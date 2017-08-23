@@ -1,0 +1,16 @@
+# dependencies
+node_modules
+
+# coverage
+coverage
+.nyc_output
+
+# production
+build
+
+# misc
+.DS_Store
+npm-debug.log
+.vscode
+
+data
