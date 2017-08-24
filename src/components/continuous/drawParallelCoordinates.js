@@ -147,14 +147,11 @@ const drawParallelCoordinates = (data) => {
 
   /*****************************************
   ******************************************
-        Setup SVG & Canvas elements
+        process and visualize data
   ******************************************
   ******************************************/
 
-  d3.csv("https://gist.githubusercontent.com/syntagmatic/05a5b0897a48890133beb59c815bd953/raw/310a68d713eb4d351f809b6cfbcffe3d9d96a205/nutrient.csv", (error, data) => {
-    if (error) throw error;
-
-    // shuffle the data!
+    // shuffle the data! - or not, this is a visual effect
     data = d3.shuffle(data);
 
     data.forEach(function(d) {
@@ -182,7 +179,24 @@ const drawParallelCoordinates = (data) => {
     });
 
     const draw = (d) => {
-      ctx.strokeStyle = "rgba(0,0,0,.4)" /* color(d.food_group); */
+
+      /*
+
+      line color options 8/23/2017:
+
+      Cluster_2d_color
+      Cluster_CNV_color
+      Location.color
+      Sample.name.color
+      Sample.type.color
+      Selection.color
+      housekeeping_cluster_color
+      recluster_myeloid
+      recluster_myeloid_color
+
+      */
+
+      ctx.strokeStyle = d["Cluster_2d_color"]; //"rgba(0,0,0,.4)" /* color(d.food_group); */
       ctx.beginPath();
       var coords = project(d);
       coords.forEach((p,i) => {
@@ -225,6 +239,8 @@ const drawParallelCoordinates = (data) => {
     const brush = () => {
       render.invalidate();
 
+      console.log('brush', svg.selectAll(".axis .brush"))
+
       var actives = [];
       svg.selectAll(".axis .brush")
         .filter((d) => {
@@ -252,12 +268,19 @@ const drawParallelCoordinates = (data) => {
       render(selected);
 
       output.text(d3.tsvFormat(selected.slice(0,24)));
-      console.log('fires brush', actives)
+      // console.log('fires brush', actives)
     }
 
     function brushstart() {
       d3.event.sourceEvent.stopPropagation();
     }
+
+
+    /*****************************************
+    ******************************************
+                    Render
+    ******************************************
+    ******************************************/
 
     var render = renderQueue(draw).rate(50);
 
@@ -306,8 +329,6 @@ const drawParallelCoordinates = (data) => {
         return [xscale(i),p.scale(d[p.key])];
       });
     };
-
-  });
 
 }
 

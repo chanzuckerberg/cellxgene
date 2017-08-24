@@ -14,7 +14,7 @@ export const types = {
     coerce: function(d) { return +d; },
     extent: d3.extent,
     within: function(d, extent, dim) { return extent[0] <= dim.scale(d) && dim.scale(d) <= extent[1]; },
-    defaultScale: d3.scaleLinear().range([innerHeight, 0])
+    defaultScale: d3.scaleSqrt().range([innerHeight, 0])
   },
   "String": {
     key: "String",
@@ -34,122 +34,87 @@ export const types = {
 
 export const dimensions = [
   {
-    key: "Total lipid (fat) (g)",
+    key: "Total_reads",
     type: types["Number"],
     scale: d3.scaleSqrt().range([innerHeight, 0])
   },
   {
-    key: "Sugars, total (g)",
+    key: "Unique_reads",
     type: types["Number"],
     scale: d3.scaleSqrt().range([innerHeight, 0])
   },
   {
-    key: "Calcium, Ca (mg)",
+    key: "Unique_reads_percent",
     type: types["Number"],
     scale: d3.scaleSqrt().range([innerHeight, 0])
   },
   {
-    key: "Sodium, Na (mg)",
+    key: "Genes_detected",
     type: types["Number"],
     scale: d3.scaleSqrt().range([innerHeight, 0])
   },
   {
-    key: "Phosphorus, P (mg)",
+    key: "ERCC_reads",
     type: types["Number"],
     scale: d3.scaleSqrt().range([innerHeight, 0])
   },
   {
-    key: "Potassium, K (mg)",
+    key: "Non_ERCC_reads",
     type: types["Number"],
     scale: d3.scaleSqrt().range([innerHeight, 0])
   },
   {
-    key: "Thiamin (mg)",
+    key: "ERCC_to_non_ERCC",
     type: types["Number"],
     scale: d3.scaleSqrt().range([innerHeight, 0])
   },
   {
-    key: "Riboflavin (mg)",
+    key: "Multimapping_reads_percent",
     type: types["Number"],
     scale: d3.scaleSqrt().range([innerHeight, 0])
   },
   {
-    key: "Niacin (mg)",
+    key: "Splice_sites_AT.AC",
     type: types["Number"],
     scale: d3.scaleSqrt().range([innerHeight, 0])
   },
   {
-    key: "Iron, Fe (mg)",
+    key: "Splice_sites_Annotated",
     type: types["Number"],
     scale: d3.scaleSqrt().range([innerHeight, 0])
   },
   {
-    key: "Magnesium, Mg (mg)",
+    key: "Splice_sites_GC.AG",
     type: types["Number"],
     scale: d3.scaleSqrt().range([innerHeight, 0])
   },
   {
-    key: "Protein (g)",
+    key: "Splice_sites_GT.AG",
     type: types["Number"],
     scale: d3.scaleSqrt().range([innerHeight, 0])
   },
   {
-    key: "Zinc, Zn (mg)",
+    key: "Splice_sites_non_canonical",
     type: types["Number"],
     scale: d3.scaleSqrt().range([innerHeight, 0])
   },
   {
-    key: "Vitamin B-6 (mg)",
+    key: "Splice_sites_total",
     type: types["Number"],
     scale: d3.scaleSqrt().range([innerHeight, 0])
   },
   {
-    key: "Vitamin B-12 (mcg)",
+    key: "Unmapped_mismatch",
     type: types["Number"],
     scale: d3.scaleSqrt().range([innerHeight, 0])
   },
   {
-    key: "Folic acid (mcg)",
+    key: "Unmapped_other",
     type: types["Number"],
     scale: d3.scaleSqrt().range([innerHeight, 0])
   },
   {
-    key: "Selenium, Se (mcg)",
-    type: types["Number"],
-    scale: d3.scaleSqrt().range([innerHeight, 0])
-  },
-  {
-    key: "Vitamin A, IU (IU)",
-    type: types["Number"],
-    scale: d3.scaleSqrt().range([innerHeight, 0])
-  },
-  {
-    key: "Vitamin K (phylloquinone) (mcg)",
-    type: types["Number"],
-    scale: d3.scaleSqrt().range([innerHeight, 0])
-  },
-  {
-    key: "Vitamin C, total ascorbic acid (mg)",
-    type: types["Number"],
-    scale: d3.scaleSqrt().range([innerHeight, 0])
-  },
-  {
-    key: "Vitamin D (IU)",
-    type: types["Number"],
-    scale: d3.scaleSqrt().range([innerHeight, 0])
-  },
-  {
-    key: "Cholesterol (mg)",
-    type: types["Number"],
-    scale: d3.scaleSqrt().range([innerHeight, 0])
-  },
-  {
-    key: "Fiber, total dietary (g)",
-    type: types["Number"],
-    scale: d3.scaleSqrt().range([innerHeight, 0])
-  },
-  {
-    key: "Carbohydrate, by difference (g)",
+    key: "Unmapped_short",
     type: types["Number"],
     scale: d3.scaleSqrt().range([innerHeight, 0])
   }
