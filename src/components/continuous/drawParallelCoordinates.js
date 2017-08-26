@@ -182,7 +182,7 @@ const drawParallelCoordinates = (data) => {
 
       /*
 
-      line color options 8/23/2017:
+      line color options from cell metadata 8/23/2017:
 
       Cluster_2d_color
       Cluster_CNV_color
@@ -254,6 +254,7 @@ const drawParallelCoordinates = (data) => {
         });
 
       var selected = data.filter(function(d) {
+        /* this is iterating over the enter dataset */
         if (actives.every(function(active) {
             var dim = active.dimension;
             // test if point is within extents for each active brush
