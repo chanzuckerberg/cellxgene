@@ -9,9 +9,9 @@ const Button = ({category, c, i}) => (
   <button
     key={i}
     style={{
-      border: i === 0 ? "none" : `1px solid ${globals.lightgrey}`,
-      background: i === 0 ? globals.hcaBlue : "none",
-      color: i === 0 ? "white" : "black",
+      border: i > -1 ? "none" : `1px solid ${globals.lightgrey}`,
+      background: i > -1 ? globals.hcaBlue : "none",
+      color: i > -1 ? "white" : "black",
       padding: "7px 10px",
       marginRight: 20,
       borderRadius: 3,
@@ -20,8 +20,8 @@ const Button = ({category, c, i}) => (
     {c}
     <span
       style={{
-        fontWeight: i === 0 ? globals.bolder : "auto",
-        background: i === 0 ? "white" : "none",
+        fontWeight: i > -1 ? globals.bolder : "auto",
+        background: i > -1 ? "white" : "none",
         color: "black",
         marginLeft: 10,
         padding: "2px 4px",

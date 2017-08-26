@@ -113,7 +113,7 @@ const drawParallelCoordinates = (data) => {
   ******************************************/
 
   var container = d3.select("body").append("div")
-      .attr("class", styles.parcoords)
+      .attr("class", "parcoords")
       .style("width", width + margin.left + margin.right + "px")
       .style("height", height + margin.top + margin.bottom + "px");
 
@@ -142,12 +142,12 @@ const drawParallelCoordinates = (data) => {
   var axes = svg.selectAll(".axis")
       .data(dimensions)
     .enter().append("g")
-      .attr("class", styles.axis)
+      .attr("class", "axis")
       .attr("transform", function(d,i) { return "translate(" + xscale(i) + ")"; });
 
   /*****************************************
   ******************************************
-        process and visualize data
+      process data and extract features
   ******************************************
   ******************************************/
 
@@ -236,14 +236,13 @@ const drawParallelCoordinates = (data) => {
     ******************************************
     ******************************************/
 
-    const brush = () => {
+    function brush () {
       render.invalidate();
-
-      console.log('brush', svg.selectAll(".axis .brush"))
 
       var actives = [];
       svg.selectAll(".axis .brush")
-        .filter((d) => {
+        .filter(function (d) {
+          console.log('this', this)
           return d3.brushSelection(this);
         })
         .each(function(d) {
@@ -298,13 +297,13 @@ const drawParallelCoordinates = (data) => {
           d3.select(this).call(renderAxis);
         })
       .append("text")
-        .attr("class", styles.title)
+        .attr("class", "title")
         .attr("text-anchor", "start")
         .text(function(d) { return "description" in d ? d.description : d.key; });
 
     // Add and store a brush for each axis.
     axes.append("g")
-        .attr("class", styles.brush)
+        .attr("class", "brush")
         .each(function(d) {
           d3.select(this).call(d.brush = d3.brushY()
             .extent([[-10,0], [10,height]])
