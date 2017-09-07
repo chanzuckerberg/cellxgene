@@ -42,7 +42,7 @@ const Category = ({category, title}) => (
 const Categorical = () => {
 
   return (
-    <div>
+    <div style={{marginTop: 50}}>
       <h3>Categorical Metadata</h3>
       {
         _.map(createCategoryCounts(cells),
@@ -64,5 +64,14 @@ export default Categorical;
   <p> <button> Field name [initial state] [create hypothesis]           [validate hypothesis]         </button> </p>
   <p> <button> Field name [total]         [selected in current filters] [selected in graph selection] </button> </p>
   <p> <button> Tumor      [400]           [40]                          [4]                           </button> </p>
+
+*/
+
+
+/*
+
+  Each category has a color associated with it - ie., color by location should show up on these buttons,
+  Does colorby live here? Like a global, with the category labels at the top? If not, we have to
+  duplicate the category names somewhere else - but then, not all (like Cluster_2d_color) won't be listed here.
 
 */

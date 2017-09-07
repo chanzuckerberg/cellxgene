@@ -1,5 +1,7 @@
-export const margin = {top: 66, right: 110, bottom: 20, left: 188};
-export const width = document.body.clientWidth - margin.left - margin.right;
+const paddingRight = 120;
+
+export const margin = {top: 66, right: 110, bottom: 20, left: 60};
+export const width = document.body.clientWidth - margin.left - margin.right - paddingRight;
 export const height = 340 - margin.top - margin.bottom;
 export const innerHeight = height - 2;
 

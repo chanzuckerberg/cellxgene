@@ -112,10 +112,7 @@ const drawParallelCoordinates = (data) => {
   ******************************************
   ******************************************/
 
-  var container = d3.select("body").append("div")
-      .attr("class", "parcoords")
-      .style("width", width + margin.left + margin.right + "px")
-      .style("height", height + margin.top + margin.bottom + "px");
+  var container = d3.select("#parcoords")
 
   var svg = container.append("svg")
       .attr("width", width + margin.left + margin.right)
@@ -131,18 +128,19 @@ const drawParallelCoordinates = (data) => {
       .style("margin-top", margin.top + "px")
       .style("margin-left", margin.left + "px");
 
+
   var ctx = canvas.node().getContext("2d");
       ctx.globalCompositeOperation = 'darken';
       ctx.globalAlpha = 0.15;
       ctx.lineWidth = 1.5;
       ctx.scale(devicePixelRatio, devicePixelRatio);
 
-  var output = d3.select("body").append("pre");
+  var output = d3.select("#parcoords_output");
 
-  var axes = svg.selectAll(".axis")
+  var axes = svg.selectAll(".parcoords_axis")
       .data(dimensions)
     .enter().append("g")
-      .attr("class", "axis")
+      .attr("class", `${styles.axis} parcoords_axis`)
       .attr("transform", function(d,i) { return "translate(" + xscale(i) + ")"; });
 
   /*****************************************
@@ -196,7 +194,8 @@ const drawParallelCoordinates = (data) => {
 
       */
 
-      ctx.strokeStyle = d["Cluster_2d_color"]; //"rgba(0,0,0,.4)" /* color(d.food_group); */
+      ctx.strokeStyle = d["Sample.name.color"];
+      // ctx.strokeStyle = "rgba(180,180,180,.4)";
       ctx.beginPath();
       var coords = project(d);
       coords.forEach((p,i) => {
@@ -240,9 +239,8 @@ const drawParallelCoordinates = (data) => {
       render.invalidate();
 
       var actives = [];
-      svg.selectAll(".axis .brush")
+      svg.selectAll(".parcoords_axis .parcoords_brush")
         .filter(function (d) {
-          console.log('this', this)
           return d3.brushSelection(this);
         })
         .each(function(d) {
@@ -263,12 +261,14 @@ const drawParallelCoordinates = (data) => {
         }
       });
 
+      /* Reset canvas */
       ctx.clearRect(0,0,width,height);
       ctx.globalAlpha = d3.min([0.85/Math.pow(selected.length,0.3),1]);
+
+      /* pass the result of the filter above to a fresh canvas, using RAF */
       render(selected);
 
-      output.text(d3.tsvFormat(selected.slice(0,24)));
-      // console.log('fires brush', actives)
+      output.text(d3.tsvFormat(selected.slice(0,22)));
     }
 
     function brushstart() {
@@ -297,13 +297,13 @@ const drawParallelCoordinates = (data) => {
           d3.select(this).call(renderAxis);
         })
       .append("text")
-        .attr("class", "title")
+        .attr("class", styles.title)
         .attr("text-anchor", "start")
         .text(function(d) { return "description" in d ? d.description : d.key; });
 
     // Add and store a brush for each axis.
     axes.append("g")
-        .attr("class", "brush")
+        .attr("class", `${styles.brush} parcoords_brush`)
         .each(function(d) {
           d3.select(this).call(d.brush = d3.brushY()
             .extent([[-10,0], [10,height]])
@@ -316,7 +316,7 @@ const drawParallelCoordinates = (data) => {
         .attr("x", -8)
         .attr("width", 16);
 
-    output.text(d3.tsvFormat(data.slice(0,24)));
+    output.text(d3.tsvFormat(data.slice(0,22)));
 
     function project(d) {
       return dimensions.map(function(p,i) {

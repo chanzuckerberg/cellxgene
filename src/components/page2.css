@@ -8,22 +8,14 @@
 }
 
 .hero {
-  font-size: 48;
+  font-size: 48px;
   margin-bottom: 0;
 }
 
 .subHero {
-  font-size: 18;
-  max-width: 600;
-  text-align: "center";
-}
-
-.primaryButton {
-  border: 1px solid black;
-  padding: 10px 15px;
-  background: none;
-  cursor: pointer;
-  font-size: 14px;
+  font-size: 18px;
+  max-width: 600px;
+  text-align: center;
 }
 
 .or {

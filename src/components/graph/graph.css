@@ -1,0 +1,31 @@
+path,
+line {
+  shape-rendering: crispEdges;
+}
+
+div,
+svg,
+canvas {
+  position: absolute;
+}
+
+svg {
+  pointer-events: none;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  stroke-width: 1px;
+}
+
+circle {
+  stroke-width: 4px;
+  stroke: #000;
+  fill: none;
+}
+
+.hidden {
+  display: none;
+}
