@@ -19,7 +19,7 @@ class Home extends React.Component {
       graph: null,
     };
   }
-  componentWillMount() {
+  componentDidMount() {
     // d3.csv("http://ec2-34-234-75-156.compute-1.amazonaws.com/api/v0.1/metadata", (d) => {
     //   console.log("from ec2",d)
     // })
@@ -51,13 +51,22 @@ class Home extends React.Component {
       <Container>
         <Helmet title="cellxgene" />
         <h1><Link to="/page2">cellxgene</Link></h1>
+        <button
+          className={buttonStyles.primaryButton}>
+          Showing a cluster informed downsampling of 10,000 cells. Refresh.
+        </button>
         <h3 style={{marginTop: 50}}> Gene selection criteria </h3>
-        <Joy data={this.state.heatmap && this.state.heatmap.data}/>
+        {false ? <Joy data={this.state.heatmap && this.state.heatmap.data}/> : ""}
 
         <Categorical/>
         <Continuous/>
         <h3 style={{marginTop: 50}}> T-SNE plot </h3>
-        <button onClick={() => { this.setState({showClustersPlaceholderImage: true}) }} style={{marginBottom: 20}} className={buttonStyles.primaryButton}>Compute clustering using [n] cells in current metadata selection</button>
+        <button
+          onClick={() => { this.setState({showClustersPlaceholderImage: true}) }}
+          style={{marginBottom: 20}}
+          className={buttonStyles.primaryButton}>
+          Compute clustering using [n] cells in current metadata selection
+        </button>
         <Graph data={this.state.graph}/>
         {this.state.showClustersPlaceholderImage ? <img width={750} src="https://s10.postimg.org/s6z3zbcvt/tsne.png"></img> : null}
       </Container>

@@ -1,15 +1,18 @@
-path,
-line {
+.graphCanvas path {
   shape-rendering: crispEdges;
 }
 
-div,
-svg,
-canvas {
+#graphWrapper {
+  position: relative;
+}
+
+#graphAttachPoint,
+.graphSVG,
+.graphCanvas {
   position: absolute;
 }
 
-svg {
+#graphSVG {
   pointer-events: none;
 }
 

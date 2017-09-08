@@ -1,34 +1,31 @@
 import React from 'react';
 import _ from "lodash";
-// import styles from "./joy.css";
-// import drawGraph from "./drawGraph";
-// import joyParser from "./joyParser";
+import styles from "./graph.css";
+import drawGraph from "./drawGraph";
 
 class Graph extends React.Component {
 
   constructor(props) {
     super(props);
     this.state = {
-
+      drawn: false,
     };
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.data) {
-      console.log('graph data 55', nextProps.data)
-      // drawGraph(graphParser(nextProps.data));
+    /* maybe should do a check here to confirm ref exists and pass it? */
+    if (nextProps.data && !this.state.drawn) {
+      console.log('About to draw graph. Data:', nextProps.data)
+      drawGraph(nextProps.data.data)
+      this.setState({drawn: true});
     }
-  }
-
-  componentDidMount() {
-
   }
 
   render() {
     return (
-      <div id="joyplot_wrapper" style={{marginTop: 50}}>
+      <div id="graphWrapper">
         <h3> Graph </h3>
-        <div id="joyplot"> </div>
+        <div id="graphAttachPoint"> </div>
       </div>
     )
   }
