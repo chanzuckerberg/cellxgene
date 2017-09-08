@@ -17,12 +17,15 @@ class Graph extends React.Component {
   componentWillReceiveProps(nextProps) {
     /* maybe should do a check here to confirm ref exists and pass it? */
     if (
-      nextProps.data &&
+      nextProps.vertices &&
+      nextProps.expressions &&
+      nextProps.expressionsCountsMap &&
       this.state.context
     ) {
       drawGraph(
-        nextProps.data.data,
-        this.state.context
+        nextProps.vertices.data,
+        this.state.context,
+        nextProps.expressionsCountsMap
       );
     }
   }

@@ -11,8 +11,6 @@ const x = d3.scaleLinear()
 const y = d3.scaleLinear()
   .range([height, 0]);
 
-const cellFillColor = "rgba(0,0,0,.5)";
-
 /******************************************
 *******************************************
           put svg & canvas in DOM
@@ -52,15 +50,20 @@ export const setupGraphElements = (data) => {
 *******************************************
 ******************************************/
 
-export const drawGraph = (data, context) => {
+export const drawGraph = (data, context, expressionsCountsMap) => {
 
   /* clear canvas */
   context.clearRect(0, 0, width, height);
 
+  /* ! create a scale to map between expression values and colors, remove to somewhere else */
+  const expressionToColorScale = d3.scaleLog()
+    .domain([0, expressionsCountsMap.maxValue])
+    .range([1,0])
+
   /* shuffle the data to overcome render order hiding cells */
   data = d3.shuffle(data);
 
-  /* loop! */
+  /* loop */
   data.forEach((p, i) => {
     context.beginPath();
     /* context.arc(x,y,r,sAngle,eAngle,counterclockwise); */
@@ -72,6 +75,17 @@ export const drawGraph = (data, context) => {
       2 * Math.PI         /* eAngle */
     );
     context.fill();
-    context.fillStyle = cellFillColor;
+
+    if (i < 20) {
+      console.log(
+        '0 to 1 scale', expressionToColorScale(expressionsCountsMap[p[0]]),
+        'color', d3.interpolateViridis(expressionToColorScale(
+          expressionsCountsMap[p[0]]
+        ))
+      )
+    }
+    context.fillStyle = d3.interpolateViridis(expressionToColorScale(
+      expressionsCountsMap[p[0]]
+    ));
   });
 }

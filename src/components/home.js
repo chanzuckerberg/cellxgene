@@ -14,15 +14,13 @@ class Home extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      showClustersPlaceholderImage: false,
-      heatmap: null,
-      graph: null,
+      expressions: null,
+      vertices: null,
+      coloring: null,
+      metadata: null,
     };
   }
   componentDidMount() {
-    // d3.csv("http://ec2-34-234-75-156.compute-1.amazonaws.com/api/v0.1/metadata", (d) => {
-    //   console.log("from ec2",d)
-    // })
 
     const prefix = "http://ec2-34-234-75-156.compute-1.amazonaws.com/api/";
     const version = "v0.1/";
@@ -39,16 +37,45 @@ class Home extends React.Component {
     })
     // const expressions = fetch(`${prefix}${version}${expression}`)
       .then((res) => res.json())
-      .then((data) => { this.setState({heatmap: data}) })
-
+      .then((data) => { this.setState({expressions: data}) })
 
     const graph = fetch(`${prefix}${version}graph`)
       .then((res) => res.json())
-      .then((data) => { this.setState({graph: data}) })
+      .then((data) => { this.setState({vertices: data}) })
 
+    const metadata = d3.csv(`${prefix}${version}metadata`, (data) => {
+      this.setState({metadata: data})
+    })
   }
+
+  createExpressionsCountsMap () {
+
+    const CHANGE_ME_MAGIC_GENE_INDEX = 3;
+
+    const expressionsCountsMap = {};
+
+    /* currently selected gene */
+    expressionsCountsMap.geneName = this.state.expressions.data.genes[3];
+
+    let maxExpressionValue = 0;
+
+    /* create map of expressions for every cell */
+    this.state.expressions.data.cells.map((c) => {
+      /* cellname = 234 */
+      expressionsCountsMap[c.cellname] = c["e"][CHANGE_ME_MAGIC_GENE_INDEX];
+      /* collect the maximum value as we iterate */
+      if (c["e"][CHANGE_ME_MAGIC_GENE_INDEX] > maxExpressionValue) {
+        maxExpressionValue = c["e"][CHANGE_ME_MAGIC_GENE_INDEX]
+      }
+    })
+
+    expressionsCountsMap.maxValue = maxExpressionValue;
+
+    return expressionsCountsMap;
+  }
+
   render() {
-    console.log('heatmap', this.state.heatmap)
+
     return (
       <Container>
         <Helmet title="cellxgene" />
@@ -59,18 +86,20 @@ class Home extends React.Component {
            Refresh.
         </button>
         <h3 style={{marginTop: 50}}> Gene selection criteria </h3>
-        {false ? <Joy data={this.state.heatmap && this.state.heatmap.data}/> : ""}
+        {false ? <Joy data={this.state.expressions && this.state.expressions.data}/> : ""}
 
         <Categorical/>
         <Continuous/>
         <button
-          onClick={() => { this.setState({showClustersPlaceholderImage: true}) }}
           style={{marginBottom: 20}}
           className={buttonStyles.primaryButton}>
           Compute clustering using [n] cells in current metadata selection
         </button>
-        <Graph data={this.state.graph}/>
-        {this.state.showClustersPlaceholderImage ? <img width={750} src="https://s10.postimg.org/s6z3zbcvt/tsne.png"></img> : null}
+        <Graph
+          vertices={this.state.vertices}
+          expressions={this.state.expressions}
+          expressionsCountsMap={this.state.expressions && this.state.expressions ? this.createExpressionsCountsMap() : null}
+          />
       </Container>
     )
   }
