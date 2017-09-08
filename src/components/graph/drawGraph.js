@@ -11,13 +11,15 @@ const x = d3.scaleLinear()
 const y = d3.scaleLinear()
   .range([height, 0]);
 
+const cellFillColor = "rgba(0,0,0,.5)";
+
 /******************************************
 *******************************************
-                  Main
+          put svg & canvas in DOM
 *******************************************
 ******************************************/
 
-const drawGraph = (data) => {
+export const setupGraphElements = (data) => {
 
   var svg = d3.select("#graphAttachPoint").append("svg")
     .attr("width", width + margin.left + margin.right)
@@ -37,31 +39,39 @@ const drawGraph = (data) => {
 
   var context = canvas.node().getContext("2d");
 
-  context.fillStyle = "rgba(0,0,0,.5)";
-
-  const draw = () => {
-
-    // Update canvas
-    context.clearRect(0, 0, width, height);
-
-    data.forEach((p, i) => {
-
-      context.beginPath();
-      /* context.arc(x,y,r,sAngle,eAngle,counterclockwise); */
-      context.arc(
-        x(p[1]),            /* x */
-        y(p[2]),            /* y */
-        2,                  /* r */
-        0,                  /* sAngle */
-        2 * Math.PI         /* eAngle */
-      );
-      context.fill();
-
-    });
+  return {
+    svg,
+    context
   }
-
-  draw();
 
 }
 
-export default drawGraph;
+/******************************************
+*******************************************
+        draw cells on the canvas
+*******************************************
+******************************************/
+
+export const drawGraph = (data, context) => {
+
+  /* clear canvas */
+  context.clearRect(0, 0, width, height);
+
+  /* shuffle the data to overcome render order hiding cells */
+  data = d3.shuffle(data);
+
+  /* loop! */
+  data.forEach((p, i) => {
+    context.beginPath();
+    /* context.arc(x,y,r,sAngle,eAngle,counterclockwise); */
+    context.arc(
+      x(p[1]),            /* x */
+      y(p[2]),            /* y */
+      2,                  /* r */
+      0,                  /* sAngle */
+      2 * Math.PI         /* eAngle */
+    );
+    context.fill();
+    context.fillStyle = cellFillColor;
+  });
+}

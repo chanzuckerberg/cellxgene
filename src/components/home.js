@@ -33,7 +33,7 @@ class Home extends React.Component {
         'Content-Type': 'application/json'
       }),
       body: JSON.stringify({
-        "celllist": ["1001000173.G8", "1001000173.D4"],
+        // "celllist": ["1001000173.G8", "1001000173.D4"],
         "genelist": ["1/2-SBSRNA4", "A1BG", "A1BG-AS1", "A1CF", "A2LD1", "A2M", "A2ML1", "A2MP1", "A4GALT"]
       })
     })
@@ -41,26 +41,28 @@ class Home extends React.Component {
       .then((res) => res.json())
       .then((data) => { this.setState({heatmap: data}) })
 
+
     const graph = fetch(`${prefix}${version}graph`)
       .then((res) => res.json())
       .then((data) => { this.setState({graph: data}) })
 
   }
   render() {
+    console.log('heatmap', this.state.heatmap)
     return (
       <Container>
         <Helmet title="cellxgene" />
         <h1><Link to="/page2">cellxgene</Link></h1>
+        Showing a cluster informed downsampling of 10,000 cells.
         <button
           className={buttonStyles.primaryButton}>
-          Showing a cluster informed downsampling of 10,000 cells. Refresh.
+           Refresh.
         </button>
         <h3 style={{marginTop: 50}}> Gene selection criteria </h3>
         {false ? <Joy data={this.state.heatmap && this.state.heatmap.data}/> : ""}
 
         <Categorical/>
         <Continuous/>
-        <h3 style={{marginTop: 50}}> T-SNE plot </h3>
         <button
           onClick={() => { this.setState({showClustersPlaceholderImage: true}) }}
           style={{marginBottom: 20}}

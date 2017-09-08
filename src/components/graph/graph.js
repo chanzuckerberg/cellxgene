@@ -1,7 +1,7 @@
 import React from 'react';
 import _ from "lodash";
 import styles from "./graph.css";
-import drawGraph from "./drawGraph";
+import {setupGraphElements, drawGraph} from "./drawGraph";
 
 class Graph extends React.Component {
 
@@ -9,16 +9,27 @@ class Graph extends React.Component {
     super(props);
     this.state = {
       drawn: false,
+      svg: null,
+      context: null,
     };
   }
 
   componentWillReceiveProps(nextProps) {
     /* maybe should do a check here to confirm ref exists and pass it? */
-    if (nextProps.data && !this.state.drawn) {
-      console.log('About to draw graph. Data:', nextProps.data)
-      drawGraph(nextProps.data.data)
-      this.setState({drawn: true});
+    if (
+      nextProps.data &&
+      this.state.context
+    ) {
+      drawGraph(
+        nextProps.data.data,
+        this.state.context
+      );
     }
+  }
+
+  componentDidMount() {
+    const {svg, context} = setupGraphElements();
+    this.setState({svg, context});
   }
 
   render() {
