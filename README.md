@@ -5,5 +5,5 @@ A React + Redux web application for exploring large scale single cell RNA sequen
 ##### Quickstart:
 
 * `npm install`
-* `npm run dev`
+* `npm start`
 * `localhost:3000`
