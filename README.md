@@ -1,6 +1,6 @@
-#cellxgene
+# cellxgene
 
-##Quickstart:
+##### Quickstart:
 
 * `npm install`
 * `npm run dev`
