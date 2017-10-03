@@ -9,6 +9,7 @@ import Categorical from "./categorical/categorical";
 import Continuous from "./continuous/continuous";
 import Joy from "./joy/joy";
 import Graph from "./graph/graph";
+import Heatmap from "./heatmap/heatmap";
 
 class Home extends React.Component {
   constructor(props) {
@@ -22,7 +23,7 @@ class Home extends React.Component {
   }
   componentDidMount() {
 
-    const prefix = "http://ec2-34-234-75-156.compute-1.amazonaws.com/api/";
+    const prefix = "http://api.clustering.czi.technology/api/";
     const version = "v0.1/";
 
     const expressions = fetch(`${prefix}${version}expression`, {
@@ -39,6 +40,10 @@ class Home extends React.Component {
       .then((res) => res.json())
       .then((data) => { this.setState({expressions: data}) })
 
+    const initialize = fetch(`${prefix}${version}initialize`)
+      .then((res) => res.json())
+      .then((data) => { this.setState({initialize: data}) })
+
     const graph = fetch(`${prefix}${version}graph`)
       .then((res) => res.json())
       .then((data) => { this.setState({vertices: data}) })
@@ -50,7 +55,7 @@ class Home extends React.Component {
 
   createExpressionsCountsMap () {
 
-    const CHANGE_ME_MAGIC_GENE_INDEX = 3;
+    const CHANGE_ME_MAGIC_GENE_INDEX = 5;
 
     const expressionsCountsMap = {};
 
@@ -75,16 +80,13 @@ class Home extends React.Component {
   }
 
   render() {
+    console.log('app:', this.props, this.state)
 
     return (
       <Container>
         <Helmet title="cellxgene" />
+        {/* <Heatmap/> */}
         <h1><Link to="/page2">cellxgene</Link></h1>
-        Showing a cluster informed downsampling of 10,000 cells.
-        <button
-          className={buttonStyles.primaryButton}>
-           Refresh.
-        </button>
         <h3 style={{marginTop: 50}}> Gene selection criteria </h3>
         {false ? <Joy data={this.state.expressions && this.state.expressions.data}/> : ""}
 

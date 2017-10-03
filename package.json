@@ -6,7 +6,7 @@
   "scripts": {
     "build": "npm run clean && webpack --config configuration/webpack/webpack.config.prod.js",
     "clean": "rimraf build",
-    "dev": "node server/development.js",
+    "start": "node server/development.js",
     "lint": "eslint src",
     "prod": "cross-env NODE_ENV=production PORT=3000 node server/production.js",
     "test": "nyc --reporter=lcov --reporter=text mocha test/.setup.js test/**/*.spec.js"
@@ -24,9 +24,12 @@
   },
   "dependencies": {
     "d3": "^4.10.0",
+    "deck.gl": "^4.1.2",
     "dsv-loader": "^2.0.0",
     "express": "^4.14.0",
+    "gl-matrix": "^2.4.0",
     "lodash": "^4.17.4",
+    "luma.gl": "^4.0.3",
     "react": "^15.3.0",
     "react-dom": "^15.3.0",
     "react-helmet": "^4.0.0",

@@ -56,7 +56,7 @@ export const drawGraph = (data, context, expressionsCountsMap) => {
   context.clearRect(0, 0, width, height);
 
   /* ! create a scale to map between expression values and colors, remove to somewhere else */
-  const expressionToColorScale = d3.scaleLog()
+  const expressionToColorScale = d3.scaleLinear()
     .domain([0, expressionsCountsMap.maxValue])
     .range([1,0])
 
@@ -76,14 +76,14 @@ export const drawGraph = (data, context, expressionsCountsMap) => {
     );
     context.fill();
 
-    if (i < 20) {
-      console.log(
-        '0 to 1 scale', expressionToColorScale(expressionsCountsMap[p[0]]),
-        'color', d3.interpolateViridis(expressionToColorScale(
-          expressionsCountsMap[p[0]]
-        ))
-      )
-    }
+    // if (i < 20) {
+    //   console.log(
+    //     '0 to 1 scale', expressionToColorScale(expressionsCountsMap[p[0]]),
+    //     'color', d3.interpolateViridis(expressionToColorScale(
+    //       expressionsCountsMap[p[0]]
+    //     ))
+    //   )
+    // }
     context.fillStyle = d3.interpolateViridis(expressionToColorScale(
       expressionsCountsMap[p[0]]
     ));
