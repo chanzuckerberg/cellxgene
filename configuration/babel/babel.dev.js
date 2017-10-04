@@ -2,9 +2,12 @@ module.exports = {
   babelrc: false,
   cacheDirectory: true,
   presets: [
-    [ 'es2015', { loose: true, modules: false } ],
-    'stage-0',
-    'react'
+    [ "es2015", { loose: true, modules: false } ],
+    "stage-0",
+    "react"
   ],
-  plugins: [ 'react-hot-loader/babel' ]
+  plugins: [
+    "react-hot-loader/babel",
+    "transform-decorators-legacy"
+  ]
 };
