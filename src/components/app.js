@@ -1,9 +1,9 @@
 import React from "react";
-import { Link } from "react-router-dom";
 import _ from "lodash";
 import Helmet from "react-helmet";
-import Container from "./container";
-import buttonStyles from "./buttons.css";
+import Container from "./framework/container";
+import buttonStyles from "./framework/buttons.css";
+import { connect } from "react-redux";
 
 import Categorical from "./categorical/categorical";
 import Continuous from "./continuous/continuous";
@@ -11,6 +11,11 @@ import Joy from "./joy/joy";
 import Graph from "./graph/graph";
 import Heatmap from "./heatmap/heatmap";
 
+@connect((state) => {
+  return {
+    foo123: state
+  }
+})
 class Home extends React.Component {
   constructor(props) {
     super(props);
@@ -86,7 +91,6 @@ class Home extends React.Component {
       <Container>
         <Helmet title="cellxgene" />
         {/* <Heatmap/> */}
-        <h1><Link to="/page2">cellxgene</Link></h1>
         <h3 style={{marginTop: 50}}> Gene selection criteria </h3>
         {false ? <Joy data={this.state.expressions && this.state.expressions.data}/> : ""}
 
