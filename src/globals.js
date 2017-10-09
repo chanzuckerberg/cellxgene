@@ -25,3 +25,8 @@ export const hcaBlue = "#1c7cc7"
 export const lightgrey = "rgb(211,211,211)";
 
 export const bolder = 700;
+
+export const API = {
+  prefix: "http://api.clustering.czi.technology/api/",
+  version: "v0.1/",
+}
