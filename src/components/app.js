@@ -9,7 +9,9 @@ import Categorical from "./categorical/categorical";
 import Continuous from "./continuous/continuous";
 import Joy from "./joy/joy";
 import Graph from "./graph/graph";
-import Heatmap from "./heatmap/heatmap";
+import * as globals from "../globals";
+
+import SectionHeader from "./framework/sectionHeader";
 
 @connect((state) => {
   return {
@@ -26,12 +28,17 @@ class Home extends React.Component {
       metadata: null,
     };
   }
+  _onURLChanged () {
+    this.props.dispatch({type: 'url changed', url: document.location.href});
+  };
   componentDidMount() {
 
-    const prefix = "http://api.clustering.czi.technology/api/";
-    const version = "v0.1/";
+    /* listen for url changes, fire one when we start the app up */
+    window.addEventListener('popstate', this._onURLChanged);
+    this._onURLChanged();
 
-    const expressions = fetch(`${prefix}${version}expression`, {
+    /* fire an initialize action */
+    const expressions = fetch(`${globals.API.prefix}${globals.API.version}expression`, {
       method: "post",
       headers: new Headers({
         'Content-Type': 'application/json'
@@ -45,17 +52,18 @@ class Home extends React.Component {
       .then((res) => res.json())
       .then((data) => { this.setState({expressions: data}) })
 
-    const initialize = fetch(`${prefix}${version}initialize`)
+    const initialize = fetch(`${globals.API.prefix}${globals.API.version}initialize`)
       .then((res) => res.json())
       .then((data) => { this.setState({initialize: data}) })
 
-    const graph = fetch(`${prefix}${version}graph`)
+    const graph = fetch(`${globals.API.prefix}${globals.API.version}graph`)
       .then((res) => res.json())
       .then((data) => { this.setState({vertices: data}) })
 
-    const metadata = d3.csv(`${prefix}${version}metadata`, (data) => {
-      this.setState({metadata: data})
-    })
+  }
+
+  componentWillUpdate() {
+    this.props.dispatch({type: "initialize app", data: "kitty! :D"})
   }
 
   createExpressionsCountsMap () {
@@ -85,13 +93,12 @@ class Home extends React.Component {
   }
 
   render() {
-    console.log('app:', this.props, this.state)
+    // console.log('app:', this.props, this.state)
 
     return (
       <Container>
         <Helmet title="cellxgene" />
-        {/* <Heatmap/> */}
-        <h3 style={{marginTop: 50}}> Gene selection criteria </h3>
+        <SectionHeader text="Gene Selection Criteria"/> 
         {false ? <Joy data={this.state.expressions && this.state.expressions.data}/> : ""}
 
         <Categorical/>
