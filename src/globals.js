@@ -30,3 +30,6 @@ export const API = {
   prefix: "http://api.clustering.czi.technology/api/",
   version: "v0.1/",
 }
+
+export const accentFont = "Georgia,Times,Times New Roman,serif";
+export const maxParagraphWidth = 600;
