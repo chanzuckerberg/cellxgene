@@ -2,14 +2,13 @@
   "name": "cellxgene",
   "version": "0.0.1",
   "license": "MIT",
-  "repository": "https://github.com/FormidableLabs/formidable-react-starter",
+  "repository": "https://github.com/chanzuckerberg/cellxgene",
   "scripts": {
     "build": "npm run clean && webpack --config configuration/webpack/webpack.config.prod.js",
     "clean": "rimraf build",
     "start": "node server/development.js",
     "lint": "eslint src",
-    "prod": "cross-env NODE_ENV=production PORT=3000 node server/production.js",
-    "test": "nyc --reporter=lcov --reporter=text mocha test/.setup.js test/**/*.spec.js"
+    "prod": "cross-env NODE_ENV=production PORT=3000 node server/production.js"
   },
   "engineStrict": true,
   "engines": {
@@ -30,6 +29,7 @@
     "gl-matrix": "^2.4.0",
     "lodash": "^4.17.4",
     "luma.gl": "^4.0.3",
+    "query-string": "^5.0.0",
     "react": "^15.3.0",
     "react-dom": "^15.3.0",
     "react-helmet": "^4.0.0",
