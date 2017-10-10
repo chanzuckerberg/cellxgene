@@ -30,6 +30,14 @@ const drawParallelCoordinates = (data) => {
   ******************************************
   ******************************************/
 
+  /*
+    to enable text below parallel
+    1. parcoords_output attach point
+    2. this selection
+    3. output on render
+    4. output on update
+  */
+
   var container = d3.select("#parcoords")
 
   var svg = container.append("svg")
@@ -186,7 +194,8 @@ const drawParallelCoordinates = (data) => {
       /* pass the result of the filter above to a fresh canvas, using RAF */
       render(selected);
 
-      output.text(d3.tsvFormat(selected.slice(0,22)));
+      /* text beneath */
+      // output.text(d3.tsvFormat(selected.slice(0,22)));
     }
 
     function brushstart() {
@@ -234,7 +243,8 @@ const drawParallelCoordinates = (data) => {
         .attr("x", -8)
         .attr("width", 16);
 
-    output.text(d3.tsvFormat(data.slice(0,22)));
+    /* text beneath */
+    // output.text(d3.tsvFormat(data.slice(0,22)));
 
     function project(d) {
       return dimensions.map(function(p,i) {
