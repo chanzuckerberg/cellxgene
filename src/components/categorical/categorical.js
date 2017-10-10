@@ -1,5 +1,6 @@
 import React from "react";
 import _ from "lodash";
+import { connect } from "react-redux";
 import * as globals from "../../globals";
 
 import cells from "../../../data/GBM_metadata.js";
@@ -52,6 +53,7 @@ const Categorical = () => {
       }
     </div>
   )
+        <SectionHeader text="Categorical Metadata"/>
 };
 
 export default Categorical;

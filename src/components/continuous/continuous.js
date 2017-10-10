@@ -4,6 +4,7 @@ import cells from "../../../data/GBM_metadata.js";
 import drawParallelCoordinates from "./drawParallelCoordinates";
 import createContinuousRanges from "./createContinuousRanges";
 import styles from './parallelCoordinates.css';
+import SectionHeader from "../framework/sectionHeader";
 
 import {
   margin,
@@ -28,7 +29,7 @@ class Continuous extends React.Component {
   render() {
     return (
       <div id="parcoords_wrapper" style={{marginTop: 50}}>
-        <h3> Continuous Metadata </h3>
+        <SectionHeader text="Continuous Metadata"/>
         <div style={{marginBottom: 30}}>
           Color By:
           <button style={{marginLeft: 10}}>Cluster_2d_color</button>
@@ -48,10 +49,12 @@ class Continuous extends React.Component {
             width:  width + margin.left + margin.right + "px",
             height: height + margin.top + margin.bottom + "px"
           }}></div>
-        <pre id="parcoords_output" className={styles.pre}></pre>
       </div>
     )
   }
 };
 
 export default Continuous;
+
+/* text appended to parellel coords giving N instances of selection */ 
+// <pre id="parcoords_output" className={styles.pre}></pre>

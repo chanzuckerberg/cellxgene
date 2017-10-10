@@ -2,6 +2,7 @@ import React from 'react';
 import _ from "lodash";
 import styles from "./graph.css";
 import {setupGraphElements, drawGraph} from "./drawGraph";
+import SectionHeader from "../framework/sectionHeader";
 
 class Graph extends React.Component {
 
@@ -38,7 +39,7 @@ class Graph extends React.Component {
   render() {
     return (
       <div id="graphWrapper">
-        <h3> Graph </h3>
+        <SectionHeader text="Graph"/>
         <div id="graphAttachPoint"> </div>
       </div>
     )
