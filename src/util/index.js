@@ -1,4 +1,3 @@
-import queryString from "query-string";
 import URI from "urijs";
 
 export const updateCategoricalQueryParams = (category, value) => {
@@ -9,33 +8,27 @@ export const updateCategoricalQueryParams = (category, value) => {
     there are four cases
     1. there are no query params
     2. there are query params, but our category isn't there yet
-    3. there are query params and this is not the first entry to the given category
+    3. there are query params and this is not the first entry to the given category (urijs may handle this with 'normalize')
     4. there are query params and ours already exists (remove it)
   */
 
+  const uri = new URI(window.location.href)
+
   if (window.location.search === "") {
-    /* #1 */
-    newURL = `${window.location.href}?${queryString.stringify({category: [value]})}`
-    window.history.pushState("", "", newUrl)
+    newURL = uri.addQuery(category, value).toString(); /* #1 */
+  } else if (uri.hasQuery(category, value) || uri.hasQuery(category, value, true)) { /* true param here means check arrays as well http://medialize.github.io/URI.js/docs.html#search-has */
+    newURL = uri.removeQuery(category, value).toString(); /* #4 */
   } else {
-
-    const existingParams = queryString.parse(window.location.search);
-    const categoryAlreadyExists = existingParams[category];
-    const valueAlreadyExists = existingParams[category] && categoryAlreadyExists[value];
-
-    if (valueAlreadyExists) {
-      /* #4 (removal) */
-
-      newURL = `${window.location.href}?${queryString.stringify({category: [value]})}`
-    } else {
-      /* #3 */
-      existingParams
-    }
-
+    newURL = uri.addQuery(category, value).toString(); /* #2 & #3 are handled by URI */
   }
+
+  window.history.pushState("", "", newURL)
 
 }
 
 export const updateContinuousParams = (category, range) => {
-
+  /*
+    this is similar to updateCategoricalQueryParams, but has a different check since
+    in this case, same key (Unique_reads) different values (>500 vs >5000) should always replace previous range.
+  */
 }
