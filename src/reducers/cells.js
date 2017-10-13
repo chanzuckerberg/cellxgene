@@ -4,17 +4,17 @@ const Cells = (state = {
   error: null,
 }, action) => {
   switch (action.type) {
-  case "REQUEST_CELLS":
+  case "request cells started":
     return Object.assign({}, state, {
       loading: true,
       error: null
     });
-  case "RECEIVE_CELLS":
+  case "request cells success":
     return Object.assign({}, state, {
       error: null,
       cells: action.data,
     });
-  case "CELLS_FETCH_ERROR":
+  case "request cells error":
     return Object.assign({}, state, {
       cells: null,
       error: action.data
