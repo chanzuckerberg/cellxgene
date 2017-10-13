@@ -10,22 +10,20 @@ import Continuous from "./continuous/continuous";
 import Joy from "./joy/joy";
 import Graph from "./graph/graph";
 import * as globals from "../globals";
+import * as actions from "../actions";
 
 import SectionHeader from "./framework/sectionHeader";
 
 @connect((state) => {
   return {
-    foo123: state
+
   }
 })
 class Home extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      expressions: null,
-      vertices: null,
-      coloring: null,
-      metadata: null,
+
     };
   }
   _onURLChanged () {
@@ -37,33 +35,8 @@ class Home extends React.Component {
     window.addEventListener('popstate', this._onURLChanged);
     this._onURLChanged();
 
-    /* fire an initialize action */
-    const expressions = fetch(`${globals.API.prefix}${globals.API.version}expression`, {
-      method: "post",
-      headers: new Headers({
-        'Content-Type': 'application/json'
-      }),
-      body: JSON.stringify({
-        // "celllist": ["1001000173.G8", "1001000173.D4"],
-        "genelist": ["1/2-SBSRNA4", "A1BG", "A1BG-AS1", "A1CF", "A2LD1", "A2M", "A2ML1", "A2MP1", "A4GALT"]
-      })
-    })
-    // const expressions = fetch(`${prefix}${version}${expression}`)
-      .then((res) => res.json())
-      .then((data) => { this.setState({expressions: data}) })
+    this.props.dispatch(actions.requestCells())
 
-    const initialize = fetch(`${globals.API.prefix}${globals.API.version}initialize`)
-      .then((res) => res.json())
-      .then((data) => { this.setState({initialize: data}) })
-
-    const graph = fetch(`${globals.API.prefix}${globals.API.version}graph`)
-      .then((res) => res.json())
-      .then((data) => { this.setState({vertices: data}) })
-
-  }
-
-  componentWillUpdate() {
-    this.props.dispatch({type: "initialize app", data: "kitty! :D"})
   }
 
   createExpressionsCountsMap () {
@@ -98,7 +71,7 @@ class Home extends React.Component {
     return (
       <Container>
         <Helmet title="cellxgene" />
-        <SectionHeader text="Gene Selection Criteria"/> 
+        <SectionHeader text="Gene Selection Criteria"/>
         {false ? <Joy data={this.state.expressions && this.state.expressions.data}/> : ""}
 
         <Categorical/>
@@ -119,8 +92,3 @@ class Home extends React.Component {
 };
 
 export default Home;
-
-// <Categorical title={"Sample type"} category={types}/>
-// <Categorical title={"Selection"} category={selection}/>
-// <Categorical title={"Location"} category={location}/>
-// <Categorical title={"Sample name"} category={names}/>
