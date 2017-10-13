@@ -6,48 +6,42 @@ import * as globals from "../../globals";
 import styles from "./categorical.css";
 import SectionHeader from "../framework/sectionHeader"
 import createCategoryCounts from "./createCategoryCounts";
-import { updateCategoricalQueryParams } from "../../util";
+import { alphabeticallySortedValues } from "../../util";
 
 import cells from "../../../data/GBM_metadata.js";
 
-const Button = ({category, value, count, i}) => (
-  <button
-    key={i}
-    onClick={() => {
-      updateCategoricalQueryParams(category, value)
-    }}
-    style={{
-      border: "none",
-      background: "none",
-      color: "black",
-      padding: "7px 10px",
-      marginRight: 3,
-      cursor: "pointer"
-    }}>
-    {value}
-    <span
-      style={{
-        fontFamily: globals.accentFont,
-        fontStyle: "italic",
-        color: "black",
-        marginLeft: 4,
-        borderRadius: 3
-      }}>
-      {count}
-    </span>
-  </button>
-)
-
-const alphabeticallySortedValues = (values) => {
-  return Object.keys(values).sort((a, b) => {
-    var textA = a.toUpperCase();
-    var textB = b.toUpperCase();
-    return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
-  })
+class Button extends React.Component {
+  render () {
+    return (
+      <button
+        key={this.props.i}
+        onClick={this.props.handleClick(this.props.category, this.props.value)}
+        style={{
+          border: "none",
+          background: "none",
+          color: "black",
+          padding: "7px 10px",
+          marginRight: 3,
+          cursor: "pointer"
+        }}>
+        {this.props.value}
+        <span
+          style={{
+            fontFamily: globals.accentFont,
+            fontStyle: "italic",
+            color: "black",
+            marginLeft: 4,
+            borderRadius: 3
+          }}>
+          {this.props.count}
+        </span>
+      </button>
+    )
+  }
 }
 
 
-const Category = ({category, values}) => (
+const Category = ({category, values, handleClick}) => (
   <div style={{
       display: "flex",
       alignItems: "baseline",
@@ -60,7 +54,19 @@ const Category = ({category, values}) => (
         marginRight: 20
       }}>{category}:</p>
     <div>
-      { _.map(alphabeticallySortedValues(values), (v, i) => <Button key={v} category={category} count={values[v]} value={v} i={i} />) }
+      {
+        _.map(alphabeticallySortedValues(values), (v, i) => {
+          return (
+            <Button
+              key={v}
+              handleClick={handleClick}
+              category={category}
+              count={values[v]}
+              value={v}
+              i={i} />
+          )
+        })
+      }
     </div>
   </div>
 )
@@ -77,15 +83,27 @@ class Categorical extends React.Component {
 
     };
   }
+  handleClick(category, value) {
+    return () => {
+      this.props.dispatch({type: "category changed", data: {category, value}})
+    }
+  }
   render () {
     return (
       <div style={{marginTop: 50}}>
         <SectionHeader text="Categorical Metadata"/>
+        <button onClick={this.handleClick("whee", "wooo")}></button>
         <p> Sort by: Alphabetical / Count || Show counts: true / false || Collapse: all / none</p>
         {
           _.map(createCategoryCounts(cells),
           (value, key) => {
-            return <Category key={key} category={key} values={value} />
+            return (
+              <Category
+                handleClick={this.handleClick.bind(this)}
+                key={key}
+                category={key}
+                values={value} />
+            )
           })
         }
       </div>
