@@ -36,13 +36,6 @@ export class Popup extends PureComponent {
   };
 }
 
-Popup.propTypes = {
-  id: React.PropTypes.string,
-  title: React.PropTypes.string,
-  x: React.PropTypes.number,
-  y: React.PropTypes.number,
-};
-
 Popup.defaultProps = {
   id: 'id',
   title: '',

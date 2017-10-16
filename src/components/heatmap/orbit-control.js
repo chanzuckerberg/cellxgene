@@ -1,5 +1,5 @@
 /* global window */
-import React, {Component, PropTypes} from 'react';
+import React, {Component} from 'react';
 import {PerspectiveViewport} from 'deck.gl';
 import {vec3} from 'gl-matrix';
 
@@ -140,26 +140,6 @@ export default class OrbitController extends Component {
       </div>);
   }
 }
-
-OrbitController.propTypes = {
-  // target position
-  lookAt: PropTypes.arrayOf(PropTypes.number),
-  // camera distance
-  distance: PropTypes.number.isRequired,
-  minDistance: PropTypes.number,
-  maxDistance: PropTypes.number,
-  // rotation
-  rotationX: PropTypes.number,
-  rotationY: PropTypes.number,
-  // field of view
-  fov: PropTypes.number,
-  // viewport width in pixels
-  width: PropTypes.number.isRequired,
-  // viewport height in pixels
-  height: PropTypes.number.isRequired,
-  // callback
-  onChangeViewport: PropTypes.func.isRequired
-};
 
 OrbitController.defaultProps = {
   lookAt: [0, 0, 0],
