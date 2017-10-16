@@ -15,8 +15,12 @@ const updateURLMiddleware = (store) => {
 
       /************************************************************************
       *************************************************************************
-      1. The state just changed. Clear, and then update, the URL.
-      1a. We get the whole state tree to construct the url from      
+      1. Redux app state just changed. Clear URL, and then update it.
+      1a. We get the whole state tree to construct the url!
+      1b. But (see reducers/url.js) we try to centralize it because...
+      1c. ...the back button / initial load case ('url changed' return above)
+      means that we have to listen for 'url changed' and construct state
+      from the browser
       *************************************************************************
       ************************************************************************/
 

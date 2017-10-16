@@ -2,17 +2,21 @@ import uri from "urijs";
 
 /************************************************************************
 *************************************************************************
-# This is all of the state that will be stored in the URL query params.
-# It is reasonably important it be kept in the same place,
+1. This is all of the state that will be stored in the URL query params.
+1a. It is reasonably important it be kept in the same place,
 because if initial load or back button etc, we'll hear about that
 and manually reconstruct the state from the url, overriding whatever
 we had. We could of course listen for the "url changed" type in another
 reducer, if this gets messy.
+1b. The data structures used here are constrained as well, as urijs
+needs to be able to parse them
 *************************************************************************
 ************************************************************************/
 
 const url = (
-  state = {},
+  state = {
+    selectedMetadata: {}
+  },
   action
 ) => {
   switch (action.type) {
@@ -26,7 +30,7 @@ const url = (
       return state;
     }
     case "category changed": {
-      /* TODO catch categories here and store a representation of them */
+
       return state;
     }
     default:
