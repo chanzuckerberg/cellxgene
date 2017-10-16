@@ -27,6 +27,7 @@
     "dsv-loader": "^2.0.0",
     "express": "^4.14.0",
     "gl-matrix": "^2.4.0",
+    "halogen": "^0.2.0",
     "lodash": "^4.17.4",
     "luma.gl": "^4.0.3",
     "query-string": "^5.0.0",
