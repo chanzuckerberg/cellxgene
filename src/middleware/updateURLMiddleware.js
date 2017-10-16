@@ -13,7 +13,12 @@ const updateURLMiddleware = (store) => {
 
       const state = store.getState();
 
-
+      /************************************************************************
+      *************************************************************************
+      1. The state just changed. Clear, and then update, the URL.
+      1a. We get the whole state tree to construct the url from      
+      *************************************************************************
+      ************************************************************************/
 
       // const oldURI = URI(window.location.href)
       // const newURI = URI(oldURI).setQuery({})

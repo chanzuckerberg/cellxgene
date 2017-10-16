@@ -1,7 +1,15 @@
 import uri from "urijs";
-/*
-  https://www.npmjs.com/package/url-parse
-*/
+
+/************************************************************************
+*************************************************************************
+# This is all of the state that will be stored in the URL query params.
+# It is reasonably important it be kept in the same place,
+because if initial load or back button etc, we'll hear about that
+and manually reconstruct the state from the url, overriding whatever
+we had. We could of course listen for the "url changed" type in another
+reducer, if this gets messy.
+*************************************************************************
+************************************************************************/
 
 const url = (
   state = {},
