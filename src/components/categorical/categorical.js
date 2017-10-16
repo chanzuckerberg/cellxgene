@@ -6,9 +6,7 @@ import * as globals from "../../globals";
 import styles from "./categorical.css";
 import SectionHeader from "../framework/sectionHeader"
 import createCategoryCounts from "./createCategoryCounts";
-import { alphabeticallySortedValues } from "../../util";
-
-import cells from "../../../data/GBM_metadata.js";
+import { alphabeticallySortedValues } from "./util";
 
 class Button extends React.Component {
   render () {
@@ -20,18 +18,19 @@ class Button extends React.Component {
           border: "none",
           background: "none",
           color: "black",
-          padding: "7px 10px",
           marginRight: 3,
-          cursor: "pointer"
+          cursor: "pointer",
         }}>
         {this.props.value}
         <span
           style={{
             fontFamily: globals.accentFont,
             fontStyle: "italic",
-            color: "black",
+            color: globals.darkGrey,
+            fontSize: globals.tiniestFontSize,
             marginLeft: 4,
-            borderRadius: 3
+            position: "relative",
+            top: -1,
           }}>
           {this.props.count}
         </span>
@@ -40,18 +39,19 @@ class Button extends React.Component {
   }
 }
 
-
 const Category = ({category, values, handleClick}) => (
   <div style={{
       display: "flex",
       alignItems: "baseline",
-      maxWidth: globals.maxParagraphWidth,
+      maxWidth: globals.maxControlsWidth,
     }}>
     <p style={{
         flexShrink: 0,
         width: 100,
         textAlign: "right",
-        marginRight: 20
+        fontFamily: globals.accentFont,
+        fontStyle: "italic",
+        marginRight: 20,
       }}>{category}:</p>
     <div>
       {
@@ -72,11 +72,21 @@ const Category = ({category, values, handleClick}) => (
 )
 
 @connect((state) => {
+
+  let ranges = null;
+
+  if (
+    state.cells.cells &&
+    state.cells.cells.data.ranges
+  ) {
+    ranges = state.cells.cells.data.ranges;
+  }
+
   return {
-    foo123: state
+    ranges: ranges
   }
 })
-class Categorical extends React.Component {
+class Categories extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -89,21 +99,26 @@ class Categorical extends React.Component {
     }
   }
   render () {
+    if (!this.props.ranges) return null
     return (
       <div style={{marginTop: 50}}>
         <SectionHeader text="Categorical Metadata"/>
-        <button onClick={this.handleClick("whee", "wooo")}></button>
-        <p> Sort by: Alphabetical / Count || Show counts: true / false || Collapse: all / none</p>
         {
-          _.map(createCategoryCounts(cells),
-          (value, key) => {
-            return (
-              <Category
-                handleClick={this.handleClick.bind(this)}
-                key={key}
-                category={key}
-                values={value} />
-            )
+          _.map(this.props.ranges, (value, key) => {
+            if (
+              value.options &&
+              key !== "CellName"
+            ) {
+              return (
+                <Category
+                  handleClick={this.handleClick.bind(this)}
+                  key={key}
+                  category={key}
+                  values={value.options}/>
+              )
+            } else {
+              return null
+            }
           })
         }
       </div>
@@ -111,11 +126,14 @@ class Categorical extends React.Component {
   }
 };
 
-export default Categorical;
+export default Categories;
 
 /*
 
   [on off] toggle hide deselected filters (shows a menu vs shows what you ordered in compact/narrative form. fold out animation.)
+
+  <p> Sort by: Alphabetical / Count || Show counts: true / false || Collapse: all / none</p>
+
 
   <p> <button> Field name [initial state] [create 2d graph]             [explain part of 2d graph]    </button> </p>
   <p> <button> Field name [initial state] [create hypothesis]           [validate hypothesis]         </button> </p>
