@@ -12,11 +12,13 @@ const Cells = (state = {
   case "request cells success":
     return Object.assign({}, state, {
       error: null,
+      loading: false,
       cells: action.data,
     });
   case "request cells error":
     return Object.assign({}, state, {
       cells: null,
+      loading: false,
       error: action.data
     });
   default:

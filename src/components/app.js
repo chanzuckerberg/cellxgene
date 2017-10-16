@@ -4,6 +4,7 @@ import Helmet from "react-helmet";
 import Container from "./framework/container";
 import buttonStyles from "./framework/buttons.css";
 import { connect } from "react-redux";
+import PulseLoader from "halogen/PulseLoader";
 
 import Categorical from "./categorical/categorical";
 import Continuous from "./continuous/continuous";
@@ -16,7 +17,7 @@ import SectionHeader from "./framework/sectionHeader";
 
 @connect((state) => {
   return {
-
+    cells: state.cells
   }
 })
 class Home extends React.Component {
@@ -71,9 +72,17 @@ class Home extends React.Component {
     return (
       <Container>
         <Helmet title="cellxgene" />
+        {
+          this.props.cells.loading ?
+          <div style={{display: "flex", justifyContent: "center"}}>
+            <PulseLoader color="rgb(0,0,0)" size="10px" margin="4px"/>
+            <span style={{marginLeft: 10, fontFamily: globals.accentFont, fontStyle: "italic"}}>loading cells</span>
+          </div> :
+          null
+        }
+        {this.props.cells.error ? "Error loading cells" : null}
         <SectionHeader text="Gene Selection Criteria"/>
         {false ? <Joy data={this.state.expressions && this.state.expressions.data}/> : ""}
-
         <Categorical/>
         <Continuous/>
         <button
