@@ -22,7 +22,14 @@ export const continuous = [
 
 /* colors */
 export const hcaBlue = "#1c7cc7"
-export const lightgrey = "rgb(211,211,211)";
+export const lighterGrey = "rgb(245,245,245)";
+export const lightGrey = "rgb(211,211,211)";
+export const mediumGrey = "rgb(153,153,153)";
+export const darkGrey = "rgb(102,102,102)";
+export const darkerGrey = "rgb(51,51,51)";
+
+export const tiniestFontSize = 12;
+
 
 export const bolder = 700;
 
@@ -33,3 +40,4 @@ export const API = {
 
 export const accentFont = "Georgia,Times,Times New Roman,serif";
 export const maxParagraphWidth = 600;
+export const maxControlsWidth = 800;
