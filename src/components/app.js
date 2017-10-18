@@ -74,7 +74,7 @@ class Home extends React.Component {
         <Helmet title="cellxgene" />
         {
           this.props.cells.loading ?
-          <div style={{display: "flex", justifyContent: "center"}}>
+          <div style={{display: "flex", justifyContent: "center", marginTop: 20}}>
             <PulseLoader color="rgb(0,0,0)" size="10px" margin="4px"/>
             <span style={{marginLeft: 10, fontFamily: globals.accentFont, fontStyle: "italic"}}>loading cells</span>
           </div> :
@@ -85,11 +85,6 @@ class Home extends React.Component {
         {false ? <Joy data={this.state.expressions && this.state.expressions.data}/> : ""}
         <Categorical/>
         <Continuous/>
-        <button
-          style={{marginBottom: 20}}
-          className={buttonStyles.primaryButton}>
-          Compute clustering using [n] cells in current metadata selection
-        </button>
         <Graph
           vertices={this.state.vertices}
           expressions={this.state.expressions}
