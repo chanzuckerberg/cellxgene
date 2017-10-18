@@ -2,7 +2,6 @@ import React from 'react';
 import _ from "lodash";
 import cells from "../../../data/GBM_metadata.js";
 import drawParallelCoordinates from "./drawParallelCoordinates";
-import createContinuousRanges from "./createContinuousRanges";
 import styles from './parallelCoordinates.css';
 import SectionHeader from "../framework/sectionHeader";
 
@@ -30,18 +29,6 @@ class Continuous extends React.Component {
     return (
       <div id="parcoords_wrapper" style={{marginTop: 50}}>
         <SectionHeader text="Continuous Metadata"/>
-        <div style={{marginBottom: 30}}>
-          Color By:
-          <button style={{marginLeft: 10}}>Cluster_2d_color</button>
-          <button style={{marginLeft: 10}}>Cluster_CNV_color</button>
-          <button style={{marginLeft: 10}}>Location.color</button>
-          <button style={{marginLeft: 10}}>Sample.name.color</button>
-          <button style={{marginLeft: 10}}>Sample.type.color</button>
-          <button style={{marginLeft: 10}}>Selection.color</button>
-          <button style={{marginLeft: 10}}>housekeeping_cluster_color</button>
-          <button style={{marginLeft: 10}}>recluster_myeloid</button>
-          <button style={{marginLeft: 10}}>recluster_myeloid_color</button>
-        </div>
         <div
           className={styles.parcoords}
           id="parcoords"
@@ -56,5 +43,23 @@ class Continuous extends React.Component {
 
 export default Continuous;
 
-/* text appended to parellel coords giving N instances of selection */ 
+/* text appended to parellel coords giving N instances of selection */
 // <pre id="parcoords_output" className={styles.pre}></pre>
+
+/*
+
+<div style={{marginBottom: 30}}>
+  Color By:
+  <button style={{marginLeft: 10}}>Cluster_2d_color</button>
+  <button style={{marginLeft: 10}}>Cluster_CNV_color</button>
+  <button style={{marginLeft: 10}}>Location.color</button>
+  <button style={{marginLeft: 10}}>Sample.name.color</button>
+  <button style={{marginLeft: 10}}>Sample.type.color</button>
+  <button style={{marginLeft: 10}}>Selection.color</button>
+  <button style={{marginLeft: 10}}>housekeeping_cluster_color</button>
+  <button style={{marginLeft: 10}}>recluster_myeloid</button>
+  <button style={{marginLeft: 10}}>recluster_myeloid_color</button>
+</div>
+
+
+*/

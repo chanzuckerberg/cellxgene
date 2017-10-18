@@ -120,8 +120,8 @@ const drawParallelCoordinates = (data) => {
 
       */
 
-      ctx.strokeStyle = d["Sample.name.color"];
-      // ctx.strokeStyle = "rgba(180,180,180,.4)";
+      // ctx.strokeStyle = d["Sample.name.color"];
+      ctx.strokeStyle = "rgba(0,0,0,1)";
       ctx.beginPath();
       var coords = project(d);
       coords.forEach((p,i) => {
