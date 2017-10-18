@@ -8,38 +8,49 @@ import SectionHeader from "../framework/sectionHeader"
 import createCategoryCounts from "./createCategoryCounts";
 import { alphabeticallySortedValues } from "./util";
 
+@connect((state) => {
+  return {
+    selectedMetadata: state.selectedMetadata
+  }
+})
 class Button extends React.Component {
   render () {
+
+    /* has this value for this category already been selected? */
+    let fontWeight;
+    if (!this.props.selectedMetadata) { /* there is no selected metadata */
+      fontWeight = 400;
+    } else if (
+      this.props.selectedMetadata[this.props.metadataField] && /* the key {Location: []} is present  */
+      this.props.selectedMetadata[this.props.metadataField].indexOf(this.props.value) > -1 /* "Tumor" exists in {Location: ["Tumor"]}  */
+    ) {
+      fontWeight = 700
+    }
+
     return (
-      <button
+      <div
         key={this.props.i}
-        onClick={this.props.handleClick(this.props.category, this.props.value)}
+        onClick={this.props.handleClick(this.props.metadataField, this.props.value)}
         style={{
-          border: "none",
-          background: "none",
-          color: "black",
-          marginRight: 3,
           cursor: "pointer",
+          display: "flex",
+          fontWeight,
         }}>
-        {this.props.value}
-        <span
-          style={{
-            fontFamily: globals.accentFont,
-            fontStyle: "italic",
-            color: globals.darkGrey,
-            fontSize: globals.tiniestFontSize,
-            marginLeft: 4,
-            position: "relative",
-            top: -1,
+        <div style={{
+            width: 200,
+            flexShrink: 0,
           }}>
+          {this.props.value}
+        </div>
+        <span>
           {this.props.count}
         </span>
-      </button>
+      </div>
     )
   }
 }
 
-const Category = ({category, values, handleClick}) => (
+const Category = ({metadataField, values, handleClick}) => (
   <div style={{
       display: "flex",
       alignItems: "baseline",
@@ -52,7 +63,7 @@ const Category = ({category, values, handleClick}) => (
         fontFamily: globals.accentFont,
         fontStyle: "italic",
         marginRight: 20,
-      }}>{category}:</p>
+      }}>{metadataField}:</p>
     <div>
       {
         _.map(alphabeticallySortedValues(values), (v, i) => {
@@ -60,7 +71,7 @@ const Category = ({category, values, handleClick}) => (
             <Button
               key={v}
               handleClick={handleClick}
-              category={category}
+              metadataField={metadataField}
               count={values[v]}
               value={v}
               i={i} />
@@ -73,17 +84,10 @@ const Category = ({category, values, handleClick}) => (
 
 @connect((state) => {
 
-  let ranges = null;
-
-  if (
-    state.cells.cells &&
-    state.cells.cells.data.ranges
-  ) {
-    ranges = state.cells.cells.data.ranges;
-  }
+  const ranges = state.cells.cells && state.cells.cells.data.ranges ? state.cells.cells.data.ranges : null;
 
   return {
-    ranges: ranges
+    ranges
   }
 })
 class Categories extends React.Component {
@@ -93,9 +97,9 @@ class Categories extends React.Component {
 
     };
   }
-  handleClick(category, value) {
+  handleClick(metadataField, value) {
     return () => {
-      this.props.dispatch({type: "category changed", data: {category, value}})
+      this.props.dispatch({type: "categorical metadata filter selected", metadataField, value})
     }
   }
   render () {
@@ -113,7 +117,7 @@ class Categories extends React.Component {
                 <Category
                   handleClick={this.handleClick.bind(this)}
                   key={key}
-                  category={key}
+                  metadataField={key}
                   values={value.options}/>
               )
             } else {
