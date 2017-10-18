@@ -2,11 +2,11 @@ import { combineReducers, createStore, applyMiddleware } from 'redux';
 import updateURLMiddleware from "../middleware/updateURLMiddleware";
 import thunk from "redux-thunk";
 import cells from "./cells";
-import url from "./url";
+import selectedMetadata from "./selectedMetadata";
 
 const Reducer = combineReducers({
   cells,
-  url,
+  selectedMetadata,
 })
 
 let store = createStore(
