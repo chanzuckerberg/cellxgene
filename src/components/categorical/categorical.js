@@ -6,51 +6,8 @@ import * as globals from "../../globals";
 import styles from "./categorical.css";
 import SectionHeader from "../framework/sectionHeader"
 import createCategoryCounts from "./createCategoryCounts";
+import Value from "./value";
 import { alphabeticallySortedValues } from "./util";
-
-@connect((state) => {
-  return {
-    selectedMetadata: state.selectedMetadata
-  }
-})
-class Button extends React.Component {
-  render () {
-
-    /* has this value for this category already been selected? */
-    let selected = false;
-    let fontWeight;
-
-    if (!this.props.selectedMetadata) { /* there is no selected metadata */
-      selected = false;
-    } else if (
-      this.props.selectedMetadata[this.props.metadataField] && /* the key {Location: []} is present  */
-      this.props.selectedMetadata[this.props.metadataField].indexOf(this.props.value) > -1 /* "Tumor" exists in {Location: ["Tumor"]}  */
-    ) {
-      selected = true;
-    }
-
-    return (
-      <div
-        key={this.props.i}
-        onClick={selected ? this.props.toggleOff(this.props.metadataField, this.props.value) : this.props.toggleOn(this.props.metadataField, this.props.value)}
-        style={{
-          cursor: "pointer",
-          display: "flex",
-          fontWeight: selected ? 700 : 400,
-        }}>
-        <div style={{
-            width: 200,
-            flexShrink: 0,
-          }}>
-          {this.props.value}
-        </div>
-        <span>
-          {this.props.count}
-        </span>
-      </div>
-    )
-  }
-}
 
 const Category = ({metadataField, values, toggleOn, toggleOff}) => (
   <div style={{
@@ -70,7 +27,7 @@ const Category = ({metadataField, values, toggleOn, toggleOff}) => (
       {
         _.map(alphabeticallySortedValues(values), (v, i) => {
           return (
-            <Button
+            <Value
               key={v}
               toggleOn={toggleOn}
               toggleOff={toggleOff}
