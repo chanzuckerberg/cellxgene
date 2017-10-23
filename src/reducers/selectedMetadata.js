@@ -38,10 +38,23 @@ const selectedMetadata = (
         })
       }
     }
+    /*
+      Seperate because it's flatter. We know in the display logic whether or not
+      this the category button is selected when it's clicked (it's bold, etc),
+      so we can fire a different action to save us some nesting logic here
+    */
     case "categorical metadata filter deselected": {
-      return Object.assign({}, state, {
-
-      })
+      /* remove the value the user just selected from the appropriate array */
+      let updatedField = _.without(state[action.metadataField], action.value);
+      /* if the array now looks like this {Location: []} */
+      if (updatedField.length === 0) {
+        return _.omit(state, action.metadataField) /* new state without Location property*/
+      } else {
+        return Object.assign({}, state, {
+          /* {Location: ["Tumor", "Periphery"]} becomes {Location: ["Tumor"]} */
+          [action.metadataField]: updatedField
+        })
+      }
     }
     default:
       return state;
