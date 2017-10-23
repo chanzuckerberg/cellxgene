@@ -100,12 +100,8 @@ module.exports = {
       output: { comments: false, screw_ie8: true }
     }),
     new ExtractTextPlugin('static/css/[name].[contenthash:8].css'),
-    new CopyWebpackPlugin([
-      { from: 'public' },
-      { from: 'manifest.webmanifest' }
-    ]),
     new SWPrecacheWebpackPlugin({
-      cacheId: 'formidable-react-starter',
+      cacheId: 'cellxgene',
       filename: 'service-worker.js'
     })
   ]
