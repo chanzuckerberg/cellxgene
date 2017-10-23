@@ -17,24 +17,26 @@ class Button extends React.Component {
   render () {
 
     /* has this value for this category already been selected? */
+    let selected = false;
     let fontWeight;
+
     if (!this.props.selectedMetadata) { /* there is no selected metadata */
-      fontWeight = 400;
+      selected = false;
     } else if (
       this.props.selectedMetadata[this.props.metadataField] && /* the key {Location: []} is present  */
       this.props.selectedMetadata[this.props.metadataField].indexOf(this.props.value) > -1 /* "Tumor" exists in {Location: ["Tumor"]}  */
     ) {
-      fontWeight = 700
+      selected = true;
     }
 
     return (
       <div
         key={this.props.i}
-        onClick={this.props.handleClick(this.props.metadataField, this.props.value)}
+        onClick={selected ? this.props.toggleOff(this.props.metadataField, this.props.value) : this.props.toggleOn(this.props.metadataField, this.props.value)}
         style={{
           cursor: "pointer",
           display: "flex",
-          fontWeight,
+          fontWeight: selected ? 700 : 400,
         }}>
         <div style={{
             width: 200,
@@ -50,7 +52,7 @@ class Button extends React.Component {
   }
 }
 
-const Category = ({metadataField, values, handleClick}) => (
+const Category = ({metadataField, values, toggleOn, toggleOff}) => (
   <div style={{
       display: "flex",
       alignItems: "baseline",
@@ -70,7 +72,8 @@ const Category = ({metadataField, values, handleClick}) => (
           return (
             <Button
               key={v}
-              handleClick={handleClick}
+              toggleOn={toggleOn}
+              toggleOff={toggleOff}
               metadataField={metadataField}
               count={values[v]}
               value={v}
@@ -97,9 +100,22 @@ class Categories extends React.Component {
 
     };
   }
-  handleClick(metadataField, value) {
+  toggleOn(metadataField, value) {
     return () => {
-      this.props.dispatch({type: "categorical metadata filter selected", metadataField, value})
+      this.props.dispatch({
+        type: "categorical metadata filter selected",
+        metadataField,
+        value
+      })
+    }
+  }
+  toggleOff(metadataField, value) {
+    return () => {
+      this.props.dispatch({
+        type: "categorical metadata filter deselected",
+        metadataField,
+        value
+      })
     }
   }
   render () {
@@ -115,7 +131,8 @@ class Categories extends React.Component {
             ) {
               return (
                 <Category
-                  handleClick={this.handleClick.bind(this)}
+                  toggleOn={this.toggleOn.bind(this)}
+                  toggleOff={this.toggleOff.bind(this)}
                   key={key}
                   metadataField={key}
                   values={value.options}/>
