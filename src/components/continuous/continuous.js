@@ -1,9 +1,10 @@
 import React from 'react';
 import _ from "lodash";
-import cells from "../../../data/GBM_metadata.js";
+// import cells from "../../../data/GBM_metadata.js";
 import drawParallelCoordinates from "./drawParallelCoordinates";
 import styles from './parallelCoordinates.css';
 import SectionHeader from "../framework/sectionHeader";
+import { connect } from "react-redux";
 
 import {
   margin,
@@ -11,6 +12,16 @@ import {
   height
 } from "./util";
 
+@connect((state) => {
+
+  const ranges = state.cells.cells && state.cells.cells.data.ranges ? state.cells.cells.data.ranges : null;
+  const metadata = state.cells.cells && state.cells.cells.data.metadata ? state.cells.cells.data.metadata : null;
+
+  return {
+    ranges,
+    metadata
+  }
+})
 class Continuous extends React.Component {
 
   constructor(props) {
@@ -22,10 +33,17 @@ class Continuous extends React.Component {
   }
 
   componentDidMount() {
-    drawParallelCoordinates(cells)
+
+  }
+
+  componentWillUpdate(nextProps) {
+    if (nextProps.ranges) {
+      drawParallelCoordinates(nextProps.metadata, nextProps.ranges)
+    }
   }
 
   render() {
+
     return (
       <div id="parcoords_wrapper" style={{marginTop: 50}}>
         <SectionHeader text="Continuous Metadata"/>

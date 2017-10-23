@@ -6,7 +6,7 @@ import {
   height,
   innerHeight,
   color,
-  dimensions,
+  createDimensions,
   types,
   xscale,
   yAxis,
@@ -18,7 +18,11 @@ Canvas Parallel coordinates with svg brushing via /* via https://bl.ocks.org/syn
 ******************************************
 ******************************************/
 
-const drawParallelCoordinates = (data) => {
+const drawParallelCoordinates = (data, ranges) => {
+
+  const dimensions = createDimensions(ranges);
+
+  console.log('ranges', data)
 
   const d3_functor = (v) => {
     return typeof v === "function" ? v : function() { return v; };
@@ -190,6 +194,9 @@ const drawParallelCoordinates = (data) => {
       /* Reset canvas */
       ctx.clearRect(0,0,width,height);
       ctx.globalAlpha = d3.min([0.85/Math.pow(selected.length,0.3),1]);
+
+      /* send the selected cells to redux */
+
 
       /* pass the result of the filter above to a fresh canvas, using RAF */
       render(selected);
