@@ -3,7 +3,7 @@ import _ from "lodash";
 
 /************************************************************************
 *************************************************************************
-1. This is all of the state that will be stored in the URL query params.
+1. This is state that will be stored in the URL query params.
 1a. It is reasonably important it be kept in the same place,
 because if initial load or back button etc, we'll hear about that
 and manually reconstruct the state from the url, overriding whatever
@@ -25,7 +25,7 @@ const selectedMetadata = (
       // console.log("onURLchange sees: ", state, parsed)
       return state;
     }
-    case "categorical metadata filter selected": {
+    case "categorical metadata filter selected success": {
       if (!state[action.metadataField]) { /* we don't have the field, which means this is a simple insertion */
         /* {} becomes {Location: ["Tumor"]} */
         return Object.assign({}, state, {[action.metadataField]: [action.value]});
@@ -43,7 +43,7 @@ const selectedMetadata = (
       this the category button is selected when it's clicked (it's bold, etc),
       so we can fire a different action to save us some nesting logic here
     */
-    case "categorical metadata filter deselected": {
+    case "categorical metadata filter deselected success": {
       /* remove the value the user just selected from the appropriate array */
       let updatedField = _.without(state[action.metadataField], action.value);
       /* if the array now looks like this {Location: []} */

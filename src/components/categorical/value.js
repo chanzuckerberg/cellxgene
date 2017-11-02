@@ -1,7 +1,7 @@
-
 import { connect } from "react-redux";
 import React from "react";
 import * as globals from "../../globals";
+import actions from "../../actions";
 
 @connect((state) => {
   return {
@@ -9,11 +9,24 @@ import * as globals from "../../globals";
   }
 })
 class CategoryValue extends React.Component {
+  toggleOn() {
+    this.props.dispatch(
+      actions.attemptCategoricalMetadataSelection(
+        this.props.metadataField,
+        this.props.value
+      ))
+  }
+  toggleOff() {
+    this.props.dispatch(
+      actions.attemptCategoricalMetadataDeselection(
+        this.props.metadataField,
+        this.props.value
+      ))
+  }
   render () {
 
     /* has this value for this category already been selected? */
     let selected = false;
-    let fontWeight;
 
     if (!this.props.selectedMetadata) { /* there is no selected metadata */
       selected = false;
@@ -27,7 +40,7 @@ class CategoryValue extends React.Component {
     return (
       <div
         key={this.props.i}
-        onClick={selected ? this.props.toggleOff(this.props.metadataField, this.props.value) : this.props.toggleOn(this.props.metadataField, this.props.value)}
+        onClick={selected ? this.toggleOff.bind(this) : this.toggleOn.bind(this)}
         style={{
           cursor: "pointer",
           display: "flex",

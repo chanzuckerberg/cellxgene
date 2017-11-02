@@ -28,7 +28,7 @@ class Continuous extends React.Component {
     super(props);
     this.state = {
       ctx: null,
-
+      parallelExists: false
     };
   }
 
@@ -36,9 +36,10 @@ class Continuous extends React.Component {
 
   }
 
-  componentWillUpdate(nextProps) {
-    if (nextProps.ranges) {
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.ranges && !this.state.parallelExists) {
       drawParallelCoordinates(nextProps.metadata, nextProps.ranges)
+      this.setState({parallelExists: true})
     }
   }
 

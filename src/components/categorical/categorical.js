@@ -5,11 +5,10 @@ import { connect } from "react-redux";
 import * as globals from "../../globals";
 import styles from "./categorical.css";
 import SectionHeader from "../framework/sectionHeader"
-import createCategoryCounts from "./createCategoryCounts";
 import Value from "./value";
 import { alphabeticallySortedValues } from "./util";
 
-const Category = ({metadataField, values, toggleOn, toggleOff}) => (
+const Category = ({metadataField, values}) => (
   <div style={{
       display: "flex",
       alignItems: "baseline",
@@ -22,15 +21,15 @@ const Category = ({metadataField, values, toggleOn, toggleOff}) => (
         fontFamily: globals.accentFont,
         fontStyle: "italic",
         marginRight: 20,
-      }}>{metadataField}:</p>
+      }}>
+      {metadataField}:
+    </p>
     <div>
       {
         _.map(alphabeticallySortedValues(values), (v, i) => {
           return (
             <Value
               key={v}
-              toggleOn={toggleOn}
-              toggleOff={toggleOff}
               metadataField={metadataField}
               count={values[v]}
               value={v}
@@ -57,24 +56,7 @@ class Categories extends React.Component {
 
     };
   }
-  toggleOn(metadataField, value) {
-    return () => {
-      this.props.dispatch({
-        type: "categorical metadata filter selected",
-        metadataField,
-        value
-      })
-    }
-  }
-  toggleOff(metadataField, value) {
-    return () => {
-      this.props.dispatch({
-        type: "categorical metadata filter deselected",
-        metadataField,
-        value
-      })
-    }
-  }
+
   render () {
     if (!this.props.ranges) return null
     return (
@@ -88,8 +70,6 @@ class Categories extends React.Component {
             ) {
               return (
                 <Category
-                  toggleOn={this.toggleOn.bind(this)}
-                  toggleOff={this.toggleOff.bind(this)}
                   key={key}
                   metadataField={key}
                   values={value.options}/>
@@ -117,6 +97,8 @@ export default Categories;
   <p> <button> Field name [initial state] [create hypothesis]           [validate hypothesis]         </button> </p>
   <p> <button> Field name [total]         [selected in current filters] [selected in graph selection] </button> </p>
   <p> <button> Tumor      [400]           [40]                          [4]                           </button> </p>
+
+  might be interesting to show them as an 👁 icon, or with a slash through it, to allow for visible or hidden state
 
 */
 

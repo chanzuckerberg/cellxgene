@@ -1,10 +1,13 @@
 import { combineReducers, createStore, applyMiddleware } from 'redux';
 import updateURLMiddleware from "../middleware/updateURLMiddleware";
 import thunk from "redux-thunk";
+
+import initialize from "./initialize";
 import cells from "./cells";
 import selectedMetadata from "./selectedMetadata";
 
 const Reducer = combineReducers({
+  initialize,
   cells,
   selectedMetadata,
 })

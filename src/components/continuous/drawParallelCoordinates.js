@@ -22,8 +22,6 @@ const drawParallelCoordinates = (data, ranges) => {
 
   const dimensions = createDimensions(ranges);
 
-  console.log('ranges', data)
-
   const d3_functor = (v) => {
     return typeof v === "function" ? v : function() { return v; };
   };

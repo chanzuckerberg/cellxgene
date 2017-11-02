@@ -1,5 +1,11 @@
 import uri from "urijs";
 
+/*
+  https://medium.com/@jacobp100/you-arent-using-redux-middleware-enough-94ffe991e6
+  storeInstance => functionToCallWithAnActionThatWillSendItToTheNextMiddleware => actionThatDispatchWasCalledWith => valueToUseAsTheReturnValueOfTheDispatchCall
+*/
+
+
 const updateURLMiddleware = (store) => {
   return (next) => {
     return (action) => {

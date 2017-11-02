@@ -1,22 +1,23 @@
-const Cells = (state = {
-  cells: null,
+const Initialize = (state = {
+  data: null,
   loading: null,
   error: null,
 }, action) => {
   switch (action.type) {
-  case "request cells started":
+  case "initialize started":
     return Object.assign({}, state, {
       loading: true,
       error: null
     });
-  case "request cells success":
+  case "initialize success":
     return Object.assign({}, state, {
       error: null,
       loading: false,
-      cells: action.data,
+      data: action.data,
     });
-  case "request cells error":
+  case "initialize error":
     return Object.assign({}, state, {
+      data: null,
       loading: false,
       error: action.data
     });
@@ -25,4 +26,4 @@ const Cells = (state = {
   }
 };
 
-export default Cells;
+export default Initialize;

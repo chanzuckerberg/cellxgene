@@ -11,7 +11,7 @@ import Continuous from "./continuous/continuous";
 import Joy from "./joy/joy";
 import Graph from "./graph/graph";
 import * as globals from "../globals";
-import * as actions from "../actions";
+import actions from "../actions";
 
 import SectionHeader from "./framework/sectionHeader";
 
@@ -36,6 +36,7 @@ class App extends React.Component {
     window.addEventListener('popstate', this._onURLChanged);
     this._onURLChanged();
 
+    this.props.dispatch(actions.initialize())
     this.props.dispatch(actions.requestCells())
 
   }
