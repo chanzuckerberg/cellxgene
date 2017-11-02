@@ -1,18 +1,10 @@
 import * as globals from "../globals";
 import URI from "urijs";
 
-const requestCells = (selectedMetadataField, selectedMetadataValue) => {
-
-  return (dispatch, getState) => {
+const requestCells = (query = "") => {
+  return (dispatch) => {
     dispatch({type: "request cells started"})
-
-    let uri = new URI()
-    uri.setSearch(getState().selectedMetadata)
-    if (selectedMetadataField) {
-      uri.addSearch({[selectedMetadataField]: [selectedMetadataValue]})
-    }
-
-    return fetch(`${globals.API.prefix}${globals.API.version}cells${uri.search()}`, {
+    return fetch(`${globals.API.prefix}${globals.API.version}cells${query}`, {
         method: "get",
         headers: new Headers({
           'Content-Type': 'application/json'
@@ -30,7 +22,14 @@ const requestCells = (selectedMetadataField, selectedMetadataValue) => {
 const attemptCategoricalMetadataSelection = (metadataField, value) => {
   return (dispatch, getState) => {
     dispatch({type: "categorical metadata filter selected start"})
-    dispatch(requestCells(metadataField, value)).then((res) => {
+
+    let uri = new URI()
+    uri.setSearch(getState().selectedMetadata)
+    uri.addSearch({[metadataField]: [value]})
+
+    dispatch(
+      requestCells(uri.search())
+    ).then((res) => {
       if (res.error) {
         dispatch({type: "categorical metadata filter selected error"})
       } else {
@@ -44,7 +43,12 @@ const attemptCategoricalMetadataSelection = (metadataField, value) => {
 const attemptCategoricalMetadataDeselection = (metadataField, value) => {
   return (dispatch, getState) => {
     dispatch({type: "categorical metadata filter deselected start"})
-    dispatch(requestCells(metadataField, value)).then((res) => {
+
+    let uri = new URI()
+    uri.setSearch(getState().selectedMetadata)
+    uri.removeSearch({[metadataField]: [value]})
+
+    dispatch(requestCells(uri.search())).then((res) => {
       if (res.error) {
         dispatch({type: "categorical metadata filter deselected error"})
       } else {
