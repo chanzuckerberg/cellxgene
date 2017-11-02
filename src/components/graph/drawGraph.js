@@ -56,12 +56,14 @@ export const drawGraph = (data, context, expressionsCountsMap) => {
   context.clearRect(0, 0, width, height);
 
   /* ! create a scale to map between expression values and colors, remove to somewhere else */
-  const expressionToColorScale = d3.scaleLinear()
-    .domain([0, expressionsCountsMap.maxValue])
-    .range([1,0])
+  // const expressionToColorScale = d3.scaleLinear()
+  //   .domain([0, expressionsCountsMap.maxValue])
+  //   .range([1,0])
 
   /* shuffle the data to overcome render order hiding cells */
   data = d3.shuffle(data);
+
+  console.log('drawing', data, context, expressionsCountsMap)
 
   /* loop */
   data.forEach((p, i) => {
@@ -84,8 +86,8 @@ export const drawGraph = (data, context, expressionsCountsMap) => {
     //     ))
     //   )
     // }
-    context.fillStyle = d3.interpolateViridis(expressionToColorScale(
-      expressionsCountsMap[p[0]]
-    ));
+    // context.fillStyle = d3.interpolateViridis(expressionToColorScale(
+    //   expressionsCountsMap[p[0]]
+    // ));
   });
 }
