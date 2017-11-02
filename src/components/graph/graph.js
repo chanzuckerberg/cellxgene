@@ -3,7 +3,16 @@ import _ from "lodash";
 import styles from "./graph.css";
 import {setupGraphElements, drawGraph} from "./drawGraph";
 import SectionHeader from "../framework/sectionHeader";
+import { connect } from "react-redux";
 
+@connect((state) => {
+
+  const vertices = state.cells.cells && state.cells.cells.data.graph ? state.cells.cells.data.graph : null;
+
+  return {
+    vertices
+  }
+})
 class Graph extends React.Component {
 
   constructor(props) {
@@ -16,15 +25,16 @@ class Graph extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
+    console.log('le grpah', nextProps)
     /* maybe should do a check here to confirm ref exists and pass it? */
     if (
-      nextProps.vertices &&
-      nextProps.expressions &&
-      nextProps.expressionsCountsMap &&
-      this.state.context
+      this.state.context &&
+      nextProps.vertices
+      // nextProps.expressions &&
+      // nextProps.expressionsCountsMap &&
     ) {
       drawGraph(
-        nextProps.vertices.data,
+        nextProps.vertices,
         this.state.context,
         nextProps.expressionsCountsMap
       );
