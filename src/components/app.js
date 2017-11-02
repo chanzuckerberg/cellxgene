@@ -41,32 +41,6 @@ class App extends React.Component {
 
   }
 
-  createExpressionsCountsMap () {
-
-    const CHANGE_ME_MAGIC_GENE_INDEX = 5;
-
-    const expressionsCountsMap = {};
-
-    /* currently selected gene */
-    expressionsCountsMap.geneName = this.state.expressions.data.genes[3];
-
-    let maxExpressionValue = 0;
-
-    /* create map of expressions for every cell */
-    this.state.expressions.data.cells.map((c) => {
-      /* cellname = 234 */
-      expressionsCountsMap[c.cellname] = c["e"][CHANGE_ME_MAGIC_GENE_INDEX];
-      /* collect the maximum value as we iterate */
-      if (c["e"][CHANGE_ME_MAGIC_GENE_INDEX] > maxExpressionValue) {
-        maxExpressionValue = c["e"][CHANGE_ME_MAGIC_GENE_INDEX]
-      }
-    })
-
-    expressionsCountsMap.maxValue = maxExpressionValue;
-
-    return expressionsCountsMap;
-  }
-
   render() {
     // console.log('app:', this.props, this.state)
 
@@ -86,11 +60,7 @@ class App extends React.Component {
         {false ? <Joy data={this.state.expressions && this.state.expressions.data}/> : ""}
         <Categorical/>
         <Continuous/>
-        <Graph
-          vertices={this.state.vertices}
-          expressions={this.state.expressions}
-          expressionsCountsMap={this.state.expressions && this.state.expressions ? this.createExpressionsCountsMap() : null}
-          />
+        <Graph/>
       </Container>
     )
   }
