@@ -74,8 +74,6 @@ class Categories extends React.Component {
                   metadataField={key}
                   values={value.options}/>
               )
-            } else {
-              return null
             }
           })
         }
