@@ -4,11 +4,13 @@ import thunk from "redux-thunk";
 
 import initialize from "./initialize";
 import cells from "./cells";
+import controls from "./controls";
 import selectedMetadata from "./selectedMetadata";
 
 const Reducer = combineReducers({
   initialize,
   cells,
+  controls,
   selectedMetadata,
 })
 
