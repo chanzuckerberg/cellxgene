@@ -1,5 +1,6 @@
 import styles from "./graph.css";
 import renderQueue from "../continuous/renderQueue";
+import _ from "lodash";
 
 const margin = {top: 20, right: 10, bottom: 30, left: 40},
     width = 960 - margin.left - margin.right,
@@ -50,10 +51,21 @@ export const setupGraphElements = (data) => {
 *******************************************
 ******************************************/
 
-export const drawGraph = (data, context, expressionsCountsMap) => {
+export const drawGraph = (data, context, expressionsCountsMap, color, ranges, metadata) => {
 
   /* clear canvas */
   context.clearRect(0, 0, width, height);
+
+  let scale = null; /* it could be 'by expression' and that's a special case */
+
+  if (
+    color &&
+    ranges[color].range /* set up a continuous scale */
+  ) {
+    scale = d3.scaleLinear()
+      .domain([0, ranges[color].range.max])
+      .range([1,0])
+  }
 
   /* ! create a scale to map between expression values and colors, remove to somewhere else */
   // const expressionToColorScale = d3.scaleLinear()
@@ -62,8 +74,6 @@ export const drawGraph = (data, context, expressionsCountsMap) => {
 
   /* shuffle the data to overcome render order hiding cells */
   data = d3.shuffle(data);
-
-  console.log('drawing', data, context, expressionsCountsMap)
 
   /* loop */
   data.forEach((p, i) => {
@@ -78,16 +88,22 @@ export const drawGraph = (data, context, expressionsCountsMap) => {
     );
     context.fill();
 
-    // if (i < 20) {
-    //   console.log(
-    //     '0 to 1 scale', expressionToColorScale(expressionsCountsMap[p[0]]),
-    //     'color', d3.interpolateViridis(expressionToColorScale(
-    //       expressionsCountsMap[p[0]]
-    //     ))
-    //   )
-    // }
+    if (i < 20) {
+      // console.log(
+      //   '0 to 1 scale', expressionToColorScale(expressionsCountsMap[p[0]]),
+      //   'color', d3.interpolateViridis(expressionToColorScale(
+      //     expressionsCountsMap[p[0]]
+      //   ))
+      // )
+      // console.log('meta', _.find(metadata, {CellName: p[0]}), color, p)
+    }
     // context.fillStyle = d3.interpolateViridis(expressionToColorScale(
     //   expressionsCountsMap[p[0]]
     // ));
+    if (color) {
+      context.fillStyle = d3.interpolateViridis(scale(
+        _.find(metadata, {CellName: p[0]})[color] /* this.state.cells.metadata["23452345325"]["ERCC_reads"] = 20000 */
+      ));
+    }
   });
 }
