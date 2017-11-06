@@ -6,6 +6,8 @@ const margin = {top: 20, right: 10, bottom: 30, left: 40},
     width = 960 - margin.left - margin.right,
     height = 500 - margin.top - margin.bottom;
 
+const MAGIC_CONSTANT_UNTIL_WE_NORMALIZE = 3; /* should be zero to one but it's zero to four for now */
+
 const x = d3.scaleLinear()
   .range([0, width]);
 
@@ -51,18 +53,28 @@ export const setupGraphElements = (data) => {
 *******************************************
 ******************************************/
 
-export const drawGraph = (data, context, expressionsCountsMap, color, ranges, metadata) => {
+export const drawGraph = (
+  data,
+  context,
+  expressionsCountsMap,
+  color,
+  ranges,
+  metadata
+) => {
 
   /* clear canvas */
   context.clearRect(0, 0, width, height);
 
-  let scale = null; /* it could be 'by expression' and that's a special case */
+  x.domain([0, MAGIC_CONSTANT_UNTIL_WE_NORMALIZE])
+  y.domain([0, MAGIC_CONSTANT_UNTIL_WE_NORMALIZE])
+
+  let colorScale = null; /* it could be 'by expression' and that's a special case */
 
   if (
     color &&
     ranges[color].range /* set up a continuous scale */
   ) {
-    scale = d3.scaleLinear()
+    colorScale = d3.scaleLinear()
       .domain([0, ranges[color].range.max])
       .range([1,0])
   }
@@ -75,7 +87,6 @@ export const drawGraph = (data, context, expressionsCountsMap, color, ranges, me
   /* shuffle the data to overcome render order hiding cells */
   data = d3.shuffle(data);
 
-  /* loop */
   data.forEach((p, i) => {
     context.beginPath();
     /* context.arc(x,y,r,sAngle,eAngle,counterclockwise); */
@@ -101,8 +112,8 @@ export const drawGraph = (data, context, expressionsCountsMap, color, ranges, me
     //   expressionsCountsMap[p[0]]
     // ));
     if (color) {
-      context.fillStyle = d3.interpolateViridis(scale(
-        _.find(metadata, {CellName: p[0]})[color] /* this.state.cells.metadata["23452345325"]["ERCC_reads"] = 20000 */
+      context.fillStyle = d3.interpolateViridis(colorScale(
+        _.find(metadata, {CellName: p[0]})[color] /* this.state.cells.metadata["23452345325"]["ERCC_reads"] = 20000 would be much faster as key value lookup */
       ));
     }
   });
