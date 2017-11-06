@@ -1,16 +1,6 @@
 import styles from './parallelCoordinates.css';
 import renderQueue from "./renderQueue";
-import {
-  margin,
-  width,
-  height,
-  innerHeight,
-  color,
-  createDimensions,
-  types,
-  xscale,
-  yAxis,
-} from "./util";
+
 
 /*****************************************
 ******************************************
@@ -18,58 +8,19 @@ Canvas Parallel coordinates with svg brushing via /* via https://bl.ocks.org/syn
 ******************************************
 ******************************************/
 
-const drawParallelCoordinates = (data, ranges) => {
-
-  const dimensions = createDimensions(ranges);
+const drawParallelCoordinates = (
+  data,
+  dimensions,
+  ctx,
+  xscale,
+  width,
+  height,
+  margin
+) => {
 
   const d3_functor = (v) => {
     return typeof v === "function" ? v : function() { return v; };
   };
-
-  /*****************************************
-  ******************************************
-        Setup SVG & Canvas elements
-  ******************************************
-  ******************************************/
-
-  /*
-    to enable text below parallel
-    1. parcoords_output attach point
-    2. this selection
-    3. output on render
-    4. output on update
-  */
-
-  var container = d3.select("#parcoords")
-
-  var svg = container.append("svg")
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
-    .append("g")
-      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-  var canvas = container.append("canvas")
-      .attr("width", width * devicePixelRatio)
-      .attr("height", height * devicePixelRatio)
-      .style("width", width + "px")
-      .style("height", height + "px")
-      .style("margin-top", margin.top + "px")
-      .style("margin-left", margin.left + "px");
-
-
-  var ctx = canvas.node().getContext("2d");
-      ctx.globalCompositeOperation = 'darken';
-      ctx.globalAlpha = 0.15;
-      ctx.lineWidth = 1.5;
-      ctx.scale(devicePixelRatio, devicePixelRatio);
-
-  var output = d3.select("#parcoords_output");
-
-  var axes = svg.selectAll(".parcoords_axis")
-      .data(dimensions)
-    .enter().append("g")
-      .attr("class", `${styles.axis} parcoords_axis`)
-      .attr("transform", function(d,i) { return "translate(" + xscale(i) + ")"; });
 
   /*****************************************
   ******************************************
