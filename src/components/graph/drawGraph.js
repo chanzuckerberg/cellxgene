@@ -6,12 +6,12 @@ const margin = {top: 20, right: 10, bottom: 30, left: 40},
     width = 960 - margin.left - margin.right,
     height = 500 - margin.top - margin.bottom;
 
-const MAGIC_CONSTANT_UNTIL_WE_NORMALIZE = 3; /* should be zero to one but it's zero to four for now */
-
 const x = d3.scaleLinear()
+  .domain([0, 1]) /* while this is the default for d3, our data is normalized so better to be explicit */
   .range([0, width]);
 
 const y = d3.scaleLinear()
+  .domain([0, 1]) /* while this is the default for d3, our data is normalized so better to be explicit */
   .range([height, 0]);
 
 /******************************************
@@ -65,15 +65,13 @@ export const drawGraph = (
   /* clear canvas */
   context.clearRect(0, 0, width, height);
 
-  x.domain([0, MAGIC_CONSTANT_UNTIL_WE_NORMALIZE])
-  y.domain([0, MAGIC_CONSTANT_UNTIL_WE_NORMALIZE])
-
   let colorScale = null; /* it could be 'by expression' and that's a special case */
 
   if (
     color &&
     ranges[color].range /* set up a continuous scale */
   ) {
+    /* this scale should live in redux since it will be consumed by cotinuous as well */
     colorScale = d3.scaleLinear()
       .domain([0, ranges[color].range.max])
       .range([1,0])
