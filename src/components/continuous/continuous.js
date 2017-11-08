@@ -1,6 +1,5 @@
 import React from 'react';
 import _ from "lodash";
-// import cells from "../../../data/GBM_metadata.js";
 import drawParallelCoordinates from "./drawParallelCoordinates";
 import drawAxes from "./drawAxes";
 import setupParallelCoordinates from "./setupParallelCoordinates";
