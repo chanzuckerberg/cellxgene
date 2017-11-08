@@ -47,96 +47,66 @@ export const createDimensions = (data) => {
   return newArr;
 }
 
-export const dimensions = [
-  {
-    key: "Total_reads",
-    type: types["Number"],
-    scale: d3.scaleSqrt().range([innerHeight, 0])
-  },
-  {
-    key: "Unique_reads",
-    type: types["Number"],
-    scale: d3.scaleSqrt().range([innerHeight, 0])
-  },
-  {
-    key: "Unique_reads_percent",
-    type: types["Number"],
-    scale: d3.scaleSqrt().range([innerHeight, 0])
-  },
-  {
-    key: "Genes_detected",
-    type: types["Number"],
-    scale: d3.scaleSqrt().range([innerHeight, 0])
-  },
-  {
-    key: "ERCC_reads",
-    type: types["Number"],
-    scale: d3.scaleSqrt().range([innerHeight, 0])
-  },
-  {
-    key: "Non_ERCC_reads",
-    type: types["Number"],
-    scale: d3.scaleSqrt().range([innerHeight, 0])
-  },
-  {
-    key: "ERCC_to_non_ERCC",
-    type: types["Number"],
-    scale: d3.scaleSqrt().range([innerHeight, 0])
-  },
-  {
-    key: "Multimapping_reads_percent",
-    type: types["Number"],
-    scale: d3.scaleSqrt().range([innerHeight, 0])
-  },
-  {
-    key: "Splice_sites_AT.AC",
-    type: types["Number"],
-    scale: d3.scaleSqrt().range([innerHeight, 0])
-  },
-  {
-    key: "Splice_sites_Annotated",
-    type: types["Number"],
-    scale: d3.scaleSqrt().range([innerHeight, 0])
-  },
-  {
-    key: "Splice_sites_GC.AG",
-    type: types["Number"],
-    scale: d3.scaleSqrt().range([innerHeight, 0])
-  },
-  {
-    key: "Splice_sites_GT.AG",
-    type: types["Number"],
-    scale: d3.scaleSqrt().range([innerHeight, 0])
-  },
-  {
-    key: "Splice_sites_non_canonical",
-    type: types["Number"],
-    scale: d3.scaleSqrt().range([innerHeight, 0])
-  },
-  {
-    key: "Splice_sites_total",
-    type: types["Number"],
-    scale: d3.scaleSqrt().range([innerHeight, 0])
-  },
-  {
-    key: "Unmapped_mismatch",
-    type: types["Number"],
-    scale: d3.scaleSqrt().range([innerHeight, 0])
-  },
-  {
-    key: "Unmapped_other",
-    type: types["Number"],
-    scale: d3.scaleSqrt().range([innerHeight, 0])
-  },
-  {
-    key: "Unmapped_short",
-    type: types["Number"],
-    scale: d3.scaleSqrt().range([innerHeight, 0])
-  }
-];
-
-export const xscale = d3.scalePoint()
-    .domain(d3.range(dimensions.length))
-    .range([0, width]);
-
 export const yAxis = d3.axisLeft();
+
+export const brushstart = () => {
+  d3.event.sourceEvent.stopPropagation();
+}
+
+export const d3_functor = (v) => {
+  return typeof v === "function" ? v : () => { return v; };
+};
+
+export const project = (d, dimensions, xscale) => {
+  return dimensions.map((p,i) => {
+    // check if data element has property and contains a value
+    if (
+      !(p.key in d) ||
+      d[p.key] === null
+    ) return null;
+
+    return [xscale(i),p.scale(d[p.key])];
+  });
+};
+
+/*****************************************
+******************************************
+    process data and extract features
+******************************************
+******************************************/
+
+export const processData = (metadata, dimensions) => {
+  // shuffle the metadata! - or not, this is a visual effect
+  metadata = d3.shuffle(metadata);
+
+  metadata.forEach((d) => {
+    dimensions.forEach((p) => {
+      d[p.key] = !d[p.key] ? null : p.type.coerce(d[p.key]);
+    });
+
+    // truncate long text strings to fit in metadata table
+    for (var key in d) {
+      if (d[key] && d[key].length > 35) d[key] = d[key].slice(0,36);
+    }
+  });
+
+  // type/dimension default setting happens here
+  dimensions.forEach((dim) => {
+    if (!("domain" in dim)) {
+      // detect domain using dimension type's extent function
+      dim.domain = d3_functor(dim.type.extent)(
+        metadata.map((d) => { return d[dim.key]; })
+      );
+    }
+    if (!("scale" in dim)) {
+      // use type's default scale for dimension
+      dim.scale = dim.type.defaultScale.copy();
+    }
+    dim.scale.domain(dim.domain);
+  });
+
+  return {
+    processedMetadata: metadata,
+    processedDimensions: dimensions
+  }
+}
