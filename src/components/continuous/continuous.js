@@ -19,8 +19,9 @@ import {
   color,
   createDimensions,
   types,
-  xscale,
+  processData,
   yAxis,
+  d3_functor,
 } from "./util";
 
 @connect((state) => {
@@ -61,19 +62,33 @@ class Continuous extends React.Component {
       !this.state.parallelExists
     ) {
       const dimensions = createDimensions(nextProps.ranges);
+      const xscale = d3.scalePoint()
+        .domain(d3.range(dimensions.length))
+        .range([0, width]);
+
+      const {
+        processedMetadata,
+        processedDimensions
+      } = processData(
+        nextProps.metadata,
+        dimensions
+      )
+
+      const _drawCellLines = this.drawCellLines(
+        processedMetadata,
+        processedDimensions,
+        xscale
+      );
+
       const axes = drawAxes(
         this.state.svg,
-        dimensions,
-        xscale
-      )
-      drawParallelCoordinates(
-        nextProps.metadata,
-        dimensions,
         this.state.ctx,
+        processedDimensions,
+        processedMetadata,
         xscale,
-        width,
         height,
-        margin
+        width,
+        _drawCellLines,
       )
 
       this.setState({
@@ -82,6 +97,20 @@ class Continuous extends React.Component {
         axes,
       })
     }
+  }
+
+  drawCellLines (metadata, dimensions, xscale) {
+    const _drawCellLines = renderQueue(
+      drawLinesCanvas(this.state.ctx, dimensions, xscale)
+    ).rate(50);
+
+    this.state.ctx.clearRect(0,0,width,height);
+    this.state.ctx.globalAlpha = d3.min([0.85/Math.pow(metadata.length,0.3),1]);
+
+    _drawCellLines(metadata);
+
+    return _drawCellLines;
+
   }
 
   render() {
