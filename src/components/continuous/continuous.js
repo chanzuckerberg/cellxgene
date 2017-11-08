@@ -1,11 +1,15 @@
 import React from 'react';
 import _ from "lodash";
-import drawParallelCoordinates from "./drawParallelCoordinates";
-import drawAxes from "./drawAxes";
-import setupParallelCoordinates from "./setupParallelCoordinates";
+import { connect } from "react-redux";
+
 import styles from './parallelCoordinates.css';
 import SectionHeader from "../framework/sectionHeader";
-import { connect } from "react-redux";
+
+import renderQueue from "./renderQueue";
+
+import setupParallelCoordinates from "./setupParallelCoordinates";
+import drawAxes from "./drawAxes";
+import drawLinesCanvas from "./drawLinesCanvas";
 
 import {
   margin,
