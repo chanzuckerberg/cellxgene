@@ -102,25 +102,3 @@ class Continuous extends React.Component {
 };
 
 export default Continuous;
-
-/* text appended to parellel coords giving N instances of selection */
-// <pre id="parcoords_output" className={styles.pre}></pre>
-// var output = d3.select("#parcoords_output");
-
-/*
-
-<div style={{marginBottom: 30}}>
-  Color By:
-  <button style={{marginLeft: 10}}>Cluster_2d_color</button>
-  <button style={{marginLeft: 10}}>Cluster_CNV_color</button>
-  <button style={{marginLeft: 10}}>Location.color</button>
-  <button style={{marginLeft: 10}}>Sample.name.color</button>
-  <button style={{marginLeft: 10}}>Sample.type.color</button>
-  <button style={{marginLeft: 10}}>Selection.color</button>
-  <button style={{marginLeft: 10}}>housekeeping_cluster_color</button>
-  <button style={{marginLeft: 10}}>recluster_myeloid</button>
-  <button style={{marginLeft: 10}}>recluster_myeloid_color</button>
-</div>
-
-
-*/
