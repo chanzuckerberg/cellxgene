@@ -4,7 +4,7 @@ import URI from "urijs";
 const requestCells = (query = "") => {
   return (dispatch) => {
     dispatch({type: "request cells started"})
-    return fetch(`${globals.API.prefix}${globals.API.version}cells${query}`, {
+    return fetch(`${window.API.prefix}${window.API.version}cells${query}`, {
         method: "get",
         headers: new Headers({
           'Content-Type': 'application/json'
@@ -61,7 +61,7 @@ const attemptCategoricalMetadataDeselection = (metadataField, value) => {
 const initialize = () => {
   return (dispatch, getState) => {
     dispatch({type: "initialize started"})
-    fetch(`${globals.API.prefix}${globals.API.version}cells`, {
+    fetch(`${window.API.prefix}${window.API.version}cells`, {
         method: "get",
         headers: new Headers({
           'Content-Type': 'application/json'
