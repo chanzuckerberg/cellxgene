@@ -34,7 +34,6 @@ import {
   }
 })
 class Continuous extends React.Component {
-
   constructor(props) {
     super(props);
     this.state = {
@@ -57,9 +56,6 @@ class Continuous extends React.Component {
 
   componentWillReceiveProps(nextProps) {
 
-
-
-
     if (
       nextProps.ranges &&
       !this.state.parallelExists
@@ -79,6 +75,7 @@ class Continuous extends React.Component {
         height,
         margin
       )
+
       this.setState({
         parallelExists: true,
         dimensions,
