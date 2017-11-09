@@ -77,7 +77,7 @@ export const project = (d, dimensions, xscale) => {
 
 export const processData = (metadata, dimensions) => {
   // shuffle the metadata! - or not, this is a visual effect
-  metadata = d3.shuffle(metadata);
+  // metadata = d3.shuffle(metadata);
 
   metadata.forEach((d) => {
     dimensions.forEach((p) => {

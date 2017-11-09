@@ -29,9 +29,16 @@ import {
   const ranges = state.cells.cells && state.cells.cells.data.ranges ? state.cells.cells.data.ranges : null;
   const metadata = state.cells.cells && state.cells.cells.data.metadata ? state.cells.cells.data.metadata : null;
 
+  const initializeRanges = state.initialize.data && state.initialize.data.data.ranges ? state.initialize.data.data.ranges : null;
+  const initializeMetadata = state.initialize.data && state.initialize.data.data.metadata ? state.initialize.data.data.metadata : null;
+
   return {
     ranges,
     metadata,
+    initializeRanges,
+    initializeMetadata,
+    color: state.controls.color,
+    continuousSelection: state.controls.continuousSelection
   }
 })
 class Continuous extends React.Component {
@@ -41,7 +48,6 @@ class Continuous extends React.Component {
       svg: null,
       ctx: null,
       axes: null,
-      parallelExists: false,
       dimensions: null,
     };
   }
@@ -56,12 +62,16 @@ class Continuous extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
+    this.maybeDrawLines(nextProps);
+    this.maybeDrawAxes(nextProps);
+  }
 
+  maybeDrawAxes(nextProps) {
     if (
-      nextProps.ranges &&
-      !this.state.parallelExists
+      !this.state.axes &&
+      nextProps.initializeRanges /* we assume if this is present, everything else is too */
     ) {
-      const dimensions = createDimensions(nextProps.ranges);
+      const dimensions = createDimensions(nextProps.initializeRanges);
       const xscale = d3.scalePoint()
         .domain(d3.range(dimensions.length))
         .range([0, width]);
@@ -70,15 +80,9 @@ class Continuous extends React.Component {
         processedMetadata,
         processedDimensions
       } = processData(
-        nextProps.metadata,
+        nextProps.initializeMetadata,
         dimensions
       )
-
-      const _drawCellLines = this.drawCellLines(
-        processedMetadata,
-        processedDimensions,
-        xscale
-      );
 
       const axes = drawAxes(
         this.state.svg,
@@ -88,20 +92,62 @@ class Continuous extends React.Component {
         xscale,
         height,
         width,
-        _drawCellLines,
-      )
+        this.handleBrushAction.bind(this),
+      );
 
       this.setState({
-        parallelExists: true,
-        dimensions,
         axes,
+        xscale,
+        processedMetadata,
+        processedDimensions,
+      })
+
+    }
+  }
+
+  maybeDrawLines(nextProps) {
+    if (
+      nextProps.ranges &&
+      this.state.axes /* this may cause things to never render :/ forceUpdate? */
+    ) {
+      if (this.state._drawCellLines) {
+
+        this.state._drawCellLines.invalidate();
+      }
+      const dimensions = createDimensions(nextProps.ranges);
+
+      const {
+        processedMetadata,
+        processedDimensions
+      } = processData(
+        nextProps.metadata,
+        dimensions
+      )
+
+      console.log('draw cell lines', processedMetadata, processedDimensions)
+      const _drawCellLines = this.drawCellLines(
+        _.filter(processedMetadata, (d) => { return nextProps.continuousSelection.indexOf(d.CellName) > -1 }),
+        processedDimensions,
+        this.state.xscale
+      );
+
+      this.setState({
+        dimensions,
+        _drawCellLines,
       })
     }
   }
 
+  handleBrushAction (selection) {
+    this.props.dispatch({
+      type: "continuous selection using parallel coords brushing",
+      data: _.map(selection, (d) => { return d.CellName })
+    })
+  }
+
   drawCellLines (metadata, dimensions, xscale) {
     const _drawCellLines = renderQueue(
-      drawLinesCanvas(this.state.ctx, dimensions, xscale)
+      drawLinesCanvas(this.state.ctx, dimensions, this.state.xscale)
     ).rate(50);
 
     this.state.ctx.clearRect(0,0,width,height);

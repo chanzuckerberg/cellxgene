@@ -13,7 +13,7 @@ const drawAxes = (
   xscale,
   height,
   width,
-  render
+  handleBrushAction,
 ) => {
 
   /*****************************************
@@ -23,7 +23,7 @@ const drawAxes = (
   ******************************************/
 
   function brush () {
-    render.invalidate();
+    // _drawCellLines.invalidate(); /* this should be moved up */
 
     var actives = [];
     svg.selectAll(".parcoords_axis .parcoords_brush")
@@ -48,15 +48,15 @@ const drawAxes = (
       }
     });
 
-    /* Reset canvas */
-    ctx.clearRect(0, 0, width, height);
-    ctx.globalAlpha = d3.min([0.85 / Math.pow(selected.length, 0.3), 1]);
-
     /* send the selected cells to redux */
+    handleBrushAction(selected)
 
+    /* Reset canvas */
+    // ctx.clearRect(0, 0, width, height);
+    // ctx.globalAlpha = d3.min([0.85 / Math.pow(selected.length, 0.3), 1]);
 
     /* pass the result of the filter above to a fresh canvas, using RAF */
-    render(selected);
+    // _drawCellLines(selected);
 
     /* text beneath */
     // output.text(d3.tsvFormat(selected.slice(0,22)));

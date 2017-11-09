@@ -59,7 +59,8 @@ export const drawGraph = (
   expressionsCountsMap,
   color,
   ranges,
-  metadata
+  metadata,
+  continuousSelection,
 ) => {
 
   /* clear canvas */
@@ -82,8 +83,12 @@ export const drawGraph = (
   //   .domain([0, expressionsCountsMap.maxValue])
   //   .range([1,0])
 
-  /* shuffle the data to overcome render order hiding cells */
-  data = d3.shuffle(data);
+  if (continuousSelection) {
+    data = _.filter(data, (d) => {return continuousSelection.indexOf(d[0]) > -1 })
+  }
+
+  /* shuffle the data to overcome render order hiding cells, & filter first */
+  // data = d3.shuffle(data);
 
   data.forEach((p, i) => {
     context.beginPath();
