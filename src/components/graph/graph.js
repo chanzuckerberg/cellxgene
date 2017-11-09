@@ -17,6 +17,7 @@ import ColorControl from "../controls/color";
     vertices,
     metadata,
     color: state.controls.color,
+    continuousSelection: state.controls.continuousSelection,
   }
 })
 class Graph extends React.Component {
@@ -27,7 +28,6 @@ class Graph extends React.Component {
       drawn: false,
       svg: null,
       context: null,
-      shimmer: false,
     };
   }
 
@@ -39,29 +39,15 @@ class Graph extends React.Component {
       // nextProps.expressions &&
       // nextProps.expressionsCountsMap &&
     ) {
-      if (this.state.shimmer) {
-        if (this.state.interval) { window.clearInterval(this.state.interval) }
-        const interval = window.setInterval(() => {
-          drawGraph(
-            nextProps.vertices,
-            this.state.context,
-            nextProps.expressionsCountsMap,
-            nextProps.color,
-            nextProps.ranges, /* assumption that this exists if vertices does both are on cells */
-            nextProps.metadata,
-          )
-        }, 100)
-        this.setState({interval})
-      } else {
-        drawGraph(
-          nextProps.vertices,
-          this.state.context,
-          nextProps.expressionsCountsMap,
-          nextProps.color,
-          nextProps.ranges, /* assumption that this exists if vertices does both are on cells */
-          nextProps.metadata,
-        )
-      }
+      drawGraph(
+        nextProps.vertices,
+        this.state.context,
+        nextProps.expressionsCountsMap,
+        nextProps.color,
+        nextProps.ranges, /* assumption that this exists if vertices does both are on cells */
+        nextProps.metadata,
+        nextProps.continuousSelection, /* continuousSelected should probably inform a global 'is active' array rather than be consumed so specifically here */
+      )
     }
   }
 
