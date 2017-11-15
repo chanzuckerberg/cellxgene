@@ -108,6 +108,7 @@ class Continuous extends React.Component {
   maybeDrawLines(nextProps) {
     if (
       nextProps.ranges &&
+      nextProps.continuousSelection &&
       this.state.axes /* this may cause things to never render :/ forceUpdate? */
     ) {
       if (this.state._drawCellLines) {
