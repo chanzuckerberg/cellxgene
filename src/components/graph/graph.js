@@ -63,13 +63,11 @@ class Graph extends React.Component {
     })
   }
   handleBrushDeselectAction() {
-    // function brushended() {
-    //   if (!d3.event.selection) {
-    //     console.log('graph brush deselect')
-    //   }
-    // }
-
-    console.log('handle deselect')
+    if (!d3.event.selection) {
+      this.props.dispatch({
+        type: "graph brush deselect"
+      })
+    }
   }
   componentWillReceiveProps(nextProps) {
     /* maybe should do a check here to confirm ref exists and pass it? */
