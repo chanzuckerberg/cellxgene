@@ -10,7 +10,12 @@ import renderQueue from "./renderQueue";
 ******************************************
 ******************************************/
 
-const drawLinesCanvas = (ctx, dimensions, xscale) => {
+const drawLinesCanvas = (
+  ctx,
+  dimensions,
+  xscale,
+  color,
+) => {
   return (d) => {
 
     // ctx.strokeStyle = d["Sample.name.color"];
@@ -54,14 +59,18 @@ const drawCellLinesUsingRenderQueue = (
   dimensions,
   xscale,
   ctx,
-  width,
-  height
+  color,
 ) => {
 
   const _renderLinesWithQueue = renderQueue(
-    drawLinesCanvas(ctx, dimensions, xscale)
+    drawLinesCanvas(
+      ctx,
+      dimensions,
+      xscale,
+      color
+    )
   ).rate(50);
-  
+
   _renderLinesWithQueue(metadata);
 
   return _renderLinesWithQueue;

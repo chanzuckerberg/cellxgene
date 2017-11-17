@@ -35,8 +35,10 @@ import {
     metadata,
     initializeRanges,
     initializeMetadata,
-    color: state.controls.color,
-    continuousSelection: state.controls.continuousSelection
+    colorAccessor: state.controls.colorAccessor,
+    graphBrushSelection: state.controls.graphBrushSelection,
+    continuousSelection: state.controls.continuousSelection,
+    axesHaveBeenDrawn: state.controls.axesHaveBeenDrawn,
   }
 })
 class Continuous extends React.Component {
@@ -49,7 +51,6 @@ class Continuous extends React.Component {
       dimensions: null,
     };
   }
-
   componentDidMount() {
     const {svg, ctx} = setupParallelCoordinates(
       width,
@@ -58,12 +59,10 @@ class Continuous extends React.Component {
     );
     this.setState({svg, ctx})
   }
-
   componentWillReceiveProps(nextProps) {
-    this.maybeDrawLines(nextProps);
     this.maybeDrawAxes(nextProps);
+    this.maybeDrawLines(nextProps);
   }
-
   maybeDrawAxes(nextProps) {
     if (
       !this.state.axes &&
@@ -126,8 +125,7 @@ class Continuous extends React.Component {
         this.state.processedDimensions,
         this.state.xscale,
         this.state.ctx,
-        width,
-        height
+        this.props.colorAccessor,
       );
 
       this.setState({

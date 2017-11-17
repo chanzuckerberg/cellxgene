@@ -22,10 +22,11 @@ const Option = ({name, selected, handleClick}) => {
 
 @connect((state) => {
   const ranges = state.cells.cells && state.cells.cells.data.ranges ? state.cells.cells.data.ranges : null;
-
+  const initializeRanges = state.initialize.data && state.initialize.data.data.ranges ? state.initialize.data.data.ranges : null;
   return {
     ranges,
-    color: state.controls.color,
+    initializeRanges,
+    colorAccessor: state.controls.colorAccessor,
   }
 })
 class ColorOptions extends React.Component {
@@ -37,17 +38,18 @@ class ColorOptions extends React.Component {
     };
   }
 
-  handleClick (data) {
+  handleClick (name) {
     return () => {
       this.props.dispatch({
         type: "color changed",
-        data
+        colorAccessor: name,
+        rangeMaxForColorAccessor: this.props.initializeRanges[name].range.max
       });
     }
   }
 
   render() {
-    if (!this.props.ranges) { return null }
+    if (!this.props.ranges || !this.props.initializeRanges) { return null }
     return (
       <div>
         Color:
@@ -61,7 +63,7 @@ class ColorOptions extends React.Component {
             return <Option
               key={key}
               handleClick={this.handleClick.bind(this)}
-              selected={this.props.color === key}
+              selected={this.props.colorAccessor === key}
               name={key}
               />
             }

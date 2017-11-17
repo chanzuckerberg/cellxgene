@@ -63,27 +63,18 @@ export const drawGraph = (
   data,
   context,
   expressionsCountsMap,
-  color,
+  colorAccessor,
   ranges,
   metadata,
   continuousSelection,
   graphBrushSelection,
+  colorScale,
 ) => {
 
   /* clear canvas */
   context.clearRect(0, 0, width, height);
 
-  let colorScale = null; /* it could be 'by expression' and that's a special case */
-
-  if (
-    color &&
-    ranges[color].range /* set up a continuous scale */
-  ) {
-    /* this scale should live in redux since it will be consumed by cotinuous as well */
-    colorScale = d3.scaleLinear()
-      .domain([0, ranges[color].range.max])
-      .range([1,0])
-  }
+  // let colorScale = null; /* it could be 'by expression' and that's a special case */
 
   /* ! create a scale to map between expression values and colors, remove to somewhere else */
   // const expressionToColorScale = d3.scaleLinear()
@@ -133,9 +124,9 @@ export const drawGraph = (
 
     context.globalAlpha = !graphBrushSelection || pointIsInsideBrushBounds ? 1 : .2;
 
-    if (color) {
+    if (colorAccessor && colorScale) {
       context.fillStyle = d3.interpolateViridis(colorScale(
-        _metadata[p[0]][color]
+        _metadata[p[0]][colorAccessor]
         // _.find(metadata, {CellName: p[0]})[color] /* this.state.cells.metadata["23452345325"]["ERCC_reads"] = 20000 would be much faster as key value lookup */
       ));
     }

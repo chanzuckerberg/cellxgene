@@ -40,7 +40,7 @@ class App extends React.Component {
 
     /*
       first request includes query straight off the url bar for now,
-      
+
     */
     this.props.dispatch(actions.requestCells(window.location.search))
 
