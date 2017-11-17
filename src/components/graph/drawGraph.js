@@ -95,7 +95,9 @@ export const drawGraph = (
   }
 
   /* shuffle the data to overcome render order hiding cells, & filter first */
-  // data = d3.shuffle(data);
+  // data = d3.shuffle(data); /* make me a control */
+
+  const _metadata = _.keyBy(metadata, "CellName"); /* move me to the reducer */
 
   data.forEach((p, i) => {
     context.beginPath();
@@ -129,24 +131,14 @@ export const drawGraph = (
       // }
     }
 
-    if (pointIsInsideBrushBounds) {
-      console.log('inside', x(p[1]), y(p[2]), graphBrushSelection)
-      context.fillStyle = "rgb(255,0,0)";
-    } else {
-      context.fillStyle = "rgb(0,0,0)"
+    context.globalAlpha = !graphBrushSelection || pointIsInsideBrushBounds ? 1 : .2;
+
+    if (color) {
+      context.fillStyle = d3.interpolateViridis(colorScale(
+        _metadata[p[0]][color]
+        // _.find(metadata, {CellName: p[0]})[color] /* this.state.cells.metadata["23452345325"]["ERCC_reads"] = 20000 would be much faster as key value lookup */
+      ));
     }
-
-    // if (color) {
-    //   if (i === 10) {
-    //     console.log(p[0], x(p[1]), y(p[2]), _.find(metadata, {CellName: p[0]}))
-    //   }
-    //   context.fillStyle = d3.interpolateViridis(colorScale(
-    //     _.find(metadata, {CellName: p[0]})[color] /* this.state.cells.metadata["23452345325"]["ERCC_reads"] = 20000 would be much faster as key value lookup */
-    //   ));
-    //   context.strokeStyle = "red";
-    // }
-
-    context.fill();
 
     // if (i < 20) {
       // console.log(
@@ -160,6 +152,8 @@ export const drawGraph = (
     // context.fillStyle = d3.interpolateViridis(expressionToColorScale(
     //   expressionsCountsMap[p[0]]
     // ));
+
+    context.fill();
 
   });
 }
