@@ -95,7 +95,7 @@ export const drawGraph = (
   }
 
   /* shuffle the data to overcome render order hiding cells, & filter first */
-  // data = d3.shuffle(data); /* make me a control */
+  data = d3.shuffle(data); /* make me a control */
 
   const _metadata = _.keyBy(metadata, "CellName"); /* move me to the reducer */
 
