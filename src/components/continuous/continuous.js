@@ -100,27 +100,24 @@ class Continuous extends React.Component {
         processedDimensions,
       })
 
+      this.props.dispatch({
+        type: "parallel coordinates axes have been drawn"
+      })
+
     }
   }
-
   maybeDrawLines(nextProps) {
     if (
       nextProps.ranges &&
       nextProps.continuousSelection &&
-      this.state.axes /* this may cause things to never render :/ forceUpdate? */
+      nextProps.axesHaveBeenDrawn /* this may cause things to never render :/ forceUpdate? */
     ) {
+
       if (this.state._drawLinesCanvas) {
         this.state._drawLinesCanvas.invalidate();
-        this.state.ctx.clearRect(0,0,width,height);
-        this.state.ctx.globalAlpha = d3.min([
-          0.85 / Math.pow(this.props.initializeMetadata.length, 0.3),
-          1
-        ]);
       }
 
-      console.log(        _.filter(this.state.processedMetadata, (d) => {
-                return nextProps.continuousSelection.indexOf(d.CellName) > -1
-              }))
+      this.state.ctx.clearRect(0,0,width,height);
 
       const _drawLinesCanvas = drawLinesCanvas(
         _.filter(this.state.processedMetadata, (d) => {
