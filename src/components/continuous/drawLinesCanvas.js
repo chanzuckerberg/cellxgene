@@ -2,6 +2,8 @@ import {
   project
 } from "./util";
 
+import renderQueue from "./renderQueue";
+
 /*****************************************
 ******************************************
               draw loop
@@ -47,4 +49,23 @@ const drawLinesCanvas = (ctx, dimensions, xscale) => {
   }
 }
 
-export default drawLinesCanvas;
+const drawCellLinesUsingRenderQueue = (
+  metadata,
+  dimensions,
+  xscale,
+  ctx,
+  width,
+  height
+) => {
+
+  const _renderLinesWithQueue = renderQueue(
+    drawLinesCanvas(ctx, dimensions, xscale)
+  ).rate(50);
+  
+  _renderLinesWithQueue(metadata);
+
+  return _renderLinesWithQueue;
+
+}
+
+export default drawCellLinesUsingRenderQueue;
