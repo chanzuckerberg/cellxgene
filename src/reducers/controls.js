@@ -17,6 +17,10 @@ const Controls = (state = {
     return Object.assign({}, state, {
       graphBrushSelection: action.brushCoords
     })
+  case "graph brush deselect":
+    return Object.assign({}, state, {
+      graphBrushSelection: null
+    })
   default:
     return state;
   }
