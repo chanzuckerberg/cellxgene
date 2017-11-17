@@ -5,8 +5,6 @@ import { connect } from "react-redux";
 import styles from './parallelCoordinates.css';
 import SectionHeader from "../framework/sectionHeader";
 
-import renderQueue from "./renderQueue";
-
 import setupParallelCoordinates from "./setupParallelCoordinates";
 import drawAxes from "./drawAxes";
 import drawLinesCanvas from "./drawLinesCanvas";
@@ -111,30 +109,33 @@ class Continuous extends React.Component {
       nextProps.continuousSelection &&
       this.state.axes /* this may cause things to never render :/ forceUpdate? */
     ) {
-      if (this.state._drawCellLines) {
-
-        this.state._drawCellLines.invalidate();
+      if (this.state._drawLinesCanvas) {
+        this.state._drawLinesCanvas.invalidate();
+        this.state.ctx.clearRect(0,0,width,height);
+        this.state.ctx.globalAlpha = d3.min([
+          0.85 / Math.pow(this.props.initializeMetadata.length, 0.3),
+          1
+        ]);
       }
-      const dimensions = createDimensions(nextProps.ranges);
 
-      const {
-        processedMetadata,
-        processedDimensions
-      } = processData(
-        nextProps.metadata,
-        dimensions
-      )
+      console.log(        _.filter(this.state.processedMetadata, (d) => {
+                return nextProps.continuousSelection.indexOf(d.CellName) > -1
+              }))
 
-      console.log('draw cell lines', processedMetadata, processedDimensions)
-      const _drawCellLines = this.drawCellLines(
-        _.filter(processedMetadata, (d) => { return nextProps.continuousSelection.indexOf(d.CellName) > -1 }),
-        processedDimensions,
-        this.state.xscale
+      const _drawLinesCanvas = drawLinesCanvas(
+        _.filter(this.state.processedMetadata, (d) => {
+          return nextProps.continuousSelection.indexOf(d.CellName) > -1
+        }),
+        this.state.processedDimensions,
+        this.state.xscale,
+        this.state.ctx,
+        width,
+        height
       );
 
       this.setState({
-        dimensions,
-        _drawCellLines,
+        // dimensions,
+        _drawLinesCanvas,
       })
     }
   }
@@ -144,20 +145,6 @@ class Continuous extends React.Component {
       type: "continuous selection using parallel coords brushing",
       data: _.map(selection, (d) => { return d.CellName })
     })
-  }
-
-  drawCellLines (metadata, dimensions, xscale) {
-    const _drawCellLines = renderQueue(
-      drawLinesCanvas(this.state.ctx, dimensions, this.state.xscale)
-    ).rate(50);
-
-    this.state.ctx.clearRect(0,0,width,height);
-    this.state.ctx.globalAlpha = d3.min([0.85/Math.pow(metadata.length,0.3),1]);
-
-    _drawCellLines(metadata);
-
-    return _drawCellLines;
-
   }
 
   render() {

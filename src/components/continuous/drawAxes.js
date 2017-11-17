@@ -84,11 +84,12 @@ const drawAxes = (
   axes.append("g")
       .attr("class", `${styles.brush} parcoords_brush`)
       .each(function(d) {
-        d3.select(this).call(d.brush = d3.brushY()
-          .extent([[-10,0], [10, height]])
-          .on("start", brushstart)
-          .on("brush", brush)
-          .on("end", brush)
+        d3.select(this).call(
+          d.brush = d3.brushY()
+            .extent([[-10,0], [10, height]])
+            .on("start", brushstart)
+            .on("brush", brush)
+            .on("end", brush)
         )
       })
     .selectAll("rect")
