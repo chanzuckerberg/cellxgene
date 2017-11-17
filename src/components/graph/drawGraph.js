@@ -20,29 +20,35 @@ const y = d3.scaleLinear()
 *******************************************
 ******************************************/
 
-export const setupGraphElements = (data) => {
+export const setupGraphElements = (
+  handleBrushSelectAction,
+  handleBrushDeselectAction
+) => {
+
+  var canvas = d3.select("#graphAttachPoint")
+    .append("canvas")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .attr("class", `${styles.graphCanvas}`);
+
+  var ctx = canvas.node().getContext("2d");
 
   var svg = d3.select("#graphAttachPoint").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
     .attr("class", `${styles.graphSVG}`)
-    .append("g")
-      .attr("transform", "translate(" + margin.left + " " + margin.top + ")");
+    // .append("g")
+    //   .attr("transform", "translate(" + margin.left + " " + margin.top + ")");
 
-  var chartArea = d3.select("#graphAttachPoint").append("div")
-    .style("left", margin.left + "px")
-    .style("top", margin.top + "px");
-
-  var canvas = chartArea.append("canvas")
-    .attr("width", width)
-    .attr("height", height)
-    .attr("class", `${styles.graphCanvas}`);
-
-  var context = canvas.node().getContext("2d");
+  setupGraphBrush(
+    svg,
+    handleBrushSelectAction,
+    handleBrushDeselectAction
+  );
 
   return {
     svg,
-    context
+    ctx
   }
 
 }
@@ -61,6 +67,7 @@ export const drawGraph = (
   ranges,
   metadata,
   continuousSelection,
+  graphBrushSelection,
 ) => {
 
   /* clear canvas */
@@ -100,9 +107,48 @@ export const drawGraph = (
       0,                  /* sAngle */
       2 * Math.PI         /* eAngle */
     );
+
+    let pointIsInsideBrushBounds;
+
+    if (graphBrushSelection) {
+
+      pointIsInsideBrushBounds = (
+        x(p[1]) >= graphBrushSelection.northwestX &&
+        x(p[1]) <= graphBrushSelection.southeastX &&
+        y(p[2]) >= graphBrushSelection.northwestY &&
+        y(p[2]) <= graphBrushSelection.southeastY
+      );
+
+      // if (i === 5) {
+      //   console.log(
+      //     pointIsInsideBrushBounds,
+      //     x(p[1]),
+      //     y(p[2]),
+      //     graphBrushSelection,
+      //   );
+      // }
+    }
+
+    if (pointIsInsideBrushBounds) {
+      console.log('inside', x(p[1]), y(p[2]), graphBrushSelection)
+      context.fillStyle = "rgb(255,0,0)";
+    } else {
+      context.fillStyle = "rgb(0,0,0)"
+    }
+
+    // if (color) {
+    //   if (i === 10) {
+    //     console.log(p[0], x(p[1]), y(p[2]), _.find(metadata, {CellName: p[0]}))
+    //   }
+    //   context.fillStyle = d3.interpolateViridis(colorScale(
+    //     _.find(metadata, {CellName: p[0]})[color] /* this.state.cells.metadata["23452345325"]["ERCC_reads"] = 20000 would be much faster as key value lookup */
+    //   ));
+    //   context.strokeStyle = "red";
+    // }
+
     context.fill();
 
-    if (i < 20) {
+    // if (i < 20) {
       // console.log(
       //   '0 to 1 scale', expressionToColorScale(expressionsCountsMap[p[0]]),
       //   'color', d3.interpolateViridis(expressionToColorScale(
@@ -110,14 +156,27 @@ export const drawGraph = (
       //   ))
       // )
       // console.log('meta', _.find(metadata, {CellName: p[0]}), color, p)
-    }
+    // }
     // context.fillStyle = d3.interpolateViridis(expressionToColorScale(
     //   expressionsCountsMap[p[0]]
     // ));
-    if (color) {
-      context.fillStyle = d3.interpolateViridis(colorScale(
-        _.find(metadata, {CellName: p[0]})[color] /* this.state.cells.metadata["23452345325"]["ERCC_reads"] = 20000 would be much faster as key value lookup */
-      ));
-    }
+
   });
+}
+
+const setupGraphBrush = (
+  svg,
+  handleBrushSelectAction,
+  handleBrushDeselectAction
+) => {
+  svg.append("g")
+   .call(
+     d3.brush()
+     .extent([
+       [0, 0],
+       [width, height]
+     ])
+     .on("brush", handleBrushSelectAction)
+     .on("end", handleBrushDeselectAction)
+   );
 }

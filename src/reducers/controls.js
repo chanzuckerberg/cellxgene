@@ -1,6 +1,7 @@
 const Controls = (state = {
   color: null,
   continuousSelection: null,
+  graphBrushSelection: null
 }, action) => {
   switch (action.type) {
   case "color changed":
@@ -12,6 +13,10 @@ const Controls = (state = {
       continuousSelection: action.data,
     });
   }
+  case "graph brush selection change":
+    return Object.assign({}, state, {
+      graphBrushSelection: action.brushCoords
+    })
   default:
     return state;
   }

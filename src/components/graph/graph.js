@@ -18,6 +18,7 @@ import ColorControl from "../controls/color";
     metadata,
     color: state.controls.color,
     continuousSelection: state.controls.continuousSelection,
+    graphBrushSelection: state.controls.graphBrushSelection
   }
 })
 class Graph extends React.Component {
@@ -27,33 +28,76 @@ class Graph extends React.Component {
     this.state = {
       drawn: false,
       svg: null,
-      context: null,
+      ctx: null,
+      brush: null,
     };
   }
+  handleBrushSelectAction() {
+    /*
+      No idea why d3 event scope works like this
+      but apparently
+      it does
+      https://bl.ocks.org/EfratVil/0e542f5fc426065dd1d4b6daaa345a9f
+    */
+    const s = d3.event.selection;
+    /*
+      event describing brush position:
+      @-------|
+      |       |
+      |       |
+      |-------@
+    */
+    const brushCoords = {
+      northwestX: s[0][0],
+      northwestY: s[0][1],
+      southeastX: s[1][0],
+      southeastY: s[1][1]
+    }
 
+    brushCoords.dx = brushCoords.southeastX - brushCoords.northwestX;
+    brushCoords.dy = brushCoords.southeastY - brushCoords.northwestY;
+
+    this.props.dispatch({
+      type: "graph brush selection change",
+      brushCoords
+    })
+  }
+  handleBrushDeselectAction() {
+    // function brushended() {
+    //   if (!d3.event.selection) {
+    //     console.log('graph brush deselect')
+    //   }
+    // }
+
+    console.log('handle deselect')
+  }
   componentWillReceiveProps(nextProps) {
     /* maybe should do a check here to confirm ref exists and pass it? */
     if (
-      this.state.context &&
+      this.state.ctx &&
       nextProps.vertices
       // nextProps.expressions &&
       // nextProps.expressionsCountsMap &&
     ) {
       drawGraph(
         nextProps.vertices,
-        this.state.context,
+        this.state.ctx,
         nextProps.expressionsCountsMap,
         nextProps.color,
         nextProps.ranges, /* assumption that this exists if vertices does both are on cells */
         nextProps.metadata,
         nextProps.continuousSelection, /* continuousSelected should probably inform a global 'is active' array rather than be consumed so specifically here */
+        nextProps.graphBrushSelection,
       )
     }
   }
 
   componentDidMount() {
-    const {svg, context} = setupGraphElements();
-    this.setState({svg, context});
+    const {svg, ctx} = setupGraphElements(
+      this.handleBrushSelectAction.bind(this),
+      this.handleBrushDeselectAction.bind(this)
+    );
+    this.setState({svg, ctx});
   }
 
   render() {
