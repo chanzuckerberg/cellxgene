@@ -36,6 +36,7 @@ import {
     initializeRanges,
     initializeMetadata,
     colorAccessor: state.controls.colorAccessor,
+    colorScale: state.controls.colorScale,
     graphBrushSelection: state.controls.graphBrushSelection,
     continuousSelection: state.controls.continuousSelection,
     axesHaveBeenDrawn: state.controls.axesHaveBeenDrawn,
@@ -66,7 +67,7 @@ class Continuous extends React.Component {
   maybeDrawAxes(nextProps) {
     if (
       !this.state.axes &&
-      nextProps.initializeRanges /* we assume if this is present, everything else is too */
+      nextProps.initializeRanges /* axes are created on full range of data */
     ) {
       const dimensions = createDimensions(nextProps.initializeRanges);
       const xscale = d3.scalePoint()
@@ -109,29 +110,30 @@ class Continuous extends React.Component {
     if (
       nextProps.ranges &&
       nextProps.continuousSelection &&
-      nextProps.axesHaveBeenDrawn /* this may cause things to never render :/ forceUpdate? */
+      nextProps.axesHaveBeenDrawn
     ) {
 
-      if (this.state._drawLinesCanvas) {
-        this.state._drawLinesCanvas.invalidate();
-      }
+      // if (this.state._drawLinesCanvas) {
+      //   this.state._drawLinesCanvas.invalidate(); /* this is only necessary if the internals of drawLinesCanvas are using the render queue */
+      // }
 
-      this.state.ctx.clearRect(0,0,width,height);
+      this.state.ctx.clearRect(0, 0, width, height);
 
       const _drawLinesCanvas = drawLinesCanvas(
         _.filter(this.state.processedMetadata, (d) => {
-          return nextProps.continuousSelection.indexOf(d.CellName) > -1
+          return nextProps.continuousSelection.indexOf(d.CellName) > -1 /* perf */
         }),
         this.state.processedDimensions,
         this.state.xscale,
         this.state.ctx,
-        this.props.colorAccessor,
+        nextProps.colorAccessor,
+        nextProps.colorScale,
       );
 
-      this.setState({
-        // dimensions,
-        _drawLinesCanvas,
-      })
+      // this.setState({
+      //   // dimensions,
+      //   _drawLinesCanvas, /* this will only exist if the internals of drawLinesCanvas are using the render queue */
+      // })
     }
   }
 

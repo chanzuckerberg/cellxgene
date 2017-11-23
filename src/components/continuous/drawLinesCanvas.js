@@ -1,3 +1,4 @@
+import _ from "lodash";
 import {
   project
 } from "./util";
@@ -14,12 +15,15 @@ const drawLinesCanvas = (
   ctx,
   dimensions,
   xscale,
-  color,
+  colorAccessor,
+  colorScale,
 ) => {
   return (d) => {
-
-    // ctx.strokeStyle = d["Sample.name.color"];
-    ctx.strokeStyle = "rgba(0,0,0,1)";
+    if (colorAccessor && colorScale) {
+      ctx.strokeStyle = d3.interpolateViridis(colorScale(d[colorAccessor]));
+    } else {
+      ctx.strokeStyle = "rgba(0,0,0,1)";
+    }
     ctx.beginPath();
     var coords = project(d, dimensions, xscale);
     coords.forEach((p,i) => {
@@ -59,7 +63,8 @@ const drawCellLinesUsingRenderQueue = (
   dimensions,
   xscale,
   ctx,
-  color,
+  colorAccessor,
+  colorScale,
 ) => {
 
   const _renderLinesWithQueue = renderQueue(
@@ -67,7 +72,8 @@ const drawCellLinesUsingRenderQueue = (
       ctx,
       dimensions,
       xscale,
-      color
+      colorAccessor,
+      colorScale,
     )
   ).rate(50);
 
@@ -77,4 +83,23 @@ const drawCellLinesUsingRenderQueue = (
 
 }
 
-export default drawCellLinesUsingRenderQueue;
+const drawCellLinesSync = (
+  metadata,
+  dimensions,
+  xscale,
+  ctx,
+  colorAccessor,
+  colorScale,
+) => {
+  const _draw = drawLinesCanvas(
+    ctx,
+    dimensions,
+    xscale,
+    colorAccessor,
+    colorScale,
+  )
+  _.each(metadata, _draw)
+}
+
+export default _.debounce(drawCellLinesSync, 100);
+// export default drawCellLinesUsingRenderQueue;
