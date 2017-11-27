@@ -8,6 +8,7 @@ import PulseLoader from "halogen/PulseLoader";
 
 import Categorical from "./categorical/categorical";
 import Continuous from "./continuous/continuous";
+import Expression from "./expression/expression";
 import Joy from "./joy/joy";
 import Graph from "./graph/graph";
 import * as globals from "../globals";
@@ -39,11 +40,10 @@ class App extends React.Component {
     this.props.dispatch(actions.initialize())
 
     /*
-      first request includes query straight off the url bar for now,
-
+      first request includes query straight off the url bar for now
     */
     this.props.dispatch(actions.requestCells(window.location.search))
-
+    this.props.dispatch(actions.___hardcoded___requestGeneExpressionCountsPOST(window.location.search))
   }
 
   render() {
@@ -61,11 +61,11 @@ class App extends React.Component {
           null
         }
         {this.props.cells.error ? "Error loading cells" : null}
-        <SectionHeader text="Gene Selection Criteria"/>
         {false ? <Joy data={this.state.expressions && this.state.expressions.data}/> : ""}
         <Categorical/>
         <Continuous/>
         <Graph/>
+        <Expression/>
       </Container>
     )
   }
