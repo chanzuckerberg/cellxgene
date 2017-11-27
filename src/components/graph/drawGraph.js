@@ -60,15 +60,15 @@ export const setupGraphElements = (
 ******************************************/
 
 export const drawGraph = (
-  data,
   context,
   expressionsCountsMap,
   colorAccessor,
   ranges,
   metadata,
-  continuousSelection,
+  currentCellSelection,
   graphBrushSelection,
   colorScale,
+  graphMap, /* tmp remove when structure exists on server */
 ) => {
 
   /* clear canvas */
@@ -81,12 +81,20 @@ export const drawGraph = (
   //   .domain([0, expressionsCountsMap.maxValue])
   //   .range([1,0])
 
-  if (continuousSelection) {
-    data = _.filter(data, (d) => {return continuousSelection.indexOf(d[0]) > -1 })
-  }
+  const data = [];
+
+  _.each(currentCellSelection, (metadata, i) => {
+    if (graphMap[metadata["CellName"]]) { /* fails silently, sometimes this is undefined, in which case the graph array should be shorter than the metadata array, check in reducer */
+      data.push([
+        metadata["CellName"],
+        graphMap[metadata["CellName"]][0],
+        graphMap[metadata["CellName"]][1]
+      ])
+    }
+  })
 
   /* shuffle the data to overcome render order hiding cells, & filter first */
-  data = d3.shuffle(data); /* make me a control */
+  // data = d3.shuffle(data); /* make me a control */
 
   const _metadata = _.keyBy(metadata, "CellName"); /* move me to the reducer */
 

@@ -19,6 +19,8 @@ import ColorControl from "../controls/color";
     colorAccessor: state.controls.colorAccessor,
     colorScale: state.controls.colorScale,
     continuousSelection: state.controls.continuousSelection,
+    graphMap: state.controls.graphMap,
+    currentCellSelection: state.controls.currentCellSelection,
     graphBrushSelection: state.controls.graphBrushSelection
   }
 })
@@ -79,15 +81,15 @@ class Graph extends React.Component {
       // nextProps.expressionsCountsMap &&
     ) {
       drawGraph(
-        nextProps.vertices,
         this.state.ctx,
         nextProps.expressionsCountsMap,
         nextProps.colorAccessor,
         nextProps.ranges, /* assumption that this exists if vertices does both are on cells */
         nextProps.metadata,
-        nextProps.continuousSelection, /* continuousSelected should probably inform a global 'is active' array rather than be consumed so specifically here */
+        nextProps.currentCellSelection, /* continuousSelected should probably inform a global 'is active' array rather than be consumed so specifically here */
         nextProps.graphBrushSelection,
         nextProps.colorScale,
+        nextProps.graphMap,
       )
     }
   }
@@ -102,7 +104,7 @@ class Graph extends React.Component {
 
   render() {
     return (
-      <div id="graphWrapper">
+      <div id="graphWrapper" style={{height: 600 /* move this to globals */}}>
         <SectionHeader text="Graph"/>
         <ColorControl/>
         <div id="graphAttachPoint"> </div>

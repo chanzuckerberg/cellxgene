@@ -48,6 +48,13 @@ const Controls = (state = {
     return Object.assign({}, state, {
       graphBrushSelection: null
     })
+  case "color changed":
+    return Object.assign({}, state, {
+      colorAccessor: action.colorAccessor,
+      colorScale: d3.scaleLinear()
+        .domain([0, action.rangeMaxForColorAccessor])
+        .range([1,0])
+    });
   default:
     return state;
   }
