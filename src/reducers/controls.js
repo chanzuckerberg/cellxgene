@@ -1,38 +1,45 @@
+import _ from "lodash";
+
 const Controls = (state = {
+  _ranges: null, /* this comes from initialize, this is universe */
+  allCellsOnClient: null, /* this comes from cells endpoint, this is world */
+  currentCellSelection: null, /* this comes from user actions, this is current cell selection */
+  graphMap: null,
   colorAccessor: null,
   colorScale: null,
-  continuousSelection: null,
   graphBrushSelection: null,
   axesHaveBeenDrawn: false,
 }, action) => {
   switch (action.type) {
-  case "color changed":
-    return Object.assign({}, state, {
-      colorAccessor: action.colorAccessor,
-      colorScale: d3.scaleLinear()
-        .domain([0, action.rangeMaxForColorAccessor])
-        .range([1,0])
-    });
-  case "continuous selection using parallel coords brushing": {
-    return Object.assign({}, state, {
-      continuousSelection: action.data,
-    });
-  }
-  /* on load, set the selection to 'all', if reactive is true */
+  /* * * * * * * * * * * * * * * * * *
+        Keep a copy of data
+  * * * * * * * * * * * * * * * * * */
   case "initialize success":
-    let allCellNames = null;
-    if (action.data.data.reactive) { /* we have metadata, get all cell names */
-      allCellNames = action.data.data.metadata.map((cell) => {
-        return cell.CellName
-      })
-    }
     return Object.assign({}, state, {
-      continuousSelection: allCellNames
+      _ranges: action.data.data.ranges
     });
+  case "request cells success":
+    const graphMap = {}
+    _.each(action.data.data.graph, (g) => { graphMap[g[0]] = [g[1], g[2]] })
+
+    return Object.assign({}, state, {
+      allCellsOnClient: action.data.data,
+      currentCellSelection: action.data.data.metadata,
+      graphMap,
+      graphBrushSelection: null, /* if we are getting new cells from the server, the layout (probably? definitely?) just changed, so this is now irrelevant, and we WILL need to call a function to reset state of this kind when cells success happens */
+    });
+  /* * * * * * * * * * * * * * * * * *
+            User events
+  * * * * * * * * * * * * * * * * * */
   case "parallel coordinates axes have been drawn":
     return Object.assign({}, state, {
       axesHaveBeenDrawn: true
     });
+  case "continuous selection using parallel coords brushing": {
+    return Object.assign({}, state, {
+      currentCellSelection: action.data,
+    });
+  }
   case "graph brush selection change":
     return Object.assign({}, state, {
       graphBrushSelection: action.brushCoords

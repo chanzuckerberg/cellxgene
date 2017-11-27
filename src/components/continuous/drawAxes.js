@@ -37,7 +37,7 @@ const drawAxes = (
         });
       });
 
-    var selected = metadata.filter(function(d) {
+    var selected = metadata.filter(function(d) { /* PERF we are filtering on all cells here, shouldn't be. these brushes need to be reinitialized every time there is a new cell set for instance */ 
       /* this is iterating over the enter dataset */
       if (actives.every(function(active) {
           var dim = active.dimension;

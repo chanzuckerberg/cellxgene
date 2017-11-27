@@ -76,11 +76,8 @@ const drawCellLinesUsingRenderQueue = (
       colorScale,
     )
   ).rate(50);
-
   _renderLinesWithQueue(metadata);
-
   return _renderLinesWithQueue;
-
 }
 
 const drawCellLinesSync = (

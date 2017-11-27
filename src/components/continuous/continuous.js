@@ -13,13 +13,7 @@ import {
   margin,
   width,
   height,
-  innerHeight,
-  color,
   createDimensions,
-  types,
-  processData,
-  yAxis,
-  d3_functor,
 } from "./util";
 
 @connect((state) => {
@@ -38,7 +32,7 @@ import {
     colorAccessor: state.controls.colorAccessor,
     colorScale: state.controls.colorScale,
     graphBrushSelection: state.controls.graphBrushSelection,
-    continuousSelection: state.controls.continuousSelection,
+    currentCellSelection: state.controls.currentCellSelection,
     axesHaveBeenDrawn: state.controls.axesHaveBeenDrawn,
   }
 })
@@ -69,24 +63,18 @@ class Continuous extends React.Component {
       !this.state.axes &&
       nextProps.initializeRanges /* axes are created on full range of data */
     ) {
+
       const dimensions = createDimensions(nextProps.initializeRanges);
+
       const xscale = d3.scalePoint()
         .domain(d3.range(dimensions.length))
         .range([0, width]);
 
-      const {
-        processedMetadata,
-        processedDimensions
-      } = processData(
-        nextProps.initializeMetadata,
-        dimensions
-      )
-
       const axes = drawAxes(
         this.state.svg,
         this.state.ctx,
-        processedDimensions,
-        processedMetadata,
+        dimensions,
+        nextProps.initializeMetadata, /* PERF this means brushes are always filtering on everything */
         xscale,
         height,
         width,
@@ -96,8 +84,7 @@ class Continuous extends React.Component {
       this.setState({
         axes,
         xscale,
-        processedMetadata,
-        processedDimensions,
+        dimensions,
       })
 
       this.props.dispatch({
@@ -109,7 +96,7 @@ class Continuous extends React.Component {
   maybeDrawLines = _.debounce((nextProps) => { /* https://stackoverflow.com/questions/23123138/perform-debounce-in-react-js */
     if (
       nextProps.ranges &&
-      nextProps.continuousSelection &&
+      nextProps.currentCellSelection &&
       nextProps.axesHaveBeenDrawn
     ) {
 
@@ -120,10 +107,8 @@ class Continuous extends React.Component {
       this.state.ctx.clearRect(0, 0, width, height);
 
       const _drawLinesCanvas = drawLinesCanvas(
-        _.filter(this.state.processedMetadata, (d) => {
-          return nextProps.continuousSelection.indexOf(d.CellName) > -1 /* perf */
-        }),
-        this.state.processedDimensions,
+        nextProps.currentCellSelection,
+        this.state.dimensions,
         this.state.xscale,
         this.state.ctx,
         nextProps.colorAccessor,
@@ -131,7 +116,6 @@ class Continuous extends React.Component {
       );
 
       this.setState({
-        // dimensions,
         _drawLinesCanvas, /* this will only exist if the internals of drawLinesCanvas are using the render queue */
       })
     }
