@@ -106,16 +106,16 @@ class Continuous extends React.Component {
 
     }
   }
-  maybeDrawLines(nextProps) {
+  maybeDrawLines = _.debounce((nextProps) => { /* https://stackoverflow.com/questions/23123138/perform-debounce-in-react-js */
     if (
       nextProps.ranges &&
       nextProps.continuousSelection &&
       nextProps.axesHaveBeenDrawn
     ) {
 
-      // if (this.state._drawLinesCanvas) {
-      //   this.state._drawLinesCanvas.invalidate(); /* this is only necessary if the internals of drawLinesCanvas are using the render queue */
-      // }
+      if (this.state._drawLinesCanvas) {
+        this.state._drawLinesCanvas.invalidate(); /* this is only necessary if the internals of drawLinesCanvas are using the render queue */
+      }
 
       this.state.ctx.clearRect(0, 0, width, height);
 
@@ -130,12 +130,12 @@ class Continuous extends React.Component {
         nextProps.colorScale,
       );
 
-      // this.setState({
-      //   // dimensions,
-      //   _drawLinesCanvas, /* this will only exist if the internals of drawLinesCanvas are using the render queue */
-      // })
+      this.setState({
+        // dimensions,
+        _drawLinesCanvas, /* this will only exist if the internals of drawLinesCanvas are using the render queue */
+      })
     }
-  }
+  }, 200)
 
   handleBrushAction (selection) {
     this.props.dispatch({
