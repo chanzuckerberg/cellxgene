@@ -101,5 +101,5 @@ const drawCellLinesSync = (
   _.each(metadata, _draw)
 }
 
-export default _.debounce(drawCellLinesSync, 100);
+export default drawCellLinesUsingRenderQueue;
 // export default drawCellLinesUsingRenderQueue;
