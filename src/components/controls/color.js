@@ -55,9 +55,8 @@ class ColorOptions extends React.Component {
         Color:
         {
           _.map(this.props.ranges, (value, key) => {
-            if (
-              (value.options ||
-              value.range) &&
+            if ( /* value.options  */
+              value.range &&
               key !== "CellName"
             ) {
             return <Option
