@@ -76,9 +76,54 @@ const initialize = () => {
   }
 }
 
+const requestGeneExpressionCounts = () => {
+  return (dispatch, getState) => {
+    dispatch({type: "get expression started"})
+    fetch(`${globals.API.prefix}${globals.API.version}expression`, {
+        method: "get",
+        headers: new Headers({
+          'accept': 'application/json'
+        })
+      })
+      .then(res => res.json())
+      .then(
+        data => dispatch({type: "get expression success", data}),
+        error => dispatch({type: "get expression error", error})
+      )
+  }
+}
+
+const ___hardcoded___requestGeneExpressionCountsPOST = () => {
+  return (dispatch, getState) => {
+    dispatch({type: "get expression started"})
+    fetch(`${globals.API.prefix}${globals.API.version}expression`, {
+        method: "POST",
+        body: JSON.stringify({
+          "genelist": [
+            "AAK1",
+            "1/2-SBSRNA4",
+          ]
+        }),
+        headers: new Headers({
+          "accept": "application/json",
+          "Content-Type": "application/json"
+        })
+      })
+      .then(res => res.json())
+      .then(
+        data => dispatch({type: "get expression success", data}),
+        error => dispatch({type: "get expression error", error})
+      )
+  }
+}
+
+
+
 export default {
   initialize,
   requestCells,
+  requestGeneExpressionCounts,
+  ___hardcoded___requestGeneExpressionCountsPOST,
   attemptCategoricalMetadataSelection,
   attemptCategoricalMetadataDeselection
 }
