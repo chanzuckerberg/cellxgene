@@ -140,7 +140,7 @@ class Continuous extends React.Component {
   handleBrushAction (selection) {
     this.props.dispatch({
       type: "continuous selection using parallel coords brushing",
-      data: _.map(selection, (d) => { return d.CellName })
+      data: selection
     })
   }
 
