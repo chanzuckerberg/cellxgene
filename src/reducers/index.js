@@ -1,5 +1,7 @@
 import { combineReducers, createStore, applyMiddleware } from 'redux';
 import updateURLMiddleware from "../middleware/updateURLMiddleware";
+import updateCellSelectionMiddleware from "../middleware/updateCellSelectionMiddleware";
+
 import thunk from "redux-thunk";
 
 import initialize from "./initialize";
@@ -19,7 +21,11 @@ const Reducer = combineReducers({
 let store = createStore(
   Reducer,
   window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__(),
-  applyMiddleware(thunk, updateURLMiddleware)
+  applyMiddleware(
+    thunk,
+    updateURLMiddleware,
+    updateCellSelectionMiddleware
+  )
 );
 
 export default store;
