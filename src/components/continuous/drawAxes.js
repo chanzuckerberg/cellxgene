@@ -23,8 +23,6 @@ const drawAxes = (
   ******************************************/
 
   function brush () {
-    // _drawCellLines.invalidate(); /* this should be moved up */
-
     var actives = [];
     svg.selectAll(".parcoords_axis .parcoords_brush")
       .filter(function (d) {
@@ -36,30 +34,8 @@ const drawAxes = (
           extent: d3.brushSelection(this)
         });
       });
-
-    var selected = metadata.filter(function(d) { /* PERF we are filtering on all cells here, shouldn't be. these brushes need to be reinitialized every time there is a new cell set for instance */ 
-      /* this is iterating over the enter dataset */
-      if (actives.every(function(active) {
-          var dim = active.dimension;
-          // test if point is within extents for each active brush
-          return dim.type.within(d[dim.key], active.extent, dim);
-        })) {
-        return true;
-      }
-    });
-
-    /* send the selected cells to redux */
-    handleBrushAction(selected)
-
-    /* Reset canvas */
-    // ctx.clearRect(0, 0, width, height);
-    // ctx.globalAlpha = d3.min([0.85 / Math.pow(selected.length, 0.3), 1]);
-
-    /* pass the result of the filter above to a fresh canvas, using RAF */
-    // _drawCellLines(selected);
-
-    /* text beneath */
-    // output.text(d3.tsvFormat(selected.slice(0,22)));
+    /* fire action, with selected dimensions & their values */
+    handleBrushAction(actives)
   }
 
   var axes = svg.selectAll(".parcoords_axis")
