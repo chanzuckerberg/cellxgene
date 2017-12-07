@@ -8,6 +8,7 @@ const Controls = (state = {
   colorAccessor: null,
   colorScale: null,
   graphBrushSelection: null,
+  continuousSelection: null,
   axesHaveBeenDrawn: false,
 }, action) => {
   switch (action.type) {
@@ -19,12 +20,14 @@ const Controls = (state = {
       _ranges: action.data.data.ranges
     });
   case "request cells success":
-    const graphMap = {}
-    _.each(action.data.data.graph, (g) => { graphMap[g[0]] = [g[1], g[2]] })
+    const graphMap = {};
+    const currentCellSelection = action.data.data.metadata.slice(0);
+    _.each(action.data.data.graph, (g) => { graphMap[g[0]] = [g[1], g[2]] });
+    _.each(currentCellSelection, (cell) => { cell["__selected__"] = true } );
 
     return Object.assign({}, state, {
       allCellsOnClient: action.data.data,
-      currentCellSelection: action.data.data.metadata,
+      currentCellSelection,
       graphMap,
       graphBrushSelection: null, /* if we are getting new cells from the server, the layout (probably? definitely?) just changed, so this is now irrelevant, and we WILL need to call a function to reset state of this kind when cells success happens */
     });
@@ -36,13 +39,15 @@ const Controls = (state = {
       axesHaveBeenDrawn: true
     });
   case "continuous selection using parallel coords brushing": {
+    console.log("controls reducer", action)
     return Object.assign({}, state, {
-      currentCellSelection: action.data,
+      continuousSelection: action.data,
     });
   }
   case "graph brush selection change":
     return Object.assign({}, state, {
-      graphBrushSelection: action.brushCoords
+      graphBrushSelection: action.brushCoords, /* this has already been applied in middleware but store it for next time */ 
+      currentCellSelection: action.newSelection /* this comes from middleware */
     })
   case "graph brush deselect":
     return Object.assign({}, state, {
