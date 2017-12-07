@@ -34,7 +34,8 @@ export const tiniestFontSize = 12;
 export const bolder = 700;
 
 export const API = {
-  prefix: "http://api.clustering.czi.technology/api/",
+  // prefix: "http://api.clustering.czi.technology/api/",
+  prefix: "http://api-staging.clustering.czi.technology/api/",
   version: "v0.1/",
 }
 
