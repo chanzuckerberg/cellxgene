@@ -19,11 +19,18 @@ const drawLinesCanvas = (
   colorScale,
 ) => {
   return (d) => {
+
+
     if (colorAccessor && colorScale) {
       ctx.strokeStyle = d3.interpolateViridis(colorScale(d[colorAccessor]));
     } else {
       ctx.strokeStyle = "rgba(0,0,0,1)";
     }
+
+    if (d["__selected__"]) {
+      ctx.strokeStyle = "rgb(255,0,0)";
+    }
+
     ctx.beginPath();
     var coords = project(d, dimensions, xscale);
     coords.forEach((p,i) => {
