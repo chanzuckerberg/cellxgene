@@ -86,7 +86,7 @@ class Graph extends React.Component {
         nextProps.colorAccessor,
         nextProps.ranges, /* assumption that this exists if vertices does both are on cells */
         nextProps.metadata,
-        nextProps.currentCellSelection, /* continuousSelected should probably inform a global 'is active' array rather than be consumed so specifically here */
+        nextProps.currentCellSelection,
         nextProps.graphBrushSelection,
         nextProps.colorScale,
         nextProps.graphMap,
