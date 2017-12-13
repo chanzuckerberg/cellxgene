@@ -42,11 +42,12 @@ const Controls = (state = {
     console.log("controls reducer", action)
     return Object.assign({}, state, {
       continuousSelection: action.data,
+      currentCellSelection: action.newSelection /* this comes from middleware */
     });
   }
   case "graph brush selection change":
     return Object.assign({}, state, {
-      graphBrushSelection: action.brushCoords, /* this has already been applied in middleware but store it for next time */ 
+      graphBrushSelection: action.brushCoords, /* this has already been applied in middleware but store it for next time */
       currentCellSelection: action.newSelection /* this comes from middleware */
     })
   case "graph brush deselect":

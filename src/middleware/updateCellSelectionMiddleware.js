@@ -6,6 +6,18 @@ import * as globals from "../globals";
   storeInstance => functionToCallWithAnActionThatWillSendItToTheNextMiddleware => actionThatDispatchWasCalledWith => valueToUseAsTheReturnValueOfTheDispatchCall
 */
 
+/*
+  What this file does:
+
+  1. fire a filter action anywhere in the app
+  2. ** this middleware checks to see the state of all the currently selected filters, including the new one
+  3. ** create updated selection from a copy of all the cells presently on the client (this may be a subset of 'all')
+  4. ** append that new selection to the action so that it magically appears in the reducer just because the action was fired
+
+  This is nice because we keep a lot of filtering business logic centralized (what it means in practice to be selected)
+*/
+
+
 const updateCellSelectionMiddleware = (store) => {
   return (next) => {
     return (action) => {
@@ -27,9 +39,12 @@ const updateCellSelectionMiddleware = (store) => {
       }
 
 
-      // metadata has cellname, and that's all we ever need (is a key to graphMap)
+      /*
+        - make a FRESH copy of all of the cells
+        - metadata has cellname, and that's all we ever need (is a key to graphMap)
+      */
       let newSelection = s.controls.allCellsOnClient.metadata.slice(0);
-
+      _.each(newSelection, (cell) => { cell["__selected__"] = true } );
       /*
          in plain language...
 
@@ -66,27 +81,33 @@ const updateCellSelectionMiddleware = (store) => {
 
           if (!pointIsInsideBrushBounds) {
             newSelection[i]["__selected__"] = false;
-          } else {
-            newSelection[i]["__selected__"] = true;
           }
+
         })
       }
-      // if (
-      //   action.type === "continuous selection using parallel coords brushing"
-      // ) {
-      //   newSelection = newSelection.filter((d) => {
-      //     /* this is iterating over the enter dataset */
-      //     if (action.data.every((active) => {
-      //         var dim = active.dimension;
-      //         // test if point is within extents for each active brush
-      //         return dim.type.within(d[dim.key], active.extent, dim);
-      //       })) {
-      //       return true;
-      //     }
-      //   });
-      // }
+      if (
+        action.type === "continuous selection using parallel coords brushing" && s.controls.continuousSelection ||
+        s.controls.continuousSelection
+      ) {
 
-      let modifiedAction = Object.assign({}, action, {newSelection})
+        _.each(newSelection, (cell, i) => {
+
+            const cellExtentsAreWithinContinuousSelectionBounds = s.controls.continuousSelection.every((active) => {
+              // test if point is within extents for each active brush
+              return active.dimension.type.within(
+                cell[active.dimension.key],
+                active.extent,
+                active.dimension
+              );
+            })
+
+            if (!cellExtentsAreWithinContinuousSelectionBounds) {
+              newSelection[i]["__selected__"] = false;
+            }
+        })
+      }
+
+      let modifiedAction = Object.assign({}, action, {newSelection}) /* append the result of all the filters to the action the user just triggered */
 
       return next(modifiedAction);
     }
