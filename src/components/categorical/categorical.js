@@ -16,7 +16,7 @@ const Category = ({metadataField, values}) => (
     }}>
     <p style={{
         flexShrink: 0,
-        width: 100,
+        width: 200,
         textAlign: "right",
         fontFamily: globals.accentFont,
         fontStyle: "italic",
