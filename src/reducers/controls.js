@@ -52,7 +52,8 @@ const Controls = (state = {
     })
   case "graph brush deselect":
     return Object.assign({}, state, {
-      graphBrushSelection: null
+      graphBrushSelection: null,
+      currentCellSelection: action.newSelection
     })
   case "color changed":
     return Object.assign({}, state, {

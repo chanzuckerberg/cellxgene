@@ -98,32 +98,18 @@ export const drawGraph = (
       2 * Math.PI         /* eAngle */
     );
 
-    let pointIsInsideBrushBounds;
-
-    if (graphBrushSelection) {
-
-      pointIsInsideBrushBounds = (
-        globals.graphXScale(p[1]) >= graphBrushSelection.northwestX &&
-        globals.graphXScale(p[1]) <= graphBrushSelection.southeastX &&
-        globals.graphYScale(p[2]) >= graphBrushSelection.northwestY &&
-        globals.graphYScale(p[2]) <= graphBrushSelection.southeastY
-      );
-
-    }
-
-
-    context.globalAlpha = !graphBrushSelection || pointIsInsideBrushBounds ? 1 : .2;
-
     if (colorAccessor && colorScale) {
       context.fillStyle = d3.interpolateViridis(colorScale(
         _currentCellSelectionMap[p[0]][colorAccessor]
       ));
+    } else {
+      context.fillStyle = "rgb(0,0,0)";
     }
 
     if (_currentCellSelectionMap[p[0]]["__selected__"]) {
-      context.fillStyle = "rgb(255,0,0)";
+      context.globalAlpha = 1;
     } else {
-      context.fillStyle = "rgb(0,0,0)";
+      context.globalAlpha = .2;
     }
 
     // if (i < 20) {
@@ -140,9 +126,7 @@ export const drawGraph = (
     // ));
 
     context.fill();
-
   });
-
 }
 
 const setupGraphBrush = (

@@ -20,20 +20,21 @@ const drawLinesCanvas = (
 ) => {
   return (d) => {
 
+    ctx.globalAlpha = .1;
 
-    if (colorAccessor && colorScale) {
+    if (colorAccessor && colorScale && d["__selected__"]) {
       ctx.strokeStyle = d3.interpolateViridis(colorScale(d[colorAccessor]));
     } else {
-      ctx.strokeStyle = "rgba(0,0,0,1)";
+      ctx.strokeStyle = "rgba(0,0,0,.1)";
     }
 
-    if (d["__selected__"]) {
-      ctx.strokeStyle = "rgb(255,0,0)";
-    }
+    // if () {
+    //   ctx.strokeStyle = "rgb(0,0,0)";
+    // }
 
     ctx.beginPath();
     var coords = project(d, dimensions, xscale);
-    coords.forEach((p,i) => {
+    coords.forEach((p, i) => {
       // this tricky bit avoids rendering null values as 0
       if (p === null) {
         // this bit renders horizontal lines on the previous/next
