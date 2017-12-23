@@ -25,7 +25,7 @@ const Controls = (state = {
     _.each(action.data.data.graph, (g) => { graphMap[g[0]] = [g[1], g[2]] });
     _.each(currentCellSelection, (cell) => {
       cell["__selected__"] = true;
-      cell["__color__"] = "rgba(255,0,0,1)" /* initial color for all cells in all charts */
+      cell["__color__"] = "rgba(0,0,0,1)" /* initial color for all cells in all charts */
     });
 
     return Object.assign({}, state, {
