@@ -98,13 +98,16 @@ export const drawGraph = (
       2 * Math.PI         /* eAngle */
     );
 
-    if (colorAccessor && colorScale) {
-      context.fillStyle = d3.interpolateViridis(colorScale(
-        _currentCellSelectionMap[p[0]][colorAccessor]
-      ));
-    } else {
-      context.fillStyle = "rgb(0,0,0)";
-    }
+    context.fillStyle = _currentCellSelectionMap[p[0]]["__color__"]
+
+
+    // if (colorAccessor && colorScale) {
+    //   context.fillStyle = d3.interpolateViridis(colorScale(
+    //     _currentCellSelectionMap[p[0]][colorAccessor]
+    //   ));
+    // } else {
+    //   context.fillStyle = "rgb(0,0,0)";
+    // }
 
     if (_currentCellSelectionMap[p[0]]["__selected__"]) {
       context.globalAlpha = 1;
