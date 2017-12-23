@@ -4,7 +4,6 @@ import styles from "./graph.css";
 import {setupGraphElements, drawGraph} from "./drawGraph";
 import SectionHeader from "../framework/sectionHeader";
 import { connect } from "react-redux";
-import ColorControl from "../controls/color";
 
 @connect((state) => {
 
@@ -105,8 +104,6 @@ class Graph extends React.Component {
   render() {
     return (
       <div id="graphWrapper" style={{height: 600 /* move this to globals */}}>
-        <SectionHeader text="Graph"/>
-        <ColorControl/>
         <div id="graphAttachPoint"> </div>
       </div>
     )
@@ -114,3 +111,5 @@ class Graph extends React.Component {
 };
 
 export default Graph;
+
+// <SectionHeader text="Graph"/>

@@ -8,6 +8,7 @@ import SectionHeader from "../framework/sectionHeader";
 import setupParallelCoordinates from "./setupParallelCoordinates";
 import drawAxes from "./drawAxes";
 import drawLinesCanvas from "./drawLinesCanvas";
+import ColorControl from "../controls/color";
 
 import {
   margin,
@@ -131,8 +132,7 @@ class Continuous extends React.Component {
   render() {
 
     return (
-      <div id="parcoords_wrapper" style={{marginTop: 50}}>
-        <SectionHeader text="Continuous Metadata"/>
+      <div id="parcoords_wrapper">
         <div
           className={styles.parcoords}
           id="parcoords"
@@ -140,9 +140,13 @@ class Continuous extends React.Component {
             width:  width + margin.left + margin.right + "px",
             height: height + margin.top + margin.bottom + "px"
           }}></div>
+          <ColorControl/>
       </div>
     )
   }
 };
 
 export default Continuous;
+
+
+// <SectionHeader text="Continuous Metadata"/>
