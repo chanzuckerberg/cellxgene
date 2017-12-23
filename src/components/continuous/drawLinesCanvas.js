@@ -22,13 +22,10 @@ const drawLinesCanvas = (
 
     ctx.globalAlpha = .1;
 
-    if (colorAccessor && colorScale && d["__selected__"]) {
-      ctx.strokeStyle = d3.interpolateViridis(colorScale(d[colorAccessor]));
-    } else if (d["__selected__"]) {
-      ctx.strokeStyle = "rgba(0,0,0,1)";
+    if (d["__selected__"]) {
+      ctx.strokeStyle = d["__color__"];
     } else {
       return
-      // ctx.strokeStyle = "rgba(0,0,0,.1)";
     }
 
     ctx.beginPath();
