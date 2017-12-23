@@ -68,7 +68,10 @@ const updateCellSelectionMiddleware = (store) => {
 
         _.each(newSelection, (cell, i) => {
 
-          if (!s.controls.graphMap[cell["CellName"]]) { return } /* this means the cells for which we do not have a graph location will be ALWAYS SELECTED */
+          if (!s.controls.graphMap[cell["CellName"]]) {
+            newSelection[i]["__selected__"] = false;
+            return
+          }
 
           const coords = s.controls.graphMap[cell["CellName"]]; // [0.08005009151334168, 0.6907652173913044]
 
