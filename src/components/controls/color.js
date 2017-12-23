@@ -41,7 +41,7 @@ class ColorOptions extends React.Component {
   handleClick (name) {
     return () => {
       this.props.dispatch({
-        type: "color changed",
+        type: "color by continuous metadata",
         colorAccessor: name,
         rangeMaxForColorAccessor: this.props.initializeRanges[name].range.max
       });

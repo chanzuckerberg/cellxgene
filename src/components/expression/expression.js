@@ -18,8 +18,13 @@ class Expression extends React.Component {
 
     };
   }
-  handleClick() {
-
+  handleClick(gene) {
+    return () => {
+      this.props.dispatch({
+        type: "color by expression",
+        gene: gene,
+      });
+    }
   }
   render () {
     if (!this.props.expression) return null
@@ -31,7 +36,7 @@ class Expression extends React.Component {
             return (
               <button
                 key={gene}
-                onClick={this.handleClick.bind(this)}
+                onClick={this.handleClick(gene).bind(this)}
                 style={{marginRight: 10}}>
                 {gene}
               </button>

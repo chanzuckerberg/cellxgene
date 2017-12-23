@@ -23,7 +23,10 @@ const Controls = (state = {
     const graphMap = {};
     const currentCellSelection = action.data.data.metadata.slice(0);
     _.each(action.data.data.graph, (g) => { graphMap[g[0]] = [g[1], g[2]] });
-    _.each(currentCellSelection, (cell) => { cell["__selected__"] = true } );
+    _.each(currentCellSelection, (cell) => {
+      cell["__selected__"] = true;
+      cell["__color__"] = "rgba(255,0,0,1)" /* initial color for all cells in all charts */
+    });
 
     return Object.assign({}, state, {
       allCellsOnClient: action.data.data,
@@ -39,7 +42,6 @@ const Controls = (state = {
       axesHaveBeenDrawn: true
     });
   case "continuous selection using parallel coords brushing": {
-    console.log("controls reducer", action)
     return Object.assign({}, state, {
       continuousSelection: action.data,
       currentCellSelection: action.newSelection /* this comes from middleware */
@@ -55,13 +57,16 @@ const Controls = (state = {
       graphBrushSelection: null,
       currentCellSelection: action.newSelection
     })
-  case "color changed":
+  case "color by continuous metadata":
     return Object.assign({}, state, {
       colorAccessor: action.colorAccessor,
-      colorScale: d3.scaleLinear()
-        .domain([0, action.rangeMaxForColorAccessor])
-        .range([1,0])
+      currentCellSelection: action.currentSelectionWithUpdatedColors /* this comes from middleware */
     });
+  case "color by expression":
+    return Object.assign({}, state, {
+      colorAccessor: action.gene,
+      currentCellSelection: action.currentSelectionWithUpdatedColors /* this comes from middleware */
+    })
   default:
     return state;
   }
