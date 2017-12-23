@@ -67,6 +67,11 @@ const Controls = (state = {
       colorAccessor: action.gene,
       currentCellSelection: action.currentSelectionWithUpdatedColors /* this comes from middleware */
     })
+  case "color by categorical metadata":
+    return Object.assign({}, state, {
+      colorAccessor: action.colorAccessor, /* pass the scale through additionally, and it's a legend! */
+      currentCellSelection: action.currentSelectionWithUpdatedColors /* this comes from middleware */
+    })
   default:
     return state;
   }

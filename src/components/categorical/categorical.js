@@ -8,38 +8,63 @@ import SectionHeader from "../framework/sectionHeader"
 import Value from "./value";
 import { alphabeticallySortedValues } from "./util";
 
-const Category = ({metadataField, values}) => (
-  <div style={{
-      display: "flex",
-      alignItems: "baseline",
-      maxWidth: globals.maxControlsWidth,
-    }}>
-    <p style={{
-        flexShrink: 0,
-        width: 200,
-        textAlign: "right",
-        fontFamily: globals.accentFont,
-        fontStyle: "italic",
-        marginRight: 20,
-      }}>
-      {metadataField}:
-    </p>
-    <div>
-      {
-        _.map(alphabeticallySortedValues(values), (v, i) => {
-          return (
-            <Value
-              key={v}
-              metadataField={metadataField}
-              count={values[v]}
-              value={v}
-              i={i} />
-          )
-        })
-      }
-    </div>
-  </div>
-)
+@connect()
+class Category extends React.Component {
+  handleColorChange() {
+    this.props.dispatch({
+      type: "color by categorical metadata",
+      colorAccessor: this.props.metadataField
+    })
+  }
+  render() {
+    return (
+      <div style={{
+          // display: "flex",
+          // alignItems: "baseline",
+          maxWidth: globals.maxControlsWidth,
+        }}>
+        <div style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "baseline"
+        }}>
+          <p style={{
+              // flexShrink: 0,
+              width: 200,
+              fontWeight: 500,
+              // textAlign: "right",
+              // fontFamily: globals.accentFont,
+              // fontStyle: "italic",
+              marginRight: 20,
+            }}>
+            {this.props.metadataField}:
+          </p>
+          <button
+          onClick={this.handleColorChange.bind(this)}
+          style={{
+            font: globals.accentFont,
+            fontStyle: "italic",
+            fontSize: 10
+          }}> as color scale </button>
+        </div>
+        <div>
+          {
+            _.map(alphabeticallySortedValues(this.props.values), (v, i) => {
+              return (
+                <Value
+                  key={v}
+                  metadataField={this.props.metadataField}
+                  count={this.props.values[v]}
+                  value={v}
+                  i={i} />
+              )
+            })
+          }
+        </div>
+      </div>
+    )
+  }
+}
 
 @connect((state) => {
 
@@ -59,14 +84,22 @@ class Categories extends React.Component {
 
   render () {
     if (!this.props.ranges) return null
+
     return (
-      <div style={{marginTop: 50}}>
-        <SectionHeader text="Categorical Metadata"/>
+      <div style={{
+        position: "fixed",
+        left: 40,
+        height: 200,
+
+      }}>
+
         {
           _.map(this.props.ranges, (value, key) => {
+            const isColorField = key.includes("color") || key.includes("Color");
             if (
               value.options &&
-              key !== "CellName"
+              key !== "CellName" &&
+              !isColorField
             ) {
               return (
                 <Category
@@ -85,7 +118,7 @@ class Categories extends React.Component {
 export default Categories;
 
 /*
-
+<SectionHeader text="Categorical Metadata"/>
   [on off] toggle hide deselected filters (shows a menu vs shows what you ordered in compact/narrative form. fold out animation.)
 
   <p> Sort by: Alphabetical / Count || Show counts: true / false || Collapse: all / none</p>

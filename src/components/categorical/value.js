@@ -9,20 +9,11 @@ import actions from "../../actions";
   }
 })
 class CategoryValue extends React.Component {
-  toggleOn() {
-    this.props.dispatch(
-      actions.attemptCategoricalMetadataSelection(
-        this.props.metadataField,
-        this.props.value
-      ))
+
+  handleChange() {
+    console.log("dispatch", this.props.metadataField, this.props.value)
   }
-  toggleOff() {
-    this.props.dispatch(
-      actions.attemptCategoricalMetadataDeselection(
-        this.props.metadataField,
-        this.props.value
-      ))
-  }
+
   render () {
 
     /* has this value for this category already been selected? */
@@ -40,9 +31,7 @@ class CategoryValue extends React.Component {
     return (
       <div
         key={this.props.i}
-        onClick={selected ? this.toggleOff.bind(this) : this.toggleOn.bind(this)}
         style={{
-          cursor: "pointer",
           display: "flex",
           fontWeight: selected ? 700 : 400,
         }}>
@@ -52,7 +41,7 @@ class CategoryValue extends React.Component {
             margin: 0,
             lineHeight: "1em"
           }}>
-          {this.props.value}
+          <input onChange={this.handleChange.bind(this)} checked={true} type="checkbox"/> {this.props.value}
         </p>
         <p style={{
             margin: 0,
@@ -66,3 +55,19 @@ class CategoryValue extends React.Component {
 }
 
 export default CategoryValue;
+
+// onClick={selected ? this.toggleOff.bind(this) : this.toggleOn.bind(this)}
+// toggleOn() {
+//   this.props.dispatch(
+//     actions.attemptCategoricalMetadataSelection(
+//       this.props.metadataField,
+//       this.props.value
+//     ))
+// }
+// toggleOff() {
+//   this.props.dispatch(
+//     actions.attemptCategoricalMetadataDeselection(
+//       this.props.metadataField,
+//       this.props.value
+//     ))
+// }

@@ -27,7 +27,8 @@ const updateCellSelectionMiddleware = (store) => {
       /* this is a hardcoded map of the things we need to keep an eye on and update global cell selection in response to */
       const filterJustChanged =
         action.type === "color by expression" ||
-        action.type === "color by continuous metadata"
+        action.type === "color by continuous metadata" ||
+        action.type === "color by categorical metadata"
         ;
 
       if (
@@ -39,6 +40,7 @@ const updateCellSelectionMiddleware = (store) => {
 
       let currentSelectionWithUpdatedColors = s.controls.currentCellSelection.slice(0);
       let colorScale;
+
       /*
          in plain language...
 
@@ -47,6 +49,18 @@ const updateCellSelectionMiddleware = (store) => {
 
          This is available to all the draw functions as cell["__color__"]
       */
+
+      if (action.type === "color by categorical metadata") {
+
+        colorScale = d3.scaleOrdinal(d3.schemeCategory20);
+
+        _.each(currentSelectionWithUpdatedColors, (cell, i) => {
+          currentSelectionWithUpdatedColors[i]["__color__"] = colorScale(
+            cell[action.colorAccessor]
+          )
+        })
+
+      }
 
       if (action.type === "color by continuous metadata") {
 
@@ -109,7 +123,17 @@ const updateCellSelectionMiddleware = (store) => {
 
       }
 
-      let modifiedAction = Object.assign({}, action, {currentSelectionWithUpdatedColors}) /* append the result of all the filters to the action the user just triggered */
+      /*
+        append the result of all the filters to the action the user just triggered
+      */
+      let modifiedAction = Object.assign(
+        {},
+        action,
+        {
+          currentSelectionWithUpdatedColors,
+          colorScale
+        }
+      )
 
       return next(modifiedAction);
     }
