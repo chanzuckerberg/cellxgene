@@ -43,7 +43,7 @@ const updateCellSelectionMiddleware = (store) => {
         - make a FRESH copy of all of the cells
         - metadata has cellname, and that's all we ever need (is a key to graphMap)
       */
-      let newSelection = s.controls.allCellsOnClient.metadata.slice(0);
+      let newSelection = s.controls.currentCellSelection.slice(0);
       _.each(newSelection, (cell) => { cell["__selected__"] = true } );
       /*
          in plain language...
