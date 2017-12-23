@@ -1,6 +1,7 @@
 import { combineReducers, createStore, applyMiddleware } from 'redux';
 import updateURLMiddleware from "../middleware/updateURLMiddleware";
 import updateCellSelectionMiddleware from "../middleware/updateCellSelectionMiddleware";
+import updateCellColors from "../middleware/updateCellColors";
 
 import thunk from "redux-thunk";
 
@@ -24,7 +25,8 @@ let store = createStore(
   applyMiddleware(
     thunk,
     updateURLMiddleware,
-    updateCellSelectionMiddleware
+    updateCellSelectionMiddleware,
+    updateCellColors
   )
 );
 
