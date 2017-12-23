@@ -69,7 +69,7 @@ const updateCellSelectionMiddleware = (store) => {
         _.each(newSelection, (cell, i) => {
 
           if (!s.controls.graphMap[cell["CellName"]]) {
-            newSelection[i]["__selected__"] = false;
+            newSelection[i]["__selected__"] = false; /* make a toggle in future */
             return
           }
 
