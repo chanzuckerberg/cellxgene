@@ -30,7 +30,6 @@ export const darkerGrey = "rgb(51,51,51)";
 
 export const tiniestFontSize = 12;
 
-
 export const bolder = 700;
 
 export const API = {

@@ -103,7 +103,7 @@ class Graph extends React.Component {
 
   render() {
     return (
-      <div id="graphWrapper" style={{height: 600 /* move this to globals */}}>
+      <div id="graphWrapper" style={{height: 540 /* move this to globals */}}>
         <div id="graphAttachPoint"> </div>
       </div>
     )

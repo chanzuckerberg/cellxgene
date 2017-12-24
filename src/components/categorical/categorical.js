@@ -42,8 +42,6 @@ class Category extends React.Component {
           <button
           onClick={this.handleColorChange.bind(this)}
           style={{
-            font: globals.accentFont,
-            fontStyle: "italic",
             fontSize: 10
           }}> as color scale </button>
         </div>
