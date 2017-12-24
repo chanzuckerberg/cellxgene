@@ -5,28 +5,31 @@ import actions from "../../actions";
 
 @connect((state) => {
   return {
-    selectedMetadata: state.selectedMetadata
+    categoricalAsBooleansMap: state.controls.categoricalAsBooleansMap
   }
 })
 class CategoryValue extends React.Component {
 
-  handleChange() {
-    console.log("dispatch", this.props.metadataField, this.props.value)
+  toggleOff() {
+    this.props.dispatch({
+      type: "categorical metadata filter deselect",
+      metadataField: this.props.metadataField,
+      value: this.props.value
+    });
+  }
+
+  toggleOn() {
+    this.props.dispatch({
+      type: "categorical metadata filter select",
+      metadataField: this.props.metadataField,
+      value: this.props.value
+    });
   }
 
   render () {
+    if (!this.props.categoricalAsBooleansMap) return null
 
-    /* has this value for this category already been selected? */
-    let selected = false;
-
-    if (!this.props.selectedMetadata) { /* there is no selected metadata */
-      selected = false;
-    } else if (
-      this.props.selectedMetadata[this.props.metadataField] && /* the key {Location: []} is present  */
-      this.props.selectedMetadata[this.props.metadataField].indexOf(this.props.value) > -1 /* "Tumor" exists in {Location: ["Tumor"]}  */
-    ) {
-      selected = true;
-    }
+    const selected = this.props.categoricalAsBooleansMap[this.props.metadataField][this.props.value]
 
     return (
       <div
@@ -41,7 +44,11 @@ class CategoryValue extends React.Component {
             margin: 0,
             lineHeight: "1em"
           }}>
-          <input onChange={this.handleChange.bind(this)} checked={true} type="checkbox"/> {this.props.value}
+          <input
+            onChange={selected ? this.toggleOff.bind(this) : this.toggleOn.bind(this)}
+            checked={selected}
+            type="checkbox"/>
+            {this.props.value}
         </p>
         <p style={{
             margin: 0,

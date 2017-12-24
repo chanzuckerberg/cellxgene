@@ -27,7 +27,9 @@ const updateCellSelectionMiddleware = (store) => {
       const filterJustChanged =
         action.type === "continuous selection using parallel coords brushing" ||
         action.type === "graph brush selection change" ||
-        action.type === "graph brush deselect"
+        action.type === "graph brush deselect" ||
+        action.type === "categorical metadata filter deselect" ||
+        action.type === "categorical metadata filter select"
         ;
 
       if (
@@ -110,7 +112,61 @@ const updateCellSelectionMiddleware = (store) => {
         })
       }
 
-      let modifiedAction = Object.assign({}, action, {newSelection}) /* append the result of all the filters to the action the user just triggered */
+      /*
+        1. figure out if the users have unchecked boxes
+        2. put them in an array
+        3. filter on them
+      */
+
+      let newCategoricalAsBooleansMap = s.controls.categoricalAsBooleansMap;
+
+      /*
+        ...spread for merge: https://github.com/reactjs/redux/issues/432
+
+        we do the update here instead of the reducer because we need it for the reactive computation
+      */
+      if (action.type === "categorical metadata filter select") {
+        newCategoricalAsBooleansMap = {
+          ...s.controls.categoricalAsBooleansMap,
+          [action.metadataField]: {
+            ...s.controls.categoricalAsBooleansMap[action.metadataField],
+            [action.value]: true
+          }
+        }
+      } else if (action.type === "categorical metadata filter deselect") {
+        newCategoricalAsBooleansMap = {
+          ...s.controls.categoricalAsBooleansMap,
+          [action.metadataField]: {
+            ...s.controls.categoricalAsBooleansMap[action.metadataField],
+            [action.value]: false
+          }
+        }
+      }
+
+      const inactiveCategories = [];
+      _.each(newCategoricalAsBooleansMap, (options, category) => {
+        _.each(options, (isActive, option) => {
+          if (!isActive) {
+            console.log("category: ", category, "option:", option)
+            inactiveCategories.push({category, option})
+          }
+        })
+      })
+
+      if (inactiveCategories.length > 0) {
+        _.each(inactiveCategories, (d) => {
+          _.each(newSelection, (cell, i) => {
+            if (cell[d.category] === d.option) {
+              newSelection[i]["__selected__"] = false;
+            }
+          })
+        })
+      }
+
+      let modifiedAction = Object.assign({}, action, {
+        newSelection,
+        newCategoricalAsBooleansMap,
+      }) /* append the result of all the filters to the action the user just triggered */
 
       return next(modifiedAction);
     }
