@@ -147,7 +147,6 @@ const updateCellSelectionMiddleware = (store) => {
       _.each(newCategoricalAsBooleansMap, (options, category) => {
         _.each(options, (isActive, option) => {
           if (!isActive) {
-            console.log("category: ", category, "option:", option)
             inactiveCategories.push({category, option})
           }
         })
@@ -156,7 +155,7 @@ const updateCellSelectionMiddleware = (store) => {
       if (inactiveCategories.length > 0) {
         _.each(inactiveCategories, (d) => {
           _.each(newSelection, (cell, i) => {
-            if (cell[d.category] === d.option) {
+            if (""+cell[d.category] === ""+d.option) { /* nums and strings to strings */
               newSelection[i]["__selected__"] = false;
             }
           })
