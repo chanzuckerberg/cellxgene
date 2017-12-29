@@ -9,12 +9,14 @@ import initialize from "./initialize";
 import cells from "./cells";
 import expression from "./expression";
 import controls from "./controls";
+import differential from "./differential";
 
 const Reducer = combineReducers({
   initialize,
   cells,
   expression,
   controls,
+  differential,
 })
 
 let store = createStore(
