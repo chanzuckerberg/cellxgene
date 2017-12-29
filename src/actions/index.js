@@ -117,7 +117,28 @@ const ___hardcoded___requestGeneExpressionCountsPOST = () => {
   }
 }
 
-
+const requestDifferentialExpression = (celllist1, celllist2, num_genes = 5) => {
+  return (dispatch, getState) => {
+    dispatch({type: "request differential expression started"})
+    fetch(`${globals.API.prefix}${globals.API.version}diffexpression`, {
+        method: "POST",
+        body: JSON.stringify({
+          celllist1,
+          celllist2,
+          num_genes,
+        }),
+        headers: new Headers({
+          "accept": "application/json",
+          "Content-Type": "application/json"
+        })
+      })
+      .then(res => res.json())
+      .then(
+        data => dispatch({type: "request differential expression success", data}),
+        error => dispatch({type: "request differential expression error", error})
+      )
+  }
+}
 
 export default {
   initialize,
@@ -125,5 +146,6 @@ export default {
   requestGeneExpressionCounts,
   ___hardcoded___requestGeneExpressionCountsPOST,
   attemptCategoricalMetadataSelection,
-  attemptCategoricalMetadataDeselection
+  attemptCategoricalMetadataDeselection,
+  requestDifferentialExpression
 }
