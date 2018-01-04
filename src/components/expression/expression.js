@@ -8,6 +8,55 @@ import actions from "../../actions";
 
 @connect((state) => {
   return {
+    differential: state.differential
+  }
+})
+class DiffExp extends React.Component {
+  render() {
+    if (!this.props.differential.diffExp) return null
+
+
+    const topGenesForCellSet1 = this.props.differential.diffExp.data.celllist1;
+    const topGenesForCellSet2 = this.props.differential.diffExp.data.celllist2;
+    const rectSide = 10;
+    const rightMargin = 0;
+
+    return (
+      <div>
+      <p> Top genes expressed by cellset 1 </p>
+      <p> Gene {"............"} Exp in set 1 {"............"} Exp in set 2 </p>
+      {
+        topGenesForCellSet1.topgenes.map((gene, i) => {
+          return (
+            <p key={gene}>
+            {gene} {"...................... "}
+            {Math.floor(topGenesForCellSet1.mean_expression_cellset1[i])} {" ................... "}
+            {Math.floor(topGenesForCellSet1.mean_expression_cellset2[i])}
+            </p>
+          )
+        })
+      }
+      <p> Top genes expressed by cellset 2 </p>
+      <p> Gene {"............"} Exp in set 1 {"............"} Exp in set 2 </p>
+      {
+        topGenesForCellSet2.topgenes.map((gene, i) => {
+          return (
+            <p key={gene}>
+              {gene} {"...................... "}
+              {Math.floor(topGenesForCellSet2.mean_expression_cellset1[i])} {" ................... "}
+              {Math.floor(topGenesForCellSet2.mean_expression_cellset2[i])}
+            </p>
+          )
+        })
+      }
+      </div>
+    )
+  }
+}
+
+
+@connect((state) => {
+  return {
     expression: state.expression.data,
     currentCellSelection: state.controls.currentCellSelection,
     differential: state.differential
@@ -65,7 +114,12 @@ class Expression extends React.Component {
     )
   }
   render () {
-    if (!this.props.expression) return null
+    if (
+      !this.props.expression ||
+      !this.props.differential
+    ) {
+      return null
+    }
 
     console.log('expression render sees', this.props.differential)
     return (
@@ -92,6 +146,7 @@ class Expression extends React.Component {
           Gene count:
           <input placeholder={"Default is 5"}/>
         </div>
+        <DiffExp/>
         <SectionHeader text="Color by expression"/>
         {
           _.map(this.props.expression.genes, (gene) => {
@@ -111,3 +166,23 @@ class Expression extends React.Component {
 };
 
 export default Expression;
+
+
+// <svg>
+//   <g transform="translate(200, 40)">
+//     {
+//       _.map(topGenesForCellSet1.topgenes, (gene, i) => {
+//         return (
+//           <g key={gene}>
+//             <rect
+//               width={rectSide}
+//               height={rectSide}
+//               x={i * (rectSide + rightMargin)}
+//               fill={"rgb(255,0,0)"}
+//               />
+//           <g>
+//         )
+//       })
+//     }
+//   </g>
+// </svg>
