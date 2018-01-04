@@ -11,6 +11,8 @@ const Controls = (state = {
   graphBrushSelection: null,
   continuousSelection: null,
   axesHaveBeenDrawn: false,
+  __storedStateForCelllist1__: null, /* will need procedural control of brush ie., brush.extent https://bl.ocks.org/micahstubbs/3cda05ca68cba260cb81 */
+  __storedStateForCelllist1__: null,
 }, action) => {
   switch (action.type) {
   /**********************************
@@ -47,8 +49,6 @@ const Controls = (state = {
         categoricalAsBooleansMap[key] = optionsAsBooleans;
       }
     })
-    // console.log("Copy of ranges obj w/ bools instead of counts:", categoricalAsBooleansMap)
-
     return Object.assign({}, state, {
       allCellsOnClient: action.data.data,
       currentCellSelection,
@@ -112,7 +112,10 @@ const Controls = (state = {
       colorAccessor: action.colorAccessor, /* pass the scale through additionally, and it's a legend! */
       currentCellSelection: action.currentSelectionWithUpdatedColors /* this comes from middleware */
     })
-
+  case "store current cell selection as differential set 1":
+    return Object.assign({}, state, {
+      __storedStateForCelllist1__: action.data
+    });
   default:
     return state;
   }
