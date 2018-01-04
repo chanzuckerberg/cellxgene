@@ -3,7 +3,7 @@ import _ from "lodash";
 const Controls = (state = {
   _ranges: null, /* this comes from initialize, this is universe */
   allCellsOnClient: null, /* this comes from cells endpoint, this is world */
-  currentCellSelection: null, /* this comes from user actions, this is current cell selection */
+  currentCellSelection: null, /* this comes from user actions, all draw components use this, it is created by middleware */
   graphMap: null,
   categoricalAsBooleansMap: null,
   colorAccessor: null,
@@ -85,6 +85,11 @@ const Controls = (state = {
       currentCellSelection: action.newSelection /* this comes from middleware */
     })
   case "categorical metadata filter deselect":
+    return Object.assign({}, state, {
+      categoricalAsBooleansMap: action.newCategoricalAsBooleansMap, /* this comes from middleware */
+      currentCellSelection: action.newSelection /* this comes from middleware */
+    })
+  case "categorical metadata filter only this":
     return Object.assign({}, state, {
       categoricalAsBooleansMap: action.newCategoricalAsBooleansMap, /* this comes from middleware */
       currentCellSelection: action.newSelection /* this comes from middleware */

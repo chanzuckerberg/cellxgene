@@ -26,6 +26,14 @@ class CategoryValue extends React.Component {
     });
   }
 
+  toggleOnlyThis() {
+    this.props.dispatch({
+      type: "categorical metadata filter only this",
+      metadataField: this.props.metadataField,
+      value: this.props.value
+    })
+  }
+
   render () {
     if (!this.props.categoricalAsBooleansMap) return null
 
@@ -36,6 +44,8 @@ class CategoryValue extends React.Component {
         key={this.props.i}
         style={{
           display: "flex",
+          alignItems: "baseline",
+          justifyContent: "space-between",
           fontWeight: selected ? 700 : 400,
         }}>
         <p style={{
@@ -56,6 +66,17 @@ class CategoryValue extends React.Component {
           }}>
           {this.props.count}
         </p>
+        <span
+          onClick={this.toggleOnlyThis.bind(this)}
+          style={{
+            fontFamily: globals.accentFont,
+            fontSize: 10,
+            fontWeight: 100,
+            fontStyle: "italic",
+            cursor: "pointer",
+          }}>
+        {" only"}
+        </span>
       </div>
     )
   }

@@ -29,7 +29,8 @@ const updateCellSelectionMiddleware = (store) => {
         action.type === "graph brush selection change" ||
         action.type === "graph brush deselect" ||
         action.type === "categorical metadata filter deselect" ||
-        action.type === "categorical metadata filter select"
+        action.type === "categorical metadata filter select" ||
+        action.type === "categorical metadata filter only this"
         ;
 
       if (
@@ -141,6 +142,24 @@ const updateCellSelectionMiddleware = (store) => {
             [action.value]: false
           }
         }
+      } else if (action.type === "categorical metadata filter only this") {
+
+        const metadataFieldWithOnlyThisValueSelected = {};
+
+        /* set EVERYTHING to false in this intermediate object */
+        _.each(s.controls.categoricalAsBooleansMap[action.metadataField], (isActive, option) => {
+          metadataFieldWithOnlyThisValueSelected[option] = false;
+        })
+
+        /* then set the one we want to true, to avoid the conditional nesting */
+        metadataFieldWithOnlyThisValueSelected[action.value] = true;
+
+        newCategoricalAsBooleansMap = {
+          ...s.controls.categoricalAsBooleansMap,
+          [action.metadataField]: metadataFieldWithOnlyThisValueSelected
+        }
+        console.log('within', metadataFieldWithOnlyThisValueSelected)
+
       }
 
       const inactiveCategories = [];
