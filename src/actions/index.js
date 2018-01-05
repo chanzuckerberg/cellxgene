@@ -93,6 +93,31 @@ const requestGeneExpressionCounts = () => {
   }
 }
 
+const requestSingleGeneExpressionCountsForColoringPOST = (gene) => {
+  return (dispatch, getState) => {
+    dispatch({type: "get single gene expression for coloring started"})
+    fetch(`${globals.API.prefix}${globals.API.version}expression`, {
+        method: "POST",
+        body: JSON.stringify({
+          "genelist": [gene]
+        }),
+        headers: new Headers({
+          "accept": "application/json",
+          "Content-Type": "application/json"
+        })
+      })
+      .then(res => res.json())
+      .then(
+        data => dispatch({
+          type: "color by expression",
+          gene: gene,
+          data
+        }),
+        error => dispatch({type: "get single gene expression for coloring error", error})
+      )
+  }
+}
+
 const ___hardcoded___requestGeneExpressionCountsPOST = () => {
   return (dispatch, getState) => {
     dispatch({type: "get expression started"})
@@ -117,7 +142,7 @@ const ___hardcoded___requestGeneExpressionCountsPOST = () => {
   }
 }
 
-const requestDifferentialExpression = (celllist1, celllist2, num_genes = 10) => {
+const requestDifferentialExpression = (celllist1, celllist2, num_genes = 7) => {
   return (dispatch, getState) => {
     dispatch({type: "request differential expression started"})
     fetch(`${globals.API.prefix}${globals.API.version}diffexpression`, {
@@ -145,6 +170,7 @@ export default {
   requestCells,
   requestGeneExpressionCounts,
   ___hardcoded___requestGeneExpressionCountsPOST,
+  requestSingleGeneExpressionCountsForColoringPOST,
   attemptCategoricalMetadataSelection,
   attemptCategoricalMetadataDeselection,
   requestDifferentialExpression
