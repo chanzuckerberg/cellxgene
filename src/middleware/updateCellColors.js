@@ -79,10 +79,9 @@ const updateCellSelectionMiddleware = (store) => {
       }
 
       if (action.type === "color by expression") {
-        /* we assume if they clicked the control we must have loaded something, that could change though. */
 
-        /* this bit could be sped up and could be on the server, but it's drawn once on click, not at 60fps */
-        const indexOfGene = s.expression.data.genes.indexOf(action.gene);
+
+        const indexOfGene = 0 /* we only get one, this comes from server as needed now */
 
         const expressionMap = {}
         /*
@@ -93,34 +92,33 @@ const updateCellSelectionMiddleware = (store) => {
             cell789: [0, 8]
           }
         */
-        _.each(s.expression.data.cells, (cell) => {
+        _.each(action.data.data.cells, (cell) => { /* this action is coming directly from the server */
           expressionMap[cell.cellname] = cell.e
         })
 
-        const minExpressionCell = _.minBy(s.expression.data.cells, (cell) => {
+        const minExpressionCell = _.minBy(action.data.data.cells, (cell) => {
           return cell.e[indexOfGene]
         })
 
-        const maxExpressionCell = _.maxBy(s.expression.data.cells, (cell) => {
+        const maxExpressionCell = _.maxBy(action.data.data.cells, (cell) => {
           return cell.e[indexOfGene]
         })
+
+
+        console.log('middle', action, expressionMap, minExpressionCell)
+
 
         colorScale = d3.scaleLinear()
           .domain([minExpressionCell.e[indexOfGene], maxExpressionCell.e[indexOfGene]])
           .range([1,0]) /* invert viridis... probably pass this scale through to others */
 
-
-
         _.each(currentSelectionWithUpdatedColors, (cell, i) => {
-
           currentSelectionWithUpdatedColors[i]["__color__"] = d3.interpolateViridis(
             colorScale(
               expressionMap[cell.CellName][indexOfGene]
             )
           )
         })
-
-
       }
 
       /*
