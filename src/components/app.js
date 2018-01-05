@@ -62,10 +62,17 @@ class App extends React.Component {
         }
         {this.props.cells.error ? "Error loading cells" : null}
         {false ? <Joy data={this.state.expressions && this.state.expressions.data}/> : ""}
-        <Categorical/>
-        <Graph/>
-        <Continuous/>
-        <Expression/>
+        <div style={{
+          display: "flex"
+        }}>
+
+          <Categorical/>
+          <div>
+            <Graph/>
+            <Continuous/>
+            <Expression/>
+          </div>
+        </div>
       </Container>
     )
   }
