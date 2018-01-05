@@ -26,7 +26,11 @@ body {
   font-size: 10px;
   transform: rotate(-21deg) translate(-5px,-6px);
   fill: #222;
+  cursor: pointer;
 }
+
+/* -webkit-filter: grayscale(100%);
+ filter: grayscale(100%); */
 
 .axis line,
 .axis path {

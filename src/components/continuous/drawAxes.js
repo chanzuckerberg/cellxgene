@@ -14,6 +14,7 @@ const drawAxes = (
   height,
   width,
   handleBrushAction,
+  handleColorAction,
 ) => {
 
   /*****************************************
@@ -52,9 +53,10 @@ const drawAxes = (
         d3.select(this).call(renderAxis);
       })
     .append("text")
+      .on("click", (d) => { handleColorAction(d.key) })
       .attr("class", styles.title)
       .attr("text-anchor", "start")
-      .text(function(d) { return "description" in d ? d.description : d.key; });
+      .text(function(d) { return "description" in d ? d.description + "  🎨" : d.key + "  🎨"; });
 
   // Add and store a brush for each axis.
   axes.append("g")

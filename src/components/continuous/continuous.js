@@ -8,7 +8,6 @@ import SectionHeader from "../framework/sectionHeader";
 import setupParallelCoordinates from "./setupParallelCoordinates";
 import drawAxes from "./drawAxes";
 import drawLinesCanvas from "./drawLinesCanvas";
-import ColorControl from "../controls/color";
 
 import {
   margin,
@@ -80,6 +79,7 @@ class Continuous extends React.Component {
         height,
         width,
         this.handleBrushAction.bind(this),
+        this.handleColorAction.bind(this),
       );
 
       this.setState({
@@ -128,6 +128,13 @@ class Continuous extends React.Component {
       data: selection
     })
   }
+  handleColorAction (key) {
+    this.props.dispatch({
+      type: "color by continuous metadata",
+      colorAccessor: key,
+      rangeMaxForColorAccessor: this.props.initializeRanges[key].range.max
+    });
+  }
 
   render() {
 
@@ -140,7 +147,6 @@ class Continuous extends React.Component {
             width:  width + margin.left + margin.right + "px",
             height: height + margin.top + margin.bottom + "px"
           }}></div>
-          <ColorControl/>
       </div>
     )
   }

@@ -36,20 +36,37 @@ class Category extends React.Component {
         }}>
           <p style={{
               // flexShrink: 0,
-              width: 200,
               fontWeight: 500,
               // textAlign: "right",
               // fontFamily: globals.accentFont,
               // fontStyle: "italic",
-              marginRight: 20,
+              marginRight: 10,
             }}>
-            {this.props.metadataField}:
+            {this.props.metadataField}
+            <span
+              onClick={this.handleColorChange.bind(this)}
+              style={{
+                fontSize: 24,
+                marginLeft: 10,
+                position: "relative",
+                top: 4,
+                cursor: "pointer",
+              }}>
+              🎨
+            </span>
           </p>
-          <button
-          onClick={this.handleColorChange.bind(this)}
-          style={{
-            fontSize: 10
-          }}> as color scale </button>
+          <span
+            onClick={this.toggleAll.bind(this)}
+            style={{
+              fontFamily: globals.accentFont,
+              fontSize: 10,
+              fontWeight: 100,
+              fontStyle: "italic",
+              cursor: "pointer",
+            }}>
+          {"all"}
+          </span>
+
         </div>
         <div>
           {
@@ -91,12 +108,10 @@ class Categories extends React.Component {
 
     return (
       <div style={{
-        position: "fixed",
-        left: 40,
-        height: 200,
-
+        width: 320,
+        marginRight: 40,
+        flexShrink: 0
       }}>
-
         {
           _.map(this.props.ranges, (value, key) => {
             const isColorField = key.includes("color") || key.includes("Color");

@@ -75,7 +75,7 @@ class CategoryValue extends React.Component {
             fontStyle: "italic",
             cursor: "pointer",
           }}>
-        {" only"}
+        {"only"}
         </span>
       </div>
     )
