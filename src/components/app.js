@@ -70,8 +70,8 @@ class App extends React.Component {
           <div>
             <Graph/>
             <Continuous/>
-            <Expression/>
           </div>
+          <Expression/>
         </div>
       </Container>
     )
