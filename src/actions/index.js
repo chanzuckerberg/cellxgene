@@ -117,7 +117,7 @@ const ___hardcoded___requestGeneExpressionCountsPOST = () => {
   }
 }
 
-const requestDifferentialExpression = (celllist1, celllist2, num_genes = 5) => {
+const requestDifferentialExpression = (celllist1, celllist2, num_genes = 10) => {
   return (dispatch, getState) => {
     dispatch({type: "request differential expression started"})
     fetch(`${globals.API.prefix}${globals.API.version}diffexpression`, {
