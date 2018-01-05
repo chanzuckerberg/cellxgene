@@ -16,6 +16,12 @@ class Category extends React.Component {
       colorAccessor: this.props.metadataField
     })
   }
+  toggleAll() {
+    this.props.dispatch({
+      type: "categorical metadata filter all of these",
+      metadataField: this.props.metadataField
+    })
+  }
   render() {
     return (
       <div style={{

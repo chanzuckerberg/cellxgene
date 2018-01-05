@@ -30,7 +30,8 @@ const updateCellSelectionMiddleware = (store) => {
         action.type === "graph brush deselect" ||
         action.type === "categorical metadata filter deselect" ||
         action.type === "categorical metadata filter select" ||
-        action.type === "categorical metadata filter only this"
+        action.type === "categorical metadata filter only this" ||
+        action.type === "categorical metadata filter all of these"
         ;
 
       if (
@@ -158,8 +159,19 @@ const updateCellSelectionMiddleware = (store) => {
           ...s.controls.categoricalAsBooleansMap,
           [action.metadataField]: metadataFieldWithOnlyThisValueSelected
         }
-        console.log('within', metadataFieldWithOnlyThisValueSelected)
 
+      } else if (action.type === "categorical metadata filter all of these") {
+        const metadataFieldWithAllOfTheseValueSelected = {};
+
+        /* set EVERYTHING to false in this intermediate object */
+        _.each(s.controls.categoricalAsBooleansMap[action.metadataField], (isActive, option) => {
+          metadataFieldWithAllOfTheseValueSelected[option] = true;
+        })
+
+        newCategoricalAsBooleansMap = {
+          ...s.controls.categoricalAsBooleansMap,
+          [action.metadataField]: metadataFieldWithAllOfTheseValueSelected
+        }
       }
 
       const inactiveCategories = [];

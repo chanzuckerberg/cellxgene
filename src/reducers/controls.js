@@ -94,6 +94,11 @@ const Controls = (state = {
       categoricalAsBooleansMap: action.newCategoricalAsBooleansMap, /* this comes from middleware */
       currentCellSelection: action.newSelection /* this comes from middleware */
     })
+  case "categorical metadata filter all of these":
+    return Object.assign({}, state, {
+      categoricalAsBooleansMap: action.newCategoricalAsBooleansMap, /* this comes from middleware */
+      currentCellSelection: action.newSelection /* this comes from middleware */
+    })
   /*******************************
             Color Scale
   *******************************/
