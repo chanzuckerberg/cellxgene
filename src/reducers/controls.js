@@ -12,7 +12,7 @@ const Controls = (state = {
   continuousSelection: null,
   axesHaveBeenDrawn: false,
   __storedStateForCelllist1__: null, /* will need procedural control of brush ie., brush.extent https://bl.ocks.org/micahstubbs/3cda05ca68cba260cb81 */
-  __storedStateForCelllist1__: null,
+  __storedStateForCelllist2__: null,
 }, action) => {
   switch (action.type) {
   /**********************************

@@ -61,7 +61,7 @@ const attemptCategoricalMetadataDeselection = (metadataField, value) => {
 const initialize = () => {
   return (dispatch, getState) => {
     dispatch({type: "initialize started"})
-    fetch(`${globals.API.prefix}${globals.API.version}cells`, {
+    fetch(`${globals.API.prefix}${globals.API.version}initialize`, {
         method: "get",
         headers: new Headers({
           'Content-Type': 'application/json'

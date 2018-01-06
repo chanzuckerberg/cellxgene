@@ -43,7 +43,7 @@ class App extends React.Component {
       first request includes query straight off the url bar for now
     */
     this.props.dispatch(actions.requestCells(window.location.search))
-    this.props.dispatch(actions.___hardcoded___requestGeneExpressionCountsPOST(window.location.search))
+    // this.props.dispatch(actions.___hardcoded___requestGeneExpressionCountsPOST(window.location.search))
   }
 
   render() {
@@ -69,6 +69,21 @@ class App extends React.Component {
           <Categorical/>
           <div>
             <Graph/>
+            <button
+              style={{
+                fontSize: 14,
+                fontWeight: 400,
+                color: "#41633C",
+                padding: "10px 20px",
+                backgroundColor: "#B9D1B5",
+                border: "none",
+                borderRadius: 3,
+                cursor: "pointer",
+              }}
+
+            >
+            Reproject
+            </button>
             <Continuous/>
           </div>
           <Expression/>

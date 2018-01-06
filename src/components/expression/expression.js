@@ -66,12 +66,12 @@ class DiffExp extends React.Component {
                 <span
                   onClick={this.handleGeneColorScaleClick(gene).bind(this)}
                   style={{
-                    fontSize: 24,
+                    fontSize: 16,
                     cursor: "pointer",
                     position: "relative",
-                    top: 5,
-                    marginRight: 10
-                  }}>🎨</span>
+                    top: 2,
+                    marginRight: 6
+                  }}>🖌️</span>
                 <span>{gene}</span>
               </div>
               <p style={{
@@ -109,12 +109,12 @@ class DiffExp extends React.Component {
                 <span
                   onClick={this.handleGeneColorScaleClick(gene).bind(this)}
                   style={{
-                    fontSize: 24,
+                    fontSize: 16,
                     cursor: "pointer",
                     position: "relative",
-                    top: 5,
-                    marginRight: 10
-                  }}>🎨</span>
+                    top: 2,
+                    marginRight: 6
+                  }}>🖌️</span>
                 <span>{gene}</span>
               </div>
               <p style={{
@@ -150,7 +150,6 @@ class DiffExp extends React.Component {
 
 @connect((state) => {
   return {
-    expression: state.expression.data,
     currentCellSelection: state.controls.currentCellSelection,
     differential: state.differential
   }
@@ -208,7 +207,6 @@ class Expression extends React.Component {
   }
   render () {
     if (
-      !this.props.expression ||
       !this.props.differential
     ) {
       return null

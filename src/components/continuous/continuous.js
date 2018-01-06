@@ -22,13 +22,11 @@ import {
   const metadata = state.cells.cells && state.cells.cells.data.metadata ? state.cells.cells.data.metadata : null;
 
   const initializeRanges = state.initialize.data && state.initialize.data.data.ranges ? state.initialize.data.data.ranges : null;
-  const initializeMetadata = state.initialize.data && state.initialize.data.data.metadata ? state.initialize.data.data.metadata : null;
 
   return {
     ranges,
     metadata,
     initializeRanges,
-    initializeMetadata,
     colorAccessor: state.controls.colorAccessor,
     colorScale: state.controls.colorScale,
     graphBrushSelection: state.controls.graphBrushSelection,
@@ -74,7 +72,6 @@ class Continuous extends React.Component {
         this.state.svg,
         this.state.ctx,
         dimensions,
-        nextProps.initializeMetadata, /* PERF this means brushes are always filtering on everything */
         xscale,
         height,
         width,

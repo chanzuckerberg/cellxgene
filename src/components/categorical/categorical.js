@@ -46,13 +46,13 @@ class Category extends React.Component {
             <span
               onClick={this.handleColorChange.bind(this)}
               style={{
-                fontSize: 24,
+                fontSize: 16,
                 marginLeft: 10,
                 position: "relative",
-                top: 4,
+                top: 2,
                 cursor: "pointer",
               }}>
-              🎨
+              🖌️
             </span>
           </p>
           <span
@@ -112,6 +112,7 @@ class Categories extends React.Component {
         marginRight: 40,
         flexShrink: 0
       }}>
+
         {
           _.map(this.props.ranges, (value, key) => {
             const isColorField = key.includes("color") || key.includes("Color");
