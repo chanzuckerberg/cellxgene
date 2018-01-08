@@ -70,6 +70,7 @@ class App extends React.Component {
           <div>
             <Graph/>
             <button
+              onClick={() => { this.props.dispatch(actions.regraph()) }}
               style={{
                 fontSize: 14,
                 fontWeight: 400,
@@ -82,7 +83,7 @@ class App extends React.Component {
               }}
 
             >
-            Reproject
+            Regraph
             </button>
             <Continuous/>
           </div>

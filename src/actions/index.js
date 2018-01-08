@@ -1,5 +1,6 @@
 import * as globals from "../globals";
 import URI from "urijs";
+import _ from "lodash";
 
 const requestCells = (query = "") => {
   return (dispatch) => {
@@ -19,40 +20,46 @@ const requestCells = (query = "") => {
 }
 
 /* SELECT */
-const attemptCategoricalMetadataSelection = (metadataField, value) => {
+const regraph = () => {
   return (dispatch, getState) => {
-    dispatch({type: "categorical metadata filter selected start"})
+    dispatch({type: "regraph started"})
+
+    const state = getState()
+    const selectedMetadata = {};
+
+    _.each(state.controls.categoricalAsBooleansMap, (options, field) => {
+      let atLeastOneOptionDeselected = false;
+
+      _.each(options, (isActive, option) => {
+        if (!isActive) {
+          atLeastOneOptionDeselected = true;
+        }
+      });
+
+      if (atLeastOneOptionDeselected) {
+        _.each(options, (isActive, option) => {
+          if (isActive) {
+            if (selectedMetadata[field]) {
+              selectedMetadata[field].push(option)
+            } else if (!selectedMetadata[field]) {
+              selectedMetadata[field] = [option]
+            }
+          }
+        })
+      }
+    })
 
     let uri = new URI()
-    uri.setSearch(getState().selectedMetadata)
-    uri.addSearch({[metadataField]: [value]})
+    uri.setSearch(selectedMetadata)
+    console.log(uri.search(), selectedMetadata)
 
     dispatch(
       requestCells(uri.search())
     ).then((res) => {
       if (res.error) {
-        dispatch({type: "categorical metadata filter selected error"})
+        dispatch({type: "regraph success"})
       } else {
-        dispatch({type: "categorical metadata filter selected success", metadataField, value})
-      }
-    })
-  }
-}
-
-/* DESELECT */
-const attemptCategoricalMetadataDeselection = (metadataField, value) => {
-  return (dispatch, getState) => {
-    dispatch({type: "categorical metadata filter deselected start"})
-
-    let uri = new URI()
-    uri.setSearch(getState().selectedMetadata)
-    uri.removeSearch({[metadataField]: [value]})
-
-    dispatch(requestCells(uri.search())).then((res) => {
-      if (res.error) {
-        dispatch({type: "categorical metadata filter deselected error"})
-      } else {
-        dispatch({type: "categorical metadata filter deselected success", metadataField, value})
+        dispatch({type: "regraph error"})
       }
     })
   }
@@ -168,10 +175,9 @@ const requestDifferentialExpression = (celllist1, celllist2, num_genes = 7) => {
 export default {
   initialize,
   requestCells,
+  regraph,
   requestGeneExpressionCounts,
   ___hardcoded___requestGeneExpressionCountsPOST,
   requestSingleGeneExpressionCountsForColoringPOST,
-  attemptCategoricalMetadataSelection,
-  attemptCategoricalMetadataDeselection,
   requestDifferentialExpression
 }

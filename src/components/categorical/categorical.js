@@ -116,9 +116,12 @@ class Categories extends React.Component {
 
     return (
       <div style={{
-        width: 320,
+        width: 310,
         marginRight: 40,
-        flexShrink: 0
+        paddingRight: 20,
+        flexShrink: 0,
+        height: 700,
+        overflow: "auto",
       }}>
 
         {
