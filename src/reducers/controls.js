@@ -89,7 +89,7 @@ const Controls = (state = {
       categoricalAsBooleansMap: action.newCategoricalAsBooleansMap, /* this comes from middleware */
       currentCellSelection: action.newSelection /* this comes from middleware */
     })
-  case "categorical metadata filter only this":
+  case "categorical metadata filter none of these":
     return Object.assign({}, state, {
       categoricalAsBooleansMap: action.newCategoricalAsBooleansMap, /* this comes from middleware */
       currentCellSelection: action.newSelection /* this comes from middleware */

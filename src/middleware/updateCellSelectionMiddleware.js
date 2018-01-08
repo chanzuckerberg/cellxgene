@@ -30,7 +30,7 @@ const updateCellSelectionMiddleware = (store) => {
         action.type === "graph brush deselect" ||
         action.type === "categorical metadata filter deselect" ||
         action.type === "categorical metadata filter select" ||
-        action.type === "categorical metadata filter only this" ||
+        action.type === "categorical metadata filter none of these" ||
         action.type === "categorical metadata filter all of these"
         ;
 
@@ -143,27 +143,24 @@ const updateCellSelectionMiddleware = (store) => {
             [action.value]: false
           }
         }
-      } else if (action.type === "categorical metadata filter only this") {
+      } else if (action.type === "categorical metadata filter none of these") {
 
-        const metadataFieldWithOnlyThisValueSelected = {};
+        const metadataFieldWithAllOfTheseValueSelected = {};
 
         /* set EVERYTHING to false in this intermediate object */
         _.each(s.controls.categoricalAsBooleansMap[action.metadataField], (isActive, option) => {
-          metadataFieldWithOnlyThisValueSelected[option] = false;
+          metadataFieldWithAllOfTheseValueSelected[option] = false;
         })
-
-        /* then set the one we want to true, to avoid the conditional nesting */
-        metadataFieldWithOnlyThisValueSelected[action.value] = true;
 
         newCategoricalAsBooleansMap = {
           ...s.controls.categoricalAsBooleansMap,
-          [action.metadataField]: metadataFieldWithOnlyThisValueSelected
+          [action.metadataField]: metadataFieldWithAllOfTheseValueSelected
         }
 
       } else if (action.type === "categorical metadata filter all of these") {
         const metadataFieldWithAllOfTheseValueSelected = {};
 
-        /* set EVERYTHING to false in this intermediate object */
+        /* set EVERYTHING to true in this intermediate object */
         _.each(s.controls.categoricalAsBooleansMap[action.metadataField], (isActive, option) => {
           metadataFieldWithAllOfTheseValueSelected[option] = true;
         })

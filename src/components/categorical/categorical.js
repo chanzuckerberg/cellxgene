@@ -10,6 +10,13 @@ import { alphabeticallySortedValues } from "./util";
 
 @connect()
 class Category extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      isChecked: true
+    };
+  }
+
   handleColorChange() {
     this.props.dispatch({
       type: "color by categorical metadata",
@@ -21,6 +28,15 @@ class Category extends React.Component {
       type: "categorical metadata filter all of these",
       metadataField: this.props.metadataField
     })
+    this.setState({isChecked: true})
+  }
+  toggleNone() {
+    this.props.dispatch({
+      type: "categorical metadata filter none of these",
+      metadataField: this.props.metadataField,
+      value: this.props.value
+    })
+    this.setState({isChecked: false})
   }
   render() {
     return (
@@ -43,11 +59,15 @@ class Category extends React.Component {
               marginRight: 10,
             }}>
             {this.props.metadataField}
+            <input
+            onChange={this.state.isChecked ? this.toggleNone.bind(this) : this.toggleAll.bind(this)}
+            checked={this.state.isChecked}
+            type="checkbox"/>
             <span
               onClick={this.handleColorChange.bind(this)}
               style={{
                 fontSize: 16,
-                marginLeft: 10,
+                marginLeft: 4,
                 position: "relative",
                 top: 2,
                 cursor: "pointer",
@@ -55,18 +75,6 @@ class Category extends React.Component {
               🖌️
             </span>
           </p>
-          <span
-            onClick={this.toggleAll.bind(this)}
-            style={{
-              fontFamily: globals.accentFont,
-              fontSize: 10,
-              fontWeight: 100,
-              fontStyle: "italic",
-              cursor: "pointer",
-            }}>
-          {"all"}
-          </span>
-
         </div>
         <div>
           {
