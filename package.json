@@ -24,7 +24,6 @@
   "dependencies": {
     "d3": "^4.10.0",
     "deck.gl": "^4.1.2",
-    "dsv-loader": "^2.0.0",
     "express": "^4.14.0",
     "gl-matrix": "^2.4.0",
     "halogen": "^0.2.0",
