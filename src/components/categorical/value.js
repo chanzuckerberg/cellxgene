@@ -5,7 +5,9 @@ import actions from "../../actions";
 
 @connect((state) => {
   return {
-    categoricalAsBooleansMap: state.controls.categoricalAsBooleansMap
+    categoricalAsBooleansMap: state.controls.categoricalAsBooleansMap,
+    colorScale: state.controls.colorScale,
+    colorAccessor: state.controls.colorAccessor,
   }
 })
 class CategoryValue extends React.Component {
@@ -30,6 +32,7 @@ class CategoryValue extends React.Component {
     if (!this.props.categoricalAsBooleansMap) return null
 
     const selected = this.props.categoricalAsBooleansMap[this.props.metadataField][this.props.value]
+    const c = this.props.metadataField === this.props.colorAccessor /* this is the color scale, so add swatches below */
 
     return (
       <div
@@ -53,6 +56,9 @@ class CategoryValue extends React.Component {
             {this.props.value}
         </p>
         <p style={{
+            padding: "1px 10px",
+            backgroundColor: c ? this.props.colorScale(this.props.value) : "white",
+            color: c ? "white" : "black",
             margin: 0,
             lineHeight: "1em"
           }}>

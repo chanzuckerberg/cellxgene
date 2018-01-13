@@ -8,6 +8,7 @@ const Controls = (state = {
   categoricalAsBooleansMap: null,
   colorAccessor: null,
   colorScale: null,
+  opacityForDeselectedCells: .5,
   graphBrushSelection: null,
   continuousSelection: null,
   axesHaveBeenDrawn: false,
@@ -105,17 +106,20 @@ const Controls = (state = {
   case "color by continuous metadata":
     return Object.assign({}, state, {
       colorAccessor: action.colorAccessor,
-      currentCellSelection: action.currentSelectionWithUpdatedColors /* this comes from middleware */
+      currentCellSelection: action.currentSelectionWithUpdatedColors, /* this comes from middleware */
+      colorScale: action.colorScale,
     });
   case "color by expression":
     return Object.assign({}, state, {
       colorAccessor: action.gene,
-      currentCellSelection: action.currentSelectionWithUpdatedColors /* this comes from middleware */
+      currentCellSelection: action.currentSelectionWithUpdatedColors, /* this comes from middleware */
+      colorScale: action.colorScale,
     })
   case "color by categorical metadata":
     return Object.assign({}, state, {
       colorAccessor: action.colorAccessor, /* pass the scale through additionally, and it's a legend! */
-      currentCellSelection: action.currentSelectionWithUpdatedColors /* this comes from middleware */
+      currentCellSelection: action.currentSelectionWithUpdatedColors, /* this comes from middleware */
+      colorScale: action.colorScale,
     })
   case "store current cell selection as differential set 1":
     return Object.assign({}, state, {

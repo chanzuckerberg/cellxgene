@@ -8,7 +8,11 @@ import SectionHeader from "../framework/sectionHeader"
 import Value from "./value";
 import { alphabeticallySortedValues } from "./util";
 
-@connect()
+@connect((state) => {
+  return {
+    colorAccessor: state.controls.colorAccessor 
+  }
+})
 class Category extends React.Component {
   constructor(props) {
     super(props);
@@ -39,6 +43,7 @@ class Category extends React.Component {
     this.setState({isChecked: false})
   }
   render() {
+
     return (
       <div style={{
           // display: "flex",
