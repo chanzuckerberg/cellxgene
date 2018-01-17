@@ -58,6 +58,7 @@ export const drawGraph = (
   graphBrushSelection,
   colorScale,
   graphMap, /* tmp remove when structure exists on server */
+  opacityForDeselectedCells,
 ) => {
 
   /* clear canvas */
@@ -112,7 +113,7 @@ export const drawGraph = (
     if (_currentCellSelectionMap[p[0]]["__selected__"]) {
       context.globalAlpha = 1;
     } else {
-      context.globalAlpha = .2;
+      context.globalAlpha = opacityForDeselectedCells;
     }
 
     // if (i < 20) {

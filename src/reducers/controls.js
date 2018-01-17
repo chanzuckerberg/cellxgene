@@ -8,7 +8,7 @@ const Controls = (state = {
   categoricalAsBooleansMap: null,
   colorAccessor: null,
   colorScale: null,
-  opacityForDeselectedCells: .5,
+  opacityForDeselectedCells: .2,
   graphBrushSelection: null,
   continuousSelection: null,
   axesHaveBeenDrawn: false,
@@ -79,6 +79,10 @@ const Controls = (state = {
     return Object.assign({}, state, {
       graphBrushSelection: null,
       currentCellSelection: action.newSelection /* this comes from middleware */
+    })
+  case "change opacity deselected cells in 2d graph background":
+    return Object.assign({}, state, {
+      opacityForDeselectedCells: action.data,
     })
   case "categorical metadata filter select":
     return Object.assign({}, state, {

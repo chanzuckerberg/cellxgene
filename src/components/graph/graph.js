@@ -20,7 +20,8 @@ import { connect } from "react-redux";
     continuousSelection: state.controls.continuousSelection,
     graphMap: state.controls.graphMap,
     currentCellSelection: state.controls.currentCellSelection,
-    graphBrushSelection: state.controls.graphBrushSelection
+    graphBrushSelection: state.controls.graphBrushSelection,
+    opacityForDeselectedCells: state.controls.opacityForDeselectedCells,
   }
 })
 class Graph extends React.Component {
@@ -89,6 +90,7 @@ class Graph extends React.Component {
         nextProps.graphBrushSelection,
         nextProps.colorScale,
         nextProps.graphMap,
+        nextProps.opacityForDeselectedCells,
       )
     }
   }
@@ -101,9 +103,26 @@ class Graph extends React.Component {
     this.setState({svg, ctx});
   }
 
+  handleOpacityRangeChange(e) {
+    this.props.dispatch({
+      type: "change opacity deselected cells in 2d graph background",
+      data: e.target.value
+    })
+  }
+
   render() {
     return (
       <div id="graphWrapper" style={{height: 540 /* move this to globals */}}>
+        <span>
+          background opacity
+        </span>
+        <input
+          type="range"
+          onChange={this.handleOpacityRangeChange.bind(this)}
+          min={0}
+          max={1}
+          step="0.01"
+          />
         <div id="graphAttachPoint"> </div>
       </div>
     )
