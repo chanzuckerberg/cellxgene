@@ -31,6 +31,7 @@
     "luma.gl": "^4.0.3",
     "query-string": "^5.0.0",
     "react": "^15.3.0",
+    "react-autocomplete": "^1.7.2",
     "react-dom": "^15.3.0",
     "react-helmet": "^5.2.0",
     "react-hot-loader": "^3.0.0-beta.7",

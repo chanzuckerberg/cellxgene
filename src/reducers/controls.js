@@ -2,6 +2,7 @@ import _ from "lodash";
 
 const Controls = (state = {
   _ranges: null, /* this comes from initialize, this is universe */
+  allGeneNames: null,
   allCellsOnClient: null, /* this comes from cells endpoint, this is world */
   currentCellSelection: null, /* this comes from user actions, all draw components use this, it is created by middleware */
   graphMap: null,
@@ -21,7 +22,8 @@ const Controls = (state = {
   ***********************************/
   case "initialize success":
     return Object.assign({}, state, {
-      _ranges: action.data.data.ranges
+      _ranges: action.data.data.ranges,
+      allGeneNames: action.data.data.genes
     });
   case "request cells success":
     const graphMap = {};

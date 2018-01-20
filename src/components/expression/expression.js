@@ -5,13 +5,22 @@ import * as globals from "../../globals";
 import styles from "./expression.css";
 import SectionHeader from "../framework/sectionHeader"
 import actions from "../../actions";
+import ReactAutocomplete from "react-autocomplete";
+
 
 @connect((state) => {
   return {
-    differential: state.differential
+    differential: state.differential,
+    allGeneNames: state.controls.allGeneNames
   }
 })
 class DiffExp extends React.Component {
+  constructor (props) {
+    super(props)
+    this.state = {
+      value: '',
+    }
+  }
   handleGeneColorScaleClick(gene) {
     return () => {
       this.props.dispatch(actions.requestSingleGeneExpressionCountsForColoringPOST(gene))
@@ -34,15 +43,32 @@ class DiffExp extends React.Component {
       )
     )
 
-    console.log('diffexp', this.props)
-    console.log('extent', extent)
-
     const greyColorScale = d3.scaleSequential()
         .domain(extent)
         .interpolator(d3.interpolateGreys);
 
     return (
       <div>
+      Color by any gene:
+      <ReactAutocomplete
+        items={this.props.allGeneNames}
+        shouldItemRender={(item, value) => item.toLowerCase().indexOf(value.toLowerCase()) > -1}
+        getItemValue={item => item}
+        renderItem={(item, highlighted) =>
+          <div
+            key={item}
+            style={{ backgroundColor: highlighted ? '#eee' : 'transparent'}}
+          >
+            {item}
+          </div>
+        }
+        value={this.state.value}
+        onChange={e => this.setState({ value: e.target.value })}
+        onSelect={(value) => {
+          this.setState({ value });
+          this.props.dispatch(actions.requestSingleGeneExpressionCountsForColoringPOST(value))
+        }}
+      />
       <div style={{
         display: "flex",
         justifyContent: "space-between",
