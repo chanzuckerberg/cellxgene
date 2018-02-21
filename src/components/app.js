@@ -8,6 +8,7 @@ import PulseLoader from "halogen/PulseLoader";
 
 import Categorical from "./categorical/categorical";
 import Continuous from "./continuous/continuous";
+import DynamicScatterplot from "./scatterplot/scatterplot";
 import Expression from "./expression/expression";
 import Joy from "./joy/joy";
 import Graph from "./graph/graph";
@@ -84,6 +85,7 @@ class App extends React.Component {
             >
             Regraph
             </button>
+            <DynamicScatterplot/>
             <Continuous/>
           </div>
           <Expression/>
