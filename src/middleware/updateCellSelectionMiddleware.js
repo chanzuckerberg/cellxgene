@@ -190,6 +190,8 @@ const updateCellSelectionMiddleware = (store) => {
         })
       }
 
+      
+
       let modifiedAction = Object.assign({}, action, {
         newSelection,
         newCategoricalAsBooleansMap,

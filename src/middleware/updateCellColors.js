@@ -104,9 +104,7 @@ const updateCellSelectionMiddleware = (store) => {
           return cell.e[indexOfGene]
         })
 
-
-        console.log('middle', action, expressionMap, minExpressionCell)
-
+        // console.log('middle', action, expressionMap, minExpressionCell)
 
         colorScale = d3.scaleLinear()
           .domain([minExpressionCell.e[indexOfGene], maxExpressionCell.e[indexOfGene]])

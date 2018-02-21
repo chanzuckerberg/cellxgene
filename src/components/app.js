@@ -43,7 +43,6 @@ class App extends React.Component {
       first request includes query straight off the url bar for now
     */
     this.props.dispatch(actions.requestCells(window.location.search))
-    // this.props.dispatch(actions.___hardcoded___requestGeneExpressionCountsPOST(window.location.search))
   }
 
   render() {

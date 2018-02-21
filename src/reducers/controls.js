@@ -86,6 +86,9 @@ const Controls = (state = {
     return Object.assign({}, state, {
       opacityForDeselectedCells: action.data,
     })
+  /*******************************
+        Categorical metadata
+  *******************************/
   case "categorical metadata filter select":
     return Object.assign({}, state, {
       categoricalAsBooleansMap: action.newCategoricalAsBooleansMap, /* this comes from middleware */
