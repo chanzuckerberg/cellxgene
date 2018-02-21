@@ -12,6 +12,8 @@ const Controls = (state = {
   opacityForDeselectedCells: .2,
   graphBrushSelection: null,
   continuousSelection: null,
+  scatterplotXXaccessor: null, // just easier to read
+  scatterplotYYaccessor: null,
   axesHaveBeenDrawn: false,
   __storedStateForCelllist1__: null, /* will need procedural control of brush ie., brush.extent https://bl.ocks.org/micahstubbs/3cda05ca68cba260cb81 */
   __storedStateForCelllist2__: null,
@@ -133,6 +135,17 @@ const Controls = (state = {
   case "store current cell selection as differential set 1":
     return Object.assign({}, state, {
       __storedStateForCelllist1__: action.data
+    });
+  /*******************************
+            Scatterplot
+  *******************************/
+  case "set scatterplot x":
+    return Object.assign({}, state, {
+      scatterplotXXaccessor: action.data
+    });
+  case "set scatterplot y":
+    return Object.assign({}, state, {
+      scatterplotYYaccessor: action.data
     });
   default:
     return state;
