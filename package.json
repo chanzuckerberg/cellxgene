@@ -25,6 +25,7 @@
     "d3": "^4.10.0",
     "deck.gl": "^4.1.2",
     "express": "^4.14.0",
+    "font-color-contrast": "^1.0.3",
     "gl-matrix": "^2.4.0",
     "halogen": "^0.2.0",
     "lodash": "^4.17.4",
