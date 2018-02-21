@@ -125,16 +125,13 @@ const requestSingleGeneExpressionCountsForColoringPOST = (gene) => {
   }
 }
 
-const ___hardcoded___requestGeneExpressionCountsPOST = () => {
+const requestGeneExpressionCountsPOST = (genes) => {
   return (dispatch, getState) => {
     dispatch({type: "get expression started"})
     fetch(`${globals.API.prefix}${globals.API.version}expression`, {
         method: "POST",
         body: JSON.stringify({
-          "genelist": [
-            "AAK1",
-            "1/2-SBSRNA4",
-          ]
+          "genelist": genes
         }),
         headers: new Headers({
           "accept": "application/json",
@@ -166,7 +163,16 @@ const requestDifferentialExpression = (celllist1, celllist2, num_genes = 7) => {
       })
       .then(res => res.json())
       .then(
-        data => dispatch({type: "request differential expression success", data}),
+        (data) => {
+          /* kick off a secondary action to get all expression counts for all cells now that we know what the top expressed are */
+          dispatch(
+            requestGeneExpressionCountsPOST(
+              _.union(data.data.celllist1.topgenes, data.data.celllist2.topgenes) // ["GPM6B", "FEZ1", "TSPAN31", "PCSK1N", "TUBA1A", "GPM6A", "CLU", "FCER1G", "TYROBP", "C1QB", "CD74", "CYBA", "GPX1", "TMSB4X"]
+            )
+          )
+          /* then send the success case action through */
+          return dispatch({type: "request differential expression success", data})
+        },
         error => dispatch({type: "request differential expression error", error})
       )
   }
@@ -177,7 +183,7 @@ export default {
   requestCells,
   regraph,
   requestGeneExpressionCounts,
-  ___hardcoded___requestGeneExpressionCountsPOST,
+  requestGeneExpressionCountsPOST,
   requestSingleGeneExpressionCountsForColoringPOST,
   requestDifferentialExpression
 }
