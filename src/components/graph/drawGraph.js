@@ -64,13 +64,6 @@ export const drawGraph = (
   /* clear canvas */
   context.clearRect(0, 0, globals.graphWidth, globals.graphHeight);
 
-  // let colorScale = null; /* it could be 'by expression' and that's a special case */
-
-  /* ! create a scale to map between expression values and colors, remove to somewhere else */
-  // const expressionToColorScale = d3.scaleLinear()
-  //   .domain([0, expressionsCountsMap.maxValue])
-  //   .range([1,0])
-
   const data = [];
 
   _.each(currentCellSelection, (cell, i) => {
@@ -101,33 +94,11 @@ export const drawGraph = (
 
     context.fillStyle = _currentCellSelectionMap[p[0]]["__color__"]
 
-
-    // if (colorAccessor && colorScale) {
-    //   context.fillStyle = d3.interpolateViridis(colorScale(
-    //     _currentCellSelectionMap[p[0]][colorAccessor]
-    //   ));
-    // } else {
-    //   context.fillStyle = "rgb(0,0,0)";
-    // }
-
     if (_currentCellSelectionMap[p[0]]["__selected__"]) {
       context.globalAlpha = 1;
     } else {
       context.globalAlpha = opacityForDeselectedCells;
     }
-
-    // if (i < 20) {
-      // console.log(
-      //   '0 to 1 scale', expressionToColorScale(expressionsCountsMap[p[0]]),
-      //   'color', d3.interpolateViridis(expressionToColorScale(
-      //     expressionsCountsMap[p[0]]
-      //   ))
-      // )
-      // console.log('meta', _.find(metadata, {CellName: p[0]}), color, p)
-    // }
-    // context.fillStyle = d3.interpolateViridis(expressionToColorScale(
-    //   expressionsCountsMap[p[0]]
-    // ));
 
     context.fill();
   });

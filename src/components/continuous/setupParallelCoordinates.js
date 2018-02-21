@@ -19,12 +19,12 @@ const setupParallelCoordinates = (
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
   var canvas = container.append("canvas")
-      .attr("width", width * devicePixelRatio)
-      .attr("height", height * devicePixelRatio)
-      .style("width", width + "px")
-      .style("height", height + "px")
-      .style("margin-top", margin.top + "px")
-      .style("margin-left", margin.left + "px");
+    .attr("width", width * devicePixelRatio)
+    .attr("height", height * devicePixelRatio)
+    .style("width", width + "px")
+    .style("height", height + "px")
+    .style("margin-top", margin.top + "px")
+    .style("margin-left", margin.left + "px");
 
   var ctx = canvas.node().getContext("2d");
       ctx.globalCompositeOperation = 'darken';
