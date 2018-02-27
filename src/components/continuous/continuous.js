@@ -1,3 +1,5 @@
+/* rc slider https://www.npmjs.com/package/rc-slider */
+
 import React from 'react';
 import _ from "lodash";
 import { connect } from "react-redux";

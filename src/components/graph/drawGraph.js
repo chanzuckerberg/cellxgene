@@ -87,7 +87,7 @@ export const drawGraph = (
     context.arc(
       globals.graphXScale(p[1]),            /* x */
       globals.graphYScale(p[2]),            /* y */
-      2,                  /* r */
+      _currentCellSelectionMap[p[0]]["__selected__"] ? 3 : 1.5,                  /* r */
       0,                  /* sAngle */
       2 * Math.PI         /* eAngle */
     );
