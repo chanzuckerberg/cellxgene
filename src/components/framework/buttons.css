@@ -1,7 +1,6 @@
-.primaryButton {
-  border: 1px solid black;
-  padding: 10px 15px;
+.btn {
   background: none;
   cursor: pointer;
-  font-size: 14px;
+  color: "#FFF";
+  border: "none";
 }
