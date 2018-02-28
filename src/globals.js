@@ -46,7 +46,7 @@ export const maxParagraphWidth = 600;
 export const maxControlsWidth = 800;
 
 export const graphMargin = {top: 20, right: 10, bottom: 30, left: 40};
-export const graphWidth = 960;
+export const graphWidth = 1440 /* window width */ - 410 /* sidebar */ - (15 + 15) /* left right padding */ /* but responsive */;
 export const graphHeight = 500;
 
 export const graphXScale = d3.scaleLinear()
