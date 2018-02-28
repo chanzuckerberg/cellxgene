@@ -4,6 +4,7 @@ import styles from "./graph.css";
 import {setupGraphElements, drawGraph} from "./drawGraph";
 import SectionHeader from "../framework/sectionHeader";
 import { connect } from "react-redux";
+import actions from "../../actions";
 
 @connect((state) => {
 
@@ -112,17 +113,42 @@ class Graph extends React.Component {
 
   render() {
     return (
-      <div id="graphWrapper" style={{height: 540 /* move this to globals */}}>
-        <span>
-          background opacity
-        </span>
-        <input
-          type="range"
-          onChange={this.handleOpacityRangeChange.bind(this)}
-          min={0}
-          max={1}
-          step="0.01"
-          />
+      <div
+        id="graphWrapper"
+        style={{
+          height: 540, /* move this to globals */
+          backgroundColor: "white",
+          borderRadius: 3,
+          boxShadow: "3px 4px 13px 0px rgba(201,201,201,1)",
+        }}>
+        <div style={{position: "relative", left: 20, top: 20}}>
+          <button
+            onClick={() => { this.props.dispatch(actions.regraph()) }}
+            style={{
+              fontSize: 14,
+              fontWeight: 400,
+              color: "#41633C",
+              padding: "10px 20px",
+              backgroundColor: "#B9D1B5",
+              border: "none",
+              borderRadius: 3,
+              cursor: "pointer",
+            }}
+          >
+          Regraph
+          </button>
+          <span style={{ marginLeft: 20}}>
+            background opacity
+          </span>
+          <input
+            style={{position: "relative", top: 3, left: 10}}
+            type="range"
+            onChange={this.handleOpacityRangeChange.bind(this)}
+            min={0}
+            max={1}
+            step="0.01"
+            />
+        </div>
         <div id="graphAttachPoint"> </div>
       </div>
     )
@@ -130,5 +156,3 @@ class Graph extends React.Component {
 };
 
 export default Graph;
-
-// <SectionHeader text="Graph"/>
