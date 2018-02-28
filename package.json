@@ -5,6 +5,7 @@
   "repository": "https://github.com/chanzuckerberg/cellxgene",
   "scripts": {
     "build": "npm run clean && webpack --config configuration/webpack/webpack.config.prod.js",
+    "dev": "npm run clean && webpack --config configuration/webpack/webpack.config.dev.js",
     "clean": "rimraf build",
     "start": "node server/development.js",
     "lint": "eslint src",
