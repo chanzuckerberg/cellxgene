@@ -28,6 +28,9 @@ export const mediumGrey = "rgb(153,153,153)";
 export const darkGrey = "rgb(102,102,102)";
 export const darkerGrey = "rgb(51,51,51)";
 
+export const brightBlue = "#3B98FC";
+export const brightGreen = "#A2D729";
+
 export const tiniestFontSize = 12;
 
 export const bolder = 700;
