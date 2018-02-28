@@ -10,7 +10,7 @@ import { alphabeticallySortedValues } from "./util";
 
 @connect((state) => {
   return {
-    colorAccessor: state.controls.colorAccessor 
+    colorAccessor: state.controls.colorAccessor
   }
 })
 class Category extends React.Component {
@@ -125,8 +125,8 @@ class Categories extends React.Component {
         marginRight: 40,
         paddingRight: 20,
         flexShrink: 0,
-        height: 700,
-        overflow: "auto",
+        // height: 700,
+        // overflow: "auto",
       }}>
 
         {
