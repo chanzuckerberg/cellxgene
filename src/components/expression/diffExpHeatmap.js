@@ -46,7 +46,7 @@ class HeatmapSquare extends React.Component {
 ***********************************
 **********************************/
 @connect((state) => {
-  
+
   return {
     scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
     scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
@@ -166,7 +166,7 @@ class Heatmap extends React.Component {
     }
   }
   render() {
-    if (!this.props.differential.diffExp) return null
+    if (!this.props.differential.diffExp) return <p>Select cells & compute differential to see heatmap</p>
 
     const topGenesForCellSet1 = this.props.differential.diffExp.data.celllist1;
     const topGenesForCellSet2 = this.props.differential.diffExp.data.celllist2;
