@@ -23,8 +23,8 @@ const setupScatterplot = (
     .attr("height", height * devicePixelRatio)
     .style("width", width + "px")
     .style("height", height + "px")
-    .style("margin-left", 10 + 3 + "px") /* magic number: this seems to be visually correct when it is equal to the amount axis is translated by plus or minus... a little? */ 
-    .style("margin-top", margin.top + margin.bottom - 2 + "px")
+    .style("margin-left", margin.left + 1 + "px") /* magic number: this seems to be visually correct when it is equal to the amount axis is translated by plus or minus... a little? */
+    .style("margin-top", margin.top + "px")
 
   var ctx = canvas.node().getContext("2d");
       ctx.globalCompositeOperation = 'darken';

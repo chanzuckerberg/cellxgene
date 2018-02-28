@@ -69,16 +69,16 @@ class Scatterplot extends React.Component {
       this.props.scatterplotXXaccessor !== prevProps.scatterplotXXaccessor || // was CLU now FTH1 etc
       this.props.scatterplotYYaccessor !== prevProps.scatterplotYYaccessor
     ) {
-      this.drawAxesSVG(this.state.xScale, this.state.yScale);  
+      this.drawAxesSVG(this.state.xScale, this.state.yScale);
     }
-    
+
     if (
-      this.state.xScale && 
+      this.state.xScale &&
       this.state.yScale
     ) {
       drawScatterplotCanvas(
-        this.state.ctx, 
-        this.state.xScale, 
+        this.state.ctx,
+        this.state.xScale,
         this.state.yScale,
         this.props.currentCellSelection,
         this.props.opacityForDeselectedCells,
@@ -106,7 +106,7 @@ class Scatterplot extends React.Component {
           return cell.e[nextProps.expression.data.genes.indexOf(nextProps.scatterplotYYaccessor)]
         }))
         .range([height, 0])
-      
+
       this.setState({
         xScale,
         yScale
@@ -114,7 +114,7 @@ class Scatterplot extends React.Component {
     }
   }
   drawAxesSVG(xScale, yScale) {
-    
+
     this.state.svg.selectAll("*").remove();
 
     // the axes are much cleaner and easier now. No need to rotate and orient the axis, just call axisBottom, axisLeft etc.
@@ -123,7 +123,7 @@ class Scatterplot extends React.Component {
 
     var yAxis = d3.axisLeft()
       .scale(yScale);
-    
+
     // adding axes is also simpler now, just translate x-axis to (0,height) and it's alread defined to be a bottom axis.
     this.state.svg.append('g')
       .attr('transform', 'translate(0,' + height + ')')
@@ -149,21 +149,28 @@ class Scatterplot extends React.Component {
       .attr('text-anchor', 'end')
       .attr('class', 'label')
       .text(this.props.scatterplotXXaccessor);
-        
+
   }
 
   render() {
     return (
-      <div id="scatterplot_wrapper">
+      <div
+        style={{
+          backgroundColor: "white",
+          borderRadius: 3,
+          marginTop: 15,
+          paddingBottom: 20,
+          boxShadow: "3px 4px 13px 0px rgba(201,201,201,1)",
+        }}
+        id="scatterplot_wrapper">
         <div
           className={styles.scatterplot}
           id="scatterplot"
           style={{
             width:  width + margin.left + margin.right + "px",
             height: height + margin.top + margin.bottom + "px",
-            marginBottom: 60
           }}
-        >scatter</div>
+        ></div>
       </div>
     )
   }
