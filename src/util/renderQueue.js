@@ -10,8 +10,8 @@ const renderQueue = (function(callback1234) {
       _invalidate = function() {},  // invalidate last render queue
       _clear = function() {};       // clearing function
 
-  var rq = function(data) {
-    if (data) rq.data(data);
+  var rq = function(ARRAY_FROM_CELLXGENE) {
+    if (ARRAY_FROM_CELLXGENE) rq.data(ARRAY_FROM_CELLXGENE);
     _invalidate();
     _clear();
     rq.render();
@@ -33,9 +33,9 @@ const renderQueue = (function(callback1234) {
     doFrame();
   };
 
-  rq.data = function(data) {
+  rq.data = function(ARRAY_FROM_CELLXGENE) {
     _invalidate();
-    _queue = data.slice(0);   // creates a copy of the data
+    _queue = ARRAY_FROM_CELLXGENE.slice(0);   // creates a copy of the data
     return rq;
   };
 
