@@ -64,7 +64,8 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       inject: 'body',
-      template: path.resolve('index.html'),
+      filename: 'index.html',
+      template: path.resolve('index_template.html'),
       favicon: path.resolve('favicon.png'),
       inlineSource: '.(js|css)$',
       minify: {
