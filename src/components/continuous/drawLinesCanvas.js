@@ -3,7 +3,7 @@ import {
   project
 } from "./util";
 
-import renderQueue from "./renderQueue";
+import renderQueue from "../../util/renderQueue";
 
 /*****************************************
 ******************************************

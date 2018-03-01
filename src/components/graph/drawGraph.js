@@ -1,5 +1,5 @@
 import styles from "./graph.css";
-import renderQueue from "../continuous/renderQueue";
+import renderQueue from "../../util/renderQueue";
 import _ from "lodash";
 import * as globals from "../../globals";
 
