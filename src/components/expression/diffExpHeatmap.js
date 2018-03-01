@@ -5,7 +5,7 @@ import * as globals from "../../globals";
 import styles from "./expression.css";
 import SectionHeader from "../framework/sectionHeader"
 import actions from "../../actions";
-import ReactAutocomplete from "react-autocomplete";
+import ReactAutocomplete from "react-autocomplete"; /* http://emilebres.github.io/react-virtualized-checkbox/ */
 import getContrast from "font-color-contrast"; // https://www.npmjs.com/package/font-color-contrast
 
 class HeatmapSquare extends React.Component {
