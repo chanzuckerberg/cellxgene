@@ -60,6 +60,8 @@ export const drawScatterplotCanvasUsingRenderQueue = (
   scatterplotXXaccessor,
   scatterplotYYaccessor
 ) => {
+  /* clear canvas */
+  context.clearRect(0, 0, width, height);
 
   const _currentCellSelectionMap = _.keyBy(currentCellSelection, "CellName"); /* move me to the reducer */
 

@@ -74,8 +74,6 @@ class Scatterplot extends React.Component {
       this.state.xScale &&
       this.state.yScale
     ) {
-      /* clear canvas */
-      this.state.ctx.clearRect(0, 0, width, height);
       drawScatterplotCanvas(
         this.state.ctx,
         this.state.xScale,

@@ -114,6 +114,9 @@ const _drawGraphUsingRenderQueue = (
     }
   })
 
+  /* clear canvas */
+  context.clearRect(0, 0, globals.graphWidth, globals.graphHeight);
+
   const _renderGraphWithFunctionReturnedByQueue = renderQueue(
     drawGraph(
       context,
@@ -133,7 +136,7 @@ const _drawGraphUsingRenderQueue = (
   return _renderGraphWithFunctionReturnedByQueue;
 }
 
-export const drawGraphUsingRenderQueue = _.debounce(_drawGraphUsingRenderQueue, 50);
+export const drawGraphUsingRenderQueue = _.debounce(_drawGraphUsingRenderQueue, 20);
 
 const setupGraphBrush = (
   svg,

@@ -82,8 +82,6 @@ class Graph extends React.Component {
       // nextProps.expressions &&
       // nextProps.expressionsCountsMap &&
     ) {
-      /* clear canvas */
-      this.state.ctx.clearRect(0, 0, globals.graphWidth, globals.graphHeight);
 
       drawGraphUsingRenderQueue(
         this.state.ctx,
