@@ -62,8 +62,6 @@ class Scatterplot extends React.Component {
     this.maybeSetupScalesAndDrawAxes(nextProps);
   }
   componentDidUpdate(prevProps) {
-    console.log('scatter sees color as', this.props.colorAccessor)
-    console.log('scatter sees scatter acess as', this.props.scatterplotXXaccessor, this.props.scatterplotYYaccessor)
     if (
       (this.props.scatterplotXXaccessor && this.props.scatterplotYYaccessor) &&
       this.props.scatterplotXXaccessor !== prevProps.scatterplotXXaccessor || // was CLU now FTH1 etc
