@@ -1,7 +1,8 @@
 import React from 'react';
 import _ from "lodash";
+import * as globals from "../../globals";
 import styles from "./graph.css";
-import {setupGraphElements, drawGraph} from "./drawGraph";
+import {setupGraphElements, drawGraphUsingRenderQueue} from "./drawGraph";
 import SectionHeader from "../framework/sectionHeader";
 import { connect } from "react-redux";
 import actions from "../../actions";
@@ -81,7 +82,10 @@ class Graph extends React.Component {
       // nextProps.expressions &&
       // nextProps.expressionsCountsMap &&
     ) {
-      drawGraph(
+      /* clear canvas */
+      this.state.ctx.clearRect(0, 0, globals.graphWidth, globals.graphHeight);
+
+      drawGraphUsingRenderQueue(
         this.state.ctx,
         nextProps.expressionsCountsMap,
         nextProps.colorAccessor,

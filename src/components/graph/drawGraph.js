@@ -48,7 +48,47 @@ export const setupGraphElements = (
 *******************************************
 ******************************************/
 
-export const drawGraph = (
+const drawGraph = (
+  context,
+  expressionsCountsMap,
+  colorAccessor,
+  ranges,
+  metadata,
+  currentCellSelection,
+  graphBrushSelection,
+  colorScale,
+  graphMap, /* tmp remove when structure exists on server */
+  opacityForDeselectedCells,
+  _currentCellSelectionMap,
+) => {
+  return (p) => {
+
+    /* shuffle the data to overcome render order hiding cells, & filter first */
+    // data = d3.shuffle(data); /* make me a control */
+      context.beginPath();
+      /* context.arc(x,y,r,sAngle,eAngle,counterclockwise); */
+      context.arc(
+        globals.graphXScale(p[1]),            /* x */
+        globals.graphYScale(p[2]),            /* y */
+        _currentCellSelectionMap[p[0]]["__selected__"] ? 3 : 1.5,                  /* r */
+        0,                  /* sAngle */
+        2 * Math.PI         /* eAngle */
+      );
+
+      context.fillStyle = _currentCellSelectionMap[p[0]]["__color__"]
+
+      if (_currentCellSelectionMap[p[0]]["__selected__"]) {
+        context.globalAlpha = 1;
+      } else {
+        context.globalAlpha = opacityForDeselectedCells;
+      }
+
+      context.fill();
+
+  }
+}
+
+const _drawGraphUsingRenderQueue = (
   context,
   expressionsCountsMap,
   colorAccessor,
@@ -60,15 +100,13 @@ export const drawGraph = (
   graphMap, /* tmp remove when structure exists on server */
   opacityForDeselectedCells,
 ) => {
+  const _currentCellSelectionMap = _.keyBy(currentCellSelection, "CellName"); /* move me to the reducer */
 
-  /* clear canvas */
-  context.clearRect(0, 0, globals.graphWidth, globals.graphHeight);
-
-  const data = [];
+  const dataForGraph = [];
 
   _.each(currentCellSelection, (cell, i) => {
     if (graphMap[cell["CellName"]]) { /* fails silently, sometimes this is undefined, in which case the graph array should be shorter than the cell array, check in reducer */
-      data.push([
+      dataForGraph.push([
         cell["CellName"],
         graphMap[cell["CellName"]][0],
         graphMap[cell["CellName"]][1]
@@ -76,33 +114,26 @@ export const drawGraph = (
     }
   })
 
-  /* shuffle the data to overcome render order hiding cells, & filter first */
-  // data = d3.shuffle(data); /* make me a control */
-
-  const _currentCellSelectionMap = _.keyBy(currentCellSelection, "CellName"); /* move me to the reducer */
-
-  data.forEach((p, i) => {
-    context.beginPath();
-    /* context.arc(x,y,r,sAngle,eAngle,counterclockwise); */
-    context.arc(
-      globals.graphXScale(p[1]),            /* x */
-      globals.graphYScale(p[2]),            /* y */
-      _currentCellSelectionMap[p[0]]["__selected__"] ? 3 : 1.5,                  /* r */
-      0,                  /* sAngle */
-      2 * Math.PI         /* eAngle */
-    );
-
-    context.fillStyle = _currentCellSelectionMap[p[0]]["__color__"]
-
-    if (_currentCellSelectionMap[p[0]]["__selected__"]) {
-      context.globalAlpha = 1;
-    } else {
-      context.globalAlpha = opacityForDeselectedCells;
-    }
-
-    context.fill();
-  });
+  const _renderGraphWithFunctionReturnedByQueue = renderQueue(
+    drawGraph(
+      context,
+      expressionsCountsMap,
+      colorAccessor,
+      ranges,
+      metadata,
+      currentCellSelection,
+      graphBrushSelection,
+      colorScale,
+      graphMap, /* tmp remove when structure exists on server */
+      opacityForDeselectedCells,
+      _currentCellSelectionMap,
+    )
+  )
+  _renderGraphWithFunctionReturnedByQueue(dataForGraph);
+  return _renderGraphWithFunctionReturnedByQueue;
 }
+
+export const drawGraphUsingRenderQueue = _.debounce(_drawGraphUsingRenderQueue, 50);
 
 const setupGraphBrush = (
   svg,
