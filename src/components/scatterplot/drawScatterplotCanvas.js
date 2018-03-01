@@ -63,7 +63,7 @@ export const drawScatterplotCanvasUsingRenderQueue = (
 
   const _currentCellSelectionMap = _.keyBy(currentCellSelection, "CellName"); /* move me to the reducer */
 
-  const _renderLinesWithFunctionReturnedByQueue = renderQueue(
+  const _renderScatterplotWithFunctionReturnedByQueue = renderQueue(
     drawScatterplotCanvas(
       context,
       xScale,
@@ -77,8 +77,8 @@ export const drawScatterplotCanvasUsingRenderQueue = (
     )
   )
 
-  _renderLinesWithFunctionReturnedByQueue(expression.data.cells)
-  return _renderLinesWithFunctionReturnedByQueue;
+  _renderScatterplotWithFunctionReturnedByQueue(expression.data.cells)
+  return _renderScatterplotWithFunctionReturnedByQueue;
 
 }
 

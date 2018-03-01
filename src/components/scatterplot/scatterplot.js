@@ -94,7 +94,6 @@ class Scatterplot extends React.Component {
       nextProps.scatterplotXXaccessor &&
       nextProps.scatterplotYYaccessor
     ) {
-      console.log('expression in scatterplot: ', nextProps)
       const xScale = d3.scaleLinear()
         .domain(d3.extent(nextProps.expression.data.cells, (cell, i) => {
           return cell.e[nextProps.expression.data.genes.indexOf(nextProps.scatterplotXXaccessor)]
