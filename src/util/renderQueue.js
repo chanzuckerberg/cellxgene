@@ -6,7 +6,7 @@ Render Queue via http://bl.ocks.org/syntagmatic/raw/3341641/render-queue.js
 
 const renderQueue = (function(callback1234) {
   var _queue = [],                  // data to be rendered
-      _rate = 1000,                 // number of calls per frame
+      _rate = 300,                 // number of calls per frame
       _invalidate = function() {},  // invalidate last render queue
       _clear = function() {};       // clearing function
 
