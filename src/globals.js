@@ -43,6 +43,10 @@ export let API = {
 
 if (window.CELLXGENE && window.CELLXGENE.API) API = window.CELLXGENE.API;
 
+export let datasetTitle = "";
+
+if (window.CELLXGENE && window.CELLXGENE.datasetTitle) datasetTitle = window.CELLXGENE.datasetTitle;
+
 export const accentFont = "Georgia,Times,Times New Roman,serif";
 export const maxParagraphWidth = 600;
 export const maxControlsWidth = 800;

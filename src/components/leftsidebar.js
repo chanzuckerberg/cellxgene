@@ -21,6 +21,7 @@ class LeftSideBar extends React.Component {
   render() {
     return (
       <div style={{position: "fixed"}}>
+        <p style={{margin: 10, fontSize: 24, width: "100%"}}>CellXGene {globals.datasetTitle} </p> 
         <div style={{padding: 10}}>
           <button
             style={{
