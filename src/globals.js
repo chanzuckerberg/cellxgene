@@ -30,6 +30,7 @@ export const darkerGrey = "rgb(51,51,51)";
 
 export const brightBlue = "#3B98FC";
 export const brightGreen = "#A2D729";
+export const darkGreen = "#448C4D";
 
 export const tiniestFontSize = 12;
 

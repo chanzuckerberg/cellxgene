@@ -58,7 +58,7 @@ class Expression extends React.Component {
               fontWeight: 700,
               color: "#FFF",
               padding: "12px 20px",
-              backgroundColor: "#448C4D",
+              backgroundColor: globals.darkGreen,
               border: "none",
               cursor: "pointer",
             }}
