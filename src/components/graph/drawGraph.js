@@ -136,7 +136,7 @@ const _drawGraphUsingRenderQueue = (
   return _renderGraphWithFunctionReturnedByQueue;
 }
 
-export const drawGraphUsingRenderQueue = _.debounce(_drawGraphUsingRenderQueue, 20);
+export const drawGraphUsingRenderQueue = _.debounce(_drawGraphUsingRenderQueue, 100);
 
 const setupGraphBrush = (
   svg,

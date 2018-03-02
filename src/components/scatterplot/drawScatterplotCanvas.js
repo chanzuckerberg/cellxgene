@@ -84,4 +84,4 @@ export const drawScatterplotCanvasUsingRenderQueue = (
 
 }
 
-export default _.debounce(drawScatterplotCanvasUsingRenderQueue, 50)
+export default _.debounce(drawScatterplotCanvasUsingRenderQueue, 100)
