@@ -1,7 +1,7 @@
 import React from "react";
 import _ from "lodash";
 import Categorical from "./categorical/categorical";
-import Expression from "./expression/expression";
+import ExpressionButtons from "./expression/expressionButtons";
 import { connect } from "react-redux";
 import Heatmap from "./expression/diffExpHeatmap";
 import * as globals from "../globals";
@@ -21,7 +21,7 @@ class LeftSideBar extends React.Component {
   render() {
     return (
       <div style={{position: "fixed"}}>
-        <p style={{margin: 10, fontSize: 24, width: "100%"}}>CellXGene {globals.datasetTitle} </p> 
+        <p style={{margin: 10, fontSize: 24, width: "100%"}}>CellXGene {globals.datasetTitle} </p>
         <div style={{padding: 10}}>
           <button
             style={{
@@ -72,7 +72,7 @@ class LeftSideBar extends React.Component {
           boxShadow: "-3px -4px 13px 0px rgba(201,201,201,1)",
           paddingTop: 10
         }}>
-          <Expression/>
+          <ExpressionButtons/>
         </div>
       </div>
     )
