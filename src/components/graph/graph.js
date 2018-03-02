@@ -123,7 +123,7 @@ class Graph extends React.Component {
           borderRadius: 3,
           boxShadow: "3px 4px 13px 0px rgba(201,201,201,1)",
         }}>
-        <div style={{position: "relative", left: 20, top: 20}}>
+        <div style={{padding: 10}}>
           <button
             onClick={() => { this.props.dispatch(actions.regraph()) }}
             style={{
