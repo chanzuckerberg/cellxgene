@@ -52,7 +52,7 @@ class App extends React.Component {
         <Helmet title="cellxgene" />
         {
           this.props.cells.loading ?
-          <div style={{position: "fixed", left: window.innerWidth / 2, marginTop: 20}}>
+          <div style={{position: "fixed", left: window.innerWidth /  2, top: 150}}>
             <PulseLoader color="rgb(0,0,0)" size="10px" margin="4px"/>
             <span style={{fontFamily: globals.accentFont, fontStyle: "italic"}}>loading cells</span>
           </div> :
