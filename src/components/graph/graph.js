@@ -127,20 +127,19 @@ class Graph extends React.Component {
           <button
             onClick={() => { this.props.dispatch(actions.regraph()) }}
             style={{
-              fontSize: 14,
+              fontSize: 12,
               fontWeight: 400,
-              color: "#41633C",
+              color: "white",
               padding: "10px 20px",
-              backgroundColor: "#B9D1B5",
+              backgroundColor: globals.darkGreen,
               border: "none",
-              borderRadius: 3,
               cursor: "pointer",
             }}
           >
-          Regraph
+          Regraph present selection
           </button>
           <span style={{ marginLeft: 20}}>
-            background opacity
+            deselected opacity
           </span>
           <input
             style={{position: "relative", top: 3, left: 10}}
