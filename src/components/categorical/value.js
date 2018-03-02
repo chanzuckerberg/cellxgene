@@ -57,7 +57,7 @@ class CategoryValue extends React.Component {
         </p>
         <p style={{
             padding: "1px 10px",
-            backgroundColor: c ? this.props.colorScale(this.props.value) : "white",
+            backgroundColor: c ? this.props.colorScale(this.props.value) : "inherit",
             color: c ? "white" : "black",
             margin: 0,
             lineHeight: "1em"
