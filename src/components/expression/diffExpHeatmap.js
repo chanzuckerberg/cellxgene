@@ -28,6 +28,7 @@ class HeatmapSquare extends React.Component {
         textAlign: "center",
         color: contrastColor,
         width: 40,
+        flexShrink: 0,
         fontSize: 12,
         margin: 0,
         backgroundColor: this.props.backgroundColor,
@@ -91,30 +92,34 @@ class HeatmapRow extends React.Component {
         justifyContent: "flex-start",
         alignItems: "baseline",
       }}>
-        <div style={{width: 200}}>
+        <div style={{width: 150, flexShrink: 0}}>
         <span
           onClick={this.handleSetGeneAsScatterplotX(this.props.gene).bind(this)}
           style={{
             fontSize: 16,
-            color: "#0074D9", // http://clrs.cc/
+            color: this.props.scatterplotXXaccessor === this.props.gene ? "white" : globals.brightBlue,
             cursor: "pointer",
             position: "relative",
             top: 1,
             fontWeight: 700,
-            marginRight: 6,
-            border: this.props.scatterplotXXaccessor === this.props.gene ? "1px solid black" : "none",
+            marginRight: 4,
+            borderRadius: 3,
+            padding: "2px 3px",
+            backgroundColor: this.props.scatterplotXXaccessor === this.props.gene ? globals.brightBlue : "inherit",
           }}>X</span>
           <span
             onClick={this.handleSetGeneAsScatterplotY(this.props.gene).bind(this)}
             style={{
               fontSize: 16,
-              color: "#0074D9", // http://clrs.cc/
+              color: this.props.scatterplotYYaccessor === this.props.gene ? "white" : globals.brightBlue,
               cursor: "pointer",
               position: "relative",
               top: 1,
               fontWeight: 700,
-              marginRight: 6,
-              border: this.props.scatterplotYYaccessor === this.props.gene ? "1px solid black" : "none",
+              marginRight: 4,
+              borderRadius: 3,
+              padding: "2px 3px",
+              backgroundColor: this.props.scatterplotYYaccessor === this.props.gene ? globals.brightBlue : "inherit",
             }}>Y</span>
           <span
             onClick={this.handleGeneColorScaleClick(this.props.gene).bind(this)}
@@ -124,7 +129,9 @@ class HeatmapRow extends React.Component {
               position: "relative",
               top: 2,
               marginRight: 6,
-              border: this.props.colorAccessor === this.props.gene ? "1px solid black" : "none",
+              borderRadius: 3,
+              padding: "2px 3px",
+              backgroundColor: this.props.colorAccessor === this.props.gene ? globals.brightBlue : "inherit",
             }}>🖌️</span>
           <span
             style={{
@@ -139,6 +146,14 @@ class HeatmapRow extends React.Component {
         <HeatmapSquare
           backgroundColor={this.props.greyColorScale(this.props.set2exp)}
           text={this.props.set2exp}/>
+        <span
+          title={this.props.aveDiff}
+          style={{
+            fontSize: 14,
+            paddingLeft: 10
+          }}>
+            {this.props.aveDiff.toFixed(2)}
+        </span>
       </div>
     )
   }
@@ -208,13 +223,14 @@ class Heatmap extends React.Component {
         />
         <div style={{
           display: "flex",
-          justifyContent: "space-between",
-          width: 165,
+          justifyContent: "flex-start",
+          width: 400,
           fontWeight: 700,
         }}>
-          <p style={{width: 100}}>Gene</p>
-          <p>1</p>
-          <p>2</p>
+          <p style={{marginRight: 110}}>Gene</p>
+          <p style={{marginRight: 25}}>1</p>
+          <p style={{marginRight: 20}}>2</p>
+          <p>ave diff</p>
         </div>
         {
           topGenesForCellSet1.topgenes.map((gene, i) => {
@@ -222,6 +238,7 @@ class Heatmap extends React.Component {
               key={gene}
               gene={gene}
               greyColorScale={greyColorScale}
+              aveDiff={topGenesForCellSet1.ave_diff[i]}
               set1exp={Math.floor(topGenesForCellSet1.mean_expression_cellset1[i])}
               set2exp={Math.floor(topGenesForCellSet1.mean_expression_cellset2[i])}
               />
@@ -233,6 +250,7 @@ class Heatmap extends React.Component {
               key={gene}
               gene={gene}
               greyColorScale={greyColorScale}
+              aveDiff={topGenesForCellSet2.ave_diff[i]}
               set1exp={Math.floor(topGenesForCellSet2.mean_expression_cellset1[i])}
               set2exp={Math.floor(topGenesForCellSet2.mean_expression_cellset2[i])}
               />
