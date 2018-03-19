@@ -6,6 +6,7 @@ import {setupGraphElements, drawGraphUsingRenderQueue} from "./drawGraph";
 import SectionHeader from "../framework/sectionHeader";
 import { connect } from "react-redux";
 import actions from "../../actions";
+import drawScatterplotRegl from "./drawGraphRegl";
 
 @connect((state) => {
 
@@ -36,6 +37,36 @@ class Graph extends React.Component {
       ctx: null,
       brush: null,
     };
+  }
+  componentDidMount() {
+    // const {svg, ctx} = setupGraphElements(
+    //   this.handleBrushSelectAction.bind(this),
+    //   this.handleBrushDeselectAction.bind(this)
+    // );
+    // this.setState({svg, ctx});
+    console.log('div', this.graphAttachPointDiv)
+  }
+  componentWillReceiveProps(nextProps) {
+    /* maybe should do a check here to confirm ref exists and pass it? */
+    if (
+      this.state.ctx &&
+      nextProps.vertices
+      // nextProps.expressions &&
+      // nextProps.expressionsCountsMap &&
+    ) {
+      drawGraphUsingRenderQueue(
+        this.state.ctx,
+        nextProps.expressionsCountsMap,
+        nextProps.colorAccessor,
+        nextProps.ranges, /* assumption that this exists if vertices does both are on cells */
+        nextProps.metadata,
+        nextProps.currentCellSelection,
+        nextProps.graphBrushSelection,
+        nextProps.colorScale,
+        nextProps.graphMap,
+        nextProps.opacityForDeselectedCells,
+      )
+    }
   }
   handleBrushSelectAction() {
     /*
@@ -74,38 +105,6 @@ class Graph extends React.Component {
       })
     }
   }
-  componentWillReceiveProps(nextProps) {
-    /* maybe should do a check here to confirm ref exists and pass it? */
-    if (
-      this.state.ctx &&
-      nextProps.vertices
-      // nextProps.expressions &&
-      // nextProps.expressionsCountsMap &&
-    ) {
-
-      drawGraphUsingRenderQueue(
-        this.state.ctx,
-        nextProps.expressionsCountsMap,
-        nextProps.colorAccessor,
-        nextProps.ranges, /* assumption that this exists if vertices does both are on cells */
-        nextProps.metadata,
-        nextProps.currentCellSelection,
-        nextProps.graphBrushSelection,
-        nextProps.colorScale,
-        nextProps.graphMap,
-        nextProps.opacityForDeselectedCells,
-      )
-    }
-  }
-
-  componentDidMount() {
-    const {svg, ctx} = setupGraphElements(
-      this.handleBrushSelectAction.bind(this),
-      this.handleBrushDeselectAction.bind(this)
-    );
-    this.setState({svg, ctx});
-  }
-
   handleOpacityRangeChange(e) {
     this.props.dispatch({
       type: "change opacity deselected cells in 2d graph background",
@@ -150,7 +149,10 @@ class Graph extends React.Component {
             step="0.01"
             />
         </div>
-        <div id="graphAttachPoint"> </div>
+        <div
+          id="graphAttachPoint"
+          ref={(div) => { this.graphAttachPointDiv = div}}>
+        </div>
       </div>
     )
   }
