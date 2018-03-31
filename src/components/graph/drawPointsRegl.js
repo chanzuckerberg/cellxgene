@@ -6,11 +6,12 @@ export default function (regl) {
     precision mediump float;
     attribute vec2 position;
     attribute vec3 color;
+    attribute float size;
     uniform float distance;
     uniform mat4 projection, view;
     varying vec3 fragColor;
     void main() {
-      gl_PointSize = 10.0 / pow(distance, 2.5);
+      gl_PointSize = 7.0 / pow(distance, 2.5) + size;
       gl_Position = projection * view * vec4(position.x, -position.y, 0, 1);
       fragColor = color;
     }`,
@@ -27,7 +28,8 @@ export default function (regl) {
 
     attributes: {
       position: regl.prop('position'),
-      color: regl.prop('color')
+      color: regl.prop('color'),
+      size: regl.prop('size')
     },
 
     uniforms: {

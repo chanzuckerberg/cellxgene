@@ -6,7 +6,6 @@ import {setupGraphElements, drawGraphUsingRenderQueue} from "./drawGraph";
 import SectionHeader from "../framework/sectionHeader";
 import { connect } from "react-redux";
 import actions from "../../actions";
-import drawScatterplotRegl from "./drawGraphRegl";
 
 import mat4 from 'gl-mat4';
 import fit from 'canvas-fit';
@@ -15,24 +14,13 @@ import _regl from 'regl'
 import _drawPoints from './drawPointsRegl'
 
 // import data generators
-const generatePoints = function (count) {
-  return Array(count).fill().map(function () {
-    return [
-      Math.random() - 0.5,
-      Math.random() - 0.5
-    ]
-  })
-}
+import {
+  generateSizes,
+  generateColors,
+  generatePoints,
+  scaleRGB,
+} from "./util";
 
-const generateColors = function (count) {
-  return Array(count).fill().map(function () {
-    return [
-      Math.random(),
-      Math.random(),
-      Math.random()
-    ]
-  })
-}
 // set constants
 const count = 1993
 
@@ -83,6 +71,7 @@ class Graph extends React.Component {
     // preallocate buffers
     const pointBuffer = regl.buffer(generatePoints(count))
     const colorBuffer = regl.buffer(generateColors(count))
+    const sizeBuffer = regl.buffer(generateSizes(count))
 
 
     regl.frame(({viewportWidth, viewportHeight}) => {
@@ -93,6 +82,7 @@ class Graph extends React.Component {
       })
 
       drawPoints({
+        size: sizeBuffer,
         distance: camera.distance,
         color: colorBuffer,
         position: pointBuffer,
@@ -108,6 +98,7 @@ class Graph extends React.Component {
       regl,
       pointBuffer,
       colorBuffer,
+      sizeBuffer,
     })
 
   }
@@ -141,24 +132,21 @@ class Graph extends React.Component {
 
       const positions = [];
       const colors = [];
+      const sizes = [];
 
+      const s = d3.scaleLinear()
+        .domain([0,1])
+        .range([-.95, .95]) /* padding */ 
+
+      /*
+        Construct Vectors
+      */
       _.each(nextProps.currentCellSelection, (cell, i) => {
         if (nextProps.graphMap[cell["CellName"]]) { /* fails silently, sometimes this is undefined, in which case the graph array should be shorter than the cell array, check in reducer */
           positions.push([
-            nextProps.graphMap[cell["CellName"]][0],
-            nextProps.graphMap[cell["CellName"]][1]
+            s(nextProps.graphMap[cell["CellName"]][0]),
+            s(nextProps.graphMap[cell["CellName"]][1])
           ])
-
-          const scaleRGB = (input) => {
-            const outputMax = 1;
-            const outputMin = 0;
-
-            const inputMax = 255;
-            const inputMin = 0;
-
-            const percent = (input - inputMin) / (inputMax - inputMin);
-            return percent * (outputMax - outputMin) + outputMin;
-          }
 
           let c = cell["__color__"];
 
@@ -178,11 +166,14 @@ class Graph extends React.Component {
             ]);
           }
 
+          sizes.push(cell["__selected__"] ? 4 : 1)
+
         }
       })
 
       this.state.pointBuffer(positions)
       this.state.colorBuffer(colors)
+      this.state.sizeBuffer(sizes)
     }
   }
   handleBrushSelectAction() {
@@ -271,7 +262,7 @@ class Graph extends React.Component {
           >
         </div>
         <div style={{padding: 0, margin: 0}}>
-          <canvas width={1500} height={800} style={{border: "1px solid black"}}  ref={(canvas) => { this.reglCanvas = canvas}}/>
+          <canvas width={960} height={450} ref={(canvas) => { this.reglCanvas = canvas}}/>
         </div>
       </div>
     )
