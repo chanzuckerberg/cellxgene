@@ -21,8 +21,11 @@ import {
   scaleRGB,
 } from "./util";
 
+/* https://bl.ocks.org/mbostock/9078690 - quadtree for onClick / hover selections */
+
+
 // set constants
-const count = 1993
+const count = 39746
 
 
 @connect((state) => {
