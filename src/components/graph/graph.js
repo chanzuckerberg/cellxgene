@@ -51,6 +51,7 @@ class Graph extends React.Component {
 
   constructor(props) {
     super(props);
+    this.count = 0;
     this.state = {
       drawn: false,
       svg: null,
@@ -76,7 +77,6 @@ class Graph extends React.Component {
     const colorBuffer = regl.buffer(generateColors(count))
     const sizeBuffer = regl.buffer(generateSizes(count))
 
-
     regl.frame(({viewportWidth, viewportHeight}) => {
 
       regl.clear({
@@ -89,7 +89,7 @@ class Graph extends React.Component {
         distance: camera.distance,
         color: colorBuffer,
         position: pointBuffer,
-        count: count,
+        count: this.count,
         view: camera.view(),
         scale: viewportHeight / viewportWidth
       })
@@ -101,7 +101,7 @@ class Graph extends React.Component {
       regl,
       pointBuffer,
       colorBuffer,
-      sizeBuffer,
+      sizeBuffer
     })
 
   }
@@ -139,7 +139,7 @@ class Graph extends React.Component {
 
       const s = d3.scaleLinear()
         .domain([0,1])
-        .range([-.95, .95]) /* padding */ 
+        .range([-.95, .95]) /* padding */
 
       /*
         Construct Vectors
@@ -169,7 +169,7 @@ class Graph extends React.Component {
             ]);
           }
 
-          sizes.push(cell["__selected__"] ? 4 : 1)
+          sizes.push(cell["__selected__"] ? 4 : .2) /* make this a function of the number of total cells, including regraph */
 
         }
       })
@@ -177,6 +177,7 @@ class Graph extends React.Component {
       this.state.pointBuffer(positions)
       this.state.colorBuffer(colors)
       this.state.sizeBuffer(sizes)
+      this.count = positions.length
     }
   }
   handleBrushSelectAction() {
