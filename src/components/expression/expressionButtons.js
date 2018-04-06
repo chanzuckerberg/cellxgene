@@ -43,9 +43,9 @@ class Expression extends React.Component {
     return (
       <div>
         <div style={{margin: 10}}>
-        <div style={{margin: 10, width: 300}}>
-        There are currently 10 cells selected, click a cell set button to store them.
-        </div>
+        // <div style={{margin: 10, width: 300}}>
+        // There are currently 10 cells selected, click a cell set button to store them.
+        // </div>
         <CellSetButton
           {...this.props}
           eitherCellSetOneOrTwo={1}/>
