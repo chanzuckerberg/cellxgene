@@ -8,6 +8,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackInlineSourcePlugin = require(
   'html-webpack-inline-source-plugin'
 );
+const MinifyPlugin = require("babel-minify-webpack-plugin");
 
 const src = path.resolve('src');
 const nodeModules = path.resolve('node_modules');
@@ -16,7 +17,7 @@ const publicPath = '/';
 
 module.exports = {
   bail: true,
-  devtool: 'source-map',
+  devtool: 'cheap-source-map',
   entry: [ require.resolve('../polyfills/polyfills'), path.join(src, 'index') ],
   output: {
     path: path.resolve('build'),
@@ -95,11 +96,7 @@ module.exports = {
     }),
     new webpack.DefinePlugin({ 'process.env.NODE_ENV': '"production"' }),
     new webpack.optimize.OccurrenceOrderPlugin(),
-    new webpack.optimize.UglifyJsPlugin({
-      compress: { screw_ie8: true, warnings: false },
-      mangle: { screw_ie8: true },
-      output: { comments: false, screw_ie8: true }
-    }),
+    new MinifyPlugin(),
     new ExtractTextPlugin('static/css/[name].[contenthash:8].css'),
     new SWPrecacheWebpackPlugin({
       cacheId: 'cellxgene',
