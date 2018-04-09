@@ -44,6 +44,7 @@ class CategoryValue extends React.Component {
           fontWeight: selected ? 700 : 400,
         }}>
         <p style={{
+            paddingLeft: 15,
             width: 200,
             flexShrink: 0,
             margin: 0,

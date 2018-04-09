@@ -74,7 +74,7 @@ class Category extends React.Component {
               // textAlign: "right",
               // fontFamily: globals.accentFont,
               // fontStyle: "italic",
-              marginRight: 10,
+              margin: "3px 10px 3px 0px",
             }}>
             <span
               style={{cursor: "pointer"}}
