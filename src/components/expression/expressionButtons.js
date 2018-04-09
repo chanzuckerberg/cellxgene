@@ -60,20 +60,37 @@ class Expression extends React.Component {
           eitherCellSetOneOrTwo={2}/>
         </div>
         <div>
-          <button
-            style={{
-              fontSize: 18,
-              margin: 10,
-              fontWeight: 700,
-              color: "#FFF",
-              padding: "12px 20px",
-              backgroundColor: globals.darkGreen,
-              border: "none",
-              cursor: "pointer",
-            }}
-            onClick={this.computeDiffExp.bind(this)}>
-            Compute differential expression
-          </button>
+          {
+            this.props.differential.celllist1 && this.props.differential.celllist2 ?
+            <button
+              style={{
+                fontSize: 18,
+                margin: 10,
+                fontWeight: 700,
+                color: "#FFF",
+                padding: "12px 20px",
+                backgroundColor: globals.brightBlue,
+                border: "none",
+                cursor: "pointer",
+              }}
+              onClick={this.computeDiffExp.bind(this)}>
+              Compute differential expression
+            </button> :
+            <button
+              style={{
+                fontSize: 18,
+                margin: 10,
+                fontWeight: 700,
+                color: "#FFF",
+                padding: "12px 20px",
+                backgroundColor: globals.mediumGrey,
+                border: "none",
+              }}
+              >
+              Compute differential expression
+            </button>
+          }
+
         </div>
       </div>
     )

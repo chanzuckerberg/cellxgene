@@ -242,7 +242,7 @@ class Graph extends React.Component {
               fontWeight: 400,
               color: "white",
               padding: "10px 20px",
-              backgroundColor: globals.darkGreen,
+              backgroundColor: globals.brightBlue,
               border: "none",
               cursor: "pointer",
             }}
