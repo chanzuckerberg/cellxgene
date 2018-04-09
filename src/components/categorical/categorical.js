@@ -17,7 +17,8 @@ class Category extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      isChecked: true
+      isChecked: true,
+      isExpanded: false
     };
   }
 
@@ -42,6 +43,18 @@ class Category extends React.Component {
     })
     this.setState({isChecked: false})
   }
+  renderCategoryItems() {
+    return _.map(alphabeticallySortedValues(this.props.values), (v, i) => {
+      return (
+        <Value
+          key={v}
+          metadataField={this.props.metadataField}
+          count={this.props.values[v]}
+          value={v}
+          i={i} />
+      )
+    })
+  }
   render() {
 
     return (
@@ -63,6 +76,13 @@ class Category extends React.Component {
               // fontStyle: "italic",
               marginRight: 10,
             }}>
+            <span
+              style={{cursor: "pointer"}}
+              onClick={() => {
+                this.setState({isExpanded: !this.state.isExpanded})
+              }}>
+              {this.state.isExpanded ? "⯆ " : "⯈ "}
+            </span>
             {this.props.metadataField}
             <input
             onChange={this.state.isChecked ? this.toggleNone.bind(this) : this.toggleAll.bind(this)}
@@ -83,16 +103,7 @@ class Category extends React.Component {
         </div>
         <div>
           {
-            _.map(alphabeticallySortedValues(this.props.values), (v, i) => {
-              return (
-                <Value
-                  key={v}
-                  metadataField={this.props.metadataField}
-                  count={this.props.values[v]}
-                  value={v}
-                  i={i} />
-              )
-            })
+            this.state.isExpanded ? this.renderCategoryItems() : null
           }
         </div>
       </div>
