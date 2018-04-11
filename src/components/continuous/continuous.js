@@ -11,6 +11,8 @@ import setupParallelCoordinates from "./setupParallelCoordinates";
 import drawAxes from "./drawAxes";
 import drawLinesCanvas from "./drawLinesCanvas";
 
+import HistogramBrush from "./histogramBrush";
+
 import {
   margin,
   width,
@@ -47,80 +49,15 @@ class Continuous extends React.Component {
     };
   }
   componentDidMount() {
-    const {svg, ctx} = setupParallelCoordinates(
-      width,
-      height,
-      margin
-    );
-    this.setState({svg, ctx})
+
   }
   componentWillReceiveProps(nextProps) {
-    this.maybeDrawAxes(nextProps);
-    this.maybeDrawLines(nextProps);
+
   }
-  maybeDrawAxes(nextProps) {
-    if (
-      !this.state.axes &&
-      nextProps.initializeRanges /* axes are created on full range of data */
-    ) {
 
-      const dimensions = createDimensions(nextProps.initializeRanges);
+  componentDidMount() {
 
-      const xscale = d3.scalePoint()
-        .domain(d3.range(dimensions.length))
-        .range([0, width]);
-
-      const axes = drawAxes(
-        this.state.svg,
-        this.state.ctx,
-        dimensions,
-        xscale,
-        height,
-        width,
-        this.handleBrushAction.bind(this),
-        this.handleColorAction.bind(this),
-      );
-
-      this.setState({
-        axes,
-        xscale,
-        dimensions,
-      })
-
-      this.props.dispatch({
-        type: "parallel coordinates axes have been drawn"
-      })
-
-    }
   }
-  maybeDrawLines = _.debounce((nextProps) => { /* https://stackoverflow.com/questions/23123138/perform-debounce-in-react-js */
-    if (
-      nextProps.ranges &&
-      nextProps.currentCellSelection &&
-      nextProps.axesHaveBeenDrawn
-    ) {
-
-      if (this.state._drawLinesCanvas) {
-        this.state._drawLinesCanvas.invalidate(); /* this is only necessary if the internals of drawLinesCanvas are using the render queue */
-      }
-
-      this.state.ctx.clearRect(0, 0, width, height);
-
-      const _drawLinesCanvas = drawLinesCanvas(
-        nextProps.currentCellSelection,
-        this.state.dimensions,
-        this.state.xscale,
-        this.state.ctx,
-        nextProps.colorAccessor,
-        nextProps.colorScale,
-      );
-
-      this.setState({
-        _drawLinesCanvas, /* this will only exist if the internals of drawLinesCanvas are using the render queue */
-      })
-    }
-  }, 200)
-
   handleBrushAction (selection) {
     this.props.dispatch({
       type: "continuous selection using parallel coords brushing",
@@ -138,14 +75,24 @@ class Continuous extends React.Component {
   render() {
 
     return (
-      <div id="parcoords_wrapper">
-        <div
-          className={styles.parcoords}
-          id="parcoords"
-          style={{
-            width:  width + margin.left + margin.right + "px",
-            height: height + margin.top + margin.bottom + "px"
-          }}></div>
+      <div>
+        {
+          _.map(this.props.ranges, (value, key) => {
+            const isColorField = key.includes("color") || key.includes("Color");
+            if (
+              value.range &&
+              key !== "CellName" &&
+              !isColorField
+            ) {
+              return (
+                <HistogramBrush
+                  key={key}
+                  metadataField={key}
+                  ranges={value.range}/>
+              )
+            }
+          })
+        }
       </div>
     )
   }

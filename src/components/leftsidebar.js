@@ -1,6 +1,7 @@
 import React from "react";
 import _ from "lodash";
 import Categorical from "./categorical/categorical";
+import Continuous from "./continuous/continuous";
 import ExpressionButtons from "./expression/expressionButtons";
 import { connect } from "react-redux";
 import Heatmap from "./expression/diffExpHeatmap";
@@ -66,6 +67,7 @@ class LeftSideBar extends React.Component {
           overflowX: "hidden",
         }}>
           {this.state.currentTab === "metadata" ? <Categorical/> : null}
+          {this.state.currentTab === "metadata" ? <Continuous/> : null}
           {this.state.currentTab === "expression" ? <Heatmap/> : null}
         </div>
         <div style={{
