@@ -6,7 +6,7 @@ import { connect } from "react-redux";
 import PulseLoader from "halogen/PulseLoader";
 
 import LeftSideBar from "./leftsidebar";
-import Continuous from "./continuous/continuous";
+import Parallel from "./continuous/parallel";
 import DynamicScatterplot from "./scatterplot/scatterplot";
 import Joy from "./joy/joy";
 import Graph from "./graph/graph";
@@ -70,7 +70,7 @@ class App extends React.Component {
           }}>
             <Graph/>
             <DynamicScatterplot/>
-            {/*<Continuous/>*/}
+            {/*<Parallel/>*/}
           </div>
         </div>
       </Container>
