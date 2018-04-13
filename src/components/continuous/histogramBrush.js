@@ -25,7 +25,7 @@ class HistogramBrush extends React.Component {
     super(props);
 
     this.width = 300;
-    this.height = 120;
+    this.height = 100;
     this.marginBottom = 20;
 
     this.state = {
