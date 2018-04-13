@@ -42,6 +42,7 @@ const Controls = (state = {
       we mutate this map in the actions below
     */
     const categoricalAsBooleansMap = {};
+    const continuousUserDefinedRanges = {};
     _.each(action.data.data.ranges, (value, key) => {
       if (
         key !== "CellName" &&
@@ -52,13 +53,20 @@ const Controls = (state = {
           optionsAsBooleans[_key] = true;
         })
         categoricalAsBooleansMap[key] = optionsAsBooleans;
+      } else if (
+        key !== "CellName" &&
+        value.range
+      ) {
+        continuousUserDefinedRanges[key] = null;
       }
     })
+
     return Object.assign({}, state, {
       allCellsOnClient: action.data.data,
       currentCellSelection,
       graphMap,
       categoricalAsBooleansMap,
+      continuousUserDefinedRanges,
       graphBrushSelection: null, /* if we are getting new cells from the server, the layout (probably? definitely?) just changed, so this is now irrelevant, and we WILL need to call a function to reset state of this kind when cells success happens */
     });
   /* * * * * * * * * * * * * * * * * *
@@ -82,6 +90,11 @@ const Controls = (state = {
   case "graph brush deselect":
     return Object.assign({}, state, {
       graphBrushSelection: null,
+      currentCellSelection: action.newSelection /* this comes from middleware */
+    })
+  case "continuous metadata histogram brush":
+    return Object.assign({}, state, {
+      newContinuousUserDefinedRanges: action.newContinuousUserDefinedRanges, /* this has already been applied in middleware but store it for next time */
       currentCellSelection: action.newSelection /* this comes from middleware */
     })
   case "change opacity deselected cells in 2d graph background":

@@ -26,6 +26,7 @@ const updateCellSelectionMiddleware = (store) => {
       /* this is a hardcoded map of the things we need to keep an eye on and update global cell selection in response to */
       const filterJustChanged =
         action.type === "continuous selection using parallel coords brushing" ||
+        action.type === "continuous metadata histogram brush" ||
         action.type === "graph brush selection change" ||
         action.type === "graph brush deselect" ||
         action.type === "categorical metadata filter deselect" ||
@@ -115,6 +116,49 @@ const updateCellSelectionMiddleware = (store) => {
       }
 
       /*
+        Continuous histograms ___---^^^^--[------__]__---___
+
+        Create newContinuousUserDefinedRanges
+        Filter based on them
+      */
+
+      let newContinuousUserDefinedRanges = s.controls.continuousUserDefinedRanges;
+
+
+      /* check if this is the action and take care of that metadata field */
+      if (action.type === "continuous metadata histogram brush") {
+        /*
+          was this a deselect? if so it will be null
+          was it a select? set the new range [20, 50]
+          we overload this because it is less if statements thru the whole system
+          but it's invisible here, thus comment.
+        */
+        newContinuousUserDefinedRanges[action.selection] = action.range;
+      }
+
+      let activeContinuousHistogramFilters = [];
+
+      _.each(newContinuousUserDefinedRanges, (value, key, i) => {
+        if (value !== null) {
+          activeContinuousHistogramFilters.push(key)
+        }
+      })
+
+      /* see if there are others from previous... */
+      if (activeContinuousHistogramFilters.length > 0) {
+        _.each(activeContinuousHistogramFilters, (key) => {
+          _.each(newSelection, (cell, i) => {
+            if (
+              +cell[key] < newContinuousUserDefinedRanges[key][0] ||
+              +cell[key] > newContinuousUserDefinedRanges[key][1]
+            ) {
+              newSelection[i]["__selected__"] = false;
+            }
+          })
+        })
+      }
+
+      /*
         1. figure out if the users have unchecked boxes
         2. put them in an array
         3. filter on them
@@ -183,18 +227,19 @@ const updateCellSelectionMiddleware = (store) => {
       if (inactiveCategories.length > 0) {
         _.each(inactiveCategories, (d) => {
           _.each(newSelection, (cell, i) => {
-            if (""+cell[d.category] === ""+d.option) { /* nums and strings to strings */
+            if (""+cell[d.category] === ""+d.option) { /* nums and strings to strings -__- */
               newSelection[i]["__selected__"] = false;
             }
           })
         })
       }
 
-      
+
 
       let modifiedAction = Object.assign({}, action, {
         newSelection,
         newCategoricalAsBooleansMap,
+        newContinuousUserDefinedRanges,
       }) /* append the result of all the filters to the action the user just triggered */
 
       return next(modifiedAction);

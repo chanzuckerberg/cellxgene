@@ -42,8 +42,23 @@ class HistogramBrush extends React.Component {
   componentDidUpdate() {
 
   }
-  onBrush(e) {
-    console.log('brushed', e)
+  onBrush(selection, x) {
+    return () => {
+      if (d3.event.selection) {
+        this.props.dispatch({
+          type: "continuous metadata histogram brush",
+          selection: this.props.metadataField,
+          range: [x(d3.event.selection[0]), x(d3.event.selection[1])]
+        });
+      } else {
+        this.props.dispatch({
+          type: "continuous metadata histogram brush",
+          selection: this.props.metadataField,
+          range: null
+        });
+      }
+
+    }
   }
   drawHistogram(svgRef) {
 
@@ -77,13 +92,12 @@ class HistogramBrush extends React.Component {
       .attr("height", function(d) { return y(0) - y(d.length / allValuesForContinuousFieldAsArray.length); });
 
     if (!this.state.brush && !this.state.axis) {
-      console.log('whee')
       const brush = d3.select(svgRef)
         .append('g')
         .attr('class', 'brush')
         .call(
           d3.brushX()
-            .on('end', this.onBrush)
+            .on('end', this.onBrush(this.props.metadataField, x.invert).bind(this))
         )
 
       const xAxis = d3.select(svgRef)
