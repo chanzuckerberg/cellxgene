@@ -52,7 +52,9 @@ const updateCellSelectionMiddleware = (store) => {
 
       if (action.type === "color by categorical metadata") {
 
-        colorScale = d3.scaleOrdinal(d3.schemeCategory20);
+
+
+        colorScale = d3.scaleOrdinal().range(globals.ordinalColors);
 
         _.each(currentSelectionWithUpdatedColors, (cell, i) => {
           currentSelectionWithUpdatedColors[i]["__color__"] = colorScale(
