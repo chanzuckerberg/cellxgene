@@ -100,6 +100,7 @@ class Scatterplot extends React.Component {
   maybeSetupScalesAndDrawAxes(nextProps) {
     if (
       nextProps.expression &&
+      nextProps.expression.data &&
       nextProps.scatterplotXXaccessor &&
       nextProps.scatterplotYYaccessor
     ) {
