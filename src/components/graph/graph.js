@@ -69,9 +69,9 @@ class Graph extends React.Component {
     const drawPoints = _drawPoints(regl)
 
     // preallocate buffers
-    const pointBuffer = regl.buffer(generatePoints(count))
-    const colorBuffer = regl.buffer(generateColors(count))
-    const sizeBuffer = regl.buffer(generateSizes(count))
+    const pointBuffer = regl.buffer();
+    const colorBuffer = regl.buffer();
+    const sizeBuffer = regl.buffer();
 
     regl.frame(({viewportWidth, viewportHeight}) => {
 
@@ -164,9 +164,7 @@ class Graph extends React.Component {
               scaleRGB(parseInt(parsedHex[3], 16))
             ]);
           }
-
           sizes.push(cell["__selected__"] ? 4 : .2) /* make this a function of the number of total cells, including regraph */
-
         }
       })
 
