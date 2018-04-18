@@ -13,13 +13,9 @@ import _camera from '../../util/camera.js'
 import _regl from 'regl'
 import _drawPoints from './drawPointsRegl'
 
-// import data generators
 import {
-  generateSizes,
-  generateColors,
-  generatePoints,
-  scaleRGB,
-} from "./util";
+  scaleRGB
+} from "../../util/scaleRGB";
 
 /* https://bl.ocks.org/mbostock/9078690 - quadtree for onClick / hover selections */
 
