@@ -27,6 +27,34 @@ import {
   createDimensions,
 } from "./util";
 
+const generatePoints = function (count) {
+  return Array(count).fill().map(function () {
+    return [
+      Math.random() - 0.5,
+      Math.random() - 0.5
+    ]
+  })
+}
+
+const generateColors = function (count) {
+  return Array(count).fill().map(function () {
+    return [
+      Math.random(),
+      Math.random(),
+      Math.random()
+    ]
+  })
+}
+
+const generateSizes = function (count) {
+  return Array(count).fill().map(function () {
+    return Math.random() * 10
+  })
+}
+
+// set constants
+const count = 1993;
+
 @connect((state) => {
 
   const ranges = state.cells.cells && state.cells.cells.data.ranges ? state.cells.cells.data.ranges : null;
@@ -68,6 +96,44 @@ class Scatterplot extends React.Component {
       margin
     );
     this.setState({svg, ctx})
+
+    const camera = _camera(this.reglCanvas, {scale: true, rotate: false});
+    const regl = _regl(this.reglCanvas)
+
+    const drawPoints = _drawPoints(regl)
+
+    // preallocate buffers
+    const pointBuffer = regl.buffer(generatePoints(count))
+    const colorBuffer = regl.buffer(generateColors(count))
+    const sizeBuffer = regl.buffer(generateSizes(count))
+
+
+    regl.frame(({viewportWidth, viewportHeight}) => {
+
+      regl.clear({
+        depth: 1,
+        color: [1, 1, 1, 1]
+      })
+
+      drawPoints({
+        distance: camera.distance,
+        color: colorBuffer,
+        position: pointBuffer,
+        size: sizeBuffer,
+        count: count,
+        view: camera.view(),
+        scale: viewportHeight / viewportWidth
+      })
+
+      camera.tick()
+    })
+
+    this.setState({
+      regl,
+      pointBuffer,
+      colorBuffer,
+    })
+
   }
   componentWillReceiveProps(nextProps) {
     this.maybeSetupScalesAndDrawAxes(nextProps);
@@ -180,6 +246,7 @@ class Scatterplot extends React.Component {
             height: height + margin.top + margin.bottom + "px",
           }}
         ></div>
+        <canvas width={500} height={500} style={{border: "1px solid black"}}  ref={(canvas) => { this.reglCanvas = canvas}}/>
       </div>
     )
   }
