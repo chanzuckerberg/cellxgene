@@ -23,7 +23,7 @@ class CellSetButton extends React.Component {
   }
   render() {
     return (
-      <span style={{marginRight: 20}}>
+      <span style={{marginRight: 10}}>
         <button
           style={{
             color: "#FFF",
@@ -43,21 +43,23 @@ class CellSetButton extends React.Component {
           }
           </span>
         </button>
-        <button style={{
-          marginLeft: 3,
-          color: "#FFF",
-          padding: "0px 10px",
-          height: 30,
-          backgroundColor: globals.brightBlue,
-          border: "none",
-          cursor: "pointer",
-        }}>
-          <span style={{fontSize: 24, fontWeight: 700}}> X </span>
-
-        </button>
       </span>
     )
   }
 }
 
 export default CellSetButton;
+
+//
+// <button style={{
+//   marginLeft: 3,
+//   color: "#FFF",
+//   padding: "0px 10px",
+//   height: 30,
+//   backgroundColor: globals.brightBlue,
+//   border: "none",
+//   cursor: "pointer",
+// }}>
+//   <span style={{fontSize: 24, fontWeight: 700}}> X </span>
+//
+// </button>

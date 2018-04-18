@@ -43,7 +43,7 @@ class Expression extends React.Component {
     return (
       <div>
         <div style={{margin: 10}}>
-        <div style={{margin: 10, width: 300}}>
+        <div style={{marginBottom: 10, width: 300}}>
           There are currently
           {
             " " +
