@@ -53,7 +53,7 @@ const generateSizes = function (count) {
 }
 
 // set constants
-const count = 1993;
+const count = 1283;
 
 @connect((state) => {
 
@@ -130,6 +130,7 @@ class Scatterplot extends React.Component {
 
     this.setState({
       regl,
+      sizeBuffer,
       pointBuffer,
       colorBuffer,
     })
@@ -137,9 +138,86 @@ class Scatterplot extends React.Component {
   }
   componentWillReceiveProps(nextProps) {
     this.maybeSetupScalesAndDrawAxes(nextProps);
+    if (
+      this.state.regl &&
+      this.state.pointBuffer &&
+      this.state.colorBuffer &&
+      this.state.sizeBuffer &&
+      nextProps.currentCellSelection &&
+      nextProps.expression.data &&
+      nextProps.expression.data.genes &&
+      nextProps.scatterplotXXaccessor &&
+      nextProps.scatterplotYYaccessor
+    ) {
+      const _currentCellSelectionMap = _.keyBy(nextProps.currentCellSelection, "CellName"); /* move me to the reducer */
+
+      const positions = [];
+      const colors = [];
+      const sizes = [];
+
+      const glScaleX = d3.scaleLinear()
+        .domain([0, width])
+        .range([-.95, .95]) /* padding */
+
+      const glScaleY = d3.scaleLinear()
+        .domain([0, height])
+        .range([-.95, .95])
+
+
+      /*
+        Construct Vectors
+      */
+      _.each(nextProps.expression.data.cells, (cell, i) => {
+        /*
+          this if is necessary until we are no longer getting expression for all cells, but only for 'world'
+          ...which will mean refetching when we regraph, or 'go back up to all cells'
+        */
+        if (_currentCellSelectionMap[cell.cellname]) { /* fails silently, sometimes this is undefined, in which case the graph array should be shorter than the cell array, check in reducer */
+          positions.push([
+            glScaleX(this.state.xScale(cell.e[nextProps.expression.data.genes.indexOf(nextProps.scatterplotXXaccessor)])), /* scale each point first to the window as we calculate extents separately below, so no need to repeat */
+            glScaleY(this.state.yScale(cell.e[nextProps.expression.data.genes.indexOf(nextProps.scatterplotYYaccessor)]))
+          ])
+
+          let c = _currentCellSelectionMap[cell.cellname]["__color__"];
+
+          if (c[0] !== "#") {
+            const _c = c.replace(/[^\d,.]/g, '').split(',');
+            colors.push([
+              scaleRGB(+_c[0]),
+              scaleRGB(+_c[1]),
+              scaleRGB(+_c[2])
+            ])
+          } else {
+            var parsedHex = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(c);
+            colors.push([
+              scaleRGB(parseInt(parsedHex[1], 16)),
+              scaleRGB(parseInt(parsedHex[2], 16)),
+              scaleRGB(parseInt(parsedHex[3], 16))
+            ]);
+          }
+          sizes.push(_currentCellSelectionMap[cell.cellname]["__selected__"] ? 4 : .2) /* make this a function of the number of total cells, including regraph */
+        }
+      })
+
+      console.log("+++++++++++++++++++++++++++")
+      console.log('RANDOM', generatePoints(count))
+      console.log('------------------------------')
+      console.log("POINTS", positions)
+      console.log("+++++++++++++++++++++++++++")
+
+
+      this.state.pointBuffer(positions)
+      this.state.colorBuffer(colors)
+      this.state.sizeBuffer(sizes)
+      // this.state.pointBuffer(generatePoints(count))
+      // this.state.colorBuffer(generateColors(count))
+      // this.state.sizeBuffer(generateSizes(count))
+      this.count = positions.length
+    }
   }
   componentDidUpdate(prevProps) {
     if (
+      (this.state.xScale && this.state.yScale) &&
       (this.props.scatterplotXXaccessor && this.props.scatterplotYYaccessor) &&
       this.props.scatterplotXXaccessor !== prevProps.scatterplotXXaccessor || // was CLU now FTH1 etc
       this.props.scatterplotYYaccessor !== prevProps.scatterplotYYaccessor
@@ -246,7 +324,7 @@ class Scatterplot extends React.Component {
             height: height + margin.top + margin.bottom + "px",
           }}
         ></div>
-        <canvas width={500} height={500} style={{border: "1px solid black"}}  ref={(canvas) => { this.reglCanvas = canvas}}/>
+        <canvas width={width} height={height} style={{border: "1px solid black"}}  ref={(canvas) => { this.reglCanvas = canvas}}/>
       </div>
     )
   }
