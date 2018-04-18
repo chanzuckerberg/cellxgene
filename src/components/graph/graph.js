@@ -223,7 +223,7 @@ class Graph extends React.Component {
       <div
         id="graphWrapper"
         style={{
-          height: 540, /* move this to globals */
+          height: 1050, /* move this to globals */
           backgroundColor: "white",
           borderRadius: 3,
           boxShadow: "3px 4px 13px 0px rgba(201,201,201,1)",
@@ -260,7 +260,7 @@ class Graph extends React.Component {
           >
         </div>
         <div style={{padding: 0, margin: 0}}>
-          <canvas width={960} height={450} ref={(canvas) => { this.reglCanvas = canvas}}/>
+          <canvas width={960} height={960} ref={(canvas) => { this.reglCanvas = canvas}}/>
         </div>
       </div>
     )
