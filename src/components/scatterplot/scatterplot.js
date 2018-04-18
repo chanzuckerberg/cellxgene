@@ -50,6 +50,7 @@ import {
 class Scatterplot extends React.Component {
   constructor(props) {
     super(props);
+    this.count = 0;
     this.state = {
       svg: null,
       ctx: null,
