@@ -1,5 +1,7 @@
 const mat4 = require('gl-mat4')
 
+// opacity: https://github.com/spacetx/starfish/blob/master/viz/draw/regions.js
+
 export default function (regl) {
   return regl({
     vert: `
