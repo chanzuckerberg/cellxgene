@@ -10,6 +10,16 @@ import setupScatterplot from "./setupScatterplot";
 import styles from './scatterplot.css';
 import drawScatterplotCanvas from "./drawScatterplotCanvas";
 
+import mat4 from 'gl-mat4';
+import fit from 'canvas-fit';
+import _camera from '../../util/camera.js'
+import _regl from 'regl'
+import _drawPoints from './drawPointsRegl'
+
+import {
+  scaleRGB
+} from "../../util/scaleRGB";
+
 import {
   margin,
   width,
