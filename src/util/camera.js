@@ -7,7 +7,8 @@ var key = require('key-pressed')
 const panSpeed = 0.4
 const scaleSpeed = 0.5
 const scaleMax = 3
-const scaleMin = 1.15
+// const scaleMin = 1.15
+const scaleMin = 1.03
 
 function attachCamera(canvas, opts) {
   opts = opts || {}
