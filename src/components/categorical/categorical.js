@@ -8,6 +8,11 @@ import SectionHeader from "../framework/sectionHeader"
 import Value from "./value";
 import { alphabeticallySortedValues } from "./util";
 
+import FaArrowRight from 'react-icons/lib/fa/angle-right';
+import FaArrowDown from 'react-icons/lib/fa/angle-down';
+import FaPaintBrush from 'react-icons/lib/fa/paint-brush';
+
+
 @connect((state) => {
   return {
     colorAccessor: state.controls.colorAccessor
@@ -77,11 +82,11 @@ class Category extends React.Component {
               margin: "3px 10px 3px 0px",
             }}>
             <span
-              style={{cursor: "pointer"}}
+              style={{cursor: "pointer", display: "inline-block", position: "relative", top: 2}}
               onClick={() => {
                 this.setState({isExpanded: !this.state.isExpanded})
               }}>
-              {this.state.isExpanded ? "⯆ " : "⯈ "}
+              {this.state.isExpanded ? <FaArrowDown /> : <FaArrowRight/> }
             </span>
             {this.props.metadataField}
             <input
@@ -93,11 +98,16 @@ class Category extends React.Component {
               style={{
                 fontSize: 16,
                 marginLeft: 4,
+                // padding: this.props.colorAccessor === this.props.metadataField ? 3 : "auto",
+                borderRadius: 3,
+                color: this.props.colorAccessor === this.props.metadataField ? globals.brightBlue : "black",
+                // backgroundColor: this.props.colorAccessor === this.props.metadataField ? globals.brightBlue : "inherit",
+                display: "inline-block",
                 position: "relative",
                 top: 2,
                 cursor: "pointer",
               }}>
-              🖌️
+              <FaPaintBrush/>
             </span>
           </p>
         </div>
