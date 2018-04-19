@@ -27,34 +27,6 @@ import {
   createDimensions,
 } from "./util";
 
-const generatePoints = function (count) {
-  return Array(count).fill().map(function () {
-    return [
-      Math.random() - 0.5,
-      Math.random() - 0.5
-    ]
-  })
-}
-
-const generateColors = function (count) {
-  return Array(count).fill().map(function () {
-    return [
-      Math.random(),
-      Math.random(),
-      Math.random()
-    ]
-  })
-}
-
-const generateSizes = function (count) {
-  return Array(count).fill().map(function () {
-    return Math.random() * 10
-  })
-}
-
-// set constants
-const count = 1283;
-
 @connect((state) => {
 
   const ranges = state.cells.cells && state.cells.cells.data.ranges ? state.cells.cells.data.ranges : null;
@@ -81,7 +53,7 @@ class Scatterplot extends React.Component {
     this.count = 0;
     this.state = {
       svg: null,
-      ctx: null,
+      // ctx: null,
       axes: null,
       dimensions: null,
       xScale: null,
@@ -90,12 +62,18 @@ class Scatterplot extends React.Component {
   }
 
   componentDidMount() {
-    const {svg, ctx} = setupScatterplot(
+    const {
+      svg
+      // ctx
+    } = setupScatterplot(
       width,
       height,
       margin
     );
-    this.setState({svg, ctx})
+    this.setState({
+      svg
+      // ctx
+    })
 
     const camera = _camera(this.reglCanvas, {scale: true, rotate: false});
     const regl = _regl(this.reglCanvas)
@@ -103,9 +81,9 @@ class Scatterplot extends React.Component {
     const drawPoints = _drawPoints(regl)
 
     // preallocate buffers
-    const pointBuffer = regl.buffer(generatePoints(count))
-    const colorBuffer = regl.buffer(generateColors(count))
-    const sizeBuffer = regl.buffer(generateSizes(count))
+    const pointBuffer = regl.buffer()
+    const colorBuffer = regl.buffer()
+    const sizeBuffer = regl.buffer()
 
 
     regl.frame(({viewportWidth, viewportHeight}) => {
@@ -120,7 +98,7 @@ class Scatterplot extends React.Component {
         color: colorBuffer,
         position: pointBuffer,
         size: sizeBuffer,
-        count: count,
+        count: this.count,
         view: camera.view(),
         scale: viewportHeight / viewportWidth
       })
@@ -137,19 +115,50 @@ class Scatterplot extends React.Component {
 
   }
   componentWillReceiveProps(nextProps) {
+
     this.maybeSetupScalesAndDrawAxes(nextProps);
+
+  }
+  componentDidUpdate(prevProps) {
+    if (
+      (this.state.xScale && this.state.yScale) &&
+      (this.props.scatterplotXXaccessor && this.props.scatterplotYYaccessor) &&
+      this.props.scatterplotXXaccessor !== prevProps.scatterplotXXaccessor || // was CLU now FTH1 etc
+      this.props.scatterplotYYaccessor !== prevProps.scatterplotYYaccessor
+    ) {
+      this.drawAxesSVG(this.state.xScale, this.state.yScale);
+    }
+
+    // if (
+    //   this.state.xScale &&
+    //   this.state.yScale
+    // ) {
+    //   drawScatterplotCanvas(
+    //     this.state.ctx,
+    //     this.state.xScale,
+    //     this.state.yScale,
+    //     this.props.currentCellSelection,
+    //     this.props.opacityForDeselectedCells,
+    //     this.props.expression,
+    //     this.props.scatterplotXXaccessor,
+    //     this.props.scatterplotYYaccessor,
+    //   )
+    // }
+
     if (
       this.state.regl &&
       this.state.pointBuffer &&
       this.state.colorBuffer &&
       this.state.sizeBuffer &&
-      nextProps.currentCellSelection &&
-      nextProps.expression.data &&
-      nextProps.expression.data.genes &&
-      nextProps.scatterplotXXaccessor &&
-      nextProps.scatterplotYYaccessor
+      this.props.currentCellSelection &&
+      this.props.expression.data &&
+      this.props.expression.data.genes &&
+      this.props.scatterplotXXaccessor &&
+      this.props.scatterplotYYaccessor &&
+      this.state.xScale &&
+      this.state.yScale
     ) {
-      const _currentCellSelectionMap = _.keyBy(nextProps.currentCellSelection, "CellName"); /* move me to the reducer */
+      const _currentCellSelectionMap = _.keyBy(this.props.currentCellSelection, "CellName"); /* move me to the reducer */
 
       const positions = [];
       const colors = [];
@@ -161,21 +170,21 @@ class Scatterplot extends React.Component {
 
       const glScaleY = d3.scaleLinear()
         .domain([0, height])
-        .range([-.95, .95])
+        .range([-1, 1])
 
 
       /*
         Construct Vectors
       */
-      _.each(nextProps.expression.data.cells, (cell, i) => {
+      _.each(this.props.expression.data.cells, (cell, i) => {
         /*
           this if is necessary until we are no longer getting expression for all cells, but only for 'world'
           ...which will mean refetching when we regraph, or 'go back up to all cells'
         */
         if (_currentCellSelectionMap[cell.cellname]) { /* fails silently, sometimes this is undefined, in which case the graph array should be shorter than the cell array, check in reducer */
           positions.push([
-            glScaleX(this.state.xScale(cell.e[nextProps.expression.data.genes.indexOf(nextProps.scatterplotXXaccessor)])), /* scale each point first to the window as we calculate extents separately below, so no need to repeat */
-            glScaleY(this.state.yScale(cell.e[nextProps.expression.data.genes.indexOf(nextProps.scatterplotYYaccessor)]))
+            glScaleX(this.state.xScale(cell.e[this.props.expression.data.genes.indexOf(this.props.scatterplotXXaccessor)])), /* scale each point first to the window as we calculate extents separately below, so no need to repeat */
+            glScaleY(this.state.yScale(cell.e[this.props.expression.data.genes.indexOf(this.props.scatterplotYYaccessor)]))
           ])
 
           let c = _currentCellSelectionMap[cell.cellname]["__color__"];
@@ -199,13 +208,6 @@ class Scatterplot extends React.Component {
         }
       })
 
-      console.log("+++++++++++++++++++++++++++")
-      console.log('RANDOM', generatePoints(count))
-      console.log('------------------------------')
-      console.log("POINTS", positions)
-      console.log("+++++++++++++++++++++++++++")
-
-
       this.state.pointBuffer(positions)
       this.state.colorBuffer(colors)
       this.state.sizeBuffer(sizes)
@@ -213,32 +215,6 @@ class Scatterplot extends React.Component {
       // this.state.colorBuffer(generateColors(count))
       // this.state.sizeBuffer(generateSizes(count))
       this.count = positions.length
-    }
-  }
-  componentDidUpdate(prevProps) {
-    if (
-      (this.state.xScale && this.state.yScale) &&
-      (this.props.scatterplotXXaccessor && this.props.scatterplotYYaccessor) &&
-      this.props.scatterplotXXaccessor !== prevProps.scatterplotXXaccessor || // was CLU now FTH1 etc
-      this.props.scatterplotYYaccessor !== prevProps.scatterplotYYaccessor
-    ) {
-      this.drawAxesSVG(this.state.xScale, this.state.yScale);
-    }
-
-    if (
-      this.state.xScale &&
-      this.state.yScale
-    ) {
-      drawScatterplotCanvas(
-        this.state.ctx,
-        this.state.xScale,
-        this.state.yScale,
-        this.props.currentCellSelection,
-        this.props.opacityForDeselectedCells,
-        this.props.expression,
-        this.props.scatterplotXXaccessor,
-        this.props.scatterplotYYaccessor,
-      )
     }
   }
   maybeSetupScalesAndDrawAxes(nextProps) {
@@ -323,8 +299,16 @@ class Scatterplot extends React.Component {
             width:  width + margin.left + margin.right + "px",
             height: height + margin.top + margin.bottom + "px",
           }}
-        ></div>
-        <canvas width={width} height={height} style={{border: "1px solid black"}}  ref={(canvas) => { this.reglCanvas = canvas}}/>
+        >
+          <canvas
+            width={width}
+            height={height}
+            style={{
+              marginLeft: margin.left - 5,
+              marginTop: margin.top
+            }}
+            ref={(canvas) => { this.reglCanvas = canvas}}/>
+        </div>
       </div>
     )
   }
