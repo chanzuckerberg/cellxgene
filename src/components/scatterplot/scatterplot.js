@@ -64,7 +64,6 @@ class Scatterplot extends React.Component {
   componentDidMount() {
     const {
       svg
-      // ctx
     } = setupScatterplot(
       width,
       height,
@@ -72,7 +71,6 @@ class Scatterplot extends React.Component {
     );
     this.setState({
       svg
-      // ctx
     })
 
     const camera = _camera(this.reglCanvas, {scale: true, rotate: false});
@@ -128,22 +126,6 @@ class Scatterplot extends React.Component {
     ) {
       this.drawAxesSVG(this.state.xScale, this.state.yScale);
     }
-
-    // if (
-    //   this.state.xScale &&
-    //   this.state.yScale
-    // ) {
-    //   drawScatterplotCanvas(
-    //     this.state.ctx,
-    //     this.state.xScale,
-    //     this.state.yScale,
-    //     this.props.currentCellSelection,
-    //     this.props.opacityForDeselectedCells,
-    //     this.props.expression,
-    //     this.props.scatterplotXXaccessor,
-    //     this.props.scatterplotYYaccessor,
-    //   )
-    // }
 
     if (
       this.state.regl &&
@@ -211,9 +193,6 @@ class Scatterplot extends React.Component {
       this.state.pointBuffer(positions)
       this.state.colorBuffer(colors)
       this.state.sizeBuffer(sizes)
-      // this.state.pointBuffer(generatePoints(count))
-      // this.state.colorBuffer(generateColors(count))
-      // this.state.sizeBuffer(generateSizes(count))
       this.count = positions.length
     }
   }
@@ -304,7 +283,7 @@ class Scatterplot extends React.Component {
             width={width}
             height={height}
             style={{
-              marginLeft: margin.left - 5,
+              marginLeft: margin.left - 7,
               marginTop: margin.top
             }}
             ref={(canvas) => { this.reglCanvas = canvas}}/>
