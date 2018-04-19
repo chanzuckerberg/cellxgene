@@ -19,11 +19,6 @@ import {
 
 /* https://bl.ocks.org/mbostock/9078690 - quadtree for onClick / hover selections */
 
-
-// set constants
-const count = 39746
-
-
 @connect((state) => {
 
   const vertices = state.cells.cells && state.cells.cells.data.graph ? state.cells.cells.data.graph : null;
@@ -56,11 +51,13 @@ class Graph extends React.Component {
     };
   }
   componentDidMount() {
-    // const {svg, ctx} = setupGraphElements(
-    //   this.handleBrushSelectAction.bind(this),
-    //   this.handleBrushDeselectAction.bind(this)
-    // );
-    // this.setState({svg, ctx});
+    const {
+      svg
+    } = setupGraphElements(
+      this.handleBrushSelectAction.bind(this),
+      this.handleBrushDeselectAction.bind(this)
+    );
+    this.setState({svg});
 
     // setup canvas and camera
     const camera = _camera(this.reglCanvas, {scale: true, rotate: false});
@@ -133,9 +130,13 @@ class Graph extends React.Component {
       const colors = [];
       const sizes = [];
 
-      const s = d3.scaleLinear()
+      const glScaleX = d3.scaleLinear()
         .domain([0,1])
-        .range([-.95, .95]) /* padding */
+        .range([-1, 1]) /* padding */
+
+      const glScaleY = d3.scaleLinear()
+        .domain([0,1])
+        .range([1, -1]) /* padding */
 
       /*
         Construct Vectors
@@ -143,8 +144,8 @@ class Graph extends React.Component {
       _.each(nextProps.currentCellSelection, (cell, i) => {
         if (nextProps.graphMap[cell["CellName"]]) { /* fails silently, sometimes this is undefined, in which case the graph array should be shorter than the cell array, check in reducer */
           positions.push([
-            s(nextProps.graphMap[cell["CellName"]][0]),
-            s(nextProps.graphMap[cell["CellName"]][1])
+            glScaleX(nextProps.graphMap[cell["CellName"]][0]),
+            glScaleY(nextProps.graphMap[cell["CellName"]][1])
           ])
 
           let c = cell["__color__"];
@@ -260,7 +261,7 @@ class Graph extends React.Component {
           >
         </div>
         <div style={{padding: 0, margin: 0}}>
-          <canvas width={960} height={960} ref={(canvas) => { this.reglCanvas = canvas}}/>
+          <canvas width={globals.graphWidth} height={globals.graphHeight} ref={(canvas) => { this.reglCanvas = canvas}}/>
         </div>
       </div>
     )
