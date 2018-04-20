@@ -13,6 +13,10 @@ import _camera from '../../util/camera.js'
 import _regl from 'regl'
 import _drawPoints from './drawPointsRegl'
 
+import FaExpand from 'react-icons/lib/fa/crosshairs';
+import FaZoom from 'react-icons/lib/fa/search-plus';
+import FaSave from 'react-icons/lib/fa/download';
+
 import {
   scaleRGB
 } from "../../util/scaleRGB";
@@ -229,7 +233,13 @@ class Graph extends React.Component {
           borderRadius: 3,
           boxShadow: "3px 4px 13px 0px rgba(201,201,201,1)",
         }}>
-        <div style={{padding: 10}}>
+        <div
+          style={{
+            padding: 10,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "baseline"
+          }}>
           <button
             onClick={() => { this.props.dispatch(actions.regraph()) }}
             style={{
@@ -244,17 +254,48 @@ class Graph extends React.Component {
           >
           Regraph present selection
           </button>
-          <span style={{ marginLeft: 20}}>
-            deselected opacity
-          </span>
-          <input
-            style={{position: "relative", top: 3, left: 10}}
-            type="range"
-            onChange={this.handleOpacityRangeChange.bind(this)}
-            min={0}
-            max={1}
-            step="0.01"
-            />
+          <div>
+            <span style={{ marginRight: 10, fontSize: 12}}>
+              deselected opacity
+            </span>
+            <input
+              style={{position: "relative", top: 6, marginRight: 20}}
+              type="range"
+              onChange={this.handleOpacityRangeChange.bind(this)}
+              min={0}
+              max={1}
+              step="0.01"
+              />
+              <span style={{position: "relative", top: 3}}>
+            <button
+              style={{
+                cursor: "pointer",
+                border: "1px solid black",
+                backgroundColor: "white",
+                padding: 5,
+                borderRadius: 3
+              }}> <FaExpand/> </button>
+            <button
+              style={{
+                cursor: "pointer",
+                border: "1px solid white",
+                backgroundColor: "white",
+                padding: 5,
+                borderRadius: 3
+              }}> <FaZoom/> </button>
+              </span>
+          </div>
+          <div>
+            <button style={{
+              fontSize: 12,
+              fontWeight: 400,
+              color: "white",
+              padding: "10px 20px",
+              backgroundColor: globals.brightBlue,
+              border: "none",
+              cursor: "pointer",
+            }}> <FaSave style={{display: "inline-block"}}/> csv url for present selection </button>
+          </div>
         </div>
         <div
           id="graphAttachPoint"
