@@ -7,6 +7,7 @@ import SectionHeader from "../framework/sectionHeader"
 import actions from "../../actions";
 import ReactAutocomplete from "react-autocomplete"; /* http://emilebres.github.io/react-virtualized-checkbox/ */
 import getContrast from "font-color-contrast"; // https://www.npmjs.com/package/font-color-contrast
+import FaPaintBrush from 'react-icons/lib/fa/paint-brush';
 
 class HeatmapSquare extends React.Component {
   constructor (props) {
@@ -127,12 +128,12 @@ class HeatmapRow extends React.Component {
               fontSize: 16,
               cursor: "pointer",
               position: "relative",
-              top: 2,
               marginRight: 6,
               borderRadius: 3,
-              padding: "2px 3px",
+              padding: "0px 2px 2px 2px",
+              color: this.props.colorAccessor === this.props.gene ? "white" : "inherit",
               backgroundColor: this.props.colorAccessor === this.props.gene ? globals.brightBlue : "inherit",
-            }}>🖌️</span>
+            }}><FaPaintBrush style={{display: "inline-block"}}/></span>
           <span
             style={{
               fontSize: 14
