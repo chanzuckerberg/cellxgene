@@ -17,7 +17,6 @@ import * as globals from "../globals";
   This is nice because we keep a lot of filtering business logic centralized (what it means in practice to be selected)
 */
 
-
 const updateCellSelectionMiddleware = (store) => {
   return (next) => {
     return (action) => {
@@ -233,8 +232,6 @@ const updateCellSelectionMiddleware = (store) => {
           })
         })
       }
-
-
 
       let modifiedAction = Object.assign({}, action, {
         newSelection,

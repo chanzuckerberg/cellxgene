@@ -14,13 +14,13 @@ export const setupGraphElements = (
   handleBrushDeselectAction
 ) => {
 
-  var canvas = d3.select("#graphAttachPoint")
-    .append("canvas")
-    .attr("width", globals.graphWidth)
-    .attr("height", globals.graphHeight)
-    .attr("class", `${styles.graphCanvas}`);
+  // var canvas = d3.select("#graphAttachPoint")
+  //   .append("canvas")
+  //   .attr("width", globals.graphWidth)
+  //   .attr("height", globals.graphHeight)
+  //   .attr("class", `${styles.graphCanvas}`);
 
-  var ctx = canvas.node().getContext("2d");
+  // var ctx = canvas.node().getContext("2d");
 
   var svg = d3.select("#graphAttachPoint").append("svg")
     .attr("width", globals.graphWidth)
@@ -37,7 +37,7 @@ export const setupGraphElements = (
 
   return {
     svg,
-    ctx
+    // ctx
   }
 
 }

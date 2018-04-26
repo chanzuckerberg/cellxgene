@@ -13,7 +13,7 @@ import _camera from '../../util/camera.js'
 import _regl from 'regl'
 import _drawPoints from './drawPointsRegl'
 
-import FaExpand from 'react-icons/lib/fa/crosshairs';
+import FaCrosshair from 'react-icons/lib/fa/crosshairs';
 import FaZoom from 'react-icons/lib/fa/search-plus';
 import FaSave from 'react-icons/lib/fa/download';
 
@@ -52,6 +52,7 @@ class Graph extends React.Component {
       svg: null,
       ctx: null,
       brush: null,
+      mode: "brush",
     };
   }
   componentDidMount() {
@@ -131,15 +132,18 @@ class Graph extends React.Component {
       const _currentCellSelectionMap = _.keyBy(nextProps.currentCellSelection, "CellName"); /* move me to the reducer */
 
       const positions = [];
+      positions.length = nextProps.currentCellSelection.length;
       const colors = [];
+      colors.length = nextProps.currentCellSelection.length;
       const sizes = [];
+      sizes.length = nextProps.currentCellSelection.length;
 
       const glScaleX = d3.scaleLinear()
         .domain([0,1])
         .range([-1, 1]) /* padding */
 
       const glScaleY = d3.scaleLinear()
-        .domain([0,1])
+        .domain([0, 1])
         .range([1, -1]) /* padding */
 
       /*
@@ -147,29 +151,29 @@ class Graph extends React.Component {
       */
       _.each(nextProps.currentCellSelection, (cell, i) => {
         if (nextProps.graphMap[cell["CellName"]]) { /* fails silently, sometimes this is undefined, in which case the graph array should be shorter than the cell array, check in reducer */
-          positions.push([
+          positions[i] = [
             glScaleX(nextProps.graphMap[cell["CellName"]][0]),
             glScaleY(nextProps.graphMap[cell["CellName"]][1])
-          ])
+          ]
 
           let c = cell["__color__"];
 
           if (c[0] !== "#") {
             const _c = c.replace(/[^\d,.]/g, '').split(',');
-            colors.push([
+            colors[i] = [
               scaleRGB(+_c[0]),
               scaleRGB(+_c[1]),
               scaleRGB(+_c[2])
-            ])
+            ]
           } else {
             var parsedHex = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(c);
-            colors.push([
+            colors[i] = [
               scaleRGB(parseInt(parsedHex[1], 16)),
               scaleRGB(parseInt(parsedHex[2], 16)),
               scaleRGB(parseInt(parsedHex[3], 16))
-            ]);
+            ];
           }
-          sizes.push(cell["__selected__"] ? 4 : .2) /* make this a function of the number of total cells, including regraph */
+          sizes[i] = cell["__selected__"] ? 4 : .2 /* make this a function of the number of total cells, including regraph */
         }
       })
 
@@ -268,17 +272,19 @@ class Graph extends React.Component {
               />
               <span style={{position: "relative", top: 3}}>
             <button
+              onClick={() => { this.setState({mode: "brush"}) }}
               style={{
                 cursor: "pointer",
-                border: "1px solid black",
+                border: this.state.mode === "brush" ? "1px solid black" : "1px solid white",
                 backgroundColor: "white",
                 padding: 5,
                 borderRadius: 3
-              }}> <FaExpand/> </button>
+              }}> <FaCrosshair/> </button>
             <button
+              onClick={() => { this.setState({mode: "zoom"}) }}
               style={{
                 cursor: "pointer",
-                border: "1px solid white",
+                border: this.state.mode === "zoom" ? "1px solid black" : "1px solid white",
                 backgroundColor: "white",
                 padding: 5,
                 borderRadius: 3
@@ -298,6 +304,7 @@ class Graph extends React.Component {
           </div>
         </div>
         <div
+          style={{display: this.state.mode === "brush" ? "inherit" : "none"}}
           id="graphAttachPoint"
           >
         </div>
