@@ -17,10 +17,6 @@ import FaCrosshair from 'react-icons/lib/fa/crosshairs';
 import FaZoom from 'react-icons/lib/fa/search-plus';
 import FaSave from 'react-icons/lib/fa/download';
 
-import {
-  scaleRGB
-} from "../../util/scaleRGB";
-
 /* https://bl.ocks.org/mbostock/9078690 - quadtree for onClick / hover selections */
 
 @connect((state) => {
@@ -156,23 +152,7 @@ class Graph extends React.Component {
             glScaleY(nextProps.graphMap[cell["CellName"]][1])
           ]
 
-          let c = cell["__color__"];
-
-          if (c[0] !== "#") {
-            const _c = c.replace(/[^\d,.]/g, '').split(',');
-            colors[i] = [
-              scaleRGB(+_c[0]),
-              scaleRGB(+_c[1]),
-              scaleRGB(+_c[2])
-            ]
-          } else {
-            var parsedHex = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(c);
-            colors[i] = [
-              scaleRGB(parseInt(parsedHex[1], 16)),
-              scaleRGB(parseInt(parsedHex[2], 16)),
-              scaleRGB(parseInt(parsedHex[3], 16))
-            ];
-          }
+          colors[i] = cell.__colorRGB__;
           sizes[i] = cell["__selected__"] ? 4 : .2 /* make this a function of the number of total cells, including regraph */
         }
       })
