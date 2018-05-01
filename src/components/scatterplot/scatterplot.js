@@ -17,10 +17,6 @@ import _regl from 'regl'
 import _drawPoints from './drawPointsRegl'
 
 import {
-  scaleRGB
-} from "../../util/scaleRGB";
-
-import {
   margin,
   width,
   height,
@@ -169,23 +165,7 @@ class Scatterplot extends React.Component {
             glScaleY(this.state.yScale(cell.e[this.props.expression.data.genes.indexOf(this.props.scatterplotYYaccessor)]))
           ])
 
-          let c = _currentCellSelectionMap[cell.cellname]["__color__"];
-
-          if (c[0] !== "#") {
-            const _c = c.replace(/[^\d,.]/g, '').split(',');
-            colors.push([
-              scaleRGB(+_c[0]),
-              scaleRGB(+_c[1]),
-              scaleRGB(+_c[2])
-            ])
-          } else {
-            var parsedHex = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(c);
-            colors.push([
-              scaleRGB(parseInt(parsedHex[1], 16)),
-              scaleRGB(parseInt(parsedHex[2], 16)),
-              scaleRGB(parseInt(parsedHex[3], 16))
-            ]);
-          }
+          colors.push(_currentCellSelectionMap[cell.cellname]["__colorRGB__"])
           sizes.push(_currentCellSelectionMap[cell.cellname]["__selected__"] ? 4 : .2) /* make this a function of the number of total cells, including regraph */
         }
       })

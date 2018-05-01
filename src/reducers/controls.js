@@ -1,4 +1,7 @@
 import _ from "lodash";
+import {
+  parseRGB
+} from "../util/parseRGB";
 
 const Controls = (state = {
   _ranges: null, /* this comes from initialize, this is universe */
@@ -34,6 +37,7 @@ const Controls = (state = {
     _.each(currentCellSelection, (cell) => {
       cell["__selected__"] = true;
       cell["__color__"] = "rgba(0,0,0,1)" /* initial color for all cells in all charts */
+      cell["__colorRGB__"] = parseRGB(cell["__color__"]);
     });
     /*
       construct a copy of the ranges object that only has categorical

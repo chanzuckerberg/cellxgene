@@ -1,6 +1,9 @@
 import uri from "urijs";
 import * as globals from "../globals";
 import _ from "lodash";
+import {
+  parseRGB
+} from "../util/parseRGB";
 
 /*
   https://medium.com/@jacobp100/you-arent-using-redux-middleware-enough-94ffe991e6
@@ -47,7 +50,7 @@ const updateCellSelectionMiddleware = (store) => {
          (a) once the cells have loaded.
          (b) each time a user changes a color control we need to update currentCellSelection colors
 
-         This is available to all the draw functions as cell["__color__"]
+         This is available to all the draw functions as cell["__color__"] and cell["__colorRGB__"]
       */
 
       if (action.type === "color by categorical metadata") {
@@ -57,9 +60,11 @@ const updateCellSelectionMiddleware = (store) => {
         colorScale = d3.scaleOrdinal().range(globals.ordinalColors);
 
         _.each(currentSelectionWithUpdatedColors, (cell, i) => {
-          currentSelectionWithUpdatedColors[i]["__color__"] = colorScale(
+          let c = colorScale(
             cell[action.colorAccessor]
-          )
+          );
+          currentSelectionWithUpdatedColors[i]["__color__"] = c;
+          currentSelectionWithUpdatedColors[i]["__colorRGB__"] = parseRGB(c);
         })
 
       }
@@ -71,11 +76,13 @@ const updateCellSelectionMiddleware = (store) => {
           .range([1,0])
 
         _.each(currentSelectionWithUpdatedColors, (cell, i) => {
-          currentSelectionWithUpdatedColors[i]["__color__"] = d3.interpolateViridis(
+          let c = d3.interpolateViridis(
             colorScale(
               cell[action.colorAccessor]
             )
-          )
+          );
+          currentSelectionWithUpdatedColors[i]["__color__"] = c;
+          currentSelectionWithUpdatedColors[i]["__colorRGB__"] = parseRGB(c);
         })
 
       }
@@ -113,11 +120,13 @@ const updateCellSelectionMiddleware = (store) => {
           .range([1,0]) /* invert viridis... probably pass this scale through to others */
 
         _.each(currentSelectionWithUpdatedColors, (cell, i) => {
-          currentSelectionWithUpdatedColors[i]["__color__"] = d3.interpolateViridis(
+          let c = d3.interpolateViridis(
             colorScale(
               expressionMap[cell.CellName][indexOfGene]
             )
-          )
+          );
+          currentSelectionWithUpdatedColors[i]["__color__"] = c;
+          currentSelectionWithUpdatedColors[i]["__colorRGB__"] = parseRGB(c);
         })
       }
 
