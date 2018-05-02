@@ -70,8 +70,10 @@ const Controls = (state = {
 
       // Add each cell to its categorical metadata set.
       _.forEach(cell, (_value, key) => {
-        const s = _.get(categoricalAsCellsMap, [key, _value]);
-        if (s) s.push(cell);
+        if (categoricalAsCellsMap[key] && categoricalAsCellsMap[key][_value]) {
+          const s = categoricalAsCellsMap[key][_value];
+          if (s) s.push(cell);
+        }
       });
     });
 
