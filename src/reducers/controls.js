@@ -34,29 +34,27 @@ const Controls = (state = {
     const graphMap = {};
     const currentCellSelection = action.data.data.metadata.slice(0);
     _.each(action.data.data.graph, (g) => { graphMap[g[0]] = [g[1], g[2]] });
-    _.each(currentCellSelection, (cell) => {
-      cell["__selected__"] = true;
-      cell["__color__"] = "rgba(0,0,0,1)" /* initial color for all cells in all charts */
-      cell["__colorRGB__"] = parseRGB(cell["__color__"]);
-    });
+
     /*
       construct a copy of the ranges object that only has categorical
       replace all counts with bool flags
       ie., everything starts out checked
       we mutate this map in the actions below
     */
-    const categoricalAsBooleansMap = {};
+    const categoricalAsBooleansMap = {}, categoricalAsCellsMap = {};
     const continuousUserDefinedRanges = {};
     _.each(action.data.data.ranges, (value, key) => {
       if (
         key !== "CellName" &&
         value.options /* it's categorical, it has options instead of ranges */
       ) {
-        const optionsAsBooleans = {}
+        const optionsAsBooleans = {}, optionsAsCells = {};
         _.each(value.options, (_value, _key) => {
           optionsAsBooleans[_key] = true;
+          optionsAsCells[_key] = [];
         })
         categoricalAsBooleansMap[key] = optionsAsBooleans;
+        categoricalAsCellsMap[key] = optionsAsCells;
       } else if (
         key !== "CellName" &&
         value.range
@@ -65,11 +63,26 @@ const Controls = (state = {
       }
     })
 
+    _.each(currentCellSelection, (cell) => {
+      cell["__selected__"] = true;
+      cell["__color__"] = "rgba(0,0,0,1)" /* initial color for all cells in all charts */
+      cell["__colorRGB__"] = parseRGB(cell["__color__"]);
+
+      // Add each cell to its categorical metadata set.
+      _.forEach(cell, (_value, key) => {
+        if (categoricalAsCellsMap[key] && categoricalAsCellsMap[key][_value]) {
+          const s = categoricalAsCellsMap[key][_value];
+          if (s) s.push(cell);
+        }
+      });
+    });
+
     return Object.assign({}, state, {
       allCellsOnClient: action.data.data,
       currentCellSelection,
       graphMap,
       categoricalAsBooleansMap,
+      categoricalAsCellsMap,
       continuousUserDefinedRanges,
       graphBrushSelection: null, /* if we are getting new cells from the server, the layout (probably? definitely?) just changed, so this is now irrelevant, and we WILL need to call a function to reset state of this kind when cells success happens */
     });

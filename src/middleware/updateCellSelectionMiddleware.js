@@ -225,11 +225,9 @@ const updateCellSelectionMiddleware = (store) => {
 
       if (inactiveCategories.length > 0) {
         _.each(inactiveCategories, (d) => {
-          _.each(newSelection, (cell, i) => {
-            if (""+cell[d.category] === ""+d.option) { /* nums and strings to strings -__- */
-              newSelection[i]["__selected__"] = false;
-            }
-          })
+          if (s.controls.categoricalAsCellsMap[d.category] && s.controls.categoricalAsCellsMap[d.category][d.option]) {
+            _.forEach(s.controls.categoricalAsCellsMap[d.category][d.option], (c) => { c.__selected__ = false; });
+          }
         })
       }
 
