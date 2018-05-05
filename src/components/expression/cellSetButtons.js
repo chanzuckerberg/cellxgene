@@ -1,3 +1,4 @@
+// jshint esversion: 6
 import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
@@ -10,20 +11,22 @@ class CellSetButton extends React.Component {
   set() {
     const set = [];
 
-    _.each(this.props.currentCellSelection, (cell) => {
+    _.each(this.props.currentCellSelection, cell => {
       if (cell["__selected__"]) {
-        set.push(cell.CellName)
+        set.push(cell.CellName);
       }
-    })
+    });
 
     this.props.dispatch({
-      type: "store current cell selection as differential set " + this.props.eitherCellSetOneOrTwo,
+      type:
+        "store current cell selection as differential set " +
+        this.props.eitherCellSetOneOrTwo,
       data: set
-    })
+    });
   }
   render() {
     return (
-      <span style={{marginRight: 10}}>
+      <span style={{ marginRight: 10 }}>
         <button
           style={{
             color: "#FFF",
@@ -31,20 +34,34 @@ class CellSetButton extends React.Component {
             height: 30,
             backgroundColor: globals.brightBlue,
             border: "none",
-            cursor: "pointer",
+            cursor: "pointer"
           }}
-          onClick={this.set.bind(this)}>
-          <span style={{fontSize: 24, fontWeight: 700}}> {this.props.eitherCellSetOneOrTwo} </span>
-          <span style={{fontFamily: "Georgia", fontStyle: "italic", marginLeft: 8, position: "relative", top: -3}}>
-          {
-            this.props.differential["celllist" + this.props.eitherCellSetOneOrTwo] ?
-            this.props.differential["celllist" + this.props.eitherCellSetOneOrTwo].length + " cells" :
-            0 + " cells"
-          }
+          onClick={this.set.bind(this)}
+        >
+          <span style={{ fontSize: 24, fontWeight: 700 }}>
+            {" "}
+            {this.props.eitherCellSetOneOrTwo}{" "}
+          </span>
+          <span
+            style={{
+              fontFamily: "Georgia",
+              fontStyle: "italic",
+              marginLeft: 8,
+              position: "relative",
+              top: -3
+            }}
+          >
+            {this.props.differential[
+              "celllist" + this.props.eitherCellSetOneOrTwo
+            ]
+              ? this.props.differential[
+                  "celllist" + this.props.eitherCellSetOneOrTwo
+                ].length + " cells"
+              : 0 + " cells"}
           </span>
         </button>
       </span>
-    )
+    );
   }
 }
 

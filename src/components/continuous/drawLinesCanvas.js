@@ -1,7 +1,6 @@
+// jshint esversion: 6
 import _ from "lodash";
-import {
-  project
-} from "./util";
+import { project } from "./util";
 
 import renderQueue from "../../util/renderQueue";
 
@@ -16,16 +15,15 @@ const drawLinesCanvas = (
   dimensions,
   xscale,
   colorAccessor,
-  colorScale,
+  colorScale
 ) => {
-  return (d) => {
-
-    ctx.globalAlpha = .1;
+  return d => {
+    ctx.globalAlpha = 0.1;
 
     if (d["__selected__"]) {
       ctx.strokeStyle = d["__color__"];
     } else {
-      return
+      return;
     }
 
     ctx.beginPath();
@@ -36,31 +34,31 @@ const drawLinesCanvas = (
         // this bit renders horizontal lines on the previous/next
         // dimensions, so that sandwiched null values are visible
         if (i > 0) {
-          var prev = coords[i-1];
+          var prev = coords[i - 1];
           if (prev !== null) {
-            ctx.moveTo(prev[0],prev[1]);
-            ctx.lineTo(prev[0]+6,prev[1]);
+            ctx.moveTo(prev[0], prev[1]);
+            ctx.lineTo(prev[0] + 6, prev[1]);
           }
         }
-        if (i < coords.length-1) {
-          var next = coords[i+1];
+        if (i < coords.length - 1) {
+          var next = coords[i + 1];
           if (next !== null) {
-            ctx.moveTo(next[0]-6,next[1]);
+            ctx.moveTo(next[0] - 6, next[1]);
           }
         }
         return;
       }
 
       if (i == 0) {
-        ctx.moveTo(p[0],p[1]);
+        ctx.moveTo(p[0], p[1]);
         return;
       }
 
-      ctx.lineTo(p[0],p[1]);
+      ctx.lineTo(p[0], p[1]);
     });
     ctx.stroke();
-  }
-}
+  };
+};
 
 const drawCellLinesUsingRenderQueue = (
   metadata,
@@ -68,21 +66,14 @@ const drawCellLinesUsingRenderQueue = (
   xscale,
   ctx,
   colorAccessor,
-  colorScale,
+  colorScale
 ) => {
-
   const _renderLinesWithQueue = renderQueue(
-    drawLinesCanvas(
-      ctx,
-      dimensions,
-      xscale,
-      colorAccessor,
-      colorScale,
-    )
+    drawLinesCanvas(ctx, dimensions, xscale, colorAccessor, colorScale)
   ).rate(50);
   _renderLinesWithQueue(metadata);
   return _renderLinesWithQueue;
-}
+};
 
 const drawCellLinesSync = (
   metadata,
@@ -90,17 +81,17 @@ const drawCellLinesSync = (
   xscale,
   ctx,
   colorAccessor,
-  colorScale,
+  colorScale
 ) => {
   const _draw = drawLinesCanvas(
     ctx,
     dimensions,
     xscale,
     colorAccessor,
-    colorScale,
-  )
-  _.each(metadata, _draw)
-}
+    colorScale
+  );
+  _.each(metadata, _draw);
+};
 
 export default drawCellLinesUsingRenderQueue;
 // export default drawCellLinesUsingRenderQueue;

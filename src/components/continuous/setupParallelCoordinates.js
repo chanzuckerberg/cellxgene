@@ -3,22 +3,19 @@
       Setup SVG & Canvas elements
 ******************************************
 ******************************************/
+// jshint esversion: 6
+const setupParallelCoordinates = (width, height, margin) => {
+  var container = d3.select("#parcoords");
 
-const setupParallelCoordinates = (
-  width,
-  height,
-  margin
-) => {
-
-  var container = d3.select("#parcoords")
-
-  var svg = container.append("svg")
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
+  var svg = container
+    .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
     .append("g")
-      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-  var canvas = container.append("canvas")
+  var canvas = container
+    .append("canvas")
     .attr("width", width * devicePixelRatio)
     .attr("height", height * devicePixelRatio)
     .style("width", width + "px")
@@ -27,16 +24,15 @@ const setupParallelCoordinates = (
     .style("margin-left", margin.left + "px");
 
   var ctx = canvas.node().getContext("2d");
-      ctx.globalCompositeOperation = 'darken';
-      ctx.globalAlpha = 0.15;
-      ctx.lineWidth = 1.5;
-      ctx.scale(devicePixelRatio, devicePixelRatio);
+  ctx.globalCompositeOperation = "darken";
+  ctx.globalAlpha = 0.15;
+  ctx.lineWidth = 1.5;
+  ctx.scale(devicePixelRatio, devicePixelRatio);
 
   return {
     svg,
-    ctx,
-  }
+    ctx
+  };
+};
 
-}
-
-export default setupParallelCoordinates
+export default setupParallelCoordinates;

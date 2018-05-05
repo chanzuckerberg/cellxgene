@@ -3,22 +3,31 @@ https://bl.ocks.org/mbostock/4341954
 https://bl.ocks.org/mbostock/34f08d5e11952a80609169b7917d4172
 https://bl.ocks.org/SpaceActuary/2f004899ea1b2bd78d6f1dbb2febf771
 */
-import React from 'react';
+// jshint esversion: 6
+import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
 
-@connect((state) => {
+@connect(state => {
+  const ranges =
+    state.cells.cells && state.cells.cells.data.ranges
+      ? state.cells.cells.data.ranges
+      : null;
+  const metadata =
+    state.cells.cells && state.cells.cells.data.metadata
+      ? state.cells.cells.data.metadata
+      : null;
 
-  const ranges = state.cells.cells && state.cells.cells.data.ranges ? state.cells.cells.data.ranges : null;
-  const metadata = state.cells.cells && state.cells.cells.data.metadata ? state.cells.cells.data.metadata : null;
-
-  const initializeRanges = state.initialize.data && state.initialize.data.data.ranges ? state.initialize.data.data.ranges : null;
+  const initializeRanges =
+    state.initialize.data && state.initialize.data.data.ranges
+      ? state.initialize.data.data.ranges
+      : null;
 
   return {
     colorAccessor: state.controls.colorAccessor,
     colorScale: state.controls.colorScale,
-    currentCellSelection: state.controls.currentCellSelection,
-  }
+    currentCellSelection: state.controls.currentCellSelection
+  };
 })
 class HistogramBrush extends React.Component {
   constructor(props) {
@@ -33,15 +42,11 @@ class HistogramBrush extends React.Component {
       ctx: null,
       axes: null,
       dimensions: null,
-      brush: null,
+      brush: null
     };
   }
-  componentDidMount() {
-
-  }
-  componentDidUpdate() {
-
-  }
+  componentDidMount() {}
+  componentDidUpdate() {}
   onBrush(selection, x) {
     return () => {
       if (d3.event.selection) {
@@ -57,81 +62,104 @@ class HistogramBrush extends React.Component {
           range: null
         });
       }
-
-    }
+    };
   }
   drawHistogram(svgRef) {
-
     const allValuesForContinuousFieldAsArray = _.map(
       this.props.currentCellSelection,
       this.props.metadataField
-    )
+    );
 
-    var x = d3.scaleLinear()
-        .domain(d3.extent(allValuesForContinuousFieldAsArray, (d) => +d))
-        .range([0, this.width])
-        // .range([margin.left, width - margin.right]);
+    var x = d3
+      .scaleLinear()
+      .domain(d3.extent(allValuesForContinuousFieldAsArray, d => +d))
+      .range([0, this.width]);
+    // .range([margin.left, width - margin.right]);
 
-    var y = d3.scaleLinear()
-      .range([this.height - this.marginBottom, 0])
-      // .range([height - margin.bottom, margin.top]);
+    var y = d3.scaleLinear().range([this.height - this.marginBottom, 0]);
+    // .range([height - margin.bottom, margin.top]);
 
-    const bins = d3.histogram()
-                    .domain(x.domain())
-                    .thresholds(40)(allValuesForContinuousFieldAsArray)
+    const bins = d3
+      .histogram()
+      .domain(x.domain())
+      .thresholds(40)(allValuesForContinuousFieldAsArray);
 
-    d3.select(svgRef)
+    d3
+      .select(svgRef)
       .insert("g", "*")
       .attr("fill", "#bbb")
       .selectAll("rect")
       .data(bins)
-      .enter().append("rect")
-      .attr("x", function(d) { return x(d.x0) + 1; })
-      .attr("y", function(d) { return y(d.length / allValuesForContinuousFieldAsArray.length); })
-      .attr("width", function(d) { return Math.abs(x(d.x1) - x(d.x0) - 1); })
-      .attr("height", function(d) { return y(0) - y(d.length / allValuesForContinuousFieldAsArray.length); });
+      .enter()
+      .append("rect")
+      .attr("x", function(d) {
+        return x(d.x0) + 1;
+      })
+      .attr("y", function(d) {
+        return y(d.length / allValuesForContinuousFieldAsArray.length);
+      })
+      .attr("width", function(d) {
+        return Math.abs(x(d.x1) - x(d.x0) - 1);
+      })
+      .attr("height", function(d) {
+        return y(0) - y(d.length / allValuesForContinuousFieldAsArray.length);
+      });
 
     if (!this.state.brush && !this.state.axis) {
-      const brush = d3.select(svgRef)
-        .append('g')
-        .attr('class', 'brush')
+      const brush = d3
+        .select(svgRef)
+        .append("g")
+        .attr("class", "brush")
         .call(
-          d3.brushX()
-            .on('end', this.onBrush(this.props.metadataField, x.invert).bind(this))
-        )
+          d3
+            .brushX()
+            .on(
+              "end",
+              this.onBrush(this.props.metadataField, x.invert).bind(this)
+            )
+        );
 
-      const xAxis = d3.select(svgRef)
+      const xAxis = d3
+        .select(svgRef)
         .append("g")
         .attr("class", "axis axis--x")
-        .attr("transform", "translate(0," + (this.height - this.marginBottom) + ")")
-        .call(
-          d3.axisBottom(x)
-          .ticks(5)
+        .attr(
+          "transform",
+          "translate(0," + (this.height - this.marginBottom) + ")"
         )
+        .call(d3.axisBottom(x).ticks(5))
         .append("text")
-          .attr("x", 300)
-          .attr("y", -6)
-          .attr("fill", "#000")
-          .attr("text-anchor", "end")
-          .attr("font-weight", "bold")
-          .text(this.props.metadataField)
+        .attr("x", 300)
+        .attr("y", -6)
+        .attr("fill", "#000")
+        .attr("text-anchor", "end")
+        .attr("font-weight", "bold")
+        .text(this.props.metadataField);
 
-      this.setState({brush, xAxis})
+      this.setState({ brush, xAxis });
     }
   }
 
   render() {
-
     return (
-      <div style={{marginTop: 10}} id={"histogram_" + this.props.metadataField}>
-        <svg width={this.width} height={this.height} ref={(svgRef) => { this.drawHistogram(svgRef)}}>
+      <div
+        style={{ marginTop: 10 }}
+        id={"histogram_" + this.props.metadataField}
+      >
+        <svg
+          width={this.width}
+          height={this.height}
+          ref={svgRef => {
+            this.drawHistogram(svgRef);
+          }}
+        >
           {this.props.ranges.min}
           {" to "}
           {this.props.ranges.max}
         </svg>
       </div>
-    )
+    );
   }
-};
+}
 
-  export default HistogramBrush;
+export default HistogramBrush;

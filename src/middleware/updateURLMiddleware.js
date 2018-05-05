@@ -1,3 +1,4 @@
+// jshint esversion: 6
 import uri from "urijs";
 
 /*
@@ -5,14 +6,13 @@ import uri from "urijs";
   storeInstance => functionToCallWithAnActionThatWillSendItToTheNextMiddleware => actionThatDispatchWasCalledWith => valueToUseAsTheReturnValueOfTheDispatchCall
 */
 
-
-const updateURLMiddleware = (store) => {
-  return (next) => {
-    return (action) => {
+const updateURLMiddleware = store => {
+  return next => {
+    return action => {
       const oldState = store.getState();
       const nextAction = next(action);
 
-      if (action.type === 'url changed') {
+      if (action.type === "url changed") {
         /* we don't handle pop state here - we handle it in the url reducer */
         return nextAction;
       }
@@ -42,7 +42,6 @@ const updateURLMiddleware = (store) => {
       // }
       //
       // window.history.pushState("", "", newURL)
-
 
       //
       // // Internal helper for working with URIs
@@ -77,8 +76,8 @@ const updateURLMiddleware = (store) => {
       // }
 
       return nextAction;
-    }
-  }
+    };
+  };
 };
 
 export default updateURLMiddleware;
