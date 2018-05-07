@@ -1,7 +1,13 @@
 // jshint esversion: 6
 import { scaleRGB } from "./scaleRGB";
 
-export const parseRGB = c => {
+// maintain a cache of already parsed RGB names, as it is reasonably expensive
+// to do this operation.  This lets us have speed, but keep the pleasant ability
+// to talk about colors by their text description eg, 'rgb(0,0,1)'
+//
+const colorCache = new Map();
+
+function parseColorName(c) {
   if (c[0] !== "#") {
     const _c = c.replace(/[^\d,.]/g, "").split(",");
     return [scaleRGB(+_c[0]), scaleRGB(+_c[1]), scaleRGB(+_c[2])];
@@ -13,4 +19,13 @@ export const parseRGB = c => {
       scaleRGB(parseInt(parsedHex[3], 16))
     ];
   }
+}
+
+export const parseRGB = c => {
+  var cv = colorCache.get(c);
+  if (!cv) {
+    cv = parseColorName(c);
+    colorCache.set(c, cv);
+  }
+  return cv;
 };
