@@ -1,3 +1,4 @@
+// jshint esversion: 6
 /* rc slider https://www.npmjs.com/package/rc-slider */
 
 import React from "react";

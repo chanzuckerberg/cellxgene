@@ -1,4 +1,5 @@
-export const scaleRGB = (input) => {
+// jshint esversion: 6
+export const scaleRGB = input => {
   const outputMax = 1;
   const outputMin = 0;
 
@@ -7,4 +8,4 @@ export const scaleRGB = (input) => {
 
   const percent = (input - inputMin) / (inputMax - inputMin);
   return percent * (outputMax - outputMin) + outputMin;
-}
+};

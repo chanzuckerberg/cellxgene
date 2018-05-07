@@ -1,11 +1,10 @@
-import React from 'react';
+// jshint esversion: 6
+import React from "react";
 
-import styles from './container.css';
+import styles from "./container.css";
 
 const Container = props => (
-  <div className={styles.container}>
-    {props.children}
-  </div>
+  <div className={styles.container}>{props.children}</div>
 );
 
 export default Container;

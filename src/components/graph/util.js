@@ -1,3 +1,4 @@
+// jshint esversion: 6
 // createExpressionsCountsMap () {
 //
 //   const CHANGE_ME_MAGIC_GENE_INDEX = 5;

@@ -1,13 +1,10 @@
-import {scaleRGB} from "./scaleRGB";
+// jshint esversion: 6
+import { scaleRGB } from "./scaleRGB";
 
-export const parseRGB = (c) => {
+export const parseRGB = c => {
   if (c[0] !== "#") {
-    const _c = c.replace(/[^\d,.]/g, '').split(',');
-    return [
-      scaleRGB(+_c[0]),
-      scaleRGB(+_c[1]),
-      scaleRGB(+_c[2])
-    ];
+    const _c = c.replace(/[^\d,.]/g, "").split(",");
+    return [scaleRGB(+_c[0]), scaleRGB(+_c[1]), scaleRGB(+_c[2])];
   } else {
     var parsedHex = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(c);
     return [

@@ -1,8 +1,9 @@
-const mat4 = require('gl-mat4')
+// jshint esversion: 6
+const mat4 = require("gl-mat4");
 
 // opacity: https://github.com/spacetx/starfish/blob/master/viz/draw/regions.js
 
-export default function (regl) {
+export default function(regl) {
   return regl({
     vert: `
     precision mediump float;
@@ -29,14 +30,14 @@ export default function (regl) {
     }`,
 
     attributes: {
-      position: regl.prop('position'),
-      color: regl.prop('color'),
-      size: regl.prop('size')
+      position: regl.prop("position"),
+      color: regl.prop("color"),
+      size: regl.prop("size")
     },
 
     uniforms: {
-      distance: regl.prop('distance'),
-      view: regl.prop('view'),
+      distance: regl.prop("distance"),
+      view: regl.prop("view"),
       projection: (context, props) => {
         return mat4.perspective(
           [],
@@ -44,12 +45,12 @@ export default function (regl) {
           context.viewportWidth * props.scale / context.viewportHeight,
           0.01,
           1000
-        )
-      },
+        );
+      }
     },
 
-    count: regl.prop('count'),
+    count: regl.prop("count"),
 
-    primitive: 'points'
-  })
+    primitive: "points"
+  });
 }
