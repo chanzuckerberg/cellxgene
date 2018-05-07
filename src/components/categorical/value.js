@@ -54,12 +54,15 @@ class CategoryValue extends React.Component {
             paddingLeft: 15,
             width: 200,
             flexShrink: 0,
-            margin: 0,
+            margin: 0
             // lineHeight: "1em"
-          }}>
+          }}
+        >
           <input
-            style={{position: "relative", top: 1}}
-            onChange={selected ? this.toggleOff.bind(this) : this.toggleOn.bind(this)}
+            style={{ position: "relative", top: 1 }}
+            onChange={
+              selected ? this.toggleOff.bind(this) : this.toggleOn.bind(this)
+            }
             checked={selected}
             type="checkbox"
           />
@@ -70,11 +73,14 @@ class CategoryValue extends React.Component {
             padding: "1px 10px",
             width: 80,
             textAlign: "center",
-            backgroundColor: c ? this.props.colorScale(this.props.value) : "inherit",
+            backgroundColor: c
+              ? this.props.colorScale(this.props.value)
+              : "inherit",
             color: c ? "white" : "black",
-            margin: 0,
+            margin: 0
             // lineHeight: "1em"
-          }}>
+          }}
+        >
           {this.props.count}
         </p>
       </div>
