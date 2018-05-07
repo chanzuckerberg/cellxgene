@@ -51,6 +51,7 @@ class Graph extends React.Component {
   constructor(props) {
     super(props);
     this.count = 0;
+    this.inverse = mat4.identity([]);
     this.state = {
       drawn: false,
       svg: null,
@@ -92,6 +93,17 @@ class Graph extends React.Component {
         view: camera.view(),
         scale: viewportHeight / viewportWidth
       });
+
+      var view = camera.view(); // get the camera matrix
+      var projection = mat4.perspective(
+        [],
+        Math.PI / 2,
+        context.viewportWidth * props.scale / context.viewportHeight,
+        0.01,
+        1000
+      ); // get the projection matrix
+      var combined = mat.multiply([], projection, view); // this is the matrix applied to the transform
+      this.inverse = mat.invert([], combined); // this is the inverse
 
       camera.tick();
     });
