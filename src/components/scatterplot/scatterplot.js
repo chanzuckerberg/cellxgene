@@ -9,7 +9,6 @@ import { connect } from "react-redux";
 import scatterplot from "./scatterplot";
 import setupScatterplot from "./setupScatterplot";
 import styles from "./scatterplot.css";
-import drawScatterplotCanvas from "./drawScatterplotCanvas";
 
 import mat4 from "gl-mat4";
 import fit from "canvas-fit";
