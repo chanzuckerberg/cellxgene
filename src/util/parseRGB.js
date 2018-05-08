@@ -5,7 +5,7 @@ import { scaleRGB } from "./scaleRGB";
 // to do this operation.  This lets us have speed, but keep the pleasant ability
 // to talk about colors by their text description eg, 'rgb(0,0,1)'
 //
-const colorCache = new Map();
+const colorCache = new Object(null); // no prototype
 
 function parseColorName(c) {
   if (c[0] !== "#") {
@@ -22,10 +22,10 @@ function parseColorName(c) {
 }
 
 export const parseRGB = c => {
-  var cv = colorCache.get(c);
+  var cv = colorCache[c];
   if (!cv) {
     cv = parseColorName(c);
-    colorCache.set(c, cv);
+    colorCache[c] = cv;
   }
   return cv;
 };
