@@ -37,7 +37,7 @@ const updateCellSelectionMiddleware = store => {
       if (
         !filterJustChanged ||
         !s.controls.allCellsOnClient
-        /* graphMap is set at the same time as allCells, so we assume it exists */
+        /* graph is set at the same time as allCells, so we assume it exists */
       ) {
         return next(
           action
@@ -46,12 +46,11 @@ const updateCellSelectionMiddleware = store => {
 
       /*
         - make a FRESH copy of all of the cells
-        - metadata has cellname, and that's all we ever need (is a key to graphMap)
+        - metadata has cellname and index, and that's all we ever need to reference cell info
       */
       let newSelection = s.controls.currentCellSelection.slice(0);
-      _.each(newSelection, cell => {
-        cell["__selected__"] = true;
-      });
+      _.forEach(newSelection, cell => (cell.__selected__ = true));
+
       /*
          in plain language...
 
@@ -74,26 +73,23 @@ const updateCellSelectionMiddleware = store => {
             ? action.brushCoords
             : s.controls.graphBrushSelection;
 
-        _.each(newSelection, (cell, i) => {
-          if (!s.controls.graphMap[cell["CellName"]]) {
-            newSelection[i][
-              "__selected__"
-            ] = false; /* make a toggle in future */
-            return;
-          }
-
-          const coords = s.controls.graphMap[cell["CellName"]]; // [0.08005009151334168, 0.6907652173913044]
+        const graphVec = s.controls.graphVec;
+        for (let i = 0; i < newSelection.length; i++) {
+          const cell = newSelection[i];
+          const cellId = cell.__cellIndex__;
+          const x = globals.graphXScale(graphVec[2 * cellId]);
+          const y = globals.graphYScale(graphVec[2 * cellId + 1]);
 
           const pointIsInsideBrushBounds =
-            globals.graphXScale(coords[0]) >= graphBrushSelection.northwestX &&
-            globals.graphXScale(coords[0]) <= graphBrushSelection.southeastX &&
-            globals.graphYScale(coords[1]) >= graphBrushSelection.northwestY &&
-            globals.graphYScale(coords[1]) <= graphBrushSelection.southeastY;
+            x >= graphBrushSelection.northwestX &&
+            x <= graphBrushSelection.southeastX &&
+            y >= graphBrushSelection.northwestY &&
+            y <= graphBrushSelection.southeastY;
 
           if (!pointIsInsideBrushBounds) {
-            newSelection[i]["__selected__"] = false;
+            cell.__selected__ = false;
           }
-        });
+        }
       }
       if (
         (action.type ===

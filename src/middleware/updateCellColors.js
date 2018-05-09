@@ -54,11 +54,12 @@ const updateCellSelectionMiddleware = store => {
       if (action.type === "color by categorical metadata") {
         colorScale = d3.scaleOrdinal().range(globals.ordinalColors);
 
-        _.each(currentSelectionWithUpdatedColors, (cell, i) => {
+        for (let i = 0; i < currentSelectionWithUpdatedColors.length; i++) {
+          const cell = currentSelectionWithUpdatedColors[i];
           let c = colorScale(cell[action.colorAccessor]);
-          currentSelectionWithUpdatedColors[i]["__color__"] = c;
-          currentSelectionWithUpdatedColors[i]["__colorRGB__"] = parseRGB(c);
-        });
+          cell.__color__ = c;
+          cell.__colorRGB__ = parseRGB(c);
+        }
       }
 
       if (action.type === "color by continuous metadata") {

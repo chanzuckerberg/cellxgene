@@ -8,8 +8,9 @@ const Controls = (
     allGeneNames: null,
     allCellsOnClient: null /* this comes from cells endpoint, this is world */,
     currentCellSelection: null /* this comes from user actions, all draw components use this, it is created by middleware */,
-    graphMap: null,
+    graphVec: null,
     categoricalAsBooleansMap: null,
+    categoricalAsCellsMap: null,
     colorAccessor: null,
     colorScale: null,
     opacityForDeselectedCells: 0.2,
@@ -33,11 +34,21 @@ const Controls = (
         allGeneNames: action.data.data.genes
       });
     case "request cells success":
-      const graphMap = {};
-      const currentCellSelection = action.data.data.metadata.slice(0);
-      _.each(action.data.data.graph, g => {
-        graphMap[g[0]] = [g[1], g[2]];
+      // Store the graph in a linear array for fast access.  Index into
+      // the array by "cell index", which is stored as metadata field
+      // __cellIndex__.
+      //
+      // Code below relies on the REST API guarantee that the graph and
+      // metadata are returned as arrays with the same order and length.
+      //
+      const graphVec = new Float32Array(2 * action.data.data.graph.length);
+      _.each(action.data.data.graph, (g, i) => {
+        graphVec[2 * i] = g[1];
+        graphVec[2 * i + 1] = g[2];
       });
+
+      const currentCellSelection = action.data.data.metadata.slice(0);
+      const currentCellSelectionMap = _.keyBy(currentCellSelection, "CellName");
 
       /*
       construct a copy of the ranges object that only has categorical
@@ -66,11 +77,12 @@ const Controls = (
         }
       });
 
-      _.each(currentCellSelection, cell => {
-        cell["__selected__"] = true;
-        cell["__color__"] =
+      _.each(currentCellSelection, (cell, idx) => {
+        cell.__cellIndex__ = idx;
+        cell.__selected__ = true;
+        cell.__color__ =
           "rgba(0,0,0,1)"; /* initial color for all cells in all charts */
-        cell["__colorRGB__"] = parseRGB(cell["__color__"]);
+        cell.__colorRGB__ = parseRGB(cell.__color__);
 
         // Add each cell to its categorical metadata set.
         _.forEach(cell, (_value, key) => {
@@ -87,7 +99,8 @@ const Controls = (
       return Object.assign({}, state, {
         allCellsOnClient: action.data.data,
         currentCellSelection,
-        graphMap,
+        currentCellSelectionMap,
+        graphVec,
         categoricalAsBooleansMap,
         categoricalAsCellsMap,
         continuousUserDefinedRanges,

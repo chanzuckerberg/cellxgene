@@ -15,6 +15,7 @@ import fit from "canvas-fit";
 import _camera from "../../util/camera.js";
 import _regl from "regl";
 import _drawPoints from "./drawPointsRegl";
+import { scaleLinear } from "../../util/scaleLinear";
 
 import { margin, width, height, createDimensions } from "./util";
 
@@ -39,6 +40,7 @@ import { margin, width, height, createDimensions } from "./util";
     colorAccessor: state.controls.colorAccessor,
     colorScale: state.controls.colorScale,
     currentCellSelection: state.controls.currentCellSelection,
+    currentCellSelectionMap: state.controls.currentCellSelectionMap,
     scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
     scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
     opacityForDeselectedCells: state.controls.opacityForDeselectedCells,
@@ -107,12 +109,12 @@ class Scatterplot extends React.Component {
   }
   componentDidUpdate(prevProps) {
     if (
-      (this.state.xScale &&
-        this.state.yScale &&
-        (this.props.scatterplotXXaccessor &&
-          this.props.scatterplotYYaccessor) &&
-        this.props.scatterplotXXaccessor !== prevProps.scatterplotXXaccessor) || // was CLU now FTH1 etc
-      this.props.scatterplotYYaccessor !== prevProps.scatterplotYYaccessor
+      this.state.xScale &&
+      this.state.yScale &&
+      this.props.scatterplotXXaccessor &&
+      this.props.scatterplotYYaccessor &&
+      (this.props.scatterplotXXaccessor !== prevProps.scatterplotXXaccessor || // was CLU now FTH1 etc
+        this.props.scatterplotYYaccessor !== prevProps.scatterplotYYaccessor)
     ) {
       this.drawAxesSVG(this.state.xScale, this.state.yScale);
     }
@@ -130,67 +132,54 @@ class Scatterplot extends React.Component {
       this.state.xScale &&
       this.state.yScale
     ) {
-      const _currentCellSelectionMap = _.keyBy(
-        this.props.currentCellSelection,
-        "CellName"
-      ); /* move me to the reducer */
+      const currentCellSelectionMap = this.props.currentCellSelectionMap;
 
-      const positions = [];
-      const colors = [];
-      const sizes = [];
+      const data = this.props.expression.data;
+      const cells = data.cells;
+      const genes = data.genes;
+      const cellCount = cells.length;
+      const positions = new Float32Array(2 * cellCount);
+      const colors = new Float32Array(3 * cellCount);
+      const sizes = new Float32Array(cellCount);
 
-      const glScaleX = d3
-        .scaleLinear()
-        .domain([0, width])
-        .range([-0.95, 0.95]); /* padding */
+      // d3.scaleLinear().domain([0, width]).range([-0.95, 0.95])
+      const glScaleX = scaleLinear([0, width], [-0.95, 0.95]);
 
-      const glScaleY = d3
-        .scaleLinear()
-        .domain([0, height])
-        .range([-1, 1]);
+      // d3.scaleLinear().domain([0, height]).range([-1, 1])
+      const glScaleY = scaleLinear([0, height], [-1, 1]);
+
+      const geneXXaccessorIndex = genes.indexOf(
+        this.props.scatterplotXXaccessor
+      );
+      const geneYYaccessorIndex = genes.indexOf(
+        this.props.scatterplotYYaccessor
+      );
 
       /*
         Construct Vectors
       */
-      _.each(this.props.expression.data.cells, (cell, i) => {
-        /*
-          this if is necessary until we are no longer getting expression for all cells, but only for 'world'
-          ...which will mean refetching when we regraph, or 'go back up to all cells'
-        */
-        if (_currentCellSelectionMap[cell.cellname]) {
-          /* fails silently, sometimes this is undefined, in which case the graph array should be shorter than the cell array, check in reducer */
-          positions.push([
-            glScaleX(
-              this.state.xScale(
-                cell.e[
-                  this.props.expression.data.genes.indexOf(
-                    this.props.scatterplotXXaccessor
-                  )
-                ]
-              )
-            ) /* scale each point first to the window as we calculate extents separately below, so no need to repeat */,
-            glScaleY(
-              this.state.yScale(
-                cell.e[
-                  this.props.expression.data.genes.indexOf(
-                    this.props.scatterplotYYaccessor
-                  )
-                ]
-              )
-            )
-          ]);
+      for (var i = 0; i < cellCount; i++) {
+        const cell = cells[i];
+        const cellMetadata = currentCellSelectionMap[cell.cellname];
 
-          colors.push(_currentCellSelectionMap[cell.cellname]["__colorRGB__"]);
-          sizes.push(
-            _currentCellSelectionMap[cell.cellname]["__selected__"] ? 4 : 0.2
-          ); /* make this a function of the number of total cells, including regraph */
-        }
-      });
+        positions[2 * i] = glScaleX(
+          this.state.xScale(cell.e[geneXXaccessorIndex])
+        ); /* scale each point first to the window as we calculate extents separately below, so no need to repeat */
+        positions[2 * i + 1] = glScaleY(
+          this.state.yScale(cell.e[geneYYaccessorIndex])
+        );
 
-      this.state.pointBuffer(positions);
-      this.state.colorBuffer(colors);
-      this.state.sizeBuffer(sizes);
-      this.count = positions.length;
+        colors.set(cellMetadata.__colorRGB__, 3 * i);
+
+        sizes[i] = cellMetadata.__selected__
+          ? 4
+          : 0.2; /* make this a function of the number of total cells, including regraph */
+      }
+
+      this.state.pointBuffer({ data: positions, dimension: 2 });
+      this.state.colorBuffer({ data: colors, dimension: 3 });
+      this.state.sizeBuffer({ data: sizes, dimension: 1 });
+      this.count = cellCount;
     }
   }
   maybeSetupScalesAndDrawAxes(nextProps) {

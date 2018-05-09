@@ -72,21 +72,17 @@ export const graphMargin = { top: 20, right: 10, bottom: 30, left: 40 };
 export const graphWidth = 960;
 export const graphHeight = 960;
 
-export const graphXScale = d3
-  .scaleLinear()
-  .domain([
-    0,
-    1
-  ]) /* while this is the default for d3, our data is normalized so better to be explicit */
-  .range([0 + graphMargin.left, graphWidth - graphMargin.right]);
-
-export const graphYScale = d3
-  .scaleLinear()
-  .domain([
-    0,
-    1
-  ]) /* while this is the default for d3, our data is normalized so better to be explicit */
-  .range([graphHeight - graphMargin.bottom, 0 + graphMargin.top]);
+import { scaleLinear } from "./util/scaleLinear";
+// d3.scaleLinear().domain([0,1]).range([0 + graphMargin.left, graphWidth - graphMargin.right])
+export const graphXScale = scaleLinear(
+  [0, 1],
+  [0 + graphMargin.left, graphWidth - graphMargin.right]
+);
+// d3.scaleLinear().domain([0,1]).range([graphHeight - graphMargin.bottom, 0 + graphMargin.top])
+export const graphYScale = scaleLinear(
+  [0, 1],
+  [graphHeight - graphMargin.bottom, 0 + graphMargin.top]
+);
 
 export const ordinalColors = [
   "#0ac115",
