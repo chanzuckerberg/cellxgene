@@ -36,30 +36,20 @@ class LeftSideBar extends React.Component {
         <div style={{ padding: 10 }}>
           <button
             style={{
-              padding: "10px 30px",
+              padding: "none",
               outline: 0,
-              fontSize: 18,
+              fontSize: 14,
+              fontWeight:
+                this.state.currentTab === "metadata" ? 700 : 400,
               fontStyle:
                 this.state.currentTab === "metadata" ? "inherit" : "italic",
               cursor: "pointer",
               border: "none",
               backgroundColor: "#FFF",
-              borderTop:
-                this.state.currentTab === "metadata"
-                  ? "4px solid " + globals.brightBlue
-                  : "none",
-              borderBottom:
-                this.state.currentTab === "metadata"
-                  ? "none"
-                  : "1px solid " + globals.lightGrey,
-              borderRight:
-                this.state.currentTab === "metadata"
-                  ? "1px solid " + globals.lightGrey
-                  : "none",
-              borderLeft:
-                this.state.currentTab === "metadata"
-                  ? "1px solid " + globals.lightGrey
-                  : "none"
+              borderTop: "none",
+              borderBottom: "none",
+              borderRight: "none",
+              borderLeft: "none",
             }}
             onClick={() => {
               this.setState({ currentTab: "metadata" });
@@ -69,30 +59,20 @@ class LeftSideBar extends React.Component {
           </button>
           <button
             style={{
-              padding: "10px 30px",
+              padding: "none",
               outline: 0,
-              fontSize: 18,
+              fontSize: 14,
+              fontWeight:
+                this.state.currentTab === "expression" ? 700 : 400,
               fontStyle:
                 this.state.currentTab === "expression" ? "inherit" : "italic",
               cursor: "pointer",
               border: "none",
               backgroundColor: "#FFF",
-              borderTop:
-                this.state.currentTab === "expression"
-                  ? "4px solid " + globals.brightBlue
-                  : "none",
-              borderBottom:
-                this.state.currentTab === "expression"
-                  ? "none"
-                  : "1px solid " + globals.lightGrey,
-              borderRight:
-                this.state.currentTab === "expression"
-                  ? "1px solid " + globals.lightGrey
-                  : "none",
-              borderLeft:
-                this.state.currentTab === "expression"
-                  ? "1px solid " + globals.lightGrey
-                  : "none"
+              borderTop: "none",
+              borderBottom: "none",
+              borderRight: "none",
+              borderLeft: "none",
             }}
             onClick={() => {
               this.setState({ currentTab: "expression" });
@@ -103,8 +83,8 @@ class LeftSideBar extends React.Component {
         </div>
         <div
           style={{
-            height: 500,
-            width: 350,
+            height: 350,
+            width: 400,
             padding: 10,
             overflowY: "auto",
             overflowX: "hidden"

@@ -101,77 +101,6 @@ class HeatmapRow extends React.Component {
       >
         <div style={{ width: 150, flexShrink: 0 }}>
           <span
-            onClick={this.handleSetGeneAsScatterplotX(this.props.gene).bind(
-              this
-            )}
-            style={{
-              fontSize: 16,
-              color:
-                this.props.scatterplotXXaccessor === this.props.gene
-                  ? "white"
-                  : globals.brightBlue,
-              cursor: "pointer",
-              position: "relative",
-              top: 1,
-              fontWeight: 700,
-              marginRight: 4,
-              borderRadius: 3,
-              padding: "2px 3px",
-              backgroundColor:
-                this.props.scatterplotXXaccessor === this.props.gene
-                  ? globals.brightBlue
-                  : "inherit"
-            }}
-          >
-            X
-          </span>
-          <span
-            onClick={this.handleSetGeneAsScatterplotY(this.props.gene).bind(
-              this
-            )}
-            style={{
-              fontSize: 16,
-              color:
-                this.props.scatterplotYYaccessor === this.props.gene
-                  ? "white"
-                  : globals.brightBlue,
-              cursor: "pointer",
-              position: "relative",
-              top: 1,
-              fontWeight: 700,
-              marginRight: 4,
-              borderRadius: 3,
-              padding: "2px 3px",
-              backgroundColor:
-                this.props.scatterplotYYaccessor === this.props.gene
-                  ? globals.brightBlue
-                  : "inherit"
-            }}
-          >
-            Y
-          </span>
-          <span
-            onClick={this.handleGeneColorScaleClick(this.props.gene).bind(this)}
-            style={{
-              fontSize: 16,
-              cursor: "pointer",
-              position: "relative",
-              marginRight: 6,
-              borderRadius: 3,
-              padding: "0px 2px 2px 2px",
-              color:
-                this.props.colorAccessor === this.props.gene
-                  ? "white"
-                  : "inherit",
-              backgroundColor:
-                this.props.colorAccessor === this.props.gene
-                  ? globals.brightBlue
-                  : "inherit"
-            }}
-          >
-            <FaPaintBrush style={{ display: "inline-block" }} />
-          </span>
-          <span
             style={{
               fontSize: 14
             }}
@@ -190,11 +119,83 @@ class HeatmapRow extends React.Component {
         <span
           title={this.props.aveDiff}
           style={{
-            fontSize: 14,
-            paddingLeft: 10
+            fontSize: 12,
+            marginLeft: 10,
+            marginRight: 10,
           }}
         >
           {this.props.aveDiff.toFixed(2)}
+        </span>
+        <span
+          onClick={this.handleSetGeneAsScatterplotX(this.props.gene).bind(
+            this
+          )}
+          style={{
+            fontSize: 16,
+            color:
+              this.props.scatterplotXXaccessor === this.props.gene
+                ? "white"
+                : globals.brightBlue,
+            cursor: "pointer",
+            position: "relative",
+            top: 1,
+            fontWeight: 700,
+            marginRight: 4,
+            borderRadius: 3,
+            padding: "2px 3px",
+            backgroundColor:
+              this.props.scatterplotXXaccessor === this.props.gene
+                ? globals.brightBlue
+                : "inherit"
+          }}
+        >
+          X
+        </span>
+        <span
+          onClick={this.handleSetGeneAsScatterplotY(this.props.gene).bind(
+            this
+          )}
+          style={{
+            fontSize: 16,
+            color:
+              this.props.scatterplotYYaccessor === this.props.gene
+                ? "white"
+                : globals.brightBlue,
+            cursor: "pointer",
+            position: "relative",
+            top: 1,
+            fontWeight: 700,
+            marginRight: 4,
+            borderRadius: 3,
+            padding: "2px 3px",
+            backgroundColor:
+              this.props.scatterplotYYaccessor === this.props.gene
+                ? globals.brightBlue
+                : "inherit"
+          }}
+        >
+          Y
+        </span>
+        <span
+          onClick={this.handleGeneColorScaleClick(this.props.gene).bind(this)}
+          style={{
+            fontSize: 16,
+            cursor: "pointer",
+            position: "relative",
+            marginRight: 6,
+            borderRadius: 3,
+            padding: "0px 2px 2px 2px",
+            color:
+              this.props.colorAccessor === this.props.gene
+                ? "white"
+                : "inherit",
+            backgroundColor:
+              this.props.colorAccessor === this.props.gene
+                ? globals.brightBlue
+                : "inherit"
+          }}
+        >
+          <FaPaintBrush style={{ display: "inline-block" }} />
         </span>
       </div>
     );
