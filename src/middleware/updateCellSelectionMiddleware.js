@@ -73,19 +73,6 @@ const updateCellSelectionMiddleware = store => {
             ? action.brushCoords
             : s.controls.graphBrushSelection;
 
-        const northwestX = globals.graphXScale.invert(
-          graphBrushSelection.northwestX
-        );
-        const southeastX = globals.graphXScale.invert(
-          graphBrushSelection.southeastX
-        );
-        const northwestY = globals.graphYScale.invert(
-          graphBrushSelection.northwestY
-        );
-        const southeastY = globals.graphYScale.invert(
-          graphBrushSelection.southeastY
-        );
-
         const graphVec = s.controls.graphVec;
         for (let i = 0; i < newSelection.length; i++) {
           const cell = newSelection[i];
@@ -94,10 +81,10 @@ const updateCellSelectionMiddleware = store => {
           const y = graphVec[2 * cellId + 1];
 
           const pointIsInsideBrushBounds =
-            x >= northwestX &&
-            x <= southeastX &&
-            y <= northwestY &&
-            y >= southeastY;
+            x >= graphBrushSelection.northwest[0] &&
+            x <= graphBrushSelection.southeast[0] &&
+            y <= graphBrushSelection.northwest[1] &&
+            y >= graphBrushSelection.southeast[1];
 
           if (!pointIsInsideBrushBounds) {
             cell.__selected__ = false;

@@ -95,17 +95,7 @@ class Graph extends React.Component {
         scale: viewportHeight / viewportWidth
       });
 
-      // var view = camera.view(); // get the camera matrix
-      // var projection = mat4.perspective(
-      //   [],
-      //   Math.PI / 2,
-      //   context.viewportWidth * props.scale / context.viewportHeight,
-      //   0.01,
-      //   1000
-      // ); // get the projection matrix
-      // var combined = mat.multiply([], projection, view); // this is the matrix applied to the transform
-      // this.inverse = mat.invert([], combined); // this is the inverse
-
+      this.setState({camera})
       camera.tick();
     });
 
@@ -170,15 +160,22 @@ class Graph extends React.Component {
       |       |
       |-------@
     */
-    const brushCoords = {
-      northwestX: s[0][0],
-      northwestY: s[0][1],
-      southeastX: s[1][0],
-      southeastY: s[1][1]
+
+    // compute inverse view matrix
+    const inverse = mat4.invert([], this.state.camera.view());
+
+    // transform screen coordinates -> cell coordinates
+    const invert = (pin) => {
+      const x = 2 * pin[0] / globals.graphWidth - 1;
+      const y = 2 * (1 - pin[1] / globals.graphHeight) - 1;
+      const pout = [x + inverse[12], y + inverse[13]];
+      return [(pout[0] + 1) / 2, (pout[1] + 1) / 2];
     };
 
-    brushCoords.dx = brushCoords.southeastX - brushCoords.northwestX;
-    brushCoords.dy = brushCoords.southeastY - brushCoords.northwestY;
+    const brushCoords = {
+      northwest: invert([s[0][0], s[0][1]]),
+      southeast: invert([s[1][0], s[1][1]])
+    };
 
     this.props.dispatch({
       type: "graph brush selection change",

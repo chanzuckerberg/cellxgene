@@ -47,8 +47,8 @@ export const bolder = 700;
 
 export let API = {
   // prefix: "http://api.clustering.czi.technology/api/",
-  prefix: "http://tabulamuris.cxg.czi.technology/api/",
-  // prefix: "http://pbmc3k.cxg.czi.technology/api/",
+  //prefix: "http://tabulamuris.cxg.czi.technology/api/",
+   prefix: "http://pbmc3k.cxg.czi.technology/api/",
   // prefix: "http://pbmc33k.cxg.czi.technology/api/",
 
   // prefix: "http://api-staging.clustering.czi.technology/api/",
@@ -71,26 +71,6 @@ export const graphMargin = { top: 20, right: 10, bottom: 30, left: 40 };
 // export const graphHeight = 500;
 export const graphWidth = 700;
 export const graphHeight = 700;
-
-import { scaleLinear } from "./util/scaleLinear";
-// d3.scaleLinear().domain([0,1]).range([0 + graphMargin.left, graphWidth - graphMargin.right])
-export const graphXScale = scaleLinear(
-  [0, 1],
-  [0 + graphMargin.left, graphWidth - graphMargin.right]
-);
-graphXScale.invert = scaleLinear(
-  [0 + graphMargin.left, graphWidth - graphMargin.right],
-  [0, 1]
-);
-// d3.scaleLinear().domain([0,1]).range([graphHeight - graphMargin.bottom, 0 + graphMargin.top])
-export const graphYScale = scaleLinear(
-  [0, 1],
-  [graphHeight - graphMargin.bottom, 0 + graphMargin.top]
-);
-graphYScale.invert = scaleLinear(
-  [graphHeight - graphMargin.bottom, 0 + graphMargin.top],
-  [0, 1]
-);
 
 export const ordinalColors = [
   "#0ac115",
