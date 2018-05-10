@@ -1,11 +1,15 @@
-import React from 'react';
+// jshint esversion: 6
+import React from "react";
 import _ from "lodash";
-import DeckGL, {PointCloudLayer, ScreenGridLayer, COORDINATE_SYSTEM} from 'deck.gl';
-import OrbitController from './orbit-control';
-import { Popup } from './popup';
+import DeckGL, {
+  PointCloudLayer,
+  ScreenGridLayer,
+  COORDINATE_SYSTEM
+} from "deck.gl";
+import OrbitController from "./orbit-control";
+import { Popup } from "./popup";
 
 class Heatmap extends React.Component {
-
   constructor(props) {
     super(props);
 
@@ -20,16 +24,16 @@ class Heatmap extends React.Component {
       height: 0,
       points: [],
       sampleExpressionMatrix: [
-        {color:[0, 255, 0], position: [100, 100]},
-        {color:[0, 255, 0], position: [100, 100]},
-        {color:[0, 255, 0], position: [100, 100]},
+        { color: [0, 255, 0], position: [100, 100] },
+        { color: [0, 255, 0], position: [100, 100] },
+        { color: [0, 255, 0], position: [100, 100] }
       ],
       progress: 0,
       popup: {
         displayed: false,
         x: 0,
         y: 0,
-        title: '',
+        title: ""
       },
       viewport: {
         lookAt: [0, 0, 0],
@@ -46,7 +50,7 @@ class Heatmap extends React.Component {
   getColor(cluster) {
     let color = [0, 0, 0];
 
-    switch(cluster){
+    switch (cluster) {
       case 0:
         color = [166, 206, 227];
         break;
@@ -82,9 +86,8 @@ class Heatmap extends React.Component {
     return color;
   }
 
-
   componentWillMount() {
-    window.addEventListener('resize', this.onResize);
+    window.addEventListener("resize", this.onResize);
     this.onResize();
   }
 
@@ -97,30 +100,31 @@ class Heatmap extends React.Component {
   }
 
   componentWillUnmount() {
-    window.removeEventListener('resize', this.onResize);
+    window.removeEventListener("resize", this.onResize);
   }
 
   fetchData() {
-    fetch('https://raw.githubusercontent.com/zdenekhynek/data-science-capstone-visualisation/master/public/clusters.json')
-      .then((res) => {
-        res.json().then((obj) => {
-          const clusters = Object.keys(obj).map((k) => obj[k])
-          const points = clusters.map((cluster) => {
-            const position = [cluster.x, cluster.y, cluster.z];
-            const color = [255,0,0];
-            const id = cluster.id;
-            const title = cluster.webTitle;
-            return { id, title, position, color };
-          });
-
-          this.setState({ points, progress: 1 })
+    fetch(
+      "https://raw.githubusercontent.com/zdenekhynek/data-science-capstone-visualisation/master/public/clusters.json"
+    ).then(res => {
+      res.json().then(obj => {
+        const clusters = Object.keys(obj).map(k => obj[k]);
+        const points = clusters.map(cluster => {
+          const position = [cluster.x, cluster.y, cluster.z];
+          const color = [255, 0, 0];
+          const id = cluster.id;
+          const title = cluster.webTitle;
+          return { id, title, position, color };
         });
+
+        this.setState({ points, progress: 1 });
       });
+    });
   }
 
   onHover(d) {
     let popup = { displayed: false };
-    console.log('d', d)
+    console.log("d", d);
 
     if (d.object) {
       const object = d.object;
@@ -129,7 +133,7 @@ class Heatmap extends React.Component {
         title: object.title,
         displayed: true,
         x: d.x,
-        y: d.y,
+        y: d.y
       };
     }
 
@@ -137,8 +141,8 @@ class Heatmap extends React.Component {
   }
 
   onResize() {
-    const {innerWidth: width, innerHeight: height} = window;
-    this.setState({width: width / 1.5, height: height / 1.5});
+    const { innerWidth: width, innerHeight: height } = window;
+    this.setState({ width: width / 1.5, height: height / 1.5 });
   }
 
   onInitialized(gl) {
@@ -150,27 +154,30 @@ class Heatmap extends React.Component {
   onChangeViewport(viewport) {
     this.setState({
       rotating: !viewport.isDragging,
-      viewport: {...this.state.viewport, ...viewport}
+      viewport: { ...this.state.viewport, ...viewport }
     });
   }
 
   onUpdate() {
-    const {viewport} = this.state;
+    const { viewport } = this.state;
     window.requestAnimationFrame(this.onUpdate);
   }
 
   renderPointCloudLayer() {
-    return this.state.points.length && new PointCloudLayer({
-      id: 'point-cloud-layer',
-      data: this.state.points,
-      projectionMode: COORDINATE_SYSTEM.IDENTITY,
-      pickable: true,
-      onHover: this.onHover,
-      getPosition: d => d.position,
-      getNormal: d => [0, 0.5, 0.2],
-      getColor: d => d.color,
-      radiusPixels: 2
-    });
+    return (
+      this.state.points.length &&
+      new PointCloudLayer({
+        id: "point-cloud-layer",
+        data: this.state.points,
+        projectionMode: COORDINATE_SYSTEM.IDENTITY,
+        pickable: true,
+        onHover: this.onHover,
+        getPosition: d => d.position,
+        getNormal: d => [0, 0.5, 0.2],
+        getColor: d => d.color,
+        radiusPixels: 2
+      })
+    );
   }
 
   renderGridLayer() {
@@ -182,7 +189,7 @@ class Heatmap extends React.Component {
      * ]
      */
     const screenGridLayer = new ScreenGridLayer({
-      id: 'screen-grid-layer',
+      id: "screen-grid-layer",
       data: this.state.sampleExpressionMatrix,
       projectionMode: COORDINATE_SYSTEM.IDENTITY,
       pickable: true,
@@ -195,34 +202,42 @@ class Heatmap extends React.Component {
   }
 
   renderDeckGLCanvas() {
-    const {width, height, viewport} = this.state;
-    const canvasProps = {width, height, ...viewport};
+    const { width, height, viewport } = this.state;
+    const canvasProps = { width, height, ...viewport };
     const glViewport = OrbitController.getViewport(canvasProps);
 
-    return width && height && (
-      <OrbitController {...canvasProps} ref={canvas => {
-        this.canvas = canvas;
-      }} onChangeViewport={this.onChangeViewport}>
-        <DeckGL
-          width={width}
-          height={height}
-          viewport={glViewport}
-          layers={[
-            // this.renderPointCloudLayer(),
-            this.renderGridLayer()
-          ].filter(Boolean)}
-          onWebGLInitialized={this.onInitialized}/>
-      </OrbitController>
+    return (
+      width &&
+      height && (
+        <OrbitController
+          {...canvasProps}
+          ref={canvas => {
+            this.canvas = canvas;
+          }}
+          onChangeViewport={this.onChangeViewport}
+        >
+          <DeckGL
+            width={width}
+            height={height}
+            viewport={glViewport}
+            layers={[
+              // this.renderPointCloudLayer(),
+              this.renderGridLayer()
+            ].filter(Boolean)}
+            onWebGLInitialized={this.onInitialized}
+          />
+        </OrbitController>
+      )
     );
   }
 
   render() {
-    const {width, height, popup} = this.state;
+    const { width, height, popup } = this.state;
     if (!width || !height) {
       return null;
     }
 
-    const renderedPopup = (popup.displayed)? <Popup {...popup} /> : null;
+    const renderedPopup = popup.displayed ? <Popup {...popup} /> : null;
 
     return (
       <div id="heatmap">
@@ -231,6 +246,6 @@ class Heatmap extends React.Component {
       </div>
     );
   }
-};
+}
 
 export default Heatmap;

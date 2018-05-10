@@ -1,23 +1,29 @@
+// jshint esversion: 6
 import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
 
 import * as globals from "../../globals";
 import styles from "./categorical.css";
-import SectionHeader from "../framework/sectionHeader"
+import SectionHeader from "../framework/sectionHeader";
 import Value from "./value";
 import { alphabeticallySortedValues } from "./util";
 
-@connect((state) => {
+import FaArrowRight from "react-icons/lib/fa/angle-right";
+import FaArrowDown from "react-icons/lib/fa/angle-down";
+import FaPaintBrush from "react-icons/lib/fa/paint-brush";
+
+@connect(state => {
   return {
     colorAccessor: state.controls.colorAccessor
-  }
+  };
 })
 class Category extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      isChecked: true
+      isChecked: true,
+      isExpanded: false
     };
   }
 
@@ -25,131 +31,155 @@ class Category extends React.Component {
     this.props.dispatch({
       type: "color by categorical metadata",
       colorAccessor: this.props.metadataField
-    })
+    });
   }
   toggleAll() {
     this.props.dispatch({
       type: "categorical metadata filter all of these",
       metadataField: this.props.metadataField
-    })
-    this.setState({isChecked: true})
+    });
+    this.setState({ isChecked: true });
   }
   toggleNone() {
     this.props.dispatch({
       type: "categorical metadata filter none of these",
       metadataField: this.props.metadataField,
       value: this.props.value
-    })
-    this.setState({isChecked: false})
+    });
+    this.setState({ isChecked: false });
+  }
+  renderCategoryItems() {
+    return _.map(alphabeticallySortedValues(this.props.values), (v, i) => {
+      return (
+        <Value
+          key={v}
+          metadataField={this.props.metadataField}
+          count={this.props.values[v]}
+          value={v}
+          i={i}
+        />
+      );
+    });
   }
   render() {
-
     return (
-      <div style={{
+      <div
+        style={{
           // display: "flex",
           // alignItems: "baseline",
-          maxWidth: globals.maxControlsWidth,
-        }}>
-        <div style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "baseline"
-        }}>
-          <p style={{
+          maxWidth: globals.maxControlsWidth
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "baseline"
+          }}
+        >
+          <p
+            style={{
               // flexShrink: 0,
               fontWeight: 500,
               // textAlign: "right",
               // fontFamily: globals.accentFont,
               // fontStyle: "italic",
-              marginRight: 10,
-            }}>
+              margin: "3px 10px 3px 0px"
+            }}
+          >
+            <span
+              style={{
+                cursor: "pointer",
+                display: "inline-block",
+                position: "relative",
+                top: 2
+              }}
+              onClick={() => {
+                this.setState({ isExpanded: !this.state.isExpanded });
+              }}
+            >
+              {this.state.isExpanded ? <FaArrowDown /> : <FaArrowRight />}
+            </span>
             {this.props.metadataField}
             <input
-            onChange={this.state.isChecked ? this.toggleNone.bind(this) : this.toggleAll.bind(this)}
-            checked={this.state.isChecked}
-            type="checkbox"/>
+              onChange={
+                this.state.isChecked
+                  ? this.toggleNone.bind(this)
+                  : this.toggleAll.bind(this)
+              }
+              checked={this.state.isChecked}
+              type="checkbox"
+            />
             <span
               onClick={this.handleColorChange.bind(this)}
               style={{
                 fontSize: 16,
                 marginLeft: 4,
+                // padding: this.props.colorAccessor === this.props.metadataField ? 3 : "auto",
+                borderRadius: 3,
+                color:
+                  this.props.colorAccessor === this.props.metadataField
+                    ? globals.brightBlue
+                    : "black",
+                // backgroundColor: this.props.colorAccessor === this.props.metadataField ? globals.brightBlue : "inherit",
+                display: "inline-block",
                 position: "relative",
                 top: 2,
-                cursor: "pointer",
-              }}>
-              🖌️
+                cursor: "pointer"
+              }}
+            >
+              <FaPaintBrush />
             </span>
           </p>
         </div>
-        <div>
-          {
-            _.map(alphabeticallySortedValues(this.props.values), (v, i) => {
-              return (
-                <Value
-                  key={v}
-                  metadataField={this.props.metadataField}
-                  count={this.props.values[v]}
-                  value={v}
-                  i={i} />
-              )
-            })
-          }
-        </div>
+        <div>{this.state.isExpanded ? this.renderCategoryItems() : null}</div>
       </div>
-    )
+    );
   }
 }
 
-@connect((state) => {
-
-  const ranges = state.cells.cells && state.cells.cells.data.ranges ? state.cells.cells.data.ranges : null;
+@connect(state => {
+  const ranges =
+    state.cells.cells && state.cells.cells.data.ranges
+      ? state.cells.cells.data.ranges
+      : null;
 
   return {
     ranges
-  }
+  };
 })
 class Categories extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-
-    };
+    this.state = {};
   }
 
-  render () {
-    if (!this.props.ranges) return null
+  render() {
+    if (!this.props.ranges) return null;
 
     return (
-      <div style={{
-        width: 310,
-        marginRight: 40,
-        paddingRight: 20,
-        flexShrink: 0,
-        // height: 700,
-        // overflow: "auto",
-      }}>
-
-        {
-          _.map(this.props.ranges, (value, key) => {
-            const isColorField = key.includes("color") || key.includes("Color");
-            if (
-              value.options &&
-              key !== "CellName" &&
-              !isColorField
-            ) {
-              return (
-                <Category
-                  key={key}
-                  metadataField={key}
-                  values={value.options}/>
-              )
-            }
-          })
-        }
+      <div
+        style={{
+          width: 310,
+          marginRight: 40,
+          paddingRight: 20,
+          flexShrink: 0
+          // height: 700,
+          // overflow: "auto",
+        }}
+      >
+        {_.map(this.props.ranges, (value, key) => {
+          const isColorField = key.includes("color") || key.includes("Color");
+          if (value.options && key !== "CellName" && !isColorField) {
+            return (
+              <Category key={key} metadataField={key} values={value.options} />
+            );
+          }
+        })}
       </div>
-    )
+    );
   }
-};
+}
 
 export default Categories;
 
@@ -168,7 +198,6 @@ export default Categories;
   might be interesting to show them as an 👁 icon, or with a slash through it, to allow for visible or hidden state
 
 */
-
 
 /*
 

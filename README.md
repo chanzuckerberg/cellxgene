@@ -1,6 +1,6 @@
 # cellxgene
 
-A React + Redux web application for exploring large scale single cell RNA sequence data. 
+A React + Redux web application for exploring large scale single cell RNA sequence data.
 
 ##### Quickstart:
 

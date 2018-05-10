@@ -1,4 +1,5 @@
-import { combineReducers, createStore, applyMiddleware } from 'redux';
+// jshint esversion: 6
+import { combineReducers, createStore, applyMiddleware } from "redux";
 import updateURLMiddleware from "../middleware/updateURLMiddleware";
 import updateCellSelectionMiddleware from "../middleware/updateCellSelectionMiddleware";
 import updateCellColors from "../middleware/updateCellColors";
@@ -16,8 +17,8 @@ const Reducer = combineReducers({
   cells,
   expression,
   controls,
-  differential,
-})
+  differential
+});
 
 let store = createStore(
   Reducer,
