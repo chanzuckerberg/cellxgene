@@ -3,7 +3,7 @@ import React from "react";
 import _ from "lodash";
 import * as globals from "../../globals";
 import styles from "./graph.css";
-import { setupGraphElements, drawGraphUsingRenderQueue } from "./drawGraph";
+import { setupGraphElements } from "./drawGraph";
 import SectionHeader from "../framework/sectionHeader";
 import { connect } from "react-redux";
 import actions from "../../actions";
