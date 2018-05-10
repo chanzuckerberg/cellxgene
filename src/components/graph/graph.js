@@ -13,6 +13,7 @@ import fit from "canvas-fit";
 import _camera from "../../util/camera.js";
 import _regl from "regl";
 import _drawPoints from "./drawPointsRegl";
+import { scaleLinear } from "../../util/scaleLinear";
 
 import FaCrosshair from "react-icons/lib/fa/crosshairs";
 import FaZoom from "react-icons/lib/fa/search-plus";
@@ -41,7 +42,7 @@ import FaSave from "react-icons/lib/fa/download";
     colorAccessor: state.controls.colorAccessor,
     colorScale: state.controls.colorScale,
     continuousSelection: state.controls.continuousSelection,
-    graphMap: state.controls.graphMap,
+    graphVec: state.controls.graphVec,
     currentCellSelection: state.controls.currentCellSelection,
     graphBrushSelection: state.controls.graphBrushSelection,
     opacityForDeselectedCells: state.controls.opacityForDeselectedCells
@@ -103,72 +104,43 @@ class Graph extends React.Component {
       sizeBuffer
     });
   }
+
   componentWillReceiveProps(nextProps) {
-    /* maybe should do a check here to confirm ref exists and pass it? */
-    // if (
-    //   this.state.ctx &&
-    //   nextProps.vertices
-    //   // nextProps.expressions &&
-    //   // nextProps.expressionsCountsMap &&
-    // ) {
-    //   drawGraphUsingRenderQueue(
-    //     this.state.ctx,
-    //     nextProps.expressionsCountsMap,
-    //     nextProps.colorAccessor,
-    //     nextProps.ranges, /* assumption that this exists if vertices does both are on cells */
-    //     nextProps.metadata,
-    //     nextProps.currentCellSelection,
-    //     nextProps.graphBrushSelection,
-    //     nextProps.colorScale,
-    //     nextProps.graphMap,
-    //     nextProps.opacityForDeselectedCells,
-    //   )
-    // }
     if (this.state.regl && nextProps.vertices) {
-      const _currentCellSelectionMap = _.keyBy(
-        nextProps.currentCellSelection,
-        "CellName"
-      ); /* move me to the reducer */
+      const vertices = nextProps.currentCellSelection;
+      const vertexCount = vertices.length;
+      const positions = new Float32Array(2 * vertexCount);
+      const colors = new Float32Array(3 * vertexCount);
+      const sizes = new Float32Array(vertexCount);
 
-      const positions = [];
-      positions.length = nextProps.currentCellSelection.length;
-      const colors = [];
-      colors.length = nextProps.currentCellSelection.length;
-      const sizes = [];
-      sizes.length = nextProps.currentCellSelection.length;
-
-      const glScaleX = d3
-        .scaleLinear()
-        .domain([0, 1])
-        .range([-1, 1]); /* padding */
-
-      const glScaleY = d3
-        .scaleLinear()
-        .domain([0, 1])
-        .range([1, -1]); /* padding */
+      // d3.scaleLinear().domain([0,1]).range([-1,1])
+      const glScaleX = scaleLinear([0, 1], [-1, 1]);
+      // d3.scaleLinear().domain([0,1]).range([1,-1])
+      const glScaleY = scaleLinear([0, 1], [1, -1]);
 
       /*
         Construct Vectors
       */
-      _.each(nextProps.currentCellSelection, (cell, i) => {
-        if (nextProps.graphMap[cell["CellName"]]) {
-          /* fails silently, sometimes this is undefined, in which case the graph array should be shorter than the cell array, check in reducer */
-          positions[i] = [
-            glScaleX(nextProps.graphMap[cell["CellName"]][0]),
-            glScaleY(nextProps.graphMap[cell["CellName"]][1])
-          ];
+      const graphVec = nextProps.graphVec;
+      for (var i = 0; i < vertexCount; i++) {
+        const cell = vertices[i];
+        const cellIdx = cell.__cellIndex__;
+        const x = glScaleX(graphVec[2 * cellIdx]);
+        const y = glScaleY(graphVec[2 * cellIdx + 1]);
+        positions[2 * i] = x;
+        positions[2 * i + 1] = y;
 
-          colors[i] = cell.__colorRGB__;
-          sizes[i] = cell["__selected__"]
-            ? 4
-            : 0.2; /* make this a function of the number of total cells, including regraph */
-        }
-      });
+        colors.set(cell.__colorRGB__, 3 * i);
 
-      this.state.pointBuffer(positions);
-      this.state.colorBuffer(colors);
-      this.state.sizeBuffer(sizes);
-      this.count = positions.length;
+        sizes[i] = cell.__selected__
+          ? 4
+          : 0.2; /* make this a function of the number of total cells, including regraph */
+      }
+
+      this.state.pointBuffer({ data: positions, dimension: 2 });
+      this.state.colorBuffer({ data: colors, dimension: 3 });
+      this.state.sizeBuffer({ data: sizes, dimension: 1 });
+      this.count = vertexCount;
     }
   }
   handleBrushSelectAction() {
