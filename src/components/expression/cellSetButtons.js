@@ -30,6 +30,7 @@ class CellSetButton extends React.Component {
         <button
           style={{
             color: "#FFF",
+            borderRadius: 2,
             padding: "0px 10px",
             height: 30,
             backgroundColor: globals.brightBlue,

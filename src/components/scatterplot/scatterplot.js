@@ -265,10 +265,7 @@ class Scatterplot extends React.Component {
       <div
         style={{
           backgroundColor: "white",
-          borderRadius: 3,
-          marginTop: 15,
-          paddingBottom: 20,
-          boxShadow: "3px 4px 13px 0px rgba(201,201,201,1)"
+          paddingBottom: 20
         }}
         id="scatterplot_wrapper"
       >

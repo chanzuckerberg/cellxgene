@@ -7,6 +7,7 @@ import ExpressionButtons from "./expression/expressionButtons";
 import { connect } from "react-redux";
 import Heatmap from "./expression/diffExpHeatmap";
 import * as globals from "../globals";
+import DynamicScatterplot from "./scatterplot/scatterplot";
 
 @connect(state => {
   return {};
@@ -21,7 +22,15 @@ class LeftSideBar extends React.Component {
   render() {
     return (
       <div style={{ position: "fixed" }}>
-        <p style={{ margin: 10, fontSize: 16, fontWeight: 700, width: "100%" }}>
+        <p
+          style={{
+            margin: 10,
+            fontSize: 24,
+            color: globals.lightGrey,
+            fontWeight: 700,
+            width: "100%"
+          }}
+        >
           CELLxGENE {globals.datasetTitle}{" "}
         </p>
         <div style={{ padding: 10 }}>
@@ -97,7 +106,7 @@ class LeftSideBar extends React.Component {
             height: 500,
             width: 350,
             padding: 10,
-            overflowY: "scroll",
+            overflowY: "auto",
             overflowX: "hidden"
           }}
         >
@@ -105,13 +114,11 @@ class LeftSideBar extends React.Component {
           {this.state.currentTab === "metadata" ? <Continuous /> : null}
           {this.state.currentTab === "expression" ? <Heatmap /> : null}
         </div>
-        <div
-          style={{
-            boxShadow: "-3px -4px 13px 0px rgba(201,201,201,1)",
-            paddingTop: 10
-          }}
-        >
-          <ExpressionButtons />
+        <div style={{ position: "fixed", bottom: 0, left: 0 }}>
+          {this.state.currentTab === "metadata" ? <ExpressionButtons /> : null}
+          {this.state.currentTab === "expression" ? (
+            <DynamicScatterplot />
+          ) : null}
         </div>
       </div>
     );

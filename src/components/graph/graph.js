@@ -204,117 +204,111 @@ class Graph extends React.Component {
       <div
         id="graphWrapper"
         style={{
-          height: 1050 /* move this to globals */,
-          backgroundColor: "white",
-          borderRadius: 3,
-          boxShadow: "3px 4px 13px 0px rgba(201,201,201,1)"
+          height: 1050 /* move this to globals */
         }}
       >
-        <div
-          style={{
-            padding: 10,
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "baseline"
-          }}
-        >
-          <button
-            onClick={() => {
-              this.props.dispatch(actions.regraph());
-            }}
+        <div style={{ position: "fixed", right: 0, top: 0 }}>
+          <div
             style={{
-              fontSize: 12,
-              fontWeight: 400,
-              color: "white",
-              padding: "10px 20px",
-              backgroundColor: globals.brightBlue,
-              border: "none",
-              cursor: "pointer"
+              padding: 10,
+              display: "flex",
+              justifyContent: "flex-end",
+              alignItems: "baseline"
             }}
           >
-            Regraph present selection
-          </button>
-          <div>
-            <span style={{ marginRight: 10, fontSize: 12 }}>
-              deselected opacity
-            </span>
-            <input
-              style={{ position: "relative", top: 6, marginRight: 20 }}
-              type="range"
-              onChange={this.handleOpacityRangeChange.bind(this)}
-              min={0}
-              max={1}
-              step="0.01"
-            />
-            <span style={{ position: "relative", top: 3 }}>
-              <button
-                onClick={() => {
-                  this.setState({ mode: "brush" });
-                }}
-                style={{
-                  cursor: "pointer",
-                  border:
-                    this.state.mode === "brush"
-                      ? "1px solid black"
-                      : "1px solid white",
-                  backgroundColor: "white",
-                  padding: 5,
-                  borderRadius: 3
-                }}
-              >
-                {" "}
-                <FaCrosshair />{" "}
-              </button>
-              <button
-                onClick={() => {
-                  this.setState({ mode: "zoom" });
-                }}
-                style={{
-                  cursor: "pointer",
-                  border:
-                    this.state.mode === "zoom"
-                      ? "1px solid black"
-                      : "1px solid white",
-                  backgroundColor: "white",
-                  padding: 5,
-                  borderRadius: 3
-                }}
-              >
-                {" "}
-                <FaZoom />{" "}
-              </button>
-            </span>
-          </div>
-          <div>
             <button
+              onClick={() => {
+                this.props.dispatch(actions.regraph());
+              }}
               style={{
-                fontSize: 12,
-                fontWeight: 400,
+                fontSize: 14,
+                fontWeight: 700,
                 color: "white",
                 padding: "10px 20px",
+                marginRight: 10,
+                borderRadius: 2,
                 backgroundColor: globals.brightBlue,
                 border: "none",
                 cursor: "pointer"
               }}
             >
-              {" "}
-              <FaSave style={{ display: "inline-block" }} /> csv url for present
-              selection{" "}
+              regraph selection
             </button>
+            <div>
+              <span style={{ position: "relative", top: 3 }}>
+                <button
+                  onClick={() => {
+                    this.setState({ mode: "brush" });
+                  }}
+                  style={{
+                    cursor: "pointer",
+                    border:
+                      this.state.mode === "brush"
+                        ? "1px solid black"
+                        : "1px solid white",
+                    backgroundColor: "white",
+                    padding: 5,
+                    borderRadius: 3
+                  }}
+                >
+                  {" "}
+                  <FaCrosshair />{" "}
+                </button>
+                <button
+                  onClick={() => {
+                    this.setState({ mode: "zoom" });
+                  }}
+                  style={{
+                    cursor: "pointer",
+                    border:
+                      this.state.mode === "zoom"
+                        ? "1px solid black"
+                        : "1px solid white",
+                    backgroundColor: "white",
+                    padding: 5,
+                    borderRadius: 3
+                  }}
+                >
+                  {" "}
+                  <FaZoom />{" "}
+                </button>
+              </span>
+            </div>
+            <div>
+              <button
+                style={{
+                  fontSize: 14,
+                  fontWeight: 700,
+                  color: "white",
+                  padding: "10px 20px",
+                  backgroundColor: globals.lightGrey,
+                  border: "none",
+                  cursor: "pointer"
+                }}
+              >
+                export
+              </button>
+            </div>
           </div>
         </div>
         <div
-          style={{ display: this.state.mode === "brush" ? "inherit" : "none" }}
-          id="graphAttachPoint"
-        />
-        <div style={{ padding: 0, margin: 0 }}>
-          <canvas
-            width={globals.graphWidth}
-            height={globals.graphHeight}
-            ref={canvas => {
-              this.reglCanvas = canvas;
+          style={{ position: "fixed", right: 80, bottom: 50, zIndex: -9999 }}
+        >
+          <div
+            style={{
+              display: this.state.mode === "brush" ? "inherit" : "none"
             }}
+            id="graphAttachPoint"
           />
+          <div style={{ padding: 0, margin: 0 }}>
+            <canvas
+              width={globals.graphWidth}
+              height={globals.graphHeight}
+              ref={canvas => {
+                this.reglCanvas = canvas;
+              }}
+            />
+          </div>
         </div>
       </div>
     );
@@ -322,3 +316,15 @@ class Graph extends React.Component {
 }
 
 export default Graph;
+
+// <span style={{ marginRight: 10, fontSize: 12 }}>
+//   deselected opacity
+// </span>
+// <input
+//   style={{ position: "relative", top: 6, marginRight: 20 }}
+//   type="range"
+//   onChange={this.handleOpacityRangeChange.bind(this)}
+//   min={0}
+//   max={1}
+//   step="0.01"
+// />

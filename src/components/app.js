@@ -8,7 +8,6 @@ import PulseLoader from "halogen/PulseLoader";
 
 import LeftSideBar from "./leftsidebar";
 import Parallel from "./continuous/parallel";
-import DynamicScatterplot from "./scatterplot/scatterplot";
 import Joy from "./joy/joy";
 import Graph from "./graph/graph";
 import * as globals from "../globals";
@@ -71,13 +70,11 @@ class App extends React.Component {
           <div
             style={{
               padding: 15,
-              backgroundColor: "#F7F7F7",
               width: 1440 - 410 /* but responsive */,
               marginLeft: 350 /* but responsive */
             }}
           >
             <Graph />
-            <DynamicScatterplot />
             {/*<Parallel/>*/}
           </div>
         </div>
