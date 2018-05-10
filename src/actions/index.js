@@ -1,5 +1,6 @@
 // jshint esversion: 6
 import * as globals from "../globals";
+import store from "../reducers";
 import URI from "urijs";
 import _ from "lodash";
 
@@ -81,6 +82,30 @@ const initialize = () => {
   };
 };
 
+// This code defends against the case where /expression returns a cellname
+// never seen before (ie, not returned by /cells).   This should not happen
+// (see https://github.com/chanzuckerberg/cellxgene-rest-api/issues/34) but
+// occasionally does.
+//
+function cleanupExpressionResponse(data) {
+  const s = store.getState();
+  const metadata = s.controls.currentCellSelectionMap;
+  let errorOccured = false;
+  const newcells = _.filter(data.data.cells, cell => {
+    const found = metadata[cell.cellname];
+    errorOccured = errorOccured || !found;
+    return found;
+  });
+
+  if (errorOccured) {
+    console.error(
+      "Warning: /expression REST API returned unexpected cell names -- discarding surprises."
+    );
+    data.data.cells = newcells;
+  }
+  return data;
+}
+
 const requestGeneExpressionCounts = () => {
   return (dispatch, getState) => {
     dispatch({ type: "get expression started" });
@@ -91,6 +116,7 @@ const requestGeneExpressionCounts = () => {
       })
     })
       .then(res => res.json())
+      .then(data => cleanupExpressionResponse(data))
       .then(
         data => dispatch({ type: "get expression success", data }),
         error => dispatch({ type: "get expression error", error })
@@ -112,6 +138,7 @@ const requestSingleGeneExpressionCountsForColoringPOST = gene => {
       })
     })
       .then(res => res.json())
+      .then(data => cleanupExpressionResponse(data))
       .then(
         data =>
           dispatch({
@@ -142,6 +169,7 @@ const requestGeneExpressionCountsPOST = genes => {
       })
     })
       .then(res => res.json())
+      .then(data => cleanupExpressionResponse(data))
       .then(
         data => dispatch({ type: "get expression success", data }),
         error => dispatch({ type: "get expression error", error })
