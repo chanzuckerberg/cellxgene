@@ -203,9 +203,7 @@ class Graph extends React.Component {
     return (
       <div
         id="graphWrapper"
-        style={{
-          height: 1050 /* move this to globals */
-        }}
+
       >
         <div style={{ position: "fixed", right: 0, top: 0 }}>
           <div
@@ -292,7 +290,7 @@ class Graph extends React.Component {
           </div>
         </div>
         <div
-          style={{ position: "fixed", right: 80, bottom: 50, zIndex: -9999 }}
+          style={{marginRight: 50, marginTop: 50, zIndex: -9999 }}
         >
           <div
             style={{
