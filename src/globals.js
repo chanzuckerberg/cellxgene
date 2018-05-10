@@ -78,10 +78,18 @@ export const graphXScale = scaleLinear(
   [0, 1],
   [0 + graphMargin.left, graphWidth - graphMargin.right]
 );
+graphXScale.invert = scaleLinear(
+  [0 + graphMargin.left, graphWidth - graphMargin.right],
+  [0, 1]
+);
 // d3.scaleLinear().domain([0,1]).range([graphHeight - graphMargin.bottom, 0 + graphMargin.top])
 export const graphYScale = scaleLinear(
   [0, 1],
   [graphHeight - graphMargin.bottom, 0 + graphMargin.top]
+);
+graphYScale.invert = scaleLinear(
+  [graphHeight - graphMargin.bottom, 0 + graphMargin.top],
+  [0, 1]
 );
 
 export const ordinalColors = [
