@@ -36,6 +36,7 @@ class HistogramBrush extends React.Component {
     this.width = 300;
     this.height = 100;
     this.marginBottom = 20;
+    this.histogramCache = {};
 
     this.state = {
       svg: null,
@@ -54,8 +55,6 @@ class HistogramBrush extends React.Component {
       nextProps.currentCellSelection,
       nextProps.metadataField
     );
-
-    this.histogramCache = {};
 
     this.histogramCache.x = d3
       .scaleLinear()
@@ -81,7 +80,7 @@ class HistogramBrush extends React.Component {
   componentWillReceiveProps(nextProps) {
     if (
       this.props.metadataField !== nextProps.metadataField ||
-      !this.histogramCache
+      !this.histogramCache.x
     ) {
       this.calcHistogramCache(nextProps);
     }
