@@ -45,7 +45,8 @@ import FaSave from "react-icons/lib/fa/download";
     graphVec: state.controls.graphVec,
     currentCellSelection: state.controls.currentCellSelection,
     graphBrushSelection: state.controls.graphBrushSelection,
-    opacityForDeselectedCells: state.controls.opacityForDeselectedCells
+    opacityForDeselectedCells: state.controls.opacityForDeselectedCells,
+    responsive: state.responsive
   };
 })
 class Graph extends React.Component {
@@ -53,6 +54,7 @@ class Graph extends React.Component {
     super(props);
     this.count = 0;
     this.inverse = mat4.identity([]);
+    this.graphPaddingTop = 100;
     this.state = {
       drawn: false,
       svg: null,
@@ -291,7 +293,16 @@ class Graph extends React.Component {
             </div>
           </div>
         </div>
-        <div style={{ marginRight: 50, marginTop: 50, zIndex: -9999 }}>
+        <div
+          style={{
+            marginRight: 50,
+            marginTop: 50,
+            zIndex: -9999,
+            position: "fixed",
+            right: 20,
+            bottom: 20
+          }}
+        >
           <div
             style={{
               display: this.state.mode === "brush" ? "inherit" : "none"
@@ -300,8 +311,8 @@ class Graph extends React.Component {
           />
           <div style={{ padding: 0, margin: 0 }}>
             <canvas
-              width={globals.graphWidth}
-              height={globals.graphHeight}
+              width={this.props.responsive.height - this.graphPaddingTop}
+              height={this.props.responsive.height - this.graphPaddingTop}
               ref={canvas => {
                 this.reglCanvas = canvas;
               }}

@@ -10,11 +10,14 @@ import * as globals from "../globals";
 import DynamicScatterplot from "./scatterplot/scatterplot";
 
 @connect(state => {
-  return {};
+  return {
+    responsive: state.responsive
+  };
 })
 class LeftSideBar extends React.Component {
   constructor(props) {
     super(props);
+    this.metadataSectionPadding = 300;
     this.state = {
       currentTab: "metadata"
     };
@@ -39,8 +42,7 @@ class LeftSideBar extends React.Component {
               padding: "none",
               outline: 0,
               fontSize: 14,
-              fontWeight:
-                this.state.currentTab === "metadata" ? 700 : 400,
+              fontWeight: this.state.currentTab === "metadata" ? 700 : 400,
               fontStyle:
                 this.state.currentTab === "metadata" ? "inherit" : "italic",
               cursor: "pointer",
@@ -49,7 +51,7 @@ class LeftSideBar extends React.Component {
               borderTop: "none",
               borderBottom: "none",
               borderRight: "none",
-              borderLeft: "none",
+              borderLeft: "none"
             }}
             onClick={() => {
               this.setState({ currentTab: "metadata" });
@@ -62,8 +64,7 @@ class LeftSideBar extends React.Component {
               padding: "none",
               outline: 0,
               fontSize: 14,
-              fontWeight:
-                this.state.currentTab === "expression" ? 700 : 400,
+              fontWeight: this.state.currentTab === "expression" ? 700 : 400,
               fontStyle:
                 this.state.currentTab === "expression" ? "inherit" : "italic",
               cursor: "pointer",
@@ -72,7 +73,7 @@ class LeftSideBar extends React.Component {
               borderTop: "none",
               borderBottom: "none",
               borderRight: "none",
-              borderLeft: "none",
+              borderLeft: "none"
             }}
             onClick={() => {
               this.setState({ currentTab: "expression" });
@@ -83,7 +84,7 @@ class LeftSideBar extends React.Component {
         </div>
         <div
           style={{
-            height: 350,
+            height: this.props.responsive.height - this.metadataSectionPadding,
             width: 400,
             padding: 10,
             overflowY: "auto",
