@@ -115,7 +115,7 @@ class Graph extends React.Component {
       const sizes = new Float32Array(vertexCount);
 
       // Cache a scaled graph
-      if (!this.scaledGraphVec || this.props.graphVec != nextProps.graphVec) {
+      if (!this.scaledGraphVec || this.props.graphVec !== nextProps.graphVec) {
         const positions = new Float32Array(2 * vertexCount);
 
         // d3.scaleLinear().domain([0,1]).range([-1,1])
