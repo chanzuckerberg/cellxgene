@@ -9,10 +9,10 @@
 // this is is equivalent to d3.scaleLinear().domain([0,1]).range([-1,1])
 
 export const scaleLinear = (domain, range) => {
-  const offsetD = domain[0];
+  const domainStart = domain[0];
   const scale = (range[1] - range[0]) / (domain[1] - domain[0]);
-  const offsetR = range[0];
-  return function(v) {
-    return (v - offsetD) * scale + offsetR;
+  const rangeStart = range[0];
+  return function(value) {
+    return (value - domainStart) * scale + rangeStart;
   };
 };

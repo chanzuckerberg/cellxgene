@@ -90,19 +90,17 @@ const initialize = () => {
 function cleanupExpressionResponse(data) {
   const s = store.getState();
   const metadata = s.controls.currentCellSelectionMap;
-  let errorOccured = false;
-  const newcells = _.filter(data.data.cells, cell => {
-    const found = metadata[cell.cellname];
-    errorOccured = errorOccured || !found;
-    return found;
+  let errorFound = false;
+  data.data.cells = _.filter(data.data.cells, cell => {
+    if (!errorFound && !metadata[cell.cellname]) {
+      errorFound = true;
+      console.error(
+        "Warning: /expression REST API returned unexpected cell names -- discarding surprises."
+      );
+    }
+    return metadata[cell.cellname];
   });
 
-  if (errorOccured) {
-    console.error(
-      "Warning: /expression REST API returned unexpected cell names -- discarding surprises."
-    );
-    data.data.cells = newcells;
-  }
   return data;
 }
 
