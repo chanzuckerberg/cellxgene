@@ -45,7 +45,8 @@ import FaSave from "react-icons/lib/fa/download";
     graphVec: state.controls.graphVec,
     currentCellSelection: state.controls.currentCellSelection,
     graphBrushSelection: state.controls.graphBrushSelection,
-    opacityForDeselectedCells: state.controls.opacityForDeselectedCells
+    opacityForDeselectedCells: state.controls.opacityForDeselectedCells,
+    responsive: state.responsive
   };
 })
 class Graph extends React.Component {
@@ -53,6 +54,7 @@ class Graph extends React.Component {
     super(props);
     this.count = 0;
     this.inverse = mat4.identity([]);
+    this.graphPaddingTop = 100;
     this.state = {
       drawn: false,
       svg: null,
@@ -95,7 +97,7 @@ class Graph extends React.Component {
         scale: viewportHeight / viewportWidth
       });
 
-      this.setState({camera})
+      this.setState({ camera });
       camera.tick();
     });
 
@@ -165,7 +167,7 @@ class Graph extends React.Component {
     const inverse = mat4.invert([], this.state.camera.view());
 
     // transform screen coordinates -> cell coordinates
-    const invert = (pin) => {
+    const invert = pin => {
       const x = 2 * pin[0] / globals.graphWidth - 1;
       const y = 2 * (1 - pin[1] / globals.graphHeight) - 1;
       const pout = [x + inverse[12], y + inverse[13]];
@@ -198,10 +200,7 @@ class Graph extends React.Component {
 
   render() {
     return (
-      <div
-        id="graphWrapper"
-
-      >
+      <div id="graphWrapper">
         <div style={{ position: "fixed", right: 0, top: 0 }}>
           <div
             style={{
@@ -287,7 +286,14 @@ class Graph extends React.Component {
           </div>
         </div>
         <div
-          style={{marginRight: 50, marginTop: 50, zIndex: -9999 }}
+          style={{
+            marginRight: 50,
+            marginTop: 50,
+            zIndex: -9999,
+            position: "fixed",
+            right: 20,
+            bottom: 20
+          }}
         >
           <div
             style={{
@@ -297,8 +303,8 @@ class Graph extends React.Component {
           />
           <div style={{ padding: 0, margin: 0 }}>
             <canvas
-              width={globals.graphWidth}
-              height={globals.graphHeight}
+              width={this.props.responsive.height - this.graphPaddingTop}
+              height={this.props.responsive.height - this.graphPaddingTop}
               ref={canvas => {
                 this.reglCanvas = canvas;
               }}
