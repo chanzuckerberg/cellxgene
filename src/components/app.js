@@ -39,6 +39,23 @@ class App extends React.Component {
       first request includes query straight off the url bar for now
     */
     this.props.dispatch(actions.requestCells(window.location.search));
+    /* listen for resize events */
+    window.addEventListener("resize", () => {
+      this.props.dispatch({
+        type: "window resize",
+        data: {
+          height: window.innerHeight,
+          width: window.innerWidth
+        }
+      });
+    });
+    this.props.dispatch({
+      type: "window resize",
+      data: {
+        height: window.innerHeight,
+        width: window.innerWidth
+      }
+    });
   }
 
   render() {

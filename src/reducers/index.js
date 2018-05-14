@@ -11,13 +11,15 @@ import cells from "./cells";
 import expression from "./expression";
 import controls from "./controls";
 import differential from "./differential";
+import responsive from "./responsive";
 
 const Reducer = combineReducers({
   initialize,
   cells,
   expression,
   controls,
-  differential
+  differential,
+  responsive
 });
 
 let store = createStore(
