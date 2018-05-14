@@ -95,7 +95,7 @@ class Graph extends React.Component {
         scale: viewportHeight / viewportWidth
       });
 
-      this.setState({camera})
+      this.setState({ camera });
       camera.tick();
     });
 
@@ -111,35 +111,43 @@ class Graph extends React.Component {
     if (this.state.regl && nextProps.vertices) {
       const vertices = nextProps.currentCellSelection;
       const vertexCount = vertices.length;
-      const positions = new Float32Array(2 * vertexCount);
       const colors = new Float32Array(3 * vertexCount);
       const sizes = new Float32Array(vertexCount);
 
-      // d3.scaleLinear().domain([0,1]).range([-1,1])
-      const glScaleX = scaleLinear([0, 1], [-1, 1]);
-      // d3.scaleLinear().domain([0,1]).range([1,-1])
-      const glScaleY = scaleLinear([0, 1], [1, -1]);
+      // Cache a scaled graph
+      if (!this.scaledGraphVec || this.props.graphVec != nextProps.graphVec) {
+        const positions = new Float32Array(2 * vertexCount);
+
+        // d3.scaleLinear().domain([0,1]).range([-1,1])
+        const glScaleX = scaleLinear([0, 1], [-1, 1]);
+        // d3.scaleLinear().domain([0,1]).range([1,-1])
+        const glScaleY = scaleLinear([0, 1], [1, -1]);
+
+        const graphVec = nextProps.graphVec;
+        for (var i = 0; i < vertexCount; i++) {
+          const cell = vertices[i];
+          const cellIdx = cell.__cellIndex__;
+
+          const x = glScaleX(graphVec[2 * cellIdx]);
+          const y = glScaleY(graphVec[2 * cellIdx + 1]);
+          positions[2 * i] = x;
+          positions[2 * i + 1] = y;
+        }
+        this.scaledGraphVec = positions;
+      }
 
       /*
-        Construct Vectors
+        Construct Size & Color Vectors
       */
-      const graphVec = nextProps.graphVec;
       for (var i = 0; i < vertexCount; i++) {
         const cell = vertices[i];
-        const cellIdx = cell.__cellIndex__;
-        const x = glScaleX(graphVec[2 * cellIdx]);
-        const y = glScaleY(graphVec[2 * cellIdx + 1]);
-        positions[2 * i] = x;
-        positions[2 * i + 1] = y;
-
         colors.set(cell.__colorRGB__, 3 * i);
-
         sizes[i] = cell.__selected__
           ? 4
           : 0.2; /* make this a function of the number of total cells, including regraph */
       }
 
-      this.state.pointBuffer({ data: positions, dimension: 2 });
+      this.state.pointBuffer({ data: this.scaledGraphVec, dimension: 2 });
       this.state.colorBuffer({ data: colors, dimension: 3 });
       this.state.sizeBuffer({ data: sizes, dimension: 1 });
       this.count = vertexCount;
@@ -165,7 +173,7 @@ class Graph extends React.Component {
     const inverse = mat4.invert([], this.state.camera.view());
 
     // transform screen coordinates -> cell coordinates
-    const invert = (pin) => {
+    const invert = pin => {
       const x = 2 * pin[0] / globals.graphWidth - 1;
       const y = 2 * (1 - pin[1] / globals.graphHeight) - 1;
       const pout = [x + inverse[12], y + inverse[13]];
@@ -198,10 +206,7 @@ class Graph extends React.Component {
 
   render() {
     return (
-      <div
-        id="graphWrapper"
-
-      >
+      <div id="graphWrapper">
         <div style={{ position: "fixed", right: 0, top: 0 }}>
           <div
             style={{
@@ -286,9 +291,7 @@ class Graph extends React.Component {
             </div>
           </div>
         </div>
-        <div
-          style={{marginRight: 50, marginTop: 50, zIndex: -9999 }}
-        >
+        <div style={{ marginRight: 50, marginTop: 50, zIndex: -9999 }}>
           <div
             style={{
               display: this.state.mode === "brush" ? "inherit" : "none"

@@ -47,6 +47,46 @@ class HistogramBrush extends React.Component {
   }
   componentDidMount() {}
   componentDidUpdate() {}
+
+  calcHistogramCache(nextProps) {
+    // recalculate expensive stuff
+    const allValuesForContinuousFieldAsArray = _.map(
+      nextProps.currentCellSelection,
+      nextProps.metadataField
+    );
+
+    this.histogramCache = {};
+
+    this.histogramCache.x = d3
+      .scaleLinear()
+      .domain([nextProps.ranges.min, nextProps.ranges.max])
+      .range([0, this.width]);
+
+    this.histogramCache.y = d3
+      .scaleLinear()
+      .range([this.height - this.marginBottom, 0]);
+    // .range([height - margin.bottom, margin.top]);
+
+    this.histogramCache.bins = d3
+      .histogram()
+      .domain(this.histogramCache.x.domain())
+      .thresholds(40)(allValuesForContinuousFieldAsArray);
+
+    this.histogramCache.numValues = allValuesForContinuousFieldAsArray.length;
+  }
+
+  componentWillMount() {
+    this.calcHistogramCache(this.props);
+  }
+  componentWillReceiveProps(nextProps) {
+    if (
+      this.props.metadataField !== nextProps.metadataField ||
+      !this.histogramCache
+    ) {
+      this.calcHistogramCache(nextProps);
+    }
+  }
+
   onBrush(selection, x) {
     return () => {
       if (d3.event.selection) {
@@ -65,24 +105,10 @@ class HistogramBrush extends React.Component {
     };
   }
   drawHistogram(svgRef) {
-    const allValuesForContinuousFieldAsArray = _.map(
-      this.props.currentCellSelection,
-      this.props.metadataField
-    );
-
-    var x = d3
-      .scaleLinear()
-      .domain(d3.extent(allValuesForContinuousFieldAsArray, d => +d))
-      .range([0, this.width]);
-    // .range([margin.left, width - margin.right]);
-
-    var y = d3.scaleLinear().range([this.height - this.marginBottom, 0]);
-    // .range([height - margin.bottom, margin.top]);
-
-    const bins = d3
-      .histogram()
-      .domain(x.domain())
-      .thresholds(40)(allValuesForContinuousFieldAsArray);
+    const x = this.histogramCache.x;
+    const y = this.histogramCache.y;
+    const bins = this.histogramCache.bins;
+    const numValues = this.histogramCache.numValues;
 
     d3
       .select(svgRef)
@@ -96,13 +122,13 @@ class HistogramBrush extends React.Component {
         return x(d.x0) + 1;
       })
       .attr("y", function(d) {
-        return y(d.length / allValuesForContinuousFieldAsArray.length);
+        return y(d.length / numValues);
       })
       .attr("width", function(d) {
         return Math.abs(x(d.x1) - x(d.x0) - 1);
       })
       .attr("height", function(d) {
-        return y(0) - y(d.length / allValuesForContinuousFieldAsArray.length);
+        return y(0) - y(d.length / numValues);
       });
 
     if (!this.state.brush && !this.state.axis) {

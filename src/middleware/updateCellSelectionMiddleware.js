@@ -49,7 +49,10 @@ const updateCellSelectionMiddleware = store => {
         - metadata has cellname and index, and that's all we ever need to reference cell info
       */
       let newSelection = s.controls.currentCellSelection.slice(0);
-      _.forEach(newSelection, cell => (cell.__selected__ = true));
+      // _.forEach(newSelection, cell => (cell.__selected__ = true));
+      for (let i = 0; i < newSelection.length; i++) {
+        newSelection[i].__selected__ = true;
+      }
 
       /*
          in plain language...
