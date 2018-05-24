@@ -89,7 +89,7 @@ const initialize = () => {
 //
 function cleanupExpressionResponse(data) {
   const s = store.getState();
-  const metadata = s.controls.currentCellSelectionMap;
+  const metadata = s.controls.allCellsMetadataMap;
   let errorFound = false;
   data.data.cells = _.filter(data.data.cells, cell => {
     if (!errorFound && !metadata[cell.cellname]) {

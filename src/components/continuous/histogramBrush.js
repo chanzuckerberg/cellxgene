@@ -26,7 +26,7 @@ import { connect } from "react-redux";
   return {
     colorAccessor: state.controls.colorAccessor,
     colorScale: state.controls.colorScale,
-    currentCellSelection: state.controls.currentCellSelection
+    allCellsMetadata: state.controls.allCellsMetadata
   };
 })
 class HistogramBrush extends React.Component {
@@ -52,7 +52,7 @@ class HistogramBrush extends React.Component {
   calcHistogramCache(nextProps) {
     // recalculate expensive stuff
     const allValuesForContinuousFieldAsArray = _.map(
-      nextProps.currentCellSelection,
+      nextProps.allCellsMetadata,
       nextProps.metadataField
     );
 

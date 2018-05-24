@@ -9,13 +9,7 @@ import actions from "../../actions";
 @connect()
 class CellSetButton extends React.Component {
   set() {
-    const set = [];
-
-    _.each(this.props.currentCellSelection, cell => {
-      if (cell["__selected__"]) {
-        set.push(cell.CellName);
-      }
-    });
+    const set = _.map(this.props.crossfilter.cells.allFiltered(), "CellName");
 
     this.props.dispatch({
       type:

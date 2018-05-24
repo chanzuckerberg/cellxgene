@@ -20,7 +20,7 @@ import { parseRGB } from "../util/parseRGB";
   This is nice because we keep a lot of filtering business logic centralized (what it means in practice to be selected)
 */
 
-const updateCellSelectionMiddleware = store => {
+const updateCellColorsMiddleware = store => {
   return next => {
     return action => {
       const s = store.getState();
@@ -37,7 +37,7 @@ const updateCellSelectionMiddleware = store => {
         ); /* if the cells haven't loaded or the action wasn't a color change, bail */
       }
 
-      let currentSelectionWithUpdatedColors = s.controls.currentCellSelection.slice(
+      let allCellsMetadataWithUpdatedColors = s.controls.allCellsMetadata.slice(
         0
       );
       let colorScale;
@@ -46,7 +46,7 @@ const updateCellSelectionMiddleware = store => {
          in plain language...
 
          (a) once the cells have loaded.
-         (b) each time a user changes a color control we need to update currentCellSelection colors
+         (b) each time a user changes a color control we need to update allCellsMetadata colors
 
          This is available to all the draw functions as cell["__color__"] and cell["__colorRGB__"]
       */
@@ -54,8 +54,8 @@ const updateCellSelectionMiddleware = store => {
       if (action.type === "color by categorical metadata") {
         colorScale = d3.scaleOrdinal().range(globals.ordinalColors);
 
-        for (let i = 0; i < currentSelectionWithUpdatedColors.length; i++) {
-          const cell = currentSelectionWithUpdatedColors[i];
+        for (let i = 0; i < allCellsMetadataWithUpdatedColors.length; i++) {
+          const cell = allCellsMetadataWithUpdatedColors[i];
           let c = colorScale(cell[action.colorAccessor]);
           cell.__color__ = c;
           cell.__colorRGB__ = parseRGB(c);
@@ -68,10 +68,10 @@ const updateCellSelectionMiddleware = store => {
           .domain([0, action.rangeMaxForColorAccessor])
           .range([1, 0]);
 
-        _.each(currentSelectionWithUpdatedColors, (cell, i) => {
+        _.each(allCellsMetadataWithUpdatedColors, (cell, i) => {
           let c = d3.interpolateViridis(colorScale(cell[action.colorAccessor]));
-          currentSelectionWithUpdatedColors[i]["__color__"] = c;
-          currentSelectionWithUpdatedColors[i]["__colorRGB__"] = parseRGB(c);
+          allCellsMetadataWithUpdatedColors[i]["__color__"] = c;
+          allCellsMetadataWithUpdatedColors[i]["__colorRGB__"] = parseRGB(c);
         });
       }
 
@@ -113,12 +113,12 @@ const updateCellSelectionMiddleware = store => {
             0
           ]); /* invert viridis... probably pass this scale through to others */
 
-        _.each(currentSelectionWithUpdatedColors, (cell, i) => {
+        _.each(allCellsMetadataWithUpdatedColors, (cell, i) => {
           let c = d3.interpolateViridis(
             colorScale(expressionMap[cell.CellName][indexOfGene])
           );
-          currentSelectionWithUpdatedColors[i]["__color__"] = c;
-          currentSelectionWithUpdatedColors[i]["__colorRGB__"] = parseRGB(c);
+          allCellsMetadataWithUpdatedColors[i]["__color__"] = c;
+          allCellsMetadataWithUpdatedColors[i]["__colorRGB__"] = parseRGB(c);
         });
       }
 
@@ -126,7 +126,7 @@ const updateCellSelectionMiddleware = store => {
         append the result of all the filters to the action the user just triggered
       */
       let modifiedAction = Object.assign({}, action, {
-        currentSelectionWithUpdatedColors,
+        allCellsMetadataWithUpdatedColors,
         colorScale
       });
 
@@ -135,4 +135,4 @@ const updateCellSelectionMiddleware = store => {
   };
 };
 
-export default updateCellSelectionMiddleware;
+export default updateCellColorsMiddleware;

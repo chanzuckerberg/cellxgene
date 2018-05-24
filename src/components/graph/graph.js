@@ -22,31 +22,11 @@ import FaSave from "react-icons/lib/fa/download";
 /* https://bl.ocks.org/mbostock/9078690 - quadtree for onClick / hover selections */
 
 @connect(state => {
-  const vertices =
-    state.cells.cells && state.cells.cells.data.graph
-      ? state.cells.cells.data.graph
-      : null;
-  const ranges =
-    state.cells.cells && state.cells.cells.data.ranges
-      ? state.cells.cells.data.ranges
-      : null;
-  const metadata =
-    state.cells.cells && state.cells.cells.data.metadata
-      ? state.cells.cells.data.metadata
-      : null;
-
   return {
-    ranges,
-    vertices,
-    metadata,
-    colorAccessor: state.controls.colorAccessor,
-    colorScale: state.controls.colorScale,
-    continuousSelection: state.controls.continuousSelection,
-    graphVec: state.controls.graphVec,
-    currentCellSelection: state.controls.currentCellSelection,
-    graphBrushSelection: state.controls.graphBrushSelection,
+    allCellsMetadata: state.controls.allCellsMetadata,
     opacityForDeselectedCells: state.controls.opacityForDeselectedCells,
-    responsive: state.responsive
+    responsive: state.responsive,
+    crossfilter: state.controls.crossfilter
   };
 })
 class Graph extends React.Component {
@@ -55,6 +35,10 @@ class Graph extends React.Component {
     this.count = 0;
     this.inverse = mat4.identity([]);
     this.graphPaddingTop = 100;
+    this.renderCache = {
+      positions: null,
+      colors: null
+    };
     this.state = {
       drawn: false,
       svg: null,
@@ -104,42 +88,60 @@ class Graph extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (this.state.regl && nextProps.vertices) {
-      /* update regl */
-      const vertices = nextProps.currentCellSelection;
-      const vertexCount = vertices.length;
-      const positions = new Float32Array(2 * vertexCount);
-      const colors = new Float32Array(3 * vertexCount);
-      const sizes = new Float32Array(vertexCount);
+    if (this.state.regl && nextProps.crossfilter) {
+      /* update the regl state */
+      const crossfilter = nextProps.crossfilter.cells;
+      const cells = crossfilter.all();
+      const cellCount = cells.length;
 
-      // d3.scaleLinear().domain([0,1]).range([-1,1])
-      const glScaleX = scaleLinear([0, 1], [-1, 1]);
-      // d3.scaleLinear().domain([0,1]).range([1,-1])
-      const glScaleY = scaleLinear([0, 1], [1, -1]);
+      // X/Y positions for each point - a cached value that only
+      // changes if we have loaded entirely new cell data
+      //
+      if (
+        !this.renderCache.positions ||
+        this.props.crossfilter.cells != nextProps.crossfilter.cells
+      ) {
+        const positions = new Float32Array(2 * cellCount);
 
-      /*
-        Construct Vectors
-      */
-      const graphVec = nextProps.graphVec;
-      for (var i = 0; i < vertexCount; i++) {
-        const cell = vertices[i];
-        const cellIdx = cell.__cellIndex__;
-        const x = glScaleX(graphVec[2 * cellIdx]);
-        const y = glScaleY(graphVec[2 * cellIdx + 1]);
-        positions[2 * i] = x;
-        positions[2 * i + 1] = y;
+        // d3.scaleLinear().domain([0,1]).range([-1,1])
+        const glScaleX = scaleLinear([0, 1], [-1, 1]);
+        // d3.scaleLinear().domain([0,1]).range([1,-1])
+        const glScaleY = scaleLinear([0, 1], [1, -1]);
 
-        colors.set(cell.__colorRGB__, 3 * i);
-
-        sizes[i] = cell.__selected__
-          ? 4
-          : 0.2; /* make this a function of the number of total cells, including regraph */
+        for (let i = 0; i < cellCount; i++) {
+          positions[2 * i] = glScaleX(cells[i].__x__);
+          positions[2 * i + 1] = glScaleY(cells[i].__y__);
+        }
+        this.renderCache.positions = positions;
       }
 
-      this.state.pointBuffer({ data: positions, dimension: 2 });
-      this.state.colorBuffer({ data: colors, dimension: 3 });
+      // Colors for each point - a cached value that only changes when
+      // the cell metadata changes (done by updateCellColors middleware).
+      // NOTE: this is a slightly pessimistic assumption, as the metadata
+      // could have changed for some other reason, but for now color is
+      // the only metadata that changes client-side.  If this is problematic,
+      // we could add some sort of color-specific indicator to the app state.
+      if (
+        !this.renderCache.colors ||
+        this.props.allCellsMetadata != nextProps.allCellsMetadata
+      ) {
+        const colors = new Float32Array(3 * cellCount);
+        for (let i = 0; i < cellCount; i++) {
+          colors.set(cells[i].__colorRGB__, 3 * i);
+        }
+        this.renderCache.colors = colors;
+      }
+
+      const sizes = new Float32Array(cellCount);
+      crossfilter.fillByIsFiltered(sizes, 4, 0.2);
+
+      this.state.pointBuffer({
+        data: this.renderCache.positions,
+        dimension: 2
+      });
+      this.state.colorBuffer({ data: this.renderCache.colors, dimension: 3 });
       this.state.sizeBuffer({ data: sizes, dimension: 1 });
-      this.count = vertexCount;
+      this.count = cellCount;
     }
 
     if (

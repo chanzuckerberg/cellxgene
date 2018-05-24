@@ -38,7 +38,6 @@ import { margin, width, height, createDimensions } from "./util";
     colorAccessor: state.controls.colorAccessor,
     colorScale: state.controls.colorScale,
     graphBrushSelection: state.controls.graphBrushSelection,
-    currentCellSelection: state.controls.currentCellSelection,
     axesHaveBeenDrawn: state.controls.axesHaveBeenDrawn
   };
 })

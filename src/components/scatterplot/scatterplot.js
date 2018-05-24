@@ -39,11 +39,10 @@ import { margin, width, height, createDimensions } from "./util";
     initializeRanges,
     colorAccessor: state.controls.colorAccessor,
     colorScale: state.controls.colorScale,
-    currentCellSelection: state.controls.currentCellSelection,
-    currentCellSelectionMap: state.controls.currentCellSelectionMap,
     scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
     scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
     opacityForDeselectedCells: state.controls.opacityForDeselectedCells,
+    crossfilter: state.controls.crossfilter,
     differential: state.differential,
     expression: state.expression
   };
@@ -124,7 +123,6 @@ class Scatterplot extends React.Component {
       this.state.pointBuffer &&
       this.state.colorBuffer &&
       this.state.sizeBuffer &&
-      this.props.currentCellSelection &&
       this.props.expression.data &&
       this.props.expression.data.genes &&
       this.props.scatterplotXXaccessor &&
@@ -132,8 +130,7 @@ class Scatterplot extends React.Component {
       this.state.xScale &&
       this.state.yScale
     ) {
-      const currentCellSelectionMap = this.props.currentCellSelectionMap;
-
+      const crossfilter = this.props.crossfilter.cells;
       const data = this.props.expression.data;
       const cells = data.cells;
       const genes = data.genes;
@@ -158,9 +155,8 @@ class Scatterplot extends React.Component {
       /*
         Construct Vectors
       */
-      for (var i = 0; i < cellCount; i++) {
+      for (let i = 0; i < cellCount; i++) {
         const cell = cells[i];
-        const cellMetadata = currentCellSelectionMap[cell.cellname];
 
         positions[2 * i] = glScaleX(
           this.state.xScale(cell.e[geneXXaccessorIndex])
@@ -168,13 +164,14 @@ class Scatterplot extends React.Component {
         positions[2 * i + 1] = glScaleY(
           this.state.yScale(cell.e[geneYYaccessorIndex])
         );
-
-        colors.set(cellMetadata.__colorRGB__, 3 * i);
-
-        sizes[i] = cellMetadata.__selected__
-          ? 4
-          : 0.2; /* make this a function of the number of total cells, including regraph */
       }
+
+      for (let i = 0; i < cellCount; i++) {
+        const metadata = this.props.metadata[i];
+        colors.set(metadata.__colorRGB__, 3 * i);
+      }
+
+      crossfilter.fillByIsFiltered(sizes, 4, 0.2);
 
       this.state.pointBuffer({ data: positions, dimension: 2 });
       this.state.colorBuffer({ data: colors, dimension: 3 });
