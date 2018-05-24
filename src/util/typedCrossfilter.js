@@ -279,8 +279,6 @@ class BitArray {
 
     this.bitmask = new Int32Array(this.width); // dimension allocation mask
     this.bitarray = new Int32Array(this.width * this.length);
-
-    console.log("a", wasmHelpersModule);
   }
 
   get selectionCount() {
