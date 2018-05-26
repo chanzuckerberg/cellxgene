@@ -101,18 +101,26 @@ class Graph extends React.Component {
         !this.renderCache.positions ||
         this.props.crossfilter.cells != nextProps.crossfilter.cells
       ) {
-        const positions = new Float32Array(2 * cellCount);
+        if (!this.renderCache.positions)
+          this.renderCache.positions = new Float32Array(2 * cellCount);
 
         // d3.scaleLinear().domain([0,1]).range([-1,1])
         const glScaleX = scaleLinear([0, 1], [-1, 1]);
         // d3.scaleLinear().domain([0,1]).range([1,-1])
         const glScaleY = scaleLinear([0, 1], [1, -1]);
 
-        for (let i = 0; i < cellCount; i++) {
+        for (
+          let i = 0, positions = this.renderCache.positions;
+          i < cellCount;
+          i++
+        ) {
           positions[2 * i] = glScaleX(cells[i].__x__);
           positions[2 * i + 1] = glScaleY(cells[i].__y__);
         }
-        this.renderCache.positions = positions;
+        this.state.pointBuffer({
+          data: this.renderCache.positions,
+          dimension: 2
+        });
       }
 
       // Colors for each point - a cached value that only changes when
@@ -125,22 +133,28 @@ class Graph extends React.Component {
         !this.renderCache.colors ||
         this.props.allCellsMetadata != nextProps.allCellsMetadata
       ) {
-        const colors = new Float32Array(3 * cellCount);
-        for (let i = 0; i < cellCount; i++) {
+        if (!this.renderCache.colors)
+          this.renderCache.colors = new Float32Array(3 * cellCount);
+        for (let i = 0, colors = this.renderCache.colors; i < cellCount; i++) {
           colors.set(cells[i].__colorRGB__, 3 * i);
         }
-        this.renderCache.colors = colors;
+        this.state.colorBuffer({ data: this.renderCache.colors, dimension: 3 });
       }
 
-      const sizes = new Float32Array(cellCount);
-      crossfilter.fillByIsFiltered(sizes, 4, 0.2);
+      // Sizes for each point - this is presumed to change each time the
+      // component receives new props.   Almost always a true assumption, as
+      // most property upates are due to changes driving a crossfilter
+      // selection set change.
+      //
+      if (
+        !this.renderCache.sizes ||
+        this.props.crossfilter.cells != nextProps.crossfilter.cells
+      ) {
+        this.renderCache.sizes = new Float32Array(cellCount);
+      }
+      crossfilter.fillByIsFiltered(this.renderCache.sizes, 4, 0.2);
+      this.state.sizeBuffer({ data: this.renderCache.sizes, dimension: 1 });
 
-      this.state.pointBuffer({
-        data: this.renderCache.positions,
-        dimension: 2
-      });
-      this.state.colorBuffer({ data: this.renderCache.colors, dimension: 3 });
-      this.state.sizeBuffer({ data: sizes, dimension: 1 });
       this.count = cellCount;
     }
 
