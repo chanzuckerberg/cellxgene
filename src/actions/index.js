@@ -65,6 +65,12 @@ const regraph = () => {
   };
 };
 
+const resetGraph = () => {
+  return (dispatch, getState) => {
+    dispatch({ type: "reset graph" });
+  };
+};
+
 const initialize = () => {
   return (dispatch, getState) => {
     dispatch({ type: "initialize started" });
@@ -218,6 +224,7 @@ export default {
   initialize,
   requestCells,
   regraph,
+  resetGraph,
   requestGeneExpressionCounts,
   requestGeneExpressionCountsPOST,
   requestSingleGeneExpressionCountsForColoringPOST,

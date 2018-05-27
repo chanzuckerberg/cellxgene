@@ -65,14 +65,89 @@ function deduceDimensionType(attributes, fieldName) {
   return dimensionType;
 }
 
+// Create view state from /cells data response.  Used both during a data
+// load and during a graph reset.
+//
+function createViewState(schema, data) {
+  const cellsMetadata = data.metadata.slice(0);
+
+  /*
+  construct a copy of the ranges object that only has categorical
+  replace all counts with bool flags
+  ie., everything starts out checked
+  we mutate this map in the actions below
+  */
+  const categoricalAsBooleansMap = {};
+  _.each(data.ranges, (value, key) => {
+    if (
+      key !== "CellName" &&
+      value.options /* it's categorical, it has options instead of ranges */
+    ) {
+      const optionsAsBooleans = {};
+      _.each(value.options, (_value, _key) => {
+        optionsAsBooleans[_key] = true;
+      });
+      categoricalAsBooleansMap[key] = optionsAsBooleans;
+    }
+  });
+
+  const graph = data.graph;
+  _.each(cellsMetadata, (cell, idx) => {
+    cell.__cellIndex__ = idx;
+    cell.__color__ =
+      "rgba(0,0,0,1)"; /* initial color for all cells in all charts */
+    cell.__colorRGB__ = parseRGB(cell.__color__);
+    cell.__x__ = graph[idx][1];
+    cell.__y__ = graph[idx][2];
+  });
+
+  // Build the selection crossfilter.
+  //
+  let cellsCrossfilter = crossfilter(cellsMetadata);
+  let cellsDimensionsMap = {};
+  cellsDimensionsMap.x = cellsCrossfilter.dimension(r => r.__x__, Float32Array);
+  cellsDimensionsMap.y = cellsCrossfilter.dimension(r => r.__y__, Float32Array);
+
+  // Now walk the schema and make an appropriate dimension for each
+  // metadata field.   This is a simplistic mapping, and could be
+  // optmized to use smaller scalars (to save memory) or larger
+  // floating point where precision is needed.
+  //
+  _.forEach(schema, (attributes, key) => {
+    if (key !== "CellName") {
+      const dimensionType = deduceDimensionType(attributes, key);
+      if (dimensionType) {
+        cellsDimensionsMap[key] = cellsCrossfilter.dimension(
+          r => r[key],
+          dimensionType
+        );
+      }
+    }
+  });
+
+  return {
+    cellsMetadata,
+    crossfilter: {
+      cells: cellsCrossfilter,
+      dimensionMap: cellsDimensionsMap
+    },
+    categoricalAsBooleansMap
+  };
+}
+
 const Controls = (
   state = {
+    /* Universe - all cells known to us.  Set once, during initial load */
     _ranges: null /* this comes from initialize, this is universe */,
     allGeneNames: null,
-    allCellsOnClient: null /* this comes from cells endpoint, this is world */,
-    allCellsMetadata: null /* this comes from user actions, all draw components use this, it is created by middleware */,
+    allCells: null /* this comes from cells endpoint, this is universe */,
+    allCellsMetadata: null /* this comes from cells endpoint, and is just the metadata for universe */,
+
+    /* View / World - all cells currently being displayed.  May be a subset of Universe. */
+    cellsMetadata: null,
     crossfilter: null /* the current user selection state */,
     categoricalAsBooleansMap: null,
+
     colorAccessor: null,
     colorScale: null,
     opacityForDeselectedCells: 0.2,
@@ -101,91 +176,41 @@ const Controls = (
       });
     }
     case "request cells success": {
-      const allCellsMetadata = action.data.data.metadata.slice(0);
-      const allCellsMetadataMap = _.keyBy(allCellsMetadata, "CellName");
-
-      /*
-      construct a copy of the ranges object that only has categorical
-      replace all counts with bool flags
-      ie., everything starts out checked
-      we mutate this map in the actions below
-      */
-      const categoricalAsBooleansMap = {};
-      _.each(action.data.data.ranges, (value, key) => {
-        if (
-          key !== "CellName" &&
-          value.options /* it's categorical, it has options instead of ranges */
-        ) {
-          const optionsAsBooleans = {};
-          _.each(value.options, (_value, _key) => {
-            optionsAsBooleans[_key] = true;
-          });
-          categoricalAsBooleansMap[key] = optionsAsBooleans;
-        }
-      });
-
-      const graph = action.data.data.graph;
-      _.each(allCellsMetadata, (cell, idx) => {
-        cell.__cellIndex__ = idx;
-        cell.__color__ =
-          "rgba(0,0,0,1)"; /* initial color for all cells in all charts */
-        cell.__colorRGB__ = parseRGB(cell.__color__);
-        cell.__x__ = graph[idx][1];
-        cell.__y__ = graph[idx][2];
-      });
-
-      // Build the selection crossfilter.
-      //
-      let cellsCrossfilter = crossfilter(allCellsMetadata);
-      let cellsDimensionsMap = {};
-      cellsDimensionsMap.x = cellsCrossfilter.dimension(
-        r => r.__x__,
-        Float32Array
-      );
-      cellsDimensionsMap.y = cellsCrossfilter.dimension(
-        r => r.__y__,
-        Float32Array
-      );
-
-      // Now walk the schema and make an appropriate dimension for each
-      // metadata field.   This is a simplistic mapping, and could be
-      // optmized to use smaller scalars (to save memory) or larger
-      // floating point where precision is needed.
-      //
       // If we don't have a schema (bad server!), fake it by inferring
       // important fields from the ranges element.
       //
       if (!state.schema) {
-        state.schema = createSchemaByDataSniffing(action.data.data.ranges);
+        state.schema = createSchemaByDataSniffing(data.ranges);
       }
-      _.forEach(state.schema, (attributes, key) => {
-        if (key !== "CellName") {
-          const dimensionType = deduceDimensionType(attributes, key);
-          if (dimensionType) {
-            cellsDimensionsMap[key] = cellsCrossfilter.dimension(
-              r => r[key],
-              dimensionType
-            );
-          }
-        }
-      });
+
+      /* Set viewable world to the provided cell data */
+      const viewState = createViewState(state.schema, action.data.data);
       return Object.assign({}, state, {
-        // this is only used as a flag that data has loaded.  Could be
-        // removed (other variables would suffice for the same test).
-        allCellsOnClient: action.data.data,
-        allCellsMetadata,
-        allCellsMetadataMap,
-        categoricalAsBooleansMap,
-        crossfilter: {
-          cells: cellsCrossfilter,
-          dimensionMap: cellsDimensionsMap
-        },
+        /* Universe - initialize once */
+        allCells: state.allCells ? state.allCells : action.data,
+        allCellsMetadata: state.allCellsMetadata
+          ? state.allCellsMetadata
+          : viewState.cellsMetadata,
+        allCellsMetadataMap: state.allCellsMetadataMap
+          ? state.allCellsMetadataMap
+          : _.keyBy(viewState.cellsMetadata, "CellName"),
+
+        /* World */
+        ...viewState,
+
         graphBrushSelection: null /* if we are getting new cells from the server, the layout (probably? definitely?) just changed, so this is now irrelevant, and we WILL need to call a function to reset state of this kind when cells success happens */
       });
     }
     /* * * * * * * * * * * * * * * * * *
             User events
   * * * * * * * * * * * * * * * * * */
+    case "reset graph": {
+      /* Reset viewable world to the entire Universe */
+      const viewState = createViewState(state.schema, state.allCells.data);
+      return Object.assign({}, state, {
+        ...viewState
+      });
+    }
     case "parallel coordinates axes have been drawn": {
       return Object.assign({}, state, {
         axesHaveBeenDrawn: true
@@ -338,23 +363,23 @@ const Controls = (
     case "color by continuous metadata":
       return Object.assign({}, state, {
         colorAccessor: action.colorAccessor,
-        allCellsMetadata:
-          action.allCellsMetadataWithUpdatedColors /* this comes from middleware */,
+        cellsMetadata:
+          action.cellsMetadataWithUpdatedColors /* this comes from middleware */,
         colorScale: action.colorScale
       });
     case "color by expression":
       return Object.assign({}, state, {
         colorAccessor: action.gene,
-        allCellsMetadata:
-          action.allCellsMetadataWithUpdatedColors /* this comes from middleware */,
+        cellsMetadata:
+          action.cellsMetadataWithUpdatedColors /* this comes from middleware */,
         colorScale: action.colorScale
       });
     case "color by categorical metadata":
       return Object.assign({}, state, {
         colorAccessor:
           action.colorAccessor /* pass the scale through additionally, and it's a legend! */,
-        allCellsMetadata:
-          action.allCellsMetadataWithUpdatedColors /* this comes from middleware */,
+        cellsMetadata:
+          action.cellsMetadataWithUpdatedColors /* this comes from middleware */,
         colorScale: action.colorScale
       });
     case "store current cell selection as differential set 1":

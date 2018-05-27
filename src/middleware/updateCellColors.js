@@ -31,22 +31,20 @@ const updateCellColorsMiddleware = store => {
         action.type === "color by continuous metadata" ||
         action.type === "color by categorical metadata";
 
-      if (!filterJustChanged || !s.controls.allCellsOnClient) {
+      if (!filterJustChanged || !s.controls.cellsMetadata) {
         return next(
           action
         ); /* if the cells haven't loaded or the action wasn't a color change, bail */
       }
 
-      let allCellsMetadataWithUpdatedColors = s.controls.allCellsMetadata.slice(
-        0
-      );
+      let cellsMetadataWithUpdatedColors = s.controls.cellsMetadata.slice(0);
       let colorScale;
 
       /*
          in plain language...
 
          (a) once the cells have loaded.
-         (b) each time a user changes a color control we need to update allCellsMetadata colors
+         (b) each time a user changes a color control we need to update cellsMetadata colors
 
          This is available to all the draw functions as cell["__color__"] and cell["__colorRGB__"]
       */
@@ -54,8 +52,8 @@ const updateCellColorsMiddleware = store => {
       if (action.type === "color by categorical metadata") {
         colorScale = d3.scaleOrdinal().range(globals.ordinalColors);
 
-        for (let i = 0; i < allCellsMetadataWithUpdatedColors.length; i++) {
-          const cell = allCellsMetadataWithUpdatedColors[i];
+        for (let i = 0; i < cellsMetadataWithUpdatedColors.length; i++) {
+          const cell = cellsMetadataWithUpdatedColors[i];
           let c = colorScale(cell[action.colorAccessor]);
           cell.__color__ = c;
           cell.__colorRGB__ = parseRGB(c);
@@ -68,10 +66,10 @@ const updateCellColorsMiddleware = store => {
           .domain([0, action.rangeMaxForColorAccessor])
           .range([1, 0]);
 
-        _.each(allCellsMetadataWithUpdatedColors, (cell, i) => {
+        _.each(cellsMetadataWithUpdatedColors, (cell, i) => {
           let c = d3.interpolateViridis(colorScale(cell[action.colorAccessor]));
-          allCellsMetadataWithUpdatedColors[i]["__color__"] = c;
-          allCellsMetadataWithUpdatedColors[i]["__colorRGB__"] = parseRGB(c);
+          cellsMetadataWithUpdatedColors[i]["__color__"] = c;
+          cellsMetadataWithUpdatedColors[i]["__colorRGB__"] = parseRGB(c);
         });
       }
 
@@ -113,12 +111,12 @@ const updateCellColorsMiddleware = store => {
             0
           ]); /* invert viridis... probably pass this scale through to others */
 
-        _.each(allCellsMetadataWithUpdatedColors, (cell, i) => {
+        _.each(cellsMetadataWithUpdatedColors, (cell, i) => {
           let c = d3.interpolateViridis(
             colorScale(expressionMap[cell.CellName][indexOfGene])
           );
-          allCellsMetadataWithUpdatedColors[i]["__color__"] = c;
-          allCellsMetadataWithUpdatedColors[i]["__colorRGB__"] = parseRGB(c);
+          cellsMetadataWithUpdatedColors[i]["__color__"] = c;
+          cellsMetadataWithUpdatedColors[i]["__colorRGB__"] = parseRGB(c);
         });
       }
 
@@ -126,7 +124,7 @@ const updateCellColorsMiddleware = store => {
         append the result of all the filters to the action the user just triggered
       */
       let modifiedAction = Object.assign({}, action, {
-        allCellsMetadataWithUpdatedColors,
+        cellsMetadataWithUpdatedColors,
         colorScale
       });
 

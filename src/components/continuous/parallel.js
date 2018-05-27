@@ -36,7 +36,7 @@ import { margin, width, height, createDimensions } from "./util";
     colorAccessor: state.controls.colorAccessor,
     colorScale: state.controls.colorScale,
     graphBrushSelection: state.controls.graphBrushSelection,
-    allCellsMetadata: state.controls.allCellsMetadata,
+    cellsMetadata: state.controls.cellsMetadata,
     axesHaveBeenDrawn: state.controls.axesHaveBeenDrawn
   };
 })
@@ -96,7 +96,7 @@ class Parallel extends React.Component {
     /* https://stackoverflow.com/questions/23123138/perform-debounce-in-react-js */
     if (
       nextProps.ranges &&
-      nextProps.allCellsMetadata &&
+      nextProps.cellsMetadata &&
       nextProps.axesHaveBeenDrawn
     ) {
       if (this.state._drawLinesCanvas) {
@@ -106,7 +106,7 @@ class Parallel extends React.Component {
       this.state.ctx.clearRect(0, 0, width, height);
 
       const _drawLinesCanvas = drawLinesCanvas(
-        nextProps.allCellsMetadata,
+        nextProps.cellsMetadata,
         this.state.dimensions,
         this.state.xscale,
         this.state.ctx,

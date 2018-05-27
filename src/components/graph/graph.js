@@ -23,7 +23,7 @@ import FaSave from "react-icons/lib/fa/download";
 
 @connect(state => {
   return {
-    allCellsMetadata: state.controls.allCellsMetadata,
+    cellsMetadata: state.controls.cellsMetadata,
     opacityForDeselectedCells: state.controls.opacityForDeselectedCells,
     responsive: state.responsive,
     crossfilter: state.controls.crossfilter
@@ -131,7 +131,7 @@ class Graph extends React.Component {
       // we could add some sort of color-specific indicator to the app state.
       if (
         !this.renderCache.colors ||
-        this.props.allCellsMetadata != nextProps.allCellsMetadata
+        this.props.cellsMetadata != nextProps.cellsMetadata
       ) {
         if (!this.renderCache.colors)
           this.renderCache.colors = new Float32Array(3 * cellCount);
@@ -244,6 +244,24 @@ class Graph extends React.Component {
               alignItems: "baseline"
             }}
           >
+            <button
+              onClick={() => {
+                this.props.dispatch(actions.resetGraph());
+              }}
+              style={{
+                fontSize: 14,
+                fontWeight: 700,
+                color: "white",
+                padding: "10px 20px",
+                marginRight: 10,
+                borderRadius: 2,
+                backgroundColor: globals.brightBlue,
+                border: "none",
+                cursor: "pointer"
+              }}
+            >
+              reset graph
+            </button>
             <button
               onClick={() => {
                 this.props.dispatch(actions.regraph());

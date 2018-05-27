@@ -3,6 +3,13 @@ import uri from "urijs";
 import * as globals from "../globals";
 
 /*
+XXX: this file should be obsolete.  We just need to complete the refactoring
+of parallel.js and it can be removed entirely.
+
+It is currently not in use - the middleware constructor does not include include it
+*/
+
+/*
   https://medium.com/@jacobp100/you-arent-using-redux-middleware-enough-94ffe991e6
   storeInstance => functionToCallWithAnActionThatWillSendItToTheNextMiddleware => actionThatDispatchWasCalledWith => valueToUseAsTheReturnValueOfTheDispatchCall
 */
@@ -34,11 +41,7 @@ const updateCellSelectionMiddleware = store => {
         action.type === "categorical metadata filter none of these" ||
         action.type === "categorical metadata filter all of these";
 
-      if (
-        !filterJustChanged ||
-        !s.controls.allCellsOnClient
-        /* graph is set at the same time as allCells, so we assume it exists */
-      ) {
+      if (!filterJustChanged || !s.controls.cellsMetadata) {
         return next(
           action
         ); /* if the cells haven't loaded or the action wasn't a filter, bail */
@@ -48,7 +51,7 @@ const updateCellSelectionMiddleware = store => {
         - make a FRESH copy of all of the cells
         - metadata has cellname and index, and that's all we ever need to reference cell info
       */
-      let newSelection = s.controls.allCellsMetadata.slice(0);
+      let newSelection = s.controls.cellsMetadata.slice(0);
       // _.forEach(newSelection, cell => (cell.__selected__ = true));
       for (let i = 0; i < newSelection.length; i++) {
         newSelection[i].__selected__ = true;
@@ -58,7 +61,7 @@ const updateCellSelectionMiddleware = store => {
          in plain language...
 
          (a) once the cells have loaded.
-         (b) each time a user changes ANY control we need to update allCellsMetadata
+         (b) each time a user changes ANY control we need to update cellsMetadata
          there are two states:
 
          1. control state we already know about (state.foo)
