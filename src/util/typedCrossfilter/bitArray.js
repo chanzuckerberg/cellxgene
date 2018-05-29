@@ -37,10 +37,15 @@ class BitArray {
     this.bitarray = new Int32Array(this.width * this.length);
   }
 
+  // Return the number of records that are selected, ie, have a one bit in
+  // all allocated dimensions.
+  //
   get selectionCount() {
     return this.countAllOnes();
   }
 
+  // Count all records that have a 'one' bit in allocated dimensions.
+  //
   countAllOnes() {
     let count = 0;
     for (let i = 0; i < this.width; i++) {
