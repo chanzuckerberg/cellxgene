@@ -141,7 +141,7 @@ const Controls = (
       // important fields from the ranges element.
       //
       if (!state.schema) {
-        state.schema = createSchemaByDataSniffing(data.ranges);
+        state.schema = createSchemaByDataSniffing(action.data.data.ranges);
       }
 
       /* Set viewable world to the provided cell data */
