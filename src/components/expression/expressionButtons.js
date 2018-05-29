@@ -8,8 +8,8 @@ import CellSetButton from "./cellSetButtons";
 
 @connect(state => {
   return {
-    currentCellSelection: state.controls.currentCellSelection,
-    differential: state.differential
+    differential: state.differential,
+    crossfilter: state.controls.crossfilter
   };
 })
 class Expression extends React.Component {
@@ -43,7 +43,9 @@ class Expression extends React.Component {
           <div style={{ marginBottom: 15, width: 300 }}>
             There are currently
             {" " +
-              _.filter(this.props.currentCellSelection, "__selected__").length +
+              (this.props.crossfilter
+                ? this.props.crossfilter.cells.countFiltered()
+                : 0) +
               " "}
             cells selected, click a cell set button to store them.
           </div>
