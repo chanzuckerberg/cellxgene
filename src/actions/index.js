@@ -57,9 +57,9 @@ const regraph = () => {
 
     dispatch(requestCells(uri.search())).then(res => {
       if (res.error) {
-        dispatch({ type: "regraph success" });
-      } else {
         dispatch({ type: "regraph error" });
+      } else {
+        dispatch({ type: "regraph success" });
       }
     });
   };
