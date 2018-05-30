@@ -65,7 +65,7 @@ class TypedCrossfilter {
 
   _freeDimension(id) {
     this.selection.freeDimension(id);
-    this.filters = this.filters.filter(f => f.id != id);
+    this.filters = this.filters.filter(f => f._id != id);
   }
 
   // return array of all records that are selected/filtered
@@ -105,7 +105,7 @@ class TypedCrossfilter {
 class ScalarDimension {
   constructor(value, valueArrayType, crossfilter, id) {
     this.crossfilter = crossfilter;
-    this.id = id;
+    this._id = id;
 
     // current selection filter, expressed as PostiveIntervals.
     this.currentFilter = [];
@@ -133,11 +133,11 @@ class ScalarDimension {
   }
 
   dispose() {
-    this.crossfilter._freeDimension(this.id);
+    this.crossfilter._freeDimension(this._id);
   }
 
   id() {
-    return this.id;
+    return this._id;
   }
 
   _updateFilters(newFilter) {
@@ -147,26 +147,26 @@ class ScalarDimension {
     // more complex work and just clobber everything.
     //
     if (newFilter.length === 0) {
-      this.crossfilter.selection.deselectAll(this.id);
+      this.crossfilter.selection.deselectAll(this._id);
     } else if (
       newFilter.length === 1 &&
       newFilter[0][0] === 0 &&
       newFilter[0][1] == this.index.length
     ) {
-      this.crossfilter.selection.selectAll(this.id);
+      this.crossfilter.selection.selectAll(this._id);
     } else {
       const adds = PositiveIntervals.difference(newFilter, this.currentFilter);
       const dels = PositiveIntervals.difference(this.currentFilter, newFilter);
       dels.forEach(interval =>
         this.crossfilter.selection.deselectIndirectFromRange(
-          this.id,
+          this._id,
           this.index,
           interval
         )
       );
       adds.forEach(interval =>
         this.crossfilter.selection.selectIndirectFromRange(
-          this.id,
+          this._id,
           this.index,
           interval
         )
