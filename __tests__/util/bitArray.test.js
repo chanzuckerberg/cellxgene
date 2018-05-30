@@ -100,10 +100,7 @@ describe("select and deselect", () => {
     }
 
     ba.selectAll(dim);
-    console.log(ba);
-    console.log(defaultTestLength - 1);
     ba.deselectOne(dim, defaultTestLength - 1);
-    console.log(ba);
     expect(ba.isSelected(defaultTestLength - 1)).toEqual(false);
     for (let i = 0; i < defaultTestLength - 1; i++) {
       expect(ba.isSelected(i)).toEqual(true);
@@ -129,9 +126,59 @@ describe("selectionCount", () => {
     for (let i = 0; i < defaultTestLength; i++) {
       ba.deselectOne(dim1, i);
       expect(ba.selectionCount).toEqual(defaultTestLength - i - 1);
+      expect(ba.selectionCount).toEqual(ba.countAllOnes());
     }
 
     ba.freeDimension(dim1);
     ba.freeDimension(dim2);
+  });
+});
+
+describe("fillBySelection", () => {
+  test("sets values correctly", () => {
+    const ba = new BitArray(defaultTestLength);
+    expect(ba).toBeDefined();
+    const dim = ba.allocDimension();
+    expect(dim).toBeDefined();
+
+    const arr = new Int32Array(defaultTestLength);
+    arr.fill(0);
+    const truth = new Int32Array(defaultTestLength);
+    truth.fill(0);
+
+    // initial state should be deselected
+    ba.fillBySelection(arr, 1, 0);
+    expect(arr).toEqual(expect.not.arrayContaining([1]));
+
+    // selectAll
+    ba.selectAll(dim);
+    ba.fillBySelection(arr, 1, 0);
+    expect(arr).toEqual(expect.not.arrayContaining([0]));
+
+    // deselectOne
+    ba.deselectOne(dim, 3);
+    ba.fillBySelection(arr, 1, 0);
+    truth.fill(1);
+    truth[3] = 0;
+    expect(arr).toEqual(truth);
+
+    // deselectAll
+    ba.deselectAll(dim);
+    ba.fillBySelection(arr, 1, 0);
+    truth.fill(0);
+    expect(arr).toEqual(truth);
+
+    // selectOne
+    ba.selectOne(dim, 5);
+    ba.fillBySelection(arr, 6, 1);
+    truth.fill(1);
+    truth[5] = 6;
+    expect(arr).toEqual(truth);
+
+    // should be deselected after dimension disposal
+    ba.freeDimension(dim);
+    ba.fillBySelection(arr, 3, 9);
+    truth.fill(9);
+    expect(arr).toEqual(truth);
   });
 });
