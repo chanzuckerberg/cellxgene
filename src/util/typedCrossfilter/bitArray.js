@@ -140,7 +140,7 @@ class BitArray {
     const col = dim >>> 5;
     const before = this.bitarray[col * this.length + index];
     const after = before | (1 << (dim % 32));
-    this.bitarray[col] = after;
+    this.bitarray[col * this.length + index] = after;
   }
 
   // deselect index on dimension
@@ -149,7 +149,7 @@ class BitArray {
     const col = dim >>> 5;
     const before = this.bitarray[col * this.length + index];
     const after = before & ~(1 << (dim % 32));
-    this.bitarray[col] = after;
+    this.bitarray[col * this.length + index] = after;
   }
 
   // select all indices on dimension.
