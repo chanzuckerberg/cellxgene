@@ -103,6 +103,7 @@ const Controls = (
     allGeneNames: null,
     allCells: null /* this comes from cells endpoint, this is universe */,
     allCellsMetadata: null /* this comes from cells endpoint, and is just the metadata for universe */,
+    allCellsMetadataMap: null,
 
     /* View / World - all cells currently being displayed.  May be a subset of Universe. */
     cellsMetadata: null,

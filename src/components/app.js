@@ -8,6 +8,7 @@ import PulseLoader from "halogen/PulseLoader";
 
 import LeftSideBar from "./leftsidebar";
 import Parallel from "./continuous/parallel";
+import Legend from "./continuousLegend";
 import Joy from "./joy/joy";
 import Graph from "./graph/graph";
 import * as globals from "../globals";
@@ -92,6 +93,7 @@ class App extends React.Component {
             }}
           >
             <Graph />
+            <Legend />
             {/*<Parallel/>*/}
           </div>
         </div>
