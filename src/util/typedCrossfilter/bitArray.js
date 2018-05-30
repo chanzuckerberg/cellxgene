@@ -214,7 +214,8 @@ class BitArray {
       const bitmask = this.bitmask[0];
       const bitarray = this.bitarray;
       for (let i = 0, len = this.length; i < len; i++) {
-        result[i] = bitarray[i] === bitmask ? selectedValue : deselectedValue;
+        result[i] =
+          bitmask && bitarray[i] === bitmask ? selectedValue : deselectedValue;
       }
     } else {
       for (let i = 0, len = this.length; i < len; i++) {
