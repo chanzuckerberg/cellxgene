@@ -14,3 +14,36 @@ npm-debug.log
 .vscode
 
 data
+
+
+*.idea*
+
+__pycache__
+*.DS_Store*
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
+
+GBM
+venv
+extesting
+
+Dockerfile-*
+*-data/*
+data/*
+runServer.py
+templates/favicon.png
+templates/index.html
+templates/service-worker.js
+templates/static/*
+Graph.dot*
+
+backend/app/web/static/css/
+
+backend/app/web/static/img/
+
+backend/app/web/static/js/
+
+backend/app/web/templates/index\.html
