@@ -1,13 +1,21 @@
-from abc import ABC, abstractmethod
+from abc import ABCMeta, abstractmethod
 
-class CXGDriver(metaclass=abc.ABCMeta):
+class CXGDriver(metaclass=ABCMeta):
 
 	def __init__(self, data, schema=None, graph_method=None, diffexp_method=None):
-		self.data = _load_data(data)
+		self.data = self._load_data(data)
 
 	@abstractmethod
 	@staticmethod
 	def _load_data(data):
+		pass
+
+	@abstractmethod
+	def _load_or_infer_schema(data):
+		pass
+
+	@abstractmethod
+	def _set_cell_ids(self):
 		pass
 
 	@abstractmethod

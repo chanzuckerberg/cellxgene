@@ -1,84 +1,115 @@
-from os.path import join
-
 import scanpy.api as sc
 import numpy as np
 
 from ..util.schema_parse import parse_schema
+from ..driver import CXGDriver
 
-class ScanpyEngine():
 
-	def __init__(self, dataloc):
-		self.ADATA = sc.read(join(dataloc, "data.h5ad"))
-		self.cell_count = self._cell_count
-		self.schema = parse_schema(join(dataloc, "data_schema.json"))
+class ScanpyEngine(CXGDriver):
 
-	def _cell_count(self):
-		return len(self.ADATA.obs.index)
+	def __init__(self, data, schema=None, graph_method=None, diffexp_method=None):
+		self.data = self._load_data(data)
+		self.schema = self._load_or_infer_schema(schema)
+		self._set_cell_ids()
+		self.cell_count = self.data.shape[0]
+		# TODO Do I need this?
+		self.gene_count = self.data.shape[1]
+		self.graph_method = graph_method
+		self.diffexp_method = diffexp_method
 
-	def all_cells(self):
-		return self.ADATA.obs.index.tolist()
 
-	def all_genes(self):
-		return self.ADATA.var.index.tolist()
+	@staticmethod
+	def _load_data(data):
+		return sc.read(data)
 
-	def gene_count(self):
-		return len(self.ADATA.var.index)
+	def _load_or_infer_schema(schema):
+		data_schema = None
+		if not schema:
+			pass
+		else:
+			data_schema = parse_schema(schema)
+		return data_schema
+
+	def _set_cell_ids(self):
+		self.data.obs['cxg_cell_id'] = list(range(self.data.obs.shape[0]))
+		self.data.obs["cell_name"] = list(self.data.obs.index)
+		self.data.obs.set_index('cxg_cell_id', inplace=True)
+
+	def cells(self):
+		return list(self.data.obs.index)
+
+	def cellids(self):
+		return list(self.data.obs.index)
+
+	def genes(self):
+		return self.data.var.index.tolist()
 
 	def filter_cells(self, filter):
+		"""
+		Filter cells from data and return a subset of the data
+		:param filter:
+		:return: iterator through cell ids
+		"""
 		cell_idx = np.ones((self.cell_count(),), dtype=bool)
+		# TODO does this need to be a generator too?
 		for key, value in filter.items():
 			if value["variable_type"] == "categorical":
-				key_idx = np.in1d(getattr(self.ADATA.obs, key), value["query"])
+				key_idx = np.in1d(getattr(self.data.obs, key), value["query"])
 				cell_idx = np.logical_and(cell_idx, key_idx)
 			else:
 				min_ = value["query"]["min"]
 				max_ = value["query"]["max"]
 				if min_:
-					key_idx = np.array((getattr(self.ADATA.obs, key) >= min_).data)
+					key_idx = np.array((getattr(self.data.obs, key) >= min_).data)
 					cell_idx = np.logical_and(cell_idx, key_idx)
 				if max_:
-					key_idx = np.array((getattr(self.ADATA.obs, key) <= min_).data)
+					key_idx = np.array((getattr(self.data.obs, key) <= min_).data)
 					cell_idx = np.logical_and(cell_idx, key_idx)
-		return self.ADATA[cell_idx, :]
+		# If this is slow, could vectorize with logical array and then loop through that
+		for idx in self.cell_count:
+			if cell_idx[idx]:
+				yield self.data.obs['cxg_cell_id'][idx]
 
-	@staticmethod
-	def metadata_ranges(data, schema):
-		metadata_ranges = {}
-		for field in schema:
-			if schema[field]["variabletype"] == "categorical":
-				group_by = field
-				if group_by == "CellName":
-					group_by = 'index'
-				metadata_ranges[field] = {"options": data.obs.groupby(group_by).size().to_dict()}
-			else:
-				metadata_ranges[field] = {
-					"range": {
-						"min": data.obs[field].min(),
-						"max": data.obs[field].max()
-					}
-				}
-		return metadata_ranges
+	# Should this return the order of metadata fields as the first value?
+	def metadata(self, cells_iterator, fields=None):
+		"""
+		Generator for metadata. Gets the metadata values cell by cell and returns all value
+		or only certain values if names is not None
 
-	@staticmethod
-	def metadata(data):
-		cell_ids = []
-		metadata = data.obs.to_dict(orient="records")
-		# Do i have to loop twice?
-		for idx, cell_name in enumerate(data.obs.index):
-			metadata[idx]["CellName"] = cell_name
-			cell_ids.append(cell_name)
-		return metadata, cell_ids
+		:param cells_iterator: from filter cells, iterator for cellids
+		:param fields: list of keys for metadata to return, returns all metadata values if not set.
+		:return: Iterator for cellid + list of cells metadata values  ex. [cell-id, val1, val2, val3]
+		"""
+		if not fields:
+			fields = self.data.obs.columns.tolist()
+		for cell_id in cells_iterator:
+			yield [cell_id] + self.data.obs.loc[cell_id, [fields]].tolist()
 
-	@staticmethod
-	# TODO cache this
-	# TODO accept n-dim versions too
-	# TODO allow optional kw params to function
-	def create_graph(data, graph_method="umap"):
-		# Run the graph method
-		getattr(sc.tl, graph_method)(data)
-		graph = data.obsm["X_{graph_method}".format(graph_method=graph_method)]
+
+	def create_graph(self, cells_iterator):
+		"""
+		Computes a n-d layout for cells through dimensionality reduction.
+		:param cells_iterator: from filter cells, iterator for cellids
+		:return: Iterator for [cellid-1, pos1, pos2], [cellid-2, pos1, pos2]
+		"""
+		cell_ids = list(cells_iterator)
+		getattr(sc.tl, self.graph_method)(self.data[self.data.obs.index.isin(cell_ids)])
+		graph = self.data.obsm["X_{graph_method}".format(graph_method=self.graph_method)]
 		normalized_graph = (graph - graph.min()) / (graph.max() - graph.min())
-		return np.hstack((data.obs.index.values.reshape(len(data.obs.index), 1), normalized_graph)).tolist()
+		for idx, cell_id in enumerate(cell_ids):
+			yield [cell_id] + normalized_graph[idx].tolist()
+
+
+	def diffexp(self, cells_iterator_1, cells_iterator_2):
+		"""
+		Computes the top differentially expressed genes between two clusters
+
+		:param cells_iterator_1: First set of cell ids
+		:param cells_iterator_2: Second set of cell ids
+		:return: Up in the air: I recommend [gene name, mean_expression_cells1, mean_expression_cells2, average_difference, statistic_value]
+		"""
+		pass
+
 
 
 
