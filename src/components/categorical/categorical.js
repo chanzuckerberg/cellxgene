@@ -15,7 +15,8 @@ import FaPaintBrush from "react-icons/lib/fa/paint-brush";
 
 @connect(state => {
   return {
-    colorAccessor: state.controls.colorAccessor
+    colorAccessor: state.controls.colorAccessor,
+    categoricalAsBooleansMap: state.controls.categoricalAsBooleansMap
   };
 })
 class Category extends React.Component {
@@ -26,7 +27,24 @@ class Category extends React.Component {
       isExpanded: false
     };
   }
+  componentDidUpdate() {
+    const valuesAsBool = _.values(
+      this.props.categoricalAsBooleansMap[this.props.metadataField]
+    )
+    /* count categories toggled on by counting true values */
+    const categoriesToggledOn = _.values(valuesAsBool).filter(v => v).length;
 
+    if (categoriesToggledOn === valuesAsBool.length) {
+      /* everything is on, so not indeterminate */
+      this.checkbox.indeterminate = false;
+    } else if (categoriesToggledOn === 0) {
+      /* nothing is on, so no */
+      this.checkbox.indeterminate = false;
+    } else if (categoriesToggledOn < valuesAsBool.length) {
+      /* to be explicit... */
+      this.checkbox.indeterminate = true;
+    }
+  }
   handleColorChange() {
     this.props.dispatch({
       type: "color by categorical metadata",
@@ -60,6 +78,16 @@ class Category extends React.Component {
         />
       );
     });
+  }
+  handleToggleAllClick() {
+     // || this.checkbox.indeterminate === false
+    if (this.state.isChecked) {
+      console.log('checked, firing toggle none')
+      this.toggleNone();
+    } else if (!this.state.isChecked) {
+      console.log('!checked, firing toggle all')
+      this.toggleAll()
+    }
   }
   render() {
     return (
@@ -102,11 +130,8 @@ class Category extends React.Component {
             </span>
             {this.props.metadataField}
             <input
-              onChange={
-                this.state.isChecked
-                  ? this.toggleNone.bind(this)
-                  : this.toggleAll.bind(this)
-              }
+              onChange={this.handleToggleAllClick.bind(this)}
+              ref={el => this.checkbox = el}
               checked={this.state.isChecked}
               type="checkbox"
             />
