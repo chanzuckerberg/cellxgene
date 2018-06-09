@@ -204,7 +204,7 @@ class Graph extends React.Component {
         2 *
           (1 - pin[1] / (this.props.responsive.height - this.graphPaddingTop)) -
         1;
-      const pout = [x + inverse[12], y + inverse[13]];
+      const pout = [x * inverse[14] + inverse[12], y * inverse[14] + inverse[13]];
       return [(pout[0] + 1) / 2, (pout[1] + 1) / 2];
     };
 
