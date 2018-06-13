@@ -48,10 +48,10 @@ export const bolder = 700;
 export let API = {
   // prefix: "http://api.clustering.czi.technology/api/",
   //prefix: "http://tabulamuris.cxg.czi.technology/api/",
-   prefix: "http://pbmc3k.cxg.czi.technology/api/",
+   // prefix: "http://pbmc3k.cxg.czi.technology/api/",
   // prefix: "http://pbmc33k.cxg.czi.technology/api/",
 
-  // prefix: "http://api-staging.clustering.czi.technology/api/",
+  prefix: "http://api-staging.clustering.czi.technology/api/",
   version: "v0.1/"
 };
 
