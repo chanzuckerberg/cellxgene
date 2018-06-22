@@ -40,12 +40,11 @@ class ScanpyEngine(CXGDriver):
 	def cells(self):
 		return list(self.data.obs.index)
 
-	def cellids(self, cells_iterator=None):
-		if cells_iterator:
-			data = self.data.obs.iloc[[i for i in cells_iterator], :]
+	def cellids(self, df=None):
+		if df:
+			return list(df.obs.index)
 		else:
-			data = self.data.obs
-		return list(data.index)
+			return list(self.data.obs.index)
 
 	def genes(self):
 		return self.data.var.index.tolist()
@@ -56,7 +55,7 @@ class ScanpyEngine(CXGDriver):
 		:param filter:
 		:return: iterator through cell ids
 		"""
-		cell_idx = np.ones((self.cell_count(),), dtype=bool)
+		cell_idx = np.ones((self.cell_count,), dtype=bool)
 		for key, value in filter.items():
 			if value["variable_type"] == "categorical":
 				key_idx = np.in1d(getattr(self.data.obs, key), value["query"])
@@ -91,33 +90,26 @@ class ScanpyEngine(CXGDriver):
 				}
 		return metadata_ranges
 
-	def metadata(self, cells_iterator, fields=None):
+	def metadata(self, df, fields=None):
 		"""
 		Generator for metadata. Gets the metadata values cell by cell and returns all value
 		or only certain values if names is not None
 
-		:param cells_iterator: from filter cells, iterator for cellids
-		:param fields: list of keys for metadata to return, returns all metadata values if not set.
-		:return: Iterator for cellid + list of cells metadata values  ex. [cell-id, val1, val2, val3]
 		"""
-		if not fields:
-			fields = self.data.obs.columns.tolist()
-		for cell_id in cells_iterator:
-			yield [cell_id] + self.data.obs.loc[cell_id, fields].tolist()
+		metadata = df.obs.to_dict(orient="records")
+		for idx in range(len(metadata)):
+			metadata[idx]["CellName"] = metadata[idx].pop("cell_name", None)
+		return metadata
 
 
-	def create_graph(self, cells_iterator):
+	def create_graph(self, df):
 		"""
 		Computes a n-d layout for cells through dimensionality reduction.
-		:param cells_iterator: from filter cells, iterator for cellids
-		:return: Iterator for [cellid-1, pos1, pos2], [cellid-2, pos1, pos2]
 		"""
-		cell_ids = list(cells_iterator)
-		getattr(sc.tl, self.graph_method)(self.data[self.data.obs.index.isin(cell_ids)])
-		graph = self.data.obsm["X_{graph_method}".format(graph_method=self.graph_method)]
+		getattr(sc.tl, self.graph_method)(df)
+		graph = df.obsm["X_{graph_method}".format(graph_method=self.graph_method)]
 		normalized_graph = (graph - graph.min()) / (graph.max() - graph.min())
-		for idx, cell_id in enumerate(cell_ids):
-			yield [cell_id] + normalized_graph[idx].tolist()
+		return np.hstack((df.obs["cell_name"].values.reshape(len(df.obs.index), 1), normalized_graph)).tolist()
 
 
 	def diffexp(self, cells_iterator_1, cells_iterator_2):

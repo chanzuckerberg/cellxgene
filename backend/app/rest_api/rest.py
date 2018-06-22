@@ -202,11 +202,11 @@ class CellsAPI(Resource):
         # get query params
         filter = parse_filter(request.args, data.schema)
         filtered_data = data.filter_cells(filter)
-        payload["metadata"] = list(data.metadata(filtered_data))
+        payload["metadata"] = data.metadata(filtered_data)
         payload["ranges"] = data.metadata_ranges(filtered_data)
-        payload["cellids"] = filtered_data
+        payload["graph"] = data.create_graph(filtered_data)
+        payload["cellids"] = data.cellids(filtered_data)
         payload["cellcount"] = len(payload["cellids"])
-        payload["graph"] = list(data.create_graph(filtered_data))
         return make_payload(payload)
 
 
