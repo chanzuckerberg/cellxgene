@@ -56,8 +56,7 @@ class ScanpyEngine(CXGDriver):
 		:param filter:
 		:return: iterator through cell ids
 		"""
-		cell_idx = np.ones((self.cell_count,), dtype=bool)
-		# TODO does this need to be a generator too?
+		cell_idx = np.ones((self.cell_count(),), dtype=bool)
 		for key, value in filter.items():
 			if value["variable_type"] == "categorical":
 				key_idx = np.in1d(getattr(self.data.obs, key), value["query"])
@@ -71,34 +70,27 @@ class ScanpyEngine(CXGDriver):
 				if max_:
 					key_idx = np.array((getattr(self.data.obs, key) <= min_).data)
 					cell_idx = np.logical_and(cell_idx, key_idx)
-		# If this is slow, could vectorize with logical array and then loop through that
-		for idx in range(self.cell_count):
-			if cell_idx[idx]:
-				yield self.data.obs.index[idx]
+		return self.data[cell_idx, :]
 
-
-	def metadata_ranges(self, cells_iterator=None):
+	def metadata_ranges(self, df=None):
 		metadata_ranges = {}
-		if cells_iterator:
-			data = self.data.obs.iloc[[i for i in cells_iterator], :]
-		else:
-			data = self.data.obs
+		if not df:
+			df = self.data
 		for field in self.schema:
 			if self.schema[field]["variabletype"] == "categorical":
 				group_by = field
 				if group_by == "CellName":
 					group_by = 'cell_name'
-				metadata_ranges[field] = {"options": data.groupby(group_by).size().to_dict()}
+				metadata_ranges[field] = {"options": df.obs.groupby(group_by).size().to_dict()}
 			else:
 				metadata_ranges[field] = {
 					"range": {
-						"min": data[field].min(),
-						"max": data[field].max()
+						"min": df.obs[field].min(),
+						"max": df.obs[field].max()
 					}
 				}
 		return metadata_ranges
 
-	# Should this return the order of metadata fields as the first value?
 	def metadata(self, cells_iterator, fields=None):
 		"""
 		Generator for metadata. Gets the metadata values cell by cell and returns all value
@@ -129,13 +121,9 @@ class ScanpyEngine(CXGDriver):
 
 
 	def diffexp(self, cells_iterator_1, cells_iterator_2):
-		"""
-		Computes the top differentially expressed genes between two clusters
+		pass
 
-		:param cells_iterator_1: First set of cell ids
-		:param cells_iterator_2: Second set of cell ids
-		:return: Up in the air: I recommend [gene name, mean_expression_cells1, mean_expression_cells2, average_difference, statistic_value]
-		"""
+	def expression(self, ):
 		pass
 
 

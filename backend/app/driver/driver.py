@@ -36,18 +36,18 @@ class CXGDriver(metaclass=ABCMeta):
 		"""
 		Filter cells from data and return a subset of the data
 		:param filter:
-		:return: iterator through cell ids
+		:return: filtered dataframe
 		"""
 		pass
 
 	# Should this return the order of metadata fields as the first value?
 	@abstractmethod
-	def metadata(self, cells_iterator, fields=None):
+	def metadata(self, df, fields=None):
 		"""
 		Generator for metadata. Gets the metadata values cell by cell and returns all value
 		or only certain values if names is not None
 
-		:param cells_iterator: from filter cells, iterator for cellids
+		:param df: from filter_cells, dataframe
 		:param fields: list of keys for metadata to return, returns all metadata values if not set.
 		:return: Iterator for cellid + list of cells metadata values  ex. [cell-id, val1, val2, val3]
 		"""
@@ -56,22 +56,26 @@ class CXGDriver(metaclass=ABCMeta):
 
 
 	@abstractmethod
-	def create_graph(self, cells_iterator):
+	def create_graph(self, df):
 		"""
 		Computes a n-d layout for cells through dimensionality reduction.
-		:param cells_iterator: from filter cells, iterator for cellids
+		:param df: from filter_cells, dataframe
 		:return: Iterator for [cellid-1, pos1, pos2], [cellid-2, pos1, pos2]
 		"""
 		pass
 
 
 	@abstractmethod
-	def diffexp(self, cells_iterator_1, cells_iterator_2):
+	def diffexp(self, df1, df2):
 		"""
 		Computes the top differentially expressed genes between two clusters
 
-		:param cells_iterator_1: First set of cell ids
-		:param cells_iterator_2: Second set of cell ids
+		:param df1: First set of cells
+		:param df2: Second set of cells
 		:return: Up in the air: I recommend [gene name, mean_expression_cells1, mean_expression_cells2, average_difference, statistic_value]
 		"""
+		pass
+
+	@abstractmethod
+	def expression(self, df):
 		pass
