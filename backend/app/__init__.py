@@ -16,8 +16,9 @@ CORS(app)
 
 #Config
 CONFIG_FILE = os.environ.get("CXG_CONFIG_FILE", default="scanpy-test.cfg")
-CXG_DIR = os.environ.get("CXG_DIRECTORY", default="/Users/charlotteweaver/Documents/Git/cxg-v2/")
+CXG_DIR = os.environ.get("CXG_DIRECTORY", default="/Users/charlotteweaver/Documents/Git/cxg-v2/data/")
 SECRET_KEY = os.environ.get("CXG_SECRET_KEY", default="SparkleAndShine")
+ENGINE = os.environ.get("CXG_ENGINE", default="scanpy")
 # TODO remove the 2 when this is prod
 CXG_API_BASE = os.environ.get("CXG_API_BASE2", default="http://0.0.0.0:5005/api/")
 
@@ -28,9 +29,8 @@ app.config.from_pyfile(os.path.join(CXG_DIR, "config", CONFIG_FILE), silent=True
 app.config.update(
     SECRET_KEY=SECRET_KEY,
     CXG_API_BASE=CXG_API_BASE,
-)
-app.config.update(
-    DATA=os.path.join(CXG_DIR, app.config["DATA_DIR"]),
+    ENGINE=ENGINE,
+    DATA=CXG_DIR
 )
 
 app.config['PROFILE'] = True
@@ -40,7 +40,7 @@ app.config['PROFILE'] = True
 data = None
 if app.config["ENGINE"] == "scanpy":
     from .scanpy_engine.scanpy_engine import ScanpyEngine
-    data = ScanpyEngine(app.config["DATA"])
+    data = ScanpyEngine(app.config["DATA"], schema="data_schema.json")
 
 REACTIVE_LIMIT = 1_000_000
 

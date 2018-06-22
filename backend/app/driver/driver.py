@@ -1,12 +1,13 @@
 from abc import ABCMeta, abstractmethod
 
+
 class CXGDriver(metaclass=ABCMeta):
 
 	def __init__(self, data, schema=None, graph_method=None, diffexp_method=None):
 		self.data = self._load_data(data)
 
-	@abstractmethod
 	@staticmethod
+	@abstractmethod
 	def _load_data(data):
 		pass
 

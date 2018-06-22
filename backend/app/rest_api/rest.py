@@ -1,10 +1,10 @@
 from flask import (
-    Blueprint, render_template, request, url_for
+    Blueprint, request
 )
 from flask_restful_swagger_2 import Api, swagger, Resource
-from ..util.utils import make_payload
-from ..util.filter import parse_filter, QueryStringError
 
+from ..util.utils import make_payload
+from ..util.filter import parse_filter
 
 
 class InitializeAPI(Resource):
@@ -88,14 +88,16 @@ class InitializeAPI(Resource):
         }
     })
     def get(self):
-        from cxg import data, REACTIVE_LIMIT
+        from app import data, REACTIVE_LIMIT
         return make_payload({
             "schema": data.schema,
-            "ranges": data.metadata_ranges(data.ADATA, data.schema),
-            "cellcount": data.cell_count(),
+            "cellcount": data.cell_count,
             "reactivelimit": REACTIVE_LIMIT,
-            "genes": data.all_genes(),
+            "genes": data.genes(),
+            "ranges": data.metadata_ranges(),
+
         })
+
 
 class CellsAPI(Resource):
     @swagger.doc({
@@ -189,7 +191,7 @@ class CellsAPI(Resource):
         }
     })
     def get(self):
-        from cxg import data
+        from app import data
         payload = {
             "cellids": [],
             "metadata": [],
@@ -199,12 +201,14 @@ class CellsAPI(Resource):
         }
         # get query params
         filter = parse_filter(request.args, data.schema)
-        filtered_data = data.filter_cells(filter)
-        payload["metadata"], payload["cellids"] = data.metadata(filtered_data)
-        payload["ranges"] = data.metadata_ranges(filtered_data, data.schema)
+        filtered_data = list(data.filter_cells(filter))
+        payload["metadata"] = list(data.metadata(filtered_data))
+        payload["ranges"] = list(data.metadata_ranges(filtered_data))
+        payload["cellids"] = filtered_data
         payload["cellcount"] = len(payload["cellids"])
-        payload["graph"] = data.create_graph(filtered_data)
+        payload["graph"] = list(data.create_graph(filtered_data))
         return make_payload(payload)
+
 
 
 def get_api_resources():

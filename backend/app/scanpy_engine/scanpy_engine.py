@@ -1,15 +1,16 @@
 import scanpy.api as sc
 import numpy as np
+import os
 
 from ..util.schema_parse import parse_schema
-from ..driver import CXGDriver
+from ..driver.driver import CXGDriver
 
 
 class ScanpyEngine(CXGDriver):
 
-	def __init__(self, data, schema=None, graph_method=None, diffexp_method=None):
+	def __init__(self, data, schema=None, graph_method="umap", diffexp_method="ttest"):
 		self.data = self._load_data(data)
-		self.schema = self._load_or_infer_schema(schema)
+		self.schema = self._load_or_infer_schema(data, schema)
 		self._set_cell_ids()
 		self.cell_count = self.data.shape[0]
 		# TODO Do I need this?
@@ -20,14 +21,15 @@ class ScanpyEngine(CXGDriver):
 
 	@staticmethod
 	def _load_data(data):
-		return sc.read(data)
+		return sc.read(os.path.join(data, "data.h5ad"))
 
-	def _load_or_infer_schema(schema):
+	@staticmethod
+	def _load_or_infer_schema(data, schema):
 		data_schema = None
 		if not schema:
 			pass
 		else:
-			data_schema = parse_schema(schema)
+			data_schema = parse_schema(os.path.join(data,schema))
 		return data_schema
 
 	def _set_cell_ids(self):
@@ -38,8 +40,12 @@ class ScanpyEngine(CXGDriver):
 	def cells(self):
 		return list(self.data.obs.index)
 
-	def cellids(self):
-		return list(self.data.obs.index)
+	def cellids(self, cells_iterator=None):
+		if cells_iterator:
+			data = self.data.obs.iloc[[i for i in cells_iterator], :]
+		else:
+			data = self.data.obs
+		return list(data.index)
 
 	def genes(self):
 		return self.data.var.index.tolist()
@@ -50,7 +56,7 @@ class ScanpyEngine(CXGDriver):
 		:param filter:
 		:return: iterator through cell ids
 		"""
-		cell_idx = np.ones((self.cell_count(),), dtype=bool)
+		cell_idx = np.ones((self.cell_count,), dtype=bool)
 		# TODO does this need to be a generator too?
 		for key, value in filter.items():
 			if value["variable_type"] == "categorical":
@@ -66,9 +72,31 @@ class ScanpyEngine(CXGDriver):
 					key_idx = np.array((getattr(self.data.obs, key) <= min_).data)
 					cell_idx = np.logical_and(cell_idx, key_idx)
 		# If this is slow, could vectorize with logical array and then loop through that
-		for idx in self.cell_count:
+		for idx in range(self.cell_count):
 			if cell_idx[idx]:
-				yield self.data.obs['cxg_cell_id'][idx]
+				yield self.data.obs.index[idx]
+
+
+	def metadata_ranges(self, cells_iterator=None):
+		metadata_ranges = {}
+		if cells_iterator:
+			data = self.data.obs.iloc[[i for i in cells_iterator], :]
+		else:
+			data = self.data.obs
+		for field in self.schema:
+			if self.schema[field]["variabletype"] == "categorical":
+				group_by = field
+				if group_by == "CellName":
+					group_by = 'cell_name'
+				metadata_ranges[field] = {"options": data.groupby(group_by).size().to_dict()}
+			else:
+				metadata_ranges[field] = {
+					"range": {
+						"min": data[field].min(),
+						"max": data[field].max()
+					}
+				}
+		return metadata_ranges
 
 	# Should this return the order of metadata fields as the first value?
 	def metadata(self, cells_iterator, fields=None):
@@ -83,7 +111,7 @@ class ScanpyEngine(CXGDriver):
 		if not fields:
 			fields = self.data.obs.columns.tolist()
 		for cell_id in cells_iterator:
-			yield [cell_id] + self.data.obs.loc[cell_id, [fields]].tolist()
+			yield [cell_id] + self.data.obs.loc[cell_id, fields].tolist()
 
 
 	def create_graph(self, cells_iterator):
