@@ -2,7 +2,6 @@ from abc import ABCMeta, abstractmethod
 
 
 class CXGDriver(metaclass=ABCMeta):
-
 	def __init__(self, data, schema=None, graph_method=None, diffexp_method=None):
 		self.data = self._load_data(data)
 
@@ -51,9 +50,7 @@ class CXGDriver(metaclass=ABCMeta):
 		:param fields: list of keys for metadata to return, returns all metadata values if not set.
 		:return: Iterator for cellid + list of cells metadata values  ex. [cell-id, val1, val2, val3]
 		"""
-
 		pass
-
 
 	@abstractmethod
 	def create_graph(self, df):
@@ -64,7 +61,6 @@ class CXGDriver(metaclass=ABCMeta):
 		"""
 		pass
 
-
 	@abstractmethod
 	def diffexp(self, df1, df2):
 		"""
@@ -72,7 +68,8 @@ class CXGDriver(metaclass=ABCMeta):
 
 		:param df1: First set of cells
 		:param df2: Second set of cells
-		:return: Up in the air: I recommend [gene name, mean_expression_cells1, mean_expression_cells2, average_difference, statistic_value]
+		:return: Up in the air: I recommend [gene name, mean_expression_cells1,
+											mean_expression_cells2, average_difference, statistic_value]
 		"""
 		pass
 

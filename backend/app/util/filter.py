@@ -1,6 +1,7 @@
 class QueryStringError(Exception):
     pass
 
+
 def _convert_variable(datatype, variable):
     """
     Convert variable to number (float/int)
@@ -18,6 +19,7 @@ def _convert_variable(datatype, variable):
         return variable
     except ValueError:
         raise
+
 
 def parse_filter(filter, schema):
     """

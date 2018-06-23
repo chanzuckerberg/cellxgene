@@ -1,7 +1,8 @@
-import scanpy.api as sc
-import numpy as np
-from scipy import stats
 import os
+
+import numpy as np
+import scanpy.api as sc
+from scipy import stats
 
 from ..util.schema_parse import parse_schema
 from ..driver.driver import CXGDriver
@@ -14,11 +15,9 @@ class ScanpyEngine(CXGDriver):
 		self.schema = self._load_or_infer_schema(data, schema)
 		self._set_cell_ids()
 		self.cell_count = self.data.shape[0]
-		# TODO Do I need this?
 		self.gene_count = self.data.shape[1]
 		self.graph_method = graph_method
 		self.diffexp_method = diffexp_method
-
 
 	@staticmethod
 	def _load_data(data):
@@ -30,7 +29,7 @@ class ScanpyEngine(CXGDriver):
 		if not schema:
 			pass
 		else:
-			data_schema = parse_schema(os.path.join(data,schema))
+			data_schema = parse_schema(os.path.join(data, schema))
 		return data_schema
 
 	def _set_cell_ids(self):
@@ -102,7 +101,6 @@ class ScanpyEngine(CXGDriver):
 			metadata[idx]["CellName"] = metadata[idx].pop("cell_name", None)
 		return metadata
 
-
 	def create_graph(self, df):
 		"""
 		Computes a n-d layout for cells through dimensionality reduction.
@@ -112,12 +110,11 @@ class ScanpyEngine(CXGDriver):
 		normalized_graph = (graph - graph.min()) / (graph.max() - graph.min())
 		return np.hstack((df.obs["cell_name"].values.reshape(len(df.obs.index), 1), normalized_graph)).tolist()
 
-
 	def diffexp(self, cell_list_1, cell_list_2, pval, num_genes):
 		cells_idx_1 = np.in1d(self.data.obs["cell_name"], cell_list_1)
 		cells_idx_2 = np.in1d(self.data.obs["cell_name"], cell_list_2)
-		expression_1 = self.data.X[cells_idx_1,:]
-		expression_2 = self.data.X[cells_idx_2,:]
+		expression_1 = self.data.X[cells_idx_1, :]
+		expression_2 = self.data.X[cells_idx_2, :]
 		diff_exp = stats.ttest_ind(expression_1, expression_2)
 		set1 = np.logical_and(diff_exp.pvalue < pval, diff_exp.statistic > 0)
 		set2 = np.logical_and(diff_exp.pvalue < pval, diff_exp.statistic < 0)
@@ -151,7 +148,7 @@ class ScanpyEngine(CXGDriver):
 				"ave_diff": mean_diff2.tolist()[:num_genes]
 			},
 		}
-	
+
 	def expression(self, cells=None, genes=None):
 		"""
 		:param df:
@@ -185,11 +182,3 @@ class ScanpyEngine(CXGDriver):
 			"cells": cell_data,
 			"nonzero_gene_count": int(np.sum(expression.any(axis=0)))
 		}
-
-
-
-
-
-
-
-

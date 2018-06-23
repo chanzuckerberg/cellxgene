@@ -315,7 +315,7 @@ class ExpressionAPI(Resource):
         args = request.get_json()
         cell_list = args.get('celllist', [])
         gene_list = args.get('genelist', [])
-        if not (cell_list) and not (gene_list):
+        if not cell_list and not gene_list:
             return make_payload([], "must include celllist and/or genelist parameter", 400)
 
         expression_data = data.expression(cell_list, gene_list)
@@ -326,6 +326,7 @@ class ExpressionAPI(Resource):
             return make_payload([], "Some genes not available", 400)
 
         return make_payload(expression_data)
+
 
 class DifferentialExpressionAPI(Resource):
     @swagger.doc({
@@ -428,6 +429,7 @@ class DifferentialExpressionAPI(Resource):
                                 400)
         data = data.diffexp(cell_list_1, cell_list_2, pval, num_genes)
         return make_payload(data)
+
 
 def get_api_resources():
     bp = Blueprint('api', __name__, url_prefix='/api/v2.0')

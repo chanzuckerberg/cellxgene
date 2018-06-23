@@ -1,8 +1,9 @@
 from flask import (
-    Blueprint, render_template, request, url_for, current_app
+    Blueprint, render_template, url_for, current_app
 )
 
 bp = Blueprint('webapp', __name__, template_folder='templates')
+
 
 @bp.route('/')
 def index():
@@ -15,6 +16,7 @@ def index():
 @bp.route('/swagger')
 def swag():
     return render_template("swagger.html")
+
 
 # renders swagger documentation
 @bp.route('/favicon.png')
