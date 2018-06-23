@@ -1,5 +1,6 @@
 import scanpy.api as sc
 import numpy as np
+from scipy import stats
 import os
 
 from ..util.schema_parse import parse_schema
@@ -112,11 +113,80 @@ class ScanpyEngine(CXGDriver):
 		return np.hstack((df.obs["cell_name"].values.reshape(len(df.obs.index), 1), normalized_graph)).tolist()
 
 
-	def diffexp(self, cells_iterator_1, cells_iterator_2):
-		pass
+	def diffexp(self, cell_list_1, cell_list_2, pval, num_genes):
+		cells_idx_1 = np.in1d(self.data.obs["cell_name"], cell_list_1)
+		cells_idx_2 = np.in1d(self.data.obs["cell_name"], cell_list_2)
+		expression_1 = self.data.X[cells_idx_1,:]
+		expression_2 = self.data.X[cells_idx_2,:]
+		diff_exp = stats.ttest_ind(expression_1, expression_2)
+		set1 = np.logical_and(diff_exp.pvalue < pval, diff_exp.statistic > 0)
+		set2 = np.logical_and(diff_exp.pvalue < pval, diff_exp.statistic < 0)
+		stat1 = diff_exp.statistic[set1]
+		stat2 = diff_exp.statistic[set2]
+		sort_set1 = np.argsort(stat1)[::-1]
+		sort_set2 = np.argsort(stat2)
+		pval1 = diff_exp.pvalue[set1][sort_set1]
+		pval2 = diff_exp.pvalue[set2][sort_set2]
+		mean_ex1_set1 = np.mean(expression_1[:, set1], axis=0)[sort_set1]
+		mean_ex2_set1 = np.mean(expression_2[:, set1], axis=0)[sort_set1]
+		mean_ex1_set2 = np.mean(expression_1[:, set2], axis=0)[sort_set2]
+		mean_ex2_set2 = np.mean(expression_2[:, set2], axis=0)[sort_set2]
+		mean_diff1 = mean_ex1_set1 - mean_ex2_set1
+		mean_diff2 = mean_ex1_set2 - mean_ex2_set2
+		genes_cellset_1 = self.data.var_names[set1][sort_set1]
+		genes_cellset_2 = self.data.var_names[set2][sort_set2]
+		return {
+			"celllist1": {
+				"topgenes": genes_cellset_1.tolist()[:num_genes],
+				"mean_expression_cellset1": mean_ex1_set1.tolist()[:num_genes],
+				"mean_expression_cellset2": mean_ex2_set1.tolist()[:num_genes],
+				"pval": pval1.tolist()[:num_genes],
+				"ave_diff": mean_diff1.tolist()[:num_genes]
+			},
+			"celllist2": {
+				"topgenes": genes_cellset_2.tolist()[:num_genes],
+				"mean_expression_cellset1": mean_ex1_set2.tolist()[:num_genes],
+				"mean_expression_cellset2": mean_ex2_set2.tolist()[:num_genes],
+				"pval": pval2.tolist()[:num_genes],
+				"ave_diff": mean_diff2.tolist()[:num_genes]
+			},
+		}
+	
+	def expression(self, cells=None, genes=None):
+		"""
+		:param df:
+		:return:
+		"""
+		if cells:
+			cells_idx = np.in1d(self.data.obs["cell_name"], cells)
+		else:
+			cells_idx = np.ones((self.cell_count,), dtype=bool)
+		if genes:
+			genes_idx = np.in1d(self.data.var_names, genes)
+		else:
+			genes_idx = np.ones((self.gene_count,), dtype=bool)
+		index = np.ix_(cells_idx, genes_idx)
+		expression = self.data.X[index]
 
-	def expression(self, ):
-		pass
+		if not genes:
+			genes = self.data.var.index.tolist()
+		if not cells:
+			cells = self.data.obs["cell_name"].tolist()
+
+		cell_data = []
+		for idx, cell in enumerate(cells):
+			cell_data.append({
+				"cellname": cell,
+				"e": list(expression[idx]),
+			})
+
+		return {
+			"genes": genes,
+			"cells": cell_data,
+			"nonzero_gene_count": int(np.sum(expression.any(axis=0)))
+		}
+
+
 
 
 
