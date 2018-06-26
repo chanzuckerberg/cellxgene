@@ -24,6 +24,7 @@ CXG_API_BASE = os.environ.get("CXG_API_BASE2", default="http://0.0.0.0:5005/api/
 if not CONFIG_FILE:
     raise ValueError("No config file set for Flask application")
 
+# TODO check what is actually being configured here
 app.config.from_pyfile(os.path.join(CXG_DIR, "config", CONFIG_FILE), silent=True)
 app.config.update(
     SECRET_KEY=SECRET_KEY,
@@ -58,7 +59,3 @@ app.register_blueprint(
 
 
 app.add_url_rule('/', endpoint='index')
-
-
-if __name__ == "__main__":
-    app.run(host='0.0.0.0', debug=True, port=5005)
