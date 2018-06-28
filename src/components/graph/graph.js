@@ -178,7 +178,7 @@ class Graph extends React.Component {
   }
   handleBrushSelectAction() {
     /* This conditional handles procedural brush deselect. Brush emits an event on procedural deselect because it is move: null */
-    if (d3.event.selection) {
+    if (d3.event.sourceEvent !== null) {
       /*
       No idea why d3 event scope works like this
       but apparently
