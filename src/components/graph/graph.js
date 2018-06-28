@@ -164,28 +164,29 @@ class Graph extends React.Component {
       nextProps.responsive.width !== this.props.responsive.width
     ) {
       /* clear out whatever was on the div, even if nothing, but usually the brushes etc */
-      d3
-        .select("#graphAttachPoint")
+      d3.select("#graphAttachPoint")
         .selectAll("*")
         .remove();
-      const { svg } = setupSVGandBrushElements(
+      const { svg, brush, brushContainer } = setupSVGandBrushElements(
         this.handleBrushSelectAction.bind(this),
         this.handleBrushDeselectAction.bind(this),
         nextProps.responsive,
         this.graphPaddingTop
       );
-      this.setState({ svg });
+      this.setState({ svg, brush, brushContainer });
     }
   }
   handleBrushSelectAction() {
-    /*
+    /* This conditional handles procedural brush deselect. Brush emits an event on procedural deselect because it is move: null */
+    if (d3.event.sourceEvent !== null) {
+      /*
       No idea why d3 event scope works like this
       but apparently
       it does
       https://bl.ocks.org/EfratVil/0e542f5fc426065dd1d4b6daaa345a9f
     */
-    const s = d3.event.selection;
-    /*
+      const s = d3.event.selection;
+      /*
       event describing brush position:
       @-------|
       |       |
@@ -193,33 +194,47 @@ class Graph extends React.Component {
       |-------@
     */
 
-    // compute inverse view matrix
-    const inverse = mat4.invert([], this.state.camera.view());
+      // compute inverse view matrix
+      const inverse = mat4.invert([], this.state.camera.view());
 
-    // transform screen coordinates -> cell coordinates
-    const invert = pin => {
-      const x =
-        2 * pin[0] / (this.props.responsive.height - this.graphPaddingTop) - 1;
-      const y =
-        2 *
-          (1 - pin[1] / (this.props.responsive.height - this.graphPaddingTop)) -
-        1;
-      const pout = [x * inverse[14] + inverse[12], y * inverse[14] + inverse[13]];
-      return [(pout[0] + 1) / 2, (pout[1] + 1) / 2];
-    };
+      // transform screen coordinates -> cell coordinates
+      const invert = pin => {
+        const x =
+          (2 * pin[0]) / (this.props.responsive.height - this.graphPaddingTop) -
+          1;
+        const y =
+          2 *
+            (1 -
+              pin[1] / (this.props.responsive.height - this.graphPaddingTop)) -
+          1;
+        const pout = [
+          x * inverse[14] + inverse[12],
+          y * inverse[14] + inverse[13]
+        ];
+        return [(pout[0] + 1) / 2, (pout[1] + 1) / 2];
+      };
 
-    const brushCoords = {
-      northwest: invert([s[0][0], s[0][1]]),
-      southeast: invert([s[1][0], s[1][1]])
-    };
+      const brushCoords = {
+        northwest: invert([s[0][0], s[0][1]]),
+        southeast: invert([s[1][0], s[1][1]])
+      };
 
-    this.props.dispatch({
-      type: "graph brush selection change",
-      brushCoords
-    });
+      this.props.dispatch({
+        type: "graph brush selection change",
+        brushCoords
+      });
+    }
   }
   handleBrushDeselectAction() {
-    if (!d3.event.selection) {
+    if (d3.event && !d3.event.selection) {
+      this.props.dispatch({
+        type: "graph brush deselect"
+      });
+    }
+
+    if (!d3.event) {
+      /* this line clears the brush procedurally, ie., zoom button clicked, not a click away from brush on svg */
+      this.state.svg.select(".graph_brush").call(this.state.brush.move, null);
       this.props.dispatch({
         type: "graph brush deselect"
       });
@@ -302,6 +317,7 @@ class Graph extends React.Component {
                 </button>
                 <button
                   onClick={() => {
+                    this.handleBrushDeselectAction();
                     this.setState({ mode: "zoom" });
                   }}
                   style={{

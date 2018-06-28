@@ -23,21 +23,23 @@ export const setupSVGandBrushElements = (
     .attr("height", side)
     .attr("class", `${styles.graphSVG}`);
 
-  svg.append("g").call(
-    d3
-      .brush()
-      .extent([
-        [0, 0],
-        [
-          responsive.height - graphPaddingTop,
-          responsive.height - graphPaddingTop
-        ]
-      ])
-      .on("brush", handleBrushSelectAction)
-      .on("end", handleBrushDeselectAction)
-  );
+  const brush = d3
+    .brush()
+    .extent([
+      [0, 0],
+      [responsive.height - graphPaddingTop, responsive.height - graphPaddingTop]
+    ])
+    .on("brush", handleBrushSelectAction)
+    .on("end", handleBrushDeselectAction);
+
+  const brushContainer = svg
+    .append("g")
+    .attr("class", "graph_brush")
+    .call(brush);
 
   return {
-    svg
+    svg,
+    brushContainer,
+    brush
   };
 };
