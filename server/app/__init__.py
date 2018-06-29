@@ -34,7 +34,7 @@ app.config.update(
     DATASET_TITLE=TITLE
 )
 
-app.config['PROFILE'] = True
+app.config["PROFILE"] = True
 # app.wsgi_app = ProfilerMiddleware(app.wsgi_app, restrictions=[15])
 
 # Application Data
@@ -54,8 +54,8 @@ docs.append(resources.get_swagger_doc())
 app.register_blueprint(webapp.bp)
 app.register_blueprint(resources.blueprint)
 app.register_blueprint(
-    get_swagger_blueprint(docs, '/api/swagger', produces=["application/json"], title="cellxgene rest api",
-                          description='An API connecting ExpressionMatrix2 clustering algorithm to cellxgene'))
+    get_swagger_blueprint(docs, "/api/swagger", produces=["application/json"], title="cellxgene rest api",
+                          description="An API connecting ExpressionMatrix2 clustering algorithm to cellxgene"))
 
 
-app.add_url_rule('/', endpoint='index')
+app.add_url_rule("/", endpoint="index")

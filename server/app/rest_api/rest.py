@@ -9,14 +9,14 @@ from ..util.filter import parse_filter
 
 class InitializeAPI(Resource):
     @swagger.doc({
-        'summary': 'get metadata schema, ranges for values, and cell count to initialize cellxgene app',
-        'tags': ['initialize'],
-        'parameters': [],
-        'responses': {
-            '200': {
-                'description': 'initialization data for UI',
-                'examples': {
-                    'application/json': {
+        "summary": "get metadata schema, ranges for values, and cell count to initialize cellxgene app",
+        "tags": ["initialize"],
+        "parameters": [],
+        "responses": {
+            "200": {
+                "description": "initialization data for UI",
+                "examples": {
+                    "application/json": {
                         "data": {
                             "cellcount": 3589,
                             "options": {
@@ -101,21 +101,21 @@ class InitializeAPI(Resource):
 
 class CellsAPI(Resource):
     @swagger.doc({
-        'summary': 'filter based on metadata fields to get a subset cells, expression data, and metadata',
-        'tags': ['cells'],
-        'description': "Cells takes query parameters defined in the schema retrieved from the /initialize enpoint. "
+        "summary": "filter based on metadata fields to get a subset cells, expression data, and metadata",
+        "tags": ["cells"],
+        "description": "Cells takes query parameters defined in the schema retrieved from the /initialize enpoint. "
                        "<br>For categorical metadata keys filter based on `key=value` <br>"
                        " For continuous metadata keys filter by `key=min,max`<br> Either value "
                        "can be replaced by a \*. To have only a minimum value `key=min,\*`  To have only a maximum "
                        "value `key=\*,max` <br>Graph data (if retrieved) is normalized"
                        " To only retrieve cells that don't have a value for the key filter by `key`",
-        'parameters': [],
+        "parameters": [],
 
-        'responses': {
-            '200': {
-                'description': 'initialization data for UI',
-                'examples': {
-                    'application/json': {
+        "responses": {
+            "200": {
+                "description": "initialization data for UI",
+                "examples": {
+                    "application/json": {
                         "data": {
                             "badmetadatacount": 0,
                             "cellcount": 0,
@@ -185,8 +185,8 @@ class CellsAPI(Resource):
                 },
             },
 
-            '400': {
-                'description': 'bad query params',
+            "400": {
+                "description": "bad query params",
             }
         }
     })
@@ -212,21 +212,21 @@ class CellsAPI(Resource):
 
 class ExpressionAPI(Resource):
     @swagger.doc({
-        'summary': 'Json with gene list and expression data by cell, limited to first 40 cells',
-        'tags': ['expression'],
-        'parameters': [
+        "summary": "Json with gene list and expression data by cell, limited to first 40 cells",
+        "tags": ["expression"],
+        "parameters": [
             {
-                'name': 'include_unexpressed_genes',
-                'description': "Include genes that have 0 expression across all cells in set",
-                'in': 'path',
-                'type': 'bool',
+                "name": "include_unexpressed_genes",
+                "description": "Include genes that have 0 expression across all cells in set",
+                "in": "path",
+                "type": "bool",
             }
         ],
-        'responses': {
-            '200': {
-                'description': 'Json for heatmap',
-                'examples': {
-                    'application/json': {
+        "responses": {
+            "200": {
+                "description": "Json for heatmap",
+                "examples": {
+                    "application/json": {
                         "data": {
                             "cells": [
                                 {
@@ -258,12 +258,12 @@ class ExpressionAPI(Resource):
         return make_payload(expression_data)
 
     @swagger.doc({
-        'summary': 'Json with gene list and expression data by cell',
-        'tags': ['expression'],
-        'parameters': [
+        "summary": "Json with gene list and expression data by cell",
+        "tags": ["expression"],
+        "parameters": [
             {
-                'name': 'body',
-                'in': 'body',
+                "name": "body",
+                "in": "body",
                 "schema": {
                     "example": {
                         "celllist": ["1001000173.G8", "1001000173.D4"],
@@ -275,11 +275,11 @@ class ExpressionAPI(Resource):
                 }
             },
         ],
-        'responses': {
-            '200': {
-                'description': 'Json for expressiondata',
-                'examples': {
-                    'application/json': {
+        "responses": {
+            "200": {
+                "description": "Json for expressiondata",
+                "examples": {
+                    "application/json": {
                         "data": {
                             "cells": [
                                 {
@@ -305,24 +305,24 @@ class ExpressionAPI(Resource):
                     }
                 }
             },
-            '400': {
-                'description': 'Required parameter missing/incorrect',
+            "400": {
+                "description": "Required parameter missing/incorrect",
             }
         }
     })
     def post(self):
         from app import data
         args = request.get_json()
-        cell_list = args.get('celllist', [])
-        gene_list = args.get('genelist', [])
+        cell_list = args.get("celllist", [])
+        gene_list = args.get("genelist", [])
         if not cell_list and not gene_list:
             return make_payload([], "must include celllist and/or genelist parameter", 400)
 
         expression_data = data.expression(cell_list, gene_list)
 
-        if cell_list and len(expression_data['cells']) < len(cell_list):
+        if cell_list and len(expression_data["cells"]) < len(cell_list):
             return make_payload([], "Some cell ids not available", 400)
-        if gene_list and len(expression_data['genes']) < len(gene_list):
+        if gene_list and len(expression_data["genes"]) < len(gene_list):
             return make_payload([], "Some genes not available", 400)
 
         return make_payload(expression_data)
@@ -330,13 +330,13 @@ class ExpressionAPI(Resource):
 
 class DifferentialExpressionAPI(Resource):
     @swagger.doc({
-        'summary': 'Get the top expressed genes for two cell sets. Calculated using t-test',
-        'tags': ['expression'],
-        'parameters': [
+        "summary": "Get the top expressed genes for two cell sets. Calculated using t-test",
+        "tags": ["expression"],
+        "parameters": [
             {
-                'name': 'body',
-                'in': 'body',
-                'schema': {
+                "name": "body",
+                "in": "body",
+                "schema": {
                     "example": {
                         "celllist1": ["1001000176.C12", "1001000176.C7", "1001000177.F11"],
                         "celllist2": ["1001000012.D2", "1001000017.F10", "1001000033.C3", "1001000229.D4"],
@@ -347,10 +347,10 @@ class DifferentialExpressionAPI(Resource):
             }
         ],
         "responses": {
-            '200': {
-                'description': 'top expressed genes for cellset1, cellset2',
-                'examples': {
-                    'application/json': {
+            "200": {
+                "description": "top expressed genes for cellset1, cellset2",
+                "examples": {
+                    "application/json": {
                         "data": {
                             "celllist1": {
                                 "ave_diff": [
@@ -419,10 +419,10 @@ class DifferentialExpressionAPI(Resource):
     def post(self):
         from app import data
         args = request.get_json()
-        cell_list_1 = args.get('celllist1', [])
-        cell_list_2 = args.get('celllist2', [])
+        cell_list_1 = args.get("celllist1", [])
+        cell_list_2 = args.get("celllist2", [])
         num_genes = args.get("num_genes", 7)
-        pval = args.get('pval', 0.5)
+        pval = args.get("pval", 0.5)
         if not (cell_list_1 and cell_list_2):
             return make_payload([],
                                 "must include celllist1 and celllist2 parameters",
@@ -432,7 +432,7 @@ class DifferentialExpressionAPI(Resource):
 
 
 def get_api_resources():
-    bp = Blueprint('api', __name__, url_prefix='/api/v2.0')
+    bp = Blueprint("api", __name__, url_prefix="/api/v2.0")
     api = Api(bp, add_api_spec_resource=False)
     api.add_resource(InitializeAPI, "/initialize")
     api.add_resource(CellsAPI, "/cells")

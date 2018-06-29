@@ -33,9 +33,9 @@ class ScanpyEngine(CXGDriver):
         return data_schema
 
     def _set_cell_ids(self):
-        self.data.obs['cxg_cell_id'] = list(range(self.data.obs.shape[0]))
+        self.data.obs["cxg_cell_id"] = list(range(self.data.obs.shape[0]))
         self.data.obs["cell_name"] = list(self.data.obs.index)
-        self.data.obs.set_index('cxg_cell_id', inplace=True)
+        self.data.obs.set_index("cxg_cell_id", inplace=True)
 
     def cells(self):
         return list(self.data.obs.index)
@@ -78,7 +78,7 @@ class ScanpyEngine(CXGDriver):
             if self.schema[field]["variabletype"] == "categorical":
                 group_by = field
                 if group_by == "CellName":
-                    group_by = 'cell_name'
+                    group_by = "cell_name"
                 metadata_ranges[field] = {"options": df.obs.groupby(group_by).size().to_dict()}
             else:
                 metadata_ranges[field] = {
