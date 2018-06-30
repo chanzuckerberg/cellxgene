@@ -52,7 +52,14 @@ class ScanpyEngine(CXGDriver):
     def filter_cells(self, filter):
         """
         Filter cells from data and return a subset of the data
+        A filter is a dictionary where the key is a metadatata category
+        Value is dictionary
+            value_type: int, float, string
+            variable_type: continuous, categorical
+            query: filter value, for categorical [val1, val2], for continuous {min: x, max:y}
+        Filters are combined with the and operator
         :param filter:
+        :return: filtered dataframe
         """
         cell_idx = np.ones((self.cell_count,), dtype=bool)
         for key, value in filter.items():
@@ -91,9 +98,11 @@ class ScanpyEngine(CXGDriver):
 
     def metadata(self, df, fields=None):
         """
-        Generator for metadata. Gets the metadata values cell by cell and returns all value
-        or only certain values if names is not None
+         Gets metadata key:value for each cells
 
+        :param df: from filter_cells, dataframe
+        :param fields: list of keys for metadata to return, returns all metadata values if not set.
+        :return: list of metadata values
         """
         metadata = df.obs.to_dict(orient="records")
         for idx in range(len(metadata)):
@@ -103,6 +112,8 @@ class ScanpyEngine(CXGDriver):
     def create_graph(self, df):
         """
         Computes a n-d layout for cells through dimensionality reduction.
+        :param df: from filter_cells, dataframe
+        :return:  [cellid, x, y]
         """
         getattr(sc.tl, self.graph_method)(df)
         graph = df.obsm["X_{graph_method}".format(graph_method=self.graph_method)]
@@ -110,6 +121,12 @@ class ScanpyEngine(CXGDriver):
         return np.hstack((df.obs["cell_name"].values.reshape(len(df.obs.index), 1), normalized_graph)).tolist()
 
     def diffexp(self, cell_list_1, cell_list_2, pval, num_genes):
+        """
+        Computes the top differentially expressed genes between two clusters
+        :param df1: from filter_cells, dataframe containing first set of cells
+        :param df2: from filter_cells, dataframe containing second set of cells
+        :return: top genes, stats and expression values for top genes
+        """
         cells_idx_1 = np.in1d(self.data.obs["cell_name"], cell_list_1)
         cells_idx_2 = np.in1d(self.data.obs["cell_name"], cell_list_2)
         expression_1 = self.data.X[cells_idx_1, :]
@@ -150,8 +167,13 @@ class ScanpyEngine(CXGDriver):
 
     def expression(self, cells=None, genes=None):
         """
+        Retrieves expression for each gene for cells in data frame
         :param df:
-        :return:
+        :return: {
+            "genes": list of genes,
+            "cells": list of cells and expression list,
+            "nonzero_gene_count": number of nonzero genes
+        }
         """
         if cells:
             cells_idx = np.in1d(self.data.obs["cell_name"], cells)
