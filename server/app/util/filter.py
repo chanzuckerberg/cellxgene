@@ -7,14 +7,16 @@ def _convert_variable(datatype, variable):
     Convert variable to number (float/int)
     Used for dataset metadata and for query string
     :param datatype: type to convert to
-    :param variable: value of variable
+    :param variable (string or None): value of variable
     :return: converted variable
     :raises: ValueError
     """
     try:
-        if variable and datatype == "int":
+        if variable is None:
+            return variable
+        if datatype == "int":
             variable = int(variable)
-        elif variable and datatype == "float":
+        elif datatype == "float":
             variable = float(variable)
         return variable
     except ValueError:
@@ -23,12 +25,9 @@ def _convert_variable(datatype, variable):
 
 def parse_filter(filter, schema):
     """
-    {key: variable_type
-    value_type
-    query
 
-    :param filter:
-    :param schema:
+    :param filter: flask's request.args
+    :param schema: dictionary schema
     :return:
     """
     query = {}
@@ -41,7 +40,7 @@ def parse_filter(filter, schema):
             "value_type": schema[key]["type"]
         }
         if query[key]["variable_type"] == "categorical":
-            query[key]["query"] = _convert_variable(query[key]["value_type"], value)
+            query[key]["query"] = [_convert_variable(query[key]["value_type"], v) for v in value]
         elif query[key]["variable_type"] == "continuous":
             value = value[0]
             try:
