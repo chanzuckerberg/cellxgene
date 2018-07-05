@@ -47,6 +47,20 @@ class Graph extends React.Component {
       mode: "brush"
     };
   }
+  reglDraw(regl, drawPoints, sizeBuffer, colorBuffer, pointBuffer, camera) {
+    regl.clear({
+      depth: 1,
+      color: [1, 1, 1, 1]
+    });
+    drawPoints({
+      size: sizeBuffer,
+      distance: camera.distance,
+      color: colorBuffer,
+      position: pointBuffer,
+      count: this.count,
+      view: camera.view()
+    });
+  }
   componentDidMount() {
     // setup canvas and camera
     const camera = _camera(this.reglCanvas, { scale: true, rotate: false });
@@ -59,23 +73,15 @@ class Graph extends React.Component {
     const colorBuffer = regl.buffer();
     const sizeBuffer = regl.buffer();
 
-    regl.frame(({ viewportWidth, viewportHeight }) => {
-      regl.clear({
-        depth: 1,
-        color: [1, 1, 1, 1]
-      });
-
-      drawPoints({
-        size: sizeBuffer,
-        distance: camera.distance,
-        color: colorBuffer,
-        position: pointBuffer,
-        count: this.count,
-        view: camera.view(),
-        scale: viewportHeight / viewportWidth
-      });
-
-      this.setState({ camera });
+    const reglRender = regl.frame(() => {
+      this.reglDraw(
+        regl,
+        drawPoints,
+        sizeBuffer,
+        colorBuffer,
+        pointBuffer,
+        camera
+      );
       camera.tick();
     });
 
@@ -83,10 +89,11 @@ class Graph extends React.Component {
       regl,
       pointBuffer,
       colorBuffer,
-      sizeBuffer
+      sizeBuffer,
+      camera,
+      reglRender
     });
   }
-
   componentWillReceiveProps(nextProps) {
     if (this.state.regl && nextProps.crossfilter) {
       /* update the regl state */
@@ -164,7 +171,8 @@ class Graph extends React.Component {
       nextProps.responsive.width !== this.props.responsive.width
     ) {
       /* clear out whatever was on the div, even if nothing, but usually the brushes etc */
-      d3.select("#graphAttachPoint")
+      d3
+        .select("#graphAttachPoint")
         .selectAll("*")
         .remove();
       const { svg, brush, brushContainer } = setupSVGandBrushElements(
@@ -200,7 +208,7 @@ class Graph extends React.Component {
       // transform screen coordinates -> cell coordinates
       const invert = pin => {
         const x =
-          (2 * pin[0]) / (this.props.responsive.height - this.graphPaddingTop) -
+          2 * pin[0] / (this.props.responsive.height - this.graphPaddingTop) -
           1;
         const y =
           2 *
