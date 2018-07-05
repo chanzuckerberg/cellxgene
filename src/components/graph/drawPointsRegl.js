@@ -39,13 +39,7 @@ export default function(regl) {
       distance: regl.prop("distance"),
       view: regl.prop("view"),
       projection: (context, props) => {
-        return mat4.perspective(
-          [],
-          Math.PI / 2,
-          context.viewportWidth * props.scale / context.viewportHeight,
-          0.01,
-          1000
-        );
+        return mat4.perspective([], Math.PI / 2, 1, 0.01, 1000);
       }
     },
 
