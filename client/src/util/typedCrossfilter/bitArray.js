@@ -140,7 +140,7 @@ class BitArray {
     const col = dim >>> 5;
     const before = this.bitarray[col * this.length + index];
     const after = before | (1 << (dim % 32));
-    this.bitarray[col] = after;
+    this.bitarray[col * this.length + index] = after;
   }
 
   // deselect index on dimension
@@ -149,7 +149,7 @@ class BitArray {
     const col = dim >>> 5;
     const before = this.bitarray[col * this.length + index];
     const after = before & ~(1 << (dim % 32));
-    this.bitarray[col] = after;
+    this.bitarray[col * this.length + index] = after;
   }
 
   // select all indices on dimension.
@@ -214,7 +214,8 @@ class BitArray {
       const bitmask = this.bitmask[0];
       const bitarray = this.bitarray;
       for (let i = 0, len = this.length; i < len; i++) {
-        result[i] = bitarray[i] === bitmask ? selectedValue : deselectedValue;
+        result[i] =
+          bitmask && bitarray[i] === bitmask ? selectedValue : deselectedValue;
       }
     } else {
       for (let i = 0, len = this.length; i < len; i++) {
@@ -225,4 +226,4 @@ class BitArray {
   }
 }
 
-module.exports = BitArray;
+export default BitArray;

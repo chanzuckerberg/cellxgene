@@ -432,7 +432,7 @@ class DifferentialExpressionAPI(Resource):
 
 
 def get_api_resources():
-    bp = Blueprint("api", __name__, url_prefix="/api/v2.0")
+    bp = Blueprint("api", __name__, url_prefix="/api/v0.1")
     api = Api(bp, add_api_spec_resource=False)
     api.add_resource(InitializeAPI, "/initialize")
     api.add_resource(CellsAPI, "/cells")

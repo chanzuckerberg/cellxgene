@@ -8,7 +8,7 @@ class EndPoints(unittest.TestCase):
 
     def setUp(self):
         # Local
-        self.url_base = "http://0.0.0.0:5005/api/" + "v2.0/"
+        self.url_base = "http://0.0.0.0:5005/api/" + "v0.1/"
         self.session = requests.Session()
 
     def test_cells(self):

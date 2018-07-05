@@ -51,6 +51,7 @@ class Scatterplot extends React.Component {
   constructor(props) {
     super(props);
     this.count = 0;
+    this.axes = false;
     this.state = {
       svg: null,
       // ctx: null,
@@ -63,8 +64,27 @@ class Scatterplot extends React.Component {
 
   componentDidMount() {
     const { svg } = setupScatterplot(width, height, margin);
+    let scales;
+
+    /* if we've already got the data, user clicked back and forth between tabs, so render the scatterplot */
+    if (
+      this.props.expression &&
+      this.props.expression.data &&
+      this.props.scatterplotXXaccessor &&
+      this.props.scatterplotYYaccessor
+    ) {
+      scales = this.setupScales(
+        this.props.expression,
+        this.props.scatterplotXXaccessor,
+        this.props.scatterplotYYaccessor
+      );
+      this.drawAxesSVG(scales.xScale, scales.yScale, svg);
+    }
+
     this.setState({
-      svg
+      svg,
+      xScale: scales ? scales.xScale : null,
+      yScale: scales ? scales.yScale : null
     });
 
     const camera = _camera(this.reglCanvas, { scale: true, rotate: false });
@@ -104,21 +124,36 @@ class Scatterplot extends React.Component {
     });
   }
   componentWillReceiveProps(nextProps) {
-    this.maybeSetupScalesAndDrawAxes(nextProps);
+    if (
+      nextProps.expression &&
+      nextProps.expression.data &&
+      nextProps.scatterplotXXaccessor &&
+      nextProps.scatterplotYYaccessor
+    ) {
+      const scales = this.setupScales(
+        nextProps.expression,
+        nextProps.scatterplotXXaccessor,
+        nextProps.scatterplotYYaccessor
+      );
+      this.setState(scales);
+    }
   }
   componentDidUpdate(prevProps) {
     if (
+      this.state.svg &&
       this.state.xScale &&
       this.state.yScale &&
       this.props.scatterplotXXaccessor &&
       this.props.scatterplotYYaccessor &&
       (this.props.scatterplotXXaccessor !== prevProps.scatterplotXXaccessor || // was CLU now FTH1 etc
-        this.props.scatterplotYYaccessor !== prevProps.scatterplotYYaccessor)
+      this.props.scatterplotYYaccessor !== prevProps.scatterplotYYaccessor || // was CLU now FTH1 etc
+        !this.axes) // clicked off the tab and back again, rerender
     ) {
-      this.drawAxesSVG(this.state.xScale, this.state.yScale);
+      this.drawAxesSVG(this.state.xScale, this.state.yScale, this.state.svg);
     }
 
     if (
+      this.props.metadata &&
       this.state.regl &&
       this.state.pointBuffer &&
       this.state.colorBuffer &&
@@ -179,47 +214,32 @@ class Scatterplot extends React.Component {
       this.count = cellCount;
     }
   }
-  maybeSetupScalesAndDrawAxes(nextProps) {
-    if (
-      nextProps.expression &&
-      nextProps.expression.data &&
-      nextProps.scatterplotXXaccessor &&
-      nextProps.scatterplotYYaccessor
-    ) {
-      const xScale = d3
-        .scaleLinear()
-        .domain(
-          d3.extent(nextProps.expression.data.cells, (cell, i) => {
-            return cell.e[
-              nextProps.expression.data.genes.indexOf(
-                nextProps.scatterplotXXaccessor
-              )
-            ];
-          })
-        )
-        .range([0, width]);
+  setupScales(expression, scatterplotXXaccessor, scatterplotYYaccessor) {
+    const xScale = d3
+      .scaleLinear()
+      .domain(
+        d3.extent(expression.data.cells, (cell, i) => {
+          return cell.e[expression.data.genes.indexOf(scatterplotXXaccessor)];
+        })
+      )
+      .range([0, width]);
 
-      const yScale = d3
-        .scaleLinear()
-        .domain(
-          d3.extent(nextProps.expression.data.cells, cell => {
-            return cell.e[
-              nextProps.expression.data.genes.indexOf(
-                nextProps.scatterplotYYaccessor
-              )
-            ];
-          })
-        )
-        .range([height, 0]);
+    const yScale = d3
+      .scaleLinear()
+      .domain(
+        d3.extent(expression.data.cells, cell => {
+          return cell.e[expression.data.genes.indexOf(scatterplotYYaccessor)];
+        })
+      )
+      .range([height, 0]);
 
-      this.setState({
-        xScale,
-        yScale
-      });
-    }
+    return {
+      xScale,
+      yScale
+    };
   }
-  drawAxesSVG(xScale, yScale) {
-    this.state.svg.selectAll("*").remove();
+  drawAxesSVG(xScale, yScale, svg) {
+    svg.selectAll("*").remove();
 
     // the axes are much cleaner and easier now. No need to rotate and orient the axis, just call axisBottom, axisLeft etc.
     var xAxis = d3.axisBottom().scale(xScale);
@@ -227,28 +247,28 @@ class Scatterplot extends React.Component {
     var yAxis = d3.axisLeft().scale(yScale);
 
     // adding axes is also simpler now, just translate x-axis to (0,height) and it's alread defined to be a bottom axis.
-    this.state.svg
+    svg
       .append("g")
       .attr("transform", "translate(0," + height + ")")
       .attr("class", "x axis")
       .call(xAxis);
 
     // y-axis is translated to (0,0)
-    this.state.svg
+    svg
       .append("g")
       .attr("transform", "translate(0,0)")
       .attr("class", "y axis")
       .call(yAxis);
 
     // adding label. For x-axis, it's at (10, 10), and for y-axis at (width, height-10).
-    this.state.svg
+    svg
       .append("text")
       .attr("x", 10)
       .attr("y", 10)
       .attr("class", "label")
       .text(this.props.scatterplotYYaccessor);
 
-    this.state.svg
+    svg
       .append("text")
       .attr("x", width)
       .attr("y", height - 10)

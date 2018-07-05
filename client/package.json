@@ -9,7 +9,8 @@
     "clean": "rimraf build",
     "start": "node server/development.js",
     "lint": "eslint src",
-    "prod": "cross-env NODE_ENV=production PORT=3000 node server/production.js"
+    "prod": "cross-env NODE_ENV=production PORT=3000 node server/production.js",
+    "test": "jest"
   },
   "engineStrict": true,
   "engines": {
@@ -90,6 +91,7 @@
     "gzip-size": "^3.0.0",
     "html-webpack-inline-source-plugin": "0.0.6",
     "html-webpack-plugin": "^2.22.0",
+    "jest": "^23.0.1",
     "jsdom": "^9.4.1",
     "json-loader": "^0.5.4",
     "nyc": "^10.0.0",
@@ -106,5 +108,10 @@
     "webpack-dev-middleware": "^1.6.1",
     "webpack-hot-middleware": "^2.12.2",
     "whatwg-fetch": "^2.0.1"
+  },
+  "jest": {
+    "testMatch": [
+      "**/__tests__/**/?(*.)(spec|test).js?(x)"
+    ]
   }
 }

@@ -7,8 +7,11 @@ https://bl.ocks.org/SpaceActuary/2f004899ea1b2bd78d6f1dbb2febf771
 import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
+import FaPaintBrush from "react-icons/lib/fa/paint-brush";
+import * as globals from "../../globals";
 
 @connect(state => {
+  console.log("state in histo brush", state)
   const ranges =
     state.cells.cells && state.cells.cells.data.ranges
       ? state.cells.cells.data.ranges
@@ -26,7 +29,8 @@ import { connect } from "react-redux";
   return {
     colorAccessor: state.controls.colorAccessor,
     colorScale: state.controls.colorScale,
-    cellsMetadata: state.controls.cellsMetadata
+    cellsMetadata: state.controls.cellsMetadata,
+    initializeRanges
   };
 })
 class HistogramBrush extends React.Component {
@@ -154,7 +158,7 @@ class HistogramBrush extends React.Component {
         )
         .call(d3.axisBottom(x).ticks(5))
         .append("text")
-        .attr("x", 300)
+        .attr("x", this.width - 2)
         .attr("y", -6)
         .attr("fill", "#000")
         .attr("text-anchor", "end")
@@ -164,13 +168,40 @@ class HistogramBrush extends React.Component {
       this.setState({ brush, xAxis });
     }
   }
-
+  handleColorAction() {
+    this.props.dispatch({
+      type: "color by continuous metadata",
+      colorAccessor: this.props.metadataField,
+      rangeMaxForColorAccessor: this.props.initializeRanges[this.props.metadataField].range.max
+    });
+  }
   render() {
     return (
       <div
-        style={{ marginTop: 10 }}
+        style={{ marginTop: 10, position: "relative" }}
         id={"histogram_" + this.props.metadataField}
       >
+        <span
+          onClick={this.handleColorAction.bind(this)}
+          style={{
+            fontSize: 16,
+            marginLeft: 4,
+            // padding: this.props.colorAccessor === this.props.metadataField ? 3 : "auto",
+            borderRadius: 3,
+            color:
+              this.props.colorAccessor === this.props.metadataField
+                ? globals.brightBlue
+                : "black",
+            // backgroundColor: this.props.colorAccessor === this.props.metadataField ? globals.brightBlue : "inherit",
+            display: "inline-block",
+            position: "relative",
+            left: this.width,
+            top: this.height - 22,
+            cursor: "pointer"
+          }}
+        >
+          <FaPaintBrush />
+        </span>
         <svg
           width={this.width}
           height={this.height}
