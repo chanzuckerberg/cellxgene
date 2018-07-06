@@ -193,7 +193,6 @@ class CellsAPI(Resource):
     def get(self):
         from app import data
         payload = {
-            "cellids": [],
             "metadata": [],
             "cellcount": 0,
             "graph": [],
@@ -205,8 +204,7 @@ class CellsAPI(Resource):
         payload["metadata"] = data.metadata(filtered_data)
         payload["ranges"] = data.metadata_ranges(filtered_data)
         payload["graph"] = data.create_graph(filtered_data)
-        payload["cellids"] = data.cellids(filtered_data)
-        payload["cellcount"] = len(payload["cellids"])
+        payload["cellcount"] = data.cell_count
         return make_payload(payload)
 
 

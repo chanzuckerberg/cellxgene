@@ -13,11 +13,14 @@ class ScanpyEngine(CXGDriver):
     def __init__(self, data, schema=None, graph_method="umap", diffexp_method="ttest"):
         self.data = self._load_data(data)
         self.schema = self._load_or_infer_schema(data, schema)
-        self._set_cell_ids()
+        self._set_cell_names()
         self.cell_count = self.data.shape[0]
         self.gene_count = self.data.shape[1]
         self.graph_method = graph_method
         self.diffexp_method = diffexp_method
+
+    def _set_cell_names(self):
+        self.data.obs["cell_name"] = list(self.data.obs.index)
 
     @staticmethod
     def _load_data(data):
@@ -32,19 +35,8 @@ class ScanpyEngine(CXGDriver):
             data_schema = parse_schema(os.path.join(data, schema))
         return data_schema
 
-    def _set_cell_ids(self):
-        self.data.obs["cxg_cell_id"] = list(range(self.data.obs.shape[0]))
-        self.data.obs["cell_name"] = list(self.data.obs.index)
-        self.data.obs.set_index("cxg_cell_id", inplace=True)
-
     def cells(self):
         return list(self.data.obs.index)
-
-    def cellids(self, df=None):
-        if df:
-            return list(df.obs.index)
-        else:
-            return list(self.data.obs.index)
 
     def genes(self):
         return self.data.var.index.tolist()
