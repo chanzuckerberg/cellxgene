@@ -48,4 +48,5 @@ server/app/web/templates/index\.html
 
 *.egg-info
 dist/*
+build/*
 
