@@ -1,11 +1,11 @@
 aniso8601==3.0.2
-anndata==0.6.4
+anndata==0.6.1
 certifi==2018.4.16
 chardet==3.0.4
 click==6.7
 cycler==0.10.0
 decorator==4.3.0
-Flask==1.0.2
+Flask==0.12.4
 Flask-Compress==1.4.0
 Flask-Cors==3.0.6
 Flask-RESTful==0.3.6
