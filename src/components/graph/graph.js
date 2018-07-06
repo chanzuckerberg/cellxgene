@@ -85,8 +85,11 @@ class Graph extends React.Component {
       camera.tick();
     });
 
+    this.reglRenderState = "rendering";
+
     this.setState({
       regl,
+      drawPoints,
       pointBuffer,
       colorBuffer,
       sizeBuffer,
@@ -163,6 +166,16 @@ class Graph extends React.Component {
       this.state.sizeBuffer({ data: this.renderCache.sizes, dimension: 1 });
 
       this.count = cellCount;
+
+      this.state.regl._refresh();
+      this.reglDraw(
+        this.state.regl,
+        this.state.drawPoints,
+        this.state.sizeBuffer,
+        this.state.colorBuffer,
+        this.state.pointBuffer,
+        this.state.camera
+      );
     }
 
     if (
@@ -173,7 +186,7 @@ class Graph extends React.Component {
       /* clear out whatever was on the div, even if nothing, but usually the brushes etc */
       d3
         .select("#graphAttachPoint")
-        .selectAll("*")
+        .selectAll("svg")
         .remove();
       const { svg, brush, brushContainer } = setupSVGandBrushElements(
         this.handleBrushSelectAction.bind(this),
@@ -182,6 +195,13 @@ class Graph extends React.Component {
         this.graphPaddingTop
       );
       this.setState({ svg, brush, brushContainer });
+    }
+  }
+  componentDidUpdate() {
+    if (this.state.reglRender && this.reglRenderState === "rendering") {
+      console.log("yeah...");
+      this.state.reglRender.cancel();
+      this.reglRenderState = "paused";
     }
   }
   handleBrushSelectAction() {
