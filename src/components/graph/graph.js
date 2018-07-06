@@ -199,7 +199,6 @@ class Graph extends React.Component {
   }
   componentDidUpdate() {
     if (this.state.reglRender && this.reglRenderState === "rendering") {
-      console.log("yeah...");
       this.state.reglRender.cancel();
       this.reglRenderState = "paused";
     }
