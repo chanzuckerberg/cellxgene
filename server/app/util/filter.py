@@ -25,7 +25,14 @@ def _convert_variable(datatype, variable):
 
 def parse_filter(filter, schema):
     """
+    The filter comes in as arguments from a GET/POST request
+    For categorical metadata keys filter based on key=value
+    For continuous metadata keys filter by key=min,max
+    Either value can be replaced by a * To have only a minimum value key=min, To have only a maximum value key=*,max
 
+    They combine via AND so a cell's metadata would have to match every filter
+
+    The results is a matrix with the cells the pass the filter and at this point all the genes
     :param filter: flask's request.args
     :param schema: dictionary schema
     :return:
