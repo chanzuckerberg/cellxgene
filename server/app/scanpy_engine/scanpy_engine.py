@@ -32,19 +32,8 @@ class ScanpyEngine(CXGDriver):
             data_schema = parse_schema(os.path.join(data, schema))
         return data_schema
 
-    def _set_cell_ids(self):
-        self.data.obs["cxg_cell_id"] = list(range(self.data.obs.shape[0]))
-        self.data.obs["cell_name"] = list(self.data.obs.index)
-        self.data.obs.set_index("cxg_cell_id", inplace=True)
-
     def cells(self):
         return list(self.data.obs.index)
-
-    def cellids(self, df=None):
-        if df:
-            return list(df.obs.index)
-        else:
-            return list(self.data.obs.index)
 
     def genes(self):
         return self.data.var.index.tolist()
