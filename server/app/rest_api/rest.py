@@ -435,5 +435,5 @@ def get_api_resources():
     api.add_resource(InitializeAPI, "/initialize")
     api.add_resource(CellsAPI, "/cells")
     api.add_resource(ExpressionAPI, "/expression")
-    api.add_resource(DifferentialExpressionAPI, "/diffexp")
+    api.add_resource(DifferentialExpressionAPI, "/diffexpression")
     return api
