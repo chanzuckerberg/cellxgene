@@ -10,7 +10,6 @@ from .rest_api.rest import get_api_resources
 
 REACTIVE_LIMIT = 1_000_000
 
-
 app = Flask(__name__)
 Compress(app)
 CORS(app)
@@ -40,8 +39,6 @@ if app.config["ENGINE"] == "scanpy":
     from .scanpy_engine.scanpy_engine import ScanpyEngine
     data = ScanpyEngine(app.config["DATA"], schema="data_schema.json")
 
-
-
 # A list of swagger document objects
 docs = []
 resources = get_api_resources()
@@ -53,10 +50,8 @@ app.register_blueprint(
     get_swagger_blueprint(docs, "/api/swagger", produces=["application/json"], title="cellxgene rest api",
                           description="An API connecting ExpressionMatrix2 clustering algorithm to cellxgene"))
 
-
 app.add_url_rule("/", endpoint="index")
 
 
 def main():
     app.run(host="0.0.0.0", debug=True, port=5005)
-
