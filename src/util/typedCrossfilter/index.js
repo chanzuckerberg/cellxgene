@@ -120,6 +120,9 @@ class ScalarDimension {
     // create sort index
     this.index = Util.fillRange(new Uint32Array(this.crossfilter.data.length));
     this.index.sort((a, b) => array[a] - array[b]);
+
+    // groups, if any
+    this.groups = [];
   }
 
   _createValueArray(value, array) {
@@ -134,12 +137,15 @@ class ScalarDimension {
 
   dispose() {
     this.crossfilter._freeDimension(this._id);
+    return this;
   }
 
   id() {
     return this._id;
   }
 
+  // Argument is an array of intervals indicating records newly selected/filtered
+  //
   _updateFilters(newFilter) {
     newFilter = PositiveIntervals.canonicalize(newFilter);
 
@@ -323,6 +329,16 @@ class ScalarDimension {
 
     return ret;
   }
+
+  group(groupValue) {
+    const grp = new ScalarGroup(groupValue, this.value.constructor, this);
+    this.groups.push(grp);
+    return grp;
+  }
+
+  _freeGroup(group) {
+    this.groups = this.groups.filter(e => e !== group);
+  }
 }
 
 // Ordered enumeration - supports any sortable enumerable type, eg,
@@ -376,6 +392,121 @@ class EnumDimension extends ScalarDimension {
         Util.lowerBound(this.enumIndex, v, 0, this.enumIndex.length)
       )
     );
+  }
+}
+
+// Groups!  Map/reduce
+//
+// XXX: potential optimizations not implemented
+//  - groupValue may be identity - could skip creating separate group map
+//  - only works for scalars so far
+//
+class ScalarGroup {
+  constructor(groupValue, groupValueType, dimension) {
+    // parent dimension
+    this.dimension = dimension;
+
+    // groupValue is optional.  Defaults to identity.  Used to perform
+    // initial map operation.
+    //
+    if (groupValue === undefined) {
+      this.mapValue = dimension.value;
+    } else {
+      const data = dimension.value;
+      const len = data.length;
+      const array = new groupValueType(dimension.value.length);
+      for (let i = 0; i < len; i++) {
+        array[i] = groupValue(data[i]);
+      }
+      this.mapValue = array;
+    }
+
+    this.groups = [];
+
+    // group index is mapping from data record index to group index
+    this.groupIndex = new Uint32Array(dimension.crossfilter.data.length);
+
+    // default to counting
+    this.reduceCount();
+
+    // Creates this.groups
+    this._reduce();
+  }
+
+  // Update the group reduction incrementally
+  _updateReduce(adds, dels) {
+    // XXX
+    throw new Error("unimplemented");
+  }
+
+  // Reduce the entire data set, creating both the group index and the
+  // groups data.
+  //
+  _reduce() {
+    const dimension = this.dimension;
+    const data = dimension.crossfilter.data;
+
+    // Create groups
+    const groupNames = new Set(this.mapValue);
+    this.groups = [];
+    const groupIndexByName = {};
+    groupNames.forEach(name => {
+      this.groups.push({ key: name, value: this.reduceInitial() });
+      groupIndexByName[name] = this.groups.length - 1;
+    });
+
+    // Create groupIndex - index map between data record index and group index
+    for (let i = 0, len = this.mapValue.length; i < len; i++) {
+      // this.groupIndex[index[i]] = groupIndexByName[this.mapValue[i]];
+      this.groupIndex[i] = groupIndexByName[this.mapValue[i]];
+    }
+
+    // reduce all filtered records, IGNORING the current dimension's filter
+    const selection = dimension.crossfilter.selection;
+    for (let i = 0, len = data.length; i < len; i++) {
+      if (selection.isSelectedIgnoringDim(i, dimension.id())) {
+        const group = this.groups[this.groupIndex[i]];
+        group.value = this.reduceAdd(group.value, data[i]);
+      }
+    }
+  }
+
+  dispose() {
+    this.dimension._freeGroup(this);
+    return this;
+  }
+
+  // return number of distinct values in the group, independent of any filters.
+  //
+  size() {
+    return this.groups.length;
+  }
+
+  // Set the reduce functions and return the grouping.
+  //
+  reduce(add, remove, initial) {
+    this.reduceAdd = add;
+    this.reduceRemove = remove;
+    this.reduceInitial = initial;
+    this._reduce();
+    return this;
+  }
+
+  // set the reduce functions to count records.
+  reduceCount() {
+    return this.reduce((p, v) => p + 1, (p, v) => p - 1, () => 0);
+  }
+
+  // set the reduce functions to sum records using specified value accessor.
+  //
+  reduceSum(value) {
+    return this.reduce((p, v) => p + value(v), (p, v) => p - value(v), () => 0);
+  }
+
+  all() {
+    const res = [...this.groups];
+    res.sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
+    return res;
   }
 }
 
