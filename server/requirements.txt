@@ -1,5 +1,5 @@
 aniso8601==3.0.2
-anndata==0.6.1
+anndata==0.6.4
 certifi==2018.4.16
 chardet==3.0.4
 click==6.7
@@ -30,7 +30,7 @@ pyparsing==2.2.0
 python-dateutil==2.7.3
 pytz==2018.4
 requests==2.19.1
-scanpy==1.2.2
+scanpy==1.0.4
 scikit-learn==0.19.1
 scipy==1.1.0
 seaborn==0.8.1

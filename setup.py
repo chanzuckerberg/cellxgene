@@ -16,7 +16,6 @@ setup(
     author_email='cweaver@chanzuckerberg.com',
     description='Web application for exploration of large scale scRNA-seq datasets',
     long_description=long_description,
-    long_description_content_type="text/markdown",
     install_requires=requirements,
     include_package_data=True,
     zip_safe=False,
@@ -24,4 +23,8 @@ setup(
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
     ),
+    entry_points={
+        'console_scripts':
+            ['cellxgene = server.app.app:main']
+    }
 )
