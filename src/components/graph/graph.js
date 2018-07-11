@@ -61,6 +61,25 @@ class Graph extends React.Component {
       view: camera.view()
     });
   }
+  restartReglLoop() {
+    const reglRender = this.state.regl.frame(() => {
+      this.reglDraw(
+        this.state.regl,
+        this.state.drawPoints,
+        this.state.sizeBuffer,
+        this.state.colorBuffer,
+        this.state.pointBuffer,
+        this.state.camera
+      );
+      this.state.camera.tick();
+    });
+
+    this.reglRenderState = "rendering";
+
+    this.setState({
+      reglRender
+    });
+  }
   componentDidMount() {
     // setup canvas and camera
     const camera = _camera(this.reglCanvas, { scale: true, rotate: false });
@@ -73,6 +92,7 @@ class Graph extends React.Component {
     const colorBuffer = regl.buffer();
     const sizeBuffer = regl.buffer();
 
+    /* first time, but this duplicates above function, should be possile to avoid this */
     const reglRender = regl.frame(() => {
       this.reglDraw(
         regl,
@@ -198,7 +218,11 @@ class Graph extends React.Component {
     }
   }
   componentDidUpdate() {
-    if (this.state.reglRender && this.reglRenderState === "rendering") {
+    if (
+      this.state.reglRender &&
+      this.reglRenderState === "rendering" &&
+      this.state.mode !== "zoom"
+    ) {
       this.state.reglRender.cancel();
       this.reglRenderState = "paused";
     }
@@ -345,6 +369,7 @@ class Graph extends React.Component {
                 <button
                   onClick={() => {
                     this.handleBrushDeselectAction();
+                    this.restartReglLoop();
                     this.setState({ mode: "zoom" });
                   }}
                   style={{
