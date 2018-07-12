@@ -47,6 +47,39 @@ class Graph extends React.Component {
       mode: "brush"
     };
   }
+  reglDraw(regl, drawPoints, sizeBuffer, colorBuffer, pointBuffer, camera) {
+    regl.clear({
+      depth: 1,
+      color: [1, 1, 1, 1]
+    });
+    drawPoints({
+      size: sizeBuffer,
+      distance: camera.distance,
+      color: colorBuffer,
+      position: pointBuffer,
+      count: this.count,
+      view: camera.view()
+    });
+  }
+  restartReglLoop() {
+    const reglRender = this.state.regl.frame(() => {
+      this.reglDraw(
+        this.state.regl,
+        this.state.drawPoints,
+        this.state.sizeBuffer,
+        this.state.colorBuffer,
+        this.state.pointBuffer,
+        this.state.camera
+      );
+      this.state.camera.tick();
+    });
+
+    this.reglRenderState = "rendering";
+
+    this.setState({
+      reglRender
+    });
+  }
   componentDidMount() {
     // setup canvas and camera
     const camera = _camera(this.reglCanvas, { scale: true, rotate: false });
@@ -59,34 +92,31 @@ class Graph extends React.Component {
     const colorBuffer = regl.buffer();
     const sizeBuffer = regl.buffer();
 
-    regl.frame(({ viewportWidth, viewportHeight }) => {
-      regl.clear({
-        depth: 1,
-        color: [1, 1, 1, 1]
-      });
-
-      drawPoints({
-        size: sizeBuffer,
-        distance: camera.distance,
-        color: colorBuffer,
-        position: pointBuffer,
-        count: this.count,
-        view: camera.view(),
-        scale: viewportHeight / viewportWidth
-      });
-
-      this.setState({ camera });
+    /* first time, but this duplicates above function, should be possile to avoid this */
+    const reglRender = regl.frame(() => {
+      this.reglDraw(
+        regl,
+        drawPoints,
+        sizeBuffer,
+        colorBuffer,
+        pointBuffer,
+        camera
+      );
       camera.tick();
     });
 
+    this.reglRenderState = "rendering";
+
     this.setState({
       regl,
+      drawPoints,
       pointBuffer,
       colorBuffer,
-      sizeBuffer
+      sizeBuffer,
+      camera,
+      reglRender
     });
   }
-
   componentWillReceiveProps(nextProps) {
     if (this.state.regl && nextProps.crossfilter) {
       /* update the regl state */
@@ -156,6 +186,16 @@ class Graph extends React.Component {
       this.state.sizeBuffer({ data: this.renderCache.sizes, dimension: 1 });
 
       this.count = cellCount;
+
+      this.state.regl._refresh();
+      this.reglDraw(
+        this.state.regl,
+        this.state.drawPoints,
+        this.state.sizeBuffer,
+        this.state.colorBuffer,
+        this.state.pointBuffer,
+        this.state.camera
+      );
     }
 
     if (
@@ -164,8 +204,9 @@ class Graph extends React.Component {
       nextProps.responsive.width !== this.props.responsive.width
     ) {
       /* clear out whatever was on the div, even if nothing, but usually the brushes etc */
-      d3.select("#graphAttachPoint")
-        .selectAll("*")
+      d3
+        .select("#graphAttachPoint")
+        .selectAll("svg")
         .remove();
       const { svg, brush, brushContainer } = setupSVGandBrushElements(
         this.handleBrushSelectAction.bind(this),
@@ -174,6 +215,16 @@ class Graph extends React.Component {
         this.graphPaddingTop
       );
       this.setState({ svg, brush, brushContainer });
+    }
+  }
+  componentDidUpdate() {
+    if (
+      this.state.reglRender &&
+      this.reglRenderState === "rendering" &&
+      this.state.mode !== "zoom"
+    ) {
+      this.state.reglRender.cancel();
+      this.reglRenderState = "paused";
     }
   }
   handleBrushSelectAction() {
@@ -200,7 +251,7 @@ class Graph extends React.Component {
       // transform screen coordinates -> cell coordinates
       const invert = pin => {
         const x =
-          (2 * pin[0]) / (this.props.responsive.height - this.graphPaddingTop) -
+          2 * pin[0] / (this.props.responsive.height - this.graphPaddingTop) -
           1;
         const y =
           2 *
@@ -318,6 +369,7 @@ class Graph extends React.Component {
                 <button
                   onClick={() => {
                     this.handleBrushDeselectAction();
+                    this.restartReglLoop();
                     this.setState({ mode: "zoom" });
                   }}
                   style={{
