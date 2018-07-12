@@ -1,9 +1,7 @@
 import unittest
-
 from unittest.mock import MagicMock
-import sys
-sys.path.insert(0, "../app")
-from util.filter import _convert_variable, parse_filter
+
+from server.app.util.filter import _convert_variable, parse_filter
 
 
 class UtilTest(unittest.TestCase):
@@ -72,3 +70,6 @@ class UtilTest(unittest.TestCase):
         filterMock.getlist.return_value = ["0,*"]
         query = parse_filter(filterMock, self.schema)
         assert query == {"n_genes": {"variable_type": "continuous", "value_type": "int", "query": {"min": 0, "max": None}}}
+
+if __name__ == '__main__':
+    unittest.main()
