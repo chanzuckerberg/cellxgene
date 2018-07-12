@@ -23,6 +23,9 @@
     "sourceMap": false,
     "instrument": false
   },
+  "resolutions": {
+    "eslint-scope": "3.7.1"
+  },
   "dependencies": {
     "canvas-fit": "^1.5.0",
     "d3": "^4.10.0",
