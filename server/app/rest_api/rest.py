@@ -88,7 +88,7 @@ class InitializeAPI(Resource):
         }
     })
     def get(self):
-        from ..app import data, REACTIVE_LIMIT
+        from server.app.app import data, REACTIVE_LIMIT
         return make_payload({
             "schema": data.schema,
             "cellcount": data.cell_count,
@@ -191,7 +191,7 @@ class CellsAPI(Resource):
         }
     })
     def get(self):
-        from ..app import data
+        from server.app.app import data
         payload = {
             "metadata": [],
             "cellcount": 0,
@@ -251,7 +251,7 @@ class ExpressionAPI(Resource):
         }
     })
     def get(self):
-        from ..app import data
+        from server.app.app import data
         expression_data = data.expression()
         return make_payload(expression_data)
 
@@ -309,7 +309,7 @@ class ExpressionAPI(Resource):
         }
     })
     def post(self):
-        from ..app import data
+        from server.app.app import data
         args = request.get_json()
         cell_list = args.get("celllist", [])
         gene_list = args.get("genelist", [])
@@ -415,7 +415,7 @@ class DifferentialExpressionAPI(Resource):
         }
     })
     def post(self):
-        from ..app import data
+        from server.app.app import data
         args = request.get_json()
         cell_list_1 = args.get("celllist1", [])
         cell_list_2 = args.get("celllist2", [])
