@@ -61,11 +61,11 @@ class ScanpyEngine(CXGDriver):
             else:
                 min_ = value["query"]["min"]
                 max_ = value["query"]["max"]
-                if min_:
+                if min_ is not None:
                     key_idx = np.array((getattr(self.data.obs, key) >= min_).data)
                     cell_idx = np.logical_and(cell_idx, key_idx)
-                if max_:
-                    key_idx = np.array((getattr(self.data.obs, key) <= min_).data)
+                if max_ is not None:
+                    key_idx = np.array((getattr(self.data.obs, key) <= max_).data)
                     cell_idx = np.logical_and(cell_idx, key_idx)
         return self.data[cell_idx, :]
 
