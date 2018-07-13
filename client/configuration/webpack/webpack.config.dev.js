@@ -21,9 +21,12 @@ module.exports = {
     filename: "static/js/bundle.js",
     publicPath: "/"
   },
-  resolve: { extensions: [".js", ".json"] },
+  resolve: {
+    extensions: [".js", ".json"],
+    modules: ["node_modules"]
+  },
   module: {
-    loaders: [
+    rules: [
       {
         test: /\.js$/,
         include: src,
@@ -33,8 +36,27 @@ module.exports = {
       {
         test: /\.css$/,
         include: [src, nodeModules],
-        loader:
-          "style-loader!css-loader?modules&importLoaders=1&localIdentName=[name]__[local]___[hash:base64:5]!postcss-loader"
+        loader: [
+          {
+            loader: "style-loader"
+          },
+          {
+            loader: "css-loader",
+            options: {
+              modules: true,
+              importLoaders: 1,
+              localIdentName: "[name]__[local]___[hash:base64:5]"
+            }
+          },
+          {
+            loader: "postcss-loader",
+            options: {
+              plugins: function() {
+                return [];
+              }
+            }
+          }
+        ]
       },
       { test: /\.json$/, include: [src, nodeModules], loader: "json-loader" },
       {

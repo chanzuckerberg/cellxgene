@@ -26,7 +26,7 @@ module.exports = {
   },
   resolve: { extensions: [".js", ".json"] },
   module: {
-    loaders: [
+    rules: [
       {
         test: /\.js$/,
         include: src,
