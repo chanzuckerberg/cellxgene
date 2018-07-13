@@ -124,6 +124,7 @@ class ScanpyEngine(CXGDriver):
         expression_1 = self.data.X[cells_idx_1, :]
         expression_2 = self.data.X[cells_idx_2, :]
         diff_exp = stats.ttest_ind(expression_1, expression_2)
+        # TODO break this up into functions
         set1 = np.logical_and(diff_exp.pvalue < pval, diff_exp.statistic > 0)
         set2 = np.logical_and(diff_exp.pvalue < pval, diff_exp.statistic < 0)
         stat1 = diff_exp.statistic[set1]

@@ -43,6 +43,25 @@ class UtilTest(unittest.TestCase):
         for val in n_genes_vals:
             assert 300 <= val <= 400
 
+    def test_metadata(self):
+        metadata = self.data.metadata(df=self.data.data)
+        assert len(metadata) == 2638
+        assert 'louvain' in metadata[0]
+
+    def test_create_graph(self):
+        graph = self.data.create_graph(df=self.data.data)
+        assert graph[0][1] == 0.5545382653143183
+        assert graph[0][2] == 0.6021833809031731
+
+    def test_diffexp(self):
+        diffexp = self.data.diffexp(["AAACATACAACCAC-1", "AACCGATGGTCATG-1"], ["CCGATAGACCTAAG-1", "GGTGGAGAAGTAGA-1"], 0.5, 7)
+        assert diffexp["celllist1"]["topgenes"] == ['EBNA1BP2', 'DIAPH1', 'SLC25A11', 'SNRNP27', 'COMMD8', 'COTL1', 'GTF3A']
+
+    def test_expression(self):
+        expression = self.data.expression(cells=["AAACATACAACCAC-1"])
+        data_exp = self.data.data[["AAACATACAACCAC-1"], :].X
+        for idx in range(len(expression["cells"][0]["e"])):
+            assert expression["cells"][0]["e"][idx] == data_exp[idx]
 
 
 if __name__ == '__main__':
