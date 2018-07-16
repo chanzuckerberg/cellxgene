@@ -29,9 +29,9 @@ more complex API.  In a few cases, elements of that API were incorporated.
 
 */
 
-var PositiveIntervals = require("./positiveIntervals");
-var BitArray = require("./bitArray");
-var Util = require("./util");
+import PositiveIntervals from "./positiveIntervals";
+import BitArray from "./bitArray";
+import {fillRange, lowerBound, lowerBoundIndirect, upperBound, upperBoundIndirect} from "./util";
 
 class TypedCrossfilter {
   constructor(data) {
@@ -118,7 +118,7 @@ class ScalarDimension {
     this.value = array;
 
     // create sort index
-    this.index = Util.fillRange(new Uint32Array(this.crossfilter.data.length));
+    this.index = fillRange(new Uint32Array(this.crossfilter.data.length));
     this.index.sort((a, b) => array[a] - array[b]);
   }
 
@@ -179,14 +179,14 @@ class ScalarDimension {
   // filter by value - exact match
   filterExact(value) {
     const newFilter = [
-      Util.lowerBoundIndirect(
+      lowerBoundIndirect(
         this.value,
         this.index,
         value,
         0,
         this.value.length
       ),
-      Util.upperBoundIndirect(
+      upperBoundIndirect(
         this.value,
         this.index,
         value,
@@ -207,14 +207,14 @@ class ScalarDimension {
     const newFilter = [];
     for (let v = 0, len = values.length; v < len; v++) {
       const intv = [
-        Util.lowerBoundIndirect(
+        lowerBoundIndirect(
           this.value,
           this.index,
           values[v],
           0,
           this.value.length
         ),
-        Util.upperBoundIndirect(
+        upperBoundIndirect(
           this.value,
           this.index,
           values[v],
@@ -233,14 +233,14 @@ class ScalarDimension {
   filterRange(range) {
     const newFilter = [];
     const intv = [
-      Util.lowerBoundIndirect(
+      lowerBoundIndirect(
         this.value,
         this.index,
         range[0],
         0,
         this.value.length
       ),
-      Util.upperBoundIndirect(
+      upperBoundIndirect(
         this.value,
         this.index,
         range[1],
@@ -350,7 +350,7 @@ class EnumDimension extends ScalarDimension {
     const enumLen = this.enumIndex.length;
     for (let i = 0; i < len; i++) {
       const v = value(data[i]);
-      const e = Util.lowerBound(this.enumIndex, v, 0, enumLen);
+      const e = lowerBound(this.enumIndex, v, 0, enumLen);
       array[i] = e;
     }
     return array;
@@ -358,14 +358,14 @@ class EnumDimension extends ScalarDimension {
 
   filterExact(value) {
     return super.filterExact(
-      Util.lowerBound(this.enumIndex, value, 0, this.enumIndex.length)
+      lowerBound(this.enumIndex, value, 0, this.enumIndex.length)
     );
   }
 
   filterEnum(values) {
     return super.filterEnum(
       values.map(v =>
-        Util.lowerBound(this.enumIndex, v, 0, this.enumIndex.length)
+        lowerBound(this.enumIndex, v, 0, this.enumIndex.length)
       )
     );
   }
@@ -373,7 +373,7 @@ class EnumDimension extends ScalarDimension {
   filterRange(range) {
     return super.filterEnum(
       range.map(v =>
-        Util.lowerBound(this.enumIndex, v, 0, this.enumIndex.length)
+        lowerBound(this.enumIndex, v, 0, this.enumIndex.length)
       )
     );
   }
@@ -391,4 +391,4 @@ crossfilter.TypedCrossfilter = TypedCrossfilter;
 crossfilter.ScalarDimension = ScalarDimension;
 crossfilter.EnumDimension = EnumDimension;
 
-module.exports = crossfilter;
+export default crossfilter;

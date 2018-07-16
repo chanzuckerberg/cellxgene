@@ -115,6 +115,8 @@
     "whatwg-fetch": "^2.0.1"
   },
   "jest": {
-    "testMatch": ["**/__tests__/**/?(*.)(spec|test).js?(x)"]
+    "testMatch": [
+      "**/__tests__/**/?(*.)(spec|test).js?(x)"
+    ]
   }
 }
