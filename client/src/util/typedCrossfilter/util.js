@@ -8,7 +8,7 @@
 // fill an array or typedarray with a sequential range of numbers,
 // starting with `start`
 //
-function fillRange(arr, start = 0) {
+export function fillRange(arr, start = 0) {
   for (let i = 0, len = arr.length; i < len; i++) {
     arr[i] = i + start;
   }
@@ -30,7 +30,7 @@ function fillRange(arr, start = 0) {
 // a factory version of lowerBound that takes an accessor (rather than having
 // a special-cased version for lining the indirection).
 //
-function lowerBound(valueArray, value, first, last) {
+export function lowerBound(valueArray, value, first, last) {
   // this is just a binary search
   while (first < last) {
     const middle = (first + last) >>> 1;
@@ -45,7 +45,7 @@ function lowerBound(valueArray, value, first, last) {
 
 // Inlined performance optimization - used to indirect through a sort map.
 //
-function lowerBoundIndirect(valueArray, indexArray, value, first, last) {
+export function lowerBoundIndirect(valueArray, indexArray, value, first, last) {
   // this is just a binary search
   while (first < last) {
     const middle = (first + last) >>> 1;
@@ -69,7 +69,7 @@ function lowerBoundIndirect(valueArray, indexArray, value, first, last) {
 //    C++: upper_bound()
 //    Python: bisect.bisect_right()
 //
-function upperBound(valueArray, value, first, last) {
+export function upperBound(valueArray, value, first, last) {
   // this is just a binary search
   while (first < last) {
     const middle = (first + last) >>> 1;
@@ -84,7 +84,7 @@ function upperBound(valueArray, value, first, last) {
 
 // Inline performance optimization
 //
-function upperBoundIndirect(valueArray, indexArray, value, first, last) {
+export function upperBoundIndirect(valueArray, indexArray, value, first, last) {
   // this is just a binary search
   while (first < last) {
     const middle = (first + last) >>> 1;
@@ -96,11 +96,3 @@ function upperBoundIndirect(valueArray, indexArray, value, first, last) {
   }
   return first;
 }
-
-module.exports = {
-  fillRange,
-  lowerBound,
-  lowerBoundIndirect,
-  upperBound,
-  upperBoundIndirect
-};

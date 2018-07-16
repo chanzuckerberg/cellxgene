@@ -25,6 +25,9 @@
     "sourceMap": false,
     "instrument": false
   },
+  "resolutions": {
+    "eslint-scope": "3.7.1"
+  },
   "dependencies": {
     "canvas-fit": "^1.5.0",
     "d3": "^4.10.0",
@@ -112,6 +115,8 @@
     "whatwg-fetch": "^2.0.1"
   },
   "jest": {
-    "testMatch": ["**/__tests__/**/?(*.)(spec|test).js?(x)"]
+    "testMatch": [
+      "**/__tests__/**/?(*.)(spec|test).js?(x)"
+    ]
   }
 }

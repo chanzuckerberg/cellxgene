@@ -2,7 +2,7 @@
 import _ from "lodash";
 import { parseRGB } from "../util/parseRGB";
 import { createSchemaByDataSniffing } from "../util/schema";
-var crossfilter = require("../util/typedCrossfilter");
+import crossfilter from "../util/typedCrossfilter";
 
 // Deduce the correct crossfilter dimension type from a metadata
 // schema description.
