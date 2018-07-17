@@ -15,7 +15,7 @@ Compress(app)
 CORS(app)
 
 # Config
-CXG_DIR = os.environ.get("CXG_DIRECTORY", default="/Users/charlotteweaver/Documents/Git/cxg-v2/data/")
+CXG_DIR = os.environ.get("CXG_DIRECTORY", default="example-dataset/")
 SECRET_KEY = os.environ.get("CXG_SECRET_KEY", default="SparkleAndShine")
 ENGINE = os.environ.get("CXG_ENGINE", default="scanpy")
 TITLE = os.environ.get("DATASET_TITLE", default="PBMC 3K")
