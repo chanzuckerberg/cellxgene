@@ -22,12 +22,13 @@ A React + Redux web application for exploring large scale single cell RNA sequen
 
 #### To use with virtual env for python (optional, but recommended)
 
-    python3 -m venv <env name>
-    source <env name>/bin/activate
+    ENV_NAME=cellxgene
+    python3 -m venv ${ENV_NAME}
+    source ${ENV_NAME}/bin/activate
 
 #### install server
 
-    python setup.py install
+    python3 setup.py install
 
 #### run (with demo data)
 
