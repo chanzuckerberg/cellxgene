@@ -61,11 +61,11 @@ class ScanpyEngine(CXGDriver):
             else:
                 min_ = value["query"]["min"]
                 max_ = value["query"]["max"]
-                if min_:
+                if min_ is not None:
                     key_idx = np.array((getattr(self.data.obs, key) >= min_).data)
                     cell_idx = np.logical_and(cell_idx, key_idx)
-                if max_:
-                    key_idx = np.array((getattr(self.data.obs, key) <= min_).data)
+                if max_ is not None:
+                    key_idx = np.array((getattr(self.data.obs, key) <= max_).data)
                     cell_idx = np.logical_and(cell_idx, key_idx)
         return self.data[cell_idx, :]
 
@@ -124,6 +124,7 @@ class ScanpyEngine(CXGDriver):
         expression_1 = self.data.X[cells_idx_1, :]
         expression_2 = self.data.X[cells_idx_2, :]
         diff_exp = stats.ttest_ind(expression_1, expression_2)
+        # TODO break this up into functions
         set1 = np.logical_and(diff_exp.pvalue < pval, diff_exp.statistic > 0)
         set2 = np.logical_and(diff_exp.pvalue < pval, diff_exp.statistic < 0)
         stat1 = diff_exp.statistic[set1]
