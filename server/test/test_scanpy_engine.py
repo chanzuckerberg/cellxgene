@@ -48,6 +48,7 @@ class UtilTest(unittest.TestCase):
         self.assertEqual(len(metadata), 2638)
         self.assertIn('louvain', metadata[0])
 
+    @unittest.skip("Umap not producing the same graph on different systems, even with the same seed. Skipping for now")
     def test_create_graph(self):
         graph = self.data.create_graph(df=self.data.data)
         self.assertEqual(graph[0][1], 0.5545382653143183)
