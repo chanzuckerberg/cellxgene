@@ -5,13 +5,9 @@ node_js:
   - "8"
 cache:
   pip: true
-addons:
-  apt:
-    packages:
-    - httpie
 install:
   - set -eo pipefail
-  - pip install flake8
+  - pip install flake8 httpie
   - ./bin/build-client
   - python setup.py install
 script:
