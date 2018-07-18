@@ -107,7 +107,7 @@ class ScanpyEngine(CXGDriver):
         :param df: from filter_cells, dataframe
         :return:  [cellid, x, y]
         """
-        getattr(sc.tl, self.graph_method)(df)
+        getattr(sc.tl, self.graph_method)(df, random_state=123)
         graph = df.obsm["X_{graph_method}".format(graph_method=self.graph_method)]
         normalized_graph = (graph - graph.min()) / (graph.max() - graph.min())
         return np.hstack((df.obs["cell_name"].values.reshape(len(df.obs.index), 1), normalized_graph)).tolist()
