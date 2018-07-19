@@ -1,4 +1,5 @@
 import os
+import argparse
 
 from flask import Flask
 from flask_compress import Compress
@@ -35,9 +36,7 @@ app.config["PROFILE"] = True
 
 # Application Data
 data = None
-if app.config["ENGINE"] == "scanpy":
-    from .scanpy_engine.scanpy_engine import ScanpyEngine
-    data = ScanpyEngine(app.config["DATA"], schema="data_schema.json")
+
 
 # A list of swagger document objects
 docs = []
@@ -53,5 +52,28 @@ app.register_blueprint(
 app.add_url_rule("/", endpoint="index")
 
 
-def main():
+def run(args):
+    global data
+    app.config.update(
+        ENGINE=args.engine,
+        DATA=args.data_directory
+    )
+    if app.config["ENGINE"] == "scanpy":
+        from .scanpy_engine.scanpy_engine import ScanpyEngine
+        data = ScanpyEngine(app.config["DATA"], schema="data_schema.json")
+
     app.run(host="0.0.0.0", debug=True, port=5005)
+
+
+def main():
+    parser = argparse.ArgumentParser(description="AAAAA")
+    subparsers = parser.add_subparsers(dest="cellxgene_command")
+    run_subparser = subparsers.add_parser('run', help="run cellxgene")
+    run_subparser.add_argument('engine', metavar='engine', help='Format that the backend uses for data')
+    run_subparser.add_argument('data_directory', metavar='dir',
+                               help='Directory containing data and schema')
+    run_subparser.set_defaults(func=run)
+    args = parser.parse_args()
+    args.func(args)
+
+    # app.run(host="0.0.0.0", debug=True, port=5005)
