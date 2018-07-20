@@ -16,23 +16,11 @@ Compress(app)
 CORS(app)
 
 # Config
-CXG_DIR = os.environ.get("CXG_DIRECTORY", default="example-dataset/")
 SECRET_KEY = os.environ.get("CXG_SECRET_KEY", default="SparkleAndShine")
-ENGINE = os.environ.get("CXG_ENGINE", default="scanpy")
-TITLE = os.environ.get("DATASET_TITLE", default="PBMC 3K")
-# TODO remove the 2 when this is prod
-CXG_API_BASE = os.environ.get("CXG_API_BASE2", default="http://0.0.0.0:5005/api/")
 
 app.config.update(
     SECRET_KEY=SECRET_KEY,
-    CXG_API_BASE=CXG_API_BASE,
-    ENGINE=ENGINE,
-    DATA=CXG_DIR,
-    DATASET_TITLE=TITLE
 )
-
-app.config["PROFILE"] = True
-# app.wsgi_app = ProfilerMiddleware(app.wsgi_app, restrictions=[15])
 
 # Application Data
 data = None
@@ -54,26 +42,31 @@ app.add_url_rule("/", endpoint="index")
 
 def run(args):
     global data
+    title = args.title
+    if not title:
+        title = os.path.basename(os.path.normpath(args.data_directory))
+    api_base = f"http://0.0.0.0:{args.port}/api/"
     app.config.update(
-        ENGINE=args.engine,
-        DATA=args.data_directory
+        DATASET_TITLE=title,
+        CXG_API_BASE=api_base
     )
-    if app.config["ENGINE"] == "scanpy":
+    if args.engine == "scanpy":
         from .scanpy_engine.scanpy_engine import ScanpyEngine
-        data = ScanpyEngine(app.config["DATA"], schema="data_schema.json")
-
-    app.run(host="0.0.0.0", debug=True, port=5005)
+        data = ScanpyEngine(args.data_directory, schema="data_schema.json")
+    app.run(host="0.0.0.0", debug=True, port=args.port)
 
 
 def main():
-    parser = argparse.ArgumentParser(description="AAAAA")
+    parser = argparse.ArgumentParser(description="Cellxgene is a tool for exploring single cell expression.")
     subparsers = parser.add_subparsers(dest="cellxgene_command")
-    run_subparser = subparsers.add_parser('run', help="run cellxgene")
-    run_subparser.add_argument('engine', metavar='engine', help='Format that the backend uses for data')
-    run_subparser.add_argument('data_directory', metavar='dir',
-                               help='Directory containing data and schema')
+    run_subparser = subparsers.add_parser("run", help="run cellxgene")
+    run_subparser.add_argument("--title", "-t", help="Title to display (default = data directory name")
+    run_subparser.add_argument("--port", help="Port to run server on.", type=int, default=5005)
+    run_subparser.add_argument("engine", help="The underlying structure of the data")
+    run_subparser.add_argument("data_directory", metavar="dir", help="Directory containing data and schema")
     run_subparser.set_defaults(func=run)
     args = parser.parse_args()
+
     args.func(args)
 
     # app.run(host="0.0.0.0", debug=True, port=5005)
