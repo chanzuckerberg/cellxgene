@@ -34,7 +34,7 @@ class LeftSideBar extends React.Component {
             width: "100%"
           }}
         >
-          CELLxGENE {globals.datasetTitle}{" "}
+          cellxgene {globals.datasetTitle}{" "}
         </p>
         <div style={{ padding: 10 }}>
           <button
