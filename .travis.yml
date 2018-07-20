@@ -14,6 +14,6 @@ script:
   - set -eo pipefail
   - flake8 server/app/
   - pytest -s server/test/test_filter.py server/test/test_scanpy_engine.py
-  - cellxgene run scanpy example-dataset/ &
+  - cellxgene scanpy example-dataset/ &
   - for i in {1..90}; do if http :5005/api/v0.1/initialize > /dev/null; then break; else echo "Waiting for server..."; sleep 1; fi; done
   - pytest server/test/test_api.py
