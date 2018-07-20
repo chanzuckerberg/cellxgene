@@ -30,9 +30,15 @@ A React + Redux web application for exploring large scale single cell RNA sequen
 
     python3 setup.py install
 
+#### commandline help
+
+    cellxgene --help
+    # For help with the scanpy engine
+    cellxgene scanpy --help
+
 #### run (with demo data)
 
-    cellxgene
+    cellxgene --title PBMC3K scanpy example-dataset/
    
    
 *Thanks to Alex Wolf his help with test data*
