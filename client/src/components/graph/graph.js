@@ -117,6 +117,12 @@ class Graph extends React.Component {
       reglRender
     });
   }
+  // static getDerivedStateFromProps(props, state) {
+  //   console.log("getDerivedStateFromProps in graph.js");
+  //   console.log("props", props);
+  //   console.log("state", state);
+  //   // console.log("this.props", this.props);
+  // }
   componentWillReceiveProps(nextProps) {
     if (this.state.regl && nextProps.crossfilter) {
       /* update the regl state */
@@ -204,8 +210,7 @@ class Graph extends React.Component {
       nextProps.responsive.width !== this.props.responsive.width
     ) {
       /* clear out whatever was on the div, even if nothing, but usually the brushes etc */
-      d3
-        .select("#graphAttachPoint")
+      d3.select("#graphAttachPoint")
         .selectAll("svg")
         .remove();
       const { svg, brush, brushContainer } = setupSVGandBrushElements(
@@ -251,7 +256,7 @@ class Graph extends React.Component {
       // transform screen coordinates -> cell coordinates
       const invert = pin => {
         const x =
-          2 * pin[0] / (this.props.responsive.height - this.graphPaddingTop) -
+          (2 * pin[0]) / (this.props.responsive.height - this.graphPaddingTop) -
           1;
         const y =
           2 *
