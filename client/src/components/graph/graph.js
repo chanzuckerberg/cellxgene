@@ -117,16 +117,19 @@ class Graph extends React.Component {
       reglRender
     });
   }
-  // static getDerivedStateFromProps(props, state) {
-  //   console.log("getDerivedStateFromProps in graph.js");
-  //   console.log("props", props);
-  //   console.log("state", state);
-  //   // console.log("this.props", this.props);
-  // }
-  componentWillReceiveProps(nextProps) {
-    if (this.state.regl && nextProps.crossfilter) {
+  componentDidUpdate(prevProps, prevState) {
+    if (
+      this.state.reglRender &&
+      this.reglRenderState === "rendering" &&
+      this.state.mode !== "zoom"
+    ) {
+      this.state.reglRender.cancel();
+      this.reglRenderState = "paused";
+    }
+
+    if (this.state.regl && this.props.crossfilter) {
       /* update the regl state */
-      const crossfilter = nextProps.crossfilter.cells;
+      const crossfilter = this.props.crossfilter.cells;
       const cells = crossfilter.all();
       const cellCount = cells.length;
 
@@ -135,7 +138,7 @@ class Graph extends React.Component {
       //
       if (
         !this.renderCache.positions ||
-        this.props.crossfilter.cells != nextProps.crossfilter.cells
+        this.props.crossfilter.cells != prevProps.crossfilter.cells
       ) {
         if (!this.renderCache.positions)
           this.renderCache.positions = new Float32Array(2 * cellCount);
@@ -167,7 +170,7 @@ class Graph extends React.Component {
       // we could add some sort of color-specific indicator to the app state.
       if (
         !this.renderCache.colors ||
-        this.props.cellsMetadata != nextProps.cellsMetadata
+        this.props.cellsMetadata != prevProps.cellsMetadata
       ) {
         if (!this.renderCache.colors)
           this.renderCache.colors = new Float32Array(3 * cellCount);
@@ -184,7 +187,7 @@ class Graph extends React.Component {
       //
       if (
         !this.renderCache.sizes ||
-        this.props.crossfilter.cells != nextProps.crossfilter.cells
+        this.props.crossfilter.cells != prevProps.crossfilter.cells
       ) {
         this.renderCache.sizes = new Float32Array(cellCount);
       }
@@ -206,8 +209,8 @@ class Graph extends React.Component {
 
     if (
       /* invisibly handles the initial null vs integer case as well as resize events */
-      nextProps.responsive.height !== this.props.responsive.height ||
-      nextProps.responsive.width !== this.props.responsive.width
+      prevProps.responsive.height !== this.props.responsive.height ||
+      prevProps.responsive.width !== this.props.responsive.width
     ) {
       /* clear out whatever was on the div, even if nothing, but usually the brushes etc */
       d3.select("#graphAttachPoint")
@@ -216,20 +219,10 @@ class Graph extends React.Component {
       const { svg, brush, brushContainer } = setupSVGandBrushElements(
         this.handleBrushSelectAction.bind(this),
         this.handleBrushDeselectAction.bind(this),
-        nextProps.responsive,
+        this.props.responsive,
         this.graphPaddingTop
       );
       this.setState({ svg, brush, brushContainer });
-    }
-  }
-  componentDidUpdate() {
-    if (
-      this.state.reglRender &&
-      this.reglRenderState === "rendering" &&
-      this.state.mode !== "zoom"
-    ) {
-      this.state.reglRender.cancel();
-      this.reglRenderState = "paused";
     }
   }
   handleBrushSelectAction() {
