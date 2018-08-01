@@ -2,6 +2,7 @@ import argparse
 import os
 
 from flask import Flask
+from flask.ext.cache import Cache
 from flask_compress import Compress
 from flask_cors import CORS
 from flask_restful_swagger_2 import get_swagger_blueprint
@@ -12,6 +13,7 @@ from .rest_api.rest import get_api_resources
 REACTIVE_LIMIT = 1_000_000
 
 app = Flask(__name__)
+cache = Cache(app, config={"CACHE_TYPE": "simple"})
 Compress(app)
 CORS(app)
 

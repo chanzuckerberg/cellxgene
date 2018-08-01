@@ -6,6 +6,7 @@ click==6.7
 cycler==0.10.0
 decorator==4.3.0
 Flask==0.12.4
+Flask-Cache==0.13.1
 Flask-Compress==1.4.0
 Flask-Cors==3.0.6
 Flask-RESTful==0.3.6
