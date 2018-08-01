@@ -1,0 +1,10 @@
+#!/bin/bash
+
+npm install --prefix client/ client
+npm run  --prefix client build
+mkdir -p server/app/web/static/img
+cp client/build/index.html server/app/web/templates/
+cp -r client/build/static server/app/web/
+
+cp client/build/favicon.png server/app/web/static/img
+cp client/build/service-worker.js server/app/web/static/js/
