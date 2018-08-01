@@ -129,10 +129,7 @@ class BitArray {
 
     for (let w = 0; w < width; w++) {
       const bitmask = this.bitmask[w];
-
-      // Wha??  XXXX
-      // if (!bitmask || bitarray[w * length + index] !== bitmask) return false;
-      if (bitmask && bitarray[w * length + index] !== bitmask) return false;
+      if (!bitmask || bitarray[w * length + index] !== bitmask) return false;
     }
     return true;
   }

@@ -149,35 +149,49 @@ class ScalarDimension {
   _updateFilters(newFilter) {
     newFilter = PositiveIntervals.canonicalize(newFilter);
 
+    // XXX removed optimization for now
     // special case optimization - select all/none can bypass
     // more complex work and just clobber everything.
     //
-    if (newFilter.length === 0) {
-      this.crossfilter.selection.deselectAll(this._id);
-    } else if (
-      newFilter.length === 1 &&
-      newFilter[0][0] === 0 &&
-      newFilter[0][1] == this.index.length
-    ) {
-      this.crossfilter.selection.selectAll(this._id);
-    } else {
-      const adds = PositiveIntervals.difference(newFilter, this.currentFilter);
-      const dels = PositiveIntervals.difference(this.currentFilter, newFilter);
-      dels.forEach(interval =>
-        this.crossfilter.selection.deselectIndirectFromRange(
-          this._id,
-          this.index,
-          interval
-        )
-      );
-      adds.forEach(interval =>
-        this.crossfilter.selection.selectIndirectFromRange(
-          this._id,
-          this.index,
-          interval
-        )
-      );
-    }
+    // if (newFilter.length === 0) {
+    //   this.crossfilter.selection.deselectAll(this._id);
+    // } else if (
+    //   newFilter.length === 1 &&
+    //   newFilter[0][0] === 0 &&
+    //   newFilter[0][1] == this.index.length
+    // ) {
+    //   this.crossfilter.selection.selectAll(this._id);
+    // } else {
+
+    const adds = PositiveIntervals.difference(newFilter, this.currentFilter);
+    const dels = PositiveIntervals.difference(this.currentFilter, newFilter);
+
+    this.crossfilter.filters.forEach(f =>
+      f.dim.groups.forEach(grp => grp._updateReduceDel(this, dels))
+    );
+
+    dels.forEach(interval =>
+      this.crossfilter.selection.deselectIndirectFromRange(
+        this._id,
+        this.index,
+        interval
+      )
+    );
+
+    adds.forEach(interval =>
+      this.crossfilter.selection.selectIndirectFromRange(
+        this._id,
+        this.index,
+        interval
+      )
+    );
+
+    this.crossfilter.filters.forEach(f =>
+      f.dim.groups.forEach(grp => grp._updateReduceAdd(this, adds))
+    );
+
+    // XXX removed optimization
+    // }
 
     this.currentFilter = newFilter;
   }
@@ -393,13 +407,19 @@ class EnumDimension extends ScalarDimension {
       )
     );
   }
+
+  group(groupValue) {
+    const grp = new EnumGroup(groupValue, this.value.constructor, this);
+    this.groups.push(grp);
+    return grp;
+  }
 }
 
 // Groups!  Map/reduce
 //
 // XXX: potential optimizations not implemented
 //  - groupValue may be identity - could skip creating separate group map
-//  - only works for scalars so far
+//  - only works for scalars so far (no enum)
 //
 class ScalarGroup {
   constructor(groupValue, groupValueType, dimension) {
@@ -433,10 +453,60 @@ class ScalarGroup {
     this._reduce();
   }
 
-  // Update the group reduction incrementally
-  _updateReduce(adds, dels) {
-    // XXX
-    throw new Error("unimplemented");
+  // Update the group reduction incrementally.  Called when *any* dimension filter
+  // changes.  Guaranteed to be called AFTER the crossfilter is updated.
+  //
+  // Arguments:
+  //  * dim: the dimension that is changing
+  //  * intv: interval list of newly selected values on `dim` (adds)
+  //
+  _updateReduceAdd(dim, intv) {
+    // console.log("_updateReduceAdd", dim, intv);
+
+    // ignore updates to self, as we don't reduce inclusive of our filter
+    if (dim === this.dimension || intv.length === 0) return;
+
+    // Each item in the range was just added to `dim`.  It was NOT previously
+    // selected - reduceAdd if it is now selected.
+    const selection = this.dimension.crossfilter.selection;
+    const data = this.dimension.crossfilter.data;
+    intv.forEach(rng => {
+      for (let r = rng[0]; r < rng[1]; r++) {
+        const i = dim.index[r];
+        if (selection.isSelectedIgnoringDim(i, this.dimension.id())) {
+          const group = this.groups[this.groupIndex[i]];
+          group.value = this.reduceAdd(group.value, data[i]);
+        }
+      }
+    });
+  }
+
+  // Update the group reduction incrementally.  Called when *any* dimension filter
+  // changes.   Guaranteed to be called BEFORE the crossfilter is updated.
+  //
+  // Arguments:
+  //  * dim: the dimension that is changing
+  //  * intv: interval list of previously selected values on `dim` (dels)
+  //
+  _updateReduceDel(dim, intv) {
+    // console.log("_updateReduceDel", dim, intv);
+
+    // ignore updates to self, as we don't reduce inclusive of our filter
+    if (dim === this.dimension || intv.length === 0) return;
+
+    // Each item in the range will be remved from `dim`.  reduceRemove if it
+    // is currently selected.
+    const selection = this.dimension.crossfilter.selection;
+    const data = this.dimension.crossfilter.data;
+    intv.forEach(rng => {
+      for (let r = rng[0]; r < rng[1]; r++) {
+        const i = dim.index[r];
+        if (selection.isSelectedIgnoringDim(i, this.dimension.id())) {
+          const group = this.groups[this.groupIndex[i]];
+          group.value = this.reduceRemove(group.value, data[i]);
+        }
+      }
+    });
   }
 
   // Reduce the entire data set, creating both the group index and the
@@ -457,7 +527,6 @@ class ScalarGroup {
 
     // Create groupIndex - index map between data record index and group index
     for (let i = 0, len = this.mapValue.length; i < len; i++) {
-      // this.groupIndex[index[i]] = groupIndexByName[this.mapValue[i]];
       this.groupIndex[i] = groupIndexByName[this.mapValue[i]];
     }
 
@@ -505,6 +574,24 @@ class ScalarGroup {
 
   all() {
     const res = [...this.groups];
+    res.sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
+    return res;
+  }
+}
+
+class EnumGroup extends ScalarGroup {
+  constructor(groupValue, groupValueType, dimension) {
+    super(groupValue, groupValueType, dimension);
+  }
+
+  all() {
+    const res = [];
+    this.groups.forEach(e =>
+      res.push({
+        key: this.dimension.enumIndex[e.key],
+        value: e.value
+      })
+    );
     res.sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
     return res;
   }
