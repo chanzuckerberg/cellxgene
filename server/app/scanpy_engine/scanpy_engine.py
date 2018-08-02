@@ -4,9 +4,9 @@ import numpy as np
 import scanpy.api as sc
 from scipy import stats
 
-from ..util.schema_parse import parse_schema
-from ..driver.driver import CXGDriver
 from server.app.app import cache
+from server.app.driver.driver import CXGDriver
+from server.app.util.schema_parse import parse_schema
 
 
 class ScanpyEngine(CXGDriver):

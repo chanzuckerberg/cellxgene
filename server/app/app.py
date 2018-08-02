@@ -7,8 +7,8 @@ from flask_compress import Compress
 from flask_cors import CORS
 from flask_restful_swagger_2 import get_swagger_blueprint
 
-from .web import webapp
 from .rest_api.rest import get_api_resources
+from .web import webapp
 
 REACTIVE_LIMIT = 1_000_000
 
