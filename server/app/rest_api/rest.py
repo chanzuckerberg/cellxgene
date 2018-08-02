@@ -3,8 +3,8 @@ from flask import (
 )
 from flask_restful_swagger_2 import Api, swagger, Resource
 
-from ..util.utils import make_payload
-from ..util.filter import parse_filter
+from server.app.util.utils import make_payload
+from server.app.util.filter import parse_filter
 
 
 class InitializeAPI(Resource):
