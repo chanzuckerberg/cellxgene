@@ -88,13 +88,13 @@ class InitializeAPI(Resource):
         }
     })
     def get(self):
-        from server.app.app import data, REACTIVE_LIMIT
+        from server.app.app import app, REACTIVE_LIMIT
         return make_payload({
-            "schema": data.schema,
-            "cellcount": data.cell_count,
+            "schema": app.data.schema,
+            "cellcount": app.data.cell_count,
             "reactivelimit": REACTIVE_LIMIT,
-            "genes": data.genes(),
-            "ranges": data.metadata_ranges(),
+            "genes": app.data.genes(),
+            "ranges": app.data.metadata_ranges(),
 
         })
 
@@ -191,7 +191,7 @@ class CellsAPI(Resource):
         }
     })
     def get(self):
-        from server.app.app import data
+        from server.app.app import app
         payload = {
             "metadata": [],
             "cellcount": 0,
@@ -199,12 +199,12 @@ class CellsAPI(Resource):
             "ranges": {},
         }
         # get query params
-        cells_filter = parse_filter(request.args, data.schema)
-        filtered_data = data.filter_cells(cells_filter)
-        payload["metadata"] = data.metadata(filtered_data)
-        payload["ranges"] = data.metadata_ranges(filtered_data)
-        payload["graph"] = data.create_graph(filtered_data)
-        payload["cellcount"] = data.cell_count
+        cells_filter = parse_filter(request.args, app.data.schema)
+        filtered_data = app.data.filter_cells(cells_filter)
+        payload["metadata"] = app.data.metadata(filtered_data)
+        payload["ranges"] = app.data.metadata_ranges(filtered_data)
+        payload["graph"] = app.data.create_graph(filtered_data)
+        payload["cellcount"] = app.data.cell_count
         return make_payload(payload)
 
 
@@ -251,8 +251,8 @@ class ExpressionAPI(Resource):
         }
     })
     def get(self):
-        from server.app.app import data
-        expression_data = data.expression()
+        from server.app.app import app
+        expression_data = app.data.expression()
         return make_payload(expression_data)
 
     @swagger.doc({
@@ -309,14 +309,14 @@ class ExpressionAPI(Resource):
         }
     })
     def post(self):
-        from server.app.app import data
+        from server.app.app import app
         args = request.get_json()
         cell_list = args.get("celllist", [])
         gene_list = args.get("genelist", [])
         if not cell_list and not gene_list:
             return make_payload([], "must include celllist and/or genelist parameter", 400)
 
-        expression_data = data.expression(cell_list, gene_list)
+        expression_data = app.data.expression(cell_list, gene_list)
 
         if cell_list and len(expression_data["cells"]) < len(cell_list):
             return make_payload([], "Some cell ids not available", 400)
@@ -415,7 +415,7 @@ class DifferentialExpressionAPI(Resource):
         }
     })
     def post(self):
-        from server.app.app import data
+        from server.app.app import app
         args = request.get_json()
         cell_list_1 = args.get("celllist1", [])
         cell_list_2 = args.get("celllist2", [])
@@ -425,7 +425,7 @@ class DifferentialExpressionAPI(Resource):
             return make_payload([],
                                 "must include celllist1 and celllist2 parameters",
                                 400)
-        data = data.diffexp(cell_list_1, cell_list_2, pval, num_genes)
+        data = app.data.diffexp(cell_list_1, cell_list_2, pval, num_genes)
         return make_payload(data)
 
 

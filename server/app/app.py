@@ -43,7 +43,6 @@ app.add_url_rule("/", endpoint="index")
 
 
 def run_scanpy(args):
-    global data
     title = args.title
     if not title:
         title = os.path.basename(os.path.normpath(args.data_directory))
@@ -54,7 +53,7 @@ def run_scanpy(args):
     )
 
     from .scanpy_engine.scanpy_engine import ScanpyEngine
-    data = ScanpyEngine(args.data_directory, schema="data_schema.json")
+    app.data = ScanpyEngine(args.data_directory, schema="data_schema.json")
     app.run(host="0.0.0.0", debug=True, port=args.port)
 
 
