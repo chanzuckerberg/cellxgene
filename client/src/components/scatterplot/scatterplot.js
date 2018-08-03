@@ -123,21 +123,6 @@ class Scatterplot extends React.Component {
       colorBuffer
     });
   }
-  componentWillReceiveProps(nextProps) {
-    if (
-      nextProps.expression &&
-      nextProps.expression.data &&
-      nextProps.scatterplotXXaccessor &&
-      nextProps.scatterplotYYaccessor
-    ) {
-      const scales = this.setupScales(
-        nextProps.expression,
-        nextProps.scatterplotXXaccessor,
-        nextProps.scatterplotYYaccessor
-      );
-      this.setState(scales);
-    }
-  }
   componentDidUpdate(prevProps) {
     if (
       this.state.svg &&
@@ -212,6 +197,22 @@ class Scatterplot extends React.Component {
       this.state.colorBuffer({ data: colors, dimension: 3 });
       this.state.sizeBuffer({ data: sizes, dimension: 1 });
       this.count = cellCount;
+    }
+
+    if (
+      this.props.expression &&
+      this.props.expression.data &&
+      this.props.scatterplotXXaccessor &&
+      this.props.scatterplotYYaccessor &&
+      (this.props.scatterplotXXaccessor !== prevProps.scatterplotXXaccessor || // was CLU now FTH1 etc
+        this.props.scatterplotYYaccessor !== prevProps.scatterplotYYaccessor)
+    ) {
+      const scales = this.setupScales(
+        this.props.expression,
+        this.props.scatterplotXXaccessor,
+        this.props.scatterplotYYaccessor
+      );
+      this.setState(scales);
     }
   }
   setupScales(expression, scatterplotXXaccessor, scatterplotYYaccessor) {

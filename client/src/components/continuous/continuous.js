@@ -51,10 +51,6 @@ class Continuous extends React.Component {
       dimensions: null
     };
   }
-  componentDidMount() {}
-  componentWillReceiveProps(nextProps) {}
-
-  componentDidMount() {}
   handleBrushAction(selection) {
     this.props.dispatch({
       type: "continuous selection using parallel coords brushing",
