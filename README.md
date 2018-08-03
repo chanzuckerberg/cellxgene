@@ -45,10 +45,16 @@ Started in the context of the [Human Cell Atlas Consortium](https://www.humancel
 
 **Run (with demo data)**  
   
-    cellxgene   
+    cellxgene --title PBMC3K scanpy example-dataset/
 *In google chrome, navigate to the viewer via the web address printed in your console.  
 E.g.,* `Running on http://0.0.0.0:5005/`
 
+**Help**
+  
+    cellxgene --help
+_For help with the scanpy engine_  
+  
+    cellxgene scanpy --help
 
 ## Contributing
 We warmly welcome contributions from the community. Please submit any bug reports and feature requests through github issues. Please submit any direct contributions via a branch + pull request.
