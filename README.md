@@ -4,7 +4,7 @@
 
 <img align="right" width="350" height="218" src="./example-dataset/cellxgene-demo.gif" pad="50px">
 cellxgene is an open-source experiment in how to bring powerful tools from modern web development to visualize and explore large single-cell transcriptomics datasets.
-Started in the context of the [Human Cell Atlas Consortium](https://www.humancellatlas.org/), cellxgene hopes to both enable scientists to explore their data and to equip developers with scalable and reusable patterns and frameworks for visualizing large scientific datasets.
+Started in the context of the [Human Cell Atlas Consortium](https://www.humancellatlas.org), cellxgene hopes to both enable scientists to explore their data and to equip developers with scalable, reusable patterns and frameworks for visualizing large scientific datasets.
 
 ## Features
 
@@ -15,7 +15,7 @@ Started in the context of the [Human Cell Atlas Consortium](https://www.humancel
 * **Flexible API:** the cellxgene client-server model is designed to support a range of existing analysis packages for backend computational tasks (eg scanpy), integrated with client-side visualization via a [REST API](https://restfulapi.net/).
 
 
-## Installation
+## Getting Started
 
 **Requirements**
 - OS: OSX, Windows, Linux
