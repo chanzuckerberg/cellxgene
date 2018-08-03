@@ -23,6 +23,13 @@ class ScanpyEngine(CXGDriver):
     def _set_cell_names(self):
         self.data.obs["cell_name"] = list(self.data.obs.index)
 
+    @classmethod
+    def add_to_parser(cls, subparsers, invocation_function):
+        scanpy_group = subparsers.add_parser("scanpy", help="run cellxgene using the scanpy engine")
+        scanpy_group.add_argument("data_directory", metavar="dir", help="Directory containing data and schema file")
+        scanpy_group.set_defaults(func=invocation_function)
+        return scanpy_group
+
     @staticmethod
     def _load_data(data):
         return sc.read(os.path.join(data, "data.h5ad"))

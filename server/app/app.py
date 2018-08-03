@@ -63,8 +63,11 @@ def main():
                                               "of the directory from the data_directory arg")
     parser.add_argument("--port", help="Port to run server on.", type=int, default=5005)
     subparsers = parser.add_subparsers(dest="cellxgene_command")
-    scanpy_subparser = subparsers.add_parser("scanpy", help="run cellxgene using the scanpy engine")
-    scanpy_subparser.add_argument("data_directory", metavar="dir", help="Directory containing data and schema file")
-    scanpy_subparser.set_defaults(func=run_scanpy)
+    try:
+        from .scanpy_engine.scanpy_engine import ScanpyEngine
+        ScanpyEngine.add_to_parser(subparsers, run_scanpy)
+    except ImportError:
+        print("Scanpy engine not available")
+
     args = parser.parse_args()
     args.func(args)
