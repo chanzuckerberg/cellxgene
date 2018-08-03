@@ -49,9 +49,6 @@ class HistogramBrush extends React.Component {
       brush: null
     };
   }
-  componentDidMount() {}
-  componentDidUpdate() {}
-
   calcHistogramCache(nextProps) {
     // recalculate expensive stuff
     const allValuesForContinuousFieldAsArray = _.map(
@@ -79,14 +76,6 @@ class HistogramBrush extends React.Component {
 
   componentWillMount() {
     this.calcHistogramCache(this.props);
-  }
-  componentWillReceiveProps(nextProps) {
-    if (
-      this.props.metadataField !== nextProps.metadataField ||
-      !this.histogramCache.x
-    ) {
-      this.calcHistogramCache(nextProps);
-    }
   }
 
   onBrush(selection, x) {
