@@ -11,25 +11,13 @@ import FaPaintBrush from "react-icons/lib/fa/paint-brush";
 import * as globals from "../../globals";
 
 @connect(state => {
-  const ranges =
-    state.cells.cells && state.cells.cells.data.ranges
-      ? state.cells.cells.data.ranges
-      : null;
-  const metadata =
-    state.cells.cells && state.cells.cells.data.metadata
-      ? state.cells.cells.data.metadata
-      : null;
-
-  const initializeRanges =
-    state.initialize.data && state.initialize.data.data.ranges
-      ? state.initialize.data.data.ranges
-      : null;
+  const initializeRanges = _.get("state.initialize.data.data.ranges", null);
 
   return {
+    initializeRanges,
     colorAccessor: state.controls.colorAccessor,
     colorScale: state.controls.colorScale,
-    cellsMetadata: state.controls.cellsMetadata,
-    initializeRanges
+    cellsMetadata: state.controls.cellsMetadata
   };
 })
 class HistogramBrush extends React.Component {
