@@ -129,4 +129,4 @@ class PositiveIntervals {
   }
 }
 
-export default PositiveIntervals;
+module.exports = PositiveIntervals;
