@@ -4,7 +4,7 @@ import _ from "lodash";
 import Helmet from "react-helmet";
 import Container from "./framework/container";
 import { connect } from "react-redux";
-import PulseLoader from "halogen/PulseLoader";
+// import PulseLoader from "halogen/PulseLoader";
 
 import LeftSideBar from "./leftsidebar";
 import Parallel from "./continuous/parallel";
@@ -69,7 +69,7 @@ class App extends React.Component {
           <div
             style={{ position: "fixed", left: window.innerWidth / 2, top: 150 }}
           >
-            <PulseLoader color="rgb(0,0,0)" size="10px" margin="4px" />
+            {/*<PulseLoader color="rgb(0,0,0)" size="10px" margin="4px" />*/}
             <span
               style={{ fontFamily: globals.accentFont, fontStyle: "italic" }}
             >

@@ -1,43 +1,32 @@
+import argparse
 import os
 
 from flask import Flask
+from flask_caching import Cache
 from flask_compress import Compress
 from flask_cors import CORS
 from flask_restful_swagger_2 import get_swagger_blueprint
 
-from .web import webapp
 from .rest_api.rest import get_api_resources
+from .web import webapp
 
 REACTIVE_LIMIT = 1_000_000
 
 app = Flask(__name__)
+cache = Cache(app, config={"CACHE_TYPE": "simple", "CACHE_DEFAULT_TIMEOUT": 860000})
 Compress(app)
 CORS(app)
 
 # Config
-CXG_DIR = os.environ.get("CXG_DIRECTORY", default="example-dataset/")
 SECRET_KEY = os.environ.get("CXG_SECRET_KEY", default="SparkleAndShine")
-ENGINE = os.environ.get("CXG_ENGINE", default="scanpy")
-TITLE = os.environ.get("DATASET_TITLE", default="PBMC 3K")
-# TODO remove the 2 when this is prod
-CXG_API_BASE = os.environ.get("CXG_API_BASE2", default="http://0.0.0.0:5005/api/")
 
 app.config.update(
     SECRET_KEY=SECRET_KEY,
-    CXG_API_BASE=CXG_API_BASE,
-    ENGINE=ENGINE,
-    DATA=CXG_DIR,
-    DATASET_TITLE=TITLE
 )
-
-app.config["PROFILE"] = True
-# app.wsgi_app = ProfilerMiddleware(app.wsgi_app, restrictions=[15])
 
 # Application Data
 data = None
-if app.config["ENGINE"] == "scanpy":
-    from .scanpy_engine.scanpy_engine import ScanpyEngine
-    data = ScanpyEngine(app.config["DATA"], schema="data_schema.json")
+
 
 # A list of swagger document objects
 docs = []
@@ -53,5 +42,29 @@ app.register_blueprint(
 app.add_url_rule("/", endpoint="index")
 
 
+def run_scanpy(args):
+    title = args.title
+    if not title:
+        title = os.path.basename(os.path.normpath(args.data_directory))
+    api_base = f"http://0.0.0.0:{args.port}/api/"
+    app.config.update(
+        DATASET_TITLE=title,
+        CXG_API_BASE=api_base
+    )
+
+    from .scanpy_engine.scanpy_engine import ScanpyEngine
+    app.data = ScanpyEngine(args.data_directory, schema="data_schema.json")
+    app.run(host="0.0.0.0", debug=True, port=args.port)
+
+
 def main():
-    app.run(host="0.0.0.0", debug=True, port=5005)
+    parser = argparse.ArgumentParser(description="Cellxgene is a tool for exploring single cell expression.")
+    parser.add_argument("--title", "-t", help="Title to display -- if this is omitted the title will be the name "
+                                              "of the directory from the data_directory arg")
+    parser.add_argument("--port", help="Port to run server on.", type=int, default=5005)
+    subparsers = parser.add_subparsers(dest="cellxgene_command")
+    scanpy_subparser = subparsers.add_parser("scanpy", help="run cellxgene using the scanpy engine")
+    scanpy_subparser.add_argument("data_directory", metavar="dir", help="Directory containing data and schema file")
+    scanpy_subparser.set_defaults(func=run_scanpy)
+    args = parser.parse_args()
+    args.func(args)

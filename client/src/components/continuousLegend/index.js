@@ -102,27 +102,26 @@ class ContinuousLegend extends React.Component {
     super(props);
     this.state = {};
   }
-  componentWillReceiveProps(nextProps) {
+  componentDidUpdate(prevProps) {
     if (
-      nextProps.colorAccessor !== this.props.colorAccessor ||
-      nextProps.responsive.height !== this.props.responsive.height ||
-      nextProps.responsive.width !== this.props.responsive.width
+      prevProps.colorAccessor !== this.props.colorAccessor ||
+      prevProps.responsive.height !== this.props.responsive.height ||
+      prevProps.responsive.width !== this.props.responsive.width
     ) {
       /* always remove it, if it's not continuous we don't put it back. */
-      d3
-        .select("#continuous_legend")
+      d3.select("#continuous_legend")
         .selectAll("*")
         .remove();
     }
 
-    if (nextProps.colorAccessor && nextProps.colorScale) {
+    if (this.props.colorAccessor && this.props.colorScale) {
       /* fragile! continuous range is 0 to 1, not [#fa4b2c, ...], make this a flag? */
-      if (nextProps.colorScale.range()[0][0] !== "#") {
+      if (this.props.colorScale.range()[0][0] !== "#") {
         continuous(
           "#continuous_legend",
           d3
             .scaleSequential(d3.interpolateViridis)
-            .domain(nextProps.colorScale.domain())
+            .domain(this.props.colorScale.domain())
         );
       }
     }

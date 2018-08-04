@@ -20,18 +20,9 @@ import { scaleLinear } from "../../util/scaleLinear";
 import { margin, width, height, createDimensions } from "./util";
 
 @connect(state => {
-  const ranges =
-    state.cells.cells && state.cells.cells.data.ranges
-      ? state.cells.cells.data.ranges
-      : null;
-  const metadata =
-    state.cells.cells && state.cells.cells.data.metadata
-      ? state.cells.cells.data.metadata
-      : null;
-  const initializeRanges =
-    state.initialize.data && state.initialize.data.data.ranges
-      ? state.initialize.data.data.ranges
-      : null;
+  const ranges = _.get("state.cells.cells.data.ranges", null);
+  const metadata = _.get("state.cells.cells.data.metadata", null);
+  const initializeRanges = _.get("state.initialize.data.data.ranges", null);
 
   return {
     ranges,
@@ -123,21 +114,6 @@ class Scatterplot extends React.Component {
       colorBuffer
     });
   }
-  componentWillReceiveProps(nextProps) {
-    if (
-      nextProps.expression &&
-      nextProps.expression.data &&
-      nextProps.scatterplotXXaccessor &&
-      nextProps.scatterplotYYaccessor
-    ) {
-      const scales = this.setupScales(
-        nextProps.expression,
-        nextProps.scatterplotXXaccessor,
-        nextProps.scatterplotYYaccessor
-      );
-      this.setState(scales);
-    }
-  }
   componentDidUpdate(prevProps) {
     if (
       this.state.svg &&
@@ -212,6 +188,22 @@ class Scatterplot extends React.Component {
       this.state.colorBuffer({ data: colors, dimension: 3 });
       this.state.sizeBuffer({ data: sizes, dimension: 1 });
       this.count = cellCount;
+    }
+
+    if (
+      this.props.expression &&
+      this.props.expression.data &&
+      this.props.scatterplotXXaccessor &&
+      this.props.scatterplotYYaccessor &&
+      (this.props.scatterplotXXaccessor !== prevProps.scatterplotXXaccessor || // was CLU now FTH1 etc
+        this.props.scatterplotYYaccessor !== prevProps.scatterplotYYaccessor)
+    ) {
+      const scales = this.setupScales(
+        this.props.expression,
+        this.props.scatterplotXXaccessor,
+        this.props.scatterplotYYaccessor
+      );
+      this.setState(scales);
     }
   }
   setupScales(expression, scatterplotXXaccessor, scatterplotYYaccessor) {

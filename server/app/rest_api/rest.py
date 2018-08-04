@@ -1,10 +1,10 @@
 from flask import (
-    Blueprint, request
+    Blueprint, request, current_app
 )
 from flask_restful_swagger_2 import Api, swagger, Resource
 
-from ..util.utils import make_payload
-from ..util.filter import parse_filter
+from server.app.util.utils import make_payload
+from server.app.util.filter import parse_filter
 
 
 class InitializeAPI(Resource):
@@ -88,13 +88,13 @@ class InitializeAPI(Resource):
         }
     })
     def get(self):
-        from server.app.app import data, REACTIVE_LIMIT
+        from server.app.app import REACTIVE_LIMIT
         return make_payload({
-            "schema": data.schema,
-            "cellcount": data.cell_count,
+            "schema": current_app.data.schema,
+            "cellcount": current_app.data.cell_count,
             "reactivelimit": REACTIVE_LIMIT,
-            "genes": data.genes(),
-            "ranges": data.metadata_ranges(),
+            "genes": current_app.data.genes(),
+            "ranges": current_app.data.metadata_ranges(),
 
         })
 
@@ -191,7 +191,6 @@ class CellsAPI(Resource):
         }
     })
     def get(self):
-        from server.app.app import data
         payload = {
             "metadata": [],
             "cellcount": 0,
@@ -199,12 +198,12 @@ class CellsAPI(Resource):
             "ranges": {},
         }
         # get query params
-        cells_filter = parse_filter(request.args, data.schema)
-        filtered_data = data.filter_cells(cells_filter)
-        payload["metadata"] = data.metadata(filtered_data)
-        payload["ranges"] = data.metadata_ranges(filtered_data)
-        payload["graph"] = data.create_graph(filtered_data)
-        payload["cellcount"] = data.cell_count
+        cells_filter = parse_filter(request.args, current_app.data.schema)
+        filtered_data = current_app.data.filter_cells(cells_filter)
+        payload["metadata"] = current_app.data.metadata(filtered_data)
+        payload["ranges"] = current_app.data.metadata_ranges(filtered_data)
+        payload["graph"] = current_app.data.create_graph(filtered_data)
+        payload["cellcount"] = current_app.data.cell_count
         return make_payload(payload)
 
 
@@ -251,8 +250,7 @@ class ExpressionAPI(Resource):
         }
     })
     def get(self):
-        from server.app.app import data
-        expression_data = data.expression()
+        expression_data = current_app.data.expression()
         return make_payload(expression_data)
 
     @swagger.doc({
@@ -309,14 +307,13 @@ class ExpressionAPI(Resource):
         }
     })
     def post(self):
-        from server.app.app import data
         args = request.get_json()
         cell_list = args.get("celllist", [])
         gene_list = args.get("genelist", [])
         if not cell_list and not gene_list:
             return make_payload([], "must include celllist and/or genelist parameter", 400)
 
-        expression_data = data.expression(cell_list, gene_list)
+        expression_data = current_app.data.expression(cell_list, gene_list)
 
         if cell_list and len(expression_data["cells"]) < len(cell_list):
             return make_payload([], "Some cell ids not available", 400)
@@ -415,7 +412,6 @@ class DifferentialExpressionAPI(Resource):
         }
     })
     def post(self):
-        from server.app.app import data
         args = request.get_json()
         cell_list_1 = args.get("celllist1", [])
         cell_list_2 = args.get("celllist2", [])
@@ -425,7 +421,7 @@ class DifferentialExpressionAPI(Resource):
             return make_payload([],
                                 "must include celllist1 and celllist2 parameters",
                                 400)
-        data = data.diffexp(cell_list_1, cell_list_2, pval, num_genes)
+        data = current_app.data.diffexp(cell_list_1, cell_list_2, pval, num_genes)
         return make_payload(data)
 
 

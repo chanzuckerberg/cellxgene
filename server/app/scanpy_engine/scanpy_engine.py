@@ -4,8 +4,9 @@ import numpy as np
 import scanpy.api as sc
 from scipy import stats
 
-from ..util.schema_parse import parse_schema
-from ..driver.driver import CXGDriver
+from server.app.app import cache
+from server.app.driver.driver import CXGDriver
+from server.app.util.schema_parse import parse_schema
 
 
 class ScanpyEngine(CXGDriver):
@@ -41,6 +42,7 @@ class ScanpyEngine(CXGDriver):
     def genes(self):
         return self.data.var.index.tolist()
 
+    # Can't seem to cache a view of a dataframe, need to investigate why
     def filter_cells(self, filter):
         """
         Filter cells from data and return a subset of the data
@@ -69,6 +71,7 @@ class ScanpyEngine(CXGDriver):
                     cell_idx = np.logical_and(cell_idx, key_idx)
         return self.data[cell_idx, :]
 
+    @cache.memoize()
     def metadata_ranges(self, df=None):
         metadata_ranges = {}
         if not df:
@@ -88,6 +91,7 @@ class ScanpyEngine(CXGDriver):
                 }
         return metadata_ranges
 
+    @cache.memoize()
     def metadata(self, df, fields=None):
         """
          Gets metadata key:value for each cells
@@ -101,6 +105,7 @@ class ScanpyEngine(CXGDriver):
             metadata[idx]["CellName"] = metadata[idx].pop("cell_name", None)
         return metadata
 
+    @cache.memoize()
     def create_graph(self, df):
         """
         Computes a n-d layout for cells through dimensionality reduction.
@@ -112,6 +117,7 @@ class ScanpyEngine(CXGDriver):
         normalized_graph = (graph - graph.min()) / (graph.max() - graph.min())
         return np.hstack((df.obs["cell_name"].values.reshape(len(df.obs.index), 1), normalized_graph)).tolist()
 
+    @cache.memoize()
     def diffexp(self, cell_list_1, cell_list_2, pval, num_genes):
         """
         Computes the top differentially expressed genes between two clusters
@@ -158,6 +164,7 @@ class ScanpyEngine(CXGDriver):
             },
         }
 
+    @cache.memoize()
     def expression(self, cells=None, genes=None):
         """
         Retrieves expression for each gene for cells in data frame

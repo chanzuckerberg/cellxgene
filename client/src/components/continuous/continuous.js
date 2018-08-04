@@ -17,19 +17,9 @@ import HistogramBrush from "./histogramBrush";
 import { margin, width, height, createDimensions } from "./util";
 
 @connect(state => {
-  const ranges =
-    state.cells.cells && state.cells.cells.data.ranges
-      ? state.cells.cells.data.ranges
-      : null;
-  const metadata =
-    state.cells.cells && state.cells.cells.data.metadata
-      ? state.cells.cells.data.metadata
-      : null;
-
-  const initializeRanges =
-    state.initialize.data && state.initialize.data.data.ranges
-      ? state.initialize.data.data.ranges
-      : null;
+  const ranges = _.get("state.cells.cells.data.ranges", null);
+  const metadata = _.get("state.cells.cells.data.metadata", null);
+  const initializeRanges = _.get("state.initialize.data.data.ranges", null);
 
   return {
     ranges,
@@ -51,10 +41,6 @@ class Continuous extends React.Component {
       dimensions: null
     };
   }
-  componentDidMount() {}
-  componentWillReceiveProps(nextProps) {}
-
-  componentDidMount() {}
   handleBrushAction(selection) {
     this.props.dispatch({
       type: "continuous selection using parallel coords brushing",
