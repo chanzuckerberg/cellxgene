@@ -116,7 +116,7 @@ class BitArray {
     // all selection tests assume unallocated dimensions are zero valued.
     this.deselectAll(dim);
     const col = dim >>> 5;
-    this.bitmask[col] &= ~(1 << (dim % 32));
+    this.bitmask[col] &= ~(1 << dim % 32);
     this.dimensionCount--;
   }
 
@@ -134,12 +134,37 @@ class BitArray {
     return true;
   }
 
+  // return true if this index is selected in ALL dimensions IGNORING dim
+  //
+  isSelectedIgnoringDim(index, dim) {
+    const ignoreOffset = dim >>> 5;
+    const ignoreMask = ~(1 << dim % 32);
+
+    const width = this.width;
+    const length = this.length;
+    const bitarray = this.bitarray;
+
+    for (let w = 0; w < width; w++) {
+      const bitmask = this.bitmask[w];
+      if (w === ignoreOffset) {
+        if (
+          bitmask &&
+          (bitarray[w * length + index] & ignoreMask) !== (bitmask & ignoreMask)
+        )
+          return false;
+      } else {
+        if (bitmask && bitarray[w * length + index] !== bitmask) return false;
+      }
+    }
+    return true;
+  }
+
   // select index on dimension
   //
   selectOne(dim, index) {
     const col = dim >>> 5;
     const before = this.bitarray[col * this.length + index];
-    const after = before | (1 << (dim % 32));
+    const after = before | (1 << dim % 32);
     this.bitarray[col * this.length + index] = after;
   }
 
@@ -148,7 +173,7 @@ class BitArray {
   deselectOne(dim, index) {
     const col = dim >>> 5;
     const before = this.bitarray[col * this.length + index];
-    const after = before & ~(1 << (dim % 32));
+    const after = before & ~(1 << dim % 32);
     this.bitarray[col * this.length + index] = after;
   }
 
@@ -158,7 +183,7 @@ class BitArray {
     let col = dim >> 5;
     const bitmask = this.bitmask[col];
     const bitarray = this.bitarray;
-    const one = 1 << (dim % 32);
+    const one = 1 << dim % 32;
     for (let i = col * this.length, len = i + this.length; i < len; i++) {
       bitarray[i] |= one;
     }
@@ -170,7 +195,7 @@ class BitArray {
     let col = dim >> 5;
     const bitmask = this.bitmask[col];
     const bitarray = this.bitarray;
-    const zero = ~(1 << (dim % 32));
+    const zero = ~(1 << dim % 32);
     for (let i = col * this.length, len = i + this.length; i < len; i++) {
       bitarray[i] &= zero;
     }
@@ -184,7 +209,7 @@ class BitArray {
     const first = range[0];
     const last = range[1];
     const bitarray = this.bitarray;
-    const one = 1 << (dim % 32);
+    const one = 1 << dim % 32;
     const offset = col * this.length;
     for (let i = first; i < last; i++) {
       bitarray[offset + indirect[i]] |= one;
@@ -198,7 +223,7 @@ class BitArray {
     const first = range[0];
     const last = range[1];
     const bitarray = this.bitarray;
-    const zero = ~(1 << (dim % 32));
+    const zero = ~(1 << dim % 32);
     const offset = col * this.length;
     for (let i = first; i < last; i++) {
       bitarray[offset + indirect[i]] &= zero;
@@ -226,4 +251,4 @@ class BitArray {
   }
 }
 
-export default BitArray;
+module.exports = BitArray;

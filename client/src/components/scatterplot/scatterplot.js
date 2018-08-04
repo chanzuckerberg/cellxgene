@@ -20,9 +20,9 @@ import { scaleLinear } from "../../util/scaleLinear";
 import { margin, width, height, createDimensions } from "./util";
 
 @connect(state => {
-  const ranges = _.get("state.cells.cells.data.ranges", null);
-  const metadata = _.get("state.cells.cells.data.metadata", null);
-  const initializeRanges = _.get("state.initialize.data.data.ranges", null);
+  const ranges = _.get(state, "cells.cells.data.ranges", null);
+  const metadata = _.get(state, "cells.cells.data.metadata", null);
+  const initializeRanges = _.get(state, "initialize.data.data.ranges", null);
 
   return {
     ranges,

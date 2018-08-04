@@ -101,6 +101,33 @@ const someData = [
   }
 ];
 
+function groupReduce(data, valueMap, valueReduce, valueInit) {
+  return _
+    .reduce(
+      data,
+      (acc, value) => {
+        const k = valueMap(value);
+        let r = _.find(acc, o => o.key === k);
+        if (!r) {
+          r = { key: k, value: valueInit() };
+          acc.push(r);
+        }
+        r.value = valueReduce(r.value, value);
+        return acc;
+      },
+      []
+    )
+    .sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
+}
+
+function groupCount(data, map) {
+  return groupReduce(data, map, (p, v) => p + 1, () => 0);
+}
+
+function groupSum(data, map) {
+  return groupReduce(data, map, (p, v) => (p += map(v)), () => 0);
+}
+
 var payments = null;
 beforeEach(() => {
   payments = crossfilter(someData);
@@ -272,5 +299,164 @@ describe("typedCrossfilter", () => {
 
     dimMap[33].filterAll();
     expect(payments.allFiltered()).toEqual(someData);
+  });
+
+  test("group, default mapping, default reducer, no filter", () => {
+    expect(payments).toBeDefined();
+
+    var quantity = payments.dimension(r => r.quantity, Int32Array);
+    var tip = payments.dimension(r => r.tip, Int32Array);
+    var type = payments.dimension(r => r.type, "enum");
+    var total = payments.dimension(r => r.total, Int32Array);
+
+    _.each(
+      {
+        tip: tip.group(r => r),
+        type: type.group(),
+        total: total.group(),
+        quantity: quantity.group()
+      },
+      (grp, k) => {
+        const whatWeExpect = groupCount(someData, v => v[k]);
+        expect(grp.all()).toEqual(whatWeExpect);
+        expect(grp.size()).toEqual(whatWeExpect.length);
+        expect(grp.dispose()).toEqual(grp);
+      }
+    );
+  });
+
+  test("group, custom map, default reducer, no filters", () => {
+    expect(payments).toBeDefined();
+
+    // custom mapping in groups only works for scalar types.  Enums do not
+    // currently implement it.
+
+    const tip = payments.dimension(r => r.tip, Int32Array);
+    const totalX10 = payments.dimension(r => r.total * 10, Int32Array);
+    const type = payments.dimension(r => r.type, "enum");
+
+    const paymentsByTip_A = tip.group();
+    const paymentsByTip_B = tip.group(r => 10 * r);
+    const paymentsByType = type.group(); // identity only
+    const paymentsByTotalX10_A = totalX10.group();
+    const paymentsByTotalX10_B = totalX10.group(r => r / 10);
+
+    expect(paymentsByTip_A.all()).toEqual(groupCount(someData, v => v.tip));
+    expect(paymentsByTip_B.all()).toEqual(
+      groupCount(someData, v => 10 * v.tip)
+    );
+    expect(paymentsByType.all()).toEqual(groupCount(someData, v => v.type));
+    expect(paymentsByTotalX10_A.all()).toEqual(
+      groupCount(someData, v => 10 * v.total)
+    );
+    expect(paymentsByTotalX10_B.all()).toEqual(
+      groupCount(someData, v => (10 * v.total) / 10)
+    );
+
+    for (let i of [
+      paymentsByTip_A,
+      paymentsByTip_B,
+      paymentsByType,
+      paymentsByTotalX10_A,
+      paymentsByTotalX10_B,
+      tip,
+      totalX10,
+      type
+    ]) {
+      expect(i.dispose()).toEqual(i);
+    }
+  });
+
+  test("group, default map, custom reducer, no filters", () => {
+    expect(payments).toBeDefined();
+
+    const total = payments.dimension(r => r.total, Float32Array);
+    const type = payments.dimension(r => r.type, "enum");
+
+    const paymentsByTotal = total.group();
+    const paymentsByType = type.group();
+
+    // reduceCount
+    expect(paymentsByTotal.reduceCount()).toEqual(paymentsByTotal);
+    expect(paymentsByTotal.all()).toEqual(groupCount(someData, v => v.total));
+
+    // reduceSum
+    expect(paymentsByTotal.reduceSum(v => v.total)).toEqual(paymentsByTotal);
+    expect(paymentsByTotal.all()).toEqual(groupSum(someData, v => v.total));
+
+    // use custom reducers (my reducers) - count by three, init 1
+    expect(
+      paymentsByTotal.reduce((p, v) => (p += 3), (p, v) => (p -= 3), () => 1)
+    ).toEqual(paymentsByTotal);
+    expect(paymentsByTotal.all()).toEqual(
+      groupReduce(someData, v => v.total, (p, v) => p + 3, () => 1)
+    );
+
+    for (let i of [paymentsByTotal, paymentsByType, type]) {
+      expect(i.dispose()).toEqual(i);
+    }
+  });
+
+  test("group, default map, default reducer, filters", () => {
+    // From the docs:
+    // Note: a grouping intersects the crossfilter's current filters, except for the
+    // associated dimension's filter. Thus, group methods consider only records that
+    // satisfy every filter except this dimension's filter. So, if the crossfilter of
+    // payments is filtered by type and total, then group by total only observes the
+    // filter by type.
+
+    expect(payments).toBeDefined();
+
+    const tip = payments.dimension(r => r.tip, Int32Array);
+    const total = payments.dimension(r => r.total, Int32Array);
+    const type = payments.dimension(r => r.type, "enum");
+
+    const paymentsByTip = tip.group();
+    const paymentsByTotal = total.group();
+    const paymentsByType = type.group();
+
+    // 1. confirm that changing the filter on a dimension does NOT change that
+    // dimensions groups.
+    {
+      tip.filterAll(), total.filterAll(), type.filterAll();
+      let before = _.cloneDeep(paymentsByTip.all());
+      tip.filterExact(0);
+      expect(paymentsByTip.all()).toEqual(before);
+    }
+
+    // 2. confirm that changing a filter on a different dimension DOES change
+    // all other groups.
+    {
+      tip.filterAll(), total.filterAll(), type.filterAll();
+      const before = _.cloneDeep([paymentsByTotal.all(), paymentsByType.all()]);
+      tip.filterExact(0);
+      const after = [paymentsByTotal.all(), paymentsByType.all()];
+      expect(after).not.toEqual(before);
+      expect(after).toEqual([
+        groupReduce(
+          someData,
+          v => v.total,
+          (p, v) => (v.tip !== 0 ? p : p + 1),
+          () => 0
+        ),
+        groupReduce(
+          someData,
+          v => v.type,
+          (p, v) => (v.tip !== 0 ? p : p + 1),
+          () => 0
+        )
+      ]);
+    }
+
+    for (let i of [
+      paymentsByTip,
+      paymentsByTotal,
+      paymentsByType,
+      tip,
+      total,
+      type
+    ]) {
+      expect(i.dispose()).toEqual(i);
+    }
   });
 });

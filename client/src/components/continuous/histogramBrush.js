@@ -11,7 +11,7 @@ import FaPaintBrush from "react-icons/lib/fa/paint-brush";
 import * as globals from "../../globals";
 
 @connect(state => {
-  const initializeRanges = _.get("state.initialize.data.data.ranges", null);
+  const initializeRanges = _.get(state, "initialize.data.data.ranges", null);
 
   return {
     initializeRanges,
@@ -89,8 +89,7 @@ class HistogramBrush extends React.Component {
     const bins = this.histogramCache.bins;
     const numValues = this.histogramCache.numValues;
 
-    d3
-      .select(svgRef)
+    d3.select(svgRef)
       .insert("g", "*")
       .attr("fill", "#bbb")
       .selectAll("rect")
