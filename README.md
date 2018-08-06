@@ -56,6 +56,72 @@ _For help with the scanpy engine_
   
     cellxgene scanpy --help
 
+## Using your own data
+
+### Scanpy
+
+To prepare you data you will need to format your data into AnnData format using scanpy and calculate PCA and nearest neighbors and save in h5ad format.
+
+1. [Load data into scanpy](https://scanpy.readthedocs.io/en/latest/api/index.html#exporting)
+
+	- Ensure that `obs`'s index is the cell names
+
+2. Calculate PCA
+
+    sc.pp.pca(data)
+    
+3. Calculate nearest neighbors (depending on layout algorithm)
+	
+    ```
+    # For umap layout algorithm
+    sc.pp.neighbors(data, method="umap", metric="euclidean", use_rep="X_pca")
+    
+    # For tsne layout algorithm
+    sc.pp.neighbors(data, method="gauss", metric="euclidean", use_rep="X_pca")
+    ```
+    
+4. Save file
+
+    ```
+    # cellxgene requires file to be named data.h5ad
+    data.write("data.h5ad")
+    ```
+   
+5. Create config file (optional)
+
+	If you do not have a config file, the schema (metadata names, types, and categorical/continuous) will be inferred from the observations in the data file. Config file is required to be named 'data_schema.json' and located in the same directory as data file.
+	- The config file is a JSON format file with information on the metadata associated with the cells. The key is the column name in obs. The value is an object 
+	```
+    type: string, int, or float (what type the values are),
+	variabletype: categorical or continuous (categorical values are displayed as checkboxes, continuous values are displayed as a histogram)
+	displayname: (what the heading should be displayed as)
+	include: True/False (whether to display values on web interface)
+	```
+    
+	```	
+	Example
+    {
+        "CellName": {
+            "type": "string",
+            "variabletype": "categorical",
+            "displayname": "Name",
+            "include": true
+        },
+        "clusters": {
+            "type": "string",
+            "variabletype": "categorical",
+            "displayname": "Clusters",
+            "include": true
+        },
+        "num_genes": {
+            "type": "int",
+            "variabletype": "continuous",
+            "displayname": "Number Genes",
+            "include": true
+        }
+    }
+    ```
+
 ## Contributing
 We warmly welcome contributions from the community. Please submit any bug reports and feature requests through github issues. Please submit any direct contributions via a branch + pull request.
 
