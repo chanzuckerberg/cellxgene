@@ -41,7 +41,7 @@ Started in the context of the Human Cell Atlas Consortium, cellxgene hopes to bo
 
 **Install server**    
   
-    python3 setup.py install  
+    pip install -e .
 
 **Run (with demo data)**  
   
