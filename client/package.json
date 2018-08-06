@@ -36,7 +36,6 @@
     "gl-matrix": "^2.7.1",
     "halogen": "^0.2.0",
     "hsv2rgb": "^1.1.0",
-    "jest": "^23.4.1",
     "key-pressed": "0.0.1",
     "lodash": "^4.17.4",
     "luma.gl": "^4.0.3",
@@ -58,7 +57,6 @@
     "scroll-speed": "^1.0.0",
     "serve-favicon": "^2.3.0",
     "urijs": "^1.19.0",
-    "webpack-hot-middleware": "^2.22.3",
     "whatwg-fetch": "^2.0.3"
   },
   "devDependencies": {
@@ -96,7 +94,7 @@
     "gzip-size": "^3.0.0",
     "html-webpack-inline-source-plugin": "0.0.6",
     "html-webpack-plugin": "^2.22.0",
-    "jest": "^23.0.1",
+    "jest": "^23.4.1",
     "jsdom": "^9.4.1",
     "json-loader": "^0.5.4",
     "nyc": "^10.0.0",
@@ -111,8 +109,7 @@
     "web-app-manifest-loader": "^0.1.1",
     "webpack": "^2.2.0-rc.4",
     "webpack-dev-middleware": "^1.6.1",
-    "webpack-hot-middleware": "^2.12.2",
-    "whatwg-fetch": "^2.0.1"
+    "webpack-hot-middleware": "^2.22.3"
   },
   "jest": {
     "testMatch": [
