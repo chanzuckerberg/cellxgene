@@ -1,5 +1,6 @@
 import argparse
 import os
+import warnings
 
 from flask import Flask
 from flask_caching import Cache
@@ -53,7 +54,7 @@ def run_scanpy(args):
     )
 
     from .scanpy_engine.scanpy_engine import ScanpyEngine
-    data = ScanpyEngine(args.data_directory, schema="data_schema.json",
+    app.data = ScanpyEngine(args.data_directory, schema="data_schema.json",
                         graph_method=args.layout, diffexp_method=args.diffexp)
     app.run(host="127.0.0.1", debug=True, port=args.port)
 
@@ -68,7 +69,7 @@ def main():
         from .scanpy_engine.scanpy_engine import ScanpyEngine
         ScanpyEngine.add_to_parser(subparsers, run_scanpy)
     except ImportError:
-        print("Scanpy engine not available")
+        warnings.warn("Scanpy engine not available", ImportWarning)
 
     args = parser.parse_args()
     args.func(args)
