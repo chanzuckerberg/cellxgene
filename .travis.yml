@@ -9,7 +9,7 @@ install:
   - set -eo pipefail
   - pip install flake8 httpie
   - ./bin/build-client
-  - python setup.py install
+  - pip install -e .
 script:
   - set -eo pipefail
   - flake8 server/app/
