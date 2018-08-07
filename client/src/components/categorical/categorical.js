@@ -164,7 +164,7 @@ class Category extends React.Component {
 }
 
 @connect(state => {
-  const ranges = _.get("state.cells.cells.data.ranges", null);
+  const ranges = _.get(state, "cells.cells.data.ranges", null);
 
   return {
     ranges
