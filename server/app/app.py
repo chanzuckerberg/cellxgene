@@ -1,5 +1,6 @@
 import argparse
 import os
+import warnings
 
 from flask import Flask
 from flask_caching import Cache
@@ -68,7 +69,7 @@ def main():
         from .scanpy_engine.scanpy_engine import ScanpyEngine
         ScanpyEngine.add_to_parser(subparsers, run_scanpy)
     except ImportError:
-        print("Scanpy engine not available")
+        warnings.warn("Scanpy engine not available", ImportWarning)
 
     args = parser.parse_args()
     args.func(args)
