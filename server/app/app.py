@@ -46,7 +46,7 @@ def run_scanpy(args):
     title = args.title
     if not title:
         title = os.path.basename(os.path.normpath(args.data_directory))
-    api_base = f"http://0.0.0.0:{args.port}/api/"
+    api_base = f"http://127.0.0.1:{args.port}/api/"
     app.config.update(
         DATASET_TITLE=title,
         CXG_API_BASE=api_base
@@ -54,7 +54,7 @@ def run_scanpy(args):
 
     from .scanpy_engine.scanpy_engine import ScanpyEngine
     app.data = ScanpyEngine(args.data_directory, schema="data_schema.json")
-    app.run(host="0.0.0.0", debug=True, port=args.port)
+    app.run(host="127.0.0.1", debug=True, port=args.port)
 
 
 def main():
