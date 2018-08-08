@@ -15,6 +15,7 @@ const nodeModules = path.resolve("node_modules");
 const publicPath = "/";
 
 module.exports = {
+  mode: "production",
   bail: true,
   devtool: "cheap-source-map",
   entry: [require.resolve("../polyfills/polyfills"), path.join(src, "index")],

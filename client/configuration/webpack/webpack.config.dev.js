@@ -8,6 +8,7 @@ const src = path.resolve("src");
 const nodeModules = path.resolve("node_modules");
 
 module.exports = {
+  mode: "development",
   devtool: "eval",
   entry: [
     "webpack-hot-middleware/client?quiet=true&noInfo=true",
