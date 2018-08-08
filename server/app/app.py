@@ -1,5 +1,6 @@
 import argparse
 import os
+import warnings
 
 from flask import Flask
 from flask_caching import Cache
@@ -53,7 +54,8 @@ def run_scanpy(args):
     )
 
     from .scanpy_engine.scanpy_engine import ScanpyEngine
-    app.data = ScanpyEngine(args.data_directory, schema="data_schema.json")
+    app.data = ScanpyEngine(args.data_directory, schema="data_schema.json",
+                            graph_method=args.layout, diffexp_method=args.diffexp)
     app.run(host="127.0.0.1", debug=True, port=args.port)
 
 
@@ -63,8 +65,11 @@ def main():
                                               "of the directory from the data_directory arg")
     parser.add_argument("--port", help="Port to run server on.", type=int, default=5005)
     subparsers = parser.add_subparsers(dest="cellxgene_command")
-    scanpy_subparser = subparsers.add_parser("scanpy", help="run cellxgene using the scanpy engine")
-    scanpy_subparser.add_argument("data_directory", metavar="dir", help="Directory containing data and schema file")
-    scanpy_subparser.set_defaults(func=run_scanpy)
+    try:
+        from .scanpy_engine.scanpy_engine import ScanpyEngine
+    except ImportError:
+        warnings.warn("Scanpy engine not available", ImportWarning)
+    else:
+        ScanpyEngine.add_to_parser(subparsers, run_scanpy)
     args = parser.parse_args()
     args.func(args)
