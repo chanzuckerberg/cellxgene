@@ -49,7 +49,7 @@ class ScanpyEngine(CXGDriver):
                 if data_kind == 'f':
                     variable_type = "continuous"
                     data_type = "float"
-                elif data_kind == 'i':
+                elif data_kind in ['i', 'u']:
                     data_type = "int"
                     if self.data.obs[m].nunique() > 50:
                         variable_type = "continuous"
