@@ -251,4 +251,4 @@ class BitArray {
   }
 }
 
-module.exports = BitArray;
+export default BitArray;
