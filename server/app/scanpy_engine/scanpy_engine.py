@@ -39,11 +39,38 @@ class ScanpyEngine(CXGDriver):
     def _load_data(data):
         return sc.read(os.path.join(data, "data.h5ad"))
 
-    @staticmethod
-    def _load_or_infer_schema(data, schema):
-        data_schema = None
-        if not schema:
-            pass
+    def _load_or_infer_schema(self, data, schema):
+        if not os.path.isfile(os.path.join(data, schema)):
+            # Initialize with cell name which is built off the index
+            data_schema = {
+                "CellName": {
+                    "type": "string",
+                    "variabletype": "categorical",
+                    "displayname": "Name",
+                    "include": True
+                }
+            }
+            metadata_fields = list(self.data.obs)
+            for m in metadata_fields:
+                # Since there are many type of float/int in numpy datatypes the kind attribute of a datatype object
+                # offers a decent insight into whether it can be lumped in with floats or ints, which is what we
+                # care about here.
+                data_kind = self.data.obs[m].dtype.kind
+                variable_type = "categorical"
+                data_type = "string"
+                if data_kind == 'f':
+                    variable_type = "continuous"
+                    data_type = "float"
+                elif data_kind in ['i', 'u']:
+                    data_type = "int"
+                    if self.data.obs[m].nunique() > 50:
+                        variable_type = "continuous"
+                data_schema[m] = {
+                    "type": data_type,
+                    "variabletype": variable_type,
+                    "displayname": m,
+                    "include": True
+                }
         else:
             data_schema = parse_schema(os.path.join(data, schema))
         return data_schema
