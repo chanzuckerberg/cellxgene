@@ -18,8 +18,9 @@ Started in the context of the Human Cell Atlas Consortium, cellxgene hopes to bo
 ## Getting Started
 
 **Requirements**
-- OS: OSX, Windows, Linux
+- OS: OSX, Windows, Linux -- the developers are currently testing on OSX and Windows (via WSL using Ubuntu). It should work on other platforms but if you are using something different and need help, please let us know. 
 - python 3.6
+- python3 tkinter 
 - npm
 - Google Chrome
 
@@ -128,6 +129,9 @@ We warmly welcome contributions from the community. Please submit any bug report
 
 ## Inspiration and collaboration
 We’ve been inspired by several other related efforts in this space, including the [UCSC Cell Browswer](http://cells.ucsc.edu/), [Cytoscape](http://www.cytoscape.org/), [Xena](https://xena.ucsc.edu/), [ASAP](https://asap.epfl.ch/), [Gene Pattern](http://genepattern-notebook.org/), & many others; we hope to explore collaborations where useful.
+
+## Help/Contact
+Please submit any help requests, suggestions, or comments as an issue in github. We'd love to hear from you!
 
 ## Reuse
 This project was started with the sole goal of empowering the scientific community to explore and understand their data. As such, we whole-heartedly encourage other scientific tool builders to adopt the patterns, tools, and code from this project, and reach out to us with ideas or questions using Github Issues or Pull Requests. All code is freely available for reuse under the [MIT license](https://opensource.org/licenses/MIT).
