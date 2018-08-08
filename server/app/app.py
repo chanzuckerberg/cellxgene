@@ -67,9 +67,9 @@ def main():
     subparsers = parser.add_subparsers(dest="cellxgene_command")
     try:
         from .scanpy_engine.scanpy_engine import ScanpyEngine
-        ScanpyEngine.add_to_parser(subparsers, run_scanpy)
     except ImportError:
         warnings.warn("Scanpy engine not available", ImportWarning)
-
+    else:
+        ScanpyEngine.add_to_parser(subparsers, run_scanpy)
     args = parser.parse_args()
     args.func(args)
