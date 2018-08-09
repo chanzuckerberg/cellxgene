@@ -1,0 +1,16 @@
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
+CELLXGENE_DIR=$(dirname $DIR)
+
+echo "Uninstalling cellxgene"
+yes | pip uninstall cellxgene
+echo "removing node_modules"
+rm -rf $CELLXGENE_DIR/client/node_modules
+echo "removing client_build"
+rm -rf $CELLXGENE_DIR/client/build
+echo "removing egg-info"
+rm -rf $CELLXGENE_DIR/cellxgene.egg-info
+echo "removing static files"
+rm -f $CELLXGENE_DIR/server/app/web/templates/index.html
+rm -rf $CELLXGENE_DIR/server/app/web/static
+echo "cellxgene cleanup complete"
+
