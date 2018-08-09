@@ -10,7 +10,7 @@ rm -rf $CELLXGENE_DIR/client/build
 echo "removing egg-info"
 rm -rf $CELLXGENE_DIR/cellxgene.egg-info
 echo "removing static files"
-rm $CELLXGENE_DIR/server/app/web/templates/index.html
+rm -f $CELLXGENE_DIR/server/app/web/templates/index.html
 rm -rf $CELLXGENE_DIR/server/app/web/static
 echo "cellxgene cleanup complete"
 
