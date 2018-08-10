@@ -9,6 +9,7 @@ from scipy import stats
 from server.app.app import cache
 from server.app.driver.driver import CXGDriver
 
+
 class ScanpyEngine(CXGDriver):
 
     def __init__(self, data, graph_method="umap", diffexp_method="ttest"):
@@ -49,7 +50,8 @@ class ScanpyEngine(CXGDriver):
 
     def _validatate_data_types(self):
         if self.data.X.dtype != 'float32':
-            warnings.warn(f"Scanpy data matrix is in {self.data.X.dtype} format not float32. Precision may be truncated.")
+            warnings.warn(f"Scanpy data matrix is in {self.data.X.dtype} format not float32. "
+                          f"Precision may be truncated.")
 
     def cells(self):
         return list(self.data.obs.index)
