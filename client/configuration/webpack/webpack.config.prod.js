@@ -3,7 +3,7 @@ const path = require("path");
 const autoprefixer = require("autoprefixer");
 const webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-const ExtractTextPlugin = require("extract-text-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const SWPrecacheWebpackPlugin = require("sw-precache-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const HtmlWebpackInlineSourcePlugin = require("html-webpack-inline-source-plugin");
@@ -17,7 +17,8 @@ const publicPath = "/";
 module.exports = {
   mode: "production",
   bail: true,
-  devtool: "cheap-source-map",
+  // TODO: causes a js error, need to update to whatever webpack4 wants
+  // devtool: "cheap-source-map",
   entry: [require.resolve("../polyfills/polyfills"), path.join(src, "index")],
   output: {
     path: path.resolve("build"),
@@ -37,11 +38,27 @@ module.exports = {
       {
         test: /\.css$/,
         include: [src, nodeModules],
-        loader: ExtractTextPlugin.extract({
-          fallbackLoader: "style-loader",
-          loader:
-            "css-loader?modules&importLoaders=1&localIdentName=[name]__[local]___[hash:base64:5]-autoprefixer!postcss-loader"
-        })
+        loader: [
+          {
+            loader: MiniCssExtractPlugin.loader
+          },
+          {
+            loader: "css-loader",
+            options: {
+              modules: true,
+              importLoaders: 1,
+              localIdentName: "[name]__[local]___[hash:base64:5]"
+            }
+          },
+          {
+            loader: "postcss-loader",
+            options: {
+              plugins: function() {
+                return [];
+              }
+            }
+          }
+        ]
       },
       {
         test: /\.json$/,
@@ -98,7 +115,9 @@ module.exports = {
     new webpack.DefinePlugin({ "process.env.NODE_ENV": '"production"' }),
     new webpack.optimize.OccurrenceOrderPlugin(),
     new MinifyPlugin(),
-    new ExtractTextPlugin("static/css/[name].[contenthash:8].css"),
+    new MiniCssExtractPlugin({
+      filename: "static/css/[name].[contenthash:8].css"
+    }),
     new SWPrecacheWebpackPlugin({
       cacheId: "cellxgene",
       filename: "service-worker.js"
