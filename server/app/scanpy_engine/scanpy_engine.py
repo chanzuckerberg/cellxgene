@@ -1,21 +1,20 @@
 import os
+import warnings
 
 import numpy as np
+from pandas import Series
 import scanpy.api as sc
 from scipy import stats
 
 from server.app.app import cache
 from server.app.driver.driver import CXGDriver
-from server.app.util.schema_parse import parse_schema
-
 
 class ScanpyEngine(CXGDriver):
 
-    def __init__(self, data, schema=None, graph_method="umap", diffexp_method="ttest"):
+    def __init__(self, data, graph_method="umap", diffexp_method="ttest"):
         self.data = self._load_data(data)
-        self._format_data()
-        self.schema = self._load_or_infer_schema(data, schema)
-        self._set_cell_names()
+        self._validatate_data_types()
+        self._add_mandatory_annotations()
         self.cell_count = self.data.shape[0]
         self.gene_count = self.data.shape[1]
         self.graph_method = graph_method
@@ -40,59 +39,17 @@ class ScanpyEngine(CXGDriver):
     def _load_data(data):
         return sc.read(os.path.join(data, "data.h5ad"))
 
-    # TODO delete after v0.1 v2.0 transition
-    def _load_or_infer_schema(self, data, schema):
-        if not os.path.isfile(os.path.join(data, schema)):
-            # Initialize with cell name which is built off the index
-            data_schema = {
-                "CellName": {
-                    "type": "string",
-                    "variabletype": "categorical",
-                    "displayname": "Name",
-                    "include": True
-                }
-            }
-            metadata_fields = list(self.data.obs)
-            for m in metadata_fields:
-                # Since there are many type of float/int in numpy datatypes the kind attribute of a datatype object
-                # offers a decent insight into whether it can be lumped in with floats or ints, which is what we
-                # care about here.
-                data_kind = self.data.obs[m].dtype.kind
-                variable_type = "categorical"
-                data_type = "string"
-                if data_kind == 'f':
-                    variable_type = "continuous"
-                    data_type = "float"
-                elif data_kind in ['i', 'u']:
-                    data_type = "int"
-                    if self.data.obs[m].nunique() > 50:
-                        variable_type = "continuous"
-                data_schema[m] = {
-                    "type": data_type,
-                    "variabletype": variable_type,
-                    "displayname": m,
-                    "include": True
-                }
-        else:
-            data_schema = parse_schema(os.path.join(data, schema))
-        return data_schema
-
-    def _format_data(self):
+    def _add_mandatory_annotations(self):
         # ensure gene
         self.data.var["name"] = list(self.data.var.index)
-        self.data.var.index = list(range(self.data.var.shape[0]))
+        self.data.var.index = Series(list(range(self.data.var.shape[0])), dtype='int32')
         # ensure cell name
         self.data.obs["name"] = list(self.data.obs.index)
-        self.data.obs.index = list(range(self.data.obs.shape[0]))
-        # ensure formats correct/ reform old format
-        for annotation in self.data.obs:
-            data_type = self.data.obs[annotation].dtype
-            if data_type.kind == 'f' and data_type != "float32":
-                self.data.obs[annotation] = self.data.obs[annotation].astype("float32")
-            elif data_type.kind in ['i', 'u'] and data_type != "int32":
-                self.data.obs[annotation] = self.data.obs[annotation].astype("int32")
+        self.data.obs.index = Series(list(range(self.data.obs.shape[0])), dtype='int32')
+
+    def _validatate_data_types(self):
         if self.data.X.dtype != 'float32':
-            self.data.X = self.data.X.astype("float32")
+            warnings.warn(f"Scanpy data matrix is in {self.data.X.dtype} format not float32. Precision may be truncated.")
 
     def cells(self):
         return list(self.data.obs.index)
