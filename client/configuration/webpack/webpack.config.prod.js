@@ -33,7 +33,8 @@ module.exports = {
         test: /\.js$/,
         include: src,
         loader: "babel-loader",
-        query: require("../babel/babel.prod")
+        // query: require("../babel/babel.prod")
+        options: require("../babel/babel.prod")
       },
       {
         test: /\.css$/,
