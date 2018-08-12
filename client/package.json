@@ -2,11 +2,14 @@
   "name": "cellxgene",
   "version": "0.0.1",
   "license": "MIT",
-  "description": "cellxgene is a web application for the interactive exploration of single cell sequence data.",
+  "description":
+    "cellxgene is a web application for the interactive exploration of single cell sequence data.",
   "repository": "https://github.com/chanzuckerberg/cellxgene",
   "scripts": {
-    "build": "npm run clean && webpack --config configuration/webpack/webpack.config.prod.js",
-    "dev": "npm run clean && webpack --config configuration/webpack/webpack.config.dev.js",
+    "build":
+      "npm run clean && webpack --config configuration/webpack/webpack.config.prod.js",
+    "dev":
+      "npm run clean && webpack --config configuration/webpack/webpack.config.dev.js",
     "clean": "rimraf build",
     "start": "node server/development.js",
     "lint": "eslint src",
@@ -57,7 +60,6 @@
     "babel-core": "^6.13.2",
     "babel-eslint": "^8.2.6",
     "babel-loader": "^7.1.2",
-    "babel-minify-webpack-plugin": "^0.3.1",
     "babel-plugin-istanbul": "^3.1.2",
     "babel-plugin-transform-decorators-legacy": "^1.3.4",
     "babel-plugin-transform-react-constant-elements": "^6.9.1",
@@ -83,7 +85,7 @@
     "file-loader": "^1.1.11",
     "html-webpack-inline-source-plugin": "0.0.10",
     "html-webpack-plugin": "^3.2.0",
-    "jest": "^23.4.1",
+    "jest": "^23.5.0",
     "json-loader": "^0.5.4",
     "mini-css-extract-plugin": "^0.4.1",
     "nyc": "^13.0.1",
@@ -101,9 +103,7 @@
     "webpack-hot-middleware": "^2.22.3"
   },
   "jest": {
-    "testMatch": [
-      "**/__tests__/**/?(*.)(spec|test).js?(x)"
-    ],
+    "testMatch": ["**/__tests__/**/?(*.)(spec|test).js?(x)"],
     "testURL": "http://localhost/"
   }
 }

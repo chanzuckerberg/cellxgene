@@ -22,10 +22,6 @@ module.exports = {
     filename: "static/js/bundle.js",
     publicPath: "/"
   },
-  resolve: {
-    extensions: [".js", ".json"],
-    modules: ["node_modules"]
-  },
   module: {
     rules: [
       {
@@ -80,18 +76,6 @@ module.exports = {
       template: path.resolve("index.html"),
       favicon: path.resolve("favicon.png")
     }),
-    new webpack.LoaderOptionsPlugin({
-      options: {
-        eslint: {
-          configFile: path.resolve("./configuration/eslint/eslint.js"),
-          useEslintrc: false
-        },
-        postcss() {
-          return [autoprefixer];
-        }
-      }
-    }),
-    new webpack.DefinePlugin({ "process.env.NODE_ENV": '"development"' }),
     // Note: only CSS is currently hot reloaded
     new webpack.HotModuleReplacementPlugin(),
     new webpack.NoEmitOnErrorsPlugin()
