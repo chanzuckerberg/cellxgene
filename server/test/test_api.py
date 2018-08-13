@@ -51,4 +51,3 @@ class EndPoints(unittest.TestCase):
         url = "{base}{endpoint}".format(base=self.url_base, endpoint="diffexpression")
         result = self.session.post(url, data=json.dumps({"celllist1": ["AAACATACAACCAC-1", "AACCGATGGTCATG-1"], "celllist2": ["CCGATAGACCTAAG-1", "GGTGGAGAAGTAGA-1"]}), headers={'content-type': 'application/json'})
         assert result.status_code == 200
-        

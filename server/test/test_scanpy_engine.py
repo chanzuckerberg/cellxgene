@@ -1,4 +1,5 @@
 import unittest
+import pytest
 
 from server.app.scanpy_engine.scanpy_engine import ScanpyEngine
 
@@ -19,9 +20,11 @@ class UtilTest(unittest.TestCase):
         self.assertIn("name", self.data.data.var)
         self.assertEqual(list(self.data.data.var.index), list(range(1838)))
 
+    @pytest.mark.filterwarnings("ignore:Scanpy data matrix")
     def test_data_type(self):
         self.data.data.X = self.data.data.X.astype("float64")
         self.assertWarns(UserWarning, self.data._validatate_data_types())
+
 
 if __name__ == '__main__':
     unittest.main()
