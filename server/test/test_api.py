@@ -8,7 +8,9 @@ class EndPoints(unittest.TestCase):
 
     def setUp(self):
         # Local
-        self.url_base = "http://0.0.0.0:5005/api/" + "v0.1/"
+        self.local_url = "http://127.0.0.1:5005/"
+        self.version = "v0.1"
+        self.url_base = "{local_url}api/{version}/".format(local_url=self.local_url, version=self.version)
         self.session = requests.Session()
 
     def test_cells(self):
@@ -50,4 +52,9 @@ class EndPoints(unittest.TestCase):
     def test_diffexp(self):
         url = "{base}{endpoint}".format(base=self.url_base, endpoint="diffexpression")
         result = self.session.post(url, data=json.dumps({"celllist1": ["AAACATACAACCAC-1", "AACCGATGGTCATG-1"], "celllist2": ["CCGATAGACCTAAG-1", "GGTGGAGAAGTAGA-1"]}), headers={'content-type': 'application/json'})
+        assert result.status_code == 200
+
+    def test_static(self):
+        url = "{url}{endpoint}/{file}".format(url=self.local_url, endpoint="static", file="js/service-worker.js")
+        result = self.session.get(url)
         assert result.status_code == 200

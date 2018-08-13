@@ -1,6 +1,8 @@
+import os
 from flask import (
-    Blueprint, render_template, url_for, current_app
+    Blueprint, render_template, send_from_directory, current_app
 )
+
 
 bp = Blueprint("webapp", __name__, template_folder="templates")
 
@@ -21,4 +23,4 @@ def swag():
 # renders swagger documentation
 @bp.route("/favicon.png")
 def favicon():
-    return url_for("static", filename="img/favicon.png")
+    return send_from_directory(os.path.join(bp.root_path, "static/img/"), "favicon.png")
