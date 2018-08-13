@@ -13,8 +13,8 @@ module.exports = {
   entry: [
     "webpack-hot-middleware/client?quiet=true&noInfo=true",
     require.resolve("react-hot-loader/patch"),
-    require.resolve("../polyfills/polyfills"),
-    path.join(src, "index")
+    "babel-polyfill",
+    "./src/index"
   ],
   output: {
     path: path.resolve("build"),

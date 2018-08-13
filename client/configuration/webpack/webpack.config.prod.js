@@ -17,12 +17,10 @@ module.exports = {
   bail: true,
   cache: false,
   devtool: "cheap-source-map",
-  // XXX todo: why are we using our own polyfill and not babel-polyfill?
-  entry: [require.resolve("../polyfills/polyfills"), path.join(src, "index")],
+  entry: ["babel-polyfill", "./src/index"],
   output: {
     path: path.resolve("build"),
     filename: "static/js/[name].[chunkhash:8].js",
-    // chunkFilename: "static/js/[name].[chunkhash:8].chunk.js",
     publicPath
   },
   module: {
