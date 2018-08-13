@@ -43,13 +43,13 @@ class ScanpyEngine(CXGDriver):
     def _add_mandatory_annotations(self):
         # ensure gene
         self.data.var["name"] = list(self.data.var.index)
-        self.data.var.index = Series(list(range(self.data.var.shape[0])), dtype='int32')
+        self.data.var.index = Series(list(range(self.data.var.shape[0])), dtype="int32")
         # ensure cell name
         self.data.obs["name"] = list(self.data.obs.index)
-        self.data.obs.index = Series(list(range(self.data.obs.shape[0])), dtype='int32')
+        self.data.obs.index = Series(list(range(self.data.obs.shape[0])), dtype="int32")
 
     def _validatate_data_types(self):
-        if self.data.X.dtype != 'float32':
+        if self.data.X.dtype != "float32":
             warnings.warn(f"Scanpy data matrix is in {self.data.X.dtype} format not float32. "
                           f"Precision may be truncated.")
 
