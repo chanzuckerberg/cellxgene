@@ -17,7 +17,7 @@ module.exports = {
   bail: true,
   cache: false,
   devtool: "cheap-source-map",
-  entry: ["babel-polyfill", "./src/index"],
+  entry: ["./src/index"],
   output: {
     path: path.resolve("build"),
     filename: "static/js/[name].[chunkhash:8].js",
