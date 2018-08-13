@@ -2,14 +2,11 @@
   "name": "cellxgene",
   "version": "0.0.1",
   "license": "MIT",
-  "description":
-    "cellxgene is a web application for the interactive exploration of single cell sequence data.",
+  "description": "cellxgene is a web application for the interactive exploration of single cell sequence data.",
   "repository": "https://github.com/chanzuckerberg/cellxgene",
   "scripts": {
-    "build":
-      "npm run clean && webpack --config configuration/webpack/webpack.config.prod.js",
-    "dev":
-      "npm run clean && webpack --config configuration/webpack/webpack.config.dev.js",
+    "build": "npm run clean && webpack --config configuration/webpack/webpack.config.prod.js",
+    "dev": "npm run clean && webpack --config configuration/webpack/webpack.config.dev.js",
     "clean": "rimraf build",
     "start": "node server/development.js",
     "lint": "eslint src",
@@ -40,6 +37,7 @@
     "mouse-position": "^2.0.1",
     "mouse-pressed": "^1.0.0",
     "orbit-camera": "^1.0.0",
+    "promise": "^7.1.1",
     "query-string": "^6.1.0",
     "react": "^16.4.2",
     "react-autocomplete": "^1.7.2",
@@ -90,7 +88,6 @@
     "mini-css-extract-plugin": "^0.4.1",
     "nyc": "^13.0.1",
     "postcss-loader": "^2.1.6",
-    "promise": "^7.1.1",
     "redbox-react": "^1.3.0",
     "rimraf": "^2.5.4",
     "serve-favicon": "^2.3.0",
@@ -103,7 +100,9 @@
     "webpack-hot-middleware": "^2.22.3"
   },
   "jest": {
-    "testMatch": ["**/__tests__/**/?(*.)(spec|test).js?(x)"],
+    "testMatch": [
+      "**/__tests__/**/?(*.)(spec|test).js?(x)"
+    ],
     "testURL": "http://localhost/"
   }
 }
