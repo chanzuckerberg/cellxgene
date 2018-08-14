@@ -11,6 +11,10 @@ class CXGDriver(metaclass=ABCMeta):
         pass
 
     @abstractmethod
+    def _load_or_infer_schema(data):
+        pass
+
+    @abstractmethod
     def cells(self):
         pass
 
