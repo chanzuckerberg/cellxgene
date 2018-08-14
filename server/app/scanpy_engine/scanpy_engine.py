@@ -82,7 +82,7 @@ class ScanpyEngine(CXGDriver):
         return self.data.var.index.tolist()
 
     # Can't seem to cache a view of a dataframe, need to investigate why
-    def filter_cells(self, filter):
+    def filter_dataframe(self, filter):
         """
         Filter cells from data and return a subset of the data
         A filter is a dictionary where the key is a metadatata category
@@ -94,21 +94,44 @@ class ScanpyEngine(CXGDriver):
         :param filter:
         :return: filtered dataframe
         """
-        cell_idx = np.ones((self.cell_count,), dtype=bool)
-        for key, value in filter.items():
-            if value["variable_type"] == "categorical":
-                key_idx = np.in1d(getattr(self.data.obs, key), value["query"])
-                cell_idx = np.logical_and(cell_idx, key_idx)
-            else:
-                min_ = value["query"]["min"]
-                max_ = value["query"]["max"]
-                if min_ is not None:
-                    key_idx = np.array((getattr(self.data.obs, key) >= min_).data)
-                    cell_idx = np.logical_and(cell_idx, key_idx)
-                if max_ is not None:
-                    key_idx = np.array((getattr(self.data.obs, key) <= max_).data)
-                    cell_idx = np.logical_and(cell_idx, key_idx)
-        return self.data[cell_idx, :]
+        cells_idx = np.ones((self.cell_count,), dtype=bool)
+        genes_idx = np.ones((self.gene_count,), dtype=bool)
+        if "obs" in filter:
+            if "index" in filter["obs"]:
+                idx_filter_cell = np.zeros((self.cell_count,), dtype=bool)
+                for i in filter["obs"]["index"]:
+                    if type(i) == list:
+                        cells_idx[i[0]:i[1]] = True
+                    else:
+                        cells_idx[i] = True
+                cells_idx = np.logical_and(cells_idx, idx_filter_cell)
+        if "var" in filter:
+            if "index" in filter["obs"]:
+                idx_filter_gene = np.zeros((self.gene_count,), dtype=bool)
+                for i in filter["obs"]["index"]:
+                    if type(i) == list:
+                        genes_idx[i[0]:i[1]] = True
+                    else:
+                        genes_idx[i] = True
+                genes_idx = np.logical_and(genes_idx, idx_filter_gene)
+        #
+        # for key, value in filter.items():
+        #     if value["variable_type"] == "categorical":
+        #         key_idx = np.in1d(getattr(self.data.obs, key), value["query"])
+        #         cell_idx = np.logical_and(cell_idx, key_idx)
+        #     else:
+        #         min_ = value["query"]["min"]
+        #         max_ = value["query"]["max"]
+        #         if min_ is not None:
+        #             key_idx = np.array((getattr(self.data.obs, key) >= min_).data)
+        #             cell_idx = np.logical_and(cell_idx, key_idx)
+        #         if max_ is not None:
+        #             key_idx = np.array((getattr(self.data.obs, key) <= max_).data)
+        #             cell_idx = np.logical_and(cell_idx, key_idx)
+
+        # Scanpy doesn't support indexing both cells and genes at the same time
+        index = np.ix_(cells_idx, genes_idx)
+        return self.data[index]
 
     @cache.memoize()
     def metadata_ranges(self, df=None):
