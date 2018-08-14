@@ -32,7 +32,7 @@ app.use(historyApiFallback({ verbose: false }));
 
 app.use(
   require("webpack-dev-middleware")(compiler, {
-    noInfo: true,
+    logLevel: 'warn',
     publicPath: config.output.publicPath
   })
 );
