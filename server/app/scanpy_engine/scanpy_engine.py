@@ -39,41 +39,18 @@ class ScanpyEngine(CXGDriver):
     def _load_data(data):
         return sc.read(os.path.join(data, "data.h5ad"))
 
-    def _load_or_infer_schema(self, data, schema):
-        if not os.path.isfile(os.path.join(data, schema)):
-            # Initialize with cell name which is built off the index
-            data_schema = {
-                "CellName": {
-                    "type": "string",
-                    "variabletype": "categorical",
-                    "displayname": "Name",
-                    "include": True
-                }
-            }
-            metadata_fields = list(self.data.obs)
-            for m in metadata_fields:
-                # Since there are many type of float/int in numpy datatypes the kind attribute of a datatype object
-                # offers a decent insight into whether it can be lumped in with floats or ints, which is what we
-                # care about here.
-                data_kind = self.data.obs[m].dtype.kind
-                variable_type = "categorical"
-                data_type = "string"
-                if data_kind == 'f':
-                    variable_type = "continuous"
-                    data_type = "float"
-                elif data_kind in ['i', 'u']:
-                    data_type = "int"
-                    if self.data.obs[m].nunique() > 50:
-                        variable_type = "continuous"
-                data_schema[m] = {
-                    "type": data_type,
-                    "variabletype": variable_type,
-                    "displayname": m,
-                    "include": True
-                }
-        else:
-            data_schema = parse_schema(os.path.join(data, schema))
-        return data_schema
+    def _add_mandatory_annotations(self):
+        # ensure gene
+        self.data.var["name"] = list(self.data.var.index)
+        self.data.var.index = Series(list(range(self.data.var.shape[0])), dtype="category")
+        # ensure cell name
+        self.data.obs["name"] = list(self.data.obs.index)
+        self.data.obs.index = Series(list(range(self.data.obs.shape[0])), dtype="category")
+
+    def _validatate_data_types(self):
+        if self.data.X.dtype != "float32":
+            warnings.warn(f"Scanpy data matrix is in {self.data.X.dtype} format not float32. "
+                          f"Precision may be truncated.")
 
     def cells(self):
         return list(self.data.obs.index)
@@ -101,37 +78,51 @@ class ScanpyEngine(CXGDriver):
                 idx_filter_cell = np.zeros((self.cell_count,), dtype=bool)
                 for i in filter["obs"]["index"]:
                     if type(i) == list:
-                        cells_idx[i[0]:i[1]] = True
+                        idx_filter_cell[i[0]:i[1]] = True
                     else:
-                        cells_idx[i] = True
+                        idx_filter_cell[i] = True
                 cells_idx = np.logical_and(cells_idx, idx_filter_cell)
-        if "var" in filter:
-            if "index" in filter["obs"]:
-                idx_filter_gene = np.zeros((self.gene_count,), dtype=bool)
-                for i in filter["obs"]["index"]:
-                    if type(i) == list:
-                        genes_idx[i[0]:i[1]] = True
+            if "annotation_value" in filter["obs"]:
+                for v in filter["obs"]["annotation_value"]:
+                    if self.data.obs[v["name"]].dtype in ["category", "string"]:
+                        key_idx = np.in1d(getattr(self.data.obs, v["name"]), v["query"])
+                        cells_idx = np.logical_and(cells_idx, key_idx)
                     else:
-                        genes_idx[i] = True
-                genes_idx = np.logical_and(genes_idx, idx_filter_gene)
-        #
-        # for key, value in filter.items():
-        #     if value["variable_type"] == "categorical":
-        #         key_idx = np.in1d(getattr(self.data.obs, key), value["query"])
-        #         cell_idx = np.logical_and(cell_idx, key_idx)
-        #     else:
-        #         min_ = value["query"]["min"]
-        #         max_ = value["query"]["max"]
-        #         if min_ is not None:
-        #             key_idx = np.array((getattr(self.data.obs, key) >= min_).data)
-        #             cell_idx = np.logical_and(cell_idx, key_idx)
-        #         if max_ is not None:
-        #             key_idx = np.array((getattr(self.data.obs, key) <= max_).data)
-        #             cell_idx = np.logical_and(cell_idx, key_idx)
+                        min_ = v.get("min", None)
+                        max_ = v.get("max", None)
+                        if min_ is not None:
+                            key_idx = np.array((getattr(self.data.obs, v["name"]) >= min_).data)
+                            cells_idx = np.logical_and(cells_idx, key_idx)
+                        if max_ is not None:
+                            key_idx = np.array((getattr(self.data.obs, v["name"]) <= max_).data)
+                            cells_idx = np.logical_and(cells_idx, key_idx)
 
-        # Scanpy doesn't support indexing both cells and genes at the same time
-        index = np.ix_(cells_idx, genes_idx)
-        return self.data[index]
+        if "var" in filter:
+            if "index" in filter["var"]:
+                idx_filter_gene = np.zeros((self.gene_count,), dtype=bool)
+                for i in filter["var"]["index"]:
+                    if type(i) == list:
+                        idx_filter_gene[i[0]:i[1]] = True
+                    else:
+                        idx_filter_gene[i] = True
+                genes_idx = np.logical_and(genes_idx, idx_filter_gene)
+            if "annotation_value" in filter["var"]:
+                for v in filter["var"]["annotation_value"]:
+                    if self.data.var[v["name"]].dtype in ["category", "string"]:
+                        key_idx = np.in1d(getattr(self.data.var, v["name"]), v["query"])
+                        genes_idx = np.logical_and(genes_idx, key_idx)
+                    else:
+                        min_ = v.get("min", None)
+                        max_ = v.get("max", None)
+                        if min_ is not None:
+                            key_idx = np.array((getattr(self.data.var, v["name"]) >= min_).data)
+                            genes_idx = np.logical_and(genes_idx, key_idx)
+                        if max_ is not None:
+                            key_idx = np.array((getattr(self.data.var, v["name"]) <= max_).data)
+                            genes_idx = np.logical_and(genes_idx, key_idx)
+        # Due to anndata issues we can't index indo cells and genes at the same time
+        data = self.data[cells_idx,:]
+        return data[:,genes_idx]
 
     @cache.memoize()
     def metadata_ranges(self, df=None):

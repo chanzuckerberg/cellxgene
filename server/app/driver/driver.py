@@ -23,7 +23,7 @@ class CXGDriver(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def filter_cells(self, filter):
+    def filter_dataframe(self, filter):
         """
         Filter cells from data and return a subset of the data
         A filter is a dictionary where the key is a metadatata category
