@@ -26,7 +26,7 @@ class UtilTest(unittest.TestCase):
         self.assertWarns(UserWarning, self.data._validatate_data_types())
 
     def test_filter_idx(self):
-        filter = {
+        filter_ = {
             "filter": {
                 "var": {
                     "index": [1, 99, [200, 300]]
@@ -36,9 +36,50 @@ class UtilTest(unittest.TestCase):
                 }
             }
         }
-        data = self.data.filter_dataframe(filter["filter"])
+        data = self.data.filter_dataframe(filter_["filter"])
         self.assertEqual(data.shape, (1002, 102))
 
+    def test_filter_annotation(self):
+        filter_ = {
+            "filter": {
+                "obs": {
+                    "annotation_value": [
+                        {"name": "louvain", "values": ["NK cells", "CD8 T cells"]},
+                    ]
+                }
+            }
+        }
+        data = self.data.filter_dataframe(filter_["filter"])
+        self.assertEqual(data.shape, (470, 1838))
+        filter_ = {
+            "filter": {
+                "obs": {
+                    "annotation_value": [
+                        {"name": "n_counts", "min": 3000},
+                    ]
+                }
+            }
+        }
+        data = self.data.filter_dataframe(filter_["filter"])
+        self.assertEqual(data.shape, (497, 1838))
 
-if __name__ == '__main__':
-    unittest.main()
+    def test_filter_complex(self):
+        filter_ = {
+            "filter": {
+                "var": {
+                    "index": [1, 99, [200, 300]]
+                },
+                "obs": {
+                    "annotation_value": [
+                        {"name": "louvain", "values": ["NK cells", "CD8 T cells"]},
+                        {"name": "n_counts", "min": 3000},
+                    ],
+                    "index": [1, 99, [1000, 2000]]
+                }
+            }
+        }
+        data = self.data.filter_dataframe(filter_["filter"])
+        self.assertEqual(data.shape, (15, 102))
+
+        if __name__ == '__main__':
+            unittest.main()
