@@ -75,54 +75,47 @@ class ScanpyEngine(CXGDriver):
         genes_idx = np.ones((self.gene_count,), dtype=bool)
         if "obs" in filter:
             if "index" in filter["obs"]:
-                idx_filter_cell = np.zeros((self.cell_count,), dtype=bool)
-                for i in filter["obs"]["index"]:
-                    if type(i) == list:
-                        idx_filter_cell[i[0]:i[1]] = True
-                    else:
-                        idx_filter_cell[i] = True
-                cells_idx = np.logical_and(cells_idx, idx_filter_cell)
+                cells_idx = self._filter_index(cells_idx, filter["obs"]["index"], "obs")
             if "annotation_value" in filter["obs"]:
-                for v in filter["obs"]["annotation_value"]:
-                    if self.data.obs[v["name"]].dtype.name in ["category", "string"]:
-                        key_idx = np.in1d(getattr(self.data.obs, v["name"]), v["values"])
-                        cells_idx = np.logical_and(cells_idx, key_idx)
-                    else:
-                        min_ = v.get("min", None)
-                        max_ = v.get("max", None)
-                        if min_ is not None:
-                            key_idx = (getattr(self.data.obs, v["name"]) >= min_).ravel()
-                            cells_idx = np.logical_and(cells_idx, key_idx)
-                        if max_ is not None:
-                            key_idx = (getattr(self.data.obs, v["name"]) <= max_).ravel()
-                            cells_idx = np.logical_and(cells_idx, key_idx)
-
+                cells_idx = self._filter_annotation(cells_idx, filter["obs"]["annotation_value"], "obs")
         if "var" in filter:
             if "index" in filter["var"]:
-                idx_filter_gene = np.zeros((self.gene_count,), dtype=bool)
-                for i in filter["var"]["index"]:
-                    if type(i) == list:
-                        idx_filter_gene[i[0]:i[1]] = True
-                    else:
-                        idx_filter_gene[i] = True
-                genes_idx = np.logical_and(genes_idx, idx_filter_gene)
+                genes_idx = self._filter_index(genes_idx, filter["var"]["index"], "var")
             if "annotation_value" in filter["var"]:
-                for v in filter["var"]["annotation_value"]:
-                    if self.data.var[v["name"]].dtype in ["category", "string"]:
-                        key_idx = np.in1d(getattr(self.data.var, v["name"]), v["query"])
-                        genes_idx = np.logical_and(genes_idx, key_idx)
-                    else:
-                        min_ = v.get("min", None)
-                        max_ = v.get("max", None)
-                        if min_ is not None:
-                            key_idx = (getattr(self.data.var, v["name"]) >= min_).ravel()
-                            genes_idx = np.logical_and(genes_idx, key_idx)
-                        if max_ is not None:
-                            key_idx = (getattr(self.data.var, v["name"]) <= max_).ravel()
-                            genes_idx = np.logical_and(genes_idx, key_idx)
+                genes_idx = self._filter_annotation(genes_idx, filter["var"]["annotation_value"], "var")
         # Due to anndata issues we can't index into cells and genes at the same time
         data = self.data[cells_idx,:]
         return data[:,genes_idx]
+
+    def _filter_index(self, index, filter, axis):
+        if axis == "obs":
+            count_ = self.cell_count
+        elif axis == "var":
+            count_ = self.gene_count
+        idx_filter= np.zeros((count_,), dtype=bool)
+        for i in filter:
+            if type(i) == list:
+                idx_filter[i[0]:i[1]] = True
+            else:
+                idx_filter[i] = True
+        return np.logical_and(index, idx_filter)
+
+    def _filter_annotation(self, index, filter, axis):
+        d_axis = getattr(self.data, axis)
+        for v in filter:
+            if d_axis[v["name"]].dtype.name in ["category", "string"]:
+                key_idx = np.in1d(getattr(d_axis, v["name"]), v["values"])
+                index = np.logical_and(index, key_idx)
+            else:
+                min_ = v.get("min", None)
+                max_ = v.get("max", None)
+                if min_ is not None:
+                    key_idx = (getattr(d_axis, v["name"]) >= min_).ravel()
+                    index = np.logical_and(index, key_idx)
+                if max_ is not None:
+                    key_idx = (getattr(d_axis, v["name"]) <= max_).ravel()
+                    index = np.logical_and(index, key_idx)
+        return index
 
     @cache.memoize()
     def metadata_ranges(self, df=None):
