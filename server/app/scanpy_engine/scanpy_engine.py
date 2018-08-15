@@ -84,17 +84,17 @@ class ScanpyEngine(CXGDriver):
                 cells_idx = np.logical_and(cells_idx, idx_filter_cell)
             if "annotation_value" in filter["obs"]:
                 for v in filter["obs"]["annotation_value"]:
-                    if self.data.obs[v["name"]].dtype in ["category", "string"]:
-                        key_idx = np.in1d(getattr(self.data.obs, v["name"]), v["query"])
+                    if self.data.obs[v["name"]].dtype.name in ["category", "string"]:
+                        key_idx = np.in1d(getattr(self.data.obs, v["name"]), v["values"])
                         cells_idx = np.logical_and(cells_idx, key_idx)
                     else:
                         min_ = v.get("min", None)
                         max_ = v.get("max", None)
                         if min_ is not None:
-                            key_idx = np.array((getattr(self.data.obs, v["name"]) >= min_).data)
+                            key_idx = (getattr(self.data.obs, v["name"]) >= min_).ravel()
                             cells_idx = np.logical_and(cells_idx, key_idx)
                         if max_ is not None:
-                            key_idx = np.array((getattr(self.data.obs, v["name"]) <= max_).data)
+                            key_idx = (getattr(self.data.obs, v["name"]) <= max_).ravel()
                             cells_idx = np.logical_and(cells_idx, key_idx)
 
         if "var" in filter:
@@ -115,12 +115,12 @@ class ScanpyEngine(CXGDriver):
                         min_ = v.get("min", None)
                         max_ = v.get("max", None)
                         if min_ is not None:
-                            key_idx = np.array((getattr(self.data.var, v["name"]) >= min_).data)
+                            key_idx = (getattr(self.data.var, v["name"]) >= min_).ravel()
                             genes_idx = np.logical_and(genes_idx, key_idx)
                         if max_ is not None:
-                            key_idx = np.array((getattr(self.data.var, v["name"]) <= max_).data)
+                            key_idx = (getattr(self.data.var, v["name"]) <= max_).ravel()
                             genes_idx = np.logical_and(genes_idx, key_idx)
-        # Due to anndata issues we can't index indo cells and genes at the same time
+        # Due to anndata issues we can't index into cells and genes at the same time
         data = self.data[cells_idx,:]
         return data[:,genes_idx]
 
