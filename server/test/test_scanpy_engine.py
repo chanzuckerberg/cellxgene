@@ -120,5 +120,5 @@ class UtilTest(unittest.TestCase):
         data = self.data.filter_dataframe(filter_["filter"])
         self.assertEqual(data.shape, (15, 102))
 
-        if __name__ == '__main__':
-            unittest.main()
+    if __name__ == '__main__':
+        unittest.main()
