@@ -62,38 +62,43 @@ class ScanpyEngine(CXGDriver):
     # Can't seem to cache a view of a dataframe, need to investigate why
     def filter_dataframe(self, filter):
         """
-        Filter cells from data and return a subset of the data
-        A filter is a dictionary where the key is a metadatata category
-        Value is dictionary
-            value_type: int, float, string
-            variable_type: continuous, categorical
-            query: filter value, for categorical [val1, val2], for continuous {min: x, max:y}
-        Filters are combined with the and operator
-        :param filter:
-        :return: filtered dataframe
+         Filter cells from data and return a subset of the data. They can operate on both obs and var dimension with
+         indexing and filtering by annotation value. Filters are combined with the and operator.
+         See REST specs for info on filter format:
+         https://docs.google.com/document/d/1Fxjp1SKtCk7l8QP9-7KAjGXL0eldi_qEnNT0NmlGzXI/edit#heading=h.8qc9q57amldx
+
+        :param filter: dictionary with filter parames
+        :return: View into scanpy object with cells/genes filtered
         """
         cells_idx = np.ones((self.cell_count,), dtype=bool)
         genes_idx = np.ones((self.gene_count,), dtype=bool)
         if "obs" in filter:
             if "index" in filter["obs"]:
-                cells_idx = self._filter_index(cells_idx, filter["obs"]["index"], "obs")
+                cells_idx = self._filter_index(filter["obs"]["index"], cells_idx, "obs")
             if "annotation_value" in filter["obs"]:
-                cells_idx = self._filter_annotation(cells_idx, filter["obs"]["annotation_value"], "obs")
+                cells_idx = self._filter_annotation(filter["obs"]["annotation_value"], cells_idx, "obs")
         if "var" in filter:
             if "index" in filter["var"]:
-                genes_idx = self._filter_index(genes_idx, filter["var"]["index"], "var")
+                genes_idx = self._filter_index(filter["var"]["index"], genes_idx, "var")
             if "annotation_value" in filter["var"]:
-                genes_idx = self._filter_annotation(genes_idx, filter["var"]["annotation_value"], "var")
+                genes_idx = self._filter_annotation(filter["var"]["annotation_value"], genes_idx, "var")
         # Due to anndata issues we can't index into cells and genes at the same time
-        data = self.data[cells_idx,:]
-        return data[:,genes_idx]
+        data = self.data[cells_idx, :]
+        return data[:, genes_idx]
 
-    def _filter_index(self, index, filter, axis):
+    def _filter_index(self, filter, index, axis):
+        """
+        Filter data based on index. ex. [1, 3, [111:200]]
+        :param filter: subset of filter dict for obs/var:index
+        :param index: np logical vector containing true for passing false for failing filter
+        :param axis: string obs or var
+        :return: np logical vector containing true for passing false for failing filter
+        """
         if axis == "obs":
             count_ = self.cell_count
         elif axis == "var":
             count_ = self.gene_count
-        idx_filter= np.zeros((count_,), dtype=bool)
+        idx_filter = np.zeros((count_,), dtype=bool)
         for i in filter:
             if type(i) == list:
                 idx_filter[i[0]:i[1]] = True
@@ -101,7 +106,14 @@ class ScanpyEngine(CXGDriver):
                 idx_filter[i] = True
         return np.logical_and(index, idx_filter)
 
-    def _filter_annotation(self, index, filter, axis):
+    def _filter_annotation(self, filter, index, axis):
+        """
+        Filter data based on annotation value
+        :param filter: subset of filter dict for obs/var:annotation_value
+        :param index: np logical vector containing true for passing false for failing filter
+        :param axis: string obs or var
+        :return: np logical vector containing true for passing false for failing filter
+        """
         d_axis = getattr(self.data, axis)
         for v in filter:
             if d_axis[v["name"]].dtype.name in ["category", "string"]:
