@@ -3,6 +3,8 @@ import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
 import * as globals from "../../globals";
+import * as d3 from "d3";
+import { interpolateViridis } from "d3-scale-chromatic";
 
 // create continuous color legend
 // http://bl.ocks.org/syntagmatic/e8ccca52559796be775553b467593a9f

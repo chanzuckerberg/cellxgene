@@ -9,6 +9,8 @@ import actions from "../../actions";
 import ReactAutocomplete from "react-autocomplete"; /* http://emilebres.github.io/react-virtualized-checkbox/ */
 import getContrast from "font-color-contrast"; // https://www.npmjs.com/package/font-color-contrast
 import FaPaintBrush from "react-icons/lib/fa/paint-brush";
+import * as d3 from "d3";
+import { interpolateGreys } from "d3-scale-chromatic";
 
 class HeatmapSquare extends React.Component {
   constructor(props) {
@@ -121,15 +123,13 @@ class HeatmapRow extends React.Component {
           style={{
             fontSize: 12,
             marginLeft: 10,
-            marginRight: 10,
+            marginRight: 10
           }}
         >
           {this.props.aveDiff.toFixed(2)}
         </span>
         <span
-          onClick={this.handleSetGeneAsScatterplotX(this.props.gene).bind(
-            this
-          )}
+          onClick={this.handleSetGeneAsScatterplotX(this.props.gene).bind(this)}
           style={{
             fontSize: 16,
             color:
@@ -152,9 +152,7 @@ class HeatmapRow extends React.Component {
           X
         </span>
         <span
-          onClick={this.handleSetGeneAsScatterplotY(this.props.gene).bind(
-            this
-          )}
+          onClick={this.handleSetGeneAsScatterplotY(this.props.gene).bind(this)}
           style={{
             fontSize: 16,
             color:
@@ -242,7 +240,7 @@ class Heatmap extends React.Component {
     const greyColorScale = d3
       .scaleSequential()
       .domain(extent)
-      .interpolator(d3.interpolateGreys);
+      .interpolator(interpolateGreys);
 
     return (
       <div>

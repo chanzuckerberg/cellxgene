@@ -1,5 +1,6 @@
 // jshint esversion: 6
 import _ from "lodash";
+import * as d3 from "d3";
 
 const paddingRight = 120;
 const continuousChartWidth = 1200;

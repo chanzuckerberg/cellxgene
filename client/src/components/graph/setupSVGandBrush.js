@@ -2,6 +2,7 @@
 import styles from "./graph.css";
 import _ from "lodash";
 import * as globals from "../../globals";
+import * as d3 from "d3";
 
 /******************************************
 *******************************************

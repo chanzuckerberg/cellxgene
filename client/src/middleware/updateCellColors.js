@@ -3,6 +3,8 @@ import uri from "urijs";
 import * as globals from "../globals";
 import _ from "lodash";
 import { parseRGB } from "../util/parseRGB";
+import * as d3 from "d3";
+import { interpolateViridis } from "d3-scale-chromatic";
 
 /*
   https://medium.com/@jacobp100/you-arent-using-redux-middleware-enough-94ffe991e6
@@ -67,7 +69,7 @@ const updateCellColorsMiddleware = store => {
           .range([1, 0]);
 
         _.each(cellsMetadataWithUpdatedColors, (cell, i) => {
-          let c = d3.interpolateViridis(colorScale(cell[action.colorAccessor]));
+          let c = interpolateViridis(colorScale(cell[action.colorAccessor]));
           cellsMetadataWithUpdatedColors[i]["__color__"] = c;
           cellsMetadataWithUpdatedColors[i]["__colorRGB__"] = parseRGB(c);
         });
@@ -112,7 +114,7 @@ const updateCellColorsMiddleware = store => {
           ]); /* invert viridis... probably pass this scale through to others */
 
         _.each(cellsMetadataWithUpdatedColors, (cell, i) => {
-          let c = d3.interpolateViridis(
+          let c = interpolateViridis(
             colorScale(expressionMap[cell.CellName][indexOfGene])
           );
           cellsMetadataWithUpdatedColors[i]["__color__"] = c;
