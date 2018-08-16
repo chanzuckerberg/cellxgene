@@ -75,7 +75,7 @@ class ScanpyEngine(CXGDriver):
         genes_idx = np.ones((self.gene_count,), dtype=bool)
         if "obs" in filter:
             if "index" in filter["obs"]:
-                cells_idx = self._filter_index(filter["obs"]["index"], cells_idx,  Axis.OBS)
+                cells_idx = self._filter_index(filter["obs"]["index"], cells_idx, Axis.OBS)
             if "annotation_value" in filter["obs"]:
                 cells_idx = self._filter_annotation(filter["obs"]["annotation_value"], cells_idx, Axis.OBS)
         if "var" in filter:
@@ -93,7 +93,7 @@ class ScanpyEngine(CXGDriver):
         :param filter: subset of filter dict for obs/var:index
         :param index: np logical vector containing true for passing false for failing filter
         :param axis: Axis
-        :return: np logical vector containing true for passing false for failing filter
+        :return: np logical vector for whether the data passes the filter
         """
         if axis == Axis.OBS:
             count_ = self.cell_count
@@ -113,7 +113,7 @@ class ScanpyEngine(CXGDriver):
         :param filter: subset of filter dict for obs/var:annotation_value
         :param index: np logical vector containing true for passing false for failing filter
         :param axis: string obs or var
-        :return: np logical vector containing true for passing false for failing filter
+        :return: np logical vector for whether the data passes the filter
         """
         d_axis = getattr(self.data, axis.value)
         for v in filter:
