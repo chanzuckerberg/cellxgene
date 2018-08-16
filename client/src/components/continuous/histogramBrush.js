@@ -185,9 +185,7 @@ class HistogramBrush extends React.Component {
                 ? globals.brightBlue
                 : "black",
             // backgroundColor: this.props.colorAccessor === this.props.metadataField ? globals.brightBlue : "inherit",
-            // display: "inline-block",
             position: "relative",
-            // left: this.width + 15,
             top: -29,
             cursor: "pointer"
           }}
