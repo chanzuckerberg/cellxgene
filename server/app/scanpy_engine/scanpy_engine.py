@@ -6,7 +6,8 @@ from scipy import stats
 
 from server.app.app import cache
 from server.app.driver.driver import CXGDriver
-from server.app.util.schema_parse import parse_schema
+
+from server.app.util.axis import Axis
 
 
 class ScanpyEngine(CXGDriver):
@@ -64,6 +65,7 @@ class ScanpyEngine(CXGDriver):
          Filter cells from data and return a subset of the data. They can operate on both obs and var dimension with
          indexing and filtering by annotation value. Filters are combined with the and operator.
          See REST specs for info on filter format:
+         # TODO update this link to swagger when it's done
          https://docs.google.com/document/d/1Fxjp1SKtCk7l8QP9-7KAjGXL0eldi_qEnNT0NmlGzXI/edit#heading=h.8qc9q57amldx
 
         :param filter: dictionary with filter parames
@@ -73,14 +75,14 @@ class ScanpyEngine(CXGDriver):
         genes_idx = np.ones((self.gene_count,), dtype=bool)
         if "obs" in filter:
             if "index" in filter["obs"]:
-                cells_idx = self._filter_index(filter["obs"]["index"], cells_idx, "obs")
+                cells_idx = self._filter_index(filter["obs"]["index"], cells_idx,  Axis.OBS)
             if "annotation_value" in filter["obs"]:
-                cells_idx = self._filter_annotation(filter["obs"]["annotation_value"], cells_idx, "obs")
+                cells_idx = self._filter_annotation(filter["obs"]["annotation_value"], cells_idx, Axis.OBS)
         if "var" in filter:
             if "index" in filter["var"]:
-                genes_idx = self._filter_index(filter["var"]["index"], genes_idx, "var")
+                genes_idx = self._filter_index(filter["var"]["index"], genes_idx, Axis.VAR)
             if "annotation_value" in filter["var"]:
-                genes_idx = self._filter_annotation(filter["var"]["annotation_value"], genes_idx, "var")
+                genes_idx = self._filter_annotation(filter["var"]["annotation_value"], genes_idx, Axis.VAR)
         # Due to anndata issues we can't index into cells and genes at the same time
         data = self.data[cells_idx, :]
         return data[:, genes_idx]
@@ -90,12 +92,12 @@ class ScanpyEngine(CXGDriver):
         Filter data based on index. ex. [1, 3, [111:200]]
         :param filter: subset of filter dict for obs/var:index
         :param index: np logical vector containing true for passing false for failing filter
-        :param axis: string obs or var
+        :param axis: Axis
         :return: np logical vector containing true for passing false for failing filter
         """
-        if axis == "obs":
+        if axis == Axis.OBS:
             count_ = self.cell_count
-        elif axis == "var":
+        elif axis == Axis.VAR:
             count_ = self.gene_count
         idx_filter = np.zeros((count_,), dtype=bool)
         for i in filter:
@@ -113,7 +115,7 @@ class ScanpyEngine(CXGDriver):
         :param axis: string obs or var
         :return: np logical vector containing true for passing false for failing filter
         """
-        d_axis = getattr(self.data, axis)
+        d_axis = getattr(self.data, axis.value)
         for v in filter:
             if d_axis[v["name"]].dtype.name in ["category", "string"]:
                 key_idx = np.in1d(getattr(d_axis, v["name"]), v["values"])
