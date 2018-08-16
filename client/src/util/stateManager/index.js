@@ -20,7 +20,7 @@ class Universe {
   alternative: should the constructor consume the raw data needed
   to create a universe, removing the need for the setters below?
   */
-  constructor() {}
+  constructor(apiVersion) {}
 
   /**
    ** setters or equivalent - build the universe
@@ -30,11 +30,12 @@ class Universe {
 
   /*
   Init-time set server-provided configuration, eg,
-  setConfigFromOTA('0.1', action.data).
+  setSchema(action.data).
   */
-  setSchemaFromOTA(apiVersion, OTAresponse) {}
-  setAnnotationsFromOTA(apiVersion, OTAresponse) {}
-  setLayoutFromOTA(apiVersion, OTAresponse) {}
+  setSchema(OTAresponse) {}
+  setObsAnnotationsObs(OTAresponse) {}
+  setAnnotationsVar(OTAresponse) {}
+  setLayoutObs(OTAresponse) {}
   // more?
 
   /*
@@ -113,7 +114,7 @@ class World {
 
   NOTE: world.annotation should be identical to the old state.cells value,
   EXCEPT that
-    * __cellIndex__ renamed to __cellId__
+    * __cellIndex__ renamed to __cellId__  XXX: should be in mapToUniverse
     * __x__ and __y__ are now in world.layout
     * __color__ and __colorRBG__ should be moved to controls reducer
 
@@ -134,10 +135,16 @@ class World {
   get annotations() {}
   get layout() {}
 
+  // private state - maps back to Universe index for any given obs
+  get mapToUniverseIndex() {}
+
   /*
   Summary information for each obs/cell annotation, keyed by annotation name.
   Value will be an object, containing either 'range' or 'options' object,
   depending on the annotation schema type (categorical or continuous)
+
+  XXX: code needs a list of all gene names, eg, "names": ...
+
   Example:
     {
       "Splice_sites_Annotated": {
@@ -165,7 +172,7 @@ class World {
 This is how I imagine the reducer will use this code.
 */
 
-const DataFrameReducer = (
+const DataFrame = (
   state = {
     universe: null,
     world: null,
