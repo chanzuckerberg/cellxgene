@@ -9,6 +9,7 @@ import _ from "lodash";
 import { connect } from "react-redux";
 import FaPaintBrush from "react-icons/lib/fa/paint-brush";
 import * as globals from "../../globals";
+import * as d3 from "d3";
 
 @connect(state => {
   const initializeRanges = _.get(state, "initialize.data.data.ranges", null);
@@ -155,9 +156,23 @@ class HistogramBrush extends React.Component {
   render() {
     return (
       <div
-        style={{ marginTop: 10, position: "relative" }}
+        style={{
+          marginTop: 10,
+          position: "flex"
+        }}
         id={"histogram_" + this.props.metadataField}
       >
+        <svg
+          width={this.width}
+          height={this.height}
+          ref={svgRef => {
+            this.drawHistogram(svgRef);
+          }}
+        >
+          {this.props.ranges.min}
+          {" to "}
+          {this.props.ranges.max}
+        </svg>
         <span
           onClick={this.handleColorAction.bind(this)}
           style={{
@@ -170,26 +185,13 @@ class HistogramBrush extends React.Component {
                 ? globals.brightBlue
                 : "black",
             // backgroundColor: this.props.colorAccessor === this.props.metadataField ? globals.brightBlue : "inherit",
-            display: "inline-block",
             position: "relative",
-            left: this.width,
-            top: this.height - 22,
+            top: -29,
             cursor: "pointer"
           }}
         >
           <FaPaintBrush />
         </span>
-        <svg
-          width={this.width}
-          height={this.height}
-          ref={svgRef => {
-            this.drawHistogram(svgRef);
-          }}
-        >
-          {this.props.ranges.min}
-          {" to "}
-          {this.props.ranges.max}
-        </svg>
       </div>
     );
   }

@@ -7,6 +7,7 @@ import { setupSVGandBrushElements } from "./setupSVGandBrush";
 import SectionHeader from "../framework/sectionHeader";
 import { connect } from "react-redux";
 import actions from "../../actions";
+import * as d3 from "d3";
 
 import mat4 from "gl-mat4";
 import fit from "canvas-fit";

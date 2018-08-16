@@ -9,7 +9,7 @@ import { connect } from "react-redux";
 import LeftSideBar from "./leftsidebar";
 import Parallel from "./continuous/parallel";
 import Legend from "./continuousLegend";
-import Joy from "./joy/joy";
+// import Joy from "./joy/joy";
 import Graph from "./graph/graph";
 import * as globals from "../globals";
 import actions from "../actions";
@@ -78,11 +78,7 @@ class App extends React.Component {
           </div>
         ) : null}
         {this.props.cells.error ? "Error loading cells" : null}
-        {false ? (
-          <Joy data={this.state.expressions && this.state.expressions.data} />
-        ) : (
-          ""
-        )}
+
         <div>
           <LeftSideBar />
           <div
@@ -103,3 +99,5 @@ class App extends React.Component {
 }
 
 export default App;
+
+// <Joy data={this.state.expressions && this.state.expressions.data} />
