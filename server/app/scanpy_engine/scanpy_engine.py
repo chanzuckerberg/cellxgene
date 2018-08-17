@@ -6,8 +6,7 @@ from scipy import stats
 
 from server.app.app import cache
 from server.app.driver.driver import CXGDriver
-
-from server.app.util.axis import Axis
+from server.app.util.constants import Axis
 
 
 class ScanpyEngine(CXGDriver):
@@ -73,12 +72,12 @@ class ScanpyEngine(CXGDriver):
         """
         cells_idx = np.ones((self.cell_count,), dtype=bool)
         genes_idx = np.ones((self.gene_count,), dtype=bool)
-        if "obs" in filter:
+        if Axis.OBS in filter:
             if "index" in filter["obs"]:
                 cells_idx = self._filter_index(filter["obs"]["index"], cells_idx, Axis.OBS)
             if "annotation_value" in filter["obs"]:
                 cells_idx = self._filter_annotation(filter["obs"]["annotation_value"], cells_idx, Axis.OBS)
-        if "var" in filter:
+        if Axis.VAR in filter:
             if "index" in filter["var"]:
                 genes_idx = self._filter_index(filter["var"]["index"], genes_idx, Axis.VAR)
             if "annotation_value" in filter["var"]:
