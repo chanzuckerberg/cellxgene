@@ -19,17 +19,15 @@ class CXGDriver(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def filter_cells(self, filter):
+    def filter_dataframe(self, filter):
         """
-        Filter cells from data and return a subset of the data
-        A filter is a dictionary where the key is a metadatata category
-        Value is dictionary
-            value_type: int, float, string
-            variable_type: continuous, categorical
-            query: filter value, for categorical [val1, val2], for continuous {min: x, max:y}
-        Filters are combined with the and operator
-        :param filter:
-        :return: filtered dataframe
+         Filter cells from data and return a subset of the data. They can operate on both obs and var dimension with
+         indexing and filtering by annotation value. Filters are combined with the and operator.
+         See REST specs for info on filter format:
+         https://docs.google.com/document/d/1Fxjp1SKtCk7l8QP9-7KAjGXL0eldi_qEnNT0NmlGzXI/edit#heading=h.8qc9q57amldx
+
+        :param filter: dictionary with filter parames
+        :return: View into scanpy object with cells/genes filtered
         """
         pass
 

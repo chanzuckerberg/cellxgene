@@ -8,6 +8,7 @@ from scipy import stats
 
 from server.app.app import cache
 from server.app.driver.driver import CXGDriver
+from server.app.util.constants import Axis
 
 
 class ScanpyEngine(CXGDriver):
@@ -43,10 +44,10 @@ class ScanpyEngine(CXGDriver):
     def _add_mandatory_annotations(self):
         # ensure gene
         self.data.var["name"] = list(self.data.var.index)
-        self.data.var.index = Series(list(range(self.data.var.shape[0])), dtype="int32")
+        self.data.var.index = Series(list(range(self.data.var.shape[0])), dtype="category")
         # ensure cell name
         self.data.obs["name"] = list(self.data.obs.index)
-        self.data.obs.index = Series(list(range(self.data.obs.shape[0])), dtype="int32")
+        self.data.obs.index = Series(list(range(self.data.obs.shape[0])), dtype="category")
 
     def _validatate_data_types(self):
         if self.data.X.dtype != "float32":
@@ -60,33 +61,76 @@ class ScanpyEngine(CXGDriver):
         return self.data.var.index.tolist()
 
     # Can't seem to cache a view of a dataframe, need to investigate why
-    def filter_cells(self, filter):
+    def filter_dataframe(self, filter):
         """
-        Filter cells from data and return a subset of the data
-        A filter is a dictionary where the key is a metadatata category
-        Value is dictionary
-            value_type: int, float, string
-            variable_type: continuous, categorical
-            query: filter value, for categorical [val1, val2], for continuous {min: x, max:y}
-        Filters are combined with the and operator
-        :param filter:
-        :return: filtered dataframe
+         Filter cells from data and return a subset of the data. They can operate on both obs and var dimension with
+         indexing and filtering by annotation value. Filters are combined with the and operator.
+         See REST specs for info on filter format:
+         # TODO update this link to swagger when it's done
+         https://docs.google.com/document/d/1Fxjp1SKtCk7l8QP9-7KAjGXL0eldi_qEnNT0NmlGzXI/edit#heading=h.8qc9q57amldx
+
+        :param filter: dictionary with filter parames
+        :return: View into scanpy object with cells/genes filtered
         """
-        cell_idx = np.ones((self.cell_count,), dtype=bool)
-        for key, value in filter.items():
-            if value["variable_type"] == "categorical":
-                key_idx = np.in1d(getattr(self.data.obs, key), value["query"])
-                cell_idx = np.logical_and(cell_idx, key_idx)
+        cells_idx = np.ones((self.cell_count,), dtype=bool)
+        genes_idx = np.ones((self.gene_count,), dtype=bool)
+        if Axis.OBS in filter:
+            if "index" in filter["obs"]:
+                cells_idx = self._filter_index(filter["obs"]["index"], cells_idx, Axis.OBS)
+            if "annotation_value" in filter["obs"]:
+                cells_idx = self._filter_annotation(filter["obs"]["annotation_value"], cells_idx, Axis.OBS)
+        if Axis.VAR in filter:
+            if "index" in filter["var"]:
+                genes_idx = self._filter_index(filter["var"]["index"], genes_idx, Axis.VAR)
+            if "annotation_value" in filter["var"]:
+                genes_idx = self._filter_annotation(filter["var"]["annotation_value"], genes_idx, Axis.VAR)
+        # Due to anndata issues we can't index into cells and genes at the same time
+        data = self.data[cells_idx, :]
+        return data[:, genes_idx]
+
+    def _filter_index(self, filter, index, axis):
+        """
+        Filter data based on index. ex. [1, 3, [111:200]]
+        :param filter: subset of filter dict for obs/var:index
+        :param index: np logical vector containing true for passing false for failing filter
+        :param axis: Axis
+        :return: np logical vector for whether the data passes the filter
+        """
+        if axis == Axis.OBS:
+            count_ = self.cell_count
+        elif axis == Axis.VAR:
+            count_ = self.gene_count
+        idx_filter = np.zeros((count_,), dtype=bool)
+        for i in filter:
+            if type(i) == list:
+                idx_filter[i[0]:i[1]] = True
             else:
-                min_ = value["query"]["min"]
-                max_ = value["query"]["max"]
+                idx_filter[i] = True
+        return np.logical_and(index, idx_filter)
+
+    def _filter_annotation(self, filter, index, axis):
+        """
+        Filter data based on annotation value
+        :param filter: subset of filter dict for obs/var:annotation_value
+        :param index: np logical vector containing true for passing false for failing filter
+        :param axis: string obs or var
+        :return: np logical vector for whether the data passes the filter
+        """
+        d_axis = getattr(self.data, axis.value)
+        for v in filter:
+            if d_axis[v["name"]].dtype.name in ["boolean", "category", "string"]:
+                key_idx = np.in1d(getattr(d_axis, v["name"]), v["values"])
+                index = np.logical_and(index, key_idx)
+            else:
+                min_ = v.get("min", None)
+                max_ = v.get("max", None)
                 if min_ is not None:
-                    key_idx = np.array((getattr(self.data.obs, key) >= min_).data)
-                    cell_idx = np.logical_and(cell_idx, key_idx)
+                    key_idx = (getattr(d_axis, v["name"]) >= min_).ravel()
+                    index = np.logical_and(index, key_idx)
                 if max_ is not None:
-                    key_idx = np.array((getattr(self.data.obs, key) <= max_).data)
-                    cell_idx = np.logical_and(cell_idx, key_idx)
-        return self.data[cell_idx, :]
+                    key_idx = (getattr(d_axis, v["name"]) <= max_).ravel()
+                    index = np.logical_and(index, key_idx)
+        return index
 
     @cache.memoize()
     def metadata_ranges(self, df=None):
