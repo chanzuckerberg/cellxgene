@@ -18,7 +18,8 @@ import SectionHeader from "./framework/sectionHeader";
 
 @connect(state => {
   return {
-    cells: state.cells
+    cells: state.cells,
+    initialize: state.initialize
   };
 })
 class App extends React.Component {
@@ -60,27 +61,27 @@ class App extends React.Component {
   }
 
   render() {
-    // console.log('app:', this.props, this.state)
-
     return (
       <Container>
         <Helmet title="cellxgene" />
-        {this.props.cells.loading ? (
+        {this.props.cells.loading || this.props.initialize.loading ? (
           <div
-            style={{ position: "fixed", left: window.innerWidth / 2, top: 150 }}
+            style={{
+              position: "fixed",
+              fontWeight: 500,
+              top: window.innerHeight / 2,
+              left: window.innerWidth / 2 - 50
+            }}
           >
-            {/*<PulseLoader color="rgb(0,0,0)" size="10px" margin="4px" />*/}
-            <span
-              style={{ fontFamily: globals.accentFont, fontStyle: "italic" }}
-            >
-              loading cells
-            </span>
+            loading cellxgene
           </div>
         ) : null}
         {this.props.cells.error ? "Error loading cells" : null}
 
         <div>
-          <LeftSideBar />
+          {this.props.cells.loading || this.props.initialize.loading ? null : (
+            <LeftSideBar />
+          )}
           <div
             style={{
               padding: 15,
@@ -88,7 +89,11 @@ class App extends React.Component {
               marginLeft: 350 /* but responsive */
             }}
           >
-            <Graph />
+            {this.props.cells.loading ||
+            this.props.initialize.loading ? null : (
+              <Graph />
+            )}
+
             <Legend />
             {/*<Parallel/>*/}
           </div>
