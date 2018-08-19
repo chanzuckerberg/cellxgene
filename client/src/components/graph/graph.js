@@ -211,9 +211,12 @@ class Graph extends React.Component {
     }
 
     if (
-      /* invisibly handles the initial null vs integer case as well as resize events */
       prevProps.responsive.height !== this.props.responsive.height ||
-      prevProps.responsive.width !== this.props.responsive.width
+      prevProps.responsive.width !== this.props.responsive.width ||
+      /* first time */
+      (this.props.responsive.height &&
+        this.props.responsive.width &&
+        !this.state.svg)
     ) {
       /* clear out whatever was on the div, even if nothing, but usually the brushes etc */
       d3.select("#graphAttachPoint")
