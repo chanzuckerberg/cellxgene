@@ -25,7 +25,6 @@ class LeftSideBar extends React.Component {
     /* this magic number should be made less fragile, if cellxgene logo or tabs change, this must as well */
     const metadataSectionPadding =
       this.state.currentTab === "metadata" ? 88 : 450;
-    console.log(this.props.currentTab, metadataSectionPadding);
     return (
       <div style={{ position: "fixed" }}>
         <p
