@@ -244,30 +244,6 @@ class Heatmap extends React.Component {
 
     return (
       <div>
-        Color by any gene:
-        <ReactAutocomplete
-          items={this.props.allGeneNames}
-          shouldItemRender={(item, value) =>
-            item.toLowerCase().indexOf(value.toLowerCase()) > -1
-          }
-          getItemValue={item => item}
-          renderItem={(item, highlighted) => (
-            <div
-              key={item}
-              style={{ backgroundColor: highlighted ? "#eee" : "transparent" }}
-            >
-              {item}
-            </div>
-          )}
-          value={this.state.value}
-          onChange={e => this.setState({ value: e.target.value })}
-          onSelect={value => {
-            this.setState({ value });
-            this.props.dispatch(
-              actions.requestSingleGeneExpressionCountsForColoringPOST(value)
-            );
-          }}
-        />
         <div
           style={{
             display: "flex",

@@ -17,12 +17,14 @@ import DynamicScatterplot from "./scatterplot/scatterplot";
 class LeftSideBar extends React.Component {
   constructor(props) {
     super(props);
-    this.metadataSectionPadding = 300;
     this.state = {
       currentTab: "metadata"
     };
   }
   render() {
+    /* this magic number should be made less fragile, if cellxgene logo or tabs change, this must as well */
+    const metadataSectionPadding =
+      this.state.currentTab === "metadata" ? 88 : 450;
     return (
       <div style={{ position: "fixed" }}>
         <p
@@ -84,7 +86,7 @@ class LeftSideBar extends React.Component {
         </div>
         <div
           style={{
-            height: this.props.responsive.height - this.metadataSectionPadding,
+            height: this.props.responsive.height - metadataSectionPadding,
             width: 400,
             padding: 10,
             overflowY: "auto",
@@ -95,11 +97,19 @@ class LeftSideBar extends React.Component {
           {this.state.currentTab === "metadata" ? <Continuous /> : null}
           {this.state.currentTab === "expression" ? <Heatmap /> : null}
         </div>
-        <div style={{ position: "fixed", bottom: 0, left: 0 }}>
-          {this.state.currentTab === "metadata" ? <ExpressionButtons /> : null}
+        <div
+          style={{
+            position: "fixed",
+            bottom: 0,
+            left: 0
+          }}
+        >
           {this.state.currentTab === "expression" ? (
             <DynamicScatterplot />
           ) : null}
+        </div>
+        <div style={{ position: "fixed", bottom: 0, right: 0 }}>
+          {this.state.currentTab === "metadata" ? <ExpressionButtons /> : null}
         </div>
       </div>
     );

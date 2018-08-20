@@ -33,17 +33,18 @@ class CellSetButton extends React.Component {
           }}
           onClick={this.set.bind(this)}
         >
-          <span style={{ fontSize: 24, fontWeight: 700 }}>
+          <span style={{ fontSize: 14, fontWeight: 700 }}>
             {" "}
-            {this.props.eitherCellSetOneOrTwo}{" "}
+            {this.props.eitherCellSetOneOrTwo}
+            {": "}
           </span>
           <span
             style={{
               fontFamily: "Georgia",
-              fontStyle: "italic",
+              fontSize: 14,
               marginLeft: 8,
               position: "relative",
-              top: -3
+              top: 0
             }}
           >
             {this.props.differential[

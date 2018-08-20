@@ -36,6 +36,8 @@ class Graph extends React.Component {
     this.count = 0;
     this.inverse = mat4.identity([]);
     this.graphPaddingTop = 100;
+    this.graphPaddingBottom = 45;
+    this.graphPaddingRight = 10;
     this.renderCache = {
       positions: null,
       colors: null
@@ -209,9 +211,12 @@ class Graph extends React.Component {
     }
 
     if (
-      /* invisibly handles the initial null vs integer case as well as resize events */
       prevProps.responsive.height !== this.props.responsive.height ||
-      prevProps.responsive.width !== this.props.responsive.width
+      prevProps.responsive.width !== this.props.responsive.width ||
+      /* first time */
+      (this.props.responsive.height &&
+        this.props.responsive.width &&
+        !this.state.svg)
     ) {
       /* clear out whatever was on the div, even if nothing, but usually the brushes etc */
       d3.select("#graphAttachPoint")
@@ -315,9 +320,10 @@ class Graph extends React.Component {
               }}
               style={{
                 fontSize: 14,
-                fontWeight: 700,
+                fontWeight: 400,
                 color: "white",
-                padding: "10px 20px",
+                padding: "0px 10px",
+                height: 30,
                 marginRight: 10,
                 borderRadius: 2,
                 backgroundColor: globals.brightBlue,
@@ -333,9 +339,10 @@ class Graph extends React.Component {
               }}
               style={{
                 fontSize: 14,
-                fontWeight: 700,
+                fontWeight: 400,
                 color: "white",
-                padding: "10px 20px",
+                padding: "0px 10px",
+                height: 30,
                 marginRight: 10,
                 borderRadius: 2,
                 backgroundColor: globals.brightBlue,
@@ -346,7 +353,7 @@ class Graph extends React.Component {
               regraph selection
             </button>
             <div>
-              <span style={{ position: "relative", top: 3 }}>
+              <span>
                 <button
                   onClick={() => {
                     this.setState({ mode: "brush" });
@@ -359,6 +366,7 @@ class Graph extends React.Component {
                         : "1px solid white",
                     backgroundColor: "white",
                     padding: 5,
+                    marginRight: 10,
                     borderRadius: 3
                   }}
                 >
@@ -379,6 +387,7 @@ class Graph extends React.Component {
                         : "1px solid white",
                     backgroundColor: "white",
                     padding: 5,
+                    marginRight: 10,
                     borderRadius: 3
                   }}
                 >
@@ -391,9 +400,11 @@ class Graph extends React.Component {
               <button
                 style={{
                   fontSize: 14,
-                  fontWeight: 700,
+                  fontWeight: 400,
                   color: "white",
-                  padding: "10px 20px",
+                  padding: "0px 10px",
+                  height: 30,
+                  borderRadius: 2,
                   backgroundColor: globals.lightGrey,
                   border: "none",
                   cursor: "pointer"
@@ -410,8 +421,8 @@ class Graph extends React.Component {
             marginTop: 50,
             zIndex: -9999,
             position: "fixed",
-            right: 20,
-            bottom: 20
+            right: this.graphPaddingRight,
+            bottom: this.graphPaddingBottom
           }}
         >
           <div
