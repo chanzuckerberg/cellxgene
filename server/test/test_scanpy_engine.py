@@ -1,11 +1,19 @@
+import json
+from os import path
+import pytest
+import time
 import unittest
+
+from pandas import Series
+
 
 from server.app.scanpy_engine.scanpy_engine import ScanpyEngine
 
 
 class UtilTest(unittest.TestCase):
     def setUp(self):
-        self.data = ScanpyEngine("example-dataset/", schema="data_schema.json")
+        self.data = ScanpyEngine("example-dataset/")
+        self.data._create_schema()
 
     def test_init(self):
         self.assertEqual(self.data.cell_count, 2638)
@@ -119,6 +127,17 @@ class UtilTest(unittest.TestCase):
         }
         data = self.data.filter_dataframe(filter_["filter"])
         self.assertEqual(data.shape, (15, 102))
+
+    def test_schema(self):
+        with open(path.join(path.dirname(__file__), "schema.json")) as fh:
+            schema = json.load(fh)
+            self.assertEqual(self.data.schema, schema)
+
+    def test_schema_produces_error(self):
+        self.data.data.obs["time"] = Series(list([time.time() for i in range(self.data.cell_count)]),
+                                            dtype="datetime64[ns]")
+        with pytest.raises(TypeError):
+            self.data._create_schema()
 
     if __name__ == '__main__':
         unittest.main()
