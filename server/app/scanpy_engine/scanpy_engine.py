@@ -19,11 +19,41 @@ class ScanpyEngine(CXGDriver):
         self._add_mandatory_annotations()
         self.cell_count = self.data.shape[0]
         self.gene_count = self.data.shape[1]
+        self._create_schema()
         self.graph_method = graph_method
         self.diffexp_method = diffexp_method
 
-    def _set_cell_names(self):
-        self.data.obs["cell_name"] = list(self.data.obs.index)
+    def _create_schema(self):
+        self.schema = {
+            "dataframe": {
+                "nObs": self.cell_count,
+                "nVar": self.gene_count,
+                "type": str(self.data.X.dtype)
+            },
+            "annotations": {
+                "obs": [],
+                "var": []
+            }
+        }
+        for ax in Axis:
+            curr_axis = getattr(self.data, str(ax))
+            for ann in curr_axis:
+                ann_schema = {"name": ann}
+                data_kind = curr_axis[ann].dtype.kind
+                if data_kind == 'f':
+                    ann_schema["type"] = "float32"
+                elif data_kind in ['i', 'u']:
+                    ann_schema["type"] = "int32"
+                elif data_kind == "?":
+                    ann_schema["type"] = "boolean"
+                elif data_kind == "O" and curr_axis[ann].dtype == "object":
+                    ann_schema["type"] = "string"
+                elif data_kind == "O" and curr_axis[ann].dtype == "category":
+                    ann_schema["type"] = "categorical"
+                    ann_schema["categories"] = curr_axis[ann].dtype.categories.tolist()
+                else:
+                    raise TypeError(f"Annotations of type {curr_axis[ann].dtype} are unsupported by cellxgene.")
+                self.schema["annotations"][ax].append(ann_schema)
 
     @classmethod
     def add_to_parser(cls, subparsers, invocation_function):
@@ -43,10 +73,10 @@ class ScanpyEngine(CXGDriver):
 
     def _add_mandatory_annotations(self):
         # ensure gene
-        self.data.var["name"] = list(self.data.var.index)
+        self.data.var["name"] = Series(list(self.data.var.index), dtype="unicode_")
         self.data.var.index = Series(list(range(self.data.var.shape[0])), dtype="category")
         # ensure cell name
-        self.data.obs["name"] = list(self.data.obs.index)
+        self.data.obs["name"] = Series(list(self.data.obs.index), dtype="unicode_")
         self.data.obs.index = Series(list(range(self.data.obs.shape[0])), dtype="category")
 
     def _validatate_data_types(self):
@@ -55,7 +85,7 @@ class ScanpyEngine(CXGDriver):
                           f"Precision may be truncated.")
 
     def cells(self):
-        return list(self.data.obs.index)
+        return self.data.obs.index.tolist()
 
     def genes(self):
         return self.data.var.index.tolist()
