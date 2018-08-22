@@ -54,8 +54,7 @@ def run_scanpy(args):
     )
 
     from .scanpy_engine.scanpy_engine import ScanpyEngine
-    app.data = ScanpyEngine(args.data_directory, schema="data_schema.json",
-                            graph_method=args.layout, diffexp_method=args.diffexp)
+    app.data = ScanpyEngine(args.data_directory, graph_method=args.layout, diffexp_method=args.diffexp)
     app.run(host="127.0.0.1", debug=True, port=args.port)
 
 

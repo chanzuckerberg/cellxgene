@@ -1,7 +1,7 @@
 import json
 
 from numpy import float32, integer
-from flask import make_response, jsonify, Response
+from flask import make_response, Response
 
 
 class Float32JSONEncoder(json.JSONEncoder):
@@ -13,26 +13,16 @@ class Float32JSONEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
-def make_payload(data, errormessage="", errorcode=200):
+def make_payload(data, errorcode=200):
     """
     Creates JSON respons for requests
     :param data: json data
-    :param errormessage: error message
     :param errorcode: http error code
     :return: flask json repsonse
     """
-    error = False
-    if errormessage:
-        error = True
     # Questionable
     data = json.loads(json.dumps(data, cls=Float32JSONEncoder))
-    return make_response(jsonify({
-        "data": data,
-        "status": {
-            "error": error,
-            "errormessage": errormessage,
-        }
-    }), errorcode)
+    return make_response(data, errorcode)
 
 
 def make_streaming_response(data_generator, errorcode=200, content_type="application/json"):
