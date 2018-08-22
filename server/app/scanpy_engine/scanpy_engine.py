@@ -13,6 +13,8 @@ from server.app.util.constants import Axis
 
 class ScanpyEngine(CXGDriver):
 
+    __version__ = "0.0.1"
+
     def __init__(self, data, graph_method="umap", diffexp_method="ttest"):
         self.data = self._load_data(data)
         self._validatate_data_types()

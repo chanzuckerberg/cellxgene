@@ -49,8 +49,60 @@ class SchemaAPI(Resource):
         return make_response(jsonify({"schema": current_app.data.schema}), 200)
 
 
+class ConfigAPI(Resource):
+    @swagger.doc({
+        "summary": "Configuration information to assist in front-end adaptation"
+                   " to underlying engine, available functionality, interactive time limits, etc",
+        "tags": ["initialize"],
+        "parameters": [],
+        "responses": {
+            "200": {
+                "description": "schema",
+                "examples": {
+                    "application/json": {
+                        "config": {
+                            "features": [
+                                {"method": "POST", "path": "/cluster/", "available": False},
+                                {
+                                    "method": "POST",
+                                    "path": "/layout/obs",
+                                    "available": True,
+                                    "interactiveLimit": 10000
+                                },
+                                {"method": "POST", "path": "/layout/var", "available": False}
+
+                            ],
+                            "displayNames": {
+                                "engine": "ScanPy version 1.33",
+                                "dataset": "/home/joe/mouse/blorth.csv"
+                            },
+                        }
+                    }
+                }
+            }
+        }
+    })
+    def get(self):
+        config = {
+            "config": {
+                "features": [
+                    {"method": "POST", "path": "/cluster/", "available": False},
+                    {"method": "POST", "path": "/layout/obs", "available": False},
+                    {"method": "POST", "path": "/layout/var", "available": False},
+                    {"method": "POST", "path": "/diffexp", "available": False},
+                ],
+                "displayNames": {
+                    "engine": f"ScanPy version {current_app.data.__version__}",
+                    "dataset": current_app.config["DATASET_TITLE"]
+                }
+            }
+        }
+        return make_response(jsonify(config), 200)
+
+
 def get_api_resources():
     bp = Blueprint("api", __name__, url_prefix="/api/v0.2")
     api = Api(bp, add_api_spec_resource=False)
     api.add_resource(SchemaAPI, "/schema")
+    api.add_resource(ConfigAPI, "/config")
     return api
