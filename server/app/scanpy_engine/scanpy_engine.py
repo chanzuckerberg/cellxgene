@@ -11,7 +11,9 @@ from server.app.util.constants import Axis
 
 class ScanpyEngine(CXGDriver):
 
-    def __init__(self, data, schema=None, graph_method="umap", diffexp_method="ttest"):
+    __version__ = "0.0.1"
+
+    def __init__(self, data, graph_method="umap", diffexp_method="ttest"):
         self.data = self._load_data(data)
         self.schema = self._load_or_infer_schema(data, schema)
         self._set_cell_names()
