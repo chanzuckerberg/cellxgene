@@ -83,6 +83,16 @@ class ScanpyEngine(CXGDriver):
         if self.data.X.dtype != "float32":
             warnings.warn(f"Scanpy data matrix is in {self.data.X.dtype} format not float32. "
                           f"Precision may be truncated.")
+        for ax in Axis:
+            curr_axis = getattr(self.data, str(ax))
+            for ann in curr_axis:
+                datatype = curr_axis[ann].dtype
+                if datatype in ["int64", "uint32", "uint64"]:
+                    warnings.warn(f"Scanpy annotation is in unsupported format: {datatype}. "
+                                  f"Data will be downcast to int32.")
+                elif datatype == "float64":
+                    warnings.warn(f"Scanpy annotation {ax}:{ann} is in unsupported format: {datatype}. "
+                                  f"Data will be downcast to float32.")
 
     def cells(self):
         return self.data.obs.index.tolist()
