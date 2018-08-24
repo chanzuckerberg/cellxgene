@@ -33,14 +33,16 @@ const updateCellColorsMiddleware = store => {
         action.type === "color by continuous metadata" ||
         action.type === "color by categorical metadata";
 
-      if (!filterJustChanged || !s.controls.cellsMetadata) {
+      if (!filterJustChanged || !s.controls2.world.obsAnnotations) {
         return next(
           action
         ); /* if the cells haven't loaded or the action wasn't a color change, bail */
       }
 
-      let cellsMetadataWithUpdatedColors = s.controls.cellsMetadata.slice(0);
+      const obsAnnotations = s.controls2.world.obsAnnotations;
       let colorScale;
+      let colorsByName = new Array(obsAnnotations.length);
+      let colorsByRGB = new Array(obsAnnotations.length);
 
       /*
          in plain language...
@@ -54,11 +56,11 @@ const updateCellColorsMiddleware = store => {
       if (action.type === "color by categorical metadata") {
         colorScale = d3.scaleOrdinal().range(globals.ordinalColors);
 
-        for (let i = 0; i < cellsMetadataWithUpdatedColors.length; i++) {
-          const cell = cellsMetadataWithUpdatedColors[i];
-          let c = colorScale(cell[action.colorAccessor]);
-          cell.__color__ = c;
-          cell.__colorRGB__ = parseRGB(c);
+        for (let i = 0; i < obsAnnotations.length; i++) {
+          const obs = obsAnnotations[i];
+          const c = colorScale(obs[action.colorAccessor]);
+          colorsByName[i] = c;
+          colorsByRGB[i] = parseRGB(c);
         }
       }
 
@@ -68,13 +70,19 @@ const updateCellColorsMiddleware = store => {
           .domain([0, action.rangeMaxForColorAccessor])
           .range([1, 0]);
 
-        _.each(cellsMetadataWithUpdatedColors, (cell, i) => {
-          let c = interpolateViridis(colorScale(cell[action.colorAccessor]));
-          cellsMetadataWithUpdatedColors[i]["__color__"] = c;
-          cellsMetadataWithUpdatedColors[i]["__colorRGB__"] = parseRGB(c);
-        });
+        for (let i = 0; i < obsAnnotations.length; i++) {
+          const obs = obsAnnotations[i];
+          let c = interpolateViridis(colorScale(obs[action.colorAccessor]));
+          colorsByName[i] = c;
+          colorsByRGB[i] = parseRGB(c);
+        }
       }
 
+      //
+      // XXX : TODO - this has not been updated for redux refactoring!!!!
+      // This needs to be rewritten once we add expression/dataframe support
+      // to the World view.
+      //
       if (action.type === "color by expression") {
         const indexOfGene = 0; /* we only get one, this comes from server as needed now */
 
@@ -100,8 +108,6 @@ const updateCellColorsMiddleware = store => {
           return cell.e[indexOfGene];
         });
 
-        // console.log('middle', action, expressionMap, minExpressionCell)
-
         colorScale = d3
           .scaleLinear()
           .domain([
@@ -113,20 +119,21 @@ const updateCellColorsMiddleware = store => {
             0
           ]); /* invert viridis... probably pass this scale through to others */
 
-        _.each(cellsMetadataWithUpdatedColors, (cell, i) => {
+        for (let i = 0, len = obsAnnotations.length; i < len; i++) {
+          const obs = obsAnnotations[i];
           let c = interpolateViridis(
-            colorScale(expressionMap[cell.CellName][indexOfGene])
+            colorScale(expressionMap[obs.CellName][indexOfGene])
           );
-          cellsMetadataWithUpdatedColors[i]["__color__"] = c;
-          cellsMetadataWithUpdatedColors[i]["__colorRGB__"] = parseRGB(c);
-        });
+          colorsByName[i] = c;
+          colorsByRGB[i] = parseRGB(c);
+        }
       }
 
       /*
         append the result of all the filters to the action the user just triggered
       */
       let modifiedAction = Object.assign({}, action, {
-        cellsMetadataWithUpdatedColors,
+        colors: { name: colorsByName, rgb: colorsByRGB },
         colorScale
       });
 

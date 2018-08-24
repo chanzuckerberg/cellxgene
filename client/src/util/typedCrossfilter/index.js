@@ -57,6 +57,7 @@ class TypedCrossfilter {
     // filters: array of { id, dimension }
     this.filters = [];
     this.selection = new BitArray(data.length);
+    this.updateTime = 0;
   }
 
   size() {
@@ -194,6 +195,7 @@ class ScalarDimension {
     );
 
     this.currentFilter = newFilter;
+    this.crossfilter.updateTime += 1;
   }
 
   // filter by value - exact match

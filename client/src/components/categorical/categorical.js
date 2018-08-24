@@ -15,8 +15,8 @@ import FaPaintBrush from "react-icons/lib/fa/paint-brush";
 
 @connect(state => {
   return {
-    colorAccessor: state.controls.colorAccessor,
-    categoricalAsBooleansMap: state.controls.categoricalAsBooleansMap
+    colorAccessor: state.controls2.colorAccessor,
+    categoricalAsBooleansMap: state.controls2.categoricalAsBooleansMap
   };
 })
 class Category extends React.Component {
@@ -164,8 +164,7 @@ class Category extends React.Component {
 }
 
 @connect(state => {
-  const ranges = _.get(state, "cells.cells.data.ranges", null);
-
+  const ranges = _.get(state.controls2.world, "summary.obs", null);
   return {
     ranges
   };
@@ -192,7 +191,7 @@ class Categories extends React.Component {
       >
         {_.map(this.props.ranges, (value, key) => {
           const isColorField = key.includes("color") || key.includes("Color");
-          if (value.options && key !== "CellName" && !isColorField) {
+          if (value.options && !isColorField) {
             return (
               <Category key={key} metadataField={key} values={value.options} />
             );

@@ -12,13 +12,11 @@ import * as globals from "../../globals";
 import * as d3 from "d3";
 
 @connect(state => {
-  const initializeRanges = _.get(state, "initialize.data.data.ranges", null);
-
   return {
-    initializeRanges,
-    colorAccessor: state.controls.colorAccessor,
-    colorScale: state.controls.colorScale,
-    cellsMetadata: state.controls.cellsMetadata
+    initializeRanges: _.get(state.controls2.world, "summary.obs"),
+    colorAccessor: state.controls2.colorAccessor,
+    colorScale: state.controls2.colorScale,
+    obsAnnotations: _.get(state.controls2.world, "obsAnnotations", null)
   };
 })
 class HistogramBrush extends React.Component {
@@ -41,7 +39,7 @@ class HistogramBrush extends React.Component {
   calcHistogramCache(nextProps) {
     // recalculate expensive stuff
     const allValuesForContinuousFieldAsArray = _.map(
-      nextProps.cellsMetadata,
+      nextProps.obsAnnotations,
       nextProps.metadataField
     );
 

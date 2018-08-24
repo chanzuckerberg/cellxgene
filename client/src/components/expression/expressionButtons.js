@@ -9,7 +9,8 @@ import CellSetButton from "./cellSetButtons";
 @connect(state => {
   return {
     differential: state.differential,
-    crossfilter: state.controls.crossfilter
+    crossfilter: _.get(state.controls2.world, "obsCrossfilter", null),
+    selectionUpdate: _.get(state.controls2.world, "obsSelectionUpdateSeq", null)
   };
 })
 class Expression extends React.Component {

@@ -1,6 +1,7 @@
 // jshint esversion: 6
 import React from "react";
 import _ from "lodash";
+import memoize from "memoize-one";
 import { connect } from "react-redux";
 import * as globals from "../../globals";
 import styles from "./expression.css";
@@ -54,9 +55,9 @@ class HeatmapSquare extends React.Component {
 **********************************/
 @connect(state => {
   return {
-    scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
-    scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
-    colorAccessor: state.controls.colorAccessor
+    scatterplotXXaccessor: state.controls2.scatterplotXXaccessor,
+    scatterplotYYaccessor: state.controls2.scatterplotYYaccessor,
+    colorAccessor: state.controls2.colorAccessor
   };
 })
 class HeatmapRow extends React.Component {
@@ -211,7 +212,7 @@ class HeatmapRow extends React.Component {
 @connect(state => {
   return {
     differential: state.differential,
-    allGeneNames: state.controls.allGeneNames
+    world: state.controls2.world
   };
 })
 class Heatmap extends React.Component {
@@ -221,12 +222,18 @@ class Heatmap extends React.Component {
       value: ""
     };
   }
+
+  getAllGeneNames = memoize(world =>
+    _.map(this.props.world.varAnnotations, "name")
+  );
+
   render() {
     if (!this.props.differential.diffExp)
       return <p>Select cells & compute differential to see heatmap</p>;
 
     const topGenesForCellSet1 = this.props.differential.diffExp.data.celllist1;
     const topGenesForCellSet2 = this.props.differential.diffExp.data.celllist2;
+    const allGeneNames = this.getAllGeneNames(this.props.world);
 
     const extent = d3.extent(
       _.union(
@@ -244,6 +251,30 @@ class Heatmap extends React.Component {
 
     return (
       <div>
+        Color by any gene:
+        <ReactAutocomplete
+          items={allGeneNames}
+          shouldItemRender={(item, value) =>
+            item.toLowerCase().indexOf(value.toLowerCase()) > -1
+          }
+          getItemValue={item => item}
+          renderItem={(item, highlighted) => (
+            <div
+              key={item}
+              style={{ backgroundColor: highlighted ? "#eee" : "transparent" }}
+            >
+              {item}
+            </div>
+          )}
+          value={this.state.value}
+          onChange={e => this.setState({ value: e.target.value })}
+          onSelect={value => {
+            this.setState({ value });
+            this.props.dispatch(
+              actions.requestSingleGeneExpressionCountsForColoringPOST(value)
+            );
+          }}
+        />
         <div
           style={{
             display: "flex",

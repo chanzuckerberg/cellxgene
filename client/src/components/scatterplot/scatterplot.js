@@ -21,22 +21,20 @@ import { scaleLinear } from "../../util/scaleLinear";
 import { margin, width, height, createDimensions } from "./util";
 
 @connect(state => {
-  const ranges = _.get(state, "cells.cells.data.ranges", null);
-  const metadata = _.get(state, "cells.cells.data.metadata", null);
-  const initializeRanges = _.get(state, "initialize.data.data.ranges", null);
-
   return {
-    ranges,
-    metadata,
-    initializeRanges,
-    colorAccessor: state.controls.colorAccessor,
-    colorScale: state.controls.colorScale,
-    scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
-    scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
-    opacityForDeselectedCells: state.controls.opacityForDeselectedCells,
-    crossfilter: state.controls.crossfilter,
+    world: state.controls2.world,
+
+    colors: state.controls2.colors,
+    colorAccessor: state.controls2.colorAccessor,
+    colorScale: state.controls2.colorScale,
+
+    scatterplotXXaccessor: state.controls2.scatterplotXXaccessor,
+    scatterplotYYaccessor: state.controls2.scatterplotYYaccessor,
+    opacityForDeselectedCells: state.controls2.opacityForDeselectedCells,
+
     differential: state.differential,
-    expression: state.expression
+    expression: state.expression,
+    selectionUpdate: _.get(state.controls2.world, "obsSelectionUpdateSeq", null)
   };
 })
 class Scatterplot extends React.Component {
@@ -130,7 +128,7 @@ class Scatterplot extends React.Component {
     }
 
     if (
-      this.props.metadata &&
+      this.props.world &&
       this.state.regl &&
       this.state.pointBuffer &&
       this.state.colorBuffer &&
@@ -142,7 +140,7 @@ class Scatterplot extends React.Component {
       this.state.xScale &&
       this.state.yScale
     ) {
-      const crossfilter = this.props.crossfilter.cells;
+      const crossfilter = this.props.world.obsCrossfilter;
       const data = this.props.expression.data;
       const cells = data.cells;
       const genes = data.genes;
@@ -178,9 +176,9 @@ class Scatterplot extends React.Component {
         );
       }
 
+      const rgb = this.props.colors.rgb;
       for (let i = 0; i < cellCount; i++) {
-        const metadata = this.props.metadata[i];
-        colors.set(metadata.__colorRGB__, 3 * i);
+        colors.set(rgb[i], 3 * i);
       }
 
       crossfilter.fillByIsFiltered(sizes, 4, 0.2);

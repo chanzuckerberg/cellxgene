@@ -1,36 +1,31 @@
 // jshint esversion: 6
 import { combineReducers, createStore, applyMiddleware } from "redux";
 import updateURLMiddleware from "../middleware/updateURLMiddleware";
-// import updateCellSelectionMiddleware from "../middleware/updateCellSelectionMiddleware";
 import updateCellColors from "../middleware/updateCellColors";
 
 import thunk from "redux-thunk";
 
-import initialize from "./initialize";
-import cells from "./cells";
 import expression from "./expression";
-import controls from "./controls";
 import differential from "./differential";
 import responsive from "./responsive";
+import dataframe from "./dataframe";
+import controls2 from "./controls2";
 
 const Reducer = combineReducers({
-  initialize,
-  cells,
+  // XXX: old - needs refactoring
   expression,
-  controls,
   differential,
+
+  // New Redux refactor
+  dataframe,
+  controls2,
   responsive
 });
 
 let store = createStore(
   Reducer,
   window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__(),
-  applyMiddleware(
-    thunk,
-    updateURLMiddleware,
-    // updateCellSelectionMiddleware,
-    updateCellColors
-  )
+  applyMiddleware(thunk, updateURLMiddleware, updateCellColors)
 );
 
 export default store;

@@ -3,6 +3,84 @@ import * as globals from "../globals";
 import store from "../reducers";
 import URI from "urijs";
 import _ from "lodash";
+import memoize from "memoize-one";
+
+/*
+Catch unexpected errors and make sure we don't lose them!
+*/
+function catchErrors(fn) {
+  return function(dispatch, getState) {
+    fn(dispatch, getState).catch(error => {
+      console.error(error);
+      dispatch({ type: "UNEXPECTED ERROR", error });
+    });
+  };
+}
+
+async function doRequestInitialize() {
+  let res = await fetch(
+    `${globals.API.prefix}${globals.API.version}initialize`,
+    {
+      method: "get",
+      headers: new Headers({
+        "Content-Type": "application/json"
+      })
+    }
+  );
+  return res.json();
+}
+
+async function doRequestCells(query) {
+  let res = await fetch(
+    `${globals.API.prefix}${globals.API.version}cells${query}`,
+    {
+      method: "get",
+      headers: new Headers({
+        "Content-Type": "application/json"
+      })
+    }
+  );
+  return res.json();
+}
+
+function doInitialDataLoad(query = "") {
+  return catchErrors(async function(dispatch, getState) {
+    dispatch({ type: "dataframe load start" });
+    dispatch({ type: "initialize started" });
+    let rqstInit = doRequestInitialize();
+    dispatch({ type: "request cells started" });
+    let rqstCells = doRequestCells(query);
+
+    let thereWasAnError = false;
+
+    try {
+      let data = await rqstInit;
+      dispatch({ type: "initialize success", data });
+    } catch (error) {
+      thereWasAnError = true;
+      dispatch({ type: "initialize error", error });
+      dispatch({ type: "dataframe load error", error });
+    }
+
+    if (!thereWasAnError) {
+      try {
+        let data = await rqstCells;
+        dispatch({ type: "request cells success", data });
+      } catch (error) {
+        thereWasAnError = true;
+        dispatch({ type: "request cells error", error });
+        dispatch({ type: "dataframe load error", error });
+      }
+    }
+
+    if (!thereWasAnError) {
+      dispatch({
+        type: "dataframe load complete (universe exists)",
+        universe: getState().dataframe
+      });
+    }
+  });
+}
 
 const requestCells = (query = "") => {
   return dispatch => {
@@ -22,6 +100,7 @@ const requestCells = (query = "") => {
 };
 
 /* SELECT */
+/* XXX TODO - this has not been refacotred for new redux state and is known to be broken */
 const regraph = () => {
   return (dispatch, getState) => {
     dispatch({ type: "regraph started" });
@@ -29,7 +108,7 @@ const regraph = () => {
     const state = getState();
     const selectedMetadata = {};
 
-    _.each(state.controls.categoricalAsBooleansMap, (options, field) => {
+    _.each(state.controls2.categoricalAsBooleansMap, (options, field) => {
       let atLeastOneOptionDeselected = false;
 
       _.each(options, (isActive, option) => {
@@ -93,9 +172,13 @@ const initialize = () => {
 // (see https://github.com/chanzuckerberg/cellxgene-rest-api/issues/34) but
 // occasionally does.
 //
+// XXX TODO - this code is only relevant in v0.1 REST API, and can be retired
+// when we port to 0.2.
+//
+var makeMetadataMap = memoize(metadata => _.keyBy(metadata, "CellName"));
 function cleanupExpressionResponse(data) {
   const s = store.getState();
-  const metadata = s.controls.allCellsMetadataMap;
+  const metadata = makeMetadataMap(s.dataframe.obsAnnotations);
   let errorFound = false;
   data.data.cells = _.filter(data.data.cells, cell => {
     if (!errorFound && !metadata[cell.cellname]) {
@@ -228,5 +311,6 @@ export default {
   requestGeneExpressionCounts,
   requestGeneExpressionCountsPOST,
   requestSingleGeneExpressionCountsForColoringPOST,
-  requestDifferentialExpression
+  requestDifferentialExpression,
+  doInitialDataLoad
 };

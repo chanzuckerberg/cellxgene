@@ -17,18 +17,15 @@ import HistogramBrush from "./histogramBrush";
 import { margin, width, height, createDimensions } from "./util";
 
 @connect(state => {
-  const ranges = _.get(state, "cells.cells.data.ranges", null);
-  const metadata = _.get(state, "cells.cells.data.metadata", null);
-  const initializeRanges = _.get(state, "initialize.data.data.ranges", null);
+  const metadata = _.get(state.controls2.world, "obsAnnotations", null);
+  const ranges = _.get(state.controls2.world, "summary.obs", null);
 
   return {
     ranges,
     metadata,
-    initializeRanges,
-    colorAccessor: state.controls.colorAccessor,
-    colorScale: state.controls.colorScale,
-    graphBrushSelection: state.controls.graphBrushSelection,
-    axesHaveBeenDrawn: state.controls.axesHaveBeenDrawn
+    colorAccessor: state.controls2.colorAccessor,
+    colorScale: state.controls2.colorScale,
+    selectionUpdate: _.get(state.controls2.world, "obsSelectionUpdateSeq", null)
   };
 })
 class Continuous extends React.Component {
@@ -51,7 +48,7 @@ class Continuous extends React.Component {
     this.props.dispatch({
       type: "color by continuous metadata",
       colorAccessor: key,
-      rangeMaxForColorAccessor: this.props.initializeRanges[key].range.max
+      rangeMaxForColorAccessor: this.props.ranges[key].range.max
     });
   }
 
