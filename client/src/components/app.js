@@ -91,5 +91,3 @@ class App extends React.Component {
 }
 
 export default App;
-
-// <Joy data={this.state.expressions && this.state.expressions.data} />
