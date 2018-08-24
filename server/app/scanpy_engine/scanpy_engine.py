@@ -87,12 +87,14 @@ class ScanpyEngine(CXGDriver):
             curr_axis = getattr(self.data, str(ax))
             for ann in curr_axis:
                 datatype = curr_axis[ann].dtype
-                if datatype in ["int64", "uint32", "uint64"]:
-                    warnings.warn(f"Scanpy annotation is in unsupported format: {datatype}. "
-                                  f"Data will be downcast to int32.")
-                elif datatype == "float64":
+                downcast_map = {'int64': 'int32',
+                                'uint32': 'int32',
+                                'uint64': 'int32',
+                                'float64': 'float32',
+                                }
+                if datatype in downcast_map:
                     warnings.warn(f"Scanpy annotation {ax}:{ann} is in unsupported format: {datatype}. "
-                                  f"Data will be downcast to float32.")
+                                  f"Data will be downcast to {downcast_map[datatype]}.")
 
     def cells(self):
         return self.data.obs.index.tolist()
