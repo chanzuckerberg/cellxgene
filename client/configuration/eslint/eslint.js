@@ -5,7 +5,7 @@ module.exports = {
   env: { browser: true, commonjs: true, es6: true },
   globals: { expect: true },
   parserOptions: {
-    ecmaVersion: 6,
+    ecmaVersion: 2017,
     sourceType: "module",
     ecmaFeatures: {
       jsx: true,
@@ -17,6 +17,9 @@ module.exports = {
     "func-style": "off",
     "arrow-parens": "off",
     "no-use-before-define": "off",
-    "react/jsx-filename-extension": "off"
+    "react/jsx-filename-extension": "off",
+    "comma-dangle": "off",
+    "no-underscore-dangle": "off",
+    quotes: ["error", "double"]
   }
 };
