@@ -12,12 +12,19 @@ class UniverseBase {
   */
   constructor(apiVersion) {
     this.api = apiVersion;
+
+    /* data status */
     this.finalized = false;
     this.loading = false;
     this.error = null;
+
     this.schema = {};
+
     this.obsAnnotations = [];
     this.varAnnotations = [];
+    this.obsNameToIndexMap = {}; /* reverse map name to index */
+    this.varNameToIndexMap = {}; /* reverse map name to index */
+
     this.obsLayout = { X: [], Y: [] };
   }
 
@@ -26,6 +33,20 @@ class UniverseBase {
   compute on the client side (eg, ranges).
   */
   _finalize() {
+    this.obsNameToIndexMap = _.transform(
+      this.obsAnnotations,
+      (acc, value, idx) => {
+        acc[value.name] = idx;
+      },
+      {}
+    );
+    this.varNameToIndexMap = _.transform(
+      this.varAnnotations,
+      (acc, value, idx) => {
+        acc[value.name] = idx;
+      },
+      {}
+    );
     this.finalized = true;
   }
 }

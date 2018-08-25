@@ -10,9 +10,9 @@ REST API 0.1 dataframe reducer.
 TODO: 0.2 reducer
 */
 
-const DataFrameV01 = (state = new Universe("0.1"), action) => {
+const UniverseReducerV01 = (state = new Universe("0.1"), action) => {
   switch (action.type) {
-    case "dataframe load start": {
+    case "initial data load start": {
       return Object.assign(new Universe(), state, {
         loading: true,
         error: null
@@ -31,14 +31,14 @@ const DataFrameV01 = (state = new Universe("0.1"), action) => {
       return Object.assign(new Universe(), state).initFromCells(action.data);
     }
 
-    case "dataframe load complete (universe exists)": {
+    case "initial data load complete (universe exists)": {
       return Object.assign(new Universe(), state, {
         loading: false,
         error: null
       });
     }
 
-    case "dataframe load error": {
+    case "initial data load error": {
       return Object.assign(new Universe(), state, {
         loading: false,
         error: action.data
@@ -50,4 +50,4 @@ const DataFrameV01 = (state = new Universe("0.1"), action) => {
   }
 };
 
-export default DataFrameV01;
+export default UniverseReducerV01;

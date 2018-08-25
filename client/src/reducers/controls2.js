@@ -48,7 +48,7 @@ const Controls = (
     /*******************************
           Initialization
     *******************************/
-    case "dataframe load complete (universe exists)": {
+    case "initial data load complete (universe exists)": {
       /* first light - create world & other data-driven defaults */
       const world = new World(action.universe);
       const categoricalAsBooleansMap = createCategoricalAsBooleansMap(world);

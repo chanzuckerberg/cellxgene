@@ -45,7 +45,7 @@ async function doRequestCells(query) {
 
 function doInitialDataLoad(query = "") {
   return catchErrors(async function(dispatch, getState) {
-    dispatch({ type: "dataframe load start" });
+    dispatch({ type: "initial data load start" });
     dispatch({ type: "initialize started" });
     let rqstInit = doRequestInitialize();
     dispatch({ type: "request cells started" });
@@ -59,7 +59,7 @@ function doInitialDataLoad(query = "") {
     } catch (error) {
       thereWasAnError = true;
       dispatch({ type: "initialize error", error });
-      dispatch({ type: "dataframe load error", error });
+      dispatch({ type: "initial data load error", error });
     }
 
     if (!thereWasAnError) {
@@ -69,35 +69,36 @@ function doInitialDataLoad(query = "") {
       } catch (error) {
         thereWasAnError = true;
         dispatch({ type: "request cells error", error });
-        dispatch({ type: "dataframe load error", error });
+        dispatch({ type: "initial data load error", error });
       }
     }
 
     if (!thereWasAnError) {
       dispatch({
-        type: "dataframe load complete (universe exists)",
+        type: "initial data load complete (universe exists)",
         universe: getState().dataframe
       });
     }
   });
 }
 
-const requestCells = (query = "") => {
-  return dispatch => {
-    dispatch({ type: "request cells started" });
-    return fetch(`${globals.API.prefix}${globals.API.version}cells${query}`, {
-      method: "get",
-      headers: new Headers({
-        "Content-Type": "application/json"
-      })
-    })
-      .then(res => res.json())
-      .then(
-        data => dispatch({ type: "request cells success", data }),
-        error => dispatch({ type: "request cells error", error })
-      );
-  };
-};
+// XXX dead code
+// const requestCells = (query = "") => {
+//   return dispatch => {
+//     dispatch({ type: "request cells started" });
+//     return fetch(`${globals.API.prefix}${globals.API.version}cells${query}`, {
+//       method: "get",
+//       headers: new Headers({
+//         "Content-Type": "application/json"
+//       })
+//     })
+//       .then(res => res.json())
+//       .then(
+//         data => dispatch({ type: "request cells success", data }),
+//         error => dispatch({ type: "request cells error", error })
+//       );
+//   };
+// };
 
 /* SELECT */
 /* XXX TODO - this has not been refacotred for new redux state and is known to be broken */
@@ -150,22 +151,23 @@ const resetGraph = () => {
   };
 };
 
-const initialize = () => {
-  return (dispatch, getState) => {
-    dispatch({ type: "initialize started" });
-    fetch(`${globals.API.prefix}${globals.API.version}initialize`, {
-      method: "get",
-      headers: new Headers({
-        "Content-Type": "application/json"
-      })
-    })
-      .then(res => res.json())
-      .then(
-        data => dispatch({ type: "initialize success", data }),
-        error => dispatch({ type: "initialize error", error })
-      );
-  };
-};
+// XXX: dead code
+// const initialize = () => {
+//   return (dispatch, getState) => {
+//     dispatch({ type: "initialize started" });
+//     fetch(`${globals.API.prefix}${globals.API.version}initialize`, {
+//       method: "get",
+//       headers: new Headers({
+//         "Content-Type": "application/json"
+//       })
+//     })
+//       .then(res => res.json())
+//       .then(
+//         data => dispatch({ type: "initialize success", data }),
+//         error => dispatch({ type: "initialize error", error })
+//       );
+//   };
+// };
 
 // This code defends against the case where /expression returns a cellname
 // never seen before (ie, not returned by /cells).   This should not happen
@@ -193,23 +195,24 @@ function cleanupExpressionResponse(data) {
   return data;
 }
 
-const requestGeneExpressionCounts = () => {
-  return (dispatch, getState) => {
-    dispatch({ type: "get expression started" });
-    fetch(`${globals.API.prefix}${globals.API.version}expression`, {
-      method: "get",
-      headers: new Headers({
-        accept: "application/json"
-      })
-    })
-      .then(res => res.json())
-      .then(data => cleanupExpressionResponse(data))
-      .then(
-        data => dispatch({ type: "get expression success", data }),
-        error => dispatch({ type: "get expression error", error })
-      );
-  };
-};
+// XXX dead code
+// const requestGeneExpressionCounts = () => {
+//   return (dispatch, getState) => {
+//     dispatch({ type: "get expression started" });
+//     fetch(`${globals.API.prefix}${globals.API.version}expression`, {
+//       method: "get",
+//       headers: new Headers({
+//         accept: "application/json"
+//       })
+//     })
+//       .then(res => res.json())
+//       .then(data => cleanupExpressionResponse(data))
+//       .then(
+//         data => dispatch({ type: "get expression success", data }),
+//         error => dispatch({ type: "get expression error", error })
+//       );
+//   };
+// };
 
 const requestSingleGeneExpressionCountsForColoringPOST = gene => {
   return (dispatch, getState) => {
@@ -304,12 +307,13 @@ const requestDifferentialExpression = (celllist1, celllist2, num_genes = 7) => {
 };
 
 export default {
-  initialize,
-  requestCells,
+  // initialize,
+  // requestCells,
   regraph,
   resetGraph,
-  requestGeneExpressionCounts,
-  requestGeneExpressionCountsPOST,
+  /* XXX: these are unused outside of this file */
+  // requestGeneExpressionCounts,
+  // requestGeneExpressionCountsPOST,
   requestSingleGeneExpressionCountsForColoringPOST,
   requestDifferentialExpression,
   doInitialDataLoad

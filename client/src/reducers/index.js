@@ -18,8 +18,8 @@ const Reducer = combineReducers({
 
   // New Redux refactor
   dataframe,
-  controls2,
-  responsive
+  responsive,
+  controls2
 });
 
 let store = createStore(
