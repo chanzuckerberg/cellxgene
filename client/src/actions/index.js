@@ -76,7 +76,7 @@ function doInitialDataLoad(query = "") {
     if (!thereWasAnError) {
       dispatch({
         type: "initial data load complete (universe exists)",
-        universe: getState().dataframe
+        universe: getState().universe
       });
     }
   });
@@ -180,7 +180,7 @@ const resetGraph = () => {
 var makeMetadataMap = memoize(metadata => _.keyBy(metadata, "CellName"));
 function cleanupExpressionResponse(data) {
   const s = store.getState();
-  const metadata = makeMetadataMap(s.dataframe.obsAnnotations);
+  const metadata = makeMetadataMap(s.universe.obsAnnotations);
   let errorFound = false;
   data.data.cells = _.filter(data.data.cells, cell => {
     if (!errorFound && !metadata[cell.cellname]) {

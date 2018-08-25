@@ -8,7 +8,7 @@ import thunk from "redux-thunk";
 import expression from "./expression";
 import differential from "./differential";
 import responsive from "./responsive";
-import dataframe from "./dataframe";
+import universe from "./universe";
 import controls2 from "./controls2";
 
 const Reducer = combineReducers({
@@ -17,7 +17,7 @@ const Reducer = combineReducers({
   differential,
 
   // New Redux refactor
-  dataframe,
+  universe,
   responsive,
   controls2
 });

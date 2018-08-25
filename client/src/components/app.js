@@ -16,7 +16,7 @@ import SectionHeader from "./framework/sectionHeader";
 
 @connect(state => {
   return {
-    dataframe: state.dataframe
+    universe: state.universe
   };
 })
 class App extends React.Component {
@@ -57,7 +57,7 @@ class App extends React.Component {
     return (
       <Container>
         <Helmet title="cellxgene" />
-        {this.props.dataframe.loading ? (
+        {this.props.universe.loading ? (
           <div
             style={{
               position: "fixed",
@@ -69,9 +69,9 @@ class App extends React.Component {
             loading cellxgene
           </div>
         ) : null}
-        {this.props.dataframe.error ? "Error loading cells" : null}
+        {this.props.universe.error ? "Error loading cells" : null}
         <div>
-          {this.props.dataframe.loading ? null : <LeftSideBar />}
+          {this.props.universe.loading ? null : <LeftSideBar />}
           <div
             style={{
               padding: 15,
@@ -79,7 +79,7 @@ class App extends React.Component {
               marginLeft: 350 /* but responsive */
             }}
           >
-            {this.props.dataframe.loading ? null : <Graph />}
+            {this.props.universe.loading ? null : <Graph />}
 
             <Legend />
             {}
