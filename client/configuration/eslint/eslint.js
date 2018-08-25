@@ -20,6 +20,7 @@ module.exports = {
     "react/jsx-filename-extension": "off",
     "comma-dangle": "off",
     "no-underscore-dangle": "off",
-    quotes: ["error", "double"]
+    quotes: ["error", "double"],
+    "implicit-arrow-linebreak": "off"
   }
 };
