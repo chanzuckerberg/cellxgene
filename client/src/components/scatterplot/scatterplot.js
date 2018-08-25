@@ -5,38 +5,34 @@
 import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
-
-import scatterplot from "./scatterplot";
-import setupScatterplot from "./setupScatterplot";
-import styles from "./scatterplot.css";
+import _regl from "regl";
 import * as d3 from "d3";
 
-import mat4 from "gl-mat4";
-import fit from "canvas-fit";
-import _camera from "../../util/camera.js";
-import _regl from "regl";
+import _camera from "../../util/camera";
+
+import setupScatterplot from "./setupScatterplot";
+import styles from "./scatterplot.css";
+
 import _drawPoints from "./drawPointsRegl";
 import { scaleLinear } from "../../util/scaleLinear";
 
-import { margin, width, height, createDimensions } from "./util";
+import { margin, width, height } from "./util";
 
-@connect(state => {
-  return {
-    world: state.controls2.world,
+@connect(state => ({
+  world: state.controls2.world,
 
-    colors: state.controls2.colors,
-    colorAccessor: state.controls2.colorAccessor,
-    colorScale: state.controls2.colorScale,
+  colors: state.controls2.colors,
+  colorAccessor: state.controls2.colorAccessor,
+  colorScale: state.controls2.colorScale,
 
-    scatterplotXXaccessor: state.controls2.scatterplotXXaccessor,
-    scatterplotYYaccessor: state.controls2.scatterplotYYaccessor,
-    opacityForDeselectedCells: state.controls2.opacityForDeselectedCells,
+  scatterplotXXaccessor: state.controls2.scatterplotXXaccessor,
+  scatterplotYYaccessor: state.controls2.scatterplotYYaccessor,
+  opacityForDeselectedCells: state.controls2.opacityForDeselectedCells,
 
-    differential: state.differential,
-    expression: state.expression,
-    selectionUpdate: _.get(state.controls2.world, "obsSelectionUpdateSeq", null)
-  };
-})
+  differential: state.differential,
+  expression: state.expression,
+  selectionUpdate: _.get(state.controls2.world, "obsSelectionUpdateSeq", null)
+}))
 class Scatterplot extends React.Component {
   constructor(props) {
     super(props);
@@ -56,7 +52,10 @@ class Scatterplot extends React.Component {
     const { svg } = setupScatterplot(width, height, margin);
     let scales;
 
-    /* if we've already got the data, user clicked back and forth between tabs, so render the scatterplot */
+    /*
+    if we've already got the data, user clicked back and forth between tabs,
+    so render the scatterplot
+    */
     if (
       this.props.expression &&
       this.props.expression.data &&
@@ -113,6 +112,7 @@ class Scatterplot extends React.Component {
       colorBuffer
     });
   }
+
   componentDidUpdate(prevProps) {
     if (
       this.state.svg &&
@@ -205,7 +205,8 @@ class Scatterplot extends React.Component {
       this.setState(scales);
     }
   }
-  setupScales(expression, scatterplotXXaccessor, scatterplotYYaccessor) {
+
+  static setupScales(expression, scatterplotXXaccessor, scatterplotYYaccessor) {
     const xScale = d3
       .scaleLinear()
       .domain(
@@ -229,15 +230,18 @@ class Scatterplot extends React.Component {
       yScale
     };
   }
+
   drawAxesSVG(xScale, yScale, svg) {
     svg.selectAll("*").remove();
 
-    // the axes are much cleaner and easier now. No need to rotate and orient the axis, just call axisBottom, axisLeft etc.
-    var xAxis = d3.axisBottom().scale(xScale);
+    // the axes are much cleaner and easier now. No need to rotate and orient
+    // the axis, just call axisBottom, axisLeft etc.
+    const xAxis = d3.axisBottom().scale(xScale);
 
-    var yAxis = d3.axisLeft().scale(yScale);
+    const yAxis = d3.axisLeft().scale(yScale);
 
-    // adding axes is also simpler now, just translate x-axis to (0,height) and it's alread defined to be a bottom axis.
+    // adding axes is also simpler now, just translate x-axis to (0,height)
+    // and it's alread defined to be a bottom axis.
     svg
       .append("g")
       .attr("transform", "translate(0," + height + ")")
