@@ -11,12 +11,10 @@ import universe from "./universe";
 import controls2 from "./controls2";
 
 const Reducer = combineReducers({
-  differential,
-
-  // New Redux refactor
   universe,
   responsive,
-  controls2
+  controls2,
+  differential
 });
 
 let store = createStore(
