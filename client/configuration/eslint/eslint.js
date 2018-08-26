@@ -21,6 +21,7 @@ module.exports = {
     "comma-dangle": "off",
     "no-underscore-dangle": "off",
     quotes: ["error", "double"],
-    "implicit-arrow-linebreak": "off"
+    "implicit-arrow-linebreak": "off",
+    "operator-linebreak": ["error", "after"]
   }
 };
