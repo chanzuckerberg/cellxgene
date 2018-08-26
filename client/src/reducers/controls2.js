@@ -1,4 +1,3 @@
-"use strict";
 // jshint esversion: 6
 
 import _ from "lodash";
@@ -6,7 +5,7 @@ import { parseRGB } from "../util/parseRGB";
 import { World } from "../util/stateManager";
 
 function createCategoricalAsBooleansMap(world) {
-  let res = {};
+  const res = {};
   _.each(world.summary.obs, (value, key) => {
     if (value.options) {
       const optionsAsBooleans = {};

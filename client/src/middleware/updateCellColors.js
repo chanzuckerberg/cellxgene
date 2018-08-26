@@ -78,52 +78,19 @@ const updateCellColorsMiddleware = store => {
         }
       }
 
-      //
-      // XXX : TODO - this has not been updated for redux refactoring!!!!
-      // This needs to be rewritten once we add expression/dataframe support
-      // to the World view.
-      //
       if (action.type === "color by expression") {
-        const indexOfGene = 0; /* we only get one, this comes from server as needed now */
-
-        const expressionMap = {};
-        /*
-          converts [{cellname: cell123, e}, {}]
-
-          expressionMap = {
-            cell123: [123, 2],
-            cell789: [0, 8]
-          }
-        */
-        _.each(action.data.data.cells, cell => {
-          /* this action is coming directly from the server */
-          expressionMap[cell.cellname] = cell.e;
-        });
-
-        const minExpressionCell = _.minBy(action.data.data.cells, cell => {
-          return cell.e[indexOfGene];
-        });
-
-        const maxExpressionCell = _.maxBy(action.data.data.cells, cell => {
-          return cell.e[indexOfGene];
-        });
-
+        const { gene, data } = action;
+        const expression = data[gene]; // Float32Array
         colorScale = d3
           .scaleLinear()
-          .domain([
-            minExpressionCell.e[indexOfGene],
-            maxExpressionCell.e[indexOfGene]
-          ])
+          .domain([_.min(expression), _.max(expression)])
           .range([
             1,
             0
           ]); /* invert viridis... probably pass this scale through to others */
 
-        for (let i = 0, len = obsAnnotations.length; i < len; i++) {
-          const obs = obsAnnotations[i];
-          let c = interpolateViridis(
-            colorScale(expressionMap[obs.CellName][indexOfGene])
-          );
+        for (let i = 0, len = expression.length; i < len; i += 1) {
+          const c = interpolateViridis(colorScale(expression[i]));
           colorsByName[i] = c;
           colorsByRGB[i] = parseRGB(c);
         }
@@ -132,7 +99,7 @@ const updateCellColorsMiddleware = store => {
       /*
         append the result of all the filters to the action the user just triggered
       */
-      let modifiedAction = Object.assign({}, action, {
+      const modifiedAction = Object.assign({}, action, {
         colors: { name: colorsByName, rgb: colorsByRGB },
         colorScale
       });

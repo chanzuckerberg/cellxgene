@@ -18,21 +18,36 @@ import { scaleLinear } from "../../util/scaleLinear";
 
 import { margin, width, height } from "./util";
 
-@connect(state => ({
-  world: state.controls2.world,
+@connect(state => {
+  const { world } = state.controls2;
+  const expressionX = world
+    ? state.controls2.world.varDataByName(state.controls2.scatterplotXXaccessor)
+    : null;
+  const expressionY = world
+    ? state.controls2.world.varDataByName(state.controls2.scatterplotYYaccessor)
+    : null;
 
-  colors: state.controls2.colors,
-  colorAccessor: state.controls2.colorAccessor,
-  colorScale: state.controls2.colorScale,
+  return {
+    world,
 
-  scatterplotXXaccessor: state.controls2.scatterplotXXaccessor,
-  scatterplotYYaccessor: state.controls2.scatterplotYYaccessor,
-  opacityForDeselectedCells: state.controls2.opacityForDeselectedCells,
+    colors: state.controls2.colors,
+    colorAccessor: state.controls2.colorAccessor,
+    colorScale: state.controls2.colorScale,
 
-  differential: state.differential,
-  expression: state.expression,
-  selectionUpdate: _.get(state.controls2.world, "obsSelectionUpdateSeq", null)
-}))
+    // Accessors are var/gene names (strings)
+    scatterplotXXaccessor: state.controls2.scatterplotXXaccessor,
+    scatterplotYYaccessor: state.controls2.scatterplotYYaccessor,
+    opacityForDeselectedCells: state.controls2.opacityForDeselectedCells,
+
+    differential: state.differential,
+
+    expressionX,
+    expressionY,
+
+    // updated whenever the crossfilter selection is updated
+    selectionUpdate: _.get(state.controls2.world, "obsSelectionUpdateSeq", null)
+  };
+})
 class Scatterplot extends React.Component {
   constructor(props) {
     super(props);
@@ -51,22 +66,10 @@ class Scatterplot extends React.Component {
   componentDidMount() {
     const { svg } = setupScatterplot(width, height, margin);
     let scales;
+    const { expressionX, expressionY } = this.props;
 
-    /*
-    if we've already got the data, user clicked back and forth between tabs,
-    so render the scatterplot
-    */
-    if (
-      this.props.expression &&
-      this.props.expression.data &&
-      this.props.scatterplotXXaccessor &&
-      this.props.scatterplotYYaccessor
-    ) {
-      scales = this.setupScales(
-        this.props.expression,
-        this.props.scatterplotXXaccessor,
-        this.props.scatterplotYYaccessor
-      );
+    if (svg && expressionX && expressionY) {
+      scales = Scatterplot.setupScales(expressionX, expressionY);
       this.drawAxesSVG(scales.xScale, scales.yScale, svg);
     }
 
@@ -114,115 +117,99 @@ class Scatterplot extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
+    const {
+      svg,
+      xScale,
+      yScale,
+      regl,
+      pointBuffer,
+      colorBuffer,
+      sizeBuffer
+    } = this.state;
+    const {
+      world,
+      scatterplotXXaccessor,
+      scatterplotYYaccessor,
+      expressionX,
+      expressionY,
+      colors
+    } = this.props;
+
     if (
-      this.state.svg &&
-      this.state.xScale &&
-      this.state.yScale &&
-      this.props.scatterplotXXaccessor &&
-      this.props.scatterplotYYaccessor &&
-      (this.props.scatterplotXXaccessor !== prevProps.scatterplotXXaccessor || // was CLU now FTH1 etc
-      this.props.scatterplotYYaccessor !== prevProps.scatterplotYYaccessor || // was CLU now FTH1 etc
+      world &&
+      svg &&
+      xScale &&
+      yScale &&
+      scatterplotXXaccessor &&
+      scatterplotYYaccessor &&
+      (scatterplotXXaccessor !== prevProps.scatterplotXXaccessor || // was CLU now FTH1 etc
+      scatterplotYYaccessor !== prevProps.scatterplotYYaccessor || // was CLU now FTH1 etc
         !this.axes) // clicked off the tab and back again, rerender
     ) {
-      this.drawAxesSVG(this.state.xScale, this.state.yScale, this.state.svg);
+      this.drawAxesSVG(xScale, yScale, svg);
     }
 
     if (
-      this.props.world &&
-      this.state.regl &&
-      this.state.pointBuffer &&
-      this.state.colorBuffer &&
-      this.state.sizeBuffer &&
-      this.props.expression.data &&
-      this.props.expression.data.genes &&
-      this.props.scatterplotXXaccessor &&
-      this.props.scatterplotYYaccessor &&
-      this.state.xScale &&
-      this.state.yScale
+      world &&
+      regl &&
+      pointBuffer &&
+      colorBuffer &&
+      sizeBuffer &&
+      expressionX &&
+      expressionY &&
+      scatterplotXXaccessor &&
+      scatterplotYYaccessor &&
+      xScale &&
+      yScale
     ) {
-      const crossfilter = this.props.world.obsCrossfilter;
-      const data = this.props.expression.data;
-      const cells = data.cells;
-      const genes = data.genes;
-      const cellCount = cells.length;
-      const positions = new Float32Array(2 * cellCount);
-      const colors = new Float32Array(3 * cellCount);
-      const sizes = new Float32Array(cellCount);
+      const crossfilter = world.obsCrossfilter;
+      const cellCount = expressionX.length;
+      const positionsBuf = new Float32Array(2 * cellCount);
+      const colorsBuf = new Float32Array(3 * cellCount);
+      const sizesBuf = new Float32Array(cellCount);
 
-      // d3.scaleLinear().domain([0, width]).range([-0.95, 0.95])
       const glScaleX = scaleLinear([0, width], [-0.95, 0.95]);
-
-      // d3.scaleLinear().domain([0, height]).range([-1, 1])
       const glScaleY = scaleLinear([0, height], [-1, 1]);
-
-      const geneXXaccessorIndex = genes.indexOf(
-        this.props.scatterplotXXaccessor
-      );
-      const geneYYaccessorIndex = genes.indexOf(
-        this.props.scatterplotYYaccessor
-      );
 
       /*
         Construct Vectors
       */
-      for (let i = 0; i < cellCount; i++) {
-        const cell = cells[i];
-
-        positions[2 * i] = glScaleX(
-          this.state.xScale(cell.e[geneXXaccessorIndex])
-        ); /* scale each point first to the window as we calculate extents separately below, so no need to repeat */
-        positions[2 * i + 1] = glScaleY(
-          this.state.yScale(cell.e[geneYYaccessorIndex])
-        );
+      for (let i = 0; i < cellCount; i += 1) {
+        positionsBuf[2 * i] = glScaleX(xScale(expressionX[i]));
+        positionsBuf[2 * i + 1] = glScaleY(yScale(expressionY[i]));
       }
 
-      const rgb = this.props.colors.rgb;
-      for (let i = 0; i < cellCount; i++) {
-        colors.set(rgb[i], 3 * i);
+      for (let i = 0; i < cellCount; i += 1) {
+        colorsBuf.set(colors.rgb[i], 3 * i);
       }
 
-      crossfilter.fillByIsFiltered(sizes, 4, 0.2);
+      crossfilter.fillByIsFiltered(sizesBuf, 4, 0.2);
 
-      this.state.pointBuffer({ data: positions, dimension: 2 });
-      this.state.colorBuffer({ data: colors, dimension: 3 });
-      this.state.sizeBuffer({ data: sizes, dimension: 1 });
+      pointBuffer({ data: positionsBuf, dimension: 2 });
+      colorBuffer({ data: colorsBuf, dimension: 3 });
+      sizeBuffer({ data: sizesBuf, dimension: 1 });
       this.count = cellCount;
     }
 
     if (
-      this.props.expression &&
-      this.props.expression.data &&
-      this.props.scatterplotXXaccessor &&
-      this.props.scatterplotYYaccessor &&
+      expressionX &&
+      expressionY &&
       (this.props.scatterplotXXaccessor !== prevProps.scatterplotXXaccessor || // was CLU now FTH1 etc
         this.props.scatterplotYYaccessor !== prevProps.scatterplotYYaccessor)
     ) {
-      const scales = this.setupScales(
-        this.props.expression,
-        this.props.scatterplotXXaccessor,
-        this.props.scatterplotYYaccessor
-      );
+      const scales = Scatterplot.setupScales(expressionX, expressionY);
       this.setState(scales);
     }
   }
 
-  static setupScales(expression, scatterplotXXaccessor, scatterplotYYaccessor) {
+  static setupScales(expressionX, expressionY) {
     const xScale = d3
       .scaleLinear()
-      .domain(
-        d3.extent(expression.data.cells, (cell, i) => {
-          return cell.e[expression.data.genes.indexOf(scatterplotXXaccessor)];
-        })
-      )
+      .domain(d3.extent(expressionX))
       .range([0, width]);
-
     const yScale = d3
       .scaleLinear()
-      .domain(
-        d3.extent(expression.data.cells, cell => {
-          return cell.e[expression.data.genes.indexOf(scatterplotYYaccessor)];
-        })
-      )
+      .domain(d3.extent(expressionY))
       .range([height, 0]);
 
     return {

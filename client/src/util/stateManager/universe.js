@@ -18,14 +18,27 @@ class UniverseBase {
     this.loading = false;
     this.error = null;
 
+    this.nObs = 0;
+    this.nVar = 0;
     this.schema = {};
 
-    this.obsAnnotations = [];
-    this.varAnnotations = [];
-    this.obsNameToIndexMap = {}; /* reverse map name to index */
-    this.varNameToIndexMap = {}; /* reverse map name to index */
+    /*
+    Annotations
+    */
+    this.obsAnnotations = []; /* all obs annotations, by obs index */
+    this.varAnnotations = []; /* all var annotations, by var index */
+    this.obsNameToIndexMap = {}; /* reverse map 'name' to index */
+    this.varNameToIndexMap = {}; /* reverse map 'name' to index */
 
     this.obsLayout = { X: [], Y: [] };
+
+    /*
+    Expression dataframes for var/gene. Sparse.  Object keyed by varIndex.
+    XXX TODO: periodically remove those not in use so this is a cache.
+    */
+    this.varData = {
+      /* eg, 383: [ 3, 49, 9, ... ] */
+    };
   }
 
   /*
@@ -48,6 +61,10 @@ class UniverseBase {
       {}
     );
     this.finalized = true;
+  }
+
+  varDataByName(name) {
+    return this.varData[this.varNameToIndexMap[name]];
   }
 }
 
@@ -130,6 +147,7 @@ class UniverseV01 extends UniverseBase {
   initFromInitialize(OTAresponse) {
     this.schema = this._toSchema(OTAresponse);
     this.varAnnotations = this._toVarAnnotations(OTAresponse);
+    this.nVar = this.varAnnotations.length;
     this.init.initialize = true;
     this._tryFinalization();
     return this;
@@ -142,9 +160,36 @@ class UniverseV01 extends UniverseBase {
     */
     this.obsAnnotations = this._toObsAnnotations(OTAresponse);
     this.obsLayout = this._toLayout(OTAresponse);
+    this.nObs = this.obsAnnotations.length;
 
     this.init.cells = true;
     this._tryFinalization();
+    return this;
+  }
+
+  initFromExpression(ota) {
+    /*
+    v0.1 ota will look like:
+      {
+        genes: [ "name1", "name2", ... ],
+        cells: [
+          { cellname: 'cell1', e: [ 3, 4, n, x, y, ... ] },
+          ...
+        ]
+      }
+    */
+    const genes = ota.data.genes;
+    const cells = ota.data.cells;
+    for (let idx = 0; idx < genes.length; idx++) {
+      const gene = genes[idx];
+      const data = new Float32Array(this.nObs);
+      for (let c = 0; c < cells.length; c++) {
+        const obsIndex = this.obsNameToIndexMap[cells[c].cellname];
+        data[obsIndex] = cells[c].e[idx];
+      }
+      this.varData[this.varNameToIndexMap[gene]] = data;
+    }
+
     return this;
   }
 }

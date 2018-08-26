@@ -83,6 +83,10 @@ class WorldBase {
     return this.obsCrossfilter.updateTime;
   }
 
+  varDataByName(name) {
+    return this._universe.varDataByName(name);
+  }
+
   /* Factory - create world from this world's universe */
   createFromUniverse() {
     throw new Error("unimplemented - subclass responsibility");

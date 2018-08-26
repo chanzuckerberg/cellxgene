@@ -5,15 +5,12 @@ import updateCellColors from "../middleware/updateCellColors";
 
 import thunk from "redux-thunk";
 
-import expression from "./expression";
 import differential from "./differential";
 import responsive from "./responsive";
 import universe from "./universe";
 import controls2 from "./controls2";
 
 const Reducer = combineReducers({
-  // XXX: old - needs refactoring
-  expression,
   differential,
 
   // New Redux refactor

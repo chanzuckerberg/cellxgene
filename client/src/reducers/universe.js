@@ -31,6 +31,13 @@ const UniverseReducerV01 = (state = new Universe("0.1"), action) => {
       return Object.assign(new Universe(), state).initFromCells(action.data);
     }
 
+    /* /api/v0.1/expression response */
+    case "expression load success": {
+      return Object.assign(new Universe(), state).initFromExpression(
+        action.data
+      );
+    }
+
     case "initial data load complete (universe exists)": {
       return Object.assign(new Universe(), state, {
         loading: false,

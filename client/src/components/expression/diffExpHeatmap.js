@@ -20,6 +20,7 @@ class HeatmapSquare extends React.Component {
       value: ""
     };
   }
+
   render() {
     const contrastColor = getContrast(
       this.props.backgroundColor
@@ -67,6 +68,7 @@ class HeatmapRow extends React.Component {
       value: ""
     };
   }
+
   handleGeneColorScaleClick(gene) {
     return () => {
       this.props.dispatch(
@@ -76,6 +78,7 @@ class HeatmapRow extends React.Component {
       );
     };
   }
+
   handleSetGeneAsScatterplotX(gene) {
     return () => {
       this.props.dispatch({
@@ -84,6 +87,7 @@ class HeatmapRow extends React.Component {
       });
     };
   }
+
   handleSetGeneAsScatterplotY(gene) {
     return () => {
       this.props.dispatch({
@@ -92,6 +96,7 @@ class HeatmapRow extends React.Component {
       });
     };
   }
+
   render() {
     return (
       <div
@@ -233,7 +238,7 @@ class Heatmap extends React.Component {
 
     const topGenesForCellSet1 = this.props.differential.diffExp.data.celllist1;
     const topGenesForCellSet2 = this.props.differential.diffExp.data.celllist2;
-    const allGeneNames = this.getAllGeneNames(this.props.world);
+    // const allGeneNames = this.getAllGeneNames(this.props.world);
 
     const extent = d3.extent(
       _.union(
