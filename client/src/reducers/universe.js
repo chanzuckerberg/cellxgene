@@ -1,7 +1,5 @@
-"use strict";
 // jshint esversion: 6
 
-import _ from "lodash";
 import { Universe } from "../util/stateManager";
 
 /*
