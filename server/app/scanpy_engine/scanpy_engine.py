@@ -58,11 +58,11 @@ class ScanpyEngine(CXGDriver):
     @classmethod
     def add_to_parser(cls, subparsers, invocation_function):
         scanpy_group = subparsers.add_parser("scanpy", help="run cellxgene using the scanpy engine")
-        # TODO these choices should be generated from the actual available methods
+        # TODO these choices should be generated from the actual available methods see GH issue #94
         scanpy_group.add_argument("-l", "--layout", choices=["umap", "tsne"], default="umap",
                                   help="Algorithm to use for graph layout")
         scanpy_group.add_argument("-d", "--diffexp", choices=["ttest"], default="ttest",
-                                  help="Algorithm to use to calculate differential expression")
+                                  help="Algorithm to used to calculate differential expression")
         scanpy_group.add_argument("data_directory", metavar="dir", help="Directory containing data and schema file")
         scanpy_group.set_defaults(func=invocation_function)
         return scanpy_group
