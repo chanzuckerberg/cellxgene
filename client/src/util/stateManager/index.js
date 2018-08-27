@@ -1,4 +1,3 @@
-"use strict";
 // jshint esversion: 6
 
 /*
@@ -12,6 +11,5 @@ This module provides several buckets of functionality:
   - lazy access and caching of dataframe contents as needed
 */
 
-import _ from "lodash";
-export { Universe } from "./universe";
-export { World } from "./world";
+export Universe from "./universe";
+export World from "./world";

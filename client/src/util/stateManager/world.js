@@ -1,4 +1,3 @@
-"use strict";
 // jshint esversion: 6
 
 import _ from "lodash";
@@ -55,8 +54,9 @@ class WorldBase {
   called)
   */
   constructor(universe) {
-    if (!universe.finalized)
+    if (!universe.finalized) {
       throw new Error("World can't be created from an partial Universe");
+    }
     this.api = universe.api;
 
     this._universe = universe;
@@ -102,7 +102,7 @@ class WorldV01 extends WorldBase {
   constructor(universe) {
     super(universe);
 
-    if (this.api != "0.1") throw new Error("unsupported REST API version");
+    if (this.api !== "0.1") throw new Error("unsupported REST API version");
     this._createDimensionMapV01();
     this._summarizeWorldV01();
   }
@@ -115,7 +115,7 @@ class WorldV01 extends WorldBase {
     this.obsDimensionMap = _.transform(
       this.schema.annotations.obs,
       (result, anno) => {
-        const dimType = this._deduceDimensionTypeV01(anno, anno.name);
+        const dimType = WorldV01._deduceDimensionTypeV01(anno, anno.name);
         if (dimType) {
           result[anno.name] = this.obsCrossfilter.dimension(
             r => r[anno.name],
@@ -151,10 +151,10 @@ class WorldV01 extends WorldBase {
     // return world;
   }
 
-  /**
-   ** Getters for the state inside world.    These are guarnateed to return
-   ** data for just the subset included in world.
-   **/
+  /*
+   * Getters for the state inside world.    These are guarnateed to return
+   * data for just the subset included in world.
+   */
 
   /*
   Summary information for each annotation, keyed by annotation name.
@@ -196,35 +196,36 @@ class WorldV01 extends WorldBase {
   */
   _summarizeWorldV01() {
     // TODO: reminder to future self
-    if (this.api != "0.1") throw new Error("unimplemented API version");
+    if (this.api !== "0.1") throw new Error("unimplemented API version");
 
     /*
     Build obs summary using any annotation in the obs schema
     */
-    const obsAnnotations = this.obsAnnotations;
+    const { obsAnnotations } = this;
     const obsSummary = _(this.schema.annotations.obs)
       .keyBy("name")
       .mapValues(anno => {
-        const key = anno.name;
-        const type = anno.type;
+        const { name, type } = anno;
         const continuous = anno.variabletype === "continuous";
 
         if (!continuous) {
           return {
-            options: _.countBy(obsAnnotations, key)
+            options: _.countBy(obsAnnotations, name)
           };
-        } else if (continuous && (type === "int" || type === "float")) {
+        }
+
+        if (continuous && (type === "int" || type === "float")) {
           let min = Number.POSITIVE_INFINITY;
           let max = Number.NEGATIVE_INFINITY;
           _.forEach(obsAnnotations, obs => {
-            const val = Number(obs[key]);
+            const val = Number(obs[name]);
             min = val < min ? val : min;
             max = val > max ? val : max;
           });
           return { range: { min, max } };
-        } else {
-          throw new Error("incomprehensible schema");
         }
+
+        throw new Error("incomprehensible schema");
       })
       .value();
 
@@ -235,7 +236,7 @@ class WorldV01 extends WorldBase {
 
     this.summary = {
       obs: obsSummary,
-      ["var"]: varSummary
+      var: varSummary
     };
   }
 
@@ -243,7 +244,7 @@ class WorldV01 extends WorldBase {
    Deduce the correct crossfilter dimension type from a metadata
    schema description.
   */
-  _deduceDimensionTypeV01(attributes, fieldName) {
+  static _deduceDimensionTypeV01(attributes, fieldName) {
     let dimensionType;
     if (attributes.type === "string") {
       dimensionType = "enum";
@@ -263,4 +264,4 @@ class WorldV01 extends WorldBase {
   }
 }
 
-export { WorldV01 as World };
+export default WorldV01;

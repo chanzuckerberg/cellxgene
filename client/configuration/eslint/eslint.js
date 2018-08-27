@@ -22,6 +22,7 @@ module.exports = {
     "no-underscore-dangle": "off",
     quotes: ["error", "double"],
     "implicit-arrow-linebreak": "off",
-    "operator-linebreak": ["error", "after"]
+    "operator-linebreak": ["error", "after"],
+    "no-console": "off"
   }
 };

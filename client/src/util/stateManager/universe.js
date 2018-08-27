@@ -1,4 +1,3 @@
-"use strict";
 // jshint esversion: 6
 
 import _ from "lodash";
@@ -85,7 +84,7 @@ class UniverseV01 extends UniverseBase {
   Cherry pick from /api/v0.1 response format to make somethign similar
   to the v0.2 schema
   */
-  _toSchema(ota) {
+  static _toSchema(ota) {
     /*
     keep the 0.1 format for now.  omit CellName to be consistent with
     _toAnnotations()
@@ -104,21 +103,19 @@ class UniverseV01 extends UniverseBase {
     };
   }
 
-  _toObsAnnotations(ota) {
+  static _toObsAnnotations(ota) {
     /*
     v0.1 format for metadata:
     metadata: [ { key: val, key: val, ... }, ... ]
     */
-    return _.map(ota.data.metadata, (c, i) => {
-      return {
-        __obsIndex__: i,
-        name: c.CellName,
-        ...c
-      };
-    });
+    return _.map(ota.data.metadata, (c, i) => ({
+      __obsIndex__: i,
+      name: c.CellName,
+      ...c
+    }));
   }
 
-  _toVarAnnotations(ota) {
+  static _toVarAnnotations(ota) {
     /*
     v0.1 initialize response contains 'genes' - names of all genes
     in order.
@@ -126,12 +123,12 @@ class UniverseV01 extends UniverseBase {
     return _.map(ota.data.genes, (g, i) => ({ __varIndex__: i, name: g }));
   }
 
-  _toLayout(ota) {
+  static _toLayout(ota) {
     /*
     v0.1 format for the graph is:
     [ [ 'cellname', x, y ], [ 'cellname', x, y, ], ... ]
     */
-    let uz = _.unzip(ota.data.graph);
+    const uz = _.unzip(ota.data.graph);
     return {
       X: uz[1],
       Y: uz[2]
@@ -145,8 +142,8 @@ class UniverseV01 extends UniverseBase {
   }
 
   initFromInitialize(OTAresponse) {
-    this.schema = this._toSchema(OTAresponse);
-    this.varAnnotations = this._toVarAnnotations(OTAresponse);
+    this.schema = UniverseV01._toSchema(OTAresponse);
+    this.varAnnotations = UniverseV01._toVarAnnotations(OTAresponse);
     this.nVar = this.varAnnotations.length;
     this.init.initialize = true;
     this._tryFinalization();
@@ -158,8 +155,8 @@ class UniverseV01 extends UniverseBase {
     NOTE: this code *assumes* that cell order in data.metadata and data.graph
     are the same.  TODO: error checking.
     */
-    this.obsAnnotations = this._toObsAnnotations(OTAresponse);
-    this.obsLayout = this._toLayout(OTAresponse);
+    this.obsAnnotations = UniverseV01._toObsAnnotations(OTAresponse);
+    this.obsLayout = UniverseV01._toLayout(OTAresponse);
     this.nObs = this.obsAnnotations.length;
 
     this.init.cells = true;
@@ -178,12 +175,11 @@ class UniverseV01 extends UniverseBase {
         ]
       }
     */
-    const genes = ota.data.genes;
-    const cells = ota.data.cells;
-    for (let idx = 0; idx < genes.length; idx++) {
+    const { genes, cells } = ota.data;
+    for (let idx = 0; idx < genes.length; idx += 1) {
       const gene = genes[idx];
       const data = new Float32Array(this.nObs);
-      for (let c = 0; c < cells.length; c++) {
+      for (let c = 0; c < cells.length; c += 1) {
         const obsIndex = this.obsNameToIndexMap[cells[c].cellname];
         data[obsIndex] = cells[c].e[idx];
       }
@@ -194,4 +190,4 @@ class UniverseV01 extends UniverseBase {
   }
 }
 
-export { UniverseV01 as Universe };
+export default UniverseV01;

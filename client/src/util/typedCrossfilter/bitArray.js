@@ -1,5 +1,5 @@
-"use strict";
 // jshint esversion: 6
+/* eslint no-bitwise: "off" */
 
 // BitArray is a 2D bitarray with size [length, nBitWidth].
 // Each bit is referred to as a `dimension`.  Dimensions may be
@@ -48,10 +48,10 @@ class BitArray {
   //
   countAllOnes() {
     let count = 0;
-    for (let i = 0; i < this.width; i++) {
+    for (let i = 0; i < this.width; i += 1) {
       const bitmask = this.bitmask[i];
-      for (let j = i * this.length, len = j + this.length; j < len; j++) {
-        if (this.bitarray[i * this.length + j] === bitmask) count++;
+      for (let j = i * this.length, len = j + this.length; j < len; j += 1) {
+        if (this.bitarray[i * this.length + j] === bitmask) count += 1;
       }
     }
     return count;
@@ -59,10 +59,11 @@ class BitArray {
 
   // count trailing zeros - hard to do fast in JS!
   // https://en.wikipedia.org/wiki/Find_first_set#CTZ
-  static ctz(v) {
+  static ctz(av) {
     let c = 32;
+    let v = av;
     v &= -v; // isolate lowest non-zero bit
-    if (v) c--;
+    if (v) c -= 1;
     if (v & 0x0000ffff) c -= 16;
     if (v & 0x00ff00ff) c -= 8;
     if (v & 0x0f0f0f0f) c -= 4;
@@ -74,8 +75,7 @@ class BitArray {
   // find a free dimension.  Return undefined if none
   _findFreeDimension() {
     let dim;
-    for (let col = 0; col < this.width; col++) {
-      const bitmask = this.bitmask[col];
+    for (let col = 0; col < this.width; col += 1) {
       const lowestZeroBit = ~this.bitmask[col] & -~this.bitmask[col];
       if (lowestZeroBit) {
         this.bitmask[col] |= lowestZeroBit;
@@ -92,7 +92,7 @@ class BitArray {
 
     // if we did not find free dimension, expand the bitarray.
     if (dim === undefined) {
-      this.width++;
+      this.width += 1;
 
       const biggerBitArray = new Int32Array(this.width * this.length);
       biggerBitArray.set(this.bitarray);
@@ -105,7 +105,7 @@ class BitArray {
       dim = this._findFreeDimension();
     }
 
-    this.dimensionCount++;
+    this.dimensionCount += 1;
     return dim;
   }
 
@@ -117,17 +117,15 @@ class BitArray {
     this.deselectAll(dim);
     const col = dim >>> 5;
     this.bitmask[col] &= ~(1 << dim % 32);
-    this.dimensionCount--;
+    this.dimensionCount -= 1;
   }
 
   // return true if this index is selected in ALL dimensions.
   //
   isSelected(index) {
-    const width = this.width;
-    const length = this.length;
-    const bitarray = this.bitarray;
+    const { width, length, bitarray } = this;
 
-    for (let w = 0; w < width; w++) {
+    for (let w = 0; w < width; w += 1) {
       const bitmask = this.bitmask[w];
       if (!bitmask || bitarray[w * length + index] !== bitmask) return false;
     }
@@ -140,20 +138,19 @@ class BitArray {
     const ignoreOffset = dim >>> 5;
     const ignoreMask = ~(1 << dim % 32);
 
-    const width = this.width;
-    const length = this.length;
-    const bitarray = this.bitarray;
+    const { width, length, bitarray } = this;
 
-    for (let w = 0; w < width; w++) {
+    for (let w = 0; w < width; w += 1) {
       const bitmask = this.bitmask[w];
       if (w === ignoreOffset) {
         if (
           bitmask &&
           (bitarray[w * length + index] & ignoreMask) !== (bitmask & ignoreMask)
-        )
+        ) {
           return false;
-      } else {
-        if (bitmask && bitarray[w * length + index] !== bitmask) return false;
+        }
+      } else if (bitmask && bitarray[w * length + index] !== bitmask) {
+        return false;
       }
     }
     return true;
@@ -180,24 +177,20 @@ class BitArray {
   // select all indices on dimension.
   //
   selectAll(dim) {
-    let col = dim >> 5;
-    const bitmask = this.bitmask[col];
-    const bitarray = this.bitarray;
+    const col = dim >> 5;
     const one = 1 << dim % 32;
-    for (let i = col * this.length, len = i + this.length; i < len; i++) {
-      bitarray[i] |= one;
+    for (let i = col * this.length, len = i + this.length; i < len; i += 1) {
+      this.bitarray[i] |= one;
     }
   }
 
   // deselect all indices on dimension
   //
   deselectAll(dim) {
-    let col = dim >> 5;
-    const bitmask = this.bitmask[col];
-    const bitarray = this.bitarray;
+    const col = dim >> 5;
     const zero = ~(1 << dim % 32);
-    for (let i = col * this.length, len = i + this.length; i < len; i++) {
-      bitarray[i] &= zero;
+    for (let i = col * this.length, len = i + this.length; i < len; i += 1) {
+      this.bitarray[i] &= zero;
     }
   }
 
@@ -208,11 +201,10 @@ class BitArray {
     const col = dim >>> 5;
     const first = range[0];
     const last = range[1];
-    const bitarray = this.bitarray;
     const one = 1 << dim % 32;
     const offset = col * this.length;
-    for (let i = first; i < last; i++) {
-      bitarray[offset + indirect[i]] |= one;
+    for (let i = first; i < last; i += 1) {
+      this.bitarray[offset + indirect[i]] |= one;
     }
   }
 
@@ -222,11 +214,10 @@ class BitArray {
     const col = dim >>> 5;
     const first = range[0];
     const last = range[1];
-    const bitarray = this.bitarray;
     const zero = ~(1 << dim % 32);
     const offset = col * this.length;
-    for (let i = first; i < last; i++) {
-      bitarray[offset + indirect[i]] &= zero;
+    for (let i = first; i < last; i += 1) {
+      this.bitarray[offset + indirect[i]] &= zero;
     }
   }
 
@@ -237,13 +228,14 @@ class BitArray {
     // special case (width === 1) for performance
     if (this.width === 1) {
       const bitmask = this.bitmask[0];
-      const bitarray = this.bitarray;
-      for (let i = 0, len = this.length; i < len; i++) {
+      for (let i = 0, len = this.length; i < len; i += 1) {
         result[i] =
-          bitmask && bitarray[i] === bitmask ? selectedValue : deselectedValue;
+          bitmask && this.bitarray[i] === bitmask
+            ? selectedValue
+            : deselectedValue;
       }
     } else {
-      for (let i = 0, len = this.length; i < len; i++) {
+      for (let i = 0, len = this.length; i < len; i += 1) {
         result[i] = this.isSelected(i) ? selectedValue : deselectedValue;
       }
     }
