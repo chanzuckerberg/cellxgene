@@ -23,6 +23,8 @@ module.exports = {
     quotes: ["error", "double"],
     "implicit-arrow-linebreak": "off",
     "operator-linebreak": ["error", "after"],
-    "no-console": "off"
+    "no-console": "off",
+    "spaced-comment": ["error", "always", { exceptions: ["*"] }],
+    "no-param-reassign": "off"
   }
 };

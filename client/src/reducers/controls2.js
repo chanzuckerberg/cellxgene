@@ -66,8 +66,8 @@ const Controls = (
     }
 
     /*******************************
-            User Events
-    *******************************/
+             User Events
+     *******************************/
     case "reset graph": {
       /* Reset viewable world to the entire Universe */
       throw new Error("unimplemented");
