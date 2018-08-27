@@ -86,13 +86,13 @@ class ConfigAPI(Resource):
         config = {
             "config": {
                 "features": [
-                    {"method": "POST", "path": "/cluster/", "available": False},
-                    {"method": "POST", "path": "/layout/obs", "available": False},
-                    {"method": "POST", "path": "/layout/var", "available": False},
-                    {"method": "POST", "path": "/diffexp", "available": False},
+                    {"method": "POST", "path": "/cluster/", **current_app.features["cluster"]},
+                    {"method": "POST", "path": "/layout/obs", **current_app.features["layout"]["obs"]},
+                    {"method": "POST", "path": "/layout/var", **current_app.features["layout"]["var"]},
+                    {"method": "POST", "path": "/diffexp/", **current_app.features["diffexp"]},
                 ],
                 "displayNames": {
-                    "engine": f"ScanPy version {current_app.data.__version__}",
+                    "engine": f"ScanPy Engine version {current_app.data.__version__}",
                     "dataset": current_app.config["DATASET_TITLE"]
                 }
             }
