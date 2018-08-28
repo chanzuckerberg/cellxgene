@@ -28,6 +28,14 @@ class EndPoints(unittest.TestCase):
         self.assertEqual(result_data["config"]["displayNames"]["dataset"], "example-dataset")
         self.assertEqual(len(result_data["config"]["features"]), 4)
 
+    def test_get_layout(self):
+        url = "{base}{endpoint}".format(base=self.url_base, endpoint="layout/obs")
+        result = self.session.get(url)
+        self.assertEqual(result.status_code, 200)
+        result_data = result.json()
+        self.assertEqual(result_data["layout"]["ndims"], 2)
+        self.assertEqual(len(result_data["layout"]["coordinates"]), 2638)
+
     def test_static(self):
         url = "{url}{endpoint}/{file}".format(url=self.local_url, endpoint="static", file="js/service-worker.js")
         result = self.session.get(url)
