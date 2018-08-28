@@ -48,10 +48,16 @@ class BitArray {
   //
   countAllOnes() {
     let count = 0;
-    for (let i = 0; i < this.width; i += 1) {
-      const bitmask = this.bitmask[i];
-      for (let j = i * this.length, len = j + this.length; j < len; j += 1) {
-        if (this.bitarray[i * this.length + j] === bitmask) count += 1;
+    const { bitarray, bitmask, length, width } = this;
+    for (let l = 0; l < length; l += 1) {
+      let dimensionsSet = 0;
+      for (let w = 0; w < width; w += 1) {
+        if (bitarray[w * length + l] === bitmask[w]) {
+          dimensionsSet += 1;
+        }
+      }
+      if (dimensionsSet === width) {
+        count += 1;
       }
     }
     return count;
