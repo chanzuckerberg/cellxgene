@@ -4,6 +4,7 @@ import pytest
 import time
 import unittest
 
+import numpy as np
 from pandas import Series
 
 from server.app.scanpy_engine.scanpy_engine import ScanpyEngine
@@ -86,6 +87,10 @@ class UtilTest(unittest.TestCase):
         }
         data = self.data.filter_dataframe(filter_["filter"])
         self.assertEqual(data.shape, (15, 102))
+
+    def test_obs_and_var_names(self):
+        self.assertEqual(np.sum(self.data.data.var["name"].isna()), 0)
+        self.assertEqual(np.sum(self.data.data.obs["name"].isna()), 0)
 
     def test_schema(self):
         with open(path.join(path.dirname(__file__), "schema.json")) as fh:
