@@ -71,10 +71,10 @@ class ScanpyEngine(CXGDriver):
 
     def _add_mandatory_annotations(self):
         # ensure gene
-        self.data.var["name"] = Series(list(self.data.var.index), dtype="unicode_")
+        self.data.var["name"] = Series(list(self.data.var.index), dtype="unicode_", index=self.data.var.index)
         self.data.var.index = Series(list(range(self.data.var.shape[0])), dtype="category")
         # ensure cell name
-        self.data.obs["name"] = Series(list(self.data.obs.index), dtype="unicode_")
+        self.data.obs["name"] = Series(list(self.data.obs.index), dtype="unicode_", index=self.data.obs.index)
         self.data.obs.index = Series(list(range(self.data.obs.shape[0])), dtype="category")
 
     def _validatate_data_types(self):
