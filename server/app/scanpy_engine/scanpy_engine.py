@@ -1,6 +1,7 @@
 import os
 
 import numpy as np
+from pandas import DataFrame, Series
 import scanpy.api as sc
 from scipy import stats
 
@@ -11,15 +12,14 @@ from server.app.util.constants import Axis
 
 class ScanpyEngine(CXGDriver):
 
-    def __init__(self, data, graph_method=None, diffexp_method=None):
-        super().__init__(data, graph_method=graph_method, diffexp_method=diffexp_method)
+    def __init__(self, data, layout_method=None, diffexp_method=None):
+        super().__init__(data, layout_method=layout_method, diffexp_method=diffexp_method)
         self._validatate_data_types()
         self._add_mandatory_annotations()
         self.cell_count = self.data.shape[0]
         self.gene_count = self.data.shape[1]
         self._create_schema()
-        self.graph_method = graph_method
-        self.diffexp_method = diffexp_method
+        self.layout(self.data)
 
     def _create_schema(self):
         self.schema = {
@@ -207,16 +207,21 @@ class ScanpyEngine(CXGDriver):
         return metadata
 
     @cache.memoize()
-    def create_graph(self, df):
+    def layout(self, df):
         """
         Computes a n-d layout for cells through dimensionality reduction.
         :param df: from filter_cells, dataframe
-        :return:  [cellid, x, y]
+        :return:  [cellid, x, y, ...]
         """
-        getattr(sc.tl, self.graph_method)(df, random_state=123)
-        graph = df.obsm["X_{graph_method}".format(graph_method=self.graph_method)]
-        normalized_graph = (graph - graph.min()) / (graph.max() - graph.min())
-        return np.hstack((df.obs["cell_name"].values.reshape(len(df.obs.index), 1), normalized_graph)).tolist()
+        getattr(sc.tl, self.layout_method)(df, random_state=123)
+        df_layout = df.obsm[f"X_{self.layout_method}"]
+        normalized_layout = DataFrame((df_layout - df_layout.min()) / (df_layout.max() - df_layout.min()),
+                                      index=df.obs.index)
+        return {
+            "ndims": normalized_layout.shape[1],
+            # reset_index gets obs' id into output
+            "coordinates": normalized_layout.reset_index().values.tolist()
+        }
 
     @cache.memoize()
     def diffexp(self, cell_list_1, cell_list_2, pval, num_genes):

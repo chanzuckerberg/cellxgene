@@ -2,9 +2,10 @@ from abc import ABCMeta, abstractmethod
 
 
 class CXGDriver(metaclass=ABCMeta):
-    def __init__(self, data, graph_method=None, diffexp_method=None):
+
+    def __init__(self, data, layout_method=None, diffexp_method=None):
         self.data = self._load_data(data)
-        self.graph_method = graph_method
+        self.layout_method = layout_method
         self.diffexp_method = diffexp_method
         self.cluster = None
 
@@ -19,7 +20,7 @@ class CXGDriver(metaclass=ABCMeta):
             "diffexp": {"available": False}
         }
         # TODO - Interactive limit should be generated from the actual available methods see GH issue #94
-        if self.graph_method:
+        if self.layout_method:
             # TODO handle "var" when gene layout becomes available
             features["layout"]["obs"] = {"available": True, "interactiveLimit": 15000}
         if self.diffexp_method:
@@ -70,7 +71,7 @@ class CXGDriver(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def create_graph(self, df):
+    def layout(self, df):
         """
         Computes a n-d layout for cells through dimensionality reduction.
         :param df: from filter_cells, dataframe

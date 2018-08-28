@@ -147,6 +147,14 @@ class UtilTest(unittest.TestCase):
     def test_config(self):
         self.assertEqual(self.data.features["layout"]["obs"], {'available': True, 'interactiveLimit': 15000})
 
+    def test_layout(self):
+        layout = self.data.layout(self.data.data)
+        self.assertEqual(layout["ndims"], 2)
+        self.assertEqual(len(layout["coordinates"]), 2638)
+        self.assertEqual(layout["coordinates"][0][0], 0)
+        for idx, val in enumerate(layout["coordinates"]):
+            self.assertLessEqual(val[1], 1)
+            self.assertLessEqual(val[2], 1)
 
     if __name__ == '__main__':
         unittest.main()
