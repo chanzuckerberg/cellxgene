@@ -12,7 +12,7 @@ from server.app.scanpy_engine.scanpy_engine import ScanpyEngine
 
 class UtilTest(unittest.TestCase):
     def setUp(self):
-        self.data = ScanpyEngine("example-dataset/", graph_method="umap", diffexp_method="ttest")
+        self.data = ScanpyEngine("example-dataset/", layout_method="umap", diffexp_method="ttest")
         self.data._create_schema()
 
     def test_init(self):

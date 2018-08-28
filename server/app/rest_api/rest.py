@@ -102,9 +102,36 @@ class ConfigAPI(Resource):
         return make_response(jsonify(config), 200)
 
 
+class LayoutObsAPI(Resource):
+    @swagger.doc({
+        "summary": "Get the default layout for all observations.",
+        "tags": ["layout"],
+        "parameters": [],
+        "responses": {
+            "200": {
+                "description": "layout",
+                "examples": {
+                    "application/json": {
+                        "layout": {
+                            "ndims": 2,
+                            "coordinates": [
+                                [0, 0.284483, 0.983744],
+                                [1, 0.038844, 0.739444]
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+    })
+    def get(self):
+        return make_response((jsonify({"layout": current_app.data.layout(current_app.data.data)})))
+
+
 def get_api_resources():
     bp = Blueprint("api", __name__, url_prefix="/api/v0.2")
     api = Api(bp, add_api_spec_resource=False)
     api.add_resource(SchemaAPI, "/schema")
     api.add_resource(ConfigAPI, "/config")
+    api.add_resource(LayoutObsAPI, "/layout/obs")
     return api
