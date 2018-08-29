@@ -243,49 +243,48 @@ const requestGeneExpressionCountsPOST = genes => async (dispatch, getState) => {
   }
 };
 
-const requestDifferentialExpression = (celllist1, celllist2, num_genes = 7) => {
-  return (dispatch, getState) => {
-    dispatch({ type: "request differential expression started" });
-    fetch(`${globals.API.prefix}${globals.API.version}diffexpression`, {
-      method: "POST",
-      body: JSON.stringify({
-        celllist1,
-        celllist2,
-        num_genes
-      }),
-      headers: new Headers({
-        accept: "application/json",
-        "Content-Type": "application/json"
-      })
+const requestDifferentialExpression = (
+  celllist1,
+  celllist2,
+  num_genes = 7
+) => dispatch => {
+  dispatch({ type: "request differential expression started" });
+  fetch(`${globals.API.prefix}${globals.API.version}diffexpression`, {
+    method: "POST",
+    body: JSON.stringify({
+      celllist1,
+      celllist2,
+      num_genes
+    }),
+    headers: new Headers({
+      accept: "application/json",
+      "Content-Type": "application/json"
     })
-      .then(res => res.json())
-      .then(
-        data => {
-          /*
+  })
+    .then(res => res.json())
+    .then(
+      data => {
+        /*
           kick off a secondary action to get all expression counts for all cells
           now that we know what the top expressed are
           */
-          dispatch(
-            requestGeneExpressionCountsPOST(
-              _.union(
-                data.data.celllist1.topgenes,
-                data.data.celllist2.topgenes
-              )
-            )
-          );
-          /* then send the success case action through */
-          return dispatch({
-            type: "request differential expression success",
-            data
-          });
-        },
-        error =>
-          dispatch({
-            type: "request differential expression error",
-            error
-          })
-      );
-  };
+        dispatch(
+          requestGeneExpressionCountsPOST(
+            _.union(data.data.celllist1.topgenes, data.data.celllist2.topgenes)
+          )
+        );
+        /* then send the success case action through */
+        return dispatch({
+          type: "request differential expression success",
+          data
+        });
+      },
+      error =>
+        dispatch({
+          type: "request differential expression error",
+          error
+        })
+    );
 };
 
 export default {

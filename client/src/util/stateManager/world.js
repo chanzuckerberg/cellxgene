@@ -29,7 +29,7 @@ obs/cell.
 
   NOTE: world.obsAnnotation should be identical to the old state.cells value,
   EXCEPT that
-    * __cellIndex__ renamed to __cellId__  XXX: should be in mapToUniverse
+    * __cellIndex__ renamed to __obsIndex__
     * __x__ and __y__ are now in world.obsLayout
     * __color__ and __colorRBG__ should be moved to controls reducer
 
@@ -113,6 +113,17 @@ class World {
     fields which are subset by observation selection/filtering need to be updated.
     */
     const numSelected = world.obsCrossfilter.countFiltered();
+    /*
+    If everything is selected, there is nothing to do.  Just return the
+    clone object.
+    */
+    if (numSelected === world.nObs) {
+      return newWorld;
+    }
+
+    /*
+    Else, subset based upon selection
+    */
     newWorld.nObs = numSelected;
     newWorld.obsAnnotations = new Array(numSelected);
     newWorld.obsLayout = {

@@ -1,7 +1,6 @@
 // jshint esversion: 6
 
 import _ from "lodash";
-import { parseRGB } from "../util/parseRGB";
 import { World } from "../util/stateManager";
 
 function createCategoricalAsBooleansMap(world) {
