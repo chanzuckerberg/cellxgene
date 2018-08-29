@@ -37,7 +37,6 @@ const Controls = (
   },
   action
 ) => {
-  console.log(action);
   switch (action.type) {
     /*****************************************************
           Initialization and World/Universe management
