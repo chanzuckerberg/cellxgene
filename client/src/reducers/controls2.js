@@ -190,7 +190,6 @@ const Controls = (
     /*******************************
               Color Scale
     *******************************/
-    case "color by expression":
     case "color by categorical metadata":
     case "color by continuous metadata": {
       const world = state.world
@@ -198,6 +197,16 @@ const Controls = (
         .setColors(action.colors.name, action.colors.rgb);
       return Object.assign({}, state, {
         colorAccessor: action.colorAccessor,
+        colorScale: action.colorScale,
+        world
+      });
+    }
+    case "color by expression": {
+      const world = state.world
+        .clone()
+        .setColors(action.colors.name, action.colors.rgb);
+      return Object.assign({}, state, {
+        colorAccessor: action.gene,
         colorScale: action.colorScale,
         world
       });
