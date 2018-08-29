@@ -13,10 +13,10 @@ class ScanpyEngine(CXGDriver):
 
     __version__ = "0.0.1"
 
-    def __init__(self, data, graph_method="umap", diffexp_method="ttest"):
-        self.data = self._load_data(data)
-        self.schema = self._load_or_infer_schema(data, schema)
-        self._set_cell_names()
+    def __init__(self, data, graph_method=None, diffexp_method=None):
+        super(ScanpyEngine, self).__init__(data, graph_method=graph_method, diffexp_method=diffexp_method)
+        self._validatate_data_types()
+        self._add_mandatory_annotations()
         self.cell_count = self.data.shape[0]
         self.gene_count = self.data.shape[1]
         self._create_schema()
