@@ -92,7 +92,7 @@ class ConfigAPI(Resource):
                     {"method": "POST", "path": "/diffexp/", **current_app.data.features["diffexp"]},
                 ],
                 "displayNames": {
-                    "engine": f"ScanPy Engine version {current_app.data.__version__}",
+                    "engine": f"cellxgene Scanpy engine version {current_app.data.__version__}",
                     "dataset": current_app.config["DATASET_TITLE"]
                 }
             }
