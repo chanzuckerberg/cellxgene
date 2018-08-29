@@ -30,7 +30,7 @@ import { margin, width, height } from "./util";
   return {
     world,
 
-    colors: state.controls2.colors,
+    colorRGB: state.controls2.world.colorRGB,
     colorAccessor: state.controls2.colorAccessor,
     colorScale: state.controls2.colorScale,
 
@@ -132,7 +132,7 @@ class Scatterplot extends React.Component {
       scatterplotYYaccessor,
       expressionX,
       expressionY,
-      colors
+      colorRGB
     } = this.props;
 
     if (
@@ -180,7 +180,7 @@ class Scatterplot extends React.Component {
       }
 
       for (let i = 0; i < cellCount; i += 1) {
-        colorsBuf.set(colors.rgb[i], 3 * i);
+        colorsBuf.set(colorRGB[i], 3 * i);
       }
 
       crossfilter.fillByIsFiltered(sizesBuf, 4, 0.2);
