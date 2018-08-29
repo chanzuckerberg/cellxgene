@@ -52,22 +52,6 @@ def run_scanpy(args):
         DATASET_TITLE=title,
         CXG_API_BASE=api_base
     )
-    app.features = {
-        "cluster": {"available": False},
-        "layout": {
-            "obs": {"available": False},
-            "var": {"available": False},
-        },
-        "diffexp": {"available": False}
-    }
-    # TODO - Interactive limit should be generated from the actual available methods see GH issue #94
-    if "layout" in args and args.layout:
-        # TODO handle "var" when gene layout becomes available
-        app.features["layout"]["obs"] = {"available": True, "interactiveLimit": 15000}
-    if "diffexp" in args and args.diffexp:
-        app.features["diffexp"] = {"available": True, "interactiveLimit": 5000}
-    if "cluster" in args and args.cluster:
-        app.features["cluster"] = {"available": True, "interactiveLimit": 45000}
 
     from .scanpy_engine.scanpy_engine import ScanpyEngine
     app.data = ScanpyEngine(args.data_directory, graph_method=args.layout, diffexp_method=args.diffexp)
