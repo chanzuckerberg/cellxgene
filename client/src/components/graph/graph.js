@@ -26,7 +26,7 @@ import FaSave from "react-icons/lib/fa/download";
   return {
     world: state.controls2.world,
     responsive: state.responsive,
-    colors: state.controls2.colors,
+    colorRGB: _.get(state.controls2.world, "colorRGB", null),
     opacityForDeselectedCells: state.controls2.opacityForDeselectedCells,
     selectionUpdate: _.get(state.controls2.world, "obsSelectionUpdateSeq", null)
   };
@@ -51,6 +51,7 @@ class Graph extends React.Component {
       mode: "brush"
     };
   }
+
   reglDraw(regl, drawPoints, sizeBuffer, colorBuffer, pointBuffer, camera) {
     regl.clear({
       depth: 1,
@@ -65,6 +66,7 @@ class Graph extends React.Component {
       view: camera.view()
     });
   }
+
   restartReglLoop() {
     const reglRender = this.state.regl.frame(() => {
       this.reglDraw(
@@ -84,6 +86,7 @@ class Graph extends React.Component {
       reglRender
     });
   }
+
   componentDidMount() {
     // setup canvas and camera
     const camera = _camera(this.reglCanvas, { scale: true, rotate: false });
@@ -121,6 +124,7 @@ class Graph extends React.Component {
       reglRender
     });
   }
+
   componentDidUpdate(prevProps, prevState) {
     if (
       this.state.reglRender &&
@@ -170,8 +174,11 @@ class Graph extends React.Component {
       // could have changed for some other reason, but for now color is
       // the only metadata that changes client-side.  If this is problematic,
       // we could add some sort of color-specific indicator to the app state.
-      if (!this.renderCache.colors || this.props.colors != prevProps.colors) {
-        const rgb = this.props.colors.rgb;
+      if (
+        !this.renderCache.colors ||
+        this.props.colorRGB != prevProps.colorRGB
+      ) {
+        const rgb = this.props.colorRGB;
         if (!this.renderCache.colors)
           this.renderCache.colors = new Float32Array(3 * rgb.length);
         for (let i = 0, colors = this.renderCache.colors; i < rgb.length; i++) {
@@ -224,6 +231,7 @@ class Graph extends React.Component {
       this.setState({ svg, brush, brushContainer });
     }
   }
+
   handleBrushSelectAction() {
     /* This conditional handles procedural brush deselect. Brush emits an event on procedural deselect because it is move: null */
     if (d3.event.sourceEvent !== null) {
@@ -273,6 +281,7 @@ class Graph extends React.Component {
       });
     }
   }
+
   handleBrushDeselectAction() {
     if (d3.event && !d3.event.selection) {
       this.props.dispatch({
@@ -288,6 +297,7 @@ class Graph extends React.Component {
       });
     }
   }
+
   handleOpacityRangeChange(e) {
     this.props.dispatch({
       type: "change opacity deselected cells in 2d graph background",
