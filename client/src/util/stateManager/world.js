@@ -4,6 +4,7 @@ import _ from "lodash";
 import crossfilter from "../typedCrossfilter";
 import { parseRGB } from "../parseRGB";
 import KeyValCache from "./keyvalcache";
+import * as globals from "../../globals";
 
 /*
 World is a subset of universe.   Most code should use world, and should
@@ -66,7 +67,7 @@ class World {
     }
     let defaultColor = color;
     if (!defaultColor || typeof defaultColor !== "string") {
-      defaultColor = "rgb(0,0,0,1)";
+      defaultColor = globals.defaultCellColor;
     }
     // backpointer to our universe
     this._universe = universe;
@@ -113,9 +114,10 @@ class World {
   Factory - create world from this world's currently crossfilter selection.
   If you want to create from Universe, just use the constructor.
   */
-  static createFromCrossfilterSelection(world) {
+  static createFromCrossfilterSelection(world, resetColor = false) {
     const newWorld = world.clone();
     const universe = world._universe;
+    const resetColorRGB = resetColor ? parseRGB(resetColor) : null;
 
     /*
     Subset world from universe based upon world's current selection.  Only those
@@ -131,7 +133,7 @@ class World {
     }
 
     /*
-    Else, subset based upon selection
+    Else, create a world which is based upon current selection
     */
     newWorld.nObs = numSelected;
     newWorld.obsAnnotations = new Array(numSelected);
@@ -148,8 +150,13 @@ class World {
         newWorld.obsAnnotations[sel] = world.obsAnnotations[i];
         newWorld.obsLayout.X[sel] = world.obsLayout.X[i];
         newWorld.obsLayout.Y[sel] = world.obsLayout.Y[i];
-        newWorld.colorName[sel] = world.colorName[i];
-        newWorld.colorRGB[sel] = world.colorRGB[i];
+        if (!resetColor) {
+          newWorld.colorName[sel] = world.colorName[i];
+          newWorld.colorRGB[sel] = world.colorRGB[i];
+        } else {
+          newWorld.colorName[sel] = resetColor;
+          newWorld.colorRGB[sel] = resetColorRGB;
+        }
         sel += 1;
       }
     }

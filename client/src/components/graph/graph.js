@@ -44,9 +44,7 @@ class Graph extends React.Component {
       colors: null
     };
     this.state = {
-      drawn: false,
       svg: null,
-      ctx: null,
       brush: null,
       mode: "brush"
     };

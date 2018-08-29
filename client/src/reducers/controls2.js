@@ -2,6 +2,7 @@
 
 import _ from "lodash";
 import { World } from "../util/stateManager";
+import * as globals from "../globals";
 
 function createCategoricalAsBooleansMap(world) {
   const res = {};
@@ -45,20 +46,25 @@ const Controls = (
     case "reset World to eq Universe": {
       /* Reset viewable world to be the entire Universe */
       /* first light - create world & other data-driven defaults */
-      const world = new World(action.universe, "rgb(0,0,0,1)");
+      const world = new World(action.universe, globals.defaultCellColor);
       const categoricalAsBooleansMap = createCategoricalAsBooleansMap(world);
       return Object.assign({}, state, {
         world,
-        categoricalAsBooleansMap
+        categoricalAsBooleansMap,
+        colorAccessor: null
       });
     }
     case "set World to current selection": {
       /* Set viewable world to be the currnetly selected data */
-      const world = World.createFromCrossfilterSelection(state.world);
+      const world = World.createFromCrossfilterSelection(
+        state.world,
+        globals.defaultCellColor
+      );
       const categoricalAsBooleansMap = createCategoricalAsBooleansMap(world);
       return Object.assign({}, state, {
         world,
-        categoricalAsBooleansMap
+        categoricalAsBooleansMap,
+        colorAccessor: null
       });
     }
 
