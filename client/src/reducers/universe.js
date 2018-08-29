@@ -11,7 +11,7 @@ TODO: 0.2 reducer
 const UniverseReducerV01 = (state = new Universe("0.1"), action) => {
   switch (action.type) {
     case "initial data load start": {
-      return Object.assign(new Universe(), state, {
+      return Object.assign(state.clone(), state, {
         loading: true,
         error: null
       });
@@ -19,32 +19,32 @@ const UniverseReducerV01 = (state = new Universe("0.1"), action) => {
 
     /* /api/v0.1/initialize response */
     case "initialize success": {
-      return Object.assign(new Universe(), state).initFromInitialize(
+      return Object.assign(state.clone(), state).initFromInitialize(
         action.data
       );
     }
 
     /* /api/v0.1/cells response */
     case "request cells success": {
-      return Object.assign(new Universe(), state).initFromCells(action.data);
+      return Object.assign(state.clone(), state).initFromCells(action.data);
     }
 
     /* /api/v0.1/expression response */
     case "expression load success": {
-      return Object.assign(new Universe(), state).initFromExpression(
+      return Object.assign(state.clone(), state).initFromExpression(
         action.data
       );
     }
 
     case "initial data load complete (universe exists)": {
-      return Object.assign(new Universe(), state, {
+      return Object.assign(state.clone(), state, {
         loading: false,
         error: null
       });
     }
 
     case "initial data load error": {
-      return Object.assign(new Universe(), state, {
+      return Object.assign(state.clone(), state, {
         loading: false,
         error: action.data
       });

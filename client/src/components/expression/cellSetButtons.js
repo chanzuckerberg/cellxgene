@@ -9,7 +9,7 @@ import actions from "../../actions";
 @connect()
 class CellSetButton extends React.Component {
   set() {
-    const set = _.map(this.props.crossfilter.allFiltered(), "CellName");
+    const set = _.map(this.props.crossfilter.allFiltered(), "name");
 
     this.props.dispatch({
       type:
@@ -18,6 +18,7 @@ class CellSetButton extends React.Component {
       data: set
     });
   }
+
   render() {
     return (
       <span style={{ marginRight: 10 }}>

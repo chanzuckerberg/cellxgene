@@ -24,10 +24,6 @@ const Controls = (
     world: null,
     categoricalAsBooleansMap: null, // should this be in world, w/ crossfilter?
 
-    // Current, per-obs (cell) colors as a name & RGB.    Must be
-    // kept in sync w/ world.
-    //
-    colors: null,
     colorAccessor: null,
     colorScale: null,
 
@@ -42,36 +38,35 @@ const Controls = (
   },
   action
 ) => {
-  console.log("Controls2:", action.type);
+  console.log(action);
   switch (action.type) {
-    /*******************************
-          Initialization
-    *******************************/
-    case "initial data load complete (universe exists)": {
+    /*****************************************************
+          Initialization and World/Universe management
+    ******************************************************/
+    case "initial data load complete (universe exists)":
+    case "reset World to eq Universe": {
+      /* Reset viewable world to be the entire Universe */
       /* first light - create world & other data-driven defaults */
-      const world = new World(action.universe);
+      const world = new World(action.universe, "rgb(0,0,0,1)");
       const categoricalAsBooleansMap = createCategoricalAsBooleansMap(world);
-      const colorNames = new Array(world.obsAnnotations.length).fill(
-        "rgb(0,0,0,1)"
-      );
-      const colors = {
-        name: colorNames,
-        rgb: _.map(colorNames, c => parseRGB(c))
-      };
       return Object.assign({}, state, {
         world,
-        categoricalAsBooleansMap,
-        colors
+        categoricalAsBooleansMap
+      });
+    }
+    case "set World to current selection": {
+      /* Set viewable world to be the currnetly selected data */
+      const world = World.createFromCrossfilterSelection(state.world);
+      const categoricalAsBooleansMap = createCategoricalAsBooleansMap(world);
+      return Object.assign({}, state, {
+        world,
+        categoricalAsBooleansMap
       });
     }
 
     /*******************************
              User Events
      *******************************/
-    case "reset graph": {
-      /* Reset viewable world to the entire Universe */
-      throw new Error("unimplemented");
-    }
     case "parallel coordinates axes have been drawn": {
       return Object.assign({}, state, {
         axesHaveBeenDrawn: true
@@ -196,24 +191,18 @@ const Controls = (
     /*******************************
               Color Scale
     *******************************/
-    case "color by continuous metadata":
-      return Object.assign({}, state, {
-        colorAccessor: action.colorAccessor,
-        colors: action.colors,
-        colorScale: action.colorScale
-      });
     case "color by expression":
-      return Object.assign({}, state, {
-        colorAccessor: action.gene,
-        colors: action.colors,
-        colorScale: action.colorScale
-      });
     case "color by categorical metadata":
+    case "color by continuous metadata": {
+      const world = state.world
+        .clone()
+        .setColors(action.colors.name, action.colors.rgb);
       return Object.assign({}, state, {
         colorAccessor: action.colorAccessor,
-        colors: action.colors,
-        colorScale: action.colorScale
+        colorScale: action.colorScale,
+        world
       });
+    }
 
     /*******************************
               Scatterplot

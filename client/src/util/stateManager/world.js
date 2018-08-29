@@ -2,10 +2,13 @@
 
 import _ from "lodash";
 import crossfilter from "../typedCrossfilter";
+import { parseRGB } from "../parseRGB";
 
 /*
 World is a subset of universe.   Most code should use world, and should
-(generally) not use Universe.
+(generally) not use Universe.   World contains any per-obs or per-var data
+that must be consisstent acorss the app when we view/manipulate subsets
+of Universe.
 
 Private API indicated by leading underscore in key name (eg, _foo).  Anything else
 is public.
@@ -37,8 +40,6 @@ obs/cell.
 
   Example: { X: [ 0.33, 0.23, ... ], Y: [ 0.8, 0.777, ... ]}
 
-* matrix:  TBD
-
 * obsCrossfilter - a crossfilter object across world.obsAnnotations
 
 * obsDimensionMap - an object mapping annotation names to dimensions on
@@ -47,36 +48,109 @@ obs/cell.
 */
 
 /* WorldBase defines hte public API */
-class WorldBase {
+class World {
   /*
   create world which is eq universe.  Universe MUST be fully
   initialized for this to suceed (eg all setters called, finalize()
   called)
   */
-  constructor(universe) {
+  constructor(universe, color) {
     if (!universe.finalized) {
       throw new Error("World can't be created from an partial Universe");
     }
-    this.api = universe.api;
-
+    let defaultColor = color;
+    if (!defaultColor || typeof defaultColor !== "string") {
+      defaultColor = "rgb(0,0,0,1)";
+    }
+    // backpointer to our universe
     this._universe = universe;
-    /*
-    map from world index to universe index, for cases where world < universe.
-    null value signifies world == universe.
-    */
-    this._universeObsIndex = null;
+    // map from the universe obsIndex to our world offset.
+    // undefined/null indicates identity map.
+    this._worldObsIndex = null;
 
     /*
-    public interface
+    public interface follows
     */
-    this.schema = this._universe.schema;
+
+    /* Schema related */
+    this.api = universe.api;
+    this.schema = universe.schema;
+    this.nObs = universe.nObs;
+    this.nVar = universe.nVar;
+
+    /* annotations */
     this.obsAnnotations = universe.obsAnnotations;
     this.varAnnotations = universe.varAnnotations;
+
+    /* layout and display characteristics */
     this.obsLayout = universe.obsLayout;
-    this.matrix = undefined; // TODO
+    this.colorName = new Array(this.nObs).fill(defaultColor);
+
+    /* selection management */
     this.obsCrossfilter = crossfilter(this.obsAnnotations);
-    this.obsDimensionMap = {};
-    this.summary = { obs: [], var: [] };
+    this.obsDimensionMap = this._createObsDimensionMap();
+
+    /* derived data & summaries */
+    this.summary = this._summarizeAnnotations();
+    this.colorRGB = _.map(this.colorName, c => parseRGB(c));
+
+    /*
+    cache of var/expression data.   Keyed by var name.
+    */
+    this.varDataCache = {};
+  }
+
+  /*
+  Factory - create world from this world's currently crossfilter selection.
+  If you want to create from Universe, just use the constructor.
+  */
+  static createFromCrossfilterSelection(world) {
+    const newWorld = world.clone();
+    const universe = world._universe;
+
+    /*
+    Subset world from universe based upon world's current selection.  Only those
+    fields which are subset by observation selection/filtering need to be updated.
+    */
+    const numSelected = world.obsCrossfilter.countFiltered();
+    newWorld.nObs = numSelected;
+    newWorld.obsAnnotations = new Array(numSelected);
+    newWorld.obsLayout = {
+      X: new Array(numSelected),
+      Y: new Array(numSelected)
+    };
+    newWorld.colorName = new Array(newWorld.nObs);
+    newWorld.colorRGB = new Array(newWorld.nObs);
+    newWorld._worldObsIndex = new Array(universe.nObs);
+
+    for (let i = 0, sel = 0; i < world.nObs; i += 1) {
+      if (world.obsCrossfilter.isElementFiltered(i)) {
+        newWorld.obsAnnotations[sel] = world.obsAnnotations[i];
+        newWorld.obsLayout.X[sel] = world.obsLayout.X[i];
+        newWorld.obsLayout.Y[sel] = world.obsLayout.Y[i];
+        newWorld.colorName[sel] = world.colorName[i];
+        newWorld.colorRGB[sel] = world.colorRGB[i];
+        sel += 1;
+      }
+    }
+
+    // build index to our world offset
+    newWorld._worldObsIndex.fill(-1); // default - aka unused
+    for (let i = 0; i < newWorld.nObs; i += 1) {
+      newWorld._worldObsIndex[newWorld.obsAnnotations[i].__obsIndex__] = i;
+    }
+
+    newWorld.obsCrossfilter = crossfilter(newWorld.obsAnnotations);
+    newWorld.obsDimensionMap = newWorld._createObsDimensionMap();
+    newWorld.summary = newWorld._summarizeAnnotations();
+
+    this.varDataCache = {};
+    return newWorld;
+  }
+
+  /* return true of the World is eq Universe */
+  _worldEqUniverse() {
+    return this._universe.obsAnnotations === this.obsAnnotations;
   }
 
   get obsSelectionUpdateSeq() {
@@ -84,40 +158,63 @@ class WorldBase {
   }
 
   varDataByName(name) {
-    return this._universe.varDataByName(name);
+    if (this.varDataCache[name] !== undefined) {
+      return this.varDataCache[name];
+    }
+
+    const univVarData = this._universe.varDataByName(name);
+    let vData;
+    if (this._worldEqUniverse()) {
+      vData = univVarData;
+    } else {
+      vData = new Array(this.nObs);
+      for (let i = 0; i < this.nObs; i += 1) {
+        vData[i] = univVarData[this.obsAnnotations[i].__obsIndex__];
+      }
+    }
+
+    this.varDataCache[name] = vData;
+    return vData;
   }
 
-  /* Factory - create world from this world's universe */
-  createFromUniverse() {
-    throw new Error("unimplemented - subclass responsibility");
+  /* shallow clone World - used to properly implement reducers */
+  clone() {
+    return _.clone(this);
   }
 
-  /* Factory - create world from this world's currently crossfilter selection */
-  createFromSelected() {
-    throw new Error("unimplemented - subclass responsibility");
+  /*
+  set the colors - optionally can provide parsed RBG values
+  */
+  setColors(colorName, colorRGB) {
+    if (colorName.length !== this.nObs) {
+      throw new Error("mismatched length - world not consistent");
+    }
+    if (colorRGB && colorRGB.length !== this.nObs) {
+      throw new Error("mismatched length - world not consistent");
+    }
+
+    this.colorName = colorName;
+    if (!colorRGB) {
+      this.colorRGB = _.map(this.colorName, c => parseRGB(c));
+    } else {
+      this.colorRGB = colorRGB;
+    }
+    return this;
   }
-}
 
-class WorldV01 extends WorldBase {
-  constructor(universe) {
-    super(universe);
-
-    if (this.api !== "0.1") throw new Error("unsupported REST API version");
-    this._createDimensionMapV01();
-    this._summarizeWorldV01();
-  }
-
-  _createDimensionMapV01() {
+  _createObsDimensionMap() {
     /*
-    create a crossfilter dimension for every obs annotation
+    create and return a crossfilter dimension for every obs annotation
     for which we have a supported type.
     */
-    this.obsDimensionMap = _.transform(
-      this.schema.annotations.obs,
+    const { schema, obsCrossfilter, obsLayout, _worldObsIndex } = this;
+
+    const obsDimensionMap = _.transform(
+      schema.annotations.obs,
       (result, anno) => {
-        const dimType = WorldV01._deduceDimensionTypeV01(anno, anno.name);
+        const dimType = World._deduceDimensionType(anno, anno.name);
         if (dimType) {
-          result[anno.name] = this.obsCrossfilter.dimension(
+          result[anno.name] = obsCrossfilter.dimension(
             r => r[anno.name],
             dimType
           );
@@ -129,32 +226,18 @@ class WorldV01 extends WorldBase {
     /*
     Add crossfilter dimensions allowing filtering on layout
     */
-    this.obsDimensionMap.x = this.obsCrossfilter.dimension(
-      r => this.obsLayout.X[r.__obsIndex__],
+    const worldIndex = _worldObsIndex ? idx => _worldObsIndex[idx] : idx => idx;
+    obsDimensionMap.x = obsCrossfilter.dimension(
+      r => obsLayout.X[worldIndex(r.__obsIndex__)],
       Float32Array
     );
-    this.obsDimensionMap.y = this.obsCrossfilter.dimension(
-      r => this.obsLayout.Y[r.__obsIndex__],
+    obsDimensionMap.y = obsCrossfilter.dimension(
+      r => obsLayout.Y[worldIndex(r.__obsIndex__)],
       Float32Array
     );
-  }
 
-  /* Factory - create world from this world's universe */
-  createFromUniverse() {
-    return new WorldV01(this._universe);
+    return obsDimensionMap;
   }
-
-  /* Factory - create world from this world's currently crossfilter selection */
-  createFromSelected() {
-    let world = new WorldV01(this._universe);
-    throw new Error("unimplemented");
-    // return world;
-  }
-
-  /*
-   * Getters for the state inside world.    These are guarnateed to return
-   * data for just the subset included in world.
-   */
 
   /*
   Summary information for each annotation, keyed by annotation name.
@@ -194,19 +277,16 @@ class WorldV01 extends WorldBase {
       }
     }
   */
-  _summarizeWorldV01() {
-    // TODO: reminder to future self
-    if (this.api !== "0.1") throw new Error("unimplemented API version");
-
+  _summarizeAnnotations() {
     /*
-    Build obs summary using any annotation in the obs schema
+    Build and return obs/var summary using any annotation in the schema
     */
     const { obsAnnotations } = this;
     const obsSummary = _(this.schema.annotations.obs)
       .keyBy("name")
       .mapValues(anno => {
         const { name, type } = anno;
-        const continuous = anno.variabletype === "continuous";
+        const continuous = type === "int32" || type === "float32";
 
         if (!continuous) {
           return {
@@ -214,7 +294,7 @@ class WorldV01 extends WorldBase {
           };
         }
 
-        if (continuous && (type === "int" || type === "float")) {
+        if (continuous) {
           let min = Number.POSITIVE_INFINITY;
           let max = Number.NEGATIVE_INFINITY;
           _.forEach(obsAnnotations, obs => {
@@ -229,12 +309,9 @@ class WorldV01 extends WorldBase {
       })
       .value();
 
-    /*
-    In the V1 REST API, we only have "gene names", a la the 'name' annotation
-    */
-    const varSummary = {}; // TODO XXX
+    const varSummary = {}; // TODO XXX - not currently used, so skip it
 
-    this.summary = {
+    return {
       obs: obsSummary,
       var: varSummary
     };
@@ -244,15 +321,18 @@ class WorldV01 extends WorldBase {
    Deduce the correct crossfilter dimension type from a metadata
    schema description.
   */
-  static _deduceDimensionTypeV01(attributes, fieldName) {
+  static _deduceDimensionType(attributes, fieldName) {
     let dimensionType;
     if (attributes.type === "string") {
       dimensionType = "enum";
-    } else if (attributes.type === "int") {
+    } else if (attributes.type === "int32") {
       dimensionType = Int32Array;
-    } else if (attributes.type === "float") {
+    } else if (attributes.type === "float32") {
       dimensionType = Float32Array;
     } else {
+      /*
+      Currently not supporting boolean and categorical types.
+      */
       console.error(
         `Warning - REST API returned unknown metadata schema (${
           attributes.type
@@ -264,4 +344,4 @@ class WorldV01 extends WorldBase {
   }
 }
 
-export default WorldV01;
+export default World;

@@ -82,56 +82,59 @@ function doInitialDataLoad(query = "") {
   });
 }
 
-/* SELECT */
-/* XXX TODO - this has not been refacotred for new redux state and is known to be broken */
-const regraph = () => {
-  return (dispatch, getState) => {
-    dispatch({ type: "regraph started" });
+// /* SELECT */
+// /* XXX TODO - this has not been refacotred for new redux state and is known to be broken */
+// const regraph = () => {
+//   return (dispatch, getState) => {
+//     dispatch({ type: "regraph started" });
+//
+//     const state = getState();
+//     const selectedMetadata = {};
+//
+//     _.each(state.controls2.categoricalAsBooleansMap, (options, field) => {
+//       let atLeastOneOptionDeselected = false;
+//
+//       _.each(options, (isActive, option) => {
+//         if (!isActive) {
+//           atLeastOneOptionDeselected = true;
+//         }
+//       });
+//
+//       if (atLeastOneOptionDeselected) {
+//         _.each(options, (isActive, option) => {
+//           if (isActive) {
+//             if (selectedMetadata[field]) {
+//               selectedMetadata[field].push(option);
+//             } else if (!selectedMetadata[field]) {
+//               selectedMetadata[field] = [option];
+//             }
+//           }
+//         });
+//       }
+//     });
+//
+//     let uri = new URI();
+//     uri.setSearch(selectedMetadata);
+//     console.log(uri.search(), selectedMetadata);
+//
+//     dispatch(requestCells(uri.search())).then(res => {
+//       if (res.error) {
+//         dispatch({ type: "regraph error" });
+//       } else {
+//         dispatch({ type: "regraph success" });
+//       }
+//     });
+//   };
+// };
 
-    const state = getState();
-    const selectedMetadata = {};
+const regraph = () => dispatch =>
+  dispatch({ type: "set World to current selection" });
 
-    _.each(state.controls2.categoricalAsBooleansMap, (options, field) => {
-      let atLeastOneOptionDeselected = false;
-
-      _.each(options, (isActive, option) => {
-        if (!isActive) {
-          atLeastOneOptionDeselected = true;
-        }
-      });
-
-      if (atLeastOneOptionDeselected) {
-        _.each(options, (isActive, option) => {
-          if (isActive) {
-            if (selectedMetadata[field]) {
-              selectedMetadata[field].push(option);
-            } else if (!selectedMetadata[field]) {
-              selectedMetadata[field] = [option];
-            }
-          }
-        });
-      }
-    });
-
-    let uri = new URI();
-    uri.setSearch(selectedMetadata);
-    console.log(uri.search(), selectedMetadata);
-
-    dispatch(requestCells(uri.search())).then(res => {
-      if (res.error) {
-        dispatch({ type: "regraph error" });
-      } else {
-        dispatch({ type: "regraph success" });
-      }
-    });
-  };
-};
-
-const resetGraph = () => {
-  return (dispatch, getState) => {
-    dispatch({ type: "reset graph" });
-  };
-};
+const resetGraph = () => (dispatch, getState) =>
+  dispatch({
+    type: "reset World to eq Universe",
+    universe: getState().universe
+  });
 
 // This code defends against the case where /expression returns a cellname
 // never seen before (ie, not returned by /cells).   This should not happen

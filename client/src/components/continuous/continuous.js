@@ -38,12 +38,14 @@ class Continuous extends React.Component {
       dimensions: null
     };
   }
+
   handleBrushAction(selection) {
     this.props.dispatch({
       type: "continuous selection using parallel coords brushing",
       data: selection
     });
   }
+
   handleColorAction(key) {
     this.props.dispatch({
       type: "color by continuous metadata",
@@ -57,7 +59,7 @@ class Continuous extends React.Component {
       <div>
         {_.map(this.props.ranges, (value, key) => {
           const isColorField = key.includes("color") || key.includes("Color");
-          if (value.range && key !== "CellName" && !isColorField) {
+          if (value.range && key !== "name" && !isColorField) {
             return (
               <HistogramBrush
                 key={key}

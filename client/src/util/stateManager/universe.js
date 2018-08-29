@@ -32,12 +32,19 @@ class UniverseBase {
     this.obsLayout = { X: [], Y: [] };
 
     /*
-    Expression dataframes for var/gene. Sparse.  Object keyed by varIndex.
-    XXX TODO: periodically remove those not in use so this is a cache.
+    Expression cache for var/gene data, keyed by varIndex.  Loaded
+    one var at a time.
+
+    XXX TODO: cache flushing - currently will grow without bounds.
     */
     this.varData = {
       /* eg, 383: [ 3, 49, 9, ... ] */
     };
+  }
+
+  /* shallow clone Universe - used to properly implement reducers */
+  clone() {
+    return _.clone(this);
   }
 
   /*
@@ -62,6 +69,10 @@ class UniverseBase {
     this.finalized = true;
   }
 
+  varNameToIndex(name) {
+    return this.varNameToIndexMap[name];
+  }
+
   varDataByName(name) {
     return this.varData[this.varNameToIndexMap[name]];
   }
@@ -82,23 +93,76 @@ class UniverseV01 extends UniverseBase {
 
   /*
   Cherry pick from /api/v0.1 response format to make somethign similar
-  to the v0.2 schema
+  to the v0.2 schema.
   */
   static _toSchema(ota) {
     /*
-    keep the 0.1 format for now.  omit CellName to be consistent with
-    _toAnnotations()
+      Annotation schemas in V02 (our target) look like:
+
+          annotations: {
+            obs: [
+              { name: "name", type: "string" },
+              { name: "num_reads", type: "int32" },
+              {
+                name: "clusters",
+                type: "categorical",
+                categories=[ 99, 1, "unknown cluster" ]
+              },
+              { name: "QScore", type: "float32" }
+            ],
+            var: [
+              { "name": "name", "type": "string" },
+              { "name": "gene", "type": "string" }
+            ]
+          }
+
+    In V01, our source, it looks like:
+
+        "schema": {
+          "CellName": {
+            "displayname": "Name",
+            "include": true,
+            "type": "string",
+            "variabletype": "categorical"
+          },
+          "Cluster_2d": {
+            "displayname": "Cluster2d",
+            "include": true,
+            "type": "string",
+            "variabletype": "categorical"
+          },
+          "ERCC_reads": {
+            "displayname": "ERCC Reads",
+            "include": true,
+            "type": "int",
+            "variabletype": "continuous"
+          },
+          ...
+        }
+
+    Mapping between the two assumes:
+      - V01 only has schema for observations
+      - CellName is mapped to 'name'
+      - type conversion:   float->float32, int->int32, string->string
+
     */
     return {
       annotations: {
-        obs: _(ota.data.schema)
-          .omit("CellName")
-          .map((val, key) => ({
-            name: key,
-            ...val
-          }))
-          .value(),
-        var: [{ name: "name", type: "string", variabletype: "categorical" }]
+        obs: _.map(ota.data.schema, (val, key) => {
+          const name = key === "CellName" ? "name" : key;
+          let { type } = val;
+          if (type === "int") {
+            type = "int32";
+          }
+          if (type === "float") {
+            type = "float32";
+          }
+          return {
+            name,
+            type
+          };
+        }),
+        var: [{ name: "name", type: "string" }]
       }
     };
   }
@@ -127,6 +191,9 @@ class UniverseV01 extends UniverseBase {
     /*
     v0.1 format for the graph is:
     [ [ 'cellname', x, y ], [ 'cellname', x, y, ], ... ]
+
+    Caution: this code assumes that the REST 0.1 API returns the graph
+    data in the same order as the metadata annotation.
     */
     const uz = _.unzip(ota.data.graph);
     return {

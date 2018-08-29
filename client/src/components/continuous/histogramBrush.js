@@ -8,8 +8,9 @@ import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
 import FaPaintBrush from "react-icons/lib/fa/paint-brush";
-import * as globals from "../../globals";
 import * as d3 from "d3";
+import memoize from "memoize-one";
+import * as globals from "../../globals";
 
 @connect(state => {
   return {
@@ -20,73 +21,77 @@ import * as d3 from "d3";
   };
 })
 class HistogramBrush extends React.Component {
+  calcHistogramCache = memoize((obsAnnotations, metadataField, ranges) => {
+    // recalculate expensive stuff
+    const allValuesForContinuousFieldAsArray = _.map(
+      obsAnnotations,
+      metadataField
+    );
+    const histogramCache = {};
+
+    histogramCache.x = d3
+      .scaleLinear()
+      .domain([ranges.min, ranges.max])
+      .range([0, this.width]);
+
+    histogramCache.y = d3
+      .scaleLinear()
+      .range([this.height - this.marginBottom, 0]);
+    // .range([height - margin.bottom, margin.top]);
+
+    histogramCache.bins = d3
+      .histogram()
+      .domain(histogramCache.x.domain())
+      .thresholds(40)(allValuesForContinuousFieldAsArray);
+
+    histogramCache.numValues = allValuesForContinuousFieldAsArray.length;
+
+    return histogramCache;
+  });
+
   constructor(props) {
     super(props);
 
     this.width = 300;
     this.height = 100;
     this.marginBottom = 20;
-    this.histogramCache = {};
 
     this.state = {
-      svg: null,
-      ctx: null,
-      axes: null,
-      dimensions: null,
       brush: null
     };
-  }
-  calcHistogramCache(nextProps) {
-    // recalculate expensive stuff
-    const allValuesForContinuousFieldAsArray = _.map(
-      nextProps.obsAnnotations,
-      nextProps.metadataField
-    );
-
-    this.histogramCache.x = d3
-      .scaleLinear()
-      .domain([nextProps.ranges.min, nextProps.ranges.max])
-      .range([0, this.width]);
-
-    this.histogramCache.y = d3
-      .scaleLinear()
-      .range([this.height - this.marginBottom, 0]);
-    // .range([height - margin.bottom, margin.top]);
-
-    this.histogramCache.bins = d3
-      .histogram()
-      .domain(this.histogramCache.x.domain())
-      .thresholds(40)(allValuesForContinuousFieldAsArray);
-
-    this.histogramCache.numValues = allValuesForContinuousFieldAsArray.length;
-  }
-
-  componentWillMount() {
-    this.calcHistogramCache(this.props);
   }
 
   onBrush(selection, x) {
     return () => {
+      const { dispatch, metadataField } = this.props;
       if (d3.event.selection) {
-        this.props.dispatch({
+        dispatch({
           type: "continuous metadata histogram brush",
-          selection: this.props.metadataField,
+          selection: metadataField,
           range: [x(d3.event.selection[0]), x(d3.event.selection[1])]
         });
       } else {
-        this.props.dispatch({
+        dispatch({
           type: "continuous metadata histogram brush",
-          selection: this.props.metadataField,
+          selection: metadataField,
           range: null
         });
       }
     };
   }
+
   drawHistogram(svgRef) {
-    const x = this.histogramCache.x;
-    const y = this.histogramCache.y;
-    const bins = this.histogramCache.bins;
-    const numValues = this.histogramCache.numValues;
+    const { obsAnnotations, metadataField, ranges } = this.props;
+    const histogramCache = this.calcHistogramCache(
+      obsAnnotations,
+      metadataField,
+      ranges
+    );
+
+    const { x, y, bins, numValues } = histogramCache;
+    d3.select(svgRef)
+      .selectAll(".bar")
+      .remove();
 
     d3.select(svgRef)
       .insert("g", "*")
@@ -95,6 +100,7 @@ class HistogramBrush extends React.Component {
       .data(bins)
       .enter()
       .append("rect")
+      .attr("class", "bar")
       .attr("x", function(d) {
         return x(d.x0) + 1;
       })
@@ -142,6 +148,7 @@ class HistogramBrush extends React.Component {
       this.setState({ brush, xAxis });
     }
   }
+
   handleColorAction() {
     this.props.dispatch({
       type: "color by continuous metadata",
@@ -151,6 +158,7 @@ class HistogramBrush extends React.Component {
       ].range.max
     });
   }
+
   render() {
     return (
       <div
