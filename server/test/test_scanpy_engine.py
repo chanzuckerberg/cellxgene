@@ -12,7 +12,7 @@ from server.app.scanpy_engine.scanpy_engine import ScanpyEngine
 
 class UtilTest(unittest.TestCase):
     def setUp(self):
-        self.data = ScanpyEngine("example-dataset/")
+        self.data = ScanpyEngine("example-dataset/", graph_method="umap", diffexp_method="ttest")
         self.data._create_schema()
 
     def test_init(self):
@@ -102,6 +102,10 @@ class UtilTest(unittest.TestCase):
                                             dtype="datetime64[ns]")
         with pytest.raises(TypeError):
             self.data._create_schema()
+
+    def test_config(self):
+        self.assertEqual(self.data.features["layout"]["obs"], {'available': True, 'interactiveLimit': 15000})
+
 
     if __name__ == '__main__':
         unittest.main()

@@ -18,8 +18,15 @@ class EndPoints(unittest.TestCase):
         self.assertEqual(result.status_code, 200)
         result_data = result.json()
         self.assertEqual(result_data["schema"]["dataframe"]["nObs"], 2638)
-        self.assertEqual(len(result_data["schema"]['annotations']["obs"]), 5)
+        self.assertEqual(len(result_data["schema"]["annotations"]["obs"]), 5)
 
+    def test_config(self):
+        url = "{base}{endpoint}".format(base=self.url_base, endpoint="config")
+        result = self.session.get(url)
+        self.assertEqual(result.status_code, 200)
+        result_data = result.json()
+        self.assertEqual(result_data["config"]["displayNames"]["dataset"], "example-dataset")
+        self.assertEqual(len(result_data["config"]["features"]), 4)
 
     def test_static(self):
         url = "{url}{endpoint}/{file}".format(url=self.local_url, endpoint="static", file="js/service-worker.js")
