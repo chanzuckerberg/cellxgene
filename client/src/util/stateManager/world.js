@@ -155,7 +155,7 @@ class World {
     newWorld.obsDimensionMap = newWorld._createObsDimensionMap();
     newWorld.summary = newWorld._summarizeAnnotations();
 
-    this.varDataCache = {};
+    newWorld.varDataCache = {};
     return newWorld;
   }
 

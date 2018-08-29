@@ -19,13 +19,19 @@ import { scaleLinear } from "../../util/scaleLinear";
 import { margin, width, height } from "./util";
 
 @connect(state => {
-  const { world } = state.controls2;
-  const expressionX = world
-    ? state.controls2.world.varDataByName(state.controls2.scatterplotXXaccessor)
-    : null;
-  const expressionY = world
-    ? state.controls2.world.varDataByName(state.controls2.scatterplotYYaccessor)
-    : null;
+  const {
+    world,
+    scatterplotXXaccessor,
+    scatterplotYYaccessor
+  } = state.controls2;
+  const expressionX =
+    world && scatterplotXXaccessor
+      ? state.controls2.world.varDataByName(scatterplotXXaccessor)
+      : null;
+  const expressionY =
+    world && scatterplotYYaccessor
+      ? state.controls2.world.varDataByName(scatterplotYYaccessor)
+      : null;
 
   return {
     world,
@@ -35,8 +41,8 @@ import { margin, width, height } from "./util";
     colorScale: state.controls2.colorScale,
 
     // Accessors are var/gene names (strings)
-    scatterplotXXaccessor: state.controls2.scatterplotXXaccessor,
-    scatterplotYYaccessor: state.controls2.scatterplotYYaccessor,
+    scatterplotXXaccessor,
+    scatterplotYYaccessor,
     opacityForDeselectedCells: state.controls2.opacityForDeselectedCells,
 
     differential: state.differential,

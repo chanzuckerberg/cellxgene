@@ -169,10 +169,7 @@ which implements the new expression data caching.
 async function _doRequestExpressionData(dispatch, getState, genes) {
   const state = getState();
   /* check cache and only fetch data we do not already have */
-  const genesToFetch = _.filter(
-    genes,
-    g => !state.controls2.world.varDataByName(g)
-  );
+  const genesToFetch = _.filter(genes, g => !state.universe.varDataByName(g));
 
   if (!genesToFetch.length) {
     return dispatch({ type: "expression load not needed, all are cached" });
