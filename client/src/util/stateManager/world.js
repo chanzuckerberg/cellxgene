@@ -3,6 +3,7 @@
 import _ from "lodash";
 import crossfilter from "../typedCrossfilter";
 import { parseRGB } from "../parseRGB";
+import KeyValCache from "./keyvalcache";
 
 /*
 World is a subset of universe.   Most code should use world, and should
@@ -54,6 +55,11 @@ class World {
   initialized for this to suceed (eg all setters called, finalize()
   called)
   */
+
+  static VarDataCacheLowWatermark = 32;
+
+  static VarDataCacheTTLMs = 1000;
+
   constructor(universe, color) {
     if (!universe.finalized) {
       throw new Error("World can't be created from an partial Universe");
@@ -97,7 +103,10 @@ class World {
     /*
     cache of var/expression data.   Keyed by var name.
     */
-    this.varDataCache = {};
+    this.varDataCache = new KeyValCache(
+      World.VarDataCacheLowWatermark,
+      World.VarDataCacheTTLMs
+    );
   }
 
   /*
@@ -155,7 +164,10 @@ class World {
     newWorld.obsDimensionMap = newWorld._createObsDimensionMap();
     newWorld.summary = newWorld._summarizeAnnotations();
 
-    newWorld.varDataCache = {};
+    newWorld.varDataCache = new KeyValCache(
+      World.VarDataCacheLowWatermark,
+      World.VarDataCacheTTLMs
+    );
     return newWorld;
   }
 
@@ -169,12 +181,12 @@ class World {
   }
 
   varDataByName(name) {
-    if (this.varDataCache[name] !== undefined) {
-      return this.varDataCache[name];
+    let vData = this.varDataCache.get(name);
+    if (vData !== undefined) {
+      return vData;
     }
 
     const univVarData = this._universe.varDataByName(name);
-    let vData;
     if (this._worldEqUniverse()) {
       vData = univVarData;
     } else {
@@ -183,8 +195,7 @@ class World {
         vData[i] = univVarData[this.obsAnnotations[i].__obsIndex__];
       }
     }
-
-    this.varDataCache[name] = vData;
+    this.varDataCache.set(name, vData);
     return vData;
   }
 

@@ -9,6 +9,13 @@ TODO: 0.2 reducer
 */
 
 const UniverseReducerV01 = (state = new Universe("0.1"), action) => {
+  /*
+  For now, log anything looking like an error to the console.
+  */
+  if (action.error || /error/i.test(action.type)) {
+    console.error(action.error);
+  }
+
   switch (action.type) {
     case "initial data load start": {
       return Object.assign(state.clone(), state, {

@@ -1,5 +1,4 @@
 // jshint esversion: 6
-import URI from "urijs";
 import _ from "lodash";
 import memoize from "memoize-one";
 import * as globals from "../globals";
@@ -82,8 +81,13 @@ function doInitialDataLoad(query = "") {
   });
 }
 
+// XXX TODO - this is the old code for doing a regraph.  Preserving it solely
+// until we port to 0.2 API.   The new UX for regraph can't be implemented on
+// the 0.1 API (doesn't allow for re-layout on arbitrary sets of cells), so just
+// punting for now.  See ticket #88
+//
+//
 // /* SELECT */
-// /* XXX TODO - this has not been refacotred for new redux state and is known to be broken */
 // const regraph = () => {
 //   return (dispatch, getState) => {
 //     dispatch({ type: "regraph started" });
@@ -144,7 +148,7 @@ const resetGraph = () => (dispatch, getState) =>
 // XXX TODO - this code is only relevant in v0.1 REST API, and can be retired
 // when we port to 0.2.
 //
-var makeMetadataMap = memoize(metadata => _.keyBy(metadata, "CellName"));
+const makeMetadataMap = memoize(metadata => _.keyBy(metadata, "CellName"));
 function cleanupExpressionResponse(data) {
   const s = store.getState();
   const metadata = makeMetadataMap(s.universe.obsAnnotations);

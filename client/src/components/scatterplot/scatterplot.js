@@ -61,9 +61,6 @@ class Scatterplot extends React.Component {
     this.axes = false;
     this.state = {
       svg: null,
-      // ctx: null,
-      axes: null,
-      dimensions: null,
       xScale: null,
       yScale: null
     };
@@ -200,8 +197,8 @@ class Scatterplot extends React.Component {
     if (
       expressionX &&
       expressionY &&
-      (this.props.scatterplotXXaccessor !== prevProps.scatterplotXXaccessor || // was CLU now FTH1 etc
-        this.props.scatterplotYYaccessor !== prevProps.scatterplotYYaccessor)
+      (scatterplotXXaccessor !== prevProps.scatterplotXXaccessor || // was CLU now FTH1 etc
+        scatterplotYYaccessor !== prevProps.scatterplotYYaccessor)
     ) {
       const scales = Scatterplot.setupScales(expressionX, expressionY);
       this.setState(scales);
@@ -225,6 +222,7 @@ class Scatterplot extends React.Component {
   }
 
   drawAxesSVG(xScale, yScale, svg) {
+    const { scatterplotYYaccessor, scatterplotXXaccessor } = this.props;
     svg.selectAll("*").remove();
 
     // the axes are much cleaner and easier now. No need to rotate and orient
@@ -254,7 +252,7 @@ class Scatterplot extends React.Component {
       .attr("x", 10)
       .attr("y", 10)
       .attr("class", "label")
-      .text(this.props.scatterplotYYaccessor);
+      .text(scatterplotYYaccessor);
 
     svg
       .append("text")
@@ -262,7 +260,7 @@ class Scatterplot extends React.Component {
       .attr("y", height - 10)
       .attr("text-anchor", "end")
       .attr("class", "label")
-      .text(this.props.scatterplotXXaccessor);
+      .text(scatterplotXXaccessor);
   }
 
   render() {

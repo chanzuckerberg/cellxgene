@@ -1,11 +1,16 @@
 // jshint esversion: 6
 
 import _ from "lodash";
+import KeyValCache from "./keyvalcache";
 
 /*
 This is the public API.   Any non-underscore key in the object is public.
 */
 class UniverseBase {
+  static VarDataCacheLowWatermark = 32;
+
+  static VarDataCacheTTLMs = 1000;
+
   /*
   creates empty universe, noting which REST API version it presumes
   */
@@ -34,12 +39,11 @@ class UniverseBase {
     /*
     Expression cache for var/gene data, keyed by varIndex.  Loaded
     one var at a time.
-
-    XXX TODO: cache flushing - currently will grow without bounds.
     */
-    this.varData = {
-      /* eg, 383: [ 3, 49, 9, ... ] */
-    };
+    this.varDataCache = new KeyValCache(
+      UniverseBase.VarDataCacheLowWatermark,
+      UniverseBase.VarDataCacheTTLMs
+    );
   }
 
   /* shallow clone Universe - used to properly implement reducers */
@@ -52,6 +56,17 @@ class UniverseBase {
   compute on the client side (eg, ranges).
   */
   _finalize() {
+    /* A bit of sanity checking! */
+    const { nObs, nVar } = this;
+    if (
+      nObs !== this.obsAnnotations.length ||
+      nObs !== this.obsLayout.X.length ||
+      nObs !== this.obsLayout.Y.length ||
+      nVar !== this.varAnnotations.length
+    ) {
+      throw new Error("Universe dimensionality mismatch - failed to load");
+    }
+
     this.obsNameToIndexMap = _.transform(
       this.obsAnnotations,
       (acc, value, idx) => {
@@ -74,7 +89,7 @@ class UniverseBase {
   }
 
   varDataByName(name) {
-    return this.varData[this.varNameToIndexMap[name]];
+    return this.varDataCache.get(this.varNameToIndexMap[name]);
   }
 }
 
@@ -171,6 +186,8 @@ class UniverseV01 extends UniverseBase {
     /*
     v0.1 format for metadata:
     metadata: [ { key: val, key: val, ... }, ... ]
+
+    Target format is essentially the same, except the CellName key becomes name.
     */
     return _.map(ota.data.metadata, (c, i) => ({
       __obsIndex__: i,
@@ -187,19 +204,32 @@ class UniverseV01 extends UniverseBase {
     return _.map(ota.data.genes, (g, i) => ({ __varIndex__: i, name: g }));
   }
 
-  static _toLayout(ota) {
+  _toLayout(ota) {
     /*
     v0.1 format for the graph is:
     [ [ 'cellname', x, y ], [ 'cellname', x, y, ], ... ]
 
-    Caution: this code assumes that the REST 0.1 API returns the graph
-    data in the same order as the metadata annotation.
+    NOTE XXX: this code does not assume any particular array ordering in the V0.1
+    response.  But for Universe initial load, the layout will be in the same
+    order as annotations, so this extra work isn't really necessary.
     */
-    const uz = _.unzip(ota.data.graph);
-    return {
-      X: uz[1],
-      Y: uz[2]
+
+    const { obsAnnotations } = this;
+    const obsAnnotationsByName = _.keyBy(obsAnnotations, "name");
+    const { graph } = ota.data;
+    const layout = {
+      X: new Float32Array(graph.length),
+      Y: new Float32Array(graph.length)
     };
+
+    for (let i = 0; i < graph.length; i += 1) {
+      const [name, x, y] = graph[i];
+      const anno = obsAnnotationsByName[name];
+      const idx = anno.__obsIndex__;
+      layout.X[idx] = x;
+      layout.Y[idx] = y;
+    }
+    return layout;
   }
 
   _tryFinalization() {
@@ -223,8 +253,8 @@ class UniverseV01 extends UniverseBase {
     are the same.  TODO: error checking.
     */
     this.obsAnnotations = UniverseV01._toObsAnnotations(OTAresponse);
-    this.obsLayout = UniverseV01._toLayout(OTAresponse);
     this.nObs = this.obsAnnotations.length;
+    this.obsLayout = this._toLayout(OTAresponse);
 
     this.init.cells = true;
     this._tryFinalization();
@@ -250,7 +280,7 @@ class UniverseV01 extends UniverseBase {
         const obsIndex = this.obsNameToIndexMap[cells[c].cellname];
         data[obsIndex] = cells[c].e[idx];
       }
-      this.varData[this.varNameToIndexMap[gene]] = data;
+      this.varDataCache.set(this.varNameToIndexMap[gene], data);
     }
 
     return this;
