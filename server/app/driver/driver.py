@@ -2,8 +2,27 @@ from abc import ABCMeta, abstractmethod
 
 
 class CXGDriver(metaclass=ABCMeta):
-    def __init__(self, data, schema=None, graph_method=None, diffexp_method=None):
+    def __init__(self, data, graph_method=None, diffexp_method=None):
         self.data = self._load_data(data)
+        self._set_features(graph_method=graph_method, diffexp_method=diffexp_method, cluster=None)
+
+    def _set_features(self, graph_method=None, diffexp_method=None, cluster=None):
+        self.features = {
+            "cluster": {"available": False},
+            "layout": {
+                "obs": {"available": False},
+                "var": {"available": False},
+            },
+            "diffexp": {"available": False}
+        }
+        # TODO - Interactive limit should be generated from the actual available methods see GH issue #94
+        if graph_method:
+            # TODO handle "var" when gene layout becomes available
+            self.features["layout"]["obs"] = {"available": True, "interactiveLimit": 15000}
+        if diffexp_method:
+            self.features["diffexp"] = {"available": True, "interactiveLimit": 5000}
+        if cluster:
+            self.features["cluster"] = {"available": True, "interactiveLimit": 45000}
 
     @staticmethod
     @abstractmethod
