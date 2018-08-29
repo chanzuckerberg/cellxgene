@@ -25,6 +25,7 @@ module.exports = {
     "operator-linebreak": ["error", "after"],
     "no-console": "off",
     "spaced-comment": ["error", "always", { exceptions: ["*"] }],
-    "no-param-reassign": "off"
+    "no-param-reassign": "off",
+    "object-curly-newline": ["error", { consistent: true }]
   }
 };
