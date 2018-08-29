@@ -55,7 +55,7 @@ const updateCellColorsMiddleware = store => next => action => {
   in plain language...
    (a) once the cells have loaded.
    (b) each time a user changes a color control we need to update cellsMetadata colors
-  This is available to all the draw functions as cell["__color__"] and cell["__colorRGB__"]
+  This is available to all the draw functions as world.colorName[index] or world.colorRGB[index]
   */
 
   if (action.type === "color by categorical metadata") {
