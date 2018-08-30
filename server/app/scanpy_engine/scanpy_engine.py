@@ -11,8 +11,6 @@ from server.app.util.constants import Axis
 
 class ScanpyEngine(CXGDriver):
 
-    __version__ = "0.0.1"
-
     def __init__(self, data, graph_method=None, diffexp_method=None):
         super().__init__(data, graph_method=graph_method, diffexp_method=diffexp_method)
         self._validatate_data_types()
