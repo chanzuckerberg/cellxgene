@@ -1,3 +1,5 @@
+import pkg_resources
+
 from flask import (
     Blueprint, current_app, jsonify, make_response
 )
@@ -92,7 +94,7 @@ class ConfigAPI(Resource):
                     {"method": "POST", "path": "/diffexp/", **current_app.data.features["diffexp"]},
                 ],
                 "displayNames": {
-                    "engine": f"cellxgene Scanpy engine version {current_app.data.__version__}",
+                    "engine": f"cellxgene Scanpy engine version {pkg_resources.get_distribution('cellxgene').version}",
                     "dataset": current_app.config["DATASET_TITLE"]
                 }
             }
