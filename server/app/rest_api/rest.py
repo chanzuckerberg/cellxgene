@@ -1,7 +1,7 @@
 import pkg_resources
 
 from flask import (
-    Blueprint, current_app, jsonify, make_response
+    Blueprint, current_app, jsonify, make_response, request
 )
 from flask_restful_swagger_2 import Api, swagger, Resource
 
@@ -130,28 +130,43 @@ class LayoutObsAPI(Resource):
 
 class AnnotationsObsAPI(Resource):
     @swagger.doc({
-        "summary": "Get the default layout for all observations.",
-        "tags": ["layout"],
-        "parameters": [],
+        "summary": "Fetch annotations (metadata) for all observations.",
+        "tags": ["annotations"],
+        "parameters": [{
+            "in": "query",
+            "name": "annotation-keys",
+            "type": "string"
+        }],
         "responses": {
             "200": {
-                "description": "layout",
+                "description": "annotations",
                 "examples": {
                     "application/json": {
-                        "layout": {
-                            "ndims": 2,
-                            "coordinates": [
-                                [0, 0.284483, 0.983744],
-                                [1, 0.038844, 0.739444]
-                            ]
-                        }
+                        "names": [
+                            'tissue_type', 'sex', 'num_reads', 'clusters'
+                        ],
+                        "data": [
+                            [0, 'lung', 'F', 39844, 99],
+                            [1, 'heart', 'M', 83, 1],
+                            [49, 'spleen', None, 2, "unknown cluster"],
+
+                        ]
                     }
+
                 }
             }
         }
     })
     def get(self):
-        return make_response((jsonify({"layout": current_app.data.layout(current_app.data.data)})))
+        annotation_keys = request.args.get("annotation-keys", None)
+        if annotation_keys:
+            annotation_keys = annotation_keys.split(",")
+        try:
+            annotation_response = current_app.data.annotation(current_app.data.data, annotation_keys)
+        except KeyError:
+            return make_response(f"Error bad key in {annotation_keys}", 404)
+        else:
+            return make_response(jsonify(annotation_response))
 
 
 def get_api_resources():
@@ -160,4 +175,5 @@ def get_api_resources():
     api.add_resource(SchemaAPI, "/schema")
     api.add_resource(ConfigAPI, "/config")
     api.add_resource(LayoutObsAPI, "/layout/obs")
+    api.add_resource(AnnotationsObsAPI, "/annotation/obs")
     return api
