@@ -135,7 +135,8 @@ class AnnotationsObsAPI(Resource):
         "parameters": [{
             "in": "query",
             "name": "annotation-keys",
-            "type": "string"
+            "type": "string",
+            "description": "comma-separated annotation keys, ex: num_genes,percent_mito"
         }],
         "responses": {
             "200": {
