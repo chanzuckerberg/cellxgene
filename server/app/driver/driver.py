@@ -56,7 +56,7 @@ class CXGDriver(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def metadata(self, df, fields=None):
+    def annotation(self, df, fields=None):
         """
          Gets metadata key:value for each cells
 

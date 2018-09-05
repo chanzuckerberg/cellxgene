@@ -174,27 +174,7 @@ class ScanpyEngine(CXGDriver):
         return index
 
     @cache.memoize()
-    def metadata_ranges(self, df=None):
-        metadata_ranges = {}
-        if not df:
-            df = self.data
-        for field in self.schema:
-            if self.schema[field]["variabletype"] == "categorical":
-                group_by = field
-                if group_by == "CellName":
-                    group_by = "cell_name"
-                metadata_ranges[field] = {"options": df.obs.groupby(group_by).size().to_dict()}
-            else:
-                metadata_ranges[field] = {
-                    "range": {
-                        "min": df.obs[field].min(),
-                        "max": df.obs[field].max()
-                    }
-                }
-        return metadata_ranges
-
-    @cache.memoize()
-    def metadata(self, df, fields=None):
+    def annotation(self, df, fields=None):
         """
          Gets metadata key:value for each cells
 
@@ -202,10 +182,13 @@ class ScanpyEngine(CXGDriver):
         :param fields: list of keys for metadata to return, returns all metadata values if not set.
         :return: list of metadata values
         """
-        metadata = df.obs.to_dict(orient="records")
-        for idx in range(len(metadata)):
-            metadata[idx]["CellName"] = metadata[idx].pop("cell_name", None)
-        return metadata
+        if not fields:
+            fields = list(df.obs.columns)
+        annotations = DataFrame(df.obs[fields], index=df.obs.index)
+        return {
+            "names": fields,
+            "data": annotations.reset_index().values.tolist()
+        }
 
     @cache.memoize()
     def layout(self, df):
