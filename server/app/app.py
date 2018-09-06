@@ -9,11 +9,13 @@ from flask_cors import CORS
 from flask_restful_swagger_2 import get_swagger_blueprint
 
 from .rest_api.rest import get_api_resources
+from .util.utils import Float32JSONEncoder
 from .web import webapp
 
 REACTIVE_LIMIT = 1_000_000
 
 app = Flask(__name__, static_folder="web/static")
+app.json_encoder = Float32JSONEncoder
 cache = Cache(app, config={"CACHE_TYPE": "simple", "CACHE_DEFAULT_TIMEOUT": 860000})
 Compress(app)
 CORS(app)
