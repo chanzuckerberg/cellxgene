@@ -60,38 +60,36 @@ def parse_filter(filter, schema):
             raise QueryStringError(f"Error: bad axis in query string {axis}")
         if axis not in query:
             query[axis] = {}
-        if annotation == "index":
-            query[axis]["index"] = filter.getlist(key)
+
+        if "annotation_value" not in query[axis]:
+            query[axis]["annotation_value"] = []
+        ann_filter = {"name": annotation}
+        for ann in schema[axis]:
+            if ann["name"] == annotation:
+                dtype = ann["type"]
+                break
         else:
-            if "annotation_value" not in query[axis]:
-                query[axis]["annotation_value"] = []
-            ann_filter = {"name": annotation}
-            for ann in schema[axis]:
-                if ann["name"] == annotation:
-                    dtype = ann["type"]
-                    break
-            else:
-                raise QueryStringError(f"Error: {annotation} not a valid annotation type")
-            if dtype in ["string", "categorical", "boolean"]:
-                ann_filter["value"] = [_convert_variable(dtype, i) for i in filter.getlist(key)]
-            else:
-                value = filter.get(key)
-                try:
-                    min_, max_ = value.split(",")
-                except ValueError:
-                    raise QueryStringError(f"Error: min,max format required for range for {annotation}, got {value}")
-                if min_ == "*":
-                    min_ = None
-                if max_ == "*":
-                    max_ = None
-                try:
-                    ann_filter["value"] = {
-                        "min": _convert_variable(dtype, min_),
-                        "max": _convert_variable(dtype, max_)
-                    }
-                except ValueError:
-                    raise QueryStringError(
-                        f"Error: expected type {dtype} for key {annotation}, got {value}"
-                    )
-            query[axis]["annotation_value"].append(ann_filter)
+            raise QueryStringError(f"Error: {annotation} not a valid annotation type")
+        if dtype in ["string", "categorical", "boolean"]:
+            ann_filter["value"] = [_convert_variable(dtype, i) for i in filter.getlist(key)]
+        else:
+            value = filter.get(key)
+            try:
+                min_, max_ = value.split(",")
+            except ValueError:
+                raise QueryStringError(f"Error: min,max format required for range for {annotation}, got {value}")
+            if min_ == "*":
+                min_ = None
+            if max_ == "*":
+                max_ = None
+            try:
+                ann_filter["value"] = {
+                    "min": _convert_variable(dtype, min_),
+                    "max": _convert_variable(dtype, max_)
+                }
+            except ValueError:
+                raise QueryStringError(
+                    f"Error: expected type {dtype} for key {annotation}, got {value}"
+                )
+        query[axis]["annotation_value"].append(ann_filter)
     return query
