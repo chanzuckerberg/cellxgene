@@ -1,75 +1,80 @@
+import json
+from os import path
 import unittest
-from unittest.mock import MagicMock
 
-from server.app.util.filter import _convert_variable, parse_filter
+from numpy import float32, int32
+from werkzeug.datastructures import ImmutableMultiDict
+
+from server.app.util.filter import _convert_variable, parse_filter, QueryStringError
 
 
 class UtilTest(unittest.TestCase):
     """Test Case for endpoints"""
 
     def setUp(self):
-       self.schema = {
-            "cluster": {
-                "displayname": "Cluster",
-                "include": True,
-                "type": "int",
-                "variabletype": "categorical"
-            },
-            "louvain": {
-                "displayname": "Louvain Cluster",
-                "include": True,
-                "type": "string",
-                "variabletype": "categorical"
-            },
-            "n_genes": {
-                "displayname": "Num Genes",
-                "include": True,
-                "type": "int",
-                "variabletype": "continuous"
-            }
-        }
+        with open(path.join(path.dirname(__file__), "schema.json")) as fh:
+            schema = json.load(fh)
+        self.schema = schema["annotations"]
 
     def test_convert(self):
-        five = _convert_variable("int", "5")
-        assert five == 5
+        five = _convert_variable("int32", "5")
+        self.assertEqual(five, int32(5))
 
     def test_convert_zero(self):
-        zero = _convert_variable("int", "0")
-        assert zero == 0
+        zero = _convert_variable("int32", "0")
+        self.assertEqual(zero, 0)
+
+    def test_convert_float(self):
+        str_to_convert = "4.38719237129"
+        val = _convert_variable("float32", str_to_convert)
+        self.assertAlmostEqual(val, float32(str_to_convert))
+
+    def test_conver_bool(self):
+        str_to_convert = "false"
+        val = _convert_variable("boolean", str_to_convert)
+        self.assertFalse(val)
+        str_to_convert = "true"
+        val = _convert_variable("boolean", str_to_convert)
+        self.assertTrue(val)
+        str_to_convert = "0"
+        with self.assertRaises(ValueError):
+            val = _convert_variable("boolean", str_to_convert)
 
     def test_empty_convert(self):
-        empty = _convert_variable("int", None)
-        assert empty is None
+        empty = _convert_variable("int32", None)
+        self.assertIsNone(empty)
 
     def test_bad_convert(self):
         with self.assertRaises(ValueError):
-            _convert_variable("int", "5.5")
+            _convert_variable("int32", "5.5")
 
-    def test_filter_categorical(self):
-        filterMock = MagicMock()
-        filterMock.__iter__.return_value = iter(["louvain"])
-        filterMock.getlist.return_value = ["B cells", "T cells"]
-        query = parse_filter(filterMock, self.schema)
-        assert query == {"louvain": {"variable_type": "categorical", "value_type": "string", "query": ["B cells", "T cells"]}}
-        filterMock.__iter__.return_value = iter(["cluster"])
-        filterMock.getlist.return_value = ["1", "2"]
-        query = parse_filter(filterMock, self.schema)
-        assert query == {"cluster": {"variable_type": "categorical", "value_type": "int", "query": [1, 2]}}
+    def test_bad_datatype(self):
+        with self.assertRaises(AssertionError):
+            _convert_variable("jkasdslkja", 1)
 
-    def test_filter_contiunous(self):
-        filterMock = MagicMock()
-        filterMock.__iter__.return_value = iter(["n_genes"])
-        filterMock.getlist.return_value = ["0,100"]
-        query = parse_filter(filterMock, self.schema)
-        assert query == {"n_genes": {"variable_type": "continuous", "value_type": "int", "query": {"min": 0, "max": 100}}}
-        filterMock.__iter__.return_value = iter(["n_genes"])
-        filterMock.getlist.return_value = ["*,100"]
-        query = parse_filter(filterMock, self.schema)
-        assert query == {"n_genes": {"variable_type": "continuous", "value_type": "int", "query": {"min": None, "max": 100}}}
-        filterMock.__iter__.return_value = iter(["n_genes"])
-        filterMock.getlist.return_value = ["0,*"]
-        query = parse_filter(filterMock, self.schema)
-        assert query == {"n_genes": {"variable_type": "continuous", "value_type": "int", "query": {"min": 0, "max": None}}}
+    def test_complex_filter(self):
+        filter_dict = ImmutableMultiDict(
+            [("obs:louvain", "NK cells"), ("obs:louvain", "CD8 T cells"), ("obs:n_counts", "3000,*")])
+        filter_ = parse_filter(filter_dict, self.schema)
+        self.assertEqual(filter_, {"obs": {"annotation_value": [{"name": "louvain",
+                                                                 "value": ["NK cells", "CD8 T cells"]},
+                                                                {"name": "n_counts",
+                                                                 "value": {"max": None, "min": 3000.0}}]}}
+                         )
 
-if __name__ == '__main__':
-    unittest.main()
+    def test_bad_filter(self):
+        bad_annotation_type = ImmutableMultiDict([("obs:tissue", "lung")])
+        with self.assertRaises(QueryStringError):
+            parse_filter(bad_annotation_type, self.schema)
+        bad_axis = ImmutableMultiDict([("xyz:n_genes", "100,1000")])
+        with self.assertRaises(QueryStringError):
+            parse_filter(bad_axis, self.schema)
+
+    def test_boolean_filter(self):
+        schema = {
+            "obs": [{"name": "bool_filter", "type": "boolean"}]
+        }
+        filter_dict = ImmutableMultiDict([("obs:bool_filter", "false")])
+        filter_ = parse_filter(filter_dict, schema)
+        self.assertEqual(filter_, {"obs": {"annotation_value": [{"name": "bool_filter", "value": [False]}]}})
+
