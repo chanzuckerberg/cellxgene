@@ -176,5 +176,5 @@ def get_api_resources():
     api.add_resource(SchemaAPI, "/schema")
     api.add_resource(ConfigAPI, "/config")
     api.add_resource(LayoutObsAPI, "/layout/obs")
-    api.add_resource(AnnotationsObsAPI, "/annotation/obs")
+    api.add_resource(AnnotationsObsAPI, "/annotations/obs")
     return api

@@ -37,7 +37,7 @@ class EndPoints(unittest.TestCase):
         self.assertEqual(len(result_data["layout"]["coordinates"]), 2638)
 
     def test_get_annotations(self):
-        url = "{base}{endpoint}".format(base=self.url_base, endpoint="annotation/obs")
+        url = "{base}{endpoint}".format(base=self.url_base, endpoint="annotations/obs")
         result = self.session.get(url)
         self.assertEqual(result.status_code, 200)
         result_data = result.json()
@@ -46,7 +46,7 @@ class EndPoints(unittest.TestCase):
         self.assertEqual(len(result_data["data"][0]), 6)
 
     def test_get_annotations_keys(self):
-        url = "{base}{endpoint}?{query}".format(base=self.url_base, endpoint="annotation/obs",
+        url = "{base}{endpoint}?{query}".format(base=self.url_base, endpoint="annotations/obs",
                                                 query="annotation-keys=n_genes,percent_mito")
         result = self.session.get(url)
         self.assertEqual(result.status_code, 200)
@@ -55,7 +55,7 @@ class EndPoints(unittest.TestCase):
         self.assertEqual(len(result_data["data"][0]), 3)
 
     def test_get_annotations_error(self):
-        url = "{base}{endpoint}?{query}".format(base=self.url_base, endpoint="annotation/obs",
+        url = "{base}{endpoint}?{query}".format(base=self.url_base, endpoint="annotations/obs",
                                                 query="annotation-keys=notakey")
         result = self.session.get(url)
         self.assertEqual(result.status_code, 404)
