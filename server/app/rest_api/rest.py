@@ -158,7 +158,6 @@ class LayoutObsAPI(Resource):
         }
     })
     def put(self):
-        print(request.get_json())
         df = current_app.data.filter_dataframe(request.get_json())
         return make_response((jsonify({"layout": current_app.data.layout(df)})))
 
