@@ -3,6 +3,7 @@ from flask_restful_swagger_2 import Schema
 
 class AnnotationModel(Schema):
     type = "object"
+    description = "Filter by annotation key: value"
     properties = {
         "name": {
             "type": "string"
@@ -28,6 +29,7 @@ class AnnotationModel(Schema):
 
 class IndexModel(Schema):
     type = "object"
+    description = "Filter by index of observation/variable ex. [0, 5, 15]"
     properties = {
         "index": {
             "type": "array",
@@ -42,6 +44,7 @@ class IndexModel(Schema):
 
 class AxisModel(Schema):
     type = "object"
+    description = "Axis of data -- obs or var"
     properties = {
         "index": IndexModel,
         "annotation_value": AnnotationModel.array()
@@ -50,6 +53,7 @@ class AxisModel(Schema):
 
 class FilterModel(Schema):
     type = "object"
+    description = "Complex filter"
     properties = {
         "filter": {
             "type": "object",
