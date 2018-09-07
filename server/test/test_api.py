@@ -53,6 +53,7 @@ class EndPoints(unittest.TestCase):
         result = self.session.put(url, json=obs_filter)
         self.assertEqual(result.status_code, 200)
         result_data = result.json()
+        self.assertEqual(len(result_data["layout"]["coordinates"]), 15)
 
     def test_static(self):
         url = "{url}{endpoint}/{file}".format(url=self.local_url, endpoint="static", file="js/service-worker.js")
