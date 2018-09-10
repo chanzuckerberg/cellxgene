@@ -37,8 +37,20 @@ class UniverseBase {
     this.obsLayout = { X: [], Y: [] };
 
     /*
-    Expression cache for var/gene data, keyed by varIndex.  Loaded
-    one var at a time.
+    Cache for var/gene data (aka expression data), keyed by varIndex (gene).
+    Loaded one var at a time.
+
+    Motivation:  the size of the full data (expression) matrix can be quite
+    large (numCells X numGenes), and is currently used in a very constrained
+    way:  display of differential expression between two genes/vars.
+
+    This LRU cache contains full-dimension expression data for a set of
+    variables/genes - ie, an entire column (1-d array) from the expression
+    dataframe.
+
+    These var dimensions will be cached until more than "low watermark"
+    dimensions are present, and those dimensions are older than TTL.   See
+    futher description in the KeyValCache class.
     */
     this.varDataCache = new KeyValCache(
       UniverseBase.VarDataCacheLowWatermark,

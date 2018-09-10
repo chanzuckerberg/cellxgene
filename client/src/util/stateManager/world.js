@@ -103,6 +103,9 @@ class World {
 
     /*
     cache of var/expression data.   Keyed by var name.
+
+    This cache has semantics identical to UniverseBase.varDataCache,
+    EXCEPT these cached arrays are subset to match current World.
     */
     this.varDataCache = new KeyValCache(
       World.VarDataCacheLowWatermark,
