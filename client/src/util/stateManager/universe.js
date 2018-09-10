@@ -96,7 +96,7 @@ class UniverseBase {
 /*
 Universe on top of the REST 0.1 interface
 */
-class UniverseV01 extends UniverseBase {
+class Universe_REST_API_v01 extends UniverseBase {
   constructor() {
     super("0.1");
 
@@ -239,8 +239,8 @@ class UniverseV01 extends UniverseBase {
   }
 
   initFromInitialize(OTAresponse) {
-    this.schema = UniverseV01._toSchema(OTAresponse);
-    this.varAnnotations = UniverseV01._toVarAnnotations(OTAresponse);
+    this.schema = Universe_REST_API_v01._toSchema(OTAresponse);
+    this.varAnnotations = Universe_REST_API_v01._toVarAnnotations(OTAresponse);
     this.nVar = this.varAnnotations.length;
     this.init.initialize = true;
     this._tryFinalization();
@@ -252,7 +252,7 @@ class UniverseV01 extends UniverseBase {
     NOTE: this code *assumes* that cell order in data.metadata and data.graph
     are the same.  TODO: error checking.
     */
-    this.obsAnnotations = UniverseV01._toObsAnnotations(OTAresponse);
+    this.obsAnnotations = Universe_REST_API_v01._toObsAnnotations(OTAresponse);
     this.nObs = this.obsAnnotations.length;
     this.obsLayout = this._toLayout(OTAresponse);
 
@@ -287,4 +287,4 @@ class UniverseV01 extends UniverseBase {
   }
 }
 
-export default UniverseV01;
+export default Universe_REST_API_v01;
