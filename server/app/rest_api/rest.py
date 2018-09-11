@@ -1,9 +1,11 @@
 import pkg_resources
 
 from flask import (
-    Blueprint, current_app, jsonify, make_response
+    Blueprint, current_app, jsonify, make_response, request
 )
 from flask_restful_swagger_2 import Api, swagger, Resource
+
+from server.app.util.models import FilterModel
 
 
 class SchemaAPI(Resource):
@@ -126,6 +128,38 @@ class LayoutObsAPI(Resource):
     })
     def get(self):
         return make_response((jsonify({"layout": current_app.data.layout(current_app.data.data)})))
+
+    @swagger.doc({
+        "summary": "Observation layout for filtered subset.",
+        "tags": ["layout"],
+        "parameters": [
+            {
+                'name': 'filter',
+                'description': 'Complex Filter',
+                'in': 'body',
+                'schema': FilterModel
+            }
+        ],
+        "responses": {
+            "200": {
+                "description": "layout",
+                "examples": {
+                    "application/json": {
+                        "layout": {
+                            "ndims": 2,
+                            "coordinates": [
+                                [0, 0.284483, 0.983744],
+                                [1, 0.038844, 0.739444]
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+    })
+    def put(self):
+        df = current_app.data.filter_dataframe(request.get_json()["filter"])
+        return make_response((jsonify({"layout": current_app.data.layout(df)})))
 
 
 def get_api_resources():

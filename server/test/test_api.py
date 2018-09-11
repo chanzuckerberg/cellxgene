@@ -1,5 +1,6 @@
-import unittest
+import json
 import requests
+import unittest
 
 
 class EndPoints(unittest.TestCase):
@@ -35,6 +36,24 @@ class EndPoints(unittest.TestCase):
         result_data = result.json()
         self.assertEqual(result_data["layout"]["ndims"], 2)
         self.assertEqual(len(result_data["layout"]["coordinates"]), 2638)
+
+    def test_put_layout(self):
+        url = "{base}{endpoint}".format(base=self.url_base, endpoint="layout/obs")
+        obs_filter = {
+            "filter": {
+                "obs": {
+                    "annotation_value": [
+                        {"name": "louvain", "values": ["NK cells", "CD8 T cells"]},
+                        {"name": "n_counts", "min": 3000},
+                    ],
+                    "index": [1, 99, [1000, 2000]]
+                }
+            }
+        }
+        result = self.session.put(url, json=obs_filter)
+        self.assertEqual(result.status_code, 200)
+        result_data = result.json()
+        self.assertEqual(len(result_data["layout"]["coordinates"]), 15)
 
     def test_static(self):
         url = "{url}{endpoint}/{file}".format(url=self.local_url, endpoint="static", file="js/service-worker.js")
