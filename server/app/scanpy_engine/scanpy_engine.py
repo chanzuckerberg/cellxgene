@@ -125,8 +125,10 @@ class ScanpyEngine(CXGDriver):
             if "annotation_value" in filter["var"]:
                 genes_idx = self._filter_annotation(filter["var"]["annotation_value"], genes_idx, Axis.VAR)
         # Due to anndata issues we can't index into cells and genes at the same time
-        data = self.data[cells_idx, :]
-        return data[:, genes_idx]
+        cell_data = self.data[cells_idx, :]
+        data = cell_data[:, genes_idx]
+        data.uns = cell_data.uns
+        return data
 
     def _filter_index(self, filter, index, axis):
         """
@@ -213,6 +215,9 @@ class ScanpyEngine(CXGDriver):
         :param df: from filter_cells, dataframe
         :return:  [cellid, x, y, ...]
         """
+        # TODO Filtering cells is fine, but filtering genes does nothing because the neighbors are
+        # calculated using the original vars (geneset) and this doesn’t get updated when you use less.
+        # Need to recalculate neighbors (long) if user requests new layout filtered by var
         getattr(sc.tl, self.layout_method)(df, random_state=123)
         df_layout = df.obsm[f"X_{self.layout_method}"]
         normalized_layout = DataFrame((df_layout - df_layout.min()) / (df_layout.max() - df_layout.min()),

@@ -156,5 +156,19 @@ class UtilTest(unittest.TestCase):
             self.assertLessEqual(val[1], 1)
             self.assertLessEqual(val[2], 1)
 
+    def test_filtered_layout(self):
+        filter_ = {
+            "filter": {
+                "obs": {
+                    "annotation_value": [
+                        {"name": "n_counts", "min": 3000},
+                    ]
+                }
+            }
+        }
+        data = self.data.filter_dataframe(filter_["filter"])
+        layout = self.data.layout(data)
+        self.assertEqual(len(layout["coordinates"]), 497)
+
     if __name__ == '__main__':
         unittest.main()
