@@ -180,7 +180,8 @@ class ScanpyEngine(CXGDriver):
 
         :param df: from filter_cells, dataframe
         :param fields: list of keys for annotation to return, returns all annotation values if not set.
-        :return: dict: names - list of fields in order, data - list of lists or metadata [idx, val1, val2...]
+        :return: dict: names - list of fields in order, data - list of lists or metadata
+        [observation ids, val1, val2...]
         """
         if not fields:
             fields = df.obs.columns.tolist()
