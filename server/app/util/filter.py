@@ -1,3 +1,4 @@
+import json
 from numpy import float32, int32
 
 from server.app.util.constants import Axis
@@ -14,27 +15,18 @@ def _convert_variable(datatype, variable):
     :param datatype: type to convert to
     :param variable (string or None): value of variable
     :return: converted variable
-    :raises: AssertionError, ValueError
     """
     assert datatype in ["boolean", "categorical", "float32", "int32", "string"]
     if variable is None:
         return variable
-    try:
-        if datatype == "int32":
-            variable = int32(variable)
-        elif datatype == "float32":
-            variable = float32(variable)
-        elif datatype == "boolean":
-            if variable == "false":
-                variable = False
-            elif variable == "true":
-                variable = True
-            else:
-                raise ValueError
-    except ValueError:
-        raise
-    else:
-        return variable
+    if datatype == "int32":
+        variable = int32(variable)
+    elif datatype == "float32":
+        variable = float32(variable)
+    elif datatype == "boolean":
+        variable = json.loads(variable)
+        assert isinstance(variable, bool)
+    return variable
 
 
 def parse_filter(filter, schema):
