@@ -29,7 +29,7 @@ class UtilTest(unittest.TestCase):
         val = _convert_variable("float32", str_to_convert)
         self.assertAlmostEqual(val, float32(str_to_convert))
 
-    def test_conver_bool(self):
+    def test_convert_bool(self):
         str_to_convert = "false"
         val = _convert_variable("boolean", str_to_convert)
         self.assertFalse(val)
@@ -37,7 +37,7 @@ class UtilTest(unittest.TestCase):
         val = _convert_variable("boolean", str_to_convert)
         self.assertTrue(val)
         str_to_convert = "0"
-        with self.assertRaises(ValueError):
+        with self.assertRaises(AssertionError):
             val = _convert_variable("boolean", str_to_convert)
 
     def test_empty_convert(self):

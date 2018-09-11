@@ -1,4 +1,6 @@
 import json
+from collections import defaultdict
+
 from numpy import float32, int32
 
 from server.app.util.constants import Axis
@@ -15,6 +17,7 @@ def _convert_variable(datatype, variable):
     :param datatype: type to convert to
     :param variable (string or None): value of variable
     :return: converted variable
+    :raises: AssertionError
     """
     assert datatype in ["boolean", "categorical", "float32", "int32", "string"]
     if variable is None:
@@ -29,32 +32,30 @@ def _convert_variable(datatype, variable):
     return variable
 
 
-def parse_filter(filter, schema):
+def parse_filter(query_filter, schema):
     """
-    The filter comes in as arguments from a GET/POST request
-    For categorical metadata keys filter based on key=value
-    For continuous metadata keys filter by key=min,max
-    Either value can be replaced by a * To have only a minimum value key=min, To have only a maximum value key=*,max
+    The filter comes in as arguments from a GET request
+    For categorical metadata keys filter based on axis:key=value
+    For continuous metadata keys filter by axis:key=min,max
+    Either value can be replaced by a * To have only a minimum
+    value axis:key=min,* To have only a maximum value axis:key=*,max
 
     They combine via AND so a cell's metadata would have to match every filter
 
     The results is a matrix with the cells the pass the filter and at this point all the genes
-    :param filter: flask's request.args
+    :param query_filter: flask's request.args
     :param schema: dictionary schema
     :raises QueryStringError
     :return:
     """
-    query = {}
+    query = defaultdict(lambda: defaultdict(list))
 
-    for key in filter:
+    for key in query_filter:
         axis, annotation = key.split(":", 1)
-        if axis not in [ax for ax in Axis]:
+        try:
+            Axis(axis)
+        except ValueError:
             raise QueryStringError(f"Error: bad axis in query string {axis}")
-        if axis not in query:
-            query[axis] = {}
-
-        if "annotation_value" not in query[axis]:
-            query[axis]["annotation_value"] = []
         ann_filter = {"name": annotation}
         for ann in schema[axis]:
             if ann["name"] == annotation:
@@ -63,9 +64,9 @@ def parse_filter(filter, schema):
         else:
             raise QueryStringError(f"Error: {annotation} not a valid annotation type")
         if dtype in ["string", "categorical", "boolean"]:
-            ann_filter["value"] = [_convert_variable(dtype, i) for i in filter.getlist(key)]
+            ann_filter["value"] = [_convert_variable(dtype, i) for i in query_filter.getlist(key)]
         else:
-            value = filter.get(key)
+            value = query_filter.get(key)
             try:
                 min_, max_ = value.split(",")
             except ValueError:
