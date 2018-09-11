@@ -134,7 +134,7 @@ class AnnotationsObsAPI(Resource):
         "tags": ["annotations"],
         "parameters": [{
             "in": "query",
-            "name": "annotation-keys",
+            "name": "annotation-names",
             "type": "string",
             "description": "comma-separated annotation keys, ex: num_genes,percent_mito"
         }],
@@ -159,13 +159,11 @@ class AnnotationsObsAPI(Resource):
         }
     })
     def get(self):
-        annotation_keys = request.args.get("annotation-keys", None)
-        if annotation_keys:
-            annotation_keys = annotation_keys.split(",")
+        fields = request.args.getlist("annotation-name", None)
         try:
-            annotation_response = current_app.data.annotation(current_app.data.data, annotation_keys)
+            annotation_response = current_app.data.annotation(current_app.data.data, fields)
         except KeyError:
-            return make_response(f"Error bad key in {annotation_keys}", 404)
+            return make_response(f"Error bad key in {fields}", 404)
         else:
             return make_response(jsonify(annotation_response))
 

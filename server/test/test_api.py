@@ -47,7 +47,7 @@ class EndPoints(unittest.TestCase):
 
     def test_get_annotations_keys(self):
         url = "{base}{endpoint}?{query}".format(base=self.url_base, endpoint="annotations/obs",
-                                                query="annotation-keys=n_genes,percent_mito")
+                                                query="annotation-name=n_genes&annotation-name=percent_mito")
         result = self.session.get(url)
         self.assertEqual(result.status_code, 200)
         result_data = result.json()
@@ -56,7 +56,7 @@ class EndPoints(unittest.TestCase):
 
     def test_get_annotations_error(self):
         url = "{base}{endpoint}?{query}".format(base=self.url_base, endpoint="annotations/obs",
-                                                query="annotation-keys=notakey")
+                                                query="annotation-name=notakey")
         result = self.session.get(url)
         self.assertEqual(result.status_code, 404)
 
