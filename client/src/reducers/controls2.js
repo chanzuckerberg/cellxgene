@@ -55,33 +55,33 @@ const Controls = (
           and data loading.
     ******************************************************/
     case "initial data load start": {
-      return Object.assign({}, state, {
-        loading: true
-      });
+      return { ...state, loading: true };
     }
     case "initial data load complete (universe exists)": {
       /* first light - create world & other data-driven defaults */
       const world = new World(action.universe, globals.defaultCellColor);
       const categoricalAsBooleansMap = createCategoricalAsBooleansMap(world);
-      return Object.assign({}, state, {
+      return {
+        ...state,
         loading: false,
         error: null,
         world,
         categoricalAsBooleansMap,
         colorAccessor: null
-      });
+      };
     }
     case "reset World to eq Universe": {
       /* Reset viewable world to be the entire Universe */
       const world = new World(state.world._universe, globals.defaultCellColor);
       const categoricalAsBooleansMap = createCategoricalAsBooleansMap(world);
-      return Object.assign({}, state, {
+      return {
+        ...state,
         loading: false,
         error: null,
         world,
         categoricalAsBooleansMap,
         colorAccessor: null
-      });
+      };
     }
     case "set World to current selection": {
       /* Set viewable world to be the currnetly selected data */
@@ -90,38 +90,42 @@ const Controls = (
         globals.defaultCellColor
       );
       const categoricalAsBooleansMap = createCategoricalAsBooleansMap(world);
-      return Object.assign({}, state, {
+      return {
+        ...state,
         world,
         categoricalAsBooleansMap,
         colorAccessor: null
-      });
+      };
     }
     /* /api/v0.1/expression response */
     case "expression load success": {
       /* this is wrong and will be reworked when we use POJOs */
       state.world._universe.initFromExpression(action.data);
-      return Object.assign({}, state);
+      return { ...state };
     }
     case "expression load error":
     case "initial data load error": {
-      return Object.assign({}, state, {
+      return {
+        ...state,
         loading: false,
         error: action.error
-      });
+      };
     }
 
     /*******************************
              User Events
      *******************************/
     case "parallel coordinates axes have been drawn": {
-      return Object.assign({}, state, {
+      return {
+        ...state,
         axesHaveBeenDrawn: true
-      });
+      };
     }
     case "continuous selection using parallel coords brushing": {
-      return Object.assign({}, state, {
+      return {
+        ...state,
         continuousSelection: action.data
-      });
+      };
     }
     case "graph brush selection change": {
       state.world.obsDimensionMap.x.filterRange([
@@ -132,16 +136,18 @@ const Controls = (
         action.brushCoords.southeast[1],
         action.brushCoords.northwest[1]
       ]);
-      return Object.assign({}, state, {
+      return {
+        ...state,
         graphBrushSelection: action.brushCoords
-      });
+      };
     }
     case "graph brush deselect": {
       state.world.obsDimensionMap.x.filterAll();
       state.world.obsDimensionMap.y.filterAll();
-      return Object.assign({}, state, {
+      return {
+        ...state,
         graphBrushSelection: null
-      });
+      };
     }
     case "continuous metadata histogram brush": {
       // action.selection: metadata name being selected
@@ -154,9 +160,10 @@ const Controls = (
       return { ...state };
     }
     case "change opacity deselected cells in 2d graph background":
-      return Object.assign({}, state, {
+      return {
+        ...state,
         opacityForDeselectedCells: action.data
-      });
+      };
 
     /*******************************
           Categorical metadata
@@ -178,9 +185,10 @@ const Controls = (
           )
         )
       );
-      return Object.assign({}, state, {
+      return {
+        ...state,
         categoricalAsBooleansMap: newCategoricalAsBooleansMap
-      });
+      };
     }
     case "categorical metadata filter deselect": {
       const newCategoricalAsBooleansMap = {
@@ -199,9 +207,10 @@ const Controls = (
           )
         )
       );
-      return Object.assign({}, state, {
+      return {
+        ...state,
         categoricalAsBooleansMap: newCategoricalAsBooleansMap
-      });
+      };
     }
     case "categorical metadata filter none of these": {
       const newCategoricalAsBooleansMap = {
@@ -214,9 +223,10 @@ const Controls = (
         }
       );
       state.world.obsDimensionMap[action.metadataField].filterNone();
-      return Object.assign({}, state, {
+      return {
+        ...state,
         categoricalAsBooleansMap: newCategoricalAsBooleansMap
-      });
+      };
     }
     case "categorical metadata filter all of these": {
       const newCategoricalAsBooleansMap = {
@@ -229,9 +239,10 @@ const Controls = (
         }
       );
       state.world.obsDimensionMap[action.metadataField].filterAll();
-      return Object.assign({}, state, {
+      return {
+        ...state,
         categoricalAsBooleansMap: newCategoricalAsBooleansMap
-      });
+      };
     }
 
     /*******************************
@@ -242,34 +253,38 @@ const Controls = (
       const world = state.world
         .clone()
         .setColors(action.colors.name, action.colors.rgb);
-      return Object.assign({}, state, {
+      return {
+        ...state,
         colorAccessor: action.colorAccessor,
         colorScale: action.colorScale,
         world
-      });
+      };
     }
     case "color by expression": {
       const world = state.world
         .clone()
         .setColors(action.colors.name, action.colors.rgb);
-      return Object.assign({}, state, {
+      return {
+        ...state,
         colorAccessor: action.gene,
         colorScale: action.colorScale,
         world
-      });
+      };
     }
 
     /*******************************
               Scatterplot
     *******************************/
     case "set scatterplot x":
-      return Object.assign({}, state, {
+      return {
+        ...state,
         scatterplotXXaccessor: action.data
-      });
+      };
     case "set scatterplot y":
-      return Object.assign({}, state, {
+      return {
+        ...state,
         scatterplotYYaccessor: action.data
-      });
+      };
 
     default:
       return state;
