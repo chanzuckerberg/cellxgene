@@ -19,8 +19,6 @@ class UniverseBase {
 
     /* data status */
     this.finalized = false;
-    this.loading = false;
-    this.error = null;
 
     this.nObs = 0;
     this.nVar = 0;

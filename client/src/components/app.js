@@ -16,7 +16,8 @@ import SectionHeader from "./framework/sectionHeader";
 
 @connect(state => {
   return {
-    universe: state.universe
+    loading: state.controls2.loading,
+    error: state.controls2.error
   };
 })
 class App extends React.Component {
@@ -24,9 +25,11 @@ class App extends React.Component {
     super(props);
     this.state = {};
   }
+
   _onURLChanged() {
     this.props.dispatch({ type: "url changed", url: document.location.href });
   }
+
   componentDidMount() {
     /* listen for url changes, fire one when we start the app up */
     window.addEventListener("popstate", this._onURLChanged);
@@ -54,10 +57,11 @@ class App extends React.Component {
   }
 
   render() {
+    const { loading, error } = this.props;
     return (
       <Container>
         <Helmet title="cellxgene" />
-        {this.props.universe.loading ? (
+        {loading ? (
           <div
             style={{
               position: "fixed",
@@ -69,9 +73,9 @@ class App extends React.Component {
             loading cellxgene
           </div>
         ) : null}
-        {this.props.universe.error ? "Error loading cells" : null}
+        {error ? "Error loading cells" : null}
         <div>
-          {this.props.universe.loading ? null : <LeftSideBar />}
+          {loading ? null : <LeftSideBar />}
           <div
             style={{
               padding: 15,
@@ -79,7 +83,7 @@ class App extends React.Component {
               marginLeft: 350 /* but responsive */
             }}
           >
-            {this.props.universe.loading ? null : <Graph />}
+            {loading ? null : <Graph />}
 
             <Legend />
             {}

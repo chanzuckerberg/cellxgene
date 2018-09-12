@@ -3,6 +3,7 @@ import _ from "lodash";
 import memoize from "memoize-one";
 import * as globals from "../globals";
 import store from "../reducers";
+import { Universe } from "../util/stateManager";
 
 /*
 Catch unexpected errors and make sure we don't lose them!
@@ -43,40 +44,22 @@ async function doRequestCells(query) {
 }
 
 function doInitialDataLoad(query = "") {
-  return catchErrorsWrap(async (dispatch, getState) => {
+  return catchErrorsWrap(async dispatch => {
     dispatch({ type: "initial data load start" });
-    dispatch({ type: "initialize started" });
-    const rqstInit = doRequestInitialize();
-    dispatch({ type: "request cells started" });
-    const rqstCells = doRequestCells(query);
-
-    let thereWasAnError = false;
-
     try {
-      const data = await rqstInit;
-      dispatch({ type: "initialize success", data });
-    } catch (error) {
-      thereWasAnError = true;
-      dispatch({ type: "initialize error", error });
-      dispatch({ type: "initial data load error", error });
-    }
-
-    if (!thereWasAnError) {
-      try {
-        const data = await rqstCells;
-        dispatch({ type: "request cells success", data });
-      } catch (error) {
-        thereWasAnError = true;
-        dispatch({ type: "request cells error", error });
-        dispatch({ type: "initial data load error", error });
-      }
-    }
-
-    if (!thereWasAnError) {
+      const universe = new Universe("0.1");
+      const res = await Promise.all([
+        doRequestInitialize(),
+        doRequestCells(query)
+      ]);
+      universe.initFromInitialize(res[0]);
+      universe.initFromCells(res[1]);
       dispatch({
         type: "initial data load complete (universe exists)",
-        universe: getState().universe
+        universe
       });
+    } catch (error) {
+      dispatch({ type: "initial data load error", error });
     }
   });
 }
@@ -134,10 +117,9 @@ function doInitialDataLoad(query = "") {
 const regraph = () => dispatch =>
   dispatch({ type: "set World to current selection" });
 
-const resetGraph = () => (dispatch, getState) =>
+const resetGraph = () => dispatch =>
   dispatch({
-    type: "reset World to eq Universe",
-    universe: getState().universe
+    type: "reset World to eq Universe"
   });
 
 // This code defends against the case where /expression returns a cellname
@@ -151,7 +133,8 @@ const resetGraph = () => (dispatch, getState) =>
 const makeMetadataMap = memoize(metadata => _.keyBy(metadata, "CellName"));
 function cleanupExpressionResponse(data) {
   const s = store.getState();
-  const metadata = makeMetadataMap(s.universe.obsAnnotations);
+  const universe = s.controls2.world._universe;
+  const metadata = makeMetadataMap(universe.obsAnnotations);
   let errorFound = false;
   data.data.cells = _.filter(data.data.cells, cell => {
     if (!errorFound && !metadata[cell.cellname]) {
@@ -173,7 +156,8 @@ which implements the new expression data caching.
 async function _doRequestExpressionData(dispatch, getState, genes) {
   const state = getState();
   /* check cache and only fetch data we do not already have */
-  const genesToFetch = _.filter(genes, g => !state.universe.varDataByName(g));
+  const universe = state.controls2.world._universe;
+  const genesToFetch = _.filter(genes, g => !universe.varDataByName(g));
 
   if (!genesToFetch.length) {
     return dispatch({ type: "expression load not needed, all are cached" });

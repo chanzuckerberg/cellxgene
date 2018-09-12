@@ -20,6 +20,10 @@ function createCategoricalAsBooleansMap(world) {
 
 const Controls = (
   state = {
+    // data loading flag
+    loading: false,
+    error: null,
+
     // all of the data + selection state
     world: null,
     categoricalAsBooleansMap: null, // should this be in world, w/ crossfilter?
@@ -38,17 +42,42 @@ const Controls = (
   },
   action
 ) => {
+  /*
+  For now, log anything looking like an error to the console.
+  */
+  if (action.error || /error/i.test(action.type)) {
+    console.error(action.error);
+  }
+
   switch (action.type) {
     /*****************************************************
-          Initialization and World/Universe management
+          Initialization, World/Universe management
+          and data loading.
     ******************************************************/
-    case "initial data load complete (universe exists)":
-    case "reset World to eq Universe": {
-      /* Reset viewable world to be the entire Universe */
+    case "initial data load start": {
+      return Object.assign({}, state, {
+        loading: true
+      });
+    }
+    case "initial data load complete (universe exists)": {
       /* first light - create world & other data-driven defaults */
       const world = new World(action.universe, globals.defaultCellColor);
       const categoricalAsBooleansMap = createCategoricalAsBooleansMap(world);
       return Object.assign({}, state, {
+        loading: false,
+        error: null,
+        world,
+        categoricalAsBooleansMap,
+        colorAccessor: null
+      });
+    }
+    case "reset World to eq Universe": {
+      /* Reset viewable world to be the entire Universe */
+      const world = new World(state.world._universe, globals.defaultCellColor);
+      const categoricalAsBooleansMap = createCategoricalAsBooleansMap(world);
+      return Object.assign({}, state, {
+        loading: false,
+        error: null,
         world,
         categoricalAsBooleansMap,
         colorAccessor: null
@@ -65,6 +94,19 @@ const Controls = (
         world,
         categoricalAsBooleansMap,
         colorAccessor: null
+      });
+    }
+    /* /api/v0.1/expression response */
+    case "expression load success": {
+      /* this is wrong and will be reworked when we use POJOs */
+      state.world._universe.initFromExpression(action.data);
+      return Object.assign({}, state);
+    }
+    case "expression load error":
+    case "initial data load error": {
+      return Object.assign({}, state, {
+        loading: false,
+        error: action.error
       });
     }
 
