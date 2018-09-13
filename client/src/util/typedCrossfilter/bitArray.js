@@ -29,7 +29,7 @@ class BitArray {
     // Fixed for the life of this object.
     this.length = length;
 
-    // Bitarray width.  width is always greater than 32*dimensionCount.
+    // Bitarray width.  width is always greater than dimensionCount/32.
     this.width = 1; // underlying number of 32 bit arrays
     this.dimensionCount = 0; // num allocated dimensions
 
