@@ -120,5 +120,19 @@ class UtilTest(unittest.TestCase):
         self.assertEqual(annotations["names"], ["n_genes", "percent_mito", "n_counts", "louvain", "name"])
         self.assertEqual(len(annotations["data"]), 2638)
 
+    def test_filtered_layout(self):
+        filter_ = {
+            "filter": {
+                "obs": {
+                    "annotation_value": [
+                        {"name": "n_counts", "min": 3000},
+                    ]
+                }
+            }
+        }
+        data = self.data.filter_dataframe(filter_["filter"])
+        layout = self.data.layout(data)
+        self.assertEqual(len(layout["coordinates"]), 497)
+
     if __name__ == '__main__':
         unittest.main()
