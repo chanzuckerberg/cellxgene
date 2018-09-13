@@ -162,10 +162,51 @@ class LayoutObsAPI(Resource):
         return make_response((jsonify({"layout": current_app.data.layout(df)})))
 
 
+class AnnotationsObsAPI(Resource):
+    @swagger.doc({
+        "summary": "Fetch annotations (metadata) for all observations.",
+        "tags": ["annotations"],
+        "parameters": [{
+            "in": "query",
+            "name": "annotation-names",
+            "type": "string",
+            "description": "comma-separated annotation keys, ex: num_genes,percent_mito"
+        }],
+        "responses": {
+            "200": {
+                "description": "annotations",
+                "examples": {
+                    "application/json": {
+                        "names": [
+                            'tissue_type', 'sex', 'num_reads', 'clusters'
+                        ],
+                        "data": [
+                            [0, 'lung', 'F', 39844, 99],
+                            [1, 'heart', 'M', 83, 1],
+                            [49, 'spleen', None, 2, "unknown cluster"],
+
+                        ]
+                    }
+
+                }
+            }
+        }
+    })
+    def get(self):
+        fields = request.args.getlist("annotation-name", None)
+        try:
+            annotation_response = current_app.data.annotation(current_app.data.data, fields)
+        except KeyError:
+            return make_response(f"Error bad key in {fields}", 404)
+        else:
+            return make_response(jsonify(annotation_response))
+
+
 def get_api_resources():
     bp = Blueprint("api", __name__, url_prefix="/api/v0.2")
     api = Api(bp, add_api_spec_resource=False)
     api.add_resource(SchemaAPI, "/schema")
     api.add_resource(ConfigAPI, "/config")
     api.add_resource(LayoutObsAPI, "/layout/obs")
+    api.add_resource(AnnotationsObsAPI, "/annotations/obs")
     return api

@@ -156,6 +156,11 @@ class UtilTest(unittest.TestCase):
             self.assertLessEqual(val[1], 1)
             self.assertLessEqual(val[2], 1)
 
+    def test_annotations(self):
+        annotations = self.data.annotation(self.data.data)
+        self.assertEqual(annotations["names"], ["n_genes", "percent_mito", "n_counts", "louvain", "name"])
+        self.assertEqual(len(annotations["data"]), 2638)
+
     def test_filtered_layout(self):
         filter_ = {
             "filter": {

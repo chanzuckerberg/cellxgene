@@ -37,6 +37,30 @@ class EndPoints(unittest.TestCase):
         self.assertEqual(result_data["layout"]["ndims"], 2)
         self.assertEqual(len(result_data["layout"]["coordinates"]), 2638)
 
+    def test_get_annotations(self):
+        url = "{base}{endpoint}".format(base=self.url_base, endpoint="annotations/obs")
+        result = self.session.get(url)
+        self.assertEqual(result.status_code, 200)
+        result_data = result.json()
+        self.assertEqual(result_data["names"], ["n_genes", "percent_mito", "n_counts", "louvain", "name"])
+        self.assertEqual(len(result_data["data"]), 2638)
+        self.assertEqual(len(result_data["data"][0]), 6)
+
+    def test_get_annotations_keys(self):
+        url = "{base}{endpoint}?{query}".format(base=self.url_base, endpoint="annotations/obs",
+                                                query="annotation-name=n_genes&annotation-name=percent_mito")
+        result = self.session.get(url)
+        self.assertEqual(result.status_code, 200)
+        result_data = result.json()
+        self.assertEqual(result_data["names"], ["n_genes", "percent_mito"])
+        self.assertEqual(len(result_data["data"][0]), 3)
+
+    def test_get_annotations_error(self):
+        url = "{base}{endpoint}?{query}".format(base=self.url_base, endpoint="annotations/obs",
+                                                query="annotation-name=notakey")
+        result = self.session.get(url)
+        self.assertEqual(result.status_code, 404)
+
     def test_put_layout(self):
         url = "{base}{endpoint}".format(base=self.url_base, endpoint="layout/obs")
         obs_filter = {
