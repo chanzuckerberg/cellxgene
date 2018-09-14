@@ -126,8 +126,10 @@ class ScanpyEngine(CXGDriver):
             if "annotation_value" in filter["var"]:
                 genes_idx = self._filter_annotation(filter["var"]["annotation_value"], genes_idx, Axis.VAR)
         # Due to anndata issues we can't index into cells and genes at the same time
-        data = self.data[cells_idx, :]
-        return data[:, genes_idx]
+        cell_data = self.data[cells_idx, :]
+        data = cell_data[:, genes_idx]
+        data.uns = cell_data.uns
+        return data
 
     def _filter_index(self, filter, index, axis):
         """
@@ -174,38 +176,22 @@ class ScanpyEngine(CXGDriver):
         return index
 
     @cache.memoize()
-    def metadata_ranges(self, df=None):
-        metadata_ranges = {}
-        if not df:
-            df = self.data
-        for field in self.schema:
-            if self.schema[field]["variabletype"] == "categorical":
-                group_by = field
-                if group_by == "CellName":
-                    group_by = "cell_name"
-                metadata_ranges[field] = {"options": df.obs.groupby(group_by).size().to_dict()}
-            else:
-                metadata_ranges[field] = {
-                    "range": {
-                        "min": df.obs[field].min(),
-                        "max": df.obs[field].max()
-                    }
-                }
-        return metadata_ranges
-
-    @cache.memoize()
-    def metadata(self, df, fields=None):
+    def annotation(self, df, fields=None):
         """
-         Gets metadata key:value for each cells
+         Gets annotation value for each observation
 
         :param df: from filter_cells, dataframe
-        :param fields: list of keys for metadata to return, returns all metadata values if not set.
-        :return: list of metadata values
+        :param fields: list of keys for annotation to return, returns all annotation values if not set.
+        :return: dict: names - list of fields in order, data - list of lists or metadata
+        [observation ids, val1, val2...]
         """
-        metadata = df.obs.to_dict(orient="records")
-        for idx in range(len(metadata)):
-            metadata[idx]["CellName"] = metadata[idx].pop("cell_name", None)
-        return metadata
+        if not fields:
+            fields = df.obs.columns.tolist()
+        annotations = DataFrame(df.obs[fields], index=df.obs.index)
+        return {
+            "names": fields,
+            "data": annotations.reset_index().values.tolist()
+        }
 
     @cache.memoize()
     def layout(self, df):
@@ -214,6 +200,9 @@ class ScanpyEngine(CXGDriver):
         :param df: from filter_cells, dataframe
         :return:  [cellid, x, y, ...]
         """
+        # TODO Filtering cells is fine, but filtering genes does nothing because the neighbors are
+        # calculated using the original vars (geneset) and this doesn’t get updated when you use less.
+        # Need to recalculate neighbors (long) if user requests new layout filtered by var
         getattr(sc.tl, self.layout_method)(df, random_state=123)
         df_layout = df.obsm[f"X_{self.layout_method}"]
         normalized_layout = DataFrame((df_layout - df_layout.min()) / (df_layout.max() - df_layout.min()),

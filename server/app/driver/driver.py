@@ -56,13 +56,13 @@ class CXGDriver(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def metadata(self, df, fields=None):
+    def annotation(self, df, fields=None):
         """
-         Gets metadata key:value for each cells
+         Gets annotation value for each observation
 
         :param df: from filter_cells, dataframe
-        :param fields: list of keys for metadata to return, returns all metadata values if not set.
-        :return: list of metadata values
+        :param fields: list of keys for annotation to return, returns all annotation values if not set.
+        :return: dict: names - list of fields in order, data - list of lists or metadata [idx, val1, val2...]
         """
         pass
 

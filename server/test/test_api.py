@@ -1,11 +1,12 @@
-import unittest
 import requests
 from subprocess import Popen
+import unittest
 import time
 
 LOCAL_URL = "http://127.0.0.1:5005/"
 VERSION = "v0.2"
 URL_BASE = f"{LOCAL_URL}api/{VERSION}/"
+
 
 
 class EndPoints(unittest.TestCase):
@@ -57,6 +58,48 @@ class EndPoints(unittest.TestCase):
         result_data = result.json()
         self.assertEqual(result_data["layout"]["ndims"], 2)
         self.assertEqual(len(result_data["layout"]["coordinates"]), 2638)
+
+    def test_get_annotations(self):
+        url = "{base}{endpoint}".format(base=self.url_base, endpoint="annotations/obs")
+        result = self.session.get(url)
+        self.assertEqual(result.status_code, 200)
+        result_data = result.json()
+        self.assertEqual(result_data["names"], ["n_genes", "percent_mito", "n_counts", "louvain", "name"])
+        self.assertEqual(len(result_data["data"]), 2638)
+        self.assertEqual(len(result_data["data"][0]), 6)
+
+    def test_get_annotations_keys(self):
+        url = "{base}{endpoint}?{query}".format(base=self.url_base, endpoint="annotations/obs",
+                                                query="annotation-name=n_genes&annotation-name=percent_mito")
+        result = self.session.get(url)
+        self.assertEqual(result.status_code, 200)
+        result_data = result.json()
+        self.assertEqual(result_data["names"], ["n_genes", "percent_mito"])
+        self.assertEqual(len(result_data["data"][0]), 3)
+
+    def test_get_annotations_error(self):
+        url = "{base}{endpoint}?{query}".format(base=self.url_base, endpoint="annotations/obs",
+                                                query="annotation-name=notakey")
+        result = self.session.get(url)
+        self.assertEqual(result.status_code, 404)
+
+    def test_put_layout(self):
+        url = "{base}{endpoint}".format(base=self.url_base, endpoint="layout/obs")
+        obs_filter = {
+            "filter": {
+                "obs": {
+                    "annotation_value": [
+                        {"name": "louvain", "values": ["NK cells", "CD8 T cells"]},
+                        {"name": "n_counts", "min": 3000},
+                    ],
+                    "index": [1, 99, [1000, 2000]]
+                }
+            }
+        }
+        result = self.session.put(url, json=obs_filter)
+        self.assertEqual(result.status_code, 200)
+        result_data = result.json()
+        self.assertEqual(len(result_data["layout"]["coordinates"]), 15)
 
     def test_static(self):
         endpoint = "static"
