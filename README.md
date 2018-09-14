@@ -131,7 +131,7 @@ We warmly welcome contributions from the community. Please submit any bug report
 We’ve been inspired by several other related efforts in this space, including the [UCSC Cell Browswer](http://cells.ucsc.edu/), [Cytoscape](http://www.cytoscape.org/), [Xena](https://xena.ucsc.edu/), [ASAP](https://asap.epfl.ch/), [Gene Pattern](http://genepattern-notebook.org/), & many others; we hope to explore collaborations where useful.
 
 ## Help/Contact
-Please submit any help requests, suggestions, or comments as an issue in github. We'd love to hear from you!
+Have questions, suggestions, or comments? You can contact us by joining [CZI Science Slack](https://cziscience.slack.com/messages/CCTA8DF1T) and posting in the #cellxgene channel. Please submit any feature requests or bugs as an issue in github. We'd love to hear from you!
 
 ## Reuse
 This project was started with the sole goal of empowering the scientific community to explore and understand their data. As such, we whole-heartedly encourage other scientific tool builders to adopt the patterns, tools, and code from this project, and reach out to us with ideas or questions using Github Issues or Pull Requests. All code is freely available for reuse under the [MIT license](https://opensource.org/licenses/MIT).
