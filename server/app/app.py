@@ -64,12 +64,15 @@ def main():
     parser.add_argument("--title", "-t", help="Title to display -- if this is omitted the title will be the name "
                                               "of the directory from the data_directory arg")
     parser.add_argument("--port", help="Port to run server on.", type=int, default=5005)
-    subparsers = parser.add_subparsers(dest="cellxgene_command")
+    subparsers = parser.add_subparsers(dest="engine", required=True)
     try:
         from .scanpy_engine.scanpy_engine import ScanpyEngine
     except ImportError:
+        warnings.simplefilter('default', ImportWarning)  # Enable ImportWarning
         warnings.warn("Scanpy engine not available", ImportWarning)
     else:
         ScanpyEngine.add_to_parser(subparsers, run_scanpy)
+    if len(subparsers.choices) == 0:
+        raise ImportError('Could not import any engines, see warnings above')
     args = parser.parse_args()
     args.func(args)
