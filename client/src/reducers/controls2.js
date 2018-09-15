@@ -23,18 +23,18 @@ function createCategoricalAsBooleansMap(world) {
 const Controls = (
   state = {
     // data loading flag
-    loading: false, // XXX: separate reducer?
+    loading: false,
     error: null,
 
-    universe: null, // XXX: separate reducer?
+    universe: null,
 
     // all of the data + selection state
     world: null,
     colorName: null,
     colorRGB: null,
-    categoricalAsBooleansMap: null, // should this be in world, w/ crossfilter?
-    obsCrossfilter: null, // separate reducer?
-    obsDimensionMap: null, // separate reducer?
+    categoricalAsBooleansMap: null,
+    obsCrossfilter: null,
+    obsDimensionMap: null,
 
     colorAccessor: null,
     colorScale: null,
