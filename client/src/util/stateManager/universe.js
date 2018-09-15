@@ -1,127 +1,22 @@
 // jshint esversion: 6
 
 import _ from "lodash";
-import KeyValCache from "./keyvalcache";
+import * as kvCache from "./keyvalcache";
 
 /*
-This is the public API.   Any non-underscore key in the object is public.
+This module implements functions that support storage of "Universe",
+aka all of the var/obs data and annotations.
+
+These functions are used exclusively by the actions and reducers to
+build an internal POJO for use by the rendering components.
 */
-class UniverseBase {
-  static VarDataCacheLowWatermark = 32;
-
-  static VarDataCacheTTLMs = 1000;
-
-  /*
-  creates empty universe, noting which REST API version it presumes
-  */
-  constructor(apiVersion) {
-    this.api = apiVersion;
-
-    /* data status */
-    this.finalized = false;
-
-    this.nObs = 0;
-    this.nVar = 0;
-    this.schema = {};
-
-    /*
-    Annotations
-    */
-    this.obsAnnotations = []; /* all obs annotations, by obs index */
-    this.varAnnotations = []; /* all var annotations, by var index */
-    this.obsNameToIndexMap = {}; /* reverse map 'name' to index */
-    this.varNameToIndexMap = {}; /* reverse map 'name' to index */
-
-    this.obsLayout = { X: [], Y: [] };
-
-    /*
-    Cache for var/gene data (aka expression data), keyed by varIndex (gene).
-    Loaded one var at a time.
-
-    Motivation:  the size of the full data (expression) matrix can be quite
-    large (numCells X numGenes), and is currently used in a very constrained
-    way:  display of differential expression between two genes/vars.
-
-    This LRU cache contains full-dimension expression data for a set of
-    variables/genes - ie, an entire column (1-d array) from the expression
-    dataframe.
-
-    These var dimensions will be cached until more than "low watermark"
-    dimensions are present, and those dimensions are older than TTL.   See
-    futher description in the KeyValCache class.
-    */
-    this.varDataCache = new KeyValCache(
-      UniverseBase.VarDataCacheLowWatermark,
-      UniverseBase.VarDataCacheTTLMs
-    );
-  }
-
-  /* shallow clone Universe - used to properly implement reducers */
-  clone() {
-    return _.clone(this);
-  }
-
-  /*
-  Universe is built - freeze and generate any derivative information we
-  compute on the client side (eg, ranges).
-  */
-  _finalize() {
-    /* A bit of sanity checking! */
-    const { nObs, nVar } = this;
-    if (
-      nObs !== this.obsAnnotations.length ||
-      nObs !== this.obsLayout.X.length ||
-      nObs !== this.obsLayout.Y.length ||
-      nVar !== this.varAnnotations.length
-    ) {
-      throw new Error("Universe dimensionality mismatch - failed to load");
-    }
-
-    this.obsNameToIndexMap = _.transform(
-      this.obsAnnotations,
-      (acc, value, idx) => {
-        acc[value.name] = idx;
-      },
-      {}
-    );
-    this.varNameToIndexMap = _.transform(
-      this.varAnnotations,
-      (acc, value, idx) => {
-        acc[value.name] = idx;
-      },
-      {}
-    );
-    this.finalized = true;
-  }
-
-  varNameToIndex(name) {
-    return this.varNameToIndexMap[name];
-  }
-
-  varDataByName(name) {
-    return this.varDataCache.get(this.varNameToIndexMap[name]);
-  }
-}
 
 /*
-Universe on top of the REST 0.1 interface
+Cherry pick from /api/v0.1 response format to make somethign similar
+to the v0.2 schema, which we use for internal interfaces.
 */
-class Universe_REST_API_v01 extends UniverseBase {
-  constructor() {
-    super("0.1");
-
-    this.init = {
-      initialize: false,
-      cells: false
-    };
-  }
-
+function OtaRESTv01ToSchema(ota) {
   /*
-  Cherry pick from /api/v0.1 response format to make somethign similar
-  to the v0.2 schema.
-  */
-  static _toSchema(ota) {
-    /*
       Annotation schemas in V02 (our target) look like:
 
           annotations: {
@@ -171,109 +66,166 @@ class Universe_REST_API_v01 extends UniverseBase {
       - type conversion:   float->float32, int->int32, string->string
 
     */
-    return {
-      annotations: {
-        obs: _.map(ota.data.schema, (val, key) => {
-          const name = key === "CellName" ? "name" : key;
-          let { type } = val;
-          if (type === "int") {
-            type = "int32";
-          }
-          if (type === "float") {
-            type = "float32";
-          }
-          return {
-            name,
-            type
-          };
-        }),
-        var: [{ name: "name", type: "string" }]
-      }
-    };
-  }
-
-  static _toObsAnnotations(ota) {
-    /*
-    v0.1 format for metadata:
-    metadata: [ { key: val, key: val, ... }, ... ]
-
-    Target format is essentially the same, except the CellName key becomes name.
-    */
-    return _.map(ota.data.metadata, (c, i) => ({
-      __obsIndex__: i,
-      name: c.CellName,
-      ...c
-    }));
-  }
-
-  static _toVarAnnotations(ota) {
-    /*
-    v0.1 initialize response contains 'genes' - names of all genes
-    in order.
-    */
-    return _.map(ota.data.genes, (g, i) => ({ __varIndex__: i, name: g }));
-  }
-
-  _toLayout(ota) {
-    /*
-    v0.1 format for the graph is:
-    [ [ 'cellname', x, y ], [ 'cellname', x, y, ], ... ]
-
-    NOTE XXX: this code does not assume any particular array ordering in the V0.1
-    response.  But for Universe initial load, the layout will be in the same
-    order as annotations, so this extra work isn't really necessary.
-    */
-
-    const { obsAnnotations } = this;
-    const obsAnnotationsByName = _.keyBy(obsAnnotations, "name");
-    const { graph } = ota.data;
-    const layout = {
-      X: new Float32Array(graph.length),
-      Y: new Float32Array(graph.length)
-    };
-
-    for (let i = 0; i < graph.length; i += 1) {
-      const [name, x, y] = graph[i];
-      const anno = obsAnnotationsByName[name];
-      const idx = anno.__obsIndex__;
-      layout.X[idx] = x;
-      layout.Y[idx] = y;
+  return {
+    annotations: {
+      obs: _.map(ota.data.schema, (val, key) => {
+        const name = key === "CellName" ? "name" : key;
+        let { type } = val;
+        if (type === "int") {
+          type = "int32";
+        }
+        if (type === "float") {
+          type = "float32";
+        }
+        return {
+          name,
+          type
+        };
+      }),
+      var: [{ name: "name", type: "string" }]
     }
-    return layout;
+  };
+}
+
+function OtaRESTv01ToVarAnnotations(ota) {
+  /*
+  v0.1 initialize response contains 'genes' - names of all genes
+  in order.
+  */
+  return _.map(ota.data.genes, (g, i) => ({ __varIndex__: i, name: g }));
+}
+
+function OtaRESTv01ToObsAnnotations(ota) {
+  /*
+  v0.1 format for metadata:
+  metadata: [ { key: val, key: val, ... }, ... ]
+
+  Target format is essentially the same, except the CellName key becomes name.
+  */
+  return _.map(ota.data.metadata, (c, i) => ({
+    __obsIndex__: i,
+    name: c.CellName,
+    ...c
+  }));
+}
+
+function OtaRESTv01ToLayout(obsAnnotations, ota) {
+  /*
+  v0.1 format for the graph is:
+  [ [ 'cellname', x, y ], [ 'cellname', x, y, ], ... ]
+
+  NOTE XXX: this code does not assume any particular array ordering in the V0.1
+  response.  But for Universe initial load, the layout will be in the same
+  order as annotations, so this extra work isn't really necessary.
+  */
+
+  const obsAnnotationsByName = _.keyBy(obsAnnotations, "name");
+  const { graph } = ota.data;
+  const layout = {
+    X: new Float32Array(graph.length),
+    Y: new Float32Array(graph.length)
+  };
+
+  for (let i = 0; i < graph.length; i += 1) {
+    const [name, x, y] = graph[i];
+    const anno = obsAnnotationsByName[name];
+    const idx = anno.__obsIndex__;
+    layout.X[idx] = x;
+    layout.Y[idx] = y;
+  }
+  return layout;
+}
+
+function finalize(universe) {
+  /* A bit of sanity checking! */
+  const { nObs, nVar } = universe;
+  if (
+    nObs !== universe.obsAnnotations.length ||
+    nObs !== universe.obsLayout.X.length ||
+    nObs !== universe.obsLayout.Y.length ||
+    nVar !== universe.varAnnotations.length
+  ) {
+    throw new Error("Universe dimensionality mismatch - failed to load");
   }
 
-  _tryFinalization() {
-    if (_.every(this.init)) {
-      this._finalize();
-    }
-  }
+  universe.obsNameToIndexMap = _.transform(
+    universe.obsAnnotations,
+    (acc, value, idx) => {
+      acc[value.name] = idx;
+    },
+    {}
+  );
+  universe.varNameToIndexMap = _.transform(
+    universe.varAnnotations,
+    (acc, value, idx) => {
+      acc[value.name] = idx;
+    },
+    {}
+  );
+  universe.finalized = true;
+  return universe;
+}
 
-  initFromInitialize(OTAresponse) {
-    this.schema = Universe_REST_API_v01._toSchema(OTAresponse);
-    this.varAnnotations = Universe_REST_API_v01._toVarAnnotations(OTAresponse);
-    this.nVar = this.varAnnotations.length;
-    this.init.initialize = true;
-    this._tryFinalization();
-    return this;
-  }
+function templateUniverse() {
+  /* default universe template */
+  const VarDataCacheLowWatermark = 32;
+  const VarDataCacheTTLMs = 1000;
 
-  initFromCells(OTAresponse) {
+  return {
+    api: "0.1",
+    finalized: true, // XXX: may not be needed
+
+    nObs: 0,
+    nVar: 0,
+    schema: {},
+
     /*
-    NOTE: this code *assumes* that cell order in data.metadata and data.graph
-    are the same.  TODO: error checking.
+    Annotations
     */
-    this.obsAnnotations = Universe_REST_API_v01._toObsAnnotations(OTAresponse);
-    this.nObs = this.obsAnnotations.length;
-    this.obsLayout = this._toLayout(OTAresponse);
+    obsAnnotations: [] /* all obs annotations, by obs index */,
+    varAnnotations: [] /* all var annotations, by var index */,
+    obsNameToIndexMap: {} /* reverse map 'name' to index */,
+    varNameToIndexMap: {} /* reverse map 'name' to index */,
 
-    this.init.cells = true;
-    this._tryFinalization();
-    return this;
-  }
+    obsLayout: { X: [], Y: [] } /* xy layout */,
 
-  initFromExpression(ota) {
-    /*
-    v0.1 ota will look like:
+    varDataCache: kvCache.create(
+      VarDataCacheLowWatermark,
+      VarDataCacheTTLMs
+    ) /* cache of var data (expression) */
+  };
+}
+
+export function createUniverseFromRESTv01Response(initOTAResp, cellsOTAResp) {
+  /*
+  build & return universe from a REST 0.1 /init and /cells response
+  */
+
+  const universe = templateUniverse();
+
+  /* extract information from init OTA response */
+  universe.schema = OtaRESTv01ToSchema(initOTAResp);
+  universe.varAnnotations = OtaRESTv01ToVarAnnotations(initOTAResp);
+  universe.nVar = universe.varAnnotations.length;
+
+  /* extract information fron cells OTA response */
+  /*
+  NOTE: this code *assumes* that cell order in data.metadata and data.graph
+  are the same.  TODO: error checking.
+  */
+  universe.obsAnnotations = OtaRESTv01ToObsAnnotations(cellsOTAResp);
+  universe.nObs = universe.obsAnnotations.length;
+  universe.obsLayout = OtaRESTv01ToLayout(
+    universe.obsAnnotations,
+    cellsOTAResp
+  );
+
+  return finalize(universe);
+}
+
+export function convertExpressionRESTv01ToObject(universe, ota) {
+  /*
+    v0.1 ota looks like:
       {
         genes: [ "name1", "name2", ... ],
         cells: [
@@ -281,20 +233,20 @@ class Universe_REST_API_v01 extends UniverseBase {
           ...
         ]
       }
+
+    convert expression to a simple Float32Array, and return
+    [ [geneName, array], [geneName, array], ... ]
     */
-    const { genes, cells } = ota.data;
-    for (let idx = 0; idx < genes.length; idx += 1) {
-      const gene = genes[idx];
-      const data = new Float32Array(this.nObs);
-      for (let c = 0; c < cells.length; c += 1) {
-        const obsIndex = this.obsNameToIndexMap[cells[c].cellname];
-        data[obsIndex] = cells[c].e[idx];
-      }
-      this.varDataCache.set(this.varNameToIndexMap[gene], data);
+  const response = {};
+  const { genes, cells } = ota.data;
+  for (let idx = 0; idx < genes.length; idx += 1) {
+    const gene = genes[idx];
+    const data = new Float32Array(universe.nObs);
+    for (let c = 0; c < cells.length; c += 1) {
+      const obsIndex = universe.obsNameToIndexMap[cells[c].cellname];
+      data[obsIndex] = cells[c].e[idx];
     }
-
-    return this;
+    response[gene] = data;
   }
+  return response;
 }
-
-export default Universe_REST_API_v01;

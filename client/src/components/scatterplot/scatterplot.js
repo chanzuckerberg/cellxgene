@@ -21,22 +21,23 @@ import { margin, width, height } from "./util";
 @connect(state => {
   const {
     world,
+    obsCrossfilter,
     scatterplotXXaccessor,
     scatterplotYYaccessor
   } = state.controls2;
   const expressionX =
     world && scatterplotXXaccessor
-      ? state.controls2.world.varDataByName(scatterplotXXaccessor)
+      ? state.controls2.world.varDataCache[scatterplotXXaccessor]
       : null;
   const expressionY =
     world && scatterplotYYaccessor
-      ? state.controls2.world.varDataByName(scatterplotYYaccessor)
+      ? state.controls2.world.varDataCache[scatterplotYYaccessor]
       : null;
 
   return {
     world,
 
-    colorRGB: state.controls2.world.colorRGB,
+    colorRGB: state.controls2.colorRGB,
     colorAccessor: state.controls2.colorAccessor,
     colorScale: state.controls2.colorScale,
 
@@ -50,8 +51,9 @@ import { margin, width, height } from "./util";
     expressionX,
     expressionY,
 
+    obsCrossfilter,
     // updated whenever the crossfilter selection is updated
-    selectionUpdate: _.get(state.controls2.world, "obsSelectionUpdateSeq", null)
+    selectionUpdate: _.get(state.controls2, "obsCrossfilter.updateTime", null)
   };
 })
 class Scatterplot extends React.Component {
@@ -131,6 +133,7 @@ class Scatterplot extends React.Component {
     } = this.state;
     const {
       world,
+      obsCrossfilter,
       scatterplotXXaccessor,
       scatterplotYYaccessor,
       expressionX,
@@ -165,7 +168,6 @@ class Scatterplot extends React.Component {
       xScale &&
       yScale
     ) {
-      const crossfilter = world.obsCrossfilter;
       const cellCount = expressionX.length;
       const positionsBuf = new Float32Array(2 * cellCount);
       const colorsBuf = new Float32Array(3 * cellCount);
@@ -186,7 +188,7 @@ class Scatterplot extends React.Component {
         colorsBuf.set(colorRGB[i], 3 * i);
       }
 
-      crossfilter.fillByIsFiltered(sizesBuf, 4, 0.2);
+      obsCrossfilter.fillByIsFiltered(sizesBuf, 4, 0.2);
 
       pointBuffer({ data: positionsBuf, dimension: 2 });
       colorBuffer({ data: colorsBuf, dimension: 3 });

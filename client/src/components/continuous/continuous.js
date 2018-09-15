@@ -25,7 +25,7 @@ import { margin, width, height, createDimensions } from "./util";
     metadata,
     colorAccessor: state.controls2.colorAccessor,
     colorScale: state.controls2.colorScale,
-    selectionUpdate: _.get(state.controls2.world, "obsSelectionUpdateSeq", null)
+    selectionUpdate: _.get(state.controls2, "obsCrossfilter.updateTime", null)
   };
 })
 class Continuous extends React.Component {

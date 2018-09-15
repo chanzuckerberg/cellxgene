@@ -47,13 +47,14 @@ function doInitialDataLoad(query = "") {
   return catchErrorsWrap(async dispatch => {
     dispatch({ type: "initial data load start" });
     try {
-      const universe = new Universe("0.1");
       const res = await Promise.all([
         doRequestInitialize(),
         doRequestCells(query)
       ]);
-      universe.initFromInitialize(res[0]);
-      universe.initFromCells(res[1]);
+      const universe = Universe.createUniverseFromRESTv01Response(
+        res[0],
+        res[1]
+      );
       dispatch({
         type: "initial data load complete (universe exists)",
         universe
@@ -114,12 +115,20 @@ function doInitialDataLoad(query = "") {
 //   };
 // };
 
-const regraph = () => dispatch =>
-  dispatch({ type: "set World to current selection" });
-
-const resetGraph = () => dispatch =>
+const regraph = () => (dispatch, getState) => {
+  const { universe, world, obsCrossfilter } = getState().controls2;
   dispatch({
-    type: "reset World to eq Universe"
+    type: "set World to current selection",
+    universe,
+    world,
+    obsCrossfilter
+  });
+};
+
+const resetGraph = () => (dispatch, getState) =>
+  dispatch({
+    type: "reset World to eq Universe",
+    universe: getState().controls2.universe
   });
 
 // This code defends against the case where /expression returns a cellname
@@ -133,7 +142,7 @@ const resetGraph = () => dispatch =>
 const makeMetadataMap = memoize(metadata => _.keyBy(metadata, "CellName"));
 function cleanupExpressionResponse(data) {
   const s = store.getState();
-  const universe = s.controls2.world._universe;
+  const { universe } = s.controls2;
   const metadata = makeMetadataMap(universe.obsAnnotations);
   let errorFound = false;
   data.data.cells = _.filter(data.data.cells, cell => {
@@ -156,35 +165,47 @@ which implements the new expression data caching.
 async function _doRequestExpressionData(dispatch, getState, genes) {
   const state = getState();
   /* check cache and only fetch data we do not already have */
-  const universe = state.controls2.world._universe;
-  const genesToFetch = _.filter(genes, g => !universe.varDataByName(g));
-
-  if (!genesToFetch.length) {
-    return dispatch({ type: "expression load not needed, all are cached" });
-  }
+  const { universe } = state.controls2;
+  const genesToFetch = _.filter(genes, g => !universe.varDataCache[g]);
 
   dispatch({ type: "expression load start" });
-  try {
-    const res = await fetch(
-      `${globals.API.prefix}${globals.API.version}expression`,
-      {
-        method: "POST",
-        body: JSON.stringify({
-          genelist: genes
-        }),
-        headers: new Headers({
-          accept: "application/json",
-          "Content-Type": "application/json"
-        })
-      }
-    );
-    let data = await res.json();
-    data = cleanupExpressionResponse(data);
-    return dispatch({ type: "expression load success", data });
-  } catch (error) {
-    dispatch({ type: "expression load error", error });
-    throw error; // rethrow
+  let expressionData = {}; // { gene: data }
+  if (genesToFetch.length) {
+    try {
+      const res = await fetch(
+        `${globals.API.prefix}${globals.API.version}expression`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            genelist: genes
+          }),
+          headers: new Headers({
+            accept: "application/json",
+            "Content-Type": "application/json"
+          })
+        }
+      );
+      let data = await res.json();
+      data = cleanupExpressionResponse(data);
+      data = Universe.convertExpressionRESTv01ToObject(universe, data);
+      expressionData = {
+        ...expressionData,
+        ...data
+      };
+    } catch (error) {
+      dispatch({ type: "expression load error", error });
+      throw error; // rethrow
+    }
   }
+
+  // add the cached values
+  _.forEach(genes, g => {
+    if (expressionData[g] === undefined) {
+      expressionData[g] = universe.varDataCache[g];
+    }
+  });
+
+  return dispatch({ type: "expression load success", expressionData });
 }
 
 function requestSingleGeneExpressionCountsForColoringPOST(gene) {
@@ -196,7 +217,7 @@ function requestSingleGeneExpressionCountsForColoringPOST(gene) {
         type: "color by expression",
         gene,
         data: {
-          [gene]: getState().controls2.world.varDataByName(gene)
+          [gene]: getState().controls2.world.varDataCache[gene]
         }
       });
     } catch (error) {
@@ -218,7 +239,7 @@ const requestGeneExpressionCountsPOST = genes => async (dispatch, getState) => {
       data: _.transform(
         genes,
         (res, gene) => {
-          res[gene] = getState().controls2.world.varDataByName(gene);
+          res[gene] = getState().controls2.world.varDataCache[gene];
         },
         {}
       )

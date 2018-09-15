@@ -18,53 +18,55 @@ Very simple key/value cache for use by World & Universe.
 
 */
 
-class KeyValCache {
-  constructor(lowWatermark = 32, minTTL = -1, cachekey = "__cachekey__") {
-    this.cachekey = cachekey;
-    this.cache = {};
+const cachePrivateKey = "__kvcachekey__";
 
-    /* don't flush if cache size below this number */
-    this.lowWatermark = lowWatermark;
-    this.minTTL = minTTL;
-  }
-
-  set(key, val) {
-    this.cache[key] = val;
-    val[this.cachekey] = Date.now();
-    this.flush(this.minTTL);
-    return val;
-  }
-
-  get(key) {
-    const val = this.cache[key];
-    if (val) {
-      val[this.cachekey] = Date.now();
+function create(lowWatermark = 32, minTTL = 1000) {
+  return {
+    [cachePrivateKey]: {
+      lowWatermark,
+      minTTL
     }
-    return val;
-  }
-
-  /*
-  Flush elements from cache IF cache size is greater than lowWatermark, and
-  those elements are older than minAgeMS
-  */
-  flush(minAgeMs = 0) {
-    if (minAgeMs < 0) return this;
-    const eol = Date.now() - minAgeMs;
-    const { cache, cachekey } = this;
-    const keys = _(this.cache)
-      .keys()
-      .filter(k => cache[k][cachekey] < eol)
-      .sortBy([k => cache[k][cachekey]])
-      .value();
-
-    if (keys.length > this.lowWatermark) {
-      const numKeysToDelete = keys.length - this.lowWatermark;
-      const keysToDelete = _.slice(keys, 0, numKeysToDelete);
-      _.forEach(keysToDelete, k => delete this.cache[k]);
-    }
-
-    return this;
-  }
+  };
 }
 
-export default KeyValCache;
+function get(kvcache, key) {
+  const val = kvcache[key];
+  if (val) {
+    val[cachePrivateKey] = Date.now();
+  }
+  return val;
+}
+
+function set(kvcache, key, val) {
+  const newKvCache = { ...kvcache };
+  newKvCache[key] = val;
+  val[cachePrivateKey] = Date.now();
+  flush(newKvCache, newKvCache[cachePrivateKey].minTTL);
+  return newKvCache;
+}
+
+/*
+Flush elements from cache IF cache size is greater than lowWatermark, and
+those elements are older than minAgeMS
+*/
+function flush(kvcache, minAgeMs = 0) {
+  if (minAgeMs < 0) return kvcache;
+  const eol = Date.now() - minAgeMs;
+  const { lowWatermark } = kvcache[cachePrivateKey];
+  const keys = _(kvcache)
+    .keys()
+    .filter(k => k !== cachePrivateKey)
+    .filter(k => kvcache[k][cachePrivateKey] < eol)
+    .sortBy([k => kvcache[k][cachePrivateKey]])
+    .value();
+
+  if (keys.length > lowWatermark) {
+    const numKeysToDelete = keys.length - lowWatermark;
+    const keysToDelete = _.slice(keys, 0, numKeysToDelete);
+    _.forEach(keysToDelete, k => delete kvcache[k]);
+  }
+
+  return kvcache;
+}
+
+export { create, get, set, flush };

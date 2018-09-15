@@ -9,7 +9,11 @@ This module provides several buckets of functionality:
     + universe: all of the server-provided, read-only data
     + world: subset of universe
   - lazy access and caching of dataframe contents as needed
+
+This is all VERY tightly integrated with reducers and actions, and
+exists to support those concepts.
 */
 
-export Universe from "./universe";
-export World from "./world";
+export * as Universe from "./universe";
+export * as World from "./world";
+export * as kvCache from "./keyvalcache";

@@ -25,10 +25,11 @@ import FaSave from "react-icons/lib/fa/download";
 @connect(state => {
   return {
     world: state.controls2.world,
+    obsCrossfilter: state.controls2.obsCrossfilter,
     responsive: state.responsive,
-    colorRGB: _.get(state.controls2.world, "colorRGB", null),
+    colorRGB: _.get(state.controls2, "colorRGB", null),
     opacityForDeselectedCells: state.controls2.opacityForDeselectedCells,
-    selectionUpdate: _.get(state.controls2.world, "obsSelectionUpdateSeq", null)
+    selectionUpdate: _.get(state.controls2, "obsCrossfilter.updateTime", null)
   };
 })
 class Graph extends React.Component {
@@ -124,6 +125,14 @@ class Graph extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    const {
+      world,
+      obsCrossfilter,
+      selectionUpdate,
+      colorRGB,
+      responsive
+    } = this.props;
+
     if (
       this.state.reglRender &&
       this.reglRenderState === "rendering" &&
@@ -133,18 +142,17 @@ class Graph extends React.Component {
       this.reglRenderState = "paused";
     }
 
-    if (this.state.regl && this.props.world) {
+    if (this.state.regl && world) {
       /* update the regl state */
-      const crossfilter = this.props.world.obsCrossfilter;
-      const obsLayout = this.props.world.obsLayout;
-      const cellCount = crossfilter.size();
+      const obsLayout = world.obsLayout;
+      const cellCount = obsCrossfilter.size();
 
       // X/Y positions for each point - a cached value that only
       // changes if we have loaded entirely new cell data
       //
       if (
         !this.renderCache.positions ||
-        this.props.selectionUpdate != prevProps.selectionUpdate
+        selectionUpdate != prevProps.selectionUpdate
       ) {
         if (!this.renderCache.positions)
           this.renderCache.positions = new Float32Array(2 * cellCount);
@@ -172,11 +180,8 @@ class Graph extends React.Component {
       // could have changed for some other reason, but for now color is
       // the only metadata that changes client-side.  If this is problematic,
       // we could add some sort of color-specific indicator to the app state.
-      if (
-        !this.renderCache.colors ||
-        this.props.colorRGB != prevProps.colorRGB
-      ) {
-        const rgb = this.props.colorRGB;
+      if (!this.renderCache.colors || colorRGB != prevProps.colorRGB) {
+        const rgb = colorRGB;
         if (!this.renderCache.colors)
           this.renderCache.colors = new Float32Array(3 * rgb.length);
         for (let i = 0, colors = this.renderCache.colors; i < rgb.length; i++) {
@@ -192,7 +197,7 @@ class Graph extends React.Component {
       //
       if (!this.renderCache.sizes)
         this.renderCache.sizes = new Float32Array(cellCount);
-      crossfilter.fillByIsFiltered(this.renderCache.sizes, 4, 0.2);
+      obsCrossfilter.fillByIsFiltered(this.renderCache.sizes, 4, 0.2);
       this.state.sizeBuffer({ data: this.renderCache.sizes, dimension: 1 });
 
       this.count = cellCount;
@@ -209,12 +214,10 @@ class Graph extends React.Component {
     }
 
     if (
-      prevProps.responsive.height !== this.props.responsive.height ||
-      prevProps.responsive.width !== this.props.responsive.width ||
+      prevProps.responsive.height !== responsive.height ||
+      prevProps.responsive.width !== responsive.width ||
       /* first time */
-      (this.props.responsive.height &&
-        this.props.responsive.width &&
-        !this.state.svg)
+      (responsive.height && responsive.width && !this.state.svg)
     ) {
       /* clear out whatever was on the div, even if nothing, but usually the brushes etc */
       d3.select("#graphAttachPoint")
@@ -223,7 +226,7 @@ class Graph extends React.Component {
       const { svg, brush, brushContainer } = setupSVGandBrushElements(
         this.handleBrushSelectAction.bind(this),
         this.handleBrushDeselectAction.bind(this),
-        this.props.responsive,
+        responsive,
         this.graphPaddingTop
       );
       this.setState({ svg, brush, brushContainer });
