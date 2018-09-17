@@ -168,7 +168,7 @@ class AnnotationsObsAPI(Resource):
         "tags": ["annotations"],
         "parameters": [{
             "in": "query",
-            "name": "annotation-names",
+            "name": "annotation-name",
             "type": "string",
             "description": "comma-separated annotation keys, ex: num_genes,percent_mito"
         }],
@@ -196,6 +196,53 @@ class AnnotationsObsAPI(Resource):
         fields = request.args.getlist("annotation-name", None)
         try:
             annotation_response = current_app.data.annotation(current_app.data.data, fields)
+        except KeyError:
+            return make_response(f"Error bad key in {fields}", 404)
+        else:
+            return make_response(jsonify(annotation_response))
+
+    @swagger.doc({
+        "summary": "Fetch annotations (metadata) for filtered subset.",
+        "tags": ["annotations"],
+        "parameters": [
+            {
+                "in": "query",
+                "name": "annotation-name",
+                "type": "string",
+                "description": "comma-separated annotation keys, ex: num_genes,percent_mito"
+            },
+            {
+                'name': 'filter',
+                'description': 'Complex Filter',
+                'in': 'body',
+                'schema': FilterModel
+            }
+        ],
+        "responses": {
+            "200": {
+                "description": "annotations",
+                "examples": {
+                    "application/json": {
+                        "names": [
+                            'tissue_type', 'sex', 'num_reads', 'clusters'
+                        ],
+                        "data": [
+                            [0, 'lung', 'F', 39844, 99],
+                            [1, 'heart', 'M', 83, 1],
+                            [49, 'spleen', None, 2, "unknown cluster"],
+
+                        ]
+                    }
+
+                }
+            }
+        }
+    })
+    def put(self):
+        fields = request.args.getlist("annotation-name", None)
+        df = current_app.data.filter_dataframe(request.get_json()["filter"])
+        try:
+            annotation_response = current_app.data.annotation(df, fields)
         except KeyError:
             return make_response(f"Error bad key in {fields}", 404)
         else:

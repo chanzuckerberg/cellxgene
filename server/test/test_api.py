@@ -105,6 +105,49 @@ class EndPoints(unittest.TestCase):
         result = self.session.get(url)
         self.assertEqual(result.status_code, 404)
 
+
+    def test_put_annotations(self):
+        endpoint = "annotations/obs"
+        url = f"{URL_BASE}{endpoint}"
+        obs_filter = {
+            "filter": {
+                "obs": {
+                    "annotation_value": [
+                        {"name": "louvain", "values": ["NK cells", "CD8 T cells"]},
+                        {"name": "n_counts", "min": 3000},
+                    ],
+                    "index": [1, 99, [1000, 2000]]
+                }
+            }
+        }
+        result = self.session.put(url, json=obs_filter)
+        self.assertEqual(result.status_code, 200)
+        result_data = result.json()
+        self.assertEqual(result_data["names"], ["n_genes", "percent_mito", "n_counts", "louvain", "name"])
+        self.assertEqual(len(result_data["data"]), 15)
+
+    def test_filter_put_annotations(self):
+        endpoint = "annotations/obs"
+        query = "annotation-name=n_genes&annotation-name=percent_mito"
+        url = f"{URL_BASE}{endpoint}?{query}"
+        obs_filter = {
+            "filter": {
+                "obs": {
+                    "annotation_value": [
+                        {"name": "louvain", "values": ["NK cells", "CD8 T cells"]},
+                        {"name": "n_counts", "min": 3000},
+                    ],
+                    "index": [1, 99, [1000, 2000]]
+                }
+            }
+        }
+        result = self.session.put(url, json=obs_filter)
+        self.assertEqual(result.status_code, 200)
+        result_data = result.json()
+        self.assertEqual(result_data["names"], ["n_genes", "percent_mito"])
+        self.assertEqual(len(result_data["data"][0]), 3)
+        self.assertEqual(len(result_data["data"]), 15)
+
     def test_static(self):
         endpoint = "static"
         file = "js/service-worker.js"
