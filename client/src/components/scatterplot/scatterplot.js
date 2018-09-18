@@ -21,7 +21,7 @@ import { margin, width, height } from "./util";
 @connect(state => {
   const {
     world,
-    obsCrossfilter,
+    crossfilter,
     scatterplotXXaccessor,
     scatterplotYYaccessor
   } = state.controls2;
@@ -51,9 +51,9 @@ import { margin, width, height } from "./util";
     expressionX,
     expressionY,
 
-    obsCrossfilter,
+    crossfilter,
     // updated whenever the crossfilter selection is updated
-    selectionUpdate: _.get(state.controls2, "obsCrossfilter.updateTime", null)
+    selectionUpdate: _.get(state.controls2, "crossfilter.updateTime", null)
   };
 })
 class Scatterplot extends React.Component {
@@ -133,7 +133,7 @@ class Scatterplot extends React.Component {
     } = this.state;
     const {
       world,
-      obsCrossfilter,
+      crossfilter,
       scatterplotXXaccessor,
       scatterplotYYaccessor,
       expressionX,
@@ -188,7 +188,7 @@ class Scatterplot extends React.Component {
         colorsBuf.set(colorRGB[i], 3 * i);
       }
 
-      obsCrossfilter.fillByIsFiltered(sizesBuf, 4, 0.2);
+      crossfilter.fillByIsFiltered(sizesBuf, 4, 0.2);
 
       pointBuffer({ data: positionsBuf, dimension: 2 });
       colorBuffer({ data: colorsBuf, dimension: 3 });

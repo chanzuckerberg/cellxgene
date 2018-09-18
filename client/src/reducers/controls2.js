@@ -3,7 +3,7 @@
 import _ from "lodash";
 import { World, kvCache } from "../util/stateManager";
 import { parseRGB } from "../util/parseRGB";
-import crossfilter from "../util/typedCrossfilter";
+import Crossfilter from "../util/typedCrossfilter";
 import * as globals from "../globals";
 
 function createCategoricalAsBooleansMap(world) {
@@ -33,8 +33,8 @@ const Controls = (
     colorName: null,
     colorRGB: null,
     categoricalAsBooleansMap: null,
-    obsCrossfilter: null,
-    obsDimensionMap: null,
+    crossfilter: null,
+    dimensionMap: null,
 
     colorAccessor: null,
     colorScale: null,
@@ -73,11 +73,8 @@ const Controls = (
       const colorName = new Array(universe.nObs).fill(globals.defaultCellColor);
       const colorRGB = _.map(colorName, c => parseRGB(c));
       const categoricalAsBooleansMap = createCategoricalAsBooleansMap(world);
-      const obsCrossfilter = crossfilter(world.obsAnnotations);
-      const obsDimensionMap = World.createObsDimensionMap(
-        obsCrossfilter,
-        world
-      );
+      const crossfilter = Crossfilter(world.obsAnnotations);
+      const dimensionMap = World.createObsDimensionMap(crossfilter, world);
       return {
         ...state,
         loading: false,
@@ -87,8 +84,8 @@ const Controls = (
         colorName,
         colorRGB,
         categoricalAsBooleansMap,
-        obsCrossfilter,
-        obsDimensionMap,
+        crossfilter,
+        dimensionMap,
         colorAccessor: null
       };
     }
@@ -97,16 +94,13 @@ const Controls = (
       const world = World.createWorldFromCurrentSelection(
         action.universe,
         action.world,
-        action.obsCrossfilter
+        action.crossfilter
       );
       const colorName = new Array(world.nObs).fill(globals.defaultCellColor);
       const colorRGB = _.map(colorName, c => parseRGB(c));
       const categoricalAsBooleansMap = createCategoricalAsBooleansMap(world);
-      const obsCrossfilter = crossfilter(world.obsAnnotations);
-      const obsDimensionMap = World.createObsDimensionMap(
-        obsCrossfilter,
-        world
-      );
+      const crossfilter = Crossfilter(world.obsAnnotations);
+      const dimensionMap = World.createObsDimensionMap(crossfilter, world);
       return {
         ...state,
         loading: false,
@@ -115,8 +109,8 @@ const Controls = (
         colorName,
         colorRGB,
         categoricalAsBooleansMap,
-        obsCrossfilter,
-        obsDimensionMap,
+        crossfilter,
+        dimensionMap,
         colorAccessor: null
       };
     }
@@ -171,11 +165,11 @@ const Controls = (
       };
     }
     case "graph brush selection change": {
-      state.obsDimensionMap.x.filterRange([
+      state.dimensionMap.x.filterRange([
         action.brushCoords.northwest[0],
         action.brushCoords.southeast[0]
       ]);
-      state.obsDimensionMap.y.filterRange([
+      state.dimensionMap.y.filterRange([
         action.brushCoords.southeast[1],
         action.brushCoords.northwest[1]
       ]);
@@ -185,8 +179,8 @@ const Controls = (
       };
     }
     case "graph brush deselect": {
-      state.obsDimensionMap.x.filterAll();
-      state.obsDimensionMap.y.filterAll();
+      state.dimensionMap.x.filterAll();
+      state.dimensionMap.y.filterAll();
       return {
         ...state,
         graphBrushSelection: null
@@ -196,9 +190,9 @@ const Controls = (
       // action.selection: metadata name being selected
       // action.range: filter range, or null if deselected
       if (!action.range) {
-        state.obsDimensionMap[action.selection].filterAll();
+        state.dimensionMap[action.selection].filterAll();
       } else {
-        state.obsDimensionMap[action.selection].filterRange(action.range);
+        state.dimensionMap[action.selection].filterRange(action.range);
       }
       return { ...state };
     }
@@ -220,7 +214,7 @@ const Controls = (
         }
       };
       // update the filter for the one category that changed state
-      state.obsDimensionMap[action.metadataField].filterEnum(
+      state.dimensionMap[action.metadataField].filterEnum(
         _.filter(
           _.map(
             newCategoricalAsBooleansMap[action.metadataField],
@@ -242,7 +236,7 @@ const Controls = (
         }
       };
       // update the filter for the one category that changed state
-      state.obsDimensionMap[action.metadataField].filterEnum(
+      state.dimensionMap[action.metadataField].filterEnum(
         _.filter(
           _.map(
             newCategoricalAsBooleansMap[action.metadataField],
@@ -265,7 +259,7 @@ const Controls = (
           c[k] = false;
         }
       );
-      state.obsDimensionMap[action.metadataField].filterNone();
+      state.dimensionMap[action.metadataField].filterNone();
       return {
         ...state,
         categoricalAsBooleansMap: newCategoricalAsBooleansMap
@@ -281,7 +275,7 @@ const Controls = (
           c[k] = true;
         }
       );
-      state.obsDimensionMap[action.metadataField].filterAll();
+      state.dimensionMap[action.metadataField].filterAll();
       return {
         ...state,
         categoricalAsBooleansMap: newCategoricalAsBooleansMap

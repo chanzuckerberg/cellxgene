@@ -25,11 +25,11 @@ import FaSave from "react-icons/lib/fa/download";
 @connect(state => {
   return {
     world: state.controls2.world,
-    obsCrossfilter: state.controls2.obsCrossfilter,
+    crossfilter: state.controls2.crossfilter,
     responsive: state.responsive,
     colorRGB: _.get(state.controls2, "colorRGB", null),
     opacityForDeselectedCells: state.controls2.opacityForDeselectedCells,
-    selectionUpdate: _.get(state.controls2, "obsCrossfilter.updateTime", null)
+    selectionUpdate: _.get(state.controls2, "crossfilter.updateTime", null)
   };
 })
 class Graph extends React.Component {
@@ -127,7 +127,7 @@ class Graph extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     const {
       world,
-      obsCrossfilter,
+      crossfilter,
       selectionUpdate,
       colorRGB,
       responsive
@@ -145,7 +145,7 @@ class Graph extends React.Component {
     if (this.state.regl && world) {
       /* update the regl state */
       const obsLayout = world.obsLayout;
-      const cellCount = obsCrossfilter.size();
+      const cellCount = crossfilter.size();
 
       // X/Y positions for each point - a cached value that only
       // changes if we have loaded entirely new cell data
@@ -197,7 +197,7 @@ class Graph extends React.Component {
       //
       if (!this.renderCache.sizes)
         this.renderCache.sizes = new Float32Array(cellCount);
-      obsCrossfilter.fillByIsFiltered(this.renderCache.sizes, 4, 0.2);
+      crossfilter.fillByIsFiltered(this.renderCache.sizes, 4, 0.2);
       this.state.sizeBuffer({ data: this.renderCache.sizes, dimension: 1 });
 
       this.count = cellCount;

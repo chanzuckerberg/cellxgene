@@ -116,12 +116,12 @@ function doInitialDataLoad(query = "") {
 // };
 
 const regraph = () => (dispatch, getState) => {
-  const { universe, world, obsCrossfilter } = getState().controls2;
+  const { universe, world, crossfilter } = getState().controls2;
   dispatch({
     type: "set World to current selection",
     universe,
     world,
-    obsCrossfilter
+    crossfilter
   });
 };
 

@@ -39,10 +39,10 @@ obs/cell.
 
   Example: { X: [ 0.33, 0.23, ... ], Y: [ 0.8, 0.777, ... ]}
 
-* obsCrossfilter - a crossfilter object across world.obsAnnotations
+* crossfilter - a crossfilter object across world.obsAnnotations
 
-* obsDimensionMap - an object mapping annotation names to dimensions on
-  the obsCrossfilter
+* dimensionMap - an object mapping annotation names to dimensions on
+  the crossfilter
 
 */
 
@@ -189,11 +189,7 @@ export function createWorldFromEntireUniverse(universe) {
   return world;
 }
 
-export function createWorldFromCurrentSelection(
-  universe,
-  world,
-  obsCrossfilter
-) {
+export function createWorldFromCurrentSelection(universe, world, crossfilter) {
   const newWorld = templateWorld();
 
   /* these don't change as only OBS are selected in our current implementation */
@@ -206,7 +202,7 @@ export function createWorldFromCurrentSelection(
   Subset world from universe based upon world's current selection.  Only those
   fields which are subset by observation selection/filtering need to be updated.
   */
-  const numSelected = obsCrossfilter.countFiltered();
+  const numSelected = crossfilter.countFiltered();
 
   /*
   Create a world which is based upon current selection
@@ -220,7 +216,7 @@ export function createWorldFromCurrentSelection(
   newWorld.worldObsIndex = new Array(universe.nObs);
 
   for (let i = 0, sel = 0; i < world.nObs; i += 1) {
-    if (obsCrossfilter.isElementFiltered(i)) {
+    if (crossfilter.isElementFiltered(i)) {
       newWorld.obsAnnotations[sel] = world.obsAnnotations[i];
       newWorld.obsLayout.X[sel] = world.obsLayout.X[i];
       newWorld.obsLayout.Y[sel] = world.obsLayout.Y[i];
@@ -267,22 +263,19 @@ function deduceDimensionType(attributes, fieldName) {
   return dimensionType;
 }
 
-export function createObsDimensionMap(obsCrossfilter, world) {
+export function createObsDimensionMap(crossfilter, world) {
   /*
   create and return a crossfilter dimension for every obs annotation
   for which we have a supported type.
   */
   const { schema, obsLayout, worldObsIndex } = world;
 
-  const obsDimensionMap = _.transform(
+  const dimensionMap = _.transform(
     schema.annotations.obs,
     (result, anno) => {
       const dimType = deduceDimensionType(anno, anno.name);
       if (dimType) {
-        result[anno.name] = obsCrossfilter.dimension(
-          r => r[anno.name],
-          dimType
-        );
+        result[anno.name] = crossfilter.dimension(r => r[anno.name], dimType);
       } // else ignore the annotation
     },
     {}
@@ -292,16 +285,16 @@ export function createObsDimensionMap(obsCrossfilter, world) {
   Add crossfilter dimensions allowing filtering on layout
   */
   const worldIndex = worldObsIndex ? idx => worldObsIndex[idx] : idx => idx;
-  obsDimensionMap.x = obsCrossfilter.dimension(
+  dimensionMap.x = crossfilter.dimension(
     r => obsLayout.X[worldIndex(r.__obsIndex__)],
     Float32Array
   );
-  obsDimensionMap.y = obsCrossfilter.dimension(
+  dimensionMap.y = crossfilter.dimension(
     r => obsLayout.Y[worldIndex(r.__obsIndex__)],
     Float32Array
   );
 
-  return obsDimensionMap;
+  return dimensionMap;
 }
 
 function worldEqUniverse(world, universe) {
