@@ -1,6 +1,7 @@
 // jshint esversion: 6
 import React from "react";
 import _ from "lodash";
+import memoize from "memoize-one";
 import { connect } from "react-redux";
 import * as globals from "../../globals";
 import styles from "./expression.css";
@@ -19,6 +20,7 @@ class HeatmapSquare extends React.Component {
       value: ""
     };
   }
+
   render() {
     const contrastColor = getContrast(
       this.props.backgroundColor
@@ -66,6 +68,7 @@ class HeatmapRow extends React.Component {
       value: ""
     };
   }
+
   handleGeneColorScaleClick(gene) {
     return () => {
       this.props.dispatch(
@@ -75,6 +78,7 @@ class HeatmapRow extends React.Component {
       );
     };
   }
+
   handleSetGeneAsScatterplotX(gene) {
     return () => {
       this.props.dispatch({
@@ -83,6 +87,7 @@ class HeatmapRow extends React.Component {
       });
     };
   }
+
   handleSetGeneAsScatterplotY(gene) {
     return () => {
       this.props.dispatch({
@@ -91,6 +96,7 @@ class HeatmapRow extends React.Component {
       });
     };
   }
+
   render() {
     return (
       <div
@@ -211,7 +217,7 @@ class HeatmapRow extends React.Component {
 @connect(state => {
   return {
     differential: state.differential,
-    allGeneNames: state.controls.allGeneNames
+    world: state.controls.world
   };
 })
 class Heatmap extends React.Component {
@@ -221,12 +227,18 @@ class Heatmap extends React.Component {
       value: ""
     };
   }
+
+  getAllGeneNames = memoize(world =>
+    _.map(this.props.world.varAnnotations, "name")
+  );
+
   render() {
     if (!this.props.differential.diffExp)
       return <p>Select cells & compute differential to see heatmap</p>;
 
     const topGenesForCellSet1 = this.props.differential.diffExp.data.celllist1;
     const topGenesForCellSet2 = this.props.differential.diffExp.data.celllist2;
+    // const allGeneNames = this.getAllGeneNames(this.props.world);
 
     const extent = d3.extent(
       _.union(

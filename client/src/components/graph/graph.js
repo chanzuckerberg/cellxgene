@@ -24,10 +24,12 @@ import FaSave from "react-icons/lib/fa/download";
 
 @connect(state => {
   return {
-    cellsMetadata: state.controls.cellsMetadata,
-    opacityForDeselectedCells: state.controls.opacityForDeselectedCells,
+    world: state.controls.world,
+    crossfilter: state.controls.crossfilter,
     responsive: state.responsive,
-    crossfilter: state.controls.crossfilter
+    colorRGB: _.get(state.controls, "colorRGB", null),
+    opacityForDeselectedCells: state.controls.opacityForDeselectedCells,
+    selectionUpdate: _.get(state.controls, "crossfilter.updateTime", null)
   };
 })
 class Graph extends React.Component {
@@ -43,13 +45,12 @@ class Graph extends React.Component {
       colors: null
     };
     this.state = {
-      drawn: false,
       svg: null,
-      ctx: null,
       brush: null,
       mode: "brush"
     };
   }
+
   reglDraw(regl, drawPoints, sizeBuffer, colorBuffer, pointBuffer, camera) {
     regl.clear({
       depth: 1,
@@ -64,6 +65,7 @@ class Graph extends React.Component {
       view: camera.view()
     });
   }
+
   restartReglLoop() {
     const reglRender = this.state.regl.frame(() => {
       this.reglDraw(
@@ -83,6 +85,7 @@ class Graph extends React.Component {
       reglRender
     });
   }
+
   componentDidMount() {
     // setup canvas and camera
     const camera = _camera(this.reglCanvas, { scale: true, rotate: false });
@@ -120,7 +123,16 @@ class Graph extends React.Component {
       reglRender
     });
   }
+
   componentDidUpdate(prevProps, prevState) {
+    const {
+      world,
+      crossfilter,
+      selectionUpdate,
+      colorRGB,
+      responsive
+    } = this.props;
+
     if (
       this.state.reglRender &&
       this.reglRenderState === "rendering" &&
@@ -130,25 +142,22 @@ class Graph extends React.Component {
       this.reglRenderState = "paused";
     }
 
-    if (this.state.regl && this.props.crossfilter) {
+    if (this.state.regl && world) {
       /* update the regl state */
-      const crossfilter = this.props.crossfilter.cells;
-      const cells = crossfilter.all();
-      const cellCount = cells.length;
+      const obsLayout = world.obsLayout;
+      const cellCount = crossfilter.size();
 
       // X/Y positions for each point - a cached value that only
       // changes if we have loaded entirely new cell data
       //
       if (
         !this.renderCache.positions ||
-        this.props.crossfilter.cells != prevProps.crossfilter.cells
+        selectionUpdate != prevProps.selectionUpdate
       ) {
         if (!this.renderCache.positions)
           this.renderCache.positions = new Float32Array(2 * cellCount);
 
-        // d3.scaleLinear().domain([0,1]).range([-1,1])
         const glScaleX = scaleLinear([0, 1], [-1, 1]);
-        // d3.scaleLinear().domain([0,1]).range([1,-1])
         const glScaleY = scaleLinear([0, 1], [1, -1]);
 
         for (
@@ -156,8 +165,8 @@ class Graph extends React.Component {
           i < cellCount;
           i++
         ) {
-          positions[2 * i] = glScaleX(cells[i].__x__);
-          positions[2 * i + 1] = glScaleY(cells[i].__y__);
+          positions[2 * i] = glScaleX(obsLayout.X[i]);
+          positions[2 * i + 1] = glScaleY(obsLayout.Y[i]);
         }
         this.state.pointBuffer({
           data: this.renderCache.positions,
@@ -171,14 +180,12 @@ class Graph extends React.Component {
       // could have changed for some other reason, but for now color is
       // the only metadata that changes client-side.  If this is problematic,
       // we could add some sort of color-specific indicator to the app state.
-      if (
-        !this.renderCache.colors ||
-        this.props.cellsMetadata != prevProps.cellsMetadata
-      ) {
+      if (!this.renderCache.colors || colorRGB != prevProps.colorRGB) {
+        const rgb = colorRGB;
         if (!this.renderCache.colors)
-          this.renderCache.colors = new Float32Array(3 * cellCount);
-        for (let i = 0, colors = this.renderCache.colors; i < cellCount; i++) {
-          colors.set(cells[i].__colorRGB__, 3 * i);
+          this.renderCache.colors = new Float32Array(3 * rgb.length);
+        for (let i = 0, colors = this.renderCache.colors; i < rgb.length; i++) {
+          colors.set(rgb[i], 3 * i);
         }
         this.state.colorBuffer({ data: this.renderCache.colors, dimension: 3 });
       }
@@ -188,12 +195,8 @@ class Graph extends React.Component {
       // most property upates are due to changes driving a crossfilter
       // selection set change.
       //
-      if (
-        !this.renderCache.sizes ||
-        this.props.crossfilter.cells != prevProps.crossfilter.cells
-      ) {
+      if (!this.renderCache.sizes)
         this.renderCache.sizes = new Float32Array(cellCount);
-      }
       crossfilter.fillByIsFiltered(this.renderCache.sizes, 4, 0.2);
       this.state.sizeBuffer({ data: this.renderCache.sizes, dimension: 1 });
 
@@ -211,12 +214,10 @@ class Graph extends React.Component {
     }
 
     if (
-      prevProps.responsive.height !== this.props.responsive.height ||
-      prevProps.responsive.width !== this.props.responsive.width ||
+      prevProps.responsive.height !== responsive.height ||
+      prevProps.responsive.width !== responsive.width ||
       /* first time */
-      (this.props.responsive.height &&
-        this.props.responsive.width &&
-        !this.state.svg)
+      (responsive.height && responsive.width && !this.state.svg)
     ) {
       /* clear out whatever was on the div, even if nothing, but usually the brushes etc */
       d3.select("#graphAttachPoint")
@@ -225,12 +226,13 @@ class Graph extends React.Component {
       const { svg, brush, brushContainer } = setupSVGandBrushElements(
         this.handleBrushSelectAction.bind(this),
         this.handleBrushDeselectAction.bind(this),
-        this.props.responsive,
+        responsive,
         this.graphPaddingTop
       );
       this.setState({ svg, brush, brushContainer });
     }
   }
+
   handleBrushSelectAction() {
     /* This conditional handles procedural brush deselect. Brush emits an event on procedural deselect because it is move: null */
     if (d3.event.sourceEvent !== null) {
@@ -280,6 +282,7 @@ class Graph extends React.Component {
       });
     }
   }
+
   handleBrushDeselectAction() {
     if (d3.event && !d3.event.selection) {
       this.props.dispatch({
@@ -295,6 +298,7 @@ class Graph extends React.Component {
       });
     }
   }
+
   handleOpacityRangeChange(e) {
     this.props.dispatch({
       type: "change opacity deselected cells in 2d graph background",

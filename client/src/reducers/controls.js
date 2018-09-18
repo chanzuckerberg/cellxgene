@@ -1,117 +1,44 @@
 // jshint esversion: 6
+
 import _ from "lodash";
+import { World, kvCache } from "../util/stateManager";
 import { parseRGB } from "../util/parseRGB";
-import { createSchemaByDataSniffing } from "../util/schema";
-import crossfilter from "../util/typedCrossfilter";
+import Crossfilter from "../util/typedCrossfilter";
+import * as globals from "../globals";
 
-// Deduce the correct crossfilter dimension type from a metadata
-// schema description.
-//
-function deduceDimensionType(attributes, fieldName) {
-  let dimensionType;
-  if (attributes.type === "string") {
-    dimensionType = "enum";
-  } else if (attributes.type === "int") {
-    dimensionType = Int32Array;
-  } else if (attributes.type === "float") {
-    dimensionType = Float32Array;
-  } else {
-    console.error(
-      `Warning - REST API returned unknown metadata schema (${
-        attributes.type
-      }) for field ${fieldName}.`
-    );
-    // skip it - we don't know what to do with this type
-  }
-  return dimensionType;
-}
-
-// Create view state from /cells data response.  Used both during a data
-// load and during a graph reset.
-//
-function createViewState(schema, data) {
-  const cellsMetadata = data.metadata.slice(0);
-
-  /*
-  construct a copy of the ranges object that only has categorical
-  replace all counts with bool flags
-  ie., everything starts out checked
-  we mutate this map in the actions below
-  */
-  const categoricalAsBooleansMap = {};
-  _.each(data.ranges, (value, key) => {
-    if (
-      key !== "CellName" &&
-      value.options /* it's categorical, it has options instead of ranges */
-    ) {
+function createCategoricalAsBooleansMap(world) {
+  const res = {};
+  _.each(world.summary.obs, (value, key) => {
+    if (value.options) {
       const optionsAsBooleans = {};
       _.each(value.options, (_value, _key) => {
         optionsAsBooleans[_key] = true;
       });
-      categoricalAsBooleansMap[key] = optionsAsBooleans;
+      res[key] = optionsAsBooleans;
     }
   });
-
-  const graph = data.graph;
-  _.each(cellsMetadata, (cell, idx) => {
-    cell.__cellIndex__ = idx;
-    cell.__color__ =
-      "rgba(0,0,0,1)"; /* initial color for all cells in all charts */
-    cell.__colorRGB__ = parseRGB(cell.__color__);
-    cell.__x__ = graph[idx][1];
-    cell.__y__ = graph[idx][2];
-  });
-
-  // Build the selection crossfilter.
-  //
-  let cellsCrossfilter = crossfilter(cellsMetadata);
-  let cellsDimensionsMap = {};
-  cellsDimensionsMap.x = cellsCrossfilter.dimension(r => r.__x__, Float32Array);
-  cellsDimensionsMap.y = cellsCrossfilter.dimension(r => r.__y__, Float32Array);
-
-  // Now walk the schema and make an appropriate dimension for each
-  // metadata field.   This is a simplistic mapping, and could be
-  // optmized to use smaller scalars (to save memory) or larger
-  // floating point where precision is needed.
-  //
-  _.forEach(schema, (attributes, key) => {
-    if (key !== "CellName") {
-      const dimensionType = deduceDimensionType(attributes, key);
-      if (dimensionType) {
-        cellsDimensionsMap[key] = cellsCrossfilter.dimension(
-          r => r[key],
-          dimensionType
-        );
-      }
-    }
-  });
-
-  return {
-    cellsMetadata,
-    crossfilter: {
-      cells: cellsCrossfilter,
-      dimensionMap: cellsDimensionsMap
-    },
-    categoricalAsBooleansMap
-  };
+  return res;
 }
 
 const Controls = (
   state = {
-    /* Universe - all cells known to us.  Set once, during initial load */
-    _ranges: null /* this comes from initialize, this is universe */,
-    allGeneNames: null,
-    allCells: null /* this comes from cells endpoint, this is universe */,
-    allCellsMetadata: null /* this comes from cells endpoint, and is just the metadata for universe */,
-    allCellsMetadataMap: null,
+    // data loading flag
+    loading: false,
+    error: null,
 
-    /* View / World - all cells currently being displayed.  May be a subset of Universe. */
-    cellsMetadata: null,
-    crossfilter: null /* the current user selection state */,
+    universe: null,
+
+    // all of the data + selection state
+    world: null,
+    colorName: null,
+    colorRGB: null,
     categoricalAsBooleansMap: null,
+    crossfilter: null,
+    dimensionMap: null,
 
     colorAccessor: null,
     colorScale: null,
+
     opacityForDeselectedCells: 0.2,
     graphBrushSelection: null,
     continuousSelection: null,
@@ -123,118 +50,161 @@ const Controls = (
   },
   action
 ) => {
+  /*
+  For now, log anything looking like an error to the console.
+  */
+  if (action.error || /error/i.test(action.type)) {
+    console.error(action.error);
+  }
+
   switch (action.type) {
-    /**********************************
-        Keep a copy of 'universe'
-  ***********************************/
-    case "initialize success": {
-      if (!action.data.data.schema) {
-        console.error("Warning - REST API omitted schema description.");
-      }
-      return Object.assign({}, state, {
-        _ranges: action.data.data.ranges,
-        allGeneNames: action.data.data.genes,
-        schema: action.data.data.schema
-      });
+    /*****************************************************
+          Initialization, World/Universe management
+          and data loading.
+    ******************************************************/
+    case "initial data load start": {
+      return { ...state, loading: true };
     }
-    case "request cells success": {
-      // If we don't have a schema (bad server!), fake it by inferring
-      // important fields from the ranges element.
-      //
-      if (!state.schema) {
-        state.schema = createSchemaByDataSniffing(action.data.data.ranges);
-      }
-
-      /* Set viewable world to the provided cell data */
-      const viewState = createViewState(state.schema, action.data.data);
-      return Object.assign({}, state, {
-        /* Universe - initialize once */
-        allCells: state.allCells ? state.allCells : action.data,
-        allCellsMetadata: state.allCellsMetadata
-          ? state.allCellsMetadata
-          : viewState.cellsMetadata,
-        allCellsMetadataMap: state.allCellsMetadataMap
-          ? state.allCellsMetadataMap
-          : _.keyBy(viewState.cellsMetadata, "CellName"),
-
-        /* World */
-        ...viewState,
-
-        graphBrushSelection: null /* if we are getting new cells from the server, the layout (probably? definitely?) just changed, so this is now irrelevant, and we WILL need to call a function to reset state of this kind when cells success happens */
-      });
+    case "initial data load complete (universe exists)":
+    case "reset World to eq Universe": {
+      /* first light - create world & other data-driven defaults */
+      const { universe } = action;
+      const world = World.createWorldFromEntireUniverse(universe);
+      const colorName = new Array(universe.nObs).fill(globals.defaultCellColor);
+      const colorRGB = _.map(colorName, c => parseRGB(c));
+      const categoricalAsBooleansMap = createCategoricalAsBooleansMap(world);
+      const crossfilter = Crossfilter(world.obsAnnotations);
+      const dimensionMap = World.createObsDimensionMap(crossfilter, world);
+      return {
+        ...state,
+        loading: false,
+        error: null,
+        universe,
+        world,
+        colorName,
+        colorRGB,
+        categoricalAsBooleansMap,
+        crossfilter,
+        dimensionMap,
+        colorAccessor: null
+      };
     }
-    /* * * * * * * * * * * * * * * * * *
-            User events
-  * * * * * * * * * * * * * * * * * */
-    case "reset graph": {
-      /* Reset viewable world to the entire Universe */
-      const viewState = createViewState(state.schema, state.allCells.data);
-      return Object.assign({}, state, {
-        ...viewState
-      });
+    case "set World to current selection": {
+      /* Set viewable world to be the currently selected data */
+      const world = World.createWorldFromCurrentSelection(
+        action.universe,
+        action.world,
+        action.crossfilter
+      );
+      const colorName = new Array(world.nObs).fill(globals.defaultCellColor);
+      const colorRGB = _.map(colorName, c => parseRGB(c));
+      const categoricalAsBooleansMap = createCategoricalAsBooleansMap(world);
+      const crossfilter = Crossfilter(world.obsAnnotations);
+      const dimensionMap = World.createObsDimensionMap(crossfilter, world);
+      return {
+        ...state,
+        loading: false,
+        error: null,
+        world,
+        colorName,
+        colorRGB,
+        categoricalAsBooleansMap,
+        crossfilter,
+        dimensionMap,
+        colorAccessor: null
+      };
     }
-    case "parallel coordinates axes have been drawn": {
-      return Object.assign({}, state, {
-        axesHaveBeenDrawn: true
-      });
-    }
-    case "continuous selection using parallel coords brushing": {
-      return Object.assign({}, state, {
-        continuousSelection: action.data,
-        crossfilter: {
-          ...state.crossfilter
+    case "expression load success": {
+      const { world, universe } = state;
+      let universeVarDataCache = universe.varDataCache;
+      let worldVarDataCache = world.varDataCache;
+      _.forEach(action.expressionData, (val, key) => {
+        universeVarDataCache = kvCache.set(universeVarDataCache, key, val);
+        if (kvCache.get(worldVarDataCache, key) === undefined) {
+          worldVarDataCache = kvCache.set(
+            worldVarDataCache,
+            key,
+            World.subsetVarData(world, universe, val)
+          );
         }
       });
+      return {
+        ...state,
+        universe: {
+          ...universe,
+          varDataCache: universeVarDataCache
+        },
+        world: {
+          ...world,
+          varDataCache: worldVarDataCache
+        }
+      };
+    }
+    case "expression load error":
+    case "initial data load error": {
+      return {
+        ...state,
+        loading: false,
+        error: action.error
+      };
+    }
+
+    /*******************************
+             User Events
+     *******************************/
+    case "parallel coordinates axes have been drawn": {
+      return {
+        ...state,
+        axesHaveBeenDrawn: true
+      };
+    }
+    case "continuous selection using parallel coords brushing": {
+      return {
+        ...state,
+        continuousSelection: action.data
+      };
     }
     case "graph brush selection change": {
-      state.crossfilter.dimensionMap.x.filterRange([
+      state.dimensionMap.x.filterRange([
         action.brushCoords.northwest[0],
         action.brushCoords.southeast[0]
       ]);
-      state.crossfilter.dimensionMap.y.filterRange([
+      state.dimensionMap.y.filterRange([
         action.brushCoords.southeast[1],
         action.brushCoords.northwest[1]
       ]);
-      return Object.assign({}, state, {
-        graphBrushSelection: action.brushCoords,
-        crossfilter: {
-          ...state.crossfilter
-        }
-      });
+      return {
+        ...state,
+        graphBrushSelection: action.brushCoords
+      };
     }
     case "graph brush deselect": {
-      state.crossfilter.dimensionMap.x.filterAll();
-      state.crossfilter.dimensionMap.y.filterAll();
-      return Object.assign({}, state, {
-        graphBrushSelection: null,
-        crossfilter: {
-          ...state.crossfilter
-        }
-      });
+      state.dimensionMap.x.filterAll();
+      state.dimensionMap.y.filterAll();
+      return {
+        ...state,
+        graphBrushSelection: null
+      };
     }
     case "continuous metadata histogram brush": {
       // action.selection: metadata name being selected
       // action.range: filter range, or null if deselected
       if (!action.range) {
-        state.crossfilter.dimensionMap[action.selection].filterAll();
+        state.dimensionMap[action.selection].filterAll();
       } else {
-        state.crossfilter.dimensionMap[action.selection].filterRange(
-          action.range
-        );
+        state.dimensionMap[action.selection].filterRange(action.range);
       }
-      return Object.assign({}, state, {
-        crossfilter: {
-          ...state.crossfilter
-        }
-      });
+      return { ...state };
     }
     case "change opacity deselected cells in 2d graph background":
-      return Object.assign({}, state, {
+      return {
+        ...state,
         opacityForDeselectedCells: action.data
-      });
+      };
+
     /*******************************
-        Categorical metadata
-  *******************************/
+          Categorical metadata
+    *******************************/
     case "categorical metadata filter select": {
       const newCategoricalAsBooleansMap = {
         ...state.categoricalAsBooleansMap,
@@ -244,7 +214,7 @@ const Controls = (
         }
       };
       // update the filter for the one category that changed state
-      state.crossfilter.dimensionMap[action.metadataField].filterEnum(
+      state.dimensionMap[action.metadataField].filterEnum(
         _.filter(
           _.map(
             newCategoricalAsBooleansMap[action.metadataField],
@@ -252,12 +222,10 @@ const Controls = (
           )
         )
       );
-      return Object.assign({}, state, {
-        categoricalAsBooleansMap: newCategoricalAsBooleansMap,
-        crossfilter: {
-          ...state.crossfilter
-        }
-      });
+      return {
+        ...state,
+        categoricalAsBooleansMap: newCategoricalAsBooleansMap
+      };
     }
     case "categorical metadata filter deselect": {
       const newCategoricalAsBooleansMap = {
@@ -268,7 +236,7 @@ const Controls = (
         }
       };
       // update the filter for the one category that changed state
-      state.crossfilter.dimensionMap[action.metadataField].filterEnum(
+      state.dimensionMap[action.metadataField].filterEnum(
         _.filter(
           _.map(
             newCategoricalAsBooleansMap[action.metadataField],
@@ -276,12 +244,10 @@ const Controls = (
           )
         )
       );
-      return Object.assign({}, state, {
-        categoricalAsBooleansMap: newCategoricalAsBooleansMap,
-        crossfilter: {
-          ...state.crossfilter
-        }
-      });
+      return {
+        ...state,
+        categoricalAsBooleansMap: newCategoricalAsBooleansMap
+      };
     }
     case "categorical metadata filter none of these": {
       const newCategoricalAsBooleansMap = {
@@ -293,13 +259,11 @@ const Controls = (
           c[k] = false;
         }
       );
-      state.crossfilter.dimensionMap[action.metadataField].filterNone();
-      return Object.assign({}, state, {
-        categoricalAsBooleansMap: newCategoricalAsBooleansMap,
-        crossfilter: {
-          ...state.crossfilter
-        }
-      });
+      state.dimensionMap[action.metadataField].filterNone();
+      return {
+        ...state,
+        categoricalAsBooleansMap: newCategoricalAsBooleansMap
+      };
     }
     case "categorical metadata filter all of these": {
       const newCategoricalAsBooleansMap = {
@@ -311,54 +275,50 @@ const Controls = (
           c[k] = true;
         }
       );
-      state.crossfilter.dimensionMap[action.metadataField].filterAll();
-      return Object.assign({}, state, {
-        categoricalAsBooleansMap: newCategoricalAsBooleansMap,
-        crossfilter: {
-          ...state.crossfilter
-        }
-      });
+      state.dimensionMap[action.metadataField].filterAll();
+      return {
+        ...state,
+        categoricalAsBooleansMap: newCategoricalAsBooleansMap
+      };
     }
+
     /*******************************
-            Color Scale
-  *******************************/
-    case "color by continuous metadata":
-      return Object.assign({}, state, {
-        colorAccessor: action.colorAccessor,
-        cellsMetadata:
-          action.cellsMetadataWithUpdatedColors /* this comes from middleware */,
-        colorScale: action.colorScale
-      });
-    case "color by expression":
-      return Object.assign({}, state, {
-        colorAccessor: action.gene,
-        cellsMetadata:
-          action.cellsMetadataWithUpdatedColors /* this comes from middleware */,
-        colorScale: action.colorScale
-      });
+              Color Scale
+    *******************************/
     case "color by categorical metadata":
-      return Object.assign({}, state, {
-        colorAccessor:
-          action.colorAccessor /* pass the scale through additionally, and it's a legend! */,
-        cellsMetadata:
-          action.cellsMetadataWithUpdatedColors /* this comes from middleware */,
+    case "color by continuous metadata": {
+      return {
+        ...state,
+        colorName: action.colors.name,
+        colorRGB: action.colors.rgb,
+        colorAccessor: action.colorAccessor,
         colorScale: action.colorScale
-      });
-    case "store current cell selection as differential set 1":
-      return Object.assign({}, state, {
-        __storedStateForCelllist1__: action.data
-      });
+      };
+    }
+    case "color by expression": {
+      return {
+        ...state,
+        colorName: action.colors.name,
+        colorRGB: action.colors.rgb,
+        colorAccessor: action.gene,
+        colorScale: action.colorScale
+      };
+    }
+
     /*******************************
-            Scatterplot
-  *******************************/
+              Scatterplot
+    *******************************/
     case "set scatterplot x":
-      return Object.assign({}, state, {
+      return {
+        ...state,
         scatterplotXXaccessor: action.data
-      });
+      };
     case "set scatterplot y":
-      return Object.assign({}, state, {
+      return {
+        ...state,
         scatterplotYYaccessor: action.data
-      });
+      };
+
     default:
       return state;
   }

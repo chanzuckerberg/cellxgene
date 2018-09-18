@@ -3,15 +3,13 @@ import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
 
-import * as globals from "../../globals";
-import styles from "./categorical.css";
-import SectionHeader from "../framework/sectionHeader";
-import Value from "./value";
-import { alphabeticallySortedValues } from "./util";
-
 import FaArrowRight from "react-icons/lib/fa/angle-right";
 import FaArrowDown from "react-icons/lib/fa/angle-down";
 import FaPaintBrush from "react-icons/lib/fa/paint-brush";
+
+import * as globals from "../../globals";
+import Value from "./value";
+import { alphabeticallySortedValues } from "./util";
 
 @connect(state => {
   return {
@@ -27,6 +25,7 @@ class Category extends React.Component {
       isExpanded: false
     };
   }
+
   componentDidUpdate() {
     const valuesAsBool = _.values(
       this.props.categoricalAsBooleansMap[this.props.metadataField]
@@ -45,12 +44,14 @@ class Category extends React.Component {
       this.checkbox.indeterminate = true;
     }
   }
+
   handleColorChange() {
     this.props.dispatch({
       type: "color by categorical metadata",
       colorAccessor: this.props.metadataField
     });
   }
+
   toggleAll() {
     this.props.dispatch({
       type: "categorical metadata filter all of these",
@@ -58,6 +59,7 @@ class Category extends React.Component {
     });
     this.setState({ isChecked: true });
   }
+
   toggleNone() {
     this.props.dispatch({
       type: "categorical metadata filter none of these",
@@ -66,6 +68,7 @@ class Category extends React.Component {
     });
     this.setState({ isChecked: false });
   }
+
   renderCategoryItems() {
     return _.map(alphabeticallySortedValues(this.props.values), (v, i) => {
       return (
@@ -79,6 +82,7 @@ class Category extends React.Component {
       );
     });
   }
+
   handleToggleAllClick() {
     // || this.checkbox.indeterminate === false
     if (this.state.isChecked) {
@@ -89,6 +93,7 @@ class Category extends React.Component {
       this.toggleAll();
     }
   }
+
   render() {
     return (
       <div
@@ -164,8 +169,7 @@ class Category extends React.Component {
 }
 
 @connect(state => {
-  const ranges = _.get(state, "cells.cells.data.ranges", null);
-
+  const ranges = _.get(state.controls.world, "summary.obs", null);
   return {
     ranges
   };
@@ -192,7 +196,7 @@ class Categories extends React.Component {
       >
         {_.map(this.props.ranges, (value, key) => {
           const isColorField = key.includes("color") || key.includes("Color");
-          if (value.options && key !== "CellName" && !isColorField) {
+          if (value.options && !isColorField && key !== "name") {
             return (
               <Category key={key} metadataField={key} values={value.options} />
             );

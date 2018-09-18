@@ -17,18 +17,15 @@ import HistogramBrush from "./histogramBrush";
 import { margin, width, height, createDimensions } from "./util";
 
 @connect(state => {
-  const ranges = _.get(state, "cells.cells.data.ranges", null);
-  const metadata = _.get(state, "cells.cells.data.metadata", null);
-  const initializeRanges = _.get(state, "initialize.data.data.ranges", null);
+  const metadata = _.get(state.controls.world, "obsAnnotations", null);
+  const ranges = _.get(state.controls.world, "summary.obs", null);
 
   return {
     ranges,
     metadata,
-    initializeRanges,
     colorAccessor: state.controls.colorAccessor,
     colorScale: state.controls.colorScale,
-    graphBrushSelection: state.controls.graphBrushSelection,
-    axesHaveBeenDrawn: state.controls.axesHaveBeenDrawn
+    selectionUpdate: _.get(state.controls, "crossfilter.updateTime", null)
   };
 })
 class Continuous extends React.Component {
@@ -41,17 +38,19 @@ class Continuous extends React.Component {
       dimensions: null
     };
   }
+
   handleBrushAction(selection) {
     this.props.dispatch({
       type: "continuous selection using parallel coords brushing",
       data: selection
     });
   }
+
   handleColorAction(key) {
     this.props.dispatch({
       type: "color by continuous metadata",
       colorAccessor: key,
-      rangeMaxForColorAccessor: this.props.initializeRanges[key].range.max
+      rangeMaxForColorAccessor: this.props.ranges[key].range.max
     });
   }
 
@@ -60,7 +59,7 @@ class Continuous extends React.Component {
       <div>
         {_.map(this.props.ranges, (value, key) => {
           const isColorField = key.includes("color") || key.includes("Color");
-          if (value.range && key !== "CellName" && !isColorField) {
+          if (value.range && key !== "name" && !isColorField) {
             return (
               <HistogramBrush
                 key={key}

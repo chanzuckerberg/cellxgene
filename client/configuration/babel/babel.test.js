@@ -1,9 +1,9 @@
 module.exports = {
   babelrc: false,
   presets: [
-    "babel-preset-env",
-    "babel-preset-stage-0",
-    "babel-preset-react"
+    ["modern-browsers", { loose: true, modules: false }],
+    "stage-0",
+    "react"
   ],
   plugins: ["istanbul"]
 };

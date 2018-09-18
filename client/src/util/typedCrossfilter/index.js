@@ -1,4 +1,3 @@
-"use strict";
 // jshint esversion: 6
 
 /*
@@ -35,7 +34,6 @@ import {
   fillRange,
   lowerBound,
   lowerBoundIndirect,
-  upperBound,
   upperBoundIndirect
 } from "./util";
 
@@ -57,6 +55,7 @@ class TypedCrossfilter {
     // filters: array of { id, dimension }
     this.filters = [];
     this.selection = new BitArray(data.length);
+    this.updateTime = 0;
   }
 
   size() {
@@ -82,15 +81,15 @@ class TypedCrossfilter {
 
   _freeDimension(id) {
     this.selection.freeDimension(id);
-    this.filters = this.filters.filter(f => f._id != id);
+    this.filters = this.filters.filter(f => f._id !== id);
   }
 
   // return array of all records that are selected/filtered
   // by all dimensions.
   allFiltered() {
-    const selection = this.selection;
+    const { selection } = this;
     const res = [];
-    for (let i = 0, len = this.data.length; i < len; i++) {
+    for (let i = 0, len = this.data.length; i < len; i += 1) {
       if (selection.isSelected(i)) {
         res.push(this.data[i]);
       }
@@ -120,8 +119,8 @@ class TypedCrossfilter {
 // and value array must be a TypedArray.
 //
 class ScalarDimension {
-  constructor(value, valueArrayType, crossfilter, id) {
-    this.crossfilter = crossfilter;
+  constructor(value, ValueArrayType, xfltr, id) {
+    this.crossfilter = xfltr;
     this._id = id;
 
     // current selection filter, expressed as PostiveIntervals.
@@ -130,7 +129,7 @@ class ScalarDimension {
     // Create value array
     const array = this._createValueArray(
       value,
-      new valueArrayType(this.crossfilter.data.length)
+      new ValueArrayType(this.crossfilter.data.length)
     );
     this.value = array;
 
@@ -144,12 +143,13 @@ class ScalarDimension {
 
   _createValueArray(value, array) {
     // create dimension value array
-    const data = this.crossfilter.data;
+    const { data } = this.crossfilter;
     const len = data.length;
-    for (let i = 0; i < len; i++) {
-      array[i] = value(data[i]);
+    const larray = array;
+    for (let i = 0; i < len; i += 1) {
+      larray[i] = value(data[i]);
     }
-    return array;
+    return larray;
   }
 
   dispose() {
@@ -164,10 +164,10 @@ class ScalarDimension {
   // Argument is an array of intervals indicating records newly selected/filtered
   //
   _updateFilters(newFilter) {
-    newFilter = PositiveIntervals.canonicalize(newFilter);
+    const cNewFilter = PositiveIntervals.canonicalize(newFilter);
 
-    const adds = PositiveIntervals.difference(newFilter, this.currentFilter);
-    const dels = PositiveIntervals.difference(this.currentFilter, newFilter);
+    const adds = PositiveIntervals.difference(cNewFilter, this.currentFilter);
+    const dels = PositiveIntervals.difference(this.currentFilter, cNewFilter);
 
     this.crossfilter.filters.forEach(f =>
       f.dim.groups.forEach(grp => grp._updateReduceDel(this, dels))
@@ -193,7 +193,8 @@ class ScalarDimension {
       f.dim.groups.forEach(grp => grp._updateReduceAdd(this, adds))
     );
 
-    this.currentFilter = newFilter;
+    this.currentFilter = cNewFilter;
+    this.crossfilter.updateTime += 1;
   }
 
   // filter by value - exact match
@@ -213,7 +214,7 @@ class ScalarDimension {
   // filter by a set of values, eg. enum.
   filterEnum(values) {
     const newFilter = [];
-    for (let v = 0, len = values.length; v < len; v++) {
+    for (let v = 0, len = values.length; v < len; v += 1) {
       const intv = [
         lowerBoundIndirect(
           this.value,
@@ -269,9 +270,8 @@ class ScalarDimension {
   // return top k records, starting with offset, in descending order.
   // Order is this dimension's sort order
   top(k, offset = 0) {
-    const data = this.crossfilter.data;
-    const selection = this.crossfilter.selection;
-    const index = this.index;
+    const { data, selection } = this.crossfilter;
+    const { index } = this;
     const len = index.length;
     const ret = [];
     let i = 0;
@@ -279,17 +279,17 @@ class ScalarDimension {
     let found = 0;
 
     // skip up to offset records
-    for (i = len - 1; 0 <= i && skip < offset; i--) {
+    for (i = len - 1; 0 <= i && skip < offset; i -= 1) {
       if (selection.isSelected(index[i])) {
-        skip++;
+        skip += 1;
       }
     }
 
     // grab up to k records
-    for (; 0 <= i && found < k; i--) {
+    for (; 0 <= i && found < k; i -= 1) {
       if (selection.isSelected(index[i])) {
         ret.push(data[index[i]]);
-        found++;
+        found += 1;
       }
     }
 
@@ -299,9 +299,8 @@ class ScalarDimension {
   // return bottom k records, starting with offset, in ascending order.
   // Order is this dimension's sort order
   bottom(k, offset = 0) {
-    const data = this.crossfilter.data;
-    const selection = this.crossfilter.selection;
-    const index = this.index;
+    const { data, selection } = this.crossfilter;
+    const { index } = this;
     const len = index.length;
     const ret = [];
     let skip = 0;
@@ -309,17 +308,17 @@ class ScalarDimension {
     let i = 0;
 
     // skip up to offset records
-    for (i = 0; i < len && skip < offset; i++) {
+    for (i = 0; i < len && skip < offset; i += 1) {
       if (selection.isSelected(index[i])) {
-        skip++;
+        skip += 1;
       }
     }
 
     // grab up to k records
-    for (; i < len && found < k; i++) {
+    for (; i < len && found < k; i += 1) {
       if (selection.isSelected(index[i])) {
         ret.push(data[index[i]]);
-        found++;
+        found += 1;
       }
     }
 
@@ -341,18 +340,19 @@ class ScalarDimension {
 // strings, which can be mapped into an fixed numeric range [0..n).
 //
 class EnumDimension extends ScalarDimension {
-  constructor(value, crossfilter, id) {
-    super(value, Uint32Array, crossfilter, id);
+  constructor(value, xfltr, id) {
+    super(value, Uint32Array, xfltr, id);
   }
 
   _createValueArray(value, array) {
-    const data = this.crossfilter.data;
+    const { data } = this.crossfilter;
     const len = data.length;
+    const larray = array;
 
     // create enumeration table - mapping between the value
     // and the enum.
     const s = new Set();
-    for (let i = 0; i < len; i++) {
+    for (let i = 0; i < len; i += 1) {
       s.add(value(data[i]));
     }
     this.enumIndex = Array.from(s);
@@ -360,12 +360,12 @@ class EnumDimension extends ScalarDimension {
 
     // create dimension value array
     const enumLen = this.enumIndex.length;
-    for (let i = 0; i < len; i++) {
+    for (let i = 0; i < len; i += 1) {
       const v = value(data[i]);
       const e = lowerBound(this.enumIndex, v, 0, enumLen);
-      array[i] = e;
+      larray[i] = e;
     }
-    return array;
+    return larray;
   }
 
   filterExact(value) {
@@ -415,7 +415,7 @@ class ScalarGroup {
 
   // internal support function - map all dimension values to group values.
   //
-  _map(groupValue, groupValueType, dimension) {
+  static _map(groupValue, GroupValueType, dimension) {
     // groupValue is optional.  Defaults to identity.  Used to perform
     // initial map operation.
     //
@@ -424,8 +424,8 @@ class ScalarGroup {
 
     const data = dimension.value;
     const len = data.length;
-    const mapValue = new groupValueType(dimension.value.length);
-    for (let i = 0; i < len; i++) {
+    const mapValue = new GroupValueType(dimension.value.length);
+    for (let i = 0; i < len; i += 1) {
       mapValue[i] = groupValue(data[i]);
     }
     return mapValue;
@@ -444,10 +444,9 @@ class ScalarGroup {
 
     // Each item in the range was just added to `dim`.  It was NOT previously
     // selected - reduceAdd if it is now selected.
-    const selection = this.dimension.crossfilter.selection;
-    const data = this.dimension.crossfilter.data;
+    const { data, selection } = this.dimension.crossfilter;
     intv.forEach(rng => {
-      for (let r = rng[0]; r < rng[1]; r++) {
+      for (let r = rng[0]; r < rng[1]; r += 1) {
         const i = dim.index[r];
         if (selection.isSelectedIgnoringDim(i, this.dimension.id())) {
           const group = this.groups[this.groupIndex[i]];
@@ -470,10 +469,9 @@ class ScalarGroup {
 
     // Each item in the range will be remved from `dim`.  reduceRemove if it
     // is currently selected.
-    const selection = this.dimension.crossfilter.selection;
-    const data = this.dimension.crossfilter.data;
+    const { data, selection } = this.dimension.crossfilter.selection;
     intv.forEach(rng => {
-      for (let r = rng[0]; r < rng[1]; r++) {
+      for (let r = rng[0]; r < rng[1]; r += 1) {
         const i = dim.index[r];
         if (selection.isSelectedIgnoringDim(i, this.dimension.id())) {
           const group = this.groups[this.groupIndex[i]];
@@ -487,8 +485,8 @@ class ScalarGroup {
   // groups data.
   //
   _reduce() {
-    const dimension = this.dimension;
-    const data = dimension.crossfilter.data;
+    const { dimension } = this;
+    const { data } = dimension.crossfilter;
 
     // Create groups
     const groupNames = new Set(this.mapValue);
@@ -500,13 +498,13 @@ class ScalarGroup {
     });
 
     // Create groupIndex - index map between data record index and group index
-    for (let i = 0, len = this.mapValue.length; i < len; i++) {
+    for (let i = 0, len = this.mapValue.length; i < len; i += 1) {
       this.groupIndex[i] = groupIndexByName[this.mapValue[i]];
     }
 
     // reduce all filtered records, IGNORING the current dimension's filter
-    const selection = dimension.crossfilter.selection;
-    for (let i = 0, len = data.length; i < len; i++) {
+    const { selection } = dimension.crossfilter;
+    for (let i = 0, len = data.length; i < len; i += 1) {
       if (selection.isSelectedIgnoringDim(i, dimension.id())) {
         const group = this.groups[this.groupIndex[i]];
         group.value = this.reduceAdd(group.value, data[i]);
@@ -554,11 +552,7 @@ class ScalarGroup {
 }
 
 class EnumGroup extends ScalarGroup {
-  constructor(groupValue, groupValueType, dimension) {
-    super(groupValue, groupValueType, dimension);
-  }
-
-  _map(groupValue, groupValueType, dimension) {
+  static _map(groupValue, groupValueType, dimension) {
     // groupValue is optional.  Defaults to identity.  Used to perform
     // initial map operation.
     //

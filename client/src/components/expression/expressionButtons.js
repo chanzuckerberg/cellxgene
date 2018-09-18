@@ -9,7 +9,9 @@ import CellSetButton from "./cellSetButtons";
 @connect(state => {
   return {
     differential: state.differential,
-    crossfilter: state.controls.crossfilter
+    world: state.controls.world,
+    crossfilter: _.get(state.controls, "crossfilter", null),
+    selectionUpdate: _.get(state.controls, "crossfilter.updateTime", null)
   };
 })
 class Expression extends React.Component {
@@ -17,6 +19,7 @@ class Expression extends React.Component {
     super(props);
     this.state = {};
   }
+
   handleClick(gene) {
     return () => {
       this.props.dispatch({
@@ -25,6 +28,7 @@ class Expression extends React.Component {
       });
     };
   }
+
   computeDiffExp() {
     this.props.dispatch(
       actions.requestDifferentialExpression(
@@ -33,6 +37,7 @@ class Expression extends React.Component {
       )
     );
   }
+
   render() {
     if (!this.props.differential) {
       return null;

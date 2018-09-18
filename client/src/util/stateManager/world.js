@@ -1,0 +1,315 @@
+// jshint esversion: 6
+
+import _ from "lodash";
+import * as kvCache from "./keyvalcache";
+
+/*
+World is a subset of universe.   Most code should use world, and should
+(generally) not use Universe.   World contains any per-obs or per-var data
+that must be consisstent acorss the app when we view/manipulate subsets
+of Universe.
+
+Private API indicated by leading underscore in key name (eg, _foo).  Anything else
+is public.
+
+World contains several public keys, obsAnnotations, and obsLayout, which are
+arrays contianing information about an OBS in the same order/offset.  In
+other words, world.obsAnnotations[0] and world.obsLayout.X[0] refer to the same
+obs/cell.
+
+* obsAnnotations:
+
+  obsAnnotations will return an array of objects.  Each object contains all annotation
+  values for a given observation/cell, keyed by annotation name, PLUS a key
+  '__cellId__', containing a REST API ID for this obs/cell (referred to as the
+  obsIndex in the REST 0.2 spec or cellIndex in the 0.1 spec.
+
+  Example:  [ { __cellId__: 99, cluster: 'blue', numReads: 93933 } ]
+
+  NOTE: world.obsAnnotation should be identical to the old state.cells value,
+  EXCEPT that
+    * __cellIndex__ renamed to __obsIndex__
+    * __x__ and __y__ are now in world.obsLayout
+    * __color__ and __colorRBG__ should be moved to controls reducer
+
+* obsLayout:
+
+  obsLayout will return an object containing two arrays, containing X and Y
+  coordinates respectively.
+
+  Example: { X: [ 0.33, 0.23, ... ], Y: [ 0.8, 0.777, ... ]}
+
+* crossfilter - a crossfilter object across world.obsAnnotations
+
+* dimensionMap - an object mapping annotation names to dimensions on
+  the crossfilter
+
+*/
+
+/*
+Summary information for each annotation, keyed by annotation name.
+Value will be an object, containing either 'range' or 'options' object,
+depending on the annotation schema type (categorical or continuous).
+
+Summarize for BOTH obs and var annotations.  Result format:
+
+{
+  obs: {
+    annotation_name: { ... },
+    ...
+  },
+  var: {
+    annotation_name: { ... },
+    ...
+  }
+}
+
+Example:
+  {
+    "Splice_sites_Annotated": {
+      "range": {
+        "min": 26,
+        "max": 1075869
+      }
+    },
+    "Selection": {
+      "options": {
+        "Astrocytes(HEPACAM)": 714,
+        "Endothelial(BSC)": 123,
+        "Oligodendrocytes(GC)": 294,
+        "Neurons(Thy1)": 685,
+        "Microglia(CD45)": 1108,
+        "Unpanned": 665
+      }
+    }
+  }
+*/
+function summarizeAnnotations(schema, obsAnnotations) {
+  /*
+  Build and return obs/var summary using any annotation in the schema
+  */
+  const obsSummary = _(schema.annotations.obs)
+    .keyBy("name")
+    .mapValues(anno => {
+      const { name, type } = anno;
+      const continuous = type === "int32" || type === "float32";
+
+      if (!continuous) {
+        return {
+          options: _.countBy(obsAnnotations, name)
+        };
+      }
+
+      if (continuous) {
+        let min = Number.POSITIVE_INFINITY;
+        let max = Number.NEGATIVE_INFINITY;
+        _.forEach(obsAnnotations, obs => {
+          const val = Number(obs[name]);
+          min = val < min ? val : min;
+          max = val > max ? val : max;
+        });
+        return { range: { min, max } };
+      }
+
+      throw new Error("incomprehensible schema");
+    })
+    .value();
+
+  const varSummary = {}; // TODO XXX - not currently used, so skip it
+
+  return {
+    obs: obsSummary,
+    var: varSummary
+  };
+}
+
+function templateWorld() {
+  const VarDataCacheLowWatermark = 32;
+  const VarDataCacheTTLMs = 1000;
+
+  return {
+    // map from universe obsIndex to world offset.
+    // Undefined / null indicates identity mapping.
+    worldObsIndex: null,
+
+    /* schema/version related */
+    api: null,
+    schema: null,
+    nObs: 0,
+    nVar: 0,
+
+    /* annotations */
+    obsAnnotations: null,
+    varAnnotations: null,
+
+    /* layout of graph */
+    obsLayout: null,
+
+    /* derived data summaries XXX: consider exploding in place */
+    summary: null,
+
+    varDataCache: kvCache.create(
+      VarDataCacheLowWatermark,
+      VarDataCacheTTLMs
+    ) /* cache of var data (expression) */
+  };
+}
+
+export function createWorldFromEntireUniverse(universe) {
+  if (!universe.finalized) {
+    throw new Error("World can't be created from an partial Universe");
+  }
+
+  const world = templateWorld();
+
+  // map from the universe obsIndex to our world offset.
+  // undefined/null indicates identity map.
+  world.worldObsIndex = null;
+
+  /*
+  public interface follows
+  */
+
+  /* Schema related */
+  world.api = universe.api;
+  world.schema = universe.schema;
+  world.nObs = universe.nObs;
+  world.nVar = universe.nVar;
+
+  /* annotations */
+  world.obsAnnotations = universe.obsAnnotations;
+  world.varAnnotations = universe.varAnnotations;
+
+  /* layout and display characteristics */
+  world.obsLayout = universe.obsLayout;
+
+  /* derived data & summaries */
+  world.summary = summarizeAnnotations(world.schema, world.obsAnnotations);
+
+  return world;
+}
+
+export function createWorldFromCurrentSelection(universe, world, crossfilter) {
+  const newWorld = templateWorld();
+
+  /* these don't change as only OBS are selected in our current implementation */
+  newWorld.api = world.api;
+  newWorld.nVar = world.nVar;
+  newWorld.schema = world.schema;
+  newWorld.varAnnotations = world.varAnnotations;
+
+  /*
+  Subset world from universe based upon world's current selection.  Only those
+  fields which are subset by observation selection/filtering need to be updated.
+  */
+  const numSelected = crossfilter.countFiltered();
+
+  /*
+  Create a world which is based upon current selection
+  */
+  newWorld.nObs = numSelected;
+  newWorld.obsAnnotations = new Array(numSelected);
+  newWorld.obsLayout = {
+    X: new Array(numSelected),
+    Y: new Array(numSelected)
+  };
+  newWorld.worldObsIndex = new Array(universe.nObs);
+
+  for (let i = 0, sel = 0; i < world.nObs; i += 1) {
+    if (crossfilter.isElementFiltered(i)) {
+      newWorld.obsAnnotations[sel] = world.obsAnnotations[i];
+      newWorld.obsLayout.X[sel] = world.obsLayout.X[i];
+      newWorld.obsLayout.Y[sel] = world.obsLayout.Y[i];
+      sel += 1;
+    }
+  }
+
+  // build index to our world offset
+  newWorld.worldObsIndex.fill(-1); // default - aka unused
+  for (let i = 0; i < newWorld.nObs; i += 1) {
+    newWorld.worldObsIndex[newWorld.obsAnnotations[i].__obsIndex__] = i;
+  }
+
+  newWorld.summary = summarizeAnnotations(
+    newWorld.schema,
+    newWorld.obsAnnotations
+  );
+  return newWorld;
+}
+
+/*
+ Deduce the correct crossfilter dimension type from a metadata
+ schema description.
+*/
+function deduceDimensionType(attributes, fieldName) {
+  let dimensionType;
+  if (attributes.type === "string") {
+    dimensionType = "enum";
+  } else if (attributes.type === "int32") {
+    dimensionType = Int32Array;
+  } else if (attributes.type === "float32") {
+    dimensionType = Float32Array;
+  } else {
+    /*
+    Currently not supporting boolean and categorical types.
+    */
+    console.error(
+      `Warning - REST API returned unknown metadata schema (${
+        attributes.type
+      }) for field ${fieldName}.`
+    );
+    // skip it - we don't know what to do with this type
+  }
+  return dimensionType;
+}
+
+export function createObsDimensionMap(crossfilter, world) {
+  /*
+  create and return a crossfilter dimension for every obs annotation
+  for which we have a supported type.
+  */
+  const { schema, obsLayout, worldObsIndex } = world;
+
+  const dimensionMap = _.transform(
+    schema.annotations.obs,
+    (result, anno) => {
+      const dimType = deduceDimensionType(anno, anno.name);
+      if (dimType) {
+        result[anno.name] = crossfilter.dimension(r => r[anno.name], dimType);
+      } // else ignore the annotation
+    },
+    {}
+  );
+
+  /*
+  Add crossfilter dimensions allowing filtering on layout
+  */
+  const worldIndex = worldObsIndex ? idx => worldObsIndex[idx] : idx => idx;
+  dimensionMap.x = crossfilter.dimension(
+    r => obsLayout.X[worldIndex(r.__obsIndex__)],
+    Float32Array
+  );
+  dimensionMap.y = crossfilter.dimension(
+    r => obsLayout.Y[worldIndex(r.__obsIndex__)],
+    Float32Array
+  );
+
+  return dimensionMap;
+}
+
+function worldEqUniverse(world, universe) {
+  return world.obsAnnotations === universe.obsAnnotations;
+}
+
+export function subsetVarData(world, universe, varData) {
+  // If world === universe, just return the entire varData array
+  if (worldEqUniverse(world, universe)) {
+    return varData;
+  }
+
+  const newVarData = new Float32Array(world.nObs);
+  for (let i = 0; i < world.nObs; i += 1) {
+    newVarData[i] = varData[world.obsAnnotations[i].__obsIndex__];
+  }
+  return newVarData;
+}

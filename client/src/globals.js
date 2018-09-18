@@ -41,6 +41,8 @@ export const brightBlue = "#4a90e2";
 export const brightGreen = "#A2D729";
 export const darkGreen = "#448C4D";
 
+export const defaultCellColor = "rgb(0,0,0,1)";
+
 export const tiniestFontSize = 12;
 
 export const bolder = 700;
@@ -48,8 +50,6 @@ export const bolder = 700;
 export let API = {
   // prefix: "http://api.clustering.czi.technology/api/",
   //prefix: "http://tabulamuris.cxg.czi.technology/api/",
-   // prefix: "http://pbmc3k.cxg.czi.technology/api/",
-  // prefix: "http://pbmc33k.cxg.czi.technology/api/",
 
   prefix: "http://api-staging.clustering.czi.technology/api/",
   version: "v0.1/"

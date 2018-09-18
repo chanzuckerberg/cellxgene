@@ -1,4 +1,3 @@
-"use strict";
 // jshint esversion: 6
 
 // Interval operations - very simple version of interval set relationship
@@ -21,11 +20,11 @@ class PositiveIntervals {
   //
   static canonicalize(A) {
     if (A.length <= 1) return A;
-    let copy = A.slice();
+    const copy = A.slice();
     copy.sort((a, b) => a[0] - b[0]);
     const res = [];
     res.push(copy[0]);
-    for (let i = 1, len = copy.length; i < len; i++) {
+    for (let i = 1, len = copy.length; i < len; i += 1) {
       if (copy[i][0] > res[res.length - 1][1]) {
         // non-overlapping, add to result
         res.push(copy[i]);
@@ -45,12 +44,12 @@ class PositiveIntervals {
   }
 
   static _flatten(A, B) {
-    let points = []; /* point, A, start */
-    for (let a = 0; a < A.length; a++) {
+    const points = []; /* point, A, start */
+    for (let a = 0; a < A.length; a += 1) {
       points.push([A[a][0], true, true]);
       points.push([A[a][1], true, false]);
     }
-    for (let b = 0; b < B.length; b++) {
+    for (let b = 0; b < B.length; b += 1) {
       points.push([B[b][0], false, true]);
       points.push([B[b][1], false, false]);
     }
@@ -68,18 +67,16 @@ class PositiveIntervals {
       return PositiveIntervals.canonicalize(A);
     }
 
-    A = PositiveIntervals.canonicalize(A);
-    B = PositiveIntervals.canonicalize(B);
+    const cA = PositiveIntervals.canonicalize(A);
+    const cB = PositiveIntervals.canonicalize(B);
 
-    const points = PositiveIntervals._flatten(A, B);
+    const points = PositiveIntervals._flatten(cA, cB);
     const res = [];
     let aDepth = 0;
     let depth = 0;
     let intervalStart;
-    let prevPoint;
-    for (let i = 0; i < points.length; i++) {
+    for (let i = 0; i < points.length; i += 1) {
       const p = points[i];
-      const before = depth;
       const delta = p[2] ? 1 : -1;
       depth += delta;
       if (p[1]) aDepth += delta;
@@ -92,7 +89,6 @@ class PositiveIntervals {
           intervalStart = undefined;
         }
       }
-      prevPoint = p[0];
     }
     // guaranteed to be in canonical form
     return res;
@@ -106,16 +102,15 @@ class PositiveIntervals {
       return [];
     }
 
-    A = PositiveIntervals.canonicalize(A);
-    B = PositiveIntervals.canonicalize(B);
+    const cA = PositiveIntervals.canonicalize(A);
+    const cB = PositiveIntervals.canonicalize(B);
 
-    const points = PositiveIntervals._flatten(A, B);
+    const points = PositiveIntervals._flatten(cA, cB);
     const res = [];
     let depth = 0;
     let intervalStart;
-    for (let i = 0; i < points.length; i++) {
+    for (let i = 0; i < points.length; i += 1) {
       const p = points[i];
-      const before = depth;
       depth += p[2] ? 1 : -1;
       if (depth === 2) {
         intervalStart = p[0];
