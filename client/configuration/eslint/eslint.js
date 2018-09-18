@@ -30,6 +30,7 @@ module.exports = {
     "no-console": "off",
     "spaced-comment": ["error", "always", { exceptions: ["*"] }],
     "no-param-reassign": "off",
-    "object-curly-newline": ["error", { consistent: true }]
+    "object-curly-newline": ["error", { consistent: true }],
+    "react/prop-types": [0]
   }
 };
