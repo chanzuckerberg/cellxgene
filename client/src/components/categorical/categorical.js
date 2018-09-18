@@ -11,12 +11,10 @@ import * as globals from "../../globals";
 import Value from "./value";
 import { alphabeticallySortedValues } from "./util";
 
-@connect(state => {
-  return {
-    colorAccessor: state.controls.colorAccessor,
-    categoricalAsBooleansMap: state.controls.categoricalAsBooleansMap
-  };
-})
+@connect(state => ({
+  colorAccessor: state.controls.colorAccessor,
+  categoricalAsBooleansMap: state.controls.categoricalAsBooleansMap
+}))
 class Category extends React.Component {
   constructor(props) {
     super(props);
@@ -27,9 +25,9 @@ class Category extends React.Component {
   }
 
   componentDidUpdate() {
-    const valuesAsBool = _.values(
-      this.props.categoricalAsBooleansMap[this.props.metadataField]
-    );
+    const { categoricalAsBooleansMap, metadataField } = this.props;
+
+    const valuesAsBool = _.values(categoricalAsBooleansMap[metadataField]);
     /* count categories toggled on by counting true values */
     const categoriesToggledOn = _.values(valuesAsBool).filter(v => v).length;
 
@@ -46,55 +44,60 @@ class Category extends React.Component {
   }
 
   handleColorChange() {
-    this.props.dispatch({
+    const { dispatch, metadataField } = this.props;
+    dispatch({
       type: "color by categorical metadata",
-      colorAccessor: this.props.metadataField
+      colorAccessor: metadataField
     });
   }
 
   toggleAll() {
-    this.props.dispatch({
+    const { dispatch, metadataField } = this.props;
+    dispatch({
       type: "categorical metadata filter all of these",
-      metadataField: this.props.metadataField
+      metadataField
     });
     this.setState({ isChecked: true });
   }
 
   toggleNone() {
-    this.props.dispatch({
+    const { dispatch, metadataField, value } = this.props;
+    dispatch({
       type: "categorical metadata filter none of these",
-      metadataField: this.props.metadataField,
-      value: this.props.value
+      metadataField,
+      value
     });
     this.setState({ isChecked: false });
   }
 
-  renderCategoryItems() {
-    return _.map(alphabeticallySortedValues(this.props.values), (v, i) => {
-      return (
-        <Value
-          key={v}
-          metadataField={this.props.metadataField}
-          count={this.props.values[v]}
-          value={v}
-          i={i}
-        />
-      );
-    });
-  }
-
   handleToggleAllClick() {
+    const { isChecked } = this.state;
     // || this.checkbox.indeterminate === false
-    if (this.state.isChecked) {
+    if (isChecked) {
       console.log("checked, firing toggle none");
       this.toggleNone();
-    } else if (!this.state.isChecked) {
+    } else if (!isChecked) {
       console.log("!checked, firing toggle all");
       this.toggleAll();
     }
   }
 
+  renderCategoryItems() {
+    const { values, metadataField } = this.props;
+    return _.map(alphabeticallySortedValues(values), (v, i) => (
+      <Value
+        key={v}
+        metadataField={metadataField}
+        count={values[v]}
+        value={v}
+        i={i}
+      />
+    ));
+  }
+
   render() {
+    const { isExpanded, isChecked } = this.state;
+    const { metadataField, colorAccessor } = this.props;
     return (
       <div
         style={{
@@ -128,16 +131,16 @@ class Category extends React.Component {
                 top: 2
               }}
               onClick={() => {
-                this.setState({ isExpanded: !this.state.isExpanded });
+                this.setState({ isExpanded: !isExpanded });
               }}
             >
-              {this.state.isExpanded ? <FaArrowDown /> : <FaArrowRight />}
+              {isExpanded ? <FaArrowDown /> : <FaArrowRight />}
             </span>
-            {this.props.metadataField}
+            {metadataField}
             <input
               onChange={this.handleToggleAllClick.bind(this)}
               ref={el => (this.checkbox = el)}
-              checked={this.state.isChecked}
+              checked={isChecked}
               type="checkbox"
             />
             <span
@@ -148,7 +151,7 @@ class Category extends React.Component {
                 // padding: this.props.colorAccessor === this.props.metadataField ? 3 : "auto",
                 borderRadius: 3,
                 color:
-                  this.props.colorAccessor === this.props.metadataField
+                  colorAccessor === metadataField
                     ? globals.brightBlue
                     : "black",
                 // backgroundColor: this.props.colorAccessor === this.props.metadataField ? globals.brightBlue : "inherit",
@@ -162,7 +165,7 @@ class Category extends React.Component {
             </span>
           </p>
         </div>
-        <div>{this.state.isExpanded ? this.renderCategoryItems() : null}</div>
+        <div>{isExpanded ? this.renderCategoryItems() : null}</div>
       </div>
     );
   }
@@ -181,7 +184,8 @@ class Categories extends React.Component {
   }
 
   render() {
-    if (!this.props.ranges) return null;
+    const { ranges } = this.props;
+    if (!ranges) return null;
 
     return (
       <div
@@ -194,7 +198,7 @@ class Categories extends React.Component {
           // overflow: "auto",
         }}
       >
-        {_.map(this.props.ranges, (value, key) => {
+        {_.map(ranges, (value, key) => {
           const isColorField = key.includes("color") || key.includes("Color");
           if (value.options && !isColorField && key !== "name") {
             return (
@@ -208,27 +212,3 @@ class Categories extends React.Component {
 }
 
 export default Categories;
-
-/*
-<SectionHeader text="Categorical Metadata"/>
-  [on off] toggle hide deselected filters (shows a menu vs shows what you ordered in compact/narrative form. fold out animation.)
-
-  <p> Sort by: Alphabetical / Count || Show counts: true / false || Collapse: all / none</p>
-
-
-  <p> <button> Field name [initial state] [create 2d graph]             [explain part of 2d graph]    </button> </p>
-  <p> <button> Field name [initial state] [create hypothesis]           [validate hypothesis]         </button> </p>
-  <p> <button> Field name [total]         [selected in current filters] [selected in graph selection] </button> </p>
-  <p> <button> Tumor      [400]           [40]                          [4]                           </button> </p>
-
-  might be interesting to show them as an 👁 icon, or with a slash through it, to allow for visible or hidden state
-
-*/
-
-/*
-
-  Each category has a color associated with it - ie., color by location should show up on these buttons,
-  Does colorby live here? Like a global, with the category labels at the top? If not, we have to
-  duplicate the category names somewhere else - but then, not all (like Cluster_2d_color) won't be listed here.
-
-*/
