@@ -15,7 +15,7 @@ build an internal POJO for use by the rendering components.
 Cherry pick from /api/v0.1 response format to make somethign similar
 to the v0.2 schema, which we use for internal interfaces.
 */
-function OtaRESTv01ToSchema(ota) {
+function RESTv01ResponseToSchema(response) {
   /*
       Annotation schemas in V02 (our target) look like:
 
@@ -68,7 +68,7 @@ function OtaRESTv01ToSchema(ota) {
     */
   return {
     annotations: {
-      obs: _.map(ota.data.schema, (val, key) => {
+      obs: _.map(response.data.schema, (val, key) => {
         const name = key === "CellName" ? "name" : key;
         let { type } = val;
         if (type === "int") {
@@ -87,29 +87,29 @@ function OtaRESTv01ToSchema(ota) {
   };
 }
 
-function OtaRESTv01ToVarAnnotations(ota) {
+function RESTv01ResponseToVarAnnotations(response) {
   /*
   v0.1 initialize response contains 'genes' - names of all genes
   in order.
   */
-  return _.map(ota.data.genes, (g, i) => ({ __varIndex__: i, name: g }));
+  return _.map(response.data.genes, (g, i) => ({ __varIndex__: i, name: g }));
 }
 
-function OtaRESTv01ToObsAnnotations(ota) {
+function RESTv01ResponseToObsAnnotations(response) {
   /*
   v0.1 format for metadata:
   metadata: [ { key: val, key: val, ... }, ... ]
 
   Target format is essentially the same, except the CellName key becomes name.
   */
-  return _.map(ota.data.metadata, (c, i) => ({
+  return _.map(response.data.metadata, (c, i) => ({
     __obsIndex__: i,
     name: c.CellName,
     ...c
   }));
 }
 
-function OtaRESTv01ToLayout(obsAnnotations, ota) {
+function RESTv01ResponseToLayout(obsAnnotations, response) {
   /*
   v0.1 format for the graph is:
   [ [ 'cellname', x, y ], [ 'cellname', x, y, ], ... ]
@@ -120,7 +120,7 @@ function OtaRESTv01ToLayout(obsAnnotations, ota) {
   */
 
   const obsAnnotationsByName = _.keyBy(obsAnnotations, "name");
-  const { graph } = ota.data;
+  const { graph } = response.data;
   const layout = {
     X: new Float32Array(graph.length),
     Y: new Float32Array(graph.length)
@@ -196,7 +196,7 @@ function templateUniverse() {
   };
 }
 
-export function createUniverseFromRESTv01Response(initOTAResp, cellsOTAResp) {
+export function createUniverseFromRESTv01Response(initResponse, cellsResponse) {
   /*
   build & return universe from a REST 0.1 /init and /cells response
   */
@@ -204,26 +204,26 @@ export function createUniverseFromRESTv01Response(initOTAResp, cellsOTAResp) {
   const universe = templateUniverse();
 
   /* extract information from init OTA response */
-  universe.schema = OtaRESTv01ToSchema(initOTAResp);
-  universe.varAnnotations = OtaRESTv01ToVarAnnotations(initOTAResp);
+  universe.schema = RESTv01ResponseToSchema(initResponse);
+  universe.varAnnotations = RESTv01ResponseToVarAnnotations(initResponse);
   universe.nVar = universe.varAnnotations.length;
 
-  /* extract information fron cells OTA response */
+  /* extract information fron cells REST json response */
   /*
   NOTE: this code *assumes* that cell order in data.metadata and data.graph
   are the same.  TODO: error checking.
   */
-  universe.obsAnnotations = OtaRESTv01ToObsAnnotations(cellsOTAResp);
+  universe.obsAnnotations = RESTv01ResponseToObsAnnotations(cellsResponse);
   universe.nObs = universe.obsAnnotations.length;
-  universe.obsLayout = OtaRESTv01ToLayout(
+  universe.obsLayout = RESTv01ResponseToLayout(
     universe.obsAnnotations,
-    cellsOTAResp
+    cellsResponse
   );
 
   return finalize(universe);
 }
 
-export function convertExpressionRESTv01ToObject(universe, ota) {
+export function convertExpressionRESTv01ToObject(universe, response) {
   /*
     v0.1 ota looks like:
       {
@@ -237,8 +237,8 @@ export function convertExpressionRESTv01ToObject(universe, ota) {
     convert expression to a simple Float32Array, and return
     [ [geneName, array], [geneName, array], ... ]
     */
-  const response = {};
-  const { genes, cells } = ota.data;
+  const result = {};
+  const { genes, cells } = response.data;
   for (let idx = 0; idx < genes.length; idx += 1) {
     const gene = genes[idx];
     const data = new Float32Array(universe.nObs);
@@ -246,7 +246,7 @@ export function convertExpressionRESTv01ToObject(universe, ota) {
       const obsIndex = universe.obsNameToIndexMap[cells[c].cellname];
       data[obsIndex] = cells[c].e[idx];
     }
-    response[gene] = data;
+    result[gene] = data;
   }
-  return response;
+  return result;
 }
