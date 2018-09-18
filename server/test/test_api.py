@@ -241,6 +241,26 @@ class EndPoints(unittest.TestCase):
         self.assertEqual(result.status_code, 200)
         self.assertEqual(len(result_data["obs"]), 38)
 
+    def test_data_put(self):
+        endpoint = "data/obs"
+        url = f"{URL_BASE}{endpoint}"
+        header = {"Accept": "application/json"}
+        obs_filter = {
+            "filter": {
+                "obs": {
+                    "annotation_value": [
+                        {"name": "louvain", "values": ["NK cells", "CD8 T cells"]},
+                        {"name": "n_counts", "min": 3000},
+                    ],
+                    "index": [1, 99, [1000, 2000]]
+                }
+            }
+        }
+        result = self.session.put(url, headers=header, json=obs_filter)
+        self.assertEqual(result.status_code, 200)
+        result_data = result.json()
+        self.assertEqual(len(result_data["obs"]), 15)
+
     def test_static(self):
         endpoint = "static"
         file = "js/service-worker.js"

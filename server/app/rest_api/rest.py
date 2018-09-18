@@ -386,6 +386,47 @@ class DataObsAPI(Resource):
         # if accept_type == "application/json":
         return make_response((jsonify(current_app.data.expression(df))))
 
+    @swagger.doc({
+        "summary": "Get data (expression values) from the dataframe.",
+        "tags": ["data"],
+        "parameters": [
+            {
+                'name': 'filter',
+                'description': 'Complex Filter',
+                'in': 'body',
+                'schema': FilterModel
+            }
+        ],
+        "responses": {
+            "200": {
+                "description": "expression",
+                "examples": {
+                    "application/json": {
+                        "var": [0, 20000],
+                        "obs": [
+                            [1, 39483, 3902, 203, 0, 0, 28]
+                        ]
+                    }
+                }
+            },
+            "400": {
+                "description": "Malformed filter"
+            },
+            "406": {
+                "description": "Unacceptable MIME type"
+            },
+        }
+    })
+    def put(self):
+        accept_type = request.accept_mimetypes.best
+        if not accept_type or accept_type not in ["application/json", "text/csv"]:
+            return make_response(f"Unacceptable MIME type '{accept_type}'", HTTPStatus.NOT_ACCEPTABLE)
+        # TODO catch error for bad filter
+        df = current_app.data.filter_dataframe(request.get_json()["filter"])
+        # TODO after implementing CSV
+        # if accept_type == "application/json":
+        return make_response((jsonify(current_app.data.expression(df))))
+
 
 def get_api_resources():
     bp = Blueprint("api", __name__, url_prefix="/api/v0.2")
