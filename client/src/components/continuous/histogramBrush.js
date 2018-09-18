@@ -14,10 +14,10 @@ import * as globals from "../../globals";
 
 @connect(state => {
   return {
-    initializeRanges: _.get(state.controls2.world, "summary.obs"),
-    colorAccessor: state.controls2.colorAccessor,
-    colorScale: state.controls2.colorScale,
-    obsAnnotations: _.get(state.controls2.world, "obsAnnotations", null)
+    initializeRanges: _.get(state.controls.world, "summary.obs"),
+    colorAccessor: state.controls.colorAccessor,
+    colorScale: state.controls.colorScale,
+    obsAnnotations: _.get(state.controls.world, "obsAnnotations", null)
   };
 })
 class HistogramBrush extends React.Component {

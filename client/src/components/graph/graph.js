@@ -24,12 +24,12 @@ import FaSave from "react-icons/lib/fa/download";
 
 @connect(state => {
   return {
-    world: state.controls2.world,
-    crossfilter: state.controls2.crossfilter,
+    world: state.controls.world,
+    crossfilter: state.controls.crossfilter,
     responsive: state.responsive,
-    colorRGB: _.get(state.controls2, "colorRGB", null),
-    opacityForDeselectedCells: state.controls2.opacityForDeselectedCells,
-    selectionUpdate: _.get(state.controls2, "crossfilter.updateTime", null)
+    colorRGB: _.get(state.controls, "colorRGB", null),
+    opacityForDeselectedCells: state.controls.opacityForDeselectedCells,
+    selectionUpdate: _.get(state.controls, "crossfilter.updateTime", null)
   };
 })
 class Graph extends React.Component {

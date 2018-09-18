@@ -79,7 +79,7 @@ function doInitialDataLoad(query = "") {
 //     const state = getState();
 //     const selectedMetadata = {};
 //
-//     _.each(state.controls2.categoricalAsBooleansMap, (options, field) => {
+//     _.each(state.controls.categoricalAsBooleansMap, (options, field) => {
 //       let atLeastOneOptionDeselected = false;
 //
 //       _.each(options, (isActive, option) => {
@@ -116,7 +116,7 @@ function doInitialDataLoad(query = "") {
 // };
 
 const regraph = () => (dispatch, getState) => {
-  const { universe, world, crossfilter } = getState().controls2;
+  const { universe, world, crossfilter } = getState().controls;
   dispatch({
     type: "set World to current selection",
     universe,
@@ -128,7 +128,7 @@ const regraph = () => (dispatch, getState) => {
 const resetGraph = () => (dispatch, getState) =>
   dispatch({
     type: "reset World to eq Universe",
-    universe: getState().controls2.universe
+    universe: getState().controls.universe
   });
 
 // This code defends against the case where /expression returns a cellname
@@ -142,7 +142,7 @@ const resetGraph = () => (dispatch, getState) =>
 const makeMetadataMap = memoize(metadata => _.keyBy(metadata, "CellName"));
 function cleanupExpressionResponse(data) {
   const s = store.getState();
-  const { universe } = s.controls2;
+  const { universe } = s.controls;
   const metadata = makeMetadataMap(universe.obsAnnotations);
   let errorFound = false;
   data.data.cells = _.filter(data.data.cells, cell => {
@@ -165,7 +165,7 @@ which implements the new expression data caching.
 async function _doRequestExpressionData(dispatch, getState, genes) {
   const state = getState();
   /* check cache and only fetch data we do not already have */
-  const { universe } = state.controls2;
+  const { universe } = state.controls;
   const genesToFetch = _.filter(genes, g => !universe.varDataCache[g]);
 
   dispatch({ type: "expression load start" });
@@ -217,7 +217,7 @@ function requestSingleGeneExpressionCountsForColoringPOST(gene) {
         type: "color by expression",
         gene,
         data: {
-          [gene]: getState().controls2.world.varDataCache[gene]
+          [gene]: getState().controls.world.varDataCache[gene]
         }
       });
     } catch (error) {
@@ -239,7 +239,7 @@ const requestGeneExpressionCountsPOST = genes => async (dispatch, getState) => {
       data: _.transform(
         genes,
         (res, gene) => {
-          res[gene] = getState().controls2.world.varDataCache[gene];
+          res[gene] = getState().controls.world.varDataCache[gene];
         },
         {}
       )

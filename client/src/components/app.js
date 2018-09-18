@@ -16,8 +16,8 @@ import SectionHeader from "./framework/sectionHeader";
 
 @connect(state => {
   return {
-    loading: state.controls2.loading,
-    error: state.controls2.error
+    loading: state.controls.loading,
+    error: state.controls.error
   };
 })
 class App extends React.Component {

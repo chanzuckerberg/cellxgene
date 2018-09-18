@@ -92,8 +92,8 @@ const continuous = (selector_id, colorscale) => {
 
 @connect(state => {
   return {
-    colorAccessor: state.controls2.colorAccessor,
-    colorScale: state.controls2.colorScale,
+    colorAccessor: state.controls.colorAccessor,
+    colorScale: state.controls.colorScale,
     responsive: state.responsive
   };
 })

@@ -13,8 +13,8 @@ import { alphabeticallySortedValues } from "./util";
 
 @connect(state => {
   return {
-    colorAccessor: state.controls2.colorAccessor,
-    categoricalAsBooleansMap: state.controls2.categoricalAsBooleansMap
+    colorAccessor: state.controls.colorAccessor,
+    categoricalAsBooleansMap: state.controls.categoricalAsBooleansMap
   };
 })
 class Category extends React.Component {
@@ -169,7 +169,7 @@ class Category extends React.Component {
 }
 
 @connect(state => {
-  const ranges = _.get(state.controls2.world, "summary.obs", null);
+  const ranges = _.get(state.controls.world, "summary.obs", null);
   return {
     ranges
   };

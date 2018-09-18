@@ -6,9 +6,9 @@ import actions from "../../actions";
 
 @connect(state => {
   return {
-    categoricalAsBooleansMap: state.controls2.categoricalAsBooleansMap,
-    colorScale: state.controls2.colorScale,
-    colorAccessor: state.controls2.colorAccessor
+    categoricalAsBooleansMap: state.controls.categoricalAsBooleansMap,
+    colorScale: state.controls.colorScale,
+    colorAccessor: state.controls.colorAccessor
   };
 })
 class CategoryValue extends React.Component {

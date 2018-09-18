@@ -6,11 +6,11 @@ import updateCellColors from "../middleware/updateCellColors";
 
 import differential from "./differential";
 import responsive from "./responsive";
-import controls2 from "./controls2";
+import controls from "./controls";
 
 const Reducer = combineReducers({
   responsive,
-  controls2,
+  controls,
   differential
 });
 

@@ -56,9 +56,9 @@ class HeatmapSquare extends React.Component {
 **********************************/
 @connect(state => {
   return {
-    scatterplotXXaccessor: state.controls2.scatterplotXXaccessor,
-    scatterplotYYaccessor: state.controls2.scatterplotYYaccessor,
-    colorAccessor: state.controls2.colorAccessor
+    scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
+    scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
+    colorAccessor: state.controls.colorAccessor
   };
 })
 class HeatmapRow extends React.Component {
@@ -217,7 +217,7 @@ class HeatmapRow extends React.Component {
 @connect(state => {
   return {
     differential: state.differential,
-    world: state.controls2.world
+    world: state.controls.world
   };
 })
 class Heatmap extends React.Component {

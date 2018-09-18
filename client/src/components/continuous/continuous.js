@@ -17,15 +17,15 @@ import HistogramBrush from "./histogramBrush";
 import { margin, width, height, createDimensions } from "./util";
 
 @connect(state => {
-  const metadata = _.get(state.controls2.world, "obsAnnotations", null);
-  const ranges = _.get(state.controls2.world, "summary.obs", null);
+  const metadata = _.get(state.controls.world, "obsAnnotations", null);
+  const ranges = _.get(state.controls.world, "summary.obs", null);
 
   return {
     ranges,
     metadata,
-    colorAccessor: state.controls2.colorAccessor,
-    colorScale: state.controls2.colorScale,
-    selectionUpdate: _.get(state.controls2, "crossfilter.updateTime", null)
+    colorAccessor: state.controls.colorAccessor,
+    colorScale: state.controls.colorScale,
+    selectionUpdate: _.get(state.controls, "crossfilter.updateTime", null)
   };
 })
 class Continuous extends React.Component {

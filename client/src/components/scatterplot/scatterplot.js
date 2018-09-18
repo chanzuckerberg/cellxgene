@@ -24,27 +24,27 @@ import { margin, width, height } from "./util";
     crossfilter,
     scatterplotXXaccessor,
     scatterplotYYaccessor
-  } = state.controls2;
+  } = state.controls;
   const expressionX =
     world && scatterplotXXaccessor
-      ? state.controls2.world.varDataCache[scatterplotXXaccessor]
+      ? state.controls.world.varDataCache[scatterplotXXaccessor]
       : null;
   const expressionY =
     world && scatterplotYYaccessor
-      ? state.controls2.world.varDataCache[scatterplotYYaccessor]
+      ? state.controls.world.varDataCache[scatterplotYYaccessor]
       : null;
 
   return {
     world,
 
-    colorRGB: state.controls2.colorRGB,
-    colorAccessor: state.controls2.colorAccessor,
-    colorScale: state.controls2.colorScale,
+    colorRGB: state.controls.colorRGB,
+    colorAccessor: state.controls.colorAccessor,
+    colorScale: state.controls.colorScale,
 
     // Accessors are var/gene names (strings)
     scatterplotXXaccessor,
     scatterplotYYaccessor,
-    opacityForDeselectedCells: state.controls2.opacityForDeselectedCells,
+    opacityForDeselectedCells: state.controls.opacityForDeselectedCells,
 
     differential: state.differential,
 
@@ -53,7 +53,7 @@ import { margin, width, height } from "./util";
 
     crossfilter,
     // updated whenever the crossfilter selection is updated
-    selectionUpdate: _.get(state.controls2, "crossfilter.updateTime", null)
+    selectionUpdate: _.get(state.controls, "crossfilter.updateTime", null)
   };
 })
 class Scatterplot extends React.Component {

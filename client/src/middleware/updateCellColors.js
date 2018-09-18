@@ -40,13 +40,13 @@ const updateCellColorsMiddleware = store => next => action => {
     action.type === "color by continuous metadata" ||
     action.type === "color by categorical metadata";
 
-  if (!filterJustChanged || !s.controls2.world.obsAnnotations) {
+  if (!filterJustChanged || !s.controls.world.obsAnnotations) {
     return next(
       action
     ); /* if the cells haven't loaded or the action wasn't a color change, bail */
   }
 
-  const { obsAnnotations } = s.controls2.world;
+  const { obsAnnotations } = s.controls.world;
   let colorScale;
   const colorsByName = new Array(obsAnnotations.length);
   const colorsByRGB = new Array(obsAnnotations.length);
