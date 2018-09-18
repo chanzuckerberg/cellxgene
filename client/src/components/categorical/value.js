@@ -1,47 +1,51 @@
 // jshint esversion: 6
 import { connect } from "react-redux";
 import React from "react";
-import * as globals from "../../globals";
-import actions from "../../actions";
 
-@connect(state => {
-  return {
-    categoricalAsBooleansMap: state.controls.categoricalAsBooleansMap,
-    colorScale: state.controls.colorScale,
-    colorAccessor: state.controls.colorAccessor
-  };
-})
+@connect(state => ({
+  categoricalAsBooleansMap: state.controls.categoricalAsBooleansMap,
+  colorScale: state.controls.colorScale,
+  colorAccessor: state.controls.colorAccessor
+}))
 class CategoryValue extends React.Component {
   toggleOff() {
-    this.props.dispatch({
+    const { dispatch, metadataField, value } = this.props;
+    dispatch({
       type: "categorical metadata filter deselect",
-      metadataField: this.props.metadataField,
-      value: this.props.value
+      metadataField,
+      value
     });
   }
 
   toggleOn() {
-    this.props.dispatch({
+    const { dispatch, metadataField, value } = this.props;
+    dispatch({
       type: "categorical metadata filter select",
-      metadataField: this.props.metadataField,
-      value: this.props.value
+      metadataField,
+      value
     });
   }
 
   render() {
-    if (!this.props.categoricalAsBooleansMap) return null;
+    const {
+      categoricalAsBooleansMap,
+      metadataField,
+      count,
+      value,
+      colorAccessor,
+      colorScale,
+      i
+    } = this.props;
 
-    const selected = this.props.categoricalAsBooleansMap[
-      this.props.metadataField
-    ][this.props.value];
-    const c =
-      this.props.metadataField ===
-      this.props
-        .colorAccessor; /* this is the color scale, so add swatches below */
+    if (!categoricalAsBooleansMap) return null;
+
+    const selected = categoricalAsBooleansMap[metadataField][value];
+    /* this is the color scale, so add swatches below */
+    const c = metadataField === colorAccessor;
 
     return (
       <div
-        key={this.props.i}
+        key={i}
         style={{
           display: "flex",
           alignItems: "baseline",
@@ -66,22 +70,20 @@ class CategoryValue extends React.Component {
             checked={selected}
             type="checkbox"
           />
-          {this.props.value}
+          {value}
         </p>
         <p
           style={{
             padding: "1px 10px",
             width: 80,
             textAlign: "center",
-            backgroundColor: c
-              ? this.props.colorScale(this.props.value)
-              : "inherit",
+            backgroundColor: c ? colorScale(value) : "inherit",
             color: c ? "white" : "black",
             margin: 0
             // lineHeight: "1em"
           }}
         >
-          {this.props.count}
+          {count}
         </p>
       </div>
     );
@@ -89,38 +91,3 @@ class CategoryValue extends React.Component {
 }
 
 export default CategoryValue;
-
-// toggleOnlyThis() {
-//   this.props.dispatch({
-//     type: "categorical metadata filter none of these",
-//     metadataField: this.props.metadataField,
-//     value: this.props.value
-//   })
-// }
-// <span
-//   onClick={this.toggleOnlyThis.bind(this)}
-//   style={{
-//     fontFamily: globals.accentFont,
-//     fontSize: 10,
-//     fontWeight: 100,
-//     fontStyle: "italic",
-//     cursor: "pointer",
-//   }}>
-// {"only"}
-// </span>
-
-// onClick={selected ? this.toggleOff.bind(this) : this.toggleOn.bind(this)}
-// toggleOn() {
-//   this.props.dispatch(
-//     actions.attemptCategoricalMetadataSelection(
-//       this.props.metadataField,
-//       this.props.value
-//     ))
-// }
-// toggleOff() {
-//   this.props.dispatch(
-//     actions.attemptCategoricalMetadataDeselection(
-//       this.props.metadataField,
-//       this.props.value
-//     ))
-// }
