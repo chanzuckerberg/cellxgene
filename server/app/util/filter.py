@@ -65,7 +65,7 @@ def parse_filter(query_filter, schema):
                 dtype = ann["type"]
                 break
         else:
-            raise QueryStringError(f"Error: {annotation} not a valid annotation type")
+            raise QueryStringError(key, f"Error: {annotation} not a valid annotation type")
         if dtype in ["string", "categorical", "boolean"]:
             ann_filter["values"] = [_convert_variable(dtype, i) for i in query_filter.getlist(key)]
         else:
@@ -73,7 +73,7 @@ def parse_filter(query_filter, schema):
             try:
                 min_, max_ = value.split(",")
             except ValueError:
-                raise QueryStringError(f"Error: min,max format required for range for {annotation}, got {value}")
+                raise QueryStringError(key, f"Error: min,max format required for range for {annotation}, got {value}")
             if min_ == "*":
                 min_ = None
             if max_ == "*":

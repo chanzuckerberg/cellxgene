@@ -105,7 +105,6 @@ class EndPoints(unittest.TestCase):
         result = self.session.get(url)
         self.assertEqual(result.status_code, 404)
 
-
     def test_put_annotations_obs(self):
         endpoint = "annotations/obs"
         url = f"{URL_BASE}{endpoint}"
@@ -212,6 +211,35 @@ class EndPoints(unittest.TestCase):
         self.assertEqual(result_data["names"], ["n_cells"])
         self.assertEqual(len(result_data["data"][0]), 2)
         self.assertEqual(len(result_data["data"]), 2)
+
+    def test_get_data(self):
+        endpoint = "data/obs"
+        query = "accept-type=application/json"
+        url = f"{URL_BASE}{endpoint}?{query}"
+        result = self.session.get(url)
+        self.assertEqual(result.status_code, 200)
+        result_data = result.json()
+        self.assertEqual(len(result_data["obs"]), 2638)
+
+    def test_data_mimetype_error(self):
+        endpoint = "data/obs"
+        query = "accept-type=xxx"
+        url = f"{URL_BASE}{endpoint}?{query}"
+        result = self.session.get(url)
+        self.assertEqual(result.status_code, 406)
+        # no accept type
+        url = f"{URL_BASE}{endpoint}"
+        result = self.session.get(url)
+        self.assertEqual(result.status_code, 406)
+
+    def test_data_filter(self):
+        endpoint = "data/obs"
+        query = "accept-type=application/json&obs:louvain=NK cells&obs:louvain=CD8 T cells&obs:n_counts=3000,*"
+        url = f"{URL_BASE}{endpoint}?{query}"
+        result = self.session.get(url)
+        result_data = result.json()
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(len(result_data["obs"]), 38)
 
     def test_static(self):
         endpoint = "static"

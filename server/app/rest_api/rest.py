@@ -1,11 +1,14 @@
+from http import HTTPStatus
 import pkg_resources
 
 from flask import (
     Blueprint, current_app, jsonify, make_response, request
 )
 from flask_restful_swagger_2 import Api, swagger, Resource
+from werkzeug.datastructures import ImmutableMultiDict
 
 from server.app.util.models import FilterModel
+from server.app.util.filter import parse_filter, QueryStringError
 
 
 class SchemaAPI(Resource):
@@ -330,6 +333,60 @@ class AnnotationsVarAPI(Resource):
         return make_response(jsonify(annotation_response))
 
 
+class DataObsAPI(Resource):
+    @swagger.doc({
+        "summary": "Get data (expression values) from the dataframe.",
+        "tags": ["data"],
+        "parameters": [
+            {
+                "in": "query",
+                "name": "filter",
+                "type": "string",
+                "description": "axis:key:value"
+            },
+            {
+                "in": "query",
+                "name": "accept-type",
+                "type": "string",
+                "description": "MIME type"
+            },
+        ],
+        "responses": {
+            "200": {
+                "description": "expression",
+                "examples": {
+                    "application/json": {
+                        "var": [0, 20000],
+                        "obs": [
+                            [1, 39483, 3902, 203, 0, 0, 28]
+                        ]
+                    }
+                }
+            },
+            "400": {
+                "description": "Malformed filter"
+            },
+            "406": {
+                "description": "Unacceptable MIME type"
+            },
+        }
+    })
+    def get(self):
+        # request.args is immutable
+        args = dict(request.args)
+        accept_type = args.pop("accept-type", None)
+        if not accept_type or accept_type[0] not in ["application/json", "text/csv"]:
+            return make_response(f"Unacceptable MIME type '{accept_type}'", HTTPStatus.NOT_ACCEPTABLE)
+        try:
+            filter_ = parse_filter(ImmutableMultiDict(args), current_app.data.schema['annotations'])
+        except QueryStringError as e:
+            return make_response(e.message, HTTPStatus.BAD_REQUEST)
+        df = current_app.data.filter_dataframe(filter_)
+        # TODO after implementing CSV
+        # if accept_type == "application/json":
+        return make_response((jsonify(current_app.data.expression(df))))
+
+
 def get_api_resources():
     bp = Blueprint("api", __name__, url_prefix="/api/v0.2")
     api = Api(bp, add_api_spec_resource=False)
@@ -338,4 +395,5 @@ def get_api_resources():
     api.add_resource(LayoutObsAPI, "/layout/obs")
     api.add_resource(AnnotationsObsAPI, "/annotations/obs")
     api.add_resource(AnnotationsVarAPI, "/annotations/var")
+    api.add_resource(DataObsAPI, "/data/obs")
     return api
