@@ -7,7 +7,10 @@ from server.app.util.constants import Axis
 
 
 class QueryStringError(Exception):
-    pass
+
+    def __init__(self, key, message):
+        self.key = key
+        self.message = message
 
 
 def _convert_variable(datatype, variable):
@@ -55,7 +58,7 @@ def parse_filter(query_filter, schema):
         try:
             Axis(axis)
         except ValueError:
-            raise QueryStringError(f"Error: bad axis in query string {axis}")
+            raise QueryStringError(key, f"Error: key {key} not in metadata schema")
         ann_filter = {"name": annotation}
         for ann in schema[axis]:
             if ann["name"] == annotation:
@@ -81,8 +84,6 @@ def parse_filter(query_filter, schema):
                     "max": _convert_variable(dtype, max_)
                 }
             except ValueError:
-                raise QueryStringError(
-                    f"Error: expected type {dtype} for key {annotation}, got {value}"
-                )
+                raise QueryStringError(key, f"Error: expected type {query[key]['type']} for key {key}, got {value}")
         query[axis]["annotation_value"].append(ann_filter)
     return query
