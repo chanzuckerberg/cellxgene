@@ -169,5 +169,25 @@ class UtilTest(unittest.TestCase):
         layout = self.data.layout(data)
         self.assertEqual(len(layout["coordinates"]), 497)
 
+    def test_expression(self):
+        expression = self.data.expression(self.data.data)
+        self.assertEqual(len(expression["var"]), 1838)
+        self.assertEqual(len(expression["obs"]), 2638)
+
+    def test_filtered_expression(self):
+        filter_ = {
+            "filter": {
+                "obs": {
+                    "annotation_value": [
+                        {"name": "n_counts", "min": 3000},
+                    ]
+                }
+            }
+        }
+        data = self.data.filter_dataframe(filter_["filter"])
+        expression = self.data.expression(data)
+        self.assertEqual(len(expression["var"]), 1838)
+        self.assertEqual(len(expression["obs"]), 497)
+
     if __name__ == '__main__':
         unittest.main()

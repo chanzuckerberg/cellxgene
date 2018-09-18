@@ -90,11 +90,10 @@ class CXGDriver(metaclass=ABCMeta):
     def expression(self, df):
         """
         Retrieves expression for each gene for cells in data frame
-        :param df:
+        :param df: from filter_cells, dataframe
         :return: {
-            "genes": list of genes,
-            "cells": list of cells and expression list,
-            "nonzero_gene_count": number of nonzero genes
+            "var": list of variable ids,
+            "obs": [cellid, var1 expression, var2 expression, ...],
         }
         """
         pass

@@ -263,41 +263,18 @@ class ScanpyEngine(CXGDriver):
         }
 
     @cache.memoize()
-    def expression(self, cells=None, genes=None):
+    def expression(self, df):
         """
         Retrieves expression for each gene for cells in data frame
-        :param df:
+        :param df: from filter_cells, dataframe
         :return: {
-            "genes": list of genes,
-            "cells": list of cells and expression list,
-            "nonzero_gene_count": number of nonzero genes
+            "var": list of variable ids,
+            "obs": [cellid, var1 expression, var2 expression, ...],
         }
         """
-        if cells:
-            cells_idx = np.in1d(self.data.obs["cell_name"], cells)
-        else:
-            cells_idx = np.ones((self.cell_count,), dtype=bool)
-        if genes:
-            genes_idx = np.in1d(self.data.var_names, genes)
-        else:
-            genes_idx = np.ones((self.gene_count,), dtype=bool)
-        index = np.ix_(cells_idx, genes_idx)
-        expression = self.data.X[index]
-
-        if not genes:
-            genes = self.data.var.index.tolist()
-        if not cells:
-            cells = self.data.obs["cell_name"].tolist()
-
-        cell_data = []
-        for idx, cell in enumerate(cells):
-            cell_data.append({
-                "cellname": cell,
-                "e": list(expression[idx]),
-            })
-
+        var_index = df.var.index.tolist()
+        expression = DataFrame(df.X, index=df.obs.index)
         return {
-            "genes": genes,
-            "cells": cell_data,
-            "nonzero_gene_count": int(np.sum(expression.any(axis=0)))
+            "var": var_index,
+            "obs": expression.reset_index().values.tolist()
         }
