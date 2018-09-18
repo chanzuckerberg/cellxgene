@@ -56,11 +56,11 @@ class UtilTest(unittest.TestCase):
         filter_dict = ImmutableMultiDict(
             [("obs:louvain", "NK cells"), ("obs:louvain", "CD8 T cells"), ("obs:n_counts", "3000,*")])
         filter_ = parse_filter(filter_dict, self.schema)
-        self.assertEqual(filter_, {"obs": {"annotation_value": [{"name": "louvain",
-                                                                 "value": ["NK cells", "CD8 T cells"]},
-                                                                {"name": "n_counts",
-                                                                 "value": {"max": None, "min": 3000.0}}]}}
-                         )
+        self.assertIn("obs", filter_)
+        self.assertEqual(filter_["obs"]["annotation_value"], [{"name": "louvain",
+                                                               "values": ["NK cells", "CD8 T cells"]},
+                                                              {"name": "n_counts",
+                                                               "max": None, "min": 3000.0}])
 
     def test_bad_filter(self):
         bad_annotation_type = ImmutableMultiDict([("obs:tissue", "lung")])
@@ -76,5 +76,5 @@ class UtilTest(unittest.TestCase):
         }
         filter_dict = ImmutableMultiDict([("obs:bool_filter", "false")])
         filter_ = parse_filter(filter_dict, schema)
-        self.assertEqual(filter_, {"obs": {"annotation_value": [{"name": "bool_filter", "value": [False]}]}})
-
+        self.assertIn("obs", filter_)
+        self.assertEqual(filter_["obs"]["annotation_value"], [{"name": "bool_filter", "values": [False]}])
