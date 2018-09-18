@@ -65,7 +65,8 @@ def main():
     parser.add_argument("--title", "-t", help="Title to display -- if this is omitted the title will be the name "
                                               "of the directory from the data_directory arg")
     parser.add_argument("--port", help="Port to run server on.", type=int, default=5005)
-    subparsers = parser.add_subparsers(dest="engine", required=True)
+    subparsers = parser.add_subparsers(dest="engine")
+    subparsers.required = True
     try:
         from .scanpy_engine.scanpy_engine import ScanpyEngine
     except ImportError:
