@@ -65,7 +65,7 @@ def parse_filter(query_filter, schema):
                 dtype = ann["type"]
                 break
         else:
-            raise QueryStringError(key, f"Error: {annotation} not a valid annotation type")
+            raise QueryStringError(key, f"Error: {annotation} not a valid annotation name")
         if dtype in ["string", "categorical", "boolean"]:
             ann_filter["values"] = [_convert_variable(dtype, i) for i in query_filter.getlist(key)]
         else:
