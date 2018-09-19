@@ -263,9 +263,9 @@ class ScanpyEngine(CXGDriver):
         }
 
     @cache.memoize()
-    def expression(self, df):
+    def data_frame(self, df):
         """
-        Retrieves expression for each gene for cells in data frame
+        Retrieves data for each variable for observations in data frame
         :param df: from filter_cells, dataframe
         :return: {
             "var": list of variable ids,

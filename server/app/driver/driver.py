@@ -87,7 +87,7 @@ class CXGDriver(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def expression(self, df):
+    def data_frame(self, df):
         """
         Retrieves expression for each gene for cells in data frame
         :param df: from filter_cells, dataframe

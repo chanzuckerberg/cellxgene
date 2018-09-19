@@ -169,12 +169,12 @@ class UtilTest(unittest.TestCase):
         layout = self.data.layout(data)
         self.assertEqual(len(layout["coordinates"]), 497)
 
-    def test_expression(self):
-        expression = self.data.expression(self.data.data)
-        self.assertEqual(len(expression["var"]), 1838)
-        self.assertEqual(len(expression["obs"]), 2638)
+    def test_data_frame(self):
+        data_frame = self.data.data_frame(self.data.data)
+        self.assertEqual(len(data_frame["var"]), 1838)
+        self.assertEqual(len(data_frame["obs"]), 2638)
 
-    def test_filtered_expression(self):
+    def test_filtered_data_frame(self):
         filter_ = {
             "filter": {
                 "obs": {
@@ -185,9 +185,9 @@ class UtilTest(unittest.TestCase):
             }
         }
         data = self.data.filter_dataframe(filter_["filter"])
-        expression = self.data.expression(data)
-        self.assertEqual(len(expression["var"]), 1838)
-        self.assertEqual(len(expression["obs"]), 497)
+        data_frame = self.data.data_frame(data)
+        self.assertEqual(len(data_frame["var"]), 1838)
+        self.assertEqual(len(data_frame["obs"]), 497)
 
     if __name__ == '__main__':
         unittest.main()
