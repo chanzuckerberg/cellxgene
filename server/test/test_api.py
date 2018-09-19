@@ -237,8 +237,8 @@ class EndPoints(unittest.TestCase):
         query = "accept-type=application/json&obs:louvain=NK cells&obs:louvain=CD8 T cells&obs:n_counts=3000,*"
         url = f"{URL_BASE}{endpoint}?{query}"
         result = self.session.get(url)
-        result_data = result.json()
         self.assertEqual(result.status_code, 200)
+        result_data = result.json()
         self.assertEqual(len(result_data["obs"]), 38)
 
     def test_data_put(self):

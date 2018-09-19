@@ -375,16 +375,16 @@ class DataObsAPI(Resource):
         # request.args is immutable
         args = dict(request.args)
         accept_type = args.pop("accept-type", None)
-        if not accept_type or accept_type[0] not in ["application/json", "text/csv"]:
-            return make_response(f"Unacceptable MIME type '{accept_type}'", HTTPStatus.NOT_ACCEPTABLE)
         try:
             filter_ = parse_filter(ImmutableMultiDict(args), current_app.data.schema['annotations'])
         except QueryStringError as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
         df = current_app.data.filter_dataframe(filter_)
-        # TODO after implementing CSV
-        # if accept_type == "application/json":
-        return make_response((jsonify(current_app.data.expression(df))))
+        if accept_type and accept_type[0] == "application/json":
+            return make_response((jsonify(current_app.data.data_frame(df))))
+        # TODO support CSV
+        else:
+            return make_response(f"Unsupported accept-type: {accept_type}", HTTPStatus.NOT_ACCEPTABLE)
 
     @swagger.doc({
         "summary": "Get data (expression values) from the dataframe.",
@@ -418,14 +418,15 @@ class DataObsAPI(Resource):
         }
     })
     def put(self):
-        accept_type = request.accept_mimetypes.best
-        if not accept_type or accept_type not in ["application/json", "text/csv"]:
-            return make_response(f"Unacceptable MIME type '{accept_type}'", HTTPStatus.NOT_ACCEPTABLE)
+        if not request.accept_mimetypes.best_match(["application/json", "text/csv"]):
+            return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
         # TODO catch error for bad filter
         df = current_app.data.filter_dataframe(request.get_json()["filter"])
-        # TODO after implementing CSV
-        # if accept_type == "application/json":
-        return make_response((jsonify(current_app.data.expression(df))))
+        if request.accept_mimetypes.best_match(['application/json']):
+            return make_response((jsonify(current_app.data.data_frame(df))))
+        # TODO support CSV
+        else:
+            return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
 
 
 def get_api_resources():
