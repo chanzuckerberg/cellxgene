@@ -176,18 +176,20 @@ class ScanpyEngine(CXGDriver):
         return index
 
     @cache.memoize()
-    def annotation(self, df, fields=None):
+    def annotation(self, df, axis, fields=None):
         """
          Gets annotation value for each observation
 
+        :param axis:
         :param df: from filter_cells, dataframe
         :param fields: list of keys for annotation to return, returns all annotation values if not set.
         :return: dict: names - list of fields in order, data - list of lists or metadata
         [observation ids, val1, val2...]
         """
+        df_axis = getattr(df, axis)
         if not fields:
-            fields = df.obs.columns.tolist()
-        annotations = DataFrame(df.obs[fields], index=df.obs.index)
+            fields = df_axis.columns.tolist()
+        annotations = DataFrame(df_axis[fields], index=df_axis.index)
         return {
             "names": fields,
             "data": annotations.reset_index().values.tolist()
