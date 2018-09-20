@@ -161,7 +161,7 @@ class ScanpyEngine(CXGDriver):
         """
         d_axis = getattr(self.data, axis.value)
         for v in filter:
-            if d_axis[v["name"]].dtype.name in ["boolean", "category", "string"]:
+            if d_axis[v["name"]].dtype.name in ["boolean", "category", "object"]:
                 key_idx = np.in1d(getattr(d_axis, v["name"]), v["values"])
                 index = np.logical_and(index, key_idx)
             else:
