@@ -170,7 +170,7 @@ class AnnotationsObsAPI(Resource):
             "in": "query",
             "name": "annotation-name",
             "type": "string",
-            "description": "comma-separated annotation keys, ex: num_genes,percent_mito"
+            "description": "list of 1 or more annotation names"
         }],
         "responses": {
             "200": {
@@ -209,7 +209,7 @@ class AnnotationsObsAPI(Resource):
                 "in": "query",
                 "name": "annotation-name",
                 "type": "string",
-                "description": "comma-separated annotation keys, ex: num_genes,percent_mito"
+                "description": "list of 1 or more annotation names"
             },
             {
                 'name': 'filter',
@@ -245,8 +245,7 @@ class AnnotationsObsAPI(Resource):
             annotation_response = current_app.data.annotation(df, fields)
         except KeyError:
             return make_response(f"Error bad key in {fields}", 404)
-        else:
-            return make_response(jsonify(annotation_response))
+        return make_response(jsonify(annotation_response))
 
 
 def get_api_resources():
