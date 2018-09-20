@@ -49,10 +49,10 @@ export const bolder = 700;
 
 export let API = {
   // prefix: "http://api.clustering.czi.technology/api/",
-  //prefix: "http://tabulamuris.cxg.czi.technology/api/",
-
-  prefix: "http://api-staging.clustering.czi.technology/api/",
-  version: "v0.1/"
+  // prefix: "http://tabulamuris.cxg.czi.technology/api/",
+  // prefix: "http://api-staging.clustering.czi.technology/api/",
+  prefix: "http://localhost:5005/api/",
+  version: "v0.2/"
 };
 
 if (window.CELLXGENE && window.CELLXGENE.API) API = window.CELLXGENE.API;

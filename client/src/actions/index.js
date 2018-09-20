@@ -17,7 +17,7 @@ function catchErrorsWrap(fn) {
   };
 }
 
-async function doRequestInitialize() {
+async function doRequestInitializeV01() {
   const res = await fetch(
     `${globals.API.prefix}${globals.API.version}initialize`,
     {
@@ -30,7 +30,7 @@ async function doRequestInitialize() {
   return res.json();
 }
 
-async function doRequestCells(query) {
+async function doRequestCellsV01(query) {
   const res = await fetch(
     `${globals.API.prefix}${globals.API.version}cells${query}`,
     {
@@ -43,13 +43,13 @@ async function doRequestCells(query) {
   return res.json();
 }
 
-function doInitialDataLoad(query = "") {
+function doInitialDataLoadV01(query = "") {
   return catchErrorsWrap(async dispatch => {
     dispatch({ type: "initial data load start" });
     try {
       const res = await Promise.all([
-        doRequestInitialize(),
-        doRequestCells(query)
+        doRequestInitializeV01(),
+        doRequestCellsV01(query)
       ]);
       const universe = Universe.createUniverseFromRESTv01Response(
         res[0],
@@ -64,6 +64,52 @@ function doInitialDataLoad(query = "") {
     }
   });
 }
+
+/*
+Bootstrap application with the initial data loading.
+  * /config - application configuration
+  * /schema - schema of dataframe
+  * /annotations/obs - all metadata annotation
+*/
+const doJsonRequest = async url => {
+  const res = await fetch(url, {
+    method: "get",
+    headers: new Headers({
+      "Content-Type": "application/json"
+    })
+  });
+  return res.json();
+};
+
+const doInitialDataLoadRESTV02 = () =>
+  catchErrorsWrap(async dispatch => {
+    dispatch({ type: "initial data load start" });
+
+    try {
+      const requests = _([
+        "config",
+        "schema",
+        "annotations/obs",
+        // TODO: "annotations/var",
+        "layout/obs"
+      ])
+        .map(r => `${globals.API.prefix}${globals.API.version}${r}`)
+        .map(url => doJsonRequest(url))
+        .value();
+      const results = await Promise.all(requests);
+      const universe = Universe.createUniverseFromRestV02Response(...results);
+      dispatch({
+        type: "configuration load complete",
+        config: requests[0]
+      });
+      dispatch({
+        type: "initial data load complete (universe exists)",
+        universe
+      });
+    } catch (error) {
+      dispatch({ type: "initial data load error", error });
+    }
+  });
 
 // XXX TODO - this is the old code for doing a regraph.  Preserving it solely
 // until we port to 0.2 API.   The new UX for regraph can't be implemented on
@@ -293,6 +339,7 @@ const requestDifferentialExpression = (
     );
 };
 
+const doInitialDataLoad = doInitialDataLoadRESTV02;
 export default {
   regraph,
   resetGraph,
