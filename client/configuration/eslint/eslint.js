@@ -31,6 +31,7 @@ module.exports = {
     "spaced-comment": ["error", "always", { exceptions: ["*"] }],
     "no-param-reassign": "off",
     "object-curly-newline": ["error", { consistent: true }],
-    "react/prop-types": [0]
+    "react/prop-types": [0],
+    "space-before-function-paren": "off"
   }
 };
