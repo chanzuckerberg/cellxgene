@@ -134,10 +134,10 @@ class LayoutObsAPI(Resource):
         "tags": ["layout"],
         "parameters": [
             {
-                'name': 'filter',
-                'description': 'Complex Filter',
-                'in': 'body',
-                'schema': FilterModel
+                "name": "filter",
+                "description": "Complex Filter",
+                "in": "body",
+                "schema": FilterModel
             }
         ],
         "responses": {
@@ -178,12 +178,12 @@ class AnnotationsObsAPI(Resource):
                 "examples": {
                     "application/json": {
                         "names": [
-                            'tissue_type', 'sex', 'num_reads', 'clusters'
+                            "tissue_type", "sex", "num_reads", "clusters"
                         ],
                         "data": [
-                            [0, 'lung', 'F', 39844, 99],
-                            [1, 'heart', 'M', 83, 1],
-                            [49, 'spleen', None, 2, "unknown cluster"],
+                            [0, "lung", "F", 39844, 99],
+                            [1, "heart", "M", 83, 1],
+                            [49, "spleen", None, 2, "unknown cluster"],
 
                         ]
                     }
@@ -195,14 +195,13 @@ class AnnotationsObsAPI(Resource):
     def get(self):
         fields = request.args.getlist("annotation-name", None)
         try:
-            annotation_response = current_app.data.annotation(current_app.data.data, fields)
+            annotation_response = current_app.data.annotation(current_app.data.data, "obs", fields)
         except KeyError:
             return make_response(f"Error bad key in {fields}", 404)
-        else:
-            return make_response(jsonify(annotation_response))
+        return make_response(jsonify(annotation_response))
 
     @swagger.doc({
-        "summary": "Fetch annotations (metadata) for filtered subset.",
+        "summary": "Fetch annotations (metadata) for filtered subset of observations.",
         "tags": ["annotations"],
         "parameters": [
             {
@@ -212,10 +211,10 @@ class AnnotationsObsAPI(Resource):
                 "description": "list of 1 or more annotation names"
             },
             {
-                'name': 'filter',
-                'description': 'Complex Filter',
-                'in': 'body',
-                'schema': FilterModel
+                "name": "filter",
+                "description": "Complex Filter",
+                "in": "body",
+                "schema": FilterModel
             }
         ],
         "responses": {
@@ -224,12 +223,12 @@ class AnnotationsObsAPI(Resource):
                 "examples": {
                     "application/json": {
                         "names": [
-                            'tissue_type', 'sex', 'num_reads', 'clusters'
+                            "tissue_type", "sex", "num_reads", "clusters"
                         ],
                         "data": [
-                            [0, 'lung', 'F', 39844, 99],
-                            [1, 'heart', 'M', 83, 1],
-                            [49, 'spleen', None, 2, "unknown cluster"],
+                            [0, "lung", "F", 39844, 99],
+                            [1, "heart", "M", 83, 1],
+                            [49, "spleen", None, 2, "unknown cluster"],
 
                         ]
                     }
@@ -242,7 +241,90 @@ class AnnotationsObsAPI(Resource):
         fields = request.args.getlist("annotation-name", None)
         df = current_app.data.filter_dataframe(request.get_json()["filter"])
         try:
-            annotation_response = current_app.data.annotation(df, fields)
+            annotation_response = current_app.data.annotation(df, "obs", fields)
+        except KeyError:
+            return make_response(f"Error bad key in {fields}", 404)
+        return make_response(jsonify(annotation_response))
+
+
+class AnnotationsVarAPI(Resource):
+    @swagger.doc({
+        "summary": "Fetch annotations (metadata) for all variables.",
+        "tags": ["annotations"],
+        "parameters": [{
+            "in": "query",
+            "name": "annotation-name",
+            "type": "string",
+            "description": "list of 1 or more annotation names"
+        }],
+        "responses": {
+            "200": {
+                "description": "annotations",
+                "examples": {
+                    "application/json": {
+                        "names": [
+                            "name", "category"
+                        ],
+                        "data": [
+                            [0, "ATAD3C", 1],
+                            [1, "RER1", None],
+                            [49, "S100B", 6]
+                        ]
+                    }
+
+                }
+            }
+        }
+    })
+    def get(self):
+        fields = request.args.getlist("annotation-name", None)
+        try:
+            annotation_response = current_app.data.annotation(current_app.data.data, "var", fields)
+        except KeyError:
+            return make_response(f"Error bad key in {fields}", 404)
+        return make_response(jsonify(annotation_response))
+
+    @swagger.doc({
+        "summary": "Fetch annotations (metadata) for filtered subset of variables.",
+        "tags": ["annotations"],
+        "parameters": [
+            {
+                "in": "query",
+                "name": "annotation-name",
+                "type": "string",
+                "description": "list of 1 or more annotation names"
+            },
+            {
+                "name": "filter",
+                "description": "Complex Filter",
+                "in": "body",
+                "schema": FilterModel
+            }
+        ],
+        "responses": {
+            "200": {
+                "description": "annotations",
+                "examples": {
+                    "application/json": {
+                        "names": [
+                            "name", "category"
+                        ],
+                        "data": [
+                            [0, "ATAD3C", 1],
+                            [1, "RER1", None],
+                            [49, "S100B", 6]
+                        ]
+                    }
+
+                }
+            }
+        }
+    })
+    def put(self):
+        fields = request.args.getlist("annotation-name", None)
+        df = current_app.data.filter_dataframe(request.get_json()["filter"])
+        try:
+            annotation_response = current_app.data.annotation(df, "var", fields)
         except KeyError:
             return make_response(f"Error bad key in {fields}", 404)
         return make_response(jsonify(annotation_response))
@@ -255,4 +337,5 @@ def get_api_resources():
     api.add_resource(ConfigAPI, "/config")
     api.add_resource(LayoutObsAPI, "/layout/obs")
     api.add_resource(AnnotationsObsAPI, "/annotations/obs")
+    api.add_resource(AnnotationsVarAPI, "/annotations/var")
     return api
