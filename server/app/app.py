@@ -44,10 +44,11 @@ app.add_url_rule("/", endpoint="index")
 
 
 def run_scanpy(args):
+    host = "0.0.0.0"  # Necessary for redirection
     title = args.title
     if not title:
         title = os.path.basename(os.path.normpath(args.data_directory))
-    api_base = f"http://127.0.0.1:{args.port}/api/"
+    api_base = f"http://{host}:{args.port}/api/"
     app.config.update(
         DATASET_TITLE=title,
         CXG_API_BASE=api_base
@@ -56,7 +57,7 @@ def run_scanpy(args):
     from .scanpy_engine.scanpy_engine import ScanpyEngine
     app.data = ScanpyEngine(args.data_directory, schema="data_schema.json",
                             graph_method=args.layout, diffexp_method=args.diffexp)
-    app.run(host="127.0.0.1", debug=True, port=args.port)
+    app.run(host=host, debug=True, port=args.port)
 
 
 def main():

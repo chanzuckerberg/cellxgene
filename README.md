@@ -58,6 +58,16 @@ _For help with the scanpy engine_
 
     cellxgene scanpy --help
 
+### Using Docker
+
+For use within Docker, you only need docker itself:
+
+    # Build an image
+    docker build . -t cellxgene
+    # Data needs to be mounted /data (can be readonly)
+    # the port can be mapped to any host port such as 80
+    docker run -v "$PWD/example-dataset:/data:ro" -p 80:5005 cellxgene
+
 ## Using your own data
 
 ### Scanpy

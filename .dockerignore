@@ -1,0 +1,6 @@
+# This would make the docker build fail.
+# Feel free to figure out why and fix it.
+client/build
+client/node_modules
+client/package-lock.json
+**/__pycache__
