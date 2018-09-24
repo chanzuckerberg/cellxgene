@@ -106,5 +106,17 @@
       "**/__tests__/**/?(*.)(spec|test).js?(x)"
     ],
     "testURL": "http://localhost/"
+  },
+  "babel": {
+    "env": {
+      "test": {
+        "presets": [
+          [
+            "env"
+          ],
+          "react"
+        ]
+      }
+    }
   }
 }
