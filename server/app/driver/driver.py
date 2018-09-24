@@ -56,10 +56,11 @@ class CXGDriver(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def annotation(self, df, fields=None):
+    def annotation(self, df, axis, fields=None):
         """
          Gets annotation value for each observation
 
+        :param axis:
         :param df: from filter_cells, dataframe
         :param fields: list of keys for annotation to return, returns all annotation values if not set.
         :return: dict: names - list of fields in order, data - list of lists or metadata [idx, val1, val2...]
@@ -86,14 +87,13 @@ class CXGDriver(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def expression(self, df):
+    def data_frame(self, df):
         """
         Retrieves expression for each gene for cells in data frame
-        :param df:
+        :param df: from filter_cells, dataframe
         :return: {
-            "genes": list of genes,
-            "cells": list of cells and expression list,
-            "nonzero_gene_count": number of nonzero genes
+            "var": list of variable ids,
+            "obs": [cellid, var1 expression, var2 expression, ...],
         }
         """
         pass

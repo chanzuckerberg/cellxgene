@@ -1,11 +1,14 @@
+from http import HTTPStatus
 import pkg_resources
 
 from flask import (
     Blueprint, current_app, jsonify, make_response, request
 )
 from flask_restful_swagger_2 import Api, swagger, Resource
+from werkzeug.datastructures import ImmutableMultiDict
 
 from server.app.util.models import FilterModel
+from server.app.util.filter import parse_filter, QueryStringError
 
 
 class SchemaAPI(Resource):
@@ -134,10 +137,10 @@ class LayoutObsAPI(Resource):
         "tags": ["layout"],
         "parameters": [
             {
-                'name': 'filter',
-                'description': 'Complex Filter',
-                'in': 'body',
-                'schema': FilterModel
+                "name": "filter",
+                "description": "Complex Filter",
+                "in": "body",
+                "schema": FilterModel
             }
         ],
         "responses": {
@@ -178,12 +181,12 @@ class AnnotationsObsAPI(Resource):
                 "examples": {
                     "application/json": {
                         "names": [
-                            'tissue_type', 'sex', 'num_reads', 'clusters'
+                            "tissue_type", "sex", "num_reads", "clusters"
                         ],
                         "data": [
-                            [0, 'lung', 'F', 39844, 99],
-                            [1, 'heart', 'M', 83, 1],
-                            [49, 'spleen', None, 2, "unknown cluster"],
+                            [0, "lung", "F", 39844, 99],
+                            [1, "heart", "M", 83, 1],
+                            [49, "spleen", None, 2, "unknown cluster"],
 
                         ]
                     }
@@ -195,14 +198,13 @@ class AnnotationsObsAPI(Resource):
     def get(self):
         fields = request.args.getlist("annotation-name", None)
         try:
-            annotation_response = current_app.data.annotation(current_app.data.data, fields)
+            annotation_response = current_app.data.annotation(current_app.data.data, "obs", fields)
         except KeyError:
             return make_response(f"Error bad key in {fields}", 404)
-        else:
-            return make_response(jsonify(annotation_response))
+        return make_response(jsonify(annotation_response))
 
     @swagger.doc({
-        "summary": "Fetch annotations (metadata) for filtered subset.",
+        "summary": "Fetch annotations (metadata) for filtered subset of observations.",
         "tags": ["annotations"],
         "parameters": [
             {
@@ -212,10 +214,10 @@ class AnnotationsObsAPI(Resource):
                 "description": "list of 1 or more annotation names"
             },
             {
-                'name': 'filter',
-                'description': 'Complex Filter',
-                'in': 'body',
-                'schema': FilterModel
+                "name": "filter",
+                "description": "Complex Filter",
+                "in": "body",
+                "schema": FilterModel
             }
         ],
         "responses": {
@@ -224,12 +226,12 @@ class AnnotationsObsAPI(Resource):
                 "examples": {
                     "application/json": {
                         "names": [
-                            'tissue_type', 'sex', 'num_reads', 'clusters'
+                            "tissue_type", "sex", "num_reads", "clusters"
                         ],
                         "data": [
-                            [0, 'lung', 'F', 39844, 99],
-                            [1, 'heart', 'M', 83, 1],
-                            [49, 'spleen', None, 2, "unknown cluster"],
+                            [0, "lung", "F", 39844, 99],
+                            [1, "heart", "M", 83, 1],
+                            [49, "spleen", None, 2, "unknown cluster"],
 
                         ]
                     }
@@ -242,10 +244,189 @@ class AnnotationsObsAPI(Resource):
         fields = request.args.getlist("annotation-name", None)
         df = current_app.data.filter_dataframe(request.get_json()["filter"])
         try:
-            annotation_response = current_app.data.annotation(df, fields)
+            annotation_response = current_app.data.annotation(df, "obs", fields)
         except KeyError:
             return make_response(f"Error bad key in {fields}", 404)
         return make_response(jsonify(annotation_response))
+
+
+class AnnotationsVarAPI(Resource):
+    @swagger.doc({
+        "summary": "Fetch annotations (metadata) for all variables.",
+        "tags": ["annotations"],
+        "parameters": [{
+            "in": "query",
+            "name": "annotation-name",
+            "type": "string",
+            "description": "list of 1 or more annotation names"
+        }],
+        "responses": {
+            "200": {
+                "description": "annotations",
+                "examples": {
+                    "application/json": {
+                        "names": [
+                            "name", "category"
+                        ],
+                        "data": [
+                            [0, "ATAD3C", 1],
+                            [1, "RER1", None],
+                            [49, "S100B", 6]
+                        ]
+                    }
+
+                }
+            }
+        }
+    })
+    def get(self):
+        fields = request.args.getlist("annotation-name", None)
+        try:
+            annotation_response = current_app.data.annotation(current_app.data.data, "var", fields)
+        except KeyError:
+            return make_response(f"Error bad key in {fields}", 404)
+        return make_response(jsonify(annotation_response))
+
+    @swagger.doc({
+        "summary": "Fetch annotations (metadata) for filtered subset of variables.",
+        "tags": ["annotations"],
+        "parameters": [
+            {
+                "in": "query",
+                "name": "annotation-name",
+                "type": "string",
+                "description": "list of 1 or more annotation names"
+            },
+            {
+                "name": "filter",
+                "description": "Complex Filter",
+                "in": "body",
+                "schema": FilterModel
+            }
+        ],
+        "responses": {
+            "200": {
+                "description": "annotations",
+                "examples": {
+                    "application/json": {
+                        "names": [
+                            "name", "category"
+                        ],
+                        "data": [
+                            [0, "ATAD3C", 1],
+                            [1, "RER1", None],
+                            [49, "S100B", 6]
+                        ]
+                    }
+
+                }
+            }
+        }
+    })
+    def put(self):
+        fields = request.args.getlist("annotation-name", None)
+        df = current_app.data.filter_dataframe(request.get_json()["filter"])
+        try:
+            annotation_response = current_app.data.annotation(df, "var", fields)
+        except KeyError:
+            return make_response(f"Error bad key in {fields}", 404)
+        return make_response(jsonify(annotation_response))
+
+
+class DataObsAPI(Resource):
+    @swagger.doc({
+        "summary": "Get data (expression values) from the dataframe.",
+        "tags": ["data"],
+        "parameters": [
+            {
+                "in": "query",
+                "name": "filter",
+                "type": "string",
+                "description": "axis:key:value"
+            },
+            {
+                "in": "query",
+                "name": "accept-type",
+                "type": "string",
+                "description": "MIME type"
+            },
+        ],
+        "responses": {
+            "200": {
+                "description": "expression",
+                "examples": {
+                    "application/json": {
+                        "var": [0, 20000],
+                        "obs": [
+                            [1, 39483, 3902, 203, 0, 0, 28]
+                        ]
+                    }
+                }
+            },
+            "400": {
+                "description": "Malformed filter"
+            },
+            "406": {
+                "description": "Unacceptable MIME type"
+            },
+        }
+    })
+    def get(self):
+        # request.args is immutable
+        args = dict(request.args)
+        accept_type = args.pop("accept-type", None)
+        try:
+            filter_ = parse_filter(ImmutableMultiDict(args), current_app.data.schema['annotations'])
+        except QueryStringError as e:
+            return make_response(e.message, HTTPStatus.BAD_REQUEST)
+        df = current_app.data.filter_dataframe(filter_)
+        if accept_type and accept_type[0] == "application/json":
+            return make_response((jsonify(current_app.data.data_frame(df))))
+        # TODO support CSV
+        else:
+            return make_response(f"Unsupported accept-type: {accept_type}", HTTPStatus.NOT_ACCEPTABLE)
+
+    @swagger.doc({
+        "summary": "Get data (expression values) from the dataframe.",
+        "tags": ["data"],
+        "parameters": [
+            {
+                'name': 'filter',
+                'description': 'Complex Filter',
+                'in': 'body',
+                'schema': FilterModel
+            }
+        ],
+        "responses": {
+            "200": {
+                "description": "expression",
+                "examples": {
+                    "application/json": {
+                        "var": [0, 20000],
+                        "obs": [
+                            [1, 39483, 3902, 203, 0, 0, 28]
+                        ]
+                    }
+                }
+            },
+            "400": {
+                "description": "Malformed filter"
+            },
+            "406": {
+                "description": "Unacceptable MIME type"
+            },
+        }
+    })
+    def put(self):
+        if not request.accept_mimetypes.best_match(["application/json", "text/csv"]):
+            return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
+        # TODO catch error for bad filter
+        df = current_app.data.filter_dataframe(request.get_json()["filter"])
+        if request.accept_mimetypes.best_match(['application/json']):
+            return make_response((jsonify(current_app.data.data_frame(df))))
+        # TODO support CSV
+        else:
+            return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
 
 
 def get_api_resources():
@@ -255,4 +436,6 @@ def get_api_resources():
     api.add_resource(ConfigAPI, "/config")
     api.add_resource(LayoutObsAPI, "/layout/obs")
     api.add_resource(AnnotationsObsAPI, "/annotations/obs")
+    api.add_resource(AnnotationsVarAPI, "/annotations/var")
+    api.add_resource(DataObsAPI, "/data/obs")
     return api

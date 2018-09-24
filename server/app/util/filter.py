@@ -7,7 +7,10 @@ from server.app.util.constants import Axis
 
 
 class QueryStringError(Exception):
-    pass
+
+    def __init__(self, key, message):
+        self.key = key
+        self.message = message
 
 
 def _convert_variable(datatype, variable):
@@ -55,34 +58,30 @@ def parse_filter(query_filter, schema):
         try:
             Axis(axis)
         except ValueError:
-            raise QueryStringError(f"Error: bad axis in query string {axis}")
+            raise QueryStringError(key, f"Error: key {key} not in metadata schema")
         ann_filter = {"name": annotation}
         for ann in schema[axis]:
             if ann["name"] == annotation:
                 dtype = ann["type"]
                 break
         else:
-            raise QueryStringError(f"Error: {annotation} not a valid annotation type")
+            raise QueryStringError(key, f"Error: {annotation} not a valid annotation name")
         if dtype in ["string", "categorical", "boolean"]:
-            ann_filter["value"] = [_convert_variable(dtype, i) for i in query_filter.getlist(key)]
+            ann_filter["values"] = [_convert_variable(dtype, i) for i in query_filter.getlist(key)]
         else:
             value = query_filter.get(key)
             try:
                 min_, max_ = value.split(",")
             except ValueError:
-                raise QueryStringError(f"Error: min,max format required for range for {annotation}, got {value}")
+                raise QueryStringError(key, f"Error: min,max format required for range for {annotation}, got {value}")
             if min_ == "*":
                 min_ = None
             if max_ == "*":
                 max_ = None
             try:
-                ann_filter["value"] = {
-                    "min": _convert_variable(dtype, min_),
-                    "max": _convert_variable(dtype, max_)
-                }
+                ann_filter["min"] = _convert_variable(dtype, min_)
+                ann_filter["max"] = _convert_variable(dtype, max_)
             except ValueError:
-                raise QueryStringError(
-                    f"Error: expected type {dtype} for key {annotation}, got {value}"
-                )
+                raise QueryStringError(key, f"Error: expected type {query[key]['type']} for key {key}, got {value}")
         query[axis]["annotation_value"].append(ann_filter)
     return query
