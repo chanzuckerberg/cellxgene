@@ -44,135 +44,6 @@ These functions are used exclusively by the actions and reducers to
 build an internal POJO for use by the rendering components.
 */
 
-// XXX cleanup
-/*
-Cherry pick from /api/v0.1 response format to make somethign similar
-to the v0.2 schema, which we use for internal interfaces.
-*/
-function RESTv01ResponseToSchema(response) {
-  /*
-      Annotation schemas in V02 (our target) look like:
-
-          annotations: {
-            obs: [
-              { name: "name", type: "string" },
-              { name: "num_reads", type: "int32" },
-              {
-                name: "clusters",
-                type: "categorical",
-                categories=[ 99, 1, "unknown cluster" ]
-              },
-              { name: "QScore", type: "float32" }
-            ],
-            var: [
-              { "name": "name", "type": "string" },
-              { "name": "gene", "type": "string" }
-            ]
-          }
-
-    In V01, our source, it looks like:
-
-        "schema": {
-          "CellName": {
-            "displayname": "Name",
-            "include": true,
-            "type": "string",
-            "variabletype": "categorical"
-          },
-          "Cluster_2d": {
-            "displayname": "Cluster2d",
-            "include": true,
-            "type": "string",
-            "variabletype": "categorical"
-          },
-          "ERCC_reads": {
-            "displayname": "ERCC Reads",
-            "include": true,
-            "type": "int",
-            "variabletype": "continuous"
-          },
-          ...
-        }
-
-    Mapping between the two assumes:
-      - V01 only has schema for observations
-      - CellName is mapped to 'name'
-      - type conversion:   float->float32, int->int32, string->string
-
-    */
-  return {
-    annotations: {
-      obs: _.map(response.data.schema, (val, key) => {
-        const name = key === "CellName" ? "name" : key;
-        let { type } = val;
-        if (type === "int") {
-          type = "int32";
-        }
-        if (type === "float") {
-          type = "float32";
-        }
-        return {
-          name,
-          type
-        };
-      }),
-      var: [{ name: "name", type: "string" }]
-    }
-  };
-}
-
-// XXX cleanup
-function RESTv01ResponseToVarAnnotations(response) {
-  /*
-  v0.1 initialize response contains 'genes' - names of all genes
-  in order.
-  */
-  return _.map(response.data.genes, (g, i) => ({ __varIndex__: i, name: g }));
-}
-
-// XXX cleanup
-function RESTv01ResponseToObsAnnotations(response) {
-  /*
-  v0.1 format for metadata:
-  metadata: [ { key: val, key: val, ... }, ... ]
-
-  Target format is essentially the same, except the CellName key becomes name.
-  */
-  return _.map(response.data.metadata, (c, i) => ({
-    __index__: i,
-    name: c.CellName,
-    ...c
-  }));
-}
-
-// XXX cleanup
-function RESTv01ResponseToLayout(obsAnnotations, response) {
-  /*
-  v0.1 format for the graph is:
-  [ [ 'cellname', x, y ], [ 'cellname', x, y, ], ... ]
-
-  NOTE XXX: this code does not assume any particular array ordering in the V0.1
-  response.  But for Universe initial load, the layout will be in the same
-  order as annotations, so this extra work isn't really necessary.
-  */
-
-  const obsAnnotationsByName = _.keyBy(obsAnnotations, "name");
-  const { graph } = response.data;
-  const layout = {
-    X: new Float32Array(graph.length),
-    Y: new Float32Array(graph.length)
-  };
-
-  for (let i = 0; i < graph.length; i += 1) {
-    const [name, x, y] = graph[i];
-    const anno = obsAnnotationsByName[name];
-    const idx = anno.__index__;
-    layout.X[idx] = x;
-    layout.Y[idx] = y;
-  }
-  return layout;
-}
-
 /*
 generate any client-side transformations or summarization that
 is independent of REST API response formats.
@@ -212,37 +83,6 @@ function finalize(universe) {
   );
   universe.finalized = true;
   return universe;
-}
-
-// XXX cleanup
-export function createUniverseFromRESTv01Response(initResponse, cellsResponse) {
-  /*
-  build & return universe from a REST 0.1 /init and /cells response
-  */
-
-  const universe = templateUniverse();
-
-  /* constants */
-  universe.api = "0.1";
-
-  /* extract information from init OTA response */
-  universe.schema = RESTv01ResponseToSchema(initResponse);
-  universe.varAnnotations = RESTv01ResponseToVarAnnotations(initResponse);
-  universe.nVar = universe.varAnnotations.length;
-
-  /* extract information fron cells REST json response */
-  /*
-  NOTE: this code *assumes* that cell order in data.metadata and data.graph
-  are the same.  TODO: error checking.
-  */
-  universe.obsAnnotations = RESTv01ResponseToObsAnnotations(cellsResponse);
-  universe.nObs = universe.obsAnnotations.length;
-  universe.obsLayout = RESTv01ResponseToLayout(
-    universe.obsAnnotations,
-    cellsResponse
-  );
-
-  return finalize(universe);
 }
 
 function RESTv02AnnotationsResponseToInternal(response) {
@@ -319,8 +159,7 @@ export function createUniverseFromRestV02Response(
   configResponse,
   schemaResponse,
   annotationsObsResponse,
-  // XXX: TODO
-  // annotationsVarResponse,
+  annotationsVarResponse,
   layoutObsResponse
 ) {
   /*
@@ -333,7 +172,7 @@ export function createUniverseFromRestV02Response(
   universe.api = "0.2";
 
   /* schema related */
-  universe.schema = schema.annotations;
+  universe.schema = schema;
   universe.nObs = schema.dataframe.nObs;
   universe.nVar = schema.dataframe.nVar;
 
@@ -341,17 +180,17 @@ export function createUniverseFromRestV02Response(
   universe.obsAnnotations = RESTv02AnnotationsResponseToInternal(
     annotationsObsResponse
   );
-  // universe.varAnnotations = RESTv02AnnotationsResponseToInternal(
-  //   annotationsVarResponse
-  // );
+  universe.varAnnotations = RESTv02AnnotationsResponseToInternal(
+    annotationsVarResponse
+  );
 
   /* layout */
-  // To do
   universe.obsLayout = RESTv02LayoutResponseToInternal(layoutObsResponse);
 
   return finalize(universe);
 }
 
+// XXX cleanup
 export function convertExpressionRESTv01ToObject(universe, response) {
   /*
     v0.1 ota looks like:

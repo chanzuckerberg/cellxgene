@@ -17,54 +17,6 @@ function catchErrorsWrap(fn) {
   };
 }
 
-async function doRequestInitializeV01() {
-  const res = await fetch(
-    `${globals.API.prefix}${globals.API.version}initialize`,
-    {
-      method: "get",
-      headers: new Headers({
-        "Content-Type": "application/json"
-      })
-    }
-  );
-  return res.json();
-}
-
-async function doRequestCellsV01(query) {
-  const res = await fetch(
-    `${globals.API.prefix}${globals.API.version}cells${query}`,
-    {
-      method: "get",
-      headers: new Headers({
-        "Content-Type": "application/json"
-      })
-    }
-  );
-  return res.json();
-}
-
-function doInitialDataLoadV01(query = "") {
-  return catchErrorsWrap(async dispatch => {
-    dispatch({ type: "initial data load start" });
-    try {
-      const res = await Promise.all([
-        doRequestInitializeV01(),
-        doRequestCellsV01(query)
-      ]);
-      const universe = Universe.createUniverseFromRESTv01Response(
-        res[0],
-        res[1]
-      );
-      dispatch({
-        type: "initial data load complete (universe exists)",
-        universe
-      });
-    } catch (error) {
-      dispatch({ type: "initial data load error", error });
-    }
-  });
-}
-
 /*
 Bootstrap application with the initial data loading.
   * /config - application configuration
@@ -90,7 +42,7 @@ const doInitialDataLoadRESTV02 = () =>
         "config",
         "schema",
         "annotations/obs",
-        // TODO: "annotations/var",
+        "annotations/var",
         "layout/obs"
       ])
         .map(r => `${globals.API.prefix}${globals.API.version}${r}`)
@@ -100,7 +52,7 @@ const doInitialDataLoadRESTV02 = () =>
       const universe = Universe.createUniverseFromRestV02Response(...results);
       dispatch({
         type: "configuration load complete",
-        config: requests[0]
+        config: results[0].config
       });
       dispatch({
         type: "initial data load complete (universe exists)",
