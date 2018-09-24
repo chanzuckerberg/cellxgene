@@ -6,6 +6,7 @@ from flask import (
 from flask_restful_swagger_2 import Api, swagger, Resource
 
 from server.app.util.models import FilterModel
+from server.app.util.constants import Axis, DiffExpMode
 
 
 class SchemaAPI(Resource):
@@ -246,6 +247,94 @@ class AnnotationsObsAPI(Resource):
         except KeyError:
             return make_response(f"Error bad key in {fields}", 404)
         return make_response(jsonify(annotation_response))
+
+
+class DiffExpObsAPI(Resource):
+    @swagger.doc({
+        "summary": "Generate differential expression (DE) statistics for two specified subsets of data, "
+                   "as indicated by the two provided observation complex filters",
+        "tags": ["diffexp"],
+        # TODO sort out params
+        # "parameters": [
+        #     # {
+        #     #     "in": "body",
+        #     #     "name": "mode",
+        #     #     "type": "string",
+        #     #     "required": True,
+        #     #     "description": "topN or varFilter"
+        #     # },
+        #     {
+        #         "in": "query",
+        #         "name": "count",
+        #         "type": "int32",
+        #         "description": "TopN mode: how many vars to return"
+        #     },
+        #     {
+        #         "in": "body",
+        #         "name": "varFilter",
+        #         "schema": FilterModel,
+        #         "description": "varFilter: Complex filter, only var for which vars to return"
+        #     },
+        #     {
+        #         "in": "body",
+        #         "name": "set1",
+        #         "schema": FilterModel,
+        #         "required": True,
+        #         "description": "Complex filter, only obs - observations in set1"
+        #     },
+        #     {
+        #         "in": "body",
+        #         "name": "set2",
+        #         "schema": FilterModel,
+        #         "description": "Complex filter, only obs - observations in set2. If not included, inverse of set1."
+        #     },
+        # ],
+        "responses": {
+            "200": {
+                "description": "Statistics are encoded as an array of arrays, with fields ordered as: "
+                               "varIndex, avgDiff,  pVal, pValAdj, set1AvgExp, set2AvgExp",
+                "examples": {
+                    "application/json": [
+                        [328, -2.569489, 2.655706e-63, 3.642036e-57, 383.393, 583.9],
+                        [1250, -2.569489, 2.655706e-63, 3.642036e-57, 383.393, 583.9],
+                    ]
+                }
+            }
+        }
+    })
+    def post(self):
+        args = request.get_json()
+        mode = args["mode"]
+        # Validate filters
+        if "varFilter" in args:
+            if mode != DiffExpMode.VAR_FILTER:
+                return make_response(f"Var filter included but mode requested is {mode} not varFilter")
+            if Axis.OBS in args["varFilter"]["filter"]:
+                return make_response("Obs filter not allowed in varFilter", 400)
+        # set1 filter only obs
+        if Axis.VAR in args["set1"]["filter"]:
+            return make_response("Var filter not allowed for set1", 400)
+        # set2
+        if "set2" in args and Axis.VAR in args["set2"]["filter"]:
+            return make_response("Var filter not allowed for set2", 400)
+        if mode == DiffExpMode.TOP_N and "set2" not in args:
+            return make_response("Set2 as inverse of set1 is not implemented", 501)
+        set1Filter = args["set1"]["filter"]
+        set2Filter = args.get("set2", {"filter": {}})["filter"]
+        if "varFilter" in args:
+            set1Filter[Axis.VAR] = args["varFilter"]["filter"][Axis.VAR]
+            set2Filter[Axis.VAR] = args["varFilter"]["filter"][Axis.VAR]
+        df1 = current_app.data.filter_dataframe(set1Filter)
+        # TODO inverse?
+        df2 = current_app.data.filter_dataframe(set2Filter)
+        # TODO exceeds size limit
+        # mode
+        count = args.get("count", None)
+        try:
+            diffexp = current_app.data.diffexp(df1, df2, count)
+        except ValueError as ve:
+            return make_response(ve.message, 400)
+        return make_response(jsonify(diffexp))
 
 
 def get_api_resources():

@@ -23,5 +23,5 @@ class Axis(AugmentedEnum):
 
 
 class DiffExpMode(AugmentedEnum):
-    TOP_VAR = "top var"
-    VAR_FILTER = "var filter"
+    TOP_N = "topN"
+    VAR_FILTER = "varFilter"

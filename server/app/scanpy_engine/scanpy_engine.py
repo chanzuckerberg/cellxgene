@@ -241,11 +241,11 @@ class ScanpyEngine(CXGDriver):
 
         # If not all genes, they used a var filter
         if df1.var.shape[0] < self.gene_count:
-            mode = DiffExpMode("var filter")
+            mode = DiffExpMode.VAR_FILTER
             if top_n:
                 raise Warning("Top N was specified but will not be used in 'Var Filter' mode")
         else:
-            mode = DiffExpMode("top var")
+            mode = DiffExpMode.TOP_N
             if not top_n:
                 top_n = DEFAULT_TOP_N
 
@@ -256,7 +256,7 @@ class ScanpyEngine(CXGDriver):
         ave_exp_set1 = np.mean(df1.X, axis=0)
         ave_exp_set2 = np.mean(df2.X, axis=0)
         ave_diff = ave_exp_set1 - ave_exp_set2
-        if mode == DiffExpMode.TOP_VAR:
+        if mode == DiffExpMode.TOP_N:
             sort_order = np.argsort(np.abs(diffexp_result.statistic))[::-1]
             # If top_n > length it will just return length
             genes = self._top_sort(genes_idx, sort_order, top_n)
