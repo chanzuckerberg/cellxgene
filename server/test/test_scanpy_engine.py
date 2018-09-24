@@ -134,5 +134,30 @@ class UtilTest(unittest.TestCase):
         layout = self.data.layout(data)
         self.assertEqual(len(layout["coordinates"]), 497)
 
+    def test_diffexp(self):
+        f1 = {
+            "filter": {
+                "obs": {
+                    "index": [[0, 500]]
+                }
+            }
+        }
+        df1 = self.data.filter_dataframe(f1["filter"])
+        f2 = {
+            "filter": {
+                "obs": {
+                    "index": [[500, 1000]]
+                }
+            }
+        }
+        df2 = self.data.filter_dataframe(f2["filter"])
+        result = self.data.diffexp(df1, df2)
+        self.assertEqual(len(result), 10)
+        var_idx = [i[0] for i in result]
+        self.assertEqual(var_idx, sorted(var_idx))
+        result = self.data.diffexp(df1, df2, 20)
+        self.assertEqual(len(result), 20)
+
+
     if __name__ == '__main__':
         unittest.main()

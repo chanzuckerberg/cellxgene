@@ -8,7 +8,7 @@ from scipy import stats
 
 from server.app.app import cache
 from server.app.driver.driver import CXGDriver
-from server.app.util.constants import Axis
+from server.app.util.constants import Axis, DEFAULT_TOP_N, DiffExpMode
 
 
 class ScanpyEngine(CXGDriver):
@@ -69,6 +69,17 @@ class ScanpyEngine(CXGDriver):
     @staticmethod
     def _load_data(data):
         return sc.read(os.path.join(data, "data.h5ad"))
+
+    @staticmethod
+    def _top_sort(values, sort_order, top_n=None):
+        """
+        Sorts an iterable in sort order limited by top_n
+        :param values: iterable of values to sort
+        :param sort_order: ndarray order to sort in
+        :param top_n: cutoff number to return
+        :return: values sorted by sort_order limited by top_n
+        """
+        return values[sort_order][:top_n]
 
     def _add_mandatory_annotations(self):
         # ensure gene
@@ -214,51 +225,53 @@ class ScanpyEngine(CXGDriver):
         }
 
     @cache.memoize()
-    def diffexp(self, cell_list_1, cell_list_2, pval, num_genes):
+    def diffexp(self, df1, df2, top_n=None):
         """
-        Computes the top differentially expressed genes between two clusters
-        :param df1: from filter_cells, dataframe containing first set of cells
-        :param df2: from filter_cells, dataframe containing second set of cells
-        :return: top genes, stats and expression values for top genes
+        Computes the top differentially expressed variables between two observation sets. If dataframes
+        contain a subset of variables, then statistics for all variables will be returned, otherwise
+        only the top N vars will be returned.
+        :param df1: from filter_cells, dataframe containing first set of observations
+        :param df2: from filter_cells, dataframe containing second set of observations
+        :param topN: Limit results to top N (Top var mode only)
+        :return: top genes, stats and expression values for variables
         """
-        cells_idx_1 = np.in1d(self.data.obs["cell_name"], cell_list_1)
-        cells_idx_2 = np.in1d(self.data.obs["cell_name"], cell_list_2)
-        expression_1 = self.data.X[cells_idx_1, :]
-        expression_2 = self.data.X[cells_idx_2, :]
-        diff_exp = stats.ttest_ind(expression_1, expression_2)
-        # TODO break this up into functions
-        set1 = np.logical_and(diff_exp.pvalue < pval, diff_exp.statistic > 0)
-        set2 = np.logical_and(diff_exp.pvalue < pval, diff_exp.statistic < 0)
-        stat1 = diff_exp.statistic[set1]
-        stat2 = diff_exp.statistic[set2]
-        sort_set1 = np.argsort(stat1)[::-1]
-        sort_set2 = np.argsort(stat2)
-        pval1 = diff_exp.pvalue[set1][sort_set1]
-        pval2 = diff_exp.pvalue[set2][sort_set2]
-        mean_ex1_set1 = np.mean(expression_1[:, set1], axis=0)[sort_set1]
-        mean_ex2_set1 = np.mean(expression_2[:, set1], axis=0)[sort_set1]
-        mean_ex1_set2 = np.mean(expression_1[:, set2], axis=0)[sort_set2]
-        mean_ex2_set2 = np.mean(expression_2[:, set2], axis=0)[sort_set2]
-        mean_diff1 = mean_ex1_set1 - mean_ex2_set1
-        mean_diff2 = mean_ex1_set2 - mean_ex2_set2
-        genes_cellset_1 = self.data.var_names[set1][sort_set1]
-        genes_cellset_2 = self.data.var_names[set2][sort_set2]
-        return {
-            "celllist1": {
-                "topgenes": genes_cellset_1.tolist()[:num_genes],
-                "mean_expression_cellset1": mean_ex1_set1.tolist()[:num_genes],
-                "mean_expression_cellset2": mean_ex2_set1.tolist()[:num_genes],
-                "pval": pval1.tolist()[:num_genes],
-                "ave_diff": mean_diff1.tolist()[:num_genes]
-            },
-            "celllist2": {
-                "topgenes": genes_cellset_2.tolist()[:num_genes],
-                "mean_expression_cellset1": mean_ex1_set2.tolist()[:num_genes],
-                "mean_expression_cellset2": mean_ex2_set2.tolist()[:num_genes],
-                "pval": pval2.tolist()[:num_genes],
-                "ave_diff": mean_diff2.tolist()[:num_genes]
-            },
-        }
+        # If not the same genes, test is wrong!
+        if np.any(df1.var.index != df2.var.index):
+            raise ValueError("Variables ares not the same in set1 and set2")
+
+        # If not all genes, they used a var filter
+        if df1.var.shape[0] < self.gene_count:
+            mode = DiffExpMode("var filter")
+            if top_n:
+                raise Warning("Top N was specified but will not be used in 'Var Filter' mode")
+        else:
+            mode = DiffExpMode("top var")
+            if not top_n:
+                top_n = DEFAULT_TOP_N
+
+        genes_idx = df1.var.index
+        diffexp_result = stats.ttest_ind(df1.X, df2.X)
+        pval = diffexp_result.pvalue
+        bonferroni_pval = 1 - (1 - pval) ** self.gene_count
+        ave_exp_set1 = np.mean(df1.X, axis=0)
+        ave_exp_set2 = np.mean(df2.X, axis=0)
+        ave_diff = ave_exp_set1 - ave_exp_set2
+        if mode == DiffExpMode.TOP_VAR:
+            sort_order = np.argsort(np.abs(diffexp_result.statistic))[::-1]
+            # If top_n > length it will just return length
+            genes = self._top_sort(genes_idx, sort_order, top_n)
+            pval = self._top_sort(pval, sort_order, top_n)
+            bonferroni_pval = self._top_sort(bonferroni_pval, sort_order, top_n)
+            ave_exp_set1 = self._top_sort(ave_exp_set1, sort_order, top_n)
+            ave_exp_set2 = self._top_sort(ave_exp_set2, sort_order, top_n)
+            ave_diff = self._top_sort(ave_diff, sort_order, top_n)
+
+        # varIndex, avgDiff,  pVal, pValAdj, set1AvgExp, set2AvgExp
+        result = []
+        for i in range(len(genes)):
+            result.append([genes[i], ave_diff[i], pval[i], bonferroni_pval[i], ave_exp_set1[i], ave_exp_set2[i]])
+        # Results need to be returned in var index order
+        return sorted(result, key=lambda gene: gene[0])
 
     @cache.memoize()
     def expression(self, cells=None, genes=None):

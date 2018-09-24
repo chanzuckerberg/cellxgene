@@ -76,12 +76,15 @@ class CXGDriver(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def diffexp(self, df1, df2):
+    def diffexp(self, df1, df2, genes):
         """
-        Computes the top differentially expressed genes between two clusters
-        :param df1: from filter_cells, dataframe containing first set of cells
-        :param df2: from filter_cells, dataframe containing second set of cells
-        :return: top genes, stats and expression values for top genes
+        Computes the top differentially expressed variables between two observation sets. If dataframes
+        contain a subset of variables, then statistics for all variables will be returned, otherwise
+        only the top N vars will be returned.
+        :param df1: from filter_cells, dataframe containing first set of observations
+        :param df2: from filter_cells, dataframe containing second set of observations
+        :param topN: Limit results to top N (Top var mode only)
+        :return: top genes, stats and expression values for variables
         """
         pass
 
