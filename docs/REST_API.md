@@ -68,11 +68,11 @@ There are several common filters supported by various routes. Route descriptions
 
 Filter by the value of specific observation or variable annotation values. For example, the `/data` routes support sub-selection by the value of the annotations, which might be used to filter by some specific metadata (eg, `tissue_type: lung`).
 
-Annotation value filters can be specified as a URL query parameter (using GET), or a JSON object in a request body (using PUT or POST)<sup>[1](#footnote-1)</sup>.
+Annotation value filters can be specified as a URL query parameter (using GET), or a JSON object in a request body (using PUT or POST)<sup>[1](#endnote-1)</sup>.
 
 For a GET URL query parameter:
 
-- Annotation name is encoded as `obs:name` or `var:name`<sup>[2](#footnote-2)</sup>.
+- Annotation name is encoded as `obs:name` or `var:name`<sup>[2](#endnote-2)</sup>.
 - Enumerated values (string, categorical, boolean) are encoded as option lists, ie, `var:tissue=lung, obs:tumor=true`
 - Scalar values (int32, float32) are encoded as ranges, ie, `obs:num_reads=1000,10000` where either min or max may be replaced with an asterisk to indicate a half-open range.
 - Index filters are not be allowed within GET URL query parameter filters
@@ -664,10 +664,10 @@ POST /data/saveSelection?name=myFavCluster
 }
 ```
 
-<!-- Footnotes themselves at the bottom. -->
+<!-- Endnotes themselves at the bottom. -->
 
 ## Notes
 
-<a name="footnote-1">[1]</a>: Filters can often be large and complex, and exceed the URL length limitations - the POST method provides a means for the client to accommodate these cases. The GET method is provided for those cases where this is not concern, and/or where the client requires deep linking (subject to this URL length limit).
+<a name="endnote-1">[1]</a>: Filters can often be large and complex, and exceed the URL length limitations - the POST method provides a means for the client to accommodate these cases. The GET method is provided for those cases where this is not concern, and/or where the client requires deep linking (subject to this URL length limit).
 
-<a name="footnote-2">[2]</a>: Note to implementers -- this scheme requires careful use of URL encoding to ensure that both annotation names and annotation values are properly escaped. It requires that both normal URL encoding is applied, as well as ensuring that the annotation name has any embedded colon characters escaped.
+<a name="endnote-2">[2]</a>: Note to implementers -- this scheme requires careful use of URL encoding to ensure that both annotation names and annotation values are properly escaped. It requires that both normal URL encoding is applied, as well as ensuring that the annotation name has any embedded colon characters escaped.
