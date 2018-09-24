@@ -1,6 +1,6 @@
 // jshint esversion: 6
-const _ = require("lodash");
-const crossfilter = require("../../src/util/typedCrossfilter");
+import _ from "lodash";
+import crossfilter from "../../src/util/typedCrossfilter";
 
 const someData = [
   {

@@ -1,6 +1,7 @@
 // jshint esversion: 6
 
-const BitArray = require("../../src/util/typedCrossfilter/bitArray");
+import BitArray from "../../src/util/typedCrossfilter/bitArray";
+
 const defaultTestLength = 8;
 
 describe("default select state", () => {
