@@ -7,9 +7,7 @@ import { connect } from "react-redux";
 // import PulseLoader from "halogen/PulseLoader";
 
 import LeftSideBar from "./leftsidebar";
-import Parallel from "./continuous/parallel";
 import Legend from "./continuousLegend";
-import Joy from "./joy/joy";
 import Graph from "./graph/graph";
 import * as globals from "../globals";
 import actions from "../actions";
@@ -18,7 +16,8 @@ import SectionHeader from "./framework/sectionHeader";
 
 @connect(state => {
   return {
-    cells: state.cells
+    loading: state.controls.loading,
+    error: state.controls.error
   };
 })
 class App extends React.Component {
@@ -26,20 +25,18 @@ class App extends React.Component {
     super(props);
     this.state = {};
   }
+
   _onURLChanged() {
     this.props.dispatch({ type: "url changed", url: document.location.href });
   }
+
   componentDidMount() {
     /* listen for url changes, fire one when we start the app up */
     window.addEventListener("popstate", this._onURLChanged);
     this._onURLChanged();
 
-    this.props.dispatch(actions.initialize());
+    this.props.dispatch(actions.doInitialDataLoad(window.location.search));
 
-    /*
-      first request includes query straight off the url bar for now
-    */
-    this.props.dispatch(actions.requestCells(window.location.search));
     /* listen for resize events */
     window.addEventListener("resize", () => {
       this.props.dispatch({
@@ -60,31 +57,25 @@ class App extends React.Component {
   }
 
   render() {
-    // console.log('app:', this.props, this.state)
-
+    const { loading, error } = this.props;
     return (
       <Container>
         <Helmet title="cellxgene" />
-        {this.props.cells.loading ? (
+        {loading ? (
           <div
-            style={{ position: "fixed", left: window.innerWidth / 2, top: 150 }}
+            style={{
+              position: "fixed",
+              fontWeight: 500,
+              top: window.innerHeight / 2,
+              left: window.innerWidth / 2 - 50
+            }}
           >
-            {/*<PulseLoader color="rgb(0,0,0)" size="10px" margin="4px" />*/}
-            <span
-              style={{ fontFamily: globals.accentFont, fontStyle: "italic" }}
-            >
-              loading cells
-            </span>
+            loading cellxgene
           </div>
         ) : null}
-        {this.props.cells.error ? "Error loading cells" : null}
-        {false ? (
-          <Joy data={this.state.expressions && this.state.expressions.data} />
-        ) : (
-          ""
-        )}
+        {error ? "Error loading cells" : null}
         <div>
-          <LeftSideBar />
+          {loading ? null : <LeftSideBar />}
           <div
             style={{
               padding: 15,
@@ -92,9 +83,10 @@ class App extends React.Component {
               marginLeft: 350 /* but responsive */
             }}
           >
-            <Graph />
+            {loading ? null : <Graph />}
+
             <Legend />
-            {/*<Parallel/>*/}
+            {}
           </div>
         </div>
       </Container>

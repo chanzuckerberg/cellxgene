@@ -1,6 +1,7 @@
 // jshint esversion: 6
 import React from "react";
 import _ from "lodash";
+import memoize from "memoize-one";
 import { connect } from "react-redux";
 import * as globals from "../../globals";
 import styles from "./expression.css";
@@ -9,6 +10,8 @@ import actions from "../../actions";
 import ReactAutocomplete from "react-autocomplete"; /* http://emilebres.github.io/react-virtualized-checkbox/ */
 import getContrast from "font-color-contrast"; // https://www.npmjs.com/package/font-color-contrast
 import FaPaintBrush from "react-icons/lib/fa/paint-brush";
+import * as d3 from "d3";
+import { interpolateGreys } from "d3-scale-chromatic";
 
 class HeatmapSquare extends React.Component {
   constructor(props) {
@@ -17,6 +20,7 @@ class HeatmapSquare extends React.Component {
       value: ""
     };
   }
+
   render() {
     const contrastColor = getContrast(
       this.props.backgroundColor
@@ -64,6 +68,7 @@ class HeatmapRow extends React.Component {
       value: ""
     };
   }
+
   handleGeneColorScaleClick(gene) {
     return () => {
       this.props.dispatch(
@@ -73,6 +78,7 @@ class HeatmapRow extends React.Component {
       );
     };
   }
+
   handleSetGeneAsScatterplotX(gene) {
     return () => {
       this.props.dispatch({
@@ -81,6 +87,7 @@ class HeatmapRow extends React.Component {
       });
     };
   }
+
   handleSetGeneAsScatterplotY(gene) {
     return () => {
       this.props.dispatch({
@@ -89,6 +96,7 @@ class HeatmapRow extends React.Component {
       });
     };
   }
+
   render() {
     return (
       <div
@@ -121,15 +129,13 @@ class HeatmapRow extends React.Component {
           style={{
             fontSize: 12,
             marginLeft: 10,
-            marginRight: 10,
+            marginRight: 10
           }}
         >
           {this.props.aveDiff.toFixed(2)}
         </span>
         <span
-          onClick={this.handleSetGeneAsScatterplotX(this.props.gene).bind(
-            this
-          )}
+          onClick={this.handleSetGeneAsScatterplotX(this.props.gene).bind(this)}
           style={{
             fontSize: 16,
             color:
@@ -152,9 +158,7 @@ class HeatmapRow extends React.Component {
           X
         </span>
         <span
-          onClick={this.handleSetGeneAsScatterplotY(this.props.gene).bind(
-            this
-          )}
+          onClick={this.handleSetGeneAsScatterplotY(this.props.gene).bind(this)}
           style={{
             fontSize: 16,
             color:
@@ -213,7 +217,7 @@ class HeatmapRow extends React.Component {
 @connect(state => {
   return {
     differential: state.differential,
-    allGeneNames: state.controls.allGeneNames
+    world: state.controls.world
   };
 })
 class Heatmap extends React.Component {
@@ -223,12 +227,18 @@ class Heatmap extends React.Component {
       value: ""
     };
   }
+
+  getAllGeneNames = memoize(world =>
+    _.map(this.props.world.varAnnotations, "name")
+  );
+
   render() {
     if (!this.props.differential.diffExp)
       return <p>Select cells & compute differential to see heatmap</p>;
 
     const topGenesForCellSet1 = this.props.differential.diffExp.data.celllist1;
     const topGenesForCellSet2 = this.props.differential.diffExp.data.celllist2;
+    // const allGeneNames = this.getAllGeneNames(this.props.world);
 
     const extent = d3.extent(
       _.union(
@@ -242,34 +252,10 @@ class Heatmap extends React.Component {
     const greyColorScale = d3
       .scaleSequential()
       .domain(extent)
-      .interpolator(d3.interpolateGreys);
+      .interpolator(interpolateGreys);
 
     return (
       <div>
-        Color by any gene:
-        <ReactAutocomplete
-          items={this.props.allGeneNames}
-          shouldItemRender={(item, value) =>
-            item.toLowerCase().indexOf(value.toLowerCase()) > -1
-          }
-          getItemValue={item => item}
-          renderItem={(item, highlighted) => (
-            <div
-              key={item}
-              style={{ backgroundColor: highlighted ? "#eee" : "transparent" }}
-            >
-              {item}
-            </div>
-          )}
-          value={this.state.value}
-          onChange={e => this.setState({ value: e.target.value })}
-          onSelect={value => {
-            this.setState({ value });
-            this.props.dispatch(
-              actions.requestSingleGeneExpressionCountsForColoringPOST(value)
-            );
-          }}
-        />
         <div
           style={{
             display: "flex",

@@ -5,6 +5,8 @@
 ******************************************
 ******************************************/
 
+import * as d3 from "d3";
+
 const setupScatterplot = (width, height, margin) => {
   var container = d3.select("#scatterplot");
 

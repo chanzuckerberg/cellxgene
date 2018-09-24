@@ -1,5 +1,5 @@
-"use strict";
 // jshint esversion: 6
+/* eslint no-bitwise: "off" */
 
 /*
     Utility functions, private to this module.
@@ -9,10 +9,11 @@
 // starting with `start`
 //
 export function fillRange(arr, start = 0) {
-  for (let i = 0, len = arr.length; i < len; i++) {
-    arr[i] = i + start;
+  const larr = arr;
+  for (let i = 0, len = larr.length; i < len; i += 1) {
+    larr[i] = i + start;
   }
-  return arr;
+  return larr;
 }
 
 // Search for `value` in the sorted array `arr`, in the range [first, last).
@@ -31,31 +32,35 @@ export function fillRange(arr, start = 0) {
 // a special-cased version for lining the indirection).
 //
 export function lowerBound(valueArray, value, first, last) {
+  let lfirst = first;
+  let llast = last;
   // this is just a binary search
-  while (first < last) {
-    const middle = (first + last) >>> 1;
+  while (lfirst < llast) {
+    const middle = (lfirst + llast) >>> 1;
     if (valueArray[middle] < value) {
-      first = middle + 1;
+      lfirst = middle + 1;
     } else {
-      last = middle;
+      llast = middle;
     }
   }
-  return first;
+  return lfirst;
 }
 
 // Inlined performance optimization - used to indirect through a sort map.
 //
 export function lowerBoundIndirect(valueArray, indexArray, value, first, last) {
+  let lfirst = first;
+  let llast = last;
   // this is just a binary search
-  while (first < last) {
-    const middle = (first + last) >>> 1;
+  while (lfirst < llast) {
+    const middle = (lfirst + llast) >>> 1;
     if (valueArray[indexArray[middle]] < value) {
-      first = middle + 1;
+      lfirst = middle + 1;
     } else {
-      last = middle;
+      llast = middle;
     }
   }
-  return first;
+  return lfirst;
 }
 
 // Search for `value in the sorted array `arr`, in the range [first, last).
@@ -70,29 +75,33 @@ export function lowerBoundIndirect(valueArray, indexArray, value, first, last) {
 //    Python: bisect.bisect_right()
 //
 export function upperBound(valueArray, value, first, last) {
+  let lfirst = first;
+  let llast = last;
   // this is just a binary search
-  while (first < last) {
-    const middle = (first + last) >>> 1;
+  while (lfirst < llast) {
+    const middle = (lfirst + llast) >>> 1;
     if (valueArray[middle] > value) {
-      last = middle;
+      llast = middle;
     } else {
-      first = middle + 1;
+      lfirst = middle + 1;
     }
   }
-  return first;
+  return lfirst;
 }
 
 // Inline performance optimization
 //
 export function upperBoundIndirect(valueArray, indexArray, value, first, last) {
+  let lfirst = first;
+  let llast = last;
   // this is just a binary search
-  while (first < last) {
-    const middle = (first + last) >>> 1;
+  while (lfirst < llast) {
+    const middle = (lfirst + llast) >>> 1;
     if (valueArray[indexArray[middle]] > value) {
-      last = middle;
+      llast = middle;
     } else {
-      first = middle + 1;
+      lfirst = middle + 1;
     }
   }
-  return first;
+  return lfirst;
 }

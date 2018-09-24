@@ -161,7 +161,7 @@ class ScanpyEngine(CXGDriver):
         """
         d_axis = getattr(self.data, axis.value)
         for v in filter:
-            if d_axis[v["name"]].dtype.name in ["boolean", "category", "string"]:
+            if d_axis[v["name"]].dtype.name in ["boolean", "category", "object"]:
                 key_idx = np.in1d(getattr(d_axis, v["name"]), v["values"])
                 index = np.logical_and(index, key_idx)
             else:
@@ -176,18 +176,20 @@ class ScanpyEngine(CXGDriver):
         return index
 
     @cache.memoize()
-    def annotation(self, df, fields=None):
+    def annotation(self, df, axis, fields=None):
         """
          Gets annotation value for each observation
 
+        :param axis:
         :param df: from filter_cells, dataframe
         :param fields: list of keys for annotation to return, returns all annotation values if not set.
         :return: dict: names - list of fields in order, data - list of lists or metadata
         [observation ids, val1, val2...]
         """
+        df_axis = getattr(df, axis)
         if not fields:
-            fields = df.obs.columns.tolist()
-        annotations = DataFrame(df.obs[fields], index=df.obs.index)
+            fields = df_axis.columns.tolist()
+        annotations = DataFrame(df_axis[fields], index=df_axis.index)
         return {
             "names": fields,
             "data": annotations.reset_index().values.tolist()
@@ -261,41 +263,18 @@ class ScanpyEngine(CXGDriver):
         }
 
     @cache.memoize()
-    def expression(self, cells=None, genes=None):
+    def data_frame(self, df):
         """
-        Retrieves expression for each gene for cells in data frame
-        :param df:
+        Retrieves data for each variable for observations in data frame
+        :param df: from filter_cells, dataframe
         :return: {
-            "genes": list of genes,
-            "cells": list of cells and expression list,
-            "nonzero_gene_count": number of nonzero genes
+            "var": list of variable ids,
+            "obs": [cellid, var1 expression, var2 expression, ...],
         }
         """
-        if cells:
-            cells_idx = np.in1d(self.data.obs["cell_name"], cells)
-        else:
-            cells_idx = np.ones((self.cell_count,), dtype=bool)
-        if genes:
-            genes_idx = np.in1d(self.data.var_names, genes)
-        else:
-            genes_idx = np.ones((self.gene_count,), dtype=bool)
-        index = np.ix_(cells_idx, genes_idx)
-        expression = self.data.X[index]
-
-        if not genes:
-            genes = self.data.var.index.tolist()
-        if not cells:
-            cells = self.data.obs["cell_name"].tolist()
-
-        cell_data = []
-        for idx, cell in enumerate(cells):
-            cell_data.append({
-                "cellname": cell,
-                "e": list(expression[idx]),
-            })
-
+        var_index = df.var.index.tolist()
+        expression = DataFrame(df.X, index=df.obs.index)
         return {
-            "genes": genes,
-            "cells": cell_data,
-            "nonzero_gene_count": int(np.sum(expression.any(axis=0)))
+            "var": var_index,
+            "obs": expression.reset_index().values.tolist()
         }

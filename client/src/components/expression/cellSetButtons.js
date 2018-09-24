@@ -9,7 +9,7 @@ import actions from "../../actions";
 @connect()
 class CellSetButton extends React.Component {
   set() {
-    const set = _.map(this.props.crossfilter.cells.allFiltered(), "CellName");
+    const set = _.map(this.props.crossfilter.allFiltered(), "name");
 
     this.props.dispatch({
       type:
@@ -18,6 +18,7 @@ class CellSetButton extends React.Component {
       data: set
     });
   }
+
   render() {
     return (
       <span style={{ marginRight: 10 }}>
@@ -33,17 +34,18 @@ class CellSetButton extends React.Component {
           }}
           onClick={this.set.bind(this)}
         >
-          <span style={{ fontSize: 24, fontWeight: 700 }}>
+          <span style={{ fontSize: 14, fontWeight: 700 }}>
             {" "}
-            {this.props.eitherCellSetOneOrTwo}{" "}
+            {this.props.eitherCellSetOneOrTwo}
+            {": "}
           </span>
           <span
             style={{
               fontFamily: "Georgia",
-              fontStyle: "italic",
+              fontSize: 14,
               marginLeft: 8,
               position: "relative",
-              top: -3
+              top: 0
             }}
           >
             {this.props.differential[

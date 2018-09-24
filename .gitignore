@@ -1,52 +1,39 @@
 # dependencies
-node_modules
+node_modules/
 
 # coverage
 coverage
 .nyc_output
 
+.pytest_cache/
+
 # production
-build
+build/
+dist/
+*.egg-info
 
-# misc
-.DS_Store
-npm-debug.log
-.vscode
+# Environments
+venv/
+cellxgene/
 
-data
-
-
-*.idea*
-
-__pycache__
-*.DS_Store*
-
-# Elastic Beanstalk Files
-.elasticbeanstalk/*
-!.elasticbeanstalk/*.cfg.yml
-!.elasticbeanstalk/*.global.yml
-
-GBM
-venv
-extesting
-
-Dockerfile-*
-*-data/*
-data/*
-runServer.py
-templates/favicon.png
-templates/index.html
-templates/service-worker.js
-templates/static/*
-Graph.dot*
-
+# client build
 server/app/web/static/css/
 server/app/web/static/img/
 server/app/web/static/js/
 server/app/web/templates/index\.html
 
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
 
-*.egg-info
-dist/*
-build/*
+# misc
+.DS_Store
+npm-debug.log
+.vscode
+*.idea*
+__pycache__
+*.DS_Store*
+
+
+
 

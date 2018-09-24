@@ -8,10 +8,11 @@ const Responsive = (
 ) => {
   switch (action.type) {
     case "window resize":
-      return Object.assign({}, state, {
+      return {
+        ...state,
         width: action.data.width,
         height: action.data.height
-      });
+      };
     default:
       return state;
   }

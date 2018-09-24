@@ -9,7 +9,9 @@ import CellSetButton from "./cellSetButtons";
 @connect(state => {
   return {
     differential: state.differential,
-    crossfilter: state.controls.crossfilter
+    world: state.controls.world,
+    crossfilter: _.get(state.controls, "crossfilter", null),
+    selectionUpdate: _.get(state.controls, "crossfilter.updateTime", null)
   };
 })
 class Expression extends React.Component {
@@ -17,6 +19,7 @@ class Expression extends React.Component {
     super(props);
     this.state = {};
   }
+
   handleClick(gene) {
     return () => {
       this.props.dispatch({
@@ -25,6 +28,7 @@ class Expression extends React.Component {
       });
     };
   }
+
   computeDiffExp() {
     this.props.dispatch(
       actions.requestDifferentialExpression(
@@ -33,62 +37,52 @@ class Expression extends React.Component {
       )
     );
   }
+
   render() {
     if (!this.props.differential) {
       return null;
     }
     return (
-      <div>
-        <div style={{ margin: 10 }}>
-          <div style={{ marginBottom: 15, width: 300 }}>
-            There are currently
-            {" " +
-              (this.props.crossfilter
-                ? this.props.crossfilter.cells.countFiltered()
-                : 0) +
-              " "}
-            cells selected, click a cell set button to store them.
-          </div>
-          <CellSetButton {...this.props} eitherCellSetOneOrTwo={1} />
-          <CellSetButton {...this.props} eitherCellSetOneOrTwo={2} />
-        </div>
-        <div>
-          {this.props.differential.celllist1 &&
-          this.props.differential.celllist2 ? (
-            <button
-              style={{
-                fontSize: 18,
-                margin: 10,
-                fontWeight: 700,
-                color: "#FFF",
-                padding: "12px 20px",
-                backgroundColor: globals.brightBlue,
-                border: "none",
-                cursor: "pointer"
-              }}
-              onClick={this.computeDiffExp.bind(this)}
-            >
-              Compute differential expression
-            </button>
-          ) : (
-            <button
-              style={{
-                fontSize: 18,
-                margin: 10,
-                fontWeight: 700,
-                color: "#FFF",
-                padding: "12px 20px",
-                backgroundColor: globals.mediumGrey,
-                border: "none"
-              }}
-            >
-              Compute differential expression
-            </button>
-          )}
-        </div>
+      <div style={{ marginRight: 10, marginBottom: 10 }}>
+        <CellSetButton {...this.props} eitherCellSetOneOrTwo={1} />
+        <CellSetButton {...this.props} eitherCellSetOneOrTwo={2} />
+        <button
+          style={{
+            fontSize: 14,
+            fontWeight: 400,
+            color: "#FFF",
+            padding: "0px 10px",
+            height: 30,
+            borderRadius: 2,
+            backgroundColor:
+              this.props.differential.celllist1 &&
+              this.props.differential.celllist2
+                ? globals.brightBlue
+                : globals.lightGrey,
+            border: "none",
+            cursor:
+              this.props.differential.celllist1 &&
+              this.props.differential.celllist2
+                ? "pointer"
+                : "auto"
+          }}
+          onClick={this.computeDiffExp.bind(this)}
+        >
+          Compute differential expression
+        </button>
       </div>
     );
   }
 }
 
 export default Expression;
+
+// <div style={{ marginBottom: 15, width: 300 }}>
+//   There are currently
+//   {" " +
+//     (this.props.crossfilter
+//       ? this.props.crossfilter.cells.countFiltered()
+//       : 0) +
+//     " "}
+//   cells selected, click a cell set button to store them.
+// </div>

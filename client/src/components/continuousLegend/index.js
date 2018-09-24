@@ -1,17 +1,17 @@
 // jshint esversion: 6
 import React from "react";
-import _ from "lodash";
 import { connect } from "react-redux";
-import * as globals from "../../globals";
+import * as d3 from "d3";
+import { interpolateViridis } from "d3-scale-chromatic";
 
 // create continuous color legend
 // http://bl.ocks.org/syntagmatic/e8ccca52559796be775553b467593a9f
 const continuous = (selector_id, colorscale) => {
-  var legendheight = 200,
-    legendwidth = 80,
-    margin = { top: 10, right: 60, bottom: 10, left: 2 };
+  const legendheight = 200;
+  const legendwidth = 80;
+  const margin = { top: 10, right: 60, bottom: 10, left: 2 };
 
-  var canvas = d3
+  const canvas = d3
     .select(selector_id)
     .style("height", legendheight + "px")
     .style("width", legendwidth + "px")
@@ -102,6 +102,7 @@ class ContinuousLegend extends React.Component {
     super(props);
     this.state = {};
   }
+
   componentDidUpdate(prevProps) {
     if (
       prevProps.colorAccessor !== this.props.colorAccessor ||
@@ -120,13 +121,15 @@ class ContinuousLegend extends React.Component {
         continuous(
           "#continuous_legend",
           d3
-            .scaleSequential(d3.interpolateViridis)
+            .scaleSequential(interpolateViridis)
             .domain(this.props.colorScale.domain())
         );
       }
     }
   }
+
   drawScale() {}
+
   render() {
     return (
       <div

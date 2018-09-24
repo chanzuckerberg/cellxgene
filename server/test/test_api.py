@@ -78,7 +78,7 @@ class EndPoints(unittest.TestCase):
         result_data = result.json()
         self.assertEqual(len(result_data["layout"]["coordinates"]), 15)
 
-    def test_get_annotations(self):
+    def test_get_annotations_obs(self):
         endpoint = "annotations/obs"
         url = f"{URL_BASE}{endpoint}"
         result = self.session.get(url)
@@ -88,7 +88,7 @@ class EndPoints(unittest.TestCase):
         self.assertEqual(len(result_data["data"]), 2638)
         self.assertEqual(len(result_data["data"][0]), 6)
 
-    def test_get_annotations_keys(self):
+    def test_get_annotations_obs_keys(self):
         endpoint = "annotations/obs"
         query = "annotation-name=n_genes&annotation-name=percent_mito"
         url = f"{URL_BASE}{endpoint}?{query}"
@@ -98,12 +98,168 @@ class EndPoints(unittest.TestCase):
         self.assertEqual(result_data["names"], ["n_genes", "percent_mito"])
         self.assertEqual(len(result_data["data"][0]), 3)
 
-    def test_get_annotations_error(self):
+    def test_get_annotations_obs_error(self):
         endpoint = "annotations/obs"
         query = "annotation-name=notakey"
         url = f"{URL_BASE}{endpoint}?{query}"
         result = self.session.get(url)
         self.assertEqual(result.status_code, 404)
+
+    def test_put_annotations_obs(self):
+        endpoint = "annotations/obs"
+        url = f"{URL_BASE}{endpoint}"
+        obs_filter = {
+            "filter": {
+                "obs": {
+                    "annotation_value": [
+                        {"name": "louvain", "values": ["NK cells", "CD8 T cells"]},
+                        {"name": "n_counts", "min": 3000},
+                    ],
+                    "index": [1, 99, [1000, 2000]]
+                }
+            }
+        }
+        result = self.session.put(url, json=obs_filter)
+        self.assertEqual(result.status_code, 200)
+        result_data = result.json()
+        self.assertEqual(result_data["names"], ["n_genes", "percent_mito", "n_counts", "louvain", "name"])
+        self.assertEqual(len(result_data["data"]), 15)
+
+    def test_filter_put_annotations_obs(self):
+        endpoint = "annotations/obs"
+        query = "annotation-name=n_genes&annotation-name=percent_mito"
+        url = f"{URL_BASE}{endpoint}?{query}"
+        obs_filter = {
+            "filter": {
+                "obs": {
+                    "annotation_value": [
+                        {"name": "louvain", "values": ["NK cells", "CD8 T cells"]},
+                        {"name": "n_counts", "min": 3000},
+                    ],
+                    "index": [1, 99, [1000, 2000]]
+                }
+            }
+        }
+        result = self.session.put(url, json=obs_filter)
+        self.assertEqual(result.status_code, 200)
+        result_data = result.json()
+        self.assertEqual(result_data["names"], ["n_genes", "percent_mito"])
+        self.assertEqual(len(result_data["data"][0]), 3)
+        self.assertEqual(len(result_data["data"]), 15)
+
+    def test_get_annotations_var(self):
+        endpoint = "annotations/var"
+        url = f"{URL_BASE}{endpoint}"
+        result = self.session.get(url)
+        self.assertEqual(result.status_code, 200)
+        result_data = result.json()
+        self.assertEqual(result_data["names"], ["n_cells", "name"])
+        self.assertEqual(len(result_data["data"]), 1838)
+        self.assertEqual(len(result_data["data"][0]), 3)
+
+    def test_get_annotations_var_keys(self):
+        endpoint = "annotations/var"
+        query = "annotation-name=n_cells"
+        url = f"{URL_BASE}{endpoint}?{query}"
+        result = self.session.get(url)
+        self.assertEqual(result.status_code, 200)
+        result_data = result.json()
+        self.assertEqual(result_data["names"], ["n_cells"])
+        self.assertEqual(len(result_data["data"][0]), 2)
+
+    def test_get_annotations_var_error(self):
+        endpoint = "annotations/var"
+        query = "annotation-name=notakey"
+        url = f"{URL_BASE}{endpoint}?{query}"
+        result = self.session.get(url)
+        self.assertEqual(result.status_code, 404)
+
+    def test_put_annotations_var(self):
+        endpoint = "annotations/var"
+        url = f"{URL_BASE}{endpoint}"
+        var_filter = {
+            "filter": {
+                "var": {
+                    "annotation_value": [
+                        {"name": "name", "values": ["ATAD3C", "RER1"]},
+                    ]
+                }
+            }
+        }
+        result = self.session.put(url, json=var_filter)
+        self.assertEqual(result.status_code, 200)
+        result_data = result.json()
+        self.assertEqual(result_data["names"], ["n_cells", "name"])
+        self.assertEqual(len(result_data["data"]), 2)
+
+    def test_filter_put_annotations_var(self):
+        endpoint = "annotations/var"
+        query = "annotation-name=n_cells"
+        url = f"{URL_BASE}{endpoint}?{query}"
+        var_filter = {
+            "filter": {
+                "var": {
+                    "annotation_value": [
+                        {"name": "name", "values": ["ATAD3C", "RER1"]},
+                    ]
+                }
+            }
+        }
+        result = self.session.put(url, json=var_filter)
+        self.assertEqual(result.status_code, 200)
+        result_data = result.json()
+        self.assertEqual(result_data["names"], ["n_cells"])
+        self.assertEqual(len(result_data["data"][0]), 2)
+        self.assertEqual(len(result_data["data"]), 2)
+
+    def test_get_data(self):
+        endpoint = "data/obs"
+        query = "accept-type=application/json"
+        url = f"{URL_BASE}{endpoint}?{query}"
+        result = self.session.get(url)
+        self.assertEqual(result.status_code, 200)
+        result_data = result.json()
+        self.assertEqual(len(result_data["obs"]), 2638)
+
+    def test_data_mimetype_error(self):
+        endpoint = "data/obs"
+        query = "accept-type=xxx"
+        url = f"{URL_BASE}{endpoint}?{query}"
+        result = self.session.get(url)
+        self.assertEqual(result.status_code, 406)
+        # no accept type
+        url = f"{URL_BASE}{endpoint}"
+        result = self.session.get(url)
+        self.assertEqual(result.status_code, 406)
+
+    def test_data_filter(self):
+        endpoint = "data/obs"
+        query = "accept-type=application/json&obs:louvain=NK cells&obs:louvain=CD8 T cells&obs:n_counts=3000,*"
+        url = f"{URL_BASE}{endpoint}?{query}"
+        result = self.session.get(url)
+        self.assertEqual(result.status_code, 200)
+        result_data = result.json()
+        self.assertEqual(len(result_data["obs"]), 38)
+
+    def test_data_put(self):
+        endpoint = "data/obs"
+        url = f"{URL_BASE}{endpoint}"
+        header = {"Accept": "application/json"}
+        obs_filter = {
+            "filter": {
+                "obs": {
+                    "annotation_value": [
+                        {"name": "louvain", "values": ["NK cells", "CD8 T cells"]},
+                        {"name": "n_counts", "min": 3000},
+                    ],
+                    "index": [1, 99, [1000, 2000]]
+                }
+            }
+        }
+        result = self.session.put(url, headers=header, json=obs_filter)
+        self.assertEqual(result.status_code, 200)
+        result_data = result.json()
+        self.assertEqual(len(result_data["obs"]), 15)
 
     def test_static(self):
         endpoint = "static"

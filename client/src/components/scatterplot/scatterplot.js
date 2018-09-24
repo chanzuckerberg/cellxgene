@@ -5,37 +5,55 @@
 import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
+import _regl from "regl";
+import * as d3 from "d3";
 
-import scatterplot from "./scatterplot";
+import _camera from "../../util/camera";
+
 import setupScatterplot from "./setupScatterplot";
 import styles from "./scatterplot.css";
 
-import mat4 from "gl-mat4";
-import fit from "canvas-fit";
-import _camera from "../../util/camera.js";
-import _regl from "regl";
 import _drawPoints from "./drawPointsRegl";
 import { scaleLinear } from "../../util/scaleLinear";
 
-import { margin, width, height, createDimensions } from "./util";
+import { margin, width, height } from "./util";
 
 @connect(state => {
-  const ranges = _.get(state, "cells.cells.data.ranges", null);
-  const metadata = _.get(state, "cells.cells.data.metadata", null);
-  const initializeRanges = _.get(state, "initialize.data.data.ranges", null);
+  const {
+    world,
+    crossfilter,
+    scatterplotXXaccessor,
+    scatterplotYYaccessor
+  } = state.controls;
+  const expressionX =
+    world && scatterplotXXaccessor
+      ? state.controls.world.varDataCache[scatterplotXXaccessor]
+      : null;
+  const expressionY =
+    world && scatterplotYYaccessor
+      ? state.controls.world.varDataCache[scatterplotYYaccessor]
+      : null;
 
   return {
-    ranges,
-    metadata,
-    initializeRanges,
+    world,
+
+    colorRGB: state.controls.colorRGB,
     colorAccessor: state.controls.colorAccessor,
     colorScale: state.controls.colorScale,
-    scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
-    scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
+
+    // Accessors are var/gene names (strings)
+    scatterplotXXaccessor,
+    scatterplotYYaccessor,
     opacityForDeselectedCells: state.controls.opacityForDeselectedCells,
-    crossfilter: state.controls.crossfilter,
+
     differential: state.differential,
-    expression: state.expression
+
+    expressionX,
+    expressionY,
+
+    crossfilter,
+    // updated whenever the crossfilter selection is updated
+    selectionUpdate: _.get(state.controls, "crossfilter.updateTime", null)
   };
 })
 class Scatterplot extends React.Component {
@@ -45,9 +63,6 @@ class Scatterplot extends React.Component {
     this.axes = false;
     this.state = {
       svg: null,
-      // ctx: null,
-      axes: null,
-      dimensions: null,
       xScale: null,
       yScale: null
     };
@@ -56,19 +71,10 @@ class Scatterplot extends React.Component {
   componentDidMount() {
     const { svg } = setupScatterplot(width, height, margin);
     let scales;
+    const { expressionX, expressionY } = this.props;
 
-    /* if we've already got the data, user clicked back and forth between tabs, so render the scatterplot */
-    if (
-      this.props.expression &&
-      this.props.expression.data &&
-      this.props.scatterplotXXaccessor &&
-      this.props.scatterplotYYaccessor
-    ) {
-      scales = this.setupScales(
-        this.props.expression,
-        this.props.scatterplotXXaccessor,
-        this.props.scatterplotYYaccessor
-      );
+    if (svg && expressionX && expressionY) {
+      scales = Scatterplot.setupScales(expressionX, expressionY);
       this.drawAxesSVG(scales.xScale, scales.yScale, svg);
     }
 
@@ -114,115 +120,101 @@ class Scatterplot extends React.Component {
       colorBuffer
     });
   }
+
   componentDidUpdate(prevProps) {
+    const {
+      svg,
+      xScale,
+      yScale,
+      regl,
+      pointBuffer,
+      colorBuffer,
+      sizeBuffer
+    } = this.state;
+    const {
+      world,
+      crossfilter,
+      scatterplotXXaccessor,
+      scatterplotYYaccessor,
+      expressionX,
+      expressionY,
+      colorRGB
+    } = this.props;
+
     if (
-      this.state.svg &&
-      this.state.xScale &&
-      this.state.yScale &&
-      this.props.scatterplotXXaccessor &&
-      this.props.scatterplotYYaccessor &&
-      (this.props.scatterplotXXaccessor !== prevProps.scatterplotXXaccessor || // was CLU now FTH1 etc
-      this.props.scatterplotYYaccessor !== prevProps.scatterplotYYaccessor || // was CLU now FTH1 etc
+      world &&
+      svg &&
+      xScale &&
+      yScale &&
+      scatterplotXXaccessor &&
+      scatterplotYYaccessor &&
+      (scatterplotXXaccessor !== prevProps.scatterplotXXaccessor || // was CLU now FTH1 etc
+      scatterplotYYaccessor !== prevProps.scatterplotYYaccessor || // was CLU now FTH1 etc
         !this.axes) // clicked off the tab and back again, rerender
     ) {
-      this.drawAxesSVG(this.state.xScale, this.state.yScale, this.state.svg);
+      this.drawAxesSVG(xScale, yScale, svg);
     }
 
     if (
-      this.props.metadata &&
-      this.state.regl &&
-      this.state.pointBuffer &&
-      this.state.colorBuffer &&
-      this.state.sizeBuffer &&
-      this.props.expression.data &&
-      this.props.expression.data.genes &&
-      this.props.scatterplotXXaccessor &&
-      this.props.scatterplotYYaccessor &&
-      this.state.xScale &&
-      this.state.yScale
+      world &&
+      regl &&
+      pointBuffer &&
+      colorBuffer &&
+      sizeBuffer &&
+      expressionX &&
+      expressionY &&
+      scatterplotXXaccessor &&
+      scatterplotYYaccessor &&
+      xScale &&
+      yScale
     ) {
-      const crossfilter = this.props.crossfilter.cells;
-      const data = this.props.expression.data;
-      const cells = data.cells;
-      const genes = data.genes;
-      const cellCount = cells.length;
-      const positions = new Float32Array(2 * cellCount);
-      const colors = new Float32Array(3 * cellCount);
-      const sizes = new Float32Array(cellCount);
+      const cellCount = expressionX.length;
+      const positionsBuf = new Float32Array(2 * cellCount);
+      const colorsBuf = new Float32Array(3 * cellCount);
+      const sizesBuf = new Float32Array(cellCount);
 
-      // d3.scaleLinear().domain([0, width]).range([-0.95, 0.95])
       const glScaleX = scaleLinear([0, width], [-0.95, 0.95]);
-
-      // d3.scaleLinear().domain([0, height]).range([-1, 1])
       const glScaleY = scaleLinear([0, height], [-1, 1]);
-
-      const geneXXaccessorIndex = genes.indexOf(
-        this.props.scatterplotXXaccessor
-      );
-      const geneYYaccessorIndex = genes.indexOf(
-        this.props.scatterplotYYaccessor
-      );
 
       /*
         Construct Vectors
       */
-      for (let i = 0; i < cellCount; i++) {
-        const cell = cells[i];
-
-        positions[2 * i] = glScaleX(
-          this.state.xScale(cell.e[geneXXaccessorIndex])
-        ); /* scale each point first to the window as we calculate extents separately below, so no need to repeat */
-        positions[2 * i + 1] = glScaleY(
-          this.state.yScale(cell.e[geneYYaccessorIndex])
-        );
+      for (let i = 0; i < cellCount; i += 1) {
+        positionsBuf[2 * i] = glScaleX(xScale(expressionX[i]));
+        positionsBuf[2 * i + 1] = glScaleY(yScale(expressionY[i]));
       }
 
-      for (let i = 0; i < cellCount; i++) {
-        const metadata = this.props.metadata[i];
-        colors.set(metadata.__colorRGB__, 3 * i);
+      for (let i = 0; i < cellCount; i += 1) {
+        colorsBuf.set(colorRGB[i], 3 * i);
       }
 
-      crossfilter.fillByIsFiltered(sizes, 4, 0.2);
+      crossfilter.fillByIsFiltered(sizesBuf, 4, 0.2);
 
-      this.state.pointBuffer({ data: positions, dimension: 2 });
-      this.state.colorBuffer({ data: colors, dimension: 3 });
-      this.state.sizeBuffer({ data: sizes, dimension: 1 });
+      pointBuffer({ data: positionsBuf, dimension: 2 });
+      colorBuffer({ data: colorsBuf, dimension: 3 });
+      sizeBuffer({ data: sizesBuf, dimension: 1 });
       this.count = cellCount;
     }
 
     if (
-      this.props.expression &&
-      this.props.expression.data &&
-      this.props.scatterplotXXaccessor &&
-      this.props.scatterplotYYaccessor &&
-      (this.props.scatterplotXXaccessor !== prevProps.scatterplotXXaccessor || // was CLU now FTH1 etc
-        this.props.scatterplotYYaccessor !== prevProps.scatterplotYYaccessor)
+      expressionX &&
+      expressionY &&
+      (scatterplotXXaccessor !== prevProps.scatterplotXXaccessor || // was CLU now FTH1 etc
+        scatterplotYYaccessor !== prevProps.scatterplotYYaccessor)
     ) {
-      const scales = this.setupScales(
-        this.props.expression,
-        this.props.scatterplotXXaccessor,
-        this.props.scatterplotYYaccessor
-      );
+      const scales = Scatterplot.setupScales(expressionX, expressionY);
       this.setState(scales);
     }
   }
-  setupScales(expression, scatterplotXXaccessor, scatterplotYYaccessor) {
+
+  static setupScales(expressionX, expressionY) {
     const xScale = d3
       .scaleLinear()
-      .domain(
-        d3.extent(expression.data.cells, (cell, i) => {
-          return cell.e[expression.data.genes.indexOf(scatterplotXXaccessor)];
-        })
-      )
+      .domain(d3.extent(expressionX))
       .range([0, width]);
-
     const yScale = d3
       .scaleLinear()
-      .domain(
-        d3.extent(expression.data.cells, cell => {
-          return cell.e[expression.data.genes.indexOf(scatterplotYYaccessor)];
-        })
-      )
+      .domain(d3.extent(expressionY))
       .range([height, 0]);
 
     return {
@@ -230,15 +222,19 @@ class Scatterplot extends React.Component {
       yScale
     };
   }
+
   drawAxesSVG(xScale, yScale, svg) {
+    const { scatterplotYYaccessor, scatterplotXXaccessor } = this.props;
     svg.selectAll("*").remove();
 
-    // the axes are much cleaner and easier now. No need to rotate and orient the axis, just call axisBottom, axisLeft etc.
-    var xAxis = d3.axisBottom().scale(xScale);
+    // the axes are much cleaner and easier now. No need to rotate and orient
+    // the axis, just call axisBottom, axisLeft etc.
+    const xAxis = d3.axisBottom().scale(xScale);
 
-    var yAxis = d3.axisLeft().scale(yScale);
+    const yAxis = d3.axisLeft().scale(yScale);
 
-    // adding axes is also simpler now, just translate x-axis to (0,height) and it's alread defined to be a bottom axis.
+    // adding axes is also simpler now, just translate x-axis to (0,height)
+    // and it's alread defined to be a bottom axis.
     svg
       .append("g")
       .attr("transform", "translate(0," + height + ")")
@@ -258,7 +254,7 @@ class Scatterplot extends React.Component {
       .attr("x", 10)
       .attr("y", 10)
       .attr("class", "label")
-      .text(this.props.scatterplotYYaccessor);
+      .text(scatterplotYYaccessor);
 
     svg
       .append("text")
@@ -266,7 +262,7 @@ class Scatterplot extends React.Component {
       .attr("y", height - 10)
       .attr("text-anchor", "end")
       .attr("class", "label")
-      .text(this.props.scatterplotXXaccessor);
+      .text(scatterplotXXaccessor);
   }
 
   render() {
