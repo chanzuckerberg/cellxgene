@@ -68,11 +68,11 @@ There are several common filters supported by various routes. Route descriptions
 
 Filter by the value of specific observation or variable annotation values. For example, the `/data` routes support sub-selection by the value of the annotations, which might be used to filter by some specific metadata (eg, `tissue_type: lung`).
 
-Annotation value filters can be specified as a URL query parameter (GET), or a JSON object in a request body (POST)[^1].
+Annotation value filters can be specified as a URL query parameter (using GET), or a JSON object in a request body (using PUT or POST)<sup>[1](#footnote-1)</sup>.
 
 For a GET URL query parameter:
 
-- Annotation name is encoded as `obs:name` or `var:name` [^2].
+- Annotation name is encoded as `obs:name` or `var:name`<sup>[2](#footnote-2)</sup>.
 - Enumerated values (string, categorical, boolean) are encoded as option lists, ie, `var:tissue=lung, obs:tumor=true`
 - Scalar values (int32, float32) are encoded as ranges, ie, `obs:num_reads=1000,10000` where either min or max may be replaced with an asterisk to indicate a half-open range.
 - Index filters are not be allowed within GET URL query parameter filters
@@ -84,7 +84,7 @@ Example selection for _lung_ and _heart_ tissue with more than 1000 reads:
     GET /data?obs:tissue=lung&obs:tissue=heart&obs:num_reads=1000,*
 ```
 
-For a POST request body, the filter encoding is a simple JSON object:
+For a PUT / POST request body, the filter encoding is a simple JSON object:
 
 - Annotation names are embedded within either a obs or var object
 - Enumerated values (eg, string, boolean categorical) are encoded as an array of options
@@ -93,7 +93,7 @@ For a POST request body, the filter encoding is a simple JSON object:
 Example selection for _lung_ and _heart_ tissue with more than 1000 reads:
 
 ```
-    POST
+    PUT or POST
     --
     {
       "filter": {
@@ -110,12 +110,12 @@ Example selection for _lung_ and _heart_ tissue with more than 1000 reads:
 
 ### Obs or Var _Index_ Filters
 
-Several POST routes allow filtering by observation or variable index, eg, access to a subset of the dataframe. Obs or var indexes may be specified individually or as a range.
+Several PUT / POST routes allow filtering by observation or variable index, eg, access to a subset of the dataframe. Obs or var indexes may be specified individually or as a range.
 
 For example, the following filter requests observations 1, 99, 1000-2000 from the dataframe (all variables are implicitly requested because no var filter is provided):
 
 ```
-POST
+PUT or POST
 --
 {
   filter: {
@@ -130,12 +130,12 @@ POST
 
 ### Complex Filters
 
-Several routes support multiple filter types, which may be combined into a single POST body. Complex filters are additive.
+Several routes support multiple filter types, which may be combined into a single PUT / POST body. Complex filters are additive.
 
 Example:
 
 ```
-POST
+PUT or POST
 --
 {
   "filter": {
@@ -668,12 +668,6 @@ POST /data/saveSelection?name=myFavCluster
 
 ## Notes
 
-[^1]:
+<a name="footnote-1">[1]</a>: Filters can often be large and complex, and exceed the URL length limitations - the POST method provides a means for the client to accommodate these cases. The GET method is provided for those cases where this is not concern, and/or where the client requires deep linking (subject to this URL length limit).
 
-  Filters can often be large and complex, and exceed the URL length limitations - the POST method provides a means for the client to accommodate these cases. The GET method is provided for those cases where this is not concern, and/or where the client requires deep linking (subject to this URL length limit).
-
-[^2]:
-
-  Note to implementers: this scheme requires careful use of URL encoding to ensure that both annotation names and annotation values are properly escaped. It requires that both normal URL encoding is applied, as well as ensuring that the annotation name has any embedded colon characters escaped.
-
-<!-- GD2md-html version 1.0β11 -->
+<a name="footnote-2">[2]</a>: Note to implementers -- this scheme requires careful use of URL encoding to ensure that both annotation names and annotation values are properly escaped. It requires that both normal URL encoding is applied, as well as ensuring that the annotation name has any embedded colon characters escaped.
