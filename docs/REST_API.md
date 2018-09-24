@@ -510,14 +510,16 @@ If differential expression is not supported by the server, must return an HTTP 5
 
   ```
       {
-         "mode": "varFilter",
-         "varFilter": {
-           "var": {
-             "annotation_value": [
-               { "name": "gene", "values": [ "FOXP2", "ACTN1" ] }
-             ]
-           }
-         }
+        "mode": "varFilter",
+        "varFilter": {
+          "filter": {
+            "var": {
+              "annotation_value": [
+                { "name": "gene", "values": [ "FOXP2", "ACTN1" ] }
+              ]
+            }
+          }
+        }
       }
   ```
 
