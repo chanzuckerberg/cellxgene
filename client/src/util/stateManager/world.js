@@ -243,20 +243,19 @@ export function createWorldFromCurrentSelection(universe, world, crossfilter) {
 */
 function deduceDimensionType(attributes, fieldName) {
   let dimensionType;
-  if (attributes.type === "string") {
+  const { type } = attributes;
+  if (type === "string" || type === "categorical" || type === "boolean") {
     dimensionType = "enum";
-  } else if (attributes.type === "int32") {
+  } else if (type === "int32") {
     dimensionType = Int32Array;
-  } else if (attributes.type === "float32") {
+  } else if (type === "float32") {
     dimensionType = Float32Array;
   } else {
     /*
     Currently not supporting boolean and categorical types.
     */
     console.error(
-      `Warning - REST API returned unknown metadata schema (${
-        attributes.type
-      }) for field ${fieldName}.`
+      `Warning - REST API returned unknown metadata schema (${type}) for field ${fieldName}.`
     );
     // skip it - we don't know what to do with this type
   }
