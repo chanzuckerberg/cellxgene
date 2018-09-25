@@ -116,9 +116,44 @@ class UtilTest(unittest.TestCase):
             self.assertLessEqual(val[2], 1)
 
     def test_annotations(self):
-        annotations = self.data.annotation(self.data.data)
+        annotations = self.data.annotation(self.data.data, "obs")
         self.assertEqual(annotations["names"], ["n_genes", "percent_mito", "n_counts", "louvain", "name"])
         self.assertEqual(len(annotations["data"]), 2638)
+        annotations = self.data.annotation(self.data.data, "var")
+        self.assertEqual(annotations["names"], ["n_cells", "name"])
+        self.assertEqual(len(annotations["data"]), 1838)
+
+    def test_annotation_fields(self):
+        annotations = self.data.annotation(self.data.data, "obs", ["n_genes", "n_counts"])
+        self.assertEqual(annotations["names"], ["n_genes", "n_counts"])
+        self.assertEqual(len(annotations["data"]), 2638)
+        annotations = self.data.annotation(self.data.data, "var", ["name"])
+        self.assertEqual(annotations["names"], ["name"])
+        self.assertEqual(len(annotations["data"]), 1838)
+
+    def test_filtered_annotation(self):
+        filter_ = {
+            "filter": {
+                "obs": {
+                    "annotation_value": [
+                        {"name": "n_counts", "min": 3000},
+                    ]
+                },
+                "var": {
+                    "annotation_value": [
+                        {"name": "name", "values": ["ATAD3C", "RER1"]},
+                    ]
+                }
+            }
+        }
+        data = self.data.filter_dataframe(filter_["filter"])
+        print(data.shape)
+        annotations = self.data.annotation(data, "obs")
+        self.assertEqual(annotations["names"], ["n_genes", "percent_mito", "n_counts", "louvain", "name"])
+        self.assertEqual(len(annotations["data"]), 497)
+        annotations = self.data.annotation(data, "var")
+        self.assertEqual(annotations["names"], ["n_cells", "name"])
+        self.assertEqual(len(annotations["data"]), 2)
 
     def test_filtered_layout(self):
         filter_ = {
@@ -158,6 +193,25 @@ class UtilTest(unittest.TestCase):
         result = self.data.diffexp(df1, df2, 20)
         self.assertEqual(len(result), 20)
 
+    def test_data_frame(self):
+        data_frame = self.data.data_frame(self.data.data)
+        self.assertEqual(len(data_frame["var"]), 1838)
+        self.assertEqual(len(data_frame["obs"]), 2638)
+
+    def test_filtered_data_frame(self):
+        filter_ = {
+            "filter": {
+                "obs": {
+                    "annotation_value": [
+                        {"name": "n_counts", "min": 3000},
+                    ]
+                }
+            }
+        }
+        data = self.data.filter_dataframe(filter_["filter"])
+        data_frame = self.data.data_frame(data)
+        self.assertEqual(len(data_frame["var"]), 1838)
+        self.assertEqual(len(data_frame["obs"]), 497)
 
     if __name__ == '__main__':
         unittest.main()

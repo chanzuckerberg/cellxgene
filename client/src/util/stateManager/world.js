@@ -28,7 +28,7 @@ obs/cell.
 
   NOTE: world.obsAnnotation should be identical to the old state.cells value,
   EXCEPT that
-    * __cellIndex__ renamed to __obsIndex__
+    * __cellIndex__ renamed to __index__
     * __x__ and __y__ are now in world.obsLayout
     * __color__ and __colorRBG__ should be moved to controls reducer
 
@@ -227,7 +227,7 @@ export function createWorldFromCurrentSelection(universe, world, crossfilter) {
   // build index to our world offset
   newWorld.worldObsIndex.fill(-1); // default - aka unused
   for (let i = 0; i < newWorld.nObs; i += 1) {
-    newWorld.worldObsIndex[newWorld.obsAnnotations[i].__obsIndex__] = i;
+    newWorld.worldObsIndex[newWorld.obsAnnotations[i].__index__] = i;
   }
 
   newWorld.summary = summarizeAnnotations(
@@ -243,20 +243,19 @@ export function createWorldFromCurrentSelection(universe, world, crossfilter) {
 */
 function deduceDimensionType(attributes, fieldName) {
   let dimensionType;
-  if (attributes.type === "string") {
+  const { type } = attributes;
+  if (type === "string" || type === "categorical" || type === "boolean") {
     dimensionType = "enum";
-  } else if (attributes.type === "int32") {
+  } else if (type === "int32") {
     dimensionType = Int32Array;
-  } else if (attributes.type === "float32") {
+  } else if (type === "float32") {
     dimensionType = Float32Array;
   } else {
     /*
     Currently not supporting boolean and categorical types.
     */
     console.error(
-      `Warning - REST API returned unknown metadata schema (${
-        attributes.type
-      }) for field ${fieldName}.`
+      `Warning - REST API returned unknown metadata schema (${type}) for field ${fieldName}.`
     );
     // skip it - we don't know what to do with this type
   }
@@ -286,11 +285,11 @@ export function createObsDimensionMap(crossfilter, world) {
   */
   const worldIndex = worldObsIndex ? idx => worldObsIndex[idx] : idx => idx;
   dimensionMap.x = crossfilter.dimension(
-    r => obsLayout.X[worldIndex(r.__obsIndex__)],
+    r => obsLayout.X[worldIndex(r.__index__)],
     Float32Array
   );
   dimensionMap.y = crossfilter.dimension(
-    r => obsLayout.Y[worldIndex(r.__obsIndex__)],
+    r => obsLayout.Y[worldIndex(r.__index__)],
     Float32Array
   );
 
@@ -309,7 +308,7 @@ export function subsetVarData(world, universe, varData) {
 
   const newVarData = new Float32Array(world.nObs);
   for (let i = 0; i < world.nObs; i += 1) {
-    newVarData[i] = varData[world.obsAnnotations[i].__obsIndex__];
+    newVarData[i] = varData[world.obsAnnotations[i].__index__];
   }
   return newVarData;
 }

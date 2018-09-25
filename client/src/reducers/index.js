@@ -4,11 +4,13 @@ import thunk from "redux-thunk";
 import updateURLMiddleware from "../middleware/updateURLMiddleware";
 import updateCellColors from "../middleware/updateCellColors";
 
+import config from "./config";
 import differential from "./differential";
 import responsive from "./responsive";
 import controls from "./controls";
 
 const Reducer = combineReducers({
+  config,
   responsive,
   controls,
   differential

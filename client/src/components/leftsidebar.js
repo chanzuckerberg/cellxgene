@@ -1,4 +1,5 @@
 // jshint esversion: 6
+import _ from "lodash";
 import React from "react";
 import { connect } from "react-redux";
 import Categorical from "./categorical/categorical";
@@ -9,7 +10,8 @@ import * as globals from "../globals";
 import DynamicScatterplot from "./scatterplot/scatterplot";
 
 @connect(state => ({
-  responsive: state.responsive
+  responsive: state.responsive,
+  datasetTitle: _.get(state.config, "displayNames.dataset")
 }))
 class LeftSideBar extends React.Component {
   constructor(props) {
@@ -21,7 +23,7 @@ class LeftSideBar extends React.Component {
 
   render() {
     const { currentTab } = this.state;
-    const { responsive } = this.props;
+    const { responsive, datasetTitle } = this.props;
 
     /*
     this magic number should be made less fragile,
@@ -39,8 +41,8 @@ class LeftSideBar extends React.Component {
             width: "100%"
           }}
         >
-          cellxgene
-          {globals.datasetTitle}{" "}
+          cellxgene &nbsp;
+          {datasetTitle}
         </p>
         <div style={{ padding: 10 }}>
           <button
