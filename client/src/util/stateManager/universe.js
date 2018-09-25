@@ -218,3 +218,32 @@ export function convertExpressionRESTv01ToObject(universe, response) {
   }
   return result;
 }
+
+export function convertExpressionRESTv02ToObject(universe, response) {
+  /*
+  /data/obs response looks like:
+  {
+    var: [ varIndices fetched ],
+    obs: [
+      [ obsIndex, evalue, ... ],
+      ...
+    ]
+  }
+
+  convert expression toa simple Float32Array, and return
+  [ [geneName, array], [geneName, array], ... ]
+  NOTE: geneName, not varIndex
+  */
+  const vars = response.var;
+  const { obs } = response;
+  const result = {};
+  for (let varIdx = 0; varIdx < vars.length; varIdx += 1) {
+    const gene = universe.varAnnoations[varIdx].name;
+    const data = new Float32Array(universe.nObs);
+    for (let obsIdx = 0; obsIdx < obs.length; obsIdx += 1) {
+      data[obsIdx] = obs[varIdx + 1];
+    }
+    result[gene] = data;
+  }
+  return result;
+}
