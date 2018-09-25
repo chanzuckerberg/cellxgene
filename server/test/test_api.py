@@ -105,7 +105,6 @@ class EndPoints(unittest.TestCase):
         result = self.session.get(url)
         self.assertEqual(result.status_code, 404)
 
-
     def test_put_annotations(self):
         endpoint = "annotations/obs"
         url = f"{URL_BASE}{endpoint}"
@@ -147,6 +146,34 @@ class EndPoints(unittest.TestCase):
         self.assertEqual(result_data["names"], ["n_genes", "percent_mito"])
         self.assertEqual(len(result_data["data"][0]), 3)
         self.assertEqual(len(result_data["data"]), 15)
+
+    def test_diff_exp(self):
+        endpoint = "diffexp/obs"
+        url = f"{URL_BASE}{endpoint}"
+        params = {
+            "mode": "topN",
+            "set1": {
+                "filter": {
+                    "obs": {"annotation_value": [
+                        {"name": "louvain", "values": ["NK cells"]}
+                    ]
+                    }
+                }
+            },
+            "set2": {
+                "filter": {
+                    "obs": {"annotation_value": [
+                        {"name": "louvain", "values": ["CD8 T cells"]}
+                    ]
+                    }
+                }
+            },
+            "count": 7
+        }
+        result = self.session.post(url, json=params)
+        self.assertEqual(result.status_code, 200)
+        result_data = result.json()
+        self.assertEqual(len(result_data), 7)
 
     def test_static(self):
         endpoint = "static"

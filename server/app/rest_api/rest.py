@@ -304,30 +304,39 @@ class DiffExpObsAPI(Resource):
     })
     def post(self):
         args = request.get_json()
-        mode = args["mode"]
+        # confirm mode is present and legal
+        try:
+            mode = DiffExpMode(args["mode"])
+        except KeyError:
+            return make_response("Error: mode is required", 400)
+        except ValueError:
+            return make_response(f"Error: invalid mode option {args['mode']}", 400)
         # Validate filters
-        if "varFilter" in args:
-            if mode != DiffExpMode.VAR_FILTER:
-                return make_response(f"Var filter included but mode requested is {mode} not varFilter")
+        if mode == DiffExpMode.VAR_FILTER:
+            if "varFilter" not in args:
+                return make_response("varFilter is required when mode is set to varFilter ", 400)
             if Axis.OBS in args["varFilter"]["filter"]:
                 return make_response("Obs filter not allowed in varFilter", 400)
-        # set1 filter only obs
+        if "set1" not in args:
+            return make_response("set1 is required.", 400)
         if Axis.VAR in args["set1"]["filter"]:
             return make_response("Var filter not allowed for set1", 400)
         # set2
-        if "set2" in args and Axis.VAR in args["set2"]["filter"]:
-            return make_response("Var filter not allowed for set2", 400)
-        if mode == DiffExpMode.TOP_N and "set2" not in args:
+        if "set2" not in args:
             return make_response("Set2 as inverse of set1 is not implemented", 501)
-        set1Filter = args["set1"]["filter"]
-        set2Filter = args.get("set2", {"filter": {}})["filter"]
+        if Axis.VAR in args["set2"]["filter"]:
+            return make_response("Var filter not allowed for set2", 400)
+        set1_filter = args["set1"]["filter"]
+        set2_filter = args.get("set2", {"filter": {}})["filter"]
         if "varFilter" in args:
-            set1Filter[Axis.VAR] = args["varFilter"]["filter"][Axis.VAR]
-            set2Filter[Axis.VAR] = args["varFilter"]["filter"][Axis.VAR]
-        df1 = current_app.data.filter_dataframe(set1Filter)
-        # TODO inverse?
-        df2 = current_app.data.filter_dataframe(set2Filter)
-        # TODO exceeds size limit
+            set1_filter[Axis.VAR] = args["varFilter"]["filter"][Axis.VAR]
+            set2_filter[Axis.VAR] = args["varFilter"]["filter"][Axis.VAR]
+        df1 = current_app.data.filter_dataframe(set1_filter)
+        # TODO inverse
+        df2 = current_app.data.filter_dataframe(set2_filter)
+        # exceeds size limit
+        if df1.shape[0] + df2.shape[0] > current_app.data.features["diffexp"]["interactiveLimit"]:
+            return make_response("Non-interactive request", 403)
         # mode
         count = args.get("count", None)
         try:
@@ -344,4 +353,5 @@ def get_api_resources():
     api.add_resource(ConfigAPI, "/config")
     api.add_resource(LayoutObsAPI, "/layout/obs")
     api.add_resource(AnnotationsObsAPI, "/annotations/obs")
+    api.add_resource(DiffExpObsAPI, "/diffexp/obs")
     return api
