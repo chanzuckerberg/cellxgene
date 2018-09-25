@@ -8,7 +8,6 @@ VERSION = "v0.2"
 URL_BASE = f"{LOCAL_URL}api/{VERSION}/"
 
 
-
 class EndPoints(unittest.TestCase):
     """Test Case for endpoints"""
 
@@ -174,6 +173,31 @@ class EndPoints(unittest.TestCase):
         self.assertEqual(result.status_code, 200)
         result_data = result.json()
         self.assertEqual(len(result_data), 7)
+
+    def test_diff_exp(self):
+        endpoint = "diffexp/obs"
+        url = f"{URL_BASE}{endpoint}"
+        params = {
+            "mode": "topN",
+            "set1": {
+                "filter": {
+                    "obs": {
+                        "index": [[0, 500]]
+                    }
+                }
+            },
+            "set2": {
+                "filter": {
+                    "obs": {
+                        "index": [[500, 1000]]
+                    }
+                }
+            }
+        }
+        result = self.session.post(url, json=params)
+        self.assertEqual(result.status_code, 200)
+        result_data = result.json()
+        self.assertEqual(len(result_data), 10)
 
     def test_get_annotations_var(self):
         endpoint = "annotations/var"
