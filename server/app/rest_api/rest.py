@@ -476,7 +476,7 @@ class DataObsAPI(Resource):
             filter_ = parse_filter(ImmutableMultiDict(args), current_app.data.schema['annotations'])
         except QueryStringError as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
-        df = current_app.data.filter_dataframe(filter_)
+        df = current_app.data.filter_dataframe(filter_, include_uns=False)
         if accept_type and accept_type[0] == "application/json":
             return make_response((jsonify(current_app.data.data_frame(df))))
         # TODO support CSV
@@ -518,7 +518,7 @@ class DataObsAPI(Resource):
         if not request.accept_mimetypes.best_match(["application/json", "text/csv"]):
             return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
         # TODO catch error for bad filter
-        df = current_app.data.filter_dataframe(request.get_json()["filter"])
+        df = current_app.data.filter_dataframe(request.get_json()["filter"], include_uns=False)
         if request.accept_mimetypes.best_match(['application/json']):
             return make_response((jsonify(current_app.data.data_frame(df))))
         # TODO support CSV

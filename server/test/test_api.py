@@ -313,6 +313,24 @@ class EndPoints(unittest.TestCase):
         result_data = result.json()
         self.assertEqual(len(result_data["obs"]), 15)
 
+    def test_data_put_single_var(self):
+        endpoint = "data/obs"
+        url = f"{URL_BASE}{endpoint}"
+        header = {"Accept": "application/json"}
+        var_filter = {
+            "filter": {
+                "var": {
+                    "annotation_value": [
+                        {"name": "name", "values": ["RER1"]},
+                    ]
+                }
+            }
+        }
+        result = self.session.put(url, headers=header, json=var_filter)
+        self.assertEqual(result.status_code, 200)
+        result_data = result.json()
+        self.assertEqual(len(result_data["obs"][0]), 2)
+
     def test_static(self):
         endpoint = "static"
         file = "js/service-worker.js"
