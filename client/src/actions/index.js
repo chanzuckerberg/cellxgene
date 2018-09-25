@@ -27,7 +27,8 @@ const doJsonRequest = async url => {
   const res = await fetch(url, {
     method: "get",
     headers: new Headers({
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      "Accept-Encoding": "gzip, deflate, br"
     })
   });
   return res.json();
@@ -129,66 +130,127 @@ const resetGraph = () => (dispatch, getState) =>
     universe: getState().controls.universe
   });
 
-// This code defends against the case where /expression returns a cellname
-// never seen before (ie, not returned by /cells).   This should not happen
-// (see https://github.com/chanzuckerberg/cellxgene-rest-api/issues/34) but
-// occasionally does.
+// XXX cleanup
+// // This code defends against the case where /expression returns a cellname
+// // never seen before (ie, not returned by /cells).   This should not happen
+// // (see https://github.com/chanzuckerberg/cellxgene-rest-api/issues/34) but
+// // occasionally does.
+// //
+// // XXX TODO - this code is only relevant in v0.1 REST API, and can be retired
+// // when we port to 0.2.
+// //
+// const makeMetadataMap = memoize(metadata => _.keyBy(metadata, "CellName"));
+// function cleanupExpressionResponse(data) {
+//   const s = store.getState();
+//   const { universe } = s.controls;
+//   const metadata = makeMetadataMap(universe.obsAnnotations);
+//   let errorFound = false;
+//   data.data.cells = _.filter(data.data.cells, cell => {
+//     if (!errorFound && !metadata[cell.cellname]) {
+//       errorFound = true;
+//       console.error(
+//         "Warning: /expression REST API returned unexpected cell names -- discarding surprises."
+//       );
+//     }
+//     return metadata[cell.cellname];
+//   });
 //
-// XXX TODO - this code is only relevant in v0.1 REST API, and can be retired
-// when we port to 0.2.
-//
-const makeMetadataMap = memoize(metadata => _.keyBy(metadata, "CellName"));
-function cleanupExpressionResponse(data) {
-  const s = store.getState();
-  const { universe } = s.controls;
-  const metadata = makeMetadataMap(universe.obsAnnotations);
-  let errorFound = false;
-  data.data.cells = _.filter(data.data.cells, cell => {
-    if (!errorFound && !metadata[cell.cellname]) {
-      errorFound = true;
-      console.error(
-        "Warning: /expression REST API returned unexpected cell names -- discarding surprises."
-      );
-    }
-    return metadata[cell.cellname];
-  });
+//   return data;
+// }
 
-  return data;
-}
+// XXX cleanup
+// /*
+// Fetch [gene, ...] from V0.1 API.  Not an action function - just a helper
+// which implements the new expression data caching.
+// */
+// async function _doRequestExpressionDataV01(dispatch, getState, genes) {
+//   const state = getState();
+//   /* check cache and only fetch data we do not already have */
+//   const { universe } = state.controls;
+//   const genesToFetch = _.filter(genes, g => !universe.varDataCache[g]);
+//
+//   dispatch({ type: "expression load start" });
+//   let expressionData = {}; // { gene: data }
+//   if (genesToFetch.length) {
+//     try {
+//       const res = await fetch(
+//         `${globals.API.prefix}${globals.API.version}expression`,
+//         {
+//           method: "POST",
+//           body: JSON.stringify({
+//             genelist: genes
+//           }),
+//           headers: new Headers({
+//             accept: "application/json",
+//             "Content-Type": "application/json"
+//           })
+//         }
+//       );
+//       let data = await res.json();
+//       data = cleanupExpressionResponse(data);
+//       data = Universe.convertExpressionRESTv01ToObject(universe, data);
+//       expressionData = {
+//         ...expressionData,
+//         ...data
+//       };
+//     } catch (error) {
+//       dispatch({ type: "expression load error", error });
+//       throw error; // rethrow
+//     }
+//   }
+//
+//   // add the cached values
+//   _.forEach(genes, g => {
+//     if (expressionData[g] === undefined) {
+//       expressionData[g] = universe.varDataCache[g];
+//     }
+//   });
+//
+//   return dispatch({ type: "expression load success", expressionData });
+// }
 
 /*
-Fetch [gene, ...] from V0.1 API.  Not an action function - just a helper
-which implements the new expression data caching.
+Fetch expression vectors for each gene in genes.   This is NOT an action
+function, but rather a helper to be called from an action helper that
+needs expression data.
+
+Transparently utilizes cached data if it is already present.
 */
-async function _doRequestExpressionData(dispatch, getState, genes) {
+async function _doRequestExpressionDataV02(dispatch, getState, genes) {
   const state = getState();
-  /* check cache and only fetch data we do not already have */
+  /* check cache make a list of genes for which we do not have data */
   const { universe } = state.controls;
   const genesToFetch = _.filter(genes, g => !universe.varDataCache[g]);
 
   dispatch({ type: "expression load start" });
   let expressionData = {}; // { gene: data }
+
+  /* Fetch data for any genes not in cache */
   if (genesToFetch.length) {
     try {
       const res = await fetch(
-        `${globals.API.prefix}${globals.API.version}expression`,
+        `${globals.API.prefix}${globals.API.version}data/obs`,
         {
-          method: "POST",
+          method: "PUT",
           body: JSON.stringify({
-            genelist: genes
+            filter: {
+              var: {
+                name: "name",
+                values: genesToFetch
+              }
+            }
           }),
           headers: new Headers({
             accept: "application/json",
+            "Accept-Encoding": "gzip, deflate, br",
             "Content-Type": "application/json"
           })
         }
       );
-      let data = await res.json();
-      data = cleanupExpressionResponse(data);
-      data = Universe.convertExpressionRESTv01ToObject(universe, data);
+      const data = await res.json();
       expressionData = {
         ...expressionData,
-        ...data
+        ...Universe.convertExpressionRESTv02toObject(universe, data)
       };
     } catch (error) {
       dispatch({ type: "expression load error", error });
@@ -196,7 +258,7 @@ async function _doRequestExpressionData(dispatch, getState, genes) {
     }
   }
 
-  // add the cached values
+  // add the previously cached values to the result
   _.forEach(genes, g => {
     if (expressionData[g] === undefined) {
       expressionData[g] = universe.varDataCache[g];
@@ -210,7 +272,7 @@ function requestSingleGeneExpressionCountsForColoringPOST(gene) {
   return async (dispatch, getState) => {
     dispatch({ type: "get single gene expression for coloring started" });
     try {
-      await _doRequestExpressionData(dispatch, getState, [gene]);
+      await _doRequestExpressionDataV02(dispatch, getState, [gene]);
       dispatch({
         type: "color by expression",
         gene,
@@ -230,7 +292,7 @@ function requestSingleGeneExpressionCountsForColoringPOST(gene) {
 const requestGeneExpressionCountsPOST = genes => async (dispatch, getState) => {
   dispatch({ type: "get expression started" });
   try {
-    await _doRequestExpressionData(dispatch, getState, genes);
+    await _doRequestExpressionDataV02(dispatch, getState, genes);
     return dispatch({
       type: "get expression success",
       genes,
@@ -247,7 +309,7 @@ const requestGeneExpressionCountsPOST = genes => async (dispatch, getState) => {
   }
 };
 
-const requestDifferentialExpression = (
+const requestDifferentialExpressionV01 = (
   celllist1,
   celllist2,
   num_genes = 7
@@ -262,7 +324,8 @@ const requestDifferentialExpression = (
     }),
     headers: new Headers({
       accept: "application/json",
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      "Accept-Encoding": "gzip, deflate, br"
     })
   })
     .then(res => res.json())
@@ -291,7 +354,43 @@ const requestDifferentialExpression = (
     );
 };
 
+const requestDifferentialExpressionV02 = async (
+  set1,
+  set2,
+  num_genes = 7
+) => async dispatch => {
+  dispatch({ type: "request differential expression started" });
+  try {
+    const res = await fetch(
+      `${globals.API.prefix}${globals.API.version}diffexp/obs`,
+      {
+        method: "POST",
+        headers: new Headers({
+          Accept: "application/json",
+          "Accept-Encoding": "gzip, deflate, br",
+          "Content-Type": "application/json"
+        }),
+        body: JSON.stringify({
+          diffexp: {
+            mode: { name: "topN", count: num_genes },
+            set1,
+            set2
+          }
+        })
+      }
+    );
+    const data = await res.json();
+    // XXX: unimplemented
+  } catch (error) {
+    dispatch({
+      type: "request differential expression error",
+      error
+    });
+  }
+};
+
 const doInitialDataLoad = doInitialDataLoadRESTV02;
+const requestDifferentialExpression = requestDifferentialExpressionV02;
 export default {
   regraph,
   resetGraph,
