@@ -147,7 +147,6 @@ class UtilTest(unittest.TestCase):
             }
         }
         data = self.data.filter_dataframe(filter_["filter"])
-        print(data.shape)
         annotations = self.data.annotation(data, "obs")
         self.assertEqual(annotations["names"], ["n_genes", "percent_mito", "n_counts", "louvain", "name"])
         self.assertEqual(len(annotations["data"]), 497)
@@ -168,6 +167,30 @@ class UtilTest(unittest.TestCase):
         data = self.data.filter_dataframe(filter_["filter"])
         layout = self.data.layout(data)
         self.assertEqual(len(layout["coordinates"]), 497)
+
+    def test_diffexp(self):
+        f1 = {
+            "filter": {
+                "obs": {
+                    "index": [[0, 500]]
+                }
+            }
+        }
+        df1 = self.data.filter_dataframe(f1["filter"])
+        f2 = {
+            "filter": {
+                "obs": {
+                    "index": [[500, 1000]]
+                }
+            }
+        }
+        df2 = self.data.filter_dataframe(f2["filter"])
+        result = self.data.diffexp(df1, df2)
+        self.assertEqual(len(result), 10)
+        var_idx = [i[0] for i in result]
+        self.assertEqual(var_idx, sorted(var_idx))
+        result = self.data.diffexp(df1, df2, 20)
+        self.assertEqual(len(result), 20)
 
     def test_data_frame(self):
         data_frame = self.data.data_frame(self.data.data)
