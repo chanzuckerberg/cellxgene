@@ -147,7 +147,6 @@ class UtilTest(unittest.TestCase):
             }
         }
         data = self.data.filter_dataframe(filter_["filter"])
-        print(data.shape)
         annotations = self.data.annotation(data, "obs")
         self.assertEqual(annotations["names"], ["n_genes", "percent_mito", "n_counts", "louvain", "name"])
         self.assertEqual(len(annotations["data"]), 497)
