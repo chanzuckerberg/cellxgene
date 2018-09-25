@@ -496,6 +496,8 @@ Two modes are provided:
 - Return top N differentially expressed variables (genes)
 - Return DE for caller-provided variable filter (future)
 
+Both modes perform calculations using a subset of observations, where each subset is defined by an observation filter (`set1` and `set2`).
+
 If differential expression is not supported by the server, must return an HTTP 501 response. If, in the view of the server, the request will exceed a reasonable interactive time period, must immediately return HTTP 403 error (error return _before_ attempting computation).
 
 **Request body:**
@@ -523,7 +525,9 @@ If differential expression is not supported by the server, must return an HTTP 5
       }
   ```
 
-- set1 - Complex filter - defines observation "set1"
+- count: required for `topN` mode, and specifies the number of results to return.
+- varFilter: required for `varFilter` mode, and specifies a variable filter.
+- set1 - Complex filter - defines observation "set1".
 
   ```
   {
@@ -589,14 +593,12 @@ POST /diffexp/obs
     },
     "set2": {
       "filter": {
-        "obs": { "index": [28448, 4, [88888, 99999] }
+        "obs": { "index": [28448, 4, [88888, 99999] ] }
       }
     },
-    "mode": {
-       "name": "topN",
-       "count": 5
-    }
-  ]
+    "mode": "topN",
+    "count": 5
+  }
 }
 ---
 200 - Success
