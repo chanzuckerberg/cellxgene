@@ -70,6 +70,19 @@ class UtilTest(unittest.TestCase):
         data = self.data.filter_dataframe(filter_["filter"])
         self.assertEqual(data.shape, (497, 1838))
 
+    def test_filter_annotation_no_uns(self):
+        filter_ = {
+            "filter": {
+                "var": {
+                    "annotation_value": [
+                        {"name": "name", "values": ["RER1"]},
+                    ]
+                }
+            }
+        }
+        data = self.data.filter_dataframe(filter_["filter"], include_uns=False)
+        self.assertEqual(data.shape[1], 1)
+
     def test_filter_complex(self):
         filter_ = {
             "filter": {
