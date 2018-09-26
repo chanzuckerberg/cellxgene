@@ -190,35 +190,6 @@ export function createUniverseFromRestV02Response(
   return finalize(universe);
 }
 
-// XXX cleanup
-export function convertExpressionRESTv01ToObject(universe, response) {
-  /*
-    v0.1 ota looks like:
-      {
-        genes: [ "name1", "name2", ... ],
-        cells: [
-          { cellname: 'cell1', e: [ 3, 4, n, x, y, ... ] },
-          ...
-        ]
-      }
-
-    convert expression to a simple Float32Array, and return
-    [ [geneName, array], [geneName, array], ... ]
-    */
-  const result = {};
-  const { genes, cells } = response.data;
-  for (let idx = 0; idx < genes.length; idx += 1) {
-    const gene = genes[idx];
-    const data = new Float32Array(universe.nObs);
-    for (let c = 0; c < cells.length; c += 1) {
-      const obsIndex = universe.obsNameToIndexMap[cells[c].cellname];
-      data[obsIndex] = cells[c].e[idx];
-    }
-    result[gene] = data;
-  }
-  return result;
-}
-
 export function convertExpressionRESTv02ToObject(universe, response) {
   /*
   /data/obs response looks like:
@@ -231,17 +202,18 @@ export function convertExpressionRESTv02ToObject(universe, response) {
   }
 
   convert expression toa simple Float32Array, and return
-  [ [geneName, array], [geneName, array], ... ]
+  { geneName: array, geneName: array, ... }
   NOTE: geneName, not varIndex
   */
   const vars = response.var;
   const { obs } = response;
   const result = {};
+  // XXX TODO: could this use _.unzip and have less code?
   for (let varIdx = 0; varIdx < vars.length; varIdx += 1) {
-    const gene = universe.varAnnoations[varIdx].name;
+    const gene = universe.varAnnotations[vars[varIdx]].name;
     const data = new Float32Array(universe.nObs);
     for (let obsIdx = 0; obsIdx < obs.length; obsIdx += 1) {
-      data[obsIdx] = obs[varIdx + 1];
+      data[obsIdx] = obs[obsIdx][varIdx + 1];
     }
     result[gene] = data;
   }
