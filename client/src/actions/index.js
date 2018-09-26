@@ -32,7 +32,7 @@ const doJsonRequest = async url => {
   return res.json();
 };
 
-const doInitialDataLoadRESTV02 = () =>
+const doInitialDataLoad = () =>
   catchErrorsWrap(async dispatch => {
     dispatch({ type: "initial data load start" });
 
@@ -135,7 +135,7 @@ needs expression data.
 
 Transparently utilizes cached data if it is already present.
 */
-async function _doRequestExpressionDataV02(dispatch, getState, genes) {
+async function _doRequestExpressionData(dispatch, getState, genes) {
   const state = getState();
   /* check cache make a list of genes for which we do not have data */
   const { universe } = state.controls;
@@ -180,19 +180,24 @@ async function _doRequestExpressionDataV02(dispatch, getState, genes) {
     }
   }
 
-  return dispatch({ type: "expression load success", expressionData });
+  dispatch({ type: "expression load success", expressionData });
+  return expressionData;
 }
 
 function requestSingleGeneExpressionCountsForColoringPOST(gene) {
   return async (dispatch, getState) => {
     dispatch({ type: "get single gene expression for coloring started" });
     try {
-      await _doRequestExpressionDataV02(dispatch, getState, [gene]);
+      const expressionData = await _doRequestExpressionData(
+        dispatch,
+        getState,
+        [gene]
+      );
       dispatch({
         type: "color by expression",
         gene,
         data: {
-          [gene]: getState().controls.world.varDataCache[gene]
+          [gene]: expressionData[gene]
         }
       });
     } catch (error) {
@@ -207,69 +212,22 @@ function requestSingleGeneExpressionCountsForColoringPOST(gene) {
 const requestGeneExpressionCountsPOST = genes => async (dispatch, getState) => {
   dispatch({ type: "get expression started" });
   try {
-    await _doRequestExpressionDataV02(dispatch, getState, genes);
+    const expressionData = await _doRequestExpressionData(
+      dispatch,
+      getState,
+      genes
+    );
     return dispatch({
       type: "get expression success",
       genes,
-      data: _.transform(
-        genes,
-        (res, gene) => {
-          res[gene] = getState().controls.world.varDataCache[gene];
-        },
-        {}
-      )
+      data: expressionData
     });
   } catch (error) {
     return dispatch({ type: "get expression error", error });
   }
 };
 
-const requestDifferentialExpressionV01 = (
-  celllist1,
-  celllist2,
-  num_genes = 7
-) => dispatch => {
-  dispatch({ type: "request differential expression started" });
-  fetch(`${globals.API.prefix}${globals.API.version}diffexpression`, {
-    method: "POST",
-    body: JSON.stringify({
-      celllist1,
-      celllist2,
-      num_genes
-    }),
-    headers: new Headers({
-      accept: "application/json",
-      "Content-Type": "application/json",
-      "Accept-Encoding": "gzip, deflate, br"
-    })
-  })
-    .then(res => res.json())
-    .then(
-      data => {
-        /*
-          kick off a secondary action to get all expression counts for all cells
-          now that we know what the top expressed are
-          */
-        dispatch(
-          requestGeneExpressionCountsPOST(
-            _.union(data.data.celllist1.topgenes, data.data.celllist2.topgenes)
-          )
-        );
-        /* then send the success case action through */
-        return dispatch({
-          type: "request differential expression success",
-          data
-        });
-      },
-      error =>
-        dispatch({
-          type: "request differential expression error",
-          error
-        })
-    );
-};
-
-const requestDifferentialExpressionV02 = (set1, set2, num_genes = 10) => async (
+const requestDifferentialExpression = (set1, set2, num_genes = 10) => async (
   dispatch,
   getState
 ) => {
@@ -324,8 +282,6 @@ const requestDifferentialExpressionV02 = (set1, set2, num_genes = 10) => async (
   }
 };
 
-const doInitialDataLoad = doInitialDataLoadRESTV02;
-const requestDifferentialExpression = requestDifferentialExpressionV02;
 export default {
   regraph,
   resetGraph,

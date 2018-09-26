@@ -1,4 +1,6 @@
 // jshint esversion: 6
+import _ from "lodash";
+
 const Differential = (
   state = {
     diffExp: null,
