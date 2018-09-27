@@ -243,7 +243,7 @@ class AnnotationsObsAPI(Resource):
     })
     def put(self):
         fields = request.args.getlist("annotation-name", None)
-        df = current_app.data.filter_dataframe(request.get_json()["filter"])
+        df = current_app.data.filter_dataframe(request.get_json()["filter"], include_uns=False)
         try:
             annotation_response = current_app.data.annotation(df, "obs", fields)
         except KeyError:
@@ -325,7 +325,7 @@ class AnnotationsVarAPI(Resource):
     })
     def put(self):
         fields = request.args.getlist("annotation-name", None)
-        df = current_app.data.filter_dataframe(request.get_json()["filter"])
+        df = current_app.data.filter_dataframe(request.get_json()["filter"], include_uns=False)
         try:
             annotation_response = current_app.data.annotation(df, "var", fields)
         except KeyError:
@@ -415,9 +415,9 @@ class DiffExpObsAPI(Resource):
         if "varFilter" in args:
             set1_filter[Axis.VAR] = args["varFilter"]["filter"][Axis.VAR]
             set2_filter[Axis.VAR] = args["varFilter"]["filter"][Axis.VAR]
-        df1 = current_app.data.filter_dataframe(set1_filter)
+        df1 = current_app.data.filter_dataframe(set1_filter, include_uns=False)
         # TODO inverse
-        df2 = current_app.data.filter_dataframe(set2_filter)
+        df2 = current_app.data.filter_dataframe(set2_filter, include_uns=False)
         # exceeds size limit
         if df1.shape[0] + df2.shape[0] > current_app.data.features["diffexp"]["interactiveLimit"]:
             return make_response("Non-interactive request", 403)
