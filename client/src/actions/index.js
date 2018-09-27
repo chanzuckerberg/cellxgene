@@ -1,7 +1,7 @@
 // jshint esversion: 6
 import _ from "lodash";
 import * as globals from "../globals";
-import { Universe } from "../util/stateManager";
+import { Universe, kvCache } from "../util/stateManager";
 
 /*
 Catch unexpected errors and make sure we don't lose them!
@@ -128,6 +128,36 @@ const resetGraph = () => (dispatch, getState) =>
     universe: getState().controls.universe
   });
 
+/* XXX: TEMP code for debugging only - will be removed shortly */
+function debugCheckServerReturn(
+  getState,
+  response,
+  genes,
+  genesToFetchByName,
+  expressionData
+) {
+  const state = getState();
+  const { universe } = state.controls;
+
+  // check if genes request are genes returned
+  const genesToFetchByIdx = _.map(
+    genesToFetchByName,
+    g => universe.varNameToIndexMap[g]
+  );
+  genesToFetchByIdx.sort();
+  const geneIdxFromResponse = [...response.var];
+  geneIdxFromResponse.sort();
+  if (!_.isEqual(genesToFetchByIdx, geneIdxFromResponse)) {
+    console.log("gene list not equal", genesToFetchByIdx, geneIdxFromResponse);
+  }
+
+  _.forEach(genes, g => {
+    if (expressionData[g] === undefined) {
+      console.log(g, "missing from expressiondata");
+    }
+  });
+}
+
 /*
 Fetch expression vectors for each gene in genes.   This is NOT an action
 function, but rather a helper to be called from an action helper that
@@ -137,20 +167,25 @@ Transparently utilizes cached data if it is already present.
 */
 async function _doRequestExpressionData(dispatch, getState, genes) {
   const state = getState();
-  /* check cache make a list of genes for which we do not have data */
   const { universe } = state.controls;
-  const genesToFetch = _.filter(genes, g => !universe.varDataCache[g]);
+  /* preload data already in cache */
   let expressionData = _.transform(genes, (expData, g) => {
-    if (universe.varDataCache[g]) {
-      expData[g] = universe.varDataCache[g];
+    const data = kvCache.get(universe.varDataCache, g);
+    if (data) {
+      expData[g] = data;
     }
   }); // --> { gene: data }
+  /* make a list of genes for which we do not have data */
+  const genesToFetch = _.filter(genes, g => expressionData[g] === undefined);
 
   dispatch({ type: "expression load start" });
 
   /* Fetch data for any genes not in cache */
   if (genesToFetch.length) {
     try {
+      // XXX: TODO - this could be using /data/var rather than /data/obs,
+      // as that would simplify the transformation in
+      // convertExpressionRESTv02ToObject
       const res = await fetch(
         `${globals.API.prefix}${globals.API.version}data/obs`,
         {
@@ -174,6 +209,14 @@ async function _doRequestExpressionData(dispatch, getState, genes) {
         ...expressionData,
         ...Universe.convertExpressionRESTv02ToObject(universe, data)
       };
+      // XXX cleanup
+      // debugCheckServerReturn(
+      //   getState,
+      //   data,
+      //   genes,
+      //   genesToFetch,
+      //   expressionData
+      // );
     } catch (error) {
       dispatch({ type: "expression load error", error });
       throw error; // rethrow
