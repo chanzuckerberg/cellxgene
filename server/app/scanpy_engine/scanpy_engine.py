@@ -189,7 +189,7 @@ class ScanpyEngine(CXGDriver):
                     index = np.logical_and(index, key_idx)
         return index
 
-    @cache.memoize()
+    # @cache.memoize()
     def annotation(self, df, axis, fields=None):
         """
          Gets annotation value for each observation
@@ -209,7 +209,7 @@ class ScanpyEngine(CXGDriver):
             "data": annotations.reset_index().values.tolist()
         }
 
-    @cache.memoize()
+    # @cache.memoize()
     def layout(self, df):
         """
         Computes a n-d layout for cells through dimensionality reduction.
@@ -229,7 +229,7 @@ class ScanpyEngine(CXGDriver):
             "coordinates": normalized_layout.reset_index().values.tolist()
         }
 
-    @cache.memoize()
+    # @cache.memoize()
     def diffexp(self, df1, df2, top_n=None):
         """
         Computes the top differentially expressed variables between two observation sets. If dataframes
@@ -278,7 +278,7 @@ class ScanpyEngine(CXGDriver):
         # Results need to be returned in var index order
         return sorted(result, key=lambda gene: gene[0])
 
-    @cache.memoize()
+    # @cache.memoize()
     def data_frame(self, df):
         """
         Retrieves data for each variable for observations in data frame
