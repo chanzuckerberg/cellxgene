@@ -69,4 +69,21 @@ function flush(kvcache, minAgeMs = 0) {
   return kvcache;
 }
 
-export { create, get, set, flush };
+/*
+use to create a cache that is a transformation of another cache.
+*/
+function map(srcKvCache, cb, createOptions) {
+  const keysInSrcKvCache = _(srcKvCache)
+    .keys()
+    .filter(k => k !== cachePrivateKey)
+    .value();
+  const newKvCache = create(createOptions.lowWatermark, createOptions.minTTL);
+  _.forEach(keysInSrcKvCache, key => {
+    const val = cb(get(srcKvCache, key));
+    newKvCache[key] = val;
+    val[cachePrivateKey] = Date.now();
+  });
+  return newKvCache;
+}
+
+export { create, get, set, flush, map };

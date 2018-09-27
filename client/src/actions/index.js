@@ -128,36 +128,6 @@ const resetGraph = () => (dispatch, getState) =>
     universe: getState().controls.universe
   });
 
-/* XXX: TEMP code for debugging only - will be removed shortly */
-function debugCheckServerReturn(
-  getState,
-  response,
-  genes,
-  genesToFetchByName,
-  expressionData
-) {
-  const state = getState();
-  const { universe } = state.controls;
-
-  // check if genes request are genes returned
-  const genesToFetchByIdx = _.map(
-    genesToFetchByName,
-    g => universe.varNameToIndexMap[g]
-  );
-  genesToFetchByIdx.sort();
-  const geneIdxFromResponse = [...response.var];
-  geneIdxFromResponse.sort();
-  if (!_.isEqual(genesToFetchByIdx, geneIdxFromResponse)) {
-    console.log("gene list not equal", genesToFetchByIdx, geneIdxFromResponse);
-  }
-
-  _.forEach(genes, g => {
-    if (expressionData[g] === undefined) {
-      console.log(g, "missing from expressiondata");
-    }
-  });
-}
-
 /*
 Fetch expression vectors for each gene in genes.   This is NOT an action
 function, but rather a helper to be called from an action helper that
@@ -209,14 +179,6 @@ async function _doRequestExpressionData(dispatch, getState, genes) {
         ...expressionData,
         ...Universe.convertExpressionRESTv02ToObject(universe, data)
       };
-      // XXX cleanup
-      // debugCheckServerReturn(
-      //   getState,
-      //   data,
-      //   genes,
-      //   genesToFetch,
-      //   expressionData
-      // );
     } catch (error) {
       dispatch({ type: "expression load error", error });
       throw error; // rethrow

@@ -46,47 +46,49 @@ obs/cell.
 
 */
 
-/*
-Summary information for each annotation, keyed by annotation name.
-Value will be an object, containing either 'range' or 'options' object,
-depending on the annotation schema type (categorical or continuous).
+const VarDataCacheLowWatermark = 32;
+const VarDataCacheTTLMs = 1000;
 
-Summarize for BOTH obs and var annotations.  Result format:
-
-{
-  obs: {
-    annotation_name: { ... },
-    ...
-  },
-  var: {
-    annotation_name: { ... },
-    ...
-  }
-}
-
-Example:
-  {
-    "Splice_sites_Annotated": {
-      "range": {
-        "min": 26,
-        "max": 1075869
-      }
-    },
-    "Selection": {
-      "options": {
-        "Astrocytes(HEPACAM)": 714,
-        "Endothelial(BSC)": 123,
-        "Oligodendrocytes(GC)": 294,
-        "Neurons(Thy1)": 685,
-        "Microglia(CD45)": 1108,
-        "Unpanned": 665
-      }
-    }
-  }
-*/
 function summarizeAnnotations(schema, obsAnnotations) {
   /*
   Build and return obs/var summary using any annotation in the schema
+
+  Summary information for each annotation, keyed by annotation name.
+  Value will be an object, containing either 'range' or 'options' object,
+  depending on the annotation schema type (categorical or continuous).
+
+  Summarize for BOTH obs and var annotations.  Result format:
+
+  {
+    obs: {
+      annotation_name: { ... },
+      ...
+    },
+    var: {
+      annotation_name: { ... },
+      ...
+    }
+  }
+
+  Example:
+    {
+      "Splice_sites_Annotated": {
+        "range": {
+          "min": 26,
+          "max": 1075869
+        }
+      },
+      "Selection": {
+        "options": {
+          "Astrocytes(HEPACAM)": 714,
+          "Endothelial(BSC)": 123,
+          "Oligodendrocytes(GC)": 294,
+          "Neurons(Thy1)": 685,
+          "Microglia(CD45)": 1108,
+          "Unpanned": 665
+        }
+      }
+    }
   */
   const obsSummary = _(schema.annotations.obs)
     .keyBy("name")
@@ -115,7 +117,8 @@ function summarizeAnnotations(schema, obsAnnotations) {
     })
     .value();
 
-  const varSummary = {}; // TODO XXX - not currently used, so skip it
+  // TODO XXX - not currently used, so skip it
+  const varSummary = {};
 
   return {
     obs: obsSummary,
@@ -124,9 +127,6 @@ function summarizeAnnotations(schema, obsAnnotations) {
 }
 
 function templateWorld() {
-  const VarDataCacheLowWatermark = 32;
-  const VarDataCacheTTLMs = 1000;
-
   return {
     // map from universe obsIndex to world offset.
     // Undefined / null indicates identity mapping.
@@ -187,9 +187,11 @@ export function createWorldFromEntireUniverse(universe) {
   world.summary = summarizeAnnotations(world.schema, world.obsAnnotations);
 
   /* build the varDataCache */
-  _.forEach(universe.varDataCache, (val, key) => {
-    kvCache.set(world.varDataCache, key, subsetVarData(world, universe, val));
-  });
+  world.varDataCache = kvCache.map(
+    universe.varDataCache,
+    val => subsetVarData(world, universe, val),
+    { lowWatermark: VarDataCacheLowWatermark, minTTL: VarDataCacheTTLMs }
+  );
 
   return world;
 }
@@ -242,13 +244,11 @@ export function createWorldFromCurrentSelection(universe, world, crossfilter) {
   );
 
   /* build the varDataCache */
-  _.forEach(universe.varDataCache, (val, key) => {
-    kvCache.set(
-      newWorld.varDataCache,
-      key,
-      subsetVarData(newWorld, universe, val)
-    );
-  });
+  newWorld.varDataCache = kvCache.map(
+    universe.varDataCache,
+    val => subsetVarData(newWorld, universe, val),
+    { lowWatermark: VarDataCacheLowWatermark, minTTL: VarDataCacheTTLMs }
+  );
   return newWorld;
 }
 
