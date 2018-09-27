@@ -29,10 +29,13 @@ function templateUniverse() {
 
     obsLayout: { X: [], Y: [] } /* xy layout */,
 
-    varDataCache: kvCache.create(
-      VarDataCacheLowWatermark,
-      VarDataCacheTTLMs
-    ) /* cache of var data (expression) */
+    /*
+    Cache of var data (expression), by var annotation name.   Data can be
+    accesses as a POJO, but if you want caching semantics, use the kvCache
+    API (eg., kvCache.get(), kvCache.set(), ...), which will maintain the
+    LRU semantics.
+    */
+    varDataCache: kvCache.create(VarDataCacheLowWatermark, VarDataCacheTTLMs)
   };
 }
 

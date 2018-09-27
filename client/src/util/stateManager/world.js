@@ -186,6 +186,11 @@ export function createWorldFromEntireUniverse(universe) {
   /* derived data & summaries */
   world.summary = summarizeAnnotations(world.schema, world.obsAnnotations);
 
+  /* build the varDataCache */
+  _.forEach(universe.varDataCache, (val, key) => {
+    kvCache.set(world.varDataCache, key, subsetVarData(world, universe, val));
+  });
+
   return world;
 }
 
@@ -230,10 +235,20 @@ export function createWorldFromCurrentSelection(universe, world, crossfilter) {
     newWorld.worldObsIndex[newWorld.obsAnnotations[i].__index__] = i;
   }
 
+  /* derived data & summaries */
   newWorld.summary = summarizeAnnotations(
     newWorld.schema,
     newWorld.obsAnnotations
   );
+
+  /* build the varDataCache */
+  _.forEach(universe.varDataCache, (val, key) => {
+    kvCache.set(
+      newWorld.varDataCache,
+      key,
+      subsetVarData(newWorld, universe, val)
+    );
+  });
   return newWorld;
 }
 

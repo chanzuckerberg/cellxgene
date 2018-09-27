@@ -17,6 +17,7 @@ import _drawPoints from "./drawPointsRegl";
 import { scaleLinear } from "../../util/scaleLinear";
 
 import { margin, width, height } from "./util";
+import { kvCache } from "../../util/stateManager";
 
 @connect(state => {
   const {
@@ -27,11 +28,11 @@ import { margin, width, height } from "./util";
   } = state.controls;
   const expressionX =
     world && scatterplotXXaccessor
-      ? state.controls.world.varDataCache[scatterplotXXaccessor]
+      ? kvCache.get(world.varDataCache, scatterplotXXaccessor)
       : null;
   const expressionY =
     world && scatterplotYYaccessor
-      ? state.controls.world.varDataCache[scatterplotYYaccessor]
+      ? kvCache.get(world.varDataCache, scatterplotYYaccessor)
       : null;
 
   return {
