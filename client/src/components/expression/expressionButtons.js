@@ -6,14 +6,12 @@ import * as globals from "../../globals";
 import actions from "../../actions";
 import CellSetButton from "./cellSetButtons";
 
-@connect(state => {
-  return {
-    differential: state.differential,
-    world: state.controls.world,
-    crossfilter: _.get(state.controls, "crossfilter", null),
-    selectionUpdate: _.get(state.controls, "crossfilter.updateTime", null)
-  };
-})
+@connect(state => ({
+  differential: state.differential,
+  world: state.controls.world,
+  crossfilter: _.get(state.controls, "crossfilter", null),
+  selectionUpdate: _.get(state.controls, "crossfilter.updateTime", null)
+}))
 class Expression extends React.Component {
   constructor(props) {
     super(props);
@@ -21,25 +19,28 @@ class Expression extends React.Component {
   }
 
   handleClick(gene) {
+    const { dispatch } = this.props;
     return () => {
-      this.props.dispatch({
+      dispatch({
         type: "color by expression",
-        gene: gene
+        gene
       });
     };
   }
 
   computeDiffExp() {
-    this.props.dispatch(
+    const { dispatch, differential } = this.props;
+    dispatch(
       actions.requestDifferentialExpression(
-        this.props.differential.celllist1,
-        this.props.differential.celllist2
+        differential.celllist1,
+        differential.celllist2
       )
     );
   }
 
   render() {
-    if (!this.props.differential) {
+    const { differential } = this.props;
+    if (!differential) {
       return null;
     }
     return (
@@ -47,6 +48,7 @@ class Expression extends React.Component {
         <CellSetButton {...this.props} eitherCellSetOneOrTwo={1} />
         <CellSetButton {...this.props} eitherCellSetOneOrTwo={2} />
         <button
+          type="button"
           style={{
             fontSize: 14,
             fontWeight: 400,
@@ -55,14 +57,12 @@ class Expression extends React.Component {
             height: 30,
             borderRadius: 2,
             backgroundColor:
-              this.props.differential.celllist1 &&
-              this.props.differential.celllist2
+              differential.celllist1 && differential.celllist2
                 ? globals.brightBlue
                 : globals.lightGrey,
             border: "none",
             cursor:
-              this.props.differential.celllist1 &&
-              this.props.differential.celllist2
+              differential.celllist1 && differential.celllist2
                 ? "pointer"
                 : "auto"
           }}
@@ -76,13 +76,3 @@ class Expression extends React.Component {
 }
 
 export default Expression;
-
-// <div style={{ marginBottom: 15, width: 300 }}>
-//   There are currently
-//   {" " +
-//     (this.props.crossfilter
-//       ? this.props.crossfilter.cells.countFiltered()
-//       : 0) +
-//     " "}
-//   cells selected, click a cell set button to store them.
-// </div>
