@@ -401,7 +401,11 @@ class ScalarGroup {
     this.dimension = dimension;
 
     // generate group names from dimension values
-    this.mapValue = this._map(groupValue, groupValueType, dimension);
+    this.mapValue = this.constructor._map(
+      groupValue,
+      groupValueType,
+      dimension
+    );
 
     // group index is mapping from data record index to group index
     this.groupIndex = new Uint32Array(dimension.crossfilter.data.length);
@@ -469,7 +473,7 @@ class ScalarGroup {
 
     // Each item in the range will be remved from `dim`.  reduceRemove if it
     // is currently selected.
-    const { data, selection } = this.dimension.crossfilter.selection;
+    const { data, selection } = this.dimension.crossfilter;
     intv.forEach(rng => {
       for (let r = rng[0]; r < rng[1]; r += 1) {
         const i = dim.index[r];

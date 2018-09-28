@@ -1,8 +1,6 @@
 // jshint esversion: 6
-import styles from "./graph.css";
-import _ from "lodash";
-import * as globals from "../../globals";
 import * as d3 from "d3";
+import styles from "./graph.css";
 
 /******************************************
 *******************************************
@@ -10,7 +8,7 @@ import * as d3 from "d3";
 *******************************************
 ******************************************/
 
-export const setupSVGandBrushElements = (
+export default (
   handleBrushSelectAction,
   handleBrushDeselectAction,
   responsive,

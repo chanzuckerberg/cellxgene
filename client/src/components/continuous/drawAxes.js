@@ -1,4 +1,5 @@
 // jshint esversion: 6
+import * as d3 from "d3";
 import styles from "./parallelCoordinates.css";
 import { yAxis, brushstart } from "./util";
 
@@ -19,13 +20,11 @@ const drawAxes = (
   ******************************************/
 
   function brush() {
-    var actives = [];
+    const actives = [];
     svg
       .selectAll(".parcoords_axis .parcoords_brush")
-      .filter(function(d) {
-        return d3.brushSelection(this);
-      })
-      .each(function(d) {
+      .filter(() => d3.brushSelection(this))
+      .each(d => {
         actives.push({
           dimension: d,
           extent: d3.brushSelection(this)
@@ -35,20 +34,18 @@ const drawAxes = (
     handleBrushAction(actives);
   }
 
-  var axes = svg
+  const axes = svg
     .selectAll(".parcoords_axis")
     .data(dimensions)
     .enter()
     .append("g")
     .attr("class", `${styles.axis} parcoords_axis`)
-    .attr("transform", (d, i) => {
-      return "translate(" + xscale(i) + ")";
-    });
+    .attr("transform", (d, i) => `translate(${xscale(i)})`);
 
   axes
     .append("g")
-    .each(function(d) {
-      var renderAxis =
+    .each(d => {
+      const renderAxis =
         "axis" in d
           ? d.axis.scale(d.scale) // custom axis
           : yAxis.scale(d.scale); // default axis
@@ -60,15 +57,13 @@ const drawAxes = (
     })
     .attr("class", styles.title)
     .attr("text-anchor", "start")
-    .text(function(d) {
-      return "description" in d ? d.description + "  🖌️" : d.key + "  🖌️";
-    });
+    .text(d => ("description" in d ? `${d.description}  🖌️` : `${d.key}  🖌️`));
 
   // Add and store a brush for each axis.
   axes
     .append("g")
     .attr("class", `${styles.brush} parcoords_brush`)
-    .each(function(d) {
+    .each(d => {
       d3.select(this).call(
         (d.brush = d3
           .brushY()

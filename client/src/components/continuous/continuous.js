@@ -5,16 +5,7 @@ import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
 
-import styles from "./parallelCoordinates.css";
-import SectionHeader from "../framework/sectionHeader";
-
-import setupParallelCoordinates from "./setupParallelCoordinates";
-import drawAxes from "./drawAxes";
-import drawLinesCanvas from "./drawLinesCanvas";
-
 import HistogramBrush from "./histogramBrush";
-
-import { margin, width, height, createDimensions } from "./util";
 
 @connect(state => {
   const metadata = _.get(state.controls.world, "obsAnnotations", null);
@@ -29,35 +20,29 @@ import { margin, width, height, createDimensions } from "./util";
   };
 })
 class Continuous extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      svg: null,
-      ctx: null,
-      axes: null,
-      dimensions: null
-    };
-  }
-
   handleBrushAction(selection) {
-    this.props.dispatch({
+    const { dispatch } = this.props;
+    dispatch({
       type: "continuous selection using parallel coords brushing",
       data: selection
     });
   }
 
   handleColorAction(key) {
-    this.props.dispatch({
+    const { dispatch, ranges } = this.props;
+    dispatch({
       type: "color by continuous metadata",
       colorAccessor: key,
-      rangeMaxForColorAccessor: this.props.ranges[key].range.max
+      rangeMaxForColorAccessor: ranges[key].range.max
     });
   }
 
   render() {
+    const { ranges } = this.props;
+
     return (
       <div>
-        {_.map(this.props.ranges, (value, key) => {
+        {_.map(ranges, (value, key) => {
           const isColorField = key.includes("color") || key.includes("Color");
           if (value.range && key !== "name" && !isColorField) {
             return (
@@ -68,6 +53,7 @@ class Continuous extends React.Component {
               />
             );
           }
+          return null;
         })}
       </div>
     );
@@ -75,5 +61,3 @@ class Continuous extends React.Component {
 }
 
 export default Continuous;
-
-// <SectionHeader text="Continuous Metadata"/>

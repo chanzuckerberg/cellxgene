@@ -18,11 +18,10 @@ export const createDimensions = data => {
   _.each(data, (value, key) => {
     if (value.range) {
       newArr.push({
-        key: key /* room for confusion: lodash calls this key, it's also the name of the property parallel coords code is looking for */,
+        key /* room for confusion: lodash calls this key, it's also the name of the property parallel coords code is looking for */,
         type: {
-          within: (d, extent, dim) => {
-            return extent[0] <= dim.scale(d) && dim.scale(d) <= extent[1];
-          }
+          within: (d, extent, dim) =>
+            extent[0] <= dim.scale(d) && dim.scale(d) <= extent[1]
         },
         scale: d3
           .scaleSqrt()
@@ -41,18 +40,13 @@ export const brushstart = () => {
 };
 
 export const d3_functor = v => {
-  return typeof v === "function"
-    ? v
-    : () => {
-        return v;
-      };
+  return typeof v === "function" ? v : () => v;
 };
 
-export const project = (d, dimensions, xscale) => {
-  return dimensions.map((p, i) => {
+export const project = (d, dimensions, xscale) =>
+  dimensions.map((p, i) => {
     // check if data element has property and contains a value
     if (!(p.key in d) || d[p.key] === null) return null;
 
     return [xscale(i), p.scale(d[p.key])];
   });
-};
