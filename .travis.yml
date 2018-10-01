@@ -14,5 +14,5 @@ install:
 script:
   - set -eo pipefail
   - flake8 server/app/
+  - (cd client && npm run test)
   - pytest -s server/test
-  - npm run test
