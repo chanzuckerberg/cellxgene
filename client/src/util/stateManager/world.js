@@ -46,8 +46,9 @@ obs/cell.
 
 */
 
-const VarDataCacheLowWatermark = 32;
-const VarDataCacheTTLMs = 1000;
+/* varDataCache config - see kvCache for semantics */
+const VarDataCacheLowWatermark = 32; // cache element count
+const VarDataCacheTTLMs = 1000; // min cache time in MS
 
 function summarizeAnnotations(schema, obsAnnotations) {
   /*

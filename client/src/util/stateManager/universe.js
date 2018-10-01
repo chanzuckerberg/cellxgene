@@ -8,8 +8,10 @@ Private helper function - create and return a template Universe
 */
 function templateUniverse() {
   /* default universe template */
-  const VarDataCacheLowWatermark = 32;
-  const VarDataCacheTTLMs = 1000;
+
+  /* varDataCache config - see kvCache for semantics */
+  const VarDataCacheLowWatermark = 32; // cache element count
+  const VarDataCacheTTLMs = 1000; // min cache time in MS
 
   return {
     api: null,

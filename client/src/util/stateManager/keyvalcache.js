@@ -4,13 +4,12 @@ import _ from "lodash";
 /*
 Very simple key/value cache for use by World & Universe.
 
-  * constructor(lowWatermark, cachekey):
+  * constructor(lowWatermark, minTTL):
       - lowWatermark defines the number of cache elements below which
         flushing will not occur.
-      - minTTL defines minimum time in MS that cache entries will live.
+      - minTTL defines minimum time in milliseconds that cache entries will live.
         A value of -1 disables automatic flushing (flush() can still
         be called by external user).
-      - cachekey is a key that will be assigned to any value to track age
   * set() - add a key/val pair.
   * get() - get a value or undefined if not present.
   * flush(minAgeMs) - flush cache entries in excess of lowWatermark if those
