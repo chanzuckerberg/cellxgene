@@ -5,15 +5,12 @@ import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
 
-import HistogramBrush from "./histogramBrush";
+import HistogramBrush from "../brushableHistogram/";
 
 @connect(state => {
-  const metadata = _.get(state.controls.world, "obsAnnotations", null);
-  const ranges = _.get(state.controls.world, "summary.obs", null);
-
   return {
-    ranges,
-    metadata,
+    ranges: _.get(state.controls.world, "summary.obs", null),
+    metadata: _.get(state.controls.world, "obsAnnotations", null),
     colorAccessor: state.controls.colorAccessor,
     colorScale: state.controls.colorScale,
     selectionUpdate: _.get(state.controls, "crossfilter.updateTime", null)
@@ -29,16 +26,18 @@ class Continuous extends React.Component {
   }
 
   handleColorAction(key) {
-    const { dispatch, ranges } = this.props;
-    dispatch({
-      type: "color by continuous metadata",
-      colorAccessor: key,
-      rangeMaxForColorAccessor: ranges[key].range.max
-    });
+    return () => {
+      const { dispatch, ranges } = this.props;
+      dispatch({
+        type: "color by continuous metadata",
+        colorAccessor: key,
+        rangeMaxForColorAccessor: ranges[key].range.max
+      });
+    };
   }
 
   render() {
-    const { ranges } = this.props;
+    const { ranges, obsAnnotations } = this.props;
 
     return (
       <div>
@@ -48,8 +47,10 @@ class Continuous extends React.Component {
             return (
               <HistogramBrush
                 key={key}
-                metadataField={key}
+                field={key}
+                fieldValues={obsAnnotations}
                 ranges={value.range}
+                handleColorAction={this.handleColorAction(key).bind(this)}
               />
             );
           }

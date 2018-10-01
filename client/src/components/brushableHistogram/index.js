@@ -19,12 +19,9 @@ import * as globals from "../../globals";
   obsAnnotations: _.get(state.controls.world, "obsAnnotations", null)
 }))
 class HistogramBrush extends React.Component {
-  calcHistogramCache = memoize((obsAnnotations, metadataField, ranges) => {
+  calcHistogramCache = memoize((obsAnnotations, field, ranges) => {
     // recalculate expensive stuff
-    const allValuesForContinuousFieldAsArray = _.map(
-      obsAnnotations,
-      metadataField
-    );
+    const allValuesForContinuousFieldAsArray = _.map(obsAnnotations, field);
     const histogramCache = {};
 
     histogramCache.x = d3
@@ -61,17 +58,17 @@ class HistogramBrush extends React.Component {
 
   onBrush(selection, x) {
     return () => {
-      const { dispatch, metadataField } = this.props;
+      const { dispatch, field } = this.props;
       if (d3.event.selection) {
         dispatch({
           type: "continuous metadata histogram brush",
-          selection: metadataField,
+          selection: field,
           range: [x(d3.event.selection[0]), x(d3.event.selection[1])]
         });
       } else {
         dispatch({
           type: "continuous metadata histogram brush",
-          selection: metadataField,
+          selection: field,
           range: null
         });
       }
@@ -79,10 +76,10 @@ class HistogramBrush extends React.Component {
   }
 
   drawHistogram(svgRef) {
-    const { obsAnnotations, metadataField, ranges } = this.props;
+    const { obsAnnotations, field, ranges } = this.props;
     const histogramCache = this.calcHistogramCache(
       obsAnnotations,
-      metadataField,
+      field,
       ranges
     );
 
@@ -109,11 +106,7 @@ class HistogramBrush extends React.Component {
         .select(svgRef)
         .append("g")
         .attr("class", "brush")
-        .call(
-          d3
-            .brushX()
-            .on("end", this.onBrush(metadataField, x.invert).bind(this))
-        );
+        .call(d3.brushX().on("end", this.onBrush(field, x.invert).bind(this)));
 
       const xAxis = d3
         .select(svgRef)
@@ -127,30 +120,40 @@ class HistogramBrush extends React.Component {
         .attr("fill", "#000")
         .attr("text-anchor", "end")
         .attr("font-weight", "bold")
-        .text(metadataField);
+        .text(field);
+
+      d3.select(svgRef)
+        .selectAll(".axis--x text")
+        .style("fill", "rgb(80,80,80)");
+      d3.select(svgRef)
+        .selectAll(".axis--x path")
+        .style("stroke", "rgb(230,230,230)");
+      d3.select(svgRef)
+        .selectAll(".axis--x line")
+        .style("stroke", "rgb(230,230,230)");
 
       this.setState({ brush, xAxis });
     }
   }
 
   handleColorAction() {
-    const { dispatch, metadataField, initializeRanges } = this.props;
+    const { dispatch, field, initializeRanges } = this.props;
     dispatch({
       type: "color by continuous metadata",
-      colorAccessor: metadataField,
-      rangeMaxForColorAccessor: initializeRanges[metadataField].range.max
+      colorAccessor: field,
+      rangeMaxForColorAccessor: initializeRanges[field].range.max
     });
   }
 
   render() {
-    const { metadataField, ranges, colorAccessor } = this.props;
+    const { field, ranges, colorAccessor } = this.props;
     return (
       <div
         style={{
           marginTop: 10,
           position: "flex"
         }}
-        id={`histogram_${metadataField}`}
+        id={`histogram_${field}`}
       >
         <svg
           width={this.width}
@@ -168,11 +171,10 @@ class HistogramBrush extends React.Component {
           style={{
             fontSize: 16,
             marginLeft: 4,
-            // padding: this.props.colorAccessor === this.props.metadataField ? 3 : "auto",
+            // padding: this.props.colorAccessor === this.props.field ? 3 : "auto",
             borderRadius: 3,
-            color:
-              colorAccessor === metadataField ? globals.brightBlue : "black",
-            // backgroundColor: this.props.colorAccessor === this.props.metadataField ? globals.brightBlue : "inherit",
+            color: colorAccessor === field ? globals.brightBlue : "black",
+            // backgroundColor: this.props.colorAccessor === this.props.field ? globals.brightBlue : "inherit",
             position: "relative",
             top: -29,
             cursor: "pointer"
