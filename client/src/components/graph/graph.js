@@ -165,6 +165,7 @@ class Graph extends React.Component {
       if (!this.renderCache.sizes) {
         this.renderCache.sizes = new Float32Array(cellCount);
       }
+
       crossfilter.fillByIsFiltered(this.renderCache.sizes, 4, 0.2);
       sizeBuffer({ data: this.renderCache.sizes, dimension: 1 });
 

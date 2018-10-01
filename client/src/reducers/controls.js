@@ -35,6 +35,7 @@ const Controls = (
     categoricalAsBooleansMap: null,
     crossfilter: null,
     dimensionMap: null,
+    dimensionMapVar: {},
 
     colorAccessor: null,
     colorScale: null,
@@ -115,9 +116,16 @@ const Controls = (
       };
     }
     case "expression load success": {
-      const { world, universe } = state;
+      const {
+        world,
+        universe,
+        crossfilter,
+        dimensionMap,
+        dimensionMapVar
+      } = state;
       let universeVarDataCache = universe.varDataCache;
       let worldVarDataCache = world.varDataCache;
+      let _dimensionMapVar = dimensionMapVar;
       _.forEach(action.expressionData, (val, key) => {
         universeVarDataCache = kvCache.set(universeVarDataCache, key, val);
         if (kvCache.get(worldVarDataCache, key) === undefined) {
@@ -128,8 +136,20 @@ const Controls = (
           );
         }
       });
+
+      _.forEach(action.expressionData, (val, key) => {
+        console.log("got one ", key);
+        dimensionMap[key] = World.createVarDimensionsMap(
+          world,
+          worldVarDataCache,
+          crossfilter,
+          key
+        );
+      });
+
       return {
         ...state,
+        dimensionMapVar,
         universe: {
           ...universe,
           varDataCache: universeVarDataCache
@@ -152,18 +172,6 @@ const Controls = (
     /*******************************
              User Events
      *******************************/
-    case "parallel coordinates axes have been drawn": {
-      return {
-        ...state,
-        axesHaveBeenDrawn: true
-      };
-    }
-    case "continuous selection using parallel coords brushing": {
-      return {
-        ...state,
-        continuousSelection: action.data
-      };
-    }
     case "graph brush selection change": {
       state.dimensionMap.x.filterRange([
         action.brushCoords.northwest[0],
