@@ -28,7 +28,7 @@ obs/cell.
 
   NOTE: world.obsAnnotation should be identical to the old state.cells value,
   EXCEPT that
-    * __cellIndex__ renamed to __obsIndex__
+    * __cellIndex__ renamed to __index__
     * __x__ and __y__ are now in world.obsLayout
     * __color__ and __colorRBG__ should be moved to controls reducer
 
@@ -46,47 +46,50 @@ obs/cell.
 
 */
 
-/*
-Summary information for each annotation, keyed by annotation name.
-Value will be an object, containing either 'range' or 'options' object,
-depending on the annotation schema type (categorical or continuous).
+/* varDataCache config - see kvCache for semantics */
+const VarDataCacheLowWatermark = 32; // cache element count
+const VarDataCacheTTLMs = 1000; // min cache time in MS
 
-Summarize for BOTH obs and var annotations.  Result format:
-
-{
-  obs: {
-    annotation_name: { ... },
-    ...
-  },
-  var: {
-    annotation_name: { ... },
-    ...
-  }
-}
-
-Example:
-  {
-    "Splice_sites_Annotated": {
-      "range": {
-        "min": 26,
-        "max": 1075869
-      }
-    },
-    "Selection": {
-      "options": {
-        "Astrocytes(HEPACAM)": 714,
-        "Endothelial(BSC)": 123,
-        "Oligodendrocytes(GC)": 294,
-        "Neurons(Thy1)": 685,
-        "Microglia(CD45)": 1108,
-        "Unpanned": 665
-      }
-    }
-  }
-*/
 function summarizeAnnotations(schema, obsAnnotations) {
   /*
   Build and return obs/var summary using any annotation in the schema
+
+  Summary information for each annotation, keyed by annotation name.
+  Value will be an object, containing either 'range' or 'options' object,
+  depending on the annotation schema type (categorical or continuous).
+
+  Summarize for BOTH obs and var annotations.  Result format:
+
+  {
+    obs: {
+      annotation_name: { ... },
+      ...
+    },
+    var: {
+      annotation_name: { ... },
+      ...
+    }
+  }
+
+  Example:
+    {
+      "Splice_sites_Annotated": {
+        "range": {
+          "min": 26,
+          "max": 1075869
+        }
+      },
+      "Selection": {
+        "options": {
+          "Astrocytes(HEPACAM)": 714,
+          "Endothelial(BSC)": 123,
+          "Oligodendrocytes(GC)": 294,
+          "Neurons(Thy1)": 685,
+          "Microglia(CD45)": 1108,
+          "Unpanned": 665
+        }
+      }
+    }
   */
   const obsSummary = _(schema.annotations.obs)
     .keyBy("name")
@@ -115,7 +118,8 @@ function summarizeAnnotations(schema, obsAnnotations) {
     })
     .value();
 
-  const varSummary = {}; // TODO XXX - not currently used, so skip it
+  // TODO XXX - not currently used, so skip it
+  const varSummary = {};
 
   return {
     obs: obsSummary,
@@ -124,9 +128,6 @@ function summarizeAnnotations(schema, obsAnnotations) {
 }
 
 function templateWorld() {
-  const VarDataCacheLowWatermark = 32;
-  const VarDataCacheTTLMs = 1000;
-
   return {
     // map from universe obsIndex to world offset.
     // Undefined / null indicates identity mapping.
@@ -186,6 +187,13 @@ export function createWorldFromEntireUniverse(universe) {
   /* derived data & summaries */
   world.summary = summarizeAnnotations(world.schema, world.obsAnnotations);
 
+  /* build the varDataCache */
+  world.varDataCache = kvCache.map(
+    universe.varDataCache,
+    val => subsetVarData(world, universe, val),
+    { lowWatermark: VarDataCacheLowWatermark, minTTL: VarDataCacheTTLMs }
+  );
+
   return world;
 }
 
@@ -227,12 +235,20 @@ export function createWorldFromCurrentSelection(universe, world, crossfilter) {
   // build index to our world offset
   newWorld.worldObsIndex.fill(-1); // default - aka unused
   for (let i = 0; i < newWorld.nObs; i += 1) {
-    newWorld.worldObsIndex[newWorld.obsAnnotations[i].__obsIndex__] = i;
+    newWorld.worldObsIndex[newWorld.obsAnnotations[i].__index__] = i;
   }
 
+  /* derived data & summaries */
   newWorld.summary = summarizeAnnotations(
     newWorld.schema,
     newWorld.obsAnnotations
+  );
+
+  /* build the varDataCache */
+  newWorld.varDataCache = kvCache.map(
+    universe.varDataCache,
+    val => subsetVarData(newWorld, universe, val),
+    { lowWatermark: VarDataCacheLowWatermark, minTTL: VarDataCacheTTLMs }
   );
   return newWorld;
 }
@@ -243,20 +259,19 @@ export function createWorldFromCurrentSelection(universe, world, crossfilter) {
 */
 function deduceDimensionType(attributes, fieldName) {
   let dimensionType;
-  if (attributes.type === "string") {
+  const { type } = attributes;
+  if (type === "string" || type === "categorical" || type === "boolean") {
     dimensionType = "enum";
-  } else if (attributes.type === "int32") {
+  } else if (type === "int32") {
     dimensionType = Int32Array;
-  } else if (attributes.type === "float32") {
+  } else if (type === "float32") {
     dimensionType = Float32Array;
   } else {
     /*
     Currently not supporting boolean and categorical types.
     */
     console.error(
-      `Warning - REST API returned unknown metadata schema (${
-        attributes.type
-      }) for field ${fieldName}.`
+      `Warning - REST API returned unknown metadata schema (${type}) for field ${fieldName}.`
     );
     // skip it - we don't know what to do with this type
   }
@@ -286,11 +301,11 @@ export function createObsDimensionMap(crossfilter, world) {
   */
   const worldIndex = worldObsIndex ? idx => worldObsIndex[idx] : idx => idx;
   dimensionMap.x = crossfilter.dimension(
-    r => obsLayout.X[worldIndex(r.__obsIndex__)],
+    r => obsLayout.X[worldIndex(r.__index__)],
     Float32Array
   );
   dimensionMap.y = crossfilter.dimension(
-    r => obsLayout.Y[worldIndex(r.__obsIndex__)],
+    r => obsLayout.Y[worldIndex(r.__index__)],
     Float32Array
   );
 
@@ -309,7 +324,7 @@ export function subsetVarData(world, universe, varData) {
 
   const newVarData = new Float32Array(world.nObs);
   for (let i = 0; i < world.nObs; i += 1) {
-    newVarData[i] = varData[world.obsAnnotations[i].__obsIndex__];
+    newVarData[i] = varData[world.obsAnnotations[i].__index__];
   }
   return newVarData;
 }

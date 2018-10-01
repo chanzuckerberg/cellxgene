@@ -1,36 +1,68 @@
 import os
+import warnings
 
 import numpy as np
+from pandas import DataFrame, Series
 import scanpy.api as sc
 from scipy import stats
 
-from server.app.app import cache
+# TODO fix memoization so that it correctly identifies the same request
+# from server.app.app import cache
 from server.app.driver.driver import CXGDriver
-from server.app.util.schema_parse import parse_schema
+from server.app.util.constants import Axis, DEFAULT_TOP_N, DiffExpMode
 
 
 class ScanpyEngine(CXGDriver):
 
-    def __init__(self, data, schema=None, graph_method="umap", diffexp_method="ttest"):
-        self.data = self._load_data(data)
-        self.schema = self._load_or_infer_schema(data, schema)
-        self._set_cell_names()
+    def __init__(self, data, layout_method=None, diffexp_method=None):
+        super().__init__(data, layout_method=layout_method, diffexp_method=diffexp_method)
+        self._validatate_data_types()
+        self._add_mandatory_annotations()
         self.cell_count = self.data.shape[0]
         self.gene_count = self.data.shape[1]
-        self.graph_method = graph_method
-        self.diffexp_method = diffexp_method
+        self._create_schema()
+        self.layout(self.data)
 
-    def _set_cell_names(self):
-        self.data.obs["cell_name"] = list(self.data.obs.index)
+    def _create_schema(self):
+        self.schema = {
+            "dataframe": {
+                "nObs": self.cell_count,
+                "nVar": self.gene_count,
+                "type": str(self.data.X.dtype)
+            },
+            "annotations": {
+                "obs": [],
+                "var": []
+            }
+        }
+        for ax in Axis:
+            curr_axis = getattr(self.data, str(ax))
+            for ann in curr_axis:
+                ann_schema = {"name": ann}
+                data_kind = curr_axis[ann].dtype.kind
+                if data_kind == 'f':
+                    ann_schema["type"] = "float32"
+                elif data_kind in ['i', 'u']:
+                    ann_schema["type"] = "int32"
+                elif data_kind == "?":
+                    ann_schema["type"] = "boolean"
+                elif data_kind == "O" and curr_axis[ann].dtype == "object":
+                    ann_schema["type"] = "string"
+                elif data_kind == "O" and curr_axis[ann].dtype == "category":
+                    ann_schema["type"] = "categorical"
+                    ann_schema["categories"] = curr_axis[ann].dtype.categories.tolist()
+                else:
+                    raise TypeError(f"Annotations of type {curr_axis[ann].dtype} are unsupported by cellxgene.")
+                self.schema["annotations"][ax].append(ann_schema)
 
     @classmethod
     def add_to_parser(cls, subparsers, invocation_function):
         scanpy_group = subparsers.add_parser("scanpy", help="run cellxgene using the scanpy engine")
-        # TODO these choices should be generated from the actual available methods
+        # TODO these choices should be generated from the actual available methods see GH issue #94
         scanpy_group.add_argument("-l", "--layout", choices=["umap", "tsne"], default="umap",
                                   help="Algorithm to use for graph layout")
         scanpy_group.add_argument("-d", "--diffexp", choices=["ttest"], default="ttest",
-                                  help="Algorithm to use to calculate differential expression")
+                                  help="Algorithm to used to calculate differential expression")
         scanpy_group.add_argument("data_directory", metavar="dir", help="Directory containing data and schema file")
         scanpy_group.set_defaults(func=invocation_function)
         return scanpy_group
@@ -39,206 +71,227 @@ class ScanpyEngine(CXGDriver):
     def _load_data(data):
         return sc.read(os.path.join(data, "data.h5ad"))
 
-    def _load_or_infer_schema(self, data, schema):
-        if not os.path.isfile(os.path.join(data, schema)):
-            # Initialize with cell name which is built off the index
-            data_schema = {
-                "CellName": {
-                    "type": "string",
-                    "variabletype": "categorical",
-                    "displayname": "Name",
-                    "include": True
-                }
-            }
-            metadata_fields = list(self.data.obs)
-            for m in metadata_fields:
-                # Since there are many type of float/int in numpy datatypes the kind attribute of a datatype object
-                # offers a decent insight into whether it can be lumped in with floats or ints, which is what we
-                # care about here.
-                data_kind = self.data.obs[m].dtype.kind
-                variable_type = "categorical"
-                data_type = "string"
-                if data_kind == 'f':
-                    variable_type = "continuous"
-                    data_type = "float"
-                elif data_kind in ['i', 'u']:
-                    data_type = "int"
-                    if self.data.obs[m].nunique() > 50:
-                        variable_type = "continuous"
-                data_schema[m] = {
-                    "type": data_type,
-                    "variabletype": variable_type,
-                    "displayname": m,
-                    "include": True
-                }
-        else:
-            data_schema = parse_schema(os.path.join(data, schema))
-        return data_schema
+    @staticmethod
+    def _top_sort(values, sort_order, top_n=None):
+        """
+        Sorts an iterable in sort order limited by top_n
+        :param values: iterable of values to sort
+        :param sort_order: ndarray order to sort in
+        :param top_n: cutoff number to return
+        :return: values sorted by sort_order limited by top_n
+        """
+        return values[sort_order][:top_n]
+
+    def _add_mandatory_annotations(self):
+        # ensure gene
+        self.data.var["name"] = Series(list(self.data.var.index), dtype="unicode_", index=self.data.var.index)
+        self.data.var.index = Series(list(range(self.data.var.shape[0])), dtype="category")
+        # ensure cell name
+        self.data.obs["name"] = Series(list(self.data.obs.index), dtype="unicode_", index=self.data.obs.index)
+        self.data.obs.index = Series(list(range(self.data.obs.shape[0])), dtype="category")
+
+    def _validatate_data_types(self):
+        if self.data.X.dtype != "float32":
+            warnings.warn(f"Scanpy data matrix is in {self.data.X.dtype} format not float32. "
+                          f"Precision may be truncated.")
+        for ax in Axis:
+            curr_axis = getattr(self.data, str(ax))
+            for ann in curr_axis:
+                datatype = curr_axis[ann].dtype
+                downcast_map = {'int64': 'int32',
+                                'uint32': 'int32',
+                                'uint64': 'int32',
+                                'float64': 'float32',
+                                }
+                if datatype in downcast_map:
+                    warnings.warn(f"Scanpy annotation {ax}:{ann} is in unsupported format: {datatype}. "
+                                  f"Data will be downcast to {downcast_map[datatype]}.")
 
     def cells(self):
-        return list(self.data.obs.index)
+        return self.data.obs.index.tolist()
 
     def genes(self):
         return self.data.var.index.tolist()
 
     # Can't seem to cache a view of a dataframe, need to investigate why
-    def filter_cells(self, filter):
+    def filter_dataframe(self, filter, include_uns=True):
         """
-        Filter cells from data and return a subset of the data
-        A filter is a dictionary where the key is a metadatata category
-        Value is dictionary
-            value_type: int, float, string
-            variable_type: continuous, categorical
-            query: filter value, for categorical [val1, val2], for continuous {min: x, max:y}
-        Filters are combined with the and operator
-        :param filter:
-        :return: filtered dataframe
+         Filter cells from data and return a subset of the data. They can operate on both obs and var dimension with
+         indexing and filtering by annotation value. Filters are combined with the and operator.
+         See REST specs for info on filter format:
+         # TODO update this link to swagger when it's done
+         https://docs.google.com/document/d/1Fxjp1SKtCk7l8QP9-7KAjGXL0eldi_qEnNT0NmlGzXI/edit#heading=h.8qc9q57amldx
+
+        :param filter: dictionary with filter parames
+        :param include_uns: bool, include unstructured annotations
+        :return: View into scanpy object with cells/genes filtered
         """
-        cell_idx = np.ones((self.cell_count,), dtype=bool)
-        for key, value in filter.items():
-            if value["variable_type"] == "categorical":
-                key_idx = np.in1d(getattr(self.data.obs, key), value["query"])
-                cell_idx = np.logical_and(cell_idx, key_idx)
+        cells_idx = np.ones((self.cell_count,), dtype=bool)
+        genes_idx = np.ones((self.gene_count,), dtype=bool)
+        if Axis.OBS in filter:
+            if "index" in filter["obs"]:
+                cells_idx = self._filter_index(filter["obs"]["index"], cells_idx, Axis.OBS)
+            if "annotation_value" in filter["obs"]:
+                cells_idx = self._filter_annotation(filter["obs"]["annotation_value"], cells_idx, Axis.OBS)
+        if Axis.VAR in filter:
+            if "index" in filter["var"]:
+                genes_idx = self._filter_index(filter["var"]["index"], genes_idx, Axis.VAR)
+            if "annotation_value" in filter["var"]:
+                genes_idx = self._filter_annotation(filter["var"]["annotation_value"], genes_idx, Axis.VAR)
+        # Due to anndata issues we can't index into cells and genes at the same time
+        cell_data = self.data[cells_idx, :]
+        data = cell_data[:, genes_idx]
+        # TODO: tmp hack to avoid problems with filter that is limited to single gene
+        if include_uns:
+            data.uns = cell_data.uns
+        return data
+
+    def _filter_index(self, filter, index, axis):
+        """
+        Filter data based on index. ex. [1, 3, [111:200]]
+        :param filter: subset of filter dict for obs/var:index
+        :param index: np logical vector containing true for passing false for failing filter
+        :param axis: Axis
+        :return: np logical vector for whether the data passes the filter
+        """
+        if axis == Axis.OBS:
+            count_ = self.cell_count
+        elif axis == Axis.VAR:
+            count_ = self.gene_count
+        idx_filter = np.zeros((count_,), dtype=bool)
+        for i in filter:
+            if type(i) == list:
+                idx_filter[i[0]:i[1]] = True
             else:
-                min_ = value["query"]["min"]
-                max_ = value["query"]["max"]
+                idx_filter[i] = True
+        return np.logical_and(index, idx_filter)
+
+    def _filter_annotation(self, filter, index, axis):
+        """
+        Filter data based on annotation value
+        :param filter: subset of filter dict for obs/var:annotation_value
+        :param index: np logical vector containing true for passing false for failing filter
+        :param axis: string obs or var
+        :return: np logical vector for whether the data passes the filter
+        """
+        d_axis = getattr(self.data, axis.value)
+        for v in filter:
+            if d_axis[v["name"]].dtype.name in ["boolean", "category", "object"]:
+                key_idx = np.in1d(getattr(d_axis, v["name"]), v["values"])
+                index = np.logical_and(index, key_idx)
+            else:
+                min_ = v.get("min", None)
+                max_ = v.get("max", None)
                 if min_ is not None:
-                    key_idx = np.array((getattr(self.data.obs, key) >= min_).data)
-                    cell_idx = np.logical_and(cell_idx, key_idx)
+                    key_idx = (getattr(d_axis, v["name"]) >= min_).ravel()
+                    index = np.logical_and(index, key_idx)
                 if max_ is not None:
-                    key_idx = np.array((getattr(self.data.obs, key) <= max_).data)
-                    cell_idx = np.logical_and(cell_idx, key_idx)
-        return self.data[cell_idx, :]
+                    key_idx = (getattr(d_axis, v["name"]) <= max_).ravel()
+                    index = np.logical_and(index, key_idx)
+        return index
 
-    @cache.memoize()
-    def metadata_ranges(self, df=None):
-        metadata_ranges = {}
-        if not df:
-            df = self.data
-        for field in self.schema:
-            if self.schema[field]["variabletype"] == "categorical":
-                group_by = field
-                if group_by == "CellName":
-                    group_by = "cell_name"
-                metadata_ranges[field] = {"options": df.obs.groupby(group_by).size().to_dict()}
-            else:
-                metadata_ranges[field] = {
-                    "range": {
-                        "min": df.obs[field].min(),
-                        "max": df.obs[field].max()
-                    }
-                }
-        return metadata_ranges
-
-    @cache.memoize()
-    def metadata(self, df, fields=None):
+    # @cache.memoize()
+    def annotation(self, df, axis, fields=None):
         """
-         Gets metadata key:value for each cells
+         Gets annotation value for each observation
 
+        :param axis:
         :param df: from filter_cells, dataframe
-        :param fields: list of keys for metadata to return, returns all metadata values if not set.
-        :return: list of metadata values
+        :param fields: list of keys for annotation to return, returns all annotation values if not set.
+        :return: dict: names - list of fields in order, data - list of lists or metadata
+        [observation ids, val1, val2...]
         """
-        metadata = df.obs.to_dict(orient="records")
-        for idx in range(len(metadata)):
-            metadata[idx]["CellName"] = metadata[idx].pop("cell_name", None)
-        return metadata
+        df_axis = getattr(df, axis)
+        if not fields:
+            fields = df_axis.columns.tolist()
+        annotations = DataFrame(df_axis[fields], index=df_axis.index)
+        return {
+            "names": fields,
+            "data": annotations.reset_index().values.tolist()
+        }
 
-    @cache.memoize()
-    def create_graph(self, df):
+    # @cache.memoize()
+    def layout(self, df):
         """
         Computes a n-d layout for cells through dimensionality reduction.
         :param df: from filter_cells, dataframe
-        :return:  [cellid, x, y]
+        :return:  [cellid, x, y, ...]
         """
-        getattr(sc.tl, self.graph_method)(df, random_state=123)
-        graph = df.obsm["X_{graph_method}".format(graph_method=self.graph_method)]
-        normalized_graph = (graph - graph.min()) / (graph.max() - graph.min())
-        return np.hstack((df.obs["cell_name"].values.reshape(len(df.obs.index), 1), normalized_graph)).tolist()
-
-    @cache.memoize()
-    def diffexp(self, cell_list_1, cell_list_2, pval, num_genes):
-        """
-        Computes the top differentially expressed genes between two clusters
-        :param df1: from filter_cells, dataframe containing first set of cells
-        :param df2: from filter_cells, dataframe containing second set of cells
-        :return: top genes, stats and expression values for top genes
-        """
-        cells_idx_1 = np.in1d(self.data.obs["cell_name"], cell_list_1)
-        cells_idx_2 = np.in1d(self.data.obs["cell_name"], cell_list_2)
-        expression_1 = self.data.X[cells_idx_1, :]
-        expression_2 = self.data.X[cells_idx_2, :]
-        diff_exp = stats.ttest_ind(expression_1, expression_2)
-        # TODO break this up into functions
-        set1 = np.logical_and(diff_exp.pvalue < pval, diff_exp.statistic > 0)
-        set2 = np.logical_and(diff_exp.pvalue < pval, diff_exp.statistic < 0)
-        stat1 = diff_exp.statistic[set1]
-        stat2 = diff_exp.statistic[set2]
-        sort_set1 = np.argsort(stat1)[::-1]
-        sort_set2 = np.argsort(stat2)
-        pval1 = diff_exp.pvalue[set1][sort_set1]
-        pval2 = diff_exp.pvalue[set2][sort_set2]
-        mean_ex1_set1 = np.mean(expression_1[:, set1], axis=0)[sort_set1]
-        mean_ex2_set1 = np.mean(expression_2[:, set1], axis=0)[sort_set1]
-        mean_ex1_set2 = np.mean(expression_1[:, set2], axis=0)[sort_set2]
-        mean_ex2_set2 = np.mean(expression_2[:, set2], axis=0)[sort_set2]
-        mean_diff1 = mean_ex1_set1 - mean_ex2_set1
-        mean_diff2 = mean_ex1_set2 - mean_ex2_set2
-        genes_cellset_1 = self.data.var_names[set1][sort_set1]
-        genes_cellset_2 = self.data.var_names[set2][sort_set2]
+        # TODO Filtering cells is fine, but filtering genes does nothing because the neighbors are
+        # calculated using the original vars (geneset) and this doesn’t get updated when you use less.
+        # Need to recalculate neighbors (long) if user requests new layout filtered by var
+        getattr(sc.tl, self.layout_method)(df, random_state=123)
+        df_layout = df.obsm[f"X_{self.layout_method}"]
+        normalized_layout = DataFrame((df_layout - df_layout.min()) / (df_layout.max() - df_layout.min()),
+                                      index=df.obs.index)
         return {
-            "celllist1": {
-                "topgenes": genes_cellset_1.tolist()[:num_genes],
-                "mean_expression_cellset1": mean_ex1_set1.tolist()[:num_genes],
-                "mean_expression_cellset2": mean_ex2_set1.tolist()[:num_genes],
-                "pval": pval1.tolist()[:num_genes],
-                "ave_diff": mean_diff1.tolist()[:num_genes]
-            },
-            "celllist2": {
-                "topgenes": genes_cellset_2.tolist()[:num_genes],
-                "mean_expression_cellset1": mean_ex1_set2.tolist()[:num_genes],
-                "mean_expression_cellset2": mean_ex2_set2.tolist()[:num_genes],
-                "pval": pval2.tolist()[:num_genes],
-                "ave_diff": mean_diff2.tolist()[:num_genes]
-            },
+            "ndims": normalized_layout.shape[1],
+            # reset_index gets obs' id into output
+            "coordinates": normalized_layout.reset_index().values.tolist()
         }
 
-    @cache.memoize()
-    def expression(self, cells=None, genes=None):
+    # @cache.memoize()
+    def diffexp(self, df1, df2, top_n=None):
         """
-        Retrieves expression for each gene for cells in data frame
-        :param df:
+        Computes the top differentially expressed variables between two observation sets. If dataframes
+        contain a subset of variables, then statistics for all variables will be returned, otherwise
+        only the top N vars will be returned.
+        :param df1: from filter_cells, dataframe containing first set of observations
+        :param df2: from filter_cells, dataframe containing second set of observations
+        :param topN: Limit results to top N (Top var mode only)
+        :return: top genes, stats and expression values for variables
+        """
+        # If not the same genes, test is wrong!
+        if np.any(df1.var.index != df2.var.index):
+            raise ValueError("Variables ares not the same in set1 and set2")
+
+        # If not all genes, they used a var filter
+        if df1.var.shape[0] < self.gene_count:
+            mode = DiffExpMode.VAR_FILTER
+            if top_n:
+                raise Warning("Top N was specified but will not be used in 'Var Filter' mode")
+        else:
+            mode = DiffExpMode.TOP_N
+            if not top_n:
+                top_n = DEFAULT_TOP_N
+
+        genes_idx = df1.var.index
+        diffexp_result = stats.ttest_ind(df1.X, df2.X)
+        pval = diffexp_result.pvalue
+        bonferroni_pval = 1 - (1 - pval) ** self.gene_count
+        ave_exp_set1 = np.mean(df1.X, axis=0)
+        ave_exp_set2 = np.mean(df2.X, axis=0)
+        ave_diff = ave_exp_set1 - ave_exp_set2
+        if mode == DiffExpMode.TOP_N:
+            sort_order = np.argsort(np.abs(diffexp_result.statistic))[::-1]
+            # If top_n > length it will just return length
+            genes = self._top_sort(genes_idx, sort_order, top_n)
+            pval = self._top_sort(pval, sort_order, top_n)
+            bonferroni_pval = self._top_sort(bonferroni_pval, sort_order, top_n)
+            ave_exp_set1 = self._top_sort(ave_exp_set1, sort_order, top_n)
+            ave_exp_set2 = self._top_sort(ave_exp_set2, sort_order, top_n)
+            ave_diff = self._top_sort(ave_diff, sort_order, top_n)
+
+        # varIndex, avgDiff,  pVal, pValAdj, set1AvgExp, set2AvgExp
+        result = []
+        for i in range(len(genes)):
+            result.append([genes[i], ave_diff[i], pval[i], bonferroni_pval[i], ave_exp_set1[i], ave_exp_set2[i]])
+        # Results need to be returned in var index order
+        return sorted(result, key=lambda gene: gene[0])
+
+    # @cache.memoize()
+    def data_frame(self, df):
+        """
+        Retrieves data for each variable for observations in data frame
+        :param df: from filter_cells, dataframe
         :return: {
-            "genes": list of genes,
-            "cells": list of cells and expression list,
-            "nonzero_gene_count": number of nonzero genes
+            "var": list of variable ids,
+            "obs": [cellid, var1 expression, var2 expression, ...],
         }
         """
-        if cells:
-            cells_idx = np.in1d(self.data.obs["cell_name"], cells)
-        else:
-            cells_idx = np.ones((self.cell_count,), dtype=bool)
-        if genes:
-            genes_idx = np.in1d(self.data.var_names, genes)
-        else:
-            genes_idx = np.ones((self.gene_count,), dtype=bool)
-        index = np.ix_(cells_idx, genes_idx)
-        expression = self.data.X[index]
-
-        if not genes:
-            genes = self.data.var.index.tolist()
-        if not cells:
-            cells = self.data.obs["cell_name"].tolist()
-
-        cell_data = []
-        for idx, cell in enumerate(cells):
-            cell_data.append({
-                "cellname": cell,
-                "e": list(expression[idx]),
-            })
-
+        var_index = df.var.index.tolist()
+        expression = DataFrame(df.X, index=df.obs.index)
         return {
-            "genes": genes,
-            "cells": cell_data,
-            "nonzero_gene_count": int(np.sum(expression.any(axis=0)))
+            "var": var_index,
+            "obs": expression.reset_index().values.tolist()
         }

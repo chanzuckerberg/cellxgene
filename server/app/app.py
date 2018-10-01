@@ -9,11 +9,13 @@ from flask_cors import CORS
 from flask_restful_swagger_2 import get_swagger_blueprint
 
 from .rest_api.rest import get_api_resources
+from .util.utils import Float32JSONEncoder
 from .web import webapp
 
 REACTIVE_LIMIT = 1_000_000
 
 app = Flask(__name__, static_folder="web/static")
+app.json_encoder = Float32JSONEncoder
 cache = Cache(app, config={"CACHE_TYPE": "simple", "CACHE_DEFAULT_TIMEOUT": 860000})
 Compress(app)
 CORS(app)
@@ -54,9 +56,12 @@ def run_scanpy(args):
     )
 
     from .scanpy_engine.scanpy_engine import ScanpyEngine
-    app.data = ScanpyEngine(args.data_directory, schema="data_schema.json",
-                            graph_method=args.layout, diffexp_method=args.diffexp)
-    app.run(host="127.0.0.1", debug=True, port=args.port)
+    app.data = ScanpyEngine(args.data_directory, layout_method=args.layout, diffexp_method=args.diffexp)
+    if args.bind_all:
+        host = "0.0.0.0"
+    else:
+        host = "127.0.0.1"
+    app.run(host=host, debug=True, port=args.port)
 
 
 def main():
@@ -64,6 +69,10 @@ def main():
     parser.add_argument("--title", "-t", help="Title to display -- if this is omitted the title will be the name "
                                               "of the directory from the data_directory arg")
     parser.add_argument("--port", help="Port to run server on.", type=int, default=5005)
+    parser.add_argument(
+        "--bind-all",
+        help="Bind to all interfaces (this makes the server accessible beyond this computer)",
+        action="store_true")
     subparsers = parser.add_subparsers(dest="cellxgene_command")
     try:
         from .scanpy_engine.scanpy_engine import ScanpyEngine

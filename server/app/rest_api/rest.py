@@ -1,435 +1,539 @@
+from http import HTTPStatus
+import pkg_resources
+
 from flask import (
-    Blueprint, request, current_app
+    Blueprint, current_app, jsonify, make_response, request
 )
 from flask_restful_swagger_2 import Api, swagger, Resource
+from werkzeug.datastructures import ImmutableMultiDict
 
-from server.app.util.utils import make_payload
-from server.app.util.filter import parse_filter
+from server.app.util.constants import Axis, DiffExpMode
+from server.app.util.filter import parse_filter, QueryStringError
+from server.app.util.models import FilterModel
 
 
-class InitializeAPI(Resource):
+class SchemaAPI(Resource):
     @swagger.doc({
-        "summary": "get metadata schema, ranges for values, and cell count to initialize cellxgene app",
+        "summary": "get schema for dataframe and annotations",
         "tags": ["initialize"],
         "parameters": [],
         "responses": {
             "200": {
-                "description": "initialization data for UI",
+                "description": "schema",
                 "examples": {
                     "application/json": {
-                        "data": {
-                            "cellcount": 3589,
-                            "options": {
-                                "Sample.type": {
-                                    "options": {
-                                        "Glioblastoma": 3589
-                                    }
-                                },
-                                "Selection": {
-                                    "options": {
-                                        "Astrocytes(HEPACAM)": 714,
-                                        "Endothelial(BSC)": 123,
-                                        "Microglia(CD45)": 1108,
-                                        "Neurons(Thy1)": 685,
-                                        "Oligodendrocytes(GC)": 294,
-                                        "Unpanned": 665
-                                    }
-                                },
-                                "Splice_sites_AT.AC": {
-                                    "range": {
-                                        "max": 1025,
-                                        "min": 152
-                                    }
-                                },
-                                "Splice_sites_Annotated": {
-                                    "range": {
-                                        "max": 1075869,
-                                        "min": 26
-                                    }
-                                }
+                        "schema": {
+                            "dataframe": {
+                                "nObs": 383,
+                                "nVar": 19944,
+                                "type": "float32"
                             },
-                            "schema": {
-                                "CellName": {
-                                    "displayname": "Name",
-                                    "type": "string",
-                                    "variabletype": "categorical"
-                                },
-                                "Class": {
-                                    "displayname": "Class",
-                                    "type": "string",
-                                    "variabletype": "categorical"
-                                },
-                                "ERCC_reads": {
-                                    "displayname": "ERCC Reads",
-                                    "type": "int",
-                                    "variabletype": "continuous"
-                                },
-                                "ERCC_to_non_ERCC": {
-                                    "displayname": "ERCC:Non-ERCC",
-                                    "type": "float",
-                                    "variabletype": "continuous"
-                                },
-                                "Genes_detected": {
-                                    "displayname": "Genes Detected",
-                                    "type": "int",
-                                    "variabletype": "continuous"
-                                }
-                            },
-                            "genes": ["1/2-SBSRNA4", "A1BG", "A1BG-AS1"]
-
-                        },
-                        "status": {
-                            "error": False,
-                            "errormessage": ""
+                            "annotations": {
+                                "obs": [
+                                    {"name": "name", "type": "string"},
+                                    {"name": "tissue_type", "type": "string"},
+                                    {"name": "num_reads", "type": "int32"},
+                                    {"name": "sample_name", "type": "string"},
+                                    {
+                                        "name": "clusters",
+                                        "type": "categorical",
+                                        "categories": [99, 1, "unknown cluster"]
+                                    },
+                                    {"name": "QScore", "type": "float32"}
+                                ],
+                                "var": [
+                                    {"name": "name", "type": "string"},
+                                    {"name": "gene", "type": "string"}
+                                ]
+                            }
                         }
                     }
                 }
             }
         }
+
     })
     def get(self):
-        from server.app.app import REACTIVE_LIMIT
-        return make_payload({
-            "schema": current_app.data.schema,
-            "cellcount": current_app.data.cell_count,
-            "reactivelimit": REACTIVE_LIMIT,
-            "genes": current_app.data.genes(),
-            "ranges": current_app.data.metadata_ranges(),
-
-        })
+        return make_response(jsonify({"schema": current_app.data.schema}), 200)
 
 
-class CellsAPI(Resource):
+class ConfigAPI(Resource):
     @swagger.doc({
-        "summary": "filter based on metadata fields to get a subset cells, expression data, and metadata",
-        "tags": ["cells"],
-        "description": "Cells takes query parameters defined in the schema retrieved from the /initialize enpoint. "
-                       "<br>For categorical metadata keys filter based on `key=value` <br>"
-                       " For continuous metadata keys filter by `key=min,max`<br> Either value "
-                       "can be replaced by a \*. To have only a minimum value `key=min,\*`  To have only a maximum "
-                       "value `key=\*,max` <br>Graph data (if retrieved) is normalized"
-                       " To only retrieve cells that don't have a value for the key filter by `key`",
+        "summary": "Configuration information to assist in front-end adaptation"
+                   " to underlying engine, available functionality, interactive time limits, etc",
+        "tags": ["initialize"],
         "parameters": [],
-
         "responses": {
             "200": {
-                "description": "initialization data for UI",
+                "description": "schema",
                 "examples": {
                     "application/json": {
-                        "data": {
-                            "badmetadatacount": 0,
-                            "cellcount": 0,
-                            "cellids": ["..."],
-                            "metadata": [
+                        "config": {
+                            "features": [
+                                {"method": "POST", "path": "/cluster/", "available": False},
                                 {
-                                    "CellName": "1001000173.G8",
-                                    "Class": "Neoplastic",
-                                    "Cluster_2d": "11",
-                                    "Cluster_2d_color": "#8C564B",
-                                    "Cluster_CNV": "1",
-                                    "Cluster_CNV_color": "#1F77B4",
-                                    "ERCC_reads": "152104",
-                                    "ERCC_to_non_ERCC": "0.562454470489481",
-                                    "Genes_detected": "1962",
-                                    "Location": "Tumor",
-                                    "Location.color": "#FF7F0E",
-                                    "Multimapping_reads_percent": "2.67",
-                                    "Neoplastic": "Neoplastic",
-                                    "Non_ERCC_reads": "270429",
-                                    "Sample.name": "BT_S2",
-                                    "Sample.name.color": "#AEC7E8",
-                                    "Sample.type": "Glioblastoma",
-                                    "Sample.type.color": "#1F77B4",
-                                    "Selection": "Unpanned",
-                                    "Selection.color": "#98DF8A",
-                                    "Splice_sites_AT.AC": "102",
-                                    "Splice_sites_Annotated": "122397",
-                                    "Splice_sites_GC.AG": "761",
-                                    "Splice_sites_GT.AG": "125741",
-                                    "Splice_sites_non_canonical": "56",
-                                    "Splice_sites_total": "126660",
-                                    "Total_reads": "1741039",
-                                    "Unique_reads": "1400382",
-                                    "Unique_reads_percent": "80.43",
-                                    "Unmapped_mismatch": "2.15",
-                                    "Unmapped_other": "0.18",
-                                    "Unmapped_short": "14.56",
-                                    "housekeeping_cluster": "2",
-                                    "housekeeping_cluster_color": "#AEC7E8",
-                                    "recluster_myeloid": "NA",
-                                    "recluster_myeloid_color": "NA"
+                                    "method": "POST",
+                                    "path": "/layout/obs",
+                                    "available": True,
+                                    "interactiveLimit": 10000
                                 },
-                            ],
-                            "reactive": True,
-                            "graph": [
-                                [
-                                    "1001000173.G8",
-                                    0.93836,
-                                    0.28623
-                                ],
-
-                                [
-                                    "1001000173.D4",
-                                    0.1662,
-                                    0.79438
-                                ]
+                                {"method": "POST", "path": "/layout/var", "available": False}
 
                             ],
-                            "status": {
-                                "error": False,
-                                "errormessage": ""
-                            }
-
-                        },
-                    }
-                },
-            },
-
-            "400": {
-                "description": "bad query params",
-            }
-        }
-    })
-    def get(self):
-        payload = {
-            "metadata": [],
-            "cellcount": 0,
-            "graph": [],
-            "ranges": {},
-        }
-        # get query params
-        cells_filter = parse_filter(request.args, current_app.data.schema)
-        filtered_data = current_app.data.filter_cells(cells_filter)
-        payload["metadata"] = current_app.data.metadata(filtered_data)
-        payload["ranges"] = current_app.data.metadata_ranges(filtered_data)
-        payload["graph"] = current_app.data.create_graph(filtered_data)
-        payload["cellcount"] = current_app.data.cell_count
-        return make_payload(payload)
-
-
-class ExpressionAPI(Resource):
-    @swagger.doc({
-        "summary": "Json with gene list and expression data by cell, limited to first 40 cells",
-        "tags": ["expression"],
-        "parameters": [
-            {
-                "name": "include_unexpressed_genes",
-                "description": "Include genes that have 0 expression across all cells in set",
-                "in": "path",
-                "type": "bool",
-            }
-        ],
-        "responses": {
-            "200": {
-                "description": "Json for heatmap",
-                "examples": {
-                    "application/json": {
-                        "data": {
-                            "cells": [
-                                {
-                                    "cellname": "1/2-SBSRNA4",
-                                    "e": [0, 0, 214, 0, 0]
-                                },
-                            ],
-                            "genes": [
-                                "1001000173.G8",
-                                "1001000173.D4",
-                                "1001000173.B4",
-                                "1001000173.A2",
-                                "1001000173.E2"
-                            ],
-                            "nonzero_gene_count": 2857
-                        },
-                        "status": {
-                            "error": False,
-                            "errormessage": ""
-                        }
-                    }
-                }
-            }
-        }
-    })
-    def get(self):
-        expression_data = current_app.data.expression()
-        return make_payload(expression_data)
-
-    @swagger.doc({
-        "summary": "Json with gene list and expression data by cell",
-        "tags": ["expression"],
-        "parameters": [
-            {
-                "name": "body",
-                "in": "body",
-                "schema": {
-                    "example": {
-                        "celllist": ["1001000173.G8", "1001000173.D4"],
-                        "genelist": ["1/2-SBSRNA4", "A1BG", "A1BG-AS1", "A1CF", "A2LD1", "A2M", "A2ML1", "A2MP1",
-                                     "A4GALT"],
-                        "include_unexpressed_genes": True,
-                    }
-
-                }
-            },
-        ],
-        "responses": {
-            "200": {
-                "description": "Json for expressiondata",
-                "examples": {
-                    "application/json": {
-                        "data": {
-                            "cells": [
-                                {
-                                    "cellname": "1001000173.D4",
-                                    "e": [0, 0]
-                                },
-                                {
-                                    "cellname": "1001000173.G8",
-                                    "e": [0, 0]
-                                }
-                            ],
-                            "genes": [
-                                "ABCD4",
-                                "ZWINT"
-                            ],
-                            "nonzero_gene_count": 2857
-                        },
-                        "status": {
-                            "error": False,
-                            "errormessage": ""
-                        }
-
-                    }
-                }
-            },
-            "400": {
-                "description": "Required parameter missing/incorrect",
-            }
-        }
-    })
-    def post(self):
-        args = request.get_json()
-        cell_list = args.get("celllist", [])
-        gene_list = args.get("genelist", [])
-        if not cell_list and not gene_list:
-            return make_payload([], "must include celllist and/or genelist parameter", 400)
-
-        expression_data = current_app.data.expression(cell_list, gene_list)
-
-        if cell_list and len(expression_data["cells"]) < len(cell_list):
-            return make_payload([], "Some cell ids not available", 400)
-        if gene_list and len(expression_data["genes"]) < len(gene_list):
-            return make_payload([], "Some genes not available", 400)
-
-        return make_payload(expression_data)
-
-
-class DifferentialExpressionAPI(Resource):
-    @swagger.doc({
-        "summary": "Get the top expressed genes for two cell sets. Calculated using t-test",
-        "tags": ["expression"],
-        "parameters": [
-            {
-                "name": "body",
-                "in": "body",
-                "schema": {
-                    "example": {
-                        "celllist1": ["1001000176.C12", "1001000176.C7", "1001000177.F11"],
-                        "celllist2": ["1001000012.D2", "1001000017.F10", "1001000033.C3", "1001000229.D4"],
-                        "num_genes": 5,
-                        "pval": 0.000001,
-                    },
-                }
-            }
-        ],
-        "responses": {
-            "200": {
-                "description": "top expressed genes for cellset1, cellset2",
-                "examples": {
-                    "application/json": {
-                        "data": {
-                            "celllist1": {
-                                "ave_diff": [
-                                    432.0132935431362,
-                                    12470.5623982637,
-                                    957.0246880086814
-                                ],
-                                "mean_expression_cellset1": [
-                                    438.6185567010309,
-                                    13315.536082474227,
-                                    1076.5773195876288
-                                ],
-                                "mean_expression_cellset2": [
-                                    6.605263157894737,
-                                    844.9736842105264,
-                                    119.55263157894737
-                                ],
-                                "pval": [
-                                    3.8906598089944563e-35,
-                                    1.9086226376018916e-25,
-                                    7.847480544069826e-21
-                                ],
-                                "topgenes": [
-                                    "TMSB10",
-                                    "FTL",
-                                    "TMSB4X"
-                                ]
+                            "displayNames": {
+                                "engine": "ScanPy version 1.33",
+                                "dataset": "/home/joe/mouse/blorth.csv"
                             },
-                            "celllist2": {
-                                "ave_diff": [
-                                    -6860.599158979924,
-                                    -519.1314432989691,
-                                    -10278.328269126423
-                                ],
-                                "mean_expression_cellset1": [
-                                    2.8350515463917527,
-                                    0.6185567010309279,
-                                    23.09278350515464
-                                ],
-                                "mean_expression_cellset2": [
-                                    6863.434210526316,
-                                    519.75,
-                                    10301.421052631578
-                                ],
-                                "pval": [
-                                    4.662891833748732e-44,
-                                    3.6278087029927103e-37,
-                                    8.396825170618402e-35
-                                ],
-                                "topgenes": [
-                                    "SPARCL1",
-                                    "C1orf61",
-                                    "CLU"
-                                ]
-                            }
-                        },
-                        "status": {
-                            "error": False,
-                            "errormessage": ""
                         }
                     }
                 }
             }
         }
     })
+    def get(self):
+        config = {
+            "config": {
+                "features": [
+                    {"method": "POST", "path": "/cluster/", **current_app.data.features["cluster"]},
+                    {"method": "POST", "path": "/layout/obs", **current_app.data.features["layout"]["obs"]},
+                    {"method": "POST", "path": "/layout/var", **current_app.data.features["layout"]["var"]},
+                    {"method": "POST", "path": "/diffexp/", **current_app.data.features["diffexp"]},
+                ],
+                "displayNames": {
+                    "engine": f"cellxgene Scanpy engine version {pkg_resources.get_distribution('cellxgene').version}",
+                    "dataset": current_app.config["DATASET_TITLE"]
+                }
+            }
+        }
+        return make_response(jsonify(config), 200)
+
+
+class LayoutObsAPI(Resource):
+    @swagger.doc({
+        "summary": "Get the default layout for all observations.",
+        "tags": ["layout"],
+        "parameters": [],
+        "responses": {
+            "200": {
+                "description": "layout",
+                "examples": {
+                    "application/json": {
+                        "layout": {
+                            "ndims": 2,
+                            "coordinates": [
+                                [0, 0.284483, 0.983744],
+                                [1, 0.038844, 0.739444]
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+    })
+    def get(self):
+        return make_response((jsonify({"layout": current_app.data.layout(current_app.data.data)})))
+
+    @swagger.doc({
+        "summary": "Observation layout for filtered subset.",
+        "tags": ["layout"],
+        "parameters": [
+            {
+                "name": "filter",
+                "description": "Complex Filter",
+                "in": "body",
+                "schema": FilterModel
+            }
+        ],
+        "responses": {
+            "200": {
+                "description": "layout",
+                "examples": {
+                    "application/json": {
+                        "layout": {
+                            "ndims": 2,
+                            "coordinates": [
+                                [0, 0.284483, 0.983744],
+                                [1, 0.038844, 0.739444]
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+    })
+    def put(self):
+        df = current_app.data.filter_dataframe(request.get_json()["filter"])
+        return make_response((jsonify({"layout": current_app.data.layout(df)})))
+
+
+class AnnotationsObsAPI(Resource):
+    @swagger.doc({
+        "summary": "Fetch annotations (metadata) for all observations.",
+        "tags": ["annotations"],
+        "parameters": [{
+            "in": "query",
+            "name": "annotation-name",
+            "type": "string",
+            "description": "list of 1 or more annotation names"
+        }],
+        "responses": {
+            "200": {
+                "description": "annotations",
+                "examples": {
+                    "application/json": {
+                        "names": [
+                            "tissue_type", "sex", "num_reads", "clusters"
+                        ],
+                        "data": [
+                            [0, "lung", "F", 39844, 99],
+                            [1, "heart", "M", 83, 1],
+                            [49, "spleen", None, 2, "unknown cluster"],
+
+                        ]
+                    }
+
+                }
+            }
+        }
+    })
+    def get(self):
+        fields = request.args.getlist("annotation-name", None)
+        try:
+            annotation_response = current_app.data.annotation(current_app.data.data, "obs", fields)
+        except KeyError:
+            return make_response(f"Error bad key in {fields}", 404)
+        return make_response(jsonify(annotation_response))
+
+    @swagger.doc({
+        "summary": "Fetch annotations (metadata) for filtered subset of observations.",
+        "tags": ["annotations"],
+        "parameters": [
+            {
+                "in": "query",
+                "name": "annotation-name",
+                "type": "string",
+                "description": "list of 1 or more annotation names"
+            },
+            {
+                "name": "filter",
+                "description": "Complex Filter",
+                "in": "body",
+                "schema": FilterModel
+            }
+        ],
+        "responses": {
+            "200": {
+                "description": "annotations",
+                "examples": {
+                    "application/json": {
+                        "names": [
+                            "tissue_type", "sex", "num_reads", "clusters"
+                        ],
+                        "data": [
+                            [0, "lung", "F", 39844, 99],
+                            [1, "heart", "M", 83, 1],
+                            [49, "spleen", None, 2, "unknown cluster"],
+
+                        ]
+                    }
+
+                }
+            }
+        }
+    })
+    def put(self):
+        fields = request.args.getlist("annotation-name", None)
+        df = current_app.data.filter_dataframe(request.get_json()["filter"], include_uns=False)
+        try:
+            annotation_response = current_app.data.annotation(df, "obs", fields)
+        except KeyError:
+            return make_response(f"Error bad key in {fields}", 404)
+        return make_response(jsonify(annotation_response))
+
+
+class AnnotationsVarAPI(Resource):
+    @swagger.doc({
+        "summary": "Fetch annotations (metadata) for all variables.",
+        "tags": ["annotations"],
+        "parameters": [{
+            "in": "query",
+            "name": "annotation-name",
+            "type": "string",
+            "description": "list of 1 or more annotation names"
+        }],
+        "responses": {
+            "200": {
+                "description": "annotations",
+                "examples": {
+                    "application/json": {
+                        "names": [
+                            "name", "category"
+                        ],
+                        "data": [
+                            [0, "ATAD3C", 1],
+                            [1, "RER1", None],
+                            [49, "S100B", 6]
+                        ]
+                    }
+
+                }
+            }
+        }
+    })
+    def get(self):
+        fields = request.args.getlist("annotation-name", None)
+        try:
+            annotation_response = current_app.data.annotation(current_app.data.data, "var", fields)
+        except KeyError:
+            return make_response(f"Error bad key in {fields}", 404)
+        return make_response(jsonify(annotation_response))
+
+    @swagger.doc({
+        "summary": "Fetch annotations (metadata) for filtered subset of variables.",
+        "tags": ["annotations"],
+        "parameters": [
+            {
+                "in": "query",
+                "name": "annotation-name",
+                "type": "string",
+                "description": "list of 1 or more annotation names"
+            },
+            {
+                "name": "filter",
+                "description": "Complex Filter",
+                "in": "body",
+                "schema": FilterModel
+            }
+        ],
+        "responses": {
+            "200": {
+                "description": "annotations",
+                "examples": {
+                    "application/json": {
+                        "names": [
+                            "name", "category"
+                        ],
+                        "data": [
+                            [0, "ATAD3C", 1],
+                            [1, "RER1", None],
+                            [49, "S100B", 6]
+                        ]
+                    }
+                }
+            }
+        }
+    })
+    def put(self):
+        fields = request.args.getlist("annotation-name", None)
+        df = current_app.data.filter_dataframe(request.get_json()["filter"], include_uns=False)
+        try:
+            annotation_response = current_app.data.annotation(df, "var", fields)
+        except KeyError:
+            return make_response(f"Error bad key in {fields}", 404)
+        return make_response(jsonify(annotation_response))
+
+
+class DiffExpObsAPI(Resource):
+    @swagger.doc({
+        "summary": "Generate differential expression (DE) statistics for two specified subsets of data, "
+                   "as indicated by the two provided observation complex filters",
+        "tags": ["diffexp"],
+        # TODO sort out params
+        # "parameters": [
+        #     # {
+        #     #     "in": "body",
+        #     #     "name": "mode",
+        #     #     "type": "string",
+        #     #     "required": True,
+        #     #     "description": "topN or varFilter"
+        #     # },
+        #     {
+        #         "in": "query",
+        #         "name": "count",
+        #         "type": "int32",
+        #         "description": "TopN mode: how many vars to return"
+        #     },
+        #     {
+        #         "in": "body",
+        #         "name": "varFilter",
+        #         "schema": FilterModel,
+        #         "description": "varFilter: Complex filter, only var for which vars to return"
+        #     },
+        #     {
+        #         "in": "body",
+        #         "name": "set1",
+        #         "schema": FilterModel,
+        #         "required": True,
+        #         "description": "Complex filter, only obs - observations in set1"
+        #     },
+        #     {
+        #         "in": "body",
+        #         "name": "set2",
+        #         "schema": FilterModel,
+        #         "description": "Complex filter, only obs - observations in set2. If not included, inverse of set1."
+        #     },
+        # ],
+        "responses": {
+            "200": {
+                "description": "Statistics are encoded as an array of arrays, with fields ordered as: "
+                               "varIndex, avgDiff,  pVal, pValAdj, set1AvgExp, set2AvgExp",
+                "examples": {
+                    "application/json": [
+                        [328, -2.569489, 2.655706e-63, 3.642036e-57, 383.393, 583.9],
+                        [1250, -2.569489, 2.655706e-63, 3.642036e-57, 383.393, 583.9],
+                    ]
+                }
+            }
+        }
+    })
     def post(self):
         args = request.get_json()
-        cell_list_1 = args.get("celllist1", [])
-        cell_list_2 = args.get("celllist2", [])
-        num_genes = args.get("num_genes", 7)
-        pval = args.get("pval", 0.5)
-        if not (cell_list_1 and cell_list_2):
-            return make_payload([],
-                                "must include celllist1 and celllist2 parameters",
-                                400)
-        data = current_app.data.diffexp(cell_list_1, cell_list_2, pval, num_genes)
-        return make_payload(data)
+        # confirm mode is present and legal
+        try:
+            mode = DiffExpMode(args["mode"])
+        except KeyError:
+            return make_response("Error: mode is required", 400)
+        except ValueError:
+            return make_response(f"Error: invalid mode option {args['mode']}", 400)
+        # Validate filters
+        if mode == DiffExpMode.VAR_FILTER:
+            if "varFilter" not in args:
+                return make_response("varFilter is required when mode is set to varFilter ", 400)
+            if Axis.OBS in args["varFilter"]["filter"]:
+                return make_response("Obs filter not allowed in varFilter", 400)
+        if "set1" not in args:
+            return make_response("set1 is required.", 400)
+        if Axis.VAR in args["set1"]["filter"]:
+            return make_response("Var filter not allowed for set1", 400)
+        # set2
+        if "set2" not in args:
+            return make_response("Set2 as inverse of set1 is not implemented", 501)
+        if Axis.VAR in args["set2"]["filter"]:
+            return make_response("Var filter not allowed for set2", 400)
+        set1_filter = args["set1"]["filter"]
+        set2_filter = args.get("set2", {"filter": {}})["filter"]
+        if "varFilter" in args:
+            set1_filter[Axis.VAR] = args["varFilter"]["filter"][Axis.VAR]
+            set2_filter[Axis.VAR] = args["varFilter"]["filter"][Axis.VAR]
+        df1 = current_app.data.filter_dataframe(set1_filter, include_uns=False)
+        # TODO inverse
+        df2 = current_app.data.filter_dataframe(set2_filter, include_uns=False)
+        # exceeds size limit
+        if df1.shape[0] + df2.shape[0] > current_app.data.features["diffexp"]["interactiveLimit"]:
+            return make_response("Non-interactive request", 403)
+        # mode
+        count = args.get("count", None)
+        try:
+            diffexp = current_app.data.diffexp(df1, df2, count)
+        except ValueError as ve:
+            return make_response(ve.message, 400)
+        return make_response(jsonify(diffexp))
+
+
+class DataObsAPI(Resource):
+    @swagger.doc({
+        "summary": "Get data (expression values) from the dataframe.",
+        "tags": ["data"],
+        "parameters": [
+            {
+                "in": "query",
+                "name": "filter",
+                "type": "string",
+                "description": "axis:key:value"
+            },
+            {
+                "in": "query",
+                "name": "accept-type",
+                "type": "string",
+                "description": "MIME type"
+            },
+        ],
+        "responses": {
+            "200": {
+                "description": "expression",
+                "examples": {
+                    "application/json": {
+                        "var": [0, 20000],
+                        "obs": [
+                            [1, 39483, 3902, 203, 0, 0, 28]
+                        ]
+                    }
+                }
+            },
+            "400": {
+                "description": "Malformed filter"
+            },
+            "406": {
+                "description": "Unacceptable MIME type"
+            },
+        }
+    })
+    def get(self):
+        # request.args is immutable
+        args = dict(request.args)
+        accept_type = args.pop("accept-type", None)
+        try:
+            filter_ = parse_filter(ImmutableMultiDict(args), current_app.data.schema['annotations'])
+        except QueryStringError as e:
+            return make_response(e.message, HTTPStatus.BAD_REQUEST)
+        df = current_app.data.filter_dataframe(filter_, include_uns=False)
+        if accept_type and accept_type[0] == "application/json":
+            return make_response((jsonify(current_app.data.data_frame(df))))
+        # TODO support CSV
+        else:
+            return make_response(f"Unsupported accept-type: {accept_type}", HTTPStatus.NOT_ACCEPTABLE)
+
+    @swagger.doc({
+        "summary": "Get data (expression values) from the dataframe.",
+        "tags": ["data"],
+        "parameters": [
+            {
+                'name': 'filter',
+                'description': 'Complex Filter',
+                'in': 'body',
+                'schema': FilterModel
+            }
+        ],
+        "responses": {
+            "200": {
+                "description": "expression",
+                "examples": {
+                    "application/json": {
+                        "var": [0, 20000],
+                        "obs": [
+                            [1, 39483, 3902, 203, 0, 0, 28]
+                        ]
+                    }
+                }
+            },
+            "400": {
+                "description": "Malformed filter"
+            },
+            "406": {
+                "description": "Unacceptable MIME type"
+            },
+        }
+    })
+    def put(self):
+        if not request.accept_mimetypes.best_match(["application/json", "text/csv"]):
+            return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
+        # TODO catch error for bad filter
+        df = current_app.data.filter_dataframe(request.get_json()["filter"], include_uns=False)
+        if request.accept_mimetypes.best_match(['application/json']):
+            return make_response((jsonify(current_app.data.data_frame(df))))
+        # TODO support CSV
+        else:
+            return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
 
 
 def get_api_resources():
-    bp = Blueprint("api", __name__, url_prefix="/api/v0.1")
+    bp = Blueprint("api", __name__, url_prefix="/api/v0.2")
     api = Api(bp, add_api_spec_resource=False)
-    api.add_resource(InitializeAPI, "/initialize")
-    api.add_resource(CellsAPI, "/cells")
-    api.add_resource(ExpressionAPI, "/expression")
-    api.add_resource(DifferentialExpressionAPI, "/diffexpression")
+    api.add_resource(SchemaAPI, "/schema")
+    api.add_resource(ConfigAPI, "/config")
+    api.add_resource(LayoutObsAPI, "/layout/obs")
+    api.add_resource(AnnotationsObsAPI, "/annotations/obs")
+    api.add_resource(DiffExpObsAPI, "/diffexp/obs")
+    api.add_resource(AnnotationsVarAPI, "/annotations/var")
+    api.add_resource(DataObsAPI, "/data/obs")
     return api

@@ -1,60 +1,30 @@
 // jshint esversion: 6
 import _ from "lodash";
-import memoize from "memoize-one";
 import * as globals from "../globals";
-import store from "../reducers";
-import { Universe } from "../util/stateManager";
+import { Universe, kvCache } from "../util/stateManager";
+import { catchErrorsWrap, doJsonRequest } from "../util/actionHelpers";
 
-/*
-Catch unexpected errors and make sure we don't lose them!
-*/
-function catchErrorsWrap(fn) {
-  return (dispatch, getState) => {
-    fn(dispatch, getState).catch(error => {
-      console.error(error);
-      dispatch({ type: "UNEXPECTED ERROR", error });
-    });
-  };
-}
-
-async function doRequestInitialize() {
-  const res = await fetch(
-    `${globals.API.prefix}${globals.API.version}initialize`,
-    {
-      method: "get",
-      headers: new Headers({
-        "Content-Type": "application/json"
-      })
-    }
-  );
-  return res.json();
-}
-
-async function doRequestCells(query) {
-  const res = await fetch(
-    `${globals.API.prefix}${globals.API.version}cells${query}`,
-    {
-      method: "get",
-      headers: new Headers({
-        "Content-Type": "application/json"
-      })
-    }
-  );
-  return res.json();
-}
-
-function doInitialDataLoad(query = "") {
-  return catchErrorsWrap(async dispatch => {
+const doInitialDataLoad = () =>
+  catchErrorsWrap(async dispatch => {
     dispatch({ type: "initial data load start" });
+
     try {
-      const res = await Promise.all([
-        doRequestInitialize(),
-        doRequestCells(query)
-      ]);
-      const universe = Universe.createUniverseFromRESTv01Response(
-        res[0],
-        res[1]
-      );
+      const requests = _([
+        "config",
+        "schema",
+        "annotations/obs",
+        "annotations/var",
+        "layout/obs"
+      ])
+        .map(r => `${globals.API.prefix}${globals.API.version}${r}`)
+        .map(url => doJsonRequest(url))
+        .value();
+      const results = await Promise.all(requests);
+      const universe = Universe.createUniverseFromRestV02Response(...results);
+      dispatch({
+        type: "configuration load complete",
+        config: results[0].config
+      });
       dispatch({
         type: "initial data load complete (universe exists)",
         universe
@@ -63,7 +33,6 @@ function doInitialDataLoad(query = "") {
       dispatch({ type: "initial data load error", error });
     }
   });
-}
 
 // XXX TODO - this is the old code for doing a regraph.  Preserving it solely
 // until we port to 0.2 API.   The new UX for regraph can't be implemented on
@@ -131,66 +100,56 @@ const resetGraph = () => (dispatch, getState) =>
     universe: getState().controls.universe
   });
 
-// This code defends against the case where /expression returns a cellname
-// never seen before (ie, not returned by /cells).   This should not happen
-// (see https://github.com/chanzuckerberg/cellxgene-rest-api/issues/34) but
-// occasionally does.
-//
-// XXX TODO - this code is only relevant in v0.1 REST API, and can be retired
-// when we port to 0.2.
-//
-const makeMetadataMap = memoize(metadata => _.keyBy(metadata, "CellName"));
-function cleanupExpressionResponse(data) {
-  const s = store.getState();
-  const { universe } = s.controls;
-  const metadata = makeMetadataMap(universe.obsAnnotations);
-  let errorFound = false;
-  data.data.cells = _.filter(data.data.cells, cell => {
-    if (!errorFound && !metadata[cell.cellname]) {
-      errorFound = true;
-      console.error(
-        "Warning: /expression REST API returned unexpected cell names -- discarding surprises."
-      );
-    }
-    return metadata[cell.cellname];
-  });
-
-  return data;
-}
-
 /*
-Fetch [gene, ...] from V0.1 API.  Not an action function - just a helper
-which implements the new expression data caching.
+Fetch expression vectors for each gene in genes.   This is NOT an action
+function, but rather a helper to be called from an action helper that
+needs expression data.
+
+Transparently utilizes cached data if it is already present.
 */
 async function _doRequestExpressionData(dispatch, getState, genes) {
   const state = getState();
-  /* check cache and only fetch data we do not already have */
   const { universe } = state.controls;
-  const genesToFetch = _.filter(genes, g => !universe.varDataCache[g]);
+  /* preload data already in cache */
+  let expressionData = _.transform(genes, (expData, g) => {
+    const data = kvCache.get(universe.varDataCache, g);
+    if (data) {
+      expData[g] = data;
+    }
+  }); // --> { gene: data }
+  /* make a list of genes for which we do not have data */
+  const genesToFetch = _.filter(genes, g => expressionData[g] === undefined);
 
   dispatch({ type: "expression load start" });
-  let expressionData = {}; // { gene: data }
+
+  /* Fetch data for any genes not in cache */
   if (genesToFetch.length) {
     try {
+      // XXX: TODO - this could be using /data/var rather than /data/obs,
+      // as that would simplify the transformation in
+      // convertExpressionRESTv02ToObject
       const res = await fetch(
-        `${globals.API.prefix}${globals.API.version}expression`,
+        `${globals.API.prefix}${globals.API.version}data/obs`,
         {
-          method: "POST",
+          method: "PUT",
           body: JSON.stringify({
-            genelist: genes
+            filter: {
+              var: {
+                annotation_value: [{ name: "name", values: genesToFetch }]
+              }
+            }
           }),
           headers: new Headers({
             accept: "application/json",
+            "Accept-Encoding": "gzip, deflate, br",
             "Content-Type": "application/json"
           })
         }
       );
-      let data = await res.json();
-      data = cleanupExpressionResponse(data);
-      data = Universe.convertExpressionRESTv01ToObject(universe, data);
+      const data = await res.json();
       expressionData = {
         ...expressionData,
-        ...data
+        ...Universe.convertExpressionRESTv02ToObject(universe, data)
       };
     } catch (error) {
       dispatch({ type: "expression load error", error });
@@ -198,26 +157,24 @@ async function _doRequestExpressionData(dispatch, getState, genes) {
     }
   }
 
-  // add the cached values
-  _.forEach(genes, g => {
-    if (expressionData[g] === undefined) {
-      expressionData[g] = universe.varDataCache[g];
-    }
-  });
-
-  return dispatch({ type: "expression load success", expressionData });
+  dispatch({ type: "expression load success", expressionData });
+  return expressionData;
 }
 
 function requestSingleGeneExpressionCountsForColoringPOST(gene) {
   return async (dispatch, getState) => {
     dispatch({ type: "get single gene expression for coloring started" });
     try {
-      await _doRequestExpressionData(dispatch, getState, [gene]);
+      const expressionData = await _doRequestExpressionData(
+        dispatch,
+        getState,
+        [gene]
+      );
       dispatch({
         type: "color by expression",
         gene,
         data: {
-          [gene]: getState().controls.world.varDataCache[gene]
+          [gene]: expressionData[gene]
         }
       });
     } catch (error) {
@@ -232,65 +189,74 @@ function requestSingleGeneExpressionCountsForColoringPOST(gene) {
 const requestGeneExpressionCountsPOST = genes => async (dispatch, getState) => {
   dispatch({ type: "get expression started" });
   try {
-    await _doRequestExpressionData(dispatch, getState, genes);
+    const expressionData = await _doRequestExpressionData(
+      dispatch,
+      getState,
+      genes
+    );
     return dispatch({
       type: "get expression success",
       genes,
-      data: _.transform(
-        genes,
-        (res, gene) => {
-          res[gene] = getState().controls.world.varDataCache[gene];
-        },
-        {}
-      )
+      data: expressionData
     });
   } catch (error) {
     return dispatch({ type: "get expression error", error });
   }
 };
 
-const requestDifferentialExpression = (
-  celllist1,
-  celllist2,
-  num_genes = 7
-) => dispatch => {
+const requestDifferentialExpression = (set1, set2, num_genes = 10) => async (
+  dispatch,
+  getState
+) => {
   dispatch({ type: "request differential expression started" });
-  fetch(`${globals.API.prefix}${globals.API.version}diffexpression`, {
-    method: "POST",
-    body: JSON.stringify({
-      celllist1,
-      celllist2,
-      num_genes
-    }),
-    headers: new Headers({
-      accept: "application/json",
-      "Content-Type": "application/json"
-    })
-  })
-    .then(res => res.json())
-    .then(
-      data => {
-        /*
-          kick off a secondary action to get all expression counts for all cells
-          now that we know what the top expressed are
-          */
-        dispatch(
-          requestGeneExpressionCountsPOST(
-            _.union(data.data.celllist1.topgenes, data.data.celllist2.topgenes)
-          )
-        );
-        /* then send the success case action through */
-        return dispatch({
-          type: "request differential expression success",
-          data
-        });
-      },
-      error =>
-        dispatch({
-          type: "request differential expression error",
-          error
+  try {
+    /*
+    Steps:
+    1. get the most differentially expressed genes
+    2. get expression data for each
+    */
+    const state = getState();
+    const { universe } = state.controls;
+    const set1ByIndex = _.map(set1, s => universe.obsNameToIndexMap[s]);
+    const set2ByIndex = _.map(set2, s => universe.obsNameToIndexMap[s]);
+    const diffExpFetch = await fetch(
+      `${globals.API.prefix}${globals.API.version}diffexp/obs`,
+      {
+        method: "POST",
+        headers: new Headers({
+          Accept: "application/json",
+          "Accept-Encoding": "gzip, deflate, br",
+          "Content-Type": "application/json"
+        }),
+        body: JSON.stringify({
+          mode: "topN",
+          count: num_genes,
+          set1: { filter: { obs: { index: set1ByIndex } } },
+          set2: { filter: { obs: { index: set2ByIndex } } }
         })
+      }
     );
+    const data = await diffExpFetch.json();
+    // result is [ [varIdx, ...], ... ]
+    const topNGenes = _.map(data, r => universe.varAnnotations[r[0]].name);
+
+    /*
+    Kick off secondary action to fetch all of the expression data for the
+    topN expressed genes.
+    */
+    dispatch(requestGeneExpressionCountsPOST(topNGenes));
+
+    /* then send the success case action through */
+    return dispatch({
+      type: "request differential expression success",
+      data
+    });
+  } catch (error) {
+    return dispatch({
+      type: "request differential expression error",
+      error
+    });
+  }
 };
 
 export default {
