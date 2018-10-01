@@ -6,7 +6,8 @@ from pandas import DataFrame, Series
 import scanpy.api as sc
 from scipy import stats
 
-from server.app.app import cache
+# TODO fix memoization so that it correctly identifies the same request
+# from server.app.app import cache
 from server.app.driver.driver import CXGDriver
 from server.app.util.constants import Axis, DEFAULT_TOP_N, DiffExpMode
 

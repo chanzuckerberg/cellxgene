@@ -174,7 +174,7 @@ class EndPoints(unittest.TestCase):
         result_data = result.json()
         self.assertEqual(len(result_data), 7)
 
-    def test_diff_exp(self):
+    def test_diff_exp_indices(self):
         endpoint = "diffexp/obs"
         url = f"{URL_BASE}{endpoint}"
         params = {
