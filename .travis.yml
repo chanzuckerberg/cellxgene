@@ -15,3 +15,4 @@ script:
   - set -eo pipefail
   - flake8 server/app/
   - pytest -s server/test
+  - npm run test
