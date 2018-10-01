@@ -263,6 +263,7 @@ export default {
   regraph,
   resetGraph,
   requestSingleGeneExpressionCountsForColoringPOST,
+  requestGeneExpressionCountsPOST,
   requestDifferentialExpression,
   doInitialDataLoad
 };
