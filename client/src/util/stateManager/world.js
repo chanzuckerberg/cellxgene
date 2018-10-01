@@ -6,7 +6,7 @@ import * as kvCache from "./keyvalcache";
 /*
 World is a subset of universe.   Most code should use world, and should
 (generally) not use Universe.   World contains any per-obs or per-var data
-that must be consisstent acorss the app when we view/manipulate subsets
+that must be consistent acorss the app when we view/manipulate subsets
 of Universe.
 
 Private API indicated by leading underscore in key name (eg, _foo).  Anything else
@@ -276,6 +276,35 @@ function deduceDimensionType(attributes, fieldName) {
     // skip it - we don't know what to do with this type
   }
   return dimensionType;
+}
+
+/*
+  Return a crossfilter dimension for the specified world & named gene.
+
+  NOTE: this assumes that the expression data was already loaded,
+  by calling an appropriate action creator.
+
+  Caller needs to *save* this dimension somewhere for it to be later used.
+  Dimension must be destroyed by calling dimension.dispose()
+  when it is no longer needed
+  (it will not be garbage collected without this call)
+*/
+
+export function createVarDimensionsMap(
+  world,
+  _worldVarDataCache,
+  crossfilter,
+  geneName
+) {
+  const { varDataCache, worldObsIndex } = world;
+  const varData = _worldVarDataCache[geneName];
+  const worldIndex = worldObsIndex ? idx => worldObsIndex[idx] : idx => idx;
+
+  console.log("in createVarDataCrossfilterDimensionsForGeneName!", varData);
+
+  return crossfilter.dimension(r => {
+    varData[r.__obsIndex__];
+  }, Float32Array);
 }
 
 export function createObsDimensionMap(crossfilter, world) {
