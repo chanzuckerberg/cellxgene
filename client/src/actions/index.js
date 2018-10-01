@@ -2,35 +2,7 @@
 import _ from "lodash";
 import * as globals from "../globals";
 import { Universe, kvCache } from "../util/stateManager";
-
-/*
-Catch unexpected errors and make sure we don't lose them!
-*/
-function catchErrorsWrap(fn) {
-  return (dispatch, getState) => {
-    fn(dispatch, getState).catch(error => {
-      console.error(error);
-      dispatch({ type: "UNEXPECTED ERROR", error });
-    });
-  };
-}
-
-/*
-Bootstrap application with the initial data loading.
-  * /config - application configuration
-  * /schema - schema of dataframe
-  * /annotations/obs - all metadata annotation
-*/
-const doJsonRequest = async url => {
-  const res = await fetch(url, {
-    method: "get",
-    headers: new Headers({
-      "Content-Type": "application/json",
-      "Accept-Encoding": "gzip, deflate, br"
-    })
-  });
-  return res.json();
-};
+import { catchErrorsWrap, doJsonRequest } from "../util/actionHelpers";
 
 const doInitialDataLoad = () =>
   catchErrorsWrap(async dispatch => {
