@@ -290,7 +290,7 @@ function deduceDimensionType(attributes, fieldName) {
   (it will not be garbage collected without this call)
 */
 
-export function createVarDimensionsMap(
+export function createVarDimension(
   world,
   _worldVarDataCache,
   crossfilter,
@@ -298,10 +298,10 @@ export function createVarDimensionsMap(
 ) {
   const { varDataCache, worldObsIndex } = world;
   const varData = _worldVarDataCache[geneName];
-  const worldIndex = worldObsIndex ? idx => worldObsIndex[idx] : idx => idx; /* this results in NaN when implemented below as it was in the test code */
+  const worldIndex = worldObsIndex ? idx => worldObsIndex[idx] : idx => idx;
 
   return crossfilter.dimension(r => {
-    return varData[r.__obsIndex__];
+    return varData[worldIndex(r.__obsIndex__)];
   }, Float32Array);
 }
 
