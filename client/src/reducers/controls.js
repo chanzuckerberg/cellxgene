@@ -138,7 +138,6 @@ const Controls = (
       });
 
       _.forEach(action.expressionData, (val, key) => {
-        console.log("got one ", key);
         dimensionMap[key] = World.createVarDimensionsMap(
           world,
           worldVarDataCache,

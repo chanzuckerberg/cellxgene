@@ -18,16 +18,6 @@ class Expression extends React.Component {
     this.state = {};
   }
 
-  handleClick(gene) {
-    return () => {
-      const { dispatch } = this.props;
-      dispatch({
-        type: "color by expression",
-        gene
-      });
-    };
-  }
-
   computeDiffExp() {
     const { dispatch, differential } = this.props;
     dispatch(
