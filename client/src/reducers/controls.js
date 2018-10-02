@@ -121,11 +121,9 @@ const Controls = (
         universe,
         crossfilter,
         dimensionMap,
-        dimensionMapVar
       } = state;
       let universeVarDataCache = universe.varDataCache;
       let worldVarDataCache = world.varDataCache;
-      let _dimensionMapVar = dimensionMapVar;
       _.forEach(action.expressionData, (val, key) => {
         universeVarDataCache = kvCache.set(universeVarDataCache, key, val);
         if (kvCache.get(worldVarDataCache, key) === undefined) {
@@ -138,7 +136,7 @@ const Controls = (
       });
 
       _.forEach(action.expressionData, (val, key) => {
-        dimensionMap[key] = World.createVarDimensionsMap(
+        dimensionMap[key] = World.createVarDimension(
           world,
           worldVarDataCache,
           crossfilter,
@@ -148,7 +146,6 @@ const Controls = (
 
       return {
         ...state,
-        dimensionMapVar,
         universe: {
           ...universe,
           varDataCache: universeVarDataCache
