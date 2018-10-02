@@ -161,7 +161,7 @@ describe("typedCrossfilter", () => {
     expect(type).toBeDefined();
 
     // initially, all should be filtered
-    expect(payments.allFiltered().length).toEqual(payments.size());
+    expect(payments.allFiltered()).toHaveLength(payments.size());
     expect(payments.allFiltered()).toEqual(payments.all());
     expect(payments.countFiltered()).toEqual(someData.length);
 
