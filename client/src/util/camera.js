@@ -1,9 +1,9 @@
 // jshint esversion: 6
-var createCamera = require("orbit-camera");
-var createScroll = require("scroll-speed");
-var mp = require("mouse-position");
-var mb = require("mouse-pressed");
-var key = require("key-pressed");
+const createCamera = require("orbit-camera");
+const createScroll = require("scroll-speed");
+const mp = require("mouse-position");
+const mb = require("mouse-pressed");
+const key = require("key-pressed");
 
 const panSpeed = 0.4;
 const scaleSpeed = 0.5;
@@ -17,20 +17,19 @@ function attachCamera(canvas, opts) {
   opts.scale = opts.scale !== false;
   opts.rotate = opts.rotate !== false;
 
-  var scroll = createScroll(canvas, opts.scale);
-  var mbut = mb(canvas, opts.rotate);
-  var mpos = mp(canvas);
-  var camera = createCamera([0, 0, 1], [0, 0, -1], [0, 1, 0]);
+  const scroll = createScroll(canvas, opts.scale);
+  const mbut = mb(canvas, opts.rotate);
+  const mpos = mp(canvas);
+  const camera = createCamera([0, 0, 1], [0, 0, -1], [0, 1, 0]);
 
   camera.tick = tick;
 
   return camera;
 
   function tick() {
-    var ctrl = key("<control>") || key("<alt>");
-    var alt = key("<shift>");
-    var height = canvas.height;
-    var width = canvas.width;
+    const ctrl = key("<control>") || key("<alt>");
+    const alt = key("<shift>");
+    const { height, width } = canvas;
 
     if (opts.rotate && mbut.left && ctrl && !alt) {
       camera.rotate(
@@ -41,23 +40,19 @@ function attachCamera(canvas, opts) {
 
     if ((opts.pan && mbut.right) || (mbut.left && !ctrl && !alt)) {
       camera.pan([
-        panSpeed *
-          (mpos[0] - mpos.prev[0]) /
-          width *
+        ((panSpeed * (mpos[0] - mpos.prev[0])) / width) *
           Math.pow(camera.distance, 1),
-        panSpeed *
-          (mpos[1] - mpos.prev[1]) /
-          height *
+        ((panSpeed * (mpos[1] - mpos.prev[1])) / height) *
           Math.pow(camera.distance, 1)
       ]);
     }
 
     if (opts.scale && scroll[1]) {
-      camera.distance *= Math.exp(scroll[1] * scaleSpeed / height);
+      camera.distance *= Math.exp((scroll[1] * scaleSpeed) / height);
     }
 
     if (opts.scale && (mbut.middle || (mbut.left && !ctrl && alt))) {
-      var d = mpos.y - mpos.prevY;
+      const d = mpos.y - mpos.prevY;
       if (!d) return;
 
       camera.distance *= Math.exp(d / height);
