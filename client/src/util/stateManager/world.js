@@ -298,12 +298,10 @@ export function createVarDimensionsMap(
 ) {
   const { varDataCache, worldObsIndex } = world;
   const varData = _worldVarDataCache[geneName];
-  const worldIndex = worldObsIndex ? idx => worldObsIndex[idx] : idx => idx;
-
-  console.log("in createVarDataCrossfilterDimensionsForGeneName!", varData);
+  const worldIndex = worldObsIndex ? idx => worldObsIndex[idx] : idx => idx; /* this results in NaN when implemented below as it was in the test code */
 
   return crossfilter.dimension(r => {
-    varData[r.__obsIndex__];
+    return varData[r.__obsIndex__];
   }, Float32Array);
 }
 
