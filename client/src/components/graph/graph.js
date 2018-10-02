@@ -423,24 +423,7 @@ class Graph extends React.Component {
                 </button>
               </span>
             </div>
-            <div>
-              <button
-                type="button"
-                style={{
-                  fontSize: 14,
-                  fontWeight: 400,
-                  color: "white",
-                  padding: "0px 10px",
-                  height: 30,
-                  borderRadius: 2,
-                  backgroundColor: globals.lightGrey,
-                  border: "none",
-                  cursor: "pointer"
-                }}
-              >
-                export
-              </button>
-            </div>
+            
           </div>
         </div>
         <div
