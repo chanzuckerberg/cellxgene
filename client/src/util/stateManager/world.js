@@ -301,7 +301,7 @@ export function createVarDimension(
   const worldIndex = worldObsIndex ? idx => worldObsIndex[idx] : idx => idx;
 
   return crossfilter.dimension(r => {
-    return varData[worldIndex(r.__obsIndex__)];
+    return varData[worldIndex(r.__index__)];
   }, Float32Array);
 }
 
