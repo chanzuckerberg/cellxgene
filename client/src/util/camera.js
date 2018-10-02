@@ -40,10 +40,8 @@ function attachCamera(canvas, opts) {
 
     if ((opts.pan && mbut.right) || (mbut.left && !ctrl && !alt)) {
       camera.pan([
-        ((panSpeed * (mpos[0] - mpos.prev[0])) / width) *
-          Math.pow(camera.distance, 1),
-        ((panSpeed * (mpos[1] - mpos.prev[1])) / height) *
-          Math.pow(camera.distance, 1)
+        ((panSpeed * (mpos[0] - mpos.prev[0])) / width) * camera.distance,
+        ((panSpeed * (mpos[1] - mpos.prev[1])) / height) * camera.distance
       ]);
     }
 
