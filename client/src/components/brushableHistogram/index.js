@@ -7,12 +7,16 @@ https://bl.ocks.org/SpaceActuary/2f004899ea1b2bd78d6f1dbb2febf771
 import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
+import { kvCache } from "../../util/stateManager/"
 import FaPaintBrush from "react-icons/lib/fa/paint-brush";
 import * as d3 from "d3";
 import memoize from "memoize-one";
 import * as globals from "../../globals";
+import actions from "../../actions";
 
 @connect(state => ({
+  world: state.controls.world,
+  crossfilter: state.controls.crossfilter,
   initializeRanges: _.get(state.controls.world, "summary.obs"),
   colorAccessor: state.controls.colorAccessor,
   colorScale: state.controls.colorScale,
@@ -20,26 +24,49 @@ import * as globals from "../../globals";
 }))
 class HistogramBrush extends React.Component {
   calcHistogramCache = memoize((obsAnnotations, field, ranges) => {
-    // recalculate expensive stuff
-    const allValuesForContinuousFieldAsArray = _.map(obsAnnotations, field);
+    const { world } = this.props
     const histogramCache = {};
-
-    histogramCache.x = d3
-      .scaleLinear()
-      .domain([ranges.min, ranges.max])
-      .range([0, this.width]);
 
     histogramCache.y = d3
       .scaleLinear()
       .range([this.height - this.marginBottom, 0]);
     // .range([height - margin.bottom, margin.top]);
 
-    histogramCache.bins = d3
-      .histogram()
-      .domain(histogramCache.x.domain())
-      .thresholds(40)(allValuesForContinuousFieldAsArray);
+    if (obsAnnotations[0][field]) {
 
-    histogramCache.numValues = allValuesForContinuousFieldAsArray.length;
+      // recalculate expensive stuff
+      const allValuesForContinuousFieldAsArray = _.map(obsAnnotations, field);
+
+      histogramCache.x = d3
+        .scaleLinear()
+        .domain([ranges.min, ranges.max])
+        .range([0, this.width]);
+
+      histogramCache.bins = d3
+        .histogram()
+        .domain(histogramCache.x.domain())
+        .thresholds(40)(allValuesForContinuousFieldAsArray);
+
+      histogramCache.numValues = allValuesForContinuousFieldAsArray.length;
+
+    } else if (world.varDataCache[field]) {
+      /* it's not in observations, so it's a gene, but let's check to make sure */
+
+      histogramCache.x = d3
+        .scaleLinear()
+        .domain(d3.extent(world.varDataCache[field])) /* replace this if we have ranges for genes back from server like we do for annotations on cells */
+        .range([0, this.width]);
+
+      histogramCache.bins = d3
+        .histogram()
+        .domain(histogramCache.x.domain())
+        .thresholds(40)(world.varDataCache[field]);
+
+      histogramCache.numValues = world.varDataCache[field].length;
+
+    }
+
+
 
     return histogramCache;
   });
@@ -119,15 +146,17 @@ class HistogramBrush extends React.Component {
         .attr("y", -6)
         .attr("fill", "#000")
         .attr("text-anchor", "end")
-        .attr("font-weight", "bold")
         .text(field);
 
       d3.select(svgRef)
         .selectAll(".axis--x text")
-        .style("fill", "rgb(80,80,80)");
+        .style("fill", "rgb(80,80,80)")
+        .style("font-size", 12);
+
       d3.select(svgRef)
         .selectAll(".axis--x path")
         .style("stroke", "rgb(230,230,230)");
+
       d3.select(svgRef)
         .selectAll(".axis--x line")
         .style("stroke", "rgb(230,230,230)");
@@ -137,16 +166,28 @@ class HistogramBrush extends React.Component {
   }
 
   handleColorAction() {
-    const { dispatch, field, initializeRanges } = this.props;
-    dispatch({
-      type: "color by continuous metadata",
-      colorAccessor: field,
-      rangeMaxForColorAccessor: initializeRanges[field].range.max
-    });
+    const { obsAnnotations, ranges, dispatch, field, world, initializeRanges } = this.props;
+
+    if (obsAnnotations[0][field]) {
+      dispatch({
+        type: "color by continuous metadata",
+        colorAccessor: field,
+        rangeMaxForColorAccessor: initializeRanges[field].range.max
+      });
+    } else if (world.varDataCache[field]) {
+      dispatch(
+        actions.requestSingleGeneExpressionCountsForColoringPOST(
+          field
+        )
+      );
+    }
+
   }
 
   render() {
+
     const { field, ranges, colorAccessor } = this.props;
+
     return (
       <div
         style={{
@@ -169,7 +210,7 @@ class HistogramBrush extends React.Component {
         <span
           onClick={this.handleColorAction.bind(this)}
           style={{
-            fontSize: 16,
+            fontSize: 14,
             marginLeft: 4,
             // padding: this.props.colorAccessor === this.props.field ? 3 : "auto",
             borderRadius: 3,

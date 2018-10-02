@@ -22,6 +22,5 @@ export const calcHistogram = (ranges, allValuesForContinuousFieldAsArray) => {
 
   histogramData.numValues = allValuesForContinuousFieldAsArray.length;
 
-  console.log(histogramData);
   return histogramData;
 };
