@@ -478,7 +478,7 @@ class DataObsAPI(Resource):
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
         df = current_app.data.filter_dataframe(filter_, include_uns=False)
         if accept_type and accept_type[0] == "application/json":
-            return make_response((jsonify(current_app.data.data_frame(df))))
+            return make_response((jsonify(current_app.data.data_frame(df, axis=Axis.OBS))))
         # TODO support CSV
         else:
             return make_response(f"Unsupported accept-type: {accept_type}", HTTPStatus.NOT_ACCEPTABLE)
@@ -520,7 +520,103 @@ class DataObsAPI(Resource):
         # TODO catch error for bad filter
         df = current_app.data.filter_dataframe(request.get_json()["filter"], include_uns=False)
         if request.accept_mimetypes.best_match(['application/json']):
-            return make_response((jsonify(current_app.data.data_frame(df))))
+            return make_response((jsonify(current_app.data.data_frame(df, axis=Axis.OBS))))
+        # TODO support CSV
+        else:
+            return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
+
+
+class DataVarAPI(Resource):
+    @swagger.doc({
+        "summary": "Get data (expression values) from the dataframe.",
+        "tags": ["data"],
+        "parameters": [
+            {
+                "in": "query",
+                "name": "filter",
+                "type": "string",
+                "description": "axis:key:value"
+            },
+            {
+                "in": "query",
+                "name": "accept-type",
+                "type": "string",
+                "description": "MIME type"
+            },
+        ],
+        "responses": {
+            "200": {
+                "description": "expression",
+                "examples": {
+                    "application/json": {
+                        "obs": [0, 20000],
+                        "var": [
+                            [1, 39483, 3902, 203, 0, 0, 28]
+                        ]
+                    }
+                }
+            },
+            "400": {
+                "description": "Malformed filter"
+            },
+            "406": {
+                "description": "Unacceptable MIME type"
+            },
+        }
+    })
+    def get(self):
+        # request.args is immutable
+        args = dict(request.args)
+        accept_type = args.pop("accept-type", None)
+        try:
+            filter_ = parse_filter(ImmutableMultiDict(args), current_app.data.schema['annotations'])
+        except QueryStringError as e:
+            return make_response(e.message, HTTPStatus.BAD_REQUEST)
+        df = current_app.data.filter_dataframe(filter_, include_uns=False)
+        if accept_type and accept_type[0] == "application/json":
+            return make_response((jsonify(current_app.data.data_frame(df, axis=Axis.VAR))))
+        # TODO support CSV
+        else:
+            return make_response(f"Unsupported accept-type: {accept_type}", HTTPStatus.NOT_ACCEPTABLE)
+
+    @swagger.doc({
+        "summary": "Get data (expression values) from the dataframe.",
+        "tags": ["data"],
+        "parameters": [
+            {
+                'name': 'filter',
+                'description': 'Complex Filter',
+                'in': 'body',
+                'schema': FilterModel
+            }
+        ],
+        "responses": {
+            "200": {
+                "description": "expression",
+                "examples": {
+                    "application/json": {
+                        "obs": [0, 20000],
+                        "var": [
+                            [1, 39483, 3902, 203, 0, 0, 28]
+                        ]
+                    }
+                }
+            },
+            "400": {
+                "description": "Malformed filter"
+            },
+            "406": {
+                "description": "Unacceptable MIME type"
+            },
+        }
+    })
+    def put(self):
+        if not request.accept_mimetypes.best_match(["application/json", "text/csv"]):
+            return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
+        # TODO catch error for bad filter
+        df = current_app.data.filter_dataframe(request.get_json()["filter"], include_uns=False)
+        if request.accept_mimetypes.best_match(['application/json']):
+            return make_response((jsonify(current_app.data.data_frame(df, axis=Axis.VAR))))
         # TODO support CSV
         else:
             return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
@@ -536,4 +632,5 @@ def get_api_resources():
     api.add_resource(DiffExpObsAPI, "/diffexp/obs")
     api.add_resource(AnnotationsVarAPI, "/annotations/var")
     api.add_resource(DataObsAPI, "/data/obs")
+    api.add_resource(DataVarAPI, "/data/var")
     return api

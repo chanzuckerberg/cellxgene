@@ -280,7 +280,7 @@ class ScanpyEngine(CXGDriver):
         return sorted(result, key=lambda gene: gene[0])
 
     # @cache.memoize()
-    def data_frame(self, df):
+    def data_frame(self, df, axis):
         """
         Retrieves data for each variable for observations in data frame
         :param df: from filter_cells, dataframe
@@ -289,9 +289,18 @@ class ScanpyEngine(CXGDriver):
             "obs": [cellid, var1 expression, var2 expression, ...],
         }
         """
-        var_index = df.var.index.tolist()
-        expression = DataFrame(df.X, index=df.obs.index)
-        return {
-            "var": var_index,
-            "obs": expression.reset_index().values.tolist()
-        }
+        if axis == Axis.OBS:
+            index = df.var.index.tolist()
+            expression = DataFrame(df.X, index=df.obs.index)
+            result = {
+                "var": index,
+                "obs": expression.reset_index().values.tolist()
+            }
+        else:
+            index = df.obs.index.tolist()
+            expression = DataFrame(df.X.transpose(), index=df.var.index)
+            result = {
+                "obs": index,
+                "var": expression.reset_index().values.tolist(),
+            }
+        return result

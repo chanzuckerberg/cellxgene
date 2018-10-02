@@ -206,9 +206,12 @@ class UtilTest(unittest.TestCase):
         self.assertEqual(len(result), 20)
 
     def test_data_frame(self):
-        data_frame = self.data.data_frame(self.data.data)
-        self.assertEqual(len(data_frame["var"]), 1838)
-        self.assertEqual(len(data_frame["obs"]), 2638)
+        data_frame_obs = self.data.data_frame(self.data.data, "obs")
+        self.assertEqual(len(data_frame_obs["var"]), 1838)
+        self.assertEqual(len(data_frame_obs["obs"]), 2638)
+        data_frame_var = self.data.data_frame(self.data.data, "var")
+        self.assertEqual(len(data_frame_var["var"]), 1838)
+        self.assertEqual(len(data_frame_var["obs"]), 2638)
 
     def test_filtered_data_frame(self):
         filter_ = {
@@ -221,9 +224,18 @@ class UtilTest(unittest.TestCase):
             }
         }
         data = self.data.filter_dataframe(filter_["filter"])
-        data_frame = self.data.data_frame(data)
-        self.assertEqual(len(data_frame["var"]), 1838)
-        self.assertEqual(len(data_frame["obs"]), 497)
+        data_frame_obs = self.data.data_frame(data, "obs")
+        self.assertEqual(len(data_frame_obs["var"]), 1838)
+        self.assertEqual(len(data_frame_obs["obs"]), 497)
+        self.assertEqual(type(data_frame_obs["obs"][0]), list)
+        self.assertEqual(type(data_frame_obs["var"][0]), int)
+        data_frame_var = self.data.data_frame(data, "var")
+        self.assertEqual(len(data_frame_var["var"]), 1838)
+        self.assertEqual(len(data_frame_var["obs"]), 497)
+        self.assertEqual(type(data_frame_var["var"][0]), list)
+        self.assertEqual(type(data_frame_var["obs"][0]), int)
+
+
 
     if __name__ == '__main__':
         unittest.main()
