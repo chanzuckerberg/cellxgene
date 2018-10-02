@@ -41,7 +41,6 @@ class CellSetButton extends React.Component {
           </span>
           <span
             style={{
-              fontFamily: "Georgia",
               fontSize: 14,
               marginLeft: 8,
               position: "relative",

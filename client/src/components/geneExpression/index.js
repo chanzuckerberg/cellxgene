@@ -97,7 +97,7 @@ class GeneExpression extends React.Component {
             background: "none",
             cursor: "pointer",
             outline: "none",
-            margin: "none",
+            marginTop: 20,
             padding: 0
           }}
           onClick={() => {
@@ -109,6 +109,7 @@ class GeneExpression extends React.Component {
           <CirclePlus
             style={{
               display: "inline-block",
+              marginLeft: 7,
               color: globals.brightBlue,
               fontSize: 22
             }}
