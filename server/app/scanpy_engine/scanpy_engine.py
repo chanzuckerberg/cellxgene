@@ -205,6 +205,7 @@ class ScanpyEngine(CXGDriver):
         if not fields:
             fields = df_axis.columns.tolist()
         annotations = DataFrame(df_axis[fields], index=df_axis.index)
+        annotations.sort_index(inplace=True)
         return {
             "names": fields,
             "data": annotations.reset_index().values.tolist()
@@ -224,6 +225,7 @@ class ScanpyEngine(CXGDriver):
         df_layout = df.obsm[f"X_{self.layout_method}"]
         normalized_layout = DataFrame((df_layout - df_layout.min()) / (df_layout.max() - df_layout.min()),
                                       index=df.obs.index)
+        normalized_layout.sort_index(inplace=True)
         return {
             "ndims": normalized_layout.shape[1],
             # reset_index gets obs' id into output
@@ -291,6 +293,7 @@ class ScanpyEngine(CXGDriver):
         """
         var_index = df.var.index.tolist()
         expression = DataFrame(df.X, index=df.obs.index)
+        expression.sort_index(inplace=True)
         return {
             "var": var_index,
             "obs": expression.reset_index().values.tolist()
