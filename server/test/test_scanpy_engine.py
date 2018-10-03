@@ -235,7 +235,25 @@ class UtilTest(unittest.TestCase):
         self.assertEqual(type(data_frame_var["var"][0]), list)
         self.assertEqual(type(data_frame_var["obs"][0]), int)
 
-
+    def test_data_single_gene(self):
+        for axis in ["obs", "var"]:
+            filter_ = {
+                "filter": {
+                    "var": {
+                        "annotation_value": [
+                            {"name": "name", "values": ["RER1"]},
+                        ]
+                    }
+                }
+            }
+            data = self.data.filter_dataframe(filter_["filter"], include_uns=False)
+            data_frame_var = self.data.data_frame(data, axis)
+            if axis == "obs":
+                self.assertEqual(type(data_frame_var["var"][0]), int)
+                self.assertEqual(type(data_frame_var["obs"][0]), list)
+            elif axis == "var":
+                self.assertEqual(type(data_frame_var["obs"][0]), int)
+                self.assertEqual(type(data_frame_var["var"][0]), list)
 
     if __name__ == '__main__':
         unittest.main()

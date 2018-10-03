@@ -289,18 +289,24 @@ class ScanpyEngine(CXGDriver):
             "obs": [cellid, var1 expression, var2 expression, ...],
         }
         """
+        var_idx = df.var.index.tolist()
+        obs_idx = df.obs.index.tolist()
+        values = df.X
+        df_shape = df.shape
+        if df_shape[0] == 1:
+            values = values[None, :]
+        elif df_shape[1] == 1:
+            values = values[:, None]
         if axis == Axis.OBS:
-            index = df.var.index.tolist()
-            expression = DataFrame(df.X, index=df.obs.index)
+            expression = DataFrame(values, index=obs_idx)
             result = {
-                "var": index,
+                "var": var_idx,
                 "obs": expression.reset_index().values.tolist()
             }
         else:
-            index = df.obs.index.tolist()
-            expression = DataFrame(df.X.transpose(), index=df.var.index)
+            expression = DataFrame(values.T, index=var_idx)
             result = {
-                "obs": index,
+                "obs": obs_idx,
                 "var": expression.reset_index().values.tolist(),
             }
         return result

@@ -334,7 +334,12 @@ class EndPoints(unittest.TestCase):
             result = self.session.put(url, headers=header, json=var_filter)
             self.assertEqual(result.status_code, 200)
             result_data = result.json()
-            self.assertEqual(len(result_data["obs"][0]), 2)
+            if axis == "obs":
+                self.assertEqual(len(result_data["obs"][0]), 2)
+                self.assertEqual(len(result_data["var"]), 1)
+            elif axis == "var":
+                self.assertEqual(len(result_data["obs"]), 2638)
+                self.assertEqual(len(result_data["var"][0]), 2639)
 
     def test_static(self):
         endpoint = "static"
