@@ -83,7 +83,7 @@ class PositiveIntervals {
 
       if (i === points.length - 1 || p[0] !== points[i + 1][0]) {
         if (aDepth === 1 && depth === 1) {
-          intervalStart = p[0];
+          [intervalStart] = p;
         } else if (intervalStart !== undefined) {
           res.push([intervalStart, p[0]]);
           intervalStart = undefined;
@@ -113,7 +113,7 @@ class PositiveIntervals {
       const p = points[i];
       depth += p[2] ? 1 : -1;
       if (depth === 2) {
-        intervalStart = p[0];
+        [intervalStart] = p;
       } else if (intervalStart !== undefined) {
         res.push([intervalStart, p[0]]);
         intervalStart = undefined;
