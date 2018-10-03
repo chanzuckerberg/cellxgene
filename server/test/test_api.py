@@ -265,71 +265,81 @@ class EndPoints(unittest.TestCase):
         self.assertEqual(len(result_data["data"]), 2)
 
     def test_get_data(self):
-        endpoint = "data/obs"
-        query = "accept-type=application/json"
-        url = f"{URL_BASE}{endpoint}?{query}"
-        result = self.session.get(url)
-        self.assertEqual(result.status_code, 200)
-        result_data = result.json()
-        self.assertEqual(len(result_data["obs"]), 2638)
+        for axis in ["obs", "var"]:
+            endpoint = f"data/{axis}"
+            query = "accept-type=application/json"
+            url = f"{URL_BASE}{endpoint}?{query}"
+            result = self.session.get(url)
+            self.assertEqual(result.status_code, 200)
+            result_data = result.json()
+            self.assertEqual(len(result_data["obs"]), 2638)
 
     def test_data_mimetype_error(self):
-        endpoint = "data/obs"
-        query = "accept-type=xxx"
-        url = f"{URL_BASE}{endpoint}?{query}"
-        result = self.session.get(url)
-        self.assertEqual(result.status_code, 406)
-        # no accept type
-        url = f"{URL_BASE}{endpoint}"
-        result = self.session.get(url)
-        self.assertEqual(result.status_code, 406)
+        for axis in ["obs", "var"]:
+            endpoint = f"data/{axis}"
+            query = "accept-type=xxx"
+            url = f"{URL_BASE}{endpoint}?{query}"
+            result = self.session.get(url)
+            self.assertEqual(result.status_code, 406)
+            # no accept type
+            url = f"{URL_BASE}{endpoint}"
+            result = self.session.get(url)
+            self.assertEqual(result.status_code, 406)
 
     def test_data_filter(self):
-        endpoint = "data/obs"
-        query = "accept-type=application/json&obs:louvain=NK cells&obs:louvain=CD8 T cells&obs:n_counts=3000,*"
-        url = f"{URL_BASE}{endpoint}?{query}"
-        result = self.session.get(url)
-        self.assertEqual(result.status_code, 200)
-        result_data = result.json()
-        self.assertEqual(len(result_data["obs"]), 38)
+        for axis in ["obs", "var"]:
+            endpoint = f"data/{axis}"
+            query = "accept-type=application/json&obs:louvain=NK cells&obs:louvain=CD8 T cells&obs:n_counts=3000,*"
+            url = f"{URL_BASE}{endpoint}?{query}"
+            result = self.session.get(url)
+            self.assertEqual(result.status_code, 200)
+            result_data = result.json()
+            self.assertEqual(len(result_data["obs"]), 38)
 
     def test_data_put(self):
-        endpoint = "data/obs"
-        url = f"{URL_BASE}{endpoint}"
-        header = {"Accept": "application/json"}
-        obs_filter = {
-            "filter": {
-                "obs": {
-                    "annotation_value": [
-                        {"name": "louvain", "values": ["NK cells", "CD8 T cells"]},
-                        {"name": "n_counts", "min": 3000},
-                    ],
-                    "index": [1, 99, [1000, 2000]]
+        for axis in ["obs", "var"]:
+            endpoint = f"data/{axis}"
+            url = f"{URL_BASE}{endpoint}"
+            header = {"Accept": "application/json"}
+            obs_filter = {
+                "filter": {
+                    "obs": {
+                        "annotation_value": [
+                            {"name": "louvain", "values": ["NK cells", "CD8 T cells"]},
+                            {"name": "n_counts", "min": 3000},
+                        ],
+                        "index": [1, 99, [1000, 2000]]
+                    }
                 }
             }
-        }
-        result = self.session.put(url, headers=header, json=obs_filter)
-        self.assertEqual(result.status_code, 200)
-        result_data = result.json()
-        self.assertEqual(len(result_data["obs"]), 15)
+            result = self.session.put(url, headers=header, json=obs_filter)
+            self.assertEqual(result.status_code, 200)
+            result_data = result.json()
+            self.assertEqual(len(result_data["obs"]), 15)
 
     def test_data_put_single_var(self):
-        endpoint = "data/obs"
-        url = f"{URL_BASE}{endpoint}"
-        header = {"Accept": "application/json"}
-        var_filter = {
-            "filter": {
-                "var": {
-                    "annotation_value": [
-                        {"name": "name", "values": ["RER1"]},
-                    ]
+        for axis in ["obs", "var"]:
+            endpoint = f"data/{axis}"
+            url = f"{URL_BASE}{endpoint}"
+            header = {"Accept": "application/json"}
+            var_filter = {
+                "filter": {
+                    "var": {
+                        "annotation_value": [
+                            {"name": "name", "values": ["RER1"]},
+                        ]
+                    }
                 }
             }
-        }
-        result = self.session.put(url, headers=header, json=var_filter)
-        self.assertEqual(result.status_code, 200)
-        result_data = result.json()
-        self.assertEqual(len(result_data["obs"][0]), 2)
+            result = self.session.put(url, headers=header, json=var_filter)
+            self.assertEqual(result.status_code, 200)
+            result_data = result.json()
+            if axis == "obs":
+                self.assertEqual(len(result_data["obs"][0]), 2)
+                self.assertEqual(len(result_data["var"]), 1)
+            elif axis == "var":
+                self.assertEqual(len(result_data["obs"]), 2638)
+                self.assertEqual(len(result_data["var"][0]), 2639)
 
     def test_static(self):
         endpoint = "static"
