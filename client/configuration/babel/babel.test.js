@@ -5,5 +5,9 @@ module.exports = {
     "stage-0",
     "react"
   ],
-  plugins: ["istanbul"]
+  plugins: [
+    "babel-plugin-transform-react-constant-elements",
+    "babel-plugin-transform-decorators-legacy",
+    "babel-plugin-transform-runtime"
+  ]
 };
