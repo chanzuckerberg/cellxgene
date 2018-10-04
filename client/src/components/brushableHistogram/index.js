@@ -49,20 +49,21 @@ class HistogramBrush extends React.Component {
 
       histogramCache.numValues = allValuesForContinuousFieldAsArray.length;
 
-    } else if (world.varDataCache[field]) {
+    } else if (kvCache.get(world.varDataCache, field)) {
       /* it's not in observations, so it's a gene, but let's check to make sure */
+      const varValues = kvCache.get(world.varDataCache, field)
 
       histogramCache.x = d3
         .scaleLinear()
-        .domain(d3.extent(world.varDataCache[field])) /* replace this if we have ranges for genes back from server like we do for annotations on cells */
+        .domain(d3.extent(varValues)) /* replace this if we have ranges for genes back from server like we do for annotations on cells */
         .range([0, this.width]);
 
       histogramCache.bins = d3
         .histogram()
         .domain(histogramCache.x.domain())
-        .thresholds(40)(world.varDataCache[field]);
+        .thresholds(40)(varValues);
 
-      histogramCache.numValues = world.varDataCache[field].length;
+      histogramCache.numValues = varValues.length;
 
     }
 
@@ -174,7 +175,7 @@ class HistogramBrush extends React.Component {
         colorAccessor: field,
         rangeMaxForColorAccessor: initializeRanges[field].range.max
       });
-    } else if (world.varDataCache[field]) {
+    } else if (kvCache.get(world.varDataCache, field)) {
       dispatch(
         actions.requestSingleGeneExpressionCountsForColoringPOST(
           field
