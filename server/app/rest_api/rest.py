@@ -158,11 +158,22 @@ class LayoutObsAPI(Resource):
                         }
                     }
                 }
-            }
+            },
+            "400": {
+                "description": "Malformed filter"
+            },
+            "403": {
+                "description": "Non-interactive request"
+            },
         }
     })
     def put(self):
-        df = current_app.data.filter_dataframe(request.get_json()["filter"])
+        try:
+            df = current_app.data.filter_dataframe(request.get_json()["filter"])
+        except KeyError:
+            return make_response("Malformed filter", HTTPStatus.BAD_REQUEST)
+        if len(df.obs.index) > current_app.data.features["layout"]["obs"]["interactiveLimit"]:
+            return make_response("Non-interactive request", HTTPStatus.FORBIDDEN)
         return make_response((jsonify({"layout": current_app.data.layout(df)})), HTTPStatus.OK)
 
 
@@ -193,6 +204,10 @@ class AnnotationsObsAPI(Resource):
                     }
 
                 }
+            },
+            "404": {
+                "description": "one or more of the annotation-name identifiers were not associated with an "
+                               "annotation name"
             }
         }
     })
@@ -238,12 +253,22 @@ class AnnotationsObsAPI(Resource):
                     }
 
                 }
+            },
+            "400": {
+                "description": "malformed filter"
+            },
+            "404": {
+                "description": "one or more of the annotation-name identifiers were not associated with an"
+                               " annotation name"
             }
         }
     })
     def put(self):
         fields = request.args.getlist("annotation-name", None)
-        df = current_app.data.filter_dataframe(request.get_json()["filter"], include_uns=False)
+        try:
+            df = current_app.data.filter_dataframe(request.get_json()["filter"], include_uns=False)
+        except KeyError:
+            return make_response("Malformed filter", HTTPStatus.BAD_REQUEST)
         try:
             annotation_response = current_app.data.annotation(df, "obs", fields)
         except KeyError:
@@ -277,6 +302,10 @@ class AnnotationsVarAPI(Resource):
                     }
 
                 }
+            },
+            "404": {
+                "description": "one or more of the annotation-name identifiers were not associated with an"
+                               " annotation name"
             }
         }
     })
@@ -320,12 +349,22 @@ class AnnotationsVarAPI(Resource):
                         ]
                     }
                 }
+            },
+            "400": {
+                "description": "malformed filter"
+            },
+            "404": {
+                "description": "one or more of the annotation-name identifiers were not associated"
+                               " with an annotation name"
             }
         }
     })
     def put(self):
         fields = request.args.getlist("annotation-name", None)
-        df = current_app.data.filter_dataframe(request.get_json()["filter"], include_uns=False)
+        try:
+            df = current_app.data.filter_dataframe(request.get_json()["filter"], include_uns=False)
+        except KeyError:
+            return make_response("Malformed filter", HTTPStatus.BAD_REQUEST)
         try:
             annotation_response = current_app.data.annotation(df, "var", fields)
         except KeyError:
@@ -383,6 +422,15 @@ class DiffExpObsAPI(Resource):
                         [1250, -2.569489, 2.655706e-63, 3.642036e-57, 383.393, 583.9],
                     ]
                 }
+            },
+            "400": {
+                "description": "malformed filter"
+            },
+            "403": {
+                "description": "non-interactive request"
+            },
+            "501": {
+                "description": "diffexp is not implemented"
             }
         }
     })
@@ -476,12 +524,21 @@ class DataObsAPI(Resource):
             filter_ = parse_filter(ImmutableMultiDict(args), current_app.data.schema['annotations'])
         except QueryStringError as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
-        df = current_app.data.filter_dataframe(filter_, include_uns=False)
-        if accept_type and accept_type[0] == "application/json":
-            return make_response((jsonify(current_app.data.data_frame(df, axis=Axis.OBS))), HTTPStatus.OK)
+        try:
+            df = current_app.data.filter_dataframe(filter_, include_uns=False)
+        except KeyError:
+            return make_response("malformed filter", HTTPStatus.BAD_REQUEST)
         # TODO support CSV
+        mime_type = "application/json"
+        if accept_type:
+            mime_type = accept_type[0]
+        elif len(request.accept_mimetypes):
+            mime_type = request.accept_mimetypes.best_match(["application/json", "text/csv"]) \
+                or request.accept_mimetypes
+        if mime_type == "application/json":
+            return make_response((jsonify(current_app.data.data_frame(df, axis=Axis.OBS))), HTTPStatus.OK)
         else:
-            return make_response(f"Unsupported accept-type: {accept_type}", HTTPStatus.NOT_ACCEPTABLE)
+            return make_response(f"Unsupported accept-type: {mime_type}", HTTPStatus.NOT_ACCEPTABLE)
 
     @swagger.doc({
         "summary": "Get data (expression values) from the dataframe.",
@@ -517,13 +574,19 @@ class DataObsAPI(Resource):
     def put(self):
         if not request.accept_mimetypes.best_match(["application/json", "text/csv"]):
             return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
-        # TODO catch error for bad filter
-        df = current_app.data.filter_dataframe(request.get_json()["filter"], include_uns=False)
-        if request.accept_mimetypes.best_match(['application/json']):
+        try:
+            df = current_app.data.filter_dataframe(request.get_json()["filter"], include_uns=False)
+        except KeyError:
+            return make_response("malformed filter", HTTPStatus.BAD_REQUEST)
+        mime_type = "application/json"
+        if len(request.accept_mimetypes):
+            mime_type = request.accept_mimetypes.best_match(["application/json", "text/csv"]) \
+                or request.accept_mimetypes
+        if mime_type == "application/json":
             return make_response((jsonify(current_app.data.data_frame(df, axis=Axis.OBS))), HTTPStatus.OK)
         # TODO support CSV
         else:
-            return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
+            return make_response(f"Unsupported MIME type '{mime_type}'", HTTPStatus.NOT_ACCEPTABLE)
 
 
 class DataVarAPI(Resource):
@@ -572,12 +635,20 @@ class DataVarAPI(Resource):
             filter_ = parse_filter(ImmutableMultiDict(args), current_app.data.schema['annotations'])
         except QueryStringError as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
-        df = current_app.data.filter_dataframe(filter_, include_uns=False)
-        if accept_type and accept_type[0] == "application/json":
+        try:
+            df = current_app.data.filter_dataframe(filter_, include_uns=False)
+        except KeyError:
+            return make_response("malformed filter", HTTPStatus.BAD_REQUEST)
+        mime_type = "application/json"
+        if accept_type:
+            mime_type = accept_type[0]
+        elif len(request.accept_mimetypes):
+            mime_type = request.accept_mimetypes.best_match(["application/json", "text/csv"]) \
+                or request.accept_mimetypes
+        if mime_type == "application/json":
             return make_response((jsonify(current_app.data.data_frame(df, axis=Axis.VAR))), HTTPStatus.OK)
-        # TODO support CSV
         else:
-            return make_response(f"Unsupported accept-type: {accept_type}", HTTPStatus.NOT_ACCEPTABLE)
+            return make_response(f"Unsupported accept-type: {mime_type}", HTTPStatus.NOT_ACCEPTABLE)
 
     @swagger.doc({
         "summary": "Get data (expression values) from the dataframe.",
@@ -613,13 +684,19 @@ class DataVarAPI(Resource):
     def put(self):
         if not request.accept_mimetypes.best_match(["application/json", "text/csv"]):
             return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
-        # TODO catch error for bad filter
-        df = current_app.data.filter_dataframe(request.get_json()["filter"], include_uns=False)
-        if request.accept_mimetypes.best_match(['application/json']):
+        try:
+            df = current_app.data.filter_dataframe(request.get_json()["filter"], include_uns=False)
+        except KeyError:
+            return make_response("malformed filter", HTTPStatus.BAD_REQUEST)
+        mime_type = "application/json"
+        if len(request.accept_mimetypes):
+            mime_type = request.accept_mimetypes.best_match(["application/json", "text/csv"]) \
+                or request.accept_mimetypes
+        if mime_type == "application/json":
             return make_response((jsonify(current_app.data.data_frame(df, axis=Axis.VAR))), HTTPStatus.OK)
         # TODO support CSV
         else:
-            return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
+            return make_response(f"Unsupported MIME type '{mime_type}'", HTTPStatus.NOT_ACCEPTABLE)
 
 
 def get_api_resources():
