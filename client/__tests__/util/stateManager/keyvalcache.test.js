@@ -161,10 +161,9 @@ describe("flush", () => {
     */
 
     // set minTTL to 1 ms
-    let kvc = kvCache.create(0, 1);
+    let kvc = kvCache.create(0, 10);
     kvc = kvCache.set(kvc, "a", []);
-    // delay for 2ish ms
-    await timeout(2);
+    await timeout(20);
     ["b", "c"].forEach(k => {
       kvc = kvCache.set(kvc, k, []);
     });
@@ -188,10 +187,10 @@ describe("flush", () => {
     */
 
     // set lowwatermark to 3, minTTL to 1 ms
-    let kvc = kvCache.create(3, 1);
+    let kvc = kvCache.create(3, 10);
     kvc = kvCache.set(kvc, "a", []);
     // delay
-    await timeout(10);
+    await timeout(20);
     ["b", "c"].forEach(k => {
       kvc = kvCache.set(kvc, k, []);
     });
