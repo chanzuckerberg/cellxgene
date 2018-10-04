@@ -7,6 +7,16 @@ LOCAL_URL = "http://127.0.0.1:5005/"
 VERSION = "v0.2"
 URL_BASE = f"{LOCAL_URL}api/{VERSION}/"
 
+BAD_FILTER = {
+            "filter": {
+                "obs": {
+                    "annotation_value": [
+                        {"name": "xyz"},
+                    ],
+                }
+            }
+        }
+
 
 class EndPoints(unittest.TestCase):
     """Test Case for endpoints"""
@@ -76,6 +86,19 @@ class EndPoints(unittest.TestCase):
         self.assertEqual(result.status_code, 200)
         result_data = result.json()
         self.assertEqual(len(result_data["layout"]["coordinates"]), 15)
+
+    def test_bad_filter(self):
+        endpoints = [
+            "layout/obs" ,
+            "annotations/obs",
+            "annotations/var",
+            "data/obs",
+            "data/var"
+        ]
+        for endpoint in endpoints:
+            url = f"{URL_BASE}{endpoint}"
+            result = self.session.put(url, json=BAD_FILTER)
+            self.assertEqual(result.status_code, 400)
 
     def test_get_annotations_obs(self):
         endpoint = "annotations/obs"
@@ -281,10 +304,17 @@ class EndPoints(unittest.TestCase):
             url = f"{URL_BASE}{endpoint}?{query}"
             result = self.session.get(url)
             self.assertEqual(result.status_code, 406)
-            # # no accept type
-            # url = f"{URL_BASE}{endpoint}"
-            # result = self.session.get(url)
-            # self.assertEqual(result.status_code, 406)
+            url = f"{URL_BASE}{endpoint}"
+            header = {"Accept": "sdkljfa;dsjalkj"}
+            result = self.session.get(url, headers=header)
+            self.assertEqual(result.status_code, 406)
+
+    def test_json_default(self):
+        for axis in ["obs", "var"]:
+            endpoint = f"data/{axis}"
+            url = f"{URL_BASE}{endpoint}"
+            result = self.session.get(url)
+            self.assertEqual(result.status_code, 200)
 
     def test_data_filter(self):
         for axis in ["obs", "var"]:
