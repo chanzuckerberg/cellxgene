@@ -10,3 +10,24 @@ class Float32JSONEncoder(json.JSONEncoder):
         elif isinstance(obj, integer):
             return int(obj)
         return json.JSONEncoder.default(self, obj)
+
+
+class MimeTypeError(Exception):
+
+    def __init__(self, message):
+        self.message = message
+
+
+def get_mime_type(default="application/json", acceptable_types=["application/json", "text/csv"], query_param=None,
+                  header=None):
+    mime_type = default
+    if query_param:
+        if query_param in acceptable_types:
+            mime_type = query_param
+        else:
+            raise MimeTypeError(f"Unsupported mime type {query_param}")
+    elif len(header):
+        mime_type = header.best_match(acceptable_types)
+        if not mime_type:
+            raise MimeTypeError(f"Unsupported mime type(s) {header}")
+    return mime_type
