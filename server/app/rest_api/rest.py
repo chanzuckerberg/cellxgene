@@ -206,7 +206,7 @@ class AnnotationsObsAPI(Resource):
 
                 }
             },
-            "404": {
+            "400": {
                 "description": "one or more of the annotation-name identifiers were not associated with an "
                                "annotation name"
             }
@@ -217,7 +217,7 @@ class AnnotationsObsAPI(Resource):
         try:
             annotation_response = current_app.data.annotation(current_app.data.data, "obs", fields)
         except KeyError:
-            return make_response(f"Error bad key in {fields}", HTTPStatus.NOT_FOUND)
+            return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
         return make_response(jsonify(annotation_response), HTTPStatus.OK)
 
     @swagger.doc({
@@ -256,11 +256,8 @@ class AnnotationsObsAPI(Resource):
                 }
             },
             "400": {
-                "description": "malformed filter"
-            },
-            "404": {
-                "description": "one or more of the annotation-name identifiers were not associated with an"
-                               " annotation name"
+                "description": "malformed filter or one or more of the annotation-name identifiers were"
+                               "not associated with an annotation name"
             }
         }
     })
@@ -273,7 +270,7 @@ class AnnotationsObsAPI(Resource):
         try:
             annotation_response = current_app.data.annotation(df, "obs", fields)
         except KeyError:
-            return make_response(f"Error bad key in {fields}", HTTPStatus.NOT_FOUND)
+            return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
         return make_response(jsonify(annotation_response), HTTPStatus.OK)
 
 
@@ -304,7 +301,7 @@ class AnnotationsVarAPI(Resource):
 
                 }
             },
-            "404": {
+            "400": {
                 "description": "one or more of the annotation-name identifiers were not associated with an"
                                " annotation name"
             }
@@ -315,7 +312,7 @@ class AnnotationsVarAPI(Resource):
         try:
             annotation_response = current_app.data.annotation(current_app.data.data, "var", fields)
         except KeyError:
-            return make_response(f"Error bad key in {fields}", HTTPStatus.NOT_FOUND)
+            return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
         return make_response(jsonify(annotation_response), HTTPStatus.OK)
 
     @swagger.doc({
@@ -352,11 +349,8 @@ class AnnotationsVarAPI(Resource):
                 }
             },
             "400": {
-                "description": "malformed filter"
-            },
-            "404": {
-                "description": "one or more of the annotation-name identifiers were not associated"
-                               " with an annotation name"
+                "description": "malformed filter or one or more of the annotation-name identifiers were"
+                               "not associated with an annotation name"
             }
         }
     })
@@ -369,7 +363,7 @@ class AnnotationsVarAPI(Resource):
         try:
             annotation_response = current_app.data.annotation(df, "var", fields)
         except KeyError:
-            return make_response(f"Error bad key in {fields}", HTTPStatus.NOT_FOUND)
+            return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
         return make_response(jsonify(annotation_response), HTTPStatus.OK)
 
 

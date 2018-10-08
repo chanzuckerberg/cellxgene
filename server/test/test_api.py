@@ -127,7 +127,7 @@ class EndPoints(unittest.TestCase):
         query = "annotation-name=notakey"
         url = f"{URL_BASE}{endpoint}?{query}"
         result = self.session.get(url)
-        self.assertEqual(result.status_code, HTTPStatus.NOT_FOUND)
+        self.assertEqual(result.status_code, HTTPStatus.BAD_REQUEST)
 
     def test_put_annotations_obs(self):
         endpoint = "annotations/obs"
@@ -249,7 +249,7 @@ class EndPoints(unittest.TestCase):
         query = "annotation-name=notakey"
         url = f"{URL_BASE}{endpoint}?{query}"
         result = self.session.get(url)
-        self.assertEqual(result.status_code, HTTPStatus.NOT_FOUND)
+        self.assertEqual(result.status_code, HTTPStatus.BAD_REQUEST)
 
     def test_put_annotations_var(self):
         endpoint = "annotations/var"
