@@ -302,7 +302,7 @@ Observations and variables are guaranteed to have a `name` annotation, which sho
 - 200 Success
 - 404 Not Found - one or more of the names specified with `annotation-name` are not associated with an annotation.
 
-**Response body:** annotation description and values. Values conform to the schema returned by `/schema` and each record begins with the observation or variable index. Where the specific value is not defined, `null`will be returned.
+**Response body:** annotation description and values. Values conform to the schema returned by `/schema` and each record begins with the observation or variable index. Where the specific value is not defined, `null`will be returned. Values will be sorted by index.
 
 Example:
 
@@ -369,7 +369,7 @@ Get data from the dataframe (ie expression values), optionally sub-selected by a
 - 406 - Not Acceptable (accept-type unacceptable MIME type)
 - 400 - Bad Request - malformed filter
 
-**Response body:** contents of the filtered dataframe, in primary-axis-major order, encoded as a dense matrix (eg, `/data/obs` will return data by observation). Data is preceded by a list of secondary axis indices, using the same index encoding as Index Filters (ie, an array of indices and/or index ranges). In JSON, this will be encoded as an array of indices with key obs or var; in CSV, this will be the header of the CSV response body.
+**Response body:** contents of the filtered dataframe, in primary-axis-major order, encoded as a dense matrix (eg, `/data/obs` will return data by observation). Data is preceded by a list of secondary axis indices, using the same index encoding as Index Filters (ie, an array of indices and/or index ranges). In JSON, this will be encoded as an array of indices with key obs or var; in CSV, this will be the header of the CSV response body. In both encodings, data will be sorted by index (both primary and secondary axis).
 
 Example JSON response to a request which has filtered by annotation value:
 
@@ -428,7 +428,7 @@ If re-clustering is not supported by the server, must return an HTTP 501 respons
 
 **Response body:**
 
-- For 200 Success, returns numeric cluster ID for each observation or variable, organized as an array of `[index, clusterId]`:
+- For 200 Success, returns numeric cluster ID for each observation or variable, organized as an array of `[index, clusterId]`, an sorted by index:
 
   ```
   {
@@ -446,7 +446,7 @@ If re-clustering is not supported by the server, must return an HTTP 501 respons
 
 Get the _default_ layout for all observations or (_future_) all variables. Return dimensionality of layout and a coordinate list. The client must be prepared to accept dimensionality different than it natively displays, and should perform a best-effort attempt to display the higher dimensionality layout (eg, create a 2D view of a 3D layout).
 
-**Response body:** dimensionality and coordinate list for each observation or variable, where coordinates are encoded as floats [0,1]. Example 2D response:
+**Response body:** dimensionality and coordinate list for each observation or variable, where coordinates are encoded as floats [0,1], sorted by index. Example 2D response:
 
 ```
 {
