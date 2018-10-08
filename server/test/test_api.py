@@ -1,11 +1,23 @@
-import requests
+from http import HTTPStatus
 from subprocess import Popen
 import unittest
 import time
 
+import requests
+
 LOCAL_URL = "http://127.0.0.1:5005/"
 VERSION = "v0.2"
 URL_BASE = f"{LOCAL_URL}api/{VERSION}/"
+
+BAD_FILTER = {
+            "filter": {
+                "obs": {
+                    "annotation_value": [
+                        {"name": "xyz"},
+                    ],
+                }
+            }
+        }
 
 
 class EndPoints(unittest.TestCase):
@@ -35,7 +47,7 @@ class EndPoints(unittest.TestCase):
         endpoint = "schema"
         url = f"{URL_BASE}{endpoint}"
         result = self.session.get(url)
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
         result_data = result.json()
         self.assertEqual(result_data["schema"]["dataframe"]["nObs"], 2638)
         self.assertEqual(len(result_data["schema"]["annotations"]["obs"]), 5)
@@ -44,7 +56,7 @@ class EndPoints(unittest.TestCase):
         endpoint = "config"
         url = f"{URL_BASE}{endpoint}"
         result = self.session.get(url)
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
         result_data = result.json()
         self.assertEqual(result_data["config"]["displayNames"]["dataset"], "example-dataset")
         self.assertEqual(len(result_data["config"]["features"]), 4)
@@ -53,7 +65,7 @@ class EndPoints(unittest.TestCase):
         endpoint = "layout/obs"
         url = f"{URL_BASE}{endpoint}"
         result = self.session.get(url)
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
         result_data = result.json()
         self.assertEqual(result_data["layout"]["ndims"], 2)
         self.assertEqual(len(result_data["layout"]["coordinates"]), 2638)
@@ -73,15 +85,28 @@ class EndPoints(unittest.TestCase):
             }
         }
         result = self.session.post(url, json=obs_filter)
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
         result_data = result.json()
         self.assertEqual(len(result_data["layout"]["coordinates"]), 15)
+
+    def test_bad_filter(self):
+        endpoints = {
+            "layout/obs": "post",
+            "annotations/obs": "put",
+            "annotations/var": "put",
+            "data/obs": "put",
+            "data/var": "put"
+        }
+        for endpoint, method in endpoints.items():
+            url = f"{URL_BASE}{endpoint}"
+            result = getattr(self.session, method)(url, json=BAD_FILTER)
+            self.assertEqual(result.status_code, HTTPStatus.BAD_REQUEST)
 
     def test_get_annotations_obs(self):
         endpoint = "annotations/obs"
         url = f"{URL_BASE}{endpoint}"
         result = self.session.get(url)
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
         result_data = result.json()
         self.assertEqual(result_data["names"], ["n_genes", "percent_mito", "n_counts", "louvain", "name"])
         self.assertEqual(len(result_data["data"]), 2638)
@@ -92,7 +117,7 @@ class EndPoints(unittest.TestCase):
         query = "annotation-name=n_genes&annotation-name=percent_mito"
         url = f"{URL_BASE}{endpoint}?{query}"
         result = self.session.get(url)
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
         result_data = result.json()
         self.assertEqual(result_data["names"], ["n_genes", "percent_mito"])
         self.assertEqual(len(result_data["data"][0]), 3)
@@ -102,7 +127,7 @@ class EndPoints(unittest.TestCase):
         query = "annotation-name=notakey"
         url = f"{URL_BASE}{endpoint}?{query}"
         result = self.session.get(url)
-        self.assertEqual(result.status_code, 404)
+        self.assertEqual(result.status_code, HTTPStatus.BAD_REQUEST)
 
     def test_put_annotations_obs(self):
         endpoint = "annotations/obs"
@@ -119,7 +144,7 @@ class EndPoints(unittest.TestCase):
             }
         }
         result = self.session.put(url, json=obs_filter)
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
         result_data = result.json()
         self.assertEqual(result_data["names"], ["n_genes", "percent_mito", "n_counts", "louvain", "name"])
         self.assertEqual(len(result_data["data"]), 15)
@@ -140,7 +165,7 @@ class EndPoints(unittest.TestCase):
             }
         }
         result = self.session.put(url, json=obs_filter)
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
         result_data = result.json()
         self.assertEqual(result_data["names"], ["n_genes", "percent_mito"])
         self.assertEqual(len(result_data["data"][0]), 3)
@@ -170,7 +195,7 @@ class EndPoints(unittest.TestCase):
             "count": 7
         }
         result = self.session.post(url, json=params)
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
         result_data = result.json()
         self.assertEqual(len(result_data), 7)
 
@@ -195,7 +220,7 @@ class EndPoints(unittest.TestCase):
             }
         }
         result = self.session.post(url, json=params)
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
         result_data = result.json()
         self.assertEqual(len(result_data), 10)
 
@@ -203,7 +228,7 @@ class EndPoints(unittest.TestCase):
         endpoint = "annotations/var"
         url = f"{URL_BASE}{endpoint}"
         result = self.session.get(url)
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
         result_data = result.json()
         self.assertEqual(result_data["names"], ["n_cells", "name"])
         self.assertEqual(len(result_data["data"]), 1838)
@@ -214,7 +239,7 @@ class EndPoints(unittest.TestCase):
         query = "annotation-name=n_cells"
         url = f"{URL_BASE}{endpoint}?{query}"
         result = self.session.get(url)
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
         result_data = result.json()
         self.assertEqual(result_data["names"], ["n_cells"])
         self.assertEqual(len(result_data["data"][0]), 2)
@@ -224,7 +249,7 @@ class EndPoints(unittest.TestCase):
         query = "annotation-name=notakey"
         url = f"{URL_BASE}{endpoint}?{query}"
         result = self.session.get(url)
-        self.assertEqual(result.status_code, 404)
+        self.assertEqual(result.status_code, HTTPStatus.BAD_REQUEST)
 
     def test_put_annotations_var(self):
         endpoint = "annotations/var"
@@ -239,7 +264,7 @@ class EndPoints(unittest.TestCase):
             }
         }
         result = self.session.put(url, json=var_filter)
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
         result_data = result.json()
         self.assertEqual(result_data["names"], ["n_cells", "name"])
         self.assertEqual(len(result_data["data"]), 2)
@@ -258,7 +283,7 @@ class EndPoints(unittest.TestCase):
             }
         }
         result = self.session.put(url, json=var_filter)
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
         result_data = result.json()
         self.assertEqual(result_data["names"], ["n_cells"])
         self.assertEqual(len(result_data["data"][0]), 2)
@@ -270,7 +295,7 @@ class EndPoints(unittest.TestCase):
             query = "accept-type=application/json"
             url = f"{URL_BASE}{endpoint}?{query}"
             result = self.session.get(url)
-            self.assertEqual(result.status_code, 200)
+            self.assertEqual(result.status_code, HTTPStatus.OK)
             result_data = result.json()
             self.assertEqual(len(result_data["obs"]), 2638)
 
@@ -280,11 +305,18 @@ class EndPoints(unittest.TestCase):
             query = "accept-type=xxx"
             url = f"{URL_BASE}{endpoint}?{query}"
             result = self.session.get(url)
-            self.assertEqual(result.status_code, 406)
-            # no accept type
+            self.assertEqual(result.status_code, HTTPStatus.NOT_ACCEPTABLE)
+            url = f"{URL_BASE}{endpoint}"
+            header = {"Accept": "sdkljfa;dsjalkj"}
+            result = self.session.get(url, headers=header)
+            self.assertEqual(result.status_code, HTTPStatus.NOT_ACCEPTABLE)
+
+    def test_json_default(self):
+        for axis in ["obs", "var"]:
+            endpoint = f"data/{axis}"
             url = f"{URL_BASE}{endpoint}"
             result = self.session.get(url)
-            self.assertEqual(result.status_code, 406)
+            self.assertEqual(result.status_code, HTTPStatus.OK)
 
     def test_data_filter(self):
         for axis in ["obs", "var"]:
@@ -292,7 +324,7 @@ class EndPoints(unittest.TestCase):
             query = "accept-type=application/json&obs:louvain=NK cells&obs:louvain=CD8 T cells&obs:n_counts=3000,*"
             url = f"{URL_BASE}{endpoint}?{query}"
             result = self.session.get(url)
-            self.assertEqual(result.status_code, 200)
+            self.assertEqual(result.status_code, HTTPStatus.OK)
             result_data = result.json()
             self.assertEqual(len(result_data["obs"]), 38)
 
@@ -313,7 +345,7 @@ class EndPoints(unittest.TestCase):
                 }
             }
             result = self.session.put(url, headers=header, json=obs_filter)
-            self.assertEqual(result.status_code, 200)
+            self.assertEqual(result.status_code, HTTPStatus.OK)
             result_data = result.json()
             self.assertEqual(len(result_data["obs"]), 15)
 
@@ -332,7 +364,7 @@ class EndPoints(unittest.TestCase):
                 }
             }
             result = self.session.put(url, headers=header, json=var_filter)
-            self.assertEqual(result.status_code, 200)
+            self.assertEqual(result.status_code, HTTPStatus.OK)
             result_data = result.json()
             if axis == "obs":
                 self.assertEqual(len(result_data["obs"][0]), 2)
@@ -346,4 +378,4 @@ class EndPoints(unittest.TestCase):
         file = "js/service-worker.js"
         url = f"{LOCAL_URL}{endpoint}/{file}"
         result = self.session.get(url)
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.status_code, HTTPStatus.OK)

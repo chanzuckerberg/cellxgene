@@ -300,7 +300,7 @@ Observations and variables are guaranteed to have a `name` annotation, which sho
 **Response code:**
 
 - 200 Success
-- 404 Not Found - one or more of the names specified with `annotation-name` are not associated with an annotation.
+- 400 Bad Request - one or more of the names specified with `annotation-name` are not associated with an annotation.
 
 **Response body:** annotation description and values. Values conform to the schema returned by `/schema` and each record begins with the observation or variable index. Where the specific value is not defined, `null`will be returned. Values will be sorted by index.
 
@@ -342,8 +342,7 @@ Same as the `GET /annotations` routes, with additional ability to filter by obse
 **Response code:**
 
 - 200 Success
-- 400 Bad Request - malformed filter
-- 404 Not Found - one or more of the annotation-name identifiers were not associated with an annotation name.
+- 400 Bad Request - malformed filter or one or more of the annotation-name identifiers were not associated with an annotation name.
 
 **Response body:**
 
