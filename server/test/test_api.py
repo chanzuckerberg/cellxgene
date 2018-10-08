@@ -72,7 +72,7 @@ class EndPoints(unittest.TestCase):
                 }
             }
         }
-        result = self.session.put(url, json=obs_filter)
+        result = self.session.post(url, json=obs_filter)
         self.assertEqual(result.status_code, 200)
         result_data = result.json()
         self.assertEqual(len(result_data["layout"]["coordinates"]), 15)
