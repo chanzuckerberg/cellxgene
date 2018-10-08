@@ -73,12 +73,16 @@ def main():
         "--bind-all",
         help="Bind to all interfaces (this makes the server accessible beyond this computer)",
         action="store_true")
-    subparsers = parser.add_subparsers(dest="cellxgene_command")
+    subparsers = parser.add_subparsers(dest="engine")
+    subparsers.required = True
     try:
         from .scanpy_engine.scanpy_engine import ScanpyEngine
     except ImportError:
+        warnings.simplefilter('default', ImportWarning)  # Enable ImportWarning
         warnings.warn("Scanpy engine not available", ImportWarning)
     else:
         ScanpyEngine.add_to_parser(subparsers, run_scanpy)
+    if len(subparsers.choices) == 0:
+        raise ImportError('Could not import any engines, see warnings above')
     args = parser.parse_args()
     args.func(args)

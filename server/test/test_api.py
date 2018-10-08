@@ -84,22 +84,22 @@ class EndPoints(unittest.TestCase):
                 }
             }
         }
-        result = self.session.put(url, json=obs_filter)
+        result = self.session.post(url, json=obs_filter)
         self.assertEqual(result.status_code, HTTPStatus.OK)
         result_data = result.json()
         self.assertEqual(len(result_data["layout"]["coordinates"]), 15)
 
     def test_bad_filter(self):
-        endpoints = [
-            "layout/obs" ,
-            "annotations/obs",
-            "annotations/var",
-            "data/obs",
-            "data/var"
-        ]
-        for endpoint in endpoints:
+        endpoints = {
+            "layout/obs": "post",
+            "annotations/obs": "put",
+            "annotations/var": "put",
+            "data/obs": "put",
+            "data/var": "put"
+        }
+        for endpoint, method in endpoints.items():
             url = f"{URL_BASE}{endpoint}"
-            result = self.session.put(url, json=BAD_FILTER)
+            result = getattr(self.session, method)(url, json=BAD_FILTER)
             self.assertEqual(result.status_code, HTTPStatus.BAD_REQUEST)
 
     def test_get_annotations_obs(self):

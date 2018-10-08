@@ -168,7 +168,7 @@ class LayoutObsAPI(Resource):
             },
         }
     })
-    def put(self):
+    def post(self):
         try:
             df = current_app.data.filter_dataframe(request.get_json()["filter"])
         except KeyError:

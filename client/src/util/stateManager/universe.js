@@ -116,7 +116,6 @@ function RESTv02AnnotationsResponseToInternal(response) {
   const keys = ["__index__", ...names];
   return _(data)
     .map(obs => _.zipObject(keys, obs))
-    .sortBy("__index__")
     .value();
 }
 
