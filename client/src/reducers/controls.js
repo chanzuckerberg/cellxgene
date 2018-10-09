@@ -35,7 +35,7 @@ const Controls = (
     categoricalAsBooleansMap: null,
     crossfilter: null,
     dimensionMap: null,
-    dimensionMapVar: {},
+    userDefinedGenes: [],
 
     colorAccessor: null,
     colorScale: null,
@@ -116,12 +116,7 @@ const Controls = (
       };
     }
     case "expression load success": {
-      const {
-        world,
-        universe,
-        crossfilter,
-        dimensionMap,
-      } = state;
+      const { world, universe, crossfilter, dimensionMap } = state;
       let universeVarDataCache = universe.varDataCache;
       let worldVarDataCache = world.varDataCache;
       _.forEach(action.expressionData, (val, key) => {
@@ -137,6 +132,7 @@ const Controls = (
 
       _.forEach(action.expressionData, (val, key) => {
         dimensionMap[key] = World.createVarDimension(
+          /* "__var__" + */
           world,
           worldVarDataCache,
           crossfilter,
@@ -156,6 +152,48 @@ const Controls = (
         }
       };
     }
+    case "clear differential expression":
+      const { world, universe, crossfilter, dimensionMap } = state;
+      const _dimensionMap = dimensionMap;
+      let universeVarDataCache = universe.varDataCache;
+      let worldVarDataCache = world.varDataCache;
+
+      _.forEach(action.diffExp, values => {
+        const name = world.varAnnotations[values[0]].name;
+        // clean up crossfilter dimensions
+        const filterID = dimensionMap[name];
+        const dimension = crossfilter.filters.find(d => {
+          return (d.id = filterID);
+        });
+        dimension.dim.dispose();
+
+        // clean up dimensionsMap
+        delete _dimensionMap[name];
+        // clean up the varDataCaches
+        delete universeVarDataCache[name];
+        delete worldVarDataCache[name];
+      });
+      return {
+        ...state,
+        dimensionMap: _dimensionMap,
+        universe: {
+          ...universe,
+          varDataCache: universeVarDataCache
+        },
+        world: {
+          ...world,
+          varDataCache: worldVarDataCache
+        }
+      };
+    case "user defined gene":
+      const newUserDefinedGenes = state.userDefinedGenes.slice();
+      newUserDefinedGenes.push(action.data);
+      return {
+        ...state,
+        userDefinedGenes: newUserDefinedGenes
+      };
+    case "clear user defined gene":
+
     case "expression load error":
     case "initial data load error": {
       return {
