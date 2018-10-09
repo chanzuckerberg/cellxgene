@@ -185,15 +185,35 @@ const Controls = (
           varDataCache: worldVarDataCache
         }
       };
-    case "user defined gene":
+    case "user defined gene": {
       const newUserDefinedGenes = state.userDefinedGenes.slice();
       newUserDefinedGenes.push(action.data);
       return {
         ...state,
         userDefinedGenes: newUserDefinedGenes
       };
-    case "clear user defined gene":
-
+    }
+    case "clear user defined gene": {
+      const { userDefinedGenes } = state;
+      const newUserDefinedGenes = _.filter(userDefinedGenes, d => {
+        return d !== action.data;
+      });
+      return {
+        ...state,
+        userDefinedGenes: newUserDefinedGenes
+      };
+    }
+    case "reset colorscale": {
+      const { world } = state;
+      const colorName = new Array(world.nObs).fill(globals.defaultCellColor);
+      const colorRGB = _.map(colorName, c => parseRGB(c));
+      return {
+        ...state,
+        colorName,
+        colorRGB,
+        colorAccessor: null
+      };
+    }
     case "expression load error":
     case "initial data load error": {
       return {

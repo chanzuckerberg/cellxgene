@@ -184,8 +184,21 @@ class HistogramBrush extends React.Component {
     }
   }
 
+  removeHistogram() {
+    const { dispatch, field, colorAccessor } = this.props;
+    dispatch({
+      type: "clear user defined gene",
+      data: field
+    });
+    if (field === colorAccessor) {
+      dispatch({
+        type: "reset colorscale"
+      });
+    }
+  }
+
   render() {
-    const { field, ranges, colorAccessor } = this.props;
+    const { field, ranges, colorAccessor, isUserDefined } = this.props;
 
     return (
       <div
@@ -195,7 +208,22 @@ class HistogramBrush extends React.Component {
         }}
         id={`histogram_${field}`}
       >
-        <p style={{ fontSize: globals.tiniestFontSize }}> {field} </p>
+        <div>
+          <span style={{ fontSize: globals.tiniestFontSize }}> {field} </span>
+          {isUserDefined ? (
+            <span
+              onClick={this.removeHistogram.bind(this)}
+              style={{
+                fontSize: globals.tiniestFontSize,
+                color: globals.blue,
+                cursor: "pointer",
+                marginLeft: 7
+              }}
+            >
+              remove
+            </span>
+          ) : null}
+        </div>
         <svg
           width={this.width}
           height={this.height}
