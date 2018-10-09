@@ -7,7 +7,7 @@ https://bl.ocks.org/SpaceActuary/2f004899ea1b2bd78d6f1dbb2febf771
 import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
-import { kvCache } from "../../util/stateManager/"
+import { kvCache } from "../../util/stateManager/";
 import FaPaintBrush from "react-icons/lib/fa/paint-brush";
 import * as d3 from "d3";
 import memoize from "memoize-one";
@@ -24,7 +24,7 @@ import actions from "../../actions";
 }))
 class HistogramBrush extends React.Component {
   calcHistogramCache = memoize((obsAnnotations, field, ranges) => {
-    const { world } = this.props
+    const { world } = this.props;
     const histogramCache = {};
 
     histogramCache.y = d3
@@ -33,7 +33,6 @@ class HistogramBrush extends React.Component {
     // .range([height - margin.bottom, margin.top]);
 
     if (obsAnnotations[0][field]) {
-
       // recalculate expensive stuff
       const allValuesForContinuousFieldAsArray = _.map(obsAnnotations, field);
 
@@ -48,14 +47,15 @@ class HistogramBrush extends React.Component {
         .thresholds(40)(allValuesForContinuousFieldAsArray);
 
       histogramCache.numValues = allValuesForContinuousFieldAsArray.length;
-
     } else if (kvCache.get(world.varDataCache, field)) {
       /* it's not in observations, so it's a gene, but let's check to make sure */
-      const varValues = kvCache.get(world.varDataCache, field)
+      const varValues = kvCache.get(world.varDataCache, field);
 
       histogramCache.x = d3
         .scaleLinear()
-        .domain(d3.extent(varValues)) /* replace this if we have ranges for genes back from server like we do for annotations on cells */
+        .domain(
+          d3.extent(varValues)
+        ) /* replace this if we have ranges for genes back from server like we do for annotations on cells */
         .range([0, this.width]);
 
       histogramCache.bins = d3
@@ -64,10 +64,7 @@ class HistogramBrush extends React.Component {
         .thresholds(40)(varValues);
 
       histogramCache.numValues = varValues.length;
-
     }
-
-
 
     return histogramCache;
   });
@@ -141,13 +138,13 @@ class HistogramBrush extends React.Component {
         .append("g")
         .attr("class", "axis axis--x")
         .attr("transform", `translate(0,${this.height - this.marginBottom})`)
-        .call(d3.axisBottom(x).ticks(5))
-        .append("text")
-        .attr("x", this.width - 2)
-        .attr("y", -6)
-        .attr("fill", "#000")
-        .attr("text-anchor", "end")
-        .text(field);
+        .call(d3.axisBottom(x).ticks(5));
+      // .append("text")
+      // .attr("x", this.width - 2)
+      // .attr("y", -6)
+      // .attr("fill", "#000")
+      // // .attr("text-anchor", "end")
+      // // .text(field);
 
       d3.select(svgRef)
         .selectAll(".axis--x text")
@@ -167,7 +164,14 @@ class HistogramBrush extends React.Component {
   }
 
   handleColorAction() {
-    const { obsAnnotations, ranges, dispatch, field, world, initializeRanges } = this.props;
+    const {
+      obsAnnotations,
+      ranges,
+      dispatch,
+      field,
+      world,
+      initializeRanges
+    } = this.props;
 
     if (obsAnnotations[0][field]) {
       dispatch({
@@ -176,17 +180,11 @@ class HistogramBrush extends React.Component {
         rangeMaxForColorAccessor: initializeRanges[field].range.max
       });
     } else if (kvCache.get(world.varDataCache, field)) {
-      dispatch(
-        actions.requestSingleGeneExpressionCountsForColoringPOST(
-          field
-        )
-      );
+      dispatch(actions.requestSingleGeneExpressionCountsForColoringPOST(field));
     }
-
   }
 
   render() {
-
     const { field, ranges, colorAccessor } = this.props;
 
     return (
@@ -197,17 +195,14 @@ class HistogramBrush extends React.Component {
         }}
         id={`histogram_${field}`}
       >
+        <p style={{ fontSize: globals.tiniestFontSize }}> {field} </p>
         <svg
           width={this.width}
           height={this.height}
           ref={svgRef => {
             this.drawHistogram(svgRef);
           }}
-        >
-          {ranges.min}
-          {" to "}
-          {ranges.max}
-        </svg>
+        />
         <span
           onClick={this.handleColorAction.bind(this)}
           style={{
