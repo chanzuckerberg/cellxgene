@@ -10,7 +10,7 @@ from werkzeug.datastructures import ImmutableMultiDict
 from server.app.util.constants import Axis, DiffExpMode
 from server.app.util.filter import parse_filter, QueryStringError
 from server.app.util.models import FilterModel
-from server.app.util.utils import MimeTypeError, get_mime_type
+from server.app.util.utils import MimeTypeError, get_mime_type, var_index, obs_index
 
 
 class SchemaAPI(Resource):
@@ -132,7 +132,8 @@ class LayoutObsAPI(Resource):
         }
     })
     def get(self):
-        return make_response((jsonify({"layout": current_app.data.layout(current_app.data.data)})), HTTPStatus.OK)
+        return make_response(jsonify({"layout": current_app.data.layout(current_app.data.data)}),
+                             HTTPStatus.OK)
 
     @swagger.doc({
         "summary": "Observation layout for filtered subset.",
@@ -175,7 +176,9 @@ class LayoutObsAPI(Resource):
             return make_response("Malformed filter", HTTPStatus.BAD_REQUEST)
         if len(df.obs.index) > current_app.data.features["layout"]["obs"]["interactiveLimit"]:
             return make_response("Non-interactive request", HTTPStatus.FORBIDDEN)
-        return make_response((jsonify({"layout": current_app.data.layout(df)})), HTTPStatus.OK)
+        return make_response(
+            (jsonify({"layout": current_app.data.layout(df, var_index=var_index(df), obs_index=obs_index(df))})),
+            HTTPStatus.OK)
 
 
 class AnnotationsObsAPI(Resource):
@@ -215,7 +218,7 @@ class AnnotationsObsAPI(Resource):
     def get(self):
         fields = request.args.getlist("annotation-name", None)
         try:
-            annotation_response = current_app.data.annotation(current_app.data.data, "obs", fields)
+            annotation_response = current_app.data.annotation(current_app.data.data, "obs", fields=fields)
         except KeyError:
             return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
         return make_response(jsonify(annotation_response), HTTPStatus.OK)
@@ -268,7 +271,8 @@ class AnnotationsObsAPI(Resource):
         except KeyError:
             return make_response("Malformed filter", HTTPStatus.BAD_REQUEST)
         try:
-            annotation_response = current_app.data.annotation(df, "obs", fields)
+            annotation_response = current_app.data.annotation(df, "obs", fields=fields, var_index=var_index(df),
+                                                              obs_index=obs_index(df))
         except KeyError:
             return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
         return make_response(jsonify(annotation_response), HTTPStatus.OK)
@@ -310,7 +314,7 @@ class AnnotationsVarAPI(Resource):
     def get(self):
         fields = request.args.getlist("annotation-name", None)
         try:
-            annotation_response = current_app.data.annotation(current_app.data.data, "var", fields)
+            annotation_response = current_app.data.annotation(current_app.data.data, "var", fields=fields)
         except KeyError:
             return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
         return make_response(jsonify(annotation_response), HTTPStatus.OK)
@@ -361,7 +365,8 @@ class AnnotationsVarAPI(Resource):
         except KeyError:
             return make_response("Malformed filter", HTTPStatus.BAD_REQUEST)
         try:
-            annotation_response = current_app.data.annotation(df, "var", fields)
+            annotation_response = current_app.data.annotation(df, "var", fields=fields, var_index=var_index(df),
+                                                              obs_index=obs_index(df))
         except KeyError:
             return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
         return make_response(jsonify(annotation_response), HTTPStatus.OK)
@@ -467,7 +472,8 @@ class DiffExpObsAPI(Resource):
         # mode
         count = args.get("count", None)
         try:
-            diffexp = current_app.data.diffexp(df1, df2, count)
+            diffexp = current_app.data.diffexp(df1, df2, var_index(df1), obs_index(df1), var_index(df2), obs_index(df2),
+                                               count)
         except ValueError as ve:
             return make_response(ve.message, HTTPStatus.BAD_REQUEST)
         return make_response(jsonify(diffexp), HTTPStatus.OK)
@@ -531,7 +537,11 @@ class DataObsAPI(Resource):
                           header=request.accept_mimetypes)
         except MimeTypeError as e:
             return make_response(e.message, HTTPStatus.NOT_ACCEPTABLE)
-        return make_response((jsonify(current_app.data.data_frame(df, axis=Axis.OBS))), HTTPStatus.OK)
+        return make_response(
+            jsonify(
+                current_app.data.data_frame(df, axis=Axis.OBS, var_index=var_index(df), obs_index=obs_index(df))
+            ),
+            HTTPStatus.OK)
 
     @swagger.doc({
         "summary": "Get data (expression values) from the dataframe.",
@@ -575,7 +585,10 @@ class DataObsAPI(Resource):
             get_mime_type(acceptable_types=["application/json"], header=request.accept_mimetypes)
         except MimeTypeError as e:
             return make_response(e.message, HTTPStatus.NOT_ACCEPTABLE)
-        return make_response((jsonify(current_app.data.data_frame(df, axis=Axis.OBS))), HTTPStatus.OK)
+        return make_response(
+            jsonify(
+                current_app.data.data_frame(df, axis=Axis.OBS, var_index=var_index(df), obs_index=obs_index(df))
+            ), HTTPStatus.OK)
 
 
 class DataVarAPI(Resource):
@@ -634,7 +647,9 @@ class DataVarAPI(Resource):
                           header=request.accept_mimetypes)
         except MimeTypeError as e:
             return make_response(e.message, HTTPStatus.NOT_ACCEPTABLE)
-        return make_response((jsonify(current_app.data.data_frame(df, axis=Axis.VAR))), HTTPStatus.OK)
+        return make_response(
+            (jsonify(current_app.data.data_frame(df, axis=Axis.VAR, var_index=var_index(df), obs_index=obs_index(df)))),
+            HTTPStatus.OK)
 
     @swagger.doc({
         "summary": "Get data (expression values) from the dataframe.",
@@ -679,7 +694,9 @@ class DataVarAPI(Resource):
             get_mime_type(acceptable_types=["application/json"], header=request.accept_mimetypes)
         except MimeTypeError as e:
             return make_response(e.message, HTTPStatus.NOT_ACCEPTABLE)
-        return make_response((jsonify(current_app.data.data_frame(df, axis=Axis.VAR))), HTTPStatus.OK)
+        return make_response(
+            (jsonify(current_app.data.data_frame(df, axis=Axis.VAR, var_index=var_index(df), obs_index=obs_index(df)))),
+            HTTPStatus.OK)
 
 
 def get_api_resources():

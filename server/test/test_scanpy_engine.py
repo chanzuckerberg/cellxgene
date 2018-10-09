@@ -137,10 +137,10 @@ class UtilTest(unittest.TestCase):
         self.assertEqual(len(annotations["data"]), 1838)
 
     def test_annotation_fields(self):
-        annotations = self.data.annotation(self.data.data, "obs", ["n_genes", "n_counts"])
+        annotations = self.data.annotation(self.data.data, "obs", fields=["n_genes", "n_counts"])
         self.assertEqual(annotations["names"], ["n_genes", "n_counts"])
         self.assertEqual(len(annotations["data"]), 2638)
-        annotations = self.data.annotation(self.data.data, "var", ["name"])
+        annotations = self.data.annotation(self.data.data, "var", fields=["name"])
         self.assertEqual(annotations["names"], ["name"])
         self.assertEqual(len(annotations["data"]), 1838)
 
@@ -160,10 +160,12 @@ class UtilTest(unittest.TestCase):
             }
         }
         data = self.data.filter_dataframe(filter_["filter"])
-        annotations = self.data.annotation(data, "obs")
+        annotations = self.data.annotation(data, "obs", var_index=data.var.index.tolist(),
+                                           obs_index=data.obs.index.tolist())
         self.assertEqual(annotations["names"], ["n_genes", "percent_mito", "n_counts", "louvain", "name"])
         self.assertEqual(len(annotations["data"]), 497)
-        annotations = self.data.annotation(data, "var")
+        annotations = self.data.annotation(data, "var", var_index=data.var.index.tolist(),
+                                           obs_index=data.obs.index.tolist())
         self.assertEqual(annotations["names"], ["n_cells", "name"])
         self.assertEqual(len(annotations["data"]), 2)
 
@@ -178,7 +180,7 @@ class UtilTest(unittest.TestCase):
             }
         }
         data = self.data.filter_dataframe(filter_["filter"])
-        layout = self.data.layout(data)
+        layout = self.data.layout(data, var_index=data.var.index.tolist(), obs_index=data.obs.index.tolist())
         self.assertEqual(len(layout["coordinates"]), 497)
 
     def test_diffexp(self):
@@ -198,11 +200,13 @@ class UtilTest(unittest.TestCase):
             }
         }
         df2 = self.data.filter_dataframe(f2["filter"])
-        result = self.data.diffexp(df1, df2)
+        result = self.data.diffexp(df1, df2, var_index1=df1.var.index.tolist(), obs_index1=df1.obs.index.tolist(),
+                                   var_index2=df2.var.index.tolist(), obs_index2=df2.obs.index.tolist())
         self.assertEqual(len(result), 10)
         var_idx = [i[0] for i in result]
         self.assertEqual(var_idx, sorted(var_idx))
-        result = self.data.diffexp(df1, df2, 20)
+        result = self.data.diffexp(df1, df2, var_index1=df1.var.index.tolist(), obs_index1=df1.obs.index.tolist(),
+                                   var_index2=df2.var.index.tolist(), obs_index2=df2.obs.index.tolist(), top_n=20)
         self.assertEqual(len(result), 20)
 
     def test_data_frame(self):
@@ -224,12 +228,14 @@ class UtilTest(unittest.TestCase):
             }
         }
         data = self.data.filter_dataframe(filter_["filter"])
-        data_frame_obs = self.data.data_frame(data, "obs")
+        data_frame_obs = self.data.data_frame(data, "obs", var_index=data.var.index.tolist(),
+                                              obs_index=data.obs.index.tolist())
         self.assertEqual(len(data_frame_obs["var"]), 1838)
         self.assertEqual(len(data_frame_obs["obs"]), 497)
         self.assertEqual(type(data_frame_obs["obs"][0]), list)
         self.assertEqual(type(data_frame_obs["var"][0]), int)
-        data_frame_var = self.data.data_frame(data, "var")
+        data_frame_var = self.data.data_frame(data, "var", var_index=data.var.index.tolist(),
+                                              obs_index=data.obs.index.tolist())
         self.assertEqual(len(data_frame_var["var"]), 1838)
         self.assertEqual(len(data_frame_var["obs"]), 497)
         self.assertEqual(type(data_frame_var["var"][0]), list)
@@ -247,7 +253,8 @@ class UtilTest(unittest.TestCase):
                 }
             }
             data = self.data.filter_dataframe(filter_["filter"], include_uns=False)
-            data_frame_var = self.data.data_frame(data, axis)
+            data_frame_var = self.data.data_frame(data, axis, var_index=data.var.index.tolist(),
+                                                  obs_index=data.obs.index.tolist())
             if axis == "obs":
                 self.assertEqual(type(data_frame_var["var"][0]), int)
                 self.assertEqual(type(data_frame_var["obs"][0]), list)

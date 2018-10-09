@@ -31,3 +31,11 @@ def get_mime_type(default="application/json", acceptable_types=["application/jso
         if not mime_type:
             raise MimeTypeError(f"Unsupported mime type(s) {header} in HTTP Accept header")
     return mime_type
+
+
+def var_index(df):
+    return df.var.index.tolist()
+
+
+def obs_index(df):
+    return df.obs.index.tolist()

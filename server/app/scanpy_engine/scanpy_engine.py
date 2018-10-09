@@ -7,7 +7,7 @@ import scanpy.api as sc
 from scipy import stats
 
 # TODO fix memoization so that it correctly identifies the same request
-# from server.app.app import cache
+from server.app.app import cache
 from server.app.driver.driver import CXGDriver
 from server.app.util.constants import Axis, DEFAULT_TOP_N, DiffExpMode
 
@@ -190,13 +190,15 @@ class ScanpyEngine(CXGDriver):
                     index = np.logical_and(index, key_idx)
         return index
 
-    # @cache.memoize()
-    def annotation(self, df, axis, fields=None):
+    @cache.memoize()
+    def annotation(self, df, axis, var_index=None, obs_index=None, fields=None):
         """
          Gets annotation value for each observation
 
         :param axis:
         :param df: from filter_cells, dataframe
+        :param var_index: list - df's var indices, necessary for caching of df views, None if original data
+        :param obs_index: list - df's obs indices, necessary for caching of df views, None if original data
         :param fields: list of keys for annotation to return, returns all annotation values if not set.
         :return: dict: names - list of fields in order, data - list of lists or metadata
         [observation ids, val1, val2...]
@@ -210,11 +212,13 @@ class ScanpyEngine(CXGDriver):
             "data": annotations.reset_index().values.tolist()
         }
 
-    # @cache.memoize()
-    def layout(self, df):
+    @cache.memoize()
+    def layout(self, df, var_index=None, obs_index=None):
         """
         Computes a n-d layout for cells through dimensionality reduction.
         :param df: from filter_cells, dataframe
+        :param var_index: list - df's var indices, necessary for caching of df views
+        :param obs_index: list - df's obs indices, necessary for caching of df views
         :return:  [cellid, x, y, ...]
         """
         # TODO Filtering cells is fine, but filtering genes does nothing because the neighbors are
@@ -230,14 +234,18 @@ class ScanpyEngine(CXGDriver):
             "coordinates": normalized_layout.reset_index().values.tolist()
         }
 
-    # @cache.memoize()
-    def diffexp(self, df1, df2, top_n=None):
+    @cache.memoize()
+    def diffexp(self, df1, df2, var_index1, obs_index1, var_index2, obs_index2, top_n=None):
         """
         Computes the top differentially expressed variables between two observation sets. If dataframes
         contain a subset of variables, then statistics for all variables will be returned, otherwise
         only the top N vars will be returned.
         :param df1: from filter_cells, dataframe containing first set of observations
         :param df2: from filter_cells, dataframe containing second set of observations
+        :param var_index1: list - df1's var indices, necessary for caching of df views
+        :param obs_index1: list - df1's obs indices, necessary for caching of df views
+        :param var_index2: list - df2's var indices, necessary for caching of df views
+        :param obs_index2: list - df2's obs indices, necessary for caching of df views
         :param topN: Limit results to top N (Top var mode only)
         :return: top genes, stats and expression values for variables
         """
@@ -279,11 +287,14 @@ class ScanpyEngine(CXGDriver):
         # Results need to be returned in var index order
         return sorted(result, key=lambda gene: gene[0])
 
-    # @cache.memoize()
-    def data_frame(self, df, axis):
+    @cache.memoize()
+    def data_frame(self, df, axis, var_index=None, obs_index=None):
         """
         Retrieves data for each variable for observations in data frame
         :param df: from filter_cells, dataframe
+        :param axis: string - var/obs axis to return dataframe by
+        :param var_index: list - df's var indices, necessary for caching of df views, None if original data
+        :param obs_index: list - df's obs indices, necessary for caching of df views, None if original data
         :return: {
             "var": list of variable ids,
             "obs": [cellid, var1 expression, var2 expression, ...],
