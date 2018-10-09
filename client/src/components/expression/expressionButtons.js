@@ -20,12 +20,22 @@ class Expression extends React.Component {
 
   computeDiffExp() {
     const { dispatch, differential } = this.props;
-    dispatch(
-      actions.requestDifferentialExpression(
-        differential.celllist1,
-        differential.celllist2
-      )
-    );
+    if (differential.celllist1 && differential.celllist2) {
+      dispatch(
+        actions.requestDifferentialExpression(
+          differential.celllist1,
+          differential.celllist2
+        )
+      );
+    }
+  }
+
+  clearDifferentialExpression() {
+    const { dispatch, differential } = this.props;
+    dispatch({
+      type: "clear differential expression",
+      diffExp: differential.diffExp
+    });
   }
 
   render() {
@@ -37,29 +47,55 @@ class Expression extends React.Component {
       <div style={{ marginRight: 10, marginBottom: 10 }}>
         <CellSetButton {...this.props} eitherCellSetOneOrTwo={1} />
         <CellSetButton {...this.props} eitherCellSetOneOrTwo={2} />
-        <button
-          type="button"
-          style={{
-            fontSize: 14,
-            fontWeight: 400,
-            color: "#FFF",
-            padding: "0px 10px",
-            height: 30,
-            borderRadius: 2,
-            backgroundColor:
-              differential.celllist1 && differential.celllist2
-                ? globals.brightBlue
-                : globals.lightGrey,
-            border: "none",
-            cursor:
-              differential.celllist1 && differential.celllist2
-                ? "pointer"
-                : "auto"
-          }}
-          onClick={this.computeDiffExp.bind(this)}
-        >
-          Compute differential expression
-        </button>
+        {!differential.diffExp ? (
+          <button
+            type="button"
+            style={{
+              fontSize: 14,
+              fontWeight: 400,
+              color: "#FFF",
+              padding: "0px 10px",
+              height: 30,
+              borderRadius: 2,
+              backgroundColor:
+                differential.celllist1 && differential.celllist2
+                  ? globals.brightBlue
+                  : globals.lightGrey,
+              border: "none",
+              cursor:
+                differential.celllist1 && differential.celllist2
+                  ? "pointer"
+                  : "auto"
+            }}
+            onClick={this.computeDiffExp.bind(this)}
+          >
+            {" "}
+            Compute Differential Expression{" "}
+          </button>
+        ) : null}
+        {differential.diffExp ? (
+          <button
+            type="button"
+            style={{
+              fontSize: 14,
+              fontWeight: 400,
+              color: "#FFF",
+              padding: "0px 10px",
+              height: 30,
+              borderRadius: 2,
+              backgroundColor: globals.brightBlue,
+              border: "none",
+              cursor:
+                differential.celllist1 && differential.celllist2
+                  ? "pointer"
+                  : "auto"
+            }}
+            onClick={this.clearDifferentialExpression.bind(this)}
+          >
+            {" "}
+            Clear Differential Expression{" "}
+          </button>
+        ) : null}
       </div>
     );
   }
