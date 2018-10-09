@@ -20,10 +20,12 @@ import actions from "../../actions/";
     ranges,
     metadata,
     initializeRanges,
-    userDefinedGenes: state.userDefinedGenes,
+    userDefinedGenes: state.controls.userDefinedGenes,
     world: state.controls.world,
+    dimensionMap: state.controls.dimensionMap,
     colorAccessor: state.controls.colorAccessor,
-    allGeneNames: state.controls.allGeneNames
+    allGeneNames: state.controls.allGeneNames,
+    differential: state.differential
   };
 })
 class GeneExpression extends React.Component {
@@ -38,51 +40,8 @@ class GeneExpression extends React.Component {
     };
   }
 
-  componentDidMount() {}
-  handleBrushAction(selection) {
-    this.props.dispatch({
-      type: "continuous selection using parallel coords brushing",
-      data: selection
-    });
-  }
-  handleColorAction(key) {
-    return () => {};
-    const indexOfGene = 0; /* we only get one, this comes from server as needed now */
-
-    const expressionMap = {};
-    /*
-      converts [{cellname: cell123, e}, ...]
-
-      expressionMap = {
-        cell123: [123, 2],
-        cell789: [0, 8]
-      }
-    */
-    // _.each(data.data.cells, cell => {
-    //   /* this action is coming directly from the server */
-    //   expressionMap[cell.cellname] = cell.e;
-    // });
-    //
-    // const minExpressionCell = _.minBy(data.data.cells, cell => {
-    //   return cell.e[indexOfGene];
-    // });
-    //
-    // const maxExpressionCell = _.maxBy(data.data.cells, cell => {
-    //   return cell.e[indexOfGene];
-    // });
-    // dispatch({
-    // type: "color by expression"
-    //   gene: gene,
-    //   colorAccessor: gene,
-    //   data,
-    //   expressionMap,
-    //   minExpressionCell,
-    //   maxExpressionCell,
-    //   indexOfGene
-    // });
-  }
-
   render() {
+    const { world, userDefinedGenes } = this.props;
     return (
       <div>
         <input
@@ -101,9 +60,21 @@ class GeneExpression extends React.Component {
             padding: 0
           }}
           onClick={() => {
-            this.props.dispatch(
-              actions.requestGeneExpressionCountsPOST([this.state.gene])
-            );
+            if (userDefinedGenes.indexOf(this.state.gene) !== -1) {
+              console.log("That gene already exists");
+            } else if (userDefinedGenes.length > 15) {
+              console.log(
+                "That's too many genes, you can have at most 15 user defined genes"
+              );
+            } else {
+              this.props.dispatch(
+                actions.requestGeneExpressionCountsPOST([this.state.gene])
+              );
+              this.props.dispatch({
+                type: "user defined gene",
+                data: this.state.gene
+              });
+            }
           }}
         >
           <CirclePlus
@@ -116,17 +87,42 @@ class GeneExpression extends React.Component {
           />{" "}
           add gene{" "}
         </button>
-        {this.props.world
-          ? _.map(this.props.world.varDataCache, (value, key) => {
-              if (key[0] === "_" /* private */) {
-                return;
+        {world && userDefinedGenes.length > 0 ? (
+          <p>User defined genes</p>
+        ) : null}
+        {world && userDefinedGenes.length > 0
+          ? _.map(userDefinedGenes, (geneName, index) => {
+              if (!world.varDataCache[geneName]) {
+                return null;
+              } else {
+                const values = world.varDataCache[geneName];
+                return (
+                  <HistogramBrush
+                    key={geneName}
+                    field={geneName}
+                    ranges={d3.extent(values)}
+                    isUserSelected
+                  />
+                );
+              }
+            })
+          : null}
+        {this.props.differential.diffExp ? (
+          <p> Differentially Expressed Genes </p>
+        ) : null}
+        {this.props.differential.diffExp
+          ? _.map(this.props.differential.diffExp, (value, key) => {
+              const name = world.varAnnotations[value[0]].name;
+              const values = world.varDataCache[name];
+              if (!world.varDataCache[world.varAnnotations[value[0]].name]) {
+                return null;
               } else {
                 return (
                   <HistogramBrush
-                    key={key}
-                    field={key}
-                    ranges={d3.extent(value)}
-                    handleColorAction={this.handleColorAction(key).bind(this)}
+                    key={name}
+                    field={name}
+                    ranges={d3.extent(values)}
+                    isDiffExp
                   />
                 );
               }
