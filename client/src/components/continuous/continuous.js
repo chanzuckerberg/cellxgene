@@ -13,16 +13,17 @@ import HistogramBrush from "../brushableHistogram/";
     metadata: _.get(state.controls.world, "obsAnnotations", null),
     colorAccessor: state.controls.colorAccessor,
     colorScale: state.controls.colorScale,
-    selectionUpdate: _.get(state.controls, "crossfilter.updateTime", null)
+    selectionUpdate: _.get(state.controls, "crossfilter.updateTime", null),
+    schema: _.get(state.controls.world, "schema", null)
   };
 })
 class Continuous extends React.Component {
-  handleBrushAction(selection) {
-    const { dispatch } = this.props;
-    dispatch({
-      type: "continuous selection using parallel coords brushing",
-      data: selection
-    });
+  constructor(props) {
+    super(props);
+    this.hasContinuous = false;
+    this.continuousChecked = false;
+
+    this.state = {};
   }
 
   handleColorAction(key) {
@@ -36,11 +37,20 @@ class Continuous extends React.Component {
     };
   }
 
+  componentDidUpdate() {}
+
   render() {
-    const { ranges, obsAnnotations } = this.props;
+    const { ranges, obsAnnotations, schema } = this.props;
+    if (schema && !this.continuousChecked) {
+      this.hasContinuous = _.some(schema.annotations.obs, d => {
+        return d.type === "int32" || d.type === "float32";
+      });
+      this.continuousChecked = true; /* only do this once */
+    }
 
     return (
       <div>
+        {this.hasContinuous ? <p> Continuous metadata </p> : null}
         {_.map(ranges, (value, key) => {
           const isColorField = key.includes("color") || key.includes("Color");
           if (value.range && key !== "name" && !isColorField) {

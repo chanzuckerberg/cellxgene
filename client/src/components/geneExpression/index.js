@@ -36,19 +36,43 @@ class GeneExpression extends React.Component {
       ctx: null,
       axes: null,
       dimensions: null,
-      gene: null
+      gene: ""
     };
   }
+  keyPress(e) {
+    if (e.keyCode == 13) {
+      this.handleClick();
+    }
+  }
+  handleClick() {
+    const { world, dispatch, userDefinedGenes } = this.props;
 
+    if (userDefinedGenes.indexOf(this.state.gene) !== -1) {
+      console.log("That gene already exists");
+    } else if (userDefinedGenes.length > 15) {
+      console.log(
+        "That's too many genes, you can have at most 15 user defined genes"
+      );
+    } else {
+      dispatch(actions.requestGeneExpressionCountsPOST([this.state.gene]));
+      dispatch({
+        type: "user defined gene",
+        data: this.state.gene
+      });
+      this.setState({ gene: "" });
+    }
+  }
   render() {
     const { world, userDefinedGenes } = this.props;
     return (
       <div>
         <input
+          onKeyDown={this.keyPress.bind(this)}
           onChange={e => {
             this.setState({ gene: e.target.value });
           }}
           type="text"
+          value={this.state.gene}
         />
         <button
           style={{
@@ -59,23 +83,7 @@ class GeneExpression extends React.Component {
             marginTop: 20,
             padding: 0
           }}
-          onClick={() => {
-            if (userDefinedGenes.indexOf(this.state.gene) !== -1) {
-              console.log("That gene already exists");
-            } else if (userDefinedGenes.length > 15) {
-              console.log(
-                "That's too many genes, you can have at most 15 user defined genes"
-              );
-            } else {
-              this.props.dispatch(
-                actions.requestGeneExpressionCountsPOST([this.state.gene])
-              );
-              this.props.dispatch({
-                type: "user defined gene",
-                data: this.state.gene
-              });
-            }
-          }}
+          onClick={this.handleClick.bind(this)}
         >
           <CirclePlus
             style={{
@@ -101,7 +109,7 @@ class GeneExpression extends React.Component {
                     key={geneName}
                     field={geneName}
                     ranges={d3.extent(values)}
-                    isUserSelected
+                    isUserDefined
                   />
                 );
               }
