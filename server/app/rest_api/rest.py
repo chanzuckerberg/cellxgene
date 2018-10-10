@@ -12,6 +12,13 @@ from server.app.util.filter import parse_filter, QueryStringError
 from server.app.util.models import FilterModel
 from server.app.util.utils import MimeTypeError, get_mime_type
 
+"""
+Sort order for routes
+1. Initialize
+2. Data & Metadata
+3. Computation
+"""
+
 
 class SchemaAPI(Resource):
     @swagger.doc({
@@ -107,75 +114,6 @@ class ConfigAPI(Resource):
             }
         }
         return make_response(jsonify(config), HTTPStatus.OK)
-
-
-class LayoutObsAPI(Resource):
-    @swagger.doc({
-        "summary": "Get the default layout for all observations.",
-        "tags": ["layout"],
-        "parameters": [],
-        "responses": {
-            "200": {
-                "description": "layout",
-                "examples": {
-                    "application/json": {
-                        "layout": {
-                            "ndims": 2,
-                            "coordinates": [
-                                [0, 0.284483, 0.983744],
-                                [1, 0.038844, 0.739444]
-                            ]
-                        }
-                    }
-                }
-            }
-        }
-    })
-    def get(self):
-        return make_response((jsonify({"layout": current_app.data.layout(current_app.data.data)})), HTTPStatus.OK)
-
-    @swagger.doc({
-        "summary": "Observation layout for filtered subset.",
-        "tags": ["layout"],
-        "parameters": [
-            {
-                "name": "filter",
-                "description": "Complex Filter",
-                "in": "body",
-                "schema": FilterModel
-            }
-        ],
-        "responses": {
-            "200": {
-                "description": "layout",
-                "examples": {
-                    "application/json": {
-                        "layout": {
-                            "ndims": 2,
-                            "coordinates": [
-                                [0, 0.284483, 0.983744],
-                                [1, 0.038844, 0.739444]
-                            ]
-                        }
-                    }
-                }
-            },
-            "400": {
-                "description": "Malformed filter"
-            },
-            "403": {
-                "description": "Non-interactive request"
-            },
-        }
-    })
-    def post(self):
-        try:
-            df = current_app.data.filter_dataframe(request.get_json()["filter"])
-        except KeyError:
-            return make_response("Malformed filter", HTTPStatus.BAD_REQUEST)
-        if len(df.obs.index) > current_app.data.features["layout"]["obs"]["interactiveLimit"]:
-            return make_response("Non-interactive request", HTTPStatus.FORBIDDEN)
-        return make_response((jsonify({"layout": current_app.data.layout(df)})), HTTPStatus.OK)
 
 
 class AnnotationsObsAPI(Resource):
@@ -365,112 +303,6 @@ class AnnotationsVarAPI(Resource):
         except KeyError:
             return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
         return make_response(jsonify(annotation_response), HTTPStatus.OK)
-
-
-class DiffExpObsAPI(Resource):
-    @swagger.doc({
-        "summary": "Generate differential expression (DE) statistics for two specified subsets of data, "
-                   "as indicated by the two provided observation complex filters",
-        "tags": ["diffexp"],
-        # TODO sort out params
-        # "parameters": [
-        #     # {
-        #     #     "in": "body",
-        #     #     "name": "mode",
-        #     #     "type": "string",
-        #     #     "required": True,
-        #     #     "description": "topN or varFilter"
-        #     # },
-        #     {
-        #         "in": "query",
-        #         "name": "count",
-        #         "type": "int32",
-        #         "description": "TopN mode: how many vars to return"
-        #     },
-        #     {
-        #         "in": "body",
-        #         "name": "varFilter",
-        #         "schema": FilterModel,
-        #         "description": "varFilter: Complex filter, only var for which vars to return"
-        #     },
-        #     {
-        #         "in": "body",
-        #         "name": "set1",
-        #         "schema": FilterModel,
-        #         "required": True,
-        #         "description": "Complex filter, only obs - observations in set1"
-        #     },
-        #     {
-        #         "in": "body",
-        #         "name": "set2",
-        #         "schema": FilterModel,
-        #         "description": "Complex filter, only obs - observations in set2. If not included, inverse of set1."
-        #     },
-        # ],
-        "responses": {
-            "200": {
-                "description": "Statistics are encoded as an array of arrays, with fields ordered as: "
-                               "varIndex, avgDiff,  pVal, pValAdj, set1AvgExp, set2AvgExp",
-                "examples": {
-                    "application/json": [
-                        [328, -2.569489, 2.655706e-63, 3.642036e-57, 383.393, 583.9],
-                        [1250, -2.569489, 2.655706e-63, 3.642036e-57, 383.393, 583.9],
-                    ]
-                }
-            },
-            "400": {
-                "description": "malformed filter"
-            },
-            "403": {
-                "description": "non-interactive request"
-            },
-            "501": {
-                "description": "diffexp is not implemented"
-            }
-        }
-    })
-    def post(self):
-        args = request.get_json()
-        # confirm mode is present and legal
-        try:
-            mode = DiffExpMode(args["mode"])
-        except KeyError:
-            return make_response("Error: mode is required", HTTPStatus.BAD_REQUEST)
-        except ValueError:
-            return make_response(f"Error: invalid mode option {args['mode']}", HTTPStatus.BAD_REQUEST)
-        # Validate filters
-        if mode == DiffExpMode.VAR_FILTER:
-            if "varFilter" not in args:
-                return make_response("varFilter is required when mode is set to varFilter ", HTTPStatus.BAD_REQUEST)
-            if Axis.OBS in args["varFilter"]["filter"]:
-                return make_response("Obs filter not allowed in varFilter", HTTPStatus.BAD_REQUEST)
-        if "set1" not in args:
-            return make_response("set1 is required.", HTTPStatus.BAD_REQUEST)
-        if Axis.VAR in args["set1"]["filter"]:
-            return make_response("Var filter not allowed for set1", HTTPStatus.BAD_REQUEST)
-        # set2
-        if "set2" not in args:
-            return make_response("Set2 as inverse of set1 is not implemented", HTTPStatus.NOT_IMPLEMENTED)
-        if Axis.VAR in args["set2"]["filter"]:
-            return make_response("Var filter not allowed for set2", HTTPStatus.BAD_REQUEST)
-        set1_filter = args["set1"]["filter"]
-        set2_filter = args.get("set2", {"filter": {}})["filter"]
-        if "varFilter" in args:
-            set1_filter[Axis.VAR] = args["varFilter"]["filter"][Axis.VAR]
-            set2_filter[Axis.VAR] = args["varFilter"]["filter"][Axis.VAR]
-        df1 = current_app.data.filter_dataframe(set1_filter, include_uns=False)
-        # TODO inverse
-        df2 = current_app.data.filter_dataframe(set2_filter, include_uns=False)
-        # exceeds size limit
-        if df1.shape[0] + df2.shape[0] > current_app.data.features["diffexp"]["interactiveLimit"]:
-            return make_response("Non-interactive request", HTTPStatus.FORBIDDEN)
-        # mode
-        count = args.get("count", None)
-        try:
-            diffexp = current_app.data.diffexp(df1, df2, count)
-        except ValueError as ve:
-            return make_response(ve.message, HTTPStatus.BAD_REQUEST)
-        return make_response(jsonify(diffexp), HTTPStatus.OK)
 
 
 class DataObsAPI(Resource):
@@ -682,15 +514,193 @@ class DataVarAPI(Resource):
         return make_response((jsonify(current_app.data.data_frame(df, axis=Axis.VAR))), HTTPStatus.OK)
 
 
+class DiffExpObsAPI(Resource):
+    @swagger.doc({
+        "summary": "Generate differential expression (DE) statistics for two specified subsets of data, "
+                   "as indicated by the two provided observation complex filters",
+        "tags": ["diffexp"],
+        # TODO sort out params
+        # "parameters": [
+        #     # {
+        #     #     "in": "body",
+        #     #     "name": "mode",
+        #     #     "type": "string",
+        #     #     "required": True,
+        #     #     "description": "topN or varFilter"
+        #     # },
+        #     {
+        #         "in": "query",
+        #         "name": "count",
+        #         "type": "int32",
+        #         "description": "TopN mode: how many vars to return"
+        #     },
+        #     {
+        #         "in": "body",
+        #         "name": "varFilter",
+        #         "schema": FilterModel,
+        #         "description": "varFilter: Complex filter, only var for which vars to return"
+        #     },
+        #     {
+        #         "in": "body",
+        #         "name": "set1",
+        #         "schema": FilterModel,
+        #         "required": True,
+        #         "description": "Complex filter, only obs - observations in set1"
+        #     },
+        #     {
+        #         "in": "body",
+        #         "name": "set2",
+        #         "schema": FilterModel,
+        #         "description": "Complex filter, only obs - observations in set2. If not included, inverse of set1."
+        #     },
+        # ],
+        "responses": {
+            "200": {
+                "description": "Statistics are encoded as an array of arrays, with fields ordered as: "
+                               "varIndex, avgDiff,  pVal, pValAdj, set1AvgExp, set2AvgExp",
+                "examples": {
+                    "application/json": [
+                        [328, -2.569489, 2.655706e-63, 3.642036e-57, 383.393, 583.9],
+                        [1250, -2.569489, 2.655706e-63, 3.642036e-57, 383.393, 583.9],
+                    ]
+                }
+            },
+            "400": {
+                "description": "malformed filter"
+            },
+            "403": {
+                "description": "non-interactive request"
+            },
+            "501": {
+                "description": "diffexp is not implemented"
+            }
+        }
+    })
+    def post(self):
+        args = request.get_json()
+        # confirm mode is present and legal
+        try:
+            mode = DiffExpMode(args["mode"])
+        except KeyError:
+            return make_response("Error: mode is required", HTTPStatus.BAD_REQUEST)
+        except ValueError:
+            return make_response(f"Error: invalid mode option {args['mode']}", HTTPStatus.BAD_REQUEST)
+        # Validate filters
+        if mode == DiffExpMode.VAR_FILTER:
+            if "varFilter" not in args:
+                return make_response("varFilter is required when mode is set to varFilter ", HTTPStatus.BAD_REQUEST)
+            if Axis.OBS in args["varFilter"]["filter"]:
+                return make_response("Obs filter not allowed in varFilter", HTTPStatus.BAD_REQUEST)
+        if "set1" not in args:
+            return make_response("set1 is required.", HTTPStatus.BAD_REQUEST)
+        if Axis.VAR in args["set1"]["filter"]:
+            return make_response("Var filter not allowed for set1", HTTPStatus.BAD_REQUEST)
+        # set2
+        if "set2" not in args:
+            return make_response("Set2 as inverse of set1 is not implemented", HTTPStatus.NOT_IMPLEMENTED)
+        if Axis.VAR in args["set2"]["filter"]:
+            return make_response("Var filter not allowed for set2", HTTPStatus.BAD_REQUEST)
+        set1_filter = args["set1"]["filter"]
+        set2_filter = args.get("set2", {"filter": {}})["filter"]
+        if "varFilter" in args:
+            set1_filter[Axis.VAR] = args["varFilter"]["filter"][Axis.VAR]
+            set2_filter[Axis.VAR] = args["varFilter"]["filter"][Axis.VAR]
+        df1 = current_app.data.filter_dataframe(set1_filter, include_uns=False)
+        # TODO inverse
+        df2 = current_app.data.filter_dataframe(set2_filter, include_uns=False)
+        # exceeds size limit
+        if df1.shape[0] + df2.shape[0] > current_app.data.features["diffexp"]["interactiveLimit"]:
+            return make_response("Non-interactive request", HTTPStatus.FORBIDDEN)
+        # mode
+        count = args.get("count", None)
+        try:
+            diffexp = current_app.data.diffexp(df1, df2, count)
+        except ValueError as ve:
+            return make_response(ve.message, HTTPStatus.BAD_REQUEST)
+        return make_response(jsonify(diffexp), HTTPStatus.OK)
+
+
+class LayoutObsAPI(Resource):
+    @swagger.doc({
+        "summary": "Get the default layout for all observations.",
+        "tags": ["layout"],
+        "parameters": [],
+        "responses": {
+            "200": {
+                "description": "layout",
+                "examples": {
+                    "application/json": {
+                        "layout": {
+                            "ndims": 2,
+                            "coordinates": [
+                                [0, 0.284483, 0.983744],
+                                [1, 0.038844, 0.739444]
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+    })
+    def get(self):
+        return make_response((jsonify({"layout": current_app.data.layout(current_app.data.data)})), HTTPStatus.OK)
+
+    @swagger.doc({
+        "summary": "Observation layout for filtered subset.",
+        "tags": ["layout"],
+        "parameters": [
+            {
+                "name": "filter",
+                "description": "Complex Filter",
+                "in": "body",
+                "schema": FilterModel
+            }
+        ],
+        "responses": {
+            "200": {
+                "description": "layout",
+                "examples": {
+                    "application/json": {
+                        "layout": {
+                            "ndims": 2,
+                            "coordinates": [
+                                [0, 0.284483, 0.983744],
+                                [1, 0.038844, 0.739444]
+                            ]
+                        }
+                    }
+                }
+            },
+            "400": {
+                "description": "Malformed filter"
+            },
+            "403": {
+                "description": "Non-interactive request"
+            },
+        }
+    })
+    def post(self):
+        try:
+            df = current_app.data.filter_dataframe(request.get_json()["filter"])
+        except KeyError:
+            return make_response("Malformed filter", HTTPStatus.BAD_REQUEST)
+        if len(df.obs.index) > current_app.data.features["layout"]["obs"]["interactiveLimit"]:
+            return make_response("Non-interactive request", HTTPStatus.FORBIDDEN)
+        return make_response((jsonify({"layout": current_app.data.layout(df)})), HTTPStatus.OK)
+
+
 def get_api_resources():
     bp = Blueprint("api", __name__, url_prefix="/api/v0.2")
     api = Api(bp, add_api_spec_resource=False)
+    # Initialization routes
     api.add_resource(SchemaAPI, "/schema")
     api.add_resource(ConfigAPI, "/config")
-    api.add_resource(LayoutObsAPI, "/layout/obs")
+    # Data routes
     api.add_resource(AnnotationsObsAPI, "/annotations/obs")
-    api.add_resource(DiffExpObsAPI, "/diffexp/obs")
     api.add_resource(AnnotationsVarAPI, "/annotations/var")
     api.add_resource(DataObsAPI, "/data/obs")
     api.add_resource(DataVarAPI, "/data/var")
+    # Computation routes
+    api.add_resource(DiffExpObsAPI, "/diffexp/obs")
+    api.add_resource(LayoutObsAPI, "/layout/obs")
     return api

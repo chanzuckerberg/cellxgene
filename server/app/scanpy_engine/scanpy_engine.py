@@ -11,6 +11,15 @@ from scipy import stats
 from server.app.driver.driver import CXGDriver
 from server.app.util.constants import Axis, DEFAULT_TOP_N, DiffExpMode
 
+"""
+Sort order for methods
+1. Initialize
+2. Helper
+3. Filter
+4. Data & Metadata
+5. Computation
+"""
+
 
 class ScanpyEngine(CXGDriver):
 
@@ -151,7 +160,7 @@ class ScanpyEngine(CXGDriver):
         Filter data based on index. ex. [1, 3, [111:200]]
         :param filter: subset of filter dict for obs/var:index
         :param index: np logical vector containing true for passing false for failing filter
-        :param axis: Axis
+        :param axis: string obs or var
         :return: np logical vector for whether the data passes the filter
         """
         if axis == Axis.OBS:
@@ -194,9 +203,8 @@ class ScanpyEngine(CXGDriver):
     def annotation(self, df, axis, fields=None):
         """
          Gets annotation value for each observation
-
-        :param axis:
         :param df: from filter_cells, dataframe
+        :param axis: string obs or var
         :param fields: list of keys for annotation to return, returns all annotation values if not set.
         :return: dict: names - list of fields in order, data - list of lists or metadata
         [observation ids, val1, val2...]
@@ -211,24 +219,37 @@ class ScanpyEngine(CXGDriver):
         }
 
     # @cache.memoize()
-    def layout(self, df):
+    def data_frame(self, df, axis):
         """
-        Computes a n-d layout for cells through dimensionality reduction.
+        Retrieves data for each variable for observations in data frame
         :param df: from filter_cells, dataframe
-        :return:  [cellid, x, y, ...]
-        """
-        # TODO Filtering cells is fine, but filtering genes does nothing because the neighbors are
-        # calculated using the original vars (geneset) and this doesn’t get updated when you use less.
-        # Need to recalculate neighbors (long) if user requests new layout filtered by var
-        getattr(sc.tl, self.layout_method)(df, random_state=123)
-        df_layout = df.obsm[f"X_{self.layout_method}"]
-        normalized_layout = DataFrame((df_layout - df_layout.min()) / (df_layout.max() - df_layout.min()),
-                                      index=df.obs.index)
-        return {
-            "ndims": normalized_layout.shape[1],
-            # reset_index gets obs' id into output
-            "coordinates": normalized_layout.reset_index().values.tolist()
+        :param axis: string obs or var
+        :return: {
+            "var": list of variable ids,
+            "obs": [cellid, var1 expression, var2 expression, ...],
         }
+        """
+        var_idx = df.var.index.tolist()
+        obs_idx = df.obs.index.tolist()
+        values = df.X
+        df_shape = df.shape
+        if df_shape[0] == 1:
+            values = values[None, :]
+        elif df_shape[1] == 1:
+            values = values[:, None]
+        if axis == Axis.OBS:
+            expression = DataFrame(values, index=obs_idx)
+            result = {
+                "var": var_idx,
+                "obs": expression.reset_index().values.tolist()
+            }
+        else:
+            expression = DataFrame(values.T, index=var_idx)
+            result = {
+                "obs": obs_idx,
+                "var": expression.reset_index().values.tolist(),
+            }
+        return result
 
     # @cache.memoize()
     def diffexp(self, df1, df2, top_n=None):
@@ -238,7 +259,7 @@ class ScanpyEngine(CXGDriver):
         only the top N vars will be returned.
         :param df1: from filter_cells, dataframe containing first set of observations
         :param df2: from filter_cells, dataframe containing second set of observations
-        :param topN: Limit results to top N (Top var mode only)
+        :param top_n: Limit results to top N (Top var mode only)
         :return: top genes, stats and expression values for variables
         """
         # If not the same genes, test is wrong!
@@ -280,33 +301,21 @@ class ScanpyEngine(CXGDriver):
         return sorted(result, key=lambda gene: gene[0])
 
     # @cache.memoize()
-    def data_frame(self, df, axis):
+    def layout(self, df):
         """
-        Retrieves data for each variable for observations in data frame
+        Computes a n-d layout for cells through dimensionality reduction.
         :param df: from filter_cells, dataframe
-        :return: {
-            "var": list of variable ids,
-            "obs": [cellid, var1 expression, var2 expression, ...],
-        }
+        :return:  [cellid, x, y, ...]
         """
-        var_idx = df.var.index.tolist()
-        obs_idx = df.obs.index.tolist()
-        values = df.X
-        df_shape = df.shape
-        if df_shape[0] == 1:
-            values = values[None, :]
-        elif df_shape[1] == 1:
-            values = values[:, None]
-        if axis == Axis.OBS:
-            expression = DataFrame(values, index=obs_idx)
-            result = {
-                "var": var_idx,
-                "obs": expression.reset_index().values.tolist()
-            }
-        else:
-            expression = DataFrame(values.T, index=var_idx)
-            result = {
-                "obs": obs_idx,
-                "var": expression.reset_index().values.tolist(),
-            }
-        return result
+        # TODO Filtering cells is fine, but filtering genes does nothing because the neighbors are
+        # calculated using the original vars (geneset) and this doesn’t get updated when you use less.
+        # Need to recalculate neighbors (long) if user requests new layout filtered by var
+        getattr(sc.tl, self.layout_method)(df, random_state=123)
+        df_layout = df.obsm[f"X_{self.layout_method}"]
+        normalized_layout = DataFrame((df_layout - df_layout.min()) / (df_layout.max() - df_layout.min()),
+                                      index=df.obs.index)
+        return {
+            "ndims": normalized_layout.shape[1],
+            # reset_index gets obs' id into output
+            "coordinates": normalized_layout.reset_index().values.tolist()
+        }

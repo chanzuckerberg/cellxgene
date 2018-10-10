@@ -1,5 +1,14 @@
 from abc import ABCMeta, abstractmethod
 
+"""
+Sort order for methods
+1. Initialize
+2. Helper
+3. Filter
+4. Data & Metadata
+5. Computation
+"""
+
 
 class CXGDriver(metaclass=ABCMeta):
 
@@ -45,12 +54,12 @@ class CXGDriver(metaclass=ABCMeta):
     @abstractmethod
     def filter_dataframe(self, filter):
         """
-         Filter cells from data and return a subset of the data. They can operate on both obs and var dimension with
-         indexing and filtering by annotation value. Filters are combined with the and operator.
-         See REST specs for info on filter format:
-         https://docs.google.com/document/d/1Fxjp1SKtCk7l8QP9-7KAjGXL0eldi_qEnNT0NmlGzXI/edit#heading=h.8qc9q57amldx
+        Filter cells from data and return a subset of the data. They can operate on both obs and var dimension with
+        indexing and filtering by annotation value. Filters are combined with the and operator.
+        See REST specs for info on filter format:
+        https://docs.google.com/document/d/1Fxjp1SKtCk7l8QP9-7KAjGXL0eldi_qEnNT0NmlGzXI/edit#heading=h.8qc9q57amldx
 
-        :param filter: dictionary with filter parames
+        :param filter: dictionary with filter params
         :return: View into scanpy object with cells/genes filtered
         """
         pass
@@ -58,12 +67,38 @@ class CXGDriver(metaclass=ABCMeta):
     @abstractmethod
     def annotation(self, df, axis, fields=None):
         """
-         Gets annotation value for each observation
-
-        :param axis:
+        Gets annotation value for each observation
         :param df: from filter_cells, dataframe
+        :param axis: string obs or var
         :param fields: list of keys for annotation to return, returns all annotation values if not set.
-        :return: dict: names - list of fields in order, data - list of lists or metadata [idx, val1, val2...]
+        :return: dict: names - list of fields in order, data - list of lists or metadata
+        [observation ids, val1, val2...]
+        """
+        pass
+
+    @abstractmethod
+    def data_frame(self, df, axis):
+        """
+        Retrieves data for each variable for observations in data frame
+        :param df: from filter_cells, dataframe
+        :param axis: string obs or var
+        :return: {
+            "var": list of variable ids,
+            "obs": [cellid, var1 expression, var2 expression, ...],
+        }
+        """
+        pass
+
+    @abstractmethod
+    def diffexp(self, df1, df2, top_n):
+        """
+        Computes the top differentially expressed variables between two observation sets. If dataframes
+        contain a subset of variables, then statistics for all variables will be returned, otherwise
+        only the top N vars will be returned.
+        :param df1: from filter_cells, dataframe containing first set of observations
+        :param df2: from filter_cells, dataframe containing second set of observations
+        :param top_n: Limit results to top N (Top var mode only)
+        :return: top genes, stats and expression values for variables
         """
         pass
 
@@ -72,31 +107,6 @@ class CXGDriver(metaclass=ABCMeta):
         """
         Computes a n-d layout for cells through dimensionality reduction.
         :param df: from filter_cells, dataframe
-        :return:  [cellid, x, y]
-        """
-        pass
-
-    @abstractmethod
-    def diffexp(self, df1, df2, genes):
-        """
-        Computes the top differentially expressed variables between two observation sets. If dataframes
-        contain a subset of variables, then statistics for all variables will be returned, otherwise
-        only the top N vars will be returned.
-        :param df1: from filter_cells, dataframe containing first set of observations
-        :param df2: from filter_cells, dataframe containing second set of observations
-        :param topN: Limit results to top N (Top var mode only)
-        :return: top genes, stats and expression values for variables
-        """
-        pass
-
-    @abstractmethod
-    def data_frame(self, df):
-        """
-        Retrieves expression for each gene for cells in data frame
-        :param df: from filter_cells, dataframe
-        :return: {
-            "var": list of variable ids,
-            "obs": [cellid, var1 expression, var2 expression, ...],
-        }
+        :return:  [cellid, x, y, ...]
         """
         pass
