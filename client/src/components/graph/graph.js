@@ -423,7 +423,6 @@ class Graph extends React.Component {
                 </button>
               </span>
             </div>
-            
           </div>
         </div>
         <div
