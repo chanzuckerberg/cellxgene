@@ -606,6 +606,8 @@ class DiffExpObsAPI(Resource):
                                                current_app.data.features["diffexp"]["interactiveLimit"])
         except ValueError as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
+        except FilterError as e:
+            return make_response(e.message, HTTPStatus.BAD_REQUEST)
         except InteractiveError:
             return make_response("Non-interactive request", HTTPStatus.FORBIDDEN)
         return make_response(jsonify(diffexp), HTTPStatus.OK)

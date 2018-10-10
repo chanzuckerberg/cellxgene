@@ -123,7 +123,6 @@ class ScanpyEngine(CXGDriver):
     def genes(self):
         return self.data.var.index.tolist()
 
-    # Can't seem to cache a view of a dataframe, need to investigate why
     def filter_dataframe(self, filter, include_uns=False):
         """
          Filter cells from data and return a subset of the data. They can operate on both obs and var dimension with
