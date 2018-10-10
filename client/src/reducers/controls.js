@@ -160,7 +160,6 @@ const Controls = (
         });
       }
 
-      console.log("diff", diffexpGenes);
       if (diffexpGenes.length > 0) {
         _.forEach(diffexpGenes, (gene, index) => {
           dimensionMap[gene] = World.createVarDimension(
@@ -172,8 +171,6 @@ const Controls = (
           );
         });
       }
-
-      console.log("crossfilter", crossfilter);
 
       return {
         ...state,
