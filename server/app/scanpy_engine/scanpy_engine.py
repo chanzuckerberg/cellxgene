@@ -123,7 +123,7 @@ class ScanpyEngine(CXGDriver):
         return self.data.var.index.tolist()
 
     # Can't seem to cache a view of a dataframe, need to investigate why
-    def filter_dataframe(self, filter, include_uns=True):
+    def filter_dataframe(self, filter, include_uns=False):
         """
          Filter cells from data and return a subset of the data. They can operate on both obs and var dimension with
          indexing and filtering by annotation value. Filters are combined with the and operator.
@@ -131,10 +131,12 @@ class ScanpyEngine(CXGDriver):
          # TODO update this link to swagger when it's done
          https://docs.google.com/document/d/1Fxjp1SKtCk7l8QP9-7KAjGXL0eldi_qEnNT0NmlGzXI/edit#heading=h.8qc9q57amldx
 
-        :param filter: dictionary with filter parames
+        :param filter: dictionary with filter params
         :param include_uns: bool, include unstructured annotations
         :return: View into scanpy object with cells/genes filtered
         """
+        if not filter:
+            return self.data
         cells_idx = np.ones((self.cell_count,), dtype=bool)
         genes_idx = np.ones((self.gene_count,), dtype=bool)
         if Axis.OBS in filter:
