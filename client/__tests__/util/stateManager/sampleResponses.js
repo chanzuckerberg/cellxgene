@@ -67,7 +67,7 @@ const anAnnotationsObsResponse = {
       `obs${idx}`,
       2 * idx,
       idx + 0.0133,
-      idx & 1,
+      !!(idx & 1),
       field4Categories[idx % field4Categories.length]
     ])
     .value()
@@ -81,7 +81,7 @@ const anAnnotationsVarResponse = {
       idx,
       10 * idx,
       idx + 2.90143,
-      idx & 1,
+      !!(idx & 1),
       fieldDCategories[idx % fieldDCategories.length],
       `var${idx}`
     ])

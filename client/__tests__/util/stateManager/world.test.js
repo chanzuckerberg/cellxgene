@@ -7,8 +7,6 @@ import * as REST from "./sampleResponses";
 /*
 TODO: endpoints to test:
 
-createWorldFromEntireUniverse(universe)
-createWorldFromCurrentSelection(universe, world, crossfilter)
 createObsDimensionMap(crossfilter, world)
 subsetVarData(world, universe, varData)
 
@@ -74,8 +72,8 @@ describe("createWorldFromCurrentSelection", () => {
       crossfilter,
       originalWorld
     );
-    dimensionMap.field1.filterRange(0, 3);
-    dimensionMap.field3.filterExact(0);
+    dimensionMap.field1.filterRange([0, 5]);
+    dimensionMap.field3.filterExact(false);
 
     /* create the world from the selection */
     const world = World.createWorldFromCurrentSelection(
@@ -84,5 +82,48 @@ describe("createWorldFromCurrentSelection", () => {
       crossfilter
     );
     expect(world).toBeDefined();
+    expect(world.nObs).toEqual(crossfilter.countFiltered());
+
+    /*
+    calculate expected values and match against result
+    */
+
+    /* matchFilter must match the dimension filters above */
+    const matchFilter = val => val.field1 >= 0 && val.field1 < 5 && !val.field3;
+    const universeIndices = _()
+      .range(universe.nObs)
+      .filter(idx => matchFilter(universe.obsAnnotations[idx]))
+      .value();
+
+    const expected = {
+      nObs: universeIndices.length,
+      obsAnnotations: _.map(universeIndices, i => universe.obsAnnotations[i]),
+      obsLayout: {
+        X: _.map(universeIndices, i => universe.obsLayout.X[i]),
+        Y: _.map(universeIndices, i => universe.obsLayout.Y[i])
+      },
+      worldObsIndex: _.transform(
+        universeIndices,
+        (result, univIdx, worldIdx) => {
+          result[univIdx] = worldIdx;
+        },
+        new Array(universe.nObs).fill(-1)
+      )
+    };
+
+    expect(world).toMatchObject(
+      expect.objectContaining({
+        api: "0.2",
+        nObs: expected.nObs,
+        nVar: universe.nVar,
+        schema: universe.schema,
+        obsAnnotations: expected.obsAnnotations,
+        varAnnotations: universe.varAnnotations,
+        obsLayout: expected.obsLayout,
+        summary: expect.any(Object) /* we could do better! */,
+        varDataCache: expect.any(Object),
+        worldObsIndex: expected.worldObsIndex
+      })
+    );
   });
 });
