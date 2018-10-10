@@ -36,6 +36,7 @@ const Controls = (
     crossfilter: null,
     dimensionMap: null,
     userDefinedGenes: [],
+    diffexpGenes: [],
 
     colorAccessor: null,
     colorScale: null,
@@ -68,6 +69,7 @@ const Controls = (
     }
     case "initial data load complete (universe exists)":
     case "reset World to eq Universe": {
+      const { userDefinedGenes, diffexpGenes } = state;
       /* first light - create world & other data-driven defaults */
       const { universe } = action;
       const world = World.createWorldFromEntireUniverse(universe);
@@ -76,6 +78,39 @@ const Controls = (
       const categoricalAsBooleansMap = createCategoricalAsBooleansMap(world);
       const crossfilter = Crossfilter(world.obsAnnotations);
       const dimensionMap = World.createObsDimensionMap(crossfilter, world);
+
+      let worldVarDataCache = world.varDataCache;
+
+      /* var dimensions */
+      if (userDefinedGenes.length > 0) {
+        /*
+          verbose & slightly confusing that we also access this as an object
+          in controls rather than an array, should be abstracted into
+          util ie., createDimensionsFromBothListsOfGenes(userGenes, diffExp)
+        */
+        _.forEach(userDefinedGenes, (gene, index) => {
+          dimensionMap[gene] = World.createVarDimension(
+            /* "__var__" + */
+            world,
+            worldVarDataCache,
+            crossfilter,
+            gene
+          );
+        });
+      }
+
+      if (diffexpGenes.length > 0) {
+        _.forEach(diffexpGenes, (gene, index) => {
+          dimensionMap[gene] = World.createVarDimension(
+            /* "__var__" + */
+            world,
+            worldVarDataCache,
+            crossfilter,
+            gene
+          );
+        });
+      }
+
       return {
         ...state,
         loading: false,
@@ -91,6 +126,8 @@ const Controls = (
       };
     }
     case "set World to current selection": {
+      const { userDefinedGenes, diffexpGenes } = state;
+
       /* Set viewable world to be the currently selected data */
       const world = World.createWorldFromCurrentSelection(
         action.universe,
@@ -102,6 +139,42 @@ const Controls = (
       const categoricalAsBooleansMap = createCategoricalAsBooleansMap(world);
       const crossfilter = Crossfilter(world.obsAnnotations);
       const dimensionMap = World.createObsDimensionMap(crossfilter, world);
+
+      let worldVarDataCache = world.varDataCache;
+      /* var dimensions */
+
+      if (userDefinedGenes.length > 0) {
+        /*
+          verbose & slightly confusing that we also access this as an object
+          in controls rather than an array, should be abstracted into
+          util ie., createDimensionsFromBothListsOfGenes(userGenes, diffExp)
+        */
+        _.forEach(userDefinedGenes, (gene, index) => {
+          dimensionMap[gene] = World.createVarDimension(
+            /* "__var__" + */
+            world,
+            worldVarDataCache,
+            crossfilter,
+            gene
+          );
+        });
+      }
+
+      console.log("diff", diffexpGenes);
+      if (diffexpGenes.length > 0) {
+        _.forEach(diffexpGenes, (gene, index) => {
+          dimensionMap[gene] = World.createVarDimension(
+            /* "__var__" + */
+            world,
+            worldVarDataCache,
+            crossfilter,
+            gene
+          );
+        });
+      }
+
+      console.log("crossfilter", crossfilter);
+
       return {
         ...state,
         loading: false,
@@ -152,6 +225,17 @@ const Controls = (
         }
       };
     }
+    case "request differential expression success": {
+      const { world } = state;
+      const _diffexpGenes = [];
+      action.data.forEach(d => {
+        _diffexpGenes.push(world.varAnnotations[d[0]].name);
+      });
+      return {
+        ...state,
+        diffexpGenes: _diffexpGenes
+      };
+    }
     case "clear differential expression":
       const { world, universe, crossfilter, dimensionMap } = state;
       const _dimensionMap = dimensionMap;
@@ -176,6 +260,7 @@ const Controls = (
       return {
         ...state,
         dimensionMap: _dimensionMap,
+        diffexpGenes: [],
         universe: {
           ...universe,
           varDataCache: universeVarDataCache
@@ -186,6 +271,7 @@ const Controls = (
         }
       };
     case "user defined gene": {
+      /* this could also live in expression success with a conditional, but that handles diffexp also */
       const newUserDefinedGenes = state.userDefinedGenes.slice();
       newUserDefinedGenes.push(action.data);
       return {
