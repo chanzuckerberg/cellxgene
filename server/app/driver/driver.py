@@ -65,10 +65,10 @@ class CXGDriver(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def annotation(self, df, axis, fields=None):
+    def annotation(self, filter, axis, fields=None):
         """
         Gets annotation value for each observation
-        :param df: from filter_cells, dataframe
+        :param filter: filter: dictionary with filter params
         :param axis: string obs or var
         :param fields: list of keys for annotation to return, returns all annotation values if not set.
         :return: dict: names - list of fields in order, data - list of lists or metadata
@@ -77,36 +77,38 @@ class CXGDriver(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def data_frame(self, df, axis):
+    def data_frame(self, filter, axis):
         """
         Retrieves data for each variable for observations in data frame
-        :param df: from filter_cells, dataframe
+        :param filter: filter: dictionary with filter params
         :param axis: string obs or var
         :return: {
             "var": list of variable ids,
             "obs": [cellid, var1 expression, var2 expression, ...],
         }
         """
-        pass
+    pass
 
     @abstractmethod
-    def diffexp(self, df1, df2, top_n):
+    def diffexp(self, filter1, filter2, top_n=None, interactive_limit=None):
         """
         Computes the top differentially expressed variables between two observation sets. If dataframes
         contain a subset of variables, then statistics for all variables will be returned, otherwise
         only the top N vars will be returned.
-        :param df1: from filter_cells, dataframe containing first set of observations
-        :param df2: from filter_cells, dataframe containing second set of observations
+        :param filter1: filter: dictionary with filter params for first set of observations
+        :param filter2: filter: dictionary with filter params for second set of observations
         :param top_n: Limit results to top N (Top var mode only)
+        :param interactive_limit: -- don't compute if total # genes in dataframes are larger than this
         :return: top genes, stats and expression values for variables
         """
         pass
 
     @abstractmethod
-    def layout(self, df):
+    def layout(self, filter, interactive_limit=None):
         """
         Computes a n-d layout for cells through dimensionality reduction.
-        :param df: from filter_cells, dataframe
+        :param filter: filter: dictionary with filter params
+        :param interactive_limit: -- don't compute if total # genes in dataframes are larger than this
         :return:  [cellid, x, y, ...]
         """
         pass
