@@ -53,6 +53,8 @@ class GeneExpression extends React.Component {
       console.log(
         "That's too many genes, you can have at most 15 user defined genes"
       );
+    } else if (!_.find(world.varAnnotations, { name: this.state.gene })) {
+      console.log("That doesn't appear to be a valid gene name.");
     } else {
       dispatch(actions.requestGeneExpressionCountsPOST([this.state.gene]));
       dispatch({
