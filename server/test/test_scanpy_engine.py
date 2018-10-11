@@ -117,7 +117,7 @@ class UtilTest(unittest.TestCase):
             self.data._create_schema()
 
     def test_config(self):
-        self.assertEqual(self.data.features["layout"]["obs"], {'available': True, 'interactiveLimit': 15000})
+        self.assertEqual(self.data.features["layout"]["obs"], {'available': True, 'interactiveLimit': 50000})
 
     def test_layout(self):
         layout = self.data.layout(None)

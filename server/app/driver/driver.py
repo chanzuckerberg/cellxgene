@@ -31,11 +31,11 @@ class CXGDriver(metaclass=ABCMeta):
         # TODO - Interactive limit should be generated from the actual available methods see GH issue #94
         if self.layout_method:
             # TODO handle "var" when gene layout becomes available
-            features["layout"]["obs"] = {"available": True, "interactiveLimit": 15000}
+            features["layout"]["obs"] = {"available": True, "interactiveLimit": 50000}
         if self.diffexp_method:
-            features["diffexp"] = {"available": True, "interactiveLimit": 5000}
+            features["diffexp"] = {"available": True, "interactiveLimit": 50000}
         if self.cluster:
-            features["cluster"] = {"available": True, "interactiveLimit": 45000}
+            features["cluster"] = {"available": True, "interactiveLimit": 50000}
         return features
 
     @staticmethod
