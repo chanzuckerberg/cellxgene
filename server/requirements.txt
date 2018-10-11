@@ -1,4 +1,4 @@
-anndata
+anndata==0.6.10
 Flask==0.12.4
 Flask-Caching==1.4.0
 Flask-Compress==1.4.0
