@@ -672,15 +672,13 @@ class LayoutObsAPI(Resource):
     })
     def post(self):
         try:
-            return make_response(
-                jsonify({
-                    "layout": current_app.data.layout(
-                        request.get_json()["filter"],
-                        interactive_limit=current_app.data.features["layout"]["obs"]["interactiveLimit"]
-                    )
-                }),
-                HTTPStatus.OK
-            )
+            filter = request.get_json()["filter"]
+            interactive_limit = current_app.data.features["layout"]["obs"]["interactiveLimit"]
+            layout = current_app.data.layout(filter, interactive_limit=interactive_limit)
+            # don't memoize layout with filter as is not idempotent
+            from server.app.app import cache
+            cache.delete_memoized(current_app.data.layout, filter, interactive_limit=interactive_limit)
+            return make_response(jsonify({"layout": layout}), HTTPStatus.OK)
         except FilterError as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
         except InteractiveError:
