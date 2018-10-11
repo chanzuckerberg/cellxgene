@@ -5,11 +5,11 @@ import React from "react";
 import _ from "lodash";
 import * as d3 from "d3";
 import { connect } from "react-redux";
-import HistogramBrush from "../brushableHistogram";
 import CirclePlus from "react-icons/lib/fa/plus-circle";
+import HistogramBrush from "../brushableHistogram";
 import * as globals from "../../globals";
 // import ReactAutocomplete from "react-autocomplete"; /* http://emilebres.github.io/react-virtualized-checkbox/ */
-import actions from "../../actions/";
+import actions from "../../actions";
 
 @connect(state => {
   const metadata = _.get(state.controls.world, "obsAnnotations", null);
@@ -22,7 +22,6 @@ import actions from "../../actions/";
     initializeRanges,
     userDefinedGenes: state.controls.userDefinedGenes,
     world: state.controls.world,
-    dimensionMap: state.controls.dimensionMap,
     colorAccessor: state.controls.colorAccessor,
     allGeneNames: state.controls.allGeneNames,
     differential: state.differential
@@ -32,40 +31,42 @@ class GeneExpression extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      svg: null,
-      ctx: null,
-      axes: null,
-      dimensions: null,
       gene: ""
     };
   }
+
   keyPress(e) {
-    if (e.keyCode == 13) {
+    if (e.keyCode === 13) {
       this.handleClick();
     }
   }
+
   handleClick() {
     const { world, dispatch, userDefinedGenes } = this.props;
+    const { gene } = this.state;
 
-    if (userDefinedGenes.indexOf(this.state.gene) !== -1) {
+    if (userDefinedGenes.indexOf(gene) !== -1) {
       console.log("That gene already exists");
     } else if (userDefinedGenes.length > 15) {
       console.log(
         "That's too many genes, you can have at most 15 user defined genes"
       );
-    } else if (!_.find(world.varAnnotations, { name: this.state.gene })) {
+    } else if (!_.find(world.varAnnotations, { name: gene })) {
       console.log("That doesn't appear to be a valid gene name.");
     } else {
-      dispatch(actions.requestGeneExpressionCountsPOST([this.state.gene]));
+      dispatch(actions.requestGeneExpressionCountsPOST([gene]));
       dispatch({
         type: "user defined gene",
-        data: this.state.gene
+        data: gene
       });
       this.setState({ gene: "" });
     }
   }
+
   render() {
     const { world, userDefinedGenes } = this.props;
+    const { gene } = this.state;
+
     return (
       <div>
         <input
@@ -74,9 +75,10 @@ class GeneExpression extends React.Component {
             this.setState({ gene: e.target.value });
           }}
           type="text"
-          value={this.state.gene}
+          value={gene}
         />
         <button
+          type="button"
           style={{
             border: "none",
             background: "none",
@@ -101,7 +103,7 @@ class GeneExpression extends React.Component {
           <p>User defined genes</p>
         ) : null}
         {world && userDefinedGenes.length > 0
-          ? _.map(userDefinedGenes, (geneName, index) => {
+          ? _.map(userDefinedGenes, geneName => {
               if (!world.varDataCache[geneName]) {
                 return null;
               } else {

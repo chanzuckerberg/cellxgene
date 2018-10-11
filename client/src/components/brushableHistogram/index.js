@@ -83,17 +83,28 @@ class HistogramBrush extends React.Component {
 
   onBrush(selection, x) {
     return () => {
-      const { dispatch, field } = this.props;
+      const { dispatch, field, isObs, isUserDefined, isDiffExp } = this.props;
+
       if (d3.event.selection) {
         dispatch({
           type: "continuous metadata histogram brush",
           selection: field,
+          continuousNamespace: {
+            isObs,
+            isUserDefined,
+            isDiffExp
+          },
           range: [x(d3.event.selection[0]), x(d3.event.selection[1])]
         });
       } else {
         dispatch({
           type: "continuous metadata histogram brush",
           selection: field,
+          continuousNamespace: {
+            isObs,
+            isUserDefined,
+            isDiffExp
+          },
           range: null
         });
       }
