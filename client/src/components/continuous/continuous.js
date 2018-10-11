@@ -58,6 +58,7 @@ class Continuous extends React.Component {
               <HistogramBrush
                 key={key}
                 field={key}
+                isObs
                 fieldValues={obsAnnotations}
                 ranges={value.range}
                 handleColorAction={this.handleColorAction(key).bind(this)}

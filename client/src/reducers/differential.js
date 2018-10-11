@@ -1,5 +1,4 @@
 // jshint esversion: 6
-import _ from "lodash";
 
 const Differential = (
   state = {
@@ -47,7 +46,7 @@ const Differential = (
         diffExp: null,
         celllist1: null,
         celllist2: null
-      }
+      };
     case "reset World to eq Universe":
     case "set World to current selection":
       return {

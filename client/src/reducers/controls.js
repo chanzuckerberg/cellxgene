@@ -5,6 +5,13 @@ import { World, kvCache } from "../util/stateManager";
 import parseRGB from "../util/parseRGB";
 import Crossfilter from "../util/typedCrossfilter";
 import * as globals from "../globals";
+import {
+  layoutDimensionName,
+  obsAnnoDimensionName,
+  userDefinedDimensionName,
+  diffexpDimensionName,
+  makeContinuousDimensionName
+} from "../util/nameCreators";
 
 function createCategoricalAsBooleansMap(world) {
   const res = {};
@@ -79,8 +86,14 @@ const Controls = (
       const crossfilter = Crossfilter(world.obsAnnotations);
       const dimensionMap = World.createObsDimensionMap(crossfilter, world);
 
-      let worldVarDataCache = world.varDataCache;
+      const worldVarDataCache = world.varDataCache;
 
+      // dimensionMap = {
+      //     layout_X: dim-for-X,
+      //     obsAnno_name: dim for an annotation,
+      //     varData_userDefined_genename: dim for user defined expression,
+      //     varData_diffexp_genename: dim for diff-exp added gene expression
+      // }
       /* var dimensions */
       if (userDefinedGenes.length > 0) {
         /*
@@ -88,8 +101,10 @@ const Controls = (
           in controls rather than an array, should be abstracted into
           util ie., createDimensionsFromBothListsOfGenes(userGenes, diffExp)
         */
-        _.forEach(userDefinedGenes, (gene, index) => {
-          dimensionMap[gene] = World.createVarDimension(
+        _.forEach(userDefinedGenes, gene => {
+          dimensionMap[
+            userDefinedDimensionName(gene)
+          ] = World.createVarDimension(
             /* "__var__" + */
             world,
             worldVarDataCache,
@@ -100,8 +115,8 @@ const Controls = (
       }
 
       if (diffexpGenes.length > 0) {
-        _.forEach(diffexpGenes, (gene, index) => {
-          dimensionMap[gene] = World.createVarDimension(
+        _.forEach(diffexpGenes, gene => {
+          dimensionMap[diffexpDimensionName(gene)] = World.createVarDimension(
             /* "__var__" + */
             world,
             worldVarDataCache,
@@ -140,7 +155,7 @@ const Controls = (
       const crossfilter = Crossfilter(world.obsAnnotations);
       const dimensionMap = World.createObsDimensionMap(crossfilter, world);
 
-      let worldVarDataCache = world.varDataCache;
+      const worldVarDataCache = world.varDataCache;
       /* var dimensions */
 
       if (userDefinedGenes.length > 0) {
@@ -149,8 +164,10 @@ const Controls = (
           in controls rather than an array, should be abstracted into
           util ie., createDimensionsFromBothListsOfGenes(userGenes, diffExp)
         */
-        _.forEach(userDefinedGenes, (gene, index) => {
-          dimensionMap[gene] = World.createVarDimension(
+        _.forEach(userDefinedGenes, gene => {
+          dimensionMap[
+            userDefinedDimensionName(gene)
+          ] = World.createVarDimension(
             /* "__var__" + */
             world,
             worldVarDataCache,
@@ -161,8 +178,8 @@ const Controls = (
       }
 
       if (diffexpGenes.length > 0) {
-        _.forEach(diffexpGenes, (gene, index) => {
-          dimensionMap[gene] = World.createVarDimension(
+        _.forEach(diffexpGenes, gene => {
+          dimensionMap[diffexpDimensionName(gene)] = World.createVarDimension(
             /* "__var__" + */
             world,
             worldVarDataCache,
@@ -186,6 +203,7 @@ const Controls = (
       };
     }
     case "expression load success": {
+      console.log("expression load success", action);
       const { world, universe, crossfilter, dimensionMap } = state;
       let universeVarDataCache = universe.varDataCache;
       let worldVarDataCache = world.varDataCache;
@@ -223,33 +241,34 @@ const Controls = (
       };
     }
     case "request differential expression success": {
+      console.log("request diff success", action);
       const { world } = state;
       const _diffexpGenes = [];
+
       action.data.forEach(d => {
         _diffexpGenes.push(world.varAnnotations[d[0]].name);
       });
+
       return {
         ...state,
         diffexpGenes: _diffexpGenes
       };
     }
-    case "clear differential expression":
+    case "clear differential expression": {
       const { world, universe, crossfilter, dimensionMap } = state;
       const _dimensionMap = dimensionMap;
-      let universeVarDataCache = universe.varDataCache;
-      let worldVarDataCache = world.varDataCache;
+      const universeVarDataCache = universe.varDataCache;
+      const worldVarDataCache = world.varDataCache;
 
       _.forEach(action.diffExp, values => {
-        const name = world.varAnnotations[values[0]].name;
+        const { name } = world.varAnnotations[values[0]].name;
         // clean up crossfilter dimensions
-        const filterID = dimensionMap[name];
-        const dimension = crossfilter.filters.find(d => {
-          return (d.id = filterID);
-        });
+        const filterID = dimensionMap[diffexpDimensionName(name)];
+        const dimension = crossfilter.filters.find(d => d.id === filterID);
         dimension.dim.dispose();
 
         // clean up dimensionsMap
-        delete _dimensionMap[name];
+        delete _dimensionMap[diffexpDimensionName(name)];
         // clean up the varDataCaches
         delete universeVarDataCache[name];
         delete worldVarDataCache[name];
@@ -267,8 +286,12 @@ const Controls = (
           varDataCache: worldVarDataCache
         }
       };
+    }
     case "user defined gene": {
-      /* this could also live in expression success with a conditional, but that handles diffexp also */
+      /*
+        this could also live in expression success with a conditional,
+        but that handles diffexp also
+      */
       const newUserDefinedGenes = state.userDefinedGenes.slice();
       newUserDefinedGenes.push(action.data);
       return {
@@ -278,9 +301,10 @@ const Controls = (
     }
     case "clear user defined gene": {
       const { userDefinedGenes } = state;
-      const newUserDefinedGenes = _.filter(userDefinedGenes, d => {
-        return d !== action.data;
-      });
+      const newUserDefinedGenes = _.filter(
+        userDefinedGenes,
+        d => d !== action.data
+      );
       return {
         ...state,
         userDefinedGenes: newUserDefinedGenes
@@ -310,11 +334,11 @@ const Controls = (
              User Events
      *******************************/
     case "graph brush selection change": {
-      state.dimensionMap.x.filterRange([
+      state.dimensionMap[layoutDimensionName("X")].filterRange([
         action.brushCoords.northwest[0],
         action.brushCoords.southeast[0]
       ]);
-      state.dimensionMap.y.filterRange([
+      state.dimensionMap[layoutDimensionName("Y")].filterRange([
         action.brushCoords.southeast[1],
         action.brushCoords.northwest[1]
       ]);
@@ -324,20 +348,25 @@ const Controls = (
       };
     }
     case "graph brush deselect": {
-      state.dimensionMap.x.filterAll();
-      state.dimensionMap.y.filterAll();
+      state.dimensionMap[layoutDimensionName("X")].filterAll();
+      state.dimensionMap[layoutDimensionName("Y")].filterAll();
       return {
         ...state,
         graphBrushSelection: null
       };
     }
     case "continuous metadata histogram brush": {
+      const name = makeContinuousDimensionName(
+        action.continuousNamespace,
+        action.selection
+      );
+
       // action.selection: metadata name being selected
       // action.range: filter range, or null if deselected
       if (!action.range) {
-        state.dimensionMap[action.selection].filterAll();
+        state.dimensionMap[name].filterAll();
       } else {
-        state.dimensionMap[action.selection].filterRange(action.range);
+        state.dimensionMap[name].filterRange(action.range);
       }
       return { ...state };
     }
@@ -359,7 +388,7 @@ const Controls = (
         }
       };
       // update the filter for the one category that changed state
-      state.dimensionMap[action.metadataField].filterEnum(
+      state.dimensionMap[obsAnnoDimensionName(action.metadataField)].filterEnum(
         _.filter(
           _.map(
             newCategoricalAsBooleansMap[action.metadataField],
@@ -381,7 +410,7 @@ const Controls = (
         }
       };
       // update the filter for the one category that changed state
-      state.dimensionMap[action.metadataField].filterEnum(
+      state.dimensionMap[obsAnnoDimensionName(action.metadataField)].filterEnum(
         _.filter(
           _.map(
             newCategoricalAsBooleansMap[action.metadataField],
@@ -404,7 +433,9 @@ const Controls = (
           c[k] = false;
         }
       );
-      state.dimensionMap[action.metadataField].filterNone();
+      state.dimensionMap[
+        obsAnnoDimensionName(action.metadataField)
+      ].filterNone();
       return {
         ...state,
         categoricalAsBooleansMap: newCategoricalAsBooleansMap
@@ -420,7 +451,9 @@ const Controls = (
           c[k] = true;
         }
       );
-      state.dimensionMap[action.metadataField].filterAll();
+      state.dimensionMap[
+        obsAnnoDimensionName(action.metadataField)
+      ].filterAll();
       return {
         ...state,
         categoricalAsBooleansMap: newCategoricalAsBooleansMap

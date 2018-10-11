@@ -2,6 +2,7 @@
 
 import _ from "lodash";
 import * as kvCache from "./keyvalcache";
+import { layoutDimensionName, obsAnnoDimensionName } from "../nameCreators";
 
 /*
 World is a subset of universe.   Most code should use world, and should
@@ -296,13 +297,14 @@ export function createVarDimension(
   crossfilter,
   geneName
 ) {
-  const { varDataCache, worldObsIndex } = world;
+  const { worldObsIndex } = world;
   const varData = _worldVarDataCache[geneName];
   const worldIndex = worldObsIndex ? idx => worldObsIndex[idx] : idx => idx;
 
-  return crossfilter.dimension(r => {
-    return varData[worldIndex(r.__index__)];
-  }, Float32Array);
+  return crossfilter.dimension(
+    r => varData[worldIndex(r.__index__)],
+    Float32Array
+  );
 }
 
 export function createObsDimensionMap(crossfilter, world) {
@@ -317,7 +319,10 @@ export function createObsDimensionMap(crossfilter, world) {
     (result, anno) => {
       const dimType = deduceDimensionType(anno, anno.name);
       if (dimType) {
-        result[anno.name] = crossfilter.dimension(r => r[anno.name], dimType);
+        result[obsAnnoDimensionName(anno.name)] = crossfilter.dimension(
+          r => r[anno.name],
+          dimType
+        );
       } // else ignore the annotation
     },
     {}
@@ -327,11 +332,11 @@ export function createObsDimensionMap(crossfilter, world) {
   Add crossfilter dimensions allowing filtering on layout
   */
   const worldIndex = worldObsIndex ? idx => worldObsIndex[idx] : idx => idx;
-  dimensionMap.x = crossfilter.dimension(
+  dimensionMap[layoutDimensionName("X")] = crossfilter.dimension(
     r => obsLayout.X[worldIndex(r.__index__)],
     Float32Array
   );
-  dimensionMap.y = crossfilter.dimension(
+  dimensionMap[layoutDimensionName("Y")] = crossfilter.dimension(
     r => obsLayout.Y[worldIndex(r.__index__)],
     Float32Array
   );
