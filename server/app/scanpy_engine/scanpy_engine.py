@@ -6,8 +6,7 @@ from pandas import DataFrame, Series
 import scanpy.api as sc
 from scipy import stats
 
-# TODO fix memoization so that it correctly identifies the same request
-# from server.app.app import cache
+from server.app.app import cache
 from server.app.driver.driver import CXGDriver
 from server.app.util.constants import Axis, DEFAULT_TOP_N, DiffExpMode
 from server.app.util.utils import FilterError, InteractiveError
@@ -201,7 +200,7 @@ class ScanpyEngine(CXGDriver):
                     index = np.logical_and(index, key_idx)
         return index
 
-    # @cache.memoize()
+    @cache.memoize()
     def annotation(self, filter, axis, fields=None):
         """
          Gets annotation value for each observation
@@ -224,7 +223,7 @@ class ScanpyEngine(CXGDriver):
             "data": annotations.reset_index().values.tolist()
         }
 
-    # @cache.memoize()
+    @cache.memoize()
     def data_frame(self, filter, axis):
         """
         Retrieves data for each variable for observations in data frame
@@ -261,7 +260,6 @@ class ScanpyEngine(CXGDriver):
             }
         return result
 
-    # @cache.memoize()
     def diffexp(self, filter1, filter2, top_n=None, interactive_limit=None):
         """
         Computes the top differentially expressed variables between two observation sets. If dataframes
@@ -321,7 +319,7 @@ class ScanpyEngine(CXGDriver):
         # Results need to be returned in var index order
         return sorted(result, key=lambda gene: gene[0])
 
-    # @cache.memoize()
+    @cache.memoize()
     def layout(self, filter, interactive_limit=None):
         """
         Computes a n-d layout for cells through dimensionality reduction.

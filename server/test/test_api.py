@@ -84,22 +84,16 @@ class EndPoints(unittest.TestCase):
                 }
             }
         }
-        result = self.session.post(url, json=obs_filter)
+        result = self.session.put(url, json=obs_filter)
         self.assertEqual(result.status_code, HTTPStatus.OK)
         result_data = result.json()
         self.assertEqual(len(result_data["layout"]["coordinates"]), 15)
 
     def test_bad_filter(self):
-        endpoints = {
-            "layout/obs": "post",
-            "annotations/obs": "put",
-            "annotations/var": "put",
-            "data/obs": "put",
-            "data/var": "put"
-        }
-        for endpoint, method in endpoints.items():
+        endpoints = ["layout/obs", "annotations/obs", "annotations/var", "data/obs", "data/var"]
+        for endpoint in endpoints:
             url = f"{URL_BASE}{endpoint}"
-            result = getattr(self.session, method)(url, json=BAD_FILTER)
+            result = self.session.put(url, json=BAD_FILTER)
             self.assertEqual(result.status_code, HTTPStatus.BAD_REQUEST)
 
     def test_get_annotations_obs(self):
@@ -372,6 +366,39 @@ class EndPoints(unittest.TestCase):
             elif axis == "var":
                 self.assertEqual(len(result_data["obs"]), 2638)
                 self.assertEqual(len(result_data["var"][0]), 2639)
+
+    def test_cache(self):
+        endpoint = "annotations/var"
+        url = f"{URL_BASE}{endpoint}"
+        f1 = {"filter": {"var": {"annotation_value": [{"name": "name",
+                                                       "values": ["HLA-DRB1", "HLA-DQA1", "HLA-DQB1", "HLA-DPA1",
+                                                                  "HLA-DPB1", "MS4A1", "IL32", "CCL5", "CD79B",
+                                                                  "CD79A"]}]}}}
+        result = self.session.put(url, json=f1)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        result_data1 = result.json()
+        f2 = {"filter": {"var": {"annotation_value": [{"name": "name",
+                                                       "values": ["FGFBP2", "GZMA", "LTB", "PRF1", "CTSW", "GZMH",
+                                                                  "CCL5", "CCL4", "CST7", "NKG7"]}]}}}
+        result = self.session.put(url, json=f2)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        result_data2 = result.json()
+        self.assertNotEqual(result_data1, result_data2)
+
+    def test_cache_nofilter(self):
+        endpoint = "annotations/var"
+        url = f"{URL_BASE}{endpoint}"
+        f1 = {"filter": {}}
+        result = self.session.put(url, json=f1)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        result_data1 = result.json()
+        f2 = {"filter": {"var": {"annotation_value": [{"name": "name",
+                                                       "values": ["FGFBP2", "GZMA", "LTB", "PRF1", "CTSW", "GZMH",
+                                                                  "CCL5", "CCL4", "CST7", "NKG7"]}]}}}
+        result = self.session.put(url, json=f2)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        result_data2 = result.json()
+        self.assertNotEqual(result_data1, result_data2)
 
     def test_static(self):
         endpoint = "static"
