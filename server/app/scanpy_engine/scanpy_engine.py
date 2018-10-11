@@ -10,6 +10,7 @@ from scipy import stats
 # from server.app.app import cache
 from server.app.driver.driver import CXGDriver
 from server.app.util.constants import Axis, DEFAULT_TOP_N, DiffExpMode
+from server.app.util.utils import FilterError, InteractiveError
 
 """
 Sort order for methods
@@ -30,7 +31,7 @@ class ScanpyEngine(CXGDriver):
         self.cell_count = self.data.shape[0]
         self.gene_count = self.data.shape[1]
         self._create_schema()
-        self.layout(self.data)
+        self.layout(None)
 
     def _create_schema(self):
         self.schema = {
@@ -122,8 +123,7 @@ class ScanpyEngine(CXGDriver):
     def genes(self):
         return self.data.var.index.tolist()
 
-    # Can't seem to cache a view of a dataframe, need to investigate why
-    def filter_dataframe(self, filter, include_uns=True):
+    def filter_dataframe(self, filter, include_uns=False):
         """
          Filter cells from data and return a subset of the data. They can operate on both obs and var dimension with
          indexing and filtering by annotation value. Filters are combined with the and operator.
@@ -131,10 +131,12 @@ class ScanpyEngine(CXGDriver):
          # TODO update this link to swagger when it's done
          https://docs.google.com/document/d/1Fxjp1SKtCk7l8QP9-7KAjGXL0eldi_qEnNT0NmlGzXI/edit#heading=h.8qc9q57amldx
 
-        :param filter: dictionary with filter parames
+        :param filter: dictionary with filter params
         :param include_uns: bool, include unstructured annotations
         :return: View into scanpy object with cells/genes filtered
         """
+        if not filter:
+            return self.data
         cells_idx = np.ones((self.cell_count,), dtype=bool)
         genes_idx = np.ones((self.gene_count,), dtype=bool)
         if Axis.OBS in filter:
@@ -200,15 +202,19 @@ class ScanpyEngine(CXGDriver):
         return index
 
     # @cache.memoize()
-    def annotation(self, df, axis, fields=None):
+    def annotation(self, filter, axis, fields=None):
         """
          Gets annotation value for each observation
-        :param df: from filter_cells, dataframe
+        :param filter: filter: dictionary with filter params
         :param axis: string obs or var
         :param fields: list of keys for annotation to return, returns all annotation values if not set.
         :return: dict: names - list of fields in order, data - list of lists or metadata
         [observation ids, val1, val2...]
         """
+        try:
+            df = self.filter_dataframe(filter)
+        except KeyError as e:
+            raise FilterError(f"Error parsing filter: {e}") from e
         df_axis = getattr(df, axis)
         if not fields:
             fields = df_axis.columns.tolist()
@@ -219,16 +225,20 @@ class ScanpyEngine(CXGDriver):
         }
 
     # @cache.memoize()
-    def data_frame(self, df, axis):
+    def data_frame(self, filter, axis):
         """
         Retrieves data for each variable for observations in data frame
-        :param df: from filter_cells, dataframe
+        :param filter: filter: dictionary with filter params
         :param axis: string obs or var
         :return: {
             "var": list of variable ids,
             "obs": [cellid, var1 expression, var2 expression, ...],
         }
         """
+        try:
+            df = self.filter_dataframe(filter)
+        except KeyError as e:
+            raise FilterError(f"Error parsing filter: {e}") from e
         var_idx = df.var.index.tolist()
         obs_idx = df.obs.index.tolist()
         values = df.X
@@ -252,20 +262,31 @@ class ScanpyEngine(CXGDriver):
         return result
 
     # @cache.memoize()
-    def diffexp(self, df1, df2, top_n=None):
+    def diffexp(self, filter1, filter2, top_n=None, interactive_limit=None):
         """
         Computes the top differentially expressed variables between two observation sets. If dataframes
         contain a subset of variables, then statistics for all variables will be returned, otherwise
         only the top N vars will be returned.
-        :param df1: from filter_cells, dataframe containing first set of observations
-        :param df2: from filter_cells, dataframe containing second set of observations
+        :param filter1: filter: dictionary with filter params for first set of observations
+        :param filter2: filter: dictionary with filter params for second set of observations
         :param top_n: Limit results to top N (Top var mode only)
+        :param interactive_limit: -- don't compute if total # genes in dataframes are larger than this
         :return: top genes, stats and expression values for variables
         """
+        try:
+            df1 = self.filter_dataframe(filter1)
+        except KeyError as e:
+            raise FilterError(f"Error parsing filter for set 1: {e}") from e
+        # TODO df2 should be inverse if not filter2 provided
+        try:
+            df2 = self.filter_dataframe(filter2)
+        except KeyError as e:
+            raise FilterError(f"Error parsing filter for set 2: {e}") from e
         # If not the same genes, test is wrong!
         if np.any(df1.var.index != df2.var.index):
             raise ValueError("Variables ares not the same in set1 and set2")
-
+        if interactive_limit and df1.shape[0] + df2.shape[0] > interactive_limit:
+            raise InteractiveError("Size of set 1 and 2 is too large for interactive computation")
         # If not all genes, they used a var filter
         if df1.var.shape[0] < self.gene_count:
             mode = DiffExpMode.VAR_FILTER
@@ -301,12 +322,19 @@ class ScanpyEngine(CXGDriver):
         return sorted(result, key=lambda gene: gene[0])
 
     # @cache.memoize()
-    def layout(self, df):
+    def layout(self, filter, interactive_limit=None):
         """
         Computes a n-d layout for cells through dimensionality reduction.
-        :param df: from filter_cells, dataframe
+        :param filter: filter: dictionary with filter params
+        :param interactive_limit: -- don't compute if total # genes in dataframes are larger than this
         :return:  [cellid, x, y, ...]
         """
+        try:
+            df = self.filter_dataframe(filter, include_uns=True)
+        except KeyError as e:
+            raise FilterError(f"Error parsing filter: {e}") from e
+        if interactive_limit and len(df.obs.index) > interactive_limit:
+            raise InteractiveError("Size data is too large for interactive computation")
         # TODO Filtering cells is fine, but filtering genes does nothing because the neighbors are
         # calculated using the original vars (geneset) and this doesn’t get updated when you use less.
         # Need to recalculate neighbors (long) if user requests new layout filtered by var

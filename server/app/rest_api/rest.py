@@ -10,7 +10,7 @@ from werkzeug.datastructures import ImmutableMultiDict
 from server.app.util.constants import Axis, DiffExpMode
 from server.app.util.filter import parse_filter, QueryStringError
 from server.app.util.models import FilterModel
-from server.app.util.utils import MimeTypeError, get_mime_type
+from server.app.util.utils import FilterError, InteractiveError, MimeTypeError, get_mime_type
 
 """
 Sort order for routes
@@ -153,7 +153,7 @@ class AnnotationsObsAPI(Resource):
     def get(self):
         fields = request.args.getlist("annotation-name", None)
         try:
-            annotation_response = current_app.data.annotation(current_app.data.data, "obs", fields)
+            annotation_response = current_app.data.annotation({}, "obs", fields)
         except KeyError:
             return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
         return make_response(jsonify(annotation_response), HTTPStatus.OK)
@@ -202,13 +202,11 @@ class AnnotationsObsAPI(Resource):
     def put(self):
         fields = request.args.getlist("annotation-name", None)
         try:
-            df = current_app.data.filter_dataframe(request.get_json()["filter"], include_uns=False)
-        except KeyError:
-            return make_response("Malformed filter", HTTPStatus.BAD_REQUEST)
-        try:
-            annotation_response = current_app.data.annotation(df, "obs", fields)
+            annotation_response = current_app.data.annotation(request.get_json()["filter"], "obs", fields)
         except KeyError:
             return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
+        except FilterError as e:
+            return make_response(e.message, HTTPStatus.BAD_REQUEST)
         return make_response(jsonify(annotation_response), HTTPStatus.OK)
 
 
@@ -248,7 +246,7 @@ class AnnotationsVarAPI(Resource):
     def get(self):
         fields = request.args.getlist("annotation-name", None)
         try:
-            annotation_response = current_app.data.annotation(current_app.data.data, "var", fields)
+            annotation_response = current_app.data.annotation({}, "var", fields)
         except KeyError:
             return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
         return make_response(jsonify(annotation_response), HTTPStatus.OK)
@@ -295,13 +293,11 @@ class AnnotationsVarAPI(Resource):
     def put(self):
         fields = request.args.getlist("annotation-name", None)
         try:
-            df = current_app.data.filter_dataframe(request.get_json()["filter"], include_uns=False)
-        except KeyError:
-            return make_response("Malformed filter", HTTPStatus.BAD_REQUEST)
-        try:
-            annotation_response = current_app.data.annotation(df, "var", fields)
+            annotation_response = current_app.data.annotation(request.get_json()["filter"], "var", fields)
         except KeyError:
             return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
+        except FilterError as e:
+            return make_response("Malformed filter", HTTPStatus.BAD_REQUEST)
         return make_response(jsonify(annotation_response), HTTPStatus.OK)
 
 
@@ -352,10 +348,6 @@ class DataObsAPI(Resource):
             filter_ = parse_filter(ImmutableMultiDict(args), current_app.data.schema['annotations'])
         except QueryStringError as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
-        try:
-            df = current_app.data.filter_dataframe(filter_, include_uns=False)
-        except KeyError:
-            return make_response("malformed filter", HTTPStatus.BAD_REQUEST)
         # TODO support CSV
         try:
             # TODO store mime_type when more than one is supported
@@ -363,7 +355,10 @@ class DataObsAPI(Resource):
                           header=request.accept_mimetypes)
         except MimeTypeError as e:
             return make_response(e.message, HTTPStatus.NOT_ACCEPTABLE)
-        return make_response((jsonify(current_app.data.data_frame(df, axis=Axis.OBS))), HTTPStatus.OK)
+        try:
+            return make_response((jsonify(current_app.data.data_frame(filter_, axis=Axis.OBS))), HTTPStatus.OK)
+        except FilterError as e:
+            return make_response(e.message, HTTPStatus.BAD_REQUEST)
 
     @swagger.doc({
         "summary": "Get data (expression values) from the dataframe.",
@@ -400,14 +395,14 @@ class DataObsAPI(Resource):
         if not request.accept_mimetypes.best_match(["application/json", "text/csv"]):
             return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
         try:
-            df = current_app.data.filter_dataframe(request.get_json()["filter"], include_uns=False)
-        except KeyError:
-            return make_response("malformed filter", HTTPStatus.BAD_REQUEST)
-        try:
             get_mime_type(acceptable_types=["application/json"], header=request.accept_mimetypes)
         except MimeTypeError as e:
             return make_response(e.message, HTTPStatus.NOT_ACCEPTABLE)
-        return make_response((jsonify(current_app.data.data_frame(df, axis=Axis.OBS))), HTTPStatus.OK)
+        try:
+            return make_response((jsonify(current_app.data.data_frame(request.get_json()["filter"], axis=Axis.OBS))),
+                                 HTTPStatus.OK)
+        except FilterError as e:
+            return make_response(e.message, HTTPStatus.BAD_REQUEST)
 
 
 class DataVarAPI(Resource):
@@ -458,15 +453,14 @@ class DataVarAPI(Resource):
         except QueryStringError as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
         try:
-            df = current_app.data.filter_dataframe(filter_, include_uns=False)
-        except KeyError:
-            return make_response("malformed filter", HTTPStatus.BAD_REQUEST)
-        try:
             get_mime_type(acceptable_types=["application/json"], query_param=accept_type,
                           header=request.accept_mimetypes)
         except MimeTypeError as e:
             return make_response(e.message, HTTPStatus.NOT_ACCEPTABLE)
-        return make_response((jsonify(current_app.data.data_frame(df, axis=Axis.VAR))), HTTPStatus.OK)
+        try:
+            return make_response((jsonify(current_app.data.data_frame(filter_, axis=Axis.VAR))), HTTPStatus.OK)
+        except FilterError as e:
+            return make_response(e.message, HTTPStatus.BAD_REQUEST)
 
     @swagger.doc({
         "summary": "Get data (expression values) from the dataframe.",
@@ -502,16 +496,16 @@ class DataVarAPI(Resource):
     def put(self):
         if not request.accept_mimetypes.best_match(["application/json", "text/csv"]):
             return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
-        try:
-            df = current_app.data.filter_dataframe(request.get_json()["filter"], include_uns=False)
-        except KeyError:
-            return make_response("malformed filter", HTTPStatus.BAD_REQUEST)
         # TODO support CSV
         try:
             get_mime_type(acceptable_types=["application/json"], header=request.accept_mimetypes)
         except MimeTypeError as e:
             return make_response(e.message, HTTPStatus.NOT_ACCEPTABLE)
-        return make_response((jsonify(current_app.data.data_frame(df, axis=Axis.VAR))), HTTPStatus.OK)
+        try:
+            return make_response((jsonify(current_app.data.data_frame(request.get_json()["filter"], axis=Axis.VAR))),
+                                 HTTPStatus.OK)
+        except FilterError as e:
+            return make_response(e.message, HTTPStatus.BAD_REQUEST)
 
 
 class DiffExpObsAPI(Resource):
@@ -605,18 +599,15 @@ class DiffExpObsAPI(Resource):
         if "varFilter" in args:
             set1_filter[Axis.VAR] = args["varFilter"]["filter"][Axis.VAR]
             set2_filter[Axis.VAR] = args["varFilter"]["filter"][Axis.VAR]
-        df1 = current_app.data.filter_dataframe(set1_filter, include_uns=False)
-        # TODO inverse
-        df2 = current_app.data.filter_dataframe(set2_filter, include_uns=False)
-        # exceeds size limit
-        if df1.shape[0] + df2.shape[0] > current_app.data.features["diffexp"]["interactiveLimit"]:
-            return make_response("Non-interactive request", HTTPStatus.FORBIDDEN)
         # mode
         count = args.get("count", None)
         try:
-            diffexp = current_app.data.diffexp(df1, df2, count)
-        except ValueError as ve:
-            return make_response(ve.message, HTTPStatus.BAD_REQUEST)
+            diffexp = current_app.data.diffexp(set1_filter, set2_filter, count,
+                                               current_app.data.features["diffexp"]["interactiveLimit"])
+        except (ValueError, FilterError) as e:
+            return make_response(e.message, HTTPStatus.BAD_REQUEST)
+        except InteractiveError:
+            return make_response("Non-interactive request", HTTPStatus.FORBIDDEN)
         return make_response(jsonify(diffexp), HTTPStatus.OK)
 
 
@@ -643,7 +634,7 @@ class LayoutObsAPI(Resource):
         }
     })
     def get(self):
-        return make_response((jsonify({"layout": current_app.data.layout(current_app.data.data)})), HTTPStatus.OK)
+        return make_response((jsonify({"layout": current_app.data.layout({})})), HTTPStatus.OK)
 
     @swagger.doc({
         "summary": "Observation layout for filtered subset.",
@@ -681,12 +672,19 @@ class LayoutObsAPI(Resource):
     })
     def post(self):
         try:
-            df = current_app.data.filter_dataframe(request.get_json()["filter"])
-        except KeyError:
-            return make_response("Malformed filter", HTTPStatus.BAD_REQUEST)
-        if len(df.obs.index) > current_app.data.features["layout"]["obs"]["interactiveLimit"]:
+            return make_response(
+                jsonify({
+                    "layout": current_app.data.layout(
+                        request.get_json()["filter"],
+                        interactive_limit=current_app.data.features["layout"]["obs"]["interactiveLimit"]
+                    )
+                }),
+                HTTPStatus.OK
+            )
+        except FilterError as e:
+            return make_response(e.message, HTTPStatus.BAD_REQUEST)
+        except InteractiveError:
             return make_response("Non-interactive request", HTTPStatus.FORBIDDEN)
-        return make_response((jsonify({"layout": current_app.data.layout(df)})), HTTPStatus.OK)
 
 
 def get_api_resources():

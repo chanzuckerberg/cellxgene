@@ -18,6 +18,18 @@ class MimeTypeError(Exception):
         self.message = message
 
 
+class FilterError(Exception):
+
+    def __init__(self, message):
+        self.message = message
+
+
+class InteractiveError(Exception):
+
+    def __init__(self, message):
+        self.message = message
+
+
 def get_mime_type(default="application/json", acceptable_types=["application/json", "text/csv"], query_param=None,
                   header=None):
     mime_type = default
