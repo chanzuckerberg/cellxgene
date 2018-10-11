@@ -461,7 +461,7 @@ Get the _default_ layout for all observations or (_future_) all variables. Retur
 }
 ```
 
-### POST /layout/obs, (_future_) POST /layout/var
+### PUT /layout/obs, (_future_) PUT /layout/var
 
 Generate layout for the caller-specified subset of data, as indicated by the filter. This operation implicitly requests a re-layout operation to be performed on the specified data.
 
