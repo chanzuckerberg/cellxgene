@@ -214,7 +214,7 @@ class ScanpyEngine(CXGDriver):
         try:
             df = self.filter_dataframe(filter)
         except KeyError as e:
-            raise FilterError(f"Error parsing filter: {e}")
+            raise FilterError(f"Error parsing filter: {e}") from e
         df_axis = getattr(df, axis)
         if not fields:
             fields = df_axis.columns.tolist()
@@ -238,7 +238,7 @@ class ScanpyEngine(CXGDriver):
         try:
             df = self.filter_dataframe(filter)
         except KeyError as e:
-            raise FilterError(f"Error parsing filter: {e}")
+            raise FilterError(f"Error parsing filter: {e}") from e
         var_idx = df.var.index.tolist()
         obs_idx = df.obs.index.tolist()
         values = df.X
@@ -276,12 +276,12 @@ class ScanpyEngine(CXGDriver):
         try:
             df1 = self.filter_dataframe(filter1)
         except KeyError as e:
-            raise FilterError(f"Error parsing filter for set 1: {e}")
+            raise FilterError(f"Error parsing filter for set 1: {e}") from e
         # TODO df2 should be inverse if not filter2 provided
         try:
             df2 = self.filter_dataframe(filter2)
         except KeyError as e:
-            raise FilterError(f"Error parsing filter for set 2: {e}")
+            raise FilterError(f"Error parsing filter for set 2: {e}") from e
         # If not the same genes, test is wrong!
         if np.any(df1.var.index != df2.var.index):
             raise ValueError("Variables ares not the same in set1 and set2")
@@ -332,7 +332,7 @@ class ScanpyEngine(CXGDriver):
         try:
             df = self.filter_dataframe(filter, include_uns=True)
         except KeyError as e:
-            raise FilterError(f"Error parsing filter: {e}")
+            raise FilterError(f"Error parsing filter: {e}") from e
         if interactive_limit and len(df.obs.index) > interactive_limit:
             raise InteractiveError("Size data is too large for interactive computation")
         # TODO Filtering cells is fine, but filtering genes does nothing because the neighbors are

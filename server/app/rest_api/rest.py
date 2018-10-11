@@ -153,7 +153,7 @@ class AnnotationsObsAPI(Resource):
     def get(self):
         fields = request.args.getlist("annotation-name", None)
         try:
-            annotation_response = current_app.data.annotation(None, "obs", fields)
+            annotation_response = current_app.data.annotation({}, "obs", fields)
         except KeyError:
             return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
         return make_response(jsonify(annotation_response), HTTPStatus.OK)
@@ -246,7 +246,7 @@ class AnnotationsVarAPI(Resource):
     def get(self):
         fields = request.args.getlist("annotation-name", None)
         try:
-            annotation_response = current_app.data.annotation(None, "var", fields)
+            annotation_response = current_app.data.annotation({}, "var", fields)
         except KeyError:
             return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
         return make_response(jsonify(annotation_response), HTTPStatus.OK)
@@ -604,9 +604,7 @@ class DiffExpObsAPI(Resource):
         try:
             diffexp = current_app.data.diffexp(set1_filter, set2_filter, count,
                                                current_app.data.features["diffexp"]["interactiveLimit"])
-        except ValueError as e:
-            return make_response(e.message, HTTPStatus.BAD_REQUEST)
-        except FilterError as e:
+        except (ValueError, FilterError) as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
         except InteractiveError:
             return make_response("Non-interactive request", HTTPStatus.FORBIDDEN)
@@ -636,7 +634,7 @@ class LayoutObsAPI(Resource):
         }
     })
     def get(self):
-        return make_response((jsonify({"layout": current_app.data.layout(None)})), HTTPStatus.OK)
+        return make_response((jsonify({"layout": current_app.data.layout({})})), HTTPStatus.OK)
 
     @swagger.doc({
         "summary": "Observation layout for filtered subset.",

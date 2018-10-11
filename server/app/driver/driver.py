@@ -57,7 +57,7 @@ class CXGDriver(metaclass=ABCMeta):
         Filter cells from data and return a subset of the data. They can operate on both obs and var dimension with
         indexing and filtering by annotation value. Filters are combined with the and operator.
         See REST specs for info on filter format:
-        https://docs.google.com/document/d/1Fxjp1SKtCk7l8QP9-7KAjGXL0eldi_qEnNT0NmlGzXI/edit#heading=h.8qc9q57amldx
+        https://github.com/chanzuckerberg/cellxgene/blob/master/docs/REST_API.md
 
         :param filter: dictionary with filter params
         :return: View into scanpy object with cells/genes filtered
@@ -87,7 +87,7 @@ class CXGDriver(metaclass=ABCMeta):
             "obs": [cellid, var1 expression, var2 expression, ...],
         }
         """
-    pass
+        pass
 
     @abstractmethod
     def diffexp(self, filter1, filter2, top_n=None, interactive_limit=None):
