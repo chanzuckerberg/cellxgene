@@ -1,45 +1,36 @@
 // jshint esversion: 6
 import React from "react";
-import _ from "lodash";
 import Helmet from "react-helmet";
-import Container from "./framework/container";
 import { connect } from "react-redux";
-// import PulseLoader from "halogen/PulseLoader";
 
+import Container from "./framework/container";
 import LeftSideBar from "./leftsidebar";
 import Legend from "./continuousLegend";
 import Graph from "./graph/graph";
-import * as globals from "../globals";
 import actions from "../actions";
 
-import SectionHeader from "./framework/sectionHeader";
-
-@connect(state => {
-  return {
-    loading: state.controls.loading,
-    error: state.controls.error
-  };
-})
+@connect(state => ({
+  loading: state.controls.loading,
+  error: state.controls.error
+}))
 class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {};
   }
 
-  _onURLChanged() {
-    this.props.dispatch({ type: "url changed", url: document.location.href });
-  }
-
   componentDidMount() {
+    const { dispatch } = this.props;
+
     /* listen for url changes, fire one when we start the app up */
     window.addEventListener("popstate", this._onURLChanged);
     this._onURLChanged();
 
-    this.props.dispatch(actions.doInitialDataLoad(window.location.search));
+    dispatch(actions.doInitialDataLoad(window.location.search));
 
     /* listen for resize events */
     window.addEventListener("resize", () => {
-      this.props.dispatch({
+      dispatch({
         type: "window resize",
         data: {
           height: window.innerHeight,
@@ -47,13 +38,19 @@ class App extends React.Component {
         }
       });
     });
-    this.props.dispatch({
+    dispatch({
       type: "window resize",
       data: {
         height: window.innerHeight,
         width: window.innerWidth
       }
     });
+  }
+
+  _onURLChanged() {
+    const { dispatch } = this.props;
+
+    dispatch({ type: "url changed", url: document.location.href });
   }
 
   render() {

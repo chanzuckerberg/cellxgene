@@ -301,5 +301,3 @@ class Scatterplot extends React.Component {
 }
 
 export default Scatterplot;
-
-// <SectionHeader text="Continuous Metadata"/>
