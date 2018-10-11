@@ -2,8 +2,18 @@
 import _ from "lodash";
 import * as globals from "../globals";
 import { Universe, kvCache } from "../util/stateManager";
-import { catchErrorsWrap, doJsonRequest } from "../util/actionHelpers";
+import {
+  catchErrorsWrap,
+  doJsonRequest,
+  rangeEncodeIndices
+} from "../util/actionHelpers";
 
+/*
+Bootstrap application with the initial data loading.
+  * /config - application configuration
+  * /schema - schema of dataframe
+  * /annotations/obs - all metadata annotation
+*/
 const doInitialDataLoad = () =>
   catchErrorsWrap(async dispatch => {
     dispatch({ type: "initial data load start" });
@@ -217,8 +227,12 @@ const requestDifferentialExpression = (set1, set2, num_genes = 10) => async (
     */
     const state = getState();
     const { universe } = state.controls;
-    const set1ByIndex = _.map(set1, s => universe.obsNameToIndexMap[s]);
-    const set2ByIndex = _.map(set2, s => universe.obsNameToIndexMap[s]);
+    const set1ByIndex = rangeEncodeIndices(
+      _.map(set1, s => universe.obsNameToIndexMap[s])
+    );
+    const set2ByIndex = rangeEncodeIndices(
+      _.map(set2, s => universe.obsNameToIndexMap[s])
+    );
     const diffExpFetch = await fetch(
       `${globals.API.prefix}${globals.API.version}diffexp/obs`,
       {
