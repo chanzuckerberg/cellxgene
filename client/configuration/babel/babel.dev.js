@@ -6,8 +6,5 @@ module.exports = {
     "stage-0",
     "react"
   ],
-  plugins: [
-    "react-hot-loader/babel",
-    "babel-plugin-transform-decorators-legacy"
-  ]
+  plugins: ["babel-plugin-transform-decorators-legacy"]
 };
