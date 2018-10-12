@@ -1,10 +1,10 @@
-# cellxgene REST API 0.2 proposal
+# cellxgene REST API 0.2 specification
 
-_This is still a draft proposal, pending implementation and validation._
+Items marked as (_future_) are intended for future implementation, and are included in the design to round out the concept, and highlight what we would do when/if we needed more functionality. The (_future_) items are not currently used by the cellxgene web application, and may be omitted from any backend.
 
-Items marked as (_future_) are intended for future implementation, and are included in the design to round out the concept, and highlight what we would do when/if we needed more functionality.
+_Caveat emptor, partial spec_: this is a sketch for a spec, not a full spec, and some shortcuts have been taken in the authorship. Best practices for a REST API are assumed but not documented here, such as API versioning, reasonable choices for HTTP response codes, etc. In addition, for clarity the JSON examples will not always have all required quoting (eg, on keys) - the actual implementation should use legal JSON/CSV.
 
-_Partial spec_: this is a sketch for a spec, not a full spec. Best practices for a REST API are assumed but not documented here, such as API versioning, reasonable choices for HTTP response codes, etc. In addition, for clarity the JSON examples will not always have all required quoting (eg, on keys) - the actual implementation should use legal JSON/CSV. We should revise this spec once implementation is complete.
+_Note to readers_: please submit bugs, errata, and requests for clarifications as github issues on this repo.
 
 ## Terminology
 
@@ -193,11 +193,11 @@ Information will include:
 - API endpoint availability (eg, differential expression not available) and related limitations, including:
   - Feature enabled/disabled:
     - POST /cluster (re-clustering) supported: true, false
-    - POST /layout (re-layout) supported: true, false
+    - PUT /layout (re-layout) supported: true, false
     - POST /diffexp (differential expression calculation) available: true, false
   - Interactive compute speed hints; _approximate_ limitation on request size before it becomes non-interactive:
     - Re-clustering: if supported, this is an integer number of obs/vars at which the algorithm is non-interactive. Omitted if POST /cluster not supported
-    - Re-layout: integer number of obs/vars at which the re-layout is non-interactive. Omitted if POST /layout not supported
+    - Re-layout: integer number of obs/vars at which the re-layout is non-interactive. Omitted if PUT /layout not supported
     - Diff Exp: integer number of obs/vars at which the differential expression compute is non-interactive. Omitted if POST /diffexp not supported
 - Human readable information:
   - Data set name / title - for display purposes.
@@ -206,7 +206,7 @@ Information will include:
 **Response body:**
 
 - Features - encoded as array of features. All optional features must be included. Each feature will be identified by an HTTP method and path **prefix**, and will have availability status. If not specified as unavailable, the feature must be implemented.
-- Limitations are optional, and specified as an additional parameter on a feature, encoded as a number value with key `interactiveLimit`. By convention, this is the maximum number of inputs at which point the request is likely to return an error indicating non-interactive compute request. For example, this might be the maximum number of observations specified in the request to `POST /layout/obs`.
+- Limitations are optional, and specified as an additional parameter on a feature, encoded as a number value with key `interactiveLimit`. By convention, this is the maximum number of inputs at which point the request is likely to return an error indicating non-interactive compute request. For example, this might be the maximum number of observations specified in the request to `PUT /layout/obs`.
 - Display names will include `engine` and `dataset` display names, as a JSON string. These should be relatively short strings (eg, suitable for window titles or equivalent)
 
 ```
@@ -219,12 +219,12 @@ GET /config
       // all /cluster/* paths not implemented
       { "method": "POST", "path": "/cluster/", "available": false },
       {
-        "method": "POST",
+        "method": "PUT",
         "path": "/layout/obs",
         "available": true,
         "interactiveLimit": 10000
       },
-      { "method": "POST", "path": "/layout/var", "available": false }
+      { "method": "PUT", "path": "/layout/var", "available": false }
     ],
     "displayNames": {
       "engine": "ScanPy version 1.33",
@@ -463,7 +463,7 @@ Get the _default_ layout for all observations or (_future_) all variables. Retur
 
 ### PUT /layout/obs, (_future_) PUT /layout/var
 
-Generate layout for the caller-specified subset of data, as indicated by the filter. This operation implicitly requests a re-layout operation to be performed on the specified data.
+Generate layout for the caller-specified subset of data, as indicated by the filter. This operation implicitly requests a re-layout operation to be performed on the specified data. This operation will _commonly_ return the same results for any given caller-specified filter, but this behavior is not guaranteed.
 
 If re-layout is not supported by the server, must return an HTTP 501 response. If, in the view of the server, the request will exceed a reasonable interactive time period, must immediately return HTTP 403 error (error return _before_ attempting computation).
 
