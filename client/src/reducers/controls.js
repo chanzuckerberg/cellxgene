@@ -275,23 +275,18 @@ const Controls = (
       };
     }
     case "clear differential expression": {
-      const { world, universe, crossfilter, dimensionMap } = state;
+      const { world, universe, dimensionMap } = state;
       const _dimensionMap = dimensionMap;
       const universeVarDataCache = universe.varDataCache;
       const worldVarDataCache = world.varDataCache;
 
       _.forEach(action.diffExp, values => {
-        const { name } = world.varAnnotations[values[0]].name;
+        const { name } = world.varAnnotations[values[0]];
         // clean up crossfilter dimensions
-        const filterID = dimensionMap[diffexpDimensionName(name)];
-        const dimension = crossfilter.filters.find(d => d.id === filterID);
-        dimension.dim.dispose();
-
-        // clean up dimensionsMap
-        delete _dimensionMap[diffexpDimensionName(name)];
-        // clean up the varDataCaches
-        delete universeVarDataCache[name];
-        delete worldVarDataCache[name];
+        console.log("clear", name);
+        const dimension = dimensionMap[diffexpDimensionName(name)];
+        dimension.dispose();
+        delete dimensionMap[diffexpDimensionName(name)];
       });
       return {
         ...state,
@@ -320,13 +315,19 @@ const Controls = (
       };
     }
     case "clear user defined gene": {
-      const { userDefinedGenes } = state;
+      const { userDefinedGenes, dimensionMap } = state;
       const newUserDefinedGenes = _.filter(
         userDefinedGenes,
         d => d !== action.data
       );
+
+      const dimension = dimensionMap[userDefinedDimensionName(action.data)];
+      dimension.dispose();
+      delete dimensionMap[userDefinedDimensionName(action.data)];
+
       return {
         ...state,
+        dimensionMap,
         userDefinedGenes: newUserDefinedGenes
       };
     }
