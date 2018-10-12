@@ -203,8 +203,7 @@ const Controls = (
       };
     }
     case "expression load success": {
-      console.log("expression load success", action);
-      const { world, universe, crossfilter, dimensionMap } = state;
+      const { world, universe } = state;
       let universeVarDataCache = universe.varDataCache;
       let worldVarDataCache = world.varDataCache;
       _.forEach(action.expressionData, (val, key) => {
@@ -216,16 +215,6 @@ const Controls = (
             World.subsetVarData(world, universe, val)
           );
         }
-      });
-
-      _.forEach(action.expressionData, (val, key) => {
-        dimensionMap[key] = World.createVarDimension(
-          /* "__var__" + */
-          world,
-          worldVarDataCache,
-          crossfilter,
-          key
-        );
       });
 
       return {
@@ -240,17 +229,48 @@ const Controls = (
         }
       };
     }
+    case "request user defined gene success": {
+      const { world, crossfilter, dimensionMap, userDefinedGenes } = state;
+      const worldVarDataCache = world.varDataCache;
+      const _userDefinedGenes = userDefinedGenes.slice();
+      const gene = action.data.genes[0];
+
+      dimensionMap[userDefinedDimensionName(gene)] = World.createVarDimension(
+        /* "__var__" + */
+        world,
+        worldVarDataCache,
+        crossfilter,
+        gene
+      );
+
+      return {
+        ...state,
+        dimensionMap,
+        userDefinedGenes: _userDefinedGenes
+      };
+    }
     case "request differential expression success": {
-      console.log("request diff success", action);
-      const { world } = state;
+      const { world, crossfilter, dimensionMap } = state;
+      const worldVarDataCache = world.varDataCache;
       const _diffexpGenes = [];
 
       action.data.forEach(d => {
         _diffexpGenes.push(world.varAnnotations[d[0]].name);
       });
 
+      _.forEach(_diffexpGenes, gene => {
+        dimensionMap[diffexpDimensionName(gene)] = World.createVarDimension(
+          /* "__var__" + */
+          world,
+          worldVarDataCache,
+          crossfilter,
+          gene
+        );
+      });
+
       return {
         ...state,
+        dimensionMap,
         diffexpGenes: _diffexpGenes
       };
     }

@@ -204,6 +204,24 @@ const requestGeneExpressionCountsPOST = genes => async (dispatch, getState) => {
   }
 };
 
+const requestUserDefinedGene = gene => async dispatch => {
+  dispatch({ type: "request user defined gene started" });
+  try {
+    const data = await dispatch(requestGeneExpressionCountsPOST([gene]));
+
+    /* then send the success case action through */
+    return dispatch({
+      type: "request user defined gene success",
+      data
+    });
+  } catch (error) {
+    return dispatch({
+      type: "request user defined gene error",
+      error
+    });
+  }
+};
+
 const requestDifferentialExpression = (set1, set2, num_genes = 10) => async (
   dispatch,
   getState
@@ -244,7 +262,7 @@ const requestDifferentialExpression = (set1, set2, num_genes = 10) => async (
     Kick off secondary action to fetch all of the expression data for the
     topN expressed genes.
     */
-    dispatch(requestGeneExpressionCountsPOST(topNGenes));
+    await dispatch(requestGeneExpressionCountsPOST(topNGenes));
 
     /* then send the success case action through */
     return dispatch({
@@ -265,5 +283,6 @@ export default {
   requestSingleGeneExpressionCountsForColoringPOST,
   requestGeneExpressionCountsPOST,
   requestDifferentialExpression,
+  requestUserDefinedGene,
   doInitialDataLoad
 };
