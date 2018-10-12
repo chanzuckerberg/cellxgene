@@ -283,7 +283,6 @@ const Controls = (
       _.forEach(action.diffExp, values => {
         const { name } = world.varAnnotations[values[0]];
         // clean up crossfilter dimensions
-        console.log("clear", name);
         const dimension = dimensionMap[diffexpDimensionName(name)];
         dimension.dispose();
         delete dimensionMap[diffexpDimensionName(name)];
