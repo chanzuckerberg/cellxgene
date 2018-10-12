@@ -54,7 +54,7 @@ class GeneExpression extends React.Component {
     } else if (!_.find(world.varAnnotations, { name: gene })) {
       console.log("That doesn't appear to be a valid gene name.");
     } else {
-      dispatch(actions.requestGeneExpressionCountsPOST([gene]));
+      dispatch(actions.requestUserDefinedGene(gene));
       dispatch({
         type: "user defined gene",
         data: gene
