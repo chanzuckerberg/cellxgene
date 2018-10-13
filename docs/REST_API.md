@@ -1,6 +1,6 @@
 # cellxgene REST API 0.2 specification
 
-Items marked as (_future_) are intended for future implementation, and are included in the design to round out the concept, and highlight what we would do when/if we needed more functionality. The (_future_) items are not currently used by the cellxgene web application, and may be omitted from any backend - see [Current Front-End Dependencies](#Current-Front-End-Dependencies) for more details.
+Items marked as (_future_) are intended for future implementation, and are included in the design to round out the concept, and highlight what we would do when/if we needed more functionality. The (_future_) items are not currently used by the cellxgene web application, and may be omitted from any backend - see [Current Front-End Dependencies](#current-front-end-dependencies) for more details.
 
 _Caveat emptor, partial spec_: this is a sketch for a spec, not a full spec, and some shortcuts have been taken in the authorship. Best practices for a REST API are assumed but not documented here, such as API versioning, reasonable choices for HTTP response codes, etc. In addition, for clarity the JSON examples will not always have all required quoting (eg, on keys) - the actual implementation should use legal JSON/CSV.
 
