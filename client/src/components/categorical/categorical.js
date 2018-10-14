@@ -3,9 +3,9 @@ import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
 
-import FaArrowRight from "react-icons/lib/fa/angle-right";
-import FaArrowDown from "react-icons/lib/fa/angle-down";
-import FaPaintBrush from "react-icons/lib/fa/paint-brush";
+import { FaArrowRight } from "react-icons/fa";
+import { FaArrowDown } from "react-icons/fa";
+import { FaPaintBrush } from "react-icons/fa";
 
 import * as globals from "../../globals";
 import Value from "./value";

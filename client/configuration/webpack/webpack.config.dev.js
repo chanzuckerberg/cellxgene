@@ -1,6 +1,5 @@
 // jshint esversion: 6
 const path = require("path");
-const autoprefixer = require("autoprefixer");
 const webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 
@@ -42,14 +41,6 @@ module.exports = {
               modules: true,
               importLoaders: 1,
               localIdentName: "[name]__[local]___[hash:base64:5]"
-            }
-          },
-          {
-            loader: "postcss-loader",
-            options: {
-              plugins: function() {
-                return [];
-              }
             }
           }
         ]

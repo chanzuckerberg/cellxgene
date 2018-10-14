@@ -7,7 +7,7 @@ https://bl.ocks.org/SpaceActuary/2f004899ea1b2bd78d6f1dbb2febf771
 import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
-import FaPaintBrush from "react-icons/lib/fa/paint-brush";
+import { FaPaintBrush } from "react-icons/fa";
 import * as d3 from "d3";
 import memoize from "memoize-one";
 import * as globals from "../../globals";
