@@ -1,6 +1,6 @@
 # cellxgene REST API 0.2 specification
 
-Items marked as (_future_) are intended for future implementation, and are included in the design to round out the concept, and highlight what we would do when/if we needed more functionality. The (_future_) items are not currently used by the cellxgene web application, and may be omitted from any backend.
+Items marked as (_future_) are intended for future implementation, and are included in the design to round out the concept, and highlight what we would do when/if we needed more functionality. The (_future_) items are not currently used by the cellxgene web application, and may be omitted from any backend - see [Current Front-End Dependencies](#current-front-end-dependencies) for more details.
 
 _Caveat emptor, partial spec_: this is a sketch for a spec, not a full spec, and some shortcuts have been taken in the authorship. Best practices for a REST API are assumed but not documented here, such as API versioning, reasonable choices for HTTP response codes, etc. In addition, for clarity the JSON examples will not always have all required quoting (eg, on keys) - the actual implementation should use legal JSON/CSV.
 
@@ -666,6 +666,33 @@ POST /data/saveSelection?name=myFavCluster
   "message": "OK"
 }
 ```
+
+## Current Front-End Dependencies
+
+The cellxgene web front-end currently uses the following routes & features.
+
+Routes:
+
+- `GET /config`
+- `GET /schema`
+- `GET /annotations/obs`
+- `GET /annotations/var`
+- `GET /layout/obs`
+- `PUT /data/obs` - request will contain a filter by var `name`
+- `POST /diffexp/obs` - mode `topN`, typically with a couple of 10, and two sets defined by an obs index filter (`{ filter: { obs: { index: [...] } } }`)
+- `PUT /layout/obs` - (_coming soon_) request will contain a filter by obs index
+
+Requests include the following content negotiation headers:
+
+- `Accept: application/json` - CSV not currently used in any routes
+- `Accept-Encoding: gzip, deflate, br`
+
+Currently unused routes:
+
+- `/data/var`
+- `/cluster/*`
+- `/layout/var`
+- `/data/saveSelection`
 
 <!-- Endnotes themselves at the bottom. -->
 
