@@ -31,11 +31,11 @@ class CXGDriver(metaclass=ABCMeta):
         # TODO - Interactive limit should be generated from the actual available methods see GH issue #94
         if self.layout_method:
             # TODO handle "var" when gene layout becomes available
-            features["layout"]["obs"] = {"available": True, "interactiveLimit": 15000}
+            features["layout"]["obs"] = {"available": True, "interactiveLimit": 50000}
         if self.diffexp_method:
-            features["diffexp"] = {"available": True, "interactiveLimit": 5000}
+            features["diffexp"] = {"available": True, "interactiveLimit": 50000}
         if self.cluster:
-            features["cluster"] = {"available": True, "interactiveLimit": 45000}
+            features["cluster"] = {"available": True, "interactiveLimit": 50000}
         return features
 
     @staticmethod
@@ -57,7 +57,7 @@ class CXGDriver(metaclass=ABCMeta):
         Filter cells from data and return a subset of the data. They can operate on both obs and var dimension with
         indexing and filtering by annotation value. Filters are combined with the and operator.
         See REST specs for info on filter format:
-        https://docs.google.com/document/d/1Fxjp1SKtCk7l8QP9-7KAjGXL0eldi_qEnNT0NmlGzXI/edit#heading=h.8qc9q57amldx
+        https://github.com/chanzuckerberg/cellxgene/blob/master/docs/REST_API.md
 
         :param filter: dictionary with filter params
         :return: View into scanpy object with cells/genes filtered
@@ -65,10 +65,10 @@ class CXGDriver(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def annotation(self, df, axis, fields=None):
+    def annotation(self, filter, axis, fields=None):
         """
         Gets annotation value for each observation
-        :param df: from filter_cells, dataframe
+        :param filter: filter: dictionary with filter params
         :param axis: string obs or var
         :param fields: list of keys for annotation to return, returns all annotation values if not set.
         :return: dict: names - list of fields in order, data - list of lists or metadata
@@ -77,10 +77,10 @@ class CXGDriver(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def data_frame(self, df, axis):
+    def data_frame(self, filter, axis):
         """
         Retrieves data for each variable for observations in data frame
-        :param df: from filter_cells, dataframe
+        :param filter: filter: dictionary with filter params
         :param axis: string obs or var
         :return: {
             "var": list of variable ids,
@@ -90,23 +90,25 @@ class CXGDriver(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def diffexp(self, df1, df2, top_n):
+    def diffexp(self, filter1, filter2, top_n=None, interactive_limit=None):
         """
         Computes the top differentially expressed variables between two observation sets. If dataframes
         contain a subset of variables, then statistics for all variables will be returned, otherwise
         only the top N vars will be returned.
-        :param df1: from filter_cells, dataframe containing first set of observations
-        :param df2: from filter_cells, dataframe containing second set of observations
+        :param filter1: filter: dictionary with filter params for first set of observations
+        :param filter2: filter: dictionary with filter params for second set of observations
         :param top_n: Limit results to top N (Top var mode only)
+        :param interactive_limit: -- don't compute if total # genes in dataframes are larger than this
         :return: top genes, stats and expression values for variables
         """
         pass
 
     @abstractmethod
-    def layout(self, df):
+    def layout(self, filter, interactive_limit=None):
         """
         Computes a n-d layout for cells through dimensionality reduction.
-        :param df: from filter_cells, dataframe
+        :param filter: filter: dictionary with filter params
+        :param interactive_limit: -- don't compute if total # genes in dataframes are larger than this
         :return:  [cellid, x, y, ...]
         """
         pass

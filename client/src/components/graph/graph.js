@@ -165,6 +165,7 @@ class Graph extends React.Component {
       if (!this.renderCache.sizes) {
         this.renderCache.sizes = new Float32Array(cellCount);
       }
+
       crossfilter.fillByIsFiltered(this.renderCache.sizes, 4, 0.2);
       sizeBuffer({ data: this.renderCache.sizes, dimension: 1 });
 
@@ -421,24 +422,6 @@ class Graph extends React.Component {
                   <FaZoom />{" "}
                 </button>
               </span>
-            </div>
-            <div>
-              <button
-                type="button"
-                style={{
-                  fontSize: 14,
-                  fontWeight: 400,
-                  color: "white",
-                  padding: "0px 10px",
-                  height: 30,
-                  borderRadius: 2,
-                  backgroundColor: globals.lightGrey,
-                  border: "none",
-                  cursor: "pointer"
-                }}
-              >
-                export
-              </button>
             </div>
           </div>
         </div>
