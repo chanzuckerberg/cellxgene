@@ -74,10 +74,8 @@ class Category extends React.Component {
     const { isChecked } = this.state;
     // || this.checkbox.indeterminate === false
     if (isChecked) {
-      console.log("checked, firing toggle none");
       this.toggleNone();
     } else if (!isChecked) {
-      console.log("!checked, firing toggle all");
       this.toggleAll();
     }
   }
@@ -128,7 +126,7 @@ class Category extends React.Component {
                 cursor: "pointer",
                 display: "inline-block",
                 position: "relative",
-                top: 2
+                top: -1
               }}
               onClick={() => {
                 this.setState({ isExpanded: !isExpanded });
@@ -146,7 +144,7 @@ class Category extends React.Component {
             <span
               onClick={this.handleColorChange.bind(this)}
               style={{
-                fontSize: 16,
+                fontSize: 14,
                 marginLeft: 4,
                 // padding: this.props.colorAccessor === this.props.metadataField ? 3 : "auto",
                 borderRadius: 3,
@@ -157,7 +155,7 @@ class Category extends React.Component {
                 // backgroundColor: this.props.colorAccessor === this.props.metadataField ? globals.brightBlue : "inherit",
                 display: "inline-block",
                 position: "relative",
-                top: 2,
+                top: -1,
                 cursor: "pointer"
               }}
             >

@@ -9,11 +9,7 @@ const nodeModules = path.resolve("node_modules");
 module.exports = {
   mode: "development",
   devtool: "eval",
-  entry: [
-    "webpack-hot-middleware/client?quiet=true&noInfo=true",
-    require.resolve("react-hot-loader/patch"),
-    "./src/index"
-  ],
+  entry: ["./src/index"],
   output: {
     path: path.resolve("build"),
     pathinfo: true,
@@ -66,8 +62,6 @@ module.exports = {
       template: path.resolve("index.html"),
       favicon: path.resolve("favicon.png")
     }),
-    // Note: only CSS is currently hot reloaded
-    new webpack.HotModuleReplacementPlugin(),
     new webpack.NoEmitOnErrorsPlugin()
   ]
 };

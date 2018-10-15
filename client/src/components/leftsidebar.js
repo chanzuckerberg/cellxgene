@@ -4,6 +4,7 @@ import React from "react";
 import { connect } from "react-redux";
 import Categorical from "./categorical/categorical";
 import Continuous from "./continuous/continuous";
+import GeneExpression from "./geneExpression";
 import ExpressionButtons from "./expression/expressionButtons";
 import Heatmap from "./expression/diffExpHeatmap";
 import * as globals from "../globals";
@@ -100,6 +101,7 @@ class LeftSideBar extends React.Component {
           }}
         >
           {currentTab === "metadata" ? <Categorical /> : null}
+          {currentTab === "metadata" ? <GeneExpression /> : null}
           {currentTab === "metadata" ? <Continuous /> : null}
           {currentTab === "expression" ? <Heatmap /> : null}
         </div>

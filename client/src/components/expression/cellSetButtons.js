@@ -9,17 +9,23 @@ import actions from "../../actions";
 @connect()
 class CellSetButton extends React.Component {
   set() {
+    const { differential } = this.props;
+
     const set = _.map(this.props.crossfilter.allFiltered(), "name");
 
-    this.props.dispatch({
-      type:
-        "store current cell selection as differential set " +
-        this.props.eitherCellSetOneOrTwo,
-      data: set
-    });
+    if (!differential.diffExp) {
+      /* diffexp needs to be cleared before we store a new set */
+      this.props.dispatch({
+        type:
+          "store current cell selection as differential set " +
+          this.props.eitherCellSetOneOrTwo,
+        data: set
+      });
+    }
   }
 
   render() {
+    const { differential } = this.props;
     return (
       <span style={{ marginRight: 10 }}>
         <button
@@ -28,7 +34,9 @@ class CellSetButton extends React.Component {
             borderRadius: 2,
             padding: "0px 10px",
             height: 30,
-            backgroundColor: globals.brightBlue,
+            backgroundColor: !differential.diffExp
+              ? globals.brightBlue
+              : globals.lightGrey,
             border: "none",
             cursor: "pointer"
           }}
@@ -41,14 +49,13 @@ class CellSetButton extends React.Component {
           </span>
           <span
             style={{
-              fontFamily: "Georgia",
               fontSize: 14,
               marginLeft: 8,
               position: "relative",
               top: 0
             }}
           >
-            {this.props.differential[
+            {differential[
               "celllist" + this.props.eitherCellSetOneOrTwo
             ]
               ? this.props.differential[

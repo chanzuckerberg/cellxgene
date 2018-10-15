@@ -3,6 +3,7 @@ import * as Universe from "../../../src/util/stateManager/universe";
 import * as World from "../../../src/util/stateManager/world";
 import Crossfilter from "../../../src/util/typedCrossfilter";
 import * as REST from "./sampleResponses";
+import { obsAnnoDimensionName } from "../../../src/util/nameCreators";
 
 /*
 TODO: endpoints to test:
@@ -72,8 +73,8 @@ describe("createWorldFromCurrentSelection", () => {
       crossfilter,
       originalWorld
     );
-    dimensionMap.field1.filterRange([0, 5]);
-    dimensionMap.field3.filterExact(false);
+    dimensionMap[obsAnnoDimensionName("field1")].filterRange([0, 5]);
+    dimensionMap[obsAnnoDimensionName("field3")].filterExact(false);
 
     /* create the world from the selection */
     const world = World.createWorldFromCurrentSelection(

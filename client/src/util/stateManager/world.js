@@ -2,11 +2,12 @@
 
 import _ from "lodash";
 import * as kvCache from "./keyvalcache";
+import { layoutDimensionName, obsAnnoDimensionName } from "../nameCreators";
 
 /*
 World is a subset of universe.   Most code should use world, and should
 (generally) not use Universe.   World contains any per-obs or per-var data
-that must be consisstent acorss the app when we view/manipulate subsets
+that must be consistent acorss the app when we view/manipulate subsets
 of Universe.
 
 Private API indicated by leading underscore in key name (eg, _foo).  Anything else
@@ -278,6 +279,34 @@ function deduceDimensionType(attributes, fieldName) {
   return dimensionType;
 }
 
+/*
+  Return a crossfilter dimension for the specified world & named gene.
+
+  NOTE: this assumes that the expression data was already loaded,
+  by calling an appropriate action creator.
+
+  Caller needs to *save* this dimension somewhere for it to be later used.
+  Dimension must be destroyed by calling dimension.dispose()
+  when it is no longer needed
+  (it will not be garbage collected without this call)
+*/
+
+export function createVarDimension(
+  world,
+  _worldVarDataCache,
+  crossfilter,
+  geneName
+) {
+  const { worldObsIndex } = world;
+  const varData = _worldVarDataCache[geneName];
+  const worldIndex = worldObsIndex ? idx => worldObsIndex[idx] : idx => idx;
+
+  return crossfilter.dimension(
+    r => varData[worldIndex(r.__index__)],
+    Float32Array
+  );
+}
+
 export function createObsDimensionMap(crossfilter, world) {
   /*
   create and return a crossfilter dimension for every obs annotation
@@ -290,7 +319,10 @@ export function createObsDimensionMap(crossfilter, world) {
     (result, anno) => {
       const dimType = deduceDimensionType(anno, anno.name);
       if (dimType) {
-        result[anno.name] = crossfilter.dimension(r => r[anno.name], dimType);
+        result[obsAnnoDimensionName(anno.name)] = crossfilter.dimension(
+          r => r[anno.name],
+          dimType
+        );
       } // else ignore the annotation
     },
     {}
@@ -300,11 +332,11 @@ export function createObsDimensionMap(crossfilter, world) {
   Add crossfilter dimensions allowing filtering on layout
   */
   const worldIndex = worldObsIndex ? idx => worldObsIndex[idx] : idx => idx;
-  dimensionMap.x = crossfilter.dimension(
+  dimensionMap[layoutDimensionName("X")] = crossfilter.dimension(
     r => obsLayout.X[worldIndex(r.__index__)],
     Float32Array
   );
-  dimensionMap.y = crossfilter.dimension(
+  dimensionMap[layoutDimensionName("Y")] = crossfilter.dimension(
     r => obsLayout.Y[worldIndex(r.__index__)],
     Float32Array
   );
