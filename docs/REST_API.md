@@ -1,10 +1,10 @@
-# cellxgene REST API 0.2 proposal
+# cellxgene REST API 0.2 specification
 
-_This is still a draft proposal, pending implementation and validation._
+Items marked as (_future_) are intended for future implementation, and are included in the design to round out the concept, and highlight what we would do when/if we needed more functionality. The (_future_) items are not currently used by the cellxgene web application, and may be omitted from any backend - see [Current Front-End Dependencies](#current-front-end-dependencies) for more details.
 
-Items marked as (_future_) are intended for future implementation, and are included in the design to round out the concept, and highlight what we would do when/if we needed more functionality.
+_Caveat emptor, partial spec_: this is a sketch for a spec, not a full spec, and some shortcuts have been taken in the authorship. Best practices for a REST API are assumed but not documented here, such as API versioning, reasonable choices for HTTP response codes, etc. In addition, for clarity the JSON examples will not always have all required quoting (eg, on keys) - the actual implementation should use legal JSON/CSV.
 
-_Partial spec_: this is a sketch for a spec, not a full spec. Best practices for a REST API are assumed but not documented here, such as API versioning, reasonable choices for HTTP response codes, etc. In addition, for clarity the JSON examples will not always have all required quoting (eg, on keys) - the actual implementation should use legal JSON/CSV. We should revise this spec once implementation is complete.
+_Note to readers_: please submit bugs, errata, and requests for clarifications as github issues on this repo.
 
 ## Terminology
 
@@ -193,11 +193,11 @@ Information will include:
 - API endpoint availability (eg, differential expression not available) and related limitations, including:
   - Feature enabled/disabled:
     - POST /cluster (re-clustering) supported: true, false
-    - POST /layout (re-layout) supported: true, false
+    - PUT /layout (re-layout) supported: true, false
     - POST /diffexp (differential expression calculation) available: true, false
   - Interactive compute speed hints; _approximate_ limitation on request size before it becomes non-interactive:
     - Re-clustering: if supported, this is an integer number of obs/vars at which the algorithm is non-interactive. Omitted if POST /cluster not supported
-    - Re-layout: integer number of obs/vars at which the re-layout is non-interactive. Omitted if POST /layout not supported
+    - Re-layout: integer number of obs/vars at which the re-layout is non-interactive. Omitted if PUT /layout not supported
     - Diff Exp: integer number of obs/vars at which the differential expression compute is non-interactive. Omitted if POST /diffexp not supported
 - Human readable information:
   - Data set name / title - for display purposes.
@@ -206,7 +206,7 @@ Information will include:
 **Response body:**
 
 - Features - encoded as array of features. All optional features must be included. Each feature will be identified by an HTTP method and path **prefix**, and will have availability status. If not specified as unavailable, the feature must be implemented.
-- Limitations are optional, and specified as an additional parameter on a feature, encoded as a number value with key `interactiveLimit`. By convention, this is the maximum number of inputs at which point the request is likely to return an error indicating non-interactive compute request. For example, this might be the maximum number of observations specified in the request to `POST /layout/obs`.
+- Limitations are optional, and specified as an additional parameter on a feature, encoded as a number value with key `interactiveLimit`. By convention, this is the maximum number of inputs at which point the request is likely to return an error indicating non-interactive compute request. For example, this might be the maximum number of observations specified in the request to `PUT /layout/obs`.
 - Display names will include `engine` and `dataset` display names, as a JSON string. These should be relatively short strings (eg, suitable for window titles or equivalent)
 
 ```
@@ -219,12 +219,12 @@ GET /config
       // all /cluster/* paths not implemented
       { "method": "POST", "path": "/cluster/", "available": false },
       {
-        "method": "POST",
+        "method": "PUT",
         "path": "/layout/obs",
         "available": true,
         "interactiveLimit": 10000
       },
-      { "method": "POST", "path": "/layout/var", "available": false }
+      { "method": "PUT", "path": "/layout/var", "available": false }
     ],
     "displayNames": {
       "engine": "ScanPy version 1.33",
@@ -300,9 +300,9 @@ Observations and variables are guaranteed to have a `name` annotation, which sho
 **Response code:**
 
 - 200 Success
-- 404 Not Found - one or more of the names specified with `annotation-name` are not associated with an annotation.
+- 400 Bad Request - one or more of the names specified with `annotation-name` are not associated with an annotation.
 
-**Response body:** annotation description and values. Values conform to the schema returned by `/schema` and each record begins with the observation or variable index. Where the specific value is not defined, `null`will be returned.
+**Response body:** annotation description and values. Values conform to the schema returned by `/schema` and each record begins with the observation or variable index. Where the specific value is not defined, `null`will be returned. Values will be sorted by index.
 
 Example:
 
@@ -342,8 +342,7 @@ Same as the `GET /annotations` routes, with additional ability to filter by obse
 **Response code:**
 
 - 200 Success
-- 400 Bad Request - malformed filter
-- 404 Not Found - one or more of the annotation-name identifiers were not associated with an annotation name.
+- 400 Bad Request - malformed filter or one or more of the annotation-name identifiers were not associated with an annotation name.
 
 **Response body:**
 
@@ -369,7 +368,7 @@ Get data from the dataframe (ie expression values), optionally sub-selected by a
 - 406 - Not Acceptable (accept-type unacceptable MIME type)
 - 400 - Bad Request - malformed filter
 
-**Response body:** contents of the filtered dataframe, in primary-axis-major order, encoded as a dense matrix (eg, `/data/obs` will return data by observation). Data is preceded by a list of secondary axis indices, using the same index encoding as Index Filters (ie, an array of indices and/or index ranges). In JSON, this will be encoded as an array of indices with key obs or var; in CSV, this will be the header of the CSV response body.
+**Response body:** contents of the filtered dataframe, in primary-axis-major order, encoded as a dense matrix (eg, `/data/obs` will return data by observation). Data is preceded by a list of secondary axis indices, using the same index encoding as Index Filters (ie, an array of indices and/or index ranges). In JSON, this will be encoded as an array of indices with key obs or var; in CSV, this will be the header of the CSV response body. In both encodings, data will be sorted by index (both primary and secondary axis).
 
 Example JSON response to a request which has filtered by annotation value:
 
@@ -428,7 +427,7 @@ If re-clustering is not supported by the server, must return an HTTP 501 respons
 
 **Response body:**
 
-- For 200 Success, returns numeric cluster ID for each observation or variable, organized as an array of `[index, clusterId]`:
+- For 200 Success, returns numeric cluster ID for each observation or variable, organized as an array of `[index, clusterId]`, an sorted by index:
 
   ```
   {
@@ -446,7 +445,7 @@ If re-clustering is not supported by the server, must return an HTTP 501 respons
 
 Get the _default_ layout for all observations or (_future_) all variables. Return dimensionality of layout and a coordinate list. The client must be prepared to accept dimensionality different than it natively displays, and should perform a best-effort attempt to display the higher dimensionality layout (eg, create a 2D view of a 3D layout).
 
-**Response body:** dimensionality and coordinate list for each observation or variable, where coordinates are encoded as floats [0,1]. Example 2D response:
+**Response body:** dimensionality and coordinate list for each observation or variable, where coordinates are encoded as floats [0,1], sorted by index. Example 2D response:
 
 ```
 {
@@ -462,9 +461,9 @@ Get the _default_ layout for all observations or (_future_) all variables. Retur
 }
 ```
 
-### POST /layout/obs, (_future_) POST /layout/var
+### PUT /layout/obs, (_future_) PUT /layout/var
 
-Generate layout for the caller-specified subset of data, as indicated by the filter. This operation implicitly requests a re-layout operation to be performed on the specified data.
+Generate layout for the caller-specified subset of data, as indicated by the filter. This operation implicitly requests a re-layout operation to be performed on the specified data. This operation will _commonly_ return the same results for any given caller-specified filter, but this behavior is not guaranteed.
 
 If re-layout is not supported by the server, must return an HTTP 501 response. If, in the view of the server, the request will exceed a reasonable interactive time period, must immediately return HTTP 403 error (error return _before_ attempting computation).
 
@@ -667,6 +666,33 @@ POST /data/saveSelection?name=myFavCluster
   "message": "OK"
 }
 ```
+
+## Current Front-End Dependencies
+
+The cellxgene web front-end currently uses the following routes & features.
+
+Routes:
+
+- `GET /config`
+- `GET /schema`
+- `GET /annotations/obs`
+- `GET /annotations/var`
+- `GET /layout/obs`
+- `PUT /data/obs` - request will contain a filter by var `name`
+- `POST /diffexp/obs` - mode `topN`, typically with a couple of 10, and two sets defined by an obs index filter (`{ filter: { obs: { index: [...] } } }`)
+- `PUT /layout/obs` - (_coming soon_) request will contain a filter by obs index
+
+Requests include the following content negotiation headers:
+
+- `Accept: application/json` - CSV not currently used in any routes
+- `Accept-Encoding: gzip, deflate, br`
+
+Currently unused routes:
+
+- `/data/var`
+- `/cluster/*`
+- `/layout/var`
+- `/data/saveSelection`
 
 <!-- Endnotes themselves at the bottom. -->
 

@@ -1,5 +1,5 @@
 // jshint esversion: 6
-export const scaleRGB = input => {
+export default input => {
   const outputMax = 1;
   const outputMin = 0;
 

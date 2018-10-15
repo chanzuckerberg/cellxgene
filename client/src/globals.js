@@ -47,7 +47,7 @@ export const tiniestFontSize = 12;
 
 export const bolder = 700;
 
-export let API = {
+let _API = {
   // prefix: "http://api.clustering.czi.technology/api/",
   // prefix: "http://tabulamuris.cxg.czi.technology/api/",
   // prefix: "http://api-staging.clustering.czi.technology/api/",
@@ -55,15 +55,14 @@ export let API = {
   version: "v0.2/"
 };
 
-if (window.CELLXGENE && window.CELLXGENE.API) API = window.CELLXGENE.API;
+if (window.CELLXGENE && window.CELLXGENE.API) _API = window.CELLXGENE.API;
+export const API = _API;
 
 export const accentFont = "Georgia,Times,Times New Roman,serif";
 export const maxParagraphWidth = 600;
 export const maxControlsWidth = 800;
 
 export const graphMargin = { top: 20, right: 10, bottom: 30, left: 40 };
-// export const graphWidth = 1440 /* window width */ - 410 /* sidebar */ - (15 + 15) /* left right padding */ /* but responsive */;
-// export const graphHeight = 500;
 export const graphWidth = 700;
 export const graphHeight = 700;
 

@@ -6,10 +6,19 @@ from pandas import DataFrame, Series
 import scanpy.api as sc
 from scipy import stats
 
-# TODO fix memoization so that it correctly identifies the same request
-# from server.app.app import cache
+from server.app.app import cache
 from server.app.driver.driver import CXGDriver
 from server.app.util.constants import Axis, DEFAULT_TOP_N, DiffExpMode
+from server.app.util.utils import FilterError, InteractiveError
+
+"""
+Sort order for methods
+1. Initialize
+2. Helper
+3. Filter
+4. Data & Metadata
+5. Computation
+"""
 
 
 class ScanpyEngine(CXGDriver):
@@ -21,7 +30,7 @@ class ScanpyEngine(CXGDriver):
         self.cell_count = self.data.shape[0]
         self.gene_count = self.data.shape[1]
         self._create_schema()
-        self.layout(self.data)
+        self.layout(None)
 
     def _create_schema(self):
         self.schema = {
@@ -113,8 +122,7 @@ class ScanpyEngine(CXGDriver):
     def genes(self):
         return self.data.var.index.tolist()
 
-    # Can't seem to cache a view of a dataframe, need to investigate why
-    def filter_dataframe(self, filter, include_uns=True):
+    def filter_dataframe(self, filter, include_uns=False):
         """
          Filter cells from data and return a subset of the data. They can operate on both obs and var dimension with
          indexing and filtering by annotation value. Filters are combined with the and operator.
@@ -122,10 +130,12 @@ class ScanpyEngine(CXGDriver):
          # TODO update this link to swagger when it's done
          https://docs.google.com/document/d/1Fxjp1SKtCk7l8QP9-7KAjGXL0eldi_qEnNT0NmlGzXI/edit#heading=h.8qc9q57amldx
 
-        :param filter: dictionary with filter parames
+        :param filter: dictionary with filter params
         :param include_uns: bool, include unstructured annotations
         :return: View into scanpy object with cells/genes filtered
         """
+        if not filter:
+            return self.data
         cells_idx = np.ones((self.cell_count,), dtype=bool)
         genes_idx = np.ones((self.gene_count,), dtype=bool)
         if Axis.OBS in filter:
@@ -151,7 +161,7 @@ class ScanpyEngine(CXGDriver):
         Filter data based on index. ex. [1, 3, [111:200]]
         :param filter: subset of filter dict for obs/var:index
         :param index: np logical vector containing true for passing false for failing filter
-        :param axis: Axis
+        :param axis: string obs or var
         :return: np logical vector for whether the data passes the filter
         """
         if axis == Axis.OBS:
@@ -190,17 +200,20 @@ class ScanpyEngine(CXGDriver):
                     index = np.logical_and(index, key_idx)
         return index
 
-    # @cache.memoize()
-    def annotation(self, df, axis, fields=None):
+    @cache.memoize()
+    def annotation(self, filter, axis, fields=None):
         """
          Gets annotation value for each observation
-
-        :param axis:
-        :param df: from filter_cells, dataframe
+        :param filter: filter: dictionary with filter params
+        :param axis: string obs or var
         :param fields: list of keys for annotation to return, returns all annotation values if not set.
         :return: dict: names - list of fields in order, data - list of lists or metadata
         [observation ids, val1, val2...]
         """
+        try:
+            df = self.filter_dataframe(filter)
+        except KeyError as e:
+            raise FilterError(f"Error parsing filter: {e}") from e
         df_axis = getattr(df, axis)
         if not fields:
             fields = df_axis.columns.tolist()
@@ -210,41 +223,68 @@ class ScanpyEngine(CXGDriver):
             "data": annotations.reset_index().values.tolist()
         }
 
-    # @cache.memoize()
-    def layout(self, df):
+    @cache.memoize()
+    def data_frame(self, filter, axis):
         """
-        Computes a n-d layout for cells through dimensionality reduction.
-        :param df: from filter_cells, dataframe
-        :return:  [cellid, x, y, ...]
-        """
-        # TODO Filtering cells is fine, but filtering genes does nothing because the neighbors are
-        # calculated using the original vars (geneset) and this doesn’t get updated when you use less.
-        # Need to recalculate neighbors (long) if user requests new layout filtered by var
-        getattr(sc.tl, self.layout_method)(df, random_state=123)
-        df_layout = df.obsm[f"X_{self.layout_method}"]
-        normalized_layout = DataFrame((df_layout - df_layout.min()) / (df_layout.max() - df_layout.min()),
-                                      index=df.obs.index)
-        return {
-            "ndims": normalized_layout.shape[1],
-            # reset_index gets obs' id into output
-            "coordinates": normalized_layout.reset_index().values.tolist()
+        Retrieves data for each variable for observations in data frame
+        :param filter: filter: dictionary with filter params
+        :param axis: string obs or var
+        :return: {
+            "var": list of variable ids,
+            "obs": [cellid, var1 expression, var2 expression, ...],
         }
+        """
+        try:
+            df = self.filter_dataframe(filter)
+        except KeyError as e:
+            raise FilterError(f"Error parsing filter: {e}") from e
+        var_idx = df.var.index.tolist()
+        obs_idx = df.obs.index.tolist()
+        values = df.X
+        df_shape = df.shape
+        if df_shape[0] == 1:
+            values = values[None, :]
+        elif df_shape[1] == 1:
+            values = values[:, None]
+        if axis == Axis.OBS:
+            expression = DataFrame(values, index=obs_idx)
+            result = {
+                "var": var_idx,
+                "obs": expression.reset_index().values.tolist()
+            }
+        else:
+            expression = DataFrame(values.T, index=var_idx)
+            result = {
+                "obs": obs_idx,
+                "var": expression.reset_index().values.tolist(),
+            }
+        return result
 
-    # @cache.memoize()
-    def diffexp(self, df1, df2, top_n=None):
+    def diffexp(self, filter1, filter2, top_n=None, interactive_limit=None):
         """
         Computes the top differentially expressed variables between two observation sets. If dataframes
         contain a subset of variables, then statistics for all variables will be returned, otherwise
         only the top N vars will be returned.
-        :param df1: from filter_cells, dataframe containing first set of observations
-        :param df2: from filter_cells, dataframe containing second set of observations
-        :param topN: Limit results to top N (Top var mode only)
+        :param filter1: filter: dictionary with filter params for first set of observations
+        :param filter2: filter: dictionary with filter params for second set of observations
+        :param top_n: Limit results to top N (Top var mode only)
+        :param interactive_limit: -- don't compute if total # genes in dataframes are larger than this
         :return: top genes, stats and expression values for variables
         """
+        try:
+            df1 = self.filter_dataframe(filter1)
+        except KeyError as e:
+            raise FilterError(f"Error parsing filter for set 1: {e}") from e
+        # TODO df2 should be inverse if not filter2 provided
+        try:
+            df2 = self.filter_dataframe(filter2)
+        except KeyError as e:
+            raise FilterError(f"Error parsing filter for set 2: {e}") from e
         # If not the same genes, test is wrong!
         if np.any(df1.var.index != df2.var.index):
             raise ValueError("Variables ares not the same in set1 and set2")
-
+        if interactive_limit and df1.shape[0] + df2.shape[0] > interactive_limit:
+            raise InteractiveError("Size of set 1 and 2 is too large for interactive computation")
         # If not all genes, they used a var filter
         if df1.var.shape[0] < self.gene_count:
             mode = DiffExpMode.VAR_FILTER
@@ -279,19 +319,29 @@ class ScanpyEngine(CXGDriver):
         # Results need to be returned in var index order
         return sorted(result, key=lambda gene: gene[0])
 
-    # @cache.memoize()
-    def data_frame(self, df):
+    @cache.memoize()
+    def layout(self, filter, interactive_limit=None):
         """
-        Retrieves data for each variable for observations in data frame
-        :param df: from filter_cells, dataframe
-        :return: {
-            "var": list of variable ids,
-            "obs": [cellid, var1 expression, var2 expression, ...],
-        }
+        Computes a n-d layout for cells through dimensionality reduction.
+        :param filter: filter: dictionary with filter params
+        :param interactive_limit: -- don't compute if total # genes in dataframes are larger than this
+        :return:  [cellid, x, y, ...]
         """
-        var_index = df.var.index.tolist()
-        expression = DataFrame(df.X, index=df.obs.index)
+        try:
+            df = self.filter_dataframe(filter, include_uns=True)
+        except KeyError as e:
+            raise FilterError(f"Error parsing filter: {e}") from e
+        if interactive_limit and len(df.obs.index) > interactive_limit:
+            raise InteractiveError("Size data is too large for interactive computation")
+        # TODO Filtering cells is fine, but filtering genes does nothing because the neighbors are
+        # calculated using the original vars (geneset) and this doesn’t get updated when you use less.
+        # Need to recalculate neighbors (long) if user requests new layout filtered by var
+        getattr(sc.tl, self.layout_method)(df, random_state=123)
+        df_layout = df.obsm[f"X_{self.layout_method}"]
+        normalized_layout = DataFrame((df_layout - df_layout.min()) / (df_layout.max() - df_layout.min()),
+                                      index=df.obs.index)
         return {
-            "var": var_index,
-            "obs": expression.reset_index().values.tolist()
+            "ndims": normalized_layout.shape[1],
+            # reset_index gets obs' id into output
+            "coordinates": normalized_layout.reset_index().values.tolist()
         }

@@ -14,7 +14,7 @@ import setupSVGandBrushElements from "./setupSVGandBrush";
 import actions from "../../actions";
 import _camera from "../../util/camera";
 import _drawPoints from "./drawPointsRegl";
-import { scaleLinear } from "../../util/scaleLinear";
+import scaleLinear from "../../util/scaleLinear";
 
 /* https://bl.ocks.org/mbostock/9078690 - quadtree for onClick / hover selections */
 

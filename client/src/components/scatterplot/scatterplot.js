@@ -14,7 +14,7 @@ import setupScatterplot from "./setupScatterplot";
 import styles from "./scatterplot.css";
 
 import _drawPoints from "./drawPointsRegl";
-import { scaleLinear } from "../../util/scaleLinear";
+import scaleLinear from "../../util/scaleLinear";
 
 import { margin, width, height } from "./util";
 import { kvCache } from "../../util/stateManager";
@@ -301,5 +301,3 @@ class Scatterplot extends React.Component {
 }
 
 export default Scatterplot;
-
-// <SectionHeader text="Continuous Metadata"/>

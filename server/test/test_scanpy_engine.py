@@ -117,10 +117,10 @@ class UtilTest(unittest.TestCase):
             self.data._create_schema()
 
     def test_config(self):
-        self.assertEqual(self.data.features["layout"]["obs"], {'available': True, 'interactiveLimit': 15000})
+        self.assertEqual(self.data.features["layout"]["obs"], {'available': True, 'interactiveLimit': 50000})
 
     def test_layout(self):
-        layout = self.data.layout(self.data.data)
+        layout = self.data.layout(None)
         self.assertEqual(layout["ndims"], 2)
         self.assertEqual(len(layout["coordinates"]), 2638)
         self.assertEqual(layout["coordinates"][0][0], 0)
@@ -129,18 +129,18 @@ class UtilTest(unittest.TestCase):
             self.assertLessEqual(val[2], 1)
 
     def test_annotations(self):
-        annotations = self.data.annotation(self.data.data, "obs")
+        annotations = self.data.annotation(None, "obs")
         self.assertEqual(annotations["names"], ["n_genes", "percent_mito", "n_counts", "louvain", "name"])
         self.assertEqual(len(annotations["data"]), 2638)
-        annotations = self.data.annotation(self.data.data, "var")
+        annotations = self.data.annotation(None, "var")
         self.assertEqual(annotations["names"], ["n_cells", "name"])
         self.assertEqual(len(annotations["data"]), 1838)
 
     def test_annotation_fields(self):
-        annotations = self.data.annotation(self.data.data, "obs", ["n_genes", "n_counts"])
+        annotations = self.data.annotation(None, "obs", ["n_genes", "n_counts"])
         self.assertEqual(annotations["names"], ["n_genes", "n_counts"])
         self.assertEqual(len(annotations["data"]), 2638)
-        annotations = self.data.annotation(self.data.data, "var", ["name"])
+        annotations = self.data.annotation(None, "var", ["name"])
         self.assertEqual(annotations["names"], ["name"])
         self.assertEqual(len(annotations["data"]), 1838)
 
@@ -159,11 +159,10 @@ class UtilTest(unittest.TestCase):
                 }
             }
         }
-        data = self.data.filter_dataframe(filter_["filter"])
-        annotations = self.data.annotation(data, "obs")
+        annotations = self.data.annotation(filter_["filter"], "obs")
         self.assertEqual(annotations["names"], ["n_genes", "percent_mito", "n_counts", "louvain", "name"])
         self.assertEqual(len(annotations["data"]), 497)
-        annotations = self.data.annotation(data, "var")
+        annotations = self.data.annotation(filter_["filter"], "var")
         self.assertEqual(annotations["names"], ["n_cells", "name"])
         self.assertEqual(len(annotations["data"]), 2)
 
@@ -177,8 +176,7 @@ class UtilTest(unittest.TestCase):
                 }
             }
         }
-        data = self.data.filter_dataframe(filter_["filter"])
-        layout = self.data.layout(data)
+        layout = self.data.layout(filter_["filter"])
         self.assertEqual(len(layout["coordinates"]), 497)
 
     def test_diffexp(self):
@@ -189,7 +187,6 @@ class UtilTest(unittest.TestCase):
                 }
             }
         }
-        df1 = self.data.filter_dataframe(f1["filter"])
         f2 = {
             "filter": {
                 "obs": {
@@ -197,18 +194,20 @@ class UtilTest(unittest.TestCase):
                 }
             }
         }
-        df2 = self.data.filter_dataframe(f2["filter"])
-        result = self.data.diffexp(df1, df2)
+        result = self.data.diffexp(f1["filter"], f2["filter"])
         self.assertEqual(len(result), 10)
         var_idx = [i[0] for i in result]
         self.assertEqual(var_idx, sorted(var_idx))
-        result = self.data.diffexp(df1, df2, 20)
+        result = self.data.diffexp(f1["filter"], f2["filter"], 20)
         self.assertEqual(len(result), 20)
 
     def test_data_frame(self):
-        data_frame = self.data.data_frame(self.data.data)
-        self.assertEqual(len(data_frame["var"]), 1838)
-        self.assertEqual(len(data_frame["obs"]), 2638)
+        data_frame_obs = self.data.data_frame(None, "obs")
+        self.assertEqual(len(data_frame_obs["var"]), 1838)
+        self.assertEqual(len(data_frame_obs["obs"]), 2638)
+        data_frame_var = self.data.data_frame(None, "var")
+        self.assertEqual(len(data_frame_var["var"]), 1838)
+        self.assertEqual(len(data_frame_var["obs"]), 2638)
 
     def test_filtered_data_frame(self):
         filter_ = {
@@ -220,10 +219,35 @@ class UtilTest(unittest.TestCase):
                 }
             }
         }
-        data = self.data.filter_dataframe(filter_["filter"])
-        data_frame = self.data.data_frame(data)
-        self.assertEqual(len(data_frame["var"]), 1838)
-        self.assertEqual(len(data_frame["obs"]), 497)
+        data_frame_obs = self.data.data_frame(filter_["filter"], "obs")
+        self.assertEqual(len(data_frame_obs["var"]), 1838)
+        self.assertEqual(len(data_frame_obs["obs"]), 497)
+        self.assertEqual(type(data_frame_obs["obs"][0]), list)
+        self.assertEqual(type(data_frame_obs["var"][0]), int)
+        data_frame_var = self.data.data_frame(filter_["filter"], "var")
+        self.assertEqual(len(data_frame_var["var"]), 1838)
+        self.assertEqual(len(data_frame_var["obs"]), 497)
+        self.assertEqual(type(data_frame_var["var"][0]), list)
+        self.assertEqual(type(data_frame_var["obs"][0]), int)
+
+    def test_data_single_gene(self):
+        for axis in ["obs", "var"]:
+            filter_ = {
+                "filter": {
+                    "var": {
+                        "annotation_value": [
+                            {"name": "name", "values": ["RER1"]},
+                        ]
+                    }
+                }
+            }
+            data_frame_var = self.data.data_frame(filter_["filter"], axis)
+            if axis == "obs":
+                self.assertEqual(type(data_frame_var["var"][0]), int)
+                self.assertEqual(type(data_frame_var["obs"][0]), list)
+            elif axis == "var":
+                self.assertEqual(type(data_frame_var["obs"][0]), int)
+                self.assertEqual(type(data_frame_var["var"][0]), list)
 
     if __name__ == '__main__':
         unittest.main()

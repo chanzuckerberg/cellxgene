@@ -2,7 +2,7 @@
 
 import _ from "lodash";
 import { World, kvCache } from "../util/stateManager";
-import { parseRGB } from "../util/parseRGB";
+import parseRGB from "../util/parseRGB";
 import Crossfilter from "../util/typedCrossfilter";
 import * as globals from "../globals";
 import {
