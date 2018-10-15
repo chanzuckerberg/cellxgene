@@ -78,7 +78,7 @@ class ScanpyEngine(CXGDriver):
 
     @staticmethod
     def _load_data(data):
-        return sc.read(os.path.join(data, "data.h5ad"))
+        return sc.read(os.path.join(data, "data.h5ad"), backed='r', cache = True)
 
     @staticmethod
     def _top_sort(values, sort_order, top_n=None):
