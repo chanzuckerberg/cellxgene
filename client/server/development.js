@@ -32,12 +32,10 @@ app.use(historyApiFallback({ verbose: false }));
 
 app.use(
   require("webpack-dev-middleware")(compiler, {
-    logLevel: 'warn',
+    logLevel: "warn",
     publicPath: config.output.publicPath
   })
 );
-
-app.use(require("webpack-hot-middleware")(compiler));
 
 app.use(favicon("./favicon.png"));
 
