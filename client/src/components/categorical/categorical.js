@@ -3,8 +3,8 @@ import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
 
-import { FaArrowRight } from "react-icons/fa";
-import { FaArrowDown } from "react-icons/fa";
+import { FaChevronRight } from "react-icons/fa";
+import { FaChevronDown } from "react-icons/fa";
 import { FaPaintBrush } from "react-icons/fa";
 
 import * as globals from "../../globals";
@@ -132,7 +132,7 @@ class Category extends React.Component {
                 this.setState({ isExpanded: !isExpanded });
               }}
             >
-              {isExpanded ? <FaArrowDown /> : <FaArrowRight />}
+              {isExpanded ? <FaChevronDown /> : <FaChevronRight />}
             </span>
             {metadataField}
             <input
