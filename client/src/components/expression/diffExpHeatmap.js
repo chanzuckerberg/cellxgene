@@ -5,7 +5,7 @@ import memoize from "memoize-one";
 import { connect } from "react-redux";
 import ReactAutocomplete from "react-autocomplete"; /* http://emilebres.github.io/react-virtualized-checkbox/ */
 import getContrast from "font-color-contrast"; // https://www.npmjs.com/package/font-color-contrast
-import FaPaintBrush from "react-icons/lib/fa/paint-brush";
+import { FaPaintBrush } from "react-icons/fa";
 import * as d3 from "d3";
 import { interpolateGreys } from "d3-scale-chromatic";
 import * as globals from "../../globals";

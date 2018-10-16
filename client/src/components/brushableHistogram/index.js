@@ -8,7 +8,7 @@ import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
 import { kvCache } from "../../util/stateManager/";
-import FaPaintBrush from "react-icons/lib/fa/paint-brush";
+import { FaPaintBrush } from "react-icons/fa";
 import * as d3 from "d3";
 import memoize from "memoize-one";
 import * as globals from "../../globals";
