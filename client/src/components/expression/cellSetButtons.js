@@ -3,32 +3,35 @@ import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
 import * as globals from "../../globals";
-import styles from "../framework/buttons.css";
-import actions from "../../actions";
 
 @connect()
 class CellSetButton extends React.Component {
   set() {
-    const { differential } = this.props;
+    const {
+      differential,
+      crossfilter,
+      dispatch,
+      eitherCellSetOneOrTwo
+    } = this.props;
 
-    const set = _.map(this.props.crossfilter.allFiltered(), "name");
+    const set = _.map(crossfilter.allFiltered(), "name");
 
     if (!differential.diffExp) {
       /* diffexp needs to be cleared before we store a new set */
-      this.props.dispatch({
-        type:
-          "store current cell selection as differential set " +
-          this.props.eitherCellSetOneOrTwo,
+      dispatch({
+        type: `store current cell selection as differential set ${eitherCellSetOneOrTwo}`,
         data: set
       });
     }
   }
 
   render() {
-    const { differential } = this.props;
+    const { differential, eitherCellSetOneOrTwo } = this.props;
+    const cellListName = `celllist${eitherCellSetOneOrTwo}`;
     return (
       <span style={{ marginRight: 10 }}>
         <button
+          type="button"
           style={{
             color: "#FFF",
             borderRadius: 2,
@@ -44,7 +47,7 @@ class CellSetButton extends React.Component {
         >
           <span style={{ fontSize: 14, fontWeight: 700 }}>
             {" "}
-            {this.props.eitherCellSetOneOrTwo}
+            {eitherCellSetOneOrTwo}
             {": "}
           </span>
           <span
@@ -55,13 +58,9 @@ class CellSetButton extends React.Component {
               top: 0
             }}
           >
-            {differential[
-              "celllist" + this.props.eitherCellSetOneOrTwo
-            ]
-              ? this.props.differential[
-                  "celllist" + this.props.eitherCellSetOneOrTwo
-                ].length + " cells"
-              : 0 + " cells"}
+            {differential[cellListName]
+              ? `${differential[cellListName].length} cells`
+              : "0 cells"}
           </span>
         </button>
       </span>
@@ -70,17 +69,3 @@ class CellSetButton extends React.Component {
 }
 
 export default CellSetButton;
-
-//
-// <button style={{
-//   marginLeft: 3,
-//   color: "#FFF",
-//   padding: "0px 10px",
-//   height: 30,
-//   backgroundColor: globals.brightBlue,
-//   border: "none",
-//   cursor: "pointer",
-// }}>
-//   <span style={{fontSize: 24, fontWeight: 700}}> X </span>
-//
-// </button>

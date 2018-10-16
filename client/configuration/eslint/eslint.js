@@ -1,7 +1,7 @@
 module.exports = {
   root: true,
   parser: "babel-eslint",
-  extends: "airbnb",
+  extends: ["airbnb", "prettier", "prettier/react"],
   env: { browser: true, commonjs: true, es6: true },
   globals: { expect: true },
   parserOptions: {
@@ -14,6 +14,7 @@ module.exports = {
   },
   rules: {
     "no-magic-numbers": "off",
+    "no-nested-ternary": "off",
     "func-style": "off",
     "arrow-parens": "off",
     "no-use-before-define": "off",
