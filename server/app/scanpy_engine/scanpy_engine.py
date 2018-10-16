@@ -81,7 +81,7 @@ class ScanpyEngine(CXGDriver):
         # See https://scanpy.readthedocs.io/en/latest/api/scanpy.api.read.html
         # Based upon this advice, setting both backend= and cache= parameters.
         # return sc.read(os.path.join(data, "data.h5ad"), cache = True)
-        return sc.read(os.path.join(data, "data.h5ad"), backed='r', cache = True)
+        return sc.read(os.path.join(data, "data.h5ad"), backed='r', cache=True)
 
     @staticmethod
     def _top_sort(values, sort_order, top_n=None):
