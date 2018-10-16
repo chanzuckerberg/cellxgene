@@ -3,7 +3,7 @@ import React from "react";
 import _ from "lodash";
 import memoize from "memoize-one";
 import { connect } from "react-redux";
-import ReactAutocomplete from "react-autocomplete"; /* http://emilebres.github.io/react-virtualized-checkbox/ */
+// import ReactAutocomplete from "react-autocomplete"; /* http://emilebres.github.io/react-virtualized-checkbox/ */
 import getContrast from "font-color-contrast"; // https://www.npmjs.com/package/font-color-contrast
 import { FaPaintBrush } from "react-icons/fa";
 import * as d3 from "d3";

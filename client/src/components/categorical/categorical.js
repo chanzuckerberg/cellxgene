@@ -3,9 +3,7 @@ import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
 
-import { FaChevronRight } from "react-icons/fa";
-import { FaChevronDown } from "react-icons/fa";
-import { FaPaintBrush } from "react-icons/fa";
+import { FaChevronRight, FaChevronDown, FaPaintBrush } from "react-icons/fa";
 
 import * as globals from "../../globals";
 import Value from "./value";
@@ -126,7 +124,7 @@ class Category extends React.Component {
                 cursor: "pointer",
                 display: "inline-block",
                 position: "relative",
-                top: -1
+                top: 2
               }}
               onClick={() => {
                 this.setState({ isExpanded: !isExpanded });
@@ -155,7 +153,7 @@ class Category extends React.Component {
                 // backgroundColor: this.props.colorAccessor === this.props.metadataField ? globals.brightBlue : "inherit",
                 display: "inline-block",
                 position: "relative",
-                top: -1,
+                top: 2,
                 cursor: "pointer"
               }}
             >
@@ -196,6 +194,7 @@ class Categories extends React.Component {
           // overflow: "auto",
         }}
       >
+        <p> Categorical Metadata </p>
         {_.map(ranges, (value, key) => {
           const isColorField = key.includes("color") || key.includes("Color");
           if (value.options && !isColorField && key !== "name") {
