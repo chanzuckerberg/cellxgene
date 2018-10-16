@@ -5,7 +5,7 @@ import React from "react";
 import _ from "lodash";
 import * as d3 from "d3";
 import { connect } from "react-redux";
-import CirclePlus from "react-icons/lib/fa/plus-circle";
+import { FaPlusCircle } from "react-icons/fa";
 import HistogramBrush from "../brushableHistogram";
 import * as globals from "../../globals";
 // import ReactAutocomplete from "react-autocomplete"; /* http://emilebres.github.io/react-virtualized-checkbox/ */
@@ -89,7 +89,7 @@ class GeneExpression extends React.Component {
           }}
           onClick={this.handleClick.bind(this)}
         >
-          <CirclePlus
+          <FaPlusCircle
             style={{
               display: "inline-block",
               marginLeft: 7,

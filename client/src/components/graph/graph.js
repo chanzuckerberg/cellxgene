@@ -6,8 +6,8 @@ import { connect } from "react-redux";
 import mat4 from "gl-mat4";
 import _regl from "regl";
 
-import FaCrosshair from "react-icons/lib/fa/crosshairs";
-import FaZoom from "react-icons/lib/fa/search-plus";
+import { FaCrosshairs } from "react-icons/fa";
+import { FaSearchPlus } from "react-icons/fa";
 
 import * as globals from "../../globals";
 import setupSVGandBrushElements from "./setupSVGandBrush";
@@ -399,7 +399,7 @@ class Graph extends React.Component {
                   }}
                 >
                   {" "}
-                  <FaCrosshair />{" "}
+                  <FaCrosshairs />{" "}
                 </button>
                 <button
                   type="button"
@@ -419,7 +419,7 @@ class Graph extends React.Component {
                   }}
                 >
                   {" "}
-                  <FaZoom />{" "}
+                  <FaSearchPlus />{" "}
                 </button>
               </span>
             </div>
