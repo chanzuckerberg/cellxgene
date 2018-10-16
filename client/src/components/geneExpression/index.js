@@ -8,7 +8,6 @@ import { connect } from "react-redux";
 import { FaPlusCircle } from "react-icons/fa";
 import HistogramBrush from "../brushableHistogram";
 import * as globals from "../../globals";
-// import ReactAutocomplete from "react-autocomplete"; /* http://emilebres.github.io/react-virtualized-checkbox/ */
 import actions from "../../actions";
 
 @connect(state => {
@@ -122,7 +121,7 @@ class GeneExpression extends React.Component {
         {differential.diffExp
           ? _.map(differential.diffExp, value => {
               const annotations = world.varAnnotations[value[0]];
-              const name = { annotations };
+              const { name } = annotations;
               const values = world.varDataCache[name];
               if (!values) {
                 return null;
