@@ -30,7 +30,7 @@ class ScanpyEngine(CXGDriver):
         self.cell_count = self.data.shape[0]
         self.gene_count = self.data.shape[1]
         self._create_schema()
-        self.layout(None)
+        self.layout({})
 
     def _create_schema(self):
         self.schema = {
@@ -79,9 +79,10 @@ class ScanpyEngine(CXGDriver):
     @staticmethod
     def _load_data(data):
         # See https://scanpy.readthedocs.io/en/latest/api/scanpy.api.read.html
-        # Based upon this advice, setting both backend= and cache= parameters.
-        # return sc.read(os.path.join(data, "data.h5ad"), cache = True)
-        return sc.read(os.path.join(data, "data.h5ad"), backed='r', cache=True)
+        # Based upon this advice, setting cache=True parameter
+        # Note: as of current scanpy/anndata release, setting backed='r' will
+        # result in an error.
+        return sc.read(os.path.join(data, "data.h5ad"), cache=True)
 
     @staticmethod
     def _top_sort(values, sort_order, top_n=None):
@@ -330,6 +331,8 @@ class ScanpyEngine(CXGDriver):
         :param interactive_limit: -- don't compute if total # genes in dataframes are larger than this
         :return:  [cellid, x, y, ...]
         """
+        print(filter)
+        print(interactive_limit)
         try:
             df = self.filter_dataframe(filter, include_uns=True)
         except KeyError as e:
