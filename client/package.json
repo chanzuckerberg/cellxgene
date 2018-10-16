@@ -90,6 +90,7 @@
     "json-loader": "^0.5.4",
     "mini-css-extract-plugin": "^0.4.1",
     "nyc": "^13.0.1",
+    "redux-devtools-extension": "^2.13.5",
     "rimraf": "^2.5.4",
     "serve-favicon": "^2.3.0",
     "style-loader": "^0.23.1",
