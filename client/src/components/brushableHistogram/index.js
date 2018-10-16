@@ -7,10 +7,10 @@ https://bl.ocks.org/SpaceActuary/2f004899ea1b2bd78d6f1dbb2febf771
 import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
-import { kvCache } from "../../util/stateManager/";
 import { FaPaintBrush } from "react-icons/fa";
 import * as d3 from "d3";
 import memoize from "memoize-one";
+import { kvCache } from "../../util/stateManager";
 import * as globals from "../../globals";
 import actions from "../../actions";
 
@@ -30,7 +30,6 @@ class HistogramBrush extends React.Component {
     histogramCache.y = d3
       .scaleLinear()
       .range([this.height - this.marginBottom, 0]);
-    // .range([height - margin.bottom, margin.top]);
 
     if (obsAnnotations[0][field]) {
       // recalculate expensive stuff
@@ -113,6 +112,7 @@ class HistogramBrush extends React.Component {
 
   drawHistogram(svgRef) {
     const { obsAnnotations, field, ranges } = this.props;
+    const { brush, axis } = this.state;
     const histogramCache = this.calcHistogramCache(
       obsAnnotations,
       field,
@@ -137,8 +137,8 @@ class HistogramBrush extends React.Component {
       .attr("width", d => Math.abs(x(d.x1) - x(d.x0) - 1))
       .attr("height", d => y(0) - y(d.length / numValues));
 
-    if (!this.state.brush && !this.state.axis) {
-      const brush = d3
+    if (!brush && !axis) {
+      const newBrush = d3
         .select(svgRef)
         .append("g")
         .attr("class", "brush")
@@ -150,12 +150,6 @@ class HistogramBrush extends React.Component {
         .attr("class", "axis axis--x")
         .attr("transform", `translate(0,${this.height - this.marginBottom})`)
         .call(d3.axisBottom(x).ticks(5));
-      // .append("text")
-      // .attr("x", this.width - 2)
-      // .attr("y", -6)
-      // .attr("fill", "#000")
-      // // .attr("text-anchor", "end")
-      // // .text(field);
 
       d3.select(svgRef)
         .selectAll(".axis--x text")
@@ -170,14 +164,13 @@ class HistogramBrush extends React.Component {
         .selectAll(".axis--x line")
         .style("stroke", "rgb(230,230,230)");
 
-      this.setState({ brush, xAxis });
+      this.setState({ brush: newBrush, xAxis }); // eslint-disable-line react/no-unused-state
     }
   }
 
   handleColorAction() {
     const {
       obsAnnotations,
-      ranges,
       dispatch,
       field,
       world,
@@ -209,7 +202,7 @@ class HistogramBrush extends React.Component {
   }
 
   render() {
-    const { field, ranges, colorAccessor, isUserDefined } = this.props;
+    const { field, colorAccessor, isUserDefined } = this.props;
 
     return (
       <div
