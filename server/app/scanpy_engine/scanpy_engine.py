@@ -331,8 +331,6 @@ class ScanpyEngine(CXGDriver):
         :param interactive_limit: -- don't compute if total # genes in dataframes are larger than this
         :return:  [cellid, x, y, ...]
         """
-        print(filter)
-        print(interactive_limit)
         try:
             df = self.filter_dataframe(filter, include_uns=True)
         except KeyError as e:
