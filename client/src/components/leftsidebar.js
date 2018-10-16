@@ -12,7 +12,9 @@ import DynamicScatterplot from "./scatterplot/scatterplot";
 
 @connect(state => ({
   responsive: state.responsive,
-  datasetTitle: _.get(state.config, "displayNames.dataset")
+  datasetTitle: _.get(state.config, "displayNames.dataset"),
+  scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
+  scatterplotYYaccessor: state.controls.scatterplotYYaccessor
 }))
 class LeftSideBar extends React.Component {
   constructor(props) {
@@ -24,86 +26,48 @@ class LeftSideBar extends React.Component {
 
   render() {
     const { currentTab } = this.state;
-    const { responsive, datasetTitle } = this.props;
+    const {
+      responsive,
+      datasetTitle,
+      scatterplotXXaccessor,
+      scatterplotYYaccessor
+    } = this.props;
 
     /*
     this magic number should be made less fragile,
     if cellxgene logo or tabs change, this must as well
     */
-    const metadataSectionPadding = currentTab === "metadata" ? 88 : 450;
+    const metadataSectionPadding =
+      scatterplotXXaccessor && scatterplotYYaccessor ? 450 : 0;
     return (
       <div style={{ position: "fixed" }}>
         <p
           style={{
-            margin: 10,
+            position: "fixed",
+            left: responsive.width / 2,
+            top: 14,
+            margin: 0,
             fontSize: 24,
-            color: globals.lightGrey,
+            color: globals.darkerGrey,
             fontWeight: 700,
             width: "100%"
           }}
         >
-          cellxgene &nbsp;
+          cellxgene: &nbsp;
           {datasetTitle}
         </p>
-        <div style={{ padding: 10 }}>
-          <button
-            type="button"
-            style={{
-              padding: "none",
-              outline: 0,
-              fontSize: 14,
-              fontWeight: currentTab === "metadata" ? 700 : 400,
-              fontStyle: currentTab === "metadata" ? "inherit" : "italic",
-              cursor: "pointer",
-              border: "none",
-              backgroundColor: "#FFF",
-              borderTop: "none",
-              borderBottom: "none",
-              borderRight: "none",
-              borderLeft: "none"
-            }}
-            onClick={() => {
-              this.setState({ currentTab: "metadata" });
-            }}
-          >
-            Metadata
-          </button>
-          <button
-            type="button"
-            style={{
-              padding: "none",
-              outline: 0,
-              fontSize: 14,
-              fontWeight: currentTab === "expression" ? 700 : 400,
-              fontStyle: currentTab === "expression" ? "inherit" : "italic",
-              cursor: "pointer",
-              border: "none",
-              backgroundColor: "#FFF",
-              borderTop: "none",
-              borderBottom: "none",
-              borderRight: "none",
-              borderLeft: "none"
-            }}
-            onClick={() => {
-              this.setState({ currentTab: "expression" });
-            }}
-          >
-            Expression
-          </button>
-        </div>
         <div
           style={{
             height: responsive.height - metadataSectionPadding,
             width: 400,
-            padding: 10,
+            padding: "0px 10px 10px 10px",
             overflowY: "auto",
             overflowX: "hidden"
           }}
         >
-          {currentTab === "metadata" ? <Categorical /> : null}
-          {currentTab === "metadata" ? <GeneExpression /> : null}
-          {currentTab === "metadata" ? <Continuous /> : null}
-          {currentTab === "expression" ? <Heatmap /> : null}
+          <Categorical />
+          <GeneExpression />
+          <Continuous />
         </div>
         <div
           style={{
@@ -112,7 +76,9 @@ class LeftSideBar extends React.Component {
             left: 0
           }}
         >
-          {currentTab === "expression" ? <DynamicScatterplot /> : null}
+          {scatterplotXXaccessor && scatterplotYYaccessor ? (
+            <DynamicScatterplot />
+          ) : null}
         </div>
         <div style={{ position: "fixed", bottom: 0, right: 0 }}>
           {currentTab === "metadata" ? <ExpressionButtons /> : null}

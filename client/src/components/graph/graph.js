@@ -392,7 +392,9 @@ class Graph extends React.Component {
                     border:
                       mode === "brush" ? "1px solid black" : "1px solid white",
                     backgroundColor: "white",
-                    padding: 5,
+                    padding: "5px 5px 2px 5px",
+                    position: "relative",
+                    top: 2,
                     marginRight: 10,
                     borderRadius: 3
                   }}
@@ -412,7 +414,9 @@ class Graph extends React.Component {
                     border:
                       mode === "zoom" ? "1px solid black" : "1px solid white",
                     backgroundColor: "white",
-                    padding: 5,
+                    padding: "5px 5px 2px 5px",
+                    position: "relative",
+                    top: 2,
                     marginRight: 10,
                     borderRadius: 3
                   }}

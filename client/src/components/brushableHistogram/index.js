@@ -16,7 +16,10 @@ import actions from "../../actions";
 
 @connect(state => ({
   world: state.controls.world,
+  scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
+  scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
   crossfilter: state.controls.crossfilter,
+  differential: state.differential,
   initializeRanges: _.get(state.controls.world, "summary.obs"),
   colorAccessor: state.controls.colorAccessor,
   colorScale: state.controls.colorScale,
@@ -201,8 +204,38 @@ class HistogramBrush extends React.Component {
     }
   }
 
+  handleSetGeneAsScatterplotX() {
+    return () => {
+      const { dispatch, field } = this.props;
+      dispatch({
+        type: "set scatterplot x",
+        data: field
+      });
+    };
+  }
+
+  handleSetGeneAsScatterplotY() {
+    return () => {
+      const { dispatch, field } = this.props;
+      dispatch({
+        type: "set scatterplot y",
+        data: field
+      });
+    };
+  }
+
   render() {
-    const { field, colorAccessor, isUserDefined } = this.props;
+    const {
+      field,
+      colorAccessor,
+      isUserDefined,
+      isDiffExp,
+      diffExp_avgDiff,
+      diffExp_set1AvgExp,
+      diffExp_set2AvgExp,
+      scatterplotXXaccessor,
+      scatterplotYYaccessor
+    } = this.props;
 
     return (
       <div
@@ -225,6 +258,84 @@ class HistogramBrush extends React.Component {
               }}
             >
               remove
+            </span>
+          ) : null}
+          {isDiffExp ? (
+            <span>
+              <span
+                style={{
+                  fontSize: globals.tiniestFontSize,
+                  marginLeft: 7
+                }}
+              >
+                <strong>1:</strong>
+                {` ${diffExp_set1AvgExp.toPrecision(2)}`}
+              </span>
+              <span
+                style={{
+                  fontSize: globals.tiniestFontSize,
+                  marginLeft: 7,
+                  backgroundColor: globals.lighterGrey,
+                  padding: 2
+                }}
+              >
+                <strong>2:</strong>
+                {` ${diffExp_set2AvgExp.toPrecision(2)}`}
+              </span>
+              <span
+                style={{
+                  fontSize: globals.tiniestFontSize,
+                  marginLeft: 7
+                }}
+              >
+                {`Av. Diff: ${diffExp_avgDiff.toFixed(2)}`}
+              </span>
+              <span
+                onClick={this.handleSetGeneAsScatterplotX(field).bind(this)}
+                style={{
+                  fontSize: 16,
+                  color:
+                    scatterplotXXaccessor === field
+                      ? "white"
+                      : globals.brightBlue,
+                  cursor: "pointer",
+                  position: "relative",
+                  top: 1,
+                  fontWeight: 700,
+                  marginRight: 4,
+                  borderRadius: 3,
+                  padding: "2px 3px",
+                  backgroundColor:
+                    scatterplotXXaccessor === field
+                      ? globals.brightBlue
+                      : "inherit"
+                }}
+              >
+                X
+              </span>
+              <span
+                onClick={this.handleSetGeneAsScatterplotY(field).bind(this)}
+                style={{
+                  fontSize: 16,
+                  color:
+                    scatterplotYYaccessor === field
+                      ? "white"
+                      : globals.brightBlue,
+                  cursor: "pointer",
+                  position: "relative",
+                  top: 1,
+                  fontWeight: 700,
+                  marginRight: 4,
+                  borderRadius: 3,
+                  padding: "2px 3px",
+                  backgroundColor:
+                    scatterplotYYaccessor === field
+                      ? globals.brightBlue
+                      : "inherit"
+                }}
+              >
+                Y
+              </span>
             </span>
           ) : null}
         </div>

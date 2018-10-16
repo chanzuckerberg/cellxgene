@@ -122,7 +122,7 @@ class Category extends React.Component {
                 cursor: "pointer",
                 display: "inline-block",
                 position: "relative",
-                top: -1
+                top: 2
               }}
               onClick={() => {
                 this.setState({ isExpanded: !isExpanded });
@@ -154,7 +154,7 @@ class Category extends React.Component {
                 // backgroundColor: this.props.colorAccessor === this.props.metadataField ? globals.brightBlue : "inherit",
                 display: "inline-block",
                 position: "relative",
-                top: -1,
+                top: 2,
                 cursor: "pointer"
               }}
             >

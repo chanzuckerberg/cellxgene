@@ -32,6 +32,7 @@ class Categories extends React.Component {
           // overflow: "auto",
         }}
       >
+        <p> Categorical Metadata </p>
         {_.map(ranges, (value, key) => {
           const isColorField = key.includes("color") || key.includes("Color");
           if (value.options && !isColorField && key !== "name") {

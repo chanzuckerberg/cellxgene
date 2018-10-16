@@ -92,6 +92,8 @@ class GeneExpression extends React.Component {
             style={{
               display: "inline-block",
               marginLeft: 7,
+              position: "relative",
+              top: 5,
               color: globals.brightBlue,
               fontSize: 22
             }}
@@ -132,6 +134,9 @@ class GeneExpression extends React.Component {
                   field={name}
                   ranges={d3.extent(values)}
                   isDiffExp
+                  diffExp_avgDiff={value[1]}
+                  diffExp_set1AvgExp={value[4]}
+                  diffExp_set2AvgExp={value[5]}
                 />
               );
             })
