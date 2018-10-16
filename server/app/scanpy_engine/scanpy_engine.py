@@ -79,7 +79,8 @@ class ScanpyEngine(CXGDriver):
     @staticmethod
     def _load_data(data):
         # See https://scanpy.readthedocs.io/en/latest/api/scanpy.api.read.html
-        # Based uon this advice, setting both backend= and cache= parameters.
+        # Based upon this advice, setting both backend= and cache= parameters.
+        # return sc.read(os.path.join(data, "data.h5ad"), cache = True)
         return sc.read(os.path.join(data, "data.h5ad"), backed='r', cache = True)
 
     @staticmethod
