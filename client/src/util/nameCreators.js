@@ -37,6 +37,8 @@ export const makeContinuousDimensionName = (continuousNamespace, key) => {
     name = diffexpDimensionName(key);
   } else if (continuousNamespace.isUserDefined) {
     name = userDefinedDimensionName(key);
+  } else {
+    throw new Error("unknown continuous dimension");
   }
 
   return name;
