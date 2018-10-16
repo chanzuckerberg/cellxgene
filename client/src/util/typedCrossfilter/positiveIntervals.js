@@ -30,7 +30,7 @@ class PositiveIntervals {
         res.push(copy[i]);
       } else if (copy[i][1] > res[res.length - 1][1]) {
         // merge this into previous
-        res[res.length - 1][1] = copy[i][1];
+        res[res.length - 1][1] = copy[i][1]; // eslint-disable-line prefer-destructuring
       }
     }
     return res;
