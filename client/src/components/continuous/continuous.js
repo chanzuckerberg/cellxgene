@@ -37,8 +37,6 @@ class Continuous extends React.Component {
     };
   }
 
-  componentDidUpdate() {}
-
   render() {
     const { ranges, obsAnnotations, schema } = this.props;
     if (schema && !this.continuousChecked) {

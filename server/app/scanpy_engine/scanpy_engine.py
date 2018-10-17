@@ -30,7 +30,7 @@ class ScanpyEngine(CXGDriver):
         self.cell_count = self.data.shape[0]
         self.gene_count = self.data.shape[1]
         self._create_schema()
-        self.layout(None)
+        self.layout({})
 
     def _create_schema(self):
         self.schema = {
@@ -78,7 +78,11 @@ class ScanpyEngine(CXGDriver):
 
     @staticmethod
     def _load_data(data):
-        return sc.read(os.path.join(data, "data.h5ad"))
+        # See https://scanpy.readthedocs.io/en/latest/api/scanpy.api.read.html
+        # Based upon this advice, setting cache=True parameter
+        # Note: as of current scanpy/anndata release, setting backed='r' will
+        # result in an error.
+        return sc.read(os.path.join(data, "data.h5ad"), cache=True)
 
     @staticmethod
     def _top_sort(values, sort_order, top_n=None):
