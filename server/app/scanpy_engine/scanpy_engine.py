@@ -9,7 +9,7 @@ from scipy import stats
 from server.app.app import cache
 from server.app.driver.driver import CXGDriver
 from server.app.util.constants import Axis, DEFAULT_TOP_N, DiffExpMode
-from server.app.util.utils import FilterError, InteractiveError
+from server.app.util.utils import FilterError, InteractiveError, PrepareError
 
 """
 Sort order for methods
@@ -342,7 +342,11 @@ class ScanpyEngine(CXGDriver):
         # TODO for MVP we are pushing computation of layout to preprocessing and not allowing re-layout
         # this will probably change after user feedback
         # getattr(sc.tl, self.layout_method)(df, random_state=123)
-        df_layout = df.obsm[f"X_{self.layout_method}"]
+        try:
+            df_layout = df.obsm[f"X_{self.layout_method}"]
+        except ValueError as e:
+            raise PrepareError(f"Layout has not been calculated using {self.layout_method}, "
+                               f"please prepare your datafile and relaunch cellxgene") from e
         normalized_layout = DataFrame((df_layout - df_layout.min()) / (df_layout.max() - df_layout.min()),
                                       index=df.obs.index)
         return {

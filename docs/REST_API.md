@@ -460,8 +460,12 @@ Get the _default_ layout for all observations or (_future_) all variables. Retur
   }
 }
 ```
+**Response code:**
 
-### PUT /layout/obs, (_future_) PUT /layout/var
+- 200 - success
+- 400 Bad Request - unprepared data, layout has not been stored in the input data
+
+### (_future_) PUT /layout/obs, (_future_) PUT /layout/var
 
 Generate layout for the caller-specified subset of data, as indicated by the filter. This operation implicitly requests a re-layout operation to be performed on the specified data. This operation will _commonly_ return the same results for any given caller-specified filter, but this behavior is not guaranteed.
 
