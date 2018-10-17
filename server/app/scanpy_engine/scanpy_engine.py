@@ -30,7 +30,6 @@ class ScanpyEngine(CXGDriver):
         self.cell_count = self.data.shape[0]
         self.gene_count = self.data.shape[1]
         self._create_schema()
-        self.layout({})
 
     def _create_schema(self):
         self.schema = {
@@ -340,7 +339,9 @@ class ScanpyEngine(CXGDriver):
         # TODO Filtering cells is fine, but filtering genes does nothing because the neighbors are
         # calculated using the original vars (geneset) and this doesn’t get updated when you use less.
         # Need to recalculate neighbors (long) if user requests new layout filtered by var
-        getattr(sc.tl, self.layout_method)(df, random_state=123)
+        # TODO for MVP we are pushing computation of layout to preprocessing and not allowing re-layout
+        # this will probably change after user feedback
+        # getattr(sc.tl, self.layout_method)(df, random_state=123)
         df_layout = df.obsm[f"X_{self.layout_method}"]
         normalized_layout = DataFrame((df_layout - df_layout.min()) / (df_layout.max() - df_layout.min()),
                                       index=df.obs.index)
