@@ -39,10 +39,8 @@ export const brushstart = () => {
   d3.event.sourceEvent.stopPropagation();
 };
 
-export const d3_functor = v => {
-  return typeof v === "function" ? v : () => v;
-};
-
+// Unused.
+// export const d3_functor = v => (typeof v === "function" ? v : () => v);
 export const project = (d, dimensions, xscale) =>
   dimensions.map((p, i) => {
     // check if data element has property and contains a value

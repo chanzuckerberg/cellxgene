@@ -8,7 +8,6 @@ import { connect } from "react-redux";
 import { FaPlusCircle } from "react-icons/fa";
 import HistogramBrush from "../brushableHistogram";
 import * as globals from "../../globals";
-// import ReactAutocomplete from "react-autocomplete"; /* http://emilebres.github.io/react-virtualized-checkbox/ */
 import actions from "../../actions";
 
 @connect(state => {
@@ -64,7 +63,7 @@ class GeneExpression extends React.Component {
   }
 
   render() {
-    const { world, userDefinedGenes } = this.props;
+    const { world, userDefinedGenes, differential } = this.props;
     const { gene } = this.state;
 
     return (
@@ -106,43 +105,40 @@ class GeneExpression extends React.Component {
         ) : null}
         {world && userDefinedGenes.length > 0
           ? _.map(userDefinedGenes, geneName => {
-              if (!world.varDataCache[geneName]) {
+              const values = world.varDataCache[geneName];
+              if (!values) {
                 return null;
-              } else {
-                const values = world.varDataCache[geneName];
-                return (
-                  <HistogramBrush
-                    key={geneName}
-                    field={geneName}
-                    ranges={d3.extent(values)}
-                    isUserDefined
-                  />
-                );
               }
+              return (
+                <HistogramBrush
+                  key={geneName}
+                  field={geneName}
+                  ranges={d3.extent(values)}
+                  isUserDefined
+                />
+              );
             })
           : null}
-        {this.props.differential.diffExp ? (
-          <p> Differentially Expressed Genes </p>
-        ) : null}
-        {this.props.differential.diffExp
-          ? _.map(this.props.differential.diffExp, (value, key) => {
-              const name = world.varAnnotations[value[0]].name;
+        {differential.diffExp ? <p> Differentially Expressed Genes </p> : null}
+        {differential.diffExp
+          ? _.map(differential.diffExp, value => {
+              const annotations = world.varAnnotations[value[0]];
+              const { name } = annotations;
               const values = world.varDataCache[name];
-              if (!world.varDataCache[world.varAnnotations[value[0]].name]) {
+              if (!values) {
                 return null;
-              } else {
-                return (
-                  <HistogramBrush
-                    key={name}
-                    field={name}
-                    ranges={d3.extent(values)}
-                    isDiffExp
-                    diffExp_avgDiff={value[1]}
-                    diffExp_set1AvgExp={value[4]}
-                    diffExp_set2AvgExp={value[5]}
-                  />
-                );
               }
+              return (
+                <HistogramBrush
+                  key={name}
+                  field={name}
+                  ranges={d3.extent(values)}
+                  isDiffExp
+                  diffExp_avgDiff={value[1]}
+                  diffExp_set1AvgExp={value[4]}
+                  diffExp_set2AvgExp={value[5]}
+                />
+              );
             })
           : null}
       </div>
@@ -151,46 +147,3 @@ class GeneExpression extends React.Component {
 }
 
 export default GeneExpression;
-
-// <ReactAutocomplete
-//   items={this.props.allGeneNames}
-//   shouldItemRender={(item, value) =>
-//     item.toLowerCase().indexOf(value.toLowerCase()) > -1
-//   }
-//   getItemValue={item => item}
-//   renderItem={(item, highlighted) => (
-//     <div
-//       key={item}
-//       style={{
-//         backgroundColor: highlighted ? "#eee" : "transparent"
-//       }}
-//     >
-//       {item}
-//     </div>
-//   )}
-//   value={this.state.value}
-//   onChange={e => this.setState({ value: e.target.value })}
-//   onSelect={value => {
-//     this.setState({ value });
-//     this.props.dispatch(
-//       actions.requestSingleGeneExpressionCountsPOST(
-//         value
-//       )
-//     );
-//   }}
-// />
-
-// <div>
-//   {_.map(this.props.ranges, (value, key) => {
-//     const isColorField = key.includes("color") || key.includes("Color");
-//     if (value.range && key !== "CellName" && !isColorField) {
-//       return (
-//         <HistogramBrush
-//           key={key}
-//           metadataField={key}
-//           ranges={value.range}
-//         />
-//       );
-//     }
-//   })}
-//   </div>
