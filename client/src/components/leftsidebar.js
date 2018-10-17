@@ -6,7 +6,6 @@ import Categorical from "./categorical/categorical";
 import Continuous from "./continuous/continuous";
 import GeneExpression from "./geneExpression";
 import ExpressionButtons from "./expression/expressionButtons";
-import Heatmap from "./expression/diffExpHeatmap";
 import * as globals from "../globals";
 import DynamicScatterplot from "./scatterplot/scatterplot";
 
@@ -56,6 +55,7 @@ class LeftSideBar extends React.Component {
           cellxgene: &nbsp;
           {datasetTitle}
         </p>
+
         <div
           style={{
             height: responsive.height - metadataSectionPadding,

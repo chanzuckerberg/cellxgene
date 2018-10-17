@@ -9,6 +9,7 @@ import { FaPlusCircle } from "react-icons/fa";
 import HistogramBrush from "../brushableHistogram";
 import * as globals from "../../globals";
 import actions from "../../actions";
+import { ErrorToastTopCenter } from "../framework/toasters";
 
 @connect(state => {
   const metadata = _.get(state.controls.world, "obsAnnotations", null);
@@ -51,6 +52,9 @@ class GeneExpression extends React.Component {
         "That's too many genes, you can have at most 15 user defined genes"
       );
     } else if (!_.find(world.varAnnotations, { name: gene })) {
+      ErrorToastTopCenter.show({
+        message: "That doesn't appear to be a valid gene name."
+      });
       console.log("That doesn't appear to be a valid gene name.");
     } else {
       dispatch(actions.requestUserDefinedGene(gene));
@@ -134,9 +138,9 @@ class GeneExpression extends React.Component {
                   field={name}
                   ranges={d3.extent(values)}
                   isDiffExp
-                  diffExp_avgDiff={value[1]}
-                  diffExp_set1AvgExp={value[4]}
-                  diffExp_set2AvgExp={value[5]}
+                  avgDiff={value[1]}
+                  set1AvgExp={value[4]}
+                  set2AvgExp={value[5]}
                 />
               );
             })

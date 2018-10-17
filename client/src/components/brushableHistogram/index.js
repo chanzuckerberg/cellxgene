@@ -230,9 +230,9 @@ class HistogramBrush extends React.Component {
       colorAccessor,
       isUserDefined,
       isDiffExp,
-      diffExp_avgDiff,
-      diffExp_set1AvgExp,
-      diffExp_set2AvgExp,
+      avgDiff,
+      set1AvgExp,
+      set2AvgExp,
       scatterplotXXaccessor,
       scatterplotYYaccessor
     } = this.props;
@@ -269,7 +269,7 @@ class HistogramBrush extends React.Component {
                 }}
               >
                 <strong>1:</strong>
-                {` ${diffExp_set1AvgExp.toPrecision(2)}`}
+                {` ${set1AvgExp.toPrecision(2)}`}
               </span>
               <span
                 style={{
@@ -280,7 +280,7 @@ class HistogramBrush extends React.Component {
                 }}
               >
                 <strong>2:</strong>
-                {` ${diffExp_set2AvgExp.toPrecision(2)}`}
+                {` ${set2AvgExp.toPrecision(2)}`}
               </span>
               <span
                 style={{
@@ -288,7 +288,7 @@ class HistogramBrush extends React.Component {
                   marginLeft: 7
                 }}
               >
-                {`Av. Diff: ${diffExp_avgDiff.toFixed(2)}`}
+                {`Av. Diff: ${avgDiff.toFixed(2)}`}
               </span>
               <span
                 onClick={this.handleSetGeneAsScatterplotX(field).bind(this)}

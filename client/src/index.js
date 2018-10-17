@@ -4,6 +4,10 @@ import React from "react";
 import ReactDOM from "react-dom";
 import { Provider } from "react-redux";
 
+// import "@blueprintjs/core/lib/css/blueprint.css";
+// import "@blueprintjs/icons/lib/css/blueprint-icons.css";
+// import "@blueprintjs/select/lib/css/blueprint-select.css";
+
 /* our code */
 import App from "./components/app";
 import store from "./reducers";
