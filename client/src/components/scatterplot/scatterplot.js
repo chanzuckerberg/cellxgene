@@ -238,7 +238,7 @@ class Scatterplot extends React.Component {
     // and it's alread defined to be a bottom axis.
     svg
       .append("g")
-      .attr("transform", "translate(0," + height + ")")
+      .attr("transform", `translate(0,${height})`)
       .attr("class", "x axis")
       .call(xAxis);
 
@@ -279,8 +279,8 @@ class Scatterplot extends React.Component {
           className={styles.scatterplot}
           id="scatterplot"
           style={{
-            width: width + margin.left + margin.right + "px",
-            height: height + margin.top + margin.bottom + "px"
+            width: `${width + margin.left + margin.right}px`,
+            height: `${height + margin.top + margin.bottom}px`
           }}
         >
           <canvas

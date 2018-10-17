@@ -6,8 +6,7 @@ import { connect } from "react-redux";
 import mat4 from "gl-mat4";
 import _regl from "regl";
 
-import { FaCrosshairs } from "react-icons/fa";
-import { FaSearchPlus } from "react-icons/fa";
+import { FaCrosshairs, FaSearchPlus } from "react-icons/fa";
 
 import * as globals from "../../globals";
 import setupSVGandBrushElements from "./setupSVGandBrush";
@@ -192,13 +191,13 @@ class Graph extends React.Component {
       d3.select("#graphAttachPoint")
         .selectAll("svg")
         .remove();
-      const { svg, brush, brushContainer } = setupSVGandBrushElements(
+      const { svg: newSvg, brush, brushContainer } = setupSVGandBrushElements(
         this.handleBrushSelectAction.bind(this),
         this.handleBrushDeselectAction.bind(this),
         responsive,
         this.graphPaddingTop
       );
-      this.setState({ svg, brush, brushContainer });
+      this.setState({ svg: newSvg, brush, brushContainer });
     }
   }
 
