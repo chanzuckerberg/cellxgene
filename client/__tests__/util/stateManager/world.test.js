@@ -7,15 +7,36 @@ import {
   obsAnnoDimensionName,
   layoutDimensionName
 } from "../../../src/util/nameCreators";
+import * as kvCache from "../../../src/util/stateManager/keyvalcache";
 
 /*
-TODO: endpoints to test:
-
-createObsDimensionMap(crossfilter, world)
-subsetVarData(world, universe, varData)
-createVarDimension(world, _worldVarDataCache, crossfilter, geneName)
-
+Helper - creates universe, world, corssfilter and dimensionMap from
+the default REST test response.
 */
+const defaultBigBang = () => {
+  /* create unverse, world, crossfilter and dimensionMap */
+  /* create universe */
+  const universe = Universe.createUniverseFromRestV02Response(
+    REST.config,
+    REST.schema,
+    REST.annotationsObs,
+    REST.annotationsVar,
+    REST.layoutObs
+  );
+  /* create world */
+  const world = World.createWorldFromEntireUniverse(universe);
+  /* create crossfilter */
+  const crossfilter = Crossfilter(world.obsAnnotations);
+  /* create dimension map */
+  const dimensionMap = World.createObsDimensionMap(crossfilter, world);
+
+  return {
+    universe,
+    world,
+    crossfilter,
+    dimensionMap
+  };
+};
 
 describe("createWorldFromEntireUniverse", () => {
   test("create from REST sample", () => {
@@ -59,24 +80,14 @@ describe("createWorldFromEntireUniverse", () => {
 
 describe("createWorldFromCurrentSelection", () => {
   test("create from REST sample", () => {
-    /* create universe */
-    const universe = Universe.createUniverseFromRestV02Response(
-      REST.config,
-      REST.schema,
-      REST.annotationsObs,
-      REST.annotationsVar,
-      REST.layoutObs
-    );
-    /* create world */
-    const originalWorld = World.createWorldFromEntireUniverse(universe);
-    /* create crossfilter */
-    const crossfilter = Crossfilter(originalWorld.obsAnnotations);
-
-    /* fake a selection */
-    const dimensionMap = World.createObsDimensionMap(
+    const {
+      universe,
+      world: originalWorld,
       crossfilter,
-      originalWorld
-    );
+      dimensionMap
+    } = defaultBigBang();
+
+    /* mock a selection */
     dimensionMap[obsAnnoDimensionName("field1")].filterRange([0, 5]);
     dimensionMap[obsAnnoDimensionName("field3")].filterExact(false);
 
@@ -141,20 +152,7 @@ describe("createObsDimensionMap", () => {
     - check that dimension typing is sane
     */
 
-    /* create universe */
-    const universe = Universe.createUniverseFromRestV02Response(
-      REST.config,
-      REST.schema,
-      REST.annotationsObs,
-      REST.annotationsVar,
-      REST.layoutObs
-    );
-    /* create world */
-    const world = World.createWorldFromEntireUniverse(universe);
-    /* create crossfilter */
-    const crossfilter = Crossfilter(world.obsAnnotations);
-    /* create dimension map */
-    const dimensionMap = World.createObsDimensionMap(crossfilter, world);
+    const { dimensionMap } = defaultBigBang();
 
     const schemaByObsName = _.keyBy(REST.schema.schema.annotations.obs, "name");
     expect(dimensionMap).toBeDefined();
@@ -174,4 +172,58 @@ describe("createObsDimensionMap", () => {
       Crossfilter.ScalarDimension
     );
   });
+});
+
+describe("subsetVarData", () => {
+  test("when world eq universe", () => {
+    const { universe, world } = defaultBigBang();
+    /* create a mock varData array for subsetting */
+    const sourceVarData = new Float32Array(universe.nObs);
+
+    /* expect literally the same object back */
+    const result = World.subsetVarData(world, universe, sourceVarData);
+    expect(result).toBe(sourceVarData);
+  });
+
+  test("when world neq universe", () => {
+    const { universe, world, crossfilter, dimensionMap } = defaultBigBang();
+    /* create a mock varData array for subsetting */
+    const sourceVarData = Float32Array.from(_.range(universe.nObs));
+
+    /* mock a selection */
+    dimensionMap[obsAnnoDimensionName("field1")].filterRange([0, 5]);
+    dimensionMap[obsAnnoDimensionName("field3")].filterExact(false);
+
+    /* create the world from the selection */
+    const newWorld = World.createWorldFromCurrentSelection(
+      universe,
+      world,
+      crossfilter
+    );
+
+    /* expect a subset */
+    const result = World.subsetVarData(newWorld, universe, sourceVarData);
+    expect(result).not.toBe(sourceVarData);
+    expect(result).toHaveLength(newWorld.nObs);
+    /* check that we have expected source var content */
+    expect(result).toMatchObject(new Float32Array([0, 2]));
+  });
+});
+
+describe("createVarDimension", () => {
+  /* create default universe */
+  const { world, crossfilter } = defaultBigBang();
+  /* create a mock var data cache */
+  const varDataCache = kvCache.set(
+    kvCache.create(),
+    "GENE",
+    Float32Array.from(_.range(world.nObs))
+  );
+  const result = World.createVarDimension(
+    world,
+    varDataCache,
+    crossfilter,
+    "GENE"
+  );
+  expect(result).toBeInstanceOf(Crossfilter.ScalarDimension);
 });
