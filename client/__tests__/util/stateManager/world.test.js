@@ -3,13 +3,17 @@ import * as Universe from "../../../src/util/stateManager/universe";
 import * as World from "../../../src/util/stateManager/world";
 import Crossfilter from "../../../src/util/typedCrossfilter";
 import * as REST from "./sampleResponses";
-import { obsAnnoDimensionName } from "../../../src/util/nameCreators";
+import {
+  obsAnnoDimensionName,
+  layoutDimensionName
+} from "../../../src/util/nameCreators";
 
 /*
 TODO: endpoints to test:
 
 createObsDimensionMap(crossfilter, world)
 subsetVarData(world, universe, varData)
+createVarDimension(world, _worldVarDataCache, crossfilter, geneName)
 
 */
 
@@ -125,6 +129,49 @@ describe("createWorldFromCurrentSelection", () => {
         varDataCache: expect.any(Object),
         worldObsIndex: expected.worldObsIndex
       })
+    );
+  });
+});
+
+describe("createObsDimensionMap", () => {
+  test("when universe eq world", () => {
+    /*
+    check for:
+    - creates a dimension for all obsAnnotations, PLUS X/Y layout
+    - check that dimension typing is sane
+    */
+
+    /* create universe */
+    const universe = Universe.createUniverseFromRestV02Response(
+      REST.config,
+      REST.schema,
+      REST.annotationsObs,
+      REST.annotationsVar,
+      REST.layoutObs
+    );
+    /* create world */
+    const world = World.createWorldFromEntireUniverse(universe);
+    /* create crossfilter */
+    const crossfilter = Crossfilter(world.obsAnnotations);
+    /* create dimension map */
+    const dimensionMap = World.createObsDimensionMap(crossfilter, world);
+
+    const schemaByObsName = _.keyBy(REST.schema.schema.annotations.obs, "name");
+    expect(dimensionMap).toBeDefined();
+    REST.annotationsObs.names.forEach(name => {
+      const dim = dimensionMap[obsAnnoDimensionName(name)];
+      const { type } = schemaByObsName[name];
+      if (type === "string" || type === "boolean" || type === "categorical") {
+        expect(dim).toBeInstanceOf(Crossfilter.EnumDimension);
+      } else {
+        expect(dim).toBeInstanceOf(Crossfilter.ScalarDimension);
+      }
+    });
+    expect(dimensionMap[layoutDimensionName("X")]).toBeInstanceOf(
+      Crossfilter.ScalarDimension
+    );
+    expect(dimensionMap[layoutDimensionName("Y")]).toBeInstanceOf(
+      Crossfilter.ScalarDimension
     );
   });
 });
