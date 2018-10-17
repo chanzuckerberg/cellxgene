@@ -42,14 +42,11 @@ Started in the context of the Human Cell Atlas Consortium, cellxgene hopes to bo
 
 **Install server**
 
-
      pip install -e .
 
 **Run (with demo data)**
 
     cellxgene --title PBMC3K scanpy example-dataset/
-*In google chrome, navigate to the viewer via the web address printed in your console.
-E.g.,* `Running on http://0.0.0.0:5005/`
 
 **Help**
 
