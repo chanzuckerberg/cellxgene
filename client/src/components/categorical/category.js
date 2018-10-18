@@ -91,7 +91,7 @@ class Category extends React.Component {
 
   render() {
     const { isExpanded, isChecked } = this.state;
-    const { metadataField, colorAccessor } = this.props;
+    const { metadataField, colorAccessor, isTruncated } = this.props;
     return (
       <div
         style={{
@@ -163,6 +163,11 @@ class Category extends React.Component {
           </p>
         </div>
         <div>{isExpanded ? this.renderCategoryItems() : null}</div>
+        <div>
+          {isExpanded && isTruncated ? (
+            <p style={{ paddingLeft: 15 }}>... truncated list ...</p>
+          ) : null}
+        </div>
       </div>
     );
   }
