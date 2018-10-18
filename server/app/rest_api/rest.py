@@ -640,7 +640,7 @@ class LayoutObsAPI(Resource):
         try:
             layout = current_app.data.layout({})
         except PrepareError as e:
-            return make_response(e.message, HTTPStatus.BAD_REQUEST)
+            return make_response(e.message, HTTPStatus.INTERNAL_SERVER_ERROR)
         return make_response((jsonify({"layout": layout})), HTTPStatus.OK)
 
     # @swagger.doc({

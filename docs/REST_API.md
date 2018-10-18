@@ -463,7 +463,7 @@ Get the _default_ layout for all observations or (_future_) all variables. Retur
 **Response code:**
 
 - 200 - success
-- 400 Bad Request - unprepared data, layout has not been stored in the input data
+- 500 Internal Server Error - unprepared data, layout has not been stored in the input data
 
 ### (_future_) PUT /layout/obs, (_future_) PUT /layout/var
 
