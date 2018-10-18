@@ -3,19 +3,19 @@ import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
 
+import * as globals from "../../globals";
 import Category from "./category";
 
 /* Cap the max number of displayed categories */
 const truncateCategories = options => {
-  const maxOptionsToDisplay = 100; // could be a property if helpful....
   const numOptions = _.size(options);
-  if (numOptions <= maxOptionsToDisplay) {
+  if (numOptions <= globals.maxCategoricalOptionsToDisplay) {
     return options;
   }
   return _(options)
     .map((v, k) => ({ name: k, val: v }))
     .sortBy("val")
-    .slice(numOptions - maxOptionsToDisplay)
+    .slice(numOptions - globals.maxCategoricalOptionsToDisplay)
     .transform((r, v) => {
       r[v.name] = v.val;
     }, {})
