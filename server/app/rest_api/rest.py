@@ -10,7 +10,7 @@ from werkzeug.datastructures import ImmutableMultiDict
 from server.app.util.constants import Axis, DiffExpMode
 from server.app.util.filter import parse_filter, QueryStringError
 from server.app.util.models import FilterModel
-from server.app.util.utils import FilterError, InteractiveError, MimeTypeError, get_mime_type
+from server.app.util.utils import FilterError, InteractiveError, MimeTypeError, PrepareError, get_mime_type
 
 """
 Sort order for routes
@@ -630,56 +630,63 @@ class LayoutObsAPI(Resource):
                         }
                     }
                 }
+            },
+            "400": {
+                "description": "Data preparation error"
             }
         }
     })
     def get(self):
-        return make_response((jsonify({"layout": current_app.data.layout({})})), HTTPStatus.OK)
-
-    @swagger.doc({
-        "summary": "Observation layout for filtered subset.",
-        "tags": ["layout"],
-        "parameters": [
-            {
-                "name": "filter",
-                "description": "Complex Filter",
-                "in": "body",
-                "schema": FilterModel
-            }
-        ],
-        "responses": {
-            "200": {
-                "description": "layout",
-                "examples": {
-                    "application/json": {
-                        "layout": {
-                            "ndims": 2,
-                            "coordinates": [
-                                [0, 0.284483, 0.983744],
-                                [1, 0.038844, 0.739444]
-                            ]
-                        }
-                    }
-                }
-            },
-            "400": {
-                "description": "Malformed filter"
-            },
-            "403": {
-                "description": "Non-interactive request"
-            },
-        }
-    })
-    def put(self):
         try:
-            filter = request.get_json()["filter"]
-            interactive_limit = current_app.data.features["layout"]["obs"]["interactiveLimit"]
-            layout = current_app.data.layout(filter, interactive_limit=interactive_limit)
-            return make_response(jsonify({"layout": layout}), HTTPStatus.OK)
-        except FilterError as e:
-            return make_response(e.message, HTTPStatus.BAD_REQUEST)
-        except InteractiveError:
-            return make_response("Non-interactive request", HTTPStatus.FORBIDDEN)
+            layout = current_app.data.layout({})
+        except PrepareError as e:
+            return make_response(e.message, HTTPStatus.INTERNAL_SERVER_ERROR)
+        return make_response((jsonify({"layout": layout})), HTTPStatus.OK)
+
+    # @swagger.doc({
+    #     "summary": "Observation layout for filtered subset.",
+    #     "tags": ["layout"],
+    #     "parameters": [
+    #         {
+    #             "name": "filter",
+    #             "description": "Complex Filter",
+    #             "in": "body",
+    #             "schema": FilterModel
+    #         }
+    #     ],
+    #     "responses": {
+    #         "200": {
+    #             "description": "layout",
+    #             "examples": {
+    #                 "application/json": {
+    #                     "layout": {
+    #                         "ndims": 2,
+    #                         "coordinates": [
+    #                             [0, 0.284483, 0.983744],
+    #                             [1, 0.038844, 0.739444]
+    #                         ]
+    #                     }
+    #                 }
+    #             }
+    #         },
+    #         "400": {
+    #             "description": "Malformed filter"
+    #         },
+    #         "403": {
+    #             "description": "Non-interactive request"
+    #         },
+    #     }
+    # })
+    # def put(self):
+    #     try:
+    #         filter = request.get_json()["filter"]
+    #         interactive_limit = current_app.data.features["layout"]["obs"]["interactiveLimit"]
+    #         layout = current_app.data.layout(filter, interactive_limit=interactive_limit)
+    #         return make_response(jsonify({"layout": layout}), HTTPStatus.OK)
+    #     except FilterError as e:
+    #         return make_response(e.message, HTTPStatus.BAD_REQUEST)
+    #     except InteractiveError:
+    #         return make_response("Non-interactive request", HTTPStatus.FORBIDDEN)
 
 
 def get_api_resources():
