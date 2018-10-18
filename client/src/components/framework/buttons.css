@@ -1,4 +1,4 @@
-.btn {
+:local(.btn) {
   background: none;
   cursor: pointer;
   color: "#FFF";
