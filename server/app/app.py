@@ -64,7 +64,7 @@ def run_scanpy(args):
         host = "127.0.0.1"
     if args.open_browser:
         webbrowser.open(f"http://{host}:{args.port}")
-    app.run(host=host, debug=True, port=args.port)
+    app.run(host=host, debug=args.flask_debug, port=args.port)
 
 
 def main():
@@ -72,6 +72,7 @@ def main():
     parser.add_argument("--title", "-t", help="Title to display -- if this is omitted the title will be the name "
                                               "of the directory from the data_directory arg")
     parser.add_argument("--port", help="Port to run server on.", type=int, default=5005)
+    parser.add_argument("--flask-debug", action="store_true", help=argparse.SUPPRESS)
     parser.add_argument("--no-open", help="Do not launch the webbrowser.", action="store_false", dest="open_browser")
     parser.add_argument(
         "--bind-all",
