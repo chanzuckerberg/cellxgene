@@ -28,6 +28,8 @@ export const continuous = [
   "Unmapped_short"
 ];
 
+export const maxCategoricalOptionsToDisplay = 100;
+
 /* colors */
 export const blue = "#4a90e2";
 export const hcaBlue = "#1c7cc7";
