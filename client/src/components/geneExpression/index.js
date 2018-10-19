@@ -5,11 +5,11 @@ import React from "react";
 import _ from "lodash";
 import * as d3 from "d3";
 import { connect } from "react-redux";
-import { FaPlusCircle } from "react-icons/fa";
 import HistogramBrush from "../brushableHistogram";
 import * as globals from "../../globals";
 import actions from "../../actions";
 import { ErrorToastTopCenter } from "../framework/toasters";
+import ExpressionButtons from "./expressionButtons";
 
 @connect(state => {
   const metadata = _.get(state.controls.world, "obsAnnotations", null);
@@ -46,16 +46,18 @@ class GeneExpression extends React.Component {
     const { gene } = this.state;
 
     if (userDefinedGenes.indexOf(gene) !== -1) {
-      console.log("That gene already exists");
+      ErrorToastTopCenter.show({
+        message: "That gene already exists"
+      });
     } else if (userDefinedGenes.length > 15) {
-      console.log(
-        "That's too many genes, you can have at most 15 user defined genes"
-      );
+      ErrorToastTopCenter.show({
+        message:
+          "That's too many genes, you can have at most 15 user defined genes"
+      });
     } else if (!_.find(world.varAnnotations, { name: gene })) {
       ErrorToastTopCenter.show({
         message: "That doesn't appear to be a valid gene name."
       });
-      console.log("That doesn't appear to be a valid gene name.");
     } else {
       dispatch(actions.requestUserDefinedGene(gene));
       dispatch({
@@ -72,41 +74,36 @@ class GeneExpression extends React.Component {
 
     return (
       <div>
-        <input
-          onKeyDown={this.keyPress.bind(this)}
-          onChange={e => {
-            this.setState({ gene: e.target.value });
-          }}
-          type="text"
-          value={gene}
-        />
-        <button
-          type="button"
-          style={{
-            border: "none",
-            background: "none",
-            cursor: "pointer",
-            outline: "none",
-            marginTop: 20,
-            padding: 0
-          }}
-          onClick={this.handleClick.bind(this)}
+        <p
+          style={Object.assign({}, globals.leftSidebarSectionHeading, {
+            marginTop: 40
+          })}
         >
-          <FaPlusCircle
-            style={{
-              display: "inline-block",
-              marginLeft: 7,
-              position: "relative",
-              top: 5,
-              color: globals.brightBlue,
-              fontSize: 22
-            }}
-          />{" "}
-          add gene{" "}
-        </button>
-        {world && userDefinedGenes.length > 0 ? (
-          <p>User defined genes</p>
-        ) : null}
+          Custom genes
+        </p>
+        <div style={{ marginTop: 11 }} className="bp3-control-group">
+          <div className="bp3-input-group">
+            <span className="bp3-icon bp3-icon-symbol-cross" />
+            <input
+              onKeyDown={this.keyPress.bind(this)}
+              onChange={e => {
+                this.setState({ gene: e.target.value });
+              }}
+              value={gene}
+              type="text"
+              className="bp3-input"
+              placeholder="Add a custom gene"
+              style={{ paddingRight: 94 }}
+            />
+          </div>
+          <button
+            type="button"
+            className="bp3-button bp3-intent-primary"
+            onClick={this.handleClick.bind(this)}
+          >
+            Add
+          </button>
+        </div>
         {world && userDefinedGenes.length > 0
           ? _.map(userDefinedGenes, geneName => {
               const values = world.varDataCache[geneName];
@@ -123,7 +120,14 @@ class GeneExpression extends React.Component {
               );
             })
           : null}
-        {differential.diffExp ? <p> Differentially Expressed Genes </p> : null}
+        <p
+          style={Object.assign({}, globals.leftSidebarSectionHeading, {
+            marginTop: 40
+          })}
+        >
+          Differentially Expressed Genes
+        </p>
+        <ExpressionButtons />
         {differential.diffExp
           ? _.map(differential.diffExp, value => {
               const annotations = world.varAnnotations[value[0]];
