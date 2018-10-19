@@ -44,8 +44,17 @@ export const darkGreen = "#448C4D";
 export const defaultCellColor = "rgb(0,0,0,1)";
 
 export const tiniestFontSize = 12;
+export const largestFontSize = 24;
+export const uppercaseLetterSpacing = "0.04em";
 
 export const bolder = 700;
+
+export const leftSidebarSectionHeading = {
+  fontSize: 18,
+  textTransform: "uppercase",
+  fontWeight: 500,
+  letterSpacing: ".05em"
+};
 
 let _API = {
   // prefix: "http://api.clustering.czi.technology/api/",
@@ -65,6 +74,10 @@ export const maxControlsWidth = 800;
 export const graphMargin = { top: 20, right: 10, bottom: 30, left: 40 };
 export const graphWidth = 700;
 export const graphHeight = 700;
+
+export const leftSidebarWidth = 365;
+export const cellxgeneTitleLeftPadding = 14;
+export const cellxgeneTitleTopPadding = 7;
 
 export const ordinalColors = [
   "#0ac115",
