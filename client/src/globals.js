@@ -31,6 +31,7 @@ export const continuous = [
 /* colors */
 export const blue = "#4a90e2";
 export const hcaBlue = "#1c7cc7";
+export const lightestGrey = "rgb(249,249,249)";
 export const lighterGrey = "rgb(245,245,245)";
 export const lightGrey = "rgb(211,211,211)";
 export const mediumGrey = "rgb(153,153,153)";
@@ -76,6 +77,7 @@ export const graphWidth = 700;
 export const graphHeight = 700;
 
 export const leftSidebarWidth = 365;
+export const scatterplotPaddingLeft = 14;
 export const cellxgeneTitleLeftPadding = 14;
 export const cellxgeneTitleTopPadding = 7;
 

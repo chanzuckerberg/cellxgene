@@ -65,7 +65,6 @@ class LeftSideBar extends React.Component {
           style={{
             height: responsive.height - metadataSectionPadding,
             width: globals.leftSidebarWidth,
-            padding: "0px 10px 10px 10px",
             overflowY: "auto",
             overflowX: "hidden"
           }}
@@ -78,7 +77,7 @@ class LeftSideBar extends React.Component {
           style={{
             position: "fixed",
             bottom: 0,
-            left: globals.leftSidebarWidth
+            left: globals.leftSidebarWidth + globals.scatterplotPaddingLeft
           }}
         >
           {scatterplotXXaccessor && scatterplotYYaccessor ? (

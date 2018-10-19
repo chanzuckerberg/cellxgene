@@ -74,52 +74,54 @@ class GeneExpression extends React.Component {
 
     return (
       <div>
-        <p
-          style={Object.assign({}, globals.leftSidebarSectionHeading, {
-            marginTop: 40
-          })}
+        <div
+          style={{
+            backgroundColor: globals.lightestGrey,
+            padding: 10,
+            marginTop: 30
+          }}
         >
-          Custom genes
-        </p>
-        <div style={{ marginTop: 11 }} className="bp3-control-group">
-          <div className="bp3-input-group">
-            <span className="bp3-icon bp3-icon-symbol-cross" />
-            <input
-              onKeyDown={this.keyPress.bind(this)}
-              onChange={e => {
-                this.setState({ gene: e.target.value });
-              }}
-              value={gene}
-              type="text"
-              className="bp3-input"
-              placeholder="Add a custom gene"
-              style={{ paddingRight: 94 }}
-            />
+          <p style={globals.leftSidebarSectionHeading}>Custom genes</p>
+          <div style={{ marginTop: 11 }} className="bp3-control-group">
+            <div className="bp3-input-group">
+              <span className="bp3-icon bp3-icon-symbol-cross" />
+              <input
+                onKeyDown={this.keyPress.bind(this)}
+                onChange={e => {
+                  this.setState({ gene: e.target.value });
+                }}
+                value={gene}
+                type="text"
+                className="bp3-input"
+                placeholder="Add a custom gene"
+                style={{ paddingRight: 94 }}
+              />
+            </div>
+            <button
+              type="button"
+              className="bp3-button bp3-intent-primary"
+              onClick={this.handleClick.bind(this)}
+            >
+              Add
+            </button>
           </div>
-          <button
-            type="button"
-            className="bp3-button bp3-intent-primary"
-            onClick={this.handleClick.bind(this)}
-          >
-            Add
-          </button>
+          {world && userDefinedGenes.length > 0
+            ? _.map(userDefinedGenes, geneName => {
+                const values = world.varDataCache[geneName];
+                if (!values) {
+                  return null;
+                }
+                return (
+                  <HistogramBrush
+                    key={geneName}
+                    field={geneName}
+                    ranges={d3.extent(values)}
+                    isUserDefined
+                  />
+                );
+              })
+            : null}
         </div>
-        {world && userDefinedGenes.length > 0
-          ? _.map(userDefinedGenes, geneName => {
-              const values = world.varDataCache[geneName];
-              if (!values) {
-                return null;
-              }
-              return (
-                <HistogramBrush
-                  key={geneName}
-                  field={geneName}
-                  ranges={d3.extent(values)}
-                  isUserDefined
-                />
-              );
-            })
-          : null}
         <p
           style={Object.assign({}, globals.leftSidebarSectionHeading, {
             marginTop: 40
