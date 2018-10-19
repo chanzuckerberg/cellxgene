@@ -1,6 +1,7 @@
 // jshint esversion: 6
 import React from "react";
 import _ from "lodash";
+import { Button } from "@blueprintjs/core";
 import { connect } from "react-redux";
 import * as globals from "../../globals";
 import actions from "../../actions";
@@ -43,58 +44,30 @@ class Expression extends React.Component {
     if (!differential) {
       return null;
     }
+    const haveBothCellSets =
+      !!differential.celllist1 && !!differential.celllist2;
     return (
       <div style={{ marginRight: 10, marginBottom: 10 }}>
         <CellSetButton {...this.props} eitherCellSetOneOrTwo={1} />
         <CellSetButton {...this.props} eitherCellSetOneOrTwo={2} />
         {!differential.diffExp ? (
-          <button
+          <Button
+            style={{ marginTop: 10 }}
+            disabled={!haveBothCellSets}
             type="button"
-            style={{
-              fontSize: 14,
-              fontWeight: 400,
-              color: "#FFF",
-              padding: "0px 10px",
-              height: 30,
-              borderRadius: 2,
-              backgroundColor:
-                differential.celllist1 && differential.celllist2
-                  ? globals.brightBlue
-                  : globals.lightGrey,
-              border: "none",
-              cursor:
-                differential.celllist1 && differential.celllist2
-                  ? "pointer"
-                  : "auto"
-            }}
             onClick={this.computeDiffExp.bind(this)}
           >
-            {" "}
-            Compute Differential Expression{" "}
-          </button>
+            Compute Differential Expression
+          </Button>
         ) : null}
         {differential.diffExp ? (
-          <button
+          <Button
             type="button"
-            style={{
-              fontSize: 14,
-              fontWeight: 400,
-              color: "#FFF",
-              padding: "0px 10px",
-              height: 30,
-              borderRadius: 2,
-              backgroundColor: globals.brightBlue,
-              border: "none",
-              cursor:
-                differential.celllist1 && differential.celllist2
-                  ? "pointer"
-                  : "auto"
-            }}
+            style={{ marginTop: 10 }}
             onClick={this.clearDifferentialExpression.bind(this)}
           >
-            {" "}
-            Clear Differential Expression{" "}
-          </button>
+            Clear Differential Expression
+          </Button>
         ) : null}
       </div>
     );
