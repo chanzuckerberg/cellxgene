@@ -64,7 +64,7 @@ def run_scanpy(args):
         host = "127.0.0.1"
     if args.open_browser:
         webbrowser.open(f"http://{host}:{args.port}")
-    app.run(host=host, debug=True, port=args.port)
+    app.run(host=host, port=args.port)
 
 
 def main():
