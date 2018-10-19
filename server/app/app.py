@@ -58,7 +58,7 @@ def run_scanpy(args):
 
     from .scanpy_engine.scanpy_engine import ScanpyEngine
     app.data = ScanpyEngine(args.data_directory, layout_method=args.layout, diffexp_method=args.diffexp)
-    if args.bind_all:
+    if args.listen_all:
         host = "0.0.0.0"
     else:
         host = "127.0.0.1"
@@ -75,7 +75,7 @@ def main():
     parser.add_argument("--flask-debug", action="store_true", help=argparse.SUPPRESS)
     parser.add_argument("--no-open", help="Do not launch the webbrowser.", action="store_false", dest="open_browser")
     parser.add_argument(
-        "--bind-all",
+        "--listen-all",
         help="Bind to all interfaces (this makes the server accessible beyond this computer)",
         action="store_true")
     subparsers = parser.add_subparsers(dest="engine")
