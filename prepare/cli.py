@@ -6,10 +6,13 @@ from os.path import isfile, isdir, splitext, expanduser
 
 settings = dict(help_option_names=['-h', '--help'])
 
+
 @click.command()
 @click.argument('dataset', nargs=1, metavar='<dataset: file or path to data>', required=True)
-@click.option('--layout', default='umap', type=click.Choice(['umap', 'tsne', 'umap+tsne']), help='layout algorithm', show_default=True)
-@click.option('--recipe', default='none', type=click.Choice(['none', 'seurat', 'zheng17']), help='preprocessing to run', show_default=True)
+@click.option('--layout', default='umap', type=click.Choice(['umap', 'tsne', 'umap+tsne']),
+              help='layout algorithm', show_default=True)
+@click.option('--recipe', default='none', type=click.Choice(['none', 'seurat', 'zheng17']),
+              help='preprocessing to run', show_default=True)
 @click.option('--output', default='', help='save a new file to filename')
 @click.option('--sparse/--no-sparse', default=False, help='whether to force sparsity', show_default=True)
 @click.option('--overwrite/--no-overwrite', default=False, help='allow overwriting an existing file', show_default=True)
@@ -25,7 +28,7 @@ def cli(dataset, layout, recipe, output, sparse, overwrite, plotting):
     matplotlib.use('Agg')
     import scanpy.api as sc
 
-    # scanpy settings 
+    # scanpy settings
     sc.settings.verbosity = 0
     sc.settings.autosave = True
 
@@ -101,7 +104,7 @@ def cli(dataset, layout, recipe, output, sparse, overwrite, plotting):
         if layout == 'tsne' or layout == 'umap+tsne':
             sc.tl.tsne(adata)
             if plotting:
-                sc.pl.tsne(adata, color='louvain', palette=palette, save='_louvain')   
+                sc.pl.tsne(adata, color='louvain', palette=palette, save='_louvain')
 
     def show_step(item):
         names = {
@@ -123,7 +126,7 @@ def cli(dataset, layout, recipe, output, sparse, overwrite, plotting):
     click.echo('[cellxgene] Beginning preprocessing...')
     with click.progressbar(steps, label='[cellxgene] Progress', show_eta=False, item_show_func=show_step) as bar:
         for step in bar:
-            step(adata)            
+            step(adata)
 
     # saving
     if not output == '':
@@ -132,5 +135,6 @@ def cli(dataset, layout, recipe, output, sparse, overwrite, plotting):
 
     click.echo('[cellxgene] ' + click.style('Success!', fg='green'))
 
+
 if __name__ == '__main__':
-  cli()
+    cli()
