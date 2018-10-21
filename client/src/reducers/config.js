@@ -2,7 +2,8 @@
 const Config = (
   state = {
     displayNames: null,
-    features: null
+    features: null,
+    parameters: null
   },
   action
 ) => {

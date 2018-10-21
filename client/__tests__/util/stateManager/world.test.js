@@ -64,10 +64,15 @@ describe("createWorldFromEntireUniverse", () => {
 
         summary: expect.objectContaining({
           obs: _(REST.schema.schema.annotations.obs)
+            .filter(v => v.name !== "name")
             .keyBy("name")
             .mapValues(() => expect.any(Object))
             .value(),
-          var: {} // TODO: currently unimplemneted
+          var: _(REST.schema.schema.annotations.var)
+            .filter(v => v.name !== "name")
+            .keyBy("name")
+            .mapValues(() => expect.any(Object))
+            .value()
         }),
 
         varDataCache: expect.any(Object),
