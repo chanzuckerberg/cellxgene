@@ -2,7 +2,7 @@ import click
 
 from numpy import unique, ndarray
 from scipy.sparse.csc import csc_matrix
-from os.path import isfile, isdir, splitext
+from os.path import isfile, isdir, splitext, expanduser
 
 settings = dict(help_option_names=['-h', '--help'])
 
@@ -33,6 +33,7 @@ def cli(dataset, layout, recipe, output, sparse, overwrite, plotting):
     if sparse and not recipe == 'none':
         raise click.UsageError('Cannot use a recipe when forcing sparsity')
 
+    output = expanduser(output)
     if isfile(output) and not overwrite:
         raise click.UsageError('Cannot overwwrite existing file %s, try using the flag --overwrite' % output)
 
