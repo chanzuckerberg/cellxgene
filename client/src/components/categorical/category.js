@@ -119,34 +119,11 @@ class Category extends React.Component {
         <div
           style={{
             display: "flex",
-            justifyContent: "space-between",
+            justifyContent: "flex-start",
             alignItems: "baseline"
           }}
         >
-          <p
-            style={{
-              // flexShrink: 0,
-              fontWeight: 500,
-              // textAlign: "right",
-              // fontFamily: globals.accentFont,
-              // fontStyle: "italic",
-              margin: "3px 10px 3px 0px"
-            }}
-          >
-            <span
-              style={{
-                cursor: "pointer",
-                display: "inline-block",
-                position: "relative",
-                top: 2
-              }}
-              onClick={() => {
-                this.setState({ isExpanded: !isExpanded });
-              }}
-            >
-              {isExpanded ? <FaChevronDown /> : <FaChevronRight />}
-            </span>
-            {metadataField}
+          <label className="bp3-control bp3-checkbox">
             <input
               onChange={this.handleToggleAllClick.bind(this)}
               ref={el => {
@@ -156,29 +133,41 @@ class Category extends React.Component {
               checked={isChecked}
               type="checkbox"
             />
-            <span
-              onClick={this.handleColorChange.bind(this)}
-              style={{
-                fontSize: 14,
-                marginLeft: 4,
-                // padding: this.props.colorAccessor === this.props.metadataField ? 3 : "auto",
-                borderRadius: 3,
-                color:
-                  colorAccessor === metadataField
-                    ? globals.brightBlue
-                    : "black",
-                // backgroundColor: this.props.colorAccessor === this.props.metadataField ? globals.brightBlue : "inherit",
-                display: "inline-block",
-                position: "relative",
-                top: 2,
-                cursor: "pointer"
-              }}
-            >
-              <FaPaintBrush />
-            </span>
-          </p>
+            <span className="bp3-control-indicator" />
+            {""}
+          </label>
+
+          <span
+            style={{
+              cursor: "pointer",
+              display: "inline-block"
+            }}
+            onClick={() => {
+              this.setState({ isExpanded: !isExpanded });
+            }}
+          >
+            {metadataField}
+            {isExpanded ? (
+              <FaChevronDown style={{ fontSize: 10, marginLeft: 5 }} />
+            ) : (
+              <FaChevronRight style={{ fontSize: 10, marginLeft: 5 }} />
+            )}
+          </span>
+
+          <span
+            onClick={this.handleColorChange.bind(this)}
+            style={{
+              marginLeft: 4,
+              color:
+                colorAccessor === metadataField ? globals.brightBlue : "black",
+              display: "inline-block",
+              cursor: "pointer"
+            }}
+          >
+            <FaPaintBrush style={{ fontSize: 12, marginLeft: 10 }} />
+          </span>
         </div>
-        <div>{isExpanded ? this.renderCategoryItems() : null}</div>
+        <div style={{ marginLeft: 26 }}>{isExpanded ? this.renderCategoryItems() : null}</div>
         <div>
           {isExpanded && isTruncated ? (
             <p style={{ paddingLeft: 15 }}>... truncated list ...</p>

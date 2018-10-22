@@ -4,6 +4,7 @@
 import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
+import * as globals from "../../globals";
 
 import HistogramBrush from "../brushableHistogram";
 
@@ -48,8 +49,20 @@ class Continuous extends React.Component {
     }
 
     return (
-      <div>
-        {this.hasContinuous ? <p> Continuous metadata </p> : null}
+      <div
+        style={{
+          padding: globals.leftSidebarSectionPadding
+        }}
+      >
+        {this.hasContinuous ? (
+          <p
+            style={Object.assign({}, globals.leftSidebarSectionHeading, {
+              marginTop: 40
+            })}
+          >
+            Continuous metadata
+          </p>
+        ) : null}
         {_.map(ranges, (value, key) => {
           const isColorField = key.includes("color") || key.includes("Color");
           if (value.range && key !== "name" && !isColorField) {

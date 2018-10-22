@@ -1,4 +1,4 @@
-.graphCanvas path {
+:local(.graphCanvas) path {
   shape-rendering: crispEdges;
 }
 
@@ -16,8 +16,8 @@
   pointer-events: none;
 }
 
-.axis path,
-.axis line {
+:local(.axis) path,
+:local(.axis) line {
   fill: none;
   stroke: #000;
   stroke-width: 1px;
@@ -29,6 +29,6 @@ circle {
   fill: none;
 }
 
-.hidden {
+:local(.hidden) {
   display: none;
 }

@@ -46,6 +46,7 @@ export const configDefaults = {
 /* colors */
 export const blue = "#4a90e2";
 export const hcaBlue = "#1c7cc7";
+export const lightestGrey = "rgb(249,249,249)";
 export const lighterGrey = "rgb(245,245,245)";
 export const lightGrey = "rgb(211,211,211)";
 export const mediumGrey = "rgb(153,153,153)";
@@ -58,9 +59,35 @@ export const darkGreen = "#448C4D";
 
 export const defaultCellColor = "rgb(0,0,0,1)";
 
-export const tiniestFontSize = 12;
+/* typography constants */
 
+export const tiniestFontSize = 12;
+export const largestFontSize = 24;
+export const uppercaseLetterSpacing = "0.04em";
 export const bolder = 700;
+export const accentFont = "Georgia,Times,Times New Roman,serif";
+export const maxParagraphWidth = 600;
+
+/* layout styles constants */
+
+export const cellxgeneTitleLeftPadding = 14;
+export const cellxgeneTitleTopPadding = 7;
+
+export const maxControlsWidth = 800;
+
+export const graphMargin = { top: 20, right: 10, bottom: 30, left: 40 };
+export const graphWidth = 700;
+export const graphHeight = 700;
+export const scatterplotPaddingLeft = 14;
+
+export const leftSidebarWidth = 365;
+export const leftSidebarSectionHeading = {
+  fontSize: 18,
+  textTransform: "uppercase",
+  fontWeight: 500,
+  letterSpacing: ".05em"
+};
+export const leftSidebarSectionPadding = 10;
 
 let _API = {
   // prefix: "http://api.clustering.czi.technology/api/",
@@ -72,14 +99,6 @@ let _API = {
 
 if (window.CELLXGENE && window.CELLXGENE.API) _API = window.CELLXGENE.API;
 export const API = _API;
-
-export const accentFont = "Georgia,Times,Times New Roman,serif";
-export const maxParagraphWidth = 600;
-export const maxControlsWidth = 800;
-
-export const graphMargin = { top: 20, right: 10, bottom: 30, left: 40 };
-export const graphWidth = 700;
-export const graphHeight = 700;
 
 export const ordinalColors = [
   "#0ac115",

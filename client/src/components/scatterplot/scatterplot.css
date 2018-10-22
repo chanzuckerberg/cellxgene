@@ -1,15 +1,14 @@
-
-.scatterplot {
+:local(.scatterplot) {
   display: block;
 }
 
-.scatterplot svg,
-.scatterplot canvas {
+:local(.scatterplot) svg,
+:local(.scatterplot) canvas {
   font: 10px sans-serif;
   position: absolute;
 }
 
-.scatterplot canvas {
+:local(.scatterplot) canvas {
   opacity: 0.9;
   pointer-events: none;
 }

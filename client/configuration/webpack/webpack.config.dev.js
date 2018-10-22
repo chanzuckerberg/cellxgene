@@ -6,6 +6,8 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const src = path.resolve("src");
 const nodeModules = path.resolve("node_modules");
 
+const babelOptions = require("../babel/babel.dev");
+
 module.exports = {
   mode: "development",
   devtool: "eval",
@@ -22,11 +24,12 @@ module.exports = {
         test: /\.js$/,
         include: src,
         loader: "babel-loader",
-        options: require("../babel/babel.dev")
+        options: babelOptions
       },
       {
         test: /\.css$/,
-        include: [src, nodeModules],
+        include: src,
+        exclude: [path.resolve(src, "index.css")],
         loader: [
           {
             loader: "style-loader"
@@ -35,12 +38,24 @@ module.exports = {
             loader: "css-loader",
             options: {
               modules: true,
-              importLoaders: 1,
               localIdentName: "[name]__[local]___[hash:base64:5]"
             }
           }
         ]
       },
+      {
+        test: /index\.css$/,
+        include: [path.resolve(src, "index.css")],
+        loader: [
+          {
+            loader: "style-loader"
+          },
+          {
+            loader: "css-loader"
+          }
+        ]
+      },
+
       { test: /\.json$/, include: [src, nodeModules], loader: "json-loader" },
       {
         test: /\.(jpg|png|gif|eot|svg|ttf|woff|woff2)(\?.*)?$/,

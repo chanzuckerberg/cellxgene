@@ -2,6 +2,7 @@
 import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
+import * as globals from "../../globals";
 
 import * as globals from "../../globals";
 import Category from "./category";
@@ -38,13 +39,16 @@ class Categories extends React.Component {
     return (
       <div
         style={{
-          width: 310,
-          marginRight: 40,
-          paddingRight: 20,
-          flexShrink: 0
+          padding: globals.leftSidebarSectionPadding
         }}
       >
-        <p> Categorical Metadata </p>
+        <p
+          style={Object.assign({}, globals.leftSidebarSectionHeading, {
+            marginTop: 4
+          })}
+        >
+          Categorical Metadata
+        </p>
         {_.map(ranges, (value, key) => {
           const isColorField = key.includes("color") || key.includes("Color");
           const isSelectableCategory =
