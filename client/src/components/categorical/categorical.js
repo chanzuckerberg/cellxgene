@@ -3,8 +3,6 @@ import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
 import * as globals from "../../globals";
-
-import * as globals from "../../globals";
 import Category from "./category";
 
 /* Cap the max number of displayed categories */
