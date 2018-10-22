@@ -2,6 +2,7 @@
 
 import _ from "lodash";
 import * as kvCache from "./keyvalcache";
+import summarizeAnnotations from "./summarizeAnnotations";
 import { layoutDimensionName, obsAnnoDimensionName } from "../nameCreators";
 
 /*
@@ -50,83 +51,6 @@ obs/cell.
 /* varDataCache config - see kvCache for semantics */
 const VarDataCacheLowWatermark = 32; // cache element count
 const VarDataCacheTTLMs = 1000; // min cache time in MS
-
-function summarizeAnnotations(schema, obsAnnotations) {
-  /*
-  Build and return obs/var summary using any annotation in the schema
-
-  Summary information for each annotation, keyed by annotation name.
-  Value will be an object, containing either 'range' or 'options' object,
-  depending on the annotation schema type (categorical or continuous).
-
-  Summarize for BOTH obs and var annotations.  Result format:
-
-  {
-    obs: {
-      annotation_name: { ... },
-      ...
-    },
-    var: {
-      annotation_name: { ... },
-      ...
-    }
-  }
-
-  Example:
-    {
-      "Splice_sites_Annotated": {
-        "range": {
-          "min": 26,
-          "max": 1075869
-        }
-      },
-      "Selection": {
-        "options": {
-          "Astrocytes(HEPACAM)": 714,
-          "Endothelial(BSC)": 123,
-          "Oligodendrocytes(GC)": 294,
-          "Neurons(Thy1)": 685,
-          "Microglia(CD45)": 1108,
-          "Unpanned": 665
-        }
-      }
-    }
-  */
-  const obsSummary = _(schema.annotations.obs)
-    .keyBy("name")
-    .mapValues(anno => {
-      const { name, type } = anno;
-      const continuous = type === "int32" || type === "float32";
-
-      if (!continuous) {
-        return {
-          options: _.countBy(obsAnnotations, name)
-        };
-      }
-
-      if (continuous) {
-        let min = Number.POSITIVE_INFINITY;
-        let max = Number.NEGATIVE_INFINITY;
-        _.forEach(obsAnnotations, obs => {
-          const val = Number(obs[name]);
-          min = val < min ? val : min;
-          max = val > max ? val : max;
-        });
-        return { range: { min, max } };
-      }
-
-      throw new Error("incomprehensible schema");
-    })
-    .value();
-
-  // TODO XXX - not currently used, so skip it
-  const varSummary = {};
-
-  return {
-    obs: obsSummary,
-    var: varSummary
-  };
-}
 
 function templateWorld() {
   return {
@@ -186,7 +110,11 @@ export function createWorldFromEntireUniverse(universe) {
   world.obsLayout = universe.obsLayout;
 
   /* derived data & summaries */
-  world.summary = summarizeAnnotations(world.schema, world.obsAnnotations);
+  world.summary = summarizeAnnotations(
+    world.schema,
+    world.obsAnnotations,
+    world.varAnnotations
+  );
 
   /* build the varDataCache */
   world.varDataCache = kvCache.map(
@@ -242,7 +170,8 @@ export function createWorldFromCurrentSelection(universe, world, crossfilter) {
   /* derived data & summaries */
   newWorld.summary = summarizeAnnotations(
     newWorld.schema,
-    newWorld.obsAnnotations
+    newWorld.obsAnnotations,
+    newWorld.varAnnotations
   );
 
   /* build the varDataCache */

@@ -25,7 +25,7 @@ class EndPoints(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.ps = Popen(["cellxgene", "scanpy", "example-dataset/"])
+        cls.ps = Popen(["cellxgene", "--no-open", "scanpy", "example-dataset/"])
         session = requests.Session()
         for i in range(90):
             try:
@@ -70,27 +70,27 @@ class EndPoints(unittest.TestCase):
         self.assertEqual(result_data["layout"]["ndims"], 2)
         self.assertEqual(len(result_data["layout"]["coordinates"]), 2638)
 
-    def test_put_layout(self):
-        endpoint = "layout/obs"
-        url = f"{URL_BASE}{endpoint}"
-        obs_filter = {
-            "filter": {
-                "obs": {
-                    "annotation_value": [
-                        {"name": "louvain", "values": ["NK cells", "CD8 T cells"]},
-                        {"name": "n_counts", "min": 3000},
-                    ],
-                    "index": [1, 99, [1000, 2000]]
-                }
-            }
-        }
-        result = self.session.put(url, json=obs_filter)
-        self.assertEqual(result.status_code, HTTPStatus.OK)
-        result_data = result.json()
-        self.assertEqual(len(result_data["layout"]["coordinates"]), 15)
+    # def test_put_layout(self):
+    #     endpoint = "layout/obs"
+    #     url = f"{URL_BASE}{endpoint}"
+    #     obs_filter = {
+    #         "filter": {
+    #             "obs": {
+    #                 "annotation_value": [
+    #                     {"name": "louvain", "values": ["NK cells", "CD8 T cells"]},
+    #                     {"name": "n_counts", "min": 3000},
+    #                 ],
+    #                 "index": [1, 99, [1000, 2000]]
+    #             }
+    #         }
+    #     }
+    #     result = self.session.put(url, json=obs_filter)
+    #     self.assertEqual(result.status_code, HTTPStatus.OK)
+    #     result_data = result.json()
+    #     self.assertEqual(len(result_data["layout"]["coordinates"]), 15)
 
     def test_bad_filter(self):
-        endpoints = ["layout/obs", "annotations/obs", "annotations/var", "data/obs", "data/var"]
+        endpoints = ["annotations/obs", "annotations/var", "data/obs", "data/var"]
         for endpoint in endpoints:
             url = f"{URL_BASE}{endpoint}"
             result = self.session.put(url, json=BAD_FILTER)
