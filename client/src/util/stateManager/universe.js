@@ -2,6 +2,7 @@
 
 import _ from "lodash";
 import * as kvCache from "./keyvalcache";
+import summarizeAnnotations from "./summarizeAnnotations";
 
 /*
 Private helper function - create and return a template Universe
@@ -28,6 +29,7 @@ function templateUniverse() {
     varAnnotations: [] /* all var annotations, by var index */,
     obsNameToIndexMap: {} /* reverse map 'name' to index */,
     varNameToIndexMap: {} /* reverse map 'name' to index */,
+    summary: null /* derived data summaries XXX: consider exploding in place */,
 
     obsLayout: { X: [], Y: [] } /* xy layout */,
 
@@ -190,6 +192,12 @@ export function createUniverseFromRestV02Response(
 
   /* layout */
   universe.obsLayout = RESTv02LayoutResponseToInternal(layoutObsResponse);
+
+  universe.summary = summarizeAnnotations(
+    universe.schema,
+    universe.obsAnnotations,
+    universe.varAnnotations
+  );
 
   return finalize(universe);
 }

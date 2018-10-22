@@ -4,22 +4,36 @@ import _ from "lodash";
 import { connect } from "react-redux";
 import * as globals from "../../globals";
 
+import * as globals from "../../globals";
 import Category from "./category";
 
-@connect(state => {
-  const ranges = _.get(state.controls.world, "summary.obs", null);
-  return {
-    ranges
-  };
-})
-class Categories extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {};
+/* Cap the max number of displayed categories */
+const truncateCategories = options => {
+  const numOptions = _.size(options);
+  if (numOptions <= globals.maxCategoricalOptionsToDisplay) {
+    return options;
   }
+  return _(options)
+    .map((v, k) => ({ name: k, val: v }))
+    .sortBy("val")
+    .slice(numOptions - globals.maxCategoricalOptionsToDisplay)
+    .transform((r, v) => {
+      r[v.name] = v.val;
+    }, {})
+    .value();
+};
 
+@connect(state => ({
+  ranges: _.get(state.controls.world, "summary.obs", null),
+  categorySelectionLimit: _.get(
+    state.config,
+    "parameters.category-selection-limit",
+    globals.configDefaults.parameters["category-selection-limit"]
+  )
+}))
+class Categories extends React.Component {
   render() {
-    const { ranges } = this.props;
+    const { ranges, categorySelectionLimit } = this.props;
     if (!ranges) return null;
 
     return (
@@ -37,9 +51,21 @@ class Categories extends React.Component {
         </p>
         {_.map(ranges, (value, key) => {
           const isColorField = key.includes("color") || key.includes("Color");
-          if (value.options && !isColorField && key !== "name") {
+          const isSelectableCategory =
+            value.options &&
+            !isColorField &&
+            key !== "name" &&
+            value.numOptions < categorySelectionLimit;
+
+          if (isSelectableCategory) {
+            const categoryOptions = truncateCategories(value.options);
             return (
-              <Category key={key} metadataField={key} values={value.options} />
+              <Category
+                key={key}
+                metadataField={key}
+                values={categoryOptions}
+                isTruncated={categoryOptions !== value.options}
+              />
             );
           }
           return undefined;

@@ -28,6 +28,21 @@ export const continuous = [
   "Unmapped_short"
 ];
 
+/* if a categorical metadata field has more options than this, truncate */
+export const maxCategoricalOptionsToDisplay = 100;
+
+/*
+these are default values for configuration  the CLI may supply.
+See the REST API and CLI specs for more info.
+*/
+export const configDefaults = {
+  features: {},
+  displayNames: {},
+  parameters: {
+    "category-selection-limit": 1000
+  }
+};
+
 /* colors */
 export const blue = "#4a90e2";
 export const hcaBlue = "#1c7cc7";
