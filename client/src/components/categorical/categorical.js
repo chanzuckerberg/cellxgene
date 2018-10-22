@@ -23,11 +23,16 @@ const truncateCategories = options => {
 };
 
 @connect(state => ({
-  ranges: _.get(state.controls.world, "summary.obs", null)
+  ranges: _.get(state.controls.world, "summary.obs", null),
+  categorySelectionLimit: _.get(
+    state.config,
+    "parameters.category-selection-limit",
+    globals.configDefaults.parameters["category-selection-limit"]
+  )
 }))
 class Categories extends React.Component {
   render() {
-    const { ranges } = this.props;
+    const { ranges, categorySelectionLimit } = this.props;
     if (!ranges) return null;
 
     return (
@@ -42,7 +47,13 @@ class Categories extends React.Component {
         <p> Categorical Metadata </p>
         {_.map(ranges, (value, key) => {
           const isColorField = key.includes("color") || key.includes("Color");
-          if (value.options && !isColorField && key !== "name") {
+          const isSelectableCategory =
+            value.options &&
+            !isColorField &&
+            key !== "name" &&
+            value.numOptions < categorySelectionLimit;
+
+          if (isSelectableCategory) {
             const categoryOptions = truncateCategories(value.options);
             return (
               <Category

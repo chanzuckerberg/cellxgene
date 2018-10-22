@@ -2,10 +2,24 @@ import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
 import { FaChevronRight, FaChevronDown, FaPaintBrush } from "react-icons/fa";
+import memoize from "memoize-one";
 
 import * as globals from "../../globals";
 import Value from "./value";
 import alphabeticallySortedValues from "./util";
+
+const countCategories = (values, optsAsBools) =>
+  _.reduce(
+    values,
+    (r, v, k) => {
+      r.total += 1;
+      if (optsAsBools[k]) {
+        r.on += 1;
+      }
+      return r;
+    },
+    { total: 0, on: 0 }
+  );
 
 @connect(state => ({
   colorAccessor: state.controls.colorAccessor,
@@ -18,22 +32,24 @@ class Category extends React.Component {
       isChecked: true,
       isExpanded: false
     };
+    this.countCategories = memoize((values, optsAsBools) =>
+      countCategories(values, optsAsBools)
+    );
   }
 
   componentDidUpdate() {
-    const { categoricalAsBooleansMap, metadataField } = this.props;
-
-    const valuesAsBool = _.values(categoricalAsBooleansMap[metadataField]);
-    /* count categories toggled on by counting true values */
-    const categoriesToggledOn = _.values(valuesAsBool).filter(v => v).length;
-
-    if (categoriesToggledOn === valuesAsBool.length) {
+    const { categoricalAsBooleansMap, metadataField, values } = this.props;
+    const categoryCount = this.countCategories(
+      values,
+      categoricalAsBooleansMap[metadataField]
+    );
+    if (categoryCount.on === categoryCount.total) {
       /* everything is on, so not indeterminate */
       this.checkbox.indeterminate = false;
-    } else if (categoriesToggledOn === 0) {
+    } else if (categoryCount.on === 0) {
       /* nothing is on, so no */
       this.checkbox.indeterminate = false;
-    } else if (categoriesToggledOn < valuesAsBool.length) {
+    } else if (categoryCount.on < categoryCount.total) {
       /* to be explicit... */
       this.checkbox.indeterminate = true;
     }
