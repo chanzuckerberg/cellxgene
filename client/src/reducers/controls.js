@@ -516,6 +516,13 @@ const Controls = (
         ...state,
         scatterplotYYaccessor: action.data
       };
+    case "clear scatterplot":
+      console.log("clear sc.");
+      return {
+        ...state,
+        scatterplotXXaccessor: null,
+        scatterplotYYaccessor: null
+      };
 
     default:
       return state;

@@ -49,7 +49,11 @@ class Continuous extends React.Component {
     }
 
     return (
-      <div>
+      <div
+        style={{
+          padding: globals.leftSidebarSectionPadding
+        }}
+      >
         {this.hasContinuous ? (
           <p
             style={Object.assign({}, globals.leftSidebarSectionHeading, {

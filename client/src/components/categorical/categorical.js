@@ -23,10 +23,14 @@ class Categories extends React.Component {
     if (!ranges) return null;
 
     return (
-      <div style={{}}>
+      <div
+        style={{
+          padding: globals.leftSidebarSectionPadding
+        }}
+      >
         <p
           style={Object.assign({}, globals.leftSidebarSectionHeading, {
-            marginTop: 14
+            marginTop: 4
           })}
         >
           Categorical Metadata

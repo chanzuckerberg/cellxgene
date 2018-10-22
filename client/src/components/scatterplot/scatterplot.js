@@ -5,8 +5,10 @@
 import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
+import { Button, ButtonGroup } from "@blueprintjs/core";
 import _regl from "regl";
 import * as d3 from "d3";
+import * as globals from "../../globals";
 
 import _camera from "../../util/camera";
 
@@ -64,6 +66,7 @@ class Scatterplot extends React.Component {
     this.axes = false;
     this.state = {
       svg: null,
+      minimized: null,
       xScale: null,
       yScale: null
     };
@@ -267,14 +270,48 @@ class Scatterplot extends React.Component {
   }
 
   render() {
+    const { dispatch } = this.props;
+    const { minimized } = this.state;
+
     return (
       <div
         style={{
-          backgroundColor: "white",
-          paddingBottom: 20
+          position: "fixed",
+          bottom: minimized ? -height + -margin.top : 0,
+          left: globals.leftSidebarWidth + globals.scatterplotPaddingLeft,
+          paddingBottom: 20,
+          backgroundColor: "white"
         }}
         id="scatterplot_wrapper"
       >
+        <ButtonGroup
+          minimal
+          style={{
+            position: "absolute",
+            right: 5,
+            top: 5
+          }}
+        >
+          <Button
+            type="button"
+            icon={minimized ? "plus" : "minus"}
+            onClick={() => {
+              this.setState({ minimized: !minimized });
+            }}
+          />
+          <Button
+            type="button"
+            icon="cross"
+            onClick={() => {
+              dispatch({
+                type: "clear scatterplot"
+              });
+              dispatch({
+                type: "reset colorscale"
+              });
+            }}
+          />
+        </ButtonGroup>
         <div
           className={styles.scatterplot}
           id="scatterplot"

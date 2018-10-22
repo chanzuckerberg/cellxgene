@@ -73,17 +73,9 @@ class LeftSideBar extends React.Component {
           <GeneExpression />
           <Continuous />
         </div>
-        <div
-          style={{
-            position: "fixed",
-            bottom: 0,
-            left: globals.leftSidebarWidth + globals.scatterplotPaddingLeft
-          }}
-        >
-          {scatterplotXXaccessor && scatterplotYYaccessor ? (
-            <DynamicScatterplot />
-          ) : null}
-        </div>
+        {scatterplotXXaccessor && scatterplotYYaccessor ? (
+          <DynamicScatterplot />
+        ) : null}
       </div>
     );
   }

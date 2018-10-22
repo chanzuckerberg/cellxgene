@@ -54,6 +54,7 @@ class Expression extends React.Component {
           <Button
             style={{ marginTop: 10 }}
             disabled={!haveBothCellSets}
+            intent="primary"
             type="button"
             onClick={this.computeDiffExp.bind(this)}
           >
@@ -64,6 +65,7 @@ class Expression extends React.Component {
           <Button
             type="button"
             style={{ marginTop: 10 }}
+            intent="warning"
             onClick={this.clearDifferentialExpression.bind(this)}
           >
             Clear Differential Expression

@@ -76,8 +76,7 @@ class GeneExpression extends React.Component {
       <div>
         <div
           style={{
-            backgroundColor: globals.lightestGrey,
-            padding: 10,
+            padding: globals.leftSidebarSectionPadding,
             marginTop: 30
           }}
         >
@@ -122,35 +121,41 @@ class GeneExpression extends React.Component {
               })
             : null}
         </div>
-        <p
-          style={Object.assign({}, globals.leftSidebarSectionHeading, {
-            marginTop: 40
-          })}
+        <div
+          style={{
+            padding: globals.leftSidebarSectionPadding
+          }}
         >
-          Differentially Expressed Genes
-        </p>
-        <ExpressionButtons />
-        {differential.diffExp
-          ? _.map(differential.diffExp, value => {
-              const annotations = world.varAnnotations[value[0]];
-              const { name } = annotations;
-              const values = world.varDataCache[name];
-              if (!values) {
-                return null;
-              }
-              return (
-                <HistogramBrush
-                  key={name}
-                  field={name}
-                  ranges={d3.extent(values)}
-                  isDiffExp
-                  avgDiff={value[1]}
-                  set1AvgExp={value[4]}
-                  set2AvgExp={value[5]}
-                />
-              );
-            })
-          : null}
+          <p
+            style={Object.assign({}, globals.leftSidebarSectionHeading, {
+              marginTop: 40
+            })}
+          >
+            Differentially Expressed Genes
+          </p>
+          <ExpressionButtons />
+          {differential.diffExp
+            ? _.map(differential.diffExp, value => {
+                const annotations = world.varAnnotations[value[0]];
+                const { name } = annotations;
+                const values = world.varDataCache[name];
+                if (!values) {
+                  return null;
+                }
+                return (
+                  <HistogramBrush
+                    key={name}
+                    field={name}
+                    ranges={d3.extent(values)}
+                    isDiffExp
+                    avgDiff={value[1]}
+                    set1AvgExp={value[4]}
+                    set2AvgExp={value[5]}
+                  />
+                );
+              })
+            : null}
+        </div>
       </div>
     );
   }
