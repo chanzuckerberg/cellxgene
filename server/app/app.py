@@ -46,7 +46,16 @@ app.add_url_rule("/", endpoint="index")
 
 
 def create_cli():
-    parser = argparse.ArgumentParser(description="cellxgene is a tool for exploring single cell expression.")
+    parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
+    parser.description = """
+synopsis:
+cellxgene <command> <data> [options]
+
+description:
+
+cellxgene is a local web application for exploring single cell expression.
+    """
+    parser.add_argument("-V", "--version", help="show version and exit")
     subparsers = parser.add_subparsers(dest="program")
     subparsers.required = True
     launch_group = subparsers.add_parser("launch", help="launch web application",
