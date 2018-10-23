@@ -29,6 +29,8 @@ class ScanpyEngine(CXGDriver):
         self._add_mandatory_annotations()
         self.cell_count = self.data.shape[0]
         self.gene_count = self.data.shape[1]
+        self.layout_options = ["umap", "tsne"]
+        self.diffexp_options = ["ttest"]
         self._create_schema()
 
     def _create_schema(self):
@@ -64,16 +66,17 @@ class ScanpyEngine(CXGDriver):
                 self.schema["annotations"][ax].append(ann_schema)
 
     @classmethod
-    def add_to_parser(cls, subparsers, invocation_function):
-        scanpy_group = subparsers.add_parser("scanpy", help="run cellxgene using the scanpy engine")
-        # TODO these choices should be generated from the actual available methods see GH issue #94
-        scanpy_group.add_argument("-l", "--layout", choices=["umap", "tsne"], default="umap",
-                                  help="Algorithm to use for graph layout")
-        scanpy_group.add_argument("-d", "--diffexp", choices=["ttest"], default="ttest",
-                                  help="Algorithm to used to calculate differential expression")
-        scanpy_group.add_argument("data_directory", metavar="dir", help="Directory containing data and schema file")
-        scanpy_group.set_defaults(func=invocation_function)
-        return scanpy_group
+    def get_computation_choices(cls):
+        return {
+            "layout": {
+                "options": {"umap", "tsne"},
+                "default": "umap",
+            },
+            "diffexp": {
+                "options": ["ttest"],
+                "default": "ttest",
+            }
+        }
 
     @staticmethod
     def _load_data(data):

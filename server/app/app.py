@@ -45,6 +45,84 @@ app.register_blueprint(
 app.add_url_rule("/", endpoint="index")
 
 
+def create_cli():
+    parser = argparse.ArgumentParser(description="cellxgene is a tool for exploring single cell expression.")
+    subparsers = parser.add_subparsers(dest="program")
+    subparsers.required = True
+    launch_group = subparsers.add_parser("launch", help="launch web application",
+                                         formatter_class=argparse.RawTextHelpFormatter)
+    launch_group.description = """
+    cellxgene launches a local web application for exploring single cell expression data.
+
+    Data must be in a format that cellxgene expects [[ how to format ]]
+        """
+    launch_group.epilog = """
+    annotation names:
+    The data viewer requires a unique, human readable name for each observation and variable.  These are used for
+    various application features, such as the ability to view expression by gene. When launching cellxgene, appropriate
+    observation and variable annotations must be identified.
+
+    If --obs-name or --var-name parameters are specified, values in the named annotations will be used. If not
+    specified, the observation and variable index values will name each respectively.  An error will generated if the
+    values for each are not unique.
+
+    examples:
+    To run with the example dataset:
+
+        cellxgene example_dataset/pbmc3k.h5ad --title PBMC3K
+
+    To run with your own data with tsne layout:
+
+        cellxgene <your data file> --title <your title> -l tsne
+
+    To indicate that the human-readable variable annotation is named 'gene_names', and the human-readable observation
+    is 'cell_names':
+
+        cellxgene mydata.h5ad -var-name gene_names -obs-name cell_names
+
+        """
+    launch_group.add_argument("data", metavar="data", help="file containing the data to display")
+    launch_group.add_argument("--title", "-t", help="title to display -- if this is omitted the title will be the name "
+                                                    "of the data file.")
+    launch_group.add_argument(
+        "--listen-all",
+        help="bind to all interfaces (this makes the server accessible beyond this computer)",
+        action="store_true")
+    launch_group.add_argument("--port", help="port to run server on", type=int, default=5005)
+    launch_group.add_argument("--debug", action="store_true",
+                              help="more verbose output, including outputting warnings and every REST request")
+    launch_group.add_argument("--flask-debug", action="store_true", help=argparse.SUPPRESS)
+    launch_group.add_argument("--no-open", help="do not launch the webbrowser", action="store_false",
+                              dest="open_browser")
+    launch_group.add_argument(
+        "--max-categories",
+        help="maximum number of categories to display on the front-end. "
+             "Annotations with more than this number are not displayed",
+        default=100)
+    computation_group = launch_group.add_argument_group('computational arguments')
+    layout_arg = computation_group.add_argument("-l", "--layout", help="algorithm to use for graph layout")
+    diffexp_arg = computation_group.add_argument("-d", "--diffexp",
+                                                 help="algorithm to used to calculate differential expression")
+    layout_choices = []
+    diffexp_choices = []
+    try:
+        from .scanpy_engine.scanpy_engine import ScanpyEngine
+    except ImportError as e:
+        # We will handle more engines when they come
+        raise ImportError('Scanpy is required for cellxgene, please install scanpy and try again', e) from e
+    else:
+        choices = ScanpyEngine.get_computation_choices()
+        layout_choices.extend(choices["layout"]["options"])
+        layout_default = choices["layout"]["default"]
+        diffexp_choices.extend(choices["layout"]["options"])
+        diffexp_default = choices["layout"]["default"]
+    layout_arg.choices = layout_choices
+    layout_arg.default = layout_default
+    diffexp_arg.choices = diffexp_choices
+    diffexp_arg.default = diffexp_default
+    return parser
+
+
 def run_scanpy(args):
     title = args.title
     if not title:
@@ -67,26 +145,6 @@ def run_scanpy(args):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Cellxgene is a tool for exploring single cell expression.")
-    parser.add_argument("--title", "-t", help="Title to display -- if this is omitted the title will be the name "
-                                              "of the directory from the data_directory arg")
-    parser.add_argument("--port", help="Port to run server on.", type=int, default=5005)
-    parser.add_argument("--flask-debug", action="store_true", help=argparse.SUPPRESS)
-    parser.add_argument("--no-open", help="Do not launch the webbrowser.", action="store_false", dest="open_browser")
-    parser.add_argument(
-        "--listen-all",
-        help="Bind to all interfaces (this makes the server accessible beyond this computer)",
-        action="store_true")
-    subparsers = parser.add_subparsers(dest="engine")
-    subparsers.required = True
-    try:
-        from .scanpy_engine.scanpy_engine import ScanpyEngine
-    except ImportError as e:
-        # We will handle more engines when they come
-        raise ImportError('Scanpy is required for cellxgene, please install scanpy and try again', e) from e
-    else:
-        choices = ScanpyEngine.add_to_parser(subparsers, run_scanpy)
-        layout_choices.extend(choices["layout"]["options"])
-        layout_default = choices["layout"]["default"]
+    parser = create_cli()
     args = parser.parse_args()
-    args.func(args)
+    run_scanpy(args)
