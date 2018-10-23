@@ -1,6 +1,5 @@
 import argparse
 import os
-import warnings
 import webbrowser
 
 from flask import Flask
@@ -82,12 +81,12 @@ def main():
     subparsers.required = True
     try:
         from .scanpy_engine.scanpy_engine import ScanpyEngine
-    except ImportError:
-        warnings.simplefilter('default', ImportWarning)  # Enable ImportWarning
-        warnings.warn("Scanpy engine not available", ImportWarning)
+    except ImportError as e:
+        # We will handle more engines when they come
+        raise ImportError('Scanpy is required for cellxgene, please install scanpy and try again', e) from e
     else:
-        ScanpyEngine.add_to_parser(subparsers, run_scanpy)
-    if len(subparsers.choices) == 0:
-        raise ImportError('Could not import any engines, see warnings above')
+        choices = ScanpyEngine.add_to_parser(subparsers, run_scanpy)
+        layout_choices.extend(choices["layout"]["options"])
+        layout_default = choices["layout"]["default"]
     args = parser.parse_args()
     args.func(args)
