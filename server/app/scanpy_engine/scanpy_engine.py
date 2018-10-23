@@ -94,6 +94,15 @@ class ScanpyEngine(CXGDriver):
         """
         return values[sort_order][:top_n]
 
+    @staticmethod
+    def _nan_to_one(values):
+        """
+        Replaces NaN values with 1
+        :param values: numpy ndarray
+        :return: ndarray
+        """
+        return np.where(np.isnan(values), 1, values)
+
     def _add_mandatory_annotations(self):
         # ensure gene
         self.data.var["name"] = Series(list(self.data.var.index), dtype="unicode_", index=self.data.var.index)
@@ -300,7 +309,7 @@ class ScanpyEngine(CXGDriver):
 
         genes_idx = df1.var.index
         diffexp_result = stats.ttest_ind(df1.X, df2.X)
-        pval = diffexp_result.pvalue
+        pval = self._nan_to_one(diffexp_result.pvalue)
         bonferroni_pval = 1 - (1 - pval) ** self.gene_count
         ave_exp_set1 = np.mean(df1.X, axis=0)
         ave_exp_set2 = np.mean(df2.X, axis=0)
