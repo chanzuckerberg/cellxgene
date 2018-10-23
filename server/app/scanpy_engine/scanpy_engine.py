@@ -1,4 +1,3 @@
-import os
 import warnings
 
 import numpy as np
@@ -80,7 +79,7 @@ class ScanpyEngine(CXGDriver):
         # Based upon this advice, setting cache=True parameter
         # Note: as of current scanpy/anndata release, setting backed='r' will
         # result in an error.
-        return sc.read(os.path.join(data, "data.h5ad"), cache=True)
+        return sc.read(data, cache=True)
 
     @staticmethod
     def _top_sort(values, sort_order, top_n=None):
