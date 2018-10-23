@@ -14,10 +14,15 @@ settings = dict(help_option_names=['-h', '--help'])
 @click.option('--recipe', default='none', type=click.Choice(['none', 'seurat', 'zheng17']),
               help='preprocessing to run', show_default=True)
 @click.option('--output', default='', help='save a new file to filename')
-@click.option('--sparse/--no-sparse', default=False, help='whether to force sparsity', show_default=True)
-@click.option('--overwrite/--no-overwrite', default=False, help='allow overwriting an existing file', show_default=True)
-@click.option('--plotting/--no-plotting', default=False, help='whether to generate plots', show_default=True)
-def cli(dataset, layout, recipe, output, sparse, overwrite, plotting):
+@click.option('--set-obs-names', default='', help='named field to set as index for obs')
+@click.option('--set-var-names', default='', help='named field to set as index for var')
+@click.option('--make-obs-names-unique', default=True, is_flag=True, help='ensure obs index is unique', show_default=True)
+@click.option('--make-var-names-unique', default=True, is_flag=True, help='ensure var index is unique', show_default=True)
+@click.option('--sparse', default=False, is_flag=True, help='whether to force sparsity', show_default=True)
+@click.option('--overwriting', default=False, is_flag=True, help='allow file overwriting', show_default=True)
+@click.option('--plotting', default=False, is_flag=True, help='whether to generate plots', show_default=True)
+def cli(dataset, layout, recipe, output, set_obs_names, set_var_names,
+        make_obs_names_unique, make_var_names_unique, sparse, overwriting, plotting):
     """
     preprocesses data for use with cellxgene
     """
@@ -57,7 +62,22 @@ def cli(dataset, layout, recipe, output, sparse, overwrite, plotting):
         else:
             raise click.FileError(dataset, hint='not a valid file or path')
 
-        adata.var_names_make_unique()
+        if not set_obs_names == '':
+            if set_obs_names not in adata.obs_keys():
+                raise click.UsageError('obs %s not found, options are: %s' % (set_obs_names, adata.obs_keys()))
+            adata.obs_names = adata.obs[set_obs_names]
+        if not set_var_names == '':
+            if set_var_names not in adata.var_keys():
+                raise click.UsageError('var %s not found, options are: %s' % (set_var_names, adata.var_keys()))
+            adata.var_names = adata.var[set_var_names]
+        if make_obs_names_unique:
+            adata.obs_names_make_unique()
+        if make_var_names_unique:
+            adata.var_names_make_unique()
+        if not adata._obs.index.is_unique:
+            click.echo('Warning: obs index is not unique')
+        if not adata._var.index.is_unique:
+            click.echo('Warning: var index is not unique')
 
         return adata
 
