@@ -296,7 +296,7 @@ class AnnotationsVarAPI(Resource):
             annotation_response = current_app.data.annotation(request.get_json()["filter"], "var", fields)
         except KeyError:
             return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
-        except FilterError as e:
+        except FilterError:
             return make_response("Malformed filter", HTTPStatus.BAD_REQUEST)
         return make_response(jsonify(annotation_response), HTTPStatus.OK)
 
