@@ -57,7 +57,9 @@ def run_scanpy(args):
     )
 
     from .scanpy_engine.scanpy_engine import ScanpyEngine
-    app.data = ScanpyEngine(args.data_directory, layout_method=args.layout, diffexp_method=args.diffexp)
+    app.data = ScanpyEngine(args.data_directory,
+                            layout_method=args.layout, diffexp_method=args.diffexp,
+                            obs_names=args.obs_names, var_names=args.var_names)
     if args.listen_all:
         host = "0.0.0.0"
     else:

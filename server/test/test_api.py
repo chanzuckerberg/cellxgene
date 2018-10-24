@@ -102,7 +102,7 @@ class EndPoints(unittest.TestCase):
         result = self.session.get(url)
         self.assertEqual(result.status_code, HTTPStatus.OK)
         result_data = result.json()
-        self.assertEqual(result_data["names"], ["n_genes", "percent_mito", "n_counts", "louvain", "name"])
+        self.assertEqual(result_data["names"], ["name", "n_genes", "percent_mito", "n_counts", "louvain"])
         self.assertEqual(len(result_data["data"]), 2638)
         self.assertEqual(len(result_data["data"][0]), 6)
 
@@ -140,7 +140,7 @@ class EndPoints(unittest.TestCase):
         result = self.session.put(url, json=obs_filter)
         self.assertEqual(result.status_code, HTTPStatus.OK)
         result_data = result.json()
-        self.assertEqual(result_data["names"], ["n_genes", "percent_mito", "n_counts", "louvain", "name"])
+        self.assertEqual(result_data["names"], ["name", "n_genes", "percent_mito", "n_counts", "louvain"])
         self.assertEqual(len(result_data["data"]), 15)
 
     def test_filter_put_annotations_obs(self):
@@ -224,7 +224,7 @@ class EndPoints(unittest.TestCase):
         result = self.session.get(url)
         self.assertEqual(result.status_code, HTTPStatus.OK)
         result_data = result.json()
-        self.assertEqual(result_data["names"], ["n_cells", "name"])
+        self.assertEqual(result_data["names"], ["name", "n_cells"])
         self.assertEqual(len(result_data["data"]), 1838)
         self.assertEqual(len(result_data["data"][0]), 3)
 
@@ -260,7 +260,7 @@ class EndPoints(unittest.TestCase):
         result = self.session.put(url, json=var_filter)
         self.assertEqual(result.status_code, HTTPStatus.OK)
         result_data = result.json()
-        self.assertEqual(result_data["names"], ["n_cells", "name"])
+        self.assertEqual(result_data["names"], ["name", "n_cells"])
         self.assertEqual(len(result_data["data"]), 2)
 
     def test_filter_put_annotations_var(self):

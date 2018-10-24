@@ -23,13 +23,41 @@ Sort order for methods
 
 class ScanpyEngine(CXGDriver):
 
-    def __init__(self, data, layout_method=None, diffexp_method=None):
+    def __init__(self, data, layout_method=None, diffexp_method=None, obs_names=None, var_names=None):
         super().__init__(data, layout_method=layout_method, diffexp_method=diffexp_method)
-        self._validatate_data_types()
-        self._add_mandatory_annotations()
+        self._alias_annotation_names(obs_names, var_names)
+        self._validate_data_types()
         self.cell_count = self.data.shape[0]
         self.gene_count = self.data.shape[1]
         self._create_schema()
+
+    def _alias_annotation_names(self, obs_names, var_names):
+        """
+        Do all user-specified annotaiton aliasing.
+        As a *critical* side-effect, ensure the indices are simple number ranges
+        """
+        aliased_names = {'obs': obs_names, 'var': var_names}
+        for ax in Axis:
+            name = aliased_names[ax]
+            if name == 'name':
+                continue
+
+            ax_name = str(ax)
+            df_axis = getattr(self.data, ax_name)
+            if name is None:
+                # reset index to simple range; alias 'name' to point at the
+                # previously specified index.
+                df_axis = df_axis.reset_index().rename(columns={'index': 'name'})
+            elif name in df_axis.columns:
+                if name not in df_axis.columns:
+                    raise KeyError(f"Annotation name {name}, specified in --{ax_name}-name does not exist.")
+                if not df_axis[name].is_unique:
+                    raise KeyError(f"Values in -{ax_name}-name must be unique. Please prepare data to contain unique values.")
+                # reset index to simple range; alias user-specified annotation to 'name'
+                df_axis = df_axis.reset_index(drop=True).rename(columns={name: 'name'})
+            else:
+                raise KeyError(f"Annotation name {name}, specified in --{ax_name}_name does not exist.")
+            setattr(self.data, ax_name, df_axis)
 
     def _create_schema(self):
         self.schema = {
@@ -71,6 +99,9 @@ class ScanpyEngine(CXGDriver):
                                   help="Algorithm to use for graph layout")
         scanpy_group.add_argument("-d", "--diffexp", choices=["ttest"], default="ttest",
                                   help="Algorithm to used to calculate differential expression")
+        scanpy_group.add_argument("--obs-names",
+                                  help="Annotation name to use as unique, human-readable observation name")
+        scanpy_group.add_argument("--var-names", help="Annotation name to use as unique, human-readable variable name")
         scanpy_group.add_argument("data_directory", metavar="dir", help="Directory containing data and schema file")
         scanpy_group.set_defaults(func=invocation_function)
         return scanpy_group
@@ -103,15 +134,7 @@ class ScanpyEngine(CXGDriver):
         """
         return np.where(np.isnan(values), 1, values)
 
-    def _add_mandatory_annotations(self):
-        # ensure gene
-        self.data.var["name"] = Series(list(self.data.var.index), dtype="unicode_", index=self.data.var.index)
-        self.data.var.index = Series(list(range(self.data.var.shape[0])), dtype="category")
-        # ensure cell name
-        self.data.obs["name"] = Series(list(self.data.obs.index), dtype="unicode_", index=self.data.obs.index)
-        self.data.obs.index = Series(list(range(self.data.obs.shape[0])), dtype="category")
-
-    def _validatate_data_types(self):
+    def _validate_data_types(self):
         if self.data.X.dtype != "float32":
             warnings.warn(f"Scanpy data matrix is in {self.data.X.dtype} format not float32. "
                           f"Precision may be truncated.")
@@ -259,13 +282,13 @@ class ScanpyEngine(CXGDriver):
         elif df_shape[1] == 1:
             values = values[:, None]
         if axis == Axis.OBS:
-            expression = DataFrame(values, index=obs_idx)
+            expression = DataFrame(values, index=df.obs.index)
             result = {
                 "var": var_idx,
                 "obs": expression.reset_index().values.tolist()
             }
         else:
-            expression = DataFrame(values.T, index=var_idx)
+            expression = DataFrame(values.T, index=df.var.index)
             result = {
                 "obs": obs_idx,
                 "var": expression.reset_index().values.tolist(),

@@ -30,7 +30,7 @@ class UtilTest(unittest.TestCase):
     @pytest.mark.filterwarnings("ignore:Scanpy data matrix")
     def test_data_type(self):
         self.data.data.X = self.data.data.X.astype("float64")
-        self.assertWarns(UserWarning, self.data._validatate_data_types())
+        self.assertWarns(UserWarning, self.data._validate_data_types())
 
     def test_filter_idx(self):
         filter_ = {
@@ -130,10 +130,10 @@ class UtilTest(unittest.TestCase):
 
     def test_annotations(self):
         annotations = self.data.annotation(None, "obs")
-        self.assertEqual(annotations["names"], ["n_genes", "percent_mito", "n_counts", "louvain", "name"])
+        self.assertEqual(annotations["names"], ["name", "n_genes", "percent_mito", "n_counts", "louvain"])
         self.assertEqual(len(annotations["data"]), 2638)
         annotations = self.data.annotation(None, "var")
-        self.assertEqual(annotations["names"], ["n_cells", "name"])
+        self.assertEqual(annotations["names"], ["name", "n_cells"])
         self.assertEqual(len(annotations["data"]), 1838)
 
     def test_annotation_fields(self):
@@ -160,10 +160,10 @@ class UtilTest(unittest.TestCase):
             }
         }
         annotations = self.data.annotation(filter_["filter"], "obs")
-        self.assertEqual(annotations["names"], ["n_genes", "percent_mito", "n_counts", "louvain", "name"])
+        self.assertEqual(annotations["names"], ["name", "n_genes", "percent_mito", "n_counts", "louvain"])
         self.assertEqual(len(annotations["data"]), 497)
         annotations = self.data.annotation(filter_["filter"], "var")
-        self.assertEqual(annotations["names"], ["n_cells", "name"])
+        self.assertEqual(annotations["names"], ["name", "n_cells"])
         self.assertEqual(len(annotations["data"]), 2)
 
     def test_filtered_layout(self):

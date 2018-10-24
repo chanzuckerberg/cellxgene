@@ -7,6 +7,10 @@
   "annotations": {
     "obs": [
       {
+        "name": "name",
+        "type": "string"
+      },
+      {
         "name": "n_genes",
         "type": "int32"
       },
@@ -31,20 +35,16 @@
           "Dendritic cells",
           "Megakaryocytes"
         ]
-      },
-      {
-        "name": "name",
-        "type": "string"
       }
     ],
     "var": [
       {
-        "name": "n_cells",
-        "type": "int32"
-      },
-      {
         "name": "name",
         "type": "string"
+      },
+      {
+        "name": "n_cells",
+        "type": "int32"
       }
     ]
   }
