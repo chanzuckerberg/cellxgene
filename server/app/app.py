@@ -1,4 +1,5 @@
 import argparse
+import logging
 import os
 import webbrowser
 
@@ -128,7 +129,9 @@ def run_scanpy(args):
         DATASET_TITLE=title,
         CXG_API_BASE=api_base
     )
-
+    if not args.debug:
+        log = logging.getLogger('werkzeug')
+        log.setLevel(logging.ERROR)
     from .scanpy_engine.scanpy_engine import ScanpyEngine
     app.data = ScanpyEngine(args.data, layout_method=args.layout, diffexp_method=args.diffexp)
     if args.listen_all:
