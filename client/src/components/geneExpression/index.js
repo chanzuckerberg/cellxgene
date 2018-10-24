@@ -76,14 +76,22 @@ class GeneExpression extends React.Component {
       <div>
         <div
           style={{
-            padding: globals.leftSidebarSectionPadding,
             marginTop: 30
           }}
         >
-          <p style={globals.leftSidebarSectionHeading}>Custom genes</p>
-          <div style={{ marginTop: 11 }} className="bp3-control-group">
-            <div className="bp3-input-group">
-              <span className="bp3-icon bp3-icon-symbol-cross" />
+          <p
+            style={Object.assign({}, globals.leftSidebarSectionHeading, {
+              paddingLeft: globals.leftSidebarSectionPadding,
+              margin: 0
+            })}
+          >
+            Custom genes
+          </p>
+          <div
+            style={{ padding: globals.leftSidebarSectionPadding }}
+            className="bp3-control-group"
+          >
+            <div className="bp3-input-group bp3-fill">
               <input
                 onKeyDown={this.keyPress.bind(this)}
                 onChange={e => {
@@ -105,7 +113,7 @@ class GeneExpression extends React.Component {
             </button>
           </div>
           {world && userDefinedGenes.length > 0
-            ? _.map(userDefinedGenes, geneName => {
+            ? _.map(userDefinedGenes, (geneName, index) => {
                 const values = world.varDataCache[geneName];
                 if (!values) {
                   return null;
@@ -114,6 +122,7 @@ class GeneExpression extends React.Component {
                   <HistogramBrush
                     key={geneName}
                     field={geneName}
+                    zebra={index % 2 === 0}
                     ranges={d3.extent(values)}
                     isUserDefined
                   />
@@ -121,21 +130,18 @@ class GeneExpression extends React.Component {
               })
             : null}
         </div>
-        <div
-          style={{
-            padding: globals.leftSidebarSectionPadding
-          }}
-        >
+        <div>
           <p
             style={Object.assign({}, globals.leftSidebarSectionHeading, {
-              marginTop: 40
+              marginTop: 40,
+              paddingLeft: globals.leftSidebarSectionPadding
             })}
           >
             Differentially Expressed Genes
           </p>
           <ExpressionButtons />
           {differential.diffExp
-            ? _.map(differential.diffExp, value => {
+            ? _.map(differential.diffExp, (value, index) => {
                 const annotations = world.varAnnotations[value[0]];
                 const { name } = annotations;
                 const values = world.varDataCache[name];
@@ -146,6 +152,7 @@ class GeneExpression extends React.Component {
                   <HistogramBrush
                     key={name}
                     field={name}
+                    zebra={index % 2 === 0}
                     ranges={d3.extent(values)}
                     isDiffExp
                     avgDiff={value[1]}

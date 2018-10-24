@@ -1,8 +1,9 @@
 import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
-import { FaChevronRight, FaChevronDown, FaPaintBrush } from "react-icons/fa";
+import { FaChevronRight, FaChevronDown } from "react-icons/fa";
 import memoize from "memoize-one";
+import { Button } from "@blueprintjs/core";
 
 import * as globals from "../../globals";
 import Value from "./value";
@@ -119,55 +120,58 @@ class Category extends React.Component {
         <div
           style={{
             display: "flex",
-            justifyContent: "flex-start",
+            justifyContent: "space-between",
             alignItems: "baseline"
           }}
         >
-          <label className="bp3-control bp3-checkbox">
-            <input
-              onChange={this.handleToggleAllClick.bind(this)}
-              ref={el => {
-                this.checkbox = el;
-                return el;
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-start",
+              alignItems: "baseline"
+            }}
+          >
+            <label className="bp3-control bp3-checkbox">
+              <input
+                onChange={this.handleToggleAllClick.bind(this)}
+                ref={el => {
+                  this.checkbox = el;
+                  return el;
+                }}
+                checked={isChecked}
+                type="checkbox"
+              />
+              <span className="bp3-control-indicator" />
+              {""}
+            </label>
+
+            <span
+              style={{
+                cursor: "pointer",
+                display: "inline-block"
               }}
-              checked={isChecked}
-              type="checkbox"
-            />
-            <span className="bp3-control-indicator" />
-            {""}
-          </label>
-
-          <span
-            style={{
-              cursor: "pointer",
-              display: "inline-block"
-            }}
-            onClick={() => {
-              this.setState({ isExpanded: !isExpanded });
-            }}
-          >
-            {metadataField}
-            {isExpanded ? (
-              <FaChevronDown style={{ fontSize: 10, marginLeft: 5 }} />
-            ) : (
-              <FaChevronRight style={{ fontSize: 10, marginLeft: 5 }} />
-            )}
-          </span>
-
-          <span
+              onClick={() => {
+                this.setState({ isExpanded: !isExpanded });
+              }}
+            >
+              {metadataField}
+              {isExpanded ? (
+                <FaChevronDown style={{ fontSize: 10, marginLeft: 5 }} />
+              ) : (
+                <FaChevronRight style={{ fontSize: 10, marginLeft: 5 }} />
+              )}
+            </span>
+          </div>
+          <Button
             onClick={this.handleColorChange.bind(this)}
-            style={{
-              marginLeft: 4,
-              color:
-                colorAccessor === metadataField ? globals.brightBlue : "black",
-              display: "inline-block",
-              cursor: "pointer"
-            }}
-          >
-            <FaPaintBrush style={{ fontSize: 12, marginLeft: 10 }} />
-          </span>
+            active={colorAccessor === metadataField}
+            intent={colorAccessor === metadataField ? "primary" : "none"}
+            icon={"tint"}
+          />
         </div>
-        <div style={{ marginLeft: 26 }}>{isExpanded ? this.renderCategoryItems() : null}</div>
+        <div style={{ marginLeft: 26 }}>
+          {isExpanded ? this.renderCategoryItems() : null}
+        </div>
         <div>
           {isExpanded && isTruncated ? (
             <p style={{ paddingLeft: 15 }}>... truncated list ...</p>

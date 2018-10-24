@@ -37,6 +37,9 @@ class Expression extends React.Component {
       type: "clear differential expression",
       diffExp: differential.diffExp
     });
+    dispatch({
+      type: "clear scatterplot"
+    });
   }
 
   render() {
@@ -47,7 +50,13 @@ class Expression extends React.Component {
     const haveBothCellSets =
       !!differential.celllist1 && !!differential.celllist2;
     return (
-      <div style={{ marginRight: 10, marginBottom: 10 }}>
+      <div
+        style={{
+          marginRight: 10,
+          marginBottom: 10,
+          paddingLeft: globals.leftSidebarSectionPadding
+        }}
+      >
         <CellSetButton {...this.props} eitherCellSetOneOrTwo={1} />
         <CellSetButton {...this.props} eitherCellSetOneOrTwo={2} />
         {!differential.diffExp ? (
@@ -55,6 +64,7 @@ class Expression extends React.Component {
             style={{ marginTop: 10 }}
             disabled={!haveBothCellSets}
             intent="primary"
+            fill
             type="button"
             onClick={this.computeDiffExp.bind(this)}
           >
@@ -64,6 +74,7 @@ class Expression extends React.Component {
         {differential.diffExp ? (
           <Button
             type="button"
+            fill
             style={{ marginTop: 10 }}
             intent="warning"
             onClick={this.clearDifferentialExpression.bind(this)}
