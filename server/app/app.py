@@ -1,4 +1,5 @@
 import argparse
+import logging
 import os
 import webbrowser
 
@@ -123,20 +124,27 @@ def run_scanpy(args):
     if not title:
         file_parts = os.path.splitext(os.path.basename(args.data))
         title = file_parts[0]
-    api_base = f"http://127.0.0.1:{args.port}/api/"
-    app.config.update(
-        DATASET_TITLE=title,
-        CXG_API_BASE=api_base
-    )
-
-    from .scanpy_engine.scanpy_engine import ScanpyEngine
-    app.data = ScanpyEngine(args.data, layout_method=args.layout, diffexp_method=args.diffexp)
     if args.listen_all:
         host = "0.0.0.0"
     else:
         host = "127.0.0.1"
+    cellxgene_url = f"http://{host}:{args.port}"
+    api_base = f"{cellxgene_url}/api/"
+    app.config.update(
+        DATASET_TITLE=title,
+        CXG_API_BASE=api_base
+    )
+    if not args.debug:
+        log = logging.getLogger('werkzeug')
+        log.setLevel(logging.ERROR)
+    from .scanpy_engine.scanpy_engine import ScanpyEngine
+    print(f"Loading data from {args.data}")
+    app.data = ScanpyEngine(args.data, layout_method=args.layout, diffexp_method=args.diffexp)
+    print(f"Launching cellxgene")
+
     if args.open_browser:
-        webbrowser.open(f"http://{host}:{args.port}")
+        webbrowser.open(cellxgene_url)
+    print(f"Please go to {cellxgene_url}")
     app.run(host=host, debug=args.flask_debug, port=args.port)
 
 
@@ -144,4 +152,5 @@ def main():
     parser = create_cli()
     args = parser.parse_args()
     # TODO pick engine based on input file
+    print("cellxgene starting...\n")
     run_scanpy(args)
