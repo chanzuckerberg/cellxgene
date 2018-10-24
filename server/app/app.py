@@ -105,6 +105,7 @@ cellxgene is a local web application for exploring single cell expression.
                               dest="open_browser")
     launch_group.add_argument(
         "--max-categories",
+        type=int,
         help="maximum number of categories to display on the front-end. "
              "Annotations with more than this number are not displayed",
         default=100)
@@ -130,7 +131,8 @@ def run_scanpy(args):
     )
 
     from .scanpy_engine.scanpy_engine import ScanpyEngine
-    app.data = ScanpyEngine(args.data, layout_method=args.layout, diffexp_method=args.diffexp)
+    app.data = ScanpyEngine(args.data, layout_method=args.layout, diffexp_method=args.diffexp,
+                            max_categories=args.max_categories)
     if args.listen_all:
         host = "0.0.0.0"
     else:
