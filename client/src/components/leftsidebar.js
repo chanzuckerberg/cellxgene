@@ -15,15 +15,7 @@ import DynamicScatterplot from "./scatterplot/scatterplot";
   scatterplotYYaccessor: state.controls.scatterplotYYaccessor
 }))
 class LeftSideBar extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      currentTab: "metadata"
-    };
-  }
-
   render() {
-    const { currentTab } = this.state;
     const {
       responsive,
       datasetTitle,

@@ -6,7 +6,7 @@ import { interpolateViridis } from "d3-scale-chromatic";
 
 // create continuous color legend
 // http://bl.ocks.org/syntagmatic/e8ccca52559796be775553b467593a9f
-const continuous = (selectorId, colorscale, colorAccessor) => {
+const continuous = (selectorId, colorscale) => {
   const legendheight = 200;
   const legendwidth = 80;
   const margin = { top: 10, right: 60, bottom: 10, left: 2 };
