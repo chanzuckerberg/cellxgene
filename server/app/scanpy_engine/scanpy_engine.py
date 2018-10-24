@@ -66,17 +66,13 @@ class ScanpyEngine(CXGDriver):
                 self.schema["annotations"][ax].append(ann_schema)
 
     @classmethod
-    def get_computation_choices(cls):
-        return {
-            "layout": {
-                "options": {"umap", "tsne"},
-                "default": "umap",
-            },
-            "diffexp": {
-                "options": ["ttest"],
-                "default": "ttest",
-            }
-        }
+    def add_to_parser(cls, subparser):
+        computation_group = subparser.add_argument_group('computational arguments')
+        # TODO these choices should be generated from the actual available methods see GH issue #94
+        computation_group.add_argument("-l", "--layout", choices=["umap", "tsne"], default="umap",
+                                       help="Algorithm to use for graph layout")
+        computation_group.add_argument("-d", "--diffexp", choices=["ttest"], default="ttest",
+                                       help="Algorithm to used to calculate differential expression")
 
     @staticmethod
     def _load_data(data):

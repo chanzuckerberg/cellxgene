@@ -108,27 +108,13 @@ cellxgene is a local web application for exploring single cell expression.
         help="maximum number of categories to display on the front-end. "
              "Annotations with more than this number are not displayed",
         default=100)
-    computation_group = launch_group.add_argument_group('computational arguments')
-    layout_arg = computation_group.add_argument("-l", "--layout", help="algorithm to use for graph layout")
-    diffexp_arg = computation_group.add_argument("-d", "--diffexp",
-                                                 help="algorithm to used to calculate differential expression")
-    layout_choices = []
-    diffexp_choices = []
     try:
         from .scanpy_engine.scanpy_engine import ScanpyEngine
     except ImportError as e:
         # We will handle more engines when they come
         raise ImportError('Scanpy is required for cellxgene, please install scanpy and try again', e) from e
     else:
-        choices = ScanpyEngine.get_computation_choices()
-        layout_choices.extend(choices["layout"]["options"])
-        layout_default = choices["layout"]["default"]
-        diffexp_choices.extend(choices["layout"]["options"])
-        diffexp_default = choices["layout"]["default"]
-    layout_arg.choices = layout_choices
-    layout_arg.default = layout_default
-    diffexp_arg.choices = diffexp_choices
-    diffexp_arg.default = diffexp_default
+        ScanpyEngine.add_to_parser(launch_group)
     return parser
 
 
@@ -156,4 +142,5 @@ def run_scanpy(args):
 def main():
     parser = create_cli()
     args = parser.parse_args()
+    # TODO pick engine based on input file
     run_scanpy(args)
