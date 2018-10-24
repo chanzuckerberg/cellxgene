@@ -96,7 +96,8 @@ class Graph extends React.Component {
       camera,
       pointBuffer,
       colorBuffer,
-      sizeBuffer
+      sizeBuffer,
+      svg
     } = this.state;
 
     if (reglRender && this.reglRenderState === "rendering" && mode !== "zoom") {
@@ -183,19 +184,19 @@ class Graph extends React.Component {
       prevProps.responsive.height !== responsive.height ||
       prevProps.responsive.width !== responsive.width ||
       /* first time */
-      (responsive.height && responsive.width && !this.state.svg)
+      (responsive.height && responsive.width && !svg)
     ) {
       /* clear out whatever was on the div, even if nothing, but usually the brushes etc */
       d3.select("#graphAttachPoint")
         .selectAll("svg")
         .remove();
-      const { svg: newSvg, brush, brushContainer } = setupSVGandBrushElements(
+      const { svg: newSvg, brush } = setupSVGandBrushElements(
         this.handleBrushSelectAction.bind(this),
         this.handleBrushDeselectAction.bind(this),
         responsive,
         this.graphPaddingTop
       );
-      this.setState({ svg: newSvg, brush, brushContainer });
+      this.setState({ svg: newSvg, brush });
     }
   }
 

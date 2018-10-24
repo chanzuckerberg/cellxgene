@@ -258,6 +258,7 @@ class Scatterplot extends React.Component {
       .attr("x", 10)
       .attr("y", 10)
       .attr("class", "label")
+      .style("font-style", "italic")
       .text(scatterplotYYaccessor);
 
     svg
@@ -266,6 +267,7 @@ class Scatterplot extends React.Component {
       .attr("y", height - 10)
       .attr("text-anchor", "end")
       .attr("class", "label")
+      .style("font-style", "italic")
       .text(scatterplotXXaccessor);
   }
 
@@ -285,7 +287,6 @@ class Scatterplot extends React.Component {
         id="scatterplot_wrapper"
       >
         <ButtonGroup
-          minimal
           style={{
             position: "absolute",
             right: 5,
@@ -294,14 +295,16 @@ class Scatterplot extends React.Component {
         >
           <Button
             type="button"
-            icon={minimized ? "plus" : "minus"}
+            minimal
             onClick={() => {
               this.setState({ minimized: !minimized });
             }}
-          />
+          >
+            {minimized ? "show scatterplot" : "hide"}
+          </Button>
           <Button
             type="button"
-            icon="cross"
+            minimal
             onClick={() => {
               dispatch({
                 type: "clear scatterplot"
@@ -310,7 +313,9 @@ class Scatterplot extends React.Component {
                 type: "reset colorscale"
               });
             }}
-          />
+          >
+            remove
+          </Button>
         </ButtonGroup>
         <div
           className={styles.scatterplot}

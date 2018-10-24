@@ -48,16 +48,16 @@ class Continuous extends React.Component {
       this.continuousChecked = true; /* only do this once */
     }
 
+    /* initial value for iterator to simulate index, ranges is an object */
+    let zebra = -1;
+
     return (
-      <div
-        style={{
-          padding: globals.leftSidebarSectionPadding
-        }}
-      >
+      <div>
         {this.hasContinuous ? (
           <p
             style={Object.assign({}, globals.leftSidebarSectionHeading, {
-              marginTop: 40
+              marginTop: 40,
+              paddingLeft: globals.leftSidebarSectionPadding
             })}
           >
             Continuous metadata
@@ -65,12 +65,14 @@ class Continuous extends React.Component {
         ) : null}
         {_.map(ranges, (value, key) => {
           const isColorField = key.includes("color") || key.includes("Color");
+          zebra += 1;
           if (value.range && key !== "name" && !isColorField) {
             return (
               <HistogramBrush
                 key={key}
                 field={key}
                 isObs
+                zebra={zebra % 2 === 0}
                 fieldValues={obsAnnotations}
                 ranges={value.range}
                 handleColorAction={this.handleColorAction(key).bind(this)}

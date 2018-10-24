@@ -3,7 +3,6 @@ import React from "react";
 import _ from "lodash";
 import { Button } from "@blueprintjs/core";
 import { connect } from "react-redux";
-import * as globals from "../../globals";
 
 @connect()
 class CellSetButton extends React.Component {
