@@ -2,7 +2,7 @@ import os
 import warnings
 
 import numpy as np
-from pandas import DataFrame, Series
+from pandas import DataFrame
 import scanpy.api as sc
 from scipy import stats
 
@@ -52,7 +52,8 @@ class ScanpyEngine(CXGDriver):
                 if name not in df_axis.columns:
                     raise KeyError(f"Annotation name {name}, specified in --{ax_name}-name does not exist.")
                 if not df_axis[name].is_unique:
-                    raise KeyError(f"Values in -{ax_name}-name must be unique. Please prepare data to contain unique values.")
+                    raise KeyError(f"Values in -{ax_name}-name must be unique. "
+                                    "Please prepare data to contain unique values.")
                 # reset index to simple range; alias user-specified annotation to 'name'
                 df_axis = df_axis.reset_index(drop=True).rename(columns={name: 'name'})
             else:
@@ -282,13 +283,13 @@ class ScanpyEngine(CXGDriver):
         elif df_shape[1] == 1:
             values = values[:, None]
         if axis == Axis.OBS:
-            expression = DataFrame(values, index=df.obs.index)
+            expression = DataFrame(values, index=obs_idx)
             result = {
                 "var": var_idx,
                 "obs": expression.reset_index().values.tolist()
             }
         else:
-            expression = DataFrame(values.T, index=df.var.index)
+            expression = DataFrame(values.T, index=var_idx)
             result = {
                 "obs": obs_idx,
                 "var": expression.reset_index().values.tolist(),
