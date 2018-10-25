@@ -1,4 +1,5 @@
 import json
+from argparse import ArgumentTypeError
 
 from numpy import float32, integer
 
@@ -49,3 +50,13 @@ def get_mime_type(default="application/json", acceptable_types=["application/jso
         if not mime_type:
             raise MimeTypeError(f"Unsupported mime type(s) {header} in HTTP Accept header")
     return mime_type
+
+
+def whole_number(value):
+    try:
+        value = int(value)
+    except ValueError as e:
+        raise ArgumentTypeError(f"{value} is not type int") from e
+    if value < 0:
+        raise ArgumentTypeError(f"{value} is not >= 0")
+    return value

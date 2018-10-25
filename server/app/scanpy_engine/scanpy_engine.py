@@ -1,4 +1,3 @@
-import os
 import warnings
 
 import numpy as np
@@ -23,12 +22,15 @@ Sort order for methods
 
 class ScanpyEngine(CXGDriver):
 
-    def __init__(self, data, layout_method=None, diffexp_method=None):
-        super().__init__(data, layout_method=layout_method, diffexp_method=diffexp_method)
+    def __init__(self, data, layout_method=None, diffexp_method=None, category_selection_limit=100):
+        super().__init__(data, layout_method=layout_method, diffexp_method=diffexp_method,
+                         category_selection_limit=category_selection_limit)
         self._validatate_data_types()
         self._add_mandatory_annotations()
         self.cell_count = self.data.shape[0]
         self.gene_count = self.data.shape[1]
+        self.layout_options = ["umap", "tsne"]
+        self.diffexp_options = ["ttest"]
         self._create_schema()
 
     def _create_schema(self):
@@ -64,16 +66,13 @@ class ScanpyEngine(CXGDriver):
                 self.schema["annotations"][ax].append(ann_schema)
 
     @classmethod
-    def add_to_parser(cls, subparsers, invocation_function):
-        scanpy_group = subparsers.add_parser("scanpy", help="run cellxgene using the scanpy engine")
+    def add_to_parser(cls, subparser):
+        computation_group = subparser.add_argument_group('computational arguments')
         # TODO these choices should be generated from the actual available methods see GH issue #94
-        scanpy_group.add_argument("-l", "--layout", choices=["umap", "tsne"], default="umap",
-                                  help="Algorithm to use for graph layout")
-        scanpy_group.add_argument("-d", "--diffexp", choices=["ttest"], default="ttest",
-                                  help="Algorithm to used to calculate differential expression")
-        scanpy_group.add_argument("data_directory", metavar="dir", help="Directory containing data and schema file")
-        scanpy_group.set_defaults(func=invocation_function)
-        return scanpy_group
+        computation_group.add_argument("-l", "--layout", choices=["umap", "tsne"], default="umap",
+                                       help="Algorithm to use for graph layout")
+        computation_group.add_argument("-d", "--diffexp", choices=["ttest"], default="ttest",
+                                       help="Algorithm to used to calculate differential expression")
 
     @staticmethod
     def _load_data(data):
@@ -81,7 +80,7 @@ class ScanpyEngine(CXGDriver):
         # Based upon this advice, setting cache=True parameter
         # Note: as of current scanpy/anndata release, setting backed='r' will
         # result in an error.
-        return sc.read(os.path.join(data, "data.h5ad"), cache=True)
+        return sc.read(data, cache=True)
 
     @staticmethod
     def _top_sort(values, sort_order, top_n=None):
