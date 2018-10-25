@@ -6,6 +6,7 @@ import { connect } from "react-redux";
 import mat4 from "gl-mat4";
 import _regl from "regl";
 import { Button } from "@blueprintjs/core";
+import { worldEqUniverse } from "../../util/stateManager/world";
 
 import setupSVGandBrushElements from "./setupSVGandBrush";
 import actions from "../../actions";
@@ -17,6 +18,7 @@ import scaleLinear from "../../util/scaleLinear";
 
 @connect(state => ({
   world: state.controls.world,
+  universe: state.controls.universe,
   crossfilter: state.controls.crossfilter,
   responsive: state.responsive,
   colorRGB: _.get(state.controls, "colorRGB", null),
@@ -326,11 +328,17 @@ class Graph extends React.Component {
   }
 
   render() {
-    const { dispatch, responsive } = this.props;
+    const { dispatch, responsive, world, universe, crossfilter } = this.props;
     const { mode } = this.state;
     return (
       <div id="graphWrapper">
-        <div style={{ position: "fixed", right: 0, top: 0 }}>
+        <div
+          style={{
+            position: "fixed",
+            right: 0,
+            top: 0
+          }}
+        >
           <div
             style={{
               padding: 10,
@@ -341,21 +349,30 @@ class Graph extends React.Component {
           >
             <Button
               type="button"
-              style={{ marginRight: 10 }}
-              onClick={() => {
-                dispatch(actions.resetGraph());
-              }}
-            >
-              reset graph
-            </Button>
-            <Button
-              type="button"
+              disabled={
+                crossfilter &&
+                (crossfilter.countFiltered() === 0 ||
+                  crossfilter.countFiltered() === crossfilter.size())
+              }
               style={{ marginRight: 10 }}
               onClick={() => {
                 dispatch(actions.regraph());
               }}
             >
-              regraph selection
+              subset to current selection
+            </Button>
+            <Button
+              disabled={
+                world && universe ? worldEqUniverse(world, universe) : false
+              }
+              type="button"
+              intent="warning"
+              style={{ marginRight: 10 }}
+              onClick={() => {
+                dispatch(actions.resetGraph());
+              }}
+            >
+              reset
             </Button>
             <div>
               <div className="bp3-button-group">
@@ -391,7 +408,9 @@ class Graph extends React.Component {
             zIndex: -9999,
             position: "fixed",
             right: this.graphPaddingRight,
-            bottom: this.graphPaddingBottom
+            bottom: this.graphPaddingBottom,
+            borderLeft: "2px solid rgb(233,233,233)",
+            borderBottom: "2px solid rgb(233,233,233)"
           }}
         >
           <div
