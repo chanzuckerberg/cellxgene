@@ -10,7 +10,7 @@ from flask_cors import CORS
 from flask_restful_swagger_2 import get_swagger_blueprint
 
 from .rest_api.rest import get_api_resources
-from .util.utils import Float32JSONEncoder
+from .util.utils import Float32JSONEncoder, whole_number
 from .web import webapp
 
 REACTIVE_LIMIT = 1_000_000
@@ -105,7 +105,8 @@ cellxgene is a local web application for exploring single cell expression.
     launch_group.add_argument("--no-open", help="do not launch the webbrowser", action="store_false",
                               dest="open_browser")
     launch_group.add_argument(
-        "--max-categories",
+        "--category-selection-limit",
+        type=whole_number,
         help="maximum number of categories to display on the front-end. "
              "Annotations with more than this number are not displayed",
         default=100)
@@ -139,9 +140,9 @@ def run_scanpy(args):
         log.setLevel(logging.ERROR)
     from .scanpy_engine.scanpy_engine import ScanpyEngine
     print(f"Loading data from {args.data}")
-    app.data = ScanpyEngine(args.data, layout_method=args.layout, diffexp_method=args.diffexp)
+    app.data = ScanpyEngine(args.data, layout_method=args.layout, diffexp_method=args.diffexp,
+                            category_selection_limit=args.category_selection_limit)
     print(f"Launching cellxgene")
-
     if args.open_browser:
         webbrowser.open(cellxgene_url)
     print(f"Please go to {cellxgene_url}")
