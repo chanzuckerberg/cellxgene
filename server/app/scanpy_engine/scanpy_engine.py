@@ -22,9 +22,9 @@ Sort order for methods
 
 class ScanpyEngine(CXGDriver):
 
-    def __init__(self, data, layout_method=None, diffexp_method=None, max_categories=100):
+    def __init__(self, data, layout_method=None, diffexp_method=None, category_selection_limit=100):
         super().__init__(data, layout_method=layout_method, diffexp_method=diffexp_method,
-                         max_categories=max_categories)
+                         category_selection_limit=category_selection_limit)
         self._validatate_data_types()
         self._add_mandatory_annotations()
         self.cell_count = self.data.shape[0]

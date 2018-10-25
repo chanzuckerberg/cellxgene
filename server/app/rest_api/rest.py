@@ -112,7 +112,7 @@ class ConfigAPI(Resource):
                     "dataset": current_app.config["DATASET_TITLE"]
                 },
                 "parameters": {
-                    "max_categories": current_app.data.max_categories
+                    "category_selection_limit": current_app.data.category_selection_limit
                 }
             }
         }

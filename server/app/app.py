@@ -104,7 +104,7 @@ cellxgene is a local web application for exploring single cell expression.
     launch_group.add_argument("--no-open", help="do not launch the webbrowser", action="store_false",
                               dest="open_browser")
     launch_group.add_argument(
-        "--max-categories",
+        "--category-selection-limit",
         type=int,
         help="maximum number of categories to display on the front-end. "
              "Annotations with more than this number are not displayed",
