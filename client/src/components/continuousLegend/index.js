@@ -85,7 +85,7 @@ const continuous = (selectorId, colorscale, colorAccessor) => {
     )
     .call(legendaxis);
 
-  // text label for tshe y axis
+  // text label for the y axis
   svg
     .append("text")
     .attr("transform", "rotate(-90)")
