@@ -84,6 +84,17 @@ const continuous = (selectorId, colorscale) => {
       `translate(${legendwidth - margin.left - margin.right + 3},${margin.top})`
     )
     .call(legendaxis);
+
+  // text label for the y axis
+  // svg
+  //   .append("text")
+  //   .attr("transform", "rotate(-90)")
+  //   .attr("y", 3)
+  //   .attr("x", 0 - legendheight / 2)
+  //   .attr("dy", "1em")
+  //   .style("text-anchor", "middle")
+  //   .style("fill", "white")
+  //   .text(colorAccessor);
 };
 
 @connect(state => ({
@@ -115,7 +126,8 @@ class ContinuousLegend extends React.Component {
       if (colorScale.range()[0][0] !== "#") {
         continuous(
           "#continuous_legend",
-          d3.scaleSequential(interpolateViridis).domain(colorScale.domain())
+          d3.scaleSequential(interpolateViridis).domain(colorScale.domain()),
+          colorAccessor
         );
       }
     }

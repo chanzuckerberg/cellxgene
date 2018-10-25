@@ -49,42 +49,39 @@ class CategoryValue extends React.Component {
         style={{
           display: "flex",
           alignItems: "baseline",
-          justifyContent: "space-between",
-          fontWeight: selected ? 700 : 400
+          justifyContent: "space-between"
         }}
       >
-        <p
+        <div
           style={{
-            paddingLeft: 15,
-            width: 200,
-            flexShrink: 0,
-            margin: 0
-            // lineHeight: "1em"
+            margin: 0,
+            padding: 0,
+            userSelect: "none"
           }}
         >
-          <input
-            style={{ position: "relative", top: 1 }}
-            onChange={
-              selected ? this.toggleOff.bind(this) : this.toggleOn.bind(this)
-            }
-            checked={selected}
-            type="checkbox"
+          <label className="bp3-control bp3-checkbox">
+            <input
+              onChange={
+                selected ? this.toggleOff.bind(this) : this.toggleOn.bind(this)
+              }
+              checked={selected}
+              type="checkbox"
+            />
+            <span className="bp3-control-indicator" />
+            {value}
+          </label>
+        </div>
+        <span>
+          <span>{count}</span>
+          <svg
+            style={{
+              marginLeft: 5,
+              width: 11,
+              height: 11,
+              backgroundColor: c ? colorScale(value) : "inherit"
+            }}
           />
-          {value}
-        </p>
-        <p
-          style={{
-            padding: "1px 10px",
-            width: 80,
-            textAlign: "center",
-            backgroundColor: c ? colorScale(value) : "inherit",
-            color: c ? "white" : "black",
-            margin: 0
-            // lineHeight: "1em"
-          }}
-        >
-          {count}
-        </p>
+        </span>
       </div>
     );
   }

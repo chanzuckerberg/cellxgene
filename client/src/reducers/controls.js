@@ -16,7 +16,7 @@ import {
 function createCategoricalAsBooleansMap(world) {
   const res = {};
   _.each(world.summary.obs, (value, key) => {
-    if (value.options) {
+    if (value.options && key !== "name") {
       const optionsAsBooleans = {};
       _.each(value.options, (_value, _key) => {
         optionsAsBooleans[_key] = true;
@@ -515,6 +515,12 @@ const Controls = (
       return {
         ...state,
         scatterplotYYaccessor: action.data
+      };
+    case "clear scatterplot":
+      return {
+        ...state,
+        scatterplotXXaccessor: null,
+        scatterplotYYaccessor: null
       };
 
     default:

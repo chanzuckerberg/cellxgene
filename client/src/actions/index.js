@@ -30,10 +30,21 @@ const doInitialDataLoad = () =>
         .map(url => doJsonRequest(url))
         .value();
       const results = await Promise.all(requests);
-      const universe = Universe.createUniverseFromRestV02Response(...results);
+
+      /* set config defaults */
+      const config = { ...globals.configDefaults, ...results[0].config };
+      const [, schema, obsAnno, varAnno, obsLayout] = [...results];
+      const universe = Universe.createUniverseFromRestV02Response(
+        config,
+        schema,
+        obsAnno,
+        varAnno,
+        obsLayout
+      );
+
       dispatch({
         type: "configuration load complete",
-        config: results[0].config
+        config
       });
       dispatch({
         type: "initial data load complete (universe exists)",

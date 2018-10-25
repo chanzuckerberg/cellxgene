@@ -4,6 +4,7 @@
 import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
+import * as globals from "../../globals";
 
 import HistogramBrush from "../brushableHistogram";
 
@@ -47,17 +48,31 @@ class Continuous extends React.Component {
       this.continuousChecked = true; /* only do this once */
     }
 
+    /* initial value for iterator to simulate index, ranges is an object */
+    let zebra = -1;
+
     return (
       <div>
-        {this.hasContinuous ? <p> Continuous metadata </p> : null}
+        {this.hasContinuous ? (
+          <p
+            style={Object.assign({}, globals.leftSidebarSectionHeading, {
+              marginTop: 40,
+              paddingLeft: globals.leftSidebarSectionPadding
+            })}
+          >
+            Continuous metadata
+          </p>
+        ) : null}
         {_.map(ranges, (value, key) => {
           const isColorField = key.includes("color") || key.includes("Color");
+          zebra += 1;
           if (value.range && key !== "name" && !isColorField) {
             return (
               <HistogramBrush
                 key={key}
                 field={key}
                 isObs
+                zebra={zebra % 2 === 0}
                 fieldValues={obsAnnotations}
                 ranges={value.range}
                 handleColorAction={this.handleColorAction(key).bind(this)}

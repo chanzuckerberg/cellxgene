@@ -1,11 +1,26 @@
 import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
-import { FaChevronRight, FaChevronDown, FaPaintBrush } from "react-icons/fa";
+import { FaChevronRight, FaChevronDown } from "react-icons/fa";
+import memoize from "memoize-one";
+import { Button } from "@blueprintjs/core";
 
 import * as globals from "../../globals";
 import Value from "./value";
 import alphabeticallySortedValues from "./util";
+
+const countCategories = (values, optsAsBools) =>
+  _.reduce(
+    values,
+    (r, v, k) => {
+      r.total += 1;
+      if (optsAsBools[k]) {
+        r.on += 1;
+      }
+      return r;
+    },
+    { total: 0, on: 0 }
+  );
 
 @connect(state => ({
   colorAccessor: state.controls.colorAccessor,
@@ -18,22 +33,24 @@ class Category extends React.Component {
       isChecked: true,
       isExpanded: false
     };
+    this.countCategories = memoize((values, optsAsBools) =>
+      countCategories(values, optsAsBools)
+    );
   }
 
   componentDidUpdate() {
-    const { categoricalAsBooleansMap, metadataField } = this.props;
-
-    const valuesAsBool = _.values(categoricalAsBooleansMap[metadataField]);
-    /* count categories toggled on by counting true values */
-    const categoriesToggledOn = _.values(valuesAsBool).filter(v => v).length;
-
-    if (categoriesToggledOn === valuesAsBool.length) {
+    const { categoricalAsBooleansMap, metadataField, values } = this.props;
+    const categoryCount = this.countCategories(
+      values,
+      categoricalAsBooleansMap[metadataField]
+    );
+    if (categoryCount.on === categoryCount.total) {
       /* everything is on, so not indeterminate */
       this.checkbox.indeterminate = false;
-    } else if (categoriesToggledOn === 0) {
+    } else if (categoryCount.on === 0) {
       /* nothing is on, so no */
       this.checkbox.indeterminate = false;
-    } else if (categoriesToggledOn < valuesAsBool.length) {
+    } else if (categoryCount.on < categoryCount.total) {
       /* to be explicit... */
       this.checkbox.indeterminate = true;
     }
@@ -107,62 +124,54 @@ class Category extends React.Component {
             alignItems: "baseline"
           }}
         >
-          <p
+          <div
             style={{
-              // flexShrink: 0,
-              fontWeight: 500,
-              // textAlign: "right",
-              // fontFamily: globals.accentFont,
-              // fontStyle: "italic",
-              margin: "3px 10px 3px 0px"
+              display: "flex",
+              justifyContent: "flex-start",
+              alignItems: "baseline"
             }}
           >
+            <label className="bp3-control bp3-checkbox">
+              <input
+                onChange={this.handleToggleAllClick.bind(this)}
+                ref={el => {
+                  this.checkbox = el;
+                  return el;
+                }}
+                checked={isChecked}
+                type="checkbox"
+              />
+              <span className="bp3-control-indicator" />
+              {""}
+            </label>
+
             <span
               style={{
                 cursor: "pointer",
-                display: "inline-block",
-                position: "relative",
-                top: 2
+                display: "inline-block"
               }}
               onClick={() => {
                 this.setState({ isExpanded: !isExpanded });
               }}
             >
-              {isExpanded ? <FaChevronDown /> : <FaChevronRight />}
+              {metadataField}
+              {isExpanded ? (
+                <FaChevronDown style={{ fontSize: 10, marginLeft: 5 }} />
+              ) : (
+                <FaChevronRight style={{ fontSize: 10, marginLeft: 5 }} />
+              )}
             </span>
-            {metadataField}
-            <input
-              onChange={this.handleToggleAllClick.bind(this)}
-              ref={el => {
-                this.checkbox = el;
-                return el;
-              }}
-              checked={isChecked}
-              type="checkbox"
-            />
-            <span
-              onClick={this.handleColorChange.bind(this)}
-              style={{
-                fontSize: 14,
-                marginLeft: 4,
-                // padding: this.props.colorAccessor === this.props.metadataField ? 3 : "auto",
-                borderRadius: 3,
-                color:
-                  colorAccessor === metadataField
-                    ? globals.brightBlue
-                    : "black",
-                // backgroundColor: this.props.colorAccessor === this.props.metadataField ? globals.brightBlue : "inherit",
-                display: "inline-block",
-                position: "relative",
-                top: 2,
-                cursor: "pointer"
-              }}
-            >
-              <FaPaintBrush />
-            </span>
-          </p>
+          </div>
+          <Button
+            onClick={this.handleColorChange.bind(this)}
+            active={colorAccessor === metadataField}
+            intent={colorAccessor === metadataField ? "primary" : "none"}
+            icon={"tint"}
+          />
         </div>
-        <div>{isExpanded ? this.renderCategoryItems() : null}</div>
+        <div style={{ marginLeft: 26 }}>
+          {isExpanded ? this.renderCategoryItems() : null}
+        </div>
         <div>
           {isExpanded && isTruncated ? (
             <p style={{ paddingLeft: 15 }}>... truncated list ...</p>

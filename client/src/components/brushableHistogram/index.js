@@ -6,8 +6,8 @@ https://bl.ocks.org/SpaceActuary/2f004899ea1b2bd78d6f1dbb2febf771
 // jshint esversion: 6
 import React from "react";
 import _ from "lodash";
+import { Button, ButtonGroup } from "@blueprintjs/core";
 import { connect } from "react-redux";
-import { FaPaintBrush } from "react-icons/fa";
 import * as d3 from "d3";
 import memoize from "memoize-one";
 import { kvCache } from "../../util/stateManager";
@@ -74,7 +74,7 @@ class HistogramBrush extends React.Component {
   constructor(props) {
     super(props);
 
-    this.width = 300;
+    this.width = 340;
     this.height = 100;
     this.marginBottom = 20;
 
@@ -156,8 +156,7 @@ class HistogramBrush extends React.Component {
 
       d3.select(svgRef)
         .selectAll(".axis--x text")
-        .style("fill", "rgb(80,80,80)")
-        .style("font-size", 12);
+        .style("fill", "rgb(80,80,80)");
 
       d3.select(svgRef)
         .selectAll(".axis--x path")
@@ -230,114 +229,66 @@ class HistogramBrush extends React.Component {
       colorAccessor,
       isUserDefined,
       isDiffExp,
-      diffExp_avgDiff,
-      diffExp_set1AvgExp,
-      diffExp_set2AvgExp,
+      avgDiff,
+      set1AvgExp,
+      set2AvgExp,
       scatterplotXXaccessor,
-      scatterplotYYaccessor
+      scatterplotYYaccessor,
+      zebra
     } = this.props;
 
     return (
       <div
-        style={{
-          marginTop: 10,
-          position: "flex"
-        }}
         id={`histogram_${field}`}
+        style={{
+          padding: globals.leftSidebarSectionPadding,
+          backgroundColor: zebra ? globals.lightestGrey : "white"
+        }}
       >
-        <div>
-          <span style={{ fontSize: globals.tiniestFontSize }}> {field} </span>
+        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+          {isDiffExp ? (
+            <span>
+              <span
+                style={{ marginRight: 7 }}
+                className="bp3-icon-standard bp3-icon-scatter-plot"
+              />
+              <ButtonGroup style={{ marginRight: 7 }}>
+                <Button
+                  onClick={this.handleSetGeneAsScatterplotX(field).bind(this)}
+                  active={scatterplotXXaccessor === field}
+                  intent={scatterplotXXaccessor === field ? "primary" : "none"}
+                >
+                  plot x
+                </Button>
+                <Button
+                  onClick={this.handleSetGeneAsScatterplotY(field).bind(this)}
+                  active={scatterplotYYaccessor === field}
+                  intent={scatterplotYYaccessor === field ? "primary" : "none"}
+                >
+                  plot y
+                </Button>
+              </ButtonGroup>
+            </span>
+          ) : null}
           {isUserDefined ? (
-            <span
+            <Button
+              minimal
               onClick={this.removeHistogram.bind(this)}
               style={{
-                fontSize: globals.tiniestFontSize,
                 color: globals.blue,
                 cursor: "pointer",
                 marginLeft: 7
               }}
             >
               remove
-            </span>
+            </Button>
           ) : null}
-          {isDiffExp ? (
-            <span>
-              <span
-                style={{
-                  fontSize: globals.tiniestFontSize,
-                  marginLeft: 7
-                }}
-              >
-                <strong>1:</strong>
-                {` ${diffExp_set1AvgExp.toPrecision(2)}`}
-              </span>
-              <span
-                style={{
-                  fontSize: globals.tiniestFontSize,
-                  marginLeft: 7,
-                  backgroundColor: globals.lighterGrey,
-                  padding: 2
-                }}
-              >
-                <strong>2:</strong>
-                {` ${diffExp_set2AvgExp.toPrecision(2)}`}
-              </span>
-              <span
-                style={{
-                  fontSize: globals.tiniestFontSize,
-                  marginLeft: 7
-                }}
-              >
-                {`Av. Diff: ${diffExp_avgDiff.toFixed(2)}`}
-              </span>
-              <span
-                onClick={this.handleSetGeneAsScatterplotX(field).bind(this)}
-                style={{
-                  fontSize: 16,
-                  color:
-                    scatterplotXXaccessor === field
-                      ? "white"
-                      : globals.brightBlue,
-                  cursor: "pointer",
-                  position: "relative",
-                  top: 1,
-                  fontWeight: 700,
-                  marginRight: 4,
-                  borderRadius: 3,
-                  padding: "2px 3px",
-                  backgroundColor:
-                    scatterplotXXaccessor === field
-                      ? globals.brightBlue
-                      : "inherit"
-                }}
-              >
-                X
-              </span>
-              <span
-                onClick={this.handleSetGeneAsScatterplotY(field).bind(this)}
-                style={{
-                  fontSize: 16,
-                  color:
-                    scatterplotYYaccessor === field
-                      ? "white"
-                      : globals.brightBlue,
-                  cursor: "pointer",
-                  position: "relative",
-                  top: 1,
-                  fontWeight: 700,
-                  marginRight: 4,
-                  borderRadius: 3,
-                  padding: "2px 3px",
-                  backgroundColor:
-                    scatterplotYYaccessor === field
-                      ? globals.brightBlue
-                      : "inherit"
-                }}
-              >
-                Y
-              </span>
-            </span>
-          ) : null}
+          <Button
+            onClick={this.handleColorAction.bind(this)}
+            active={colorAccessor === field}
+            intent={colorAccessor === field ? "primary" : "none"}
+            icon="tint"
+          />
         </div>
         <svg
           width={this.width}
@@ -346,22 +297,46 @@ class HistogramBrush extends React.Component {
             this.drawHistogram(svgRef);
           }}
         />
-        <span
-          onClick={this.handleColorAction.bind(this)}
+        <div
           style={{
-            fontSize: 14,
-            marginLeft: 4,
-            // padding: this.props.colorAccessor === this.props.field ? 3 : "auto",
-            borderRadius: 3,
-            color: colorAccessor === field ? globals.brightBlue : "black",
-            // backgroundColor: this.props.colorAccessor === this.props.field ? globals.brightBlue : "inherit",
-            position: "relative",
-            top: -29,
-            cursor: "pointer"
+            display: "flex",
+            justifyContent: "center"
           }}
         >
-          <FaPaintBrush />
-        </span>
+          <span style={{ fontStyle: "italic" }}>{field}</span>
+        </div>
+
+        {isDiffExp ? (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "baseline"
+            }}
+          >
+            <span>
+              <strong>1:</strong>
+              {` ${set1AvgExp.toPrecision(2)}`}
+            </span>
+            <span
+              style={{
+                marginLeft: 7,
+                backgroundColor: globals.lighterGrey,
+                padding: 2
+              }}
+            >
+              <strong>2:</strong>
+              {` ${set2AvgExp.toPrecision(2)}`}
+            </span>
+            <span
+              style={{
+                marginLeft: 7
+              }}
+            >
+              {`Av. Diff: ${avgDiff.toFixed(2)}`}
+            </span>
+          </div>
+        ) : null}
       </div>
     );
   }

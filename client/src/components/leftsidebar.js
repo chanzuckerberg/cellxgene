@@ -5,8 +5,6 @@ import { connect } from "react-redux";
 import Categorical from "./categorical/categorical";
 import Continuous from "./continuous/continuous";
 import GeneExpression from "./geneExpression";
-import ExpressionButtons from "./expression/expressionButtons";
-import Heatmap from "./expression/diffExpHeatmap";
 import * as globals from "../globals";
 import DynamicScatterplot from "./scatterplot/scatterplot";
 
@@ -17,15 +15,7 @@ import DynamicScatterplot from "./scatterplot/scatterplot";
   scatterplotYYaccessor: state.controls.scatterplotYYaccessor
 }))
 class LeftSideBar extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      currentTab: "metadata"
-    };
-  }
-
   render() {
-    const { currentTab } = this.state;
     const {
       responsive,
       datasetTitle,
@@ -37,30 +27,36 @@ class LeftSideBar extends React.Component {
     this magic number should be made less fragile,
     if cellxgene logo or tabs change, this must as well
     */
-    const metadataSectionPadding =
-      scatterplotXXaccessor && scatterplotYYaccessor ? 450 : 0;
+    const metadataSectionPadding = 0;
+    // scatterplotXXaccessor && scatterplotYYaccessor ? 450 : 0;
+
     return (
-      <div style={{ position: "fixed" }}>
+      <div
+        style={{
+          position: "fixed",
+          backgroundColor: "white",
+          /* x y blur spread color */
+          boxShadow: "1px 0px 6px 2px rgba(153,153,153,0.4)"
+        }}
+      >
         <p
           style={{
             position: "fixed",
-            left: responsive.width / 2,
-            top: 14,
+            top: globals.cellxgeneTitleTopPadding,
+            left: globals.leftSidebarWidth + globals.cellxgeneTitleLeftPadding,
             margin: 0,
-            fontSize: 24,
+            fontSize: globals.largestFontSize,
             color: globals.darkerGrey,
-            fontWeight: 700,
             width: "100%"
           }}
         >
-          cellxgene: &nbsp;
-          {datasetTitle}
+          cellxgene: {datasetTitle}
         </p>
+
         <div
           style={{
             height: responsive.height - metadataSectionPadding,
-            width: 400,
-            padding: "0px 10px 10px 10px",
+            width: globals.leftSidebarWidth,
             overflowY: "auto",
             overflowX: "hidden"
           }}
@@ -69,20 +65,9 @@ class LeftSideBar extends React.Component {
           <GeneExpression />
           <Continuous />
         </div>
-        <div
-          style={{
-            position: "fixed",
-            bottom: 0,
-            left: 0
-          }}
-        >
-          {scatterplotXXaccessor && scatterplotYYaccessor ? (
-            <DynamicScatterplot />
-          ) : null}
-        </div>
-        <div style={{ position: "fixed", bottom: 0, right: 0 }}>
-          {currentTab === "metadata" ? <ExpressionButtons /> : null}
-        </div>
+        {scatterplotXXaccessor && scatterplotYYaccessor ? (
+          <DynamicScatterplot />
+        ) : null}
       </div>
     );
   }

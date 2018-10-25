@@ -2,7 +2,6 @@
 import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
-
 import * as globals from "../../globals";
 import Category from "./category";
 
@@ -23,26 +22,40 @@ const truncateCategories = options => {
 };
 
 @connect(state => ({
-  ranges: _.get(state.controls.world, "summary.obs", null)
+  ranges: _.get(state.controls.world, "summary.obs", null),
+  categorySelectionLimit: _.get(
+    state.config,
+    "parameters.category-selection-limit",
+    globals.configDefaults.parameters["category-selection-limit"]
+  )
 }))
 class Categories extends React.Component {
   render() {
-    const { ranges } = this.props;
+    const { ranges, categorySelectionLimit } = this.props;
     if (!ranges) return null;
 
     return (
       <div
         style={{
-          width: 310,
-          marginRight: 40,
-          paddingRight: 20,
-          flexShrink: 0
+          padding: globals.leftSidebarSectionPadding
         }}
       >
-        <p> Categorical Metadata </p>
+        <p
+          style={Object.assign({}, globals.leftSidebarSectionHeading, {
+            marginTop: 4
+          })}
+        >
+          Categorical Metadata
+        </p>
         {_.map(ranges, (value, key) => {
           const isColorField = key.includes("color") || key.includes("Color");
-          if (value.options && !isColorField && key !== "name") {
+          const isSelectableCategory =
+            value.options &&
+            !isColorField &&
+            key !== "name" &&
+            value.numOptions < categorySelectionLimit;
+
+          if (isSelectableCategory) {
             const categoryOptions = truncateCategories(value.options);
             return (
               <Category

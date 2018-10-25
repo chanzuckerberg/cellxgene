@@ -5,10 +5,8 @@ import * as d3 from "d3";
 import { connect } from "react-redux";
 import mat4 from "gl-mat4";
 import _regl from "regl";
+import { Button } from "@blueprintjs/core";
 
-import { FaCrosshairs, FaSearchPlus } from "react-icons/fa";
-
-import * as globals from "../../globals";
 import setupSVGandBrushElements from "./setupSVGandBrush";
 import actions from "../../actions";
 import _camera from "../../util/camera";
@@ -98,7 +96,8 @@ class Graph extends React.Component {
       camera,
       pointBuffer,
       colorBuffer,
-      sizeBuffer
+      sizeBuffer,
+      svg
     } = this.state;
 
     if (reglRender && this.reglRenderState === "rendering" && mode !== "zoom") {
@@ -185,19 +184,19 @@ class Graph extends React.Component {
       prevProps.responsive.height !== responsive.height ||
       prevProps.responsive.width !== responsive.width ||
       /* first time */
-      (responsive.height && responsive.width && !this.state.svg)
+      (responsive.height && responsive.width && !svg)
     ) {
       /* clear out whatever was on the div, even if nothing, but usually the brushes etc */
       d3.select("#graphAttachPoint")
         .selectAll("svg")
         .remove();
-      const { svg: newSvg, brush, brushContainer } = setupSVGandBrushElements(
+      const { svg: newSvg, brush } = setupSVGandBrushElements(
         this.handleBrushSelectAction.bind(this),
         this.handleBrushDeselectAction.bind(this),
         responsive,
         this.graphPaddingTop
       );
-      this.setState({ svg: newSvg, brush, brushContainer });
+      this.setState({ svg: newSvg, brush });
     }
   }
 
@@ -340,91 +339,48 @@ class Graph extends React.Component {
               alignItems: "baseline"
             }}
           >
-            <button
+            <Button
               type="button"
+              style={{ marginRight: 10 }}
               onClick={() => {
                 dispatch(actions.resetGraph());
               }}
-              style={{
-                fontSize: 14,
-                fontWeight: 400,
-                color: "white",
-                padding: "0px 10px",
-                height: 30,
-                marginRight: 10,
-                borderRadius: 2,
-                backgroundColor: globals.brightBlue,
-                border: "none",
-                cursor: "pointer"
-              }}
             >
               reset graph
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              style={{ marginRight: 10 }}
               onClick={() => {
                 dispatch(actions.regraph());
               }}
-              style={{
-                fontSize: 14,
-                fontWeight: 400,
-                color: "white",
-                padding: "0px 10px",
-                height: 30,
-                marginRight: 10,
-                borderRadius: 2,
-                backgroundColor: globals.brightBlue,
-                border: "none",
-                cursor: "pointer"
-              }}
             >
               regraph selection
-            </button>
+            </Button>
             <div>
-              <span>
-                <button
+              <div className="bp3-button-group">
+                <Button
+                  className="bp3-button bp3-icon-locate"
                   type="button"
+                  active={mode === "brush"}
                   onClick={() => {
                     this.setState({ mode: "brush" });
                   }}
-                  style={{
-                    cursor: "pointer",
-                    border:
-                      mode === "brush" ? "1px solid black" : "1px solid white",
-                    backgroundColor: "white",
-                    padding: "5px 5px 2px 5px",
-                    position: "relative",
-                    top: 2,
-                    marginRight: 10,
-                    borderRadius: 3
-                  }}
-                >
-                  {" "}
-                  <FaCrosshairs />{" "}
-                </button>
-                <button
+                />
+                <Button
                   type="button"
+                  className="bp3-button bp3-icon-zoom-in"
+                  active={mode === "zoom"}
                   onClick={() => {
                     this.handleBrushDeselectAction();
                     this.restartReglLoop();
                     this.setState({ mode: "zoom" });
                   }}
                   style={{
-                    cursor: "pointer",
-                    border:
-                      mode === "zoom" ? "1px solid black" : "1px solid white",
-                    backgroundColor: "white",
-                    padding: "5px 5px 2px 5px",
-                    position: "relative",
-                    top: 2,
-                    marginRight: 10,
-                    borderRadius: 3
+                    cursor: "pointer"
                   }}
-                >
-                  {" "}
-                  <FaSearchPlus />{" "}
-                </button>
-              </span>
+                />
+              </div>
             </div>
           </div>
         </div>
