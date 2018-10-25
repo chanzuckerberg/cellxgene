@@ -25,7 +25,7 @@ class EndPoints(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.ps = Popen(["cellxgene", "--no-open", "scanpy", "example-dataset/"])
+        cls.ps = Popen(["cellxgene", "launch", "--no-open", "example-dataset/pbmc3k.h5ad"])
         session = requests.Session()
         for i in range(90):
             try:
@@ -58,7 +58,7 @@ class EndPoints(unittest.TestCase):
         result = self.session.get(url)
         self.assertEqual(result.status_code, HTTPStatus.OK)
         result_data = result.json()
-        self.assertEqual(result_data["config"]["displayNames"]["dataset"], "example-dataset")
+        self.assertEqual(result_data["config"]["displayNames"]["dataset"], "pbmc3k")
         self.assertEqual(len(result_data["config"]["features"]), 4)
 
     def test_get_layout(self):

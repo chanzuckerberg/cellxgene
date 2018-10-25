@@ -1,4 +1,3 @@
-import os
 import warnings
 
 import numpy as np
@@ -23,8 +22,9 @@ Sort order for methods
 
 class ScanpyEngine(CXGDriver):
 
-    def __init__(self, data, layout_method=None, diffexp_method=None):
-        super().__init__(data, layout_method=layout_method, diffexp_method=diffexp_method)
+    def __init__(self, data, layout_method=None, diffexp_method=None, category_selection_limit=100):
+        super().__init__(data, layout_method=layout_method, diffexp_method=diffexp_method,
+                         category_selection_limit=category_selection_limit)
         self._validatate_data_types()
         self._add_mandatory_annotations()
         self.cell_count = self.data.shape[0]
@@ -80,7 +80,7 @@ class ScanpyEngine(CXGDriver):
         # Based upon this advice, setting cache=True parameter
         # Note: as of current scanpy/anndata release, setting backed='r' will
         # result in an error.
-        return sc.read(os.path.join(data, "data.h5ad"), cache=True)
+        return sc.read(data, cache=True)
 
     @staticmethod
     def _top_sort(values, sort_order, top_n=None):

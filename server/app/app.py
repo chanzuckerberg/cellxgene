@@ -1,4 +1,5 @@
 import argparse
+import logging
 import os
 import webbrowser
 
@@ -9,7 +10,7 @@ from flask_cors import CORS
 from flask_restful_swagger_2 import get_swagger_blueprint
 
 from .rest_api.rest import get_api_resources
-from .util.utils import Float32JSONEncoder
+from .util.utils import Float32JSONEncoder, whole_number
 from .web import webapp
 
 REACTIVE_LIMIT = 1_000_000
@@ -104,7 +105,8 @@ cellxgene is a local web application for exploring single cell expression.
     launch_group.add_argument("--no-open", help="do not launch the webbrowser", action="store_false",
                               dest="open_browser")
     launch_group.add_argument(
-        "--max-categories",
+        "--category-selection-limit",
+        type=whole_number,
         help="maximum number of categories to display on the front-end. "
              "Annotations with more than this number are not displayed",
         default=100)
@@ -121,21 +123,29 @@ cellxgene is a local web application for exploring single cell expression.
 def run_scanpy(args):
     title = args.title
     if not title:
-        title = os.path.basename(os.path.normpath(args.data_directory))
-    api_base = f"http://127.0.0.1:{args.port}/api/"
-    app.config.update(
-        DATASET_TITLE=title,
-        CXG_API_BASE=api_base
-    )
-
-    from .scanpy_engine.scanpy_engine import ScanpyEngine
-    app.data = ScanpyEngine(args.data_directory, layout_method=args.layout, diffexp_method=args.diffexp)
+        file_parts = os.path.splitext(os.path.basename(args.data))
+        title = file_parts[0]
     if args.listen_all:
         host = "0.0.0.0"
     else:
         host = "127.0.0.1"
+    cellxgene_url = f"http://{host}:{args.port}"
+    api_base = f"{cellxgene_url}/api/"
+    app.config.update(
+        DATASET_TITLE=title,
+        CXG_API_BASE=api_base
+    )
+    if not args.debug:
+        log = logging.getLogger('werkzeug')
+        log.setLevel(logging.ERROR)
+    from .scanpy_engine.scanpy_engine import ScanpyEngine
+    print(f"Loading data from {args.data}")
+    app.data = ScanpyEngine(args.data, layout_method=args.layout, diffexp_method=args.diffexp,
+                            category_selection_limit=args.category_selection_limit)
+    print(f"Launching cellxgene")
     if args.open_browser:
-        webbrowser.open(f"http://{host}:{args.port}")
+        webbrowser.open(cellxgene_url)
+    print(f"Please go to {cellxgene_url}")
     app.run(host=host, debug=args.flask_debug, port=args.port)
 
 
@@ -143,4 +153,5 @@ def main():
     parser = create_cli()
     args = parser.parse_args()
     # TODO pick engine based on input file
+    print("cellxgene starting...\n")
     run_scanpy(args)

@@ -110,6 +110,9 @@ class ConfigAPI(Resource):
                 "displayNames": {
                     "engine": f"cellxgene Scanpy engine version {pkg_resources.get_distribution('cellxgene').version}",
                     "dataset": current_app.config["DATASET_TITLE"]
+                },
+                "parameters": {
+                    "category_selection_limit": current_app.data.category_selection_limit
                 }
             }
         }
