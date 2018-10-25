@@ -273,7 +273,7 @@ export function createObsDimensionMap(crossfilter, world) {
   return dimensionMap;
 }
 
-function worldEqUniverse(world, universe) {
+export function worldEqUniverse(world, universe) {
   return world.obsAnnotations === universe.obsAnnotations;
 }
 
