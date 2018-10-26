@@ -58,7 +58,7 @@ description:
 cellxgene is a local web application for exploring single cell expression.
     """
     parser.add_argument("-V", "--version", help="show version and exit")
-    subparsers = parser.add_subparsers(dest="program")
+    subparsers = parser.add_subparsers(dest="command")
     subparsers.required = True
     launch_group = subparsers.add_parser("launch", help="launch web application",
                                          formatter_class=argparse.RawTextHelpFormatter)
@@ -66,16 +66,6 @@ cellxgene is a local web application for exploring single cell expression.
     cellxgene launches a local web application for exploring single cell expression data.
 
     Data must be in a format that cellxgene expects [[ how to format ]]
-        """
-    launch_group.epilog = """
-    annotation names:
-    The data viewer requires a unique, human readable name for each observation and variable.  These are used for
-    various application features, such as the ability to view expression by gene. When launching cellxgene, appropriate
-    observation and variable annotations must be identified.
-
-    If --obs-name or --var-name parameters are specified, values in the named annotations will be used. If not
-    specified, the observation and variable index values will name each respectively.  An error will generated if the
-    values for each are not unique.
 
     examples:
     To run with the example dataset:
@@ -90,7 +80,16 @@ cellxgene is a local web application for exploring single cell expression.
     is 'cell_names':
 
         cellxgene mydata.h5ad -var-name gene_names -obs-name cell_names
+        """
+    launch_group.epilog = """
+    annotation names:
+    The data viewer requires a unique, human readable name for each observation and variable.  These are used for
+    various application features, such as the ability to view expression by gene. When launching cellxgene, appropriate
+    observation and variable annotations must be identified.
 
+    If --obs-name or --var-name parameters are specified, values in the named annotations will be used. If not
+    specified, the observation and variable index values will name each respectively.  An error will generated if the
+    values for each are not unique.
         """
     launch_group.add_argument("data", metavar="data", help="file containing the data to display")
     launch_group.add_argument("--title", "-t", help="title to display -- if this is omitted the title will be the name "
@@ -100,16 +99,16 @@ cellxgene is a local web application for exploring single cell expression.
         help="bind to all interfaces (this makes the server accessible beyond this computer)",
         action="store_true")
     launch_group.add_argument("--port", help="port to run server on", type=int, default=5005)
-    launch_group.add_argument("--debug", action="store_true",
+    launch_group.add_argument("-v", "--verbose", action="store_true",
                               help="more verbose output, including outputting warnings and every REST request")
-    launch_group.add_argument("--flask-debug", action="store_true", help=argparse.SUPPRESS)
+    launch_group.add_argument("--debug", action="store_true", help=argparse.SUPPRESS)
     launch_group.add_argument("--no-open", help="do not launch the webbrowser", action="store_false",
                               dest="open_browser")
     launch_group.add_argument(
-        "--category-selection-limit",
+        "--max-category-items",
         type=whole_number,
-        help="maximum number of categories to display on the front-end. "
-             "Annotations with more than this number are not displayed",
+        help="Limit for the cardinality of a categorical annotation, beyond which the"
+             " annotation will not be available for user selection in the front-end",
         default=100)
     try:
         from .scanpy_engine.scanpy_engine import ScanpyEngine
@@ -136,24 +135,29 @@ def run_scanpy(args):
         DATASET_TITLE=title,
         CXG_API_BASE=api_base
     )
-    if not args.debug:
+
+    if not args.verbose:
         log = logging.getLogger('werkzeug')
         log.setLevel(logging.ERROR)
     from .scanpy_engine.scanpy_engine import ScanpyEngine
-    print(f"Loading data from {args.data}")
+    print(f"Loading data from {args.data} (this may take a while)")
     app.data = ScanpyEngine(args.data, layout_method=args.layout, diffexp_method=args.diffexp,
-                            category_selection_limit=args.category_selection_limit)
+                            max_category_items=args.max_category_items)
     print(f"Launching cellxgene")
     if args.open_browser:
         webbrowser.open(cellxgene_url)
     print(f"Please go to {cellxgene_url}")
-    app.run(host=host, debug=args.flask_debug, port=args.port)
+    app.run(host=host, debug=args.debug, port=args.port)
 
 
 def main():
     parser = create_cli()
     args = parser.parse_args()
-    if not args.debug:
+    # Debug sets up developer mode
+    if args.debug:
+        args.verbose = True
+        args.open_browser = False
+    if not args.verbose:
         sys.tracebacklimit = 0
     # TODO pick engine based on input file
     print("cellxgene starting...\n")
