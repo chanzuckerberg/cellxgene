@@ -136,6 +136,7 @@ def run_scanpy(args):
         DATASET_TITLE=title,
         CXG_API_BASE=api_base
     )
+
     if not args.verbose:
         log = logging.getLogger('werkzeug')
         log.setLevel(logging.ERROR)
@@ -153,6 +154,10 @@ def run_scanpy(args):
 def main():
     parser = create_cli()
     args = parser.parse_args()
+    # Debug sets up developer mode
+    if args.debug:
+        args.verbose = True
+        args.open_browser = False
     if not args.verbose:
         sys.tracebacklimit = 0
     # TODO pick engine based on input file
