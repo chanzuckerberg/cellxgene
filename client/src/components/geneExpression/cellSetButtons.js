@@ -1,7 +1,7 @@
 // jshint esversion: 6
 import React from "react";
 import _ from "lodash";
-import { Button } from "@blueprintjs/core";
+import { Button, Tooltip } from "@blueprintjs/core";
 import { connect } from "react-redux";
 
 @connect()
@@ -29,15 +29,22 @@ class CellSetButton extends React.Component {
     const { differential, eitherCellSetOneOrTwo } = this.props;
     const cellListName = `celllist${eitherCellSetOneOrTwo}`;
     return (
-      <span style={{ marginRight: 10 }}>
-        <Button type="button" onClick={this.set.bind(this)}>
+      <Tooltip
+        content="Save current selection for differential expression computation"
+        position="top"
+      >
+        <Button
+          style={{ marginRight: 10 }}
+          type="button"
+          onClick={this.set.bind(this)}
+        >
           {eitherCellSetOneOrTwo}
           {": "}
           {differential[cellListName]
             ? `${differential[cellListName].length} cells`
             : "0 cells"}
         </Button>
-      </span>
+      </Tooltip>
     );
   }
 }

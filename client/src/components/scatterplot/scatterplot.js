@@ -280,9 +280,12 @@ class Scatterplot extends React.Component {
         style={{
           position: "fixed",
           bottom: minimized ? -height + -margin.top : 0,
-          left: globals.leftSidebarWidth + globals.scatterplotPaddingLeft,
-          paddingBottom: 20,
-          backgroundColor: "white"
+          borderRadius: "3px 3px 0px 0px",
+          left: globals.leftSidebarWidth + globals.scatterplotMarginLeft,
+          padding: "0px 20px 20px 0px",
+          backgroundColor: "white",
+          /* x y blur spread color */
+          boxShadow: "0px 0px 6px 2px rgba(153,153,153,0.4)"
         }}
         id="scatterplot_wrapper"
       >

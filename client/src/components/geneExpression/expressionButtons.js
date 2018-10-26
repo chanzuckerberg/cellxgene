@@ -1,7 +1,7 @@
 // jshint esversion: 6
 import React from "react";
 import _ from "lodash";
-import { Button } from "@blueprintjs/core";
+import { Button, AnchorButton, Tooltip } from "@blueprintjs/core";
 import { connect } from "react-redux";
 import * as globals from "../../globals";
 import actions from "../../actions";
@@ -60,27 +60,37 @@ class Expression extends React.Component {
         <CellSetButton {...this.props} eitherCellSetOneOrTwo={1} />
         <CellSetButton {...this.props} eitherCellSetOneOrTwo={2} />
         {!differential.diffExp ? (
-          <Button
-            style={{ marginTop: 10 }}
-            disabled={!haveBothCellSets}
-            intent="primary"
-            fill
-            type="button"
-            onClick={this.computeDiffExp.bind(this)}
+          <Tooltip
+            content="Add two cells selections, see the top 15 differentially expressed genes between them"
+            position="bottom"
           >
-            Compute Differential Expression
-          </Button>
+            <AnchorButton
+              style={{ marginTop: 10 }}
+              disabled={!haveBothCellSets}
+              intent="primary"
+              fill
+              type="button"
+              onClick={this.computeDiffExp.bind(this)}
+            >
+              Compute Differential Expression
+            </AnchorButton>
+          </Tooltip>
         ) : null}
         {differential.diffExp ? (
-          <Button
-            type="button"
-            fill
-            style={{ marginTop: 10 }}
-            intent="warning"
-            onClick={this.clearDifferentialExpression.bind(this)}
+          <Tooltip
+            content="Remove differentially expressed gene list and clear cell selections"
+            position="bottom"
           >
-            Clear Differential Expression
-          </Button>
+            <Button
+              type="button"
+              fill
+              style={{ marginTop: 10 }}
+              intent="warning"
+              onClick={this.clearDifferentialExpression.bind(this)}
+            >
+              Clear Differential Expression
+            </Button>
+          </Tooltip>
         ) : null}
       </div>
     );
