@@ -1,6 +1,7 @@
 import argparse
 import logging
 import os
+import sys
 import webbrowser
 
 from flask import Flask
@@ -152,6 +153,8 @@ def run_scanpy(args):
 def main():
     parser = create_cli()
     args = parser.parse_args()
+    if not args.debug:
+        sys.tracebacklimit = 0
     # TODO pick engine based on input file
     print("cellxgene starting...\n")
     run_scanpy(args)
