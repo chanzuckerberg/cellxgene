@@ -107,8 +107,8 @@ cellxgene is a local web application for exploring single cell expression.
     launch_group.add_argument(
         "--max-category-items",
         type=whole_number,
-        help="maximum number of categories to display on the front-end. "
-             "Annotations with more categories than this number will not be not displayed",
+        help="Limit for the cardinality of a categorical annotation, beyond which the"
+             " annotation will not be available for user selection in the front-end",
         default=100)
     try:
         from .scanpy_engine.scanpy_engine import ScanpyEngine
@@ -140,7 +140,7 @@ def run_scanpy(args):
         log = logging.getLogger('werkzeug')
         log.setLevel(logging.ERROR)
     from .scanpy_engine.scanpy_engine import ScanpyEngine
-    print(f"Loading data from {args.data} (this may take a while for large datasets)")
+    print(f"Loading data from {args.data} (this may take a while)")
     app.data = ScanpyEngine(args.data, layout_method=args.layout, diffexp_method=args.diffexp,
                             max_category_items=args.max_category_items)
     print(f"Launching cellxgene")
