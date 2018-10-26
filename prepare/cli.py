@@ -2,25 +2,25 @@ import click
 
 from numpy import unique, ndarray
 from scipy.sparse.csc import csc_matrix
-from os.path import isfile, isdir, splitext, expanduser
+from os.path import isfile, isdir, splitext, expanduser, sep
 
 settings = dict(help_option_names=['-h', '--help'])
 
 
 @click.command()
 @click.argument('dataset', nargs=1, metavar='<dataset: file or path to data>', required=True)
-@click.option('--layout', default='umap', type=click.Choice(['umap', 'tsne', 'umap+tsne']),
+@click.option('--layout', '-l', default=['umap', 'tsne'], multiple=True, type=click.Choice(['umap', 'tsne']),
               help='layout algorithm', show_default=True)
-@click.option('--recipe', default='none', type=click.Choice(['none', 'seurat', 'zheng17']),
+@click.option('--recipe', '-r', default='none', type=click.Choice(['none', 'seurat', 'zheng17']),
               help='preprocessing to run', show_default=True)
-@click.option('--output', default='', help='save a new file to filename')
-@click.option('--set-obs-names', default='', help='named field to set as index for obs')
-@click.option('--set-var-names', default='', help='named field to set as index for var')
+@click.option('--output', '-o', default='', help='save a new file to filename', metavar='<filename>')
+@click.option('--set-obs-names', default='', help='named field to set as index for obs', metavar='<name>')
+@click.option('--set-var-names', default='', help='named field to set as index for var', metavar='<name>')
 @click.option('--make-obs-names-unique', default=True, is_flag=True, help='ensure obs index is unique', show_default=True)
 @click.option('--make-var-names-unique', default=True, is_flag=True, help='ensure var index is unique', show_default=True)
 @click.option('--sparse', default=False, is_flag=True, help='whether to force sparsity', show_default=True)
-@click.option('--overwriting', default=False, is_flag=True, help='allow file overwriting', show_default=True)
-@click.option('--plotting', default=False, is_flag=True, help='whether to generate plots', show_default=True)
+@click.option('--overwriting', default=False, is_flag=True, help='whether to allow file overwriting', show_default=True)
+@click.option('--plotting', '-p', default=False, is_flag=True, help='whether to generate plots', show_default=True)
 def cli(dataset, layout, recipe, output, set_obs_names, set_var_names,
         make_obs_names_unique, make_var_names_unique, sparse, overwriting, plotting):
     """
@@ -43,7 +43,7 @@ def cli(dataset, layout, recipe, output, set_obs_names, set_var_names,
 
     output = expanduser(output)
     if isfile(output) and not overwrite:
-        raise click.UsageError('Cannot overwwrite existing file %s, try using the flag --overwrite' % output)
+        raise click.UsageError('Cannot overwrite existing file %s, try using the flag --overwrite' % output)
 
     def load_data(dataset):
         if isfile(dataset):
@@ -55,10 +55,9 @@ def cli(dataset, layout, recipe, output, set_obs_names, set_var_names,
             else:
                 raise click.FileError(dataset, hint='does not have a valid extension [.h5ad | .loom]')
         elif isdir(dataset):
-            if not dataset.endswith('/'):
-                raise click.FileError(dataset, hint='a path must end with a /')
-            else:
-                adata = sc.read_10x_mtx(dataset)
+            if not dataset.endswith(sep):
+                dataset += sep
+            adata = sc.read_10x_mtx(dataset)
         else:
             raise click.FileError(dataset, hint='not a valid file or path')
 
