@@ -115,12 +115,6 @@ const regraph = () => (dispatch, getState) => {
   });
 };
 
-const resetGraph = () => (dispatch, getState) =>
-  dispatch({
-    type: "reset World to eq Universe",
-    universe: getState().controls.universe
-  });
-
 /*
 Fetch expression vectors for each gene in genes.   This is NOT an action
 function, but rather a helper to be called from an action helper that
@@ -304,7 +298,6 @@ const requestDifferentialExpression = (set1, set2, num_genes = 10) => async (
 
 export default {
   regraph,
-  resetGraph,
   requestSingleGeneExpressionCountsForColoringPOST,
   requestGeneExpressionCountsPOST,
   requestDifferentialExpression,

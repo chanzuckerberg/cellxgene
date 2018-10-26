@@ -327,8 +327,29 @@ class Graph extends React.Component {
     });
   }
 
+  resetInterface() {
+    const { dispatch, universe } = this.props;
+
+    dispatch({
+      type: "clear all user defined genes"
+    });
+    dispatch({
+      type: "clear differential expression"
+    });
+    dispatch({
+      type: "reset colorscale"
+    });
+    dispatch({
+      type: "clear scatterplot"
+    });
+    dispatch({
+      type: "reset World to eq Universe",
+      universe
+    });
+  }
+
   render() {
-    const { dispatch, responsive, world, universe, crossfilter } = this.props;
+    const { dispatch, responsive, crossfilter } = this.props;
     const { mode } = this.state;
     return (
       <div id="graphWrapper">
@@ -372,14 +393,13 @@ class Graph extends React.Component {
             >
               <AnchorButton
                 disabled={
-                  world && universe ? worldEqUniverse(world, universe) : false
+                  false
+                  /* world && universe ? worldEqUniverse(world, universe) : false */
                 }
                 type="button"
                 intent="warning"
                 style={{ marginRight: 10 }}
-                onClick={() => {
-                  dispatch(actions.resetGraph());
-                }}
+                onClick={this.resetInterface.bind(this)}
               >
                 reset
               </AnchorButton>
