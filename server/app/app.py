@@ -58,7 +58,7 @@ description:
 cellxgene is a local web application for exploring single cell expression.
     """
     parser.add_argument("-V", "--version", help="show version and exit")
-    subparsers = parser.add_subparsers(dest="program")
+    subparsers = parser.add_subparsers(dest="command")
     subparsers.required = True
     launch_group = subparsers.add_parser("launch", help="launch web application",
                                          formatter_class=argparse.RawTextHelpFormatter)
@@ -100,16 +100,16 @@ cellxgene is a local web application for exploring single cell expression.
         help="bind to all interfaces (this makes the server accessible beyond this computer)",
         action="store_true")
     launch_group.add_argument("--port", help="port to run server on", type=int, default=5005)
-    launch_group.add_argument("--debug", action="store_true",
+    launch_group.add_argument("-v", "--verbose", action="store_true",
                               help="more verbose output, including outputting warnings and every REST request")
-    launch_group.add_argument("--flask-debug", action="store_true", help=argparse.SUPPRESS)
+    launch_group.add_argument("--debug", action="store_true", help=argparse.SUPPRESS)
     launch_group.add_argument("--no-open", help="do not launch the webbrowser", action="store_false",
                               dest="open_browser")
     launch_group.add_argument(
-        "--category-selection-limit",
+        "--max-category-items",
         type=whole_number,
         help="maximum number of categories to display on the front-end. "
-             "Annotations with more than this number are not displayed",
+             "Annotations with more categories than this number will not be not displayed",
         default=100)
     try:
         from .scanpy_engine.scanpy_engine import ScanpyEngine
@@ -136,24 +136,24 @@ def run_scanpy(args):
         DATASET_TITLE=title,
         CXG_API_BASE=api_base
     )
-    if not args.debug:
+    if not args.verbose:
         log = logging.getLogger('werkzeug')
         log.setLevel(logging.ERROR)
     from .scanpy_engine.scanpy_engine import ScanpyEngine
-    print(f"Loading data from {args.data}")
+    print(f"Loading data from {args.data} (this may take a while for large datasets)")
     app.data = ScanpyEngine(args.data, layout_method=args.layout, diffexp_method=args.diffexp,
-                            category_selection_limit=args.category_selection_limit)
+                            max_category_items=args.max_category_items)
     print(f"Launching cellxgene")
     if args.open_browser:
         webbrowser.open(cellxgene_url)
     print(f"Please go to {cellxgene_url}")
-    app.run(host=host, debug=args.flask_debug, port=args.port)
+    app.run(host=host, debug=args.debug, port=args.port)
 
 
 def main():
     parser = create_cli()
     args = parser.parse_args()
-    if not args.debug:
+    if not args.verbose:
         sys.tracebacklimit = 0
     # TODO pick engine based on input file
     print("cellxgene starting...\n")
