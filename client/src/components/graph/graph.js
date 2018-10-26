@@ -328,24 +328,8 @@ class Graph extends React.Component {
   }
 
   resetInterface() {
-    const { dispatch, universe } = this.props;
-
-    dispatch({
-      type: "clear all user defined genes"
-    });
-    dispatch({
-      type: "clear differential expression"
-    });
-    dispatch({
-      type: "reset colorscale"
-    });
-    dispatch({
-      type: "clear scatterplot"
-    });
-    dispatch({
-      type: "reset World to eq Universe",
-      universe
-    });
+    const { dispatch } = this.props;
+    dispatch(actions.resetInterface());
   }
 
   render() {
@@ -388,7 +372,7 @@ class Graph extends React.Component {
               </AnchorButton>
             </Tooltip>
             <Tooltip
-              content="Return interface to initial state, clearing any selections"
+              content="Reset cellxgene, clearing all selections"
               position="left"
             >
               <AnchorButton

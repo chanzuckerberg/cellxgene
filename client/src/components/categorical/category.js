@@ -162,10 +162,7 @@ class Category extends React.Component {
               )}
             </span>
           </div>
-          <Tooltip
-            content="Use this metadata field as color scale"
-            position="bottom"
-          >
+          <Tooltip content="Use as color scale" position="bottom">
             <Button
               onClick={this.handleColorChange.bind(this)}
               active={colorAccessor === metadataField}

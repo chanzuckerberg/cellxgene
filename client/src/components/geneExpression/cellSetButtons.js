@@ -30,7 +30,7 @@ class CellSetButton extends React.Component {
     const cellListName = `celllist${eitherCellSetOneOrTwo}`;
     return (
       <Tooltip
-        content="Select a group of cells, then click here to store them"
+        content="Save current selection for differential expression computation"
         position="top"
       >
         <Button

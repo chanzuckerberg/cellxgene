@@ -283,10 +283,7 @@ class HistogramBrush extends React.Component {
               remove
             </Button>
           ) : null}
-          <Tooltip
-            content="Use this metadata field as color scale"
-            position="bottom"
-          >
+          <Tooltip content="Use as color scale" position="bottom">
             <Button
               onClick={this.handleColorAction.bind(this)}
               active={colorAccessor === field}

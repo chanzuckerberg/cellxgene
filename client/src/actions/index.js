@@ -296,8 +296,30 @@ const requestDifferentialExpression = (set1, set2, num_genes = 10) => async (
   }
 };
 
+const resetInterface = () => (dispatch, getState) => {
+  const { universe } = getState().controls;
+
+  dispatch({
+    type: "clear all user defined genes"
+  });
+  dispatch({
+    type: "clear differential expression"
+  });
+  dispatch({
+    type: "reset colorscale"
+  });
+  dispatch({
+    type: "clear scatterplot"
+  });
+  dispatch({
+    type: "reset World to eq Universe",
+    universe
+  });
+};
+
 export default {
   regraph,
+  resetInterface,
   requestSingleGeneExpressionCountsForColoringPOST,
   requestGeneExpressionCountsPOST,
   requestDifferentialExpression,
