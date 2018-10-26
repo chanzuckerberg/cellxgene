@@ -5,6 +5,7 @@ import React from "react";
 import _ from "lodash";
 import * as d3 from "d3";
 import { connect } from "react-redux";
+import { Button, Tooltip } from "@blueprintjs/core";
 import HistogramBrush from "../brushableHistogram";
 import * as globals from "../../globals";
 import actions from "../../actions";
@@ -85,7 +86,7 @@ class GeneExpression extends React.Component {
               margin: 0
             })}
           >
-            Custom genes
+            Selected Genes
           </p>
           <div
             style={{ padding: globals.leftSidebarSectionPadding }}
@@ -100,17 +101,18 @@ class GeneExpression extends React.Component {
                 value={gene}
                 type="text"
                 className="bp3-input"
-                placeholder="Add a custom gene"
+                placeholder="Enter a gene name"
                 style={{ paddingRight: 94 }}
               />
             </div>
-            <button
-              type="button"
-              className="bp3-button bp3-intent-primary"
-              onClick={this.handleClick.bind(this)}
+            <Tooltip
+              content="Add a gene to see its expression levels"
+              position="bottom"
             >
-              Add
-            </button>
+              <Button intent="primary" onClick={this.handleClick.bind(this)}>
+                Add
+              </Button>
+            </Tooltip>
           </div>
           {world && userDefinedGenes.length > 0
             ? _.map(userDefinedGenes, (geneName, index) => {
