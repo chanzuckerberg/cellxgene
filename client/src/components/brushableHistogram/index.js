@@ -6,7 +6,7 @@ https://bl.ocks.org/SpaceActuary/2f004899ea1b2bd78d6f1dbb2febf771
 // jshint esversion: 6
 import React from "react";
 import _ from "lodash";
-import { Button, ButtonGroup } from "@blueprintjs/core";
+import { Button, ButtonGroup, Tooltip } from "@blueprintjs/core";
 import { connect } from "react-redux";
 import * as d3 from "d3";
 import memoize from "memoize-one";
@@ -283,12 +283,14 @@ class HistogramBrush extends React.Component {
               remove
             </Button>
           ) : null}
-          <Button
-            onClick={this.handleColorAction.bind(this)}
-            active={colorAccessor === field}
-            intent={colorAccessor === field ? "primary" : "none"}
-            icon="tint"
-          />
+          <Tooltip content="Use as color scale" position="bottom">
+            <Button
+              onClick={this.handleColorAction.bind(this)}
+              active={colorAccessor === field}
+              intent={colorAccessor === field ? "primary" : "none"}
+              icon="tint"
+            />
+          </Tooltip>
         </div>
         <svg
           width={this.width}
