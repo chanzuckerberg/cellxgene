@@ -66,16 +66,6 @@ cellxgene is a local web application for exploring single cell expression.
     cellxgene launches a local web application for exploring single cell expression data.
 
     Data must be in a format that cellxgene expects [[ how to format ]]
-        """
-    launch_group.epilog = """
-    annotation names:
-    The data viewer requires a unique, human readable name for each observation and variable.  These are used for
-    various application features, such as the ability to view expression by gene. When launching cellxgene, appropriate
-    observation and variable annotations must be identified.
-
-    If --obs-name or --var-name parameters are specified, values in the named annotations will be used. If not
-    specified, the observation and variable index values will name each respectively.  An error will generated if the
-    values for each are not unique.
 
     examples:
     To run with the example dataset:
@@ -90,7 +80,16 @@ cellxgene is a local web application for exploring single cell expression.
     is 'cell_names':
 
         cellxgene mydata.h5ad -var-name gene_names -obs-name cell_names
+        """
+    launch_group.epilog = """
+    annotation names:
+    The data viewer requires a unique, human readable name for each observation and variable.  These are used for
+    various application features, such as the ability to view expression by gene. When launching cellxgene, appropriate
+    observation and variable annotations must be identified.
 
+    If --obs-name or --var-name parameters are specified, values in the named annotations will be used. If not
+    specified, the observation and variable index values will name each respectively.  An error will generated if the
+    values for each are not unique.
         """
     launch_group.add_argument("data", metavar="data", help="file containing the data to display")
     launch_group.add_argument("--title", "-t", help="title to display -- if this is omitted the title will be the name "
