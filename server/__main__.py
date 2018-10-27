@@ -8,5 +8,5 @@ if __package__ is None:
     __package__ = PKG_PATH.name
 
 # Main thing
-from .app.app import main
-main()
+from .cli.cli import cli
+cli()
