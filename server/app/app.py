@@ -110,13 +110,13 @@ cellxgene is a local web application for exploring single cell expression.
         help="Limit for the cardinality of a categorical annotation, beyond which the"
              " annotation will not be available for user selection in the front-end",
         default=100)
-    try:
-        from .scanpy_engine.scanpy_engine import ScanpyEngine
-    except ImportError as e:
-        # We will handle more engines when they come
-        raise ImportError('Scanpy is required for cellxgene, please install scanpy and try again', e) from e
-    else:
-        ScanpyEngine.add_to_parser(launch_group)
+    # TODO scanpy specific; rethink when we add another engine
+    computation_group = launch_group.add_argument_group('computational arguments')
+    # TODO these choices should be generated from the actual available methods see GH issue #94
+    computation_group.add_argument("-l", "--layout", choices=["umap", "tsne"], default="umap",
+                                   help="Algorithm to use for graph layout")
+    computation_group.add_argument("-d", "--diffexp", choices=["ttest"], default="ttest",
+                                   help="Algorithm to used to calculate differential expression")
     return parser
 
 
