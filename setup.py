@@ -25,6 +25,6 @@ setup(
     ),
     entry_points={
         "console_scripts":
-            ["cellxgene = server.cli:cli"]
+            ["cellxgene = server.cli.cli:cli"]
     }
 )
