@@ -232,3 +232,9 @@ describe("createVarDimension", () => {
   );
   expect(result).toBeInstanceOf(Crossfilter.ScalarDimension);
 });
+
+describe("worldEqUniverse", () => {
+  const { universe, world } = defaultBigBang();
+  const result = World.worldEqUniverse(world, universe);
+  expect(result).toBe(true);
+});

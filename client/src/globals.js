@@ -78,7 +78,7 @@ export const maxControlsWidth = 800;
 export const graphMargin = { top: 20, right: 10, bottom: 30, left: 40 };
 export const graphWidth = 700;
 export const graphHeight = 700;
-export const scatterplotPaddingLeft = 14;
+export const scatterplotMarginLeft = 25;
 
 export const leftSidebarWidth = 365;
 export const leftSidebarSectionHeading = {

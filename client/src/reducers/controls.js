@@ -330,6 +330,21 @@ const Controls = (
         userDefinedGenes: newUserDefinedGenes
       };
     }
+    case "clear all user defined genes": {
+      const { userDefinedGenes, dimensionMap } = state;
+
+      _.forEach(userDefinedGenes, gene => {
+        const dimension = dimensionMap[userDefinedDimensionName(gene)];
+        dimension.dispose();
+        delete dimensionMap[userDefinedDimensionName(gene)];
+      });
+
+      return {
+        ...state,
+        dimensionMap,
+        userDefinedGenes: []
+      };
+    }
     case "reset colorscale": {
       const { world } = state;
       const colorName = new Array(world.nObs).fill(globals.defaultCellColor);

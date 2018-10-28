@@ -3,7 +3,7 @@ import _ from "lodash";
 import { connect } from "react-redux";
 import { FaChevronRight, FaChevronDown } from "react-icons/fa";
 import memoize from "memoize-one";
-import { Button } from "@blueprintjs/core";
+import { Button, Tooltip, Position } from "@blueprintjs/core";
 
 import * as globals from "../../globals";
 import Value from "./value";
@@ -162,12 +162,14 @@ class Category extends React.Component {
               )}
             </span>
           </div>
-          <Button
-            onClick={this.handleColorChange.bind(this)}
-            active={colorAccessor === metadataField}
-            intent={colorAccessor === metadataField ? "primary" : "none"}
-            icon={"tint"}
-          />
+          <Tooltip content="Use as color scale" position="bottom">
+            <Button
+              onClick={this.handleColorChange.bind(this)}
+              active={colorAccessor === metadataField}
+              intent={colorAccessor === metadataField ? "primary" : "none"}
+              icon={"tint"}
+            />
+          </Tooltip>
         </div>
         <div style={{ marginLeft: 26 }}>
           {isExpanded ? this.renderCategoryItems() : null}

@@ -1,4 +1,3 @@
-import os
 import warnings
 
 import numpy as np
@@ -23,12 +22,15 @@ Sort order for methods
 
 class ScanpyEngine(CXGDriver):
 
-    def __init__(self, data, layout_method=None, diffexp_method=None, obs_names=None, var_names=None):
-        super().__init__(data, layout_method=layout_method, diffexp_method=diffexp_method)
+    def __init__(self, data, layout_method=None, diffexp_method=None, obs_names=None, var_names=None, max_category_items=100):
+        super().__init__(data, layout_method=layout_method, diffexp_method=diffexp_method,
+                         max_category_items=max_category_items)
         self._alias_annotation_names(obs_names, var_names)
         self._validate_data_types()
         self.cell_count = self.data.shape[0]
         self.gene_count = self.data.shape[1]
+        self.layout_options = ["umap", "tsne"]
+        self.diffexp_options = ["ttest"]
         self._create_schema()
 
     def _alias_annotation_names(self, obs_names, var_names):
@@ -93,28 +95,13 @@ class ScanpyEngine(CXGDriver):
                     raise TypeError(f"Annotations of type {curr_axis[ann].dtype} are unsupported by cellxgene.")
                 self.schema["annotations"][ax].append(ann_schema)
 
-    @classmethod
-    def add_to_parser(cls, subparsers, invocation_function):
-        scanpy_group = subparsers.add_parser("scanpy", help="run cellxgene using the scanpy engine")
-        # TODO these choices should be generated from the actual available methods see GH issue #94
-        scanpy_group.add_argument("-l", "--layout", choices=["umap", "tsne"], default="umap",
-                                  help="Algorithm to use for graph layout")
-        scanpy_group.add_argument("-d", "--diffexp", choices=["ttest"], default="ttest",
-                                  help="Algorithm to used to calculate differential expression")
-        scanpy_group.add_argument("--obs-names",
-                                  help="Annotation name to use as unique, human-readable observation name")
-        scanpy_group.add_argument("--var-names", help="Annotation name to use as unique, human-readable variable name")
-        scanpy_group.add_argument("data_directory", metavar="dir", help="Directory containing data and schema file")
-        scanpy_group.set_defaults(func=invocation_function)
-        return scanpy_group
-
     @staticmethod
     def _load_data(data):
         # See https://scanpy.readthedocs.io/en/latest/api/scanpy.api.read.html
         # Based upon this advice, setting cache=True parameter
         # Note: as of current scanpy/anndata release, setting backed='r' will
         # result in an error.
-        return sc.read(os.path.join(data, "data.h5ad"), cache=True)
+        return sc.read(data, cache=True)
 
     @staticmethod
     def _top_sort(values, sort_order, top_n=None):
