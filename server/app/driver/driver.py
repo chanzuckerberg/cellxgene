@@ -44,14 +44,6 @@ class CXGDriver(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def cells(self):
-        pass
-
-    @abstractmethod
-    def genes(self):
-        pass
-
-    @abstractmethod
     def filter_dataframe(self, filter):
         """
         Filter cells from data and return a subset of the data. They can operate on both obs and var dimension with

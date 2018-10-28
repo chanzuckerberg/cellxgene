@@ -4,7 +4,7 @@ import warnings
 import numpy as np
 from pandas import DataFrame
 import scanpy.api as sc
-from scipy import stats
+from scipy import stats, sparse
 
 from server.app.app import cache
 from server.app.driver.driver import CXGDriver
@@ -34,14 +34,15 @@ class ScanpyEngine(CXGDriver):
     def _alias_annotation_names(self, obs_names, var_names):
         """
         Do all user-specified annotaiton aliasing.
+
         As a *critical* side-effect, ensure the indices are simple number ranges
+        (accomplished by calling pandas.DataFrame.reset_index())
         """
         aliased_names = {'obs': obs_names, 'var': var_names}
         for ax in Axis:
             name = aliased_names[ax]
             if name == 'name':
                 continue
-
             ax_name = str(ax)
             df_axis = getattr(self.data, ax_name)
             if name is None:
@@ -152,12 +153,6 @@ class ScanpyEngine(CXGDriver):
                     warnings.warn(f"Scanpy annotation {ax}:{ann} is in unsupported format: {datatype}. "
                                   f"Data will be downcast to {downcast_map[datatype]}.")
 
-    def cells(self):
-        return self.data.obs.index.tolist()
-
-    def genes(self):
-        return self.data.var.index.tolist()
-
     def filter_dataframe(self, filter, include_uns=False):
         """
          Filter cells from data and return a subset of the data. They can operate on both obs and var dimension with
@@ -184,12 +179,8 @@ class ScanpyEngine(CXGDriver):
                 genes_idx = self._filter_index(filter["var"]["index"], genes_idx, Axis.VAR)
             if "annotation_value" in filter["var"]:
                 genes_idx = self._filter_annotation(filter["var"]["annotation_value"], genes_idx, Axis.VAR)
-        # Due to anndata issues we can't index into cells and genes at the same time
-        cell_data = self.data[cells_idx, :]
-        data = cell_data[:, genes_idx]
-        # TODO: tmp hack to avoid problems with filter that is limited to single gene
-        if include_uns:
-            data.uns = cell_data.uns
+
+        data = self._slice(self.data, cells_idx, genes_idx)
         return data
 
     def _filter_index(self, filter, index, axis):
@@ -236,6 +227,33 @@ class ScanpyEngine(CXGDriver):
                     index = np.logical_and(index, key_idx)
         return index
 
+    def _slice(self, data, obs_selector=None, var_selector=None):
+        """
+        Slice date using any selector that the AnnData object
+        supprots for slicing.  If selector is None, will not slice
+        on that axis.
+
+        This method exists to optimize filtering/slicing sparse data that has
+        access patterns which impact slicing performance.
+
+        https://docs.scipy.org/doc/scipy/reference/sparse.html
+        """
+        prefer_column_access = sparse.isspmatrix_csc(data.X)
+        prefer_row_access = sparse.isspmatrix_lil(data.X) or sparse.isspmatrix_bsr(data.X)
+        if prefer_row_access:
+            # Row-major slicing
+            if obs_selector is not None:
+                data = data[obs_selector, :]
+            if var_selector is not None:
+                data = data[:, var_selector]
+        else:
+            # Col-major slicing
+            if var_selector is not None:
+                data = data[:, var_selector]
+            if obs_selector is not None:
+                data = data[obs_selector, :]
+        return data
+
     @cache.memoize()
     def annotation(self, filter, axis, fields=None):
         """
@@ -253,11 +271,11 @@ class ScanpyEngine(CXGDriver):
         df_axis = getattr(df, axis)
         if not fields:
             fields = df_axis.columns.tolist()
-        annotations = DataFrame(df_axis[fields], index=df_axis.index)
-        return {
+        result = {
             "names": fields,
-            "data": annotations.reset_index().values.tolist()
+            "data": DataFrame(df_axis[fields]).to_records(index=True).tolist()
         }
+        return result
 
     @cache.memoize()
     def data_frame(self, filter, axis):
@@ -271,28 +289,25 @@ class ScanpyEngine(CXGDriver):
         }
         """
         try:
-            df = self.filter_dataframe(filter)
+            slice = self.filter_dataframe(filter)
         except KeyError as e:
             raise FilterError(f"Error parsing filter: {e}") from e
-        var_idx = df.var.index.tolist()
-        obs_idx = df.obs.index.tolist()
-        values = df.X
-        df_shape = df.shape
-        if df_shape[0] == 1:
-            values = values[None, :]
-        elif df_shape[1] == 1:
-            values = values[:, None]
+        # convert sparse slice to dense
+        X = slice.X.toarray() if sparse.issparse(slice.X) else slice.X
+        if slice.shape[0] == 1:
+            X = X[None, :]
+        if slice.shape[1] == 1:
+            X = X[:, None]
+
         if axis == Axis.OBS:
-            expression = DataFrame(values, index=obs_idx)
             result = {
-                "var": var_idx,
-                "obs": expression.reset_index().values.tolist()
+                "var": slice.var.index.tolist(),
+                "obs": DataFrame(X, index=slice.obs.index).to_records(index=True).tolist()
             }
         else:
-            expression = DataFrame(values.T, index=var_idx)
             result = {
-                "obs": obs_idx,
-                "var": expression.reset_index().values.tolist(),
+                "obs": slice.obs.index.tolist(),
+                "var": DataFrame(X.T, index=slice.var.index).to_records(index=True).tolist()
             }
         return result
 
@@ -384,6 +399,5 @@ class ScanpyEngine(CXGDriver):
                                       index=df.obs.index)
         return {
             "ndims": normalized_layout.shape[1],
-            # reset_index gets obs' id into output
-            "coordinates": normalized_layout.reset_index().values.tolist()
+            "coordinates": normalized_layout.to_records(index=True).tolist()
         }

@@ -222,12 +222,12 @@ class UtilTest(unittest.TestCase):
         data_frame_obs = self.data.data_frame(filter_["filter"], "obs")
         self.assertEqual(len(data_frame_obs["var"]), 1838)
         self.assertEqual(len(data_frame_obs["obs"]), 497)
-        self.assertEqual(type(data_frame_obs["obs"][0]), list)
+        self.assertIsInstance(data_frame_obs["obs"][0], (list, tuple))
         self.assertEqual(type(data_frame_obs["var"][0]), int)
         data_frame_var = self.data.data_frame(filter_["filter"], "var")
         self.assertEqual(len(data_frame_var["var"]), 1838)
         self.assertEqual(len(data_frame_var["obs"]), 497)
-        self.assertEqual(type(data_frame_var["var"][0]), list)
+        self.assertIsInstance(data_frame_var["var"][0], (list, tuple))
         self.assertEqual(type(data_frame_var["obs"][0]), int)
 
     def test_data_single_gene(self):
@@ -244,10 +244,10 @@ class UtilTest(unittest.TestCase):
             data_frame_var = self.data.data_frame(filter_["filter"], axis)
             if axis == "obs":
                 self.assertEqual(type(data_frame_var["var"][0]), int)
-                self.assertEqual(type(data_frame_var["obs"][0]), list)
+                self.assertIsInstance(data_frame_var["obs"][0], (list, tuple))
             elif axis == "var":
                 self.assertEqual(type(data_frame_var["obs"][0]), int)
-                self.assertEqual(type(data_frame_var["var"][0]), list)
+                self.assertIsInstance(data_frame_var["var"][0], (list, tuple))
 
     if __name__ == '__main__':
         unittest.main()
