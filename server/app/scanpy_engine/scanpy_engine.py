@@ -22,7 +22,8 @@ Sort order for methods
 
 class ScanpyEngine(CXGDriver):
 
-    def __init__(self, data, layout_method=None, diffexp_method=None, obs_names=None, var_names=None, max_category_items=100):
+    def __init__(self, data, layout_method=None, diffexp_method=None,
+                 obs_names=None, var_names=None, max_category_items=100):
         super().__init__(data, layout_method=layout_method, diffexp_method=diffexp_method,
                          max_category_items=max_category_items)
         self._alias_annotation_names(obs_names, var_names)
@@ -56,7 +57,7 @@ class ScanpyEngine(CXGDriver):
                     raise KeyError(f"Annotation name {name}, specified in --{ax_name}-name does not exist.")
                 if not df_axis[name].is_unique:
                     raise KeyError(f"Values in -{ax_name}-name must be unique. "
-                                    "Please prepare data to contain unique values.")
+                                   "Please prepare data to contain unique values.")
                 # reset index to simple range; alias user-specified annotation to 'name'
                 df_axis = df_axis.reset_index(drop=True).rename(columns={name: 'name'})
             else:
@@ -225,7 +226,7 @@ class ScanpyEngine(CXGDriver):
 
         https://docs.scipy.org/doc/scipy/reference/sparse.html
         """
-        prefer_column_access = sparse.isspmatrix_csc(data.X)
+        # prefer_column_access = sparse.isspmatrix_csc(data.X)
         prefer_row_access = sparse.isspmatrix_lil(data.X) or sparse.isspmatrix_bsr(data.X)
         if prefer_row_access:
             # Row-major slicing
