@@ -46,7 +46,7 @@ Started in the context of the Human Cell Atlas Consortium, cellxgene hopes to bo
 
 **Run (with demo data)**
 
-    cellxgene launch --title PBMC3K example-dataset/pbmck3.h5ad
+    cellxgene launch --title PBMC3K example-dataset/pbmc3k.h5ad
 
 **Help**
 
