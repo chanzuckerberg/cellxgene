@@ -335,11 +335,14 @@ class ScanpyEngine(CXGDriver):
                 top_n = DEFAULT_TOP_N
 
         genes_idx = df1.var.index
-        diffexp_result = stats.ttest_ind(df1.X, df2.X)
+
+        X1 = df1.X.toarray() if sparse.issparse(df1.X) else df1.X
+        X2 = df2.X.toarray() if sparse.issparse(df2.X) else df2.X
+        diffexp_result = stats.ttest_ind(X1, X2)
         pval = self._nan_to_one(diffexp_result.pvalue)
         bonferroni_pval = 1 - (1 - pval) ** self.gene_count
-        ave_exp_set1 = np.mean(df1.X, axis=0)
-        ave_exp_set2 = np.mean(df2.X, axis=0)
+        ave_exp_set1 = np.mean(X1, axis=0)
+        ave_exp_set2 = np.mean(X2, axis=0)
         ave_diff = ave_exp_set1 - ave_exp_set2
         if mode == DiffExpMode.TOP_N:
             sort_order = np.argsort(np.abs(diffexp_result.statistic))[::-1]
