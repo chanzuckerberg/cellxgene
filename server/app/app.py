@@ -104,6 +104,8 @@ cellxgene is a local web application for exploring single cell expression.
     launch_group.add_argument("--debug", action="store_true", help=argparse.SUPPRESS)
     launch_group.add_argument("--no-open", help="do not launch the webbrowser", action="store_false",
                               dest="open_browser")
+    launch_group.add_argument("--obs-names", help="Annotation name to use as unique, human-readable observation name")
+    launch_group.add_argument("--var-names", help="Annotation name to use as unique, human-readable variable name")
     launch_group.add_argument(
         "--max-category-items",
         type=whole_number,
@@ -141,8 +143,7 @@ def run_scanpy(args):
         log.setLevel(logging.ERROR)
     from .scanpy_engine.scanpy_engine import ScanpyEngine
     print(f"Loading data from {args.data} (this may take a while)")
-    app.data = ScanpyEngine(args.data, layout_method=args.layout, diffexp_method=args.diffexp,
-                            max_category_items=args.max_category_items)
+    app.data = ScanpyEngine(args.data, args)
     print(f"Launching cellxgene")
     if args.open_browser:
         webbrowser.open(cellxgene_url)

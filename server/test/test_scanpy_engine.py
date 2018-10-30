@@ -3,6 +3,7 @@ from os import path
 import pytest
 import time
 import unittest
+import argparse
 
 import numpy as np
 from pandas import Series
@@ -12,7 +13,14 @@ from server.app.scanpy_engine.scanpy_engine import ScanpyEngine
 
 class UtilTest(unittest.TestCase):
     def setUp(self):
-        self.data = ScanpyEngine("example-dataset/pbmc3k.h5ad", layout_method="umap", diffexp_method="ttest")
+        args = argparse.Namespace()
+        args.layout = "umap"
+        args.diffexp = "ttest"
+        args.max_category_items = 100
+        args.obs_names = None
+        args.var_names = None
+
+        self.data = ScanpyEngine("example-dataset/pbmc3k.h5ad", args)
         self.data._create_schema()
 
     def test_init(self):
@@ -30,7 +38,7 @@ class UtilTest(unittest.TestCase):
     @pytest.mark.filterwarnings("ignore:Scanpy data matrix")
     def test_data_type(self):
         self.data.data.X = self.data.data.X.astype("float64")
-        self.assertWarns(UserWarning, self.data._validatate_data_types())
+        self.assertWarns(UserWarning, self.data._validate_data_types())
 
     def test_filter_idx(self):
         filter_ = {
@@ -130,10 +138,10 @@ class UtilTest(unittest.TestCase):
 
     def test_annotations(self):
         annotations = self.data.annotation(None, "obs")
-        self.assertEqual(annotations["names"], ["n_genes", "percent_mito", "n_counts", "louvain", "name"])
+        self.assertEqual(annotations["names"], ["name", "n_genes", "percent_mito", "n_counts", "louvain"])
         self.assertEqual(len(annotations["data"]), 2638)
         annotations = self.data.annotation(None, "var")
-        self.assertEqual(annotations["names"], ["n_cells", "name"])
+        self.assertEqual(annotations["names"], ["name", "n_cells"])
         self.assertEqual(len(annotations["data"]), 1838)
 
     def test_annotation_fields(self):
@@ -160,10 +168,10 @@ class UtilTest(unittest.TestCase):
             }
         }
         annotations = self.data.annotation(filter_["filter"], "obs")
-        self.assertEqual(annotations["names"], ["n_genes", "percent_mito", "n_counts", "louvain", "name"])
+        self.assertEqual(annotations["names"], ["name", "n_genes", "percent_mito", "n_counts", "louvain"])
         self.assertEqual(len(annotations["data"]), 497)
         annotations = self.data.annotation(filter_["filter"], "var")
-        self.assertEqual(annotations["names"], ["n_cells", "name"])
+        self.assertEqual(annotations["names"], ["name", "n_cells"])
         self.assertEqual(len(annotations["data"]), 2)
 
     def test_filtered_layout(self):
@@ -222,12 +230,12 @@ class UtilTest(unittest.TestCase):
         data_frame_obs = self.data.data_frame(filter_["filter"], "obs")
         self.assertEqual(len(data_frame_obs["var"]), 1838)
         self.assertEqual(len(data_frame_obs["obs"]), 497)
-        self.assertEqual(type(data_frame_obs["obs"][0]), list)
+        self.assertIsInstance(data_frame_obs["obs"][0], (list, tuple))
         self.assertEqual(type(data_frame_obs["var"][0]), int)
         data_frame_var = self.data.data_frame(filter_["filter"], "var")
         self.assertEqual(len(data_frame_var["var"]), 1838)
         self.assertEqual(len(data_frame_var["obs"]), 497)
-        self.assertEqual(type(data_frame_var["var"][0]), list)
+        self.assertIsInstance(data_frame_var["var"][0], (list, tuple))
         self.assertEqual(type(data_frame_var["obs"][0]), int)
 
     def test_data_single_gene(self):
@@ -244,10 +252,10 @@ class UtilTest(unittest.TestCase):
             data_frame_var = self.data.data_frame(filter_["filter"], axis)
             if axis == "obs":
                 self.assertEqual(type(data_frame_var["var"][0]), int)
-                self.assertEqual(type(data_frame_var["obs"][0]), list)
+                self.assertIsInstance(data_frame_var["obs"][0], (list, tuple))
             elif axis == "var":
                 self.assertEqual(type(data_frame_var["obs"][0]), int)
-                self.assertEqual(type(data_frame_var["var"][0]), list)
+                self.assertIsInstance(data_frame_var["var"][0], (list, tuple))
 
     if __name__ == '__main__':
         unittest.main()

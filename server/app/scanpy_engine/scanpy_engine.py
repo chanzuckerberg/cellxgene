@@ -1,9 +1,9 @@
 import warnings
 
 import numpy as np
-from pandas import DataFrame, Series
+from pandas import DataFrame
 import scanpy.api as sc
-from scipy import stats
+from scipy import stats, sparse
 
 from server.app.app import cache
 from server.app.driver.driver import CXGDriver
@@ -22,16 +22,45 @@ Sort order for methods
 
 class ScanpyEngine(CXGDriver):
 
-    def __init__(self, data, layout_method=None, diffexp_method=None, max_category_items=100):
-        super().__init__(data, layout_method=layout_method, diffexp_method=diffexp_method,
-                         max_category_items=max_category_items)
-        self._validatate_data_types()
-        self._add_mandatory_annotations()
+    def __init__(self, data, args):
+        super().__init__(data, args)
+        self._alias_annotation_names(Axis.OBS, args.obs_names)
+        self._alias_annotation_names(Axis.VAR, args.var_names)
+        self._validate_data_types()
         self.cell_count = self.data.shape[0]
         self.gene_count = self.data.shape[1]
         self.layout_options = ["umap", "tsne"]
         self.diffexp_options = ["ttest"]
         self._create_schema()
+
+    def _alias_annotation_names(self, axis, name):
+        """
+        Do all user-specified annotation aliasing.
+
+        As a *critical* side-effect, ensure the indices are simple number ranges
+        (accomplished by calling pandas.DataFrame.reset_index())
+        """
+        if name == 'name':
+            # a noop, so skip it
+            return
+
+        ax_name = str(axis)
+        df_axis = getattr(self.data, ax_name)
+        if name is None:
+            # reset index to simple range; alias 'name' to point at the
+            # previously specified index.
+            df_axis = df_axis.reset_index().rename(columns={'index': 'name'})
+        elif name in df_axis.columns:
+            if name not in df_axis.columns:
+                raise KeyError(f"Annotation name {name}, specified in --{ax_name}-name does not exist.")
+            if not df_axis[name].is_unique:
+                raise KeyError(f"Values in -{ax_name}-name must be unique. "
+                               "Please prepare data to contain unique values.")
+            # reset index to simple range; alias user-specified annotation to 'name'
+            df_axis = df_axis.reset_index(drop=True).rename(columns={name: 'name'})
+        else:
+            raise KeyError(f"Annotation name {name}, specified in --{ax_name}_name does not exist.")
+        setattr(self.data, ax_name, df_axis)
 
     def _create_schema(self):
         self.schema = {
@@ -93,15 +122,16 @@ class ScanpyEngine(CXGDriver):
         """
         return np.where(np.isnan(values), 1, values)
 
-    def _add_mandatory_annotations(self):
-        # ensure gene
-        self.data.var["name"] = Series(list(self.data.var.index), dtype="unicode_", index=self.data.var.index)
-        self.data.var.index = Series(list(range(self.data.var.shape[0])), dtype="category")
-        # ensure cell name
-        self.data.obs["name"] = Series(list(self.data.obs.index), dtype="unicode_", index=self.data.obs.index)
-        self.data.obs.index = Series(list(range(self.data.obs.shape[0])), dtype="category")
+    @staticmethod
+    def _nan_to_zero(values):
+        """
+        Replaces NaN values with 0
+        :param values: numpy ndarray
+        :return: ndarray
+        """
+        return np.where(np.isnan(values), 0, values)
 
-    def _validatate_data_types(self):
+    def _validate_data_types(self):
         if self.data.X.dtype != "float32":
             warnings.warn(f"Scanpy data matrix is in {self.data.X.dtype} format not float32. "
                           f"Precision may be truncated.")
@@ -117,12 +147,6 @@ class ScanpyEngine(CXGDriver):
                 if datatype in downcast_map:
                     warnings.warn(f"Scanpy annotation {ax}:{ann} is in unsupported format: {datatype}. "
                                   f"Data will be downcast to {downcast_map[datatype]}.")
-
-    def cells(self):
-        return self.data.obs.index.tolist()
-
-    def genes(self):
-        return self.data.var.index.tolist()
 
     def filter_dataframe(self, filter, include_uns=False):
         """
@@ -150,12 +174,8 @@ class ScanpyEngine(CXGDriver):
                 genes_idx = self._filter_index(filter["var"]["index"], genes_idx, Axis.VAR)
             if "annotation_value" in filter["var"]:
                 genes_idx = self._filter_annotation(filter["var"]["annotation_value"], genes_idx, Axis.VAR)
-        # Due to anndata issues we can't index into cells and genes at the same time
-        cell_data = self.data[cells_idx, :]
-        data = cell_data[:, genes_idx]
-        # TODO: tmp hack to avoid problems with filter that is limited to single gene
-        if include_uns:
-            data.uns = cell_data.uns
+
+        data = self._slice(self.data, cells_idx, genes_idx)
         return data
 
     def _filter_index(self, filter, index, axis):
@@ -202,6 +222,35 @@ class ScanpyEngine(CXGDriver):
                     index = np.logical_and(index, key_idx)
         return index
 
+    @staticmethod
+    def _slice(data, obs_selector=None, vars_selector=None):
+        """
+        Slice date using any selector that the AnnData object
+        supprots for slicing.  If selector is None, will not slice
+        on that axis.
+
+        This method exists to optimize filtering/slicing sparse data that has
+        access patterns which impact slicing performance.
+
+        https://docs.scipy.org/doc/scipy/reference/sparse.html
+        """
+        prefer_row_access = sparse.isspmatrix_csr(data._X) or \
+            sparse.isspmatrix_lil(data._X) or sparse.isspmatrix_bsr(data._X)
+        if prefer_row_access:
+            # Row-major slicing
+            if obs_selector is not None:
+                data = data[obs_selector, :]
+            if vars_selector is not None:
+                data = data[:, vars_selector]
+        else:
+            # Col-major slicing
+            if vars_selector is not None:
+                data = data[:, vars_selector]
+            if obs_selector is not None:
+                data = data[obs_selector, :]
+
+        return data
+
     @cache.memoize()
     def annotation(self, filter, axis, fields=None):
         """
@@ -219,11 +268,11 @@ class ScanpyEngine(CXGDriver):
         df_axis = getattr(df, axis)
         if not fields:
             fields = df_axis.columns.tolist()
-        annotations = DataFrame(df_axis[fields], index=df_axis.index)
-        return {
+        result = {
             "names": fields,
-            "data": annotations.reset_index().values.tolist()
+            "data": DataFrame(df_axis[fields]).to_records(index=True).tolist()
         }
+        return result
 
     @cache.memoize()
     def data_frame(self, filter, axis):
@@ -237,28 +286,20 @@ class ScanpyEngine(CXGDriver):
         }
         """
         try:
-            df = self.filter_dataframe(filter)
+            slice = self.filter_dataframe(filter)
         except KeyError as e:
             raise FilterError(f"Error parsing filter: {e}") from e
-        var_idx = df.var.index.tolist()
-        obs_idx = df.obs.index.tolist()
-        values = df.X
-        df_shape = df.shape
-        if df_shape[0] == 1:
-            values = values[None, :]
-        elif df_shape[1] == 1:
-            values = values[:, None]
+        # convert sparse slice to dense
+        X = slice._X.toarray() if sparse.issparse(slice._X) else slice._X
         if axis == Axis.OBS:
-            expression = DataFrame(values, index=obs_idx)
             result = {
-                "var": var_idx,
-                "obs": expression.reset_index().values.tolist()
+                "var": slice.var.index.tolist(),
+                "obs": DataFrame(X, index=slice.obs.index).to_records(index=True).tolist()
             }
         else:
-            expression = DataFrame(values.T, index=var_idx)
             result = {
-                "obs": obs_idx,
-                "var": expression.reset_index().values.tolist(),
+                "obs": slice.obs.index.tolist(),
+                "var": DataFrame(X.T, index=slice.var.index).to_records(index=True).tolist()
             }
         return result
 
@@ -298,14 +339,18 @@ class ScanpyEngine(CXGDriver):
                 top_n = DEFAULT_TOP_N
 
         genes_idx = df1.var.index
-        diffexp_result = stats.ttest_ind(df1.X, df2.X)
+        # ensure we are using a dense ndarray
+        X1 = df1._X.toarray() if sparse.issparse(df1._X) else df1._X
+        X2 = df2._X.toarray() if sparse.issparse(df2._X) else df2._X
+        diffexp_result = stats.ttest_ind(X1, X2)
+        tstats = self._nan_to_zero(diffexp_result.statistic)
         pval = self._nan_to_one(diffexp_result.pvalue)
         bonferroni_pval = 1 - (1 - pval) ** self.gene_count
-        ave_exp_set1 = np.mean(df1.X, axis=0)
-        ave_exp_set2 = np.mean(df2.X, axis=0)
+        ave_exp_set1 = np.mean(X1, axis=0)
+        ave_exp_set2 = np.mean(X2, axis=0)
         ave_diff = ave_exp_set1 - ave_exp_set2
         if mode == DiffExpMode.TOP_N:
-            sort_order = np.argsort(np.abs(diffexp_result.statistic))[::-1]
+            sort_order = np.argsort(np.abs(tstats))[::-1]
             # If top_n > length it will just return length
             genes = self._top_sort(genes_idx, sort_order, top_n)
             pval = self._top_sort(pval, sort_order, top_n)
@@ -350,6 +395,5 @@ class ScanpyEngine(CXGDriver):
                                       index=df.obs.index)
         return {
             "ndims": normalized_layout.shape[1],
-            # reset_index gets obs' id into output
-            "coordinates": normalized_layout.reset_index().values.tolist()
+            "coordinates": normalized_layout.to_records(index=True).tolist()
         }

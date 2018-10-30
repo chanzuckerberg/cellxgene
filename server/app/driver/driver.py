@@ -12,11 +12,11 @@ Sort order for methods
 
 class CXGDriver(metaclass=ABCMeta):
 
-    def __init__(self, data, layout_method=None, diffexp_method=None, max_category_items=100):
+    def __init__(self, data, args):
         self.data = self._load_data(data)
-        self.layout_method = layout_method
-        self.diffexp_method = diffexp_method
-        self.max_category_items = max_category_items
+        self.layout_method = args.layout
+        self.diffexp_method = args.diffexp
+        self.max_category_items = args.max_category_items
         self.cluster = None
 
     @property
@@ -42,14 +42,6 @@ class CXGDriver(metaclass=ABCMeta):
     @staticmethod
     @abstractmethod
     def _load_data(data):
-        pass
-
-    @abstractmethod
-    def cells(self):
-        pass
-
-    @abstractmethod
-    def genes(self):
         pass
 
     @abstractmethod
