@@ -215,7 +215,7 @@ class ScanpyEngine(CXGDriver):
                     index = np.logical_and(index, key_idx)
         return index
 
-    def _slice(self, data, obs_selector=None, var_selector=None):
+    def _slice(self, data, obs_selector=None, vars_selector=None):
         """
         Slice date using any selector that the AnnData object
         supprots for slicing.  If selector is None, will not slice
@@ -226,20 +226,21 @@ class ScanpyEngine(CXGDriver):
 
         https://docs.scipy.org/doc/scipy/reference/sparse.html
         """
-        # prefer_column_access = sparse.isspmatrix_csc(data.X)
-        prefer_row_access = sparse.isspmatrix_lil(data.X) or sparse.isspmatrix_bsr(data.X)
+        prefer_row_access = sparse.isspmatrix_csr(data._X) or \
+            sparse.isspmatrix_lil(data._X) or sparse.isspmatrix_bsr(data._X)
         if prefer_row_access:
             # Row-major slicing
             if obs_selector is not None:
                 data = data[obs_selector, :]
-            if var_selector is not None:
-                data = data[:, var_selector]
+            if vars_selector is not None:
+                data = data[:, vars_selector]
         else:
             # Col-major slicing
-            if var_selector is not None:
-                data = data[:, var_selector]
+            if vars_selector is not None:
+                data = data[:, vars_selector]
             if obs_selector is not None:
                 data = data[obs_selector, :]
+
         return data
 
     @cache.memoize()
@@ -281,12 +282,7 @@ class ScanpyEngine(CXGDriver):
         except KeyError as e:
             raise FilterError(f"Error parsing filter: {e}") from e
         # convert sparse slice to dense
-        X = slice.X.toarray() if sparse.issparse(slice.X) else slice.X
-        if slice.shape[0] == 1:
-            X = X[None, :]
-        if slice.shape[1] == 1:
-            X = X[:, None]
-
+        X = slice._X.toarray() if sparse.issparse(slice._X) else slice._X
         if axis == Axis.OBS:
             result = {
                 "var": slice.var.index.tolist(),
@@ -335,9 +331,9 @@ class ScanpyEngine(CXGDriver):
                 top_n = DEFAULT_TOP_N
 
         genes_idx = df1.var.index
-
-        X1 = df1.X.toarray() if sparse.issparse(df1.X) else df1.X
-        X2 = df2.X.toarray() if sparse.issparse(df2.X) else df2.X
+        # ensure we are using a dense ndarray
+        X1 = df1._X.toarray() if sparse.issparse(df1._X) else df1._X
+        X2 = df2._X.toarray() if sparse.issparse(df2._X) else df2._X
         diffexp_result = stats.ttest_ind(X1, X2)
         pval = self._nan_to_one(diffexp_result.pvalue)
         bonferroni_pval = 1 - (1 - pval) ** self.gene_count
@@ -345,7 +341,7 @@ class ScanpyEngine(CXGDriver):
         ave_exp_set2 = np.mean(X2, axis=0)
         ave_diff = ave_exp_set1 - ave_exp_set2
         if mode == DiffExpMode.TOP_N:
-            sort_order = np.argsort(np.abs(diffexp_result.statistic))[::-1]
+            sort_order = np.argsort(np.abs(pval))
             # If top_n > length it will just return length
             genes = self._top_sort(genes_idx, sort_order, top_n)
             pval = self._top_sort(pval, sort_order, top_n)
