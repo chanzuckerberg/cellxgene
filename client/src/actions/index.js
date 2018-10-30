@@ -6,7 +6,7 @@ import {
   catchErrorsWrap,
   doJsonRequest,
   rangeEncodeIndices,
-  dispatchErrorMessageToUser
+  dispatchNetworkErrorMessageToUser
 } from "../util/actionHelpers";
 
 /*
@@ -75,7 +75,7 @@ const dispatchExpressionErrors = (dispatch, res) => {
   const msg = `Unexpected HTTP response while fetching expression data ${
     res.status
   }, ${res.statusText}`;
-  dispatchErrorMessageToUser(msg);
+  dispatchNetworkErrorMessageToUser(msg);
   throw new Error(msg);
 };
 
@@ -193,18 +193,20 @@ const requestUserDefinedGene = gene => async (dispatch, getState) => {
 const dispatchDiffExpErrors = (dispatch, response) => {
   switch (response.status) {
     case 403:
-      dispatchErrorMessageToUser(
+      dispatchNetworkErrorMessageToUser(
         "Too many cells selected for differential experesion calculation - please make a smaller selection."
       );
       break;
     case 501:
-      dispatchErrorMessageToUser("Differential expression is not implemented.");
+      dispatchNetworkErrorMessageToUser(
+        "Differential expression is not implemented."
+      );
       break;
     default: {
       const msg = `Unexpected differential expression HTTP response ${
         response.status
       }, ${response.statusText}`;
-      dispatchErrorMessageToUser(msg);
+      dispatchNetworkErrorMessageToUser(msg);
       dispatch({
         type: "request differential expression error",
         error: new Error(msg)
