@@ -3,6 +3,7 @@ from os import path
 import pytest
 import time
 import unittest
+import argparse
 
 import numpy as np
 from pandas import Series
@@ -12,7 +13,14 @@ from server.app.scanpy_engine.scanpy_engine import ScanpyEngine
 
 class UtilTest(unittest.TestCase):
     def setUp(self):
-        self.data = ScanpyEngine("example-dataset/pbmc3k.h5ad", layout_method="umap", diffexp_method="ttest")
+        args = argparse.Namespace()
+        args.layout = "umap"
+        args.diffexp = "ttest"
+        args.max_category_items = 100
+        args.obs_names = None
+        args.var_names = None
+
+        self.data = ScanpyEngine("example-dataset/pbmc3k.h5ad", args)
         self.data._create_schema()
 
     def test_init(self):

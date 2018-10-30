@@ -35,7 +35,7 @@ class ScanpyEngine(CXGDriver):
 
     def _alias_annotation_names(self, axis, name):
         """
-        Do all user-specified annotaiton aliasing.
+        Do all user-specified annotation aliasing.
 
         As a *critical* side-effect, ensure the indices are simple number ranges
         (accomplished by calling pandas.DataFrame.reset_index())
