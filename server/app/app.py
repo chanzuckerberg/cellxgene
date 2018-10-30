@@ -143,9 +143,7 @@ def run_scanpy(args):
         log.setLevel(logging.ERROR)
     from .scanpy_engine.scanpy_engine import ScanpyEngine
     print(f"Loading data from {args.data} (this may take a while)")
-    app.data = ScanpyEngine(args.data, layout_method=args.layout, diffexp_method=args.diffexp,
-                            obs_names=args.obs_names, var_names=args.var_names,
-                            max_category_items=args.max_category_items)
+    app.data = ScanpyEngine(args.data, args)
     print(f"Launching cellxgene")
     if args.open_browser:
         webbrowser.open(cellxgene_url)

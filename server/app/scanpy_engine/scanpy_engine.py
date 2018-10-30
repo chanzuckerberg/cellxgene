@@ -22,11 +22,10 @@ Sort order for methods
 
 class ScanpyEngine(CXGDriver):
 
-    def __init__(self, data, layout_method=None, diffexp_method=None,
-                 obs_names=None, var_names=None, max_category_items=100):
-        super().__init__(data, layout_method=layout_method, diffexp_method=diffexp_method,
-                         max_category_items=max_category_items)
-        self._alias_annotation_names(obs_names, var_names)
+    def __init__(self, data, args):
+        super().__init__(data, args)
+        self._alias_annotation_names(Axis.OBS, args.obs_names)
+        self._alias_annotation_names(Axis.VAR, args.var_names)
         self._validate_data_types()
         self.cell_count = self.data.shape[0]
         self.gene_count = self.data.shape[1]
@@ -34,35 +33,34 @@ class ScanpyEngine(CXGDriver):
         self.diffexp_options = ["ttest"]
         self._create_schema()
 
-    def _alias_annotation_names(self, obs_names, var_names):
+    def _alias_annotation_names(self, axis, name):
         """
         Do all user-specified annotaiton aliasing.
 
         As a *critical* side-effect, ensure the indices are simple number ranges
         (accomplished by calling pandas.DataFrame.reset_index())
         """
-        aliased_names = {'obs': obs_names, 'var': var_names}
-        for ax in Axis:
-            name = aliased_names[ax]
-            if name == 'name':
-                continue
-            ax_name = str(ax)
-            df_axis = getattr(self.data, ax_name)
-            if name is None:
-                # reset index to simple range; alias 'name' to point at the
-                # previously specified index.
-                df_axis = df_axis.reset_index().rename(columns={'index': 'name'})
-            elif name in df_axis.columns:
-                if name not in df_axis.columns:
-                    raise KeyError(f"Annotation name {name}, specified in --{ax_name}-name does not exist.")
-                if not df_axis[name].is_unique:
-                    raise KeyError(f"Values in -{ax_name}-name must be unique. "
-                                   "Please prepare data to contain unique values.")
-                # reset index to simple range; alias user-specified annotation to 'name'
-                df_axis = df_axis.reset_index(drop=True).rename(columns={name: 'name'})
-            else:
-                raise KeyError(f"Annotation name {name}, specified in --{ax_name}_name does not exist.")
-            setattr(self.data, ax_name, df_axis)
+        if name == 'name':
+            # a noop, so skip it
+            return
+
+        ax_name = str(axis)
+        df_axis = getattr(self.data, ax_name)
+        if name is None:
+            # reset index to simple range; alias 'name' to point at the
+            # previously specified index.
+            df_axis = df_axis.reset_index().rename(columns={'index': 'name'})
+        elif name in df_axis.columns:
+            if name not in df_axis.columns:
+                raise KeyError(f"Annotation name {name}, specified in --{ax_name}-name does not exist.")
+            if not df_axis[name].is_unique:
+                raise KeyError(f"Values in -{ax_name}-name must be unique. "
+                               "Please prepare data to contain unique values.")
+            # reset index to simple range; alias user-specified annotation to 'name'
+            df_axis = df_axis.reset_index(drop=True).rename(columns={name: 'name'})
+        else:
+            raise KeyError(f"Annotation name {name}, specified in --{ax_name}_name does not exist.")
+        setattr(self.data, ax_name, df_axis)
 
     def _create_schema(self):
         self.schema = {
@@ -123,6 +121,15 @@ class ScanpyEngine(CXGDriver):
         :return: ndarray
         """
         return np.where(np.isnan(values), 1, values)
+
+    @staticmethod
+    def _nan_to_zero(values):
+        """
+        Replaces NaN values with 0
+        :param values: numpy ndarray
+        :return: ndarray
+        """
+        return np.where(np.isnan(values), 0, values)
 
     def _validate_data_types(self):
         if self.data.X.dtype != "float32":
@@ -335,13 +342,14 @@ class ScanpyEngine(CXGDriver):
         X1 = df1._X.toarray() if sparse.issparse(df1._X) else df1._X
         X2 = df2._X.toarray() if sparse.issparse(df2._X) else df2._X
         diffexp_result = stats.ttest_ind(X1, X2)
+        tstats = self._nan_to_zero(diffexp_result.statistic)
         pval = self._nan_to_one(diffexp_result.pvalue)
         bonferroni_pval = 1 - (1 - pval) ** self.gene_count
         ave_exp_set1 = np.mean(X1, axis=0)
         ave_exp_set2 = np.mean(X2, axis=0)
         ave_diff = ave_exp_set1 - ave_exp_set2
         if mode == DiffExpMode.TOP_N:
-            sort_order = np.argsort(np.abs(pval))
+            sort_order = np.argsort(np.abs(tstats))[::-1]
             # If top_n > length it will just return length
             genes = self._top_sort(genes_idx, sort_order, top_n)
             pval = self._top_sort(pval, sort_order, top_n)
