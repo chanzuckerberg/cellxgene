@@ -54,6 +54,9 @@ def launch(data, layout, diffexp, title, verbose, debug, open_browser, port, lis
         verbose = True
         open_browser = False
 
+    if not verbose:
+        sys.tracebacklimit = 0
+
     if not title:
         file_parts = splitext(basename(data))
         title = file_parts[0]
