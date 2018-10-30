@@ -39,7 +39,7 @@ export const configDefaults = {
   features: {},
   displayNames: {},
   parameters: {
-    "category-selection-limit": 1000
+    "max-category-items": 1000
   }
 };
 
