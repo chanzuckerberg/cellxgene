@@ -210,7 +210,7 @@ Information will include:
   - Limitations are optional, and specified as an additional parameter on a feature, encoded as a number value with key `interactiveLimit`. By convention, this is the maximum number of inputs at which point the request is likely to return an error indicating non-interactive compute request. For example, this might be the maximum number of observations specified in the request to `PUT /layout/obs`.
   - mandatory routes do not need to be specified
 - `displayNames` - names will include `engine` and `dataset` display names, as a JSON string. These should be relatively short strings (eg, suitable for window titles or equivalent)
-- `parameters` - system configuration parameters, specified as a key/value pair in a simple object.
+- `parameters` - system configuration parameters, specified as a key/value pair in a simple object. See [Currently Defined Parameters](#currently-defined-parameters) for additional information.
 
 ```
 GET /config
@@ -234,9 +234,8 @@ GET /config
       "dataset": "/home/joe/mouse/blorth.csv"
     },
     "parameters": {
-      "verbose": false,
-      "log-level": "info",
-      "minimumThreshold", 99
+      "max-category-items": 1000,
+      "verbose": false
       // name: value
     }
   }
@@ -707,6 +706,18 @@ Currently unused routes:
 - `/cluster/*`
 - `/layout/var`
 - `/data/saveSelection`
+
+## Currently Defined Parameters
+
+The system currently defines the following parameters:
+
+- `max-category-items` - if any categorical annotation has a unique value count exceeding
+  this parameter, it will not be displayed to the user. Number.
+- `layout` - algorithm to use for graph layout. String.
+- `diffexp` - algorithm to used to calculate differential expression. String.
+- `title` - data set name. String.
+- `debug` - run in debug mode. Boolean.
+- `verbose` - more verbose logging. Boolean.
 
 <!-- Endnotes themselves at the bottom. -->
 
