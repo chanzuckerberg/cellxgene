@@ -1,12 +1,24 @@
 import _ from "lodash";
+/* XXX: cough, cough, ... */
+import { ErrorToastTopCenter } from "../components/framework/toasters";
+
+/*
+dispatch an action error to the user.   Currently we use
+async toasts.
+*/
+export const dispatchErrorMessageToUser = message =>
+  ErrorToastTopCenter.show({ message });
 
 /*
 Catch unexpected errors and make sure we don't lose them!
 */
-export function catchErrorsWrap(fn) {
+export function catchErrorsWrap(fn, dispatchToUser = false) {
   return (dispatch, getState) => {
     fn(dispatch, getState).catch(error => {
       console.error(error);
+      if (dispatchToUser) {
+        dispatchErrorMessageToUser(error.message);
+      }
       dispatch({ type: "UNEXPECTED ERROR", error });
     });
   };

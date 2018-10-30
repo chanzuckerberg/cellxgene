@@ -5,7 +5,8 @@ import { Universe, kvCache } from "../util/stateManager";
 import {
   catchErrorsWrap,
   doJsonRequest,
-  rangeEncodeIndices
+  rangeEncodeIndices,
+  dispatchErrorMessageToUser
 } from "../util/actionHelpers";
 
 /*
@@ -53,58 +54,12 @@ const doInitialDataLoad = () =>
     } catch (error) {
       dispatch({ type: "initial data load error", error });
     }
-  });
+  }, true);
 
-// XXX TODO - this is the old code for doing a regraph.  Preserving it solely
-// until we port to 0.2 API.   The new UX for regraph can't be implemented on
-// the 0.1 API (doesn't allow for re-layout on arbitrary sets of cells), so just
-// punting for now.  See ticket #88
-//
-//
-// /* SELECT */
-// const regraph = () => {
-//   return (dispatch, getState) => {
-//     dispatch({ type: "regraph started" });
-//
-//     const state = getState();
-//     const selectedMetadata = {};
-//
-//     _.each(state.controls.categoricalAsBooleansMap, (options, field) => {
-//       let atLeastOneOptionDeselected = false;
-//
-//       _.each(options, (isActive, option) => {
-//         if (!isActive) {
-//           atLeastOneOptionDeselected = true;
-//         }
-//       });
-//
-//       if (atLeastOneOptionDeselected) {
-//         _.each(options, (isActive, option) => {
-//           if (isActive) {
-//             if (selectedMetadata[field]) {
-//               selectedMetadata[field].push(option);
-//             } else if (!selectedMetadata[field]) {
-//               selectedMetadata[field] = [option];
-//             }
-//           }
-//         });
-//       }
-//     });
-//
-//     let uri = new URI();
-//     uri.setSearch(selectedMetadata);
-//     console.log(uri.search(), selectedMetadata);
-//
-//     dispatch(requestCells(uri.search())).then(res => {
-//       if (res.error) {
-//         dispatch({ type: "regraph error" });
-//       } else {
-//         dispatch({ type: "regraph success" });
-//       }
-//     });
-//   };
-// };
-
+/*
+Set the view (world) to current selection.   Placeholder for an async action
+which also does re-layout.
+*/
 const regraph = () => (dispatch, getState) => {
   const { universe, world, crossfilter } = getState().controls;
   dispatch({
@@ -141,8 +96,7 @@ async function _doRequestExpressionData(dispatch, getState, genes) {
   if (genesToFetch.length) {
     try {
       // XXX: TODO - this could be using /data/var rather than /data/obs,
-      // as that would simplify the transformation in
-      // convertExpressionRESTv02ToObject
+      // as that would simplify the transformation in convertExpressionRESTv02ToObject
       const res = await fetch(
         `${globals.API.prefix}${globals.API.version}data/obs`,
         {
@@ -237,6 +191,29 @@ const requestUserDefinedGene = gene => async dispatch => {
   }
 };
 
+const dispatchDiffExpErrors = (dispatch, response) => {
+  switch (response.status) {
+    case 403:
+      dispatchErrorMessageToUser(
+        "Too many cells selected for differential experesion calculation - please make a smaller selection."
+      );
+      break;
+    case 501:
+      dispatchErrorMessageToUser("Differential expression is not implemented.");
+      break;
+    default: {
+      const msg = `Unexpected differential expression HTTP response ${
+        response.status
+      }, ${response.statusText}`;
+      dispatchErrorMessageToUser(msg);
+      dispatch({
+        type: "request differential expression error",
+        error: new Error(msg)
+      });
+    }
+  }
+};
+
 const requestDifferentialExpression = (set1, set2, num_genes = 10) => async (
   dispatch,
   getState
@@ -256,7 +233,7 @@ const requestDifferentialExpression = (set1, set2, num_genes = 10) => async (
     const set2ByIndex = rangeEncodeIndices(
       _.map(set2, s => universe.obsNameToIndexMap[s])
     );
-    const diffExpFetch = await fetch(
+    const response = await fetch(
       `${globals.API.prefix}${globals.API.version}diffexp/obs`,
       {
         method: "POST",
@@ -273,7 +250,15 @@ const requestDifferentialExpression = (set1, set2, num_genes = 10) => async (
         })
       }
     );
-    const data = await diffExpFetch.json();
+
+    if (
+      !response.ok ||
+      response.headers["Content-Type"] !== "application/json"
+    ) {
+      return dispatchDiffExpErrors(dispatch, response);
+    }
+
+    const data = await response.json();
     // result is [ [varIdx, ...], ... ]
     const topNGenes = _.map(data, r => universe.varAnnotations[r[0]].name);
 
