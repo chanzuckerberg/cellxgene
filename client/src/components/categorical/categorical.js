@@ -25,8 +25,8 @@ const truncateCategories = options => {
   ranges: _.get(state.controls.world, "summary.obs", null),
   categorySelectionLimit: _.get(
     state.config,
-    "parameters.category-selection-limit",
-    globals.configDefaults.parameters["category-selection-limit"]
+    "parameters.max-category-items",
+    globals.configDefaults.parameters["max-category-items"]
   )
 }))
 class Categories extends React.Component {
