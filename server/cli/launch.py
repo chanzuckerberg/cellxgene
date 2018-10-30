@@ -16,7 +16,7 @@ from os.path import splitext, basename, isfile
               help='Provide verbose output, including warnings and all server requests.')
 @click.option('--debug', '-d', is_flag=True, default=False, show_default=True,
               help='Run in debug mode.')
-@click.option('--open-browser', '-o', is_flag=True, default=False, show_default=True,
+@click.option('--open', '-o', 'open_browser', is_flag=True, default=False, show_default=True,
               help='Open the web browser after launch.')
 @click.option('--port', '-p', help="Port to run server on.", metavar='', default=5005, show_default=True)
 @click.option('--listen-all', is_flag=True, default=False, show_default=True,
@@ -83,7 +83,7 @@ def launch(data, layout, diffexp, title, verbose, debug, open_browser, port, lis
                             max_category_items=max_category_items)
 
     if open_browser:
-        click.echo('[cellxgene] Launching! Opening your browser now.')
+        click.echo('[cellxgene] Launching! Opening your browser to %s now.' % cellxgene_url)
         webbrowser.open(cellxgene_url)
     else:
         click.echo('[cellxgene] Launching! Please go to %s in your browser.' % cellxgene_url)
