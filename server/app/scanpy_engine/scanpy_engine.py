@@ -222,7 +222,8 @@ class ScanpyEngine(CXGDriver):
                     index = np.logical_and(index, key_idx)
         return index
 
-    def _slice(self, data, obs_selector=None, vars_selector=None):
+    @staticmethod
+    def _slice(data, obs_selector=None, vars_selector=None):
         """
         Slice date using any selector that the AnnData object
         supprots for slicing.  If selector is None, will not slice
