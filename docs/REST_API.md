@@ -201,13 +201,16 @@ Information will include:
     - Diff Exp: integer number of obs/vars at which the differential expression compute is non-interactive. Omitted if POST /diffexp not supported
 - Human readable information:
   - Data set name / title - for display purposes.
-  - Engine name and version - for display purposes
+  - Engine name and version - for display purposes.
+- System-wide configuration parameters, eg, configuration the end user has specified via a CLI or server configuration system.
 
 **Response body:**
 
-- Features - encoded as array of features. All optional features must be included. Each feature will be identified by an HTTP method and path **prefix**, and will have availability status. If not specified as unavailable, the feature must be implemented.
-- Limitations are optional, and specified as an additional parameter on a feature, encoded as a number value with key `interactiveLimit`. By convention, this is the maximum number of inputs at which point the request is likely to return an error indicating non-interactive compute request. For example, this might be the maximum number of observations specified in the request to `PUT /layout/obs`.
-- Display names will include `engine` and `dataset` display names, as a JSON string. These should be relatively short strings (eg, suitable for window titles or equivalent)
+- `features` - encoded as array of features. All optional features must be included. Each feature will be identified by an HTTP method and path **prefix**, and will have availability status. If not specified as unavailable, the feature must be implemented.
+  - Limitations are optional, and specified as an additional parameter on a feature, encoded as a number value with key `interactiveLimit`. By convention, this is the maximum number of inputs at which point the request is likely to return an error indicating non-interactive compute request. For example, this might be the maximum number of observations specified in the request to `PUT /layout/obs`.
+  - mandatory routes do not need to be specified
+- `displayNames` - names will include `engine` and `dataset` display names, as a JSON string. These should be relatively short strings (eg, suitable for window titles or equivalent)
+- `parameters` - system configuration parameters, specified as a key/value pair in a simple object. See [Currently Defined Parameters](#currently-defined-parameters) for additional information.
 
 ```
 GET /config
@@ -230,6 +233,11 @@ GET /config
       "engine": "ScanPy version 1.33",
       "dataset": "/home/joe/mouse/blorth.csv"
     },
+    "parameters": {
+      "max-category-items": 1000,
+      "verbose": false
+      // name: value
+    }
   }
 }
 ```
@@ -460,6 +468,7 @@ Get the _default_ layout for all observations or (_future_) all variables. Retur
   }
 }
 ```
+
 **Response code:**
 
 - 200 - success
@@ -697,6 +706,18 @@ Currently unused routes:
 - `/cluster/*`
 - `/layout/var`
 - `/data/saveSelection`
+
+## Currently Defined Parameters
+
+The system currently defines the following parameters:
+
+- `max-category-items` - if any categorical annotation has a unique value count exceeding
+  this parameter, it will not be displayed to the user. Number.
+- `layout` - algorithm to use for graph layout. String.
+- `diffexp` - algorithm to used to calculate differential expression. String.
+- `title` - data set name. String.
+- `debug` - run in debug mode. Boolean.
+- `verbose` - more verbose logging. Boolean.
 
 <!-- Endnotes themselves at the bottom. -->
 
