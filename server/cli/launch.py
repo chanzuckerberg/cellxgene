@@ -78,7 +78,7 @@ def launch(data, layout, diffexp, title, verbose, debug, open_browser, port, lis
         log = logging.getLogger('werkzeug')
         log.setLevel(logging.ERROR)
 
-    click.echo('[cellxgene] Loading data from %s, this may take a while...' % data)
+    click.echo('[cellxgene] Loading data from %s, this may take awhile...' % basename(data))
 
     from server.app.scanpy_engine.scanpy_engine import ScanpyEngine
     app.data = ScanpyEngine(data, layout_method=layout, diffexp_method=diffexp,
