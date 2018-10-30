@@ -35,7 +35,13 @@ export const doJsonRequest = async url => {
       "Accept-Encoding": "gzip, deflate, br"
     })
   });
-  return res.json();
+  if (res.ok && res.headers.get("Content-Type") === "application/json") {
+    return res.json();
+  }
+  // else an error
+  const msg = `Unexpected HTTP response ${res.status}, ${res.statusText}`;
+  dispatchErrorMessageToUser(msg);
+  throw new Error(msg);
 };
 
 /*

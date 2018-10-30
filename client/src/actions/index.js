@@ -70,6 +70,15 @@ const regraph = () => (dispatch, getState) => {
   });
 };
 
+// Throws
+const dispatchExpressionErrors = (dispatch, res) => {
+  const msg = `Unexpected HTTP response while fetching expression data ${
+    res.status
+  }, ${res.statusText}`;
+  dispatchErrorMessageToUser(msg);
+  throw new Error(msg);
+};
+
 /*
 Fetch expression vectors for each gene in genes.   This is NOT an action
 function, but rather a helper to be called from an action helper that
@@ -115,6 +124,12 @@ async function _doRequestExpressionData(dispatch, getState, genes) {
           })
         }
       );
+
+      if (!res.ok || res.headers.get("Content-Type") !== "application/json") {
+        // WILL throw
+        return dispatchExpressionErrors(dispatch, res);
+      }
+
       const data = await res.json();
       expressionData = {
         ...expressionData,
@@ -155,28 +170,12 @@ function requestSingleGeneExpressionCountsForColoringPOST(gene) {
   };
 }
 
-const requestGeneExpressionCountsPOST = genes => async (dispatch, getState) => {
-  dispatch({ type: "get expression started" });
-  try {
-    const expressionData = await _doRequestExpressionData(
-      dispatch,
-      getState,
-      genes
-    );
-    return dispatch({
-      type: "get expression success",
-      genes,
-      data: expressionData
-    });
-  } catch (error) {
-    return dispatch({ type: "get expression error", error });
-  }
-};
-
-const requestUserDefinedGene = gene => async dispatch => {
+const requestUserDefinedGene = gene => async (dispatch, getState) => {
   dispatch({ type: "request user defined gene started" });
   try {
-    const data = await dispatch(requestGeneExpressionCountsPOST([gene]));
+    const data = await await _doRequestExpressionData(dispatch, getState, [
+      gene
+    ]);
 
     /* then send the success case action through */
     return dispatch({
@@ -233,7 +232,7 @@ const requestDifferentialExpression = (set1, set2, num_genes = 10) => async (
     const set2ByIndex = rangeEncodeIndices(
       _.map(set2, s => universe.obsNameToIndexMap[s])
     );
-    const response = await fetch(
+    const res = await fetch(
       `${globals.API.prefix}${globals.API.version}diffexp/obs`,
       {
         method: "POST",
@@ -251,14 +250,11 @@ const requestDifferentialExpression = (set1, set2, num_genes = 10) => async (
       }
     );
 
-    if (
-      !response.ok ||
-      response.headers["Content-Type"] !== "application/json"
-    ) {
-      return dispatchDiffExpErrors(dispatch, response);
+    if (!res.ok || res.headers.get("Content-Type") !== "application/json") {
+      return dispatchDiffExpErrors(dispatch, res);
     }
 
-    const data = await response.json();
+    const data = await res.json();
     // result is [ [varIdx, ...], ... ]
     const topNGenes = _.map(data, r => universe.varAnnotations[r[0]].name);
 
@@ -266,7 +262,7 @@ const requestDifferentialExpression = (set1, set2, num_genes = 10) => async (
     Kick off secondary action to fetch all of the expression data for the
     topN expressed genes.
     */
-    await dispatch(requestGeneExpressionCountsPOST(topNGenes));
+    await _doRequestExpressionData(dispatch, getState, topNGenes);
 
     /* then send the success case action through */
     return dispatch({
@@ -306,7 +302,6 @@ export default {
   regraph,
   resetInterface,
   requestSingleGeneExpressionCountsForColoringPOST,
-  requestGeneExpressionCountsPOST,
   requestDifferentialExpression,
   requestUserDefinedGene,
   doInitialDataLoad
