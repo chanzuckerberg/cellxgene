@@ -50,7 +50,7 @@ def launch(data, layout, diffexp, title, verbose, debug, open_browser, port, lis
     else:
         name, extension = splitext(data)
         if not extension == '.h5ad':
-            raise click.FileError(data, hint='file type must be .h5ad')
+            raise click.FileError(basename(data), hint='file type must be .h5ad')
 
     if debug:
         verbose = True
