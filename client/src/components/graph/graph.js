@@ -6,8 +6,7 @@ import { connect } from "react-redux";
 import mat4 from "gl-mat4";
 import _regl from "regl";
 import { Button, AnchorButton, Tooltip } from "@blueprintjs/core";
-import { worldEqUniverse } from "../../util/stateManager/world";
-
+import * as globals from "../../globals";
 import setupSVGandBrushElements from "./setupSVGandBrush";
 import actions from "../../actions";
 import _camera from "../../util/camera";
@@ -30,9 +29,9 @@ class Graph extends React.Component {
     super(props);
     this.count = 0;
     this.inverse = mat4.identity([]);
-    this.graphPaddingTop = 100;
+    this.graphPaddingTop = 0;
     this.graphPaddingBottom = 45;
-    this.graphPaddingRight = 10;
+    this.graphPaddingRight = globals.leftSidebarWidth;
     this.renderCache = {
       positions: null,
       colors: null
@@ -196,7 +195,7 @@ class Graph extends React.Component {
         this.handleBrushSelectAction.bind(this),
         this.handleBrushDeselectAction.bind(this),
         responsive,
-        this.graphPaddingTop
+        this.graphPaddingRight
       );
       this.setState({ svg: newSvg, brush });
     }
@@ -277,7 +276,7 @@ class Graph extends React.Component {
       const invert = pin => {
         const x = (2 * pin[0]) / (responsive.height - this.graphPaddingTop) - 1;
         const y =
-          2 * (1 - pin[1] / (responsive.height - this.graphPaddingTop)) - 1;
+          2 * (1 - pin[1] / (responsive.width - this.graphPaddingRight)) - 1;
         const pout = [
           x * inverse[14] + inverse[12],
           y * inverse[14] + inverse[13]
@@ -421,12 +420,10 @@ class Graph extends React.Component {
         </div>
         <div
           style={{
-            marginRight: 50,
-            marginTop: 50,
             zIndex: -9999,
             position: "fixed",
-            right: this.graphPaddingRight,
-            bottom: this.graphPaddingBottom
+            top: 0,
+            right: 0
           }}
         >
           <div
@@ -437,7 +434,7 @@ class Graph extends React.Component {
           />
           <div style={{ padding: 0, margin: 0 }}>
             <canvas
-              width={responsive.height - this.graphPaddingTop}
+              width={responsive.width - this.graphPaddingRight}
               height={responsive.height - this.graphPaddingTop}
               ref={canvas => {
                 this.reglCanvas = canvas;
