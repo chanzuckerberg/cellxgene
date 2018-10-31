@@ -5,7 +5,8 @@ import { Universe, kvCache } from "../util/stateManager";
 import {
   catchErrorsWrap,
   doJsonRequest,
-  rangeEncodeIndices
+  rangeEncodeIndices,
+  dispatchNetworkErrorMessageToUser
 } from "../util/actionHelpers";
 
 /*
@@ -53,58 +54,12 @@ const doInitialDataLoad = () =>
     } catch (error) {
       dispatch({ type: "initial data load error", error });
     }
-  });
+  }, true);
 
-// XXX TODO - this is the old code for doing a regraph.  Preserving it solely
-// until we port to 0.2 API.   The new UX for regraph can't be implemented on
-// the 0.1 API (doesn't allow for re-layout on arbitrary sets of cells), so just
-// punting for now.  See ticket #88
-//
-//
-// /* SELECT */
-// const regraph = () => {
-//   return (dispatch, getState) => {
-//     dispatch({ type: "regraph started" });
-//
-//     const state = getState();
-//     const selectedMetadata = {};
-//
-//     _.each(state.controls.categoricalAsBooleansMap, (options, field) => {
-//       let atLeastOneOptionDeselected = false;
-//
-//       _.each(options, (isActive, option) => {
-//         if (!isActive) {
-//           atLeastOneOptionDeselected = true;
-//         }
-//       });
-//
-//       if (atLeastOneOptionDeselected) {
-//         _.each(options, (isActive, option) => {
-//           if (isActive) {
-//             if (selectedMetadata[field]) {
-//               selectedMetadata[field].push(option);
-//             } else if (!selectedMetadata[field]) {
-//               selectedMetadata[field] = [option];
-//             }
-//           }
-//         });
-//       }
-//     });
-//
-//     let uri = new URI();
-//     uri.setSearch(selectedMetadata);
-//     console.log(uri.search(), selectedMetadata);
-//
-//     dispatch(requestCells(uri.search())).then(res => {
-//       if (res.error) {
-//         dispatch({ type: "regraph error" });
-//       } else {
-//         dispatch({ type: "regraph success" });
-//       }
-//     });
-//   };
-// };
-
+/*
+Set the view (world) to current selection.   Placeholder for an async action
+which also does re-layout.
+*/
 const regraph = () => (dispatch, getState) => {
   const { universe, world, crossfilter } = getState().controls;
   dispatch({
@@ -113,6 +68,15 @@ const regraph = () => (dispatch, getState) => {
     world,
     crossfilter
   });
+};
+
+// Throws
+const dispatchExpressionErrors = (dispatch, res) => {
+  const msg = `Unexpected HTTP response while fetching expression data ${
+    res.status
+  }, ${res.statusText}`;
+  dispatchNetworkErrorMessageToUser(msg);
+  throw new Error(msg);
 };
 
 /*
@@ -141,8 +105,7 @@ async function _doRequestExpressionData(dispatch, getState, genes) {
   if (genesToFetch.length) {
     try {
       // XXX: TODO - this could be using /data/var rather than /data/obs,
-      // as that would simplify the transformation in
-      // convertExpressionRESTv02ToObject
+      // as that would simplify the transformation in convertExpressionRESTv02ToObject
       const res = await fetch(
         `${globals.API.prefix}${globals.API.version}data/obs`,
         {
@@ -161,6 +124,12 @@ async function _doRequestExpressionData(dispatch, getState, genes) {
           })
         }
       );
+
+      if (!res.ok || res.headers.get("Content-Type") !== "application/json") {
+        // WILL throw
+        return dispatchExpressionErrors(dispatch, res);
+      }
+
       const data = await res.json();
       expressionData = {
         ...expressionData,
@@ -201,28 +170,12 @@ function requestSingleGeneExpressionCountsForColoringPOST(gene) {
   };
 }
 
-const requestGeneExpressionCountsPOST = genes => async (dispatch, getState) => {
-  dispatch({ type: "get expression started" });
-  try {
-    const expressionData = await _doRequestExpressionData(
-      dispatch,
-      getState,
-      genes
-    );
-    return dispatch({
-      type: "get expression success",
-      genes,
-      data: expressionData
-    });
-  } catch (error) {
-    return dispatch({ type: "get expression error", error });
-  }
-};
-
-const requestUserDefinedGene = gene => async dispatch => {
+const requestUserDefinedGene = gene => async (dispatch, getState) => {
   dispatch({ type: "request user defined gene started" });
   try {
-    const data = await dispatch(requestGeneExpressionCountsPOST([gene]));
+    const data = await await _doRequestExpressionData(dispatch, getState, [
+      gene
+    ]);
 
     /* then send the success case action through */
     return dispatch({
@@ -234,6 +187,31 @@ const requestUserDefinedGene = gene => async dispatch => {
       type: "request user defined gene error",
       error
     });
+  }
+};
+
+const dispatchDiffExpErrors = (dispatch, response) => {
+  switch (response.status) {
+    case 403:
+      dispatchNetworkErrorMessageToUser(
+        "Too many cells selected for differential experesion calculation - please make a smaller selection."
+      );
+      break;
+    case 501:
+      dispatchNetworkErrorMessageToUser(
+        "Differential expression is not implemented."
+      );
+      break;
+    default: {
+      const msg = `Unexpected differential expression HTTP response ${
+        response.status
+      }, ${response.statusText}`;
+      dispatchNetworkErrorMessageToUser(msg);
+      dispatch({
+        type: "request differential expression error",
+        error: new Error(msg)
+      });
+    }
   }
 };
 
@@ -256,7 +234,7 @@ const requestDifferentialExpression = (set1, set2, num_genes = 10) => async (
     const set2ByIndex = rangeEncodeIndices(
       _.map(set2, s => universe.obsNameToIndexMap[s])
     );
-    const diffExpFetch = await fetch(
+    const res = await fetch(
       `${globals.API.prefix}${globals.API.version}diffexp/obs`,
       {
         method: "POST",
@@ -273,7 +251,12 @@ const requestDifferentialExpression = (set1, set2, num_genes = 10) => async (
         })
       }
     );
-    const data = await diffExpFetch.json();
+
+    if (!res.ok || res.headers.get("Content-Type") !== "application/json") {
+      return dispatchDiffExpErrors(dispatch, res);
+    }
+
+    const data = await res.json();
     // result is [ [varIdx, ...], ... ]
     const topNGenes = _.map(data, r => universe.varAnnotations[r[0]].name);
 
@@ -281,7 +264,7 @@ const requestDifferentialExpression = (set1, set2, num_genes = 10) => async (
     Kick off secondary action to fetch all of the expression data for the
     topN expressed genes.
     */
-    await dispatch(requestGeneExpressionCountsPOST(topNGenes));
+    await _doRequestExpressionData(dispatch, getState, topNGenes);
 
     /* then send the success case action through */
     return dispatch({
@@ -321,7 +304,6 @@ export default {
   regraph,
   resetInterface,
   requestSingleGeneExpressionCountsForColoringPOST,
-  requestGeneExpressionCountsPOST,
   requestDifferentialExpression,
   requestUserDefinedGene,
   doInitialDataLoad

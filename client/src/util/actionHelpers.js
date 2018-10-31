@@ -1,12 +1,24 @@
 import _ from "lodash";
+/* XXX: cough, cough, ... */
+import { postNetworkErrorToast } from "../components/framework/toasters";
+
+/*
+dispatch an action error to the user.   Currently we use
+async toasts.
+*/
+export const dispatchNetworkErrorMessageToUser = message =>
+  postNetworkErrorToast(message);
 
 /*
 Catch unexpected errors and make sure we don't lose them!
 */
-export function catchErrorsWrap(fn) {
+export function catchErrorsWrap(fn, dispatchToUser = false) {
   return (dispatch, getState) => {
     fn(dispatch, getState).catch(error => {
       console.error(error);
+      if (dispatchToUser) {
+        dispatchNetworkErrorMessageToUser(error.message);
+      }
       dispatch({ type: "UNEXPECTED ERROR", error });
     });
   };
@@ -23,7 +35,13 @@ export const doJsonRequest = async url => {
       "Accept-Encoding": "gzip, deflate, br"
     })
   });
-  return res.json();
+  if (res.ok && res.headers.get("Content-Type") === "application/json") {
+    return res.json();
+  }
+  // else an error
+  const msg = `Unexpected HTTP response ${res.status}, ${res.statusText}`;
+  dispatchNetworkErrorMessageToUser(msg);
+  throw new Error(msg);
 };
 
 /*

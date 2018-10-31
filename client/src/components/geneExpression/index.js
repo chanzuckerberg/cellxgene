@@ -9,7 +9,7 @@ import { Button, Tooltip } from "@blueprintjs/core";
 import HistogramBrush from "../brushableHistogram";
 import * as globals from "../../globals";
 import actions from "../../actions";
-import { ErrorToastTopCenter } from "../framework/toasters";
+import { postUserErrorToast } from "../framework/toasters";
 import ExpressionButtons from "./expressionButtons";
 
 @connect(state => {
@@ -47,18 +47,13 @@ class GeneExpression extends React.Component {
     const { gene } = this.state;
 
     if (userDefinedGenes.indexOf(gene) !== -1) {
-      ErrorToastTopCenter.show({
-        message: "That gene already exists"
-      });
+      postUserErrorToast("That gene already exists");
     } else if (userDefinedGenes.length > 15) {
-      ErrorToastTopCenter.show({
-        message:
-          "That's too many genes, you can have at most 15 user defined genes"
-      });
+      postUserErrorToast(
+        "That's too many genes, you can have at most 15 user defined genes"
+      );
     } else if (!_.find(world.varAnnotations, { name: gene })) {
-      ErrorToastTopCenter.show({
-        message: "That doesn't appear to be a valid gene name."
-      });
+      postUserErrorToast("That doesn't appear to be a valid gene name.");
     } else {
       dispatch(actions.requestUserDefinedGene(gene));
       dispatch({
