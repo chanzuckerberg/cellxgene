@@ -3,7 +3,7 @@ import click
 import logging
 import webbrowser
 
-from os.path import splitext, basename, isfile
+from os.path import splitext, basename
 
 
 @click.command()
