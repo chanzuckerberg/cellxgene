@@ -17,11 +17,11 @@ from os.path import splitext, basename
               help='Provide verbose output, including warnings and all server requests.')
 @click.option('--debug', '-d', is_flag=True, default=False, show_default=True,
               help='Run in debug mode.')
-@click.option('--obs-names', default=None, help='Name of annotation field to use for observations.')
-@click.option('--var-names', default=None, help='Name of annotation to use for variables.')
 @click.option('--open', '-o', 'open_browser', is_flag=True, default=False, show_default=True,
               help='Open the web browser after launch.')
 @click.option('--port', '-p', help="Port to run server on.", metavar='', default=5005, show_default=True)
+@click.option('--obs-names', default=None, metavar='', help='Name of annotation field to use for observations.')
+@click.option('--var-names', default=None, metavar='', help='Name of annotation to use for variables.')
 @click.option('--listen-all', is_flag=True, default=False, show_default=True,
               help='Bind to all interfaces (this makes the server accessible beyond this computer).')
 @click.option('--max-category-items', default=100, metavar='', show_default=True,
