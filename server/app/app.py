@@ -148,7 +148,7 @@ def run_scanpy(args):
     if args.open_browser:
         webbrowser.open(cellxgene_url)
     print(f"Please go to {cellxgene_url}")
-    app.run(host=host, debug=args.debug, port=args.port)
+    app.run(host=host, debug=args.debug, port=args.port, threaded=True)
 
 
 def main():
