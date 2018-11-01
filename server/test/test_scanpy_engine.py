@@ -13,12 +13,8 @@ from server.app.scanpy_engine.scanpy_engine import ScanpyEngine
 
 class UtilTest(unittest.TestCase):
     def setUp(self):
-        args = argparse.Namespace()
-        args.layout = "umap"
-        args.diffexp = "ttest"
-        args.max_category_items = 100
-        args.obs_names = None
-        args.var_names = None
+        args = {'layout': 'umap', 'diffexp': 'ttest', 'max_category_items': 100,
+                'obs_names': None, 'var_names': None}
 
         self.data = ScanpyEngine("example-dataset/pbmc3k.h5ad", args)
         self.data._create_schema()
