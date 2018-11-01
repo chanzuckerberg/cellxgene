@@ -180,7 +180,10 @@ const requestUserDefinedGene = gene => async (dispatch, getState) => {
     /* then send the success case action through */
     return dispatch({
       type: "request user defined gene success",
-      data
+      data: {
+        genes: [gene],
+        expression: data[gene]
+      }
     });
   } catch (error) {
     return dispatch({
