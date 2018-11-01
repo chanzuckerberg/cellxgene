@@ -14,9 +14,9 @@ class CXGDriver(metaclass=ABCMeta):
 
     def __init__(self, data, args):
         self.data = self._load_data(data)
-        self.layout_method = args.layout
-        self.diffexp_method = args.diffexp
-        self.max_category_items = args.max_category_items
+        self.layout_method = args['layout']
+        self.diffexp_method = args['diffexp']
+        self.max_category_items = args['max_category_items']
         self.cluster = None
 
     @property

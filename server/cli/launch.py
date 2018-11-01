@@ -7,7 +7,7 @@ from os.path import splitext, basename, isfile
 
 
 @click.command()
-@click.argument('data', metavar='<data file>')
+@click.argument('data', metavar='<data file>', type=click.Path(exists=True, file_okay=True, dir_okay=False))
 @click.option('--layout', '-l', type=click.Choice(['umap', 'tsne']), default='umap', show_default=True,
               help='Method for layout.')
 @click.option('--diffexp', '-d', type=click.Choice(['ttest']), default='ttest', show_default=True,
@@ -26,9 +26,9 @@ from os.path import splitext, basename, isfile
               help='Bind to all interfaces (this makes the server accessible beyond this computer).')
 @click.option('--max-category-items', default=100, metavar='', show_default=True,
               help='Limits the number of categorical annotation items displayed.')
-def launch(data, layout, diffexp, title, verbose, debug, open_browser, port, listen_all, max_category_items):
-    """
-    Launch the cellxgene data viewer.
+def launch(data, layout, diffexp, title, verbose, debug, obs_names, var_names,
+           open_browser, port, listen_all, max_category_items):
+    """Launch the cellxgene data viewer.
     This web app lets you explore single-cell expression data.
     Data must be in a format that cellxgene expects, read the
     "getting started" guide.
@@ -37,8 +37,8 @@ def launch(data, layout, diffexp, title, verbose, debug, open_browser, port, lis
 
     > cellxgene launch example_dataset/pbmc3k.h5ad --title pbmc3k
 
-    > cellxgene launch <your data file> --title <your title>
-    """
+    > cellxgene launch <your data file> --title <your title>"""
+
     # Startup message
     click.echo('[cellxgene] Starting the CLI...')
 
@@ -46,12 +46,9 @@ def launch(data, layout, diffexp, title, verbose, debug, open_browser, port, lis
     from server.app.app import app
 
     # Argument checking
-    if not isfile(data):
-        raise click.FileError(data, hint='file does not exist')
-    else:
-        name, extension = splitext(data)
-        if not extension == '.h5ad':
-            raise click.FileError(basename(data), hint='file type must be .h5ad')
+    name, extension = splitext(data)
+    if extension != '.h5ad':
+        raise click.FileError(basename(data), hint='file type must be .h5ad')
 
     if debug:
         verbose = True
@@ -82,17 +79,20 @@ def launch(data, layout, diffexp, title, verbose, debug, open_browser, port, lis
         log = logging.getLogger('werkzeug')
         log.setLevel(logging.ERROR)
 
-    click.echo('[cellxgene] Loading data from %s, this may take awhile...' % basename(data))
+    click.echo(f'[cellxgene] Loading data from {basename(data)}, this may take awhile...')
 
     from server.app.scanpy_engine.scanpy_engine import ScanpyEngine
-    app.data = ScanpyEngine(data, layout_method=layout, diffexp_method=diffexp,
-                            max_category_items=max_category_items)
+
+    args = {'layout': layout, 'diffexp': diffexp, 'max_category_items': max_category_items,
+            'obs_names': obs_names, 'var_names': var_names}
+
+    app.data = ScanpyEngine(data, args)
 
     if open_browser:
-        click.echo('[cellxgene] Launching! Opening your browser to %s now.' % cellxgene_url)
+        click.echo(f'[cellxgene] Launching! Opening your browser to {cellxgene_url} now.')
         webbrowser.open(cellxgene_url)
     else:
-        click.echo('[cellxgene] Launching! Please go to %s in your browser.' % cellxgene_url)
+        click.echo(f'[cellxgene] Launching! Please go to {cellxgene_url} in your browser.')
 
     click.echo('[cellxgene] Type CTRL-C at any time to exit.')
 
