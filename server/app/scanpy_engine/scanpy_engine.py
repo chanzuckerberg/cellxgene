@@ -24,8 +24,8 @@ class ScanpyEngine(CXGDriver):
 
     def __init__(self, data, args):
         super().__init__(data, args)
-        self._alias_annotation_names(Axis.OBS, args.obs_names)
-        self._alias_annotation_names(Axis.VAR, args.var_names)
+        self._alias_annotation_names(Axis.OBS, args['obs_names'])
+        self._alias_annotation_names(Axis.VAR, args['var_names'])
         self._validate_data_types()
         self.cell_count = self.data.shape[0]
         self.gene_count = self.data.shape[1]
