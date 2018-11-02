@@ -1,7 +1,7 @@
 module.exports = {
   root: true,
   parser: "babel-eslint",
-  extends: "airbnb",
+  extends: ["airbnb", "prettier", "prettier/react"],
   env: { browser: true, commonjs: true, es6: true },
   globals: { expect: true },
   parserOptions: {
@@ -14,6 +14,7 @@ module.exports = {
   },
   rules: {
     "no-magic-numbers": "off",
+    "no-nested-ternary": "off",
     "func-style": "off",
     "arrow-parens": "off",
     "no-use-before-define": "off",
@@ -32,6 +33,25 @@ module.exports = {
     "no-param-reassign": "off",
     "object-curly-newline": ["error", { consistent: true }],
     "react/prop-types": [0],
-    "space-before-function-paren": "off"
-  }
+    "space-before-function-paren": "off",
+    "function-paren-newline": "off"
+  },
+  overrides: [
+    {
+      files: ["**/*.test.js"],
+      env: {
+        jest: true // now **/*.test.js files' env has both es6 *and* jest
+      },
+      // Can't extend in overrides: https://github.com/eslint/eslint/issues/8813
+      // "extends": ["plugin:jest/recommended"]
+      plugins: ["jest"],
+      rules: {
+        "jest/no-disabled-tests": "warn",
+        "jest/no-focused-tests": "error",
+        "jest/no-identical-title": "error",
+        "jest/prefer-to-have-length": "warn",
+        "jest/valid-expect": "error"
+      }
+    }
+  ]
 };

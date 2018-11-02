@@ -2,14 +2,21 @@
 
 import _ from "lodash";
 import { World, kvCache } from "../util/stateManager";
-import { parseRGB } from "../util/parseRGB";
+import parseRGB from "../util/parseRGB";
 import Crossfilter from "../util/typedCrossfilter";
 import * as globals from "../globals";
+import {
+  layoutDimensionName,
+  obsAnnoDimensionName,
+  userDefinedDimensionName,
+  diffexpDimensionName,
+  makeContinuousDimensionName
+} from "../util/nameCreators";
 
 function createCategoricalAsBooleansMap(world) {
   const res = {};
   _.each(world.summary.obs, (value, key) => {
-    if (value.options) {
+    if (value.options && key !== "name") {
       const optionsAsBooleans = {};
       _.each(value.options, (_value, _key) => {
         optionsAsBooleans[_key] = true;
@@ -35,6 +42,8 @@ const Controls = (
     categoricalAsBooleansMap: null,
     crossfilter: null,
     dimensionMap: null,
+    userDefinedGenes: [],
+    diffexpGenes: [],
 
     colorAccessor: null,
     colorScale: null,
@@ -67,6 +76,7 @@ const Controls = (
     }
     case "initial data load complete (universe exists)":
     case "reset World to eq Universe": {
+      const { userDefinedGenes, diffexpGenes } = state;
       /* first light - create world & other data-driven defaults */
       const { universe } = action;
       const world = World.createWorldFromEntireUniverse(universe);
@@ -75,6 +85,47 @@ const Controls = (
       const categoricalAsBooleansMap = createCategoricalAsBooleansMap(world);
       const crossfilter = Crossfilter(world.obsAnnotations);
       const dimensionMap = World.createObsDimensionMap(crossfilter, world);
+
+      const worldVarDataCache = world.varDataCache;
+
+      // dimensionMap = {
+      //     layout_X: dim-for-X,
+      //     obsAnno_name: dim for an annotation,
+      //     varData_userDefined_genename: dim for user defined expression,
+      //     varData_diffexp_genename: dim for diff-exp added gene expression
+      // }
+      /* var dimensions */
+      if (userDefinedGenes.length > 0) {
+        /*
+          verbose & slightly confusing that we also access this as an object
+          in controls rather than an array, should be abstracted into
+          util ie., createDimensionsFromBothListsOfGenes(userGenes, diffExp)
+        */
+        _.forEach(userDefinedGenes, gene => {
+          dimensionMap[
+            userDefinedDimensionName(gene)
+          ] = World.createVarDimension(
+            /* "__var__" + */
+            world,
+            worldVarDataCache,
+            crossfilter,
+            gene
+          );
+        });
+      }
+
+      if (diffexpGenes.length > 0) {
+        _.forEach(diffexpGenes, gene => {
+          dimensionMap[diffexpDimensionName(gene)] = World.createVarDimension(
+            /* "__var__" + */
+            world,
+            worldVarDataCache,
+            crossfilter,
+            gene
+          );
+        });
+      }
+
       return {
         ...state,
         loading: false,
@@ -90,6 +141,8 @@ const Controls = (
       };
     }
     case "set World to current selection": {
+      const { userDefinedGenes, diffexpGenes } = state;
+
       /* Set viewable world to be the currently selected data */
       const world = World.createWorldFromCurrentSelection(
         action.universe,
@@ -101,6 +154,41 @@ const Controls = (
       const categoricalAsBooleansMap = createCategoricalAsBooleansMap(world);
       const crossfilter = Crossfilter(world.obsAnnotations);
       const dimensionMap = World.createObsDimensionMap(crossfilter, world);
+
+      const worldVarDataCache = world.varDataCache;
+      /* var dimensions */
+
+      if (userDefinedGenes.length > 0) {
+        /*
+          verbose & slightly confusing that we also access this as an object
+          in controls rather than an array, should be abstracted into
+          util ie., createDimensionsFromBothListsOfGenes(userGenes, diffExp)
+        */
+        _.forEach(userDefinedGenes, gene => {
+          dimensionMap[
+            userDefinedDimensionName(gene)
+          ] = World.createVarDimension(
+            /* "__var__" + */
+            world,
+            worldVarDataCache,
+            crossfilter,
+            gene
+          );
+        });
+      }
+
+      if (diffexpGenes.length > 0) {
+        _.forEach(diffexpGenes, gene => {
+          dimensionMap[diffexpDimensionName(gene)] = World.createVarDimension(
+            /* "__var__" + */
+            world,
+            worldVarDataCache,
+            crossfilter,
+            gene
+          );
+        });
+      }
+
       return {
         ...state,
         loading: false,
@@ -128,6 +216,7 @@ const Controls = (
           );
         }
       });
+
       return {
         ...state,
         universe: {
@@ -138,6 +227,133 @@ const Controls = (
           ...world,
           varDataCache: worldVarDataCache
         }
+      };
+    }
+    case "request user defined gene success": {
+      const { world, crossfilter, dimensionMap, userDefinedGenes } = state;
+      const worldVarDataCache = world.varDataCache;
+      const _userDefinedGenes = userDefinedGenes.slice();
+      const gene = action.data.genes[0];
+
+      dimensionMap[userDefinedDimensionName(gene)] = World.createVarDimension(
+        /* "__var__" + */
+        world,
+        worldVarDataCache,
+        crossfilter,
+        gene
+      );
+
+      return {
+        ...state,
+        dimensionMap,
+        userDefinedGenes: _userDefinedGenes
+      };
+    }
+    case "request differential expression success": {
+      const { world, crossfilter, dimensionMap } = state;
+      const worldVarDataCache = world.varDataCache;
+      const _diffexpGenes = [];
+
+      action.data.forEach(d => {
+        _diffexpGenes.push(world.varAnnotations[d[0]].name);
+      });
+
+      _.forEach(_diffexpGenes, gene => {
+        dimensionMap[diffexpDimensionName(gene)] = World.createVarDimension(
+          /* "__var__" + */
+          world,
+          worldVarDataCache,
+          crossfilter,
+          gene
+        );
+      });
+
+      return {
+        ...state,
+        dimensionMap,
+        diffexpGenes: _diffexpGenes
+      };
+    }
+    case "clear differential expression": {
+      const { world, universe, dimensionMap } = state;
+      const _dimensionMap = dimensionMap;
+      const universeVarDataCache = universe.varDataCache;
+      const worldVarDataCache = world.varDataCache;
+
+      _.forEach(action.diffExp, values => {
+        const { name } = world.varAnnotations[values[0]];
+        // clean up crossfilter dimensions
+        const dimension = dimensionMap[diffexpDimensionName(name)];
+        dimension.dispose();
+        delete dimensionMap[diffexpDimensionName(name)];
+      });
+      return {
+        ...state,
+        dimensionMap: _dimensionMap,
+        diffexpGenes: [],
+        universe: {
+          ...universe,
+          varDataCache: universeVarDataCache
+        },
+        world: {
+          ...world,
+          varDataCache: worldVarDataCache
+        }
+      };
+    }
+    case "user defined gene": {
+      /*
+        this could also live in expression success with a conditional,
+        but that handles diffexp also
+      */
+      const newUserDefinedGenes = state.userDefinedGenes.slice();
+      newUserDefinedGenes.push(action.data);
+      return {
+        ...state,
+        userDefinedGenes: newUserDefinedGenes
+      };
+    }
+    case "clear user defined gene": {
+      const { userDefinedGenes, dimensionMap } = state;
+      const newUserDefinedGenes = _.filter(
+        userDefinedGenes,
+        d => d !== action.data
+      );
+
+      const dimension = dimensionMap[userDefinedDimensionName(action.data)];
+      dimension.dispose();
+      delete dimensionMap[userDefinedDimensionName(action.data)];
+
+      return {
+        ...state,
+        dimensionMap,
+        userDefinedGenes: newUserDefinedGenes
+      };
+    }
+    case "clear all user defined genes": {
+      const { userDefinedGenes, dimensionMap } = state;
+
+      _.forEach(userDefinedGenes, gene => {
+        const dimension = dimensionMap[userDefinedDimensionName(gene)];
+        dimension.dispose();
+        delete dimensionMap[userDefinedDimensionName(gene)];
+      });
+
+      return {
+        ...state,
+        dimensionMap,
+        userDefinedGenes: []
+      };
+    }
+    case "reset colorscale": {
+      const { world } = state;
+      const colorName = new Array(world.nObs).fill(globals.defaultCellColor);
+      const colorRGB = _.map(colorName, c => parseRGB(c));
+      return {
+        ...state,
+        colorName,
+        colorRGB,
+        colorAccessor: null
       };
     }
     case "expression load error":
@@ -152,24 +368,12 @@ const Controls = (
     /*******************************
              User Events
      *******************************/
-    case "parallel coordinates axes have been drawn": {
-      return {
-        ...state,
-        axesHaveBeenDrawn: true
-      };
-    }
-    case "continuous selection using parallel coords brushing": {
-      return {
-        ...state,
-        continuousSelection: action.data
-      };
-    }
     case "graph brush selection change": {
-      state.dimensionMap.x.filterRange([
+      state.dimensionMap[layoutDimensionName("X")].filterRange([
         action.brushCoords.northwest[0],
         action.brushCoords.southeast[0]
       ]);
-      state.dimensionMap.y.filterRange([
+      state.dimensionMap[layoutDimensionName("Y")].filterRange([
         action.brushCoords.southeast[1],
         action.brushCoords.northwest[1]
       ]);
@@ -179,20 +383,25 @@ const Controls = (
       };
     }
     case "graph brush deselect": {
-      state.dimensionMap.x.filterAll();
-      state.dimensionMap.y.filterAll();
+      state.dimensionMap[layoutDimensionName("X")].filterAll();
+      state.dimensionMap[layoutDimensionName("Y")].filterAll();
       return {
         ...state,
         graphBrushSelection: null
       };
     }
     case "continuous metadata histogram brush": {
+      const name = makeContinuousDimensionName(
+        action.continuousNamespace,
+        action.selection
+      );
+
       // action.selection: metadata name being selected
       // action.range: filter range, or null if deselected
       if (!action.range) {
-        state.dimensionMap[action.selection].filterAll();
+        state.dimensionMap[name].filterAll();
       } else {
-        state.dimensionMap[action.selection].filterRange(action.range);
+        state.dimensionMap[name].filterRange(action.range);
       }
       return { ...state };
     }
@@ -214,7 +423,7 @@ const Controls = (
         }
       };
       // update the filter for the one category that changed state
-      state.dimensionMap[action.metadataField].filterEnum(
+      state.dimensionMap[obsAnnoDimensionName(action.metadataField)].filterEnum(
         _.filter(
           _.map(
             newCategoricalAsBooleansMap[action.metadataField],
@@ -236,7 +445,7 @@ const Controls = (
         }
       };
       // update the filter for the one category that changed state
-      state.dimensionMap[action.metadataField].filterEnum(
+      state.dimensionMap[obsAnnoDimensionName(action.metadataField)].filterEnum(
         _.filter(
           _.map(
             newCategoricalAsBooleansMap[action.metadataField],
@@ -259,7 +468,9 @@ const Controls = (
           c[k] = false;
         }
       );
-      state.dimensionMap[action.metadataField].filterNone();
+      state.dimensionMap[
+        obsAnnoDimensionName(action.metadataField)
+      ].filterNone();
       return {
         ...state,
         categoricalAsBooleansMap: newCategoricalAsBooleansMap
@@ -275,7 +486,9 @@ const Controls = (
           c[k] = true;
         }
       );
-      state.dimensionMap[action.metadataField].filterAll();
+      state.dimensionMap[
+        obsAnnoDimensionName(action.metadataField)
+      ].filterAll();
       return {
         ...state,
         categoricalAsBooleansMap: newCategoricalAsBooleansMap
@@ -317,6 +530,12 @@ const Controls = (
       return {
         ...state,
         scatterplotYYaccessor: action.data
+      };
+    case "clear scatterplot":
+      return {
+        ...state,
+        scatterplotXXaccessor: null,
+        scatterplotYYaccessor: null
       };
 
     default:

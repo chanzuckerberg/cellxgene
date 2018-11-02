@@ -2,15 +2,15 @@
 import _ from "lodash";
 
 /*
-Very simple key/value cache for use by World & Universe.
+Very simple key/value cache for use by World & Universe.   Cache keys must
+be a string, and values are any JS non-primitive value.
 
-  * constructor(lowWatermark, cachekey):
+  * constructor(lowWatermark, minTTL):
       - lowWatermark defines the number of cache elements below which
         flushing will not occur.
-      - minTTL defines minimum time in MS that cache entries will live.
+      - minTTL defines minimum time in milliseconds that cache entries will live.
         A value of -1 disables automatic flushing (flush() can still
         be called by external user).
-      - cachekey is a key that will be assigned to any value to track age
   * set() - add a key/val pair.
   * get() - get a value or undefined if not present.
   * flush(minAgeMs) - flush cache entries in excess of lowWatermark if those
@@ -19,8 +19,21 @@ Very simple key/value cache for use by World & Universe.
 */
 
 const cachePrivateKey = "__kvcachekey__";
+const defaultLowWatermark = 32;
+const defaultMinTTL = 1000;
 
-function create(lowWatermark = 32, minTTL = 1000) {
+function create(lowWatermark = defaultLowWatermark, minTTL = defaultMinTTL) {
+  if (typeof minTTL !== "number" || typeof lowWatermark !== "number") {
+    throw new TypeError(
+      "minTTL and lowWatermark parameters must be a primitive number"
+    );
+  }
+  if (lowWatermark < 0 || minTTL < 0) {
+    throw new RangeError(
+      "minTTL and lowWatermark parameters must be number greater than zero"
+    );
+  }
+
   return {
     [cachePrivateKey]: {
       lowWatermark,
@@ -30,6 +43,10 @@ function create(lowWatermark = 32, minTTL = 1000) {
 }
 
 function get(kvcache, key) {
+  if (key === cachePrivateKey) {
+    throw new RangeError(`key parameter may not have value ${cachePrivateKey}`);
+  }
+
   const val = kvcache[key];
   if (val) {
     val[cachePrivateKey] = Date.now();
@@ -38,10 +55,20 @@ function get(kvcache, key) {
 }
 
 function set(kvcache, key, val) {
+  if (key === cachePrivateKey) {
+    throw new RangeError(`key parameter may not have value ${cachePrivateKey}`);
+  }
+
   const newKvCache = { ...kvcache };
   newKvCache[key] = val;
   val[cachePrivateKey] = Date.now();
-  flush(newKvCache, newKvCache[cachePrivateKey].minTTL);
+  flushInPlace(newKvCache);
+  return newKvCache;
+}
+
+function flush(kvcache) {
+  const newKvCache = { ...kvcache };
+  flushInPlace(newKvCache);
   return newKvCache;
 }
 
@@ -49,24 +76,47 @@ function set(kvcache, key, val) {
 Flush elements from cache IF cache size is greater than lowWatermark, and
 those elements are older than minAgeMS
 */
-function flush(kvcache, minAgeMs = 0) {
-  if (minAgeMs < 0) return kvcache;
-  const eol = Date.now() - minAgeMs;
-  const { lowWatermark } = kvcache[cachePrivateKey];
-  const keys = _(kvcache)
+function flushInPlace(kvCache) {
+  const { lowWatermark, minTTL } = kvCache[cachePrivateKey];
+  const eol = Date.now() - minTTL;
+  const allKeys = _(kvCache)
     .keys()
     .filter(k => k !== cachePrivateKey)
-    .filter(k => kvcache[k][cachePrivateKey] < eol)
-    .sortBy([k => kvcache[k][cachePrivateKey]])
+    .sortBy([k => kvCache[k][cachePrivateKey]])
     .value();
 
-  if (keys.length > lowWatermark) {
-    const numKeysToDelete = keys.length - lowWatermark;
-    const keysToDelete = _.slice(keys, 0, numKeysToDelete);
-    _.forEach(keysToDelete, k => delete kvcache[k]);
+  if (allKeys.length > lowWatermark) {
+    const keysToDelete = _(allKeys)
+      .slice(0, allKeys.length - lowWatermark)
+      .filter(k => kvCache[k][cachePrivateKey] <= eol)
+      .value();
+    _.forEach(keysToDelete, k => delete kvCache[k]);
   }
 
-  return kvcache;
+  return kvCache;
 }
 
-export { create, get, set, flush };
+/*
+use to create a cache that is a transformation of another cache.
+*/
+function map(srcKvCache, cb, createOptions) {
+  const keysInSrcKvCache = _(srcKvCache)
+    .keys()
+    .filter(k => k !== cachePrivateKey)
+    .value();
+  const lowWatermark = _.get(
+    createOptions,
+    "lowWatermark",
+    defaultLowWatermark
+  );
+  const minTTL = _.get(createOptions, "minTTL", defaultMinTTL);
+  const newKvCache = create(lowWatermark, minTTL);
+  _.forEach(keysInSrcKvCache, key => {
+    const val = cb(get(srcKvCache, key), key);
+    newKvCache[key] = val;
+    val[cachePrivateKey] = Date.now();
+  });
+  return newKvCache;
+}
+
+export { create, get, set, flush, map };

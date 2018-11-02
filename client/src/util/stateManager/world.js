@@ -2,11 +2,13 @@
 
 import _ from "lodash";
 import * as kvCache from "./keyvalcache";
+import summarizeAnnotations from "./summarizeAnnotations";
+import { layoutDimensionName, obsAnnoDimensionName } from "../nameCreators";
 
 /*
 World is a subset of universe.   Most code should use world, and should
 (generally) not use Universe.   World contains any per-obs or per-var data
-that must be consisstent acorss the app when we view/manipulate subsets
+that must be consistent acorss the app when we view/manipulate subsets
 of Universe.
 
 Private API indicated by leading underscore in key name (eg, _foo).  Anything else
@@ -28,7 +30,7 @@ obs/cell.
 
   NOTE: world.obsAnnotation should be identical to the old state.cells value,
   EXCEPT that
-    * __cellIndex__ renamed to __obsIndex__
+    * __cellIndex__ renamed to __index__
     * __x__ and __y__ are now in world.obsLayout
     * __color__ and __colorRBG__ should be moved to controls reducer
 
@@ -46,87 +48,11 @@ obs/cell.
 
 */
 
-/*
-Summary information for each annotation, keyed by annotation name.
-Value will be an object, containing either 'range' or 'options' object,
-depending on the annotation schema type (categorical or continuous).
-
-Summarize for BOTH obs and var annotations.  Result format:
-
-{
-  obs: {
-    annotation_name: { ... },
-    ...
-  },
-  var: {
-    annotation_name: { ... },
-    ...
-  }
-}
-
-Example:
-  {
-    "Splice_sites_Annotated": {
-      "range": {
-        "min": 26,
-        "max": 1075869
-      }
-    },
-    "Selection": {
-      "options": {
-        "Astrocytes(HEPACAM)": 714,
-        "Endothelial(BSC)": 123,
-        "Oligodendrocytes(GC)": 294,
-        "Neurons(Thy1)": 685,
-        "Microglia(CD45)": 1108,
-        "Unpanned": 665
-      }
-    }
-  }
-*/
-function summarizeAnnotations(schema, obsAnnotations) {
-  /*
-  Build and return obs/var summary using any annotation in the schema
-  */
-  const obsSummary = _(schema.annotations.obs)
-    .keyBy("name")
-    .mapValues(anno => {
-      const { name, type } = anno;
-      const continuous = type === "int32" || type === "float32";
-
-      if (!continuous) {
-        return {
-          options: _.countBy(obsAnnotations, name)
-        };
-      }
-
-      if (continuous) {
-        let min = Number.POSITIVE_INFINITY;
-        let max = Number.NEGATIVE_INFINITY;
-        _.forEach(obsAnnotations, obs => {
-          const val = Number(obs[name]);
-          min = val < min ? val : min;
-          max = val > max ? val : max;
-        });
-        return { range: { min, max } };
-      }
-
-      throw new Error("incomprehensible schema");
-    })
-    .value();
-
-  const varSummary = {}; // TODO XXX - not currently used, so skip it
-
-  return {
-    obs: obsSummary,
-    var: varSummary
-  };
-}
+/* varDataCache config - see kvCache for semantics */
+const VarDataCacheLowWatermark = 32; // cache element count
+const VarDataCacheTTLMs = 1000; // min cache time in MS
 
 function templateWorld() {
-  const VarDataCacheLowWatermark = 32;
-  const VarDataCacheTTLMs = 1000;
-
   return {
     // map from universe obsIndex to world offset.
     // Undefined / null indicates identity mapping.
@@ -184,7 +110,18 @@ export function createWorldFromEntireUniverse(universe) {
   world.obsLayout = universe.obsLayout;
 
   /* derived data & summaries */
-  world.summary = summarizeAnnotations(world.schema, world.obsAnnotations);
+  world.summary = summarizeAnnotations(
+    world.schema,
+    world.obsAnnotations,
+    world.varAnnotations
+  );
+
+  /* build the varDataCache */
+  world.varDataCache = kvCache.map(
+    universe.varDataCache,
+    val => subsetVarData(world, universe, val),
+    { lowWatermark: VarDataCacheLowWatermark, minTTL: VarDataCacheTTLMs }
+  );
 
   return world;
 }
@@ -227,12 +164,21 @@ export function createWorldFromCurrentSelection(universe, world, crossfilter) {
   // build index to our world offset
   newWorld.worldObsIndex.fill(-1); // default - aka unused
   for (let i = 0; i < newWorld.nObs; i += 1) {
-    newWorld.worldObsIndex[newWorld.obsAnnotations[i].__obsIndex__] = i;
+    newWorld.worldObsIndex[newWorld.obsAnnotations[i].__index__] = i;
   }
 
+  /* derived data & summaries */
   newWorld.summary = summarizeAnnotations(
     newWorld.schema,
-    newWorld.obsAnnotations
+    newWorld.obsAnnotations,
+    newWorld.varAnnotations
+  );
+
+  /* build the varDataCache */
+  newWorld.varDataCache = kvCache.map(
+    universe.varDataCache,
+    val => subsetVarData(newWorld, universe, val),
+    { lowWatermark: VarDataCacheLowWatermark, minTTL: VarDataCacheTTLMs }
   );
   return newWorld;
 }
@@ -243,24 +189,51 @@ export function createWorldFromCurrentSelection(universe, world, crossfilter) {
 */
 function deduceDimensionType(attributes, fieldName) {
   let dimensionType;
-  if (attributes.type === "string") {
+  const { type } = attributes;
+  if (type === "string" || type === "categorical" || type === "boolean") {
     dimensionType = "enum";
-  } else if (attributes.type === "int32") {
+  } else if (type === "int32") {
     dimensionType = Int32Array;
-  } else if (attributes.type === "float32") {
+  } else if (type === "float32") {
     dimensionType = Float32Array;
   } else {
     /*
     Currently not supporting boolean and categorical types.
     */
     console.error(
-      `Warning - REST API returned unknown metadata schema (${
-        attributes.type
-      }) for field ${fieldName}.`
+      `Warning - REST API returned unknown metadata schema (${type}) for field ${fieldName}.`
     );
     // skip it - we don't know what to do with this type
   }
   return dimensionType;
+}
+
+/*
+  Return a crossfilter dimension for the specified world & named gene.
+
+  NOTE: this assumes that the expression data was already loaded,
+  by calling an appropriate action creator.
+
+  Caller needs to *save* this dimension somewhere for it to be later used.
+  Dimension must be destroyed by calling dimension.dispose()
+  when it is no longer needed
+  (it will not be garbage collected without this call)
+*/
+
+export function createVarDimension(
+  world,
+  _worldVarDataCache,
+  crossfilter,
+  geneName
+) {
+  const { worldObsIndex } = world;
+  const varData = _worldVarDataCache[geneName];
+  const worldIndex = worldObsIndex ? idx => worldObsIndex[idx] : idx => idx;
+
+  return crossfilter.dimension(
+    r => varData[worldIndex(r.__index__)],
+    Float32Array
+  );
 }
 
 export function createObsDimensionMap(crossfilter, world) {
@@ -275,7 +248,10 @@ export function createObsDimensionMap(crossfilter, world) {
     (result, anno) => {
       const dimType = deduceDimensionType(anno, anno.name);
       if (dimType) {
-        result[anno.name] = crossfilter.dimension(r => r[anno.name], dimType);
+        result[obsAnnoDimensionName(anno.name)] = crossfilter.dimension(
+          r => r[anno.name],
+          dimType
+        );
       } // else ignore the annotation
     },
     {}
@@ -285,19 +261,19 @@ export function createObsDimensionMap(crossfilter, world) {
   Add crossfilter dimensions allowing filtering on layout
   */
   const worldIndex = worldObsIndex ? idx => worldObsIndex[idx] : idx => idx;
-  dimensionMap.x = crossfilter.dimension(
-    r => obsLayout.X[worldIndex(r.__obsIndex__)],
+  dimensionMap[layoutDimensionName("X")] = crossfilter.dimension(
+    r => obsLayout.X[worldIndex(r.__index__)],
     Float32Array
   );
-  dimensionMap.y = crossfilter.dimension(
-    r => obsLayout.Y[worldIndex(r.__obsIndex__)],
+  dimensionMap[layoutDimensionName("Y")] = crossfilter.dimension(
+    r => obsLayout.Y[worldIndex(r.__index__)],
     Float32Array
   );
 
   return dimensionMap;
 }
 
-function worldEqUniverse(world, universe) {
+export function worldEqUniverse(world, universe) {
   return world.obsAnnotations === universe.obsAnnotations;
 }
 
@@ -309,7 +285,7 @@ export function subsetVarData(world, universe, varData) {
 
   const newVarData = new Float32Array(world.nObs);
   for (let i = 0; i < world.nObs; i += 1) {
-    newVarData[i] = varData[world.obsAnnotations[i].__obsIndex__];
+    newVarData[i] = varData[world.obsAnnotations[i].__index__];
   }
   return newVarData;
 }

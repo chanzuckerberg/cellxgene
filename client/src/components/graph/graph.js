@@ -5,21 +5,20 @@ import * as d3 from "d3";
 import { connect } from "react-redux";
 import mat4 from "gl-mat4";
 import _regl from "regl";
+import { Button, AnchorButton, Tooltip } from "@blueprintjs/core";
+import { worldEqUniverse } from "../../util/stateManager/world";
 
-import FaCrosshair from "react-icons/lib/fa/crosshairs";
-import FaZoom from "react-icons/lib/fa/search-plus";
-
-import * as globals from "../../globals";
 import setupSVGandBrushElements from "./setupSVGandBrush";
 import actions from "../../actions";
 import _camera from "../../util/camera";
 import _drawPoints from "./drawPointsRegl";
-import { scaleLinear } from "../../util/scaleLinear";
+import scaleLinear from "../../util/scaleLinear";
 
 /* https://bl.ocks.org/mbostock/9078690 - quadtree for onClick / hover selections */
 
 @connect(state => ({
   world: state.controls.world,
+  universe: state.controls.universe,
   crossfilter: state.controls.crossfilter,
   responsive: state.responsive,
   colorRGB: _.get(state.controls, "colorRGB", null),
@@ -99,7 +98,8 @@ class Graph extends React.Component {
       camera,
       pointBuffer,
       colorBuffer,
-      sizeBuffer
+      sizeBuffer,
+      svg
     } = this.state;
 
     if (reglRender && this.reglRenderState === "rendering" && mode !== "zoom") {
@@ -165,6 +165,7 @@ class Graph extends React.Component {
       if (!this.renderCache.sizes) {
         this.renderCache.sizes = new Float32Array(cellCount);
       }
+
       crossfilter.fillByIsFiltered(this.renderCache.sizes, 4, 0.2);
       sizeBuffer({ data: this.renderCache.sizes, dimension: 1 });
 
@@ -185,19 +186,19 @@ class Graph extends React.Component {
       prevProps.responsive.height !== responsive.height ||
       prevProps.responsive.width !== responsive.width ||
       /* first time */
-      (responsive.height && responsive.width && !this.state.svg)
+      (responsive.height && responsive.width && !svg)
     ) {
       /* clear out whatever was on the div, even if nothing, but usually the brushes etc */
       d3.select("#graphAttachPoint")
         .selectAll("svg")
         .remove();
-      const { svg, brush, brushContainer } = setupSVGandBrushElements(
+      const { svg: newSvg, brush } = setupSVGandBrushElements(
         this.handleBrushSelectAction.bind(this),
         this.handleBrushDeselectAction.bind(this),
         responsive,
         this.graphPaddingTop
       );
-      this.setState({ svg, brush, brushContainer });
+      this.setState({ svg: newSvg, brush });
     }
   }
 
@@ -326,12 +327,23 @@ class Graph extends React.Component {
     });
   }
 
+  resetInterface() {
+    const { dispatch } = this.props;
+    dispatch(actions.resetInterface());
+  }
+
   render() {
-    const { dispatch, responsive } = this.props;
+    const { dispatch, responsive, crossfilter } = this.props;
     const { mode } = this.state;
     return (
       <div id="graphWrapper">
-        <div style={{ position: "fixed", right: 0, top: 0 }}>
+        <div
+          style={{
+            position: "fixed",
+            right: 0,
+            top: 0
+          }}
+        >
           <div
             style={{
               padding: 10,
@@ -340,105 +352,70 @@ class Graph extends React.Component {
               alignItems: "baseline"
             }}
           >
-            <button
-              type="button"
-              onClick={() => {
-                dispatch(actions.resetGraph());
-              }}
-              style={{
-                fontSize: 14,
-                fontWeight: 400,
-                color: "white",
-                padding: "0px 10px",
-                height: 30,
-                marginRight: 10,
-                borderRadius: 2,
-                backgroundColor: globals.brightBlue,
-                border: "none",
-                cursor: "pointer"
-              }}
+            <Tooltip
+              content="Show only metadata and cells which are currently selected"
+              position="left"
             >
-              reset graph
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                dispatch(actions.regraph());
-              }}
-              style={{
-                fontSize: 14,
-                fontWeight: 400,
-                color: "white",
-                padding: "0px 10px",
-                height: 30,
-                marginRight: 10,
-                borderRadius: 2,
-                backgroundColor: globals.brightBlue,
-                border: "none",
-                cursor: "pointer"
-              }}
-            >
-              regraph selection
-            </button>
-            <div>
-              <span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    this.setState({ mode: "brush" });
-                  }}
-                  style={{
-                    cursor: "pointer",
-                    border:
-                      mode === "brush" ? "1px solid black" : "1px solid white",
-                    backgroundColor: "white",
-                    padding: 5,
-                    marginRight: 10,
-                    borderRadius: 3
-                  }}
-                >
-                  {" "}
-                  <FaCrosshair />{" "}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    this.handleBrushDeselectAction();
-                    this.restartReglLoop();
-                    this.setState({ mode: "zoom" });
-                  }}
-                  style={{
-                    cursor: "pointer",
-                    border:
-                      mode === "zoom" ? "1px solid black" : "1px solid white",
-                    backgroundColor: "white",
-                    padding: 5,
-                    marginRight: 10,
-                    borderRadius: 3
-                  }}
-                >
-                  {" "}
-                  <FaZoom />{" "}
-                </button>
-              </span>
-            </div>
-            <div>
-              <button
+              <AnchorButton
                 type="button"
-                style={{
-                  fontSize: 14,
-                  fontWeight: 400,
-                  color: "white",
-                  padding: "0px 10px",
-                  height: 30,
-                  borderRadius: 2,
-                  backgroundColor: globals.lightGrey,
-                  border: "none",
-                  cursor: "pointer"
+                disabled={
+                  crossfilter &&
+                  (crossfilter.countFiltered() === 0 ||
+                    crossfilter.countFiltered() === crossfilter.size())
+                }
+                style={{ marginRight: 10 }}
+                onClick={() => {
+                  dispatch(actions.regraph());
                 }}
               >
-                export
-              </button>
+                subset to current selection
+              </AnchorButton>
+            </Tooltip>
+            <Tooltip
+              content="Reset cellxgene, clearing all selections"
+              position="left"
+            >
+              <AnchorButton
+                disabled={
+                  false
+                  /* world && universe ? worldEqUniverse(world, universe) : false */
+                }
+                type="button"
+                intent="warning"
+                style={{ marginRight: 10 }}
+                onClick={this.resetInterface.bind(this)}
+              >
+                reset
+              </AnchorButton>
+            </Tooltip>
+            <div>
+              <div className="bp3-button-group">
+                <Tooltip content="Lasso cells" position="left">
+                  <Button
+                    className="bp3-button bp3-icon-select"
+                    type="button"
+                    active={mode === "brush"}
+                    onClick={() => {
+                      this.setState({ mode: "brush" });
+                    }}
+                  />
+                </Tooltip>
+                <Tooltip content="Pan and zoom" position="left">
+                  <Button
+                    type="button"
+                    className="bp3-button bp3-icon-zoom-in"
+                    active={mode === "zoom"}
+                    onClick={() => {
+                      this.handleBrushDeselectAction();
+                      this.restartReglLoop();
+                      this.setState({ mode: "zoom" });
+                    }}
+                    style={{
+                      cursor: "pointer"
+                    }}
+                  />
+                </Tooltip>
+              </div>
             </div>
           </div>
         </div>

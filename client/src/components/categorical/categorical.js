@@ -2,209 +2,71 @@
 import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
-
-import FaArrowRight from "react-icons/lib/fa/angle-right";
-import FaArrowDown from "react-icons/lib/fa/angle-down";
-import FaPaintBrush from "react-icons/lib/fa/paint-brush";
-
 import * as globals from "../../globals";
-import Value from "./value";
-import { alphabeticallySortedValues } from "./util";
+import Category from "./category";
+
+/* Cap the max number of displayed categories */
+const truncateCategories = options => {
+  const numOptions = _.size(options);
+  if (numOptions <= globals.maxCategoricalOptionsToDisplay) {
+    return options;
+  }
+  return _(options)
+    .map((v, k) => ({ name: k, val: v }))
+    .sortBy("val")
+    .slice(numOptions - globals.maxCategoricalOptionsToDisplay)
+    .transform((r, v) => {
+      r[v.name] = v.val;
+    }, {})
+    .value();
+};
 
 @connect(state => ({
-  colorAccessor: state.controls.colorAccessor,
-  categoricalAsBooleansMap: state.controls.categoricalAsBooleansMap
+  ranges: _.get(state.controls.world, "summary.obs", null),
+  categorySelectionLimit: _.get(
+    state.config,
+    "parameters.max-category-items",
+    globals.configDefaults.parameters["max-category-items"]
+  )
 }))
-class Category extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      isChecked: true,
-      isExpanded: false
-    };
-  }
-
-  componentDidUpdate() {
-    const { categoricalAsBooleansMap, metadataField } = this.props;
-
-    const valuesAsBool = _.values(categoricalAsBooleansMap[metadataField]);
-    /* count categories toggled on by counting true values */
-    const categoriesToggledOn = _.values(valuesAsBool).filter(v => v).length;
-
-    if (categoriesToggledOn === valuesAsBool.length) {
-      /* everything is on, so not indeterminate */
-      this.checkbox.indeterminate = false;
-    } else if (categoriesToggledOn === 0) {
-      /* nothing is on, so no */
-      this.checkbox.indeterminate = false;
-    } else if (categoriesToggledOn < valuesAsBool.length) {
-      /* to be explicit... */
-      this.checkbox.indeterminate = true;
-    }
-  }
-
-  handleColorChange() {
-    const { dispatch, metadataField } = this.props;
-    dispatch({
-      type: "color by categorical metadata",
-      colorAccessor: metadataField
-    });
-  }
-
-  toggleAll() {
-    const { dispatch, metadataField } = this.props;
-    dispatch({
-      type: "categorical metadata filter all of these",
-      metadataField
-    });
-    this.setState({ isChecked: true });
-  }
-
-  toggleNone() {
-    const { dispatch, metadataField, value } = this.props;
-    dispatch({
-      type: "categorical metadata filter none of these",
-      metadataField,
-      value
-    });
-    this.setState({ isChecked: false });
-  }
-
-  handleToggleAllClick() {
-    const { isChecked } = this.state;
-    // || this.checkbox.indeterminate === false
-    if (isChecked) {
-      console.log("checked, firing toggle none");
-      this.toggleNone();
-    } else if (!isChecked) {
-      console.log("!checked, firing toggle all");
-      this.toggleAll();
-    }
-  }
-
-  renderCategoryItems() {
-    const { values, metadataField } = this.props;
-    return _.map(alphabeticallySortedValues(values), (v, i) => (
-      <Value
-        key={v}
-        metadataField={metadataField}
-        count={values[v]}
-        value={v}
-        i={i}
-      />
-    ));
-  }
-
-  render() {
-    const { isExpanded, isChecked } = this.state;
-    const { metadataField, colorAccessor } = this.props;
-    return (
-      <div
-        style={{
-          // display: "flex",
-          // alignItems: "baseline",
-          maxWidth: globals.maxControlsWidth
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "baseline"
-          }}
-        >
-          <p
-            style={{
-              // flexShrink: 0,
-              fontWeight: 500,
-              // textAlign: "right",
-              // fontFamily: globals.accentFont,
-              // fontStyle: "italic",
-              margin: "3px 10px 3px 0px"
-            }}
-          >
-            <span
-              style={{
-                cursor: "pointer",
-                display: "inline-block",
-                position: "relative",
-                top: 2
-              }}
-              onClick={() => {
-                this.setState({ isExpanded: !isExpanded });
-              }}
-            >
-              {isExpanded ? <FaArrowDown /> : <FaArrowRight />}
-            </span>
-            {metadataField}
-            <input
-              onChange={this.handleToggleAllClick.bind(this)}
-              ref={el => (this.checkbox = el)}
-              checked={isChecked}
-              type="checkbox"
-            />
-            <span
-              onClick={this.handleColorChange.bind(this)}
-              style={{
-                fontSize: 16,
-                marginLeft: 4,
-                // padding: this.props.colorAccessor === this.props.metadataField ? 3 : "auto",
-                borderRadius: 3,
-                color:
-                  colorAccessor === metadataField
-                    ? globals.brightBlue
-                    : "black",
-                // backgroundColor: this.props.colorAccessor === this.props.metadataField ? globals.brightBlue : "inherit",
-                display: "inline-block",
-                position: "relative",
-                top: 2,
-                cursor: "pointer"
-              }}
-            >
-              <FaPaintBrush />
-            </span>
-          </p>
-        </div>
-        <div>{isExpanded ? this.renderCategoryItems() : null}</div>
-      </div>
-    );
-  }
-}
-
-@connect(state => {
-  const ranges = _.get(state.controls.world, "summary.obs", null);
-  return {
-    ranges
-  };
-})
 class Categories extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {};
-  }
-
   render() {
-    const { ranges } = this.props;
+    const { ranges, categorySelectionLimit } = this.props;
     if (!ranges) return null;
 
     return (
       <div
         style={{
-          width: 310,
-          marginRight: 40,
-          paddingRight: 20,
-          flexShrink: 0
-          // height: 700,
-          // overflow: "auto",
+          padding: globals.leftSidebarSectionPadding
         }}
       >
+        <p
+          style={Object.assign({}, globals.leftSidebarSectionHeading, {
+            marginTop: 4
+          })}
+        >
+          Categorical Metadata
+        </p>
         {_.map(ranges, (value, key) => {
           const isColorField = key.includes("color") || key.includes("Color");
-          if (value.options && !isColorField && key !== "name") {
+          const isSelectableCategory =
+            value.options &&
+            !isColorField &&
+            key !== "name" &&
+            value.numOptions < categorySelectionLimit;
+
+          if (isSelectableCategory) {
+            const categoryOptions = truncateCategories(value.options);
             return (
-              <Category key={key} metadataField={key} values={value.options} />
+              <Category
+                key={key}
+                metadataField={key}
+                values={categoryOptions}
+                isTruncated={categoryOptions !== value.options}
+              />
             );
           }
+          return undefined;
         })}
       </div>
     );

@@ -38,15 +38,14 @@ export default function(regl) {
     uniforms: {
       distance: regl.prop("distance"),
       view: regl.prop("view"),
-      projection: (context, props) => {
-        return mat4.perspective(
+      projection: (context, props) =>
+        mat4.perspective(
           [],
           Math.PI / 2,
-          context.viewportWidth * props.scale / context.viewportHeight,
+          (context.viewportWidth * props.scale) / context.viewportHeight,
           0.01,
           1000
-        );
-      }
+        )
     },
 
     count: regl.prop("count"),

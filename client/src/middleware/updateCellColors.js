@@ -3,7 +3,7 @@ import _ from "lodash";
 import * as d3 from "d3";
 import { interpolateViridis } from "d3-scale-chromatic";
 import * as globals from "../globals";
-import { parseRGB } from "../util/parseRGB";
+import parseRGB from "../util/parseRGB";
 
 /*
   https://medium.com/@jacobp100/you-arent-using-redux-middleware-enough-94ffe991e6

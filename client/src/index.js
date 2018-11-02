@@ -2,34 +2,20 @@
 /* eslint-disable no-console */
 import React from "react";
 import ReactDOM from "react-dom";
-import { AppContainer } from "react-hot-loader";
 import { Provider } from "react-redux";
-import Redbox from "redbox-react";
+import { FocusStyleManager } from "@blueprintjs/core";
+
+import "./index.css";
 
 /* our code */
 import App from "./components/app";
 import store from "./reducers";
 
+FocusStyleManager.onlyShowFocusOnTabs();
+
 ReactDOM.render(
-  <AppContainer errorReporter={Redbox}>
-    <Provider store={store}>
-      <App />
-    </Provider>
-  </AppContainer>,
+  <Provider store={store}>
+    <App />
+  </Provider>,
   document.getElementById("root")
 );
-
-// Hot Module Replacement API
-if (module.hot) {
-  module.hot.accept("./components/app", () => {
-    const NextApp = require("./components/app").default;
-    ReactDOM.render(
-      <AppContainer>
-        <Provider store={store}>
-          <NextApp />
-        </Provider>
-      </AppContainer>,
-      document.getElementById("root")
-    );
-  });
-}

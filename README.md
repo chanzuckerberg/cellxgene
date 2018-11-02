@@ -42,14 +42,11 @@ Started in the context of the Human Cell Atlas Consortium, cellxgene hopes to bo
 
 **Install server**
 
-
      pip install -e .
 
 **Run (with demo data)**
 
-    cellxgene --title PBMC3K scanpy example-dataset/
-*In google chrome, navigate to the viewer via the web address printed in your console.
-E.g.,* `Running on http://0.0.0.0:5005/`
+    cellxgene launch --title PBMC3K example-dataset/pbmc3k.h5ad
 
 **Help**
 
@@ -97,41 +94,6 @@ To prepare your data you will need to format your data into AnnData format using
     ```
     # cellxgene requires file to be named data.h5ad
     data.write("data.h5ad")
-    ```
-
-5. Create config file (optional)
-
-	If you do not have a config file, the schema (metadata names, types, and categorical/continuous) will be inferred from the observations in the data file. Config file is required to be named 'data_schema.json' and located in the same directory as data file.
-	- The config file is a JSON format file with information on the metadata associated with the cells. The key is the column name in obs. The value is an object
-	```
-    type: string, int, or float (what type the values are),
-	  variabletype: categorical or continuous (categorical values are displayed as checkboxes, continuous values are displayed as a histogram)
-	  displayname: (what the heading should be displayed as)
-	  include: True/False (whether to display values on web interface)
-	```
-
-	```
-	Example
-    {
-        "CellName": {
-            "type": "string",
-            "variabletype": "categorical",
-            "displayname": "Name",
-            "include": true
-        },
-        "clusters": {
-            "type": "string",
-            "variabletype": "categorical",
-            "displayname": "Clusters",
-            "include": true
-        },
-        "num_genes": {
-            "type": "int",
-            "variabletype": "continuous",
-            "displayname": "Number Genes",
-            "include": true
-        }
-    }
     ```
 
 ## Contributing

@@ -1,7 +1,5 @@
 // jshint esversion: 6
 const path = require("path");
-const autoprefixer = require("autoprefixer");
-const webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const SWPrecacheWebpackPlugin = require("sw-precache-webpack-plugin");
@@ -10,6 +8,8 @@ const HtmlWebpackInlineSourcePlugin = require("html-webpack-inline-source-plugin
 const src = path.resolve("src");
 const nodeModules = path.resolve("node_modules");
 
+const babelOptions = require("../babel/babel.prod");
+
 const publicPath = "/";
 
 module.exports = {
@@ -17,7 +17,7 @@ module.exports = {
   bail: true,
   cache: false,
   devtool: "cheap-source-map",
-  entry: ["./src/index"],
+  entry: ["./src/index.js"],
   output: {
     path: path.resolve("build"),
     filename: "static/js/[name].[chunkhash:8].js",
@@ -29,15 +29,14 @@ module.exports = {
         test: /\.js$/,
         include: src,
         loader: "babel-loader",
-        options: require("../babel/babel.prod")
+        options: babelOptions
       },
       {
         test: /\.css$/,
-        include: [src, nodeModules],
-        loader: [
-          {
-            loader: MiniCssExtractPlugin.loader
-          },
+        include: src,
+        exclude: [path.resolve(src, "index.css")],
+        use: [
+          MiniCssExtractPlugin.loader,
           {
             loader: "css-loader",
             options: {
@@ -45,13 +44,18 @@ module.exports = {
               importLoaders: 1,
               localIdentName: "[name]__[local]___[hash:base64:5]"
             }
-          },
+          }
+        ]
+      },
+      {
+        test: /index\.css$/,
+        include: [path.resolve(src, "index.css")],
+        use: [
+          MiniCssExtractPlugin.loader,
           {
-            loader: "postcss-loader",
+            loader: "css-loader",
             options: {
-              plugins: function() {
-                return [];
-              }
+              importLoaders: 1
             }
           }
         ]
@@ -66,7 +70,10 @@ module.exports = {
         test: /\.(jpg|png|gif|eot|svg|ttf|woff|woff2)(\?.*)?$/,
         include: [src, nodeModules],
         loader: "file-loader",
-        query: { name: "static/media/[name].[hash:8].[ext]" }
+        options: {
+          name: "[name].[hash:8].[ext]",
+          outputPath: "static/media/"
+        }
       },
       {
         test: /\.(mp4|webm)(\?.*)?$/,
@@ -104,5 +111,9 @@ module.exports = {
       cacheId: "cellxgene",
       filename: "service-worker.js"
     })
-  ]
+  ],
+  performance: {
+    maxEntrypointSize: 2000000,
+    maxAssetSize: 2000000
+  }
 };

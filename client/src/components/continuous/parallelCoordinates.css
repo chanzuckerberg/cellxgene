@@ -7,24 +7,24 @@ body {
 }
 */
 
-.parcoords {
+:local(.parcoords) {
   display: block;
 }
 
-.parcoords svg,
-.parcoords canvas {
+:local(.parcoords) svg,
+:local(.parcoords) canvas {
   font: 10px sans-serif;
   position: absolute;
 }
 
-.parcoords canvas {
+:local(.parcoords) canvas {
   opacity: 0.9;
   pointer-events: none;
 }
 
-.axis .title {
+:local(.axis .title) {
   font-size: 10px;
-  transform: rotate(-21deg) translate(-5px,-6px);
+  transform: rotate(-21deg) translate(-5px, -6px);
   fill: #222;
   cursor: pointer;
 }
@@ -32,14 +32,14 @@ body {
 /* -webkit-filter: grayscale(100%);
  filter: grayscale(100%); */
 
-.axis line,
-.axis path {
+:local(.axis) line,
+:local(.axis) path {
   fill: none;
   stroke: #ccc;
   stroke-width: 1px;
 }
 
-.axis .tick text {
+:local(.axis .tick) text {
   fill: #222;
   pointer-events: none;
 }
@@ -52,39 +52,39 @@ old, from reference bl.ocks
 }
 */
 
-.axis:hover line,
-.axis:hover path,
-.axis.active line,
-.axis.active path {
+:local(.axis:hover) line,
+:local(.axis:hover) path,
+:local(.axis.active) line,
+:local(.axis.active) path {
   fill: none;
   stroke: #222;
   stroke-width: 1px;
 }
 
-.axis:hover .title {
+:local(.axis:hover .title) {
   font-weight: bold;
 }
 
-.axis:hover .tick text {
+:local(.axis:hover .tick) text {
   opacity: 1;
 }
 
-.axis.active .title {
+:local(.axis.active .title) {
   font-weight: bold;
 }
 
-.axis.active .tick text {
+:local(.axis.active .tick) text {
   opacity: 1;
   font-weight: bold;
 }
 
-.brush .extent {
-  fill-opacity: .3;
+:local(.brush .extent) {
+  fill-opacity: 0.3;
   stroke: #fff;
   stroke-width: 1px;
 }
 
-.pre {
+:local(.pre) {
   width: 100%;
   height: 300px;
   margin: 6px 12px;

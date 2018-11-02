@@ -1,7 +1,7 @@
 import json
+from argparse import ArgumentTypeError
 
 from numpy import float32, integer
-from flask import make_response, jsonify, Response
 
 
 class Float32JSONEncoder(json.JSONEncoder):
@@ -13,28 +13,50 @@ class Float32JSONEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
-def make_payload(data, errormessage="", errorcode=200):
-    """
-    Creates JSON respons for requests
-    :param data: json data
-    :param errormessage: error message
-    :param errorcode: http error code
-    :return: flask json repsonse
-    """
-    error = False
-    if errormessage:
-        error = True
-    # Questionable
-    data = json.loads(json.dumps(data, cls=Float32JSONEncoder))
-    return make_response(jsonify({
-        "data": data,
-        "status": {
-            "error": error,
-            "errormessage": errormessage,
-        }
-    }), errorcode)
+class MimeTypeError(Exception):
+
+    def __init__(self, message):
+        self.message = message
 
 
-def make_streaming_response(data_generator, errorcode=200, content_type="application/json"):
-    # TODO headers
-    return Response(data_generator, status=errorcode, content_type=content_type)
+class FilterError(Exception):
+
+    def __init__(self, message):
+        self.message = message
+
+
+class InteractiveError(Exception):
+
+    def __init__(self, message):
+        self.message = message
+
+
+class PrepareError(Exception):
+
+    def __init__(self, message):
+        self.message = message
+
+
+def get_mime_type(default="application/json", acceptable_types=["application/json", "text/csv"], query_param=None,
+                  header=None):
+    mime_type = default
+    if query_param:
+        if query_param in acceptable_types:
+            mime_type = query_param
+        else:
+            raise MimeTypeError(f"Unsupported mime type {query_param} specified in query parameter 'accept-type'")
+    elif len(header):
+        mime_type = header.best_match(acceptable_types)
+        if not mime_type:
+            raise MimeTypeError(f"Unsupported mime type(s) {header} in HTTP Accept header")
+    return mime_type
+
+
+def whole_number(value):
+    try:
+        value = int(value)
+    except ValueError as e:
+        raise ArgumentTypeError(f"{value} is not type int") from e
+    if value < 0:
+        raise ArgumentTypeError(f"{value} is not >= 0")
+    return value

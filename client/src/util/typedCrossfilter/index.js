@@ -279,14 +279,14 @@ class ScalarDimension {
     let found = 0;
 
     // skip up to offset records
-    for (i = len - 1; 0 <= i && skip < offset; i -= 1) {
+    for (i = len - 1; i >= 0 && skip < offset; i -= 1) {
       if (selection.isSelected(index[i])) {
         skip += 1;
       }
     }
 
     // grab up to k records
-    for (; 0 <= i && found < k; i -= 1) {
+    for (; i >= 0 && found < k; i -= 1) {
       if (selection.isSelected(index[i])) {
         ret.push(data[index[i]]);
         found += 1;
@@ -401,7 +401,11 @@ class ScalarGroup {
     this.dimension = dimension;
 
     // generate group names from dimension values
-    this.mapValue = this._map(groupValue, groupValueType, dimension);
+    this.mapValue = this.constructor._map(
+      groupValue,
+      groupValueType,
+      dimension
+    );
 
     // group index is mapping from data record index to group index
     this.groupIndex = new Uint32Array(dimension.crossfilter.data.length);
@@ -469,7 +473,7 @@ class ScalarGroup {
 
     // Each item in the range will be remved from `dim`.  reduceRemove if it
     // is currently selected.
-    const { data, selection } = this.dimension.crossfilter.selection;
+    const { data, selection } = this.dimension.crossfilter;
     intv.forEach(rng => {
       for (let r = rng[0]; r < rng[1]; r += 1) {
         const i = dim.index[r];
@@ -535,7 +539,7 @@ class ScalarGroup {
 
   // set the reduce functions to count records.
   reduceCount() {
-    return this.reduce((p, v) => p + 1, (p, v) => p - 1, () => 0);
+    return this.reduce(p => p + 1, p => p - 1, () => 0);
   }
 
   // set the reduce functions to sum records using specified value accessor.
