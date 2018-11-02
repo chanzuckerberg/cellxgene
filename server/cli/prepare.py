@@ -14,12 +14,14 @@ from os.path import isfile, isdir, splitext, expanduser, sep
 @click.option('--output', '-o', default='', help='Save a new file to filename.', metavar='<filename>')
 @click.option('--plotting', '-p', default=False, is_flag=True, help='Whether to generate plots.', show_default=True)
 @click.option('--sparse', default=False, is_flag=True, help='Whether to force sparsity.', show_default=True)
-@click.option('--overwriting', default=False, is_flag=True, help='Allow file overwriting.', show_default=True)
+@click.option('--overwrite', default=False, is_flag=True, help='Allow file overwriting.', show_default=True)
 @click.option('--set-obs-names', default='', help='Named field to set as index for obs.', metavar='<name>')
 @click.option('--set-var-names', default='', help='Named field to set as index for var.', metavar='<name>')
-@click.option('--make-obs-names-unique', default=True, is_flag=True, help='Ensure obs index is unique.', show_default=True)
-@click.option('--make-var-names-unique', default=True, is_flag=True, help='Ensure var index is unique.', show_default=True)
-def prepare(data, layout, recipe, output, plotting, sparse, overwriting, 
+@click.option('--make-obs-names-unique', default=True, is_flag=True,
+              help='Ensure obs index is unique.', show_default=True)
+@click.option('--make-var-names-unique', default=True, is_flag=True,
+              help='Ensure var index is unique.', show_default=True)
+def prepare(data, layout, recipe, output, plotting, sparse, overwrite,
             set_obs_names, set_var_names, make_obs_names_unique, make_var_names_unique):
     """Preprocesses data for use with cellxgene."""
 
@@ -149,4 +151,3 @@ def prepare(data, layout, recipe, output, plotting, sparse, overwriting,
         adata.write(output)
 
     click.echo('[cellxgene] Success!')
-
