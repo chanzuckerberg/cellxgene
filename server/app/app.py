@@ -123,7 +123,6 @@ cellxgene is a local web application for exploring single cell expression.
 
 
 def run_scanpy(args):
-    host = "0.0.0.0"  # Necessary for redirection
     title = args.title
     if not title:
         file_parts = os.path.splitext(os.path.basename(args.data))
