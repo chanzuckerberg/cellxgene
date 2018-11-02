@@ -28,7 +28,7 @@ def prepare(data, layout, recipe, output, plotting, sparse, overwrite,
     This tool runs a series of scanpy routines for preparing a dataset
     for use with cellxgene. It loads data from different formats
     (h5ad, loom, or a 10x directory), runs dimensionality reduction,
-    computes nearest neighbors, computes a layout, performs clustering, 
+    computes nearest neighbors, computes a layout, performs clustering,
     and saves the results. Includes additional options for naming
     annotations, ensuring sparsity, and plotting results."""
 
