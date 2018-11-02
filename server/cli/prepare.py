@@ -23,7 +23,14 @@ from os.path import isfile, isdir, splitext, expanduser, sep
               help='Ensure var index is unique.', show_default=True)
 def prepare(data, layout, recipe, output, plotting, sparse, overwrite,
             set_obs_names, set_var_names, make_obs_names_unique, make_var_names_unique):
-    """Preprocesses data for use with cellxgene."""
+    """Preprocesses data for use with cellxgene.
+
+    This tool runs a series of scanpy routines for preparing a dataset
+    for use with cellxgene. It loads data from different formats
+    (h5ad, loom, or a 10x directory), runs dimensionality reduction,
+    computes nearest neighbors, computes a layout, performs clustering, 
+    and saves the results. Includes additional options for naming
+    annotations, ensuring sparsity, and plotting results."""
 
     # collect slow imports here to make CLI startup more responsive
     click.echo('[cellxgene] Starting CLI...')
