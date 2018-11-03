@@ -1,6 +1,7 @@
 import click
 
 from .launch import launch
+from .prepare import prepare
 
 
 @click.group(name='cellxgene', context_settings=dict(max_content_width=85))
@@ -10,3 +11,4 @@ def cli():
 
 
 cli.add_command(launch)
+cli.add_command(prepare)
