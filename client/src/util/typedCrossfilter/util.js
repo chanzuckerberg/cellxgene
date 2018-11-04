@@ -16,6 +16,25 @@ export function fillRange(arr, start = 0) {
   return larr;
 }
 
+// slice out of one array into another, using an index array
+//
+export function sliceByIndex(src, index) {
+  if (index === undefined || index === null) {
+    return src;
+  }
+  const dst = new src.constructor(index.length);
+  for (let i = 0; i < index.length; i += 1) {
+    dst[i] = src[index[i]];
+  }
+  return dst;
+}
+
+export function makeSortIndex(src) {
+  const index = fillRange(new Uint32Array(src.length));
+  index.sort((a, b) => src[a] - src[b]);
+  return index;
+}
+
 // Search for `value` in the sorted array `arr`, in the range [first, last).
 // Return the first (left most) index where arr[index] >= value.
 //
