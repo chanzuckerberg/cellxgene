@@ -241,9 +241,10 @@ export function createObsDimensionMap(crossfilter, world) {
   */
   const { schema, obsLayout } = world;
 
-  const dimensionMap = _.transform(
-    schema.annotations.obs,
-    (result, anno) => {
+  // Create a crossfilter dimension for all obs annotations *except* 'name'
+  const dimensionMap = _(schema.annotations.obs)
+    .filter(anno => anno.name !== "name")
+    .transform((result, anno) => {
       const dimType = deduceDimensionType(anno, anno.name);
       // XXX if dimtype is a scalar, we may be able to do better?
       if (dimType) {
@@ -252,9 +253,8 @@ export function createObsDimensionMap(crossfilter, world) {
           dimType
         );
       } // else ignore the annotation
-    },
-    {}
-  );
+    }, {})
+    .value();
 
   /*
   Add crossfilter dimensions allowing filtering on layout
