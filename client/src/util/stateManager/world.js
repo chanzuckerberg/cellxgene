@@ -4,6 +4,7 @@ import _ from "lodash";
 import * as kvCache from "./keyvalcache";
 import summarizeAnnotations from "./summarizeAnnotations";
 import { layoutDimensionName, obsAnnoDimensionName } from "../nameCreators";
+import { sliceByIndex } from "../typedCrossfilter/util";
 
 /*
 World is a subset of universe.   Most code should use world, and should
@@ -56,7 +57,8 @@ function templateWorld() {
   return {
     // map from universe obsIndex to world offset.
     // Undefined / null indicates identity mapping.
-    worldObsIndex: null,
+    obsIndex: null,
+    obsBackIndex: null,
 
     /* schema/version related */
     api: null,
@@ -90,7 +92,12 @@ export function createWorldFromEntireUniverse(universe) {
 
   // map from the universe obsIndex to our world offset.
   // undefined/null indicates identity map.
-  world.worldObsIndex = null;
+  // In other words   obsBackIndex[universeIdx] -> worldIdx
+  world.obsBackIndex = null;
+  // Map to the universe index for each element in world.
+  // Null indicates identity map (aka world === universe)
+  // In other wrods  obsIndex[worldIdx]  ->  universeIdx
+  world.obsIndex = null;
 
   /*
   public interface follows
@@ -130,42 +137,40 @@ export function createWorldFromCurrentSelection(universe, world, crossfilter) {
   const newWorld = templateWorld();
 
   /* these don't change as only OBS are selected in our current implementation */
-  newWorld.api = world.api;
-  newWorld.nVar = world.nVar;
-  newWorld.schema = world.schema;
-  newWorld.varAnnotations = world.varAnnotations;
+  newWorld.api = universe.api;
+  newWorld.nVar = universe.nVar;
+  newWorld.schema = universe.schema;
+  newWorld.varAnnotations = universe.varAnnotations;
 
-  /*
-  Subset world from universe based upon world's current selection.  Only those
-  fields which are subset by observation selection/filtering need to be updated.
-  */
-  const numSelected = crossfilter.countFiltered();
-
-  /*
-  Create a world which is based upon current selection
-  */
-  newWorld.nObs = numSelected;
-  newWorld.obsAnnotations = new Array(numSelected);
-  newWorld.obsLayout = {
-    X: new Array(numSelected),
-    Y: new Array(numSelected)
-  };
-  newWorld.worldObsIndex = new Array(universe.nObs);
-
-  for (let i = 0, sel = 0; i < world.nObs; i += 1) {
+  /* build index maps and back maps based upon current selection state */
+  const obsBackIndex = new Uint32Array(universe.nObs);
+  obsBackIndex.fill(-1); // default - aka unused
+  const notSelected = obsBackIndex[0];
+  let nObs = 0;
+  for (let i = 0; i < universe.nObs; i += 1) {
     if (crossfilter.isElementFiltered(i)) {
-      newWorld.obsAnnotations[sel] = world.obsAnnotations[i];
-      newWorld.obsLayout.X[sel] = world.obsLayout.X[i];
-      newWorld.obsLayout.Y[sel] = world.obsLayout.Y[i];
-      sel += 1;
+      obsBackIndex[i] = nObs;
+      nObs += 1;
+    }
+  }
+  const obsIndex = new Uint32Array(nObs);
+  for (let i = 0; i < universe.nObs; i += 1) {
+    const worldIdx = obsBackIndex[i];
+    if (worldIdx !== notSelected) {
+      obsIndex[worldIdx] = i;
     }
   }
 
-  // build index to our world offset
-  newWorld.worldObsIndex.fill(-1); // default - aka unused
-  for (let i = 0; i < newWorld.nObs; i += 1) {
-    newWorld.worldObsIndex[newWorld.obsAnnotations[i].__index__] = i;
-  }
+  newWorld.nObs = nObs;
+  newWorld.obsIndex = obsIndex;
+  newWorld.obsBackIndex = obsBackIndex;
+
+  /* now slice */
+  newWorld.obsAnnotations = sliceByIndex(universe.obsAnnotations, obsIndex);
+  newWorld.obsLayout = {
+    X: sliceByIndex(universe.obsLayout.X, obsIndex),
+    Y: sliceByIndex(universe.obsLayout.Y, obsIndex)
+  };
 
   /* derived data & summaries */
   newWorld.summary = summarizeAnnotations(
@@ -226,14 +231,7 @@ export function createVarDimension(
   crossfilter,
   geneName
 ) {
-  const { worldObsIndex } = world;
-  const varData = _worldVarDataCache[geneName];
-  const worldIndex = worldObsIndex ? idx => worldObsIndex[idx] : idx => idx;
-
-  return crossfilter.dimension(
-    r => varData[worldIndex(r.__index__)],
-    Float32Array
-  );
+  return crossfilter.dimension(_worldVarDataCache[geneName], Float32Array);
 }
 
 export function createObsDimensionMap(crossfilter, world) {
@@ -241,12 +239,13 @@ export function createObsDimensionMap(crossfilter, world) {
   create and return a crossfilter dimension for every obs annotation
   for which we have a supported type.
   */
-  const { schema, obsLayout, worldObsIndex } = world;
+  const { schema, obsLayout } = world;
 
   const dimensionMap = _.transform(
     schema.annotations.obs,
     (result, anno) => {
       const dimType = deduceDimensionType(anno, anno.name);
+      // XXX if dimtype is a scalar, we may be able to do better?
       if (dimType) {
         result[obsAnnoDimensionName(anno.name)] = crossfilter.dimension(
           r => r[anno.name],
@@ -260,13 +259,12 @@ export function createObsDimensionMap(crossfilter, world) {
   /*
   Add crossfilter dimensions allowing filtering on layout
   */
-  const worldIndex = worldObsIndex ? idx => worldObsIndex[idx] : idx => idx;
   dimensionMap[layoutDimensionName("X")] = crossfilter.dimension(
-    r => obsLayout.X[worldIndex(r.__index__)],
+    obsLayout.X,
     Float32Array
   );
   dimensionMap[layoutDimensionName("Y")] = crossfilter.dimension(
-    r => obsLayout.Y[worldIndex(r.__index__)],
+    obsLayout.Y,
     Float32Array
   );
 
@@ -282,10 +280,5 @@ export function subsetVarData(world, universe, varData) {
   if (worldEqUniverse(world, universe)) {
     return varData;
   }
-
-  const newVarData = new Float32Array(world.nObs);
-  for (let i = 0; i < world.nObs; i += 1) {
-    newVarData[i] = varData[world.obsAnnotations[i].__index__];
-  }
-  return newVarData;
+  return sliceByIndex(varData, world.obsIndex);
 }
