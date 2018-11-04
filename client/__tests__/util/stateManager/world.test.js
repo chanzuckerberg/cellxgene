@@ -77,7 +77,8 @@ describe("createWorldFromEntireUniverse", () => {
 
         varDataCache: expect.any(Object),
 
-        worldObsIndex: null // indicating full universe
+        obsIndex: null, // null indicating full universe
+        obsBackIndex: null
       })
     );
   });
@@ -120,16 +121,21 @@ describe("createWorldFromCurrentSelection", () => {
       nObs: universeIndices.length,
       obsAnnotations: _.map(universeIndices, i => universe.obsAnnotations[i]),
       obsLayout: {
-        X: _.map(universeIndices, i => universe.obsLayout.X[i]),
-        Y: _.map(universeIndices, i => universe.obsLayout.Y[i])
+        X: new Float32Array(
+          _.map(universeIndices, i => universe.obsLayout.X[i])
+        ),
+        Y: new Float32Array(
+          _.map(universeIndices, i => universe.obsLayout.Y[i])
+        )
       },
-      worldObsIndex: _.transform(
+      obsBackIndex: _.transform(
         universeIndices,
         (result, univIdx, worldIdx) => {
           result[univIdx] = worldIdx;
         },
-        new Array(universe.nObs).fill(-1)
-      )
+        new Uint32Array(universe.nObs).fill(-1)
+      ),
+      obsIndex: new Uint32Array(universeIndices)
     };
 
     expect(world).toMatchObject(
@@ -141,9 +147,13 @@ describe("createWorldFromCurrentSelection", () => {
         obsAnnotations: expected.obsAnnotations,
         varAnnotations: universe.varAnnotations,
         obsLayout: expected.obsLayout,
-        summary: expect.any(Object) /* we could do better! */,
+        summary: {
+          obs: expect.any(Object) /* we could do better! */,
+          var: expect.any(Object) /* we could do better! */
+        },
         varDataCache: expect.any(Object),
-        worldObsIndex: expected.worldObsIndex
+        obsIndex: expected.obsIndex,
+        obsBackIndex: expected.obsBackIndex
       })
     );
   });
@@ -205,6 +215,7 @@ describe("subsetVarData", () => {
       world,
       crossfilter
     );
+    expect(newWorld.obsIndex).toMatchObject(new Uint32Array([0, 2]));
 
     /* expect a subset */
     const result = World.subsetVarData(newWorld, universe, sourceVarData);
