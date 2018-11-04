@@ -149,16 +149,13 @@ function requestSingleGeneExpressionCountsForColoringPOST(gene) {
   return async (dispatch, getState) => {
     dispatch({ type: "get single gene expression for coloring started" });
     try {
-      const expressionData = await _doRequestExpressionData(
-        dispatch,
-        getState,
-        [gene]
-      );
+      await _doRequestExpressionData(dispatch, getState, [gene]);
+      const { world } = getState().controls;
       dispatch({
         type: "color by expression",
         gene,
         data: {
-          [gene]: expressionData[gene]
+          [gene]: kvCache.get(world.varDataCache, gene)
         }
       });
     } catch (error) {
@@ -173,16 +170,15 @@ function requestSingleGeneExpressionCountsForColoringPOST(gene) {
 const requestUserDefinedGene = gene => async (dispatch, getState) => {
   dispatch({ type: "request user defined gene started" });
   try {
-    const data = await await _doRequestExpressionData(dispatch, getState, [
-      gene
-    ]);
+    await await _doRequestExpressionData(dispatch, getState, [gene]);
+    const { world } = getState().controls;
 
     /* then send the success case action through */
     return dispatch({
       type: "request user defined gene success",
       data: {
         genes: [gene],
-        expression: data[gene]
+        expression: kvCache.get(world.varDataCache, gene)
       }
     });
   } catch (error) {
