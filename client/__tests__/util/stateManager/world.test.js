@@ -173,11 +173,15 @@ describe("createObsDimensionMap", () => {
     expect(dimensionMap).toBeDefined();
     REST.annotationsObs.names.forEach(name => {
       const dim = dimensionMap[obsAnnoDimensionName(name)];
-      const { type } = schemaByObsName[name];
-      if (type === "string" || type === "boolean" || type === "categorical") {
-        expect(dim).toBeInstanceOf(Crossfilter.EnumDimension);
+      if (name === "name") {
+        expect(dim).toBeUndefined();
       } else {
-        expect(dim).toBeInstanceOf(Crossfilter.ScalarDimension);
+        const { type } = schemaByObsName[name];
+        if (type === "string" || type === "boolean" || type === "categorical") {
+          expect(dim).toBeInstanceOf(Crossfilter.EnumDimension);
+        } else {
+          expect(dim).toBeInstanceOf(Crossfilter.ScalarDimension);
+        }
       }
     });
     expect(dimensionMap[layoutDimensionName("X")]).toBeInstanceOf(
