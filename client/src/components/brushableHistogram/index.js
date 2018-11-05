@@ -27,7 +27,6 @@ import actions from "../../actions";
 }))
 class HistogramBrush extends React.Component {
   calcHistogramCache = memoize((obsAnnotations, field, ranges) => {
-    console.log("calculating histograms");
     const { world } = this.props;
     const histogramCache = {};
 
