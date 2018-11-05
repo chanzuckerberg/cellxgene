@@ -9,7 +9,7 @@ to PyPi, with a matching tagged release on github.
 
 The release process should result in the following side-effects:
 
-- Version number bump
+- Version number bump, using semantic versioning
 - JS assets built & packaged, committed to the repo
 - Tagged github release
 - Publication to PyPi
@@ -19,7 +19,7 @@ The release process should result in the following side-effects:
 Follow these steps to create a release.
 
 1.  Preparation:
-    - Define the release version number
+    - Define the release version number, using [semantic versioning](https://semver.org/)
     - Write the release title and release notes
 2.  Create a release branch, eg, `release-version`
 3.  In the release branch:
