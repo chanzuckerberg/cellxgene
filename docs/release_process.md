@@ -1,4 +1,4 @@
-# cellxgene Release Process
+# cellxgene release process
 
 _This document defines the release process for cellxgene_
 
@@ -27,6 +27,23 @@ Follow these steps to create a release.
     - set the version number in `setup.py`
     - build the JS asserts using `bin/build-client`
 4.  Commit and push the new branch
-5.  Create a PR for the release. _As needed, conduct PR review._
+5.  Create a PR for the release.
+    - [optional] As needed, conduct PR review.
 6.  Create Github release using the version number and release notes ([instructions](https://help.github.com/articles/creating-releases/)).
-7.  Publish to PyPi
+7.  Publish to pypi by performing the following steps
+    (assumes you have `setuptools` and `twine` installed and that you have
+    registered for pypi and have write access to the cellxgene pypi package)
+    - build the distribution by calling
+      `python setup.py sdist bdist_wheel`
+      inside the top-level directory
+    - [optional] upload the package to test pypi
+      `twine upload --repository-url https://test.pypi.org/legacy/ dist/*`
+    - [optional] test the test installation in a fresh virtual environment using
+      `pip install --index-url https://test.pypi.org/simple/ cellxgene`
+    - upload the package to real pypi using `twine upload dist/*`
+    - [optional] test the installation in a fresh virtual environment using
+      `pip install cellxgene`
+
+The optional steps are for testing purposes, and are recommended
+for publishing any major releases, and any releases that significantly
+change the packaging (e.g. new bundled files, new dependencies, etc.)
