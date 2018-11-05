@@ -54,7 +54,7 @@ class App extends React.Component {
   }
 
   render() {
-    const { loading, error } = this.props;
+    const { loading } = this.props;
     return (
       <Container>
         <Helmet title="cellxgene" />
@@ -70,7 +70,6 @@ class App extends React.Component {
             loading cellxgene
           </div>
         ) : null}
-        {error ? "Error loading cells" : null}
         <div>
           {loading ? null : <LeftSideBar />}
           <div
