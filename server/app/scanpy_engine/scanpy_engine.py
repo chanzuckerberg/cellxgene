@@ -5,7 +5,6 @@ from pandas import DataFrame
 import scanpy.api as sc
 from scipy import stats, sparse
 
-from server.app.app import cache
 from server.app.driver.driver import CXGDriver
 from server.app.util.constants import Axis, DEFAULT_TOP_N, DiffExpMode
 from server.app.util.utils import FilterError, InteractiveError, PrepareError
@@ -96,11 +95,10 @@ class ScanpyEngine(CXGDriver):
 
     @staticmethod
     def _load_data(data):
-        # See https://scanpy.readthedocs.io/en/latest/api/scanpy.api.read.html
-        # Based upon this advice, setting cache=True parameter
+        # Based on benchmarking, cache=True has no impact on perf.
         # Note: as of current scanpy/anndata release, setting backed='r' will
-        # result in an error.
-        return sc.read(data, cache=True)
+        # result in an error.  https://github.com/theislab/anndata/issues/79
+        return sc.read(data, cache=False)
 
     @staticmethod
     def _top_sort(values, sort_order, top_n=None):
@@ -251,7 +249,6 @@ class ScanpyEngine(CXGDriver):
 
         return data
 
-    @cache.memoize()
     def annotation(self, filter, axis, fields=None):
         """
          Gets annotation value for each observation
@@ -274,7 +271,6 @@ class ScanpyEngine(CXGDriver):
         }
         return result
 
-    @cache.memoize()
     def data_frame(self, filter, axis):
         """
         Retrieves data for each variable for observations in data frame
@@ -366,7 +362,6 @@ class ScanpyEngine(CXGDriver):
         # Results need to be returned in var index order
         return sorted(result, key=lambda gene: gene[0])
 
-    @cache.memoize()
     def layout(self, filter, interactive_limit=None):
         """
         Computes a n-d layout for cells through dimensionality reduction.

@@ -31,7 +31,7 @@ more complex API.  In a few cases, elements of that API were incorporated.
 import PositiveIntervals from "./positiveIntervals";
 import BitArray from "./bitArray";
 import {
-  fillRange,
+  makeSortIndex,
   lowerBound,
   lowerBoundIndirect,
   upperBoundIndirect
@@ -126,16 +126,31 @@ class ScalarDimension {
     // current selection filter, expressed as PostiveIntervals.
     this.currentFilter = [];
 
-    // Create value array
-    const array = this._createValueArray(
-      value,
-      new ValueArrayType(this.crossfilter.data.length)
-    );
+    // Two modes - caller can provide a pre-created value array,
+    // or a map function which will create it.
+    let array;
+    if (value instanceof ValueArrayType) {
+      if (value.length !== this.crossfilter.data.length) {
+        throw new RangeError(
+          "ScalarDimension values length must equal crossfilter data record count"
+        );
+      }
+      array = value;
+    } else if (value instanceof Function) {
+      // Create value array
+      array = this._createValueArray(
+        value,
+        new ValueArrayType(this.crossfilter.data.length)
+      );
+    } else {
+      throw new NotImplementedError(
+        "dimension value must be function or value array type"
+      );
+    }
     this.value = array;
 
     // create sort index
-    this.index = fillRange(new Uint32Array(this.crossfilter.data.length));
-    this.index.sort((a, b) => array[a] - array[b]);
+    this.index = makeSortIndex(array);
 
     // groups, if any
     this.groups = [];

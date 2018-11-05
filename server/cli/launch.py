@@ -96,4 +96,4 @@ def launch(data, layout, diffexp, title, verbose, debug, obs_names, var_names,
 
     click.echo('[cellxgene] Type CTRL-C at any time to exit.')
 
-    app.run(host=host, debug=debug, port=port)
+    app.run(host=host, debug=debug, port=port, threaded=True)

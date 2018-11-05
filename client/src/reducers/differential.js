@@ -51,6 +51,7 @@ const Differential = (
     case "set World to current selection":
       return {
         ...state,
+        diffExp: null,
         celllist1: null,
         celllist2: null
       };
