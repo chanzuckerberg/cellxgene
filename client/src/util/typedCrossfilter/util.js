@@ -1,6 +1,8 @@
 // jshint esversion: 6
 /* eslint no-bitwise: "off" */
 
+import { sortIndex } from "./sort";
+
 /*
     Utility functions, private to this module.
 */
@@ -31,7 +33,7 @@ export function sliceByIndex(src, index) {
 
 export function makeSortIndex(src) {
   const index = fillRange(new Uint32Array(src.length));
-  index.sort((a, b) => src[a] - src[b]);
+  sortIndex(index, src);
   return index;
 }
 
