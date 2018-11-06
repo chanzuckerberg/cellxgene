@@ -23,8 +23,8 @@ class ScanpyEngine(CXGDriver):
 
     def __init__(self, data, args):
         super().__init__(data, args)
-        self._alias_annotation_names(Axis.OBS, args['obs_names'])
-        self._alias_annotation_names(Axis.VAR, args['var_names'])
+        self._alias_annotation_names(Axis.OBS, args["obs_names"])
+        self._alias_annotation_names(Axis.VAR, args["var_names"])
         self._validate_data_types()
         self.cell_count = self.data.shape[0]
         self.gene_count = self.data.shape[1]
@@ -78,9 +78,9 @@ class ScanpyEngine(CXGDriver):
             for ann in curr_axis:
                 ann_schema = {"name": ann}
                 data_kind = curr_axis[ann].dtype.kind
-                if data_kind == 'f':
+                if data_kind == "f":
                     ann_schema["type"] = "float32"
-                elif data_kind in ['i', 'u']:
+                elif data_kind in ["i", "u"]:
                     ann_schema["type"] = "int32"
                 elif data_kind == "?":
                     ann_schema["type"] = "boolean"
@@ -137,10 +137,10 @@ class ScanpyEngine(CXGDriver):
             curr_axis = getattr(self.data, str(ax))
             for ann in curr_axis:
                 datatype = curr_axis[ann].dtype
-                downcast_map = {'int64': 'int32',
-                                'uint32': 'int32',
-                                'uint64': 'int32',
-                                'float64': 'float32',
+                downcast_map = {"int64": "int32",
+                                "uint32": "int32",
+                                "uint64": "int32",
+                                "float64": "float32",
                                 }
                 if datatype in downcast_map:
                     warnings.warn(f"Scanpy annotation {ax}:{ann} is in unsupported format: {datatype}. "

@@ -14,9 +14,9 @@ class CXGDriver(metaclass=ABCMeta):
 
     def __init__(self, data, args):
         self.data = self._load_data(data)
-        self.layout_method = args['layout']
-        self.diffexp_method = args['diffexp']
-        self.max_category_items = args['max_category_items']
+        self.layout_method = args["layout"]
+        self.diffexp_method = args["diffexp"]
+        self.max_category_items = args["max_category_items"]
         self.cluster = None
 
     @property
@@ -101,7 +101,7 @@ class CXGDriver(metaclass=ABCMeta):
         """
         Computes a n-d layout for cells through dimensionality reduction.
         :param filter: filter: dictionary with filter params
-        :param interactive_limit: -- don't compute if total # genes in dataframes are larger than this
+        :param interactive_limit: -- don"t compute if total # genes in dataframes are larger than this
         :return:  [cellid, x, y, ...]
         """
         pass

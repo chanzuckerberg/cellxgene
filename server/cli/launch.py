@@ -1,6 +1,7 @@
 import sys
 import click
 import logging
+from os.path import splitext, basename
 import webbrowser
 
 from os.path import splitext, basename
@@ -83,10 +84,18 @@ def launch(data, layout, diffexp, title, verbose, debug, obs_names, var_names,
 
     from server.app.scanpy_engine.scanpy_engine import ScanpyEngine
 
-    args = {"layout": layout, "diffexp": diffexp, "max_category_items": max_category_items,
-            "obs_names": obs_names, "var_names": var_names}
+    args = {
+        "layout": layout,
+        "diffexp": diffexp,
+        "max_category_items": max_category_items,
+        "obs_names": obs_names,
+        "var_names": var_names
+    }
 
-    app.data = ScanpyEngine(data, args)
+    try:
+        app.data = ScanpyEngine(data, args)
+    except ScanpyFileError as e:
+        raise click.ClickException(f"{e}")
 
     if open_browser:
         click.echo(f"[cellxgene] Launching! Opening your browser to {cellxgene_url} now.")
