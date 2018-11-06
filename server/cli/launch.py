@@ -4,7 +4,7 @@ import logging
 from os.path import splitext, basename
 import webbrowser
 
-from os.path import splitext, basename
+from server.app.util.errors import ScanpyFileError
 
 
 @click.command()

@@ -2,12 +2,13 @@ import warnings
 
 import numpy as np
 from pandas import DataFrame
+from pandas.core.dtypes.dtypes import CategoricalDtype
 import scanpy.api as sc
 from scipy import stats, sparse
 
 from server.app.driver.driver import CXGDriver
 from server.app.util.constants import Axis, DEFAULT_TOP_N, DiffExpMode
-from server.app.util.utils import FilterError, InteractiveError, PrepareError
+from server.app.util.errors import FilterError, InteractiveError, PrepareError, ScanpyFileError
 
 """
 Sort order for methods
@@ -26,6 +27,7 @@ class ScanpyEngine(CXGDriver):
         self._alias_annotation_names(Axis.OBS, args["obs_names"])
         self._alias_annotation_names(Axis.VAR, args["var_names"])
         self._validate_data_types()
+        self._validate_data_calculations()
         self.cell_count = self.data.shape[0]
         self.gene_count = self.data.shape[1]
         self.layout_options = ["umap", "tsne"]
@@ -39,27 +41,28 @@ class ScanpyEngine(CXGDriver):
         As a *critical* side-effect, ensure the indices are simple number ranges
         (accomplished by calling pandas.DataFrame.reset_index())
         """
-        if name == 'name':
+        if name == "name":
             # a noop, so skip it
             return
 
         ax_name = str(axis)
         df_axis = getattr(self.data, ax_name)
         if name is None:
-            # reset index to simple range; alias 'name' to point at the
+            # reset index to simple range; alias "name" to point at the
             # previously specified index.
-            df_axis = df_axis.reset_index().rename(columns={'index': 'name'})
+            df_axis.reset_index(inplace=True)
+            df_axis.rename(inplace=True, columns={"index": "name"})
         elif name in df_axis.columns:
             if name not in df_axis.columns:
                 raise KeyError(f"Annotation name {name}, specified in --{ax_name}-name does not exist.")
             if not df_axis[name].is_unique:
                 raise KeyError(f"Values in -{ax_name}-name must be unique. "
                                "Please prepare data to contain unique values.")
-            # reset index to simple range; alias user-specified annotation to 'name'
-            df_axis = df_axis.reset_index(drop=True).rename(columns={name: 'name'})
+            # reset index to simple range; alias user-specified annotation to "name"
+            df_axis.reset_index(drop=True, inplace=True)
+            df_axis.rename(inplace=True, columns={name: "name"})
         else:
             raise KeyError(f"Annotation name {name}, specified in --{ax_name}_name does not exist.")
-        setattr(self.data, ax_name, df_axis)
 
     def _create_schema(self):
         self.schema = {
@@ -98,7 +101,18 @@ class ScanpyEngine(CXGDriver):
         # Based on benchmarking, cache=True has no impact on perf.
         # Note: as of current scanpy/anndata release, setting backed='r' will
         # result in an error.  https://github.com/theislab/anndata/issues/79
-        return sc.read(data, cache=False)
+        try:
+            result = sc.read(data, cache=True)
+        except ValueError:
+            raise ScanpyFileError("File must be in the .h5ad format. Please read "
+                                  "https://github.com/theislab/scanpy_usage/blob/master/170505_seurat/info_h5ad.md to "
+                                  "learn more about this format. You may be able to convert your file into this format "
+                                  "using `cellxgene prepare`, please run `cellxgene prepare --help` for more "
+                                  "information.")
+        except Exception as e:
+            raise ScanpyFileError(f"Error while loading file: {e}, File must be in the .h5ad format, please check "
+                                  f"that your input and try again.")
+        return result
 
     @staticmethod
     def _top_sort(values, sort_order, top_n=None):
@@ -145,6 +159,26 @@ class ScanpyEngine(CXGDriver):
                 if datatype in downcast_map:
                     warnings.warn(f"Scanpy annotation {ax}:{ann} is in unsupported format: {datatype}. "
                                   f"Data will be downcast to {downcast_map[datatype]}.")
+                if isinstance(datatype, CategoricalDtype):
+                    category_num = len(curr_axis[ann].dtype.categories)
+                    if category_num > 100 and category_num > self.max_category_items:
+                        warnings.warn(
+                            f"{str(ax).title()} annotation '{ann}' has {category_num} categories, this may be "
+                            f"cumbersome or slow to display. We recommend setting the "
+                            f"--max-category-items option to 100, this will hide categorical "
+                            f"annotations with more than 100 categories in the UI")
+
+    def _validate_data_calculations(self):
+        layout_key = f"X_{self.layout_method}"
+        try:
+            assert layout_key in self.data.obsm_keys()
+        except AssertionError:
+            raise PrepareError(
+                f"Cannot find a field with coordinates for the {self.layout_method} layout requested. A different"
+                f" layout may have been computed. The requested layout must be pre-calculated and saved "
+                f"back in the h5ad file. You can run "
+                f"`cellxgene prepare --layout {self.layout_method} <datafile>` "
+                f"to solve this problem. ")
 
     def filter_dataframe(self, filter, include_uns=False):
         """
@@ -232,8 +266,8 @@ class ScanpyEngine(CXGDriver):
 
         https://docs.scipy.org/doc/scipy/reference/sparse.html
         """
-        prefer_row_access = sparse.isspmatrix_csr(data._X) or \
-            sparse.isspmatrix_lil(data._X) or sparse.isspmatrix_bsr(data._X)
+        prefer_row_access = sparse.isspmatrix_csr(data._X) or sparse.isspmatrix_lil(data._X) \
+            or sparse.isspmatrix_bsr(data._X)
         if prefer_row_access:
             # Row-major slicing
             if obs_selector is not None:
