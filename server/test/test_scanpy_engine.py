@@ -34,7 +34,8 @@ class UtilTest(unittest.TestCase):
     @pytest.mark.filterwarnings("ignore:Scanpy data matrix")
     def test_data_type(self):
         self.data.data.X = self.data.data.X.astype("float64")
-        self.assertWarns(UserWarning, self.data._validate_data_types())
+        with self.assertWarns(UserWarning):
+            self.data._validate_data_types()
 
     def test_filter_idx(self):
         filter_ = {
