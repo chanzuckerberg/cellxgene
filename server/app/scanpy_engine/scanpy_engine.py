@@ -161,12 +161,12 @@ class ScanpyEngine(CXGDriver):
                                   f"Data will be downcast to {downcast_map[datatype]}.")
                 if isinstance(datatype, CategoricalDtype):
                     category_num = len(curr_axis[ann].dtype.categories)
-                    if category_num > 100 and category_num > self.max_category_items:
+                    if category_num > 500 and category_num > self.max_category_items:
                         warnings.warn(
                             f"{str(ax).title()} annotation '{ann}' has {category_num} categories, this may be "
                             f"cumbersome or slow to display. We recommend setting the "
-                            f"--max-category-items option to 100, this will hide categorical "
-                            f"annotations with more than 100 categories in the UI")
+                            f"--max-category-items option to 500, this will hide categorical "
+                            f"annotations with more than 500 categories in the UI")
 
     def _validate_data_calculations(self):
         layout_key = f"X_{self.layout_method}"
