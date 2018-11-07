@@ -1,4 +1,9 @@
+<<<<<<< HEAD
 from os.path import expanduser, isdir, isfile, sep, splitext
+=======
+import click
+import warnings
+>>>>>>> 0395f679... no saved output error -> warning
 
 import click
 from numpy import ndarray, unique
