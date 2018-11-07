@@ -101,7 +101,7 @@ class CXGDriver(metaclass=ABCMeta):
         """
         Computes a n-d layout for cells through dimensionality reduction.
         :param filter: filter: dictionary with filter params
-        :param interactive_limit: -- don"t compute if total # genes in dataframes are larger than this
+        :param interactive_limit: -- don't compute if total # genes in dataframes are larger than this
         :return:  [cellid, x, y, ...]
         """
         pass
