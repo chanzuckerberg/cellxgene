@@ -47,6 +47,7 @@ def prepare(data, layout, recipe, output, plotting, sparse, overwrite,
         raise click.UsageError("Cannot use a recipe when forcing sparsity")
 
     output = expanduser(output)
+
     if isfile(output) and not overwrite:
         raise click.UsageError(f"Cannot overwrite existing file {output}, try using the flag --overwrite")
 
