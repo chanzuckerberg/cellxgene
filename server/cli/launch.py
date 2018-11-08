@@ -74,7 +74,7 @@ def launch(data, layout, diffexp, title, verbose, debug, obs_names, var_names,
     app.config.update(
         DATASET_TITLE=title,
         CXG_API_BASE=api_base
-        )
+    )
 
     if not verbose:
         log = logging.getLogger("werkzeug")
