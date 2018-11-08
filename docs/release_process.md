@@ -35,7 +35,7 @@ Follow these steps to create a release.
     (assumes you have `setuptools` and `twine` installed and that you have
     registered for pypi and have write access to the cellxgene pypi package)
     - build the distribution by calling
-      `python setup.py sdist bdist_wheel`
+      `python setup.py sdist`
       inside the top-level directory
     - [optional] upload the package to test pypi
       `twine upload --repository-url https://test.pypi.org/legacy/ dist/*`
