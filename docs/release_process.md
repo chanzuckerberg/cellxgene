@@ -25,6 +25,7 @@ Follow these steps to create a release.
 3.  In the release branch:
     - set the version number in `client/package.json`
     - set the version number in `setup.py`
+    - set the version number in `server/cli/cli.py`
     - build the JS asserts using `bin/build-client`
 4.  Commit and push the new branch
 5.  Create a PR for the release.
