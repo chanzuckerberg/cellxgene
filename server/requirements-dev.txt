@@ -1,3 +1,4 @@
+bumpversion
 pytest
 requests
 -r requirements.txt

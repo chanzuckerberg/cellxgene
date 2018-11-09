@@ -23,9 +23,7 @@ Follow these steps to create a release.
     - Write the release title and release notes
 2.  Create a release branch, eg, `release-version`
 3.  In the release branch:
-    - set the version number in `client/package.json`
-    - set the version number in `setup.py`
-    - set the version number in `server/cli/cli.py`
+    - run `bumpversion --config-file .bumpversion.cfg [major | minor | patch]`
     - build the JS asserts using `bin/build-client`
 4.  Commit and push the new branch
 5.  Create a PR for the release.
