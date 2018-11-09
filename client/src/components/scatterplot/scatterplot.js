@@ -117,20 +117,17 @@ class Scatterplot extends React.Component {
       regl,
       sizeBuffer,
       pointBuffer,
-      colorBuffer
+      colorBuffer,
+      svg,
+      xScale: scales ? scales.xScale : null,
+      yScale: scales ? scales.yScale : null,
+      reglRender,
+      camera,
+      drawPoints
     });
   }
 
   componentDidUpdate(prevProps) {
-    const {
-      svg,
-      xScale,
-      yScale,
-      regl,
-      pointBuffer,
-      colorBuffer,
-      sizeBuffer
-    } = this.state;
     const {
       world,
       crossfilter,
