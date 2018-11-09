@@ -82,12 +82,6 @@ class Scatterplot extends React.Component {
       this.drawAxesSVG(scales.xScale, scales.yScale, svg);
     }
 
-    this.setState({
-      svg,
-      xScale: scales ? scales.xScale : null,
-      yScale: scales ? scales.yScale : null
-    });
-
     const camera = _camera(this.reglCanvas, { scale: true, rotate: false });
     const regl = _regl(this.reglCanvas);
 
@@ -98,7 +92,7 @@ class Scatterplot extends React.Component {
     const colorBuffer = regl.buffer();
     const sizeBuffer = regl.buffer();
 
-    regl.frame(({ viewportWidth, viewportHeight }) => {
+    const reglRender = regl.frame(({ viewportWidth, viewportHeight }) => {
       regl.clear({
         depth: 1,
         color: [1, 1, 1, 1]
@@ -116,6 +110,8 @@ class Scatterplot extends React.Component {
 
       camera.tick();
     });
+
+    this.reglRenderState = "rendering";
 
     this.setState({
       regl,
@@ -144,6 +140,18 @@ class Scatterplot extends React.Component {
       expressionY,
       colorRGB
     } = this.props;
+    const {
+      reglRender,
+      xScale,
+      yScale,
+      regl,
+      pointBuffer,
+      colorBuffer,
+      sizeBuffer,
+      svg,
+      drawPoints,
+      camera
+    } = this.state;
 
     if (
       world &&
