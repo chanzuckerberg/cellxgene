@@ -1,3 +1,4 @@
 pytest
 requests
+twine
 -r requirements.txt
