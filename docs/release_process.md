@@ -38,7 +38,7 @@ Follow these steps to create a release.
     - [optional] upload the package to test pypi
       `twine upload --repository-url https://test.pypi.org/legacy/ dist/*`
     - [optional] test the test installation in a fresh virtual environment using
-      `pip install --index-url https://test.pypi.org/simple/ cellxgene`
+      `pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple cellxgene`
     - upload the package to real pypi using `twine upload dist/*`
     - [optional] test the installation in a fresh virtual environment using
       `pip install cellxgene`
