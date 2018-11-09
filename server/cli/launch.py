@@ -82,6 +82,9 @@ def launch(data, layout, diffexp, title, verbose, debug, obs_names, var_names,
 
     click.echo(f"[cellxgene] Loading data from {basename(data)}, this may take awhile...")
 
+    # Fix for anaconda python. Allows python to not be installed as a framework
+    import matplotlib as mpl
+    mpl.use('TkAgg')
     from server.app.scanpy_engine.scanpy_engine import ScanpyEngine
 
     args = {
