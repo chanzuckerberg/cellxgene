@@ -93,21 +93,16 @@ class Scatterplot extends React.Component {
     const sizeBuffer = regl.buffer();
 
     const reglRender = regl.frame(({ viewportWidth, viewportHeight }) => {
-      regl.clear({
-        depth: 1,
-        color: [1, 1, 1, 1]
-      });
-
-      drawPoints({
-        distance: camera.distance,
-        color: colorBuffer,
-        position: pointBuffer,
-        size: sizeBuffer,
-        count: this.count,
-        view: camera.view(),
-        scale: viewportHeight / viewportWidth
-      });
-
+      this.reglDraw(
+        regl,
+        drawPoints,
+        sizeBuffer,
+        colorBuffer,
+        pointBuffer,
+        camera,
+        viewportWidth,
+        viewportHeight
+      );
       camera.tick();
     });
 
@@ -230,6 +225,32 @@ class Scatterplot extends React.Component {
       xScale,
       yScale
     };
+  }
+
+  reglDraw(
+    regl,
+    drawPoints,
+    sizeBuffer,
+    colorBuffer,
+    pointBuffer,
+    camera,
+    viewportWidth,
+    viewportHeight
+  ) {
+    regl.clear({
+      depth: 1,
+      color: [1, 1, 1, 1]
+    });
+
+    drawPoints({
+      size: sizeBuffer,
+      distance: camera.distance,
+      color: colorBuffer,
+      position: pointBuffer,
+      count: this.count,
+      view: camera.view(),
+      scale: viewportHeight / viewportWidth
+    });
   }
 
   drawAxesSVG(xScale, yScale, svg) {
