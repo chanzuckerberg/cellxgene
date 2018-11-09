@@ -48,6 +48,9 @@ def prepare(data, layout, recipe, output, plotting, sparse, overwrite,
 
     output = expanduser(output)
 
+    if not output:
+        click.echo("Warning: No file will be saved, to save the results of cellxgene prepare include "
+                   "--output <filename> to save output to a new file")
     if isfile(output) and not overwrite:
         raise click.UsageError(f"Cannot overwrite existing file {output}, try using the flag --overwrite")
 
