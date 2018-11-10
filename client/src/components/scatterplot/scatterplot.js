@@ -102,7 +102,6 @@ class Scatterplot extends React.Component {
         camera
       );
       camera.tick();
-      console.log("tick");
     });
 
     this.reglRenderState = "rendering";
@@ -159,7 +158,6 @@ class Scatterplot extends React.Component {
     }
 
     if (reglRender && this.reglRenderState === "rendering") {
-      console.log("cancel");
       reglRender.cancel();
       this.reglRenderState = "paused";
     }
@@ -204,8 +202,6 @@ class Scatterplot extends React.Component {
       sizeBuffer({ data: sizesBuf, dimension: 1 });
       this.count = cellCount;
 
-      console.log("docancel", !!reglRender, this.reglRenderState);
-
       regl._refresh();
       this.reglDraw(
         regl,
@@ -216,8 +212,6 @@ class Scatterplot extends React.Component {
         camera
       );
     }
-
-    console.log("update");
 
     if (
       expressionX &&
