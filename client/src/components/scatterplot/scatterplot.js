@@ -82,12 +82,6 @@ class Scatterplot extends React.Component {
       this.drawAxesSVG(scales.xScale, scales.yScale, svg);
     }
 
-    this.setState({
-      svg,
-      xScale: scales ? scales.xScale : null,
-      yScale: scales ? scales.yScale : null
-    });
-
     const camera = _camera(this.reglCanvas, { scale: true, rotate: false });
     const regl = _regl(this.reglCanvas);
 
@@ -98,43 +92,35 @@ class Scatterplot extends React.Component {
     const colorBuffer = regl.buffer();
     const sizeBuffer = regl.buffer();
 
-    regl.frame(({ viewportWidth, viewportHeight }) => {
-      regl.clear({
-        depth: 1,
-        color: [1, 1, 1, 1]
-      });
-
-      drawPoints({
-        distance: camera.distance,
-        color: colorBuffer,
-        position: pointBuffer,
-        size: sizeBuffer,
-        count: this.count,
-        view: camera.view(),
-        scale: viewportHeight / viewportWidth
-      });
-
+    const reglRender = regl.frame(() => {
+      this.reglDraw(
+        regl,
+        drawPoints,
+        sizeBuffer,
+        colorBuffer,
+        pointBuffer,
+        camera
+      );
       camera.tick();
     });
+
+    this.reglRenderState = "rendering";
 
     this.setState({
       regl,
       sizeBuffer,
       pointBuffer,
-      colorBuffer
+      colorBuffer,
+      svg,
+      xScale: scales ? scales.xScale : null,
+      yScale: scales ? scales.yScale : null,
+      reglRender,
+      camera,
+      drawPoints
     });
   }
 
   componentDidUpdate(prevProps) {
-    const {
-      svg,
-      xScale,
-      yScale,
-      regl,
-      pointBuffer,
-      colorBuffer,
-      sizeBuffer
-    } = this.state;
     const {
       world,
       crossfilter,
@@ -144,6 +130,18 @@ class Scatterplot extends React.Component {
       expressionY,
       colorRGB
     } = this.props;
+    const {
+      reglRender,
+      xScale,
+      yScale,
+      regl,
+      pointBuffer,
+      colorBuffer,
+      sizeBuffer,
+      svg,
+      drawPoints,
+      camera
+    } = this.state;
 
     if (
       world &&
@@ -157,6 +155,11 @@ class Scatterplot extends React.Component {
         !this.axes) // clicked off the tab and back again, rerender
     ) {
       this.drawAxesSVG(xScale, yScale, svg);
+    }
+
+    if (reglRender && this.reglRenderState === "rendering") {
+      reglRender.cancel();
+      this.reglRenderState = "paused";
     }
 
     if (
@@ -198,6 +201,16 @@ class Scatterplot extends React.Component {
       colorBuffer({ data: colorsBuf, dimension: 3 });
       sizeBuffer({ data: sizesBuf, dimension: 1 });
       this.count = cellCount;
+
+      regl._refresh();
+      this.reglDraw(
+        regl,
+        drawPoints,
+        sizeBuffer,
+        colorBuffer,
+        pointBuffer,
+        camera
+      );
     }
 
     if (
@@ -225,6 +238,22 @@ class Scatterplot extends React.Component {
       xScale,
       yScale
     };
+  }
+
+  reglDraw(regl, drawPoints, sizeBuffer, colorBuffer, pointBuffer, camera) {
+    regl.clear({
+      depth: 1,
+      color: [1, 1, 1, 1]
+    });
+
+    drawPoints({
+      size: sizeBuffer,
+      distance: camera.distance,
+      color: colorBuffer,
+      position: pointBuffer,
+      count: this.count,
+      view: camera.view()
+    });
   }
 
   drawAxesSVG(xScale, yScale, svg) {

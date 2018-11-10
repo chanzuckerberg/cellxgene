@@ -215,7 +215,12 @@ class HistogramBrush extends React.Component {
     d3.select(svgRef)
       .append("g")
       .attr("class", "brush")
-      .call(d3.brushX().on("end", this.onBrush(field, x.invert).bind(this)));
+      .call(
+        d3
+          .brushX()
+          .on("brush", this.onBrush(field, x.invert).bind(this))
+          .on("end", this.onBrush(field, x.invert).bind(this))
+      );
 
     /* AXIS */
     d3.select(svgRef)
