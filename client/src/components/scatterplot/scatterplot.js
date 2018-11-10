@@ -92,18 +92,17 @@ class Scatterplot extends React.Component {
     const colorBuffer = regl.buffer();
     const sizeBuffer = regl.buffer();
 
-    const reglRender = regl.frame(({ viewportWidth, viewportHeight }) => {
+    const reglRender = regl.frame(() => {
       this.reglDraw(
         regl,
         drawPoints,
         sizeBuffer,
         colorBuffer,
         pointBuffer,
-        camera,
-        viewportWidth,
-        viewportHeight
+        camera
       );
       camera.tick();
+      console.log("tick");
     });
 
     this.reglRenderState = "rendering";
@@ -159,6 +158,12 @@ class Scatterplot extends React.Component {
       this.drawAxesSVG(xScale, yScale, svg);
     }
 
+    if (reglRender && this.reglRenderState === "rendering") {
+      console.log("cancel");
+      reglRender.cancel();
+      this.reglRenderState = "paused";
+    }
+
     if (
       world &&
       regl &&
@@ -198,7 +203,21 @@ class Scatterplot extends React.Component {
       colorBuffer({ data: colorsBuf, dimension: 3 });
       sizeBuffer({ data: sizesBuf, dimension: 1 });
       this.count = cellCount;
+
+      console.log("docancel", !!reglRender, this.reglRenderState);
+
+      regl._refresh();
+      this.reglDraw(
+        regl,
+        drawPoints,
+        sizeBuffer,
+        colorBuffer,
+        pointBuffer,
+        camera
+      );
     }
+
+    console.log("update");
 
     if (
       expressionX &&
@@ -227,16 +246,7 @@ class Scatterplot extends React.Component {
     };
   }
 
-  reglDraw(
-    regl,
-    drawPoints,
-    sizeBuffer,
-    colorBuffer,
-    pointBuffer,
-    camera,
-    viewportWidth,
-    viewportHeight
-  ) {
+  reglDraw(regl, drawPoints, sizeBuffer, colorBuffer, pointBuffer, camera) {
     regl.clear({
       depth: 1,
       color: [1, 1, 1, 1]
@@ -248,8 +258,7 @@ class Scatterplot extends React.Component {
       color: colorBuffer,
       position: pointBuffer,
       count: this.count,
-      view: camera.view(),
-      scale: viewportHeight / viewportWidth
+      view: camera.view()
     });
   }
 
