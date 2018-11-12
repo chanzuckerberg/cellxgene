@@ -85,7 +85,7 @@ class UtilTest(unittest.TestCase):
                 }
             }
         }
-        data = self.data.filter_dataframe(filter_["filter"], include_uns=False)
+        data = self.data.filter_dataframe(filter_["filter"])
         self.assertEqual(data.shape[1], 1)
 
     def test_filter_complex(self):
@@ -184,7 +184,7 @@ class UtilTest(unittest.TestCase):
         layout = self.data.layout(filter_["filter"])
         self.assertEqual(len(layout["coordinates"]), 497)
 
-    def test_diffexp(self):
+    def test_diffexp_topN(self):
         f1 = {
             "filter": {
                 "obs": {
@@ -199,11 +199,11 @@ class UtilTest(unittest.TestCase):
                 }
             }
         }
-        result = self.data.diffexp(f1["filter"], f2["filter"])
+        result = self.data.diffexp_topN(f1["filter"], f2["filter"])
         self.assertEqual(len(result), 10)
         var_idx = [i[0] for i in result]
         self.assertEqual(var_idx, sorted(var_idx))
-        result = self.data.diffexp(f1["filter"], f2["filter"], 20)
+        result = self.data.diffexp_topN(f1["filter"], f2["filter"], 20)
         self.assertEqual(len(result), 20)
 
     def test_data_frame(self):
