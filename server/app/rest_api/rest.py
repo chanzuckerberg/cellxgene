@@ -10,7 +10,8 @@ from werkzeug.datastructures import ImmutableMultiDict
 from server.app.util.constants import Axis, DiffExpMode
 from server.app.util.filter import parse_filter, QueryStringError
 from server.app.util.models import FilterModel
-from server.app.util.utils import FilterError, InteractiveError, MimeTypeError, PrepareError, get_mime_type
+from server.app.util.utils import get_mime_type
+from server.app.util.errors import MimeTypeError, FilterError, InteractiveError, PrepareError
 
 """
 Sort order for routes

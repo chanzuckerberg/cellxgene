@@ -3,6 +3,8 @@ from argparse import ArgumentTypeError
 
 from numpy import float32, integer
 
+from server.app.util.errors import MimeTypeError
+
 
 class Float32JSONEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -11,30 +13,6 @@ class Float32JSONEncoder(json.JSONEncoder):
         elif isinstance(obj, integer):
             return int(obj)
         return json.JSONEncoder.default(self, obj)
-
-
-class MimeTypeError(Exception):
-
-    def __init__(self, message):
-        self.message = message
-
-
-class FilterError(Exception):
-
-    def __init__(self, message):
-        self.message = message
-
-
-class InteractiveError(Exception):
-
-    def __init__(self, message):
-        self.message = message
-
-
-class PrepareError(Exception):
-
-    def __init__(self, message):
-        self.message = message
 
 
 def get_mime_type(default="application/json", acceptable_types=["application/json", "text/csv"], query_param=None,

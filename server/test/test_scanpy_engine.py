@@ -13,12 +13,8 @@ from server.app.scanpy_engine.scanpy_engine import ScanpyEngine
 
 class UtilTest(unittest.TestCase):
     def setUp(self):
-        args = argparse.Namespace()
-        args.layout = "umap"
-        args.diffexp = "ttest"
-        args.max_category_items = 100
-        args.obs_names = None
-        args.var_names = None
+        args = {'layout': 'umap', 'diffexp': 'ttest', 'max_category_items': 100,
+                'obs_names': None, 'var_names': None}
 
         self.data = ScanpyEngine("example-dataset/pbmc3k.h5ad", args)
         self.data._create_schema()
@@ -38,7 +34,8 @@ class UtilTest(unittest.TestCase):
     @pytest.mark.filterwarnings("ignore:Scanpy data matrix")
     def test_data_type(self):
         self.data.data.X = self.data.data.X.astype("float64")
-        self.assertWarns(UserWarning, self.data._validate_data_types())
+        with self.assertWarns(UserWarning):
+            self.data._validate_data_types()
 
     def test_filter_idx(self):
         filter_ = {

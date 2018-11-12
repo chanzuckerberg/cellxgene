@@ -25,6 +25,9 @@ setup(
     ),
     entry_points={
         "console_scripts":
-            ["cellxgene = server.app.app:main"]
-    }
+            ["cellxgene = server.cli.cli:cli"]
+    },
+    extras_require=dict(
+        louvain=['python-igraph', 'louvain>=0.6'],
+    ),
 )

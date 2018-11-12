@@ -71,7 +71,6 @@ class App extends React.Component {
             loading cellxgene
           </div>
         ) : null}
-        {error ? "Error loading cells" : null}
         <div>
           {loading ? null : <LeftSideBar />}
           <div

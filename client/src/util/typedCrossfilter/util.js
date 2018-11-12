@@ -1,6 +1,8 @@
 // jshint esversion: 6
 /* eslint no-bitwise: "off" */
 
+import { sortIndex } from "./sort";
+
 /*
     Utility functions, private to this module.
 */
@@ -14,6 +16,25 @@ export function fillRange(arr, start = 0) {
     larr[i] = i + start;
   }
   return larr;
+}
+
+// slice out of one array into another, using an index array
+//
+export function sliceByIndex(src, index) {
+  if (index === undefined || index === null) {
+    return src;
+  }
+  const dst = new src.constructor(index.length);
+  for (let i = 0; i < index.length; i += 1) {
+    dst[i] = src[index[i]];
+  }
+  return dst;
+}
+
+export function makeSortIndex(src) {
+  const index = fillRange(new Uint32Array(src.length));
+  sortIndex(index, src);
+  return index;
 }
 
 // Search for `value` in the sorted array `arr`, in the range [first, last).

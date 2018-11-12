@@ -77,10 +77,22 @@ class HistogramBrush extends React.Component {
     this.width = 340;
     this.height = 100;
     this.marginBottom = 20;
+  }
 
-    this.state = {
-      brush: null
-    };
+  componentDidMount() {
+    const { field } = this.props;
+    const { x, y, bins, numValues, svgRef } = this._histogram;
+
+    this.renderAxesBrushBins(x, y, bins, numValues, svgRef, field);
+  }
+
+  componentDidUpdate(prevProps) {
+    const { field, obsAnnotations } = this.props;
+    const { x, y, bins, numValues, svgRef } = this._histogram;
+
+    if (obsAnnotations !== prevProps.obsAnnotations) {
+      this.renderAxesBrushBins(x, y, bins, numValues, svgRef, field);
+    }
   }
 
   onBrush(selection, x) {
@@ -115,7 +127,6 @@ class HistogramBrush extends React.Component {
 
   drawHistogram(svgRef) {
     const { obsAnnotations, field, ranges } = this.props;
-    const { brush, axis } = this.state;
     const histogramCache = this.calcHistogramCache(
       obsAnnotations,
       field,
@@ -123,51 +134,8 @@ class HistogramBrush extends React.Component {
     );
 
     const { x, y, bins, numValues } = histogramCache;
-    d3.select(svgRef)
-      .selectAll(".bar")
-      .remove();
 
-    d3.select(svgRef)
-      .insert("g", "*")
-      .attr("fill", "#bbb")
-      .selectAll("rect")
-      .data(bins)
-      .enter()
-      .append("rect")
-      .attr("class", "bar")
-      .attr("x", d => x(d.x0) + 1)
-      .attr("y", d => y(d.length / numValues))
-      .attr("width", d => Math.abs(x(d.x1) - x(d.x0) - 1))
-      .attr("height", d => y(0) - y(d.length / numValues));
-
-    if (!brush && !axis) {
-      const newBrush = d3
-        .select(svgRef)
-        .append("g")
-        .attr("class", "brush")
-        .call(d3.brushX().on("end", this.onBrush(field, x.invert).bind(this)));
-
-      const xAxis = d3
-        .select(svgRef)
-        .append("g")
-        .attr("class", "axis axis--x")
-        .attr("transform", `translate(0,${this.height - this.marginBottom})`)
-        .call(d3.axisBottom(x).ticks(5));
-
-      d3.select(svgRef)
-        .selectAll(".axis--x text")
-        .style("fill", "rgb(80,80,80)");
-
-      d3.select(svgRef)
-        .selectAll(".axis--x path")
-        .style("stroke", "rgb(230,230,230)");
-
-      d3.select(svgRef)
-        .selectAll(".axis--x line")
-        .style("stroke", "rgb(230,230,230)");
-
-      this.setState({ brush: newBrush, xAxis }); // eslint-disable-line react/no-unused-state
-    }
+    this._histogram = { x, y, bins, numValues, svgRef };
   }
 
   handleColorAction() {
@@ -221,6 +189,57 @@ class HistogramBrush extends React.Component {
         data: field
       });
     };
+  }
+
+  renderAxesBrushBins(x, y, bins, numValues, svgRef, field) {
+    /* Remove everything */
+    d3.select(svgRef)
+      .selectAll("*")
+      .remove();
+
+    /* BINS */
+    d3.select(svgRef)
+      .insert("g", "*")
+      .attr("fill", "#bbb")
+      .selectAll("rect")
+      .data(bins)
+      .enter()
+      .append("rect")
+      .attr("class", "bar")
+      .attr("x", d => x(d.x0) + 1)
+      .attr("y", d => y(d.length / numValues))
+      .attr("width", d => Math.abs(x(d.x1) - x(d.x0) - 1))
+      .attr("height", d => y(0) - y(d.length / numValues));
+
+    /* BRUSH */
+    d3.select(svgRef)
+      .append("g")
+      .attr("class", "brush")
+      .call(
+        d3
+          .brushX()
+          .on("brush", this.onBrush(field, x.invert).bind(this))
+          .on("end", this.onBrush(field, x.invert).bind(this))
+      );
+
+    /* AXIS */
+    d3.select(svgRef)
+      .append("g")
+      .attr("class", "axis axis--x")
+      .attr("transform", `translate(0,${this.height - this.marginBottom})`)
+      .call(d3.axisBottom(x).ticks(5));
+
+    d3.select(svgRef)
+      .selectAll(".axis--x text")
+      .style("fill", "rgb(80,80,80)");
+
+    d3.select(svgRef)
+      .selectAll(".axis--x path")
+      .style("stroke", "rgb(230,230,230)");
+
+    d3.select(svgRef)
+      .selectAll(".axis--x line")
+      .style("stroke", "rgb(230,230,230)");
   }
 
   render() {
@@ -295,6 +314,7 @@ class HistogramBrush extends React.Component {
         <svg
           width={this.width}
           height={this.height}
+          id={`histogram_${field}_svg`}
           ref={svgRef => {
             this.drawHistogram(svgRef);
           }}
