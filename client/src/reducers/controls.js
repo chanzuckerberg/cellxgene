@@ -54,6 +54,7 @@ const Controls = (
     scatterplotXXaccessor: null, // just easier to read
     scatterplotYYaccessor: null,
     axesHaveBeenDrawn: false,
+    graphRenderCounter: 0 /* integer as <Component key={graphRenderCounter} - a change in key forces a remount */,
     __storedStateForCelllist1__: null /* will need procedural control of brush ie., brush.extent https://bl.ocks.org/micahstubbs/3cda05ca68cba260cb81 */,
     __storedStateForCelllist2__: null
   },
@@ -410,7 +411,13 @@ const Controls = (
         ...state,
         opacityForDeselectedCells: action.data
       };
-
+    case "increment graph render counter": {
+      const c = state.graphRenderCounter + 1;
+      return {
+        ...state,
+        graphRenderCounter: c
+      };
+    }
     /*******************************
           Categorical metadata
     *******************************/

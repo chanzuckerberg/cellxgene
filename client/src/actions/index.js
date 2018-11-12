@@ -298,6 +298,9 @@ const resetInterface = () => (dispatch, getState) => {
     type: "reset World to eq Universe",
     universe
   });
+  dispatch({
+    type: "increment graph render counter"
+  });
 };
 
 export default {

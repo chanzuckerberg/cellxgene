@@ -284,14 +284,15 @@ class Graph extends React.Component {
 
       // transform screen coordinates -> cell coordinates
       const invert = pin => {
-        const x = (2 * pin[0]) / (responsive.width - this.graphPaddingRight) - 1;
+        const x =
+          (2 * pin[0]) / (responsive.width - this.graphPaddingRight) - 1;
         const y =
           2 * (1 - pin[1] / (responsive.height - this.graphPaddingTop)) - 1;
         const pout = [
           x * inverse[14] * aspect + inverse[12],
           y * inverse[14] + inverse[13]
         ];
-        return [(pout[0] + 1) / 2  + offset[0], (pout[1] + 1) / 2  + offset[1]];
+        return [(pout[0] + 1) / 2 + offset[0], (pout[1] + 1) / 2 + offset[1]];
       };
 
       const brushCoords = {
@@ -375,6 +376,7 @@ class Graph extends React.Component {
                 style={{ marginRight: 10 }}
                 onClick={() => {
                   dispatch(actions.regraph());
+                  dispatch({ type: "increment graph render counter" });
                 }}
               >
                 subset to current selection
