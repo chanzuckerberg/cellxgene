@@ -90,12 +90,16 @@ async function _doRequestExpressionData(dispatch, getState, genes) {
   const state = getState();
   const { universe } = state.controls;
   /* preload data already in cache */
-  let expressionData = _.transform(genes, (expData, g) => {
-    const data = kvCache.get(universe.varDataCache, g);
-    if (data) {
-      expData[g] = data;
-    }
-  }); // --> { gene: data }
+  let expressionData = _.transform(
+    genes,
+    (expData, g) => {
+      const data = kvCache.get(universe.varDataCache, g);
+      if (data) {
+        expData[g] = data;
+      }
+    },
+    {}
+  ); // --> { gene: data }
   /* make a list of genes for which we do not have data */
   const genesToFetch = _.filter(genes, g => expressionData[g] === undefined);
 

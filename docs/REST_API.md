@@ -505,10 +505,10 @@ Generate differential expression (DE) statistics for two specified subsets of da
 
 Two modes are provided:
 
-- Return top N differentially expressed variables (genes)
-- Return DE for caller-provided variable filter (future)
+- `topN`: return top N differentially expressed variables (across all variables)
+- `varFilter`: return DE for caller-provided variable filter (_future_)
 
-Both modes perform calculations using a subset of observations, where each subset is defined by an observation filter (`set1` and `set2`).
+Both modes perform calculations using a subset of observations, where each subset is defined by an observation filter (`set1` and `set2`). These filters must not include a variable filter.
 
 If differential expression is not supported by the server, must return an HTTP 501 response. If, in the view of the server, the request will exceed a reasonable interactive time period, must immediately return HTTP 403 error (error return _before_ attempting computation).
 
@@ -568,24 +568,22 @@ If differential expression is not supported by the server, must return an HTTP 5
 
 **Response body:**
 
-- For 200 Success, differential expression statistics returned as array of arrays sorted by obs index, where each contains the following values:
+- For 200 Success, differential expression statistics returned as array of arrays sorted by varindex, where each contains the following values:
 
   - **varIndex**: variable index for the computed results
-  - **avgDiff**: log fold-change of the average expression between the two groups. Positive values indicate that the gene is more highly expressed in the first group,
+  - **logfoldchange**: log fold-change of the average expression between the two groups. Positive values indicate that the gene is more highly expressed in the first group,
   - **pVal**: unadjusted p-value,
-  - **pValAdj**: Adjusted p-value, based on bonferroni correction using all genes in the original dataset),
-  - **set1AvgExp:** average expression value for all observations in set 1,
-  - **set2AvgExp**: average expression value for all observations in set 2
+  - **pValAdj**: adjusted p-value
 
   Statistics are encoded as an array of arrays, with fields ordered as:
 
-  _varIndex_, _avgDiff_, _pVal_, _pValAdj_, _set1AvgExp_, _set2AvgExp_
+  _varIndex_, _logfoldchange_, _pVal_, _pValAdj_
 
   For example:
 
   ```
   [
-    [ 328, -2.569489, 2.655706e-63, 3.642036e-57, 383.393, 583.9 ],
+    [ 1720, 2.4679039, 2.3124478092035228e-175, 4.250279073316075e-172 ]
     // ...
   ]
   ```
@@ -616,8 +614,8 @@ POST /diffexp/obs
 200 - Success
 {
   "diffexp": [
-    [ 328, -2.569489, 2.655706e-63, 3.642036e-57, 383.393, 583.9 ],
-    // [ varIdx, avgDiff, pVal, pValAdj, set1AvgExp, set2AvgExp ],
+    [ 328, -2.569489, 2.655706e-63, 3.642036e-57 ],
+    // [ varIdx, logfoldchange, pVal, pValAdj ],
     // ...
   ]
 }
