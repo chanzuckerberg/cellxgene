@@ -32,7 +32,6 @@ export const doJsonRequest = async url => {
     method: "get",
     headers: new Headers({
       "Content-Type": "application/json"
-      // "Accept-Encoding": "gzip, deflate, br"
     })
   });
   if (res.ok && res.headers.get("Content-Type") === "application/json") {
