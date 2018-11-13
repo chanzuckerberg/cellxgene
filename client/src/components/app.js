@@ -11,7 +11,8 @@ import actions from "../actions";
 
 @connect(state => ({
   loading: state.controls.loading,
-  error: state.controls.error
+  error: state.controls.error,
+  graphRenderCounter: state.controls.graphRenderCounter
 }))
 class App extends React.Component {
   constructor(props) {
@@ -54,7 +55,7 @@ class App extends React.Component {
   }
 
   render() {
-    const { loading } = this.props;
+    const { loading, error, graphRenderCounter } = this.props;
     return (
       <Container>
         <Helmet title="cellxgene" />
@@ -79,10 +80,8 @@ class App extends React.Component {
               marginLeft: 350 /* but responsive */
             }}
           >
-            {loading ? null : <Graph />}
-
+            {loading ? null : <Graph key={graphRenderCounter} />}
             <Legend />
-            {}
           </div>
         </div>
       </Container>
