@@ -10,7 +10,7 @@
 
 - _Visualization at scale_  Built with [WebGL](https://www.khronos.org/webgl/), [React](https://reactjs.org/), and [Redux](https://redux.js.org/) to enable performant exploration of at least 1 million cells.
 - _Interactive exploration_  Select, cross-filter, and compare subsets of data with performant indexing and data handling.
-- _Flexible API_  The cellxgene client-server model is designed to support a range of existing analysis packages for backend computational tasks (currently built for [scanpy](https://github.com/theislab/scanpy)), integrated with client-side visualization via a [REST API](https://restfulapi.net/).
+- _Support for computational backends_  The cellxgene client-server model is designed to support a range of existing analysis packages for backend computational tasks (currently built for [scanpy](https://github.com/theislab/scanpy)), integrated with client-side visualization via a [REST API](https://restfulapi.net/).
 
 ## getting started
 
