@@ -264,7 +264,7 @@ class ScanpyEngine(CXGDriver):
         """
         try:
             obs_selector, var_selector = self._filter_to_mask(filter)
-        except KeyError as e:
+        except (KeyError, IndexError) as e:
             raise FilterError(f"Error parsing filter: {e}") from e
         if axis == Axis.OBS:
             obs = self.data.obs[obs_selector]
@@ -296,7 +296,7 @@ class ScanpyEngine(CXGDriver):
         """
         try:
             obs_selector, var_selector = self._filter_to_mask(filter)
-        except KeyError as e:
+        except (KeyError, IndexError) as e:
             raise FilterError(f"Error parsing filter: {e}") from e
         _X = self.data._X[obs_selector, var_selector]
         if sparse.issparse(_X):
@@ -321,7 +321,7 @@ class ScanpyEngine(CXGDriver):
         try:
             obs_mask_A = self._axis_filter_to_mask(obsFilterA["obs"], self.data.obs, self.data.n_obs)
             obs_mask_B = self._axis_filter_to_mask(obsFilterB["obs"], self.data.obs, self.data.n_obs)
-        except KeyError as e:
+        except (KeyError, IndexError) as e:
             raise FilterError(f"Error parsing filter: {e}") from e
         if top_n is None:
             top_n = DEFAULT_TOP_N
@@ -337,7 +337,7 @@ class ScanpyEngine(CXGDriver):
         """
         try:
             df = self.filter_dataframe(filter)
-        except KeyError as e:
+        except (KeyError, IndexError) as e:
             raise FilterError(f"Error parsing filter: {e}") from e
         if interactive_limit and len(df.obs.index) > interactive_limit:
             raise InteractiveError("Size data is too large for interactive computation")
