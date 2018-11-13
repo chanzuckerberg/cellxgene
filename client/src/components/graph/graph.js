@@ -6,8 +6,7 @@ import { connect } from "react-redux";
 import mat4 from "gl-mat4";
 import _regl from "regl";
 import { Button, AnchorButton, Tooltip } from "@blueprintjs/core";
-import { worldEqUniverse } from "../../util/stateManager/world";
-
+import * as globals from "../../globals";
 import setupSVGandBrushElements from "./setupSVGandBrush";
 import actions from "../../actions";
 import _camera from "../../util/camera";
@@ -30,9 +29,9 @@ class Graph extends React.Component {
     super(props);
     this.count = 0;
     this.inverse = mat4.identity([]);
-    this.graphPaddingTop = 100;
+    this.graphPaddingTop = 0;
     this.graphPaddingBottom = 45;
-    this.graphPaddingRight = 10;
+    this.graphPaddingRight = globals.leftSidebarWidth;
     this.renderCache = {
       positions: null,
       colors: null
@@ -126,17 +125,23 @@ class Graph extends React.Component {
         const glScaleX = scaleLinear([0, 1], [-1, 1]);
         const glScaleY = scaleLinear([0, 1], [1, -1]);
 
+        const offset = [d3.mean(obsLayout.X) - 0.5, d3.mean(obsLayout.Y) - 0.5];
+
         for (
           let i = 0, { positions } = this.renderCache;
           i < cellCount;
           i += 1
         ) {
-          positions[2 * i] = glScaleX(obsLayout.X[i]);
-          positions[2 * i + 1] = glScaleY(obsLayout.Y[i]);
+          positions[2 * i] = glScaleX(obsLayout.X[i] - offset[0]);
+          positions[2 * i + 1] = glScaleY(obsLayout.Y[i] - offset[1]);
         }
         pointBuffer({
           data: this.renderCache.positions,
           dimension: 2
+        });
+
+        this.setState({
+          offset
         });
       }
 
@@ -196,7 +201,7 @@ class Graph extends React.Component {
         this.handleBrushSelectAction.bind(this),
         this.handleBrushDeselectAction.bind(this),
         responsive,
-        this.graphPaddingTop
+        this.graphPaddingRight
       );
       this.setState({ svg: newSvg, brush });
     }
@@ -251,7 +256,7 @@ class Graph extends React.Component {
     an event on procedural deselect because it is move: null
     */
 
-    const { camera } = this.state;
+    const { camera, offset } = this.state;
     const { dispatch, responsive } = this.props;
 
     if (d3.event.sourceEvent !== null) {
@@ -262,6 +267,7 @@ class Graph extends React.Component {
       https://bl.ocks.org/EfratVil/0e542f5fc426065dd1d4b6daaa345a9f
     */
       const s = d3.event.selection;
+      const gl = this.state.regl._gl;
       /*
       event describing brush position:
       @-------|
@@ -270,19 +276,23 @@ class Graph extends React.Component {
       |-------@
     */
 
+      // get aspect ratio
+      const aspect = gl.drawingBufferWidth / gl.drawingBufferHeight;
+
       // compute inverse view matrix
       const inverse = mat4.invert([], camera.view());
 
       // transform screen coordinates -> cell coordinates
       const invert = pin => {
-        const x = (2 * pin[0]) / (responsive.height - this.graphPaddingTop) - 1;
+        const x =
+          (2 * pin[0]) / (responsive.width - this.graphPaddingRight) - 1;
         const y =
           2 * (1 - pin[1] / (responsive.height - this.graphPaddingTop)) - 1;
         const pout = [
-          x * inverse[14] + inverse[12],
+          x * inverse[14] * aspect + inverse[12],
           y * inverse[14] + inverse[13]
         ];
-        return [(pout[0] + 1) / 2, (pout[1] + 1) / 2];
+        return [(pout[0] + 1) / 2 + offset[0], (pout[1] + 1) / 2 + offset[1]];
       };
 
       const brushCoords = {
@@ -366,6 +376,7 @@ class Graph extends React.Component {
                 style={{ marginRight: 10 }}
                 onClick={() => {
                   dispatch(actions.regraph());
+                  dispatch({ type: "increment graph render counter" });
                 }}
               >
                 subset to current selection
@@ -421,12 +432,10 @@ class Graph extends React.Component {
         </div>
         <div
           style={{
-            marginRight: 50,
-            marginTop: 50,
             zIndex: -9999,
             position: "fixed",
-            right: this.graphPaddingRight,
-            bottom: this.graphPaddingBottom
+            top: 0,
+            right: 0
           }}
         >
           <div
@@ -437,7 +446,7 @@ class Graph extends React.Component {
           />
           <div style={{ padding: 0, margin: 0 }}>
             <canvas
-              width={responsive.height - this.graphPaddingTop}
+              width={responsive.width - this.graphPaddingRight}
               height={responsive.height - this.graphPaddingTop}
               ref={canvas => {
                 this.reglCanvas = canvas;
