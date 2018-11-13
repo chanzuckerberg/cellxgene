@@ -688,10 +688,9 @@ Routes:
 - `GET /schema`
 - `GET /annotations/obs`
 - `GET /annotations/var`
-- `GET /layout/obs`
+- `GET /layout/obs` - get the default layout
 - `PUT /data/obs` - request will contain a filter by var `name`
-- `POST /diffexp/obs` - mode `topN`, typically with a couple of 10, and two sets defined by an obs index filter (`{ filter: { obs: { index: [...] } } }`)
-- `PUT /layout/obs` - (_coming soon_) request will contain a filter by obs index
+- `POST /diffexp/obs` - mode `topN`, typically with a `count` of 10, and two sets defined by an obs index filter (`{ filter: { obs: { index: [...] } } }`)
 
 Requests include the following content negotiation headers:
 
