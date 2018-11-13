@@ -4,15 +4,23 @@ from scipy import sparse, stats
 
 # Convenience function which handles sparse data
 def _mean_var_n(X):
+    """
+    Two-pass variance calculation.  Numerically (more) stable
+    than naive methods (and same method used by numpy.var())
+    https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Two-pass
+    """
     n = X.shape[0]
     if sparse.issparse(X):
         mean = X.mean(axis=0).A1
-        mean_sq = X.multiply(X).mean(axis=0).A1
+        dfm = X - mean
+        sumsq = np.sum(np.multiply(dfm, dfm), axis=0).A1
+        v = sumsq / (n - 1)
     else:
         mean = X.mean(axis=0)
-        mean_sq = np.multiply(X, X).mean(axis=0)
+        dfm = X - mean
+        sumsq = np.sum(np.multiply(dfm, dfm), axis=0)
+        v = sumsq / (n - 1)
 
-    v = (mean_sq - mean**2) * (n / (n-1))
     return mean, v, n
 
 def diffexp_ttest(adata, maskA, maskB, top_n=8):
@@ -28,8 +36,8 @@ def diffexp_ttest(adata, maskA, maskB, top_n=8):
     """
 
     # mean, variance, N
-    meanA, vA, nA = _mean_var_n(adata.X[maskA])
-    meanB, vB, nB = _mean_var_n(adata.X[maskB])
+    meanA, vA, nA = _mean_var_n(adata._X[maskA])
+    meanB, vB, nB = _mean_var_n(adata._X[maskB])
 
     # variance / N
     vnA = vA / nA
@@ -48,7 +56,7 @@ def diffexp_ttest(adata, maskA, maskB, top_n=8):
 
     # p-value
     pvals = stats.t.sf(np.abs(tscores), dof) * 2
-    pvals_adj = pvals * adata.X.shape[1]
+    pvals_adj = pvals * adata._X.shape[1]
 
     # logfoldchanges: log2(meanA / meanB)
     logfoldchanges = np.log2(np.abs((meanA + 1e-9) / (meanB + 1e-9)))
