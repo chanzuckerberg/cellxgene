@@ -8,9 +8,9 @@ cellxgene is an interactive data explorer that leverages modern web development 
 
 ## features
 
-- **Visualization at scale:** built with [WebGL](https://www.khronos.org/webgl/), [React](https://reactjs.org/), & [Redux](https://redux.js.org/) to enable performant exploration of at least 1 million cells.
-- **Interactive exploration:** select, cross-filter, and compare subsets of data with performant indexing and data handling.
-- **Flexible API:** the cellxgene client-server model is designed to support a range of existing analysis packages for backend computational tasks (currently built for [scanpy](https://github.com/theislab/scanpy)), integrated with client-side visualization via a [REST API](https://restfulapi.net/).
+- _Visualization at scale_  Built with [WebGL](https://www.khronos.org/webgl/), [React](https://reactjs.org/), & [Redux](https://redux.js.org/) to enable performant exploration of at least 1 million cells.
+- _Interactive exploration_  Select, cross-filter, and compare subsets of data with performant indexing and data handling.
+- _Flexible API_  The cellxgene client-server model is designed to support a range of existing analysis packages for backend computational tasks (currently built for [scanpy](https://github.com/theislab/scanpy)), integrated with client-side visualization via a [REST API](https://restfulapi.net/).
 
 ## getting started
 
