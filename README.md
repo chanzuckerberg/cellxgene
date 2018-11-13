@@ -14,7 +14,7 @@
 
 ## getting started
 
-You'll need **python 3.6** or later and **Google Chrome**. Currently tested on OSX or Windows (via WSL using Ubuntu). It should work on other platforms, if you run into trouble let us know (see [help](#help) below).
+You'll need **python 3.6** or later and **Google Chrome**. Currently tested on OSX or Windows (via WSL using Ubuntu). It should work on other platforms, if you run into trouble let us know (see [help](#help-and-contact) below).
 
 To install call
 
