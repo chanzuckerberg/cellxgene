@@ -123,7 +123,7 @@ async function _doRequestExpressionData(dispatch, getState, genes) {
           }),
           headers: new Headers({
             accept: "application/json",
-            "Accept-Encoding": "gzip, deflate, br",
+            // "Accept-Encoding": "gzip, deflate, br",
             "Content-Type": "application/json"
           })
         }
@@ -243,7 +243,7 @@ const requestDifferentialExpression = (set1, set2, num_genes = 10) => async (
         method: "POST",
         headers: new Headers({
           Accept: "application/json",
-          "Accept-Encoding": "gzip, deflate, br",
+          // "Accept-Encoding": "gzip, deflate, br",
           "Content-Type": "application/json"
         }),
         body: JSON.stringify({
