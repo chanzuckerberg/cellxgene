@@ -2,6 +2,7 @@
 import numpy as np
 from scipy import sparse, stats
 
+
 # Convenience function which handles sparse data
 def _mean_var_n(X):
     """
@@ -22,6 +23,7 @@ def _mean_var_n(X):
         v = sumsq / (n - 1)
 
     return mean, v, n
+
 
 def diffexp_ttest(adata, maskA, maskB, top_n=8):
     """
@@ -74,8 +76,8 @@ def diffexp_ttest(adata, maskA, maskB, top_n=8):
     pvals_adj_top_n = pvals_adj[sort_order]
 
     # varIndex, logfoldchange, pval, pval_adj
-    result = [ [sort_order[i],
-                logfoldchanges_top_n[i],
-                pvals_top_n[i],
-                pvals_adj_top_n[i] ] for i in range(top_n)]
+    result = [[sort_order[i],
+               logfoldchanges_top_n[i],
+               pvals_top_n[i],
+               pvals_adj_top_n[i]] for i in range(top_n)]
     return result

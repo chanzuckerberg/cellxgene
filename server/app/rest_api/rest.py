@@ -588,7 +588,7 @@ class DiffExpObsAPI(Resource):
             # not NOT_IMPLEMENTED
             return make_response("mode=varfilter not implemented", HTTPStatus.BAD_REQUEST)
         if mode == DiffExpMode.TOP_N and "count" not in args:
-            return make_response("mode=topN requires a count parameter", HTTPStatus.BAD_REQUEST);
+            return make_response("mode=topN requires a count parameter", HTTPStatus.BAD_REQUEST)
 
         if "set1" not in args:
             return make_response("set1 is required.", HTTPStatus.BAD_REQUEST)
@@ -607,7 +607,7 @@ class DiffExpObsAPI(Resource):
         count = args.get("count", None)
         try:
             diffexp = current_app.data.diffexp_topN(set1_filter, set2_filter, count,
-                                               current_app.data.features["diffexp"]["interactiveLimit"])
+                                                    current_app.data.features["diffexp"]["interactiveLimit"])
         except (ValueError, FilterError) as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
         except InteractiveError:

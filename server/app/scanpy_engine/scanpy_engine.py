@@ -4,11 +4,10 @@ import numpy as np
 from pandas import DataFrame
 from pandas.core.dtypes.dtypes import CategoricalDtype
 import scanpy.api as sc
-from scipy import stats, sparse
-from datetime import datetime
+from scipy import sparse
 
 from server.app.driver.driver import CXGDriver
-from server.app.util.constants import Axis, DEFAULT_TOP_N, DiffExpMode
+from server.app.util.constants import Axis, DEFAULT_TOP_N
 from server.app.util.errors import FilterError, InteractiveError, PrepareError, ScanpyFileError
 from server.app.scanpy_engine.diffexp import diffexp_ttest
 
@@ -204,10 +203,13 @@ class ScanpyEngine(CXGDriver):
         if "index" in filter:
             mask = np.logical_and(mask, ScanpyEngine._index_filter_to_mask(filter["index"], count))
         if "annotation_value" in filter:
-            mask = np.logical_and(mask, ScanpyEngine._annotation_filter_to_mask(filter["annotation_value"], d_axis, count))
+            mask = np.logical_and(mask,
+                                  ScanpyEngine._annotation_filter_to_mask(filter["annotation_value"],
+                                                                          d_axis,
+                                                                          count))
         return mask
 
-    def _filter_to_mask(self, filter, use_slices = True):
+    def _filter_to_mask(self, filter, use_slices=True):
         if use_slices:
             obs_selector = slice(0, self.data.n_obs)
             var_selector = slice(0, self.data.n_vars)
@@ -266,14 +268,16 @@ class ScanpyEngine(CXGDriver):
             raise FilterError(f"Error parsing filter: {e}") from e
         if axis == Axis.OBS:
             obs = self.data.obs[obs_selector]
-            if not fields: fields = obs.columns.tolist()
+            if not fields:
+                fields = obs.columns.tolist()
             result = {
                 "names": fields,
                 "data": DataFrame(obs[fields]).to_records(index=True).tolist()
             }
         else:
             var = self.data.var[var_selector]
-            if not fields: fields = var.columns.tolist()
+            if not fields:
+                fields = var.columns.tolist()
             result = {
                 "names": fields,
                 "data": DataFrame(var[fields]).to_records(index=True).tolist()
@@ -295,7 +299,8 @@ class ScanpyEngine(CXGDriver):
         except KeyError as e:
             raise FilterError(f"Error parsing filter: {e}") from e
         _X = self.data._X[obs_selector, var_selector]
-        if sparse.issparse(_X): _X = _X.toarray()
+        if sparse.issparse(_X):
+            _X = _X.toarray()
         var_index_sliced = self.data.var.index[var_selector]
         obs_index_sliced = self.data.obs.index[obs_selector]
         if axis == Axis.OBS:
