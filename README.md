@@ -2,9 +2,9 @@
 
 > an interactive performant explorer for single cell transcriptomics data
 
-<img align="right" width="350" height="218" src="./docs/cellxgene-demo.gif" pad="50px">
-
 cellxgene is an interactive data explorer that leverages modern web development techniques to visualize large single-cell transcriptomics datasets, such as the data coming from large consortia projects like the Human Cell Atlas. cellxgene hopes to both enable biologists and computational researchers to explore their data, and to demonstrate general, scalable, reusable patterns for visualizing large scientific datasets. 
+
+<img width="500" src="./docs/cellxgene-demo.gif" pad="50px">
 
 ## features
 
@@ -46,7 +46,7 @@ cellxgene launch pbmc3k.h5ad --open
 ```
 You should see your web browser open with the following
 
-<img align="right" width="350" height="218" src="./docs/cellxgene-screenshot.png" pad="50px">
+<img width="350" height="218" src="./docs/cellxgene-screenshot.png" pad="50px">
 
 There are several options available, such as:
 
