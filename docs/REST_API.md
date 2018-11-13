@@ -75,7 +75,7 @@ For a GET URL query parameter:
 - Annotation name is encoded as `obs:name` or `var:name`<sup>[2](#endnote-2)</sup>.
 - Enumerated values (string, categorical, boolean) are encoded as option lists, ie, `var:tissue=lung, obs:tumor=true`
 - Scalar values (int32, float32) are encoded as ranges, ie, `obs:num_reads=1000,10000` where either min or max may be replaced with an asterisk to indicate a half-open range.
-- Index filters are not be allowed within GET URL query parameter filters
+- Index filters are not allowed within GET URL query parameter filters
 - Logically, filters are ANDed, except for repeated annotation names which are ORed. For example, `?X=A&X=B&Y=1` is evaluated as `((X==A or X==B) and Y==1)`
 
 Example selection for _lung_ and _heart_ tissue with more than 1000 reads:
