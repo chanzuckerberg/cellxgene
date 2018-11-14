@@ -4,11 +4,12 @@ import numpy as np
 from pandas import DataFrame
 from pandas.core.dtypes.dtypes import CategoricalDtype
 import scanpy.api as sc
-from scipy import stats, sparse
+from scipy import sparse
 
 from server.app.driver.driver import CXGDriver
-from server.app.util.constants import Axis, DEFAULT_TOP_N, DiffExpMode
+from server.app.util.constants import Axis, DEFAULT_TOP_N
 from server.app.util.errors import FilterError, InteractiveError, PrepareError, ScanpyFileError
+from server.app.scanpy_engine.diffexp import diffexp_ttest
 
 """
 Sort order for methods
@@ -114,35 +115,6 @@ class ScanpyEngine(CXGDriver):
                                   f"that your input and try again.")
         return result
 
-    @staticmethod
-    def _top_sort(values, sort_order, top_n=None):
-        """
-        Sorts an iterable in sort order limited by top_n
-        :param values: iterable of values to sort
-        :param sort_order: ndarray order to sort in
-        :param top_n: cutoff number to return
-        :return: values sorted by sort_order limited by top_n
-        """
-        return values[sort_order][:top_n]
-
-    @staticmethod
-    def _nan_to_one(values):
-        """
-        Replaces NaN values with 1
-        :param values: numpy ndarray
-        :return: ndarray
-        """
-        return np.where(np.isnan(values), 1, values)
-
-    @staticmethod
-    def _nan_to_zero(values):
-        """
-        Replaces NaN values with 0
-        :param values: numpy ndarray
-        :return: ndarray
-        """
-        return np.where(np.isnan(values), 0, values)
-
     def _validate_data_types(self):
         if self.data.X.dtype != "float32":
             warnings.warn(f"Scanpy data matrix is in {self.data.X.dtype} format not float32. "
@@ -180,7 +152,7 @@ class ScanpyEngine(CXGDriver):
                 f"`cellxgene prepare --layout {self.layout_method} <datafile>` "
                 f"to solve this problem. ")
 
-    def filter_dataframe(self, filter, include_uns=False):
+    def filter_dataframe(self, filter):
         """
          Filter cells from data and return a subset of the data. They can operate on both obs and var dimension with
          indexing and filtering by annotation value. Filters are combined with the and operator.
@@ -189,70 +161,68 @@ class ScanpyEngine(CXGDriver):
          https://docs.google.com/document/d/1Fxjp1SKtCk7l8QP9-7KAjGXL0eldi_qEnNT0NmlGzXI/edit#heading=h.8qc9q57amldx
 
         :param filter: dictionary with filter params
-        :param include_uns: bool, include unstructured annotations
         :return: View into scanpy object with cells/genes filtered
         """
         if not filter:
             return self.data
-        cells_idx = np.ones((self.cell_count,), dtype=bool)
-        genes_idx = np.ones((self.gene_count,), dtype=bool)
-        if Axis.OBS in filter:
-            if "index" in filter["obs"]:
-                cells_idx = self._filter_index(filter["obs"]["index"], cells_idx, Axis.OBS)
-            if "annotation_value" in filter["obs"]:
-                cells_idx = self._filter_annotation(filter["obs"]["annotation_value"], cells_idx, Axis.OBS)
-        if Axis.VAR in filter:
-            if "index" in filter["var"]:
-                genes_idx = self._filter_index(filter["var"]["index"], genes_idx, Axis.VAR)
-            if "annotation_value" in filter["var"]:
-                genes_idx = self._filter_annotation(filter["var"]["annotation_value"], genes_idx, Axis.VAR)
-
-        data = self._slice(self.data, cells_idx, genes_idx)
+        obs_selector, var_selector = self._filter_to_mask(filter, use_slices=False)
+        data = self._slice(self.data, obs_selector, var_selector)
         return data
 
-    def _filter_index(self, filter, index, axis):
-        """
-        Filter data based on index. ex. [1, 3, [111:200]]
-        :param filter: subset of filter dict for obs/var:index
-        :param index: np logical vector containing true for passing false for failing filter
-        :param axis: string obs or var
-        :return: np logical vector for whether the data passes the filter
-        """
-        if axis == Axis.OBS:
-            count_ = self.cell_count
-        elif axis == Axis.VAR:
-            count_ = self.gene_count
-        idx_filter = np.zeros((count_,), dtype=bool)
-        for i in filter:
-            if type(i) == list:
-                idx_filter[i[0]:i[1]] = True
-            else:
-                idx_filter[i] = True
-        return np.logical_and(index, idx_filter)
-
-    def _filter_annotation(self, filter, index, axis):
-        """
-        Filter data based on annotation value
-        :param filter: subset of filter dict for obs/var:annotation_value
-        :param index: np logical vector containing true for passing false for failing filter
-        :param axis: string obs or var
-        :return: np logical vector for whether the data passes the filter
-        """
-        d_axis = getattr(self.data, axis.value)
+    @staticmethod
+    def _annotation_filter_to_mask(filter, d_axis, count):
+        mask = np.ones((count, ), dtype=bool)
         for v in filter:
             if d_axis[v["name"]].dtype.name in ["boolean", "category", "object"]:
                 key_idx = np.in1d(getattr(d_axis, v["name"]), v["values"])
-                index = np.logical_and(index, key_idx)
+                mask = np.logical_and(mask, key_idx)
             else:
                 min_ = v.get("min", None)
                 max_ = v.get("max", None)
                 if min_ is not None:
                     key_idx = (getattr(d_axis, v["name"]) >= min_).ravel()
-                    index = np.logical_and(index, key_idx)
+                    mask = np.logical_and(mask, key_idx)
                 if max_ is not None:
                     key_idx = (getattr(d_axis, v["name"]) <= max_).ravel()
-                    index = np.logical_and(index, key_idx)
-        return index
+                    mask = np.logical_and(mask, key_idx)
+        return mask
+
+    @staticmethod
+    def _index_filter_to_mask(filter, count):
+        mask = np.zeros((count, ), dtype=bool)
+        for i in filter:
+            if type(i) == list:
+                mask[i[0]:i[1]] = True
+            else:
+                mask[i] = True
+        return mask
+
+    @staticmethod
+    def _axis_filter_to_mask(filter, d_axis, count):
+        mask = np.ones((count, ), dtype=bool)
+        if "index" in filter:
+            mask = np.logical_and(mask, ScanpyEngine._index_filter_to_mask(filter["index"], count))
+        if "annotation_value" in filter:
+            mask = np.logical_and(mask,
+                                  ScanpyEngine._annotation_filter_to_mask(filter["annotation_value"],
+                                                                          d_axis,
+                                                                          count))
+        return mask
+
+    def _filter_to_mask(self, filter, use_slices=True):
+        if use_slices:
+            obs_selector = slice(0, self.data.n_obs)
+            var_selector = slice(0, self.data.n_vars)
+        else:
+            obs_selector = None
+            var_selector = None
+
+        if filter is not None:
+            if Axis.OBS in filter:
+                obs_selector = self._axis_filter_to_mask(filter["obs"], self.data.obs, self.data.n_obs)
+            if Axis.VAR in filter:
+                var_selector = self._axis_filter_to_mask(filter["var"], self.data.var, self.data.n_vars)
+        return obs_selector, var_selector
 
     @staticmethod
     def _slice(data, obs_selector=None, vars_selector=None):
@@ -293,16 +263,25 @@ class ScanpyEngine(CXGDriver):
         [observation ids, val1, val2...]
         """
         try:
-            df = self.filter_dataframe(filter)
-        except KeyError as e:
+            obs_selector, var_selector = self._filter_to_mask(filter)
+        except (KeyError, IndexError) as e:
             raise FilterError(f"Error parsing filter: {e}") from e
-        df_axis = getattr(df, axis)
-        if not fields:
-            fields = df_axis.columns.tolist()
-        result = {
-            "names": fields,
-            "data": DataFrame(df_axis[fields]).to_records(index=True).tolist()
-        }
+        if axis == Axis.OBS:
+            obs = self.data.obs[obs_selector]
+            if not fields:
+                fields = obs.columns.tolist()
+            result = {
+                "names": fields,
+                "data": DataFrame(obs[fields]).to_records(index=True).tolist()
+            }
+        else:
+            var = self.data.var[var_selector]
+            if not fields:
+                fields = var.columns.tolist()
+            result = {
+                "names": fields,
+                "data": DataFrame(var[fields]).to_records(index=True).tolist()
+            }
         return result
 
     def data_frame(self, filter, axis):
@@ -316,85 +295,38 @@ class ScanpyEngine(CXGDriver):
         }
         """
         try:
-            slice = self.filter_dataframe(filter)
-        except KeyError as e:
+            obs_selector, var_selector = self._filter_to_mask(filter)
+        except (KeyError, IndexError) as e:
             raise FilterError(f"Error parsing filter: {e}") from e
-        # convert sparse slice to dense
-        X = slice._X.toarray() if sparse.issparse(slice._X) else slice._X
+        _X = self.data._X[obs_selector, var_selector]
+        if sparse.issparse(_X):
+            _X = _X.toarray()
+        var_index_sliced = self.data.var.index[var_selector]
+        obs_index_sliced = self.data.obs.index[obs_selector]
         if axis == Axis.OBS:
             result = {
-                "var": slice.var.index.tolist(),
-                "obs": DataFrame(X, index=slice.obs.index).to_records(index=True).tolist()
+                "var": var_index_sliced.tolist(),
+                "obs": DataFrame(_X, index=obs_index_sliced).to_records(index=True).tolist()
             }
         else:
             result = {
-                "obs": slice.obs.index.tolist(),
-                "var": DataFrame(X.T, index=slice.var.index).to_records(index=True).tolist()
+                "obs": obs_index_sliced.tolist(),
+                "var": DataFrame(_X.T, index=var_index_sliced).to_records(index=True).tolist()
             }
         return result
 
-    def diffexp(self, filter1, filter2, top_n=None, interactive_limit=None):
-        """
-        Computes the top differentially expressed variables between two observation sets. If dataframes
-        contain a subset of variables, then statistics for all variables will be returned, otherwise
-        only the top N vars will be returned.
-        :param filter1: filter: dictionary with filter params for first set of observations
-        :param filter2: filter: dictionary with filter params for second set of observations
-        :param top_n: Limit results to top N (Top var mode only)
-        :param interactive_limit: -- don't compute if total # genes in dataframes are larger than this
-        :return: top genes, stats and expression values for variables
-        """
+    def diffexp_topN(self, obsFilterA, obsFilterB, top_n=None, interactive_limit=None):
+        if Axis.VAR in obsFilterA or Axis.VAR in obsFilterB:
+            raise FilterError("Observation filters may not contain vaiable conditions")
         try:
-            df1 = self.filter_dataframe(filter1)
-        except KeyError as e:
-            raise FilterError(f"Error parsing filter for set 1: {e}") from e
-        # TODO df2 should be inverse if not filter2 provided
-        try:
-            df2 = self.filter_dataframe(filter2)
-        except KeyError as e:
-            raise FilterError(f"Error parsing filter for set 2: {e}") from e
-        # If not the same genes, test is wrong!
-        if np.any(df1.var.index != df2.var.index):
-            raise ValueError("Variables ares not the same in set1 and set2")
-        if interactive_limit and df1.shape[0] + df2.shape[0] > interactive_limit:
-            raise InteractiveError("Size of set 1 and 2 is too large for interactive computation")
-        # If not all genes, they used a var filter
-        if df1.var.shape[0] < self.gene_count:
-            mode = DiffExpMode.VAR_FILTER
-            if top_n:
-                raise Warning("Top N was specified but will not be used in 'Var Filter' mode")
-        else:
-            mode = DiffExpMode.TOP_N
-            if not top_n:
-                top_n = DEFAULT_TOP_N
-
-        genes_idx = df1.var.index
-        # ensure we are using a dense ndarray
-        X1 = df1._X.toarray() if sparse.issparse(df1._X) else df1._X
-        X2 = df2._X.toarray() if sparse.issparse(df2._X) else df2._X
-        diffexp_result = stats.ttest_ind(X1, X2)
-        tstats = self._nan_to_zero(diffexp_result.statistic)
-        pval = self._nan_to_one(diffexp_result.pvalue)
-        bonferroni_pval = 1 - (1 - pval) ** self.gene_count
-        ave_exp_set1 = np.mean(X1, axis=0)
-        ave_exp_set2 = np.mean(X2, axis=0)
-        ave_diff = ave_exp_set1 - ave_exp_set2
-        if mode == DiffExpMode.TOP_N:
-            sort_order = np.argsort(np.abs(tstats))[::-1]
-            # If top_n > length it will just return length
-            genes = self._top_sort(genes_idx, sort_order, top_n)
-            pval = self._top_sort(pval, sort_order, top_n)
-            bonferroni_pval = self._top_sort(bonferroni_pval, sort_order, top_n)
-            ave_exp_set1 = self._top_sort(ave_exp_set1, sort_order, top_n)
-            ave_exp_set2 = self._top_sort(ave_exp_set2, sort_order, top_n)
-            ave_diff = self._top_sort(ave_diff, sort_order, top_n)
-
-        # varIndex, avgDiff,  pVal, pValAdj, set1AvgExp, set2AvgExp
-        result = []
-        for i in range(len(genes)):
-            result.append([genes[i], ave_diff[i], pval[i], bonferroni_pval[i], ave_exp_set1[i], ave_exp_set2[i]])
-        # Results need to be returned in var index order
-        return sorted(result, key=lambda gene: gene[0])
+            obs_mask_A = self._axis_filter_to_mask(obsFilterA["obs"], self.data.obs, self.data.n_obs)
+            obs_mask_B = self._axis_filter_to_mask(obsFilterB["obs"], self.data.obs, self.data.n_obs)
+        except (KeyError, IndexError) as e:
+            raise FilterError(f"Error parsing filter: {e}") from e
+        if top_n is None:
+            top_n = DEFAULT_TOP_N
+        result = diffexp_ttest(self.data, obs_mask_A, obs_mask_B, top_n)
+        return sorted(result, key=lambda r: r[0])
 
     def layout(self, filter, interactive_limit=None):
         """
@@ -404,8 +336,8 @@ class ScanpyEngine(CXGDriver):
         :return:  [cellid, x, y, ...]
         """
         try:
-            df = self.filter_dataframe(filter, include_uns=True)
-        except KeyError as e:
+            df = self.filter_dataframe(filter)
+        except (KeyError, IndexError) as e:
             raise FilterError(f"Error parsing filter: {e}") from e
         if interactive_limit and len(df.obs.index) > interactive_limit:
             raise InteractiveError("Size data is too large for interactive computation")

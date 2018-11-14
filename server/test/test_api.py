@@ -198,6 +198,7 @@ class EndPoints(unittest.TestCase):
         url = f"{URL_BASE}{endpoint}"
         params = {
             "mode": "topN",
+            "count": 10,
             "set1": {
                 "filter": {
                     "obs": {

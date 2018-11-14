@@ -248,9 +248,9 @@ class HistogramBrush extends React.Component {
       colorAccessor,
       isUserDefined,
       isDiffExp,
-      avgDiff,
-      set1AvgExp,
-      set2AvgExp,
+      logFoldChange,
+      pval,
+      pvalAdj,
       scatterplotXXaccessor,
       scatterplotYYaccessor,
       zebra
@@ -337,25 +337,17 @@ class HistogramBrush extends React.Component {
             }}
           >
             <span>
-              <strong>1:</strong>
-              {` ${set1AvgExp.toPrecision(2)}`}
+              <strong>log fold change:</strong>
+              {` ${logFoldChange.toPrecision(4)}`}
             </span>
             <span
               style={{
                 marginLeft: 7,
-                backgroundColor: globals.lighterGrey,
                 padding: 2
               }}
             >
-              <strong>2:</strong>
-              {` ${set2AvgExp.toPrecision(2)}`}
-            </span>
-            <span
-              style={{
-                marginLeft: 7
-              }}
-            >
-              {`Av. Diff: ${avgDiff.toFixed(2)}`}
+              <strong>p-value (adj):</strong>
+              {pvalAdj < 0.0001 ? " < 0.0001" : ` ${pvalAdj.toFixed(4)}`}
             </span>
           </div>
         ) : null}

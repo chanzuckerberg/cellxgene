@@ -83,16 +83,18 @@ class CXGDriver(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def diffexp(self, filter1, filter2, top_n=None, interactive_limit=None):
+    def diffexp_topN(self, obsFilter1, obsFilter2, top_n=None, interactive_limit=None):
         """
-        Computes the top differentially expressed variables between two observation sets. If dataframes
+        Computes the top N differentially expressed variables between two observation sets. If mode
+        is "TOP_N", then stats for the top N
+        dataframes
         contain a subset of variables, then statistics for all variables will be returned, otherwise
         only the top N vars will be returned.
-        :param filter1: filter: dictionary with filter params for first set of observations
-        :param filter2: filter: dictionary with filter params for second set of observations
+        :param obsFilter1: filter: dictionary with filter params for first set of observations
+        :param obsFilter2: filter: dictionary with filter params for second set of observations
         :param top_n: Limit results to top N (Top var mode only)
         :param interactive_limit: -- don't compute if total # genes in dataframes are larger than this
-        :return: top genes, stats and expression values for variables
+        :return: top N genes and corresponding stats
         """
         pass
 

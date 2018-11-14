@@ -555,11 +555,11 @@ class DiffExpObsAPI(Resource):
         "responses": {
             "200": {
                 "description": "Statistics are encoded as an array of arrays, with fields ordered as: "
-                               "varIndex, avgDiff,  pVal, pValAdj, set1AvgExp, set2AvgExp",
+                               "varIndex, logfoldchange,  pVal, pValAdj",
                 "examples": {
                     "application/json": [
-                        [328, -2.569489, 2.655706e-63, 3.642036e-57, 383.393, 583.9],
-                        [1250, -2.569489, 2.655706e-63, 3.642036e-57, 383.393, 583.9],
+                        [328, -2.569489, 2.655706e-63, 3.642036e-57],
+                        [1250, -2.569489, 2.655706e-63, 3.642036e-57],
                     ]
                 }
             },
@@ -584,11 +584,12 @@ class DiffExpObsAPI(Resource):
         except ValueError:
             return make_response(f"Error: invalid mode option {args['mode']}", HTTPStatus.BAD_REQUEST)
         # Validate filters
-        if mode == DiffExpMode.VAR_FILTER:
-            if "varFilter" not in args:
-                return make_response("varFilter is required when mode is set to varFilter ", HTTPStatus.BAD_REQUEST)
-            if Axis.OBS in args["varFilter"]["filter"]:
-                return make_response("Obs filter not allowed in varFilter", HTTPStatus.BAD_REQUEST)
+        if mode == DiffExpMode.VAR_FILTER or "varFilter" in args:
+            # not NOT_IMPLEMENTED
+            return make_response("mode=varfilter not implemented", HTTPStatus.NOT_IMPLEMENTED)
+        if mode == DiffExpMode.TOP_N and "count" not in args:
+            return make_response("mode=topN requires a count parameter", HTTPStatus.BAD_REQUEST)
+
         if "set1" not in args:
             return make_response("set1 is required.", HTTPStatus.BAD_REQUEST)
         if Axis.VAR in args["set1"]["filter"]:
@@ -598,16 +599,17 @@ class DiffExpObsAPI(Resource):
             return make_response("Set2 as inverse of set1 is not implemented", HTTPStatus.NOT_IMPLEMENTED)
         if Axis.VAR in args["set2"]["filter"]:
             return make_response("Var filter not allowed for set2", HTTPStatus.BAD_REQUEST)
+
         set1_filter = args["set1"]["filter"]
         set2_filter = args.get("set2", {"filter": {}})["filter"]
-        if "varFilter" in args:
-            set1_filter[Axis.VAR] = args["varFilter"]["filter"][Axis.VAR]
-            set2_filter[Axis.VAR] = args["varFilter"]["filter"][Axis.VAR]
-        # mode
+
+        # TODO: implement varfilter mode
+
+        # mode=topN
         count = args.get("count", None)
         try:
-            diffexp = current_app.data.diffexp(set1_filter, set2_filter, count,
-                                               current_app.data.features["diffexp"]["interactiveLimit"])
+            diffexp = current_app.data.diffexp_topN(set1_filter, set2_filter, count,
+                                                    current_app.data.features["diffexp"]["interactiveLimit"])
         except (ValueError, FilterError) as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
         except InteractiveError:

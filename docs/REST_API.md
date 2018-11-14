@@ -75,7 +75,7 @@ For a GET URL query parameter:
 - Annotation name is encoded as `obs:name` or `var:name`<sup>[2](#endnote-2)</sup>.
 - Enumerated values (string, categorical, boolean) are encoded as option lists, ie, `var:tissue=lung, obs:tumor=true`
 - Scalar values (int32, float32) are encoded as ranges, ie, `obs:num_reads=1000,10000` where either min or max may be replaced with an asterisk to indicate a half-open range.
-- Index filters are not be allowed within GET URL query parameter filters
+- Index filters are not allowed within GET URL query parameter filters
 - Logically, filters are ANDed, except for repeated annotation names which are ORed. For example, `?X=A&X=B&Y=1` is evaluated as `((X==A or X==B) and Y==1)`
 
 Example selection for _lung_ and _heart_ tissue with more than 1000 reads:
@@ -505,10 +505,10 @@ Generate differential expression (DE) statistics for two specified subsets of da
 
 Two modes are provided:
 
-- Return top N differentially expressed variables (genes)
-- Return DE for caller-provided variable filter (future)
+- `topN`: return top N differentially expressed variables (across all variables)
+- `varFilter`: return DE for caller-provided variable filter (_future_)
 
-Both modes perform calculations using a subset of observations, where each subset is defined by an observation filter (`set1` and `set2`).
+Both modes perform calculations using a subset of observations, where each subset is defined by an observation filter (`set1` and `set2`). These filters must not include a variable filter.
 
 If differential expression is not supported by the server, must return an HTTP 501 response. If, in the view of the server, the request will exceed a reasonable interactive time period, must immediately return HTTP 403 error (error return _before_ attempting computation).
 
@@ -568,24 +568,22 @@ If differential expression is not supported by the server, must return an HTTP 5
 
 **Response body:**
 
-- For 200 Success, differential expression statistics returned as array of arrays sorted by obs index, where each contains the following values:
+- For 200 Success, differential expression statistics returned as array of arrays sorted by varindex, where each contains the following values:
 
   - **varIndex**: variable index for the computed results
-  - **avgDiff**: log fold-change of the average expression between the two groups. Positive values indicate that the gene is more highly expressed in the first group,
+  - **logfoldchange**: log fold-change of the average expression between the two groups. Positive values indicate that the gene is more highly expressed in the first group,
   - **pVal**: unadjusted p-value,
-  - **pValAdj**: Adjusted p-value, based on bonferroni correction using all genes in the original dataset),
-  - **set1AvgExp:** average expression value for all observations in set 1,
-  - **set2AvgExp**: average expression value for all observations in set 2
+  - **pValAdj**: adjusted p-value
 
   Statistics are encoded as an array of arrays, with fields ordered as:
 
-  _varIndex_, _avgDiff_, _pVal_, _pValAdj_, _set1AvgExp_, _set2AvgExp_
+  _varIndex_, _logfoldchange_, _pVal_, _pValAdj_
 
   For example:
 
   ```
   [
-    [ 328, -2.569489, 2.655706e-63, 3.642036e-57, 383.393, 583.9 ],
+    [ 1720, 2.4679039, 2.3124478092035228e-175, 4.250279073316075e-172 ]
     // ...
   ]
   ```
@@ -616,8 +614,8 @@ POST /diffexp/obs
 200 - Success
 {
   "diffexp": [
-    [ 328, -2.569489, 2.655706e-63, 3.642036e-57, 383.393, 583.9 ],
-    // [ varIdx, avgDiff, pVal, pValAdj, set1AvgExp, set2AvgExp ],
+    [ 328, -2.569489, 2.655706e-63, 3.642036e-57 ],
+    // [ varIdx, logfoldchange, pVal, pValAdj ],
     // ...
   ]
 }
@@ -690,10 +688,9 @@ Routes:
 - `GET /schema`
 - `GET /annotations/obs`
 - `GET /annotations/var`
-- `GET /layout/obs`
+- `GET /layout/obs` - get the default layout
 - `PUT /data/obs` - request will contain a filter by var `name`
-- `POST /diffexp/obs` - mode `topN`, typically with a couple of 10, and two sets defined by an obs index filter (`{ filter: { obs: { index: [...] } } }`)
-- `PUT /layout/obs` - (_coming soon_) request will contain a filter by obs index
+- `POST /diffexp/obs` - mode `topN`, typically with a `count` of 10, and two sets defined by an obs index filter (`{ filter: { obs: { index: [...] } } }`)
 
 Requests include the following content negotiation headers:
 

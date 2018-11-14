@@ -152,9 +152,9 @@ class GeneExpression extends React.Component {
                     zebra={index % 2 === 0}
                     ranges={d3.extent(values)}
                     isDiffExp
-                    avgDiff={value[1]}
-                    set1AvgExp={value[4]}
-                    set2AvgExp={value[5]}
+                    logFoldChange={value[1]}
+                    pval={value[2]}
+                    pvalAdj={value[3]}
                   />
                 );
               })
