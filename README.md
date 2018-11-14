@@ -4,7 +4,7 @@
 
 `cellxgene` is an interactive data explorer that leverages modern web development techniques to visualize large single-cell transcriptomics datasets, such as the data coming from the [Human Cell Atlas](https://humancellatlas.org). We hope to enable biologists and computational researchers to explore their data, and to demonstrate general, scalable, and reusable patterns for scientific data visualization.
 
-<img width="500" src="./docs/cellxgene-demo.gif" pad="50px">
+![demo](docs/cellxgene-demo-1.gif)![demo](docs/cellxgene-demo-2.gif)![demo](docs/cellxgene-demo-3.gif)
 
 ## features
 
