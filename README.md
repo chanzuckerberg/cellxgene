@@ -148,7 +148,7 @@ You might want to try running one of the preprocessing recipes included with `sc
 cellxgene prepare data/ --output=data-processed.h5ad --recipe=zheng17
 ```
 
-It should be easy to run `prepare` then call `cellxgene launch` a few different times with different settings to explore different behaviors. We may explore adding other preprocessing options in the future.
+It should be easy to run `prepare` then call `cellxgene launch` a few times with different settings to explore different behaviors. We may explore adding other preprocessing options in the future.
 
 > I have extra metadata that I want to add to my dataset
 
