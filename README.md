@@ -130,7 +130,7 @@ This is likely because you do not have node and npm installed, we recommend usin
 
 ## development roadmap
 
-`cellxgene` is still very much in development, and we've love to include the community as we plan new features to work on. We are thinking about working on the following features over the next 3-12 months. If you are interested in updates, want to give feedback, want to contribute, or have ideas about other features we should work on, please [contact us](# Help/Contact) 
+`cellxgene` is still very much in development, and we've love to include the community as we plan new features to work on. We are thinking about working on the following features over the next 3-12 months. If you are interested in updates, want to give feedback, want to contribute, or have ideas about other features we should work on, please [contact us](#help-and-contact) 
 
 - **Visualizaling spatial metadata** Image-based transcriptomics methods also generate large cell by gene matrices, alongside rich metadata about spatial location; we would like to render this information in `cellxgene`.
 - **Visualizing trajectories** Trajectory analyses infer progression along some ordering or pseudotime; we would like `cellxgene ` to render the results of these analyses when they have been performed
