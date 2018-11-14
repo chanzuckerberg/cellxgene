@@ -28,7 +28,7 @@ To start the tool and see the help information call
 cellxgene --help
 ```
 
-There are two primary subcommands: `launch` and `prepare`:
+There are two primary subcommands -- `launch` and `prepare`:
 
 - The `launch` command loads a dataset and starts the interactive explorer in your web browser
 - The optional `prepare` command takes an existing dataset in one of several formats and applies minimal preprocessing and reformatting so that `launch` can use it
@@ -64,16 +64,16 @@ cellxgene launch --help
 
 ### assumptions
 
-The `launch` command assumes that the data is in the `.h5ad` `anndata` format (read more about [anndata](https://anndata.readthedocs.io/en/latest/index.html)). It makes the following assumptions about the structure of the data:
+The `launch` command assumes that the data is stored in the `.h5ad` format from the [`anndata` library](https://anndata.readthedocs.io/en/latest/index.html). Briefly, this format wraps a two-dimensional `ndarray` and stores additional metadata as "annotations" for either observations (`obs` and `obsm`) or variables (`var` and `varm`). `cellxgene launch` makes the following assumptions about the structure of your data (we recommend loading and inspecting your data using `scanpy` to validate these assumptions):
 
-- an `obsm` field contains the coordinates for the layout that you want to render (e.g. `X_tsne` for the `tsne` layout or `X_umap` for the `umap` layout)
-- an `obs`  annotation has a unique identifier for every cell (you can specify this using the `--obs-names` option, by default it will use the index)
-- an `var` annotation has a unique identifier for every gene (you can specify this using the `--var-names` option, by default it will use the index)
+- an `obs` annotation has a unique identifier for every cell (you can specify which field to use with the `--obs-names` option, by default it will use the value of `data.obs_names`)
+- an `var` annotation has a unique identifier for every gene (you can specify which field to use with the `--var-names` option, by default it will use the value of `data.var_names`)
+- an `obsm` field contains the two-dimensional coordinates for the layout that you want to render (e.g. `X_tsne` for the `tsne` layout or `X_umap` for the `umap` layout)
 - any additional  `obs` annotations will be rendered as per-cell metadata by the app (e.g. `louvain` cluster assignments) 
 
 ### prepare
 
-The `prepare` command is included to help you format your data using `scanpy`. This is especially useful if you are unfamiliar with `scanpy` or have a data in a different format. 
+The `prepare` command is included to help you format your data by using `scanpy` under the hood. This is especially useful if you are unfamiliar with `scanpy` or are starting with data in a different format. 
 
 To prepare from an existing `.h5ad` file use
 
@@ -81,7 +81,7 @@ To prepare from an existing `.h5ad` file use
 cellxgene prepare dataset.h5ad --output=dataset-processed.h5ad
 ```
 
-This will load the input data, perform PCA and nearest neighbors, compute `umap` and `tsne` layouts and `louvain` cluster assignments, and save the results in a new file called `dataset-processed.h5ad` that can be loaded using `cellxgene launch` . Several options are available, including running the preprocessing `recipes` included with `scanpy`. To see all options call
+This will load the input data, perform PCA and nearest neighbor calculation, compute `umap` and `tsne` layouts and `louvain` cluster assignments, and save the results in a new file called `dataset-processed.h5ad` that can be loaded using `cellxgene launch`. Data can be loaded from several formats, including `.h5ad`, `.loom`, and a `10-Genomics-formatted` `mtx` directory. Several options are available, including running one of the preprocessing `recipes` included with `scanpy`, which include steps like cell filtering and gene selection. To see all options call
 
 ```
 cellxgene prepare --help
@@ -120,7 +120,7 @@ pip install -e .
 
 You can start the app while developing either by calling `cellxgene` or by calling `python -m server`.
 
-## faq
+## FAQ
 
 > I'm following the developer instructions and get an error about "missing files and directories” when trying to build the client
 
