@@ -8,7 +8,7 @@
 
 ## features
 
-- Built **visualization at scale** using [WebGL](https://www.khronos.org/webgl/), [React](https://reactjs.org/), and [Redux](https://redux.js.org/) to handle at least 1 million cells.
+- Built for **visualization at scale** using [WebGL](https://www.khronos.org/webgl/), [React](https://reactjs.org/), and [Redux](https://redux.js.org/) to handle at least 1 million cells.
 - Enables **interactive exploration** with performant indexing and data handling for selection, cross-filtering, and comparisons across subsets of data.
 - Support for **computational backends**  through a client-server model that can support a range of existing analysis packages for backend computational tasks (currently built for [scanpy](https://github.com/theislab/scanpy)).
 
