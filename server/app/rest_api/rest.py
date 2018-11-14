@@ -555,7 +555,7 @@ class DiffExpObsAPI(Resource):
         "responses": {
             "200": {
                 "description": "Statistics are encoded as an array of arrays, with fields ordered as: "
-                               "varIndex, logfoldchnage,  pVal, pValAdj",
+                               "varIndex, logfoldchange,  pVal, pValAdj",
                 "examples": {
                     "application/json": [
                         [328, -2.569489, 2.655706e-63, 3.642036e-57],
@@ -586,7 +586,7 @@ class DiffExpObsAPI(Resource):
         # Validate filters
         if mode == DiffExpMode.VAR_FILTER or "varFilter" in args:
             # not NOT_IMPLEMENTED
-            return make_response("mode=varfilter not implemented", HTTPStatus.BAD_REQUEST)
+            return make_response("mode=varfilter not implemented", HTTPStatus.NOT_IMPLEMENTED)
         if mode == DiffExpMode.TOP_N and "count" not in args:
             return make_response("mode=topN requires a count parameter", HTTPStatus.BAD_REQUEST)
 
@@ -602,6 +602,8 @@ class DiffExpObsAPI(Resource):
 
         set1_filter = args["set1"]["filter"]
         set2_filter = args.get("set2", {"filter": {}})["filter"]
+
+        # TODO: implement varfilter mode
 
         # mode=topN
         count = args.get("count", None)
