@@ -48,11 +48,13 @@ You should see your web browser open with the following
 
 <img width="350" height="218" src="./docs/cellxgene-screenshot.png" pad="50px">
 
+**Note**: automatic opening of the browser with the `--open` flag only works on OS X, on other platforms you'll need to directly point to the provided link in your browser.
+
 There are several options available, such as:
 
 - `--layout` to specify the layout as  `tsne` or `umap`
 - `--title` to show a title on the explorer
-- `--open` to automatically open the web browser after launching
+- `--open` to automatically open the web browser after launching (OS X only)
 
 To see all options call
 
@@ -169,7 +171,7 @@ This is likely because you do not have node and npm installed, we recommend usin
 - **Visualizaling spatial metadata** Image-based transcriptomics methods also generate large cell by gene matrices, alongside rich metadata about spatial location; we would like to render this information in `cellxgene`.
 - **Visualizing trajectories** Trajectory analyses infer progression along some ordering or pseudotime; we would like `cellxgene ` to render the results of these analyses when they have been performed
 - **Deploy to web**  Many projects release public data browser websites  alongside their publicatons; we would like to make it easy for anyone to deploy `cellxgene` to a custom URL with their own dataset that they own and operate.
-- **HCA Integration** The [Human Cell Atlas](https://humancellatlas.org) is generating a large corupus of single-cell expression data and will make it available through the Data Coordination Platform; we would like `cellxgene` to be one of several different portals for browsing these data
+- **HCA Integration** The [Human Cell Atlas](https://humancellatlas.org) is generating a large corpus of single-cell expression data and will make it available through the Data Coordination Platform; we would like `cellxgene` to be one of several different portals for browsing these data
 
 ## contributing
 
