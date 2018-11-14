@@ -64,16 +64,16 @@ cellxgene launch --help
 
 ### assumptions
 
-The `launch` command assumes that the data is stored in the `.h5ad` format from the [`anndata`](https://anndata.readthedocs.io/en/latest/index.html) library. Briefly, this format wraps a two-dimensional `ndarray` and stores additional metadata as "annotations" for either observations (`obs` and `obsm`) or variables (`var` and `varm`). `cellxgene launch` makes the following assumptions about the structure of your data (we recommend loading and inspecting your data using `scanpy` to validate these assumptions)
+The `launch` command assumes that the data is stored in the `.h5ad` format from the [`anndata`](https://anndata.readthedocs.io/en/latest/index.html) library. It also assumes that certain computations have already been performed. Briefly, the `.h5ad` format wraps a two-dimensional `ndarray` and stores additional metadata as "annotations" for either observations (referred to as `obs` and `obsm`) or variables (`var` and `varm`). `cellxgene launch` makes the following assumptions about your data (we recommend loading and inspecting your data using `scanpy` to validate these assumptions)
 
-- an `obs` annotation has a unique identifier for every cell (you can specify which field to use with the `--obs-names` option, by default it will use the value of `data.obs_names`)
-- an `var` annotation has a unique identifier for every gene (you can specify which field to use with the `--var-names` option, by default it will use the value of `data.var_names`)
+- an `obs` field has a unique identifier for every cell (you can specify which field to use with the `--obs-names` option, by default it will use the value of `data.obs_names`)
+- a `var` field has a unique identifier for every gene (you can specify which field to use with the `--var-names` option, by default it will use the value of `data.var_names`)
 - an `obsm` field contains the two-dimensional coordinates for the layout that you want to render (e.g. `X_tsne` for the `tsne` layout or `X_umap` for the `umap` layout)
-- any additional  `obs` annotations will be rendered as per-cell metadata by the app (e.g. `louvain` cluster assignments) 
+- any additional  `obs` fields will be rendered as per-cell continuous or categorical metadata by the app (e.g. `louvain` cluster assignments) 
 
 ### prepare
 
-The `prepare` command is included to help you format your data. It uses `scanpy` under the hood. This is especially useful if you are unfamiliar with `scanpy` or are starting with data in a different format. 
+The `prepare` command is included to help you format your data. It uses `scanpy` under the hood. This is especially useful if you are starting with raw unanalyzed data and are unfamiliar with `scanpy`. 
 
 To prepare from an existing `.h5ad` file use
 
