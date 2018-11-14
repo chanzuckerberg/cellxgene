@@ -8,9 +8,9 @@
 
 ## features
 
-- _Visualization at scale_  Built with [WebGL](https://www.khronos.org/webgl/), [React](https://reactjs.org/), and [Redux](https://redux.js.org/) to enable performant exploration of at least 1 million cells.
-- _Interactive exploration_  Select, cross-filter, and compare subsets of data with performant indexing and data handling.
-- _Support for computational backends_  The cellxgene client-server model is designed to support a range of existing analysis packages for backend computational tasks (currently built for [scanpy](https://github.com/theislab/scanpy)).
+- Built for **visualization at scale** using [WebGL](https://www.khronos.org/webgl/), [React](https://reactjs.org/), and [Redux](https://redux.js.org/) to enable performant exploration of at least 1 million cells.
+- Handles **interactive exploration** with performant indexing and data handling for selection, cross-filtering, and comparisons across subsets of data.
+- Support for **computational backends**  through a client-server model that can support a range of existing analysis packages for backend computational tasks (currently built for [scanpy](https://github.com/theislab/scanpy)).
 
 ## getting started
 
@@ -28,7 +28,7 @@ To start the tool and see the help information call
 cellxgene --help
 ```
 
-There are two primary subcommands -- `launch` and `prepare`:
+There are two primary subcommands -- `launch` and `prepare`
 
 - The `launch` command loads a dataset and starts the interactive explorer in your web browser
 - The optional `prepare` command takes an existing dataset in one of several formats and applies minimal preprocessing and reformatting so that `launch` can use it
@@ -64,7 +64,7 @@ cellxgene launch --help
 
 ### assumptions
 
-The `launch` command assumes that the data is stored in the `.h5ad` format from the [`anndata` library](https://anndata.readthedocs.io/en/latest/index.html). Briefly, this format wraps a two-dimensional `ndarray` and stores additional metadata as "annotations" for either observations (`obs` and `obsm`) or variables (`var` and `varm`). `cellxgene launch` makes the following assumptions about the structure of your data (we recommend loading and inspecting your data using `scanpy` to validate these assumptions):
+The `launch` command assumes that the data is stored in the `.h5ad` format from the [`anndata`](https://anndata.readthedocs.io/en/latest/index.html) library. Briefly, this format wraps a two-dimensional `ndarray` and stores additional metadata as "annotations" for either observations (`obs` and `obsm`) or variables (`var` and `varm`). `cellxgene launch` makes the following assumptions about the structure of your data (we recommend loading and inspecting your data using `scanpy` to validate these assumptions)
 
 - an `obs` annotation has a unique identifier for every cell (you can specify which field to use with the `--obs-names` option, by default it will use the value of `data.obs_names`)
 - an `var` annotation has a unique identifier for every gene (you can specify which field to use with the `--var-names` option, by default it will use the value of `data.var_names`)
@@ -73,7 +73,7 @@ The `launch` command assumes that the data is stored in the `.h5ad` format from 
 
 ### prepare
 
-The `prepare` command is included to help you format your data by using `scanpy` under the hood. This is especially useful if you are unfamiliar with `scanpy` or are starting with data in a different format. 
+The `prepare` command is included to help you format your data. It uses `scanpy` under the hood. This is especially useful if you are unfamiliar with `scanpy` or are starting with data in a different format. 
 
 To prepare from an existing `.h5ad` file use
 
@@ -87,7 +87,7 @@ This will load the input data, perform PCA and nearest neighbor calculation, com
 cellxgene prepare --help
 ```
 
-_Note_: `cellxgene prepare` will only perform `louvain` clustering if you have the `python-igraph` and `louvain` packages installed. To make sure they are installed with `cellxgene` install using
+**Note**: `cellxgene prepare` will only perform `louvain` clustering if you have the `python-igraph` and `louvain` packages installed. To make sure they are installed alongside `cellxgene` use
 
 ```
 pip install cellxgene[louvain]
@@ -106,13 +106,13 @@ Then clone the project
 git clone https://github.com/chanzuckerberg/cellxgene.git
 ```
 
-Build the client assets by calling this from inside the `cellxgene` folder
+Build the client web assets by calling this from inside the `cellxgene` folder
 
 ```
 ./bin/build-client
 ```
 
-Install all requirements (we recommend using virtual environments)
+Install all requirements (we recommend doing this inside a virtual environment)
 
 ```
 pip install -e .
@@ -130,10 +130,10 @@ This is likely because you do not have node and npm installed, we recommend usin
 
 `cellxgene` is still very much in development, and we've love to include the community as we plan new features to work on. We are thinking about working on the following features over the next 3-12 months. If you are interested in updates, want to give feedback, want to contribute, or have ideas about other features we should work on, please [contact us](# Help/Contact) 
 
-- _Visualizaling spatial metadata_  Image-based transcriptomics methods also generate large cell by gene matrices, alongside rich metadata about spatial location; we would like to render this information in `cellxgene`.
-- _Visualizing trajectories_  Trajectory analyses infer progression along some ordering or pseudotime; we would like `cellxgene ` to render the results of these analyses when they have been performed
-- _Deploy to web_  Many projects release public data browser websites  alongside their publicatons; we would like to make it easy for anyone to deploy `cellxgene` to a custom URL with their own dataset that they own and operate.
-- _HCA Integration_  The [Human Cell Atlas](https://humancellatlas.org) is generating a large corupus of single-cell expression data and will make it available through the Data Coordination Platform; we would like `cellxgene` to be one of several different portals for browsing these data
+- **Visualizaling spatial metadata** Image-based transcriptomics methods also generate large cell by gene matrices, alongside rich metadata about spatial location; we would like to render this information in `cellxgene`.
+- **Visualizing trajectories** Trajectory analyses infer progression along some ordering or pseudotime; we would like `cellxgene ` to render the results of these analyses when they have been performed
+- **Deploy to web**  Many projects release public data browser websites  alongside their publicatons; we would like to make it easy for anyone to deploy `cellxgene` to a custom URL with their own dataset that they own and operate.
+- **HCA Integration** The [Human Cell Atlas](https://humancellatlas.org) is generating a large corupus of single-cell expression data and will make it available through the Data Coordination Platform; we would like `cellxgene` to be one of several different portals for browsing these data
 
 ## contributing
 
