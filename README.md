@@ -81,11 +81,13 @@ To prepare from an existing `.h5ad` file use
 cellxgene prepare dataset.h5ad --output=dataset-processed.h5ad
 ```
 
-This will load the input data, perform PCA and nearest neighbor calculation, compute `umap` and `tsne` layouts and `louvain` cluster assignments, and save the results in a new file called `dataset-processed.h5ad` that can be loaded using `cellxgene launch`. Data can be loaded from several formats, including `.h5ad`, `.loom`, and a `10-Genomics-formatted` `mtx` directory. Several options are available, including running one of the preprocessing `recipes` included with `scanpy`, which include steps like cell filtering and gene selection. To see all options call
+This will load the input data, perform PCA and nearest neighbor calculation, compute `umap` and `tsne` layouts and `louvain` cluster assignments, and save the results in a new file called `dataset-processed.h5ad` that can be loaded using `cellxgene launch`. Data can be loaded from several formats, including `.h5ad` `.loom` and a `10-Genomics-formatted` `mtx` directory. Several options are available, including running one of the preprocessing `recipes` included with `scanpy`, which include steps like cell filtering and gene selection. To see all options call
 
 ```
 cellxgene prepare --help
 ```
+
+Depending on the options chosen, `prepare` can take a long time to run (several minutes for datasets with ~10k cells, an hour or more for datasets with >500k cells). If you want `prepare` to run faster we recommend using the `sparse` option and only computing the layout for `umap`.
 
 **Note**: `cellxgene prepare` will only perform `louvain` clustering if you have the `python-igraph` and `louvain` packages installed. To make sure they are installed alongside `cellxgene` use
 
