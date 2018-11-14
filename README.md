@@ -87,7 +87,7 @@ This will load the input data, perform PCA and nearest neighbor calculations, co
 cellxgene prepare --help
 ```
 
-Depending on the options chosen, `prepare` can take a long time to run (several minutes for datasets with 10k cells, an hour or more for datasets with >500k cells). If you want `prepare` to run faster we recommend using the `sparse` option and only computing the layout for `umap`.
+Depending on the options chosen, `prepare` can take a long time to run (a few minutes for datasets with 10-100k cells, up to an hour or more for datasets with >100k cells). If you want `prepare` to run faster we recommend using the `sparse` option and only computing the layout for `umap`.
 
 **Note**: `cellxgene prepare` will only perform `louvain` clustering if you have the `python-igraph` and `louvain` packages installed. To make sure they are installed alongside `cellxgene` use
 
