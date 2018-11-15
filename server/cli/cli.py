@@ -5,7 +5,7 @@ from .prepare import prepare
 
 
 @click.group(name="cellxgene", context_settings=dict(max_content_width=85))
-@click.version_option(version="0.0.3", prog_name="cellxgene", message="[%(prog)s] Version %(version)s")
+@click.version_option(version="0.0.4", prog_name="cellxgene", message="[%(prog)s] Version %(version)s")
 def cli():
     pass
 
