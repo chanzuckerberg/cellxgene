@@ -24,6 +24,7 @@ Follow these steps to create a release.
 2.  Create a release branch, eg, `release-version`
 3.  In the release branch:
     - run `bumpversion --config-file .bumpversion.cfg [major | minor | patch]`
+    - clean up existing environment using `bin/clean`
     - build the JS asserts using `bin/build-client`
 4.  Commit and push the new branch
 5.  Create a PR for the release.
