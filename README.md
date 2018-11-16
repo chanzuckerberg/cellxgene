@@ -127,7 +127,7 @@ And your web browser should open with an interactive view of your data.
 
 > In my `prepare` command I received the following error `Warning: louvain module is not installed, no clusters will be calculated. To fix this please install cellxgene with the optional feature louvain enabled`
 
-Louvain clustering requires additional dependencies that are somewhat complex. For now, you need to specify that you want these packages by using 
+Louvain clustering requires additional dependencies that are somewhat complex, so we don't include them by default. For now, you need to specify that you want these packages by using 
 
 ```
 pip install cellxgene[louvain]
@@ -149,21 +149,21 @@ Currently this is not supported directly, but you should be able to do this manu
 
 > I tried to `pip install cellxgene` and got a weird error I don't understand
 
-This may happen, especially as we work out bugs in our installation process. Please create a new [Github issue](https://github.com/chanzuckerberg/cellxgene/issues), explain what you did, and include all the error messages you saw. It'd also be super helpful if you call `pip freeze` and include the full output alongside your issue.
+This may happen, especially as we work out bugs in our installation process! Please create a new [Github issue](https://github.com/chanzuckerberg/cellxgene/issues), explain what you did, and include all the error messages you saw. It'd also be super helpful if you call `pip freeze` and include the full output alongside your issue.
 
 > I'm following the developer instructions and get an error about "missing files and directories” when trying to build the client
 
-This is likely because you do not have node and npm installed, we recommend using [nvm](https://github.com/creationix/nvm)
+This is likely because you do not have node and npm installed, we recommend using [nvm](https://github.com/creationix/nvm) if you're new to using these tools.
 
 ## developer guide
 
-This project has made a few key design choices:
+This project has made a few key design choices
 
 - The front-end is built with [`regl`](https://github.com/regl-project/regl) (a webgl library), [`react`](https://reactjs.org/), [`redux`](https://redux.js.org/), and [`d3`](https://github.com/d3/d3) to handle rendering large numbers of cells.
 - The app is designed with a client-server model that can support a range of existing analysis packages for backend computational tasks (currently built for [scanpy](https://github.com/theislab/scanpy)).
 - The client uses fast cross-filtering to handle selections and comparisons across subsets of data.
 
-Depending on your background and interests, you might be interested in contributing either to the frontend, or backend, or both!
+Depending on your background and interests, you might want to contribute to the frontend, or backend, or both!
 
 If you are interested in working on `cellxgene` development, we recommend cloning the project from Gitub. First you'll need the following installed on your machine
 
