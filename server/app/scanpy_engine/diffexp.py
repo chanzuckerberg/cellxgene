@@ -72,12 +72,6 @@ def diffexp_ttest(adata, maskA, maskB, top_n=8, expression_cutoff=0.2):
     threshold = meanU.min() + expression_cutoff * (meanU.max() - meanU.min())
     local_genes_to_ignore = np.nonzero(meanU < threshold)[0]
     tscores[local_genes_to_ignore] = 0
-    print(local_genes_to_ignore)
-
-    print(meanU[16], meanA[16], meanB[16])
-    print(threshold, expression_cutoff)
-    print(tscores[16])
-
 
     # p-value
     pvals = stats.t.sf(np.abs(tscores), dof) * 2
