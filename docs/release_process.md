@@ -29,8 +29,15 @@ Follow these steps to create a release.
 4.  Commit and push the new branch
 5.  Create a PR for the release.
     - [optional] As needed, conduct PR review.
-6.  Create Github release using the version number and release notes ([instructions](https://help.github.com/articles/creating-releases/)).
-7.  Publish to pypi by performing the following steps
+6.  Merge to master
+7.  Create Github release using the version number and release notes ([instructions](https://help.github.com/articles/creating-releases/)).
+    - Draft new release
+    - Type version name matching release version number from (1)
+    - Select `master` as release branch (ensure you merged the release PR)
+    - Type title `Release {version num}`
+    - [optional] check pre-release if this release is not ready for production
+    - Publish Release
+ 8.  Publish to pypi by performing the following steps
     (assumes you have `setuptools` and `twine` installed and that you have
     registered for pypi and have write access to the cellxgene pypi package)
     - build the distribution by calling

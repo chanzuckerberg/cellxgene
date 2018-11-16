@@ -7,6 +7,8 @@ echo "removing node_modules"
 rm -rf $CELLXGENE_DIR/client/node_modules
 echo "removing client_build"
 rm -rf $CELLXGENE_DIR/client/build
+echo "removing dist"
+rm -rf $CELLXGENE_DIR/dist
 echo "removing egg-info"
 rm -rf $CELLXGENE_DIR/cellxgene.egg-info
 echo "removing static files"
