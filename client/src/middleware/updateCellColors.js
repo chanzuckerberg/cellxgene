@@ -1,7 +1,13 @@
 // jshint esversion: 6
 import _ from "lodash";
 import * as d3 from "d3";
-import { interpolateViridis } from "d3-scale-chromatic";
+import {
+  interpolateViridis,
+  interpolateSpectral,
+  interpolateRainbow,
+  interpolateBlues,
+  interpolateWarm
+} from "d3-scale-chromatic";
 import * as globals from "../globals";
 import parseRGB from "../util/parseRGB";
 
@@ -59,11 +65,19 @@ const updateCellColorsMiddleware = store => next => action => {
   */
 
   if (action.type === "color by categorical metadata") {
-    colorScale = d3.scaleOrdinal().range(globals.ordinalColors);
+    // colorScale = d3.scaleOrdinal().range(globals.ordinalColors);
+
+    const categories = _.filter(s.controls.world.schema.annotations.obs, {
+      name: action.colorAccessor
+    })[0].categories;
+
+    colorScale = d3
+      .scaleSequential(interpolateRainbow)
+      .domain([0, categories.length]);
 
     for (let i = 0; i < obsAnnotations.length; i += 1) {
       const obs = obsAnnotations[i];
-      const c = colorScale(obs[action.colorAccessor]);
+      const c = colorScale(categories.indexOf(obs[action.colorAccessor]));
       colorsByName[i] = c;
       colorsByRGB[i] = parseRGB(c);
     }
@@ -77,7 +91,7 @@ const updateCellColorsMiddleware = store => next => action => {
 
     for (let i = 0; i < obsAnnotations.length; i += 1) {
       const obs = obsAnnotations[i];
-      const c = interpolateViridis(colorScale(obs[action.colorAccessor]));
+      const c = interpolateWarm(colorScale(obs[action.colorAccessor]));
       colorsByName[i] = c;
       colorsByRGB[i] = parseRGB(c);
     }
@@ -95,7 +109,7 @@ const updateCellColorsMiddleware = store => next => action => {
       ]); /* invert viridis... probably pass this scale through to others */
 
     for (let i = 0, len = expression.length; i < len; i += 1) {
-      const c = interpolateViridis(colorScale(expression[i]));
+      const c = interpolateWarm(colorScale(expression[i]));
       colorsByName[i] = c;
       colorsByRGB[i] = parseRGB(c);
     }
