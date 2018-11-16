@@ -153,7 +153,7 @@ This may happen, especially as we work out bugs in our installation process! Ple
 
 > How are you computing and sorting differential expression results?
 
-Currently we use a Welch's `t-test` implementation including the same variance overestimation correction as used in `scanpy`. We sort the `tscore` to identify the top N genes, and then filter to remove any that fall below a cutoff log fold change value, which can help remove spurious test results. The default threshold is `0.01` and can be changed using the option `--diffexp-lfc-cutoff`. We can explore adding support for other test types in the future.
+Currently we use a [Welch's *t*-test](https://en.wikipedia.org/wiki/Welch%27s_t-test) implementation including the same variance overestimation correction as used in `scanpy`. We sort the `tscore` to identify the top N genes, and then filter to remove any that fall below a cutoff log fold change value, which can help remove spurious test results. The default threshold is `0.01` and can be changed using the option `--diffexp-lfc-cutoff`. We can explore adding support for other test types in the future.
 
 > I'm following the developer instructions and get an error about "missing files and directories” when trying to build the client
 
