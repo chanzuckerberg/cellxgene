@@ -54,14 +54,13 @@ def diffexp_ttest(adata, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
     if top_n > adata.n_obs:
         top_n = adata.n_obs
 
-    # mean, variance, N - calculate for both sets and the union of both
+    # mean, variance, N - calculate for both selections
     meanA, vA, nA = _mean_var_n(adata._X[maskA])
     meanB, vB, nB = _mean_var_n(adata._X[maskB])
 
     # variance / N
     vnA = vA / nA
-    # vnB = vB / nB
-    vnB = vB / nA       # hack to overstimulate variance
+    vnB = vB / nA   # hack to overstimulate variance, would normally be vB/nB
     sum_vn = vnA + vnB
 
     # degrees of freedom for Welch's t-test
@@ -77,7 +76,7 @@ def diffexp_ttest(adata, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
     # p-value
     pvals = stats.t.sf(np.abs(tscores), dof) * 2
     pvals_adj = pvals * adata._X.shape[1]
-    pvals_adj[pvals_adj > 1] = 1        # cap adjusted p-value to 1
+    pvals_adj[pvals_adj > 1] = 1        # cap adjusted p-value at 1
 
     # logfoldchanges: log2(meanA / meanB)
     logfoldchanges = np.log2(np.abs((meanA + 1e-9) / (meanB + 1e-9)))
