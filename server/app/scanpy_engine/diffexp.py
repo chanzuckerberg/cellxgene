@@ -2,7 +2,6 @@
 import numpy as np
 from scipy import sparse, stats
 
-
 # Convenience function which handles sparse data
 def _mean_var_n(X):
     """
@@ -25,10 +24,19 @@ def _mean_var_n(X):
     return mean, v, n
 
 
-def diffexp_ttest(adata, maskA, maskB, top_n=8):
+def diffexp_ttest(adata, maskA, maskB, top_n=8, expression_cutoff=0.2):
     """
     Return differential expression statistics for top N variables, sorted by
-    t statistic.   Implemented as a unequal variance t-test.
+    t statistic.   Implemented as a unequal variance (Welch's) t-test.
+
+    Notes on alogrithm:
+    - Welch's ttest provides basic statistics test.
+      https://en.wikipedia.org/wiki/Welch%27s_t-test
+    - p-values adjusted with Bonferroni correction.
+      https://en.wikipedia.org/wiki/Bonferroni_correction
+    - top N selection will not select any variable/gene
+      which has a mean expression level below a cutoff
+      threshold (across both sets)
 
     :param adata: anndata dataframe
     :param maskA: observation selection mask for set 1
@@ -37,9 +45,13 @@ def diffexp_ttest(adata, maskA, maskB, top_n=8):
     :return:  for top N genes, [ varindex, logfoldchange, pval, pval_adj ]
     """
 
-    # mean, variance, N
+    # Union of both selections
+    maskU = np.logical_or(maskA, maskB)
+
+    # mean, variance, N - calculate for both sets and the union of both
     meanA, vA, nA = _mean_var_n(adata._X[maskA])
     meanB, vB, nB = _mean_var_n(adata._X[maskB])
+    meanU, vU, nU = _mean_var_n(adata._X[maskU])
 
     # variance / N
     vnA = vA / nA
@@ -55,6 +67,17 @@ def diffexp_ttest(adata, maskA, maskB, top_n=8):
     with np.errstate(divide='ignore', invalid='ignore'):
         tscores = (meanA - meanB) / np.sqrt(sum_vn)
     tscores[np.isnan(tscores)] = 0
+
+    # ignore genes not sufficiently expressed across selections
+    threshold = meanU.min() + expression_cutoff * (meanU.max() - meanU.min())
+    local_genes_to_ignore = np.nonzero(meanU < threshold)[0]
+    tscores[local_genes_to_ignore] = 0
+    print(local_genes_to_ignore)
+
+    print(meanU[16], meanA[16], meanB[16])
+    print(threshold, expression_cutoff)
+    print(tscores[16])
+
 
     # p-value
     pvals = stats.t.sf(np.abs(tscores), dof) * 2
