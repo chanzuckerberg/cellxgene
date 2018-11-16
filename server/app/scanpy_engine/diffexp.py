@@ -24,7 +24,7 @@ def _mean_var_n(X):
     return mean, v, n
 
 
-def diffexp_ttest(adata, maskA, maskB, top_n=8, expression_cutoff=0.2):
+def diffexp_ttest(adata, maskA, maskB, top_n=8, diffexp_expression_threshold=0.2):
     """
     Return differential expression statistics for top N variables, sorted by
     t statistic.   Implemented as a unequal variance (Welch's) t-test.
@@ -69,7 +69,7 @@ def diffexp_ttest(adata, maskA, maskB, top_n=8, expression_cutoff=0.2):
     tscores[np.isnan(tscores)] = 0
 
     # ignore genes not sufficiently expressed across selections
-    threshold = meanU.min() + expression_cutoff * (meanU.max() - meanU.min())
+    threshold = meanU.min() + diffexp_expression_threshold * (meanU.max() - meanU.min())
     local_genes_to_ignore = np.nonzero(meanU < threshold)[0]
     tscores[local_genes_to_ignore] = 0
 
