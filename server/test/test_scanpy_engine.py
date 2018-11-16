@@ -201,8 +201,6 @@ class UtilTest(unittest.TestCase):
         }
         result = self.data.diffexp_topN(f1["filter"], f2["filter"])
         self.assertEqual(len(result), 10)
-        var_idx = [i[0] for i in result]
-        self.assertEqual(var_idx, sorted(var_idx))
         result = self.data.diffexp_topN(f1["filter"], f2["filter"], 20)
         self.assertEqual(len(result), 20)
 
