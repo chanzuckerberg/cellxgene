@@ -1,11 +1,13 @@
 // jshint esversion: 6
 import { connect } from "react-redux";
 import React from "react";
+import _ from "lodash";
 
 @connect(state => ({
   categoricalAsBooleansMap: state.controls.categoricalAsBooleansMap,
   colorScale: state.controls.colorScale,
-  colorAccessor: state.controls.colorAccessor
+  colorAccessor: state.controls.colorAccessor,
+  schema: _.get(state.controls.world, "schema", null)
 }))
 class CategoryValue extends React.Component {
   toggleOff() {
@@ -34,7 +36,8 @@ class CategoryValue extends React.Component {
       value,
       colorAccessor,
       colorScale,
-      i
+      i,
+      schema
     } = this.props;
 
     if (!categoricalAsBooleansMap) return null;
@@ -42,6 +45,13 @@ class CategoryValue extends React.Component {
     const selected = categoricalAsBooleansMap[metadataField][value];
     /* this is the color scale, so add swatches below */
     const c = metadataField === colorAccessor;
+    let categories = null;
+
+    if (c && schema) {
+      categories = _.filter(schema.annotations.obs, {
+        name: colorAccessor
+      })[0].categories;
+    }
 
     return (
       <div
@@ -78,7 +88,10 @@ class CategoryValue extends React.Component {
               marginLeft: 5,
               width: 11,
               height: 11,
-              backgroundColor: c ? colorScale(value) : "inherit"
+              backgroundColor:
+                c && categories
+                  ? colorScale(categories.indexOf(value))
+                  : "inherit"
             }}
           />
         </span>
