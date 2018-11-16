@@ -2,7 +2,7 @@
 import React from "react";
 import { connect } from "react-redux";
 import * as d3 from "d3";
-import { interpolateViridis } from "d3-scale-chromatic";
+import { interpolateViridis, interpolateWarm } from "d3-scale-chromatic";
 
 // create continuous color legend
 // http://bl.ocks.org/syntagmatic/e8ccca52559796be775553b467593a9f
@@ -121,12 +121,12 @@ class ContinuousLegend extends React.Component {
         .remove();
     }
 
-    if (colorAccessor && colorScale) {
+    if (colorAccessor && colorScale && colorScale.range) {
       /* fragile! continuous range is 0 to 1, not [#fa4b2c, ...], make this a flag? */
       if (colorScale.range()[0][0] !== "#") {
         continuous(
           "#continuous_legend",
-          d3.scaleSequential(interpolateViridis).domain(colorScale.domain()),
+          d3.scaleSequential(interpolateWarm).domain(colorScale.domain()),
           colorAccessor
         );
       }
