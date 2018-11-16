@@ -2,6 +2,7 @@
 import numpy as np
 from scipy import sparse, stats
 
+
 # Convenience function which handles sparse data
 def _mean_var_n(X):
     """
