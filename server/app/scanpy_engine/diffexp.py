@@ -24,107 +24,29 @@ def _mean_var_n(X):
     return mean, v, n
 
 
-def diffexp_ttest_OLD(adata, maskA, maskB, top_n=8, diffexp_p_cutoff=0.2):
-    """
-    Return differential expression statistics for top N variables, sorted by
-    t statistic.   Implemented as a unequal variance (Welch's) t-test.
-
-    Notes on alogrithm:
-    - Welch's ttest provides basic statistics test.
-      https://en.wikipedia.org/wiki/Welch%27s_t-test
-    - p-values adjusted with Bonferroni correction.
-      https://en.wikipedia.org/wiki/Bonferroni_correction
-    - top N selection will not select any variable/gene
-      which has a mean expression level below a cutoff
-      threshold (across both sets)
-
-    :param adata: anndata dataframe
-    :param maskA: observation selection mask for set 1
-    :param maskB: observation selection mask for set 2
-    :param top_n: number of variables to return stats for
-    :return:  for top N genes, [ varindex, logfoldchange, pval, pval_adj ]
-    """
-
-    # Union of both selections
-    maskU = np.logical_or(maskA, maskB)
-
-    # mean, variance, N - calculate for both sets and the union of both
-    meanA, vA, nA = _mean_var_n(adata._X[maskA])
-    meanB, vB, nB = _mean_var_n(adata._X[maskB])
-    meanU, vU, nU = _mean_var_n(adata._X[maskU])
-
-    # variance / N
-    vnA = vA / nA
-    vnB = vB / nB
-    sum_vn = vnA + vnB
-
-    # degrees of freedom for Welch's t-test
-    with np.errstate(divide='ignore', invalid='ignore'):
-        dof = sum_vn**2 / (vnA**2 / (nA - 1) + vnB**2 / (nB - 1))
-    dof[np.isnan(dof)] = 1
-
-    # Welch's t-test score calculation
-    with np.errstate(divide='ignore', invalid='ignore'):
-        tscores = (meanA - meanB) / np.sqrt(sum_vn)
-    tscores[np.isnan(tscores)] = 0
-
-    # ignore genes not sufficiently expressed across selections
-    threshold = meanU.min() + diffexp_expression_threshold * (meanU.max() - meanU.min())
-    local_genes_to_ignore = np.nonzero(meanU < threshold)[0]
-    tscores[local_genes_to_ignore] = 0
-
-    # p-value
-    pvals = stats.t.sf(np.abs(tscores), dof) * 2
-    pvals_adj = pvals * adata._X.shape[1]
-
-    # logfoldchanges: log2(meanA / meanB)
-    logfoldchanges = np.log2(np.abs((meanA + 1e-9) / (meanB + 1e-9)))
-
-    # top n sort
-    stats_to_sort = np.abs(tscores)
-    partition = np.argpartition(stats_to_sort, -top_n)[-top_n:]
-    rel_sort_order = np.argsort(stats_to_sort[partition])[::-1]
-    vars_indices = np.arange(adata.n_vars, dtype=int)
-    sort_order = vars_indices[partition][rel_sort_order]
-
-    # top n slice
-    logfoldchanges_top_n = logfoldchanges[sort_order]
-    pvals_top_n = pvals[sort_order]
-    pvals_adj_top_n = pvals_adj[sort_order]
-
-    # varIndex, logfoldchange, pval, pval_adj
-    result = [[sort_order[i],
-               logfoldchanges_top_n[i],
-               pvals_top_n[i],
-               pvals_adj_top_n[i]] for i in range(top_n)]
-    return result
-
 def diffexp_ttest(adata, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
     """
-    Return differential expression statistics for top N variablesself.
+    Return differential expression statistics for top N variables.
 
     Algorithm:
     - compute log fold change (log2(meanA/meanB))
     - compute Welch's t-test statistic and pvalue (w/ Bonferroni correction)
-    - return top N abs(logfoldchange) where p-value-adj > diffexp-p-cutoff
+    - return top N abs(logfoldchange) where lfc > diffexp_lfc_cutoff
 
-    If there are not N which meet criteria, augment by removing the p-value
-    threshold.
+    If there are not N which meet criteria, augment by removing the logfoldchange
+    threshold requirement.
 
     Notes on alogrithm:
     - Welch's ttest provides basic statistics test.
       https://en.wikipedia.org/wiki/Welch%27s_t-test
     - p-values adjusted with Bonferroni correction.
       https://en.wikipedia.org/wiki/Bonferroni_correction
-    - top N selection will not select any variable/gene
-      which has a mean expression level below a cutoff
-      threshold (across both sets)
 
     :param adata: anndata dataframe
     :param maskA: observation selection mask for set 1
     :param maskB: observation selection mask for set 2
     :param top_n: number of variables to return stats for
-    :param diffexp-p-cutoff: minimum
+    :param diffexp_lfc_cutoff: minimum
     :return:  for top N genes, [ varindex, logfoldchange, pval, pval_adj ]
     """
 
@@ -154,6 +76,7 @@ def diffexp_ttest(adata, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
     # p-value
     pvals = stats.t.sf(np.abs(tscores), dof) * 2
     pvals_adj = pvals * adata._X.shape[1]
+    pvals_adj[pvals_adj > 1] = 1        # cap adjusted p-value to 1
 
     # logfoldchanges: log2(meanA / meanB)
     logfoldchanges = np.log2(np.abs((meanA + 1e-9) / (meanB + 1e-9)))
@@ -161,6 +84,8 @@ def diffexp_ttest(adata, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
     # find all with lfc > cutoff
     lfc_above_cutoff_idx = np.nonzero(np.abs(logfoldchanges) > diffexp_lfc_cutoff)[0]
     stats_to_sort = np.abs(tscores)
+
+    # derive sort order
     if lfc_above_cutoff_idx.shape[0] > top_n:
         # partition top N
         rel_t_partition = np.argpartition(stats_to_sort[lfc_above_cutoff_idx], -top_n)[-top_n:]
@@ -175,7 +100,7 @@ def diffexp_ttest(adata, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
         indices = np.indices(stats_to_sort.shape)[0]
         sort_order = indices[partition][rel_sort_order]
 
-    # top n slice
+    # top n slice based upon sort order
     logfoldchanges_top_n = logfoldchanges[sort_order]
     pvals_top_n = pvals[sort_order]
     pvals_adj_top_n = pvals_adj[sort_order]

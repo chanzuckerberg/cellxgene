@@ -568,14 +568,14 @@ If differential expression is not supported by the server, must return an HTTP 5
 
 **Response body:**
 
-- For 200 Success, differential expression statistics returned as array of arrays sorted by varindex, where each contains the following values:
+- For 200 Success, differential expression statistics returned as array of arrays, where each contains the following values:
 
   - **varIndex**: variable index for the computed results
   - **logfoldchange**: log fold-change of the average expression between the two groups. Positive values indicate that the gene is more highly expressed in the first group,
   - **pVal**: unadjusted p-value,
   - **pValAdj**: adjusted p-value
 
-  Statistics are encoded as an array of arrays, with fields ordered as:
+  Values ordered as:
 
   _varIndex_, _logfoldchange_, _pVal_, _pValAdj_
 
