@@ -65,8 +65,6 @@ const updateCellColorsMiddleware = store => next => action => {
   */
 
   if (action.type === "color by categorical metadata") {
-    // colorScale = d3.scaleOrdinal().range(globals.ordinalColors);
-
     const categories = _.filter(s.controls.world.schema.annotations.obs, {
       name: action.colorAccessor
     })[0].categories;

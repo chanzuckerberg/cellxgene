@@ -48,7 +48,6 @@ class CategoryValue extends React.Component {
     let categories = null;
 
     if (c && schema) {
-      /* lint wants [categories] which seems less clear, prefer [0] over array destructuring */
       categories = _.filter(schema.annotations.obs, {
         name: colorAccessor
       })[0].categories;
