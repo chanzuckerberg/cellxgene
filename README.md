@@ -2,15 +2,9 @@
 
 > an interactive performant explorer for single cell transcriptomics data
 
-`cellxgene` is an interactive data explorer that leverages modern web development techniques to visualize large single-cell transcriptomics datasets, such as the data coming from the [Human Cell Atlas](https://humancellatlas.org). We hope to enable biologists and computational researchers to explore their data, and to demonstrate general, scalable, and reusable patterns for scientific data visualization.
+`cellxgene` is an interactive data explorer for single-cell transcriptomics datasets, such as those coming from the [Human Cell Atlas](https://humancellatlas.org). Leveraging modern web development techniques to enable fast visualizations of at least 1 million cells, we hope to enable biologists and computational researchers to explore their data, and to demonstrate general, scalable, and reusable patterns for scientific data visualization.
 
 <img src="./docs/cellxgene-demo-1.gif" width="200" height="200" hspace="30"><img src="./docs/cellxgene-demo-2.gif" width="200" height="200" hspace="30"><img src="./docs/cellxgene-demo-3.gif" width="200" height="200" hspace="30">
-
-## features
-
-- Built for **visualization at scale** using [WebGL](https://www.khronos.org/webgl/), [React](https://reactjs.org/), and [Redux](https://redux.js.org/) to handle at least 1 million cells.
-- Enables **interactive exploration** with performant indexing and data handling for selection, cross-filtering, and comparisons across subsets of data.
-- Support for **computational backends**  through a client-server model that can support a range of existing analysis packages for backend computational tasks (currently built for [scanpy](https://github.com/theislab/scanpy)).
 
 ## getting started
 
@@ -22,18 +16,7 @@ To install run
 pip install cellxgene
 ```
 
-To start the tool and see the help information call
-
-```
-cellxgene --help
-```
-
-There are two primary subcommands -- `launch` and `prepare`
-
-- The `launch` command loads a dataset and starts the interactive explorer in your web browser
-- The optional `prepare` command takes an existing dataset in one of several formats and applies minimal preprocessing and reformatting so that `launch` can use it
-
-To explore a dataset call
+To start exploring a dataset call
 
 ```
 cellxgene launch dataset.h5ad --open
@@ -62,6 +45,8 @@ To see all options call
 cellxgene launch --help
 ```
 
+There is an additional subcommand called `cellxgene prepare` that takes an existing dataset in one of several formats and applies minimal preprocessing and reformatting so that `launch` can use it (see [the next section](##data-formatting) for more info on `prepare`).
+
 ## data formatting
 
 ### assumptions
@@ -83,13 +68,19 @@ To prepare from an existing `.h5ad` file use
 cellxgene prepare dataset.h5ad --output=dataset-processed.h5ad
 ```
 
-This will load the input data, perform PCA and nearest neighbor calculations, compute `umap` and `tsne` layouts and `louvain` cluster assignments, and save the results in a new file called `dataset-processed.h5ad` that can be loaded using `cellxgene launch`. Data can be loaded from several formats, including `.h5ad` `.loom` and a `10-Genomics-formatted` `mtx` directory. Several options are available, including running one of the preprocessing `recipes` included with `scanpy`, which include steps like cell filtering and gene selection. To see all options call
+This will load the input data, perform PCA and nearest neighbor calculations, compute `umap` and `tsne` layouts and `louvain` cluster assignments, and save the results in a new file called `dataset-processed.h5ad` that can be loaded using `cellxgene launch`. Data can be loaded from several formats, including `.h5ad` `.loom` and a `10-Genomics-formatted` `mtx` directory. Several options are available, including running one of the preprocessing `recipes` included with `scanpy`, which include steps like cell filtering and gene selection. 
+
+Depending on the options chosen, `prepare` can take a long time to run (a few minutes for datasets with 10-100k cells, up to an hour or more for datasets with >100k cells). If you want `prepare` to run faster we recommend using the `sparse` option and only computing the layout for `umap`, using a call like this
+
+```
+cellxgene prepare dataset.h5ad --output=dataset-processed.h5ad --layout=umap --sparse
+```
+
+To see all options call
 
 ```
 cellxgene prepare --help
 ```
-
-Depending on the options chosen, `prepare` can take a long time to run (a few minutes for datasets with 10-100k cells, up to an hour or more for datasets with >100k cells). If you want `prepare` to run faster we recommend using the `sparse` option and only computing the layout for `umap`.
 
 **Note**: `cellxgene prepare` will only perform `louvain` clustering if you have the `python-igraph` and `louvain` packages installed. To make sure they are installed alongside `cellxgene` use
 
@@ -97,7 +88,82 @@ Depending on the options chosen, `prepare` can take a long time to run (a few mi
 pip install cellxgene[louvain]
 ```
 
+## conda and virtual environments
+
+If you use conda and want to create a conda environment for `cellxgene` you can use the following commands
+
+```
+conda create --yes -n cellxgene python=3.6
+conda activate cellxgene
+pip install cellxgene
+```
+
+Or you can create a virtual environment by using
+
+```
+ENV_NAME=cellxgene
+python3 -m venv ${ENV_NAME}
+source ${ENV_NAME}/bin/activate
+pip install cellxgene
+```
+
+## FAQ
+
+> Someone sent me a directory of `10X-Genomics` data with a `mtx` file and I've never used `scanpy`, can I use `cellxgene`?
+
+Yep! This should only take a couple steps. We'll assume your data is in a folder called `data/` and you've successfully installed `cellxgene` with the `louvain` packages as described above. Just run
+
+```
+cellxgene prepare data/ --output=data-processed.h5ad --layout=umap
+```
+
+Depending on the size of the dataset, this may take some time. Once it's done, call
+
+```
+cellxgene launch data-processed.h5ad --layout=umap --open
+```
+
+And your web browser should open with an interactive view of your data.
+
+> In my `prepare` command I received the following error `Warning: louvain module is not installed, no clusters will be calculated. To fix this please install cellxgene with the optional feature louvain enabled`
+
+Louvain clustering requires additional dependencies that are somewhat complex. For now, you need to specify that you want these packages by using 
+
+```
+pip install cellxgene[louvain]
+```
+
+> I ran `prepare` and I'm getting results that look unexpected
+
+You might want to try running one of the preprocessing recipes included with `scanpy` (read more about them [here](https://scanpy.readthedocs.io/en/latest/api/index.html#recipes)). You can specify this with the `--recipe` option, such as
+
+```
+cellxgene prepare data/ --output=data-processed.h5ad --recipe=zheng17
+```
+
+It should be easy to run `prepare` then call `cellxgene launch` a few times with different settings to explore different behaviors. We may explore adding other preprocessing options in the future.
+
+> I have extra metadata that I want to add to my dataset
+
+Currently this is not supported directly, but you should be able to do this manually using `scanpy`. For example, this [notebook](https://github.com/falexwolf/fun-analyses/blob/master/tabula_muris/tabula_muris.ipynb) shows adding the contents of a `csv` file with metadata to an `anndata` object. For now, you could do this manually on your data in the same way and then save out the result before loading into `cellxgene`.
+
+> I tried to `pip install cellxgene` and got a weird error I don't understand
+
+This may happen, especially as we work out bugs in our installation process. Please create a new [Github issue](https://github.com/chanzuckerberg/cellxgene/issues), explain what you did, and include all the error messages you saw. It'd also be super helpful if you call `pip freeze` and include the full output alongside your issue.
+
+> I'm following the developer instructions and get an error about "missing files and directories” when trying to build the client
+
+This is likely because you do not have node and npm installed, we recommend using [nvm](https://github.com/creationix/nvm)
+
 ## developer guide
+
+This project has made a few key design choices:
+
+- The front-end is built with [`regl`](https://github.com/regl-project/regl) (a webgl library), [`react`](https://reactjs.org/), [`redux`](https://redux.js.org/), and [`d3`](https://github.com/d3/d3) to handle rendering large numbers of cells.
+- The app is designed with a client-server model that can support a range of existing analysis packages for backend computational tasks (currently built for [scanpy](https://github.com/theislab/scanpy)).
+- The client uses fast cross-filtering to handle selections and comparisons across subsets of data.
+
+Depending on your background and interests, you might be interested in contributing either to the frontend, or backend, or both!
 
 If you are interested in working on `cellxgene` development, we recommend cloning the project from Gitub. First you'll need the following installed on your machine
 
@@ -124,45 +190,7 @@ pip install -e .
 
 You can start the app while developing either by calling `cellxgene` or by calling `python -m server`. We recommend using the `--debug` flag to see more output, which you can include when reporting bugs.
 
-## FAQ
-
-> Someone sent me a directory of `10X-Genomics` data with a `mtx` file and I've never used `scanpy`, can I use `cellxgene`?
-
-Yep! This should only take a couple steps. We'll assume your data is in a folder called `data/` and you've successfully installed `cellxgene` with the `louvain` packages as described above. Just run
-
-```
-cellxgene prepare data/ --output=data-processed.h5ad --layout=umap
-```
-
-Depending on the size of the dataset, this may take some time. Once it's done, call
-
-```
-cellxgene launch data-processed.h5ad --layout=umap --open
-```
-
-And your web browser should open with an interactive view of your data.
-
-> I ran `prepare` and I'm getting results that look unexpected
-
-You might want to try running one of the preprocessing recipes included with `scanpy` (read more about them [here](https://scanpy.readthedocs.io/en/latest/api/index.html#recipes)). You can specify this with the `--recipe` option, such as
-
-```
-cellxgene prepare data/ --output=data-processed.h5ad --recipe=zheng17
-```
-
-It should be easy to run `prepare` then call `cellxgene launch` a few times with different settings to explore different behaviors. We may explore adding other preprocessing options in the future.
-
-> I have extra metadata that I want to add to my dataset
-
-Currently this is not supported directly, but you should be able to do this manually using `scanpy`. For example, this [notebook](https://github.com/falexwolf/fun-analyses/blob/master/tabula_muris/tabula_muris.ipynb) shows adding the contents of a `csv` file with metadata to an `anndata` object. For now, you could do this manually on your data in the same way and then save out the result before loading into `cellxgene`.
-
-> I tried to `pip install cellxgene` and got a weird error I don't understand
-
-This may happen, especially as we work out bugs in our installation process. Please create a new [Github issue](https://github.com/chanzuckerberg/cellxgene/issues), explain what you did, and include all the error messages you saw. It'd also be super helpful if you call `pip freeze` and include the full output alongside your issue.
-
-> I'm following the developer instructions and get an error about "missing files and directories” when trying to build the client
-
-This is likely because you do not have node and npm installed, we recommend using [nvm](https://github.com/creationix/nvm)
+If you have any questions about developing or contributing, come hang out with us by joining the [CZI Science Slack](https://cziscience.slack.com/messages/CCTA8DF1T) and posting in the `#cellxgene-dev` channel.
 
 ## development roadmap
 
@@ -189,8 +217,8 @@ We are eager to explore integrations with other computational backends such as [
 
 ## help and contact
 
-Have questions, suggestions, or comments? You can come hang out with us by joining the [CZI Science Slack](https://cziscience.slack.com/messages/CCTA8DF1T) and posting in the `#cellxgene` channel. As mentioned above, please submit any feature requests or bugs as [Github issues](https://github.com/chanzuckerberg/cellxgene/issues). We'd love to hear from you!
+Have questions, suggestions, or comments? You can come hang out with us by joining the [CZI Science Slack](https://cziscience.slack.com/messages/CCTA8DF1T) and posting in the `#cellxgene-users` channel. As mentioned above, please submit any feature requests or bugs as [Github issues](https://github.com/chanzuckerberg/cellxgene/issues). We'd love to hear from you!
 
 ## reuse
 
-This project was started with the sole goal of empowering the scientific community to explore and understand their data. As such, we encourage other scientific tool builders to adopt the patterns, tools, and code from this project, and reach out to us with ideas or questions. All code is freely available for reuse under the [MIT license](https://opensource.org/licenses/MIT).
+This project was started with the sole goal of empowering the scientific community to explore and understand their data. As such, we encourage other scientific tool builders in academia or industry to adopt the patterns, tools, and code from this project, and reach out to us with ideas or questions. All code is freely available for reuse under the [MIT license](https://opensource.org/licenses/MIT).
