@@ -159,9 +159,9 @@ This is likely because you do not have node and npm installed, we recommend usin
 
 This project has made a few key design choices
 
-- The front-end is built with [`regl`](https://github.com/regl-project/regl) (a webgl library), [`react`](https://reactjs.org/), [`redux`](https://redux.js.org/), and [`d3`](https://github.com/d3/d3) to handle rendering large numbers of cells.
-- The app is designed with a client-server model that can support a range of existing analysis packages for backend computational tasks (currently built for [scanpy](https://github.com/theislab/scanpy)).
-- The client uses fast cross-filtering to handle selections and comparisons across subsets of data.
+- The front-end is built with [`regl`](https://github.com/regl-project/regl) (a webgl library), [`react`](https://reactjs.org/), [`redux`](https://redux.js.org/), [`d3`](https://github.com/d3/d3), and [`blueprint`](https://blueprintjs.com/docs/#core) to handle rendering large numbers of cells with lots of complex interactivity
+- The app is designed with a client-server model that can support a range of existing analysis packages for backend computational tasks (currently built for [scanpy](https://github.com/theislab/scanpy))
+- The client uses fast cross-filtering to handle selections and comparisons across subsets of data
 
 Depending on your background and interests, you might want to contribute to the frontend, or backend, or both!
 
