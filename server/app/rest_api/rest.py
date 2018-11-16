@@ -5,7 +5,7 @@ from flask import (
     Blueprint, current_app, jsonify, make_response, request
 )
 from flask_restful_swagger_2 import Api, swagger, Resource
-from werkzeug.datastructures import ImmutableMultiDict
+from werkzeug.datastructures import ImmutableMultiDict, MultiDict
 
 from server.app.util.constants import Axis, DiffExpMode
 from server.app.util.filter import parse_filter, QueryStringError
@@ -346,7 +346,7 @@ class DataObsAPI(Resource):
     def get(self):
         accept_type = request.args.get("accept-type", None)
         # request.args is immutable
-        args = dict(request.args)
+        args = request.args.copy()
         args.pop("accept-type", None)
         try:
             filter_ = parse_filter(ImmutableMultiDict(args), current_app.data.schema['annotations'])
@@ -450,7 +450,7 @@ class DataVarAPI(Resource):
     def get(self):
         accept_type = request.args.get("accept-type", None)
         # request.args is immutable
-        args = dict(request.args)
+        args = request.args.copy()
         args.pop("accept-type", None)
         try:
             filter_ = parse_filter(ImmutableMultiDict(args), current_app.data.schema['annotations'])
