@@ -14,7 +14,7 @@ from server.app.scanpy_engine.scanpy_engine import ScanpyEngine
 class UtilTest(unittest.TestCase):
     def setUp(self):
         args = {'layout': 'umap', 'diffexp': 'ttest', 'max_category_items': 100,
-                'obs_names': None, 'var_names': None}
+                'obs_names': None, 'var_names': None, 'diffexp_lfc_cutoff': 0.01}
 
         self.data = ScanpyEngine("example-dataset/pbmc3k.h5ad", args)
         self.data._create_schema()
@@ -201,8 +201,6 @@ class UtilTest(unittest.TestCase):
         }
         result = self.data.diffexp_topN(f1["filter"], f2["filter"])
         self.assertEqual(len(result), 10)
-        var_idx = [i[0] for i in result]
-        self.assertEqual(var_idx, sorted(var_idx))
         result = self.data.diffexp_topN(f1["filter"], f2["filter"], 20)
         self.assertEqual(len(result), 20)
 

@@ -325,8 +325,8 @@ class ScanpyEngine(CXGDriver):
             raise FilterError(f"Error parsing filter: {e}") from e
         if top_n is None:
             top_n = DEFAULT_TOP_N
-        result = diffexp_ttest(self.data, obs_mask_A, obs_mask_B, top_n)
-        return sorted(result, key=lambda r: r[0])
+        result = diffexp_ttest(self.data, obs_mask_A, obs_mask_B, top_n, self.diffexp_lfc_cutoff)
+        return result
 
     def layout(self, filter, interactive_limit=None):
         """

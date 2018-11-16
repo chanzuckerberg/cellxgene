@@ -346,7 +346,7 @@ class DataObsAPI(Resource):
     def get(self):
         accept_type = request.args.get("accept-type", None)
         # request.args is immutable
-        args = dict(request.args)
+        args = request.args.copy()
         args.pop("accept-type", None)
         try:
             filter_ = parse_filter(ImmutableMultiDict(args), current_app.data.schema['annotations'])
@@ -450,7 +450,7 @@ class DataVarAPI(Resource):
     def get(self):
         accept_type = request.args.get("accept-type", None)
         # request.args is immutable
-        args = dict(request.args)
+        args = request.args.copy()
         args.pop("accept-type", None)
         try:
             filter_ = parse_filter(ImmutableMultiDict(args), current_app.data.schema['annotations'])
