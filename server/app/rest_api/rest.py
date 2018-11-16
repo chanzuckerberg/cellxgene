@@ -5,7 +5,7 @@ from flask import (
     Blueprint, current_app, jsonify, make_response, request
 )
 from flask_restful_swagger_2 import Api, swagger, Resource
-from werkzeug.datastructures import ImmutableMultiDict, MultiDict
+from werkzeug.datastructures import ImmutableMultiDict
 
 from server.app.util.constants import Axis, DiffExpMode
 from server.app.util.filter import parse_filter, QueryStringError
