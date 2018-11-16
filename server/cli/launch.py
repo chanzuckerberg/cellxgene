@@ -27,10 +27,10 @@ from server.app.util.errors import ScanpyFileError
               help="Bind to all interfaces (this makes the server accessible beyond this computer).")
 @click.option("--max-category-items", default=100, metavar="", show_default=True,
               help="Limits the number of categorical annotation items displayed.")
-@click.option("--diffexp-p-cutoff", default=0.0001, show_default=True,
+@click.option("--diffexp-lfc-cutoff", default=0.01, show_default=True,
               help="Relative expression cutoff used when selecting top N differentially expressed genes")
 def launch(data, layout, diffexp, title, verbose, debug, obs_names, var_names,
-           open_browser, port, listen_all, max_category_items, diffexp_p_cutoff):
+           open_browser, port, listen_all, max_category_items, diffexp_lfc_cutoff):
     """Launch the cellxgene data viewer.
     This web app lets you explore single-cell expression data.
     Data must be in a format that cellxgene expects, read the
@@ -94,7 +94,7 @@ def launch(data, layout, diffexp, title, verbose, debug, obs_names, var_names,
         "layout": layout,
         "diffexp": diffexp,
         "max_category_items": max_category_items,
-        "diffexp_p_cutoff": diffexp_p_cutoff,
+        "diffexp_lfc_cutoff": diffexp_lfc_cutoff,
         "obs_names": obs_names,
         "var_names": var_names
     }

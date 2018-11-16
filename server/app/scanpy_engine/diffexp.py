@@ -99,7 +99,7 @@ def diffexp_ttest_OLD(adata, maskA, maskB, top_n=8, diffexp_p_cutoff=0.2):
                pvals_adj_top_n[i]] for i in range(top_n)]
     return result
 
-def diffexp_ttest(adata, maskA, maskB, top_n=8, diffexp_p_cutoff=0.0001):
+def diffexp_ttest(adata, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
     """
     Return differential expression statistics for top N variablesself.
 
@@ -158,16 +158,16 @@ def diffexp_ttest(adata, maskA, maskB, top_n=8, diffexp_p_cutoff=0.0001):
     # logfoldchanges: log2(meanA / meanB)
     logfoldchanges = np.log2(np.abs((meanA + 1e-9) / (meanB + 1e-9)))
 
-    # find all with pval > cutoff
-    pval_above_cutoff_idx = np.nonzero(pvals_adj > diffexp_p_cutoff)[0]
-    stats_to_sort = np.abs(logfoldchanges)
-    if pval_above_cutoff_idx.shape[0] > top_n:
+    # find all with lfc > cutoff
+    lfc_above_cutoff_idx = np.nonzero(np.abs(logfoldchanges) > diffexp_lfc_cutoff)[0]
+    stats_to_sort = np.abs(tscores)
+    if lfc_above_cutoff_idx.shape[0] > top_n:
         # partition top N
-        rel_lfc_partition = np.argpartition(stats_to_sort[pval_above_cutoff_idx], -top_n)[-top_n:]
-        lfc_partition = pval_above_cutoff_idx[rel_lfc_partition]
+        rel_t_partition = np.argpartition(stats_to_sort[lfc_above_cutoff_idx], -top_n)[-top_n:]
+        t_partition = lfc_above_cutoff_idx[rel_t_partition]
         # sort the top N partition
-        rel_sort_order = np.argsort(stats_to_sort[lfc_partition])[::-1]
-        sort_order = lfc_partition[rel_sort_order]
+        rel_sort_order = np.argsort(stats_to_sort[t_partition])[::-1]
+        sort_order = t_partition[rel_sort_order]
     else:
         # partition and sort top N, ignoring p-value cutoff
         partition = np.argpartition(stats_to_sort, -top_n)[-top_n:]

@@ -17,7 +17,7 @@ class CXGDriver(metaclass=ABCMeta):
         self.layout_method = args["layout"]
         self.diffexp_method = args["diffexp"]
         self.max_category_items = args["max_category_items"]
-        self.diffexp_p_cutoff = args["diffexp_p_cutoff"]
+        self.diffexp_lfc_cutoff = args["diffexp_lfc_cutoff"]
         self.cluster = None
 
     @property
