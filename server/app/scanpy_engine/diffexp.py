@@ -59,8 +59,8 @@ def diffexp_ttest(adata, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
     meanB, vB, nB = _mean_var_n(adata._X[maskB])
 
     # variance / N
-    vnA = vA / min(nA, nB) # overestimate variance, would normally be nA
-    vnB = vB / min(nA, nB) # overestimate variance, would normally be nB
+    vnA = vA / min(nA, nB)  # overestimate variance, would normally be nA
+    vnB = vB / min(nA, nB)  # overestimate variance, would normally be nB
     sum_vn = vnA + vnB
 
     # degrees of freedom for Welch's t-test
