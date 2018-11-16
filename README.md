@@ -151,6 +151,10 @@ Currently this is not supported directly, but you should be able to do this manu
 
 This may happen, especially as we work out bugs in our installation process! Please create a new [Github issue](https://github.com/chanzuckerberg/cellxgene/issues), explain what you did, and include all the error messages you saw. It'd also be super helpful if you call `pip freeze` and include the full output alongside your issue.
 
+> How are you computing and sorting differential expression results?
+
+Currently we use a Welch's `t-test` implementation including the same variance overestimation correction as used in `scanpy`. We sort the `tscore` to identify the top N genes, and then filter to remove any that fall below a cutoff log fold change value, which can help remove spurious test results. The default threshold is `0.01` and can be changed using the option `--diffexp-lfc-cutoff`. We can explore adding support for other test types in the future.
+
 > I'm following the developer instructions and get an error about "missing files and directories” when trying to build the client
 
 This is likely because you do not have node and npm installed, we recommend using [nvm](https://github.com/creationix/nvm) if you're new to using these tools.
