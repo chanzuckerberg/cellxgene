@@ -29,7 +29,7 @@ cellxgene launch pbmc3k.h5ad --open
 ```
 You should see your web browser open with the following
 
-<img width="350" height="218" src="./docs/cellxgene-opening-screenshot.png" pad="50px">
+<img width="450" src="./docs/cellxgene-opening-screenshot.png" pad="50px">
 
 **Note**: automatic opening of the browser with the `--open` flag only works on OS X, on other platforms you'll need to directly point to the provided link in your browser.
 
