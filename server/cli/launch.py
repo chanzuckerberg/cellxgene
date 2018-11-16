@@ -1,6 +1,7 @@
 import sys
 import click
 import logging
+from os import devnull
 from os.path import splitext, basename
 import webbrowser
 
@@ -108,5 +109,9 @@ def launch(data, layout, diffexp, title, verbose, debug, obs_names, var_names,
         click.echo(f"[cellxgene] Launching! Please go to {cellxgene_url} in your browser.")
 
     click.echo("[cellxgene] Type CTRL-C at any time to exit.")
+
+    if not verbose:
+        f = open(devnull, 'w')
+        sys.stdout = f
 
     app.run(host=host, debug=debug, port=port, threaded=True)
