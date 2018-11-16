@@ -59,8 +59,8 @@ def diffexp_ttest(adata, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
     meanB, vB, nB = _mean_var_n(adata._X[maskB])
 
     # variance / N
-    vnA = vA / nA
-    vnB = vB / nA   # hack to overstimulate variance, would normally be vB/nB
+    vnA = vA / min(nA, nB) # overestimate variance, would normally be nA
+    vnB = vB / min(nA, nB) # overestimate variance, would normally be nB
     sum_vn = vnA + vnB
 
     # degrees of freedom for Welch's t-test
@@ -94,7 +94,7 @@ def diffexp_ttest(adata, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
         rel_sort_order = np.argsort(stats_to_sort[t_partition])[::-1]
         sort_order = t_partition[rel_sort_order]
     else:
-        # partition and sort top N, ignoring p-value cutoff
+        # partition and sort top N, ignoring lfc cutoff
         partition = np.argpartition(stats_to_sort, -top_n)[-top_n:]
         rel_sort_order = np.argsort(stats_to_sort[partition])[::-1]
         indices = np.indices(stats_to_sort.shape)[0]
