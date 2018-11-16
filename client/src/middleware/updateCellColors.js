@@ -6,7 +6,7 @@ import {
   interpolateSpectral,
   interpolateRainbow,
   interpolateBlues,
-  interpolateWarm
+  interpolateCool
 } from "d3-scale-chromatic";
 import * as globals from "../globals";
 import parseRGB from "../util/parseRGB";
@@ -89,7 +89,7 @@ const updateCellColorsMiddleware = store => next => action => {
 
     for (let i = 0; i < obsAnnotations.length; i += 1) {
       const obs = obsAnnotations[i];
-      const c = interpolateWarm(colorScale(obs[action.colorAccessor]));
+      const c = interpolateCool(colorScale(obs[action.colorAccessor]));
       colorsByName[i] = c;
       colorsByRGB[i] = parseRGB(c);
     }
@@ -107,7 +107,7 @@ const updateCellColorsMiddleware = store => next => action => {
       ]); /* invert viridis... probably pass this scale through to others */
 
     for (let i = 0, len = expression.length; i < len; i += 1) {
-      const c = interpolateWarm(colorScale(expression[i]));
+      const c = interpolateCool(colorScale(expression[i]));
       colorsByName[i] = c;
       colorsByRGB[i] = parseRGB(c);
     }
