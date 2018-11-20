@@ -2,6 +2,7 @@
 import { connect } from "react-redux";
 import React from "react";
 import _ from "lodash";
+import Occupancy from "./occupancy";
 
 @connect(state => ({
   categoricalSelectionState: state.controls.categoricalSelectionState,
@@ -88,6 +89,7 @@ class CategoryValue extends React.Component {
           </label>
         </div>
         <span>
+          {!c && categories ? <Occupancy {...this.props} /> : null}
           <span>{count}</span>
           <svg
             style={{

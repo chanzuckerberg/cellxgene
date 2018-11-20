@@ -92,6 +92,9 @@ class Category extends React.Component {
         key={tuple[1]}
         metadataField={metadataField}
         categoryIndex={tuple[1]}
+        count={values[v]}
+        value={v}
+        values={values}
         i={i}
       />
     ));
