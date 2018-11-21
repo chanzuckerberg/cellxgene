@@ -2,29 +2,15 @@ import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
 import { FaChevronRight, FaChevronDown } from "react-icons/fa";
-import memoize from "memoize-one";
-import { Button, Tooltip, Position } from "@blueprintjs/core";
+import { Button, Tooltip } from "@blueprintjs/core";
 
 import * as globals from "../../globals";
 import Value from "./value";
 import alphabeticallySortedValues from "./util";
 
-const countCategories = (values, optsAsBools) =>
-  _.reduce(
-    values,
-    (r, v, k) => {
-      r.total += 1;
-      if (optsAsBools[k]) {
-        r.on += 1;
-      }
-      return r;
-    },
-    { total: 0, on: 0 }
-  );
-
 @connect(state => ({
   colorAccessor: state.controls.colorAccessor,
-  categoricalAsBooleansMap: state.controls.categoricalAsBooleansMap
+  categoricalSelectionState: state.controls.categoricalSelectionState
 }))
 class Category extends React.Component {
   constructor(props) {
@@ -33,17 +19,15 @@ class Category extends React.Component {
       isChecked: true,
       isExpanded: false
     };
-    this.countCategories = memoize((values, optsAsBools) =>
-      countCategories(values, optsAsBools)
-    );
   }
 
   componentDidUpdate() {
-    const { categoricalAsBooleansMap, metadataField, values } = this.props;
-    const categoryCount = this.countCategories(
-      values,
-      categoricalAsBooleansMap[metadataField]
-    );
+    const { categoricalSelectionState, metadataField } = this.props;
+    const cat = categoricalSelectionState[metadataField];
+    const categoryCount = {
+      total: cat.numOptions,
+      on: _.reduce(cat.optionSelected, (res, cond) => (cond ? res + 1 : res), 0)
+    };
     if (categoryCount.on === categoryCount.total) {
       /* everything is on, so not indeterminate */
       this.checkbox.indeterminate = false;
@@ -74,11 +58,10 @@ class Category extends React.Component {
   }
 
   toggleNone() {
-    const { dispatch, metadataField, value } = this.props;
+    const { dispatch, metadataField } = this.props;
     dispatch({
       type: "categorical metadata filter none of these",
-      metadataField,
-      value
+      metadataField
     });
     this.setState({ isChecked: false });
   }
@@ -94,13 +77,15 @@ class Category extends React.Component {
   }
 
   renderCategoryItems() {
-    const { values, metadataField } = this.props;
-    return _.map(alphabeticallySortedValues(values), (v, i) => (
+    const { categoricalSelectionState, metadataField } = this.props;
+
+    const cat = categoricalSelectionState[metadataField];
+    const optTuples = alphabeticallySortedValues([...cat.optionIndex]);
+    return _.map(optTuples, (tuple, i) => (
       <Value
-        key={v}
+        key={tuple[1]}
         metadataField={metadataField}
-        count={values[v]}
-        value={v}
+        optionIndex={tuple[1]}
         i={i}
       />
     ));
@@ -108,12 +93,15 @@ class Category extends React.Component {
 
   render() {
     const { isExpanded, isChecked } = this.state;
-    const { metadataField, colorAccessor, isTruncated } = this.props;
+    const {
+      metadataField,
+      colorAccessor,
+      categoricalSelectionState
+    } = this.props;
+    const { isTruncated } = categoricalSelectionState[metadataField];
     return (
       <div
         style={{
-          // display: "flex",
-          // alignItems: "baseline",
           maxWidth: globals.maxControlsWidth
         }}
       >

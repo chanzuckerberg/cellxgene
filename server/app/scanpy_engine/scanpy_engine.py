@@ -65,6 +65,22 @@ class ScanpyEngine(CXGDriver):
         else:
             raise KeyError(f"Annotation name {name}, specified in --{ax_name}_name does not exist.")
 
+    @staticmethod
+    def _can_cast_to_float32(ann):
+        if ann.dtype.kind == "f" and np.can_cast(ann.dtype, np.float32):
+            return True
+        return False
+
+    @staticmethod
+    def _can_cast_to_int32(ann):
+        if ann.dtype.kind in ["i", "u"]:
+            if np.can_cast(ann.dtype, np.int32):
+                return True
+            ii32 = np.iinfo(np.int32)
+            if ann.min() >= ii32.min and ann.max() <= ii32.max:
+                return True
+        return False
+
     def _create_schema(self):
         self.schema = {
             "dataframe": {
@@ -81,16 +97,18 @@ class ScanpyEngine(CXGDriver):
             curr_axis = getattr(self.data, str(ax))
             for ann in curr_axis:
                 ann_schema = {"name": ann}
-                data_kind = curr_axis[ann].dtype.kind
-                if data_kind == "f":
+                dtype = curr_axis[ann].dtype
+                data_kind = dtype.kind
+
+                if self._can_cast_to_float32(curr_axis[ann]):
                     ann_schema["type"] = "float32"
-                elif data_kind in ["i", "u"]:
+                elif self._can_cast_to_int32(curr_axis[ann]):
                     ann_schema["type"] = "int32"
-                elif data_kind == "?":
+                elif dtype == np.bool_:
                     ann_schema["type"] = "boolean"
-                elif data_kind == "O" and curr_axis[ann].dtype == "object":
+                elif data_kind == "O" and dtype == "object":
                     ann_schema["type"] = "string"
-                elif data_kind == "O" and curr_axis[ann].dtype == "category":
+                elif data_kind == "O" and dtype == "category":
                     ann_schema["type"] = "categorical"
                     ann_schema["categories"] = curr_axis[ann].dtype.categories.tolist()
                 else:
