@@ -4,7 +4,7 @@
 
 `cellxgene` is an interactive data explorer for single-cell transcriptomics datasets, such as those coming from the [Human Cell Atlas](https://humancellatlas.org). Leveraging modern web development techniques to enable fast visualizations of at least 1 million cells, we hope to enable biologists and computational researchers to explore their data, and to demonstrate general, scalable, and reusable patterns for scientific data visualization.
 
-<img src="https://github.com/chanzuckerberg/cellxgene/blob/master/docs/cellxgene-demo-1.gif" width="200" height="200" hspace="30"><img src="https://github.com/chanzuckerberg/cellxgene/blob/master/docs/cellxgene-demo-2.gif" width="200" height="200" hspace="30"><img src="https://github.com/chanzuckerberg/cellxgene/blob/master/docs/cellxgene-demo-3.gif" width="200" height="200" hspace="30">
+<img src="https://raw.githubusercontent.com/chanzuckerberg/cellxgene/master/docs/cellxgene-demo-1.gif" width="200" height="200" hspace="30"><img src="https://raw.githubusercontent.com/chanzuckerberg/cellxgene/master/docs/cellxgene-demo-2.gif" width="200" height="200" hspace="30"><img src="https://raw.githubusercontent.com/chanzuckerberg/cellxgene/master/docs/cellxgene-demo-3.gif" width="200" height="200" hspace="30">
 
 ## getting started
 
@@ -29,7 +29,7 @@ cellxgene launch pbmc3k.h5ad --open
 ```
 You should see your web browser open with the following
 
-<img width="450" src="https://github.com/chanzuckerberg/cellxgene/blob/master/docs/cellxgene-opening-screenshot.png" pad="50px">
+<img width="450" src="https://raw.githubusercontent.com/chanzuckerberg/cellxgene/master/docs/cellxgene-opening-screenshot.png" pad="50px">
 
 **Note**: automatic opening of the browser with the `--open` flag only works on OS X, on other platforms you'll need to directly point to the provided link in your browser.
 
