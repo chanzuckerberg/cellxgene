@@ -25,16 +25,24 @@ class Category extends React.Component {
     const { categoricalSelectionState, metadataField } = this.props;
     const cat = categoricalSelectionState[metadataField];
     const categoryCount = {
-      total: cat.numOptions,
-      on: _.reduce(cat.optionSelected, (res, cond) => (cond ? res + 1 : res), 0)
+      // total number of options in this category
+      totalOptionCount: cat.numOptions,
+      // number of selected options in this category
+      selectedOptionCount: _.reduce(
+        cat.optionSelected,
+        (res, cond) => (cond ? res + 1 : res),
+        0
+      )
     };
-    if (categoryCount.on === categoryCount.total) {
+    if (categoryCount.selectedOptionCount === categoryCount.totalOptionCount) {
       /* everything is on, so not indeterminate */
       this.checkbox.indeterminate = false;
-    } else if (categoryCount.on === 0) {
+    } else if (categoryCount.selectedOptionCount === 0) {
       /* nothing is on, so no */
       this.checkbox.indeterminate = false;
-    } else if (categoryCount.on < categoryCount.total) {
+    } else if (
+      categoryCount.selectedOptionCount < categoryCount.totalOptionCount
+    ) {
       /* to be explicit... */
       this.checkbox.indeterminate = true;
     }
