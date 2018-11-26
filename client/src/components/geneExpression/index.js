@@ -5,12 +5,78 @@ import React from "react";
 import _ from "lodash";
 import * as d3 from "d3";
 import { connect } from "react-redux";
-import { Button, Tooltip } from "@blueprintjs/core";
+import { Button, Tooltip, MenuItem } from "@blueprintjs/core";
+import { Suggest } from "@blueprintjs/select";
 import HistogramBrush from "../brushableHistogram";
 import * as globals from "../../globals";
 import actions from "../../actions";
 import { postUserErrorToast } from "../framework/toasters";
 import ExpressionButtons from "./expressionButtons";
+
+function highlightText(text, query) {
+  let lastIndex = 0;
+  //console.log(query.split(/\s+/).filter(word => word.length>0));
+  const words = query
+    .split(/\s+/)
+    .filter(word => word.length > 0)
+    .map(escapeRegExpChars);
+  if (words.length === 0) {
+    return [text];
+  }
+  //console.log(JSON.stringify(words.join("|","gi")));
+  const regexp = new RegExp(words.join("|"), "gi");
+  const tokens = [];
+  //console.log(text);
+  while (true) {
+    const match = regexp.exec(text);
+    //console.log("match data=",JSON.stringify(match));
+    if (!match) {
+      break;
+    }
+    const length = match[0].length;
+    const before = text.slice(lastIndex, regexp.lastIndex - length);
+
+    if (before.length > 0) {
+      tokens.push(before);
+    }
+
+    lastIndex = regexp.lastIndex;
+    tokens.push(<strong key={lastIndex}>{match[0]}</strong>);
+    //console.log(tokens);
+  }
+  const rest = text.slice(lastIndex);
+  if (rest.length > 0) {
+    tokens.push(rest);
+  }
+  return tokens;
+}
+
+function escapeRegExpChars(text) {
+  return text.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
+}
+
+const renderGene = (gene, { handleClick, modifiers, query }) => {
+  if (!modifiers.matchesPredicate) {
+    return null;
+  }
+  const text = gene;
+  return (
+    <MenuItem
+      active={modifiers.active}
+      disabled={modifiers.disabled}
+      label={"Arbitrary label!"}
+      key={gene}
+      onClick={g => {
+        console.log("item clicked: ", g);
+      }}
+      text={highlightText(text, query)}
+    />
+  );
+};
+
+const filterGene = (query, gene) => {
+  return `${gene.toLowerCase()}`.indexOf(query.toLowerCase()) >= 0;
+};
 
 @connect(state => {
   const metadata = _.get(state.controls.world, "obsAnnotations", null);
@@ -108,6 +174,24 @@ class GeneExpression extends React.Component {
                 Add
               </Button>
             </Tooltip>
+          </div>
+          <div>
+            <p> Typeahead </p>
+            <Suggest
+              closeOnSelect
+              openOnKeyDown
+              noResults={<MenuItem disabled text="No matching genes." />}
+              onItemSelect={g => {
+                console.log("user typed: ", g);
+              }}
+              inputValueRenderer={g => {
+                return g;
+              }}
+              itemPredicate={filterGene}
+              itemRenderer={renderGene}
+              items={["APOD", "CD7"]}
+              popoverProps={{ minimal: true }}
+            />
           </div>
           {world && userDefinedGenes.length > 0
             ? _.map(userDefinedGenes, (geneName, index) => {
