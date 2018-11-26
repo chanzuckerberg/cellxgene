@@ -12,19 +12,90 @@ import {
   diffexpDimensionName,
   makeContinuousDimensionName
 } from "../util/nameCreators";
+import { fillRange } from "../util/typedCrossfilter/util";
 
-function createCategoricalAsBooleansMap(world) {
+/*
+Selection state for categoricals are tracked in an Object that
+has two main components for each category:
+1. mapping of option value to an index
+2. array of bool selection state by index
+Remember that option values can be ANY js type, except undefined/null.
+
+  {
+    _category_name_1: {
+      // map of option value to index
+      optionIndex: Map([
+        optval1: index,
+        ...
+      ])
+
+      // index->selection true/false state
+      optionSelected: [ true/false, true/false, ... ]
+
+      // number of options
+      numOptions: number,
+
+      // isTruncated - true if the options for selection has
+      // been truncated (ie, was too large to implement)
+    }
+  }
+*/
+function topNoptions(summary) {
+  const counts = _.map(summary.categories, cat => summary.options[cat]);
+  const sortIndex = fillRange(new Array(summary.numOptions)).sort(
+    (a, b) => counts[b] - counts[a]
+  );
+  const sortedCategories = _.map(sortIndex, i => summary.categories[i]);
+  const sortedCounts = _.map(sortIndex, i => counts[i]);
+  const N = globals.maxCategoricalOptionsToDisplay;
+
+  if (sortedCategories.length < N) {
+    return [sortedCategories, sortedCounts];
+  }
+  return [sortedCategories.slice(0, N), sortedCounts.slice(0, N)];
+}
+
+function createCategoricalSelectionState(state, world) {
   const res = {};
-  _.each(world.summary.obs, (value, key) => {
-    if (value.options && key !== "name") {
-      const optionsAsBooleans = {};
-      _.each(value.options, (_value, _key) => {
-        optionsAsBooleans[_key] = true;
-      });
-      res[key] = optionsAsBooleans;
+  _.forEach(world.summary.obs, (value, key) => {
+    if (value.categories) {
+      const isColorField = key.includes("color") || key.includes("Color");
+      const isSelectableCategory =
+        !isColorField &&
+        key !== "name" &&
+        value.categories.length < state.maxCategoryItems;
+      if (isSelectableCategory) {
+        const [optionValue, optionCount] = topNoptions(value);
+        // const optionCount = Object.values(value.options);
+
+        const optionIndex = new Map(optionValue.map((v, i) => [v, i]));
+        const numOptions = optionIndex.size;
+        const optionSelected = new Array(numOptions).fill(true);
+        const isTruncated = optionValue.length < value.numOptions;
+        res[key] = {
+          optionValue, // array: of natively typed option values
+          optionIndex, // map: option value (native type) -> option index
+          optionSelected, // array: t/f selection state
+          numOptions, // number: of options
+          isTruncated, // bool: true if list was truncated
+          optionCount // array: cardinality of each option
+        };
+      }
     }
   });
   return res;
+}
+
+/*
+given a categoricalSelectionState, return the list of all option values
+where selection state is true (ie, they are selected).
+*/
+function selectedValuesForCategory(categorySelectionState) {
+  const selectedValues = _([...categorySelectionState.optionIndex])
+    .filter(tuple => categorySelectionState.optionSelected[tuple[1]])
+    .map(tuple => tuple[0])
+    .value();
+  return selectedValues;
 }
 
 const Controls = (
@@ -33,13 +104,17 @@ const Controls = (
     loading: false,
     error: null,
 
+    // configuration
+    maxCategoryItems: globals.configDefaults.parameters["max-category-items"],
+
+    // the whole big bang
     universe: null,
 
     // all of the data + selection state
     world: null,
     colorName: null,
     colorRGB: null,
-    categoricalAsBooleansMap: null,
+    categoricalSelectionState: null,
     crossfilter: null,
     dimensionMap: null,
     userDefinedGenes: [],
@@ -72,6 +147,17 @@ const Controls = (
           Initialization, World/Universe management
           and data loading.
     ******************************************************/
+    case "configuration load complete": {
+      // there are a couple of configuration items we need to retain
+      return {
+        ...state,
+        maxCategoryItems: _.get(
+          state.config,
+          "parameters.max-category-items",
+          globals.configDefaults.parameters["max-category-items"]
+        )
+      };
+    }
     case "initial data load start": {
       return { ...state, loading: true };
     }
@@ -83,7 +169,10 @@ const Controls = (
       const world = World.createWorldFromEntireUniverse(universe);
       const colorName = new Array(universe.nObs).fill(globals.defaultCellColor);
       const colorRGB = _.map(colorName, c => parseRGB(c));
-      const categoricalAsBooleansMap = createCategoricalAsBooleansMap(world);
+      const categoricalSelectionState = createCategoricalSelectionState(
+        state,
+        world
+      );
       const crossfilter = Crossfilter(world.obsAnnotations);
       const dimensionMap = World.createObsDimensionMap(crossfilter, world);
 
@@ -135,7 +224,7 @@ const Controls = (
         world,
         colorName,
         colorRGB,
-        categoricalAsBooleansMap,
+        categoricalSelectionState,
         crossfilter,
         dimensionMap,
         colorAccessor: null
@@ -152,7 +241,10 @@ const Controls = (
       );
       const colorName = new Array(world.nObs).fill(globals.defaultCellColor);
       const colorRGB = _.map(colorName, c => parseRGB(c));
-      const categoricalAsBooleansMap = createCategoricalAsBooleansMap(world);
+      const categoricalSelectionState = createCategoricalSelectionState(
+        state,
+        world
+      );
       const crossfilter = Crossfilter(world.obsAnnotations);
       const dimensionMap = World.createObsDimensionMap(crossfilter, world);
 
@@ -197,7 +289,7 @@ const Controls = (
         world,
         colorName,
         colorRGB,
-        categoricalAsBooleansMap,
+        categoricalSelectionState,
         crossfilter,
         dimensionMap,
         colorAccessor: null
@@ -422,83 +514,87 @@ const Controls = (
           Categorical metadata
     *******************************/
     case "categorical metadata filter select": {
-      const newCategoricalAsBooleansMap = {
-        ...state.categoricalAsBooleansMap,
+      const newOptionSelected = Array.from(
+        state.categoricalSelectionState[action.metadataField].optionSelected
+      );
+      newOptionSelected[action.optionIndex] = true;
+      const newCategoricalSelectionState = {
+        ...state.categoricalSelectionState,
         [action.metadataField]: {
-          ...state.categoricalAsBooleansMap[action.metadataField],
-          [action.value]: true
+          ...state.categoricalSelectionState[action.metadataField],
+          optionSelected: newOptionSelected
         }
       };
-      // update the filter for the one category that changed state
+
+      // update the filter to match all selected options
+      const cat = newCategoricalSelectionState[action.metadataField];
       state.dimensionMap[obsAnnoDimensionName(action.metadataField)].filterEnum(
-        _.filter(
-          _.map(
-            newCategoricalAsBooleansMap[action.metadataField],
-            (val, key) => (val ? key : false)
-          )
-        )
+        selectedValuesForCategory(cat)
       );
+
       return {
         ...state,
-        categoricalAsBooleansMap: newCategoricalAsBooleansMap
+        categoricalSelectionState: newCategoricalSelectionState
       };
     }
     case "categorical metadata filter deselect": {
-      const newCategoricalAsBooleansMap = {
-        ...state.categoricalAsBooleansMap,
+      const newOptionSelected = Array.from(
+        state.categoricalSelectionState[action.metadataField].optionSelected
+      );
+      newOptionSelected[action.optionIndex] = false;
+      const newCategoricalSelectionState = {
+        ...state.categoricalSelectionState,
         [action.metadataField]: {
-          ...state.categoricalAsBooleansMap[action.metadataField],
-          [action.value]: false
+          ...state.categoricalSelectionState[action.metadataField],
+          optionSelected: newOptionSelected
         }
       };
-      // update the filter for the one category that changed state
+
+      // update the filter to match all selected options
+      const cat = newCategoricalSelectionState[action.metadataField];
       state.dimensionMap[obsAnnoDimensionName(action.metadataField)].filterEnum(
-        _.filter(
-          _.map(
-            newCategoricalAsBooleansMap[action.metadataField],
-            (val, key) => (val ? key : false)
-          )
-        )
+        selectedValuesForCategory(cat)
       );
+
       return {
         ...state,
-        categoricalAsBooleansMap: newCategoricalAsBooleansMap
+        categoricalSelectionState: newCategoricalSelectionState
       };
     }
     case "categorical metadata filter none of these": {
-      const newCategoricalAsBooleansMap = {
-        ...state.categoricalAsBooleansMap
-      };
-      _.forEach(
-        newCategoricalAsBooleansMap[action.metadataField],
-        (v, k, c) => {
-          c[k] = false;
+      const newCategoricalSelectionState = {
+        ...state.categoricalSelectionState,
+        [action.metadataField]: {
+          ...state.categoricalSelectionState[action.metadataField],
+          optionSelected: Array.from(
+            state.categoricalSelectionState[action.metadataField].optionSelected
+          ).fill(false)
         }
-      );
+      };
       state.dimensionMap[
         obsAnnoDimensionName(action.metadataField)
       ].filterNone();
       return {
         ...state,
-        categoricalAsBooleansMap: newCategoricalAsBooleansMap
+        categoricalSelectionState: newCategoricalSelectionState
       };
     }
     case "categorical metadata filter all of these": {
-      const newCategoricalAsBooleansMap = {
-        ...state.categoricalAsBooleansMap
-      };
-      _.forEach(
-        newCategoricalAsBooleansMap[action.metadataField],
-        (v, k, c) => {
-          c[k] = true;
+      const newCategoricalSelectionState = {
+        ...state.categoricalSelectionState,
+        [action.metadataField]: {
+          ...state.categoricalSelectionState[action.metadataField],
+          optionSelected: Array.from(
+            state.categoricalSelectionState[action.metadataField].optionSelected
+          ).fill(true)
         }
-      );
+      };
       state.dimensionMap[
         obsAnnoDimensionName(action.metadataField)
       ].filterAll();
       return {
         ...state,
-        categoricalAsBooleansMap: newCategoricalAsBooleansMap
+        categoricalSelectionState: newCategoricalSelectionState
       };
     }
 

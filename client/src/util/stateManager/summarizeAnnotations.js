@@ -48,6 +48,12 @@ Example:
 
 NOTE: will not summarize the required 'name' annotation, as that is
 specified as unique per element.
+
+TODO: XXX - this data structure coerces all metadata categories into a string
+(ie, stores values as an Object property in the `options` field).   This looses
+information (eg, type) for category types which are not strings.  Consider an
+alterative data structure that does not use the object property for non-string
+data types (and does not use _.countBy to summarize).
 */
 function summarizeDimension(schema, annotations) {
   return _(schema)
@@ -58,11 +64,13 @@ function summarizeDimension(schema, annotations) {
       const continuous = type === "int32" || type === "float32";
 
       if (!continuous) {
+        const categories = _.uniq(_.flatMap(annotations, name));
         const options = _.countBy(annotations, name);
         const numOptions = _.size(options);
         return {
           numOptions,
-          options
+          options,
+          categories
         };
       }
 
