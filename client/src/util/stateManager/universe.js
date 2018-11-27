@@ -161,6 +161,32 @@ function RESTv02LayoutResponseToInternal(response) {
   return layout;
 }
 
+function reconcileSchemaCategoriesWithSummary(universe) {
+  /*
+  where we treat types as (essentially) categorical metadata, update
+  the schema with data-derived categories (in addition to those in
+  the server declared schema).
+
+  For example, boolean defined fields in the schema do not contain
+  explicit declaration of categories (nor do string fields).  In these
+  cases, add a 'categories' field to the schema so it is accessible.
+  */
+
+  _.forEach(universe.schema.annotations.obs, s => {
+    if (
+      s.type === "string" ||
+      s.type === "boolean" ||
+      s.type === "categorical"
+    ) {
+      const categories = _.union(
+        _.get(s, "categories", []),
+        _.get(universe.summary.obs[s.name], "categories", [])
+      );
+      s.categories = categories;
+    }
+  });
+}
+
 export function createUniverseFromRestV02Response(
   configResponse,
   schemaResponse,
@@ -199,6 +225,7 @@ export function createUniverseFromRestV02Response(
     universe.varAnnotations
   );
 
+  reconcileSchemaCategoriesWithSummary(universe);
   return finalize(universe);
 }
 

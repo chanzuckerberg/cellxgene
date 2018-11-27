@@ -4,45 +4,49 @@ import React from "react";
 import _ from "lodash";
 
 @connect(state => ({
-  categoricalAsBooleansMap: state.controls.categoricalAsBooleansMap,
+  categoricalSelectionState: state.controls.categoricalSelectionState,
   colorScale: state.controls.colorScale,
   colorAccessor: state.controls.colorAccessor,
   schema: _.get(state.controls.world, "schema", null)
 }))
 class CategoryValue extends React.Component {
   toggleOff() {
-    const { dispatch, metadataField, value } = this.props;
+    const { dispatch, metadataField, optionIndex } = this.props;
     dispatch({
       type: "categorical metadata filter deselect",
       metadataField,
-      value
+      optionIndex
     });
   }
 
   toggleOn() {
-    const { dispatch, metadataField, value } = this.props;
+    const { dispatch, metadataField, optionIndex } = this.props;
     dispatch({
       type: "categorical metadata filter select",
       metadataField,
-      value
+      optionIndex
     });
   }
 
   render() {
     const {
-      categoricalAsBooleansMap,
+      categoricalSelectionState,
       metadataField,
-      count,
-      value,
+      optionIndex,
       colorAccessor,
       colorScale,
       i,
       schema
     } = this.props;
 
-    if (!categoricalAsBooleansMap) return null;
+    if (!categoricalSelectionState) return null;
 
-    const selected = categoricalAsBooleansMap[metadataField][value];
+    const category = categoricalSelectionState[metadataField];
+    const selected = category.optionSelected[optionIndex];
+    const count = category.optionCount[optionIndex];
+    const value = category.optionValue[optionIndex];
+    const displayString = String(category.optionValue[optionIndex]).valueOf();
+
     /* this is the color scale, so add swatches below */
     const c = metadataField === colorAccessor;
     let categories = null;
@@ -78,7 +82,7 @@ class CategoryValue extends React.Component {
               type="checkbox"
             />
             <span className="bp3-control-indicator" />
-            {value}
+            {displayString}
           </label>
         </div>
         <span>
