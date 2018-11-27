@@ -4,15 +4,16 @@
 import React from "react";
 import _ from "lodash";
 import * as d3 from "d3";
+import fuzzysort from "fuzzysort";
+
 import { connect } from "react-redux";
-import { Button, Tooltip, MenuItem } from "@blueprintjs/core";
+import { MenuItem } from "@blueprintjs/core";
 import { Suggest } from "@blueprintjs/select";
 import HistogramBrush from "../brushableHistogram";
 import * as globals from "../../globals";
 import actions from "../../actions";
 import { postUserErrorToast } from "../framework/toasters";
 import ExpressionButtons from "./expressionButtons";
-import fuzzysort from "fuzzysort";
 
 const renderGene = (fuzzySortResult, { handleClick, modifiers, query }) => {
   if (!modifiers.matchesPredicate) {
@@ -65,17 +66,9 @@ const filterGenes = (query, genes) => {
   };
 })
 class GeneExpression extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      gene: ""
-    };
-  }
-
   handleClick(g) {
     const { world, dispatch, userDefinedGenes } = this.props;
     const gene = g.target;
-    console.log("in handleclick");
     if (userDefinedGenes.indexOf(gene) !== -1) {
       postUserErrorToast("That gene already exists");
     } else if (userDefinedGenes.length > 15) {
@@ -90,13 +83,11 @@ class GeneExpression extends React.Component {
         type: "user defined gene",
         data: gene
       });
-      this.setState({ gene: "" });
     }
   }
 
   render() {
     const { world, userDefinedGenes, differential } = this.props;
-    const { gene } = this.state;
 
     return (
       <div>
@@ -120,14 +111,14 @@ class GeneExpression extends React.Component {
             <Suggest
               closeOnSelect
               openOnKeyDown
+              resetOnSelect
               noResults={<MenuItem disabled text="No matching genes." />}
               onItemSelect={g => {
                 /* this happens on 'enter' */
-                console.log("on item select this ", this);
                 this.handleClick(g);
               }}
               inputValueRenderer={g => {
-                return g;
+                return "";
               }}
               itemListPredicate={filterGenes}
               itemRenderer={renderGene.bind(this)}
