@@ -67,7 +67,9 @@ class ScanpyEngine(CXGDriver):
 
     @staticmethod
     def _can_cast_to_float32(ann):
-        if ann.dtype.kind == "f" and np.can_cast(ann.dtype, np.float32):
+        if ann.dtype.kind == "f":
+            if not np.can_cast(ann.dtype, np.float32):
+                warnings.warn(f"Annotation {ann.name} will be converted to 32 bit float and may loose precision.")
             return True
         return False
 
