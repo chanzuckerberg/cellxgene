@@ -21,7 +21,6 @@ const renderGene = (fuzzySortResult, { handleClick, modifiers, query }) => {
   }
   /* the fuzzysort wraps the object with other properties, like a score */
   const gene = fuzzySortResult.obj;
-  // fuzzysort.highlight(fuzzysort.single('tt', 'test'), '*', '*') // *t*es*t*
   const text = gene.name;
 
   return (
@@ -46,7 +45,6 @@ const filterGenes = (query, genes) => {
     limit: 5,
     threshold: -10000 // don't return bad results
   });
-  // return `${gene.name.toLowerCase()}`.indexOf(query.toLowerCase()) >= 0;
 };
 
 @connect(state => {
@@ -187,9 +185,3 @@ class GeneExpression extends React.Component {
 }
 
 export default GeneExpression;
-
-// keyPress(e) {
-//   if (e.keyCode === 13) {
-//     this.handleClick();
-//   }
-// }
