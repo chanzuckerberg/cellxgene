@@ -18,10 +18,13 @@ const renderGene = (fuzzySortResult, { handleClick, modifiers, query }) => {
   if (!modifiers.matchesPredicate) {
     return null;
   }
-  console.log("in renderGene", fuzzySortResult);
   /* the fuzzysort wraps the object with other properties, like a score */
   const gene = fuzzySortResult.obj;
+  // fuzzysort.highlight(fuzzysort.single('tt', 'test'), '*', '*') // *t*es*t*
   const text = gene.name;
+
+  console.log(text);
+
   return (
     <MenuItem
       active={modifiers.active}
@@ -30,7 +33,7 @@ const renderGene = (fuzzySortResult, { handleClick, modifiers, query }) => {
       key={gene.name}
       onClick={g => {
         /* this fires when user clicks a menu item */
-        console.log("item clicked: ", g);
+        console.log("item clicked: ", handleClick);
       }}
       text={text}
     />
@@ -38,7 +41,6 @@ const renderGene = (fuzzySortResult, { handleClick, modifiers, query }) => {
 };
 
 const filterGenes = (query, genes) => {
-  console.log("filterGenes", query, genes);
   /* fires on load, once, and then for each character typed into the input */
   return fuzzysort.go(query, genes, {
     key: "name",
@@ -72,15 +74,9 @@ class GeneExpression extends React.Component {
     };
   }
 
-  keyPress(e) {
-    if (e.keyCode === 13) {
-      this.handleClick();
-    }
-  }
-
-  handleClick() {
+  handleClick(g) {
     const { world, dispatch, userDefinedGenes } = this.props;
-    const { gene } = this.state;
+    const gene = g.target;
 
     if (userDefinedGenes.indexOf(gene) !== -1) {
       postUserErrorToast("That gene already exists");
@@ -129,13 +125,14 @@ class GeneExpression extends React.Component {
               noResults={<MenuItem disabled text="No matching genes." />}
               onItemSelect={g => {
                 /* this happens on 'enter' */
-                console.log("user typed: ", g);
+                console.log("on item select this ", this);
+                this.handleClick(g);
               }}
               inputValueRenderer={g => {
                 return g;
               }}
               itemListPredicate={filterGenes}
-              itemRenderer={renderGene}
+              itemRenderer={renderGene.bind(this)}
               items={
                 world && world.varAnnotations
                   ? world.varAnnotations
@@ -201,3 +198,9 @@ class GeneExpression extends React.Component {
 }
 
 export default GeneExpression;
+
+// keyPress(e) {
+//   if (e.keyCode === 13) {
+//     this.handleClick();
+//   }
+// }
