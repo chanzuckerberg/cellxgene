@@ -11,20 +11,20 @@ import _ from "lodash";
 }))
 class CategoryValue extends React.Component {
   toggleOff() {
-    const { dispatch, metadataField, optionIndex } = this.props;
+    const { dispatch, metadataField, categoryIndex } = this.props;
     dispatch({
       type: "categorical metadata filter deselect",
       metadataField,
-      optionIndex
+      categoryIndex
     });
   }
 
   toggleOn() {
-    const { dispatch, metadataField, optionIndex } = this.props;
+    const { dispatch, metadataField, categoryIndex } = this.props;
     dispatch({
       type: "categorical metadata filter select",
       metadataField,
-      optionIndex
+      categoryIndex
     });
   }
 
@@ -32,7 +32,7 @@ class CategoryValue extends React.Component {
     const {
       categoricalSelectionState,
       metadataField,
-      optionIndex,
+      categoryIndex,
       colorAccessor,
       colorScale,
       i,
@@ -42,10 +42,12 @@ class CategoryValue extends React.Component {
     if (!categoricalSelectionState) return null;
 
     const category = categoricalSelectionState[metadataField];
-    const selected = category.optionSelected[optionIndex];
-    const count = category.optionCount[optionIndex];
-    const value = category.optionValue[optionIndex];
-    const displayString = String(category.optionValue[optionIndex]).valueOf();
+    const selected = category.categorySelected[categoryIndex];
+    const count = category.categoryCounts[categoryIndex];
+    const value = category.categoryValues[categoryIndex];
+    const displayString = String(
+      category.categoryValues[categoryIndex]
+    ).valueOf();
 
     /* this is the color scale, so add swatches below */
     const c = metadataField === colorAccessor;
