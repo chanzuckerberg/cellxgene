@@ -23,8 +23,6 @@ const renderGene = (fuzzySortResult, { handleClick, modifiers, query }) => {
   // fuzzysort.highlight(fuzzysort.single('tt', 'test'), '*', '*') // *t*es*t*
   const text = gene.name;
 
-  console.log(text);
-
   return (
     <MenuItem
       active={modifiers.active}
@@ -33,7 +31,7 @@ const renderGene = (fuzzySortResult, { handleClick, modifiers, query }) => {
       key={gene.name}
       onClick={g => {
         /* this fires when user clicks a menu item */
-        console.log("item clicked: ", handleClick);
+        handleClick(g);
       }}
       text={text}
     />
@@ -77,7 +75,7 @@ class GeneExpression extends React.Component {
   handleClick(g) {
     const { world, dispatch, userDefinedGenes } = this.props;
     const gene = g.target;
-
+    console.log("in handleclick");
     if (userDefinedGenes.indexOf(gene) !== -1) {
       postUserErrorToast("That gene already exists");
     } else if (userDefinedGenes.length > 15) {
