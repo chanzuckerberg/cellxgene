@@ -12,70 +12,40 @@ import * as globals from "../../globals";
 import actions from "../../actions";
 import { postUserErrorToast } from "../framework/toasters";
 import ExpressionButtons from "./expressionButtons";
+import fuzzysort from "fuzzysort";
 
-function highlightText(text, query) {
-  let lastIndex = 0;
-  //console.log(query.split(/\s+/).filter(word => word.length>0));
-  const words = query
-    .split(/\s+/)
-    .filter(word => word.length > 0)
-    .map(escapeRegExpChars);
-  if (words.length === 0) {
-    return [text];
-  }
-  //console.log(JSON.stringify(words.join("|","gi")));
-  const regexp = new RegExp(words.join("|"), "gi");
-  const tokens = [];
-  //console.log(text);
-  while (true) {
-    const match = regexp.exec(text);
-    //console.log("match data=",JSON.stringify(match));
-    if (!match) {
-      break;
-    }
-    const length = match[0].length;
-    const before = text.slice(lastIndex, regexp.lastIndex - length);
-
-    if (before.length > 0) {
-      tokens.push(before);
-    }
-
-    lastIndex = regexp.lastIndex;
-    tokens.push(<strong key={lastIndex}>{match[0]}</strong>);
-    //console.log(tokens);
-  }
-  const rest = text.slice(lastIndex);
-  if (rest.length > 0) {
-    tokens.push(rest);
-  }
-  return tokens;
-}
-
-function escapeRegExpChars(text) {
-  return text.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
-}
-
-const renderGene = (gene, { handleClick, modifiers, query }) => {
+const renderGene = (fuzzySortResult, { handleClick, modifiers, query }) => {
   if (!modifiers.matchesPredicate) {
     return null;
   }
-  const text = gene;
+  console.log("in renderGene", fuzzySortResult);
+  /* the fuzzysort wraps the object with other properties, like a score */
+  const gene = fuzzySortResult.obj;
+  const text = gene.name;
   return (
     <MenuItem
       active={modifiers.active}
       disabled={modifiers.disabled}
-      label={"Arbitrary label!"}
-      key={gene}
+      label={gene.n_counts}
+      key={gene.name}
       onClick={g => {
+        /* this fires when user clicks a menu item */
         console.log("item clicked: ", g);
       }}
-      text={highlightText(text, query)}
+      text={text}
     />
   );
 };
 
-const filterGene = (query, gene) => {
-  return `${gene.toLowerCase()}`.indexOf(query.toLowerCase()) >= 0;
+const filterGenes = (query, genes) => {
+  console.log("filterGenes", query, genes);
+  /* fires on load, once, and then for each character typed into the input */
+  return fuzzysort.go(query, genes, {
+    key: "name",
+    limit: 5,
+    threshold: -10000 // don't return bad results
+  });
+  // return `${gene.name.toLowerCase()}`.indexOf(query.toLowerCase()) >= 0;
 };
 
 @connect(state => {
@@ -153,43 +123,24 @@ class GeneExpression extends React.Component {
             style={{ padding: globals.leftSidebarSectionPadding }}
             className="bp3-control-group"
           >
-            <div className="bp3-input-group bp3-fill">
-              <input
-                onKeyDown={this.keyPress.bind(this)}
-                onChange={e => {
-                  this.setState({ gene: e.target.value });
-                }}
-                value={gene}
-                type="text"
-                className="bp3-input"
-                placeholder="Enter a gene name"
-                style={{ paddingRight: 94 }}
-              />
-            </div>
-            <Tooltip
-              content="Add a gene to see its expression levels"
-              position="bottom"
-            >
-              <Button intent="primary" onClick={this.handleClick.bind(this)}>
-                Add
-              </Button>
-            </Tooltip>
-          </div>
-          <div>
-            <p> Typeahead </p>
             <Suggest
               closeOnSelect
               openOnKeyDown
               noResults={<MenuItem disabled text="No matching genes." />}
               onItemSelect={g => {
+                /* this happens on 'enter' */
                 console.log("user typed: ", g);
               }}
               inputValueRenderer={g => {
                 return g;
               }}
-              itemPredicate={filterGene}
+              itemListPredicate={filterGenes}
               itemRenderer={renderGene}
-              items={["APOD", "CD7"]}
+              items={
+                world && world.varAnnotations
+                  ? world.varAnnotations
+                  : [{ name: "No genes", n_counts: "" }]
+              }
               popoverProps={{ minimal: true }}
             />
           </div>
