@@ -34,7 +34,7 @@ class HistogramBrush extends React.Component {
       .scaleLinear()
       .range([this.height - this.marginBottom, 0]);
 
-    if (obsAnnotations[0][field]) {
+    if (obsAnnotations[0][field] !== undefined) {
       // recalculate expensive stuff
       const allValuesForContinuousFieldAsArray = _.map(obsAnnotations, field);
 
