@@ -1,14 +1,17 @@
-import WorldOps from "../../../src/util/stateManager/worldOps";
+import {
+  countCategoryValues2D,
+  clearCaches
+} from "../../../src/util/stateManager/worldOps";
 
 describe("WorldOps cache management", () => {
   test("empty", () => {
-    const count = WorldOps.countCategoryValues2D("a", "b", []);
+    const count = countCategoryValues2D("a", "b", []);
     expect(count).toMatchObject(new Map());
   });
 
   test("simple couts", () => {
     const rows = [{ a: 0, b: false }, { a: 0, b: true }, { a: 1, b: false }];
-    const count = WorldOps.countCategoryValues2D("a", "b", rows);
+    const count = countCategoryValues2D("a", "b", rows);
     expect(count).toMatchObject(
       new Map([
         [0, new Map([[true, 1], [false, 1]])],
@@ -18,17 +21,17 @@ describe("WorldOps cache management", () => {
   });
 
   test("memo cache clear", () => {
-    WorldOps.clearCaches();
+    clearCaches();
     const row1 = [];
     const row2 = [{ a: 0, b: false }, { a: 0, b: true }, { a: 1, b: false }];
-    const count1 = WorldOps.countCategoryValues2D("a", "b", row1);
-    const count2 = WorldOps.countCategoryValues2D("a", "b", row1);
-    const count3 = WorldOps.countCategoryValues2D("a", "b", []);
-    const count4 = WorldOps.countCategoryValues2D("a", "b", row2);
+    const count1 = countCategoryValues2D("a", "b", row1);
+    const count2 = countCategoryValues2D("a", "b", row1);
+    const count3 = countCategoryValues2D("a", "b", []);
+    const count4 = countCategoryValues2D("a", "b", row2);
 
-    WorldOps.clearCaches();
-    const count10 = WorldOps.countCategoryValues2D("a", "b", row1);
-    const count11 = WorldOps.countCategoryValues2D("a", "b", row2);
+    clearCaches();
+    const count10 = countCategoryValues2D("a", "b", row1);
+    const count11 = countCategoryValues2D("a", "b", row2);
 
     expect(count1).toEqual(count2);
     expect(count1).toEqual(count3);

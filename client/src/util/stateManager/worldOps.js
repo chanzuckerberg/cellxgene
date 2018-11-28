@@ -52,7 +52,7 @@ function _countCategoryValues2DResolver(...args) {
   return id;
 }
 
-const countCategoryValues2D = _.memoize(
+export const countCategoryValues2D = _.memoize(
   _countCategoryValues2D,
   _countCategoryValues2DResolver
 );
@@ -60,8 +60,6 @@ const countCategoryValues2D = _.memoize(
 /*
 Clear any cached data within WorldOps caches, eg, memoized functions
 */
-function clearCaches() {
+export function clearCaches() {
   countCategoryValues2D.cache.clear();
 }
-
-export default { countCategoryValues2D, clearCaches };
