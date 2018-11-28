@@ -15,6 +15,10 @@ class Float32JSONEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
+def custom_format_warning(msg, *args, **kwargs):
+    return f"[cellxgene] Warning: {msg} \n"
+
+
 def get_mime_type(default="application/json", acceptable_types=["application/json", "text/csv"], query_param=None,
                   header=None):
     mime_type = default
