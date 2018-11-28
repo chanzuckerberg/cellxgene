@@ -4,13 +4,48 @@
 import React from "react";
 import _ from "lodash";
 import * as d3 from "d3";
+import fuzzysort from "fuzzysort";
+
 import { connect } from "react-redux";
-import { Button, Tooltip } from "@blueprintjs/core";
+import { MenuItem } from "@blueprintjs/core";
+import { Suggest } from "@blueprintjs/select";
 import HistogramBrush from "../brushableHistogram";
 import * as globals from "../../globals";
 import actions from "../../actions";
 import { postUserErrorToast } from "../framework/toasters";
 import ExpressionButtons from "./expressionButtons";
+
+const renderGene = (fuzzySortResult, { handleClick, modifiers, query }) => {
+  if (!modifiers.matchesPredicate) {
+    return null;
+  }
+  /* the fuzzysort wraps the object with other properties, like a score */
+  const gene = fuzzySortResult.obj;
+  const text = gene.name;
+
+  return (
+    <MenuItem
+      active={modifiers.active}
+      disabled={modifiers.disabled}
+      label={gene.n_counts}
+      key={gene.name}
+      onClick={g => {
+        /* this fires when user clicks a menu item */
+        handleClick(g);
+      }}
+      text={text}
+    />
+  );
+};
+
+const filterGenes = (query, genes) => {
+  /* fires on load, once, and then for each character typed into the input */
+  return fuzzysort.go(query, genes, {
+    key: "name",
+    limit: 5,
+    threshold: -10000 // don't return bad results
+  });
+};
 
 @connect(state => {
   const metadata = _.get(state.controls.world, "obsAnnotations", null);
@@ -29,23 +64,9 @@ import ExpressionButtons from "./expressionButtons";
   };
 })
 class GeneExpression extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      gene: ""
-    };
-  }
-
-  keyPress(e) {
-    if (e.keyCode === 13) {
-      this.handleClick();
-    }
-  }
-
-  handleClick() {
+  handleClick(g) {
     const { world, dispatch, userDefinedGenes } = this.props;
-    const { gene } = this.state;
-
+    const gene = g.target;
     if (userDefinedGenes.indexOf(gene) !== -1) {
       postUserErrorToast("That gene already exists");
     } else if (userDefinedGenes.length > 15) {
@@ -60,13 +81,11 @@ class GeneExpression extends React.Component {
         type: "user defined gene",
         data: gene
       });
-      this.setState({ gene: "" });
     }
   }
 
   render() {
     const { world, userDefinedGenes, differential } = this.props;
-    const { gene } = this.state;
 
     return (
       <div>
@@ -87,27 +106,27 @@ class GeneExpression extends React.Component {
             style={{ padding: globals.leftSidebarSectionPadding }}
             className="bp3-control-group"
           >
-            <div className="bp3-input-group bp3-fill">
-              <input
-                onKeyDown={this.keyPress.bind(this)}
-                onChange={e => {
-                  this.setState({ gene: e.target.value });
-                }}
-                value={gene}
-                type="text"
-                className="bp3-input"
-                placeholder="Enter a gene name"
-                style={{ paddingRight: 94 }}
-              />
-            </div>
-            <Tooltip
-              content="Add a gene to see its expression levels"
-              position="bottom"
-            >
-              <Button intent="primary" onClick={this.handleClick.bind(this)}>
-                Add
-              </Button>
-            </Tooltip>
+            <Suggest
+              closeOnSelect
+              openOnKeyDown
+              resetOnSelect
+              noResults={<MenuItem disabled text="No matching genes." />}
+              onItemSelect={g => {
+                /* this happens on 'enter' */
+                this.handleClick(g);
+              }}
+              inputValueRenderer={g => {
+                return "";
+              }}
+              itemListPredicate={filterGenes}
+              itemRenderer={renderGene.bind(this)}
+              items={
+                world && world.varAnnotations
+                  ? world.varAnnotations
+                  : [{ name: "No genes", n_counts: "" }]
+              }
+              popoverProps={{ minimal: true }}
+            />
           </div>
           {world && userDefinedGenes.length > 0
             ? _.map(userDefinedGenes, (geneName, index) => {

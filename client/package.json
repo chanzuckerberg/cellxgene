@@ -34,6 +34,7 @@
     "d3": "^4.10.0",
     "d3-scale-chromatic": "^1.3.0",
     "font-color-contrast": "^1.0.3",
+    "fuzzysort": "^1.1.4",
     "gl-mat4": "^1.1.4",
     "gl-matrix": "^2.7.1",
     "key-pressed": "0.0.1",
