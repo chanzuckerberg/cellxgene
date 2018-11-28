@@ -19,7 +19,7 @@ Map {
 }
 
 */
-function _countCategoriesByDimension2D(dim1, dim2, rows) {
+function _countCategoryValues2D(dim1, dim2, rows) {
   const dimMap = new Map();
   for (let r = 0; r < rows.length; r += 1) {
     const row = rows[r];
@@ -39,5 +39,29 @@ function _countCategoriesByDimension2D(dim1, dim2, rows) {
   return dimMap;
 }
 
-const countCategoriesByDimension2D = _.memoize(_countCategoriesByDimension2D);
-export { countCategoriesByDimension2D };
+let __worldOpsMemoId__ = 0;
+function _memoizedId(x) {
+  if (!x.__worldOpsMemoId__) {
+    __worldOpsMemoId__ += 1;
+    x.__worldOpsMemoId__ = __worldOpsMemoId__;
+  }
+  return x.__worldOpsMemoId__;
+}
+function _countCategoryValues2DResolver(...args) {
+  const id = args[0] + args[1] + _memoizedId(args[2]);
+  return id;
+}
+
+const countCategoryValues2D = _.memoize(
+  _countCategoryValues2D,
+  _countCategoryValues2DResolver
+);
+
+/*
+Clear any cached data within WorldOps caches, eg, memoized functions
+*/
+function clearCaches() {
+  countCategoryValues2D.cache.clear();
+}
+
+export default { countCategoryValues2D, clearCaches };
