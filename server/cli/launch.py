@@ -66,8 +66,10 @@ def launch(data, layout, diffexp, title, verbose, debug, obs_names, var_names,
 
     if host:
         host = host
+        flask_host = "0.0.0.0"
     else:
         host = "127.0.0.1"
+        flask_host = host
 
     # Setup app
     cellxgene_url = f"http://{host}:{port}"
@@ -116,4 +118,4 @@ def launch(data, layout, diffexp, title, verbose, debug, obs_names, var_names,
         f = open(devnull, 'w')
         sys.stdout = f
 
-    app.run(host=host, debug=debug, port=port, threaded=True)
+    app.run(host=flask_host, debug=debug, port=port, threaded=True)
