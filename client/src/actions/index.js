@@ -24,7 +24,7 @@ const doInitialDataLoad = () =>
         "config",
         "schema",
         "annotations/obs",
-        "annotations/var",
+        "annotations/var?annotation-name=name",
         "layout/obs"
       ])
         .map(r => `${globals.API.prefix}${globals.API.version}${r}`)
