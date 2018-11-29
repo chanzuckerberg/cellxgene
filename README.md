@@ -68,7 +68,7 @@ To prepare from an existing `.h5ad` file use
 cellxgene prepare dataset.h5ad --output=dataset-processed.h5ad
 ```
 
-This will load the input data, perform PCA and nearest neighbor calculations, compute `umap` and `tsne` layouts and `louvain` cluster assignments, and save the results in a new file called `dataset-processed.h5ad` that can be loaded using `cellxgene launch`. Data can be loaded from several formats, including `.h5ad` `.loom` and a `10-Genomics-formatted` `mtx` directory. Several options are available, including running one of the preprocessing `recipes` included with `scanpy`, which include steps like cell filtering and gene selection. 
+This will load the input data, perform PCA and nearest neighbor calculations, compute `umap` and `tsne` layouts and `louvain` cluster assignments, and save the results in a new file called `dataset-processed.h5ad` that can be loaded using `cellxgene launch`. Data can be loaded from several formats, including `.h5ad` `.loom` and a `10-Genomics-formatted` `mtx` directory. Several options are available, including running one of the preprocessing `recipes` included with `scanpy`, which include steps like cell filtering and gene selection. To learn more about the `recipes` please see the `scanpy` [documentation](https://github.com/theislab/scanpy/blob/master/scanpy/preprocessing/recipes.py).
 
 Depending on the options chosen, `prepare` can take a long time to run (a few minutes for datasets with 10-100k cells, up to an hour or more for datasets with >100k cells). If you want `prepare` to run faster we recommend using the `sparse` option and only computing the layout for `umap`, using a call like this
 
@@ -158,6 +158,12 @@ Currently we use a [Welch's *t*-test](https://en.wikipedia.org/wiki/Welch%27s_t-
 > I'm following the developer instructions and get an error about "missing files and directories” when trying to build the client
 
 This is likely because you do not have node and npm installed, we recommend using [nvm](https://github.com/creationix/nvm) if you're new to using these tools.
+
+> What part of the anndata objects does cellxgene pull in for visualization?
+
+- `.obs` and `.var` annotations are use to extract metadata for filtering
+- `.X` is used to display expression (histograms, scatterplot & colorscale) and to compute differential expression
+- `.obsm` is used for layout
 
 ## developer guide
 
