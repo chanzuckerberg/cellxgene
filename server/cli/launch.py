@@ -24,14 +24,13 @@ from server.app.util.errors import ScanpyFileError
 @click.option("--port", "-p", help="Port to run server on.", metavar="", default=5005, show_default=True)
 @click.option("--obs-names", default=None, metavar="", help="Name of annotation field to use for observations.")
 @click.option("--var-names", default=None, metavar="", help="Name of annotation to use for variables.")
-@click.option("--listen-all", is_flag=True, default=False, show_default=True,
-              help="Bind to all interfaces (this makes the server accessible beyond this computer).")
+@click.option("--host", default=None, help="Host name or ip (for serving externally accessible instance).")
 @click.option("--max-category-items", default=100, metavar="", show_default=True,
               help="Limits the number of categorical annotation items displayed.")
 @click.option("--diffexp-lfc-cutoff", default=0.01, show_default=True,
               help="Relative expression cutoff used when selecting top N differentially expressed genes")
 def launch(data, layout, diffexp, title, verbose, debug, obs_names, var_names,
-           open_browser, port, listen_all, max_category_items, diffexp_lfc_cutoff):
+           open_browser, port, host, max_category_items, diffexp_lfc_cutoff):
     """Launch the cellxgene data viewer.
     This web app lets you explore single-cell expression data.
     Data must be in a format that cellxgene expects, read the
@@ -65,8 +64,8 @@ def launch(data, layout, diffexp, title, verbose, debug, obs_names, var_names,
         file_parts = splitext(basename(data))
         title = file_parts[0]
 
-    if listen_all:
-        host = "0.0.0.0"
+    if host:
+        host = host
     else:
         host = "127.0.0.1"
 
