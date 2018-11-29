@@ -195,7 +195,7 @@ class ScanpyEngine(CXGDriver):
             for ann in curr_axis:
                 dtype = curr_axis[ann].dtype
                 if dtype.kind == 'f':
-                    not_finite = np.isfinite(curr_axis[ann]) == False
+                    not_finite = np.isfinite(curr_axis[ann]) == False   # noqa: E712
                     if np.count_nonzero(not_finite) > 0:
                         warnings.warn(
                             f"{str(ax).title()} annotation '{ann}' contains floating point NaN or Infinities. "
@@ -209,7 +209,7 @@ class ScanpyEngine(CXGDriver):
 
         See comments in _IEEE754_special_values_workaround_annotations
         """
-        not_finite = np.isfinite(_X) == False
+        not_finite = np.isfinite(_X) == False   # noqa: E712
         if np.count_nonzero(not_finite) > 0:
             _X[not_finite] = 0
             warnings.warn(
