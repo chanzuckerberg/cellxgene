@@ -24,7 +24,7 @@ from server.app.util.errors import ScanpyFileError
 @click.option("--port", "-p", help="Port to run server on.", metavar="", default=5005, show_default=True)
 @click.option("--obs-names", default=None, metavar="", help="Name of annotation field to use for observations.")
 @click.option("--var-names", default=None, metavar="", help="Name of annotation to use for variables.")
-@click.option("--host", default=None, help="Host name or ip (for serving externally accessible instance).")
+@click.option("--host", default="127.0.0.1", help="Host IP address")
 @click.option("--max-category-items", default=100, metavar="", show_default=True,
               help="Limits the number of categorical annotation items displayed.")
 @click.option("--diffexp-lfc-cutoff", default=0.01, show_default=True,
@@ -63,13 +63,6 @@ def launch(data, layout, diffexp, title, verbose, debug, obs_names, var_names,
     if not title:
         file_parts = splitext(basename(data))
         title = file_parts[0]
-
-    if host:
-        host = host
-        flask_host = "0.0.0.0"
-    else:
-        host = "127.0.0.1"
-        flask_host = host
 
     # Setup app
     cellxgene_url = f"http://{host}:{port}"
@@ -118,4 +111,4 @@ def launch(data, layout, diffexp, title, verbose, debug, obs_names, var_names,
         f = open(devnull, 'w')
         sys.stdout = f
 
-    app.run(host=flask_host, debug=debug, port=port, threaded=True)
+    app.run(host=host, debug=debug, port=port, threaded=True)
