@@ -212,11 +212,13 @@ class ScanpyEngine(CXGDriver):
         not_finite = np.isfinite(_X) == False   # noqa: E712
         if np.count_nonzero(not_finite) > 0:
             _X[not_finite] = 0
-            warnings.warn(
-                "Dataframe X contains floating point NaN or Infinities. "
-                "These values will be treated as zero."
-            )
-            self._IEEE754_X_warning_issued = True
+            if not self._IEEE754_X_warning_issued:
+                # only want to issue this warning once.
+                warnings.warn(
+                    "Dataframe X contains floating point NaN or Infinities. "
+                    "These values will be treated as zero."
+                )
+                self._IEEE754_X_warning_issued = True
 
         return _X
 
