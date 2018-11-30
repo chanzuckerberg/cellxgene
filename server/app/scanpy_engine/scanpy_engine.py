@@ -35,6 +35,10 @@ class ScanpyEngine(CXGDriver):
         self.diffexp_options = ["ttest"]
         self._create_schema()
 
+        # TODO: temporary work-arounds
+        self._IEEE754_X_warning_issued = False
+        self._IEEE754_special_values_workaround_annotations()
+
     def _alias_annotation_names(self, axis, name):
         """
         Do all user-specified annotation aliasing.
@@ -171,6 +175,52 @@ class ScanpyEngine(CXGDriver):
                 f"back in the h5ad file. You can run "
                 f"`cellxgene prepare --layout {self.layout_method} <datafile>` "
                 f"to solve this problem. ")
+
+    def _IEEE754_special_values_workaround_annotations(self):
+        """
+        TODO: temporary workaround
+
+        Because all floating point data is serialized to JSON, and JSON has no means of representing
+        non-finite, floating point special values (NaN, +/-Infinity, etc), we include this temporary
+        work-around.
+
+        This will likely be removed in the future, contingent upon improved marshalling.
+
+        Where non-finite floating point is present in obs, var or X:
+        * issue a warning to the user that these values will be treated as zeros.
+        * set the value to zero within the in-memory data (self.data)
+        """
+        for ax in Axis:
+            curr_axis = getattr(self.data, str(ax))
+            for ann in curr_axis:
+                dtype = curr_axis[ann].dtype
+                if dtype.kind == 'f':
+                    not_finite = np.isfinite(curr_axis[ann]) == False   # noqa: E712
+                    if np.count_nonzero(not_finite) > 0:
+                        warnings.warn(
+                            f"{str(ax).title()} annotation '{ann}' contains floating point NaN or Infinities. "
+                            f"These values will be treated as zero."
+                        )
+                        curr_axis[ann][not_finite] = 0
+
+    def _IEEE754_special_values_workaround_X(self, _X):
+        """
+        TODO: temporary workaround
+
+        See comments in _IEEE754_special_values_workaround_annotations
+        """
+        not_finite = np.isfinite(_X) == False   # noqa: E712
+        if np.count_nonzero(not_finite) > 0:
+            _X[not_finite] = 0
+            if not self._IEEE754_X_warning_issued:
+                # only want to issue this warning once.
+                warnings.warn(
+                    "Dataframe X contains floating point NaN or Infinities. "
+                    "These values will be treated as zero."
+                )
+                self._IEEE754_X_warning_issued = True
+
+        return _X
 
     def filter_dataframe(self, filter):
         """
@@ -323,6 +373,7 @@ class ScanpyEngine(CXGDriver):
             _X = _X.toarray()
         var_index_sliced = self.data.var.index[var_selector]
         obs_index_sliced = self.data.obs.index[obs_selector]
+        _X = self._IEEE754_special_values_workaround_X(_X)
         if axis == Axis.OBS:
             result = {
                 "var": var_index_sliced.tolist(),
