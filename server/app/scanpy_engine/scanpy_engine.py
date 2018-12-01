@@ -188,7 +188,7 @@ class ScanpyEngine(CXGDriver):
 
         Where non-finite floating point is present in obs, var or X:
         * issue a warning to the user that these values will be convert to finite numbers.
-        * set NaN to zero, and initities to min/max of the element.
+        * set NaN to zero, and Infinities to min/max of the element.
         """
 
         # annotations
@@ -222,13 +222,14 @@ class ScanpyEngine(CXGDriver):
                 self.data._X = _X
         else:
             _X = self.data._X
-            for r in _X:
-                finite_idx = np.isfinite(r)
-                if not finite_idx.all():
-                    non_finite_X_found = True
-                    r[np.isnan(r)] = 0
-                    r[np.isneginf(r)] = r[finite_idx].min()
-                    r[np.isposinf(r)] = r[finite_idx].max()
+            finite_idx = np.isfinite(_X.flat)
+            if not finite_idx.all():
+                non_finite_X_found = True
+                min_X = _X.flat[finite_idx].min()
+                max_X = _X.flat[finite_idx].max()
+                _X[np.isnan(_X)] = 0
+                _X[np.isneginf(_X)] = min_X
+                _X[np.isposinf(_X)] = max_X
 
         if non_finite_X_found:
             warnings.warn(
