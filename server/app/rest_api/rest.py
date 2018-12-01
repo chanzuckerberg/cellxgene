@@ -166,9 +166,8 @@ class AnnotationsObsAPI(Resource):
         except ValueError as e:
             # JSON encoding failure, usually due to bad data
             warnings.warn("JSON encoding failure - suggest trying --nan-to-num command "
-                         "line option")
+                          "line option")
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
-
 
     @swagger.doc({
         "summary": "Fetch annotations (metadata) for filtered subset of observations.",
@@ -224,7 +223,7 @@ class AnnotationsObsAPI(Resource):
         except ValueError as e:
             # JSON encoding failure, usually due to bad data
             warnings.warn("JSON encoding failure - suggest trying --nan-to-num command "
-                         "line option")
+                          "line option")
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
@@ -272,9 +271,8 @@ class AnnotationsVarAPI(Resource):
         except ValueError as e:
             # JSON encoding failure, usually due to bad data
             warnings.warn("JSON encoding failure - suggest trying --nan-to-num command "
-                         "line option")
+                          "line option")
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
-
 
     @swagger.doc({
         "summary": "Fetch annotations (metadata) for filtered subset of variables.",
@@ -328,7 +326,7 @@ class AnnotationsVarAPI(Resource):
         except ValueError as e:
             # JSON encoding failure, usually due to bad data
             warnings.warn("JSON encoding failure - suggest trying --nan-to-num command "
-                         "line option")
+                          "line option")
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
@@ -393,9 +391,8 @@ class DataObsAPI(Resource):
         except ValueError as e:
             # JSON encoding failure, usually due to bad data
             warnings.warn("JSON encoding failure - suggest trying --nan-to-num command "
-                         "line option")
+                          "line option")
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
-
 
     @swagger.doc({
         "summary": "Get data (expression values) from the dataframe.",
@@ -443,7 +440,7 @@ class DataObsAPI(Resource):
         except ValueError as e:
             # JSON encoding failure, usually due to bad data
             warnings.warn("JSON encoding failure - suggest trying --nan-to-num command "
-                         "line option")
+                          "line option")
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
@@ -506,7 +503,7 @@ class DataVarAPI(Resource):
         except ValueError as e:
             # JSON encoding failure, usually due to bad data
             warnings.warn("JSON encoding failure - suggest trying --nan-to-num command "
-                         "line option")
+                          "line option")
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
     @swagger.doc({
@@ -556,7 +553,7 @@ class DataVarAPI(Resource):
         except ValueError as e:
             # JSON encoding failure, usually due to bad data
             warnings.warn("JSON encoding failure - suggest trying --nan-to-num command "
-                         "line option")
+                          "line option")
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
@@ -667,7 +664,7 @@ class DiffExpObsAPI(Resource):
         except ValueError as e:
             # JSON encoding failure, usually due to bad data
             warnings.warn("JSON encoding failure - suggest trying --nan-to-num command "
-                         "line option")
+                          "line option")
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
@@ -706,9 +703,8 @@ class LayoutObsAPI(Resource):
         except ValueError as e:
             # JSON encoding failure, usually due to bad data
             warnings.warn("JSON encoding failure - suggest trying --nan-to-num command "
-                         "line option")
+                          "line option")
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
-
 
     # @swagger.doc({
     #     "summary": "Observation layout for filtered subset.",

@@ -199,9 +199,9 @@ class ScanpyEngine(CXGDriver):
                 if dtype.kind == 'f':
                     finite_idx = np.isfinite(curr_axis[ann])
                     if not finite_idx.all():
-                        curr_axis.loc[np.isnan(curr_axis[ann]),ann] = 0
-                        curr_axis.loc[np.isneginf(curr_axis[ann]),ann] = curr_axis[ann][finite_idx].min()
-                        curr_axis.loc[np.isposinf(curr_axis[ann]),ann] = curr_axis[ann][finite_idx].max()
+                        curr_axis.loc[np.isnan(curr_axis[ann]), ann] = 0
+                        curr_axis.loc[np.isneginf(curr_axis[ann]), ann] = curr_axis[ann][finite_idx].min()
+                        curr_axis.loc[np.isposinf(curr_axis[ann]), ann] = curr_axis[ann][finite_idx].max()
                         warnings.warn(
                             f"{str(ax).title()} annotation '{ann}' contains floating point NaN or Infinities. "
                             f"These will be converted to finite values."
