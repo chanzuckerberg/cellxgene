@@ -1,5 +1,6 @@
 from http import HTTPStatus
 import pkg_resources
+import warnings
 
 from flask import (
     Blueprint, current_app, jsonify, make_response, request
@@ -160,7 +161,14 @@ class AnnotationsObsAPI(Resource):
             annotation_response = current_app.data.annotation({}, "obs", fields)
         except KeyError:
             return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
-        return make_response(jsonify(annotation_response), HTTPStatus.OK)
+        try:
+            return make_response(jsonify(annotation_response), HTTPStatus.OK)
+        except ValueError as e:
+            # JSON encoding failure, usually due to bad data
+            warnings.warn("JSON encoding failure - suggest trying --nan-to-num command "
+                         "line option")
+            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+
 
     @swagger.doc({
         "summary": "Fetch annotations (metadata) for filtered subset of observations.",
@@ -211,7 +219,13 @@ class AnnotationsObsAPI(Resource):
             return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
         except FilterError as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
-        return make_response(jsonify(annotation_response), HTTPStatus.OK)
+        try:
+            return make_response(jsonify(annotation_response), HTTPStatus.OK)
+        except ValueError as e:
+            # JSON encoding failure, usually due to bad data
+            warnings.warn("JSON encoding failure - suggest trying --nan-to-num command "
+                         "line option")
+            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
 class AnnotationsVarAPI(Resource):
@@ -253,7 +267,14 @@ class AnnotationsVarAPI(Resource):
             annotation_response = current_app.data.annotation({}, "var", fields)
         except KeyError:
             return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
-        return make_response(jsonify(annotation_response), HTTPStatus.OK)
+        try:
+            return make_response(jsonify(annotation_response), HTTPStatus.OK)
+        except ValueError as e:
+            # JSON encoding failure, usually due to bad data
+            warnings.warn("JSON encoding failure - suggest trying --nan-to-num command "
+                         "line option")
+            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+
 
     @swagger.doc({
         "summary": "Fetch annotations (metadata) for filtered subset of variables.",
@@ -302,7 +323,13 @@ class AnnotationsVarAPI(Resource):
             return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
         except FilterError:
             return make_response("Malformed filter", HTTPStatus.BAD_REQUEST)
-        return make_response(jsonify(annotation_response), HTTPStatus.OK)
+        try:
+            return make_response(jsonify(annotation_response), HTTPStatus.OK)
+        except ValueError as e:
+            # JSON encoding failure, usually due to bad data
+            warnings.warn("JSON encoding failure - suggest trying --nan-to-num command "
+                         "line option")
+            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
 class DataObsAPI(Resource):
@@ -363,6 +390,12 @@ class DataObsAPI(Resource):
             return make_response((jsonify(current_app.data.data_frame(filter_, axis=Axis.OBS))), HTTPStatus.OK)
         except FilterError as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
+        except ValueError as e:
+            # JSON encoding failure, usually due to bad data
+            warnings.warn("JSON encoding failure - suggest trying --nan-to-num command "
+                         "line option")
+            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+
 
     @swagger.doc({
         "summary": "Get data (expression values) from the dataframe.",
@@ -407,6 +440,11 @@ class DataObsAPI(Resource):
                                  HTTPStatus.OK)
         except FilterError as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
+        except ValueError as e:
+            # JSON encoding failure, usually due to bad data
+            warnings.warn("JSON encoding failure - suggest trying --nan-to-num command "
+                         "line option")
+            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
 class DataVarAPI(Resource):
@@ -465,6 +503,11 @@ class DataVarAPI(Resource):
             return make_response((jsonify(current_app.data.data_frame(filter_, axis=Axis.VAR))), HTTPStatus.OK)
         except FilterError as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
+        except ValueError as e:
+            # JSON encoding failure, usually due to bad data
+            warnings.warn("JSON encoding failure - suggest trying --nan-to-num command "
+                         "line option")
+            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
     @swagger.doc({
         "summary": "Get data (expression values) from the dataframe.",
@@ -510,6 +553,11 @@ class DataVarAPI(Resource):
                                  HTTPStatus.OK)
         except FilterError as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
+        except ValueError as e:
+            # JSON encoding failure, usually due to bad data
+            warnings.warn("JSON encoding failure - suggest trying --nan-to-num command "
+                         "line option")
+            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
 class DiffExpObsAPI(Resource):
@@ -614,7 +662,13 @@ class DiffExpObsAPI(Resource):
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
         except InteractiveError:
             return make_response("Non-interactive request", HTTPStatus.FORBIDDEN)
-        return make_response(jsonify(diffexp), HTTPStatus.OK)
+        try:
+            return make_response(jsonify(diffexp), HTTPStatus.OK)
+        except ValueError as e:
+            # JSON encoding failure, usually due to bad data
+            warnings.warn("JSON encoding failure - suggest trying --nan-to-num command "
+                         "line option")
+            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
 class LayoutObsAPI(Resource):
@@ -647,7 +701,14 @@ class LayoutObsAPI(Resource):
             layout = current_app.data.layout({})
         except PrepareError as e:
             return make_response(e.message, HTTPStatus.INTERNAL_SERVER_ERROR)
-        return make_response((jsonify({"layout": layout})), HTTPStatus.OK)
+        try:
+            return make_response((jsonify({"layout": layout})), HTTPStatus.OK)
+        except ValueError as e:
+            # JSON encoding failure, usually due to bad data
+            warnings.warn("JSON encoding failure - suggest trying --nan-to-num command "
+                         "line option")
+            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+
 
     # @swagger.doc({
     #     "summary": "Observation layout for filtered subset.",

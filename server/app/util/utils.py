@@ -7,6 +7,17 @@ from server.app.util.errors import MimeTypeError
 
 
 class Float32JSONEncoder(json.JSONEncoder):
+    def __init__(self, *args, **kwargs):
+        """
+        NaN/Infinities are illegal in standard JSON.  Python extends JSON with
+        non-standard symbols that most JavaScript JSON parsers do not understand.
+        The `allow_nan` parameter will force Python simplejson to throw an ValueError
+        if it runs into non-finite floating point values which are unsupported by
+        standard JSON.
+        """
+        kwargs['allow_nan'] = False
+        super().__init__(*args, **kwargs)
+
     def default(self, obj):
         if isinstance(obj, float32):
             return float(obj)
