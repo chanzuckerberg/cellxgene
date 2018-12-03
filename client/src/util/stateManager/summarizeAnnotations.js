@@ -8,6 +8,7 @@ Value will be an object, containing summary information.
 
 For continuous annotations (int, float, etc):
   <annotation_name>: {
+    categorical: false,
     range {
       min: <number>,
       max: <number>
@@ -15,12 +16,14 @@ For continuous annotations (int, float, etc):
   }
 
 For categorical annotations (boolean, string, category):
-  <annotatoin_name>: {
-    options: {
-      <option1>: <number>,
+  <annotation_name>: {
+    categorical: true,
+    categories: [ <category1>, <category2>, ... ]
+    categoryCounts: Map {
+      <category1>: <number>,
       ...
     },
-    numOptions: <number>
+    numCategories: <number>
   }
 
 Summarize will be returned for BOTH obs and var annotations.
@@ -28,19 +31,19 @@ Summarize will be returned for BOTH obs and var annotations.
 Example:
   {
     "Splice_sites_Annotated": {
-      "range": {
+      categorical: false,
+      range: {
         "min": 26,
         "max": 1075869
       }
     },
     "Selection": {
-      numOptions, 6,
-      "options": {
+      categorical: true,
+      numCategories, 3,
+      categories: [ "Astrocytes(HEPACAM)", "Endothelial(BSC)", "Unpanned" ],
+      categoryCounts: Map {
         "Astrocytes(HEPACAM)": 714,
         "Endothelial(BSC)": 123,
-        "Oligodendrocytes(GC)": 294,
-        "Neurons(Thy1)": 685,
-        "Microglia(CD45)": 1108,
         "Unpanned": 665
       }
     }
@@ -48,46 +51,46 @@ Example:
 
 NOTE: will not summarize the required 'name' annotation, as that is
 specified as unique per element.
-
-TODO: XXX - this data structure coerces all metadata categories into a string
-(ie, stores values as an Object property in the `options` field).   This looses
-information (eg, type) for category types which are not strings.  Consider an
-alterative data structure that does not use the object property for non-string
-data types (and does not use _.countBy to summarize).
 */
-function summarizeDimension(schema, annotations) {
-  return _(schema)
+function _summarizeAnnotations(_schema, annotations) {
+  const summary = _(_schema) // lodash wrapping: https://lodash.com/docs/4.17.11#lodash
     .filter(v => v.name !== "name")
     .keyBy("name")
     .mapValues(anno => {
       const { name, type } = anno;
       const continuous = type === "int32" || type === "float32";
 
-      if (!continuous) {
-        const categories = _.uniq(_.flatMap(annotations, name));
-        const options = _.countBy(annotations, name);
-        const numOptions = _.size(options);
-        return {
-          numOptions,
-          options,
-          categories
-        };
-      }
-
       if (continuous) {
         let min = Number.POSITIVE_INFINITY;
         let max = Number.NEGATIVE_INFINITY;
-        _.forEach(annotations, obs => {
-          const val = Number(obs[name]);
+        for (let r = 0; r < annotations.length; r += 1) {
+          const val = Number(annotations[r][name]);
           min = val < min ? val : min;
           max = val > max ? val : max;
-        });
-        return { range: { min, max } };
+        }
+        return {
+          categorical: false,
+          range: { min, max }
+        };
       }
 
-      throw new Error("incomprehensible schema");
+      /* else categorical */
+      const categoryCounts = new Map();
+      for (let r = 0; r < annotations.length; r += 1) {
+        const val = annotations[r][name];
+        let curCount = categoryCounts.get(val);
+        if (curCount === undefined) curCount = 0;
+        categoryCounts.set(val, curCount + 1);
+      }
+      return {
+        categorical: true,
+        categories: [...categoryCounts.keys()],
+        categoryCounts,
+        numCategories: categoryCounts.size
+      };
     })
     .value();
+  return summary;
 }
 
 export default function summarizeAnnotations(
@@ -96,7 +99,7 @@ export default function summarizeAnnotations(
   varAnnotations
 ) {
   return {
-    obs: summarizeDimension(schema.annotations.obs, obsAnnotations),
-    var: summarizeDimension(schema.annotations.var, varAnnotations)
+    obs: _summarizeAnnotations(schema.annotations.obs, obsAnnotations),
+    var: _summarizeAnnotations(schema.annotations.var, varAnnotations)
   };
 }
