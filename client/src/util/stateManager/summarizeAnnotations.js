@@ -53,7 +53,7 @@ NOTE: will not summarize the required 'name' annotation, as that is
 specified as unique per element.
 */
 function _summarizeAnnotations(_schema, annotations) {
-  const summary = _(_schema)
+  const summary = _(_schema) // lodash wrapping: https://lodash.com/docs/4.17.11#lodash
     .filter(v => v.name !== "name")
     .keyBy("name")
     .mapValues(anno => {
