@@ -1,7 +1,7 @@
 // jshint esversion: 6
 
 import _ from "lodash";
-import { World, kvCache, WorldOps } from "../util/stateManager";
+import { World, kvCache, WorldUtil } from "../util/stateManager";
 import parseRGB from "../util/parseRGB";
 import Crossfilter from "../util/typedCrossfilter";
 import * as globals from "../globals";
@@ -175,7 +175,7 @@ const Controls = (
       );
       const crossfilter = Crossfilter(world.obsAnnotations);
       const dimensionMap = World.createObsDimensionMap(crossfilter, world);
-      WorldOps.clearCaches();
+      WorldUtil.clearCaches();
 
       const worldVarDataCache = world.varDataCache;
 
@@ -248,7 +248,7 @@ const Controls = (
       );
       const crossfilter = Crossfilter(world.obsAnnotations);
       const dimensionMap = World.createObsDimensionMap(crossfilter, world);
-      WorldOps.clearCaches();
+      WorldUtil.clearCaches();
 
       const worldVarDataCache = world.varDataCache;
       /* var dimensions */

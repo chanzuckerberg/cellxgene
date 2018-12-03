@@ -1,9 +1,9 @@
 import {
   countCategoryValues2D,
   clearCaches
-} from "../../../src/util/stateManager/worldOps";
+} from "../../../src/util/stateManager/worldUtil";
 
-describe("WorldOps cache management", () => {
+describe("WorldUtil cache management", () => {
   test("empty", () => {
     const count = countCategoryValues2D("a", "b", []);
     expect(count).toMatchObject(new Map());

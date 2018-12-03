@@ -39,13 +39,13 @@ function _countCategoryValues2D(dim1, dim2, rows) {
   return dimMap;
 }
 
-let __worldOpsMemoId__ = 0;
+let __worldUtilMemoId__ = 0;
 function _memoizedId(x) {
-  if (!x.__worldOpsMemoId__) {
-    __worldOpsMemoId__ += 1;
-    x.__worldOpsMemoId__ = __worldOpsMemoId__;
+  if (!x.__worldUtilMemoId__) {
+    __worldUtilMemoId__ += 1;
+    x.__worldUtilMemoId__ = __worldUtilMemoId__;
   }
-  return x.__worldOpsMemoId__;
+  return x.__worldUtilMemoId__;
 }
 function _countCategoryValues2DResolver(...args) {
   const id = args[0] + args[1] + _memoizedId(args[2]);
@@ -58,7 +58,7 @@ export const countCategoryValues2D = _.memoize(
 );
 
 /*
-Clear any cached data within WorldOps caches, eg, memoized functions
+Clear any cached data within WorldUtil caches, eg, memoized functions
 */
 export function clearCaches() {
   countCategoryValues2D.cache.clear();
