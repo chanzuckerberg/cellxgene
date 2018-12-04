@@ -8,7 +8,7 @@ from flask import (
 from flask_restful_swagger_2 import Api, swagger, Resource
 from werkzeug.datastructures import ImmutableMultiDict
 
-from server.app.util.constants import Axis, DiffExpMode
+from server.app.util.constants import Axis, DiffExpMode, JSON_NaN_to_num_warning_msg
 from server.app.util.filter import parse_filter, QueryStringError
 from server.app.util.models import FilterModel
 from server.app.util.utils import get_mime_type
@@ -165,8 +165,7 @@ class AnnotationsObsAPI(Resource):
             return make_response(jsonify(annotation_response), HTTPStatus.OK)
         except ValueError as e:
             # JSON encoding failure, usually due to bad data
-            warnings.warn("JSON encoding failure - suggest trying --nan-to-num command "
-                          "line option")
+            warnings.warn(JSON_NaN_to_num_warning_msg)
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
     @swagger.doc({
@@ -222,8 +221,7 @@ class AnnotationsObsAPI(Resource):
             return make_response(jsonify(annotation_response), HTTPStatus.OK)
         except ValueError as e:
             # JSON encoding failure, usually due to bad data
-            warnings.warn("JSON encoding failure - suggest trying --nan-to-num command "
-                          "line option")
+            warnings.warn(JSON_NaN_to_num_warning_msg)
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
@@ -270,8 +268,7 @@ class AnnotationsVarAPI(Resource):
             return make_response(jsonify(annotation_response), HTTPStatus.OK)
         except ValueError as e:
             # JSON encoding failure, usually due to bad data
-            warnings.warn("JSON encoding failure - suggest trying --nan-to-num command "
-                          "line option")
+            warnings.warn(JSON_NaN_to_num_warning_msg)
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
     @swagger.doc({
@@ -325,8 +322,7 @@ class AnnotationsVarAPI(Resource):
             return make_response(jsonify(annotation_response), HTTPStatus.OK)
         except ValueError as e:
             # JSON encoding failure, usually due to bad data
-            warnings.warn("JSON encoding failure - suggest trying --nan-to-num command "
-                          "line option")
+            warnings.warn(JSON_NaN_to_num_warning_msg)
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
@@ -390,8 +386,7 @@ class DataObsAPI(Resource):
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
         except ValueError as e:
             # JSON encoding failure, usually due to bad data
-            warnings.warn("JSON encoding failure - suggest trying --nan-to-num command "
-                          "line option")
+            warnings.warn(JSON_NaN_to_num_warning_msg)
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
     @swagger.doc({
@@ -439,8 +434,7 @@ class DataObsAPI(Resource):
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
         except ValueError as e:
             # JSON encoding failure, usually due to bad data
-            warnings.warn("JSON encoding failure - suggest trying --nan-to-num command "
-                          "line option")
+            warnings.warn(JSON_NaN_to_num_warning_msg)
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
@@ -502,8 +496,7 @@ class DataVarAPI(Resource):
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
         except ValueError as e:
             # JSON encoding failure, usually due to bad data
-            warnings.warn("JSON encoding failure - suggest trying --nan-to-num command "
-                          "line option")
+            warnings.warn(JSON_NaN_to_num_warning_msg)
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
     @swagger.doc({
@@ -552,8 +545,7 @@ class DataVarAPI(Resource):
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
         except ValueError as e:
             # JSON encoding failure, usually due to bad data
-            warnings.warn("JSON encoding failure - suggest trying --nan-to-num command "
-                          "line option")
+            warnings.warn(JSON_NaN_to_num_warning_msg)
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
@@ -663,8 +655,7 @@ class DiffExpObsAPI(Resource):
             return make_response(jsonify(diffexp), HTTPStatus.OK)
         except ValueError as e:
             # JSON encoding failure, usually due to bad data
-            warnings.warn("JSON encoding failure - suggest trying --nan-to-num command "
-                          "line option")
+            warnings.warn(JSON_NaN_to_num_warning_msg)
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
@@ -702,8 +693,7 @@ class LayoutObsAPI(Resource):
             return make_response((jsonify({"layout": layout})), HTTPStatus.OK)
         except ValueError as e:
             # JSON encoding failure, usually due to bad data
-            warnings.warn("JSON encoding failure - suggest trying --nan-to-num command "
-                          "line option")
+            warnings.warn(JSON_NaN_to_num_warning_msg)
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
     # @swagger.doc({
