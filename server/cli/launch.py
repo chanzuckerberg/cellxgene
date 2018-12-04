@@ -29,8 +29,11 @@ from server.app.util.errors import ScanpyFileError
               help="Limits the number of categorical annotation items displayed.")
 @click.option("--diffexp-lfc-cutoff", default=0.01, show_default=True,
               help="Relative expression cutoff used when selecting top N differentially expressed genes")
+@click.option("--nan-to-num", is_flag=True, default=False, show_default=True,
+              help="Replace all floating point NaN with zero, and infinities with finite numbers")
 def launch(data, layout, diffexp, title, verbose, debug, obs_names, var_names,
-           open_browser, port, host, max_category_items, diffexp_lfc_cutoff):
+           open_browser, port, host, max_category_items, diffexp_lfc_cutoff,
+           nan_to_num):
     """Launch the cellxgene data viewer.
     This web app lets you explore single-cell expression data.
     Data must be in a format that cellxgene expects, read the
@@ -91,7 +94,8 @@ def launch(data, layout, diffexp, title, verbose, debug, obs_names, var_names,
         "max_category_items": max_category_items,
         "diffexp_lfc_cutoff": diffexp_lfc_cutoff,
         "obs_names": obs_names,
-        "var_names": var_names
+        "var_names": var_names,
+        "nan_to_num": nan_to_num
     }
 
     try:
