@@ -166,7 +166,7 @@ This is likely because you do not have node and npm installed, we recommend usin
 - `.X` is used to display expression (histograms, scatterplot & colorscale) and to compute differential expression
 - `.obsm` is used for layout
 
-> When I start cellxgene, I get an error `Unexpected HTTP response 500, INTERNAL SERVER ERROR -- Out of range float values are not JSON compliant`, or `Warning: JSON encoding failure - suggest trying --nan-to-num command line option`. What can I do?
+> When I start cellxgene, I get an error `Unexpected HTTP response 500, INTERNAL SERVER ERROR -- Out of range float values are not JSON compliant` in the web UI, or `Warning: JSON encoding failure - suggest trying --nan-to-num command line option` in the CLI. What can I do?
 
 At the moment, cellxgene is unable to transmit floating point NaN or Inifinty values to the web UI (due to a limitation on data serialization method in use). We expect to resolve this in a future release, but in the meantime, you can work around this issue by starting cellxgene with the `--nan-to-num` command line option, ie, `cellxgene launch data.h5ad --nan-to-num`.
 
