@@ -8,10 +8,10 @@
     2. Describe why and how when appropriate
     3. Call out specific areas you want extra attention in review (optional)
     4. If your PR requires more than one reviewer tag those people in the description or comments and let them know that you specifically require them
-    4. Ensure that the PR updates tests and documentation and adds tests where appropriate
-4. Fixes issues
+4. Ensure that the PR updates tests and documentation and adds tests where appropriate
+5. Fixes issues
     1. Use github’s issue keywords when PR is addressing an issue https://help.github.com/articles/closing-issues-using-keywords/
-5. Tags (add at beginning of title)
+6. Tags (add at beginning of title)
     1. [EASY] - small non-controversial change, easy to review
     2. [DO NOT MERGE] - PR is in progress, do not merge changes
 
