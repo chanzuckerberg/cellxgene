@@ -5,7 +5,7 @@
 2. Code should address only one issue ideally, make a separate PR for each task
 3. Description 
     1. Clear explanation of issues solved
-    2. Describe why and how when appropriate
+    2. Describe why and how, when appropriate
     3. Call out specific areas you want extra attention in review (optional)
     4. If your PR requires more than one reviewer tag those people in the description or comments and let them know that you specifically require them
 4. Ensure that the PR updates tests and documentation and adds tests where appropriate
