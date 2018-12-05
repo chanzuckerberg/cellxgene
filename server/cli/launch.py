@@ -1,11 +1,14 @@
-import sys
-import click
 import logging
 from os import devnull
 from os.path import splitext, basename
+import sys
+import warnings
 import webbrowser
 
+import click
+
 from server.app.util.errors import ScanpyFileError
+from server.app.util.utils import custom_format_warning
 
 
 @click.command()
@@ -48,9 +51,6 @@ def launch(data, layout, diffexp, title, verbose, debug, obs_names, var_names,
     # Startup message
     click.echo("[cellxgene] Starting the CLI...")
 
-    # Import Flask app
-    from server.app.app import app
-
     # Argument checking
     name, extension = splitext(data)
     if extension != ".h5ad":
@@ -59,6 +59,8 @@ def launch(data, layout, diffexp, title, verbose, debug, obs_names, var_names,
     if debug:
         verbose = True
         open_browser = False
+    else:
+        warnings.formatwarning = custom_format_warning
 
     if not verbose:
         sys.tracebacklimit = 0
@@ -70,6 +72,9 @@ def launch(data, layout, diffexp, title, verbose, debug, obs_names, var_names,
     # Setup app
     cellxgene_url = f"http://{host}:{port}"
     api_base = f"{cellxgene_url}/api/"
+
+    # Import Flask app
+    from server.app.app import app
 
     app.config.update(
         DATASET_TITLE=title,
