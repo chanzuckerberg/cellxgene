@@ -28,8 +28,8 @@ Follow these steps to create a release.
 2.  Create a release branch, eg, `release-version`
 3.  In the release branch:
     - Run `bumpversion --config-file .bumpversion.cfg [major | minor | patch]`,
-      were you choose major/minor/patch depending on which part of the version
-      is being dumped (eg, 0.2.9->0.3 is minor).
+      where you choose major/minor/patch depending on which part of the version
+      is being bumped (eg, 0.2.9->0.3 is minor).
     - Clean up existing environment using `bin/clean`
     - Build the JS asserts using `bin/build-client`
 4.  Commit and push the new branch
