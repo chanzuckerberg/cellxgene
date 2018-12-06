@@ -14,35 +14,40 @@ The release process should result in the following side-effects:
 - Tagged github release
 - Publication to PyPi
 
-## Process
+## Recipe
 
 Follow these steps to create a release.
 
 1.  Preparation:
-    - Define the release version number, using [semantic versioning](https://semver.org/)
-    - Write the release title and release notes and add to 
-    [release notes document](https://docs.google.com/document/d/1KnHwkYfhyWO5H8BDcMu7y3ogjvq5Yi4OwpmZ8DB6w0Y/edit)
+    - python3.6 environment, and a cellxgene clone
+    - install required tools: `pip install -r requirements-dev.txt`
+    - Define the release version number, using [semantic versioning](https://semver.org/),
+      and specifying all three digits (eg, 0.3.0)
+    - Write the release title and release notes and add to
+      [release notes document](https://docs.google.com/document/d/1KnHwkYfhyWO5H8BDcMu7y3ogjvq5Yi4OwpmZ8DB6w0Y/edit)
 2.  Create a release branch, eg, `release-version`
 3.  In the release branch:
-    - Run `bumpversion --config-file .bumpversion.cfg [major | minor | patch]`
+    - Run `bumpversion --config-file .bumpversion.cfg [major | minor | patch]`,
+      were you choose major/minor/patch depending on which part of the version
+      is being dumped (eg, 0.2.9->0.3 is minor).
     - Clean up existing environment using `bin/clean`
     - Build the JS asserts using `bin/build-client`
 4.  Commit and push the new branch
 5.  Create a PR for the release.
     - [optional] As needed, conduct PR review.
 6.  Merge to master
-7.  Create Github release using the version number and release notes 
-([instructions](https://help.github.com/articles/creating-releases/)).
+7.  Create Github release using the version number and release notes
+    ([instructions](https://help.github.com/articles/creating-releases/)).
     - Draft new release
     - Type version name matching release version number from (1)
     - Select `master` as release branch (ensure you merged the release PR)
     - Type title `Release {version num}`
     - [optional] Check pre-release if this release is not ready for production
     - Publish Release
-8.  Publish to pypi by performing the following steps (assumes you have `setuptools` and `twine` installed and that you 
-have registered for pypi and have write access to the cellxgene pypi package)
-    - Build the distribution by calling
-    `python setup.py sdist`
+8.  Publish to pypi by performing the following steps (assumes you have `setuptools`
+    and `twine` installed, that you have registered for pypi, and that you have
+    write access to the cellxgene pypi package):
+    - Build the distribution by calling `python setup.py sdist`
       inside the top-level directory
     - [optional] Upload the package to test pypi
       `twine upload --repository-url https://test.pypi.org/legacy/ dist/*`
