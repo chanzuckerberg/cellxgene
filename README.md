@@ -89,7 +89,7 @@ cellxgene prepare --help
 pip install cellxgene[louvain]
 ```
 
-On some environments installing the extra requires for lovain as above does not work. Alternatively, you can install these dependencies by hand in addition to the cellxgene package.
+If the aforementioned optional package installation fails, you can also install these packages directly:
 
 ```
 pip install python-igraph louvain>=0.6
