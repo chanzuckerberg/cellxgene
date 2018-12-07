@@ -4,6 +4,7 @@ import React from "react";
 import _ from "lodash";
 import Occupancy from "./occupancy";
 import { countCategoryValues2D } from "../../util/stateManager/worldUtil";
+import * as globals from "../../globals";
 
 @connect(state => ({
   categoricalSelectionState: state.controls.categoricalSelectionState,
@@ -86,7 +87,9 @@ class CategoryValue extends React.Component {
             margin: 0,
             padding: 0,
             userSelect: "none",
-            flexShrink: 2
+            width: globals.leftSidebarWidth - 130,
+            display: "flex",
+            justifyContent: "space-between"
           }}
         >
           <label className="bp3-control bp3-checkbox">
@@ -100,9 +103,7 @@ class CategoryValue extends React.Component {
             <span className="bp3-control-indicator" />
             {displayString}
           </label>
-        </div>
-        <div>
-          <span>
+          <span style={{ flexShrink: 0 }}>
             {colorAccessor && !c ? (
               <Occupancy
                 occupancy={occupancy.get(
@@ -112,21 +113,21 @@ class CategoryValue extends React.Component {
               />
             ) : null}
           </span>
-          <span>
-            <span>{count}</span>
-            <svg
-              style={{
-                marginLeft: 5,
-                width: 11,
-                height: 11,
-                backgroundColor:
-                  c && categories
-                    ? colorScale(categories.indexOf(value))
-                    : "inherit"
-              }}
-            />
-          </span>
         </div>
+        <span>
+          <span>{count}</span>
+          <svg
+            style={{
+              marginLeft: 5,
+              width: 11,
+              height: 11,
+              backgroundColor:
+                c && categories
+                  ? colorScale(categories.indexOf(value))
+                  : "inherit"
+            }}
+          />
+        </span>
       </div>
     );
   }
