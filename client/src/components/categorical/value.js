@@ -3,12 +3,14 @@ import { connect } from "react-redux";
 import React from "react";
 import _ from "lodash";
 import Occupancy from "./occupancy";
+import { countCategoryValues2D } from "../../util/stateManager/worldUtil";
 
 @connect(state => ({
   categoricalSelectionState: state.controls.categoricalSelectionState,
   colorScale: state.controls.colorScale,
   colorAccessor: state.controls.colorAccessor,
-  schema: _.get(state.controls.world, "schema", null)
+  schema: _.get(state.controls.world, "schema", null),
+  world: state.controls.world
 }))
 class CategoryValue extends React.Component {
   toggleOff() {
@@ -37,7 +39,8 @@ class CategoryValue extends React.Component {
       colorAccessor,
       colorScale,
       i,
-      schema
+      schema,
+      world
     } = this.props;
 
     if (!categoricalSelectionState) return null;
@@ -53,11 +56,20 @@ class CategoryValue extends React.Component {
     /* this is the color scale, so add swatches below */
     const c = metadataField === colorAccessor;
     let categories = null;
+    let occupancy = null;
 
     if (c && schema) {
       categories = _.filter(schema.annotations.obs, {
         name: colorAccessor
       })[0].categories;
+    }
+
+    if (colorAccessor && !c) {
+      occupancy = countCategoryValues2D(
+        metadataField,
+        colorAccessor,
+        world.obsAnnotations
+      );
     }
 
     return (
@@ -73,7 +85,8 @@ class CategoryValue extends React.Component {
           style={{
             margin: 0,
             padding: 0,
-            userSelect: "none"
+            userSelect: "none",
+            flexShrink: 2
           }}
         >
           <label className="bp3-control bp3-checkbox">
@@ -88,21 +101,32 @@ class CategoryValue extends React.Component {
             {displayString}
           </label>
         </div>
-        <span>
-          {!c && categories ? <Occupancy {...this.props} /> : null}
-          <span>{count}</span>
-          <svg
-            style={{
-              marginLeft: 5,
-              width: 11,
-              height: 11,
-              backgroundColor:
-                c && categories
-                  ? colorScale(categories.indexOf(value))
-                  : "inherit"
-            }}
-          />
-        </span>
+        <div>
+          <span>
+            {colorAccessor && !c ? (
+              <Occupancy
+                occupancy={occupancy.get(
+                  category.categoryValues[categoryIndex]
+                )}
+                {...this.props}
+              />
+            ) : null}
+          </span>
+          <span>
+            <span>{count}</span>
+            <svg
+              style={{
+                marginLeft: 5,
+                width: 11,
+                height: 11,
+                backgroundColor:
+                  c && categories
+                    ? colorScale(categories.indexOf(value))
+                    : "inherit"
+              }}
+            />
+          </span>
+        </div>
       </div>
     );
   }
