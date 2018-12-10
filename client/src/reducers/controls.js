@@ -1,7 +1,7 @@
 // jshint esversion: 6
 
 import _ from "lodash";
-import { World, kvCache } from "../util/stateManager";
+import { World, kvCache, WorldUtil } from "../util/stateManager";
 import parseRGB from "../util/parseRGB";
 import Crossfilter from "../util/typedCrossfilter";
 import * as globals from "../globals";
@@ -24,25 +24,27 @@ Remember that option values can be ANY js type, except undefined/null.
   {
     _category_name_1: {
       // map of option value to index
-      optionIndex: Map([
-        optval1: index,
+      categoryIndices: Map([
+        catval1: index,
         ...
       ])
 
       // index->selection true/false state
-      optionSelected: [ true/false, true/false, ... ]
+      categorySelected: [ true/false, true/false, ... ]
 
       // number of options
-      numOptions: number,
+      numCategories: number,
 
       // isTruncated - true if the options for selection has
       // been truncated (ie, was too large to implement)
     }
   }
 */
-function topNoptions(summary) {
-  const counts = _.map(summary.categories, cat => summary.options[cat]);
-  const sortIndex = fillRange(new Array(summary.numOptions)).sort(
+function topNCategories(summary) {
+  const counts = _.map(summary.categories, cat =>
+    summary.categoryCounts.get(cat)
+  );
+  const sortIndex = fillRange(new Array(summary.numCategories)).sort(
     (a, b) => counts[b] - counts[a]
   );
   const sortedCategories = _.map(sortIndex, i => summary.categories[i]);
@@ -65,20 +67,18 @@ function createCategoricalSelectionState(state, world) {
         key !== "name" &&
         value.categories.length < state.maxCategoryItems;
       if (isSelectableCategory) {
-        const [optionValue, optionCount] = topNoptions(value);
-        // const optionCount = Object.values(value.options);
-
-        const optionIndex = new Map(optionValue.map((v, i) => [v, i]));
-        const numOptions = optionIndex.size;
-        const optionSelected = new Array(numOptions).fill(true);
-        const isTruncated = optionValue.length < value.numOptions;
+        const [categoryValues, categoryCounts] = topNCategories(value);
+        const categoryIndices = new Map(categoryValues.map((v, i) => [v, i]));
+        const numCategories = categoryIndices.size;
+        const categorySelected = new Array(numCategories).fill(true);
+        const isTruncated = categoryValues.length < value.numCategories;
         res[key] = {
-          optionValue, // array: of natively typed option values
-          optionIndex, // map: option value (native type) -> option index
-          optionSelected, // array: t/f selection state
-          numOptions, // number: of options
+          categoryValues, // array: of natively typed category values
+          categoryIndices, // map: category value (native type) -> category index
+          categorySelected, // array: t/f selection state
+          numCategories, // number: of categories
           isTruncated, // bool: true if list was truncated
-          optionCount // array: cardinality of each option
+          categoryCounts // array: cardinality of each category
         };
       }
     }
@@ -87,12 +87,12 @@ function createCategoricalSelectionState(state, world) {
 }
 
 /*
-given a categoricalSelectionState, return the list of all option values
+given a categoricalSelectionState, return the list of all category values
 where selection state is true (ie, they are selected).
 */
 function selectedValuesForCategory(categorySelectionState) {
-  const selectedValues = _([...categorySelectionState.optionIndex])
-    .filter(tuple => categorySelectionState.optionSelected[tuple[1]])
+  const selectedValues = _([...categorySelectionState.categoryIndices])
+    .filter(tuple => categorySelectionState.categorySelected[tuple[1]])
     .map(tuple => tuple[0])
     .value();
   return selectedValues;
@@ -175,6 +175,7 @@ const Controls = (
       );
       const crossfilter = Crossfilter(world.obsAnnotations);
       const dimensionMap = World.createObsDimensionMap(crossfilter, world);
+      WorldUtil.clearCaches();
 
       const worldVarDataCache = world.varDataCache;
 
@@ -247,6 +248,7 @@ const Controls = (
       );
       const crossfilter = Crossfilter(world.obsAnnotations);
       const dimensionMap = World.createObsDimensionMap(crossfilter, world);
+      WorldUtil.clearCaches();
 
       const worldVarDataCache = world.varDataCache;
       /* var dimensions */
@@ -514,15 +516,15 @@ const Controls = (
           Categorical metadata
     *******************************/
     case "categorical metadata filter select": {
-      const newOptionSelected = Array.from(
-        state.categoricalSelectionState[action.metadataField].optionSelected
+      const newCategorySelected = Array.from(
+        state.categoricalSelectionState[action.metadataField].categorySelected
       );
-      newOptionSelected[action.optionIndex] = true;
+      newCategorySelected[action.categoryIndex] = true;
       const newCategoricalSelectionState = {
         ...state.categoricalSelectionState,
         [action.metadataField]: {
           ...state.categoricalSelectionState[action.metadataField],
-          optionSelected: newOptionSelected
+          categorySelected: newCategorySelected
         }
       };
 
@@ -538,15 +540,15 @@ const Controls = (
       };
     }
     case "categorical metadata filter deselect": {
-      const newOptionSelected = Array.from(
-        state.categoricalSelectionState[action.metadataField].optionSelected
+      const newCategorySelected = Array.from(
+        state.categoricalSelectionState[action.metadataField].categorySelected
       );
-      newOptionSelected[action.optionIndex] = false;
+      newCategorySelected[action.categoryIndex] = false;
       const newCategoricalSelectionState = {
         ...state.categoricalSelectionState,
         [action.metadataField]: {
           ...state.categoricalSelectionState[action.metadataField],
-          optionSelected: newOptionSelected
+          categorySelected: newCategorySelected
         }
       };
 
@@ -566,8 +568,9 @@ const Controls = (
         ...state.categoricalSelectionState,
         [action.metadataField]: {
           ...state.categoricalSelectionState[action.metadataField],
-          optionSelected: Array.from(
-            state.categoricalSelectionState[action.metadataField].optionSelected
+          categorySelected: Array.from(
+            state.categoricalSelectionState[action.metadataField]
+              .categorySelected
           ).fill(false)
         }
       };
@@ -584,8 +587,9 @@ const Controls = (
         ...state.categoricalSelectionState,
         [action.metadataField]: {
           ...state.categoricalSelectionState[action.metadataField],
-          optionSelected: Array.from(
-            state.categoricalSelectionState[action.metadataField].optionSelected
+          categorySelected: Array.from(
+            state.categoricalSelectionState[action.metadataField]
+              .categorySelected
           ).fill(true)
         }
       };

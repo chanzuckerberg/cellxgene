@@ -25,24 +25,22 @@ class Category extends React.Component {
     const { categoricalSelectionState, metadataField } = this.props;
     const cat = categoricalSelectionState[metadataField];
     const categoryCount = {
-      // total number of options in this category
-      totalOptionCount: cat.numOptions,
+      // total number of categories in this dimension
+      totalCatCount: cat.numCategories,
       // number of selected options in this category
-      selectedOptionCount: _.reduce(
-        cat.optionSelected,
+      selectedCatCount: _.reduce(
+        cat.categorySelected,
         (res, cond) => (cond ? res + 1 : res),
         0
       )
     };
-    if (categoryCount.selectedOptionCount === categoryCount.totalOptionCount) {
+    if (categoryCount.selectedCatCount === categoryCount.totalCatCount) {
       /* everything is on, so not indeterminate */
       this.checkbox.indeterminate = false;
-    } else if (categoryCount.selectedOptionCount === 0) {
+    } else if (categoryCount.selectedCatCount === 0) {
       /* nothing is on, so no */
       this.checkbox.indeterminate = false;
-    } else if (
-      categoryCount.selectedOptionCount < categoryCount.totalOptionCount
-    ) {
+    } else if (categoryCount.selectedCatCount < categoryCount.totalCatCount) {
       /* to be explicit... */
       this.checkbox.indeterminate = true;
     }
@@ -88,12 +86,12 @@ class Category extends React.Component {
     const { categoricalSelectionState, metadataField } = this.props;
 
     const cat = categoricalSelectionState[metadataField];
-    const optTuples = alphabeticallySortedValues([...cat.optionIndex]);
+    const optTuples = alphabeticallySortedValues([...cat.categoryIndices]);
     return _.map(optTuples, (tuple, i) => (
       <Value
         key={tuple[1]}
         metadataField={metadataField}
-        optionIndex={tuple[1]}
+        categoryIndex={tuple[1]}
         i={i}
       />
     ));

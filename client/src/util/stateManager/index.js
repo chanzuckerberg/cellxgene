@@ -17,3 +17,4 @@ exists to support those concepts.
 export * as Universe from "./universe";
 export * as World from "./world";
 export * as kvCache from "./keyvalcache";
+export * as WorldUtil from "./worldUtil";

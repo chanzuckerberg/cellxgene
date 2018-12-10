@@ -1,11 +1,14 @@
-import sys
-import click
 import logging
 from os import devnull
 from os.path import splitext, basename
+import sys
+import warnings
 import webbrowser
 
+import click
+
 from server.app.util.errors import ScanpyFileError
+from server.app.util.utils import custom_format_warning
 
 
 @click.command()
@@ -24,14 +27,16 @@ from server.app.util.errors import ScanpyFileError
 @click.option("--port", "-p", help="Port to run server on.", metavar="", default=5005, show_default=True)
 @click.option("--obs-names", default=None, metavar="", help="Name of annotation field to use for observations.")
 @click.option("--var-names", default=None, metavar="", help="Name of annotation to use for variables.")
-@click.option("--listen-all", is_flag=True, default=False, show_default=True,
-              help="Bind to all interfaces (this makes the server accessible beyond this computer).")
+@click.option("--host", default="127.0.0.1", help="Host IP address")
 @click.option("--max-category-items", default=100, metavar="", show_default=True,
               help="Limits the number of categorical annotation items displayed.")
 @click.option("--diffexp-lfc-cutoff", default=0.01, show_default=True,
               help="Relative expression cutoff used when selecting top N differentially expressed genes")
+@click.option("--nan-to-num", is_flag=True, default=False, show_default=True,
+              help="Replace all floating point NaN with zero, and infinities with finite numbers")
 def launch(data, layout, diffexp, title, verbose, debug, obs_names, var_names,
-           open_browser, port, listen_all, max_category_items, diffexp_lfc_cutoff):
+           open_browser, port, host, max_category_items, diffexp_lfc_cutoff,
+           nan_to_num):
     """Launch the cellxgene data viewer.
     This web app lets you explore single-cell expression data.
     Data must be in a format that cellxgene expects, read the
@@ -46,9 +51,6 @@ def launch(data, layout, diffexp, title, verbose, debug, obs_names, var_names,
     # Startup message
     click.echo("[cellxgene] Starting the CLI...")
 
-    # Import Flask app
-    from server.app.app import app
-
     # Argument checking
     name, extension = splitext(data)
     if extension != ".h5ad":
@@ -57,6 +59,8 @@ def launch(data, layout, diffexp, title, verbose, debug, obs_names, var_names,
     if debug:
         verbose = True
         open_browser = False
+    else:
+        warnings.formatwarning = custom_format_warning
 
     if not verbose:
         sys.tracebacklimit = 0
@@ -65,14 +69,12 @@ def launch(data, layout, diffexp, title, verbose, debug, obs_names, var_names,
         file_parts = splitext(basename(data))
         title = file_parts[0]
 
-    if listen_all:
-        host = "0.0.0.0"
-    else:
-        host = "127.0.0.1"
-
     # Setup app
     cellxgene_url = f"http://{host}:{port}"
     api_base = f"{cellxgene_url}/api/"
+
+    # Import Flask app
+    from server.app.app import app
 
     app.config.update(
         DATASET_TITLE=title,
@@ -97,7 +99,8 @@ def launch(data, layout, diffexp, title, verbose, debug, obs_names, var_names,
         "max_category_items": max_category_items,
         "diffexp_lfc_cutoff": diffexp_lfc_cutoff,
         "obs_names": obs_names,
-        "var_names": var_names
+        "var_names": var_names,
+        "nan_to_num": nan_to_num
     }
 
     try:

@@ -27,6 +27,7 @@ If you want an example dataset download [this file](https://github.com/chanzucke
 ```
 cellxgene launch pbmc3k.h5ad --open
 ```
+
 You should see your web browser open with the following
 
 <img width="450" src="https://raw.githubusercontent.com/chanzuckerberg/cellxgene/master/docs/cellxgene-opening-screenshot.png" pad="50px">
@@ -35,7 +36,7 @@ You should see your web browser open with the following
 
 There are several options available, such as:
 
-- `--layout` to specify the layout as  `tsne` or `umap`
+- `--layout` to specify the layout as `tsne` or `umap`
 - `--title` to show a title on the explorer
 - `--open` to automatically open the web browser after launching (OS X only)
 
@@ -56,11 +57,11 @@ The `launch` command assumes that the data is stored in the `.h5ad` format from 
 - an `obs` field has a unique identifier for every cell (you can specify which field to use with the `--obs-names` option, by default it will use the value of `data.obs_names`)
 - a `var` field has a unique identifier for every gene (you can specify which field to use with the `--var-names` option, by default it will use the value of `data.var_names`)
 - an `obsm` field contains the two-dimensional coordinates for the layout that you want to render (e.g. `X_tsne` for the `tsne` layout or `X_umap` for the `umap` layout)
-- any additional  `obs` fields will be rendered as per-cell continuous or categorical metadata by the app (e.g. `louvain` cluster assignments) 
+- any additional `obs` fields will be rendered as per-cell continuous or categorical metadata by the app (e.g. `louvain` cluster assignments)
 
 ### prepare
 
-The `prepare` command is included to help you format your data. It uses `scanpy` under the hood. This is especially useful if you are starting with raw unanalyzed data and are unfamiliar with `scanpy`. 
+The `prepare` command is included to help you format your data. It uses `scanpy` under the hood. This is especially useful if you are starting with raw unanalyzed data and are unfamiliar with `scanpy`.
 
 To prepare from an existing `.h5ad` file use
 
@@ -86,6 +87,12 @@ cellxgene prepare --help
 
 ```
 pip install cellxgene[louvain]
+```
+
+If the aforementioned optional package installation fails, you can also install these packages directly:
+
+```
+pip install python-igraph louvain>=0.6
 ```
 
 ## conda and virtual environments
@@ -118,6 +125,12 @@ We have included a dockerfile to conveniently run cellxgene from docker.
 
 ## FAQ
 
+<details>
+
+<summary> questions about data formatting </summary>
+  
+<hr>
+  
 > Someone sent me a directory of `10X-Genomics` data with a `mtx` file and I've never used `scanpy`, can I use `cellxgene`?
 
 Yep! This should only take a couple steps. We'll assume your data is in a folder called `data/` and you've successfully installed `cellxgene` with the `louvain` packages as described above. Just run
@@ -134,13 +147,17 @@ cellxgene launch data-processed.h5ad --layout=umap --open
 
 And your web browser should open with an interactive view of your data.
 
+<hr>
+
 > In my `prepare` command I received the following error `Warning: louvain module is not installed, no clusters will be calculated. To fix this please install cellxgene with the optional feature louvain enabled`
 
-Louvain clustering requires additional dependencies that are somewhat complex, so we don't include them by default. For now, you need to specify that you want these packages by using 
+Louvain clustering requires additional dependencies that are somewhat complex, so we don't include them by default. For now, you need to specify that you want these packages by using
 
 ```
 pip install cellxgene[louvain]
 ```
+
+<hr>
 
 > I ran `prepare` and I'm getting results that look unexpected
 
@@ -152,27 +169,59 @@ cellxgene prepare data/ --output=data-processed.h5ad --recipe=zheng17
 
 It should be easy to run `prepare` then call `cellxgene launch` a few times with different settings to explore different behaviors. We may explore adding other preprocessing options in the future.
 
+<hr>
+
 > I have extra metadata that I want to add to my dataset
 
 Currently this is not supported directly, but you should be able to do this manually using `scanpy`. For example, this [notebook](https://github.com/falexwolf/fun-analyses/blob/master/tabula_muris/tabula_muris.ipynb) shows adding the contents of a `csv` file with metadata to an `anndata` object. For now, you could do this manually on your data in the same way and then save out the result before loading into `cellxgene`.
 
-> I tried to `pip install cellxgene` and got a weird error I don't understand
-
-This may happen, especially as we work out bugs in our installation process! Please create a new [Github issue](https://github.com/chanzuckerberg/cellxgene/issues), explain what you did, and include all the error messages you saw. It'd also be super helpful if you call `pip freeze` and include the full output alongside your issue.
-
-> How are you computing and sorting differential expression results?
-
-Currently we use a [Welch's *t*-test](https://en.wikipedia.org/wiki/Welch%27s_t-test) implementation including the same variance overestimation correction as used in `scanpy`. We sort the `tscore` to identify the top N genes, and then filter to remove any that fall below a cutoff log fold change value, which can help remove spurious test results. The default threshold is `0.01` and can be changed using the option `--diffexp-lfc-cutoff`. We can explore adding support for other test types in the future.
-
-> I'm following the developer instructions and get an error about "missing files and directories” when trying to build the client
-
-This is likely because you do not have node and npm installed, we recommend using [nvm](https://github.com/creationix/nvm) if you're new to using these tools.
+<hr>
 
 > What part of the anndata objects does cellxgene pull in for visualization?
 
 - `.obs` and `.var` annotations are use to extract metadata for filtering
 - `.X` is used to display expression (histograms, scatterplot & colorscale) and to compute differential expression
 - `.obsm` is used for layout
+
+<hr>
+
+> When I start cellxgene, I get an error `Unexpected HTTP response 500, INTERNAL SERVER ERROR -- Out of range float values are not JSON compliant` in the web UI, or `Warning: JSON encoding failure - suggest trying --nan-to-num command line option` in the CLI. What can I do?
+
+At the moment, cellxgene is unable to transmit floating point NaN or Inifinty values to the web UI (due to a limitation on data serialization method in use). We expect to resolve this in a future release, but in the meantime, you can work around this issue by starting cellxgene with the `--nan-to-num` command line option, ie, `cellxgene launch data.h5ad --nan-to-num`.
+
+This option will convert all NaNs to zero, and all positive/negative infinities to the min/max of the data element within which the value was found (eg, +Infinity within an `obs` annotation will be converted to the maximum finite value in that annotation). This option will increase startup time, so we recommend only using it when the dataset contains NaN/Infinities.
+
+</details>
+
+<details>
+  
+<summary> questions about installing and building </summary>
+
+<hr>
+
+> I tried to `pip install cellxgene` and got a weird error I don't understand
+
+This may happen, especially as we work out bugs in our installation process! Please create a new [Github issue](https://github.com/chanzuckerberg/cellxgene/issues), explain what you did, and include all the error messages you saw. It'd also be super helpful if you call `pip freeze` and include the full output alongside your issue.
+
+<hr>
+
+> I'm following the developer instructions and get an error about "missing files and directories” when trying to build the client
+
+This is likely because you do not have node and npm installed, we recommend using [nvm](https://github.com/creationix/nvm) if you're new to using these tools.
+
+</details>
+
+<details>
+
+<summary> questions about algorithms </summary>
+
+<hr>
+
+> How are you computing and sorting differential expression results?
+
+Currently we use a [Welch's _t_-test](https://en.wikipedia.org/wiki/Welch%27s_t-test) implementation including the same variance overestimation correction as used in `scanpy`. We sort the `tscore` to identify the top N genes, and then filter to remove any that fall below a cutoff log fold change value, which can help remove spurious test results. The default threshold is `0.01` and can be changed using the option `--diffexp-lfc-cutoff`. We can explore adding support for other test types in the future.
+
+</details>
 
 ## developer guide
 
@@ -213,11 +262,11 @@ If you have any questions about developing or contributing, come hang out with u
 
 ## development roadmap
 
-`cellxgene` is still very much in development, and we've love to include the community as we plan new features to work on. We are thinking about working on the following features over the next 3-12 months. If you are interested in updates, want to give feedback, want to contribute, or have ideas about other features we should work on, please [contact us](#help-and-contact) 
+`cellxgene` is still very much in development, and we've love to include the community as we plan new features to work on. We are thinking about working on the following features over the next 3-12 months. If you are interested in updates, want to give feedback, want to contribute, or have ideas about other features we should work on, please [contact us](#help-and-contact)
 
 - **Visualizaling spatial metadata** Image-based transcriptomics methods also generate large cell by gene matrices, alongside rich metadata about spatial location; we would like to render this information in `cellxgene`
-- **Visualizing trajectories** Trajectory analyses infer progression along some ordering or pseudotime; we would like `cellxgene ` to render the results of these analyses when they have been performed
-- **Deploy to web**  Many projects release public data browser websites  alongside their publicatons; we would like to make it easy for anyone to deploy `cellxgene` to a custom URL with their own dataset that they own and operate
+- **Visualizing trajectories** Trajectory analyses infer progression along some ordering or pseudotime; we would like `cellxgene` to render the results of these analyses when they have been performed
+- **Deploy to web** Many projects release public data browser websites alongside their publicatons; we would like to make it easy for anyone to deploy `cellxgene` to a custom URL with their own dataset that they own and operate
 - **HCA Integration** The [Human Cell Atlas](https://humancellatlas.org) is generating a large corpus of single-cell expression data and will make it available through the Data Coordination Platform; we would like `cellxgene` to be one of several different portals for browsing these data
 
 ## contributing
@@ -230,7 +279,7 @@ We've been heavily inspired by several other related single-cell visualization p
 
 We were inspired by Mike Bostock and the [crossfilter](https://github.com/crossfilter) team for the design of our filtering implementation.
 
-We have been working closely with the [`scanpy`](https://github.com/theislab/scanpy) team to integrate with their awesome analysis tools. Special thanks to Alex Wolf, Fabian Theis, and the rest of the team for their help during development and for providing an example dataset. 
+We have been working closely with the [`scanpy`](https://github.com/theislab/scanpy) team to integrate with their awesome analysis tools. Special thanks to Alex Wolf, Fabian Theis, and the rest of the team for their help during development and for providing an example dataset.
 
 We are eager to explore integrations with other computational backends such as [`Seurat`](https://github.com/satijalab/seurat) or [`Bioconductor`](https://github.com/Bioconductor)
 

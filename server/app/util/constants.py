@@ -25,3 +25,6 @@ class Axis(AugmentedEnum):
 class DiffExpMode(AugmentedEnum):
     TOP_N = "topN"
     VAR_FILTER = "varFilter"
+
+
+JSON_NaN_to_num_warning_msg = "JSON encoding failure - suggest trying --nan-to-num command line option"

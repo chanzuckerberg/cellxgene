@@ -38,7 +38,11 @@ export const doJsonRequest = async url => {
     return res.json();
   }
   // else an error
-  const msg = `Unexpected HTTP response ${res.status}, ${res.statusText}`;
+  let msg = `Unexpected HTTP response ${res.status}, ${res.statusText}`;
+  const body = await res.text();
+  if (body && body.length > 0) {
+    msg = `${msg} -- ${body}`;
+  }
   dispatchNetworkErrorMessageToUser(msg);
   throw new Error(msg);
 };
