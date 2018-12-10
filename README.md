@@ -89,6 +89,12 @@ cellxgene prepare --help
 pip install cellxgene[louvain]
 ```
 
+If the aforementioned optional package installation fails, you can also install these packages directly:
+
+```
+pip install python-igraph louvain>=0.6
+```
+
 ## conda and virtual environments
 
 If you use conda and want to create a conda environment for `cellxgene` you can use the following commands
