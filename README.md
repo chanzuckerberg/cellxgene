@@ -89,6 +89,12 @@ cellxgene prepare --help
 pip install cellxgene[louvain]
 ```
 
+If the aforementioned optional package installation fails, you can also install these packages directly:
+
+```
+pip install python-igraph louvain>=0.6
+```
+
 ## conda and virtual environments
 
 If you use conda and want to create a conda environment for `cellxgene` you can use the following commands
@@ -107,6 +113,15 @@ python3 -m venv ${ENV_NAME}
 source ${ENV_NAME}/bin/activate
 pip install cellxgene
 ```
+
+## docker
+
+We have included a dockerfile to conveniently run cellxgene from docker. 
+
+1. Build the  image `docker build . -t cellxgene`
+2. Run the container and mount data `docker run -v "$PWD/example-dataset/:/data/" -p 5005:5005 cellxgene launch --host 0.0.0.0 data/pbmc3k.h5ad`
+    * You will need to use --host 0.0.0.0 to have the container listen to incoming requests from the browser
+
 
 ## FAQ
 
@@ -243,7 +258,7 @@ pip install -e .
 
 You can start the app while developing either by calling `cellxgene` or by calling `python -m server`. We recommend using the `--debug` flag to see more output, which you can include when reporting bugs.
 
-If you have any questions about developing or contributing, come hang out with us by joining the [CZI Science Slack](https://cziscience.slack.com/messages/CCTA8DF1T) and posting in the `#cellxgene-dev` channel.
+If you have any questions about developing or contributing, come hang out with us by joining the [CZI Science Slack](https://join-cziscience-slack.herokuapp.com/) and posting in the `#cellxgene-dev` channel.
 
 ## development roadmap
 
@@ -270,7 +285,7 @@ We are eager to explore integrations with other computational backends such as [
 
 ## help and contact
 
-Have questions, suggestions, or comments? You can come hang out with us by joining the [CZI Science Slack](https://cziscience.slack.com/messages/CCTA8DF1T) and posting in the `#cellxgene-users` channel. As mentioned above, please submit any feature requests or bugs as [Github issues](https://github.com/chanzuckerberg/cellxgene/issues). We'd love to hear from you!
+Have questions, suggestions, or comments? You can come hang out with us by joining the [CZI Science Slack](https://join-cziscience-slack.herokuapp.com/) and posting in the `#cellxgene-users` channel. As mentioned above, please submit any feature requests or bugs as [Github issues](https://github.com/chanzuckerberg/cellxgene/issues). We'd love to hear from you!
 
 ## reuse
 
