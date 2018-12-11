@@ -14,8 +14,8 @@ install:
   - docker build .
 script:
   - set -eo pipefail
-  - flake8 server/app/
-  - flake8 server/cli/
+  - flake8 server
+  - black --check
   - npm run --prefix client/ build
   - npm run --prefix client/ test
   - pytest -s server/test
