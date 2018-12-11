@@ -5,6 +5,7 @@ import { Universe, kvCache } from "../util/stateManager";
 import {
   catchErrorsWrap,
   doJsonRequest,
+  doBinaryRequest,
   rangeEncodeIndices,
   dispatchNetworkErrorMessageToUser
 } from "../util/actionHelpers";
@@ -13,7 +14,8 @@ import {
 Bootstrap application with the initial data loading.
   * /config - application configuration
   * /schema - schema of dataframe
-  * /annotations/obs - all metadata annotation
+  * /annotations - all metadata annotation
+  * /layout - all default layout
 */
 const doInitialDataLoad = () =>
   catchErrorsWrap(async dispatch => {
@@ -24,23 +26,25 @@ const doInitialDataLoad = () =>
         "config",
         "schema",
         "annotations/obs",
-        "annotations/var?annotation-name=name",
-        "layout/obs"
+        "annotations/var?annotation-name=name"
       ])
         .map(r => `${globals.API.prefix}${globals.API.version}${r}`)
         .map(url => doJsonRequest(url))
         .value();
+      requests.push(
+        doBinaryRequest(`${globals.API.prefix}${globals.API.version}layout`)
+      );
       const results = await Promise.all(requests);
 
       /* set config defaults */
       const config = { ...globals.configDefaults, ...results[0].config };
-      const [, schema, obsAnno, varAnno, obsLayout] = [...results];
+      const [, schema, obsAnno, varAnno, layout] = [...results];
       const universe = Universe.createUniverseFromRestV02Response(
         config,
         schema,
         obsAnno,
         varAnno,
-        obsLayout
+        layout
       );
 
       dispatch({

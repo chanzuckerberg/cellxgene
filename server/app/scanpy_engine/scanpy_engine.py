@@ -468,3 +468,19 @@ class ScanpyEngine(CXGDriver):
             "ndims": normalized_layout.shape[1],
             "coordinates": normalized_layout.to_records(index=True).tolist()
         }
+
+    def layout_to_fbs_matrix(self):
+        """
+        Return the default 2-D layout for cells as a FBS Matrix.
+
+        Caveats:
+        * does not support filtering
+        * only returns Matrix in columnar layout
+        """
+        try:
+            df_layout = self.data.obsm[f"X_{self.layout_method}"]
+        except ValueError as e:
+            raise PrepareError(f"Layout has not been calculated using {self.layout_method}, "
+                               f"please prepare your datafile and relaunch cellxgene") from e
+        normalized_layout = (df_layout - df_layout.min()) / (df_layout.max() - df_layout.min())
+        return create_matrix_flatbuffer(normalized_layout.T.astype(dtype=np.float32), col_idx=None, row_idx=None)

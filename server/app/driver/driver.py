@@ -112,3 +112,7 @@ class CXGDriver(metaclass=ABCMeta):
         :return:  [cellid, x, y, ...]
         """
         pass
+
+    @abstractmethod
+    def layout_to_fbs_matrix(self, filter):
+        pass

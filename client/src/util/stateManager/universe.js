@@ -124,6 +124,7 @@ function RESTv02AnnotationsResponseToInternal(response) {
     .value();
 }
 
+/* XXX TODO - this is now obsolete */
 function RESTv02LayoutResponseToInternal(response) {
   /*
   Source per the spec:
@@ -164,6 +165,32 @@ function RESTv02LayoutResponseToInternal(response) {
   return layout;
 }
 
+function fbsMatrixExtractColumns(arrayBuffer) {
+  const bb = new flatbuffers.ByteBuffer(new Uint8Array(arrayBuffer));
+  const matrix = NetEncoding.Matrix.getRootAsMatrix(bb);
+  const columnsLength = matrix.columnsLength();
+  const result = [];
+  for (let c = 0; c < columnsLength; c += 1) {
+    const column = matrix.columns(c);
+    // Look up the type for this FBS column (eg, Float32)
+    const uType = column.uType();
+    // Convert to a JS class that supports this type
+    const TypeClass = NetEncoding[NetEncoding.ColumnUnion[uType]];
+    // Create a TypedArray that references the underlying buffer
+    const arr = column.u(new TypeClass()).dataArray();
+    result.push(arr);
+  }
+  return result;
+}
+
+function RESTv02LayoutFBSResponseToInternal(arrayBuffer) {
+  const arrs = fbsMatrixExtractColumns(arrayBuffer);
+  return {
+    X: arrs[0],
+    Y: arrs[1]
+  };
+}
+
 function reconcileSchemaCategoriesWithSummary(universe) {
   /*
   where we treat types as (essentially) categorical metadata, update
@@ -195,7 +222,7 @@ export function createUniverseFromRestV02Response(
   schemaResponse,
   annotationsObsResponse,
   annotationsVarResponse,
-  layoutObsResponse
+  layoutFBSResponse
 ) {
   /*
   build & return universe from a REST 0.2 /config, /schema and /annotations/obs response
@@ -220,7 +247,7 @@ export function createUniverseFromRestV02Response(
   );
 
   /* layout */
-  universe.obsLayout = RESTv02LayoutResponseToInternal(layoutObsResponse);
+  universe.obsLayout = RESTv02LayoutFBSResponseToInternal(layoutFBSResponse);
 
   universe.summary = summarizeAnnotations(
     universe.schema,
@@ -273,7 +300,7 @@ export function convertDataXTFBStoObject(universe, arrayBuffer) {
     gene: Float32Array
   for each element.
   */
-
+  const columns = fbsMatrixExtractColumns(arrayBuffer);
   const bb = new flatbuffers.ByteBuffer(new Uint8Array(arrayBuffer));
   const matrix = NetEncoding.Matrix.getRootAsMatrix(bb);
   const vars = matrix.colIndexArray();
@@ -281,16 +308,10 @@ export function convertDataXTFBStoObject(universe, arrayBuffer) {
 
   for (let varIdx = 0; varIdx < vars.length; varIdx += 1) {
     const gene = universe.varAnnotations[vars[varIdx]].name;
-    const column = matrix.columns(varIdx);
-    // Look up the type for this FBS column (eg, Float32)
-    const uType = column.uType();
-    // Convert to a JS class that supports this type
-    const TypeClass = NetEncoding[NetEncoding.ColumnUnion[uType]];
-    // Create a TypedArray that references the underlying buffer
-    const arr = column.u(new TypeClass()).dataArray();
+    const column = columns(varIdx);
     // and copy the array buffer, for better cache behavior (so we don't pin
     // the entire array buffer)
-    const data = new arr.constructor(arr);
+    const data = new column.constructor(arr);
     // and save the resulting ojbect for later use.
     result[gene] = data;
   }

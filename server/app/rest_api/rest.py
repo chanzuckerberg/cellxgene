@@ -669,6 +669,16 @@ class DiffExpObsAPI(Resource):
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
+class LayoutAPI(Resource):
+    def get(self):
+        try:
+            return make_response(current_app.data.layout_to_fbs_matrix(),
+                                 HTTPStatus.OK,
+                                 {"Content-Type": "application/octet-stream"})
+        except PrepareError as e:
+            return make_response(e.message, HTTPStatus.INTERNAL_SERVER_ERROR)
+
+
 class LayoutObsAPI(Resource):
     @swagger.doc({
         "summary": "Get the default layout for all observations.",
@@ -766,5 +776,6 @@ def get_api_resources():
     api.add_resource(DataXT, "/data/X/T")
     # Computation routes
     api.add_resource(DiffExpObsAPI, "/diffexp/obs")
+    api.add_resource(LayoutAPI, "/layout")
     api.add_resource(LayoutObsAPI, "/layout/obs")
     return api
