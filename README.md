@@ -114,6 +114,15 @@ source ${ENV_NAME}/bin/activate
 pip install cellxgene
 ```
 
+## docker
+
+We have included a dockerfile to conveniently run cellxgene from docker. 
+
+1. Build the  image `docker build . -t cellxgene`
+2. Run the container and mount data `docker run -v "$PWD/example-dataset/:/data/" -p 5005:5005 cellxgene launch --host 0.0.0.0 data/pbmc3k.h5ad`
+    * You will need to use --host 0.0.0.0 to have the container listen to incoming requests from the browser
+
+
 ## FAQ
 
 <details>

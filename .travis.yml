@@ -11,6 +11,7 @@ install:
   - ./bin/build-client
   - pip install -e .
   - pip install -r server/requirements-dev.txt
+  - docker build .
 script:
   - set -eo pipefail
   - flake8 server/app/
