@@ -8,11 +8,10 @@ import server.app.util.fbs.NetEncoding.Matrix as Matrix
 
 
 # Placeholder until recent enhancements to flatbuffers Python
-# runtime are released.  https://github.com/google/flatbuffers/pull/4829
+# runtime are released, at which point we can use the default
+# version.  This code is a port of the head.  See:
 #
-# TODO: this could support automatic casting from various numpy types
-# to the supported OTA types.   It could also convert non-ndarray
-# to ndarray (eg, matrix.to_array())
+#       https://github.com/google/flatbuffers/pull/4829
 #
 def CreateNumpyVector(builder, x):
     """CreateNumpyVector writes a numpy array into the buffer."""

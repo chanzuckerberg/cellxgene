@@ -423,7 +423,7 @@ class ScanpyEngine(CXGDriver):
 
         # Currently only handles VAR dimension
         T = self.data._X.T[var_selector]
-        return create_matrix_flatbuffer(T, col_idx=np.nonzero(var_selector)[0])
+        return create_matrix_flatbuffer(T, col_idx=np.nonzero(var_selector)[0], row_idx=None)
 
     def diffexp_topN(self, obsFilterA, obsFilterB, top_n=None, interactive_limit=None):
         if Axis.VAR in obsFilterA or Axis.VAR in obsFilterB:
