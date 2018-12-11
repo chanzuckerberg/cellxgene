@@ -13,7 +13,7 @@ install:
   - pip install -r server/requirements-dev.txt
 script:
   - set -eo pipefail
-  - flake8 server/app/
+  - flake8 --exclude=server/app/util/fbs/NetEncoding/ server/app/
   - flake8 server/cli/
   - npm run --prefix client/ build
   - npm run --prefix client/ test
