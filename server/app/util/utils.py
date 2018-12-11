@@ -15,7 +15,7 @@ class Float32JSONEncoder(json.JSONEncoder):
         if it runs into non-finite floating point values which are unsupported by
         standard JSON.
         """
-        kwargs['allow_nan'] = False
+        kwargs["allow_nan"] = False
         super().__init__(*args, **kwargs)
 
     def default(self, obj):
@@ -30,8 +30,9 @@ def custom_format_warning(msg, *args, **kwargs):
     return f"[cellxgene] Warning: {msg} \n"
 
 
-def get_mime_type(default="application/json", acceptable_types=["application/json", "text/csv"], query_param=None,
-                  header=None):
+def get_mime_type(
+    default="application/json", acceptable_types=["application/json", "text/csv"], query_param=None, header=None
+):
     mime_type = default
     if query_param:
         if query_param in acceptable_types:
