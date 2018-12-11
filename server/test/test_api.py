@@ -344,6 +344,21 @@ class EndPoints(unittest.TestCase):
             result_data = result.json()
             self.assertEqual(len(result_data["obs"]), 15)
 
+    def test_data_xy_put(self):
+        endpoint = f"data/X/T"
+        url = f"{URL_BASE}{endpoint}"
+        header={"Accept": "application/octet-stream"}
+        filter = {
+            "filter": {
+                "var": {
+                    "index": [ 0, 1, 4 ]
+                }
+            }
+        }
+        result = self.session.put(url, headers=header, json=filter)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
+
     def test_data_put_single_var(self):
         for axis in ["obs", "var"]:
             endpoint = f"data/{axis}"

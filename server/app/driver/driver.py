@@ -84,6 +84,10 @@ class CXGDriver(metaclass=ABCMeta):
         pass
 
     @abstractmethod
+    def data_frame_to_fbs_matrix(self, filter, axis):
+        pass
+
+    @abstractmethod
     def diffexp_topN(self, obsFilter1, obsFilter2, top_n=None, interactive_limit=None):
         """
         Computes the top N differentially expressed variables between two observation sets. If mode

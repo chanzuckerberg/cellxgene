@@ -549,6 +549,16 @@ class DataVarAPI(Resource):
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
+class DataXT(Resource):
+    def put(self):
+        try:
+            return make_response(current_app.data.data_frame_to_fbs_matrix(request.get_json()["filter"], axis=Axis.VAR),
+                                 HTTPStatus.OK,
+                                 {"Content-Type": "application/octet-stream"})
+        except FilterError as e:
+            return make_response(e.message, HTTPStatus.BAD_REQUEST)
+
+
 class DiffExpObsAPI(Resource):
     @swagger.doc({
         "summary": "Generate differential expression (DE) statistics for two specified subsets of data, "
@@ -753,6 +763,7 @@ def get_api_resources():
     api.add_resource(AnnotationsVarAPI, "/annotations/var")
     api.add_resource(DataObsAPI, "/data/obs")
     api.add_resource(DataVarAPI, "/data/var")
+    api.add_resource(DataXT, "/data/X/T")
     # Computation routes
     api.add_resource(DiffExpObsAPI, "/diffexp/obs")
     api.add_resource(LayoutObsAPI, "/layout/obs")

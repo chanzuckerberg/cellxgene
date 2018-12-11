@@ -10,6 +10,7 @@ from server.app.driver.driver import CXGDriver
 from server.app.util.constants import Axis, DEFAULT_TOP_N
 from server.app.util.errors import FilterError, InteractiveError, PrepareError, ScanpyFileError
 from server.app.scanpy_engine.diffexp import diffexp_ttest
+from server.app.util.fbs.matrix import create_matrix_flatbuffer
 
 """
 Sort order for methods
@@ -399,6 +400,30 @@ class ScanpyEngine(CXGDriver):
                 "var": DataFrame(_X.T, index=var_index_sliced).to_records(index=True).tolist()
             }
         return result
+
+    def data_frame_to_fbs_matrix(self, filter, axis):
+        """
+        Retrieves data 'X' and returns in a flatbuffer Matrix.
+        :param filter: filter: dictionary with filter params
+        :param axis: string obs or var
+        :return: flatbuffer Matrix
+
+        Caveats:
+        * currently only supports access on VAR axis
+        * currently only supports filtering on VAR axis
+        """
+        if axis != Axis.VAR:
+            raise ValueError("Only VAR dimension access is supported")
+        try:
+            obs_selector, var_selector = self._filter_to_mask(filter, use_slices=False)
+        except (KeyError, IndexError) as e:
+            raise FilterError(f"Error parsing filter: {e}") from e
+        if obs_selector is not None:
+            raise FilterError("filtering on obs unsupported")
+
+        # Currently only handles VAR dimension
+        T = self.data._X.T[var_selector]
+        return create_matrix_flatbuffer(T, col_idx=np.nonzero(var_selector)[0])
 
     def diffexp_topN(self, obsFilterA, obsFilterB, top_n=None, interactive_limit=None):
         if Axis.VAR in obsFilterA or Axis.VAR in obsFilterB:
