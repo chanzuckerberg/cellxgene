@@ -1,8 +1,11 @@
 // jshint esversion: 6
 
 import _ from "lodash";
+import { flatbuffers } from "flatbuffers";
+
 import * as kvCache from "./keyvalcache";
 import summarizeAnnotations from "./summarizeAnnotations";
+import { NetEncoding } from "./matrix_generated";
 
 /*
 Private helper function - create and return a template Universe
@@ -229,6 +232,9 @@ export function createUniverseFromRestV02Response(
   return finalize(universe);
 }
 
+/*
+XXX TODO - this code is no longer used and could be cleaned up
+*/
 export function convertExpressionRESTv02ToObject(universe, response) {
   /*
   /data/obs response looks like:
@@ -240,7 +246,7 @@ export function convertExpressionRESTv02ToObject(universe, response) {
     ]
   }
 
-  convert expression toa simple Float32Array, and return
+  convert expression to a simple Float32Array, and return
   { geneName: array, geneName: array, ... }
   NOTE: geneName, not varIndex
   */
@@ -254,6 +260,38 @@ export function convertExpressionRESTv02ToObject(universe, response) {
     for (let obsIdx = 0; obsIdx < obs.length; obsIdx += 1) {
       data[obsIdx] = obs[obsIdx][varIdx + 1];
     }
+    result[gene] = data;
+  }
+  return result;
+}
+
+export function convertDataXTFBStoObject(universe, arrayBuffer) {
+  /*
+  /data/X/T returns a flatbuffer (FBS) as described by cellxgene/fbs/Matrix.fbs.
+
+  This routine converts that form into an object containing
+    gene: Float32Array
+  for each element.
+  */
+
+  const bb = new flatbuffers.ByteBuffer(new Uint8Array(arrayBuffer));
+  const matrix = NetEncoding.Matrix.getRootAsMatrix(bb);
+  const vars = matrix.colIndexArray();
+  const result = {};
+
+  for (let varIdx = 0; varIdx < vars.length; varIdx += 1) {
+    const gene = universe.varAnnotations[vars[varIdx]].name;
+    const column = matrix.columns(varIdx);
+    // Look up the type for this FBS column (eg, Float32)
+    const uType = column.uType();
+    // Convert to a JS class that supports this type
+    const TypeClass = NetEncoding[NetEncoding.ColumnUnion[uType]];
+    // Create a TypedArray that references the underlying buffer
+    const arr = column.u(new TypeClass()).dataArray();
+    // and copy the array buffer, for better cache behavior (so we don't pin
+    // the entire array buffer)
+    const data = new arr.constructor(arr);
+    // and save the resulting ojbect for later use.
     result[gene] = data;
   }
   return result;

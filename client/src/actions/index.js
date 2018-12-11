@@ -87,6 +87,38 @@ needs expression data.
 Transparently utilizes cached data if it is already present.
 */
 async function _doRequestExpressionData(dispatch, getState, genes) {
+  /* helper for this function only */
+  const fetchFBSDataXT = async geneNames => {
+    const res = await fetch(
+      `${globals.API.prefix}${globals.API.version}data/X/T`,
+      {
+        method: "PUT",
+        body: JSON.stringify({
+          filter: {
+            var: {
+              annotation_value: [{ name: "name", values: geneNames }]
+            }
+          }
+        }),
+        headers: new Headers({
+          accept: "application/octet-stream",
+          "Content-Type": "application/json"
+        })
+      }
+    );
+
+    if (
+      !res.ok ||
+      res.headers.get("Content-Type") !== "application/octet-stream"
+    ) {
+      // WILL throw
+      return dispatchExpressionErrors(dispatch, res);
+    }
+
+    const data = await res.arrayBuffer();
+    return Universe.convertDataXTFBStoObject(universe, data);
+  };
+
   const state = getState();
   const { universe } = state.controls;
   /* preload data already in cache */
@@ -108,35 +140,10 @@ async function _doRequestExpressionData(dispatch, getState, genes) {
   /* Fetch data for any genes not in cache */
   if (genesToFetch.length) {
     try {
-      // XXX: TODO - this could be using /data/var rather than /data/obs,
-      // as that would simplify the transformation in convertExpressionRESTv02ToObject
-      const res = await fetch(
-        `${globals.API.prefix}${globals.API.version}data/obs`,
-        {
-          method: "PUT",
-          body: JSON.stringify({
-            filter: {
-              var: {
-                annotation_value: [{ name: "name", values: genesToFetch }]
-              }
-            }
-          }),
-          headers: new Headers({
-            accept: "application/json",
-            "Content-Type": "application/json"
-          })
-        }
-      );
-
-      if (!res.ok || res.headers.get("Content-Type") !== "application/json") {
-        // WILL throw
-        return dispatchExpressionErrors(dispatch, res);
-      }
-
-      const data = await res.json();
+      const newExpressionData = await fetchFBSDataXT(genesToFetch);
       expressionData = {
         ...expressionData,
-        ...Universe.convertExpressionRESTv02ToObject(universe, data)
+        ...newExpressionData
       };
     } catch (error) {
       dispatch({ type: "expression load error", error });
