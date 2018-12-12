@@ -124,47 +124,6 @@ function RESTv02AnnotationsResponseToInternal(response) {
     .value();
 }
 
-/* XXX TODO - this is now obsolete */
-function RESTv02LayoutResponseToInternal(response) {
-  /*
-  Source per the spec:
-  {
-    layout: {
-      ndims: 2,
-      coordinates: [
-        [ 0, 0.284483, 0.983744 ],
-        [ 1, 0.038844, 0.739444 ],
-        // [ obsOrVarIndex, X_coord, Y_coord ],
-        // ...
-      ]
-    }
-  }
-
-  Target (internal) format:
-  {
-    X: Float32Array(numObs),
-    Y: Float32Array(numObs)
-  }
-  In the same order as obsAnnotations
-  */
-  const { ndims, coordinates } = response.layout;
-  if (ndims !== 2) {
-    throw new Error("Unsupported layout dimensionality");
-  }
-
-  const layout = {
-    X: new Float32Array(coordinates.length),
-    Y: new Float32Array(coordinates.length)
-  };
-
-  for (let i = 0; i < coordinates.length; i += 1) {
-    const [idx, x, y] = coordinates[i];
-    layout.X[idx] = x;
-    layout.Y[idx] = y;
-  }
-  return layout;
-}
-
 function fbsMatrixExtractColumns(arrayBuffer) {
   const bb = new flatbuffers.ByteBuffer(new Uint8Array(arrayBuffer));
   const matrix = NetEncoding.Matrix.getRootAsMatrix(bb);
@@ -259,39 +218,6 @@ export function createUniverseFromRestV02Response(
   return finalize(universe);
 }
 
-/*
-XXX TODO - this code is no longer used and could be cleaned up
-*/
-export function convertExpressionRESTv02ToObject(universe, response) {
-  /*
-  /data/obs response looks like:
-  {
-    var: [ varIndices fetched ],
-    obs: [
-      [ obsIndex, evalue, ... ],
-      ...
-    ]
-  }
-
-  convert expression to a simple Float32Array, and return
-  { geneName: array, geneName: array, ... }
-  NOTE: geneName, not varIndex
-  */
-  const vars = response.var;
-  const { obs } = response;
-  const result = {};
-  // XXX TODO: could this use _.unzip and have less code?
-  for (let varIdx = 0; varIdx < vars.length; varIdx += 1) {
-    const gene = universe.varAnnotations[vars[varIdx]].name;
-    const data = new Float32Array(universe.nObs);
-    for (let obsIdx = 0; obsIdx < obs.length; obsIdx += 1) {
-      data[obsIdx] = obs[obsIdx][varIdx + 1];
-    }
-    result[gene] = data;
-  }
-  return result;
-}
-
 export function convertDataXTFBStoObject(universe, arrayBuffer) {
   /*
   /data/X/T returns a flatbuffer (FBS) as described by cellxgene/fbs/Matrix.fbs.
@@ -308,10 +234,10 @@ export function convertDataXTFBStoObject(universe, arrayBuffer) {
 
   for (let varIdx = 0; varIdx < vars.length; varIdx += 1) {
     const gene = universe.varAnnotations[vars[varIdx]].name;
-    const column = columns(varIdx);
+    const column = columns[varIdx];
     // and copy the array buffer, for better cache behavior (so we don't pin
     // the entire array buffer)
-    const data = new column.constructor(arr);
+    const data = new column.constructor(columns[varIdx]);
     // and save the resulting ojbect for later use.
     result[gene] = data;
   }
