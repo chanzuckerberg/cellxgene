@@ -11,7 +11,6 @@ Sort order for methods
 
 
 class CXGDriver(metaclass=ABCMeta):
-
     def __init__(self, data, args):
         self.data = self._load_data(data)
         self.layout_method = args["layout"]
@@ -24,11 +23,8 @@ class CXGDriver(metaclass=ABCMeta):
     def features(self):
         features = {
             "cluster": {"available": False},
-            "layout": {
-                "obs": {"available": False},
-                "var": {"available": False},
-            },
-            "diffexp": {"available": False}
+            "layout": {"obs": {"available": False}, "var": {"available": False}},
+            "diffexp": {"available": False},
         }
         # TODO - Interactive limit should be generated from the actual available methods see GH issue #94
         if self.layout_method:

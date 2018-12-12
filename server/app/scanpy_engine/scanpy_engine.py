@@ -23,7 +23,6 @@ Sort order for methods
 
 
 class ScanpyEngine(CXGDriver):
-
     def __init__(self, data, args):
         super().__init__(data, args)
         self._alias_annotation_names(Axis.OBS, args["obs_names"])
@@ -37,7 +36,7 @@ class ScanpyEngine(CXGDriver):
         self._create_schema()
 
         # TODO: temporary work-arounds
-        if args['nan_to_num']:
+        if args["nan_to_num"]:
             self._IEEE754_special_values_workaround()
 
     def _alias_annotation_names(self, axis, name):
@@ -62,8 +61,9 @@ class ScanpyEngine(CXGDriver):
             if name not in df_axis.columns:
                 raise KeyError(f"Annotation name {name}, specified in --{ax_name}-name does not exist.")
             if not df_axis[name].is_unique:
-                raise KeyError(f"Values in -{ax_name}-name must be unique. "
-                               "Please prepare data to contain unique values.")
+                raise KeyError(
+                    f"Values in -{ax_name}-name must be unique. " "Please prepare data to contain unique values."
+                )
             # reset index to simple range; alias user-specified annotation to "name"
             df_axis.reset_index(drop=True, inplace=True)
             df_axis.rename(inplace=True, columns={name: "name"})
@@ -90,15 +90,8 @@ class ScanpyEngine(CXGDriver):
 
     def _create_schema(self):
         self.schema = {
-            "dataframe": {
-                "nObs": self.cell_count,
-                "nVar": self.gene_count,
-                "type": str(self.data.X.dtype)
-            },
-            "annotations": {
-                "obs": [],
-                "var": []
-            }
+            "dataframe": {"nObs": self.cell_count, "nVar": self.gene_count, "type": str(self.data.X.dtype)},
+            "annotations": {"obs": [], "var": []},
         }
         for ax in Axis:
             curr_axis = getattr(self.data, str(ax))
@@ -130,32 +123,35 @@ class ScanpyEngine(CXGDriver):
         try:
             result = sc.read(data, cache=True)
         except ValueError:
-            raise ScanpyFileError("File must be in the .h5ad format. Please read "
-                                  "https://github.com/theislab/scanpy_usage/blob/master/170505_seurat/info_h5ad.md to "
-                                  "learn more about this format. You may be able to convert your file into this format "
-                                  "using `cellxgene prepare`, please run `cellxgene prepare --help` for more "
-                                  "information.")
+            raise ScanpyFileError(
+                "File must be in the .h5ad format. Please read "
+                "https://github.com/theislab/scanpy_usage/blob/master/170505_seurat/info_h5ad.md to "
+                "learn more about this format. You may be able to convert your file into this format "
+                "using `cellxgene prepare`, please run `cellxgene prepare --help` for more "
+                "information."
+            )
         except Exception as e:
-            raise ScanpyFileError(f"Error while loading file: {e}, File must be in the .h5ad format, please check "
-                                  f"that your input and try again.")
+            raise ScanpyFileError(
+                f"Error while loading file: {e}, File must be in the .h5ad format, please check "
+                f"that your input and try again."
+            )
         return result
 
     def _validate_data_types(self):
         if self.data.X.dtype != "float32":
-            warnings.warn(f"Scanpy data matrix is in {self.data.X.dtype} format not float32. "
-                          f"Precision may be truncated.")
+            warnings.warn(
+                f"Scanpy data matrix is in {self.data.X.dtype} format not float32. " f"Precision may be truncated."
+            )
         for ax in Axis:
             curr_axis = getattr(self.data, str(ax))
             for ann in curr_axis:
                 datatype = curr_axis[ann].dtype
-                downcast_map = {"int64": "int32",
-                                "uint32": "int32",
-                                "uint64": "int32",
-                                "float64": "float32",
-                                }
+                downcast_map = {"int64": "int32", "uint32": "int32", "uint64": "int32", "float64": "float32"}
                 if datatype in downcast_map:
-                    warnings.warn(f"Scanpy annotation {ax}:{ann} is in unsupported format: {datatype}. "
-                                  f"Data will be downcast to {downcast_map[datatype]}.")
+                    warnings.warn(
+                        f"Scanpy annotation {ax}:{ann} is in unsupported format: {datatype}. "
+                        f"Data will be downcast to {downcast_map[datatype]}."
+                    )
                 if isinstance(datatype, CategoricalDtype):
                     category_num = len(curr_axis[ann].dtype.categories)
                     if category_num > 500 and category_num > self.max_category_items:
@@ -163,7 +159,8 @@ class ScanpyEngine(CXGDriver):
                             f"{str(ax).title()} annotation '{ann}' has {category_num} categories, this may be "
                             f"cumbersome or slow to display. We recommend setting the "
                             f"--max-category-items option to 500, this will hide categorical "
-                            f"annotations with more than 500 categories in the UI")
+                            f"annotations with more than 500 categories in the UI"
+                        )
 
     def _validate_data_calculations(self):
         layout_key = f"X_{self.layout_method}"
@@ -175,7 +172,8 @@ class ScanpyEngine(CXGDriver):
                 f" layout may have been computed. The requested layout must be pre-calculated and saved "
                 f"back in the h5ad file. You can run "
                 f"`cellxgene prepare --layout {self.layout_method} <datafile>` "
-                f"to solve this problem. ")
+                f"to solve this problem. "
+            )
 
     def _IEEE754_special_values_workaround(self):
         """
@@ -197,7 +195,7 @@ class ScanpyEngine(CXGDriver):
             curr_axis = getattr(self.data, str(ax))
             for ann in curr_axis:
                 dtype = curr_axis[ann].dtype
-                if dtype.kind == 'f':
+                if dtype.kind == "f":
                     finite_idx = np.isfinite(curr_axis[ann])
                     if not finite_idx.all():
                         curr_axis.loc[np.isnan(curr_axis[ann]), ann] = 0
@@ -234,8 +232,7 @@ class ScanpyEngine(CXGDriver):
 
         if non_finite_X_found:
             warnings.warn(
-                "Dataframe X contains floating point NaN or Infinities. "
-                "These will be converted to finite values."
+                "Dataframe X contains floating point NaN or Infinities. " "These will be converted to finite values."
             )
 
     def filter_dataframe(self, filter):
@@ -257,7 +254,7 @@ class ScanpyEngine(CXGDriver):
 
     @staticmethod
     def _annotation_filter_to_mask(filter, d_axis, count):
-        mask = np.ones((count, ), dtype=bool)
+        mask = np.ones((count,), dtype=bool)
         for v in filter:
             if d_axis[v["name"]].dtype.name in ["boolean", "category", "object"]:
                 key_idx = np.in1d(getattr(d_axis, v["name"]), v["values"])
@@ -275,24 +272,23 @@ class ScanpyEngine(CXGDriver):
 
     @staticmethod
     def _index_filter_to_mask(filter, count):
-        mask = np.zeros((count, ), dtype=bool)
+        mask = np.zeros((count,), dtype=bool)
         for i in filter:
             if type(i) == list:
-                mask[i[0]:i[1]] = True
+                mask[i[0] : i[1]] = True
             else:
                 mask[i] = True
         return mask
 
     @staticmethod
     def _axis_filter_to_mask(filter, d_axis, count):
-        mask = np.ones((count, ), dtype=bool)
+        mask = np.ones((count,), dtype=bool)
         if "index" in filter:
             mask = np.logical_and(mask, ScanpyEngine._index_filter_to_mask(filter["index"], count))
         if "annotation_value" in filter:
-            mask = np.logical_and(mask,
-                                  ScanpyEngine._annotation_filter_to_mask(filter["annotation_value"],
-                                                                          d_axis,
-                                                                          count))
+            mask = np.logical_and(
+                mask, ScanpyEngine._annotation_filter_to_mask(filter["annotation_value"], d_axis, count)
+            )
         return mask
 
     def _filter_to_mask(self, filter, use_slices=True):
@@ -322,8 +318,9 @@ class ScanpyEngine(CXGDriver):
 
         https://docs.scipy.org/doc/scipy/reference/sparse.html
         """
-        prefer_row_access = sparse.isspmatrix_csr(data._X) or sparse.isspmatrix_lil(data._X) \
-            or sparse.isspmatrix_bsr(data._X)
+        prefer_row_access = (
+            sparse.isspmatrix_csr(data._X) or sparse.isspmatrix_lil(data._X) or sparse.isspmatrix_bsr(data._X)
+        )
         if prefer_row_access:
             # Row-major slicing
             if obs_selector is not None:
@@ -356,18 +353,12 @@ class ScanpyEngine(CXGDriver):
             obs = self.data.obs[obs_selector]
             if not fields:
                 fields = obs.columns.tolist()
-            result = {
-                "names": fields,
-                "data": DataFrame(obs[fields]).to_records(index=True).tolist()
-            }
+            result = {"names": fields, "data": DataFrame(obs[fields]).to_records(index=True).tolist()}
         else:
             var = self.data.var[var_selector]
             if not fields:
                 fields = var.columns.tolist()
-            result = {
-                "names": fields,
-                "data": DataFrame(var[fields]).to_records(index=True).tolist()
-            }
+            result = {"names": fields, "data": DataFrame(var[fields]).to_records(index=True).tolist()}
         return result
 
     def data_frame(self, filter, axis):
@@ -392,12 +383,12 @@ class ScanpyEngine(CXGDriver):
         if axis == Axis.OBS:
             result = {
                 "var": var_index_sliced.tolist(),
-                "obs": DataFrame(_X, index=obs_index_sliced).to_records(index=True).tolist()
+                "obs": DataFrame(_X, index=obs_index_sliced).to_records(index=True).tolist(),
             }
         else:
             result = {
                 "obs": obs_index_sliced.tolist(),
-                "var": DataFrame(_X.T, index=var_index_sliced).to_records(index=True).tolist()
+                "var": DataFrame(_X.T, index=var_index_sliced).to_records(index=True).tolist(),
             }
         return result
 
@@ -460,14 +451,14 @@ class ScanpyEngine(CXGDriver):
         try:
             df_layout = df.obsm[f"X_{self.layout_method}"]
         except ValueError as e:
-            raise PrepareError(f"Layout has not been calculated using {self.layout_method}, "
-                               f"please prepare your datafile and relaunch cellxgene") from e
-        normalized_layout = DataFrame((df_layout - df_layout.min()) / (df_layout.max() - df_layout.min()),
-                                      index=df.obs.index)
-        return {
-            "ndims": normalized_layout.shape[1],
-            "coordinates": normalized_layout.to_records(index=True).tolist()
-        }
+            raise PrepareError(
+                f"Layout has not been calculated using {self.layout_method}, "
+                f"please prepare your datafile and relaunch cellxgene"
+            ) from e
+        normalized_layout = DataFrame(
+            (df_layout - df_layout.min()) / (df_layout.max() - df_layout.min()), index=df.obs.index
+        )
+        return {"ndims": normalized_layout.shape[1], "coordinates": normalized_layout.to_records(index=True).tolist()}
 
     def layout_to_fbs_matrix(self):
         """
@@ -480,7 +471,8 @@ class ScanpyEngine(CXGDriver):
         try:
             df_layout = self.data.obsm[f"X_{self.layout_method}"]
         except ValueError as e:
-            raise PrepareError(f"Layout has not been calculated using {self.layout_method}, "
-                               f"please prepare your datafile and relaunch cellxgene") from e
+            raise PrepareError(
+                f"Layout has not been calculated using {self.layout_method}, "
+                f"please prepare your datafile and relaunch cellxgene") from e
         normalized_layout = (df_layout - df_layout.min()) / (df_layout.max() - df_layout.min())
         return create_matrix_flatbuffer(normalized_layout.T.astype(dtype=np.float32), col_idx=None, row_idx=None)

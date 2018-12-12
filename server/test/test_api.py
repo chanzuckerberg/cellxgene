@@ -9,15 +9,7 @@ LOCAL_URL = "http://127.0.0.1:5005/"
 VERSION = "v0.2"
 URL_BASE = f"{LOCAL_URL}api/{VERSION}/"
 
-BAD_FILTER = {
-            "filter": {
-                "obs": {
-                    "annotation_value": [
-                        {"name": "xyz"},
-                    ],
-                }
-            }
-        }
+BAD_FILTER = {"filter": {"obs": {"annotation_value": [{"name": "xyz"}]}}}
 
 
 class EndPoints(unittest.TestCase):
@@ -133,7 +125,7 @@ class EndPoints(unittest.TestCase):
                         {"name": "louvain", "values": ["NK cells", "CD8 T cells"]},
                         {"name": "n_counts", "min": 3000},
                     ],
-                    "index": [1, 99, [1000, 2000]]
+                    "index": [1, 99, [1000, 2000]],
                 }
             }
         }
@@ -154,7 +146,7 @@ class EndPoints(unittest.TestCase):
                         {"name": "louvain", "values": ["NK cells", "CD8 T cells"]},
                         {"name": "n_counts", "min": 3000},
                     ],
-                    "index": [1, 99, [1000, 2000]]
+                    "index": [1, 99, [1000, 2000]],
                 }
             }
         }
@@ -170,23 +162,9 @@ class EndPoints(unittest.TestCase):
         url = f"{URL_BASE}{endpoint}"
         params = {
             "mode": "topN",
-            "set1": {
-                "filter": {
-                    "obs": {"annotation_value": [
-                        {"name": "louvain", "values": ["NK cells"]}
-                    ]
-                    }
-                }
-            },
-            "set2": {
-                "filter": {
-                    "obs": {"annotation_value": [
-                        {"name": "louvain", "values": ["CD8 T cells"]}
-                    ]
-                    }
-                }
-            },
-            "count": 7
+            "set1": {"filter": {"obs": {"annotation_value": [{"name": "louvain", "values": ["NK cells"]}]}}},
+            "set2": {"filter": {"obs": {"annotation_value": [{"name": "louvain", "values": ["CD8 T cells"]}]}}},
+            "count": 7,
         }
         result = self.session.post(url, json=params)
         self.assertEqual(result.status_code, HTTPStatus.OK)
@@ -199,20 +177,8 @@ class EndPoints(unittest.TestCase):
         params = {
             "mode": "topN",
             "count": 10,
-            "set1": {
-                "filter": {
-                    "obs": {
-                        "index": [[0, 500]]
-                    }
-                }
-            },
-            "set2": {
-                "filter": {
-                    "obs": {
-                        "index": [[500, 1000]]
-                    }
-                }
-            }
+            "set1": {"filter": {"obs": {"index": [[0, 500]]}}},
+            "set2": {"filter": {"obs": {"index": [[500, 1000]]}}},
         }
         result = self.session.post(url, json=params)
         self.assertEqual(result.status_code, HTTPStatus.OK)
@@ -249,15 +215,7 @@ class EndPoints(unittest.TestCase):
     def test_put_annotations_var(self):
         endpoint = "annotations/var"
         url = f"{URL_BASE}{endpoint}"
-        var_filter = {
-            "filter": {
-                "var": {
-                    "annotation_value": [
-                        {"name": "name", "values": ["ATAD3C", "RER1"]},
-                    ]
-                }
-            }
-        }
+        var_filter = {"filter": {"var": {"annotation_value": [{"name": "name", "values": ["ATAD3C", "RER1"]}]}}}
         result = self.session.put(url, json=var_filter)
         self.assertEqual(result.status_code, HTTPStatus.OK)
         result_data = result.json()
@@ -268,15 +226,7 @@ class EndPoints(unittest.TestCase):
         endpoint = "annotations/var"
         query = "annotation-name=n_cells"
         url = f"{URL_BASE}{endpoint}?{query}"
-        var_filter = {
-            "filter": {
-                "var": {
-                    "annotation_value": [
-                        {"name": "name", "values": ["ATAD3C", "RER1"]},
-                    ]
-                }
-            }
-        }
+        var_filter = {"filter": {"var": {"annotation_value": [{"name": "name", "values": ["ATAD3C", "RER1"]}]}}}
         result = self.session.put(url, json=var_filter)
         self.assertEqual(result.status_code, HTTPStatus.OK)
         result_data = result.json()
@@ -335,7 +285,7 @@ class EndPoints(unittest.TestCase):
                             {"name": "louvain", "values": ["NK cells", "CD8 T cells"]},
                             {"name": "n_counts", "min": 3000},
                         ],
-                        "index": [1, 99, [1000, 2000]]
+                        "index": [1, 99, [1000, 2000]],
                     }
                 }
             }
@@ -364,15 +314,7 @@ class EndPoints(unittest.TestCase):
             endpoint = f"data/{axis}"
             url = f"{URL_BASE}{endpoint}"
             header = {"Accept": "application/json"}
-            var_filter = {
-                "filter": {
-                    "var": {
-                        "annotation_value": [
-                            {"name": "name", "values": ["RER1"]},
-                        ]
-                    }
-                }
-            }
+            var_filter = {"filter": {"var": {"annotation_value": [{"name": "name", "values": ["RER1"]}]}}}
             result = self.session.put(url, headers=header, json=var_filter)
             self.assertEqual(result.status_code, HTTPStatus.OK)
             result_data = result.json()
@@ -386,16 +328,44 @@ class EndPoints(unittest.TestCase):
     def test_cache(self):
         endpoint = "annotations/var"
         url = f"{URL_BASE}{endpoint}"
-        f1 = {"filter": {"var": {"annotation_value": [{"name": "name",
-                                                       "values": ["HLA-DRB1", "HLA-DQA1", "HLA-DQB1", "HLA-DPA1",
-                                                                  "HLA-DPB1", "MS4A1", "IL32", "CCL5", "CD79B",
-                                                                  "CD79A"]}]}}}
+        f1 = {
+            "filter": {
+                "var": {
+                    "annotation_value": [
+                        {
+                            "name": "name",
+                            "values": [
+                                "HLA-DRB1",
+                                "HLA-DQA1",
+                                "HLA-DQB1",
+                                "HLA-DPA1",
+                                "HLA-DPB1",
+                                "MS4A1",
+                                "IL32",
+                                "CCL5",
+                                "CD79B",
+                                "CD79A",
+                            ],
+                        }
+                    ]
+                }
+            }
+        }
         result = self.session.put(url, json=f1)
         self.assertEqual(result.status_code, HTTPStatus.OK)
         result_data1 = result.json()
-        f2 = {"filter": {"var": {"annotation_value": [{"name": "name",
-                                                       "values": ["FGFBP2", "GZMA", "LTB", "PRF1", "CTSW", "GZMH",
-                                                                  "CCL5", "CCL4", "CST7", "NKG7"]}]}}}
+        f2 = {
+            "filter": {
+                "var": {
+                    "annotation_value": [
+                        {
+                            "name": "name",
+                            "values": ["FGFBP2", "GZMA", "LTB", "PRF1", "CTSW", "GZMH", "CCL5", "CCL4", "CST7", "NKG7"],
+                        }
+                    ]
+                }
+            }
+        }
         result = self.session.put(url, json=f2)
         self.assertEqual(result.status_code, HTTPStatus.OK)
         result_data2 = result.json()
@@ -408,9 +378,18 @@ class EndPoints(unittest.TestCase):
         result = self.session.put(url, json=f1)
         self.assertEqual(result.status_code, HTTPStatus.OK)
         result_data1 = result.json()
-        f2 = {"filter": {"var": {"annotation_value": [{"name": "name",
-                                                       "values": ["FGFBP2", "GZMA", "LTB", "PRF1", "CTSW", "GZMH",
-                                                                  "CCL5", "CCL4", "CST7", "NKG7"]}]}}}
+        f2 = {
+            "filter": {
+                "var": {
+                    "annotation_value": [
+                        {
+                            "name": "name",
+                            "values": ["FGFBP2", "GZMA", "LTB", "PRF1", "CTSW", "GZMH", "CCL5", "CCL4", "CST7", "NKG7"],
+                        }
+                    ]
+                }
+            }
+        }
         result = self.session.put(url, json=f2)
         self.assertEqual(result.status_code, HTTPStatus.OK)
         result_data2 = result.json()

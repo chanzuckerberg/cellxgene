@@ -14,16 +14,14 @@ REACTIVE_LIMIT = 1_000_000
 
 app = Flask(__name__, static_folder="web/static")
 app.json_encoder = Float32JSONEncoder
-cache = Cache(app, config={"CACHE_TYPE": "simple", "CACHE_DEFAULT_TIMEOUT": 860000})
+cache = Cache(app, config={"CACHE_TYPE": "simple", "CACHE_DEFAULT_TIMEOUT": 860_000})
 Compress(app)
 CORS(app)
 
 # Config
 SECRET_KEY = os.environ.get("CXG_SECRET_KEY", default="SparkleAndShine")
 
-app.config.update(
-    SECRET_KEY=SECRET_KEY,
-)
+app.config.update(SECRET_KEY=SECRET_KEY)
 
 # Application Data
 data = None
@@ -36,7 +34,13 @@ docs.append(resources.get_swagger_doc())
 app.register_blueprint(webapp.bp)
 app.register_blueprint(resources.blueprint)
 app.register_blueprint(
-    get_swagger_blueprint(docs, "/api/swagger", produces=["application/json"], title="cellxgene rest api",
-                          description="An API connecting ExpressionMatrix2 clustering algorithm to cellxgene"))
+    get_swagger_blueprint(
+        docs,
+        "/api/swagger",
+        produces=["application/json"],
+        title="cellxgene rest api",
+        description="An API connecting ExpressionMatrix2 clustering algorithm to cellxgene",
+    )
+)
 
 app.add_url_rule("/", endpoint="index")
