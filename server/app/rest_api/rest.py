@@ -10,7 +10,12 @@ from server.app.util.constants import Axis, DiffExpMode, JSON_NaN_to_num_warning
 from server.app.util.filter import parse_filter, QueryStringError
 from server.app.util.models import FilterModel
 from server.app.util.utils import get_mime_type
-from server.app.util.errors import MimeTypeError, FilterError, InteractiveError, PrepareError
+from server.app.util.errors import (
+    MimeTypeError,
+    FilterError,
+    InteractiveError,
+    PrepareError,
+)
 
 """
 Sort order for routes
@@ -32,7 +37,11 @@ class SchemaAPI(Resource):
                     "examples": {
                         "application/json": {
                             "schema": {
-                                "dataframe": {"nObs": 383, "nVar": 19944, "type": "float32"},
+                                "dataframe": {
+                                    "nObs": 383,
+                                    "nVar": 19944,
+                                    "type": "float32",
+                                },
                                 "annotations": {
                                     "obs": [
                                         {"name": "name", "type": "string"},
@@ -46,7 +55,10 @@ class SchemaAPI(Resource):
                                         },
                                         {"name": "QScore", "type": "float32"},
                                     ],
-                                    "var": [{"name": "name", "type": "string"}, {"name": "gene", "type": "string"}],
+                                    "var": [
+                                        {"name": "name", "type": "string"},
+                                        {"name": "gene", "type": "string"},
+                                    ],
                                 },
                             }
                         }
@@ -56,7 +68,9 @@ class SchemaAPI(Resource):
         }
     )
     def get(self):
-        return make_response(jsonify({"schema": current_app.data.schema}), HTTPStatus.OK)
+        return make_response(
+            jsonify({"schema": current_app.data.schema}), HTTPStatus.OK
+        )
 
 
 class ConfigAPI(Resource):
@@ -73,14 +87,22 @@ class ConfigAPI(Resource):
                         "application/json": {
                             "config": {
                                 "features": [
-                                    {"method": "POST", "path": "/cluster/", "available": False},
+                                    {
+                                        "method": "POST",
+                                        "path": "/cluster/",
+                                        "available": False,
+                                    },
                                     {
                                         "method": "POST",
                                         "path": "/layout/obs",
                                         "available": True,
                                         "interactiveLimit": 10000,
                                     },
-                                    {"method": "POST", "path": "/layout/var", "available": False},
+                                    {
+                                        "method": "POST",
+                                        "path": "/layout/var",
+                                        "available": False,
+                                    },
                                 ],
                                 "displayNames": {
                                     "engine": "ScanPy version 1.33",
@@ -97,16 +119,34 @@ class ConfigAPI(Resource):
         config = {
             "config": {
                 "features": [
-                    {"method": "POST", "path": "/cluster/", **current_app.data.features["cluster"]},
-                    {"method": "POST", "path": "/layout/obs", **current_app.data.features["layout"]["obs"]},
-                    {"method": "POST", "path": "/layout/var", **current_app.data.features["layout"]["var"]},
-                    {"method": "POST", "path": "/diffexp/", **current_app.data.features["diffexp"]},
+                    {
+                        "method": "POST",
+                        "path": "/cluster/",
+                        **current_app.data.features["cluster"],
+                    },
+                    {
+                        "method": "POST",
+                        "path": "/layout/obs",
+                        **current_app.data.features["layout"]["obs"],
+                    },
+                    {
+                        "method": "POST",
+                        "path": "/layout/var",
+                        **current_app.data.features["layout"]["var"],
+                    },
+                    {
+                        "method": "POST",
+                        "path": "/diffexp/",
+                        **current_app.data.features["diffexp"],
+                    },
                 ],
                 "displayNames": {
                     "engine": f"cellxgene Scanpy engine version {pkg_resources.get_distribution('cellxgene').version}",
                     "dataset": current_app.config["DATASET_TITLE"],
                 },
-                "parameters": {"max_category_items": current_app.data.max_category_items},
+                "parameters": {
+                    "max_category_items": current_app.data.max_category_items
+                },
             }
         }
         return make_response(jsonify(config), HTTPStatus.OK)
@@ -153,7 +193,7 @@ class AnnotationsObsAPI(Resource):
         except KeyError:
             return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
         try:
-            return make_response(jsonify(annotation_response), HTTPStatus.OK)
+            return make_response(annotation_response, HTTPStatus.OK)
         except ValueError as e:
             # JSON encoding failure, usually due to bad data
             warnings.warn(JSON_NaN_to_num_warning_msg)
@@ -170,7 +210,12 @@ class AnnotationsObsAPI(Resource):
                     "type": "string",
                     "description": "list of 1 or more annotation names",
                 },
-                {"name": "filter", "description": "Complex Filter", "in": "body", "schema": FilterModel},
+                {
+                    "name": "filter",
+                    "description": "Complex Filter",
+                    "in": "body",
+                    "schema": FilterModel,
+                },
             ],
             "responses": {
                 "200": {
@@ -196,13 +241,15 @@ class AnnotationsObsAPI(Resource):
     def put(self):
         fields = request.args.getlist("annotation-name", None)
         try:
-            annotation_response = current_app.data.annotation(request.get_json()["filter"], "obs", fields)
+            annotation_response = current_app.data.annotation(
+                request.get_json()["filter"], "obs", fields
+            )
         except KeyError:
             return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
         except FilterError as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
         try:
-            return make_response(jsonify(annotation_response), HTTPStatus.OK)
+            return make_response(annotation_response, HTTPStatus.OK)
         except ValueError as e:
             # JSON encoding failure, usually due to bad data
             warnings.warn(JSON_NaN_to_num_warning_msg)
@@ -228,7 +275,11 @@ class AnnotationsVarAPI(Resource):
                     "examples": {
                         "application/json": {
                             "names": ["name", "category"],
-                            "data": [[0, "ATAD3C", 1], [1, "RER1", None], [49, "S100B", 6]],
+                            "data": [
+                                [0, "ATAD3C", 1],
+                                [1, "RER1", None],
+                                [49, "S100B", 6],
+                            ],
                         }
                     },
                 },
@@ -246,7 +297,7 @@ class AnnotationsVarAPI(Resource):
         except KeyError:
             return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
         try:
-            return make_response(jsonify(annotation_response), HTTPStatus.OK)
+            return make_response(annotation_response, HTTPStatus.OK)
         except ValueError as e:
             # JSON encoding failure, usually due to bad data
             warnings.warn(JSON_NaN_to_num_warning_msg)
@@ -263,7 +314,12 @@ class AnnotationsVarAPI(Resource):
                     "type": "string",
                     "description": "list of 1 or more annotation names",
                 },
-                {"name": "filter", "description": "Complex Filter", "in": "body", "schema": FilterModel},
+                {
+                    "name": "filter",
+                    "description": "Complex Filter",
+                    "in": "body",
+                    "schema": FilterModel,
+                },
             ],
             "responses": {
                 "200": {
@@ -271,7 +327,11 @@ class AnnotationsVarAPI(Resource):
                     "examples": {
                         "application/json": {
                             "names": ["name", "category"],
-                            "data": [[0, "ATAD3C", 1], [1, "RER1", None], [49, "S100B", 6]],
+                            "data": [
+                                [0, "ATAD3C", 1],
+                                [1, "RER1", None],
+                                [49, "S100B", 6],
+                            ],
                         }
                     },
                 },
@@ -285,13 +345,15 @@ class AnnotationsVarAPI(Resource):
     def put(self):
         fields = request.args.getlist("annotation-name", None)
         try:
-            annotation_response = current_app.data.annotation(request.get_json()["filter"], "var", fields)
+            annotation_response = current_app.data.annotation(
+                request.get_json()["filter"], "var", fields
+            )
         except KeyError:
             return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
         except FilterError:
             return make_response("Malformed filter", HTTPStatus.BAD_REQUEST)
         try:
-            return make_response(jsonify(annotation_response), HTTPStatus.OK)
+            return make_response(annotation_response, HTTPStatus.OK)
         except ValueError as e:
             # JSON encoding failure, usually due to bad data
             warnings.warn(JSON_NaN_to_num_warning_msg)
@@ -304,13 +366,28 @@ class DataObsAPI(Resource):
             "summary": "Get data (expression values) from the dataframe.",
             "tags": ["data"],
             "parameters": [
-                {"in": "query", "name": "filter", "type": "string", "description": "axis:key:value"},
-                {"in": "query", "name": "accept-type", "type": "string", "description": "MIME type"},
+                {
+                    "in": "query",
+                    "name": "filter",
+                    "type": "string",
+                    "description": "axis:key:value",
+                },
+                {
+                    "in": "query",
+                    "name": "accept-type",
+                    "type": "string",
+                    "description": "MIME type",
+                },
             ],
             "responses": {
                 "200": {
                     "description": "expression",
-                    "examples": {"application/json": {"var": [0, 20000], "obs": [[1, 39483, 3902, 203, 0, 0, 28]]}},
+                    "examples": {
+                        "application/json": {
+                            "var": [0, 20000],
+                            "obs": [[1, 39483, 3902, 203, 0, 0, 28]],
+                        }
+                    },
                 },
                 "400": {"description": "Malformed filter"},
                 "406": {"description": "Unacceptable MIME type"},
@@ -323,19 +400,25 @@ class DataObsAPI(Resource):
         args = request.args.copy()
         args.pop("accept-type", None)
         try:
-            filter_ = parse_filter(ImmutableMultiDict(args), current_app.data.schema["annotations"])
+            filter_ = parse_filter(
+                ImmutableMultiDict(args), current_app.data.schema["annotations"]
+            )
         except QueryStringError as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
         # TODO support CSV
         try:
             # TODO store mime_type when more than one is supported
             get_mime_type(
-                acceptable_types=["application/json"], query_param=accept_type, header=request.accept_mimetypes
+                acceptable_types=["application/json"],
+                query_param=accept_type,
+                header=request.accept_mimetypes,
             )
         except MimeTypeError as e:
             return make_response(e.message, HTTPStatus.NOT_ACCEPTABLE)
         try:
-            return make_response((jsonify(current_app.data.data_frame(filter_, axis=Axis.OBS))), HTTPStatus.OK)
+            return make_response(
+                current_app.data.data_frame(filter_, axis=Axis.OBS), HTTPStatus.OK
+            )
         except FilterError as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
         except ValueError as e:
@@ -347,11 +430,23 @@ class DataObsAPI(Resource):
         {
             "summary": "Get data (expression values) from the dataframe.",
             "tags": ["data"],
-            "parameters": [{"name": "filter", "description": "Complex Filter", "in": "body", "schema": FilterModel}],
+            "parameters": [
+                {
+                    "name": "filter",
+                    "description": "Complex Filter",
+                    "in": "body",
+                    "schema": FilterModel,
+                }
+            ],
             "responses": {
                 "200": {
                     "description": "expression",
-                    "examples": {"application/json": {"var": [0, 20000], "obs": [[1, 39483, 3902, 203, 0, 0, 28]]}},
+                    "examples": {
+                        "application/json": {
+                            "var": [0, 20000],
+                            "obs": [[1, 39483, 3902, 203, 0, 0, 28]],
+                        }
+                    },
                 },
                 "400": {"description": "Malformed filter"},
                 "406": {"description": "Unacceptable MIME type"},
@@ -360,14 +455,24 @@ class DataObsAPI(Resource):
     )
     def put(self):
         if not request.accept_mimetypes.best_match(["application/json", "text/csv"]):
-            return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
+            return make_response(
+                f"Unsupported MIME type '{request.accept_mimetypes}'",
+                HTTPStatus.NOT_ACCEPTABLE,
+            )
         try:
-            get_mime_type(acceptable_types=["application/json"], header=request.accept_mimetypes)
+            get_mime_type(
+                acceptable_types=["application/json"], header=request.accept_mimetypes
+            )
         except MimeTypeError as e:
             return make_response(e.message, HTTPStatus.NOT_ACCEPTABLE)
         try:
             return make_response(
-                (jsonify(current_app.data.data_frame(request.get_json()["filter"], axis=Axis.OBS))), HTTPStatus.OK
+                (
+                    current_app.data.data_frame(
+                        request.get_json()["filter"], axis=Axis.OBS
+                    )
+                ),
+                HTTPStatus.OK,
             )
         except FilterError as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
@@ -383,13 +488,28 @@ class DataVarAPI(Resource):
             "summary": "Get data (expression values) from the dataframe.",
             "tags": ["data"],
             "parameters": [
-                {"in": "query", "name": "filter", "type": "string", "description": "axis:key:value"},
-                {"in": "query", "name": "accept-type", "type": "string", "description": "MIME type"},
+                {
+                    "in": "query",
+                    "name": "filter",
+                    "type": "string",
+                    "description": "axis:key:value",
+                },
+                {
+                    "in": "query",
+                    "name": "accept-type",
+                    "type": "string",
+                    "description": "MIME type",
+                },
             ],
             "responses": {
                 "200": {
                     "description": "expression",
-                    "examples": {"application/json": {"obs": [0, 20000], "var": [[1, 39483, 3902, 203, 0, 0, 28]]}},
+                    "examples": {
+                        "application/json": {
+                            "obs": [0, 20000],
+                            "var": [[1, 39483, 3902, 203, 0, 0, 28]],
+                        }
+                    },
                 },
                 "400": {"description": "Malformed filter"},
                 "406": {"description": "Unacceptable MIME type"},
@@ -402,17 +522,23 @@ class DataVarAPI(Resource):
         args = request.args.copy()
         args.pop("accept-type", None)
         try:
-            filter_ = parse_filter(ImmutableMultiDict(args), current_app.data.schema["annotations"])
+            filter_ = parse_filter(
+                ImmutableMultiDict(args), current_app.data.schema["annotations"]
+            )
         except QueryStringError as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
         try:
             get_mime_type(
-                acceptable_types=["application/json"], query_param=accept_type, header=request.accept_mimetypes
+                acceptable_types=["application/json"],
+                query_param=accept_type,
+                header=request.accept_mimetypes,
             )
         except MimeTypeError as e:
             return make_response(e.message, HTTPStatus.NOT_ACCEPTABLE)
         try:
-            return make_response((jsonify(current_app.data.data_frame(filter_, axis=Axis.VAR))), HTTPStatus.OK)
+            return make_response(
+                current_app.data.data_frame(filter_, axis=Axis.VAR), HTTPStatus.OK
+            )
         except FilterError as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
         except ValueError as e:
@@ -424,11 +550,23 @@ class DataVarAPI(Resource):
         {
             "summary": "Get data (expression values) from the dataframe.",
             "tags": ["data"],
-            "parameters": [{"name": "filter", "description": "Complex Filter", "in": "body", "schema": FilterModel}],
+            "parameters": [
+                {
+                    "name": "filter",
+                    "description": "Complex Filter",
+                    "in": "body",
+                    "schema": FilterModel,
+                }
+            ],
             "responses": {
                 "200": {
                     "description": "expression",
-                    "examples": {"application/json": {"obs": [0, 20000], "var": [[1, 39483, 3902, 203, 0, 0, 28]]}},
+                    "examples": {
+                        "application/json": {
+                            "obs": [0, 20000],
+                            "var": [[1, 39483, 3902, 203, 0, 0, 28]],
+                        }
+                    },
                 },
                 "400": {"description": "Malformed filter"},
                 "406": {"description": "Unacceptable MIME type"},
@@ -437,15 +575,25 @@ class DataVarAPI(Resource):
     )
     def put(self):
         if not request.accept_mimetypes.best_match(["application/json", "text/csv"]):
-            return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
+            return make_response(
+                f"Unsupported MIME type '{request.accept_mimetypes}'",
+                HTTPStatus.NOT_ACCEPTABLE,
+            )
         # TODO support CSV
         try:
-            get_mime_type(acceptable_types=["application/json"], header=request.accept_mimetypes)
+            get_mime_type(
+                acceptable_types=["application/json"], header=request.accept_mimetypes
+            )
         except MimeTypeError as e:
             return make_response(e.message, HTTPStatus.NOT_ACCEPTABLE)
         try:
             return make_response(
-                (jsonify(current_app.data.data_frame(request.get_json()["filter"], axis=Axis.VAR))), HTTPStatus.OK
+                (
+                    current_app.data.data_frame(
+                        request.get_json()["filter"], axis=Axis.VAR
+                    )
+                ),
+                HTTPStatus.OK,
             )
         except FilterError as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
@@ -522,23 +670,35 @@ class DiffExpObsAPI(Resource):
         except KeyError:
             return make_response("Error: mode is required", HTTPStatus.BAD_REQUEST)
         except ValueError:
-            return make_response(f"Error: invalid mode option {args['mode']}", HTTPStatus.BAD_REQUEST)
+            return make_response(
+                f"Error: invalid mode option {args['mode']}", HTTPStatus.BAD_REQUEST
+            )
         # Validate filters
         if mode == DiffExpMode.VAR_FILTER or "varFilter" in args:
             # not NOT_IMPLEMENTED
-            return make_response("mode=varfilter not implemented", HTTPStatus.NOT_IMPLEMENTED)
+            return make_response(
+                "mode=varfilter not implemented", HTTPStatus.NOT_IMPLEMENTED
+            )
         if mode == DiffExpMode.TOP_N and "count" not in args:
-            return make_response("mode=topN requires a count parameter", HTTPStatus.BAD_REQUEST)
+            return make_response(
+                "mode=topN requires a count parameter", HTTPStatus.BAD_REQUEST
+            )
 
         if "set1" not in args:
             return make_response("set1 is required.", HTTPStatus.BAD_REQUEST)
         if Axis.VAR in args["set1"]["filter"]:
-            return make_response("Var filter not allowed for set1", HTTPStatus.BAD_REQUEST)
+            return make_response(
+                "Var filter not allowed for set1", HTTPStatus.BAD_REQUEST
+            )
         # set2
         if "set2" not in args:
-            return make_response("Set2 as inverse of set1 is not implemented", HTTPStatus.NOT_IMPLEMENTED)
+            return make_response(
+                "Set2 as inverse of set1 is not implemented", HTTPStatus.NOT_IMPLEMENTED
+            )
         if Axis.VAR in args["set2"]["filter"]:
-            return make_response("Var filter not allowed for set2", HTTPStatus.BAD_REQUEST)
+            return make_response(
+                "Var filter not allowed for set2", HTTPStatus.BAD_REQUEST
+            )
 
         set1_filter = args["set1"]["filter"]
         set2_filter = args.get("set2", {"filter": {}})["filter"]
@@ -549,14 +709,17 @@ class DiffExpObsAPI(Resource):
         count = args.get("count", None)
         try:
             diffexp = current_app.data.diffexp_topN(
-                set1_filter, set2_filter, count, current_app.data.features["diffexp"]["interactiveLimit"]
+                set1_filter,
+                set2_filter,
+                count,
+                current_app.data.features["diffexp"]["interactiveLimit"],
             )
         except (ValueError, FilterError) as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
         except InteractiveError:
             return make_response("Non-interactive request", HTTPStatus.FORBIDDEN)
         try:
-            return make_response(jsonify(diffexp), HTTPStatus.OK)
+            return make_response(diffexp, HTTPStatus.OK)
         except ValueError as e:
             # JSON encoding failure, usually due to bad data
             warnings.warn(JSON_NaN_to_num_warning_msg)
@@ -576,7 +739,10 @@ class LayoutObsAPI(Resource):
                         "application/json": {
                             "layout": {
                                 "ndims": 2,
-                                "coordinates": [[0, 0.284_483, 0.983_744], [1, 0.038_844, 0.739_444]],
+                                "coordinates": [
+                                    [0, 0.284_483, 0.983_744],
+                                    [1, 0.038_844, 0.739_444],
+                                ],
                             }
                         }
                     },
@@ -591,7 +757,7 @@ class LayoutObsAPI(Resource):
         except PrepareError as e:
             return make_response(e.message, HTTPStatus.INTERNAL_SERVER_ERROR)
         try:
-            return make_response((jsonify({"layout": layout})), HTTPStatus.OK)
+            return make_response(layout, HTTPStatus.OK)
         except ValueError as e:
             # JSON encoding failure, usually due to bad data
             warnings.warn(JSON_NaN_to_num_warning_msg)
