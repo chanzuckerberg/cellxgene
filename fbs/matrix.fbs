@@ -7,6 +7,11 @@ in the future to others.
 
 https://github.com/google/flatbuffers
 http://google.github.io/flatbuffers/
+
+NOTE: IF YOU MODIFY THIS FILE, YOU MUST RECOMPILE AND COMMIT
+RESULTING FBS ACCESS CODE TO THE REPO.   See:
+* server/app/util/fbs
+* client/src/util/stateManager/
 */
 
 namespace NetEncoding;
@@ -48,7 +53,7 @@ table Matrix {
   columns: [Column];  // length n_cols
 
   // optional row and column index.  Length == n_cols
-  // If null, defaults to [0, n_rows)
+  // If null, defaults to [0, n_rows) or [0, n_cols)
   col_index: [uint32];
   row_index: [uint32];
 }
