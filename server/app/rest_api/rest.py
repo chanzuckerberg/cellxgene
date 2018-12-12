@@ -2,9 +2,7 @@ from http import HTTPStatus
 import pkg_resources
 import warnings
 
-from flask import (
-    Blueprint, current_app, jsonify, make_response, request
-)
+from flask import Blueprint, current_app, jsonify, make_response, request
 from flask_restful_swagger_2 import Api, swagger, Resource
 from werkzeug.datastructures import ImmutableMultiDict
 
@@ -23,83 +21,78 @@ Sort order for routes
 
 
 class SchemaAPI(Resource):
-    @swagger.doc({
-        "summary": "get schema for dataframe and annotations",
-        "tags": ["initialize"],
-        "parameters": [],
-        "responses": {
-            "200": {
-                "description": "schema",
-                "examples": {
-                    "application/json": {
-                        "schema": {
-                            "dataframe": {
-                                "nObs": 383,
-                                "nVar": 19944,
-                                "type": "float32"
-                            },
-                            "annotations": {
-                                "obs": [
-                                    {"name": "name", "type": "string"},
-                                    {"name": "tissue_type", "type": "string"},
-                                    {"name": "num_reads", "type": "int32"},
-                                    {"name": "sample_name", "type": "string"},
-                                    {
-                                        "name": "clusters",
-                                        "type": "categorical",
-                                        "categories": [99, 1, "unknown cluster"]
-                                    },
-                                    {"name": "QScore", "type": "float32"}
-                                ],
-                                "var": [
-                                    {"name": "name", "type": "string"},
-                                    {"name": "gene", "type": "string"}
-                                ]
+    @swagger.doc(
+        {
+            "summary": "get schema for dataframe and annotations",
+            "tags": ["initialize"],
+            "parameters": [],
+            "responses": {
+                "200": {
+                    "description": "schema",
+                    "examples": {
+                        "application/json": {
+                            "schema": {
+                                "dataframe": {"nObs": 383, "nVar": 19944, "type": "float32"},
+                                "annotations": {
+                                    "obs": [
+                                        {"name": "name", "type": "string"},
+                                        {"name": "tissue_type", "type": "string"},
+                                        {"name": "num_reads", "type": "int32"},
+                                        {"name": "sample_name", "type": "string"},
+                                        {
+                                            "name": "clusters",
+                                            "type": "categorical",
+                                            "categories": [99, 1, "unknown cluster"],
+                                        },
+                                        {"name": "QScore", "type": "float32"},
+                                    ],
+                                    "var": [{"name": "name", "type": "string"}, {"name": "gene", "type": "string"}],
+                                },
                             }
                         }
-                    }
+                    },
                 }
-            }
+            },
         }
-
-    })
+    )
     def get(self):
         return make_response(jsonify({"schema": current_app.data.schema}), HTTPStatus.OK)
 
 
 class ConfigAPI(Resource):
-    @swagger.doc({
-        "summary": "Configuration information to assist in front-end adaptation"
-                   " to underlying engine, available functionality, interactive time limits, etc",
-        "tags": ["initialize"],
-        "parameters": [],
-        "responses": {
-            "200": {
-                "description": "schema",
-                "examples": {
-                    "application/json": {
-                        "config": {
-                            "features": [
-                                {"method": "POST", "path": "/cluster/", "available": False},
-                                {
-                                    "method": "POST",
-                                    "path": "/layout/obs",
-                                    "available": True,
-                                    "interactiveLimit": 10000
+    @swagger.doc(
+        {
+            "summary": "Configuration information to assist in front-end adaptation"
+            " to underlying engine, available functionality, interactive time limits, etc",
+            "tags": ["initialize"],
+            "parameters": [],
+            "responses": {
+                "200": {
+                    "description": "schema",
+                    "examples": {
+                        "application/json": {
+                            "config": {
+                                "features": [
+                                    {"method": "POST", "path": "/cluster/", "available": False},
+                                    {
+                                        "method": "POST",
+                                        "path": "/layout/obs",
+                                        "available": True,
+                                        "interactiveLimit": 10000,
+                                    },
+                                    {"method": "POST", "path": "/layout/var", "available": False},
+                                ],
+                                "displayNames": {
+                                    "engine": "ScanPy version 1.33",
+                                    "dataset": "/home/joe/mouse/blorth.csv",
                                 },
-                                {"method": "POST", "path": "/layout/var", "available": False}
-
-                            ],
-                            "displayNames": {
-                                "engine": "ScanPy version 1.33",
-                                "dataset": "/home/joe/mouse/blorth.csv"
-                            },
+                            }
                         }
-                    }
+                    },
                 }
-            }
+            },
         }
-    })
+    )
     def get(self):
         config = {
             "config": {
@@ -111,50 +104,48 @@ class ConfigAPI(Resource):
                 ],
                 "displayNames": {
                     "engine": f"cellxgene Scanpy engine version {pkg_resources.get_distribution('cellxgene').version}",
-                    "dataset": current_app.config["DATASET_TITLE"]
+                    "dataset": current_app.config["DATASET_TITLE"],
                 },
-                "parameters": {
-                    "max_category_items": current_app.data.max_category_items
-                }
+                "parameters": {"max_category_items": current_app.data.max_category_items},
             }
         }
         return make_response(jsonify(config), HTTPStatus.OK)
 
 
 class AnnotationsObsAPI(Resource):
-    @swagger.doc({
-        "summary": "Fetch annotations (metadata) for all observations.",
-        "tags": ["annotations"],
-        "parameters": [{
-            "in": "query",
-            "name": "annotation-name",
-            "type": "string",
-            "description": "list of 1 or more annotation names"
-        }],
-        "responses": {
-            "200": {
-                "description": "annotations",
-                "examples": {
-                    "application/json": {
-                        "names": [
-                            "tissue_type", "sex", "num_reads", "clusters"
-                        ],
-                        "data": [
-                            [0, "lung", "F", 39844, 99],
-                            [1, "heart", "M", 83, 1],
-                            [49, "spleen", None, 2, "unknown cluster"],
-
-                        ]
-                    }
-
+    @swagger.doc(
+        {
+            "summary": "Fetch annotations (metadata) for all observations.",
+            "tags": ["annotations"],
+            "parameters": [
+                {
+                    "in": "query",
+                    "name": "annotation-name",
+                    "type": "string",
+                    "description": "list of 1 or more annotation names",
                 }
+            ],
+            "responses": {
+                "200": {
+                    "description": "annotations",
+                    "examples": {
+                        "application/json": {
+                            "names": ["tissue_type", "sex", "num_reads", "clusters"],
+                            "data": [
+                                [0, "lung", "F", 39844, 99],
+                                [1, "heart", "M", 83, 1],
+                                [49, "spleen", None, 2, "unknown cluster"],
+                            ],
+                        }
+                    },
+                },
+                "400": {
+                    "description": "one or more of the annotation-name identifiers were not associated with an "
+                    "annotation name"
+                },
             },
-            "400": {
-                "description": "one or more of the annotation-name identifiers were not associated with an "
-                               "annotation name"
-            }
         }
-    })
+    )
     def get(self):
         fields = request.args.getlist("annotation-name", None)
         try:
@@ -168,47 +159,40 @@ class AnnotationsObsAPI(Resource):
             warnings.warn(JSON_NaN_to_num_warning_msg)
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
-    @swagger.doc({
-        "summary": "Fetch annotations (metadata) for filtered subset of observations.",
-        "tags": ["annotations"],
-        "parameters": [
-            {
-                "in": "query",
-                "name": "annotation-name",
-                "type": "string",
-                "description": "list of 1 or more annotation names"
+    @swagger.doc(
+        {
+            "summary": "Fetch annotations (metadata) for filtered subset of observations.",
+            "tags": ["annotations"],
+            "parameters": [
+                {
+                    "in": "query",
+                    "name": "annotation-name",
+                    "type": "string",
+                    "description": "list of 1 or more annotation names",
+                },
+                {"name": "filter", "description": "Complex Filter", "in": "body", "schema": FilterModel},
+            ],
+            "responses": {
+                "200": {
+                    "description": "annotations",
+                    "examples": {
+                        "application/json": {
+                            "names": ["tissue_type", "sex", "num_reads", "clusters"],
+                            "data": [
+                                [0, "lung", "F", 39844, 99],
+                                [1, "heart", "M", 83, 1],
+                                [49, "spleen", None, 2, "unknown cluster"],
+                            ],
+                        }
+                    },
+                },
+                "400": {
+                    "description": "malformed filter or one or more of the annotation-name identifiers were"
+                    "not associated with an annotation name"
+                },
             },
-            {
-                "name": "filter",
-                "description": "Complex Filter",
-                "in": "body",
-                "schema": FilterModel
-            }
-        ],
-        "responses": {
-            "200": {
-                "description": "annotations",
-                "examples": {
-                    "application/json": {
-                        "names": [
-                            "tissue_type", "sex", "num_reads", "clusters"
-                        ],
-                        "data": [
-                            [0, "lung", "F", 39844, 99],
-                            [1, "heart", "M", 83, 1],
-                            [49, "spleen", None, 2, "unknown cluster"],
-
-                        ]
-                    }
-
-                }
-            },
-            "400": {
-                "description": "malformed filter or one or more of the annotation-name identifiers were"
-                               "not associated with an annotation name"
-            }
         }
-    })
+    )
     def put(self):
         fields = request.args.getlist("annotation-name", None)
         try:
@@ -226,38 +210,35 @@ class AnnotationsObsAPI(Resource):
 
 
 class AnnotationsVarAPI(Resource):
-    @swagger.doc({
-        "summary": "Fetch annotations (metadata) for all variables.",
-        "tags": ["annotations"],
-        "parameters": [{
-            "in": "query",
-            "name": "annotation-name",
-            "type": "string",
-            "description": "list of 1 or more annotation names"
-        }],
-        "responses": {
-            "200": {
-                "description": "annotations",
-                "examples": {
-                    "application/json": {
-                        "names": [
-                            "name", "category"
-                        ],
-                        "data": [
-                            [0, "ATAD3C", 1],
-                            [1, "RER1", None],
-                            [49, "S100B", 6]
-                        ]
-                    }
-
+    @swagger.doc(
+        {
+            "summary": "Fetch annotations (metadata) for all variables.",
+            "tags": ["annotations"],
+            "parameters": [
+                {
+                    "in": "query",
+                    "name": "annotation-name",
+                    "type": "string",
+                    "description": "list of 1 or more annotation names",
                 }
+            ],
+            "responses": {
+                "200": {
+                    "description": "annotations",
+                    "examples": {
+                        "application/json": {
+                            "names": ["name", "category"],
+                            "data": [[0, "ATAD3C", 1], [1, "RER1", None], [49, "S100B", 6]],
+                        }
+                    },
+                },
+                "400": {
+                    "description": "one or more of the annotation-name identifiers were not associated with an"
+                    " annotation name"
+                },
             },
-            "400": {
-                "description": "one or more of the annotation-name identifiers were not associated with an"
-                               " annotation name"
-            }
         }
-    })
+    )
     def get(self):
         fields = request.args.getlist("annotation-name", None)
         try:
@@ -271,45 +252,36 @@ class AnnotationsVarAPI(Resource):
             warnings.warn(JSON_NaN_to_num_warning_msg)
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
-    @swagger.doc({
-        "summary": "Fetch annotations (metadata) for filtered subset of variables.",
-        "tags": ["annotations"],
-        "parameters": [
-            {
-                "in": "query",
-                "name": "annotation-name",
-                "type": "string",
-                "description": "list of 1 or more annotation names"
+    @swagger.doc(
+        {
+            "summary": "Fetch annotations (metadata) for filtered subset of variables.",
+            "tags": ["annotations"],
+            "parameters": [
+                {
+                    "in": "query",
+                    "name": "annotation-name",
+                    "type": "string",
+                    "description": "list of 1 or more annotation names",
+                },
+                {"name": "filter", "description": "Complex Filter", "in": "body", "schema": FilterModel},
+            ],
+            "responses": {
+                "200": {
+                    "description": "annotations",
+                    "examples": {
+                        "application/json": {
+                            "names": ["name", "category"],
+                            "data": [[0, "ATAD3C", 1], [1, "RER1", None], [49, "S100B", 6]],
+                        }
+                    },
+                },
+                "400": {
+                    "description": "malformed filter or one or more of the annotation-name identifiers were"
+                    "not associated with an annotation name"
+                },
             },
-            {
-                "name": "filter",
-                "description": "Complex Filter",
-                "in": "body",
-                "schema": FilterModel
-            }
-        ],
-        "responses": {
-            "200": {
-                "description": "annotations",
-                "examples": {
-                    "application/json": {
-                        "names": [
-                            "name", "category"
-                        ],
-                        "data": [
-                            [0, "ATAD3C", 1],
-                            [1, "RER1", None],
-                            [49, "S100B", 6]
-                        ]
-                    }
-                }
-            },
-            "400": {
-                "description": "malformed filter or one or more of the annotation-name identifiers were"
-                               "not associated with an annotation name"
-            }
         }
-    })
+    )
     def put(self):
         fields = request.args.getlist("annotation-name", None)
         try:
@@ -327,57 +299,39 @@ class AnnotationsVarAPI(Resource):
 
 
 class DataObsAPI(Resource):
-    @swagger.doc({
-        "summary": "Get data (expression values) from the dataframe.",
-        "tags": ["data"],
-        "parameters": [
-            {
-                "in": "query",
-                "name": "filter",
-                "type": "string",
-                "description": "axis:key:value"
-            },
-            {
-                "in": "query",
-                "name": "accept-type",
-                "type": "string",
-                "description": "MIME type"
-            },
-        ],
-        "responses": {
-            "200": {
-                "description": "expression",
-                "examples": {
-                    "application/json": {
-                        "var": [0, 20000],
-                        "obs": [
-                            [1, 39483, 3902, 203, 0, 0, 28]
-                        ]
-                    }
-                }
-            },
-            "400": {
-                "description": "Malformed filter"
-            },
-            "406": {
-                "description": "Unacceptable MIME type"
+    @swagger.doc(
+        {
+            "summary": "Get data (expression values) from the dataframe.",
+            "tags": ["data"],
+            "parameters": [
+                {"in": "query", "name": "filter", "type": "string", "description": "axis:key:value"},
+                {"in": "query", "name": "accept-type", "type": "string", "description": "MIME type"},
+            ],
+            "responses": {
+                "200": {
+                    "description": "expression",
+                    "examples": {"application/json": {"var": [0, 20000], "obs": [[1, 39483, 3902, 203, 0, 0, 28]]}},
+                },
+                "400": {"description": "Malformed filter"},
+                "406": {"description": "Unacceptable MIME type"},
             },
         }
-    })
+    )
     def get(self):
         accept_type = request.args.get("accept-type", None)
         # request.args is immutable
         args = request.args.copy()
         args.pop("accept-type", None)
         try:
-            filter_ = parse_filter(ImmutableMultiDict(args), current_app.data.schema['annotations'])
+            filter_ = parse_filter(ImmutableMultiDict(args), current_app.data.schema["annotations"])
         except QueryStringError as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
         # TODO support CSV
         try:
             # TODO store mime_type when more than one is supported
-            get_mime_type(acceptable_types=["application/json"], query_param=accept_type,
-                          header=request.accept_mimetypes)
+            get_mime_type(
+                acceptable_types=["application/json"], query_param=accept_type, header=request.accept_mimetypes
+            )
         except MimeTypeError as e:
             return make_response(e.message, HTTPStatus.NOT_ACCEPTABLE)
         try:
@@ -389,37 +343,21 @@ class DataObsAPI(Resource):
             warnings.warn(JSON_NaN_to_num_warning_msg)
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
-    @swagger.doc({
-        "summary": "Get data (expression values) from the dataframe.",
-        "tags": ["data"],
-        "parameters": [
-            {
-                'name': 'filter',
-                'description': 'Complex Filter',
-                'in': 'body',
-                'schema': FilterModel
-            }
-        ],
-        "responses": {
-            "200": {
-                "description": "expression",
-                "examples": {
-                    "application/json": {
-                        "var": [0, 20000],
-                        "obs": [
-                            [1, 39483, 3902, 203, 0, 0, 28]
-                        ]
-                    }
-                }
-            },
-            "400": {
-                "description": "Malformed filter"
-            },
-            "406": {
-                "description": "Unacceptable MIME type"
+    @swagger.doc(
+        {
+            "summary": "Get data (expression values) from the dataframe.",
+            "tags": ["data"],
+            "parameters": [{"name": "filter", "description": "Complex Filter", "in": "body", "schema": FilterModel}],
+            "responses": {
+                "200": {
+                    "description": "expression",
+                    "examples": {"application/json": {"var": [0, 20000], "obs": [[1, 39483, 3902, 203, 0, 0, 28]]}},
+                },
+                "400": {"description": "Malformed filter"},
+                "406": {"description": "Unacceptable MIME type"},
             },
         }
-    })
+    )
     def put(self):
         if not request.accept_mimetypes.best_match(["application/json", "text/csv"]):
             return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
@@ -428,8 +366,9 @@ class DataObsAPI(Resource):
         except MimeTypeError as e:
             return make_response(e.message, HTTPStatus.NOT_ACCEPTABLE)
         try:
-            return make_response((jsonify(current_app.data.data_frame(request.get_json()["filter"], axis=Axis.OBS))),
-                                 HTTPStatus.OK)
+            return make_response(
+                (jsonify(current_app.data.data_frame(request.get_json()["filter"], axis=Axis.OBS))), HTTPStatus.OK
+            )
         except FilterError as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
         except ValueError as e:
@@ -439,55 +378,37 @@ class DataObsAPI(Resource):
 
 
 class DataVarAPI(Resource):
-    @swagger.doc({
-        "summary": "Get data (expression values) from the dataframe.",
-        "tags": ["data"],
-        "parameters": [
-            {
-                "in": "query",
-                "name": "filter",
-                "type": "string",
-                "description": "axis:key:value"
-            },
-            {
-                "in": "query",
-                "name": "accept-type",
-                "type": "string",
-                "description": "MIME type"
-            },
-        ],
-        "responses": {
-            "200": {
-                "description": "expression",
-                "examples": {
-                    "application/json": {
-                        "obs": [0, 20000],
-                        "var": [
-                            [1, 39483, 3902, 203, 0, 0, 28]
-                        ]
-                    }
-                }
-            },
-            "400": {
-                "description": "Malformed filter"
-            },
-            "406": {
-                "description": "Unacceptable MIME type"
+    @swagger.doc(
+        {
+            "summary": "Get data (expression values) from the dataframe.",
+            "tags": ["data"],
+            "parameters": [
+                {"in": "query", "name": "filter", "type": "string", "description": "axis:key:value"},
+                {"in": "query", "name": "accept-type", "type": "string", "description": "MIME type"},
+            ],
+            "responses": {
+                "200": {
+                    "description": "expression",
+                    "examples": {"application/json": {"obs": [0, 20000], "var": [[1, 39483, 3902, 203, 0, 0, 28]]}},
+                },
+                "400": {"description": "Malformed filter"},
+                "406": {"description": "Unacceptable MIME type"},
             },
         }
-    })
+    )
     def get(self):
         accept_type = request.args.get("accept-type", None)
         # request.args is immutable
         args = request.args.copy()
         args.pop("accept-type", None)
         try:
-            filter_ = parse_filter(ImmutableMultiDict(args), current_app.data.schema['annotations'])
+            filter_ = parse_filter(ImmutableMultiDict(args), current_app.data.schema["annotations"])
         except QueryStringError as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
         try:
-            get_mime_type(acceptable_types=["application/json"], query_param=accept_type,
-                          header=request.accept_mimetypes)
+            get_mime_type(
+                acceptable_types=["application/json"], query_param=accept_type, header=request.accept_mimetypes
+            )
         except MimeTypeError as e:
             return make_response(e.message, HTTPStatus.NOT_ACCEPTABLE)
         try:
@@ -499,37 +420,21 @@ class DataVarAPI(Resource):
             warnings.warn(JSON_NaN_to_num_warning_msg)
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
-    @swagger.doc({
-        "summary": "Get data (expression values) from the dataframe.",
-        "tags": ["data"],
-        "parameters": [
-            {
-                'name': 'filter',
-                'description': 'Complex Filter',
-                'in': 'body',
-                'schema': FilterModel
-            }
-        ],
-        "responses": {
-            "200": {
-                "description": "expression",
-                "examples": {
-                    "application/json": {
-                        "obs": [0, 20000],
-                        "var": [
-                            [1, 39483, 3902, 203, 0, 0, 28]
-                        ]
-                    }
-                }
-            },
-            "400": {
-                "description": "Malformed filter"
-            },
-            "406": {
-                "description": "Unacceptable MIME type"
+    @swagger.doc(
+        {
+            "summary": "Get data (expression values) from the dataframe.",
+            "tags": ["data"],
+            "parameters": [{"name": "filter", "description": "Complex Filter", "in": "body", "schema": FilterModel}],
+            "responses": {
+                "200": {
+                    "description": "expression",
+                    "examples": {"application/json": {"obs": [0, 20000], "var": [[1, 39483, 3902, 203, 0, 0, 28]]}},
+                },
+                "400": {"description": "Malformed filter"},
+                "406": {"description": "Unacceptable MIME type"},
             },
         }
-    })
+    )
     def put(self):
         if not request.accept_mimetypes.best_match(["application/json", "text/csv"]):
             return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
@@ -539,8 +444,9 @@ class DataVarAPI(Resource):
         except MimeTypeError as e:
             return make_response(e.message, HTTPStatus.NOT_ACCEPTABLE)
         try:
-            return make_response((jsonify(current_app.data.data_frame(request.get_json()["filter"], axis=Axis.VAR))),
-                                 HTTPStatus.OK)
+            return make_response(
+                (jsonify(current_app.data.data_frame(request.get_json()["filter"], axis=Axis.VAR))), HTTPStatus.OK
+            )
         except FilterError as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
         except ValueError as e:
@@ -550,67 +456,64 @@ class DataVarAPI(Resource):
 
 
 class DiffExpObsAPI(Resource):
-    @swagger.doc({
-        "summary": "Generate differential expression (DE) statistics for two specified subsets of data, "
-                   "as indicated by the two provided observation complex filters",
-        "tags": ["diffexp"],
-        # TODO sort out params
-        # "parameters": [
-        #     # {
-        #     #     "in": "body",
-        #     #     "name": "mode",
-        #     #     "type": "string",
-        #     #     "required": True,
-        #     #     "description": "topN or varFilter"
-        #     # },
-        #     {
-        #         "in": "query",
-        #         "name": "count",
-        #         "type": "int32",
-        #         "description": "TopN mode: how many vars to return"
-        #     },
-        #     {
-        #         "in": "body",
-        #         "name": "varFilter",
-        #         "schema": FilterModel,
-        #         "description": "varFilter: Complex filter, only var for which vars to return"
-        #     },
-        #     {
-        #         "in": "body",
-        #         "name": "set1",
-        #         "schema": FilterModel,
-        #         "required": True,
-        #         "description": "Complex filter, only obs - observations in set1"
-        #     },
-        #     {
-        #         "in": "body",
-        #         "name": "set2",
-        #         "schema": FilterModel,
-        #         "description": "Complex filter, only obs - observations in set2. If not included, inverse of set1."
-        #     },
-        # ],
-        "responses": {
-            "200": {
-                "description": "Statistics are encoded as an array of arrays, with fields ordered as: "
-                               "varIndex, logfoldchange,  pVal, pValAdj",
-                "examples": {
-                    "application/json": [
-                        [328, -2.569489, 2.655706e-63, 3.642036e-57],
-                        [1250, -2.569489, 2.655706e-63, 3.642036e-57],
-                    ]
-                }
+    @swagger.doc(
+        {
+            "summary": "Generate differential expression (DE) statistics for two specified subsets of data, "
+            "as indicated by the two provided observation complex filters",
+            "tags": ["diffexp"],
+            # TODO sort out params
+            # "parameters": [
+            #     # {
+            #     #     "in": "body",
+            #     #     "name": "mode",
+            #     #     "type": "string",
+            #     #     "required": True,
+            #     #     "description": "topN or varFilter"
+            #     # },
+            #     {
+            #         "in": "query",
+            #         "name": "count",
+            #         "type": "int32",
+            #         "description": "TopN mode: how many vars to return"
+            #     },
+            #     {
+            #         "in": "body",
+            #         "name": "varFilter",
+            #         "schema": FilterModel,
+            #         "description": "varFilter: Complex filter, only var for which vars to return"
+            #     },
+            #     {
+            #         "in": "body",
+            #         "name": "set1",
+            #         "schema": FilterModel,
+            #         "required": True,
+            #         "description": "Complex filter, only obs - observations in set1"
+            #     },
+            #     {
+            #         "in": "body",
+            #         "name": "set2",
+            #         "schema": FilterModel,
+            #         "description": "Complex filter, only obs - observations in set2.
+            # If not included, inverse of set1."
+            #     },
+            # ],
+            "responses": {
+                "200": {
+                    "description": "Statistics are encoded as an array of arrays, with fields ordered as: "
+                    "varIndex, logfoldchange,  pVal, pValAdj",
+                    "examples": {
+                        "application/json": [
+                            [328, -2.569_489, 2.655_706e-63, 3.642_036e-57],
+                            [1250, -2.569_489, 2.655_706e-63, 3.642_036e-57],
+                        ]
+                    },
+                },
+                "400": {"description": "malformed filter"},
+                "403": {"description": "non-interactive request"},
+                "501": {"description": "diffexp is not implemented"},
             },
-            "400": {
-                "description": "malformed filter"
-            },
-            "403": {
-                "description": "non-interactive request"
-            },
-            "501": {
-                "description": "diffexp is not implemented"
-            }
         }
-    })
+    )
     def post(self):
         args = request.get_json()
         # confirm mode is present and legal
@@ -645,8 +548,9 @@ class DiffExpObsAPI(Resource):
         # mode=topN
         count = args.get("count", None)
         try:
-            diffexp = current_app.data.diffexp_topN(set1_filter, set2_filter, count,
-                                                    current_app.data.features["diffexp"]["interactiveLimit"])
+            diffexp = current_app.data.diffexp_topN(
+                set1_filter, set2_filter, count, current_app.data.features["diffexp"]["interactiveLimit"]
+            )
         except (ValueError, FilterError) as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
         except InteractiveError:
@@ -660,30 +564,27 @@ class DiffExpObsAPI(Resource):
 
 
 class LayoutObsAPI(Resource):
-    @swagger.doc({
-        "summary": "Get the default layout for all observations.",
-        "tags": ["layout"],
-        "parameters": [],
-        "responses": {
-            "200": {
-                "description": "layout",
-                "examples": {
-                    "application/json": {
-                        "layout": {
-                            "ndims": 2,
-                            "coordinates": [
-                                [0, 0.284483, 0.983744],
-                                [1, 0.038844, 0.739444]
-                            ]
+    @swagger.doc(
+        {
+            "summary": "Get the default layout for all observations.",
+            "tags": ["layout"],
+            "parameters": [],
+            "responses": {
+                "200": {
+                    "description": "layout",
+                    "examples": {
+                        "application/json": {
+                            "layout": {
+                                "ndims": 2,
+                                "coordinates": [[0, 0.284_483, 0.983_744], [1, 0.038_844, 0.739_444]],
+                            }
                         }
-                    }
-                }
+                    },
+                },
+                "400": {"description": "Data preparation error"},
             },
-            "400": {
-                "description": "Data preparation error"
-            }
         }
-    })
+    )
     def get(self):
         try:
             layout = current_app.data.layout({})

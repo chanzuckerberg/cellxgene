@@ -7,22 +7,48 @@ from scipy.sparse.csc import csc_matrix
 
 @click.command()
 @click.argument("data", nargs=1, metavar="<dataset: file or path to data>", required=True)
-@click.option("--layout", "-l", default=["umap", "tsne"], multiple=True, type=click.Choice(["umap", "tsne"]),
-              help="Layout algorithm", show_default=True)
-@click.option("--recipe", "-r", default="none", type=click.Choice(["none", "seurat", "zheng17"]),
-              help="Preprocessing to run.", show_default=True)
+@click.option(
+    "--layout",
+    "-l",
+    default=["umap", "tsne"],
+    multiple=True,
+    type=click.Choice(["umap", "tsne"]),
+    help="Layout algorithm",
+    show_default=True,
+)
+@click.option(
+    "--recipe",
+    "-r",
+    default="none",
+    type=click.Choice(["none", "seurat", "zheng17"]),
+    help="Preprocessing to run.",
+    show_default=True,
+)
 @click.option("--output", "-o", default="", help="Save a new file to filename.", metavar="<filename>")
 @click.option("--plotting", "-p", default=False, is_flag=True, help="Whether to generate plots.", show_default=True)
 @click.option("--sparse", default=False, is_flag=True, help="Whether to force sparsity.", show_default=True)
 @click.option("--overwrite", default=False, is_flag=True, help="Allow file overwriting.", show_default=True)
 @click.option("--set-obs-names", default="", help="Named field to set as index for obs.", metavar="<name>")
 @click.option("--set-var-names", default="", help="Named field to set as index for var.", metavar="<name>")
-@click.option("--make-obs-names-unique", default=True, is_flag=True,
-              help="Ensure obs index is unique.", show_default=True)
-@click.option("--make-var-names-unique", default=True, is_flag=True,
-              help="Ensure var index is unique.", show_default=True)
-def prepare(data, layout, recipe, output, plotting, sparse, overwrite,
-            set_obs_names, set_var_names, make_obs_names_unique, make_var_names_unique):
+@click.option(
+    "--make-obs-names-unique", default=True, is_flag=True, help="Ensure obs index is unique.", show_default=True
+)
+@click.option(
+    "--make-var-names-unique", default=True, is_flag=True, help="Ensure var index is unique.", show_default=True
+)
+def prepare(
+    data,
+    layout,
+    recipe,
+    output,
+    plotting,
+    sparse,
+    overwrite,
+    set_obs_names,
+    set_var_names,
+    make_obs_names_unique,
+    make_var_names_unique,
+):
     """Preprocesses data for use with cellxgene.
 
     This tool runs a series of scanpy routines for preparing a dataset
@@ -35,6 +61,7 @@ def prepare(data, layout, recipe, output, plotting, sparse, overwrite,
     # collect slow imports here to make CLI startup more responsive
     click.echo("[cellxgene] Starting CLI...")
     import matplotlib
+
     matplotlib.use("Agg")
     import scanpy.api as sc
 
@@ -49,8 +76,10 @@ def prepare(data, layout, recipe, output, plotting, sparse, overwrite,
     output = expanduser(output)
 
     if not output:
-        click.echo("Warning: No file will be saved, to save the results of cellxgene prepare include "
-                   "--output <filename> to save output to a new file")
+        click.echo(
+            "Warning: No file will be saved, to save the results of cellxgene prepare include "
+            "--output <filename> to save output to a new file"
+        )
     if isfile(output) and not overwrite:
         raise click.UsageError(f"Cannot overwrite existing file {output}, try using the flag --overwrite")
 
@@ -119,9 +148,11 @@ def prepare(data, layout, recipe, output, plotting, sparse, overwrite,
         try:
             sc.tl.louvain(adata)
         except ModuleNotFoundError:
-            click.echo("\nWarning: louvain module is not installed, no clusters will be calculated. "
-                       "To fix this please install cellxgene with the optional feature louvain enabled: "
-                       "`pip install cellxgene[louvain]`")
+            click.echo(
+                "\nWarning: louvain module is not installed, no clusters will be calculated. "
+                "To fix this please install cellxgene with the optional feature louvain enabled: "
+                "`pip install cellxgene[louvain]`"
+            )
 
     def run_layout(adata):
         if len(unique(adata.obs["louvain"].values)) < 10:
@@ -142,11 +173,11 @@ def prepare(data, layout, recipe, output, plotting, sparse, overwrite,
     def show_step(item):
         names = {
             "make_sparse": "Ensuring sparsity",
-            "run_recipe": f"Running preprocessing recipe \"{recipe}\"",
+            "run_recipe": f'Running preprocessing recipe "{recipe}"',
             "run_pca": "Running PCA",
             "run_neighbors": "Calculating neighbors",
             "run_louvain": "Calculating clusters",
-            "run_layout": "Computing layout"
+            "run_layout": "Computing layout",
         }
         if item is not None:
             return names[item.__name__]

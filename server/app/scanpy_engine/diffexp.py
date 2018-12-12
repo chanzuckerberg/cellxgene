@@ -1,4 +1,3 @@
-
 import numpy as np
 from scipy import sparse, stats
 
@@ -64,19 +63,19 @@ def diffexp_ttest(adata, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
     sum_vn = vnA + vnB
 
     # degrees of freedom for Welch's t-test
-    with np.errstate(divide='ignore', invalid='ignore'):
-        dof = sum_vn**2 / (vnA**2 / (nA - 1) + vnB**2 / (nB - 1))
+    with np.errstate(divide="ignore", invalid="ignore"):
+        dof = sum_vn ** 2 / (vnA ** 2 / (nA - 1) + vnB ** 2 / (nB - 1))
     dof[np.isnan(dof)] = 1
 
     # Welch's t-test score calculation
-    with np.errstate(divide='ignore', invalid='ignore'):
+    with np.errstate(divide="ignore", invalid="ignore"):
         tscores = (meanA - meanB) / np.sqrt(sum_vn)
     tscores[np.isnan(tscores)] = 0
 
     # p-value
     pvals = stats.t.sf(np.abs(tscores), dof) * 2
     pvals_adj = pvals * adata._X.shape[1]
-    pvals_adj[pvals_adj > 1] = 1        # cap adjusted p-value at 1
+    pvals_adj[pvals_adj > 1] = 1  # cap adjusted p-value at 1
 
     # logfoldchanges: log2(meanA / meanB)
     logfoldchanges = np.log2(np.abs((meanA + 1e-9) / (meanB + 1e-9)))
@@ -106,8 +105,5 @@ def diffexp_ttest(adata, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
     pvals_adj_top_n = pvals_adj[sort_order]
 
     # varIndex, logfoldchange, pval, pval_adj
-    result = [[sort_order[i],
-               logfoldchanges_top_n[i],
-               pvals_top_n[i],
-               pvals_adj_top_n[i]] for i in range(top_n)]
+    result = [[sort_order[i], logfoldchanges_top_n[i], pvals_top_n[i], pvals_adj_top_n[i]] for i in range(top_n)]
     return result

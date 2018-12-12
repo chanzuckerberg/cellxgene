@@ -2,11 +2,14 @@
 if __package__ is None:
     import sys
     from pathlib import Path
+
     PKG_PATH = Path(__file__).parent
     sys.path.insert(0, str(PKG_PATH.parent))
-    import server
+    import server # noqa F401
+
     __package__ = PKG_PATH.name
 
 # Main thing
-from .cli.cli import cli
+from .cli.cli import cli # noqa F402
+
 cli()

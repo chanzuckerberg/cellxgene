@@ -13,30 +13,76 @@ from server.app.util.utils import custom_format_warning
 
 @click.command()
 @click.argument("data", metavar="<data file>", type=click.Path(exists=True, file_okay=True, dir_okay=False))
-@click.option("--layout", "-l", type=click.Choice(["umap", "tsne"]), default="umap", show_default=True,
-              help="Method for layout.")
-@click.option("--diffexp", "-d", type=click.Choice(["ttest"]), default="ttest", show_default=True,
-              help="Method for differential expression.")
+@click.option(
+    "--layout", "-l", type=click.Choice(["umap", "tsne"]), default="umap", show_default=True, help="Method for layout."
+)
+@click.option(
+    "--diffexp",
+    "-d",
+    type=click.Choice(["ttest"]),
+    default="ttest",
+    show_default=True,
+    help="Method for differential expression.",
+)
 @click.option("--title", "-t", help="Title to display (if omitted will use file name).", metavar="")
-@click.option("--verbose", "-v", is_flag=True, default=False, show_default=True,
-              help="Provide verbose output, including warnings and all server requests.")
-@click.option("--debug", "-d", is_flag=True, default=False, show_default=True,
-              help="Run in debug mode.")
-@click.option("--open", "-o", "open_browser", is_flag=True, default=False, show_default=True,
-              help="Open the web browser after launch.")
+@click.option(
+    "--verbose",
+    "-v",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="Provide verbose output, including warnings and all server requests.",
+)
+@click.option("--debug", "-d", is_flag=True, default=False, show_default=True, help="Run in debug mode.")
+@click.option(
+    "--open",
+    "-o",
+    "open_browser",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="Open the web browser after launch.",
+)
 @click.option("--port", "-p", help="Port to run server on.", metavar="", default=5005, show_default=True)
 @click.option("--obs-names", default=None, metavar="", help="Name of annotation field to use for observations.")
 @click.option("--var-names", default=None, metavar="", help="Name of annotation to use for variables.")
 @click.option("--host", default="127.0.0.1", help="Host IP address")
-@click.option("--max-category-items", default=100, metavar="", show_default=True,
-              help="Limits the number of categorical annotation items displayed.")
-@click.option("--diffexp-lfc-cutoff", default=0.01, show_default=True,
-              help="Relative expression cutoff used when selecting top N differentially expressed genes")
-@click.option("--nan-to-num", is_flag=True, default=False, show_default=True,
-              help="Replace all floating point NaN with zero, and infinities with finite numbers")
-def launch(data, layout, diffexp, title, verbose, debug, obs_names, var_names,
-           open_browser, port, host, max_category_items, diffexp_lfc_cutoff,
-           nan_to_num):
+@click.option(
+    "--max-category-items",
+    default=100,
+    metavar="",
+    show_default=True,
+    help="Limits the number of categorical annotation items displayed.",
+)
+@click.option(
+    "--diffexp-lfc-cutoff",
+    default=0.01,
+    show_default=True,
+    help="Relative expression cutoff used when selecting top N differentially expressed genes",
+)
+@click.option(
+    "--nan-to-num",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="Replace all floating point NaN with zero, and infinities with finite numbers",
+)
+def launch(
+    data,
+    layout,
+    diffexp,
+    title,
+    verbose,
+    debug,
+    obs_names,
+    var_names,
+    open_browser,
+    port,
+    host,
+    max_category_items,
+    diffexp_lfc_cutoff,
+    nan_to_num,
+):
     """Launch the cellxgene data viewer.
     This web app lets you explore single-cell expression data.
     Data must be in a format that cellxgene expects, read the
@@ -76,10 +122,7 @@ def launch(data, layout, diffexp, title, verbose, debug, obs_names, var_names,
     # Import Flask app
     from server.app.app import app
 
-    app.config.update(
-        DATASET_TITLE=title,
-        CXG_API_BASE=api_base
-    )
+    app.config.update(DATASET_TITLE=title, CXG_API_BASE=api_base)
 
     if not verbose:
         log = logging.getLogger("werkzeug")
@@ -90,7 +133,8 @@ def launch(data, layout, diffexp, title, verbose, debug, obs_names, var_names,
     # Fix for anaconda python. matplotlib typically expects python to be installed as a framework TKAgg is usually
     # available and fixes this issue. See https://matplotlib.org/faq/virtualenv_faq.html
     import matplotlib as mpl
-    mpl.use('TkAgg')
+
+    mpl.use("TkAgg")
     from server.app.scanpy_engine.scanpy_engine import ScanpyEngine
 
     args = {
@@ -100,7 +144,7 @@ def launch(data, layout, diffexp, title, verbose, debug, obs_names, var_names,
         "diffexp_lfc_cutoff": diffexp_lfc_cutoff,
         "obs_names": obs_names,
         "var_names": var_names,
-        "nan_to_num": nan_to_num
+        "nan_to_num": nan_to_num,
     }
 
     try:
@@ -117,7 +161,7 @@ def launch(data, layout, diffexp, title, verbose, debug, obs_names, var_names,
     click.echo("[cellxgene] Type CTRL-C at any time to exit.")
 
     if not verbose:
-        f = open(devnull, 'w')
+        f = open(devnull, "w")
         sys.stdout = f
 
     app.run(host=host, debug=debug, port=port, threaded=True)
