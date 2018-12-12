@@ -297,11 +297,11 @@ class EndPoints(unittest.TestCase):
     def test_data_xy_put(self):
         endpoint = f"data/X/T"
         url = f"{URL_BASE}{endpoint}"
-        header={"Accept": "application/octet-stream"}
+        header = {"Accept": "application/octet-stream"}
         filter = {
             "filter": {
                 "var": {
-                    "index": [ 0, 1, 4 ]
+                    "index": [0, 1, 4]
                 }
             }
         }

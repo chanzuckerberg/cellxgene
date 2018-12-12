@@ -38,7 +38,7 @@ def CreateNumpyVector(builder, x):
     builder.head = int(builder.Head() - len)
 
     # tobytes ensures c_contiguous ordering
-    builder.Bytes[builder.Head():builder.Head()+len] = x_lend.tobytes(order='C')
+    builder.Bytes[builder.Head():builder.Head() + len] = x_lend.tobytes(order='C')
 
     return builder.EndVector(x.size)
 
