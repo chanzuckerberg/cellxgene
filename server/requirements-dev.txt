@@ -1,4 +1,4 @@
-black>=18
+black
 bumpversion>=0.5
 pytest>=3.6.3
 requests>=2.18.4
