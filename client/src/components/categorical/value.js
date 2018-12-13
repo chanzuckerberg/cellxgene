@@ -104,7 +104,7 @@ class CategoryValue extends React.Component {
             {displayString}
           </label>
           <span style={{ flexShrink: 0 }}>
-            {colorAccessor && !c ? (
+            {colorAccessor && !c && categoricalSelectionState[colorAccessor] ? (
               <Occupancy
                 occupancy={occupancy.get(
                   category.categoryValues[categoryIndex]
