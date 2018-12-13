@@ -192,16 +192,14 @@ class AnnotationsObsAPI(Resource):
         }
     )
     def get(self):
-        content_type = JSON_MIMETYPE
         fields = request.args.getlist("annotation-name", None)
         try:
             annotation_response = current_app.data.annotation({}, "obs", fields)
+            return make_response(
+                annotation_response, HTTPStatus.OK, {"Content-Type": JSON_MIMETYPE}
+            )
         except KeyError:
             return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
-        try:
-            return make_response(
-                annotation_response, HTTPStatus.OK, {"Content-Type": content_type}
-            )
         except ValueError as e:
             # JSON encoding failure, usually due to bad data
             warnings.warn(JSON_NaN_to_num_warning_msg)
@@ -247,20 +245,18 @@ class AnnotationsObsAPI(Resource):
         }
     )
     def put(self):
-        content_type = JSON_MIMETYPE
         fields = request.args.getlist("annotation-name", None)
         try:
             annotation_response = current_app.data.annotation(
                 request.get_json()["filter"], "obs", fields
             )
+            return make_response(
+                annotation_response, HTTPStatus.OK, {"Content-Type": JSON_MIMETYPE}
+            )
         except KeyError:
             return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
         except FilterError as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
-        try:
-            return make_response(
-                annotation_response, HTTPStatus.OK, {"Content-Type": content_type}
-            )
         except ValueError as e:
             # JSON encoding failure, usually due to bad data
             warnings.warn(JSON_NaN_to_num_warning_msg)
@@ -302,16 +298,14 @@ class AnnotationsVarAPI(Resource):
         }
     )
     def get(self):
-        content_type = JSON_MIMETYPE
         fields = request.args.getlist("annotation-name", None)
         try:
             annotation_response = current_app.data.annotation({}, "var", fields)
+            return make_response(
+                annotation_response, HTTPStatus.OK, {"Content-Type": JSON_MIMETYPE}
+            )
         except KeyError:
             return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
-        try:
-            return make_response(
-                annotation_response, HTTPStatus.OK, {"Content-Type": content_type}
-            )
         except ValueError as e:
             # JSON encoding failure, usually due to bad data
             warnings.warn(JSON_NaN_to_num_warning_msg)
@@ -357,20 +351,18 @@ class AnnotationsVarAPI(Resource):
         }
     )
     def put(self):
-        content_type = JSON_MIMETYPE
         fields = request.args.getlist("annotation-name", None)
         try:
             annotation_response = current_app.data.annotation(
                 request.get_json()["filter"], "var", fields
             )
+            return make_response(
+                annotation_response, HTTPStatus.OK, {"Content-Type": JSON_MIMETYPE}
+            )
         except KeyError:
             return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
         except FilterError:
             return make_response("Malformed filter", HTTPStatus.BAD_REQUEST)
-        try:
-            return make_response(
-                annotation_response, HTTPStatus.OK, {"Content-Type": content_type}
-            )
         except ValueError as e:
             # JSON encoding failure, usually due to bad data
             warnings.warn(JSON_NaN_to_num_warning_msg)
@@ -412,7 +404,6 @@ class DataObsAPI(Resource):
         }
     )
     def get(self):
-        content_type = JSON_MIMETYPE
         accept_type = request.args.get("accept-type", None)
         # request.args is immutable
         args = request.args.copy()
@@ -437,7 +428,7 @@ class DataObsAPI(Resource):
             return make_response(
                 current_app.data.data_frame(filter_, axis=Axis.OBS),
                 HTTPStatus.OK,
-                {"Content-Type": content_type},
+                {"Content-Type": JSON_MIMETYPE},
             )
         except FilterError as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
@@ -474,7 +465,6 @@ class DataObsAPI(Resource):
         }
     )
     def put(self):
-        content_type = JSON_MIMETYPE
         if not request.accept_mimetypes.best_match(["application/json", "text/csv"]):
             return make_response(
                 f"Unsupported MIME type '{request.accept_mimetypes}'",
@@ -494,7 +484,7 @@ class DataObsAPI(Resource):
                     )
                 ),
                 HTTPStatus.OK,
-                {"Content-Type": content_type},
+                {"Content-Type": JSON_MIMETYPE},
             )
         except FilterError as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
@@ -539,7 +529,6 @@ class DataVarAPI(Resource):
         }
     )
     def get(self):
-        content_type = JSON_MIMETYPE
         accept_type = request.args.get("accept-type", None)
         # request.args is immutable
         args = request.args.copy()
@@ -562,7 +551,7 @@ class DataVarAPI(Resource):
             return make_response(
                 current_app.data.data_frame(filter_, axis=Axis.VAR),
                 HTTPStatus.OK,
-                {"Content-Type": content_type},
+                {"Content-Type": JSON_MIMETYPE},
             )
         except FilterError as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
@@ -599,7 +588,6 @@ class DataVarAPI(Resource):
         }
     )
     def put(self):
-        content_type = JSON_MIMETYPE
         if not request.accept_mimetypes.best_match(["application/json", "text/csv"]):
             return make_response(
                 f"Unsupported MIME type '{request.accept_mimetypes}'",
@@ -620,7 +608,7 @@ class DataVarAPI(Resource):
                     )
                 ),
                 HTTPStatus.OK,
-                {"Content-Type": content_type},
+                {"Content-Type": JSON_MIMETYPE},
             )
         except FilterError as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
@@ -690,7 +678,6 @@ class DiffExpObsAPI(Resource):
         }
     )
     def post(self):
-        content_type = JSON_MIMETYPE
         args = request.get_json()
         # confirm mode is present and legal
         try:
@@ -742,12 +729,13 @@ class DiffExpObsAPI(Resource):
                 count,
                 current_app.data.features["diffexp"]["interactiveLimit"],
             )
+            return make_response(
+                diffexp, HTTPStatus.OK, {"Content-Type": JSON_MIMETYPE}
+            )
         except (ValueError, FilterError) as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
         except InteractiveError:
             return make_response("Non-interactive request", HTTPStatus.FORBIDDEN)
-        try:
-            return make_response(diffexp, HTTPStatus.OK, {"Content-Type": content_type})
         except ValueError as e:
             # JSON encoding failure, usually due to bad data
             warnings.warn(JSON_NaN_to_num_warning_msg)
