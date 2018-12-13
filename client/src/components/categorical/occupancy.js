@@ -46,25 +46,21 @@ class Occupancy extends React.Component {
     // });
 
     const cat = categoricalSelectionState[colorAccessor];
-    // console.log("cat in occupancy", cat);
 
     cat.categoryValues.forEach(d => {
       const o = occupancy.get(d);
+
       const scaledValue = x(o);
+
       stack.push({
         key: d,
-        value: o,
-        rectWidth: scaledValue,
+        value: o || 0,
+        rectWidth: o ? scaledValue : 0,
         offset: currentOffset,
-        fill: colorScale(categories.indexOf(d))
+        fill: o ? colorScale(categories.indexOf(d)) : "rgb(255,255,255)"
       });
-      currentOffset += scaledValue;
+      currentOffset += o ? scaledValue : 0;
     });
-
-    // const optTuples = sortedCategoryValues([...cat.categoryIndices]);
-
-    // console.log("stack", stack);
-    // stack.sort(d => d.key);
 
     return (
       <svg

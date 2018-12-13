@@ -86,7 +86,6 @@ class Category extends React.Component {
     const { categoricalSelectionState, metadataField } = this.props;
 
     const cat = categoricalSelectionState[metadataField];
-    console.log("cat in category", cat);
     const optTuples = sortedCategoryValues([...cat.categoryIndices]);
     return _.map(optTuples, (tuple, i) => (
       <Value

@@ -8,6 +8,8 @@ import isNumber from "is-number";
 import _ from "lodash";
 
 const sortedCategoryValues = values => {
+  /* this sort could be memoized for perf */
+
   const strings = [];
   const ints = [];
 
