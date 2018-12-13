@@ -111,7 +111,7 @@ Or you can create a virtual environment by using
 
 ```
 ENV_NAME=cellxgene
-python3 -m venv ${ENV_NAME}
+python3.6 -m venv ${ENV_NAME}
 source ${ENV_NAME}/bin/activate
 pip install cellxgene
 ```
