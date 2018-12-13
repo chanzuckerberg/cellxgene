@@ -1,6 +1,6 @@
+import json
 import warnings
 
-from flask import jsonify
 import numpy as np
 from pandas import DataFrame
 from pandas.core.dtypes.dtypes import CategoricalDtype
@@ -15,6 +15,7 @@ from server.app.util.errors import (
     PrepareError,
     ScanpyFileError,
 )
+from server.app.util.utils import Float32JSONEncoder
 from server.app.scanpy_engine.diffexp import diffexp_ttest
 
 """
@@ -405,7 +406,7 @@ class ScanpyEngine(CXGDriver):
                 "names": fields,
                 "data": DataFrame(var[fields]).to_records(index=True).tolist(),
             }
-        return jsonify(result)
+        return json.dumps(result, cls=Float32JSONEncoder)
 
     def data_frame(self, filter, axis):
         """
@@ -440,7 +441,7 @@ class ScanpyEngine(CXGDriver):
                 .to_records(index=True)
                 .tolist(),
             }
-        return jsonify(result)
+        return json.dumps(result, cls=Float32JSONEncoder)
 
     def diffexp_topN(self, obsFilterA, obsFilterB, top_n=None, interactive_limit=None):
         if Axis.VAR in obsFilterA or Axis.VAR in obsFilterB:
@@ -459,7 +460,7 @@ class ScanpyEngine(CXGDriver):
         result = diffexp_ttest(
             self.data, obs_mask_A, obs_mask_B, top_n, self.diffexp_lfc_cutoff
         )
-        return jsonify(result)
+        return json.dumps(result, cls=Float32JSONEncoder)
 
     def layout(self, filter, interactive_limit=None):
         """
@@ -491,11 +492,12 @@ class ScanpyEngine(CXGDriver):
             (df_layout - df_layout.min()) / (df_layout.max() - df_layout.min()),
             index=df.obs.index,
         )
-        return jsonify(
+        return json.dumps(
             {
                 "layout": {
                     "ndims": normalized_layout.shape[1],
                     "coordinates": normalized_layout.to_records(index=True).tolist(),
                 }
-            }
+            },
+            cls=Float32JSONEncoder,
         )

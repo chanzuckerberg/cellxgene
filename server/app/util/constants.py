@@ -3,6 +3,9 @@ from enum import Enum
 
 DEFAULT_TOP_N = 10
 
+# response mimetypes
+JSON_MIMETYPE = "application/json"
+
 
 class AugmentedEnum(Enum):
     def __hash__(self):
@@ -27,4 +30,6 @@ class DiffExpMode(AugmentedEnum):
     VAR_FILTER = "varFilter"
 
 
-JSON_NaN_to_num_warning_msg = "JSON encoding failure - suggest trying --nan-to-num command line option"
+JSON_NaN_to_num_warning_msg = (
+    "JSON encoding failure - suggest trying --nan-to-num command line option"
+)
