@@ -37,6 +37,7 @@
     "fuzzysort": "^1.1.4",
     "gl-mat4": "^1.1.4",
     "gl-matrix": "^2.7.1",
+    "is-number": "^7.0.0",
     "key-pressed": "0.0.1",
     "lodash": "^4.17.4",
     "memoize-one": "^4.0.0",
