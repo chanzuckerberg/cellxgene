@@ -3,6 +3,7 @@ import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
 import * as d3 from "d3";
+import sortedCategoryValues from "./util";
 
 @connect()
 class Occupancy extends React.Component {
@@ -11,8 +12,10 @@ class Occupancy extends React.Component {
       occupancy,
       colorScale,
       metadataField,
+      categoricalSelectionState,
       colorAccessor,
-      schema
+      schema,
+      optTuples
     } = this.props;
     const width = 100;
     const height = 11;
@@ -29,17 +32,39 @@ class Occupancy extends React.Component {
 
     const stack = [];
     let currentOffset = 0;
-    occupancy.forEach((value, key) => {
-      const scaledValue = x(value);
+
+    // occupancy.forEach((value, key) => {
+    //   const scaledValue = x(value);
+    //   stack.push({
+    //     key,
+    //     value,
+    //     rectWidth: scaledValue,
+    //     offset: currentOffset,
+    //     fill: colorScale(categories.indexOf(key))
+    //   });
+    //   currentOffset += scaledValue;
+    // });
+
+    const cat = categoricalSelectionState[colorAccessor];
+    // console.log("cat in occupancy", cat);
+
+    cat.categoryValues.forEach(d => {
+      const o = occupancy.get(d);
+      const scaledValue = x(o);
       stack.push({
-        key,
-        value,
+        key: d,
+        value: o,
         rectWidth: scaledValue,
         offset: currentOffset,
-        fill: colorScale(categories.indexOf(key))
+        fill: colorScale(categories.indexOf(d))
       });
       currentOffset += scaledValue;
     });
+
+    // const optTuples = sortedCategoryValues([...cat.categoryIndices]);
+
+    // console.log("stack", stack);
+    // stack.sort(d => d.key);
 
     return (
       <svg
