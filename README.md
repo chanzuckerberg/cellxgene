@@ -8,7 +8,9 @@
 
 ## getting started
 
-You'll need **python 3.6** and **Google Chrome**. The web UI is tested on OSX and Windows using Chrome, and the python CLI is tested on OSX and Ubuntu (via WSL/Windows). It should work on other platforms, but if you run into trouble let us know (see [help](#help-and-contact) below).
+You'll need **python 3.6** and **Google Chrome**. (*Warning*: Python 3.7 is **not** supported at this time)
+The web UI is tested on OSX and Windows using Chrome, and the python CLI is tested on OSX and Ubuntu (via WSL/Windows). It should work on other platforms, but if you run into trouble let us know (see [help](#help-and-contact) below).
+
 
 To install run
 
@@ -109,7 +111,7 @@ Or you can create a virtual environment by using
 
 ```
 ENV_NAME=cellxgene
-python3 -m venv ${ENV_NAME}
+python3.6 -m venv ${ENV_NAME}
 source ${ENV_NAME}/bin/activate
 pip install cellxgene
 ```
