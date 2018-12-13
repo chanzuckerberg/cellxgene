@@ -3,9 +3,10 @@ import sys
 
 if sys.version_info[0:2] != (3, 6):
     raise ImportError(
-        "cellxgene only supports python 3.6. "
+        "cellxgene currently only supports python 3.6. Python 3.7 is known to fail; we will look at supporting "
+        "versions other than 3.6 in the future."
         "See https://github.com/chanzuckerberg/cellxgene#conda-and-virtual-environments "
-        "for more details about installation"
+        "for more help with installation."
     )
 
 with open("README.md", "rb") as fh:
