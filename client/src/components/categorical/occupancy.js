@@ -3,7 +3,6 @@ import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
 import * as d3 from "d3";
-import sortedCategoryValues from "./util";
 
 @connect()
 class Occupancy extends React.Component {
@@ -11,11 +10,9 @@ class Occupancy extends React.Component {
     const {
       occupancy,
       colorScale,
-      metadataField,
       categoricalSelectionState,
       colorAccessor,
-      schema,
-      optTuples
+      schema
     } = this.props;
     const width = 100;
     const height = 11;
