@@ -573,16 +573,6 @@ class DiffExpObsAPI(Resource):
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
-class LayoutAPI(Resource):
-    def get(self):
-        try:
-            return make_response(current_app.data.layout_to_fbs_matrix(),
-                                 HTTPStatus.OK,
-                                 {"Content-Type": "application/octet-stream"})
-        except PrepareError as e:
-            return make_response(e.message, HTTPStatus.INTERNAL_SERVER_ERROR)
-
-
 class LayoutObsAPI(Resource):
     @swagger.doc(
         {
@@ -606,16 +596,31 @@ class LayoutObsAPI(Resource):
         }
     )
     def get(self):
-        try:
-            layout = current_app.data.layout({})
-        except PrepareError as e:
-            return make_response(e.message, HTTPStatus.INTERNAL_SERVER_ERROR)
-        try:
-            return make_response((jsonify({"layout": layout})), HTTPStatus.OK)
-        except ValueError as e:
-            # JSON encoding failure, usually due to bad data
-            warnings.warn(JSON_NaN_to_num_warning_msg)
-            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+        preferred_mimetype = request.accept_mimetypes.best_match(
+            ["application/json", "application/octet-stream"],
+            "application/json"
+        )
+        if preferred_mimetype == "application/json":
+            try:
+                layout = current_app.data.layout({})
+            except PrepareError as e:
+                return make_response(e.message, HTTPStatus.INTERNAL_SERVER_ERROR)
+            try:
+                return make_response((jsonify({"layout": layout})), HTTPStatus.OK)
+            except ValueError as e:
+                # JSON encoding failure, usually due to bad data
+                warnings.warn(JSON_NaN_to_num_warning_msg)
+                return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+        elif preferred_mimetype == "application/octet-stream":
+            try:
+                return make_response(current_app.data.layout_to_fbs_matrix(),
+                                     HTTPStatus.OK,
+                                     {"Content-Type": "application/octet-stream"})
+            except PrepareError as e:
+                return make_response(e.message, HTTPStatus.INTERNAL_SERVER_ERROR)
+        else:
+            return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
+
 
     # @swagger.doc({
     #     "summary": "Observation layout for filtered subset.",
@@ -677,6 +682,5 @@ def get_api_resources():
     api.add_resource(DataXT, "/data/X/T")
     # Computation routes
     api.add_resource(DiffExpObsAPI, "/diffexp/obs")
-    api.add_resource(LayoutAPI, "/layout")
     api.add_resource(LayoutObsAPI, "/layout/obs")
     return api

@@ -32,7 +32,7 @@ const doInitialDataLoad = () =>
         .map(url => doJsonRequest(url))
         .value();
       requests.push(
-        doBinaryRequest(`${globals.API.prefix}${globals.API.version}layout`)
+        doBinaryRequest(`${globals.API.prefix}${globals.API.version}layout/obs`)
       );
       const results = await Promise.all(requests);
 
