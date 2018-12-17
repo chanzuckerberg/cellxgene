@@ -1,11 +1,10 @@
 // jshint esversion: 6
 
 import _ from "lodash";
-import { flatbuffers } from "flatbuffers";
 
 import * as kvCache from "./keyvalcache";
 import summarizeAnnotations from "./summarizeAnnotations";
-import { NetEncoding } from "./matrix_generated";
+import decodeMatrixFBS from "./matrix";
 
 /*
 Private helper function - create and return a template Universe
@@ -124,29 +123,11 @@ function RESTv02AnnotationsResponseToInternal(response) {
     .value();
 }
 
-function fbsMatrixExtractColumns(arrayBuffer) {
-  const bb = new flatbuffers.ByteBuffer(new Uint8Array(arrayBuffer));
-  const matrix = NetEncoding.Matrix.getRootAsMatrix(bb);
-  const columnsLength = matrix.columnsLength();
-  const result = [];
-  for (let c = 0; c < columnsLength; c += 1) {
-    const column = matrix.columns(c);
-    // Look up the type for this FBS column (eg, Float32)
-    const uType = column.uType();
-    // Convert to a JS class that supports this type
-    const TypeClass = NetEncoding[NetEncoding.ColumnUnion[uType]];
-    // Create a TypedArray that references the underlying buffer
-    const arr = column.u(new TypeClass()).dataArray();
-    result.push(arr);
-  }
-  return result;
-}
-
 function RESTv02LayoutFBSResponseToInternal(arrayBuffer) {
-  const arrs = fbsMatrixExtractColumns(arrayBuffer);
+  const fbs = decodeMatrixFBS(arrayBuffer, true);
   return {
-    X: arrs[0],
-    Y: arrs[1]
+    X: fbs.columns[0],
+    Y: fbs.columns[1]
   };
 }
 
@@ -226,20 +207,13 @@ export function convertDataXTFBStoObject(universe, arrayBuffer) {
     gene: Float32Array
   for each element.
   */
-  const columns = fbsMatrixExtractColumns(arrayBuffer);
-  const bb = new flatbuffers.ByteBuffer(new Uint8Array(arrayBuffer));
-  const matrix = NetEncoding.Matrix.getRootAsMatrix(bb);
-  const vars = matrix.colIndexArray();
+  const fbs = decodeMatrixFBS(arrayBuffer);
+  const { colIdx, columns } = fbs;
   const result = {};
 
-  for (let varIdx = 0; varIdx < vars.length; varIdx += 1) {
-    const gene = universe.varAnnotations[vars[varIdx]].name;
-    const column = columns[varIdx];
-    // and copy the array buffer, for better cache behavior (so we don't pin
-    // the entire array buffer)
-    const data = new column.constructor(columns[varIdx]);
-    // and save the resulting ojbect for later use.
-    result[gene] = data;
+  for (let c = 0; c < colIdx.length; c += 1) {
+    const gene = universe.varAnnotations[colIdx[c]].name;
+    result[gene] = columns[c];
   }
   return result;
 }

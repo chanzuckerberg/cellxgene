@@ -10,7 +10,7 @@ from server.app.driver.driver import CXGDriver
 from server.app.util.constants import Axis, DEFAULT_TOP_N
 from server.app.util.errors import FilterError, InteractiveError, PrepareError, ScanpyFileError
 from server.app.scanpy_engine.diffexp import diffexp_ttest
-from server.app.util.fbs.matrix import create_matrix_flatbuffer
+from server.app.util.fbs.matrix import matrix_to_flatbuffer
 
 """
 Sort order for methods
@@ -413,8 +413,8 @@ class ScanpyEngine(CXGDriver):
             raise FilterError("filtering on obs unsupported")
 
         # Currently only handles VAR dimension
-        T = self.data._X.T[var_selector]
-        return create_matrix_flatbuffer(T, col_idx=np.nonzero(var_selector)[0], row_idx=None)
+        X = self.data._X[:, var_selector]
+        return matrix_to_flatbuffer(X, col_idx=np.nonzero(var_selector)[0], row_idx=None)
 
     def diffexp_topN(self, obsFilterA, obsFilterB, top_n=None, interactive_limit=None):
         if Axis.VAR in obsFilterA or Axis.VAR in obsFilterB:
@@ -475,4 +475,4 @@ class ScanpyEngine(CXGDriver):
                 f"Layout has not been calculated using {self.layout_method}, "
                 f"please prepare your datafile and relaunch cellxgene") from e
         normalized_layout = (df_layout - df_layout.min()) / (df_layout.max() - df_layout.min())
-        return create_matrix_flatbuffer(normalized_layout.T.astype(dtype=np.float32), col_idx=None, row_idx=None)
+        return matrix_to_flatbuffer(normalized_layout.astype(dtype=np.float32), col_idx=None, row_idx=None)

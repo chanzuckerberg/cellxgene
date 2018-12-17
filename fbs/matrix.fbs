@@ -32,30 +32,36 @@ table Float64Array {
   data: [float64];
 }
 
-union ColumnUnion {
+table JSONEncodedArray {
+  // contains a UTF-8/JSON encoded array.  Used to store other
+  // types (or polymorphic arrays)
+  data: [uint8];
+}
+
+union TypedArray {
   Float32Array,
   Int32Array,
   Uint32Array,
-  Float64Array
-  // TODO add other types
+  Float64Array,
+  JSONEncodedArray
 }
 
 // Extra level of indirection required because vector of union not yet supported
 table Column {
-  u: ColumnUnion;
+  u: TypedArray;
 }
 
-// 2D matrix stored in columnar layout.
+// 2D matrix stored in columnar layout
 //
-table Matrix {
+table DataFrame {
   n_rows: uint32;     // all columns have this length
   n_cols: uint32;     // same as columns.length
   columns: [Column];  // length n_cols
 
-  // optional row and column index.  Length == n_cols
-  // If null, defaults to [0, n_rows) or [0, n_cols)
-  col_index: [uint32];
-  row_index: [uint32];
+  // optional row and column index, with same length as corresponding dimension.
+  // If null, defaults numeric index, ie, [0, n_rows) or [0, n_cols)
+  col_index: TypedArray;
+  row_index: TypedArray;
 }
 
-root_type Matrix;
+root_type DataFrame;

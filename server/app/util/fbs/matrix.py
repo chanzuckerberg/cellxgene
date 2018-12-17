@@ -1,10 +1,11 @@
 import flatbuffers
 import numpy as np
 from scipy import sparse
+import pandas as pd
 
 import server.app.util.fbs.NetEncoding.Column as Column
-import server.app.util.fbs.NetEncoding.ColumnUnion as ColumnUnion
-import server.app.util.fbs.NetEncoding.Matrix as Matrix
+import server.app.util.fbs.NetEncoding.TypedArray as TypedArray
+import server.app.util.fbs.NetEncoding.DataFrame as DataFrame
 
 
 # Placeholder until recent enhancements to flatbuffers Python
@@ -43,80 +44,164 @@ def CreateNumpyVector(builder, x):
     return builder.EndVector(x.size)
 
 
-def create_matrix_flatbuffer(matrix, row_idx=None, col_idx=None):
+# Serialization helper
+def serialize_column(builder, tarr):
+    """ Serialize NetEncoding.Column """
+    (u_type, u_value) = tarr
+    Column.ColumnStart(builder)
+    Column.ColumnAddUType(builder, u_type)
+    Column.ColumnAddU(builder, u_value)
+    return Column.ColumnEnd(builder)
+
+
+# Serialization helper
+def serialize_dataframe(builder, n_rows, n_cols, columns, col_idx):
+    """ Serialize NetEncoding.DataFrame """
+    DataFrame.DataFrameStart(builder)
+    DataFrame.DataFrameAddNRows(builder, n_rows)
+    DataFrame.DataFrameAddNCols(builder, n_cols)
+    DataFrame.DataFrameAddColumns(builder, columns)
+    if col_idx is not None:
+        (u_type, u_val) = col_idx
+        DataFrame.DataFrameAddColIndexType(builder, u_type)
+        DataFrame.DataFrameAddColIndex(builder, u_val)
+    return DataFrame.DataFrameEnd(builder)
+
+
+# Serialization helper
+def serialize_typed_array(builder, source_array, encoding_info):
     """
-    Given an array of ndarrays, create and return a Matrix flatbuffer.
+    Serialize any of the various typed arrays, eg, Float32Array.   Specific
+    means of serialization and type conversion are provided by type_info.
+    """
+    arr = source_array
+    (array_type, as_type) = encoding_info(source_array)
 
-    :param matrix: 2D ndarray or sparse equivalent
-    :param row_idx: numeric index for row dimension
-    :param col_idx: numeric index for col dimension
+    if isinstance(arr, pd.Index):
+        arr = arr.to_series()
 
-    Currently indices are unsupported and must be None
+    # convert to a simple ndarray
+    if as_type == 'json':
+        as_json = arr.to_json(orient='records')
+        arr = np.array(bytearray(as_json, 'utf-8'))
+    else:
+        if sparse.issparse(arr):
+            arr = arr.toarray()
+        elif isinstance(arr, pd.Series):
+            arr = arr.get_values()
+        if arr.dtype != as_type:
+            arr = arr.astype(as_type)
+
+    # serialize the ndarray into a vector
+    if arr.ndim == 2 and arr.shape[0] == 1:
+        arr = arr[0]
+    vec = CreateNumpyVector(builder, arr)
+
+    # serialize the typed array table
+    builder.StartObject(1)
+    builder.PrependUOffsetTRelativeSlot(0, vec, 0)
+    array_value = builder.EndObject()
+    return (array_type, array_value)
+
+
+def column_encoding(arr):
+    type_map = {
+        # dtype:  ( array_type, as_type )
+        np.float64: (TypedArray.TypedArray.Float32Array, np.float32),
+        np.float32: (TypedArray.TypedArray.Float32Array, np.float32),
+        np.float16: (TypedArray.TypedArray.Float32Array, np.float32),
+
+        np.int8: (TypedArray.TypedArray.Int32Array, np.int32),
+        np.int16: (TypedArray.TypedArray.Int32Array, np.int32),
+        np.int32: (TypedArray.TypedArray.Int32Array, np.int32),
+        np.int64: (TypedArray.TypedArray.Int32Array, np.int32),
+
+        np.uint8: (TypedArray.TypedArray.Uint32Array, np.uint32),
+        np.uint16: (TypedArray.TypedArray.Uint32Array, np.uint32),
+        np.uint32: (TypedArray.TypedArray.Uint32Array, np.uint32),
+        np.uint64: (TypedArray.TypedArray.Uint32Array, np.uint32)
+    }
+    type_map_default = (TypedArray.TypedArray.JSONEncodedArray, 'json')
+    return type_map.get(arr.dtype.type, type_map_default)
+
+
+def index_encoding(arr):
+    type_map = {
+        # dtype:  ( array_type, as_type )
+        np.int32: (TypedArray.TypedArray.Int32Array, np.int32),
+        np.int64: (TypedArray.TypedArray.Int32Array, np.int32),
+
+        np.uint32: (TypedArray.TypedArray.Uint32Array, np.uint32),
+        np.uint64: (TypedArray.TypedArray.Uint32Array, np.uint32)
+    }
+    type_map_default = (TypedArray.TypedArray.JSONEncodedArray, 'json')
+    return type_map.get(arr.dtype.type, type_map_default)
+
+
+def guess_at_mem_needed(matrix):
+    (n_rows, n_cols) = matrix.shape
+    if isinstance(matrix, np.ndarray) or sparse.issparse(matrix):
+        guess = (n_rows * n_cols * matrix.dtype.itemsize) + 1024
+    elif isinstance(matrix, pd.DataFrame):
+        # XXX TODO - DataFrame type estimate
+        guess = 1
+    else:
+        guess = 1
+
+    # round up to nearest 1024 bytes
+    guess = (guess + 0x400) & (~0x3ff)
+    return guess
+
+
+def matrix_to_flatbuffer(matrix, row_idx=None, col_idx=None):
+    """
+    Given a 2D DataFrame, ndarray or sparse equivalent, create and return a
+    DataFrame flatbuffer.
+
+    :param matrix: 2D DataFrame, ndarray or sparse equivalent
+    :param row_idx: index for row dimension, Index or ndarray
+    :param col_idx: index for col dimension, Index or ndarray
+
+    NOTE: row indices are (currently) unsupported and must be None
     """
 
     if row_idx is not None:
-        raise ValueError("row indexing not supproted for FBS Matrix")
+        raise ValueError("row indexing not supproted for FBS DataFrame")
+    if matrix.ndim != 2:
+        raise ValueError("FBS DataFrame must be 2D")
 
-    n_rows = matrix.shape[1]
-    n_cols = matrix.shape[0]
-    dtype = matrix.dtype
+    (n_rows, n_cols) = matrix.shape
 
-    # estimate size needed, so we don't unnecessarily realloc
-    guess_at_mem = (n_rows * n_cols * dtype.itemsize) + 1024
-    guess_at_mem = (guess_at_mem + 0x400) & (~0x3ff)  # round up to nearest 1024 bytes
-    builder = flatbuffers.Builder(guess_at_mem)
+    # estimate size needed, so we don't unnecessarily realloc.
+    builder = flatbuffers.Builder(guess_at_mem_needed(matrix))
 
-    type_map = {
-        # dtype:  ( array_type )
-        np.float64: (ColumnUnion.ColumnUnion.Float64Array),
-        np.float32: (ColumnUnion.ColumnUnion.Float32Array),
-        np.int32: (ColumnUnion.ColumnUnion.Int32Array),
-        np.uint32: (ColumnUnion.ColumnUnion.Uint32Array)
-    }
-    assert dtype.type in type_map
-    array_type = type_map[dtype.type]
+    if isinstance(matrix, pd.DataFrame):
+        matrix_columns = reversed(tuple(matrix[name] for name in matrix))
+    else:
+        matrix_columns = reversed(tuple(c for c in matrix.T))
 
     columns = []
-    for idx in reversed(np.arange(matrix.shape[0])):
-        # serialize the underlying vector
-        mat = matrix[idx]
-        if sparse.issparse(mat):
-            mat = mat.toarray()
-        if mat.ndim == 2 and mat.shape[0] == 1:
-            mat = mat[0]
-        vec = CreateNumpyVector(builder, mat)
-
+    # for idx in reversed(np.arange(n_cols)):
+    for c in matrix_columns:
         # serialize the typed array
-        builder.StartObject(1)
-        builder.PrependUOffsetTRelativeSlot(0, vec, 0)
-        array_value = builder.EndObject()
+        tarr = serialize_typed_array(builder, c, column_encoding)
 
-        # serialize the Column
-        Column.ColumnStart(builder)
-        Column.ColumnAddUType(builder, array_type)
-        Column.ColumnAddU(builder, array_value)
-        column = Column.ColumnEnd(builder)
-        columns.append(column)
+        # serialize the Column union
+        columns.append(serialize_column(builder, tarr))
 
-    # Serialize Matrix.columns[]
-    Matrix.MatrixStartColumnsVector(builder, n_cols)
+    # Serialize DataFrame.columns[]
+    DataFrame.DataFrameStartColumnsVector(builder, n_cols)
     for c in columns:
         builder.PrependUOffsetTRelative(c)
     mcv = builder.EndVector(n_cols)
 
-    # serialize the colIndex if available
+    # serialize the colIndex if provided
     cidx = None
     if col_idx is not None:
-        cidx = CreateNumpyVector(builder, col_idx.astype('uint32'))
+        cidx = serialize_typed_array(builder, col_idx, index_encoding)
 
-    # Serialize Matrix
-    Matrix.MatrixStart(builder)
-    Matrix.MatrixAddNRows(builder, n_rows)
-    Matrix.MatrixAddNCols(builder, n_cols)
-    Matrix.MatrixAddColumns(builder, mcv)
-    if cidx is not None:
-        Matrix.MatrixAddColIndex(builder, cidx)
-    matrix = Matrix.MatrixEnd(builder)
+    # Serialize DataFrame
+    matrix = serialize_dataframe(builder, n_rows, n_cols, mcv, cidx)
 
     builder.Finish(matrix)
     return builder.Output()

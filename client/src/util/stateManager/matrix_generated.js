@@ -9,12 +9,13 @@ var NetEncoding = NetEncoding || {};
 /**
  * @enum
  */
-NetEncoding.ColumnUnion = {
+NetEncoding.TypedArray = {
   NONE: 0, 0: 'NONE',
   Float32Array: 1, 1: 'Float32Array',
   Int32Array: 2, 2: 'Int32Array',
   Uint32Array: 3, 3: 'Uint32Array',
-  Float64Array: 4, 4: 'Float64Array'
+  Float64Array: 4, 4: 'Float64Array',
+  JSONEncodedArray: 5, 5: 'JSONEncodedArray'
 };
 
 /**
@@ -440,6 +441,111 @@ NetEncoding.Float64Array.endFloat64Array = function(builder) {
 /**
  * @constructor
  */
+NetEncoding.JSONEncodedArray = function() {
+  /**
+   * @type {flatbuffers.ByteBuffer}
+   */
+  this.bb = null;
+
+  /**
+   * @type {number}
+   */
+  this.bb_pos = 0;
+};
+
+/**
+ * @param {number} i
+ * @param {flatbuffers.ByteBuffer} bb
+ * @returns {NetEncoding.JSONEncodedArray}
+ */
+NetEncoding.JSONEncodedArray.prototype.__init = function(i, bb) {
+  this.bb_pos = i;
+  this.bb = bb;
+  return this;
+};
+
+/**
+ * @param {flatbuffers.ByteBuffer} bb
+ * @param {NetEncoding.JSONEncodedArray=} obj
+ * @returns {NetEncoding.JSONEncodedArray}
+ */
+NetEncoding.JSONEncodedArray.getRootAsJSONEncodedArray = function(bb, obj) {
+  return (obj || new NetEncoding.JSONEncodedArray).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
+ * @param {number} index
+ * @returns {number}
+ */
+NetEncoding.JSONEncodedArray.prototype.data = function(index) {
+  var offset = this.bb.__offset(this.bb_pos, 4);
+  return offset ? this.bb.readUint8(this.bb.__vector(this.bb_pos + offset) + index) : 0;
+};
+
+/**
+ * @returns {number}
+ */
+NetEncoding.JSONEncodedArray.prototype.dataLength = function() {
+  var offset = this.bb.__offset(this.bb_pos, 4);
+  return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @returns {Uint8Array}
+ */
+NetEncoding.JSONEncodedArray.prototype.dataArray = function() {
+  var offset = this.bb.__offset(this.bb_pos, 4);
+  return offset ? new Uint8Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ */
+NetEncoding.JSONEncodedArray.startJSONEncodedArray = function(builder) {
+  builder.startObject(1);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} dataOffset
+ */
+NetEncoding.JSONEncodedArray.addData = function(builder, dataOffset) {
+  builder.addFieldOffset(0, dataOffset, 0);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {Array.<number>} data
+ * @returns {flatbuffers.Offset}
+ */
+NetEncoding.JSONEncodedArray.createDataVector = function(builder, data) {
+  builder.startVector(1, data.length, 1);
+  for (var i = data.length - 1; i >= 0; i--) {
+    builder.addInt8(data[i]);
+  }
+  return builder.endVector();
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {number} numElems
+ */
+NetEncoding.JSONEncodedArray.startDataVector = function(builder, numElems) {
+  builder.startVector(1, numElems, 1);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @returns {flatbuffers.Offset}
+ */
+NetEncoding.JSONEncodedArray.endJSONEncodedArray = function(builder) {
+  var offset = builder.endObject();
+  return offset;
+};
+
+/**
+ * @constructor
+ */
 NetEncoding.Column = function() {
   /**
    * @type {flatbuffers.ByteBuffer}
@@ -473,11 +579,11 @@ NetEncoding.Column.getRootAsColumn = function(bb, obj) {
 };
 
 /**
- * @returns {NetEncoding.ColumnUnion}
+ * @returns {NetEncoding.TypedArray}
  */
 NetEncoding.Column.prototype.uType = function() {
   var offset = this.bb.__offset(this.bb_pos, 4);
-  return offset ? /** @type {NetEncoding.ColumnUnion} */ (this.bb.readUint8(this.bb_pos + offset)) : NetEncoding.ColumnUnion.NONE;
+  return offset ? /** @type {NetEncoding.TypedArray} */ (this.bb.readUint8(this.bb_pos + offset)) : NetEncoding.TypedArray.NONE;
 };
 
 /**
@@ -498,10 +604,10 @@ NetEncoding.Column.startColumn = function(builder) {
 
 /**
  * @param {flatbuffers.Builder} builder
- * @param {NetEncoding.ColumnUnion} uType
+ * @param {NetEncoding.TypedArray} uType
  */
 NetEncoding.Column.addUType = function(builder, uType) {
-  builder.addFieldInt8(0, uType, NetEncoding.ColumnUnion.NONE);
+  builder.addFieldInt8(0, uType, NetEncoding.TypedArray.NONE);
 };
 
 /**
@@ -524,7 +630,7 @@ NetEncoding.Column.endColumn = function(builder) {
 /**
  * @constructor
  */
-NetEncoding.Matrix = function() {
+NetEncoding.DataFrame = function() {
   /**
    * @type {flatbuffers.ByteBuffer}
    */
@@ -539,9 +645,9 @@ NetEncoding.Matrix = function() {
 /**
  * @param {number} i
  * @param {flatbuffers.ByteBuffer} bb
- * @returns {NetEncoding.Matrix}
+ * @returns {NetEncoding.DataFrame}
  */
-NetEncoding.Matrix.prototype.__init = function(i, bb) {
+NetEncoding.DataFrame.prototype.__init = function(i, bb) {
   this.bb_pos = i;
   this.bb = bb;
   return this;
@@ -549,17 +655,17 @@ NetEncoding.Matrix.prototype.__init = function(i, bb) {
 
 /**
  * @param {flatbuffers.ByteBuffer} bb
- * @param {NetEncoding.Matrix=} obj
- * @returns {NetEncoding.Matrix}
+ * @param {NetEncoding.DataFrame=} obj
+ * @returns {NetEncoding.DataFrame}
  */
-NetEncoding.Matrix.getRootAsMatrix = function(bb, obj) {
-  return (obj || new NetEncoding.Matrix).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+NetEncoding.DataFrame.getRootAsDataFrame = function(bb, obj) {
+  return (obj || new NetEncoding.DataFrame).__init(bb.readInt32(bb.position()) + bb.position(), bb);
 };
 
 /**
  * @returns {number}
  */
-NetEncoding.Matrix.prototype.nRows = function() {
+NetEncoding.DataFrame.prototype.nRows = function() {
   var offset = this.bb.__offset(this.bb_pos, 4);
   return offset ? this.bb.readUint32(this.bb_pos + offset) : 0;
 };
@@ -567,7 +673,7 @@ NetEncoding.Matrix.prototype.nRows = function() {
 /**
  * @returns {number}
  */
-NetEncoding.Matrix.prototype.nCols = function() {
+NetEncoding.DataFrame.prototype.nCols = function() {
   var offset = this.bb.__offset(this.bb_pos, 6);
   return offset ? this.bb.readUint32(this.bb_pos + offset) : 0;
 };
@@ -577,7 +683,7 @@ NetEncoding.Matrix.prototype.nCols = function() {
  * @param {NetEncoding.Column=} obj
  * @returns {NetEncoding.Column}
  */
-NetEncoding.Matrix.prototype.columns = function(index, obj) {
+NetEncoding.DataFrame.prototype.columns = function(index, obj) {
   var offset = this.bb.__offset(this.bb_pos, 8);
   return offset ? (obj || new NetEncoding.Column).__init(this.bb.__indirect(this.bb.__vector(this.bb_pos + offset) + index * 4), this.bb) : null;
 };
@@ -585,73 +691,57 @@ NetEncoding.Matrix.prototype.columns = function(index, obj) {
 /**
  * @returns {number}
  */
-NetEncoding.Matrix.prototype.columnsLength = function() {
+NetEncoding.DataFrame.prototype.columnsLength = function() {
   var offset = this.bb.__offset(this.bb_pos, 8);
   return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
 };
 
 /**
- * @param {number} index
- * @returns {number}
+ * @returns {NetEncoding.TypedArray}
  */
-NetEncoding.Matrix.prototype.colIndex = function(index) {
+NetEncoding.DataFrame.prototype.colIndexType = function() {
   var offset = this.bb.__offset(this.bb_pos, 10);
-  return offset ? this.bb.readUint32(this.bb.__vector(this.bb_pos + offset) + index * 4) : 0;
+  return offset ? /** @type {NetEncoding.TypedArray} */ (this.bb.readUint8(this.bb_pos + offset)) : NetEncoding.TypedArray.NONE;
 };
 
 /**
- * @returns {number}
+ * @param {flatbuffers.Table} obj
+ * @returns {?flatbuffers.Table}
  */
-NetEncoding.Matrix.prototype.colIndexLength = function() {
-  var offset = this.bb.__offset(this.bb_pos, 10);
-  return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
-};
-
-/**
- * @returns {Uint32Array}
- */
-NetEncoding.Matrix.prototype.colIndexArray = function() {
-  var offset = this.bb.__offset(this.bb_pos, 10);
-  return offset ? new Uint32Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
-};
-
-/**
- * @param {number} index
- * @returns {number}
- */
-NetEncoding.Matrix.prototype.rowIndex = function(index) {
+NetEncoding.DataFrame.prototype.colIndex = function(obj) {
   var offset = this.bb.__offset(this.bb_pos, 12);
-  return offset ? this.bb.readUint32(this.bb.__vector(this.bb_pos + offset) + index * 4) : 0;
+  return offset ? this.bb.__union(obj, this.bb_pos + offset) : null;
 };
 
 /**
- * @returns {number}
+ * @returns {NetEncoding.TypedArray}
  */
-NetEncoding.Matrix.prototype.rowIndexLength = function() {
-  var offset = this.bb.__offset(this.bb_pos, 12);
-  return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+NetEncoding.DataFrame.prototype.rowIndexType = function() {
+  var offset = this.bb.__offset(this.bb_pos, 14);
+  return offset ? /** @type {NetEncoding.TypedArray} */ (this.bb.readUint8(this.bb_pos + offset)) : NetEncoding.TypedArray.NONE;
 };
 
 /**
- * @returns {Uint32Array}
+ * @param {flatbuffers.Table} obj
+ * @returns {?flatbuffers.Table}
  */
-NetEncoding.Matrix.prototype.rowIndexArray = function() {
-  var offset = this.bb.__offset(this.bb_pos, 12);
-  return offset ? new Uint32Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+NetEncoding.DataFrame.prototype.rowIndex = function(obj) {
+  var offset = this.bb.__offset(this.bb_pos, 16);
+  return offset ? this.bb.__union(obj, this.bb_pos + offset) : null;
 };
 
 /**
  * @param {flatbuffers.Builder} builder
  */
-NetEncoding.Matrix.startMatrix = function(builder) {
-  builder.startObject(5);
+NetEncoding.DataFrame.startDataFrame = function(builder) {
+  builder.startObject(7);
 };
 
 /**
  * @param {flatbuffers.Builder} builder
  * @param {number} nRows
  */
-NetEncoding.Matrix.addNRows = function(builder, nRows) {
+NetEncoding.DataFrame.addNRows = function(builder, nRows) {
   builder.addFieldInt32(0, nRows, 0);
 };
 
@@ -659,7 +749,7 @@ NetEncoding.Matrix.addNRows = function(builder, nRows) {
  * @param {flatbuffers.Builder} builder
  * @param {number} nCols
  */
-NetEncoding.Matrix.addNCols = function(builder, nCols) {
+NetEncoding.DataFrame.addNCols = function(builder, nCols) {
   builder.addFieldInt32(1, nCols, 0);
 };
 
@@ -667,7 +757,7 @@ NetEncoding.Matrix.addNCols = function(builder, nCols) {
  * @param {flatbuffers.Builder} builder
  * @param {flatbuffers.Offset} columnsOffset
  */
-NetEncoding.Matrix.addColumns = function(builder, columnsOffset) {
+NetEncoding.DataFrame.addColumns = function(builder, columnsOffset) {
   builder.addFieldOffset(2, columnsOffset, 0);
 };
 
@@ -676,7 +766,7 @@ NetEncoding.Matrix.addColumns = function(builder, columnsOffset) {
  * @param {Array.<flatbuffers.Offset>} data
  * @returns {flatbuffers.Offset}
  */
-NetEncoding.Matrix.createColumnsVector = function(builder, data) {
+NetEncoding.DataFrame.createColumnsVector = function(builder, data) {
   builder.startVector(4, data.length, 4);
   for (var i = data.length - 1; i >= 0; i--) {
     builder.addOffset(data[i]);
@@ -688,73 +778,47 @@ NetEncoding.Matrix.createColumnsVector = function(builder, data) {
  * @param {flatbuffers.Builder} builder
  * @param {number} numElems
  */
-NetEncoding.Matrix.startColumnsVector = function(builder, numElems) {
+NetEncoding.DataFrame.startColumnsVector = function(builder, numElems) {
   builder.startVector(4, numElems, 4);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {NetEncoding.TypedArray} colIndexType
+ */
+NetEncoding.DataFrame.addColIndexType = function(builder, colIndexType) {
+  builder.addFieldInt8(3, colIndexType, NetEncoding.TypedArray.NONE);
 };
 
 /**
  * @param {flatbuffers.Builder} builder
  * @param {flatbuffers.Offset} colIndexOffset
  */
-NetEncoding.Matrix.addColIndex = function(builder, colIndexOffset) {
-  builder.addFieldOffset(3, colIndexOffset, 0);
+NetEncoding.DataFrame.addColIndex = function(builder, colIndexOffset) {
+  builder.addFieldOffset(4, colIndexOffset, 0);
 };
 
 /**
  * @param {flatbuffers.Builder} builder
- * @param {Array.<number>} data
- * @returns {flatbuffers.Offset}
+ * @param {NetEncoding.TypedArray} rowIndexType
  */
-NetEncoding.Matrix.createColIndexVector = function(builder, data) {
-  builder.startVector(4, data.length, 4);
-  for (var i = data.length - 1; i >= 0; i--) {
-    builder.addInt32(data[i]);
-  }
-  return builder.endVector();
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} numElems
- */
-NetEncoding.Matrix.startColIndexVector = function(builder, numElems) {
-  builder.startVector(4, numElems, 4);
+NetEncoding.DataFrame.addRowIndexType = function(builder, rowIndexType) {
+  builder.addFieldInt8(5, rowIndexType, NetEncoding.TypedArray.NONE);
 };
 
 /**
  * @param {flatbuffers.Builder} builder
  * @param {flatbuffers.Offset} rowIndexOffset
  */
-NetEncoding.Matrix.addRowIndex = function(builder, rowIndexOffset) {
-  builder.addFieldOffset(4, rowIndexOffset, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {Array.<number>} data
- * @returns {flatbuffers.Offset}
- */
-NetEncoding.Matrix.createRowIndexVector = function(builder, data) {
-  builder.startVector(4, data.length, 4);
-  for (var i = data.length - 1; i >= 0; i--) {
-    builder.addInt32(data[i]);
-  }
-  return builder.endVector();
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} numElems
- */
-NetEncoding.Matrix.startRowIndexVector = function(builder, numElems) {
-  builder.startVector(4, numElems, 4);
+NetEncoding.DataFrame.addRowIndex = function(builder, rowIndexOffset) {
+  builder.addFieldOffset(6, rowIndexOffset, 0);
 };
 
 /**
  * @param {flatbuffers.Builder} builder
  * @returns {flatbuffers.Offset}
  */
-NetEncoding.Matrix.endMatrix = function(builder) {
+NetEncoding.DataFrame.endDataFrame = function(builder) {
   var offset = builder.endObject();
   return offset;
 };
@@ -763,7 +827,7 @@ NetEncoding.Matrix.endMatrix = function(builder) {
  * @param {flatbuffers.Builder} builder
  * @param {flatbuffers.Offset} offset
  */
-NetEncoding.Matrix.finishMatrixBuffer = function(builder, offset) {
+NetEncoding.DataFrame.finishDataFrameBuffer = function(builder, offset) {
   builder.finish(offset);
 };
 
