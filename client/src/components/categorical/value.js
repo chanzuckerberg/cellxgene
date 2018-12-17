@@ -55,17 +55,17 @@ class CategoryValue extends React.Component {
     ).valueOf();
 
     /* this is the color scale, so add swatches below */
-    const c = metadataField === colorAccessor;
+    const isColorBy = metadataField === colorAccessor;
     let categories = null;
     let occupancy = null;
 
-    if (c && schema) {
+    if (isColorBy && schema) {
       categories = _.filter(schema.annotations.obs, {
         name: colorAccessor
       })[0].categories;
     }
 
-    if (colorAccessor && !c) {
+    if (colorAccessor && !isColorBy) {
       occupancy = countCategoryValues2D(
         metadataField,
         colorAccessor,
@@ -104,7 +104,9 @@ class CategoryValue extends React.Component {
             {displayString}
           </label>
           <span style={{ flexShrink: 0 }}>
-            {colorAccessor && !c && categoricalSelectionState[colorAccessor] ? (
+            {colorAccessor &&
+            !isColorBy &&
+            categoricalSelectionState[colorAccessor] ? (
               <Occupancy
                 occupancy={occupancy.get(
                   category.categoryValues[categoryIndex]
@@ -122,7 +124,7 @@ class CategoryValue extends React.Component {
               width: 11,
               height: 11,
               backgroundColor:
-                c && categories
+                isColorBy && categories
                   ? colorScale(categories.indexOf(value))
                   : "inherit"
             }}

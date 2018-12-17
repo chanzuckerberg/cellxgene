@@ -27,37 +27,25 @@ class Occupancy extends React.Component {
       .domain([0, d3.sum(Array.from(occupancy, d => d[1]))])
       .range([0, width]);
 
-    const stack = [];
     let currentOffset = 0;
 
-    // occupancy.forEach((value, key) => {
-    //   const scaledValue = x(value);
-    //   stack.push({
-    //     key,
-    //     value,
-    //     rectWidth: scaledValue,
-    //     offset: currentOffset,
-    //     fill: colorScale(categories.indexOf(key))
-    //   });
-    //   currentOffset += scaledValue;
-    // });
+    const stacks = categoricalSelectionState[colorAccessor].categoryValues.map(
+      d => {
+        const o = occupancy.get(d);
 
-    const cat = categoricalSelectionState[colorAccessor];
+        const scaledValue = x(o);
 
-    cat.categoryValues.forEach(d => {
-      const o = occupancy.get(d);
-
-      const scaledValue = x(o);
-
-      stack.push({
-        key: d,
-        value: o || 0,
-        rectWidth: o ? scaledValue : 0,
-        offset: currentOffset,
-        fill: o ? colorScale(categories.indexOf(d)) : "rgb(255,255,255)"
-      });
-      currentOffset += o ? scaledValue : 0;
-    });
+        const stackItem = {
+          key: d,
+          value: o || 0,
+          rectWidth: o ? scaledValue : 0,
+          offset: currentOffset,
+          fill: o ? colorScale(categories.indexOf(d)) : "rgb(255,255,255)"
+        };
+        currentOffset += o ? scaledValue : 0;
+        return stackItem;
+      }
+    );
 
     return (
       <svg
@@ -67,7 +55,7 @@ class Occupancy extends React.Component {
           height
         }}
       >
-        {_.map(stack, d => (
+        {stacks.map(d => (
           <rect
             key={d.key}
             width={d.rectWidth}
