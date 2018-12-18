@@ -621,7 +621,6 @@ class LayoutObsAPI(Resource):
         else:
             return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
 
-
     # @swagger.doc({
     #     "summary": "Observation layout for filtered subset.",
     #     "tags": ["layout"],
