@@ -361,6 +361,16 @@ class ScanpyEngine(CXGDriver):
             result = {"names": fields, "data": DataFrame(var[fields]).to_records(index=True).tolist()}
         return result
 
+    def annotation_to_fbs_matrix(self, axis, fields=None):
+        import sys
+        if axis == Axis.OBS:
+            df = self.data.obs
+        else:
+            df = self.data.var
+        if fields is not None and len(fields) > 0:
+            df = df[fields]
+        return matrix_to_flatbuffer(df, col_idx=df.columns)
+
     def data_frame(self, filter, axis):
         """
         Retrieves data for each variable for observations in data frame

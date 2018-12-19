@@ -22,19 +22,20 @@ const doInitialDataLoad = () =>
     dispatch({ type: "initial data load start" });
 
     try {
-      const requests = _([
-        "config",
-        "schema",
-        "annotations/obs",
-        "annotations/var?annotation-name=name"
-      ])
+      const requestJson = _(["config", "schema"])
         .map(r => `${globals.API.prefix}${globals.API.version}${r}`)
         .map(url => doJsonRequest(url))
         .value();
-      requests.push(
-        doBinaryRequest(`${globals.API.prefix}${globals.API.version}layout/obs`)
-      );
-      const results = await Promise.all(requests);
+      const requestBinary = _([
+        "annotations/obs",
+        "annotations/var?annotation-name=name",
+        "layout/obs"
+      ])
+        .map(r => `${globals.API.prefix}${globals.API.version}${r}`)
+        .map(url => doBinaryRequest(url))
+        .value();
+
+      const results = await Promise.all(_.concat(requestJson, requestBinary));
 
       /* set config defaults */
       const config = { ...globals.configDefaults, ...results[0].config };

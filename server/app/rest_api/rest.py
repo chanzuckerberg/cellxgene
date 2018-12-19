@@ -148,16 +148,30 @@ class AnnotationsObsAPI(Resource):
     )
     def get(self):
         fields = request.args.getlist("annotation-name", None)
-        try:
-            annotation_response = current_app.data.annotation({}, "obs", fields)
-        except KeyError:
-            return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
-        try:
-            return make_response(jsonify(annotation_response), HTTPStatus.OK)
-        except ValueError as e:
-            # JSON encoding failure, usually due to bad data
-            warnings.warn(JSON_NaN_to_num_warning_msg)
-            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+        preferred_mimetype = request.accept_mimetypes.best_match(
+            ["application/json", "application/octet-stream"],
+            "application/json"
+        )
+        if preferred_mimetype == "application/json":
+            try:
+                annotation_response = current_app.data.annotation({}, "obs", fields)
+            except KeyError:
+                return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
+            try:
+                return make_response(jsonify(annotation_response), HTTPStatus.OK)
+            except ValueError as e:
+                # JSON encoding failure, usually due to bad data
+                warnings.warn(JSON_NaN_to_num_warning_msg)
+                return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+        elif preferred_mimetype == "application/octet-stream":
+            try:
+                return make_response(current_app.data.annotation_to_fbs_matrix("obs", fields),
+                                     HTTPStatus.OK,
+                                     {"Content-Type": "application/octet-stream"})
+            except KeyError:
+                return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
+        else:
+            return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
 
     @swagger.doc(
         {
@@ -241,16 +255,30 @@ class AnnotationsVarAPI(Resource):
     )
     def get(self):
         fields = request.args.getlist("annotation-name", None)
-        try:
-            annotation_response = current_app.data.annotation({}, "var", fields)
-        except KeyError:
-            return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
-        try:
-            return make_response(jsonify(annotation_response), HTTPStatus.OK)
-        except ValueError as e:
-            # JSON encoding failure, usually due to bad data
-            warnings.warn(JSON_NaN_to_num_warning_msg)
-            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+        preferred_mimetype = request.accept_mimetypes.best_match(
+            ["application/json", "application/octet-stream"],
+            "application/json"
+        )
+        if preferred_mimetype == "application/json":
+            try:
+                annotation_response = current_app.data.annotation({}, "var", fields)
+            except KeyError:
+                return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
+            try:
+                return make_response(jsonify(annotation_response), HTTPStatus.OK)
+            except ValueError as e:
+                # JSON encoding failure, usually due to bad data
+                warnings.warn(JSON_NaN_to_num_warning_msg)
+                return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+        elif preferred_mimetype == "application/octet-stream":
+            try:
+                return make_response(current_app.data.annotation_to_fbs_matrix("var", fields),
+                                     HTTPStatus.OK,
+                                     {"Content-Type": "application/octet-stream"})
+            except KeyError:
+                return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
+        else:
+            return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
 
     @swagger.doc(
         {

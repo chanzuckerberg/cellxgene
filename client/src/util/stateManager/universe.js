@@ -123,6 +123,20 @@ function RESTv02AnnotationsResponseToInternal(response) {
     .value();
 }
 
+function RESTv02AnotationsFBSResponseToInternal(arrayBuffer) {
+  const fbs = decodeMatrixFBS(arrayBuffer);
+  const keys = fbs.colIdx;
+  const result = Array(fbs.nRows);
+  for (let row = 0; row < fbs.nRows; row += 1) {
+    const rec = { __index__: row };
+    for (let col = 0; col < fbs.nCols; col += 1) {
+      rec[keys[col]] = fbs.columns[col][row];
+    }
+    result[row] = rec;
+  }
+  return result;
+}
+
 function RESTv02LayoutFBSResponseToInternal(arrayBuffer) {
   const fbs = decodeMatrixFBS(arrayBuffer, true);
   return {
@@ -179,10 +193,10 @@ export function createUniverseFromRestV02Response(
   universe.nVar = schema.dataframe.nVar;
 
   /* annotations */
-  universe.obsAnnotations = RESTv02AnnotationsResponseToInternal(
+  universe.obsAnnotations = RESTv02AnotationsFBSResponseToInternal(
     annotationsObsResponse
   );
-  universe.varAnnotations = RESTv02AnnotationsResponseToInternal(
+  universe.varAnnotations = RESTv02AnotationsFBSResponseToInternal(
     annotationsVarResponse
   );
 

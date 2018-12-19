@@ -67,6 +67,11 @@ class CXGDriver(metaclass=ABCMeta):
         pass
 
     @abstractmethod
+    def annotation_to_fbs_matrix(self, axis, field=None):
+        """ Same as annotation(), except returns a flatbuffer, and does not support filtering. """
+        pass
+
+    @abstractmethod
     def data_frame(self, filter, axis):
         """
         Retrieves data for each variable for observations in data frame
@@ -111,4 +116,5 @@ class CXGDriver(metaclass=ABCMeta):
 
     @abstractmethod
     def layout_to_fbs_matrix(self, filter):
+        """ same as layout, except returns a flatbuffer """
         pass
