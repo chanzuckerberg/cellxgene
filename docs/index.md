@@ -8,11 +8,21 @@ _cellxgene_ is an interactive data explorer for single-cell transcriptomics data
 
 ## getting started
 
-install the package
-> `> pip install cellxgene`
+Install the package
+``` bash
+pip install cellxgene
+```
 
-launch the web app
-> `> cellxgene --launch processed.h5ad`
+Download an example file
+
+``` bash
+curl -o pbmc3k.h5ad https://raw.githubusercontent.com/chanzuckerberg/cellxgene/master/example-dataset/pbmc3k.h5ad
+```
+
+Launch _cellxgene_
+``` bash
+cellxgene launch pbmc3k.h5ad
+```
 
 ## getting help
 
