@@ -538,8 +538,19 @@ class ScanpyEngine(CXGDriver):
             (df_layout - df_layout.min()) / (df_layout.max() - df_layout.min()),
             index=df.obs.index,
         )
-<<<<<<< HEAD
-        return {"ndims": normalized_layout.shape[1], "coordinates": normalized_layout.to_records(index=True).tolist()}
+        try:
+            return jsonify_scanpy(
+                {
+                    "layout": {
+                        "ndims": normalized_layout.shape[1],
+                        "coordinates": normalized_layout.to_records(
+                            index=True
+                        ).tolist(),
+                    }
+                }
+            )
+        except ValueError:
+            raise JSONEncodingValueError("Error encoding layout to JSON")
 
     def layout_to_fbs_matrix(self):
         """
@@ -557,18 +568,3 @@ class ScanpyEngine(CXGDriver):
                 f"please prepare your datafile and relaunch cellxgene") from e
         normalized_layout = (df_layout - df_layout.min()) / (df_layout.max() - df_layout.min())
         return encode_matrix_fbs(normalized_layout.astype(dtype=np.float32), col_idx=None, row_idx=None)
-=======
-        try:
-            return jsonify_scanpy(
-                {
-                    "layout": {
-                        "ndims": normalized_layout.shape[1],
-                        "coordinates": normalized_layout.to_records(
-                            index=True
-                        ).tolist(),
-                    }
-                }
-            )
-        except ValueError:
-            raise JSONEncodingValueError("Error encoding layout to JSON")
->>>>>>> master
