@@ -198,29 +198,25 @@ class AnnotationsObsAPI(Resource):
             ["application/json", "application/octet-stream"],
             "application/json"
         )
-        if preferred_mimetype == "application/json":
-            try:
-                annotation_response = current_app.data.annotation({}, "obs", fields)
+        try:
+            if preferred_mimetype == "application/json":
                 return make_response(
-                    annotation_response, HTTPStatus.OK, {"Content-Type": JSON_MIMETYPE}
+                    current_app.data.annotation({}, "obs", fields), HTTPStatus.OK, {"Content-Type": "application/json"}
                 )
-            except KeyError:
-                return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
-            except JSONEncodingValueError as e:
-                # JSON encoding failure, usually due to bad data
-                warnings.warn(JSON_NaN_to_num_warning_msg)
-                return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
-            except ValueError as e:
-                return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
-        elif preferred_mimetype == "application/octet-stream":
-            try:
+            elif preferred_mimetype == "application/octet-stream":
                 return make_response(current_app.data.annotation_to_fbs_matrix("obs", fields),
                                      HTTPStatus.OK,
                                      {"Content-Type": "application/octet-stream"})
-            except KeyError:
-                return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
-        else:
-            return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
+            else:
+                return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
+        except KeyError:
+            return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
+        except JSONEncodingValueError as e:
+            # JSON encoding failure, usually due to bad data
+            warnings.warn(JSON_NaN_to_num_warning_msg)
+            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+        except ValueError as e:
+            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
     @swagger.doc(
         {
@@ -322,29 +318,25 @@ class AnnotationsVarAPI(Resource):
             ["application/json", "application/octet-stream"],
             "application/json"
         )
-        if preferred_mimetype == "application/json":
-            try:
-                annotation_response = current_app.data.annotation({}, "var", fields)
-                return make_response(
-                    annotation_response, HTTPStatus.OK, {"Content-Type": JSON_MIMETYPE}
-                )
-            except KeyError:
-                return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
-            except JSONEncodingValueError as e:
-                # JSON encoding failure, usually due to bad data
-                warnings.warn(JSON_NaN_to_num_warning_msg)
-                return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
-            except ValueError as e:
-                return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
-        elif preferred_mimetype == "application/octet-stream":
-            try:
+        try:
+            if preferred_mimetype == "application/json":
+                return make_response(current_app.data.annotation({}, "var", fields),
+                                     HTTPStatus.OK,
+                                     {"Content-Type": "application/json"})
+            elif preferred_mimetype == "application/octet-stream":
                 return make_response(current_app.data.annotation_to_fbs_matrix("var", fields),
                                      HTTPStatus.OK,
                                      {"Content-Type": "application/octet-stream"})
-            except KeyError:
-                return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
-        else:
-            return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
+            else:
+                return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
+        except KeyError:
+            return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
+        except JSONEncodingValueError as e:
+            # JSON encoding failure, usually due to bad data
+            warnings.warn(JSON_NaN_to_num_warning_msg)
+            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+        except ValueError as e:
+            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
     @swagger.doc(
         {
@@ -631,28 +623,30 @@ class DataVarAPI(Resource):
         }
     )
     def put(self):
-        if not request.accept_mimetypes.best_match(["application/json", "text/csv"]):
-            return make_response(
-                f"Unsupported MIME type '{request.accept_mimetypes}'",
-                HTTPStatus.NOT_ACCEPTABLE,
-            )
-        # TODO support CSV
+        preferred_mimetype = request.accept_mimetypes.best_match(
+            ["application/json", "application/octet-stream"],
+            "application/json"
+        )
         try:
-            get_mime_type(
-                acceptable_types=["application/json"], header=request.accept_mimetypes
-            )
-        except MimeTypeError as e:
-            return make_response(e.message, HTTPStatus.NOT_ACCEPTABLE)
-        try:
-            return make_response(
-                (
-                    current_app.data.data_frame(
+            if preferred_mimetype == "application/json":
+                return make_response(
+                    (
+                        current_app.data.data_frame(
+                            request.get_json()["filter"], axis=Axis.VAR
+                        )
+                    ),
+                    HTTPStatus.OK,
+                    {"Content-Type": JSON_MIMETYPE},
+                )
+            elif preferred_mimetype == "application/octet-stream":
+                return make_response(
+                    current_app.data.data_frame_to_fbs_matrix(
                         request.get_json()["filter"], axis=Axis.VAR
-                    )
-                ),
-                HTTPStatus.OK,
-                {"Content-Type": JSON_MIMETYPE},
-            )
+                    ),
+                    HTTPStatus.OK,
+                    {"Content-Type": "application/octet-stream"})
+            else:
+                return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
         except FilterError as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
         except JSONEncodingValueError as e:
@@ -661,16 +655,6 @@ class DataVarAPI(Resource):
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
         except ValueError as e:
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
-
-
-class DataXT(Resource):
-    def put(self):
-        try:
-            return make_response(current_app.data.data_frame_to_fbs_matrix(request.get_json()["filter"], axis=Axis.VAR),
-                                 HTTPStatus.OK,
-                                 {"Content-Type": "application/octet-stream"})
-        except FilterError as e:
-            return make_response(e.message, HTTPStatus.BAD_REQUEST)
 
 
 class DiffExpObsAPI(Resource):
@@ -829,29 +813,24 @@ class LayoutObsAPI(Resource):
             ["application/json", "application/octet-stream"],
             "application/json"
         )
-        if preferred_mimetype == "application/json":
-            content_type = JSON_MIMETYPE
-            try:
-                layout = current_app.data.layout({})
-            except PrepareError as e:
-                return make_response(e.message, HTTPStatus.INTERNAL_SERVER_ERROR)
-            try:
-                return make_response(layout, HTTPStatus.OK, {"Content-Type": content_type})
-            except JSONEncodingValueError as e:
-                # JSON encoding failure, usually due to bad data
-                warnings.warn(JSON_NaN_to_num_warning_msg)
-                return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
-            except ValueError as e:
-                return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
-        elif preferred_mimetype == "application/octet-stream":
-            try:
+        try:
+            if preferred_mimetype == "application/json":
+                return make_response(current_app.data.layout({}), HTTPStatus.OK, {"Content-Type": "application/json"})
+
+            elif preferred_mimetype == "application/octet-stream":
                 return make_response(current_app.data.layout_to_fbs_matrix(),
                                      HTTPStatus.OK,
                                      {"Content-Type": "application/octet-stream"})
-            except PrepareError as e:
-                return make_response(e.message, HTTPStatus.INTERNAL_SERVER_ERROR)
-        else:
-            return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
+            else:
+                return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
+        except PrepareError as e:
+            return make_response(e.message, HTTPStatus.INTERNAL_SERVER_ERROR)
+        except JSONEncodingValueError as e:
+            # JSON encoding failure, usually due to bad data
+            warnings.warn(JSON_NaN_to_num_warning_msg)
+            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+        except ValueError as e:
+            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
     # @swagger.doc({
     #     "summary": "Observation layout for filtered subset.",
@@ -910,7 +889,6 @@ def get_api_resources():
     api.add_resource(AnnotationsVarAPI, "/annotations/var")
     api.add_resource(DataObsAPI, "/data/obs")
     api.add_resource(DataVarAPI, "/data/var")
-    api.add_resource(DataXT, "/data/X/T")
     # Computation routes
     api.add_resource(DiffExpObsAPI, "/diffexp/obs")
     api.add_resource(LayoutObsAPI, "/layout/obs")

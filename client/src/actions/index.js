@@ -95,7 +95,7 @@ async function _doRequestExpressionData(dispatch, getState, genes) {
   /* helper for this function only */
   const fetchFBSDataXT = async geneNames => {
     const res = await fetch(
-      `${globals.API.prefix}${globals.API.version}data/X/T`,
+      `${globals.API.prefix}${globals.API.version}data/var`,
       {
         method: "PUT",
         body: JSON.stringify({
