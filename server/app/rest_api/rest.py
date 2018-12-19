@@ -570,9 +570,6 @@ class DataVarAPI(Resource):
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
         except JSONEncodingValueError as e:
             # JSON encoding failure, usually due to bad data
-            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
-        except JSONEncodingValueError as e:
-            # JSON encoding failure, usually due to bad data
             warnings.warn(JSON_NaN_to_num_warning_msg)
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
         except ValueError as e:
