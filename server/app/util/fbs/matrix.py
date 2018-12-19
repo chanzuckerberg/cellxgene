@@ -153,7 +153,7 @@ def guess_at_mem_needed(matrix):
     return guess
 
 
-def matrix_to_flatbuffer(matrix, row_idx=None, col_idx=None):
+def encode_matrix_fbs(matrix, row_idx=None, col_idx=None):
     """
     Given a 2D DataFrame, ndarray or sparse equivalent, create and return a
     DataFrame flatbuffer.
