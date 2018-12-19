@@ -44,22 +44,39 @@ class UtilTest(unittest.TestCase):
             self.data._validate_data_types()
 
     def test_filter_idx(self):
-        filter_ = {"filter": {"var": {"index": [1, 99, [200, 300]]}, "obs": {"index": [1, 99, [1000, 2000]]}}}
+        filter_ = {
+            "filter": {
+                "var": {"index": [1, 99, [200, 300]]},
+                "obs": {"index": [1, 99, [1000, 2000]]},
+            }
+        }
         data = self.data.filter_dataframe(filter_["filter"])
         self.assertEqual(data.shape, (1002, 102))
 
     def test_filter_annotation(self):
         filter_ = {
-            "filter": {"obs": {"annotation_value": [{"name": "louvain", "values": ["NK cells", "CD8 T cells"]}]}}
+            "filter": {
+                "obs": {
+                    "annotation_value": [
+                        {"name": "louvain", "values": ["NK cells", "CD8 T cells"]}
+                    ]
+                }
+            }
         }
         data = self.data.filter_dataframe(filter_["filter"])
         self.assertEqual(data.shape, (470, 1838))
-        filter_ = {"filter": {"obs": {"annotation_value": [{"name": "n_counts", "min": 3000}]}}}
+        filter_ = {
+            "filter": {"obs": {"annotation_value": [{"name": "n_counts", "min": 3000}]}}
+        }
         data = self.data.filter_dataframe(filter_["filter"])
         self.assertEqual(data.shape, (497, 1838))
 
     def test_filter_annotation_no_uns(self):
-        filter_ = {"filter": {"var": {"annotation_value": [{"name": "name", "values": ["RER1"]}]}}}
+        filter_ = {
+            "filter": {
+                "var": {"annotation_value": [{"name": "name", "values": ["RER1"]}]}
+            }
+        }
         data = self.data.filter_dataframe(filter_["filter"])
         self.assertEqual(data.shape[1], 1)
 
@@ -90,36 +107,45 @@ class UtilTest(unittest.TestCase):
 
     def test_schema_produces_error(self):
         self.data.data.obs["time"] = Series(
-            list([time.time() for i in range(self.data.cell_count)]), dtype="datetime64[ns]"
+            list([time.time() for i in range(self.data.cell_count)]),
+            dtype="datetime64[ns]",
         )
         with pytest.raises(TypeError):
             self.data._create_schema()
 
     def test_config(self):
-        self.assertEqual(self.data.features["layout"]["obs"], {"available": True, "interactiveLimit": 50000})
+        self.assertEqual(
+            self.data.features["layout"]["obs"],
+            {"available": True, "interactiveLimit": 50000},
+        )
 
     def test_layout(self):
-        layout = self.data.layout(None)
-        self.assertEqual(layout["ndims"], 2)
-        self.assertEqual(len(layout["coordinates"]), 2638)
-        self.assertEqual(layout["coordinates"][0][0], 0)
-        for idx, val in enumerate(layout["coordinates"]):
+        layout = json.loads(self.data.layout(None))
+        self.assertEqual(layout["layout"]["ndims"], 2)
+        self.assertEqual(len(layout["layout"]["coordinates"]), 2638)
+        self.assertEqual(layout["layout"]["coordinates"][0][0], 0)
+        for idx, val in enumerate(layout["layout"]["coordinates"]):
             self.assertLessEqual(val[1], 1)
             self.assertLessEqual(val[2], 1)
 
     def test_annotations(self):
-        annotations = self.data.annotation(None, "obs")
-        self.assertEqual(annotations["names"], ["name", "n_genes", "percent_mito", "n_counts", "louvain"])
+        annotations = json.loads(self.data.annotation(None, "obs"))
+        self.assertEqual(
+            annotations["names"],
+            ["name", "n_genes", "percent_mito", "n_counts", "louvain"],
+        )
         self.assertEqual(len(annotations["data"]), 2638)
-        annotations = self.data.annotation(None, "var")
+        annotations = json.loads(self.data.annotation(None, "var"))
         self.assertEqual(annotations["names"], ["name", "n_cells"])
         self.assertEqual(len(annotations["data"]), 1838)
 
     def test_annotation_fields(self):
-        annotations = self.data.annotation(None, "obs", ["n_genes", "n_counts"])
+        annotations = json.loads(
+            self.data.annotation(None, "obs", ["n_genes", "n_counts"])
+        )
         self.assertEqual(annotations["names"], ["n_genes", "n_counts"])
         self.assertEqual(len(annotations["data"]), 2638)
-        annotations = self.data.annotation(None, "var", ["name"])
+        annotations = json.loads(self.data.annotation(None, "var", ["name"]))
         self.assertEqual(annotations["names"], ["name"])
         self.assertEqual(len(annotations["data"]), 1838)
 
@@ -127,45 +153,54 @@ class UtilTest(unittest.TestCase):
         filter_ = {
             "filter": {
                 "obs": {"annotation_value": [{"name": "n_counts", "min": 3000}]},
-                "var": {"annotation_value": [{"name": "name", "values": ["ATAD3C", "RER1"]}]},
+                "var": {
+                    "annotation_value": [{"name": "name", "values": ["ATAD3C", "RER1"]}]
+                },
             }
         }
-        annotations = self.data.annotation(filter_["filter"], "obs")
-        self.assertEqual(annotations["names"], ["name", "n_genes", "percent_mito", "n_counts", "louvain"])
+        annotations = json.loads(self.data.annotation(filter_["filter"], "obs"))
+        self.assertEqual(
+            annotations["names"],
+            ["name", "n_genes", "percent_mito", "n_counts", "louvain"],
+        )
         self.assertEqual(len(annotations["data"]), 497)
-        annotations = self.data.annotation(filter_["filter"], "var")
+        annotations = json.loads(self.data.annotation(filter_["filter"], "var"))
         self.assertEqual(annotations["names"], ["name", "n_cells"])
         self.assertEqual(len(annotations["data"]), 2)
 
     def test_filtered_layout(self):
-        filter_ = {"filter": {"obs": {"annotation_value": [{"name": "n_counts", "min": 3000}]}}}
-        layout = self.data.layout(filter_["filter"])
-        self.assertEqual(len(layout["coordinates"]), 497)
+        filter_ = {
+            "filter": {"obs": {"annotation_value": [{"name": "n_counts", "min": 3000}]}}
+        }
+        layout = json.loads(self.data.layout(filter_["filter"]))
+        self.assertEqual(len(layout["layout"]["coordinates"]), 497)
 
     def test_diffexp_topN(self):
         f1 = {"filter": {"obs": {"index": [[0, 500]]}}}
         f2 = {"filter": {"obs": {"index": [[500, 1000]]}}}
-        result = self.data.diffexp_topN(f1["filter"], f2["filter"])
+        result = json.loads(self.data.diffexp_topN(f1["filter"], f2["filter"]))
         self.assertEqual(len(result), 10)
-        result = self.data.diffexp_topN(f1["filter"], f2["filter"], 20)
+        result = json.loads(self.data.diffexp_topN(f1["filter"], f2["filter"], 20))
         self.assertEqual(len(result), 20)
 
     def test_data_frame(self):
-        data_frame_obs = self.data.data_frame(None, "obs")
+        data_frame_obs = json.loads(self.data.data_frame(None, "obs"))
         self.assertEqual(len(data_frame_obs["var"]), 1838)
         self.assertEqual(len(data_frame_obs["obs"]), 2638)
-        data_frame_var = self.data.data_frame(None, "var")
+        data_frame_var = json.loads(self.data.data_frame(None, "var"))
         self.assertEqual(len(data_frame_var["var"]), 1838)
         self.assertEqual(len(data_frame_var["obs"]), 2638)
 
     def test_filtered_data_frame(self):
-        filter_ = {"filter": {"obs": {"annotation_value": [{"name": "n_counts", "min": 3000}]}}}
-        data_frame_obs = self.data.data_frame(filter_["filter"], "obs")
+        filter_ = {
+            "filter": {"obs": {"annotation_value": [{"name": "n_counts", "min": 3000}]}}
+        }
+        data_frame_obs = json.loads(self.data.data_frame(filter_["filter"], "obs"))
         self.assertEqual(len(data_frame_obs["var"]), 1838)
         self.assertEqual(len(data_frame_obs["obs"]), 497)
         self.assertIsInstance(data_frame_obs["obs"][0], (list, tuple))
         self.assertEqual(type(data_frame_obs["var"][0]), int)
-        data_frame_var = self.data.data_frame(filter_["filter"], "var")
+        data_frame_var = json.loads(self.data.data_frame(filter_["filter"], "var"))
         self.assertEqual(len(data_frame_var["var"]), 1838)
         self.assertEqual(len(data_frame_var["obs"]), 497)
         self.assertIsInstance(data_frame_var["var"][0], (list, tuple))
@@ -173,8 +208,12 @@ class UtilTest(unittest.TestCase):
 
     def test_data_single_gene(self):
         for axis in ["obs", "var"]:
-            filter_ = {"filter": {"var": {"annotation_value": [{"name": "name", "values": ["RER1"]}]}}}
-            data_frame_var = self.data.data_frame(filter_["filter"], axis)
+            filter_ = {
+                "filter": {
+                    "var": {"annotation_value": [{"name": "name", "values": ["RER1"]}]}
+                }
+            }
+            data_frame_var = json.loads(self.data.data_frame(filter_["filter"], axis))
             if axis == "obs":
                 self.assertEqual(type(data_frame_var["var"][0]), int)
                 self.assertIsInstance(data_frame_var["obs"][0], (list, tuple))

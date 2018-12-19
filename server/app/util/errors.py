@@ -16,6 +16,15 @@ class InteractiveError(Exception):
         self.message = message
 
 
+class JSONEncodingValueError(Exception):
+    """
+    Raised when file loaded into scanpy is misformatted
+    """
+
+    def __init__(self, message):
+        self.message = message
+
+
 class MimeTypeError(Exception):
     """
     Raised when incompatible MIME type selected

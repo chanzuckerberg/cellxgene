@@ -6,7 +6,7 @@ import { Button, Tooltip } from "@blueprintjs/core";
 
 import * as globals from "../../globals";
 import Value from "./value";
-import alphabeticallySortedValues from "./util";
+import sortedCategoryValues from "./util";
 
 @connect(state => ({
   colorAccessor: state.controls.colorAccessor,
@@ -86,9 +86,10 @@ class Category extends React.Component {
     const { categoricalSelectionState, metadataField } = this.props;
 
     const cat = categoricalSelectionState[metadataField];
-    const optTuples = alphabeticallySortedValues([...cat.categoryIndices]);
+    const optTuples = sortedCategoryValues([...cat.categoryIndices]);
     return _.map(optTuples, (tuple, i) => (
       <Value
+        optTuples={optTuples}
         key={tuple[1]}
         metadataField={metadataField}
         categoryIndex={tuple[1]}

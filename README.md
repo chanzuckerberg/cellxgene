@@ -8,7 +8,9 @@
 
 ## getting started
 
-You'll need **python 3.6** and **Google Chrome**. The web UI is tested on OSX and Windows using Chrome, and the python CLI is tested on OSX and Ubuntu (via WSL/Windows). It should work on other platforms, but if you run into trouble let us know (see [help](#help-and-contact) below).
+You'll need **python 3.6** and **Google Chrome**. (*Warning*: Python 3.7 is **not** supported at this time)
+The web UI is tested on OSX and Windows using Chrome, and the python CLI is tested on OSX and Ubuntu (via WSL/Windows). It should work on other platforms, but if you run into trouble let us know (see [help](#help-and-contact) below).
+
 
 To install run
 
@@ -109,7 +111,7 @@ Or you can create a virtual environment by using
 
 ```
 ENV_NAME=cellxgene
-python3 -m venv ${ENV_NAME}
+python3.6 -m venv ${ENV_NAME}
 source ${ENV_NAME}/bin/activate
 pip install cellxgene
 ```
@@ -258,7 +260,7 @@ pip install -e .
 
 You can start the app while developing either by calling `cellxgene` or by calling `python -m server`. We recommend using the `--debug` flag to see more output, which you can include when reporting bugs.
 
-If you have any questions about developing or contributing, come hang out with us by joining the [CZI Science Slack](https://join-cziscience-slack.herokuapp.com/) and posting in the `#cellxgene-dev` channel.
+If you have any questions about developing or contributing, come hang out with us by joining the [CZI Science Slack](https://join-cellxgene-users.herokuapp.com/) and posting in the `#cellxgene-dev` channel.
 
 ## development roadmap
 
@@ -285,7 +287,7 @@ We are eager to explore integrations with other computational backends such as [
 
 ## help and contact
 
-Have questions, suggestions, or comments? You can come hang out with us by joining the [CZI Science Slack](https://join-cziscience-slack.herokuapp.com/) and posting in the `#cellxgene-users` channel. As mentioned above, please submit any feature requests or bugs as [Github issues](https://github.com/chanzuckerberg/cellxgene/issues). We'd love to hear from you!
+Have questions, suggestions, or comments? You can come hang out with us by joining the [CZI Science Slack](https://join-cellxgene-users.herokuapp.com/) and posting in the `#cellxgene-users` channel. As mentioned above, please submit any feature requests or bugs as [Github issues](https://github.com/chanzuckerberg/cellxgene/issues). We'd love to hear from you!
 
 ## reuse
 

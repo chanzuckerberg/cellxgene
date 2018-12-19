@@ -8,7 +8,14 @@ from scipy import sparse
 
 from server.app.driver.driver import CXGDriver
 from server.app.util.constants import Axis, DEFAULT_TOP_N
-from server.app.util.errors import FilterError, InteractiveError, PrepareError, ScanpyFileError
+from server.app.util.errors import (
+    FilterError,
+    InteractiveError,
+    JSONEncodingValueError,
+    PrepareError,
+    ScanpyFileError,
+)
+from server.app.util.utils import jsonify_scanpy
 from server.app.scanpy_engine.diffexp import diffexp_ttest
 from server.app.util.fbs.matrix import encode_matrix_fbs
 
@@ -59,22 +66,29 @@ class ScanpyEngine(CXGDriver):
             df_axis.rename(inplace=True, columns={"index": "name"})
         elif name in df_axis.columns:
             if name not in df_axis.columns:
-                raise KeyError(f"Annotation name {name}, specified in --{ax_name}-name does not exist.")
+                raise KeyError(
+                    f"Annotation name {name}, specified in --{ax_name}-name does not exist."
+                )
             if not df_axis[name].is_unique:
                 raise KeyError(
-                    f"Values in -{ax_name}-name must be unique. " "Please prepare data to contain unique values."
+                    f"Values in -{ax_name}-name must be unique. "
+                    "Please prepare data to contain unique values."
                 )
             # reset index to simple range; alias user-specified annotation to "name"
             df_axis.reset_index(drop=True, inplace=True)
             df_axis.rename(inplace=True, columns={name: "name"})
         else:
-            raise KeyError(f"Annotation name {name}, specified in --{ax_name}_name does not exist.")
+            raise KeyError(
+                f"Annotation name {name}, specified in --{ax_name}_name does not exist."
+            )
 
     @staticmethod
     def _can_cast_to_float32(ann):
         if ann.dtype.kind == "f":
             if not np.can_cast(ann.dtype, np.float32):
-                warnings.warn(f"Annotation {ann.name} will be converted to 32 bit float and may lose precision.")
+                warnings.warn(
+                    f"Annotation {ann.name} will be converted to 32 bit float and may lose precision."
+                )
             return True
         return False
 
@@ -90,7 +104,11 @@ class ScanpyEngine(CXGDriver):
 
     def _create_schema(self):
         self.schema = {
-            "dataframe": {"nObs": self.cell_count, "nVar": self.gene_count, "type": str(self.data.X.dtype)},
+            "dataframe": {
+                "nObs": self.cell_count,
+                "nVar": self.gene_count,
+                "type": str(self.data.X.dtype),
+            },
             "annotations": {"obs": [], "var": []},
         }
         for ax in Axis:
@@ -112,7 +130,9 @@ class ScanpyEngine(CXGDriver):
                     ann_schema["type"] = "categorical"
                     ann_schema["categories"] = curr_axis[ann].dtype.categories.tolist()
                 else:
-                    raise TypeError(f"Annotations of type {curr_axis[ann].dtype} are unsupported by cellxgene.")
+                    raise TypeError(
+                        f"Annotations of type {curr_axis[ann].dtype} are unsupported by cellxgene."
+                    )
                 self.schema["annotations"][ax].append(ann_schema)
 
     @staticmethod
@@ -140,13 +160,19 @@ class ScanpyEngine(CXGDriver):
     def _validate_data_types(self):
         if self.data.X.dtype != "float32":
             warnings.warn(
-                f"Scanpy data matrix is in {self.data.X.dtype} format not float32. " f"Precision may be truncated."
+                f"Scanpy data matrix is in {self.data.X.dtype} format not float32. "
+                f"Precision may be truncated."
             )
         for ax in Axis:
             curr_axis = getattr(self.data, str(ax))
             for ann in curr_axis:
                 datatype = curr_axis[ann].dtype
-                downcast_map = {"int64": "int32", "uint32": "int32", "uint64": "int32", "float64": "float32"}
+                downcast_map = {
+                    "int64": "int32",
+                    "uint32": "int32",
+                    "uint64": "int32",
+                    "float64": "float32",
+                }
                 if datatype in downcast_map:
                     warnings.warn(
                         f"Scanpy annotation {ax}:{ann} is in unsupported format: {datatype}. "
@@ -199,8 +225,12 @@ class ScanpyEngine(CXGDriver):
                     finite_idx = np.isfinite(curr_axis[ann])
                     if not finite_idx.all():
                         curr_axis.loc[np.isnan(curr_axis[ann]), ann] = 0
-                        curr_axis.loc[np.isneginf(curr_axis[ann]), ann] = curr_axis[ann][finite_idx].min()
-                        curr_axis.loc[np.isposinf(curr_axis[ann]), ann] = curr_axis[ann][finite_idx].max()
+                        curr_axis.loc[np.isneginf(curr_axis[ann]), ann] = curr_axis[
+                            ann
+                        ][finite_idx].min()
+                        curr_axis.loc[np.isposinf(curr_axis[ann]), ann] = curr_axis[
+                            ann
+                        ][finite_idx].max()
                         warnings.warn(
                             f"{str(ax).title()} annotation '{ann}' contains floating point NaN or Infinities. "
                             f"These will be converted to finite values."
@@ -232,7 +262,8 @@ class ScanpyEngine(CXGDriver):
 
         if non_finite_X_found:
             warnings.warn(
-                "Dataframe X contains floating point NaN or Infinities. " "These will be converted to finite values."
+                "Dataframe X contains floating point NaN or Infinities. "
+                "These will be converted to finite values."
             )
 
     def filter_dataframe(self, filter):
@@ -284,10 +315,15 @@ class ScanpyEngine(CXGDriver):
     def _axis_filter_to_mask(filter, d_axis, count):
         mask = np.ones((count,), dtype=bool)
         if "index" in filter:
-            mask = np.logical_and(mask, ScanpyEngine._index_filter_to_mask(filter["index"], count))
+            mask = np.logical_and(
+                mask, ScanpyEngine._index_filter_to_mask(filter["index"], count)
+            )
         if "annotation_value" in filter:
             mask = np.logical_and(
-                mask, ScanpyEngine._annotation_filter_to_mask(filter["annotation_value"], d_axis, count)
+                mask,
+                ScanpyEngine._annotation_filter_to_mask(
+                    filter["annotation_value"], d_axis, count
+                ),
             )
         return mask
 
@@ -301,9 +337,13 @@ class ScanpyEngine(CXGDriver):
 
         if filter is not None:
             if Axis.OBS in filter:
-                obs_selector = self._axis_filter_to_mask(filter["obs"], self.data.obs, self.data.n_obs)
+                obs_selector = self._axis_filter_to_mask(
+                    filter["obs"], self.data.obs, self.data.n_obs
+                )
             if Axis.VAR in filter:
-                var_selector = self._axis_filter_to_mask(filter["var"], self.data.var, self.data.n_vars)
+                var_selector = self._axis_filter_to_mask(
+                    filter["var"], self.data.var, self.data.n_vars
+                )
         return obs_selector, var_selector
 
     @staticmethod
@@ -319,7 +359,9 @@ class ScanpyEngine(CXGDriver):
         https://docs.scipy.org/doc/scipy/reference/sparse.html
         """
         prefer_row_access = (
-            sparse.isspmatrix_csr(data._X) or sparse.isspmatrix_lil(data._X) or sparse.isspmatrix_bsr(data._X)
+            sparse.isspmatrix_csr(data._X)
+            or sparse.isspmatrix_lil(data._X)
+            or sparse.isspmatrix_bsr(data._X)
         )
         if prefer_row_access:
             # Row-major slicing
@@ -353,13 +395,22 @@ class ScanpyEngine(CXGDriver):
             obs = self.data.obs[obs_selector]
             if not fields:
                 fields = obs.columns.tolist()
-            result = {"names": fields, "data": DataFrame(obs[fields]).to_records(index=True).tolist()}
+            result = {
+                "names": fields,
+                "data": DataFrame(obs[fields]).to_records(index=True).tolist(),
+            }
         else:
             var = self.data.var[var_selector]
             if not fields:
                 fields = var.columns.tolist()
-            result = {"names": fields, "data": DataFrame(var[fields]).to_records(index=True).tolist()}
-        return result
+            result = {
+                "names": fields,
+                "data": DataFrame(var[fields]).to_records(index=True).tolist(),
+            }
+        try:
+            return jsonify_scanpy(result)
+        except ValueError:
+            raise JSONEncodingValueError("Error encoding annotations to JSON")
 
     def annotation_to_fbs_matrix(self, axis, fields=None):
         import sys
@@ -393,14 +444,21 @@ class ScanpyEngine(CXGDriver):
         if axis == Axis.OBS:
             result = {
                 "var": var_index_sliced.tolist(),
-                "obs": DataFrame(_X, index=obs_index_sliced).to_records(index=True).tolist(),
+                "obs": DataFrame(_X, index=obs_index_sliced)
+                .to_records(index=True)
+                .tolist(),
             }
         else:
             result = {
                 "obs": obs_index_sliced.tolist(),
-                "var": DataFrame(_X.T, index=var_index_sliced).to_records(index=True).tolist(),
+                "var": DataFrame(_X.T, index=var_index_sliced)
+                .to_records(index=True)
+                .tolist(),
             }
-        return result
+        try:
+            return jsonify_scanpy(result)
+        except ValueError:
+            raise JSONEncodingValueError("Error encoding dataframe to JSON")
 
     def data_frame_to_fbs_matrix(self, filter, axis):
         """
@@ -430,14 +488,25 @@ class ScanpyEngine(CXGDriver):
         if Axis.VAR in obsFilterA or Axis.VAR in obsFilterB:
             raise FilterError("Observation filters may not contain vaiable conditions")
         try:
-            obs_mask_A = self._axis_filter_to_mask(obsFilterA["obs"], self.data.obs, self.data.n_obs)
-            obs_mask_B = self._axis_filter_to_mask(obsFilterB["obs"], self.data.obs, self.data.n_obs)
+            obs_mask_A = self._axis_filter_to_mask(
+                obsFilterA["obs"], self.data.obs, self.data.n_obs
+            )
+            obs_mask_B = self._axis_filter_to_mask(
+                obsFilterB["obs"], self.data.obs, self.data.n_obs
+            )
         except (KeyError, IndexError) as e:
             raise FilterError(f"Error parsing filter: {e}") from e
         if top_n is None:
             top_n = DEFAULT_TOP_N
-        result = diffexp_ttest(self.data, obs_mask_A, obs_mask_B, top_n, self.diffexp_lfc_cutoff)
-        return result
+        result = diffexp_ttest(
+            self.data, obs_mask_A, obs_mask_B, top_n, self.diffexp_lfc_cutoff
+        )
+        try:
+            return jsonify_scanpy(result)
+        except ValueError:
+            raise JSONEncodingValueError(
+                "Error encoding differential expression to JSON"
+            )
 
     def layout(self, filter, interactive_limit=None):
         """
@@ -466,8 +535,10 @@ class ScanpyEngine(CXGDriver):
                 f"please prepare your datafile and relaunch cellxgene"
             ) from e
         normalized_layout = DataFrame(
-            (df_layout - df_layout.min()) / (df_layout.max() - df_layout.min()), index=df.obs.index
+            (df_layout - df_layout.min()) / (df_layout.max() - df_layout.min()),
+            index=df.obs.index,
         )
+<<<<<<< HEAD
         return {"ndims": normalized_layout.shape[1], "coordinates": normalized_layout.to_records(index=True).tolist()}
 
     def layout_to_fbs_matrix(self):
@@ -486,3 +557,18 @@ class ScanpyEngine(CXGDriver):
                 f"please prepare your datafile and relaunch cellxgene") from e
         normalized_layout = (df_layout - df_layout.min()) / (df_layout.max() - df_layout.min())
         return encode_matrix_fbs(normalized_layout.astype(dtype=np.float32), col_idx=None, row_idx=None)
+=======
+        try:
+            return jsonify_scanpy(
+                {
+                    "layout": {
+                        "ndims": normalized_layout.shape[1],
+                        "coordinates": normalized_layout.to_records(
+                            index=True
+                        ).tolist(),
+                    }
+                }
+            )
+        except ValueError:
+            raise JSONEncodingValueError("Error encoding layout to JSON")
+>>>>>>> master

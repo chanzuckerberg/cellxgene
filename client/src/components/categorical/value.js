@@ -2,12 +2,16 @@
 import { connect } from "react-redux";
 import React from "react";
 import _ from "lodash";
+import Occupancy from "./occupancy";
+import { countCategoryValues2D } from "../../util/stateManager/worldUtil";
+import * as globals from "../../globals";
 
 @connect(state => ({
   categoricalSelectionState: state.controls.categoricalSelectionState,
   colorScale: state.controls.colorScale,
   colorAccessor: state.controls.colorAccessor,
-  schema: _.get(state.controls.world, "schema", null)
+  schema: _.get(state.controls.world, "schema", null),
+  world: state.controls.world
 }))
 class CategoryValue extends React.Component {
   toggleOff() {
@@ -36,7 +40,8 @@ class CategoryValue extends React.Component {
       colorAccessor,
       colorScale,
       i,
-      schema
+      schema,
+      world
     } = this.props;
 
     if (!categoricalSelectionState) return null;
@@ -50,13 +55,22 @@ class CategoryValue extends React.Component {
     ).valueOf();
 
     /* this is the color scale, so add swatches below */
-    const c = metadataField === colorAccessor;
+    const isColorBy = metadataField === colorAccessor;
     let categories = null;
+    let occupancy = null;
 
-    if (c && schema) {
+    if (isColorBy && schema) {
       categories = _.filter(schema.annotations.obs, {
         name: colorAccessor
       })[0].categories;
+    }
+
+    if (colorAccessor && !isColorBy) {
+      occupancy = countCategoryValues2D(
+        metadataField,
+        colorAccessor,
+        world.obsAnnotations
+      );
     }
 
     return (
@@ -72,7 +86,10 @@ class CategoryValue extends React.Component {
           style={{
             margin: 0,
             padding: 0,
-            userSelect: "none"
+            userSelect: "none",
+            width: globals.leftSidebarWidth - 130,
+            display: "flex",
+            justifyContent: "space-between"
           }}
         >
           <label className="bp3-control bp3-checkbox">
@@ -86,6 +103,18 @@ class CategoryValue extends React.Component {
             <span className="bp3-control-indicator" />
             {displayString}
           </label>
+          <span style={{ flexShrink: 0 }}>
+            {colorAccessor &&
+            !isColorBy &&
+            categoricalSelectionState[colorAccessor] ? (
+              <Occupancy
+                occupancy={occupancy.get(
+                  category.categoryValues[categoryIndex]
+                )}
+                {...this.props}
+              />
+            ) : null}
+          </span>
         </div>
         <span>
           <span>{count}</span>
@@ -95,7 +124,7 @@ class CategoryValue extends React.Component {
               width: 11,
               height: 11,
               backgroundColor:
-                c && categories
+                isColorBy && categories
                   ? colorScale(categories.indexOf(value))
                   : "inherit"
             }}

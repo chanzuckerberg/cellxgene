@@ -54,3 +54,7 @@ def whole_number(value):
     if value < 0:
         raise ArgumentTypeError(f"{value} is not >= 0")
     return value
+
+
+def jsonify_scanpy(data):
+    return json.dumps(data, cls=Float32JSONEncoder, allow_nan=False)
