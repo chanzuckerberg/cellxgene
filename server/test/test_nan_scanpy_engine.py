@@ -5,6 +5,7 @@ import sys
 import warnings
 
 from server.app.scanpy_engine.scanpy_engine import ScanpyEngine
+from server.app.util.errors import JSONEncodingValueError
 
 
 class NaNTest(unittest.TestCase):
@@ -53,9 +54,9 @@ class NaNTest(unittest.TestCase):
         data_frame_var = json.loads(self.data_nan.data_frame(None, "var"))
         self.assertEqual(len(data_frame_var["var"]), 100)
         self.assertEqual(len(data_frame_var["obs"]), 100)
-        with pytest.raises(ValueError):
+        with pytest.raises(JSONEncodingValueError):
             data_frame_obs = json.loads(self.data.data_frame(None, "obs"))
-        with pytest.raises(ValueError):
+        with pytest.raises(JSONEncodingValueError):
             data_frame_var = json.loads(self.data.data_frame(None, "var"))
 
     def test_annotation(self):
@@ -67,7 +68,7 @@ class NaNTest(unittest.TestCase):
         annotations = json.loads(self.data_nan.annotation(None, "var"))
         self.assertEqual(annotations["names"], ["name", "n_cells", "var_with_nans"])
         self.assertEqual(len(annotations["data"]), 100)
-        with pytest.raises(ValueError):
+        with pytest.raises(JSONEncodingValueError):
             annotations = json.loads(self.data.annotation(None, "obs"))
-        with pytest.raises(ValueError):
+        with pytest.raises(JSONEncodingValueError):
             annotations = json.loads(self.data.annotation(None, "var"))

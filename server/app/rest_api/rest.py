@@ -16,9 +16,10 @@ from server.app.util.filter import parse_filter, QueryStringError
 from server.app.util.models import FilterModel
 from server.app.util.utils import get_mime_type
 from server.app.util.errors import (
-    MimeTypeError,
     FilterError,
     InteractiveError,
+    JSONEncodingValueError,
+    MimeTypeError,
     PrepareError,
 )
 
@@ -200,9 +201,11 @@ class AnnotationsObsAPI(Resource):
             )
         except KeyError:
             return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
-        except ValueError as e:
+        except JSONEncodingValueError as e:
             # JSON encoding failure, usually due to bad data
             warnings.warn(JSON_NaN_to_num_warning_msg)
+            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+        except ValueError as e:
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
     @swagger.doc(
@@ -257,9 +260,11 @@ class AnnotationsObsAPI(Resource):
             return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
         except FilterError as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
-        except ValueError as e:
+        except JSONEncodingValueError as e:
             # JSON encoding failure, usually due to bad data
             warnings.warn(JSON_NaN_to_num_warning_msg)
+            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+        except ValueError as e:
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
@@ -306,9 +311,11 @@ class AnnotationsVarAPI(Resource):
             )
         except KeyError:
             return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
-        except ValueError as e:
+        except JSONEncodingValueError as e:
             # JSON encoding failure, usually due to bad data
             warnings.warn(JSON_NaN_to_num_warning_msg)
+            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+        except ValueError as e:
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
     @swagger.doc(
@@ -363,9 +370,11 @@ class AnnotationsVarAPI(Resource):
             return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
         except FilterError:
             return make_response("Malformed filter", HTTPStatus.BAD_REQUEST)
-        except ValueError as e:
+        except JSONEncodingValueError as e:
             # JSON encoding failure, usually due to bad data
             warnings.warn(JSON_NaN_to_num_warning_msg)
+            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+        except ValueError as e:
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
@@ -432,9 +441,11 @@ class DataObsAPI(Resource):
             )
         except FilterError as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
-        except ValueError as e:
+        except JSONEncodingValueError as e:
             # JSON encoding failure, usually due to bad data
             warnings.warn(JSON_NaN_to_num_warning_msg)
+            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+        except ValueError as e:
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
     @swagger.doc(
@@ -488,9 +499,11 @@ class DataObsAPI(Resource):
             )
         except FilterError as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
-        except ValueError as e:
+        except JSONEncodingValueError as e:
             # JSON encoding failure, usually due to bad data
             warnings.warn(JSON_NaN_to_num_warning_msg)
+            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+        except ValueError as e:
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
@@ -555,9 +568,14 @@ class DataVarAPI(Resource):
             )
         except FilterError as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
-        except ValueError as e:
+        except JSONEncodingValueError as e:
+            # JSON encoding failure, usually due to bad data
+            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+        except JSONEncodingValueError as e:
             # JSON encoding failure, usually due to bad data
             warnings.warn(JSON_NaN_to_num_warning_msg)
+            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+        except ValueError as e:
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
     @swagger.doc(
@@ -612,9 +630,11 @@ class DataVarAPI(Resource):
             )
         except FilterError as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
-        except ValueError as e:
+        except JSONEncodingValueError as e:
             # JSON encoding failure, usually due to bad data
             warnings.warn(JSON_NaN_to_num_warning_msg)
+            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+        except ValueError as e:
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
@@ -736,9 +756,11 @@ class DiffExpObsAPI(Resource):
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
         except InteractiveError:
             return make_response("Non-interactive request", HTTPStatus.FORBIDDEN)
-        except ValueError as e:
+        except JSONEncodingValueError as e:
             # JSON encoding failure, usually due to bad data
             warnings.warn(JSON_NaN_to_num_warning_msg)
+            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+        except ValueError as e:
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
@@ -775,9 +797,11 @@ class LayoutObsAPI(Resource):
             return make_response(e.message, HTTPStatus.INTERNAL_SERVER_ERROR)
         try:
             return make_response(layout, HTTPStatus.OK, {"Content-Type": content_type})
-        except ValueError as e:
+        except JSONEncodingValueError as e:
             # JSON encoding failure, usually due to bad data
             warnings.warn(JSON_NaN_to_num_warning_msg)
+            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+        except ValueError as e:
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
     # @swagger.doc({
