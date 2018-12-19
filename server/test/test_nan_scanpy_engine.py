@@ -1,7 +1,6 @@
 import json
 import pytest
 import unittest
-import sys
 import warnings
 
 from server.app.scanpy_engine.scanpy_engine import ScanpyEngine
