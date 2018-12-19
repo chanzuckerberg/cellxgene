@@ -1,5 +1,3 @@
-# cellxgene
-
 _cellxgene_ is an interactive data explorer for single-cell transcriptomics data designed to handle large datasets (1 million cells or more) and integrate with your favorite analysis tools
 
 ## features
@@ -16,7 +14,7 @@ install the package
 launch the web app
 > `> cellxgene --launch processed.h5ad`
 
-### getting help
+## getting help
 
 We'd love to hear from you!
 
