@@ -413,7 +413,6 @@ class ScanpyEngine(CXGDriver):
             raise JSONEncodingValueError("Error encoding annotations to JSON")
 
     def annotation_to_fbs_matrix(self, axis, fields=None):
-        import sys
         if axis == Axis.OBS:
             df = self.data.obs
         else:
