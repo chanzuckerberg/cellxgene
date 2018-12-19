@@ -59,6 +59,18 @@ class NaNTest(unittest.TestCase):
         with pytest.raises(JSONEncodingValueError):
             data_frame_var = json.loads(self.data.data_frame(None, "var"))
 
+    def test_dataframe_nan_to_0(self):
+        data_frame_obs = json.loads(self.data_nan.data_frame(None, "obs"))
+        self.assertEqual(data_frame_obs["obs"][1][3], 0.0)
+        data_frame_var = json.loads(self.data_nan.data_frame(None, "var"))
+        self.assertEqual(data_frame_var["var"][1][5], 0.0)
+
+    def test_annotation_nan_to_0(self):
+        annotations_obs = json.loads(self.data_nan.annotation(None, "obs"))
+        self.assertEqual(annotations_obs["data"][0][3], 0.0)
+        annotations_var = json.loads(self.data_nan.annotation(None, "var"))
+        self.assertEqual(annotations_var["data"][0][3], 0.0)
+
     def test_annotation(self):
         annotations = json.loads(self.data_nan.annotation(None, "obs"))
         self.assertEqual(
