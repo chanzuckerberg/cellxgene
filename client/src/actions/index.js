@@ -93,7 +93,7 @@ Transparently utilizes cached data if it is already present.
 */
 async function _doRequestExpressionData(dispatch, getState, genes) {
   /* helper for this function only */
-  const fetchFBSDataXT = async geneNames => {
+  const fetchData = async geneNames => {
     const res = await fetch(
       `${globals.API.prefix}${globals.API.version}data/var`,
       {
@@ -145,7 +145,7 @@ async function _doRequestExpressionData(dispatch, getState, genes) {
   /* Fetch data for any genes not in cache */
   if (genesToFetch.length) {
     try {
-      const newExpressionData = await fetchFBSDataXT(genesToFetch);
+      const newExpressionData = await fetchData(genesToFetch);
       expressionData = {
         ...expressionData,
         ...newExpressionData
