@@ -39,13 +39,13 @@ const doInitialDataLoad = () =>
 
       /* set config defaults */
       const config = { ...globals.configDefaults, ...results[0].config };
-      const [, schema, obsAnno, varAnno, layout] = [...results];
+      const [, schema, obsAnno, varAnno, obsLayout] = [...results];
       const universe = Universe.createUniverseFromRestV02Response(
         config,
         schema,
         obsAnno,
         varAnno,
-        layout
+        obsLayout
       );
 
       dispatch({
@@ -121,7 +121,7 @@ async function _doRequestExpressionData(dispatch, getState, genes) {
     }
 
     const data = await res.arrayBuffer();
-    return Universe.convertDataXTFBStoObject(universe, data);
+    return Universe.convertDataFBStoObject(universe, data);
   };
 
   const state = getState();

@@ -1,17 +1,23 @@
 
 /*
-Flatbuffers schema for use in cellxgene.
 
-Currently the only supported wire format is a 2D matrix.  May expand
-in the future to others.
+  Flatbuffers schema for use in cellxgene wire-format.
 
-https://github.com/google/flatbuffers
-http://google.github.io/flatbuffers/
+  Schema defines a general purpose dataframe (2D matrix).  Data is
+  organized in a columnar layout.   Each column is homomorphic, and
+  several column types are supported:
+    - IEEE 32 and 64 bit floats
+    - signed and unsigned 32 bit integers
+    - JSON/UTF8 encoded array (for other types)
 
-NOTE: IF YOU MODIFY THIS FILE, YOU MUST RECOMPILE AND COMMIT
-RESULTING FBS ACCESS CODE TO THE REPO.   See:
-* server/app/util/fbs
-* client/src/util/stateManager/
+  https://github.com/google/flatbuffers
+  http://google.github.io/flatbuffers/
+
+  NOTE: IF YOU MODIFY THIS FILE, YOU MUST RECOMPILE AND COMMIT
+  RESULTING FILES TO THE REPO:
+  * server/app/util/fbs/NetEncoding/*
+  * client/src/util/stateManager/matrix_generated.js
+
 */
 
 namespace NetEncoding;
@@ -59,7 +65,7 @@ table DataFrame {
   columns: [Column];  // length n_cols
 
   // optional row and column index, with same length as corresponding dimension.
-  // If null, defaults numeric index, ie, [0, n_rows) or [0, n_cols)
+  // If null, defaults to numeric index, ie, [0, n_rows) or [0, n_cols)
   col_index: TypedArray;
   row_index: TypedArray;
 }

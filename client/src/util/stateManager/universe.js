@@ -213,13 +213,16 @@ export function createUniverseFromRestV02Response(
   return finalize(universe);
 }
 
-export function convertDataXTFBStoObject(universe, arrayBuffer) {
+export function convertDataFBStoObject(universe, arrayBuffer) {
   /*
-  /data/X/T returns a flatbuffer (FBS) as described by cellxgene/fbs/Matrix.fbs.
+  /data/var returns a flatbuffer (FBS) as described by cellxgene/fbs/matrix.fbs
 
-  This routine converts that form into an object containing
-    gene: Float32Array
-  for each element.
+  This routine converts the binary wire encoding into a JS object:
+
+  {
+    gene: Float32Array,
+    ...
+  }
   */
   const fbs = decodeMatrixFBS(arrayBuffer);
   const { colIdx, columns } = fbs;
