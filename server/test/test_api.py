@@ -273,7 +273,7 @@ class EndPoints(unittest.TestCase):
             result_data = result.json()
             self.assertEqual(len(result_data["obs"]), 38)
 
-    def test_data_put(self):
+    def test_data_json_put(self):
         for axis in ["obs", "var"]:
             endpoint = f"data/{axis}"
             url = f"{URL_BASE}{endpoint}"
@@ -294,8 +294,8 @@ class EndPoints(unittest.TestCase):
             result_data = result.json()
             self.assertEqual(len(result_data["obs"]), 15)
 
-    def test_data_xy_put(self):
-        endpoint = f"data/X/T"
+    def test_data_fbs_put(self):
+        endpoint = f"data/var"
         url = f"{URL_BASE}{endpoint}"
         header = {"Accept": "application/octet-stream"}
         filter = {
