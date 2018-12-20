@@ -117,12 +117,11 @@ def launch(
 
     # Setup app
     cellxgene_url = f"http://{host}:{port}"
-    api_base = f"{cellxgene_url}/api/"
 
     # Import Flask app
     from server.app.app import app
 
-    app.config.update(DATASET_TITLE=title, CXG_API_BASE=api_base)
+    app.config.update(DATASET_TITLE=title)
 
     if not verbose:
         log = logging.getLogger("werkzeug")

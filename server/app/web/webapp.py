@@ -1,5 +1,5 @@
 import os
-from flask import Blueprint, render_template, send_from_directory, current_app
+from flask import Blueprint, render_template, send_from_directory, current_app, request
 
 
 bp = Blueprint("webapp", __name__, template_folder="templates")
@@ -7,7 +7,7 @@ bp = Blueprint("webapp", __name__, template_folder="templates")
 
 @bp.route("/")
 def index():
-    url_base = current_app.config["CXG_API_BASE"]
+    url_base = request.url_root + "api/"
     dataset_title = current_app.config["DATASET_TITLE"]
     return render_template("index.html", prefix=url_base, datasetTitle=dataset_title)
 
