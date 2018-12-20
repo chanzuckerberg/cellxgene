@@ -1,4 +1,4 @@
-_cellxgene_ is an interactive data explorer for single-cell transcriptomics data designed to handle large datasets (1 million cells or more) and integrate with your favorite analysis tools
+_cellxgene_ is an interactive data explorer for single-cell transcriptomics data. Whether you need to visualize one thousand cells or one million, _cellxgene_ helps you gain insight into your single-cell data.
 
 ## features
 
@@ -8,12 +8,14 @@ _cellxgene_ is an interactive data explorer for single-cell transcriptomics data
 
 ## getting started
 
-Install the package
+_cellxgene_ requires **Python 3.6**
+
+Install the package.
 ``` bash
 pip install cellxgene
 ```
 
-Download an example file
+Download an example [anndata](https://anndata.readthedocs.io/en/latest/) file
 
 ``` bash
 curl -o pbmc3k.h5ad https://raw.githubusercontent.com/chanzuckerberg/cellxgene/master/example-dataset/pbmc3k.h5ad
