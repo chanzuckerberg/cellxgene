@@ -30,7 +30,6 @@ describe("createUniverseFromRestV02Response", () => {
     create a universe from sample data nad validate its shape & contents
     */
     const { nObs, nVar } = REST.schema.schema.dataframe;
-
     const universe = Universe.createUniverseFromRestV02Response(
       REST.config,
       REST.schema,
