@@ -1,4 +1,5 @@
 import _ from "lodash";
+import finiteExtent from "../finiteExtent";
 
 /*
 Build and return obs/var summary using any annotation in the schema
@@ -61,16 +62,32 @@ function _summarizeAnnotations(_schema, annotations) {
       const continuous = type === "int32" || type === "float32";
 
       if (continuous) {
-        let min = Number.POSITIVE_INFINITY;
-        let max = Number.NEGATIVE_INFINITY;
+        let min;
+        let max;
+        let nan = 0;
+        let pinf = 0;
+        let ninf = 0;
         for (let r = 0; r < annotations.length; r += 1) {
           const val = Number(annotations[r][name]);
-          min = val < min ? val : min;
-          max = val > max ? val : max;
+          if (Number.isFinite(val)) {
+            if (min === undefined) {
+              min = val;
+              max = val;
+            } else {
+              min = val < min ? val : min;
+              max = val > max ? val : max;
+            }
+          } else if (Number.isNaN(val)) {
+            nan += 1;
+          } else if (val > 0) {
+            pinf += 1;
+          } else {
+            ninf += 1;
+          }
         }
         return {
           categorical: false,
-          range: { min, max }
+          range: { min, max, nan, pinf, ninf }
         };
       }
 

@@ -10,6 +10,7 @@ import {
 } from "d3-scale-chromatic";
 import * as globals from "../globals";
 import parseRGB from "../util/parseRGB";
+import finiteExtent from "../util/finiteExtent";
 
 /*
   https://medium.com/@jacobp100/you-arent-using-redux-middleware-enough-94ffe991e6
@@ -100,7 +101,7 @@ const updateCellColorsMiddleware = store => next => action => {
     const expression = data[gene]; // Float32Array
     colorScale = d3
       .scaleLinear()
-      .domain([_.min(expression), _.max(expression)])
+      .domain(finiteExtent(expression))
       .range([
         1,
         0

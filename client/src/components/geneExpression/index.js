@@ -3,7 +3,6 @@
 
 import React from "react";
 import _ from "lodash";
-import * as d3 from "d3";
 import fuzzysort from "fuzzysort";
 
 import { connect } from "react-redux";
@@ -14,6 +13,7 @@ import * as globals from "../../globals";
 import actions from "../../actions";
 import { postUserErrorToast } from "../framework/toasters";
 import ExpressionButtons from "./expressionButtons";
+import finiteExtent from "../../util/finiteExtent";
 
 const renderGene = (fuzzySortResult, { handleClick, modifiers, query }) => {
   if (!modifiers.matchesPredicate) {
@@ -141,7 +141,7 @@ class GeneExpression extends React.Component {
                     key={geneName}
                     field={geneName}
                     zebra={index % 2 === 0}
-                    ranges={d3.extent(values)}
+                    ranges={finiteExtent(values)}
                     isUserDefined
                   />
                 );
@@ -171,7 +171,7 @@ class GeneExpression extends React.Component {
                     key={name}
                     field={name}
                     zebra={index % 2 === 0}
-                    ranges={d3.extent(values)}
+                    ranges={finiteExtent(values)}
                     isDiffExp
                     logFoldChange={value[1]}
                     pval={value[2]}
