@@ -35,3 +35,7 @@ npm-debug.log
 __pycache__
 *.DS_Store*
 data
+
+# Jekyll
+docs/_site/
+docs/Gemfile.lock
