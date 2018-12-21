@@ -94,36 +94,21 @@ function finalize(universe) {
   return universe;
 }
 
-function RESTv02AnnotationsResponseToInternal(response) {
+function RESTv02AnotationsFBSResponseToInternal(arrayBuffer) {
   /*
-  Source per the spec:
-  {
-    names: [
-      'tissue_type', 'sex', 'num_reads', 'clusters'
-    ],
-    data: [
-      [ 0, 'lung', 'F', 39844, 99 ],
-      [ 1, 'heart', 'M', 83, 1 ],
-      [ 49, 'spleen', null, 2, "unknown cluster" ],
-      // [ obsOrVarIndex, value, value, value, value ],
-      // ...
-    ]
-  }
+  Convert a DataFrame FBS to our internal format -- row-major array of
+  observations/cells, stored as an object.  Each obs has a key for each
+  annotation, plus __index__ containing its obsIndex.
 
-  Internal (target) format:
+  Example:
   [
     { __index__: 0, tissue_type: "lung", sex: "F", ... },
     ...
   ]
-  */
-  const { names, data } = response;
-  const keys = ["__index__", ...names];
-  return _(data)
-    .map(obs => _.zipObject(keys, obs))
-    .value();
-}
 
-function RESTv02AnotationsFBSResponseToInternal(arrayBuffer) {
+  XXX TODO: we could make use of the columns in building crossfilter
+  dimensions (they have to be recreated).  Future optimization.
+  */
   const fbs = decodeMatrixFBS(arrayBuffer);
   const keys = fbs.colIdx;
   const result = Array(fbs.nRows);
