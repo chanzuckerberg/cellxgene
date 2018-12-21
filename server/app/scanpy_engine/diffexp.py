@@ -13,6 +13,7 @@ def _mean_var_n(X):
     # occured somewhere in our compute.  Used to trigger non-finite
     # number handling.
     fp_err_occurred = False
+
     def fp_err_set(err, flag):
         nonlocal fp_err_occurred
         fp_err_occurred = True
@@ -31,8 +32,8 @@ def _mean_var_n(X):
             v = sumsq / (n - 1)
 
     if fp_err_occurred:
-        mean[np.isfinite(mean) == False] = 0
-        v[np.isfinite(v) == False] = 0
+        mean[np.isfinite(mean) == False] = 0    # noqa: E712
+        v[np.isfinite(v) == False] = 0          # noqa: E712
     return mean, v, n
 
 
