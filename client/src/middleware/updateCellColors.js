@@ -1,13 +1,7 @@
 // jshint esversion: 6
 import _ from "lodash";
 import * as d3 from "d3";
-import {
-  interpolateViridis,
-  interpolateSpectral,
-  interpolateRainbow,
-  interpolateBlues,
-  interpolateCool
-} from "d3-scale-chromatic";
+import { interpolateRainbow, interpolateCool } from "d3-scale-chromatic";
 import * as globals from "../globals";
 import parseRGB from "../util/parseRGB";
 import finiteExtent from "../util/finiteExtent";
@@ -66,9 +60,9 @@ const updateCellColorsMiddleware = store => next => action => {
   */
 
   if (action.type === "color by categorical metadata") {
-    const categories = _.filter(s.controls.world.schema.annotations.obs, {
+    const { categories } = _.filter(s.controls.world.schema.annotations.obs, {
       name: action.colorAccessor
-    })[0].categories;
+    })[0];
 
     colorScale = d3
       .scaleSequential(interpolateRainbow)
