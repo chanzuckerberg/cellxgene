@@ -89,10 +89,13 @@ const updateCellColorsMiddleware = store => next => action => {
       .range([1, 0]);
 
     for (let i = 0; i < obsAnnotations.length; i += 1) {
-      const obs = obsAnnotations[i];
-      const c = interpolateCool(colorScale(obs[action.colorAccessor]));
-      colorsByName[i] = c;
-      colorsByRGB[i] = parseRGB(c);
+      const val = obsAnnotations[i][action.colorAccessor];
+      if (Number.isFinite(val)) {
+        colorsByName[i] = interpolateCool(colorScale(val));
+      } else {
+        colorsByName[i] = globals.nonFiniteCellColor;
+      }
+      colorsByRGB[i] = parseRGB(colorsByName[i]);
     }
   }
 
@@ -108,9 +111,13 @@ const updateCellColorsMiddleware = store => next => action => {
       ]); /* invert viridis... probably pass this scale through to others */
 
     for (let i = 0, len = expression.length; i < len; i += 1) {
-      const c = interpolateCool(colorScale(expression[i]));
-      colorsByName[i] = c;
-      colorsByRGB[i] = parseRGB(c);
+      const e = expression[i];
+      if (Number.isFinite(e)) {
+        colorsByName[i] = interpolateCool(colorScale(e));
+      } else {
+        colorsByName[i] = globals.nonFiniteCellColor;
+      }
+      colorsByRGB[i] = parseRGB(colorsByName[i]);
     }
   }
 

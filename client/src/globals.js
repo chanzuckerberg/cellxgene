@@ -57,6 +57,7 @@ export const brightBlue = "#4a90e2";
 export const brightGreen = "#A2D729";
 export const darkGreen = "#448C4D";
 
+export const nonFiniteCellColor = lightGrey;
 export const defaultCellColor = "rgb(0,0,0,1)";
 
 /* typography constants */
