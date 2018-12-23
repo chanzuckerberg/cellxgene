@@ -5,6 +5,8 @@ import time
 
 import requests
 
+import decode_fbs
+
 LOCAL_URL = "http://127.0.0.1:5005/"
 VERSION = "v0.2"
 URL_BASE = f"{LOCAL_URL}api/{VERSION}/"
@@ -40,6 +42,7 @@ class EndPoints(unittest.TestCase):
         url = f"{URL_BASE}{endpoint}"
         result = self.session.get(url)
         self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "application/json")
         result_data = result.json()
         self.assertEqual(result_data["schema"]["dataframe"]["nObs"], 2638)
         self.assertEqual(len(result_data["schema"]["annotations"]["obs"]), 5)
@@ -49,6 +52,7 @@ class EndPoints(unittest.TestCase):
         url = f"{URL_BASE}{endpoint}"
         result = self.session.get(url)
         self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "application/json")
         result_data = result.json()
         self.assertEqual(result_data["config"]["displayNames"]["dataset"], "pbmc3k")
         self.assertEqual(len(result_data["config"]["features"]), 4)
@@ -58,9 +62,25 @@ class EndPoints(unittest.TestCase):
         url = f"{URL_BASE}{endpoint}"
         result = self.session.get(url)
         self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "application/json")
         result_data = result.json()
         self.assertEqual(result_data["layout"]["ndims"], 2)
         self.assertEqual(len(result_data["layout"]["coordinates"]), 2638)
+
+    def test_get_layout_fbs(self):
+        endpoint = "layout/obs"
+        url = f"{URL_BASE}{endpoint}"
+        header = {"Accept": "application/octet-stream"}
+        result = self.session.get(url, headers=header)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
+        df = decode_fbs.decode_dataframe_FBS(result.content)
+        self.assertEqual(df['n_rows'], 2638)
+        self.assertEqual(df['n_cols'], 2)
+        self.assertIsNotNone(df['columns'])
+        self.assertIsNone(df['col_idx'])
+        self.assertIsNone(df['row_idx'])
+        self.assertEqual(len(df['columns']), df['n_cols'])
 
     # def test_put_layout(self):
     #     endpoint = "layout/obs"
@@ -93,6 +113,7 @@ class EndPoints(unittest.TestCase):
         url = f"{URL_BASE}{endpoint}"
         result = self.session.get(url)
         self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "application/json")
         result_data = result.json()
         self.assertEqual(result_data["names"], ["name", "n_genes", "percent_mito", "n_counts", "louvain"])
         self.assertEqual(len(result_data["data"]), 2638)
@@ -103,10 +124,27 @@ class EndPoints(unittest.TestCase):
         query = "annotation-name=n_genes&annotation-name=percent_mito"
         url = f"{URL_BASE}{endpoint}?{query}"
         result = self.session.get(url)
+        self.assertEqual(result.headers["Content-Type"], "application/json")
         self.assertEqual(result.status_code, HTTPStatus.OK)
         result_data = result.json()
         self.assertEqual(result_data["names"], ["n_genes", "percent_mito"])
         self.assertEqual(len(result_data["data"][0]), 3)
+
+    def test_get_annotations_obs_fbs(self):
+        endpoint = "annotations/obs"
+        url = f"{URL_BASE}{endpoint}"
+        header = {"Accept": "application/octet-stream"}
+        result = self.session.get(url, headers=header)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
+        df = decode_fbs.decode_dataframe_FBS(result.content)
+        self.assertEqual(df['n_rows'], 2638)
+        self.assertEqual(df['n_cols'], 5)
+        self.assertIsNotNone(df['columns'])
+        self.assertIsNotNone(df['col_idx'])
+        self.assertIsNone(df['row_idx'])
+        self.assertEqual(len(df['columns']), df['n_cols'])
+        self.assertListEqual(df['col_idx'], ['name', 'n_genes', 'percent_mito', 'n_counts', 'louvain'])
 
     def test_get_annotations_obs_error(self):
         endpoint = "annotations/obs"
@@ -131,6 +169,7 @@ class EndPoints(unittest.TestCase):
         }
         result = self.session.put(url, json=obs_filter)
         self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "application/json")
         result_data = result.json()
         self.assertEqual(result_data["names"], ["name", "n_genes", "percent_mito", "n_counts", "louvain"])
         self.assertEqual(len(result_data["data"]), 15)
@@ -152,6 +191,7 @@ class EndPoints(unittest.TestCase):
         }
         result = self.session.put(url, json=obs_filter)
         self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "application/json")
         result_data = result.json()
         self.assertEqual(result_data["names"], ["n_genes", "percent_mito"])
         self.assertEqual(len(result_data["data"][0]), 3)
@@ -168,6 +208,7 @@ class EndPoints(unittest.TestCase):
         }
         result = self.session.post(url, json=params)
         self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "application/json")
         result_data = result.json()
         self.assertEqual(len(result_data), 7)
 
@@ -182,6 +223,7 @@ class EndPoints(unittest.TestCase):
         }
         result = self.session.post(url, json=params)
         self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "application/json")
         result_data = result.json()
         self.assertEqual(len(result_data), 10)
 
@@ -190,6 +232,7 @@ class EndPoints(unittest.TestCase):
         url = f"{URL_BASE}{endpoint}"
         result = self.session.get(url)
         self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "application/json")
         result_data = result.json()
         self.assertEqual(result_data["names"], ["name", "n_cells"])
         self.assertEqual(len(result_data["data"]), 1838)
@@ -201,9 +244,26 @@ class EndPoints(unittest.TestCase):
         url = f"{URL_BASE}{endpoint}?{query}"
         result = self.session.get(url)
         self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "application/json")
         result_data = result.json()
         self.assertEqual(result_data["names"], ["n_cells"])
         self.assertEqual(len(result_data["data"][0]), 2)
+
+    def test_get_annotations_var_fbs(self):
+        endpoint = "annotations/var"
+        url = f"{URL_BASE}{endpoint}"
+        header = {"Accept": "application/octet-stream"}
+        result = self.session.get(url, headers=header)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
+        df = decode_fbs.decode_dataframe_FBS(result.content)
+        self.assertEqual(df['n_rows'], 1838)
+        self.assertEqual(df['n_cols'], 2)
+        self.assertIsNotNone(df['columns'])
+        self.assertIsNotNone(df['col_idx'])
+        self.assertIsNone(df['row_idx'])
+        self.assertEqual(len(df['columns']), df['n_cols'])
+        self.assertListEqual(df['col_idx'], ['name', 'n_cells'])
 
     def test_get_annotations_var_error(self):
         endpoint = "annotations/var"
@@ -218,6 +278,7 @@ class EndPoints(unittest.TestCase):
         var_filter = {"filter": {"var": {"annotation_value": [{"name": "name", "values": ["ATAD3C", "RER1"]}]}}}
         result = self.session.put(url, json=var_filter)
         self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "application/json")
         result_data = result.json()
         self.assertEqual(result_data["names"], ["name", "n_cells"])
         self.assertEqual(len(result_data["data"]), 2)
@@ -229,6 +290,7 @@ class EndPoints(unittest.TestCase):
         var_filter = {"filter": {"var": {"annotation_value": [{"name": "name", "values": ["ATAD3C", "RER1"]}]}}}
         result = self.session.put(url, json=var_filter)
         self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "application/json")
         result_data = result.json()
         self.assertEqual(result_data["names"], ["n_cells"])
         self.assertEqual(len(result_data["data"][0]), 2)
@@ -241,6 +303,7 @@ class EndPoints(unittest.TestCase):
             url = f"{URL_BASE}{endpoint}?{query}"
             result = self.session.get(url)
             self.assertEqual(result.status_code, HTTPStatus.OK)
+            self.assertEqual(result.headers["Content-Type"], "application/json")
             result_data = result.json()
             self.assertEqual(len(result_data["obs"]), 2638)
 
@@ -262,6 +325,7 @@ class EndPoints(unittest.TestCase):
             url = f"{URL_BASE}{endpoint}"
             result = self.session.get(url)
             self.assertEqual(result.status_code, HTTPStatus.OK)
+            self.assertEqual(result.headers["Content-Type"], "application/json")
 
     def test_data_filter(self):
         for axis in ["obs", "var"]:
@@ -270,6 +334,7 @@ class EndPoints(unittest.TestCase):
             url = f"{URL_BASE}{endpoint}?{query}"
             result = self.session.get(url)
             self.assertEqual(result.status_code, HTTPStatus.OK)
+            self.assertEqual(result.headers["Content-Type"], "application/json")
             result_data = result.json()
             self.assertEqual(len(result_data["obs"]), 38)
 
@@ -291,10 +356,11 @@ class EndPoints(unittest.TestCase):
             }
             result = self.session.put(url, headers=header, json=obs_filter)
             self.assertEqual(result.status_code, HTTPStatus.OK)
+            self.assertEqual(result.headers["Content-Type"], "application/json")
             result_data = result.json()
             self.assertEqual(len(result_data["obs"]), 15)
 
-    def test_data_fbs_put(self):
+    def test_data_put_fbs(self):
         endpoint = f"data/var"
         url = f"{URL_BASE}{endpoint}"
         header = {"Accept": "application/octet-stream"}
@@ -308,6 +374,14 @@ class EndPoints(unittest.TestCase):
         result = self.session.put(url, headers=header, json=filter)
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
+        df = decode_fbs.decode_dataframe_FBS(result.content)
+        self.assertEqual(df['n_rows'], 2638)
+        self.assertEqual(df['n_cols'], 3)
+        self.assertIsNotNone(df['columns'])
+        self.assertIsNotNone(df['col_idx'])
+        self.assertIsNone(df['row_idx'])
+        self.assertEqual(len(df['columns']), df['n_cols'])
+        self.assertListEqual(df['col_idx'].tolist(), [0, 1, 4])
 
     def test_data_put_single_var(self):
         for axis in ["obs", "var"]:
@@ -317,6 +391,7 @@ class EndPoints(unittest.TestCase):
             var_filter = {"filter": {"var": {"annotation_value": [{"name": "name", "values": ["RER1"]}]}}}
             result = self.session.put(url, headers=header, json=var_filter)
             self.assertEqual(result.status_code, HTTPStatus.OK)
+            self.assertEqual(result.headers["Content-Type"], "application/json")
             result_data = result.json()
             if axis == "obs":
                 self.assertEqual(len(result_data["obs"][0]), 2)
@@ -353,6 +428,7 @@ class EndPoints(unittest.TestCase):
         }
         result = self.session.put(url, json=f1)
         self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "application/json")
         result_data1 = result.json()
         f2 = {
             "filter": {
@@ -368,6 +444,7 @@ class EndPoints(unittest.TestCase):
         }
         result = self.session.put(url, json=f2)
         self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "application/json")
         result_data2 = result.json()
         self.assertNotEqual(result_data1, result_data2)
 
@@ -392,6 +469,7 @@ class EndPoints(unittest.TestCase):
         }
         result = self.session.put(url, json=f2)
         self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "application/json")
         result_data2 = result.json()
         self.assertNotEqual(result_data1, result_data2)
 
