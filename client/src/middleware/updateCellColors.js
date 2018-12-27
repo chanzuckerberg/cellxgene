@@ -1,14 +1,7 @@
 // jshint esversion: 6
 import _ from "lodash";
 import * as d3 from "d3";
-import {
-  interpolateViridis,
-  interpolateSpectral,
-  interpolateRainbow,
-  interpolateBlues,
-  interpolateCool
-} from "d3-scale-chromatic";
-import * as globals from "../globals";
+import { interpolateRainbow, interpolateCool } from "d3-scale-chromatic";
 import parseRGB from "../util/parseRGB";
 
 /*
@@ -54,62 +47,79 @@ const updateCellColorsMiddleware = store => next => action => {
 
   const { obsAnnotations } = s.controls.world;
   let colorScale;
-  const colorsByName = new Array(obsAnnotations.length);
   const colorsByRGB = new Array(obsAnnotations.length);
 
   /*
   in plain language...
    (a) once the cells have loaded.
    (b) each time a user changes a color control we need to update cellsMetadata colors
-  This is available to all the draw functions as world.colorName[index] or world.colorRGB[index]
+  This is available to all the draw functions as controls.colorRGB[index]
   */
 
   if (action.type === "color by categorical metadata") {
-    const categories = _.filter(s.controls.world.schema.annotations.obs, {
+    const { categories } = _.filter(s.controls.world.schema.annotations.obs, {
       name: action.colorAccessor
-    })[0].categories;
+    })[0];
 
     colorScale = d3
       .scaleSequential(interpolateRainbow)
       .domain([0, categories.length]);
 
-    for (let i = 0; i < obsAnnotations.length; i += 1) {
+    /* pre-create colors - much faster than doing it for each obs */
+    const colors = _.transform(categories, (acc, cat, idx) => {
+      acc[cat] = parseRGB(colorScale(idx));
+    });
+
+    const key = action.colorAccessor;
+    for (let i = 0, len = obsAnnotations.length; i < len; i += 1) {
       const obs = obsAnnotations[i];
-      const c = colorScale(categories.indexOf(obs[action.colorAccessor]));
-      colorsByName[i] = c;
-      colorsByRGB[i] = parseRGB(c);
+      const cat = obs[key];
+      colorsByRGB[i] = colors[cat];
     }
   }
 
   if (action.type === "color by continuous metadata") {
+    const colorBins = 100;
+    const [min, max] = [0, action.rangeMaxForColorAccessor];
     colorScale = d3
-      .scaleLinear()
-      .domain([0, action.rangeMaxForColorAccessor])
-      .range([1, 0]);
+      .scaleQuantile()
+      .domain([min, max])
+      .range(_.range(colorBins - 1, -1, -1));
 
-    for (let i = 0; i < obsAnnotations.length; i += 1) {
+    /* pre-create colors - much faster than doing it for each obs */
+    const colors = new Array(colorBins);
+    for (let i = 0; i < colorBins; i += 1) {
+      colors[i] = parseRGB(interpolateCool(i / colorBins));
+    }
+
+    const key = action.colorAccessor;
+    for (let i = 0, len = obsAnnotations.length; i < len; i += 1) {
       const obs = obsAnnotations[i];
-      const c = interpolateCool(colorScale(obs[action.colorAccessor]));
-      colorsByName[i] = c;
-      colorsByRGB[i] = parseRGB(c);
+      const c = colorScale(obs[key]);
+      colorsByRGB[i] = colors[c];
     }
   }
 
   if (action.type === "color by expression") {
     const { gene, data } = action;
     const expression = data[gene]; // Float32Array
+    const colorBins = 100;
+    // XXX TODO - replace _.min/_.max with the much faster finiteExtent
+    const [min, max] = [_.min(expression), _.max(expression)];
     colorScale = d3
-      .scaleLinear()
-      .domain([_.min(expression), _.max(expression)])
-      .range([
-        1,
-        0
-      ]); /* invert viridis... probably pass this scale through to others */
+      .scaleQuantile()
+      .domain([min, max])
+      .range(_.range(colorBins - 1, -1, -1));
+
+    /* pre-create colors - much faster than doing it for each obs */
+    const colors = new Array(colorBins);
+    for (let i = 0; i < colorBins; i += 1) {
+      colors[i] = parseRGB(interpolateCool(i / colorBins));
+    }
 
     for (let i = 0, len = expression.length; i < len; i += 1) {
-      const c = interpolateCool(colorScale(expression[i]));
-      colorsByName[i] = c;
-      colorsByRGB[i] = parseRGB(c);
+      const c = colorScale(expression[i]);
+      colorsByRGB[i] = colors[c];
     }
   }
 
@@ -117,7 +127,7 @@ const updateCellColorsMiddleware = store => next => action => {
   append the result of all the filters to the action the user just triggered
   */
   const modifiedAction = Object.assign({}, action, {
-    colors: { name: colorsByName, rgb: colorsByRGB },
+    colors: { rgb: colorsByRGB },
     colorScale
   });
 
