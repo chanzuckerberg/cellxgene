@@ -112,7 +112,6 @@ const Controls = (
 
     // all of the data + selection state
     world: null,
-    colorName: null,
     colorRGB: null,
     categoricalSelectionState: null,
     crossfilter: null,
@@ -167,8 +166,9 @@ const Controls = (
       /* first light - create world & other data-driven defaults */
       const { universe } = action;
       const world = World.createWorldFromEntireUniverse(universe);
-      const colorName = new Array(universe.nObs).fill(globals.defaultCellColor);
-      const colorRGB = _.map(colorName, c => parseRGB(c));
+      const colorRGB = new Array(universe.nObs).fill(
+        parseRGB(globals.defaultCellColor)
+      );
       const categoricalSelectionState = createCategoricalSelectionState(
         state,
         world
@@ -223,7 +223,6 @@ const Controls = (
         error: null,
         universe,
         world,
-        colorName,
         colorRGB,
         categoricalSelectionState,
         crossfilter,
@@ -240,8 +239,9 @@ const Controls = (
         action.world,
         action.crossfilter
       );
-      const colorName = new Array(world.nObs).fill(globals.defaultCellColor);
-      const colorRGB = _.map(colorName, c => parseRGB(c));
+      const colorRGB = new Array(world.nObs).fill(
+        parseRGB(globals.defaultCellColor)
+      );
       const categoricalSelectionState = createCategoricalSelectionState(
         state,
         world
@@ -289,7 +289,6 @@ const Controls = (
         loading: false,
         error: null,
         world,
-        colorName,
         colorRGB,
         categoricalSelectionState,
         crossfilter,
@@ -442,11 +441,11 @@ const Controls = (
     }
     case "reset colorscale": {
       const { world } = state;
-      const colorName = new Array(world.nObs).fill(globals.defaultCellColor);
-      const colorRGB = _.map(colorName, c => parseRGB(c));
+      const colorRGB = new Array(world.nObs).fill(
+        parseRGB(globals.defaultCellColor)
+      );
       return {
         ...state,
-        colorName,
         colorRGB,
         colorAccessor: null
       };
@@ -609,7 +608,6 @@ const Controls = (
     case "color by continuous metadata": {
       return {
         ...state,
-        colorName: action.colors.name,
         colorRGB: action.colors.rgb,
         colorAccessor: action.colorAccessor,
         colorScale: action.colorScale
@@ -618,7 +616,6 @@ const Controls = (
     case "color by expression": {
       return {
         ...state,
-        colorName: action.colors.name,
         colorRGB: action.colors.rgb,
         colorAccessor: action.gene,
         colorScale: action.colorScale

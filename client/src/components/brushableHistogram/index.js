@@ -27,7 +27,7 @@ import finiteExtent from "../../util/finiteExtent";
   obsAnnotations: _.get(state.controls.world, "obsAnnotations", null)
 }))
 class HistogramBrush extends React.Component {
-  calcHistogramCache = memoize((obsAnnotations, field, ranges) => {
+  calcHistogramCache = memoize((obsAnnotations, field, rangeMin, rangeMax) => {
     const { world } = this.props;
     const histogramCache = {};
 
@@ -41,7 +41,7 @@ class HistogramBrush extends React.Component {
 
       histogramCache.x = d3
         .scaleLinear()
-        .domain([ranges.min, ranges.max])
+        .domain([rangeMin, rangeMax])
         .range([0, this.width]);
 
       histogramCache.bins = d3
@@ -131,7 +131,8 @@ class HistogramBrush extends React.Component {
     const histogramCache = this.calcHistogramCache(
       obsAnnotations,
       field,
-      ranges
+      ranges.min,
+      ranges.max
     );
 
     const { x, y, bins, numValues } = histogramCache;

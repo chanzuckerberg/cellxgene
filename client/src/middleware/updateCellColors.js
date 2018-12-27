@@ -49,14 +49,13 @@ const updateCellColorsMiddleware = store => next => action => {
 
   const { obsAnnotations } = s.controls.world;
   let colorScale;
-  const colorsByName = new Array(obsAnnotations.length);
   const colorsByRGB = new Array(obsAnnotations.length);
 
   /*
   in plain language...
    (a) once the cells have loaded.
    (b) each time a user changes a color control we need to update cellsMetadata colors
-  This is available to all the draw functions as world.colorName[index] or world.colorRGB[index]
+  This is available to all the draw functions as controls.colorRGB[index]
   */
 
   if (action.type === "color by categorical metadata") {
@@ -68,50 +67,71 @@ const updateCellColorsMiddleware = store => next => action => {
       .scaleSequential(interpolateRainbow)
       .domain([0, categories.length]);
 
-    for (let i = 0; i < obsAnnotations.length; i += 1) {
+    /* pre-create colors - much faster than doing it for each obs */
+    const colors = _.transform(categories, (acc, cat, idx) => {
+      acc[cat] = parseRGB(colorScale(idx));
+    });
+
+    const key = action.colorAccessor;
+    for (let i = 0, len = obsAnnotations.length; i < len; i += 1) {
       const obs = obsAnnotations[i];
-      const c = colorScale(categories.indexOf(obs[action.colorAccessor]));
-      colorsByName[i] = c;
-      colorsByRGB[i] = parseRGB(c);
+      const cat = obs[key];
+      colorsByRGB[i] = colors[cat];
     }
   }
 
   if (action.type === "color by continuous metadata") {
+    const colorBins = 100;
+    const [min, max] = [0, action.rangeMaxForColorAccessor];
     colorScale = d3
-      .scaleLinear()
-      .domain([0, action.rangeMaxForColorAccessor])
-      .range([1, 0]);
+      .scaleQuantile()
+      .domain([min, max])
+      .range(_.range(colorBins - 1, -1, -1));
 
-    for (let i = 0; i < obsAnnotations.length; i += 1) {
-      const val = obsAnnotations[i][action.colorAccessor];
+    /* pre-create colors - much faster than doing it for each obs */
+    const colors = new Array(colorBins);
+    for (let i = 0; i < colorBins; i += 1) {
+      colors[i] = parseRGB(interpolateCool(i / colorBins));
+    }
+
+    const key = action.colorAccessor;
+    const nonFiniteColor = parseRGB(globals.nonFiniteCellColor);
+    for (let i = 0, len = obsAnnotations.length; i < len; i += 1) {
+      const val = obsAnnotations[i][key];
       if (Number.isFinite(val)) {
-        colorsByName[i] = interpolateCool(colorScale(val));
+        const c = colorScale(val);
+        colorsByRGB[i] = colors[c];
       } else {
-        colorsByName[i] = globals.nonFiniteCellColor;
+        colorsByRGB[i] = nonFiniteColor;
       }
-      colorsByRGB[i] = parseRGB(colorsByName[i]);
     }
   }
 
   if (action.type === "color by expression") {
     const { gene, data } = action;
     const expression = data[gene]; // Float32Array
+    const colorBins = 100;
+    const [min, max] = finiteExtent(expression);
     colorScale = d3
-      .scaleLinear()
-      .domain(finiteExtent(expression))
-      .range([
-        1,
-        0
-      ]); /* invert viridis... probably pass this scale through to others */
+      .scaleQuantile()
+      .domain([min, max])
+      .range(_.range(colorBins - 1, -1, -1));
+
+    /* pre-create colors - much faster than doing it for each obs */
+    const colors = new Array(colorBins);
+    for (let i = 0; i < colorBins; i += 1) {
+      colors[i] = parseRGB(interpolateCool(i / colorBins));
+    }
+    const nonFiniteColor = parseRGB(globals.nonFiniteCellColor);
 
     for (let i = 0, len = expression.length; i < len; i += 1) {
       const e = expression[i];
       if (Number.isFinite(e)) {
-        colorsByName[i] = interpolateCool(colorScale(e));
+        const c = colorScale(e);
+        colorsByRGB[i] = colors[c];
       } else {
-        colorsByName[i] = globals.nonFiniteCellColor;
+        colorsByRGB[i] = nonFiniteColor;
       }
-      colorsByRGB[i] = parseRGB(colorsByName[i]);
     }
   }
 
@@ -119,7 +139,7 @@ const updateCellColorsMiddleware = store => next => action => {
   append the result of all the filters to the action the user just triggered
   */
   const modifiedAction = Object.assign({}, action, {
-    colors: { name: colorsByName, rgb: colorsByRGB },
+    colors: { rgb: colorsByRGB },
     colorScale
   });
 
