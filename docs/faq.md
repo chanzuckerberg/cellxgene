@@ -7,7 +7,14 @@ description: Frequently Asked Questions
 
 # data formatting
 
-## Someone sent me a directory of `10X-Genomics` data with a `mtx` file and I've never used `scanpy`, can I use `cellxgene`?
+## What file formats can I use with _cellxgene_?
+Currently, you can go straight into `cellxgene launch` with your own analyzed data in h5ad format, after you have performed dimenstionality reduction (tsne, umap) and clustering (louvain).
+
+If your data is in a different format, and/or you still need to perform dimensionality reduction and clustering, `cellxgene` can do that for you with the `prepare` command. `cellxgene prepare` runs `scanpy` under the hood and can read in any format that is currently supported by `scanpy` (including mtx, loom, and more listed [here](https://scanpy.readthedocs.io/en/latest/api/index.html#reading)). 
+
+The output of `cellxgene prepare` is a h5ad file with your computed clusters and tsne/umap projections that can be used in `cellxgene launch`.
+
+## I have a directory of 10X-Genomics data with _mtx_ files and I've never used _scanpy_, can I use _cellxgene_?
 
 Yep! This should only take a couple steps. We'll assume your data is in a folder called `data/` and you've successfully installed `cellxgene` with the `louvain` packages as described above. Just run
 
@@ -23,15 +30,15 @@ cellxgene launch data-processed.h5ad --layout=umap --open
 
 And your web browser should open with an interactive view of your data.
 
-## In my `prepare` command I received the following error `Warning: louvain module is not installed, no clusters will be calculated. To fix this please install cellxgene with the optional feature louvain enabled`
+## In my _prepare_ command I received the following error `Warning: louvain module is not installed, no clusters will be calculated. To fix this please install cellxgene with the optional feature louvain enabled`
 
-Louvain clustering requires additional dependencies that are somewhat complex, so we don't include them by default. For now, you need to specify that you want these packages by using
+Louvain clustering requires additional dependencies, so we don't include them by default. For now, you need to specify that you want these packages by using
 
 ```
 pip install cellxgene[louvain]
 ```
 
-## I ran `prepare` and I'm getting results that look unexpected
+## I ran _prepare_ and I'm getting results that look unexpected
 
 You might want to try running one of the preprocessing recipes included with `scanpy` (read more about them [here](https://scanpy.readthedocs.io/en/latest/api/index.html#recipes)). You can specify this with the `--recipe` option, such as
 
@@ -43,7 +50,7 @@ It should be easy to run `prepare` then call `cellxgene launch` a few times with
 
 ## I have extra metadata that I want to add to my dataset
 
-Currently this is not supported directly, but you should be able to do this manually using `scanpy`. For example, this [notebook](https://github.com/falexwolf/fun-analyses/blob/master/tabula_muris/tabula_muris.ipynb) shows adding the contents of a `csv` file with metadata to an `anndata` object. For now, you could do this manually on your data in the same way and then save out the result before loading into `cellxgene`.
+Currently this is not supported directly, but you should be able to do this yourself using `scanpy`. For example, this [notebook](https://github.com/falexwolf/fun-analyses/blob/master/tabula_muris/tabula_muris.ipynb) shows adding the contents of a `csv` file with metadata to an `anndata` object. For now, you could do this manually on your data in the same way and then save out the result before loading into `cellxgene`.
 
 ## What part of the _anndata_ objects does cellxgene pull in for visualization?
 
