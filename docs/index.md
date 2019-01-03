@@ -2,9 +2,11 @@ _cellxgene_ is an interactive data explorer for single-cell transcriptomics data
 
 ## features
 
-- Flexible selection and coloring of cells
-- Differential expression of your selected sets of cells
-- Single-gene analyses (e.g. expression analysis)
+#### Flexible selections, coloring, and differential expression of your selected sets of cells
+<img src="diffexp.gif" width="600"/>
+
+#### Single-gene analyses (e.g. expression analysis)
+<img src="customGene.gif" width="600" />
 
 ## getting started
 
