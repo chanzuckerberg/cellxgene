@@ -10,7 +10,7 @@ _cellxgene_ is an interactive data explorer for single-cell transcriptomics data
 
 ## getting started
 
-_cellxgene_ requires **Python 3.6**
+_cellxgene_ **only** supports Python 3.6. We recommend [installing _cellxgene_ into a conda or virtual environment.](/faq.html#how-do-i-create-a-python-36-environment-for-cellxgene)
 
 Install the package.
 ``` bash
