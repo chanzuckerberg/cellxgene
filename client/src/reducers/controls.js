@@ -117,6 +117,7 @@ const Controls = (
     crossfilter: null,
     dimensionMap: null,
     userDefinedGenes: [],
+    userDefinedGenesLoading: false,
     diffexpGenes: [],
 
     colorAccessor: null,
