@@ -7,7 +7,7 @@ import * as d3 from "d3";
 import fuzzysort from "fuzzysort";
 
 import { connect } from "react-redux";
-import { MenuItem } from "@blueprintjs/core";
+import { MenuItem, Button } from "@blueprintjs/core";
 import { Suggest } from "@blueprintjs/select";
 import HistogramBrush from "../brushableHistogram";
 import * as globals from "../../globals";
@@ -59,6 +59,7 @@ const filterGenes = (query, genes) => {
     metadata,
     initializeRanges,
     userDefinedGenes: state.controls.userDefinedGenes,
+    userDefinedGenesLoading: state.controls.userDefinedGenesLoading,
     world: state.controls.world,
     colorAccessor: state.controls.colorAccessor,
     allGeneNames: state.controls.allGeneNames,
@@ -87,7 +88,12 @@ class GeneExpression extends React.Component {
   }
 
   render() {
-    const { world, userDefinedGenes, differential } = this.props;
+    const {
+      world,
+      userDefinedGenes,
+      userDefinedGenesLoading,
+      differential
+    } = this.props;
 
     return (
       <div>
@@ -109,9 +115,11 @@ class GeneExpression extends React.Component {
             className="bp3-control-group"
           >
             <Suggest
+              disabled={true}
               closeOnSelect
               openOnKeyDown
               resetOnSelect
+              itemDisabled={userDefinedGenesLoading ? () => true : () => false}
               noResults={<MenuItem disabled text="No matching genes." />}
               onItemSelect={g => {
                 /* this happens on 'enter' */
@@ -129,6 +137,12 @@ class GeneExpression extends React.Component {
               }
               popoverProps={{ minimal: true }}
             />
+            <Button
+              className="bp3-button bp3-intent-primary"
+              loading={userDefinedGenesLoading}
+            >
+              Add
+            </Button>
           </div>
           {world && userDefinedGenes.length > 0
             ? _.map(userDefinedGenes, (geneName, index) => {

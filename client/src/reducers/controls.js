@@ -117,6 +117,7 @@ const Controls = (
     crossfilter: null,
     dimensionMap: null,
     userDefinedGenes: [],
+    userDefinedGenesLoading: false,
     diffexpGenes: [],
 
     colorAccessor: null,
@@ -323,6 +324,18 @@ const Controls = (
         }
       };
     }
+    case "request user defined gene started": {
+      return {
+        ...state,
+        userDefinedGenesLoading: true
+      };
+    }
+    case "request user defined gene error": {
+      return {
+        ...state,
+        userDefinedGenesLoading: false
+      };
+    }
     case "request user defined gene success": {
       const { world, crossfilter, dimensionMap, userDefinedGenes } = state;
       const worldVarDataCache = world.varDataCache;
@@ -340,7 +353,8 @@ const Controls = (
       return {
         ...state,
         dimensionMap,
-        userDefinedGenes: _userDefinedGenes
+        userDefinedGenes: _userDefinedGenes,
+        userDefinedGenesLoading: false
       };
     }
     case "request differential expression success": {
