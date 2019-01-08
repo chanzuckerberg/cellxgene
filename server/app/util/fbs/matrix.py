@@ -166,7 +166,7 @@ def encode_matrix_fbs(matrix, row_idx=None, col_idx=None):
     """
 
     if row_idx is not None:
-        raise ValueError("row indexing not supproted for FBS DataFrame")
+        raise ValueError("row indexing not supported for FBS DataFrame")
     if matrix.ndim != 2:
         raise ValueError("FBS DataFrame must be 2D")
 
