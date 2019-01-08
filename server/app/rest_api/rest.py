@@ -9,7 +9,6 @@ from werkzeug.datastructures import ImmutableMultiDict
 from server.app.util.constants import (
     Axis,
     DiffExpMode,
-    JSON_MIMETYPE,
     JSON_NaN_to_num_warning_msg,
 )
 from server.app.util.filter import parse_filter, QueryStringError
@@ -264,7 +263,7 @@ class AnnotationsObsAPI(Resource):
                 request.get_json()["filter"], "obs", fields
             )
             return make_response(
-                annotation_response, HTTPStatus.OK, {"Content-Type": JSON_MIMETYPE}
+                annotation_response, HTTPStatus.OK, {"Content-Type": "application/json"}
             )
         except KeyError:
             return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
@@ -384,7 +383,7 @@ class AnnotationsVarAPI(Resource):
                 request.get_json()["filter"], "var", fields
             )
             return make_response(
-                annotation_response, HTTPStatus.OK, {"Content-Type": JSON_MIMETYPE}
+                annotation_response, HTTPStatus.OK, {"Content-Type": "application/json"}
             )
         except KeyError:
             return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
@@ -457,7 +456,7 @@ class DataObsAPI(Resource):
             return make_response(
                 current_app.data.data_frame(filter_, axis=Axis.OBS),
                 HTTPStatus.OK,
-                {"Content-Type": JSON_MIMETYPE},
+                {"Content-Type": "application/json"},
             )
         except FilterError as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
@@ -515,7 +514,7 @@ class DataObsAPI(Resource):
                     )
                 ),
                 HTTPStatus.OK,
-                {"Content-Type": JSON_MIMETYPE},
+                {"Content-Type": "application/json"},
             )
         except FilterError as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
@@ -584,7 +583,7 @@ class DataVarAPI(Resource):
             return make_response(
                 current_app.data.data_frame(filter_, axis=Axis.VAR),
                 HTTPStatus.OK,
-                {"Content-Type": JSON_MIMETYPE},
+                {"Content-Type": "application/json"},
             )
         except FilterError as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
@@ -636,7 +635,7 @@ class DataVarAPI(Resource):
                         )
                     ),
                     HTTPStatus.OK,
-                    {"Content-Type": JSON_MIMETYPE},
+                    {"Content-Type": "application/json"},
                 )
             elif preferred_mimetype == "application/octet-stream":
                 return make_response(
@@ -769,7 +768,7 @@ class DiffExpObsAPI(Resource):
                 current_app.data.features["diffexp"]["interactiveLimit"],
             )
             return make_response(
-                diffexp, HTTPStatus.OK, {"Content-Type": JSON_MIMETYPE}
+                diffexp, HTTPStatus.OK, {"Content-Type": "application/json"}
             )
         except (ValueError, FilterError) as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
