@@ -30,24 +30,24 @@ def CreateNumpyVector(builder, x):
 
     # Ensure little endian byte ordering
     if x.dtype.str[0] == "<":
-        x_lend = x
+        x_little_endian = x
     else:
-        x_lend = x.byteswap(inplace=False)
+        x_little_endian = x.byteswap(inplace=False)
 
     # Calculate total length
-    len = int(x_lend.itemsize * x_lend.size)
+    len = int(x_little_endian.itemsize * x_little_endian.size)
     builder.head = int(builder.Head() - len)
 
     # tobytes ensures c_contiguous ordering
-    builder.Bytes[builder.Head():builder.Head() + len] = x_lend.tobytes(order='C')
+    builder.Bytes[builder.Head():builder.Head() + len] = x_little_endian.tobytes(order='C')
 
     return builder.EndVector(x.size)
 
 
 # Serialization helper
-def serialize_column(builder, tarr):
+def serialize_column(builder, typed_arr):
     """ Serialize NetEncoding.Column """
-    (u_type, u_value) = tarr
+    (u_type, u_value) = typed_arr
     Column.ColumnStart(builder)
     Column.ColumnAddUType(builder, u_type)
     Column.ColumnAddU(builder, u_value)
@@ -184,16 +184,16 @@ def encode_matrix_fbs(matrix, row_idx=None, col_idx=None):
     # for idx in reversed(np.arange(n_cols)):
     for c in matrix_columns:
         # serialize the typed array
-        tarr = serialize_typed_array(builder, c, column_encoding)
+        typed_arr = serialize_typed_array(builder, c, column_encoding)
 
         # serialize the Column union
-        columns.append(serialize_column(builder, tarr))
+        columns.append(serialize_column(builder, typed_arr))
 
     # Serialize DataFrame.columns[]
     DataFrame.DataFrameStartColumnsVector(builder, n_cols)
     for c in columns:
         builder.PrependUOffsetTRelative(c)
-    mcv = builder.EndVector(n_cols)
+    matrix_column_vec = builder.EndVector(n_cols)
 
     # serialize the colIndex if provided
     cidx = None
@@ -201,7 +201,7 @@ def encode_matrix_fbs(matrix, row_idx=None, col_idx=None):
         cidx = serialize_typed_array(builder, col_idx, index_encoding)
 
     # Serialize DataFrame
-    matrix = serialize_dataframe(builder, n_rows, n_cols, mcv, cidx)
+    matrix = serialize_dataframe(builder, n_rows, n_cols, matrix_column_vec, cidx)
 
     builder.Finish(matrix)
     return builder.Output()
