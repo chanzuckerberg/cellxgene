@@ -9,18 +9,31 @@ def _mean_var_n(X):
     than naive methods (and same method used by numpy.var())
     https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Two-pass
     """
-    n = X.shape[0]
-    if sparse.issparse(X):
-        mean = X.mean(axis=0).A1
-        dfm = X - mean
-        sumsq = np.sum(np.multiply(dfm, dfm), axis=0).A1
-        v = sumsq / (n - 1)
-    else:
-        mean = X.mean(axis=0)
-        dfm = X - mean
-        sumsq = np.sum(np.multiply(dfm, dfm), axis=0)
-        v = sumsq / (n - 1)
+    # fp_err_occurred is a flag indicating that a floating point error
+    # occured somewhere in our compute.  Used to trigger non-finite
+    # number handling.
+    fp_err_occurred = False
 
+    def fp_err_set(err, flag):
+        nonlocal fp_err_occurred
+        fp_err_occurred = True
+
+    with np.errstate(divide="call", invalid="call", call=fp_err_set):
+        n = X.shape[0]
+        if sparse.issparse(X):
+            mean = X.mean(axis=0).A1
+            dfm = X - mean
+            sumsq = np.sum(np.multiply(dfm, dfm), axis=0).A1
+            v = sumsq / (n - 1)
+        else:
+            mean = X.mean(axis=0)
+            dfm = X - mean
+            sumsq = np.sum(np.multiply(dfm, dfm), axis=0)
+            v = sumsq / (n - 1)
+
+    if fp_err_occurred:
+        mean[np.isfinite(mean) == False] = 0    # noqa: E712
+        v[np.isfinite(v) == False] = 0          # noqa: E712
     return mean, v, n
 
 

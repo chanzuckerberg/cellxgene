@@ -168,10 +168,13 @@ describe("createObsDimensionMap", () => {
     */
 
     const { dimensionMap } = defaultBigBang();
-
+    const annotationNames = _.map(
+      REST.schema.schema.annotations.obs,
+      c => c.name
+    );
     const schemaByObsName = _.keyBy(REST.schema.schema.annotations.obs, "name");
     expect(dimensionMap).toBeDefined();
-    REST.annotationsObs.names.forEach(name => {
+    annotationNames.forEach(name => {
       const dim = dimensionMap[obsAnnoDimensionName(name)];
       if (name === "name") {
         expect(dim).toBeUndefined();

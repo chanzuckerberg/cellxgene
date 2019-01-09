@@ -25,17 +25,18 @@ export function catchErrorsWrap(fn, dispatchToUser = false) {
 }
 
 /*
-Wrapper to perform an async fetch and JSON decode response.
+Wrapper to perform async fetch with some modest error handling
+and decoding.
 */
-export const doJsonRequest = async url => {
+const doFetch = async (url, acceptType) => {
   const res = await fetch(url, {
     method: "get",
     headers: new Headers({
-      "Content-Type": "application/json"
+      Accept: acceptType
     })
   });
-  if (res.ok && res.headers.get("Content-Type") === "application/json") {
-    return res.json();
+  if (res.ok && res.headers.get("Content-Type") === acceptType) {
+    return res;
   }
   // else an error
   let msg = `Unexpected HTTP response ${res.status}, ${res.statusText}`;
@@ -45,6 +46,22 @@ export const doJsonRequest = async url => {
   }
   dispatchNetworkErrorMessageToUser(msg);
   throw new Error(msg);
+};
+
+/*
+Wrapper to perform an async fetch and JSON decode response.
+*/
+export const doJsonRequest = async url => {
+  const res = await doFetch(url, "application/json");
+  return res.json();
+};
+
+/*
+Wrapper to perform an async fetch for binary data.
+*/
+export const doBinaryRequest = async url => {
+  const res = await doFetch(url, "application/octet-stream");
+  return res.arrayBuffer();
 };
 
 /*

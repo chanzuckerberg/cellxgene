@@ -13,6 +13,7 @@ import memoize from "memoize-one";
 import { kvCache } from "../../util/stateManager";
 import * as globals from "../../globals";
 import actions from "../../actions";
+import finiteExtent from "../../util/finiteExtent";
 
 @connect(state => ({
   world: state.controls.world,
@@ -56,7 +57,7 @@ class HistogramBrush extends React.Component {
       histogramCache.x = d3
         .scaleLinear()
         .domain(
-          d3.extent(varValues)
+          finiteExtent(varValues)
         ) /* replace this if we have ranges for genes back from server like we do for annotations on cells */
         .range([0, this.width]);
 

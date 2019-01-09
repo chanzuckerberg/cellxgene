@@ -30,7 +30,6 @@ describe("createUniverseFromRestV02Response", () => {
     create a universe from sample data nad validate its shape & contents
     */
     const { nObs, nVar } = REST.schema.schema.dataframe;
-
     const universe = Universe.createUniverseFromRestV02Response(
       REST.config,
       REST.schema,
@@ -64,58 +63,5 @@ describe("createUniverseFromRestV02Response", () => {
     expect(universe.obsLayout.Y).toHaveLength(nObs);
     expect(universe.varAnnotations).toHaveLength(nVar);
     expect(_.keys(universe.varNameToIndexMap)).toHaveLength(nVar);
-  });
-});
-
-describe("convertExpressionRESTv02ToObject", () => {
-  /*
-  test convertExpressionRESTv02ToObject
-
-  convertExpressionRESTv02ToObject(
-    universe,
-    response) --> { geneName: Float32Array, geneName: Float32Array, ... }
-
-  reponse is a /data/obs response:
-  {
-    var: [ varIndices fetched ],
-    obs: [
-      [ obsIndex, evalue, ... ],
-      ...
-    ]
-  }
-  */
-  test("create from response data", () => {
-    const universe = Universe.createUniverseFromRestV02Response(
-      REST.config,
-      REST.schema,
-      REST.annotationsObs,
-      REST.annotationsVar,
-      REST.layoutObs
-    );
-    const expression = Universe.convertExpressionRESTv02ToObject(
-      universe,
-      REST.dataObs
-    );
-
-    /* Check that the expected keys are present */
-    const expectedGeneNames = _.map(
-      REST.dataObs.var,
-      v => REST.annotationsVar.data[v][5]
-    );
-    expect(Object.keys(expression)).toEqual(
-      expect.arrayContaining(expectedGeneNames)
-    );
-
-    const expectedExpressionValues = _.map(
-      _.unzip(REST.dataObs.obs),
-      a => new Float32Array(a)
-    );
-
-    _.forEach(REST.dataObs.var, (varIdx, idx) => {
-      const varName = universe.varAnnotations[varIdx].name;
-      expect(varName).toBeDefined();
-      expect(varIdx).toBe(universe.varNameToIndexMap[varName]);
-      expect(expression[varName]).toEqual(expectedExpressionValues[idx + 1]);
-    });
   });
 });

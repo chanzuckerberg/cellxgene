@@ -17,6 +17,7 @@ from server.app.util.errors import (
 )
 from server.app.util.utils import jsonify_scanpy
 from server.app.scanpy_engine.diffexp import diffexp_ttest
+from server.app.util.fbs.matrix import encode_matrix_fbs
 
 """
 Sort order for methods
@@ -411,6 +412,15 @@ class ScanpyEngine(CXGDriver):
         except ValueError:
             raise JSONEncodingValueError("Error encoding annotations to JSON")
 
+    def annotation_to_fbs_matrix(self, axis, fields=None):
+        if axis == Axis.OBS:
+            df = self.data.obs
+        else:
+            df = self.data.var
+        if fields is not None and len(fields) > 0:
+            df = df[fields]
+        return encode_matrix_fbs(df, col_idx=df.columns)
+
     def data_frame(self, filter, axis):
         """
         Retrieves data for each variable for observations in data frame
@@ -448,6 +458,30 @@ class ScanpyEngine(CXGDriver):
             return jsonify_scanpy(result)
         except ValueError:
             raise JSONEncodingValueError("Error encoding dataframe to JSON")
+
+    def data_frame_to_fbs_matrix(self, filter, axis):
+        """
+        Retrieves data 'X' and returns in a flatbuffer Matrix.
+        :param filter: filter: dictionary with filter params
+        :param axis: string obs or var
+        :return: flatbuffer Matrix
+
+        Caveats:
+        * currently only supports access on VAR axis
+        * currently only supports filtering on VAR axis
+        """
+        if axis != Axis.VAR:
+            raise ValueError("Only VAR dimension access is supported")
+        try:
+            obs_selector, var_selector = self._filter_to_mask(filter, use_slices=False)
+        except (KeyError, IndexError) as e:
+            raise FilterError(f"Error parsing filter: {e}") from e
+        if obs_selector is not None:
+            raise FilterError("filtering on obs unsupported")
+
+        # Currently only handles VAR dimension
+        X = self.data._X[:, var_selector]
+        return encode_matrix_fbs(X, col_idx=np.nonzero(var_selector)[0], row_idx=None)
 
     def diffexp_topN(self, obsFilterA, obsFilterB, top_n=None, interactive_limit=None):
         if Axis.VAR in obsFilterA or Axis.VAR in obsFilterB:
@@ -516,3 +550,20 @@ class ScanpyEngine(CXGDriver):
             )
         except ValueError:
             raise JSONEncodingValueError("Error encoding layout to JSON")
+
+    def layout_to_fbs_matrix(self):
+        """
+        Return the default 2-D layout for cells as a FBS Matrix.
+
+        Caveats:
+        * does not support filtering
+        * only returns Matrix in columnar layout
+        """
+        try:
+            df_layout = self.data.obsm[f"X_{self.layout_method}"]
+        except ValueError as e:
+            raise PrepareError(
+                f"Layout has not been calculated using {self.layout_method}, "
+                f"please prepare your datafile and relaunch cellxgene") from e
+        normalized_layout = (df_layout - df_layout.min()) / (df_layout.max() - df_layout.min())
+        return encode_matrix_fbs(normalized_layout.astype(dtype=np.float32), col_idx=None, row_idx=None)

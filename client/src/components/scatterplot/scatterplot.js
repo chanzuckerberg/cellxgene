@@ -20,6 +20,7 @@ import scaleLinear from "../../util/scaleLinear";
 
 import { margin, width, height } from "./util";
 import { kvCache } from "../../util/stateManager";
+import finiteExtent from "../../util/finiteExtent";
 
 @connect(state => {
   const {
@@ -227,11 +228,11 @@ class Scatterplot extends React.Component {
   static setupScales(expressionX, expressionY) {
     const xScale = d3
       .scaleLinear()
-      .domain(d3.extent(expressionX))
+      .domain(finiteExtent(expressionX))
       .range([0, width]);
     const yScale = d3
       .scaleLinear()
-      .domain(d3.extent(expressionY))
+      .domain(finiteExtent(expressionY))
       .range([height, 0]);
 
     return {

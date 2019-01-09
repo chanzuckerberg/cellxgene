@@ -3,9 +3,6 @@ from enum import Enum
 
 DEFAULT_TOP_N = 10
 
-# response mimetypes
-JSON_MIMETYPE = "application/json"
-
 
 class AugmentedEnum(Enum):
     def __hash__(self):

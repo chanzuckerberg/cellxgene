@@ -1,8 +1,10 @@
 // jshint esversion: 6
 
 import _ from "lodash";
+
 import * as kvCache from "./keyvalcache";
 import summarizeAnnotations from "./summarizeAnnotations";
+import decodeMatrixFBS from "./matrix";
 
 /*
 Private helper function - create and return a template Universe
@@ -92,73 +94,40 @@ function finalize(universe) {
   return universe;
 }
 
-function RESTv02AnnotationsResponseToInternal(response) {
+function RESTv02AnotationsFBSResponseToInternal(arrayBuffer) {
   /*
-  Source per the spec:
-  {
-    names: [
-      'tissue_type', 'sex', 'num_reads', 'clusters'
-    ],
-    data: [
-      [ 0, 'lung', 'F', 39844, 99 ],
-      [ 1, 'heart', 'M', 83, 1 ],
-      [ 49, 'spleen', null, 2, "unknown cluster" ],
-      // [ obsOrVarIndex, value, value, value, value ],
-      // ...
-    ]
-  }
+  Convert a Matrix FBS to our internal format -- row-major array of
+  observations/cells, stored as an object.  Each obs has a key for each
+  annotation, plus __index__ containing its obsIndex.
 
-  Internal (target) format:
+  Example:
   [
     { __index__: 0, tissue_type: "lung", sex: "F", ... },
     ...
   ]
+
+  XXX TODO: we could make use of the columns in building crossfilter
+  dimensions (they have to be recreated).  Future optimization.
   */
-  const { names, data } = response;
-  const keys = ["__index__", ...names];
-  return _(data)
-    .map(obs => _.zipObject(keys, obs))
-    .value();
+  const fbs = decodeMatrixFBS(arrayBuffer);
+  const keys = fbs.colIdx;
+  const result = Array(fbs.nRows);
+  for (let row = 0; row < fbs.nRows; row += 1) {
+    const rec = { __index__: row };
+    for (let col = 0; col < fbs.nCols; col += 1) {
+      rec[keys[col]] = fbs.columns[col][row];
+    }
+    result[row] = rec;
+  }
+  return result;
 }
 
-function RESTv02LayoutResponseToInternal(response) {
-  /*
-  Source per the spec:
-  {
-    layout: {
-      ndims: 2,
-      coordinates: [
-        [ 0, 0.284483, 0.983744 ],
-        [ 1, 0.038844, 0.739444 ],
-        // [ obsOrVarIndex, X_coord, Y_coord ],
-        // ...
-      ]
-    }
-  }
-
-  Target (internal) format:
-  {
-    X: Float32Array(numObs),
-    Y: Float32Array(numObs)
-  }
-  In the same order as obsAnnotations
-  */
-  const { ndims, coordinates } = response.layout;
-  if (ndims !== 2) {
-    throw new Error("Unsupported layout dimensionality");
-  }
-
-  const layout = {
-    X: new Float32Array(coordinates.length),
-    Y: new Float32Array(coordinates.length)
+function RESTv02LayoutFBSResponseToInternal(arrayBuffer) {
+  const fbs = decodeMatrixFBS(arrayBuffer, true);
+  return {
+    X: fbs.columns[0],
+    Y: fbs.columns[1]
   };
-
-  for (let i = 0; i < coordinates.length; i += 1) {
-    const [idx, x, y] = coordinates[i];
-    layout.X[idx] = x;
-    layout.Y[idx] = y;
-  }
-  return layout;
 }
 
 function reconcileSchemaCategoriesWithSummary(universe) {
@@ -192,7 +161,7 @@ export function createUniverseFromRestV02Response(
   schemaResponse,
   annotationsObsResponse,
   annotationsVarResponse,
-  layoutObsResponse
+  layoutFBSResponse
 ) {
   /*
   build & return universe from a REST 0.2 /config, /schema and /annotations/obs response
@@ -209,15 +178,15 @@ export function createUniverseFromRestV02Response(
   universe.nVar = schema.dataframe.nVar;
 
   /* annotations */
-  universe.obsAnnotations = RESTv02AnnotationsResponseToInternal(
+  universe.obsAnnotations = RESTv02AnotationsFBSResponseToInternal(
     annotationsObsResponse
   );
-  universe.varAnnotations = RESTv02AnnotationsResponseToInternal(
+  universe.varAnnotations = RESTv02AnotationsFBSResponseToInternal(
     annotationsVarResponse
   );
 
   /* layout */
-  universe.obsLayout = RESTv02LayoutResponseToInternal(layoutObsResponse);
+  universe.obsLayout = RESTv02LayoutFBSResponseToInternal(layoutFBSResponse);
 
   universe.summary = summarizeAnnotations(
     universe.schema,
@@ -229,32 +198,24 @@ export function createUniverseFromRestV02Response(
   return finalize(universe);
 }
 
-export function convertExpressionRESTv02ToObject(universe, response) {
+export function convertDataFBStoObject(universe, arrayBuffer) {
   /*
-  /data/obs response looks like:
-  {
-    var: [ varIndices fetched ],
-    obs: [
-      [ obsIndex, evalue, ... ],
-      ...
-    ]
-  }
+  /data/var returns a flatbuffer (FBS) as described by cellxgene/fbs/matrix.fbs
 
-  convert expression toa simple Float32Array, and return
-  { geneName: array, geneName: array, ... }
-  NOTE: geneName, not varIndex
+  This routine converts the binary wire encoding into a JS object:
+
+  {
+    gene: Float32Array,
+    ...
+  }
   */
-  const vars = response.var;
-  const { obs } = response;
+  const fbs = decodeMatrixFBS(arrayBuffer);
+  const { colIdx, columns } = fbs;
   const result = {};
-  // XXX TODO: could this use _.unzip and have less code?
-  for (let varIdx = 0; varIdx < vars.length; varIdx += 1) {
-    const gene = universe.varAnnotations[vars[varIdx]].name;
-    const data = new Float32Array(universe.nObs);
-    for (let obsIdx = 0; obsIdx < obs.length; obsIdx += 1) {
-      data[obsIdx] = obs[obsIdx][varIdx + 1];
-    }
-    result[gene] = data;
+
+  for (let c = 0; c < colIdx.length; c += 1) {
+    const gene = universe.varAnnotations[colIdx[c]].name;
+    result[gene] = columns[c];
   }
   return result;
 }

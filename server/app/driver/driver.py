@@ -67,6 +67,11 @@ class CXGDriver(metaclass=ABCMeta):
         pass
 
     @abstractmethod
+    def annotation_to_fbs_matrix(self, axis, field=None):
+        """ Same as annotation(), except returns a flatbuffer, and does not support filtering. """
+        pass
+
+    @abstractmethod
     def data_frame(self, filter, axis):
         """
         Retrieves data for each variable for observations in data frame
@@ -77,6 +82,10 @@ class CXGDriver(metaclass=ABCMeta):
             "obs": [cellid, var1 expression, var2 expression, ...],
         }
         """
+        pass
+
+    @abstractmethod
+    def data_frame_to_fbs_matrix(self, filter, axis):
         pass
 
     @abstractmethod
@@ -103,4 +112,9 @@ class CXGDriver(metaclass=ABCMeta):
         :param interactive_limit: -- don't compute if total # genes in dataframes are larger than this
         :return:  [cellid, x, y, ...]
         """
+        pass
+
+    @abstractmethod
+    def layout_to_fbs_matrix(self, filter):
+        """ same as layout, except returns a flatbuffer """
         pass

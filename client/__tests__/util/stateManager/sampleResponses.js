@@ -1,5 +1,7 @@
 /* eslint no-bitwise: "off" */
 import _ from "lodash";
+import { flatbuffers } from "flatbuffers";
+import { NetEncoding } from "../../../src/util/stateManager/matrix_generated";
 
 /*
 test data mocking REST 0.2 API responses.  Used in several tests.
@@ -58,7 +60,7 @@ const aSchemaResponse = {
   }
 };
 
-const anAnnotationsObsResponse = {
+const anAnnotationsObsJSONResponse = {
   names: ["name", "field1", "field2", "field3", "field4"],
   data: _()
     .range(nObs)
@@ -73,7 +75,7 @@ const anAnnotationsObsResponse = {
     .value()
 };
 
-const anAnnotationsVarResponse = {
+const anAnnotationsVarJSONResponse = {
   names: ["fieldA", "fieldB", "fieldC", "fieldD", "name"],
   data: _()
     .range(nVar)
@@ -88,7 +90,74 @@ const anAnnotationsVarResponse = {
     .value()
 };
 
-const aLayoutResponse = {
+function encodeTypedArray(builder, uType, uData) {
+  const uTypeName = NetEncoding.TypedArray[uType];
+  const ArrayType = NetEncoding[uTypeName];
+  const dv = ArrayType.createDataVector(builder, uData);
+  builder.startObject(1);
+  builder.addFieldOffset(0, dv, 0);
+  return builder.endObject();
+}
+
+function encodeMatrix(columns, colIndex = undefined) {
+  const utf8Encoder = new TextEncoder("utf-8");
+  const builder = new flatbuffers.Builder(1024);
+  const cols = _.map(columns, carr => {
+    let uType;
+    let tarr;
+    if (_.every(carr, _.isNumber)) {
+      uType = NetEncoding.TypedArray.Float32Array;
+      tarr = encodeTypedArray(builder, uType, new Float32Array(carr));
+    } else {
+      uType = NetEncoding.TypedArray.JSONEncodedArray;
+      const json = JSON.stringify(carr);
+      const jsonUTF8 = utf8Encoder.encode(json);
+      tarr = encodeTypedArray(builder, uType, jsonUTF8);
+    }
+    NetEncoding.Column.startColumn(builder);
+    NetEncoding.Column.addUType(builder, uType);
+    NetEncoding.Column.addU(builder, tarr);
+    return NetEncoding.Column.endColumn(builder);
+  });
+
+  const encColumns = NetEncoding.Matrix.createColumnsVector(builder, cols);
+
+  let encColIndex;
+  if (colIndex) {
+    encColIndex = encodeTypedArray(
+      builder,
+      NetEncoding.TypedArray.JSONEncodedArray,
+      utf8Encoder.encode(JSON.stringify(colIndex))
+    );
+  }
+
+  NetEncoding.Matrix.startMatrix(builder);
+  NetEncoding.Matrix.addNRows(builder, columns[0].length);
+  NetEncoding.Matrix.addNCols(builder, columns.length);
+  NetEncoding.Matrix.addColumns(builder, encColumns);
+  if (colIndex) {
+    NetEncoding.Matrix.addColIndexType(
+      builder,
+      NetEncoding.TypedArray.JSONEncodedArray
+    );
+    NetEncoding.Matrix.addColIndex(builder, encColIndex);
+  }
+  const root = NetEncoding.Matrix.endMatrix(builder);
+  builder.finish(root);
+  return builder.asUint8Array();
+}
+
+const anAnnotationsObsFBSResponse = (() => {
+  const columns = _.zip(...anAnnotationsObsJSONResponse.data).slice(1);
+  return encodeMatrix(columns, anAnnotationsObsJSONResponse.names);
+})();
+
+const anAnnotationsVarFBSResponse = (() => {
+  const columns = _.zip(...anAnnotationsVarJSONResponse.data).slice(1);
+  return encodeMatrix(columns, anAnnotationsVarJSONResponse.names);
+})();
+
+const aLayoutJSONResponse = {
   layout: {
     ndims: 2,
     coordinates: _()
@@ -97,6 +166,36 @@ const aLayoutResponse = {
       .value()
   }
 };
+
+const aLayoutFBSResponse = (() => {
+  const coords = [
+    new Float32Array(nObs).fill(Math.random()),
+    new Float32Array(nObs).fill(Math.random())
+  ];
+  const builder = new flatbuffers.Builder(1024);
+
+  const cols = _.map(coords, carr => {
+    const cdv = NetEncoding.Float32Array.createDataVector(builder, carr);
+    NetEncoding.Float32Array.startFloat32Array(builder);
+    NetEncoding.Float32Array.addData(builder, cdv);
+    const floatArr = NetEncoding.Float32Array.endFloat32Array(builder);
+
+    NetEncoding.Column.startColumn(builder);
+    NetEncoding.Column.addUType(builder, NetEncoding.TypedArray.Float32Array);
+    NetEncoding.Column.addU(builder, floatArr);
+    return NetEncoding.Column.endColumn(builder);
+  });
+
+  const columns = NetEncoding.Matrix.createColumnsVector(builder, cols);
+
+  NetEncoding.Matrix.startMatrix(builder);
+  NetEncoding.Matrix.addNRows(builder, nObs);
+  NetEncoding.Matrix.addNCols(builder, nVar);
+  NetEncoding.Matrix.addColumns(builder, columns);
+  const matrix = NetEncoding.Matrix.endMatrix(builder);
+  builder.finish(matrix);
+  return builder.asUint8Array();
+})();
 
 const aDataObsResponse = {
   var: [2, 4, 29],
@@ -107,10 +206,10 @@ const aDataObsResponse = {
 };
 
 export {
-  aLayoutResponse as layoutObs,
+  aLayoutFBSResponse as layoutObs,
   aDataObsResponse as dataObs,
-  anAnnotationsVarResponse as annotationsVar,
-  anAnnotationsObsResponse as annotationsObs,
+  anAnnotationsVarFBSResponse as annotationsVar,
+  anAnnotationsObsFBSResponse as annotationsObs,
   aSchemaResponse as schema,
   aConfigResponse as config
 };

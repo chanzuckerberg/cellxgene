@@ -2,7 +2,9 @@
 import _ from "lodash";
 import * as d3 from "d3";
 import { interpolateRainbow, interpolateCool } from "d3-scale-chromatic";
+import * as globals from "../globals";
 import parseRGB from "../util/parseRGB";
+import finiteExtent from "../util/finiteExtent";
 
 /*
   https://medium.com/@jacobp100/you-arent-using-redux-middleware-enough-94ffe991e6
@@ -93,10 +95,15 @@ const updateCellColorsMiddleware = store => next => action => {
     }
 
     const key = action.colorAccessor;
+    const nonFiniteColor = parseRGB(globals.nonFiniteCellColor);
     for (let i = 0, len = obsAnnotations.length; i < len; i += 1) {
-      const obs = obsAnnotations[i];
-      const c = colorScale(obs[key]);
-      colorsByRGB[i] = colors[c];
+      const val = obsAnnotations[i][key];
+      if (Number.isFinite(val)) {
+        const c = colorScale(val);
+        colorsByRGB[i] = colors[c];
+      } else {
+        colorsByRGB[i] = nonFiniteColor;
+      }
     }
   }
 
@@ -104,8 +111,7 @@ const updateCellColorsMiddleware = store => next => action => {
     const { gene, data } = action;
     const expression = data[gene]; // Float32Array
     const colorBins = 100;
-    // XXX TODO - replace _.min/_.max with the much faster finiteExtent
-    const [min, max] = [_.min(expression), _.max(expression)];
+    const [min, max] = finiteExtent(expression);
     colorScale = d3
       .scaleQuantile()
       .domain([min, max])
@@ -116,10 +122,16 @@ const updateCellColorsMiddleware = store => next => action => {
     for (let i = 0; i < colorBins; i += 1) {
       colors[i] = parseRGB(interpolateCool(i / colorBins));
     }
+    const nonFiniteColor = parseRGB(globals.nonFiniteCellColor);
 
     for (let i = 0, len = expression.length; i < len; i += 1) {
-      const c = colorScale(expression[i]);
-      colorsByRGB[i] = colors[c];
+      const e = expression[i];
+      if (Number.isFinite(e)) {
+        const c = colorScale(e);
+        colorsByRGB[i] = colors[c];
+      } else {
+        colorsByRGB[i] = nonFiniteColor;
+      }
     }
   }
 

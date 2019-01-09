@@ -9,7 +9,6 @@ from werkzeug.datastructures import ImmutableMultiDict
 from server.app.util.constants import (
     Axis,
     DiffExpMode,
-    JSON_MIMETYPE,
     JSON_NaN_to_num_warning_msg,
 )
 from server.app.util.filter import parse_filter, QueryStringError
@@ -194,11 +193,21 @@ class AnnotationsObsAPI(Resource):
     )
     def get(self):
         fields = request.args.getlist("annotation-name", None)
+        preferred_mimetype = request.accept_mimetypes.best_match(
+            ["application/json", "application/octet-stream"],
+            "application/json"
+        )
         try:
-            annotation_response = current_app.data.annotation({}, "obs", fields)
-            return make_response(
-                annotation_response, HTTPStatus.OK, {"Content-Type": JSON_MIMETYPE}
-            )
+            if preferred_mimetype == "application/json":
+                return make_response(
+                    current_app.data.annotation({}, "obs", fields), HTTPStatus.OK, {"Content-Type": "application/json"}
+                )
+            elif preferred_mimetype == "application/octet-stream":
+                return make_response(current_app.data.annotation_to_fbs_matrix("obs", fields),
+                                     HTTPStatus.OK,
+                                     {"Content-Type": "application/octet-stream"})
+            else:
+                return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
         except KeyError:
             return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
         except JSONEncodingValueError as e:
@@ -254,7 +263,7 @@ class AnnotationsObsAPI(Resource):
                 request.get_json()["filter"], "obs", fields
             )
             return make_response(
-                annotation_response, HTTPStatus.OK, {"Content-Type": JSON_MIMETYPE}
+                annotation_response, HTTPStatus.OK, {"Content-Type": "application/json"}
             )
         except KeyError:
             return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
@@ -304,11 +313,21 @@ class AnnotationsVarAPI(Resource):
     )
     def get(self):
         fields = request.args.getlist("annotation-name", None)
+        preferred_mimetype = request.accept_mimetypes.best_match(
+            ["application/json", "application/octet-stream"],
+            "application/json"
+        )
         try:
-            annotation_response = current_app.data.annotation({}, "var", fields)
-            return make_response(
-                annotation_response, HTTPStatus.OK, {"Content-Type": JSON_MIMETYPE}
-            )
+            if preferred_mimetype == "application/json":
+                return make_response(current_app.data.annotation({}, "var", fields),
+                                     HTTPStatus.OK,
+                                     {"Content-Type": "application/json"})
+            elif preferred_mimetype == "application/octet-stream":
+                return make_response(current_app.data.annotation_to_fbs_matrix("var", fields),
+                                     HTTPStatus.OK,
+                                     {"Content-Type": "application/octet-stream"})
+            else:
+                return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
         except KeyError:
             return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
         except JSONEncodingValueError as e:
@@ -364,7 +383,7 @@ class AnnotationsVarAPI(Resource):
                 request.get_json()["filter"], "var", fields
             )
             return make_response(
-                annotation_response, HTTPStatus.OK, {"Content-Type": JSON_MIMETYPE}
+                annotation_response, HTTPStatus.OK, {"Content-Type": "application/json"}
             )
         except KeyError:
             return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
@@ -437,7 +456,7 @@ class DataObsAPI(Resource):
             return make_response(
                 current_app.data.data_frame(filter_, axis=Axis.OBS),
                 HTTPStatus.OK,
-                {"Content-Type": JSON_MIMETYPE},
+                {"Content-Type": "application/json"},
             )
         except FilterError as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
@@ -495,7 +514,7 @@ class DataObsAPI(Resource):
                     )
                 ),
                 HTTPStatus.OK,
-                {"Content-Type": JSON_MIMETYPE},
+                {"Content-Type": "application/json"},
             )
         except FilterError as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
@@ -564,7 +583,7 @@ class DataVarAPI(Resource):
             return make_response(
                 current_app.data.data_frame(filter_, axis=Axis.VAR),
                 HTTPStatus.OK,
-                {"Content-Type": JSON_MIMETYPE},
+                {"Content-Type": "application/json"},
             )
         except FilterError as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
@@ -603,28 +622,30 @@ class DataVarAPI(Resource):
         }
     )
     def put(self):
-        if not request.accept_mimetypes.best_match(["application/json", "text/csv"]):
-            return make_response(
-                f"Unsupported MIME type '{request.accept_mimetypes}'",
-                HTTPStatus.NOT_ACCEPTABLE,
-            )
-        # TODO support CSV
+        preferred_mimetype = request.accept_mimetypes.best_match(
+            ["application/json", "application/octet-stream"],
+            "application/json"
+        )
         try:
-            get_mime_type(
-                acceptable_types=["application/json"], header=request.accept_mimetypes
-            )
-        except MimeTypeError as e:
-            return make_response(e.message, HTTPStatus.NOT_ACCEPTABLE)
-        try:
-            return make_response(
-                (
-                    current_app.data.data_frame(
+            if preferred_mimetype == "application/json":
+                return make_response(
+                    (
+                        current_app.data.data_frame(
+                            request.get_json()["filter"], axis=Axis.VAR
+                        )
+                    ),
+                    HTTPStatus.OK,
+                    {"Content-Type": "application/json"},
+                )
+            elif preferred_mimetype == "application/octet-stream":
+                return make_response(
+                    current_app.data.data_frame_to_fbs_matrix(
                         request.get_json()["filter"], axis=Axis.VAR
-                    )
-                ),
-                HTTPStatus.OK,
-                {"Content-Type": JSON_MIMETYPE},
-            )
+                    ),
+                    HTTPStatus.OK,
+                    {"Content-Type": "application/octet-stream"})
+            else:
+                return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
         except FilterError as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
         except JSONEncodingValueError as e:
@@ -747,7 +768,7 @@ class DiffExpObsAPI(Resource):
                 current_app.data.features["diffexp"]["interactiveLimit"],
             )
             return make_response(
-                diffexp, HTTPStatus.OK, {"Content-Type": JSON_MIMETYPE}
+                diffexp, HTTPStatus.OK, {"Content-Type": "application/json"}
             )
         except (ValueError, FilterError) as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
@@ -787,13 +808,22 @@ class LayoutObsAPI(Resource):
         }
     )
     def get(self):
-        content_type = JSON_MIMETYPE
+        preferred_mimetype = request.accept_mimetypes.best_match(
+            ["application/json", "application/octet-stream"],
+            "application/json"
+        )
         try:
-            layout = current_app.data.layout({})
+            if preferred_mimetype == "application/json":
+                return make_response(current_app.data.layout({}), HTTPStatus.OK, {"Content-Type": "application/json"})
+
+            elif preferred_mimetype == "application/octet-stream":
+                return make_response(current_app.data.layout_to_fbs_matrix(),
+                                     HTTPStatus.OK,
+                                     {"Content-Type": "application/octet-stream"})
+            else:
+                return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
         except PrepareError as e:
             return make_response(e.message, HTTPStatus.INTERNAL_SERVER_ERROR)
-        try:
-            return make_response(layout, HTTPStatus.OK, {"Content-Type": content_type})
         except JSONEncodingValueError as e:
             # JSON encoding failure, usually due to bad data
             warnings.warn(JSON_NaN_to_num_warning_msg)
