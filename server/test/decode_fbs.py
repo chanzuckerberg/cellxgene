@@ -8,7 +8,7 @@ For more information, see fbs/matrix.fbs and server/app/util/fbs/
 import json
 
 import server.app.util.fbs.NetEncoding.TypedArray as TypedArray
-import server.app.util.fbs.NetEncoding.DataFrame as DataFrame
+import server.app.util.fbs.NetEncoding.Matrix as Matrix
 import server.app.util.fbs.NetEncoding.Int32Array as Int32Array
 import server.app.util.fbs.NetEncoding.Uint32Array as Uint32Array
 import server.app.util.fbs.NetEncoding.Float32Array as Float32Array
@@ -39,14 +39,14 @@ def decode_typed_array(tarr):
     return narr
 
 
-def decode_dataframe_FBS(buf):
+def decode_matrix_FBS(buf):
     """
-    Given a FBS DataFrame, return an decoded Python dict containing
+    Given a FBS Matrix, return an decoded Python dict containing
     same info in native format.
 
     NOTE / TODO: row_idx not currently implemented
     """
-    df = DataFrame.DataFrame.GetRootAsDataFrame(buf, 0)
+    df = Matrix.Matrix.GetRootAsMatrix(buf, 0)
     n_rows = df.NRows()
     n_cols = df.NCols()
 

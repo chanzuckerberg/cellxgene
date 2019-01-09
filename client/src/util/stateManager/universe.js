@@ -96,7 +96,7 @@ function finalize(universe) {
 
 function RESTv02AnotationsFBSResponseToInternal(arrayBuffer) {
   /*
-  Convert a DataFrame FBS to our internal format -- row-major array of
+  Convert a Matrix FBS to our internal format -- row-major array of
   observations/cells, stored as an object.  Each obs has a key for each
   annotation, plus __index__ containing its obsIndex.
 

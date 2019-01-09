@@ -3,7 +3,7 @@
 /*
 Model manager providing an abstraction for the use of the reducer code.
 This module provides several buckets of functionality:
-  - schema and config driven tranformation of the dataframe wire protocol
+  - schema and config driven tranformation of the wire protocol
     into a format that is easy for the UI code to use.
   - manage the universe/world abstraction:
     + universe: all of the server-provided, read-only data

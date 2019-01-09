@@ -99,7 +99,7 @@ function encodeTypedArray(builder, uType, uData) {
   return builder.endObject();
 }
 
-function encodeDataFrame(columns, colIndex = undefined) {
+function encodeMatrix(columns, colIndex = undefined) {
   const utf8Encoder = new TextEncoder("utf-8");
   const builder = new flatbuffers.Builder(1024);
   const cols = _.map(columns, carr => {
@@ -120,7 +120,7 @@ function encodeDataFrame(columns, colIndex = undefined) {
     return NetEncoding.Column.endColumn(builder);
   });
 
-  const encColumns = NetEncoding.DataFrame.createColumnsVector(builder, cols);
+  const encColumns = NetEncoding.Matrix.createColumnsVector(builder, cols);
 
   let encColIndex;
   if (colIndex) {
@@ -131,30 +131,30 @@ function encodeDataFrame(columns, colIndex = undefined) {
     );
   }
 
-  NetEncoding.DataFrame.startDataFrame(builder);
-  NetEncoding.DataFrame.addNRows(builder, columns[0].length);
-  NetEncoding.DataFrame.addNCols(builder, columns.length);
-  NetEncoding.DataFrame.addColumns(builder, encColumns);
+  NetEncoding.Matrix.startMatrix(builder);
+  NetEncoding.Matrix.addNRows(builder, columns[0].length);
+  NetEncoding.Matrix.addNCols(builder, columns.length);
+  NetEncoding.Matrix.addColumns(builder, encColumns);
   if (colIndex) {
-    NetEncoding.DataFrame.addColIndexType(
+    NetEncoding.Matrix.addColIndexType(
       builder,
       NetEncoding.TypedArray.JSONEncodedArray
     );
-    NetEncoding.DataFrame.addColIndex(builder, encColIndex);
+    NetEncoding.Matrix.addColIndex(builder, encColIndex);
   }
-  const root = NetEncoding.DataFrame.endDataFrame(builder);
+  const root = NetEncoding.Matrix.endMatrix(builder);
   builder.finish(root);
   return builder.asUint8Array();
 }
 
 const anAnnotationsObsFBSResponse = (() => {
   const columns = _.zip(...anAnnotationsObsJSONResponse.data).slice(1);
-  return encodeDataFrame(columns, anAnnotationsObsJSONResponse.names);
+  return encodeMatrix(columns, anAnnotationsObsJSONResponse.names);
 })();
 
 const anAnnotationsVarFBSResponse = (() => {
   const columns = _.zip(...anAnnotationsVarJSONResponse.data).slice(1);
-  return encodeDataFrame(columns, anAnnotationsVarJSONResponse.names);
+  return encodeMatrix(columns, anAnnotationsVarJSONResponse.names);
 })();
 
 const aLayoutJSONResponse = {
@@ -186,13 +186,13 @@ const aLayoutFBSResponse = (() => {
     return NetEncoding.Column.endColumn(builder);
   });
 
-  const columns = NetEncoding.DataFrame.createColumnsVector(builder, cols);
+  const columns = NetEncoding.Matrix.createColumnsVector(builder, cols);
 
-  NetEncoding.DataFrame.startDataFrame(builder);
-  NetEncoding.DataFrame.addNRows(builder, nObs);
-  NetEncoding.DataFrame.addNCols(builder, nVar);
-  NetEncoding.DataFrame.addColumns(builder, columns);
-  const matrix = NetEncoding.DataFrame.endDataFrame(builder);
+  NetEncoding.Matrix.startMatrix(builder);
+  NetEncoding.Matrix.addNRows(builder, nObs);
+  NetEncoding.Matrix.addNCols(builder, nVar);
+  NetEncoding.Matrix.addColumns(builder, columns);
+  const matrix = NetEncoding.Matrix.endMatrix(builder);
   builder.finish(matrix);
   return builder.asUint8Array();
 })();

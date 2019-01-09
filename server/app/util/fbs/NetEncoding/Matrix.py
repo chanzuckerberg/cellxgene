@@ -4,35 +4,35 @@
 
 import flatbuffers
 
-class DataFrame(object):
+class Matrix(object):
     __slots__ = ['_tab']
 
     @classmethod
-    def GetRootAsDataFrame(cls, buf, offset):
+    def GetRootAsMatrix(cls, buf, offset):
         n = flatbuffers.encode.Get(flatbuffers.packer.uoffset, buf, offset)
-        x = DataFrame()
+        x = Matrix()
         x.Init(buf, n + offset)
         return x
 
-    # DataFrame
+    # Matrix
     def Init(self, buf, pos):
         self._tab = flatbuffers.table.Table(buf, pos)
 
-    # DataFrame
+    # Matrix
     def NRows(self):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(4))
         if o != 0:
             return self._tab.Get(flatbuffers.number_types.Uint32Flags, o + self._tab.Pos)
         return 0
 
-    # DataFrame
+    # Matrix
     def NCols(self):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(6))
         if o != 0:
             return self._tab.Get(flatbuffers.number_types.Uint32Flags, o + self._tab.Pos)
         return 0
 
-    # DataFrame
+    # Matrix
     def Columns(self, j):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(8))
         if o != 0:
@@ -45,21 +45,21 @@ class DataFrame(object):
             return obj
         return None
 
-    # DataFrame
+    # Matrix
     def ColumnsLength(self):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(8))
         if o != 0:
             return self._tab.VectorLen(o)
         return 0
 
-    # DataFrame
+    # Matrix
     def ColIndexType(self):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(10))
         if o != 0:
             return self._tab.Get(flatbuffers.number_types.Uint8Flags, o + self._tab.Pos)
         return 0
 
-    # DataFrame
+    # Matrix
     def ColIndex(self):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(12))
         if o != 0:
@@ -69,14 +69,14 @@ class DataFrame(object):
             return obj
         return None
 
-    # DataFrame
+    # Matrix
     def RowIndexType(self):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(14))
         if o != 0:
             return self._tab.Get(flatbuffers.number_types.Uint8Flags, o + self._tab.Pos)
         return 0
 
-    # DataFrame
+    # Matrix
     def RowIndex(self):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(16))
         if o != 0:
@@ -86,13 +86,13 @@ class DataFrame(object):
             return obj
         return None
 
-def DataFrameStart(builder): builder.StartObject(7)
-def DataFrameAddNRows(builder, nRows): builder.PrependUint32Slot(0, nRows, 0)
-def DataFrameAddNCols(builder, nCols): builder.PrependUint32Slot(1, nCols, 0)
-def DataFrameAddColumns(builder, columns): builder.PrependUOffsetTRelativeSlot(2, flatbuffers.number_types.UOffsetTFlags.py_type(columns), 0)
-def DataFrameStartColumnsVector(builder, numElems): return builder.StartVector(4, numElems, 4)
-def DataFrameAddColIndexType(builder, colIndexType): builder.PrependUint8Slot(3, colIndexType, 0)
-def DataFrameAddColIndex(builder, colIndex): builder.PrependUOffsetTRelativeSlot(4, flatbuffers.number_types.UOffsetTFlags.py_type(colIndex), 0)
-def DataFrameAddRowIndexType(builder, rowIndexType): builder.PrependUint8Slot(5, rowIndexType, 0)
-def DataFrameAddRowIndex(builder, rowIndex): builder.PrependUOffsetTRelativeSlot(6, flatbuffers.number_types.UOffsetTFlags.py_type(rowIndex), 0)
-def DataFrameEnd(builder): return builder.EndObject()
+def MatrixStart(builder): builder.StartObject(7)
+def MatrixAddNRows(builder, nRows): builder.PrependUint32Slot(0, nRows, 0)
+def MatrixAddNCols(builder, nCols): builder.PrependUint32Slot(1, nCols, 0)
+def MatrixAddColumns(builder, columns): builder.PrependUOffsetTRelativeSlot(2, flatbuffers.number_types.UOffsetTFlags.py_type(columns), 0)
+def MatrixStartColumnsVector(builder, numElems): return builder.StartVector(4, numElems, 4)
+def MatrixAddColIndexType(builder, colIndexType): builder.PrependUint8Slot(3, colIndexType, 0)
+def MatrixAddColIndex(builder, colIndex): builder.PrependUOffsetTRelativeSlot(4, flatbuffers.number_types.UOffsetTFlags.py_type(colIndex), 0)
+def MatrixAddRowIndexType(builder, rowIndexType): builder.PrependUint8Slot(5, rowIndexType, 0)
+def MatrixAddRowIndex(builder, rowIndex): builder.PrependUOffsetTRelativeSlot(6, flatbuffers.number_types.UOffsetTFlags.py_type(rowIndex), 0)
+def MatrixEnd(builder): return builder.EndObject()

@@ -5,7 +5,7 @@ import pandas as pd
 
 import server.app.util.fbs.NetEncoding.Column as Column
 import server.app.util.fbs.NetEncoding.TypedArray as TypedArray
-import server.app.util.fbs.NetEncoding.DataFrame as DataFrame
+import server.app.util.fbs.NetEncoding.Matrix as Matrix
 
 
 # Placeholder until recent enhancements to flatbuffers Python
@@ -55,17 +55,17 @@ def serialize_column(builder, typed_arr):
 
 
 # Serialization helper
-def serialize_dataframe(builder, n_rows, n_cols, columns, col_idx):
-    """ Serialize NetEncoding.DataFrame """
-    DataFrame.DataFrameStart(builder)
-    DataFrame.DataFrameAddNRows(builder, n_rows)
-    DataFrame.DataFrameAddNCols(builder, n_cols)
-    DataFrame.DataFrameAddColumns(builder, columns)
+def serialize_matrix(builder, n_rows, n_cols, columns, col_idx):
+    """ Serialize NetEncoding.Matrix """
+    Matrix.MatrixStart(builder)
+    Matrix.MatrixAddNRows(builder, n_rows)
+    Matrix.MatrixAddNCols(builder, n_cols)
+    Matrix.MatrixAddColumns(builder, columns)
     if col_idx is not None:
         (u_type, u_val) = col_idx
-        DataFrame.DataFrameAddColIndexType(builder, u_type)
-        DataFrame.DataFrameAddColIndex(builder, u_val)
-    return DataFrame.DataFrameEnd(builder)
+        Matrix.MatrixAddColIndexType(builder, u_type)
+        Matrix.MatrixAddColIndex(builder, u_val)
+    return Matrix.MatrixEnd(builder)
 
 
 # Serialization helper
@@ -156,7 +156,7 @@ def guess_at_mem_needed(matrix):
 def encode_matrix_fbs(matrix, row_idx=None, col_idx=None):
     """
     Given a 2D DataFrame, ndarray or sparse equivalent, create and return a
-    DataFrame flatbuffer.
+    Matrix flatbuffer.
 
     :param matrix: 2D DataFrame, ndarray or sparse equivalent
     :param row_idx: index for row dimension, Index or ndarray
@@ -166,9 +166,9 @@ def encode_matrix_fbs(matrix, row_idx=None, col_idx=None):
     """
 
     if row_idx is not None:
-        raise ValueError("row indexing not supported for FBS DataFrame")
+        raise ValueError("row indexing not supported for FBS Matrix")
     if matrix.ndim != 2:
-        raise ValueError("FBS DataFrame must be 2D")
+        raise ValueError("FBS Matrix must be 2D")
 
     (n_rows, n_cols) = matrix.shape
 
@@ -189,8 +189,8 @@ def encode_matrix_fbs(matrix, row_idx=None, col_idx=None):
         # serialize the Column union
         columns.append(serialize_column(builder, typed_arr))
 
-    # Serialize DataFrame.columns[]
-    DataFrame.DataFrameStartColumnsVector(builder, n_cols)
+    # Serialize Matrix.columns[]
+    Matrix.MatrixStartColumnsVector(builder, n_cols)
     for c in columns:
         builder.PrependUOffsetTRelative(c)
     matrix_column_vec = builder.EndVector(n_cols)
@@ -200,8 +200,8 @@ def encode_matrix_fbs(matrix, row_idx=None, col_idx=None):
     if col_idx is not None:
         cidx = serialize_typed_array(builder, col_idx, index_encoding)
 
-    # Serialize DataFrame
-    matrix = serialize_dataframe(builder, n_rows, n_cols, matrix_column_vec, cidx)
+    # Serialize Matrix
+    matrix = serialize_matrix(builder, n_rows, n_cols, matrix_column_vec, cidx)
 
     builder.Finish(matrix)
     return builder.Output()

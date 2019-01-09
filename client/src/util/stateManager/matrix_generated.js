@@ -630,7 +630,7 @@ NetEncoding.Column.endColumn = function(builder) {
 /**
  * @constructor
  */
-NetEncoding.DataFrame = function() {
+NetEncoding.Matrix = function() {
   /**
    * @type {flatbuffers.ByteBuffer}
    */
@@ -645,9 +645,9 @@ NetEncoding.DataFrame = function() {
 /**
  * @param {number} i
  * @param {flatbuffers.ByteBuffer} bb
- * @returns {NetEncoding.DataFrame}
+ * @returns {NetEncoding.Matrix}
  */
-NetEncoding.DataFrame.prototype.__init = function(i, bb) {
+NetEncoding.Matrix.prototype.__init = function(i, bb) {
   this.bb_pos = i;
   this.bb = bb;
   return this;
@@ -655,17 +655,17 @@ NetEncoding.DataFrame.prototype.__init = function(i, bb) {
 
 /**
  * @param {flatbuffers.ByteBuffer} bb
- * @param {NetEncoding.DataFrame=} obj
- * @returns {NetEncoding.DataFrame}
+ * @param {NetEncoding.Matrix=} obj
+ * @returns {NetEncoding.Matrix}
  */
-NetEncoding.DataFrame.getRootAsDataFrame = function(bb, obj) {
-  return (obj || new NetEncoding.DataFrame).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+NetEncoding.Matrix.getRootAsMatrix = function(bb, obj) {
+  return (obj || new NetEncoding.Matrix).__init(bb.readInt32(bb.position()) + bb.position(), bb);
 };
 
 /**
  * @returns {number}
  */
-NetEncoding.DataFrame.prototype.nRows = function() {
+NetEncoding.Matrix.prototype.nRows = function() {
   var offset = this.bb.__offset(this.bb_pos, 4);
   return offset ? this.bb.readUint32(this.bb_pos + offset) : 0;
 };
@@ -673,7 +673,7 @@ NetEncoding.DataFrame.prototype.nRows = function() {
 /**
  * @returns {number}
  */
-NetEncoding.DataFrame.prototype.nCols = function() {
+NetEncoding.Matrix.prototype.nCols = function() {
   var offset = this.bb.__offset(this.bb_pos, 6);
   return offset ? this.bb.readUint32(this.bb_pos + offset) : 0;
 };
@@ -683,7 +683,7 @@ NetEncoding.DataFrame.prototype.nCols = function() {
  * @param {NetEncoding.Column=} obj
  * @returns {NetEncoding.Column}
  */
-NetEncoding.DataFrame.prototype.columns = function(index, obj) {
+NetEncoding.Matrix.prototype.columns = function(index, obj) {
   var offset = this.bb.__offset(this.bb_pos, 8);
   return offset ? (obj || new NetEncoding.Column).__init(this.bb.__indirect(this.bb.__vector(this.bb_pos + offset) + index * 4), this.bb) : null;
 };
@@ -691,7 +691,7 @@ NetEncoding.DataFrame.prototype.columns = function(index, obj) {
 /**
  * @returns {number}
  */
-NetEncoding.DataFrame.prototype.columnsLength = function() {
+NetEncoding.Matrix.prototype.columnsLength = function() {
   var offset = this.bb.__offset(this.bb_pos, 8);
   return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
 };
@@ -699,7 +699,7 @@ NetEncoding.DataFrame.prototype.columnsLength = function() {
 /**
  * @returns {NetEncoding.TypedArray}
  */
-NetEncoding.DataFrame.prototype.colIndexType = function() {
+NetEncoding.Matrix.prototype.colIndexType = function() {
   var offset = this.bb.__offset(this.bb_pos, 10);
   return offset ? /** @type {NetEncoding.TypedArray} */ (this.bb.readUint8(this.bb_pos + offset)) : NetEncoding.TypedArray.NONE;
 };
@@ -708,7 +708,7 @@ NetEncoding.DataFrame.prototype.colIndexType = function() {
  * @param {flatbuffers.Table} obj
  * @returns {?flatbuffers.Table}
  */
-NetEncoding.DataFrame.prototype.colIndex = function(obj) {
+NetEncoding.Matrix.prototype.colIndex = function(obj) {
   var offset = this.bb.__offset(this.bb_pos, 12);
   return offset ? this.bb.__union(obj, this.bb_pos + offset) : null;
 };
@@ -716,7 +716,7 @@ NetEncoding.DataFrame.prototype.colIndex = function(obj) {
 /**
  * @returns {NetEncoding.TypedArray}
  */
-NetEncoding.DataFrame.prototype.rowIndexType = function() {
+NetEncoding.Matrix.prototype.rowIndexType = function() {
   var offset = this.bb.__offset(this.bb_pos, 14);
   return offset ? /** @type {NetEncoding.TypedArray} */ (this.bb.readUint8(this.bb_pos + offset)) : NetEncoding.TypedArray.NONE;
 };
@@ -725,7 +725,7 @@ NetEncoding.DataFrame.prototype.rowIndexType = function() {
  * @param {flatbuffers.Table} obj
  * @returns {?flatbuffers.Table}
  */
-NetEncoding.DataFrame.prototype.rowIndex = function(obj) {
+NetEncoding.Matrix.prototype.rowIndex = function(obj) {
   var offset = this.bb.__offset(this.bb_pos, 16);
   return offset ? this.bb.__union(obj, this.bb_pos + offset) : null;
 };
@@ -733,7 +733,7 @@ NetEncoding.DataFrame.prototype.rowIndex = function(obj) {
 /**
  * @param {flatbuffers.Builder} builder
  */
-NetEncoding.DataFrame.startDataFrame = function(builder) {
+NetEncoding.Matrix.startMatrix = function(builder) {
   builder.startObject(7);
 };
 
@@ -741,7 +741,7 @@ NetEncoding.DataFrame.startDataFrame = function(builder) {
  * @param {flatbuffers.Builder} builder
  * @param {number} nRows
  */
-NetEncoding.DataFrame.addNRows = function(builder, nRows) {
+NetEncoding.Matrix.addNRows = function(builder, nRows) {
   builder.addFieldInt32(0, nRows, 0);
 };
 
@@ -749,7 +749,7 @@ NetEncoding.DataFrame.addNRows = function(builder, nRows) {
  * @param {flatbuffers.Builder} builder
  * @param {number} nCols
  */
-NetEncoding.DataFrame.addNCols = function(builder, nCols) {
+NetEncoding.Matrix.addNCols = function(builder, nCols) {
   builder.addFieldInt32(1, nCols, 0);
 };
 
@@ -757,7 +757,7 @@ NetEncoding.DataFrame.addNCols = function(builder, nCols) {
  * @param {flatbuffers.Builder} builder
  * @param {flatbuffers.Offset} columnsOffset
  */
-NetEncoding.DataFrame.addColumns = function(builder, columnsOffset) {
+NetEncoding.Matrix.addColumns = function(builder, columnsOffset) {
   builder.addFieldOffset(2, columnsOffset, 0);
 };
 
@@ -766,7 +766,7 @@ NetEncoding.DataFrame.addColumns = function(builder, columnsOffset) {
  * @param {Array.<flatbuffers.Offset>} data
  * @returns {flatbuffers.Offset}
  */
-NetEncoding.DataFrame.createColumnsVector = function(builder, data) {
+NetEncoding.Matrix.createColumnsVector = function(builder, data) {
   builder.startVector(4, data.length, 4);
   for (var i = data.length - 1; i >= 0; i--) {
     builder.addOffset(data[i]);
@@ -778,7 +778,7 @@ NetEncoding.DataFrame.createColumnsVector = function(builder, data) {
  * @param {flatbuffers.Builder} builder
  * @param {number} numElems
  */
-NetEncoding.DataFrame.startColumnsVector = function(builder, numElems) {
+NetEncoding.Matrix.startColumnsVector = function(builder, numElems) {
   builder.startVector(4, numElems, 4);
 };
 
@@ -786,7 +786,7 @@ NetEncoding.DataFrame.startColumnsVector = function(builder, numElems) {
  * @param {flatbuffers.Builder} builder
  * @param {NetEncoding.TypedArray} colIndexType
  */
-NetEncoding.DataFrame.addColIndexType = function(builder, colIndexType) {
+NetEncoding.Matrix.addColIndexType = function(builder, colIndexType) {
   builder.addFieldInt8(3, colIndexType, NetEncoding.TypedArray.NONE);
 };
 
@@ -794,7 +794,7 @@ NetEncoding.DataFrame.addColIndexType = function(builder, colIndexType) {
  * @param {flatbuffers.Builder} builder
  * @param {flatbuffers.Offset} colIndexOffset
  */
-NetEncoding.DataFrame.addColIndex = function(builder, colIndexOffset) {
+NetEncoding.Matrix.addColIndex = function(builder, colIndexOffset) {
   builder.addFieldOffset(4, colIndexOffset, 0);
 };
 
@@ -802,7 +802,7 @@ NetEncoding.DataFrame.addColIndex = function(builder, colIndexOffset) {
  * @param {flatbuffers.Builder} builder
  * @param {NetEncoding.TypedArray} rowIndexType
  */
-NetEncoding.DataFrame.addRowIndexType = function(builder, rowIndexType) {
+NetEncoding.Matrix.addRowIndexType = function(builder, rowIndexType) {
   builder.addFieldInt8(5, rowIndexType, NetEncoding.TypedArray.NONE);
 };
 
@@ -810,7 +810,7 @@ NetEncoding.DataFrame.addRowIndexType = function(builder, rowIndexType) {
  * @param {flatbuffers.Builder} builder
  * @param {flatbuffers.Offset} rowIndexOffset
  */
-NetEncoding.DataFrame.addRowIndex = function(builder, rowIndexOffset) {
+NetEncoding.Matrix.addRowIndex = function(builder, rowIndexOffset) {
   builder.addFieldOffset(6, rowIndexOffset, 0);
 };
 
@@ -818,7 +818,7 @@ NetEncoding.DataFrame.addRowIndex = function(builder, rowIndexOffset) {
  * @param {flatbuffers.Builder} builder
  * @returns {flatbuffers.Offset}
  */
-NetEncoding.DataFrame.endDataFrame = function(builder) {
+NetEncoding.Matrix.endMatrix = function(builder) {
   var offset = builder.endObject();
   return offset;
 };
@@ -827,7 +827,7 @@ NetEncoding.DataFrame.endDataFrame = function(builder) {
  * @param {flatbuffers.Builder} builder
  * @param {flatbuffers.Offset} offset
  */
-NetEncoding.DataFrame.finishDataFrameBuffer = function(builder, offset) {
+NetEncoding.Matrix.finishMatrixBuffer = function(builder, offset) {
   builder.finish(offset);
 };
 

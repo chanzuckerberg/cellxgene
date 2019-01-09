@@ -4,7 +4,7 @@ import { NetEncoding } from "./matrix_generated";
 const utf8Decoder = new TextDecoder("utf-8");
 
 /*
-DataFrame flatbuffer decoding support.   See fbs/matrix.fbs
+Matrix flatbuffer decoding support.   See fbs/matrix.fbs
 */
 
 /*
@@ -31,7 +31,7 @@ function decodeTypedArray(uType, uValF, inplace = false) {
 
 /*
 Parameter: Uint8Array or ArrayBuffer containing raw flatbuffer Matrix
-Returns: object containing decoded DataFrame:
+Returns: object containing decoded Matrix:
 {
   nRows: num,
   nCols: num,
@@ -43,7 +43,7 @@ Returns: object containing decoded DataFrame:
 */
 function decodeMatrixFBS(arrayBuffer, inplace = false) {
   const bb = new flatbuffers.ByteBuffer(new Uint8Array(arrayBuffer));
-  const df = NetEncoding.DataFrame.getRootAsDataFrame(bb);
+  const df = NetEncoding.Matrix.getRootAsMatrix(bb);
 
   const nRows = df.nRows();
   const nCols = df.nCols();
