@@ -67,6 +67,6 @@ class NaNTest(unittest.TestCase):
         self.assertTrue(math.isnan(annotations["columns"][2][0]))
 
         with pytest.raises(JSONEncodingValueError):
-            annotations = json.loads(self.data.annotation(None, "obs"))
+            json.loads(self.data.annotation(None, "obs"))
         with pytest.raises(JSONEncodingValueError):
-            annotations = json.loads(self.data.annotation(None, "var"))
+            json.loads(self.data.annotation(None, "var"))
