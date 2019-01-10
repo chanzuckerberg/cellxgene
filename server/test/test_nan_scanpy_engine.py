@@ -42,14 +42,15 @@ class NaNTest(unittest.TestCase):
         self.assertEqual(data_frame_var["n_cols"], 100)
         self.assertTrue(math.isnan(data_frame_var["columns"][3][3]))
 
+        with pytest.raises(JSONEncodingValueError):
+            json.loads(self.data.data_frame(None, "obs"))
+        with pytest.raises(JSONEncodingValueError):
+            json.loads(self.data.data_frame(None, "var"))
+
+    def test_dataframe_obs_not_implemented(self):
         with self.assertRaises(ValueError) as cm:
             decode_fbs.decode_matrix_FBS(self.data.data_frame_to_fbs_matrix(None, "obs"))
         self.assertIsNotNone(cm.exception)
-
-        with pytest.raises(JSONEncodingValueError):
-            data_frame_obs = json.loads(self.data.data_frame(None, "obs"))
-        with pytest.raises(JSONEncodingValueError):
-            data_frame_var = json.loads(self.data.data_frame(None, "var"))
 
     def test_annotation(self):
         annotations = decode_fbs.decode_matrix_FBS(self.data.annotation_to_fbs_matrix("obs"))
