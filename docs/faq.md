@@ -4,13 +4,13 @@ title: FAQ
 description: Frequently Asked Questions
 ---
 
-
 # Data formatting
 
 #### What file formats can I use with _cellxgene_?
+
 Currently, you can go straight into `cellxgene launch` with your own analyzed data in h5ad format, after you have performed dimenstionality reduction (tsne, umap) and clustering (louvain).
 
-If your data is in a different format, and/or you still need to perform dimensionality reduction and clustering, `cellxgene` can do that for you with the `prepare` command. `cellxgene prepare` runs `scanpy` under the hood and can read in any format that is currently supported by `scanpy` (including mtx, loom, and more listed [here](https://scanpy.readthedocs.io/en/latest/api/index.html#reading)). 
+If your data is in a different format, and/or you still need to perform dimensionality reduction and clustering, `cellxgene` can do that for you with the `prepare` command. `cellxgene prepare` runs `scanpy` under the hood and can read in any format that is currently supported by `scanpy` (including mtx, loom, and more listed [here](https://scanpy.readthedocs.io/en/latest/api/index.html#reading)).
 
 The output of `cellxgene prepare` is a h5ad file with your computed clusters and tsne/umap projections that can be used in `cellxgene launch`.
 
@@ -66,7 +66,6 @@ python3.6 -m venv ${ENV_NAME}
 source ${ENV_NAME}/bin/activate
 pip install cellxgene
 ```
-
 
 #### In my _prepare_ command I received the following error `Warning: louvain module is not installed, no clusters will be calculated. To fix this please install cellxgene with the optional feature louvain enabled`
 
