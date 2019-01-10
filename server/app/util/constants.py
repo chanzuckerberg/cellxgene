@@ -28,5 +28,5 @@ class DiffExpMode(AugmentedEnum):
 
 
 JSON_NaN_to_num_warning_msg = (
-    "JSON encoding failure - suggest trying --nan-to-num command line option"
+    "JSON encoding failure - please verify all data are finite values (no NaN or Infinities)"
 )

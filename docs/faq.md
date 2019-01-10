@@ -86,12 +86,6 @@ cellxgene prepare data/ --output=data-processed.h5ad --recipe=zheng17
 
 It should be easy to run `prepare` then call `cellxgene launch` a few times with different settings to explore different behaviors. We may explore adding other preprocessing options in the future.
 
-#### When I start _cellxgene_, I get an error `Unexpected HTTP response 500, INTERNAL SERVER ERROR -- Out of range float values are not JSON compliant` in the web UI, or `Warning: JSON encoding failure - suggest trying --nan-to-num command line option` in the CLI. What can I do?
-
-At the moment, _cellxgene_ is unable to transmit floating point NaN or Infinity values to the web UI (due to a limitation on data serialization method in use). We expect to resolve this in a future release, but in the meantime, you can work around this issue by starting cellxgene with the `--nan-to-num` command line option, ie, `cellxgene launch data.h5ad --nan-to-num`.
-
-This option will convert all NaNs to zero, and all positive/negative infinities to the min/max of the data element within which the value was found (eg, +Infinity within an `obs` annotation will be converted to the maximum finite value in that annotation). This option will increase startup time, so we recommend only using it when the dataset contains NaN/Infinities.
-
 #### I tried to `pip install cellxgene` and got a weird error I don't understand
 
 This may happen, especially as we work out bugs in our installation process! Please create a new [Github issue](https://github.com/chanzuckerberg/cellxgene/issues), explain what you did, and include all the error messages you saw. It'd also be super helpful if you call `pip freeze` and include the full output alongside your issue.

@@ -60,13 +60,6 @@ from server.app.util.utils import custom_format_warning
     show_default=True,
     help="Relative expression cutoff used when selecting top N differentially expressed genes",
 )
-@click.option(
-    "--nan-to-num",
-    is_flag=True,
-    default=False,
-    show_default=True,
-    help="Replace all floating point NaN with zero, and infinities with finite numbers",
-)
 def launch(
     data,
     layout,
@@ -81,7 +74,6 @@ def launch(
     host,
     max_category_items,
     diffexp_lfc_cutoff,
-    nan_to_num,
 ):
     """Launch the cellxgene data viewer.
     This web app lets you explore single-cell expression data.
@@ -143,7 +135,6 @@ def launch(
         "diffexp_lfc_cutoff": diffexp_lfc_cutoff,
         "obs_names": obs_names,
         "var_names": var_names,
-        "nan_to_num": nan_to_num,
     }
 
     try:

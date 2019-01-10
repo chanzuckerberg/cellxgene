@@ -19,7 +19,6 @@ class UtilTest(unittest.TestCase):
             "obs_names": None,
             "var_names": None,
             "diffexp_lfc_cutoff": 0.01,
-            "nan_to_num": True,
         }
 
         self.data = ScanpyEngine("example-dataset/pbmc3k.h5ad", args)
