@@ -8,9 +8,8 @@
 
 ## getting started
 
-You'll need **python 3.6** and **Google Chrome**. (*Warning*: Python 3.7 is **not** supported at this time)
+You'll need **python 3.6** and **Google Chrome**. (_Warning_: Python 3.7 is **not** supported at this time)
 The web UI is tested on OSX and Windows using Chrome, and the python CLI is tested on OSX and Ubuntu (via WSL/Windows). It should work on other platforms, but if you run into trouble let us know (see [help](#help-and-contact) below).
-
 
 To install run
 
@@ -118,12 +117,11 @@ pip install cellxgene
 
 ## docker
 
-We have included a dockerfile to conveniently run cellxgene from docker. 
+We have included a dockerfile to conveniently run cellxgene from docker.
 
-1. Build the  image `docker build . -t cellxgene`
+1. Build the image `docker build . -t cellxgene`
 2. Run the container and mount data `docker run -v "$PWD/example-dataset/:/data/" -p 5005:5005 cellxgene launch --host 0.0.0.0 data/pbmc3k.h5ad`
-    * You will need to use --host 0.0.0.0 to have the container listen to incoming requests from the browser
-
+   - You will need to use --host 0.0.0.0 to have the container listen to incoming requests from the browser
 
 ## FAQ
 
