@@ -1,5 +1,6 @@
 theme: jekyll-theme-cayman
 show_downloads: false
+url: https://chanzuckerberg.github.io/cellxgene/
 
 nav:
   - title: Home
