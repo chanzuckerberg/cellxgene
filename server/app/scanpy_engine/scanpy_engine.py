@@ -42,10 +42,6 @@ class ScanpyEngine(CXGDriver):
         self.diffexp_options = ["ttest"]
         self._create_schema()
 
-        # TODO: temporary work-arounds
-        if args["nan_to_num"]:
-            self._IEEE754_special_values_workaround()
-
     def _alias_annotation_names(self, axis, name):
         """
         Do all user-specified annotation aliasing.
@@ -199,71 +195,6 @@ class ScanpyEngine(CXGDriver):
                 f"back in the h5ad file. You can run "
                 f"`cellxgene prepare --layout {self.layout_method} <datafile>` "
                 f"to solve this problem. "
-            )
-
-    def _IEEE754_special_values_workaround(self):
-        """
-        TODO: temporary workaround
-
-        Because all floating point data is serialized to JSON, and JSON has no means of representing
-        non-finite, floating point special values (NaN, +/-Infinity, etc), we include this temporary
-        work-around.
-
-        This will likely be removed in the future, contingent upon improved marshalling.
-
-        Where non-finite floating point is present in obs, var or X:
-        * issue a warning to the user that these values will be convert to finite numbers.
-        * set NaN to zero, and Infinities to min/max of the element.
-        """
-
-        # annotations
-        for ax in Axis:
-            curr_axis = getattr(self.data, str(ax))
-            for ann in curr_axis:
-                dtype = curr_axis[ann].dtype
-                if dtype.kind == "f":
-                    finite_idx = np.isfinite(curr_axis[ann])
-                    if not finite_idx.all():
-                        curr_axis.loc[np.isnan(curr_axis[ann]), ann] = 0
-                        curr_axis.loc[np.isneginf(curr_axis[ann]), ann] = curr_axis[
-                            ann
-                        ][finite_idx].min()
-                        curr_axis.loc[np.isposinf(curr_axis[ann]), ann] = curr_axis[
-                            ann
-                        ][finite_idx].max()
-                        warnings.warn(
-                            f"{str(ax).title()} annotation '{ann}' contains floating point NaN or Infinities. "
-                            f"These will be converted to finite values."
-                        )
-
-        # X
-        non_finite_X_found = False
-        if sparse.issparse(self.data._X):
-            coo = self.data._X.tocoo()
-            finite_idx = np.isfinite(coo.data)
-            if not finite_idx.all():
-                non_finite_X_found = True
-                coo.data[np.isnan(coo.data)] = 0
-                coo.data[np.isneginf(coo.data)] = np.min(coo.data[finite_idx])
-                coo.data[np.isposinf(coo.data)] = np.max(coo.data[finite_idx])
-                coo.eliminate_zeros()
-                _X = coo.asformat(self.data._X.getformat())
-                self.data._X = _X
-        else:
-            _X = self.data._X
-            finite_idx = np.isfinite(_X.flat)
-            if not finite_idx.all():
-                non_finite_X_found = True
-                min_X = _X.flat[finite_idx].min()
-                max_X = _X.flat[finite_idx].max()
-                _X[np.isnan(_X)] = 0
-                _X[np.isneginf(_X)] = min_X
-                _X[np.isposinf(_X)] = max_X
-
-        if non_finite_X_found:
-            warnings.warn(
-                "Dataframe X contains floating point NaN or Infinities. "
-                "These will be converted to finite values."
             )
 
     def filter_dataframe(self, filter):
@@ -480,7 +411,9 @@ class ScanpyEngine(CXGDriver):
             raise FilterError("filtering on obs unsupported")
 
         # Currently only handles VAR dimension
-        X = self.data._X[:, var_selector]
+        X = self.data._X
+        if var_selector is not None:
+            X = X[:, var_selector]
         return encode_matrix_fbs(X, col_idx=np.nonzero(var_selector)[0], row_idx=None)
 
     def diffexp_topN(self, obsFilterA, obsFilterB, top_n=None, interactive_limit=None):
