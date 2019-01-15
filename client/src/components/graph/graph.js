@@ -22,7 +22,8 @@ import scaleLinear from "../../util/scaleLinear";
   responsive: state.responsive,
   colorRGB: _.get(state.controls, "colorRGB", null),
   opacityForDeselectedCells: state.controls.opacityForDeselectedCells,
-  selectionUpdate: _.get(state.controls, "crossfilter.updateTime", null)
+  selectionUpdate: _.get(state.controls, "crossfilter.updateTime", null),
+  resettingInterface: state.controls.resettingInterface
 }))
 class Graph extends React.Component {
   constructor(props) {
@@ -339,11 +340,20 @@ class Graph extends React.Component {
 
   resetInterface() {
     const { dispatch } = this.props;
+    dispatch({
+      type: "interface reset started"
+    });
     dispatch(actions.resetInterface());
   }
 
   render() {
-    const { dispatch, responsive, crossfilter } = this.props;
+    const {
+      dispatch,
+      responsive,
+      crossfilter,
+      resettingInterface
+    } = this.props;
+
     const { mode } = this.state;
     return (
       <div id="graphWrapper">
@@ -392,6 +402,7 @@ class Graph extends React.Component {
                   /* world && universe ? worldEqUniverse(world, universe) : false */
                 }
                 type="button"
+                loading={resettingInterface}
                 intent="warning"
                 style={{ marginRight: 10 }}
                 onClick={this.resetInterface.bind(this)}
