@@ -160,7 +160,13 @@ class HistogramBrush extends React.Component {
   }
 
   removeHistogram() {
-    const { dispatch, field, colorAccessor } = this.props;
+    const {
+      dispatch,
+      field,
+      colorAccessor,
+      scatterplotXXaccessor,
+      scatterplotYYaccessor
+    } = this.props;
     dispatch({
       type: "clear user defined gene",
       data: field
@@ -168,6 +174,18 @@ class HistogramBrush extends React.Component {
     if (field === colorAccessor) {
       dispatch({
         type: "reset colorscale"
+      });
+    }
+    if (field === scatterplotXXaccessor) {
+      dispatch({
+        type: "set scatterplot x",
+        data: null
+      });
+    }
+    if (field === scatterplotYYaccessor) {
+      dispatch({
+        type: "set scatterplot y",
+        data: null
       });
     }
   }
@@ -266,7 +284,7 @@ class HistogramBrush extends React.Component {
         }}
       >
         <div style={{ display: "flex", justifyContent: "flex-end" }}>
-          {isDiffExp ? (
+          {isDiffExp || isUserDefined ? (
             <span>
               <span
                 style={{ marginRight: 7 }}
