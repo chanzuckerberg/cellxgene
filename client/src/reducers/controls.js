@@ -122,6 +122,7 @@ const Controls = (
 
     colorAccessor: null,
     colorScale: null,
+    resettingInterface: false,
 
     opacityForDeselectedCells: 0.2,
     graphBrushSelection: null,
@@ -228,7 +229,8 @@ const Controls = (
         categoricalSelectionState,
         crossfilter,
         dimensionMap,
-        colorAccessor: null
+        colorAccessor: null,
+        resettingInterface: false
       };
     }
     case "set World to current selection": {
@@ -523,6 +525,12 @@ const Controls = (
       return {
         ...state,
         graphRenderCounter: c
+      };
+    }
+    case "interface reset started": {
+      return {
+        ...state,
+        resettingInterface: true
       };
     }
     /*******************************
