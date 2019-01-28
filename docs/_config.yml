@@ -1,9 +1,8 @@
 theme: jekyll-theme-cayman
 show_downloads: false
+baseurl: /cellxgene
 
 nav:
-  - title: Home
-    url: /
   - title: Data
     url: data.html
   - title: FAQ
