@@ -207,7 +207,7 @@ class GeneExpression extends React.Component {
                 items={
                   world && world.varAnnotations
                     ? world.varAnnotations
-                    : [{ name: "No genes", n_counts: "" }]
+                    : [{ name: "No genes" }]
                 }
                 popoverProps={{ minimal: true }}
               />
