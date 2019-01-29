@@ -6,12 +6,21 @@ import _ from "lodash";
 import fuzzysort from "fuzzysort";
 
 import { connect } from "react-redux";
-import { MenuItem, Button } from "@blueprintjs/core";
+import {
+  MenuItem,
+  Button,
+  FormGroup,
+  InputGroup,
+  ControlGroup
+} from "@blueprintjs/core";
 import { Suggest } from "@blueprintjs/select";
 import HistogramBrush from "../brushableHistogram";
 import * as globals from "../../globals";
 import actions from "../../actions";
-import { postUserErrorToast } from "../framework/toasters";
+import {
+  postUserErrorToast,
+  keepAroundErrorToast
+} from "../framework/toasters";
 import ExpressionButtons from "./expressionButtons";
 import finiteExtent from "../../util/finiteExtent";
 
@@ -67,6 +76,14 @@ const filterGenes = (query, genes) => {
   };
 })
 class GeneExpression extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      bulkAdd: "",
+      tab: "autosuggest"
+    };
+  }
+
   handleClick(g) {
     const { world, dispatch, userDefinedGenes } = this.props;
     const gene = g.target;
@@ -87,6 +104,29 @@ class GeneExpression extends React.Component {
     }
   }
 
+  handleBulkAddClick() {
+    const { world, dispatch, userDefinedGenes } = this.props;
+    const { bulkAdd } = this.state;
+
+    const genes = _.uniq(bulkAdd.split(", ").map(g => g.trim()));
+
+    genes.forEach(gene => {
+      if (userDefinedGenes.indexOf(gene) !== -1) {
+        keepAroundErrorToast("That gene already exists");
+      } else if (!_.find(world.varAnnotations, { name: gene })) {
+        keepAroundErrorToast(`${gene} doesn't appear to be a valid gene name.`);
+      } else {
+        dispatch(actions.requestUserDefinedGene(gene));
+        dispatch({
+          type: "user defined gene",
+          data: gene
+        });
+      }
+    });
+
+    this.setState({ bulkAdd: "" });
+  }
+
   render() {
     const {
       world,
@@ -94,6 +134,8 @@ class GeneExpression extends React.Component {
       userDefinedGenesLoading,
       differential
     } = this.props;
+
+    const { tab, bulkAdd } = this.state;
 
     return (
       <div>
@@ -111,39 +153,108 @@ class GeneExpression extends React.Component {
             Selected Genes
           </p>
           <div
-            style={{ padding: globals.leftSidebarSectionPadding }}
-            className="bp3-control-group"
+            style={{
+              padding: globals.leftSidebarSectionPadding
+            }}
           >
-            <Suggest
-              disabled={true}
-              closeOnSelect
-              openOnKeyDown
-              resetOnSelect
-              itemDisabled={userDefinedGenesLoading ? () => true : () => false}
-              noResults={<MenuItem disabled text="No matching genes." />}
-              onItemSelect={g => {
-                /* this happens on 'enter' */
-                this.handleClick(g);
-              }}
-              inputValueRenderer={g => {
-                return "";
-              }}
-              itemListPredicate={filterGenes}
-              itemRenderer={renderGene.bind(this)}
-              items={
-                world && world.varAnnotations
-                  ? world.varAnnotations
-                  : [{ name: "No genes", n_counts: "" }]
-              }
-              popoverProps={{ minimal: true }}
-            />
             <Button
-              className="bp3-button bp3-intent-primary"
-              loading={userDefinedGenesLoading}
+              active={tab === "autosuggest"}
+              style={{ marginRight: 5 }}
+              minimal
+              small
+              onClick={() => {
+                this.setState({ tab: "autosuggest" });
+              }}
             >
-              Add
+              Autosuggest
+            </Button>
+            <Button
+              active={tab === "bulkadd"}
+              minimal
+              small
+              onClick={() => {
+                this.setState({ tab: "bulkadd" });
+              }}
+            >
+              Bulk add genes
             </Button>
           </div>
+
+          {tab === "autosuggest" ? (
+            <ControlGroup
+              style={{
+                paddingLeft: globals.leftSidebarSectionPadding,
+                paddingBottom: globals.leftSidebarSectionPadding
+              }}
+            >
+              <Suggest
+                closeOnSelect
+                openOnKeyDown
+                resetOnSelect
+                itemDisabled={
+                  userDefinedGenesLoading ? () => true : () => false
+                }
+                noResults={<MenuItem disabled text="No matching genes." />}
+                onItemSelect={g => {
+                  /* this happens on 'enter' */
+                  this.handleClick(g);
+                }}
+                inputValueRenderer={g => {
+                  return "";
+                }}
+                itemListPredicate={filterGenes}
+                itemRenderer={renderGene.bind(this)}
+                items={
+                  world && world.varAnnotations
+                    ? world.varAnnotations
+                    : [{ name: "No genes", n_counts: "" }]
+                }
+                popoverProps={{ minimal: true }}
+              />
+              <Button
+                className="bp3-button bp3-intent-primary"
+                loading={userDefinedGenesLoading}
+              >
+                Add
+              </Button>
+            </ControlGroup>
+          ) : null}
+          {tab === "bulkadd" ? (
+            <div style={{ paddingLeft: globals.leftSidebarSectionPadding }}>
+              <form
+                onSubmit={e => {
+                  e.preventDefault();
+                  this.handleBulkAddClick();
+                }}
+              >
+                <FormGroup
+                  helperText="Add a list of genes (comma delimited)"
+                  labelFor="text-input-bulk-add"
+                  onSubmit={() => {
+                    console.log("heyo");
+                  }}
+                >
+                  <ControlGroup>
+                    <InputGroup
+                      onChange={e => {
+                        this.setState({ bulkAdd: e.target.value });
+                      }}
+                      id="text-input-bulk-add"
+                      placeholder="Apod, Cd74, ..."
+                      value={bulkAdd}
+                    />
+                    <Button
+                      intent="primary"
+                      onClick={this.handleBulkAddClick.bind(this)}
+                      loading={userDefinedGenesLoading}
+                    >
+                      Add
+                    </Button>
+                  </ControlGroup>
+                </FormGroup>
+              </form>
+            </div>
+          ) : null}
           {world && userDefinedGenes.length > 0
             ? _.map(userDefinedGenes, (geneName, index) => {
                 const values = world.varDataCache[geneName];
