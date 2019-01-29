@@ -5,7 +5,7 @@
   "description": "cellxgene is a web application for the interactive exploration of single cell sequence data.",
   "repository": "https://github.com/chanzuckerberg/cellxgene",
   "scripts": {
-    "backend": "python3 -m venv cellxgene && source cellxgene/bin/activate && yes | pip uninstall cellxgene || true && pip install -e .. && cellxgene launch ",
+    "backend": "python3.6 -m venv cellxgene && source cellxgene/bin/activate && yes | pip uninstall cellxgene || true && pip install -e .. && cellxgene launch ",
     "build": "npm run clean && webpack --config configuration/webpack/webpack.config.prod.js",
     "dev": "npm run clean && webpack --config configuration/webpack/webpack.config.dev.js",
     "clean": "rimraf build",
