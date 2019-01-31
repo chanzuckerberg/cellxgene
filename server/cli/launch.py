@@ -33,7 +33,7 @@ from server.app.util.utils import custom_format_warning
     show_default=True,
     help="Provide verbose output, including warnings and all server requests.",
 )
-@click.option("--debug", "-d", is_flag=True, default=False, show_default=True, help="Run in debug mode.")
+@click.option("--debug", is_flag=True, default=False, show_default=True, help="Run in debug mode.")
 @click.option(
     "--open",
     "-o",
