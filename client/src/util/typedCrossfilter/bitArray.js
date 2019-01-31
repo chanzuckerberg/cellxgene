@@ -40,7 +40,7 @@ class BitArray {
   // Return the number of records that are selected, ie, have a one bit in
   // all allocated dimensions.
   //
-  get selectionCount() {
+  selectionCount() {
     return this.countAllOnes();
   }
 

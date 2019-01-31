@@ -1,3 +1,4 @@
+import { IdentityInt32Index } from "./labelIndex";
 import { sort, sortIndex } from "../typedCrossfilter/sort";
 
 /*
@@ -17,92 +18,8 @@ It does not currently support:
 * JS iterators - they are too slow.  Use explicit iteration over
   offest or labels.
 
-All private functions/methods are prefixed by '__', eg, __compile().
+All private functions/methods/fields are prefixed by '__', eg, __compile().
 */
-
-/**
-Label indexing
-**/
-
-/* eslint-disable class-methods-use-this */
-class IdentityIndex {
-  getOffset(i) {
-    return i;
-  }
-
-  cut(labelArray) {
-    return new IntIndex(labelArray);
-  }
-}
-
-class RangeIndex {
-  constructor(start, stop = 0, step = 1) {
-    this.start = start;
-    this.stop = stop;
-    this.step = step;
-    this.__compile();
-  }
-
-  __compile() {
-    const [start, stop, step] = this;
-    const max = Math.trunc((stop - start) / step);
-    /* eslint-disable-next-line no-new-func */
-    this.getOffset = new Function(
-      "i",
-      `
-        const loc = ${start} + i*${step};
-        if (loc > ${max}) {
-          throw new RangeError();
-        }
-        return loc;
-      `
-    );
-  }
-
-  cut(labelArray) {
-    return new IntIndex(labelArray);
-  }
-}
-
-class IntIndex {
-  constructor(index) {
-    this.index = index;
-    this.__compile();
-  }
-
-  __compile() {
-    this.getOffset = (function getOffsetClosure(index) {
-      return function getOffset(i) {
-        return index[i];
-      };
-    })(this.index);
-  }
-
-  cut(labelArray) {
-    return new IntIndex(labelArray);
-  }
-}
-
-class KeyIndex {
-  constructor(labels) {
-    const index = new Map();
-    labels.forEach((v, i) => index.set(v, i));
-    this.index = index;
-    this.__compile();
-  }
-
-  __compile() {
-    const { index } = this;
-    this.getOffset = function getOffset(k) {
-      return index.get(k);
-    };
-  }
-
-  cut(labelArray) {
-    return new KeyIndex(labelArray);
-  }
-}
-/* eslint-enable class-methods-use-this */
 
 /**
 Dataframe
@@ -113,45 +30,54 @@ class Dataframe {
   Constructors & factories
   **/
 
-  constructor(dims, columnarData, rowLabelIndex, colLabelIndex) {
+  constructor(dims, columnarData, rowIndex = null, colIndex = null) {
     /*
     The base constructor is relatively hard to use - as an alternative,
     see factory methods and clone/slice, below.
     */
-    Dataframe.__errorChecks(dims, columnarData);
+    Dataframe.__errorChecks(dims, columnarData, rowIndex, colIndex);
     const [nRows, nCols] = dims;
-    if (!rowLabelIndex) {
-      rowLabelIndex = new IdentityIndex();
+    if (!rowIndex) {
+      rowIndex = new IdentityInt32Index(nRows);
     }
-    if (!colLabelIndex) {
-      colLabelIndex = new IdentityIndex();
+    if (!colIndex) {
+      colIndex = new IdentityInt32Index(nCols);
     }
 
-    this.columns = Array.from(columnarData);
-    this.nRows = nRows;
-    this.nCols = nCols;
-    this.rowLabelIndex = rowLabelIndex;
-    this.colLabelIndex = colLabelIndex;
+    this.__columns = Array.from(columnarData);
+    this.dims = dims;
+    this.length = nRows; // convenience accessor for row dimension
+    this.rowIndex = rowIndex;
+    this.colIndex = colIndex;
 
     this.__compile();
   }
 
   static __errorChecks(dims, columnarData) {
-    // TODO: more error checking on inputs, eg,
-    //    - column type matches schema, i.e. array of T
-    //    - column names are unique, and legal variable names
-    //    - fewer than max (??) columns
+    function isArrayOrTypedArray(x) {
+      return (
+        Array.isArray(x) ||
+        (ArrayBuffer.isView(x) &&
+          Object.prototype.toString.call(x) !== "[object DataView]")
+      );
+    }
 
     const [nRows, nCols] = dims;
     if (nRows <= 0 || nCols <= 0) {
       throw new RangeError("Dataframe dimensions must be positive");
+    }
+    if (!Array.isArray(columnarData)) {
+      throw new TypeError("Dataframe constructor requires array of columns");
+    }
+    if (!columnarData.every(c => isArrayOrTypedArray(c))) {
+      throw new TypeError("Dataframe columns must all be Array or TypedArray");
     }
     if (
       nCols !== columnarData.length ||
       !columnarData.every(c => c.length === nRows)
     ) {
       throw new RangeError(
-        "Dataframe constructor parameters do not have the same shape"
+        "Dataframe dimension does not match column data shape"
       );
     }
   }
@@ -160,13 +86,17 @@ class Dataframe {
     /*
     Compile data accessors for each column.
     */
-    const roff = this.rowLabelIndex.getOffset;
-    this.columnsAccessor = this.columns.map(column => {
+    const { getOffset, getLabel } = this.rowIndex;
+    this.__columnsAccessor = this.__columns.map(column => {
       const { length } = column;
 
       /* default value access by row label */
-      const getCol = function getCol(rlabel) {
-        return column[roff(rlabel)];
+      const get = function get(rlabel) {
+        return column[getOffset(rlabel)];
+      };
+
+      const iget = function iget(roffset) {
+        return column[roffset];
       };
 
       /* full column array access */
@@ -175,23 +105,36 @@ class Dataframe {
       };
 
       /* test for row label inclusion in column */
-      const includes = function includes(rlabel) {
-        const offset = roff(rlabel);
+      const has = function has(rlabel) {
+        const offset = getOffset(rlabel);
         return offset >= 0 && offset < length;
       };
 
-      getCol.asArray = asArray;
-      getCol.includes = includes;
-      return getCol;
+      const ihas = function ihas(offset) {
+        return offset >= 0 && offset < length;
+      };
+
+      /* return first label (index) at which the value is found in this column. */
+      const indexOf = function indexOf(value) {
+        const offset = column.indexOf(value);
+        return getLabel(offset);
+      };
+
+      get.asArray = asArray;
+      get.has = has;
+      get.ihas = ihas;
+      get.indexOf = indexOf;
+      get.iget = iget;
+      return get;
     });
   }
 
   clone() {
     return new this.constructor(
-      [this.nRows, this.nCols],
-      [...this.columns],
-      this.rowLabelIndex,
-      this.colLabelIndex
+      this.dims,
+      [...this.__columns],
+      this.rowIndex,
+      this.colIndex
     );
   }
 
@@ -206,76 +149,59 @@ class Dataframe {
     return new Dataframe(dims, columnarData, null, null);
   }
 
-  cut(rowLabels, colLabels) {
-    /*
-    Cut (aka slice) a dataframe by row/column label.  Accepted values are:
-      - array of labels indicating the desired row and/or columns
-      - falsey value, indicating that this dimension should not be cut
-    Example:
-      const newDf = df.cut([0,2,4], null);
-    */
+  __cut(rowOffsets, colOffsets) {
+    const dims = [...this.dims];
 
-    /* algo:
-
-    default label arrays (may be falsey/all)
-    convert label arrays to offsets (may be falsey/all)
-    set dims
-    cut column & columnLabelIndex
-    cut rows & rowLabelIndex
-    call constructor
-
-    */
-    const dims = [this.nRows, this.nCols];
-
-    const getSortedLabelAndOffsets = function getSortedLabelAndOffsets(
-      labels,
-      index
-    ) {
-      if (!labels || !index) {
+    const getSortedLabelAndOffsets = (offsets, index) => {
+      /*
+      Given offsets, return both offsets and associated lables,
+      sorted by offset.
+      */
+      if (!offsets) {
         return [null, null];
       }
-      const offsets = labels.map(label => {
-        const off = index.getOffset(label);
-        if (off === undefined) {
-          throw new RangeError(`unknown label: ${label}`);
-        }
-        return off;
-      });
-      const sortedLabels = sortIndex(labels, offsets);
       const sortedOffsets = sort(offsets);
+      const sortedLabels = new Array(sortedOffsets.length);
+      for (let i = 0, l = sortedOffsets.length; i < l; i += 1) {
+        sortedLabels[i] = index.getLabel(sortedOffsets[i]);
+      }
+      // const sortedLabels = sortedOffsets.map(o => index.getLabel(o));
       return [sortedLabels, sortedOffsets];
     };
 
-    let colOffsets;
-    let { colLabelIndex } = this;
-    if (colLabels) {
+    let { colIndex } = this;
+    if (colOffsets) {
+      let colLabels;
       [colLabels, colOffsets] = getSortedLabelAndOffsets(
-        colLabels,
-        this.colLabelIndex
+        colOffsets,
+        this.colIndex
       );
-      dims[1] = colLabels.length;
-      colLabelIndex = this.colLabelIndex.cut(colLabels);
+      dims[1] = colOffsets.length;
+      colIndex = this.colIndex.cut(colLabels);
     }
 
-    let rowOffsets;
-    let { rowLabelIndex } = this;
-    if (rowLabels) {
+    let { rowIndex } = this;
+    if (rowOffsets) {
+      let rowLabels;
       [rowLabels, rowOffsets] = getSortedLabelAndOffsets(
-        rowLabels,
-        this.rowLabelIndex
+        rowOffsets,
+        this.rowIndex
       );
       dims[0] = rowLabels.length;
-      rowLabelIndex = this.rowLabelIndex.cut(rowLabels);
+      rowIndex = this.rowIndex.cut(rowLabels);
     }
 
     /* cut columns */
-    let { columns } = this;
-    if (colLabels) {
-      columns = colOffsets.map(coff => this.columns[coff]);
+    let columns = this.__columns;
+    if (colOffsets) {
+      columns = new Array(colOffsets.length);
+      for (let i = 0, l = colOffsets.length; i < l; i += 1) {
+        columns[i] = this.__columns[colOffsets[i]];
+      }
     }
 
     /* cut rows */
-    if (rowLabels) {
+    if (rowOffsets) {
       columns = columns.map(col => {
         const newCol = new col.constructor(rowOffsets.length);
         for (let i = 0, l = rowOffsets.length; i < l; i += 1) {
@@ -284,8 +210,62 @@ class Dataframe {
         return newCol;
       });
     }
+    return new Dataframe(dims, columns, rowIndex, colIndex);
+  }
 
-    return new Dataframe(dims, columns, rowLabelIndex, colLabelIndex);
+  cutByList(rowLabels, colLabels) {
+    const toOffsets = (labels, index) => {
+      if (!labels) {
+        return null;
+      }
+      return labels.map(label => {
+        const off = index.getOffset(label);
+        if (off === undefined) {
+          throw new RangeError(`unknown label: ${label}`);
+        }
+        return off;
+      });
+    };
+
+    const rowOffsets = toOffsets(rowLabels, this.rowIndex);
+    const colOffsets = toOffsets(colLabels, this.colIndex);
+    return this.__cut(rowOffsets, colOffsets);
+  }
+
+  icutByList(rowOffsets, colOffsets) {
+    return this.__cut(rowOffsets, colOffsets);
+  }
+
+  icutByMask(rowMask, colMask) {
+    /*
+    Cut on row/column based upon a truthy/falsey array.
+    */
+    const [nRows, nCols] = this.dims;
+    if (
+      (rowMask && rowMask.length !== nRows) ||
+      (colMask && colMask.length !== nCols)
+    ) {
+      throw new RangeError("boolean arrays must match row/col dimensions");
+    }
+
+    /* convert masks to lists - method wastes space, but is fast */
+    const toList = (mask, maxSize) => {
+      if (!mask) {
+        return null;
+      }
+      const list = new Int32Array(maxSize);
+      let elems = 0;
+      for (let i = 0, l = mask.length; i < l; i += 1) {
+        if (mask[i]) {
+          list[elems] = i;
+          elems += 1;
+        }
+      }
+      return new Int32Array(list.buffer, 0, elems);
+    };
+    const rowOffsets = toList(rowMask, nRows);
+    const colOffsets = toList(colMask, nCols);
+    return this.__cut(rowOffsets, colOffsets);
   }
 
   /**
@@ -313,49 +293,50 @@ class Dataframe {
       Example:
         const arr = df.col('a').asArray();
 
-    includes(rlabel) -- return boolean indicating of the row label
+    has(rlabel) -- return boolean indicating of the row label
       is contained within the column.  Example:
         const isInColumn = df.col('a').includes(99)
       For the default offset indexing, this is identical to:
         const isInColumn = (99 > 0) && (99 < df.nRows);
+
+    XXX - add docs on the rest:
+    indexOf()
+    iget()
     */
-    const coff = this.colLabelIndex.getOffset(columnLabel);
-    return this.columnsAccessor[coff];
+    const coff = this.colIndex.getOffset(columnLabel);
+    return this.__columnsAccessor[coff];
   }
 
-  row(rowLabel) {
-    /*
-    Return accessor bound to a row.  Allows random column access.
-    Example:
-
-      console.log("Value at [99,'foo']:", df.row(99)("foo"));
-
-    */
-    const roff = this.rowLabelIndex.getOffset(rowLabel);
-    if (roff === undefined) {
-      return undefined;
-    }
-    const coff = this.colLabelIndex.getOffset;
-    const { columns } = this;
-    return function col(clabel) {
-      return columns[coff(clabel)][roff];
-    };
+  icol(columnOffset) {
+    return this.__columnsAccessor[columnOffset];
   }
 
   at(r, c) {
     /*
       Access a single value, for a row/col label pair
     */
-    const coff = this.colLabelIndex.getOffset(c);
-    const roff = this.rowLabelIndex.getOffset(r);
-    return this.columns[coff][roff];
+    const coff = this.colIndex.getOffset(c);
+    const roff = this.rowIndex.getOffset(r);
+    return this.__columns[coff][roff];
   }
 
   iat(r, c) {
     /*
     Access a single value, for a row/col offset (integer) position
     */
-    return this.columns[c][r];
+    return this.__columns[c][r];
+  }
+
+  has(r, c) {
+    const [nRows, nCols] = this.dims;
+    const coff = this.colIndex.getOffset(c);
+    const roff = this.rowIndex.getOffset(r);
+    return coff >= 0 && coff < nCols && roff >= 0 && roff < nRows;
+  }
+
+  ihas(r, c) {
+    const [nRows, nCols] = this.dims;
+    return c >= 0 && c < nCols && r >= 0 && r < nRows;
   }
 
   /****
@@ -368,8 +349,8 @@ class Dataframe {
   XXX TODO remainder of map/reduce functions:  mapCol, mapRow, reduceRow, ...
   */
   reduceCol(clabel, callback, initialValue) {
-    const coff = this.colLabelIndex.getOffset(clabel);
-    const column = this.columns[coff];
+    const coff = this.colIndex.getOffset(clabel);
+    const column = this.__columns[coff];
     let start = 0;
     let acc = initialValue;
     if (initialValue === undefined) {
@@ -383,4 +364,4 @@ class Dataframe {
   }
 }
 
-export { Dataframe, RangeIndex, IntIndex, IdentityIndex, KeyIndex };
+export default Dataframe;

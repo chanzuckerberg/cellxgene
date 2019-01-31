@@ -20,8 +20,7 @@ const renderGene = (fuzzySortResult, { handleClick, modifiers, query }) => {
     return null;
   }
   /* the fuzzysort wraps the object with other properties, like a score */
-  const gene = fuzzySortResult.obj;
-  const text = gene.name;
+  const geneName = fuzzySortResult.target;
 
   return (
     <MenuItem
@@ -30,33 +29,29 @@ const renderGene = (fuzzySortResult, { handleClick, modifiers, query }) => {
       // Use of annotations in this way is incorrect and dataset specific.
       // See https://github.com/chanzuckerberg/cellxgene/issues/483
       // label={gene.n_counts}
-      key={gene.name}
-      onClick={g => {
+      key={geneName}
+      onClick={g =>
         /* this fires when user clicks a menu item */
-        handleClick(g);
-      }}
-      text={text}
+        handleClick(g)
+      }
+      text={geneName}
     />
   );
 };
 
-const filterGenes = (query, genes) => {
+const filterGenes = (query, genes) =>
   /* fires on load, once, and then for each character typed into the input */
-  return fuzzysort.go(query, genes, {
-    key: "name",
+  fuzzysort.go(query, genes, {
     limit: 5,
     threshold: -10000 // don't return bad results
   });
-};
 
 @connect(state => {
-  const metadata = _.get(state.controls.world, "obsAnnotations", null);
   const ranges = _.get(state.controls.world, "summary.obs", null);
   const initializeRanges = _.get(state.controls.world, "summary.obs");
 
   return {
     ranges,
-    metadata,
     initializeRanges,
     userDefinedGenes: state.controls.userDefinedGenes,
     userDefinedGenesLoading: state.controls.userDefinedGenesLoading,
@@ -76,7 +71,7 @@ class GeneExpression extends React.Component {
       postUserErrorToast(
         "That's too many genes, you can have at most 15 user defined genes"
       );
-    } else if (!_.find(world.varAnnotations, { name: gene })) {
+    } else if (world.varAnnotationsDf.col("name").indexOf(gene) === undefined) {
       postUserErrorToast("That doesn't appear to be a valid gene name.");
     } else {
       dispatch(actions.requestUserDefinedGene(gene));
@@ -131,9 +126,9 @@ class GeneExpression extends React.Component {
               itemListPredicate={filterGenes}
               itemRenderer={renderGene.bind(this)}
               items={
-                world && world.varAnnotations
-                  ? world.varAnnotations
-                  : [{ name: "No genes", n_counts: "" }]
+                world && world.varAnnotationsDf
+                  ? world.varAnnotationsDf.col("name").asArray()
+                  : ["No genes"]
               }
               popoverProps={{ minimal: true }}
             />
@@ -174,8 +169,7 @@ class GeneExpression extends React.Component {
           <ExpressionButtons />
           {differential.diffExp
             ? _.map(differential.diffExp, (value, index) => {
-                const annotations = world.varAnnotations[value[0]];
-                const { name } = annotations;
+                const name = world.varAnnotationsDf.at(value[0], "name");
                 const values = world.varDataCache[name];
                 if (!values) {
                   return null;

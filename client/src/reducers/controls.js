@@ -175,7 +175,7 @@ const Controls = (
         state,
         world
       );
-      const crossfilter = Crossfilter(world.obsAnnotations);
+      const crossfilter = Crossfilter(world.obsAnnotationsDf);
       const dimensionMap = World.createObsDimensionMap(crossfilter, world);
       WorldUtil.clearCaches();
 
@@ -249,7 +249,7 @@ const Controls = (
         state,
         world
       );
-      const crossfilter = Crossfilter(world.obsAnnotations);
+      const crossfilter = Crossfilter(world.obsAnnotationsDf);
       const dimensionMap = World.createObsDimensionMap(crossfilter, world);
       WorldUtil.clearCaches();
 
@@ -365,7 +365,7 @@ const Controls = (
       const _diffexpGenes = [];
 
       action.data.forEach(d => {
-        _diffexpGenes.push(world.varAnnotations[d[0]].name);
+        _diffexpGenes.push(world.varAnnotationsDf.at(d[0], "name"));
       });
 
       _.forEach(_diffexpGenes, gene => {
@@ -391,7 +391,7 @@ const Controls = (
       const worldVarDataCache = world.varDataCache;
 
       _.forEach(action.diffExp, values => {
-        const { name } = world.varAnnotations[values[0]];
+        const name = world.varAnnotationsDf.at(values[0], "name");
         // clean up crossfilter dimensions
         const dimension = dimensionMap[diffexpDimensionName(name)];
         dimension.dispose();

@@ -110,6 +110,8 @@ class Graph extends React.Component {
     if (regl && world) {
       /* update the regl state */
       const { obsLayout } = world;
+      const X = obsLayout.col("X").asArray();
+      const Y = obsLayout.col("Y").asArray();
       const cellCount = crossfilter.size();
 
       // X/Y positions for each point - a cached value that only
@@ -126,15 +128,15 @@ class Graph extends React.Component {
         const glScaleX = scaleLinear([0, 1], [-1, 1]);
         const glScaleY = scaleLinear([0, 1], [1, -1]);
 
-        const offset = [d3.mean(obsLayout.X) - 0.5, d3.mean(obsLayout.Y) - 0.5];
+        const offset = [d3.mean(X) - 0.5, d3.mean(Y) - 0.5];
 
         for (
           let i = 0, { positions } = this.renderCache;
           i < cellCount;
           i += 1
         ) {
-          positions[2 * i] = glScaleX(obsLayout.X[i] - offset[0]);
-          positions[2 * i + 1] = glScaleY(obsLayout.Y[i] - offset[1]);
+          positions[2 * i] = glScaleX(X[i] - offset[0]);
+          positions[2 * i + 1] = glScaleY(Y[i] - offset[1]);
         }
         pointBuffer({
           data: this.renderCache.positions,

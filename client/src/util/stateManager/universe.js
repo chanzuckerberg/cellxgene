@@ -5,6 +5,7 @@ import _ from "lodash";
 import * as kvCache from "./keyvalcache";
 import summarizeAnnotations from "./summarizeAnnotations";
 import decodeMatrixFBS from "./matrix";
+import * as Dataframe from "../dataframe";
 
 /*
 Private helper function - create and return a template Universe
@@ -27,13 +28,10 @@ function templateUniverse() {
     /*
     Annotations
     */
-    obsAnnotations: [] /* all obs annotations, by obs index */,
-    varAnnotations: [] /* all var annotations, by var index */,
-    obsNameToIndexMap: {} /* reverse map 'name' to index */,
-    varNameToIndexMap: {} /* reverse map 'name' to index */,
-    summary: null /* derived data summaries XXX: consider exploding in place */,
-
-    obsLayout: { X: [], Y: [] } /* xy layout */,
+    obsAnnotationsDf: null,
+    varAnnotationsDf: null,
+    obsLayout: null,
+    summary: null /* derived data summaries. XXX: consider exploding in place */,
 
     /*
     Cache of var data (expression), by var annotation name.   Data can be
@@ -61,10 +59,9 @@ function finalize(universe) {
   /* A bit of sanity checking! */
   const { nObs, nVar } = universe;
   if (
-    nObs !== universe.obsAnnotations.length ||
-    nObs !== universe.obsLayout.X.length ||
-    nObs !== universe.obsLayout.Y.length ||
-    nVar !== universe.varAnnotations.length
+    nObs !== universe.obsLayout.length ||
+    nObs !== universe.obsAnnotationsDf.length ||
+    nVar !== universe.varAnnotationsDf.length
   ) {
     throw new Error("Universe dimensionality mismatch - failed to load");
   }
@@ -73,61 +70,33 @@ function finalize(universe) {
   //  - layout has supported number of dimensions
   //  - ...
 
-  /*
-  Create all derived (convenience) data structures.
-  */
-  universe.obsNameToIndexMap = _.transform(
-    universe.obsAnnotations,
-    (acc, value, idx) => {
-      acc[value.name] = idx;
-    },
-    {}
-  );
-  universe.varNameToIndexMap = _.transform(
-    universe.varAnnotations,
-    (acc, value, idx) => {
-      acc[value.name] = idx;
-    },
-    {}
-  );
   universe.finalized = true;
   return universe;
 }
 
-function RESTv02AnotationsFBSResponseToInternal(arrayBuffer) {
+function RESTv02AnotationsFBSToDataframe(arrayBuffer) {
   /*
-  Convert a Matrix FBS to our internal format -- row-major array of
-  observations/cells, stored as an object.  Each obs has a key for each
-  annotation, plus __index__ containing its obsIndex.
-
-  Example:
-  [
-    { __index__: 0, tissue_type: "lung", sex: "F", ... },
-    ...
-  ]
-
-  XXX TODO: we could make use of the columns in building crossfilter
-  dimensions (they have to be recreated).  Future optimization.
+  Convert a Matrix FBS to a Dataframe.
   */
   const fbs = decodeMatrixFBS(arrayBuffer);
-  const keys = fbs.colIdx;
-  const result = Array(fbs.nRows);
-  for (let row = 0; row < fbs.nRows; row += 1) {
-    const rec = { __index__: row };
-    for (let col = 0; col < fbs.nCols; col += 1) {
-      rec[keys[col]] = fbs.columns[col][row];
-    }
-    result[row] = rec;
-  }
-  return result;
+  const df = new Dataframe.Dataframe(
+    [fbs.nRows, fbs.nCols],
+    fbs.columns,
+    null,
+    new Dataframe.KeyIndex(fbs.colIdx)
+  );
+  return df;
 }
 
-function RESTv02LayoutFBSResponseToInternal(arrayBuffer) {
+function RESTv02LayoutFBSToDataframe(arrayBuffer) {
   const fbs = decodeMatrixFBS(arrayBuffer, true);
-  return {
-    X: fbs.columns[0],
-    Y: fbs.columns[1]
-  };
+  const df = new Dataframe.Dataframe(
+    [fbs.nRows, fbs.nCols],
+    fbs.columns,
+    null,
+    new Dataframe.KeyIndex(["X", "Y"])
+  );
+  return df;
 }
 
 function reconcileSchemaCategoriesWithSummary(universe) {
@@ -178,20 +147,19 @@ export function createUniverseFromRestV02Response(
   universe.nVar = schema.dataframe.nVar;
 
   /* annotations */
-  universe.obsAnnotations = RESTv02AnotationsFBSResponseToInternal(
+  universe.obsAnnotationsDf = RESTv02AnotationsFBSToDataframe(
     annotationsObsResponse
   );
-  universe.varAnnotations = RESTv02AnotationsFBSResponseToInternal(
+  universe.varAnnotationsDf = RESTv02AnotationsFBSToDataframe(
     annotationsVarResponse
   );
-
   /* layout */
-  universe.obsLayout = RESTv02LayoutFBSResponseToInternal(layoutFBSResponse);
+  universe.obsLayout = RESTv02LayoutFBSToDataframe(layoutFBSResponse);
 
   universe.summary = summarizeAnnotations(
     universe.schema,
-    universe.obsAnnotations,
-    universe.varAnnotations
+    universe.obsAnnotationsDf,
+    universe.varAnnotationsDf
   );
 
   reconcileSchemaCategoriesWithSummary(universe);
@@ -208,14 +176,16 @@ export function convertDataFBStoObject(universe, arrayBuffer) {
     gene: Float32Array,
     ...
   }
+
+  // XXX should we return a Dataframe instead?
   */
   const fbs = decodeMatrixFBS(arrayBuffer);
   const { colIdx, columns } = fbs;
   const result = {};
 
   for (let c = 0; c < colIdx.length; c += 1) {
-    const gene = universe.varAnnotations[colIdx[c]].name;
-    result[gene] = columns[c];
+    const varName = universe.varAnnotationsDf.at(colIdx[c], "name");
+    result[varName] = columns[c];
   }
   return result;
 }

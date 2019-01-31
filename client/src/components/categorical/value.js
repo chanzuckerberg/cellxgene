@@ -65,11 +65,15 @@ class CategoryValue extends React.Component {
       })[0].categories;
     }
 
-    if (colorAccessor && !isColorBy) {
+    if (
+      colorAccessor &&
+      !isColorBy &&
+      categoricalSelectionState[colorAccessor]
+    ) {
       occupancy = countCategoryValues2D(
         metadataField,
         colorAccessor,
-        world.obsAnnotations
+        world.obsAnnotationsDf
       );
     }
 
