@@ -73,7 +73,7 @@ class CategoryValue extends React.Component {
       occupancy = countCategoryValues2D(
         metadataField,
         colorAccessor,
-        world.obsAnnotationsDf
+        world.obsAnnotations
       );
     }
 

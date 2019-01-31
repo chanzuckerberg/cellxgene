@@ -28,8 +28,8 @@ function templateUniverse() {
     /*
     Annotations
     */
-    obsAnnotationsDf: null,
-    varAnnotationsDf: null,
+    obsAnnotations: null,
+    varAnnotations: null,
     obsLayout: null,
     summary: null /* derived data summaries. XXX: consider exploding in place */,
 
@@ -60,8 +60,8 @@ function finalize(universe) {
   const { nObs, nVar } = universe;
   if (
     nObs !== universe.obsLayout.length ||
-    nObs !== universe.obsAnnotationsDf.length ||
-    nVar !== universe.varAnnotationsDf.length
+    nObs !== universe.obsAnnotations.length ||
+    nVar !== universe.varAnnotations.length
   ) {
     throw new Error("Universe dimensionality mismatch - failed to load");
   }
@@ -147,10 +147,10 @@ export function createUniverseFromRestV02Response(
   universe.nVar = schema.dataframe.nVar;
 
   /* annotations */
-  universe.obsAnnotationsDf = RESTv02AnotationsFBSToDataframe(
+  universe.obsAnnotations = RESTv02AnotationsFBSToDataframe(
     annotationsObsResponse
   );
-  universe.varAnnotationsDf = RESTv02AnotationsFBSToDataframe(
+  universe.varAnnotations = RESTv02AnotationsFBSToDataframe(
     annotationsVarResponse
   );
   /* layout */
@@ -158,8 +158,8 @@ export function createUniverseFromRestV02Response(
 
   universe.summary = summarizeAnnotations(
     universe.schema,
-    universe.obsAnnotationsDf,
-    universe.varAnnotationsDf
+    universe.obsAnnotations,
+    universe.varAnnotations
   );
 
   reconcileSchemaCategoriesWithSummary(universe);
@@ -184,7 +184,7 @@ export function convertDataFBStoObject(universe, arrayBuffer) {
   const result = {};
 
   for (let c = 0; c < colIdx.length; c += 1) {
-    const varName = universe.varAnnotationsDf.at(colIdx[c], "name");
+    const varName = universe.varAnnotations.at(colIdx[c], "name");
     result[varName] = columns[c];
   }
   return result;

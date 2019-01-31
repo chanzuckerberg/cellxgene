@@ -71,7 +71,7 @@ class GeneExpression extends React.Component {
       postUserErrorToast(
         "That's too many genes, you can have at most 15 user defined genes"
       );
-    } else if (world.varAnnotationsDf.col("name").indexOf(gene) === undefined) {
+    } else if (world.varAnnotations.col("name").indexOf(gene) === undefined) {
       postUserErrorToast("That doesn't appear to be a valid gene name.");
     } else {
       dispatch(actions.requestUserDefinedGene(gene));
@@ -126,8 +126,8 @@ class GeneExpression extends React.Component {
               itemListPredicate={filterGenes}
               itemRenderer={renderGene.bind(this)}
               items={
-                world && world.varAnnotationsDf
-                  ? world.varAnnotationsDf.col("name").asArray()
+                world && world.varAnnotations
+                  ? world.varAnnotations.col("name").asArray()
                   : ["No genes"]
               }
               popoverProps={{ minimal: true }}
@@ -169,7 +169,7 @@ class GeneExpression extends React.Component {
           <ExpressionButtons />
           {differential.diffExp
             ? _.map(differential.diffExp, (value, index) => {
-                const name = world.varAnnotationsDf.at(value[0], "name");
+                const name = world.varAnnotations.at(value[0], "name");
                 const values = world.varDataCache[name];
                 if (!values) {
                   return null;

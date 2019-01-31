@@ -41,15 +41,15 @@ const updateCellColorsMiddleware = store => next => action => {
     action.type === "color by continuous metadata" ||
     action.type === "color by categorical metadata";
 
-  const obsAnnotationsDf = _.get(s.controls, "world.obsAnnotationsDf", null);
-  if (!filterJustChanged || !obsAnnotationsDf) {
+  const obsAnnotations = _.get(s.controls, "world.obsAnnotations", null);
+  if (!filterJustChanged || !obsAnnotations) {
     return next(
       action
     ); /* if the cells haven't loaded or the action wasn't a color change, bail */
   }
 
   let colorScale;
-  const colorsByRGB = new Array(obsAnnotationsDf.length);
+  const colorsByRGB = new Array(obsAnnotations.length);
 
   /*
   in plain language...
@@ -73,8 +73,8 @@ const updateCellColorsMiddleware = store => next => action => {
     });
 
     const key = action.colorAccessor;
-    const col = obsAnnotationsDf.col(key).asArray();
-    for (let i = 0, len = obsAnnotationsDf.length; i < len; i += 1) {
+    const col = obsAnnotations.col(key).asArray();
+    for (let i = 0, len = obsAnnotations.length; i < len; i += 1) {
       const cat = col[i];
       colorsByRGB[i] = colors[cat];
     }
@@ -96,8 +96,8 @@ const updateCellColorsMiddleware = store => next => action => {
 
     const key = action.colorAccessor;
     const nonFiniteColor = parseRGB(globals.nonFiniteCellColor);
-    const col = obsAnnotationsDf.col(key).asArray();
-    for (let i = 0, len = obsAnnotationsDf.length; i < len; i += 1) {
+    const col = obsAnnotations.col(key).asArray();
+    for (let i = 0, len = obsAnnotations.length; i < len; i += 1) {
       const val = col[i];
       if (Number.isFinite(val)) {
         const c = colorScale(val);

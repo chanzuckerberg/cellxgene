@@ -61,8 +61,8 @@ function templateWorld() {
     nVar: 0,
 
     /* annotations */
-    obsAnnotationsDf: null,
-    varAnnotationsDf: null,
+    obsAnnotations: null,
+    varAnnotations: null,
 
     /* layout of graph. Dataframe. */
     obsLayout: null,
@@ -95,8 +95,8 @@ export function createWorldFromEntireUniverse(universe) {
   world.nVar = universe.nVar;
 
   /* annotations */
-  world.obsAnnotationsDf = universe.obsAnnotationsDf;
-  world.varAnnotationsDf = universe.varAnnotationsDf;
+  world.obsAnnotations = universe.obsAnnotations;
+  world.varAnnotations = universe.varAnnotations;
 
   /* layout and display characteristics */
   world.obsLayout = universe.obsLayout;
@@ -104,8 +104,8 @@ export function createWorldFromEntireUniverse(universe) {
   /* derived data & summaries */
   world.summary = summarizeAnnotations(
     world.schema,
-    world.obsAnnotationsDf,
-    world.varAnnotationsDf
+    world.obsAnnotations,
+    world.varAnnotations
   );
 
   /* build the varDataCache */
@@ -125,19 +125,19 @@ export function createWorldFromCurrentSelection(universe, world, crossfilter) {
   newWorld.api = universe.api;
   newWorld.nVar = universe.nVar;
   newWorld.schema = universe.schema;
-  newWorld.varAnnotationsDf = universe.varAnnotationsDf;
+  newWorld.varAnnotations = universe.varAnnotations;
 
   /* now subset/cut obs */
   const mask = crossfilter.allFilteredMask();
-  newWorld.obsAnnotationsDf = universe.obsAnnotationsDf.icutByMask(mask, null);
+  newWorld.obsAnnotations = universe.obsAnnotations.icutByMask(mask, null);
   newWorld.obsLayout = universe.obsLayout.icutByMask(mask, null);
-  newWorld.nObs = newWorld.obsAnnotationsDf.dims[0];
+  newWorld.nObs = newWorld.obsAnnotations.dims[0];
 
   /* derived data & summaries */
   newWorld.summary = summarizeAnnotations(
     newWorld.schema,
-    newWorld.obsAnnotationsDf,
-    newWorld.varAnnotationsDf
+    newWorld.obsAnnotations,
+    newWorld.varAnnotations
   );
 
   /* build the varDataCache */
@@ -200,7 +200,7 @@ export function createObsDimensionMap(crossfilter, world) {
   create and return a crossfilter dimension for every obs annotation
   for which we have a supported type.
   */
-  const { schema, obsLayout, obsAnnotationsDf } = world;
+  const { schema, obsLayout, obsAnnotations } = world;
 
   // Create a crossfilter dimension for all obs annotations *except* 'name'
   const dimensionMap = _(schema.annotations.obs)
@@ -208,7 +208,7 @@ export function createObsDimensionMap(crossfilter, world) {
     .transform((result, anno) => {
       const dimType = deduceDimensionType(anno, anno.name);
       if (dimType) {
-        const colData = obsAnnotationsDf.col(anno.name).asArray();
+        const colData = obsAnnotations.col(anno.name).asArray();
         result[obsAnnoDimensionName(anno.name)] = crossfilter.dimension(
           colData,
           dimType
@@ -235,7 +235,7 @@ export function createObsDimensionMap(crossfilter, world) {
 }
 
 export function worldEqUniverse(world, universe) {
-  return world.obsAnnotationsDf === universe.obsAnnotationsDf;
+  return world.obsAnnotations === universe.obsAnnotations;
 }
 
 export function subsetVarData(world, universe, varData) {
@@ -243,7 +243,7 @@ export function subsetVarData(world, universe, varData) {
   if (worldEqUniverse(world, universe)) {
     return varData;
   }
-  return sliceByIndex(varData, world.obsAnnotationsDf.rowIndex.keys());
+  return sliceByIndex(varData, world.obsAnnotations.rowIndex.keys());
 }
 
 export function getSelectedByIndex(crossfilter) {

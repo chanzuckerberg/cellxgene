@@ -24,7 +24,7 @@ import finiteExtent from "../../util/finiteExtent";
   initializeRanges: _.get(state.controls.world, "summary.obs"),
   colorAccessor: state.controls.colorAccessor,
   colorScale: state.controls.colorScale,
-  obsAnnotations: _.get(state.controls.world, "obsAnnotationsDf", null)
+  obsAnnotations: _.get(state.controls.world, "obsAnnotations", null)
 }))
 class HistogramBrush extends React.Component {
   calcHistogramCache = memoize((obsAnnotations, field, rangeMin, rangeMax) => {

@@ -269,7 +269,7 @@ const requestDifferentialExpression = (set1, set2, num_genes = 10) => async (
     const data = await res.json();
     // result is [ [varIdx, ...], ... ]
     const topNGenes = _.map(data, r =>
-      universe.varAnnotationsDf.at(r[0], "name")
+      universe.varAnnotations.at(r[0], "name")
     );
 
     /*
