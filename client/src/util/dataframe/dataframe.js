@@ -348,6 +348,8 @@ class Dataframe {
 
   XXX TODO remainder of map/reduce functions:  mapCol, mapRow, reduceRow, ...
   */
+  /* comment out until we have a use for this
+
   reduceCol(clabel, callback, initialValue) {
     const coff = this.colIndex.getOffset(clabel);
     const column = this.__columns[coff];
@@ -362,6 +364,7 @@ class Dataframe {
     }
     return acc;
   }
+  */
 }
 
 export default Dataframe;
