@@ -1,5 +1,5 @@
 import { IdentityInt32Index } from "./labelIndex";
-import { sort, sortIndex } from "../typedCrossfilter/sort";
+import { sort } from "../typedCrossfilter/sort";
 
 /*
 Dataframe is an immutable 2D matrix similiar to Pandas Dataframe,
