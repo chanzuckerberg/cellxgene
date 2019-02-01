@@ -1,3 +1,4 @@
+import os
 from setuptools import setup, find_packages
 import sys
 
@@ -15,10 +16,17 @@ with open("README.md", "rb") as fh:
 with open("server/requirements.txt") as fh:
     requirements = fh.read().splitlines()
 
+# if build exists, install from there, otherwise install from server
+package_opts = {}
+package_data = {"server": "server/*"}
+if os.path.isdir("build"):
+    package_opts["where"] = "build"
+    package_data = {"server": "build/server/*"}
+
 setup(
     name="cellxgene",
     version="0.5.1",
-    packages=find_packages(),
+    packages=find_packages(**package_opts),
     url="https://github.com/chanzuckerberg/cellxgene",
     license="MIT",
     author="Colin Megill, Charlotte Weaver",
