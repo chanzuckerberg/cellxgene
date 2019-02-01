@@ -1,3 +1,5 @@
+import { Colors } from "@blueprintjs/core";
+
 // jshint esversion: 6
 /* these will be either (preferably) specified or inferred */
 export const categories = [
@@ -44,8 +46,8 @@ export const configDefaults = {
 };
 
 /* colors */
-export const blue = "#4a90e2";
-export const hcaBlue = "#1c7cc7";
+export const blue = Colors.BLUE3;
+export const linkBlue = Colors.BLUE5;
 export const lightestGrey = "rgb(249,249,249)";
 export const lighterGrey = "rgb(245,245,245)";
 export const lightGrey = "rgb(211,211,211)";
