@@ -242,6 +242,11 @@ const requestDifferentialExpression = (set1, set2, num_genes = 10) => async (
     */
     const state = getState();
     const { universe } = state.controls;
+
+    // These lines ensure that we convert any TypedArray to an Array.
+    // This is necessary because JSON.stringify() does some very strange
+    // things with TypedArrays (they are marshalled to JSON objects, rather
+    // than being marshalled as a JSON array).
     const aset1 = Array.isArray(set1) ? set1 : Array.from(set1);
     const aset2 = Array.isArray(set2) ? set2 : Array.from(set2);
 
