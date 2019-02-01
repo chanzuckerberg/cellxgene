@@ -37,6 +37,14 @@ import {
   upperBoundIndirect
 } from "./util";
 
+function isArrayOrTypedArray(x) {
+  return (
+    Array.isArray(x) ||
+    (ArrayBuffer.isView(x) &&
+      Object.prototype.toString.call(x) !== "[object DataView]")
+  );
+}
+
 class NotImplementedError extends Error {
   constructor(...params) {
     super(...params);
@@ -162,7 +170,7 @@ class ScalarDimension {
         value,
         new ValueArrayType(this.crossfilter.data.length)
       );
-    } else if (Array.isArray(value)) {
+    } else if (isArrayOrTypedArray(value)) {
       // Create value array from user-provided array.  Typically used
       // only by enumerated dimensions
       array = this._createValueArray(
