@@ -1,24 +1,51 @@
 import { IdentityInt32Index } from "./labelIndex";
+// weird cross-dependency that we should clean up someday...
 import { sort } from "../typedCrossfilter/sort";
 
 /*
-Dataframe is an immutable 2D matrix similiar to Pandas Dataframe,
-but (currently) without all of the mathematical support functions.
-Data is stored in column-major layout, and each column is unimorphic.
+Dataframe is an immutable 2D matrix similiar to Python Pandas Dataframe,
+but (currently) without all of the surrounding support functions.
+Data is stored in column-major layout, and each column is monomorphic.
 
 It supports:
-* Relatively effiicent creation, cloning and subsetting ("cut")
+* Relatively efficient creation, cloning and subsetting ("cut")
 * Very efficient columnar access (eg, sum down a column), and access
-  to the underlying column arrays
-* Data access by offset or label
+  to the underlying column arrays.
+* Data access by row/col offset or label.  Labels are reasonably well
+  optimized for both numeric lables and arbitrary (eg, sting) labels.
 
 It does not currently support:
-* Views on matrix subset - for currently envisioned access patterns,
-  it is more effiicent to copy on cut/slice
+* Views on matrix subset - for currently known access patterns,
+  it is more effiicent to copy on subsetting, optimizing for access
+  speed over memory use.
 * JS iterators - they are too slow.  Use explicit iteration over
   offest or labels.
 
+There are three index types for row/col indexing:
+* IdentityInt32Index - noop index, where the index label is the offset.
+* KeyIndex - index arbitrary JS objects.
+* DenseInt32Index - integer indexing.  Optimization over KeyIndex as it uses
+  Int32Array as a back-map to offsets.  This means that the index array
+  must be sized to [minLabel, maxLabel), so this is only useful when the label
+  range is relatively close the underlying offset range [minOffset, maxOffset).
+
 All private functions/methods/fields are prefixed by '__', eg, __compile().
+Don't use them outside of this file.
+
+Simple example:
+
+  // default indexing is integer offset.
+  const df = Dataframe.create([2,2], [['a', 'b'], [0, 1]])
+  console.log(df.at(0,0));  // outputs: a
+  console.log(df.col(1).asArray());   // outputs: [0, 1]
+
+  // KeyIndex
+  const df = new Dataframe([1,2], [['a'], ['b']], null, new KeyIndex(['A', 'B']))
+  console.log(df.at(0, 'A')); // outputs: a
+  console.log(df.col('A').asArray(); // outputs: ['a']
+
+Performance tuning is primarily focused on columnar access patterns, which is the
+dominant pattern in cellxgene.
 */
 
 /**
@@ -303,15 +330,24 @@ class Dataframe {
       For the default offset indexing, this is identical to:
         const isInColumn = (99 > 0) && (99 < df.nRows);
 
-    XXX - add docs on the rest:
-    indexOf()
-    iget()
+    ihas(roffset) -- same as has(), but accepts a row offset
+      instead of a row label.
+
+    indexOf(value) -- return the label (not offset) of the first instance of
+      'value' in the column.  If you want the offset, just use the builtin JS
+      indexOf() function, available on both Array and TypedArray.
+
+    iget(offset) -- return the value at 'offset'
+
     */
     const coff = this.colIndex.getOffset(columnLabel);
     return this.__columnsAccessor[coff];
   }
 
   icol(columnOffset) {
+    /*
+    Return column accessor by offset.
+    */
     return this.__columnsAccessor[columnOffset];
   }
 
@@ -345,6 +381,9 @@ class Dataframe {
 
   /****
   Functional (map/reduce/etc) data access
+
+  XXX: not yet implemented, as there is no clear use case.   Can easily
+  add these as useful.
   ****/
 
   /*

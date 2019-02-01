@@ -176,8 +176,6 @@ export function convertDataFBStoObject(universe, arrayBuffer) {
     gene: Float32Array,
     ...
   }
-
-  // XXX should we return a Dataframe instead?
   */
   const fbs = decodeMatrixFBS(arrayBuffer);
   const { colIdx, columns } = fbs;

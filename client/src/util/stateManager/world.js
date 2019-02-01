@@ -6,7 +6,7 @@ import summarizeAnnotations from "./summarizeAnnotations";
 import { layoutDimensionName, obsAnnoDimensionName } from "../nameCreators";
 import { sliceByIndex } from "../typedCrossfilter/util";
 
-/*  XXX comments need revising to accomadate dataframe changes
+/*
 
 World is a subset of universe.   Most code should use world, and should
 (generally) not use Universe.   World contains any per-obs or per-var data
@@ -16,35 +16,32 @@ of Universe.
 Private API indicated by leading underscore in key name (eg, _foo).  Anything else
 is public.
 
-World contains several public keys, obsAnnotations, and obsLayout, which are
-dataframes contianing information about an OBS in the same order/offset.
+Notable keys in the world object:
+
+* nObs, nVar: dimensions
+
+* schema: data schema from the server
 
 * obsAnnotations:
 
-  obsAnnotations will return an array of objects.  Each object contains all annotation
-  values for a given observation/cell, keyed by annotation name, PLUS a key
-  '__cellId__', containing a REST API ID for this obs/cell (referred to as the
-  obsIndex in the REST 0.2 spec or cellIndex in the 0.1 spec.
+  Dataframe containing obs annotations.  Columns are indexed by annotation
+  name (eg, 'tissue type'), and rows are indexed by the REST API obsIndex
+  (ie, the offset into the underlying server-side dataframe).
 
-  Example:  [ { __cellId__: 99, cluster: 'blue', numReads: 93933 } ]
-
-  NOTE: world.obsAnnotation should be identical to the old state.cells value,
-  EXCEPT that
-    * __cellIndex__ renamed to __index__
-    * __x__ and __y__ are now in world.obsLayout
-    * __color__ and __colorRBG__ should be moved to controls reducer
+  This indexing means that you can access data by _either_ the server's
+  obxIndex, or the offset into the client-side column array .  Be careful
+  to know which you want and are using.
 
 * obsLayout:
 
-  obsLayout will return an object containing two arrays, containing X and Y
-  coordinates respectively.
+  A dataframe containing the X/Y layout for all obs.  Columns are named
+  'X' and 'Y', and rows are indexed in the same way as obsAnnotation.
 
-  Example: { X: [ 0.33, 0.23, ... ], Y: [ 0.8, 0.777, ... ]}
+* summary: summary of each obsAnnotation column (eg, numeric extent for
+  continuous data, category counts for categorical metadata)
 
-* crossfilter - a crossfilter object across world.obsAnnotations
-
-* dimensionMap - an object mapping annotation names to dimensions on
-  the crossfilter
+* varDataCache: expression columns, in a kvCache.   XXX: maybe move to a
+  Dataframe in the future.
 
 */
 

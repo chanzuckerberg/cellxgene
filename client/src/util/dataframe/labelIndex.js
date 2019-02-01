@@ -1,18 +1,6 @@
 /**
-Label indexing - map a label to & from an integer offset
-
-Each immutable index must support the following methods (in addition to its own
-unique constructor):
-
-  'offset': zero based integer offset.
-
-  getOffset(label) -> zero based, integer offset
-  getMaxOffset() -> offsets are [0, maxOffset)
-  getLabel(offset) -> label
-  cut([array of labels]) -> factory, which creates new index containing
-    these labels.  Labels must be subset of current labels.
-  keys() -> array or typedarray of keys
-
+Label indexing - map a label to & from an integer offset.  See Dataframe
+for how this is used.
 **/
 
 /*
@@ -20,7 +8,7 @@ Private utility functions
 */
 function extent(tarr) {
   let min = 0x7fffffff;
-  let max = ~min;
+  let max = ~min; // eslint-disable-line no-bitwise
   for (let i = 0, l = tarr.length; i < l; i += 1) {
     const v = tarr[i];
     if (v < min) {
@@ -87,35 +75,6 @@ class IdentityInt32Index {
   }
 }
 /* eslint-enable class-methods-use-this */
-
-// class RangeIndex {
-//   constructor(start, stop = 0, step = 1) {
-//     this.start = start;
-//     this.stop = stop;
-//     this.step = step;
-//     this.__compile();
-//   }
-//
-//   __compile() {
-//     const [start, stop, step] = this;
-//     const max = Math.trunc((stop - start) / step);
-//     /* eslint-disable-next-line no-new-func */
-//     this.getOffset = new Function(
-//       "i",
-//       `
-//         const loc = ${start} + i*${step};
-//         if (loc > ${max}) {
-//           throw new RangeError();
-//         }
-//         return loc;
-//       `
-//     );
-//   }
-//
-//   cut(labelArray) {
-//     return new IntIndex(labelArray);
-//   }
-// }
 
 /* eslint-disable class-methods-use-this */
 class DenseInt32Index {
