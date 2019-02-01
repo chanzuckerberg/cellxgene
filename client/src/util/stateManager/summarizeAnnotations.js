@@ -56,7 +56,6 @@ specified as unique per element.
 function _summarizeAnnotations(_schema, df) {
   const summary = _(_schema) // lodash wrapping: https://lodash.com/docs/4.17.11#lodash
     .filter(v => v.name !== "name") // don't summarize name
-    .filter(v => !!df.col(v.name)) // ensure data contains this field
     .keyBy("name")
     .mapValues(anno => {
       const { name, type } = anno;
