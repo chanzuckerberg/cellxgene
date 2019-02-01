@@ -63,7 +63,7 @@ class Dataframe {
     }
 
     const [nRows, nCols] = dims;
-    if (nRows <= 0 || nCols <= 0) {
+    if (nRows < 0 || nCols < 0) {
       throw new RangeError("Dataframe dimensions must be positive");
     }
     if (!Array.isArray(columnarData)) {
