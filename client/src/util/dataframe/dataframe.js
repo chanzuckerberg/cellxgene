@@ -138,6 +138,10 @@ class Dataframe {
     );
   }
 
+  static empty() {
+    return new Dataframe([0, 0], []);
+  }
+
   static create(dims, columnarData) {
     /*
     Create a dataframe from raw columnar data.  All column arrays
