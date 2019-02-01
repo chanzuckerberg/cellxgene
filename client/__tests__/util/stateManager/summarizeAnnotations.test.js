@@ -1,4 +1,9 @@
 import summarizeAnnotations from "../../../src/util/stateManager/summarizeAnnotations";
+import * as Dataframe from "../../../src/util/dataframe";
+
+function float32Conversion(f) {
+  return new Float32Array([39.3])[0];
+}
 
 describe("summarizeAnnotations", () => {
   const schema = {
@@ -20,7 +25,8 @@ describe("summarizeAnnotations", () => {
   };
 
   test("empty test", () => {
-    const summary = summarizeAnnotations(schema, [], []);
+    const df = Dataframe.Dataframe.empty();
+    const summary = summarizeAnnotations(schema, df, df.clone());
     expect(summary).toEqual(
       expect.objectContaining({
         obs: {
@@ -69,18 +75,27 @@ describe("summarizeAnnotations", () => {
   });
 
   test("simple test", () => {
-    const obsAnnotations = [
-      {
-        __index__: 0,
-        name: "n1",
-        nameString: "hi",
-        nameBoolean: true,
-        nameFloat32: 39.3,
-        nameInt32: 99,
-        nameCategorical: 1
-      }
-    ];
-    const varAnnotations = [];
+    const obsAnnotations = new Dataframe.Dataframe(
+      [1, 6],
+      [
+        ["n1"],
+        ["hi"],
+        [true],
+        new Float32Array([39.3]),
+        new Int32Array([99]),
+        [1]
+      ],
+      null,
+      new Dataframe.KeyIndex([
+        "name",
+        "nameString",
+        "nameBoolean",
+        "nameFloat32",
+        "nameInt32",
+        "nameCategorical"
+      ])
+    );
+    const varAnnotations = Dataframe.Dataframe.empty();
 
     const summary = summarizeAnnotations(
       schema,
@@ -105,7 +120,13 @@ describe("summarizeAnnotations", () => {
           },
           nameFloat32: {
             categorical: false,
-            range: { min: 39.3, max: 39.3, nan: 0, ninf: 0, pinf: 0 }
+            range: {
+              min: float32Conversion(39.3),
+              max: float32Conversion(39.3),
+              nan: 0,
+              ninf: 0,
+              pinf: 0
+            }
           },
           nameInt32: {
             categorical: false,
@@ -124,36 +145,27 @@ describe("summarizeAnnotations", () => {
   });
 
   test("multi test", () => {
-    const obsAnnotations = [
-      {
-        __index__: 0,
-        name: "n0",
-        nameString: "hi",
-        nameBoolean: false,
-        nameFloat32: 39.3,
-        nameInt32: 99,
-        nameCategorical: 1
-      },
-      {
-        __index__: 1,
-        name: "n1",
-        nameString: "hi",
-        nameBoolean: true,
-        nameFloat32: 39.3,
-        nameInt32: 99,
-        nameCategorical: false
-      },
-      {
-        __index__: 2,
-        name: "n2",
-        nameString: "bye",
-        nameBoolean: true,
-        nameFloat32: 0,
-        nameInt32: 99,
-        nameCategorical: "0"
-      }
-    ];
-    const varAnnotations = [];
+    const obsAnnotations = new Dataframe.Dataframe(
+      [3, 6],
+      [
+        ["n0", "n1", "n2"],
+        ["hi", "hi", "bye"],
+        [false, true, true],
+        new Float32Array([39.3, 39.3, 0]),
+        new Int32Array([99, 99, 99]),
+        [1, false, "0"]
+      ],
+      null,
+      new Dataframe.KeyIndex([
+        "name",
+        "nameString",
+        "nameBoolean",
+        "nameFloat32",
+        "nameInt32",
+        "nameCategorical"
+      ])
+    );
+    const varAnnotations = Dataframe.Dataframe.empty();
 
     const summary = summarizeAnnotations(
       schema,
@@ -178,7 +190,13 @@ describe("summarizeAnnotations", () => {
           },
           nameFloat32: {
             categorical: false,
-            range: { min: 0, max: 39.3, nan: 0, ninf: 0, pinf: 0 }
+            range: {
+              min: 0,
+              max: float32Conversion(39.3),
+              nan: 0,
+              ninf: 0,
+              pinf: 0
+            }
           },
           nameInt32: {
             categorical: false,
@@ -197,45 +215,32 @@ describe("summarizeAnnotations", () => {
   });
 
   test("non-finite numbers", () => {
-    const obsAnnotations = [
-      {
-        __index__: 0,
-        name: "n0",
-        nameString: "hi",
-        nameBoolean: false,
-        nameFloat32: 39.3,
-        nameInt32: 99,
-        nameCategorical: 1
-      },
-      {
-        __index__: 1,
-        name: "n1",
-        nameString: "hi",
-        nameBoolean: true,
-        nameFloat32: Number.NEGATIVE_INFINITY,
-        nameInt32: 99,
-        nameCategorical: false
-      },
-      {
-        __index__: 2,
-        name: "n2",
-        nameString: "bye",
-        nameBoolean: true,
-        nameFloat32: Number.NaN,
-        nameInt32: 99,
-        nameCategorical: "0"
-      },
-      {
-        __index__: 3,
-        name: "n2",
-        nameString: "bye",
-        nameBoolean: true,
-        nameFloat32: Number.POSITIVE_INFINITY,
-        nameInt32: 99,
-        nameCategorical: "0"
-      }
-    ];
-    const varAnnotations = [];
+    const obsAnnotations = new Dataframe.Dataframe(
+      [4, 6],
+      [
+        ["n0", "n1", "n2", "n2"],
+        ["hi", "hi", "bye", "bye"],
+        [false, true, true, true],
+        new Float32Array([
+          39.3,
+          Number.NEGATIVE_INFINITY,
+          Number.NaN,
+          Number.POSITIVE_INFINITY
+        ]),
+        new Int32Array([99, 99, 99, 99]),
+        [1, false, "0", "0"]
+      ],
+      null,
+      new Dataframe.KeyIndex([
+        "name",
+        "nameString",
+        "nameBoolean",
+        "nameFloat32",
+        "nameInt32",
+        "nameCategorical"
+      ])
+    );
+    const varAnnotations = Dataframe.Dataframe.empty();
 
     const summary = summarizeAnnotations(
       schema,
@@ -260,7 +265,13 @@ describe("summarizeAnnotations", () => {
           },
           nameFloat32: {
             categorical: false,
-            range: { min: 39.3, max: 39.3, nan: 1, ninf: 1, pinf: 1 }
+            range: {
+              min: float32Conversion(39.3),
+              max: float32Conversion(39.3),
+              nan: 1,
+              ninf: 1,
+              pinf: 1
+            }
           },
           nameInt32: {
             categorical: false,

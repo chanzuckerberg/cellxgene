@@ -1,6 +1,7 @@
 import _ from "lodash";
 import * as Universe from "../../../src/util/stateManager/universe";
 import * as World from "../../../src/util/stateManager/world";
+import * as Dataframe from "../../../src/util/dataframe";
 import Crossfilter from "../../../src/util/typedCrossfilter";
 import * as REST from "./sampleResponses";
 import {
@@ -75,10 +76,7 @@ describe("createWorldFromEntireUniverse", () => {
             .value()
         }),
 
-        varDataCache: expect.any(Object),
-
-        obsIndex: null, // null indicating full universe
-        obsBackIndex: null
+        varDataCache: expect.any(Object)
       })
     );
   });
@@ -111,51 +109,43 @@ describe("createWorldFromCurrentSelection", () => {
     */
 
     /* matchFilter must match the dimension filters above */
-    const matchFilter = val => val.field1 >= 0 && val.field1 < 5 && !val.field3;
-    const universeIndices = _()
-      .range(universe.nObs)
-      .filter(idx => matchFilter(universe.obsAnnotations[idx]))
-      .value();
-
-    const expected = {
-      nObs: universeIndices.length,
-      obsAnnotations: _.map(universeIndices, i => universe.obsAnnotations[i]),
-      obsLayout: {
-        X: new Float32Array(
-          _.map(universeIndices, i => universe.obsLayout.X[i])
-        ),
-        Y: new Float32Array(
-          _.map(universeIndices, i => universe.obsLayout.Y[i])
-        )
-      },
-      obsBackIndex: _.transform(
-        universeIndices,
-        (result, univIdx, worldIdx) => {
-          result[univIdx] = worldIdx;
-        },
-        new Uint32Array(universe.nObs).fill(-1)
-      ),
-      obsIndex: new Uint32Array(universeIndices)
+    const matchFilter = (df, row) => {
+      const field1 = df.at(row, "field1");
+      const field3 = df.at(row, "field3");
+      return field1 >= 0 && field1 < 5 && !field3;
     };
+    const matchingIndices = _()
+      .range(universe.nObs)
+      .filter(idx => matchFilter(universe.obsAnnotations, idx))
+      .value();
 
     expect(world).toMatchObject(
       expect.objectContaining({
         api: "0.2",
-        nObs: expected.nObs,
+        nObs: matchingIndices.length,
         nVar: universe.nVar,
         schema: universe.schema,
-        obsAnnotations: expected.obsAnnotations,
+        obsAnnotations: expect.any(Dataframe.Dataframe),
         varAnnotations: universe.varAnnotations,
-        obsLayout: expected.obsLayout,
+        obsLayout: expect.any(Dataframe.Dataframe),
         summary: {
           obs: expect.any(Object) /* we could do better! */,
           var: expect.any(Object) /* we could do better! */
         },
-        varDataCache: expect.any(Object),
-        obsIndex: expected.obsIndex,
-        obsBackIndex: expected.obsBackIndex
+        varDataCache: expect.any(Object)
       })
     );
+
+    expect(world.obsAnnotations.rowIndex.keys()).toEqual(
+      new Int32Array(matchingIndices)
+    );
+    expect(world.obsAnnotations.colIndex.keys()).toEqual(
+      universe.obsAnnotations.colIndex.keys()
+    );
+    expect(world.obsLayout.rowIndex.keys()).toEqual(
+      new Int32Array(matchingIndices)
+    );
+    expect(world.obsLayout.colIndex.keys()).toEqual(["X", "Y"]);
   });
 });
 
@@ -222,7 +212,9 @@ describe("subsetVarData", () => {
       world,
       crossfilter
     );
-    expect(newWorld.obsIndex).toMatchObject(new Uint32Array([0, 2]));
+    expect(newWorld.obsAnnotations.rowIndex.keys()).toEqual(
+      new Int32Array([0, 2])
+    );
 
     /* expect a subset */
     const result = World.subsetVarData(newWorld, universe, sourceVarData);

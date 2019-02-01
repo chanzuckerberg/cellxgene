@@ -3,8 +3,6 @@ import * as Dataframe from "../../../src/util/dataframe";
 /*
 Tests to write:
 
-Dataframe.create()
-Dataframe.clone()
 Dataframe.col()
 Dataframe.icol()
 Dataframe.col.get()
@@ -12,11 +10,17 @@ Dataframe.col.iget()
 Dataframe.col.has()
 Dataframe.col.ihas()
 Dataframe.col.indexOf()
-Dataframe.cut
-Dataframe.reduce
 */
 
 describe("dataframe constructor", () => {
+  test("empty dataframe", () => {
+    const df = new Dataframe.Dataframe([0, 0], []);
+    expect(df).toBeDefined();
+    expect(df.dims).toEqual([0, 0]);
+    expect(df).toHaveLength(0);
+    expect(df.icol(0)).not.toBeDefined();
+  });
+
   test("create with default indices", () => {
     const df = new Dataframe.Dataframe(
       [3, 2],
@@ -172,5 +176,47 @@ describe("dataframe subsetting", () => {
     expect(dfA.icol(1).asArray()).toEqual(["green", "blue"]);
     expect(dfA.rowIndex.keys()).toEqual(new Int32Array([4, 6]));
     expect(dfA.colIndex.keys()).toEqual(["int32", "colors"]);
+  });
+});
+
+describe("dataframe factories", () => {
+  test("create", () => {
+    const df = Dataframe.Dataframe.create(
+      [3, 3],
+      [
+        new Array(3).fill(0),
+        new Int16Array(3).fill(99),
+        new Float64Array(3).fill(1.1)
+      ]
+    );
+
+    expect(df).toBeDefined();
+    expect(df.dims).toEqual([3, 3]);
+    expect(df).toHaveLength(3);
+    expect(df.iat(0, 0)).toEqual(0);
+    expect(df.iat(1, 1)).toEqual(99);
+    expect(df.iat(2, 2)).toBeCloseTo(1.1);
+    expect(df.iat(0, 0)).toEqual(df.at(0, 0));
+    expect(df.iat(1, 1)).toEqual(df.at(1, 1));
+    expect(df.iat(2, 2)).toEqual(df.at(2, 2));
+  });
+
+  test("clone", () => {
+    const dfA = new Dataframe.Dataframe(
+      [3, 2],
+      [new Int32Array([0, 1, 2]), new Int32Array([3, 4, 5])],
+      new Dataframe.DenseInt32Index([2, 1, 0]),
+      new Dataframe.KeyIndex(["A", "B"])
+    );
+
+    const dfB = dfA.clone();
+    expect(dfB).not.toBe(dfA);
+    expect(dfB.dims).toEqual(dfA.dims);
+    expect(dfB).toHaveLength(dfA.length);
+    expect(dfB.rowIndex.keys()).toEqual(dfA.rowIndex.keys());
+    expect(dfB.colIndex.keys()).toEqual(dfA.colIndex.keys());
+    for (let i = 0, l = dfB.dims[1]; i < l; i += 1) {
+      expect(dfB.icol(i).asArray()).toEqual(dfA.icol(i).asArray());
+    }
   });
 });

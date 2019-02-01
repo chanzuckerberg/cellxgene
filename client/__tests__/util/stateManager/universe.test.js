@@ -1,5 +1,5 @@
-import _ from "lodash";
 import * as Universe from "../../../src/util/stateManager/universe";
+import * as Dataframe from "../../../src/util/dataframe";
 import * as REST from "./sampleResponses";
 
 describe("createUniverseFromRestV02Response", () => {
@@ -45,23 +45,23 @@ describe("createUniverseFromRestV02Response", () => {
         nObs,
         nVar,
         schema: REST.schema.schema,
-        obsAnnotations: expect.any(Array),
-        varAnnotations: expect.any(Array),
-        obsNameToIndexMap: expect.any(Object),
-        varNameToIndexMap: expect.any(Object),
-        obsLayout: expect.objectContaining({
-          X: expect.any(Float32Array),
-          Y: expect.any(Float32Array)
-        }),
+        obsAnnotations: expect.any(Dataframe.Dataframe),
+        varAnnotations: expect.any(Dataframe.Dataframe),
+        obsLayout: expect.any(Dataframe.Dataframe),
+        summary: expect.any(Object),
         varDataCache: expect.any(Object)
       })
     );
 
-    expect(universe.obsAnnotations).toHaveLength(nObs);
-    expect(_.keys(universe.obsNameToIndexMap)).toHaveLength(nObs);
-    expect(universe.obsLayout.X).toHaveLength(nObs);
-    expect(universe.obsLayout.Y).toHaveLength(nObs);
-    expect(universe.varAnnotations).toHaveLength(nVar);
-    expect(_.keys(universe.varNameToIndexMap)).toHaveLength(nVar);
+    expect(universe.obsAnnotations.dims).toEqual([
+      nObs,
+      REST.schema.schema.annotations.obs.length
+    ]);
+    expect(universe.obsLayout.dims).toEqual([nObs, 2]);
+    expect(universe.obsLayout.colIndex.keys()).toEqual(["X", "Y"]);
+    expect(universe.varAnnotations.dims).toEqual([
+      nVar,
+      REST.schema.schema.annotations.var.length
+    ]);
   });
 });
