@@ -66,7 +66,6 @@ const filterGenes = (query, genes) =>
     userDefinedGenesLoading: state.controls.userDefinedGenesLoading,
     world: state.controls.world,
     colorAccessor: state.controls.colorAccessor,
-    allGeneNames: state.controls.allGeneNames,
     differential: state.differential
   };
 })
@@ -77,6 +76,37 @@ class GeneExpression extends React.Component {
       bulkAdd: "",
       tab: "autosuggest"
     };
+  }
+
+  placeholderGeneNames() {
+    /*
+    return a string containing gene name suggestions for use as a user hint.
+    Eg.,    Apod, Cd74, ...
+    Will return a max of 3 genes, totalling 15 characters in length.
+    Randomly selects gene names.
+
+    NOTE: the random selection means it will re-render constantly.
+    */
+    const { world } = this.props;
+    const { varAnnotations } = world;
+    const geneNames = varAnnotations.col("name").asArray();
+    if (geneNames.length > 0) {
+      const placeholder = [];
+      let len = geneNames.length;
+      const maxGeneNameCount = 3;
+      const maxStrLength = 15;
+      len = len < maxGeneNameCount ? len : maxGeneNameCount;
+      for (let i = 0, strLen = 0; i < len && strLen < maxStrLength; i += 1) {
+        const deal = Math.floor(Math.random() * geneNames.length);
+        const geneName = geneNames[deal];
+        placeholder.push(geneName);
+        strLen += geneName.length + 2; // '2' is the length of a comma and space
+      }
+      placeholder.push("...");
+      return placeholder.join(", ");
+    }
+    // default - should never happen.
+    return "Apod, Cd74, ...";
   }
 
   handleClick(g) {
@@ -235,7 +265,7 @@ class GeneExpression extends React.Component {
                         this.setState({ bulkAdd: e.target.value });
                       }}
                       id="text-input-bulk-add"
-                      placeholder="Apod, Cd74, ..."
+                      placeholder={this.placeholderGeneNames()}
                       value={bulkAdd}
                     />
                     <Button
