@@ -8,8 +8,8 @@ cache:
 install:
   - set -eo pipefail
   - pip install flake8
-  - ./bin/build-client
-  - pip install -e .
+  - make build
+  - make install
   - pip install -r server/requirements-dev.txt
   - docker build .
 script:
