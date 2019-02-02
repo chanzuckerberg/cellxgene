@@ -20,18 +20,14 @@ Follow these steps to create a release.
 
 1.  Preparation:
     - python3.6 environment, and a cellxgene clone
-    - install required tools: `pip install -r requirements-dev.txt`
     - Define the release version number, using [semantic versioning](https://semver.org/),
       and specifying all three digits (eg, 0.3.0)
     - Write the release title and release notes and add to
       [release notes document](https://docs.google.com/document/d/1KnHwkYfhyWO5H8BDcMu7y3ogjvq5Yi4OwpmZ8DB6w0Y/edit)
 2.  Create a release branch, eg, `release-version`
 3.  In the release branch:
-    - Run `bumpversion --config-file .bumpversion.cfg [major | minor | patch]`,
-      where you choose major/minor/patch depending on which part of the version
+    - Run `make release-stage-1 PART=[major | minor | patch]` where you choose major/minor/patch depending on which part of the version
       is being bumped (eg, 0.2.9->0.3 is minor).
-    - Clean up existing environment using `bin/clean`
-    - Build the JS asserts using `bin/build-client`
 4.  Commit and push the new branch
 5.  Create a PR for the release.
     - [optional] As needed, conduct PR review.
@@ -56,6 +52,7 @@ Follow these steps to create a release.
     - Upload the package to real pypi using `twine upload dist/*`
     - [optional] Test the installation in a fresh virtual environment using
       `pip install cellxgene`
+      
 
 The optional steps are for testing purposes, and are recommended
 for publishing any major releases, and any releases that significantly
