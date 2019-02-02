@@ -40,19 +40,25 @@ Follow these steps to create a release.
     - Type title `Release {version num}`
     - [optional] Check pre-release if this release is not ready for production
     - Publish Release
-8.  Publish to pypi by performing the following steps (assumes you have `setuptools`
+8. Publish to pypi by performing the following steps (assumes you have `setuptools`
     and `twine` installed, that you have registered for pypi, and that you have
     write access to the cellxgene pypi package):
-    - Build the distribution by calling `python setup.py sdist`
-      inside the top-level directory
-    - [optional] Upload the package to test pypi
-      `twine upload --repository-url https://test.pypi.org/legacy/ dist/*`
-    - [optional] Test the test installation in a fresh virtual environment using
-      `pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple cellxgene`
-    - Upload the package to real pypi using `twine upload dist/*`
+    - Build the distribution and upload to test pypi `make release-stage-2`
+    - [optional] Test the test installation in a fresh virtual environment using `make install-release-test`
+    - Upload the package to real pypi using `make release-stage-final`
     - [optional] Test the installation in a fresh virtual environment using
       `pip install cellxgene`
-      
+    - **Troubleshooting**:
+        - Fails to upload to test.pypi: pypi doesn't allow you to reupload a release with the same version number, 
+        if you accidentally burned a release number you want to use on prod, you have a couple options. 
+            1) OPTION 1: Create distribution `make pydist`; test release locally `pip install dist/<release tarball>`;
+             then upload to prod `make pydist`. 
+            2) OPTION 2: (DANGER) release directly to prod: `make release-burned`  
+        - The release doesn't install or fails your tests when you install it: Delete it from pypi - Go to pypi.org, sign in, 
+        go to the cellxgene package, click manage, then in the options drop down, click delete and 
+        follow the instructions. You will not be able to use that release number again. If it is a minor bug 
+        and not a major regression, you can just release a patch. 
+    
 
 The optional steps are for testing purposes, and are recommended
 for publishing any major releases, and any releases that significantly
