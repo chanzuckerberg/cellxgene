@@ -54,6 +54,8 @@ Follow these steps to create a release.
             1) OPTION 1: Create distribution `make pydist`; test release locally `pip install dist/<release tarball>`;
              then upload to prod `make pydist`. 
             2) OPTION 2: (DANGER) release directly to prod: `make release-burned`  
+            3) OPTION 3: If the release was burned on prod as well run from Step 3 again with option
+            PART=patch until you get to an unburned version.
         - The release doesn't install or fails your tests when you install it: Delete it from pypi - Go to pypi.org, sign in, 
         go to the cellxgene package, click manage, then in the options drop down, click delete and 
         follow the instructions. You will not be able to use that release number again. If it is a minor bug 
