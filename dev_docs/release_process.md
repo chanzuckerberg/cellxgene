@@ -40,9 +40,8 @@ Follow these steps to create a release.
     - Type title `Release {version num}`
     - [optional] Check pre-release if this release is not ready for production
     - Publish Release
-8. Publish to pypi by performing the following steps (assumes you have `setuptools`
-    and `twine` installed, that you have registered for pypi, and that you have
-    write access to the cellxgene pypi package):
+8. Publish to pypi by performing the following steps (assumes you that you have registered for pypi, 
+and that you have write access to the cellxgene pypi package):
     - Build the distribution and upload to test pypi `make release-stage-2`
     - [optional] Test the test installation in a fresh virtual environment using `make install-release-test`
     - Upload the package to real pypi using `make release-stage-final`
