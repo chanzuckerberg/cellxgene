@@ -1,15 +1,8 @@
 import * as Dataframe from "../../../src/util/dataframe";
 
 /*
-Tests to write:
-
-Dataframe.col()
-Dataframe.icol()
-Dataframe.col.get()
-Dataframe.col.iget()
-Dataframe.col.has()
-Dataframe.col.ihas()
-Dataframe.col.indexOf()
+Known gaps in these tests:
+- row indexing, especially a la 'world', are not sufficiently tested
 */
 
 describe("dataframe constructor", () => {
@@ -218,5 +211,86 @@ describe("dataframe factories", () => {
     for (let i = 0, l = dfB.dims[1]; i < l; i += 1) {
       expect(dfB.icol(i).asArray()).toEqual(dfA.icol(i).asArray());
     }
+  });
+});
+
+describe("dataframe col", () => {
+  let df = null;
+  beforeEach(() => {
+    df = new Dataframe.Dataframe(
+      [2, 2],
+      [[true, false], [1, 0]],
+      null,
+      new Dataframe.KeyIndex(["A", "B"])
+    );
+  });
+
+  test("col", () => {
+    expect(df).toBeDefined();
+    expect(df.col("A")).toBe(df.icol(0));
+    expect(df.col("B")).toBe(df.icol(1));
+    expect(df.col("undefined")).toBeUndefined();
+    expect(df.icol("undefined")).toBeUndefined();
+
+    const colA = df.col("A");
+    expect(colA).toBeInstanceOf(Function);
+    expect(colA.asArray).toBeInstanceOf(Function);
+    expect(colA.has).toBeInstanceOf(Function);
+    expect(colA.ihas).toBeInstanceOf(Function);
+    expect(colA.indexOf).toBeInstanceOf(Function);
+    expect(colA.iget).toBeInstanceOf(Function);
+  });
+
+  test("col.asArray", () => {
+    expect(df).toBeDefined();
+    expect(df.col("A").asArray()).toEqual([true, false]);
+    expect(df.icol(0).asArray()).toEqual([true, false]);
+    expect(df.col("B").asArray()).toEqual([1, 0]);
+    expect(df.icol(1).asArray()).toEqual([1, 0]);
+  });
+
+  test("col.has", () => {
+    expect(df).toBeDefined();
+    expect(df.col("A").has(-1)).toBe(false);
+    expect(df.col("A").has(0)).toBe(true);
+    expect(df.col("A").has(1)).toBe(true);
+    expect(df.col("A").has(2)).toBe(false);
+    expect(df.col("B").has(-1)).toBe(false);
+    expect(df.col("B").has(0)).toBe(true);
+    expect(df.col("B").has(1)).toBe(true);
+    expect(df.col("B").has(2)).toBe(false);
+  });
+
+  test("col.ihas", () => {
+    expect(df).toBeDefined();
+    expect(df.col("A").ihas(-1)).toBe(false);
+    expect(df.col("A").ihas(0)).toBe(true);
+    expect(df.col("A").ihas(1)).toBe(true);
+    expect(df.col("A").ihas(2)).toBe(false);
+    expect(df.col("B").ihas(-1)).toBe(false);
+    expect(df.col("B").ihas(0)).toBe(true);
+    expect(df.col("B").ihas(1)).toBe(true);
+    expect(df.col("B").ihas(2)).toBe(false);
+  });
+
+  test("col.iget", () => {
+    expect(df).toBeDefined();
+    expect(df.col("A").iget(0)).toEqual(df.iat(0, 0));
+    expect(df.col("B").iget(1)).toEqual(df.iat(1, 1));
+  });
+
+  test("col.indexOf", () => {
+    expect(df).toBeDefined();
+    expect(df.col("A").indexOf(true)).toEqual(0);
+    expect(df.col("A").indexOf(false)).toEqual(1);
+    expect(df.col("A").indexOf(99)).toBeUndefined();
+    expect(df.col("A").indexOf(undefined)).toBeUndefined();
+    expect(df.col("A").indexOf(1)).toBeUndefined();
+
+    expect(df.col("B").indexOf(1)).toEqual(0);
+    expect(df.col("B").indexOf(0)).toEqual(1);
+    expect(df.col("B").indexOf(99)).toBeUndefined();
+    expect(df.col("B").indexOf(undefined)).toBeUndefined();
+    expect(df.col("B").indexOf(true)).toBeUndefined();
   });
 });
