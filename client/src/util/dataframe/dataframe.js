@@ -141,9 +141,18 @@ class Dataframe {
         return offset >= 0 && offset < length;
       };
 
-      /* return first label (index) at which the value is found in this column. */
+      /*
+      return first label (index) at which the value is found in this column,
+      or undefined if not found.
+
+      NOTE: not found return is DIFFERENT than the default Array.indexOf as
+      -1 is a plausible Dataframe row/col label.
+      */
       const indexOf = function indexOf(value) {
         const offset = column.indexOf(value);
+        if (offset === -1) {
+          return undefined;
+        }
         return getLabel(offset);
       };
 

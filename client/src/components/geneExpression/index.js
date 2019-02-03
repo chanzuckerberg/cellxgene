@@ -136,9 +136,11 @@ class GeneExpression extends React.Component {
     const genes = _.uniq(bulkAdd.split(", ").map(g => g.trim()));
 
     genes.forEach(gene => {
-      if (userDefinedGenes.indexOf(gene) !== -1) {
+      if (gene.length === 0) {
+        keepAroundErrorToast("Must enter a gene name.");
+      } else if (userDefinedGenes.indexOf(gene) !== -1) {
         keepAroundErrorToast("That gene already exists");
-      } else if (!_.find(world.varAnnotations, { name: gene })) {
+      } else if (world.varAnnotations.col("name").indexOf(gene) === undefined) {
         keepAroundErrorToast(`${gene} doesn't appear to be a valid gene name.`);
       } else {
         dispatch(actions.requestUserDefinedGene(gene));
