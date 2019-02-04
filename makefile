@@ -1,5 +1,4 @@
-# Python by default ignores the build directory for installation so added -dev
-BUILDDIR := build-dev
+BUILDDIR := build
 CLIENTBUILD := $(BUILDDIR)/client
 SERVERBUILD := $(BUILDDIR)/server
 CLEANFILES :=  $(BUILDDIR)/ client/build dist cellxgene.egg-info
