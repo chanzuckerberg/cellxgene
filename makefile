@@ -3,7 +3,7 @@ CLIENTBUILD := $(BUILDDIR)/client
 SERVERBUILD := $(BUILDDIR)/server
 CLEANFILES :=  $(BUILDDIR)/ client/build dist cellxgene.egg-info
 
-PART ?= minor
+PART ?= patch
 
 # BUILDING PACKAGE
 
