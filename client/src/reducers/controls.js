@@ -131,6 +131,7 @@ const Controls = (
 
     // the whole big bang
     universe: null,
+    fullUniverseCache: null,
 
     // all of the data + selection state
     world: null,
@@ -184,9 +185,7 @@ const Controls = (
     case "initial data load start": {
       return { ...state, loading: true };
     }
-    case "initial data load complete (universe exists)":
-    case "reset World to eq Universe": {
-      const { userDefinedGenes, diffexpGenes } = state;
+    case "initial data load complete (universe exists)": {
       /* first light - create world & other data-driven defaults */
       const { universe } = action;
       const world = World.createWorldFromEntireUniverse(universe);
@@ -198,10 +197,7 @@ const Controls = (
         world
       );
       const crossfilter = Crossfilter(world.obsAnnotations);
-      const dimensionMap = {
-        ...World.createObsDimensionMap(crossfilter, world),
-        ...createGenesDimMap(userDefinedGenes, diffexpGenes, world, crossfilter)
-      };
+      const dimensionMap = World.createObsDimensionMap(crossfilter, world);
       WorldUtil.clearCaches();
 
       return {
@@ -209,6 +205,48 @@ const Controls = (
         loading: false,
         error: null,
         universe,
+        fullUniverseCache: { world, crossfilter, dimensionMap },
+        world,
+        colorRGB,
+        categoricalSelectionState,
+        crossfilter,
+        dimensionMap,
+        colorAccessor: null,
+        resettingInterface: false
+      };
+    }
+    case "reset World to eq Universe": {
+      const {
+        userDefinedGenes,
+        diffexpGenes,
+        universe,
+        fullUniverseCache
+      } = state;
+      const { world, crossfilter } = fullUniverseCache;
+      // reset all crossfilter dimensions
+      _.forEach(fullUniverseCache.dimensionMap, dim => dim.filterAll());
+      const colorRGB = new Array(universe.nObs).fill(
+        parseRGB(globals.defaultCellColor)
+      );
+      const categoricalSelectionState = createCategoricalSelectionState(
+        state,
+        world
+      );
+
+      /* free dimensions not in cache (otherwise they leak) */
+      _.forEach(state.dimensionMap, (dim, dimName) => {
+        if (!fullUniverseCache.dimensionMap[dimName]) {
+          dim.dispose();
+        }
+      });
+      const dimensionMap = {
+        ...fullUniverseCache.dimensionMap,
+        ...createGenesDimMap(userDefinedGenes, diffexpGenes, world, crossfilter)
+      };
+      WorldUtil.clearCaches();
+
+      return {
+        ...state,
         world,
         colorRGB,
         categoricalSelectionState,
