@@ -83,13 +83,7 @@ class Graph extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
-    const {
-      world,
-      crossfilter,
-      selectionUpdate,
-      colorRGB,
-      responsive
-    } = this.props;
+    const { world, crossfilter, colorRGB, responsive } = this.props;
     const {
       reglRender,
       mode,
@@ -117,13 +111,8 @@ class Graph extends React.Component {
       // X/Y positions for each point - a cached value that only
       // changes if we have loaded entirely new cell data
       //
-      if (
-        !this.renderCache.positions ||
-        selectionUpdate !== prevProps.selectionUpdate
-      ) {
-        if (!this.renderCache.positions) {
-          this.renderCache.positions = new Float32Array(2 * cellCount);
-        }
+      if (!this.renderCache.positions) {
+        this.renderCache.positions = new Float32Array(2 * cellCount);
 
         const glScaleX = scaleLinear([0, 1], [-1, 1]);
         const glScaleY = scaleLinear([0, 1], [1, -1]);
