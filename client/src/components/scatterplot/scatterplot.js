@@ -65,6 +65,11 @@ class Scatterplot extends React.Component {
     super(props);
     this.count = 0;
     this.axes = false;
+    this.renderCache = {
+      positions: null,
+      colors: null,
+      sizes: null
+    };
     this.state = {
       svg: null,
       minimized: null,
@@ -129,7 +134,8 @@ class Scatterplot extends React.Component {
       scatterplotYYaccessor,
       expressionX,
       expressionY,
-      colorRGB
+      colorRGB,
+      selectionUpdate
     } = this.props;
     const {
       reglRender,
@@ -145,15 +151,8 @@ class Scatterplot extends React.Component {
     } = this.state;
 
     if (
-      world &&
-      svg &&
-      xScale &&
-      yScale &&
-      scatterplotXXaccessor &&
-      scatterplotYYaccessor &&
-      (scatterplotXXaccessor !== prevProps.scatterplotXXaccessor || // was CLU now FTH1 etc
-      scatterplotYYaccessor !== prevProps.scatterplotYYaccessor || // was CLU now FTH1 etc
-        !this.axes) // clicked off the tab and back again, rerender
+      scatterplotXXaccessor !== prevProps.scatterplotXXaccessor || // was CLU now FTH1 etc
+      scatterplotYYaccessor !== prevProps.scatterplotYYaccessor // was CLU now FTH1 etc
     ) {
       this.drawAxesSVG(xScale, yScale, svg);
     }
@@ -176,31 +175,48 @@ class Scatterplot extends React.Component {
       xScale &&
       yScale
     ) {
+      const { renderCache } = this;
       const cellCount = expressionX.length;
-      const positionsBuf = new Float32Array(2 * cellCount);
-      const colorsBuf = new Float32Array(3 * cellCount);
-      const sizesBuf = new Float32Array(cellCount);
 
-      const glScaleX = scaleLinear([0, width], [-0.95, 0.95]);
-      const glScaleY = scaleLinear([0, height], [-1, 1]);
-
-      /*
-        Construct Vectors
-      */
-      for (let i = 0; i < cellCount; i += 1) {
-        positionsBuf[2 * i] = glScaleX(xScale(expressionX[i]));
-        positionsBuf[2 * i + 1] = glScaleY(yScale(expressionY[i]));
+      // Points change when expressionX or expressionY change.
+      if (
+        !renderCache.positions ||
+        expressionX !== prevProps.expressionX ||
+        expressionY !== prevProps.expressionY
+      ) {
+        if (!renderCache.positions) {
+          renderCache.positions = new Float32Array(2 * cellCount);
+        }
+        const glScaleX = scaleLinear([0, width], [-0.95, 0.95]);
+        const glScaleY = scaleLinear([0, height], [-1, 1]);
+        for (let i = 0, { positions } = renderCache; i < cellCount; i += 1) {
+          positions[2 * i] = glScaleX(xScale(expressionX[i]));
+          positions[2 * i + 1] = glScaleY(yScale(expressionY[i]));
+        }
+        pointBuffer({ data: renderCache.positions, dimension: 2 });
       }
 
-      for (let i = 0; i < cellCount; i += 1) {
-        colorsBuf.set(colorRGB[i], 3 * i);
+      // Colors for each point - change only when props.colorsRGB change.
+      if (!renderCache.colors || colorRGB !== prevProps.colorRGB) {
+        if (!renderCache.colors) {
+          renderCache.colors = new Float32Array(3 * cellCount);
+        }
+        for (let i = 0, { colors } = renderCache; i < cellCount; i += 1) {
+          colors.set(colorRGB[i], 3 * i);
+        }
+        colorBuffer({ data: renderCache.colors, dimension: 3 });
       }
 
-      crossfilter.fillByIsFiltered(sizesBuf, 4, 0.2);
+      // Sizes for each point - updates are triggered only when selected
+      // obs change
+      if (!renderCache.sizes || selectionUpdate !== prevProps.selctionUpdate) {
+        if (!renderCache.sizes) {
+          renderCache.sizes = new Float32Array(cellCount);
+        }
+        crossfilter.fillByIsFiltered(renderCache.sizes, 4, 0.2);
+        sizeBuffer({ data: renderCache.sizes, dimension: 1 });
+      }
 
-      pointBuffer({ data: positionsBuf, dimension: 2 });
-      colorBuffer({ data: colorsBuf, dimension: 3 });
-      sizeBuffer({ data: sizesBuf, dimension: 1 });
       this.count = cellCount;
 
       regl._refresh();
