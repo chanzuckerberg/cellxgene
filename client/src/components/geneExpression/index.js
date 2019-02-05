@@ -108,21 +108,29 @@ class GeneExpression extends React.Component {
     const { world, dispatch, userDefinedGenes } = this.props;
     const { bulkAdd } = this.state;
 
-    const genes = _.uniq(bulkAdd.split(", ").map(g => g.trim()));
+    /*
+      test:
+      Apod,,, Cd74,,    ,,,    Foo,    Bar-2,,
+    */
+    if (bulkAdd !== "") {
+      const genes = _.pull(_.uniq(bulkAdd.split(/[ ,]+/)), "");
 
-    genes.forEach(gene => {
-      if (userDefinedGenes.indexOf(gene) !== -1) {
-        keepAroundErrorToast("That gene already exists");
-      } else if (!_.find(world.varAnnotations, { name: gene })) {
-        keepAroundErrorToast(`${gene} doesn't appear to be a valid gene name.`);
-      } else {
-        dispatch(actions.requestUserDefinedGene(gene));
-        dispatch({
-          type: "user defined gene",
-          data: gene
-        });
-      }
-    });
+      genes.forEach(gene => {
+        if (userDefinedGenes.indexOf(gene) !== -1) {
+          keepAroundErrorToast("That gene already exists");
+        } else if (!_.find(world.varAnnotations, { name: gene })) {
+          keepAroundErrorToast(
+            `${gene} doesn't appear to be a valid gene name.`
+          );
+        } else {
+          dispatch(actions.requestUserDefinedGene(gene));
+          dispatch({
+            type: "user defined gene",
+            data: gene
+          });
+        }
+      });
+    }
 
     this.setState({ bulkAdd: "" });
   }
@@ -230,9 +238,6 @@ class GeneExpression extends React.Component {
                 <FormGroup
                   helperText="Add a list of genes (comma delimited)"
                   labelFor="text-input-bulk-add"
-                  onSubmit={() => {
-                    console.log("heyo");
-                  }}
                 >
                   <ControlGroup>
                     <InputGroup
