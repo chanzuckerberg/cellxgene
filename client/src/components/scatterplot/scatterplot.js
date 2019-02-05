@@ -68,13 +68,13 @@ class Scatterplot extends React.Component {
     this.renderCache = {
       positions: null,
       colors: null,
-      sizes: null
+      sizes: null,
+      xScale: null,
+      yScale: null
     };
     this.state = {
       svg: null,
-      minimized: null,
-      xScale: null,
-      yScale: null
+      minimized: null
     };
   }
 
@@ -86,6 +86,7 @@ class Scatterplot extends React.Component {
     if (svg && expressionX && expressionY) {
       scales = Scatterplot.setupScales(expressionX, expressionY);
       this.drawAxesSVG(scales.xScale, scales.yScale, svg);
+      this.renderCache = { ...this.renderCache, ...scales };
     }
 
     const camera = _camera(this.reglCanvas, { scale: true, rotate: false });
@@ -118,8 +119,6 @@ class Scatterplot extends React.Component {
       pointBuffer,
       colorBuffer,
       svg,
-      xScale: scales ? scales.xScale : null,
-      yScale: scales ? scales.yScale : null,
       reglRender,
       camera,
       drawPoints
@@ -139,8 +138,6 @@ class Scatterplot extends React.Component {
     } = this.props;
     const {
       reglRender,
-      xScale,
-      yScale,
       regl,
       pointBuffer,
       colorBuffer,
@@ -154,7 +151,9 @@ class Scatterplot extends React.Component {
       scatterplotXXaccessor !== prevProps.scatterplotXXaccessor || // was CLU now FTH1 etc
       scatterplotYYaccessor !== prevProps.scatterplotYYaccessor // was CLU now FTH1 etc
     ) {
-      this.drawAxesSVG(xScale, yScale, svg);
+      const scales = Scatterplot.setupScales(expressionX, expressionY);
+      this.drawAxesSVG(scales.xScale, scales.yScale, svg);
+      this.renderCache = { ...this.renderCache, ...scales };
     }
 
     if (reglRender && this.reglRenderState === "rendering") {
@@ -171,11 +170,10 @@ class Scatterplot extends React.Component {
       expressionX &&
       expressionY &&
       scatterplotXXaccessor &&
-      scatterplotYYaccessor &&
-      xScale &&
-      yScale
+      scatterplotYYaccessor
     ) {
       const { renderCache } = this;
+      const { xScale, yScale } = this.renderCache;
       const cellCount = expressionX.length;
 
       // Points change when expressionX or expressionY change.
@@ -228,16 +226,6 @@ class Scatterplot extends React.Component {
         pointBuffer,
         camera
       );
-    }
-
-    if (
-      expressionX &&
-      expressionY &&
-      (scatterplotXXaccessor !== prevProps.scatterplotXXaccessor || // was CLU now FTH1 etc
-        scatterplotYYaccessor !== prevProps.scatterplotYYaccessor)
-    ) {
-      const scales = Scatterplot.setupScales(expressionX, expressionY);
-      this.setState(scales);
     }
   }
 
