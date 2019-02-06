@@ -257,20 +257,7 @@ class Graph extends React.Component {
     const { responsive } = this.props;
     const { regl, camera, offset } = this.state;
 
-    /*
-    No idea why d3 event scope works like this
-    but apparently
-    it does
-    https://bl.ocks.org/EfratVil/0e542f5fc426065dd1d4b6daaa345a9f
-  */
     const gl = regl._gl;
-    /*
-    event describing brush position:
-    @-------|
-    |       |
-    |       |
-    |-------@
-  */
 
     // get aspect ratio
     const aspect = gl.drawingBufferWidth / gl.drawingBufferHeight;
@@ -290,10 +277,22 @@ class Graph extends React.Component {
 
   handleBrushSelectAction() {
     /*
-    This conditional handles procedural brush deselect. Brush emits
-    an event on procedural deselect because it is move: null
+      This conditional handles procedural brush deselect. Brush emits
+      an event on procedural deselect because it is move: null
     */
-
+    /*
+      event describing brush position:
+      @-------|
+      |       |
+      |       |
+      |-------@
+    */
+    /*
+      No idea why d3 event scope works like this
+      but apparently
+      it does
+      https://bl.ocks.org/EfratVil/0e542f5fc426065dd1d4b6daaa345a9f
+    */
     const { dispatch } = this.props;
 
     if (d3.event.sourceEvent !== null) {
@@ -333,22 +332,23 @@ class Graph extends React.Component {
     }
   }
 
-  // reset selected points when starting a new polygon
   handleLassoStart() {
-    // clear selection
+    const { dispatch } = this.props;
+    // reset selected points when starting a new polygon
+    // making it easier for the user to make the next selection
+    dispatch({
+      type: "lasso started"
+    });
   }
 
   // when a lasso is completed, filter to the points within the lasso polygon
-  handleLassoEnd(lassoPolygon) {
-    console.log("the lasso drew: ", lassoPolygon);
-    // const selectedPoints = points.filter(d => {
-    //   // note we have to undo any transforms done to the x and y to match with the
-    //   // coordinate system in the svg.
-    //   const x = d.x + padding.left;
-    //   const y = d.y + padding.top;
-    //
-    //   return d3.polygonContains(lassoPolygon, [x, y]);
-    // });
+  handleLassoEnd(polygon) {
+    const { dispatch } = this.props;
+
+    dispatch({
+      type: "lasso selection",
+      polygon: polygon.map(xy => this.invertPoint(xy)) // transform the polygon
+    });
   }
 
   handleOpacityRangeChange(e) {
@@ -433,13 +433,28 @@ class Graph extends React.Component {
             </Tooltip>
             <div>
               <div className="bp3-button-group">
-                <Tooltip content="Lasso cells" position="left">
+                <Tooltip content="Rectangular selection" position="left">
                   <Button
                     className="bp3-button bp3-icon-select"
                     type="button"
                     active={mode === "brush"}
                     onClick={() => {
                       this.setState({ mode: "brush" });
+                    }}
+                  />
+                </Tooltip>
+                <Tooltip content="Lasso selection" position="left">
+                  <Button
+                    type="button"
+                    className="bp3-button bp3-icon-polygon-filter"
+                    active={mode === "lasso"}
+                    onClick={() => {
+                      this.handleBrushDeselectAction();
+                      // this.restartReglLoop();
+                      this.setState({ mode: "lasso" });
+                    }}
+                    style={{
+                      cursor: "pointer"
                     }}
                   />
                 </Tooltip>

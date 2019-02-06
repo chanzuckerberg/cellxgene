@@ -14,8 +14,8 @@ export default (
   handleBrushDeselectAction,
   responsive,
   graphPaddingRight,
-  handleLassoEnd,
-  handleLassoStart
+  handleLassoStart,
+  handleLassoEnd
 ) => {
   const svg = d3
     .select("#graphAttachPoint")
