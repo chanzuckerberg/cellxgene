@@ -202,7 +202,9 @@ class Graph extends React.Component {
         this.handleBrushSelectAction.bind(this),
         this.handleBrushDeselectAction.bind(this),
         responsive,
-        this.graphPaddingRight
+        this.graphPaddingRight,
+        this.handleLassoStart.bind(this),
+        this.handleLassoEnd.bind(this)
       );
       this.setState({ svg: newSvg, brush });
     }
@@ -259,6 +261,7 @@ class Graph extends React.Component {
 
     const { camera, offset } = this.state;
     const { dispatch, responsive } = this.props;
+    const { regl } = this.state;
 
     if (d3.event.sourceEvent !== null) {
       /*
@@ -268,7 +271,7 @@ class Graph extends React.Component {
       https://bl.ocks.org/EfratVil/0e542f5fc426065dd1d4b6daaa345a9f
     */
       const s = d3.event.selection;
-      const gl = this.state.regl._gl;
+      const gl = regl._gl;
       /*
       event describing brush position:
       @-------|
@@ -328,6 +331,24 @@ class Graph extends React.Component {
         type: "graph brush deselect"
       });
     }
+  }
+
+  // reset selected points when starting a new polygon
+  handleLassoStart() {
+    // clear selection
+  }
+
+  // when a lasso is completed, filter to the points within the lasso polygon
+  handleLassoEnd(lassoPolygon) {
+    console.log("the lasso drew: ", lassoPolygon);
+    // const selectedPoints = points.filter(d => {
+    //   // note we have to undo any transforms done to the x and y to match with the
+    //   // coordinate system in the svg.
+    //   const x = d.x + padding.left;
+    //   const y = d.y + padding.top;
+    //
+    //   return d3.polygonContains(lassoPolygon, [x, y]);
+    // });
   }
 
   handleOpacityRangeChange(e) {
