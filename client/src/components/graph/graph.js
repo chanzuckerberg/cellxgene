@@ -253,55 +253,55 @@ class Graph extends React.Component {
     });
   }
 
+  invertPoint(pin) {
+    const { responsive } = this.props;
+    const { regl, camera, offset } = this.state;
+
+    /*
+    No idea why d3 event scope works like this
+    but apparently
+    it does
+    https://bl.ocks.org/EfratVil/0e542f5fc426065dd1d4b6daaa345a9f
+  */
+    const gl = regl._gl;
+    /*
+    event describing brush position:
+    @-------|
+    |       |
+    |       |
+    |-------@
+  */
+
+    // get aspect ratio
+    const aspect = gl.drawingBufferWidth / gl.drawingBufferHeight;
+
+    // compute inverse view matrix
+    const inverse = mat4.invert([], camera.view());
+
+    // transform screen coordinates -> cell coordinates
+    const x = (2 * pin[0]) / (responsive.width - this.graphPaddingRight) - 1;
+    const y = 2 * (1 - pin[1] / (responsive.height - this.graphPaddingTop)) - 1;
+    const pout = [
+      x * inverse[14] * aspect + inverse[12],
+      y * inverse[14] + inverse[13]
+    ];
+    return [(pout[0] + 1) / 2 + offset[0], (pout[1] + 1) / 2 + offset[1]];
+  }
+
   handleBrushSelectAction() {
     /*
     This conditional handles procedural brush deselect. Brush emits
     an event on procedural deselect because it is move: null
     */
 
-    const { camera, offset } = this.state;
-    const { dispatch, responsive } = this.props;
-    const { regl } = this.state;
+    const { dispatch } = this.props;
 
     if (d3.event.sourceEvent !== null) {
-      /*
-      No idea why d3 event scope works like this
-      but apparently
-      it does
-      https://bl.ocks.org/EfratVil/0e542f5fc426065dd1d4b6daaa345a9f
-    */
       const s = d3.event.selection;
-      const gl = regl._gl;
-      /*
-      event describing brush position:
-      @-------|
-      |       |
-      |       |
-      |-------@
-    */
-
-      // get aspect ratio
-      const aspect = gl.drawingBufferWidth / gl.drawingBufferHeight;
-
-      // compute inverse view matrix
-      const inverse = mat4.invert([], camera.view());
-
-      // transform screen coordinates -> cell coordinates
-      const invert = pin => {
-        const x =
-          (2 * pin[0]) / (responsive.width - this.graphPaddingRight) - 1;
-        const y =
-          2 * (1 - pin[1] / (responsive.height - this.graphPaddingTop)) - 1;
-        const pout = [
-          x * inverse[14] * aspect + inverse[12],
-          y * inverse[14] + inverse[13]
-        ];
-        return [(pout[0] + 1) / 2 + offset[0], (pout[1] + 1) / 2 + offset[1]];
-      };
 
       const brushCoords = {
-        northwest: invert([s[0][0], s[0][1]]),
-        southeast: invert([s[1][0], s[1][1]])
+        northwest: this.invertPoint([s[0][0], s[0][1]]),
+        southeast: this.invertPoint([s[1][0], s[1][1]])
       };
 
       dispatch({
