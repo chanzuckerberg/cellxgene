@@ -27,6 +27,8 @@ more complex API.  In a few cases, elements of that API were incorporated.
     https://github.com/square/crossfilter/
 
 */
+// XXX replace
+import { polygonContains } from "d3";
 
 import PositiveIntervals from "./positiveIntervals";
 import BitArray from "./bitArray";
@@ -66,14 +68,9 @@ class TypedCrossfilter {
     return this.data;
   }
 
-  dimension(value, valueArrayType) {
+  dimension(DimensionType, ...rest) {
     const id = this.selection.allocDimension();
-    let dim;
-    if (valueArrayType === "enum") {
-      dim = new EnumDimension(value, this, id);
-    } else {
-      dim = new ScalarDimension(value, valueArrayType, this, id);
-    }
+    const dim = new DimensionType(this, id, ...rest);
     this.filters.push({ id, dim });
     dim.filterAll();
     return dim;
@@ -115,13 +112,34 @@ class TypedCrossfilter {
   }
 }
 
-// Base dimension type - value must be a scalar type (eg, int, float),
-// and value array must be a TypedArray.
-//
-class ScalarDimension {
-  constructor(value, ValueArrayType, xfltr, id) {
+// Base dimension type - not exported.
+class _Dimension {
+  constructor(xfltr, id) {
     this.crossfilter = xfltr;
     this._id = id;
+    this.groups = [];
+  }
+
+  dispose() {
+    this.crossfilter._freeDimension(this._id);
+    return this;
+  }
+
+  id() {
+    return this._id;
+  }
+
+  _filterUpdate() {
+    this.crossfilter.updateTime += 1;
+  }
+}
+
+// Scalar dimension type - value must be a scalar type (eg, int, float),
+// and value array must be a TypedArray.
+//
+class ScalarDimension extends _Dimension {
+  constructor(xfltr, id, value, ValueArrayType) {
+    super(xfltr, id);
 
     // current selection filter, expressed as PostiveIntervals.
     this.currentFilter = [];
@@ -151,9 +169,6 @@ class ScalarDimension {
 
     // create sort index
     this.index = makeSortIndex(array);
-
-    // groups, if any
-    this.groups = [];
   }
 
   _createValueArray(value, array) {
@@ -165,15 +180,6 @@ class ScalarDimension {
       larray[i] = value(data[i]);
     }
     return larray;
-  }
-
-  dispose() {
-    this.crossfilter._freeDimension(this._id);
-    return this;
-  }
-
-  id() {
-    return this._id;
   }
 
   // Argument is an array of intervals indicating records newly selected/filtered
@@ -209,7 +215,7 @@ class ScalarDimension {
     );
 
     this.currentFilter = cNewFilter;
-    this.crossfilter.updateTime += 1;
+    this._filterUpdate();
   }
 
   // filter by value - exact match
@@ -355,8 +361,8 @@ class ScalarDimension {
 // strings, which can be mapped into an fixed numeric range [0..n).
 //
 class EnumDimension extends ScalarDimension {
-  constructor(value, xfltr, id) {
-    super(value, Uint32Array, xfltr, id);
+  constructor(xfltr, id, value) {
+    super(xfltr, id, value, Uint32Array);
   }
 
   _createValueArray(value, array) {
@@ -405,6 +411,127 @@ class EnumDimension extends ScalarDimension {
     const grp = new EnumGroup(groupValue, this.value.constructor, this);
     this.groups.push(grp);
     return grp;
+  }
+}
+
+/*
+Super simple 2D spatial dimension, supporting basic "filter within"
+operations.
+*/
+class SpatialDimension extends _Dimension {
+  constructor(xfltr, id, X, Y) {
+    super(xfltr, id);
+
+    if (X.length !== Y.length && X.length !== this.crossfilter.data.length) {
+      throw new RangeError(
+        "SpatialDimension values must have same dimensionality as crossfilter"
+      );
+    }
+    this.X = X;
+    this.Y = Y;
+
+    this.Xindex = makeSortIndex(X);
+    this.Yindex = makeSortIndex(Y);
+  }
+
+  filterAll() {
+    this.crossfilter.selection.selectAll(this._id);
+    this._filterUpdate();
+  }
+
+  filterNone() {
+    this.crossfilter.selection.deselectAll(this._id);
+    this._filterUpdate();
+  }
+
+  /*
+  this could be smarter, but we don't currently use it...
+  */
+  filterWithinRect(northwest, southeast) {
+    const [x0, y0] = northwest;
+    const [x1, y1] = southeast;
+    const { X, Y } = this;
+    const seln = this.crossfilter.selection;
+    const { _id } = this;
+    seln.deselectAll(_id);
+    for (let i = 0, l = this.X.length; i < l; i += 1) {
+      const x = X[i];
+      const y = Y[i];
+      if (x0 <= x && x < x1 && y0 <= y && y < y1) {
+        seln.selectOne(_id, i);
+      }
+    }
+    this._filterUpdate();
+  }
+
+  /*
+  Relatively brute force filter by polygon.   Polygon is array of points, where
+  each point is [x,y].   Eg, [[x0,y0], [x1,y1], ...].
+
+  Currently uses d3.polygonContains() to test for polygon inclusion, which itself
+  uses a ray casting (crossing number) algorithm.  There are a series of optimizations
+  to make this faster:
+    * first sliced by X or Y, using an index on the axis
+    * then the polygon bounding box is used for trivial rejection
+    * then the polygon test is applied
+  */
+  filterWithinPolygon(polygon) {
+    /* return bounding box of the polygon */
+    function polygonBoundingBox(pg) {
+      let minX = Number.MAX_VALUE;
+      let minY = Number.MAX_VALUE;
+      let maxX = Number.MIN_VALUE;
+      let maxY = Number.MIN_VALUE;
+      for (let i = 0, l = pg.length; i < l; i += 1) {
+        const p = pg[i];
+        const x = p[0];
+        const y = p[1];
+        if (x < minX) minX = x;
+        if (y < minY) minY = y;
+        if (x > maxX) maxX = x;
+        if (y > maxY) maxY = y;
+      }
+      return [minX, minY, maxX, maxY];
+    }
+
+    const [minX, minY, maxX, maxY] = polygonBoundingBox(polygon);
+    const { X, Y } = this;
+    let slice;
+    let index;
+    if (maxY - minY > maxX - minX) {
+      slice = [
+        lowerBoundIndirect(X, this.Xindex, minX, 0, X.length),
+        upperBoundIndirect(X, this.Xindex, maxX, 0, X.length)
+      ];
+      index = this.Xindex;
+    } else {
+      slice = [
+        lowerBoundIndirect(Y, this.Yindex, minY, 0, Y.length),
+        upperBoundIndirect(Y, this.Yindex, maxY, 0, Y.length)
+      ];
+      index = this.Yindex;
+    }
+
+    const seln = this.crossfilter.selection;
+    const { _id } = this;
+    const testWithin = polygonContains; // d3.polygonContains()
+    seln.deselectAll(_id);
+
+    for (let i = slice[0], e = slice[1]; i < e; i += 1) {
+      const rid = index[i];
+      const x = X[rid];
+      const y = Y[rid];
+      if (
+        minX <= x &&
+        x < maxX &&
+        minY <= y &&
+        y < maxY &&
+        testWithin(polygon, [x, y])
+      ) {
+        seln.selectOne(_id, rid);
+      }
+    }
+    this._filterUpdate();
   }
 }
 
@@ -611,5 +738,6 @@ crossfilter.BitArray = BitArray;
 crossfilter.TypedCrossfilter = TypedCrossfilter;
 crossfilter.ScalarDimension = ScalarDimension;
 crossfilter.EnumDimension = EnumDimension;
+crossfilter.SpatialDimension = SpatialDimension;
 
 export default crossfilter;

@@ -102,22 +102,20 @@ const someData = [
 ];
 
 function groupReduce(data, valueMap, valueReduce, valueInit) {
-  return _
-    .reduce(
-      data,
-      (acc, value) => {
-        const k = valueMap(value);
-        let r = _.find(acc, o => o.key === k);
-        if (!r) {
-          r = { key: k, value: valueInit() };
-          acc.push(r);
-        }
-        r.value = valueReduce(r.value, value);
-        return acc;
-      },
-      []
-    )
-    .sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
+  return _.reduce(
+    data,
+    (acc, value) => {
+      const k = valueMap(value);
+      let r = _.find(acc, o => o.key === k);
+      if (!r) {
+        r = { key: k, value: valueInit() };
+        acc.push(r);
+      }
+      r.value = valueReduce(r.value, value);
+      return acc;
+    },
+    []
+  ).sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
 }
 
 function groupCount(data, map) {
@@ -139,7 +137,11 @@ describe("typedCrossfilter", () => {
     expect(payments.size()).toEqual(someData.length);
     expect(payments.all()).toEqual(someData);
 
-    const quantity = payments.dimension(r => r.quantity, Int32Array);
+    const quantity = payments.dimension(
+      crossfilter.ScalarDimension,
+      r => r.quantity,
+      Int32Array
+    );
     expect(quantity).toBeDefined();
     expect(quantity.id()).toBeDefined();
 
@@ -150,10 +152,22 @@ describe("typedCrossfilter", () => {
 
   test("filterAll and filterNone", () => {
     expect(payments).toBeDefined();
-    const quantity = payments.dimension(r => r.quantity, Int32Array);
-    const tip = payments.dimension(r => r.tip, Float32Array);
-    const total = payments.dimension(r => r.total, Float32Array);
-    const type = payments.dimension(r => r.type, "enum");
+    const quantity = payments.dimension(
+      crossfilter.ScalarDimension,
+      r => r.quantity,
+      Int32Array
+    );
+    const tip = payments.dimension(
+      crossfilter.ScalarDimension,
+      r => r.tip,
+      Float32Array
+    );
+    const total = payments.dimension(
+      crossfilter.ScalarDimension,
+      r => r.total,
+      Float32Array
+    );
+    const type = payments.dimension(crossfilter.EnumDimension, r => r.type);
 
     expect(quantity).toBeDefined();
     expect(tip).toBeDefined();
@@ -198,10 +212,22 @@ describe("typedCrossfilter", () => {
 
   test("filterExact", () => {
     expect(payments).toBeDefined();
-    const quantity = payments.dimension(r => r.quantity, Int32Array);
-    const tip = payments.dimension(r => r.tip, Float32Array);
-    const total = payments.dimension(r => r.total, Float32Array);
-    const type = payments.dimension(r => r.type, "enum");
+    const quantity = payments.dimension(
+      crossfilter.ScalarDimension,
+      r => r.quantity,
+      Int32Array
+    );
+    const tip = payments.dimension(
+      crossfilter.ScalarDimension,
+      r => r.tip,
+      Float32Array
+    );
+    const total = payments.dimension(
+      crossfilter.ScalarDimension,
+      r => r.total,
+      Float32Array
+    );
+    const type = payments.dimension(crossfilter.EnumDimension, r => r.type);
 
     quantity.filterExact(1);
     expect(payments.countFiltered()).toEqual(
@@ -222,10 +248,22 @@ describe("typedCrossfilter", () => {
 
   test("filterRange", () => {
     expect(payments).toBeDefined();
-    const quantity = payments.dimension(r => r.quantity, Int32Array);
-    const tip = payments.dimension(r => r.tip, Float32Array);
-    const total = payments.dimension(r => r.total, Float32Array);
-    const type = payments.dimension(r => r.type, "enum");
+    const quantity = payments.dimension(
+      crossfilter.ScalarDimension,
+      r => r.quantity,
+      Int32Array
+    );
+    const tip = payments.dimension(
+      crossfilter.ScalarDimension,
+      r => r.tip,
+      Float32Array
+    );
+    const total = payments.dimension(
+      crossfilter.ScalarDimension,
+      r => r.total,
+      Float32Array
+    );
+    const type = payments.dimension(crossfilter.EnumDimension, r => r.type);
 
     tip.filterRange([0, 91]);
     expect(payments.allFiltered()).toEqual(
@@ -251,10 +289,22 @@ describe("typedCrossfilter", () => {
 
   test("filterEnum", () => {
     expect(payments).toBeDefined();
-    const quantity = payments.dimension(r => r.quantity, Int32Array);
-    const tip = payments.dimension(r => r.tip, Float32Array);
-    const total = payments.dimension(r => r.total, Float32Array);
-    const type = payments.dimension(r => r.type, "enum");
+    const quantity = payments.dimension(
+      crossfilter.ScalarDimension,
+      r => r.quantity,
+      Int32Array
+    );
+    const tip = payments.dimension(
+      crossfilter.ScalarDimension,
+      r => r.tip,
+      Float32Array
+    );
+    const total = payments.dimension(
+      crossfilter.ScalarDimension,
+      r => r.total,
+      Float32Array
+    );
+    const type = payments.dimension(crossfilter.EnumDimension, r => r.type);
 
     type.filterEnum(["tab", "cash"]);
     expect(payments.allFiltered()).toEqual(
@@ -274,15 +324,31 @@ describe("typedCrossfilter", () => {
 
   test("more than 32 dimensions", () => {
     expect(payments).toBeDefined();
-    const quantity = payments.dimension(r => r.quantity, Int32Array);
-    const tip = payments.dimension(r => r.tip, Float32Array);
-    const total = payments.dimension(r => r.total, Float32Array);
-    const type = payments.dimension(r => r.type, "enum");
+    const quantity = payments.dimension(
+      crossfilter.ScalarDimension,
+      r => r.quantity,
+      Int32Array
+    );
+    const tip = payments.dimension(
+      crossfilter.ScalarDimension,
+      r => r.tip,
+      Float32Array
+    );
+    const total = payments.dimension(
+      crossfilter.ScalarDimension,
+      r => r.total,
+      Float32Array
+    );
+    const type = payments.dimension(crossfilter.EnumDimension, r => r.type);
 
     // Create a bunch of fake dimensions to ensure we can handle > 32
     let dimMap = {};
     for (let i = 0; i < 65; i++) {
-      dimMap[i] = payments.dimension(r => Math.random(), Float32Array);
+      dimMap[i] = payments.dimension(
+        crossfilter.ScalarDimension,
+        r => Math.random(),
+        Float32Array
+      );
       expect(dimMap[i]).toBeDefined();
       expect(dimMap[i].id()).toBeDefined();
     }
@@ -304,10 +370,22 @@ describe("typedCrossfilter", () => {
   test("group, default mapping, default reducer, no filter", () => {
     expect(payments).toBeDefined();
 
-    var quantity = payments.dimension(r => r.quantity, Int32Array);
-    var tip = payments.dimension(r => r.tip, Int32Array);
-    var type = payments.dimension(r => r.type, "enum");
-    var total = payments.dimension(r => r.total, Int32Array);
+    const quantity = payments.dimension(
+      crossfilter.ScalarDimension,
+      r => r.quantity,
+      Int32Array
+    );
+    const tip = payments.dimension(
+      crossfilter.ScalarDimension,
+      r => r.tip,
+      Int32Array
+    );
+    const type = payments.dimension(crossfilter.EnumDimension, r => r.type);
+    const total = payments.dimension(
+      crossfilter.ScalarDimension,
+      r => r.total,
+      Int32Array
+    );
 
     _.each(
       {
@@ -331,9 +409,17 @@ describe("typedCrossfilter", () => {
     // custom mapping in groups only works for scalar types.  Enums do not
     // currently implement it.
 
-    const tip = payments.dimension(r => r.tip, Int32Array);
-    const totalX10 = payments.dimension(r => r.total * 10, Int32Array);
-    const type = payments.dimension(r => r.type, "enum");
+    const tip = payments.dimension(
+      crossfilter.ScalarDimension,
+      r => r.tip,
+      Int32Array
+    );
+    const totalX10 = payments.dimension(
+      crossfilter.ScalarDimension,
+      r => r.total * 10,
+      Int32Array
+    );
+    const type = payments.dimension(crossfilter.EnumDimension, r => r.type);
 
     const paymentsByTip_A = tip.group();
     const paymentsByTip_B = tip.group(r => 10 * r);
@@ -370,8 +456,12 @@ describe("typedCrossfilter", () => {
   test("group, default map, custom reducer, no filters", () => {
     expect(payments).toBeDefined();
 
-    const total = payments.dimension(r => r.total, Float32Array);
-    const type = payments.dimension(r => r.type, "enum");
+    const total = payments.dimension(
+      crossfilter.ScalarDimension,
+      r => r.total,
+      Float32Array
+    );
+    const type = payments.dimension(crossfilter.EnumDimension, r => r.type);
 
     const paymentsByTotal = total.group();
     const paymentsByType = type.group();
@@ -407,9 +497,17 @@ describe("typedCrossfilter", () => {
 
     expect(payments).toBeDefined();
 
-    const tip = payments.dimension(r => r.tip, Int32Array);
-    const total = payments.dimension(r => r.total, Int32Array);
-    const type = payments.dimension(r => r.type, "enum");
+    const tip = payments.dimension(
+      crossfilter.ScalarDimension,
+      r => r.tip,
+      Int32Array
+    );
+    const total = payments.dimension(
+      crossfilter.ScalarDimension,
+      r => r.total,
+      Int32Array
+    );
+    const type = payments.dimension(crossfilter.EnumDimension, r => r.type);
 
     const paymentsByTip = tip.group();
     const paymentsByTotal = total.group();
