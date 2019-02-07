@@ -68,6 +68,19 @@ class TypedCrossfilter {
     return this.data;
   }
 
+  /*
+  Create a crossfilter dimension, upon which filtering (subselection) can
+  be done.  Each dimension is typed, and has a particular set of filtering
+  semantics.
+    * ScalarDimension - backed by TypedArray values, supporting filtering
+      by value (within a value range, or one or more exact values)
+    * EnumDimension - backed by an enumeration (eg, strings, bools), filtering
+      by one or more enum categories.
+    * SpatialDimension - backed by 2D points, filter by containment within
+      various shapes (currently supports within Rectangle and within Polygon).
+  Call this method to create a dimension, passing arguments appropriate for
+  the dimension constructor.
+  */
   dimension(DimensionType, ...rest) {
     const id = this.selection.allocDimension();
     const dim = new DimensionType(this, id, ...rest);
