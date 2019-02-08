@@ -260,38 +260,6 @@ class ScanpyEngine(CXGDriver):
                 )
         return obs_selector, var_selector
 
-    @staticmethod
-    def _slice(data, obs_selector=None, vars_selector=None):
-        """
-        Slice date using any selector that the AnnData object
-        supprots for slicing.  If selector is None, will not slice
-        on that axis.
-
-        This method exists to optimize filtering/slicing sparse data that has
-        access patterns which impact slicing performance.
-
-        https://docs.scipy.org/doc/scipy/reference/sparse.html
-        """
-        prefer_row_access = (
-            sparse.isspmatrix_csr(data._X)
-            or sparse.isspmatrix_lil(data._X)
-            or sparse.isspmatrix_bsr(data._X)
-        )
-        if prefer_row_access:
-            # Row-major slicing
-            if obs_selector is not None:
-                data = data[obs_selector, :]
-            if vars_selector is not None:
-                data = data[:, vars_selector]
-        else:
-            # Col-major slicing
-            if vars_selector is not None:
-                data = data[:, vars_selector]
-            if obs_selector is not None:
-                data = data[obs_selector, :]
-
-        return data
-
     def annotation_to_fbs_matrix(self, axis, fields=None):
         if axis == Axis.OBS:
             df = self.data.obs
