@@ -1,6 +1,7 @@
 // jshint esversion: 6
 import * as d3 from "d3";
 import styles from "./graph.css";
+import Lasso from "./setupLasso";
 
 /******************************************
 *******************************************
@@ -12,7 +13,9 @@ export default (
   handleBrushSelectAction,
   handleBrushDeselectAction,
   responsive,
-  graphPaddingRight
+  graphPaddingRight,
+  handleLassoStart,
+  handleLassoEnd
 ) => {
   const svg = d3
     .select("#graphAttachPoint")
@@ -32,9 +35,16 @@ export default (
     .attr("class", "graph_brush")
     .call(brush);
 
+  const lassoInstance = Lasso()
+    .on("end", handleLassoEnd)
+    .on("start", handleLassoStart);
+
+  const lasso = svg.call(lassoInstance);
+
   return {
     svg,
     brushContainer,
-    brush
+    brush,
+    lasso
   };
 };
