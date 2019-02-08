@@ -35,7 +35,7 @@ const doFetch = async (url, acceptType) => {
       Accept: acceptType
     })
   });
-  if (res.ok && res.headers.get("Content-Type") === acceptType) {
+  if (res.ok && res.headers.get("Content-Type").includes(acceptType)) {
     return res;
   }
   // else an error

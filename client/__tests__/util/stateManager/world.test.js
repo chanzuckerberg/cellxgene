@@ -177,11 +177,8 @@ describe("createObsDimensionMap", () => {
         }
       }
     });
-    expect(dimensionMap[layoutDimensionName("X")]).toBeInstanceOf(
-      Crossfilter.ScalarDimension
-    );
-    expect(dimensionMap[layoutDimensionName("Y")]).toBeInstanceOf(
-      Crossfilter.ScalarDimension
+    expect(dimensionMap[layoutDimensionName("XY")]).toBeInstanceOf(
+      Crossfilter.SpatialDimension
     );
   });
 });

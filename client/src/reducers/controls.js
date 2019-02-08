@@ -1,6 +1,8 @@
 // jshint esversion: 6
 
 import _ from "lodash";
+import { polygonContains } from "d3";
+
 import { World, kvCache, WorldUtil } from "../util/stateManager";
 import parseRGB from "../util/parseRGB";
 import Crossfilter from "../util/typedCrossfilter";
@@ -471,25 +473,34 @@ const Controls = (
              User Events
      *******************************/
     case "graph brush selection change": {
-      state.dimensionMap[layoutDimensionName("X")].filterRange([
-        action.brushCoords.northwest[0],
-        action.brushCoords.southeast[0]
-      ]);
-      state.dimensionMap[layoutDimensionName("Y")].filterRange([
-        action.brushCoords.southeast[1],
-        action.brushCoords.northwest[1]
-      ]);
+      state.dimensionMap[layoutDimensionName("XY")].filterWithinRect(
+        action.brushCoords.northwest,
+        action.brushCoords.southeast
+      );
       return {
         ...state,
         graphBrushSelection: action.brushCoords
       };
     }
+    case "lasso deselect":
     case "graph brush deselect": {
-      state.dimensionMap[layoutDimensionName("X")].filterAll();
-      state.dimensionMap[layoutDimensionName("Y")].filterAll();
+      state.dimensionMap[layoutDimensionName("XY")].filterAll();
       return {
         ...state,
         graphBrushSelection: null
+      };
+    }
+    case "lasso selection": {
+      const { polygon } = action;
+      const dXY = state.dimensionMap[layoutDimensionName("XY")];
+      if (polygon.length < 3) {
+        // single point or a line is not a polygon, and is therefore a deselect
+        dXY.filterAll();
+      } else {
+        dXY.filterWithinPolygon(polygon);
+      }
+      return {
+        ...state
       };
     }
     case "continuous metadata histogram brush": {
