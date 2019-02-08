@@ -1,6 +1,8 @@
 import { IdentityInt32Index } from "./labelIndex";
 // weird cross-dependency that we should clean up someday...
 import { sort } from "../typedCrossfilter/sort";
+import { isTypedArray, isArrayOrTypedArray, callOnceLazy } from "./util";
+import { summarizeContinuous, summarizeCategorical } from "./summarize";
 
 /*
 Dataframe is an immutable 2D matrix similiar to Python Pandas Dataframe,
@@ -20,6 +22,10 @@ It does not currently support:
   speed over memory use.
 * JS iterators - they are too slow.  Use explicit iteration over
   offest or labels.
+
+Important assumptions embedded in the API:
+* Columns are implicitly categorical if they are a JS Array and numeric
+  (aka continuous) if they are a TypedArray.
 
 There are three index types for row/col indexing:
 * IdentityInt32Index - noop index, where the index label is the offset.
@@ -61,6 +67,14 @@ class Dataframe {
     /*
     The base constructor is relatively hard to use - as an alternative,
     see factory methods and clone/slice, below.
+
+    Parameters:
+      * dims - 2D array describing intendend dimensionality: [nRows,nCols].
+      * columnarData - JS array, nCols in length, containing array
+        or TypedArray of length nRows.
+      * rowIndex/colIndex - null (create default index using offsets as key),
+        or a caller-provided index.
+    All columns and indices must have appropriate dimensionality.
     */
     Dataframe.__errorChecks(dims, columnarData, rowIndex, colIndex);
     const [nRows, nCols] = dims;
@@ -81,14 +95,6 @@ class Dataframe {
   }
 
   static __errorChecks(dims, columnarData) {
-    function isArrayOrTypedArray(x) {
-      return (
-        Array.isArray(x) ||
-        (ArrayBuffer.isView(x) &&
-          Object.prototype.toString.call(x) !== "[object DataView]")
-      );
-    }
-
     const [nRows, nCols] = dims;
     if (nRows < 0 || nCols < 0) {
       throw new RangeError("Dataframe dimensions must be positive");
@@ -112,16 +118,44 @@ class Dataframe {
   __compile() {
     /*
     Compile data accessors for each column.
+
+    Each column accessor is a function which will lookup data by
+    index (ie, is equivalent to dataframe.get(row, col), where 'col'
+    is fixed.
+
+    In addition, each column accessor has several functions:
+
+    asArray() -- return the entire column as a native Array or TypedArray.
+      Crucially, this native array only supports label indexing.
+      Example:
+        const arr = df.col('a').asArray();
+
+    has(rlabel) -- return boolean indicating of the row label
+      is contained within the column.  Example:
+        const isInColumn = df.col('a').includes(99)
+      For the default offset indexing, this is identical to:
+        const isInColumn = (99 > 0) && (99 < df.nRows);
+
+    ihas(roffset) -- same as has(), but accepts a row offset
+      instead of a row label.
+
+    indexOf(value) -- return the label (not offset) of the first instance of
+      'value' in the column.  If you want the offset, just use the builtin JS
+      indexOf() function, available on both Array and TypedArray.
+
+    iget(offset) -- return the value at 'offset'
+
     */
     const { getOffset, getLabel } = this.rowIndex;
     this.__columnsAccessor = this.__columns.map(column => {
       const { length } = column;
 
-      /* default value access by row label */
+      /* get value by row label */
       const get = function get(rlabel) {
         return column[getOffset(rlabel)];
       };
 
+      /* get value by row offset */
       const iget = function iget(roffset) {
         return column[roffset];
       };
@@ -156,6 +190,16 @@ class Dataframe {
         return getLabel(offset);
       };
 
+      /*
+      Summarize the column data. Lazy eval;
+      */
+      const summarize = callOnceLazy(() =>
+        isTypedArray(column)
+          ? summarizeContinuous(column)
+          : summarizeCategorical(column)
+      );
+
+      get.summarize = summarize;
       get.asArray = asArray;
       get.has = has;
       get.ihas = ihas;
@@ -326,28 +370,7 @@ class Dataframe {
         console.log(r, getValue(r));
       }
 
-    In addition, each bound column accessor has several more functions:
-
-    asArray() -- return the entire column as a native Array or TypedArray.
-      Crucially, this native array only supports label indexing.
-      Example:
-        const arr = df.col('a').asArray();
-
-    has(rlabel) -- return boolean indicating of the row label
-      is contained within the column.  Example:
-        const isInColumn = df.col('a').includes(99)
-      For the default offset indexing, this is identical to:
-        const isInColumn = (99 > 0) && (99 < df.nRows);
-
-    ihas(roffset) -- same as has(), but accepts a row offset
-      instead of a row label.
-
-    indexOf(value) -- return the label (not offset) of the first instance of
-      'value' in the column.  If you want the offset, just use the builtin JS
-      indexOf() function, available on both Array and TypedArray.
-
-    iget(offset) -- return the value at 'offset'
-
+    See __compile() for the functions available in a column accessor.
     */
     const coff = this.colIndex.getOffset(columnLabel);
     return this.__columnsAccessor[coff];
