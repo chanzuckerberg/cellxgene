@@ -194,15 +194,11 @@ class AnnotationsObsAPI(Resource):
     def get(self):
         fields = request.args.getlist("annotation-name", None)
         preferred_mimetype = request.accept_mimetypes.best_match(
-            ["application/json", "application/octet-stream"],
-            "application/json"
+            ["application/octet-stream"],
+            "application/octet-stream"
         )
         try:
-            if preferred_mimetype == "application/json":
-                return make_response(
-                    current_app.data.annotation({}, "obs", fields), HTTPStatus.OK, {"Content-Type": "application/json"}
-                )
-            elif preferred_mimetype == "application/octet-stream":
+            if preferred_mimetype == "application/octet-stream":
                 return make_response(current_app.data.annotation_to_fbs_matrix("obs", fields),
                                      HTTPStatus.OK,
                                      {"Content-Type": "application/octet-stream"})
@@ -210,69 +206,6 @@ class AnnotationsObsAPI(Resource):
                 return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
         except KeyError:
             return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
-        except JSONEncodingValueError as e:
-            # JSON encoding failure, usually due to bad data
-            warnings.warn(JSON_NaN_to_num_warning_msg)
-            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
-        except ValueError as e:
-            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
-
-    @swagger.doc(
-        {
-            "summary": "Fetch annotations (metadata) for filtered subset of observations.",
-            "tags": ["annotations"],
-            "parameters": [
-                {
-                    "in": "query",
-                    "name": "annotation-name",
-                    "type": "string",
-                    "description": "list of 1 or more annotation names",
-                },
-                {
-                    "name": "filter",
-                    "description": "Complex Filter",
-                    "in": "body",
-                    "schema": FilterModel,
-                },
-            ],
-            "responses": {
-                "200": {
-                    "description": "annotations",
-                    "examples": {
-                        "application/json": {
-                            "names": ["tissue_type", "sex", "num_reads", "clusters"],
-                            "data": [
-                                [0, "lung", "F", 39844, 99],
-                                [1, "heart", "M", 83, 1],
-                                [49, "spleen", None, 2, "unknown cluster"],
-                            ],
-                        }
-                    },
-                },
-                "400": {
-                    "description": "malformed filter or one or more of the annotation-name identifiers were"
-                    "not associated with an annotation name"
-                },
-            },
-        }
-    )
-    def put(self):
-        fields = request.args.getlist("annotation-name", None)
-        try:
-            annotation_response = current_app.data.annotation(
-                request.get_json()["filter"], "obs", fields
-            )
-            return make_response(
-                annotation_response, HTTPStatus.OK, {"Content-Type": "application/json"}
-            )
-        except KeyError:
-            return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
-        except FilterError as e:
-            return make_response(e.message, HTTPStatus.BAD_REQUEST)
-        except JSONEncodingValueError as e:
-            # JSON encoding failure, usually due to bad data
-            warnings.warn(JSON_NaN_to_num_warning_msg)
-            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
         except ValueError as e:
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
@@ -314,15 +247,11 @@ class AnnotationsVarAPI(Resource):
     def get(self):
         fields = request.args.getlist("annotation-name", None)
         preferred_mimetype = request.accept_mimetypes.best_match(
-            ["application/json", "application/octet-stream"],
-            "application/json"
+            ["application/octet-stream"],
+            "application/octet-stream"
         )
         try:
-            if preferred_mimetype == "application/json":
-                return make_response(current_app.data.annotation({}, "var", fields),
-                                     HTTPStatus.OK,
-                                     {"Content-Type": "application/json"})
-            elif preferred_mimetype == "application/octet-stream":
+            if preferred_mimetype == "application/octet-stream":
                 return make_response(current_app.data.annotation_to_fbs_matrix("var", fields),
                                      HTTPStatus.OK,
                                      {"Content-Type": "application/octet-stream"})
@@ -330,270 +259,11 @@ class AnnotationsVarAPI(Resource):
                 return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
         except KeyError:
             return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
-        except JSONEncodingValueError as e:
-            # JSON encoding failure, usually due to bad data
-            warnings.warn(JSON_NaN_to_num_warning_msg)
-            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
-        except ValueError as e:
-            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
-
-    @swagger.doc(
-        {
-            "summary": "Fetch annotations (metadata) for filtered subset of variables.",
-            "tags": ["annotations"],
-            "parameters": [
-                {
-                    "in": "query",
-                    "name": "annotation-name",
-                    "type": "string",
-                    "description": "list of 1 or more annotation names",
-                },
-                {
-                    "name": "filter",
-                    "description": "Complex Filter",
-                    "in": "body",
-                    "schema": FilterModel,
-                },
-            ],
-            "responses": {
-                "200": {
-                    "description": "annotations",
-                    "examples": {
-                        "application/json": {
-                            "names": ["name", "category"],
-                            "data": [
-                                [0, "ATAD3C", 1],
-                                [1, "RER1", None],
-                                [49, "S100B", 6],
-                            ],
-                        }
-                    },
-                },
-                "400": {
-                    "description": "malformed filter or one or more of the annotation-name identifiers were"
-                    "not associated with an annotation name"
-                },
-            },
-        }
-    )
-    def put(self):
-        fields = request.args.getlist("annotation-name", None)
-        try:
-            annotation_response = current_app.data.annotation(
-                request.get_json()["filter"], "var", fields
-            )
-            return make_response(
-                annotation_response, HTTPStatus.OK, {"Content-Type": "application/json"}
-            )
-        except KeyError:
-            return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
-        except FilterError:
-            return make_response("Malformed filter", HTTPStatus.BAD_REQUEST)
-        except JSONEncodingValueError as e:
-            # JSON encoding failure, usually due to bad data
-            warnings.warn(JSON_NaN_to_num_warning_msg)
-            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
-        except ValueError as e:
-            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
-
-
-class DataObsAPI(Resource):
-    @swagger.doc(
-        {
-            "summary": "Get data (expression values) from the dataframe.",
-            "tags": ["data"],
-            "parameters": [
-                {
-                    "in": "query",
-                    "name": "filter",
-                    "type": "string",
-                    "description": "axis:key:value",
-                },
-                {
-                    "in": "query",
-                    "name": "accept-type",
-                    "type": "string",
-                    "description": "MIME type",
-                },
-            ],
-            "responses": {
-                "200": {
-                    "description": "expression",
-                    "examples": {
-                        "application/json": {
-                            "var": [0, 20000],
-                            "obs": [[1, 39483, 3902, 203, 0, 0, 28]],
-                        }
-                    },
-                },
-                "400": {"description": "Malformed filter"},
-                "406": {"description": "Unacceptable MIME type"},
-            },
-        }
-    )
-    def get(self):
-        accept_type = request.args.get("accept-type", None)
-        # request.args is immutable
-        args = request.args.copy()
-        args.pop("accept-type", None)
-        try:
-            filter_ = parse_filter(
-                ImmutableMultiDict(args), current_app.data.schema["annotations"]
-            )
-        except QueryStringError as e:
-            return make_response(e.message, HTTPStatus.BAD_REQUEST)
-        # TODO support CSV
-        try:
-            # TODO store mime_type when more than one is supported
-            get_mime_type(
-                acceptable_types=["application/json"],
-                query_param=accept_type,
-                header=request.accept_mimetypes,
-            )
-        except MimeTypeError as e:
-            return make_response(e.message, HTTPStatus.NOT_ACCEPTABLE)
-        try:
-            return make_response(
-                current_app.data.data_frame(filter_, axis=Axis.OBS),
-                HTTPStatus.OK,
-                {"Content-Type": "application/json"},
-            )
-        except FilterError as e:
-            return make_response(e.message, HTTPStatus.BAD_REQUEST)
-        except JSONEncodingValueError as e:
-            # JSON encoding failure, usually due to bad data
-            warnings.warn(JSON_NaN_to_num_warning_msg)
-            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
-        except ValueError as e:
-            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
-
-    @swagger.doc(
-        {
-            "summary": "Get data (expression values) from the dataframe.",
-            "tags": ["data"],
-            "parameters": [
-                {
-                    "name": "filter",
-                    "description": "Complex Filter",
-                    "in": "body",
-                    "schema": FilterModel,
-                }
-            ],
-            "responses": {
-                "200": {
-                    "description": "expression",
-                    "examples": {
-                        "application/json": {
-                            "var": [0, 20000],
-                            "obs": [[1, 39483, 3902, 203, 0, 0, 28]],
-                        }
-                    },
-                },
-                "400": {"description": "Malformed filter"},
-                "406": {"description": "Unacceptable MIME type"},
-            },
-        }
-    )
-    def put(self):
-        if not request.accept_mimetypes.best_match(["application/json", "text/csv"]):
-            return make_response(
-                f"Unsupported MIME type '{request.accept_mimetypes}'",
-                HTTPStatus.NOT_ACCEPTABLE,
-            )
-        try:
-            get_mime_type(
-                acceptable_types=["application/json"], header=request.accept_mimetypes
-            )
-        except MimeTypeError as e:
-            return make_response(e.message, HTTPStatus.NOT_ACCEPTABLE)
-        try:
-            return make_response(
-                (
-                    current_app.data.data_frame(
-                        request.get_json()["filter"], axis=Axis.OBS
-                    )
-                ),
-                HTTPStatus.OK,
-                {"Content-Type": "application/json"},
-            )
-        except FilterError as e:
-            return make_response(e.message, HTTPStatus.BAD_REQUEST)
-        except JSONEncodingValueError as e:
-            # JSON encoding failure, usually due to bad data
-            warnings.warn(JSON_NaN_to_num_warning_msg)
-            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
         except ValueError as e:
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
 class DataVarAPI(Resource):
-    @swagger.doc(
-        {
-            "summary": "Get data (expression values) from the dataframe.",
-            "tags": ["data"],
-            "parameters": [
-                {
-                    "in": "query",
-                    "name": "filter",
-                    "type": "string",
-                    "description": "axis:key:value",
-                },
-                {
-                    "in": "query",
-                    "name": "accept-type",
-                    "type": "string",
-                    "description": "MIME type",
-                },
-            ],
-            "responses": {
-                "200": {
-                    "description": "expression",
-                    "examples": {
-                        "application/json": {
-                            "obs": [0, 20000],
-                            "var": [[1, 39483, 3902, 203, 0, 0, 28]],
-                        }
-                    },
-                },
-                "400": {"description": "Malformed filter"},
-                "406": {"description": "Unacceptable MIME type"},
-            },
-        }
-    )
-    def get(self):
-        accept_type = request.args.get("accept-type", None)
-        # request.args is immutable
-        args = request.args.copy()
-        args.pop("accept-type", None)
-        try:
-            filter_ = parse_filter(
-                ImmutableMultiDict(args), current_app.data.schema["annotations"]
-            )
-        except QueryStringError as e:
-            return make_response(e.message, HTTPStatus.BAD_REQUEST)
-        try:
-            get_mime_type(
-                acceptable_types=["application/json"],
-                query_param=accept_type,
-                header=request.accept_mimetypes,
-            )
-        except MimeTypeError as e:
-            return make_response(e.message, HTTPStatus.NOT_ACCEPTABLE)
-        try:
-            return make_response(
-                current_app.data.data_frame(filter_, axis=Axis.VAR),
-                HTTPStatus.OK,
-                {"Content-Type": "application/json"},
-            )
-        except FilterError as e:
-            return make_response(e.message, HTTPStatus.BAD_REQUEST)
-        except JSONEncodingValueError as e:
-            # JSON encoding failure, usually due to bad data
-            warnings.warn(JSON_NaN_to_num_warning_msg)
-            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
-        except ValueError as e:
-            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
-
     @swagger.doc(
         {
             "summary": "Get data (expression values) from the dataframe.",
@@ -623,21 +293,11 @@ class DataVarAPI(Resource):
     )
     def put(self):
         preferred_mimetype = request.accept_mimetypes.best_match(
-            ["application/json", "application/octet-stream"],
-            "application/json"
+            ["application/octet-stream"],
+            "application/octet-stream"
         )
         try:
-            if preferred_mimetype == "application/json":
-                return make_response(
-                    (
-                        current_app.data.data_frame(
-                            request.get_json()["filter"], axis=Axis.VAR
-                        )
-                    ),
-                    HTTPStatus.OK,
-                    {"Content-Type": "application/json"},
-                )
-            elif preferred_mimetype == "application/octet-stream":
+            if preferred_mimetype == "application/octet-stream":
                 return make_response(
                     current_app.data.data_frame_to_fbs_matrix(
                         request.get_json()["filter"], axis=Axis.VAR
@@ -648,10 +308,6 @@ class DataVarAPI(Resource):
                 return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
         except FilterError as e:
             return make_response(e.message, HTTPStatus.BAD_REQUEST)
-        except JSONEncodingValueError as e:
-            # JSON encoding failure, usually due to bad data
-            warnings.warn(JSON_NaN_to_num_warning_msg)
-            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
         except ValueError as e:
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
@@ -662,42 +318,6 @@ class DiffExpObsAPI(Resource):
             "summary": "Generate differential expression (DE) statistics for two specified subsets of data, "
             "as indicated by the two provided observation complex filters",
             "tags": ["diffexp"],
-            # TODO sort out params
-            # "parameters": [
-            #     # {
-            #     #     "in": "body",
-            #     #     "name": "mode",
-            #     #     "type": "string",
-            #     #     "required": True,
-            #     #     "description": "topN or varFilter"
-            #     # },
-            #     {
-            #         "in": "query",
-            #         "name": "count",
-            #         "type": "int32",
-            #         "description": "TopN mode: how many vars to return"
-            #     },
-            #     {
-            #         "in": "body",
-            #         "name": "varFilter",
-            #         "schema": FilterModel,
-            #         "description": "varFilter: Complex filter, only var for which vars to return"
-            #     },
-            #     {
-            #         "in": "body",
-            #         "name": "set1",
-            #         "schema": FilterModel,
-            #         "required": True,
-            #         "description": "Complex filter, only obs - observations in set1"
-            #     },
-            #     {
-            #         "in": "body",
-            #         "name": "set2",
-            #         "schema": FilterModel,
-            #         "description": "Complex filter, only obs - observations in set2.
-            # If not included, inverse of set1."
-            #     },
-            # ],
             "responses": {
                 "200": {
                     "description": "Statistics are encoded as an array of arrays, with fields ordered as: "
@@ -809,14 +429,11 @@ class LayoutObsAPI(Resource):
     )
     def get(self):
         preferred_mimetype = request.accept_mimetypes.best_match(
-            ["application/json", "application/octet-stream"],
-            "application/json"
+            ["application/octet-stream"],
+            "application/octet-stream"
         )
         try:
-            if preferred_mimetype == "application/json":
-                return make_response(current_app.data.layout({}), HTTPStatus.OK, {"Content-Type": "application/json"})
-
-            elif preferred_mimetype == "application/octet-stream":
+            if preferred_mimetype == "application/octet-stream":
                 return make_response(current_app.data.layout_to_fbs_matrix(),
                                      HTTPStatus.OK,
                                      {"Content-Type": "application/octet-stream"})
@@ -824,57 +441,8 @@ class LayoutObsAPI(Resource):
                 return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
         except PrepareError as e:
             return make_response(e.message, HTTPStatus.INTERNAL_SERVER_ERROR)
-        except JSONEncodingValueError as e:
-            # JSON encoding failure, usually due to bad data
-            warnings.warn(JSON_NaN_to_num_warning_msg)
-            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
         except ValueError as e:
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
-
-    # @swagger.doc({
-    #     "summary": "Observation layout for filtered subset.",
-    #     "tags": ["layout"],
-    #     "parameters": [
-    #         {
-    #             "name": "filter",
-    #             "description": "Complex Filter",
-    #             "in": "body",
-    #             "schema": FilterModel
-    #         }
-    #     ],
-    #     "responses": {
-    #         "200": {
-    #             "description": "layout",
-    #             "examples": {
-    #                 "application/json": {
-    #                     "layout": {
-    #                         "ndims": 2,
-    #                         "coordinates": [
-    #                             [0, 0.284483, 0.983744],
-    #                             [1, 0.038844, 0.739444]
-    #                         ]
-    #                     }
-    #                 }
-    #             }
-    #         },
-    #         "400": {
-    #             "description": "Malformed filter"
-    #         },
-    #         "403": {
-    #             "description": "Non-interactive request"
-    #         },
-    #     }
-    # })
-    # def put(self):
-    #     try:
-    #         filter = request.get_json()["filter"]
-    #         interactive_limit = current_app.data.features["layout"]["obs"]["interactiveLimit"]
-    #         layout = current_app.data.layout(filter, interactive_limit=interactive_limit)
-    #         return make_response(layout, HTTPStatus.OK, {"Content-Type": content_type})
-    #     except FilterError as e:
-    #         return make_response(e.message, HTTPStatus.BAD_REQUEST)
-    #     except InteractiveError:
-    #         return make_response("Non-interactive request", HTTPStatus.FORBIDDEN)
 
 
 def get_api_resources():
@@ -886,7 +454,6 @@ def get_api_resources():
     # Data routes
     api.add_resource(AnnotationsObsAPI, "/annotations/obs")
     api.add_resource(AnnotationsVarAPI, "/annotations/var")
-    api.add_resource(DataObsAPI, "/data/obs")
     api.add_resource(DataVarAPI, "/data/var")
     # Computation routes
     api.add_resource(DiffExpObsAPI, "/diffexp/obs")

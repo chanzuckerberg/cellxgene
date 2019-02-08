@@ -197,23 +197,6 @@ class ScanpyEngine(CXGDriver):
                 f"to solve this problem. "
             )
 
-    def filter_dataframe(self, filter):
-        """
-         Filter cells from data and return a subset of the data. They can operate on both obs and var dimension with
-         indexing and filtering by annotation value. Filters are combined with the and operator.
-         See REST specs for info on filter format:
-         # TODO update this link to swagger when it's done
-         https://docs.google.com/document/d/1Fxjp1SKtCk7l8QP9-7KAjGXL0eldi_qEnNT0NmlGzXI/edit#heading=h.8qc9q57amldx
-
-        :param filter: dictionary with filter params
-        :return: View into scanpy object with cells/genes filtered
-        """
-        if not filter:
-            return self.data
-        obs_selector, var_selector = self._filter_to_mask(filter, use_slices=False)
-        data = self._slice(self.data, obs_selector, var_selector)
-        return data
-
     @staticmethod
     def _annotation_filter_to_mask(filter, d_axis, count):
         mask = np.ones((count,), dtype=bool)
@@ -309,40 +292,6 @@ class ScanpyEngine(CXGDriver):
 
         return data
 
-    def annotation(self, filter, axis, fields=None):
-        """
-         Gets annotation value for each observation
-        :param filter: filter: dictionary with filter params
-        :param axis: string obs or var
-        :param fields: list of keys for annotation to return, returns all annotation values if not set.
-        :return: dict: names - list of fields in order, data - list of lists or metadata
-        [observation ids, val1, val2...]
-        """
-        try:
-            obs_selector, var_selector = self._filter_to_mask(filter)
-        except (KeyError, IndexError) as e:
-            raise FilterError(f"Error parsing filter: {e}") from e
-        if axis == Axis.OBS:
-            obs = self.data.obs[obs_selector]
-            if not fields:
-                fields = obs.columns.tolist()
-            result = {
-                "names": fields,
-                "data": DataFrame(obs[fields]).to_records(index=True).tolist(),
-            }
-        else:
-            var = self.data.var[var_selector]
-            if not fields:
-                fields = var.columns.tolist()
-            result = {
-                "names": fields,
-                "data": DataFrame(var[fields]).to_records(index=True).tolist(),
-            }
-        try:
-            return jsonify_scanpy(result)
-        except ValueError:
-            raise JSONEncodingValueError("Error encoding annotations to JSON")
-
     def annotation_to_fbs_matrix(self, axis, fields=None):
         if axis == Axis.OBS:
             df = self.data.obs
@@ -351,44 +300,6 @@ class ScanpyEngine(CXGDriver):
         if fields is not None and len(fields) > 0:
             df = df[fields]
         return encode_matrix_fbs(df, col_idx=df.columns)
-
-    def data_frame(self, filter, axis):
-        """
-        Retrieves data for each variable for observations in data frame
-        :param filter: filter: dictionary with filter params
-        :param axis: string obs or var
-        :return: {
-            "var": list of variable ids,
-            "obs": [cellid, var1 expression, var2 expression, ...],
-        }
-        """
-        try:
-            obs_selector, var_selector = self._filter_to_mask(filter)
-        except (KeyError, IndexError) as e:
-            raise FilterError(f"Error parsing filter: {e}") from e
-        _X = self.data._X[obs_selector, var_selector]
-        if sparse.issparse(_X):
-            _X = _X.toarray()
-        var_index_sliced = self.data.var.index[var_selector]
-        obs_index_sliced = self.data.obs.index[obs_selector]
-        if axis == Axis.OBS:
-            result = {
-                "var": var_index_sliced.tolist(),
-                "obs": DataFrame(_X, index=obs_index_sliced)
-                .to_records(index=True)
-                .tolist(),
-            }
-        else:
-            result = {
-                "obs": obs_index_sliced.tolist(),
-                "var": DataFrame(_X.T, index=var_index_sliced)
-                .to_records(index=True)
-                .tolist(),
-            }
-        try:
-            return jsonify_scanpy(result)
-        except ValueError:
-            raise JSONEncodingValueError("Error encoding dataframe to JSON")
 
     def data_frame_to_fbs_matrix(self, filter, axis):
         """
@@ -439,50 +350,6 @@ class ScanpyEngine(CXGDriver):
             raise JSONEncodingValueError(
                 "Error encoding differential expression to JSON"
             )
-
-    def layout(self, filter, interactive_limit=None):
-        """
-        Computes a n-d layout for cells through dimensionality reduction.
-        :param filter: filter: dictionary with filter params
-        :param interactive_limit: -- don't compute if total # genes in dataframes are larger than this
-        :return:  [cellid, x, y, ...]
-        """
-        try:
-            df = self.filter_dataframe(filter)
-        except (KeyError, IndexError) as e:
-            raise FilterError(f"Error parsing filter: {e}") from e
-        if interactive_limit and len(df.obs.index) > interactive_limit:
-            raise InteractiveError("Size data is too large for interactive computation")
-        # TODO Filtering cells is fine, but filtering genes does nothing because the neighbors are
-        # calculated using the original vars (geneset) and this doesn’t get updated when you use less.
-        # Need to recalculate neighbors (long) if user requests new layout filtered by var
-        # TODO for MVP we are pushing computation of layout to preprocessing and not allowing re-layout
-        # this will probably change after user feedback
-        # getattr(sc.tl, self.layout_method)(df, random_state=123)
-        try:
-            df_layout = df.obsm[f"X_{self.layout_method}"]
-        except ValueError as e:
-            raise PrepareError(
-                f"Layout has not been calculated using {self.layout_method}, "
-                f"please prepare your datafile and relaunch cellxgene"
-            ) from e
-        normalized_layout = DataFrame(
-            (df_layout - df_layout.min()) / (df_layout.max() - df_layout.min()),
-            index=df.obs.index,
-        )
-        try:
-            return jsonify_scanpy(
-                {
-                    "layout": {
-                        "ndims": normalized_layout.shape[1],
-                        "coordinates": normalized_layout.to_records(
-                            index=True
-                        ).tolist(),
-                    }
-                }
-            )
-        except ValueError:
-            raise JSONEncodingValueError("Error encoding layout to JSON")
 
     def layout_to_fbs_matrix(self):
         """
