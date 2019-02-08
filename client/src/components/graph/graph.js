@@ -40,7 +40,7 @@ class Graph extends React.Component {
     this.state = {
       svg: null,
       brush: null,
-      mode: "brush"
+      mode: "lasso"
     };
   }
 
@@ -433,16 +433,6 @@ class Graph extends React.Component {
             </Tooltip>
             <div>
               <div className="bp3-button-group">
-                <Tooltip content="Rectangular selection" position="left">
-                  <Button
-                    className="bp3-button bp3-icon-select"
-                    type="button"
-                    active={mode === "brush"}
-                    onClick={() => {
-                      this.setState({ mode: "brush" });
-                    }}
-                  />
-                </Tooltip>
                 <Tooltip content="Lasso selection" position="left">
                   <Button
                     type="button"
@@ -487,7 +477,7 @@ class Graph extends React.Component {
         >
           <div
             style={{
-              display: mode === "brush" ? "inherit" : "none"
+              display: mode === "lasso" ? "inherit" : "none"
             }}
             id="graphAttachPoint"
           />
