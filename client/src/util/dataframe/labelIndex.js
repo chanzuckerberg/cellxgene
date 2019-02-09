@@ -68,6 +68,7 @@ class IdentityInt32Index {
     const [minLabel, maxLabel] = extent(labelArray);
     const labelSpaceSize = maxLabel - minLabel + 1;
     const density = labelSpaceSize / this.maxOffset;
+    /* 0.1 is a magic number, that needs testing to optimize */
     if (density < 0.1) {
       return new KeyIndex(labelArray);
     }
@@ -133,6 +134,7 @@ class DenseInt32Index {
     const [minLabel, maxLabel] = extent(labelArray);
     const labelSpaceSize = maxLabel - minLabel + 1;
     const density = labelSpaceSize / this.rindex.length;
+    /* 0.1 is a magic number, that needs testing to optimize */
     if (density < 0.1) {
       return new KeyIndex(labelArray);
     }

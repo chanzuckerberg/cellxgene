@@ -249,7 +249,6 @@ class Dataframe {
       for (let i = 0, l = sortedOffsets.length; i < l; i += 1) {
         sortedLabels[i] = index.getLabel(sortedOffsets[i]);
       }
-      // const sortedLabels = sortedOffsets.map(o => index.getLabel(o));
       return [sortedLabels, sortedOffsets];
     };
 
