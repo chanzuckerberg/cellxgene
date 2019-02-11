@@ -10,7 +10,7 @@ const nodeModules = path.resolve("node_modules");
 
 const babelOptions = require("../babel/babel.prod");
 
-const publicPath = "/";
+const publicPath = "";
 
 module.exports = {
   mode: "production",
