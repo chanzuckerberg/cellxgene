@@ -281,7 +281,7 @@ class ScanpyEngine(CXGDriver):
             raise ValueError("Only VAR dimension access is supported")
         try:
             obs_selector, var_selector = self._filter_to_mask(filter, use_slices=False)
-        except (KeyError, IndexError) as e:
+        except (KeyError, IndexError, TypeError) as e:
             raise FilterError(f"Error parsing filter: {e}") from e
         if obs_selector is not None:
             raise FilterError("filtering on obs unsupported")
