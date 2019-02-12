@@ -29,6 +29,8 @@ build-client :
 # If you are actively developing in the server folder use this, dirties the source tree
 build-for-server-dev : clean-server build-client
 	mkdir -p server/app/web/static/img
+	mkdir -p server/app/web/static/js
+	mkdir -p server/app/web/templates/
 	cp client/build/index.html server/app/web/templates/
 	cp -r client/build/static server/app/web/
 	cp client/build/favicon.png server/app/web/static/img
