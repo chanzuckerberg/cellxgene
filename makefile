@@ -15,6 +15,7 @@ build-server : build-client
 	cp -r server/* $(SERVERBUILD)
 	cp -r client/build/  $(CLIENTBUILD)
 	mkdir -p $(SERVERBUILD)/app/web/static/img
+	mkdir -p $(SERVERBUILD)/app/web/templates/
 	cp $(CLIENTBUILD)/index.html $(SERVERBUILD)/app/web/templates/
 	cp -r $(CLIENTBUILD)/static $(SERVERBUILD)/app/web/
 	cp $(CLIENTBUILD)/favicon.png $(SERVERBUILD)/app/web/static/img
