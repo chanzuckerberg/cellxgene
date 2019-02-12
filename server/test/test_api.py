@@ -73,7 +73,7 @@ class EndPoints(unittest.TestCase):
         self.assertEqual(len(df['columns']), df['n_cols'])
 
     def test_bad_filter(self):
-        endpoints = "data/var"
+        endpoint = "data/var"
         url = f"{URL_BASE}{endpoint}"
         result = self.session.put(url, json=BAD_FILTER)
         self.assertEqual(result.status_code, HTTPStatus.BAD_REQUEST)
