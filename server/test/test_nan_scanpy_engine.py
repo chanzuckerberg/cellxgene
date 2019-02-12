@@ -1,4 +1,3 @@
-import json
 import pytest
 import unittest
 import warnings
@@ -7,7 +6,7 @@ import math
 import decode_fbs
 
 from server.app.scanpy_engine.scanpy_engine import ScanpyEngine
-from server.app.util.errors import (JSONEncodingValueError, FilterError)
+from server.app.util.errors import FilterError
 
 
 class NaNTest(unittest.TestCase):
