@@ -10,6 +10,7 @@ def index():
     dataset_title = current_app.config["DATASET_TITLE"]
     return render_template("index.html", datasetTitle=dataset_title)
 
+
 @bp.route("/favicon.png")
 def favicon():
     return send_from_directory(os.path.join(bp.root_path, "static/img/"), "favicon.png")
