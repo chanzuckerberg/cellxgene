@@ -5,7 +5,6 @@ Flask-Caching>=1.4.0
 Flask-Compress>=1.4.0
 Flask-Cors>=3.0.6
 Flask-RESTful>=0.3.6
-flask-restful-swagger-2>=0.35
 flatbuffers>=1.10.0
 matplotlib>=2.2
 numpy>=1.14.5

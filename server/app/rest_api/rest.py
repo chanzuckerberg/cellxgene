@@ -3,14 +3,13 @@ import pkg_resources
 import warnings
 
 from flask import Blueprint, current_app, jsonify, make_response, request
-from flask_restful_swagger_2 import Api, Resource
+from flask_restful import Api, Resource
 
 from server.app.util.constants import (
     Axis,
     DiffExpMode,
     JSON_NaN_to_num_warning_msg,
 )
-from server.app.util.models import FilterModel
 from server.app.util.errors import (
     FilterError,
     InteractiveError,
@@ -220,7 +219,7 @@ class LayoutObsAPI(Resource):
 
 def get_api_resources():
     bp = Blueprint("api", __name__, url_prefix="/api/v0.2")
-    api = Api(bp, add_api_spec_resource=False)
+    api = Api(bp)
     # Initialization routes
     api.add_resource(SchemaAPI, "/schema")
     api.add_resource(ConfigAPI, "/config")
