@@ -73,34 +73,11 @@ class EndPoints(unittest.TestCase):
         self.assertEqual(len(df['columns']), df['n_cols'])
 
     def test_bad_filter(self):
-        endpoints = ["data/var"]
-        for endpoint in endpoints:
-            url = f"{URL_BASE}{endpoint}"
-            result = self.session.put(url, json=BAD_FILTER)
-            self.assertEqual(result.status_code, HTTPStatus.BAD_REQUEST)
+        endpoints = "data/var"
+        url = f"{URL_BASE}{endpoint}"
+        result = self.session.put(url, json=BAD_FILTER)
+        self.assertEqual(result.status_code, HTTPStatus.BAD_REQUEST)
 
-    # def test_get_annotations_obs(self):
-    #     endpoint = "annotations/obs"
-    #     url = f"{URL_BASE}{endpoint}"
-    #     result = self.session.get(url)
-    #     self.assertEqual(result.status_code, HTTPStatus.OK)
-    #     self.assertEqual(result.headers["Content-Type"], "application/json")
-    #     result_data = result.json()
-    #     self.assertEqual(result_data["names"], ["name", "n_genes", "percent_mito", "n_counts", "louvain"])
-    #     self.assertEqual(len(result_data["data"]), 2638)
-    #     self.assertEqual(len(result_data["data"][0]), 6)
-    #
-    # def test_get_annotations_obs_keys(self):
-    #     endpoint = "annotations/obs"
-    #     query = "annotation-name=n_genes&annotation-name=percent_mito"
-    #     url = f"{URL_BASE}{endpoint}?{query}"
-    #     result = self.session.get(url)
-    #     self.assertEqual(result.headers["Content-Type"], "application/json")
-    #     self.assertEqual(result.status_code, HTTPStatus.OK)
-    #     result_data = result.json()
-    #     self.assertEqual(result_data["names"], ["n_genes", "percent_mito"])
-    #     self.assertEqual(len(result_data["data"][0]), 3)
-    #
     def test_get_annotations_obs_fbs(self):
         endpoint = "annotations/obs"
         url = f"{URL_BASE}{endpoint}"
@@ -171,28 +148,6 @@ class EndPoints(unittest.TestCase):
         result_data = result.json()
         self.assertEqual(len(result_data), 10)
 
-    # def test_get_annotations_var(self):
-    #     endpoint = "annotations/var"
-    #     url = f"{URL_BASE}{endpoint}"
-    #     result = self.session.get(url)
-    #     self.assertEqual(result.status_code, HTTPStatus.OK)
-    #     self.assertEqual(result.headers["Content-Type"], "application/json")
-    #     result_data = result.json()
-    #     self.assertEqual(result_data["names"], ["name", "n_cells"])
-    #     self.assertEqual(len(result_data["data"]), 1838)
-    #     self.assertEqual(len(result_data["data"][0]), 3)
-    #
-    # def test_get_annotations_var_keys(self):
-    #     endpoint = "annotations/var"
-    #     query = "annotation-name=n_cells"
-    #     url = f"{URL_BASE}{endpoint}?{query}"
-    #     result = self.session.get(url)
-    #     self.assertEqual(result.status_code, HTTPStatus.OK)
-    #     self.assertEqual(result.headers["Content-Type"], "application/json")
-    #     result_data = result.json()
-    #     self.assertEqual(result_data["names"], ["n_cells"])
-    #     self.assertEqual(len(result_data["data"][0]), 2)
-    #
     def test_get_annotations_var_fbs(self):
         endpoint = "annotations/var"
         url = f"{URL_BASE}{endpoint}"
