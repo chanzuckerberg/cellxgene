@@ -190,8 +190,7 @@ class AnnotationsObsAPI(Resource):
     def get(self):
         fields = request.args.getlist("annotation-name", None)
         preferred_mimetype = request.accept_mimetypes.best_match(
-            ["application/octet-stream"],
-            "application/octet-stream"
+            ["application/octet-stream"]
         )
         try:
             if preferred_mimetype == "application/octet-stream":
@@ -243,8 +242,7 @@ class AnnotationsVarAPI(Resource):
     def get(self):
         fields = request.args.getlist("annotation-name", None)
         preferred_mimetype = request.accept_mimetypes.best_match(
-            ["application/octet-stream"],
-            "application/octet-stream"
+            ["application/octet-stream"]
         )
         try:
             if preferred_mimetype == "application/octet-stream":
@@ -289,14 +287,15 @@ class DataVarAPI(Resource):
     )
     def put(self):
         preferred_mimetype = request.accept_mimetypes.best_match(
-            ["application/octet-stream"],
-            "application/octet-stream"
+            ["application/octet-stream"]
         )
         try:
             if preferred_mimetype == "application/octet-stream":
+                filter_json = request.get_json()
+                filter = filter_json["filter"] if filter_json else None
                 return make_response(
                     current_app.data.data_frame_to_fbs_matrix(
-                        request.get_json()["filter"], axis=Axis.VAR
+                        filter, axis=Axis.VAR
                     ),
                     HTTPStatus.OK,
                     {"Content-Type": "application/octet-stream"})
@@ -425,8 +424,7 @@ class LayoutObsAPI(Resource):
     )
     def get(self):
         preferred_mimetype = request.accept_mimetypes.best_match(
-            ["application/octet-stream"],
-            "application/octet-stream"
+            ["application/octet-stream"]
         )
         try:
             if preferred_mimetype == "application/octet-stream":
