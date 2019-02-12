@@ -4,6 +4,7 @@ import _ from "lodash";
 import * as kvCache from "./keyvalcache";
 import summarizeAnnotations from "./summarizeAnnotations";
 import { layoutDimensionName, obsAnnoDimensionName } from "../nameCreators";
+import Crossfilter from "../typedCrossfilter";
 import { sliceByIndex } from "../typedCrossfilter/util";
 
 /*
@@ -231,7 +232,12 @@ export function createVarDimension(
   crossfilter,
   geneName
 ) {
-  return crossfilter.dimension(_worldVarDataCache[geneName], Float32Array);
+  // return crossfilter.dimension(_worldVarDataCache[geneName], Float32Array);
+  return crossfilter.dimension(
+    Crossfilter.ScalarDimension,
+    _worldVarDataCache[geneName],
+    Float32Array
+  );
 }
 
 export function createObsDimensionMap(crossfilter, world) {
@@ -246,9 +252,14 @@ export function createObsDimensionMap(crossfilter, world) {
     .filter(anno => anno.name !== "name")
     .transform((result, anno) => {
       const dimType = deduceDimensionType(anno, anno.name);
-      // XXX if dimtype is a scalar, we may be able to do better?
-      if (dimType) {
+      if (dimType === "enum") {
         result[obsAnnoDimensionName(anno.name)] = crossfilter.dimension(
+          Crossfilter.EnumDimension,
+          r => r[anno.name]
+        );
+      } else {
+        result[obsAnnoDimensionName(anno.name)] = crossfilter.dimension(
+          Crossfilter.ScalarDimension,
           r => r[anno.name],
           dimType
         );
@@ -259,13 +270,10 @@ export function createObsDimensionMap(crossfilter, world) {
   /*
   Add crossfilter dimensions allowing filtering on layout
   */
-  dimensionMap[layoutDimensionName("X")] = crossfilter.dimension(
+  dimensionMap[layoutDimensionName("XY")] = crossfilter.dimension(
+    Crossfilter.SpatialDimension,
     obsLayout.X,
-    Float32Array
-  );
-  dimensionMap[layoutDimensionName("Y")] = crossfilter.dimension(
-    obsLayout.Y,
-    Float32Array
+    obsLayout.Y
   );
 
   return dimensionMap;

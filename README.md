@@ -191,9 +191,13 @@ Currently this is not supported directly, but you should be able to do this manu
 
 <hr>
 
-> I tried to `pip install cellxgene` and got a weird error I don't understand
+> I tried to `pip install cellxgene` and got a weird error about missing paths to an HDF5 library?  
 
-This may happen, especially as we work out bugs in our installation process! Please create a new [Github issue](https://github.com/chanzuckerberg/cellxgene/issues), explain what you did, and include all the error messages you saw. It'd also be super helpful if you call `pip freeze` and include the full output alongside your issue.
+You probably just need to install HDF5 first. If you're on a mac, you can simply `brew install hdf5` and then try `pip install cellxgene` again.  
+
+> I tried to `pip install cellxgene` and got another weird error I don't understand  
+
+This may happen, especially as we work out bugs in our installation process! Please create a new [Github issue](https://github.com/chanzuckerberg/cellxgene/issues), explain what you did, and include all the error messages you saw. It'd also be super helpful if you call `pip freeze` and include the full output alongside your issue.  
 
 <hr>
 

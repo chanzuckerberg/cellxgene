@@ -1,6 +1,10 @@
 # cellxgene REST API 0.2 specification
 
-_Note:_ this document lacks any information about the binary encoding utilized by various routes. This will be added at a later date.
+_Note:_ this document is increasingly divergent from the code base and should be read with great suspicion. For example, it lacks any information
+about the binary encoding used by various routes, and has incorrect information about "required" routes and features. We may update it at a
+later date when the protocol stabilizes a bit.
+
+---
 
 Items marked as (_future_) are intended for future implementation, and are included in the design to round out the concept, and highlight what we would do when/if we needed more functionality. The (_future_) items are not currently used by the cellxgene web application, and may be omitted from any backend - see [Current Front-End Dependencies](#current-front-end-dependencies) for more details.
 
