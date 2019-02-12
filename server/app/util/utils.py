@@ -1,9 +1,5 @@
 import json
-from argparse import ArgumentTypeError
-
 from numpy import float32, integer
-
-from server.app.util.errors import MimeTypeError
 
 
 class Float32JSONEncoder(json.JSONEncoder):
