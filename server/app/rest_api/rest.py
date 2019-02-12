@@ -3,7 +3,7 @@ import pkg_resources
 import warnings
 
 from flask import Blueprint, current_app, jsonify, make_response, request
-from flask_restful_swagger_2 import Api, swagger, Resource
+from flask_restful_swagger_2 import Api, Resource
 
 from server.app.util.constants import (
     Axis,
@@ -27,47 +27,6 @@ Sort order for routes
 
 
 class SchemaAPI(Resource):
-    @swagger.doc(
-        {
-            "summary": "get schema for dataframe and annotations",
-            "tags": ["initialize"],
-            "parameters": [],
-            "responses": {
-                "200": {
-                    "description": "schema",
-                    "examples": {
-                        "application/json": {
-                            "schema": {
-                                "dataframe": {
-                                    "nObs": 383,
-                                    "nVar": 19944,
-                                    "type": "float32",
-                                },
-                                "annotations": {
-                                    "obs": [
-                                        {"name": "name", "type": "string"},
-                                        {"name": "tissue_type", "type": "string"},
-                                        {"name": "num_reads", "type": "int32"},
-                                        {"name": "sample_name", "type": "string"},
-                                        {
-                                            "name": "clusters",
-                                            "type": "categorical",
-                                            "categories": [99, 1, "unknown cluster"],
-                                        },
-                                        {"name": "QScore", "type": "float32"},
-                                    ],
-                                    "var": [
-                                        {"name": "name", "type": "string"},
-                                        {"name": "gene", "type": "string"},
-                                    ],
-                                },
-                            }
-                        }
-                    },
-                }
-            },
-        }
-    )
     def get(self):
         return make_response(
             jsonify({"schema": current_app.data.schema}), HTTPStatus.OK
@@ -75,47 +34,6 @@ class SchemaAPI(Resource):
 
 
 class ConfigAPI(Resource):
-    @swagger.doc(
-        {
-            "summary": "Configuration information to assist in front-end adaptation"
-            " to underlying engine, available functionality, interactive time limits, etc",
-            "tags": ["initialize"],
-            "parameters": [],
-            "responses": {
-                "200": {
-                    "description": "schema",
-                    "examples": {
-                        "application/json": {
-                            "config": {
-                                "features": [
-                                    {
-                                        "method": "POST",
-                                        "path": "/cluster/",
-                                        "available": False,
-                                    },
-                                    {
-                                        "method": "POST",
-                                        "path": "/layout/obs",
-                                        "available": True,
-                                        "interactiveLimit": 10000,
-                                    },
-                                    {
-                                        "method": "POST",
-                                        "path": "/layout/var",
-                                        "available": False,
-                                    },
-                                ],
-                                "displayNames": {
-                                    "engine": "ScanPy version 1.33",
-                                    "dataset": "/home/joe/mouse/blorth.csv",
-                                },
-                            }
-                        }
-                    },
-                }
-            },
-        }
-    )
     def get(self):
         config = {
             "config": {
@@ -154,39 +72,6 @@ class ConfigAPI(Resource):
 
 
 class AnnotationsObsAPI(Resource):
-    @swagger.doc(
-        {
-            "summary": "Fetch annotations (metadata) for all observations.",
-            "tags": ["annotations"],
-            "parameters": [
-                {
-                    "in": "query",
-                    "name": "annotation-name",
-                    "type": "string",
-                    "description": "list of 1 or more annotation names",
-                }
-            ],
-            "responses": {
-                "200": {
-                    "description": "annotations",
-                    "examples": {
-                        "application/json": {
-                            "names": ["tissue_type", "sex", "num_reads", "clusters"],
-                            "data": [
-                                [0, "lung", "F", 39844, 99],
-                                [1, "heart", "M", 83, 1],
-                                [49, "spleen", None, 2, "unknown cluster"],
-                            ],
-                        }
-                    },
-                },
-                "400": {
-                    "description": "one or more of the annotation-name identifiers were not associated with an "
-                    "annotation name"
-                },
-            },
-        }
-    )
     def get(self):
         fields = request.args.getlist("annotation-name", None)
         preferred_mimetype = request.accept_mimetypes.best_match(
@@ -206,39 +91,6 @@ class AnnotationsObsAPI(Resource):
 
 
 class AnnotationsVarAPI(Resource):
-    @swagger.doc(
-        {
-            "summary": "Fetch annotations (metadata) for all variables.",
-            "tags": ["annotations"],
-            "parameters": [
-                {
-                    "in": "query",
-                    "name": "annotation-name",
-                    "type": "string",
-                    "description": "list of 1 or more annotation names",
-                }
-            ],
-            "responses": {
-                "200": {
-                    "description": "annotations",
-                    "examples": {
-                        "application/json": {
-                            "names": ["name", "category"],
-                            "data": [
-                                [0, "ATAD3C", 1],
-                                [1, "RER1", None],
-                                [49, "S100B", 6],
-                            ],
-                        }
-                    },
-                },
-                "400": {
-                    "description": "one or more of the annotation-name identifiers were not associated with an"
-                    " annotation name"
-                },
-            },
-        }
-    )
     def get(self):
         fields = request.args.getlist("annotation-name", None)
         preferred_mimetype = request.accept_mimetypes.best_match(
@@ -258,33 +110,6 @@ class AnnotationsVarAPI(Resource):
 
 
 class DataVarAPI(Resource):
-    @swagger.doc(
-        {
-            "summary": "Get data (expression values) from the dataframe.",
-            "tags": ["data"],
-            "parameters": [
-                {
-                    "name": "filter",
-                    "description": "Complex Filter",
-                    "in": "body",
-                    "schema": FilterModel,
-                }
-            ],
-            "responses": {
-                "200": {
-                    "description": "expression",
-                    "examples": {
-                        "application/json": {
-                            "obs": [0, 20000],
-                            "var": [[1, 39483, 3902, 203, 0, 0, 28]],
-                        }
-                    },
-                },
-                "400": {"description": "Malformed filter"},
-                "406": {"description": "Unacceptable MIME type"},
-            },
-        }
-    )
     def put(self):
         preferred_mimetype = request.accept_mimetypes.best_match(
             ["application/octet-stream"]
@@ -308,28 +133,6 @@ class DataVarAPI(Resource):
 
 
 class DiffExpObsAPI(Resource):
-    @swagger.doc(
-        {
-            "summary": "Generate differential expression (DE) statistics for two specified subsets of data, "
-            "as indicated by the two provided observation complex filters",
-            "tags": ["diffexp"],
-            "responses": {
-                "200": {
-                    "description": "Statistics are encoded as an array of arrays, with fields ordered as: "
-                    "varIndex, logfoldchange,  pVal, pValAdj",
-                    "examples": {
-                        "application/json": [
-                            [328, -2.569_489, 2.655_706e-63, 3.642_036e-57],
-                            [1250, -2.569_489, 2.655_706e-63, 3.642_036e-57],
-                        ]
-                    },
-                },
-                "400": {"description": "malformed filter"},
-                "403": {"description": "non-interactive request"},
-                "501": {"description": "diffexp is not implemented"},
-            },
-        }
-    )
     def post(self):
         args = request.get_json()
         # confirm mode is present and legal
@@ -398,30 +201,6 @@ class DiffExpObsAPI(Resource):
 
 
 class LayoutObsAPI(Resource):
-    @swagger.doc(
-        {
-            "summary": "Get the default layout for all observations.",
-            "tags": ["layout"],
-            "parameters": [],
-            "responses": {
-                "200": {
-                    "description": "layout",
-                    "examples": {
-                        "application/json": {
-                            "layout": {
-                                "ndims": 2,
-                                "coordinates": [
-                                    [0, 0.284_483, 0.983_744],
-                                    [1, 0.038_844, 0.739_444],
-                                ],
-                            }
-                        }
-                    },
-                },
-                "400": {"description": "Data preparation error"},
-            },
-        }
-    )
     def get(self):
         preferred_mimetype = request.accept_mimetypes.best_match(
             ["application/octet-stream"]
