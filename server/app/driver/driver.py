@@ -42,45 +42,12 @@ class CXGDriver(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def filter_dataframe(self, filter):
-        """
-        Filter cells from data and return a subset of the data. They can operate on both obs and var dimension with
-        indexing and filtering by annotation value. Filters are combined with the and operator.
-        See REST specs for info on filter format:
-        https://github.com/chanzuckerberg/cellxgene/blob/master/docs/REST_API.md
-
-        :param filter: dictionary with filter params
-        :return: View into scanpy object with cells/genes filtered
-        """
-        pass
-
-    @abstractmethod
-    def annotation(self, filter, axis, fields=None):
+    def annotation_to_fbs_matrix(self, axis, field=None):
         """
         Gets annotation value for each observation
-        :param filter: filter: dictionary with filter params
         :param axis: string obs or var
         :param fields: list of keys for annotation to return, returns all annotation values if not set.
-        :return: dict: names - list of fields in order, data - list of lists or metadata
-        [observation ids, val1, val2...]
-        """
-        pass
-
-    @abstractmethod
-    def annotation_to_fbs_matrix(self, axis, field=None):
-        """ Same as annotation(), except returns a flatbuffer, and does not support filtering. """
-        pass
-
-    @abstractmethod
-    def data_frame(self, filter, axis):
-        """
-        Retrieves data for each variable for observations in data frame
-        :param filter: filter: dictionary with filter params
-        :param axis: string obs or var
-        :return: {
-            "var": list of variable ids,
-            "obs": [cellid, var1 expression, var2 expression, ...],
-        }
+        :return: flatbuffer: in fbs/matrix.fbs encoding
         """
         pass
 
@@ -101,16 +68,6 @@ class CXGDriver(metaclass=ABCMeta):
         :param top_n: Limit results to top N (Top var mode only)
         :param interactive_limit: -- don't compute if total # genes in dataframes are larger than this
         :return: top N genes and corresponding stats
-        """
-        pass
-
-    @abstractmethod
-    def layout(self, filter, interactive_limit=None):
-        """
-        Computes a n-d layout for cells through dimensionality reduction.
-        :param filter: filter: dictionary with filter params
-        :param interactive_limit: -- don't compute if total # genes in dataframes are larger than this
-        :return:  [cellid, x, y, ...]
         """
         pass
 
