@@ -17,7 +17,7 @@ the default REST test response.
 const defaultBigBang = () => {
   /* create unverse, world, crossfilter and dimensionMap */
   /* create universe */
-  const universe = Universe.createUniverseFromRestV02Response(
+  const universe = Universe.createUniverseFromResponse(
     REST.config,
     REST.schema,
     REST.annotationsObs,
@@ -41,7 +41,7 @@ const defaultBigBang = () => {
 
 describe("createWorldFromEntireUniverse", () => {
   test("create from REST sample", () => {
-    const universe = Universe.createUniverseFromRestV02Response(
+    const universe = Universe.createUniverseFromResponse(
       REST.config,
       REST.schema,
       REST.annotationsObs,

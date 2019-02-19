@@ -2,12 +2,12 @@ import * as Universe from "../../../src/util/stateManager/universe";
 import * as Dataframe from "../../../src/util/dataframe";
 import * as REST from "./sampleResponses";
 
-describe("createUniverseFromRestV02Response", () => {
+describe("createUniverseFromResponse", () => {
   /*
-  test createUniverseFromRestV02Response - this function converts
+  test createUniverseFromResponse - this function converts
   a set of REST 0.2 responses into a "new" Universe.
 
-  createUniverseFromRestV02Response(
+  createUniverseFromResponse(
     configResponse,
     schemaResponse,
     annotationsObsResponse,
@@ -30,7 +30,7 @@ describe("createUniverseFromRestV02Response", () => {
     create a universe from sample data nad validate its shape & contents
     */
     const { nObs, nVar } = REST.schema.schema.dataframe;
-    const universe = Universe.createUniverseFromRestV02Response(
+    const universe = Universe.createUniverseFromResponse(
       REST.config,
       REST.schema,
       REST.annotationsObs,

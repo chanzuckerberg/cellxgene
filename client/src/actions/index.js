@@ -40,7 +40,7 @@ const doInitialDataLoad = () =>
       /* set config defaults */
       const config = { ...globals.configDefaults, ...results[0].config };
       const [, schema, obsAnno, varAnno, obsLayout] = [...results];
-      const universe = Universe.createUniverseFromRestV02Response(
+      const universe = Universe.createUniverseFromResponse(
         config,
         schema,
         obsAnno,

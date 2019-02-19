@@ -74,7 +74,7 @@ function finalize(universe) {
   return universe;
 }
 
-function RESTv02AnnotationsFBSToDataframe(arrayBuffer) {
+function AnnotationsFBSToDataframe(arrayBuffer) {
   /*
   Convert a Matrix FBS to a Dataframe.
   */
@@ -88,7 +88,7 @@ function RESTv02AnnotationsFBSToDataframe(arrayBuffer) {
   return df;
 }
 
-function RESTv02LayoutFBSToDataframe(arrayBuffer) {
+function LayoutFBSToDataframe(arrayBuffer) {
   const fbs = decodeMatrixFBS(arrayBuffer, true);
   const df = new Dataframe.Dataframe(
     [fbs.nRows, fbs.nCols],
@@ -125,7 +125,7 @@ function reconcileSchemaCategoriesWithSummary(universe) {
   });
 }
 
-export function createUniverseFromRestV02Response(
+export function createUniverseFromResponse(
   configResponse,
   schemaResponse,
   annotationsObsResponse,
@@ -147,14 +147,10 @@ export function createUniverseFromRestV02Response(
   universe.nVar = schema.dataframe.nVar;
 
   /* annotations */
-  universe.obsAnnotations = RESTv02AnnotationsFBSToDataframe(
-    annotationsObsResponse
-  );
-  universe.varAnnotations = RESTv02AnnotationsFBSToDataframe(
-    annotationsVarResponse
-  );
+  universe.obsAnnotations = AnnotationsFBSToDataframe(annotationsObsResponse);
+  universe.varAnnotations = AnnotationsFBSToDataframe(annotationsVarResponse);
   /* layout */
-  universe.obsLayout = RESTv02LayoutFBSToDataframe(layoutFBSResponse);
+  universe.obsLayout = LayoutFBSToDataframe(layoutFBSResponse);
 
   universe.summary = summarizeAnnotations(
     universe.schema,
