@@ -74,7 +74,7 @@ function finalize(universe) {
   return universe;
 }
 
-function RESTv02AnotationsFBSToDataframe(arrayBuffer) {
+function RESTv02AnnotationsFBSToDataframe(arrayBuffer) {
   /*
   Convert a Matrix FBS to a Dataframe.
   */
@@ -147,10 +147,10 @@ export function createUniverseFromRestV02Response(
   universe.nVar = schema.dataframe.nVar;
 
   /* annotations */
-  universe.obsAnnotations = RESTv02AnotationsFBSToDataframe(
+  universe.obsAnnotations = RESTv02AnnotationsFBSToDataframe(
     annotationsObsResponse
   );
-  universe.varAnnotations = RESTv02AnotationsFBSToDataframe(
+  universe.varAnnotations = RESTv02AnnotationsFBSToDataframe(
     annotationsVarResponse
   );
   /* layout */
