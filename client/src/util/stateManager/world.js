@@ -41,7 +41,7 @@ Notable keys in the world object:
 * summary: summary of each obsAnnotation column (eg, numeric extent for
   continuous data, category counts for categorical metadata)
 
-* varDataCache: expression columns, in a kvCache.   XXX: maybe move to a
+* varDataCache: expression columns, in a kvCache.   TODO: maybe move to a
   Dataframe in the future.
 
 */

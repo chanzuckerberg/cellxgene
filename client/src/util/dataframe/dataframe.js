@@ -399,6 +399,9 @@ class Dataframe {
   }
 
   has(r, c) {
+    /*
+    Test if row/col labels exist in the dataframe - returns true/false
+    */
     const [nRows, nCols] = this.dims;
     const coff = this.colIndex.getOffset(c);
     const roff = this.rowIndex.getOffset(r);
@@ -406,6 +409,10 @@ class Dataframe {
   }
 
   ihas(r, c) {
+    /*
+    Test if row/col offset (integer) position exists in the
+    dataframe - returns true/false
+    */
     const [nRows, nCols] = this.dims;
     return c >= 0 && c < nCols && r >= 0 && r < nRows;
   }
