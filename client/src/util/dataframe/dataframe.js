@@ -384,7 +384,15 @@ class Dataframe {
 
   at(r, c) {
     /*
-      Access a single value, for a row/col label pair
+    Access a single value, for a row/col label pair.
+
+    For performance reasons, there are no bounds or existance
+    checks on labels, and no defined behavior when these are supplied.
+    May return undefined, throw an Error, or do something else for
+    non-existant labels.  If you want predictable out-of-bounds
+    behavior, use has(), eg,
+
+    const myVal = df.has(r,l) ? df.at(r,l) : undefined;
     */
     const coff = this.colIndex.getOffset(c);
     const roff = this.rowIndex.getOffset(r);
@@ -393,7 +401,13 @@ class Dataframe {
 
   iat(r, c) {
     /*
-    Access a single value, for a row/col offset (integer) position
+    Access a single value, for a row/col offset (integer) position.
+
+    For performance reasons, there are no bounds checks on row/col offsets
+    or other well-defined behavior for out-of-bounds values.  If you want
+    well-defined bounds checking, use ihas(), eg,
+
+    const myVal = df.ihas(r, c) ? df.iat(r, c) : undefined;
     */
     return this.__columns[c][r];
   }

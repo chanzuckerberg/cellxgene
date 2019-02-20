@@ -1,10 +1,5 @@
 import * as Dataframe from "../../../src/util/dataframe";
 
-/*
-Known gaps in these tests:
-- row indexing, especially a la 'world', are not sufficiently tested
-*/
-
 describe("dataframe constructor", () => {
   test("empty dataframe", () => {
     const df = new Dataframe.Dataframe([0, 0], []);
@@ -50,6 +45,86 @@ describe("dataframe constructor", () => {
     expect(df.at(2, "B")).toEqual(3);
     expect(df.iat(0, 0)).toEqual(0);
     expect(df.iat(2, 1)).toEqual(5);
+  });
+});
+
+describe("simple data access", () => {
+  const df = new Dataframe.Dataframe(
+    [4, 2],
+    [
+      new Float64Array([0.0, Number.NaN, Number.POSITIVE_INFINITY, 3.14159]),
+      ["red", "blue", "green", "nan"]
+    ],
+    new Dataframe.DenseInt32Index([3, 2, 1, 0]),
+    new Dataframe.KeyIndex(["numbers", "colors"])
+  );
+
+  test("iat", () => {
+    expect(df).toBeDefined();
+
+    // present
+    expect(df.iat(0, 0)).toEqual(0.0);
+    expect(df.iat(0, 1)).toEqual("red");
+    expect(df.iat(1, 0)).toEqual(Number.NaN);
+    expect(df.iat(1, 1)).toEqual("blue");
+    expect(df.iat(2, 0)).toEqual(Number.POSITIVE_INFINITY);
+    expect(df.iat(2, 1)).toEqual("green");
+    expect(df.iat(3, 0)).toEqual(3.14159);
+    expect(df.iat(3, 1)).toEqual("nan");
+
+    // labels out of range have no defined behavior
+  });
+
+  test("at", () => {
+    expect(df).toBeDefined();
+
+    // present
+    expect(df.at(3, "numbers")).toEqual(0.0);
+    expect(df.at(3, "colors")).toEqual("red");
+    expect(df.at(2, "numbers")).toEqual(Number.NaN);
+    expect(df.at(2, "colors")).toEqual("blue");
+    expect(df.at(1, "numbers")).toEqual(Number.POSITIVE_INFINITY);
+    expect(df.at(1, "colors")).toEqual("green");
+    expect(df.at(0, "numbers")).toEqual(3.14159);
+    expect(df.at(0, "colors")).toEqual("nan");
+
+    // labels out of range have no defined behavior
+  });
+
+  test("ihas", () => {
+    expect(df).toBeDefined();
+
+    // present
+    expect(df.ihas(0, 0)).toBeTruthy();
+    expect(df.ihas(1, 1)).toBeTruthy();
+    expect(df.ihas(3, 1)).toBeTruthy();
+
+    // not present
+    expect(df.ihas(-1, -1)).toBeFalsy();
+    expect(df.ihas(0, 99)).toBeFalsy();
+    expect(df.ihas(99, 0)).toBeFalsy();
+    expect(df.ihas(99, 99)).toBeFalsy();
+    expect(df.ihas(-1, 0)).toBeFalsy();
+    expect(df.ihas(0, -1)).toBeFalsy();
+  });
+
+  test("has", () => {
+    expect(df).toBeDefined();
+
+    // present
+    expect(df.has(3, "numbers")).toBeTruthy();
+    expect(df.has(0, "numbers")).toBeTruthy();
+    expect(df.has(3, "colors")).toBeTruthy();
+    expect(df.has(0, "colors")).toBeTruthy();
+
+    // not present
+    expect(df.has(3, "foo")).toBeFalsy();
+    expect(df.has(-1, "numbers")).toBeFalsy();
+    expect(df.has(-1, -1)).toBeFalsy();
+    expect(df.has(null, null)).toBeFalsy();
+    expect(df.has(0, "foo")).toBeFalsy();
+    expect(df.has(99, "numbers")).toBeFalsy();
+    expect(df.has(99, "foo")).toBeFalsy();
   });
 });
 
