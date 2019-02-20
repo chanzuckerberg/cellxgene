@@ -54,7 +54,7 @@ describe("dataframe constructor", () => {
 });
 
 describe("dataframe subsetting", () => {
-  test("cutByList", () => {
+  describe("cutByList", () => {
     const sourceDf = new Dataframe.Dataframe(
       [3, 4],
       [
@@ -67,84 +67,90 @@ describe("dataframe subsetting", () => {
       new Dataframe.KeyIndex(["int32", "string", "float32", "colors"])
     );
 
-    // all rows, one column
-    const dfA = sourceDf.cutByList(null, ["colors"]);
-    expect(dfA).toBeDefined();
-    expect(dfA.dims).toEqual([3, 1]);
-    expect(dfA.iat(0, 0)).toEqual("red");
-    expect(dfA.at(2, "colors")).toEqual("blue");
-    expect(dfA.col("colors").asArray()).toEqual(["red", "green", "blue"]);
-    expect(dfA.icol(0).asArray()).toEqual(["red", "green", "blue"]);
-    expect(dfA.col("colors").asArray()).toEqual(
-      sourceDf.col("colors").asArray()
-    );
-    expect(dfA.rowIndex.keys()).toEqual(sourceDf.rowIndex.keys());
-    expect(dfA.colIndex.keys()).toEqual(["colors"]);
+    test("all rows, one column", () => {
+      const dfA = sourceDf.cutByList(null, ["colors"]);
+      expect(dfA).toBeDefined();
+      expect(dfA.dims).toEqual([3, 1]);
+      expect(dfA.iat(0, 0)).toEqual("red");
+      expect(dfA.at(2, "colors")).toEqual("blue");
+      expect(dfA.col("colors").asArray()).toEqual(["red", "green", "blue"]);
+      expect(dfA.icol(0).asArray()).toEqual(["red", "green", "blue"]);
+      expect(dfA.col("colors").asArray()).toEqual(
+        sourceDf.col("colors").asArray()
+      );
+      expect(dfA.rowIndex.keys()).toEqual(sourceDf.rowIndex.keys());
+      expect(dfA.colIndex.keys()).toEqual(["colors"]);
+    });
 
-    // all rows, two columns
-    const dfB = sourceDf.cutByList(null, ["colors", "float32"]);
-    expect(dfB).toBeDefined();
-    expect(dfB.dims).toEqual([3, 2]);
-    expect(dfB.iat(0, 0)).toBeCloseTo(4.4);
-    expect(dfB.iat(0, 1)).toEqual("red");
-    expect(dfB.at(2, "colors")).toEqual("blue");
-    expect(dfB.at(2, "float32")).toBeCloseTo(6.6);
-    expect(dfB.col("colors").asArray()).toEqual(["red", "green", "blue"]);
-    expect(dfB.col("float32").asArray()).toEqual(
-      new Float32Array([4.4, 5.5, 6.6])
-    );
-    expect(dfB.icol(0).asArray()).toEqual(dfB.col("float32").asArray());
-    expect(dfB.icol(1).asArray()).toEqual(dfB.col("colors").asArray());
-    expect(dfB.col("colors").asArray()).toEqual(
-      sourceDf.col("colors").asArray()
-    );
-    expect(dfB.col("float32").asArray()).toEqual(
-      sourceDf.col("float32").asArray()
-    );
-    expect(dfB.rowIndex.keys()).toEqual(sourceDf.rowIndex.keys());
-    expect(dfB.colIndex.keys()).toEqual(["float32", "colors"]);
+    test("all rows, two columns", () => {
+      const dfB = sourceDf.cutByList(null, ["colors", "float32"]);
+      expect(dfB).toBeDefined();
+      expect(dfB.dims).toEqual([3, 2]);
+      expect(dfB.iat(0, 0)).toBeCloseTo(4.4);
+      expect(dfB.iat(0, 1)).toEqual("red");
+      expect(dfB.at(2, "colors")).toEqual("blue");
+      expect(dfB.at(2, "float32")).toBeCloseTo(6.6);
+      expect(dfB.col("colors").asArray()).toEqual(["red", "green", "blue"]);
+      expect(dfB.col("float32").asArray()).toEqual(
+        new Float32Array([4.4, 5.5, 6.6])
+      );
+      expect(dfB.icol(0).asArray()).toEqual(dfB.col("float32").asArray());
+      expect(dfB.icol(1).asArray()).toEqual(dfB.col("colors").asArray());
+      expect(dfB.col("colors").asArray()).toEqual(
+        sourceDf.col("colors").asArray()
+      );
+      expect(dfB.col("float32").asArray()).toEqual(
+        sourceDf.col("float32").asArray()
+      );
+      expect(dfB.rowIndex.keys()).toEqual(sourceDf.rowIndex.keys());
+      expect(dfB.colIndex.keys()).toEqual(["float32", "colors"]);
+    });
 
-    // one row, all columns
-    const dfC = sourceDf.cutByList([1], null);
-    expect(dfC).toBeDefined();
-    expect(dfC.dims).toEqual([1, 4]);
-    expect(dfC.iat(0, 0)).toEqual(1);
-    expect(dfC.iat(0, 1)).toEqual("B");
-    expect(dfC.iat(0, 2)).toBeCloseTo(5.5);
-    expect(dfC.iat(0, 3)).toEqual("green");
-    expect(dfC.rowIndex.keys()).toEqual(new Int32Array([1]));
-    expect(dfC.colIndex.keys()).toEqual(sourceDf.colIndex.keys());
+    test("one row, all columns", () => {
+      const dfC = sourceDf.cutByList([1], null);
+      expect(dfC).toBeDefined();
+      expect(dfC.dims).toEqual([1, 4]);
+      expect(dfC.iat(0, 0)).toEqual(1);
+      expect(dfC.iat(0, 1)).toEqual("B");
+      expect(dfC.iat(0, 2)).toBeCloseTo(5.5);
+      expect(dfC.iat(0, 3)).toEqual("green");
+      expect(dfC.rowIndex.keys()).toEqual(new Int32Array([1]));
+      expect(dfC.colIndex.keys()).toEqual(sourceDf.colIndex.keys());
+    });
 
-    // two rows, all columns
-    const dfD = sourceDf.cutByList([0, 2], null);
-    expect(dfD).toBeDefined();
-    expect(dfD.dims).toEqual([2, 4]);
-    expect(dfD.icol(0).asArray()).toEqual(new Int32Array([0, 2]));
-    expect(dfD.icol(1).asArray()).toEqual(["A", "C"]);
-    expect(dfD.icol(2).asArray()).toEqual(new Float32Array([4.4, 6.6]));
-    expect(dfD.icol(3).asArray()).toEqual(["red", "blue"]);
-    expect(dfD.rowIndex.keys()).toEqual(new Int32Array([0, 2]));
-    expect(dfD.colIndex.keys()).toEqual(sourceDf.colIndex.keys());
+    test("two rows, all columns", () => {
+      const dfD = sourceDf.cutByList([0, 2], null);
+      expect(dfD).toBeDefined();
+      expect(dfD.dims).toEqual([2, 4]);
+      expect(dfD.icol(0).asArray()).toEqual(new Int32Array([0, 2]));
+      expect(dfD.icol(1).asArray()).toEqual(["A", "C"]);
+      expect(dfD.icol(2).asArray()).toEqual(new Float32Array([4.4, 6.6]));
+      expect(dfD.icol(3).asArray()).toEqual(["red", "blue"]);
+      expect(dfD.rowIndex.keys()).toEqual(new Int32Array([0, 2]));
+      expect(dfD.colIndex.keys()).toEqual(sourceDf.colIndex.keys());
+    });
 
-    // all rows, all columns
-    const dfE = sourceDf.cutByList(null, null);
-    expect(dfE).toBeDefined();
-    expect(dfE.dims).toEqual([3, 4]);
-    expect(dfE.icol(0).asArray()).toEqual(sourceDf.icol(0).asArray());
-    expect(dfE.icol(1).asArray()).toEqual(sourceDf.icol(1).asArray());
-    expect(dfE.icol(2).asArray()).toEqual(sourceDf.icol(2).asArray());
-    expect(dfE.icol(3).asArray()).toEqual(sourceDf.icol(3).asArray());
-    expect(dfE.rowIndex.keys()).toEqual(sourceDf.rowIndex.keys());
-    expect(dfE.colIndex.keys()).toEqual(sourceDf.colIndex.keys());
+    test("all rows, all columns", () => {
+      const dfE = sourceDf.cutByList(null, null);
+      expect(dfE).toBeDefined();
+      expect(dfE.dims).toEqual([3, 4]);
+      expect(dfE.icol(0).asArray()).toEqual(sourceDf.icol(0).asArray());
+      expect(dfE.icol(1).asArray()).toEqual(sourceDf.icol(1).asArray());
+      expect(dfE.icol(2).asArray()).toEqual(sourceDf.icol(2).asArray());
+      expect(dfE.icol(3).asArray()).toEqual(sourceDf.icol(3).asArray());
+      expect(dfE.rowIndex.keys()).toEqual(sourceDf.rowIndex.keys());
+      expect(dfE.colIndex.keys()).toEqual(sourceDf.colIndex.keys());
+    });
 
-    // two rows, two colums
-    const dfF = sourceDf.cutByList([0, 2], ["int32", "float32"]);
-    expect(dfF).toBeDefined();
-    expect(dfF.dims).toEqual([2, 2]);
-    expect(dfF.icol(0).asArray()).toEqual(new Int32Array([0, 2]));
-    expect(dfF.icol(1).asArray()).toEqual(new Float32Array([4.4, 6.6]));
-    expect(dfF.rowIndex.keys()).toEqual(new Int32Array([0, 2]));
-    expect(dfF.colIndex.keys()).toEqual(["int32", "float32"]);
+    test("two rows, two colums", () => {
+      const dfF = sourceDf.cutByList([0, 2], ["int32", "float32"]);
+      expect(dfF).toBeDefined();
+      expect(dfF.dims).toEqual([2, 2]);
+      expect(dfF.icol(0).asArray()).toEqual(new Int32Array([0, 2]));
+      expect(dfF.icol(1).asArray()).toEqual(new Float32Array([4.4, 6.6]));
+      expect(dfF.rowIndex.keys()).toEqual(new Int32Array([0, 2]));
+      expect(dfF.colIndex.keys()).toEqual(["int32", "float32"]);
+    });
   });
 
   test("icutByMask", () => {
