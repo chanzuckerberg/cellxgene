@@ -38,6 +38,7 @@ class CellSetButton extends React.Component {
           type="button"
           disabled={differential.diffExp}
           onClick={this.set.bind(this)}
+          data-testid={`cellset_button_${eitherCellSetOneOrTwo}`}
         >
           {eitherCellSetOneOrTwo}
           {": "}

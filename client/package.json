@@ -97,6 +97,7 @@
     "jest": "^24.1.0",
     "json-loader": "^0.5.4",
     "mini-css-extract-plugin": "^0.4.1",
+    "puppeteer": "^1.12.1",
     "rimraf": "^2.6.3",
     "serve-favicon": "^2.3.0",
     "style-loader": "^0.23.1",

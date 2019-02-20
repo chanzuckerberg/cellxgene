@@ -485,6 +485,7 @@ class Graph extends React.Component {
             <canvas
               width={responsive.width - this.graphPaddingRight}
               height={responsive.height - this.graphPaddingTop}
+              data-testid="layout"
               ref={canvas => {
                 this.reglCanvas = canvas;
               }}
