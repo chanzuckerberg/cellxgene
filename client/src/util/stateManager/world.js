@@ -127,8 +127,8 @@ export function createWorldFromCurrentSelection(universe, world, crossfilter) {
 
   /* now subset/cut obs */
   const mask = crossfilter.allFilteredMask();
-  newWorld.obsAnnotations = world.obsAnnotations.icutByMask(mask, null);
-  newWorld.obsLayout = world.obsLayout.icutByMask(mask, null);
+  newWorld.obsAnnotations = world.obsAnnotations.icutByMask(mask);
+  newWorld.obsLayout = world.obsLayout.icutByMask(mask);
   newWorld.nObs = newWorld.obsAnnotations.dims[0];
 
   /* derived data & summaries */

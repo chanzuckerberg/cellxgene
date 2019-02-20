@@ -296,7 +296,7 @@ class Dataframe {
     return new Dataframe(dims, columns, rowIndex, colIndex);
   }
 
-  cutByList(rowLabels, colLabels) {
+  cutByList(rowLabels, colLabels = null) {
     const toOffsets = (labels, index) => {
       if (!labels) {
         return null;
@@ -315,11 +315,11 @@ class Dataframe {
     return this.__cut(rowOffsets, colOffsets);
   }
 
-  icutByList(rowOffsets, colOffsets) {
+  icutByList(rowOffsets, colOffsets = null) {
     return this.__cut(rowOffsets, colOffsets);
   }
 
-  icutByMask(rowMask, colMask) {
+  icutByMask(rowMask, colMask = null) {
     /*
     Cut on row/column based upon a truthy/falsey array.
     */
