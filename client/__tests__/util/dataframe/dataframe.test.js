@@ -293,6 +293,197 @@ describe("dataframe factories", () => {
       expect(dfB.icol(i).asArray()).toEqual(dfA.icol(i).asArray());
     }
   });
+
+  describe("withCol", () => {
+    test("KeyIndex", () => {
+      const df = new Dataframe.Dataframe(
+        [2, 2],
+        [["red", "blue"], [true, false]],
+        null,
+        new Dataframe.KeyIndex(["colors", "bools"])
+      );
+      const dfA = df.withCol("numbers", [1, 0]);
+
+      expect(dfA).toBeDefined();
+      expect(dfA.dims).toEqual([2, 3]);
+      expect(dfA.icol(0).asArray()).toEqual(["red", "blue"]);
+      expect(dfA.icol(1).asArray()).toEqual([true, false]);
+      expect(dfA.icol(2).asArray()).toEqual([1, 0]);
+      expect(dfA.col("numbers").asArray()).toEqual([1, 0]);
+      expect(dfA.colIndex.keys()).toEqual(["colors", "bools", "numbers"]);
+      expect(df.colIndex.keys()).toEqual(["colors", "bools"]);
+      expect(df.rowIndex.keys()).toEqual(dfA.rowIndex.keys());
+    });
+
+    test("DenseInt32Index", () => {
+      const df = new Dataframe.Dataframe(
+        [2, 2],
+        [["red", "blue"], [true, false]],
+        null,
+        new Dataframe.DenseInt32Index([74, 75])
+      );
+      const dfA = df.withCol(72, [1, 0]);
+
+      expect(dfA).toBeDefined();
+      expect(dfA.dims).toEqual([2, 3]);
+      expect(dfA.icol(0).asArray()).toEqual(["red", "blue"]);
+      expect(dfA.icol(1).asArray()).toEqual([true, false]);
+      expect(dfA.icol(2).asArray()).toEqual([1, 0]);
+      expect(dfA.col(74).asArray()).toEqual(["red", "blue"]);
+      expect(dfA.col(75).asArray()).toEqual([true, false]);
+      expect(dfA.col(72).asArray()).toEqual([1, 0]);
+      expect(dfA.colIndex.keys()).toEqual(new Int32Array([74, 75, 72]));
+      expect(df.colIndex.keys()).toEqual(new Int32Array([74, 75]));
+      expect(df.rowIndex.keys()).toEqual(dfA.rowIndex.keys());
+    });
+
+    test("DenseInt32Index promote", () => {
+      const df = new Dataframe.Dataframe(
+        [2, 2],
+        [["red", "blue"], [true, false]],
+        null,
+        new Dataframe.DenseInt32Index([74, 75])
+      );
+      const dfA = df.withCol(999, [1, 0]);
+
+      expect(dfA).toBeDefined();
+      expect(dfA.dims).toEqual([2, 3]);
+      expect(dfA.icol(0).asArray()).toEqual(["red", "blue"]);
+      expect(dfA.icol(1).asArray()).toEqual([true, false]);
+      expect(dfA.icol(2).asArray()).toEqual([1, 0]);
+      expect(dfA.col(74).asArray()).toEqual(["red", "blue"]);
+      expect(dfA.col(75).asArray()).toEqual([true, false]);
+      expect(dfA.col(999).asArray()).toEqual([1, 0]);
+      expect(dfA.colIndex.keys()).toEqual(new Int32Array([74, 75, 999]));
+      expect(df.colIndex.keys()).toEqual(new Int32Array([74, 75]));
+      expect(df.rowIndex.keys()).toEqual(dfA.rowIndex.keys());
+    });
+
+    test("IdentityInt32Index with last", () => {
+      const df = new Dataframe.Dataframe(
+        [2, 2],
+        [["red", "blue"], [true, false]],
+        null,
+        null
+      );
+      const dfA = df.withCol(2, [1, 0]);
+
+      expect(dfA).toBeDefined();
+      expect(dfA.dims).toEqual([2, 3]);
+      expect(dfA.icol(0).asArray()).toEqual(["red", "blue"]);
+      expect(dfA.icol(1).asArray()).toEqual([true, false]);
+      expect(dfA.icol(2).asArray()).toEqual([1, 0]);
+      expect(dfA.col(0).asArray()).toEqual(["red", "blue"]);
+      expect(dfA.col(1).asArray()).toEqual([true, false]);
+      expect(dfA.col(2).asArray()).toEqual([1, 0]);
+      expect(dfA.colIndex.keys()).toEqual(new Int32Array([0, 1, 2]));
+      expect(df.colIndex.keys()).toEqual(new Int32Array([0, 1]));
+      expect(df.rowIndex.keys()).toEqual(dfA.rowIndex.keys());
+    });
+
+    test("IdentityInt32Index promote", () => {
+      const df = new Dataframe.Dataframe(
+        [2, 2],
+        [["red", "blue"], [true, false]],
+        null,
+        null
+      );
+      const dfA = df.withCol(99, [1, 0]);
+
+      expect(dfA).toBeDefined();
+      expect(dfA.dims).toEqual([2, 3]);
+      expect(dfA.icol(0).asArray()).toEqual(["red", "blue"]);
+      expect(dfA.icol(1).asArray()).toEqual([true, false]);
+      expect(dfA.icol(2).asArray()).toEqual([1, 0]);
+      expect(dfA.col(0).asArray()).toEqual(["red", "blue"]);
+      expect(dfA.col(1).asArray()).toEqual([true, false]);
+      expect(dfA.col(99).asArray()).toEqual([1, 0]);
+      expect(dfA.colIndex.keys()).toEqual(new Int32Array([0, 1, 99]));
+      expect(df.colIndex.keys()).toEqual(new Int32Array([0, 1]));
+      expect(df.rowIndex.keys()).toEqual(dfA.rowIndex.keys());
+    });
+  });
+
+  describe("dropCol", () => {
+    test("KeyIndex", () => {
+      const df = new Dataframe.Dataframe(
+        [2, 3],
+        [["red", "blue"], [true, false], [1, 0]],
+        null,
+        new Dataframe.KeyIndex(["colors", "bools", "numbers"])
+      );
+      const dfA = df.dropCol("colors");
+
+      expect(dfA).toBeDefined();
+      expect(dfA.dims).toEqual([2, 2]);
+      expect(dfA.icol(0).asArray()).toEqual([true, false]);
+      expect(dfA.icol(1).asArray()).toEqual([1, 0]);
+      expect(dfA.col("numbers").asArray()).toEqual([1, 0]);
+      expect(dfA.colIndex.keys()).toEqual(["bools", "numbers"]);
+      expect(df.colIndex.keys()).toEqual(["colors", "bools", "numbers"]);
+      expect(df.rowIndex.keys()).toEqual(dfA.rowIndex.keys());
+    });
+
+    test("IdentityInt32Index drop first", () => {
+      const df = new Dataframe.Dataframe(
+        [2, 3],
+        [["red", "blue"], [true, false], [1, 0]],
+        null,
+        null
+      );
+      const dfA = df.dropCol(0);
+
+      expect(dfA).toBeDefined();
+      expect(dfA.dims).toEqual([2, 2]);
+      expect(dfA.icol(0).asArray()).toEqual([true, false]);
+      expect(dfA.icol(1).asArray()).toEqual([1, 0]);
+      expect(df.col(1).asArray()).toEqual(dfA.col(1).asArray());
+      expect(df.col(2).asArray()).toEqual(dfA.col(2).asArray());
+      expect(dfA.colIndex.keys()).toEqual(new Int32Array([1, 2]));
+      expect(df.colIndex.keys()).toEqual(new Int32Array([0, 1, 2]));
+      expect(df.rowIndex.keys()).toEqual(dfA.rowIndex.keys());
+    });
+
+    test("IdentityInt32Index drop last", () => {
+      const df = new Dataframe.Dataframe(
+        [2, 3],
+        [["red", "blue"], [true, false], [1, 0]],
+        null,
+        null
+      );
+      const dfA = df.dropCol(2);
+
+      expect(dfA).toBeDefined();
+      expect(dfA.dims).toEqual([2, 2]);
+      expect(dfA.icol(0).asArray()).toEqual(["red", "blue"]);
+      expect(dfA.icol(1).asArray()).toEqual([true, false]);
+      expect(df.col(0).asArray()).toEqual(dfA.col(0).asArray());
+      expect(df.col(1).asArray()).toEqual(dfA.col(1).asArray());
+      expect(dfA.colIndex.keys()).toEqual(new Int32Array([0, 1]));
+      expect(df.colIndex.keys()).toEqual(new Int32Array([0, 1, 2]));
+      expect(df.rowIndex.keys()).toEqual(dfA.rowIndex.keys());
+    });
+
+    test("DenseInt32Index", () => {
+      const df = new Dataframe.Dataframe(
+        [2, 3],
+        [["red", "blue"], [true, false], [1, 0]],
+        null,
+        new Dataframe.DenseInt32Index([102, 101, 100])
+      );
+      const dfA = df.dropCol(101);
+
+      expect(dfA).toBeDefined();
+      expect(dfA.dims).toEqual([2, 2]);
+      expect(dfA.icol(0).asArray()).toEqual(["red", "blue"]);
+      expect(dfA.icol(1).asArray()).toEqual([1, 0]);
+      expect(dfA.col(100).asArray()).toEqual([1, 0]);
+      expect(dfA.col(102).asArray()).toEqual(["red", "blue"]);
+      expect(dfA.colIndex.keys()).toEqual(new Int32Array([102, 100]));
+      expect(df.colIndex.keys()).toEqual(new Int32Array([102, 101, 100]));
+      expect(df.rowIndex.keys()).toEqual(dfA.rowIndex.keys());
+    });
+  });
 });
 
 describe("dataframe col", () => {

@@ -61,9 +61,9 @@ class IdentityInt32Index {
     return this.maxOffset;
   }
 
-  cut(labelArray) {
+  __promote(labelArray) {
     /*
-    if density of resulting integer
+    time/space decision - based on the resulting density
     */
     const [minLabel, maxLabel] = extent(labelArray);
     const labelSpaceSize = maxLabel - minLabel + 1;
@@ -73,6 +73,26 @@ class IdentityInt32Index {
       return new KeyIndex(labelArray);
     }
     return new DenseInt32Index(labelArray, [minLabel, maxLabel]);
+  }
+
+  cut(labelArray) {
+    return this.__promote(labelArray);
+  }
+
+  with(label) {
+    if (label === this.maxOffset) {
+      return new IdentityInt32Index(label + 1);
+    }
+    return this.__promote([...this.keys(), label]);
+  }
+
+  drop(label) {
+    if (label === this.maxOffset - 1) {
+      return new IdentityInt32Index(label);
+    }
+    const labelArray = [...this.keys()];
+    labelArray.splice(labelArray.indexOf(label), 1);
+    return this.__promote(labelArray);
   }
 }
 /* eslint-enable class-methods-use-this */
@@ -125,7 +145,7 @@ class DenseInt32Index {
     return this.rindex.length;
   }
 
-  cut(labelArray) {
+  __promote(labelArray) {
     /*
     time/space decision - if we are going to use less than 10% of the
     dense index space, switch to a KeyIndex (which is slower, but uses
@@ -140,6 +160,20 @@ class DenseInt32Index {
     }
     return new DenseInt32Index(labelArray, [minLabel, maxLabel]);
   }
+
+  cut(labelArray) {
+    return this.__promote(labelArray);
+  }
+
+  with(label) {
+    return this.__promote([...this.keys(), label]);
+  }
+
+  drop(label) {
+    const labelArray = [...this.keys()];
+    labelArray.splice(labelArray.indexOf(label), 1);
+    return this.__promote(labelArray);
+  }
 }
 /* eslint-enable class-methods-use-this */
 
@@ -151,6 +185,9 @@ class KeyIndex {
   */
   constructor(labels) {
     const index = new Map();
+    if (labels === undefined) {
+      labels = [];
+    }
     const rindex = labels;
     labels.forEach((v, i) => {
       index.set(v, i);
@@ -180,6 +217,17 @@ class KeyIndex {
   }
 
   cut(labelArray) {
+    return new KeyIndex(labelArray);
+  }
+
+  with(label) {
+    return new KeyIndex([...this.rindex, label]);
+  }
+
+  drop(label) {
+    const idx = this.rindex.indexOf(label);
+    const labelArray = [...this.rindex];
+    labelArray.splice(idx, 1);
     return new KeyIndex(labelArray);
   }
 }

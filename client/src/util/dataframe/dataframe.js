@@ -210,6 +210,9 @@ class Dataframe {
   }
 
   clone() {
+    /*
+    Clone this dataframe
+    */
     return new this.constructor(
       this.dims,
       [...this.__columns],
@@ -218,8 +221,45 @@ class Dataframe {
     );
   }
 
-  static empty() {
-    return new Dataframe([0, 0], []);
+  withCol(label, colData) {
+    /*
+    Like clone(), but adds a column.  Example:
+    const newDf = df.withCol("foo", [1,2,3]);
+
+    Dimensionality of new column must match existing dataframe.
+
+    Special case: empty dataframe will accept any size column.  Example:
+    const newDf = Dataframe.empty().withCol("foo", [1,2,3]);
+    */
+    let dims;
+    if (this.isEmpty()) {
+      dims = [colData.length, 1];
+    } else {
+      dims = [this.dims[0], this.dims[1] + 1];
+    }
+
+    const columns = [...this.__columns];
+    columns.push(colData);
+    const colIndex = this.colIndex.with(label);
+    return new this.constructor(dims, columns, this.rowIndex, colIndex);
+  }
+
+  dropCol(label) {
+    /*
+    Create a new dataframe, omitting one columns.
+
+    const newDf = df.dropCol("colors");
+    */
+    const dims = [this.dims[0], this.dims[1] - 1];
+    const coffset = this.colIndex.getOffset(label);
+    const columns = [...this.__columns];
+    columns.splice(coffset, 1);
+    const colIndex = this.colIndex.drop(label);
+    return new this.constructor(dims, columns, this.rowIndex, colIndex);
+  }
+
+  static empty(rowIndex = null, colIndex = null) {
+    return new Dataframe([0, 0], [], rowIndex, colIndex);
   }
 
   static create(dims, columnarData) {
@@ -429,6 +469,18 @@ class Dataframe {
     */
     const [nRows, nCols] = this.dims;
     return c >= 0 && c < nCols && r >= 0 && r < nRows;
+  }
+
+  hasCol(c) {
+    /*
+    Test if col label exists - return true/false
+    */
+    return !!this.col(c);
+  }
+
+  isEmpty() {
+    const [rows, cols] = this.dims;
+    return rows === 0 && cols === 0;
   }
 
   /****
