@@ -1,4 +1,3 @@
-import json
 import pytest
 import unittest
 import warnings
@@ -7,7 +6,7 @@ import math
 import decode_fbs
 
 from server.app.scanpy_engine.scanpy_engine import ScanpyEngine
-from server.app.util.errors import JSONEncodingValueError
+from server.app.util.errors import FilterError
 
 
 class NaNTest(unittest.TestCase):
@@ -42,10 +41,15 @@ class NaNTest(unittest.TestCase):
         self.assertEqual(data_frame_var["n_cols"], 100)
         self.assertTrue(math.isnan(data_frame_var["columns"][3][3]))
 
-        with pytest.raises(JSONEncodingValueError):
-            json.loads(self.data.data_frame(None, "obs"))
-        with pytest.raises(JSONEncodingValueError):
-            json.loads(self.data.data_frame(None, "var"))
+        with pytest.raises(FilterError):
+            self.data.data_frame_to_fbs_matrix("an erroneous filter", "var")
+        with pytest.raises(FilterError):
+            filter_ = {
+                "filter": {
+                    "obs": {"index": [1, 99, [200, 300]]}
+                }
+            }
+            self.data.data_frame_to_fbs_matrix(filter_["filter"], "var")
 
     def test_dataframe_obs_not_implemented(self):
         with self.assertRaises(ValueError) as cm:
@@ -65,8 +69,3 @@ class NaNTest(unittest.TestCase):
         self.assertEqual(annotations["col_idx"], ["name", "n_cells", "var_with_nans"])
         self.assertEqual(annotations["n_rows"], 100)
         self.assertTrue(math.isnan(annotations["columns"][2][0]))
-
-        with pytest.raises(JSONEncodingValueError):
-            json.loads(self.data.annotation(None, "obs"))
-        with pytest.raises(JSONEncodingValueError):
-            json.loads(self.data.annotation(None, "var"))

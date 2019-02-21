@@ -2,6 +2,9 @@ from http import HTTPStatus
 from subprocess import Popen
 import unittest
 import time
+import math
+
+import decode_fbs
 
 import requests
 
@@ -43,9 +46,29 @@ class WithNaNs(unittest.TestCase):
         result = self.session.get(url)
         self.assertEqual(result.status_code, HTTPStatus.OK)
 
-    def test_errors(self):
-        endpoints = ["annotations/obs", "annotations/var", "data/obs", "data/var"]
-        for endpoint in endpoints:
-            url = f"{URL_BASE}{endpoint}"
-            result = self.session.get(url)
-            self.assertEqual(result.status_code, HTTPStatus.INTERNAL_SERVER_ERROR)
+    def test_data(self):
+        endpoint = "data/var"
+        url = f"{URL_BASE}{endpoint}"
+        result = self.session.put(url)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
+        df = decode_fbs.decode_matrix_FBS(result.content)
+        self.assertTrue(math.isnan(df["columns"][3][3]))
+
+    def test_annotation_obs(self):
+        endpoint = "annotations/obs"
+        url = f"{URL_BASE}{endpoint}"
+        result = self.session.get(url)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
+        df = decode_fbs.decode_matrix_FBS(result.content)
+        self.assertTrue(math.isnan(df["columns"][2][0]))
+
+    def test_annotation_var(self):
+        endpoint = "annotations/var"
+        url = f"{URL_BASE}{endpoint}"
+        result = self.session.get(url)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
+        df = decode_fbs.decode_matrix_FBS(result.content)
+        self.assertTrue(math.isnan(df["columns"][2][0]))

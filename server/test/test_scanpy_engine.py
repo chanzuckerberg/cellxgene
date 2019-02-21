@@ -3,11 +3,13 @@ from os import path
 import pytest
 import time
 import unittest
+import decode_fbs
 
 import numpy as np
 from pandas import Series
 
 from server.app.scanpy_engine.scanpy_engine import ScanpyEngine
+from server.app.util.errors import FilterError
 
 
 class UtilTest(unittest.TestCase):
@@ -45,55 +47,29 @@ class UtilTest(unittest.TestCase):
     def test_filter_idx(self):
         filter_ = {
             "filter": {
-                "var": {"index": [1, 99, [200, 300]]},
-                "obs": {"index": [1, 99, [1000, 2000]]},
+                "var": {"index": [1, 99, [200, 300]]}
             }
         }
-        data = self.data.filter_dataframe(filter_["filter"])
-        self.assertEqual(data.shape, (1002, 102))
-
-    def test_filter_annotation(self):
-        filter_ = {
-            "filter": {
-                "obs": {
-                    "annotation_value": [
-                        {"name": "louvain", "values": ["NK cells", "CD8 T cells"]}
-                    ]
-                }
-            }
-        }
-        data = self.data.filter_dataframe(filter_["filter"])
-        self.assertEqual(data.shape, (470, 1838))
-        filter_ = {
-            "filter": {"obs": {"annotation_value": [{"name": "n_counts", "min": 3000}]}}
-        }
-        data = self.data.filter_dataframe(filter_["filter"])
-        self.assertEqual(data.shape, (497, 1838))
-
-    def test_filter_annotation_no_uns(self):
-        filter_ = {
-            "filter": {
-                "var": {"annotation_value": [{"name": "name", "values": ["RER1"]}]}
-            }
-        }
-        data = self.data.filter_dataframe(filter_["filter"])
-        self.assertEqual(data.shape[1], 1)
+        fbs = self.data.data_frame_to_fbs_matrix(filter_["filter"], "var")
+        data = decode_fbs.decode_matrix_FBS(fbs)
+        self.assertEqual(data["n_rows"], 2638)
+        self.assertEqual(data["n_cols"], 102)
 
     def test_filter_complex(self):
         filter_ = {
             "filter": {
-                "var": {"index": [1, 99, [200, 300]]},
-                "obs": {
+                "var": {
                     "annotation_value": [
-                        {"name": "louvain", "values": ["NK cells", "CD8 T cells"]},
-                        {"name": "n_counts", "min": 3000},
+                        {"name": "n_cells", "min": 10}
                     ],
-                    "index": [1, 99, [1000, 2000]],
-                },
+                    "index": [1, 99, [200, 300]]
+                }
             }
         }
-        data = self.data.filter_dataframe(filter_["filter"])
-        self.assertEqual(data.shape, (15, 102))
+        fbs = self.data.data_frame_to_fbs_matrix(filter_["filter"], "var")
+        data = decode_fbs.decode_matrix_FBS(fbs)
+        self.assertEqual(data["n_rows"], 2638)
+        self.assertEqual(data["n_cols"], 91)
 
     def test_obs_and_var_names(self):
         self.assertEqual(np.sum(self.data.data.var["name"].isna()), 0)
@@ -119,60 +95,42 @@ class UtilTest(unittest.TestCase):
         )
 
     def test_layout(self):
-        layout = json.loads(self.data.layout(None))
-        self.assertEqual(layout["layout"]["ndims"], 2)
-        self.assertEqual(len(layout["layout"]["coordinates"]), 2638)
-        self.assertEqual(layout["layout"]["coordinates"][0][0], 0)
-        for idx, val in enumerate(layout["layout"]["coordinates"]):
-            self.assertLessEqual(val[1], 1)
-            self.assertLessEqual(val[2], 1)
+        fbs = self.data.layout_to_fbs_matrix()
+        layout = decode_fbs.decode_matrix_FBS(fbs)
+        self.assertEqual(layout["n_cols"], 2)
+        self.assertEqual(layout["n_rows"], 2638)
+
+        X = layout["columns"][0]
+        self.assertTrue((X >= 0).all() and (X <= 1).all())
+        Y = layout["columns"][1]
+        self.assertTrue((Y >= 0).all() and (Y <= 1).all())
 
     def test_annotations(self):
-        annotations = json.loads(self.data.annotation(None, "obs"))
+        fbs = self.data.annotation_to_fbs_matrix("obs")
+        annotations = decode_fbs.decode_matrix_FBS(fbs)
+        self.assertEqual(annotations["n_rows"], 2638)
+        self.assertEqual(annotations["n_cols"], 5)
         self.assertEqual(
-            annotations["names"],
+            annotations["col_idx"],
             ["name", "n_genes", "percent_mito", "n_counts", "louvain"],
         )
-        self.assertEqual(len(annotations["data"]), 2638)
-        annotations = json.loads(self.data.annotation(None, "var"))
-        self.assertEqual(annotations["names"], ["name", "n_cells"])
-        self.assertEqual(len(annotations["data"]), 1838)
+
+        fbs = self.data.annotation_to_fbs_matrix("var")
+        annotations = decode_fbs.decode_matrix_FBS(fbs)
+        self.assertEqual(annotations['n_rows'], 1838)
+        self.assertEqual(annotations['n_cols'], 2)
+        self.assertEqual(annotations["col_idx"], ["name", "n_cells"])
 
     def test_annotation_fields(self):
-        annotations = json.loads(
-            self.data.annotation(None, "obs", ["n_genes", "n_counts"])
-        )
-        self.assertEqual(annotations["names"], ["n_genes", "n_counts"])
-        self.assertEqual(len(annotations["data"]), 2638)
-        annotations = json.loads(self.data.annotation(None, "var", ["name"]))
-        self.assertEqual(annotations["names"], ["name"])
-        self.assertEqual(len(annotations["data"]), 1838)
+        fbs = self.data.annotation_to_fbs_matrix("obs", ["n_genes", "n_counts"])
+        annotations = decode_fbs.decode_matrix_FBS(fbs)
+        self.assertEqual(annotations["n_rows"], 2638)
+        self.assertEqual(annotations['n_cols'], 2)
 
-    def test_filtered_annotation(self):
-        filter_ = {
-            "filter": {
-                "obs": {"annotation_value": [{"name": "n_counts", "min": 3000}]},
-                "var": {
-                    "annotation_value": [{"name": "name", "values": ["ATAD3C", "RER1"]}]
-                },
-            }
-        }
-        annotations = json.loads(self.data.annotation(filter_["filter"], "obs"))
-        self.assertEqual(
-            annotations["names"],
-            ["name", "n_genes", "percent_mito", "n_counts", "louvain"],
-        )
-        self.assertEqual(len(annotations["data"]), 497)
-        annotations = json.loads(self.data.annotation(filter_["filter"], "var"))
-        self.assertEqual(annotations["names"], ["name", "n_cells"])
-        self.assertEqual(len(annotations["data"]), 2)
-
-    def test_filtered_layout(self):
-        filter_ = {
-            "filter": {"obs": {"annotation_value": [{"name": "n_counts", "min": 3000}]}}
-        }
-        layout = json.loads(self.data.layout(filter_["filter"]))
-        self.assertEqual(len(layout["layout"]["coordinates"]), 497)
+        fbs = self.data.annotation_to_fbs_matrix("var", ["name"])
+        annotations = decode_fbs.decode_matrix_FBS(fbs)
+        self.assertEqual(annotations['n_rows'], 1838)
+        self.assertEqual(annotations['n_cols'], 1)
 
     def test_diffexp_topN(self):
         f1 = {"filter": {"obs": {"index": [[0, 500]]}}}
@@ -183,42 +141,51 @@ class UtilTest(unittest.TestCase):
         self.assertEqual(len(result), 20)
 
     def test_data_frame(self):
-        data_frame_obs = json.loads(self.data.data_frame(None, "obs"))
-        self.assertEqual(len(data_frame_obs["var"]), 1838)
-        self.assertEqual(len(data_frame_obs["obs"]), 2638)
-        data_frame_var = json.loads(self.data.data_frame(None, "var"))
-        self.assertEqual(len(data_frame_var["var"]), 1838)
-        self.assertEqual(len(data_frame_var["obs"]), 2638)
+        fbs = self.data.data_frame_to_fbs_matrix(None, "var")
+        data = decode_fbs.decode_matrix_FBS(fbs)
+        self.assertEqual(data["n_rows"], 2638)
+        self.assertEqual(data["n_cols"], 1838)
+
+        with self.assertRaises(ValueError):
+            self.data.data_frame_to_fbs_matrix(None, "obs")
 
     def test_filtered_data_frame(self):
         filter_ = {
+            "filter": {"var": {"annotation_value": [{"name": "n_cells", "min": 100}]}}
+        }
+        fbs = self.data.data_frame_to_fbs_matrix(filter_["filter"], "var")
+        data = decode_fbs.decode_matrix_FBS(fbs)
+        self.assertEqual(data["n_rows"], 2638)
+        self.assertEqual(data["n_cols"], 1040)
+
+        filter_ = {
             "filter": {"obs": {"annotation_value": [{"name": "n_counts", "min": 3000}]}}
         }
-        data_frame_obs = json.loads(self.data.data_frame(filter_["filter"], "obs"))
-        self.assertEqual(len(data_frame_obs["var"]), 1838)
-        self.assertEqual(len(data_frame_obs["obs"]), 497)
-        self.assertIsInstance(data_frame_obs["obs"][0], (list, tuple))
-        self.assertEqual(type(data_frame_obs["var"][0]), int)
-        data_frame_var = json.loads(self.data.data_frame(filter_["filter"], "var"))
-        self.assertEqual(len(data_frame_var["var"]), 1838)
-        self.assertEqual(len(data_frame_var["obs"]), 497)
-        self.assertIsInstance(data_frame_var["var"][0], (list, tuple))
-        self.assertEqual(type(data_frame_var["obs"][0]), int)
+        with self.assertRaises(FilterError):
+            self.data.data_frame_to_fbs_matrix(filter_["filter"], "var")
 
-    def test_data_single_gene(self):
-        for axis in ["obs", "var"]:
-            filter_ = {
-                "filter": {
-                    "var": {"annotation_value": [{"name": "name", "values": ["RER1"]}]}
-                }
+    def test_data_named_gene(self):
+        filter_ = {
+            "filter": {
+                "var": {"annotation_value": [{"name": "name", "values": ["RER1"]}]}
             }
-            data_frame_var = json.loads(self.data.data_frame(filter_["filter"], axis))
-            if axis == "obs":
-                self.assertEqual(type(data_frame_var["var"][0]), int)
-                self.assertIsInstance(data_frame_var["obs"][0], (list, tuple))
-            elif axis == "var":
-                self.assertEqual(type(data_frame_var["obs"][0]), int)
-                self.assertIsInstance(data_frame_var["var"][0], (list, tuple))
+        }
+        fbs = self.data.data_frame_to_fbs_matrix(filter_["filter"], "var")
+        data = decode_fbs.decode_matrix_FBS(fbs)
+        self.assertEqual(data["n_rows"], 2638)
+        self.assertEqual(data["n_cols"], 1)
+        self.assertEqual(data["col_idx"], [4])
+
+        filter_ = {
+            "filter": {
+                "var": {"annotation_value": [{"name": "name", "values": ["SPEN", "TYMP", "PRMT2"]}]}
+            }
+        }
+        fbs = self.data.data_frame_to_fbs_matrix(filter_["filter"], "var")
+        data = decode_fbs.decode_matrix_FBS(fbs)
+        self.assertEqual(data["n_rows"], 2638)
+        self.assertEqual(data["n_cols"], 3)
+        self.assertTrue((data["col_idx"] == [15, 1818, 1837]).all())
 
     if __name__ == "__main__":
         unittest.main()
