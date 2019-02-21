@@ -7,11 +7,14 @@
   "scripts": {
     "backend-dev": "python3.6 -m venv cellxgene && source cellxgene/bin/activate && yes | pip uninstall cellxgene || true && pip install -e .. && cellxgene launch ",
     "build": "npm run clean && webpack --config configuration/webpack/webpack.config.prod.js",
+    "e2e": "jest e2e",
     "dev": "npm run clean && webpack --config configuration/webpack/webpack.config.dev.js",
     "clean": "rimraf build",
     "start": "node server/development.js",
+    "start-server-for-test": "cellxgene launch -p 5000 ../example-dataset/pbmc3k.h5ad",
+    "ci": "start-server-and-test start-server-for-test :5000 e2e",
     "lint": "eslint src",
-    "test": "jest"
+    "test": "jest --testPathIgnorePatterns e2e"
   },
   "engineStrict": true,
   "engines": {
@@ -100,6 +103,7 @@
     "puppeteer": "^1.12.1",
     "rimraf": "^2.6.3",
     "serve-favicon": "^2.3.0",
+    "start-server-and-test": "^1.7.11",
     "style-loader": "^0.23.1",
     "sw-precache-webpack-plugin": "^0.11.5",
     "url-loader": "^1.1.0",

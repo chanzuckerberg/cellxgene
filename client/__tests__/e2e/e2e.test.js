@@ -1,6 +1,6 @@
 import puppeteer from "puppeteer";
 
-const appUrlBase = "http://localhost:3000";
+const appUrlBase = "http://localhost:5000";
 
 let browser;
 let page;

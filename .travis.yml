@@ -19,3 +19,4 @@ script:
   - npm run --prefix client/ build
   - npm run --prefix client/ test
   - pytest -s server/test
+  - npm run --prefix client/ ci
