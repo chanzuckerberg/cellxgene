@@ -60,19 +60,20 @@ function topNCategories(summary) {
 
 function createCategoricalSelectionState(state, world) {
   const res = {};
-  _.forEach(world.summary.obs, (value, key) => {
-    if (value.categories) {
+  _.forEach(world.obsAnnotations.colIndex.keys(), key => {
+    const summary = world.obsAnnotations.col(key).summarize();
+    if (summary.categories) {
       const isColorField = key.includes("color") || key.includes("Color");
       const isSelectableCategory =
         !isColorField &&
         key !== "name" &&
-        value.categories.length < state.maxCategoryItems;
+        summary.categories.length < state.maxCategoryItems;
       if (isSelectableCategory) {
-        const [categoryValues, categoryCounts] = topNCategories(value);
+        const [categoryValues, categoryCounts] = topNCategories(summary);
         const categoryIndices = new Map(categoryValues.map((v, i) => [v, i]));
         const numCategories = categoryIndices.size;
         const categorySelected = new Array(numCategories).fill(true);
-        const isTruncated = categoryValues.length < value.numCategories;
+        const isTruncated = categoryValues.length < summary.numCategories;
         res[key] = {
           categoryValues, // array: of natively typed category values
           categoryIndices, // map: category value (native type) -> category index
@@ -148,11 +149,7 @@ function pruneVarDataCache(varData, needed) {
     unused.sort((a, b) => colIndex.getOffset(a) - colIndex.getOffset(b));
     const numToDrop =
       unused.length < numOverWatermark ? unused.length : numOverWatermark;
-    console.log(
-      `current ${varData.dims[1]}, need: ${needed.length}, drop: ${numToDrop}`
-    );
     for (let i = 0; i < numToDrop; i += 1) {
-      console.log("expression: DROP ", unused[i]);
       varData = varData.dropCol(unused[i]);
     }
   }
@@ -337,12 +334,14 @@ const Controls = (
 
       // Load new expression data into the varData dataframes
       _.forEach(action.expressionData, (val, key) => {
-        console.log("expression: ADD ", key);
-        universeVarData = universeVarData.withCol(key, val);
-        worldVarData = worldVarData.withCol(
-          key,
-          World.subsetVarData(world, universe, val)
-        );
+        const col = universeVarData.col(key);
+        if (!col || col.asArray() !== val) {
+          universeVarData = universeVarData.withCol(key, val);
+          worldVarData = worldVarData.withCol(
+            key,
+            World.subsetVarData(world, universe, val)
+          );
+        }
       });
 
       // Prune size of varData if getting out of hand....

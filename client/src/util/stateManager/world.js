@@ -1,7 +1,6 @@
 // jshint esversion: 6
 
 import _ from "lodash";
-import summarizeAnnotations from "./summarizeAnnotations"; // XXX cleanup
 import { layoutDimensionName, obsAnnoDimensionName } from "../nameCreators";
 import Crossfilter from "../typedCrossfilter";
 import { sliceByIndex } from "../typedCrossfilter/util";
@@ -38,9 +37,6 @@ Notable keys in the world object:
   A dataframe containing the X/Y layout for all obs.  Columns are named
   'X' and 'Y', and rows are indexed in the same way as obsAnnotation.
 
-* summary: summary of each obsAnnotation column (eg, numeric extent for
-  continuous data, category counts for categorical metadata)
-
 * varData: a cache of expression columns, stored in a Dataframe.  Cache
   managed by controls reducer.
 
@@ -59,10 +55,6 @@ function templateWorld() {
 
     /* layout of graph. Dataframe. */
     obsLayout: Dataframe.Dataframe.empty(),
-
-    /* derived data summaries XXX: consider exploding in place */
-    // XXX cleanup
-    summary: null,
 
     /*
     Var data columns - subset of all
@@ -90,14 +82,6 @@ export function createWorldFromEntireUniverse(universe) {
   /* layout and display characteristics dataframe */
   world.obsLayout = universe.obsLayout;
 
-  /* derived data & summaries */
-  // XXX cleanup
-  world.summary = summarizeAnnotations(
-    world.schema,
-    world.obsAnnotations,
-    world.varAnnotations
-  );
-
   /*
   Var data columns - subset of all
   */
@@ -119,13 +103,6 @@ export function createWorldFromCurrentSelection(universe, world, crossfilter) {
   newWorld.obsAnnotations = world.obsAnnotations.icutByMask(mask);
   newWorld.obsLayout = world.obsLayout.icutByMask(mask);
   newWorld.nObs = newWorld.obsAnnotations.dims[0];
-
-  /* derived data & summaries */
-  newWorld.summary = summarizeAnnotations(
-    newWorld.schema,
-    newWorld.obsAnnotations,
-    newWorld.varAnnotations
-  );
 
   /*
   Var data columns - subset of all

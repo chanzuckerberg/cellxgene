@@ -20,7 +20,6 @@ import finiteExtent from "../../util/finiteExtent";
   scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
   crossfilter: state.controls.crossfilter,
   differential: state.differential,
-  initializeRanges: _.get(state.controls.world, "summary.obs"),
   colorAccessor: state.controls.colorAccessor,
   colorScale: state.controls.colorScale,
   obsAnnotations: _.get(state.controls.world, "obsAnnotations", null)
@@ -127,7 +126,7 @@ class HistogramBrush extends React.Component {
   }
 
   drawHistogram(svgRef) {
-    const { obsAnnotations, field, ranges } = this.props;
+    const { obsAnnotations, ranges, field } = this.props;
     const histogramCache = this.calcHistogramCache(
       obsAnnotations,
       field,
@@ -141,19 +140,13 @@ class HistogramBrush extends React.Component {
   }
 
   handleColorAction() {
-    const {
-      obsAnnotations,
-      dispatch,
-      field,
-      world,
-      initializeRanges
-    } = this.props;
+    const { obsAnnotations, ranges, dispatch, field, world } = this.props;
 
     if (obsAnnotations.col(field)) {
       dispatch({
         type: "color by continuous metadata",
         colorAccessor: field,
-        rangeMaxForColorAccessor: initializeRanges[field].range.max
+        rangeMaxForColorAccessor: ranges.max
       });
     } else if (world.varData.col(field)) {
       dispatch(actions.requestSingleGeneExpressionCountsForColoringPOST(field));

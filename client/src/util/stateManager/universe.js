@@ -2,7 +2,6 @@
 
 import _ from "lodash";
 
-import summarizeAnnotations from "./summarizeAnnotations";
 import decodeMatrixFBS from "./matrix";
 import * as Dataframe from "../dataframe";
 
@@ -22,7 +21,6 @@ function templateUniverse() {
     obsAnnotations: Dataframe.Dataframe.empty(),
     varAnnotations: Dataframe.Dataframe.empty(),
     obsLayout: Dataframe.Dataframe.empty(),
-    summary: null /* derived data summaries. XXX: consider exploding in place */,
 
     /*
     Var data columns - subset of all
@@ -83,7 +81,7 @@ function reconcileSchemaCategoriesWithSummary(universe) {
     ) {
       const categories = _.union(
         _.get(s, "categories", []),
-        _.get(universe.summary.obs[s.name], "categories", [])
+        _.get(universe.obsAnnotations.col(s.name).summarize(), "categories", [])
       );
       s.categories = categories;
     }
@@ -122,12 +120,6 @@ export function createUniverseFromResponse(
   ) {
     throw new Error("Universe dimensionality mismatch - failed to load");
   }
-
-  universe.summary = summarizeAnnotations(
-    universe.schema,
-    universe.obsAnnotations,
-    universe.varAnnotations
-  );
 
   reconcileSchemaCategoriesWithSummary(universe);
   return universe;
