@@ -33,7 +33,7 @@ class HistogramBrush extends React.Component {
       .scaleLinear()
       .range([this.height - this.marginBottom, 0]);
 
-    if (obsAnnotations.col(field)) {
+    if (obsAnnotations.hasCol(field)) {
       // recalculate expensive stuff
       const allValuesForContinuousFieldAsArray = obsAnnotations
         .col(field)
@@ -50,7 +50,7 @@ class HistogramBrush extends React.Component {
         .thresholds(40)(allValuesForContinuousFieldAsArray);
 
       histogramCache.numValues = allValuesForContinuousFieldAsArray.length;
-    } else if (world.varData.col(field)) {
+    } else if (world.varData.hasCol(field)) {
       const varValues = world.varData.col(field).asArray();
 
       histogramCache.x = d3
@@ -142,13 +142,13 @@ class HistogramBrush extends React.Component {
   handleColorAction() {
     const { obsAnnotations, ranges, dispatch, field, world } = this.props;
 
-    if (obsAnnotations.col(field)) {
+    if (obsAnnotations.hasCol(field)) {
       dispatch({
         type: "color by continuous metadata",
         colorAccessor: field,
         rangeMaxForColorAccessor: ranges.max
       });
-    } else if (world.varData.col(field)) {
+    } else if (world.varData.hasCol(field)) {
       dispatch(actions.requestSingleGeneExpressionCountsForColoringPOST(field));
     }
   }
