@@ -47,7 +47,6 @@ describe("createUniverseFromResponse", () => {
         obsAnnotations: expect.any(Dataframe.Dataframe),
         varAnnotations: expect.any(Dataframe.Dataframe),
         obsLayout: expect.any(Dataframe.Dataframe),
-        summary: expect.any(Object),
         varData: expect.any(Dataframe.Dataframe)
       })
     );

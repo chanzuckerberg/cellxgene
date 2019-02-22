@@ -60,20 +60,6 @@ describe("createWorldFromEntireUniverse", () => {
         obsAnnotations: universe.obsAnnotations,
         varAnnotations: universe.varAnnotations,
         obsLayout: universe.obsLayout,
-
-        summary: expect.objectContaining({
-          obs: _(REST.schema.schema.annotations.obs)
-            .filter(v => v.name !== "name")
-            .keyBy("name")
-            .mapValues(() => expect.any(Object))
-            .value(),
-          var: _(REST.schema.schema.annotations.var)
-            .filter(v => v.name !== "name")
-            .keyBy("name")
-            .mapValues(() => expect.any(Object))
-            .value()
-        }),
-
         varData: expect.any(Dataframe.Dataframe)
       })
     );
@@ -125,10 +111,6 @@ describe("createWorldFromCurrentSelection", () => {
         obsAnnotations: expect.any(Dataframe.Dataframe),
         varAnnotations: universe.varAnnotations,
         obsLayout: expect.any(Dataframe.Dataframe),
-        summary: {
-          obs: expect.any(Object) /* we could do better! */,
-          var: expect.any(Object) /* we could do better! */
-        },
         varData: expect.any(Dataframe.Dataframe)
       })
     );
