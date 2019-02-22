@@ -402,6 +402,31 @@ describe("dataframe factories", () => {
       expect(df.colIndex.keys()).toEqual(new Int32Array([0, 1]));
       expect(df.rowIndex.keys()).toEqual(dfA.rowIndex.keys());
     });
+
+    describe("handle column dimensions correctly", () => {
+      /*
+      there are two conditions:
+      - empty dataframe - will accept an add of any dimensionality
+      - non-empty dataframe - added column must match row-count dimension
+      */
+      test("empty.withCol", () => {
+        const edf = Dataframe.Dataframe.empty();
+        const df = edf.withCol("foo", [1, 2, 3]);
+
+        expect(edf).toBeDefined();
+        expect(df).toBeDefined();
+        expect(edf).not.toEqual(df);
+        expect(df.dims).toEqual([3, 1]);
+        expect(df.icol(0).asArray()).toEqual([1, 2, 3]);
+      });
+
+      test("withCol dimension check", () => {
+        const dfA = new Dataframe.Dataframe([1, 1], [["a"]]);
+        expect(() => {
+          dfA.withCol(1, []);
+        }).toThrow(RangeError);
+      });
+    });
   });
 
   describe("dropCol", () => {
