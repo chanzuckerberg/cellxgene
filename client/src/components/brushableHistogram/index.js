@@ -10,7 +10,6 @@ import { Button, ButtonGroup, Tooltip } from "@blueprintjs/core";
 import { connect } from "react-redux";
 import * as d3 from "d3";
 import memoize from "memoize-one";
-import { kvCache } from "../../util/stateManager";
 import * as globals from "../../globals";
 import actions from "../../actions";
 import finiteExtent from "../../util/finiteExtent";
@@ -52,9 +51,8 @@ class HistogramBrush extends React.Component {
         .thresholds(40)(allValuesForContinuousFieldAsArray);
 
       histogramCache.numValues = allValuesForContinuousFieldAsArray.length;
-    } else if (kvCache.get(world.varDataCache, field)) {
-      /* it's not in observations, so it's a gene, but let's check to make sure */
-      const varValues = kvCache.get(world.varDataCache, field);
+    } else if (world.varData.col(field)) {
+      const varValues = world.varData.col(field).asArray();
 
       histogramCache.x = d3
         .scaleLinear()
@@ -157,7 +155,7 @@ class HistogramBrush extends React.Component {
         colorAccessor: field,
         rangeMaxForColorAccessor: initializeRanges[field].range.max
       });
-    } else if (kvCache.get(world.varDataCache, field)) {
+    } else if (world.varData.col(field)) {
       dispatch(actions.requestSingleGeneExpressionCountsForColoringPOST(field));
     }
   }

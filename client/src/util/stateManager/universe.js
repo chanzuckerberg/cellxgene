@@ -2,7 +2,6 @@
 
 import _ from "lodash";
 
-import * as kvCache from "./keyvalcache";
 import summarizeAnnotations from "./summarizeAnnotations";
 import decodeMatrixFBS from "./matrix";
 import * as Dataframe from "../dataframe";
@@ -12,14 +11,9 @@ Private helper function - create and return a template Universe
 */
 function templateUniverse() {
   /* default universe template */
-
-  /* varDataCache config - see kvCache for semantics */
-  const VarDataCacheLowWatermark = 32; // cache element count
-  const VarDataCacheTTLMs = 1000; // min cache time in MS
-
   return {
-    api: null,
-    finalized: false, // XXX: may not be needed
+    api: null, // XXX: no longer used, cleanup
+    finalized: false, // XXX: may not be needed, cleanup?
 
     nObs: 0,
     nVar: 0,
@@ -28,18 +22,15 @@ function templateUniverse() {
     /*
     Annotations
     */
-    obsAnnotations: null,
-    varAnnotations: null,
-    obsLayout: null,
+    obsAnnotations: Dataframe.Dataframe.empty(),
+    varAnnotations: Dataframe.Dataframe.empty(),
+    obsLayout: Dataframe.Dataframe.empty(),
     summary: null /* derived data summaries. XXX: consider exploding in place */,
 
     /*
-    Cache of var data (expression), by var annotation name.   Data can be
-    accesses as a POJO, but if you want caching semantics, use the kvCache
-    API (eg., kvCache.get(), kvCache.set(), ...), which will maintain the
-    LRU semantics.
+    Var data columns - subset of all
     */
-    varDataCache: kvCache.create(VarDataCacheLowWatermark, VarDataCacheTTLMs)
+    varData: Dataframe.Dataframe.empty(null, new Dataframe.KeyIndex())
   };
 }
 
@@ -54,6 +45,10 @@ build an internal POJO for use by the rendering components.
 /*
 generate any client-side transformations or summarization that
 is independent of REST API response formats.
+
+XXX: cleanup.  this doesn't do much now, can we change this into
+a simple error check in the factories?
+}
 */
 function finalize(universe) {
   /* A bit of sanity checking! */
@@ -139,7 +134,7 @@ export function createUniverseFromResponse(
   const universe = templateUniverse();
 
   /* constants */
-  universe.api = "0.2";
+  universe.api = "0.2"; // XXX cleanup
 
   /* schema related */
   universe.schema = schema;

@@ -8,7 +8,6 @@ import {
   obsAnnoDimensionName,
   layoutDimensionName
 } from "../../../src/util/nameCreators";
-import * as kvCache from "../../../src/util/stateManager/keyvalcache";
 
 /*
 Helper - creates universe, world, corssfilter and dimensionMap from
@@ -76,7 +75,7 @@ describe("createWorldFromEntireUniverse", () => {
             .value()
         }),
 
-        varDataCache: expect.any(Object)
+        varData: expect.any(Dataframe.Dataframe)
       })
     );
   });
@@ -132,7 +131,7 @@ describe("createWorldFromCurrentSelection", () => {
           obs: expect.any(Object) /* we could do better! */,
           var: expect.any(Object) /* we could do better! */
         },
-        varDataCache: expect.any(Object)
+        varData: expect.any(Dataframe.Dataframe)
       })
     );
 
@@ -222,21 +221,14 @@ describe("subsetVarData", () => {
   });
 });
 
-describe("createVarDimension", () => {
+describe("createVarDataDimension", () => {
   /* create default universe */
   const { world, crossfilter } = defaultBigBang();
-  /* create a mock var data cache */
-  const varDataCache = kvCache.set(
-    kvCache.create(),
+  world.varData = world.varData.withCol(
     "GENE",
     Float32Array.from(_.range(world.nObs))
   );
-  const result = World.createVarDimension(
-    world,
-    varDataCache,
-    crossfilter,
-    "GENE"
-  );
+  const result = World.createVarDataDimension(world, crossfilter, "GENE");
   expect(result).toBeInstanceOf(Crossfilter.ScalarDimension);
 });
 

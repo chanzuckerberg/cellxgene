@@ -291,7 +291,7 @@ class GeneExpression extends React.Component {
           ) : null}
           {world && userDefinedGenes.length > 0
             ? _.map(userDefinedGenes, (geneName, index) => {
-                const values = world.varDataCache[geneName];
+                const values = world.varData.col(geneName);
                 if (!values) {
                   return null;
                 }
@@ -300,7 +300,7 @@ class GeneExpression extends React.Component {
                     key={geneName}
                     field={geneName}
                     zebra={index % 2 === 0}
-                    ranges={finiteExtent(values)}
+                    ranges={finiteExtent(values.asArray())}
                     isUserDefined
                   />
                 );
@@ -320,7 +320,7 @@ class GeneExpression extends React.Component {
           {differential.diffExp
             ? _.map(differential.diffExp, (value, index) => {
                 const name = world.varAnnotations.at(value[0], "name");
-                const values = world.varDataCache[name];
+                const values = world.varData.col(name);
                 if (!values) {
                   return null;
                 }
@@ -329,7 +329,7 @@ class GeneExpression extends React.Component {
                     key={name}
                     field={name}
                     zebra={index % 2 === 0}
-                    ranges={finiteExtent(values)}
+                    ranges={finiteExtent(values.asArray())}
                     isDiffExp
                     logFoldChange={value[1]}
                     pval={value[2]}

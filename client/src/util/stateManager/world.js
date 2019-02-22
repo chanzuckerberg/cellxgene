@@ -1,11 +1,11 @@
 // jshint esversion: 6
 
 import _ from "lodash";
-import * as kvCache from "./keyvalcache";
-import summarizeAnnotations from "./summarizeAnnotations";
+import summarizeAnnotations from "./summarizeAnnotations"; // XXX cleanup
 import { layoutDimensionName, obsAnnoDimensionName } from "../nameCreators";
 import Crossfilter from "../typedCrossfilter";
 import { sliceByIndex } from "../typedCrossfilter/util";
+import * as Dataframe from "../dataframe";
 
 /*
 
@@ -41,14 +41,10 @@ Notable keys in the world object:
 * summary: summary of each obsAnnotation column (eg, numeric extent for
   continuous data, category counts for categorical metadata)
 
-* varDataCache: expression columns, in a kvCache.   TODO: maybe move to a
-  Dataframe in the future.
+* varData: a cache of expression columns, stored in a Dataframe.  Cache
+  managed by controls reducer.
 
 */
-
-/* varDataCache config - see kvCache for semantics */
-const VarDataCacheLowWatermark = 32; // cache element count
-const VarDataCacheTTLMs = 1000; // min cache time in MS
 
 function templateWorld() {
   return {
@@ -59,19 +55,20 @@ function templateWorld() {
     nVar: 0,
 
     /* annotations */
-    obsAnnotations: null,
-    varAnnotations: null,
+    obsAnnotations: Dataframe.Dataframe.empty(),
+    varAnnotations: Dataframe.Dataframe.empty(),
 
     /* layout of graph. Dataframe. */
-    obsLayout: null,
+    obsLayout: Dataframe.Dataframe.empty(),
 
     /* derived data summaries XXX: consider exploding in place */
+    // XXX cleanup
     summary: null,
 
-    varDataCache: kvCache.create(
-      VarDataCacheLowWatermark,
-      VarDataCacheTTLMs
-    ) /* cache of var data (expression) */
+    /*
+    Var data columns - subset of all
+    */
+    varData: Dataframe.Dataframe.empty(null, new Dataframe.KeyIndex())
   };
 }
 
@@ -92,26 +89,25 @@ export function createWorldFromEntireUniverse(universe) {
   world.nObs = universe.nObs;
   world.nVar = universe.nVar;
 
-  /* annotations */
+  /* annotation dataframes */
   world.obsAnnotations = universe.obsAnnotations;
   world.varAnnotations = universe.varAnnotations;
 
-  /* layout and display characteristics */
+  /* layout and display characteristics dataframe */
   world.obsLayout = universe.obsLayout;
 
   /* derived data & summaries */
+  // XXX cleanup
   world.summary = summarizeAnnotations(
     world.schema,
     world.obsAnnotations,
     world.varAnnotations
   );
 
-  /* build the varDataCache */
-  world.varDataCache = kvCache.map(
-    universe.varDataCache,
-    val => subsetVarData(world, universe, val),
-    { lowWatermark: VarDataCacheLowWatermark, minTTL: VarDataCacheTTLMs }
-  );
+  /*
+  Var data columns - subset of all
+  */
+  world.varData = universe.varData.clone();
 
   return world;
 }
@@ -138,12 +134,14 @@ export function createWorldFromCurrentSelection(universe, world, crossfilter) {
     newWorld.varAnnotations
   );
 
-  /* build the varDataCache */
-  newWorld.varDataCache = kvCache.map(
-    universe.varDataCache,
-    val => subsetVarData(newWorld, universe, val),
-    { lowWatermark: VarDataCacheLowWatermark, minTTL: VarDataCacheTTLMs }
-  );
+  /*
+  Var data columns - subset of all
+  */
+  if (world.varData.isEmpty()) {
+    newWorld.varData = world.varData.clone();
+  } else {
+    newWorld.varData = world.varData.icutByMask(mask);
+  }
   return newWorld;
 }
 
@@ -183,17 +181,10 @@ function deduceDimensionType(attributes, fieldName) {
   when it is no longer needed
   (it will not be garbage collected without this call)
 */
-
-export function createVarDimension(
-  world,
-  _worldVarDataCache,
-  crossfilter,
-  geneName
-) {
-  // return crossfilter.dimension(_worldVarDataCache[geneName], Float32Array);
+export function createVarDataDimension(world, crossfilter, name) {
   return crossfilter.dimension(
     Crossfilter.ScalarDimension,
-    _worldVarDataCache[geneName],
+    world.varData.col(name).asArray(),
     Float32Array
   );
 }

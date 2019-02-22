@@ -19,7 +19,6 @@ import _drawPoints from "./drawPointsRegl";
 import scaleLinear from "../../util/scaleLinear";
 
 import { margin, width, height } from "./util";
-import { kvCache } from "../../util/stateManager";
 import finiteExtent from "../../util/finiteExtent";
 
 @connect(state => {
@@ -30,12 +29,16 @@ import finiteExtent from "../../util/finiteExtent";
     scatterplotYYaccessor
   } = state.controls;
   const expressionX =
-    world && scatterplotXXaccessor
-      ? kvCache.get(world.varDataCache, scatterplotXXaccessor)
+    world &&
+    scatterplotXXaccessor &&
+    world.varData.hasCol(scatterplotXXaccessor)
+      ? world.varData.col(scatterplotXXaccessor).asArray()
       : null;
   const expressionY =
-    world && scatterplotYYaccessor
-      ? kvCache.get(world.varDataCache, scatterplotYYaccessor)
+    world &&
+    scatterplotYYaccessor &&
+    world.varData.hasCol(scatterplotYYaccessor)
+      ? world.varData.col(scatterplotYYaccessor).asArray()
       : null;
 
   return {

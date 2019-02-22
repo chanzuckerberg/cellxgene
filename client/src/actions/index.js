@@ -1,12 +1,11 @@
 // jshint esversion: 6
 import _ from "lodash";
 import * as globals from "../globals";
-import { Universe, kvCache } from "../util/stateManager";
+import { Universe } from "../util/stateManager";
 import {
   catchErrorsWrap,
   doJsonRequest,
   doBinaryRequest,
-  rangeEncodeIndices,
   dispatchNetworkErrorMessageToUser
 } from "../util/actionHelpers";
 
@@ -130,9 +129,9 @@ async function _doRequestExpressionData(dispatch, getState, genes) {
   let expressionData = _.transform(
     genes,
     (expData, g) => {
-      const data = kvCache.get(universe.varDataCache, g);
+      const data = universe.varData.col(g);
       if (data) {
-        expData[g] = data;
+        expData[g] = data.asArray();
       }
     },
     {}
@@ -170,7 +169,7 @@ function requestSingleGeneExpressionCountsForColoringPOST(gene) {
         type: "color by expression",
         gene,
         data: {
-          [gene]: kvCache.get(world.varDataCache, gene)
+          [gene]: world.varData.col(gene).asArray()
         }
       });
     } catch (error) {
@@ -193,7 +192,7 @@ const requestUserDefinedGene = gene => async (dispatch, getState) => {
       type: "request user defined gene success",
       data: {
         genes: [gene],
-        expression: kvCache.get(world.varDataCache, gene)
+        expression: world.varData.col(gene).asArray()
       }
     });
   } catch (error) {
