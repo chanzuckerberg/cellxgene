@@ -49,7 +49,6 @@ Notable keys in the world object:
 function templateWorld() {
   return {
     /* schema/version related */
-    api: null,
     schema: null,
     nObs: 0,
     nVar: 0,
@@ -73,10 +72,6 @@ function templateWorld() {
 }
 
 export function createWorldFromEntireUniverse(universe) {
-  if (!universe.finalized) {
-    throw new Error("World can't be created from an partial Universe");
-  }
-
   const world = templateWorld();
 
   /*
@@ -84,7 +79,6 @@ export function createWorldFromEntireUniverse(universe) {
   */
 
   /* Schema related */
-  world.api = universe.api;
   world.schema = universe.schema;
   world.nObs = universe.nObs;
   world.nVar = universe.nVar;
@@ -116,7 +110,6 @@ export function createWorldFromCurrentSelection(universe, world, crossfilter) {
   const newWorld = templateWorld();
 
   /* these don't change as only OBS are selected in our current implementation */
-  newWorld.api = universe.api;
   newWorld.nVar = universe.nVar;
   newWorld.schema = universe.schema;
   newWorld.varAnnotations = universe.varAnnotations;

@@ -12,9 +12,6 @@ Private helper function - create and return a template Universe
 function templateUniverse() {
   /* default universe template */
   return {
-    api: null, // XXX: no longer used, cleanup
-    finalized: false, // XXX: may not be needed, cleanup?
-
     nObs: 0,
     nVar: 0,
     schema: {},
@@ -41,33 +38,6 @@ aka all of the var/obs data and annotations.
 These functions are used exclusively by the actions and reducers to
 build an internal POJO for use by the rendering components.
 */
-
-/*
-generate any client-side transformations or summarization that
-is independent of REST API response formats.
-
-XXX: cleanup.  this doesn't do much now, can we change this into
-a simple error check in the factories?
-}
-*/
-function finalize(universe) {
-  /* A bit of sanity checking! */
-  const { nObs, nVar } = universe;
-  if (
-    nObs !== universe.obsLayout.length ||
-    nObs !== universe.obsAnnotations.length ||
-    nVar !== universe.varAnnotations.length
-  ) {
-    throw new Error("Universe dimensionality mismatch - failed to load");
-  }
-  // TODO: add more sanity checks, such as:
-  //  - all annotations in the schema
-  //  - layout has supported number of dimensions
-  //  - ...
-
-  universe.finalized = true;
-  return universe;
-}
 
 function AnnotationsFBSToDataframe(arrayBuffer) {
   /*
@@ -133,9 +103,6 @@ export function createUniverseFromResponse(
   const { schema } = schemaResponse;
   const universe = templateUniverse();
 
-  /* constants */
-  universe.api = "0.2"; // XXX cleanup
-
   /* schema related */
   universe.schema = schema;
   universe.nObs = schema.dataframe.nObs;
@@ -147,6 +114,15 @@ export function createUniverseFromResponse(
   /* layout */
   universe.obsLayout = LayoutFBSToDataframe(layoutFBSResponse);
 
+  /* sanity check */
+  if (
+    universe.nObs !== universe.obsLayout.length ||
+    universe.nObs !== universe.obsAnnotations.length ||
+    universe.nVar !== universe.varAnnotations.length
+  ) {
+    throw new Error("Universe dimensionality mismatch - failed to load");
+  }
+
   universe.summary = summarizeAnnotations(
     universe.schema,
     universe.obsAnnotations,
@@ -154,7 +130,7 @@ export function createUniverseFromResponse(
   );
 
   reconcileSchemaCategoriesWithSummary(universe);
-  return finalize(universe);
+  return universe;
 }
 
 export function convertDataFBStoObject(universe, arrayBuffer) {

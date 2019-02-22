@@ -54,7 +54,6 @@ describe("createWorldFromEntireUniverse", () => {
 
     expect(world).toMatchObject(
       expect.objectContaining({
-        api: "0.2",
         nObs: universe.nObs,
         nVar: universe.nVar,
         schema: universe.schema,
@@ -120,7 +119,6 @@ describe("createWorldFromCurrentSelection", () => {
 
     expect(world).toMatchObject(
       expect.objectContaining({
-        api: "0.2",
         nObs: matchingIndices.length,
         nVar: universe.nVar,
         schema: universe.schema,

@@ -41,7 +41,6 @@ describe("createUniverseFromResponse", () => {
     expect(universe).toBeDefined();
     expect(universe).toMatchObject(
       expect.objectContaining({
-        api: "0.2",
         nObs,
         nVar,
         schema: REST.schema.schema,
