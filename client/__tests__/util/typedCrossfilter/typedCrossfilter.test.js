@@ -119,14 +119,22 @@ function groupReduce(data, valueMap, valueReduce, valueInit) {
 }
 
 function groupCount(data, map) {
-  return groupReduce(data, map, (p, v) => p + 1, () => 0);
+  return groupReduce(data, map, p => p + 1, () => 0);
 }
 
 function groupSum(data, map) {
-  return groupReduce(data, map, (p, v) => (p += map(v)), () => 0);
+  return groupReduce(
+    data,
+    map,
+    (p, v) => {
+      p += map(v);
+      return p;
+    },
+    () => 0
+  );
 }
 
-var payments = null;
+let payments = null;
 beforeEach(() => {
   payments = crossfilter(someData);
 });
@@ -139,7 +147,7 @@ describe("typedCrossfilter", () => {
 
     const quantity = payments.dimension(
       crossfilter.ScalarDimension,
-      r => r.quantity,
+      (i, data) => data[i].quantity,
       Int32Array
     );
     expect(quantity).toBeDefined();
@@ -154,20 +162,23 @@ describe("typedCrossfilter", () => {
     expect(payments).toBeDefined();
     const quantity = payments.dimension(
       crossfilter.ScalarDimension,
-      r => r.quantity,
+      (i, data) => data[i].quantity,
       Int32Array
     );
     const tip = payments.dimension(
       crossfilter.ScalarDimension,
-      r => r.tip,
+      (i, data) => data[i].tip,
       Float32Array
     );
     const total = payments.dimension(
       crossfilter.ScalarDimension,
-      r => r.total,
+      (i, data) => data[i].total,
       Float32Array
     );
-    const type = payments.dimension(crossfilter.EnumDimension, r => r.type);
+    const type = payments.dimension(
+      crossfilter.EnumDimension,
+      (i, data) => data[i].type
+    );
 
     expect(quantity).toBeDefined();
     expect(tip).toBeDefined();
@@ -214,20 +225,18 @@ describe("typedCrossfilter", () => {
     expect(payments).toBeDefined();
     const quantity = payments.dimension(
       crossfilter.ScalarDimension,
-      r => r.quantity,
+      (i, data) => data[i].quantity,
       Int32Array
     );
     const tip = payments.dimension(
       crossfilter.ScalarDimension,
-      r => r.tip,
+      (i, data) => data[i].tip,
       Float32Array
     );
-    const total = payments.dimension(
-      crossfilter.ScalarDimension,
-      r => r.total,
-      Float32Array
+    const type = payments.dimension(
+      crossfilter.EnumDimension,
+      (i, data) => data[i].type
     );
-    const type = payments.dimension(crossfilter.EnumDimension, r => r.type);
 
     quantity.filterExact(1);
     expect(payments.countFiltered()).toEqual(
@@ -250,20 +259,23 @@ describe("typedCrossfilter", () => {
     expect(payments).toBeDefined();
     const quantity = payments.dimension(
       crossfilter.ScalarDimension,
-      r => r.quantity,
+      (i, data) => data[i].quantity,
       Int32Array
     );
     const tip = payments.dimension(
       crossfilter.ScalarDimension,
-      r => r.tip,
+      (i, data) => data[i].tip,
       Float32Array
     );
     const total = payments.dimension(
       crossfilter.ScalarDimension,
-      r => r.total,
+      (i, data) => data[i].total,
       Float32Array
     );
-    const type = payments.dimension(crossfilter.EnumDimension, r => r.type);
+    const type = payments.dimension(
+      crossfilter.EnumDimension,
+      (i, data) => data[i].type
+    );
 
     tip.filterRange([0, 91]);
     expect(payments.allFiltered()).toEqual(
@@ -291,20 +303,23 @@ describe("typedCrossfilter", () => {
     expect(payments).toBeDefined();
     const quantity = payments.dimension(
       crossfilter.ScalarDimension,
-      r => r.quantity,
+      (i, data) => data[i].quantity,
       Int32Array
     );
     const tip = payments.dimension(
       crossfilter.ScalarDimension,
-      r => r.tip,
+      (i, data) => data[i].tip,
       Float32Array
     );
     const total = payments.dimension(
       crossfilter.ScalarDimension,
-      r => r.total,
+      (i, data) => data[i].total,
       Float32Array
     );
-    const type = payments.dimension(crossfilter.EnumDimension, r => r.type);
+    const type = payments.dimension(
+      crossfilter.EnumDimension,
+      (i, data) => data[i].type
+    );
 
     type.filterEnum(["tab", "cash"]);
     expect(payments.allFiltered()).toEqual(
@@ -326,27 +341,30 @@ describe("typedCrossfilter", () => {
     expect(payments).toBeDefined();
     const quantity = payments.dimension(
       crossfilter.ScalarDimension,
-      r => r.quantity,
+      (i, data) => data[i].quantity,
       Int32Array
     );
     const tip = payments.dimension(
       crossfilter.ScalarDimension,
-      r => r.tip,
+      (i, data) => data[i].tip,
       Float32Array
     );
     const total = payments.dimension(
       crossfilter.ScalarDimension,
-      r => r.total,
+      (i, data) => data[i].total,
       Float32Array
     );
-    const type = payments.dimension(crossfilter.EnumDimension, r => r.type);
+    const type = payments.dimension(
+      crossfilter.EnumDimension,
+      (i, data) => data[i].type
+    );
 
     // Create a bunch of fake dimensions to ensure we can handle > 32
     let dimMap = {};
     for (let i = 0; i < 65; i++) {
       dimMap[i] = payments.dimension(
         crossfilter.ScalarDimension,
-        r => Math.random(),
+        () => Math.random(),
         Float32Array
       );
       expect(dimMap[i]).toBeDefined();
@@ -372,18 +390,21 @@ describe("typedCrossfilter", () => {
 
     const quantity = payments.dimension(
       crossfilter.ScalarDimension,
-      r => r.quantity,
+      (i, data) => data[i].quantity,
       Int32Array
     );
     const tip = payments.dimension(
       crossfilter.ScalarDimension,
-      r => r.tip,
+      (i, data) => data[i].tip,
       Int32Array
     );
-    const type = payments.dimension(crossfilter.EnumDimension, r => r.type);
+    const type = payments.dimension(
+      crossfilter.EnumDimension,
+      (i, data) => data[i].type
+    );
     const total = payments.dimension(
       crossfilter.ScalarDimension,
-      r => r.total,
+      (i, data) => data[i].total,
       Int32Array
     );
 
@@ -411,15 +432,18 @@ describe("typedCrossfilter", () => {
 
     const tip = payments.dimension(
       crossfilter.ScalarDimension,
-      r => r.tip,
+      (i, data) => data[i].tip,
       Int32Array
     );
     const totalX10 = payments.dimension(
       crossfilter.ScalarDimension,
-      r => r.total * 10,
+      (i, data) => data[i].total * 10,
       Int32Array
     );
-    const type = payments.dimension(crossfilter.EnumDimension, r => r.type);
+    const type = payments.dimension(
+      crossfilter.EnumDimension,
+      (i, data) => data[i].type
+    );
 
     const paymentsByTip_A = tip.group();
     const paymentsByTip_B = tip.group(r => 10 * r);
@@ -458,10 +482,13 @@ describe("typedCrossfilter", () => {
 
     const total = payments.dimension(
       crossfilter.ScalarDimension,
-      r => r.total,
+      (i, data) => data[i].total,
       Float32Array
     );
-    const type = payments.dimension(crossfilter.EnumDimension, r => r.type);
+    const type = payments.dimension(
+      crossfilter.EnumDimension,
+      (i, data) => data[i].type
+    );
 
     const paymentsByTotal = total.group();
     const paymentsByType = type.group();
@@ -499,15 +526,18 @@ describe("typedCrossfilter", () => {
 
     const tip = payments.dimension(
       crossfilter.ScalarDimension,
-      r => r.tip,
+      (i, data) => data[i].tip,
       Int32Array
     );
     const total = payments.dimension(
       crossfilter.ScalarDimension,
-      r => r.total,
+      (i, data) => data[i].total,
       Int32Array
     );
-    const type = payments.dimension(crossfilter.EnumDimension, r => r.type);
+    const type = payments.dimension(
+      crossfilter.EnumDimension,
+      (i, data) => data[i].type
+    );
 
     const paymentsByTip = tip.group();
     const paymentsByTotal = total.group();

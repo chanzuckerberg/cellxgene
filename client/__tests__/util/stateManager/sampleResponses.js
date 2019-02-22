@@ -157,16 +157,6 @@ const anAnnotationsVarFBSResponse = (() => {
   return encodeMatrix(columns, anAnnotationsVarJSONResponse.names);
 })();
 
-const aLayoutJSONResponse = {
-  layout: {
-    ndims: 2,
-    coordinates: _()
-      .range(nObs)
-      .map(idx => [idx, Math.random(), Math.random()])
-      .value()
-  }
-};
-
 const aLayoutFBSResponse = (() => {
   const coords = [
     new Float32Array(nObs).fill(Math.random()),
@@ -190,7 +180,7 @@ const aLayoutFBSResponse = (() => {
 
   NetEncoding.Matrix.startMatrix(builder);
   NetEncoding.Matrix.addNRows(builder, nObs);
-  NetEncoding.Matrix.addNCols(builder, nVar);
+  NetEncoding.Matrix.addNCols(builder, coords.length);
   NetEncoding.Matrix.addColumns(builder, columns);
   const matrix = NetEncoding.Matrix.endMatrix(builder);
   builder.finish(matrix);

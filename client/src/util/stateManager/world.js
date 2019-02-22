@@ -8,6 +8,7 @@ import Crossfilter from "../typedCrossfilter";
 import { sliceByIndex } from "../typedCrossfilter/util";
 
 /*
+
 World is a subset of universe.   Most code should use world, and should
 (generally) not use Universe.   World contains any per-obs or per-var data
 that must be consistent acorss the app when we view/manipulate subsets
@@ -16,37 +17,32 @@ of Universe.
 Private API indicated by leading underscore in key name (eg, _foo).  Anything else
 is public.
 
-World contains several public keys, obsAnnotations, and obsLayout, which are
-arrays contianing information about an OBS in the same order/offset.  In
-other words, world.obsAnnotations[0] and world.obsLayout.X[0] refer to the same
-obs/cell.
+Notable keys in the world object:
+
+* nObs, nVar: dimensions
+
+* schema: data schema from the server
 
 * obsAnnotations:
 
-  obsAnnotations will return an array of objects.  Each object contains all annotation
-  values for a given observation/cell, keyed by annotation name, PLUS a key
-  '__cellId__', containing a REST API ID for this obs/cell (referred to as the
-  obsIndex in the REST 0.2 spec or cellIndex in the 0.1 spec.
+  Dataframe containing obs annotations.  Columns are indexed by annotation
+  name (eg, 'tissue type'), and rows are indexed by the REST API obsIndex
+  (ie, the offset into the underlying server-side dataframe).
 
-  Example:  [ { __cellId__: 99, cluster: 'blue', numReads: 93933 } ]
-
-  NOTE: world.obsAnnotation should be identical to the old state.cells value,
-  EXCEPT that
-    * __cellIndex__ renamed to __index__
-    * __x__ and __y__ are now in world.obsLayout
-    * __color__ and __colorRBG__ should be moved to controls reducer
+  This indexing means that you can access data by _either_ the server's
+  obxIndex, or the offset into the client-side column array .  Be careful
+  to know which you want and are using.
 
 * obsLayout:
 
-  obsLayout will return an object containing two arrays, containing X and Y
-  coordinates respectively.
+  A dataframe containing the X/Y layout for all obs.  Columns are named
+  'X' and 'Y', and rows are indexed in the same way as obsAnnotation.
 
-  Example: { X: [ 0.33, 0.23, ... ], Y: [ 0.8, 0.777, ... ]}
+* summary: summary of each obsAnnotation column (eg, numeric extent for
+  continuous data, category counts for categorical metadata)
 
-* crossfilter - a crossfilter object across world.obsAnnotations
-
-* dimensionMap - an object mapping annotation names to dimensions on
-  the crossfilter
+* varDataCache: expression columns, in a kvCache.   TODO: maybe move to a
+  Dataframe in the future.
 
 */
 
@@ -56,11 +52,6 @@ const VarDataCacheTTLMs = 1000; // min cache time in MS
 
 function templateWorld() {
   return {
-    // map from universe obsIndex to world offset.
-    // Undefined / null indicates identity mapping.
-    obsIndex: null,
-    obsBackIndex: null,
-
     /* schema/version related */
     api: null,
     schema: null,
@@ -71,7 +62,7 @@ function templateWorld() {
     obsAnnotations: null,
     varAnnotations: null,
 
-    /* layout of graph */
+    /* layout of graph. Dataframe. */
     obsLayout: null,
 
     /* derived data summaries XXX: consider exploding in place */
@@ -90,15 +81,6 @@ export function createWorldFromEntireUniverse(universe) {
   }
 
   const world = templateWorld();
-
-  // map from the universe obsIndex to our world offset.
-  // undefined/null indicates identity map.
-  // In other words   obsBackIndex[universeIdx] -> worldIdx
-  world.obsBackIndex = null;
-  // Map to the universe index for each element in world.
-  // Null indicates identity map (aka world === universe)
-  // In other wrods  obsIndex[worldIdx]  ->  universeIdx
-  world.obsIndex = null;
 
   /*
   public interface follows
@@ -143,35 +125,11 @@ export function createWorldFromCurrentSelection(universe, world, crossfilter) {
   newWorld.schema = universe.schema;
   newWorld.varAnnotations = universe.varAnnotations;
 
-  /* build index maps and back maps based upon current selection state */
-  const obsBackIndex = new Uint32Array(universe.nObs);
-  obsBackIndex.fill(-1); // default - aka unused
-  const notSelected = obsBackIndex[0];
-  let nObs = 0;
-  for (let i = 0; i < universe.nObs; i += 1) {
-    if (crossfilter.isElementFiltered(i)) {
-      obsBackIndex[i] = nObs;
-      nObs += 1;
-    }
-  }
-  const obsIndex = new Uint32Array(nObs);
-  for (let i = 0; i < universe.nObs; i += 1) {
-    const worldIdx = obsBackIndex[i];
-    if (worldIdx !== notSelected) {
-      obsIndex[worldIdx] = i;
-    }
-  }
-
-  newWorld.nObs = nObs;
-  newWorld.obsIndex = obsIndex;
-  newWorld.obsBackIndex = obsBackIndex;
-
-  /* now slice */
-  newWorld.obsAnnotations = sliceByIndex(universe.obsAnnotations, obsIndex);
-  newWorld.obsLayout = {
-    X: sliceByIndex(universe.obsLayout.X, obsIndex),
-    Y: sliceByIndex(universe.obsLayout.Y, obsIndex)
-  };
+  /* now subset/cut obs */
+  const mask = crossfilter.allFilteredMask();
+  newWorld.obsAnnotations = world.obsAnnotations.icutByMask(mask);
+  newWorld.obsLayout = world.obsLayout.icutByMask(mask);
+  newWorld.nObs = newWorld.obsAnnotations.dims[0];
 
   /* derived data & summaries */
   newWorld.summary = summarizeAnnotations(
@@ -245,22 +203,23 @@ export function createObsDimensionMap(crossfilter, world) {
   create and return a crossfilter dimension for every obs annotation
   for which we have a supported type.
   */
-  const { schema, obsLayout } = world;
+  const { schema, obsLayout, obsAnnotations } = world;
 
   // Create a crossfilter dimension for all obs annotations *except* 'name'
   const dimensionMap = _(schema.annotations.obs)
     .filter(anno => anno.name !== "name")
     .transform((result, anno) => {
       const dimType = deduceDimensionType(anno, anno.name);
+      const colData = obsAnnotations.col(anno.name).asArray();
       if (dimType === "enum") {
         result[obsAnnoDimensionName(anno.name)] = crossfilter.dimension(
           Crossfilter.EnumDimension,
-          r => r[anno.name]
+          colData
         );
-      } else {
+      } else if (dimType) {
         result[obsAnnoDimensionName(anno.name)] = crossfilter.dimension(
           Crossfilter.ScalarDimension,
-          r => r[anno.name],
+          colData,
           dimType
         );
       } // else ignore the annotation
@@ -272,8 +231,8 @@ export function createObsDimensionMap(crossfilter, world) {
   */
   dimensionMap[layoutDimensionName("XY")] = crossfilter.dimension(
     Crossfilter.SpatialDimension,
-    obsLayout.X,
-    obsLayout.Y
+    obsLayout.col("X").asArray(),
+    obsLayout.col("Y").asArray()
   );
 
   return dimensionMap;
@@ -288,5 +247,23 @@ export function subsetVarData(world, universe, varData) {
   if (worldEqUniverse(world, universe)) {
     return varData;
   }
-  return sliceByIndex(varData, world.obsIndex);
+  return sliceByIndex(varData, world.obsAnnotations.rowIndex.keys());
+}
+
+export function getSelectedByIndex(crossfilter) {
+  /*
+  return array of obsIndex, containing all selected obs/cells.
+  */
+  const selected = crossfilter.allFilteredMask(); // array of bool-ish
+  const keys = crossfilter.data.rowIndex.keys(); // row keys, aka universe rowIndex
+
+  const set = new Int32Array(selected.length);
+  let numElems = 0;
+  for (let i = 0, l = selected.length; i < l; i += 1) {
+    if (selected[i]) {
+      set[numElems] = keys[i];
+      numElems += 1;
+    }
+  }
+  return new Int32Array(set.buffer, 0, numElems);
 }

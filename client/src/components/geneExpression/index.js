@@ -29,8 +29,7 @@ const renderGene = (fuzzySortResult, { handleClick, modifiers, query }) => {
     return null;
   }
   /* the fuzzysort wraps the object with other properties, like a score */
-  const gene = fuzzySortResult.obj;
-  const text = gene.name;
+  const geneName = fuzzySortResult.target;
 
   return (
     <MenuItem
@@ -39,39 +38,34 @@ const renderGene = (fuzzySortResult, { handleClick, modifiers, query }) => {
       // Use of annotations in this way is incorrect and dataset specific.
       // See https://github.com/chanzuckerberg/cellxgene/issues/483
       // label={gene.n_counts}
-      key={gene.name}
-      onClick={g => {
+      key={geneName}
+      onClick={g =>
         /* this fires when user clicks a menu item */
-        handleClick(g);
-      }}
-      text={text}
+        handleClick(g)
+      }
+      text={geneName}
     />
   );
 };
 
-const filterGenes = (query, genes) => {
+const filterGenes = (query, genes) =>
   /* fires on load, once, and then for each character typed into the input */
-  return fuzzysort.go(query, genes, {
-    key: "name",
+  fuzzysort.go(query, genes, {
     limit: 5,
     threshold: -10000 // don't return bad results
   });
-};
 
 @connect(state => {
-  const metadata = _.get(state.controls.world, "obsAnnotations", null);
   const ranges = _.get(state.controls.world, "summary.obs", null);
   const initializeRanges = _.get(state.controls.world, "summary.obs");
 
   return {
     ranges,
-    metadata,
     initializeRanges,
     userDefinedGenes: state.controls.userDefinedGenes,
     userDefinedGenesLoading: state.controls.userDefinedGenesLoading,
     world: state.controls.world,
     colorAccessor: state.controls.colorAccessor,
-    allGeneNames: state.controls.allGeneNames,
     differential: state.differential
   };
 })
@@ -84,6 +78,37 @@ class GeneExpression extends React.Component {
     };
   }
 
+  placeholderGeneNames() {
+    /*
+    return a string containing gene name suggestions for use as a user hint.
+    Eg.,    Apod, Cd74, ...
+    Will return a max of 3 genes, totalling 15 characters in length.
+    Randomly selects gene names.
+
+    NOTE: the random selection means it will re-render constantly.
+    */
+    const { world } = this.props;
+    const { varAnnotations } = world;
+    const geneNames = varAnnotations.col("name").asArray();
+    if (geneNames.length > 0) {
+      const placeholder = [];
+      let len = geneNames.length;
+      const maxGeneNameCount = 3;
+      const maxStrLength = 15;
+      len = len < maxGeneNameCount ? len : maxGeneNameCount;
+      for (let i = 0, strLen = 0; i < len && strLen < maxStrLength; i += 1) {
+        const deal = Math.floor(Math.random() * geneNames.length);
+        const geneName = geneNames[deal];
+        placeholder.push(geneName);
+        strLen += geneName.length + 2; // '2' is the length of a comma and space
+      }
+      placeholder.push("...");
+      return placeholder.join(", ");
+    }
+    // default - should never happen.
+    return "Apod, Cd74, ...";
+  }
+
   handleClick(g) {
     const { world, dispatch, userDefinedGenes } = this.props;
     const gene = g.target;
@@ -93,7 +118,7 @@ class GeneExpression extends React.Component {
       postUserErrorToast(
         "That's too many genes, you can have at most 15 user defined genes"
       );
-    } else if (!_.find(world.varAnnotations, { name: gene })) {
+    } else if (world.varAnnotations.col("name").indexOf(gene) === undefined) {
       postUserErrorToast("That doesn't appear to be a valid gene name.");
     } else {
       dispatch(actions.requestUserDefinedGene(gene));
@@ -116,9 +141,13 @@ class GeneExpression extends React.Component {
       const genes = _.pull(_.uniq(bulkAdd.split(/[ ,]+/)), "");
 
       genes.forEach(gene => {
-        if (userDefinedGenes.indexOf(gene) !== -1) {
+        if (gene.length === 0) {
+          keepAroundErrorToast("Must enter a gene name.");
+        } else if (userDefinedGenes.indexOf(gene) !== -1) {
           keepAroundErrorToast("That gene already exists");
-        } else if (!_.find(world.varAnnotations, { name: gene })) {
+        } else if (
+          world.varAnnotations.col("name").indexOf(gene) === undefined
+        ) {
           keepAroundErrorToast(
             `${gene} doesn't appear to be a valid gene name.`
           );
@@ -214,8 +243,8 @@ class GeneExpression extends React.Component {
                 itemRenderer={renderGene.bind(this)}
                 items={
                   world && world.varAnnotations
-                    ? world.varAnnotations
-                    : [{ name: "No genes" }]
+                    ? world.varAnnotations.col("name").asArray()
+                    : ["No genes"]
                 }
                 popoverProps={{ minimal: true }}
               />
@@ -245,7 +274,7 @@ class GeneExpression extends React.Component {
                         this.setState({ bulkAdd: e.target.value });
                       }}
                       id="text-input-bulk-add"
-                      placeholder="Apod, Cd74, ..."
+                      placeholder={this.placeholderGeneNames()}
                       value={bulkAdd}
                     />
                     <Button
@@ -290,8 +319,7 @@ class GeneExpression extends React.Component {
           <ExpressionButtons />
           {differential.diffExp
             ? _.map(differential.diffExp, (value, index) => {
-                const annotations = world.varAnnotations[value[0]];
-                const { name } = annotations;
+                const name = world.varAnnotations.at(value[0], "name");
                 const values = world.varDataCache[name];
                 if (!values) {
                   return null;

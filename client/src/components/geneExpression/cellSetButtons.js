@@ -1,8 +1,8 @@
 // jshint esversion: 6
 import React from "react";
-import _ from "lodash";
 import { AnchorButton, Tooltip } from "@blueprintjs/core";
 import { connect } from "react-redux";
+import { World } from "../../util/stateManager";
 
 @connect()
 class CellSetButton extends React.Component {
@@ -14,7 +14,7 @@ class CellSetButton extends React.Component {
       eitherCellSetOneOrTwo
     } = this.props;
 
-    const set = _.map(crossfilter.allFiltered(), "name");
+    const set = World.getSelectedByIndex(crossfilter);
 
     if (!differential.diffExp) {
       /* diffexp needs to be cleared before we store a new set */

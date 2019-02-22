@@ -39,6 +39,14 @@ import {
   upperBoundIndirect
 } from "./util";
 
+function isArrayOrTypedArray(x) {
+  return (
+    Array.isArray(x) ||
+    (ArrayBuffer.isView(x) &&
+      Object.prototype.toString.call(x) !== "[object DataView]")
+  );
+}
+
 class NotImplementedError extends Error {
   constructor(...params) {
     super(...params);
@@ -52,6 +60,11 @@ class NotImplementedError extends Error {
 
 class TypedCrossfilter {
   constructor(data) {
+    /*
+    Typically, data is one of:
+      - Array of objects/records
+      - Dataframe (util/dataframe)
+    */
     this.data = data;
 
     // filters: array of { id, dimension }
@@ -97,18 +110,32 @@ class TypedCrossfilter {
   // return array of all records that are selected/filtered
   // by all dimensions.
   allFiltered() {
-    const { selection } = this;
-    const res = [];
-    for (let i = 0, len = this.data.length; i < len; i += 1) {
-      if (selection.isSelected(i)) {
-        res.push(this.data[i]);
+    const { data, selection } = this;
+    if (Array.isArray(data)) {
+      const res = [];
+      for (let i = 0, len = data.length; i < len; i += 1) {
+        if (selection.isSelected(i)) {
+          res.push(data[i]);
+        }
       }
+      return res;
     }
-    return res;
+    /* else, Dataframe-like */
+    return data.icutByMask(this.allFilteredMask());
+  }
+
+  // return Uint8array containing selection state (truthy/falsey) for each record.
+  //
+  allFilteredMask() {
+    return this.selection.fillBySelection(
+      new Uint8Array(this.data.length),
+      1,
+      0
+    );
   }
 
   countFiltered() {
-    return this.selection.selectionCount;
+    return this.selection.selectionCount();
   }
 
   isElementFiltered(i) {
@@ -161,6 +188,7 @@ class ScalarDimension extends _Dimension {
     // or a map function which will create it.
     let array;
     if (value instanceof ValueArrayType) {
+      // user has provided the final typed array - just use it
       if (value.length !== this.crossfilter.data.length) {
         throw new RangeError(
           "ScalarDimension values length must equal crossfilter data record count"
@@ -168,9 +196,16 @@ class ScalarDimension extends _Dimension {
       }
       array = value;
     } else if (value instanceof Function) {
-      // Create value array
+      // Create value array from user-provided map function.
       array = this._createValueArray(
         value,
+        new ValueArrayType(this.crossfilter.data.length)
+      );
+    } else if (isArrayOrTypedArray(value)) {
+      // Create value array from user-provided array.  Typically used
+      // only by enumerated dimensions
+      array = this._createValueArray(
+        i => value[i],
         new ValueArrayType(this.crossfilter.data.length)
       );
     } else {
@@ -190,7 +225,7 @@ class ScalarDimension extends _Dimension {
     const len = data.length;
     const larray = array;
     for (let i = 0; i < len; i += 1) {
-      larray[i] = value(data[i]);
+      larray[i] = value(i, data);
     }
     return larray;
   }
@@ -387,7 +422,7 @@ class EnumDimension extends ScalarDimension {
     // and the enum.
     const s = new Set();
     for (let i = 0; i < len; i += 1) {
-      s.add(value(data[i]));
+      s.add(value(i, data));
     }
     this.enumIndex = Array.from(s);
     this.enumIndex.sort();
@@ -395,7 +430,7 @@ class EnumDimension extends ScalarDimension {
     // create dimension value array
     const enumLen = this.enumIndex.length;
     for (let i = 0; i < len; i += 1) {
-      const v = value(data[i]);
+      const v = value(i, data);
       const e = lowerBound(this.enumIndex, v, 0, enumLen);
       larray[i] = e;
     }

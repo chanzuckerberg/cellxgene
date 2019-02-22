@@ -40,7 +40,7 @@ class BitArray {
   // Return the number of records that are selected, ie, have a one bit in
   // all allocated dimensions.
   //
-  get selectionCount() {
+  selectionCount() {
     return this.countAllOnes();
   }
 
@@ -48,16 +48,27 @@ class BitArray {
   //
   countAllOnes() {
     let count = 0;
-    const { bitarray, bitmask, length, width } = this;
-    for (let l = 0; l < length; l += 1) {
-      let dimensionsSet = 0;
-      for (let w = 0; w < width; w += 1) {
-        if (bitarray[w * length + l] === bitmask[w]) {
-          dimensionsSet += 1;
+    const { bitarray, length, width } = this;
+    if (width === 1) {
+      // special case, width === 1, for performance
+      const bitmask = this.bitmask[0];
+      for (let l = 0; l < length; l += 1) {
+        if (bitarray[l] === bitmask) {
+          count += 1;
         }
       }
-      if (dimensionsSet === width) {
-        count += 1;
+    } else {
+      const { bitmask } = this;
+      for (let l = 0; l < length; l += 1) {
+        let dimensionsSet = 0;
+        for (let w = 0; w < width; w += 1) {
+          if (bitarray[w * length + l] === bitmask[w]) {
+            dimensionsSet += 1;
+          }
+        }
+        if (dimensionsSet === width) {
+          count += 1;
+        }
       }
     }
     return count;
@@ -233,12 +244,14 @@ class BitArray {
   fillBySelection(result, selectedValue, deselectedValue) {
     // special case (width === 1) for performance
     if (this.width === 1) {
-      const bitmask = this.bitmask[0];
-      for (let i = 0, len = this.length; i < len; i += 1) {
-        result[i] =
-          bitmask && this.bitarray[i] === bitmask
-            ? selectedValue
-            : deselectedValue;
+      const { bitmask, bitarray } = this;
+      const mask = bitmask[0];
+      if (!mask) {
+        result.fill(deselectedValue);
+      } else {
+        for (let i = 0, len = this.length; i < len; i += 1) {
+          result[i] = bitarray[i] === mask ? selectedValue : deselectedValue;
+        }
       }
     } else {
       for (let i = 0, len = this.length; i < len; i += 1) {

@@ -2,16 +2,27 @@ import {
   countCategoryValues2D,
   clearCaches
 } from "../../../src/util/stateManager/worldUtil";
+import * as Dataframe from "../../../src/util/dataframe";
 
 describe("WorldUtil cache management", () => {
   test("empty", () => {
-    const count = countCategoryValues2D("a", "b", []);
+    const count = countCategoryValues2D(
+      "a",
+      "b",
+      new Dataframe.Dataframe([0, 0], [])
+    );
     expect(count).toMatchObject(new Map());
+    expect(count.size).toBe(0);
   });
 
   test("simple couts", () => {
-    const rows = [{ a: 0, b: false }, { a: 0, b: true }, { a: 1, b: false }];
-    const count = countCategoryValues2D("a", "b", rows);
+    const df = new Dataframe.Dataframe(
+      [3, 2],
+      [[0, 0, 1], [false, true, false]],
+      null,
+      new Dataframe.KeyIndex(["a", "b"])
+    );
+    const count = countCategoryValues2D("a", "b", df);
     expect(count).toMatchObject(
       new Map([
         [0, new Map([[true, 1], [false, 1]])],
@@ -22,16 +33,22 @@ describe("WorldUtil cache management", () => {
 
   test("memo cache clear", () => {
     clearCaches();
-    const row1 = [];
-    const row2 = [{ a: 0, b: false }, { a: 0, b: true }, { a: 1, b: false }];
-    const count1 = countCategoryValues2D("a", "b", row1);
-    const count2 = countCategoryValues2D("a", "b", row1);
-    const count3 = countCategoryValues2D("a", "b", []);
-    const count4 = countCategoryValues2D("a", "b", row2);
+    const df1 = new Dataframe.Dataframe([0, 0], []);
+    const df2 = new Dataframe.Dataframe(
+      [3, 2],
+      [[0, 0, 1], [false, true, false]],
+      null,
+      new Dataframe.KeyIndex(["a", "b"])
+    );
+
+    const count1 = countCategoryValues2D("a", "b", df1);
+    const count2 = countCategoryValues2D("a", "b", df1);
+    const count3 = countCategoryValues2D("a", "b", df1.clone());
+    const count4 = countCategoryValues2D("a", "b", df2);
 
     clearCaches();
-    const count10 = countCategoryValues2D("a", "b", row1);
-    const count11 = countCategoryValues2D("a", "b", row2);
+    const count10 = countCategoryValues2D("a", "b", df1);
+    const count11 = countCategoryValues2D("a", "b", df2);
 
     expect(count1).toEqual(count2);
     expect(count1).toEqual(count3);

@@ -40,7 +40,7 @@ const doInitialDataLoad = () =>
       /* set config defaults */
       const config = { ...globals.configDefaults, ...results[0].config };
       const [, schema, obsAnno, varAnno, obsLayout] = [...results];
-      const universe = Universe.createUniverseFromRestV02Response(
+      const universe = Universe.createUniverseFromResponse(
         config,
         schema,
         obsAnno,
@@ -242,12 +242,14 @@ const requestDifferentialExpression = (set1, set2, num_genes = 10) => async (
     */
     const state = getState();
     const { universe } = state.controls;
-    const set1ByIndex = rangeEncodeIndices(
-      _.map(set1, s => universe.obsNameToIndexMap[s])
-    );
-    const set2ByIndex = rangeEncodeIndices(
-      _.map(set2, s => universe.obsNameToIndexMap[s])
-    );
+
+    // These lines ensure that we convert any TypedArray to an Array.
+    // This is necessary because JSON.stringify() does some very strange
+    // things with TypedArrays (they are marshalled to JSON objects, rather
+    // than being marshalled as a JSON array).
+    const aset1 = Array.isArray(set1) ? set1 : Array.from(set1);
+    const aset2 = Array.isArray(set2) ? set2 : Array.from(set2);
+
     const res = await fetch(
       `${globals.API.prefix}${globals.API.version}diffexp/obs`,
       {
@@ -259,8 +261,8 @@ const requestDifferentialExpression = (set1, set2, num_genes = 10) => async (
         body: JSON.stringify({
           mode: "topN",
           count: num_genes,
-          set1: { filter: { obs: { index: set1ByIndex } } },
-          set2: { filter: { obs: { index: set2ByIndex } } }
+          set1: { filter: { obs: { index: aset1 } } },
+          set2: { filter: { obs: { index: aset2 } } }
         })
       }
     );
@@ -271,7 +273,9 @@ const requestDifferentialExpression = (set1, set2, num_genes = 10) => async (
 
     const data = await res.json();
     // result is [ [varIdx, ...], ... ]
-    const topNGenes = _.map(data, r => universe.varAnnotations[r[0]].name);
+    const topNGenes = _.map(data, r =>
+      universe.varAnnotations.at(r[0], "name")
+    );
 
     /*
     Kick off secondary action to fetch all of the expression data for the

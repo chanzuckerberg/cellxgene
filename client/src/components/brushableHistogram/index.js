@@ -35,9 +35,11 @@ class HistogramBrush extends React.Component {
       .scaleLinear()
       .range([this.height - this.marginBottom, 0]);
 
-    if (obsAnnotations[0][field] !== undefined) {
+    if (obsAnnotations.col(field)) {
       // recalculate expensive stuff
-      const allValuesForContinuousFieldAsArray = _.map(obsAnnotations, field);
+      const allValuesForContinuousFieldAsArray = obsAnnotations
+        .col(field)
+        .asArray();
 
       histogramCache.x = d3
         .scaleLinear()
@@ -149,7 +151,7 @@ class HistogramBrush extends React.Component {
       initializeRanges
     } = this.props;
 
-    if (obsAnnotations[0][field]) {
+    if (obsAnnotations.col(field)) {
       dispatch({
         type: "color by continuous metadata",
         colorAccessor: field,

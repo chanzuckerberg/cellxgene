@@ -35,7 +35,8 @@ class Graph extends React.Component {
     this.graphPaddingRight = globals.leftSidebarWidth;
     this.renderCache = {
       positions: null,
-      colors: null
+      colors: null,
+      sizes: null
     };
     this.state = {
       svg: null,
@@ -83,12 +84,13 @@ class Graph extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
+    const { renderCache } = this;
     const {
       world,
       crossfilter,
-      selectionUpdate,
       colorRGB,
-      responsive
+      responsive,
+      selectionUpdate
     } = this.props;
     const {
       reglRender,
@@ -109,35 +111,27 @@ class Graph extends React.Component {
 
     if (regl && world) {
       /* update the regl state */
-      const { obsLayout } = world;
-      const cellCount = crossfilter.size();
+      const { obsLayout, nObs } = world;
+      const X = obsLayout.col("X").asArray();
+      const Y = obsLayout.col("Y").asArray();
 
       // X/Y positions for each point - a cached value that only
       // changes if we have loaded entirely new cell data
       //
-      if (
-        !this.renderCache.positions ||
-        selectionUpdate !== prevProps.selectionUpdate
-      ) {
-        if (!this.renderCache.positions) {
-          this.renderCache.positions = new Float32Array(2 * cellCount);
-        }
+      if (!renderCache.positions || world !== prevProps.world) {
+        renderCache.positions = new Float32Array(2 * nObs);
 
         const glScaleX = scaleLinear([0, 1], [-1, 1]);
         const glScaleY = scaleLinear([0, 1], [1, -1]);
 
-        const offset = [d3.mean(obsLayout.X) - 0.5, d3.mean(obsLayout.Y) - 0.5];
+        const offset = [d3.mean(X) - 0.5, d3.mean(Y) - 0.5];
 
-        for (
-          let i = 0, { positions } = this.renderCache;
-          i < cellCount;
-          i += 1
-        ) {
-          positions[2 * i] = glScaleX(obsLayout.X[i] - offset[0]);
-          positions[2 * i + 1] = glScaleY(obsLayout.Y[i] - offset[1]);
+        for (let i = 0, { positions } = renderCache; i < nObs; i += 1) {
+          positions[2 * i] = glScaleX(X[i] - offset[0]);
+          positions[2 * i + 1] = glScaleY(Y[i] - offset[1]);
         }
         pointBuffer({
-          data: this.renderCache.positions,
+          data: renderCache.positions,
           dimension: 2
         });
 
@@ -152,30 +146,28 @@ class Graph extends React.Component {
       // could have changed for some other reason, but for now color is
       // the only metadata that changes client-side.  If this is problematic,
       // we could add some sort of color-specific indicator to the app state.
-      if (!this.renderCache.colors || colorRGB !== prevProps.colorRGB) {
+      if (!renderCache.colors || colorRGB !== prevProps.colorRGB) {
         const rgb = colorRGB;
-        if (!this.renderCache.colors) {
-          this.renderCache.colors = new Float32Array(3 * rgb.length);
+        if (!renderCache.colors) {
+          renderCache.colors = new Float32Array(3 * rgb.length);
         }
-        for (let i = 0, { colors } = this.renderCache; i < rgb.length; i += 1) {
+        for (let i = 0, { colors } = renderCache; i < rgb.length; i += 1) {
           colors.set(rgb[i], 3 * i);
         }
-        colorBuffer({ data: this.renderCache.colors, dimension: 3 });
+        colorBuffer({ data: renderCache.colors, dimension: 3 });
       }
 
-      // Sizes for each point - this is presumed to change each time the
-      // component receives new props.   Almost always a true assumption, as
-      // most property upates are due to changes driving a crossfilter
-      // selection set change.
-      //
-      if (!this.renderCache.sizes) {
-        this.renderCache.sizes = new Float32Array(cellCount);
+      // Sizes for each point - updates are triggered only when selected
+      // obs change
+      if (!renderCache.sizes || selectionUpdate !== prevProps.selectionUpdate) {
+        if (!renderCache.sizes) {
+          renderCache.sizes = new Float32Array(nObs);
+        }
+        crossfilter.fillByIsFiltered(renderCache.sizes, 4, 0.2);
+        sizeBuffer({ data: renderCache.sizes, dimension: 1 });
       }
 
-      crossfilter.fillByIsFiltered(this.renderCache.sizes, 4, 0.2);
-      sizeBuffer({ data: this.renderCache.sizes, dimension: 1 });
-
-      this.count = cellCount;
+      this.count = nObs;
 
       regl._refresh();
       this.reglDraw(

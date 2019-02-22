@@ -118,16 +118,16 @@ describe("selectionCount", () => {
     const dim2 = ba.allocDimension();
     expect(dim2).toBeDefined();
 
-    expect(ba.selectionCount).toEqual(0);
+    expect(ba.selectionCount()).toEqual(0);
     ba.selectAll(dim1);
-    expect(ba.selectionCount).toEqual(0);
+    expect(ba.selectionCount()).toEqual(0);
     ba.selectAll(dim2);
-    expect(ba.selectionCount).toEqual(defaultTestLength);
+    expect(ba.selectionCount()).toEqual(defaultTestLength);
 
     for (let i = 0; i < defaultTestLength; i += 1) {
       ba.deselectOne(dim1, i);
-      expect(ba.selectionCount).toEqual(defaultTestLength - i - 1);
-      expect(ba.selectionCount).toEqual(ba.countAllOnes());
+      expect(ba.selectionCount()).toEqual(defaultTestLength - i - 1);
+      expect(ba.selectionCount()).toEqual(ba.countAllOnes());
     }
 
     ba.freeDimension(dim1);

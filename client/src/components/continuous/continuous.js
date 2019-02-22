@@ -10,7 +10,6 @@ import HistogramBrush from "../brushableHistogram";
 
 @connect(state => ({
   ranges: _.get(state.controls.world, "summary.obs", null),
-  metadata: _.get(state.controls.world, "obsAnnotations", null),
   colorAccessor: state.controls.colorAccessor,
   colorScale: state.controls.colorScale,
   selectionUpdate: _.get(state.controls, "crossfilter.updateTime", null),
@@ -39,7 +38,7 @@ class Continuous extends React.Component {
   }
 
   render() {
-    const { ranges, obsAnnotations, schema } = this.props;
+    const { ranges, schema } = this.props;
     if (schema && !this.continuousChecked) {
       this.hasContinuous = _.some(
         schema.annotations.obs,
@@ -73,7 +72,6 @@ class Continuous extends React.Component {
                 field={key}
                 isObs
                 zebra={zebra % 2 === 0}
-                fieldValues={obsAnnotations}
                 ranges={value.range}
                 handleColorAction={this.handleColorAction(key).bind(this)}
               />

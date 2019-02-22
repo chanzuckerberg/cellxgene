@@ -100,6 +100,28 @@ function selectedValuesForCategory(categorySelectionState) {
   return selectedValues;
 }
 
+/*
+build a crossfilter dimension map for all gene expression related dimensions.
+*/
+function createGenesDimMap(userDefinedGenes, diffexpGenes, world, crossfilter) {
+  function _createGenesDimMap(genes, nameF) {
+    return genes.reduce((acc, gene) => {
+      acc[nameF(gene)] = World.createVarDimension(
+        world,
+        world.varDataCache,
+        crossfilter,
+        gene
+      );
+      return acc;
+    }, {});
+  }
+
+  return {
+    ..._createGenesDimMap(userDefinedGenes, userDefinedDimensionName),
+    ..._createGenesDimMap(diffexpGenes, diffexpDimensionName)
+  };
+}
+
 const Controls = (
   state = {
     // data loading flag
@@ -111,6 +133,7 @@ const Controls = (
 
     // the whole big bang
     universe: null,
+    fullUniverseCache: null,
 
     // all of the data + selection state
     world: null,
@@ -164,9 +187,7 @@ const Controls = (
     case "initial data load start": {
       return { ...state, loading: true };
     }
-    case "initial data load complete (universe exists)":
-    case "reset World to eq Universe": {
-      const { userDefinedGenes, diffexpGenes } = state;
+    case "initial data load complete (universe exists)": {
       /* first light - create world & other data-driven defaults */
       const { universe } = action;
       const world = World.createWorldFromEntireUniverse(universe);
@@ -181,51 +202,53 @@ const Controls = (
       const dimensionMap = World.createObsDimensionMap(crossfilter, world);
       WorldUtil.clearCaches();
 
-      const worldVarDataCache = world.varDataCache;
-
-      // dimensionMap = {
-      //     layout_X: dim-for-X,
-      //     obsAnno_name: dim for an annotation,
-      //     varData_userDefined_genename: dim for user defined expression,
-      //     varData_diffexp_genename: dim for diff-exp added gene expression
-      // }
-      /* var dimensions */
-      if (userDefinedGenes.length > 0) {
-        /*
-          verbose & slightly confusing that we also access this as an object
-          in controls rather than an array, should be abstracted into
-          util ie., createDimensionsFromBothListsOfGenes(userGenes, diffExp)
-        */
-        _.forEach(userDefinedGenes, gene => {
-          dimensionMap[
-            userDefinedDimensionName(gene)
-          ] = World.createVarDimension(
-            /* "__var__" + */
-            world,
-            worldVarDataCache,
-            crossfilter,
-            gene
-          );
-        });
-      }
-
-      if (diffexpGenes.length > 0) {
-        _.forEach(diffexpGenes, gene => {
-          dimensionMap[diffexpDimensionName(gene)] = World.createVarDimension(
-            /* "__var__" + */
-            world,
-            worldVarDataCache,
-            crossfilter,
-            gene
-          );
-        });
-      }
-
       return {
         ...state,
         loading: false,
         error: null,
         universe,
+        fullUniverseCache: { world, crossfilter, dimensionMap },
+        world,
+        colorRGB,
+        categoricalSelectionState,
+        crossfilter,
+        dimensionMap,
+        colorAccessor: null,
+        resettingInterface: false
+      };
+    }
+    case "reset World to eq Universe": {
+      const {
+        userDefinedGenes,
+        diffexpGenes,
+        universe,
+        fullUniverseCache
+      } = state;
+      const { world, crossfilter } = fullUniverseCache;
+      // reset all crossfilter dimensions
+      _.forEach(fullUniverseCache.dimensionMap, dim => dim.filterAll());
+      const colorRGB = new Array(universe.nObs).fill(
+        parseRGB(globals.defaultCellColor)
+      );
+      const categoricalSelectionState = createCategoricalSelectionState(
+        state,
+        world
+      );
+
+      /* free dimensions not in cache (otherwise they leak) */
+      _.forEach(state.dimensionMap, (dim, dimName) => {
+        if (!fullUniverseCache.dimensionMap[dimName]) {
+          dim.dispose();
+        }
+      });
+      const dimensionMap = {
+        ...fullUniverseCache.dimensionMap,
+        ...createGenesDimMap(userDefinedGenes, diffexpGenes, world, crossfilter)
+      };
+      WorldUtil.clearCaches();
+
+      return {
+        ...state,
         world,
         colorRGB,
         categoricalSelectionState,
@@ -252,42 +275,11 @@ const Controls = (
         world
       );
       const crossfilter = Crossfilter(world.obsAnnotations);
-      const dimensionMap = World.createObsDimensionMap(crossfilter, world);
+      const dimensionMap = {
+        ...World.createObsDimensionMap(crossfilter, world),
+        ...createGenesDimMap(userDefinedGenes, diffexpGenes, world, crossfilter)
+      };
       WorldUtil.clearCaches();
-
-      const worldVarDataCache = world.varDataCache;
-      /* var dimensions */
-
-      if (userDefinedGenes.length > 0) {
-        /*
-          verbose & slightly confusing that we also access this as an object
-          in controls rather than an array, should be abstracted into
-          util ie., createDimensionsFromBothListsOfGenes(userGenes, diffExp)
-        */
-        _.forEach(userDefinedGenes, gene => {
-          dimensionMap[
-            userDefinedDimensionName(gene)
-          ] = World.createVarDimension(
-            /* "__var__" + */
-            world,
-            worldVarDataCache,
-            crossfilter,
-            gene
-          );
-        });
-      }
-
-      if (diffexpGenes.length > 0) {
-        _.forEach(diffexpGenes, gene => {
-          dimensionMap[diffexpDimensionName(gene)] = World.createVarDimension(
-            /* "__var__" + */
-            world,
-            worldVarDataCache,
-            crossfilter,
-            gene
-          );
-        });
-      }
 
       return {
         ...state,
@@ -367,7 +359,7 @@ const Controls = (
       const _diffexpGenes = [];
 
       action.data.forEach(d => {
-        _diffexpGenes.push(world.varAnnotations[d[0]].name);
+        _diffexpGenes.push(world.varAnnotations.at(d[0], "name"));
       });
 
       _.forEach(_diffexpGenes, gene => {
@@ -393,7 +385,7 @@ const Controls = (
       const worldVarDataCache = world.varDataCache;
 
       _.forEach(action.diffExp, values => {
-        const { name } = world.varAnnotations[values[0]];
+        const name = world.varAnnotations.at(values[0], "name");
         // clean up crossfilter dimensions
         const dimension = dimensionMap[diffexpDimensionName(name)];
         dimension.dispose();

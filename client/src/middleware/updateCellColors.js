@@ -41,13 +41,13 @@ const updateCellColorsMiddleware = store => next => action => {
     action.type === "color by continuous metadata" ||
     action.type === "color by categorical metadata";
 
-  if (!filterJustChanged || !s.controls.world.obsAnnotations) {
+  const obsAnnotations = _.get(s.controls, "world.obsAnnotations", null);
+  if (!filterJustChanged || !obsAnnotations) {
     return next(
       action
     ); /* if the cells haven't loaded or the action wasn't a color change, bail */
   }
 
-  const { obsAnnotations } = s.controls.world;
   let colorScale;
   const colorsByRGB = new Array(obsAnnotations.length);
 
@@ -73,9 +73,9 @@ const updateCellColorsMiddleware = store => next => action => {
     });
 
     const key = action.colorAccessor;
+    const col = obsAnnotations.col(key).asArray();
     for (let i = 0, len = obsAnnotations.length; i < len; i += 1) {
-      const obs = obsAnnotations[i];
-      const cat = obs[key];
+      const cat = col[i];
       colorsByRGB[i] = colors[cat];
     }
   }
@@ -96,8 +96,9 @@ const updateCellColorsMiddleware = store => next => action => {
 
     const key = action.colorAccessor;
     const nonFiniteColor = parseRGB(globals.nonFiniteCellColor);
+    const col = obsAnnotations.col(key).asArray();
     for (let i = 0, len = obsAnnotations.length; i < len; i += 1) {
-      const val = obsAnnotations[i][key];
+      const val = col[i];
       if (Number.isFinite(val)) {
         const c = colorScale(val);
         colorsByRGB[i] = colors[c];

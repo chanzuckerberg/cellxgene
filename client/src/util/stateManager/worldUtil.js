@@ -18,13 +18,23 @@ Map {
    ...
 }
 
+Parameters are:
+- dim1: dimension 1 name/label
+- dim2: dimension 2 name/label
+- df: dataframe containing dim1 and dim2 on the column axis
+
 */
-function _countCategoryValues2D(dim1, dim2, rows) {
+function _countCategoryValues2D(dim1, dim2, df) {
   const dimMap = new Map();
-  for (let r = 0; r < rows.length; r += 1) {
-    const row = rows[r];
-    const val1 = row[dim1];
-    const val2 = row[dim2];
+  const col1 = df.col(dim1) ? df.col(dim1).asArray() : null;
+  const col2 = df.col(dim2) ? df.col(dim2).asArray() : null;
+  if (!col1 || !col2) {
+    return dimMap;
+  }
+
+  for (let r = 0, l = df.length; r < l; r += 1) {
+    const val1 = col1[r];
+    const val2 = col2[r];
     let d2Map = dimMap.get(val1);
     if (d2Map === undefined) {
       d2Map = new Map();
