@@ -479,6 +479,9 @@ class Dataframe {
   }
 
   isEmpty() {
+    /*
+    Return true if this is an empty dataframe, ie, has dimensions [0,0]
+    */
     const [rows, cols] = this.dims;
     return rows === 0 && cols === 0;
   }
