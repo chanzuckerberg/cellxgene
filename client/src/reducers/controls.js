@@ -104,9 +104,13 @@ function selectedValuesForCategory(categorySelectionState) {
 build a crossfilter dimension map for all gene expression related dimensions.
 */
 function createGenesDimMap(userDefinedGenes, diffexpGenes, world, crossfilter) {
-  function _createGenesDimMap(genes, nameF) {
+  function _createGenesDimMap(genes, nameCreator) {
     return genes.reduce((acc, gene) => {
-      acc[nameF(gene)] = World.createVarDataDimension(world, crossfilter, gene);
+      acc[nameCreator(gene)] = World.createVarDataDimension(
+        world,
+        crossfilter,
+        gene
+      );
       return acc;
     }, {});
   }
