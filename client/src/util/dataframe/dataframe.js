@@ -1,4 +1,4 @@
-import { IdentityInt32Index } from "./labelIndex";
+import { IdentityInt32Index, isLabelIndex } from "./labelIndex";
 // weird cross-dependency that we should clean up someday...
 import { sort } from "../typedCrossfilter/sort";
 import { isTypedArray, isArrayOrTypedArray, callOnceLazy } from "./util";
@@ -76,14 +76,17 @@ class Dataframe {
         or a caller-provided index.
     All columns and indices must have appropriate dimensionality.
     */
-    Dataframe.__errorChecks(dims, columnarData, rowIndex, colIndex);
     const [nRows, nCols] = dims;
+    if (nRows < 0 || nCols < 0) {
+      throw new RangeError("Dataframe dimensions must be positive");
+    }
     if (!rowIndex) {
       rowIndex = new IdentityInt32Index(nRows);
     }
     if (!colIndex) {
       colIndex = new IdentityInt32Index(nCols);
     }
+    Dataframe.__errorChecks(dims, columnarData, rowIndex, colIndex);
 
     this.__columns = Array.from(columnarData);
     this.dims = dims;
@@ -94,23 +97,32 @@ class Dataframe {
     this.__compile();
   }
 
-  static __errorChecks(dims, columnarData) {
+  static __errorChecks(dims, columnarData, rowIndex, colIndex) {
     const [nRows, nCols] = dims;
-    if (nRows < 0 || nCols < 0) {
-      throw new RangeError("Dataframe dimensions must be positive");
-    }
+
+    /* check for expected types */
     if (!Array.isArray(columnarData)) {
       throw new TypeError("Dataframe constructor requires array of columns");
     }
     if (!columnarData.every(c => isArrayOrTypedArray(c))) {
       throw new TypeError("Dataframe columns must all be Array or TypedArray");
     }
+    if (!isLabelIndex(rowIndex) || !isLabelIndex(colIndex)) {
+      throw new TypeError("Dataframe index just be of label index type");
+    }
+
+    /* check for expected dimensionality / size */
     if (
       nCols !== columnarData.length ||
       !columnarData.every(c => c.length === nRows)
     ) {
       throw new RangeError(
         "Dataframe dimension does not match column data shape"
+      );
+    }
+    if (nRows !== rowIndex.size() || nCols !== colIndex.size()) {
+      throw new RangeError(
+        "Dataframe indices must have same size as underlying data"
       );
     }
   }
@@ -221,27 +233,36 @@ class Dataframe {
     );
   }
 
-  withCol(label, colData) {
+  withCol(label, colData, withRowIndex = null) {
     /*
-    Like clone(), but adds a column.  Example:
+    Create a new DF, which is `this` plus the new column. Example:
     const newDf = df.withCol("foo", [1,2,3]);
 
     Dimensionality of new column must match existing dataframe.
 
     Special case: empty dataframe will accept any size column.  Example:
     const newDf = Dataframe.empty().withCol("foo", [1,2,3]);
+
+    If `withRowIndex` specified, it will be used for the new dataframe.
     */
     let dims;
+    let rowIndex;
     if (this.isEmpty()) {
       dims = [colData.length, 1];
+      rowIndex = null;
     } else {
       dims = [this.dims[0], this.dims[1] + 1];
+      ({ rowIndex } = this);
+    }
+
+    if (withRowIndex) {
+      rowIndex = withRowIndex;
     }
 
     const columns = [...this.__columns];
     columns.push(colData);
     const colIndex = this.colIndex.with(label);
-    return new this.constructor(dims, columns, this.rowIndex, colIndex);
+    return new this.constructor(dims, columns, rowIndex, colIndex);
   }
 
   dropCol(label) {
@@ -273,7 +294,7 @@ class Dataframe {
     return new Dataframe(dims, columnarData, null, null);
   }
 
-  __cut(rowOffsets, colOffsets) {
+  __cut(rowOffsets, colOffsets, withRowIndex) {
     const dims = [...this.dims];
 
     const getSortedLabelAndOffsets = (offsets, index) => {
@@ -304,6 +325,7 @@ class Dataframe {
     }
 
     let { rowIndex } = this;
+    if (withRowIndex) rowIndex = withRowIndex;
     if (rowOffsets) {
       let rowLabels;
       [rowLabels, rowOffsets] = getSortedLabelAndOffsets(
@@ -311,7 +333,7 @@ class Dataframe {
         this.rowIndex
       );
       dims[0] = rowLabels.length;
-      rowIndex = this.rowIndex.cut(rowLabels);
+      if (!withRowIndex) rowIndex = this.rowIndex.cut(rowLabels);
     }
 
     /* cut columns */
@@ -336,7 +358,15 @@ class Dataframe {
     return new Dataframe(dims, columns, rowIndex, colIndex);
   }
 
-  cutByList(rowLabels, colLabels = null) {
+  cutByList(rowLabels, colLabels = null, withRowIndex = null) {
+    /*
+    Cut on row/col labels.
+
+    withRowIndex allows assignment of new row index during cut operation.
+    If withRowIndex === null, it will reset the index to identity (offset)
+    indexing.  if withRowIndex is a label index object, it will be used
+    for the new dataframe.
+    */
     const toOffsets = (labels, index) => {
       if (!labels) {
         return null;
@@ -352,16 +382,29 @@ class Dataframe {
 
     const rowOffsets = toOffsets(rowLabels, this.rowIndex);
     const colOffsets = toOffsets(colLabels, this.colIndex);
-    return this.__cut(rowOffsets, colOffsets);
+    return this.__cut(rowOffsets, colOffsets, withRowIndex);
   }
 
-  icutByList(rowOffsets, colOffsets = null) {
-    return this.__cut(rowOffsets, colOffsets);
-  }
-
-  icutByMask(rowMask, colMask = null) {
+  icutByList(rowOffsets, colOffsets = null, withRowIndex = null) {
     /*
-    Cut on row/column based upon a truthy/falsey array.
+    Cut by row/col offset.
+
+    withRowIndex allows assignment of new row index during cut operation.
+    If withRowIndex === null, it will reset the index to identity (offset)
+    indexing.  if withRowIndex is a label index object, it will be used
+    for the new dataframe.
+    */
+    return this.__cut(rowOffsets, colOffsets, withRowIndex);
+  }
+
+  icutByMask(rowMask, colMask = null, withRowIndex = null) {
+    /*
+    Cut on row/column based upon a truthy/falsey array (a mask).
+
+    withRowIndex allows assignment of new row index during cut operation.
+    If withRowIndex === null, it will reset the index to identity (offset)
+    indexing.  if withRowIndex is a label index object, it will be used
+    for the new dataframe.
     */
     const [nRows, nCols] = this.dims;
     if (
@@ -388,7 +431,7 @@ class Dataframe {
     };
     const rowOffsets = toList(rowMask, nRows);
     const colOffsets = toList(colMask, nCols);
-    return this.__cut(rowOffsets, colOffsets);
+    return this.__cut(rowOffsets, colOffsets, withRowIndex);
   }
 
   /**

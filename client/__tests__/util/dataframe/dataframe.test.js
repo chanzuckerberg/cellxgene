@@ -226,6 +226,29 @@ describe("dataframe subsetting", () => {
       expect(dfF.rowIndex.keys()).toEqual(new Int32Array([0, 2]));
       expect(dfF.colIndex.keys()).toEqual(["int32", "float32"]);
     });
+
+    test("withRowIndex", () => {
+      const df = sourceDf.cutByList(
+        null,
+        ["int32", "float32"],
+        new Dataframe.DenseInt32Index([3, 2, 1])
+      );
+      expect(df.colIndex).toBeInstanceOf(Dataframe.KeyIndex);
+      expect(df.rowIndex).toBeInstanceOf(Dataframe.DenseInt32Index);
+      expect(df.at(3, "int32")).toEqual(df.iat(0, 0));
+    });
+
+    test("withRowIndex error checks", () => {
+      expect(() =>
+        sourceDf.cutByList(null, ["red"], new Dataframe.IdentityInt32Index(1))
+      ).toThrow(RangeError);
+      expect(() =>
+        sourceDf.cutByList(null, ["red"], new Dataframe.DenseInt32Index([0, 1]))
+      ).toThrow(RangeError);
+      expect(() =>
+        sourceDf.cutByList(null, ["red"], new Dataframe.KeyIndex([0, 1, 2, 3]))
+      ).toThrow(RangeError);
+    });
   });
 
   test("icutByMask", () => {

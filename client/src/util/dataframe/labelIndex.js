@@ -57,7 +57,7 @@ class IdentityInt32Index {
     return i;
   }
 
-  getMaxOffset() {
+  size() {
     return this.maxOffset;
   }
 
@@ -141,7 +141,7 @@ class DenseInt32Index {
     return this.rindex;
   }
 
-  getMaxOffset() {
+  size() {
     return this.rindex.length;
   }
 
@@ -212,7 +212,7 @@ class KeyIndex {
     return this.rindex;
   }
 
-  getMaxOffset() {
+  size() {
     return this.rindex.length;
   }
 
@@ -233,4 +233,12 @@ class KeyIndex {
 }
 /* eslint-enable class-methods-use-this */
 
-export { DenseInt32Index, IdentityInt32Index, KeyIndex };
+function isLabelIndex(i) {
+  return (
+    i instanceof IdentityInt32Index ||
+    i instanceof DenseInt32Index ||
+    i instanceof KeyIndex
+  );
+}
+
+export { DenseInt32Index, IdentityInt32Index, KeyIndex, isLabelIndex };
