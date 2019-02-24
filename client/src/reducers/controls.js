@@ -336,14 +336,32 @@ const Controls = (
       let universeVarData = universe.varData;
       let worldVarData = world.varData;
 
-      // Load new expression data into the varData dataframes
+      // Load new expression data into the varData dataframes, if
+      // not already present.
       _.forEach(action.expressionData, (val, key) => {
-        const col = universeVarData.col(key);
-        if (!col || col.asArray() !== val) {
+        // If not already in universe.varData, save entire expression column
+        if (!universeVarData.hasCol(key)) {
           universeVarData = universeVarData.withCol(key, val);
+        }
+
+        // If not already in world.varData, save sliced expression column
+        if (!worldVarData.hasCol(key)) {
+          // Slice if world !== universe, else just use whole column.
+          // Use the obsAnnotation index as the cut key, as we keep
+          // all world dataframes in sync.
+          let worldValSlice = val;
+          if (!World.worldEqUniverse(world, universe)) {
+            worldValSlice = universeVarData
+              .cutByList(world.obsAnnotations.rowIndex.keys(), [key], null)
+              .icol(0)
+              .asArray();
+          }
+
+          // Now build world's varData dataframe
           worldVarData = worldVarData.withCol(
             key,
-            World.subsetVarData(world, universe, val)
+            worldValSlice,
+            world.obsAnnotations.rowIndex
           );
         }
       });
