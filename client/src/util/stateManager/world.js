@@ -57,7 +57,7 @@ function templateWorld() {
     obsLayout: Dataframe.Dataframe.empty(),
 
     /*
-    Var data columns - subset of all
+    Var data columns - subset of all data (may be empty)
     */
     varData: Dataframe.Dataframe.empty(null, new Dataframe.KeyIndex())
   };
@@ -201,14 +201,6 @@ export function createObsDimensionMap(crossfilter, world) {
 
 export function worldEqUniverse(world, universe) {
   return world.obsAnnotations === universe.obsAnnotations;
-}
-
-export function subsetVarData(world, universe, varData) {
-  // If world === universe, just return the entire varData array
-  if (worldEqUniverse(world, universe)) {
-    return varData;
-  }
-  return sliceByIndex(varData, world.obsAnnotations.rowIndex.keys());
 }
 
 export function getSelectedByIndex(crossfilter) {

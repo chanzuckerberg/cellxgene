@@ -162,45 +162,6 @@ describe("createObsDimensionMap", () => {
   });
 });
 
-describe("subsetVarData", () => {
-  test("when world eq universe", () => {
-    const { universe, world } = defaultBigBang();
-    /* create a mock varData array for subsetting */
-    const sourceVarData = new Float32Array(universe.nObs);
-
-    /* expect literally the same object back */
-    const result = World.subsetVarData(world, universe, sourceVarData);
-    expect(result).toBe(sourceVarData);
-  });
-
-  test("when world neq universe", () => {
-    const { universe, world, crossfilter, dimensionMap } = defaultBigBang();
-    /* create a mock varData array for subsetting */
-    const sourceVarData = Float32Array.from(_.range(universe.nObs));
-
-    /* mock a selection */
-    dimensionMap[obsAnnoDimensionName("field1")].filterRange([0, 5]);
-    dimensionMap[obsAnnoDimensionName("field3")].filterExact(false);
-
-    /* create the world from the selection */
-    const newWorld = World.createWorldFromCurrentSelection(
-      universe,
-      world,
-      crossfilter
-    );
-    expect(newWorld.obsAnnotations.rowIndex.keys()).toEqual(
-      new Int32Array([0, 2])
-    );
-
-    /* expect a subset */
-    const result = World.subsetVarData(newWorld, universe, sourceVarData);
-    expect(result).not.toBe(sourceVarData);
-    expect(result).toHaveLength(newWorld.nObs);
-    /* check that we have expected source var content */
-    expect(result).toMatchObject(new Float32Array([0, 2]));
-  });
-});
-
 describe("createVarDataDimension", () => {
   /* create default universe */
   const { world, crossfilter } = defaultBigBang();
