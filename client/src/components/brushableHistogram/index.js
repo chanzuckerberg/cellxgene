@@ -126,7 +126,7 @@ class HistogramBrush extends React.Component {
   }
 
   drawHistogram(svgRef) {
-    const { obsAnnotations, ranges, field } = this.props;
+    const { obsAnnotations, field, ranges } = this.props;
     const histogramCache = this.calcHistogramCache(
       obsAnnotations,
       field,
@@ -140,7 +140,7 @@ class HistogramBrush extends React.Component {
   }
 
   handleColorAction() {
-    const { obsAnnotations, ranges, dispatch, field, world } = this.props;
+    const { obsAnnotations, dispatch, field, world, ranges } = this.props;
 
     if (obsAnnotations.hasCol(field)) {
       dispatch({

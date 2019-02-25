@@ -121,17 +121,6 @@ function createGenesDimMap(userDefinedGenes, diffexpGenes, world, crossfilter) {
   };
 }
 
-/*
-this magic value sets the minimum cache size, in columns, below which
-we don't throw away data.
-
-The value should be high enough so we are caching the maximum which will
-"typically" be used in the UI (currently: 10 for diffexp, and N for user-
-specified genes), and low enough to account for memory use (any single
-column size is 4 bytes * numObs, so a column can be multi-megabyte in common
-use cases).
-*/
-const VarDataCacheLowWatermark = 32;
 function pruneVarDataCache(varData, needed) {
   /*
   Remove any unneeded columns from the varData dataframe.  Will only
@@ -141,6 +130,18 @@ function pruneVarDataCache(varData, needed) {
   the order in which the columns were added.  This crudely provides
   LRU semantics, so we can delete "older" columns first.
   */
+
+  /*
+  VarDataCacheLowWatermark - this cofig value sets the minimum cache size,
+  in columns, below which we don't throw away data.
+
+  The value should be high enough so we are caching the maximum which will
+  "typically" be used in the UI (currently: 10 for diffexp, and N for user-
+  specified genes), and low enough to account for memory use (any single
+  column size is 4 bytes * numObs, so a column can be multi-megabyte in common
+  use cases).
+  */
+  const VarDataCacheLowWatermark = 32;
 
   const numOverWatermark = varData.dims[1] - VarDataCacheLowWatermark;
   if (numOverWatermark <= 0) return varData;
@@ -366,17 +367,17 @@ const Controls = (
         }
       });
 
-      // Prune size of varData if getting out of hand....
+      // Prune size of varData "cache" if getting out of hand....
       const { userDefinedGenes, diffexpGenes } = state;
-      const genesWeNeed = _.uniq(
+      const allTheGenesWeNeed = _.uniq(
         [].concat(
           userDefinedGenes,
           diffexpGenes,
           Object.keys(action.expressionData)
         )
       );
-      universeVarData = pruneVarDataCache(universeVarData, genesWeNeed);
-      worldVarData = pruneVarDataCache(worldVarData, genesWeNeed);
+      universeVarData = pruneVarDataCache(universeVarData, allTheGenesWeNeed);
+      worldVarData = pruneVarDataCache(worldVarData, allTheGenesWeNeed);
 
       return {
         ...state,
