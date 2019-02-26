@@ -68,7 +68,7 @@ class Expression extends React.Component {
               style={{ marginTop: 10 }}
               disabled={!haveBothCellSets}
               intent="primary"
-              data-testid="diffexp_button"
+              data-testid="diffexp-button"
               loading={differential.loading}
               fill
               type="button"

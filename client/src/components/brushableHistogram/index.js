@@ -235,7 +235,7 @@ class HistogramBrush extends React.Component {
     d3.select(svgRef)
       .append("g")
       .attr("class", "brush")
-      .attr("data-testid", `${svgRef.id}_brush`)
+      .attr("data-testid", `${svgRef.id}-brush`)
       .call(
         d3
           .brushX()

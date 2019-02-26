@@ -1,16 +1,21 @@
 import puppeteer from "puppeteer";
 
-const appUrlBase = "http://localhost:5000";
+const jest_env = process.env.JEST_ENV || "dev";
+const appPort = process.env.JEST_CXG_PORT || 3000;
+const appUrlBase = `http://localhost:${appPort}`;
 
 let browser;
 let page;
 const browserViewport = { width: 1280, height: 960 };
 
 beforeAll(async () => {
-  browser = await puppeteer.launch();
+  const browser_params =
+    jest_env === "dev" ? {} : { headless: false, slowMo: 100, devtools: true };
+  browser = await puppeteer.launch(browser_params);
   page = await browser.newPage();
   page.setViewport(browserViewport);
-  // page.on("console", msg => console.log("PAGE LOG:", msg.text()));
+  if (jest_env === "dev")
+    page.on("console", msg => console.log("PAGE LOG:", msg.text()));
 });
 
 afterAll(() => {
@@ -79,8 +84,8 @@ describe("select cells and diffexp", () => {
       }
     };
     await drag(size, cellset1.start, cellset1.end, true);
-    await page.click("[data-testid='cellset_button_1");
-    let button = await getOneElementInnerHTML("[data-testid='cellset_button_1");
+    await page.click("[data-testid='cellset-button-1");
+    let button = await getOneElementInnerHTML("[data-testid='cellset-button-1");
     expect(button).toMatch(/26 cells/);
   });
 
@@ -99,8 +104,8 @@ describe("select cells and diffexp", () => {
       }
     };
     await drag(size, cellset2.start, cellset2.end, true);
-    await page.click("[data-testid='cellset_button_2");
-    let button = await getOneElementInnerHTML("[data-testid='cellset_button_2");
+    await page.click("[data-testid='cellset-button-2");
+    let button = await getOneElementInnerHTML("[data-testid='cellset-button-2");
     expect(button).toMatch(/49 cells/);
   });
 
@@ -119,7 +124,7 @@ describe("select cells and diffexp", () => {
       }
     };
     await drag(size, cellset1.start, cellset1.end, true);
-    await page.click("[data-testid='cellset_button_1");
+    await page.click("[data-testid='cellset-button-1");
     const cellset2 = {
       start: {
         x: Math.floor(size.width * 0.45),
@@ -131,14 +136,14 @@ describe("select cells and diffexp", () => {
       }
     };
     await drag(size, cellset2.start, cellset2.end, true);
-    await page.click("[data-testid='cellset_button_2");
-    await page.click("[data-testid='diffexp_button");
+    await page.click("[data-testid='cellset-button-2");
+    await page.click("[data-testid='diffexp-button");
     await page.waitForSelector("[data-testclass='histogram-diffexp']");
     const diffexps = await page.$$eval(
       "[data-testclass='histogram-diffexp']",
       divs => {
         return divs.map(div =>
-          div.id.substring("histogram_".length, div.id.length)
+          div.id.substring("histogram-".length, div.id.length)
         );
       }
     );
@@ -161,7 +166,7 @@ describe("brushable histogram", () => {
   test("can brush historgram", async () => {
     await page.goto(appUrlBase);
     const hist = await page.waitForSelector(
-      "[data-testid='histogram_n_genes_svg_brush'] > .overlay"
+      "[data-testid='histogram_n_genes_svg-brush'] > .overlay"
     );
     const hist_size = await hist.boxModel();
     const draghist = {
