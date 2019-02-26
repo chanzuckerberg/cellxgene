@@ -358,7 +358,7 @@ class Dataframe {
     return new Dataframe(dims, columns, rowIndex, colIndex);
   }
 
-  cutByList(rowLabels, colLabels = null, withRowIndex = null) {
+  subset(rowLabels, colLabels = null, withRowIndex = null) {
     /*
     Cut on row/col labels.
 
@@ -385,7 +385,7 @@ class Dataframe {
     return this.__cut(rowOffsets, colOffsets, withRowIndex);
   }
 
-  icutByList(rowOffsets, colOffsets = null, withRowIndex = null) {
+  isubset(rowOffsets, colOffsets = null, withRowIndex = null) {
     /*
     Cut by row/col offset.
 
@@ -397,7 +397,7 @@ class Dataframe {
     return this.__cut(rowOffsets, colOffsets, withRowIndex);
   }
 
-  icutByMask(rowMask, colMask = null, withRowIndex = null) {
+  isubsetMask(rowMask, colMask = null, withRowIndex = null) {
     /*
     Cut on row/column based upon a truthy/falsey array (a mask).
 

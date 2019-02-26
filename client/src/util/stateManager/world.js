@@ -100,8 +100,8 @@ export function createWorldFromCurrentSelection(universe, world, crossfilter) {
 
   /* now subset/cut obs */
   const mask = crossfilter.allFilteredMask();
-  newWorld.obsAnnotations = world.obsAnnotations.icutByMask(mask);
-  newWorld.obsLayout = world.obsLayout.icutByMask(mask);
+  newWorld.obsAnnotations = world.obsAnnotations.isubsetMask(mask);
+  newWorld.obsLayout = world.obsLayout.isubsetMask(mask);
   newWorld.nObs = newWorld.obsAnnotations.dims[0];
 
   /*
@@ -110,7 +110,7 @@ export function createWorldFromCurrentSelection(universe, world, crossfilter) {
   if (world.varData.isEmpty()) {
     newWorld.varData = world.varData.clone();
   } else {
-    newWorld.varData = world.varData.icutByMask(mask);
+    newWorld.varData = world.varData.isubsetMask(mask);
   }
   return newWorld;
 }

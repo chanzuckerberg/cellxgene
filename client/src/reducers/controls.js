@@ -353,7 +353,7 @@ const Controls = (
           let worldValSlice = val;
           if (!World.worldEqUniverse(world, universe)) {
             worldValSlice = universeVarData
-              .cutByList(world.obsAnnotations.rowIndex.keys(), [key], null)
+              .subset(world.obsAnnotations.rowIndex.keys(), [key], null)
               .icol(0)
               .asArray();
           }

@@ -129,7 +129,7 @@ describe("simple data access", () => {
 });
 
 describe("dataframe subsetting", () => {
-  describe("cutByList", () => {
+  describe("subset", () => {
     const sourceDf = new Dataframe.Dataframe(
       [3, 4],
       [
@@ -143,7 +143,7 @@ describe("dataframe subsetting", () => {
     );
 
     test("all rows, one column", () => {
-      const dfA = sourceDf.cutByList(null, ["colors"]);
+      const dfA = sourceDf.subset(null, ["colors"]);
       expect(dfA).toBeDefined();
       expect(dfA.dims).toEqual([3, 1]);
       expect(dfA.iat(0, 0)).toEqual("red");
@@ -158,7 +158,7 @@ describe("dataframe subsetting", () => {
     });
 
     test("all rows, two columns", () => {
-      const dfB = sourceDf.cutByList(null, ["colors", "float32"]);
+      const dfB = sourceDf.subset(null, ["colors", "float32"]);
       expect(dfB).toBeDefined();
       expect(dfB.dims).toEqual([3, 2]);
       expect(dfB.iat(0, 0)).toBeCloseTo(4.4);
@@ -182,7 +182,7 @@ describe("dataframe subsetting", () => {
     });
 
     test("one row, all columns", () => {
-      const dfC = sourceDf.cutByList([1], null);
+      const dfC = sourceDf.subset([1], null);
       expect(dfC).toBeDefined();
       expect(dfC.dims).toEqual([1, 4]);
       expect(dfC.iat(0, 0)).toEqual(1);
@@ -194,7 +194,7 @@ describe("dataframe subsetting", () => {
     });
 
     test("two rows, all columns", () => {
-      const dfD = sourceDf.cutByList([0, 2], null);
+      const dfD = sourceDf.subset([0, 2], null);
       expect(dfD).toBeDefined();
       expect(dfD.dims).toEqual([2, 4]);
       expect(dfD.icol(0).asArray()).toEqual(new Int32Array([0, 2]));
@@ -206,7 +206,7 @@ describe("dataframe subsetting", () => {
     });
 
     test("all rows, all columns", () => {
-      const dfE = sourceDf.cutByList(null, null);
+      const dfE = sourceDf.subset(null, null);
       expect(dfE).toBeDefined();
       expect(dfE.dims).toEqual([3, 4]);
       expect(dfE.icol(0).asArray()).toEqual(sourceDf.icol(0).asArray());
@@ -218,7 +218,7 @@ describe("dataframe subsetting", () => {
     });
 
     test("two rows, two colums", () => {
-      const dfF = sourceDf.cutByList([0, 2], ["int32", "float32"]);
+      const dfF = sourceDf.subset([0, 2], ["int32", "float32"]);
       expect(dfF).toBeDefined();
       expect(dfF.dims).toEqual([2, 2]);
       expect(dfF.icol(0).asArray()).toEqual(new Int32Array([0, 2]));
@@ -228,7 +228,7 @@ describe("dataframe subsetting", () => {
     });
 
     test("withRowIndex", () => {
-      const df = sourceDf.cutByList(
+      const df = sourceDf.subset(
         null,
         ["int32", "float32"],
         new Dataframe.DenseInt32Index([3, 2, 1])
@@ -240,18 +240,18 @@ describe("dataframe subsetting", () => {
 
     test("withRowIndex error checks", () => {
       expect(() =>
-        sourceDf.cutByList(null, ["red"], new Dataframe.IdentityInt32Index(1))
+        sourceDf.subset(null, ["red"], new Dataframe.IdentityInt32Index(1))
       ).toThrow(RangeError);
       expect(() =>
-        sourceDf.cutByList(null, ["red"], new Dataframe.DenseInt32Index([0, 1]))
+        sourceDf.subset(null, ["red"], new Dataframe.DenseInt32Index([0, 1]))
       ).toThrow(RangeError);
       expect(() =>
-        sourceDf.cutByList(null, ["red"], new Dataframe.KeyIndex([0, 1, 2, 3]))
+        sourceDf.subset(null, ["red"], new Dataframe.KeyIndex([0, 1, 2, 3]))
       ).toThrow(RangeError);
     });
   });
 
-  test("icutByMask", () => {
+  test("isubsetMask", () => {
     const sourceDf = new Dataframe.Dataframe(
       [3, 4],
       [
@@ -264,7 +264,7 @@ describe("dataframe subsetting", () => {
       new Dataframe.KeyIndex(["int32", "string", "float32", "colors"])
     );
 
-    const dfA = sourceDf.icutByMask(
+    const dfA = sourceDf.isubsetMask(
       new Uint8Array([0, 1, 1]),
       new Uint8Array([1, 0, 0, 1])
     );
