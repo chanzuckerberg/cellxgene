@@ -16,14 +16,14 @@ install:
 jobs:
   include:
   - name: "Branch Tests"
-      script:
-        - set -eo pipefail
-        - flake8 server
-        - black --check
-        - npm run --prefix client/ build
-        - npm run --prefix client/ unit-test
-        - pytest -s server/test
+    script:
+      - set -eo pipefail
+      - flake8 server
+      - black --check
+      - npm run --prefix client/ build
+      - npm run --prefix client/ unit-test
+      - pytest -s server/test
   - name: "Smoke Tests"
-      if: branch = csweaver/e2e-puppeteer
-      script:
-        - npm run --prefix client/ smoke-test
+    if: branch = csweaver/e2e-puppeteer
+    script:
+      - npm run --prefix client/ smoke-test
