@@ -11,17 +11,16 @@ const browserViewport = { width: 1280, height: 960 };
 
 beforeAll(async () => {
   const browser_params = DEV
-    ? {}
-    : { headless: false, slowMo: 100, devtools: true };
+    ? { headless: false, slowMo: 100, devtools: true }
+    : {};
   browser = await puppeteer.launch(browser_params);
-  console.log(`DEV: ${DEV}, browser: ${browser}, params: ${browser_params}`);
   page = await browser.newPage();
   page.setViewport(browserViewport);
   if (DEV) page.on("console", msg => console.log("PAGE LOG:", msg.text()));
 });
 
 afterAll(() => {
-  if (DEV) {
+  if (!DEV) {
     browser.close();
   }
 });
