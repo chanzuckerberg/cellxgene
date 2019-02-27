@@ -3,19 +3,20 @@ import puppeteer from "puppeteer";
 const jest_env = process.env.JEST_ENV || "dev";
 const appPort = process.env.JEST_CXG_PORT || 3000;
 const appUrlBase = `http://localhost:${appPort}`;
+const DEV = jest_env === "dev";
 
 let browser;
 let page;
 const browserViewport = { width: 1280, height: 960 };
 
 beforeAll(async () => {
-  const browser_params =
-    jest_env === "dev" ? {} : { headless: false, slowMo: 100, devtools: true };
+  const browser_params = DEV
+    ? {}
+    : { headless: false, slowMo: 100, devtools: true };
   browser = await puppeteer.launch(browser_params);
   page = await browser.newPage();
   page.setViewport(browserViewport);
-  if (jest_env === "dev")
-    page.on("console", msg => console.log("PAGE LOG:", msg.text()));
+  if (DEV) page.on("console", msg => console.log("PAGE LOG:", msg.text()));
 });
 
 afterAll(() => {
