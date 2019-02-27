@@ -24,6 +24,6 @@ jobs:
       - npm run --prefix client/ unit-test
       - pytest -s server/test
   - name: "Smoke Tests"
-    if: branch = master
+    if: branch = master AND type = cron
     script:
       - npm run --prefix client/ smoke-test
