@@ -230,17 +230,6 @@ class KeyIndex {
     labelArray.splice(idx, 1);
     return new KeyIndex(labelArray);
   }
-
-  with(label) {
-    return new KeyIndex([...this.rindex, label]);
-  }
-
-  drop(label) {
-    const idx = this.rindex.indexOf(label);
-    const labelArray = [...this.rindex];
-    labelArray.splice(idx, 1);
-    return new KeyIndex(labelArray);
-  }
 }
 /* eslint-enable class-methods-use-this */
 
