@@ -33,7 +33,7 @@ class Continuous extends React.Component {
       dispatch({
         type: "color by continuous metadata",
         colorAccessor: key,
-        rangeMaxForColorAccessor: summary.max
+        rangeForColorAccessor: summary
       });
     };
   }
@@ -68,8 +68,15 @@ class Continuous extends React.Component {
               const summary = obsAnnotations.col(key).summarize();
               const isColorField =
                 key.includes("color") || key.includes("Color");
+              const nonFiniteExtent =
+                summary.min === undefined || summary.max === undefined;
               zebra += 1;
-              if (!summary.categorical && key !== "name" && !isColorField) {
+              if (
+                !summary.categorical &&
+                key !== "name" &&
+                !isColorField &&
+                !nonFiniteExtent
+              ) {
                 return (
                   <HistogramBrush
                     key={key}

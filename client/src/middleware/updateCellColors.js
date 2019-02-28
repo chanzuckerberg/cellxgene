@@ -82,7 +82,7 @@ const updateCellColorsMiddleware = store => next => action => {
 
   if (action.type === "color by continuous metadata") {
     const colorBins = 100;
-    const [min, max] = [0, action.rangeMaxForColorAccessor];
+    const { min, max } = action.rangeForColorAccessor;
     colorScale = d3
       .scaleQuantile()
       .domain([min, max])

@@ -40,6 +40,7 @@ class LeftSideBar extends React.Component {
         }}
       >
         <p
+          data-testid="header"
           style={{
             position: "fixed",
             top: globals.cellxgeneTitleTopPadding,

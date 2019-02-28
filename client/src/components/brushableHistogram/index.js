@@ -146,7 +146,7 @@ class HistogramBrush extends React.Component {
       dispatch({
         type: "color by continuous metadata",
         colorAccessor: field,
-        rangeMaxForColorAccessor: ranges.max
+        rangeForColorAccessor: ranges
       });
     } else if (world.varData.hasCol(field)) {
       dispatch(actions.requestSingleGeneExpressionCountsForColoringPOST(field));
@@ -228,6 +228,7 @@ class HistogramBrush extends React.Component {
     d3.select(svgRef)
       .append("g")
       .attr("class", "brush")
+      .attr("data-testid", `${svgRef.id}-brush`)
       .call(
         d3
           .brushX()
@@ -272,6 +273,8 @@ class HistogramBrush extends React.Component {
     return (
       <div
         id={`histogram_${field}`}
+        data-testid={`histogram-${field}`}
+        data-testclass={isDiffExp ? `histogram-diffexp` : ""}
         style={{
           padding: globals.leftSidebarSectionPadding,
           backgroundColor: zebra ? globals.lightestGrey : "white"
