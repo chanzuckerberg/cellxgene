@@ -146,7 +146,7 @@ class HistogramBrush extends React.Component {
       dispatch({
         type: "color by continuous metadata",
         colorAccessor: field,
-        rangeMaxForColorAccessor: ranges.max
+        rangeForColorAccessor: ranges
       });
     } else if (world.varData.hasCol(field)) {
       dispatch(actions.requestSingleGeneExpressionCountsForColoringPOST(field));

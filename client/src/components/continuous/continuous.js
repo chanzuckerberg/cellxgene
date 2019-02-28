@@ -33,7 +33,7 @@ class Continuous extends React.Component {
       dispatch({
         type: "color by continuous metadata",
         colorAccessor: key,
-        rangeMaxForColorAccessor: summary.max
+        rangeForColorAccessor: summary
       });
     };
   }
