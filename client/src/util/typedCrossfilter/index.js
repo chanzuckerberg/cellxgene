@@ -121,7 +121,7 @@ class TypedCrossfilter {
       return res;
     }
     /* else, Dataframe-like */
-    return data.icutByMask(this.allFilteredMask());
+    return data.isubsetMask(this.allFilteredMask());
   }
 
   // return Uint8array containing selection state (truthy/falsey) for each record.

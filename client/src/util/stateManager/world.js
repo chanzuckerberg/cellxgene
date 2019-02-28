@@ -1,11 +1,10 @@
 // jshint esversion: 6
 
 import _ from "lodash";
-import * as kvCache from "./keyvalcache";
-import summarizeAnnotations from "./summarizeAnnotations";
 import { layoutDimensionName, obsAnnoDimensionName } from "../nameCreators";
 import Crossfilter from "../typedCrossfilter";
 import { sliceByIndex } from "../typedCrossfilter/util";
+import * as Dataframe from "../dataframe";
 
 /*
 
@@ -38,48 +37,33 @@ Notable keys in the world object:
   A dataframe containing the X/Y layout for all obs.  Columns are named
   'X' and 'Y', and rows are indexed in the same way as obsAnnotation.
 
-* summary: summary of each obsAnnotation column (eg, numeric extent for
-  continuous data, category counts for categorical metadata)
-
-* varDataCache: expression columns, in a kvCache.   TODO: maybe move to a
-  Dataframe in the future.
+* varData: a cache of expression columns, stored in a Dataframe.  Cache
+  managed by controls reducer.
 
 */
-
-/* varDataCache config - see kvCache for semantics */
-const VarDataCacheLowWatermark = 32; // cache element count
-const VarDataCacheTTLMs = 1000; // min cache time in MS
 
 function templateWorld() {
   return {
     /* schema/version related */
-    api: null,
     schema: null,
     nObs: 0,
     nVar: 0,
 
     /* annotations */
-    obsAnnotations: null,
-    varAnnotations: null,
+    obsAnnotations: Dataframe.Dataframe.empty(),
+    varAnnotations: Dataframe.Dataframe.empty(),
 
     /* layout of graph. Dataframe. */
-    obsLayout: null,
+    obsLayout: Dataframe.Dataframe.empty(),
 
-    /* derived data summaries XXX: consider exploding in place */
-    summary: null,
-
-    varDataCache: kvCache.create(
-      VarDataCacheLowWatermark,
-      VarDataCacheTTLMs
-    ) /* cache of var data (expression) */
+    /*
+    Var data columns - subset of all data (may be empty)
+    */
+    varData: Dataframe.Dataframe.empty(null, new Dataframe.KeyIndex())
   };
 }
 
 export function createWorldFromEntireUniverse(universe) {
-  if (!universe.finalized) {
-    throw new Error("World can't be created from an partial Universe");
-  }
-
   const world = templateWorld();
 
   /*
@@ -87,31 +71,21 @@ export function createWorldFromEntireUniverse(universe) {
   */
 
   /* Schema related */
-  world.api = universe.api;
   world.schema = universe.schema;
   world.nObs = universe.nObs;
   world.nVar = universe.nVar;
 
-  /* annotations */
+  /* annotation dataframes */
   world.obsAnnotations = universe.obsAnnotations;
   world.varAnnotations = universe.varAnnotations;
 
-  /* layout and display characteristics */
+  /* layout and display characteristics dataframe */
   world.obsLayout = universe.obsLayout;
 
-  /* derived data & summaries */
-  world.summary = summarizeAnnotations(
-    world.schema,
-    world.obsAnnotations,
-    world.varAnnotations
-  );
-
-  /* build the varDataCache */
-  world.varDataCache = kvCache.map(
-    universe.varDataCache,
-    val => subsetVarData(world, universe, val),
-    { lowWatermark: VarDataCacheLowWatermark, minTTL: VarDataCacheTTLMs }
-  );
+  /*
+  Var data columns - subset of all
+  */
+  world.varData = universe.varData.clone();
 
   return world;
 }
@@ -120,30 +94,24 @@ export function createWorldFromCurrentSelection(universe, world, crossfilter) {
   const newWorld = templateWorld();
 
   /* these don't change as only OBS are selected in our current implementation */
-  newWorld.api = universe.api;
   newWorld.nVar = universe.nVar;
   newWorld.schema = universe.schema;
   newWorld.varAnnotations = universe.varAnnotations;
 
   /* now subset/cut obs */
   const mask = crossfilter.allFilteredMask();
-  newWorld.obsAnnotations = world.obsAnnotations.icutByMask(mask);
-  newWorld.obsLayout = world.obsLayout.icutByMask(mask);
+  newWorld.obsAnnotations = world.obsAnnotations.isubsetMask(mask);
+  newWorld.obsLayout = world.obsLayout.isubsetMask(mask);
   newWorld.nObs = newWorld.obsAnnotations.dims[0];
 
-  /* derived data & summaries */
-  newWorld.summary = summarizeAnnotations(
-    newWorld.schema,
-    newWorld.obsAnnotations,
-    newWorld.varAnnotations
-  );
-
-  /* build the varDataCache */
-  newWorld.varDataCache = kvCache.map(
-    universe.varDataCache,
-    val => subsetVarData(newWorld, universe, val),
-    { lowWatermark: VarDataCacheLowWatermark, minTTL: VarDataCacheTTLMs }
-  );
+  /*
+  Var data columns - subset of all
+  */
+  if (world.varData.isEmpty()) {
+    newWorld.varData = world.varData.clone();
+  } else {
+    newWorld.varData = world.varData.isubsetMask(mask);
+  }
   return newWorld;
 }
 
@@ -183,17 +151,10 @@ function deduceDimensionType(attributes, fieldName) {
   when it is no longer needed
   (it will not be garbage collected without this call)
 */
-
-export function createVarDimension(
-  world,
-  _worldVarDataCache,
-  crossfilter,
-  geneName
-) {
-  // return crossfilter.dimension(_worldVarDataCache[geneName], Float32Array);
+export function createVarDataDimension(world, crossfilter, name) {
   return crossfilter.dimension(
     Crossfilter.ScalarDimension,
-    _worldVarDataCache[geneName],
+    world.varData.col(name).asArray(),
     Float32Array
   );
 }
@@ -240,14 +201,6 @@ export function createObsDimensionMap(crossfilter, world) {
 
 export function worldEqUniverse(world, universe) {
   return world.obsAnnotations === universe.obsAnnotations;
-}
-
-export function subsetVarData(world, universe, varData) {
-  // If world === universe, just return the entire varData array
-  if (worldEqUniverse(world, universe)) {
-    return varData;
-  }
-  return sliceByIndex(varData, world.obsAnnotations.rowIndex.keys());
 }
 
 export function getSelectedByIndex(crossfilter) {

@@ -8,7 +8,6 @@ import {
   obsAnnoDimensionName,
   layoutDimensionName
 } from "../../../src/util/nameCreators";
-import * as kvCache from "../../../src/util/stateManager/keyvalcache";
 
 /*
 Helper - creates universe, world, corssfilter and dimensionMap from
@@ -55,28 +54,13 @@ describe("createWorldFromEntireUniverse", () => {
 
     expect(world).toMatchObject(
       expect.objectContaining({
-        api: "0.2",
         nObs: universe.nObs,
         nVar: universe.nVar,
         schema: universe.schema,
         obsAnnotations: universe.obsAnnotations,
         varAnnotations: universe.varAnnotations,
         obsLayout: universe.obsLayout,
-
-        summary: expect.objectContaining({
-          obs: _(REST.schema.schema.annotations.obs)
-            .filter(v => v.name !== "name")
-            .keyBy("name")
-            .mapValues(() => expect.any(Object))
-            .value(),
-          var: _(REST.schema.schema.annotations.var)
-            .filter(v => v.name !== "name")
-            .keyBy("name")
-            .mapValues(() => expect.any(Object))
-            .value()
-        }),
-
-        varDataCache: expect.any(Object)
+        varData: expect.any(Dataframe.Dataframe)
       })
     );
   });
@@ -121,18 +105,13 @@ describe("createWorldFromCurrentSelection", () => {
 
     expect(world).toMatchObject(
       expect.objectContaining({
-        api: "0.2",
         nObs: matchingIndices.length,
         nVar: universe.nVar,
         schema: universe.schema,
         obsAnnotations: expect.any(Dataframe.Dataframe),
         varAnnotations: universe.varAnnotations,
         obsLayout: expect.any(Dataframe.Dataframe),
-        summary: {
-          obs: expect.any(Object) /* we could do better! */,
-          var: expect.any(Object) /* we could do better! */
-        },
-        varDataCache: expect.any(Object)
+        varData: expect.any(Dataframe.Dataframe)
       })
     );
 
@@ -183,60 +162,14 @@ describe("createObsDimensionMap", () => {
   });
 });
 
-describe("subsetVarData", () => {
-  test("when world eq universe", () => {
-    const { universe, world } = defaultBigBang();
-    /* create a mock varData array for subsetting */
-    const sourceVarData = new Float32Array(universe.nObs);
-
-    /* expect literally the same object back */
-    const result = World.subsetVarData(world, universe, sourceVarData);
-    expect(result).toBe(sourceVarData);
-  });
-
-  test("when world neq universe", () => {
-    const { universe, world, crossfilter, dimensionMap } = defaultBigBang();
-    /* create a mock varData array for subsetting */
-    const sourceVarData = Float32Array.from(_.range(universe.nObs));
-
-    /* mock a selection */
-    dimensionMap[obsAnnoDimensionName("field1")].filterRange([0, 5]);
-    dimensionMap[obsAnnoDimensionName("field3")].filterExact(false);
-
-    /* create the world from the selection */
-    const newWorld = World.createWorldFromCurrentSelection(
-      universe,
-      world,
-      crossfilter
-    );
-    expect(newWorld.obsAnnotations.rowIndex.keys()).toEqual(
-      new Int32Array([0, 2])
-    );
-
-    /* expect a subset */
-    const result = World.subsetVarData(newWorld, universe, sourceVarData);
-    expect(result).not.toBe(sourceVarData);
-    expect(result).toHaveLength(newWorld.nObs);
-    /* check that we have expected source var content */
-    expect(result).toMatchObject(new Float32Array([0, 2]));
-  });
-});
-
-describe("createVarDimension", () => {
+describe("createVarDataDimension", () => {
   /* create default universe */
   const { world, crossfilter } = defaultBigBang();
-  /* create a mock var data cache */
-  const varDataCache = kvCache.set(
-    kvCache.create(),
+  world.varData = world.varData.withCol(
     "GENE",
     Float32Array.from(_.range(world.nObs))
   );
-  const result = World.createVarDimension(
-    world,
-    varDataCache,
-    crossfilter,
-    "GENE"
-  );
+  const result = World.createVarDataDimension(world, crossfilter, "GENE");
   expect(result).toBeInstanceOf(Crossfilter.ScalarDimension);
 });
 

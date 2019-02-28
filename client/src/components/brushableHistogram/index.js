@@ -10,7 +10,6 @@ import { Button, ButtonGroup, Tooltip } from "@blueprintjs/core";
 import { connect } from "react-redux";
 import * as d3 from "d3";
 import memoize from "memoize-one";
-import { kvCache } from "../../util/stateManager";
 import * as globals from "../../globals";
 import actions from "../../actions";
 import finiteExtent from "../../util/finiteExtent";
@@ -21,7 +20,6 @@ import finiteExtent from "../../util/finiteExtent";
   scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
   crossfilter: state.controls.crossfilter,
   differential: state.differential,
-  initializeRanges: _.get(state.controls.world, "summary.obs"),
   colorAccessor: state.controls.colorAccessor,
   colorScale: state.controls.colorScale,
   obsAnnotations: _.get(state.controls.world, "obsAnnotations", null)
@@ -35,7 +33,7 @@ class HistogramBrush extends React.Component {
       .scaleLinear()
       .range([this.height - this.marginBottom, 0]);
 
-    if (obsAnnotations.col(field)) {
+    if (obsAnnotations.hasCol(field)) {
       // recalculate expensive stuff
       const allValuesForContinuousFieldAsArray = obsAnnotations
         .col(field)
@@ -52,9 +50,8 @@ class HistogramBrush extends React.Component {
         .thresholds(40)(allValuesForContinuousFieldAsArray);
 
       histogramCache.numValues = allValuesForContinuousFieldAsArray.length;
-    } else if (kvCache.get(world.varDataCache, field)) {
-      /* it's not in observations, so it's a gene, but let's check to make sure */
-      const varValues = kvCache.get(world.varDataCache, field);
+    } else if (world.varData.hasCol(field)) {
+      const varValues = world.varData.col(field).asArray();
 
       histogramCache.x = d3
         .scaleLinear()
@@ -143,21 +140,15 @@ class HistogramBrush extends React.Component {
   }
 
   handleColorAction() {
-    const {
-      obsAnnotations,
-      dispatch,
-      field,
-      world,
-      initializeRanges
-    } = this.props;
+    const { obsAnnotations, dispatch, field, world, ranges } = this.props;
 
-    if (obsAnnotations.col(field)) {
+    if (obsAnnotations.hasCol(field)) {
       dispatch({
         type: "color by continuous metadata",
         colorAccessor: field,
-        rangeMaxForColorAccessor: initializeRanges[field].range.max
+        rangeMaxForColorAccessor: ranges.max
       });
-    } else if (kvCache.get(world.varDataCache, field)) {
+    } else if (world.varData.hasCol(field)) {
       dispatch(actions.requestSingleGeneExpressionCountsForColoringPOST(field));
     }
   }

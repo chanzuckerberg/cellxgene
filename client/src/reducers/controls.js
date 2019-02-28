@@ -1,9 +1,8 @@
 // jshint esversion: 6
 
 import _ from "lodash";
-import { polygonContains } from "d3";
 
-import { World, kvCache, WorldUtil } from "../util/stateManager";
+import { World, WorldUtil } from "../util/stateManager";
 import parseRGB from "../util/parseRGB";
 import Crossfilter from "../util/typedCrossfilter";
 import * as globals from "../globals";
@@ -61,19 +60,20 @@ function topNCategories(summary) {
 
 function createCategoricalSelectionState(state, world) {
   const res = {};
-  _.forEach(world.summary.obs, (value, key) => {
-    if (value.categories) {
+  _.forEach(world.obsAnnotations.colIndex.keys(), key => {
+    const summary = world.obsAnnotations.col(key).summarize();
+    if (summary.categories) {
       const isColorField = key.includes("color") || key.includes("Color");
       const isSelectableCategory =
         !isColorField &&
         key !== "name" &&
-        value.categories.length < state.maxCategoryItems;
+        summary.categories.length < state.maxCategoryItems;
       if (isSelectableCategory) {
-        const [categoryValues, categoryCounts] = topNCategories(value);
+        const [categoryValues, categoryCounts] = topNCategories(summary);
         const categoryIndices = new Map(categoryValues.map((v, i) => [v, i]));
         const numCategories = categoryIndices.size;
         const categorySelected = new Array(numCategories).fill(true);
-        const isTruncated = categoryValues.length < value.numCategories;
+        const isTruncated = categoryValues.length < summary.numCategories;
         res[key] = {
           categoryValues, // array: of natively typed category values
           categoryIndices, // map: category value (native type) -> category index
@@ -104,11 +104,10 @@ function selectedValuesForCategory(categorySelectionState) {
 build a crossfilter dimension map for all gene expression related dimensions.
 */
 function createGenesDimMap(userDefinedGenes, diffexpGenes, world, crossfilter) {
-  function _createGenesDimMap(genes, nameF) {
+  function _createGenesDimMap(genes, nameCreator) {
     return genes.reduce((acc, gene) => {
-      acc[nameF(gene)] = World.createVarDimension(
+      acc[nameCreator(gene)] = World.createVarDataDimension(
         world,
-        world.varDataCache,
         crossfilter,
         gene
       );
@@ -120,6 +119,46 @@ function createGenesDimMap(userDefinedGenes, diffexpGenes, world, crossfilter) {
     ..._createGenesDimMap(userDefinedGenes, userDefinedDimensionName),
     ..._createGenesDimMap(diffexpGenes, diffexpDimensionName)
   };
+}
+
+function pruneVarDataCache(varData, needed) {
+  /*
+  Remove any unneeded columns from the varData dataframe.  Will only
+  prune / remove if the total column count exceeds VarDataCacheLowWatermark
+
+  Note: this code leverages the fact that dataframe offsets indicate
+  the order in which the columns were added.  This crudely provides
+  LRU semantics, so we can delete "older" columns first.
+  */
+
+  /*
+  VarDataCacheLowWatermark - this cofig value sets the minimum cache size,
+  in columns, below which we don't throw away data.
+
+  The value should be high enough so we are caching the maximum which will
+  "typically" be used in the UI (currently: 10 for diffexp, and N for user-
+  specified genes), and low enough to account for memory use (any single
+  column size is 4 bytes * numObs, so a column can be multi-megabyte in common
+  use cases).
+  */
+  const VarDataCacheLowWatermark = 32;
+
+  const numOverWatermark = varData.dims[1] - VarDataCacheLowWatermark;
+  if (numOverWatermark <= 0) return varData;
+
+  const { colIndex } = varData;
+  const all = colIndex.keys();
+  const unused = _.difference(all, needed);
+  if (unused.length > 0) {
+    // sort by offset in the dataframe - ie, psuedo-LRU
+    unused.sort((a, b) => colIndex.getOffset(a) - colIndex.getOffset(b));
+    const numToDrop =
+      unused.length < numOverWatermark ? unused.length : numOverWatermark;
+    for (let i = 0; i < numToDrop; i += 1) {
+      varData = varData.dropCol(unused[i]);
+    }
+  }
+  return varData;
 }
 
 const Controls = (
@@ -295,28 +334,60 @@ const Controls = (
     }
     case "expression load success": {
       const { world, universe } = state;
-      let universeVarDataCache = universe.varDataCache;
-      let worldVarDataCache = world.varDataCache;
+      let universeVarData = universe.varData;
+      let worldVarData = world.varData;
+
+      // Load new expression data into the varData dataframes, if
+      // not already present.
       _.forEach(action.expressionData, (val, key) => {
-        universeVarDataCache = kvCache.set(universeVarDataCache, key, val);
-        if (kvCache.get(worldVarDataCache, key) === undefined) {
-          worldVarDataCache = kvCache.set(
-            worldVarDataCache,
+        // If not already in universe.varData, save entire expression column
+        if (!universeVarData.hasCol(key)) {
+          universeVarData = universeVarData.withCol(key, val);
+        }
+
+        // If not already in world.varData, save sliced expression column
+        if (!worldVarData.hasCol(key)) {
+          // Slice if world !== universe, else just use whole column.
+          // Use the obsAnnotation index as the cut key, as we keep
+          // all world dataframes in sync.
+          let worldValSlice = val;
+          if (!World.worldEqUniverse(world, universe)) {
+            worldValSlice = universeVarData
+              .subset(world.obsAnnotations.rowIndex.keys(), [key], null)
+              .icol(0)
+              .asArray();
+          }
+
+          // Now build world's varData dataframe
+          worldVarData = worldVarData.withCol(
             key,
-            World.subsetVarData(world, universe, val)
+            worldValSlice,
+            world.obsAnnotations.rowIndex
           );
         }
       });
+
+      // Prune size of varData "cache" if getting out of hand....
+      const { userDefinedGenes, diffexpGenes } = state;
+      const allTheGenesWeNeed = _.uniq(
+        [].concat(
+          userDefinedGenes,
+          diffexpGenes,
+          Object.keys(action.expressionData)
+        )
+      );
+      universeVarData = pruneVarDataCache(universeVarData, allTheGenesWeNeed);
+      worldVarData = pruneVarDataCache(worldVarData, allTheGenesWeNeed);
 
       return {
         ...state,
         universe: {
           ...universe,
-          varDataCache: universeVarDataCache
+          varData: universeVarData
         },
         world: {
           ...world,
-          varDataCache: worldVarDataCache
+          varData: worldVarData
         }
       };
     }
@@ -334,17 +405,12 @@ const Controls = (
     }
     case "request user defined gene success": {
       const { world, crossfilter, dimensionMap, userDefinedGenes } = state;
-      const worldVarDataCache = world.varDataCache;
       const _userDefinedGenes = userDefinedGenes.slice();
       const gene = action.data.genes[0];
 
-      dimensionMap[userDefinedDimensionName(gene)] = World.createVarDimension(
-        /* "__var__" + */
-        world,
-        worldVarDataCache,
-        crossfilter,
-        gene
-      );
+      dimensionMap[
+        userDefinedDimensionName(gene)
+      ] = World.createVarDataDimension(world, crossfilter, gene);
 
       return {
         ...state,
@@ -355,7 +421,6 @@ const Controls = (
     }
     case "request differential expression success": {
       const { world, crossfilter, dimensionMap } = state;
-      const worldVarDataCache = world.varDataCache;
       const _diffexpGenes = [];
 
       action.data.forEach(d => {
@@ -363,10 +428,8 @@ const Controls = (
       });
 
       _.forEach(_diffexpGenes, gene => {
-        dimensionMap[diffexpDimensionName(gene)] = World.createVarDimension(
-          /* "__var__" + */
+        dimensionMap[diffexpDimensionName(gene)] = World.createVarDataDimension(
           world,
-          worldVarDataCache,
           crossfilter,
           gene
         );
@@ -381,9 +444,6 @@ const Controls = (
     case "clear differential expression": {
       const { world, universe, dimensionMap } = state;
       const _dimensionMap = dimensionMap;
-      const universeVarDataCache = universe.varDataCache;
-      const worldVarDataCache = world.varDataCache;
-
       _.forEach(action.diffExp, values => {
         const name = world.varAnnotations.at(values[0], "name");
         // clean up crossfilter dimensions
@@ -394,15 +454,7 @@ const Controls = (
       return {
         ...state,
         dimensionMap: _dimensionMap,
-        diffexpGenes: [],
-        universe: {
-          ...universe,
-          varDataCache: universeVarDataCache
-        },
-        world: {
-          ...world,
-          varDataCache: worldVarDataCache
-        }
+        diffexpGenes: []
       };
     }
     case "user defined gene": {

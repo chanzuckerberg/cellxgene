@@ -56,12 +56,8 @@ const filterGenes = (query, genes) =>
   });
 
 @connect(state => {
-  const ranges = _.get(state.controls.world, "summary.obs", null);
-  const initializeRanges = _.get(state.controls.world, "summary.obs");
-
   return {
-    ranges,
-    initializeRanges,
+    obsAnnotations: _.get(state.controls.world, "obsAnnotations", null),
     userDefinedGenes: state.controls.userDefinedGenes,
     userDefinedGenesLoading: state.controls.userDefinedGenesLoading,
     world: state.controls.world,
@@ -293,16 +289,17 @@ class GeneExpression extends React.Component {
           ) : null}
           {world && userDefinedGenes.length > 0
             ? _.map(userDefinedGenes, (geneName, index) => {
-                const values = world.varDataCache[geneName];
+                const values = world.varData.col(geneName);
                 if (!values) {
                   return null;
                 }
+                const summary = values.summarize();
                 return (
                   <HistogramBrush
                     key={geneName}
                     field={geneName}
                     zebra={index % 2 === 0}
-                    ranges={finiteExtent(values)}
+                    ranges={summary}
                     isUserDefined
                   />
                 );
@@ -322,16 +319,17 @@ class GeneExpression extends React.Component {
           {differential.diffExp
             ? _.map(differential.diffExp, (value, index) => {
                 const name = world.varAnnotations.at(value[0], "name");
-                const values = world.varDataCache[name];
+                const values = world.varData.col(name);
                 if (!values) {
                   return null;
                 }
+                const summary = values.summarize();
                 return (
                   <HistogramBrush
                     key={name}
                     field={name}
                     zebra={index % 2 === 0}
-                    ranges={finiteExtent(values)}
+                    ranges={summary}
                     isDiffExp
                     logFoldChange={value[1]}
                     pval={value[2]}

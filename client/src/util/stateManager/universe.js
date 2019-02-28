@@ -2,8 +2,6 @@
 
 import _ from "lodash";
 
-import * as kvCache from "./keyvalcache";
-import summarizeAnnotations from "./summarizeAnnotations";
 import decodeMatrixFBS from "./matrix";
 import * as Dataframe from "../dataframe";
 
@@ -12,15 +10,7 @@ Private helper function - create and return a template Universe
 */
 function templateUniverse() {
   /* default universe template */
-
-  /* varDataCache config - see kvCache for semantics */
-  const VarDataCacheLowWatermark = 32; // cache element count
-  const VarDataCacheTTLMs = 1000; // min cache time in MS
-
   return {
-    api: null,
-    finalized: false, // XXX: may not be needed
-
     nObs: 0,
     nVar: 0,
     schema: {},
@@ -28,18 +18,14 @@ function templateUniverse() {
     /*
     Annotations
     */
-    obsAnnotations: null,
-    varAnnotations: null,
-    obsLayout: null,
-    summary: null /* derived data summaries. XXX: consider exploding in place */,
+    obsAnnotations: Dataframe.Dataframe.empty(),
+    varAnnotations: Dataframe.Dataframe.empty(),
+    obsLayout: Dataframe.Dataframe.empty(),
 
     /*
-    Cache of var data (expression), by var annotation name.   Data can be
-    accesses as a POJO, but if you want caching semantics, use the kvCache
-    API (eg., kvCache.get(), kvCache.set(), ...), which will maintain the
-    LRU semantics.
+    Var data columns - subset of all
     */
-    varDataCache: kvCache.create(VarDataCacheLowWatermark, VarDataCacheTTLMs)
+    varData: Dataframe.Dataframe.empty(null, new Dataframe.KeyIndex())
   };
 }
 
@@ -50,29 +36,6 @@ aka all of the var/obs data and annotations.
 These functions are used exclusively by the actions and reducers to
 build an internal POJO for use by the rendering components.
 */
-
-/*
-generate any client-side transformations or summarization that
-is independent of REST API response formats.
-*/
-function finalize(universe) {
-  /* A bit of sanity checking! */
-  const { nObs, nVar } = universe;
-  if (
-    nObs !== universe.obsLayout.length ||
-    nObs !== universe.obsAnnotations.length ||
-    nVar !== universe.varAnnotations.length
-  ) {
-    throw new Error("Universe dimensionality mismatch - failed to load");
-  }
-  // TODO: add more sanity checks, such as:
-  //  - all annotations in the schema
-  //  - layout has supported number of dimensions
-  //  - ...
-
-  universe.finalized = true;
-  return universe;
-}
 
 function AnnotationsFBSToDataframe(arrayBuffer) {
   /*
@@ -118,7 +81,7 @@ function reconcileSchemaCategoriesWithSummary(universe) {
     ) {
       const categories = _.union(
         _.get(s, "categories", []),
-        _.get(universe.summary.obs[s.name], "categories", [])
+        _.get(universe.obsAnnotations.col(s.name).summarize(), "categories", [])
       );
       s.categories = categories;
     }
@@ -138,9 +101,6 @@ export function createUniverseFromResponse(
   const { schema } = schemaResponse;
   const universe = templateUniverse();
 
-  /* constants */
-  universe.api = "0.2";
-
   /* schema related */
   universe.schema = schema;
   universe.nObs = schema.dataframe.nObs;
@@ -152,14 +112,17 @@ export function createUniverseFromResponse(
   /* layout */
   universe.obsLayout = LayoutFBSToDataframe(layoutFBSResponse);
 
-  universe.summary = summarizeAnnotations(
-    universe.schema,
-    universe.obsAnnotations,
-    universe.varAnnotations
-  );
+  /* sanity check */
+  if (
+    universe.nObs !== universe.obsLayout.length ||
+    universe.nObs !== universe.obsAnnotations.length ||
+    universe.nVar !== universe.varAnnotations.length
+  ) {
+    throw new Error("Universe dimensionality mismatch - failed to load");
+  }
 
   reconcileSchemaCategoriesWithSummary(universe);
-  return finalize(universe);
+  return universe;
 }
 
 export function convertDataFBStoObject(universe, arrayBuffer) {

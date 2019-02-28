@@ -9,7 +9,7 @@ import * as globals from "../../globals";
 import HistogramBrush from "../brushableHistogram";
 
 @connect(state => ({
-  ranges: _.get(state.controls.world, "summary.obs", null),
+  obsAnnotations: _.get(state.controls.world, "obsAnnotations", null),
   colorAccessor: state.controls.colorAccessor,
   colorScale: state.controls.colorScale,
   selectionUpdate: _.get(state.controls, "crossfilter.updateTime", null),
@@ -28,17 +28,18 @@ class Continuous extends React.Component {
 
   handleColorAction(key) {
     return () => {
-      const { dispatch, ranges } = this.props;
+      const { dispatch, obsAnnotations } = this.props;
+      const summary = obsAnnotations.col(key).summarize();
       dispatch({
         type: "color by continuous metadata",
         colorAccessor: key,
-        rangeMaxForColorAccessor: ranges[key].range.max
+        rangeMaxForColorAccessor: summary.max
       });
     };
   }
 
   render() {
-    const { ranges, schema } = this.props;
+    const { obsAnnotations, schema } = this.props;
     if (schema && !this.continuousChecked) {
       this.hasContinuous = _.some(
         schema.annotations.obs,
@@ -62,23 +63,27 @@ class Continuous extends React.Component {
             Continuous metadata
           </p>
         ) : null}
-        {_.map(ranges, (value, key) => {
-          const isColorField = key.includes("color") || key.includes("Color");
-          zebra += 1;
-          if (value.range && key !== "name" && !isColorField) {
-            return (
-              <HistogramBrush
-                key={key}
-                field={key}
-                isObs
-                zebra={zebra % 2 === 0}
-                ranges={value.range}
-                handleColorAction={this.handleColorAction(key).bind(this)}
-              />
-            );
-          }
-          return null;
-        })}
+        {obsAnnotations
+          ? _.map(obsAnnotations.colIndex.keys(), key => {
+              const summary = obsAnnotations.col(key).summarize();
+              const isColorField =
+                key.includes("color") || key.includes("Color");
+              zebra += 1;
+              if (!summary.categorical && key !== "name" && !isColorField) {
+                return (
+                  <HistogramBrush
+                    key={key}
+                    field={key}
+                    isObs
+                    zebra={zebra % 2 === 0}
+                    ranges={summary}
+                    handleColorAction={this.handleColorAction(key).bind(this)}
+                  />
+                );
+              }
+              return null;
+            })
+          : null}
       </div>
     );
   }

@@ -41,15 +41,13 @@ describe("createUniverseFromResponse", () => {
     expect(universe).toBeDefined();
     expect(universe).toMatchObject(
       expect.objectContaining({
-        api: "0.2",
         nObs,
         nVar,
         schema: REST.schema.schema,
         obsAnnotations: expect.any(Dataframe.Dataframe),
         varAnnotations: expect.any(Dataframe.Dataframe),
         obsLayout: expect.any(Dataframe.Dataframe),
-        summary: expect.any(Object),
-        varDataCache: expect.any(Object)
+        varData: expect.any(Dataframe.Dataframe)
       })
     );
 
@@ -63,5 +61,6 @@ describe("createUniverseFromResponse", () => {
       nVar,
       REST.schema.schema.annotations.var.length
     ]);
+    expect(universe.varData.isEmpty()).toBeTruthy();
   });
 });

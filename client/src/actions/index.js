@@ -1,12 +1,11 @@
 // jshint esversion: 6
 import _ from "lodash";
 import * as globals from "../globals";
-import { Universe, kvCache } from "../util/stateManager";
+import { Universe } from "../util/stateManager";
 import {
   catchErrorsWrap,
   doJsonRequest,
   doBinaryRequest,
-  rangeEncodeIndices,
   dispatchNetworkErrorMessageToUser
 } from "../util/actionHelpers";
 
@@ -130,9 +129,9 @@ async function _doRequestExpressionData(dispatch, getState, genes) {
   let expressionData = _.transform(
     genes,
     (expData, g) => {
-      const data = kvCache.get(universe.varDataCache, g);
+      const data = universe.varData.col(g);
       if (data) {
-        expData[g] = data;
+        expData[g] = data.asArray();
       }
     },
     {}
@@ -170,7 +169,7 @@ function requestSingleGeneExpressionCountsForColoringPOST(gene) {
         type: "color by expression",
         gene,
         data: {
-          [gene]: kvCache.get(world.varDataCache, gene)
+          [gene]: world.varData.col(gene).asArray()
         }
       });
     } catch (error) {
@@ -193,7 +192,7 @@ const requestUserDefinedGene = gene => async (dispatch, getState) => {
       type: "request user defined gene success",
       data: {
         genes: [gene],
-        expression: kvCache.get(world.varDataCache, gene)
+        expression: world.varData.col(gene).asArray()
       }
     });
   } catch (error) {
@@ -243,12 +242,16 @@ const requestDifferentialExpression = (set1, set2, num_genes = 10) => async (
     const state = getState();
     const { universe } = state.controls;
 
+    // Legal values are null, Array or TypedArray.  Null is initial state.
+    if (!set1) set1 = [];
+    if (!set2) set2 = [];
+
     // These lines ensure that we convert any TypedArray to an Array.
     // This is necessary because JSON.stringify() does some very strange
     // things with TypedArrays (they are marshalled to JSON objects, rather
     // than being marshalled as a JSON array).
-    const aset1 = Array.isArray(set1) ? set1 : Array.from(set1);
-    const aset2 = Array.isArray(set2) ? set2 : Array.from(set2);
+    set1 = Array.isArray(set1) ? set1 : Array.from(set1);
+    set2 = Array.isArray(set2) ? set2 : Array.from(set2);
 
     const res = await fetch(
       `${globals.API.prefix}${globals.API.version}diffexp/obs`,
@@ -261,8 +264,8 @@ const requestDifferentialExpression = (set1, set2, num_genes = 10) => async (
         body: JSON.stringify({
           mode: "topN",
           count: num_genes,
-          set1: { filter: { obs: { index: aset1 } } },
-          set2: { filter: { obs: { index: aset2 } } }
+          set1: { filter: { obs: { index: set1 } } },
+          set2: { filter: { obs: { index: set2 } } }
         })
       }
     );
