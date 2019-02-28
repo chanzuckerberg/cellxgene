@@ -3,7 +3,6 @@
 import _ from "lodash";
 import { layoutDimensionName, obsAnnoDimensionName } from "../nameCreators";
 import Crossfilter from "../typedCrossfilter";
-import { sliceByIndex } from "../typedCrossfilter/util";
 import * as Dataframe from "../dataframe";
 
 /*

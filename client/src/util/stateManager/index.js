@@ -17,3 +17,4 @@ exists to support those concepts.
 export * as Universe from "./universe";
 export * as World from "./world";
 export * as WorldUtil from "./worldUtil";
+export * as ControlsHelper from "./controlsHelpers";
