@@ -133,11 +133,6 @@ class Dataframe {
         "Dataframe colIndex must have same size as underlying data"
       );
     }
-    if (nRows !== rowIndex.size() || nCols !== colIndex.size()) {
-      throw new RangeError(
-        "Dataframe indices must have same size as underlying data"
-      );
-    }
   }
 
   __compile() {
