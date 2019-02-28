@@ -10,7 +10,7 @@ but (currently) without all of the surrounding support functions.
 Data is stored in column-major layout, and each column is monomorphic.
 
 It supports:
-* Relatively efficient creation, cloning and subsetting ("cut")
+* Relatively efficient creation, cloning and subsetting
 * Very efficient columnar access (eg, sum down a column), and access
   to the underlying column arrays.
 * Data access by row/col offset or label.  Labels are reasonably well
@@ -107,8 +107,11 @@ class Dataframe {
     if (!columnarData.every(c => isArrayOrTypedArray(c))) {
       throw new TypeError("Dataframe columns must all be Array or TypedArray");
     }
-    if (!isLabelIndex(rowIndex) || !isLabelIndex(colIndex)) {
-      throw new TypeError("Dataframe index just be of label index type");
+    if (!isLabelIndex(rowIndex)) {
+      throw new TypeError("Dataframe rowIndex is an unsupported type.");
+    }
+    if (!isLabelIndex(colIndex)) {
+      throw new TypeError("Dataframe colIndex is an unsupported type.");
     }
 
     /* check for expected dimensionality / size */
@@ -117,7 +120,17 @@ class Dataframe {
       !columnarData.every(c => c.length === nRows)
     ) {
       throw new RangeError(
-        "Dataframe dimension does not match column data shape"
+        "Dataframe dimension does not match provided data shape"
+      );
+    }
+    if (nRows !== rowIndex.size()) {
+      throw new RangeError(
+        "Dataframe rowIndex must have same size as underlying data"
+      );
+    }
+    if (nCols !== colIndex.size()) {
+      throw new RangeError(
+        "Dataframe colIndex must have same size as underlying data"
       );
     }
     if (nRows !== rowIndex.size() || nCols !== colIndex.size()) {
@@ -243,7 +256,10 @@ class Dataframe {
     Special case: empty dataframe will accept any size column.  Example:
     const newDf = Dataframe.empty().withCol("foo", [1,2,3]);
 
-    If `withRowIndex` specified, it will be used for the new dataframe.
+    If `withRowIndex` specified, the provided index will become the
+    rowIndex for the newly created dataframe.   If not specified,
+    the rowIndex from `this` will be used (ie, the rowIndex is
+    unchanged).
     */
     let dims;
     let rowIndex;
@@ -261,7 +277,7 @@ class Dataframe {
 
     const columns = [...this.__columns];
     columns.push(colData);
-    const colIndex = this.colIndex.with(label);
+    const colIndex = this.colIndex.withLabel(label);
     return new this.constructor(dims, columns, rowIndex, colIndex);
   }
 
@@ -275,7 +291,7 @@ class Dataframe {
     const coffset = this.colIndex.getOffset(label);
     const columns = [...this.__columns];
     columns.splice(coffset, 1);
-    const colIndex = this.colIndex.drop(label);
+    const colIndex = this.colIndex.dropLabel(label);
     return new this.constructor(dims, columns, this.rowIndex, colIndex);
   }
 
@@ -294,7 +310,7 @@ class Dataframe {
     return new Dataframe(dims, columnarData, null, null);
   }
 
-  __cut(rowOffsets, colOffsets, withRowIndex) {
+  __subset(rowOffsets, colOffsets, withRowIndex) {
     const dims = [...this.dims];
 
     const getSortedLabelAndOffsets = (offsets, index) => {
@@ -321,7 +337,7 @@ class Dataframe {
         this.colIndex
       );
       dims[1] = colOffsets.length;
-      colIndex = this.colIndex.cut(colLabels);
+      colIndex = this.colIndex.subsetLabels(colLabels);
     }
 
     let { rowIndex } = this;
@@ -333,10 +349,10 @@ class Dataframe {
         this.rowIndex
       );
       dims[0] = rowLabels.length;
-      if (!withRowIndex) rowIndex = this.rowIndex.cut(rowLabels);
+      if (!withRowIndex) rowIndex = this.rowIndex.subsetLabels(rowLabels);
     }
 
-    /* cut columns */
+    /* subset columns */
     let columns = this.__columns;
     if (colOffsets) {
       columns = new Array(colOffsets.length);
@@ -345,7 +361,7 @@ class Dataframe {
       }
     }
 
-    /* cut rows */
+    /* subset rows */
     if (rowOffsets) {
       columns = columns.map(col => {
         const newCol = new col.constructor(rowOffsets.length);
@@ -360,9 +376,9 @@ class Dataframe {
 
   subset(rowLabels, colLabels = null, withRowIndex = null) {
     /*
-    Cut on row/col labels.
+    Subset by row/col labels.
 
-    withRowIndex allows assignment of new row index during cut operation.
+    withRowIndex allows assignment of new row index during subset operation.
     If withRowIndex === null, it will reset the index to identity (offset)
     indexing.  if withRowIndex is a label index object, it will be used
     for the new dataframe.
@@ -382,26 +398,26 @@ class Dataframe {
 
     const rowOffsets = toOffsets(rowLabels, this.rowIndex);
     const colOffsets = toOffsets(colLabels, this.colIndex);
-    return this.__cut(rowOffsets, colOffsets, withRowIndex);
+    return this.__subset(rowOffsets, colOffsets, withRowIndex);
   }
 
   isubset(rowOffsets, colOffsets = null, withRowIndex = null) {
     /*
-    Cut by row/col offset.
+    Subset by row/col offset.
 
-    withRowIndex allows assignment of new row index during cut operation.
+    withRowIndex allows assignment of new row index during subset operation.
     If withRowIndex === null, it will reset the index to identity (offset)
     indexing.  if withRowIndex is a label index object, it will be used
     for the new dataframe.
     */
-    return this.__cut(rowOffsets, colOffsets, withRowIndex);
+    return this.__subset(rowOffsets, colOffsets, withRowIndex);
   }
 
   isubsetMask(rowMask, colMask = null, withRowIndex = null) {
     /*
-    Cut on row/column based upon a truthy/falsey array (a mask).
+    Subset on row/column based upon a truthy/falsey array (a mask).
 
-    withRowIndex allows assignment of new row index during cut operation.
+    withRowIndex allows assignment of new row index during subset operation.
     If withRowIndex === null, it will reset the index to identity (offset)
     indexing.  if withRowIndex is a label index object, it will be used
     for the new dataframe.
@@ -431,7 +447,7 @@ class Dataframe {
     };
     const rowOffsets = toList(rowMask, nRows);
     const colOffsets = toList(colMask, nCols);
-    return this.__cut(rowOffsets, colOffsets, withRowIndex);
+    return this.__subset(rowOffsets, colOffsets, withRowIndex);
   }
 
   /**

@@ -75,18 +75,18 @@ class IdentityInt32Index {
     return new DenseInt32Index(labelArray, [minLabel, maxLabel]);
   }
 
-  cut(labelArray) {
+  subsetLabels(labelArray) {
     return this.__promote(labelArray);
   }
 
-  with(label) {
+  withLabel(label) {
     if (label === this.maxOffset) {
       return new IdentityInt32Index(label + 1);
     }
     return this.__promote([...this.keys(), label]);
   }
 
-  drop(label) {
+  dropLabel(label) {
     if (label === this.maxOffset - 1) {
       return new IdentityInt32Index(label);
     }
@@ -161,15 +161,15 @@ class DenseInt32Index {
     return new DenseInt32Index(labelArray, [minLabel, maxLabel]);
   }
 
-  cut(labelArray) {
+  subsetLabels(labelArray) {
     return this.__promote(labelArray);
   }
 
-  with(label) {
+  withLabel(label) {
     return this.__promote([...this.keys(), label]);
   }
 
-  drop(label) {
+  dropLabel(label) {
     const labelArray = [...this.keys()];
     labelArray.splice(labelArray.indexOf(label), 1);
     return this.__promote(labelArray);
@@ -216,7 +216,18 @@ class KeyIndex {
     return this.rindex.length;
   }
 
-  cut(labelArray) {
+  subsetLabels(labelArray) {
+    return new KeyIndex(labelArray);
+  }
+
+  withLabel(label) {
+    return new KeyIndex([...this.rindex, label]);
+  }
+
+  dropLabel(label) {
+    const idx = this.rindex.indexOf(label);
+    const labelArray = [...this.rindex];
+    labelArray.splice(idx, 1);
     return new KeyIndex(labelArray);
   }
 
