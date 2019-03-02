@@ -78,7 +78,8 @@ release-stage-final: twine-prod
 # use this if you accidently burned a test release version number,
 release-burned : dev-env pydist twine-prod
 	@echo "Dist built and uploaded to pypi.org"
-	@echo "Test the install `make install-release`"
+	@echo "Test the install:"
+	@echo "    make install-release"
 
 dev-env :
 	pip install -r server/requirements-dev.txt
