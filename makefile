@@ -66,8 +66,10 @@ release-stage-1 : dev-env bump clean-lite gen-package-lock
 # build dist and release to dev pypi
 release-stage-2 : dev-env pydist twine
 	@echo "Dist built and uploaded to test.pypi.org"
-	@echo "Test the install `make install-release-test` and then upload to Pypi prod"
-	@echo "`make twine-prod`"
+	@echo "Test the install:"
+	@echo "    make install-release-test"
+	@echo "Then upload to Pypi prod:"
+	@echo "    make twine-prod"
 
 release-stage-final: twine-prod
 	@echo "Release uploaded to pypi.org"
@@ -76,7 +78,8 @@ release-stage-final: twine-prod
 # use this if you accidently burned a test release version number,
 release-burned : dev-env pydist twine-prod
 	@echo "Dist built and uploaded to pypi.org"
-	@echo "Test the install `make install-release`"
+	@echo "Test the install:"
+	@echo "    make install-release"
 
 dev-env :
 	pip install -r server/requirements-dev.txt
