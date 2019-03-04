@@ -14,7 +14,12 @@ from server.app.util.utils import custom_format_warning
 @click.command()
 @click.argument("data", metavar="<data file>", type=click.Path(exists=True, file_okay=True, dir_okay=False))
 @click.option(
-    "--layout", "-l", type=click.Choice(["umap", "tsne", "draw_graph_fa", "draw_graph_fr"]), default="umap", show_default=True, help="Method for layout."
+    "--layout",
+    "-l",
+    type=click.Choice(["umap", "tsne", "draw_graph_fa", "draw_graph_fr"]),
+    default="umap",
+    show_default=True,
+    help="Method for layout."
 )
 @click.option(
     "--diffexp",
