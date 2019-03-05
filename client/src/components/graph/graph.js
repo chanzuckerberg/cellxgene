@@ -5,7 +5,15 @@ import * as d3 from "d3";
 import { connect } from "react-redux";
 import mat4 from "gl-mat4";
 import _regl from "regl";
-import { Button, AnchorButton, Tooltip } from "@blueprintjs/core";
+import {
+  Button,
+  AnchorButton,
+  Tooltip,
+  Popover,
+  Menu,
+  MenuItem,
+  Position
+} from "@blueprintjs/core";
 
 import * as globals from "../../globals";
 import setupSVGandBrushElements from "./setupSVGandBrush";
@@ -504,6 +512,49 @@ class Graph extends React.Component {
                   />
                 </Tooltip>
               </div>
+            </div>
+            <div style={{ marginLeft: 10 }}>
+              <Popover
+                content={
+                  <Menu>
+                    <MenuItem
+                      href="https://chanzuckerberg.github.io/cellxgene/faq.html"
+                      target="_blank"
+                      icon="help"
+                      text="FAQ"
+                    />
+                    <MenuItem
+                      href="https://join-cziscience-slack.herokuapp.com/"
+                      target="_blank"
+                      icon="chat"
+                      text="Chat"
+                    />
+                    <MenuItem
+                      href="https://chanzuckerberg.github.io/cellxgene/"
+                      target="_blank"
+                      icon="book"
+                      text="Docs"
+                    />
+                    <MenuItem
+                      href="https://github.com/chanzuckerberg/cellxgene"
+                      target="_blank"
+                      icon="git-branch"
+                      text="Github"
+                    />
+                    <MenuItem target="_blank" text={`cellxgene v${"0.6.0"}`} />
+                    <MenuItem text="MIT License" />
+                  </Menu>
+                }
+                position={Position.BOTTOM_RIGHT}
+              >
+                <Button
+                  type="button"
+                  className="bp3-button bp3-icon-cog"
+                  style={{
+                    cursor: "pointer"
+                  }}
+                />
+              </Popover>
             </div>
           </div>
         </div>
