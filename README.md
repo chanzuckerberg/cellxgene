@@ -37,7 +37,7 @@ You should see your web browser open with the following
 
 There are several options available, such as:
 
-- `--layout` to specify the layout as `tsne` or `umap`
+- `--layout` to specify the layout as `tsne`, `umap`, `draw_graph_fa`, or `draw_graph_fr` 
 - `--title` to show a title on the explorer
 - `--open` to automatically open the web browser after launching (OS X only)
 
@@ -57,7 +57,7 @@ The `launch` command assumes that the data is stored in the `.h5ad` format from 
 
 - an `obs` field has a unique identifier for every cell (you can specify which field to use with the `--obs-names` option, by default it will use the value of `data.obs_names`)
 - a `var` field has a unique identifier for every gene (you can specify which field to use with the `--var-names` option, by default it will use the value of `data.var_names`)
-- an `obsm` field contains the two-dimensional coordinates for the layout that you want to render (e.g. `X_tsne` for the `tsne` layout or `X_umap` for the `umap` layout)
+- an `obsm` field contains the two-dimensional coordinates for the layout that you want to render (e.g. `X_umap` for the `umap` layout)
 - any additional `obs` fields will be rendered as per-cell continuous or categorical metadata by the app (e.g. `louvain` cluster assignments)
 
 ### prepare
