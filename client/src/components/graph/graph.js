@@ -6,12 +6,14 @@ import { connect } from "react-redux";
 import mat4 from "gl-mat4";
 import _regl from "regl";
 import { Button, AnchorButton, Tooltip } from "@blueprintjs/core";
+
 import * as globals from "../../globals";
 import setupSVGandBrushElements from "./setupSVGandBrush";
 import actions from "../../actions";
 import _camera from "../../util/camera";
 import _drawPoints from "./drawPointsRegl";
 import scaleLinear from "../../util/scaleLinear";
+import { World } from "../../util/stateManager";
 
 /* https://bl.ocks.org/mbostock/9078690 - quadtree for onClick / hover selections */
 
@@ -23,7 +25,14 @@ import scaleLinear from "../../util/scaleLinear";
   colorRGB: _.get(state.controls, "colorRGB", null),
   opacityForDeselectedCells: state.controls.opacityForDeselectedCells,
   selectionUpdate: _.get(state.controls, "crossfilter.updateTime", null),
-  resettingInterface: state.controls.resettingInterface
+  resettingInterface: state.controls.resettingInterface,
+  userDefinedGenes: state.controls.userDefinedGenes,
+  diffexpGenes: state.controls.diffexpGenes,
+  colorAccessor: state.controls.colorAccessor,
+  scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
+  scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
+  celllist1: state.differential.celllist1,
+  celllist2: state.differential.celllist2
 }))
 class Graph extends React.Component {
   constructor(props) {
@@ -202,6 +211,56 @@ class Graph extends React.Component {
     }
   }
 
+  isResetDisabled = () => {
+    /*
+    Reset should be disabled when all of the following are true:
+      * nothing is selected in the crossfilter
+      * world EQ universe
+      * nothing is colored by
+      * there are no userDefinedGenes or diffexpGenes displayed
+      * scatterplot is not displayed
+      * nothing in cellset1 or cellset2
+    */
+    const {
+      crossfilter,
+      world,
+      universe,
+      userDefinedGenes,
+      diffexpGenes,
+      colorAccessor,
+      scatterplotXXaccessor,
+      scatterplotYYaccessor,
+      celllist1,
+      celllist2
+    } = this.props;
+
+    if (!crossfilter || !world || !universe) {
+      return false;
+    }
+    const nothingSelected = crossfilter.countFiltered() === crossfilter.size();
+    const nothingColoredBy = !colorAccessor;
+    const noGenes = userDefinedGenes.length === 0 && diffexpGenes.length === 0;
+    const scatterNotDpl = !scatterplotXXaccessor || !scatterplotYYaccessor;
+    const nothingInCellsets = !celllist1 && !celllist2;
+
+    return (
+      nothingSelected &&
+      World.worldEqUniverse(world, universe) &&
+      nothingColoredBy &&
+      noGenes &&
+      scatterNotDpl &&
+      nothingInCellsets
+    );
+  };
+
+  resetInterface = () => {
+    const { dispatch } = this.props;
+    dispatch({
+      type: "interface reset started"
+    });
+    dispatch(actions.resetInterface());
+  };
+
   reglDraw(regl, drawPoints, sizeBuffer, colorBuffer, pointBuffer, camera) {
     regl.clear({
       depth: 1,
@@ -351,14 +410,6 @@ class Graph extends React.Component {
     });
   }
 
-  resetInterface() {
-    const { dispatch } = this.props;
-    dispatch({
-      type: "interface reset started"
-    });
-    dispatch(actions.resetInterface());
-  }
-
   render() {
     const {
       dispatch,
@@ -410,15 +461,12 @@ class Graph extends React.Component {
               position="left"
             >
               <AnchorButton
-                disabled={
-                  false
-                  /* world && universe ? worldEqUniverse(world, universe) : false */
-                }
+                disabled={this.isResetDisabled()}
                 type="button"
                 loading={resettingInterface}
                 intent="warning"
                 style={{ marginRight: 10 }}
-                onClick={this.resetInterface.bind(this)}
+                onClick={this.resetInterface}
               >
                 reset
               </AnchorButton>
