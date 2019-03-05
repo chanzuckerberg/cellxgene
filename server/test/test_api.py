@@ -54,6 +54,7 @@ class EndPoints(unittest.TestCase):
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/json")
         result_data = result.json()
+        self.assertIn("library_versions", result_data["config"])
         self.assertEqual(result_data["config"]["displayNames"]["dataset"], "pbmc3k")
         self.assertEqual(len(result_data["config"]["features"]), 4)
 
