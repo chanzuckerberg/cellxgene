@@ -40,7 +40,8 @@ import { World } from "../../util/stateManager";
   scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
   scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
   celllist1: state.differential.celllist1,
-  celllist2: state.differential.celllist2
+  celllist2: state.differential.celllist2,
+  library_versions: _.get(state.config, "library_versions", null)
 }))
 class Graph extends React.Component {
   constructor(props) {
@@ -423,9 +424,9 @@ class Graph extends React.Component {
       dispatch,
       responsive,
       crossfilter,
-      resettingInterface
+      resettingInterface,
+      library_versions
     } = this.props;
-
     const { mode } = this.state;
     return (
       <div id="graphWrapper">
@@ -541,7 +542,14 @@ class Graph extends React.Component {
                       icon="git-branch"
                       text="Github"
                     />
-                    <MenuItem target="_blank" text={`cellxgene v${"0.6.0"}`} />
+                    <MenuItem
+                      target="_blank"
+                      text={`cellxgene v${
+                        library_versions && library_versions.cellxgene
+                          ? library_versions.cellxgene
+                          : null
+                      }`}
+                    />
                     <MenuItem text="MIT License" />
                   </Menu>
                 }
