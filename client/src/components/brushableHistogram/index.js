@@ -331,6 +331,8 @@ class HistogramBrush extends React.Component {
           width={this.width}
           height={this.height}
           id={`histogram_${field}_svg`}
+          data-testclass="histogram-svg"
+          data-testid={`histogram_${field}_svg`}
           ref={svgRef => {
             this.drawHistogram(svgRef);
           }}
@@ -341,7 +343,12 @@ class HistogramBrush extends React.Component {
             justifyContent: "center"
           }}
         >
-          <span style={{ fontStyle: "italic" }}>{field}</span>
+          <span
+            data-testclass="brushable-histogram-field-name"
+            style={{ fontStyle: "italic" }}
+          >
+            {field}
+          </span>
         </div>
 
         {isDiffExp ? (

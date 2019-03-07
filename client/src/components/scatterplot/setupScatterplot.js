@@ -14,6 +14,7 @@ const setupScatterplot = (width, height, margin) => {
     .append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
+    .attr("data-testid", "scatterplot-svg")
     .append("g")
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
