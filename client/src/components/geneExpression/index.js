@@ -35,6 +35,7 @@ const renderGene = (fuzzySortResult, { handleClick, modifiers, query }) => {
     <MenuItem
       active={modifiers.active}
       disabled={modifiers.disabled}
+      data-testid={`suggest-menu-item-${geneName}`}
       // Use of annotations in this way is incorrect and dataset specific.
       // See https://github.com/chanzuckerberg/cellxgene/issues/483
       // label={gene.n_counts}
