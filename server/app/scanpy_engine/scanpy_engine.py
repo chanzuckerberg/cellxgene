@@ -325,6 +325,10 @@ class ScanpyEngine(CXGDriver):
         * only returns Matrix in columnar layout
         """
         try:
+            import click
+            click.echo('click echo worked')
+            print('print worked')
+            raise KeyError('error raising works')
             df_layout = self.data.obsm[f"X_{self.layout_method}"]
         except ValueError as e:
             raise PrepareError(
