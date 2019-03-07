@@ -451,6 +451,7 @@ class Graph extends React.Component {
             >
               <AnchorButton
                 type="button"
+                data-testid="subset-button"
                 disabled={
                   crossfilter &&
                   (crossfilter.countFiltered() === 0 ||
@@ -584,7 +585,7 @@ class Graph extends React.Component {
             <canvas
               width={responsive.width - this.graphPaddingRight}
               height={responsive.height - this.graphPaddingTop}
-              data-testid="layout"
+              data-testid="layout-graph"
               ref={canvas => {
                 this.reglCanvas = canvas;
               }}

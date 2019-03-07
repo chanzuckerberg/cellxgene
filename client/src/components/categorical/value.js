@@ -101,6 +101,8 @@ class CategoryValue extends React.Component {
               onChange={
                 selected ? this.toggleOff.bind(this) : this.toggleOn.bind(this)
               }
+              data-testclass="categorical-value-checkbox"
+              data-testid={`categorical-value-checkbox-${metadataField}`}
               checked={selected}
               type="checkbox"
             />
@@ -121,7 +123,11 @@ class CategoryValue extends React.Component {
           </span>
         </div>
         <span>
-          <span>{count}</span>
+          <span
+            data-testid={`categorical-value-count-${metadataField}-${count}`}
+          >
+            {count}
+          </span>
           <svg
             style={{
               marginLeft: 5,

@@ -128,6 +128,8 @@ class Category extends React.Component {
           >
             <label className="bp3-control bp3-checkbox">
               <input
+                data-testclass="category-checkbox"
+                data-testid={`category-checkbox-${metadataField}`}
                 onChange={this.handleToggleAllClick.bind(this)}
                 ref={el => {
                   this.checkbox = el;
