@@ -65,6 +65,11 @@ class ConfigAPI(Resource):
                 "parameters": {
                     "max_category_items": current_app.data.max_category_items
                 },
+                "library_versions": {
+                    "scanpy": pkg_resources.get_distribution("scanpy").version,
+                    "cellxgene": pkg_resources.get_distribution("cellxgene").version,
+                    "anndata": pkg_resources.get_distribution("cellxgene").version
+                }
             }
         }
         return make_response(jsonify(config), HTTPStatus.OK)

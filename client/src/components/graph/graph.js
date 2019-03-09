@@ -5,13 +5,23 @@ import * as d3 from "d3";
 import { connect } from "react-redux";
 import mat4 from "gl-mat4";
 import _regl from "regl";
-import { Button, AnchorButton, Tooltip } from "@blueprintjs/core";
+import {
+  Button,
+  AnchorButton,
+  Tooltip,
+  Popover,
+  Menu,
+  MenuItem,
+  Position
+} from "@blueprintjs/core";
+
 import * as globals from "../../globals";
 import setupSVGandBrushElements from "./setupSVGandBrush";
 import actions from "../../actions";
 import _camera from "../../util/camera";
 import _drawPoints from "./drawPointsRegl";
 import scaleLinear from "../../util/scaleLinear";
+import { World } from "../../util/stateManager";
 
 /* https://bl.ocks.org/mbostock/9078690 - quadtree for onClick / hover selections */
 
@@ -23,7 +33,15 @@ import scaleLinear from "../../util/scaleLinear";
   colorRGB: _.get(state.controls, "colors.rgb", null),
   opacityForDeselectedCells: state.controls.opacityForDeselectedCells,
   selectionUpdate: _.get(state.controls, "crossfilter.updateTime", null),
-  resettingInterface: state.controls.resettingInterface
+  resettingInterface: state.controls.resettingInterface,
+  userDefinedGenes: state.controls.userDefinedGenes,
+  diffexpGenes: state.controls.diffexpGenes,
+  colorAccessor: state.controls.colorAccessor,
+  scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
+  scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
+  celllist1: state.differential.celllist1,
+  celllist2: state.differential.celllist2,
+  library_versions: _.get(state.config, "library_versions", null)
 }))
 class Graph extends React.Component {
   constructor(props) {
@@ -198,6 +216,56 @@ class Graph extends React.Component {
     }
   }
 
+  isResetDisabled = () => {
+    /*
+    Reset should be disabled when all of the following are true:
+      * nothing is selected in the crossfilter
+      * world EQ universe
+      * nothing is colored by
+      * there are no userDefinedGenes or diffexpGenes displayed
+      * scatterplot is not displayed
+      * nothing in cellset1 or cellset2
+    */
+    const {
+      crossfilter,
+      world,
+      universe,
+      userDefinedGenes,
+      diffexpGenes,
+      colorAccessor,
+      scatterplotXXaccessor,
+      scatterplotYYaccessor,
+      celllist1,
+      celllist2
+    } = this.props;
+
+    if (!crossfilter || !world || !universe) {
+      return false;
+    }
+    const nothingSelected = crossfilter.countFiltered() === crossfilter.size();
+    const nothingColoredBy = !colorAccessor;
+    const noGenes = userDefinedGenes.length === 0 && diffexpGenes.length === 0;
+    const scatterNotDpl = !scatterplotXXaccessor || !scatterplotYYaccessor;
+    const nothingInCellsets = !celllist1 && !celllist2;
+
+    return (
+      nothingSelected &&
+      World.worldEqUniverse(world, universe) &&
+      nothingColoredBy &&
+      noGenes &&
+      scatterNotDpl &&
+      nothingInCellsets
+    );
+  };
+
+  resetInterface = () => {
+    const { dispatch } = this.props;
+    dispatch({
+      type: "interface reset started"
+    });
+    dispatch(actions.resetInterface());
+  };
+
   reglDraw(regl, drawPoints, sizeBuffer, colorBuffer, pointBuffer, camera) {
     regl.clear({
       depth: 1,
@@ -347,22 +415,14 @@ class Graph extends React.Component {
     });
   }
 
-  resetInterface = () => {
-    const { dispatch } = this.props;
-    dispatch({
-      type: "interface reset started"
-    });
-    dispatch(actions.resetInterface());
-  };
-
   render() {
     const {
       dispatch,
       responsive,
       crossfilter,
-      resettingInterface
+      resettingInterface,
+      library_versions
     } = this.props;
-
     const { mode } = this.state;
     return (
       <div id="graphWrapper">
@@ -387,6 +447,7 @@ class Graph extends React.Component {
             >
               <AnchorButton
                 type="button"
+                data-testid="subset-button"
                 disabled={
                   crossfilter &&
                   (crossfilter.countFiltered() === 0 ||
@@ -406,10 +467,7 @@ class Graph extends React.Component {
               position="left"
             >
               <AnchorButton
-                disabled={
-                  false
-                  /* world && universe ? worldEqUniverse(world, universe) : false */
-                }
+                disabled={this.isResetDisabled()}
                 type="button"
                 loading={resettingInterface}
                 intent="warning"
@@ -453,6 +511,56 @@ class Graph extends React.Component {
                 </Tooltip>
               </div>
             </div>
+            <div style={{ marginLeft: 10 }}>
+              <Popover
+                content={
+                  <Menu>
+                    <MenuItem
+                      href="https://chanzuckerberg.github.io/cellxgene/faq.html"
+                      target="_blank"
+                      icon="help"
+                      text="FAQ"
+                    />
+                    <MenuItem
+                      href="https://join-cziscience-slack.herokuapp.com/"
+                      target="_blank"
+                      icon="chat"
+                      text="Chat"
+                    />
+                    <MenuItem
+                      href="https://chanzuckerberg.github.io/cellxgene/"
+                      target="_blank"
+                      icon="book"
+                      text="Docs"
+                    />
+                    <MenuItem
+                      href="https://github.com/chanzuckerberg/cellxgene"
+                      target="_blank"
+                      icon="git-branch"
+                      text="Github"
+                    />
+                    <MenuItem
+                      target="_blank"
+                      text={`cellxgene v${
+                        library_versions && library_versions.cellxgene
+                          ? library_versions.cellxgene
+                          : null
+                      }`}
+                    />
+                    <MenuItem text="MIT License" />
+                  </Menu>
+                }
+                position={Position.BOTTOM_RIGHT}
+              >
+                <Button
+                  type="button"
+                  className="bp3-button bp3-icon-cog"
+                  style={{
+                    cursor: "pointer"
+                  }}
+                />
+              </Popover>
+            </div>
           </div>
         </div>
         <div
@@ -473,7 +581,7 @@ class Graph extends React.Component {
             <canvas
               width={responsive.width - this.graphPaddingRight}
               height={responsive.height - this.graphPaddingTop}
-              data-testid="layout"
+              data-testid="layout-graph"
               ref={canvas => {
                 this.reglCanvas = canvas;
               }}

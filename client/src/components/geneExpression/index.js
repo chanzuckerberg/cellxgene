@@ -35,6 +35,7 @@ const renderGene = (fuzzySortResult, { handleClick, modifiers, query }) => {
     <MenuItem
       active={modifiers.active}
       disabled={modifiers.disabled}
+      data-testid={`suggest-menu-item-${geneName}`}
       // Use of annotations in this way is incorrect and dataset specific.
       // See https://github.com/chanzuckerberg/cellxgene/issues/483
       // label={gene.n_counts}
@@ -195,6 +196,7 @@ class GeneExpression extends React.Component {
               style={{ marginRight: 5 }}
               minimal
               small
+              data-testid="tab-autosuggest"
               onClick={() => {
                 this.setState({ tab: "autosuggest" });
               }}
@@ -205,6 +207,7 @@ class GeneExpression extends React.Component {
               active={tab === "bulkadd"}
               minimal
               small
+              data-testid="tab-bulkadd"
               onClick={() => {
                 this.setState({ tab: "bulkadd" });
               }}
@@ -272,6 +275,7 @@ class GeneExpression extends React.Component {
                         this.setState({ bulkAdd: e.target.value });
                       }}
                       id="text-input-bulk-add"
+                      data-testid="text-input-bulk-add"
                       placeholder={this.placeholderGeneNames()}
                       value={bulkAdd}
                     />
