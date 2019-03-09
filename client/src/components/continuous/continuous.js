@@ -11,7 +11,7 @@ import HistogramBrush from "../brushableHistogram";
 @connect(state => ({
   obsAnnotations: _.get(state.controls.world, "obsAnnotations", null),
   colorAccessor: state.controls.colorAccessor,
-  colorScale: state.controls.colorScale,
+  colorScale: state.controls.colors.scale,
   selectionUpdate: _.get(state.controls, "crossfilter.updateTime", null),
   schema: _.get(state.controls.world, "schema", null)
 }))

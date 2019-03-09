@@ -20,7 +20,7 @@ import scaleLinear from "../../util/scaleLinear";
   universe: state.controls.universe,
   crossfilter: state.controls.crossfilter,
   responsive: state.responsive,
-  colorRGB: _.get(state.controls, "colorRGB", null),
+  colorRGB: _.get(state.controls, "colors.rgb", null),
   opacityForDeselectedCells: state.controls.opacityForDeselectedCells,
   selectionUpdate: _.get(state.controls, "crossfilter.updateTime", null),
   resettingInterface: state.controls.resettingInterface
@@ -141,11 +141,7 @@ class Graph extends React.Component {
       }
 
       // Colors for each point - a cached value that only changes when
-      // the cell metadata changes (done by updateCellColors middleware).
-      // NOTE: this is a slightly pessimistic assumption, as the metadata
-      // could have changed for some other reason, but for now color is
-      // the only metadata that changes client-side.  If this is problematic,
-      // we could add some sort of color-specific indicator to the app state.
+      // the cell metadata changes.
       if (!renderCache.colors || colorRGB !== prevProps.colorRGB) {
         const rgb = colorRGB;
         if (!renderCache.colors) {
@@ -351,13 +347,13 @@ class Graph extends React.Component {
     });
   }
 
-  resetInterface() {
+  resetInterface = () => {
     const { dispatch } = this.props;
     dispatch({
       type: "interface reset started"
     });
     dispatch(actions.resetInterface());
-  }
+  };
 
   render() {
     const {
@@ -418,7 +414,7 @@ class Graph extends React.Component {
                 loading={resettingInterface}
                 intent="warning"
                 style={{ marginRight: 10 }}
-                onClick={this.resetInterface.bind(this)}
+                onClick={this.resetInterface}
               >
                 reset
               </AnchorButton>

@@ -48,7 +48,6 @@ const Differential = (
         celllist2: null
       };
     case "reset World to eq Universe":
-    case "set World to current selection":
       return {
         ...state,
         diffExp: null,

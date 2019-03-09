@@ -21,7 +21,6 @@ import finiteExtent from "../../util/finiteExtent";
   crossfilter: state.controls.crossfilter,
   differential: state.differential,
   colorAccessor: state.controls.colorAccessor,
-  colorScale: state.controls.colorScale,
   obsAnnotations: _.get(state.controls.world, "obsAnnotations", null)
 }))
 class HistogramBrush extends React.Component {

@@ -14,7 +14,8 @@ This is all VERY tightly integrated with reducers and actions, and
 exists to support those concepts.
 */
 
+export { default as createColors } from "./colorHelpers";
 export * as Universe from "./universe";
 export * as World from "./world";
 export * as WorldUtil from "./worldUtil";
-export * as ControlsHelper from "./controlsHelpers";
+export * as ControlsHelpers from "./controlsHelpers";

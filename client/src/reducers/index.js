@@ -3,7 +3,6 @@ import { combineReducers, createStore, applyMiddleware } from "redux";
 import thunk from "redux-thunk";
 import { composeWithDevTools } from "redux-devtools-extension";
 import updateURLMiddleware from "../middleware/updateURLMiddleware";
-import updateCellColors from "../middleware/updateCellColors";
 
 import config from "./config";
 import differential from "./differential";
@@ -19,9 +18,7 @@ const Reducer = combineReducers({
 
 const store = createStore(
   Reducer,
-  composeWithDevTools(
-    applyMiddleware(thunk, updateURLMiddleware, updateCellColors)
-  )
+  composeWithDevTools(applyMiddleware(thunk, updateURLMiddleware))
 );
 
 export default store;
