@@ -72,7 +72,7 @@ describe("search for genes", () => {
 describe("select cells and diffexp", () => {
   test("selects cells from layout and adds to cell set 1", async () => {
     await page.goto(appUrlBase);
-    const layout = await page.waitForSelector("[data-testid='layout']");
+    const layout = await page.waitForSelector("[data-testid='layout-graph']");
     const size = await layout.boxModel();
     const cellset1 = {
       start: {
@@ -92,7 +92,7 @@ describe("select cells and diffexp", () => {
 
   test("selects cells from layout and adds to cell set 2", async () => {
     await page.goto(appUrlBase);
-    const layout = await page.waitForSelector("[data-testid='layout']");
+    const layout = await page.waitForSelector("[data-testid='layout-graph']");
     const size = await layout.boxModel();
     const cellset2 = {
       start: {
@@ -112,7 +112,7 @@ describe("select cells and diffexp", () => {
 
   test("selects cells, saves them and performs diffexp", async () => {
     await page.goto(appUrlBase);
-    const layout = await page.waitForSelector("[data-testid='layout']");
+    const layout = await page.waitForSelector("[data-testid='layout-graph']");
     const size = await layout.boxModel();
     const cellset1 = {
       start: {
