@@ -21,38 +21,42 @@ class Category extends React.Component {
     };
   }
 
-  componentDidUpdate() {
+  componentDidUpdate(prevProps) {
     const { categoricalSelectionState, metadataField } = this.props;
-    const cat = categoricalSelectionState[metadataField];
-    const categoryCount = {
-      // total number of categories in this dimension
-      totalCatCount: cat.numCategories,
-      // number of selected options in this category
-      selectedCatCount: _.reduce(
-        cat.categorySelected,
-        (res, cond) => (cond ? res + 1 : res),
-        0
-      )
-    };
-    if (categoryCount.selectedCatCount === categoryCount.totalCatCount) {
-      /* everything is on, so not indeterminate */
-      this.checkbox.indeterminate = false;
-    } else if (categoryCount.selectedCatCount === 0) {
-      /* nothing is on, so no */
-      this.checkbox.indeterminate = false;
-    } else if (categoryCount.selectedCatCount < categoryCount.totalCatCount) {
-      /* to be explicit... */
-      this.checkbox.indeterminate = true;
+    if (categoricalSelectionState !== prevProps.categoricalSelectionState) {
+      const cat = categoricalSelectionState[metadataField];
+      const categoryCount = {
+        // total number of categories in this dimension
+        totalCatCount: cat.numCategories,
+        // number of selected options in this category
+        selectedCatCount: _.reduce(
+          cat.categorySelected,
+          (res, cond) => (cond ? res + 1 : res),
+          0
+        )
+      };
+      if (categoryCount.selectedCatCount === categoryCount.totalCatCount) {
+        /* everything is on, so not indeterminate */
+        this.checkbox.indeterminate = false;
+        this.setState({ isChecked: true }); // eslint-disable-line react/no-did-update-set-state
+      } else if (categoryCount.selectedCatCount === 0) {
+        /* nothing is on, so no */
+        this.checkbox.indeterminate = false;
+        this.setState({ isChecked: false }); // eslint-disable-line react/no-did-update-set-state
+      } else if (categoryCount.selectedCatCount < categoryCount.totalCatCount) {
+        /* to be explicit... */
+        this.checkbox.indeterminate = true;
+      }
     }
   }
 
-  handleColorChange() {
+  handleColorChange = () => {
     const { dispatch, metadataField } = this.props;
     dispatch({
       type: "color by categorical metadata",
       colorAccessor: metadataField
     });
-  }
+  };
 
   toggleAll() {
     const { dispatch, metadataField } = this.props;
@@ -161,10 +165,10 @@ class Category extends React.Component {
           </div>
           <Tooltip content="Use as color scale" position="bottom">
             <Button
-              onClick={this.handleColorChange.bind(this)}
+              onClick={this.handleColorChange}
               active={colorAccessor === metadataField}
               intent={colorAccessor === metadataField ? "primary" : "none"}
-              icon={"tint"}
+              icon="tint"
             />
           </Tooltip>
         </div>
