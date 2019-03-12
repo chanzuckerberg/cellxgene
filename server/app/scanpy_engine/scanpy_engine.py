@@ -143,7 +143,7 @@ class ScanpyEngine(CXGDriver):
                 "using `cellxgene prepare`, please run `cellxgene prepare --help` for more "
                 "information."
             )
-        except MemoryError as e:
+        except MemoryError:
             raise ScanpyFileError("Error while loading file: out of memory, file is too large"
                                   " for memory available")
         except Exception as e:
