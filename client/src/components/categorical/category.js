@@ -111,6 +111,8 @@ class Category extends React.Component {
         style={{
           maxWidth: globals.maxControlsWidth
         }}
+        data-testclass="category"
+        data-testid={`category-${metadataField}`}
       >
         <div
           style={{

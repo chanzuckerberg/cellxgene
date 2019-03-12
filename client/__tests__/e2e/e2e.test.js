@@ -1,15 +1,15 @@
 import puppeteer from "puppeteer";
 import { appUrlBase, DEBUG, DEV } from "./const";
-import { puppeteerUtils } from "./utils";
+import { puppeteerUtils, cellxgeneActions } from "./utils";
 
-let browser, page, utils;
+let browser, page, utils, cxgActions;
 const browserViewport = { width: 1280, height: 960 };
 
 if (DEBUG) jest.setTimeout(100000);
 if (DEV) jest.setTimeout(10000);
 beforeAll(async () => {
   const browser_params = DEV
-    ? { headless: false, slowMo: 50 }
+    ? { headless: false, slowMo: 10 }
     : DEBUG
     ? { headless: false, slowMo: 200, devtools: true }
     : {};
@@ -19,6 +19,7 @@ beforeAll(async () => {
   if (DEV || DEBUG)
     page.on("console", msg => console.log("PAGE LOG:", msg.text()));
   utils = puppeteerUtils(page);
+  cxgActions = cellxgeneActions(page);
   await page.goto(appUrlBase);
 });
 
@@ -58,8 +59,8 @@ describe("select cells and diffexp", () => {
         y: Math.floor(size.height * 0.35)
       }
     };
-    await utils.drag(size, cellset1.start, cellset1.end, true);
-    await page.click("[data-testid='cellset-button-1");
+    await cxgActions.drag(size, cellset1.start, cellset1.end, true);
+    await page.click("[data-testid='cellset-button-1']");
     let button = await utils.getOneElementInnerHTML(
       "[data-testid='cellset-button-1"
     );
@@ -79,8 +80,8 @@ describe("select cells and diffexp", () => {
         y: Math.floor(size.height * 0.55)
       }
     };
-    await utils.drag(size, cellset2.start, cellset2.end, true);
-    await page.click("[data-testid='cellset-button-2");
+    await cxgActions.drag(size, cellset2.start, cellset2.end, true);
+    await page.click("[data-testid='cellset-button-2']");
     let button = await utils.getOneElementInnerHTML(
       "[data-testid='cellset-button-2"
     );
@@ -100,8 +101,8 @@ describe("select cells and diffexp", () => {
         y: Math.floor(size.height * 0.35)
       }
     };
-    await utils.drag(size, cellset1.start, cellset1.end, true);
-    await page.click("[data-testid='cellset-button-1");
+    await cxgActions.drag(size, cellset1.start, cellset1.end, true);
+    await page.click("[data-testid='cellset-button-1']");
     const cellset2 = {
       start: {
         x: Math.floor(size.width * 0.45),
@@ -112,19 +113,11 @@ describe("select cells and diffexp", () => {
         y: Math.floor(size.height * 0.55)
       }
     };
-    await utils.drag(size, cellset2.start, cellset2.end, true);
-    await page.click("[data-testid='cellset-button-2");
-    await page.click("[data-testid='diffexp-button");
-    await page.waitForSelector("[data-testclass='histogram-diffexp']");
-    const diffexps = await page.$$eval(
-      "[data-testclass='histogram-diffexp']",
-      divs => {
-        return divs.map(div =>
-          div.id.substring("histogram-".length, div.id.length)
-        );
-      }
-    );
-    expect(diffexps).toMatchObject([
+    await cxgActions.drag(size, cellset2.start, cellset2.end, true);
+    await page.click("[data-testid='cellset-button-2']");
+    await page.click("[data-testid='diffexp-button']");
+    const diffExpHists = await cxgActions.getAllHistograms("histogram-diffexp");
+    expect(diffExpHists).toMatchObject([
       "HLA-DPA1",
       "HLA-DQA1",
       "HLA-DRB1",
@@ -155,26 +148,24 @@ describe("brushable histogram", () => {
         y: Math.floor(hist_size.height * 0.5)
       }
     };
-    await utils.drag(hist_size, draghist.start, draghist.end);
+    await cxgActions.drag(hist_size, draghist.start, draghist.end);
   });
 });
 
 describe("bulk add genes", () => {
   test("add several genes in dataset and display them", async () => {
-    await utils.clickOn("reset");
+    await cxgActions.reset();
     const testGenes = ["S100A8", "FCGR3A", "LGALS2", "GSTP1"];
     await page.click("[data-testid='section-bulk-add']");
     await utils.typeInto("input-bulk-add", testGenes.join(","));
     await page.keyboard.press("Enter");
-    await page.waitForSelector("[data-testclass='histogram-user-gene']");
-    const diffexps = await page.$$eval(
-      "[data-testclass='histogram-user-gene']",
-      divs => {
-        return divs.map(div =>
-          div.id.substring("histogram-".length, div.id.length)
-        );
-      }
+    const userGeneHist = await cxgActions.getAllHistograms(
+      "histogram-user-gene"
     );
-    expect(diffexps).toMatchObject(testGenes);
+    expect(userGeneHist).toMatchObject(testGenes);
   });
+});
+
+describe("categorical data", () => {
+  test("categories and values from dataset appear", async () => {});
 });

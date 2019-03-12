@@ -47,6 +47,44 @@ export const puppeteerUtils = puppeteerPage => ({
   }
 });
 
+export const cellxgeneActions = puppeteerPage => ({
+  async drag(el_box, start, end, lasso = false) {
+    const x1 = el_box.content[0].x + start.x;
+    const x2 = el_box.content[0].x + end.x;
+    const y1 = el_box.content[0].y + start.y;
+    const y2 = el_box.content[0].y + end.y;
+    await puppeteerPage.mouse.move(x1, y1);
+    await puppeteerPage.mouse.down();
+    if (lasso) {
+      await puppeteerPage.mouse.move(x2, y1);
+      await puppeteerPage.mouse.move(x2, y2);
+      await puppeteerPage.mouse.move(x1, y2);
+      await puppeteerPage.mouse.move(x1, y1);
+    } else {
+      await puppeteerPage.mouse.move(x2, y2);
+    }
+    await puppeteerPage.mouse.up();
+  },
+
+  async getAllHistograms(testclass) {
+    await puppeteerPage.waitForSelector(`[data-testclass=${testclass}]`);
+    const histograms = await puppeteerPage.$$eval(
+      `[data-testclass=${testclass}]`,
+      divs => {
+        return divs.map(div => {
+          // TODO get from ids
+          return div.id.substring("histogram_".length, div.id.length);
+        });
+      }
+    );
+    return histograms;
+  },
+
+  async reset() {
+    await puppeteerUtils(puppeteerPage).clickOn("reset");
+  }
+});
+
 // TODO cellxgene specific
 // find historgrams of type
 // reset page
