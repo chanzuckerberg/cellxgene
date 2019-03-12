@@ -44,9 +44,9 @@ import finiteExtent from "../../util/finiteExtent";
   return {
     world,
 
-    colorRGB: state.controls.colorRGB,
+    colorRGB: _.get(state.controls, "colors.rgb", null),
+    colorScale: _.get(state.controls, "colors.scale", null),
     colorAccessor: state.controls.colorAccessor,
-    colorScale: state.controls.colorScale,
 
     // Accessors are var/gene names (strings)
     scatterplotXXaccessor,

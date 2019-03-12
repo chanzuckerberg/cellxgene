@@ -99,7 +99,7 @@ const continuous = (selectorId, colorscale, colorAccessor) => {
 
 @connect(state => ({
   colorAccessor: state.controls.colorAccessor,
-  colorScale: state.controls.colorScale,
+  colorScale: state.controls.colors.scale,
   responsive: state.responsive
 }))
 class ContinuousLegend extends React.Component {
