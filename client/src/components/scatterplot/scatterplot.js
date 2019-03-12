@@ -345,14 +345,11 @@ class Scatterplot extends React.Component {
           <Button
             type="button"
             minimal
-            onClick={() => {
+            onClick={() =>
               dispatch({
                 type: "clear scatterplot"
-              });
-              dispatch({
-                type: "reset colorscale"
-              });
-            }}
+              })
+            }
           >
             remove
           </Button>
