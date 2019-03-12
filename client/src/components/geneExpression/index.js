@@ -203,7 +203,7 @@ class GeneExpression extends React.Component {
               active={tab === "bulkadd"}
               minimal
               small
-              data-testid="tab-bulkadd"
+              data-testid="section-bulk-add"
               onClick={() => {
                 this.setState({ tab: "bulkadd" });
               }}
@@ -271,7 +271,7 @@ class GeneExpression extends React.Component {
                         this.setState({ bulkAdd: e.target.value });
                       }}
                       id="text-input-bulk-add"
-                      data-testid="text-input-bulk-add"
+                      data-testid="input-bulk-add"
                       placeholder={this.placeholderGeneNames()}
                       value={bulkAdd}
                     />

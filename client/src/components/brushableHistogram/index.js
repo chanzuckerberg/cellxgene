@@ -385,7 +385,13 @@ class HistogramBrush extends React.Component {
       <div
         id={`histogram_${field}`}
         data-testid={`histogram-${field}`}
-        data-testclass={isDiffExp ? `histogram-diffexp` : ""}
+        data-testclass={
+          isDiffExp
+            ? "histogram-diffexp"
+            : isUserDefined
+            ? "histogram-user-gene"
+            : "histogram-continuous-metadata"
+        }
         style={{
           padding: globals.leftSidebarSectionPadding,
           backgroundColor: zebra ? globals.lightestGrey : "white"

@@ -6,7 +6,7 @@ let browser, page, utils;
 const browserViewport = { width: 1280, height: 960 };
 
 if (DEBUG) jest.setTimeout(100000);
-
+if (DEV) jest.setTimeout(10000);
 beforeAll(async () => {
   const browser_params = DEV
     ? { headless: false, slowMo: 50 }
@@ -19,6 +19,7 @@ beforeAll(async () => {
   if (DEV || DEBUG)
     page.on("console", msg => console.log("PAGE LOG:", msg.text()));
   utils = puppeteerUtils(page);
+  await page.goto(appUrlBase);
 });
 
 afterAll(() => {
@@ -29,7 +30,6 @@ afterAll(() => {
 
 describe("did launch", () => {
   test("page launched", async () => {
-    await page.goto(appUrlBase);
     let el = await utils.getOneElementInnerHTML("[data-testid='header']");
     expect(el).toBe("cellxgene: pbmc3k");
   });
@@ -37,12 +37,8 @@ describe("did launch", () => {
 
 describe("search for genes", () => {
   test("search for known gene and add to metadata", async () => {
-    await page.goto(appUrlBase);
-    await page.waitForSelector("[ data-testid='gene-search']");
     // blueprint's  typeahead is treating typing weird, clicking & waiting first solves this
-    await page.click("[data-testid='gene-search']");
-    await page.waitFor(200);
-    await page.type("[data-testid='gene-search']", "ACD");
+    await utils.typeInto("gene-search", "ACD");
     await page.keyboard.press("Enter");
     await page.waitForSelector("[data-testid='histogram-ACD']");
   });
@@ -50,7 +46,6 @@ describe("search for genes", () => {
 
 describe("select cells and diffexp", () => {
   test("selects cells from layout and adds to cell set 1", async () => {
-    await page.goto(appUrlBase);
     const layout = await page.waitForSelector("[data-testid='layout-graph']");
     const size = await layout.boxModel();
     const cellset1 = {
@@ -72,7 +67,6 @@ describe("select cells and diffexp", () => {
   });
 
   test("selects cells from layout and adds to cell set 2", async () => {
-    await page.goto(appUrlBase);
     const layout = await page.waitForSelector("[data-testid='layout-graph']");
     const size = await layout.boxModel();
     const cellset2 = {
@@ -94,7 +88,6 @@ describe("select cells and diffexp", () => {
   });
 
   test("selects cells, saves them and performs diffexp", async () => {
-    await page.goto(appUrlBase);
     const layout = await page.waitForSelector("[data-testid='layout-graph']");
     const size = await layout.boxModel();
     const cellset1 = {
@@ -148,7 +141,6 @@ describe("select cells and diffexp", () => {
 
 describe("brushable histogram", () => {
   test("can brush historgram", async () => {
-    await page.goto(appUrlBase);
     const hist = await page.waitForSelector(
       "[data-testid='histogram_n_genes_svg-brush'] > .overlay"
     );
@@ -164,5 +156,25 @@ describe("brushable histogram", () => {
       }
     };
     await utils.drag(hist_size, draghist.start, draghist.end);
+  });
+});
+
+describe("bulk add genes", () => {
+  test("add several genes in dataset and display them", async () => {
+    await utils.clickOn("reset");
+    const testGenes = ["S100A8", "FCGR3A", "LGALS2", "GSTP1"];
+    await page.click("[data-testid='section-bulk-add']");
+    await utils.typeInto("input-bulk-add", testGenes.join(","));
+    await page.keyboard.press("Enter");
+    await page.waitForSelector("[data-testclass='histogram-user-gene']");
+    const diffexps = await page.$$eval(
+      "[data-testclass='histogram-user-gene']",
+      divs => {
+        return divs.map(div =>
+          div.id.substring("histogram-".length, div.id.length)
+        );
+      }
+    );
+    expect(diffexps).toMatchObject(testGenes);
   });
 });

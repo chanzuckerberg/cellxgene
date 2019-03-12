@@ -479,6 +479,7 @@ class Graph extends React.Component {
                 intent="warning"
                 style={{ marginRight: 10 }}
                 onClick={this.resetInterface}
+                data-testid="reset"
               >
                 reset
               </AnchorButton>

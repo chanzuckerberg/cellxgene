@@ -1,4 +1,28 @@
 export const puppeteerUtils = puppeteerPage => ({
+  async waitByID(testid) {
+    return await puppeteerPage.waitForSelector(`[data-testid='${testid}']`);
+  },
+
+  async waitByClass(testclass) {
+    return await puppeteerPage.waitForSelector(
+      `[data-testclass='${testclass}']`
+    );
+  },
+
+  async typeInto(testid, text) {
+    // only works for text without special characters
+    this.waitByID(testid);
+    // type ahead can be annoying if you don't pause before you type
+    await puppeteerPage.click(`[data-testid='${testid}']`);
+    await puppeteerPage.waitFor(200);
+    await puppeteerPage.type(`[data-testid='${testid}']`, text);
+  },
+
+  async clickOn(testid) {
+    this.waitByID(testid);
+    puppeteerPage.click(`[data-testid='${testid}']`);
+  },
+
   async getOneElementInnerHTML(selector) {
     let text = await puppeteerPage.$eval(selector, el => el.innerHTML);
     return text;
@@ -22,3 +46,10 @@ export const puppeteerUtils = puppeteerPage => ({
     await puppeteerPage.mouse.up();
   }
 });
+
+// TODO cellxgene specific
+// find historgrams of type
+// reset page
+// select cells
+
+// TODO fixtures for different datasets
