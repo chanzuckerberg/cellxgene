@@ -3,6 +3,7 @@ import * as Universe from "../../../src/util/stateManager/universe";
 import * as World from "../../../src/util/stateManager/world";
 import * as Dataframe from "../../../src/util/dataframe";
 import Crossfilter from "../../../src/util/typedCrossfilter";
+import { DimTypes } from "../../../src/util/typedCrossfilter/crossfilter";
 import * as REST from "./sampleResponses";
 import {
   obsAnnoDimensionName,
@@ -26,15 +27,15 @@ const defaultBigBang = () => {
   /* create world */
   const world = World.createWorldFromEntireUniverse(universe);
   /* create crossfilter */
-  const crossfilter = Crossfilter(world.obsAnnotations);
-  /* create dimension map */
-  const dimensionMap = World.createObsDimensionMap(crossfilter, world);
+  const crossfilter = World.createObsDimensions(
+    new Crossfilter(world.obsAnnotations),
+    world
+  );
 
   return {
     universe,
     world,
-    crossfilter,
-    dimensionMap
+    crossfilter
   };
 };
 
@@ -71,13 +72,16 @@ describe("createWorldFromCurrentSelection", () => {
     const {
       universe,
       world: originalWorld,
-      crossfilter,
-      dimensionMap
+      crossfilter: originalCrossfilter
     } = defaultBigBang();
 
     /* mock a selection */
-    dimensionMap[obsAnnoDimensionName("field1")].filterRange([0, 5]);
-    dimensionMap[obsAnnoDimensionName("field3")].filterExact(false);
+    let crossfilter = originalCrossfilter
+      .select(obsAnnoDimensionName("field1"), { mode: "range", lo: 0, hi: 5 })
+      .select(obsAnnoDimensionName("field3"), {
+        mode: "exact",
+        values: [false]
+      });
 
     /* create the world from the selection */
     const world = World.createWorldFromCurrentSelection(
@@ -86,7 +90,7 @@ describe("createWorldFromCurrentSelection", () => {
       crossfilter
     );
     expect(world).toBeDefined();
-    expect(world.nObs).toEqual(crossfilter.countFiltered());
+    expect(world.nObs).toEqual(crossfilter.countSelected());
 
     /*
     calculate expected values and match against result
@@ -136,41 +140,30 @@ describe("createObsDimensionMap", () => {
     - check that dimension typing is sane
     */
 
-    const { dimensionMap } = defaultBigBang();
+    const { crossfilter } = defaultBigBang();
     const annotationNames = _.map(
       REST.schema.schema.annotations.obs,
       c => c.name
     );
     const schemaByObsName = _.keyBy(REST.schema.schema.annotations.obs, "name");
-    expect(dimensionMap).toBeDefined();
+    expect(crossfilter).toBeDefined();
     annotationNames.forEach(name => {
-      const dim = dimensionMap[obsAnnoDimensionName(name)];
+      const dim = crossfilter.dimensions[obsAnnoDimensionName(name)];
       if (name === "name") {
         expect(dim).toBeUndefined();
       } else {
         const { type } = schemaByObsName[name];
         if (type === "string" || type === "boolean" || type === "categorical") {
-          expect(dim).toBeInstanceOf(Crossfilter.EnumDimension);
+          expect(dim.dim).toBeInstanceOf(DimTypes.enum);
         } else {
-          expect(dim).toBeInstanceOf(Crossfilter.ScalarDimension);
+          expect(dim.dim).toBeInstanceOf(DimTypes.scalar);
         }
       }
     });
-    expect(dimensionMap[layoutDimensionName("XY")]).toBeInstanceOf(
-      Crossfilter.SpatialDimension
-    );
+    expect(
+      crossfilter.dimensions[layoutDimensionName("XY")].dim
+    ).toBeInstanceOf(DimTypes.spatial);
   });
-});
-
-describe("createVarDataDimension", () => {
-  /* create default universe */
-  const { world, crossfilter } = defaultBigBang();
-  world.varData = world.varData.withCol(
-    "GENE",
-    Float32Array.from(_.range(world.nObs))
-  );
-  const result = World.createVarDataDimension(world, crossfilter, "GENE");
-  expect(result).toBeInstanceOf(Crossfilter.ScalarDimension);
 });
 
 describe("worldEqUniverse", () => {

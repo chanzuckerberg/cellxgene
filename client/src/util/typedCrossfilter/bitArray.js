@@ -211,6 +211,19 @@ class BitArray {
     }
   }
 
+  // select range of indices on a dimension
+  //
+  selectFromRange(dim, range) {
+    const col = dim >>> 5;
+    const first = range[0];
+    const last = range[1];
+    const one = 1 << dim % 32;
+    const offset = col * this.length;
+    for (let i = first; i < last; i += 1) {
+      this.bitarray[offset + i] |= one;
+    }
+  }
+
   // select range of indices on a dimension, indirect through a sort map.
   // Indirect functions are used to map between sort and natural order.
   //
@@ -222,6 +235,19 @@ class BitArray {
     const offset = col * this.length;
     for (let i = first; i < last; i += 1) {
       this.bitarray[offset + indirect[i]] |= one;
+    }
+  }
+
+  // deselect range of indices on a dimension
+  //
+  deselectFromRange(dim, range) {
+    const col = dim >>> 5;
+    const first = range[0];
+    const last = range[1];
+    const zero = ~(1 << dim % 32);
+    const offset = col * this.length;
+    for (let i = first; i < last; i += 1) {
+      this.bitarray[offset + i] &= zero;
     }
   }
 
