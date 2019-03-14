@@ -28,6 +28,11 @@ export const puppeteerUtils = puppeteerPage => ({
     return text;
   },
 
+  async getOneElementInnerText(selector) {
+    let text = await puppeteerPage.$eval(selector, el => el.innerText);
+    return text;
+  },
+
   async drag(el_box, start, end, lasso = false) {
     const x1 = el_box.content[0].x + start.x;
     const x2 = el_box.content[0].x + end.x;

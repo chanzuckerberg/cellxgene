@@ -1,0 +1,10 @@
+{
+  "preset": "jest-puppeteer",
+  "testMatch": [
+    "**/__tests__/**/?(*.)(spec|test).js?(x)"
+  ],
+  "testURL": "http://localhost/",
+  "setupFiles": [
+    "../setupMissingGlobals.js"
+  ]
+}

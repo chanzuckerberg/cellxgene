@@ -168,8 +168,8 @@ describe("bulk add genes", () => {
 
 describe.only("categorical data", () => {
   test("categories and values from dataset appear", async () => {
-    await utils.waitByID("category-louvain"s);
-    const louvain = utils.getOneElementInnerHTML(
+    await utils.waitByID("category-louvain");
+    const louvain = await utils.getOneElementInnerText(
       '[data-testid="category-louvain"]'
     );
     expect(louvain).toMatch("louvain");
