@@ -1,8 +1,14 @@
 language: python
-python:
-  - "3.7"
-node_js:
-  - "8"
+matrix:
+  include:
+    - sudo: required
+      dist: xenial
+      python: "3.7"
+      node_js: "8"
+    - sudo: required
+      dist: xenial
+      python: "3.6"
+      node_js: "8"
 cache:
   pip: true
 install:
