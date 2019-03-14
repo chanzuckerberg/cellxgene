@@ -166,6 +166,12 @@ describe("bulk add genes", () => {
   });
 });
 
-describe("categorical data", () => {
-  test("categories and values from dataset appear", async () => {});
+describe.only("categorical data", () => {
+  test("categories and values from dataset appear", async () => {
+    await utils.waitByID("category-louvain"s);
+    const louvain = utils.getOneElementInnerHTML(
+      '[data-testid="category-louvain"]'
+    );
+    expect(louvain).toMatch("louvain");
+  });
 });

@@ -67,7 +67,7 @@ export const cellxgeneActions = puppeteerPage => ({
   },
 
   async getAllHistograms(testclass) {
-    await puppeteerPage.waitForSelector(`[data-testclass=${testclass}]`);
+    await puppeteerUtils(puppeteerPage).waitByClass(testclass);
     const histograms = await puppeteerPage.$$eval(
       `[data-testclass=${testclass}]`,
       divs => {
