@@ -1,9 +1,6 @@
 language: python
 dist: xenial
 sudo: required
-python:
-  - 3.6
-  - 3.7
 
 node_js:
   - 8
@@ -20,7 +17,8 @@ install:
 
 jobs:
   include:
-  - name: "Branch Tests"
+  - name: "Branch Tests 3.7"
+    python: 3.7
     script:
       - set -eo pipefail
       - flake8 server
@@ -28,6 +26,15 @@ jobs:
       - npm run --prefix client/ build
       - npm run --prefix client/ unit-test
       - pytest -s server/test
+  - name: "Branch Tests 3.6"
+    python: 3.6
+    script:
+    - set -eo pipefail
+    - flake8 server
+    - black --check
+    - npm run --prefix client/ build
+    - npm run --prefix client/ unit-test
+    - pytest -s server/test
   - name: "Smoke Tests"
     if: branch = master AND type = cron
     script:
