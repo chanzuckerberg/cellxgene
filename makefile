@@ -105,7 +105,7 @@ gen-package-lock :
 # setup.py sucks when you have your library in a separate folder, adding these in to help setup envs
 
 # install from build directory
-install :
+install : uninstall
 	cd $(BUILDDIR); pip install -e .
 
 # install from source tree for development
@@ -123,6 +123,6 @@ install-release : uninstall
 	@echo "Installed cellxgene from pypi.org"
 
 uninstall :
-	yes | pip uninstall cellxgene || true
+	pip uninstall -y cellxgene || :
 
 .PHONY : install install-dev install-release-test install-release uninstall

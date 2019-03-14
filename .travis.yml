@@ -1,10 +1,8 @@
 language: python
 dist: xenial
 sudo: required
-
 node_js:
   - 8
-
 cache:
   pip: true
 install:
@@ -18,23 +16,11 @@ install:
 jobs:
   include:
   - name: "Branch Tests 3.7"
-    python: 3.7
-    script:
-      - set -eo pipefail
-      - flake8 server
-      - black --check
-      - npm run --prefix client/ build
-      - npm run --prefix client/ unit-test
-      - pytest -s server/test
+    python: "3.7"
+    script: ./travis-build.sh
   - name: "Branch Tests 3.6"
-    python: 3.6
-    script:
-    - set -eo pipefail
-    - flake8 server
-    - black --check
-    - npm run --prefix client/ build
-    - npm run --prefix client/ unit-test
-    - pytest -s server/test
+    python: "3.6"
+    script: ./travis-build.sh
   - name: "Smoke Tests"
     if: branch = master AND type = cron
     script:
