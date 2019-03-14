@@ -105,7 +105,7 @@ gen-package-lock :
 # setup.py sucks when you have your library in a separate folder, adding these in to help setup envs
 
 # install from build directory
-install : uninstall
+install : 
 	cd $(BUILDDIR); pip install -e .
 
 # install from source tree for development
