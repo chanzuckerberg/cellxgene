@@ -128,34 +128,31 @@ class HistogramBrush extends React.Component {
     return () => {
       const { dispatch, field, isObs, isUserDefined, isDiffExp } = this.props;
       const { brushX } = this.state;
+      const minAllowedBrushSize = 50;
 
       if (d3.event.selection) {
         let _range;
 
-        if (d3.event.selection[1] - d3.event.selection[0] < 100) {
+        if (
+          d3.event.selection[1] - d3.event.selection[0] >
+          minAllowedBrushSize
+        ) {
           _range = [x(d3.event.selection[0]), x(d3.event.selection[1])];
         } else {
           /* the user selected range is too small and will be hidden #587, so take control of it procedurally */
           /* https://stackoverflow.com/questions/12354729/d3-js-limit-size-of-brush */
-          const minSelectionSize = 50;
           const difference =
-            minSelectionSize - (d3.event.selection[1] - d3.event.selection[0]);
+            minAllowedBrushSize -
+            (d3.event.selection[1] - d3.event.selection[0]);
 
           _range = [
-            brushCenter - 0.49 * minSelectionSize,
-            brushCenter + 0.49 * minSelectionSize
+            // brushCenter - 0.49 * minAllowedBrushSize,
+            // brushCenter + 0.49 * minAllowedBrushSize
+            200,
+            300
           ];
 
-          console.log(
-            "brushX",
-            d3.event.selection[0],
-            d3.event.selection[1],
-            _range
-          );
-          brushX
-            .transition()
-            .duration(400)
-            .call(brushX.move, _range);
+          d3.event.target.move(brushX, [200, 300]);
         }
 
         dispatch({
