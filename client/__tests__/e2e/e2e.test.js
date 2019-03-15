@@ -166,12 +166,25 @@ describe("bulk add genes", () => {
   });
 });
 
-describe.only("categorical data", () => {
+describe("categorical data", () => {
   test("categories and values from dataset appear", async () => {
     await utils.waitByID("category-louvain");
     const louvain = await utils.getOneElementInnerText(
       '[data-testid="category-louvain"]'
     );
     expect(louvain).toMatch("louvain");
+    await utils.clickOn("category-expand-louvain");
+    const categories = await cxgActions.getAllCategories("categorical-value");
+    console.log(categories);
+    expect(categories).toMatchObject([
+      "B cells",
+      "CD14+ Monocytes",
+      "CD4 T cells",
+      "CD8 T cells",
+      "Dendritic cells",
+      "FCGR3A+ Monocytes",
+      "Megakaryocytes",
+      "NK cells"
+    ]);
   });
 });

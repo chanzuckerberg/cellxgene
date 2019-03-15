@@ -145,6 +145,7 @@ class Category extends React.Component {
             </label>
 
             <span
+              data-testid={`category-expand-${metadataField}`}
               style={{
                 cursor: "pointer",
                 display: "inline-block"

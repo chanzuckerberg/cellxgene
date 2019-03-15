@@ -31,24 +31,6 @@ export const puppeteerUtils = puppeteerPage => ({
   async getOneElementInnerText(selector) {
     let text = await puppeteerPage.$eval(selector, el => el.innerText);
     return text;
-  },
-
-  async drag(el_box, start, end, lasso = false) {
-    const x1 = el_box.content[0].x + start.x;
-    const x2 = el_box.content[0].x + end.x;
-    const y1 = el_box.content[0].y + start.y;
-    const y2 = el_box.content[0].y + end.y;
-    await puppeteerPage.mouse.move(x1, y1);
-    await puppeteerPage.mouse.down();
-    if (lasso) {
-      await puppeteerPage.mouse.move(x2, y1);
-      await puppeteerPage.mouse.move(x2, y2);
-      await puppeteerPage.mouse.move(x1, y2);
-      await puppeteerPage.mouse.move(x1, y1);
-    } else {
-      await puppeteerPage.mouse.move(x2, y2);
-    }
-    await puppeteerPage.mouse.up();
   }
 });
 
@@ -85,13 +67,30 @@ export const cellxgeneActions = puppeteerPage => ({
     return histograms;
   },
 
+  async getAllCategories(testclass) {
+    await puppeteerUtils(puppeteerPage).waitByClass(testclass);
+    const categories = await puppeteerPage.$$eval(
+      `[data-testclass=${testclass}]`,
+      divs => {
+        return divs.map(div => {
+          // TODO get from ids
+          return div.dataset.testid.substring(
+            "categorical-value-".length,
+            div.dataset.testid.length
+          );
+        });
+      }
+    );
+    return categories;
+  },
+
   async reset() {
     await puppeteerUtils(puppeteerPage).clickOn("reset");
   }
 });
 
 // TODO cellxgene specific
-// find historgrams of type
+// find histograms of type
 // reset page
 // select cells
 

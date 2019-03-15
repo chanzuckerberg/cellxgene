@@ -102,7 +102,11 @@ class CategoryValue extends React.Component {
               checked={selected}
               type="checkbox"
             />
-            <span className="bp3-control-indicator" />
+            <span
+              data-testid={`categorical-value-${displayString}`}
+              data-testclass="categorical-value"
+              className="bp3-control-indicator"
+            />
             {displayString}
           </label>
           <span style={{ flexShrink: 0 }}>
@@ -119,9 +123,7 @@ class CategoryValue extends React.Component {
           </span>
         </div>
         <span>
-          <span
-            data-testid={`categorical-value-count-${metadataField}-${count}`}
-          >
+          <span data-testid={`categorical-value-count-${metadataField}`}>
             {count}
           </span>
           <svg
