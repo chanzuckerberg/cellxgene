@@ -8,7 +8,7 @@ import * as globals from "../../globals";
 
 @connect(state => ({
   categoricalSelectionState: state.controls.categoricalSelectionState,
-  colorScale: state.controls.colorScale,
+  colorScale: state.controls.colors.scale,
   colorAccessor: state.controls.colorAccessor,
   schema: _.get(state.controls.world, "schema", null),
   world: state.controls.world

@@ -1,13 +1,4 @@
 from setuptools import setup, find_packages
-import sys
-
-if sys.version_info[0:2] != (3, 6):
-    raise ImportError(
-        "cellxgene currently only supports python 3.6. Python 3.7 is known to fail; we will look at supporting "
-        "versions other than 3.6 in the future."
-        "See https://github.com/chanzuckerberg/cellxgene#conda-and-virtual-environments "
-        "for more help with installation."
-    )
 
 with open("README.md", "rb") as fh:
     long_description = fh.read().decode()
@@ -40,6 +31,7 @@ setup(
         "Programming Language :: JavaScript",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3 :: Only",
         "Topic :: Scientific/Engineering :: Bio-Informatics",
     ],

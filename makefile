@@ -123,6 +123,6 @@ install-release : uninstall
 	@echo "Installed cellxgene from pypi.org"
 
 uninstall :
-	yes | pip uninstall cellxgene || true
+	pip uninstall -y cellxgene || :
 
 .PHONY : install install-dev install-release-test install-release uninstall

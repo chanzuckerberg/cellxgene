@@ -2,8 +2,12 @@
 
 import _ from "lodash";
 
-import { World, WorldUtil, ControlsHelper } from "../util/stateManager";
-import parseRGB from "../util/parseRGB";
+import {
+  World,
+  WorldUtil,
+  ControlsHelpers,
+  createColors
+} from "../util/stateManager";
 import Crossfilter from "../util/typedCrossfilter";
 import * as globals from "../globals";
 import {
@@ -29,15 +33,17 @@ const Controls = (
 
     // all of the data + selection state
     world: null,
-    colorRGB: null,
     categoricalSelectionState: null,
     crossfilter: null,
     userDefinedGenes: [],
     userDefinedGenesLoading: false,
     diffexpGenes: [],
 
+    // graph color-by
+    colorMode: null,
     colorAccessor: null,
-    colorScale: null,
+    colors: {},
+
     resettingInterface: false,
 
     opacityForDeselectedCells: 0.2,
@@ -82,10 +88,9 @@ const Controls = (
       /* first light - create world & other data-driven defaults */
       const { universe } = action;
       const world = World.createWorldFromEntireUniverse(universe);
-      const colorRGB = new Array(universe.nObs).fill(
-        parseRGB(globals.defaultCellColor)
-      );
-      const categoricalSelectionState = ControlsHelper.createCategoricalSelectionState(
+      const colorMode = null;
+      const colors = createColors(world, colorMode);
+      const categoricalSelectionState = ControlsHelpers.createCategoricalSelectionState(
         state,
         world
       );
@@ -102,10 +107,11 @@ const Controls = (
         universe,
         fullUniverseCache: { world, crossfilter },
         world,
-        colorRGB,
         categoricalSelectionState,
         crossfilter,
+        colorMode,
         colorAccessor: null,
+        colors,
         resettingInterface: false
       };
     }
@@ -119,39 +125,39 @@ const Controls = (
       4. Reset all WorldUtil caches
       5. Reset color-by
       */
-      const {
-        userDefinedGenes,
-        diffexpGenes,
-        universe,
-        fullUniverseCache
-      } = state;
+      const { userDefinedGenes, diffexpGenes, fullUniverseCache } = state;
       const { world } = fullUniverseCache;
-      const crossfilter = ControlsHelper.createGeneDimensions(
+      const crossfilter = ControlsHelpers.createGeneDimensions(
         userDefinedGenes,
         diffexpGenes,
         world,
         fullUniverseCache.crossfilter
       );
-      const categoricalSelectionState = ControlsHelper.createCategoricalSelectionState(
+      const colorMode = null;
+      const colors = createColors(world, colorMode);
+      const categoricalSelectionState = ControlsHelpers.createCategoricalSelectionState(
         state,
         world
-      );
-      const colorRGB = new Array(universe.nObs).fill(
-        parseRGB(globals.defaultCellColor)
       );
       WorldUtil.clearCaches();
       return {
         ...state,
         world,
-        colorAccessor: null,
-        colorRGB,
         categoricalSelectionState,
         crossfilter,
+        colorMode,
+        colorAccessor: null,
+        colors,
         resettingInterface: false
       };
     }
     case "set World to current selection": {
-      const { userDefinedGenes, diffexpGenes } = state;
+      const {
+        userDefinedGenes,
+        diffexpGenes,
+        colorMode,
+        colorAccessor
+      } = state;
 
       /* Set viewable world to be the currently selected data */
       const world = World.createWorldFromCurrentSelection(
@@ -159,16 +165,14 @@ const Controls = (
         action.world,
         action.crossfilter
       );
-      const colorRGB = new Array(world.nObs).fill(
-        parseRGB(globals.defaultCellColor)
-      );
-      const categoricalSelectionState = ControlsHelper.createCategoricalSelectionState(
+      const colors = createColors(world, colorMode, colorAccessor);
+      const categoricalSelectionState = ControlsHelpers.createCategoricalSelectionState(
         state,
         world
       );
       let crossfilter = new Crossfilter(world.obsAnnotations);
       crossfilter = World.createObsDimensions(crossfilter, world);
-      crossfilter = ControlsHelper.createGeneDimensions(
+      crossfilter = ControlsHelpers.createGeneDimensions(
         userDefinedGenes,
         diffexpGenes,
         world,
@@ -182,10 +186,9 @@ const Controls = (
         loading: false,
         error: null,
         world,
-        colorRGB,
+        colors,
         categoricalSelectionState,
-        crossfilter,
-        colorAccessor: null
+        crossfilter
       };
     }
     case "expression load success": {
@@ -232,11 +235,11 @@ const Controls = (
           Object.keys(action.expressionData)
         )
       );
-      universeVarData = ControlsHelper.pruneVarDataCache(
+      universeVarData = ControlsHelpers.pruneVarDataCache(
         universeVarData,
         allTheGenesWeNeed
       );
-      worldVarData = ControlsHelper.pruneVarDataCache(
+      worldVarData = ControlsHelpers.pruneVarDataCache(
         worldVarData,
         allTheGenesWeNeed
       );
@@ -361,13 +364,11 @@ const Controls = (
     }
     case "reset colorscale": {
       const { world } = state;
-      const colorRGB = new Array(world.nObs).fill(
-        parseRGB(globals.defaultCellColor)
-      );
       return {
         ...state,
-        colorRGB,
-        colorAccessor: null
+        colorMode: null,
+        colorAccessor: null,
+        colors: createColors(world)
       };
     }
     case "expression load error":
@@ -484,7 +485,7 @@ const Controls = (
       const dName = obsAnnoDimensionName(action.metadataField);
       const crossfilter = state.crossfilter.select(dName, {
         mode: "exact",
-        values: ControlsHelper.selectedValuesForCategory(cat)
+        values: ControlsHelpers.selectedValuesForCategory(cat)
       });
       return {
         ...state,
@@ -510,7 +511,7 @@ const Controls = (
       const dName = obsAnnoDimensionName(action.metadataField);
       const crossfilter = state.crossfilter.select(dName, {
         mode: "exact",
-        values: ControlsHelper.selectedValuesForCategory(cat)
+        values: ControlsHelpers.selectedValuesForCategory(cat)
       });
       return {
         ...state,
@@ -566,19 +567,21 @@ const Controls = (
     *******************************/
     case "color by categorical metadata":
     case "color by continuous metadata": {
+      const { world } = state;
       return {
         ...state,
-        colorRGB: action.colors.rgb,
+        colorMode: action.type,
         colorAccessor: action.colorAccessor,
-        colorScale: action.colorScale
+        colors: createColors(world, action.type, action.colorAccessor)
       };
     }
     case "color by expression": {
+      const { world } = state;
       return {
         ...state,
-        colorRGB: action.colors.rgb,
+        colorMode: action.type,
         colorAccessor: action.gene,
-        colorScale: action.colorScale
+        colors: createColors(world, action.type, action.gene)
       };
     }
 
