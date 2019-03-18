@@ -9,8 +9,8 @@ import CellSetButton from "./cellSetButtons";
 
 @connect(state => ({
   differential: state.differential,
-  world: state.controls.world,
-  crossfilter: state.controls.crossfilter
+  world: state.world,
+  crossfilter: state.crossfilter
 }))
 class Expression extends React.Component {
   constructor(props) {

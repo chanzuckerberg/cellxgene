@@ -6,7 +6,7 @@ import * as globals from "../../globals";
 import Category from "./category";
 
 @connect(state => ({
-  categoricalSelectionState: state.controls.categoricalSelectionState
+  categoricalSelectionState: state.categoricalSelectionState
 }))
 class Categories extends React.Component {
   render() {

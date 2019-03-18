@@ -1,0 +1,88 @@
+import { createColors } from "../util/stateManager";
+
+const ColorsReducer = (
+  state = {
+    colorMode: null,
+    colorAccessor: null,
+    rgb: null,
+    scale: null
+  },
+  action,
+  nextSharedState,
+  prevSharedState
+) => {
+  switch (action.type) {
+    case "initial data load complete (universe exists)":
+    case "reset World to eq Universe": {
+      const { world } = nextSharedState;
+      const colorMode = null;
+      const colorAccessor = null;
+      const { rgb, scale } = createColors(world, colorMode);
+      return {
+        ...state,
+        colorAccessor,
+        colorMode,
+        rgb,
+        scale
+      };
+    }
+
+    case "set World to current selection": {
+      const { colorMode, colorAccessor } = state;
+      const { world } = nextSharedState;
+      const { rgb, scale } = createColors(world, colorMode, colorAccessor);
+      return {
+        ...state,
+        rgb,
+        scale
+      };
+    }
+
+    case "reset colorscale": {
+      const { world } = prevSharedState;
+      const { rgb, scale } = createColors(world);
+      return {
+        ...state,
+        colorMode: null,
+        colorAccessor: null,
+        rgb,
+        scale
+      };
+    }
+
+    case "color by categorical metadata":
+    case "color by continuous metadata": {
+      const { world } = prevSharedState;
+      const { rgb, scale } = createColors(
+        world,
+        action.type,
+        action.colorAccessor
+      );
+      return {
+        ...state,
+        colorMode: action.type,
+        colorAccessor: action.colorAccessor,
+        rgb,
+        scale
+      };
+    }
+
+    case "color by expression": {
+      const { world } = prevSharedState;
+      const { rgb, scale } = createColors(world, action.type, action.gene);
+      return {
+        ...state,
+        colorMode: action.type,
+        colorAccessor: action.gene,
+        rgb,
+        scale
+      };
+    }
+
+    default: {
+      return state;
+    }
+  }
+};
+
+export default ColorsReducer;

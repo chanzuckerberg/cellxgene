@@ -9,8 +9,8 @@ import Value from "./value";
 import sortedCategoryValues from "./util";
 
 @connect(state => ({
-  colorAccessor: state.controls.colorAccessor,
-  categoricalSelectionState: state.controls.categoricalSelectionState
+  colorAccessor: state.colors.colorAccessor,
+  categoricalSelectionState: state.categoricalSelectionState
 }))
 class Category extends React.Component {
   constructor(props) {

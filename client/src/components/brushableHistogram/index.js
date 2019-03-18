@@ -15,13 +15,13 @@ import actions from "../../actions";
 import finiteExtent from "../../util/finiteExtent";
 
 @connect(state => ({
-  world: state.controls.world,
+  world: state.world,
   scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
   scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
-  crossfilter: state.controls.crossfilter,
+  crossfilter: state.crossfilter,
   differential: state.differential,
-  colorAccessor: state.controls.colorAccessor,
-  obsAnnotations: _.get(state.controls.world, "obsAnnotations", null)
+  colorAccessor: state.colors.colorAccessor,
+  obsAnnotations: _.get(state.world, "obsAnnotations", null)
 }))
 class HistogramBrush extends React.Component {
   calcHistogramCache = memoize((obsAnnotations, field, rangeMin, rangeMax) => {

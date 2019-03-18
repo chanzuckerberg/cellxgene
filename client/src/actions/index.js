@@ -65,7 +65,7 @@ Set the view (world) to current selection.   Placeholder for an async action
 which also does re-layout.
 */
 const regraph = () => (dispatch, getState) => {
-  const { universe, world, crossfilter } = getState().controls;
+  const { universe, world, crossfilter } = getState();
   dispatch({
     type: "set World to current selection",
     universe,
@@ -124,7 +124,7 @@ async function _doRequestExpressionData(dispatch, getState, genes) {
   };
 
   const state = getState();
-  const { universe } = state.controls;
+  const { universe } = state;
   /* preload data already in cache */
   let expressionData = _.transform(
     genes,
@@ -164,7 +164,7 @@ function requestSingleGeneExpressionCountsForColoringPOST(gene) {
     dispatch({ type: "get single gene expression for coloring started" });
     try {
       await _doRequestExpressionData(dispatch, getState, [gene]);
-      const { world } = getState().controls;
+      const { world } = getState();
       dispatch({
         type: "color by expression",
         gene,
@@ -185,7 +185,7 @@ const requestUserDefinedGene = gene => async (dispatch, getState) => {
   dispatch({ type: "request user defined gene started" });
   try {
     await await _doRequestExpressionData(dispatch, getState, [gene]);
-    const { world } = getState().controls;
+    const { world } = getState();
 
     /* then send the success case action through */
     return dispatch({
@@ -240,7 +240,7 @@ const requestDifferentialExpression = (set1, set2, num_genes = 10) => async (
     2. get expression data for each
     */
     const state = getState();
-    const { universe } = state.controls;
+    const { universe } = state;
 
     // Legal values are null, Array or TypedArray.  Null is initial state.
     if (!set1) set1 = [];
@@ -300,7 +300,7 @@ const requestDifferentialExpression = (set1, set2, num_genes = 10) => async (
 };
 
 const resetInterface = () => (dispatch, getState) => {
-  const { universe } = getState().controls;
+  const { universe } = getState();
 
   dispatch({
     type: "clear all user defined genes"

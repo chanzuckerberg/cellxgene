@@ -58,11 +58,11 @@ const filterGenes = (query, genes) =>
 
 @connect(state => {
   return {
-    obsAnnotations: _.get(state.controls.world, "obsAnnotations", null),
+    obsAnnotations: _.get(state.world, "obsAnnotations", null),
     userDefinedGenes: state.controls.userDefinedGenes,
     userDefinedGenesLoading: state.controls.userDefinedGenesLoading,
-    world: state.controls.world,
-    colorAccessor: state.controls.colorAccessor,
+    world: state.world,
+    colorAccessor: state.colors.colorAccessor,
     differential: state.differential
   };
 })

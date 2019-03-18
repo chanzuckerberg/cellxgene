@@ -7,11 +7,11 @@ import { countCategoryValues2D } from "../../util/stateManager/worldUtil";
 import * as globals from "../../globals";
 
 @connect(state => ({
-  categoricalSelectionState: state.controls.categoricalSelectionState,
-  colorScale: state.controls.colors.scale,
-  colorAccessor: state.controls.colorAccessor,
-  schema: _.get(state.controls.world, "schema", null),
-  world: state.controls.world
+  categoricalSelectionState: state.categoricalSelectionState,
+  colorScale: state.colors.scale,
+  colorAccessor: state.colors.colorAccessor,
+  schema: _.get(state.world, "schema", null),
+  world: state.world
 }))
 class CategoryValue extends React.Component {
   toggleOff() {

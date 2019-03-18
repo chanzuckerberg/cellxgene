@@ -26,16 +26,16 @@ import { World } from "../../util/stateManager";
 /* https://bl.ocks.org/mbostock/9078690 - quadtree for onClick / hover selections */
 
 @connect(state => ({
-  world: state.controls.world,
-  universe: state.controls.universe,
-  crossfilter: state.controls.crossfilter,
+  world: state.world,
+  universe: state.universe,
+  crossfilter: state.crossfilter,
   responsive: state.responsive,
-  colorRGB: _.get(state.controls, "colors.rgb", null),
+  colorRGB: state.colors.rgb,
   opacityForDeselectedCells: state.controls.opacityForDeselectedCells,
   resettingInterface: state.controls.resettingInterface,
   userDefinedGenes: state.controls.userDefinedGenes,
   diffexpGenes: state.controls.diffexpGenes,
-  colorAccessor: state.controls.colorAccessor,
+  colorAccessor: state.colors.colorAccessor,
   scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
   scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
   celllist1: state.differential.celllist1,
