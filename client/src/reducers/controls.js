@@ -117,7 +117,7 @@ const Controls = (
     }
     case "reset World to eq Universe": {
       /*
-      1. reset world & crossfilter, using previously created objects which were
+      1. Reset world & crossfilter, using previously created objects which were
          stashed in `fullUniverseCache`
       2. Add crossfilter dimension for all userDefined and diffexp genes/varData,
          as they are not part of the cached crossfilter.

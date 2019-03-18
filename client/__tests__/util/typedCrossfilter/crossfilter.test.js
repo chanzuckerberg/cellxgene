@@ -166,7 +166,7 @@ describe("ImmutableTypedCrossfilter", () => {
       .addDimension("type", "enum", (i, d) => d[i].type);
     expect(p).toBeDefined();
 
-    /* expect all records to be selecte - default init state */
+    /* expect all records to be selected - default init state */
     expect(p.allSelected()).toEqual(someData);
     expect(p.countSelected()).toEqual(someData.length);
     expect(p.allSelectedMask()).toEqual(
@@ -179,7 +179,7 @@ describe("ImmutableTypedCrossfilter", () => {
       expect(p.isElementSelected(i)).toBeTruthy();
     }
 
-    /* expect a selectAll on one dimension to chnage nothing */
+    /* expect a selectAll on one dimension to change nothing */
     p = p.select("tip", { mode: "all" });
     expect(p.allSelected()).toEqual(someData);
 
