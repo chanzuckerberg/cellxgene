@@ -81,6 +81,7 @@ class CategoryValue extends React.Component {
           alignItems: "baseline",
           justifyContent: "space-between"
         }}
+        data-testclass="categorical-row"
       >
         <div
           style={{
@@ -102,12 +103,13 @@ class CategoryValue extends React.Component {
               checked={selected}
               type="checkbox"
             />
+            <span className="bp3-control-indicator" />
             <span
               data-testid={`categorical-value-${displayString}`}
               data-testclass="categorical-value"
-              className="bp3-control-indicator"
-            />
-            {displayString}
+            >
+              {displayString}
+            </span>
           </label>
           <span style={{ flexShrink: 0 }}>
             {colorAccessor &&
@@ -123,7 +125,10 @@ class CategoryValue extends React.Component {
           </span>
         </div>
         <span>
-          <span data-testid={`categorical-value-count-${metadataField}`}>
+          <span
+            data-testclass="categorical-value-count"
+            data-testid={`categorical-value-count-${metadataField}`}
+          >
             {count}
           </span>
           <svg

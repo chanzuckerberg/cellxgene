@@ -67,18 +67,40 @@ export const cellxgeneActions = puppeteerPage => ({
     return histograms;
   },
 
-  async getAllCategories(testclass) {
-    await puppeteerUtils(puppeteerPage).waitByClass(testclass);
+  // make sure these are children of the category
+  async getAllCategories(category) {
+    await puppeteerUtils(puppeteerPage).waitByClass("categorical-row");
     const categories = await puppeteerPage.$$eval(
-      `[data-testclass=${testclass}]`,
+      `[data-testid="category-${category}"] [data-testclass=categorical-row]`,
       divs => {
         return divs.map(div => {
           // TODO get from ids
-          return div.dataset.testid.substring(
+          const val = div.querySelector("[data-testclass='categorical-value']");
+          return val.dataset.testid.substring(
             "categorical-value-".length,
-            div.dataset.testid.length
+            val.dataset.testid.length
           );
         });
+      }
+    );
+    return categories;
+  },
+
+  async getAllCategoriesAndCounts(category) {
+    await puppeteerUtils(puppeteerPage).waitByClass("categorical-row");
+    const categories = await puppeteerPage.$$eval(
+      `[data-testid="category-${category}"] [data-testclass=categorical-row]`,
+      divs => {
+        let result = {};
+        divs.forEach(div => {
+          const cat = div.querySelector("[data-testclass='categorical-value']")
+            .innerText;
+          const count = div.querySelector(
+            "[data-testclass='categorical-value-count']"
+          ).innerText;
+          result[cat] = count;
+        });
+        return result;
       }
     );
     return categories;

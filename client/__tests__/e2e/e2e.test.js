@@ -166,7 +166,7 @@ describe("bulk add genes", () => {
   });
 });
 
-describe("categorical data", () => {
+describe.only("categorical data", () => {
   test("categories and values from dataset appear", async () => {
     await utils.waitByID("category-louvain");
     const louvain = await utils.getOneElementInnerText(
@@ -174,9 +174,8 @@ describe("categorical data", () => {
     );
     expect(louvain).toMatch("louvain");
     await utils.clickOn("category-expand-louvain");
-    const categories = await cxgActions.getAllCategories("categorical-value");
-    console.log(categories);
-    expect(categories).toMatchObject([
+    const categories = await cxgActions.getAllCategoriesAndCounts("louvain");
+    expect(Object.keys(categories)).toMatchObject([
       "B cells",
       "CD14+ Monocytes",
       "CD4 T cells",
@@ -186,5 +185,20 @@ describe("categorical data", () => {
       "Megakaryocytes",
       "NK cells"
     ]);
+    expect(Object.values(categories)).toMatchObject([
+      "342",
+      "480",
+      "1144",
+      "316",
+      "37",
+      "150",
+      "15",
+      "154"
+    ]);
+  });
+
+  test("cell selection by categorical metadata", async () => {
+    await utils.clickOn("category-checkbox-louvain");
+    await utils.clickOn("category-expand-louvain");
   });
 });
