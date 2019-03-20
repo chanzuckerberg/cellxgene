@@ -1,8 +1,8 @@
 import puppeteer from "puppeteer";
-import { appUrlBase, DEBUG, DEV } from "./const";
+import { appUrlBase, DEBUG, DEV } from "./config";
 import { puppeteerUtils, cellxgeneActions } from "./utils";
 
-let browser, page, utils, cxgActions;
+let browser, page, utils, cxgActions, store;
 const browserViewport = { width: 1280, height: 960 };
 
 if (DEBUG) jest.setTimeout(100000);
@@ -66,8 +66,8 @@ describe("select cells and diffexp", () => {
       }
     };
     await cxgActions.drag(size, cellset1.start, cellset1.end, true);
-    const cell_count = await cxgActions.cellSet(1)
-    expect(cell_count).toBe("26")
+    const cell_count = await cxgActions.cellSet(1);
+    expect(cell_count).toBe("26");
   });
 
   test("selects cells from layout and adds to cell set 2", async () => {
@@ -84,8 +84,8 @@ describe("select cells and diffexp", () => {
       }
     };
     await cxgActions.drag(size, cellset2.start, cellset2.end, true);
-    const cell_count = await cxgActions.cellSet(2)
-    expect(cell_count).toBe("49")
+    const cell_count = await cxgActions.cellSet(2);
+    expect(cell_count).toBe("49");
   });
 
   test("selects cells, saves them and performs diffexp", async () => {
@@ -115,7 +115,7 @@ describe("select cells and diffexp", () => {
     };
     await cxgActions.drag(size, cellset2.start, cellset2.end, true);
     await utils.clickOn("cellset-button-2");
-     await utils.clickOn("diffexp-button");
+    await utils.clickOn("diffexp-button");
     const diffExpHists = await cxgActions.getAllHistograms("histogram-diffexp");
     expect(diffExpHists).toMatchObject([
       "HLA-DPA1",
@@ -149,8 +149,8 @@ describe("brushable histogram", () => {
       }
     };
     await cxgActions.drag(hist_size, draghist.start, draghist.end);
-    const cell_count = await cxgActions.cellSet(1)
-    expect(cell_count).toBe("1537")
+    const cell_count = await cxgActions.cellSet(1);
+    expect(cell_count).toBe("1537");
   });
 });
 
@@ -197,14 +197,23 @@ describe("categorical data", () => {
       "15",
       "154"
     ]);
-  })
+  });
 
   test("cell selection by categorical metadata", async () => {
     await utils.clickOn("category-expand-louvain");
     await utils.clickOn("category-select-louvain");
     await utils.clickOn("categorical-value-select-B cells");
     await utils.clickOn("categorical-value-select-Megakaryocytes");
-    const cell_count = await cxgActions.cellSet(1)
-    expect(cell_count).toBe("357")
+    const cell_count = await cxgActions.cellSet(1);
+    expect(cell_count).toBe("357");
+  });
+});
+
+describe.only("store test", () => {
+  test("this is a test", async () => {
+    store = await page.evaluate(() => {
+      window.cxg_store.getState();
+    });
+    console.log("Store2:", store);
   });
 });

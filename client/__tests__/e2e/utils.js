@@ -107,17 +107,15 @@ export const cellxgeneActions = puppeteerPage => ({
   },
 
   async cellSet(num) {
-    await puppeteerUtils(puppeteerPage).clickOn(
-      `cellset-button-${num}`
-    );
+    await puppeteerUtils(puppeteerPage).clickOn(`cellset-button-${num}`);
     return await puppeteerUtils(puppeteerPage).getOneElementInnerText(
-       `[data-testid='cellset-count-${num}']`
+      `[data-testid='cellset-count-${num}']`
     );
   },
 
   async reset() {
     await puppeteerUtils(puppeteerPage).clickOn("reset");
-    await page.waitFor(100)
+    await page.waitFor(100);
   }
 });
 
