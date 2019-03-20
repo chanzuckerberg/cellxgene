@@ -1,35 +1,5 @@
 import { Colors } from "@blueprintjs/core";
 
-// jshint esversion: 6
-/* these will be either (preferably) specified or inferred */
-export const categories = [
-  "Sample.type",
-  "Selection",
-  "Location",
-  "Sample.name",
-  "Class",
-  "Neoplastic"
-];
-export const continuous = [
-  "Total_reads",
-  "Unique_reads",
-  "Unique_reads_percent",
-  "ERCC_reads",
-  "Non_ERCC_reads",
-  "ERCC_to_non_ERCC",
-  "Genes_detected",
-  "Multimapping_reads_percent",
-  "Splice_sites_AT.AC",
-  "Splice_sites_Annotated",
-  "Splice_sites_GC.AG",
-  "Splice_sites_GT.AG",
-  "Splice_sites_non_canonical",
-  "Splice_sites_total",
-  "Unmapped_mismatch",
-  "Unmapped_other",
-  "Unmapped_short"
-];
-
 /* if a categorical metadata field has more options than this, truncate */
 export const maxCategoricalOptionsToDisplay = 100;
 

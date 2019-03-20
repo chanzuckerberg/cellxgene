@@ -2,8 +2,7 @@
 
 import _ from "lodash";
 
-import { WorldUtil, createColors } from "../util/stateManager";
-import * as globals from "../globals";
+import { WorldUtil } from "../util/stateManager";
 
 const Controls = (
   state = {

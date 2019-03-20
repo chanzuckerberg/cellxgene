@@ -1,8 +1,6 @@
 // jshint esversion: 6
 
-import _ from "lodash";
 import { layoutDimensionName, obsAnnoDimensionName } from "../nameCreators";
-import Crossfilter from "../typedCrossfilter";
 import * as Dataframe from "../dataframe";
 
 /*
@@ -145,26 +143,19 @@ export function createObsDimensions(crossfilter, world) {
   for which we have a supported type, *except* 'name'
   */
   const { schema, obsLayout, obsAnnotations } = world;
-  const annoList = _.filter(
-    schema.annotations.obs,
-    anno => anno.name !== "name"
-  );
-  crossfilter = _.reduce(
-    annoList,
-    (xfltr, anno) => {
-      const dimType = deduceDimensionType(anno, anno.name);
-      const colData = obsAnnotations.col(anno.name).asArray();
-      const name = obsAnnoDimensionName(anno.name);
-      if (dimType === "enum") {
-        return xfltr.addDimension(name, "enum", colData);
-      }
-      if (dimType) {
-        return xfltr.addDimension(name, "scalar", colData, dimType);
-      }
-      return xfltr;
-    },
-    crossfilter
-  );
+  const annoList = schema.annotations.obs.filter(anno => anno.name !== "name");
+  crossfilter = annoList.reduce((xfltr, anno) => {
+    const dimType = deduceDimensionType(anno, anno.name);
+    const colData = obsAnnotations.col(anno.name).asArray();
+    const name = obsAnnoDimensionName(anno.name);
+    if (dimType === "enum") {
+      return xfltr.addDimension(name, "enum", colData);
+    }
+    if (dimType) {
+      return xfltr.addDimension(name, "scalar", colData, dimType);
+    }
+    return xfltr;
+  }, crossfilter);
 
   return crossfilter.addDimension(
     layoutDimensionName("XY"),
