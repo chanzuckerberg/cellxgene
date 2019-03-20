@@ -32,7 +32,6 @@ import { World } from "../../util/stateManager";
   responsive: state.responsive,
   colorRGB: _.get(state.controls, "colors.rgb", null),
   opacityForDeselectedCells: state.controls.opacityForDeselectedCells,
-  selectionUpdate: _.get(state.controls, "crossfilter.updateTime", null),
   resettingInterface: state.controls.resettingInterface,
   userDefinedGenes: state.controls.userDefinedGenes,
   diffexpGenes: state.controls.diffexpGenes,
@@ -103,13 +102,7 @@ class Graph extends React.Component {
 
   componentDidUpdate(prevProps) {
     const { renderCache } = this;
-    const {
-      world,
-      crossfilter,
-      colorRGB,
-      responsive,
-      selectionUpdate
-    } = this.props;
+    const { world, crossfilter, colorRGB, responsive } = this.props;
     const {
       reglRender,
       mode,
@@ -173,11 +166,11 @@ class Graph extends React.Component {
 
       // Sizes for each point - updates are triggered only when selected
       // obs change
-      if (!renderCache.sizes || selectionUpdate !== prevProps.selectionUpdate) {
+      if (!renderCache.sizes || crossfilter !== prevProps.crossfilter) {
         if (!renderCache.sizes) {
           renderCache.sizes = new Float32Array(nObs);
         }
-        crossfilter.fillByIsFiltered(renderCache.sizes, 4, 0.2);
+        crossfilter.fillByIsSelected(renderCache.sizes, 4, 0.2);
         sizeBuffer({ data: renderCache.sizes, dimension: 1 });
       }
 
@@ -242,7 +235,7 @@ class Graph extends React.Component {
     if (!crossfilter || !world || !universe) {
       return false;
     }
-    const nothingSelected = crossfilter.countFiltered() === crossfilter.size();
+    const nothingSelected = crossfilter.countSelected() === crossfilter.size();
     const nothingColoredBy = !colorAccessor;
     const noGenes = userDefinedGenes.length === 0 && diffexpGenes.length === 0;
     const scatterNotDpl = !scatterplotXXaccessor || !scatterplotYYaccessor;
@@ -450,8 +443,8 @@ class Graph extends React.Component {
                 data-testid="subset-button"
                 disabled={
                   crossfilter &&
-                  (crossfilter.countFiltered() === 0 ||
-                    crossfilter.countFiltered() === crossfilter.size())
+                  (crossfilter.countSelected() === 0 ||
+                    crossfilter.countSelected() === crossfilter.size())
                 }
                 style={{ marginRight: 10 }}
                 onClick={() => {

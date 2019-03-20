@@ -11,8 +11,7 @@ import HistogramBrush from "../brushableHistogram";
 @connect(state => ({
   obsAnnotations: _.get(state.controls.world, "obsAnnotations", null),
   colorAccessor: state.controls.colorAccessor,
-  colorScale: state.controls.colors.scale,
-  selectionUpdate: _.get(state.controls, "crossfilter.updateTime", null),
+  colorScale: state.controls.colorScale,
   schema: _.get(state.controls.world, "schema", null)
 }))
 class Continuous extends React.Component {

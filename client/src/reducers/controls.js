@@ -35,7 +35,6 @@ const Controls = (
     world: null,
     categoricalSelectionState: null,
     crossfilter: null,
-    dimensionMap: null,
     userDefinedGenes: [],
     userDefinedGenesLoading: false,
     diffexpGenes: [],
@@ -95,8 +94,10 @@ const Controls = (
         state,
         world
       );
-      const crossfilter = Crossfilter(world.obsAnnotations);
-      const dimensionMap = World.createObsDimensionMap(crossfilter, world);
+      const crossfilter = World.createObsDimensions(
+        new Crossfilter(world.obsAnnotations),
+        world
+      );
       WorldUtil.clearCaches();
 
       return {
@@ -104,11 +105,10 @@ const Controls = (
         loading: false,
         error: null,
         universe,
-        fullUniverseCache: { world, crossfilter, dimensionMap },
+        fullUniverseCache: { world, crossfilter },
         world,
         categoricalSelectionState,
         crossfilter,
-        dimensionMap,
         colorMode,
         colorAccessor: null,
         colors,
@@ -116,40 +116,35 @@ const Controls = (
       };
     }
     case "reset World to eq Universe": {
+      /*
+      1. Reset world & crossfilter, using previously created objects which were
+         stashed in `fullUniverseCache`
+      2. Add crossfilter dimension for all userDefined and diffexp genes/varData,
+         as they are not part of the cached crossfilter.
+      3. Compute categorical selection summary
+      4. Reset all WorldUtil caches
+      5. Reset color-by
+      */
       const { userDefinedGenes, diffexpGenes, fullUniverseCache } = state;
-      const { world, crossfilter } = fullUniverseCache;
-      // reset all crossfilter dimensions
-      _.forEach(fullUniverseCache.dimensionMap, dim => dim.filterAll());
+      const { world } = fullUniverseCache;
+      const crossfilter = ControlsHelpers.createGeneDimensions(
+        userDefinedGenes,
+        diffexpGenes,
+        world,
+        fullUniverseCache.crossfilter
+      );
       const colorMode = null;
       const colors = createColors(world, colorMode);
       const categoricalSelectionState = ControlsHelpers.createCategoricalSelectionState(
         state,
         world
       );
-
-      /* free dimensions not in cache (otherwise they leak) */
-      _.forEach(state.dimensionMap, (dim, dimName) => {
-        if (!fullUniverseCache.dimensionMap[dimName]) {
-          dim.dispose();
-        }
-      });
-      const dimensionMap = {
-        ...fullUniverseCache.dimensionMap,
-        ...ControlsHelpers.createGenesDimMap(
-          userDefinedGenes,
-          diffexpGenes,
-          world,
-          crossfilter
-        )
-      };
       WorldUtil.clearCaches();
-
       return {
         ...state,
         world,
         categoricalSelectionState,
         crossfilter,
-        dimensionMap,
         colorMode,
         colorAccessor: null,
         colors,
@@ -175,16 +170,15 @@ const Controls = (
         state,
         world
       );
-      const crossfilter = Crossfilter(world.obsAnnotations);
-      const dimensionMap = {
-        ...World.createObsDimensionMap(crossfilter, world),
-        ...ControlsHelpers.createGenesDimMap(
-          userDefinedGenes,
-          diffexpGenes,
-          world,
-          crossfilter
-        )
-      };
+      let crossfilter = new Crossfilter(world.obsAnnotations);
+      crossfilter = World.createObsDimensions(crossfilter, world);
+      crossfilter = ControlsHelpers.createGeneDimensions(
+        userDefinedGenes,
+        diffexpGenes,
+        world,
+        crossfilter
+      );
+
       WorldUtil.clearCaches();
 
       return {
@@ -194,8 +188,7 @@ const Controls = (
         world,
         colors,
         categoricalSelectionState,
-        crossfilter,
-        dimensionMap
+        crossfilter
       };
     }
     case "expression load success": {
@@ -276,56 +269,57 @@ const Controls = (
       };
     }
     case "request user defined gene success": {
-      const { world, crossfilter, dimensionMap, userDefinedGenes } = state;
+      const { world, crossfilter: oldCrossfilter, userDefinedGenes } = state;
       const _userDefinedGenes = userDefinedGenes.slice();
       const gene = action.data.genes[0];
 
-      dimensionMap[
-        userDefinedDimensionName(gene)
-      ] = World.createVarDataDimension(world, crossfilter, gene);
-
+      const crossfilter = oldCrossfilter.addDimension(
+        userDefinedDimensionName(gene),
+        "scalar",
+        world.varData.col(gene).asArray(),
+        Float32Array
+      );
       return {
         ...state,
-        dimensionMap,
+        crossfilter,
         userDefinedGenes: _userDefinedGenes,
         userDefinedGenesLoading: false
       };
     }
     case "request differential expression success": {
-      const { world, crossfilter, dimensionMap } = state;
+      const { world, crossfilter: oldCrossfilter } = state;
       const _diffexpGenes = [];
 
       action.data.forEach(d => {
         _diffexpGenes.push(world.varAnnotations.at(d[0], "name"));
       });
 
+      let crossfilter = oldCrossfilter;
       _.forEach(_diffexpGenes, gene => {
-        dimensionMap[diffexpDimensionName(gene)] = World.createVarDataDimension(
-          world,
-          crossfilter,
-          gene
+        crossfilter = crossfilter.addDimension(
+          diffexpDimensionName(gene),
+          "scalar",
+          world.varData.col(gene).asArray(),
+          Float32Array
         );
       });
 
       return {
         ...state,
-        dimensionMap,
+        crossfilter,
         diffexpGenes: _diffexpGenes
       };
     }
     case "clear differential expression": {
-      const { world, dimensionMap } = state;
-      const _dimensionMap = dimensionMap;
+      const { world } = state;
+      let { crossfilter } = state;
       _.forEach(action.diffExp, values => {
         const name = world.varAnnotations.at(values[0], "name");
-        // clean up crossfilter dimensions
-        const dimension = dimensionMap[diffexpDimensionName(name)];
-        dimension.dispose();
-        delete dimensionMap[diffexpDimensionName(name)];
+        crossfilter = crossfilter.delDimension(diffexpDimensionName(name));
       });
       return {
         ...state,
-        dimensionMap: _dimensionMap,
+        crossfilter,
         diffexpGenes: []
       };
     }
@@ -342,34 +336,29 @@ const Controls = (
       };
     }
     case "clear user defined gene": {
-      const { userDefinedGenes, dimensionMap } = state;
+      const { userDefinedGenes, crossfilter: oldCrossfilter } = state;
       const newUserDefinedGenes = _.filter(
         userDefinedGenes,
         d => d !== action.data
       );
-
-      const dimension = dimensionMap[userDefinedDimensionName(action.data)];
-      dimension.dispose();
-      delete dimensionMap[userDefinedDimensionName(action.data)];
-
+      const crossfilter = oldCrossfilter.delDimension(
+        userDefinedDimensionName(action.data)
+      );
       return {
         ...state,
-        dimensionMap,
+        crossfilter,
         userDefinedGenes: newUserDefinedGenes
       };
     }
     case "clear all user defined genes": {
-      const { userDefinedGenes, dimensionMap } = state;
-
+      const { userDefinedGenes } = state;
+      let { crossfilter } = state;
       _.forEach(userDefinedGenes, gene => {
-        const dimension = dimensionMap[userDefinedDimensionName(gene)];
-        dimension.dispose();
-        delete dimensionMap[userDefinedDimensionName(gene)];
+        crossfilter = crossfilter.delDimension(userDefinedDimensionName(gene));
       });
-
       return {
         ...state,
-        dimensionMap,
+        crossfilter,
         userDefinedGenes: []
       };
     }
@@ -395,34 +384,49 @@ const Controls = (
              User Events
      *******************************/
     case "graph brush selection change": {
-      state.dimensionMap[layoutDimensionName("XY")].filterWithinRect(
-        action.brushCoords.northwest,
-        action.brushCoords.southeast
-      );
+      const name = layoutDimensionName("XY");
+      const [x0, y0] = action.brushCoords.northwest;
+      const [x1, y1] = action.brushCoords.southeast;
+      const crossfilter = state.crossfilter.select(name, {
+        mode: "within-rect",
+        x0,
+        y0,
+        x1,
+        y1
+      });
       return {
         ...state,
+        crossfilter,
         graphBrushSelection: action.brushCoords
       };
     }
     case "lasso deselect":
     case "graph brush deselect": {
-      state.dimensionMap[layoutDimensionName("XY")].filterAll();
+      const name = layoutDimensionName("XY");
+      const crossfilter = state.crossfilter.select(name, { mode: "all" });
       return {
         ...state,
+        crossfilter,
         graphBrushSelection: null
       };
     }
     case "lasso selection": {
       const { polygon } = action;
-      const dXY = state.dimensionMap[layoutDimensionName("XY")];
+      const name = layoutDimensionName("XY");
+      const { crossfilter: oldCrossfilter } = state;
+      let crossfilter;
       if (polygon.length < 3) {
         // single point or a line is not a polygon, and is therefore a deselect
-        dXY.filterAll();
+        crossfilter = oldCrossfilter.select(name, { mode: "all" });
       } else {
-        dXY.filterWithinPolygon(polygon);
+        crossfilter = oldCrossfilter.select(name, {
+          mode: "within-polygon",
+          polygon
+        });
       }
       return {
-        ...state
+        ...state,
+        crossfilter
       };
     }
     case "continuous metadata histogram brush": {
@@ -430,15 +434,17 @@ const Controls = (
         action.continuousNamespace,
         action.selection
       );
+      let { crossfilter } = state;
 
       // action.selection: metadata name being selected
       // action.range: filter range, or null if deselected
       if (!action.range) {
-        state.dimensionMap[name].filterAll();
+        crossfilter = crossfilter.select(name, { mode: "all" });
       } else {
-        state.dimensionMap[name].filterRange(action.range);
+        const [lo, hi] = action.range;
+        crossfilter = crossfilter.select(name, { mode: "range", lo, hi });
       }
-      return { ...state };
+      return { ...state, crossfilter };
     }
     case "change opacity deselected cells in 2d graph background":
       return {
@@ -476,13 +482,15 @@ const Controls = (
 
       // update the filter to match all selected options
       const cat = newCategoricalSelectionState[action.metadataField];
-      state.dimensionMap[obsAnnoDimensionName(action.metadataField)].filterEnum(
-        ControlsHelpers.selectedValuesForCategory(cat)
-      );
-
+      const dName = obsAnnoDimensionName(action.metadataField);
+      const crossfilter = state.crossfilter.select(dName, {
+        mode: "exact",
+        values: ControlsHelpers.selectedValuesForCategory(cat)
+      });
       return {
         ...state,
-        categoricalSelectionState: newCategoricalSelectionState
+        categoricalSelectionState: newCategoricalSelectionState,
+        crossfilter
       };
     }
     case "categorical metadata filter deselect": {
@@ -500,13 +508,15 @@ const Controls = (
 
       // update the filter to match all selected options
       const cat = newCategoricalSelectionState[action.metadataField];
-      state.dimensionMap[obsAnnoDimensionName(action.metadataField)].filterEnum(
-        ControlsHelpers.selectedValuesForCategory(cat)
-      );
-
+      const dName = obsAnnoDimensionName(action.metadataField);
+      const crossfilter = state.crossfilter.select(dName, {
+        mode: "exact",
+        values: ControlsHelpers.selectedValuesForCategory(cat)
+      });
       return {
         ...state,
-        categoricalSelectionState: newCategoricalSelectionState
+        categoricalSelectionState: newCategoricalSelectionState,
+        crossfilter
       };
     }
     case "categorical metadata filter none of these": {
@@ -520,12 +530,14 @@ const Controls = (
           ).fill(false)
         }
       };
-      state.dimensionMap[
-        obsAnnoDimensionName(action.metadataField)
-      ].filterNone();
+      const dName = obsAnnoDimensionName(action.metadataField);
+      const crossfilter = state.crossfilter.select(dName, {
+        mode: "none"
+      });
       return {
         ...state,
-        categoricalSelectionState: newCategoricalSelectionState
+        categoricalSelectionState: newCategoricalSelectionState,
+        crossfilter
       };
     }
     case "categorical metadata filter all of these": {
@@ -539,12 +551,14 @@ const Controls = (
           ).fill(true)
         }
       };
-      state.dimensionMap[
-        obsAnnoDimensionName(action.metadataField)
-      ].filterAll();
+      const dName = obsAnnoDimensionName(action.metadataField);
+      const crossfilter = state.crossfilter.select(dName, {
+        mode: "all"
+      });
       return {
         ...state,
-        categoricalSelectionState: newCategoricalSelectionState
+        categoricalSelectionState: newCategoricalSelectionState,
+        crossfilter
       };
     }
 

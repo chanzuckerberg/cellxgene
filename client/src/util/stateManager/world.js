@@ -1,8 +1,6 @@
 // jshint esversion: 6
 
-import _ from "lodash";
 import { layoutDimensionName, obsAnnoDimensionName } from "../nameCreators";
-import Crossfilter from "../typedCrossfilter";
 import * as Dataframe from "../dataframe";
 
 /*
@@ -98,7 +96,7 @@ export function createWorldFromCurrentSelection(universe, world, crossfilter) {
   newWorld.varAnnotations = universe.varAnnotations;
 
   /* now subset/cut obs */
-  const mask = crossfilter.allFilteredMask();
+  const mask = crossfilter.allSelectedMask();
   newWorld.obsAnnotations = world.obsAnnotations.isubsetMask(mask);
   newWorld.obsLayout = world.obsLayout.isubsetMask(mask);
   newWorld.nObs = newWorld.obsAnnotations.dims[0];
@@ -139,63 +137,32 @@ function deduceDimensionType(attributes, fieldName) {
   return dimensionType;
 }
 
-/*
-  Return a crossfilter dimension for the specified world & named gene.
-
-  NOTE: this assumes that the expression data was already loaded,
-  by calling an appropriate action creator.
-
-  Caller needs to *save* this dimension somewhere for it to be later used.
-  Dimension must be destroyed by calling dimension.dispose()
-  when it is no longer needed
-  (it will not be garbage collected without this call)
-*/
-export function createVarDataDimension(world, crossfilter, name) {
-  return crossfilter.dimension(
-    Crossfilter.ScalarDimension,
-    world.varData.col(name).asArray(),
-    Float32Array
-  );
-}
-
-export function createObsDimensionMap(crossfilter, world) {
+export function createObsDimensions(crossfilter, world) {
   /*
-  create and return a crossfilter dimension for every obs annotation
-  for which we have a supported type.
+  create and return a crossfilter with a dimension for every obs annotation
+  for which we have a supported type, *except* 'name'
   */
   const { schema, obsLayout, obsAnnotations } = world;
+  const annoList = schema.annotations.obs.filter(anno => anno.name !== "name");
+  crossfilter = annoList.reduce((xfltr, anno) => {
+    const dimType = deduceDimensionType(anno, anno.name);
+    const colData = obsAnnotations.col(anno.name).asArray();
+    const name = obsAnnoDimensionName(anno.name);
+    if (dimType === "enum") {
+      return xfltr.addDimension(name, "enum", colData);
+    }
+    if (dimType) {
+      return xfltr.addDimension(name, "scalar", colData, dimType);
+    }
+    return xfltr;
+  }, crossfilter);
 
-  // Create a crossfilter dimension for all obs annotations *except* 'name'
-  const dimensionMap = _(schema.annotations.obs)
-    .filter(anno => anno.name !== "name")
-    .transform((result, anno) => {
-      const dimType = deduceDimensionType(anno, anno.name);
-      const colData = obsAnnotations.col(anno.name).asArray();
-      if (dimType === "enum") {
-        result[obsAnnoDimensionName(anno.name)] = crossfilter.dimension(
-          Crossfilter.EnumDimension,
-          colData
-        );
-      } else if (dimType) {
-        result[obsAnnoDimensionName(anno.name)] = crossfilter.dimension(
-          Crossfilter.ScalarDimension,
-          colData,
-          dimType
-        );
-      } // else ignore the annotation
-    }, {})
-    .value();
-
-  /*
-  Add crossfilter dimensions allowing filtering on layout
-  */
-  dimensionMap[layoutDimensionName("XY")] = crossfilter.dimension(
-    Crossfilter.SpatialDimension,
+  return crossfilter.addDimension(
+    layoutDimensionName("XY"),
+    "spatial",
     obsLayout.col("X").asArray(),
     obsLayout.col("Y").asArray()
   );
-
-  return dimensionMap;
 }
 
 export function worldEqUniverse(world, universe) {
@@ -206,7 +173,7 @@ export function getSelectedByIndex(crossfilter) {
   /*
   return array of obsIndex, containing all selected obs/cells.
   */
-  const selected = crossfilter.allFilteredMask(); // array of bool-ish
+  const selected = crossfilter.allSelectedMask(); // array of bool-ish
   const keys = crossfilter.data.rowIndex.keys(); // row keys, aka universe rowIndex
 
   const set = new Int32Array(selected.length);

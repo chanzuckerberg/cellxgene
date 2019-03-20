@@ -58,9 +58,7 @@ import finiteExtent from "../../util/finiteExtent";
     expressionX,
     expressionY,
 
-    crossfilter,
-    // updated whenever the crossfilter selection is updated
-    selectionUpdate: _.get(state.controls, "crossfilter.updateTime", null)
+    crossfilter
   };
 })
 class Scatterplot extends React.Component {
@@ -136,8 +134,7 @@ class Scatterplot extends React.Component {
       scatterplotYYaccessor,
       expressionX,
       expressionY,
-      colorRGB,
-      selectionUpdate
+      colorRGB
     } = this.props;
     const {
       reglRender,
@@ -210,11 +207,11 @@ class Scatterplot extends React.Component {
 
       // Sizes for each point - updates are triggered only when selected
       // obs change
-      if (!renderCache.sizes || selectionUpdate !== prevProps.selctionUpdate) {
+      if (!renderCache.sizes || crossfilter !== prevProps.crossfilter) {
         if (!renderCache.sizes) {
           renderCache.sizes = new Float32Array(cellCount);
         }
-        crossfilter.fillByIsFiltered(renderCache.sizes, 4, 0.2);
+        crossfilter.fillByIsSelected(renderCache.sizes, 4, 0.2);
         sizeBuffer({ data: renderCache.sizes, dimension: 1 });
       }
 

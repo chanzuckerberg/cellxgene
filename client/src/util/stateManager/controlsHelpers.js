@@ -98,29 +98,35 @@ export function selectedValuesForCategory(categorySelectionState) {
 }
 
 /*
-build a crossfilter dimension map for all gene expression related dimensions.
+build a crossfilter dimensions for all gene expression related dimensions.
 */
-export function createGenesDimMap(
+export function createGeneDimensions(
   userDefinedGenes,
   diffexpGenes,
   world,
   crossfilter
 ) {
-  function _createGenesDimMap(genes, nameCreator) {
-    return genes.reduce((acc, gene) => {
-      acc[nameCreator(gene)] = World.createVarDataDimension(
-        world,
-        crossfilter,
-        gene
-      );
-      return acc;
-    }, {});
-  }
-
-  return {
-    ..._createGenesDimMap(userDefinedGenes, userDefinedDimensionName),
-    ..._createGenesDimMap(diffexpGenes, diffexpDimensionName)
-  };
+  crossfilter = userDefinedGenes.reduce(
+    (xflt, gene) =>
+      xflt.addDimension(
+        userDefinedDimensionName(gene),
+        "scalar",
+        world.varData.col(gene).asArray(),
+        Float32Array
+      ),
+    crossfilter
+  );
+  crossfilter = diffexpGenes.reduce(
+    (xflt, gene) =>
+      xflt.addDimension(
+        diffexpDimensionName(gene),
+        "scalar",
+        world.varData.col(gene).asArray(),
+        Float32Array
+      ),
+    crossfilter
+  );
+  return crossfilter;
 }
 
 export function pruneVarDataCache(varData, needed) {
