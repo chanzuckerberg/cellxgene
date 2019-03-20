@@ -40,7 +40,9 @@ import { World } from "../../util/stateManager";
   scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
   celllist1: state.differential.celllist1,
   celllist2: state.differential.celllist2,
-  library_versions: _.get(state.config, "library_versions", null)
+  library_versions: _.get(state.config, "library_versions", null),
+  undoDisabled: state["@@undoable/past"].length === 0,
+  redoDisabled: state["@@undoable/future"].length === 0
 }))
 class Graph extends React.Component {
   constructor(props) {
@@ -414,7 +416,9 @@ class Graph extends React.Component {
       responsive,
       crossfilter,
       resettingInterface,
-      library_versions
+      library_versions,
+      undoDisabled,
+      redoDisabled
     } = this.props;
     const { mode } = this.state;
     return (
@@ -496,6 +500,32 @@ class Graph extends React.Component {
                       this.handleBrushDeselectAction();
                       this.restartReglLoop();
                       this.setState({ mode: "zoom" });
+                    }}
+                    style={{
+                      cursor: "pointer"
+                    }}
+                  />
+                </Tooltip>
+                <Tooltip content="Undo" position="left">
+                  <AnchorButton
+                    type="button"
+                    className="bp3-button bp3-icon-undo"
+                    disabled={undoDisabled}
+                    onClick={() => {
+                      dispatch({ type: "@@undoable/undo" });
+                    }}
+                    style={{
+                      cursor: "pointer"
+                    }}
+                  />
+                </Tooltip>
+                <Tooltip content="Redo" position="left">
+                  <AnchorButton
+                    type="button"
+                    className="bp3-button bp3-icon-redo"
+                    disabled={redoDisabled}
+                    onClick={() => {
+                      dispatch({ type: "@@undoable/redo" });
                     }}
                     style={{
                       cursor: "pointer"

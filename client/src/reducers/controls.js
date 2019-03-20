@@ -19,10 +19,8 @@ const Controls = (
     resettingInterface: false,
 
     opacityForDeselectedCells: 0.2,
-    continuousSelection: null,
     scatterplotXXaccessor: null, // just easier to read
     scatterplotYYaccessor: null,
-    axesHaveBeenDrawn: false,
     graphRenderCounter: 0 /* integer as <Component key={graphRenderCounter} - a change in key forces a remount */,
     __storedStateForCelllist1__: null /* will need procedural control of brush ie., brush.extent https://bl.ocks.org/micahstubbs/3cda05ca68cba260cb81 */,
     __storedStateForCelllist2__: null

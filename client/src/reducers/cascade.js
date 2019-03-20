@@ -14,12 +14,12 @@ export default function cascadeReducers(arg) {
   Ie,  cascadeReducers([ ["a", reduceA], ["b", reduceB] ])
 
   Each reducer will be called with the sigature:
-      (prevState, action, topLevelUpdatedState) => newState
+      (prevState, action, sharedNextState, sharedPrevState) => newState
 
   cascadeReducers will build a composite newState object, much
   like combinedReducers.  Additional semantics:
   - reducers guaranteed to be called in order
-  - each reducer will receive a third object, the new/updated state
+  - each reducer will receive shared objects
   */
   const reducers = arg instanceof Map ? arg : new Map(arg);
   const reducerKeys = [...reducers.keys()];

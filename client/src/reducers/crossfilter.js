@@ -141,7 +141,9 @@ const CrossfilterReducer = (
       });
     }
 
-    case "continuous metadata histogram brush": {
+    case "continuous metadata histogram start":
+    case "continuous metadata histogram brush":
+    case "continuous metadata histogram end": {
       const name = makeContinuousDimensionName(
         action.continuousNamespace,
         action.selection
@@ -152,7 +154,8 @@ const CrossfilterReducer = (
         return state.select(name, { mode: "all" });
       }
       const [lo, hi] = action.range;
-      return state.select(name, { mode: "range", lo, hi });
+      const newState = state.select(name, { mode: "range", lo, hi });
+      return newState;
     }
 
     case "categorical metadata filter select":
