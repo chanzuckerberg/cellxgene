@@ -124,6 +124,63 @@ class HistogramBrush extends React.Component {
     };
   }
 
+  onBrushEnd(selection, x) {
+    return () => {
+      const { dispatch, field, isObs, isUserDefined, isDiffExp } = this.props;
+      const { brushX } = this.state;
+      const minAllowedBrushSize = 10;
+      const smallAmountToAvoidInfiniteLoop = 0.1;
+
+      if (d3.event.selection) {
+        let _range;
+
+        if (
+          d3.event.selection[1] - d3.event.selection[0] >
+          minAllowedBrushSize
+        ) {
+          _range = [x(d3.event.selection[0]), x(d3.event.selection[1])];
+        } else {
+          /* the user selected range is too small and will be hidden #587, so take control of it procedurally */
+          /* https://stackoverflow.com/questions/12354729/d3-js-limit-size-of-brush */
+
+          const procedurallyResizedBrushWidth =
+            d3.event.selection[0] +
+            minAllowedBrushSize +
+            smallAmountToAvoidInfiniteLoop; //
+
+          _range = [x(d3.event.selection[0]), x(procedurallyResizedBrushWidth)];
+
+          d3.event.target.move(brushX, [
+            d3.event.selection[0],
+            procedurallyResizedBrushWidth
+          ]);
+        }
+
+        dispatch({
+          type: "continuous metadata histogram brush",
+          selection: field,
+          continuousNamespace: {
+            isObs,
+            isUserDefined,
+            isDiffExp
+          },
+          range: _range
+        });
+      } else {
+        dispatch({
+          type: "continuous metadata histogram brush",
+          selection: field,
+          continuousNamespace: {
+            isObs,
+            isUserDefined,
+            isDiffExp
+          },
+          range: null
+        });
+      }
+    };
+  }
+
   drawHistogram(svgRef) {
     const { obsAnnotations, field, ranges } = this.props;
     const histogramCache = this.calcHistogramCache(
@@ -224,7 +281,8 @@ class HistogramBrush extends React.Component {
       .attr("height", d => y(0) - y(d.length / numValues));
 
     /* BRUSH */
-    d3.select(svgRef)
+    const brushX = d3
+      .select(svgRef)
       .append("g")
       .attr("class", "brush")
       .attr("data-testid", `${svgRef.id}-brush`)
@@ -232,7 +290,7 @@ class HistogramBrush extends React.Component {
         d3
           .brushX()
           .on("brush", this.onBrush(field, x.invert).bind(this))
-          .on("end", this.onBrush(field, x.invert).bind(this))
+          .on("end", this.onBrushEnd(field, x.invert).bind(this))
       );
 
     /* AXIS */
@@ -253,6 +311,8 @@ class HistogramBrush extends React.Component {
     d3.select(svgRef)
       .selectAll(".axis--x line")
       .style("stroke", "rgb(230,230,230)");
+
+    this.setState({ brushX });
   }
 
   render() {
