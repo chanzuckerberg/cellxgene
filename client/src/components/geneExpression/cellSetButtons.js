@@ -32,6 +32,7 @@ class CellSetButton extends React.Component {
   render() {
     const { differential, eitherCellSetOneOrTwo } = this.props;
     const cellListName = `celllist${eitherCellSetOneOrTwo}`;
+    let cells_selected = differential[cellListName]?differential[cellListName].length:0;
     return (
       <Tooltip
         content="Save current selection for differential expression computation"
@@ -46,9 +47,11 @@ class CellSetButton extends React.Component {
         >
           {eitherCellSetOneOrTwo}
           {": "}
-          {differential[cellListName]
-            ? `${differential[cellListName].length} cells`
-            : "0 cells"}
+          <span data-testid={`cellset-count-${eitherCellSetOneOrTwo}`}>
+            {cells_selected}
+          </span>
+          {" cells"}
+
         </AnchorButton>
       </Tooltip>
     );

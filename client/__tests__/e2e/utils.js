@@ -11,7 +11,7 @@ export const puppeteerUtils = puppeteerPage => ({
 
   async typeInto(testid, text) {
     // only works for text without special characters
-    this.waitByID(testid);
+    await this.waitByID(testid);
     // type ahead can be annoying if you don't pause before you type
     await puppeteerPage.click(`[data-testid='${testid}']`);
     await puppeteerPage.waitFor(200);
@@ -19,8 +19,8 @@ export const puppeteerUtils = puppeteerPage => ({
   },
 
   async clickOn(testid) {
-    this.waitByID(testid);
-    puppeteerPage.click(`[data-testid='${testid}']`);
+    await this.waitByID(testid);
+    await puppeteerPage.click(`[data-testid='${testid}']`);
   },
 
   async getOneElementInnerHTML(selector) {
@@ -69,7 +69,7 @@ export const cellxgeneActions = puppeteerPage => ({
 
   // make sure these are children of the category
   async getAllCategories(category) {
-    await puppeteerUtils(puppeteerPage).waitByClass("categorical-row");
+    await c.waitByClass("categorical-row");
     const categories = await puppeteerPage.$$eval(
       `[data-testid="category-${category}"] [data-testclass=categorical-row]`,
       divs => {
@@ -106,8 +106,18 @@ export const cellxgeneActions = puppeteerPage => ({
     return categories;
   },
 
+  async cellSet(num) {
+    await puppeteerUtils(puppeteerPage).clickOn(
+      `cellset-button-${num}`
+    );
+    return await puppeteerUtils(puppeteerPage).getOneElementInnerText(
+       `[data-testid='cellset-count-${num}']`
+    );
+  },
+
   async reset() {
     await puppeteerUtils(puppeteerPage).clickOn("reset");
+    await page.waitFor(100)
   }
 });
 

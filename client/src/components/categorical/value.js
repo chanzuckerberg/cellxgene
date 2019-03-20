@@ -98,8 +98,8 @@ class CategoryValue extends React.Component {
               onChange={
                 selected ? this.toggleOff.bind(this) : this.toggleOn.bind(this)
               }
-              data-testclass="categorical-value-checkbox"
-              data-testid={`categorical-value-checkbox-${metadataField}`}
+              data-testclass="categorical-value-select"
+              data-testid={`categorical-value-select-${displayString}`}
               checked={selected}
               type="checkbox"
             />

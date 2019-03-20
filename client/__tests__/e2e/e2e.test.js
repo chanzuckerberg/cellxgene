@@ -7,6 +7,9 @@ const browserViewport = { width: 1280, height: 960 };
 
 if (DEBUG) jest.setTimeout(100000);
 if (DEV) jest.setTimeout(10000);
+
+// TODO are tests robust?
+
 beforeAll(async () => {
   const browser_params = DEV
     ? { headless: false, slowMo: 10 }
@@ -20,6 +23,9 @@ beforeAll(async () => {
     page.on("console", msg => console.log("PAGE LOG:", msg.text()));
   utils = puppeteerUtils(page);
   cxgActions = cellxgeneActions(page);
+});
+
+beforeEach(async () => {
   await page.goto(appUrlBase);
 });
 
@@ -60,11 +66,8 @@ describe("select cells and diffexp", () => {
       }
     };
     await cxgActions.drag(size, cellset1.start, cellset1.end, true);
-    await page.click("[data-testid='cellset-button-1']");
-    let button = await utils.getOneElementInnerHTML(
-      "[data-testid='cellset-button-1"
-    );
-    expect(button).toMatch(/26 cells/);
+    const cell_count = await cxgActions.cellSet(1)
+    expect(cell_count).toBe("26")
   });
 
   test("selects cells from layout and adds to cell set 2", async () => {
@@ -81,11 +84,8 @@ describe("select cells and diffexp", () => {
       }
     };
     await cxgActions.drag(size, cellset2.start, cellset2.end, true);
-    await page.click("[data-testid='cellset-button-2']");
-    let button = await utils.getOneElementInnerHTML(
-      "[data-testid='cellset-button-2"
-    );
-    expect(button).toMatch(/49 cells/);
+    const cell_count = await cxgActions.cellSet(2)
+    expect(cell_count).toBe("49")
   });
 
   test("selects cells, saves them and performs diffexp", async () => {
@@ -102,7 +102,7 @@ describe("select cells and diffexp", () => {
       }
     };
     await cxgActions.drag(size, cellset1.start, cellset1.end, true);
-    await page.click("[data-testid='cellset-button-1']");
+    await utils.clickOn("cellset-button-1");
     const cellset2 = {
       start: {
         x: Math.floor(size.width * 0.45),
@@ -114,8 +114,8 @@ describe("select cells and diffexp", () => {
       }
     };
     await cxgActions.drag(size, cellset2.start, cellset2.end, true);
-    await page.click("[data-testid='cellset-button-2']");
-    await page.click("[data-testid='diffexp-button']");
+    await utils.clickOn("cellset-button-2");
+     await utils.clickOn("diffexp-button");
     const diffExpHists = await cxgActions.getAllHistograms("histogram-diffexp");
     expect(diffExpHists).toMatchObject([
       "HLA-DPA1",
@@ -149,6 +149,8 @@ describe("brushable histogram", () => {
       }
     };
     await cxgActions.drag(hist_size, draghist.start, draghist.end);
+    const cell_count = await cxgActions.cellSet(1)
+    expect(cell_count).toBe("1537")
   });
 });
 
@@ -166,7 +168,7 @@ describe("bulk add genes", () => {
   });
 });
 
-describe.only("categorical data", () => {
+describe("categorical data", () => {
   test("categories and values from dataset appear", async () => {
     await utils.waitByID("category-louvain");
     const louvain = await utils.getOneElementInnerText(
@@ -195,10 +197,14 @@ describe.only("categorical data", () => {
       "15",
       "154"
     ]);
-  });
+  })
 
   test("cell selection by categorical metadata", async () => {
-    await utils.clickOn("category-checkbox-louvain");
     await utils.clickOn("category-expand-louvain");
+    await utils.clickOn("category-select-louvain");
+    await utils.clickOn("categorical-value-select-B cells");
+    await utils.clickOn("categorical-value-select-Megakaryocytes");
+    const cell_count = await cxgActions.cellSet(1)
+    expect(cell_count).toBe("357")
   });
 });
