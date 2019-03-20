@@ -26,10 +26,10 @@ const Undoable = (reducer, undoableKeys, options = {}) => {
   function undo(currentState) {
     const past = currentState[pastKey];
     const future = currentState[futureKey];
+    if (past.length === 0) return currentState;
     const currentUndoableState = Object.entries(currentState).filter(kv =>
       undoableKeysSet.has(kv[0])
     );
-    if (past.length === 0) return currentState;
     const newPast = [...past];
     const newState = newPast.pop();
     const newFuture = push(future, currentUndoableState);
@@ -45,10 +45,10 @@ const Undoable = (reducer, undoableKeys, options = {}) => {
   function redo(currentState) {
     const past = currentState[pastKey];
     const future = currentState[futureKey];
+    if (future.length === 0) return currentState;
     const currentUndoableState = Object.entries(currentState).filter(kv =>
       undoableKeysSet.has(kv[0])
     );
-    if (future.length === 0) return currentState;
     const newFuture = [...future];
     const newState = newFuture.pop();
     const newPast = push(past, currentUndoableState);
