@@ -82,7 +82,9 @@ const Controls = (
     }
     case "request user defined gene success": {
       const { userDefinedGenes } = state;
-      const _userDefinedGenes = userDefinedGenes.slice();
+      const _userDefinedGenes = _.uniq(
+        userDefinedGenes.concat(action.data.genes)
+      );
       return {
         ...state,
         userDefinedGenes: _userDefinedGenes,
@@ -104,18 +106,6 @@ const Controls = (
       return {
         ...state,
         diffexpGenes: []
-      };
-    }
-    case "user defined gene": {
-      /*
-        this could also live in expression success with a conditional,
-        but that handles diffexp also
-      */
-      const newUserDefinedGenes = state.userDefinedGenes.slice();
-      newUserDefinedGenes.push(action.data);
-      return {
-        ...state,
-        userDefinedGenes: newUserDefinedGenes
       };
     }
     case "clear user defined gene": {

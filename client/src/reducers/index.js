@@ -24,20 +24,30 @@ const undoableConfig = {
     "initial data load error"
   ],
   ignoreActions: [
-    // these actions will not affect history
+    // these actions will not affect history, ie, we will
+    // not snapshot history upon these actions.
     "url changed",
+    "interface reset started",
     "initial data load start",
     "configuration load complete",
-    "lasso started",
     "increment graph render counter",
     "window resize",
-    "expression load success",
+
+    "lasso started",
     "request differential expression started",
-    "request user defined gene started",
+
+    "expression load start",
+    "expression load success",
     "expression load error",
-    "interface reset started",
+
     "continuous metadata histogram brush",
-    "continuous metadata histogram end"
+    "continuous metadata histogram end",
+
+    "request user defined gene started",
+    "request user defined gene success",
+    "request user defined gene error",
+    "bulk user defined gene complete",
+    "single user defined gene complete"
   ]
 };
 const Reducer = undoable(

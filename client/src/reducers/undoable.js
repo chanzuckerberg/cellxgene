@@ -1,9 +1,24 @@
 /*
-A redo/undo reducer for Redux.   Designed to work well with the cascadeReducer().
+A redo/undo meta reducer for Redux.   Designed to work well with the cascadeReducer().
 
-Options include:
-  - undoableKeys
-  - historyLimit: max number of historical states to remember (aka max undo depth)
+Requires three parameters:
+* reducer - a reducer, which MUST return an object as state.
+* undoableKeys - an array of object keys (strings).   If any of these keys
+  are in the object/state returned by the reducer, they will be treated as
+  state to be made "undoable".
+* options - an optional object, which may contain the following parameters:
+    * historyLimit: max number of historical states to remember (aka max undo depth)
+    * clearHistoryUponActions: an array of values.  Any action with a type in this
+      array will cause the history to be cleared.
+    * ignoreActions: an array of values.  Any action with a type in this array
+      will be ignored from the standpoint of history management.  Ie, undoable keys
+      will not be saved as a result of processing this action.  All actions NOT in
+      this list will cause state to be snapshot in the history.
+
+This meta reducer accepts three actions types:
+* @@undoable/undo - move back in history
+* @@undoable/redo - move forward in history
+* @@undoable/clear - clear history
 */
 
 const historyKeyPrefix = "@@undoable/";
