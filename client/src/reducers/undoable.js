@@ -8,11 +8,12 @@ Requires three parameters:
   state to be made "undoable".
 * options - an optional object, which may contain the following parameters:
     * historyLimit: max number of historical states to remember (aka max undo depth)
-    * clearOnActions: an array of values.  Any action with a type in this
-      array will cause the history to be cleared.
-    * skipActionFilter: a function, which will be called with the state & action. Must
-      return boolish.  On truthy, the action will be skipped (ie, state will
-      not be pushed into the history).  On falsey, state will be pushed to history.
+    * skipActionFilter: filter function, (state, action) => bool.  If it returns
+      truthy, the current state will not be pushed onto the history stack.
+    * clearOnActionFilter: filter function, (state, action) => bool.  If it returns
+      truthy, the history state will be cleared as part of handling this action.
+
+skipActionFilter has precedence over clearOnActionFilter.
 
 This meta reducer accepts three actions types:
 * @@undoable/undo - move back in history
