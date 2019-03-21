@@ -35,6 +35,12 @@ export const puppeteerUtils = puppeteerPage => ({
 });
 
 export const cellxgeneActions = puppeteerPage => ({
+  async getStore() {
+    return await puppeteerPage.evaluate(() => {
+      window.cxg_store.getState();
+    });
+  },
+
   async drag(el_box, start, end, lasso = false) {
     const x1 = el_box.content[0].x + start.x;
     const x2 = el_box.content[0].x + end.x;
@@ -113,15 +119,26 @@ export const cellxgeneActions = puppeteerPage => ({
     );
   },
 
+  async calcDragCoordinates(testid, coordinateAsPercent) {
+    const layout = puppeteerUtils(puppeteerPage).waitByID("layout-graph");
+    const size = await layout.boxModel();
+    const coords = {
+      start: {
+        x: Math.floor(size.width * coordinateAsPercent.x1),
+        y: Math.floor(size.height * coordinateAsPercent.y1)
+      },
+      end: {
+        x: Math.floor(size.width * coordinateAsPercent.x2),
+        y: Math.floor(size.height * coordinateAsPercent.y2)
+      }
+    };
+    return coords;
+  },
+
   async reset() {
     await puppeteerUtils(puppeteerPage).clickOn("reset");
     await page.waitFor(100);
   }
 });
-
-// TODO cellxgene specific
-// find histograms of type
-// reset page
-// select cells
 
 // TODO fixtures for different datasets
