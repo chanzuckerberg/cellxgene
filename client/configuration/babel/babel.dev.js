@@ -9,6 +9,8 @@ module.exports = {
     "@babel/plugin-proposal-function-bind",
     "@babel/plugin-proposal-class-properties",
     ["@babel/plugin-proposal-decorators", { legacy: true }],
-    "@babel/plugin-proposal-export-namespace-from"
+    "@babel/plugin-proposal-export-namespace-from",
+    "@babel/plugin-proposal-optional-chaining",
+    "@babel/plugin-proposal-nullish-coalescing-operator"
   ]
 };
