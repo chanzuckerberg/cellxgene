@@ -16,16 +16,11 @@ import controls from "./controls";
 import resetCache from "./resetCache";
 
 const undoableConfig = {
-  historyLimit: 20,
-  clearHistoryUponActions: [
-    // history will be cleared when these actions occur
-    "initial data load complete (universe exists)",
-    "reset World to eq Universe",
-    "initial data load error"
-  ],
+  historyLimit: 50,
   ignoreActions: [
     // these actions will not affect history, ie, we will
-    // not snapshot history upon these actions.
+    // not snapshot history upon these actions.  These take
+    // precedent over `clearHistoryUponActions`
     "url changed",
     "interface reset started",
     "initial data load start",
@@ -49,6 +44,12 @@ const undoableConfig = {
     "request user defined gene error",
     "bulk user defined gene complete",
     "single user defined gene complete"
+  ],
+  clearHistoryUponActions: [
+    // history will be cleared when these actions occur
+    "initial data load complete (universe exists)",
+    "reset World to eq Universe",
+    "initial data load error"
   ]
 };
 const Reducer = undoable(
