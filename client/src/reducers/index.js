@@ -1,6 +1,5 @@
 import { createStore, applyMiddleware } from "redux";
 import thunk from "redux-thunk";
-import { composeWithDevTools } from "redux-devtools-extension";
 
 import cascadeReducers from "./cascade";
 import undoable from "./undoable";
@@ -82,6 +81,6 @@ const Reducer = undoable(
   undoableConfig
 );
 
-const store = createStore(Reducer, composeWithDevTools(applyMiddleware(thunk)));
+const store = createStore(Reducer, applyMiddleware(thunk));
 
 export default store;
