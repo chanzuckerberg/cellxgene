@@ -158,7 +158,7 @@ class HistogramBrush extends React.Component {
         }
 
         dispatch({
-          type: "continuous metadata histogram brush",
+          type: "continuous metadata histogram end",
           selection: field,
           continuousNamespace: {
             isObs,
@@ -169,7 +169,7 @@ class HistogramBrush extends React.Component {
         });
       } else {
         dispatch({
-          type: "continuous metadata histogram brush",
+          type: "continuous metadata histogram end",
           selection: field,
           continuousNamespace: {
             isObs,
@@ -292,7 +292,7 @@ class HistogramBrush extends React.Component {
           .brushX()
           .on("start", this.onBrush(field, x.invert, "start").bind(this))
           .on("brush", this.onBrush(field, x.invert, "brush").bind(this))
-          .on("end", this.onBrush(field, x.invert, "end").bind(this))
+          .on("end", this.onBrushEnd(field, x.invert).bind(this))
       );
 
     /* AXIS */
