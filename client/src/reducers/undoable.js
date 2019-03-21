@@ -31,8 +31,10 @@ const Undoable = (reducer, undoableKeys, options = {}) => {
   if (!historyLimit) historyLimit = defaultHistoryLimit;
   if (historyLimit > 0) historyLimit = -historyLimit;
 
-  clearHistoryUponActions = new Set(defaultArray(clearHistoryUponActions, []));
-  ignoreActions = new Set(defaultArray(ignoreActions, []));
+  clearHistoryUponActions = new Set(
+    defaultIfNotArray(clearHistoryUponActions, [])
+  );
+  ignoreActions = new Set(defaultIfNotArray(ignoreActions, []));
 
   if (!Array.isArray(undoableKeys) || undoableKeys.length === 0)
     throw new Error("undoable keys must be specified");
@@ -116,6 +118,7 @@ const Undoable = (reducer, undoableKeys, options = {}) => {
     },
     action
   ) => {
+    console.log(action.type);
     const aType = action.type;
     if (ignoreActions.has(aType)) {
       return skip(currentState, action);
@@ -166,7 +169,7 @@ function fromEntries(arr) {
   return obj;
 }
 
-function defaultArray(arr, dflt) {
+function defaultIfNotArray(arr, dflt) {
   if (!Array.isArray(arr)) return dflt;
   return arr;
 }
