@@ -34,7 +34,8 @@ const undoableConfig = {
     "window resize",
 
     "lasso started",
-    "request differential expression started",
+
+    "request differential expression success",
 
     "expression load start",
     "expression load success",
