@@ -325,7 +325,10 @@ class ScanpyEngine(CXGDriver):
         * only returns Matrix in columnar layout
         """
         try:
-            df_layout = self.data.obsm[f"X_{self.layout_method}"][:, :2]
+            full_embedding = self.data.obsm[f"X_{self.layout_method}"]
+            if full_embedding.shape[1] > 2:
+                warnings.warn(f"Warning: found {full_embedding.shape[1]} components of embedding. Using the first two for layout display.")
+            df_layout = full_embedding[:, :2]
         except ValueError as e:
             raise PrepareError(
                 f"Layout has not been calculated using {self.layout_method}, "
