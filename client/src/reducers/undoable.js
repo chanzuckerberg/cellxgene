@@ -58,8 +58,8 @@ const Undoable = (reducer, undoableKeys, options = {}) => {
   }
 
   function redo(currentState) {
-    const past = currentState[pastKey];
-    const future = currentState[futureKey];
+    const past = currentState[pastKey] || [];
+    const future = currentState[futureKey] || [];
     if (future.length === 0) return currentState;
     const currentUndoableState = Object.entries(currentState).filter(kv =>
       undoableKeysSet.has(kv[0])
@@ -85,7 +85,7 @@ const Undoable = (reducer, undoableKeys, options = {}) => {
   }
 
   function skip(currentState, action) {
-    const past = currentState[pastKey];
+    const past = currentState[pastKey] || [];
     const res = reducer(currentState, action);
     return {
       ...res,
@@ -95,7 +95,7 @@ const Undoable = (reducer, undoableKeys, options = {}) => {
   }
 
   function save(currentState, action) {
-    const past = currentState[pastKey];
+    const past = currentState[pastKey] || [];
     const currentUndoableState = Object.entries(currentState).filter(kv =>
       undoableKeysSet.has(kv[0])
     );
@@ -142,6 +142,11 @@ const Undoable = (reducer, undoableKeys, options = {}) => {
 };
 
 function push(arr, val, limit = undefined) {
+  /*
+  functional array push, with a max length limit to the new array.
+  Like Array.push, except it returns new array and discards as needed
+  to enforce the length limit.
+  */
   const narr = arr.slice(limit);
   narr.push(val);
   return narr;
