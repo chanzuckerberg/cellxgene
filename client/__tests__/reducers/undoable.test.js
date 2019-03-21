@@ -83,7 +83,5 @@ describe("redo", () => {
 /*
 TODO:
 - historyLimit is enforced
-- clearHistoryUponActions observed
-- ignoreActions observed
-
+- action filters
 */

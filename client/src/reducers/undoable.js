@@ -8,12 +8,11 @@ Requires three parameters:
   state to be made "undoable".
 * options - an optional object, which may contain the following parameters:
     * historyLimit: max number of historical states to remember (aka max undo depth)
-    * clearHistoryUponActions: an array of values.  Any action with a type in this
+    * clearOnActions: an array of values.  Any action with a type in this
       array will cause the history to be cleared.
-    * ignoreActions: an array of values.  Any action with a type in this array
-      will be ignored from the standpoint of history management.  Ie, undoable keys
-      will not be saved as a result of processing this action.  All actions NOT in
-      this list will cause state to be snapshot in the history.
+    * skipActionFilter: a function, which will be called with the state & action. Must
+      return boolish.  On truthy, the action will be skipped (ie, state will
+      not be pushed into the history).  On falsey, state will be pushed to history.
 
 This meta reducer accepts three actions types:
 * @@undoable/undo - move back in history
@@ -27,17 +26,14 @@ const futureKey = `${historyKeyPrefix}future`;
 const defaultHistoryLimit = -100;
 
 const Undoable = (reducer, undoableKeys, options = {}) => {
-  let { historyLimit, clearHistoryUponActions, ignoreActions } = options;
+  let { historyLimit } = options;
   if (!historyLimit) historyLimit = defaultHistoryLimit;
   if (historyLimit > 0) historyLimit = -historyLimit;
-
-  clearHistoryUponActions = new Set(
-    defaultIfNotArray(clearHistoryUponActions, [])
-  );
-  ignoreActions = new Set(defaultIfNotArray(ignoreActions, []));
+  const skipActionFilter = options.skipActionFilter || (() => false);
+  const clearOnActionFilter = options.clearOnActionFilter || (() => false);
 
   if (!Array.isArray(undoableKeys) || undoableKeys.length === 0)
-    throw new Error("undoable keys must be specified");
+    throw new Error("undoable keys array must be specified");
   const undoableKeysSet = new Set(undoableKeys);
 
   function undo(currentState) {
@@ -119,13 +115,6 @@ const Undoable = (reducer, undoableKeys, options = {}) => {
     action
   ) => {
     const aType = action.type;
-    if (ignoreActions.has(aType)) {
-      return skip(currentState, action);
-    }
-    if (clearHistoryUponActions.has(aType)) {
-      return clear(skip(currentState, action));
-    }
-
     switch (aType) {
       case "@@undoable/undo": {
         return undo(currentState, action);
@@ -137,6 +126,12 @@ const Undoable = (reducer, undoableKeys, options = {}) => {
         return clear(currentState, action);
       }
       default: {
+        if (skipActionFilter(currentState, action)) {
+          return skip(currentState, action);
+        }
+        if (clearOnActionFilter(currentState, action)) {
+          return clear(skip(currentState, action));
+        }
         return save(currentState, action);
       }
     }
@@ -166,11 +161,6 @@ function fromEntries(arr) {
     obj[arr[i][0]] = arr[i][1];
   }
   return obj;
-}
-
-function defaultIfNotArray(arr, dflt) {
-  if (!Array.isArray(arr)) return dflt;
-  return arr;
 }
 
 export default Undoable;
