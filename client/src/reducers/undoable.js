@@ -118,7 +118,6 @@ const Undoable = (reducer, undoableKeys, options = {}) => {
     },
     action
   ) => {
-    console.log(action.type);
     const aType = action.type;
     if (ignoreActions.has(aType)) {
       return skip(currentState, action);
