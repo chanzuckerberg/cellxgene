@@ -394,12 +394,18 @@ class Graph extends React.Component {
 
   // when a lasso is completed, filter to the points within the lasso polygon
   handleLassoEnd(polygon) {
+    const minimumPolygoneArea = 10;
     const { dispatch } = this.props;
 
-    dispatch({
-      type: "lasso selection",
-      polygon: polygon.map(xy => this.invertPoint(xy)) // transform the polygon
-    });
+    if (polygon.length < 3 || d3.polygonArea(polygon) < minimumPolygoneArea) {
+      // if less than three points, or super small area, treat as a clear selection.
+      dispatch({ type: "lasso deselect" });
+    } else {
+      dispatch({
+        type: "lasso selection",
+        polygon: polygon.map(xy => this.invertPoint(xy)) // transform the polygon
+      });
+    }
   }
 
   handleOpacityRangeChange(e) {
