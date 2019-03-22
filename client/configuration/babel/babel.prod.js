@@ -10,6 +10,8 @@ module.exports = {
     ["@babel/plugin-proposal-decorators", { legacy: true }],
     "@babel/plugin-proposal-export-namespace-from",
     "@babel/plugin-transform-react-constant-elements",
-    "@babel/plugin-transform-runtime"
+    "@babel/plugin-transform-runtime",
+    "@babel/plugin-proposal-optional-chaining",
+    "@babel/plugin-proposal-nullish-coalescing-operator"
   ]
 };
