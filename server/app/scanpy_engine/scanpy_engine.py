@@ -328,10 +328,15 @@ class ScanpyEngine(CXGDriver):
         * only returns Matrix in columnar layout
         """
         try:
-            df_layout = self.data.obsm[f"X_{self.layout_method}"]
+            full_embedding = self.data.obsm[f"X_{self.layout_method}"]
+            if full_embedding.shape[1] > 2:
+                warnings.warn(f"Warning: found {full_embedding.shape[1]} \
+                components of embedding. Using the first two for layout display.")
+            df_layout = full_embedding[:, :2]
         except ValueError as e:
             raise PrepareError(
                 f"Layout has not been calculated using {self.layout_method}, "
                 f"please prepare your datafile and relaunch cellxgene") from e
+
         normalized_layout = (df_layout - df_layout.min()) / (df_layout.max() - df_layout.min())
         return encode_matrix_fbs(normalized_layout.astype(dtype=np.float32), col_idx=None, row_idx=None)

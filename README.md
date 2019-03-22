@@ -37,7 +37,7 @@ You should see your web browser open with the following
 
 There are several options available, such as:
 
-- `--layout` to specify the layout as `tsne`, `umap`, `draw_graph_fa`, or `draw_graph_fr` 
+- `--layout` to specify the layout as `tsne`, `umap`, `diffmap`, `phate`, `draw_graph_fa`, or `draw_graph_fr`
 - `--title` to show a title on the explorer
 - `--open` to automatically open the web browser after launching (OS X only)
 

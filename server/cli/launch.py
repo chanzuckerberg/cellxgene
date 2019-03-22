@@ -16,7 +16,7 @@ from server.app.util.utils import custom_format_warning
 @click.option(
     "--layout",
     "-l",
-    type=click.Choice(["umap", "tsne", "draw_graph_fa", "draw_graph_fr"]),
+    type=click.Choice(["umap", "tsne", "draw_graph_fa", "draw_graph_fr", "diffmap", "phate"]),
     default="umap",
     show_default=True,
     help="Method for layout."
