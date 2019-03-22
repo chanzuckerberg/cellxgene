@@ -29,6 +29,9 @@ const CategoricalSelection = (
     }
 
     case "categorical metadata filter select": {
+      /*
+      Set the specific category in this field to false
+      */
       const newCategorySelected = Array.from(
         state[action.metadataField].categorySelected
       );
@@ -44,6 +47,9 @@ const CategoricalSelection = (
     }
 
     case "categorical metadata filter deselect": {
+      /*
+      Set the specific category in this field to false
+      */
       const newCategorySelected = Array.from(
         state[action.metadataField].categorySelected
       );
@@ -59,6 +65,9 @@ const CategoricalSelection = (
     }
 
     case "categorical metadata filter none of these": {
+      /*
+      set all categories in this field to false.
+      */
       const newCategoricalSelection = {
         ...state,
         [action.metadataField]: {
@@ -72,6 +81,9 @@ const CategoricalSelection = (
     }
 
     case "categorical metadata filter all of these": {
+      /*
+      set all categories in this field to true.
+      */
       const newCategoricalSelection = {
         ...state,
         [action.metadataField]: {
