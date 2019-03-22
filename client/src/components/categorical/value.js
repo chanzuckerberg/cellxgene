@@ -99,13 +99,13 @@ class CategoryValue extends React.Component {
                 selected ? this.toggleOff.bind(this) : this.toggleOn.bind(this)
               }
               data-testclass="categorical-value-select"
-              data-testid={`categorical-value-select-${displayString}`}
+              data-testid={`categorical-value-select-${metadataField}-${displayString}`}
               checked={selected}
               type="checkbox"
             />
             <span className="bp3-control-indicator" />
             <span
-              data-testid={`categorical-value-${displayString}`}
+              data-testid={`categorical-value-${metadataField}-${displayString}`}
               data-testclass="categorical-value"
             >
               {displayString}
@@ -127,7 +127,7 @@ class CategoryValue extends React.Component {
         <span>
           <span
             data-testclass="categorical-value-count"
-            data-testid={`categorical-value-count-${metadataField}`}
+            data-testid={`categorical-value-count-${metadataField}-${displayString}`}
           >
             {count}
           </span>

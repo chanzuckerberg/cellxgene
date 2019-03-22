@@ -21,6 +21,7 @@ export const puppeteerUtils = puppeteerPage => ({
   async clickOn(testid) {
     await this.waitByID(testid);
     await puppeteerPage.click(`[data-testid='${testid}']`);
+    await puppeteerPage.waitFor(50);
   },
 
   async getOneElementInnerHTML(selector) {
@@ -34,111 +35,158 @@ export const puppeteerUtils = puppeteerPage => ({
   }
 });
 
-export const cellxgeneActions = puppeteerPage => ({
-  async getStore() {
-    return await puppeteerPage.evaluate(() => {
-      window.cxg_store.getState();
-    });
-  },
+export const cellxgeneActions = puppeteerPage => {
+  return {
+    async getStore() {
+      return await puppeteerPage.evaluate(() => {
+        window.cxg_store.getState();
+      });
+    },
 
-  async drag(el_box, start, end, lasso = false) {
-    const x1 = el_box.content[0].x + start.x;
-    const x2 = el_box.content[0].x + end.x;
-    const y1 = el_box.content[0].y + start.y;
-    const y2 = el_box.content[0].y + end.y;
-    await puppeteerPage.mouse.move(x1, y1);
-    await puppeteerPage.mouse.down();
-    if (lasso) {
-      await puppeteerPage.mouse.move(x2, y1);
-      await puppeteerPage.mouse.move(x2, y2);
-      await puppeteerPage.mouse.move(x1, y2);
+    async drag(testid, start, end, lasso = false) {
+      const layout = await puppeteerUtils(puppeteerPage).waitByID(testid);
+      const el_box = await layout.boxModel();
+      const x1 = el_box.content[0].x + start.x;
+      const x2 = el_box.content[0].x + end.x;
+      const y1 = el_box.content[0].y + start.y;
+      const y2 = el_box.content[0].y + end.y;
       await puppeteerPage.mouse.move(x1, y1);
-    } else {
-      await puppeteerPage.mouse.move(x2, y2);
+      await puppeteerPage.mouse.down();
+      if (lasso) {
+        await puppeteerPage.mouse.move(x2, y1);
+        await puppeteerPage.mouse.move(x2, y2);
+        await puppeteerPage.mouse.move(x1, y2);
+        await puppeteerPage.mouse.move(x1, y1);
+      } else {
+        await puppeteerPage.mouse.move(x2, y2);
+      }
+      await puppeteerPage.mouse.up();
+    },
+
+    async getAllHistograms(testclass) {
+      await puppeteerUtils(puppeteerPage).waitByClass(testclass);
+      const histograms = await puppeteerPage.$$eval(
+        `[data-testclass=${testclass}]`,
+        divs => {
+          return divs.map(div => {
+            // TODO get from test ids
+            return div.id.substring("histogram_".length, div.id.length);
+          });
+        }
+      );
+      return histograms;
+    },
+
+    // make sure these are children of the category
+    async getAllCategories(category) {
+      await c.waitByClass("categorical-row");
+      const categories = await puppeteerPage.$$eval(
+        `[data-testid="category-${category}"] [data-testclass=categorical-row]`,
+        divs => {
+          return divs.map(div => {
+            // TODO get from ids
+            const val = div.querySelector(
+              "[data-testclass='categorical-value']"
+            );
+            return val.dataset.testid.substring(
+              "categorical-value-".length,
+              val.dataset.testid.length
+            );
+          });
+        }
+      );
+      return categories;
+    },
+
+    async getAllCategoriesAndCounts(category) {
+      await puppeteerUtils(puppeteerPage).waitByClass("categorical-row");
+      const categories = await puppeteerPage.$$eval(
+        `[data-testid="category-${category}"] [data-testclass=categorical-row]`,
+        divs => {
+          let result = {};
+          divs.forEach(div => {
+            const cat = div.querySelector(
+              "[data-testclass='categorical-value']"
+            ).innerText;
+            const count = div.querySelector(
+              "[data-testclass='categorical-value-count']"
+            ).innerText;
+            result[cat] = count;
+          });
+          return result;
+        }
+      );
+      return categories;
+    },
+
+    async cellSet(num) {
+      await puppeteerUtils(puppeteerPage).clickOn(`cellset-button-${num}`);
+      return await puppeteerUtils(puppeteerPage).getOneElementInnerText(
+        `[data-testid='cellset-count-${num}']`
+      );
+    },
+
+    // TODO test me
+
+    async resetCategory(category) {
+      const checkbox_id = `category-select-${category}`;
+      const category_el = await puppeteerUtils(puppeteerPage).waitByID(
+        checkbox_id
+      );
+      const checked = await puppeteerPage.$eval(
+        `[data-testid='${checkbox_id}']`,
+        el => {
+          return el.matches(":checked");
+        }
+      );
+      if (!checked) {
+        await puppeteerUtils(puppeteerPage).clickOn(checkbox_id);
+      }
+      try {
+        await category_el.$("category-expand-is-expanded");
+        await puppeteerUtils(puppeteerPage).clickOn(
+          `category-expand-${category}`
+        );
+      } catch {}
+    },
+
+    async calcDragCoordinates(testid, coordinateAsPercent) {
+      const el = await puppeteerUtils(puppeteerPage).waitByID(testid);
+      const size = await el.boxModel();
+      const coords = {
+        start: {
+          x: Math.floor(size.width * coordinateAsPercent.x1),
+          y: Math.floor(size.height * coordinateAsPercent.y1)
+        },
+        end: {
+          x: Math.floor(size.width * coordinateAsPercent.x2),
+          y: Math.floor(size.height * coordinateAsPercent.y2)
+        }
+      };
+      return coords;
+    },
+
+    async selectCategory(category, values, reset = true) {
+      if (reset) await this.resetCategory(category);
+      await puppeteerUtils(puppeteerPage).clickOn(
+        `category-expand-${category}`
+      );
+      await puppeteerUtils(puppeteerPage).clickOn(
+        `category-select-${category}`
+      );
+      for (let i = 0; i < values.length; i++) {
+        const val = values[i];
+        await puppeteerUtils(puppeteerPage).clickOn(
+          `categorical-value-select-${category}-${val}`
+        );
+      }
+    },
+
+    async reset() {
+      await puppeteerUtils(puppeteerPage).clickOn("reset");
+      // TODO how to caputre reset complete
+      // Loading state of reset button
+      await page.waitFor(200);
     }
-    await puppeteerPage.mouse.up();
-  },
-
-  async getAllHistograms(testclass) {
-    await puppeteerUtils(puppeteerPage).waitByClass(testclass);
-    const histograms = await puppeteerPage.$$eval(
-      `[data-testclass=${testclass}]`,
-      divs => {
-        return divs.map(div => {
-          // TODO get from ids
-          return div.id.substring("histogram_".length, div.id.length);
-        });
-      }
-    );
-    return histograms;
-  },
-
-  // make sure these are children of the category
-  async getAllCategories(category) {
-    await c.waitByClass("categorical-row");
-    const categories = await puppeteerPage.$$eval(
-      `[data-testid="category-${category}"] [data-testclass=categorical-row]`,
-      divs => {
-        return divs.map(div => {
-          // TODO get from ids
-          const val = div.querySelector("[data-testclass='categorical-value']");
-          return val.dataset.testid.substring(
-            "categorical-value-".length,
-            val.dataset.testid.length
-          );
-        });
-      }
-    );
-    return categories;
-  },
-
-  async getAllCategoriesAndCounts(category) {
-    await puppeteerUtils(puppeteerPage).waitByClass("categorical-row");
-    const categories = await puppeteerPage.$$eval(
-      `[data-testid="category-${category}"] [data-testclass=categorical-row]`,
-      divs => {
-        let result = {};
-        divs.forEach(div => {
-          const cat = div.querySelector("[data-testclass='categorical-value']")
-            .innerText;
-          const count = div.querySelector(
-            "[data-testclass='categorical-value-count']"
-          ).innerText;
-          result[cat] = count;
-        });
-        return result;
-      }
-    );
-    return categories;
-  },
-
-  async cellSet(num) {
-    await puppeteerUtils(puppeteerPage).clickOn(`cellset-button-${num}`);
-    return await puppeteerUtils(puppeteerPage).getOneElementInnerText(
-      `[data-testid='cellset-count-${num}']`
-    );
-  },
-
-  async calcDragCoordinates(testid, coordinateAsPercent) {
-    const layout = puppeteerUtils(puppeteerPage).waitByID("layout-graph");
-    const size = await layout.boxModel();
-    const coords = {
-      start: {
-        x: Math.floor(size.width * coordinateAsPercent.x1),
-        y: Math.floor(size.height * coordinateAsPercent.y1)
-      },
-      end: {
-        x: Math.floor(size.width * coordinateAsPercent.x2),
-        y: Math.floor(size.height * coordinateAsPercent.y2)
-      }
-    };
-    return coords;
-  },
-
-  async reset() {
-    await puppeteerUtils(puppeteerPage).clickOn("reset");
-    await page.waitFor(100);
-  }
-});
-
-// TODO fixtures for different datasets
+  };
+};

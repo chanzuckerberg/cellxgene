@@ -156,9 +156,15 @@ class Category extends React.Component {
             >
               {metadataField}
               {isExpanded ? (
-                <FaChevronDown style={{ fontSize: 10, marginLeft: 5 }} />
+                <FaChevronDown
+                  data-testclass="category-expand-is-expanded"
+                  style={{ fontSize: 10, marginLeft: 5 }}
+                />
               ) : (
-                <FaChevronRight style={{ fontSize: 10, marginLeft: 5 }} />
+                <FaChevronRight
+                  data-testclass="category-expand-is-not-expanded"
+                  style={{ fontSize: 10, marginLeft: 5 }}
+                />
               )}
             </span>
           </div>
