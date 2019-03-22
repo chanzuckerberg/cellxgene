@@ -6,12 +6,12 @@ import * as globals from "../../globals";
 import Category from "./category";
 
 @connect(state => ({
-  categoricalSelectionState: state.categoricalSelectionState
+  categoricalSelection: state.categoricalSelection
 }))
 class Categories extends React.Component {
   render() {
-    const { categoricalSelectionState } = this.props;
-    if (!categoricalSelectionState) return null;
+    const { categoricalSelection } = this.props;
+    if (!categoricalSelection) return null;
 
     return (
       <div
@@ -26,7 +26,7 @@ class Categories extends React.Component {
         >
           Categorical Metadata
         </p>
-        {_.map(categoricalSelectionState, (catState, catName) => (
+        {_.map(categoricalSelection, (catState, catName) => (
           <Category key={catName} metadataField={catName} />
         ))}
       </div>

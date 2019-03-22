@@ -10,7 +10,7 @@ class Occupancy extends React.Component {
     const {
       occupancy,
       colorScale,
-      categoricalSelectionState,
+      categoricalSelection,
       colorAccessor,
       schema
     } = this.props;
@@ -29,23 +29,21 @@ class Occupancy extends React.Component {
 
     let currentOffset = 0;
 
-    const stacks = categoricalSelectionState[colorAccessor].categoryValues.map(
-      d => {
-        const o = occupancy.get(d);
+    const stacks = categoricalSelection[colorAccessor].categoryValues.map(d => {
+      const o = occupancy.get(d);
 
-        const scaledValue = x(o);
+      const scaledValue = x(o);
 
-        const stackItem = {
-          key: d,
-          value: o || 0,
-          rectWidth: o ? scaledValue : 0,
-          offset: currentOffset,
-          fill: o ? colorScale(categories.indexOf(d)) : "rgb(255,255,255)"
-        };
-        currentOffset += o ? scaledValue : 0;
-        return stackItem;
-      }
-    );
+      const stackItem = {
+        key: d,
+        value: o || 0,
+        rectWidth: o ? scaledValue : 0,
+        offset: currentOffset,
+        fill: o ? colorScale(categories.indexOf(d)) : "rgb(255,255,255)"
+      };
+      currentOffset += o ? scaledValue : 0;
+      return stackItem;
+    });
 
     return (
       <svg

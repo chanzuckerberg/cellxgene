@@ -11,7 +11,7 @@ function maxCategoryItems(state) {
   );
 }
 
-const CategoricalSelectionState = (
+const CategoricalSelection = (
   state,
   action,
   nextSharedState,
@@ -22,7 +22,7 @@ const CategoricalSelectionState = (
     case "set World to current selection":
     case "reset World to eq Universe": {
       const { world } = nextSharedState;
-      return ControlsHelpers.createCategoricalSelectionState(
+      return ControlsHelpers.createCategoricalSelection(
         maxCategoryItems(prevSharedState),
         world
       );
@@ -33,14 +33,14 @@ const CategoricalSelectionState = (
         state[action.metadataField].categorySelected
       );
       newCategorySelected[action.categoryIndex] = true;
-      const newCategoricalSelectionState = {
+      const newCategoricalSelection = {
         ...state,
         [action.metadataField]: {
           ...state[action.metadataField],
           categorySelected: newCategorySelected
         }
       };
-      return newCategoricalSelectionState;
+      return newCategoricalSelection;
     }
 
     case "categorical metadata filter deselect": {
@@ -48,18 +48,18 @@ const CategoricalSelectionState = (
         state[action.metadataField].categorySelected
       );
       newCategorySelected[action.categoryIndex] = false;
-      const newCategoricalSelectionState = {
+      const newCategoricalSelection = {
         ...state,
         [action.metadataField]: {
           ...state[action.metadataField],
           categorySelected: newCategorySelected
         }
       };
-      return newCategoricalSelectionState;
+      return newCategoricalSelection;
     }
 
     case "categorical metadata filter none of these": {
-      const newCategoricalSelectionState = {
+      const newCategoricalSelection = {
         ...state,
         [action.metadataField]: {
           ...state[action.metadataField],
@@ -68,11 +68,11 @@ const CategoricalSelectionState = (
           ).fill(false)
         }
       };
-      return newCategoricalSelectionState;
+      return newCategoricalSelection;
     }
 
     case "categorical metadata filter all of these": {
-      const newCategoricalSelectionState = {
+      const newCategoricalSelection = {
         ...state,
         [action.metadataField]: {
           ...state[action.metadataField],
@@ -81,7 +81,7 @@ const CategoricalSelectionState = (
           ).fill(true)
         }
       };
-      return newCategoricalSelectionState;
+      return newCategoricalSelection;
     }
 
     default: {
@@ -90,4 +90,4 @@ const CategoricalSelectionState = (
   }
 };
 
-export default CategoricalSelectionState;
+export default CategoricalSelection;

@@ -54,7 +54,7 @@ function topNCategories(summary) {
   return [sortedCategories.slice(0, N), sortedCounts.slice(0, N)];
 }
 
-export function createCategoricalSelectionState(maxCategoryItems, world) {
+export function createCategoricalSelection(maxCategoryItems, world) {
   const res = {};
   _.forEach(world.obsAnnotations.colIndex.keys(), key => {
     const summary = world.obsAnnotations.col(key).summarize();
@@ -85,7 +85,7 @@ export function createCategoricalSelectionState(maxCategoryItems, world) {
 }
 
 /*
-given a categoricalSelectionState, return the list of all category values
+given a categoricalSelection, return the list of all category values
 where selection state is true (ie, they are selected).
 */
 export function selectedValuesForCategory(categorySelectionState) {

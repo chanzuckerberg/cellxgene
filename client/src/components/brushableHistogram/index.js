@@ -290,6 +290,10 @@ class HistogramBrush extends React.Component {
       .call(
         d3
           .brushX()
+          /*
+          emit start so that the Undoable history can save an undo point
+          upon drag start, and ignore the subsequent intermediate drag events.
+          */
           .on("start", this.onBrush(field, x.invert, "start").bind(this))
           .on("brush", this.onBrush(field, x.invert, "brush").bind(this))
           .on("end", this.onBrushEnd(field, x.invert).bind(this))
