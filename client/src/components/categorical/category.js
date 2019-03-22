@@ -9,8 +9,8 @@ import Value from "./value";
 import sortedCategoryValues from "./util";
 
 @connect(state => ({
-  colorAccessor: state.controls.colorAccessor,
-  categoricalSelectionState: state.controls.categoricalSelectionState
+  colorAccessor: state.colors.colorAccessor,
+  categoricalSelection: state.categoricalSelection
 }))
 class Category extends React.Component {
   constructor(props) {
@@ -22,9 +22,9 @@ class Category extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
-    const { categoricalSelectionState, metadataField } = this.props;
-    if (categoricalSelectionState !== prevProps.categoricalSelectionState) {
-      const cat = categoricalSelectionState[metadataField];
+    const { categoricalSelection, metadataField } = this.props;
+    if (categoricalSelection !== prevProps.categoricalSelection) {
+      const cat = categoricalSelection[metadataField];
       const categoryCount = {
         // total number of categories in this dimension
         totalCatCount: cat.numCategories,
@@ -87,9 +87,9 @@ class Category extends React.Component {
   }
 
   renderCategoryItems() {
-    const { categoricalSelectionState, metadataField } = this.props;
+    const { categoricalSelection, metadataField } = this.props;
 
-    const cat = categoricalSelectionState[metadataField];
+    const cat = categoricalSelection[metadataField];
     const optTuples = sortedCategoryValues([...cat.categoryIndices]);
     return _.map(optTuples, (tuple, i) => (
       <Value
@@ -104,12 +104,8 @@ class Category extends React.Component {
 
   render() {
     const { isExpanded, isChecked } = this.state;
-    const {
-      metadataField,
-      colorAccessor,
-      categoricalSelectionState
-    } = this.props;
-    const { isTruncated } = categoricalSelectionState[metadataField];
+    const { metadataField, colorAccessor, categoricalSelection } = this.props;
+    const { isTruncated } = categoricalSelection[metadataField];
     return (
       <div
         style={{

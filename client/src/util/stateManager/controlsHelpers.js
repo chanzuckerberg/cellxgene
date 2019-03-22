@@ -10,7 +10,6 @@ import {
   userDefinedDimensionName,
   diffexpDimensionName
 } from "../nameCreators";
-import * as World from "./world";
 
 /*
 Selection state for categoricals are tracked in an Object that
@@ -55,7 +54,7 @@ function topNCategories(summary) {
   return [sortedCategories.slice(0, N), sortedCounts.slice(0, N)];
 }
 
-export function createCategoricalSelectionState(state, world) {
+export function createCategoricalSelection(maxCategoryItems, world) {
   const res = {};
   _.forEach(world.obsAnnotations.colIndex.keys(), key => {
     const summary = world.obsAnnotations.col(key).summarize();
@@ -64,7 +63,7 @@ export function createCategoricalSelectionState(state, world) {
       const isSelectableCategory =
         !isColorField &&
         key !== "name" &&
-        summary.categories.length < state.maxCategoryItems;
+        summary.categories.length < maxCategoryItems;
       if (isSelectableCategory) {
         const [categoryValues, categoryCounts] = topNCategories(summary);
         const categoryIndices = new Map(categoryValues.map((v, i) => [v, i]));
@@ -86,7 +85,7 @@ export function createCategoricalSelectionState(state, world) {
 }
 
 /*
-given a categoricalSelectionState, return the list of all category values
+given a categoricalSelection, return the list of all category values
 where selection state is true (ie, they are selected).
 */
 export function selectedValuesForCategory(categorySelectionState) {

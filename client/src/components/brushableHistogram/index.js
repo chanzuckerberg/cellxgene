@@ -15,13 +15,13 @@ import actions from "../../actions";
 import finiteExtent from "../../util/finiteExtent";
 
 @connect(state => ({
-  world: state.controls.world,
+  world: state.world,
   scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
   scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
-  crossfilter: state.controls.crossfilter,
+  crossfilter: state.crossfilter,
   differential: state.differential,
-  colorAccessor: state.controls.colorAccessor,
-  obsAnnotations: _.get(state.controls.world, "obsAnnotations", null)
+  colorAccessor: state.colors.colorAccessor,
+  obsAnnotations: _.get(state.world, "obsAnnotations", null)
 }))
 class HistogramBrush extends React.Component {
   calcHistogramCache = memoize((obsAnnotations, field, rangeMin, rangeMax) => {
@@ -94,13 +94,14 @@ class HistogramBrush extends React.Component {
     }
   }
 
-  onBrush(selection, x) {
+  onBrush(selection, x, eventType) {
+    const type = `continuous metadata histogram ${eventType}`;
     return () => {
       const { dispatch, field, isObs, isUserDefined, isDiffExp } = this.props;
 
       if (d3.event.selection) {
         dispatch({
-          type: "continuous metadata histogram brush",
+          type,
           selection: field,
           continuousNamespace: {
             isObs,
@@ -111,7 +112,7 @@ class HistogramBrush extends React.Component {
         });
       } else {
         dispatch({
-          type: "continuous metadata histogram brush",
+          type,
           selection: field,
           continuousNamespace: {
             isObs,
@@ -157,7 +158,7 @@ class HistogramBrush extends React.Component {
         }
 
         dispatch({
-          type: "continuous metadata histogram brush",
+          type: "continuous metadata histogram end",
           selection: field,
           continuousNamespace: {
             isObs,
@@ -168,7 +169,7 @@ class HistogramBrush extends React.Component {
         });
       } else {
         dispatch({
-          type: "continuous metadata histogram brush",
+          type: "continuous metadata histogram end",
           selection: field,
           continuousNamespace: {
             isObs,
@@ -289,7 +290,12 @@ class HistogramBrush extends React.Component {
       .call(
         d3
           .brushX()
-          .on("brush", this.onBrush(field, x.invert).bind(this))
+          /*
+          emit start so that the Undoable history can save an undo point
+          upon drag start, and ignore the subsequent intermediate drag events.
+          */
+          .on("start", this.onBrush(field, x.invert, "start").bind(this))
+          .on("brush", this.onBrush(field, x.invert, "brush").bind(this))
           .on("end", this.onBrushEnd(field, x.invert).bind(this))
       );
 

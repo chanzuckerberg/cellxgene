@@ -58,11 +58,11 @@ const filterGenes = (query, genes) =>
 
 @connect(state => {
   return {
-    obsAnnotations: _.get(state.controls.world, "obsAnnotations", null),
+    obsAnnotations: _.get(state.world, "obsAnnotations", null),
     userDefinedGenes: state.controls.userDefinedGenes,
     userDefinedGenesLoading: state.controls.userDefinedGenesLoading,
-    world: state.controls.world,
-    colorAccessor: state.controls.colorAccessor,
+    world: state.world,
+    colorAccessor: state.colors.colorAccessor,
     differential: state.differential
   };
 })
@@ -118,11 +118,9 @@ class GeneExpression extends React.Component {
     } else if (world.varAnnotations.col("name").indexOf(gene) === undefined) {
       postUserErrorToast("That doesn't appear to be a valid gene name.");
     } else {
+      dispatch({ type: "single user defined gene start" });
       dispatch(actions.requestUserDefinedGene(gene));
-      dispatch({
-        type: "user defined gene",
-        data: gene
-      });
+      dispatch({ type: "single user defined gene complete" });
     }
   }
 
@@ -137,6 +135,7 @@ class GeneExpression extends React.Component {
     if (bulkAdd !== "") {
       const genes = _.pull(_.uniq(bulkAdd.split(/[ ,]+/)), "");
 
+      dispatch({ type: "bulk user defined gene start" });
       genes.forEach(gene => {
         if (gene.length === 0) {
           keepAroundErrorToast("Must enter a gene name.");
@@ -150,12 +149,9 @@ class GeneExpression extends React.Component {
           );
         } else {
           dispatch(actions.requestUserDefinedGene(gene));
-          dispatch({
-            type: "user defined gene",
-            data: gene
-          });
         }
       });
+      dispatch({ type: "bulk user defined gene complete" });
     }
 
     this.setState({ bulkAdd: "" });

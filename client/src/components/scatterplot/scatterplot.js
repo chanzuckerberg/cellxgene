@@ -22,12 +22,8 @@ import { margin, width, height } from "./util";
 import finiteExtent from "../../util/finiteExtent";
 
 @connect(state => {
-  const {
-    world,
-    crossfilter,
-    scatterplotXXaccessor,
-    scatterplotYYaccessor
-  } = state.controls;
+  const { world, crossfilter } = state;
+  const { scatterplotXXaccessor, scatterplotYYaccessor } = state.controls;
   const expressionX =
     world &&
     scatterplotXXaccessor &&
@@ -44,9 +40,9 @@ import finiteExtent from "../../util/finiteExtent";
   return {
     world,
 
-    colorRGB: _.get(state.controls, "colors.rgb", null),
-    colorScale: _.get(state.controls, "colors.scale", null),
-    colorAccessor: state.controls.colorAccessor,
+    colorRGB: state.colors.rgb,
+    colorScale: state.colors.scale,
+    colorAccessor: state.colors.colorAccessor,
 
     // Accessors are var/gene names (strings)
     scatterplotXXaccessor,

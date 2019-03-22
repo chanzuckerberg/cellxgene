@@ -7,11 +7,11 @@ import { countCategoryValues2D } from "../../util/stateManager/worldUtil";
 import * as globals from "../../globals";
 
 @connect(state => ({
-  categoricalSelectionState: state.controls.categoricalSelectionState,
-  colorScale: state.controls.colors.scale,
-  colorAccessor: state.controls.colorAccessor,
-  schema: _.get(state.controls.world, "schema", null),
-  world: state.controls.world
+  categoricalSelection: state.categoricalSelection,
+  colorScale: state.colors.scale,
+  colorAccessor: state.colors.colorAccessor,
+  schema: _.get(state.world, "schema", null),
+  world: state.world
 }))
 class CategoryValue extends React.Component {
   toggleOff() {
@@ -34,7 +34,7 @@ class CategoryValue extends React.Component {
 
   render() {
     const {
-      categoricalSelectionState,
+      categoricalSelection,
       metadataField,
       categoryIndex,
       colorAccessor,
@@ -44,9 +44,9 @@ class CategoryValue extends React.Component {
       world
     } = this.props;
 
-    if (!categoricalSelectionState) return null;
+    if (!categoricalSelection) return null;
 
-    const category = categoricalSelectionState[metadataField];
+    const category = categoricalSelection[metadataField];
     const selected = category.categorySelected[categoryIndex];
     const count = category.categoryCounts[categoryIndex];
     const value = category.categoryValues[categoryIndex];
@@ -65,11 +65,7 @@ class CategoryValue extends React.Component {
       })[0].categories;
     }
 
-    if (
-      colorAccessor &&
-      !isColorBy &&
-      categoricalSelectionState[colorAccessor]
-    ) {
+    if (colorAccessor && !isColorBy && categoricalSelection[colorAccessor]) {
       occupancy = countCategoryValues2D(
         metadataField,
         colorAccessor,
@@ -112,7 +108,7 @@ class CategoryValue extends React.Component {
           <span style={{ flexShrink: 0 }}>
             {colorAccessor &&
             !isColorBy &&
-            categoricalSelectionState[colorAccessor] ? (
+            categoricalSelection[colorAccessor] ? (
               <Occupancy
                 occupancy={occupancy.get(
                   category.categoryValues[categoryIndex]

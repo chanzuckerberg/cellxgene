@@ -26,21 +26,23 @@ import { World } from "../../util/stateManager";
 /* https://bl.ocks.org/mbostock/9078690 - quadtree for onClick / hover selections */
 
 @connect(state => ({
-  world: state.controls.world,
-  universe: state.controls.universe,
-  crossfilter: state.controls.crossfilter,
+  world: state.world,
+  universe: state.universe,
+  crossfilter: state.crossfilter,
   responsive: state.responsive,
-  colorRGB: _.get(state.controls, "colors.rgb", null),
+  colorRGB: state.colors.rgb,
   opacityForDeselectedCells: state.controls.opacityForDeselectedCells,
   resettingInterface: state.controls.resettingInterface,
   userDefinedGenes: state.controls.userDefinedGenes,
   diffexpGenes: state.controls.diffexpGenes,
-  colorAccessor: state.controls.colorAccessor,
+  colorAccessor: state.colors.colorAccessor,
   scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
   scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
   celllist1: state.differential.celllist1,
   celllist2: state.differential.celllist2,
-  library_versions: _.get(state.config, "library_versions", null)
+  library_versions: _.get(state.config, "library_versions", null),
+  undoDisabled: state["@@undoable/past"].length === 0,
+  redoDisabled: state["@@undoable/future"].length === 0
 }))
 class Graph extends React.Component {
   constructor(props) {
@@ -392,12 +394,18 @@ class Graph extends React.Component {
 
   // when a lasso is completed, filter to the points within the lasso polygon
   handleLassoEnd(polygon) {
+    const minimumPolygoneArea = 10;
     const { dispatch } = this.props;
 
-    dispatch({
-      type: "lasso selection",
-      polygon: polygon.map(xy => this.invertPoint(xy)) // transform the polygon
-    });
+    if (polygon.length < 3 || d3.polygonArea(polygon) < minimumPolygoneArea) {
+      // if less than three points, or super small area, treat as a clear selection.
+      dispatch({ type: "lasso deselect" });
+    } else {
+      dispatch({
+        type: "lasso selection",
+        polygon: polygon.map(xy => this.invertPoint(xy)) // transform the polygon
+      });
+    }
   }
 
   handleOpacityRangeChange(e) {
@@ -414,7 +422,9 @@ class Graph extends React.Component {
       responsive,
       crossfilter,
       resettingInterface,
-      library_versions
+      library_versions,
+      undoDisabled,
+      redoDisabled
     } = this.props;
     const { mode } = this.state;
     return (
@@ -496,6 +506,32 @@ class Graph extends React.Component {
                       this.handleBrushDeselectAction();
                       this.restartReglLoop();
                       this.setState({ mode: "zoom" });
+                    }}
+                    style={{
+                      cursor: "pointer"
+                    }}
+                  />
+                </Tooltip>
+                <Tooltip content="Undo" position="left">
+                  <AnchorButton
+                    type="button"
+                    className="bp3-button bp3-icon-undo"
+                    disabled={undoDisabled}
+                    onClick={() => {
+                      dispatch({ type: "@@undoable/undo" });
+                    }}
+                    style={{
+                      cursor: "pointer"
+                    }}
+                  />
+                </Tooltip>
+                <Tooltip content="Redo" position="left">
+                  <AnchorButton
+                    type="button"
+                    className="bp3-button bp3-icon-redo"
+                    disabled={redoDisabled}
+                    onClick={() => {
+                      dispatch({ type: "@@undoable/redo" });
                     }}
                     style={{
                       cursor: "pointer"
