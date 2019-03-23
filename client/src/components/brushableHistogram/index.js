@@ -106,7 +106,11 @@ class HistogramBrush extends React.Component {
         const selection = d3.brushSelection(brushXselection.node());
         if (!range && selection) {
           brushXselection.call(brushX.move, null);
-        } else if (range) {
+        } else if (range && !selection) {
+          const x0 = x(range[0]);
+          const x1 = x(range[1]);
+          brushXselection.call(brushX.move, [x0, x1]);
+        } else if (range && selection) {
           const moveDeltaThreshold = 1;
           const x0 = x(range[0]);
           const x1 = x(range[1]);
