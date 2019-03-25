@@ -94,6 +94,10 @@ class HistogramBrush extends React.Component {
       this.renderAxesBrushBins(x, y, bins, numValues, svgRef, field);
     }
 
+    /*
+    if the selection has changed, ensure that the brush correctly reflects
+    the underlying selection.
+    */
     if (continuousSelection !== prevProps.continuousSelection) {
       const { isObs, isUserDefined, isDiffExp } = this.props;
       const myName = makeContinuousDimensionName(
@@ -105,17 +109,24 @@ class HistogramBrush extends React.Component {
       if (brushXselection) {
         const selection = d3.brushSelection(brushXselection.node());
         if (!range && selection) {
+          /* no active selection - clear brush */
           brushXselection.call(brushX.move, null);
         } else if (range && !selection) {
+          /* there is an active selection, but no brush - set the brush */
           const x0 = x(range[0]);
           const x1 = x(range[1]);
           brushXselection.call(brushX.move, [x0, x1]);
         } else if (range && selection) {
+          /* there is an active selection and a brush - make sure they match */
           const moveDeltaThreshold = 1;
           const x0 = x(range[0]);
           const x1 = x(range[1]);
           const dX0 = Math.abs(x0 - selection[0]);
           const dX1 = Math.abs(x1 - selection[1]);
+          /*
+          only update the brush if it is grossly incorrect, 
+          as defined by the moveDeltaThreshold
+          */
           if (dX0 > moveDeltaThreshold || dX1 > moveDeltaThreshold) {
             brushXselection.call(brushX.move, [x0, x1]);
           }

@@ -12,9 +12,10 @@ const ContinuousSelection = (state = {}, action) => {
         action.continuousNamespace,
         action.selection
       );
-      const continuousSelection = { ...state };
-      continuousSelection[name] = action.range;
-      return continuousSelection;
+      return {
+        ...state,
+        [name]: action.range
+      };
     }
     default: {
       return state;
