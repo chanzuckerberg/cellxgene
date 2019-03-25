@@ -13,12 +13,13 @@ import memoize from "memoize-one";
 import * as globals from "../../globals";
 import actions from "../../actions";
 import finiteExtent from "../../util/finiteExtent";
+import { makeContinuousDimensionName } from "../../util/nameCreators";
 
 @connect(state => ({
   world: state.world,
   scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
   scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
-  crossfilter: state.crossfilter,
+  continuousSelection: state.continuousSelection,
   differential: state.differential,
   colorAccessor: state.colors.colorAccessor,
   obsAnnotations: _.get(state.world, "obsAnnotations", null)
@@ -86,11 +87,51 @@ class HistogramBrush extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
-    const { field, obsAnnotations } = this.props;
+    const { field, obsAnnotations, continuousSelection } = this.props;
     const { x, y, bins, numValues, svgRef } = this._histogram;
 
     if (obsAnnotations !== prevProps.obsAnnotations) {
       this.renderAxesBrushBins(x, y, bins, numValues, svgRef, field);
+    }
+
+    /*
+    if the selection has changed, ensure that the brush correctly reflects
+    the underlying selection.
+    */
+    if (continuousSelection !== prevProps.continuousSelection) {
+      const { isObs, isUserDefined, isDiffExp } = this.props;
+      const myName = makeContinuousDimensionName(
+        { isObs, isUserDefined, isDiffExp },
+        field
+      );
+      const range = continuousSelection[myName];
+      const { brushXselection, brushX } = this.state;
+      if (brushXselection) {
+        const selection = d3.brushSelection(brushXselection.node());
+        if (!range && selection) {
+          /* no active selection - clear brush */
+          brushXselection.call(brushX.move, null);
+        } else if (range && !selection) {
+          /* there is an active selection, but no brush - set the brush */
+          const x0 = x(range[0]);
+          const x1 = x(range[1]);
+          brushXselection.call(brushX.move, [x0, x1]);
+        } else if (range && selection) {
+          /* there is an active selection and a brush - make sure they match */
+          const moveDeltaThreshold = 1;
+          const x0 = x(range[0]);
+          const x1 = x(range[1]);
+          const dX0 = Math.abs(x0 - selection[0]);
+          const dX1 = Math.abs(x1 - selection[1]);
+          /*
+          only update the brush if it is grossly incorrect, 
+          as defined by the moveDeltaThreshold
+          */
+          if (dX0 > moveDeltaThreshold || dX1 > moveDeltaThreshold) {
+            brushXselection.call(brushX.move, [x0, x1]);
+          }
+        }
+      }
     }
   }
 
@@ -98,6 +139,9 @@ class HistogramBrush extends React.Component {
     const type = `continuous metadata histogram ${eventType}`;
     return () => {
       const { dispatch, field, isObs, isUserDefined, isDiffExp } = this.props;
+
+      // ignore programmatically generated events
+      if (!d3.event.sourceEvent) return;
 
       if (d3.event.selection) {
         dispatch({
@@ -128,9 +172,12 @@ class HistogramBrush extends React.Component {
   onBrushEnd(selection, x) {
     return () => {
       const { dispatch, field, isObs, isUserDefined, isDiffExp } = this.props;
-      const { brushX } = this.state;
+      const { brushXselection } = this.state;
       const minAllowedBrushSize = 10;
       const smallAmountToAvoidInfiniteLoop = 0.1;
+
+      // ignore programmatically generated events
+      if (!d3.event.sourceEvent) return;
 
       if (d3.event.selection) {
         let _range;
@@ -151,7 +198,7 @@ class HistogramBrush extends React.Component {
 
           _range = [x(d3.event.selection[0]), x(procedurallyResizedBrushWidth)];
 
-          d3.event.target.move(brushX, [
+          d3.event.target.move(brushXselection, [
             d3.event.selection[0],
             procedurallyResizedBrushWidth
           ]);
@@ -283,21 +330,20 @@ class HistogramBrush extends React.Component {
 
     /* BRUSH */
     const brushX = d3
+      .brushX()
+      /*
+      emit start so that the Undoable history can save an undo point
+      upon drag start, and ignore the subsequent intermediate drag events.
+      */
+      .on("start", this.onBrush(field, x.invert, "start").bind(this))
+      .on("brush", this.onBrush(field, x.invert, "brush").bind(this))
+      .on("end", this.onBrushEnd(field, x.invert).bind(this));
+    const brushXselection = d3
       .select(svgRef)
       .append("g")
       .attr("class", "brush")
       .attr("data-testid", `${svgRef.id}-brush`)
-      .call(
-        d3
-          .brushX()
-          /*
-          emit start so that the Undoable history can save an undo point
-          upon drag start, and ignore the subsequent intermediate drag events.
-          */
-          .on("start", this.onBrush(field, x.invert, "start").bind(this))
-          .on("brush", this.onBrush(field, x.invert, "brush").bind(this))
-          .on("end", this.onBrushEnd(field, x.invert).bind(this))
-      );
+      .call(brushX);
 
     /* AXIS */
     d3.select(svgRef)
@@ -318,7 +364,7 @@ class HistogramBrush extends React.Component {
       .selectAll(".axis--x line")
       .style("stroke", "rgb(230,230,230)");
 
-    this.setState({ brushX });
+    this.setState({ brushX, brushXselection });
   }
 
   render() {

@@ -7,6 +7,7 @@ import config from "./config";
 import universe from "./universe";
 import world from "./world";
 import categoricalSelection from "./categoricalSelection";
+import continuousSelection from "./continuousSelection";
 import crossfilter from "./crossfilter";
 import colors from "./colors";
 import differential from "./differential";
@@ -63,6 +64,7 @@ const Reducer = undoable(
     ["universe", universe],
     ["world", world],
     ["categoricalSelection", categoricalSelection],
+    ["continuousSelection", continuousSelection],
     ["crossfilter", crossfilter],
     ["colors", colors],
     ["controls", controls],
@@ -73,6 +75,7 @@ const Reducer = undoable(
   [
     "world",
     "categoricalSelection",
+    "continuousSelection",
     "crossfilter",
     "colors",
     "controls",
