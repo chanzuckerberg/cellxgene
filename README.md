@@ -240,10 +240,10 @@ Then clone the project
 git clone https://github.com/chanzuckerberg/cellxgene.git
 ```
 
-Build the client web assets by calling this from inside the `cellxgene` folder
+Build the client web assets by calling `make` from inside the `cellxgene` folder
 
 ```
-./bin/build-client
+make
 ```
 
 Install all requirements (we recommend doing this inside a virtual environment)
