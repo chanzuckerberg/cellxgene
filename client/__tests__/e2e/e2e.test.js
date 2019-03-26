@@ -10,18 +10,15 @@ let data = datasets[DATASET];
 if (DEBUG) jest.setTimeout(100000);
 if (DEV) jest.setTimeout(10000);
 
-// TODO are tests robust?
-
 beforeAll(async () => {
   const browser_params = DEV
-    ? { headless: false, slowMo: 10 }
+    ? { headless: false, slowMo: 5 }
     : DEBUG
     ? { headless: false, slowMo: 100, devtools: true }
     : {};
   browser = await puppeteer.launch(browser_params);
   page = await browser.newPage();
   await page.setViewport(browserViewport);
-  spy = jest.spyOn(global.console, "error");
   if (DEV || DEBUG) {
     page.on("console", msg => console.log(`PAGE LOG: ${msg.text()}`));
   }
@@ -34,10 +31,6 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   await page.goto(appUrlBase);
-});
-
-afterEach(() => {
-  expect(spy).not.toHaveBeenCalled();
 });
 
 afterAll(() => {
@@ -98,7 +91,7 @@ describe("cell selection", async () => {
       );
       await cxgActions.drag("layout-graph", cellset1.start, cellset1.end, true);
       const cell_count = await cxgActions.cellSet(1);
-      expect(cell_count).toBe(cellset["count"]);
+      expect(cell_count).toBe(cellset.count);
     }
   });
 
@@ -106,8 +99,7 @@ describe("cell selection", async () => {
     for (const cellset of data.cellsets.categorical) {
       await utils.clickOn(`category-expand-${cellset.metadata}`);
       await utils.clickOn(`category-select-${cellset.metadata}`);
-      for (let i = 0; i < cellset.values.length; i++) {
-        const val = cellset.values[i];
+      for (const val of cellset.values) {
         await utils.clickOn(
           `categorical-value-select-${cellset.metadata}-${val}`
         );
@@ -143,7 +135,7 @@ describe("gene entry", async () => {
 
   test("bulk add genes", async () => {
     await cxgActions.reset();
-    const testGenes = data.genes["bulk add"];
+    const testGenes = data.genes.bulkadd;
     await utils.clickOn("section-bulk-add");
     await utils.typeInto("input-bulk-add", testGenes.join(","));
     await page.keyboard.press("Enter");
@@ -168,7 +160,6 @@ describe("diffexp", async () => {
       }
     }
     await cxgActions.cellSet(2);
-    console.log("here i am");
     await utils.clickOn("diffexp-button");
     const diffExpHists = await cxgActions.getAllHistograms("histogram-diffexp");
     expect(diffExpHists).toMatchObject(data.diffexp["gene-results"]);
@@ -177,7 +168,7 @@ describe("diffexp", async () => {
 //
 
 describe("subset/reset", async () => {
-  test("subset works and cell count matches", async () => {
+  test("subset - cell count matches", async () => {
     for (const select of data.subset.cellset1) {
       if (select.kind === "categorical") {
         await cxgActions.selectCategory(select.metadata, select.values, true);
@@ -195,7 +186,7 @@ describe("subset/reset", async () => {
     }
   });
 
-  test.only("reset works after subset", async () => {
+  test("reset after subset", async () => {
     for (const select of data.subset.cellset1) {
       if (select.kind === "categorical") {
         await cxgActions.selectCategory(select.metadata, select.values, true);
@@ -211,8 +202,6 @@ describe("subset/reset", async () => {
         Object.values(data.subset.categorical[label])
       );
     }
-    // TODO ensure lasso works
-
     await cxgActions.reset();
     for (const label in data.categorical) {
       await utils.waitByID(`category-${label}`);
@@ -220,8 +209,6 @@ describe("subset/reset", async () => {
         `[data-testid="category-${label}"]`
       );
       expect(category_name).toMatch(label);
-      // TODO update when reset category works
-      // await utils.clickOn(`category-expand-${label}`);
       const categories = await cxgActions.getAllCategoriesAndCounts(label);
       expect(Object.keys(categories)).toMatchObject(
         Object.keys(data.categorical[label])
@@ -231,6 +218,27 @@ describe("subset/reset", async () => {
       );
     }
   });
+
+  test("lasso after subset", async () => {
+    for (const select of data.subset.cellset1) {
+      if (select.kind === "categorical") {
+        await cxgActions.selectCategory(select.metadata, select.values, true);
+      }
+    }
+    await utils.clickOn("subset-button");
+    const lasso_selection = await cxgActions.calcDragCoordinates(
+      "layout-graph",
+      data.subset.lasso["coordinates-as-percent"]
+    );
+    await cxgActions.drag(
+      "layout-graph",
+      lasso_selection.start,
+      lasso_selection.end,
+      true
+    );
+    const cell_count = await cxgActions.cellSet(1);
+    expect(cell_count).toBe(data.subset.lasso.count);
+  });
 });
 
 describe("scatter plot", async () => {
@@ -238,16 +246,16 @@ describe("scatter plot", async () => {
     await cxgActions.reset();
     const testGenes = data.scatter.genes;
     await utils.clickOn("section-bulk-add");
-    await utils.typeInto("input-bulk-add", testGenes.join(","));
+    await utils.typeInto("input-bulk-add", Object.values(testGenes).join(","));
     await page.keyboard.press("Enter");
-    await utils.clickOn(`plot-x-${data.scatter.genes[0]}`);
-    await utils.clickOn(`plot-y-${data.scatter.genes[1]}`);
+    await utils.clickOn(`plot-x-${data.scatter.genes.x}`);
+    await utils.clickOn(`plot-y-${data.scatter.genes.y}`);
     await utils.waitByID("scatterplot");
   });
 });
 
 // interact with UI elements just that they do not break
-describe("ui elements screen", async () => {
+describe("ui elements don't error", async () => {
   test("color by", async () => {
     for (const label in data.categorical) {
       await utils.clickOn(`colorby-${label}`);
@@ -256,5 +264,19 @@ describe("ui elements screen", async () => {
       await utils.clickOn(`colorby-${label}`);
     }
   });
-  // TODO make sure pan and zoom work
+
+  test("pan and zoom", async () => {
+    await utils.clickOn("mode-pan-zoom");
+    const pan_coords = await cxgActions.calcDragCoordinates(
+      "layout-graph",
+      data.pan["coordinates-as-percent"]
+    );
+    await cxgActions.drag(
+      "layout-graph",
+      pan_coords.start,
+      pan_coords.end,
+      false
+    );
+    await page.evaluate(`window.scrollBy(0, 1000);`);
+  });
 });

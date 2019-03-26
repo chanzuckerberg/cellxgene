@@ -72,7 +72,7 @@ export const datasets = {
     },
 
     genes: {
-      "bulk add": ["S100A8", "FCGR3A", "LGALS2", "GSTP1"],
+      bulkadd: ["S100A8", "FCGR3A", "LGALS2", "GSTP1"],
       search: "ACD"
     },
     subset: {
@@ -89,10 +89,17 @@ export const datasets = {
           "B cells": "342",
           Megakaryocytes: "15"
         }
+      },
+      lasso: {
+        "coordinates-as-percent": { x1: 0.45, y1: 0.45, x2: 0.5, y2: 0.5 },
+        count: "67"
       }
     },
     scatter: {
-      genes: ["S100A8", "FCGR3A"]
+      genes: { x: "S100A8", y: "FCGR3A" }
+    },
+    pan: {
+      "coordinates-as-percent": { x1: 0.75, y1: 0.75, x2: 0.35, y2: 0.35 }
     }
   }
 };
