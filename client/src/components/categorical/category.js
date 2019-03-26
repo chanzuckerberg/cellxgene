@@ -46,6 +46,7 @@ class Category extends React.Component {
       } else if (categoryCount.selectedCatCount < categoryCount.totalCatCount) {
         /* to be explicit... */
         this.checkbox.indeterminate = true;
+        this.setState({ isChecked: false });
       }
     }
   }
@@ -170,6 +171,8 @@ class Category extends React.Component {
           </div>
           <Tooltip content="Use as color scale" position="bottom">
             <Button
+              data-testclass="colorby"
+              data-testid={`colorby-${metadataField}`}
               onClick={this.handleColorChange}
               active={colorAccessor === metadataField}
               intent={colorAccessor === metadataField ? "primary" : "none"}

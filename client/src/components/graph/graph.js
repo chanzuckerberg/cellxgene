@@ -480,6 +480,7 @@ class Graph extends React.Component {
                 style={{ marginRight: 10 }}
                 onClick={this.resetInterface}
                 data-testid="reset"
+                data-testclass={`resetting-${resettingInterface}`}
               >
                 reset
               </AnchorButton>

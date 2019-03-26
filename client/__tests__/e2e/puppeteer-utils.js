@@ -37,12 +37,6 @@ export const puppeteerUtils = puppeteerPage => ({
 
 export const cellxgeneActions = puppeteerPage => {
   return {
-    async getStore() {
-      return await puppeteerPage.evaluate(() => {
-        window.cxg_store.getState();
-      });
-    },
-
     async drag(testid, start, end, lasso = false) {
       const layout = await puppeteerUtils(puppeteerPage).waitByID(testid);
       const el_box = await layout.boxModel();
@@ -77,38 +71,16 @@ export const cellxgeneActions = puppeteerPage => {
       return histograms;
     },
 
-    // make sure these are children of the category
-    async getAllCategories(category) {
-      await c.waitByClass("categorical-row");
-      const categories = await puppeteerPage.$$eval(
-        `[data-testid="category-${category}"] [data-testclass=categorical-row]`,
-        divs => {
-          return divs.map(div => {
-            // TODO get from ids
-            const val = div.querySelector(
-              "[data-testclass='categorical-value']"
-            );
-            return val.dataset.testid.substring(
-              "categorical-value-".length,
-              val.dataset.testid.length
-            );
-          });
-        }
-      );
-      return categories;
-    },
-
     async getAllCategoriesAndCounts(category) {
       await puppeteerUtils(puppeteerPage).waitByClass("categorical-row");
       const categories = await puppeteerPage.$$eval(
-        `[data-testid="category-${category}"] [data-testclass=categorical-row]`,
-        divs => {
+        `[data-testid="category-${category}"] [data-testclass='categorical-row']`,
+        els => {
           let result = {};
-          divs.forEach(div => {
-            const cat = div.querySelector(
-              "[data-testclass='categorical-value']"
-            ).innerText;
-            const count = div.querySelector(
+          els.forEach(el => {
+            const cat = el.querySelector("[data-testclass='categorical-value']")
+              .innerText;
+            const count = el.querySelector(
               "[data-testclass='categorical-value-count']"
             ).innerText;
             result[cat] = count;
@@ -126,27 +98,33 @@ export const cellxgeneActions = puppeteerPage => {
       );
     },
 
-    // TODO test me
-
     async resetCategory(category) {
+      // TODO fix reset when fresh
+
       const checkbox_id = `category-select-${category}`;
-      const category_el = await puppeteerUtils(puppeteerPage).waitByID(
-        checkbox_id
-      );
-      const checked = await puppeteerPage.$eval(
+      await puppeteerUtils(puppeteerPage).waitByID(checkbox_id);
+      const checked_pseudoclass = await puppeteerPage.$eval(
         `[data-testid='${checkbox_id}']`,
         el => {
           return el.matches(":checked");
         }
       );
-      if (!checked) {
+      if (!checked_pseudoclass) {
         await puppeteerUtils(puppeteerPage).clickOn(checkbox_id);
       }
       try {
-        await category_el.$("category-expand-is-expanded");
-        await puppeteerUtils(puppeteerPage).clickOn(
+        const category_row = await puppeteerUtils(puppeteerPage).waitByID(
           `category-expand-${category}`
         );
+        const is_expanded = await category_row.$(
+          "[data-testclass='category-expand-is-expanded']"
+        );
+        if (is_expanded) {
+          console.log("expanding category");
+          await puppeteerUtils(puppeteerPage).clickOn(
+            `category-expand-${category}`
+          );
+        }
       } catch {}
     },
 
@@ -174,8 +152,7 @@ export const cellxgeneActions = puppeteerPage => {
       await puppeteerUtils(puppeteerPage).clickOn(
         `category-select-${category}`
       );
-      for (let i = 0; i < values.length; i++) {
-        const val = values[i];
+      for (const val of values) {
         await puppeteerUtils(puppeteerPage).clickOn(
           `categorical-value-select-${category}-${val}`
         );
@@ -183,9 +160,8 @@ export const cellxgeneActions = puppeteerPage => {
     },
 
     async reset() {
-      await puppeteerUtils(puppeteerPage).clickOn("reset");
-      // TODO how to caputre reset complete
-      // Loading state of reset button
+      const reset_button = await puppeteerUtils(puppeteerPage).clickOn("reset");
+      // loading state never actually happens, reset is too fast
       await page.waitFor(200);
     }
   };

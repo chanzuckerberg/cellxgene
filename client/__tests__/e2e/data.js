@@ -74,6 +74,25 @@ export const datasets = {
     genes: {
       "bulk add": ["S100A8", "FCGR3A", "LGALS2", "GSTP1"],
       search: "ACD"
+    },
+    subset: {
+      cellset1: [
+        {
+          kind: "categorical",
+          metadata: "louvain",
+          values: ["B cells", "Megakaryocytes"]
+        }
+      ],
+      count: "357",
+      categorical: {
+        louvain: {
+          "B cells": "342",
+          Megakaryocytes: "15"
+        }
+      }
+    },
+    scatter: {
+      genes: ["S100A8", "FCGR3A"]
     }
   }
 };

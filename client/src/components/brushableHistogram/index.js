@@ -342,7 +342,7 @@ class HistogramBrush extends React.Component {
       .select(svgRef)
       .append("g")
       .attr("class", "brush")
-      .attr("data-testid", `${svgRef.id}-brush`)
+      .attr("data-testid", `${svgRef.dataset.testid}-brush`)
       .call(brushX);
 
     /* AXIS */
@@ -406,6 +406,7 @@ class HistogramBrush extends React.Component {
               />
               <ButtonGroup style={{ marginRight: 7 }}>
                 <Button
+                  data-testid={`plot-x-${field}`}
                   onClick={this.handleSetGeneAsScatterplotX(field).bind(this)}
                   active={scatterplotXXaccessor === field}
                   intent={scatterplotXXaccessor === field ? "primary" : "none"}
@@ -413,6 +414,7 @@ class HistogramBrush extends React.Component {
                   plot x
                 </Button>
                 <Button
+                  data-testid={`plot-y-${field}`}
                   onClick={this.handleSetGeneAsScatterplotY(field).bind(this)}
                   active={scatterplotYYaccessor === field}
                   intent={scatterplotYYaccessor === field ? "primary" : "none"}
@@ -440,6 +442,8 @@ class HistogramBrush extends React.Component {
               onClick={this.handleColorAction.bind(this)}
               active={colorAccessor === field}
               intent={colorAccessor === field ? "primary" : "none"}
+              data-testclass="colorby"
+              data-testid={`colorby-${field}`}
               icon="tint"
             />
           </Tooltip>
@@ -448,8 +452,8 @@ class HistogramBrush extends React.Component {
           width={this.width}
           height={this.height}
           id={`histogram_${field}_svg`}
-          data-testclass="histogram-svg"
-          data-testid={`histogram_${field}_svg`}
+          data-testclass="histogram-plot"
+          data-testid={`histogram-${field}-plot`}
           ref={svgRef => {
             this.drawHistogram(svgRef);
           }}
