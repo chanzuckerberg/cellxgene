@@ -12,6 +12,7 @@ import App from "./components/app";
 import store from "./reducers";
 
 FocusStyleManager.onlyShowFocusOnTabs();
+
 ReactDOM.render(
   <Provider store={store}>
     <App />
