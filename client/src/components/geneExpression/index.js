@@ -11,7 +11,8 @@ import {
   Button,
   FormGroup,
   InputGroup,
-  ControlGroup
+  ControlGroup,
+  NumericInput
 } from "@blueprintjs/core";
 import { Suggest } from "@blueprintjs/select";
 import HistogramBrush from "../brushableHistogram";
@@ -174,6 +175,39 @@ class GeneExpression extends React.Component {
             marginTop: 30
           }}
         >
+          <p
+            style={Object.assign({}, globals.leftSidebarSectionHeading, {
+              paddingLeft: globals.leftSidebarSectionPadding,
+              margin: 0
+            })}
+          >
+            Histogram settings
+          </p>
+
+          <div
+            style={{
+              padding: globals.leftSidebarSectionPadding
+            }}
+          >
+            For all histograms, show only the cells between the min:
+            <NumericInput
+              onValueChange={this.handleContinuousPercentileMin}
+              onButtonClick={this.handleContinuousPercentileMin}
+              value={this.props.continuousPercentileMin}
+              min={0}
+              max={this.props.continuousPercentileMax - 1}
+            />
+            and max:
+            <NumericInput
+              onValueChange={this.handleContinuousPercentileMax}
+              onButtonClick={this.handleContinuousPercentileMax}
+              value={this.props.continuousPercentileMax}
+              min={this.props.continuousPercentileMin + 1}
+              max={100}
+            />
+            percentile. Axes and binning will be updated.
+          </div>
+
           <p
             style={Object.assign({}, globals.leftSidebarSectionHeading, {
               paddingLeft: globals.leftSidebarSectionPadding,
