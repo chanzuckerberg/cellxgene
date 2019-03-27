@@ -6,7 +6,9 @@ const WorldReducer = (
   state = null,
   action,
   nextSharedState,
-  prevSharedState
+  prevSharedState,
+  continuousPercentileMin = 0,
+  continuousPercentileMax = 100
 ) => {
   switch (action.type) {
     case "initial data load complete (universe exists)": {
