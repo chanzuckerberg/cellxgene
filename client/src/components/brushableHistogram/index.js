@@ -380,10 +380,10 @@ class HistogramBrush extends React.Component {
       scatterplotYYaccessor,
       zebra
     } = this.props;
-
+    const field_for_id = field.replace(/\s/g, "_");
     return (
       <div
-        id={`histogram_${field}`}
+        id={`histogram_${field_for_id}`}
         data-testid={`histogram-${field}`}
         data-testclass={
           isDiffExp
@@ -451,7 +451,7 @@ class HistogramBrush extends React.Component {
         <svg
           width={this.width}
           height={this.height}
-          id={`histogram_${field}_svg`}
+          id={`histogram_${field_for_id}_svg`}
           data-testclass="histogram-plot"
           data-testid={`histogram-${field}-plot`}
           ref={svgRef => {
