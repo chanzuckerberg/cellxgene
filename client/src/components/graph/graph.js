@@ -397,7 +397,10 @@ class Graph extends React.Component {
     const minimumPolygoneArea = 10;
     const { dispatch } = this.props;
 
-    if (polygon.length < 3 || d3.polygonArea(polygon) < minimumPolygoneArea) {
+    if (
+      polygon.length < 3 ||
+      Math.abs(d3.polygonArea(polygon)) < minimumPolygoneArea
+    ) {
       // if less than three points, or super small area, treat as a clear selection.
       dispatch({ type: "lasso deselect" });
     } else {
