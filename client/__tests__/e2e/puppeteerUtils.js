@@ -38,11 +38,11 @@ export const puppeteerUtils = puppeteerPage => ({
 export const cellxgeneActions = puppeteerPage => ({
   async drag(testid, start, end, lasso = false) {
     const layout = await puppeteerUtils(puppeteerPage).waitByID(testid);
-    const el_box = await layout.boxModel();
-    const x1 = el_box.content[0].x + start.x;
-    const x2 = el_box.content[0].x + end.x;
-    const y1 = el_box.content[0].y + start.y;
-    const y2 = el_box.content[0].y + end.y;
+    const elBox = await layout.boxModel();
+    const x1 = elBox.content[0].x + start.x;
+    const x2 = elBox.content[0].x + end.x;
+    const y1 = elBox.content[0].y + start.y;
+    const y2 = elBox.content[0].y + end.y;
     await puppeteerPage.mouse.move(x1, y1);
     await puppeteerPage.mouse.down();
     if (lasso) {
@@ -100,25 +100,25 @@ export const cellxgeneActions = puppeteerPage => ({
   },
 
   async resetCategory(category) {
-    const checkbox_id = `category-select-${category}`;
-    await puppeteerUtils(puppeteerPage).waitByID(checkbox_id);
-    const checked_pseudoclass = await puppeteerPage.$eval(
-      `[data-testid='${checkbox_id}']`,
+    const checkboxId = `category-select-${category}`;
+    await puppeteerUtils(puppeteerPage).waitByID(checkboxId);
+    const checkedPseudoclass = await puppeteerPage.$eval(
+      `[data-testid='${checkboxId}']`,
       el => {
         return el.matches(":checked");
       }
     );
-    if (!checked_pseudoclass) {
-      await puppeteerUtils(puppeteerPage).clickOn(checkbox_id);
+    if (!checkedPseudoclass) {
+      await puppeteerUtils(puppeteerPage).clickOn(checkboxId);
     }
     try {
-      const category_row = await puppeteerUtils(puppeteerPage).waitByID(
+      const categoryRow = await puppeteerUtils(puppeteerPage).waitByID(
         `category-expand-${category}`
       );
-      const is_expanded = await category_row.$(
+      const isExpanded = await categoryRow.$(
         "[data-testclass='category-expand-is-expanded']"
       );
-      if (is_expanded) {
+      if (isExpanded) {
         await puppeteerUtils(puppeteerPage).clickOn(
           `category-expand-${category}`
         );
@@ -154,7 +154,7 @@ export const cellxgeneActions = puppeteerPage => ({
   },
 
   async reset() {
-    const reset_button = await puppeteerUtils(puppeteerPage).clickOn("reset");
+    await puppeteerUtils(puppeteerPage).clickOn("reset");
     // loading state never actually happens, reset is too fast
     await page.waitFor(200);
   }

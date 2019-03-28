@@ -11,12 +11,12 @@ if (DEBUG) jest.setTimeout(100000);
 if (DEV) jest.setTimeout(10000);
 
 beforeAll(async () => {
-  const browser_params = DEV
+  const browserParams = DEV
     ? { headless: false, slowMo: 5 }
     : DEBUG
     ? { headless: false, slowMo: 100, devtools: true }
     : {};
-  browser = await puppeteer.launch(browser_params);
+  browser = await puppeteer.launch(browserParams);
   page = await browser.newPage();
   await page.setViewport(browserViewport);
   if (DEV || DEBUG) {
@@ -50,10 +50,10 @@ describe("metadata loads", async () => {
   test("categories and values from dataset appear", async () => {
     for (const label in data.categorical) {
       await utils.waitByID(`category-${label}`);
-      const category_name = await utils.getOneElementInnerText(
+      const categoryName = await utils.getOneElementInnerText(
         `[data-testid="category-${label}"]`
       );
-      expect(category_name).toMatch(label);
+      expect(categoryName).toMatch(label);
       await utils.clickOn(`category-expand-${label}`);
       const categories = await cxgActions.getAllCategoriesAndCounts(label);
       expect(Object.keys(categories)).toMatchObject(
@@ -74,13 +74,13 @@ describe("metadata loads", async () => {
 
 describe("cell selection", async () => {
   test("selects all cells cellset 1", async () => {
-    const cell_count = await cxgActions.cellSet(1);
-    expect(cell_count).toBe(data.dataframe.nObs);
+    const cellCount = await cxgActions.cellSet(1);
+    expect(cellCount).toBe(data.dataframe.nObs);
   });
 
   test("selects all cells cellset 2", async () => {
-    const cell_count = await cxgActions.cellSet(2);
-    expect(cell_count).toBe(data.dataframe.nObs);
+    const cellCount = await cxgActions.cellSet(2);
+    expect(cellCount).toBe(data.dataframe.nObs);
   });
 
   test("selects cells via lasso", async () => {
@@ -90,8 +90,8 @@ describe("cell selection", async () => {
         cellset["coordinates-as-percent"]
       );
       await cxgActions.drag("layout-graph", cellset1.start, cellset1.end, true);
-      const cell_count = await cxgActions.cellSet(1);
-      expect(cell_count).toBe(cellset.count);
+      const cellCount = await cxgActions.cellSet(1);
+      expect(cellCount).toBe(cellset.count);
     }
   });
 
@@ -104,21 +104,21 @@ describe("cell selection", async () => {
           `categorical-value-select-${cellset.metadata}-${val}`
         );
       }
-      const cell_count = await cxgActions.cellSet(1);
-      expect(cell_count).toBe(cellset.count);
+      const cellCount = await cxgActions.cellSet(1);
+      expect(cellCount).toBe(cellset.count);
     }
   });
 
   test("selects cells via continuous", async () => {
     for (const cellset of data.cellsets.continuous) {
-      const hist_id = `histogram-${cellset.metadata}-plot-brush`;
+      const histId = `histogram-${cellset.metadata}-plot-brush`;
       const coords = await cxgActions.calcDragCoordinates(
-        hist_id,
+        histId,
         cellset["coordinates-as-percent"]
       );
-      await cxgActions.drag(hist_id, coords.start, coords.end);
-      const cell_count = await cxgActions.cellSet(1);
-      expect(cell_count).toBe(cellset.count);
+      await cxgActions.drag(histId, coords.start, coords.end);
+      const cellCount = await cxgActions.cellSet(1);
+      expect(cellCount).toBe(cellset.count);
     }
   });
 });
@@ -207,10 +207,10 @@ describe("subset/reset", async () => {
     await cxgActions.reset();
     for (const label in data.categorical) {
       await utils.waitByID(`category-${label}`);
-      const category_name = await utils.getOneElementInnerText(
+      const categoryName = await utils.getOneElementInnerText(
         `[data-testid="category-${label}"]`
       );
-      expect(category_name).toMatch(label);
+      expect(categoryName).toMatch(label);
       const categories = await cxgActions.getAllCategoriesAndCounts(label);
       expect(Object.keys(categories)).toMatchObject(
         Object.keys(data.categorical[label])
@@ -228,18 +228,18 @@ describe("subset/reset", async () => {
       }
     }
     await utils.clickOn("subset-button");
-    const lasso_selection = await cxgActions.calcDragCoordinates(
+    const lassoSelection = await cxgActions.calcDragCoordinates(
       "layout-graph",
       data.subset.lasso["coordinates-as-percent"]
     );
     await cxgActions.drag(
       "layout-graph",
-      lasso_selection.start,
-      lasso_selection.end,
+      lassoSelection.start,
+      lassoSelection.end,
       true
     );
-    const cell_count = await cxgActions.cellSet(1);
-    expect(cell_count).toBe(data.subset.lasso.count);
+    const cellCount = await cxgActions.cellSet(1);
+    expect(cellCount).toBe(data.subset.lasso.count);
   });
 });
 
@@ -269,14 +269,14 @@ describe("ui elements don't error", async () => {
 
   test("pan and zoom", async () => {
     await utils.clickOn("mode-pan-zoom");
-    const pan_coords = await cxgActions.calcDragCoordinates(
+    const panCoords = await cxgActions.calcDragCoordinates(
       "layout-graph",
       data.pan["coordinates-as-percent"]
     );
     await cxgActions.drag(
       "layout-graph",
-      pan_coords.start,
-      pan_coords.end,
+      panCoords.start,
+      panCoords.end,
       false
     );
     await page.evaluate(`window.scrollBy(0, 1000);`);
