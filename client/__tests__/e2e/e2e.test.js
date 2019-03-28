@@ -144,6 +144,22 @@ describe("gene entry", async () => {
     );
     expect(userGeneHist).toEqual(expect.arrayContaining(testGenes));
   });
+
+  test("bad gene causes error", async () => {
+    await utils.clickOn("section-bulk-add");
+    await utils.typeInto("input-bulk-add", data.genes["bad search"]);
+    await page.keyboard.press("Enter");
+    await cxgActions.errorAppears();
+  });
+
+  test("bulk add bad formatting causes error", async () => {
+    await cxgActions.reset();
+    const testGenes = data.genes.bulkadd;
+    await utils.clickOn("section-bulk-add");
+    await utils.typeInto("input-bulk-add", testGenes.join(";"));
+    await page.keyboard.press("Enter");
+    await cxgActions.errorAppears();
+  });
 });
 
 describe("diffexp", async () => {

@@ -73,7 +73,8 @@ export const datasets = {
 
     genes: {
       bulkadd: ["S100A8", "FCGR3A", "LGALS2", "GSTP1"],
-      search: "ACD"
+      search: "ACD",
+      "bad search": "not a gene"
     },
     subset: {
       cellset1: [
