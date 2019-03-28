@@ -9,7 +9,7 @@
     "build": "npm run clean && webpack --config configuration/webpack/webpack.config.prod.js",
     "clean": "rimraf build",
     "dev": "npm run clean && webpack --config configuration/webpack/webpack.config.dev.js",
-    "e2e": "jest --verbose false --config __tests__/e2e/e2e-jest-config.json e2e",
+    "e2e": "jest --verbose false --config __tests__/e2e/e2eJestConfig.json e2e",
     "lint": "eslint src",
     "smoke-test": "start-server-and-test start-server-for-test :5000 e2e",
     "start": "node server/development.js",

@@ -1,6 +1,6 @@
 import puppeteer from "puppeteer";
 import { appUrlBase, DEBUG, DEV, DATASET } from "./config";
-import { puppeteerUtils, cellxgeneActions } from "./puppeteer-utils";
+import { puppeteerUtils, cellxgeneActions } from "./puppeteerUtils";
 import { datasets } from "./data";
 
 let browser, page, utils, cxgActions, spy;
