@@ -142,7 +142,7 @@ describe("gene entry", async () => {
     const userGeneHist = await cxgActions.getAllHistograms(
       "histogram-user-gene"
     );
-    expect(userGeneHist).toMatchObject(testGenes);
+    expect(userGeneHist).toEqual(expect.arrayContaining(testGenes));
   });
 });
 
@@ -162,7 +162,9 @@ describe("diffexp", async () => {
     await cxgActions.cellSet(2);
     await utils.clickOn("diffexp-button");
     const diffExpHists = await cxgActions.getAllHistograms("histogram-diffexp");
-    expect(diffExpHists).toMatchObject(data.diffexp["gene-results"]);
+    expect(diffExpHists).toEqual(
+      expect.arrayContaining(data.diffexp["gene-results"])
+    );
   });
 });
 //
