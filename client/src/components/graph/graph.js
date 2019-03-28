@@ -479,6 +479,8 @@ class Graph extends React.Component {
                 intent="warning"
                 style={{ marginRight: 10 }}
                 onClick={this.resetInterface}
+                data-testid="reset"
+                data-testclass={`resetting-${resettingInterface}`}
               >
                 reset
               </AnchorButton>
@@ -488,6 +490,7 @@ class Graph extends React.Component {
                 <Tooltip content="Lasso selection" position="left">
                   <Button
                     type="button"
+                    data-testid="mode-lasso"
                     className="bp3-button bp3-icon-polygon-filter"
                     active={mode === "lasso"}
                     onClick={() => {
@@ -503,6 +506,7 @@ class Graph extends React.Component {
                 <Tooltip content="Pan and zoom" position="left">
                   <Button
                     type="button"
+                    data-testid="mode-pan-zoom"
                     className="bp3-button bp3-icon-zoom-in"
                     active={mode === "zoom"}
                     onClick={() => {

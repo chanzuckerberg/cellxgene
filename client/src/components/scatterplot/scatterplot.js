@@ -338,6 +338,7 @@ class Scatterplot extends React.Component {
           <Button
             type="button"
             minimal
+            data-testid="clear-scatterplot"
             onClick={() =>
               dispatch({
                 type: "clear scatterplot"
@@ -358,6 +359,7 @@ class Scatterplot extends React.Component {
           <canvas
             width={width}
             height={height}
+            data-testid="scatterplot"
             style={{
               marginLeft: margin.left - 7,
               marginTop: margin.top

@@ -77,6 +77,9 @@ module.exports = {
       template: path.resolve("index.html"),
       favicon: path.resolve("favicon.png")
     }),
-    new webpack.NoEmitOnErrorsPlugin()
+    new webpack.NoEmitOnErrorsPlugin(),
+    new webpack.DefinePlugin({
+      __REACT_DEVTOOLS_GLOBAL_HOOK__: "({ isDisabled: true })"
+    })
   ]
 };
