@@ -6,6 +6,7 @@ const GraphSelection = (state = {}, action) => {
       };
     }
 
+    case "graph brush selection start":
     case "graph brush selection change": {
       const { brushCoords } = action;
       return {

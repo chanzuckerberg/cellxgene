@@ -200,6 +200,7 @@ class Graph extends React.Component {
         .selectAll("svg")
         .remove();
       const { svg: newSvg, brush } = setupSVGandBrushElements(
+        this.handleBrushStartAction.bind(this),
         this.handleBrushSelectAction.bind(this),
         this.handleBrushDeselectAction.bind(this),
         responsive,
@@ -326,7 +327,7 @@ class Graph extends React.Component {
     return [(pout[0] + 1) / 2 + offset[0], (pout[1] + 1) / 2 + offset[1]];
   }
 
-  handleBrushSelectAction() {
+  handleBrushCommon(type) {
     /*
       This conditional handles procedural brush deselect. Brush emits
       an event on procedural deselect because it is move: null
@@ -355,10 +356,18 @@ class Graph extends React.Component {
       };
 
       dispatch({
-        type: "graph brush selection change",
+        type,
         brushCoords
       });
     }
+  }
+
+  handleBrushSelectAction() {
+    this.handleBrushCommon("graph brush selection change");
+  }
+
+  handleBrushStartAction() {
+    this.handleBrushCommon("graph brush selection start");
   }
 
   handleBrushDeselectAction() {

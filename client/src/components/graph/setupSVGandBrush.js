@@ -10,6 +10,7 @@ import Lasso from "./setupLasso";
 ******************************************/
 
 export default (
+  handleBrushStartAction,
   handleBrushSelectAction,
   handleBrushDeselectAction,
   responsive,
@@ -28,6 +29,7 @@ export default (
   const brush = d3
     .brush()
     .extent([[0, 0], [responsive.width - graphPaddingRight, responsive.height]])
+    .on("start", handleBrushStartAction)
     .on("brush", handleBrushSelectAction)
     .on("end", handleBrushDeselectAction);
 

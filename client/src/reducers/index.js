@@ -28,6 +28,7 @@ const ignoredActions = new Set([
   "window resize",
 
   "graph lasso started",
+  "graph brush selection change",
 
   "request differential expression success",
 

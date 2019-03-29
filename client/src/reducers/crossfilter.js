@@ -111,6 +111,7 @@ const CrossfilterReducer = (
       return crossfilter;
     }
 
+    case "graph brush selection start":
     case "graph brush selection change": {
       const [minX, maxY] = action.brushCoords.northwest;
       const [maxX, minY] = action.brushCoords.southeast;
