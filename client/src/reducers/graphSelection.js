@@ -7,11 +7,10 @@ const GraphSelection = (state = {}, action) => {
     }
 
     case "graph brush selection change": {
-      const { northwest, southeast } = action;
+      const { brushCoords } = action;
       return {
         mode: "rect",
-        northwest,
-        southeast
+        brushCoords
       };
     }
 

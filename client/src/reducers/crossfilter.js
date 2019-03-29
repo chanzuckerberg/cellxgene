@@ -112,14 +112,14 @@ const CrossfilterReducer = (
     }
 
     case "graph brush selection change": {
-      const [x0, y0] = action.brushCoords.northwest;
-      const [x1, y1] = action.brushCoords.southeast;
+      const [minX, maxY] = action.brushCoords.northwest;
+      const [maxX, minY] = action.brushCoords.southeast;
       return state.select(XYDimName, {
         mode: "within-rect",
-        x0,
-        y0,
-        x1,
-        y1
+        minX,
+        minY,
+        maxX,
+        maxY
       });
     }
 
