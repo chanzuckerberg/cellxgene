@@ -543,14 +543,28 @@ class Dataframe {
   /****
   Functional (map/reduce/etc) data access
 
-  XXX: not yet implemented, as there is no clear use case.   Can easily
+  TODO: most are not yet implemented, as there is no clear use case.   Can easily
   add these as useful.
   ****/
+
+  mapColumns(callback) {
+    /*
+    map all columns in the dataframe, returning a new dataframe comprised of the
+    return values, with the same index as the original dataframe.
+    */
+    const columnMap = this.__columns.map(callback);
+    return new this.constructor(
+      this.dims,
+      columnMap,
+      this.rowIndex,
+      this.colIndex
+    );
+  }
 
   /*
   Map & reduce of column or row
 
-  XXX TODO remainder of map/reduce functions:  mapCol, mapRow, reduceRow, ...
+  TODO remainder of map/reduce functions:  mapCol, mapRow, reduceRow, ...
   */
   /* comment out until we have a use for this
 

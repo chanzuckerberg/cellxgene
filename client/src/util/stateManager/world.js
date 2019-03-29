@@ -166,7 +166,10 @@ export function createObsDimensions(crossfilter, world) {
 }
 
 export function worldEqUniverse(world, universe) {
-  return world.obsAnnotations === universe.obsAnnotations;
+  return (
+    world.obsAnnotations === universe.obsAnnotations ||
+    world.obsAnnotations.rowIndex === universe.obsAnnotations.rowIndex
+  );
 }
 
 export function getSelectedByIndex(crossfilter) {

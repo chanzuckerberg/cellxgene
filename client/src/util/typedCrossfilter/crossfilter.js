@@ -109,6 +109,13 @@ export default class ImmutableTypedCrossfilter {
     return new ImmutableTypedCrossfilter(data, dimensions, selectionCache);
   }
 
+  percentile(name, p) {
+    const { dim } = this.dimensions[name];
+    if (p < 0 || p > 1)
+      throw new Error("percentile parameter must be >= 0 and <= 1");
+    return dim.percentile(p);
+  }
+
   select(name, spec) {
     /*
     select on named dimension, as indicated by `spec`.   Spec is an object
@@ -284,15 +291,19 @@ class _ImmutableBaseDimension {
     this.name = name;
   }
 
-  /* eslint-disable class-methods-use-this */
   select(spec) {
     const { mode } = spec;
     if (mode === undefined) {
       throw new Error("select spec does not contain 'mode'");
     }
-    throw new Error(`select mode ${mode} not implemented`);
+    throw new Error(
+      `select mode ${mode} not implemented by dimension ${this.name}`
+    );
   }
-  /* eslint-enable class-methods-use-this */
+
+  percentile() {
+    throw new Error(`percentile not supported by dimension ${this.name}`);
+  }
 }
 
 class ImmutableScalarDimension extends _ImmutableBaseDimension {
@@ -396,6 +407,13 @@ class ImmutableScalarDimension extends _ImmutableBaseDimension {
     ];
     if (r[0] < r[1]) ranges.push(r);
     return { ranges, index };
+  }
+
+  percentile(p) {
+    const { value, index } = this;
+    const len = value.length;
+    const i = Math.min(len - 1, Math.ceil(p * len));
+    return value[index[i]];
   }
 }
 
