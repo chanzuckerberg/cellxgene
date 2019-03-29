@@ -45,6 +45,8 @@ function templateWorld() {
     schema: null,
     nObs: 0,
     nVar: 0,
+    continuousPercentileMin: 0,
+    continuousPercentileMax: 100,
 
     /* annotations */
     obsAnnotations: Dataframe.Dataframe.empty(),
@@ -60,7 +62,11 @@ function templateWorld() {
   };
 }
 
-export function createWorldFromEntireUniverse(universe) {
+export function createWorldFromEntireUniverse(
+  universe,
+  continuousPercentileMin,
+  continuousPercentileMax
+) {
   const world = templateWorld();
 
   /*
@@ -71,6 +77,8 @@ export function createWorldFromEntireUniverse(universe) {
   world.schema = universe.schema;
   world.nObs = universe.nObs;
   world.nVar = universe.nVar;
+  world.continuousPercentileMin = continuousPercentileMin;
+  world.continuousPercentileMax = continuousPercentileMax;
 
   /* annotation dataframes */
   world.obsAnnotations = universe.obsAnnotations;
@@ -88,6 +96,13 @@ export function createWorldFromEntireUniverse(universe) {
 }
 
 export function createWorldFromCurrentSelection(universe, world, crossfilter) {
+export function createWorldFromCurrentSelection(
+  universe,
+  world,
+  crossfilter,
+  continuousPercentileMin,
+  continuousPercentileMax
+) {
   const newWorld = templateWorld();
 
   /* these don't change as only OBS are selected in our current implementation */
@@ -100,6 +115,9 @@ export function createWorldFromCurrentSelection(universe, world, crossfilter) {
   newWorld.obsAnnotations = world.obsAnnotations.isubsetMask(mask);
   newWorld.obsLayout = world.obsLayout.isubsetMask(mask);
   newWorld.nObs = newWorld.obsAnnotations.dims[0];
+
+  newWorld.continuousPercentileMin = continuousPercentileMin;
+  newWorld.continuousPercentileMax = continuousPercentileMax;
 
   /*
   Var data columns - subset of all

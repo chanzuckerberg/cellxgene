@@ -3,17 +3,22 @@ import _ from "lodash";
 import { World, ControlsHelpers } from "../util/stateManager";
 
 const WorldReducer = (
-  state = null,
+  state = {
+    continuousPercentileMin: 0,
+    continuousPercentileMax: 100
+  },
   action,
   nextSharedState,
-  prevSharedState,
-  continuousPercentileMin = 0,
-  continuousPercentileMax = 100
+  prevSharedState
 ) => {
   switch (action.type) {
     case "initial data load complete (universe exists)": {
       const { universe } = nextSharedState;
-      const world = World.createWorldFromEntireUniverse(universe);
+      const world = World.createWorldFromEntireUniverse(
+        universe,
+        state.continuousPercentileMin,
+        state.continuousPercentileMax
+      );
       return world;
     }
 
@@ -26,7 +31,9 @@ const WorldReducer = (
       const world = World.createWorldFromCurrentSelection(
         action.universe,
         action.world,
-        action.crossfilter
+        action.crossfilter,
+        state.continuousPercentileMin,
+        state.continuousPercentileMax
       );
       return world;
     }
