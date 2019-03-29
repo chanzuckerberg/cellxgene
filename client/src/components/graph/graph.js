@@ -388,7 +388,7 @@ class Graph extends React.Component {
     // reset selected points when starting a new polygon
     // making it easier for the user to make the next selection
     dispatch({
-      type: "lasso started"
+      type: "graph lasso started"
     });
   }
 
@@ -402,10 +402,10 @@ class Graph extends React.Component {
       Math.abs(d3.polygonArea(polygon)) < minimumPolygoneArea
     ) {
       // if less than three points, or super small area, treat as a clear selection.
-      dispatch({ type: "lasso deselect" });
+      dispatch({ type: "graph lasso deselect" });
     } else {
       dispatch({
-        type: "lasso selection",
+        type: "graph lasso selection",
         polygon: polygon.map(xy => this.invertPoint(xy)) // transform the polygon
       });
     }

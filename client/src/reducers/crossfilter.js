@@ -10,6 +10,8 @@ import {
   makeContinuousDimensionName
 } from "../util/nameCreators";
 
+const XYDimName = layoutDimensionName("XY");
+
 const CrossfilterReducer = (
   state = null,
   action,
@@ -110,10 +112,9 @@ const CrossfilterReducer = (
     }
 
     case "graph brush selection change": {
-      const name = layoutDimensionName("XY");
       const [x0, y0] = action.brushCoords.northwest;
       const [x1, y1] = action.brushCoords.southeast;
-      return state.select(name, {
+      return state.select(XYDimName, {
         mode: "within-rect",
         x0,
         y0,
@@ -122,20 +123,14 @@ const CrossfilterReducer = (
       });
     }
 
-    case "lasso deselect":
+    case "graph lasso deselect":
     case "graph brush deselect": {
-      const name = layoutDimensionName("XY");
-      return state.select(name, { mode: "all" });
+      return state.select(XYDimName, { mode: "all" });
     }
 
-    case "lasso selection": {
+    case "graph lasso selection": {
       const { polygon } = action;
-      const name = layoutDimensionName("XY");
-      if (polygon.length < 3) {
-        // single point or a line is not a polygon, and is therefore a deselect
-        return state.select(name, { mode: "all" });
-      }
-      return state.select(name, {
+      return state.select(XYDimName, {
         mode: "within-polygon",
         polygon
       });

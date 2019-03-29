@@ -8,6 +8,7 @@ import universe from "./universe";
 import world from "./world";
 import categoricalSelection from "./categoricalSelection";
 import continuousSelection from "./continuousSelection";
+import graphSelection from "./graphSelection";
 import crossfilter from "./crossfilter";
 import colors from "./colors";
 import differential from "./differential";
@@ -26,7 +27,7 @@ const ignoredActions = new Set([
   "increment graph render counter",
   "window resize",
 
-  "lasso started",
+  "graph lasso started",
 
   "request differential expression success",
 
@@ -65,6 +66,7 @@ const Reducer = undoable(
     ["world", world],
     ["categoricalSelection", categoricalSelection],
     ["continuousSelection", continuousSelection],
+    ["graphSelection", graphSelection],
     ["crossfilter", crossfilter],
     ["colors", colors],
     ["controls", controls],
@@ -76,6 +78,7 @@ const Reducer = undoable(
     "world",
     "categoricalSelection",
     "continuousSelection",
+    "graphSelection",
     "crossfilter",
     "colors",
     "controls",
