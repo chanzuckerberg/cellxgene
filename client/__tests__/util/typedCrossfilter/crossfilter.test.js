@@ -304,15 +304,15 @@ describe("ImmutableTypedCrossfilter", () => {
     });
     test.each([[0, 0, 1, 1], [0, 0, 0.5, 0.5], [0.5, 0.5, 1, 1]])(
       "within-rect %d %d %d %d",
-      (x0, y0, x1, y1) => {
+      (minX, minY, maxX, maxY) => {
         expect(
           p
-            .select("coords", { mode: "within-rect", x0, y0, x1, y1 })
+            .select("coords", { mode: "within-rect", minX, minY, maxX, maxY })
             .allSelected()
         ).toEqual(
           _.filter(someData, d => {
             const [x, y] = d.coords;
-            return x0 <= x && x < x1 && y0 <= y && y < y1;
+            return minX <= x && x < maxX && minY <= y && y < maxY;
           })
         );
       }
