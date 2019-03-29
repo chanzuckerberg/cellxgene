@@ -64,7 +64,9 @@ const filterGenes = (query, genes) =>
     userDefinedGenesLoading: state.controls.userDefinedGenesLoading,
     world: state.world,
     colorAccessor: state.colors.colorAccessor,
-    differential: state.differential
+    differential: state.differential,
+    continuousPercentileMin: state.world.continuousPercentileMin,
+    continuousPercentileMax: state.world.continuousPercentileMax
   };
 })
 class GeneExpression extends React.Component {
@@ -157,6 +159,22 @@ class GeneExpression extends React.Component {
 
     this.setState({ bulkAdd: "" });
   }
+
+  handleContinuousPercentileMin = v => {
+    const { dispatch } = this.props;
+    dispatch({
+      type: "set continuous percentile min",
+      data: v
+    });
+  };
+
+  handleContinuousPercentileMax = v => {
+    const { dispatch } = this.props;
+    dispatch({
+      type: "set continuous percentile max",
+      data: v
+    });
+  };
 
   render() {
     const {
