@@ -81,11 +81,11 @@ export function createWorldFromEntireUniverse(
   world.continuousPercentileMax = continuousPercentileMax;
 
   /* annotation dataframes */
-  world.obsAnnotations = universe.obsAnnotations;
-  world.varAnnotations = universe.varAnnotations;
+  world.obsAnnotations = universe.obsAnnotations.clone();
+  world.varAnnotations = universe.varAnnotations.clone();
 
   /* layout and display characteristics dataframe */
-  world.obsLayout = universe.obsLayout;
+  world.obsLayout = universe.obsLayout.clone();
 
   /*
   Var data columns - subset of all
