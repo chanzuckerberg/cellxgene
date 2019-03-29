@@ -38,6 +38,22 @@ const WorldReducer = (
       return world;
     }
 
+    case "set continuous percentile min": {
+      console.log("setting percentile min to", action.data);
+      return {
+        ...state,
+        continuousPercentileMin: action.data
+      };
+    }
+
+    case "set continuous percentile max": {
+      console.log("setting percentile max to", action.data);
+      return {
+        ...state,
+        continuousPercentileMax: action.data
+      };
+    }
+
     case "expression load success": {
       const { universe } = nextSharedState;
       const universeVarData = universe.varData;
