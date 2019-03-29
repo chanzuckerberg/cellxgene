@@ -65,6 +65,13 @@ from server.app.util.utils import custom_format_warning
     show_default=True,
     help="Relative expression cutoff used when selecting top N differentially expressed genes",
 )
+@click.option(
+    "--scripts",
+    default=[],
+    multiple=True,
+    help="Additional script files to include in html page",
+    show_default=True,
+)
 def launch(
     data,
     layout,
@@ -79,6 +86,7 @@ def launch(
     host,
     max_category_items,
     diffexp_lfc_cutoff,
+    scripts,
 ):
     """Launch the cellxgene data viewer.
     This web app lets you explore single-cell expression data.
@@ -119,6 +127,7 @@ def launch(
     from server.app.app import app
 
     app.config.update(DATASET_TITLE=title)
+    app.config.update(SCRIPTS=scripts)
 
     if not verbose:
         log = logging.getLogger("werkzeug")
