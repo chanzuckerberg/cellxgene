@@ -31,6 +31,9 @@ from scipy.sparse.csc import csc_matrix
 @click.option("--set-obs-names", default="", help="Named field to set as index for obs.", metavar="<name>")
 @click.option("--set-var-names", default="", help="Named field to set as index for var.", metavar="<name>")
 @click.option(
+    "--calculate_qc_metrics", default=True, is_flag=True,
+    help="Whether to calculate QC metrics (saved to adata.obs and adata.var)", show_default=True)
+@click.option(
     "--make-obs-names-unique", default=True, is_flag=True, help="Ensure obs index is unique.", show_default=True
 )
 @click.option(
@@ -46,6 +49,7 @@ def prepare(
     overwrite,
     set_obs_names,
     set_var_names,
+    calculate_qc_metrics,
     make_obs_names_unique,
     make_var_names_unique,
 ):
@@ -83,7 +87,7 @@ def prepare(
     if isfile(output) and not overwrite:
         raise click.UsageError(f"Cannot overwrite existing file {output}, try using the flag --overwrite")
 
-    def load_data(data):
+    def load_data(data, calculate_qc_metrics):
         if isfile(data):
             name, extension = splitext(data)
             if extension == ".h5ad":
@@ -115,6 +119,9 @@ def prepare(
             click.echo("Warning: obs index is not unique")
         if not adata._var.index.is_unique:
             click.echo("Warning: var index is not unique")
+
+	if calculate_qc_metrics:
+	    sc.pp.calculate_qc_metrics(adata, inplace=True)
 
         return adata
 
@@ -185,7 +192,7 @@ def prepare(
     steps = [make_sparse, run_recipe, run_pca, run_neighbors, run_louvain, run_layout]
 
     click.echo(f"[cellxgene] Loading data from {data}, please wait...")
-    adata = load_data(data)
+    adata = load_data(data, calculate_qc_metrics)
 
     click.echo("[cellxgene] Beginning preprocessing...")
     with click.progressbar(steps, label="[cellxgene] Progress", show_eta=False, item_show_func=show_step) as bar:
