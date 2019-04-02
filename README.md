@@ -8,7 +8,7 @@
 
 ## getting started
 
-You'll need **python 3.6** and **Google Chrome**. (_Warning_: Python 3.7 is **not** supported at this time)
+You'll need **python 3.6+** and **Google Chrome**.
 The web UI is tested on OSX and Windows using Chrome, and the python CLI is tested on OSX and Ubuntu (via WSL/Windows). It should work on other platforms, but if you run into trouble let us know (see [help](#help-and-contact) below).
 
 To install run
@@ -101,7 +101,7 @@ pip install python-igraph louvain>=0.6
 If you use conda and want to create a conda environment for `cellxgene` you can use the following commands
 
 ```
-conda create --yes -n cellxgene python=3.6
+conda create --yes -n cellxgene python=3.7
 conda activate cellxgene
 pip install cellxgene
 ```
@@ -110,7 +110,7 @@ Or you can create a virtual environment by using
 
 ```
 ENV_NAME=cellxgene
-python3.6 -m venv ${ENV_NAME}
+python3.7 -m venv ${ENV_NAME}
 source ${ENV_NAME}/bin/activate
 pip install cellxgene
 ```
@@ -231,7 +231,7 @@ Depending on your background and interests, you might want to contribute to the 
 
 If you are interested in working on `cellxgene` development, we recommend cloning the project from Gitub. First you'll need the following installed on your machine
 
-- python 3.6
+- python 3.6+
 - node and npm (we recommend using [nvm](https://github.com/creationix/nvm) if this is your first time with node)
 
 Then clone the project
