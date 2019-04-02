@@ -73,20 +73,20 @@ from server.app.util.utils import custom_format_warning
     show_default=True,
 )
 def launch(
-    data,
-    layout,
-    diffexp,
-    title,
-    verbose,
-    debug,
-    obs_names,
-    var_names,
-    open_browser,
-    port,
-    host,
-    max_category_items,
-    diffexp_lfc_cutoff,
-    scripts,
+        data,
+        layout,
+        diffexp,
+        title,
+        verbose,
+        debug,
+        obs_names,
+        var_names,
+        open_browser,
+        port,
+        host,
+        max_category_items,
+        diffexp_lfc_cutoff,
+        scripts,
 ):
     """Launch the cellxgene data viewer.
     This web app lets you explore single-cell expression data.
@@ -112,6 +112,17 @@ def launch(
         open_browser = False
     else:
         warnings.formatwarning = custom_format_warning
+
+    if scripts:
+        click.echo("""
+/ / /\ \ \__ _ _ __ _ __ (_)_ __   __ _
+\ \/  \/ / _` | '__| '_ \| | '_ \ / _` |
+ \  /\  / (_| | |  | | | | | | | | (_| |
+  \/  \/ \__,_|_|  |_| |_|_|_| |_|\__, |
+                                  |___/
+The --scripts flag is intended for developers to include google analytics etc. You could be opening yourself to a
+security risk by including the --scripts flag. Make sure you trust the scripts that you are including.
+        """)
 
     if not verbose:
         sys.tracebacklimit = 0
