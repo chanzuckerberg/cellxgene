@@ -1,32 +1,54 @@
-const GraphSelection = (state = {}, action) => {
+const GraphSelection = (
+  state = {
+    tool: "lasso", // what selection tool mode (lasso, brush, ...)
+    selection: { mode: "all" } // current selection, which is tool specific
+  },
+  action
+) => {
   switch (action.type) {
     case "reset World to eq Universe": {
       return {
-        mode: "all"
+        ...state,
+        selection: {
+          mode: "all"
+        }
       };
     }
 
-    case "graph brush selection start":
-    case "graph brush selection change": {
-      const { brushCoords } = action;
+    case "graph brush end":
+    case "graph brush change": {
+      const { brushCoords, sourceCoords } = action;
       return {
-        mode: "rect",
-        brushCoords
+        ...state,
+        selection: {
+          mode: "within-rect",
+          brushCoords,
+          sourceCoords
+        }
       };
     }
 
-    case "graph lasso selection": {
-      const { polygon } = action;
+    case "graph lasso end": {
+      const { polygon, source } = action;
       return {
-        mode: "lasso",
-        polygon
+        ...state,
+        selection: {
+          mode: "within-polygon",
+          polygon,
+          source
+        }
       };
     }
 
+    case "graph lasso cancel":
+    case "graph brush cancel":
     case "graph lasso deselect":
     case "graph brush deselect": {
       return {
-        mode: "all"
+        ...state,
+        selection: {
+          mode: "all"
+        }
       };
     }
 

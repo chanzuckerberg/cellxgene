@@ -10,13 +10,12 @@ import Lasso from "./setupLasso";
 ******************************************/
 
 export default (
-  handleBrushStartAction,
-  handleBrushSelectAction,
-  handleBrushDeselectAction,
+  selectionToolType,
+  handleStartAction,
+  handleDragAction,
+  handleEndAction,
   responsive,
-  graphPaddingRight,
-  handleLassoStart,
-  handleLassoEnd
+  graphPaddingRight
 ) => {
   const svg = d3
     .select("#graphAttachPoint")
@@ -26,28 +25,35 @@ export default (
     .attr("height", responsive.height)
     .attr("class", `${styles.graphSVG}`);
 
-  const brush = d3
-    .brush()
-    .extent([[0, 0], [responsive.width - graphPaddingRight, responsive.height]])
-    .on("start", handleBrushStartAction)
-    .on("brush", handleBrushSelectAction)
-    .on("end", handleBrushDeselectAction);
+  if (selectionToolType === "brush") {
+    const brush = d3
+      .brush()
+      .extent([
+        [0, 0],
+        [responsive.width - graphPaddingRight, responsive.height]
+      ])
+      .on("start", handleStartAction)
+      .on("brush", handleDragAction)
+      .on("end", handleEndAction);
 
-  const brushContainer = svg
-    .append("g")
-    .attr("class", "graph_brush")
-    .call(brush);
+    const brushContainer = svg
+      .append("g")
+      .attr("class", "graph_brush")
+      .call(brush);
 
-  const lassoInstance = Lasso()
-    .on("end", handleLassoEnd)
-    .on("start", handleLassoStart);
+    return { svg, container: brushContainer, tool: brush };
+  }
 
-  const lasso = svg.call(lassoInstance);
+  if (selectionToolType === "lasso") {
+    const lasso = Lasso()
+      .on("end", handleEndAction)
+      // lass does not generate drag/brush events
+      .on("start", handleStartAction);
 
-  return {
-    svg,
-    brushContainer,
-    brush,
-    lasso
-  };
+    const lassoContainer = svg.call(lasso);
+
+    return { svg, container: lassoContainer, tool: lasso };
+  }
+
+  throw new Error("unknown graph selection tool");
 };

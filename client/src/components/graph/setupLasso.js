@@ -114,6 +114,22 @@ const Lasso = () => {
         closePath = null;
       }
     };
+
+    lasso.move = polygon => {
+      if (polygon !== lassoPolygon || polygon.length !== lassoPolygon.length) {
+        lasso.reset();
+
+        lassoPolygon = polygon;
+        lassoPath = g
+          .append("path")
+          .attr("fill", "#0bb")
+          .attr("fill-opacity", 0.1)
+          .attr("stroke", "#0bb")
+          .attr("stroke-dasharray", "3, 3");
+
+        lassoPath.attr("d", `${polygonToPath(lassoPolygon)}Z`);
+      }
+    };
   };
 
   lasso.on = (type, callback) => {

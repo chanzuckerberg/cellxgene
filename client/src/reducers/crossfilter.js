@@ -111,8 +111,8 @@ const CrossfilterReducer = (
       return crossfilter;
     }
 
-    case "graph brush selection start":
-    case "graph brush selection change": {
+    case "graph brush end":
+    case "graph brush change": {
       const [minX, maxY] = action.brushCoords.northwest;
       const [maxX, minY] = action.brushCoords.southeast;
       return state.select(XYDimName, {
@@ -124,17 +124,19 @@ const CrossfilterReducer = (
       });
     }
 
-    case "graph lasso deselect":
-    case "graph brush deselect": {
-      return state.select(XYDimName, { mode: "all" });
-    }
-
-    case "graph lasso selection": {
+    case "graph lasso end": {
       const { polygon } = action;
       return state.select(XYDimName, {
         mode: "within-polygon",
         polygon
       });
+    }
+
+    case "graph lasso cancel":
+    case "graph brush cancel":
+    case "graph lasso deselect":
+    case "graph brush deselect": {
+      return state.select(XYDimName, { mode: "all" });
     }
 
     case "continuous metadata histogram start":

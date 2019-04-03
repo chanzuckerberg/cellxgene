@@ -28,6 +28,7 @@ const Controls = (
   nextSharedState,
   prevSharedState
 ) => {
+  console.log(action);
   /*
   For now, log anything looking like an error to the console.
   */
