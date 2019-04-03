@@ -118,13 +118,15 @@ def prepare(
             adata.var_names_make_unique()
         if not adata._obs.index.is_unique:
             click.echo("Warning: obs index is not unique")
-        if not adata._var.index.is_unique:
-            click.echo("Warning: var index is not unique")
+	if not adata._var.index.is_unique:
+	    click.echo("Warning: var index is not unique")
 
-	if calculate_qc_metrics:
+	return adata
+
+    def calculate_qc_metrics(adata):
+	if run_qc:
 	    sc.pp.calculate_qc_metrics(adata, inplace=True)
-
-        return adata
+	return adata
 
     def make_sparse(adata):
         if (type(adata.X) is ndarray) and sparse:
@@ -180,6 +182,7 @@ def prepare(
 
     def show_step(item):
         names = {
+	    "calculate_qc_metrics": "Calculating QC metrics" if run_qc else "Skipping QC",
             "make_sparse": "Ensuring sparsity",
             "run_recipe": f'Running preprocessing recipe "{recipe}"',
             "run_pca": "Running PCA",
@@ -190,7 +193,7 @@ def prepare(
         if item is not None:
             return names[item.__name__]
 
-    steps = [make_sparse, run_recipe, run_pca, run_neighbors, run_louvain, run_layout]
+    steps = [calculate_qc_metrics, make_sparse, run_recipe, run_pca, run_neighbors, run_louvain, run_layout]
 
     click.echo(f"[cellxgene] Loading data from {data}, please wait...")
     adata = load_data(data)
