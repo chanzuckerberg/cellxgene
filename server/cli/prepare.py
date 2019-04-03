@@ -31,7 +31,7 @@ from scipy.sparse.csc import csc_matrix
 @click.option("--set-obs-names", default="", help="Named field to set as index for obs.", metavar="<name>")
 @click.option("--set-var-names", default="", help="Named field to set as index for var.", metavar="<name>")
 @click.option(
-    "--calculate_qc_metrics", default=True, is_flag=True,
+    "--run-qc/--skip-qc", default=True, is_flag=True,
     help="Whether to calculate QC metrics (saved to adata.obs and adata.var). \
     See scanpy.pp.calculate_qc_metrics for details.", show_default=True)
 @click.option(
@@ -50,7 +50,7 @@ def prepare(
     overwrite,
     set_obs_names,
     set_var_names,
-    calculate_qc_metrics,
+    run_qc,
     make_obs_names_unique,
     make_var_names_unique,
 ):
