@@ -88,7 +88,7 @@ def prepare(
     if isfile(output) and not overwrite:
         raise click.UsageError(f"Cannot overwrite existing file {output}, try using the flag --overwrite")
 
-    def load_data(data, calculate_qc_metrics):
+    def load_data(data):
         if isfile(data):
             name, extension = splitext(data)
             if extension == ".h5ad":
@@ -193,7 +193,7 @@ def prepare(
     steps = [make_sparse, run_recipe, run_pca, run_neighbors, run_louvain, run_layout]
 
     click.echo(f"[cellxgene] Loading data from {data}, please wait...")
-    adata = load_data(data, calculate_qc_metrics)
+    adata = load_data(data)
 
     click.echo("[cellxgene] Beginning preprocessing...")
     with click.progressbar(steps, label="[cellxgene] Progress", show_eta=False, item_show_func=show_step) as bar:
