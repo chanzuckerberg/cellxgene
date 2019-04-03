@@ -114,7 +114,7 @@ def launch(
         warnings.formatwarning = custom_format_warning
 
     if scripts:
-        click.echo("""
+        click.echo(r"""
 / / /\ \ \__ _ _ __ _ __ (_)_ __   __ _
 \ \/  \/ / _` | '__| '_ \| | '_ \ / _` |
  \  /\  / (_| | |  | | | | | | | | (_| |
