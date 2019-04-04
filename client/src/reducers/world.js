@@ -5,7 +5,7 @@ import { World, ControlsHelpers } from "../util/stateManager";
 const WorldReducer = (
   state = {
     continuousPercentileMin: 0,
-    continuousPercentileMax: 100
+    continuousPercentileMax: 1
   },
   action,
   nextSharedState,
@@ -42,7 +42,7 @@ const WorldReducer = (
       console.log("setting percentile min to", action.data);
       return {
         ...state,
-        continuousPercentileMin: action.data
+        continuousPercentileMin: action.data / 100
       };
     }
 
@@ -50,7 +50,7 @@ const WorldReducer = (
       console.log("setting percentile max to", action.data);
       return {
         ...state,
-        continuousPercentileMax: action.data
+        continuousPercentileMax: action.data / 100
       };
     }
 

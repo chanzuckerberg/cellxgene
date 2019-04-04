@@ -46,7 +46,7 @@ function templateWorld() {
     nObs: 0,
     nVar: 0,
     continuousPercentileMin: 0,
-    continuousPercentileMax: 100,
+    continuousPercentileMax: 1,
 
     /* annotations */
     obsAnnotations: Dataframe.Dataframe.empty(),

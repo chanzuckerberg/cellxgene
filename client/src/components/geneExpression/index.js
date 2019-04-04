@@ -211,16 +211,16 @@ class GeneExpression extends React.Component {
             <NumericInput
               onValueChange={this.handleContinuousPercentileMin}
               onButtonClick={this.handleContinuousPercentileMin}
-              value={this.props.continuousPercentileMin}
+              value={this.props.continuousPercentileMin * 100}
               min={0}
-              max={this.props.continuousPercentileMax - 1}
+              max={this.props.continuousPercentileMax * 100 - 1}
             />
             and max:
             <NumericInput
               onValueChange={this.handleContinuousPercentileMax}
               onButtonClick={this.handleContinuousPercentileMax}
-              value={this.props.continuousPercentileMax}
-              min={this.props.continuousPercentileMin + 1}
+              value={this.props.continuousPercentileMax * 100}
+              min={this.props.continuousPercentileMin * 100 + 1}
               max={100}
             />
             percentile. Axes and binning will be updated.
