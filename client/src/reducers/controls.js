@@ -31,7 +31,6 @@ const Controls = (
   /*
   For now, log anything looking like an error to the console.
   */
-  console.log(action.type);
   if (action.error || /error/i.test(action.type)) {
     console.error(action.error);
   }
