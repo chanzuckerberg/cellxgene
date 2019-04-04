@@ -16,50 +16,7 @@ import responsive from "./responsive";
 import controls from "./controls";
 import resetCache from "./resetCache";
 
-const ignoredActions = new Set([
-  // these actions will not affect history, ie, we will
-  // not snapshot history upon these actions.  These take
-  // precedent over `clearHistoryUponActions`
-  "url changed",
-  "interface reset started",
-  "initial data load start",
-  "configuration load complete",
-  "increment graph render counter",
-  "window resize",
-
-  "graph lasso start",
-  "graph brush end",
-  "graph brush change",
-
-  "request differential expression success",
-
-  "expression load start",
-  "expression load success",
-  "expression load error",
-
-  "continuous metadata histogram brush",
-  "continuous metadata histogram end",
-
-  "request user defined gene started",
-  "request user defined gene success",
-  "request user defined gene error",
-  "bulk user defined gene complete",
-  "single user defined gene complete"
-]);
-
-const clearOnActions = new Set([
-  // history will be cleared when these actions occur
-  "initial data load complete (universe exists)",
-  "reset World to eq Universe",
-  "initial data load error"
-]);
-
-/* configuration for the undoable meta reducer */
-const undoableConfig = {
-  historyLimit: 50, // maximum history size
-  skipActionFilter: (state, action) => ignoredActions.has(action.type),
-  clearOnActionFilter: (state, action) => clearOnActions.has(action.type)
-};
+import undoableConfig from "./undoableConfig";
 
 const Reducer = undoable(
   cascadeReducers([

@@ -124,7 +124,7 @@ class HistogramBrush extends React.Component {
           const dX0 = Math.abs(x0 - selection[0]);
           const dX1 = Math.abs(x1 - selection[1]);
           /*
-          only update the brush if it is grossly incorrect, 
+          only update the brush if it is grossly incorrect,
           as defined by the moveDeltaThreshold
           */
           if (dX0 > moveDeltaThreshold || dX1 > moveDeltaThreshold) {
@@ -216,14 +216,13 @@ class HistogramBrush extends React.Component {
         });
       } else {
         dispatch({
-          type: "continuous metadata histogram end",
+          type: "continuous metadata histogram cancel",
           selection: field,
           continuousNamespace: {
             isObs,
             isUserDefined,
             isDiffExp
-          },
-          range: null
+          }
         });
       }
     };

@@ -104,7 +104,7 @@ class Graph extends React.Component {
     });
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps, prevState) {
     const { renderCache } = this;
     const {
       world,
@@ -236,7 +236,10 @@ class Graph extends React.Component {
     if the selection tool or state has changed, ensure that the selection
     tool correctly reflects the underlying selection.
     */
-    if (currentSelection !== prevProps.currentSelection) {
+    if (
+      currentSelection !== prevProps.currentSelection ||
+      mode !== prevState.mode
+    ) {
       this.selectionToolUpdate();
     }
   }
@@ -311,7 +314,6 @@ class Graph extends React.Component {
           container.call(tool.move, screenCoords);
         } else {
           /* there is an active selection and a brush - make sure they match */
-          // const source = currentSelection.sourceCoords;
           /* this just sums the difference of each dimension, of each point */
           let delta = 0;
           for (let x = 0; x < 2; x += 1) {
@@ -339,7 +341,10 @@ class Graph extends React.Component {
       /*
       if there is a current selection, make sure the lasso tool matches
       */
-      tool.move(currentSelection.source);
+      const polygon = currentSelection.polygon.map(p =>
+        this.mapPointToScreen(p)
+      );
+      tool.move(polygon);
     } else {
       tool.reset();
     }
@@ -484,8 +489,7 @@ class Graph extends React.Component {
 
     dispatch({
       type: "graph brush change",
-      brushCoords,
-      sourceCoords: s
+      brushCoords
     });
   }
 
@@ -561,8 +565,7 @@ class Graph extends React.Component {
     } else {
       dispatch({
         type: "graph lasso end",
-        polygon: polygon.map(xy => this.mapScreenToPoint(xy)), // transform the polygon
-        source: polygon
+        polygon: polygon.map(xy => this.mapScreenToPoint(xy)) // transform the polygon
       });
     }
   }
@@ -674,7 +677,7 @@ class Graph extends React.Component {
                     className={`bp3-button ${selectionButtonClass}`}
                     active={mode === "select"}
                     onClick={() => {
-                      this.handleDeselectAction();
+                      // this.handleDeselectAction();
                       // this.restartReglLoop();
                       this.setState({ mode: "select" });
                     }}
@@ -690,7 +693,7 @@ class Graph extends React.Component {
                     className="bp3-button bp3-icon-zoom-in"
                     active={mode === "zoom"}
                     onClick={() => {
-                      this.handleDeselectAction();
+                      // this.handleDeselectAction();
                       this.restartReglLoop();
                       this.setState({ mode: "zoom" });
                     }}

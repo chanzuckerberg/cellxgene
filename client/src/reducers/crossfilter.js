@@ -141,6 +141,7 @@ const CrossfilterReducer = (
 
     case "continuous metadata histogram start":
     case "continuous metadata histogram brush":
+    case "continuous metadata histogram cancel":
     case "continuous metadata histogram end": {
       const name = makeContinuousDimensionName(
         action.continuousNamespace,

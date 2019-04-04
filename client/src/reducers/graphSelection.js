@@ -17,25 +17,23 @@ const GraphSelection = (
 
     case "graph brush end":
     case "graph brush change": {
-      const { brushCoords, sourceCoords } = action;
+      const { brushCoords } = action;
       return {
         ...state,
         selection: {
           mode: "within-rect",
-          brushCoords,
-          sourceCoords
+          brushCoords
         }
       };
     }
 
     case "graph lasso end": {
-      const { polygon, source } = action;
+      const { polygon } = action;
       return {
         ...state,
         selection: {
           mode: "within-polygon",
-          polygon,
-          source
+          polygon
         }
       };
     }

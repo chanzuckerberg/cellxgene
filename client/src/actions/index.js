@@ -303,6 +303,9 @@ const resetInterface = () => (dispatch, getState) => {
   const { universe } = getState();
 
   dispatch({
+    type: "user reset start"
+  });
+  dispatch({
     type: "clear all user defined genes"
   });
   dispatch({
@@ -320,6 +323,9 @@ const resetInterface = () => (dispatch, getState) => {
   });
   dispatch({
     type: "increment graph render counter"
+  });
+  dispatch({
+    type: "user reset end"
   });
 };
 
