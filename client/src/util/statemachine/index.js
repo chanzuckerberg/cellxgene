@@ -38,7 +38,7 @@ export default class StateMachine {
     return fsm;
   }
 
-  next(event) {
+  next(event, reducerState, reducerAction) {
     const { graph, state } = this;
     const tsnMap = graph.get(event);
     if (!tsnMap) return this.onError(this, event, state, undefined);
@@ -47,6 +47,8 @@ export default class StateMachine {
     if (!transition) return this.onError(this, event, state, undefined);
 
     this.state = transition.to;
-    return transition.action ? transition.action(this, transition) : undefined;
+    return transition.action
+      ? transition.action(this, transition, reducerState, reducerAction)
+      : undefined;
   }
 }

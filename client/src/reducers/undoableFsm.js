@@ -17,6 +17,7 @@ upon some success criteria, otherwise cancelled.
 b) compound actions that should be collapsed into a single history change.
 
 */
+
 const createFsmTransitions = (stashPending, cancelPending, applyPending) => {
   return [
     /* graph selection brushing */
@@ -30,7 +31,17 @@ const createFsmTransitions = (stashPending, cancelPending, applyPending) => {
       event: "graph brush cancel",
       from: "graph brush in progress",
       to: "done",
-      action: cancelPending
+      action: applyPending
+    },
+    {
+      event: "graph brush deselect",
+      from: "graph brush in progress",
+      to: "done",
+      /* if current selection is all, cancelPending.  Else, applyPending */
+      action: (fsm, transition, state) =>
+        state.graphSelection.selection.mode === "all"
+          ? cancelPending()
+          : applyPending()
     },
     {
       event: "graph brush end",
@@ -50,7 +61,17 @@ const createFsmTransitions = (stashPending, cancelPending, applyPending) => {
       event: "graph lasso cancel",
       from: "graph lasso in progress",
       to: "done",
-      action: cancelPending
+      action: applyPending
+    },
+    {
+      event: "graph lasso deselect",
+      from: "graph lasso in progress",
+      to: "done",
+      /* if current selection is all, cancelPending.  Else, applyPending */
+      action: (fsm, transition, state) =>
+        state.graphSelection.selection.mode === "all"
+          ? cancelPending()
+          : applyPending()
     },
     {
       event: "graph lasso end",

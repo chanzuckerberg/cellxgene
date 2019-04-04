@@ -14,6 +14,7 @@ export default (
   handleStartAction,
   handleDragAction,
   handleEndAction,
+  handleCancelAction,
   responsive,
   graphPaddingRight
 ) => {
@@ -34,6 +35,7 @@ export default (
       ])
       .on("start", handleStartAction)
       .on("brush", handleDragAction)
+      // FYI, brush doesn't generate cancel
       .on("end", handleEndAction);
 
     const brushContainer = svg
@@ -47,8 +49,9 @@ export default (
   if (selectionToolType === "lasso") {
     const lasso = Lasso()
       .on("end", handleEndAction)
-      // lass does not generate drag/brush events
-      .on("start", handleStartAction);
+      // FYI, Lasso doesn't generate drag
+      .on("start", handleStartAction)
+      .on("cancel", handleCancelAction);
 
     const lassoContainer = svg.call(lasso);
 

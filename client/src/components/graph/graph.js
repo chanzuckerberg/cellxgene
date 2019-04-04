@@ -213,6 +213,7 @@ class Graph extends React.Component {
       let handleStart;
       let handleDrag;
       let handleEnd;
+      let handleCancel;
       if (selectionTool === "brush") {
         handleStart = this.handleBrushStartAction.bind(this);
         handleDrag = this.handleBrushDragAction.bind(this);
@@ -220,12 +221,14 @@ class Graph extends React.Component {
       } else {
         handleStart = this.handleLassoStart.bind(this);
         handleEnd = this.handleLassoEnd.bind(this);
+        handleCancel = this.handleLassoCancel.bind(this);
       }
       const { svg: newSvg, tool, container } = setupSVGandBrushElements(
         selectionTool,
         handleStart,
         handleDrag,
         handleEnd,
+        handleCancel,
         responsive,
         this.graphPaddingRight
       );
@@ -522,21 +525,13 @@ class Graph extends React.Component {
       });
     } else {
       dispatch({
-        type: "graph brush cancel"
+        type: "graph brush deselect"
       });
     }
   }
 
   handleBrushDeselectAction() {
     const { dispatch } = this.props;
-    const { svg, tool: brush } = this.state;
-
-    /*
-      this line clears the brush procedurally, ie., zoom button clicked,
-      not a click away from brush on svg
-      */
-    // XXX cleanup why not just use container.call(tool.move, null)?
-    svg.select(".graph_brush").call(brush.move, null);
     dispatch({
       type: "graph brush deselect"
     });
@@ -544,8 +539,6 @@ class Graph extends React.Component {
 
   handleLassoStart() {
     const { dispatch } = this.props;
-    // reset selected points when starting a new polygon
-    // making it easier for the user to make the next selection
     dispatch({
       type: "graph lasso start"
     });
@@ -553,21 +546,26 @@ class Graph extends React.Component {
 
   // when a lasso is completed, filter to the points within the lasso polygon
   handleLassoEnd(polygon) {
-    const minimumPolygoneArea = 10;
+    const minimumPolygonArea = 10;
     const { dispatch } = this.props;
 
     if (
       polygon.length < 3 ||
-      Math.abs(d3.polygonArea(polygon)) < minimumPolygoneArea
+      Math.abs(d3.polygonArea(polygon)) < minimumPolygonArea
     ) {
       // if less than three points, or super small area, treat as a clear selection.
-      dispatch({ type: "graph lasso cancel" });
+      dispatch({ type: "graph lasso deselect" });
     } else {
       dispatch({
         type: "graph lasso end",
         polygon: polygon.map(xy => this.mapScreenToPoint(xy)) // transform the polygon
       });
     }
+  }
+
+  handleLassoCancel() {
+    const { dispatch } = this.props;
+    dispatch({ type: "graph lasso cancel" });
   }
 
   handleLassoDeselectAction() {
@@ -677,8 +675,6 @@ class Graph extends React.Component {
                     className={`bp3-button ${selectionButtonClass}`}
                     active={mode === "select"}
                     onClick={() => {
-                      // this.handleDeselectAction();
-                      // this.restartReglLoop();
                       this.setState({ mode: "select" });
                     }}
                     style={{
@@ -693,7 +689,6 @@ class Graph extends React.Component {
                     className="bp3-button bp3-icon-zoom-in"
                     active={mode === "zoom"}
                     onClick={() => {
-                      // this.handleDeselectAction();
                       this.restartReglLoop();
                       this.setState({ mode: "zoom" });
                     }}

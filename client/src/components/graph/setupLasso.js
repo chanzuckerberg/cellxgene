@@ -3,7 +3,7 @@
 import * as d3 from "d3";
 
 const Lasso = () => {
-  const dispatch = d3.dispatch("start", "end");
+  const dispatch = d3.dispatch("start", "end", "cancel");
 
   const polygonToPath = polygon =>
     `M${polygon.map(d => d.join(",")).join("L")}`;
@@ -81,6 +81,7 @@ const Lasso = () => {
         lassoPath.remove();
         lassoPath = null;
         lassoPolygon = null;
+        dispatch.call("cancel");
       }
     };
 

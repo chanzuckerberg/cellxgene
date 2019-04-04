@@ -18,8 +18,6 @@ const skipOnActions = new Set([
   "reset colorscale",
 
   "graph brush change",
-  "graph brush deselect",
-  "graph lasso deselect",
   "continuous metadata histogram brush",
 
   "expression load start",
@@ -74,7 +72,7 @@ StateMachine processed / complex action handling - see FSM graph for
 actual structure.
 */
 
-/* action args:   fsm, transition */
+/* action args:   fsm, transition, reducerState, reducerAction */
 const stashPending = fsm => ({ [actionKey]: "stashPending", [stateKey]: fsm });
 const cancelPending = () => ({
   [actionKey]: "cancelPending",
@@ -133,11 +131,11 @@ function actionFilter(state, action, fsm) {
       /* no active FSM, so create one in init state */
       fsm = seedFsm.clone("init");
     }
-    return fsm.next(action.type);
+    return fsm.next(action.type, state, action);
   }
 
   /* else, we have no idea what this is - skip it */
-  console.error("**** EVENT MISS", action.type);
+  console.log("**** EVENT MISS", action.type);
   return skip(fsm);
 }
 

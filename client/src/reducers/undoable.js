@@ -240,15 +240,15 @@ const Undoable = (reducer, undoableKeys, options = {}) => {
             return save(currentState, action, nextFilterState);
 
           case "stashPending":
-            // console.log("---- STASH", action.type);
+            // console.log("---- STASH PENDING", action.type);
             return skip(stashPending(currentState), action, nextFilterState);
 
           case "cancelPending":
-            // console.log("---- CANCEL PENDING HISTO", action.type);
+            // console.log("---- CANCEL PENDING", action.type);
             return skip(cancelPending(currentState), action, nextFilterState);
 
           case "applyPending":
-            // console.log("---- APPLY PENDING HISTO", action.type);
+            // console.log("---- APPLY PENDING", action.type);
             return skip(applyPending(currentState), action, nextFilterState);
 
           case "skip":
