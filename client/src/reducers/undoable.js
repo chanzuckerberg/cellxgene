@@ -57,12 +57,15 @@ const Undoable = (reducer, undoableKeys, options = {}) => {
   if (!historyLimit) historyLimit = defaultHistoryLimit;
   if (historyLimit > 0) historyLimit = -historyLimit;
   const actionFilter =
-    options.actionFilter || (() => ({ "@@undoable/action": "skip" }));
+    options.actionFilter || (() => ({ [filterActionKey]: "save" }));
 
   if (!Array.isArray(undoableKeys) || undoableKeys.length === 0)
     throw new Error("undoable keys array must be specified");
   const undoableKeysSet = new Set(undoableKeys);
 
+  /*
+  Undo the current to previous history
+  */
   function undo(currentState) {
     const past = currentState[pastKey];
     const future = currentState[futureKey];
@@ -83,6 +86,9 @@ const Undoable = (reducer, undoableKeys, options = {}) => {
     return nextState;
   }
 
+  /*
+  Replay future, previously undone.
+  */
   function redo(currentState) {
     const past = currentState[pastKey] || [];
     const future = currentState[futureKey] || [];
