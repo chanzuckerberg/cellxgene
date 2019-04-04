@@ -63,7 +63,7 @@ def prepare(
     import matplotlib
 
     matplotlib.use("Agg")
-    import scanpy.api as sc
+    import scanpy as sc
 
     # scanpy settings
     sc.settings.verbosity = 0
