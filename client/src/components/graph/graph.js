@@ -516,8 +516,8 @@ class Graph extends React.Component {
     const s = d3.event.selection;
     if (s) {
       const brushCoords = {
-        northwest: this.mapScreenToPoint([s[0][0], s[0][1]]),
-        southeast: this.mapScreenToPoint([s[1][0], s[1][1]])
+        northwest: this.mapScreenToPoint(s[0]),
+        southeast: this.mapScreenToPoint(s[1])
       };
       dispatch({
         type: "graph brush end",
