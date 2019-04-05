@@ -125,6 +125,7 @@ class Graph extends React.Component {
       sizeBuffer,
       svg
     } = this.state;
+    let stateChanges = {};
 
     if (reglRender && this.reglRenderState === "rendering" && mode !== "zoom") {
       reglRender.cancel();
@@ -157,9 +158,7 @@ class Graph extends React.Component {
           dimension: 2
         });
 
-        this.setState({
-          offset
-        });
+        stateChanges.offset = offset;
       }
 
       // Colors for each point - a cached value that only changes when
@@ -232,7 +231,7 @@ class Graph extends React.Component {
         responsive,
         this.graphPaddingRight
       );
-      this.setState({ svg: newSvg, tool, container });
+      stateChanges = { ...stateChanges, svg: newSvg, tool, container };
     }
 
     /*
@@ -241,9 +240,19 @@ class Graph extends React.Component {
     */
     if (
       currentSelection !== prevProps.currentSelection ||
-      mode !== prevState.mode
+      mode !== prevState.mode ||
+      stateChanges.svg
     ) {
-      this.selectionToolUpdate();
+      const { tool, container, offset } = this.state;
+      this.selectionToolUpdate(
+        stateChanges.tool ? stateChanges.tool : tool,
+        stateChanges.container ? stateChanges.container : container,
+        stateChanges.offset ? stateChanges.offset : offset
+      );
+    }
+
+    if (Object.keys(stateChanges).length > 0) {
+      this.setState(stateChanges);
     }
   }
 
@@ -297,10 +306,12 @@ class Graph extends React.Component {
     dispatch(actions.resetInterface());
   };
 
-  brushToolUpdate() {
+  brushToolUpdate(tool, container, offset) {
+    /*
+    this is called from componentDidUpdate(), so be very careful using
+    anything from this.state, which may be updated asynchronously.
+    */
     const { currentSelection } = this.props;
-    const { tool, container } = this.state;
-
     if (container) {
       const toolCurrentSelection = d3.brushSelection(container.node());
 
@@ -309,8 +320,8 @@ class Graph extends React.Component {
         if there is a selection, make sure the brush tool matches
         */
         const screenCoords = [
-          this.mapPointToScreen(currentSelection.brushCoords.northwest),
-          this.mapPointToScreen(currentSelection.brushCoords.southeast)
+          this.mapPointToScreen(currentSelection.brushCoords.northwest, offset),
+          this.mapPointToScreen(currentSelection.brushCoords.southeast, offset)
         ];
         if (!toolCurrentSelection) {
           /* tool is not selected, so just move the brush */
@@ -337,15 +348,18 @@ class Graph extends React.Component {
     }
   }
 
-  lassoToolUpdate() {
-    const { tool } = this.state;
+  lassoToolUpdate(tool, container, offset) {
+    /*
+    this is called from componentDidUpdate(), so be very careful using
+    anything from this.state, which may be updated asynchronously.
+    */
     const { currentSelection } = this.props;
     if (currentSelection.mode === "within-polygon") {
       /*
       if there is a current selection, make sure the lasso tool matches
       */
       const polygon = currentSelection.polygon.map(p =>
-        this.mapPointToScreen(p)
+        this.mapPointToScreen(p, offset)
       );
       tool.move(polygon);
     } else {
@@ -353,14 +367,18 @@ class Graph extends React.Component {
     }
   }
 
-  selectionToolUpdate() {
+  selectionToolUpdate(tool, container, offset) {
+    /*
+    this is called from componentDidUpdate(), so be very careful using
+    anything from this.state, which may be updated asynchronously.
+    */
     const { selectionTool } = this.props;
     switch (selectionTool) {
       case "brush":
-        this.brushToolUpdate();
+        this.brushToolUpdate(tool, container, offset);
         break;
       case "lasso":
-        this.lassoToolUpdate();
+        this.lassoToolUpdate(tool, container, offset);
         break;
       default:
         /* punt? */
@@ -438,13 +456,13 @@ class Graph extends React.Component {
     return [(pout[0] + 1) / 2 + offset[0], (pout[1] + 1) / 2 + offset[1]];
   }
 
-  mapPointToScreen(xyCell) {
+  mapPointToScreen(xyCell, offset) {
     /*
     Map an XY coordinate from cell/point domain to screen range.  Inverse
     of mapScreenToPoint()
     */
     const { responsive } = this.props;
-    const { regl, camera, offset } = this.state;
+    const { regl, camera } = this.state;
 
     const gl = regl._gl;
 
