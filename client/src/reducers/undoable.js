@@ -29,8 +29,8 @@ This filter state will be passed to each action filter call, and any
 value returned (via @@undoable/filterState field described below) will be
 MERGED into the current filter state.
 
-An object must be returned, indicating desired history state processing.
-The object contents, by key:
+An object must be returned (the "undoable action"), indicating desired
+history state processing.  The undoable action object contents, by key:
 
   @@undoable/filterAction: required.   Can be one of:
       "skip" - reduce the current action, but no other side effects.
