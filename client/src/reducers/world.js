@@ -2,6 +2,8 @@ import _ from "lodash";
 
 import { World, ControlsHelpers } from "../util/stateManager";
 
+import { createWorldFromEntireUniverse } from "../util/stateManager/world";
+
 const WorldReducer = (
   state = {
     continuousPercentileMin: 0,
@@ -39,18 +41,28 @@ const WorldReducer = (
     }
 
     case "set continuous percentile min": {
-      console.log("setting percentile min to", action.data);
+      const world = createWorldFromEntireUniverse(
+        action.universe,
+        state.continuousPercentileMin,
+        state.continuousPercentileMax
+      );
       return {
         ...state,
-        continuousPercentileMin: action.data / 100
+        continuousPercentileMin: action.data / 100,
+        world
       };
     }
 
     case "set continuous percentile max": {
-      console.log("setting percentile max to", action.data);
+      const world = createWorldFromEntireUniverse(
+        action.universe,
+        state.continuousPercentileMin,
+        state.continuousPercentileMax
+      );
       return {
         ...state,
-        continuousPercentileMax: action.data / 100
+        continuousPercentileMax: action.data / 100,
+        world
       };
     }
 
