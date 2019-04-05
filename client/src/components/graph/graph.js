@@ -499,66 +499,74 @@ class Graph extends React.Component {
                 reset
               </AnchorButton>
             </Tooltip>
-            <div>
-              <div className="bp3-button-group">
-                <Tooltip content="Lasso selection" position="left">
-                  <Button
-                    type="button"
-                    className="bp3-button bp3-icon-polygon-filter"
-                    active={mode === "lasso"}
-                    onClick={() => {
-                      this.handleBrushDeselectAction();
-                      // this.restartReglLoop();
-                      this.setState({ mode: "lasso" });
-                    }}
-                    style={{
-                      cursor: "pointer"
-                    }}
-                  />
-                </Tooltip>
-                <Tooltip content="Pan and zoom" position="left">
-                  <Button
-                    type="button"
-                    className="bp3-button bp3-icon-zoom-in"
-                    active={mode === "zoom"}
-                    onClick={() => {
-                      this.handleBrushDeselectAction();
-                      this.restartReglLoop();
-                      this.setState({ mode: "zoom" });
-                    }}
-                    style={{
-                      cursor: "pointer"
-                    }}
-                  />
-                </Tooltip>
-                <Tooltip content="Undo" position="left">
-                  <AnchorButton
-                    type="button"
-                    className="bp3-button bp3-icon-undo"
-                    disabled={undoDisabled}
-                    onClick={() => {
-                      dispatch({ type: "@@undoable/undo" });
-                    }}
-                    style={{
-                      cursor: "pointer"
-                    }}
-                  />
-                </Tooltip>
-                <Tooltip content="Redo" position="left">
-                  <AnchorButton
-                    type="button"
-                    className="bp3-button bp3-icon-redo"
-                    disabled={redoDisabled}
-                    onClick={() => {
-                      dispatch({ type: "@@undoable/redo" });
-                    }}
-                    style={{
-                      cursor: "pointer"
-                    }}
-                  />
-                </Tooltip>
-              </div>
+            <div className="bp3-button-group">
+              <Tooltip content="Lasso selection" position="left">
+                <Button
+                  type="button"
+                  className="bp3-button bp3-icon-polygon-filter"
+                  active={mode === "lasso"}
+                  onClick={() => {
+                    this.handleBrushDeselectAction();
+                    // this.restartReglLoop();
+                    this.setState({ mode: "lasso" });
+                  }}
+                  style={{
+                    cursor: "pointer"
+                  }}
+                />
+              </Tooltip>
+              <Tooltip content="Pan and zoom" position="left">
+                <Button
+                  type="button"
+                  className="bp3-button bp3-icon-zoom-in"
+                  active={mode === "zoom"}
+                  onClick={() => {
+                    this.handleBrushDeselectAction();
+                    this.restartReglLoop();
+                    this.setState({ mode: "zoom" });
+                  }}
+                  style={{
+                    cursor: "pointer"
+                  }}
+                />
+              </Tooltip>
             </div>
+            <span
+              style={{
+                marginLeft: 10,
+                display: "flex",
+                justifyContent: "flex-end",
+                alignItems: "baseline"
+              }}
+            >
+              <Tooltip content="Undo" position="left">
+                <AnchorButton
+                  type="button"
+                  className="bp3-button bp3-icon-undo"
+                  disabled={undoDisabled}
+                  onClick={() => {
+                    dispatch({ type: "@@undoable/undo" });
+                  }}
+                  style={{
+                    cursor: "pointer"
+                  }}
+                />
+              </Tooltip>
+              <Tooltip content="Redo" position="left">
+                <AnchorButton
+                  type="button"
+                  className="bp3-button bp3-icon-redo"
+                  disabled={redoDisabled}
+                  onClick={() => {
+                    dispatch({ type: "@@undoable/redo" });
+                  }}
+                  style={{
+                    cursor: "pointer"
+                  }}
+                />
+              </Tooltip>
+            </span>
+
             <span
               style={{
                 marginLeft: 10,
