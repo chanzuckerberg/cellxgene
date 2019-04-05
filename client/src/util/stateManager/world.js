@@ -2,6 +2,7 @@
 
 import { layoutDimensionName, obsAnnoDimensionName } from "../nameCreators";
 import * as Dataframe from "../dataframe";
+import ImmutableTypedCrossfilter from "../typedCrossfilter/crossfilter";
 
 /*
 
@@ -62,6 +63,36 @@ function templateWorld() {
   };
 }
 
+/* modified pseudocode from Bruce; check this works */
+function clampDataframe(df, continuousPercentileMin, continuousPercentileMax) {
+  if (continuousPercentileMin === 0 && continuousPercentileMax === 1) return df;
+
+  const keys = df.keys();
+  return df.mapColumns((col, colIdx) => {
+    /* do we actually have access to the colIdx from `mapColumns`?*/
+    const colName = keys[colIdx];
+    /* how do we check if it's continuous metadata?
+    if (!colName_is_a_continuous_metadata_field) return col;
+    */
+
+    const newCol = col.slice();
+    for (let i = 0, l = newCol.length; i < l; i += 1) {
+      const colMin = ImmutableTypedCrossfilter.percentile(
+        colName,
+        continuousPercentileMin
+      );
+      const colMax = ImmutableTypedCrossfilter.percentile(
+        colName,
+        continuousPercentileMax
+      );
+      if (newCol[i] < colMin || newCol[i] > colMax) {
+        newCol[i] = Number.NaN;
+      }
+    }
+    return newCol;
+  });
+}
+
 export function createWorldFromEntireUniverse(
   universe,
   continuousPercentileMin,
@@ -91,11 +122,17 @@ export function createWorldFromEntireUniverse(
   Var data columns - subset of all
   */
   world.varData = universe.varData.clone();
+  /*
+  world.varData = clampDataframe(
+    world.varData,
+    continuousPercentileMin,
+    continuousPercentileMax
+  );
+  */
 
   return world;
 }
 
-export function createWorldFromCurrentSelection(universe, world, crossfilter) {
 export function createWorldFromCurrentSelection(
   universe,
   world,
