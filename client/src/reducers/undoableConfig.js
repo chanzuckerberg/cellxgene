@@ -237,7 +237,8 @@ function shallowObjectEq(objA, objB) {
 }
 
 /*
-return true if arrA and arrB contain strict-equal values.
+return true if arrA and arrB contain the same strict-equal values,
+in the same order.
 */
 function shallowArrayEq(arrA, arrB) {
   if (arrA.length !== arrB.length) return false;
