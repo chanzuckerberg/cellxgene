@@ -18,7 +18,14 @@ b) compound actions that should be collapsed into a single history change.
 
 */
 
-const createFsmTransitions = (stashPending, cancelPending, applyPending) => {
+const createFsmTransitions = (
+  stashPending,
+  cancelPending,
+  applyPending,
+  skip,
+  clear,
+  save
+) => {
   return [
     /* graph selection brushing */
     {
@@ -172,6 +179,14 @@ const createFsmTransitions = (stashPending, cancelPending, applyPending) => {
       from: "CDE Button in progress",
       to: "done",
       action: applyPending
+    },
+
+    /* clear scatter plot button (eg, on scatterplot view) */
+    {
+      event: "clear scatterplot",
+      from: "init",
+      to: "done",
+      action: save
     }
   ];
 };

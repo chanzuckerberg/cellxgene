@@ -67,7 +67,6 @@ const saveOnActions = new Set([
 
   "set scatterplot x",
   "set scatterplot y",
-  "clear scatterplot",
 
   "store current cell selection as differential set 1",
   "store current cell selection as differential set 2",
@@ -175,6 +174,32 @@ const actionFilter = debug => (state, action, prevFilterState) => {
   return { [actionKey]: "skip", [stateKey]: filterState };
 };
 
+/*
+return true if objA and objB are ===, OR if:
+  - are both objects and not null
+  - have same own properties
+  - all values are strict equal (===)
+*/
+function shallowObjectEq(objA, objB) {
+  if (objA === objB) return true;
+  if (!objA || !objB) return false;
+  if (!shallowArrayEq(Object.keys(objA), Object.keys(objB))) return false;
+  if (!shallowArrayEq(Object.values(objA), Object.values(objB))) return false;
+  return true;
+}
+
+/*
+return true if arrA and arrB contain the same strict-equal values,
+in the same order.
+*/
+function shallowArrayEq(arrA, arrB) {
+  if (arrA.length !== arrB.length) return false;
+  for (let i = 0, l = arrA.length; i < l; i += 1) {
+    if (arrA[i] !== arrB[i]) return false;
+  }
+  return true;
+}
+
 /* configuration for the undoable meta reducer */
 const debug = true; // set truish for undoble debugging
 const undoableConfig = {
@@ -202,7 +227,9 @@ if (debug) {
   }
 
   /*
-  Confirm that no FSM events are blocked by a trivial rejection filter
+  Confirm that no FSM events are blocked by a trivial rejection filter.
+  If this occurs, the FSM can't ever see the events needed to process
+  state transitions.
   */
   const trivialFilters = new Set([
     ...skipOnActions,
@@ -210,9 +237,7 @@ if (debug) {
     ...saveOnActions
   ]);
   const trivialOverlapWithFsm = new Set(
-    [...trivialFilters].filter(
-      x => seedFsm.events.has(x) && seedFsm.graph.get(x).has("init")
-    )
+    [...trivialFilters].filter(x => seedFsm.events.has(x))
   );
   if (trivialOverlapWithFsm.size > 0) {
     console.error(
@@ -220,32 +245,6 @@ if (debug) {
       [...trivialOverlapWithFsm]
     );
   }
-}
-
-/*
-return true if objA and objB are ===, OR if:
-  - are both objects and not null
-  - have same own properties
-  - all values are strict equal (===)
-*/
-function shallowObjectEq(objA, objB) {
-  if (objA === objB) return true;
-  if (!objA || !objB) return false;
-  if (!shallowArrayEq(Object.keys(objA), Object.keys(objB))) return false;
-  if (!shallowArrayEq(Object.values(objA), Object.values(objB))) return false;
-  return true;
-}
-
-/*
-return true if arrA and arrB contain the same strict-equal values,
-in the same order.
-*/
-function shallowArrayEq(arrA, arrB) {
-  if (arrA.length !== arrB.length) return false;
-  for (let i = 0, l = arrA.length; i < l; i += 1) {
-    if (arrA[i] !== arrB[i]) return false;
-  }
-  return true;
 }
 
 export default undoableConfig;
