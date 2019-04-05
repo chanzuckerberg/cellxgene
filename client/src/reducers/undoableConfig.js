@@ -51,7 +51,6 @@ const saveOnActions = new Set([
   "categorical metadata filter all of these",
   "categorical metadata none of these",
 
-  "reset colorscale",
   "color by categorical metadata",
   "color by continuous metadata",
   "color by expression",
@@ -72,7 +71,11 @@ StateMachine processed / complex action handling - see FSM graph for
 actual structure.
 */
 
-/* action args:   fsm, transition, reducerState, reducerAction */
+/*
+action args:   fsm, transition, reducerState, reducerAction
+
+Default FSM actions.  Used to side-effect transitions in the graph.
+*/
 const stashPending = fsm => ({ [actionKey]: "stashPending", [stateKey]: fsm });
 const cancelPending = () => ({
   [actionKey]: "cancelPending",
@@ -83,7 +86,11 @@ const skip = fsm => ({ [actionKey]: "skip", [stateKey]: fsm });
 const clear = () => ({ [actionKey]: "clear", [stateKey]: null });
 const save = fsm => ({ [actionKey]: "save", [stateKey]: fsm });
 
-/* onFsmError args:  fsm, name, from */
+/*
+onFsmError args:  fsm, name, from
+
+Error handler for state transitions that are unexpected.
+*/
 const onFsmError = (fsm, name, from) => {
   console.error("FSM error - unexpected history state", fsm, name, from);
   // In production, try to recover gracefully if we have unexpected state
@@ -104,29 +111,29 @@ const fsmTransitions = createFsmTransitions(
 const seedFsm = new StateMachine("init", fsmTransitions, onFsmError);
 
 /*
-See undoable.js for description action filter interface description
+See undoable.js for description action filter interface description.
 
 Basic approach:
   * trivial handlers for skip, clear & save cases to keep config simple.
   * only implement complex state machines where absolutely required (eg,
     multi-event seleciton and the like)
 */
-
-function actionFilter(state, action, fsm) {
+const actionFilter = debug => (state, action, filterState) => {
   if (skipOnActions.has(action.type)) {
-    return skip(fsm);
+    return skip(filterState);
   }
   if (clearOnActions.has(action.type)) {
-    return clear(fsm);
+    return clear(filterState);
   }
   if (saveOnActions.has(action.type)) {
-    return save(fsm);
+    return save(filterState);
   }
 
   /*
-  Else, something more complex OR unknown to us....
-  */
+    Else, something more complex OR unknown to us....
+    */
   if (seedFsm.events.has(action.type)) {
+    let fsm = filterState;
     if (!fsm) {
       /* no active FSM, so create one in init state */
       fsm = seedFsm.clone("init");
@@ -135,14 +142,16 @@ function actionFilter(state, action, fsm) {
   }
 
   /* else, we have no idea what this is - skip it */
-  console.log("**** EVENT MISS", action.type);
-  return skip(fsm);
-}
+  if (debug) console.log("**** ACTION FILTER EVENT HANDLER MISS", action.type);
+  return skip(filterState);
+};
 
 /* configuration for the undoable meta reducer */
+const debug = true; // set truish for undoble debugging
 const undoableConfig = {
+  debug,
   historyLimit: 50, // maximum history size
-  actionFilter
+  actionFilter: actionFilter(debug)
 };
 
 export default undoableConfig;

@@ -10,6 +10,7 @@ Requires three parameters:
     * historyLimit: max number of historical states to remember (aka max undo depth)
     * actionFilter: filter function, (state, action) => value.  See below for
       details
+    * debug: if truish, will print helpful log messages about history manipulation
 
 This meta reducer accepts three actions types:
 * @@undoable/undo - move back in history
@@ -53,7 +54,7 @@ const pendingKey = `${historyKeyPrefix}pending`;
 const defaultHistoryLimit = -100;
 
 const Undoable = (reducer, undoableKeys, options = {}) => {
-  let { historyLimit } = options;
+  let { historyLimit, debug } = options;
   if (!historyLimit) historyLimit = defaultHistoryLimit;
   if (historyLimit > 0) historyLimit = -historyLimit;
   const actionFilter =
@@ -232,23 +233,23 @@ const Undoable = (reducer, undoableKeys, options = {}) => {
 
         switch (filterAction) {
           case "clear":
-            // console.log("---- CLEAR HISTO", action.type);
+            if (debug) console.log("---- CLEAR HISTO", action.type);
             return clear(skip(currentState, action, nextFilterState));
 
           case "save":
-            // console.log("---- SAVE HISTO", action.type);
+            if (debug) console.log("---- SAVE HISTO", action.type);
             return save(currentState, action, nextFilterState);
 
           case "stashPending":
-            // console.log("---- STASH PENDING", action.type);
+            if (debug) console.log("---- STASH PENDING", action.type);
             return skip(stashPending(currentState), action, nextFilterState);
 
           case "cancelPending":
-            // console.log("---- CANCEL PENDING", action.type);
+            if (debug) console.log("---- CANCEL PENDING", action.type);
             return skip(cancelPending(currentState), action, nextFilterState);
 
           case "applyPending":
-            // console.log("---- APPLY PENDING", action.type);
+            if (debug) console.log("---- APPLY PENDING", action.type);
             return skip(applyPending(currentState), action, nextFilterState);
 
           case "skip":

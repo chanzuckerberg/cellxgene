@@ -1,6 +1,6 @@
 const GraphSelection = (
   state = {
-    tool: "brush", // what selection tool mode (lasso, brush, ...)
+    tool: "lasso", // what selection tool mode (lasso, brush, ...)
     selection: { mode: "all" } // current selection, which is tool specific
   },
   action
