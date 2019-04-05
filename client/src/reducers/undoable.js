@@ -8,8 +8,8 @@ Requires three parameters:
   state to be made "undoable".
 * options - an optional object, which may contain the following parameters:
     * historyLimit: max number of historical states to remember (aka max undo depth)
-    * actionFilter: filter function, (state, action) => value.  See below for
-      details
+    * actionFilter: filter function, (state, action, filterState) => value.
+      See below for details.
     * debug: if truish, will print helpful log messages about history manipulation
 
 This meta reducer accepts three actions types:
@@ -17,13 +17,20 @@ This meta reducer accepts three actions types:
 * @@undoable/redo - move forward in history
 * @@undoable/clear - clear history
 
+---
 
-Action filter - controls the undoable reducer side-effects.
-This will have access to both the current action, and the entire
-undoable reducer state.
+Action filter - controls the undoable reducer side-effects.  If not
+specified, the action filter defaults to "save", ie, pushes a redo
+point upon each action.
+
+The action filter callback has access to the current action, the entire
+undoable reducer state, and any state it wants to manage ("filterState").
+This filter state will be passed to each action filter call, and any
+value returned (via @@undoable/filterState field described below) will be
+MERGED into the current filter state.
 
 An object must be returned, indicating desired history state processing.
-The object keys:
+The object contents, by key:
 
   @@undoable/filterAction: required.   Can be one of:
       "skip" - reduce the current action, but no other side effects.
@@ -40,8 +47,8 @@ The object keys:
         then reduce action.
 
   @@undoable/filterState: optional.  If this value is set, it will be
-    saved into the state field of the same name. The value and its
-    semantics are entirely defined by the Action Filter function.
+    MERGED into the current filter state. The value and semantics of any
+    filter state are entirely at the discretion of the action filter.
 
 */
 
@@ -54,7 +61,8 @@ const pendingKey = `${historyKeyPrefix}pending`;
 const defaultHistoryLimit = -100;
 
 const Undoable = (reducer, undoableKeys, options = {}) => {
-  let { historyLimit, debug } = options;
+  const { debug } = options;
+  let { historyLimit } = options;
   if (!historyLimit) historyLimit = defaultHistoryLimit;
   if (historyLimit > 0) historyLimit = -historyLimit;
   const actionFilter =
@@ -118,7 +126,7 @@ const Undoable = (reducer, undoableKeys, options = {}) => {
       ...currentState,
       [pastKey]: [],
       [futureKey]: [],
-      [filterStateKey]: null,
+      [filterStateKey]: {},
       [pendingKey]: null
     };
   }
@@ -201,7 +209,9 @@ const Undoable = (reducer, undoableKeys, options = {}) => {
   return (
     currentState = {
       [pastKey]: [],
-      [futureKey]: []
+      [futureKey]: [],
+      [filterStateKey]: {},
+      [pendingKey]: null
     },
     action
   ) => {
@@ -228,8 +238,9 @@ const Undoable = (reducer, undoableKeys, options = {}) => {
         );
         const {
           [filterActionKey]: filterAction,
-          [filterStateKey]: nextFilterState
+          [filterStateKey]: filterStateUpdate
         } = actionFilterResp;
+        const nextFilterState = { ...currentFilterState, ...filterStateUpdate };
 
         switch (filterAction) {
           case "clear":

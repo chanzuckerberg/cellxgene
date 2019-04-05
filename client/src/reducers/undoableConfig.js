@@ -76,15 +76,21 @@ action args:   fsm, transition, reducerState, reducerAction
 
 Default FSM actions.  Used to side-effect transitions in the graph.
 */
-const stashPending = fsm => ({ [actionKey]: "stashPending", [stateKey]: fsm });
+const stashPending = fsm => ({
+  [actionKey]: "stashPending",
+  [stateKey]: { fsm }
+});
 const cancelPending = () => ({
   [actionKey]: "cancelPending",
-  [stateKey]: null
+  [stateKey]: { fsm: null }
 });
-const applyPending = () => ({ [actionKey]: "applyPending", [stateKey]: null });
-const skip = fsm => ({ [actionKey]: "skip", [stateKey]: fsm });
-const clear = () => ({ [actionKey]: "clear", [stateKey]: null });
-const save = fsm => ({ [actionKey]: "save", [stateKey]: fsm });
+const applyPending = () => ({
+  [actionKey]: "applyPending",
+  [stateKey]: { fsm: null }
+});
+const skip = fsm => ({ [actionKey]: "skip", [stateKey]: { fsm } });
+const clear = () => ({ [actionKey]: "clear", [stateKey]: { fsm: null } });
+const save = fsm => ({ [actionKey]: "save", [stateKey]: { fsm } });
 
 /*
 onFsmError args:  fsm, name, from
@@ -120,20 +126,20 @@ Basic approach:
 */
 const actionFilter = debug => (state, action, filterState) => {
   if (skipOnActions.has(action.type)) {
-    return skip(filterState);
+    return { [actionKey]: "skip", [stateKey]: filterState };
   }
   if (clearOnActions.has(action.type)) {
-    return clear(filterState);
+    return { [actionKey]: "clear", [stateKey]: filterState };
   }
   if (saveOnActions.has(action.type)) {
-    return save(filterState);
+    return { [actionKey]: "save", [stateKey]: filterState };
   }
 
   /*
     Else, something more complex OR unknown to us....
     */
   if (seedFsm.events.has(action.type)) {
-    let fsm = filterState;
+    let { fsm } = filterState;
     if (!fsm) {
       /* no active FSM, so create one in init state */
       fsm = seedFsm.clone("init");
@@ -143,7 +149,7 @@ const actionFilter = debug => (state, action, filterState) => {
 
   /* else, we have no idea what this is - skip it */
   if (debug) console.log("**** ACTION FILTER EVENT HANDLER MISS", action.type);
-  return skip(filterState);
+  return { [actionKey]: "skip", [stateKey]: filterState };
 };
 
 /* configuration for the undoable meta reducer */
