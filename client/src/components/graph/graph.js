@@ -12,7 +12,8 @@ import {
   Popover,
   Menu,
   MenuItem,
-  Position
+  Position,
+  NumericInput
 } from "@blueprintjs/core";
 
 import * as globals from "../../globals";
@@ -29,6 +30,8 @@ import { World } from "../../util/stateManager";
   world: state.world,
   universe: state.universe,
   crossfilter: state.crossfilter,
+  continuousPercentileMin: state.world.continuousPercentileMin,
+  continuousPercentileMax: state.world.continuousPercentileMax,
   responsive: state.responsive,
   colorRGB: state.colors.rgb,
   opacityForDeselectedCells: state.controls.opacityForDeselectedCells,
@@ -326,6 +329,22 @@ class Graph extends React.Component {
     return [(pout[0] + 1) / 2 + offset[0], (pout[1] + 1) / 2 + offset[1]];
   }
 
+  handleContinuousPercentileMin = v => {
+    const { dispatch } = this.props;
+    dispatch({
+      type: "set continuous percentile min",
+      data: v
+    });
+  };
+
+  handleContinuousPercentileMax = v => {
+    const { dispatch } = this.props;
+    dispatch({
+      type: "set continuous percentile max",
+      data: v
+    });
+  };
+
   handleBrushSelectAction() {
     /*
       This conditional handles procedural brush deselect. Brush emits
@@ -540,6 +559,66 @@ class Graph extends React.Component {
                 </Tooltip>
               </div>
             </div>
+            <span
+              style={{
+                marginLeft: 10,
+                display: "flex",
+                justifyContent: "flex-end",
+                alignItems: "baseline"
+              }}
+            >
+              <Tooltip content="Visualization settings" position="left">
+                <Popover
+                  target={
+                    <Button
+                      type="button"
+                      className="bp3-button bp3-icon-cog"
+                      style={{
+                        cursor: "pointer"
+                      }}
+                    />
+                  }
+                  content={
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "flex-start",
+                        alignItems: "baseline"
+                      }}
+                    >
+                      For each continuous field, show only the cells between the
+                      <span style={{ marginRight: 5, marginLeft: 5 }}>
+                        min:
+                      </span>
+                      <NumericInput
+                        style={{ width: 40 }}
+                        onValueChange={this.handleContinuousPercentileMin}
+                        onButtonClick={this.handleContinuousPercentileMin}
+                        value={this.props.continuousPercentileMin * 100}
+                        min={0}
+                        max={this.props.continuousPercentileMax * 100 - 1}
+                        fill={false}
+                      />
+                      <span style={{ marginRight: 5, marginLeft: 5 }}>
+                        and max:
+                      </span>
+                      <NumericInput
+                        style={{ width: 40 }}
+                        onValueChange={this.handleContinuousPercentileMax}
+                        onButtonClick={this.handleContinuousPercentileMax}
+                        value={this.props.continuousPercentileMax * 100}
+                        min={this.props.continuousPercentileMin * 100 + 1}
+                        max={100}
+                        fill={false}
+                      />
+                      percentile of expression. Axes and binning will be
+                      updated.
+                    </div>
+                  }
+                />
+              </Tooltip>
+            </span>
+
             <div style={{ marginLeft: 10 }}>
               <Popover
                 content={
@@ -583,7 +662,7 @@ class Graph extends React.Component {
               >
                 <Button
                   type="button"
-                  className="bp3-button bp3-icon-cog"
+                  className="bp3-button bp3-icon-info-sign"
                   style={{
                     cursor: "pointer"
                   }}
