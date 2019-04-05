@@ -33,6 +33,16 @@ const skipOnActions = new Set([
 ]);
 
 /*
+identical, repeated occurances of these action types will be debounced.
+Entire action must be identical (all keys).
+*/
+const debounceOnActions = new Set([
+  "color by categorical metadata",
+  "color by continuous metadata",
+  "color by expression"
+]);
+
+/*
 history will be cleared when these actions occur
 */
 const clearOnActions = new Set([
@@ -59,22 +69,22 @@ const saveOnActions = new Set([
   "set scatterplot y",
   "clear scatterplot",
 
-  "clear differential expression",
   "store current cell selection as differential set 1",
   "store current cell selection as differential set 2",
 
   "set World to current selection"
 ]);
 
-/*
-StateMachine processed / complex action handling - see FSM graph for
-actual structure.
-*/
+/**
+StateMachine - processing complex action handling - see FSM graph for
+actual structure, in undoableFsm.js
+**/
 
 /*
-action args:   fsm, transition, reducerState, reducerAction
-
 Default FSM actions.  Used to side-effect transitions in the graph.
+See graph definition for the transitions that use each.
+
+Signature:  (fsm, transition, reducerState, reducerAction) => undoableAction
 */
 const stashPending = fsm => ({
   [actionKey]: "stashPending",
@@ -93,9 +103,10 @@ const clear = () => ({ [actionKey]: "clear", [stateKey]: { fsm: null } });
 const save = fsm => ({ [actionKey]: "save", [stateKey]: { fsm } });
 
 /*
-onFsmError args:  fsm, name, from
+Error handler for state transitions that are unexpected.  Called by
+StateMachine when it doesn't know what to do.
 
-Error handler for state transitions that are unexpected.
+Signature:  (fsm, event, from) => undoableAction
 */
 const onFsmError = (fsm, name, from) => {
   console.error("FSM error - unexpected history state", fsm, name, from);
@@ -104,7 +115,7 @@ const onFsmError = (fsm, name, from) => {
 };
 
 /*
-Definition of the transition graph mapping action types to history side effects
+Definition of the transition graph mapping action types to history side effects.
 */
 const fsmTransitions = createFsmTransitions(
   stashPending,
@@ -114,6 +125,7 @@ const fsmTransitions = createFsmTransitions(
   clear,
   save
 );
+/* State machine we clone whenever we need to run it */
 const seedFsm = new StateMachine("init", fsmTransitions, onFsmError);
 
 /*
@@ -124,21 +136,32 @@ Basic approach:
   * only implement complex state machines where absolutely required (eg,
     multi-event seleciton and the like)
 */
-const actionFilter = debug => (state, action, filterState) => {
-  if (skipOnActions.has(action.type)) {
+const actionFilter = debug => (state, action, prevFilterState) => {
+  const actionType = action.type;
+  const filterState = {
+    ...prevFilterState,
+    prevAction: action
+  };
+  if (skipOnActions.has(actionType)) {
     return { [actionKey]: "skip", [stateKey]: filterState };
   }
-  if (clearOnActions.has(action.type)) {
+  if (
+    debounceOnActions.has(actionType) &&
+    shallowObjectEq(action, prevFilterState.prevAction)
+  ) {
+    return { [actionKey]: "skip", [stateKey]: filterState };
+  }
+  if (clearOnActions.has(actionType)) {
     return { [actionKey]: "clear", [stateKey]: filterState };
   }
-  if (saveOnActions.has(action.type)) {
+  if (saveOnActions.has(actionType)) {
     return { [actionKey]: "save", [stateKey]: filterState };
   }
 
   /*
     Else, something more complex OR unknown to us....
     */
-  if (seedFsm.events.has(action.type)) {
+  if (seedFsm.events.has(actionType)) {
     let { fsm } = filterState;
     if (!fsm) {
       /* no active FSM, so create one in init state */
@@ -148,7 +171,7 @@ const actionFilter = debug => (state, action, filterState) => {
   }
 
   /* else, we have no idea what this is - skip it */
-  if (debug) console.log("**** ACTION FILTER EVENT HANDLER MISS", action.type);
+  if (debug) console.log("**** ACTION FILTER EVENT HANDLER MISS", actionType);
   return { [actionKey]: "skip", [stateKey]: filterState };
 };
 
@@ -159,5 +182,69 @@ const undoableConfig = {
   historyLimit: 50, // maximum history size
   actionFilter: actionFilter(debug)
 };
+
+/*
+this code is strictly for sanity checking configuration, and is only
+enabled when we are debugging the undoable configuration (ie, debug === true).
+*/
+if (debug) {
+  /*
+  Confirm no intersection between the various trivial rejection action filters
+  */
+  if (
+    new Set([...skipOnActions].filter(x => clearOnActions.has(x))).size > 0 ||
+    new Set([...skipOnActions].filter(x => saveOnActions.has(x))).size > 0 ||
+    new Set([...clearOnActions].filter(x => saveOnActions.has(x))).size > 0
+  ) {
+    console.error(
+      "Undoable misconfiguration - action filters have redundant events"
+    );
+  }
+
+  /*
+  Confirm that no FSM events are blocked by a trivial rejection filter
+  */
+  const trivialFilters = new Set([
+    ...skipOnActions,
+    ...clearOnActions,
+    ...saveOnActions
+  ]);
+  const trivialOverlapWithFsm = new Set(
+    [...trivialFilters].filter(
+      x => seedFsm.events.has(x) && seedFsm.graph.get(x).has("init")
+    )
+  );
+  if (trivialOverlapWithFsm.size > 0) {
+    console.error(
+      "Undoable misconfiguration - trivival action filter blocking FSM filter",
+      [...trivialOverlapWithFsm]
+    );
+  }
+}
+
+/*
+return true if objA and objB are ===, OR if:
+  - are both objects and not null
+  - have same own properties
+  - all values are strict equal (===)
+*/
+function shallowObjectEq(objA, objB) {
+  if (objA === objB) return true;
+  if (!objA || !objB) return false;
+  if (!shallowArrayEq(Object.keys(objA), Object.keys(objB))) return false;
+  if (!shallowArrayEq(Object.values(objA), Object.values(objB))) return false;
+  return true;
+}
+
+/*
+return true if arrA and arrB contain strict-equal values.
+*/
+function shallowArrayEq(arrA, arrB) {
+  if (arrA.length !== arrB.length) return false;
+  for (let i = 0, l = arrA.length; i < l; i += 1) {
+    if (arrA[i] !== arrB[i]) return false;
+  }
+  return true;
+}
 
 export default undoableConfig;
