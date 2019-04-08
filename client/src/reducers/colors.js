@@ -11,6 +11,7 @@ const ColorsReducer = (
   nextSharedState,
   prevSharedState
 ) => {
+  console.log(state, action);
   switch (action.type) {
     case "initial data load complete (universe exists)":
     case "reset World to eq Universe": {
@@ -53,15 +54,19 @@ const ColorsReducer = (
     case "color by categorical metadata":
     case "color by continuous metadata": {
       const { world } = prevSharedState;
-      const { rgb, scale } = createColors(
-        world,
-        action.type,
-        action.colorAccessor
-      );
+
+      /* toggle between this mode and reset */
+      const colorMode = action.type !== state.colorMode ? action.type : null;
+      const colorAccessor =
+        action.colorAccessor !== state.colorAccessor
+          ? action.colorAccessor
+          : null;
+
+      const { rgb, scale } = createColors(world, colorMode, colorAccessor);
       return {
         ...state,
-        colorMode: action.type,
-        colorAccessor: action.colorAccessor,
+        colorMode,
+        colorAccessor,
         rgb,
         scale
       };
@@ -69,11 +74,17 @@ const ColorsReducer = (
 
     case "color by expression": {
       const { world } = prevSharedState;
-      const { rgb, scale } = createColors(world, action.type, action.gene);
+
+      /* toggle between this mode and reset */
+      const colorMode = action.type !== state.colorMode ? action.type : null;
+      const colorAccessor =
+        action.gene !== state.colorAccessor ? action.gene : null;
+
+      const { rgb, scale } = createColors(world, colorMode, colorAccessor);
       return {
         ...state,
-        colorMode: action.type,
-        colorAccessor: action.gene,
+        colorMode,
+        colorAccessor,
         rgb,
         scale
       };
