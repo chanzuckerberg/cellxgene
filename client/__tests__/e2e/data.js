@@ -100,6 +100,14 @@ export const datasets = {
     },
     pan: {
       "coordinates-as-percent": { x1: 0.75, y1: 0.75, x2: 0.35, y2: 0.35 }
+    },
+    features: {
+      panzoom: {
+        lasso: {
+          "coordinates-as-percent": { x1: 0.3, y1: 0.3, x2: 0.5, y2: 0.5 },
+          count: "24"
+        }
+      }
     }
   }
 };
