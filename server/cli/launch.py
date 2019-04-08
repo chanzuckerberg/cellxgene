@@ -123,6 +123,8 @@ def launch(
 The --scripts flag is intended for developers to include google analytics etc. You could be opening yourself to a
 security risk by including the --scripts flag. Make sure you trust the scripts that you are including.
         """)
+        scripts_pretty = ", ".join(scripts)
+        click.confirm(f"Are you sure you want to inject these scripts: {scripts_pretty}?", abort=True)
 
     if not verbose:
         sys.tracebacklimit = 0
