@@ -118,15 +118,14 @@ def prepare(
             adata.var_names_make_unique()
         if not adata._obs.index.is_unique:
             click.echo("Warning: obs index is not unique")
-	if not adata._var.index.is_unique:
-	    click.echo("Warning: var index is not unique")
-
-	return adata
+        if not adata._var.index.is_unique:
+            click.echo("Warning: var index is not unique")
+        return adata
 
     def calculate_qc_metrics(adata):
-	if run_qc:
-	    sc.pp.calculate_qc_metrics(adata, inplace=True)
-	return adata
+        if run_qc:
+            sc.pp.calculate_qc_metrics(adata, inplace=True)
+        return adata
 
     def make_sparse(adata):
         if (type(adata.X) is ndarray) and sparse:
@@ -178,18 +177,18 @@ def prepare(
         if "tsne" in layout:
             sc.tl.tsne(adata)
             if plotting:
-		sc.pl.tsne(adata, color="louvain", palette=palette, save="_louvain")
+                sc.pl.tsne(adata, color="louvain", palette=palette, save="_louvain")
 
     def show_step(item):
-	if run_qc:
-	    qc_name = "Calculating QC metrics"
-	else:
-	    qc_name = "Skipping QC"
-	names = {
-	    "calculate_qc_metrics": qc_name,
-	    "make_sparse": "Ensuring sparsity",
-	    "run_recipe": f'Running preprocessing recipe "{recipe}"',
-	    "run_pca": "Running PCA",
+        if run_qc:
+            qc_name = "Calculating QC metrics"
+        else:
+            qc_name = "Skipping QC"
+        names = {
+            "calculate_qc_metrics": qc_name,
+            "make_sparse": "Ensuring sparsity",
+            "run_recipe": f'Running preprocessing recipe "{recipe}"',
+            "run_pca": "Running PCA",
             "run_neighbors": "Calculating neighbors",
             "run_louvain": "Calculating clusters",
             "run_layout": "Computing layout",
