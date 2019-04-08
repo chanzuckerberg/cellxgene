@@ -1,5 +1,46 @@
 /*
 Very simple FSM for use in reducer, etc.
+
+To create a state machine:
+  new StateMachine(initialState, transitions, onErrorCallback) -> statemachine
+
+Where:
+  * initialState - a caller-specified value that represents the initial state of
+    the FSM.
+  * transitions - an array of objects, representing FSM transitions (graph edges),
+    having the form:
+      {
+        to: state_name_transitioning_to,
+        from: state_name_transitioning_from,
+        event: value_that_will_cause_transition,
+        action: optional_callback_upon_transition
+      }
+    The transition will be provided to the action callback, so other data
+    may be stored in the transition object for use by the action callback.
+  * onErrorCallback - a callback function called if the FSM receives an event
+    for which it has no defined transition.
+
+
+Interface:
+  * states - property containing the state names. A Set(), contianing the
+    union of to: and from: values.
+  * events - property containing all of the accepted event values.  Set().
+  * graph - a Map of Maps, organized as  graph[eventValue][fromStateValue]
+  * clone() - clone the entire statemachine.
+  * next(eventValue) - drive the FSM to the next state.   If the event
+    matches a transition with a defined action, the action callback is
+    called, and the action return value is returned by next().  If no
+    transition is defined, onErrorCallback is called.
+
+Example:
+
+  const transitions = [
+    { from: "A", to: "B", event: "yo", action: () => 42 }
+  ];
+  const fsm = new StateMachine("A", transitions, () => { throw new Error("oops") });
+  fsm.next("yo");   // returns 42
+
+
 */
 export default class StateMachine {
   constructor(initState, transitions, onError) {
@@ -38,7 +79,7 @@ export default class StateMachine {
     return fsm;
   }
 
-  next(event, reducerState, reducerAction) {
+  next(event, data) {
     const { graph, state } = this;
     const tsnMap = graph.get(event);
     if (!tsnMap) return this.onError(this, event, state, undefined);
@@ -48,7 +89,7 @@ export default class StateMachine {
 
     this.state = transition.to;
     return transition.action
-      ? transition.action(this, transition, reducerState, reducerAction)
+      ? transition.action(this, transition, data)
       : undefined;
   }
 }

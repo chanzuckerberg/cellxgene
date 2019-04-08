@@ -166,7 +166,7 @@ const actionFilter = debug => (state, action, prevFilterState) => {
       /* no active FSM, so create one in init state */
       fsm = seedFsm.clone("init");
     }
-    return fsm.next(action.type, state, action);
+    return fsm.next(action.type, { state, action });
   }
 
   /* else, we have no idea what this is - skip it */

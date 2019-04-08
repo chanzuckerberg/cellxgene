@@ -45,8 +45,8 @@ const createFsmTransitions = (
       from: "graph brush in progress",
       to: "done",
       /* if current selection is all, cancelPending.  Else, applyPending */
-      action: (fsm, transition, state) =>
-        state.graphSelection.selection.mode === "all"
+      action: (fsm, transition, data) =>
+        data.state.graphSelection.selection.mode === "all"
           ? cancelPending()
           : applyPending()
     },
@@ -75,8 +75,8 @@ const createFsmTransitions = (
       from: "graph lasso in progress",
       to: "done",
       /* if current selection is all, cancelPending.  Else, applyPending */
-      action: (fsm, transition, state) =>
-        state.graphSelection.selection.mode === "all"
+      action: (fsm, transition, data) =>
+        data.state.graphSelection.selection.mode === "all"
           ? cancelPending()
           : applyPending()
     },
