@@ -119,8 +119,9 @@ class GeneExpression extends React.Component {
       postUserErrorToast("That doesn't appear to be a valid gene name.");
     } else {
       dispatch({ type: "single user defined gene start" });
-      dispatch(actions.requestUserDefinedGene(gene)).then(() =>
-        dispatch({ type: "single user defined gene complete" })
+      dispatch(actions.requestUserDefinedGene(gene)).then(
+        () => dispatch({ type: "single user defined gene complete" }),
+        () => dispatch({ type: "single user defined gene error" })
       );
     }
   }
@@ -152,7 +153,10 @@ class GeneExpression extends React.Component {
           }
           return dispatch(actions.requestUserDefinedGene(gene));
         })
-      ).then(() => dispatch({ type: "bulk user defined gene complete" }));
+      ).then(
+        () => dispatch({ type: "bulk user defined gene complete" }),
+        () => dispatch({ type: "bulk user defined gene error" })
+      );
     }
 
     this.setState({ bulkAdd: "" });

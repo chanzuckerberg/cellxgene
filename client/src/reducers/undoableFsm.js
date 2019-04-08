@@ -117,6 +117,12 @@ const createFsmTransitions = (
     {
       event: "request user defined gene error",
       from: "single user gene request in progress",
+      to: "single user gene error in progress",
+      action: skip
+    },
+    {
+      event: "single user defined gene error",
+      from: "single user gene error in progress",
       to: "done",
       action: cancelPending
     },
@@ -137,6 +143,12 @@ const createFsmTransitions = (
     {
       event: "request user defined gene error",
       from: "bulk user gene request in progress",
+      to: "bulk user gene request error in progress",
+      action: skip
+    },
+    {
+      event: "bulk user defined gene error",
+      from: "bulk user gene request error in progress",
       to: "done",
       action: cancelPending
     },
