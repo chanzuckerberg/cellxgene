@@ -123,6 +123,7 @@ const Lasso = () => {
         lassoPolygon = polygon;
         lassoPath = g
           .append("path")
+          .attr("data-testid", "lasso-element")
           .attr("fill", "#0bb")
           .attr("fill-opacity", 0.1)
           .attr("stroke", "#0bb")
