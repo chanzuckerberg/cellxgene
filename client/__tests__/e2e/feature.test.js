@@ -1,3 +1,12 @@
+/*
+NOT run in Travis CI
+
+UX tests using puppeteer to be run locally.
+
+To run locally, ensure you are running the client is running on port 3000.
+Then run jest --verbose false --config __tests__/e2e/e2eJestConfig.json feature.
+ */
+
 import puppeteer from "puppeteer";
 import { appUrlBase, DEBUG, DEV, DATASET } from "./config";
 import { puppeteerUtils, cellxgeneActions } from "./puppeteerUtils";

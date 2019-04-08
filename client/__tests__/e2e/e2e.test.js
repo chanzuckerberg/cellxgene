@@ -1,3 +1,8 @@
+/*
+Smoke test suite that will be run in Travis CI
+
+Tests included in this file are expected to be relatively stable and test core features
+ */
 import puppeteer from "puppeteer";
 import { appUrlBase, DEBUG, DEV, DATASET } from "./config";
 import { puppeteerUtils, cellxgeneActions } from "./puppeteerUtils";
