@@ -49,7 +49,8 @@ afterAll(() => {
 });
 
 describe("zoom interaction", async () => {
-  test("lasso visible after switching modes to pan/zoom", async () => {
+  // Skip this test since UI is to hide lasso path when switching modes
+  test.skip("lasso visible after switching modes to pan/zoom", async () => {
     const lassoSelection = await cxgActions.calcDragCoordinates(
       "layout-graph",
       data.panzoom.lasso["coordinates-as-percent"]
