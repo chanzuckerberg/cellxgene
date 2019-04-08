@@ -1,11 +1,15 @@
 export const puppeteerUtils = puppeteerPage => ({
-  async waitByID(testid) {
-    return await puppeteerPage.waitForSelector(`[data-testid='${testid}']`);
+  async waitByID(testid, props = {}) {
+    return await puppeteerPage.waitForSelector(
+      `[data-testid='${testid}']`,
+      props
+    );
   },
 
-  async waitByClass(testclass) {
+  async waitByClass(testclass, props = {}) {
     return await puppeteerPage.waitForSelector(
-      `[data-testclass='${testclass}']`
+      `[data-testclass='${testclass}']`,
+      props
     );
   },
 
