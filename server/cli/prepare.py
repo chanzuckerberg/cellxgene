@@ -178,14 +178,18 @@ def prepare(
         if "tsne" in layout:
             sc.tl.tsne(adata)
             if plotting:
-                sc.pl.tsne(adata, color="louvain", palette=palette, save="_louvain")
+		sc.pl.tsne(adata, color="louvain", palette=palette, save="_louvain")
 
     def show_step(item):
-        names = {
-	    "calculate_qc_metrics": "Calculating QC metrics" if run_qc else "Skipping QC",
-            "make_sparse": "Ensuring sparsity",
-            "run_recipe": f'Running preprocessing recipe "{recipe}"',
-            "run_pca": "Running PCA",
+	if run_qc:
+	    qc_name = "Calculating QC metrics"
+	else:
+	    qc_name = "Skipping QC"
+	names = {
+	    "calculate_qc_metrics": qc_name,
+	    "make_sparse": "Ensuring sparsity",
+	    "run_recipe": f'Running preprocessing recipe "{recipe}"',
+	    "run_pca": "Running PCA",
             "run_neighbors": "Calculating neighbors",
             "run_louvain": "Calculating clusters",
             "run_layout": "Computing layout",
