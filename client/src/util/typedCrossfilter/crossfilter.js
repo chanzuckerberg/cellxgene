@@ -477,16 +477,16 @@ class ImmutableSpatialDimension extends _ImmutableBaseDimension {
 
   selectWithinRect(spec) {
     /*
-      { mode: "within-rect", x0: 1, y0: 0, x1: 3, y1: 9 }
+      { mode: "within-rect", minX: 1, minY: 0, maxX: 3, maxY: 9 }
     */
-    const { x0, y0, x1, y1 } = spec;
+    const { minX, minY, maxX, maxY } = spec;
     const { X, Y } = this;
     const ranges = [];
     let start = -1;
     for (let i = 0, l = X.length; i < l; i += 1) {
       const x = X[i];
       const y = Y[i];
-      const inside = x0 <= x && x < x1 && y0 <= y && y < y1;
+      const inside = minX <= x && x < maxX && minY <= y && y < maxY;
       if (inside && start === -1) start = i;
       if (!inside && start !== -1) {
         ranges.push([start, i]);

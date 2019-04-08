@@ -10,6 +10,8 @@ import {
   makeContinuousDimensionName
 } from "../util/nameCreators";
 
+const XYDimName = layoutDimensionName("XY");
+
 const CrossfilterReducer = (
   state = null,
   action,
@@ -109,40 +111,37 @@ const CrossfilterReducer = (
       return crossfilter;
     }
 
-    case "graph brush selection change": {
-      const name = layoutDimensionName("XY");
-      const [x0, y0] = action.brushCoords.northwest;
-      const [x1, y1] = action.brushCoords.southeast;
-      return state.select(name, {
+    case "graph brush end":
+    case "graph brush change": {
+      const [minX, maxY] = action.brushCoords.northwest;
+      const [maxX, minY] = action.brushCoords.southeast;
+      return state.select(XYDimName, {
         mode: "within-rect",
-        x0,
-        y0,
-        x1,
-        y1
+        minX,
+        minY,
+        maxX,
+        maxY
       });
     }
 
-    case "lasso deselect":
-    case "graph brush deselect": {
-      const name = layoutDimensionName("XY");
-      return state.select(name, { mode: "all" });
-    }
-
-    case "lasso selection": {
+    case "graph lasso end": {
       const { polygon } = action;
-      const name = layoutDimensionName("XY");
-      if (polygon.length < 3) {
-        // single point or a line is not a polygon, and is therefore a deselect
-        return state.select(name, { mode: "all" });
-      }
-      return state.select(name, {
+      return state.select(XYDimName, {
         mode: "within-polygon",
         polygon
       });
     }
 
+    case "graph lasso cancel":
+    case "graph brush cancel":
+    case "graph lasso deselect":
+    case "graph brush deselect": {
+      return state.select(XYDimName, { mode: "all" });
+    }
+
     case "continuous metadata histogram start":
     case "continuous metadata histogram brush":
+    case "continuous metadata histogram cancel":
     case "continuous metadata histogram end": {
       const name = makeContinuousDimensionName(
         action.continuousNamespace,
