@@ -1,4 +1,4 @@
-import json
+from flask import json
 from numpy import float32, integer
 
 
