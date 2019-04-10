@@ -31,6 +31,10 @@ from scipy.sparse.csc import csc_matrix
 @click.option("--set-obs-names", default="", help="Named field to set as index for obs.", metavar="<name>")
 @click.option("--set-var-names", default="", help="Named field to set as index for var.", metavar="<name>")
 @click.option(
+    "--run-qc/--skip-qc", default=True, is_flag=True,
+    help="Whether to calculate QC metrics (saved to adata.obs and adata.var). \
+    See scanpy.pp.calculate_qc_metrics for details.", show_default=True)
+@click.option(
     "--make-obs-names-unique", default=True, is_flag=True, help="Ensure obs index is unique.", show_default=True
 )
 @click.option(
@@ -46,6 +50,7 @@ def prepare(
     overwrite,
     set_obs_names,
     set_var_names,
+    run_qc,
     make_obs_names_unique,
     make_var_names_unique,
 ):
@@ -63,7 +68,7 @@ def prepare(
     import matplotlib
 
     matplotlib.use("Agg")
-    import scanpy.api as sc
+    import scanpy as sc
 
     # scanpy settings
     sc.settings.verbosity = 0
@@ -115,7 +120,11 @@ def prepare(
             click.echo("Warning: obs index is not unique")
         if not adata._var.index.is_unique:
             click.echo("Warning: var index is not unique")
+        return adata
 
+    def calculate_qc_metrics(adata):
+        if run_qc:
+            sc.pp.calculate_qc_metrics(adata, inplace=True)
         return adata
 
     def make_sparse(adata):
@@ -171,7 +180,12 @@ def prepare(
                 sc.pl.tsne(adata, color="louvain", palette=palette, save="_louvain")
 
     def show_step(item):
+        if run_qc:
+            qc_name = "Calculating QC metrics"
+        else:
+            qc_name = "Skipping QC"
         names = {
+            "calculate_qc_metrics": qc_name,
             "make_sparse": "Ensuring sparsity",
             "run_recipe": f'Running preprocessing recipe "{recipe}"',
             "run_pca": "Running PCA",
@@ -182,7 +196,7 @@ def prepare(
         if item is not None:
             return names[item.__name__]
 
-    steps = [make_sparse, run_recipe, run_pca, run_neighbors, run_louvain, run_layout]
+    steps = [calculate_qc_metrics, make_sparse, run_recipe, run_pca, run_neighbors, run_louvain, run_layout]
 
     click.echo(f"[cellxgene] Loading data from {data}, please wait...")
     adata = load_data(data)

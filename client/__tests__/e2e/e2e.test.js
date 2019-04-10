@@ -1,28 +1,41 @@
+/*
+Smoke test suite that will be run in Travis CI
+
+Tests included in this file are expected to be relatively stable and test core features
+ */
 import puppeteer from "puppeteer";
+import { appUrlBase, DEBUG, DEV, DATASET } from "./config";
+import { puppeteerUtils, cellxgeneActions } from "./puppeteerUtils";
+import { datasets } from "./data";
 
-const jest_env = process.env.JEST_ENV || "dev";
-const appPort = process.env.JEST_CXG_PORT || 3000;
-const appUrlBase = `http://localhost:${appPort}`;
-const DEV = jest_env === "dev";
-const DEBUG = jest_env === "debug";
-
-let browser;
-let page;
+let browser, page, utils, cxgActions, spy;
 const browserViewport = { width: 1280, height: 960 };
+let data = datasets[DATASET];
 
 if (DEBUG) jest.setTimeout(100000);
+if (DEV) jest.setTimeout(10000);
 
 beforeAll(async () => {
-  const browser_params = DEV
-    ? { headless: false, slowMo: 50 }
+  const browserParams = DEV
+    ? { headless: false, slowMo: 5 }
     : DEBUG
-    ? { headless: false, slowMo: 200, devtools: true }
+    ? { headless: false, slowMo: 100, devtools: true }
     : {};
-  browser = await puppeteer.launch(browser_params);
+  browser = await puppeteer.launch(browserParams);
   page = await browser.newPage();
-  page.setViewport(browserViewport);
-  if (DEV || DEBUG)
-    page.on("console", msg => console.log("PAGE LOG:", msg.text()));
+  await page.setViewport(browserViewport);
+  if (DEV || DEBUG) {
+    page.on("console", msg => console.log(`PAGE LOG: ${msg.text()}`));
+  }
+  page.on("pageerror", err => {
+    throw new Error(`Console error: ${err}`);
+  });
+  utils = puppeteerUtils(page);
+  cxgActions = cellxgeneActions(page);
+});
+
+beforeEach(async () => {
+  await page.goto(appUrlBase);
 });
 
 afterAll(() => {
@@ -31,161 +44,246 @@ afterAll(() => {
   }
 });
 
-const getOneElementInnerHTML = async function(selector) {
-  let text = await page.$eval(selector, el => el.innerHTML);
-  return text;
-};
-
-const drag = async function(el_box, start, end, lasso = false) {
-  const x1 = el_box.content[0].x + start.x;
-  const x2 = el_box.content[0].x + end.x;
-  const y1 = el_box.content[0].y + start.y;
-  const y2 = el_box.content[0].y + end.y;
-  await page.mouse.move(x1, y1);
-  await page.mouse.down();
-  if (lasso) {
-    await page.mouse.move(x2, y1);
-    await page.mouse.move(x2, y2);
-    await page.mouse.move(x1, y2);
-    await page.mouse.move(x1, y1);
-  } else {
-    await page.mouse.move(x2, y2);
-  }
-  await page.mouse.up();
-};
-
-describe("did launch", () => {
+describe("did launch", async () => {
   test("page launched", async () => {
-    await page.goto(appUrlBase);
-    let el = await getOneElementInnerHTML("[data-testid='header']");
-    expect(el).toBe("cellxgene: pbmc3k");
+    let el = await utils.getOneElementInnerHTML("[data-testid='header']");
+    expect(el).toBe(data.title);
   });
 });
 
-describe("search for genes", () => {
-  test("search for known gene and add to metadata", async () => {
-    await page.goto(appUrlBase);
-    await page.waitForSelector("[ data-testid='gene-search']");
-    // blueprint's  typeahead is treating typing weird, clicking & waiting first solves this
-    await page.click("[data-testid='gene-search']");
-    await page.waitFor(200);
-    await page.type("[data-testid='gene-search']", "ACD");
-    await page.keyboard.press("Enter");
-    await page.waitForSelector("[data-testid='histogram-ACD']");
+describe("metadata loads", async () => {
+  test("categories and values from dataset appear", async () => {
+    for (const label in data.categorical) {
+      await utils.waitByID(`category-${label}`);
+      const categoryName = await utils.getOneElementInnerText(
+        `[data-testid="category-${label}"]`
+      );
+      expect(categoryName).toMatch(label);
+      await utils.clickOn(`category-expand-${label}`);
+      const categories = await cxgActions.getAllCategoriesAndCounts(label);
+      expect(Object.keys(categories)).toMatchObject(
+        Object.keys(data.categorical[label])
+      );
+      expect(Object.values(categories)).toMatchObject(
+        Object.values(data.categorical[label])
+      );
+    }
+  });
+
+  test("continuous data appears", async () => {
+    for (const label in data.continuous) {
+      await utils.waitByID(`histogram-${label}`);
+    }
   });
 });
 
-describe("select cells and diffexp", () => {
-  test("selects cells from layout and adds to cell set 1", async () => {
-    await page.goto(appUrlBase);
-    const layout = await page.waitForSelector("[data-testid='layout-graph']");
-    const size = await layout.boxModel();
-    const cellset1 = {
-      start: {
-        x: Math.floor(size.width * 0.25),
-        y: Math.floor(size.height * 0.25)
-      },
-      end: {
-        x: Math.floor(size.width * 0.35),
-        y: Math.floor(size.height * 0.35)
-      }
-    };
-    await drag(size, cellset1.start, cellset1.end, true);
-    await page.click("[data-testid='cellset-button-1");
-    let button = await getOneElementInnerHTML("[data-testid='cellset-button-1");
-    expect(button).toMatch(/26 cells/);
+describe("cell selection", async () => {
+  test("selects all cells cellset 1", async () => {
+    const cellCount = await cxgActions.cellSet(1);
+    expect(cellCount).toBe(data.dataframe.nObs);
   });
 
-  test("selects cells from layout and adds to cell set 2", async () => {
-    await page.goto(appUrlBase);
-    const layout = await page.waitForSelector("[data-testid='layout-graph']");
-    const size = await layout.boxModel();
-    const cellset2 = {
-      start: {
-        x: Math.floor(size.width * 0.45),
-        y: Math.floor(size.height * 0.45)
-      },
-      end: {
-        x: Math.floor(size.width * 0.55),
-        y: Math.floor(size.height * 0.55)
-      }
-    };
-    await drag(size, cellset2.start, cellset2.end, true);
-    await page.click("[data-testid='cellset-button-2");
-    let button = await getOneElementInnerHTML("[data-testid='cellset-button-2");
-    expect(button).toMatch(/49 cells/);
+  test("selects all cells cellset 2", async () => {
+    const cellCount = await cxgActions.cellSet(2);
+    expect(cellCount).toBe(data.dataframe.nObs);
   });
 
-  test("selects cells, saves them and performs diffexp", async () => {
-    await page.goto(appUrlBase);
-    const layout = await page.waitForSelector("[data-testid='layout-graph']");
-    const size = await layout.boxModel();
-    const cellset1 = {
-      start: {
-        x: Math.floor(size.width * 0.25),
-        y: Math.floor(size.height * 0.25)
-      },
-      end: {
-        x: Math.floor(size.width * 0.35),
-        y: Math.floor(size.height * 0.35)
-      }
-    };
-    await drag(size, cellset1.start, cellset1.end, true);
-    await page.click("[data-testid='cellset-button-1");
-    const cellset2 = {
-      start: {
-        x: Math.floor(size.width * 0.45),
-        y: Math.floor(size.height * 0.45)
-      },
-      end: {
-        x: Math.floor(size.width * 0.55),
-        y: Math.floor(size.height * 0.55)
-      }
-    };
-    await drag(size, cellset2.start, cellset2.end, true);
-    await page.click("[data-testid='cellset-button-2");
-    await page.click("[data-testid='diffexp-button");
-    await page.waitForSelector("[data-testclass='histogram-diffexp']");
-    const diffexps = await page.$$eval(
-      "[data-testclass='histogram-diffexp']",
-      divs => {
-        return divs.map(div =>
-          div.id.substring("histogram-".length, div.id.length)
+  test("selects cells via lasso", async () => {
+    for (const cellset of data.cellsets.lasso) {
+      const cellset1 = await cxgActions.calcDragCoordinates(
+        "layout-graph",
+        cellset["coordinates-as-percent"]
+      );
+      await cxgActions.drag("layout-graph", cellset1.start, cellset1.end, true);
+      const cellCount = await cxgActions.cellSet(1);
+      expect(cellCount).toBe(cellset.count);
+    }
+  });
+
+  test("selects cells via categorical", async () => {
+    for (const cellset of data.cellsets.categorical) {
+      await utils.clickOn(`category-expand-${cellset.metadata}`);
+      await utils.clickOn(`category-select-${cellset.metadata}`);
+      for (const val of cellset.values) {
+        await utils.clickOn(
+          `categorical-value-select-${cellset.metadata}-${val}`
         );
       }
-    );
-    expect(diffexps).toMatchObject([
-      "HLA-DPA1",
-      "HLA-DQA1",
-      "HLA-DRB1",
-      "HLA-DMA",
-      "CST3",
-      "HLA-DPB1",
-      "HLA-DQB1",
-      "LGALS2",
-      "FCER1A",
-      "LTB"
-    ]);
+      const cellCount = await cxgActions.cellSet(1);
+      expect(cellCount).toBe(cellset.count);
+    }
+  });
+
+  test("selects cells via continuous", async () => {
+    for (const cellset of data.cellsets.continuous) {
+      const histId = `histogram-${cellset.metadata}-plot-brush`;
+      const coords = await cxgActions.calcDragCoordinates(
+        histId,
+        cellset["coordinates-as-percent"]
+      );
+      await cxgActions.drag(histId, coords.start, coords.end);
+      const cellCount = await cxgActions.cellSet(1);
+      expect(cellCount).toBe(cellset.count);
+    }
   });
 });
 
-describe("brushable histogram", () => {
-  test("can brush historgram", async () => {
-    await page.goto(appUrlBase);
-    const hist = await page.waitForSelector(
-      "[data-testid='histogram_n_genes_svg-brush'] > .overlay"
+describe("gene entry", async () => {
+  test("search for single gene", async () => {
+    // blueprint's  typeahead is treating typing weird, clicking & waiting first solves this
+    await utils.typeInto("gene-search", data.genes.search);
+    await page.keyboard.press("Enter");
+    await page.waitForSelector(
+      `[data-testid='histogram-${data.genes.search}']`
     );
-    const hist_size = await hist.boxModel();
-    const draghist = {
-      start: {
-        x: Math.floor(hist_size.width * 0.25),
-        y: Math.floor(hist_size.height * 0.5)
-      },
-      end: {
-        x: Math.floor(hist_size.width * 0.55),
-        y: Math.floor(hist_size.height * 0.5)
+  });
+
+  test("bulk add genes", async () => {
+    await cxgActions.reset();
+    const testGenes = data.genes.bulkadd;
+    await utils.clickOn("section-bulk-add");
+    await utils.typeInto("input-bulk-add", testGenes.join(","));
+    await page.keyboard.press("Enter");
+    const userGeneHist = await cxgActions.getAllHistograms(
+      "histogram-user-gene"
+    );
+    expect(userGeneHist).toEqual(expect.arrayContaining(testGenes));
+  });
+});
+
+describe("diffexp", async () => {
+  test("selects cells, saves them and performs diffexp", async () => {
+    for (const select of data.diffexp.cellset1) {
+      if (select.kind === "categorical") {
+        await cxgActions.selectCategory(select.metadata, select.values, true);
       }
-    };
-    await drag(hist_size, draghist.start, draghist.end);
+    }
+    await cxgActions.cellSet(1);
+    for (const select of data.diffexp.cellset2) {
+      if (select.kind === "categorical") {
+        await cxgActions.selectCategory(select.metadata, select.values, true);
+      }
+    }
+    await cxgActions.cellSet(2);
+    await utils.clickOn("diffexp-button");
+    const diffExpHists = await cxgActions.getAllHistograms("histogram-diffexp");
+    expect(diffExpHists).toEqual(
+      expect.arrayContaining(data.diffexp["gene-results"])
+    );
+  });
+});
+//
+
+describe("subset/reset", async () => {
+  test("subset - cell count matches", async () => {
+    for (const select of data.subset.cellset1) {
+      if (select.kind === "categorical") {
+        await cxgActions.selectCategory(select.metadata, select.values, true);
+      }
+    }
+    await utils.clickOn("subset-button");
+    for (const label in data.subset.categorical) {
+      const categories = await cxgActions.getAllCategoriesAndCounts(label);
+      expect(Object.keys(categories)).toMatchObject(
+        Object.keys(data.subset.categorical[label])
+      );
+      expect(Object.values(categories)).toMatchObject(
+        Object.values(data.subset.categorical[label])
+      );
+    }
+  });
+
+  test("reset after subset", async () => {
+    for (const select of data.subset.cellset1) {
+      if (select.kind === "categorical") {
+        await cxgActions.selectCategory(select.metadata, select.values, true);
+      }
+    }
+    await utils.clickOn("subset-button");
+    for (const label in data.subset.categorical) {
+      const categories = await cxgActions.getAllCategoriesAndCounts(label);
+      expect(Object.keys(categories)).toMatchObject(
+        Object.keys(data.subset.categorical[label])
+      );
+      expect(Object.values(categories)).toMatchObject(
+        Object.values(data.subset.categorical[label])
+      );
+    }
+    await cxgActions.reset();
+    for (const label in data.categorical) {
+      await utils.waitByID(`category-${label}`);
+      const categoryName = await utils.getOneElementInnerText(
+        `[data-testid="category-${label}"]`
+      );
+      expect(categoryName).toMatch(label);
+      const categories = await cxgActions.getAllCategoriesAndCounts(label);
+      expect(Object.keys(categories)).toMatchObject(
+        Object.keys(data.categorical[label])
+      );
+      expect(Object.values(categories)).toMatchObject(
+        Object.values(data.categorical[label])
+      );
+    }
+  });
+
+  test("lasso after subset", async () => {
+    for (const select of data.subset.cellset1) {
+      if (select.kind === "categorical") {
+        await cxgActions.selectCategory(select.metadata, select.values, true);
+      }
+    }
+    await utils.clickOn("subset-button");
+    const lassoSelection = await cxgActions.calcDragCoordinates(
+      "layout-graph",
+      data.subset.lasso["coordinates-as-percent"]
+    );
+    await cxgActions.drag(
+      "layout-graph",
+      lassoSelection.start,
+      lassoSelection.end,
+      true
+    );
+    const cellCount = await cxgActions.cellSet(1);
+    expect(cellCount).toBe(data.subset.lasso.count);
+  });
+});
+
+describe("scatter plot", async () => {
+  test("scatter plot appears", async () => {
+    await cxgActions.reset();
+    const testGenes = data.scatter.genes;
+    await utils.clickOn("section-bulk-add");
+    await utils.typeInto("input-bulk-add", Object.values(testGenes).join(","));
+    await page.keyboard.press("Enter");
+    await utils.clickOn(`plot-x-${data.scatter.genes.x}`);
+    await utils.clickOn(`plot-y-${data.scatter.genes.y}`);
+    await utils.waitByID("scatterplot");
+  });
+});
+
+// interact with UI elements just that they do not break
+describe("ui elements don't error", async () => {
+  test("color by", async () => {
+    for (const label in data.categorical) {
+      await utils.clickOn(`colorby-${label}`);
+    }
+    for (const label in data.continuous) {
+      await utils.clickOn(`colorby-${label}`);
+    }
+  });
+
+  test("pan and zoom", async () => {
+    await utils.clickOn("mode-pan-zoom");
+    const panCoords = await cxgActions.calcDragCoordinates(
+      "layout-graph",
+      data.pan["coordinates-as-percent"]
+    );
+    await cxgActions.drag(
+      "layout-graph",
+      panCoords.start,
+      panCoords.end,
+      false
+    );
+    await page.evaluate(`window.scrollBy(0, 1000);`);
   });
 });

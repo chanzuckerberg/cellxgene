@@ -122,8 +122,10 @@ class GeneExpression extends React.Component {
       postUserErrorToast("That doesn't appear to be a valid gene name.");
     } else {
       dispatch({ type: "single user defined gene start" });
-      dispatch(actions.requestUserDefinedGene(gene));
-      dispatch({ type: "single user defined gene complete" });
+      dispatch(actions.requestUserDefinedGene(gene)).then(
+        () => dispatch({ type: "single user defined gene complete" }),
+        () => dispatch({ type: "single user defined gene error" })
+      );
     }
   }
 
@@ -139,22 +141,25 @@ class GeneExpression extends React.Component {
       const genes = _.pull(_.uniq(bulkAdd.split(/[ ,]+/)), "");
 
       dispatch({ type: "bulk user defined gene start" });
-      genes.forEach(gene => {
-        if (gene.length === 0) {
-          keepAroundErrorToast("Must enter a gene name.");
-        } else if (userDefinedGenes.indexOf(gene) !== -1) {
-          keepAroundErrorToast("That gene already exists");
-        } else if (
-          world.varAnnotations.col("name").indexOf(gene) === undefined
-        ) {
-          keepAroundErrorToast(
-            `${gene} doesn't appear to be a valid gene name.`
-          );
-        } else {
-          dispatch(actions.requestUserDefinedGene(gene));
-        }
-      });
-      dispatch({ type: "bulk user defined gene complete" });
+      Promise.all(
+        genes.map(gene => {
+          if (gene.length === 0) {
+            return keepAroundErrorToast("Must enter a gene name.");
+          }
+          if (userDefinedGenes.indexOf(gene) !== -1) {
+            return keepAroundErrorToast("That gene already exists");
+          }
+          if (world.varAnnotations.col("name").indexOf(gene) === undefined) {
+            return keepAroundErrorToast(
+              `${gene} doesn't appear to be a valid gene name.`
+            );
+          }
+          return dispatch(actions.requestUserDefinedGene(gene));
+        })
+      ).then(
+        () => dispatch({ type: "bulk user defined gene complete" }),
+        () => dispatch({ type: "bulk user defined gene error" })
+      );
     }
 
     this.setState({ bulkAdd: "" });
@@ -206,7 +211,7 @@ class GeneExpression extends React.Component {
               active={tab === "bulkadd"}
               minimal
               small
-              data-testid="tab-bulkadd"
+              data-testid="section-bulk-add"
               onClick={() => {
                 this.setState({ tab: "bulkadd" });
               }}
@@ -274,7 +279,7 @@ class GeneExpression extends React.Component {
                         this.setState({ bulkAdd: e.target.value });
                       }}
                       id="text-input-bulk-add"
-                      data-testid="text-input-bulk-add"
+                      data-testid="input-bulk-add"
                       placeholder={this.placeholderGeneNames()}
                       value={bulkAdd}
                     />

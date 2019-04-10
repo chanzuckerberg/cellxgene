@@ -3,7 +3,7 @@
 import * as d3 from "d3";
 
 const Lasso = () => {
-  const dispatch = d3.dispatch("start", "end");
+  const dispatch = d3.dispatch("start", "end", "cancel");
 
   const polygonToPath = polygon =>
     `M${polygon.map(d => d.join(",")).join("L")}`;
@@ -28,6 +28,7 @@ const Lasso = () => {
 
       lassoPath = g
         .append("path")
+        .attr("data-testid", "lasso-element")
         .attr("fill", "#0bb")
         .attr("fill-opacity", 0.1)
         .attr("stroke", "#0bb")
@@ -81,6 +82,7 @@ const Lasso = () => {
         lassoPath.remove();
         lassoPath = null;
         lassoPolygon = null;
+        dispatch.call("cancel");
       }
     };
 
@@ -112,6 +114,23 @@ const Lasso = () => {
       if (closePath) {
         closePath.remove();
         closePath = null;
+      }
+    };
+
+    lasso.move = polygon => {
+      if (polygon !== lassoPolygon || polygon.length !== lassoPolygon.length) {
+        lasso.reset();
+
+        lassoPolygon = polygon;
+        lassoPath = g
+          .append("path")
+          .attr("data-testid", "lasso-element")
+          .attr("fill", "#0bb")
+          .attr("fill-opacity", 0.1)
+          .attr("stroke", "#0bb")
+          .attr("stroke-dasharray", "3, 3");
+
+        lassoPath.attr("d", `${polygonToPath(lassoPolygon)}Z`);
       }
     };
   };

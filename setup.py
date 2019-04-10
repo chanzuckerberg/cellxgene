@@ -8,7 +8,7 @@ with open("server/requirements.txt") as fh:
 
 setup(
     name="cellxgene",
-    version="0.7.0",
+    version="0.8.0",
     packages=find_packages(),
     url="https://github.com/chanzuckerberg/cellxgene",
     license="MIT",

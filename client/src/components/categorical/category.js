@@ -46,6 +46,7 @@ class Category extends React.Component {
       } else if (categoryCount.selectedCatCount < categoryCount.totalCatCount) {
         /* to be explicit... */
         this.checkbox.indeterminate = true;
+        this.setState({ isChecked: false });
       }
     }
   }
@@ -111,6 +112,8 @@ class Category extends React.Component {
         style={{
           maxWidth: globals.maxControlsWidth
         }}
+        data-testclass="category"
+        data-testid={`category-${metadataField}`}
       >
         <div
           style={{
@@ -128,8 +131,8 @@ class Category extends React.Component {
           >
             <label className="bp3-control bp3-checkbox">
               <input
-                data-testclass="category-checkbox"
-                data-testid={`category-checkbox-${metadataField}`}
+                data-testclass="category-select"
+                data-testid={`category-select-${metadataField}`}
                 onChange={this.handleToggleAllClick.bind(this)}
                 ref={el => {
                   this.checkbox = el;
@@ -143,6 +146,7 @@ class Category extends React.Component {
             </label>
 
             <span
+              data-testid={`category-expand-${metadataField}`}
               style={{
                 cursor: "pointer",
                 display: "inline-block"
@@ -153,14 +157,22 @@ class Category extends React.Component {
             >
               {metadataField}
               {isExpanded ? (
-                <FaChevronDown style={{ fontSize: 10, marginLeft: 5 }} />
+                <FaChevronDown
+                  data-testclass="category-expand-is-expanded"
+                  style={{ fontSize: 10, marginLeft: 5 }}
+                />
               ) : (
-                <FaChevronRight style={{ fontSize: 10, marginLeft: 5 }} />
+                <FaChevronRight
+                  data-testclass="category-expand-is-not-expanded"
+                  style={{ fontSize: 10, marginLeft: 5 }}
+                />
               )}
             </span>
           </div>
           <Tooltip content="Use as color scale" position="bottom">
             <Button
+              data-testclass="colorby"
+              data-testid={`colorby-${metadataField}`}
               onClick={this.handleColorChange}
               active={colorAccessor === metadataField}
               intent={colorAccessor === metadataField ? "primary" : "none"}

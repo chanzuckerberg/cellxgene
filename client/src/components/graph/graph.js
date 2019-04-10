@@ -43,15 +43,16 @@ import { World } from "../../util/stateManager";
   scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
   celllist1: state.differential.celllist1,
   celllist2: state.differential.celllist2,
-  library_versions: _.get(state.config, "library_versions", null),
+  libraryVersions: state.config?.library_versions, // eslint-disable-line camelcase
   undoDisabled: state["@@undoable/past"].length === 0,
-  redoDisabled: state["@@undoable/future"].length === 0
+  redoDisabled: state["@@undoable/future"].length === 0,
+  selectionTool: state.graphSelection.tool,
+  currentSelection: state.graphSelection.selection
 }))
 class Graph extends React.Component {
   constructor(props) {
     super(props);
     this.count = 0;
-    this.inverse = mat4.identity([]);
     this.graphPaddingTop = 0;
     this.graphPaddingBottom = 45;
     this.graphPaddingRight = globals.leftSidebarWidth;
@@ -62,8 +63,9 @@ class Graph extends React.Component {
     };
     this.state = {
       svg: null,
-      brush: null,
-      mode: "lasso"
+      tool: null,
+      container: null,
+      mode: "select"
     };
   }
 
@@ -105,9 +107,16 @@ class Graph extends React.Component {
     });
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps, prevState) {
     const { renderCache } = this;
-    const { world, crossfilter, colorRGB, responsive } = this.props;
+    const {
+      world,
+      crossfilter,
+      colorRGB,
+      responsive,
+      selectionTool,
+      currentSelection
+    } = this.props;
     const {
       reglRender,
       mode,
@@ -119,6 +128,7 @@ class Graph extends React.Component {
       sizeBuffer,
       svg
     } = this.state;
+    let stateChanges = {};
 
     if (reglRender && this.reglRenderState === "rendering" && mode !== "zoom") {
       reglRender.cancel();
@@ -151,9 +161,7 @@ class Graph extends React.Component {
           dimension: 2
         });
 
-        this.setState({
-          offset
-        });
+        stateChanges.offset = offset;
       }
 
       // Colors for each point - a cached value that only changes when
@@ -196,21 +204,58 @@ class Graph extends React.Component {
       prevProps.responsive.height !== responsive.height ||
       prevProps.responsive.width !== responsive.width ||
       /* first time */
-      (responsive.height && responsive.width && !svg)
+      (responsive.height && responsive.width && !svg) ||
+      selectionTool !== prevProps.selectionTool
     ) {
       /* clear out whatever was on the div, even if nothing, but usually the brushes etc */
       d3.select("#graphAttachPoint")
         .selectAll("svg")
         .remove();
-      const { svg: newSvg, brush } = setupSVGandBrushElements(
-        this.handleBrushSelectAction.bind(this),
-        this.handleBrushDeselectAction.bind(this),
+
+      let handleStart;
+      let handleDrag;
+      let handleEnd;
+      let handleCancel;
+      if (selectionTool === "brush") {
+        handleStart = this.handleBrushStartAction.bind(this);
+        handleDrag = this.handleBrushDragAction.bind(this);
+        handleEnd = this.handleBrushEndAction.bind(this);
+      } else {
+        handleStart = this.handleLassoStart.bind(this);
+        handleEnd = this.handleLassoEnd.bind(this);
+        handleCancel = this.handleLassoCancel.bind(this);
+      }
+      const { svg: newSvg, tool, container } = setupSVGandBrushElements(
+        selectionTool,
+        handleStart,
+        handleDrag,
+        handleEnd,
+        handleCancel,
         responsive,
-        this.graphPaddingRight,
-        this.handleLassoStart.bind(this),
-        this.handleLassoEnd.bind(this)
+        this.graphPaddingRight
       );
-      this.setState({ svg: newSvg, brush });
+      stateChanges = { ...stateChanges, svg: newSvg, tool, container };
+    }
+
+    /*
+    if the selection tool or state has changed, ensure that the selection
+    tool correctly reflects the underlying selection.
+    */
+    if (
+      currentSelection !== prevProps.currentSelection ||
+      mode !== prevState.mode ||
+      stateChanges.svg
+    ) {
+      const { tool, container, offset } = this.state;
+      this.selectionToolUpdate(
+        stateChanges.tool ? stateChanges.tool : tool,
+        stateChanges.container ? stateChanges.container : container,
+        stateChanges.offset ? stateChanges.offset : offset
+      );
+    }
+
+    if (Object.keys(stateChanges).length > 0) {
+      this.setState(stateChanges);
     }
   }
 
@@ -264,6 +309,102 @@ class Graph extends React.Component {
     dispatch(actions.resetInterface());
   };
 
+  handleContinuousPercentileMin = v => {
+    const { dispatch } = this.props;
+    dispatch({
+      type: "set continuous percentile min",
+      data: v
+    });
+  };
+
+  handleContinuousPercentileMax = v => {
+    const { dispatch } = this.props;
+    dispatch({
+      type: "set continuous percentile max",
+      data: v
+    });
+  };
+
+  brushToolUpdate(tool, container, offset) {
+    /*
+    this is called from componentDidUpdate(), so be very careful using
+    anything from this.state, which may be updated asynchronously.
+    */
+    const { currentSelection } = this.props;
+    if (container) {
+      const toolCurrentSelection = d3.brushSelection(container.node());
+
+      if (currentSelection.mode === "within-rect") {
+        /*
+        if there is a selection, make sure the brush tool matches
+        */
+        const screenCoords = [
+          this.mapPointToScreen(currentSelection.brushCoords.northwest, offset),
+          this.mapPointToScreen(currentSelection.brushCoords.southeast, offset)
+        ];
+        if (!toolCurrentSelection) {
+          /* tool is not selected, so just move the brush */
+          container.call(tool.move, screenCoords);
+        } else {
+          /* there is an active selection and a brush - make sure they match */
+          /* this just sums the difference of each dimension, of each point */
+          let delta = 0;
+          for (let x = 0; x < 2; x += 1) {
+            for (let y = 0; y < 2; y += 1) {
+              delta += Math.abs(
+                screenCoords[x][y] - toolCurrentSelection[x][y]
+              );
+            }
+          }
+          if (delta > 0) {
+            container.call(tool.move, screenCoords);
+          }
+        }
+      } else if (toolCurrentSelection) {
+        /* no selection, so clear the brush tool if it is set */
+        container.call(tool.move, null);
+      }
+    }
+  }
+
+  lassoToolUpdate(tool, container, offset) {
+    /*
+    this is called from componentDidUpdate(), so be very careful using
+    anything from this.state, which may be updated asynchronously.
+    */
+    const { currentSelection } = this.props;
+    if (currentSelection.mode === "within-polygon") {
+      /*
+      if there is a current selection, make sure the lasso tool matches
+      */
+      const polygon = currentSelection.polygon.map(p =>
+        this.mapPointToScreen(p, offset)
+      );
+      tool.move(polygon);
+    } else {
+      tool.reset();
+    }
+  }
+
+  selectionToolUpdate(tool, container, offset) {
+    /*
+    this is called from componentDidUpdate(), so be very careful using
+    anything from this.state, which may be updated asynchronously.
+    */
+    const { selectionTool } = this.props;
+    switch (selectionTool) {
+      case "brush":
+        this.brushToolUpdate(tool, container, offset);
+        break;
+      case "lasso":
+        this.lassoToolUpdate(tool, container, offset);
+        break;
+      default:
+        /* punt? */
+        break;
+    }
+  }
+
   reglDraw(regl, drawPoints, sizeBuffer, colorBuffer, pointBuffer, camera) {
     regl.clear({
       depth: 1,
@@ -307,7 +448,11 @@ class Graph extends React.Component {
     });
   }
 
-  invertPoint(pin) {
+  mapScreenToPoint(pin) {
+    /*
+    Map an XY coordinates from screen domain to cell/point range,
+    accounting for current pan/zoom camera.
+    */
     const { responsive } = this.props;
     const { regl, camera, offset } = this.state;
 
@@ -326,30 +471,45 @@ class Graph extends React.Component {
       x * inverse[14] * aspect + inverse[12],
       y * inverse[14] + inverse[13]
     ];
+
     return [(pout[0] + 1) / 2 + offset[0], (pout[1] + 1) / 2 + offset[1]];
   }
 
-  handleContinuousPercentileMin = v => {
-    const { dispatch } = this.props;
-    dispatch({
-      type: "set continuous percentile min",
-      data: v
-    });
-  };
-
-  handleContinuousPercentileMax = v => {
-    const { dispatch } = this.props;
-    dispatch({
-      type: "set continuous percentile max",
-      data: v
-    });
-  };
-
-  handleBrushSelectAction() {
+  mapPointToScreen(xyCell, offset) {
     /*
-      This conditional handles procedural brush deselect. Brush emits
-      an event on procedural deselect because it is move: null
+    Map an XY coordinate from cell/point domain to screen range.  Inverse
+    of mapScreenToPoint()
     */
+    const { responsive } = this.props;
+    const { regl, camera } = this.state;
+
+    const gl = regl._gl;
+
+    // get aspect ratio
+    const aspect = gl.drawingBufferWidth / gl.drawingBufferHeight;
+
+    // compute inverse view matrix
+    const inverse = mat4.invert([], camera.view());
+
+    // variable names are choosen to reflect inverse of those used
+    // in mapScreenToPoint().
+    const pout = [
+      (xyCell[0] - offset[0]) * 2 - 1,
+      (xyCell[1] - offset[1]) * 2 - 1
+    ];
+    const x = (pout[0] - inverse[12]) / aspect / inverse[14];
+    const y = (pout[1] - inverse[13]) / inverse[14];
+
+    const pin = [
+      Math.round(((x + 1) * (responsive.width - this.graphPaddingRight)) / 2),
+      Math.round(
+        -((y + 1) / 2 - 1) * (responsive.height - this.graphPaddingTop)
+      )
+    ];
+    return pin;
+  }
+
+  handleBrushDragAction() {
     /*
       event describing brush position:
       @-------|
@@ -357,74 +517,103 @@ class Graph extends React.Component {
       |       |
       |-------@
     */
+    // ignore programatically generated events
+    if (d3.event.sourceEvent === null || !d3.event.selection) return;
+
+    const { dispatch } = this.props;
+    const s = d3.event.selection;
+    const brushCoords = {
+      northwest: this.mapScreenToPoint([s[0][0], s[0][1]]),
+      southeast: this.mapScreenToPoint([s[1][0], s[1][1]])
+    };
+
+    dispatch({
+      type: "graph brush change",
+      brushCoords
+    });
+  }
+
+  handleBrushStartAction() {
+    // Ignore programatically generated events.
+    if (!d3.event.sourceEvent) return;
+
+    const { dispatch } = this.props;
+    dispatch({ type: "graph brush start" });
+  }
+
+  handleBrushEndAction() {
+    // Ignore programatically generated events.
+    if (!d3.event.sourceEvent) return;
+
     /*
-      No idea why d3 event scope works like this
-      but apparently
-      it does
-      https://bl.ocks.org/EfratVil/0e542f5fc426065dd1d4b6daaa345a9f
+    coordinates will be included if selection made, null
+    if selection cleared.
     */
     const { dispatch } = this.props;
-
-    if (d3.event.sourceEvent !== null) {
-      const s = d3.event.selection;
-
+    const s = d3.event.selection;
+    if (s) {
       const brushCoords = {
-        northwest: this.invertPoint([s[0][0], s[0][1]]),
-        southeast: this.invertPoint([s[1][0], s[1][1]])
+        northwest: this.mapScreenToPoint(s[0]),
+        southeast: this.mapScreenToPoint(s[1])
       };
-
       dispatch({
-        type: "graph brush selection change",
+        type: "graph brush end",
         brushCoords
+      });
+    } else {
+      dispatch({
+        type: "graph brush deselect"
       });
     }
   }
 
   handleBrushDeselectAction() {
     const { dispatch } = this.props;
-    const { svg, brush } = this.state;
-
-    if (d3.event && !d3.event.selection) {
-      dispatch({
-        type: "graph brush deselect"
-      });
-    }
-
-    if (!d3.event) {
-      /*
-      this line clears the brush procedurally, ie., zoom button clicked,
-      not a click away from brush on svg
-      */
-      svg.select(".graph_brush").call(brush.move, null);
-      dispatch({
-        type: "graph brush deselect"
-      });
-    }
+    dispatch({
+      type: "graph brush deselect"
+    });
   }
 
   handleLassoStart() {
     const { dispatch } = this.props;
-    // reset selected points when starting a new polygon
-    // making it easier for the user to make the next selection
     dispatch({
-      type: "lasso started"
+      type: "graph lasso start"
     });
   }
 
   // when a lasso is completed, filter to the points within the lasso polygon
   handleLassoEnd(polygon) {
-    const minimumPolygoneArea = 10;
+    const minimumPolygonArea = 10;
     const { dispatch } = this.props;
 
-    if (polygon.length < 3 || d3.polygonArea(polygon) < minimumPolygoneArea) {
+    if (
+      polygon.length < 3 ||
+      Math.abs(d3.polygonArea(polygon)) < minimumPolygonArea
+    ) {
       // if less than three points, or super small area, treat as a clear selection.
-      dispatch({ type: "lasso deselect" });
+      dispatch({ type: "graph lasso deselect" });
     } else {
       dispatch({
-        type: "lasso selection",
-        polygon: polygon.map(xy => this.invertPoint(xy)) // transform the polygon
+        type: "graph lasso end",
+        polygon: polygon.map(xy => this.mapScreenToPoint(xy)) // transform the polygon
       });
     }
+  }
+
+  handleLassoCancel() {
+    const { dispatch } = this.props;
+    dispatch({ type: "graph lasso cancel" });
+  }
+
+  handleLassoDeselectAction() {
+    const { dispatch } = this.props;
+    dispatch({ type: "graph lasso deselect" });
+  }
+
+  handleDeselectAction() {
+    const { selectionTool } = this.props;
+    if (selectionTool === "brush") this.handleBrushDeselectAction();
+    if (selectionTool === "lasso") this.handleLassoDeselectAction();
   }
 
   handleOpacityRangeChange(e) {
@@ -441,11 +630,26 @@ class Graph extends React.Component {
       responsive,
       crossfilter,
       resettingInterface,
-      library_versions,
+      libraryVersions,
       undoDisabled,
-      redoDisabled
+      redoDisabled,
+      selectionTool,
+      continuousPercentileMin,
+      continuousPercentileMax
     } = this.props;
     const { mode } = this.state;
+
+    // constants used to create selection tool button
+    let selectionTooltip;
+    let selectionButtonClass;
+    if (selectionTool === "brush") {
+      selectionTooltip = "Brush selection";
+      selectionButtonClass = "bp3-icon-select";
+    } else {
+      selectionTooltip = "Lasso selection";
+      selectionButtonClass = "bp3-icon-polygon-filter";
+    }
+
     return (
       <div id="graphWrapper">
         <div
@@ -495,20 +699,21 @@ class Graph extends React.Component {
                 intent="warning"
                 style={{ marginRight: 10 }}
                 onClick={this.resetInterface}
+                data-testid="reset"
+                data-testclass={`resetting-${resettingInterface}`}
               >
                 reset
               </AnchorButton>
             </Tooltip>
             <div className="bp3-button-group">
-              <Tooltip content="Lasso selection" position="left">
+              <Tooltip content={selectionTooltip} position="left">
                 <Button
                   type="button"
-                  className="bp3-button bp3-icon-polygon-filter"
-                  active={mode === "lasso"}
+                  data-testid="mode-lasso"
+                  className={`bp3-button ${selectionButtonClass}`}
+                  active={mode === "select"}
                   onClick={() => {
-                    this.handleBrushDeselectAction();
-                    // this.restartReglLoop();
-                    this.setState({ mode: "lasso" });
+                    this.setState({ mode: "select" });
                   }}
                   style={{
                     cursor: "pointer"
@@ -518,10 +723,10 @@ class Graph extends React.Component {
               <Tooltip content="Pan and zoom" position="left">
                 <Button
                   type="button"
+                  data-testid="mode-pan-zoom"
                   className="bp3-button bp3-icon-zoom-in"
                   active={mode === "zoom"}
                   onClick={() => {
-                    this.handleBrushDeselectAction();
                     this.restartReglLoop();
                     this.setState({ mode: "zoom" });
                   }}
@@ -566,7 +771,6 @@ class Graph extends React.Component {
                 />
               </Tooltip>
             </span>
-
             <span
               style={{
                 marginLeft: 10,
@@ -602,9 +806,9 @@ class Graph extends React.Component {
                         style={{ width: 40 }}
                         onValueChange={this.handleContinuousPercentileMin}
                         onButtonClick={this.handleContinuousPercentileMin}
-                        value={this.props.continuousPercentileMin * 100}
+                        value={continuousPercentileMin * 100}
                         min={0}
-                        max={this.props.continuousPercentileMax * 100 - 1}
+                        max={continuousPercentileMax * 100 - 1}
                         fill={false}
                       />
                       <span style={{ marginRight: 5, marginLeft: 5 }}>
@@ -614,8 +818,8 @@ class Graph extends React.Component {
                         style={{ width: 40 }}
                         onValueChange={this.handleContinuousPercentileMax}
                         onButtonClick={this.handleContinuousPercentileMax}
-                        value={this.props.continuousPercentileMax * 100}
-                        min={this.props.continuousPercentileMin * 100 + 1}
+                        value={continuousPercentileMax * 100}
+                        min={continuousPercentileMin * 100 + 1}
                         max={100}
                         fill={false}
                       />
@@ -658,8 +862,8 @@ class Graph extends React.Component {
                     <MenuItem
                       target="_blank"
                       text={`cellxgene v${
-                        library_versions && library_versions.cellxgene
-                          ? library_versions.cellxgene
+                        libraryVersions && libraryVersions.cellxgene
+                          ? libraryVersions.cellxgene
                           : null
                       }`}
                     />
@@ -689,7 +893,7 @@ class Graph extends React.Component {
         >
           <div
             style={{
-              display: mode === "lasso" ? "inherit" : "none"
+              display: mode === "select" ? "inherit" : "none"
             }}
             id="graphAttachPoint"
           />

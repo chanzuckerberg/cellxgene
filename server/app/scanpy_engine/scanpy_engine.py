@@ -2,7 +2,7 @@ import warnings
 
 import numpy as np
 from pandas.core.dtypes.dtypes import CategoricalDtype
-import scanpy.api as sc
+import scanpy as sc
 
 from server.app.driver.driver import CXGDriver
 from server.app.util.constants import Axis, DEFAULT_TOP_N

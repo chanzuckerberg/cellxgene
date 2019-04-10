@@ -124,7 +124,7 @@ class HistogramBrush extends React.Component {
           const dX0 = Math.abs(x0 - selection[0]);
           const dX1 = Math.abs(x1 - selection[1]);
           /*
-          only update the brush if it is grossly incorrect, 
+          only update the brush if it is grossly incorrect,
           as defined by the moveDeltaThreshold
           */
           if (dX0 > moveDeltaThreshold || dX1 > moveDeltaThreshold) {
@@ -216,14 +216,13 @@ class HistogramBrush extends React.Component {
         });
       } else {
         dispatch({
-          type: "continuous metadata histogram end",
+          type: "continuous metadata histogram cancel",
           selection: field,
           continuousNamespace: {
             isObs,
             isUserDefined,
             isDiffExp
-          },
-          range: null
+          }
         });
       }
     };
@@ -342,7 +341,7 @@ class HistogramBrush extends React.Component {
       .select(svgRef)
       .append("g")
       .attr("class", "brush")
-      .attr("data-testid", `${svgRef.id}-brush`)
+      .attr("data-testid", `${svgRef.dataset.testid}-brush`)
       .call(brushX);
 
     /* AXIS */
@@ -380,12 +379,18 @@ class HistogramBrush extends React.Component {
       scatterplotYYaccessor,
       zebra
     } = this.props;
-
+    const field_for_id = field.replace(/\s/g, "_");
     return (
       <div
-        id={`histogram_${field}`}
+        id={`histogram_${field_for_id}`}
         data-testid={`histogram-${field}`}
-        data-testclass={isDiffExp ? `histogram-diffexp` : ""}
+        data-testclass={
+          isDiffExp
+            ? "histogram-diffexp"
+            : isUserDefined
+            ? "histogram-user-gene"
+            : "histogram-continuous-metadata"
+        }
         style={{
           padding: globals.leftSidebarSectionPadding,
           backgroundColor: zebra ? globals.lightestGrey : "white"
@@ -400,6 +405,7 @@ class HistogramBrush extends React.Component {
               />
               <ButtonGroup style={{ marginRight: 7 }}>
                 <Button
+                  data-testid={`plot-x-${field}`}
                   onClick={this.handleSetGeneAsScatterplotX(field).bind(this)}
                   active={scatterplotXXaccessor === field}
                   intent={scatterplotXXaccessor === field ? "primary" : "none"}
@@ -407,6 +413,7 @@ class HistogramBrush extends React.Component {
                   plot x
                 </Button>
                 <Button
+                  data-testid={`plot-y-${field}`}
                   onClick={this.handleSetGeneAsScatterplotY(field).bind(this)}
                   active={scatterplotYYaccessor === field}
                   intent={scatterplotYYaccessor === field ? "primary" : "none"}
@@ -434,6 +441,8 @@ class HistogramBrush extends React.Component {
               onClick={this.handleColorAction.bind(this)}
               active={colorAccessor === field}
               intent={colorAccessor === field ? "primary" : "none"}
+              data-testclass="colorby"
+              data-testid={`colorby-${field}`}
               icon="tint"
             />
           </Tooltip>
@@ -441,9 +450,9 @@ class HistogramBrush extends React.Component {
         <svg
           width={this.width}
           height={this.height}
-          id={`histogram_${field}_svg`}
-          data-testclass="histogram-svg"
-          data-testid={`histogram_${field}_svg`}
+          id={`histogram_${field_for_id}_svg`}
+          data-testclass="histogram-plot"
+          data-testid={`histogram-${field}-plot`}
           ref={svgRef => {
             this.drawHistogram(svgRef);
           }}

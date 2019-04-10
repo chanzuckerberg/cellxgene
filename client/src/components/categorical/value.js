@@ -81,6 +81,7 @@ class CategoryValue extends React.Component {
           alignItems: "baseline",
           justifyContent: "space-between"
         }}
+        data-testclass="categorical-row"
       >
         <div
           style={{
@@ -97,13 +98,18 @@ class CategoryValue extends React.Component {
               onChange={
                 selected ? this.toggleOff.bind(this) : this.toggleOn.bind(this)
               }
-              data-testclass="categorical-value-checkbox"
-              data-testid={`categorical-value-checkbox-${metadataField}`}
+              data-testclass="categorical-value-select"
+              data-testid={`categorical-value-select-${metadataField}-${displayString}`}
               checked={selected}
               type="checkbox"
             />
             <span className="bp3-control-indicator" />
-            {displayString}
+            <span
+              data-testid={`categorical-value-${metadataField}-${displayString}`}
+              data-testclass="categorical-value"
+            >
+              {displayString}
+            </span>
           </label>
           <span style={{ flexShrink: 0 }}>
             {colorAccessor &&
@@ -120,7 +126,8 @@ class CategoryValue extends React.Component {
         </div>
         <span>
           <span
-            data-testid={`categorical-value-count-${metadataField}-${count}`}
+            data-testclass="categorical-value-count"
+            data-testid={`categorical-value-count-${metadataField}-${displayString}`}
           >
             {count}
           </span>
