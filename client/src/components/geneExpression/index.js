@@ -64,9 +64,7 @@ const filterGenes = (query, genes) =>
     userDefinedGenesLoading: state.controls.userDefinedGenesLoading,
     world: state.world,
     colorAccessor: state.colors.colorAccessor,
-    differential: state.differential,
-    continuousPercentileMin: state.world.continuousPercentileMin,
-    continuousPercentileMax: state.world.continuousPercentileMax
+    differential: state.differential
   };
 })
 class GeneExpression extends React.Component {

@@ -20,6 +20,8 @@ Notable keys in the world object:
 
 * schema: data schema from the server
 
+* clipQuantiles: the quantiles used to clip all data in world.
+
 * obsAnnotations:
 
   Dataframe containing obs annotations.  Columns are indexed by annotation
@@ -41,13 +43,12 @@ Notable keys in the world object:
 */
 
 function templateWorld() {
-  return {
+  const template = {
     /* schema/version related */
     schema: null,
     nObs: 0,
     nVar: 0,
-    continuousPercentileMin: 0,
-    continuousPercentileMax: 1,
+    clipQuantiles: { min: 0, max: 1 },
 
     /* annotations */
     obsAnnotations: Dataframe.Dataframe.empty(),
@@ -56,16 +57,29 @@ function templateWorld() {
     /* layout of graph. Dataframe. */
     obsLayout: Dataframe.Dataframe.empty(),
 
-    /*
-    Var data columns - subset of all data (may be empty)
-    */
+    /* Var data columns - subset of all data (may be empty) */
     varData: Dataframe.Dataframe.empty(null, new Dataframe.KeyIndex())
+
+    /* unclipped dataframes - subset, but not value clipped */
+    unclipped: {}
   };
+  template.unclipped = {
+    obsAnnotations: t.obsAnnotations,
+    varData: t.varData
+  }
+  return template;
 }
 
-/* modified pseudocode from Bruce; check this works */
-function clampDataframe(df, continuousPercentileMin, continuousPercentileMax) {
-  if (continuousPercentileMin === 0 && continuousPercentileMax === 1) return df;
+function clipDataframe(df, lowerQuantile, upperQuantile, value = Number.NaN) {
+  /*
+  Clip all values above or below specified quantiles to `value`.
+  */
+
+  // XXX - this is not finished
+
+  if (lowerQuantile < 0) lowerQuantile = 0;
+  if (upperQuantile > 1) upperQuantile = 1;
+  if (lowerQuantile === 0 && upperQuantile === 1) return df;
 
   const keys = df.keys();
   return df.mapColumns((col, colIdx) => {
@@ -79,66 +93,64 @@ function clampDataframe(df, continuousPercentileMin, continuousPercentileMax) {
     for (let i = 0, l = newCol.length; i < l; i += 1) {
       const colMin = ImmutableTypedCrossfilter.percentile(
         colName,
-        continuousPercentileMin
+        lowerQuantile
       );
       const colMax = ImmutableTypedCrossfilter.percentile(
         colName,
-        continuousPercentileMax
+        upperQuantile
       );
       if (newCol[i] < colMin || newCol[i] > colMax) {
-        newCol[i] = Number.NaN;
+        newCol[i] = value;
       }
     }
     return newCol;
   });
 }
 
-export function createWorldFromEntireUniverse(
-  universe,
-  continuousPercentileMin,
-  continuousPercentileMax
-) {
+/*
+Create World with contents eq entire universe.   Commonly used to initialize World.
+If clipQuantiles
+*/
+export function createWorldFromEntireUniverse(universe) {
   const world = templateWorld();
-
-  /*
-  public interface follows
-  */
 
   /* Schema related */
   world.schema = universe.schema;
   world.nObs = universe.nObs;
   world.nVar = universe.nVar;
-  world.continuousPercentileMin = continuousPercentileMin;
-  world.continuousPercentileMax = continuousPercentileMax;
+  world.clipQuantiles = { min: 0, max: 1 };
 
-  /* annotation dataframes */
+  /* dataframes: annotations and layout */
   world.obsAnnotations = universe.obsAnnotations.clone();
   world.varAnnotations = universe.varAnnotations.clone();
-
-  /* layout and display characteristics dataframe */
   world.obsLayout = universe.obsLayout.clone();
 
-  /*
-  Var data columns - subset of all
-  */
+  /* Var dataframe - contains a subset of all var columns */
   world.varData = universe.varData.clone();
-  /*
-  world.varData = clampDataframe(
-    world.varData,
-    continuousPercentileMin,
-    continuousPercentileMax
-  );
-  */
+
+  world.unclipped = {
+    obsAnnotations: world.obsAnnotations,
+    varData: world.varData
+  }
 
   return world;
 }
 
-export function createWorldFromCurrentSelection(
+/*
+Create world as a subset of the current world.   Params:
+  * universe: the universe object
+  * world: the _current_ world object
+  * crossfilter: If crossfilter is specified, the new world will contain
+    only those elements currently selected.
+  * clipQuantiles: if specified, the new worlds values will be clipped.
+
+TODO/XXX: this function needs a better name.
+*/
+export function createWorldFromCurrentWorld(
   universe,
   world,
-  crossfilter,
-  continuousPercentileMin,
-  continuousPercentileMax
+  crossfilter = null,
+  clipQuantiles
 ) {
   const newWorld = templateWorld();
 
@@ -147,23 +159,33 @@ export function createWorldFromCurrentSelection(
   newWorld.schema = universe.schema;
   newWorld.varAnnotations = universe.varAnnotations;
 
-  /* now subset/cut obs */
-  const mask = crossfilter.allSelectedMask();
-  newWorld.obsAnnotations = world.obsAnnotations.isubsetMask(mask);
-  newWorld.obsLayout = world.obsLayout.isubsetMask(mask);
-  newWorld.nObs = newWorld.obsAnnotations.dims[0];
+  if (!clipQuantiles) {
+    newWorld.clipQuantiles = world.clipQuantiles;
+  } else {
+    newWorld.clipQuantiles = clipQuantiles;
+  }
 
-  newWorld.continuousPercentileMin = continuousPercentileMin;
-  newWorld.continuousPercentileMax = continuousPercentileMax;
-
-  /*
-  Var data columns - subset of all
-  */
-  if (world.varData.isEmpty()) {
+  /* now subset/cut if the crossfilter was provided */
+  if (!crossfilter) {
+    newWorld.obsAnnotations = world.obsAnnotations.clone();
+    newWorld.obsLayout = world.obsLayout.clone();
     newWorld.varData = world.varData.clone();
   } else {
-    newWorld.varData = world.varData.isubsetMask(mask);
+    const mask = crossfilter.allSelectedMask();
+    newWorld.obsAnnotations = world.obsAnnotations.isubsetMask(mask);
+    newWorld.obsLayout = world.obsLayout.isubsetMask(mask);
+
+    /*
+    Var data columns - subset of all
+    */
+    if (world.varData.isEmpty()) {
+      newWorld.varData = world.varData.clone();
+    } else {
+      newWorld.varData = world.varData.isubsetMask(mask);
+    }
   }
+
+  newWorld.nObs = newWorld.obsAnnotations.dims[0];
   return newWorld;
 }
 

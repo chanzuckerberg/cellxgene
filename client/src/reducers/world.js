@@ -2,13 +2,8 @@ import _ from "lodash";
 
 import { World, ControlsHelpers } from "../util/stateManager";
 
-import { createWorldFromEntireUniverse } from "../util/stateManager/world";
-
 const WorldReducer = (
-  state = {
-    continuousPercentileMin: 0,
-    continuousPercentileMax: 1
-  },
+  state = null,
   action,
   nextSharedState,
   prevSharedState
@@ -16,11 +11,7 @@ const WorldReducer = (
   switch (action.type) {
     case "initial data load complete (universe exists)": {
       const { universe } = nextSharedState;
-      const world = World.createWorldFromEntireUniverse(
-        universe,
-        state.continuousPercentileMin,
-        state.continuousPercentileMax
-      );
+      const world = World.createWorldFromEntireUniverse(universe);
       return world;
     }
 
@@ -30,40 +21,32 @@ const WorldReducer = (
 
     case "set World to current selection": {
       /* Set viewable world to be the currently selected data */
-      const world = World.createWorldFromCurrentSelection(
+      const world = World.createWorldFromCurrentWorld(
         action.universe,
         action.world,
-        action.crossfilter,
-        state.continuousPercentileMin,
-        state.continuousPercentileMax
+        action.crossfilter
       );
       return world;
     }
 
-    case "set continuous percentile min": {
-      const world = createWorldFromEntireUniverse(
-        action.universe,
-        state.continuousPercentileMin,
-        state.continuousPercentileMax
+    case "set clip quantile min": {
+      const world = World.createWorldFromCurrentWorld(
+        prevSharedState.universe,
+        state,
+        null,
+        action.clipQuantiles
       );
-      return {
-        ...state,
-        continuousPercentileMin: action.data / 100,
-        world
-      };
+      return world;
     }
 
-    case "set continuous percentile max": {
-      const world = createWorldFromEntireUniverse(
-        action.universe,
-        state.continuousPercentileMin,
-        state.continuousPercentileMax
+    case "set clip quantile max": {
+      const world = World.createWorldFromCurrentWorld(
+        prevSharedState.universe,
+        state,
+        null,
+        action.clipQuantiles
       );
-      return {
-        ...state,
-        continuousPercentileMax: action.data / 100,
-        world
-      };
+      return world;
     }
 
     case "expression load success": {

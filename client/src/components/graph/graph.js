@@ -30,8 +30,8 @@ import { World } from "../../util/stateManager";
   world: state.world,
   universe: state.universe,
   crossfilter: state.crossfilter,
-  continuousPercentileMin: state.world.continuousPercentileMin,
-  continuousPercentileMax: state.world.continuousPercentileMax,
+  clipPercentileMin: Math.round(100 * (state.world?.clipQuantiles?.min ?? 0)),
+  clipPercentileMax: Math.round(100 * (state.world?.clipQuantiles?.max ?? 1)),
   responsive: state.responsive,
   colorRGB: state.colors.rgb,
   opacityForDeselectedCells: state.controls.opacityForDeselectedCells,
@@ -309,19 +309,47 @@ class Graph extends React.Component {
     dispatch(actions.resetInterface());
   };
 
-  handleContinuousPercentileMin = v => {
-    const { dispatch } = this.props;
+  handleClipPercentileMinValueChange = v => {
+    const { dispatch, clipPercentileMax } = this.props;
+
+    /*
+    Ignore anything that isn't a legit number
+    */
+    if (!Number.isFinite(v)) return;
+
+    /*
+    clamp to [0, currentClipPercentileMax] / 100
+    */
+    const max = clipPercentileMax / 100;
+    let min = Math.round(v) / 100;
+    if (min >= max) min = (clipPercentileMax - 1) / 100;
+    if (min <= 0) min = 0;
+
     dispatch({
-      type: "set continuous percentile min",
-      data: v
+      type: "set clip quantile min",
+      clipQuantiles: { min, max }
     });
   };
 
-  handleContinuousPercentileMax = v => {
-    const { dispatch } = this.props;
+  handleClipPercentileMaxValueChange = v => {
+    const { dispatch, clipPercentileMin } = this.props;
+
+    /*
+    Ignore anything that isn't a legit number
+    */
+    if (!Number.isFinite(v)) return;
+
+    /*
+    clamp to [currentClipPercentileMin, 100] / 100
+    */
+    const min = clipPercentileMin / 100;
+    let max = Math.round(v) / 100;
+    if (max <= min) max = (clipPercentileMin + 1) / 100;
+    if (max > 1) max = 1;
+
     dispatch({
-      type: "set continuous percentile max",
-      data: v
+      type: "set clip quantile max",
+      clipQuantiles: { min, max }
     });
   };
 
@@ -634,8 +662,8 @@ class Graph extends React.Component {
       undoDisabled,
       redoDisabled,
       selectionTool,
-      continuousPercentileMin,
-      continuousPercentileMax
+      clipPercentileMin,
+      clipPercentileMax
     } = this.props;
     const { mode } = this.state;
 
@@ -798,33 +826,39 @@ class Graph extends React.Component {
                         alignItems: "baseline"
                       }}
                     >
-                      For each continuous field, show only the cells between the
-                      <span style={{ marginRight: 5, marginLeft: 5 }}>
-                        min:
-                      </span>
+                      Clip all continuous values to percentile range
+                      <span style={{ marginRight: 5, marginLeft: 5 }} />
                       <NumericInput
                         style={{ width: 40 }}
-                        onValueChange={this.handleContinuousPercentileMin}
-                        onButtonClick={this.handleContinuousPercentileMin}
-                        value={continuousPercentileMin * 100}
-                        min={0}
-                        max={continuousPercentileMax * 100 - 1}
+                        onValueChange={this.handleClipPercentileMinValueChange}
+                        value={clipPercentileMin}
+                        min={0 - 1e-9}
+                        max={
+                          clipPercentileMax > 100
+                            ? 100
+                            : clipPercentileMax - 1 === clipPercentileMin
+                            ? clipPercentileMin
+                            : clipPercentileMax - 1
+                        }
                         fill={false}
+                        minorStepSize={null}
                       />
-                      <span style={{ marginRight: 5, marginLeft: 5 }}>
-                        and max:
-                      </span>
+                      <span style={{ marginRight: 5, marginLeft: 5 }}> - </span>
                       <NumericInput
                         style={{ width: 40 }}
-                        onValueChange={this.handleContinuousPercentileMax}
-                        onButtonClick={this.handleContinuousPercentileMax}
-                        value={continuousPercentileMax * 100}
-                        min={continuousPercentileMin * 100 + 1}
-                        max={100}
+                        onValueChange={this.handleClipPercentileMaxValueChange}
+                        value={clipPercentileMax}
+                        min={
+                          clipPercentileMin < 0
+                            ? 0
+                            : clipPercentileMin + 1 === clipPercentileMax
+                            ? clipPercentileMax
+                            : clipPercentileMin + 1
+                        }
+                        max={100 + 1e-9}
                         fill={false}
+                        minorStepSize={null}
                       />
-                      percentile of expression. Axes and binning will be
-                      updated.
                     </div>
                   }
                 />
