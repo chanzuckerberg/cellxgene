@@ -76,10 +76,9 @@ const ColorsReducer = (
 
       /* toggle between this mode and reset */
       const resetCurrent =
-        action.type === state.colorMode &&
-        action.colorAccessor === state.colorAccessor;
+        action.type === state.colorMode && action.gene === state.colorAccessor;
       const colorMode = !resetCurrent ? action.type : null;
-      const colorAccessor = !resetCurrent ? action.colorAccessor : null;
+      const colorAccessor = !resetCurrent ? action.gene : null;
 
       const { rgb, scale } = createColors(world, colorMode, colorAccessor);
       return {
