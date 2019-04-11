@@ -43,7 +43,9 @@ Notable keys in the world object:
 */
 
 function templateWorld() {
-  const template = {
+  const obsAnnotations = Dataframe.Dataframe.empty();
+  const varData = Dataframe.Dataframe.empty(null, new Dataframe.KeyIndex());
+  return {
     /* schema/version related */
     schema: null,
     nObs: 0,
@@ -51,23 +53,21 @@ function templateWorld() {
     clipQuantiles: { min: 0, max: 1 },
 
     /* annotations */
-    obsAnnotations: Dataframe.Dataframe.empty(),
+    obsAnnotations,
     varAnnotations: Dataframe.Dataframe.empty(),
 
     /* layout of graph. Dataframe. */
     obsLayout: Dataframe.Dataframe.empty(),
 
     /* Var data columns - subset of all data (may be empty) */
-    varData: Dataframe.Dataframe.empty(null, new Dataframe.KeyIndex())
+    varData,
 
     /* unclipped dataframes - subset, but not value clipped */
-    unclipped: {}
+    unclipped: {
+      obsAnnotations,
+      varData
+    }
   };
-  template.unclipped = {
-    obsAnnotations: t.obsAnnotations,
-    varData: t.varData
-  }
-  return template;
 }
 
 function clipDataframe(df, lowerQuantile, upperQuantile, value = Number.NaN) {
@@ -131,7 +131,7 @@ export function createWorldFromEntireUniverse(universe) {
   world.unclipped = {
     obsAnnotations: world.obsAnnotations,
     varData: world.varData
-  }
+  };
 
   return world;
 }
@@ -159,13 +159,14 @@ export function createWorldFromCurrentWorld(
   newWorld.schema = universe.schema;
   newWorld.varAnnotations = universe.varAnnotations;
 
+  /* if not specified, inherit clip quantiles from current World */
   if (!clipQuantiles) {
     newWorld.clipQuantiles = world.clipQuantiles;
   } else {
     newWorld.clipQuantiles = clipQuantiles;
   }
 
-  /* now subset/cut if the crossfilter was provided */
+  /* if crossfilter provided, subset/cut world to current selection */
   if (!crossfilter) {
     newWorld.obsAnnotations = world.obsAnnotations.clone();
     newWorld.obsLayout = world.obsLayout.clone();
@@ -175,9 +176,7 @@ export function createWorldFromCurrentWorld(
     newWorld.obsAnnotations = world.obsAnnotations.isubsetMask(mask);
     newWorld.obsLayout = world.obsLayout.isubsetMask(mask);
 
-    /*
-    Var data columns - subset of all
-    */
+    /* Var data columns - subset of all */
     if (world.varData.isEmpty()) {
       newWorld.varData = world.varData.clone();
     } else {
