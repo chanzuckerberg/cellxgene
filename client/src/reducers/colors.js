@@ -55,11 +55,11 @@ const ColorsReducer = (
       const { world } = prevSharedState;
 
       /* toggle between this mode and reset */
-      const colorMode = action.type !== state.colorMode ? action.type : null;
-      const colorAccessor =
-        action.colorAccessor !== state.colorAccessor && colorMode !== null
-          ? action.colorAccessor
-          : null;
+      const resetCurrent =
+        action.type === state.colorMode &&
+        action.colorAccessor === state.colorAccessor;
+      const colorMode = !resetCurrent ? action.type : null;
+      const colorAccessor = !resetCurrent ? action.colorAccessor : null;
 
       const { rgb, scale } = createColors(world, colorMode, colorAccessor);
       return {
@@ -75,11 +75,10 @@ const ColorsReducer = (
       const { world } = prevSharedState;
 
       /* toggle between this mode and reset */
-      const colorMode = action.type !== state.colorMode ? action.type : null;
-      const colorAccessor =
-        action.gene !== state.colorAccessor && coorMode !== null
-          ? action.gene
-          : null;
+      const resetCurrent =
+        action.type === state.colorMode && action.gene === state.colorAccessor;
+      const colorMode = !resetCurrent ? action.type : null;
+      const colorAccessor = !resetCurrent ? action.gene : null;
 
       const { rgb, scale } = createColors(world, colorMode, colorAccessor);
       return {
