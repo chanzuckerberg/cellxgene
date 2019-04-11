@@ -272,6 +272,15 @@ describe("ui elements don't error", async () => {
     }
   });
 
+  test.only("color by for gene", async () => {
+    await utils.typeInto("gene-search", data.genes.search);
+    await page.keyboard.press("Enter");
+    await page.waitForSelector(
+      `[data-testid='histogram-${data.genes.search}']`
+    );
+    await utils.clickOn(`colorby-${data.genes.search}`);
+  });
+
   test("pan and zoom", async () => {
     await utils.clickOn("mode-pan-zoom");
     const panCoords = await cxgActions.calcDragCoordinates(
