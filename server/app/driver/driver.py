@@ -11,13 +11,25 @@ Sort order for methods
 
 
 class CXGDriver(metaclass=ABCMeta):
-    def __init__(self, data, args):
-        self.data = self._load_data(data)
-        self.layout_method = args["layout"]
-        self.diffexp_method = args["diffexp"]
-        self.max_category_items = args["max_category_items"]
-        self.diffexp_lfc_cutoff = args["diffexp_lfc_cutoff"]
-        self.cluster = None
+    def __init__(self, data=None, args={}):
+        self.config = {
+            "layout": None,
+            "diffexp": None,
+            "max_category_items": None,
+            "diffexp_lfc_cutoff": None
+        }
+        self.config.update(args)
+        if data:
+            self._load_data(data)
+        else:
+            self.data = None
+
+
+    def update_config(self, args):
+        self.config.update(args)
+
+    def update_data(self, data):
+        self._load_data(data)
 
     @property
     def features(self):
@@ -27,18 +39,16 @@ class CXGDriver(metaclass=ABCMeta):
             "diffexp": {"available": False},
         }
         # TODO - Interactive limit should be generated from the actual available methods see GH issue #94
-        if self.layout_method:
+        if self.config["layout"]:
             # TODO handle "var" when gene layout becomes available
             features["layout"]["obs"] = {"available": True, "interactiveLimit": 50000}
-        if self.diffexp_method:
+        if self.config["diffexp"]:
             features["diffexp"] = {"available": True, "interactiveLimit": 50000}
-        if self.cluster:
-            features["cluster"] = {"available": True, "interactiveLimit": 50000}
         return features
 
     @staticmethod
     @abstractmethod
-    def _load_data(data):
+    def _load_data(self, data):
         pass
 
     @abstractmethod

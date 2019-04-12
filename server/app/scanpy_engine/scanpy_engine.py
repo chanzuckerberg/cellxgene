@@ -27,17 +27,8 @@ Sort order for methods
 
 
 class ScanpyEngine(CXGDriver):
-    def __init__(self, data, args):
+    def __init__(self, data=None, args={}):
         super().__init__(data, args)
-        self._alias_annotation_names(Axis.OBS, args["obs_names"])
-        self._alias_annotation_names(Axis.VAR, args["var_names"])
-        self._validate_data_types()
-        self._validate_data_calculations()
-        self.cell_count = self.data.shape[0]
-        self.gene_count = self.data.shape[1]
-        self.layout_options = ["umap", "tsne"]
-        self.diffexp_options = ["ttest"]
-        self._create_schema()
 
     def _alias_annotation_names(self, axis, name):
         """
@@ -128,13 +119,12 @@ class ScanpyEngine(CXGDriver):
                     )
                 self.schema["annotations"][ax].append(ann_schema)
 
-    @staticmethod
-    def _load_data(data):
+    def _load_data(self, data):
         # Based on benchmarking, cache=True has no impact on perf.
         # Note: as of current scanpy/anndata release, setting backed='r' will
         # result in an error.  https://github.com/theislab/anndata/issues/79
         try:
-            result = sc.read(data, cache=True)
+            self.data = sc.read(data, cache=True)
         except ValueError:
             raise ScanpyFileError(
                 "File must be in the .h5ad format. Please read "
@@ -151,7 +141,13 @@ class ScanpyEngine(CXGDriver):
                 f"Error while loading file: {e}, File must be in the .h5ad format, please check "
                 f"that your input and try again."
             )
-        return result
+        self._alias_annotation_names(Axis.OBS, self.config["obs_names"])
+        self._alias_annotation_names(Axis.VAR, self.config["var_names"])
+        self._validate_data_types()
+        self._validate_data_calculations()
+        self.cell_count = self.data.shape[0]
+        self.gene_count = self.data.shape[1]
+        self._create_schema()
 
     def _validate_data_types(self):
         if self.data.X.dtype != "float32":
@@ -176,7 +172,7 @@ class ScanpyEngine(CXGDriver):
                     )
                 if isinstance(datatype, CategoricalDtype):
                     category_num = len(curr_axis[ann].dtype.categories)
-                    if category_num > 500 and category_num > self.max_category_items:
+                    if category_num > 500 and category_num > self.config['max_category_items']:
                         warnings.warn(
                             f"{str(ax).title()} annotation '{ann}' has {category_num} categories, this may be "
                             f"cumbersome or slow to display. We recommend setting the "
@@ -185,15 +181,15 @@ class ScanpyEngine(CXGDriver):
                         )
 
     def _validate_data_calculations(self):
-        layout_key = f"X_{self.layout_method}"
+        layout_key = f"X_{self.config['layout']}"
         try:
             assert layout_key in self.data.obsm_keys()
         except AssertionError:
             raise PrepareError(
-                f"Cannot find a field with coordinates for the {self.layout_method} layout requested. A different"
+                f"Cannot find a field with coordinates for the {self.config['layout']} layout requested. A different"
                 f" layout may have been computed. The requested layout must be pre-calculated and saved "
                 f"back in the h5ad file. You can run "
-                f"`cellxgene prepare --layout {self.layout_method} <datafile>` "
+                f"`cellxgene prepare --layout {self.config['layout']} <datafile>` "
                 f"to solve this problem. "
             )
 
@@ -310,7 +306,7 @@ class ScanpyEngine(CXGDriver):
         if top_n is None:
             top_n = DEFAULT_TOP_N
         result = diffexp_ttest(
-            self.data, obs_mask_A, obs_mask_B, top_n, self.diffexp_lfc_cutoff
+            self.data, obs_mask_A, obs_mask_B, top_n, self.config['diffexp_lfc_cutoff']
         )
         try:
             return jsonify_scanpy(result)
@@ -328,14 +324,14 @@ class ScanpyEngine(CXGDriver):
         * only returns Matrix in columnar layout
         """
         try:
-            full_embedding = self.data.obsm[f"X_{self.layout_method}"]
+            full_embedding = self.data.obsm[f"X_{self.config['layout']}"]
             if full_embedding.shape[1] > 2:
                 warnings.warn(f"Warning: found {full_embedding.shape[1]} \
                 components of embedding. Using the first two for layout display.")
             df_layout = full_embedding[:, :2]
         except ValueError as e:
             raise PrepareError(
-                f"Layout has not been calculated using {self.layout_method}, "
+                f"Layout has not been calculated using {self.config['layout']}, "
                 f"please prepare your datafile and relaunch cellxgene") from e
 
         normalized_layout = (df_layout - df_layout.min()) / (df_layout.max() - df_layout.min())
