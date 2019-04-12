@@ -116,8 +116,9 @@ def launch(
     cellxgene_url = f"http://{host}:{port}"
 
     # Import Flask app
-    from server.app.app import app
+    from server.app.app import create_app
 
+    app = create_app()
     app.config.update(DATASET_TITLE=title)
 
     if not verbose:
