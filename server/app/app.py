@@ -25,7 +25,6 @@ def create_app():
     SECRET_KEY = os.environ.get("CXG_SECRET_KEY", default="SparkleAndShine")
     app.config.update(SECRET_KEY=SECRET_KEY)
 
-
     resources = get_api_resources()
     app.register_blueprint(webapp.bp)
     app.register_blueprint(resources.blueprint)

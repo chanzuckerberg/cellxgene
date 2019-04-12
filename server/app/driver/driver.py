@@ -24,7 +24,6 @@ class CXGDriver(metaclass=ABCMeta):
         else:
             self.data = None
 
-
     def update_config(self, args):
         self.config.update(args)
 
