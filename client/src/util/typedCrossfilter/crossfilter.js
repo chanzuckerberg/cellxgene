@@ -109,11 +109,11 @@ export default class ImmutableTypedCrossfilter {
     return new ImmutableTypedCrossfilter(data, dimensions, selectionCache);
   }
 
-  percentile(name, p) {
+  quantile(name, q) {
     const { dim } = this.dimensions[name];
-    if (p < 0 || p > 1)
-      throw new Error("percentile parameter must be >= 0 and <= 1");
-    return dim.percentile(p);
+    if (q < 0 || q > 1)
+      throw new Error("quantile parameter must be >= 0 and <= 1");
+    return dim.quantile(q);
   }
 
   select(name, spec) {
@@ -301,8 +301,8 @@ class _ImmutableBaseDimension {
     );
   }
 
-  percentile() {
-    throw new Error(`percentile not supported by dimension ${this.name}`);
+  quantile() {
+    throw new Error(`quantile not supported by dimension ${this.name}`);
   }
 }
 
@@ -409,10 +409,10 @@ class ImmutableScalarDimension extends _ImmutableBaseDimension {
     return { ranges, index };
   }
 
-  percentile(p) {
+  quantile(q) {
     const { value, index } = this;
     const len = value.length;
-    const i = Math.min(len - 1, Math.ceil(p * len));
+    const i = Math.min(len - 1, Math.ceil(q * len));
     return value[index[i]];
   }
 }

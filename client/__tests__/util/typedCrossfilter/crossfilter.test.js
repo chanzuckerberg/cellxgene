@@ -251,13 +251,13 @@ describe("ImmutableTypedCrossfilter", () => {
     });
 
     /*
-    percentile
+    quantile
     */
-    test("percentile", () => {
-      expect(p.percentile("tip", 0)).toEqual(0);
-      expect(p.percentile("tip", 0.5)).toEqual(0);
-      expect(p.percentile("tip", 0.7)).toEqual(100);
-      expect(p.percentile("tip", 1.0)).toEqual(200);
+    test("quantile", () => {
+      expect(p.quantile("tip", 0)).toEqual(0);
+      expect(p.quantile("tip", 0.5)).toEqual(0);
+      expect(p.quantile("tip", 0.7)).toEqual(100);
+      expect(p.quantile("tip", 1.0)).toEqual(200);
     });
   });
 
