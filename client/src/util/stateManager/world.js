@@ -140,8 +140,8 @@ export function createWorldFromEntireUniverse(universe) {
 
   /* save unclipped copies of potentially clipped dataframes */
   world.unclipped = {
-    obsAnnotations: world.obsAnnotations,
-    varData: world.varData
+    obsAnnotations: world.obsAnnotations.clone(),
+    varData: world.varData.clone()
   };
 
   return world;
@@ -204,7 +204,7 @@ export function createWorldBySelection(universe, world, crossfilter) {
     newWorld.unclipped.varData = world.unclipped.varData.isubsetMask(mask);
   }
   /* subsetting changings dimension size */
-  newWorld.nObs = newWorld.obsAnnotations.dims[0];
+  newWorld.nObs = newWorld.unclipped.obsAnnotations.dims[0];
 
   /* and now clip */
   setClippedDataframes(newWorld, crossfilter);
