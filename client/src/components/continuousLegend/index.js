@@ -112,6 +112,7 @@ class ContinuousLegend extends React.Component {
     const { colorAccessor, responsive, colorScale } = this.props;
     if (
       prevProps.colorAccessor !== colorAccessor ||
+      prevProps.colorScale !== colorScale ||
       prevProps.responsive.height !== responsive.height ||
       prevProps.responsive.width !== responsive.width
     ) {
