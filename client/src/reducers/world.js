@@ -21,7 +21,7 @@ const WorldReducer = (
 
     case "set World to current selection": {
       /* Set viewable world to be the currently selected data */
-      const world = World.createWorldFromCurrentWorld(
+      const world = World.createWorldBySelection(
         action.universe,
         action.world,
         action.crossfilter
@@ -30,20 +30,20 @@ const WorldReducer = (
     }
 
     case "set clip quantile min": {
-      const world = World.createWorldFromCurrentWorld(
+      const world = World.createWorldWithNewClip(
         prevSharedState.universe,
         state,
-        null,
+        prevSharedState.crossfilter,
         action.clipQuantiles
       );
       return world;
     }
 
     case "set clip quantile max": {
-      const world = World.createWorldFromCurrentWorld(
+      const world = World.createWorldWithNewClip(
         prevSharedState.universe,
         state,
-        null,
+        prevSharedState.crossfilter,
         action.clipQuantiles
       );
       return world;

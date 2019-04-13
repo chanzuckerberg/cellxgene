@@ -1,6 +1,11 @@
 // jshint esversion: 6
 
-import { layoutDimensionName, obsAnnoDimensionName } from "../nameCreators";
+import {
+  layoutDimensionName,
+  obsAnnoDimensionName,
+  diffexpDimensionName,
+  userDefinedDimensionName
+} from "../nameCreators";
 import * as Dataframe from "../dataframe";
 import ImmutableTypedCrossfilter from "../typedCrossfilter/crossfilter";
 
@@ -40,6 +45,9 @@ Notable keys in the world object:
 * varData: a cache of expression columns, stored in a Dataframe.  Cache
   managed by controls reducer.
 
+* unclipped: will contain unclipped variants of all potentiall clipped
+  dataframes (obsAnnotations, varData).
+
 */
 
 function templateWorld() {
@@ -70,35 +78,37 @@ function templateWorld() {
   };
 }
 
-function clipDataframe(df, lowerQuantile, upperQuantile, value = Number.NaN) {
+function clipDataframe(
+  df,
+  lowerQuantile,
+  upperQuantile,
+  quantileF,
+  clipPredicate = () => true,
+  value = Number.NaN
+) {
   /*
-  Clip all values above or below specified quantiles to `value`.
+  For all columns in the dataframe, clip all values above or below specified 
+  quantiles to `value`, IFF clipPredicate returns true.
+
+  Returns a clipped copy - does not mutate original.
+
+  clipPredicate must have signature: (dataframe, colIndex, colLabel) => boolean
+
+  quantileF must have signature:  (label, qval) => number
   */
-
-  // XXX - this is not finished
-
   if (lowerQuantile < 0) lowerQuantile = 0;
   if (upperQuantile > 1) upperQuantile = 1;
   if (lowerQuantile === 0 && upperQuantile === 1) return df;
 
-  const keys = df.keys();
+  const keys = df.colIndex.keys();
   return df.mapColumns((col, colIdx) => {
-    /* do we actually have access to the colIdx from `mapColumns`?*/
-    const colName = keys[colIdx];
-    /* how do we check if it's continuous metadata?
-    if (!colName_is_a_continuous_metadata_field) return col;
-    */
+    const colLabel = keys[colIdx];
+    if (!clipPredicate(df, colIdx, colLabel)) return col;
 
     const newCol = col.slice();
     for (let i = 0, l = newCol.length; i < l; i += 1) {
-      const colMin = ImmutableTypedCrossfilter.percentile(
-        colName,
-        lowerQuantile
-      );
-      const colMax = ImmutableTypedCrossfilter.percentile(
-        colName,
-        upperQuantile
-      );
+      const colMin = quantileF(colLabel, lowerQuantile);
+      const colMax = quantileF(colLabel, upperQuantile);
       if (newCol[i] < colMin || newCol[i] > colMax) {
         newCol[i] = value;
       }
@@ -128,6 +138,7 @@ export function createWorldFromEntireUniverse(universe) {
   /* Var dataframe - contains a subset of all var columns */
   world.varData = universe.varData.clone();
 
+  /* save unclipped copies of potentially clipped dataframes */
   world.unclipped = {
     obsAnnotations: world.obsAnnotations,
     varData: world.varData
@@ -137,54 +148,92 @@ export function createWorldFromEntireUniverse(universe) {
 }
 
 /*
-Create world as a subset of the current world.   Params:
-  * universe: the universe object
-  * world: the _current_ world object
-  * crossfilter: If crossfilter is specified, the new world will contain
-    only those elements currently selected.
-  * clipQuantiles: if specified, the new worlds values will be clipped.
-
-TODO/XXX: this function needs a better name.
+clip dataframes based on quantiles
 */
-export function createWorldFromCurrentWorld(
+function setClippedDataframes(world, crossfilter) {
+  const { schema } = world;
+  const { obsAnnotations, varData } = world.unclipped;
+  const isContinuousObsAnnotation = (df, idx, label) =>
+    deduceDimensionType(schema.annotations.obsByName[label], label) !== "enum";
+  const obsQuantile = (label, q) =>
+    crossfilter.quantile(obsAnnoDimensionName(label), q);
+  world.obsAnnotations = clipDataframe(
+    obsAnnotations,
+    world.clipQuantiles.min,
+    world.clipQuantiles.max,
+    obsQuantile,
+    isContinuousObsAnnotation
+  );
+
+  const varDataQuantile = (label, q) => {
+    /* a gene / vardata might be indexed as userDefined or diffexp gene */
+    let dimName = diffexpDimensionName(label);
+    if (!crossfilter.dimensions(dimName))
+      dimName = userDefinedDimensionName(label);
+    return crossfilter.quantile(dimName, q);
+  };
+  world.varData = clipDataframe(
+    world.unclipped.varData,
+    world.clipQuantiles.min,
+    world.clipQuantiles.max,
+    varDataQuantile,
+    () => true
+  );
+  return world;
+}
+
+/*
+Subset the current world based upon the current selection.  Returns
+new world.  Parameters:
+  * unvierse
+  * world - the current world
+  * crossfilter - the selection state
+*/
+export function createWorldBySelection(universe, world, crossfilter) {
+  const newWorld = { ...world, obsLayout: null, unclipped: {}, varData: null };
+
+  /* subset unclipped dataframes based upon current selection */
+  const mask = crossfilter.allSelectedMask();
+  newWorld.obsLayout = world.obsLayout.isubsetMask(mask);
+  newWorld.unclipped.obsAnnotations = world.unclipped.obsAnnotations.isubsetMask(
+    mask
+  );
+  if (world.unclipped.varData.isEmpty()) {
+    newWorld.unclipped.varData = world.unclipped.varData.clone();
+  } else {
+    newWorld.unclipped.varData = world.unclipped.varData.isubsetMask(mask);
+  }
+  /* subsetting changings dimension size */
+  newWorld.nObs = newWorld.obsAnnotations.dims[0];
+
+  /* and now clip */
+  setClippedDataframes(newWorld, crossfilter);
+  return newWorld;
+}
+
+/*
+Change clip quantiles on the current world, returning a new world.
+Parameters:
+  * universe
+  * world - current world
+  * clipQuantiles - new clip
+*/
+export function createWorldWithNewClip(
   universe,
   world,
-  crossfilter = null,
+  crossfilter,
   clipQuantiles
 ) {
-  const newWorld = templateWorld();
+  const newWorld = { ...world, obsAnnotation: null, varData: null };
+  newWorld.clipQuantiles = clipQuantiles;
+  newWorld.obsLayout = world.obsLayout.clone();
+  newWorld.unclipped = {
+    obsAnnotations: world.unclipped.obsAnnotations.clone(),
+    varData: world.unclipped.varData.clone()
+  };
 
-  /* these don't change as only OBS are selected in our current implementation */
-  newWorld.nVar = universe.nVar;
-  newWorld.schema = universe.schema;
-  newWorld.varAnnotations = universe.varAnnotations;
-
-  /* if not specified, inherit clip quantiles from current World */
-  if (!clipQuantiles) {
-    newWorld.clipQuantiles = world.clipQuantiles;
-  } else {
-    newWorld.clipQuantiles = clipQuantiles;
-  }
-
-  /* if crossfilter provided, subset/cut world to current selection */
-  if (!crossfilter) {
-    newWorld.obsAnnotations = world.obsAnnotations.clone();
-    newWorld.obsLayout = world.obsLayout.clone();
-    newWorld.varData = world.varData.clone();
-  } else {
-    const mask = crossfilter.allSelectedMask();
-    newWorld.obsAnnotations = world.obsAnnotations.isubsetMask(mask);
-    newWorld.obsLayout = world.obsLayout.isubsetMask(mask);
-
-    /* Var data columns - subset of all */
-    if (world.varData.isEmpty()) {
-      newWorld.varData = world.varData.clone();
-    } else {
-      newWorld.varData = world.varData.isubsetMask(mask);
-    }
-  }
-
-  newWorld.nObs = newWorld.obsAnnotations.dims[0];
+  /* and now clip */
+  setClippedDataframes(newWorld, crossfilter);
   return newWorld;
 }
 
