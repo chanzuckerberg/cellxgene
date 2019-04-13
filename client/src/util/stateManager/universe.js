@@ -4,6 +4,7 @@ import _ from "lodash";
 
 import decodeMatrixFBS from "./matrix";
 import * as Dataframe from "../dataframe";
+import fromEntries from "../fromEntries";
 
 /*
 Private helper function - create and return a template Universe
@@ -124,10 +125,10 @@ export function createUniverseFromResponse(
   reconcileSchemaCategoriesWithSummary(universe);
 
   /* Index schema for ease of use */
-  universe.schema.annotations.obsByName = Object.fromEntries(
+  universe.schema.annotations.obsByName = fromEntries(
     universe.schema.annotations.obs.map(v => [v.name, v])
   );
-  universe.schema.annotations.varByName = Object.fromEntries(
+  universe.schema.annotations.varByName = fromEntries(
     universe.schema.annotations.var.map(v => [v.name, v])
   );
   return universe;
