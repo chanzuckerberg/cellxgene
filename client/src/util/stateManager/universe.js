@@ -122,6 +122,14 @@ export function createUniverseFromResponse(
   }
 
   reconcileSchemaCategoriesWithSummary(universe);
+
+  /* Index schema for ease of use */
+  universe.schema.annotations.obsByName = Object.fromEntries(
+    universe.schema.annotations.obs.map(v => [v.name, v])
+  );
+  universe.schema.annotations.varByName = Object.fromEntries(
+    universe.schema.annotations.var.map(v => [v.name, v])
+  );
   return universe;
 }
 
