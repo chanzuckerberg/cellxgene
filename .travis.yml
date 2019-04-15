@@ -4,14 +4,14 @@ sudo: required
 node_js:
   - 8
 cache:
-  pip: true
+  - pip
+  - npm
 install:
   - set -eo pipefail
   - pip install flake8
   - make build
   - make install
   - pip install -r server/requirements-dev.txt
-  - docker build .
 
 jobs:
   include:
@@ -21,6 +21,10 @@ jobs:
   - name: "Branch Tests 3.6"
     python: "3.6"
     script: ./travis-build.sh
+  - name: "Docker Build"
+    install: skip
+    python: "3.6"
+    script: docker build .
   - name: "Smoke Tests"
     python: "3.6"
     if: branch = master AND type = cron
