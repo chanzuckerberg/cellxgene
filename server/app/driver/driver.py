@@ -33,6 +33,15 @@ class CXGDriver(metaclass=ABCMeta):
             "diffexp_lfc_cutoff": None
         }
 
+    @staticmethod
+    def _get_default_config():
+        return {
+            "layout": None,
+            "diffexp": None,
+            "max_category_items": None,
+            "diffexp_lfc_cutoff": None
+        }
+
     @property
     def features(self):
         features = {
