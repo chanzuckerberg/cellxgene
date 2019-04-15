@@ -8,11 +8,15 @@
 
 Want to see where we are going? Check out [our roadmap](ROADMAP.md).
 
-## documentation
+## Documentation
 
 If you want to learn how to install and use cellxgene, visit the [cellxgene docs](https://chanzuckerberg.github.io/cellxgene/).
 
-## developer guide
+## Contributing
+
+We warmly welcome contributions from the community! Please submit any bug reports and feature requests through [Github issues](https://github.com/chanzuckerberg/cellxgene/issues). Please submit any direct contributions by forking the repository, creating a branch, and submitting a Pull Request. It'd be great for PRs to include test cases and documentation updates where relevant, though we know the core test suite is itself still a work in progress. And all code contributions and dependencies must be compatible with the project's open-source license (MIT). If you have any questions about this stuff, just ask!
+
+### Developer Guide
 
 This project has made a few key design choices
 
@@ -49,12 +53,7 @@ You can start the app while developing either by calling `cellxgene` or by calli
 
 If you have any questions about developing or contributing, come hang out with us by joining the [CZI Science Slack](https://join-cellxgene-users.herokuapp.com/) and posting in the `#cellxgene-dev` channel.
 
-
-## contributing
-
-We warmly welcome contributions from the community! Please submit any bug reports and feature requests through [Github issues](https://github.com/chanzuckerberg/cellxgene/issues). Please submit any direct contributions by forking the repository, creating a branch, and submitting a Pull Request. It'd be great for PRs to include test cases and documentation updates where relevant, though we know the core test suite is itself still a work in progress. And all code contributions and dependencies must be compatible with the project's open-source license (MIT). If you have any questions about this stuff, just ask!
-
-## inspiration and collaboration
+## Inspiration
 
 We've been heavily inspired by several other related single-cell visualization projects, including the [UCSC Cell Browswer](http://cells.ucsc.edu/), [Cytoscape](http://www.cytoscape.org/), [Xena](https://xena.ucsc.edu/), [ASAP](https://asap.epfl.ch/), [Gene Pattern](http://genepattern-notebook.org/), and many others. We hope to explore collaborations where useful as this community works together on improving interactive visualization for single-cell data.
 
@@ -64,11 +63,11 @@ We have been working closely with the [`scanpy`](https://github.com/theislab/sca
 
 We are eager to explore integrations with other computational backends such as [`Seurat`](https://github.com/satijalab/seurat) or [`Bioconductor`](https://github.com/Bioconductor)
 
-## help and contact
+## Communication
 
 Have questions, suggestions, or comments? You can come hang out with us by joining the [CZI Science Slack](https://join-cellxgene-users.herokuapp.com/) and posting in the `#cellxgene-users` channel. As mentioned above, please submit any feature requests or bugs as [Github issues](https://github.com/chanzuckerberg/cellxgene/issues). We'd love to hear from you!
 
-## core team
+## Core Team
 
 - Colin Megill, frontend & product design
 - Charlotte Weaver, backend engineer
@@ -76,6 +75,6 @@ Have questions, suggestions, or comments? You can come hang out with us by joini
 - Sidney Bell, computational biologist
 - Justin Kiggins, product manager
 
-## reuse
+## Reuse
 
 This project was started with the sole goal of empowering the scientific community to explore and understand their data. As such, we encourage other scientific tool builders in academia or industry to adopt the patterns, tools, and code from this project, and reach out to us with ideas or questions. All code is freely available for reuse under the [MIT license](https://opensource.org/licenses/MIT).
