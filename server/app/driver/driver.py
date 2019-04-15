@@ -48,7 +48,6 @@ class CXGDriver(metaclass=ABCMeta):
             features["diffexp"] = {"available": True, "interactiveLimit": 50000}
         return features
 
-    @staticmethod
     @abstractmethod
     def _load_data(self, data):
         pass
