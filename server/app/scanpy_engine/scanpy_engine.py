@@ -29,6 +29,13 @@ Sort order for methods
 class ScanpyEngine(CXGDriver):
     def __init__(self, data=None, args={}):
         super().__init__(data, args)
+        if self.data:
+            self._validate_and_initialize()
+
+    def update(self, data=None, args={}):
+        super().__init__(data, args)
+        if self.data:
+            self._validate_and_initialize()
 
     @staticmethod
     def _get_default_config():
@@ -153,6 +160,9 @@ class ScanpyEngine(CXGDriver):
                 f"Error while loading file: {e}, File must be in the .h5ad format, please check "
                 f"that your input and try again."
             )
+
+    @requires_data
+    def _validate_and_initialize(self):
         self._alias_annotation_names(Axis.OBS, self.config["obs_names"])
         self._alias_annotation_names(Axis.VAR, self.config["var_names"])
         self._validate_data_types()

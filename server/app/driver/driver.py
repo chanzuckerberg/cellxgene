@@ -19,11 +19,10 @@ class CXGDriver(metaclass=ABCMeta):
         else:
             self.data = None
 
-    def update_config(self, args):
+    def update(self, data=None, args={}):
         self.config.update(args)
-
-    def update_data(self, data):
-        self._load_data(data)
+        if data:
+            self._load_data(data)
 
     @staticmethod
     def _get_default_config():
