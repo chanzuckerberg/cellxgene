@@ -30,7 +30,7 @@ Launch _cellxgene_
 cellxgene launch pbmc3k.h5ad --open
 ```
 
-To load your own data into _cellxgene_, see the [Getting Started](https://chanzuckerberg.github.io/cellxgene/getting-stared/) guide.
+To learn more about what you can do with _cellxgene_, see the [Getting Started](https://chanzuckerberg.github.io/cellxgene/getting-stared/) guide.
 
 ## Contributing
 
