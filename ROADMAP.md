@@ -2,11 +2,10 @@
 
 We are very exited for _cellxgene_ to become a valuable tool in collaborations
 between computational biologists and experimental biologists working on
-single-cell transcriptomics data. _cellxgene_ is in active developmentis in
-active development, and we've love to include the community as we plan new
-features to work on.
-
-In the future, we plan to improve cellxgene in the ways described below.
+single-cell transcriptomics data. _cellxgene_ is in active development, and we
+would love to include the community as we plan new features to work on. If you
+have questions of feedback about this roadmap, please submit an issue on
+GitHub.
 
 Please note: this roadmap may change at any time.
 
