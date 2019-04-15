@@ -6,11 +6,31 @@
 
 <img src="https://raw.githubusercontent.com/chanzuckerberg/cellxgene/master/docs/cellxgene-demo-1.gif" width="200" height="200" hspace="30"><img src="https://raw.githubusercontent.com/chanzuckerberg/cellxgene/master/docs/cellxgene-demo-2.gif" width="200" height="200" hspace="30"><img src="https://raw.githubusercontent.com/chanzuckerberg/cellxgene/master/docs/cellxgene-demo-3.gif" width="200" height="200" hspace="30">
 
-Want to see where we are going? Check out [our roadmap](ROADMAP.md).
+- Want to install and use cellxgene? Visit the [cellxgene docs](https://chanzuckerberg.github.io/cellxgene/).
+- Want to see where we are going? Check out [our roadmap](ROADMAP.md).
+- Want to contribute? See our [contributors guide](#Contributing)
 
-## Documentation
+## Quick Start
 
-If you want to learn how to install and use cellxgene, visit the [cellxgene docs](https://chanzuckerberg.github.io/cellxgene/).
+To install _cellxgene_ you need Python 3.6+. We recommend [installing _cellxgene_ into a conda or virtual environment.](https://chanzuckerberg.github.io/cellxgene/faq.html#how-do-i-create-a-python-36-environment-for-cellxgene)
+
+Install the package.
+``` bash
+pip install cellxgene
+```
+
+Download an example [anndata](https://anndata.readthedocs.io/en/latest/) file
+
+``` bash
+curl -o pbmc3k.h5ad https://raw.githubusercontent.com/chanzuckerberg/cellxgene/master/example-dataset/pbmc3k.h5ad
+```
+
+Launch _cellxgene_
+``` bash
+cellxgene launch pbmc3k.h5ad --open
+```
+
+To load your own data into _cellxgene_, see the [Getting Started](https://chanzuckerberg.github.io/cellxgene/getting-stared/) guide.
 
 ## Contributing
 
