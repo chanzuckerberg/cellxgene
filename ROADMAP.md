@@ -7,7 +7,7 @@ would love to include the community as we plan new features to work on. If you
 have questions of feedback about this roadmap, please submit an issue on
 GitHub.
 
-Please note: this roadmap may change at any time.
+Please note: this roadmap is subject to change.
 
 *Last updated: April 11, 2019*
 
