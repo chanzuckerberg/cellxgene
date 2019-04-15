@@ -4,7 +4,8 @@ sudo: required
 node_js:
   - 8
 cache:
-  pip: true
+  - pip
+  - npm
 install:
   - set -eo pipefail
   - pip install flake8
