@@ -754,7 +754,7 @@ class Graph extends React.Component {
                       text="FAQ"
                     />
                     <MenuItem
-                      href="https://join-cziscience-slack.herokuapp.com/"
+                      href="https://join-cellxgene-users.herokuapp.com/"
                       target="_blank"
                       icon="chat"
                       text="Chat"
