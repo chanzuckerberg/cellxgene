@@ -43,7 +43,7 @@ There is an additional subcommand called `cellxgene prepare` that takes an exist
 
 ## data formatting
 
-### assumptions
+### requirements
 
 The `launch` command assumes that the data is stored in the `.h5ad` format from the [`anndata`](https://anndata.readthedocs.io/en/latest/index.html) library. It also assumes that certain computations have already been performed. Briefly, the `.h5ad` format wraps a two-dimensional `ndarray` and stores additional metadata as "annotations" for either observations (referred to as `obs` and `obsm`) or variables (`var` and `varm`). `cellxgene launch` makes the following assumptions about your data (we recommend loading and inspecting your data using `scanpy` to validate these assumptions)
 
