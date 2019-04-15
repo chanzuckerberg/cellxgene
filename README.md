@@ -70,7 +70,7 @@ Have questions, suggestions, or comments? You can come hang out with us by joini
 ## Core Team
 
 - Colin Megill, frontend & product design
-- Charlotte Weaver, backend engineer
+- Charlotte Weaver, software engineer
 - Bruce Martin, software engineer
 - Sidney Bell, computational biologist
 - Justin Kiggins, product manager
