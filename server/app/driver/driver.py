@@ -12,12 +12,7 @@ Sort order for methods
 
 class CXGDriver(metaclass=ABCMeta):
     def __init__(self, data=None, args={}):
-        self.config = {
-            "layout": None,
-            "diffexp": None,
-            "max_category_items": None,
-            "diffexp_lfc_cutoff": None
-        }
+        self.config = self._get_default_config()
         self.config.update(args)
         if data:
             self._load_data(data)
@@ -29,6 +24,15 @@ class CXGDriver(metaclass=ABCMeta):
 
     def update_data(self, data):
         self._load_data(data)
+
+    @staticmethod
+    def _get_default_config():
+        return {
+            "layout": None,
+            "diffexp": None,
+            "max_category_items": None,
+            "diffexp_lfc_cutoff": None
+        }
 
     @property
     def features(self):
