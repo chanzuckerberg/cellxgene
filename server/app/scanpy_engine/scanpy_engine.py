@@ -12,7 +12,7 @@ from server.app.util.errors import (
     PrepareError,
     ScanpyFileError,
 )
-from server.app.util.utils import jsonify_scanpy
+from server.app.util.utils import jsonify_scanpy, requires_data
 from server.app.scanpy_engine.diffexp import diffexp_ttest
 from server.app.util.fbs.matrix import encode_matrix_fbs
 
@@ -97,6 +97,7 @@ class ScanpyEngine(CXGDriver):
                 return True
         return False
 
+    @requires_data
     def _create_schema(self):
         self.schema = {
             "dataframe": {
@@ -160,6 +161,7 @@ class ScanpyEngine(CXGDriver):
         self.gene_count = self.data.shape[1]
         self._create_schema()
 
+    @requires_data
     def _validate_data_types(self):
         if self.data.X.dtype != "float32":
             warnings.warn(
@@ -191,6 +193,7 @@ class ScanpyEngine(CXGDriver):
                             f"annotations with more than 500 categories in the UI"
                         )
 
+    @requires_data
     def _validate_data_calculations(self):
         layout_key = f"X_{self.config['layout']}"
         try:
@@ -227,7 +230,7 @@ class ScanpyEngine(CXGDriver):
         mask = np.zeros((count,), dtype=bool)
         for i in filter:
             if type(i) == list:
-                mask[i[0] : i[1]] = True
+                mask[i[0]: i[1]] = True
             else:
                 mask[i] = True
         return mask
@@ -248,6 +251,7 @@ class ScanpyEngine(CXGDriver):
             )
         return mask
 
+    @requires_data
     def _filter_to_mask(self, filter, use_slices=True):
         if use_slices:
             obs_selector = slice(0, self.data.n_obs)
@@ -267,6 +271,7 @@ class ScanpyEngine(CXGDriver):
                 )
         return obs_selector, var_selector
 
+    @requires_data
     def annotation_to_fbs_matrix(self, axis, fields=None):
         if axis == Axis.OBS:
             df = self.data.obs
@@ -276,6 +281,7 @@ class ScanpyEngine(CXGDriver):
             df = df[fields]
         return encode_matrix_fbs(df, col_idx=df.columns)
 
+    @requires_data
     def data_frame_to_fbs_matrix(self, filter, axis):
         """
         Retrieves data 'X' and returns in a flatbuffer Matrix.
@@ -302,6 +308,7 @@ class ScanpyEngine(CXGDriver):
             X = X[:, var_selector]
         return encode_matrix_fbs(X, col_idx=np.nonzero(var_selector)[0], row_idx=None)
 
+    @requires_data
     def diffexp_topN(self, obsFilterA, obsFilterB, top_n=None, interactive_limit=None):
         if Axis.VAR in obsFilterA or Axis.VAR in obsFilterB:
             raise FilterError("Observation filters may not contain vaiable conditions")
@@ -326,6 +333,7 @@ class ScanpyEngine(CXGDriver):
                 "Error encoding differential expression to JSON"
             )
 
+    @requires_data
     def layout_to_fbs_matrix(self):
         """
         Return the default 2-D layout for cells as a FBS Matrix.
