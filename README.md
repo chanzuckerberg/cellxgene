@@ -2,7 +2,7 @@
 
 > an interactive explorer for single-cell transcriptomics data
 
-`cellxgene` is an interactive data explorer for single-cell transcriptomics datasets, such as those coming from the [Human Cell Atlas](https://humancellatlas.org). Leveraging modern web development techniques to enable fast visualizations of at least 1 million cells, we hope to enable biologists and computational researchers to explore their data, and to demonstrate general, scalable, and reusable patterns for scientific data visualization.
+_cellxgene_ is an interactive data explorer for single-cell transcriptomics datasets, such as those coming from the [Human Cell Atlas](https://humancellatlas.org). Leveraging modern web development techniques to enable fast visualizations of at least 1 million cells, we hope to enable biologists and computational researchers to explore their data, and to demonstrate general, scalable, and reusable patterns for scientific data visualization.
 
 <img src="https://raw.githubusercontent.com/chanzuckerberg/cellxgene/master/docs/cellxgene-demo-1.gif" width="200" height="200" hspace="30"><img src="https://raw.githubusercontent.com/chanzuckerberg/cellxgene/master/docs/cellxgene-demo-2.gif" width="200" height="200" hspace="30"><img src="https://raw.githubusercontent.com/chanzuckerberg/cellxgene/master/docs/cellxgene-demo-3.gif" width="200" height="200" hspace="30">
 
@@ -10,7 +10,7 @@
 - Want to see where we are going? Check out [our roadmap](ROADMAP.md).
 - Want to contribute? See our [contributors guide](#Contributing)
 
-## Quick Start
+## quick start
 
 To install _cellxgene_ you need Python 3.6+. We recommend [installing _cellxgene_ into a conda or virtual environment.](https://chanzuckerberg.github.io/cellxgene/faq.html#how-do-i-create-a-python-36-environment-for-cellxgene)
 
@@ -32,11 +32,11 @@ cellxgene launch pbmc3k.h5ad --open
 
 To learn more about what you can do with _cellxgene_, see the [Getting Started](https://chanzuckerberg.github.io/cellxgene/getting-stared/) guide.
 
-## Contributing
+## contributing
 
 We warmly welcome contributions from the community! Please submit any bug reports and feature requests through [Github issues](https://github.com/chanzuckerberg/cellxgene/issues). Please submit any direct contributions by forking the repository, creating a branch, and submitting a Pull Request. It'd be great for PRs to include test cases and documentation updates where relevant, though we know the core test suite is itself still a work in progress. And all code contributions and dependencies must be compatible with the project's open-source license (MIT). If you have any questions about this stuff, just ask!
 
-### Developer Guide
+### developer guide
 
 This project has made a few key design choices
 
@@ -73,7 +73,7 @@ You can start the app while developing either by calling `cellxgene` or by calli
 
 If you have any questions about developing or contributing, come hang out with us by joining the [CZI Science Slack](https://join-cellxgene-users.herokuapp.com/) and posting in the `#cellxgene-dev` channel.
 
-## Inspiration
+## inspiration
 
 We've been heavily inspired by several other related single-cell visualization projects, including the [UCSC Cell Browswer](http://cells.ucsc.edu/), [Cytoscape](http://www.cytoscape.org/), [Xena](https://xena.ucsc.edu/), [ASAP](https://asap.epfl.ch/), [Gene Pattern](http://genepattern-notebook.org/), and many others. We hope to explore collaborations where useful as this community works together on improving interactive visualization for single-cell data.
 
@@ -83,11 +83,11 @@ We have been working closely with the [`scanpy`](https://github.com/theislab/sca
 
 We are eager to explore integrations with other computational backends such as [`Seurat`](https://github.com/satijalab/seurat) or [`Bioconductor`](https://github.com/Bioconductor)
 
-## Communication
+## communication
 
 Have questions, suggestions, or comments? You can come hang out with us by joining the [CZI Science Slack](https://join-cellxgene-users.herokuapp.com/) and posting in the `#cellxgene-users` channel. As mentioned above, please submit any feature requests or bugs as [Github issues](https://github.com/chanzuckerberg/cellxgene/issues). We'd love to hear from you!
 
-## Core Team
+## core team
 
 - Colin Megill, frontend & product design
 - Charlotte Weaver, software engineer
@@ -95,6 +95,6 @@ Have questions, suggestions, or comments? You can come hang out with us by joini
 - Sidney Bell, computational biologist
 - Justin Kiggins, product manager
 
-## Reuse
+## reuse
 
 This project was started with the sole goal of empowering the scientific community to explore and understand their data. As such, we encourage other scientific tool builders in academia or industry to adopt the patterns, tools, and code from this project, and reach out to us with ideas or questions. All code is freely available for reuse under the [MIT license](https://opensource.org/licenses/MIT).

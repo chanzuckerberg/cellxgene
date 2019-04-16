@@ -11,7 +11,7 @@ Please note: this roadmap may change at any time.
 
 *Last updated: April 11, 2019*
 
-## What we are building now
+## what we are building now
 
 In the near term, our goal is to enable teams of computational and experimental
 biologists to explore and annotate their single-cell RNA-seq data.
@@ -23,14 +23,14 @@ There are 4 key features we plan to implement in the near term.
 - Toggle embeddings
 - Gene information
 
-### Click install and launch
+### simple install and launch
 
 The command line interface for installing and launching cellxgene is a barrier
 for users who are not used to Python or using the command line. We plan to
 support installation and launch of cellxgene on Mac and Windows. See
 https://github.com/chanzuckerberg/cellxgene/issues/687 for more details.
 
-### Manual annotation workflows
+### manual annotation workflows
 
 The exploratory visualization that cellxgene offers is critical for manual
 annotation workflows, especially in collaborative environments. We plan to
@@ -38,7 +38,7 @@ support manually annotate cells with labels (i.e., cell type or QC flags) for
 downstream analysis. See https://github.com/chanzuckerberg/cellxgene/issues/524
 for more details.
 
-### Toggle embeddings
+### toggle embeddings
 
 While a single dataset may have multiple embeddings calculated (tSNE, umap, in
 situ coordinates, trajectories, etc), cellxgene currently requires the user to select the
@@ -46,7 +46,7 @@ embedding to use in the main layout at launch. We plan to support letting users
 toggle between any embedding present in a file from the cellxgene interface.
 See https://github.com/chanzuckerberg/cellxgene/issues/594 for details.
 
-### Gene information
+### gene information
 
 Differential expression returns only the names of genes, but no additional information
 about gene metadata, function, or known associations. We plan to help users learn
