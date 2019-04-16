@@ -1,0 +1,34 @@
+
+[2019-04-16 13:55:46] Traceback (most recent call last):
+  File "server/native/native_app.py", line 318, in <module>
+    main()
+  File "server/native/native_app.py", line 39, in main
+    datad.start()
+  File "server/native/native_app.py", line 67, in start
+    from server.app.app import app
+ImportError: cannot import name 'app'
+
+
+[2019-04-16 13:57:04] Traceback (most recent call last):
+  File "server/native/native_app.py", line 315, in <module>
+    main()
+  File "server/native/native_app.py", line 35, in main
+    datad.start()
+  File "server/native/native_app.py", line 69, in start
+    self.httpd = threading.Thread(target=self.data_server, daemon=True, args=(app,))
+NameError: name 'app' is not defined
+
+
+[2019-04-16 16:38:49] Traceback (most recent call last):
+  File "server/native/native_app.py", line 298, in <module>
+    main()
+  File "server/native/native_app.py", line 39, in main
+    main_window = MainWindow(datad)
+  File "server/native/native_app.py", line 91, in __init__
+    self.navigation_bar = LoadWidget(self.cef_widget)
+  File "server/native/native_app.py", line 268, in __init__
+    self.updateState()
+  File "server/native/native_app.py", line 286, in updateState
+    browser = self.cef_widget.browser
+AttributeError: 'NoneType' object has no attribute 'browser'
+
