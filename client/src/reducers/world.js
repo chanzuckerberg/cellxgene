@@ -29,17 +29,7 @@ const WorldReducer = (
       return world;
     }
 
-    case "set clip quantile min": {
-      const world = World.createWorldWithNewClip(
-        prevSharedState.universe,
-        state,
-        prevSharedState.crossfilter,
-        action.clipQuantiles
-      );
-      return world;
-    }
-
-    case "set clip quantile max": {
+    case "set clip quantiles": {
       const world = World.createWorldWithNewClip(
         prevSharedState.universe,
         state,

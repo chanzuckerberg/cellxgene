@@ -27,8 +27,7 @@ const ColorsReducer = (
       };
     }
 
-    case "set clip quantile min":
-    case "set clip quantile max":
+    case "set clip quantiles":
     case "set World to current selection": {
       const { colorMode, colorAccessor } = state;
       const { world } = nextSharedState;

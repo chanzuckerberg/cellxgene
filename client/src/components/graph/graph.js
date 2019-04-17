@@ -1,6 +1,5 @@
 // jshint esversion: 6
 import React from "react";
-import _ from "lodash";
 import * as d3 from "d3";
 import { connect } from "react-redux";
 import mat4 from "gl-mat4";
@@ -65,7 +64,8 @@ class Graph extends React.Component {
       svg: null,
       tool: null,
       container: null,
-      mode: "select"
+      mode: "select",
+      pendingClipPercentiles: null
     };
   }
 
@@ -310,7 +310,8 @@ class Graph extends React.Component {
   };
 
   handleClipPercentileMinValueChange = v => {
-    const { dispatch, clipPercentileMax } = this.props;
+    const { pendingClipPercentiles } = this.state;
+    const { clipPercentileMax } = pendingClipPercentiles;
 
     /*
     Ignore anything that isn't a legit number
@@ -318,21 +319,20 @@ class Graph extends React.Component {
     if (!Number.isFinite(v)) return;
 
     /*
-    clamp to [0, currentClipPercentileMax] / 100
+    clamp to [0, currentClipPercentileMax]
     */
-    const max = clipPercentileMax / 100;
-    let min = Math.round(v) / 100;
-    if (min >= max) min = (clipPercentileMax - 1) / 100;
+    let min = v;
+    if (min >= clipPercentileMax) min = clipPercentileMax - 1;
     if (min <= 0) min = 0;
-
-    dispatch({
-      type: "set clip quantile min",
-      clipQuantiles: { min, max }
+    const clipPercentileMin = Math.round(min);
+    this.setState({
+      pendingClipPercentiles: { clipPercentileMin, clipPercentileMax }
     });
   };
 
   handleClipPercentileMaxValueChange = v => {
-    const { dispatch, clipPercentileMin } = this.props;
+    const { pendingClipPercentiles } = this.state;
+    const { clipPercentileMin } = pendingClipPercentiles;
 
     /*
     Ignore anything that isn't a legit number
@@ -340,17 +340,39 @@ class Graph extends React.Component {
     if (!Number.isFinite(v)) return;
 
     /*
-    clamp to [currentClipPercentileMin, 100] / 100
+    clamp to [currentClipPercentileMin, 100]
     */
-    const min = clipPercentileMin / 100;
-    let max = Math.round(v) / 100;
-    if (max <= min) max = (clipPercentileMin + 1) / 100;
-    if (max > 1) max = 1;
+    let max = v;
+    if (max <= clipPercentileMin) max = clipPercentileMin + 1;
+    if (max > 100) max = 100;
+    const clipPercentileMax = Math.round(max);
 
+    this.setState({
+      pendingClipPercentiles: { clipPercentileMin, clipPercentileMax }
+    });
+  };
+
+  handleClipCommit = () => {
+    const { dispatch } = this.props;
+    const { pendingClipPercentiles } = this.state;
+    const { clipPercentileMin, clipPercentileMax } = pendingClipPercentiles;
+    const min = clipPercentileMin / 100;
+    const max = clipPercentileMax / 100;
     dispatch({
-      type: "set clip quantile max",
+      type: "set clip quantiles",
       clipQuantiles: { min, max }
     });
+  };
+
+  handleClipOpening = () => {
+    const { clipPercentileMin, clipPercentileMax } = this.props;
+    this.setState({
+      pendingClipPercentiles: { clipPercentileMin, clipPercentileMax }
+    });
+  };
+
+  handleClipClosing = () => {
+    this.setState({ pendingClipPercentiles: null });
   };
 
   brushToolUpdate(tool, container, offset) {
@@ -661,11 +683,14 @@ class Graph extends React.Component {
       libraryVersions,
       undoDisabled,
       redoDisabled,
-      selectionTool,
-      clipPercentileMin,
-      clipPercentileMax
+      selectionTool
     } = this.props;
-    const { mode } = this.state;
+    const { mode, pendingClipPercentiles } = this.state;
+
+    const clipPercentileMin =
+      pendingClipPercentiles?.clipPercentileMin ?? this.props.clipPercentileMin;
+    const clipPercentileMax =
+      pendingClipPercentiles?.clipPercentileMax ?? this.props.clipPercentileMax;
 
     // constants used to create selection tool button
     let selectionTooltip;
@@ -818,6 +843,8 @@ class Graph extends React.Component {
                       }}
                     />
                   }
+                  onOpening={this.handleClipOpening}
+                  onClosing={this.handleClipClosing}
                   content={
                     <div
                       style={{
@@ -849,8 +876,8 @@ class Graph extends React.Component {
                             clipPercentileMax > 100
                               ? 100
                               : clipPercentileMax - 1 === clipPercentileMin
-                                ? clipPercentileMin
-                                : clipPercentileMax - 1
+                              ? clipPercentileMin
+                              : clipPercentileMax - 1
                           }
                           fill={false}
                           minorStepSize={null}
@@ -869,8 +896,8 @@ class Graph extends React.Component {
                             clipPercentileMin < 0
                               ? 0
                               : clipPercentileMin + 1 === clipPercentileMax
-                                ? clipPercentileMax
-                                : clipPercentileMin + 1
+                              ? clipPercentileMax
+                              : clipPercentileMin + 1
                           }
                           max={100 + 1e-9}
                           fill={false}
@@ -883,6 +910,7 @@ class Graph extends React.Component {
                         style={{
                           cursor: "pointer"
                         }}
+                        onClick={this.handleClipCommit}
                       >
                         {" "}
                         Clip histograms to range{" "}
