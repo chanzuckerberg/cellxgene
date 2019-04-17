@@ -25,7 +25,17 @@ beforeAll(async () => {
   page = await browser.newPage();
   await page.setViewport(browserViewport);
   if (DEV || DEBUG) {
-    page.on("console", msg => console.log(`PAGE LOG: ${msg.text()}`));
+    page.on("console", async msg => {
+      // If there is a console.error but an error is not thrown, this will ensure the test fails
+      if (msg.type() === "error") {
+        const errorMsgText = await Promise.all(
+          // TODO can we do this without internal properties?
+          msg.args().map(arg => arg._remoteObject.description)
+        );
+        throw new Error(`Console error: ${errorMsgText}`);
+      }
+      console.log(`PAGE LOG: ${msg.text()}`);
+    });
   }
   page.on("pageerror", err => {
     throw new Error(`Console error: ${err}`);
@@ -270,6 +280,15 @@ describe("ui elements don't error", async () => {
     for (const label in data.continuous) {
       await utils.clickOn(`colorby-${label}`);
     }
+  });
+
+  test("color by for gene", async () => {
+    await utils.typeInto("gene-search", data.genes.search);
+    await page.keyboard.press("Enter");
+    await page.waitForSelector(
+      `[data-testid='histogram-${data.genes.search}']`
+    );
+    await utils.clickOn(`colorby-${data.genes.search}`);
   });
 
   test("pan and zoom", async () => {
