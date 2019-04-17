@@ -225,9 +225,9 @@ class GeneExpression extends React.Component {
               }}
             >
               <Suggest
-                closeOnSelect
-                openOnKeyDown
                 resetOnSelect
+                closeOnSelect
+                resetOnClose
                 itemDisabled={
                   userDefinedGenesLoading ? () => true : () => false
                 }
