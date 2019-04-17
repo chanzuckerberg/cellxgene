@@ -812,7 +812,7 @@ class Graph extends React.Component {
                   target={
                     <Button
                       type="button"
-                      className="bp3-button bp3-icon-cog"
+                      className="bp3-button bp3-icon-timeline-bar-chart"
                       style={{
                         cursor: "pointer"
                       }}
@@ -823,42 +823,70 @@ class Graph extends React.Component {
                       style={{
                         display: "flex",
                         justifyContent: "flex-start",
-                        alignItems: "baseline"
+                        alignItems: "flex-start",
+                        flexDirection: "column",
+                        padding: 10
                       }}
                     >
                       Clip all continuous values to percentile range
-                      <span style={{ marginRight: 5, marginLeft: 5 }} />
-                      <NumericInput
-                        style={{ width: 40 }}
-                        onValueChange={this.handleClipPercentileMinValueChange}
-                        value={clipPercentileMin}
-                        min={0 - 1e-9}
-                        max={
-                          clipPercentileMax > 100
-                            ? 100
-                            : clipPercentileMax - 1 === clipPercentileMin
-                            ? clipPercentileMin
-                            : clipPercentileMax - 1
-                        }
-                        fill={false}
-                        minorStepSize={null}
-                      />
-                      <span style={{ marginRight: 5, marginLeft: 5 }}> - </span>
-                      <NumericInput
-                        style={{ width: 40 }}
-                        onValueChange={this.handleClipPercentileMaxValueChange}
-                        value={clipPercentileMax}
-                        min={
-                          clipPercentileMin < 0
-                            ? 0
-                            : clipPercentileMin + 1 === clipPercentileMax
-                            ? clipPercentileMax
-                            : clipPercentileMin + 1
-                        }
-                        max={100 + 1e-9}
-                        fill={false}
-                        minorStepSize={null}
-                      />
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "flex-start",
+                          alignItems: "baseline",
+                          paddingTop: 5,
+                          paddingBottom: 5
+                        }}
+                      >
+                        <NumericInput
+                          style={{ width: 50 }}
+                          onValueChange={
+                            this.handleClipPercentileMinValueChange
+                          }
+                          value={clipPercentileMin}
+                          min={0 - 1e-9}
+                          max={
+                            clipPercentileMax > 100
+                              ? 100
+                              : clipPercentileMax - 1 === clipPercentileMin
+                                ? clipPercentileMin
+                                : clipPercentileMax - 1
+                          }
+                          fill={false}
+                          minorStepSize={null}
+                        />
+                        <span style={{ marginRight: 5, marginLeft: 5 }}>
+                          {" "}
+                          -{" "}
+                        </span>
+                        <NumericInput
+                          style={{ width: 50 }}
+                          onValueChange={
+                            this.handleClipPercentileMaxValueChange
+                          }
+                          value={clipPercentileMax}
+                          min={
+                            clipPercentileMin < 0
+                              ? 0
+                              : clipPercentileMin + 1 === clipPercentileMax
+                                ? clipPercentileMax
+                                : clipPercentileMin + 1
+                          }
+                          max={100 + 1e-9}
+                          fill={false}
+                          minorStepSize={null}
+                        />
+                      </div>
+                      <Button
+                        type="button"
+                        className="bp3-button"
+                        style={{
+                          cursor: "pointer"
+                        }}
+                      >
+                        {" "}
+                        Clip histograms to range{" "}
+                      </Button>
                     </div>
                   }
                 />
