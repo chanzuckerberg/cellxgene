@@ -1,5 +1,6 @@
 // jshint esversion: 6
 
+import clip from "../clip";
 import {
   layoutDimensionName,
   obsAnnoDimensionName,
@@ -105,14 +106,9 @@ function clipDataframe(
     const colLabel = keys[colIdx];
     if (!clipPredicate(df, colIdx, colLabel)) return col;
 
-    const newCol = col.slice();
-    for (let i = 0, l = newCol.length; i < l; i += 1) {
-      const colMin = quantileF(colLabel, lowerQuantile);
-      const colMax = quantileF(colLabel, upperQuantile);
-      if (newCol[i] < colMin || newCol[i] > colMax) {
-        newCol[i] = value;
-      }
-    }
+    const colMin = quantileF(colLabel, lowerQuantile);
+    const colMax = quantileF(colLabel, upperQuantile);
+    const newCol = clip(col.slice(), colMin, colMax, value);
     return newCol;
   });
 }
