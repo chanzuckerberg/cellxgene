@@ -1,7 +1,10 @@
 /*
-Reducer which caches derived state to be used in a reset
-*/
+Reducer which caches derived state to be used in a reset or other 
+recomputation.
 
+Currently this only caches the baseline (full universe) world & crossfilter, 
+for use in a Reset.
+*/
 const ResetCacheReducer = (
   state = {
     world: null,
