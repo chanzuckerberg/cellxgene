@@ -225,9 +225,9 @@ class GeneExpression extends React.Component {
               }}
             >
               <Suggest
-                closeOnSelect
-                openOnKeyDown
                 resetOnSelect
+                closeOnSelect
+                resetOnClose
                 itemDisabled={
                   userDefinedGenesLoading ? () => true : () => false
                 }
@@ -311,7 +311,6 @@ class GeneExpression extends React.Component {
               })
             : null}
         </div>
-        <Suggest inputValueRenderer={() => ""} items={["a", "b"]} itemRenderer={} onItemSelect={(d) => {console.log(d)}} />
         <div>
           <p
             style={Object.assign({}, globals.leftSidebarSectionHeading, {
