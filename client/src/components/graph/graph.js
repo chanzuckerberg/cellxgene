@@ -268,6 +268,7 @@ class Graph extends React.Component {
       * there are no userDefinedGenes or diffexpGenes displayed
       * scatterplot is not displayed
       * nothing in cellset1 or cellset2
+      * clip percentiles are [0,100]
     */
     const {
       crossfilter,
@@ -279,7 +280,9 @@ class Graph extends React.Component {
       scatterplotXXaccessor,
       scatterplotYYaccessor,
       celllist1,
-      celllist2
+      celllist2,
+      clipPercentileMin,
+      clipPercentileMax
     } = this.props;
 
     if (!crossfilter || !world || !universe) {
@@ -297,7 +300,9 @@ class Graph extends React.Component {
       nothingColoredBy &&
       noGenes &&
       scatterNotDpl &&
-      nothingInCellsets
+      nothingInCellsets &&
+      clipPercentileMax === 100 &&
+      clipPercentileMin === 0
     );
   };
 
