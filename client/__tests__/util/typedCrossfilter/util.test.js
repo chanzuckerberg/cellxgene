@@ -1,10 +1,7 @@
 import {
   fillRange,
   sliceByIndex,
-  makeSortIndex,
-  lowerBound,
-  lowerBoundIndirect,
-  upperBoundIndirect
+  makeSortIndex
 } from "../../../src/util/typedCrossfilter/util";
 
 describe("fillRange", () => {

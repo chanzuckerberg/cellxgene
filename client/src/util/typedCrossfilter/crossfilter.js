@@ -2,13 +2,13 @@ import { polygonContains } from "d3";
 
 import PositiveIntervals from "./positiveIntervals";
 import BitArray from "./bitArray";
-import { sort } from "./sort";
 import {
-  makeSortIndex,
+  sort,
   lowerBound,
   lowerBoundIndirect,
   upperBoundIndirect
-} from "./util";
+} from "./sort";
+import { makeSortIndex } from "./util";
 
 class NotImplementedError extends Error {
   constructor(...params) {
