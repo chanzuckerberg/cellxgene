@@ -164,7 +164,7 @@ function setClippedDataframes(world, crossfilter) {
   const varDataQuantile = (label, q) => {
     /* a gene / vardata might be indexed as userDefined or diffexp gene */
     let dimName = diffexpDimensionName(label);
-    if (!crossfilter.dimensions(dimName))
+    if (!crossfilter.dimension(dimName))
       dimName = userDefinedDimensionName(label);
     return crossfilter.quantile(dimName, q);
   };

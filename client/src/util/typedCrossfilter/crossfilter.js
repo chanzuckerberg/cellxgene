@@ -9,6 +9,7 @@ import {
   upperBoundIndirect
 } from "./sort";
 import { makeSortIndex } from "./util";
+import quantile from "../quantile";
 
 class NotImplementedError extends Error {
   constructor(...params) {
@@ -59,6 +60,10 @@ export default class ImmutableTypedCrossfilter {
   dimensionNames() {
     /* return array of all dimensions (by name) */
     return Object.keys(this.dimensions);
+  }
+
+  dimension(name) {
+    return this.dimensions[name];
   }
 
   addDimension(name, type, ...rest) {
@@ -411,9 +416,7 @@ class ImmutableScalarDimension extends _ImmutableBaseDimension {
 
   quantile(q) {
     const { value, index } = this;
-    const len = value.length;
-    const i = Math.min(len - 1, Math.ceil(q * len));
-    return value[index[i]];
+    return value[quantile([q], index, true)[0]];
   }
 }
 

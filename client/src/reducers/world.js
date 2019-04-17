@@ -1,6 +1,6 @@
-import _ from "lodash";
-
 import { World, ControlsHelpers } from "../util/stateManager";
+import clip from "../util/clip";
+import quantile from "../util/quantile";
 
 const WorldReducer = (
   state = null,
@@ -52,13 +52,14 @@ const WorldReducer = (
     case "expression load success": {
       const { universe } = nextSharedState;
       const universeVarData = universe.varData;
-      let worldVarData = state.varData;
+      let unclippedVarData = state.unclipped.varData;
 
-      // Load new expression data into the varData dataframes, if
+      // Lazy load new expression data into the unclipped varData dataframe, if
       // not already present.
-      _.forEach(action.expressionData, (val, key) => {
+      //
+      Object.entries(action.expressionData).forEach(([key, val]) => {
         // If not already in world.varData, save sliced expression column
-        if (!worldVarData.hasCol(key)) {
+        if (!unclippedVarData.hasCol(key)) {
           // Slice if world !== universe, else just use whole column.
           // Use the obsAnnotation index as the cut key, as we keep
           // all world dataframes in sync.
@@ -71,7 +72,7 @@ const WorldReducer = (
           }
 
           // Now build world's varData dataframe
-          worldVarData = worldVarData.withCol(
+          unclippedVarData = unclippedVarData.withCol(
             key,
             worldValSlice,
             state.obsAnnotations.rowIndex
@@ -79,23 +80,55 @@ const WorldReducer = (
         }
       });
 
-      // Prune size of varData "cache" if getting out of hand....
+      // Prune size of varData unclipped dataframe if getting out of hand....
+      //
       const { userDefinedGenes, diffexpGenes } = prevSharedState;
-      const allTheGenesWeNeed = _.uniq(
-        [].concat(
+      const allTheGenesWeNeed = [
+        ...new Set(
           userDefinedGenes,
           diffexpGenes,
           Object.keys(action.expressionData)
         )
-      );
-      worldVarData = ControlsHelpers.pruneVarDataCache(
-        worldVarData,
+      ];
+      unclippedVarData = ControlsHelpers.pruneVarDataCache(
+        unclippedVarData,
         allTheGenesWeNeed
       );
 
+      // at this point, we have the unclipped data in unclippedVarData.
+      // Now create clipped.
+      //   - Drop columns no longer needed
+      //   - Add new columns
+      //
+      let clippedVarData = state.varData;
+      const keysToDrop = clippedVarData.colIndex
+        .keys()
+        .filter(k => !unclippedVarData.hasCol(k));
+      const keysToAdd = unclippedVarData.colIndex
+        .keys()
+        .filter(k => !clippedVarData.hasCol(k));
+      keysToDrop.forEach(k => {
+        clippedVarData = clippedVarData.dropCol(k);
+      });
+      keysToAdd.forEach(k => {
+        const data = unclippedVarData.col(k).asArray();
+        const q = [state.clipQuantiles.min, state.clipQuantiles.max];
+        const [qMinVal, qMaxVal] = quantile(q, data);
+        const clippedData = clip(data, qMinVal, qMaxVal, Number.NaN);
+        clippedVarData = clippedVarData.withCol(
+          k,
+          clippedData,
+          state.obsAnnotations.rowIndex
+        );
+      });
+
       return {
         ...state,
-        varData: worldVarData
+        varData: clippedVarData,
+        unclipped: {
+          ...state.unclipped,
+          varData: unclippedVarData
+        }
       };
     }
 
