@@ -32,6 +32,10 @@ cellxgene launch pbmc3k.h5ad --open
 
 To learn more about what you can do with _cellxgene_, see the [Getting Started](https://chanzuckerberg.github.io/cellxgene/getting-stared/) guide.
 
+## get in touch
+
+Have questions, suggestions, or comments? You can come hang out with us by joining the [CZI Science Slack](https://join-cellxgene-users.herokuapp.com/) and posting in the `#cellxgene-users` channel. As mentioned above, please submit any feature requests or bugs as [Github issues](https://github.com/chanzuckerberg/cellxgene/issues). We'd love to hear from you!
+
 ## where we are going
 
 Our goal is to enable teams of computational and experimental
@@ -96,10 +100,6 @@ We were inspired by Mike Bostock and the [crossfilter](https://github.com/crossf
 We have been working closely with the [`scanpy`](https://github.com/theislab/scanpy) team to integrate with their awesome analysis tools. Special thanks to Alex Wolf, Fabian Theis, and the rest of the team for their help during development and for providing an example dataset.
 
 We are eager to explore integrations with other computational backends such as [`Seurat`](https://github.com/satijalab/seurat) or [`Bioconductor`](https://github.com/Bioconductor)
-
-## communication
-
-Have questions, suggestions, or comments? You can come hang out with us by joining the [CZI Science Slack](https://join-cellxgene-users.herokuapp.com/) and posting in the `#cellxgene-users` channel. As mentioned above, please submit any feature requests or bugs as [Github issues](https://github.com/chanzuckerberg/cellxgene/issues). We'd love to hear from you!
 
 ## core team
 
