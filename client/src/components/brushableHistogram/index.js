@@ -35,9 +35,8 @@ class HistogramBrush extends React.Component {
 
     if (obsAnnotations.hasCol(field)) {
       // recalculate expensive stuff
-      const allValuesForContinuousFieldAsArray = obsAnnotations
-        .col(field)
-        .asArray();
+      const col = obsAnnotations.col(field);
+      const allValuesForContinuousFieldAsArray = col.asArray();
 
       histogramCache.x = d3
         .scaleLinear()
@@ -51,7 +50,8 @@ class HistogramBrush extends React.Component {
 
       histogramCache.numValues = allValuesForContinuousFieldAsArray.length;
     } else if (world.varData.hasCol(field)) {
-      const varValues = world.varData.col(field).asArray();
+      const col = world.varData.col(field);
+      const varValues = col.asArray();
 
       histogramCache.x = d3
         .scaleLinear()
