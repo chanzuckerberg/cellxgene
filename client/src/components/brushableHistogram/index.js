@@ -172,7 +172,6 @@ class HistogramBrush extends React.Component {
   onBrushEnd(selection, x) {
     return () => {
       const { dispatch, field, isObs, isUserDefined, isDiffExp } = this.props;
-      const { brushXselection } = this.state;
       const minAllowedBrushSize = 10;
       const smallAmountToAvoidInfiniteLoop = 0.1;
 
@@ -197,11 +196,6 @@ class HistogramBrush extends React.Component {
             smallAmountToAvoidInfiniteLoop; //
 
           _range = [x(d3.event.selection[0]), x(procedurallyResizedBrushWidth)];
-
-          d3.event.target.move(brushXselection, [
-            d3.event.selection[0],
-            procedurallyResizedBrushWidth
-          ]);
         }
 
         dispatch({
