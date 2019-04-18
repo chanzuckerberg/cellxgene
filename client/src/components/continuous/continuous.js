@@ -64,18 +64,15 @@ class Continuous extends React.Component {
         ) : null}
         {obsAnnotations
           ? _.map(obsAnnotations.colIndex.keys(), key => {
-              const summary = obsAnnotations.col(key).summarize();
               const isColorField =
                 key.includes("color") || key.includes("Color");
+              if (key === "name" || isColorField) return null;
+
+              const summary = obsAnnotations.col(key).summarize();
               const nonFiniteExtent =
                 summary.min === undefined || summary.max === undefined;
-              zebra += 1;
-              if (
-                !summary.categorical &&
-                key !== "name" &&
-                !isColorField &&
-                !nonFiniteExtent
-              ) {
+              if (!summary.categorical && !nonFiniteExtent) {
+                zebra += 1;
                 return (
                   <HistogramBrush
                     key={key}
