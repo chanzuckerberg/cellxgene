@@ -32,6 +32,20 @@ cellxgene launch pbmc3k.h5ad --open
 
 To learn more about what you can do with _cellxgene_, see the [Getting Started](https://chanzuckerberg.github.io/cellxgene/getting-stared/) guide.
 
+## where we are going
+
+Our goal is to enable teams of computational and experimental
+biologists to collaboratively gain insight into their single-cell RNA-seq data.
+
+There are 4 key features we plan to implement in the near term.
+
+- Click install and launch
+- Manual annotation workflows
+- Toggle embeddings
+- Gene information
+
+For more detail on these features and where we are going, see [our roadmap](ROADMAP.md).
+
 ## contributing
 
 We warmly welcome contributions from the community! Please submit any bug reports and feature requests through [Github issues](https://github.com/chanzuckerberg/cellxgene/issues). Please submit any direct contributions by forking the repository, creating a branch, and submitting a Pull Request. It'd be great for PRs to include test cases and documentation updates where relevant, though we know the core test suite is itself still a work in progress. And all code contributions and dependencies must be compatible with the project's open-source license (MIT). If you have any questions about this stuff, just ask!
