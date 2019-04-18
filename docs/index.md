@@ -10,7 +10,7 @@ _cellxgene_ is an interactive data explorer for single-cell transcriptomics data
 
 ## quick start
 
-To install _cellxgene_ you need Python 3.6+. We recommend [installing _cellxgene_ into a conda or virtual environment.](/faq.html#how-do-i-create-a-python-36-environment-for-cellxgene)
+To install _cellxgene_ you need Python 3.6+. We recommend [installing _cellxgene_ into a conda or virtual environment.](/faq.html#how-do-i-create-a-python-environment-for-cellxgene)
 
 Install the package.
 ``` bash
@@ -30,7 +30,7 @@ cellxgene launch pbmc3k.h5ad --open
 
 To explore more datasets already formatted for _cellxgene_, see [Data](data) or
 visit [Getting Started](getting-started) to learn more about formatting your own
-data for _cellxgene_. 
+data for _cellxgene_.
 
 ## getting help
 
