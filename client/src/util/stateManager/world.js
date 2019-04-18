@@ -148,13 +148,12 @@ clip dataframes based on quantiles
 */
 function setClippedDataframes(world, crossfilter) {
   const { schema } = world;
-  const { obsAnnotations, varData } = world.unclipped;
   const isContinuousObsAnnotation = (df, idx, label) =>
     deduceDimensionType(schema.annotations.obsByName[label], label) !== "enum";
   const obsQuantile = (label, q) =>
     crossfilter.quantile(obsAnnoDimensionName(label), q);
   world.obsAnnotations = clipDataframe(
-    obsAnnotations,
+    world.unclipped.obsAnnotations,
     world.clipQuantiles.min,
     world.clipQuantiles.max,
     obsQuantile,

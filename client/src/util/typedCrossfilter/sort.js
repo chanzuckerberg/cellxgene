@@ -1,3 +1,5 @@
+import { isTypedArray, isFpTypedArray } from "../typeHelpers";
+
 /* eslint no-bitwise: "off" */
 
 /*
@@ -16,21 +18,6 @@ function lt(a, b) {
 function gt(a, b) {
   if (Number.isNaN(a)) return !Number.isNaN(b);
   return a > b;
-}
-
-/*
-Utility function to test for a typed array
-*/
-function isTypedArray(x) {
-  return (
-    ArrayBuffer.isView(x) &&
-    Object.prototype.toString.call(x) !== "[object DataView]"
-  );
-}
-
-function isFpTypedArray(x) {
-  const ctor = x.constructor;
-  return isTypedArray(x) && (ctor === Float32Array || ctor === Float64Array);
 }
 
 /*

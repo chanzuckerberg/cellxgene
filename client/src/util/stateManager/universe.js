@@ -5,6 +5,7 @@ import _ from "lodash";
 import decodeMatrixFBS from "./matrix";
 import * as Dataframe from "../dataframe";
 import fromEntries from "../fromEntries";
+import { isFpTypedArray } from "../typeHelpers";
 
 /*
 Private helper function - create and return a template Universe
@@ -38,14 +39,57 @@ These functions are used exclusively by the actions and reducers to
 build an internal POJO for use by the rendering components.
 */
 
+function promoteTypedArray(o) {
+  /*
+  Decide what internal data type to use for the data returned from 
+  the server.
+
+  TODO - future optimization: not all int32/uint32 data series require
+  promotion to float64.  We COULD simply look at the data to decide. 
+  */
+  if (isFpTypedArray(o) || Array.isArray(o)) return o;
+
+  let TyepdArrayCtor;
+  switch (o.constructor) {
+    case Int8Array:
+    case Uint8Array:
+    case Uint8ClampedArray:
+    case Int16Array:
+    case Uint16Array:
+      TyepdArrayCtor = Float32Array;
+      break;
+
+    case Int32Array:
+    case Uint32Array:
+      TyepdArrayCtor = Float64Array;
+      break;
+
+    default:
+      throw new Error("Unexpected data type returned from server.");
+  }
+  if (o.constructor === TyepdArrayCtor) return o;
+  return new TyepdArrayCtor(o);
+}
+
 function AnnotationsFBSToDataframe(arrayBuffer) {
   /*
   Convert a Matrix FBS to a Dataframe.
+
+  The application has strong assumptions that all scalar data will be
+  stored as a float32 or float64 (regardless of underlying data types).
+  For example, clipping of value ranges (eg, user-selected percentiles)
+
+  All float data from the server is left as is.  All non-float is promoted
+  to an appropriate float.
   */
-  const fbs = decodeMatrixFBS(arrayBuffer);
+  const fbs = decodeMatrixFBS(arrayBuffer, true); // leave in place
+  const columns = fbs.columns.map(c => {
+    if (isFpTypedArray(c) || Array.isArray(c)) return c;
+    return promoteTypedArray(c);
+  });
   const df = new Dataframe.Dataframe(
     [fbs.nRows, fbs.nCols],
-    fbs.columns,
+    columns,
     null,
     new Dataframe.KeyIndex(fbs.colIdx)
   );
@@ -54,6 +98,10 @@ function AnnotationsFBSToDataframe(arrayBuffer) {
 
 function LayoutFBSToDataframe(arrayBuffer) {
   const fbs = decodeMatrixFBS(arrayBuffer, true);
+  if (fbs.columns.length !== 2 || !fbs.columns.every(isFpTypedArray)) {
+    // We have strong assumptions about the shape & type of layout data.
+    throw new Error("Unexpected layout data type returned from server");
+  }
   const df = new Dataframe.Dataframe(
     [fbs.nRows, fbs.nCols],
     fbs.columns,
@@ -148,6 +196,11 @@ export function convertDataFBStoObject(universe, arrayBuffer) {
   const fbs = decodeMatrixFBS(arrayBuffer);
   const { colIdx, columns } = fbs;
   const result = {};
+
+  if (!columns.every(isFpTypedArray)) {
+    // We have strong assumptions that all var data is float
+    throw new Error("Unexpected non-floating point response from server.");
+  }
 
   for (let c = 0; c < colIdx.length; c += 1) {
     const varName = universe.varAnnotations.at(colIdx[c], "name");
