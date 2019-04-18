@@ -1,8 +1,7 @@
-
+# flake8: noqa F403, F405
 import sys
 import threading
 from cefpython3 import cefpython as cef
-import ctypes
 import platform
 
 from PyQt5.QtGui import *
@@ -24,6 +23,7 @@ HEIGHT = 768
 CefWidgetParent = QWidget
 if LINUX:
     CefWidgetParent = QX11EmbedContainer
+
 
 def main():
     sys.excepthook = cef.ExceptHook  # To shutdown all CEF processes on error
@@ -47,6 +47,7 @@ def main():
     del app  # Must destroy app object before calling Shutdown
     cef.Shutdown()
     sys.exit(0)
+
 
 class DataDaemon():
     def __init__(self):
@@ -128,7 +129,7 @@ class MainWindow(QMainWindow):
             # cef widget in the layout with the container.
             # noinspection PyUnresolvedReferences, PyArgumentList
             self.container = QWidget.createWindowContainer(
-                    self.cef_widget.hidden_window, parent=self)
+                self.cef_widget.hidden_window, parent=self)
             # noinspection PyArgumentList
             layout.addWidget(self.container, 1, 0)
 
@@ -191,7 +192,6 @@ class CefWidget(CefWidgetParent):
         else:
             return int(self.winId())
 
-
     def moveEvent(self, _):
         self.x = 0
         self.y = 0
@@ -251,6 +251,7 @@ class FocusHandler(object):
                   " keyboard focus fix no. 1 (Issue #284)")
             browser.SetFocus(True)
 
+
 class LoadWidget(QFrame):
     def __init__(self, cef_widget):
         super(LoadWidget, self).__init__()
@@ -273,7 +274,7 @@ class LoadWidget(QFrame):
         options = QFileDialog.Options()
         # options |= QFileDialog.DontUseNativeDialog
         fileName, _ = QFileDialog.getOpenFileName(self,
-            "Open H5AD File", "","H5AD Files (*.h5ad)", options=options)
+                                                  "Open H5AD File", "", "H5AD Files (*.h5ad)", options=options)
         if fileName:
             # TODO handle this better
             # TODO thread this
@@ -284,6 +285,7 @@ class LoadWidget(QFrame):
 
     def createButton(self, name):
         return QPushButton(name)
+
 
 if __name__ == '__main__':
     main()
