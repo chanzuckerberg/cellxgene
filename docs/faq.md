@@ -48,12 +48,12 @@ We use a [Welch's _t_-test](https://en.wikipedia.org/wiki/Welch%27s_t-test) impl
 
 # Problems, errors, & bugs
 
-#### How do I create a Python 3.6 environment for _cellxgene_?
+#### How do I create a Python environment for _cellxgene_?
 
 If you use conda and want to create a [conda environment](https://conda.io/docs/user-guide/tasks/manage-environments.html) for _cellxgene_ you can use the following commands
 
 ```
-conda create --yes -n cellxgene python=3.6
+conda create --yes -n cellxgene python=3.7
 conda activate cellxgene
 pip install cellxgene
 ```
@@ -62,7 +62,7 @@ Or you can create a virtual environment by using
 
 ```
 ENV_NAME=cellxgene
-python3.6 -m venv ${ENV_NAME}
+python3.7 -m venv ${ENV_NAME}
 source ${ENV_NAME}/bin/activate
 pip install cellxgene
 ```

@@ -3,6 +3,8 @@ show_downloads: false
 baseurl: /cellxgene
 
 nav:
+  - title: Getting Started
+    url: getting-started.html
   - title: Data
     url: data.html
   - title: FAQ
