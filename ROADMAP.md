@@ -14,7 +14,7 @@ Please note: this roadmap is subject to change.
 ## what we are building now
 
 In the near term, our goal is to enable teams of computational and experimental
-biologists to explore and annotate their single-cell RNA-seq data.
+biologists to collaboratively explore and annotate their single-cell RNA-seq data.
 
 There are 4 key features we plan to implement in the near term.
 
