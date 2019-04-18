@@ -16,15 +16,21 @@ LINUX = (platform.system() == "Linux")
 MAC = (platform.system() == "Darwin")
 
 # Configuration
+# TODO remember this or calculate it?
 WIDTH = 1024
 HEIGHT = 768
 
 # OS differences
+# noinspection PyUnresolvedReferences
 CefWidgetParent = QWidget
 if LINUX:
+    # noinspection PyUnresolvedReferences
     CefWidgetParent = QX11EmbedContainer
 
 
+# TODO make this cleaner
+# Document more
+# rename?
 def main():
     sys.excepthook = cef.ExceptHook  # To shutdown all CEF processes on error
     settings = {}
@@ -84,22 +90,25 @@ class DataDaemon():
         }
         self.app.data = ScanpyEngine(data, args)
 
-
+# noinspection PyUnresolvedReferences
 class MainWindow(QMainWindow):
     def __init__(self, datad):
         super(MainWindow, self).__init__(None)
         self.cef_widget = None
         self.navigation_bar = None
-        # TODO what is datad?
+
+        # datad = data daemon
         self.datad = datad
-        self.setWindowTitle("example")
-        # TODO check this
+        self.setWindowTitle("cellxgene")
+
+        # Strong focus - accepts focus by tab & click
         self.setFocusPolicy(Qt.StrongFocus)
         self.setupLayout()
 
     def setupLayout(self):
         self.resize(WIDTH, HEIGHT)
         self.cef_widget = CefWidget(self)
+        # TODO rename navigation bar
         self.navigation_bar = LoadWidget(self.cef_widget)
         layout = QGridLayout()
         layout.addWidget(self.cef_widget, 1, 0)
@@ -127,10 +136,8 @@ class MainWindow(QMainWindow):
             # a hidden window, embed CEF browser in it and then
             # create a container for that hidden window and replace
             # cef widget in the layout with the container.
-            # noinspection PyUnresolvedReferences, PyArgumentList
             self.container = QWidget.createWindowContainer(
                 self.cef_widget.hidden_window, parent=self)
-            # noinspection PyArgumentList
             layout.addWidget(self.container, 1, 0)
 
     def closeEvent(self, event):
@@ -145,16 +152,16 @@ class MainWindow(QMainWindow):
         self.cef_widget.browser = None
 
 
+# noinspection PyUnresolvedReferences
 class CefWidget(CefWidgetParent):
     def __init__(self, parent=None):
         super(CefWidget, self).__init__(parent)
         self.parent = parent
         self.browser = None
-        # TODO why??
+        # TODO test without this on linux
         self.hidden_window = None  # Required for PyQt5 on Linux
         self.show()
 
-    # TODO focus why?
     def focusInEvent(self, event):
         # This event seems to never get called on Linux, as CEF is
         # stealing all focus due to Issue #284.
@@ -172,7 +179,6 @@ class CefWidget(CefWidgetParent):
     # TODO when does this happen?
     def embedBrowser(self):
         if LINUX:
-            # noinspection PyUnresolvedReferences
             self.hidden_window = QWindow()
         window_info = cef.WindowInfo()
         rect = [0, 0, self.width(), self.height()]
@@ -180,11 +186,7 @@ class CefWidget(CefWidgetParent):
         # TODO better splash
         self.browser = cef.CreateBrowserSync(window_info,
                                              url="http://localhost:8000/splash")
-        # TODO is this necessary?
-        # self.browser.SetClientHandler(LoadHandler())
-        self.browser.SetClientHandler(FocusHandler(self))
 
-    # TODO is this needed?
     def getHandle(self):
         if self.hidden_window:
             # PyQt5 on Linux
@@ -214,11 +216,11 @@ class CefWidget(CefWidgetParent):
             self.browser.NotifyMoveOrResizeStarted()
 
 
+# For Windows -- transfer event loop control on timer
+# noinspection PyUnresolvedReferences
 class CefApplication(QApplication):
     def __init__(self, args):
         super(CefApplication, self).__init__(args)
-        # TODO is this the best way?
-        # do we need to do this?
         if not cef.GetAppSetting("external_message_pump"):
             self.timer = self.createTimer()
 
@@ -235,23 +237,7 @@ class CefApplication(QApplication):
         # Stop the timer after Qt's message loop has ended
         self.timer.stop()
 
-
-class FocusHandler(object):
-    # TODO why do we need this?
-    def __init__(self, cef_widget):
-        self.cef_widget = cef_widget
-
-    def OnSetFocus(self, **_):
-        pass
-
-    def OnGotFocus(self, browser, **_):
-        # Temporary fix no. 1 for focus issues on Linux (Issue #284)
-        if LINUX:
-            print("[qt.py] FocusHandler.OnGotFocus:"
-                  " keyboard focus fix no. 1 (Issue #284)")
-            browser.SetFocus(True)
-
-
+# noinspection PyUnresolvedReferences
 class LoadWidget(QFrame):
     def __init__(self, cef_widget):
         super(LoadWidget, self).__init__()
