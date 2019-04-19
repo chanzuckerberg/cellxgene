@@ -1,6 +1,15 @@
 /*
 Private dataframe support functions
+
+TODO / XXX: for scalar/continuous data, this uses a naive method
+of computing quantiles.  Would be good to switch from sort to 
+partition at some point.
 */
+
+import quantile from "../quantile";
+import { sort } from "../typedCrossfilter/sort";
+
+const centileNames = new Array(101).fill(0).map((v, idx) => idx / 100);
 
 export function summarizeContinuous(col) {
   let min;
@@ -8,25 +17,39 @@ export function summarizeContinuous(col) {
   let nan = 0;
   let pinf = 0;
   let ninf = 0;
+  let percentiles;
   if (col) {
-    for (let r = 0, l = col.length; r < l; r += 1) {
-      const val = Number(col[r]);
-      if (Number.isFinite(val)) {
-        if (min === undefined) {
-          min = val;
-          max = val;
-        } else {
-          min = val < min ? val : min;
-          max = val > max ? val : max;
-        }
-      } else if (Number.isNaN(val)) {
-        nan += 1;
-      } else if (val > 0) {
-        pinf += 1;
-      } else {
-        ninf += 1;
+    // -Inf < finite < Inf < NaN
+    const sortedCol = sort(new col.constructor(col));
+
+    // count non-finites, which are at each end of sorted data
+    for (let i = sortedCol.length - 1; i >= 0; i -= 1) {
+      if (!Number.isNaN(sortedCol[i])) {
+        nan = sortedCol.length - i - 1;
+        break;
       }
     }
+    for (let i = 0, l = sortedCol.length; i < l; i += 1) {
+      if (sortedCol[i] !== Number.NEGATIVE_INFINITY) {
+        ninf = i;
+        break;
+      }
+    }
+    for (let i = sortedCol.length - nan - 1; i >= 0; i -= 1) {
+      if (sortedCol[i] !== Number.POSITIVE_INFINITY) {
+        pinf = sortedCol.length - i - nan - 1;
+        break;
+      }
+    }
+
+    // compute percentiles on finite data ONLY
+    const sortedColFiniteOnly = sortedCol.slice(
+      ninf,
+      sortedCol.length - nan - pinf
+    );
+    percentiles = quantile(centileNames, sortedColFiniteOnly, true);
+    min = percentiles[0];
+    max = percentiles[100];
   }
   return {
     categorical: false,
@@ -34,7 +57,8 @@ export function summarizeContinuous(col) {
     max,
     nan,
     pinf,
-    ninf
+    ninf,
+    percentiles
   };
 }
 
