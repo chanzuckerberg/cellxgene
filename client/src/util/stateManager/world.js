@@ -146,12 +146,12 @@ export function createWorldFromEntireUniverse(universe) {
 /*
 clip dataframes based on quantiles
 */
-function setClippedDataframes(world, crossfilter) {
+function setClippedDataframes(world) {
   const { schema } = world;
   const isContinuousObsAnnotation = (df, idx, label) =>
     deduceDimensionType(schema.annotations.obsByName[label], label) !== "enum";
   const obsQuantile = (label, q) =>
-    crossfilter.quantile(obsAnnoDimensionName(label), q);
+    world.unclipped.obsAnnotations.col(label).summarize().percentiles[100 * q];
   world.obsAnnotations = clipDataframe(
     world.unclipped.obsAnnotations,
     world.clipQuantiles.min,
@@ -160,13 +160,8 @@ function setClippedDataframes(world, crossfilter) {
     isContinuousObsAnnotation
   );
 
-  const varDataQuantile = (label, q) => {
-    /* a gene / vardata might be indexed as userDefined or diffexp gene */
-    let dimName = diffexpDimensionName(label);
-    if (!crossfilter.dimension(dimName))
-      dimName = userDefinedDimensionName(label);
-    return crossfilter.quantile(dimName, q);
-  };
+  const varDataQuantile = (label, q) =>
+    world.unclipped.varData.col(label).summarize().percentiles[100 * q];
   world.varData = clipDataframe(
     world.unclipped.varData,
     world.clipQuantiles.min,
@@ -178,8 +173,8 @@ function setClippedDataframes(world, crossfilter) {
 }
 
 /*
-Subset the current world based upon the current selection.  Returns
-new world.  Parameters:
+Subset the current world based upon the current selection, maintaining any existing
+clip.  Returns new world.  Parameters:
   * unvierse
   * world - the current world
   * crossfilter - the selection state
@@ -202,7 +197,7 @@ export function createWorldBySelection(universe, world, crossfilter) {
   newWorld.nObs = newWorld.unclipped.obsAnnotations.dims[0];
 
   /* and now clip */
-  setClippedDataframes(newWorld, crossfilter);
+  setClippedDataframes(newWorld);
   return newWorld;
 }
 
@@ -228,7 +223,7 @@ export function createWorldWithNewClip(
   };
 
   /* and now clip */
-  setClippedDataframes(newWorld, crossfilter);
+  setClippedDataframes(newWorld);
   return newWorld;
 }
 
