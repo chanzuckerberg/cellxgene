@@ -63,7 +63,13 @@ class Dataframe {
   Constructors & factories
   **/
 
-  constructor(dims, columnarData, rowIndex = null, colIndex = null) {
+  constructor(
+    dims,
+    columnarData,
+    rowIndex = null,
+    colIndex = null,
+    __columnsAccessor = [] // private interface
+  ) {
     /*
     The base constructor is relatively hard to use - as an alternative,
     see factory methods and clone/slice, below.
@@ -94,7 +100,7 @@ class Dataframe {
     this.rowIndex = rowIndex;
     this.colIndex = colIndex;
 
-    this.__compile();
+    this.__compile(__columnsAccessor);
   }
 
   static __errorChecks(dims, columnarData, rowIndex, colIndex) {
@@ -135,97 +141,107 @@ class Dataframe {
     }
   }
 
-  __compile() {
+  static __compileColumn(column, getOffset, getLabel) {
     /*
-    Compile data accessors for each column.
+      Each column accessor is a function which will lookup data by
+      index (ie, is equivalent to dataframe.get(row, col), where 'col'
+      is fixed.
 
-    Each column accessor is a function which will lookup data by
-    index (ie, is equivalent to dataframe.get(row, col), where 'col'
-    is fixed.
+      In addition, each column accessor has several functions:
 
-    In addition, each column accessor has several functions:
+      asArray() -- return the entire column as a native Array or TypedArray.
+        Crucially, this native array only supports label indexing.
+        Example:
+          const arr = df.col('a').asArray();
 
-    asArray() -- return the entire column as a native Array or TypedArray.
-      Crucially, this native array only supports label indexing.
-      Example:
-        const arr = df.col('a').asArray();
+      has(rlabel) -- return boolean indicating of the row label
+        is contained within the column.  Example:
+          const isInColumn = df.col('a').includes(99)
+        For the default offset indexing, this is identical to:
+          const isInColumn = (99 > 0) && (99 < df.nRows);
 
-    has(rlabel) -- return boolean indicating of the row label
-      is contained within the column.  Example:
-        const isInColumn = df.col('a').includes(99)
-      For the default offset indexing, this is identical to:
-        const isInColumn = (99 > 0) && (99 < df.nRows);
+      ihas(roffset) -- same as has(), but accepts a row offset
+        instead of a row label.
 
-    ihas(roffset) -- same as has(), but accepts a row offset
-      instead of a row label.
+      indexOf(value) -- return the label (not offset) of the first instance of
+        'value' in the column.  If you want the offset, just use the builtin JS
+        indexOf() function, available on both Array and TypedArray.
 
-    indexOf(value) -- return the label (not offset) of the first instance of
-      'value' in the column.  If you want the offset, just use the builtin JS
-      indexOf() function, available on both Array and TypedArray.
-
-    iget(offset) -- return the value at 'offset'
+      iget(offset) -- return the value at 'offset'
 
     */
-    const { getOffset, getLabel } = this.rowIndex;
-    this.__columnsAccessor = this.__columns.map(column => {
-      const { length } = column;
+    const { length } = column;
 
-      /* get value by row label */
-      const get = function get(rlabel) {
-        return column[getOffset(rlabel)];
-      };
+    /* get value by row label */
+    const get = function get(rlabel) {
+      return column[getOffset(rlabel)];
+    };
 
-      /* get value by row offset */
-      const iget = function iget(roffset) {
-        return column[roffset];
-      };
+    /* get value by row offset */
+    const iget = function iget(roffset) {
+      return column[roffset];
+    };
 
-      /* full column array access */
-      const asArray = function asArray() {
-        return column;
-      };
+    /* full column array access */
+    const asArray = function asArray() {
+      return column;
+    };
 
-      /* test for row label inclusion in column */
-      const has = function has(rlabel) {
-        const offset = getOffset(rlabel);
-        return offset >= 0 && offset < length;
-      };
+    /* test for row label inclusion in column */
+    const has = function has(rlabel) {
+      const offset = getOffset(rlabel);
+      return offset >= 0 && offset < length;
+    };
 
-      const ihas = function ihas(offset) {
-        return offset >= 0 && offset < length;
-      };
+    const ihas = function ihas(offset) {
+      return offset >= 0 && offset < length;
+    };
 
-      /*
+    /*
       return first label (index) at which the value is found in this column,
       or undefined if not found.
 
       NOTE: not found return is DIFFERENT than the default Array.indexOf as
       -1 is a plausible Dataframe row/col label.
       */
-      const indexOf = function indexOf(value) {
-        const offset = column.indexOf(value);
-        if (offset === -1) {
-          return undefined;
-        }
-        return getLabel(offset);
-      };
+    const indexOf = function indexOf(value) {
+      const offset = column.indexOf(value);
+      if (offset === -1) {
+        return undefined;
+      }
+      return getLabel(offset);
+    };
 
-      /*
+    /*
       Summarize the column data. Lazy eval;
       */
-      const summarize = callOnceLazy(() =>
-        isTypedArray(column)
-          ? summarizeContinuous(column)
-          : summarizeCategorical(column)
-      );
+    const summarize = callOnceLazy(() =>
+      isTypedArray(column)
+        ? summarizeContinuous(column)
+        : summarizeCategorical(column)
+    );
 
-      get.summarize = summarize;
-      get.asArray = asArray;
-      get.has = has;
-      get.ihas = ihas;
-      get.indexOf = indexOf;
-      get.iget = iget;
-      return get;
+    get.summarize = summarize;
+    get.asArray = asArray;
+    get.has = has;
+    get.ihas = ihas;
+    get.indexOf = indexOf;
+    get.iget = iget;
+    return get;
+  }
+
+  __compile(accessors) {
+    /*
+    Compile data accessors for each column.
+
+    Use an existing accessor if provided, else compile a new one.
+    */
+    const { getOffset, getLabel } = this.rowIndex;
+    this.__columnsAccessor = this.__columns.map((column, idx) => {
+      if (accessors[idx]) {
+        return accessors[idx];
+      }
+      return Dataframe.__compileColumn(column, getOffset, getLabel);
     });
   }
 
@@ -237,7 +253,8 @@ class Dataframe {
       this.dims,
       [...this.__columns],
       this.rowIndex,
-      this.colIndex
+      this.colIndex,
+      [...this.__columnsAccessor]
     );
   }
 
@@ -273,7 +290,14 @@ class Dataframe {
     const columns = [...this.__columns];
     columns.push(colData);
     const colIndex = this.colIndex.withLabel(label);
-    return new this.constructor(dims, columns, rowIndex, colIndex);
+    const columnsAccessor = [...this.__columnsAccessor, undefined];
+    return new this.constructor(
+      dims,
+      columns,
+      rowIndex,
+      colIndex,
+      columnsAccessor
+    );
   }
 
   dropCol(label) {
@@ -287,7 +311,15 @@ class Dataframe {
     const columns = [...this.__columns];
     columns.splice(coffset, 1);
     const colIndex = this.colIndex.dropLabel(label);
-    return new this.constructor(dims, columns, this.rowIndex, colIndex);
+    const columnsAccessor = [...this.__columnsAccessor];
+    columnsAccessor.splice(coffset, 1);
+    return new this.constructor(
+      dims,
+      columns,
+      this.rowIndex,
+      colIndex,
+      columnsAccessor
+    );
   }
 
   static empty(rowIndex = null, colIndex = null) {
@@ -551,13 +583,19 @@ class Dataframe {
     /*
     map all columns in the dataframe, returning a new dataframe comprised of the
     return values, with the same index as the original dataframe.
+
+    callback MUST not modify the column, but instead return a mutated copy.
     */
-    const columnMap = this.__columns.map(callback);
+    const columns = this.__columns.map(callback);
+    const columnsAccessor = columns.map((c, idx) =>
+      this.__columns[idx] === c ? this.__columnsAccessor[idx] : undefined
+    );
     return new this.constructor(
       this.dims,
-      columnMap,
+      columns,
       this.rowIndex,
-      this.colIndex
+      this.colIndex,
+      columnsAccessor
     );
   }
 
