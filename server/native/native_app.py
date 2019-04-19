@@ -3,6 +3,7 @@ import sys
 import threading
 from cefpython3 import cefpython as cef
 import platform
+import werkzeug
 
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
@@ -37,12 +38,9 @@ def main():
     if MAC:
         settings["external_message_pump"] = True
 
-    datad = DataDaemon()
-    datad.start()
-
     cef.Initialize(settings)
     app = CefApplication(sys.argv)
-    main_window = MainWindow(datad)
+    main_window = MainWindow()
     main_window.show()
     main_window.activateWindow()
     main_window.raise_()
@@ -55,30 +53,47 @@ def main():
     sys.exit(0)
 
 
-class DataDaemon():
-    def __init__(self):
-        self.httpd = None
-        self.app = None
+class WorkerSignals(QObject):
+    '''
+    Defines the signals available from a running worker thread.
+    Supported signals are:
+    finished
+    No data
+    error
+    `tuple` (exctype, value, traceback.format_exc() )
+    result
+    `object` data returned from processing, anything
+    '''
+    finished = pyqtSignal()
+    error = pyqtSignal(tuple)
+    result = pyqtSignal(tuple)
 
-    def data_server(self):
+# TODO do I need to autodelete
+# TODO how to make it a daemon?
+class ServerRunWorker(QRunnable):
+    def __init__(self, app, *args, **kwargs):
+        super(ServerRunWorker, self).__init__()
+        self.app = app
+        self.signals = WorkerSignals()
+
+    @pyqtSlot()
+    def run(self):
         host = "127.0.0.1"
         port = 8000
         debug = False
         # TODO check if thread should have access to self?
         self.app.run(host=host, debug=debug, port=port, threaded=True)
 
-    def start(self):
-        from server.app.app import Server
-        server = Server()
-        self.app = server.create_app()
-        self.app.config.update(DATASET_TITLE="DEMO!")
+# noinspection PyUnresolvedReferences
+class DataLoadWorker(QRunnable):
+    def __init__(self, data, nav, *args, **kwargs):
+        super(DataLoadWorker, self).__init__()
+        self.data = data
+        self.nav = nav
+        self.signals = WorkerSignals()
 
-        # start server
-        self.httpd = threading.Thread(target=self.data_server, daemon=True)
-        self.httpd.start()
-
-    def load_data(self, data):
-        print("DataDaemon::load ", data)
+    @pyqtSlot()
+    def run(self):
         from server.app.scanpy_engine.scanpy_engine import ScanpyEngine
         args = {
             "layout": "umap",
@@ -88,22 +103,25 @@ class DataDaemon():
             "obs_names": None,
             "var_names": None,
         }
-        self.app.data = ScanpyEngine(data, args)
+        data_results = ScanpyEngine(self.data, args)
+        self.signals.result.emit((data_results, self.nav))
+        self.signals.finished.emit()
 
 # noinspection PyUnresolvedReferences
 class MainWindow(QMainWindow):
-    def __init__(self, datad):
+    def __init__(self):
         super(MainWindow, self).__init__(None)
+        self.threadpool = QThreadPool()
         self.cef_widget = None
         self.navigation_bar = None
-
-        # datad = data daemon
-        self.datad = datad
+        self.server = cellxgeneServer(self.threadpool)
+        self.server.setupApp()
         self.setWindowTitle("cellxgene")
 
         # Strong focus - accepts focus by tab & click
         self.setFocusPolicy(Qt.StrongFocus)
         self.setupLayout()
+
 
     def setupLayout(self):
         self.resize(WIDTH, HEIGHT)
@@ -152,6 +170,36 @@ class MainWindow(QMainWindow):
         self.cef_widget.browser = None
 
 
+
+class cellxgeneServer():
+    def __init__(self, threadPool):
+        self.app = None
+        self.threadpool = threadPool
+
+    def setupApp(self):
+        from server.app.app import Server
+        server = Server()
+        self.app = server.create_app()
+        self.app.config.update(DATASET_TITLE="DEMO!")
+        # Technically a race condition
+        self.runServer()
+
+    def runServer(self):
+        worker = ServerRunWorker(self.app)
+        self.threadpool.start(worker)
+
+    def loadData(self, file_name, nav):
+        worker = DataLoadWorker(file_name, nav)
+        worker.signals.result.connect(self.attachData)
+        self.threadpool.start(worker)
+
+    def attachData(self, results):
+        data = results[0]
+        nav = results[1]
+        self.app.data = data
+        nav()
+
+
 # noinspection PyUnresolvedReferences
 class CefWidget(CefWidgetParent):
     def __init__(self, parent=None):
@@ -185,7 +233,7 @@ class CefWidget(CefWidgetParent):
         window_info.SetAsChild(self.getHandle(), rect)
         # TODO better splash
         self.browser = cef.CreateBrowserSync(window_info,
-                                             url="http://localhost:8000/splash")
+                                             url="http://google.com")
 
     def getHandle(self):
         if self.hidden_window:
@@ -256,7 +304,6 @@ class LoadWidget(QFrame):
         self.setLayout(layout)
 
     def onLoad(self):
-        print("load!")
         options = QFileDialog.Options()
         # options |= QFileDialog.DontUseNativeDialog
         fileName, _ = QFileDialog.getOpenFileName(self,
@@ -264,10 +311,13 @@ class LoadWidget(QFrame):
         if fileName:
             # TODO handle this better
             # TODO thread this
-            self.cef_widget.parent.datad.load_data(fileName)
-            self.load.setEnabled(False)
+            self.cef_widget.parent.server.loadData(fileName, self.navigateToLocation)
             # TODO instead create cef_widget
-            self.cef_widget.browser.Navigate("http://localhost:8000/")
+
+
+    def navigateToLocation(self):
+        self.cef_widget.browser.Navigate("http://localhost:8000/")
+
 
     def createButton(self, name):
         return QPushButton(name)
