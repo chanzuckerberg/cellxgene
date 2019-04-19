@@ -9,7 +9,6 @@ import {
   upperBoundIndirect
 } from "./sort";
 import { makeSortIndex } from "./util";
-import quantile from "../quantile";
 
 class NotImplementedError extends Error {
   constructor(...params) {
@@ -112,13 +111,6 @@ export default class ImmutableTypedCrossfilter {
       selectionCache.freeDimension(id);
     }
     return new ImmutableTypedCrossfilter(data, dimensions, selectionCache);
-  }
-
-  quantile(name, q) {
-    const { dim } = this.dimensions[name];
-    if (q < 0 || q > 1)
-      throw new Error("quantile parameter must be >= 0 and <= 1");
-    return dim.quantile(q);
   }
 
   select(name, spec) {
@@ -305,10 +297,6 @@ class _ImmutableBaseDimension {
       `select mode ${mode} not implemented by dimension ${this.name}`
     );
   }
-
-  quantile() {
-    throw new Error(`quantile not supported by dimension ${this.name}`);
-  }
 }
 
 class ImmutableScalarDimension extends _ImmutableBaseDimension {
@@ -412,11 +400,6 @@ class ImmutableScalarDimension extends _ImmutableBaseDimension {
     ];
     if (r[0] < r[1]) ranges.push(r);
     return { ranges, index };
-  }
-
-  quantile(q) {
-    const { value, index } = this;
-    return value[quantile([q], index, true)[0]];
   }
 }
 

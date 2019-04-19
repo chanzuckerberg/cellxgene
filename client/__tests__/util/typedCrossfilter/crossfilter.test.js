@@ -261,16 +261,6 @@ describe("ImmutableTypedCrossfilter", () => {
     test("bad mode", () => {
       expect(() => p.select("type", { mode: "bad mode" })).toThrow(Error);
     });
-
-    /*
-    quantile
-    */
-    test("quantile", () => {
-      expect(p.quantile("tip", 0)).toEqual(0);
-      expect(p.quantile("tip", 0.5)).toEqual(0);
-      expect(p.quantile("tip", 0.7)).toEqual(100);
-      expect(p.quantile("tip", 1.0)).toEqual(200);
-    });
   });
 
   describe("enum dimension", () => {
