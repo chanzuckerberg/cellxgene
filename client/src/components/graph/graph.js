@@ -314,43 +314,62 @@ class Graph extends React.Component {
     dispatch(actions.resetInterface());
   };
 
-  handleClipPercentileMinValueChange = v => {
+  isClipDisabled = () => {
+    /*
+    return true if clip button should be disabled.
+    */
     const { pendingClipPercentiles } = this.state;
-    const { clipPercentileMax } = pendingClipPercentiles;
+    const clipPercentileMin = pendingClipPercentiles?.clipPercentileMin;
+    const clipPercentileMax = pendingClipPercentiles?.clipPercentileMax;
 
+    const { world } = this.props;
+    const currentClipMin = 100 * world?.clipQuantiles?.min;
+    const currentClipMax = 100 * world?.clipQuantiles?.max;
+
+    // if you change this test, be careful with logic around null / NaN handling.
+    const isDisabled =
+      !(clipPercentileMin < clipPercentileMax) ||
+      (clipPercentileMin === currentClipMin &&
+        clipPercentileMax === currentClipMax);
+
+    return isDisabled;
+  };
+
+  handleClipPercentileMinValueChange = v => {
     /*
     Ignore anything that isn't a legit number
     */
     if (!Number.isFinite(v)) return;
 
+    const { pendingClipPercentiles } = this.state;
+    const clipPercentileMax = pendingClipPercentiles?.clipPercentileMax;
+
     /*
     clamp to [0, currentClipPercentileMax]
     */
-    let min = v;
-    if (min >= clipPercentileMax) min = clipPercentileMax - 1;
-    if (min <= 0) min = 0;
-    const clipPercentileMin = Math.round(min);
+    if (v <= 0) v = 0;
+    if (v > 100) v = 100;
+    const clipPercentileMin = Math.round(v); // paranoia
     this.setState({
       pendingClipPercentiles: { clipPercentileMin, clipPercentileMax }
     });
   };
 
   handleClipPercentileMaxValueChange = v => {
-    const { pendingClipPercentiles } = this.state;
-    const { clipPercentileMin } = pendingClipPercentiles;
-
     /*
     Ignore anything that isn't a legit number
     */
     if (!Number.isFinite(v)) return;
 
+    const { pendingClipPercentiles } = this.state;
+    const clipPercentileMin = pendingClipPercentiles?.clipPercentileMin;
+
     /*
-    clamp to [currentClipPercentileMin, 100]
+    clamp to [0, 100]
     */
-    let max = v;
-    if (max <= clipPercentileMin) max = clipPercentileMin + 1;
-    if (max > 100) max = 100;
-    const clipPercentileMax = Math.round(max);
+    if (v < 0) v = 0;
+    if (v > 100) v = 100;
+    const clipPercentileMax = Math.round(v); // paranoia
 
     this.setState({
       pendingClipPercentiles: { clipPercentileMin, clipPercentileMax }
@@ -688,14 +707,20 @@ class Graph extends React.Component {
       libraryVersions,
       undoDisabled,
       redoDisabled,
-      selectionTool
+      selectionTool,
+      clipPercentileMin,
+      clipPercentileMax
     } = this.props;
     const { mode, pendingClipPercentiles } = this.state;
 
-    const clipPercentileMin =
-      pendingClipPercentiles?.clipPercentileMin ?? this.props.clipPercentileMin;
-    const clipPercentileMax =
-      pendingClipPercentiles?.clipPercentileMax ?? this.props.clipPercentileMax;
+    const clipMin =
+      pendingClipPercentiles?.clipPercentileMin ?? clipPercentileMin;
+    const clipMax =
+      pendingClipPercentiles?.clipPercentileMax ?? clipPercentileMax;
+    const activeClipClass =
+      clipPercentileMin > 0 || clipPercentileMax < 100
+        ? " bp3-intent-warning"
+        : "";
 
     // constants used to create selection tool button
     let selectionTooltip;
@@ -842,7 +867,7 @@ class Graph extends React.Component {
                   target={
                     <Button
                       type="button"
-                      className="bp3-button bp3-icon-timeline-bar-chart"
+                      className={`bp3-button bp3-icon-timeline-bar-chart ${activeClipClass}`}
                       style={{
                         cursor: "pointer"
                       }}
@@ -860,12 +885,12 @@ class Graph extends React.Component {
                         padding: 10
                       }}
                     >
-                      Clip all continuous values to percentile range
+                      <div>Clip all continuous values to percentile range</div>
                       <div
                         style={{
                           display: "flex",
-                          justifyContent: "flex-start",
-                          alignItems: "baseline",
+                          justifyContent: "space-between",
+                          alignItems: "center",
                           paddingTop: 5,
                           paddingBottom: 5
                         }}
@@ -875,15 +900,9 @@ class Graph extends React.Component {
                           onValueChange={
                             this.handleClipPercentileMinValueChange
                           }
-                          value={clipPercentileMin}
-                          min={0 - 1e-9}
-                          max={
-                            clipPercentileMax > 100
-                              ? 100
-                              : clipPercentileMax - 1 === clipPercentileMin
-                              ? clipPercentileMin
-                              : clipPercentileMax - 1
-                          }
+                          value={clipMin}
+                          min={0}
+                          max={100}
                           fill={false}
                           minorStepSize={null}
                         />
@@ -896,30 +915,26 @@ class Graph extends React.Component {
                           onValueChange={
                             this.handleClipPercentileMaxValueChange
                           }
-                          value={clipPercentileMax}
-                          min={
-                            clipPercentileMin < 0
-                              ? 0
-                              : clipPercentileMin + 1 === clipPercentileMax
-                              ? clipPercentileMax
-                              : clipPercentileMin + 1
-                          }
-                          max={100 + 1e-9}
+                          value={clipMax}
+                          min={0}
+                          max={100}
                           fill={false}
                           minorStepSize={null}
                         />
+                        <span style={{ marginRight: 5, marginLeft: 5 }}> </span>
+
+                        <Button
+                          type="button"
+                          className="bp3-button"
+                          disabled={this.isClipDisabled()}
+                          style={{
+                            cursor: "pointer"
+                          }}
+                          onClick={this.handleClipCommit}
+                        >
+                          Clip
+                        </Button>
                       </div>
-                      <Button
-                        type="button"
-                        className="bp3-button"
-                        style={{
-                          cursor: "pointer"
-                        }}
-                        onClick={this.handleClipCommit}
-                      >
-                        {" "}
-                        Clip histograms to range{" "}
-                      </Button>
                     </div>
                   }
                 />
