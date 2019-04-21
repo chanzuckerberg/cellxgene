@@ -23,6 +23,11 @@ import { makeContinuousDimensionName } from "../../util/nameCreators";
 }))
 class HistogramBrush extends React.Component {
   static getColumn(world, field, clipped = true) {
+    /*
+    Return the underlying Dataframe column for our field.   By default, 
+    returns the clipped column.   If clipped===false, will return the 
+    unclipped column.
+    */
     const obsAnnotations = clipped
       ? world.obsAnnotations
       : world.unclipped.obsAnnotations;
@@ -34,7 +39,9 @@ class HistogramBrush extends React.Component {
   }
 
   calcHistogramCache = memoize((world, field) => {
-    // recalculate expensive stuff
+    /*
+     recalculate expensive stuff, notably bins, summaries, etc.
+    */
     const histogramCache = {};
     const col = HistogramBrush.getColumn(world, field);
     const values = col.asArray();
@@ -66,8 +73,8 @@ class HistogramBrush extends React.Component {
 
     this.width = 340;
     this.height = 100;
-    this.marginBottom = 20;
-    this.marginRight = 40;
+    this.marginBottom = 20; // space for X axis & labels
+    this.marginRight = 40; // space for Y axis & labels
   }
 
   componentDidMount() {
