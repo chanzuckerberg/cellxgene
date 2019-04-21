@@ -443,7 +443,7 @@ class HistogramBrush extends React.Component {
         <div
           style={{
             display: "flex",
-            justifyContent: "space-around"
+            justifyContent: "space-between"
           }}
         >
           <span style={{ color: "red" }}>
