@@ -123,7 +123,6 @@ class Scatterplot extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
-    console.log("scatterplot::componentDidUpdate");
     const {
       world,
       crossfilter,
