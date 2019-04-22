@@ -66,20 +66,28 @@ from server.app.util.utils import custom_format_warning
     show_default=True,
     help="Relative expression cutoff used when selecting top N differentially expressed genes",
 )
+@click.option(
+    "--scripts",
+    default=[],
+    multiple=True,
+    help="Additional script files to include in html page",
+    show_default=True,
+)
 def launch(
-    data,
-    layout,
-    diffexp,
-    title,
-    verbose,
-    debug,
-    obs_names,
-    var_names,
-    open_browser,
-    port,
-    host,
-    max_category_items,
-    diffexp_lfc_cutoff,
+        data,
+        layout,
+        diffexp,
+        title,
+        verbose,
+        debug,
+        obs_names,
+        var_names,
+        open_browser,
+        port,
+        host,
+        max_category_items,
+        diffexp_lfc_cutoff,
+        scripts,
 ):
     """Launch the cellxgene data viewer.
     This web app lets you explore single-cell expression data.
@@ -106,6 +114,19 @@ def launch(
     else:
         warnings.formatwarning = custom_format_warning
 
+    if scripts:
+        click.echo(r"""
+/ / /\ \ \__ _ _ __ _ __ (_)_ __   __ _
+\ \/  \/ / _` | '__| '_ \| | '_ \ / _` |
+ \  /\  / (_| | |  | | | | | | | | (_| |
+  \/  \/ \__,_|_|  |_| |_|_|_| |_|\__, |
+                                  |___/
+The --scripts flag is intended for developers to include google analytics etc. You could be opening yourself to a
+security risk by including the --scripts flag. Make sure you trust the scripts that you are including.
+        """)
+        scripts_pretty = ", ".join(scripts)
+        click.confirm(f"Are you sure you want to inject these scripts: {scripts_pretty}?", abort=True)
+
     if not verbose:
         sys.tracebacklimit = 0
 
@@ -121,6 +142,7 @@ def launch(
 
     app = server.create_app()
     app.config.update(DATASET_TITLE=title)
+    app.config.update(SCRIPTS=scripts)
 
     if not verbose:
         log = logging.getLogger("werkzeug")

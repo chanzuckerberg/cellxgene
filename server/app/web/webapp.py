@@ -8,7 +8,8 @@ bp = Blueprint("webapp", __name__, template_folder="templates")
 @bp.route("/")
 def index():
     dataset_title = current_app.config["DATASET_TITLE"]
-    return render_template("index.html", datasetTitle=dataset_title)
+    scripts = current_app.config["SCRIPTS"]
+    return render_template("index.html", datasetTitle=dataset_title, SCRIPTS=scripts)
 
 
 @bp.route("/favicon.png")
