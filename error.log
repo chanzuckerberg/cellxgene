@@ -32,3 +32,178 @@ NameError: name 'app' is not defined
     browser = self.cef_widget.browser
 AttributeError: 'NoneType' object has no attribute 'browser'
 
+
+[2019-04-22 14:29:29] Traceback (most recent call last):
+  File "server/gui/main.py", line 149, in <module>
+    main()
+  File "server/gui/main.py", line 29, in main
+    main_window = MainWindow()
+  File "server/gui/main.py", line 49, in __init__
+    self.server.setup_app()
+  File "/Users/charlotteweaver/Documents/Git/cellxgene/server/gui/cxg_server.py", line 19, in setup_app
+    self.run_server()
+  File "/Users/charlotteweaver/Documents/Git/cellxgene/server/gui/cxg_server.py", line 23, in run_server
+    self.threadpool.start(worker)
+AttributeError: 'MainWindow' object has no attribute 'start'
+
+
+[2019-04-22 14:32:33] Traceback (most recent call last):
+  File "server/gui/main.py", line 126, in on_load
+    worker.signals.result.connect(self.on_data)
+AttributeError: 'LoadWidget' object has no attribute 'on_data'
+
+
+[2019-04-22 14:32:54] Traceback (most recent call last):
+  File "server/gui/main.py", line 129, in on_load
+    self.threadpool.start(worker)
+AttributeError: 'LoadWidget' object has no attribute 'threadpool'
+
+
+[2019-04-22 14:33:41] Traceback (most recent call last):
+  File "server/gui/main.py", line 129, in on_load
+    self.parent().threadpool.start(worker)
+AttributeError: 'QFrame' object has no attribute 'threadpool'
+
+
+[2019-04-22 14:36:09] Traceback (most recent call last):
+  File "server/gui/main.py", line 129, in on_load
+    self.parentWidget().threadpool.start(worker)
+AttributeError: 'QFrame' object has no attribute 'threadpool'
+
+
+[2019-04-22 14:37:50] Traceback (most recent call last):
+  File "server/gui/main.py", line 129, in on_load
+    self.parentWidget().threadpool.start(worker)
+AttributeError: 'QFrame' object has no attribute 'threadpool'
+
+
+[2019-04-22 14:38:20] Traceback (most recent call last):
+  File "server/gui/main.py", line 129, in on_load
+    self.parent().threadpool.start(worker)
+AttributeError: 'QFrame' object has no attribute 'threadpool'
+
+
+[2019-04-22 14:39:26] Traceback (most recent call last):
+  File "server/gui/main.py", line 129, in on_load
+    self.parent().threadpool.start(worker)
+AttributeError: 'QFrame' object has no attribute 'threadpool'
+
+
+[2019-04-22 14:46:10] Traceback (most recent call last):
+  File "server/gui/main.py", line 132, in on_load
+    self.parent().threadpool.start(worker)
+AttributeError: 'QFrame' object has no attribute 'threadpool'
+
+
+[2019-04-22 14:47:09] Traceback (most recent call last):
+  File "server/gui/main.py", line 132, in on_load
+    self.parent().thread_pool.start(worker)
+AttributeError: 'QFrame' object has no attribute 'thread_pool'
+
+
+[2019-04-22 14:48:04] Traceback (most recent call last):
+  File "server/gui/main.py", line 132, in on_load
+    self.parent().thread_pool.start(worker)
+AttributeError: 'QFrame' object has no attribute 'thread_pool'
+
+
+[2019-04-22 14:48:41] Traceback (most recent call last):
+  File "server/gui/main.py", line 132, in on_load
+    self.parent().thread_pool.start(worker)
+AttributeError: 'QFrame' object has no attribute 'thread_pool'
+
+
+[2019-04-22 14:51:35] Traceback (most recent call last):
+  File "server/gui/main.py", line 139, in on_data_success
+    self.window.server.attach_data()
+AttributeError: 'builtin_function_or_method' object has no attribute 'server'
+
+
+[2019-04-22 14:52:32] Traceback (most recent call last):
+  File "server/gui/main.py", line 140, in on_data_success
+    self.parent().server.attach_data()
+AttributeError: 'QFrame' object has no attribute 'server'
+
+
+[2019-04-22 14:53:07] Traceback (most recent call last):
+  File "server/gui/main.py", line 140, in on_data_success
+    self.parent().parent().server.attach_data()
+TypeError: attach_data() missing 1 required positional argument: 'data'
+
+
+[2019-04-22 14:53:35] Traceback (most recent call last):
+  File "server/gui/main.py", line 141, in on_data_success
+    self.navigate_to_location()
+  File "server/gui/main.py", line 147, in navigate_to_location
+    self.parent().cef_widget.browser.Navigate(location)
+AttributeError: 'QFrame' object has no attribute 'cef_widget'
+
+
+[2019-04-22 15:01:27] TypeError: on_data_success() missing 1 required positional argument: 'data'
+
+
+[2019-04-22 16:19:20] Traceback (most recent call last):
+  File "server/gui/main.py", line 130, in on_load
+    worker.result_signal.connect(self.on_data_success)
+AttributeError: 'PyQt5.QtCore.pyqtSignal' object has no attribute 'connect'
+
+
+[2019-04-23 10:29:07] Traceback (most recent call last):
+  File "server/gui/main.py", line 130, in on_load
+    worker.result_signal.connect(self.on_data_success)
+AttributeError: 'PyQt5.QtCore.pyqtSignal' object has no attribute 'connect'
+
+
+[2019-04-23 10:35:10] Traceback (most recent call last):
+  File "server/gui/main.py", line 130, in on_load
+    worker.result_signal.connect(self.on_data_success)
+AttributeError: 'PyQt5.QtCore.pyqtSignal' object has no attribute 'connect'
+
+
+[2019-04-23 10:38:19] Traceback (most recent call last):
+  File "/Users/charlotteweaver/Documents/Git/cellxgene/server/gui/cxg_server.py", line 47, in run
+    self.result_signal.emit(data_results)
+AttributeError: 'DataLoadWorker' object has no attribute 'result_signal'
+
+
+[2019-04-23 10:40:52] Traceback (most recent call last):
+  File "server/gui/main.py", line 161, in <module>
+    main()
+  File "server/gui/main.py", line 29, in main
+    main_window = MainWindow()
+  File "server/gui/main.py", line 49, in __init__
+    self.server.setup_app()
+  File "/Users/charlotteweaver/Documents/Git/cellxgene/server/gui/cxg_server.py", line 19, in setup_app
+    self.run_server()
+  File "/Users/charlotteweaver/Documents/Git/cellxgene/server/gui/cxg_server.py", line 23, in run_server
+    self.window().start(worker)
+AttributeError: 'cellxgeneServer' object has no attribute 'window'
+
+
+[2019-04-23 10:41:31] Traceback (most recent call last):
+  File "server/gui/main.py", line 149, in <module>
+    main()
+  File "server/gui/main.py", line 29, in main
+    main_window = MainWindow()
+  File "server/gui/main.py", line 49, in __init__
+    self.server.setup_app()
+  File "/Users/charlotteweaver/Documents/Git/cellxgene/server/gui/cxg_server.py", line 19, in setup_app
+    self.run_server()
+  File "/Users/charlotteweaver/Documents/Git/cellxgene/server/gui/cxg_server.py", line 24, in run_server
+    self.window().start(worker)
+AttributeError: 'cellxgeneServer' object has no attribute 'window'
+
+
+[2019-04-23 10:43:19] Traceback (most recent call last):
+  File "server/gui/main.py", line 149, in <module>
+    main()
+  File "server/gui/main.py", line 29, in main
+    main_window = MainWindow()
+  File "server/gui/main.py", line 49, in __init__
+    self.server.setup_app()
+  File "/Users/charlotteweaver/Documents/Git/cellxgene/server/gui/cxg_server.py", line 19, in setup_app
+    self.run_server()
+  File "/Users/charlotteweaver/Documents/Git/cellxgene/server/gui/cxg_server.py", line 24, in run_server
+    self.parent().start(worker)
+AttributeError: 'MainWindow' object has no attribute 'start'
+
