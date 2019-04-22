@@ -369,6 +369,10 @@ class HistogramBrush extends React.Component {
       min: unclippedRangeMin,
       max: unclippedRangeMax
     } = HistogramBrush.getColumn(world, field, false).summarize();
+    const unclippedRangeMinColor =
+      world.clipQuantiles.min === 0 ? "#bbb" : globals.blue;
+    const unclippedRangeMaxColor =
+      world.clipQuantiles.max === 1 ? "#bbb" : globals.blue;
 
     return (
       <div
@@ -386,7 +390,13 @@ class HistogramBrush extends React.Component {
           backgroundColor: zebra ? globals.lightestGrey : "white"
         }}
       >
-        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            paddingBottom: "8px"
+          }}
+        >
           {isDiffExp || isUserDefined ? (
             <span>
               <span
@@ -453,7 +463,7 @@ class HistogramBrush extends React.Component {
             justifyContent: "space-between"
           }}
         >
-          <span style={{ color: "red" }}>
+          <span style={{ color: unclippedRangeMinColor }}>
             min {unclippedRangeMin.toPrecision(4)}
           </span>
           <span
@@ -462,7 +472,7 @@ class HistogramBrush extends React.Component {
           >
             {field}
           </span>
-          <span style={{ color: "red" }}>
+          <span style={{ color: unclippedRangeMaxColor }}>
             max {unclippedRangeMax.toPrecision(4)}
           </span>
         </div>
