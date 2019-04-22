@@ -71,7 +71,8 @@ const saveOnActions = new Set([
   "store current cell selection as differential set 1",
   "store current cell selection as differential set 2",
 
-  "set World to current selection"
+  "set World to current selection",
+  "set clip quantiles"
 ]);
 
 /**
