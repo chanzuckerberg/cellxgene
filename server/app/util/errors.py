@@ -50,3 +50,12 @@ class ScanpyFileError(Exception):
 
     def __init__(self, message):
         self.message = message
+
+
+class DriverError(Exception):
+    """
+    Raised when file loaded into scanpy is misformatted
+    """
+
+    def __init__(self, message):
+        self.message = message

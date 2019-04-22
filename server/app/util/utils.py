@@ -1,5 +1,9 @@
+from functools import wraps
+
 from flask import json
 from numpy import float32, integer
+
+from server.app.util.errors import DriverError
 
 
 class Float32JSONEncoder(json.JSONEncoder):
@@ -28,3 +32,12 @@ def custom_format_warning(msg, *args, **kwargs):
 
 def jsonify_scanpy(data):
     return json.dumps(data, cls=Float32JSONEncoder, allow_nan=False)
+
+
+def requires_data(func):
+    @wraps(func)
+    def wrapped_function(self, *args, **kwargs):
+        if self.data is None:
+            raise DriverError(f"error data must be loaded before you call {func.__name__}")
+        return func(self, *args, **kwargs)
+    return wrapped_function

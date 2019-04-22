@@ -12,7 +12,7 @@ from server.app.util.errors import (
     PrepareError,
     ScanpyFileError,
 )
-from server.app.util.utils import jsonify_scanpy
+from server.app.util.utils import jsonify_scanpy, requires_data
 from server.app.scanpy_engine.diffexp import diffexp_ttest
 from server.app.util.fbs.matrix import encode_matrix_fbs
 
@@ -27,17 +27,26 @@ Sort order for methods
 
 
 class ScanpyEngine(CXGDriver):
-    def __init__(self, data, args):
+    def __init__(self, data=None, args={}):
         super().__init__(data, args)
-        self._alias_annotation_names(Axis.OBS, args["obs_names"])
-        self._alias_annotation_names(Axis.VAR, args["var_names"])
-        self._validate_data_types()
-        self._validate_data_calculations()
-        self.cell_count = self.data.shape[0]
-        self.gene_count = self.data.shape[1]
-        self.layout_options = ["umap", "tsne"]
-        self.diffexp_options = ["ttest"]
-        self._create_schema()
+        if self.data:
+            self._validate_and_initialize()
+
+    def update(self, data=None, args={}):
+        super().__init__(data, args)
+        if self.data:
+            self._validate_and_initialize()
+
+    @staticmethod
+    def _get_default_config():
+        return {
+            "layout": "umap",
+            "diffexp": "ttest",
+            "max_category_items": 100,
+            "obs_names": None,
+            "var_names": None,
+            "diffexp_lfc_cutoff": 0.01,
+        }
 
     def _alias_annotation_names(self, axis, name):
         """
@@ -95,6 +104,7 @@ class ScanpyEngine(CXGDriver):
                 return True
         return False
 
+    @requires_data
     def _create_schema(self):
         self.schema = {
             "dataframe": {
@@ -128,13 +138,12 @@ class ScanpyEngine(CXGDriver):
                     )
                 self.schema["annotations"][ax].append(ann_schema)
 
-    @staticmethod
-    def _load_data(data):
+    def _load_data(self, data):
         # Based on benchmarking, cache=True has no impact on perf.
         # Note: as of current scanpy/anndata release, setting backed='r' will
         # result in an error.  https://github.com/theislab/anndata/issues/79
         try:
-            result = sc.read(data, cache=True)
+            self.data = sc.read(data, cache=True)
         except ValueError:
             raise ScanpyFileError(
                 "File must be in the .h5ad format. Please read "
@@ -151,8 +160,18 @@ class ScanpyEngine(CXGDriver):
                 f"Error while loading file: {e}, File must be in the .h5ad format, please check "
                 f"that your input and try again."
             )
-        return result
 
+    @requires_data
+    def _validate_and_initialize(self):
+        self._alias_annotation_names(Axis.OBS, self.config["obs_names"])
+        self._alias_annotation_names(Axis.VAR, self.config["var_names"])
+        self._validate_data_types()
+        self._validate_data_calculations()
+        self.cell_count = self.data.shape[0]
+        self.gene_count = self.data.shape[1]
+        self._create_schema()
+
+    @requires_data
     def _validate_data_types(self):
         if self.data.X.dtype != "float32":
             warnings.warn(
@@ -176,7 +195,7 @@ class ScanpyEngine(CXGDriver):
                     )
                 if isinstance(datatype, CategoricalDtype):
                     category_num = len(curr_axis[ann].dtype.categories)
-                    if category_num > 500 and category_num > self.max_category_items:
+                    if category_num > 500 and category_num > self.config['max_category_items']:
                         warnings.warn(
                             f"{str(ax).title()} annotation '{ann}' has {category_num} categories, this may be "
                             f"cumbersome or slow to display. We recommend setting the "
@@ -184,16 +203,17 @@ class ScanpyEngine(CXGDriver):
                             f"annotations with more than 500 categories in the UI"
                         )
 
+    @requires_data
     def _validate_data_calculations(self):
-        layout_key = f"X_{self.layout_method}"
+        layout_key = f"X_{self.config['layout']}"
         try:
             assert layout_key in self.data.obsm_keys()
         except AssertionError:
             raise PrepareError(
-                f"Cannot find a field with coordinates for the {self.layout_method} layout requested. A different"
+                f"Cannot find a field with coordinates for the {self.config['layout']} layout requested. A different"
                 f" layout may have been computed. The requested layout must be pre-calculated and saved "
                 f"back in the h5ad file. You can run "
-                f"`cellxgene prepare --layout {self.layout_method} <datafile>` "
+                f"`cellxgene prepare --layout {self.config['layout']} <datafile>` "
                 f"to solve this problem. "
             )
 
@@ -220,7 +240,7 @@ class ScanpyEngine(CXGDriver):
         mask = np.zeros((count,), dtype=bool)
         for i in filter:
             if type(i) == list:
-                mask[i[0] : i[1]] = True
+                mask[i[0]: i[1]] = True
             else:
                 mask[i] = True
         return mask
@@ -241,6 +261,7 @@ class ScanpyEngine(CXGDriver):
             )
         return mask
 
+    @requires_data
     def _filter_to_mask(self, filter, use_slices=True):
         if use_slices:
             obs_selector = slice(0, self.data.n_obs)
@@ -260,6 +281,7 @@ class ScanpyEngine(CXGDriver):
                 )
         return obs_selector, var_selector
 
+    @requires_data
     def annotation_to_fbs_matrix(self, axis, fields=None):
         if axis == Axis.OBS:
             df = self.data.obs
@@ -269,6 +291,7 @@ class ScanpyEngine(CXGDriver):
             df = df[fields]
         return encode_matrix_fbs(df, col_idx=df.columns)
 
+    @requires_data
     def data_frame_to_fbs_matrix(self, filter, axis):
         """
         Retrieves data 'X' and returns in a flatbuffer Matrix.
@@ -295,6 +318,7 @@ class ScanpyEngine(CXGDriver):
             X = X[:, var_selector]
         return encode_matrix_fbs(X, col_idx=np.nonzero(var_selector)[0], row_idx=None)
 
+    @requires_data
     def diffexp_topN(self, obsFilterA, obsFilterB, top_n=None, interactive_limit=None):
         if Axis.VAR in obsFilterA or Axis.VAR in obsFilterB:
             raise FilterError("Observation filters may not contain vaiable conditions")
@@ -310,7 +334,7 @@ class ScanpyEngine(CXGDriver):
         if top_n is None:
             top_n = DEFAULT_TOP_N
         result = diffexp_ttest(
-            self.data, obs_mask_A, obs_mask_B, top_n, self.diffexp_lfc_cutoff
+            self.data, obs_mask_A, obs_mask_B, top_n, self.config['diffexp_lfc_cutoff']
         )
         try:
             return jsonify_scanpy(result)
@@ -319,6 +343,7 @@ class ScanpyEngine(CXGDriver):
                 "Error encoding differential expression to JSON"
             )
 
+    @requires_data
     def layout_to_fbs_matrix(self):
         """
         Return the default 2-D layout for cells as a FBS Matrix.
@@ -328,14 +353,14 @@ class ScanpyEngine(CXGDriver):
         * only returns Matrix in columnar layout
         """
         try:
-            full_embedding = self.data.obsm[f"X_{self.layout_method}"]
+            full_embedding = self.data.obsm[f"X_{self.config['layout']}"]
             if full_embedding.shape[1] > 2:
                 warnings.warn(f"Warning: found {full_embedding.shape[1]} \
                 components of embedding. Using the first two for layout display.")
             df_layout = full_embedding[:, :2]
         except ValueError as e:
             raise PrepareError(
-                f"Layout has not been calculated using {self.layout_method}, "
+                f"Layout has not been calculated using {self.config['layout']}, "
                 f"please prepare your datafile and relaunch cellxgene") from e
 
         normalized_layout = (df_layout - df_layout.min()) / (df_layout.max() - df_layout.min())

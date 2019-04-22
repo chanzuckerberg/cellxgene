@@ -7,6 +7,7 @@ import webbrowser
 
 import click
 
+from server.app.app import Server
 from server.app.util.errors import ScanpyFileError
 from server.app.util.utils import custom_format_warning
 
@@ -116,8 +117,9 @@ def launch(
     cellxgene_url = f"http://{host}:{port}"
 
     # Import Flask app
-    from server.app.app import app
+    server = Server()
 
+    app = server.create_app()
     app.config.update(DATASET_TITLE=title)
 
     if not verbose:
