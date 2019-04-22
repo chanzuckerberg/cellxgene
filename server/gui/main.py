@@ -74,7 +74,6 @@ class ServerRunWorker(QRunnable):
     def __init__(self, app, *args, **kwargs):
         super(ServerRunWorker, self).__init__()
         self.app = app
-        self.signals = WorkerSignals()
 
     @pyqtSlot()
     def run(self):
