@@ -61,8 +61,8 @@ export default class ImmutableTypedCrossfilter {
     return Object.keys(this.dimensions);
   }
 
-  dimension(name) {
-    return this.dimensions[name];
+  hasDimension(name) {
+    return !!this.dimensions[name];
   }
 
   addDimension(name, type, ...rest) {
