@@ -1,42 +1,19 @@
 # flake8: noqa F403, F405
 import sys
-from cefpython3 import cefpython as cef
+from os.path import splitext, basename
 
+from cefpython3 import cefpython as cef
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
 from server.gui.browser import CefWidget, CefApplication
-from server.gui.cxg_server import cellxgeneServer, DataLoadWorker
+from server.gui.cxg_server import cellxgeneServer, DataLoadWorker, ServerRunWorker
 from server.gui.utils import WINDOWS, LINUX, MAC
 
 # Configuration
 # TODO remember this or calculate it?
 WIDTH = 1024
 HEIGHT = 768
-
-# TODO make this cleaner
-# Document more
-# rename?
-def main():
-    sys.excepthook = cef.ExceptHook  # To shutdown all CEF processes on error
-    settings = {}
-    # Instead of timer loop
-    if MAC:
-        settings["external_message_pump"] = True
-
-    cef.Initialize(settings)
-    app = CefApplication(sys.argv)
-    main_window = MainWindow()
-    main_window.show()
-    main_window.activateWindow()
-    main_window.raise_()
-    app.exec_()
-    if not cef.GetAppSetting("external_message_pump"):
-        app.stopTimer()
-    del main_window  # Just to be safe, similarly to "del app"
-    del app  # Must destroy app object before calling Shutdown
-    cef.Shutdown()
-    sys.exit(0)
 
 # noinspection PyUnresolvedReferences
 class MainWindow(QMainWindow):
@@ -47,6 +24,7 @@ class MainWindow(QMainWindow):
         self.data_widget = None
         self.server = cellxgeneServer(self)
         self.server.setup_app()
+        self.run_server()
         self.setWindowTitle("cellxgene")
 
         # Strong focus - accepts focus by tab & click
@@ -94,26 +72,50 @@ class MainWindow(QMainWindow):
             self.cef_widget.browser.CloseBrowser(True)
             self.clear_browser_references()
 
+    def run_server(self):
+        worker = ServerRunWorker(self.server.app, host=self.server.host, port=self.server.port)
+        self.thread_pool.start(worker)
+
     def clear_browser_references(self):
         # Clear browser references that you keep anywhere in your
         # code. All references must be cleared for CEF to shutdown cleanly.
         self.cef_widget.browser = None
 
 
+# TODO make central location for methods?
+MODES = ["umap", "tsne", "draw_graph_fa", "draw_graph_fr", "diffmap", "phate"]
 class LoadWidget(QFrame):
     def __init__(self, parent):
         super(LoadWidget, self).__init__(parent=parent)
 
         # Init layout
+        load_ui_layout = QVBoxLayout()
+
         layout = QGridLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
-
-        self.load = QPushButton("load")
+        self.title = ""
+        self.label = QLabel("cellxgene")
+        layout.addWidget(self.label, 0, 0, 1, 3)
+        self.load = QPushButton("Open...")
         self.load.clicked.connect(self.on_load)
-        layout.addWidget(self.load, 0, 0)
+        layout.addWidget(self.load, 1, 2)
+        self.embedding_label = QLabel("Embedding: ")
+        layout.addWidget(self.embedding_label, 1, 0)
+        self.embeddings = QComboBox(self)
+        self.embeddings.currentIndexChanged.connect(self.update_embedding)
+        self.embeddings.addItems(MODES)
+        self.embedding_selection = MODES[0]
+        layout.addWidget(self.embeddings, 1, 1)
+
+        self.error_label = QLabel("")
+        layout.addWidget(self.error_label, 2, 1)
         # Layout
         self.setLayout(layout)
+
+    @pyqtSlot(int)
+    def update_embedding(self, idx):
+        self.embedding_selection = MODES[idx]
 
     @pyqtSlot()
     def on_load(self):
@@ -121,26 +123,46 @@ class LoadWidget(QFrame):
         # options |= QFileDialog.DontUseNativeDialog
         file_name, _ = QFileDialog.getOpenFileName(self,
                                                   "Open H5AD File", "", "H5AD Files (*.h5ad)", options=options)
+        self.title = splitext(basename(file_name))[0]
         # self.cef_widget.parent.server.load_data(fileName)
-        worker = DataLoadWorker(file_name)
+        worker = DataLoadWorker(file_name, self.embedding_selection)
         worker.signals.result.connect(self.on_data_success)
         worker.signals.error.connect(self.on_data_error)
         self.window().thread_pool.start(worker)
 
-    @pyqtSlot(object)
     def on_data_success(self, data):
-        self.window().server.attach_data(data)
+        self.window().server.attach_data(data, self.title)
         self.navigate_to_location()
 
-    @pyqtSlot()
-    def on_data_error(self):
-        print("Error loading data")
+    def on_data_error(self, err):
+        self.error_label.setText(err)
 
     def navigate_to_location(self, location="http://localhost:8000/"):
         self.window().cef_widget.browser.Navigate(location)
 
-    def create_button(self, name):
-        return QPushButton(name)
+# TODO make this cleaner
+# Document more
+# rename?
+def main():
+    sys.excepthook = cef.ExceptHook  # To shutdown all CEF processes on error
+    settings = {}
+    # Instead of timer loop
+    if MAC:
+        settings["external_message_pump"] = True
+
+    cef.Initialize(settings)
+    app = CefApplication(sys.argv)
+    main_window = MainWindow()
+    main_window.show()
+    main_window.activateWindow()
+    main_window.raise_()
+    app.exec_()
+    if not cef.GetAppSetting("external_message_pump"):
+        app.stopTimer()
+    del main_window  # Just to be safe, similarly to "del app"
+    del app  # Must destroy app object before calling Shutdown
+    cef.Shutdown()
+    sys.exit(0)
 
 if __name__ == '__main__':
     main()

@@ -19,5 +19,5 @@ class WorkerSignals(QObject):
     `object` data returned from processing, anything
     '''
     finished = pyqtSignal()
-    error = pyqtSignal(tuple)
+    error = pyqtSignal(str)
     result = pyqtSignal(object)
