@@ -12,7 +12,8 @@ import {
   Menu,
   MenuItem,
   Position,
-  NumericInput
+  NumericInput,
+  Icon
 } from "@blueprintjs/core";
 
 import * as globals from "../../globals";
@@ -49,6 +50,23 @@ import { World } from "../../util/stateManager";
   currentSelection: state.graphSelection.selection
 }))
 class Graph extends React.Component {
+  static isValidDigitKeyEvent(e) {
+    if (e.key === null) return true;
+    if (e.ctrlKey || e.altKey || e.metaKey) return true;
+
+    // concept borrowed from blueprint's numericInputUtils:
+    // keys that print a single character when pressed have a `key` name of
+    // length 1. every other key has a longer `key` name (e.g. "Backspace",
+    // "ArrowUp", "Shift"). since none of those keys can print a character
+    // to the field--and since they may have important native behaviors
+    // beyond printing a character--we don't want to disable their effects.
+    const isSingleCharKey = e.key.length === 1;
+    if (!isSingleCharKey) return true;
+
+    const key = e.key.charCodeAt(0) - 48; /* "0" */
+    return key >= 0 && key <= 9;
+  }
+
   constructor(props) {
     super(props);
     this.count = 0;
@@ -333,6 +351,16 @@ class Graph extends React.Component {
         clipPercentileMax === currentClipMax);
 
     return isDisabled;
+  };
+
+  handleClipOnKeyPress = e => {
+    /* 
+    allow only numbers, plus other critical keys which 
+    may be required to make a number 
+    */
+    if (!Graph.isValidDigitKeyEvent(e)) {
+      e.preventDefault();
+    }
   };
 
   handleClipPercentileMinValueChange = v => {
@@ -900,11 +928,21 @@ class Graph extends React.Component {
                           onValueChange={
                             this.handleClipPercentileMinValueChange
                           }
+                          onKeyPress={this.handleClipOnKeyPress}
                           value={clipMin}
                           min={0}
                           max={100}
                           fill={false}
                           minorStepSize={null}
+                          rightElement={
+                            <div style={{ padding: "4px 2px" }}>
+                              <Icon
+                                icon="percentage"
+                                intent="primary"
+                                iconSize={14}
+                              />
+                            </div>
+                          }
                         />
                         <span style={{ marginRight: 5, marginLeft: 5 }}>
                           {" "}
@@ -915,14 +953,23 @@ class Graph extends React.Component {
                           onValueChange={
                             this.handleClipPercentileMaxValueChange
                           }
+                          onKeyPress={this.handleClipOnKeyPress}
                           value={clipMax}
                           min={0}
                           max={100}
                           fill={false}
                           minorStepSize={null}
+                          rightElement={
+                            <div style={{ padding: "4px 2px" }}>
+                              <Icon
+                                icon="percentage"
+                                intent="primary"
+                                iconSize={14}
+                              />
+                            </div>
+                          }
                         />
                         <span style={{ marginRight: 5, marginLeft: 5 }}> </span>
-
                         <Button
                           type="button"
                           className="bp3-button"

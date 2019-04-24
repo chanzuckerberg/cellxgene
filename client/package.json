@@ -31,7 +31,7 @@
     "eslint-scope": "3.7.1"
   },
   "dependencies": {
-    "@blueprintjs/core": "^3.8.0",
+    "@blueprintjs/core": "^3.15.0",
     "@blueprintjs/icons": "^3.3.0",
     "@blueprintjs/select": "^3.8.0",
     "canvas-fit": "^1.5.0",
