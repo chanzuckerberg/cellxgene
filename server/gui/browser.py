@@ -46,8 +46,7 @@ class CefWidget(CefWidgetParent):
         rect = [0, 0, self.width(), self.height()]
         window_info.SetAsChild(self.getHandle(), rect)
         # TODO better splash
-        self.browser = cef.CreateBrowserSync(window_info,
-                                             url="http://google.com")
+        self.browser = cef.CreateBrowserSync(window_info)
 
     def getHandle(self):
         if self.hidden_window:

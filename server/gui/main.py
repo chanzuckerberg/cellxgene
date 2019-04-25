@@ -30,21 +30,22 @@ class MainWindow(QMainWindow):
         # Strong focus - accepts focus by tab & click
         self.setFocusPolicy(Qt.StrongFocus)
         self.setup_layout()
+        self.setupMenu()
 
     def setup_layout(self):
         self.resize(WIDTH, HEIGHT)
         self.cef_widget = CefWidget(self)
-        # TODO rename navigation bar
         self.data_widget = LoadWidget(self)
-        layout = QGridLayout()
-        layout.addWidget(self.cef_widget, 1, 0)
-        layout.addWidget(self.data_widget, 0, 0)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(0)
-        layout.setRowStretch(0, 0)
-        layout.setRowStretch(1, 1)
+        self.stacked_layout = QStackedLayout()
+        # self.stacked_layout.stackingMode = QStackedLayout.StackAll
+        self.stacked_layout.addWidget(self.data_widget)
+        self.stacked_layout.addWidget(self.cef_widget)
+        main_layout = QVBoxLayout()
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
+        main_layout.addLayout(self.stacked_layout)
         frame = QFrame()
-        frame.setLayout(layout)
+        frame.setLayout(main_layout)
         self.setCentralWidget(frame)
 
         if WINDOWS:
@@ -64,7 +65,19 @@ class MainWindow(QMainWindow):
             # cef widget in the layout with the container.
             self.container = QWidget.createWindowContainer(
                 self.cef_widget.hidden_window, parent=self)
-            layout.addWidget(self.container, 1, 0)
+            stacked_layout.addWidget(self.container, 1, 0)
+
+    def setupMenu(self):
+        main_menu = self.menuBar()
+        file_menu = main_menu.addMenu('File')
+        load_action = QAction("Load file...", self)
+        load_action.setStatusTip("Load file")
+        load_action.setShortcut("Ctrl+O")
+        load_action.triggered.connect(self.file_open)
+        file_menu.addAction(load_action)
+
+    def show_load(self):
+        self.stacked_layout.setCurrentIndex(0)
 
     def closeEvent(self, event):
         # Close browser (force=True) and free CEF reference
@@ -89,35 +102,60 @@ class LoadWidget(QFrame):
         super(LoadWidget, self).__init__(parent=parent)
 
         # Init layout
+        self.MAX_CONTENT_WIDTH = 500
         load_ui_layout = QVBoxLayout()
+        h_margin = int((WIDTH - self.MAX_CONTENT_WIDTH) / 2)
+        if h_margin < 10:
+            h_margin = 10
+        load_ui_layout.setContentsMargins(h_margin, 20, h_margin, 20)
+        logo_layout = QHBoxLayout()
+        logo_layout.setContentsMargins(0, 0, 0, 20)
 
-        layout = QGridLayout()
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(0)
+        load_layout = QGridLayout()
+        load_layout.setContentsMargins(0, 0, 0, 0)
+        load_layout.setSpacing(0)
+        message_layout = QHBoxLayout()
+        message_layout.setContentsMargins(0, 0, 0, 0)
+        # sizePolicy = QSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
+
         self.title = ""
         self.label = QLabel("cellxgene")
-        layout.addWidget(self.label, 0, 0, 1, 3)
-        self.load = QPushButton("Open...")
-        self.load.clicked.connect(self.on_load)
-        layout.addWidget(self.load, 1, 2)
-        self.embedding_label = QLabel("Embedding: ")
-        layout.addWidget(self.embedding_label, 1, 0)
+        logo_layout.addWidget(self.label)
+
+        # UI section
+        # TODO add load spinner
+        # TODO add cancel button to send back to browser (if available)
+        self.embedding_label = QLabel("embedding: ")
+        load_layout.addWidget(self.embedding_label, 0, 0)
+        self.file_label = QLabel("file: ")
+        load_layout.addWidget(self.file_label, 0, 1)
         self.embeddings = QComboBox(self)
         self.embeddings.currentIndexChanged.connect(self.update_embedding)
         self.embeddings.addItems(MODES)
         self.embedding_selection = MODES[0]
-        layout.addWidget(self.embeddings, 1, 1)
+        load_layout.addWidget(self.embeddings, 1, 0)
 
+        self.load = QPushButton("Open...")
+        self.load.clicked.connect(self.on_load)
+        load_layout.addWidget(self.load, 1, 1)
+
+
+        # Error section
         self.error_label = QLabel("")
-        layout.addWidget(self.error_label, 2, 1)
-        # Layout
-        self.setLayout(layout)
+        self.error_label.setWordWrap(True)
+        self.error_label.setFixedWidth(self.MAX_CONTENT_WIDTH)
+        message_layout.addWidget(self.error_label, alignment=Qt.AlignTop)
 
-    @pyqtSlot(int)
+        # Layout
+        for l in [logo_layout, load_layout, message_layout ]:
+            load_ui_layout.addLayout(l)
+
+        load_ui_layout.setStretch(2, 10)
+        self.setLayout(load_ui_layout)
+
     def update_embedding(self, idx):
         self.embedding_selection = MODES[idx]
 
-    @pyqtSlot()
     def on_load(self):
         options = QFileDialog.Options()
         # options |= QFileDialog.DontUseNativeDialog
@@ -133,9 +171,12 @@ class LoadWidget(QFrame):
     def on_data_success(self, data):
         self.window().server.attach_data(data, self.title)
         self.navigate_to_location()
+        # Reveal browser
+        self.window().stacked_layout.setCurrentIndex(1)
 
     def on_data_error(self, err):
-        self.error_label.setText(err)
+        self.error_label.setText(f"Error: {err}")
+        self.error_label.resize(self.MAX_CONTENT_WIDTH, self.error_label.height())
 
     def navigate_to_location(self, location="http://localhost:8000/"):
         self.window().cef_widget.browser.Navigate(location)
