@@ -1,7 +1,7 @@
 /*
 quantiles - calculate quantiles for the typed array.
 
-Currently interpolates to 'higher' value.
+Currently interpolates to 'lower' value.
 
 Arguments:
 
