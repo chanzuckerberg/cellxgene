@@ -51,6 +51,13 @@ import { World } from "../../util/stateManager";
 }))
 class Graph extends React.Component {
   static isValidDigitKeyEvent(e) {
+    /*
+    Return true if this event is necessary to enter a percent number input.
+    Return false if not.
+
+    Returns true for events with keys: backspace, control, alt, meta, [0-9],
+    or events that don't have a key.
+    */
     if (e.key === null) return true;
     if (e.ctrlKey || e.altKey || e.metaKey) return true;
 
