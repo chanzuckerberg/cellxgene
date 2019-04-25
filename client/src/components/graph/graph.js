@@ -855,12 +855,10 @@ class Graph extends React.Component {
                 />
               </Tooltip>
             </div>
-            <span
+            <div
+              className="bp3-button-group"
               style={{
-                marginLeft: 10,
-                display: "flex",
-                justifyContent: "flex-end",
-                alignItems: "baseline"
+                marginLeft: 10
               }}
             >
               <Tooltip content="Undo" position="left">
@@ -889,13 +887,11 @@ class Graph extends React.Component {
                   }}
                 />
               </Tooltip>
-            </span>
-            <span
+            </div>
+            <div
+              className="bp3-button-group"
               style={{
-                marginLeft: 10,
-                display: "flex",
-                justifyContent: "flex-end",
-                alignItems: "baseline"
+                marginLeft: 10
               }}
             >
               <Tooltip content="Visualization settings" position="left">
@@ -994,9 +990,9 @@ class Graph extends React.Component {
                   }
                 />
               </Tooltip>
-            </span>
+            </div>
 
-            <div style={{ marginLeft: 10 }}>
+            <div style={{ marginLeft: 10 }} className="bp3-button-group">
               <Popover
                 content={
                   <Menu>
