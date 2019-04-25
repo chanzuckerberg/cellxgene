@@ -344,7 +344,8 @@ class Graph extends React.Component {
     const currentClipMin = 100 * world?.clipQuantiles?.min;
     const currentClipMax = 100 * world?.clipQuantiles?.max;
 
-    // if you change this test, be careful with logic around null / NaN handling.
+    // if you change this test, be careful with logic around
+    // comparisons between undefined / NaN handling.
     const isDisabled =
       !(clipPercentileMin < clipPercentileMax) ||
       (clipPercentileMin === currentClipMin &&
