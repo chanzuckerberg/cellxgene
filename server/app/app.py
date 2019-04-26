@@ -25,6 +25,7 @@ class Server:
         # Config
         SECRET_KEY = os.environ.get("CXG_SECRET_KEY", default="SparkleAndShine")
         app.config.update(SECRET_KEY=SECRET_KEY)
+        app.config.update(SCRIPTS=[])
 
         resources = get_api_resources()
         app.register_blueprint(webapp.bp)

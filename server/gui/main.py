@@ -73,7 +73,7 @@ class MainWindow(QMainWindow):
         load_action = QAction("Load file...", self)
         load_action.setStatusTip("Load file")
         load_action.setShortcut("Ctrl+O")
-        load_action.triggered.connect(self.file_open)
+        load_action.triggered.connect(self.show_load)
         file_menu.addAction(load_action)
 
     def show_load(self):
