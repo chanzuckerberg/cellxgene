@@ -48,17 +48,6 @@ class ScanpyEngine(CXGDriver):
             "diffexp_lfc_cutoff": 0.01,
         }
 
-    @staticmethod
-    def _get_default_config():
-        return {
-            "layout": "umap",
-            "diffexp": "ttest",
-            "max_category_items": 100,
-            "obs_names": None,
-            "var_names": None,
-            "diffexp_lfc_cutoff": 0.01,
-        }
-
     def _alias_annotation_names(self, axis, name):
         """
         Do all user-specified annotation aliasing.
