@@ -21,9 +21,9 @@ function gt(a, b) {
 }
 
 /*
-insertion sort, used for small arrays (controlled by SmallArray constant)
+insertion sort, used for small arrays (controlled by SMALL_ARRAY constant)
 */
-const SmallArray = 32;
+const SMALL_ARRAY = 32;
 function insertionsort(a, lo, hi) {
   for (let i = lo + 1; i < hi + 1; i += 1) {
     const x = a[i];
@@ -78,7 +78,7 @@ function insertionsortFloatsIndirect(a, s, lo, hi) {
 Quicksort - used for larger arrays
 */
 function quicksort(a, lo, hi) {
-  if (hi - lo < SmallArray) {
+  if (hi - lo < SMALL_ARRAY) {
     return insertionsort(a, lo, hi);
   }
   if (lo < hi) {
@@ -108,7 +108,7 @@ function quicksort(a, lo, hi) {
 }
 
 function quicksortFloats(a, lo, hi) {
-  if (hi - lo < SmallArray) {
+  if (hi - lo < SMALL_ARRAY) {
     return insertionsortFloats(a, lo, hi);
   }
   if (lo < hi) {
@@ -138,7 +138,7 @@ function quicksortFloats(a, lo, hi) {
 }
 
 function quicksortIndirect(a, s, lo, hi) {
-  if (hi - lo < SmallArray) {
+  if (hi - lo < SMALL_ARRAY) {
     return insertionsortIndirect(a, s, lo, hi);
   }
   if (lo < hi) {
@@ -169,7 +169,7 @@ function quicksortIndirect(a, s, lo, hi) {
 }
 
 function quicksortFloatsIndirect(a, s, lo, hi) {
-  if (hi - lo < SmallArray) {
+  if (hi - lo < SMALL_ARRAY) {
     return insertionsortFloatsIndirect(a, s, lo, hi);
   }
   if (lo < hi) {
@@ -208,8 +208,7 @@ export function sortArray(arr) {
     return quicksort(arr, 0, arr.length - 1);
   }
   if (isTypedArray(arr)) {
-    const { constructor } = arr;
-    if (constructor === Float32Array || constructor === Float64Array) {
+    if (isFpTypedArray(arr)) {
       return quicksortFloats(arr, 0, arr.length - 1);
     }
     return quicksort(arr, 0, arr.length - 1);
@@ -219,9 +218,6 @@ export function sortArray(arr) {
 }
 
 export function sortIndex(index, source) {
-  if (Array.isArray(source)) {
-    return quicksortIndirect(index, source, 0, index.length - 1);
-  }
   if (isFpTypedArray(source))
     return quicksortFloatsIndirect(index, source, 0, index.length - 1);
   return quicksortIndirect(index, source, 0, index.length - 1);
