@@ -1,5 +1,5 @@
 import {
-  sort,
+  sortArray,
   sortIndex,
   lowerBound,
   upperBound,
@@ -33,7 +33,7 @@ function fillRand(arr) {
   return arr;
 }
 
-describe("sort", () => {
+describe("sortArray", () => {
   describe("JS vals", () => {
     [
       [true, false],
@@ -43,7 +43,7 @@ describe("sort", () => {
       ["a", NaN, null, pInf]
     ].map((val, idx) =>
       test(`JS vals ${idx}`, () => {
-        expect(sort(val)).toMatchObject(val.sort());
+        expect(sortArray(val)).toMatchObject(val.sort());
       })
     );
   });
@@ -51,33 +51,35 @@ describe("sort", () => {
   describe("finite numbers", () => {
     [Array, Float32Array, Uint32Array, Int32Array, Float64Array].map(Type =>
       test(Type.name, () => {
-        expect(sort(Type.from([6, 5, 4, 3, 2, 1, 0]))).toMatchObject(
+        expect(sortArray(Type.from([6, 5, 4, 3, 2, 1, 0]))).toMatchObject(
           Type.from([0, 1, 2, 3, 4, 5, 6])
         );
 
-        expect(sort(Type.from([6, 5, 4, 3, 2, 1]))).toMatchObject(
+        expect(sortArray(Type.from([6, 5, 4, 3, 2, 1]))).toMatchObject(
           Type.from([1, 2, 3, 4, 5, 6])
         );
 
         const source = fillRand(new Type(1000));
-        expect(sort(Type.from(source))).toMatchObject(Type.from(source).sort());
+        expect(sortArray(Type.from(source))).toMatchObject(
+          Type.from(source).sort()
+        );
       })
     );
   });
 
   describe("non-finite numbers", () => {
     test("inifinity", () => {
-      expect(sort(new Float32Array([pInf, nInf, 0, 1, 2]))).toMatchObject(
+      expect(sortArray(new Float32Array([pInf, nInf, 0, 1, 2]))).toMatchObject(
         new Float32Array([nInf, 0, 1, 2, pInf])
       );
-      expect(sort(new Float32Array([pInf, nInf, pInf, nInf]))).toMatchObject(
-        new Float32Array([nInf, nInf, pInf, pInf])
-      );
       expect(
-        sort(new Float32Array([pInf, nInf, pInf, nInf, pInf]))
+        sortArray(new Float32Array([pInf, nInf, pInf, nInf]))
+      ).toMatchObject(new Float32Array([nInf, nInf, pInf, pInf]));
+      expect(
+        sortArray(new Float32Array([pInf, nInf, pInf, nInf, pInf]))
       ).toMatchObject(new Float32Array([nInf, nInf, pInf, pInf, pInf]));
       expect(
-        sort(
+        sortArray(
           new Float32Array(100).fill(Infinity, 0, 50).fill(-Infinity, 50, 100)
         )
       ).toMatchObject(
@@ -85,35 +87,35 @@ describe("sort", () => {
       );
     });
     test("NaN", () => {
-      expect(sort(new Float64Array([NaN, 2, 1, 0]))).toMatchObject(
+      expect(sortArray(new Float64Array([NaN, 2, 1, 0]))).toMatchObject(
         new Float64Array([0, 1, 2, NaN])
       );
-      expect(sort(new Float32Array([NaN, 2, 1, 0]))).toMatchObject(
+      expect(sortArray(new Float32Array([NaN, 2, 1, 0]))).toMatchObject(
         new Float32Array([0, 1, 2, NaN])
       );
-      expect(sort(new Float32Array([NaN, 2, NaN, 1, 0]))).toMatchObject(
+      expect(sortArray(new Float32Array([NaN, 2, NaN, 1, 0]))).toMatchObject(
         new Float32Array([0, 1, 2, NaN, NaN])
       );
-      expect(sort(new Float32Array([NaN, 2, 1, NaN, 0]))).toMatchObject(
+      expect(sortArray(new Float32Array([NaN, 2, 1, NaN, 0]))).toMatchObject(
         new Float32Array([0, 1, 2, NaN, NaN])
       );
       expect(
-        sort(fillRange(new Float32Array(100)).fill(NaN, 0, 10))
+        sortArray(fillRange(new Float32Array(100)).fill(NaN, 0, 10))
       ).toMatchObject(fillRange(new Float32Array(100), 10).fill(NaN, 90, 100));
     });
 
     test("mixed numbers", () => {
-      expect(sort(new Float32Array([NaN, pInf, nInf, NaN, NaN]))).toMatchObject(
-        new Float32Array([nInf, pInf, NaN, NaN, NaN])
-      );
       expect(
-        sort(new Float32Array([NaN, pInf, nInf, NaN, 1, NaN, 2]))
+        sortArray(new Float32Array([NaN, pInf, nInf, NaN, NaN]))
+      ).toMatchObject(new Float32Array([nInf, pInf, NaN, NaN, NaN]));
+      expect(
+        sortArray(new Float32Array([NaN, pInf, nInf, NaN, 1, NaN, 2]))
       ).toMatchObject(new Float32Array([nInf, 1, 2, pInf, NaN, NaN, NaN]));
       expect(
-        sort(new Float32Array([NaN, pInf, nInf, 0, 1, NaN, 2]))
+        sortArray(new Float32Array([NaN, pInf, nInf, 0, 1, NaN, 2]))
       ).toMatchObject(new Float32Array([nInf, 0, 1, 2, pInf, NaN, NaN]));
       expect(
-        sort(
+        sortArray(
           fillRange(new Float32Array(100))
             .fill(NaN, 0, 10)
             .fill(Infinity, 10, 20)

@@ -12,13 +12,13 @@ Arguments:
 
 */
 
-import { sort } from "./typedCrossfilter/sort";
+import { sortArray } from "./typedCrossfilter/sort";
 
 export default function quantile(quantArr, tarr, sorted = false) {
 	/*
 	start with the naive (sort) implementation.  Later, use a faster partition
 	*/
-	const arr = sorted ? tarr : sort(new tarr.constructor(tarr)); // copy
+	const arr = sorted ? tarr : sortArray(new tarr.constructor(tarr)); // copy
 	const len = arr.length;
 	return quantArr.map(q => {
 		if (q === 1) {

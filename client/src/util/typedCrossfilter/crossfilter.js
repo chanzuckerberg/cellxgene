@@ -3,7 +3,7 @@ import { polygonContains } from "d3";
 import PositiveIntervals from "./positiveIntervals";
 import BitArray from "./bitArray";
 import {
-  sort,
+  sortArray,
   lowerBound,
   lowerBoundIndirect,
   upperBoundIndirect
@@ -418,7 +418,7 @@ class ImmutableEnumDimension extends ImmutableScalarDimension {
     for (let i = 0; i < len; i += 1) {
       s.add(mapf(i, data));
     }
-    const enumIndex = sort(Array.from(s));
+    const enumIndex = sortArray(Array.from(s));
     this.enumIndex = enumIndex;
 
     // create dimension value array

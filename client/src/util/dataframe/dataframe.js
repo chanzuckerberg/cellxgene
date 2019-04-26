@@ -1,6 +1,6 @@
 import { IdentityInt32Index, isLabelIndex } from "./labelIndex";
 // weird cross-dependency that we should clean up someday...
-import { sort } from "../typedCrossfilter/sort";
+import { sortArray } from "../typedCrossfilter/sort";
 import { isTypedArray, isArrayOrTypedArray, callOnceLazy } from "./util";
 import { summarizeContinuous, summarizeCategorical } from "./summarize";
 
@@ -348,7 +348,7 @@ class Dataframe {
       if (!offsets) {
         return [null, null];
       }
-      const sortedOffsets = sort(offsets);
+      const sortedOffsets = sortArray(offsets);
       const sortedLabels = new Array(sortedOffsets.length);
       for (let i = 0, l = sortedOffsets.length; i < l; i += 1) {
         sortedLabels[i] = index.getLabel(sortedOffsets[i]);

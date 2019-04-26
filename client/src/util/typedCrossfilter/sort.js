@@ -201,12 +201,9 @@ function quicksortFloatsIndirect(a, s, lo, hi) {
 
 /*
 Convenience wrappers, handling optimization paths and default
-handlers for NaN comparisons.
+handlers for NaN comparisons.  Sorts in place.
 */
-export function sort(arr, comparator = undefined) {
-  if (comparator !== undefined) {
-    return arr.sort(arr, comparator);
-  }
+export function sortArray(arr) {
   if (Array.isArray(arr)) {
     return quicksort(arr, 0, arr.length - 1);
   }
@@ -217,8 +214,8 @@ export function sort(arr, comparator = undefined) {
     }
     return quicksort(arr, 0, arr.length - 1);
   }
-  /* else, punt */
-  return arr.sort(arr);
+  /* else unsupported */
+  throw new Error("sortArray recieved unsupported object type");
 }
 
 export function sortIndex(index, source) {

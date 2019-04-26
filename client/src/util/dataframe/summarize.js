@@ -7,7 +7,7 @@ partition at some point.
 */
 
 import quantile from "../quantile";
-import { sort } from "../typedCrossfilter/sort";
+import { sortArray } from "../typedCrossfilter/sort";
 
 const centileNames = new Array(101).fill(0).map((v, idx) => idx / 100);
 
@@ -20,7 +20,7 @@ export function summarizeContinuous(col) {
   let percentiles;
   if (col) {
     // -Inf < finite < Inf < NaN
-    const sortedCol = sort(new col.constructor(col));
+    const sortedCol = sortArray(new col.constructor(col));
 
     // count non-finites, which are at each end of sorted data
     for (let i = sortedCol.length - 1; i >= 0; i -= 1) {
