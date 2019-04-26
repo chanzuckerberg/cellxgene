@@ -1,8 +1,8 @@
 # flake8: noqa F403, F405
+from cefpython3 import cefpython as cef
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-from cefpython3 import cefpython as cef
 
 from server.gui.utils import WINDOWS, LINUX
 
