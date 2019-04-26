@@ -2,6 +2,7 @@ import platform
 
 from PyQt5.QtCore import QObject, pyqtSignal
 
+# Detect OS
 WINDOWS = (platform.system() == "Windows")
 LINUX = (platform.system() == "Linux")
 MAC = (platform.system() == "Darwin")
@@ -14,7 +15,7 @@ class WorkerSignals(QObject):
     finished
     No data
     error
-    `tuple` (exctype, value, traceback.format_exc() )
+    `str` error message
     result
     `object` data returned from processing, anything
     '''

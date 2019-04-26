@@ -15,6 +15,7 @@ from server.gui.utils import WINDOWS, LINUX, MAC
 WIDTH = 1024
 HEIGHT = 768
 
+
 # noinspection PyUnresolvedReferences
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -24,20 +25,19 @@ class MainWindow(QMainWindow):
         self.data_widget = None
         self.server = cellxgeneServer(self)
         self.server.setup_app()
-        self.run_server()
+        self.runServer()
         self.setWindowTitle("cellxgene")
 
         # Strong focus - accepts focus by tab & click
         self.setFocusPolicy(Qt.StrongFocus)
-        self.setup_layout()
+        self.setupLayout()
         self.setupMenu()
 
-    def setup_layout(self):
+    def setupLayout(self):
         self.resize(WIDTH, HEIGHT)
         self.cef_widget = CefWidget(self)
         self.data_widget = LoadWidget(self)
         self.stacked_layout = QStackedLayout()
-        # self.stacked_layout.stackingMode = QStackedLayout.StackAll
         self.stacked_layout.addWidget(self.data_widget)
         self.stacked_layout.addWidget(self.cef_widget)
         main_layout = QVBoxLayout()
@@ -73,23 +73,23 @@ class MainWindow(QMainWindow):
         load_action = QAction("Load file...", self)
         load_action.setStatusTip("Load file")
         load_action.setShortcut("Ctrl+O")
-        load_action.triggered.connect(self.show_load)
+        load_action.triggered.connect(self.showLoad)
         file_menu.addAction(load_action)
 
-    def show_load(self):
+    def showLoad(self):
         self.stacked_layout.setCurrentIndex(0)
 
     def closeEvent(self, event):
         # Close browser (force=True) and free CEF reference
         if self.cef_widget.browser:
             self.cef_widget.browser.CloseBrowser(True)
-            self.clear_browser_references()
+            self.clearBrowserReferences()
 
-    def run_server(self):
+    def runServer(self):
         worker = ServerRunWorker(self.server.app, host=self.server.host, port=self.server.port)
         self.thread_pool.start(worker)
 
-    def clear_browser_references(self):
+    def clearBrowserReferences(self):
         # Clear browser references that you keep anywhere in your
         # code. All references must be cleared for CEF to shutdown cleanly.
         self.cef_widget.browser = None
@@ -97,6 +97,8 @@ class MainWindow(QMainWindow):
 
 # TODO make central location for methods?
 MODES = ["umap", "tsne", "draw_graph_fa", "draw_graph_fr", "diffmap", "phate"]
+
+
 class LoadWidget(QFrame):
     def __init__(self, parent):
         super(LoadWidget, self).__init__(parent=parent)
@@ -116,7 +118,6 @@ class LoadWidget(QFrame):
         load_layout.setSpacing(0)
         message_layout = QHBoxLayout()
         message_layout.setContentsMargins(0, 0, 0, 0)
-        # sizePolicy = QSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
 
         self.title = ""
         self.label = QLabel("cellxgene")
@@ -138,7 +139,6 @@ class LoadWidget(QFrame):
         self.load = QPushButton("Open...")
         self.load.clicked.connect(self.on_load)
         load_layout.addWidget(self.load, 1, 1)
-
 
         # Error section
         self.error_label = QLabel("")
@@ -162,7 +162,6 @@ class LoadWidget(QFrame):
         file_name, _ = QFileDialog.getOpenFileName(self,
                                                   "Open H5AD File", "", "H5AD Files (*.h5ad)", options=options)
         self.title = splitext(basename(file_name))[0]
-        # self.cef_widget.parent.server.load_data(fileName)
         worker = DataLoadWorker(file_name, self.embedding_selection)
         worker.signals.result.connect(self.on_data_success)
         worker.signals.error.connect(self.on_data_error)
@@ -181,16 +180,16 @@ class LoadWidget(QFrame):
     def navigate_to_location(self, location="http://localhost:8000/"):
         self.window().cef_widget.browser.Navigate(location)
 
-# TODO make this cleaner
-# Document more
-# rename?
+
 def main():
+    # This generates an error.log file on error
     sys.excepthook = cef.ExceptHook  # To shutdown all CEF processes on error
     settings = {}
     # Instead of timer loop
     if MAC:
         settings["external_message_pump"] = True
 
+    # Create and launch cef browser and qt window
     cef.Initialize(settings)
     app = CefApplication(sys.argv)
     main_window = MainWindow()
@@ -198,12 +197,16 @@ def main():
     main_window.activateWindow()
     main_window.raise_()
     app.exec_()
+
+    # Clean up on close
     if not cef.GetAppSetting("external_message_pump"):
         app.stopTimer()
+    # TODO clean up threads when we switch threading model
     del main_window  # Just to be safe, similarly to "del app"
     del app  # Must destroy app object before calling Shutdown
     cef.Shutdown()
     sys.exit(0)
+
 
 if __name__ == '__main__':
     main()
