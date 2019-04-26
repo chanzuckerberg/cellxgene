@@ -208,8 +208,8 @@ export function sortArray(arr) {
     return quicksort(arr, 0, arr.length - 1);
   }
   if (isTypedArray(arr)) {
-    const ctor = arr.constructor;
-    if (ctor === Float32Array || ctor === Float64Array) {
+    const { constructor } = arr;
+    if (constructor === Float32Array || constructor === Float64Array) {
       return quicksortFloats(arr, 0, arr.length - 1);
     }
     return quicksort(arr, 0, arr.length - 1);

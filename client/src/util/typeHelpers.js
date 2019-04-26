@@ -16,12 +16,12 @@ export function isTypedArray(x) {
 Test for float typed array, ie, Float32TypedArray or Float64TypedArray
 */
 export function isFpTypedArray(x) {
-	let ctor;
-	const ret =
+	let constructor;
+	const isFloatArray =
 		x &&
-		(ctor = x.constructor) &&
-		(ctor === Float32Array || ctor === Float64Array);
-	return ret;
+		({ constructor } = x) &&
+		(constructor === Float32Array || constructor === Float64Array);
+	return isFloatArray;
 }
 
 export function isArrayOrTypedArray(x) {
