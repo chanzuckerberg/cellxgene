@@ -11,8 +11,7 @@ import {
   Button,
   FormGroup,
   InputGroup,
-  ControlGroup,
-  NumericInput
+  ControlGroup
 } from "@blueprintjs/core";
 import { Suggest } from "@blueprintjs/select";
 import HistogramBrush from "../brushableHistogram";
@@ -23,7 +22,6 @@ import {
   keepAroundErrorToast
 } from "../framework/toasters";
 import ExpressionButtons from "./expressionButtons";
-import finiteExtent from "../../util/finiteExtent";
 
 const renderGene = (fuzzySortResult, { handleClick, modifiers, query }) => {
   if (!modifiers.matchesPredicate) {
