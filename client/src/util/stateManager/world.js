@@ -53,6 +53,8 @@ Notable keys in the world object:
 
 function templateWorld() {
   const obsAnnotations = Dataframe.Dataframe.empty();
+  const varAnnotations = Dataframe.Dataframe.empty();
+  const obsLayout = Dataframe.Dataframe.empty();
   const varData = Dataframe.Dataframe.empty(null, new Dataframe.KeyIndex());
   return {
     /* schema/version related */
@@ -63,10 +65,10 @@ function templateWorld() {
 
     /* annotations */
     obsAnnotations,
-    varAnnotations: Dataframe.Dataframe.empty(),
+    varAnnotations,
 
     /* layout of graph. Dataframe. */
-    obsLayout: Dataframe.Dataframe.empty(),
+    obsLayout,
 
     /* Var data columns - subset of all data (may be empty) */
     varData,
