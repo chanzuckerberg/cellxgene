@@ -5,19 +5,22 @@ Currently interpolates to 'lower' value.
 
 Arguments:
 
-	* q - array of quantiles to compute.
+	* qs - array of quantiles to compute.
 	* tarr - a typed array
+	* sorted - option bool.  If false (default), will assume array is not sorted.
+	 	If true, will assume it is sorted.
+
 */
 
 import { sort } from "./typedCrossfilter/sort";
 
-export default function quantile(qs, tarr, sorted = false) {
+export default function quantile(quantArr, tarr, sorted = false) {
 	/*
 	start with the naive (sort) implementation.  Later, use a faster partition
 	*/
 	const arr = sorted ? tarr : sort(new tarr.constructor(tarr)); // copy
 	const len = arr.length;
-	return qs.map(q => {
+	return quantArr.map(q => {
 		if (q === 1) {
 			return arr[len - 1];
 		}
