@@ -10,6 +10,7 @@ import click
 from server.app.app import Server
 from server.app.util.errors import ScanpyFileError
 from server.app.util.utils import custom_format_warning
+from server.utils.constants import MODES
 
 
 @click.command()
@@ -17,7 +18,7 @@ from server.app.util.utils import custom_format_warning
 @click.option(
     "--layout",
     "-l",
-    type=click.Choice(["umap", "tsne", "draw_graph_fa", "draw_graph_fr", "diffmap", "phate"]),
+    type=click.Choice(MODES),
     default="umap",
     show_default=True,
     help="Method for layout."
@@ -140,9 +141,8 @@ security risk by including the --scripts flag. Make sure you trust the scripts t
     # Import Flask app
     server = Server()
 
-    app = server.create_app()
-    app.config.update(DATASET_TITLE=title)
-    app.config.update(SCRIPTS=scripts)
+    server.create_app()
+    server.app.config.update(SCRIPTS=scripts)
 
     if not verbose:
         log = logging.getLogger("werkzeug")
@@ -167,7 +167,7 @@ security risk by including the --scripts flag. Make sure you trust the scripts t
     }
 
     try:
-        app.data = ScanpyEngine(data, args)
+        server.attach_data(ScanpyEngine(data, args), title=title)
     except ScanpyFileError as e:
         raise click.ClickException(f"{e}")
 
@@ -183,4 +183,4 @@ security risk by including the --scripts flag. Make sure you trust the scripts t
         f = open(devnull, "w")
         sys.stdout = f
 
-    app.run(host=host, debug=debug, port=port, threaded=True)
+    server.app.run(host=host, debug=debug, port=port, threaded=True)

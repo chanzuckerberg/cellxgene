@@ -5,22 +5,6 @@ from PyQt5.QtCore import QRunnable, pyqtSlot
 from server.gui.utils import WorkerSignals
 
 
-class cellxgeneServer():
-    def __init__(self, parent, host="127.0.0.1", port=8000):
-        self.app = None
-        self.host = host
-        self.port = port
-
-    def setup_app(self):
-        from server.app.app import Server
-        server = Server()
-        self.app = server.create_app()
-
-    def attach_data(self, data, title="Demo"):
-        self.app.config.update(DATASET_TITLE=title)
-        self.app.data = data
-
-
 class DataLoadWorker(QRunnable):
     def __init__(self, data_file, layout="umap", *args, **kwargs):
         super(DataLoadWorker, self).__init__()

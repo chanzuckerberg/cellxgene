@@ -14,21 +14,25 @@ class Server:
     def __init__(self):
         self.data = None
         self.cache = Cache(config={"CACHE_TYPE": "simple", "CACHE_DEFAULT_TIMEOUT": 860_000})
+        self.app = None
 
     def create_app(self):
-        app = Flask(__name__, static_folder="web/static")
-        app.json_encoder = Float32JSONEncoder
-        self.cache.init_app(app)
-        Compress(app)
-        CORS(app)
+        self.app = Flask(__name__, static_folder="web/static")
+        self.app.json_encoder = Float32JSONEncoder
+        self.cache.init_app(self.app)
+        Compress(self.app)
+        CORS(self.app)
 
         # Config
         SECRET_KEY = os.environ.get("CXG_SECRET_KEY", default="SparkleAndShine")
-        app.config.update(SECRET_KEY=SECRET_KEY)
-        app.config.update(SCRIPTS=[])
+        self.app.config.update(SECRET_KEY=SECRET_KEY)
+        self.app.config.update(SCRIPTS=[])
 
         resources = get_api_resources()
-        app.register_blueprint(webapp.bp)
-        app.register_blueprint(resources.blueprint)
-        app.add_url_rule("/", endpoint="index")
-        return app
+        self.app.register_blueprint(webapp.bp)
+        self.app.register_blueprint(resources.blueprint)
+        self.app.add_url_rule("/", endpoint="index")
+
+    def attach_data(self, data, title="Demo"):
+        self.app.config.update(DATASET_TITLE=title)
+        self.app.data = data

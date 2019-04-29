@@ -6,12 +6,16 @@ from cefpython3 import cefpython as cef
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
+from server.app.app import Server
 from server.gui.browser import CefWidget, CefApplication
-from server.gui.cxg_server import cellxgeneServer, DataLoadWorker, ServerRunWorker
+from server.gui.workers import DataLoadWorker, ServerRunWorker
 from server.gui.utils import WINDOWS, LINUX, MAC
+from server.utils.constants import MODES
+
 
 # Configuration
 # TODO remember this or calculate it?
+
 WIDTH = 1024
 HEIGHT = 768
 
@@ -23,8 +27,8 @@ class MainWindow(QMainWindow):
         self.thread_pool = QThreadPool()
         self.cef_widget = None
         self.data_widget = None
-        self.server = cellxgeneServer(self)
-        self.server.setup_app()
+        self.server = Server()
+        self.server.create_app()
         self.runServer()
         self.setWindowTitle("cellxgene")
 
@@ -59,7 +63,7 @@ class MainWindow(QMainWindow):
 
         if LINUX:
             # On Linux with PyQt5 the QX11EmbedContainer widget is
-            # no more available. An equivalent in Qt5 is to create
+            # no longer available. An equivalent in Qt5 is to create
             # a hidden window, embed CEF browser in it and then
             # create a container for that hidden window and replace
             # cef widget in the layout with the container.
@@ -86,17 +90,13 @@ class MainWindow(QMainWindow):
             self.clearBrowserReferences()
 
     def runServer(self):
-        worker = ServerRunWorker(self.server.app, host=self.server.host, port=self.server.port)
+        worker = ServerRunWorker(self.server.app, host="127.0.0.1", port=8000)
         self.thread_pool.start(worker)
 
     def clearBrowserReferences(self):
         # Clear browser references that you keep anywhere in your
         # code. All references must be cleared for CEF to shutdown cleanly.
         self.cef_widget.browser = None
-
-
-# TODO make central location for methods?
-MODES = ["umap", "tsne", "draw_graph_fa", "draw_graph_fr", "diffmap", "phate"]
 
 
 class LoadWidget(QFrame):
