@@ -36,5 +36,5 @@ setup(
         "Topic :: Scientific/Engineering :: Bio-Informatics",
     ],
     entry_points={"console_scripts": ["cellxgene = server.cli.cli:cli"]},
-    extras_require=dict(louvain=["python-igraph", "louvain>=0.6"]),
+    extras_require=dict(louvain=["python-igraph", "louvain>=0.6"], gui=["PyQt5>=5.12.1", "cefpython3>=66"]),
 )
