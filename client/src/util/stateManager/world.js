@@ -146,7 +146,11 @@ export function createWorldFromEntireUniverse(universe) {
 }
 
 /*
-clip dataframes based on quantiles
+clip dataframes based on quantiles.
+
+This is an in-place operation on the world object provided as an argument.
+The values in world.unclipped are clipped and assigned to world.obsAnnotations
+and world.varData.
 */
 function setClippedDataframes(world) {
   const { schema } = world;
@@ -171,7 +175,6 @@ function setClippedDataframes(world) {
     varDataQuantile,
     () => true
   );
-  return world;
 }
 
 /*
