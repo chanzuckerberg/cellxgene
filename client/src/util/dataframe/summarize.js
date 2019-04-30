@@ -9,6 +9,7 @@ partition at some point.
 import quantile from "../quantile";
 import { sortArray } from "../typedCrossfilter/sort";
 
+// [ 0, 0.01, 0.02, ..., 1.0]
 const centileNames = new Array(101).fill(0).map((v, idx) => idx / 100);
 
 export function summarizeContinuous(col) {
