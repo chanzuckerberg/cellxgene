@@ -12,7 +12,7 @@ const someData = [
     type: "tab",
     productIDs: ["001"],
     coords: [0, 0],
-    nonFiniteTest: 0.0
+    nonFinite: 0.0
   },
   {
     date: "2011-11-14T16:20:19Z",
@@ -22,7 +22,7 @@ const someData = [
     type: "tab",
     productIDs: ["001", "005"],
     coords: [0.4, 0.4],
-    nonFiniteTest: Number.NaN
+    nonFinite: Number.NaN
   },
   {
     date: "2011-11-14T16:28:54Z",
@@ -32,7 +32,7 @@ const someData = [
     type: "visa",
     productIDs: ["004", "005"],
     coords: [0.3, 0.1],
-    nonFiniteTest: Number.POSITIVE_INFINITY
+    nonFinite: Number.POSITIVE_INFINITY
   },
   {
     date: "2011-11-14T16:30:43Z",
@@ -42,7 +42,7 @@ const someData = [
     type: "tab",
     productIDs: ["001", "002"],
     coords: [0.392, 0.1],
-    nonFiniteTest: Number.NEGATIVE_INFINITY
+    nonFinite: Number.NEGATIVE_INFINITY
   },
   {
     date: "2011-11-14T16:48:46Z",
@@ -52,7 +52,7 @@ const someData = [
     type: "tab",
     productIDs: ["005"],
     coords: [0.7, 0.0482],
-    nonFiniteTest: 1.0
+    nonFinite: 1.0
   },
   {
     date: "2011-11-14T16:53:41Z",
@@ -62,7 +62,7 @@ const someData = [
     type: "tab",
     productIDs: ["001", "004", "005"],
     coords: [0.9999, 1.0],
-    nonFiniteTest: Number.NaN
+    nonFinite: Number.NaN
   },
   {
     date: "2011-11-14T16:54:06Z",
@@ -72,7 +72,7 @@ const someData = [
     type: "cash",
     productIDs: ["001", "002", "003", "004", "005"],
     coords: [0.384, 0.6938],
-    nonFiniteTest: 99.0
+    nonFinite: 99.0
   },
   {
     date: "2011-11-14T16:58:03Z",
@@ -82,7 +82,7 @@ const someData = [
     type: "tab",
     productIDs: ["001"],
     coords: [0.4822, 0.482],
-    nonFiniteTest: Number.NaN
+    nonFinite: Number.NaN
   },
   {
     date: "2011-11-14T17:07:21Z",
@@ -92,7 +92,7 @@ const someData = [
     type: "tab",
     productIDs: ["004", "005"],
     coords: [0.2234, 0],
-    nonFiniteTest: Number.NaN
+    nonFinite: Number.NaN
   },
   {
     date: "2011-11-14T17:22:59Z",
@@ -102,7 +102,7 @@ const someData = [
     type: "tab",
     productIDs: ["001", "002", "004", "005"],
     coords: [0.382, 0.38485],
-    nonFiniteTest: -1
+    nonFinite: -1
   },
   {
     date: "2011-11-14T17:25:45Z",
@@ -112,7 +112,7 @@ const someData = [
     type: "cash",
     productIDs: ["002"],
     coords: [0.998, 0.8472],
-    nonFiniteTest: 0.0
+    nonFinite: 0.0
   },
   {
     date: "2011-11-14T17:29:52Z",
@@ -122,7 +122,7 @@ const someData = [
     type: "visa",
     productIDs: ["004"],
     coords: [0.8273, 0.3384],
-    nonFiniteTest: 0.0
+    nonFinite: 0.0
   }
 ];
 
@@ -346,37 +346,33 @@ describe("ImmutableTypedCrossfilter", () => {
       p = payments
         .addDimension("quantity", "scalar", (i, d) => d[i].quantity, Int32Array)
         .addDimension(
-          "nonFiniteTest",
+          "nonFinite",
           "scalar",
-          (i, d) => d[i].nonFiniteTest,
+          (i, d) => d[i].nonFinite,
           Float32Array
         )
         .select("quantity", { mode: "all" });
     });
 
     test("all or none", () => {
-      expect(
-        p.select("nonFiniteTest", { mode: "all" }).countSelected()
-      ).toEqual(someData.length);
-      expect(
-        p.select("nonFiniteTest", { mode: "none" }).countSelected()
-      ).toEqual(0);
+      expect(p.select("nonFinite", { mode: "all" }).countSelected()).toEqual(
+        someData.length
+      );
+      expect(p.select("nonFinite", { mode: "none" }).countSelected()).toEqual(
+        0
+      );
     });
 
     test("exact", () => {
       expect(
-        p
-          .select("nonFiniteTest", { mode: "exact", values: [0] })
-          .countSelected()
+        p.select("nonFinite", { mode: "exact", values: [0] }).countSelected()
       ).toEqual(3);
       expect(
-        p
-          .select("nonFiniteTest", { mode: "exact", values: [1] })
-          .countSelected()
+        p.select("nonFinite", { mode: "exact", values: [1] }).countSelected()
       ).toEqual(1);
       expect(
         p
-          .select("nonFiniteTest", {
+          .select("nonFinite", {
             mode: "exact",
             values: [Number.POSITIVE_INFINITY]
           })
@@ -384,7 +380,7 @@ describe("ImmutableTypedCrossfilter", () => {
       ).toEqual(1);
       expect(
         p
-          .select("nonFiniteTest", {
+          .select("nonFinite", {
             mode: "exact",
             values: [Number.NEGATIVE_INFINITY]
           })
@@ -392,12 +388,12 @@ describe("ImmutableTypedCrossfilter", () => {
       ).toEqual(1);
       expect(
         p
-          .select("nonFiniteTest", { mode: "exact", values: [Number.NaN] })
+          .select("nonFinite", { mode: "exact", values: [Number.NaN] })
           .countSelected()
       ).toEqual(4);
       expect(
         p
-          .select("nonFiniteTest", {
+          .select("nonFinite", {
             mode: "exact",
             values: [Number.POSITIVE_INFINITY, 0, 1, 99]
           })
@@ -408,7 +404,7 @@ describe("ImmutableTypedCrossfilter", () => {
     test("range", () => {
       expect(
         p
-          .select("nonFiniteTest", {
+          .select("nonFinite", {
             mode: "range",
             lo: 0,
             hi: Number.POSITIVE_INFINITY
@@ -417,7 +413,7 @@ describe("ImmutableTypedCrossfilter", () => {
       ).toEqual(5);
       expect(
         p
-          .select("nonFiniteTest", {
+          .select("nonFinite", {
             mode: "range",
             lo: 0,
             hi: Number.NaN
@@ -426,7 +422,7 @@ describe("ImmutableTypedCrossfilter", () => {
       ).toEqual(6);
       expect(
         p
-          .select("nonFiniteTest", {
+          .select("nonFinite", {
             mode: "range",
             lo: Number.NEGATIVE_INFINITY,
             hi: Number.POSITIVE_INFINITY
