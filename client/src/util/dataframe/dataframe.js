@@ -198,12 +198,12 @@ class Dataframe {
     };
 
     /*
-      return first label (index) at which the value is found in this column,
-      or undefined if not found.
+    return first label (index) at which the value is found in this column,
+    or undefined if not found.
 
-      NOTE: not found return is DIFFERENT than the default Array.indexOf as
-      -1 is a plausible Dataframe row/col label.
-      */
+    NOTE: not found return is DIFFERENT than the default Array.indexOf as
+    -1 is a plausible Dataframe row/col label.
+    */
     const indexOf = function indexOf(value) {
       const offset = column.indexOf(value);
       if (offset === -1) {
@@ -213,8 +213,8 @@ class Dataframe {
     };
 
     /*
-      Summarize the column data. Lazy eval;
-      */
+    Summarize the column data. Lazy eval;
+    */
     const summarize = callOnceLazy(() =>
       isTypedArray(column)
         ? summarizeContinuous(column)
