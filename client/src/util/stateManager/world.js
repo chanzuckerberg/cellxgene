@@ -1,7 +1,14 @@
 // jshint esversion: 6
 
-import { layoutDimensionName, obsAnnoDimensionName } from "../nameCreators";
+import clip from "../clip";
+import {
+  layoutDimensionName,
+  obsAnnoDimensionName,
+  diffexpDimensionName,
+  userDefinedDimensionName
+} from "../nameCreators";
 import * as Dataframe from "../dataframe";
+import ImmutableTypedCrossfilter from "../typedCrossfilter/crossfilter";
 
 /*
 
@@ -18,6 +25,8 @@ Notable keys in the world object:
 * nObs, nVar: dimensions
 
 * schema: data schema from the server
+
+* clipQuantiles: the quantiles used to clip all data in world.
 
 * obsAnnotations:
 
@@ -37,78 +46,192 @@ Notable keys in the world object:
 * varData: a cache of expression columns, stored in a Dataframe.  Cache
   managed by controls reducer.
 
+* unclipped: will contain unclipped variants of all potentiall clipped
+  dataframes (obsAnnotations, varData).
+
 */
 
 function templateWorld() {
+  const obsAnnotations = Dataframe.Dataframe.empty();
+  const varAnnotations = Dataframe.Dataframe.empty();
+  const obsLayout = Dataframe.Dataframe.empty();
+  const varData = Dataframe.Dataframe.empty(null, new Dataframe.KeyIndex());
   return {
     /* schema/version related */
     schema: null,
     nObs: 0,
     nVar: 0,
+    clipQuantiles: { min: 0, max: 1 },
 
     /* annotations */
-    obsAnnotations: Dataframe.Dataframe.empty(),
-    varAnnotations: Dataframe.Dataframe.empty(),
+    obsAnnotations,
+    varAnnotations,
 
     /* layout of graph. Dataframe. */
-    obsLayout: Dataframe.Dataframe.empty(),
+    obsLayout,
 
-    /*
-    Var data columns - subset of all data (may be empty)
-    */
-    varData: Dataframe.Dataframe.empty(null, new Dataframe.KeyIndex())
+    /* Var data columns - subset of all data (may be empty) */
+    varData,
+
+    /* unclipped dataframes - subset, but not value clipped */
+    unclipped: {
+      obsAnnotations,
+      varData
+    }
   };
 }
 
+function clipDataframe(
+  df,
+  lowerQuantile,
+  upperQuantile,
+  quantileF,
+  clipPredicate = () => true,
+  value = Number.NaN
+) {
+  /*
+  For all columns in the dataframe, clip all values above or below specified 
+  quantiles to `value` if clipPredicate returns True for that column (if it
+  returns false, skip the column entirely).
+
+  Returns a clipped copy - does not mutate original.
+
+  clipPredicate must have signature: (dataframe, colIndex, colLabel) => boolean
+  True signifies that the column should be clipped; false indicates that the
+  column should be left intact/unchanged.
+
+  quantileF must have signature:  (label, qval) => number
+  */
+  if (lowerQuantile < 0) lowerQuantile = 0;
+  if (upperQuantile > 1) upperQuantile = 1;
+  if (lowerQuantile === 0 && upperQuantile === 1) return df;
+
+  const keys = df.colIndex.keys();
+  return df.mapColumns((col, colIdx) => {
+    const colLabel = keys[colIdx];
+    if (!clipPredicate(df, colIdx, colLabel)) return col;
+
+    const colMin = quantileF(colLabel, lowerQuantile);
+    const colMax = quantileF(colLabel, upperQuantile);
+    const newCol = clip(col.slice(), colMin, colMax, value);
+    return newCol;
+  });
+}
+
+/*
+Create World with contents eq entire universe.   Commonly used to initialize World.
+If clipQuantiles
+*/
 export function createWorldFromEntireUniverse(universe) {
   const world = templateWorld();
-
-  /*
-  public interface follows
-  */
 
   /* Schema related */
   world.schema = universe.schema;
   world.nObs = universe.nObs;
   world.nVar = universe.nVar;
+  world.clipQuantiles = { min: 0, max: 1 };
 
-  /* annotation dataframes */
-  world.obsAnnotations = universe.obsAnnotations;
-  world.varAnnotations = universe.varAnnotations;
+  /* dataframes: annotations and layout */
+  world.obsAnnotations = universe.obsAnnotations.clone();
+  world.varAnnotations = universe.varAnnotations.clone();
+  world.obsLayout = universe.obsLayout.clone();
 
-  /* layout and display characteristics dataframe */
-  world.obsLayout = universe.obsLayout;
-
-  /*
-  Var data columns - subset of all
-  */
+  /* Var dataframe - contains a subset of all var columns */
   world.varData = universe.varData.clone();
+
+  /* save unclipped copies of potentially clipped dataframes */
+  world.unclipped = {
+    obsAnnotations: world.obsAnnotations.clone(),
+    varData: world.varData.clone()
+  };
 
   return world;
 }
 
-export function createWorldFromCurrentSelection(universe, world, crossfilter) {
-  const newWorld = templateWorld();
+/*
+clip dataframes based on quantiles.
 
-  /* these don't change as only OBS are selected in our current implementation */
-  newWorld.nVar = universe.nVar;
-  newWorld.schema = universe.schema;
-  newWorld.varAnnotations = universe.varAnnotations;
+This is an in-place operation on the world object provided as an argument.
+The values in world.unclipped are clipped and assigned to world.obsAnnotations
+and world.varData.
+*/
+function setClippedDataframes(world) {
+  const { schema } = world;
+  const isContinuousObsAnnotation = (df, idx, label) =>
+    deduceDimensionType(schema.annotations.obsByName[label], label) !== "enum";
+  const obsQuantile = (label, q) =>
+    world.unclipped.obsAnnotations.col(label).summarize().percentiles[100 * q];
+  world.obsAnnotations = clipDataframe(
+    world.unclipped.obsAnnotations,
+    world.clipQuantiles.min,
+    world.clipQuantiles.max,
+    obsQuantile,
+    isContinuousObsAnnotation
+  );
 
-  /* now subset/cut obs */
+  const varDataQuantile = (label, q) =>
+    world.unclipped.varData.col(label).summarize().percentiles[100 * q];
+  world.varData = clipDataframe(
+    world.unclipped.varData,
+    world.clipQuantiles.min,
+    world.clipQuantiles.max,
+    varDataQuantile,
+    () => true
+  );
+}
+
+/*
+Subset the current world based upon the current selection, maintaining any existing
+clip.  Returns new world.  Parameters:
+  * unvierse
+  * world - the current world
+  * crossfilter - the selection state
+*/
+export function createWorldBySelection(universe, world, crossfilter) {
+  const newWorld = { ...world, obsLayout: null, unclipped: {}, varData: null };
+
+  /* subset unclipped dataframes based upon current selection */
   const mask = crossfilter.allSelectedMask();
-  newWorld.obsAnnotations = world.obsAnnotations.isubsetMask(mask);
   newWorld.obsLayout = world.obsLayout.isubsetMask(mask);
-  newWorld.nObs = newWorld.obsAnnotations.dims[0];
-
-  /*
-  Var data columns - subset of all
-  */
-  if (world.varData.isEmpty()) {
-    newWorld.varData = world.varData.clone();
+  newWorld.unclipped.obsAnnotations = world.unclipped.obsAnnotations.isubsetMask(
+    mask
+  );
+  if (world.unclipped.varData.isEmpty()) {
+    newWorld.unclipped.varData = world.unclipped.varData.clone();
   } else {
-    newWorld.varData = world.varData.isubsetMask(mask);
+    newWorld.unclipped.varData = world.unclipped.varData.isubsetMask(mask);
   }
+  /* subsetting changings dimension size */
+  newWorld.nObs = newWorld.unclipped.obsAnnotations.dims[0];
+
+  /* and now clip */
+  setClippedDataframes(newWorld);
+  return newWorld;
+}
+
+/*
+Change clip quantiles on the current world, returning a new world.
+Parameters:
+  * universe
+  * world - current world
+  * clipQuantiles - new clip
+*/
+export function createWorldWithNewClip(
+  universe,
+  world,
+  crossfilter,
+  clipQuantiles
+) {
+  const newWorld = { ...world, obsAnnotation: null, varData: null };
+  newWorld.clipQuantiles = clipQuantiles;
+  newWorld.obsLayout = world.obsLayout.clone();
+  newWorld.unclipped = {
+    obsAnnotations: world.unclipped.obsAnnotations.clone(),
+    varData: world.unclipped.varData.clone()
+  };
+
+  /* and now clip */
+  setClippedDataframes(newWorld);
   return newWorld;
 }
 
@@ -166,7 +289,10 @@ export function createObsDimensions(crossfilter, world) {
 }
 
 export function worldEqUniverse(world, universe) {
-  return world.obsAnnotations === universe.obsAnnotations;
+  return (
+    world.obsAnnotations === universe.obsAnnotations ||
+    world.obsAnnotations.rowIndex === universe.obsAnnotations.rowIndex
+  );
 }
 
 export function getSelectedByIndex(crossfilter) {

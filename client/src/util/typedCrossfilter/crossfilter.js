@@ -2,13 +2,13 @@ import { polygonContains } from "d3";
 
 import PositiveIntervals from "./positiveIntervals";
 import BitArray from "./bitArray";
-import { sort } from "./sort";
 import {
-  makeSortIndex,
+  sortArray,
   lowerBound,
   lowerBoundIndirect,
   upperBoundIndirect
-} from "./util";
+} from "./sort";
+import { makeSortIndex } from "./util";
 
 class NotImplementedError extends Error {
   constructor(...params) {
@@ -59,6 +59,10 @@ export default class ImmutableTypedCrossfilter {
   dimensionNames() {
     /* return array of all dimensions (by name) */
     return Object.keys(this.dimensions);
+  }
+
+  hasDimension(name) {
+    return !!this.dimensions[name];
   }
 
   addDimension(name, type, ...rest) {
@@ -284,15 +288,15 @@ class _ImmutableBaseDimension {
     this.name = name;
   }
 
-  /* eslint-disable class-methods-use-this */
   select(spec) {
     const { mode } = spec;
     if (mode === undefined) {
       throw new Error("select spec does not contain 'mode'");
     }
-    throw new Error(`select mode ${mode} not implemented`);
+    throw new Error(
+      `select mode ${mode} not implemented by dimension ${this.name}`
+    );
   }
-  /* eslint-enable class-methods-use-this */
 }
 
 class ImmutableScalarDimension extends _ImmutableBaseDimension {
@@ -414,7 +418,7 @@ class ImmutableEnumDimension extends ImmutableScalarDimension {
     for (let i = 0; i < len; i += 1) {
       s.add(mapf(i, data));
     }
-    const enumIndex = sort(Array.from(s));
+    const enumIndex = sortArray(Array.from(s));
     this.enumIndex = enumIndex;
 
     // create dimension value array

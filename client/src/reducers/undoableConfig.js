@@ -71,7 +71,8 @@ const saveOnActions = new Set([
   "store current cell selection as differential set 1",
   "store current cell selection as differential set 2",
 
-  "set World to current selection"
+  "set World to current selection",
+  "set clip quantiles"
 ]);
 
 /**
@@ -107,8 +108,8 @@ StateMachine when it doesn't know what to do.
 
 Signature:  (fsm, event, from) => undoableAction
 */
-const onFsmError = (fsm, name, from) => {
-  console.error("FSM error - unexpected history state", fsm, name, from);
+const onFsmError = (fsm, event, from) => {
+  console.error(`FSM error [event: "${event}", state: "${from}"]`, fsm);
   // In production, try to recover gracefully if we have unexpected state
   return clear(fsm);
 };

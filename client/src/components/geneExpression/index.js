@@ -22,7 +22,6 @@ import {
   keepAroundErrorToast
 } from "../framework/toasters";
 import ExpressionButtons from "./expressionButtons";
-import finiteExtent from "../../util/finiteExtent";
 
 const renderGene = (fuzzySortResult, { handleClick, modifiers, query }) => {
   if (!modifiers.matchesPredicate) {

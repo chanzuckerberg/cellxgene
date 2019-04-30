@@ -532,6 +532,42 @@ describe("dataframe factories", () => {
       expect(df.rowIndex.keys()).toEqual(dfA.rowIndex.keys());
     });
   });
+
+  describe("mapColumns", () => {
+    test("identity", () => {
+      const dfA = Dataframe.Dataframe.create(
+        [3, 3],
+        [
+          new Array(3).fill(0),
+          new Int16Array(3).fill(99),
+          new Float64Array(3).fill(1.1)
+        ]
+      );
+      const dfB = dfA.mapColumns((col, idx) => {
+        expect(dfA.icol(idx).asArray()).toBe(col);
+        return col;
+      });
+      expect(dfA).not.toBe(dfB);
+      expect(dfA.dims).toEqual(dfB.dims);
+      for (let c = 0; c < dfA.dims[1]; c += 1) {
+        expect(dfA.icol(c).asArray()).toBe(dfB.icol(c).asArray());
+      }
+    });
+
+    test("transform", () => {
+      const dfA = Dataframe.Dataframe.create(
+        [3, 3],
+        [new Array(3).fill(0), new Array(3).fill(0), new Array(3).fill(0)]
+      );
+      const dfB = dfA.mapColumns(() => {
+        return new Array(3).fill(1);
+      });
+      expect(dfA).not.toBe(dfB);
+      expect(dfB.iat(0, 0)).toEqual(1);
+      expect(dfB.iat(0, 1)).toEqual(1);
+      expect(dfB.iat(0, 2)).toEqual(1);
+    });
+  });
 });
 
 describe("dataframe col", () => {

@@ -40,6 +40,7 @@ const CrossfilterReducer = (
       return crossfilter;
     }
 
+    case "set clip quantiles":
     case "set World to current selection": {
       const { userDefinedGenes, diffexpGenes } = prevSharedState.controls;
       const { world } = nextSharedState;

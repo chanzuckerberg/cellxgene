@@ -145,7 +145,8 @@ class Scatterplot extends React.Component {
 
     if (
       scatterplotXXaccessor !== prevProps.scatterplotXXaccessor || // was CLU now FTH1 etc
-      scatterplotYYaccessor !== prevProps.scatterplotYYaccessor // was CLU now FTH1 etc
+      scatterplotYYaccessor !== prevProps.scatterplotYYaccessor || // was CLU now FTH1 etc
+      world !== prevProps.world // shape or clip of world changed
     ) {
       const scales = Scatterplot.setupScales(expressionX, expressionY);
       this.drawAxesSVG(scales.xScale, scales.yScale, svg);
@@ -263,9 +264,15 @@ class Scatterplot extends React.Component {
 
     // the axes are much cleaner and easier now. No need to rotate and orient
     // the axis, just call axisBottom, axisLeft etc.
-    const xAxis = d3.axisBottom().scale(xScale);
+    const xAxis = d3
+      .axisBottom()
+      .ticks(7)
+      .scale(xScale);
 
-    const yAxis = d3.axisLeft().scale(yScale);
+    const yAxis = d3
+      .axisLeft()
+      .ticks(7)
+      .scale(yScale);
 
     // adding axes is also simpler now, just translate x-axis to (0,height)
     // and it's alread defined to be a bottom axis.

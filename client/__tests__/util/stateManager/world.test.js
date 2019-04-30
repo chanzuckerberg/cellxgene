@@ -58,10 +58,15 @@ describe("createWorldFromEntireUniverse", () => {
         nObs: universe.nObs,
         nVar: universe.nVar,
         schema: universe.schema,
-        obsAnnotations: universe.obsAnnotations,
-        varAnnotations: universe.varAnnotations,
-        obsLayout: universe.obsLayout,
-        varData: expect.any(Dataframe.Dataframe)
+        obsAnnotations: expect.any(Dataframe.Dataframe),
+        varAnnotations: expect.any(Dataframe.Dataframe),
+        obsLayout: expect.any(Dataframe.Dataframe),
+        varData: expect.any(Dataframe.Dataframe),
+        clipQuantiles: { min: 0, max: 1 },
+        unclipped: {
+          obsAnnotations: expect.any(Dataframe.Dataframe),
+          varData: expect.any(Dataframe.Dataframe)
+        }
       })
     );
   });
@@ -76,7 +81,7 @@ describe("createWorldFromCurrentSelection", () => {
     } = defaultBigBang();
 
     /* mock a selection */
-    let crossfilter = originalCrossfilter
+    const crossfilter = originalCrossfilter
       .select(obsAnnoDimensionName("field1"), { mode: "range", lo: 0, hi: 5 })
       .select(obsAnnoDimensionName("field3"), {
         mode: "exact",
@@ -84,7 +89,7 @@ describe("createWorldFromCurrentSelection", () => {
       });
 
     /* create the world from the selection */
-    const world = World.createWorldFromCurrentSelection(
+    const world = World.createWorldBySelection(
       universe,
       originalWorld,
       crossfilter
@@ -112,10 +117,15 @@ describe("createWorldFromCurrentSelection", () => {
         nObs: matchingIndices.length,
         nVar: universe.nVar,
         schema: universe.schema,
+        clipQuantiles: { min: 0, max: 1 },
         obsAnnotations: expect.any(Dataframe.Dataframe),
-        varAnnotations: universe.varAnnotations,
+        varAnnotations: expect.any(Dataframe.Dataframe),
         obsLayout: expect.any(Dataframe.Dataframe),
-        varData: expect.any(Dataframe.Dataframe)
+        varData: expect.any(Dataframe.Dataframe),
+        unclipped: {
+          obsAnnotations: expect.any(Dataframe.Dataframe),
+          varData: expect.any(Dataframe.Dataframe)
+        }
       })
     );
 

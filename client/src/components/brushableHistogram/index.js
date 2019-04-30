@@ -5,14 +5,12 @@ https://bl.ocks.org/SpaceActuary/2f004899ea1b2bd78d6f1dbb2febf771
 */
 // jshint esversion: 6
 import React from "react";
-import _ from "lodash";
 import { Button, ButtonGroup, Tooltip } from "@blueprintjs/core";
 import { connect } from "react-redux";
 import * as d3 from "d3";
 import memoize from "memoize-one";
 import * as globals from "../../globals";
 import actions from "../../actions";
-import finiteExtent from "../../util/finiteExtent";
 import { makeContinuousDimensionName } from "../../util/nameCreators";
 
 @connect(state => ({
@@ -21,52 +19,51 @@ import { makeContinuousDimensionName } from "../../util/nameCreators";
   scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
   continuousSelection: state.continuousSelection,
   differential: state.differential,
-  colorAccessor: state.colors.colorAccessor,
-  obsAnnotations: _.get(state.world, "obsAnnotations", null)
+  colorAccessor: state.colors.colorAccessor
 }))
 class HistogramBrush extends React.Component {
-  calcHistogramCache = memoize((obsAnnotations, field, rangeMin, rangeMax) => {
-    const { world } = this.props;
-    const histogramCache = {};
+  static getColumn(world, field, clipped = true) {
+    /*
+    Return the underlying Dataframe column for our field.   By default, 
+    returns the clipped column.   If clipped===false, will return the 
+    unclipped column.
+    */
+    const obsAnnotations = clipped
+      ? world.obsAnnotations
+      : world.unclipped.obsAnnotations;
+    const varData = clipped ? world.varData : world.unclipped.varData;
+    if (obsAnnotations.hasCol(field)) {
+      return obsAnnotations.col(field);
+    }
+    return varData.col(field);
+  }
 
+  calcHistogramCache = memoize((world, field) => {
+    /*
+     recalculate expensive stuff, notably bins, summaries, etc.
+    */
+    const histogramCache = {};
+    const col = HistogramBrush.getColumn(world, field);
+    const values = col.asArray();
+    const summary = col.summarize();
+    const { min: domainMin, max: domainMax } = summary;
+    histogramCache.x = d3
+      .scaleLinear()
+      .domain([domainMin, domainMax])
+      .range([0, this.width - this.marginRight]);
+
+    histogramCache.bins = d3
+      .histogram()
+      .domain(histogramCache.x.domain())
+      .thresholds(40)(values);
+
+    const yMax = histogramCache.bins
+      .map(b => b.length)
+      .reduce((a, b) => Math.max(a, b));
     histogramCache.y = d3
       .scaleLinear()
+      .domain([0, yMax])
       .range([this.height - this.marginBottom, 0]);
-
-    if (obsAnnotations.hasCol(field)) {
-      // recalculate expensive stuff
-      const allValuesForContinuousFieldAsArray = obsAnnotations
-        .col(field)
-        .asArray();
-
-      histogramCache.x = d3
-        .scaleLinear()
-        .domain([rangeMin, rangeMax])
-        .range([0, this.width]);
-
-      histogramCache.bins = d3
-        .histogram()
-        .domain(histogramCache.x.domain())
-        .thresholds(40)(allValuesForContinuousFieldAsArray);
-
-      histogramCache.numValues = allValuesForContinuousFieldAsArray.length;
-    } else if (world.varData.hasCol(field)) {
-      const varValues = world.varData.col(field).asArray();
-
-      histogramCache.x = d3
-        .scaleLinear()
-        .domain(
-          finiteExtent(varValues)
-        ) /* replace this if we have ranges for genes back from server like we do for annotations on cells */
-        .range([0, this.width]);
-
-      histogramCache.bins = d3
-        .histogram()
-        .domain(histogramCache.x.domain())
-        .thresholds(40)(varValues);
-
-      histogramCache.numValues = varValues.length;
-    }
 
     return histogramCache;
   });
@@ -76,22 +73,23 @@ class HistogramBrush extends React.Component {
 
     this.width = 340;
     this.height = 100;
-    this.marginBottom = 20;
+    this.marginBottom = 20; // space for X axis & labels
+    this.marginRight = 40; // space for Y axis & labels
   }
 
   componentDidMount() {
     const { field } = this.props;
-    const { x, y, bins, numValues, svgRef } = this._histogram;
+    const { x, y, bins, svgRef } = this._histogram;
 
-    this.renderAxesBrushBins(x, y, bins, numValues, svgRef, field);
+    this.renderAxesBrushBins(x, y, bins, svgRef, field);
   }
 
   componentDidUpdate(prevProps) {
-    const { field, obsAnnotations, continuousSelection } = this.props;
-    const { x, y, bins, numValues, svgRef } = this._histogram;
+    const { field, world, continuousSelection } = this.props;
+    const { x, y, bins, svgRef } = this._histogram;
 
-    if (obsAnnotations !== prevProps.obsAnnotations) {
-      this.renderAxesBrushBins(x, y, bins, numValues, svgRef, field);
+    if (world !== prevProps.world) {
+      this.renderAxesBrushBins(x, y, bins, svgRef, field);
     }
 
     /*
@@ -172,7 +170,6 @@ class HistogramBrush extends React.Component {
   onBrushEnd(selection, x) {
     return () => {
       const { dispatch, field, isObs, isUserDefined, isDiffExp } = this.props;
-      const { brushXselection } = this.state;
       const minAllowedBrushSize = 10;
       const smallAmountToAvoidInfiniteLoop = 0.1;
 
@@ -197,11 +194,6 @@ class HistogramBrush extends React.Component {
             smallAmountToAvoidInfiniteLoop; //
 
           _range = [x(d3.event.selection[0]), x(procedurallyResizedBrushWidth)];
-
-          d3.event.target.move(brushXselection, [
-            d3.event.selection[0],
-            procedurallyResizedBrushWidth
-          ]);
         }
 
         dispatch({
@@ -229,23 +221,16 @@ class HistogramBrush extends React.Component {
   }
 
   drawHistogram(svgRef) {
-    const { obsAnnotations, field, ranges } = this.props;
-    const histogramCache = this.calcHistogramCache(
-      obsAnnotations,
-      field,
-      ranges.min,
-      ranges.max
-    );
-
-    const { x, y, bins, numValues } = histogramCache;
-
-    this._histogram = { x, y, bins, numValues, svgRef };
+    const { field, world } = this.props;
+    const histogramCache = this.calcHistogramCache(world, field);
+    const { x, y, bins } = histogramCache;
+    this._histogram = { x, y, bins, svgRef };
   }
 
   handleColorAction() {
-    const { obsAnnotations, dispatch, field, world, ranges } = this.props;
+    const { dispatch, field, world, ranges } = this.props;
 
-    if (obsAnnotations.hasCol(field)) {
+    if (world.obsAnnotations.hasCol(field)) {
       dispatch({
         type: "color by continuous metadata",
         colorAccessor: field,
@@ -307,29 +292,29 @@ class HistogramBrush extends React.Component {
     };
   }
 
-  renderAxesBrushBins(x, y, bins, numValues, svgRef, field) {
+  renderAxesBrushBins(x, y, bins, svgRef, field) {
+    const svg = d3.select(svgRef);
+
     /* Remove everything */
-    d3.select(svgRef)
-      .selectAll("*")
-      .remove();
+    svg.selectAll("*").remove();
 
     /* BINS */
-    d3.select(svgRef)
+    svg
       .insert("g", "*")
       .attr("fill", "#bbb")
       .selectAll("rect")
       .data(bins)
       .enter()
       .append("rect")
-      .attr("class", "bar")
       .attr("x", d => x(d.x0) + 1)
-      .attr("y", d => y(d.length / numValues))
+      .attr("y", d => y(d.length))
       .attr("width", d => Math.abs(x(d.x1) - x(d.x0) - 1))
-      .attr("height", d => y(0) - y(d.length / numValues));
+      .attr("height", d => y(0) - y(d.length));
 
     /* BRUSH */
     const brushX = d3
       .brushX()
+      .extent([[0, 0], [this.width - this.marginRight, this.height]])
       /*
       emit start so that the Undoable history can save an undo point
       upon drag start, and ignore the subsequent intermediate drag events.
@@ -344,24 +329,24 @@ class HistogramBrush extends React.Component {
       .attr("data-testid", `${svgRef.dataset.testid}-brush`)
       .call(brushX);
 
-    /* AXIS */
-    d3.select(svgRef)
+    /* X AXIS */
+    svg
       .append("g")
       .attr("class", "axis axis--x")
       .attr("transform", `translate(0,${this.height - this.marginBottom})`)
       .call(d3.axisBottom(x).ticks(5));
 
-    d3.select(svgRef)
-      .selectAll(".axis--x text")
-      .style("fill", "rgb(80,80,80)");
+    /* Y AXIS */
+    svg
+      .append("g")
+      .attr("class", "axis axis--y")
+      .attr("transform", `translate(${this.width - this.marginRight},0)`)
+      .call(d3.axisRight(y).ticks(3));
 
-    d3.select(svgRef)
-      .selectAll(".axis--x path")
-      .style("stroke", "rgb(230,230,230)");
-
-    d3.select(svgRef)
-      .selectAll(".axis--x line")
-      .style("stroke", "rgb(230,230,230)");
+    /* axis style */
+    svg.selectAll(".axis text").style("fill", "rgb(80,80,80)");
+    svg.selectAll(".axis path").style("stroke", "rgb(230,230,230)");
+    svg.selectAll(".axis line").style("stroke", "rgb(230,230,230)");
 
     this.setState({ brushX, brushXselection });
   }
@@ -369,20 +354,29 @@ class HistogramBrush extends React.Component {
   render() {
     const {
       field,
+      world,
       colorAccessor,
       isUserDefined,
       isDiffExp,
       logFoldChange,
-      pval,
       pvalAdj,
       scatterplotXXaccessor,
       scatterplotYYaccessor,
       zebra
     } = this.props;
-    const field_for_id = field.replace(/\s/g, "_");
+    const fieldForId = field.replace(/\s/g, "_");
+    const {
+      min: unclippedRangeMin,
+      max: unclippedRangeMax
+    } = HistogramBrush.getColumn(world, field, false).summarize();
+    const unclippedRangeMinColor =
+      world.clipQuantiles.min === 0 ? "#bbb" : globals.blue;
+    const unclippedRangeMaxColor =
+      world.clipQuantiles.max === 1 ? "#bbb" : globals.blue;
+
     return (
       <div
-        id={`histogram_${field_for_id}`}
+        id={`histogram_${fieldForId}`}
         data-testid={`histogram-${field}`}
         data-testclass={
           isDiffExp
@@ -396,7 +390,13 @@ class HistogramBrush extends React.Component {
           backgroundColor: zebra ? globals.lightestGrey : "white"
         }}
       >
-        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            paddingBottom: "8px"
+          }}
+        >
           {isDiffExp || isUserDefined ? (
             <span>
               <span
@@ -450,7 +450,7 @@ class HistogramBrush extends React.Component {
         <svg
           width={this.width}
           height={this.height}
-          id={`histogram_${field_for_id}_svg`}
+          id={`histogram_${fieldForId}_svg`}
           data-testclass="histogram-plot"
           data-testid={`histogram-${field}-plot`}
           ref={svgRef => {
@@ -460,14 +460,20 @@ class HistogramBrush extends React.Component {
         <div
           style={{
             display: "flex",
-            justifyContent: "center"
+            justifyContent: "space-between"
           }}
         >
+          <span style={{ color: unclippedRangeMinColor }}>
+            min {unclippedRangeMin.toPrecision(4)}
+          </span>
           <span
             data-testclass="brushable-histogram-field-name"
             style={{ fontStyle: "italic" }}
           >
             {field}
+          </span>
+          <span style={{ color: unclippedRangeMaxColor }}>
+            max {unclippedRangeMax.toPrecision(4)}
           </span>
         </div>
 

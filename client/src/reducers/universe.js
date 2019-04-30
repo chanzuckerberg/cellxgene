@@ -1,5 +1,3 @@
-import _ from "lodash";
-
 import { ControlsHelpers } from "../util/stateManager";
 
 const Universe = (state = null, action, nextSharedState, prevSharedState) => {
@@ -12,9 +10,10 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
     case "expression load success": {
       let { varData } = state;
 
-      // Load new expression data into the varData dataframes, if
+      // Lazy load new expression data into the varData dataframe, if
       // not already present.
-      _.forEach(action.expressionData, (val, key) => {
+      //
+      Object.entries(action.expressionData).forEach(([key, val]) => {
         // If not already in universe.varData, save entire expression column
         if (!varData.hasCol(key)) {
           varData = varData.withCol(key, val);
@@ -22,14 +21,15 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
       });
 
       // Prune size of varData "cache" if getting out of hand....
+      //
       const { userDefinedGenes, diffexpGenes } = prevSharedState;
-      const allTheGenesWeNeed = _.uniq(
-        [].concat(
+      const allTheGenesWeNeed = [
+        ...new Set(
           userDefinedGenes,
           diffexpGenes,
           Object.keys(action.expressionData)
         )
-      );
+      ];
       varData = ControlsHelpers.pruneVarDataCache(varData, allTheGenesWeNeed);
 
       return {

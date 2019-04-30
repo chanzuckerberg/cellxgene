@@ -1,6 +1,5 @@
 // jshint esversion: 6
 import React from "react";
-import _ from "lodash";
 import * as d3 from "d3";
 import { connect } from "react-redux";
 import mat4 from "gl-mat4";
@@ -12,7 +11,9 @@ import {
   Popover,
   Menu,
   MenuItem,
-  Position
+  Position,
+  NumericInput,
+  Icon
 } from "@blueprintjs/core";
 
 import * as globals from "../../globals";
@@ -29,6 +30,8 @@ import { World } from "../../util/stateManager";
   world: state.world,
   universe: state.universe,
   crossfilter: state.crossfilter,
+  clipPercentileMin: Math.round(100 * (state.world?.clipQuantiles?.min ?? 0)),
+  clipPercentileMax: Math.round(100 * (state.world?.clipQuantiles?.max ?? 1)),
   responsive: state.responsive,
   colorRGB: state.colors.rgb,
   opacityForDeselectedCells: state.controls.opacityForDeselectedCells,
@@ -47,6 +50,30 @@ import { World } from "../../util/stateManager";
   currentSelection: state.graphSelection.selection
 }))
 class Graph extends React.Component {
+  static isValidDigitKeyEvent(e) {
+    /*
+    Return true if this event is necessary to enter a percent number input.
+    Return false if not.
+
+    Returns true for events with keys: backspace, control, alt, meta, [0-9],
+    or events that don't have a key.
+    */
+    if (e.key === null) return true;
+    if (e.ctrlKey || e.altKey || e.metaKey) return true;
+
+    // concept borrowed from blueprint's numericInputUtils:
+    // keys that print a single character when pressed have a `key` name of
+    // length 1. every other key has a longer `key` name (e.g. "Backspace",
+    // "ArrowUp", "Shift"). since none of those keys can print a character
+    // to the field--and since they may have important native behaviors
+    // beyond printing a character--we don't want to disable their effects.
+    const isSingleCharKey = e.key.length === 1;
+    if (!isSingleCharKey) return true;
+
+    const key = e.key.charCodeAt(0) - 48; /* "0" */
+    return key >= 0 && key <= 9;
+  }
+
   constructor(props) {
     super(props);
     this.count = 0;
@@ -62,7 +89,8 @@ class Graph extends React.Component {
       svg: null,
       tool: null,
       container: null,
-      mode: "select"
+      mode: "select",
+      pendingClipPercentiles: null
     };
   }
 
@@ -265,6 +293,7 @@ class Graph extends React.Component {
       * there are no userDefinedGenes or diffexpGenes displayed
       * scatterplot is not displayed
       * nothing in cellset1 or cellset2
+      * clip percentiles are [0,100]
     */
     const {
       crossfilter,
@@ -276,7 +305,9 @@ class Graph extends React.Component {
       scatterplotXXaccessor,
       scatterplotYYaccessor,
       celllist1,
-      celllist2
+      celllist2,
+      clipPercentileMin,
+      clipPercentileMax
     } = this.props;
 
     if (!crossfilter || !world || !universe) {
@@ -294,7 +325,9 @@ class Graph extends React.Component {
       nothingColoredBy &&
       noGenes &&
       scatterNotDpl &&
-      nothingInCellsets
+      nothingInCellsets &&
+      clipPercentileMax === 100 &&
+      clipPercentileMin === 0
     );
   };
 
@@ -304,6 +337,102 @@ class Graph extends React.Component {
       type: "interface reset started"
     });
     dispatch(actions.resetInterface());
+  };
+
+  isClipDisabled = () => {
+    /*
+    return true if clip button should be disabled.
+    */
+    const { pendingClipPercentiles } = this.state;
+    const clipPercentileMin = pendingClipPercentiles?.clipPercentileMin;
+    const clipPercentileMax = pendingClipPercentiles?.clipPercentileMax;
+
+    const { world } = this.props;
+    const currentClipMin = 100 * world?.clipQuantiles?.min;
+    const currentClipMax = 100 * world?.clipQuantiles?.max;
+
+    // if you change this test, be careful with logic around
+    // comparisons between undefined / NaN handling.
+    const isDisabled =
+      !(clipPercentileMin < clipPercentileMax) ||
+      (clipPercentileMin === currentClipMin &&
+        clipPercentileMax === currentClipMax);
+
+    return isDisabled;
+  };
+
+  handleClipOnKeyPress = e => {
+    /* 
+    allow only numbers, plus other critical keys which 
+    may be required to make a number 
+    */
+    if (!Graph.isValidDigitKeyEvent(e)) {
+      e.preventDefault();
+    }
+  };
+
+  handleClipPercentileMinValueChange = v => {
+    /*
+    Ignore anything that isn't a legit number
+    */
+    if (!Number.isFinite(v)) return;
+
+    const { pendingClipPercentiles } = this.state;
+    const clipPercentileMax = pendingClipPercentiles?.clipPercentileMax;
+
+    /*
+    clamp to [0, currentClipPercentileMax]
+    */
+    if (v <= 0) v = 0;
+    if (v > 100) v = 100;
+    const clipPercentileMin = Math.round(v); // paranoia
+    this.setState({
+      pendingClipPercentiles: { clipPercentileMin, clipPercentileMax }
+    });
+  };
+
+  handleClipPercentileMaxValueChange = v => {
+    /*
+    Ignore anything that isn't a legit number
+    */
+    if (!Number.isFinite(v)) return;
+
+    const { pendingClipPercentiles } = this.state;
+    const clipPercentileMin = pendingClipPercentiles?.clipPercentileMin;
+
+    /*
+    clamp to [0, 100]
+    */
+    if (v < 0) v = 0;
+    if (v > 100) v = 100;
+    const clipPercentileMax = Math.round(v); // paranoia
+
+    this.setState({
+      pendingClipPercentiles: { clipPercentileMin, clipPercentileMax }
+    });
+  };
+
+  handleClipCommit = () => {
+    const { dispatch } = this.props;
+    const { pendingClipPercentiles } = this.state;
+    const { clipPercentileMin, clipPercentileMax } = pendingClipPercentiles;
+    const min = clipPercentileMin / 100;
+    const max = clipPercentileMax / 100;
+    dispatch({
+      type: "set clip quantiles",
+      clipQuantiles: { min, max }
+    });
+  };
+
+  handleClipOpening = () => {
+    const { clipPercentileMin, clipPercentileMax } = this.props;
+    this.setState({
+      pendingClipPercentiles: { clipPercentileMin, clipPercentileMax }
+    });
+  };
+
+  handleClipClosing = () => {
+    this.setState({ pendingClipPercentiles: null });
   };
 
   brushToolUpdate(tool, container, offset) {
@@ -614,9 +743,20 @@ class Graph extends React.Component {
       libraryVersions,
       undoDisabled,
       redoDisabled,
-      selectionTool
+      selectionTool,
+      clipPercentileMin,
+      clipPercentileMax
     } = this.props;
-    const { mode } = this.state;
+    const { mode, pendingClipPercentiles } = this.state;
+
+    const clipMin =
+      pendingClipPercentiles?.clipPercentileMin ?? clipPercentileMin;
+    const clipMax =
+      pendingClipPercentiles?.clipPercentileMax ?? clipPercentileMax;
+    const activeClipClass =
+      clipPercentileMin > 0 || clipPercentileMax < 100
+        ? " bp3-intent-warning"
+        : "";
 
     // constants used to create selection tool button
     let selectionTooltip;
@@ -684,66 +824,175 @@ class Graph extends React.Component {
                 reset
               </AnchorButton>
             </Tooltip>
-            <div>
-              <div className="bp3-button-group">
-                <Tooltip content={selectionTooltip} position="left">
-                  <Button
-                    type="button"
-                    data-testid="mode-lasso"
-                    className={`bp3-button ${selectionButtonClass}`}
-                    active={mode === "select"}
-                    onClick={() => {
-                      this.setState({ mode: "select" });
-                    }}
-                    style={{
-                      cursor: "pointer"
-                    }}
-                  />
-                </Tooltip>
-                <Tooltip content="Pan and zoom" position="left">
-                  <Button
-                    type="button"
-                    data-testid="mode-pan-zoom"
-                    className="bp3-button bp3-icon-zoom-in"
-                    active={mode === "zoom"}
-                    onClick={() => {
-                      this.restartReglLoop();
-                      this.setState({ mode: "zoom" });
-                    }}
-                    style={{
-                      cursor: "pointer"
-                    }}
-                  />
-                </Tooltip>
-                <Tooltip content="Undo" position="left">
-                  <AnchorButton
-                    type="button"
-                    className="bp3-button bp3-icon-undo"
-                    disabled={undoDisabled}
-                    onClick={() => {
-                      dispatch({ type: "@@undoable/undo" });
-                    }}
-                    style={{
-                      cursor: "pointer"
-                    }}
-                  />
-                </Tooltip>
-                <Tooltip content="Redo" position="left">
-                  <AnchorButton
-                    type="button"
-                    className="bp3-button bp3-icon-redo"
-                    disabled={redoDisabled}
-                    onClick={() => {
-                      dispatch({ type: "@@undoable/redo" });
-                    }}
-                    style={{
-                      cursor: "pointer"
-                    }}
-                  />
-                </Tooltip>
-              </div>
+            <div className="bp3-button-group">
+              <Tooltip content={selectionTooltip} position="left">
+                <Button
+                  type="button"
+                  data-testid="mode-lasso"
+                  className={`bp3-button ${selectionButtonClass}`}
+                  active={mode === "select"}
+                  onClick={() => {
+                    this.setState({ mode: "select" });
+                  }}
+                  style={{
+                    cursor: "pointer"
+                  }}
+                />
+              </Tooltip>
+              <Tooltip content="Pan and zoom" position="left">
+                <Button
+                  type="button"
+                  data-testid="mode-pan-zoom"
+                  className="bp3-button bp3-icon-zoom-in"
+                  active={mode === "zoom"}
+                  onClick={() => {
+                    this.restartReglLoop();
+                    this.setState({ mode: "zoom" });
+                  }}
+                  style={{
+                    cursor: "pointer"
+                  }}
+                />
+              </Tooltip>
             </div>
-            <div style={{ marginLeft: 10 }}>
+            <div
+              className="bp3-button-group"
+              style={{
+                marginLeft: 10
+              }}
+            >
+              <Tooltip content="Undo" position="left">
+                <AnchorButton
+                  type="button"
+                  className="bp3-button bp3-icon-undo"
+                  disabled={undoDisabled}
+                  onClick={() => {
+                    dispatch({ type: "@@undoable/undo" });
+                  }}
+                  style={{
+                    cursor: "pointer"
+                  }}
+                />
+              </Tooltip>
+              <Tooltip content="Redo" position="left">
+                <AnchorButton
+                  type="button"
+                  className="bp3-button bp3-icon-redo"
+                  disabled={redoDisabled}
+                  onClick={() => {
+                    dispatch({ type: "@@undoable/redo" });
+                  }}
+                  style={{
+                    cursor: "pointer"
+                  }}
+                />
+              </Tooltip>
+            </div>
+            <div
+              className="bp3-button-group"
+              style={{
+                marginLeft: 10
+              }}
+            >
+              <Tooltip content="Visualization settings" position="left">
+                <Popover
+                  target={
+                    <Button
+                      type="button"
+                      className={`bp3-button bp3-icon-timeline-bar-chart ${activeClipClass}`}
+                      style={{
+                        cursor: "pointer"
+                      }}
+                    />
+                  }
+                  onOpening={this.handleClipOpening}
+                  onClosing={this.handleClipClosing}
+                  content={
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "flex-start",
+                        alignItems: "flex-start",
+                        flexDirection: "column",
+                        padding: 10
+                      }}
+                    >
+                      <div>Clip all continuous values to percentile range</div>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          paddingTop: 5,
+                          paddingBottom: 5
+                        }}
+                      >
+                        <NumericInput
+                          style={{ width: 50 }}
+                          onValueChange={
+                            this.handleClipPercentileMinValueChange
+                          }
+                          onKeyPress={this.handleClipOnKeyPress}
+                          value={clipMin}
+                          min={0}
+                          max={100}
+                          fill={false}
+                          minorStepSize={null}
+                          rightElement={
+                            <div style={{ padding: "4px 2px" }}>
+                              <Icon
+                                icon="percentage"
+                                intent="primary"
+                                iconSize={14}
+                              />
+                            </div>
+                          }
+                        />
+                        <span style={{ marginRight: 5, marginLeft: 5 }}>
+                          {" "}
+                          -{" "}
+                        </span>
+                        <NumericInput
+                          style={{ width: 50 }}
+                          onValueChange={
+                            this.handleClipPercentileMaxValueChange
+                          }
+                          onKeyPress={this.handleClipOnKeyPress}
+                          value={clipMax}
+                          min={0}
+                          max={100}
+                          fill={false}
+                          minorStepSize={null}
+                          rightElement={
+                            <div style={{ padding: "4px 2px" }}>
+                              <Icon
+                                icon="percentage"
+                                intent="primary"
+                                iconSize={14}
+                              />
+                            </div>
+                          }
+                        />
+                        <span style={{ marginRight: 5, marginLeft: 5 }}> </span>
+                        <Button
+                          type="button"
+                          className="bp3-button"
+                          disabled={this.isClipDisabled()}
+                          style={{
+                            cursor: "pointer"
+                          }}
+                          onClick={this.handleClipCommit}
+                        >
+                          Clip
+                        </Button>
+                      </div>
+                    </div>
+                  }
+                />
+              </Tooltip>
+            </div>
+
+            <div style={{ marginLeft: 10 }} className="bp3-button-group">
               <Popover
                 content={
                   <Menu>
@@ -786,7 +1035,7 @@ class Graph extends React.Component {
               >
                 <Button
                   type="button"
-                  className="bp3-button bp3-icon-cog"
+                  className="bp3-button bp3-icon-info-sign"
                   style={{
                     cursor: "pointer"
                   }}

@@ -51,6 +51,7 @@ history state processing.  The undoable action object contents, by key:
     filter state are entirely at the discretion of the action filter.
 
 */
+import fromEntries from "../util/fromEntries";
 
 const historyKeyPrefix = "@@undoable/";
 const pastKey = `${historyKeyPrefix}past`;
@@ -281,20 +282,6 @@ function push(arr, val, limit = undefined) {
   const narr = arr.slice(limit);
   narr.push(val);
   return narr;
-}
-
-function fromEntries(arr) {
-  /*
-  Similar to Object.fromEntries, but only handles array.
-  This could be replaced with the standard fucnction once it
-  is widely available.   As of 3/20/2019, it has not yet
-  been released in the Chrome stable channel.
-  */
-  const obj = {};
-  for (let i = 0, l = arr.length; i < l; i += 1) {
-    obj[arr[i][0]] = arr[i][1];
-  }
-  return obj;
 }
 
 export default Undoable;

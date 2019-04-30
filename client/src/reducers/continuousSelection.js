@@ -17,6 +17,14 @@ const ContinuousSelection = (state = {}, action) => {
         [name]: action.range
       };
     }
+    case "continuous metadata histogram cancel": {
+      const name = makeContinuousDimensionName(
+        action.continuousNamespace,
+        action.selection
+      );
+      const { [name]: deletedField, ...newState } = state;
+      return newState;
+    }
     default: {
       return state;
     }
