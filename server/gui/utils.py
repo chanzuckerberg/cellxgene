@@ -1,6 +1,6 @@
 import platform
 
-from PyQt5.QtCore import QObject, pyqtSignal
+from PySide2.QtCore import QObject, Signal
 
 # Detect OS
 WINDOWS = (platform.system() == "Windows")
@@ -16,6 +16,6 @@ class WorkerSignals(QObject):
         error - `str` error message
         result - `object` data returned from processing, anything
     """
-    finished = pyqtSignal()
-    error = pyqtSignal(str)
-    result = pyqtSignal(object)
+    finished = Signal()
+    error = Signal(str)
+    result = Signal(object)

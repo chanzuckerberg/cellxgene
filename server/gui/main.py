@@ -3,8 +3,8 @@ import sys
 from os.path import splitext, basename
 
 from cefpython3 import cefpython as cef
-from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *
+from PySide2.QtCore import *
+from PySide2.QtWidgets import *
 
 from server.app.app import Server
 from server.gui.browser import CefWidget, CefApplication
