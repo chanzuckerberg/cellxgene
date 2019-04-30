@@ -131,13 +131,13 @@ class LoadWidget(QFrame):
         self.file_label = QLabel("file: ")
         load_layout.addWidget(self.file_label, 0, 1)
         self.embeddings = QComboBox(self)
-        self.embeddings.currentIndexChanged.connect(self.update_embedding)
+        self.embeddings.currentIndexChanged.connect(self.updateEmbedding)
         self.embeddings.addItems(MODES)
         self.embedding_selection = MODES[0]
         load_layout.addWidget(self.embeddings, 1, 0)
 
         self.load = QPushButton("Open...")
-        self.load.clicked.connect(self.on_load)
+        self.load.clicked.connect(self.onLoad)
         load_layout.addWidget(self.load, 1, 1)
 
         # Error section
@@ -153,31 +153,31 @@ class LoadWidget(QFrame):
         load_ui_layout.setStretch(2, 10)
         self.setLayout(load_ui_layout)
 
-    def update_embedding(self, idx):
+    def updateEmbedding(self, idx):
         self.embedding_selection = MODES[idx]
 
-    def on_load(self):
+    def onLoad(self):
         options = QFileDialog.Options()
         # options |= QFileDialog.DontUseNativeDialog
         file_name, _ = QFileDialog.getOpenFileName(self,
                                                   "Open H5AD File", "", "H5AD Files (*.h5ad)", options=options)
         self.title = splitext(basename(file_name))[0]
         worker = DataLoadWorker(file_name, self.embedding_selection)
-        worker.signals.result.connect(self.on_data_success)
-        worker.signals.error.connect(self.on_data_error)
+        worker.signals.result.connect(self.onDataSuccess)
+        worker.signals.error.connect(self.onDataError)
         self.window().thread_pool.start(worker)
 
-    def on_data_success(self, data):
+    def onDataSuccess(self, data):
         self.window().server.attach_data(data, self.title)
-        self.navigate_to_location()
+        self.navigateToLocation()
         # Reveal browser
         self.window().stacked_layout.setCurrentIndex(1)
 
-    def on_data_error(self, err):
+    def onDataError(self, err):
         self.error_label.setText(f"Error: {err}")
         self.error_label.resize(self.MAX_CONTENT_WIDTH, self.error_label.height())
 
-    def navigate_to_location(self, location="http://localhost:8000/"):
+    def navigateToLocation(self, location="http://localhost:8000/"):
         self.window().cef_widget.browser.Navigate(location)
 
 
