@@ -106,7 +106,7 @@ class LoadWidget(QFrame):
         # Init layout
         self.MAX_CONTENT_WIDTH = 500
         load_ui_layout = QVBoxLayout()
-        h_margin = int((WIDTH - self.MAX_CONTENT_WIDTH) / 2)
+        h_margin = (WIDTH - self.MAX_CONTENT_WIDTH) // 2
         if h_margin < 10:
             h_margin = 10
         load_ui_layout.setContentsMargins(h_margin, 20, h_margin, 20)
