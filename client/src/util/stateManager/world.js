@@ -91,11 +91,14 @@ function clipDataframe(
 ) {
   /*
   For all columns in the dataframe, clip all values above or below specified 
-  quantiles to `value`, IFF clipPredicate returns true.
+  quantiles to `value` if clipPredicate returns True for that column (if it
+  returns false, skip the column entirely).
 
   Returns a clipped copy - does not mutate original.
 
   clipPredicate must have signature: (dataframe, colIndex, colLabel) => boolean
+  True signifies that the column should be clipped; false indicates that the
+  column should be left intact/unchanged.
 
   quantileF must have signature:  (label, qval) => number
   */
