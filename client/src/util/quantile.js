@@ -5,7 +5,7 @@ Currently interpolates to 'lower' value.
 
 Arguments:
 
-	* qs - array of quantiles to compute.
+	* quantArr - array of quantiles to compute, where values:  0 <= value <= 1.0
 	* tarr - a typed array
 	* sorted - option bool.  If false (default), will assume array is not sorted.
 	 	If true, will assume it is sorted.
