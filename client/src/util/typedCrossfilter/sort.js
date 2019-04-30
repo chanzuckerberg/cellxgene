@@ -214,7 +214,7 @@ export function sortArray(arr) {
     return quicksort(arr, 0, arr.length - 1);
   }
   /* else unsupported */
-  throw new Error("sortArray recieved unsupported object type");
+  throw new Error("sortArray received unsupported object type");
 }
 
 export function sortIndex(index, source) {
