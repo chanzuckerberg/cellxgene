@@ -95,6 +95,3 @@ class CefApplication(QApplication):
     def stopTimer(self):
         # Stop the timer after Qt's message loop has ended
         self.timer.stop()
-
-
-
