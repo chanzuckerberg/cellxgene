@@ -18,6 +18,7 @@ class DataLoadWorker(QRunnable):
             self.signals.finished.emit()
             return
 
+        # delayed import to speed load
         from server.app.scanpy_engine.scanpy_engine import ScanpyEngine
         args = {
             "layout": self.layout,
