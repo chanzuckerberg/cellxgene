@@ -80,6 +80,9 @@ class Dataframe {
         or TypedArray of length nRows.
       * rowIndex/colIndex - null (create default index using offsets as key),
         or a caller-provided index.
+      * __columnsAccessor - private interface, do not specify.  Used internally
+        to improve caching of column accessors when possible (eg, clone(), 
+        dropCol(), withCol()).
     All columns and indices must have appropriate dimensionality.
     */
     const [nRows, nCols] = dims;
@@ -290,7 +293,7 @@ class Dataframe {
     const columns = [...this.__columns];
     columns.push(colData);
     const colIndex = this.colIndex.withLabel(label);
-    const columnsAccessor = [...this.__columnsAccessor, undefined];
+    const columnsAccessor = [...this.__columnsAccessor];
     return new this.constructor(
       dims,
       columns,
