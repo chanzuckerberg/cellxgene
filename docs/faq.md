@@ -44,7 +44,7 @@ Currently this is not supported directly, but you should be able to do this your
 
 `cellxgene` is optimized for columnar data access. Format the expression matrix (`.X`) as either a [SciPy CSC sparse matrix](https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.csc_matrix.html) or a dense Numpy array (whichever is smaller).
 
-If you are using `cellxgene prepare`, use the `--sparse` flag to request the creation of a sparse CSC `.X` matrix (by default, it will create a dense matrix).
+If you are using `cellxgene prepare`, include the `--sparse` flag to ensure `.X` is formatted as a CSC sparse matrix (by default, `.X` will be a dense matrix)
 
 NOTE: if your dataset size exceeds the size of memory (RAM) on the host computer, differential expression calculations will be extremely slow (or fail, if you run out of virtual memory).
 
