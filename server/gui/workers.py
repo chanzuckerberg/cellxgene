@@ -1,6 +1,6 @@
 import traceback
 
-from PyQt5.QtCore import QRunnable, pyqtSlot
+from PySide2.QtCore import QRunnable, Slot
 
 from server.gui.utils import WorkerSignals
 
@@ -12,7 +12,7 @@ class DataLoadWorker(QRunnable):
         self.layout = layout
         self.signals = WorkerSignals()
 
-    @pyqtSlot()
+    @Slot()
     def run(self):
         if not self.data_file:
             self.signals.finished.emit()
@@ -46,6 +46,6 @@ class ServerRunWorker(QRunnable):
         self.host = host
         self.port = port
 
-    @pyqtSlot()
+    @Slot()
     def run(self):
         self.app.run(host=self.host, debug=False, port=self.port, threaded=True)
