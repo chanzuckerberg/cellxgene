@@ -42,11 +42,11 @@ Currently this is not supported directly, but you should be able to do this your
 
 #### I have a BIG dataset - how can I make cellxgene run as fast as possible?
 
-`cellxgene` is optimized for columnar data access. Format the expression matrix (`.X`) as either a [SciPy CSC sparse matrix](https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.csc_matrix.html) or a dense Numpy array (whichever is smaller).
+If your dataset requires gigabytes of disk space, you may need to select an appropriate storage format in order to effectively utilize `cellxgene`. Tips and tricks:
 
-If you are using `cellxgene prepare`, include the `--sparse` flag to ensure `.X` is formatted as a CSC sparse matrix (by default, `.X` will be a dense matrix)
-
-NOTE: if your dataset size exceeds the size of memory (RAM) on the host computer, differential expression calculations will be extremely slow (or fail, if you run out of virtual memory).
+- `cellxgene` is optimized for columnar data access. For large datasets, format the expression matrix (`.X`) as either a [SciPy CSC sparse matrix](https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.csc_matrix.html) or a dense Numpy array (whichever creates a smaller `h5ad` file). If you are using `cellxgene prepare`, include the `--sparse` flag to ensure `.X` is formatted as a CSC sparse matrix (by default, `.X` will be a dense matrix).
+- `cellxgene` start time is directly proportional to `h5ad` file size and the speed of your file system. Expect that large (eg, million cell) datasets will take minutes to load, even on relatively fast computers with a high performance local hard drive. Once loaded, exploring metadata should still be quick.
+- If your dataset size exceeds the size of memory (RAM) on the host computer, differential expression calculations will be extremely slow (or fail, if you run out of virtual memory).
 
 # Algorithms
 
