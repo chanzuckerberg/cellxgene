@@ -40,6 +40,12 @@ Currently this is not supported directly, but you should be able to do this your
 - `.X` is used to display expression (histograms, scatterplot & colorscale) and to compute differential expression
 - `.obsm` is used for layout
 
+#### I have a BIG dataset - how can I make cellxgene run as fast as possible?
+
+`cellxgene` is optimized for columnar data access. Format the expression matrix (`.X`) as either a [SciPy CSC sparse matrix](https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.csc_matrix.html) or a dense Numpy array (whichever is smaller).
+
+NOTE: if your dataset size exceeds the size of memory (RAM) on the host computer, differential expression calculations will be extremely slow (or fail, if you run out of virtual memory).
+
 # Algorithms
 
 #### How are you computing and sorting differential expression results?
