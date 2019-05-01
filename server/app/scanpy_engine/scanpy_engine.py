@@ -331,8 +331,7 @@ class ScanpyEngine(CXGDriver):
 
         # Currently only handles VAR dimension
         X = self.slice_columns(self.data._X, var_selector)
-        m = encode_matrix_fbs(X, col_idx=np.nonzero(var_selector)[0], row_idx=None)
-        return m
+        return encode_matrix_fbs(X, col_idx=np.nonzero(var_selector)[0], row_idx=None)
 
     @requires_data
     def diffexp_topN(self, obsFilterA, obsFilterB, top_n=None, interactive_limit=None):
