@@ -362,9 +362,9 @@ class Graph extends React.Component {
   };
 
   handleClipOnKeyPress = e => {
-    /* 
-    allow only numbers, plus other critical keys which 
-    may be required to make a number 
+    /*
+    allow only numbers, plus other critical keys which
+    may be required to make a number
     */
     if (!Graph.isValidDigitKeyEvent(e)) {
       e.preventDefault();
@@ -894,102 +894,95 @@ class Graph extends React.Component {
                 marginLeft: 10
               }}
             >
-              <Tooltip content="Visualization settings" position="left">
-                <Popover
-                  target={
-                    <Button
-                      type="button"
-                      className={`bp3-button bp3-icon-timeline-bar-chart ${activeClipClass}`}
-                      style={{
-                        cursor: "pointer"
-                      }}
-                    />
-                  }
-                  onOpening={this.handleClipOpening}
-                  onClosing={this.handleClipClosing}
-                  content={
+              <Popover
+                target={
+                  <Button
+                    type="button"
+                    className={`bp3-button bp3-icon-timeline-bar-chart ${activeClipClass}`}
+                    style={{
+                      cursor: "pointer"
+                    }}
+                  />
+                }
+                position={Position.BOTTOM_RIGHT}
+                onOpening={this.handleClipOpening}
+                onClosing={this.handleClipClosing}
+                content={
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "flex-start",
+                      alignItems: "flex-start",
+                      flexDirection: "column",
+                      padding: 10
+                    }}
+                  >
+                    <div>Clip all continuous values to percentile range</div>
                     <div
                       style={{
                         display: "flex",
-                        justifyContent: "flex-start",
-                        alignItems: "flex-start",
-                        flexDirection: "column",
-                        padding: 10
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        paddingTop: 5,
+                        paddingBottom: 5
                       }}
                     >
-                      <div>Clip all continuous values to percentile range</div>
-                      <div
+                      <NumericInput
+                        style={{ width: 50 }}
+                        onValueChange={this.handleClipPercentileMinValueChange}
+                        onKeyPress={this.handleClipOnKeyPress}
+                        value={clipMin}
+                        min={0}
+                        max={100}
+                        fill={false}
+                        minorStepSize={null}
+                        rightElement={
+                          <div style={{ padding: "4px 2px" }}>
+                            <Icon
+                              icon="percentage"
+                              intent="primary"
+                              iconSize={14}
+                            />
+                          </div>
+                        }
+                      />
+                      <span style={{ marginRight: 5, marginLeft: 5 }}> - </span>
+                      <NumericInput
+                        style={{ width: 50 }}
+                        onValueChange={this.handleClipPercentileMaxValueChange}
+                        onKeyPress={this.handleClipOnKeyPress}
+                        value={clipMax}
+                        min={0}
+                        max={100}
+                        fill={false}
+                        minorStepSize={null}
+                        rightElement={
+                          <div style={{ padding: "4px 2px" }}>
+                            <Icon
+                              icon="percentage"
+                              intent="primary"
+                              iconSize={14}
+                            />
+                          </div>
+                        }
+                      />
+                      <Button
+                        type="button"
+                        className="bp3-button"
+                        disabled={this.isClipDisabled()}
                         style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          paddingTop: 5,
-                          paddingBottom: 5
+                          cursor: "pointer",
+                          marginRight: 5,
+                          marginLeft: 5
                         }}
+                        onClick={this.handleClipCommit}
                       >
-                        <NumericInput
-                          style={{ width: 50 }}
-                          onValueChange={
-                            this.handleClipPercentileMinValueChange
-                          }
-                          onKeyPress={this.handleClipOnKeyPress}
-                          value={clipMin}
-                          min={0}
-                          max={100}
-                          fill={false}
-                          minorStepSize={null}
-                          rightElement={
-                            <div style={{ padding: "4px 2px" }}>
-                              <Icon
-                                icon="percentage"
-                                intent="primary"
-                                iconSize={14}
-                              />
-                            </div>
-                          }
-                        />
-                        <span style={{ marginRight: 5, marginLeft: 5 }}>
-                          {" "}
-                          -{" "}
-                        </span>
-                        <NumericInput
-                          style={{ width: 50 }}
-                          onValueChange={
-                            this.handleClipPercentileMaxValueChange
-                          }
-                          onKeyPress={this.handleClipOnKeyPress}
-                          value={clipMax}
-                          min={0}
-                          max={100}
-                          fill={false}
-                          minorStepSize={null}
-                          rightElement={
-                            <div style={{ padding: "4px 2px" }}>
-                              <Icon
-                                icon="percentage"
-                                intent="primary"
-                                iconSize={14}
-                              />
-                            </div>
-                          }
-                        />
-                        <span style={{ marginRight: 5, marginLeft: 5 }}> </span>
-                        <Button
-                          type="button"
-                          className="bp3-button"
-                          disabled={this.isClipDisabled()}
-                          style={{
-                            cursor: "pointer"
-                          }}
-                          onClick={this.handleClipCommit}
-                        >
-                          Clip
-                        </Button>
-                      </div>
+                        Clip
+                      </Button>
                     </div>
-                  }
-                />
-              </Tooltip>
+                  </div>
+                }
+              />
             </div>
 
             <div style={{ marginLeft: 10 }} className="bp3-button-group">
