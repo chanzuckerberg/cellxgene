@@ -3,6 +3,7 @@ import warnings
 import numpy as np
 from pandas.core.dtypes.dtypes import CategoricalDtype
 import scanpy as sc
+from scipy import sparse
 
 from server.app.driver.driver import CXGDriver
 from server.app.util.constants import Axis, DEFAULT_TOP_N
@@ -291,6 +292,22 @@ class ScanpyEngine(CXGDriver):
             df = df[fields]
         return encode_matrix_fbs(df, col_idx=df.columns)
 
+    @staticmethod
+    def slice_columns(X, var_mask):
+        """
+        Slice columns from the matrix X, as specified by the mask
+        Semantically equivalent to X[:, var_mask], but handles sparse
+        matrices in a more performant manner.
+        """
+        if var_mask is None:    # noop
+            return X
+        if sparse.issparse(X):  # use tuned getcol/hstack for performance
+            indices = np.nonzero(var_mask)[0]
+            cols = [X.getcol(i) for i in indices]
+            return sparse.hstack(cols)
+        else:   # else, just use standard slicing, which is fine for dense arrays
+            return X[:, var_mask]
+
     @requires_data
     def data_frame_to_fbs_matrix(self, filter, axis):
         """
@@ -313,9 +330,7 @@ class ScanpyEngine(CXGDriver):
             raise FilterError("filtering on obs unsupported")
 
         # Currently only handles VAR dimension
-        X = self.data._X
-        if var_selector is not None:
-            X = X[:, var_selector]
+        X = self.slice_columns(self.data._X, var_selector)
         return encode_matrix_fbs(X, col_idx=np.nonzero(var_selector)[0], row_idx=None)
 
     @requires_data
