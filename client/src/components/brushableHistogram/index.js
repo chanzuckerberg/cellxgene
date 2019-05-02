@@ -158,7 +158,7 @@ class HistogramBrush extends React.Component {
 
       // ignore programmatically generated events
       if (!d3.event.sourceEvent) return;
-      // ignore cascading events
+      // ignore cascading events, which are programmatically generated
       if (d3.event.sourceEvent.sourceEvent) return;
 
       if (d3.event.selection) {
@@ -195,7 +195,7 @@ class HistogramBrush extends React.Component {
 
       // ignore programmatically generated events
       if (!d3.event.sourceEvent) return;
-      // ignore cascading events
+      // ignore cascading events, which are programmatically generated
       if (d3.event.sourceEvent.sourceEvent) return;
 
       if (d3.event.selection) {
