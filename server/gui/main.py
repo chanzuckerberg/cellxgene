@@ -1,6 +1,7 @@
 # flake8: noqa F403, F405
-import sys
 from os.path import splitext, basename
+import sys
+import threading
 
 from cefpython3 import cefpython as cef
 from PySide2.QtCore import *
@@ -9,22 +10,19 @@ from PySide2.QtWidgets import *
 from server.app.app import Server
 from server.gui.browser import CefWidget, CefApplication
 from server.gui.workers import DataLoadWorker, ServerRunWorker
-from server.gui.utils import WINDOWS, LINUX, MAC
+from server.gui.utils import WINDOWS, LINUX, MAC, FileLoadSignals
 from server.utils.constants import MODES
 
 
 # Configuration
 # TODO remember this or calculate it?
-
 WIDTH = 1024
 HEIGHT = 768
-
 
 # noinspection PyUnresolvedReferences
 class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__(None)
-        self.thread_pool = QThreadPool()
         self.cef_widget = None
         self.data_widget = None
         self.server = Server()
@@ -91,7 +89,8 @@ class MainWindow(QMainWindow):
 
     def runServer(self):
         worker = ServerRunWorker(self.server.app, host="127.0.0.1", port=8000)
-        self.thread_pool.start(worker)
+        self.httpd = threading.Thread(target=worker.run, daemon=True)
+        self.httpd.start()
 
     def clearBrowserReferences(self):
         # Clear browser references that you keep anywhere in your
@@ -102,7 +101,6 @@ class MainWindow(QMainWindow):
 class LoadWidget(QFrame):
     def __init__(self, parent):
         super(LoadWidget, self).__init__(parent=parent)
-
         # Init layout
         self.MAX_CONTENT_WIDTH = 500
         load_ui_layout = QVBoxLayout()
@@ -153,8 +151,18 @@ class LoadWidget(QFrame):
         load_ui_layout.setStretch(2, 10)
         self.setLayout(load_ui_layout)
 
+        self.signals = FileLoadSignals()
+        self.signals.selectedFile.connect(self.createScanpyEngine)
+
     def updateEmbedding(self, idx):
         self.embedding_selection = MODES[idx]
+
+    def createScanpyEngine(self, file_name):
+        worker = DataLoadWorker(file_name, self.embedding_selection)
+        worker.signals.result.connect(self.onDataSuccess)
+        worker.signals.error.connect(self.onDataError)
+        self.load_worker = threading.Thread(target=worker.run, daemon=True)
+        self.load_worker.start()
 
     def onLoad(self):
         options = QFileDialog.Options()
@@ -162,10 +170,9 @@ class LoadWidget(QFrame):
         file_name, _ = QFileDialog.getOpenFileName(self,
                                                   "Open H5AD File", "", "H5AD Files (*.h5ad)", options=options)
         self.title = splitext(basename(file_name))[0]
-        worker = DataLoadWorker(file_name, self.embedding_selection)
-        worker.signals.result.connect(self.onDataSuccess)
-        worker.signals.error.connect(self.onDataError)
-        self.window().thread_pool.start(worker)
+        if file_name:
+            self.signals.selectedFile.emit(file_name)
+
 
     def onDataSuccess(self, data):
         self.window().server.attach_data(data, self.title)
