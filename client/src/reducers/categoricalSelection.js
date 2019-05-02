@@ -20,7 +20,8 @@ const CategoricalSelection = (
   switch (action.type) {
     case "initial data load complete (universe exists)":
     case "set World to current selection":
-    case "reset World to eq Universe": {
+    case "reset World to eq Universe":
+    case "set clip quantiles": {
       const { world } = nextSharedState;
       return ControlsHelpers.createCategoricalSelection(
         maxCategoryItems(prevSharedState),
