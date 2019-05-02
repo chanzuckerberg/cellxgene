@@ -898,6 +898,7 @@ class Graph extends React.Component {
                 target={
                   <Button
                     type="button"
+                    data-testid="visualization-settings"
                     className={`bp3-button bp3-icon-timeline-bar-chart ${activeClipClass}`}
                     style={{
                       cursor: "pointer"
@@ -929,6 +930,7 @@ class Graph extends React.Component {
                     >
                       <NumericInput
                         style={{ width: 50 }}
+                        data-testid={"clip-min-input"}
                         onValueChange={this.handleClipPercentileMinValueChange}
                         onKeyPress={this.handleClipOnKeyPress}
                         value={clipMin}
@@ -949,6 +951,7 @@ class Graph extends React.Component {
                       <span style={{ marginRight: 5, marginLeft: 5 }}> - </span>
                       <NumericInput
                         style={{ width: 50 }}
+                        data-testid={"clip-max-input"}
                         onValueChange={this.handleClipPercentileMaxValueChange}
                         onKeyPress={this.handleClipOnKeyPress}
                         value={clipMax}
@@ -968,6 +971,7 @@ class Graph extends React.Component {
                       />
                       <Button
                         type="button"
+                        data-testid="clip-commit"
                         className="bp3-button"
                         disabled={this.isClipDisabled()}
                         style={{

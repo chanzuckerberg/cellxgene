@@ -108,6 +108,15 @@ export const datasets = {
           count: "24"
         }
       }
+    },
+    clip: {
+      min: "30",
+      max: "70",
+      metadata: "n_genes",
+      gene: "S100A8",
+      "coordinates-as-percent": { x1: 0.25, y1: 0.5, x2: 0.55, y2: 0.5 },
+      count: "392",
+      "gene-cell-count": "421"
     }
   }
 };

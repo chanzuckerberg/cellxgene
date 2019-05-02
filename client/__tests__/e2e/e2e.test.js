@@ -19,7 +19,7 @@ beforeAll(async () => {
   const browserParams = DEV
     ? { headless: false, slowMo: 5 }
     : DEBUG
-    ? { headless: false, slowMo: 100, devtools: true }
+    ? { headless: false, slowMo: 100, devtools: false }
     : {};
   browser = await puppeteer.launch(browserParams);
   page = await browser.newPage();
@@ -182,7 +182,6 @@ describe("diffexp", async () => {
     );
   });
 });
-//
 
 describe("subset/reset", async () => {
   test("subset - cell count matches", async () => {
@@ -268,6 +267,38 @@ describe("scatter plot", async () => {
     await utils.clickOn(`plot-x-${data.scatter.genes.x}`);
     await utils.clickOn(`plot-y-${data.scatter.genes.y}`);
     await utils.waitByID("scatterplot");
+  });
+});
+
+describe("clipping", async () => {
+  test("clip continuous", async () => {
+    await cxgActions.clip(data.clip.min, data.clip.max)
+    const histId = `histogram-${data.clip.metadata}-plot-brush`;
+    const coords = await cxgActions.calcDragCoordinates(
+      histId,
+      data.clip["coordinates-as-percent"]
+    );
+    await cxgActions.drag(histId, coords.start, coords.end);
+    const cellCount = await cxgActions.cellSet(1);
+    expect(cellCount).toBe(data.clip.count);
+    
+  });
+
+  test("clip gene", async () => {
+    await utils.typeInto("gene-search", data.clip.gene);
+    await page.keyboard.press("Enter");
+    await page.waitForSelector(
+      `[data-testid='histogram-${data.clip.gene}']`
+    );
+    await cxgActions.clip(data.clip.min, data.clip.max)
+    const histId = `histogram-${data.clip.gene}-plot-brush`;
+    const coords = await cxgActions.calcDragCoordinates(
+      histId,
+      data.clip["coordinates-as-percent"]
+    );
+    await cxgActions.drag(histId, coords.start, coords.end);
+    const cellCount = await cxgActions.cellSet(1);
+    expect(cellCount).toBe(data.clip["gene-cell-count"]);
   });
 });
 
