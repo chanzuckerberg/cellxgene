@@ -38,12 +38,11 @@ class HistogramBrush extends React.Component {
     return varData.col(field);
   }
 
-  calcHistogramCache = memoize((world, field) => {
+  calcHistogramCache = memoize((col, field) => {
     /*
      recalculate expensive stuff, notably bins, summaries, etc.
     */
     const histogramCache = {};
-    const col = HistogramBrush.getColumn(world, field);
     const values = col.asArray();
     const summary = col.summarize();
     const { min: domainMin, max: domainMax } = summary;
@@ -87,23 +86,42 @@ class HistogramBrush extends React.Component {
   componentDidUpdate(prevProps) {
     const { field, world, continuousSelection } = this.props;
     const { x, y, bins, svgRef } = this._histogram;
+    let { brushXselection, brushX } = this.state;
+    let forceBrushUpdate = false;
 
-    if (world !== prevProps.world) {
-      this.renderAxesBrushBins(x, y, bins, svgRef, field);
+    /*
+    Update our axis if the underlying dataframe column has changed
+    */
+    const dfColumn = HistogramBrush.getColumn(world, field);
+    const oldDfColumn = HistogramBrush.getColumn(
+      prevProps.world,
+      prevProps.field
+    );
+    if (dfColumn !== oldDfColumn) {
+      ({ brushXselection, brushX } = this.renderAxesBrushBins(
+        x,
+        y,
+        bins,
+        svgRef,
+        field
+      ));
+      forceBrushUpdate = true;
     }
 
     /*
     if the selection has changed, ensure that the brush correctly reflects
     the underlying selection.
     */
-    if (continuousSelection !== prevProps.continuousSelection) {
+    if (
+      forceBrushUpdate ||
+      continuousSelection !== prevProps.continuousSelection
+    ) {
       const { isObs, isUserDefined, isDiffExp } = this.props;
       const myName = makeContinuousDimensionName(
         { isObs, isUserDefined, isDiffExp },
         field
       );
       const range = continuousSelection[myName];
-      const { brushXselection, brushX } = this.state;
       if (brushXselection) {
         const selection = d3.brushSelection(brushXselection.node());
         if (!range && selection) {
@@ -140,6 +158,8 @@ class HistogramBrush extends React.Component {
 
       // ignore programmatically generated events
       if (!d3.event.sourceEvent) return;
+      // ignore cascading events
+      if (d3.event.sourceEvent.sourceEvent) return;
 
       if (d3.event.selection) {
         dispatch({
@@ -175,6 +195,8 @@ class HistogramBrush extends React.Component {
 
       // ignore programmatically generated events
       if (!d3.event.sourceEvent) return;
+      // ignore cascading events
+      if (d3.event.sourceEvent.sourceEvent) return;
 
       if (d3.event.selection) {
         let _range;
@@ -222,7 +244,8 @@ class HistogramBrush extends React.Component {
 
   drawHistogram(svgRef) {
     const { field, world } = this.props;
-    const histogramCache = this.calcHistogramCache(world, field);
+    const col = HistogramBrush.getColumn(world, field);
+    const histogramCache = this.calcHistogramCache(col, field);
     const { x, y, bins } = histogramCache;
     this._histogram = { x, y, bins, svgRef };
   }
@@ -348,7 +371,9 @@ class HistogramBrush extends React.Component {
     svg.selectAll(".axis path").style("stroke", "rgb(230,230,230)");
     svg.selectAll(".axis line").style("stroke", "rgb(230,230,230)");
 
-    this.setState({ brushX, brushXselection });
+    const newState = { brushX, brushXselection };
+    this.setState(newState);
+    return newState;
   }
 
   render() {
