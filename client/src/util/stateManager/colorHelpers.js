@@ -1,12 +1,12 @@
 /*
 Helper functions for the embedded graph colors
 */
-import _ from "lodash";
 import * as d3 from "d3";
 import { interpolateRainbow, interpolateCool } from "d3-scale-chromatic";
 import * as globals from "../../globals";
 import parseRGB from "../parseRGB";
 import finiteExtent from "../finiteExtent";
+import { range } from "../range";
 
 /*
 create new colors state object.   Paramters:
@@ -37,9 +37,7 @@ function createColors(world, colorMode = null, colorAccessor = null) {
 }
 
 function createColorsByCategoricalMetadata(world, accessor) {
-  const { categories } = _.filter(world.schema.annotations.obs, {
-    name: accessor
-  })[0];
+  const { categories } = world.schema.annotations.obsByName[accessor];
 
   const scale = d3
     .scaleSequential(interpolateRainbow)
@@ -67,7 +65,7 @@ function createColorsByContinuousMetadata(world, accessor) {
   const scale = d3
     .scaleQuantile()
     .domain([min, max])
-    .range(_.range(colorBins - 1, -1, -1));
+    .range(range(colorBins - 1, -1, -1));
 
   /* pre-create colors - much faster than doing it for each obs */
   const colors = new Array(colorBins);
@@ -97,7 +95,7 @@ function createColorsByExpression(world, accessor) {
   const scale = d3
     .scaleQuantile()
     .domain([min, max])
-    .range(_.range(colorBins - 1, -1, -1));
+    .range(range(colorBins - 1, -1, -1));
 
   /* pre-create colors - much faster than doing it for each obs */
   const colors = new Array(colorBins);

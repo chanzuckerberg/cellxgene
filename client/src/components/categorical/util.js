@@ -5,7 +5,6 @@
 // return sorted index
 
 import isNumber from "is-number";
-import _ from "lodash";
 
 const sortedCategoryValues = values => {
   /* this sort could be memoized for perf */
@@ -13,7 +12,7 @@ const sortedCategoryValues = values => {
   const strings = [];
   const ints = [];
 
-  _.forEach(values, v => {
+  values.forEach(v => {
     if (isNumber(v[0])) {
       ints.push(v);
     } else {

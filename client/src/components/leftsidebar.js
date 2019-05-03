@@ -1,5 +1,4 @@
 // jshint esversion: 6
-import _ from "lodash";
 import React from "react";
 import { connect } from "react-redux";
 import Categorical from "./categorical/categorical";
@@ -10,7 +9,7 @@ import DynamicScatterplot from "./scatterplot/scatterplot";
 
 @connect(state => ({
   responsive: state.responsive,
-  datasetTitle: _.get(state.config, "displayNames.dataset"),
+  datasetTitle: state.config?.displayNames?.dataset,
   scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
   scatterplotYYaccessor: state.controls.scatterplotYYaccessor
 }))
