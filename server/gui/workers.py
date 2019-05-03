@@ -1,18 +1,15 @@
 import traceback
 
-from PySide2.QtCore import QRunnable, Slot
-
 from server.gui.utils import WorkerSignals
 
 
-class DataLoadWorker(QRunnable):
+class DataLoadWorker():
     def __init__(self, data_file, layout="umap", *args, **kwargs):
         super(DataLoadWorker, self).__init__()
         self.data_file = data_file
         self.layout = layout
         self.signals = WorkerSignals()
 
-    @Slot()
     def run(self):
         if not self.data_file:
             self.signals.finished.emit()
@@ -39,13 +36,12 @@ class DataLoadWorker(QRunnable):
             self.signals.finished.emit()
 
 
-class ServerRunWorker(QRunnable):
+class ServerRunWorker():
     def __init__(self, app, host, port, *args, **kwargs):
         super(ServerRunWorker, self).__init__()
         self.app = app
         self.host = host
         self.port = port
 
-    @Slot()
     def run(self):
         self.app.run(host=self.host, debug=False, port=self.port, threaded=True)

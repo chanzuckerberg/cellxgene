@@ -19,3 +19,7 @@ class WorkerSignals(QObject):
     finished = Signal()
     error = Signal(str)
     result = Signal(object)
+
+
+class FileLoadSignals(QObject):
+    selectedFile = Signal(str)
