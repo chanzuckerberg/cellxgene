@@ -3,6 +3,8 @@ Label indexing - map a label to & from an integer offset.  See Dataframe
 for how this is used.
 **/
 
+import { rangeFill as fillRange } from "../range";
+
 /*
 Private utility functions
 */
@@ -19,14 +21,6 @@ function extent(tarr) {
     }
   }
   return [min, max];
-}
-
-function fillRange(arr, start = 0) {
-  const larr = arr;
-  for (let i = 0, l = larr.length; i < l; i += 1) {
-    larr[i] = i + start;
-  }
-  return larr;
 }
 
 /* eslint-disable class-methods-use-this */
