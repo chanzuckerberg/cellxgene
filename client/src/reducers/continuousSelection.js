@@ -2,7 +2,8 @@ import { makeContinuousDimensionName } from "../util/nameCreators";
 
 const ContinuousSelection = (state = {}, action) => {
   switch (action.type) {
-    case "reset World to eq Universe": {
+    case "reset World to eq Universe":
+    case "set clip quantiles": {
       return {};
     }
     case "continuous metadata histogram start":
