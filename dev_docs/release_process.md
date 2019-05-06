@@ -43,9 +43,9 @@ Follow these steps to create a release.
 8. Publish to pypi by performing the following steps (assumes you that you have registered for pypi, 
 and that you have write access to the cellxgene pypi package):
     - Build the distribution and upload to test pypi `make release-stage-2`
-    - [optional] Test the test installation in a fresh virtual environment using `make install-release-test`
+    - Test the test installation in a fresh virtual environment using `make install-release-test`
     - Upload the package to real pypi using `make release-stage-final`
-    - [optional] Test the installation in a fresh virtual environment using
+    - Test the installation in a fresh virtual environment using
       `pip install cellxgene`
     - **Troubleshooting**:
         - Fails to upload to test.pypi: pypi doesn't allow you to reupload a release with the same version number, 
