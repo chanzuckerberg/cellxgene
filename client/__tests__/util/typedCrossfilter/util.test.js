@@ -1,8 +1,8 @@
 import {
-  fillRange,
   sliceByIndex,
   makeSortIndex
 } from "../../../src/util/typedCrossfilter/util";
+import { rangeFill as fillRange } from "../../../src/util/range";
 
 describe("fillRange", () => {
   test("Array", () => {
