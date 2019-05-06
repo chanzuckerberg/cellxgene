@@ -114,12 +114,12 @@ install-dev : uninstall
 
 # install from test.pypi to test your release
 install-release-test : uninstall
-	pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple cellxgene
+	pip install --no-cache-dir --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple cellxgene
 	@echo "Installed cellxgene from test.pypi.org, now run and smoke test"
 
 # install from pypi to test your release
 install-release : uninstall
-	pip install cellxgene
+	pip install --no-cache-dir cellxgene
 	@echo "Installed cellxgene from pypi.org"
 
 uninstall :
