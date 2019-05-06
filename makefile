@@ -76,7 +76,7 @@ release-stage-final: twine-prod
 
 # DANGER: releases directly to prod
 # use this if you accidently burned a test release version number,
-release-burned : dev-env pydist twine-prod
+release-directly-to-prod : dev-env pydist twine-prod
 	@echo "Dist built and uploaded to pypi.org"
 	@echo "Test the install:"
 	@echo "    make install-release"
