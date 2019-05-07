@@ -304,7 +304,7 @@ class ScanpyEngine(CXGDriver):
         if sparse.issparse(X):  # use tuned getcol/hstack for performance
             indices = np.nonzero(var_mask)[0]
             cols = [X.getcol(i) for i in indices]
-            return sparse.hstack(cols)
+            return sparse.hstack(cols, format="csc")
         else:   # else, just use standard slicing, which is fine for dense arrays
             return X[:, var_mask]
 
