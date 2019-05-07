@@ -122,15 +122,15 @@ function reconcileSchemaCategoriesWithSummary(universe) {
   cases, add a 'categories' field to the schema so it is accessible.
   */
 
-  _.forEach(universe.schema.annotations.obs, s => {
+  universe.schema.annotations.obs.forEach(s => {
     if (
       s.type === "string" ||
       s.type === "boolean" ||
       s.type === "categorical"
     ) {
       const categories = _.union(
-        _.get(s, "categories", []),
-        _.get(universe.obsAnnotations.col(s.name).summarize(), "categories", [])
+        s.categories ?? [],
+        universe.obsAnnotations.col(s.name).summarize().categories ?? []
       );
       s.categories = categories;
     }

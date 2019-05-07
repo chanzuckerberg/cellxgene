@@ -1,12 +1,9 @@
-import _ from "lodash";
-
 import { ControlsHelpers } from "../util/stateManager";
 import * as globals from "../globals";
 
 function maxCategoryItems(state) {
-  return _.get(
-    state.config,
-    "parameters.max-category-items",
+  return (
+    state.config.parameters?.["max-category-items"] ??
     globals.configDefaults.parameters["max-category-items"]
   );
 }

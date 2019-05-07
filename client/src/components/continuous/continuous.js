@@ -9,10 +9,10 @@ import * as globals from "../../globals";
 import HistogramBrush from "../brushableHistogram";
 
 @connect(state => ({
-  obsAnnotations: _.get(state.world, "obsAnnotations", null),
+  obsAnnotations: state.world?.obsAnnotations,
   colorAccessor: state.colors.colorAccessor,
   colorScale: state.colors.scale,
-  schema: _.get(state.world, "schema", null)
+  schema: state.world?.schema
 }))
 class Continuous extends React.Component {
   constructor(props) {

@@ -1,6 +1,5 @@
 // jshint esversion: 6
 import React from "react";
-import _ from "lodash";
 import { connect } from "react-redux";
 import * as d3 from "d3";
 
@@ -17,9 +16,7 @@ class Occupancy extends React.Component {
     const width = 100;
     const height = 11;
 
-    const categories = _.filter(schema.annotations.obs, {
-      name: colorAccessor
-    })[0].categories;
+    const categories = schema.annotations.obsByName[colorAccessor]?.categories;
 
     const x = d3
       .scaleLinear()

@@ -5,7 +5,7 @@ Helper functions for the controls reducer
 import _ from "lodash";
 
 import * as globals from "../../globals";
-import { fillRange } from "../typedCrossfilter/util";
+import { rangeFill as fillRange } from "../range";
 import {
   userDefinedDimensionName,
   diffexpDimensionName

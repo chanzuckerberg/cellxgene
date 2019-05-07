@@ -1,7 +1,6 @@
 // jshint esversion: 6
 import { connect } from "react-redux";
 import React from "react";
-import _ from "lodash";
 import Occupancy from "./occupancy";
 import { countCategoryValues2D } from "../../util/stateManager/worldUtil";
 import * as globals from "../../globals";
@@ -10,7 +9,7 @@ import * as globals from "../../globals";
   categoricalSelection: state.categoricalSelection,
   colorScale: state.colors.scale,
   colorAccessor: state.colors.colorAccessor,
-  schema: _.get(state.world, "schema", null),
+  schema: state.world?.schema,
   world: state.world
 }))
 class CategoryValue extends React.Component {
@@ -60,9 +59,7 @@ class CategoryValue extends React.Component {
     let occupancy = null;
 
     if (isColorBy && schema) {
-      categories = _.filter(schema.annotations.obs, {
-        name: colorAccessor
-      })[0].categories;
+      categories = schema.annotations.obsByName[colorAccessor]?.categories;
     }
 
     if (colorAccessor && !isColorBy && categoricalSelection[colorAccessor]) {

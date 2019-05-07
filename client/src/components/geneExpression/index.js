@@ -57,7 +57,7 @@ const filterGenes = (query, genes) =>
 
 @connect(state => {
   return {
-    obsAnnotations: _.get(state.world, "obsAnnotations", null),
+    obsAnnotations: state.world?.obsAnnotations,
     userDefinedGenes: state.controls.userDefinedGenes,
     userDefinedGenesLoading: state.controls.userDefinedGenesLoading,
     world: state.world,
