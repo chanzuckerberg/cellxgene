@@ -203,32 +203,32 @@ security risk by including the --scripts flag. Make sure you trust the scripts t
 
 def find_available_port(host, port):
     """
-    Helper method to find open port on host. Tries 50 ports incremented from specified port
+    Helper method to find open port on host. Tries 50 ports incremented from the specified port
     """
     import errno
     import socket
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     new_port = port
-    for i in range(3):
+    found_port = False
+    num_ports_to_try = 50
+    for i in range(num_ports_to_try):
         new_port = port + i
-        print(new_port)
         while True:
             try:
                 s.bind((host, new_port))
-                print("worked")
+                found_port = True
                 break
             except socket.error as e:
-                if e.errno == errno.EADDRINUSE:
-                    continue
-                else:
-                    raise
-            finally:
-                s.close()
+                # Reraise if error is not "address in use"
+                if e.errno != errno.EADDRINUSE:
+                    raise e
                 break
-    # else:
-    #     click.echo(f"[cellxgene] No port in range {new_port} - {new_port + 50} was
-    #     available to run cellxgene server on.")
-    #     click.echo(f"[cellxgene] Exiting")
-    #     raise OSError("No available ports")
+        if found_port:
+            break
+    if not found_port:
+        click.echo(f"[cellxgene] No port in range {new_port} - {new_port + num_ports_to_try - 1} was"
+                   f" available to run cellxgene server on.")
+        click.echo(f"[cellxgene] Exiting")
+        raise OSError("No available ports")
     s.close()
     return new_port
