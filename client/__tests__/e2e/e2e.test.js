@@ -19,7 +19,7 @@ beforeAll(async () => {
   const browserParams = DEV
     ? { headless: false, slowMo: 5 }
     : DEBUG
-    ? { headless: false, slowMo: 100, devtools: false }
+    ? { headless: false, slowMo: 100, devtools: true }
     : {};
   browser = await puppeteer.launch(browserParams);
   page = await browser.newPage();
