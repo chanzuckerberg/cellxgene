@@ -21,7 +21,7 @@ class WithNaNs(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.ps = Popen(
-            ["cellxgene", "launch", "server/test/test_datasets/nan.h5ad", "--debug"]
+            ["cellxgene", "launch", "server/test/test_datasets/nan.h5ad", "--debug", "--fixed-port"]
         )
         session = requests.Session()
         for i in range(90):
