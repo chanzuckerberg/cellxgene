@@ -11,7 +11,7 @@ def find_available_port(host, port):
     new_port = port
     found_port = False
     num_ports_to_try = 50
-    for i in range(num_ports_to_try):
+    for port_to_try in range(port, port + num_ports_to_try):
         new_port = port + i
         while True:
             try:
