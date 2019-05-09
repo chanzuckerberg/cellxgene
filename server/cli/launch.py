@@ -54,6 +54,8 @@ from server.utils.constants import MODES
 @click.option("--obs-names", default=None, metavar="", help="Name of annotation field to use for observations.")
 @click.option("--var-names", default=None, metavar="", help="Name of annotation to use for variables.")
 @click.option("--host", default="127.0.0.1", help="Host IP address")
+@click.option("--fixed-port", is_flag=True, default=False, show_default=True,
+              help="Error if request port is not available instead of searching for another available port.")
 @click.option(
     "--max-category-items",
     default=100,
@@ -86,6 +88,7 @@ def launch(
         open_browser,
         port,
         host,
+        fixed_port,
         max_category_items,
         diffexp_lfc_cutoff,
         scripts,
@@ -135,6 +138,15 @@ security risk by including the --scripts flag. Make sure you trust the scripts t
         file_parts = splitext(basename(data))
         title = file_parts[0]
 
+    if not fixed_port:
+        new_port = find_available_port(host, port)
+        if new_port != port:
+            click.echo(
+                f"[cellxgene] Warning: the port you specified was in use, using port {new_port} instead. "
+                f"If you want to require cellxgene to only use the port specified and exit if that port is not "
+                f"available run launch with the --fixed-port flag")
+            port = new_port
+
     # Setup app
     cellxgene_url = f"http://{host}:{port}"
 
@@ -183,4 +195,40 @@ security risk by including the --scripts flag. Make sure you trust the scripts t
         f = open(devnull, "w")
         sys.stdout = f
 
-    server.app.run(host=host, debug=debug, port=port, threaded=True)
+    try:
+        server.app.run(host=host, debug=debug, port=port, threaded=True)
+    except OSError as e:
+        raise click.ClickException(f"{e}. Port is in use, please specify another port using the --port flag.")
+
+
+def find_available_port(host, port):
+    """
+    Helper method to find open port on host. Tries 50 ports incremented from specified port
+    """
+    import errno
+    import socket
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    new_port = port
+    for i in range(3):
+        new_port = port + i
+        print(new_port)
+        while True:
+            try:
+                s.bind((host, new_port))
+                print("worked")
+                break
+            except socket.error as e:
+                if e.errno == errno.EADDRINUSE:
+                    continue
+                else:
+                    raise
+            finally:
+                s.close()
+                break
+    # else:
+    #     click.echo(f"[cellxgene] No port in range {new_port} - {new_port + 50} was
+    #     available to run cellxgene server on.")
+    #     click.echo(f"[cellxgene] Exiting")
+    #     raise OSError("No available ports")
+    s.close()
+    return new_port
