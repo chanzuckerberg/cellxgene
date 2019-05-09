@@ -122,6 +122,10 @@ install-release : uninstall
 	pip install --no-cache-dir cellxgene
 	@echo "Installed cellxgene from pypi.org"
 
+# install from dist
+install-dist : uninstall
+	pip install dist/cellxgene*.tar.gz
+
 uninstall :
 	pip uninstall -y cellxgene || :
 
