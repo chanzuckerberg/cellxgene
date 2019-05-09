@@ -11,6 +11,7 @@ from server.app.app import Server
 from server.app.util.errors import ScanpyFileError
 from server.app.util.utils import custom_format_warning
 from server.utils.constants import MODES
+from server.utils.utils import find_available_port
 
 
 @click.command()
@@ -199,36 +200,3 @@ security risk by including the --scripts flag. Make sure you trust the scripts t
         server.app.run(host=host, debug=debug, port=port, threaded=True)
     except OSError as e:
         raise click.ClickException(f"{e}. Port is in use, please specify another port using the --port flag.")
-
-
-def find_available_port(host, port):
-    """
-    Helper method to find open port on host. Tries 50 ports incremented from the specified port
-    """
-    import errno
-    import socket
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    new_port = port
-    found_port = False
-    num_ports_to_try = 50
-    for i in range(num_ports_to_try):
-        new_port = port + i
-        while True:
-            try:
-                s.bind((host, new_port))
-                found_port = True
-                break
-            except socket.error as e:
-                # Reraise if error is not "address in use"
-                if e.errno != errno.EADDRINUSE:
-                    raise e
-                break
-        if found_port:
-            break
-    if not found_port:
-        click.echo(f"[cellxgene] No port in range {new_port} - {new_port + num_ports_to_try - 1} was"
-                   f" available to run cellxgene server on.")
-        click.echo(f"[cellxgene] Exiting")
-        raise OSError("No available ports")
-    s.close()
-    return new_port
