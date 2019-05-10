@@ -139,6 +139,7 @@ security risk by including the --scripts flag. Make sure you trust the scripts t
         file_parts = splitext(basename(data))
         title = file_parts[0]
 
+    print(no_port_scan)
     if not no_port_scan:
         new_port = find_available_port(host, port)
         # warn if the user specified port is being overridden
