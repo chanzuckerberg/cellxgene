@@ -1,9 +1,10 @@
 import logging
 from os import devnull
-from os.path import splitext, basename
+from os.path import splitext, basename, exists, getsize
 import sys
 import warnings
 import webbrowser
+import psutil
 
 import click
 
@@ -11,6 +12,10 @@ from server.app.app import Server
 from server.app.util.errors import ScanpyFileError
 from server.app.util.utils import custom_format_warning
 from server.utils.constants import MODES
+
+
+# anything bigger than this will generate a special message
+BIG_FILE_SIZE_THRESHOLD = 100 * 2**20
 
 
 @click.command()
@@ -148,7 +153,17 @@ security risk by including the --scripts flag. Make sure you trust the scripts t
         log = logging.getLogger("werkzeug")
         log.setLevel(logging.ERROR)
 
-    click.echo(f"[cellxgene] Loading data from {basename(data)}, this may take awhile...")
+    file_size = getsize(data) if exists(data) else 0
+
+    # if a big file, let the user know it may take a while to load.
+    if file_size > BIG_FILE_SIZE_THRESHOLD:
+        click.echo(f"[cellxgene] Loading data from {basename(data)}, this may take awhile...")
+    else:
+        click.echo(f"[cellxgene] Loading data from {basename(data)}.")
+    # if file is larger than main memory, let the user know performance may suffer
+    if file_size > .95*psutil.virtual_memory().total:
+        click.echo(f"[cellxgene] Warning: data file is larger than RAM - application may be very slow.")
+
 
     # Fix for anaconda python. matplotlib typically expects python to be installed as a framework TKAgg is usually
     # available and fixes this issue. See https://matplotlib.org/faq/virtualenv_faq.html
