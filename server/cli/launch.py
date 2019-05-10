@@ -161,9 +161,8 @@ security risk by including the --scripts flag. Make sure you trust the scripts t
     else:
         click.echo(f"[cellxgene] Loading data from {basename(data)}.")
     # if file is larger than main memory, let the user know performance may suffer
-    if file_size > .95*psutil.virtual_memory().total:
+    if file_size > .95 * psutil.virtual_memory().total:
         click.echo(f"[cellxgene] Warning: data file is larger than RAM - application may be very slow.")
-
 
     # Fix for anaconda python. matplotlib typically expects python to be installed as a framework TKAgg is usually
     # available and fixes this issue. See https://matplotlib.org/faq/virtualenv_faq.html

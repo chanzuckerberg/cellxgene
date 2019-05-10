@@ -1,5 +1,5 @@
 import warnings
-import os
+
 import numpy as np
 from pandas.core.dtypes.dtypes import CategoricalDtype
 import anndata
