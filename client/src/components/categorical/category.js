@@ -2,7 +2,7 @@ import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
 import { FaChevronRight, FaChevronDown } from "react-icons/fa";
-import { Button, Tooltip } from "@blueprintjs/core";
+import { Button, Tooltip, Icon } from "@blueprintjs/core";
 
 import * as globals from "../../globals";
 import Value from "./value";
@@ -88,12 +88,13 @@ class Category extends React.Component {
   }
 
   renderCategoryItems() {
-    const { categoricalSelection, metadataField } = this.props;
+    const { categoricalSelection, metadataField, isUserAnno } = this.props;
 
     const cat = categoricalSelection[metadataField];
     const optTuples = sortedCategoryValues([...cat.categoryIndices]);
     return _.map(optTuples, (tuple, i) => (
       <Value
+        isUserAnno={isUserAnno}
         optTuples={optTuples}
         key={tuple[1]}
         metadataField={metadataField}
@@ -105,7 +106,13 @@ class Category extends React.Component {
 
   render() {
     const { isExpanded, isChecked } = this.state;
-    const { metadataField, colorAccessor, categoricalSelection } = this.props;
+    const {
+      metadataField,
+      colorAccessor,
+      categoricalSelection,
+      isUserAnno,
+      createAnnoModeActive
+    } = this.props;
     const { isTruncated } = categoricalSelection[metadataField];
     return (
       <div
@@ -155,6 +162,9 @@ class Category extends React.Component {
                 this.setState({ isExpanded: !isExpanded });
               }}
             >
+              {isUserAnno ? (
+                <Icon style={{ marginRight: 5 }} icon={"tag"} iconSize={16} />
+              ) : null}
               {metadataField}
               {isExpanded ? (
                 <FaChevronDown
@@ -169,16 +179,47 @@ class Category extends React.Component {
               )}
             </span>
           </div>
-          <Tooltip content="Use as color scale" position="bottom">
-            <Button
-              data-testclass="colorby"
-              data-testid={`colorby-${metadataField}`}
-              onClick={this.handleColorChange}
-              active={colorAccessor === metadataField}
-              intent={colorAccessor === metadataField ? "primary" : "none"}
-              icon="tint"
-            />
-          </Tooltip>
+          <div>
+            {isUserAnno ? (
+              <Tooltip
+                content="Delete category & associated labels"
+                position="bottom"
+              >
+                <Button
+                  style={{ marginRight: 5 }}
+                  data-testclass="deleteAnnoCategory"
+                  data-testid={`deleteAnnoCategory-${metadataField}`}
+                  onClick={this.handleDeleteUserAnno}
+                  icon="delete"
+                  minimal
+                />
+              </Tooltip>
+            ) : null}
+            {createAnnoModeActive ? (
+              <Tooltip
+                content="Duplicate this field as an editable category"
+                position="bottom"
+              >
+                <Button
+                  style={{ marginRight: 5 }}
+                  data-testclass="duplicateExitingAnno"
+                  data-testid={`duplicateExitingAnno-${metadataField}`}
+                  onClick={this.handleDuplicateAnno}
+                  icon="duplicate"
+                />
+              </Tooltip>
+            ) : null}
+            <Tooltip content="Use as color scale" position="bottom">
+              <Button
+                data-testclass="colorby"
+                data-testid={`colorby-${metadataField}`}
+                onClick={this.handleColorChange}
+                active={colorAccessor === metadataField}
+                intent={colorAccessor === metadataField ? "primary" : "none"}
+                icon="tint"
+              />
+            </Tooltip>
+          </div>
         </div>
         <div style={{ marginLeft: 26 }}>
           {isExpanded ? this.renderCategoryItems() : null}

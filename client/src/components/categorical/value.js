@@ -4,6 +4,13 @@ import React from "react";
 import Occupancy from "./occupancy";
 import { countCategoryValues2D } from "../../util/stateManager/worldUtil";
 import * as globals from "../../globals";
+import {
+  Button,
+  Tooltip,
+  Icon,
+  ControlGroup,
+  InputGroup
+} from "@blueprintjs/core";
 
 @connect(state => ({
   categoricalSelection: state.categoricalSelection,
@@ -13,6 +20,19 @@ import * as globals from "../../globals";
   world: state.world
 }))
 class CategoryValue extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      isEditing: false
+    };
+  }
+
+  handleDeleteValue = () => {};
+
+  handleEditValue = () => {
+    this.setState({ isEditing: true });
+  };
+
   toggleOff() {
     const { dispatch, metadataField, categoryIndex } = this.props;
     dispatch({
@@ -42,6 +62,8 @@ class CategoryValue extends React.Component {
       schema,
       world
     } = this.props;
+
+    const { isEditing } = this.state;
 
     if (!categoricalSelection) return null;
 
@@ -90,24 +112,49 @@ class CategoryValue extends React.Component {
             justifyContent: "space-between"
           }}
         >
-          <label className="bp3-control bp3-checkbox">
-            <input
-              onChange={
-                selected ? this.toggleOff.bind(this) : this.toggleOn.bind(this)
-              }
-              data-testclass="categorical-value-select"
-              data-testid={`categorical-value-select-${metadataField}-${displayString}`}
-              checked={selected}
-              type="checkbox"
-            />
-            <span className="bp3-control-indicator" />
-            <span
-              data-testid={`categorical-value-${metadataField}-${displayString}`}
-              data-testclass="categorical-value"
-            >
-              {displayString}
-            </span>
-          </label>
+          {!isEditing ? (
+            <label className="bp3-control bp3-checkbox">
+              <input
+                onChange={
+                  selected
+                    ? this.toggleOff.bind(this)
+                    : this.toggleOn.bind(this)
+                }
+                data-testclass="categorical-value-select"
+                data-testid={`categorical-value-select-${metadataField}-${displayString}`}
+                checked={selected}
+                type="checkbox"
+              />
+              <span className="bp3-control-indicator" />
+              <span
+                data-testid={`categorical-value-${metadataField}-${displayString}`}
+                data-testclass="categorical-value"
+              >
+                {displayString}
+              </span>
+              <Tooltip content="Edit value" position="bottom">
+                <Button
+                  data-testclass="handleEditValue"
+                  data-testid={`handleEditValue-${metadataField}`}
+                  onClick={this.handleEditValue}
+                  icon="edit"
+                  small
+                  minimal
+                />
+              </Tooltip>
+            </label>
+          ) : (
+            <ControlGroup>
+              <InputGroup small />
+              <Button
+                small
+                icon="small-tick"
+                data-testclass="editValue"
+                data-testid="editValue"
+                onClick={this.handleEditValue}
+              />
+            </ControlGroup>
+          )}
           <span style={{ flexShrink: 0 }}>
             {colorAccessor &&
             !isColorBy &&
@@ -122,6 +169,16 @@ class CategoryValue extends React.Component {
           </span>
         </div>
         <span>
+          <Tooltip content="Delete value" position="bottom">
+            <Button
+              data-testclass="handleDeleteValue"
+              data-testid={`handleDeleteValue-${metadataField}`}
+              onClick={this.handleDeleteValue}
+              icon="delete"
+              small
+              minimal
+            />
+          </Tooltip>
           <span
             data-testclass="categorical-value-count"
             data-testid={`categorical-value-count-${metadataField}-${displayString}`}
