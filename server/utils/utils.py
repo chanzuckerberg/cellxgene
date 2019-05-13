@@ -1,4 +1,5 @@
 import contextlib
+import errno
 import socket
 
 
@@ -15,4 +16,4 @@ def find_available_port(host, port=5005):
                 return port_to_try
             except socket.error:
                 pass
-    raise OSError(f"No port in range {port} - {port + num_ports_to_try - 1} available.")
+    raise OSError(errno.EADDRINUSE, f"No port in range {port} - {port + num_ports_to_try - 1} available.")
