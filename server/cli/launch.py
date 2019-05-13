@@ -51,12 +51,10 @@ from server.utils.utils import find_available_port
     show_default=True,
     help="Open the web browser after launch.",
 )
-@click.option("--port", "-p", help="Port to run server on.", metavar="", default=5005, show_default=True)
+@click.option("--port", "-p", help="Port to run server on.", metavar="", show_default=True)
 @click.option("--obs-names", default=None, metavar="", help="Name of annotation field to use for observations.")
 @click.option("--var-names", default=None, metavar="", help="Name of annotation to use for variables.")
 @click.option("--host", default="127.0.0.1", help="Host IP address")
-@click.option("--no-port-scan", is_flag=True, default=False, show_default=True,
-              help="Disable automatic scan for unused port.")
 @click.option(
     "--max-category-items",
     default=100,
@@ -89,7 +87,6 @@ def launch(
         open_browser,
         port,
         host,
-        no_port_scan,
         max_category_items,
         diffexp_lfc_cutoff,
         scripts,
@@ -139,16 +136,8 @@ security risk by including the --scripts flag. Make sure you trust the scripts t
         file_parts = splitext(basename(data))
         title = file_parts[0]
 
-    print(no_port_scan)
-    if not no_port_scan:
-        new_port = find_available_port(host, port)
-        # warn if the user specified port is being overridden
-        if new_port != port and port != 5005:
-            click.echo(
-                f"[cellxgene] Warning: the port you specified was in use, using port {new_port} instead. "
-                f"If you want to require cellxgene to only use the port specified and exit if that port is not "
-                f"available run launch with the --fixed-port flag")
-        port = new_port
+    if not port:
+        port = find_available_port(host)
 
     # Setup app
     cellxgene_url = f"http://{host}:{port}"
