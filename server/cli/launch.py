@@ -1,3 +1,4 @@
+import errno
 import logging
 from os import devnull
 from os.path import splitext, basename
@@ -190,4 +191,6 @@ security risk by including the --scripts flag. Make sure you trust the scripts t
     try:
         server.app.run(host=host, debug=debug, port=port, threaded=True)
     except OSError as e:
-        raise click.ClickException(f"{e}. Port is in use, please specify another port using the --port flag.")
+        if e.errno == errno.EADDRINUSE:
+            raise click.ClickException(f"{e} Port is in use, please specify an open port using the --port flag.")
+        raise click.ClickException(f"{e}")
