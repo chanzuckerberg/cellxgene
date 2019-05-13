@@ -6,13 +6,7 @@ import * as d3 from "d3";
 @connect()
 class Occupancy extends React.Component {
   render() {
-    const {
-      occupancy,
-      colorScale,
-      categoricalSelection,
-      colorAccessor,
-      schema
-    } = this.props;
+    const { occupancy, colorScale, colorAccessor, schema, world } = this.props;
     const width = 100;
     const height = 11;
 
@@ -25,8 +19,9 @@ class Occupancy extends React.Component {
       .range([0, width]);
 
     let currentOffset = 0;
-
-    const stacks = categoricalSelection[colorAccessor].categoryValues.map(d => {
+    const dfColumn = world.obsAnnotations.col(colorAccessor);
+    const categoryValues = dfColumn.summarize().categories;
+    const stacks = categoryValues.map(d => {
       const o = occupancy.get(d);
 
       const scaledValue = x(o);
