@@ -4,9 +4,9 @@ from os.path import splitext, basename, exists, getsize
 import sys
 import warnings
 import webbrowser
-import psutil
 
 import click
+import psutil
 
 from server.app.app import Server
 from server.app.util.errors import ScanpyFileError
@@ -15,7 +15,7 @@ from server.utils.constants import MODES
 
 
 # anything bigger than this will generate a special message
-BIG_FILE_SIZE_THRESHOLD = 100 * 2**20
+BIG_FILE_SIZE_THRESHOLD = 100 * 2**20  # 100MB
 
 
 @click.command()
@@ -153,7 +153,7 @@ security risk by including the --scripts flag. Make sure you trust the scripts t
         log = logging.getLogger("werkzeug")
         log.setLevel(logging.ERROR)
 
-    file_size = getsize(data) if exists(data) else 0
+    file_size = getsize(data)
 
     # if a big file, let the user know it may take a while to load.
     if file_size > BIG_FILE_SIZE_THRESHOLD:
