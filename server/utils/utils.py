@@ -4,7 +4,7 @@ import socket
 
 def find_available_port(host, port=5005):
     """
-    Helper method to find open port on host. Tries 50 ports incremented from the specified port
+    Helper method to find open port on host. Tries 5000 ports incremented from the specified port
     """
     # Takes approx 2 seconds to do a scan of 5000 ports on my laptop
     num_ports_to_try = 5000
