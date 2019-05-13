@@ -13,6 +13,6 @@ def find_available_port(host, port=5005):
             try:
                 s.bind((host, port_to_try))
                 return port_to_try
-            except socket.error as e:
+            except socket.error:
                 pass
     raise OSError(f"No port in range {port} - {port + num_ports_to_try - 1} available.")
