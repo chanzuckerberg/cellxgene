@@ -19,7 +19,7 @@ class EndPoints(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.ps = Popen(["cellxgene", "launch", "example-dataset/pbmc3k.h5ad", "--debug", "--no-port-scan"])
+        cls.ps = Popen(["cellxgene", "launch", "example-dataset/pbmc3k.h5ad", "--debug", "--port", "5005"])
         session = requests.Session()
         for i in range(90):
             try:
