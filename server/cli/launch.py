@@ -1,6 +1,6 @@
 import logging
 from os import devnull
-from os.path import splitext, basename, exists, getsize
+from os.path import splitext, basename, getsize
 import sys
 import warnings
 import webbrowser
