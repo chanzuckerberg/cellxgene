@@ -1,3 +1,4 @@
+import errno
 import logging
 from os import devnull
 from os.path import splitext, basename, getsize
@@ -12,6 +13,7 @@ from server.app.app import Server
 from server.app.util.errors import ScanpyFileError
 from server.app.util.utils import custom_format_warning
 from server.utils.constants import MODES
+from server.utils.utils import find_available_port
 
 
 # anything bigger than this will generate a special message
@@ -55,7 +57,8 @@ BIG_FILE_SIZE_THRESHOLD = 100 * 2**20  # 100MB
     show_default=True,
     help="Open the web browser after launch.",
 )
-@click.option("--port", "-p", help="Port to run server on.", metavar="", default=5005, show_default=True)
+@click.option("--port", "-p", help="Port to run server on, if not specified cellxgene will find an available port.",
+              metavar="", show_default=True)
 @click.option("--obs-names", default=None, metavar="", help="Name of annotation field to use for observations.")
 @click.option("--var-names", default=None, metavar="", help="Name of annotation to use for variables.")
 @click.option("--host", default="127.0.0.1", help="Host IP address")
@@ -140,6 +143,9 @@ security risk by including the --scripts flag. Make sure you trust the scripts t
         file_parts = splitext(basename(data))
         title = file_parts[0]
 
+    if not port:
+        port = find_available_port(host)
+
     # Setup app
     cellxgene_url = f"http://{host}:{port}"
 
@@ -197,4 +203,9 @@ security risk by including the --scripts flag. Make sure you trust the scripts t
         f = open(devnull, "w")
         sys.stdout = f
 
-    server.app.run(host=host, debug=debug, port=port, threaded=True)
+    try:
+        server.app.run(host=host, debug=debug, port=port, threaded=True)
+    except OSError as e:
+        if e.errno == errno.EADDRINUSE:
+            raise click.ClickException("Port is in use, please specify an open port using the --port flag.") from e
+        raise
