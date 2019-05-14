@@ -52,7 +52,8 @@ from server.utils.utils import find_available_port
     show_default=True,
     help="Open the web browser after launch.",
 )
-@click.option("--port", "-p", help="Port to run server on.", metavar="", show_default=True)
+@click.option("--port", "-p", help="Port to run server on, if not specified cellxgene will find an available port.",
+              metavar="", show_default=True)
 @click.option("--obs-names", default=None, metavar="", help="Name of annotation field to use for observations.")
 @click.option("--var-names", default=None, metavar="", help="Name of annotation to use for variables.")
 @click.option("--host", default="127.0.0.1", help="Host IP address")
@@ -192,5 +193,5 @@ security risk by including the --scripts flag. Make sure you trust the scripts t
         server.app.run(host=host, debug=debug, port=port, threaded=True)
     except OSError as e:
         if e.errno == errno.EADDRINUSE:
-            raise click.ClickException(f"{e} Port is in use, please specify an open port using the --port flag.")
-        raise click.ClickException(f"{e}")
+            raise click.ClickException("Port is in use, please specify an open port using the --port flag.") from e
+        raise e
