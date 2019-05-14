@@ -2,7 +2,7 @@ import warnings
 
 import numpy as np
 from pandas.core.dtypes.dtypes import CategoricalDtype
-import scanpy as sc
+import anndata
 from scipy import sparse
 
 from server.app.driver.driver import CXGDriver
@@ -140,11 +140,10 @@ class ScanpyEngine(CXGDriver):
                 self.schema["annotations"][ax].append(ann_schema)
 
     def _load_data(self, data):
-        # Based on benchmarking, cache=True has no impact on perf.
-        # Note: as of current scanpy/anndata release, setting backed='r' will
-        # result in an error.  https://github.com/theislab/anndata/issues/79
+        # as of AnnData 0.6.19, backed mode performs initial load fast, but at the
+        # cost of significantly slower access to X data.
         try:
-            self.data = sc.read(data, cache=True)
+            self.data = anndata.read_h5ad(data)
         except ValueError:
             raise ScanpyFileError(
                 "File must be in the .h5ad format. Please read "
@@ -174,6 +173,11 @@ class ScanpyEngine(CXGDriver):
 
     @requires_data
     def _validate_data_types(self):
+        if sparse.isspmatrix(self.data.X) and not sparse.isspmatrix_csc(self.data.X):
+            warnings.warn(
+                f"Scanpy data matrix is sparse, but not a CSC (columnar) matrix.  "
+                f"Performance may be improved by using CSC."
+            )
         if self.data.X.dtype != "float32":
             warnings.warn(
                 f"Scanpy data matrix is in {self.data.X.dtype} format not float32. "
