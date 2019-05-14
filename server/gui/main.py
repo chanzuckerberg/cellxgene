@@ -6,6 +6,7 @@ import sys
 import threading
 
 from cefpython3 import cefpython as cef
+import PySide2
 from PySide2.QtCore import *
 from PySide2.QtWidgets import *
 
@@ -15,6 +16,10 @@ from server.gui.utils import WINDOWS, LINUX, MAC, FileLoadSignals, Emitter, Work
 from server.utils.constants import MODES
 from server.utils.utils import find_available_port
 
+
+dirname = dirname(PySide2.__file__)
+plugin_path = join(dirname, 'plugins', 'platforms')
+environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = plugin_path
 
 # Configuration
 # TODO remember this or calculate it?
