@@ -194,4 +194,4 @@ security risk by including the --scripts flag. Make sure you trust the scripts t
     except OSError as e:
         if e.errno == errno.EADDRINUSE:
             raise click.ClickException("Port is in use, please specify an open port using the --port flag.") from e
-        raise e
+        raise
