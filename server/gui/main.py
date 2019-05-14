@@ -16,10 +16,10 @@ from server.gui.utils import WINDOWS, LINUX, MAC, FileLoadSignals, Emitter, Work
 from server.utils.constants import MODES
 from server.utils.utils import find_available_port
 
-
-dirname = dirname(PySide2.__file__)
-plugin_path = join(dirname, 'plugins', 'platforms')
-environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = plugin_path
+if WINDOWS or LINUX:
+    dirname = dirname(PySide2.__file__)
+    plugin_path = join(dirname, 'plugins', 'platforms')
+    environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = plugin_path
 
 # Configuration
 # TODO remember this or calculate it?
@@ -58,8 +58,8 @@ class MainWindow(QMainWindow):
         self.cef_widget = CefWidget(self)
         self.data_widget = LoadWidget(self)
         self.stacked_layout = QStackedLayout()
-        self.stacked_layout.addWidget(self.data_widget)
         self.stacked_layout.addWidget(self.cef_widget)
+        self.stacked_layout.addWidget(self.data_widget)
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
@@ -85,7 +85,9 @@ class MainWindow(QMainWindow):
             # cef widget in the layout with the container.
             self.container = QWidget.createWindowContainer(
                 self.cef_widget.hidden_window, parent=self)
-            self.stacked_layout.addWidget(self.container, 1, 0)
+            self.stacked_layout.replaceWidget(self.cef_widget, self.container)
+        # CEF browser
+        self.stacked_layout.setCurrentIndex(1)
 
     def setupServer(self):
         self.shutdownServer()
