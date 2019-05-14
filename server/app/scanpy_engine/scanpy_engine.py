@@ -305,7 +305,8 @@ class ScanpyEngine(CXGDriver):
         """
         if var_mask is None:    # noop
             return X
-        if sparse.issparse(X):  # use tuned getcol/hstack for performance
+        if sparse.isspmatrix_csc(X):
+            # use tuned getcol/hstack for performance
             indices = np.nonzero(var_mask)[0]
             cols = [X.getcol(i) for i in indices]
             return sparse.hstack(cols, format="csc")
