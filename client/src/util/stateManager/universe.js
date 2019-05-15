@@ -108,12 +108,22 @@ function LayoutFBSToDataframe(arrayBuffer) {
   TODO: XXX
 
   Temporary code to support the progressive introduction of multi-layout
-  support.  For now, just accept the first layout in the FBS, and
-  assume that is the desired default.
+  support.  For now, we search for one of the following in the layouts
+  and use it if we find it.  If not, we just use the first available.
+
+  umap, then tsne, then pca, then whatever is first
   */
+  let layoutIndex = 0;
+  ["umap", "tsne", "pca"].some(name => {
+    const idx = fbs.colIdx.indexOf(`${name}_0`);
+    if (idx !== -1) {
+      layoutIndex = idx;
+    }
+    return idx !== -1;
+  });
   const df = new Dataframe.Dataframe(
     [fbs.nRows, 2],
-    [fbs.columns[0], fbs.columns[1]],
+    [fbs.columns[layoutIndex], fbs.columns[layoutIndex + 1]],
     null,
     new Dataframe.KeyIndex(["X", "Y"])
   );
