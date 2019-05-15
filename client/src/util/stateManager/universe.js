@@ -78,6 +78,7 @@ function AnnotationsFBSToDataframe(arrayBuffer) {
   The application has strong assumptions that all scalar data will be
   stored as a float32 or float64 (regardless of underlying data types).
   For example, clipping of value ranges (eg, user-selected percentiles)
+  depends on the ability to use NaN in any numeric type.
 
   All float data from the server is left as is.  All non-float is promoted
   to an appropriate float.
@@ -98,13 +99,21 @@ function AnnotationsFBSToDataframe(arrayBuffer) {
 
 function LayoutFBSToDataframe(arrayBuffer) {
   const fbs = decodeMatrixFBS(arrayBuffer, true);
-  if (fbs.columns.length !== 2 || !fbs.columns.every(isFpTypedArray)) {
+  if (fbs.columns.length < 2 || !fbs.columns.every(isFpTypedArray)) {
     // We have strong assumptions about the shape & type of layout data.
     throw new Error("Unexpected layout data type returned from server");
   }
+
+  /*
+  TODO: XXX
+
+  Temporary code to support the progressive introduction of multi-layout
+  support.  For now, just accept the first layout in the FBS, and
+  assume that is the desired default.
+  */
   const df = new Dataframe.Dataframe(
-    [fbs.nRows, fbs.nCols],
-    fbs.columns,
+    [fbs.nRows, 2],
+    [fbs.columns[0], fbs.columns[1]],
     null,
     new Dataframe.KeyIndex(["X", "Y"])
   );

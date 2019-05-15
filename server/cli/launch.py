@@ -11,7 +11,6 @@ import psutil
 from server.app.app import Server
 from server.app.util.errors import ScanpyFileError
 from server.app.util.utils import custom_format_warning
-from server.utils.constants import MODES
 
 
 # anything bigger than this will generate a special message
@@ -23,8 +22,8 @@ BIG_FILE_SIZE_THRESHOLD = 100 * 2**20  # 100MB
 @click.option(
     "--layout",
     "-l",
-    type=click.Choice(MODES),
-    default="umap",
+    default=[],
+    multiple=True,
     show_default=True,
     help="Method for layout."
 )

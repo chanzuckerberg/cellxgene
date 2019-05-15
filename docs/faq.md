@@ -38,7 +38,7 @@ Currently this is not supported directly, but you should be able to do this your
 
 - `.obs` and `.var` annotations are use to extract metadata for filtering
 - `.X` is used to display expression (histograms, scatterplot & colorscale) and to compute differential expression
-- `.obsm` is used for layout
+- `.obsm` is used for layout. If an embedding has more than two components, the first two will be used for visualization.
 
 #### I have a BIG dataset - how can I make cellxgene run as fast as possible?
 
