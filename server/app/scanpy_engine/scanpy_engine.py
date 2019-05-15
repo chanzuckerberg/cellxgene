@@ -203,9 +203,6 @@ class ScanpyEngine(CXGDriver):
             else:
                 valid_layouts.append(layout)
 
-        # valid_layouts = [key for key in layout
-        #                  if key in self.data.obsm_keys()
-        #                  and self._is_valid_layout(self.data.obsm[f"X_{key}"])]
         if len(valid_layouts) == 0:
             raise PrepareError(f"No valid layout data.")
 
