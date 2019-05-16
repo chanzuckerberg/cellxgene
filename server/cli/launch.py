@@ -27,7 +27,7 @@ BIG_FILE_SIZE_THRESHOLD = 100 * 2**20  # 100MB
     default=[],
     multiple=True,
     show_default=True,
-    help="Layout name, eg, 'umap'. The data must contain a layout named 'X_layout', eg, 'X_umap'."
+    help="Layout name, eg, 'umap'."
 )
 @click.option(
     "--diffexp",
