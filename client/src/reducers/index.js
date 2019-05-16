@@ -15,6 +15,7 @@ import differential from "./differential";
 import responsive from "./responsive";
 import controls from "./controls";
 import resetCache from "./resetCache";
+import annotations from "./annotations";
 
 import undoableConfig from "./undoableConfig";
 
@@ -31,7 +32,8 @@ const Reducer = undoable(
     ["controls", controls],
     ["differential", differential],
     ["responsive", responsive],
-    ["resetCache", resetCache]
+    ["resetCache", resetCache],
+    ["annotations", annotations]
   ]),
   [
     "world",

@@ -55,7 +55,7 @@ class Categories extends React.Component {
         {_.map(
           categoricalSelection,
           (catState, catName) =>
-            catName !== "louvain" ? (
+            catName !== "free_annotation" ? (
               <Category
                 key={catName}
                 metadataField={catName}
@@ -64,8 +64,8 @@ class Categories extends React.Component {
             ) : null
         )}
         <Category
-          key={"louvain"}
-          metadataField={"louvain"}
+          key={"free_annotation"}
+          metadataField={"free_annotation"}
           isUserAnno
           createAnnoModeActive={createAnnoModeActive}
         />

@@ -1,19 +1,24 @@
 // jshint esversion: 6
 import { connect } from "react-redux";
 import React from "react";
-import Occupancy from "./occupancy";
-import { countCategoryValues2D } from "../../util/stateManager/worldUtil";
-import * as globals from "../../globals";
+
 import {
   Button,
   Tooltip,
-  Icon,
-  ControlGroup,
-  InputGroup
+  InputGroup,
+  Menu,
+  MenuItem,
+  Popover,
+  Position,
+  PopoverInteractionKind
 } from "@blueprintjs/core";
+import Occupancy from "./occupancy";
+import { countCategoryValues2D } from "../../util/stateManager/worldUtil";
+import * as globals from "../../globals";
 
 @connect(state => ({
   categoricalSelection: state.categoricalSelection,
+  annotations: state.annotations,
   colorScale: state.colors.scale,
   colorAccessor: state.colors.colorAccessor,
   schema: state.world?.schema,
@@ -22,15 +27,43 @@ import {
 class CategoryValue extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      isEditing: false
-    };
   }
 
-  handleDeleteValue = () => {};
+  handleDeleteValue = () => {
+    const { dispatch, metadataField, categoryIndex } = this.props;
+    dispatch({
+      type: "delete label",
+      metadataField,
+      categoryIndex
+    });
+  };
+
+  handleAddCurrentSelectionToThisLabel = () => {
+    const { dispatch, metadataField, categoryIndex } = this.props;
+    dispatch({
+      type: "label current cell selection",
+      metadataField,
+      categoryIndex
+    });
+  };
 
   handleEditValue = () => {
-    this.setState({ isEditing: true });
+    const { dispatch, metadataField, categoryIndex } = this.props;
+    dispatch({
+      type: "label edited",
+      newLabel: "foo123",
+      metadataField,
+      categoryIndex
+    });
+  };
+
+  activateEditLabelMode = () => {
+    const { dispatch, metadataField, categoryIndex } = this.props;
+    dispatch({
+      type: "activate edit label mode",
+      metadataField,
+      categoryIndex
+    });
   };
 
   toggleOff() {
@@ -60,10 +93,10 @@ class CategoryValue extends React.Component {
       colorScale,
       i,
       schema,
-      world
+      world,
+      isUserAnno,
+      annotations
     } = this.props;
-
-    const { isEditing } = this.state;
 
     if (!categoricalSelection) return null;
 
@@ -107,85 +140,77 @@ class CategoryValue extends React.Component {
             margin: 0,
             padding: 0,
             userSelect: "none",
-            width: globals.leftSidebarWidth - 130,
+            width: globals.leftSidebarWidth - 240,
             display: "flex",
-            justifyContent: "space-between"
+            justifyContent: "flex-start"
           }}
         >
-          {!isEditing ? (
-            <label className="bp3-control bp3-checkbox">
-              <input
-                onChange={
-                  selected
-                    ? this.toggleOff.bind(this)
-                    : this.toggleOn.bind(this)
-                }
-                data-testclass="categorical-value-select"
-                data-testid={`categorical-value-select-${metadataField}-${displayString}`}
-                checked={selected}
-                type="checkbox"
-              />
-              <span className="bp3-control-indicator" />
-              <span
-                data-testid={`categorical-value-${metadataField}-${displayString}`}
-                data-testclass="categorical-value"
-              >
-                {displayString}
-              </span>
-              <Tooltip content="Edit value" position="bottom">
-                <Button
-                  data-testclass="handleEditValue"
-                  data-testid={`handleEditValue-${metadataField}`}
-                  onClick={this.handleEditValue}
-                  icon="edit"
-                  small
-                  minimal
-                />
-              </Tooltip>
-            </label>
-          ) : (
-            <ControlGroup>
-              <InputGroup small />
-              <Button
-                small
-                icon="small-tick"
-                data-testclass="editValue"
-                data-testid="editValue"
-                onClick={this.handleEditValue}
-              />
-            </ControlGroup>
-          )}
-          <span style={{ flexShrink: 0 }}>
-            {colorAccessor &&
-            !isColorBy &&
-            categoricalSelection[colorAccessor] ? (
-              <Occupancy
-                occupancy={occupancy.get(
-                  category.categoryValues[categoryIndex]
-                )}
-                {...this.props}
-              />
-            ) : null}
-          </span>
-        </div>
-        <span>
-          <Tooltip content="Delete value" position="bottom">
-            <Button
-              data-testclass="handleDeleteValue"
-              data-testid={`handleDeleteValue-${metadataField}`}
-              onClick={this.handleDeleteValue}
-              icon="delete"
-              small
-              minimal
+          <label className="bp3-control bp3-checkbox">
+            <input
+              onChange={
+                selected ? this.toggleOff.bind(this) : this.toggleOn.bind(this)
+              }
+              data-testclass="categorical-value-select"
+              data-testid={`categorical-value-select-${metadataField}-${displayString}`}
+              checked={selected}
+              type="checkbox"
             />
-          </Tooltip>
+            <span className="bp3-control-indicator" />
+            <span
+              data-testid={`categorical-value-${metadataField}-${displayString}`}
+              data-testclass="categorical-value"
+            >
+              {annotations.isEditingLabelName &&
+              annotations.labelEditable.category === metadataField &&
+              annotations.labelEditable.label === categoryIndex
+                ? null
+                : displayString}
+            </span>
+          </label>
+
+          {isUserAnno &&
+          annotations.isEditingLabelName &&
+          annotations.labelEditable.category === metadataField &&
+          annotations.labelEditable.label === categoryIndex ? (
+            <InputGroup
+              style={{ position: "relative", top: -1 }}
+              small
+              defaultValue={displayString}
+              rightElement={
+                <Button
+                  minimal
+                  style={{ position: "relative", top: -1 }}
+                  type="submit"
+                  icon="small-tick"
+                  data-testclass="submitEdit"
+                  data-testid="submitEdit"
+                  onClick={this.handleEditValue}
+                />
+              }
+            />
+          ) : null}
+        </div>
+        <span style={{ flexShrink: 0 }}>
+          {colorAccessor &&
+          !annotations.isEditingLabelName &&
+          !isColorBy &&
+          categoricalSelection[colorAccessor] ? (
+            <Occupancy
+              occupancy={occupancy.get(category.categoryValues[categoryIndex])}
+              {...this.props}
+            />
+          ) : null}
+        </span>
+        <span>
           <span
             data-testclass="categorical-value-count"
             data-testid={`categorical-value-count-${metadataField}-${displayString}`}
           >
             {count}
           </span>
+
           <svg
+            display={isColorBy && categories ? "auto" : "none"}
             style={{
               marginLeft: 5,
               width: 11,
@@ -196,6 +221,48 @@ class CategoryValue extends React.Component {
                   : "inherit"
             }}
           />
+          {isUserAnno ? (
+            <Popover
+              interactionKind={PopoverInteractionKind.HOVER}
+              boundary="window"
+              position={Position.RIGHT}
+              content={
+                <Menu>
+                  <MenuItem
+                    icon="plus"
+                    data-testclass="handleAddCurrentSelectionToThisLabel"
+                    data-testid={`handleAddCurrentSelectionToThisLabel-${metadataField}`}
+                    onClick={this.handleAddCurrentSelectionToThisLabel}
+                    text="Add current cell selection to this label"
+                  />
+                  <MenuItem
+                    icon="edit"
+                    text="Edit this label's name"
+                    data-testclass="handleEditValue"
+                    data-testid={`handleEditValue-${metadataField}`}
+                    onClick={this.activateEditLabelMode}
+                  />
+                  <MenuItem
+                    icon="delete"
+                    data-testclass="handleDeleteValue"
+                    data-testid={`handleDeleteValue-${metadataField}`}
+                    onClick={this.handleDeleteValue}
+                    text="Delete this value, and reassign all cells to type 'unknown'"
+                  />
+                </Menu>
+              }
+            >
+              <Button
+                style={{ marginLeft: 0, position: "relative", top: -1 }}
+                data-testclass="seeActions"
+                data-testid={`seeActions-${metadataField}`}
+                onClick={this.handleDeleteValue}
+                icon="more"
+                small
+                minimal
+              />
+            </Popover>
+          ) : null}
         </span>
       </div>
     );
