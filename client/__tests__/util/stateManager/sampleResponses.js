@@ -162,29 +162,7 @@ const aLayoutFBSResponse = (() => {
     new Float32Array(nObs).fill(Math.random()),
     new Float32Array(nObs).fill(Math.random())
   ];
-  const builder = new flatbuffers.Builder(1024);
-
-  const cols = _.map(coords, carr => {
-    const cdv = NetEncoding.Float32Array.createDataVector(builder, carr);
-    NetEncoding.Float32Array.startFloat32Array(builder);
-    NetEncoding.Float32Array.addData(builder, cdv);
-    const floatArr = NetEncoding.Float32Array.endFloat32Array(builder);
-
-    NetEncoding.Column.startColumn(builder);
-    NetEncoding.Column.addUType(builder, NetEncoding.TypedArray.Float32Array);
-    NetEncoding.Column.addU(builder, floatArr);
-    return NetEncoding.Column.endColumn(builder);
-  });
-
-  const columns = NetEncoding.Matrix.createColumnsVector(builder, cols);
-
-  NetEncoding.Matrix.startMatrix(builder);
-  NetEncoding.Matrix.addNRows(builder, nObs);
-  NetEncoding.Matrix.addNCols(builder, coords.length);
-  NetEncoding.Matrix.addColumns(builder, columns);
-  const matrix = NetEncoding.Matrix.endMatrix(builder);
-  builder.finish(matrix);
-  return builder.asUint8Array();
+  return encodeMatrix(coords, ["umap_0", "umap_1"]);
 })();
 
 const aDataObsResponse = {

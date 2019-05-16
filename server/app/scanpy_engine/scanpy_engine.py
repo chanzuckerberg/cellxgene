@@ -1,12 +1,13 @@
 import warnings
 
 import numpy as np
+import pandas
 from pandas.core.dtypes.dtypes import CategoricalDtype
 import anndata
 from scipy import sparse
 
 from server.app.driver.driver import CXGDriver
-from server.app.util.constants import Axis, DEFAULT_TOP_N
+from server.app.util.constants import Axis, DEFAULT_TOP_N, MAX_LAYOUTS
 from server.app.util.errors import (
     FilterError,
     JSONEncodingValueError,
@@ -41,7 +42,7 @@ class ScanpyEngine(CXGDriver):
     @staticmethod
     def _get_default_config():
         return {
-            "layout": "umap",
+            "layout": [],
             "diffexp": "ttest",
             "max_category_items": 100,
             "obs_names": None,
@@ -166,10 +167,54 @@ class ScanpyEngine(CXGDriver):
         self._alias_annotation_names(Axis.OBS, self.config["obs_names"])
         self._alias_annotation_names(Axis.VAR, self.config["var_names"])
         self._validate_data_types()
-        self._validate_data_calculations()
         self.cell_count = self.data.shape[0]
         self.gene_count = self.data.shape[1]
+        self._default_and_validate_layouts()
         self._create_schema()
+
+    @requires_data
+    def _default_and_validate_layouts(self):
+        """ function:
+            a) generate list of default layouts, if not already user specified
+            b) validate layouts are legal.  remove/warn on any that are not
+            c) cap total list of layouts at global const MAX_LAYOUTS
+        """
+        layouts = self.config['layout']
+        # handle default
+        if layouts is None or len(layouts) == 0:
+            # load default layouts from the data.
+            layouts = [key[2:] for key in self.data.obsm_keys() if type(key) == str and key.startswith("X_")]
+            if len(layouts) == 0:
+                raise PrepareError(f"Unable to find any precomputed layouts within the dataset.")
+
+        # remove invalid layouts
+        valid_layouts = []
+        obsm_keys = self.data.obsm_keys()
+        for layout in layouts:
+            layout_name = f"X_{layout}"
+            if layout_name not in obsm_keys:
+                warnings.warn(f"Ignoring unknown layout name: {layout}.")
+            elif not self._is_valid_layout(self.data.obsm[layout_name]):
+                warnings.warn(f"Ignoring layout due to malformed shape or data type: {layout}")
+            else:
+                valid_layouts.append(layout)
+
+        if len(valid_layouts) == 0:
+            raise PrepareError(f"No valid layout data.")
+
+        # cap layouts to MAX_LAYOUTS
+        self.config['layout'] = valid_layouts[0:MAX_LAYOUTS]
+
+    @requires_data
+    def _is_valid_layout(self, arr):
+        """ return True if this layout data is a valid array for front-end presentation:
+            * ndarray, with shape (n_obs, >= 2), dtype float/int/uint
+            * contains only finite values
+        """
+        is_valid = type(arr) == np.ndarray and arr.dtype.kind in "fiu"
+        is_valid = is_valid and arr.shape[0] == self.data.n_obs and arr.shape[1] >= 2
+        is_valid = is_valid and np.all(np.isfinite(arr))
+        return is_valid
 
     @requires_data
     def _validate_data_types(self):
@@ -207,20 +252,6 @@ class ScanpyEngine(CXGDriver):
                             f"--max-category-items option to 500, this will hide categorical "
                             f"annotations with more than 500 categories in the UI"
                         )
-
-    @requires_data
-    def _validate_data_calculations(self):
-        layout_key = f"X_{self.config['layout']}"
-        try:
-            assert layout_key in self.data.obsm_keys()
-        except AssertionError:
-            raise PrepareError(
-                f"Cannot find a field with coordinates for the {self.config['layout']} layout requested. A different"
-                f" layout may have been computed. The requested layout must be pre-calculated and saved "
-                f"back in the h5ad file. You can run "
-                f"`cellxgene prepare --layout {self.config['layout']} <datafile>` "
-                f"to solve this problem. "
-            )
 
     @staticmethod
     def _annotation_filter_to_mask(filter, d_axis, count):
@@ -372,15 +403,18 @@ class ScanpyEngine(CXGDriver):
         * only returns Matrix in columnar layout
         """
         try:
-            full_embedding = self.data.obsm[f"X_{self.config['layout']}"]
-            if full_embedding.shape[1] > 2:
-                warnings.warn(f"Warning: found {full_embedding.shape[1]} \
-                components of embedding. Using the first two for layout display.")
-            df_layout = full_embedding[:, :2]
+            layout_data = []
+            for layout in self.config["layout"]:
+                full_embedding = self.data.obsm[f"X_{layout}"]
+                embedding = full_embedding[:, :2]
+                normalized_layout = (embedding - embedding.min()) / (embedding.max() - embedding.min())
+                normalized_layout = normalized_layout.astype(dtype=np.float32)
+                layout_data.append(pandas.DataFrame(normalized_layout, columns=[f"{layout}_0", f"{layout}_1"]))
+
         except ValueError as e:
             raise PrepareError(
                 f"Layout has not been calculated using {self.config['layout']}, "
                 f"please prepare your datafile and relaunch cellxgene") from e
 
-        normalized_layout = (df_layout - df_layout.min()) / (df_layout.max() - df_layout.min())
-        return encode_matrix_fbs(normalized_layout.astype(dtype=np.float32), col_idx=None, row_idx=None)
+        df = pandas.concat(layout_data, axis=1, copy=False)
+        return encode_matrix_fbs(df, col_idx=df.columns, row_idx=None)
