@@ -69,7 +69,9 @@ class EndPoints(unittest.TestCase):
         self.assertEqual(df['n_rows'], 2638)
         self.assertEqual(df['n_cols'], 8)
         self.assertIsNotNone(df['columns'])
-        self.assertListEqual(df['col_idx'], ['pca_0', 'pca_1', 'tsne_0', 'tsne_1', 'umap_0', 'umap_1', 'draw_graph_fr_0', 'draw_graph_fr_1'])
+        self.assertListEqual(df['col_idx'], [
+            'pca_0', 'pca_1', 'tsne_0', 'tsne_1', 'umap_0', 'umap_1', 'draw_graph_fr_0', 'draw_graph_fr_1'
+        ])
         self.assertIsNone(df['row_idx'])
         self.assertEqual(len(df['columns']), df['n_cols'])
 
