@@ -185,11 +185,7 @@ class ScanpyEngine(CXGDriver):
             # load default layouts from the data.
             layouts = [key[2:] for key in self.data.obsm_keys() if type(key) == str and key.startswith("X_")]
             if len(layouts) == 0:
-                raise PrepareError(
-                    f"Unable to find precomputed layouts within the dataset."
-                    f"You can run `cellxgene prepare --layout {self.config['layout']} <datafile>` "
-                    f"to solve this problem. "
-                )
+                raise PrepareError(f"Unable to find any precomputed layouts within the dataset.")
 
         # remove invalid layouts
         valid_layouts = []
@@ -209,6 +205,7 @@ class ScanpyEngine(CXGDriver):
         # cap layouts to MAX_LAYOUTS
         self.config['layout'] = valid_layouts[0:MAX_LAYOUTS]
 
+    @requires_data
     def _is_valid_layout(self, arr):
         """ return True if this layout data is a valid array for front-end presentation:
             * ndarray, with shape (n_obs, >= 2), dtype float/int/uint
