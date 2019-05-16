@@ -107,11 +107,10 @@ function LayoutFBSToDataframe(arrayBuffer) {
   /*
   TODO: XXX
 
-  Temporary code to support the progressive introduction of multi-layout
-  support.  For now, we search for one of the following in the layouts
-  and use it if we find it.  If not, we just use the first available.
-
-  umap, then tsne, then pca, then whatever is first
+  TEMPORARY CODE AND COMMENT to support the progressive implementation
+  of multi-layout support.  For now, we search for one of the following 
+  in the layouts and use it if we find it: umap, then tsne, then pca, 
+  then whatever is first in the list.
   */
   let layoutIndex = 0;
   ["umap", "tsne", "pca"].some(name => {
