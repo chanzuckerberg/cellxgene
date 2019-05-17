@@ -34,7 +34,7 @@ We use `flake8` to lint code. Travis CI runs `flake8 server`.
 ## Client dev
 ### Install
 1. Install prereqs for client: `npm install --prefix client/ client`
-2. Install cellxgene server: `pip install -e .` Caveat: this will not build the production client package - you must use the [server install](#install) instructions below to serve web assets.
+2. Install cellxgene server: `pip install -e .` Caveat: this will not build the production client package - you must use the [server install](#install) instructions above to serve web assets.
 
 ### Launch
 To launch with hot reloading you need to launch the server and the client separately. Node's hot reloading starts the client on its own node server and auto-refreshes when changes are made.
