@@ -175,6 +175,9 @@ class CategoryValue extends React.Component {
             <InputGroup
               style={{ position: "relative", top: -1 }}
               small
+              onChange={e => {
+                this.setState({ newLabelEditedText: e.target.value });
+              }}
               defaultValue={displayString}
               rightElement={
                 <Button
