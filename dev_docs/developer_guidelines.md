@@ -7,7 +7,6 @@
 
 [See dev section of README](../README.md)
 
-
 ## Server Dev
 ### Install
 * Build the client and put static files in place: `make build-for-server-dev`
@@ -36,7 +35,7 @@ We use `flake8` to lint code. Travis CI runs `flake8 server`.
 2. Install cellxgene server: `pip install -e .` Caveat: this will install necessary files for launching the cellxgene REST API but, you will need to build the client if you want to be able to view cellxgene in the browser when launched from the CLI.
 
 ### Launch
-To launch with hot reloading you need to launch the server and the client separately. Node's hot reloading starts the client on it's own node server and auto-refreshes when changes are made.
+To launch with hot reloading you need to launch the server and the client separately. Node's hot reloading starts the client on its own node server and auto-refreshes when changes are made.
 1. Launch server (the client relies on the REST API being available): `cellxgene launch [options] <datafile>`
 2. Launch client: `npm run start`
 3. Client will be served on localhost:3000
@@ -54,6 +53,8 @@ Run `npm run unit-test`
 * You can also install/launch the server side code from npm scrips (requires python3.6 with virtualenv) `npm run backend-dev`
 
 ## Running tests
+Client and server tests run on Travis CI for every push, PR, and commit to master on github. Smoke tests run nightly on master only. 
+
 ### Server
 Install development requirements `pip install -r server/requirements-dev.txt`
 Run tests `pytest server/test`
@@ -72,7 +73,7 @@ Smoke tests use two env variables
 
 Run smoke tests locally
 1. cellxgene should be built and installed
-2. run `npm run --prefix client/ smoke-test` from cellxgene directory
+2. Run `npm run --prefix client/ smoke-test` from cellxgene directory
 
 Run tests interactively
 1. cellxgene should be installed
