@@ -55,7 +55,7 @@ In `client/` directory run `npm run unit-test`
 * You can also install/launch the server side code from npm scrips (requires python3.6 with virtualenv) in `client/` directory run `npm run backend-dev`
 
 ## Running tests
-Client and server tests run on Travis CI for every push, PR, and commit to master on github. Smoke tests run nightly on master only. 
+Client and server tests run on Travis CI for every push, PR, and commit to master on github. End to end tests run nightly on master only. 
 
 ### Server unit tests
 Install development requirements `pip install -r server/requirements-dev.txt`
@@ -75,11 +75,13 @@ End to end tests use two env variables:
 
 On CI the end to end tests are run with `JEST_ENV` set to `prod` using the `smoke-test` npm script
 
-To run end to end tests locally
+To run end to end tests as they will be run on CI
 1. cellxgene should be built and installed as [specified in server dev](#install-1)
-2. Run `npm run --prefix client/ smoke-test`
+2. `export JEST_ENV='prod'`
+3. `export JEST_CXG_PORT='5000'`
+4. Run `npm run --prefix client/ smoke-test`
 
-Run tests interactively
+Run end to end tests interactively during development
 1. cellxgene should be installed as [specified in client dev](#install-2)
 2. Follow [launch](#launch-2) instructions for client dev
 3. Run `npm run --prefix client/ e2e`
