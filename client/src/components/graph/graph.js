@@ -23,7 +23,6 @@ import _camera from "../../util/camera";
 import _drawPoints from "./drawPointsRegl";
 import scaleLinear from "../../util/scaleLinear";
 import { World } from "../../util/stateManager";
-import finiteExtent from "../../util/finiteExtent";
 
 /* https://bl.ocks.org/mbostock/9078690 - quadtree for onClick / hover selections */
 
