@@ -7,7 +7,9 @@
 
 [See dev section of README](../README.md)
 
-## Server Dev
+**All instructions are expected to be run from the top level cellxgene directory unless otherwise specified.**
+
+## Server dev
 ### Install
 * Build the client and put static files in place: `make build-for-server-dev`
 * Install from local files: `make install-dev`
@@ -29,15 +31,15 @@ We use `flake8` to lint code. Travis CI runs `flake8 server`.
 * Install in a virtualenv
 * May need to rebuild/reinstall when you make client changes
 
-## Client Dev
+## Client dev
 ### Install
 1. Install prereqs for client: `npm install --prefix client/ client`
-2. Install cellxgene server: `pip install -e .` Caveat: this will install necessary files for launching the cellxgene REST API but, you will need to build the client if you want to be able to view cellxgene in the browser when launched from the CLI.
+2. Install cellxgene server: `pip install -e .` Caveat: this will not build the production client package - you must use the [server install](#install-1) instructions below to serve web assets.
 
 ### Launch
 To launch with hot reloading you need to launch the server and the client separately. Node's hot reloading starts the client on its own node server and auto-refreshes when changes are made.
 1. Launch server (the client relies on the REST API being available): `cellxgene launch [options] <datafile>`
-2. Launch client: `npm run start`
+2. Launch client: in `client/` directory run `npm run start`
 3. Client will be served on localhost:3000
 
 ### Build
@@ -47,36 +49,38 @@ To build only the client: `make build-client`
 We use `prettier` to lint the code.
 
 ### Test
-Run `npm run unit-test`
+In `client/` directory run `npm run unit-test`
 
 ### Tips
-* You can also install/launch the server side code from npm scrips (requires python3.6 with virtualenv) `npm run backend-dev`
+* You can also install/launch the server side code from npm scrips (requires python3.6 with virtualenv) in `client/` directory run `npm run backend-dev`
 
 ## Running tests
 Client and server tests run on Travis CI for every push, PR, and commit to master on github. Smoke tests run nightly on master only. 
 
-### Server
+### Server unit tests
 Install development requirements `pip install -r server/requirements-dev.txt`
 Run tests `pytest server/test`
 
-### Client
-Run `npm run unit-test`
+### Client unit tests
+In `client/` directory run `npm run unit-test`
 
-### Smoke tests
+### End to end tests
 
-Smoke tests use two env variables
-* `JEST_ENV` - environment to run smoke tests. Default `dev`
+End to end tests use two env variables:
+* `JEST_ENV` - environment to run end to end tests. Default `dev`
     * `prod` - run headless with no slowdown, chromium will not open.
     * `dev` - opens chromimum, runs tests with minimal slowdown, close on exit.
     * `debug` - opens chromium, runs tests with 100ms slowdown, dev tools open, chrome stays open on exit.
-* `JEST_CXG_PORT` - port that smoke tests are being run on. Default `3000` (client hosted port).
+* `JEST_CXG_PORT` - port that end to end tests are being run on. Default `3000` (client hosted port).
 
-Run smoke tests locally
-1. cellxgene should be built and installed
-2. Run `npm run --prefix client/ smoke-test` from cellxgene directory
+On CI the end to end tests are run with `JEST_ENV` set to `prod` using the `smoke-test` npm script
+
+To run end to end tests locally
+1. cellxgene should be built and installed as [specified in server dev](#install-1)
+2. Run `npm run --prefix client/ smoke-test`
 
 Run tests interactively
-1. cellxgene should be installed
+1. cellxgene should be installed as [specified in client dev](#install-2)
 2. Follow [launch](#launch-2) instructions for client dev
 3. Run `npm run --prefix client/ e2e`
 4. To debug a failing test `export JEST_ENV='debug'` and re-run.
