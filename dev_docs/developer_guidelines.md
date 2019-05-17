@@ -34,7 +34,7 @@ We use `flake8` to lint code. Travis CI runs `flake8 server`.
 ## Client dev
 ### Install
 1. Install prereqs for client: `npm install --prefix client/ client`
-2. Install cellxgene server: `pip install -e .` Caveat: this will not build the production client package - you must use the [server install](#install-1) instructions below to serve web assets.
+2. Install cellxgene server: `pip install -e .` Caveat: this will not build the production client package - you must use the [server install](#install) instructions below to serve web assets.
 
 ### Launch
 To launch with hot reloading you need to launch the server and the client separately. Node's hot reloading starts the client on its own node server and auto-refreshes when changes are made.
@@ -76,14 +76,14 @@ End to end tests use two env variables:
 On CI the end to end tests are run with `JEST_ENV` set to `prod` using the `smoke-test` npm script
 
 To run end to end tests as they will be run on CI
-1. cellxgene should be built and installed as [specified in server dev](#install-1)
+1. cellxgene should be built and installed as [specified in server dev](#install)
 2. `export JEST_ENV='prod'`
 3. `export JEST_CXG_PORT='5000'`
 4. Run `npm run --prefix client/ smoke-test`
 
 Run end to end tests interactively during development
-1. cellxgene should be installed as [specified in client dev](#install-2)
-2. Follow [launch](#launch-2) instructions for client dev
+1. cellxgene should be installed as [specified in client dev](#install-1)
+2. Follow [launch](#launch-1) instructions for client dev
 3. Run `npm run --prefix client/ e2e`
 4. To debug a failing test `export JEST_ENV='debug'` and re-run.
 
