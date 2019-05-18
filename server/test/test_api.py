@@ -19,7 +19,7 @@ class EndPoints(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.ps = Popen(["cellxgene", "launch", "example-dataset/pbmc3k.h5ad", "--debug"])
+        cls.ps = Popen(["cellxgene", "launch", "example-dataset/pbmc3k.h5ad", "--debug", "--port", "5005"])
         session = requests.Session()
         for i in range(90):
             try:
@@ -67,9 +67,11 @@ class EndPoints(unittest.TestCase):
         self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
         df = decode_fbs.decode_matrix_FBS(result.content)
         self.assertEqual(df['n_rows'], 2638)
-        self.assertEqual(df['n_cols'], 2)
+        self.assertEqual(df['n_cols'], 8)
         self.assertIsNotNone(df['columns'])
-        self.assertIsNone(df['col_idx'])
+        self.assertListEqual(df['col_idx'], [
+            'pca_0', 'pca_1', 'tsne_0', 'tsne_1', 'umap_0', 'umap_1', 'draw_graph_fr_0', 'draw_graph_fr_1'
+        ])
         self.assertIsNone(df['row_idx'])
         self.assertEqual(len(df['columns']), df['n_cols'])
 

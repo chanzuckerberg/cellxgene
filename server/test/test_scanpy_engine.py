@@ -15,7 +15,7 @@ from server.app.util.errors import FilterError
 class EngineTest(unittest.TestCase):
     def setUp(self):
         args = {
-            "layout": "umap",
+            "layout": ["umap"],
             "diffexp": "ttest",
             "max_category_items": 100,
             "obs_names": None,
