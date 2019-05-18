@@ -7,7 +7,6 @@ import warnings
 import webbrowser
 
 import click
-import psutil
 
 from server.app.app import Server
 from server.app.util.errors import ScanpyFileError
@@ -165,9 +164,6 @@ security risk by including the --scripts flag. Make sure you trust the scripts t
         click.echo(f"[cellxgene] Loading data from {basename(data)}, this may take awhile...")
     else:
         click.echo(f"[cellxgene] Loading data from {basename(data)}.")
-    # if file is larger than main memory, let the user know performance may suffer
-    if file_size > .95 * psutil.virtual_memory().total:
-        click.echo(f"[cellxgene] Warning: data file is larger than RAM - application may be very slow.")
 
     # Fix for anaconda python. matplotlib typically expects python to be installed as a framework TKAgg is usually
     # available and fixes this issue. See https://matplotlib.org/faq/virtualenv_faq.html
