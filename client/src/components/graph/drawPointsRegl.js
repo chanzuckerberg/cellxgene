@@ -1,6 +1,6 @@
 // jshint esversion: 6
 const mat4 = require("gl-mat4");
-const mat3 = require("gl-vec3");
+const vec3 = require("gl-vec3");
 
 // opacity: https://github.com/spacetx/starfish/blob/master/viz/draw/regions.js
 
@@ -49,7 +49,7 @@ export default function(regl) {
           1000
         );
         if (aspectRatio < 1) {
-          m = mat4.scale(m, m, mat3.fromValues(1, 1, 1 / aspectRatio));
+          m = mat4.scale(m, m, vec3.fromValues(1, 1, 1 / aspectRatio));
         }
         return m;
       }
