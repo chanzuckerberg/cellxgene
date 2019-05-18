@@ -27,6 +27,5 @@ jobs:
     script: docker build .
   - name: "Smoke Tests"
     python: "3.6"
-    if: branch = master AND type = cron
     script:
       - npm run --prefix client/ smoke-test
