@@ -13,7 +13,9 @@ import {
   MenuItem,
   Position,
   NumericInput,
-  Icon
+  Icon,
+  RadioGroup,
+  Radio
 } from "@blueprintjs/core";
 
 import * as globals from "../../globals";
@@ -47,7 +49,8 @@ import { World } from "../../util/stateManager";
   undoDisabled: state["@@undoable/past"].length === 0,
   redoDisabled: state["@@undoable/future"].length === 0,
   selectionTool: state.graphSelection.tool,
-  currentSelection: state.graphSelection.selection
+  currentSelection: state.graphSelection.selection,
+  layoutChoice: state.layoutChoice
 }))
 class Graph extends React.Component {
   static isValidDigitKeyEvent(e) {
@@ -81,6 +84,8 @@ class Graph extends React.Component {
     this.graphPaddingBottom = 45;
     this.graphPaddingRight = globals.leftSidebarWidth;
     this.renderCache = {
+      X: null,
+      Y: null,
       positions: null,
       colors: null,
       sizes: null
@@ -140,7 +145,8 @@ class Graph extends React.Component {
       colorRGB,
       responsive,
       selectionTool,
-      currentSelection
+      currentSelection,
+      layoutChoice
     } = this.props;
     const {
       reglRender,
@@ -163,13 +169,15 @@ class Graph extends React.Component {
     if (regl && world) {
       /* update the regl state */
       const { obsLayout, nObs } = world;
-      const X = obsLayout.col("X").asArray();
-      const Y = obsLayout.col("Y").asArray();
+      const X = obsLayout.col(layoutChoice.currentDimNames[0]).asArray();
+      const Y = obsLayout.col(layoutChoice.currentDimNames[1]).asArray();
+      const { X: prevX, Y: prevY } = renderCache;
 
       // X/Y positions for each point - a cached value that only
       // changes if we have loaded entirely new cell data
       //
-      if (!renderCache.positions || world !== prevProps.world) {
+      /* TODO/XXX: we should just memoize this code */
+      if (!renderCache.positions || X !== prevX || Y !== prevY) {
         renderCache.positions = new Float32Array(2 * nObs);
 
         const glScaleX = scaleLinear([0, 1], [-1, 1]);
@@ -187,6 +195,8 @@ class Graph extends React.Component {
         });
 
         stateChanges.offset = offset;
+        renderCache.X = X;
+        renderCache.Y = Y;
       }
 
       // Colors for each point - a cached value that only changes when
@@ -433,6 +443,14 @@ class Graph extends React.Component {
 
   handleClipClosing = () => {
     this.setState({ pendingClipPercentiles: null });
+  };
+
+  handleLayoutChoiceChange = e => {
+    const { dispatch } = this.props;
+    dispatch({
+      type: "set layout choice",
+      layoutChoice: e.currentTarget.value
+    });
   };
 
   brushToolUpdate(tool, container, offset) {
@@ -745,7 +763,8 @@ class Graph extends React.Component {
       redoDisabled,
       selectionTool,
       clipPercentileMin,
-      clipPercentileMax
+      clipPercentileMax,
+      layoutChoice
     } = this.props;
     const { mode, pendingClipPercentiles } = this.state;
 
@@ -888,6 +907,49 @@ class Graph extends React.Component {
                 />
               </Tooltip>
             </div>
+
+            <div
+              className="bp3-button-group"
+              style={{
+                marginLeft: 10
+              }}
+            >
+              <Popover
+                target={
+                  <Button
+                    type="button"
+                    data-testid="visualization-settings"
+                    className="bp3-button bp3-icon-heatmap"
+                    style={{
+                      cursor: "pointer"
+                    }}
+                  />
+                }
+                position={Position.BOTTOM_RIGHT}
+                content={
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "flex-start",
+                      alignItems: "flex-start",
+                      flexDirection: "column",
+                      padding: 10
+                    }}
+                  >
+                    <RadioGroup
+                      label="Layout Choice"
+                      onChange={this.handleLayoutChoiceChange}
+                      selectedValue={layoutChoice.current}
+                    >
+                      {layoutChoice.available.map(name => (
+                        <Radio label={name} value={name} key={name} />
+                      ))}
+                    </RadioGroup>
+                  </div>
+                }
+              />
+            </div>
+
             <div
               className="bp3-button-group"
               style={{

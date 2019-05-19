@@ -104,27 +104,11 @@ function LayoutFBSToDataframe(arrayBuffer) {
     throw new Error("Unexpected layout data type returned from server");
   }
 
-  /*
-  TODO: XXX
-
-  TEMPORARY CODE AND COMMENT to support the progressive implementation
-  of multi-layout support.  For now, we search for one of the following 
-  in the layouts and use it if we find it: umap, then tsne, then pca, 
-  then whatever is first in the list.
-  */
-  let layoutIndex = 0;
-  ["umap", "tsne", "pca"].some(name => {
-    const idx = fbs.colIdx.indexOf(`${name}_0`);
-    if (idx !== -1) {
-      layoutIndex = idx;
-    }
-    return idx !== -1;
-  });
   const df = new Dataframe.Dataframe(
-    [fbs.nRows, 2],
-    [fbs.columns[layoutIndex], fbs.columns[layoutIndex + 1]],
+    [fbs.nRows, fbs.nCols],
+    fbs.columns,
     null,
-    new Dataframe.KeyIndex(["X", "Y"])
+    new Dataframe.KeyIndex(fbs.colIdx)
   );
   return df;
 }
@@ -196,6 +180,12 @@ export function createUniverseFromResponse(
   );
   universe.schema.annotations.varByName = fromEntries(
     universe.schema.annotations.var.map(v => [v.name, v])
+  );
+  universe.schema.layout.obsByName = fromEntries(
+    universe.schema.layout.obs.map(v => [v.name, v])
+  );
+  universe.schema.layout.varByName = fromEntries(
+    universe.schema.layout.var.map(v => [v.name, v])
   );
   return universe;
 }
