@@ -26,8 +26,8 @@ export const datasets = {
     cellsets: {
       lasso: [
         {
-          "coordinates-as-percent": { x1: 0.25, y1: 0.25, x2: 0.35, y2: 0.35 },
-          count: "26"
+          "coordinates-as-percent": { x1: 0.05, y1: 0.25, x2: 0.15, y2: 0.35 },
+          count: "43"
         }
       ],
       categorical: [
@@ -91,8 +91,8 @@ export const datasets = {
         }
       },
       lasso: {
-        "coordinates-as-percent": { x1: 0.45, y1: 0.45, x2: 0.5, y2: 0.5 },
-        count: "67"
+        "coordinates-as-percent": { x1: 0.45, y1: 0.05, x2: 0.5, y2: 0.1 },
+        count: "65"
       }
     },
     scatter: {

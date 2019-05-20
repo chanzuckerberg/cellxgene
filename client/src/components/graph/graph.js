@@ -175,18 +175,19 @@ class Graph extends React.Component {
         const glScaleX = scaleLinear([0, 1], [-1, 1]);
         const glScaleY = scaleLinear([0, 1], [1, -1]);
 
-        const offset = [d3.mean(X) - 0.5, d3.mean(Y) - 0.5];
-
         for (let i = 0, { positions } = renderCache; i < nObs; i += 1) {
-          positions[2 * i] = glScaleX(X[i] - offset[0]);
-          positions[2 * i + 1] = glScaleY(Y[i] - offset[1]);
+          positions[2 * i] = glScaleX(X[i]);
+          positions[2 * i + 1] = glScaleY(Y[i]);
         }
         pointBuffer({
           data: renderCache.positions,
           dimension: 2
         });
 
-        stateChanges.offset = offset;
+        stateChanges.transform = {
+          glScaleX,
+          glScaleY
+        };
       }
 
       // Colors for each point - a cached value that only changes when
@@ -271,11 +272,11 @@ class Graph extends React.Component {
       mode !== prevState.mode ||
       stateChanges.svg
     ) {
-      const { tool, container, offset } = this.state;
+      const { tool, container, transform } = this.state;
       this.selectionToolUpdate(
         stateChanges.tool ? stateChanges.tool : tool,
         stateChanges.container ? stateChanges.container : container,
-        stateChanges.offset ? stateChanges.offset : offset
+        stateChanges.transform ? stateChanges.transform : transform
       );
     }
 
@@ -435,7 +436,7 @@ class Graph extends React.Component {
     this.setState({ pendingClipPercentiles: null });
   };
 
-  brushToolUpdate(tool, container, offset) {
+  brushToolUpdate(tool, container, transform) {
     /*
     this is called from componentDidUpdate(), so be very careful using
     anything from this.state, which may be updated asynchronously.
@@ -449,8 +450,14 @@ class Graph extends React.Component {
         if there is a selection, make sure the brush tool matches
         */
         const screenCoords = [
-          this.mapPointToScreen(currentSelection.brushCoords.northwest, offset),
-          this.mapPointToScreen(currentSelection.brushCoords.southeast, offset)
+          this.mapPointToScreen(
+            currentSelection.brushCoords.northwest,
+            transform
+          ),
+          this.mapPointToScreen(
+            currentSelection.brushCoords.southeast,
+            transform
+          )
         ];
         if (!toolCurrentSelection) {
           /* tool is not selected, so just move the brush */
@@ -477,7 +484,7 @@ class Graph extends React.Component {
     }
   }
 
-  lassoToolUpdate(tool, container, offset) {
+  lassoToolUpdate(tool, container, transform) {
     /*
     this is called from componentDidUpdate(), so be very careful using
     anything from this.state, which may be updated asynchronously.
@@ -488,7 +495,7 @@ class Graph extends React.Component {
       if there is a current selection, make sure the lasso tool matches
       */
       const polygon = currentSelection.polygon.map(p =>
-        this.mapPointToScreen(p, offset)
+        this.mapPointToScreen(p, transform)
       );
       tool.move(polygon);
     } else {
@@ -496,7 +503,7 @@ class Graph extends React.Component {
     }
   }
 
-  selectionToolUpdate(tool, container, offset) {
+  selectionToolUpdate(tool, container, transform) {
     /*
     this is called from componentDidUpdate(), so be very careful using
     anything from this.state, which may be updated asynchronously.
@@ -504,10 +511,10 @@ class Graph extends React.Component {
     const { selectionTool } = this.props;
     switch (selectionTool) {
       case "brush":
-        this.brushToolUpdate(tool, container, offset);
+        this.brushToolUpdate(tool, container, transform);
         break;
       case "lasso":
-        this.lassoToolUpdate(tool, container, offset);
+        this.lassoToolUpdate(tool, container, transform);
         break;
       default:
         /* punt? */
@@ -564,7 +571,8 @@ class Graph extends React.Component {
     accounting for current pan/zoom camera.
     */
     const { responsive } = this.props;
-    const { regl, camera, offset } = this.state;
+    const { regl, camera, transform } = this.state;
+    const { glScaleX, glScaleY } = transform;
 
     const gl = regl._gl;
 
@@ -579,19 +587,20 @@ class Graph extends React.Component {
     const y = 2 * (1 - pin[1] / (responsive.height - this.graphPaddingTop)) - 1;
     const pout = [
       x * inverse[14] * aspect + inverse[12],
-      y * inverse[14] + inverse[13]
+      -(y * inverse[14] + inverse[13])
     ];
 
-    return [(pout[0] + 1) / 2 + offset[0], (pout[1] + 1) / 2 + offset[1]];
+    return [glScaleX.invert(pout[0]), glScaleY.invert(pout[1])];
   }
 
-  mapPointToScreen(xyCell, offset) {
+  mapPointToScreen(xyCell, transform) {
     /*
     Map an XY coordinate from cell/point domain to screen range.  Inverse
     of mapScreenToPoint()
     */
     const { responsive } = this.props;
     const { regl, camera } = this.state;
+    const { glScaleX, glScaleY } = transform;
 
     const gl = regl._gl;
 
@@ -603,12 +612,9 @@ class Graph extends React.Component {
 
     // variable names are choosen to reflect inverse of those used
     // in mapScreenToPoint().
-    const pout = [
-      (xyCell[0] - offset[0]) * 2 - 1,
-      (xyCell[1] - offset[1]) * 2 - 1
-    ];
+    const pout = [glScaleX(xyCell[0]), glScaleY(xyCell[1])];
     const x = (pout[0] - inverse[12]) / aspect / inverse[14];
-    const y = (pout[1] - inverse[13]) / inverse[14];
+    const y = (-pout[1] - inverse[13]) / inverse[14];
 
     const pin = [
       Math.round(((x + 1) * (responsive.width - this.graphPaddingRight)) / 2),
