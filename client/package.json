@@ -9,13 +9,13 @@
     "build": "npm run clean && webpack --config configuration/webpack/webpack.config.prod.js",
     "clean": "rimraf build",
     "dev": "npm run clean && webpack --config configuration/webpack/webpack.config.dev.js",
-    "e2e": "jest --verbose false --config __tests__/e2e/e2eJestConfig.json e2e/e2e.test.js",
+    "e2e": "node node_modules/jest/bin/jest.js --verbose false --config __tests__/e2e/e2eJestConfig.json e2e/e2e.test.js",
     "lint": "eslint src",
     "smoke-test": "start-server-and-test start-server-for-test :5000 e2e",
     "start": "node server/development.js",
     "start-server-for-test": "cellxgene launch -p 5000 ../example-dataset/pbmc3k.h5ad",
-    "test": "jest",
-    "unit-test": "jest --testPathIgnorePatterns e2e"
+    "test": "node node_modules/jest/bin/jest.js",
+    "unit-test": "node node_modules/jest/bin/jest.js --testPathIgnorePatterns e2e"
   },
   "engineStrict": true,
   "engines": {
