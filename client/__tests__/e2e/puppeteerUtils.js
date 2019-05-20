@@ -44,11 +44,13 @@ export const puppeteerUtils = puppeteerPage => ({
   },
 
   async getOneElementInnerHTML(selector) {
+    await puppeteerPage.waitForSelector(selector);
     let text = await puppeteerPage.$eval(selector, el => el.innerHTML);
     return text;
   },
 
   async getOneElementInnerText(selector) {
+    await puppeteerPage.waitForSelector(selector);
     let text = await puppeteerPage.$eval(selector, el => el.innerText);
     return text;
   }
