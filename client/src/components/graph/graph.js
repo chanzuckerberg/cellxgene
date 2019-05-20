@@ -918,7 +918,7 @@ class Graph extends React.Component {
                 target={
                   <Button
                     type="button"
-                    data-testid="visualization-settings"
+                    data-testid="layout-choice"
                     className="bp3-button bp3-icon-heatmap"
                     style={{
                       cursor: "pointer"
