@@ -272,7 +272,7 @@ describe("scatter plot", async () => {
 
 describe("clipping", async () => {
   test("clip continuous", async () => {
-    await cxgActions.clip(data.clip.min, data.clip.max)
+    await cxgActions.clip(data.clip.min, data.clip.max);
     const histId = `histogram-${data.clip.metadata}-plot-brush`;
     const coords = await cxgActions.calcDragCoordinates(
       histId,
@@ -281,16 +281,13 @@ describe("clipping", async () => {
     await cxgActions.drag(histId, coords.start, coords.end);
     const cellCount = await cxgActions.cellSet(1);
     expect(cellCount).toBe(data.clip.count);
-    
   });
 
   test("clip gene", async () => {
     await utils.typeInto("gene-search", data.clip.gene);
     await page.keyboard.press("Enter");
-    await page.waitForSelector(
-      `[data-testid='histogram-${data.clip.gene}']`
-    );
-    await cxgActions.clip(data.clip.min, data.clip.max)
+    await page.waitForSelector(`[data-testid='histogram-${data.clip.gene}']`);
+    await cxgActions.clip(data.clip.min, data.clip.max);
     const histId = `histogram-${data.clip.gene}-plot-brush`;
     const coords = await cxgActions.calcDragCoordinates(
       histId,

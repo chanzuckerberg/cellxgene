@@ -5,10 +5,9 @@ const mp = require("mouse-position");
 const mb = require("mouse-pressed");
 const key = require("key-pressed");
 
-const panSpeed = 0.4;
+const panSpeed = 1.0; // changed from 0.4 to 1.0 per issue #722
 const scaleSpeed = 0.5;
 const scaleMax = 3;
-// const scaleMin = 1.15
 const scaleMin = 1.03;
 
 function attachCamera(canvas, opts) {
