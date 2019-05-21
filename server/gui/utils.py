@@ -23,6 +23,18 @@ class WorkerSignals(QObject):
     ready = Signal()
 
 
+class SiteReadySignals(QObject):
+    """
+    Defines the signals available from a running worker thread.
+    Supported signals are:
+        timeout
+        ready
+        error - `str` error message
+    """
+    ready = Signal()
+    timeout = Signal()
+    error = Signal(str)
+
 class FileLoadSignals(QObject):
     selectedFile = Signal(str)
 

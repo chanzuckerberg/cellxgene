@@ -1,7 +1,11 @@
 from multiprocessing import Process
 import traceback
+import time
 
-s
+import requests
+
+from server.gui.utils import SiteReadySignals
+
 class EmittingProcess(Process):
     def __init__(self, transport, *arg, **kwargs):
         super(EmittingProcess, self).__init__()
@@ -14,7 +18,7 @@ class EmittingProcess(Process):
 
 class Worker(EmittingProcess):
     def __init__(self, transport, data_file, title, host, port, layout=["umap"], *args, **kwargs):
-        super(Worker, self).__init__()
+        super(Worker, self).__init__(transport)
         self.data_file = data_file
         self.layout = layout
         self.title = title
@@ -22,31 +26,50 @@ class Worker(EmittingProcess):
         self.port = port
 
     def run(self):
-        from server.app.app import Server
-        from server.app.scanpy_engine.scanpy_engine import ScanpyEngine
-        server = Server()
-        app = server.create_app()
-        args = {
-            "layout": self.layout,
-            "diffexp": "ttest",
-            "max_category_items": 100,
-            "diffexp_lfc_cutoff": 0.01,
-            "obs_names": None,
-            "var_names": None,
-        }
-        data = ScanpyEngine(self.data_file, args)
-        server.attach_data(data, self.title)
-        self.emit("ready")
-        # TODO listen for finished to kill?
-        server.app.run(host=self.host, debug=True, port=self.port, threaded=True)
+        if not self.data_file:
+            self.emit("finished")
+            return
+        try:
+            from server.app.app import Server
+            from server.app.scanpy_engine.scanpy_engine import ScanpyEngine
+            server = Server()
+            app = server.create_app()
+            args = {
+                "layout": self.layout,
+                "diffexp": "ttest",
+                "max_category_items": 100,
+                "diffexp_lfc_cutoff": 0.01,
+                "obs_names": None,
+                "var_names": None,
+            }
+            data = ScanpyEngine(self.data_file, args)
+            server.attach_data(data, self.title)
+            self.emit("ready")
+            # TODO listen for finished to kill?
+            server.app.run(host=self.host, debug=False, port=self.port, threaded=True)
+        except Exception as e:
+            traceback.print_exc()
+            self.emit("error", str(e))
+        finally:
+            self.emit("finished")
 
 
-class ServerRunWorker():
-    def __init__(self, app, host, port, *args, **kwargs):
-        super(ServerRunWorker, self).__init__()
-        self.app = app
-        self.host = host
-        self.port = port
+class SiteReadyWorker:
+    def __init__(self, location):
+        super(SiteReadyWorker, self).__init__()
+        self.signals = SiteReadySignals()
+        self.location = location
 
     def run(self):
-        self.app.run(host=self.host, debug=False, port=self.port, threaded=True)
+        session = requests.Session()
+        for i in range(90):
+            try:
+                session.head(self.location)
+                self.signals.ready.emit()
+                break
+            except requests.exceptions.ConnectionError:
+                time.sleep(1)
+            except Exception as e:
+                traceback.print_exc()
+                self.signals.error.emit(str(e))
+        self.signals.timeout.emit()

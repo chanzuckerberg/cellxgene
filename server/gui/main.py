@@ -8,9 +8,8 @@ from cefpython3 import cefpython as cef
 from PySide2.QtCore import *
 from PySide2.QtWidgets import *
 
-from server.app.app import Server
 from server.gui.browser import CefWidget, CefApplication
-from server.gui.workers import DataLoadWorker, ServerRunWorker
+from server.gui.workers import Worker, SiteReadyWorker
 from server.gui.utils import WINDOWS, LINUX, MAC, FileLoadSignals, Emitter, WorkerSignals
 from server.utils.constants import MODES
 
@@ -19,6 +18,7 @@ from server.utils.constants import MODES
 # TODO remember this or calculate it?
 WIDTH = 1024
 HEIGHT = 768
+GUI_PORT = 8004
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -29,9 +29,8 @@ class MainWindow(QMainWindow):
         self.load_emitter = Emitter(self.parent_conn, WorkerSignals)
         self.emitter_thread = threading.Thread(target=self.load_emitter.run, daemon=True)
         self.emitter_thread.start()
-        self.server = Server()
-        self.server.create_app()
-        self.runServer()
+        self.worker = None
+        self.url = f"http://localhost:{GUI_PORT}/"
         self.setWindowTitle("cellxgene")
 
         # Strong focus - accepts focus by tab & click
@@ -90,11 +89,6 @@ class MainWindow(QMainWindow):
         if self.cef_widget.browser:
             self.cef_widget.browser.CloseBrowser(True)
             self.clearBrowserReferences()
-
-    def runServer(self):
-        worker = ServerRunWorker(self.server.app, host="127.0.0.1", port=8000)
-        self.httpd = threading.Thread(target=worker.run, daemon=True)
-        self.httpd.start()
 
     def clearBrowserReferences(self):
         # Clear browser references that you keep anywhere in your
@@ -162,11 +156,12 @@ class LoadWidget(QFrame):
         self.embedding_selection = [MODES[idx]]
 
     def createScanpyEngine(self, file_name):
-        worker = DataLoadWorker(file_name, self.embedding_selection)
-        worker.signals.result.connect(self.onDataSuccess)
-        worker.signals.error.connect(self.onDataError)
-        self.load_worker = threading.Thread(target=worker.run, daemon=True)
-        self.load_worker.start()
+        worker = Worker(self.window().child_conn, file_name, self.title, host="127.0.0.1", port=GUI_PORT,
+                        layout=self.embedding_selection)
+        self.window().load_emitter.signals.ready.connect(self.onDataReady)
+        self.window().load_emitter.signals.error.connect(self.onDataError)
+        self.window().worker = Process(target=worker.run, daemon=True)
+        self.window().worker.start()
 
     def onLoad(self):
         options = QFileDialog.Options()
@@ -178,18 +173,21 @@ class LoadWidget(QFrame):
             self.signals.selectedFile.emit(file_name)
 
 
-    def onDataSuccess(self, data):
-        self.window().server.attach_data(data, self.title)
-        self.navigateToLocation()
-        # Reveal browser
+    def onDataReady(self):
+        site_ready_worker = SiteReadyWorker(self.window().url)
+        site_ready_worker.signals.ready.connect(self.onServerReady)
+        site_ready_worker.signals.error.connect(self.onDataError)
+        srw_thread = threading.Thread(target=site_ready_worker.run, daemon=True)
+        srw_thread.start()
+
+    def onServerReady(self):
+        self.window().cef_widget.browser.Navigate(self.window().url)
         self.window().stacked_layout.setCurrentIndex(1)
 
     def onDataError(self, err):
+        self.window().stacked_layout.setCurrentIndex(0)
         self.error_label.setText(f"Error: {err}")
         self.error_label.resize(self.MAX_CONTENT_WIDTH, self.error_label.height())
-
-    def navigateToLocation(self, location="http://localhost:8000/"):
-        self.window().cef_widget.browser.Navigate(location)
 
 
 def main():
@@ -207,16 +205,22 @@ def main():
     main_window.show()
     main_window.activateWindow()
     main_window.raise_()
-    app.exec_()
+    try:
+        app.exec_()
+    except Exception as e:
+        raise
+    finally:
+        # Clean up on close
+        if not cef.GetAppSetting("external_message_pump"):
+            app.stopTimer()
 
-    # Clean up on close
-    if not cef.GetAppSetting("external_message_pump"):
-        app.stopTimer()
-    # TODO clean up threads when we switch threading model
-    del main_window  # Just to be safe, similarly to "del app"
-    del app  # Must destroy app object before calling Shutdown
-    cef.Shutdown()
-    sys.exit(0)
+        if main_window.worker:
+            main_window.worker.terminate()
+        # TODO clean up threads when we switch threading model
+        del main_window  # Just to be safe, similarly to "del app"
+        del app  # Must destroy app object before calling Shutdown
+        cef.Shutdown()
+        sys.exit(0)
 
 
 if __name__ == '__main__':
