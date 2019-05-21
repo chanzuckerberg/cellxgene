@@ -18,7 +18,7 @@ from server.utils.constants import MODES
 # TODO remember this or calculate it?
 WIDTH = 1024
 HEIGHT = 768
-GUI_PORT = 8004
+GUI_PORT = 8000
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -36,7 +36,7 @@ class MainWindow(QMainWindow):
         # Strong focus - accepts focus by tab & click
         self.setFocusPolicy(Qt.StrongFocus)
         self.setupLayout()
-        self.setupMenu()
+        # self.setupMenu()
 
     def setupLayout(self):
         self.resize(WIDTH, HEIGHT)
@@ -73,6 +73,7 @@ class MainWindow(QMainWindow):
             self.stacked_layout.addWidget(self.container, 1, 0)
 
     def setupMenu(self):
+        # TODO add communication to subprocess on reload
         main_menu = self.menuBar()
         file_menu = main_menu.addMenu('File')
         load_action = QAction("Load file...", self)
@@ -171,7 +172,6 @@ class LoadWidget(QFrame):
         self.title = splitext(basename(file_name))[0]
         if file_name:
             self.signals.selectedFile.emit(file_name)
-
 
     def onDataReady(self):
         site_ready_worker = SiteReadyWorker(self.window().url)

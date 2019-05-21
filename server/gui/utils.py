@@ -35,8 +35,10 @@ class SiteReadySignals(QObject):
     timeout = Signal()
     error = Signal(str)
 
+
 class FileLoadSignals(QObject):
     selectedFile = Signal(str)
+
 
 class Emitter:
     def __init__(self, transport, signals):

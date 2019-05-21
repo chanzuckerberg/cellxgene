@@ -6,6 +6,7 @@ import requests
 
 from server.gui.utils import SiteReadySignals
 
+
 class EmittingProcess(Process):
     def __init__(self, transport, *arg, **kwargs):
         super(EmittingProcess, self).__init__()
@@ -33,7 +34,7 @@ class Worker(EmittingProcess):
             from server.app.app import Server
             from server.app.scanpy_engine.scanpy_engine import ScanpyEngine
             server = Server()
-            app = server.create_app()
+            server.create_app()
             args = {
                 "layout": self.layout,
                 "diffexp": "ttest",
