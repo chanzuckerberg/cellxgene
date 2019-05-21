@@ -46,7 +46,7 @@ To launch with hot reloading you need to launch the server and the client separa
 To build only the client: `make build-client`
 
 ### Linter
-We use `prettier` to lint the code.
+We use `eslint` to lint the code and `prettier` as our code formatter.
 
 ### Test
 In `client/` directory run `npm run unit-test`
@@ -83,7 +83,7 @@ To run end to end tests as they will be run on CI
 
 Run end to end tests interactively during development
 1. cellxgene should be installed as [specified in client dev](#install-1)
-2. Follow [launch](#launch-1) instructions for client dev
+2. Follow [launch](#launch-1) instructions for client dev with dataset `example-dataset/pbmc3k`
 3. Run `npm run --prefix client/ e2e`
 4. To debug a failing test `export JEST_ENV='debug'` and re-run.
 
