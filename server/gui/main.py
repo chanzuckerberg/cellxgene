@@ -131,7 +131,7 @@ class LoadWidget(QFrame):
         self.embeddings = QComboBox(self)
         self.embeddings.currentIndexChanged.connect(self.updateEmbedding)
         self.embeddings.addItems(MODES)
-        self.embedding_selection = MODES[0]
+        self.embedding_selection = [MODES[0]]
         load_layout.addWidget(self.embeddings, 1, 0)
 
         self.load = QPushButton("Open...")
@@ -155,7 +155,7 @@ class LoadWidget(QFrame):
         self.signals.selectedFile.connect(self.createScanpyEngine)
 
     def updateEmbedding(self, idx):
-        self.embedding_selection = MODES[idx]
+        self.embedding_selection = [MODES[idx]]
 
     def createScanpyEngine(self, file_name):
         worker = DataLoadWorker(file_name, self.embedding_selection)
