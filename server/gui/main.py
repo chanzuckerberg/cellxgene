@@ -1,4 +1,5 @@
 # flake8: noqa F403, F405
+from multiprocessing import Pipe, Process
 from os.path import splitext, basename
 import sys
 import threading
@@ -10,7 +11,7 @@ from PySide2.QtWidgets import *
 from server.app.app import Server
 from server.gui.browser import CefWidget, CefApplication
 from server.gui.workers import DataLoadWorker, ServerRunWorker
-from server.gui.utils import WINDOWS, LINUX, MAC, FileLoadSignals
+from server.gui.utils import WINDOWS, LINUX, MAC, FileLoadSignals, Emitter, WorkerSignals
 from server.utils.constants import MODES
 
 
@@ -19,12 +20,15 @@ from server.utils.constants import MODES
 WIDTH = 1024
 HEIGHT = 768
 
-# noinspection PyUnresolvedReferences
 class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__(None)
         self.cef_widget = None
         self.data_widget = None
+        self.parent_conn, self.child_conn = Pipe()
+        self.load_emitter = Emitter(self.parent_conn, WorkerSignals)
+        self.emitter_thread = threading.Thread(target=self.load_emitter.run, daemon=True)
+        self.emitter_thread.start()
         self.server = Server()
         self.server.create_app()
         self.runServer()
@@ -67,7 +71,7 @@ class MainWindow(QMainWindow):
             # cef widget in the layout with the container.
             self.container = QWidget.createWindowContainer(
                 self.cef_widget.hidden_window, parent=self)
-            stacked_layout.addWidget(self.container, 1, 0)
+            self.stacked_layout.addWidget(self.container, 1, 0)
 
     def setupMenu(self):
         main_menu = self.menuBar()
