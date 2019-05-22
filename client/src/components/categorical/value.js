@@ -27,6 +27,9 @@ import * as globals from "../../globals";
 class CategoryValue extends React.Component {
   constructor(props) {
     super(props);
+    this.state = {
+      editedLabelText: ""
+    };
   }
 
   handleDeleteValue = () => {
@@ -49,18 +52,29 @@ class CategoryValue extends React.Component {
 
   handleEditValue = () => {
     const { dispatch, metadataField, categoryIndex } = this.props;
+    const { editedLabelText } = this.state;
     dispatch({
       type: "label edited",
-      newLabel: "foo123",
+      newLabel: editedLabelText,
       metadataField,
       categoryIndex
     });
+    this.setState({ editedLabelText: "" });
   };
 
   activateEditLabelMode = () => {
     const { dispatch, metadataField, categoryIndex } = this.props;
     dispatch({
       type: "activate edit label mode",
+      metadataField,
+      categoryIndex
+    });
+  };
+
+  cancelEdit = () => {
+    const { dispatch, metadataField, categoryIndex } = this.props;
+    dispatch({
+      type: "cancel edit label mode",
       metadataField,
       categoryIndex
     });
@@ -172,26 +186,48 @@ class CategoryValue extends React.Component {
           annotations.isEditingLabelName &&
           annotations.labelEditable.category === metadataField &&
           annotations.labelEditable.label === categoryIndex ? (
-            <InputGroup
-              style={{ position: "relative", top: -1 }}
-              small
-              onChange={e => {
-                this.setState({ newLabelEditedText: e.target.value });
+            <form
+              onSubmit={e => {
+                e.preventDefault();
+                this.handleEditValue();
               }}
-              defaultValue={displayString}
-              rightElement={
-                <Button
-                  minimal
-                  style={{ position: "relative", top: -1 }}
-                  type="submit"
-                  icon="small-tick"
-                  data-testclass="submitEdit"
-                  data-testid="submitEdit"
-                  onClick={this.handleEditValue}
-                />
-              }
-            />
+            >
+              <InputGroup
+                style={{ position: "relative", top: -1 }}
+                ref={input => {
+                  this.editableInput = input;
+                }}
+                small
+                onChange={e => {
+                  this.setState({ editedLabelText: e.target.value });
+                }}
+                defaultValue={displayString}
+                rightElement={
+                  <Button
+                    minimal
+                    style={{ position: "relative", top: -1 }}
+                    type="button"
+                    icon="small-tick"
+                    data-testclass="submitEdit"
+                    data-testid="submitEdit"
+                    onClick={this.handleEditValue}
+                  />
+                }
+              />
+            </form>
           ) : null}
+          {/*
+            CANCEL IT, WITH BUTTON, ESCAPE KEY, CLICK OUT, UNDO?
+
+            <Button
+            minimal
+            style={{ position: "relative", top: -1 }}
+            type="button"
+            icon="cross"
+            data-testclass="submitEdit"
+            data-testid="submitEdit"
+            onClick={this.cancelEdit}
+          /> */}
         </div>
         <span style={{ flexShrink: 0 }}>
           {colorAccessor &&
@@ -259,7 +295,6 @@ class CategoryValue extends React.Component {
                 style={{ marginLeft: 0, position: "relative", top: -1 }}
                 data-testclass="seeActions"
                 data-testid={`seeActions-${metadataField}`}
-                onClick={this.handleDeleteValue}
                 icon="more"
                 small
                 minimal

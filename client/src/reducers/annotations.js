@@ -19,6 +19,13 @@ const Annotations = (
           label: action.categoryIndex
         }
       };
+    case "cancel edit label mode":
+      console.log("cancel edit label mode", action);
+      return {
+        ...state,
+        isEditingLabelName: false,
+        labelEditable: { category: null, label: null }
+      };
     case "label edited":
       console.log("label edited", action);
       return {
