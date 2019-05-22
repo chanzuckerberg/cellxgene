@@ -56,7 +56,9 @@ describe("createUniverseFromResponse", () => {
       REST.schema.schema.annotations.obs.length
     ]);
     expect(universe.obsLayout.dims).toEqual([nObs, 2]);
-    expect(universe.obsLayout.colIndex.keys()).toEqual(["X", "Y"]);
+    expect(universe.obsLayout.colIndex.keys()).toEqual(
+      universe.schema.layout.obs[0].dims
+    );
     expect(universe.varAnnotations.dims).toEqual([
       nVar,
       REST.schema.schema.annotations.var.length

@@ -29,7 +29,8 @@ const defaultBigBang = () => {
   /* create crossfilter */
   const crossfilter = World.createObsDimensions(
     new Crossfilter(world.obsAnnotations),
-    world
+    world,
+    REST.schema.schema.layout.obs[0].dims
   );
 
   return {
@@ -138,7 +139,9 @@ describe("createWorldFromCurrentSelection", () => {
     expect(world.obsLayout.rowIndex.keys()).toEqual(
       new Int32Array(matchingIndices)
     );
-    expect(world.obsLayout.colIndex.keys()).toEqual(["X", "Y"]);
+    expect(world.obsLayout.colIndex.keys()).toEqual(
+      world.schema.layout.obs[0].dims
+    );
   });
 });
 
