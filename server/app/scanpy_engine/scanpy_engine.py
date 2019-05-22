@@ -115,7 +115,7 @@ class ScanpyEngine(CXGDriver):
                 "type": str(self.data.X.dtype),
             },
             "annotations": {"obs": [], "var": []},
-            "layout": {"obs": [], "var": []}
+            "layout": {"obs": []}
         }
         for ax in Axis:
             curr_axis = getattr(self.data, str(ax))
@@ -142,12 +142,12 @@ class ScanpyEngine(CXGDriver):
                 self.schema["annotations"][ax].append(ann_schema)
 
         for layout in self.config['layout']:
-            ly_schema = {
+            layout_schema = {
                 "name": layout,
                 "type": "float32",
                 "dims": [f"{layout}_0", f"{layout}_1"]
             }
-            self.schema["layout"]["obs"].append(ly_schema)
+            self.schema["layout"]["obs"].append(layout_schema)
 
     def _load_data(self, data):
         # as of AnnData 0.6.19, backed mode performs initial load fast, but at the

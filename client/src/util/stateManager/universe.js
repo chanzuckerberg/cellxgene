@@ -156,6 +156,9 @@ export function createUniverseFromResponse(
   universe.schema = schema;
   universe.nObs = schema.dataframe.nObs;
   universe.nVar = schema.dataframe.nVar;
+  /* add defaults, as we can't assume back-end will fully populate schema */
+  if (!schema.layout.var) schema.layout.var = [];
+  if (!schema.layout.obs) schema.layout.obs = [];
 
   /* annotations */
   universe.obsAnnotations = AnnotationsFBSToDataframe(annotationsObsResponse);
