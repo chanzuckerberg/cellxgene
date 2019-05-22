@@ -164,6 +164,10 @@ class ScanpyEngine(CXGDriver):
 
     @requires_data
     def _validate_and_initialize(self):
+        # var and obs column names must be unique
+        if not self.data.obs.is_unique or not self.data.var.is_unique:
+            raise KeyError(f"All annotation column names must be unique.")
+
         self._alias_annotation_names(Axis.OBS, self.config["obs_names"])
         self._alias_annotation_names(Axis.VAR, self.config["var_names"])
         self._validate_data_types()
