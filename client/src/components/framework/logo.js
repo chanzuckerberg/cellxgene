@@ -2,7 +2,7 @@ import React from "react";
 import * as globals from "../../globals";
 
 const Logo = props => {
-  const { size, style } = props;
+  const { size } = props;
   return (
     <svg width={size} height={size} viewBox={`0 0 ${48} ${48}`} fill="none">
       <rect width="48" height="48" fill="white" />

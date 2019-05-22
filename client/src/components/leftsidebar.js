@@ -39,14 +39,13 @@ class LeftSideBar extends React.Component {
           boxShadow: "1px 0px 6px 2px rgba(153,153,153,0.4)"
         }}
       >
-        <div
+        <p
           data-testid="header"
           style={{
             position: "fixed",
             top: globals.cellxgeneTitleTopPadding,
             left: globals.leftSidebarWidth + globals.cellxgeneTitleLeftPadding,
             margin: 0
-            // width: "100%"
           }}
         >
           <Logo size={32} />
@@ -62,17 +61,18 @@ class LeftSideBar extends React.Component {
           >
             cellxgene
           </span>
-          <p
+          <span
             style={{
               fontSize: 16,
+              display: "block",
               position: "relative",
               marginTop: 10,
               top: -4
             }}
           >
             {datasetTitle}
-          </p>
-        </div>
+          </span>
+        </p>
         <div
           style={{
             height: responsive.height - metadataSectionPadding,
