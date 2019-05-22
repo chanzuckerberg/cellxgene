@@ -20,10 +20,11 @@ const CrossfilterReducer = (
 ) => {
   switch (action.type) {
     case "initial data load complete (universe exists)": {
-      const { world } = nextSharedState;
+      const { world, layoutChoice } = nextSharedState;
       const crossfilter = World.createObsDimensions(
         new Crossfilter(world.obsAnnotations),
-        world
+        world,
+        layoutChoice.currentDimNames
       );
       return crossfilter;
     }
@@ -43,9 +44,13 @@ const CrossfilterReducer = (
     case "set clip quantiles":
     case "set World to current selection": {
       const { userDefinedGenes, diffexpGenes } = prevSharedState.controls;
-      const { world } = nextSharedState;
+      const { world, layoutChoice } = nextSharedState;
       let crossfilter = new Crossfilter(world.obsAnnotations);
-      crossfilter = World.createObsDimensions(crossfilter, world);
+      crossfilter = World.createObsDimensions(
+        crossfilter,
+        world,
+        layoutChoice.currentDimNames
+      );
       crossfilter = ControlsHelpers.createGeneDimensions(
         userDefinedGenes,
         diffexpGenes,
@@ -53,6 +58,23 @@ const CrossfilterReducer = (
         crossfilter
       );
       return crossfilter;
+    }
+
+    case "set layout choice": {
+      /*
+      when switching layouts:
+      - delete the existing XY index
+      - add the new XY index (which implicitly selects all on it)
+      */
+      const { world, layoutChoice } = nextSharedState;
+      return state
+        .delDimension(layoutDimensionName("XY"))
+        .addDimension(
+          layoutDimensionName("XY"),
+          "spatial",
+          world.obsLayout.col(layoutChoice.currentDimNames[0]).asArray(),
+          world.obsLayout.col(layoutChoice.currentDimNames[1]).asArray()
+        );
     }
 
     case "request user defined gene success": {

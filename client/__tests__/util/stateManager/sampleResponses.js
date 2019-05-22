@@ -56,6 +56,10 @@ const aSchemaResponse = {
           categories: fieldDCategories
         }
       ]
+    },
+    layout: {
+      obs: [{ name: "umap", type: "float32", dims: ["umap_0", "umap_1"] }],
+      var: []
     }
   }
 };

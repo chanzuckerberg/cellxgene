@@ -7,7 +7,8 @@ const GraphSelection = (
 ) => {
   switch (action.type) {
     case "set clip quantiles":
-    case "reset World to eq Universe": {
+    case "reset World to eq Universe":
+    case "set layout choice": {
       return {
         ...state,
         selection: {
