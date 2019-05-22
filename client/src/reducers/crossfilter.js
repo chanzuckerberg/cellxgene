@@ -161,10 +161,12 @@ const CrossfilterReducer = (
     case "categorical metadata filter select":
     case "categorical metadata filter deselect": {
       const { categoricalSelection } = nextSharedState;
+      const { world } = prevSharedState;
       const cat = categoricalSelection[action.metadataField];
+      const col = world.obsAnnotations.col(action.metadataField);
       return state.select(obsAnnoDimensionName(action.metadataField), {
         mode: "exact",
-        values: ControlsHelpers.selectedValuesForCategory(cat)
+        values: ControlsHelpers.selectedValuesForCategory(cat, col)
       });
     }
 
