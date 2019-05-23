@@ -4,7 +4,7 @@ import * as globals from "../../globals";
 const Logo = props => {
   const { size } = props;
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${48} ${48}`} fill="none">
+    <svg width={size} height={size} viewBox={`0 0 48 48`} fill="none">
       <rect width="48" height="48" fill="white" />
       <rect width="48" height="48" fill={globals.logoColor} />
       <rect x="19" y="19" width="22" height="22" fill="white" />

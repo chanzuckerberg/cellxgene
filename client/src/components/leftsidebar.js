@@ -28,7 +28,6 @@ class LeftSideBar extends React.Component {
     if cellxgene logo or tabs change, this must as well
     */
     const metadataSectionPadding = 0;
-    // scatterplotXXaccessor && scatterplotYYaccessor ? 450 : 0;
 
     return (
       <div
@@ -40,7 +39,6 @@ class LeftSideBar extends React.Component {
         }}
       >
         <p
-          data-testid="header"
           style={{
             position: "fixed",
             top: globals.cellxgeneTitleTopPadding,
@@ -62,6 +60,7 @@ class LeftSideBar extends React.Component {
             cellxgene
           </span>
           <span
+            data-testid="header"
             style={{
               fontSize: 16,
               display: "block",
