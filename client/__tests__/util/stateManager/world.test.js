@@ -155,14 +155,18 @@ describe("createObsDimensionMap", () => {
 
     const { crossfilter } = defaultBigBang();
     const annotationNames = _.map(
-      REST.schema.schema.annotations.obs,
+      REST.schema.schema.annotations.obs.columns,
       c => c.name
     );
-    const schemaByObsName = _.keyBy(REST.schema.schema.annotations.obs, "name");
+    const obsIndexColName = REST.schema.schema.annotations.obs.index;
+    const schemaByObsName = _.keyBy(
+      REST.schema.schema.annotations.obs.columns,
+      "name"
+    );
     expect(crossfilter).toBeDefined();
     annotationNames.forEach(name => {
       const dim = crossfilter.dimensions[obsAnnoDimensionName(name)];
-      if (name === "name") {
+      if (name === obsIndexColName) {
         expect(dim).toBeUndefined();
       } else {
         const { type } = schemaByObsName[name];
