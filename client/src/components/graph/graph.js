@@ -4,6 +4,7 @@ import * as d3 from "d3";
 import { connect } from "react-redux";
 import mat4 from "gl-mat4";
 import _regl from "regl";
+import memoize from "memoize-one";
 import {
   Button,
   AnchorButton,
@@ -77,6 +78,38 @@ class Graph extends React.Component {
     return key >= 0 && key <= 9;
   }
 
+  computePointPositions = memoize((X, Y, scaleX, scaleY) => {
+    /*
+    compute webgl coordinate buffer for each point
+    */
+    const positions = new Float32Array(2 * X.length);
+    for (let i = 0, len = X.length; i < len; i += 1) {
+      positions[2 * i] = scaleX(X[i]);
+      positions[2 * i + 1] = scaleY(Y[i]);
+    }
+    return positions;
+  });
+
+  computePointColors = memoize(rgb => {
+    /*
+    compute webgl colors for each point
+    */
+    const colors = new Float32Array(3 * rgb.length);
+    for (let i = 0, len = rgb.length; i < len; i += 1) {
+      colors.set(rgb[i], 3 * i);
+    }
+    return colors;
+  });
+
+  computePointSizes = memoize((len, crossfilter) => {
+    /*
+    compute webgl dot size for each point
+    */
+    const sizes = new Float32Array(len);
+    crossfilter.fillByIsSelected(sizes, 4, 0.2);
+    return sizes;
+  });
+
   constructor(props) {
     super(props);
     this.count = 0;
@@ -111,6 +144,12 @@ class Graph extends React.Component {
     const colorBuffer = regl.buffer();
     const sizeBuffer = regl.buffer();
 
+    // preallocate coordinate system transformation between data and gl
+    const transform = {
+      glScaleX: scaleLinear([0, 1], [-1, 1]),
+      glScaleY: scaleLinear([0, 1], [1, -1])
+    };
+
     /* first time, but this duplicates above function, should be possile to avoid this */
     const reglRender = regl.frame(() => {
       this.reglDraw(
@@ -133,7 +172,8 @@ class Graph extends React.Component {
       colorBuffer,
       sizeBuffer,
       camera,
-      reglRender
+      reglRender,
+      transform
     });
   }
 
@@ -148,17 +188,7 @@ class Graph extends React.Component {
       currentSelection,
       layoutChoice
     } = this.props;
-    const {
-      reglRender,
-      mode,
-      regl,
-      drawPoints,
-      camera,
-      pointBuffer,
-      colorBuffer,
-      sizeBuffer,
-      svg
-    } = this.state;
+    const { reglRender, mode, regl, svg } = this.state;
     let stateChanges = {};
 
     if (reglRender && this.reglRenderState === "rendering" && mode !== "zoom") {
@@ -169,58 +199,40 @@ class Graph extends React.Component {
     if (regl && world) {
       /* update the regl state */
       const { obsLayout, nObs } = world;
+      const {
+        drawPoints,
+        transform,
+        camera,
+        pointBuffer,
+        colorBuffer,
+        sizeBuffer
+      } = this.state;
+
+      /* coordinates for each point */
+      const { glScaleX, glScaleY } = transform;
       const X = obsLayout.col(layoutChoice.currentDimNames[0]).asArray();
       const Y = obsLayout.col(layoutChoice.currentDimNames[1]).asArray();
-      const { X: prevX, Y: prevY } = renderCache;
-
-      // X/Y positions for each point - a cached value that only
-      // changes if we have loaded entirely new cell data
-      //
-      /* TODO/XXX: we should just memoize this code */
-      if (!renderCache.positions || X !== prevX || Y !== prevY) {
-        renderCache.positions = new Float32Array(2 * nObs);
-
-        const glScaleX = scaleLinear([0, 1], [-1, 1]);
-        const glScaleY = scaleLinear([0, 1], [1, -1]);
-
-        for (let i = 0, { positions } = renderCache; i < nObs; i += 1) {
-          positions[2 * i] = glScaleX(X[i]);
-          positions[2 * i + 1] = glScaleY(Y[i]);
-        }
-        pointBuffer({
-          data: renderCache.positions,
-          dimension: 2
-        });
-
-        stateChanges.transform = {
-          glScaleX,
-          glScaleY
-        };
-        renderCache.X = X;
-        renderCache.Y = Y;
+      const newPositions = this.computePointPositions(X, Y, glScaleX, glScaleY);
+      if (renderCache.positions !== newPositions) {
+        /* update our cache & GL if the buffer changes */
+        renderCache.positions = newPositions;
+        pointBuffer({ data: newPositions, dimension: 2 });
       }
 
-      // Colors for each point - a cached value that only changes when
-      // the cell metadata changes.
-      if (!renderCache.colors || colorRGB !== prevProps.colorRGB) {
-        const rgb = colorRGB;
-        if (!renderCache.colors) {
-          renderCache.colors = new Float32Array(3 * rgb.length);
-        }
-        for (let i = 0, { colors } = renderCache; i < rgb.length; i += 1) {
-          colors.set(rgb[i], 3 * i);
-        }
-        colorBuffer({ data: renderCache.colors, dimension: 3 });
+      /* colors for each point */
+      const newColors = this.computePointColors(colorRGB);
+      if (renderCache.colors !== newColors) {
+        /* update our cache & GL if the buffer changes */
+        renderCache.colors = newColors;
+        colorBuffer({ data: newColors, dimension: 3 });
       }
 
-      // Sizes for each point - updates are triggered only when selected
-      // obs change
-      if (!renderCache.sizes || crossfilter !== prevProps.crossfilter) {
-        if (!renderCache.sizes) {
-          renderCache.sizes = new Float32Array(nObs);
-        }
-        crossfilter.fillByIsSelected(renderCache.sizes, 4, 0.2);
-        sizeBuffer({ data: renderCache.sizes, dimension: 1 });
+      /* sizes for each point */
+      const newSizes = this.computePointSizes(nObs, crossfilter);
+      if (renderCache.sizes !== newSizes) {
+        /* update our cache & GL if the buffer changes */
+        renderCache.size = newSizes;
+        sizeBuffer({ data: newSizes, dimension: 1 });
       }
 
       this.count = nObs;
