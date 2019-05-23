@@ -1,6 +1,6 @@
 export const datasets = {
   pbmc3k: {
-    title: "cellxgene: pbmc3k",
+    title: "pbmc3k",
     dataframe: {
       nObs: "2638",
       nVar: "1838",
