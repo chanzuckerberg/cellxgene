@@ -23,7 +23,8 @@ class EndPoints(unittest.TestCase):
         session = requests.Session()
         for i in range(90):
             try:
-                session.get(f"{URL_BASE}schema")
+                result = session.get(f"{URL_BASE}schema")
+                cls.schema = result.json()
             except requests.exceptions.ConnectionError:
                 time.sleep(1)
 
@@ -45,7 +46,8 @@ class EndPoints(unittest.TestCase):
         self.assertEqual(result.headers["Content-Type"], "application/json")
         result_data = result.json()
         self.assertEqual(result_data["schema"]["dataframe"]["nObs"], 2638)
-        self.assertEqual(len(result_data["schema"]["annotations"]["obs"]), 5)
+        self.assertEqual(len(result_data["schema"]["annotations"]["obs"]), 2)
+        self.assertEqual(len(result_data["schema"]["annotations"]["obs"]["columns"]), 5)
 
     def test_config(self):
         endpoint = "config"
@@ -95,7 +97,8 @@ class EndPoints(unittest.TestCase):
         self.assertIsNotNone(df['col_idx'])
         self.assertIsNone(df['row_idx'])
         self.assertEqual(len(df['columns']), df['n_cols'])
-        self.assertListEqual(df['col_idx'], ['name', 'n_genes', 'percent_mito', 'n_counts', 'louvain'])
+        obs_index_col_name = self.schema["schema"]["annotations"]["obs"]["index"]
+        self.assertListEqual(df['col_idx'], [obs_index_col_name, 'n_genes', 'percent_mito', 'n_counts', 'louvain'])
 
     def test_get_annotations_obs_keys_fbs(self):
         endpoint = "annotations/obs"
@@ -165,7 +168,8 @@ class EndPoints(unittest.TestCase):
         self.assertIsNotNone(df['col_idx'])
         self.assertIsNone(df['row_idx'])
         self.assertEqual(len(df['columns']), df['n_cols'])
-        self.assertListEqual(df['col_idx'], ['name', 'n_cells'])
+        var_index_col_name = self.schema["schema"]["annotations"]["var"]["index"]
+        self.assertListEqual(df['col_idx'], [var_index_col_name, 'n_cells'])
 
     def test_get_annotations_var_keys_fbs(self):
         endpoint = "annotations/var"
@@ -247,7 +251,8 @@ class EndPoints(unittest.TestCase):
         endpoint = f"data/var"
         url = f"{URL_BASE}{endpoint}"
         header = {"Accept": "application/octet-stream"}
-        var_filter = {"filter": {"var": {"annotation_value": [{"name": "name", "values": ["RER1"]}]}}}
+        index_col_name = self.schema["schema"]["annotations"]["var"]["index"]
+        var_filter = {"filter": {"var": {"annotation_value": [{"name": index_col_name, "values": ["RER1"]}]}}}
         result = self.session.put(url, headers=header, json=var_filter)
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
