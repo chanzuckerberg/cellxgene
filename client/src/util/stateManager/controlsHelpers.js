@@ -56,13 +56,14 @@ function topNCategories(summary) {
 
 export function createCategoricalSelection(maxCategoryItems, world) {
   const res = {};
+  const obsIndexName = world.schema.annotations.obs.index;
   _.forEach(world.obsAnnotations.colIndex.keys(), key => {
     const summary = world.obsAnnotations.col(key).summarize();
     if (summary.categories) {
       const isColorField = key.includes("color") || key.includes("Color");
       const isSelectableCategory =
         !isColorField &&
-        key !== "name" &&
+        key !== obsIndexName &&
         summary.categories.length < maxCategoryItems;
       if (isSelectableCategory) {
         const [categoryValues, categoryValueCounts] = topNCategories(summary);

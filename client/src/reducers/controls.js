@@ -93,9 +93,10 @@ const Controls = (
     }
     case "request differential expression success": {
       const { world } = prevSharedState;
+      const varIndexName = world.schema.annotations.var.index;
       const _diffexpGenes = [];
       action.data.forEach(d => {
-        _diffexpGenes.push(world.varAnnotations.at(d[0], "name"));
+        _diffexpGenes.push(world.varAnnotations.at(d[0], varIndexName));
       });
       return {
         ...state,
