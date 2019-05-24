@@ -3,6 +3,7 @@ import React from "react";
 import * as d3 from "d3";
 import { connect } from "react-redux";
 import mat4 from "gl-mat4";
+import vec3 from "gl-vec3";
 import _regl from "regl";
 import memoize from "memoize-one";
 import {
@@ -294,11 +295,10 @@ class Graph extends React.Component {
       mode !== prevState.mode ||
       stateChanges.svg
     ) {
-      const { tool, container, transform } = this.state;
+      const { tool, container } = this.state;
       this.selectionToolUpdate(
         stateChanges.tool ? stateChanges.tool : tool,
-        stateChanges.container ? stateChanges.container : container,
-        stateChanges.transform ? stateChanges.transform : transform
+        stateChanges.container ? stateChanges.container : container
       );
     }
 
@@ -466,7 +466,7 @@ class Graph extends React.Component {
     });
   };
 
-  brushToolUpdate(tool, container, transform) {
+  brushToolUpdate(tool, container) {
     /*
     this is called from componentDidUpdate(), so be very careful using
     anything from this.state, which may be updated asynchronously.
@@ -480,14 +480,8 @@ class Graph extends React.Component {
         if there is a selection, make sure the brush tool matches
         */
         const screenCoords = [
-          this.mapPointToScreen(
-            currentSelection.brushCoords.northwest,
-            transform
-          ),
-          this.mapPointToScreen(
-            currentSelection.brushCoords.southeast,
-            transform
-          )
+          this.mapPointToScreen(currentSelection.brushCoords.northwest),
+          this.mapPointToScreen(currentSelection.brushCoords.southeast)
         ];
         if (!toolCurrentSelection) {
           /* tool is not selected, so just move the brush */
@@ -514,7 +508,7 @@ class Graph extends React.Component {
     }
   }
 
-  lassoToolUpdate(tool, container, transform) {
+  lassoToolUpdate(tool, container) {
     /*
     this is called from componentDidUpdate(), so be very careful using
     anything from this.state, which may be updated asynchronously.
@@ -525,7 +519,7 @@ class Graph extends React.Component {
       if there is a current selection, make sure the lasso tool matches
       */
       const polygon = currentSelection.polygon.map(p =>
-        this.mapPointToScreen(p, transform)
+        this.mapPointToScreen(p)
       );
       tool.move(polygon);
     } else {
@@ -533,7 +527,7 @@ class Graph extends React.Component {
     }
   }
 
-  selectionToolUpdate(tool, container, transform) {
+  selectionToolUpdate(tool, container) {
     /*
     this is called from componentDidUpdate(), so be very careful using
     anything from this.state, which may be updated asynchronously.
@@ -541,10 +535,10 @@ class Graph extends React.Component {
     const { selectionTool } = this.props;
     switch (selectionTool) {
       case "brush":
-        this.brushToolUpdate(tool, container, transform);
+        this.brushToolUpdate(tool, container);
         break;
       case "lasso":
-        this.lassoToolUpdate(tool, container, transform);
+        this.lassoToolUpdate(tool, container);
         break;
       default:
         /* punt? */
@@ -608,6 +602,7 @@ class Graph extends React.Component {
 
     // get aspect ratio
     const aspect = gl.drawingBufferWidth / gl.drawingBufferHeight;
+    const scale = aspect < 1 ? 1 / aspect : 1;
 
     // compute inverse view matrix
     const inverse = mat4.invert([], camera.view());
@@ -616,35 +611,37 @@ class Graph extends React.Component {
     const x = (2 * pin[0]) / (responsive.width - this.graphPaddingRight) - 1;
     const y = 2 * (1 - pin[1] / (responsive.height - this.graphPaddingTop)) - 1;
     const pout = [
-      x * inverse[14] * aspect + inverse[12],
-      -(y * inverse[14] + inverse[13])
+      x * inverse[14] * aspect * scale + inverse[12],
+      -(y * inverse[14] * scale + inverse[13])
     ];
 
-    return [glScaleX.invert(pout[0]), glScaleY.invert(pout[1])];
+    const xy = [glScaleX.invert(pout[0]), glScaleY.invert(pout[1])];
+    return xy;
   }
 
-  mapPointToScreen(xyCell, transform) {
+  mapPointToScreen(xyCell) {
     /*
     Map an XY coordinate from cell/point domain to screen range.  Inverse
     of mapScreenToPoint()
     */
     const { responsive } = this.props;
-    const { regl, camera } = this.state;
+    const { regl, camera, transform } = this.state;
     const { glScaleX, glScaleY } = transform;
 
     const gl = regl._gl;
 
     // get aspect ratio
     const aspect = gl.drawingBufferWidth / gl.drawingBufferHeight;
+    const scale = aspect < 1 ? 1 / aspect : 1;
 
     // compute inverse view matrix
-    const inverse = mat4.invert([], camera.view());
+    let inverse = mat4.invert([], camera.view());
 
     // variable names are choosen to reflect inverse of those used
     // in mapScreenToPoint().
     const pout = [glScaleX(xyCell[0]), glScaleY(xyCell[1])];
-    const x = (pout[0] - inverse[12]) / aspect / inverse[14];
-    const y = (-pout[1] - inverse[13]) / inverse[14];
+    const x = (pout[0] - inverse[12]) / aspect / scale / inverse[14];
+    const y = (-pout[1] - inverse[13]) / scale / inverse[14];
 
     const pin = [
       Math.round(((x + 1) * (responsive.width - this.graphPaddingRight)) / 2),
