@@ -55,7 +55,7 @@ class CategoryValue extends React.Component {
     const { editedLabelText } = this.state;
     dispatch({
       type: "label edited",
-      newLabel: editedLabelText,
+      editedLabel: editedLabelText,
       metadataField,
       categoryIndex
     });
@@ -283,6 +283,7 @@ class CategoryValue extends React.Component {
                   />
                   <MenuItem
                     icon="delete"
+                    intent="danger"
                     data-testclass="handleDeleteValue"
                     data-testid={`handleDeleteValue-${metadataField}`}
                     onClick={this.handleDeleteValue}

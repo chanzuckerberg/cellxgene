@@ -2,7 +2,17 @@ import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
 import { FaChevronRight, FaChevronDown } from "react-icons/fa";
-import { Button, Tooltip, Icon } from "@blueprintjs/core";
+import {
+  Button,
+  Tooltip,
+  InputGroup,
+  Menu,
+  MenuItem,
+  Popover,
+  Icon,
+  Position,
+  PopoverInteractionKind
+} from "@blueprintjs/core";
 
 import * as globals from "../../globals";
 import Value from "./value";
@@ -10,14 +20,17 @@ import sortedCategoryValues from "./util";
 
 @connect(state => ({
   colorAccessor: state.colors.colorAccessor,
-  categoricalSelection: state.categoricalSelection
+  categoricalSelection: state.categoricalSelection,
+  annotations: state.annotations
 }))
 class Category extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       isChecked: true,
-      isExpanded: false
+      isExpanded: false,
+      editedCategoryText: "",
+      newLabelText: ""
     };
   }
 
@@ -50,6 +63,43 @@ class Category extends React.Component {
       }
     }
   }
+
+  handleAddNewLabelToCategory = () => {
+    const { dispatch, metadataField } = this.props;
+    const { newLabelText } = this.state;
+    dispatch({
+      type: "add new label to category",
+      metadataField,
+      newLabelText
+    });
+  };
+
+  activateEditCategoryMode = () => {
+    const { dispatch, metadataField } = this.props;
+    dispatch({
+      type: "activate edit category mode",
+      metadataField
+    });
+  };
+
+  handleEditCategory = () => {
+    const { dispatch, metadataField } = this.props;
+    const { editedCategoryText } = this.state;
+
+    dispatch({
+      type: "category edited",
+      metadataField,
+      editedCategoryText
+    });
+  };
+
+  handleDeleteCategory = () => {
+    const { dispatch, metadataField } = this.props;
+    dispatch({
+      type: "delete category",
+      metadataField
+    });
+  };
 
   handleColorChange = () => {
     const { dispatch, metadataField } = this.props;
@@ -111,7 +161,8 @@ class Category extends React.Component {
       colorAccessor,
       categoricalSelection,
       isUserAnno,
-      createAnnoModeActive
+      createAnnoModeActive,
+      annotations
     } = this.props;
     const { isTruncated } = categoricalSelection[metadataField];
     return (
@@ -181,19 +232,71 @@ class Category extends React.Component {
           </div>
           <div>
             {isUserAnno ? (
-              <Tooltip
-                content="Delete category & associated labels"
-                position="bottom"
+              <Popover
+                interactionKind={PopoverInteractionKind.HOVER}
+                boundary="window"
+                position={Position.RIGHT}
+                content={
+                  <Menu>
+                    {annotations.isEditingCategoryName &&
+                    annotations.categoryEditable === metadataField ? (
+                      <InputGroup
+                        style={{ position: "relative", top: -1 }}
+                        ref={input => {
+                          this.editableInput = input;
+                        }}
+                        small
+                        onChange={e => {
+                          this.setState({ editedCategoryText: e.target.value });
+                        }}
+                        defaultValue={metadataField}
+                        rightElement={
+                          <Button
+                            minimal
+                            style={{ position: "relative", top: -1 }}
+                            type="button"
+                            icon="small-tick"
+                            data-testclass="submitEditCategory"
+                            data-testid="submitEditCategory"
+                            onClick={this.handleEditCategory}
+                          />
+                        }
+                      />
+                    ) : (
+                      <MenuItem
+                        icon="tag"
+                        data-testclass="handleAddNewLabelToCategory"
+                        data-testid={`handleAddNewLabelToCategory-${metadataField}`}
+                        onClick={this.handleAddNewLabelToCategory}
+                        text="Add a new label to this category"
+                      />
+                    )}
+                    <MenuItem
+                      icon="edit"
+                      data-testclass="activateEditCategoryMode"
+                      data-testid={`activateEditCategoryMode-${metadataField}`}
+                      onClick={this.activateEditCategoryMode}
+                      text="Edit this category's name"
+                    />
+                    <MenuItem
+                      icon="delete"
+                      intent="danger"
+                      data-testclass="handleDeleteCategory"
+                      data-testid={`handleDeleteCategory-${metadataField}`}
+                      onClick={this.handleDeleteCategory}
+                      text="Delete this category, all associated labels, and remove all cell assignments"
+                    />
+                  </Menu>
+                }
               >
                 <Button
-                  style={{ marginRight: 5 }}
-                  data-testclass="deleteAnnoCategory"
-                  data-testid={`deleteAnnoCategory-${metadataField}`}
-                  onClick={this.handleDeleteUserAnno}
-                  icon="delete"
+                  style={{ marginLeft: 0 }}
+                  data-testclass="seeActions"
+                  data-testid={`seeActions-${metadataField}`}
+                  icon="more"
                   minimal
                 />
-              </Tooltip>
+              </Popover>
             ) : null}
             {createAnnoModeActive ? (
               <Tooltip

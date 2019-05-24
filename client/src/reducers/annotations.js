@@ -9,6 +9,39 @@ const Annotations = (
   action
 ) => {
   switch (action.type) {
+    /* CATEGORY */
+    case "add new label to category":
+      console.log("add new label to category", action);
+      return {
+        ...state
+        /* Bruce to persist new category name */
+      };
+    case "activate category edit mode":
+      console.log("activate category edit mode", action);
+      return {
+        ...state,
+        isEditingCategoryName: true,
+        categoryEditable: {
+          category: action.metadataField
+        }
+      };
+    case "category edited":
+      console.log("activate category edit mode", action);
+      return {
+        ...state,
+        isEditingCategoryName: true,
+        categoryEditable: {
+          category: null
+        }
+        /* Bruce to persist new category name */
+      };
+    case "delete category":
+      console.log("delete category", action);
+      return {
+        ...state
+        /* Bruce to delete category */
+      };
+    /* LABEL */
     case "activate edit label mode":
       console.log("edit label mode", action);
       return {
