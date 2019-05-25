@@ -157,12 +157,13 @@ class LoadWidget(QFrame):
         self.embedding_selection = [MODES[idx]]
 
     def createScanpyEngine(self, file_name):
-        worker = Worker(self.window().child_conn, file_name, self.title, host="127.0.0.1", port=GUI_PORT,
+        worker = Worker((self.window().parent_conn, self.window().child_conn), file_name, self.title, host="127.0.0.1", port=GUI_PORT,
                         layout=self.embedding_selection)
         self.window().load_emitter.signals.ready.connect(self.onDataReady)
         self.window().load_emitter.signals.error.connect(self.onDataError)
         self.window().worker = Process(target=worker.run, daemon=True)
         self.window().worker.start()
+        self.window().child_conn.close()
 
     def onLoad(self):
         options = QFileDialog.Options()

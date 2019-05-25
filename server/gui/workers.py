@@ -10,7 +10,9 @@ from server.gui.utils import SiteReadySignals
 class EmittingProcess(Process):
     def __init__(self, transport, *arg, **kwargs):
         super(EmittingProcess, self).__init__()
-        self.transport = transport
+        transport[0].close()
+        self.transport = transport[1]
+
 
     def emit(self, signal_name, *args):
         message = (signal_name, *args)
