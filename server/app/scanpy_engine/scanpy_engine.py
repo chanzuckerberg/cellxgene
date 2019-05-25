@@ -52,7 +52,7 @@ class ScanpyEngine(CXGDriver):
 
     @staticmethod
     def _create_unique_column_name(df, col_name_prefix):
-        """ given the columns of a dataframe, and a name prefix, return a column name which 
+        """ given the columns of a dataframe, and a name prefix, return a column name which
             does not exist in the dataframe, AND which is prefixed by `prefix`
 
             The approach is to append a numeric suffix, starting at zero and increasing by
