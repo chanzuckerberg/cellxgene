@@ -51,14 +51,17 @@ class ScanpyEngine(CXGDriver):
         }
 
     @staticmethod
-    def _create_unique_column_name(df, prefix):
-        """ given a dataframe and a name prefix, return a column name which does not
-            exist in the dataframe.
+    def _create_unique_column_name(df, col_name_prefix):
+        """ given the columns of a dataframe, and a name prefix, return a column name which 
+            does not exist in the dataframe, AND which is prefixed by `prefix`
+
+            The approach is to append a numeric suffix, starting at zero and increasing by
+            one, until an unused name is found (eg, prefix_0, prefix_1, ...).
         """
         suffix = 0
-        while f"{prefix}{suffix}" in df.columns:
+        while f"{col_name_prefix}{suffix}" in df:
             suffix += 1
-        return f"{prefix}{suffix}"
+        return f"{col_name_prefix}{suffix}"
 
     def _alias_annotation_names(self):
         """
@@ -83,11 +86,11 @@ class ScanpyEngine(CXGDriver):
                         "Please prepare data to contain unique index values, or specify an "
                         "alternative with --{ax_name}-name."
                     )
-                name = self._create_unique_column_name(df_axis, "name_")
+                name = self._create_unique_column_name(df_axis.columns, "name_")
                 self.config[config_name] = name
                 # reset index to simple range; alias name to point at the
                 # previously specified index.
-                df_axis.rename_axis(name, axis=0, inplace=True)
+                df_axis.rename_axis(name, inplace=True)
                 df_axis.reset_index(inplace=True)
             elif name in df_axis.columns:
                 # User has specified alternative column for unique names, and it exists
