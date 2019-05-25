@@ -34,28 +34,34 @@ const aSchemaResponse = {
       type: "float32"
     },
     annotations: {
-      obs: [
-        { name: "name", type: "string" },
-        { name: "field1", type: "int32" },
-        { name: "field2", type: "float32" },
-        { name: "field3", type: "boolean" },
-        {
-          name: "field4",
-          type: "categorical",
-          categories: field4Categories
-        }
-      ],
-      var: [
-        { name: "name", type: "string" },
-        { name: "fieldA", type: "int32" },
-        { name: "fieldB", type: "float32" },
-        { name: "fieldC", type: "boolean" },
-        {
-          name: "fieldD",
-          type: "categorical",
-          categories: fieldDCategories
-        }
-      ]
+      obs: {
+        index: "name",
+        columns: [
+          { name: "name", type: "string" },
+          { name: "field1", type: "int32" },
+          { name: "field2", type: "float32" },
+          { name: "field3", type: "boolean" },
+          {
+            name: "field4",
+            type: "categorical",
+            categories: field4Categories
+          }
+        ]
+      },
+      var: {
+        index: "name",
+        columns: [
+          { name: "name", type: "string" },
+          { name: "fieldA", type: "int32" },
+          { name: "fieldB", type: "float32" },
+          { name: "fieldC", type: "boolean" },
+          {
+            name: "fieldD",
+            type: "categorical",
+            categories: fieldDCategories
+          }
+        ]
+      }
     },
     layout: {
       obs: [{ name: "umap", type: "float32", dims: ["umap_0", "umap_1"] }],

@@ -50,41 +50,61 @@ class ScanpyEngine(CXGDriver):
             "diffexp_lfc_cutoff": 0.01,
         }
 
-    def _alias_annotation_names(self, axis, name):
-        """
-        Do all user-specified annotation aliasing.
+    @staticmethod
+    def _create_unique_column_name(df, col_name_prefix):
+        """ given the columns of a dataframe, and a name prefix, return a column name which
+            does not exist in the dataframe, AND which is prefixed by `prefix`
 
-        As a *critical* side-effect, ensure the indices are simple number ranges
-        (accomplished by calling pandas.DataFrame.reset_index())
+            The approach is to append a numeric suffix, starting at zero and increasing by
+            one, until an unused name is found (eg, prefix_0, prefix_1, ...).
         """
-        if name == "name":
-            # a noop, so skip it
-            return
+        suffix = 0
+        while f"{col_name_prefix}{suffix}" in df:
+            suffix += 1
+        return f"{col_name_prefix}{suffix}"
 
-        ax_name = str(axis)
-        df_axis = getattr(self.data, ax_name)
-        if name is None:
-            # reset index to simple range; alias "name" to point at the
-            # previously specified index.
-            df_axis.reset_index(inplace=True)
-            df_axis.rename(inplace=True, columns={"index": "name"})
-        elif name in df_axis.columns:
-            if name not in df_axis.columns:
+    def _alias_annotation_names(self):
+        """
+        The front-end relies on the existance of a unique, human-readable
+        index for obs & var (eg, var is typically gene name, obs the cell name).
+        The user can specify these via the --obs-names and --var-names config.
+        If they are not specified, use the existing index to create them, giving
+        the resulting column a unique name (eg, "name").
+
+        In both cases, enforce that the result is unique, and communicate the
+        index column name to the front-end via the obs_names and var_names config
+        (which is incorporated into the schema).
+        """
+        for (ax_name, config_name) in ((Axis.OBS, "obs_names"), (Axis.VAR, "var_names")):
+            name = self.config[config_name]
+            df_axis = getattr(self.data, str(ax_name))
+            if name is None:
+                # Default: create unique names from index
+                if not df_axis.index.is_unique:
+                    raise KeyError(
+                        f"Values in {ax_name}.index must be unique. "
+                        "Please prepare data to contain unique index values, or specify an "
+                        "alternative with --{ax_name}-name."
+                    )
+                name = self._create_unique_column_name(df_axis.columns, "name_")
+                self.config[config_name] = name
+                # reset index to simple range; alias name to point at the
+                # previously specified index.
+                df_axis.rename_axis(name, inplace=True)
+                df_axis.reset_index(inplace=True)
+            elif name in df_axis.columns:
+                # User has specified alternative column for unique names, and it exists
+                if not df_axis[name].is_unique:
+                    raise KeyError(
+                        f"Values in {ax_name}.{name} must be unique. "
+                        "Please prepare data to contain unique values."
+                    )
+                df_axis.reset_index(drop=True, inplace=True)
+            else:
+                # user specified a non-existent column name
                 raise KeyError(
                     f"Annotation name {name}, specified in --{ax_name}-name does not exist."
                 )
-            if not df_axis[name].is_unique:
-                raise KeyError(
-                    f"Values in -{ax_name}-name must be unique. "
-                    "Please prepare data to contain unique values."
-                )
-            # reset index to simple range; alias user-specified annotation to "name"
-            df_axis.reset_index(drop=True, inplace=True)
-            df_axis.rename(inplace=True, columns={name: "name"})
-        else:
-            raise KeyError(
-                f"Annotation name {name}, specified in --{ax_name}_name does not exist."
-            )
 
     @staticmethod
     def _can_cast_to_float32(ann):
@@ -114,7 +134,16 @@ class ScanpyEngine(CXGDriver):
                 "nVar": self.gene_count,
                 "type": str(self.data.X.dtype),
             },
-            "annotations": {"obs": [], "var": []},
+            "annotations": {
+                "obs": {
+                    "index": self.config["obs_names"],
+                    "columns": []
+                },
+                "var": {
+                    "index": self.config["var_names"],
+                    "columns": []
+                }
+            },
             "layout": {"obs": []}
         }
         for ax in Axis:
@@ -139,7 +168,7 @@ class ScanpyEngine(CXGDriver):
                     raise TypeError(
                         f"Annotations of type {curr_axis[ann].dtype} are unsupported by cellxgene."
                     )
-                self.schema["annotations"][ax].append(ann_schema)
+                self.schema["annotations"][ax]["columns"].append(ann_schema)
 
         for layout in self.config['layout']:
             layout_schema = {
@@ -173,8 +202,11 @@ class ScanpyEngine(CXGDriver):
 
     @requires_data
     def _validate_and_initialize(self):
-        self._alias_annotation_names(Axis.OBS, self.config["obs_names"])
-        self._alias_annotation_names(Axis.VAR, self.config["var_names"])
+        # var and obs column names must be unique
+        if not self.data.obs.columns.is_unique or not self.data.var.columns.is_unique:
+            raise KeyError(f"All annotation column names must be unique.")
+
+        self._alias_annotation_names()
         self._validate_data_types()
         self.cell_count = self.data.shape[0]
         self.gene_count = self.data.shape[1]

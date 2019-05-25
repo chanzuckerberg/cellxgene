@@ -90,8 +90,9 @@ const CrossfilterReducer = (
 
     case "request differential expression success": {
       const { world } = prevSharedState;
+      const varIndexName = world.schema.annotations.var.index;
       const genes = _.map(action.data, d =>
-        world.varAnnotations.at(d[0], "name")
+        world.varAnnotations.at(d[0], varIndexName)
       );
       const crossfilter = _.reduce(
         genes,
@@ -109,10 +110,11 @@ const CrossfilterReducer = (
 
     case "clear differential expression": {
       const { world } = prevSharedState;
+      const varIndexName = world.schema.annotations.var.index;
       const crossfilter = _.reduce(
         action.diffExp,
         (xfltr, values) => {
-          const name = world.varAnnotations.at(values[0], "name");
+          const name = world.varAnnotations.at(values[0], varIndexName);
           return xfltr.delDimension(diffexpDimensionName(name));
         },
         state

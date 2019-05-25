@@ -124,7 +124,7 @@ function reconcileSchemaCategoriesWithSummary(universe) {
   cases, add a 'categories' field to the schema so it is accessible.
   */
 
-  universe.schema.annotations.obs.forEach(s => {
+  universe.schema.annotations.obs.columns.forEach(s => {
     if (
       s.type === "string" ||
       s.type === "boolean" ||
@@ -179,10 +179,10 @@ export function createUniverseFromResponse(
 
   /* Index schema for ease of use */
   universe.schema.annotations.obsByName = fromEntries(
-    universe.schema.annotations.obs.map(v => [v.name, v])
+    universe.schema.annotations.obs.columns.map(v => [v.name, v])
   );
   universe.schema.annotations.varByName = fromEntries(
-    universe.schema.annotations.var.map(v => [v.name, v])
+    universe.schema.annotations.var.columns.map(v => [v.name, v])
   );
   universe.schema.layout.obsByName = fromEntries(
     universe.schema.layout.obs.map(v => [v.name, v])
@@ -213,8 +213,9 @@ export function convertDataFBStoObject(universe, arrayBuffer) {
     throw new Error("Unexpected non-floating point response from server.");
   }
 
+  const varIndexName = universe.schema.annotations.var.index;
   for (let c = 0; c < colIdx.length; c += 1) {
-    const varName = universe.varAnnotations.at(colIdx[c], "name");
+    const varName = universe.varAnnotations.at(colIdx[c], varIndexName);
     result[varName] = columns[c];
   }
   return result;
