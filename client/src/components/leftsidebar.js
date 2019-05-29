@@ -54,10 +54,20 @@ class LeftSideBar extends React.Component {
               top: -4,
               fontWeight: "bold",
               marginLeft: 5,
-              color: globals.logoColor
+              color: globals.logoColor,
+              userSelect: "none"
             }}
           >
-            cellxgene
+            cell<span
+              style={{
+                position: "relative",
+                top: 1,
+                fontWeight: 300,
+                fontSize: 24
+              }}
+            >
+              ×
+            </span>gene
           </span>
           <span
             data-testid="header"
