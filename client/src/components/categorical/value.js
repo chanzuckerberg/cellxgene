@@ -2,7 +2,6 @@
 import { connect } from "react-redux";
 import React from "react";
 import Occupancy from "./occupancy";
-import { countCategoryValues2D } from "../../util/stateManager/worldUtil";
 import * as globals from "../../globals";
 
 @connect(state => ({
@@ -63,11 +62,8 @@ class CategoryValue extends React.Component {
     }
 
     if (colorAccessor && !isColorBy && categoricalSelection[colorAccessor]) {
-      occupancy = countCategoryValues2D(
-        metadataField,
-        colorAccessor,
-        world.obsAnnotations
-      );
+      const groupBy = world.obsAnnotations.col(metadataField);
+      occupancy = world.obsAnnotations.col(colorAccessor).histogram(groupBy);
     }
 
     return (

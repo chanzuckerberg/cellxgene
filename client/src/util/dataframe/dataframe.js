@@ -1,8 +1,19 @@
 import { IdentityInt32Index, isLabelIndex } from "./labelIndex";
 // weird cross-dependency that we should clean up someday...
 import { sortArray } from "../typedCrossfilter/sort";
-import { isTypedArray, isArrayOrTypedArray, callOnceLazy } from "./util";
+import {
+  isTypedArray,
+  isArrayOrTypedArray,
+  callOnceLazy,
+  memoize
+} from "./util";
 import { summarizeContinuous, summarizeCategorical } from "./summarize";
+import {
+  histogramCategorical,
+  hashCategorical,
+  histogramContinuous,
+  hashContinuous
+} from "./histogram";
 
 /*
 Dataframe is an immutable 2D matrix similiar to Python Pandas Dataframe,
@@ -60,6 +71,17 @@ Dataframe
 
 class Dataframe {
   /**
+  memoization helpers.
+  **/
+  static __DataframeId__ = 0;
+
+  static __getId() {
+    const id = Dataframe.__DataframeId__;
+    Dataframe.__DataframeId__ += 1;
+    return id;
+  }
+
+  /**
   Constructors & factories
   **/
 
@@ -102,6 +124,7 @@ class Dataframe {
     this.length = nRows; // convenience accessor for row dimension
     this.rowIndex = rowIndex;
     this.colIndex = colIndex;
+    this.__id = Dataframe.__getId();
 
     this.__compile(__columnsAccessor);
   }
@@ -144,7 +167,7 @@ class Dataframe {
     }
   }
 
-  static __compileColumn(column, getOffset, getLabel) {
+  static __compileColumn(column, getRowByOffset, getRowByLabel) {
     /*
       Each column accessor is a function which will lookup data by
       index (ie, is equivalent to dataframe.get(row, col), where 'col'
@@ -172,12 +195,15 @@ class Dataframe {
 
       iget(offset) -- return the value at 'offset'
 
+      ... and more ...
+
     */
     const { length } = column;
+    const __id = Dataframe.__getId();
 
     /* get value by row label */
     const get = function get(rlabel) {
-      return column[getOffset(rlabel)];
+      return column[getRowByOffset(rlabel)];
     };
 
     /* get value by row offset */
@@ -192,7 +218,7 @@ class Dataframe {
 
     /* test for row label inclusion in column */
     const has = function has(rlabel) {
-      const offset = getOffset(rlabel);
+      const offset = getRowByOffset(rlabel);
       return offset >= 0 && offset < length;
     };
 
@@ -212,7 +238,7 @@ class Dataframe {
       if (offset === -1) {
         return undefined;
       }
-      return getLabel(offset);
+      return getRowByLabel(offset);
     };
 
     /*
@@ -224,12 +250,25 @@ class Dataframe {
         : summarizeCategorical(column)
     );
 
+    /*
+    Create histogram bins for this column.  Memoized.
+    */
+    if (isTypedArray(column)) {
+      const mFn = memoize(histogramContinuous, hashContinuous);
+      get.histogram = (bins, domain, by) => mFn(get, bins, domain, by);
+    } else {
+      const mFn = memoize(histogramCategorical, hashCategorical);
+      get.histogram = by => mFn(get, by);
+    }
+
     get.summarize = summarize;
     get.asArray = asArray;
     get.has = has;
     get.ihas = ihas;
     get.indexOf = indexOf;
     get.iget = iget;
+    get.__id = __id;
+
     return get;
   }
 
@@ -239,12 +278,15 @@ class Dataframe {
 
     Use an existing accessor if provided, else compile a new one.
     */
-    const { getOffset, getLabel } = this.rowIndex;
+    const {
+      getOffset: getRowByOffset,
+      getLabel: getRowByLabel
+    } = this.rowIndex;
     this.__columnsAccessor = this.__columns.map((column, idx) => {
       if (accessors[idx]) {
         return accessors[idx];
       }
-      return Dataframe.__compileColumn(column, getOffset, getLabel);
+      return Dataframe.__compileColumn(column, getRowByOffset, getRowByLabel);
     });
   }
 
