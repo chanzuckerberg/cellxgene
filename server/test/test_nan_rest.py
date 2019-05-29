@@ -8,7 +8,7 @@ import decode_fbs
 
 import requests
 
-LOCAL_URL = "http://127.0.0.1:5005/"
+LOCAL_URL = "http://127.0.0.1:5006/"
 VERSION = "v0.2"
 URL_BASE = f"{LOCAL_URL}api/{VERSION}/"
 
@@ -21,7 +21,7 @@ class WithNaNs(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.ps = Popen(
-            ["cellxgene", "launch", "server/test/test_datasets/nan.h5ad", "--debug", "--port", "5005"]
+            ["cellxgene", "launch", "server/test/test_datasets/nan.h5ad", "--debug", "--port", "5006"]
         )
         session = requests.Session()
         for i in range(90):
