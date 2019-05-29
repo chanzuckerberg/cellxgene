@@ -46,6 +46,8 @@ BIG_FILE_SIZE_THRESHOLD = 100 * 2**20  # 100MB
     help="Provide verbose output, including warnings and all server requests.",
 )
 @click.option("--debug", is_flag=True, default=False, show_default=True, help="Run in debug mode.")
+@click.option("--developer", is_flag=True, default=False, show_default=True,
+              help="Run in developer mode (hot reload).  May not be used with --port.")
 @click.option(
     "--open",
     "-o",
@@ -87,6 +89,7 @@ def launch(
         title,
         verbose,
         debug,
+        developer,
         obs_names,
         var_names,
         open_browser,
@@ -114,6 +117,9 @@ def launch(
     name, extension = splitext(data)
     if extension != ".h5ad":
         raise click.FileError(basename(data), hint="file type must be .h5ad")
+
+    if developer:
+        debug = True
 
     if debug:
         verbose = True
@@ -144,8 +150,12 @@ security risk by including the --scripts flag. Make sure you trust the scripts t
     if not port:
         port = find_available_port(host)
     else:
+        if developer:
+            raise click.ClickException("--port and --developer may not be used together.")
         if not is_port_available(host, int(port)):
-            raise click.ClickException(f"The port selected {port} is in use, please specify an open port using the --port flag.")
+            raise click.ClickException(
+                f"The port selected {port} is in use, please specify an open port using the --port flag."
+            )
 
     # Setup app
     cellxgene_url = f"http://{host}:{port}"
@@ -202,7 +212,7 @@ security risk by including the --scripts flag. Make sure you trust the scripts t
         sys.stdout = f
 
     try:
-        server.app.run(host=host, debug=debug, port=port, threaded=True)
+        server.app.run(host=host, debug=developer, port=port, threaded=True, use_reloader=developer, use_debugger=False)
     except OSError as e:
         if e.errno == errno.EADDRINUSE:
             raise click.ClickException("Port is in use, please specify an open port using the --port flag.") from e

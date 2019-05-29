@@ -10,7 +10,6 @@ def find_available_port(host, port=5005):
     # Takes approx 2 seconds to do a scan of 5000 ports on my laptop
     num_ports_to_try = 5000
     for port_to_try in range(port, port + num_ports_to_try):
-        print(type(port_to_try))
         if is_port_available(host, port_to_try):
             return port_to_try
     raise socket.error(errno.EADDRINUSE, f"No port in range {port} - {port + num_ports_to_try - 1} available.")
