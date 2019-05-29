@@ -11,7 +11,7 @@ import click
 from server.app.app import Server
 from server.app.util.errors import ScanpyFileError
 from server.app.util.utils import custom_format_warning
-from server.utils.utils import find_available_port
+from server.utils.utils import find_available_port, is_port_available
 
 
 # anything bigger than this will generate a special message
@@ -143,6 +143,9 @@ security risk by including the --scripts flag. Make sure you trust the scripts t
 
     if not port:
         port = find_available_port(host)
+    else:
+        if not is_port_available(host, int(port)):
+            raise click.ClickException(f"The port selected {port} is in use, please specify an open port using the --port flag.")
 
     # Setup app
     cellxgene_url = f"http://{host}:{port}"
