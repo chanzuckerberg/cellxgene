@@ -442,13 +442,26 @@ class ScanpyEngine(CXGDriver):
         Caveats:
         * does not support filtering
         * only returns Matrix in columnar layout
+
+        All embeddings must be individually centered & scaled (isotropically)
+        to a [0, 1] range.
         """
         try:
             layout_data = []
             for layout in self.config["layout"]:
                 full_embedding = self.data.obsm[f"X_{layout}"]
                 embedding = full_embedding[:, :2]
-                normalized_layout = (embedding - embedding.min()) / (embedding.max() - embedding.min())
+
+                # scale isotropically
+                min = embedding.min(axis=0)
+                max = embedding.max(axis=0)
+                scale = np.amax(max - min)
+                normalized_layout = (embedding - min) / scale
+
+                # translate to center on both axis
+                translate = 0.5 - ((max - min) / scale / 2)
+                normalized_layout = normalized_layout + translate
+
                 normalized_layout = normalized_layout.astype(dtype=np.float32)
                 layout_data.append(pandas.DataFrame(normalized_layout, columns=[f"{layout}_0", f"{layout}_1"]))
 
