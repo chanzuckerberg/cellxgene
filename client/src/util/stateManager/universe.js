@@ -78,6 +78,7 @@ function AnnotationsFBSToDataframe(arrayBuffer) {
   The application has strong assumptions that all scalar data will be
   stored as a float32 or float64 (regardless of underlying data types).
   For example, clipping of value ranges (eg, user-selected percentiles)
+  depends on the ability to use NaN in any numeric type.
 
   All float data from the server is left as is.  All non-float is promoted
   to an appropriate float.
@@ -98,15 +99,16 @@ function AnnotationsFBSToDataframe(arrayBuffer) {
 
 function LayoutFBSToDataframe(arrayBuffer) {
   const fbs = decodeMatrixFBS(arrayBuffer, true);
-  if (fbs.columns.length !== 2 || !fbs.columns.every(isFpTypedArray)) {
+  if (fbs.columns.length < 2 || !fbs.columns.every(isFpTypedArray)) {
     // We have strong assumptions about the shape & type of layout data.
     throw new Error("Unexpected layout data type returned from server");
   }
+
   const df = new Dataframe.Dataframe(
     [fbs.nRows, fbs.nCols],
     fbs.columns,
     null,
-    new Dataframe.KeyIndex(["X", "Y"])
+    new Dataframe.KeyIndex(fbs.colIdx)
   );
   return df;
 }
@@ -122,7 +124,7 @@ function reconcileSchemaCategoriesWithSummary(universe) {
   cases, add a 'categories' field to the schema so it is accessible.
   */
 
-  universe.schema.annotations.obs.forEach(s => {
+  universe.schema.annotations.obs.columns.forEach(s => {
     if (
       s.type === "string" ||
       s.type === "boolean" ||
@@ -154,6 +156,9 @@ export function createUniverseFromResponse(
   universe.schema = schema;
   universe.nObs = schema.dataframe.nObs;
   universe.nVar = schema.dataframe.nVar;
+  /* add defaults, as we can't assume back-end will fully populate schema */
+  if (!schema.layout.var) schema.layout.var = [];
+  if (!schema.layout.obs) schema.layout.obs = [];
 
   /* annotations */
   universe.obsAnnotations = AnnotationsFBSToDataframe(annotationsObsResponse);
@@ -174,10 +179,16 @@ export function createUniverseFromResponse(
 
   /* Index schema for ease of use */
   universe.schema.annotations.obsByName = fromEntries(
-    universe.schema.annotations.obs.map(v => [v.name, v])
+    universe.schema.annotations.obs.columns.map(v => [v.name, v])
   );
   universe.schema.annotations.varByName = fromEntries(
-    universe.schema.annotations.var.map(v => [v.name, v])
+    universe.schema.annotations.var.columns.map(v => [v.name, v])
+  );
+  universe.schema.layout.obsByName = fromEntries(
+    universe.schema.layout.obs.map(v => [v.name, v])
+  );
+  universe.schema.layout.varByName = fromEntries(
+    universe.schema.layout.var.map(v => [v.name, v])
   );
   return universe;
 }
@@ -202,8 +213,9 @@ export function convertDataFBStoObject(universe, arrayBuffer) {
     throw new Error("Unexpected non-floating point response from server.");
   }
 
+  const varIndexName = universe.schema.annotations.var.index;
   for (let c = 0; c < colIdx.length; c += 1) {
-    const varName = universe.varAnnotations.at(colIdx[c], "name");
+    const varName = universe.varAnnotations.at(colIdx[c], varIndexName);
     result[varName] = columns[c];
   }
   return result;

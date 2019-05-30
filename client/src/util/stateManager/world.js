@@ -260,13 +260,17 @@ function deduceDimensionType(attributes, fieldName) {
   return dimensionType;
 }
 
-export function createObsDimensions(crossfilter, world) {
+export function createObsDimensions(crossfilter, world, XYdimNames) {
   /*
   create and return a crossfilter with a dimension for every obs annotation
-  for which we have a supported type, *except* 'name'
+  for which we have a supported type, *except* for the index column, indicated
+  by schema.annotations.obs.index.
   */
   const { schema, obsLayout, obsAnnotations } = world;
-  const annoList = schema.annotations.obs.filter(anno => anno.name !== "name");
+  const indexName = schema.annotations.obs.index;
+  const annoList = schema.annotations.obs.columns.filter(
+    anno => anno.name !== indexName
+  );
   crossfilter = annoList.reduce((xfltr, anno) => {
     const dimType = deduceDimensionType(anno, anno.name);
     const colData = obsAnnotations.col(anno.name).asArray();
@@ -283,8 +287,8 @@ export function createObsDimensions(crossfilter, world) {
   return crossfilter.addDimension(
     layoutDimensionName("XY"),
     "spatial",
-    obsLayout.col("X").asArray(),
-    obsLayout.col("Y").asArray()
+    obsLayout.col(XYdimNames[0]).asArray(),
+    obsLayout.col(XYdimNames[1]).asArray()
   );
 }
 

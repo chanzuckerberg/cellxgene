@@ -16,10 +16,25 @@ export const puppeteerUtils = puppeteerPage => ({
   async typeInto(testid, text) {
     // only works for text without special characters
     await this.waitByID(testid);
+    const selector = `[data-testid='${testid}']`;
     // type ahead can be annoying if you don't pause before you type
-    await puppeteerPage.click(`[data-testid='${testid}']`);
+    await puppeteerPage.click(selector);
     await puppeteerPage.waitFor(200);
-    await puppeteerPage.type(`[data-testid='${testid}']`, text);
+    await puppeteerPage.type(selector, text);
+  },
+
+  async clearInputAndTypeInto(testid, text) {
+    await this.waitByID(testid);
+    const selector = `[data-testid='${testid}']`;
+    // only works for text without special characters
+    // type ahead can be annoying if you don't pause before you type
+    await puppeteerPage.click(selector);
+    await puppeteerPage.waitFor(200);
+    // select all
+
+    await puppeteerPage.click(selector, {clickCount: 3})
+    await puppeteerPage.keyboard.type("Backspace")
+    await puppeteerPage.type(selector, text);
   },
 
   async clickOn(testid) {
@@ -29,11 +44,13 @@ export const puppeteerUtils = puppeteerPage => ({
   },
 
   async getOneElementInnerHTML(selector) {
+    await puppeteerPage.waitForSelector(selector);
     let text = await puppeteerPage.$eval(selector, el => el.innerHTML);
     return text;
   },
 
   async getOneElementInnerText(selector) {
+    await puppeteerPage.waitForSelector(selector);
     let text = await puppeteerPage.$eval(selector, el => el.innerText);
     return text;
   }
@@ -161,5 +178,13 @@ export const cellxgeneActions = puppeteerPage => ({
     await puppeteerUtils(puppeteerPage).clickOn("reset");
     // loading state never actually happens, reset is too fast
     await page.waitFor(200);
+  },
+
+  async clip(min = 0, max = 100) { 
+    await puppeteerUtils(puppeteerPage).clickOn("visualization-settings");
+    await puppeteerUtils(puppeteerPage).clearInputAndTypeInto("clip-min-input", min);
+    await puppeteerUtils(puppeteerPage).clearInputAndTypeInto("clip-max-input", max);
+    await puppeteerUtils(puppeteerPage).clickOn("clip-commit");
   }
+
 });

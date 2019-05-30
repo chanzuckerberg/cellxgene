@@ -12,6 +12,7 @@ import graphSelection from "./graphSelection";
 import crossfilter from "./crossfilter";
 import colors from "./colors";
 import differential from "./differential";
+import layoutChoice from "./layoutChoice";
 import responsive from "./responsive";
 import controls from "./controls";
 import resetCache from "./resetCache";
@@ -24,6 +25,7 @@ const Reducer = undoable(
     ["config", config],
     ["universe", universe],
     ["world", world],
+    ["layoutChoice", layoutChoice],
     ["categoricalSelection", categoricalSelection],
     ["continuousSelection", continuousSelection],
     ["graphSelection", graphSelection],
@@ -43,7 +45,8 @@ const Reducer = undoable(
     "crossfilter",
     "colors",
     "controls",
-    "differential"
+    "differential",
+    "layoutChoice"
   ],
   undoableConfig
 );

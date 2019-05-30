@@ -31,6 +31,7 @@ export const darkGreen = "#448C4D";
 
 export const nonFiniteCellColor = lightGrey;
 export const defaultCellColor = "rgb(0,0,0,1)";
+export const logoColor = "black"; /* logo pink: "#E9429A" */
 
 /* typography constants */
 

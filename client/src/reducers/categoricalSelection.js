@@ -30,15 +30,15 @@ const CategoricalSelection = (
       /*
       Set the specific category in this field to false
       */
-      const newCategorySelected = Array.from(
-        state[action.metadataField].categorySelected
+      const newCategoryValueSelected = Array.from(
+        state[action.metadataField].categoryValueSelected
       );
-      newCategorySelected[action.categoryIndex] = true;
+      newCategoryValueSelected[action.categoryIndex] = true;
       const newCategoricalSelection = {
         ...state,
         [action.metadataField]: {
           ...state[action.metadataField],
-          categorySelected: newCategorySelected
+          categoryValueSelected: newCategoryValueSelected
         }
       };
       return newCategoricalSelection;
@@ -48,15 +48,15 @@ const CategoricalSelection = (
       /*
       Set the specific category in this field to false
       */
-      const newCategorySelected = Array.from(
-        state[action.metadataField].categorySelected
+      const newCategoryValueSelected = Array.from(
+        state[action.metadataField].categoryValueSelected
       );
-      newCategorySelected[action.categoryIndex] = false;
+      newCategoryValueSelected[action.categoryIndex] = false;
       const newCategoricalSelection = {
         ...state,
         [action.metadataField]: {
           ...state[action.metadataField],
-          categorySelected: newCategorySelected
+          categoryValueSelected: newCategoryValueSelected
         }
       };
       return newCategoricalSelection;
@@ -70,8 +70,9 @@ const CategoricalSelection = (
         ...state,
         [action.metadataField]: {
           ...state[action.metadataField],
-          categorySelected: Array.from(
-            state[action.metadataField].categorySelected
+          categorySelected: false,
+          categoryValueSelected: Array.from(
+            state[action.metadataField].categoryValueSelected
           ).fill(false)
         }
       };
@@ -86,8 +87,9 @@ const CategoricalSelection = (
         ...state,
         [action.metadataField]: {
           ...state[action.metadataField],
-          categorySelected: Array.from(
-            state[action.metadataField].categorySelected
+          categorySelected: true,
+          categoryValueSelected: Array.from(
+            state[action.metadataField].categoryValueSelected
           ).fill(true)
         }
       };

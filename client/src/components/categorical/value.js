@@ -115,8 +115,8 @@ class CategoryValue extends React.Component {
     if (!categoricalSelection) return null;
 
     const category = categoricalSelection[metadataField];
-    const selected = category.categorySelected[categoryIndex];
-    const count = category.categoryCounts[categoryIndex];
+    const selected = category.categoryValueSelected[categoryIndex];
+    const count = category.categoryValueCounts[categoryIndex];
     const value = category.categoryValues[categoryIndex];
     const displayString = String(
       category.categoryValues[categoryIndex]

@@ -12,7 +12,7 @@ from server.app.util.errors import FilterError
 class NaNTest(unittest.TestCase):
     def setUp(self):
         self.args = {
-            "layout": "umap",
+            "layout": ["umap"],
             "diffexp": "ttest",
             "max_category_items": 100,
             "obs_names": None,
@@ -58,14 +58,16 @@ class NaNTest(unittest.TestCase):
 
     def test_annotation(self):
         annotations = decode_fbs.decode_matrix_FBS(self.data.annotation_to_fbs_matrix("obs"))
+        obs_index_col_name = self.data.schema["annotations"]["obs"]["index"]
         self.assertEqual(
             annotations["col_idx"],
-            ["name", "n_genes", "percent_mito", "n_counts", "louvain"]
+            [obs_index_col_name, "n_genes", "percent_mito", "n_counts", "louvain"]
         )
         self.assertEqual(annotations["n_rows"], 100)
         self.assertTrue(math.isnan(annotations["columns"][2][0]))
 
         annotations = decode_fbs.decode_matrix_FBS(self.data.annotation_to_fbs_matrix("var"))
-        self.assertEqual(annotations["col_idx"], ["name", "n_cells", "var_with_nans"])
+        var_index_col_name = self.data.schema["annotations"]["var"]["index"]
+        self.assertEqual(annotations["col_idx"], [var_index_col_name, "n_cells", "var_with_nans"])
         self.assertEqual(annotations["n_rows"], 100)
         self.assertTrue(math.isnan(annotations["columns"][2][0]))

@@ -6,6 +6,7 @@ import Continuous from "./continuous/continuous";
 import GeneExpression from "./geneExpression";
 import * as globals from "../globals";
 import DynamicScatterplot from "./scatterplot/scatterplot";
+import Logo from "./framework/logo.js";
 
 @connect(state => ({
   responsive: state.responsive,
@@ -27,7 +28,6 @@ class LeftSideBar extends React.Component {
     if cellxgene logo or tabs change, this must as well
     */
     const metadataSectionPadding = 0;
-    // scatterplotXXaccessor && scatterplotYYaccessor ? 450 : 0;
 
     return (
       <div
@@ -39,20 +39,49 @@ class LeftSideBar extends React.Component {
         }}
       >
         <p
-          data-testid="header"
           style={{
             position: "fixed",
             top: globals.cellxgeneTitleTopPadding,
             left: globals.leftSidebarWidth + globals.cellxgeneTitleLeftPadding,
-            margin: 0,
-            fontSize: globals.largestFontSize,
-            color: globals.darkerGrey,
-            width: "100%"
+            margin: 0
           }}
         >
-          cellxgene: {datasetTitle}
+          <Logo size={32} />
+          <span
+            style={{
+              fontSize: 28,
+              position: "relative",
+              top: -4,
+              fontWeight: "bold",
+              marginLeft: 5,
+              color: globals.logoColor,
+              userSelect: "none"
+            }}
+          >
+            cell<span
+              style={{
+                position: "relative",
+                top: 1,
+                fontWeight: 300,
+                fontSize: 24
+              }}
+            >
+              ×
+            </span>gene
+          </span>
+          <span
+            data-testid="header"
+            style={{
+              fontSize: 16,
+              display: "block",
+              position: "relative",
+              marginTop: 10,
+              top: -4
+            }}
+          >
+            {datasetTitle}
+          </span>
         </p>
-
         <div
           style={{
             height: responsive.height - metadataSectionPadding,

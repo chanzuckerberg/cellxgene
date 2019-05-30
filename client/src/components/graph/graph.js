@@ -3,7 +3,9 @@ import React from "react";
 import * as d3 from "d3";
 import { connect } from "react-redux";
 import mat4 from "gl-mat4";
+import vec3 from "gl-vec3";
 import _regl from "regl";
+import memoize from "memoize-one";
 import {
   Button,
   AnchorButton,
@@ -13,7 +15,9 @@ import {
   MenuItem,
   Position,
   NumericInput,
-  Icon
+  Icon,
+  RadioGroup,
+  Radio
 } from "@blueprintjs/core";
 
 import * as globals from "../../globals";
@@ -47,7 +51,8 @@ import { World } from "../../util/stateManager";
   undoDisabled: state["@@undoable/past"].length === 0,
   redoDisabled: state["@@undoable/future"].length === 0,
   selectionTool: state.graphSelection.tool,
-  currentSelection: state.graphSelection.selection
+  currentSelection: state.graphSelection.selection,
+  layoutChoice: state.layoutChoice
 }))
 class Graph extends React.Component {
   static isValidDigitKeyEvent(e) {
@@ -74,6 +79,38 @@ class Graph extends React.Component {
     return key >= 0 && key <= 9;
   }
 
+  computePointPositions = memoize((X, Y, scaleX, scaleY) => {
+    /*
+    compute webgl coordinate buffer for each point
+    */
+    const positions = new Float32Array(2 * X.length);
+    for (let i = 0, len = X.length; i < len; i += 1) {
+      positions[2 * i] = scaleX(X[i]);
+      positions[2 * i + 1] = scaleY(Y[i]);
+    }
+    return positions;
+  });
+
+  computePointColors = memoize(rgb => {
+    /*
+    compute webgl colors for each point
+    */
+    const colors = new Float32Array(3 * rgb.length);
+    for (let i = 0, len = rgb.length; i < len; i += 1) {
+      colors.set(rgb[i], 3 * i);
+    }
+    return colors;
+  });
+
+  computePointSizes = memoize((len, crossfilter) => {
+    /*
+    compute webgl dot size for each point
+    */
+    const sizes = new Float32Array(len);
+    crossfilter.fillByIsSelected(sizes, 4, 0.2);
+    return sizes;
+  });
+
   constructor(props) {
     super(props);
     this.count = 0;
@@ -81,6 +118,8 @@ class Graph extends React.Component {
     this.graphPaddingBottom = 45;
     this.graphPaddingRight = globals.leftSidebarWidth;
     this.renderCache = {
+      X: null,
+      Y: null,
       positions: null,
       colors: null,
       sizes: null
@@ -106,6 +145,12 @@ class Graph extends React.Component {
     const colorBuffer = regl.buffer();
     const sizeBuffer = regl.buffer();
 
+    // preallocate coordinate system transformation between data and gl
+    const transform = {
+      glScaleX: scaleLinear([0, 1], [-1, 1]),
+      glScaleY: scaleLinear([0, 1], [1, -1])
+    };
+
     /* first time, but this duplicates above function, should be possile to avoid this */
     const reglRender = regl.frame(() => {
       this.reglDraw(
@@ -128,7 +173,8 @@ class Graph extends React.Component {
       colorBuffer,
       sizeBuffer,
       camera,
-      reglRender
+      reglRender,
+      transform
     });
   }
 
@@ -140,19 +186,10 @@ class Graph extends React.Component {
       colorRGB,
       responsive,
       selectionTool,
-      currentSelection
+      currentSelection,
+      layoutChoice
     } = this.props;
-    const {
-      reglRender,
-      mode,
-      regl,
-      drawPoints,
-      camera,
-      pointBuffer,
-      colorBuffer,
-      sizeBuffer,
-      svg
-    } = this.state;
+    const { reglRender, mode, regl, svg } = this.state;
     let stateChanges = {};
 
     if (reglRender && this.reglRenderState === "rendering" && mode !== "zoom") {
@@ -163,53 +200,40 @@ class Graph extends React.Component {
     if (regl && world) {
       /* update the regl state */
       const { obsLayout, nObs } = world;
-      const X = obsLayout.col("X").asArray();
-      const Y = obsLayout.col("Y").asArray();
+      const {
+        drawPoints,
+        transform,
+        camera,
+        pointBuffer,
+        colorBuffer,
+        sizeBuffer
+      } = this.state;
 
-      // X/Y positions for each point - a cached value that only
-      // changes if we have loaded entirely new cell data
-      //
-      if (!renderCache.positions || world !== prevProps.world) {
-        renderCache.positions = new Float32Array(2 * nObs);
-
-        const glScaleX = scaleLinear([0, 1], [-1, 1]);
-        const glScaleY = scaleLinear([0, 1], [1, -1]);
-
-        const offset = [d3.mean(X) - 0.5, d3.mean(Y) - 0.5];
-
-        for (let i = 0, { positions } = renderCache; i < nObs; i += 1) {
-          positions[2 * i] = glScaleX(X[i] - offset[0]);
-          positions[2 * i + 1] = glScaleY(Y[i] - offset[1]);
-        }
-        pointBuffer({
-          data: renderCache.positions,
-          dimension: 2
-        });
-
-        stateChanges.offset = offset;
+      /* coordinates for each point */
+      const { glScaleX, glScaleY } = transform;
+      const X = obsLayout.col(layoutChoice.currentDimNames[0]).asArray();
+      const Y = obsLayout.col(layoutChoice.currentDimNames[1]).asArray();
+      const newPositions = this.computePointPositions(X, Y, glScaleX, glScaleY);
+      if (renderCache.positions !== newPositions) {
+        /* update our cache & GL if the buffer changes */
+        renderCache.positions = newPositions;
+        pointBuffer({ data: newPositions, dimension: 2 });
       }
 
-      // Colors for each point - a cached value that only changes when
-      // the cell metadata changes.
-      if (!renderCache.colors || colorRGB !== prevProps.colorRGB) {
-        const rgb = colorRGB;
-        if (!renderCache.colors) {
-          renderCache.colors = new Float32Array(3 * rgb.length);
-        }
-        for (let i = 0, { colors } = renderCache; i < rgb.length; i += 1) {
-          colors.set(rgb[i], 3 * i);
-        }
-        colorBuffer({ data: renderCache.colors, dimension: 3 });
+      /* colors for each point */
+      const newColors = this.computePointColors(colorRGB);
+      if (renderCache.colors !== newColors) {
+        /* update our cache & GL if the buffer changes */
+        renderCache.colors = newColors;
+        colorBuffer({ data: newColors, dimension: 3 });
       }
 
-      // Sizes for each point - updates are triggered only when selected
-      // obs change
-      if (!renderCache.sizes || crossfilter !== prevProps.crossfilter) {
-        if (!renderCache.sizes) {
-          renderCache.sizes = new Float32Array(nObs);
-        }
-        crossfilter.fillByIsSelected(renderCache.sizes, 4, 0.2);
-        sizeBuffer({ data: renderCache.sizes, dimension: 1 });
+      /* sizes for each point */
+      const newSizes = this.computePointSizes(nObs, crossfilter);
+      if (renderCache.sizes !== newSizes) {
+        /* update our cache & GL if the buffer changes */
+        renderCache.size = newSizes;
+        sizeBuffer({ data: newSizes, dimension: 1 });
       }
 
       this.count = nObs;
@@ -271,11 +295,10 @@ class Graph extends React.Component {
       mode !== prevState.mode ||
       stateChanges.svg
     ) {
-      const { tool, container, offset } = this.state;
+      const { tool, container } = this.state;
       this.selectionToolUpdate(
         stateChanges.tool ? stateChanges.tool : tool,
-        stateChanges.container ? stateChanges.container : container,
-        stateChanges.offset ? stateChanges.offset : offset
+        stateChanges.container ? stateChanges.container : container
       );
     }
 
@@ -435,7 +458,15 @@ class Graph extends React.Component {
     this.setState({ pendingClipPercentiles: null });
   };
 
-  brushToolUpdate(tool, container, offset) {
+  handleLayoutChoiceChange = e => {
+    const { dispatch } = this.props;
+    dispatch({
+      type: "set layout choice",
+      layoutChoice: e.currentTarget.value
+    });
+  };
+
+  brushToolUpdate(tool, container) {
     /*
     this is called from componentDidUpdate(), so be very careful using
     anything from this.state, which may be updated asynchronously.
@@ -449,8 +480,8 @@ class Graph extends React.Component {
         if there is a selection, make sure the brush tool matches
         */
         const screenCoords = [
-          this.mapPointToScreen(currentSelection.brushCoords.northwest, offset),
-          this.mapPointToScreen(currentSelection.brushCoords.southeast, offset)
+          this.mapPointToScreen(currentSelection.brushCoords.northwest),
+          this.mapPointToScreen(currentSelection.brushCoords.southeast)
         ];
         if (!toolCurrentSelection) {
           /* tool is not selected, so just move the brush */
@@ -477,7 +508,7 @@ class Graph extends React.Component {
     }
   }
 
-  lassoToolUpdate(tool, container, offset) {
+  lassoToolUpdate(tool, container) {
     /*
     this is called from componentDidUpdate(), so be very careful using
     anything from this.state, which may be updated asynchronously.
@@ -488,7 +519,7 @@ class Graph extends React.Component {
       if there is a current selection, make sure the lasso tool matches
       */
       const polygon = currentSelection.polygon.map(p =>
-        this.mapPointToScreen(p, offset)
+        this.mapPointToScreen(p)
       );
       tool.move(polygon);
     } else {
@@ -496,7 +527,7 @@ class Graph extends React.Component {
     }
   }
 
-  selectionToolUpdate(tool, container, offset) {
+  selectionToolUpdate(tool, container) {
     /*
     this is called from componentDidUpdate(), so be very careful using
     anything from this.state, which may be updated asynchronously.
@@ -504,10 +535,10 @@ class Graph extends React.Component {
     const { selectionTool } = this.props;
     switch (selectionTool) {
       case "brush":
-        this.brushToolUpdate(tool, container, offset);
+        this.brushToolUpdate(tool, container);
         break;
       case "lasso":
-        this.lassoToolUpdate(tool, container, offset);
+        this.lassoToolUpdate(tool, container);
         break;
       default:
         /* punt? */
@@ -564,12 +595,14 @@ class Graph extends React.Component {
     accounting for current pan/zoom camera.
     */
     const { responsive } = this.props;
-    const { regl, camera, offset } = this.state;
+    const { regl, camera, transform } = this.state;
+    const { glScaleX, glScaleY } = transform;
 
     const gl = regl._gl;
 
     // get aspect ratio
     const aspect = gl.drawingBufferWidth / gl.drawingBufferHeight;
+    const scale = aspect < 1 ? 1 / aspect : 1;
 
     // compute inverse view matrix
     const inverse = mat4.invert([], camera.view());
@@ -578,37 +611,37 @@ class Graph extends React.Component {
     const x = (2 * pin[0]) / (responsive.width - this.graphPaddingRight) - 1;
     const y = 2 * (1 - pin[1] / (responsive.height - this.graphPaddingTop)) - 1;
     const pout = [
-      x * inverse[14] * aspect + inverse[12],
-      y * inverse[14] + inverse[13]
+      x * inverse[14] * aspect * scale + inverse[12],
+      -(y * inverse[14] * scale + inverse[13])
     ];
 
-    return [(pout[0] + 1) / 2 + offset[0], (pout[1] + 1) / 2 + offset[1]];
+    const xy = [glScaleX.invert(pout[0]), glScaleY.invert(pout[1])];
+    return xy;
   }
 
-  mapPointToScreen(xyCell, offset) {
+  mapPointToScreen(xyCell) {
     /*
     Map an XY coordinate from cell/point domain to screen range.  Inverse
     of mapScreenToPoint()
     */
     const { responsive } = this.props;
-    const { regl, camera } = this.state;
+    const { regl, camera, transform } = this.state;
+    const { glScaleX, glScaleY } = transform;
 
     const gl = regl._gl;
 
     // get aspect ratio
     const aspect = gl.drawingBufferWidth / gl.drawingBufferHeight;
+    const scale = aspect < 1 ? 1 / aspect : 1;
 
     // compute inverse view matrix
-    const inverse = mat4.invert([], camera.view());
+    let inverse = mat4.invert([], camera.view());
 
     // variable names are choosen to reflect inverse of those used
     // in mapScreenToPoint().
-    const pout = [
-      (xyCell[0] - offset[0]) * 2 - 1,
-      (xyCell[1] - offset[1]) * 2 - 1
-    ];
-    const x = (pout[0] - inverse[12]) / aspect / inverse[14];
-    const y = (pout[1] - inverse[13]) / inverse[14];
+    const pout = [glScaleX(xyCell[0]), glScaleY(xyCell[1])];
+    const x = (pout[0] - inverse[12]) / aspect / scale / inverse[14];
+    const y = (-pout[1] - inverse[13]) / scale / inverse[14];
 
     const pin = [
       Math.round(((x + 1) * (responsive.width - this.graphPaddingRight)) / 2),
@@ -745,7 +778,8 @@ class Graph extends React.Component {
       redoDisabled,
       selectionTool,
       clipPercentileMin,
-      clipPercentileMax
+      clipPercentileMax,
+      layoutChoice
     } = this.props;
     const { mode, pendingClipPercentiles } = this.state;
 
@@ -888,6 +922,7 @@ class Graph extends React.Component {
                 />
               </Tooltip>
             </div>
+
             <div
               className="bp3-button-group"
               style={{
@@ -898,6 +933,49 @@ class Graph extends React.Component {
                 target={
                   <Button
                     type="button"
+                    data-testid="layout-choice"
+                    className="bp3-button bp3-icon-heatmap"
+                    style={{
+                      cursor: "pointer"
+                    }}
+                  />
+                }
+                position={Position.BOTTOM_RIGHT}
+                content={
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "flex-start",
+                      alignItems: "flex-start",
+                      flexDirection: "column",
+                      padding: 10
+                    }}
+                  >
+                    <RadioGroup
+                      label="Layout Choice"
+                      onChange={this.handleLayoutChoiceChange}
+                      selectedValue={layoutChoice.current}
+                    >
+                      {layoutChoice.available.map(name => (
+                        <Radio label={name} value={name} key={name} />
+                      ))}
+                    </RadioGroup>
+                  </div>
+                }
+              />
+            </div>
+
+            <div
+              className="bp3-button-group"
+              style={{
+                marginLeft: 10
+              }}
+            >
+              <Popover
+                target={
+                  <Button
+                    type="button"
+                    data-testid="visualization-settings"
                     className={`bp3-button bp3-icon-timeline-bar-chart ${activeClipClass}`}
                     style={{
                       cursor: "pointer"
@@ -929,6 +1007,7 @@ class Graph extends React.Component {
                     >
                       <NumericInput
                         style={{ width: 50 }}
+                        data-testid={"clip-min-input"}
                         onValueChange={this.handleClipPercentileMinValueChange}
                         onKeyPress={this.handleClipOnKeyPress}
                         value={clipMin}
@@ -949,6 +1028,7 @@ class Graph extends React.Component {
                       <span style={{ marginRight: 5, marginLeft: 5 }}> - </span>
                       <NumericInput
                         style={{ width: 50 }}
+                        data-testid={"clip-max-input"}
                         onValueChange={this.handleClipPercentileMaxValueChange}
                         onKeyPress={this.handleClipOnKeyPress}
                         value={clipMax}
@@ -968,6 +1048,7 @@ class Graph extends React.Component {
                       />
                       <Button
                         type="button"
+                        data-testid="clip-commit"
                         className="bp3-button"
                         disabled={this.isClipDisabled()}
                         style={{

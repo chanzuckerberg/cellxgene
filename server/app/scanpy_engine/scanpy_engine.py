@@ -1,12 +1,13 @@
 import warnings
 
 import numpy as np
+import pandas
 from pandas.core.dtypes.dtypes import CategoricalDtype
-import scanpy as sc
+import anndata
 from scipy import sparse
 
 from server.app.driver.driver import CXGDriver
-from server.app.util.constants import Axis, DEFAULT_TOP_N
+from server.app.util.constants import Axis, DEFAULT_TOP_N, MAX_LAYOUTS
 from server.app.util.errors import (
     FilterError,
     JSONEncodingValueError,
@@ -41,7 +42,7 @@ class ScanpyEngine(CXGDriver):
     @staticmethod
     def _get_default_config():
         return {
-            "layout": "umap",
+            "layout": [],
             "diffexp": "ttest",
             "max_category_items": 100,
             "obs_names": None,
@@ -49,41 +50,61 @@ class ScanpyEngine(CXGDriver):
             "diffexp_lfc_cutoff": 0.01,
         }
 
-    def _alias_annotation_names(self, axis, name):
-        """
-        Do all user-specified annotation aliasing.
+    @staticmethod
+    def _create_unique_column_name(df, col_name_prefix):
+        """ given the columns of a dataframe, and a name prefix, return a column name which
+            does not exist in the dataframe, AND which is prefixed by `prefix`
 
-        As a *critical* side-effect, ensure the indices are simple number ranges
-        (accomplished by calling pandas.DataFrame.reset_index())
+            The approach is to append a numeric suffix, starting at zero and increasing by
+            one, until an unused name is found (eg, prefix_0, prefix_1, ...).
         """
-        if name == "name":
-            # a noop, so skip it
-            return
+        suffix = 0
+        while f"{col_name_prefix}{suffix}" in df:
+            suffix += 1
+        return f"{col_name_prefix}{suffix}"
 
-        ax_name = str(axis)
-        df_axis = getattr(self.data, ax_name)
-        if name is None:
-            # reset index to simple range; alias "name" to point at the
-            # previously specified index.
-            df_axis.reset_index(inplace=True)
-            df_axis.rename(inplace=True, columns={"index": "name"})
-        elif name in df_axis.columns:
-            if name not in df_axis.columns:
+    def _alias_annotation_names(self):
+        """
+        The front-end relies on the existance of a unique, human-readable
+        index for obs & var (eg, var is typically gene name, obs the cell name).
+        The user can specify these via the --obs-names and --var-names config.
+        If they are not specified, use the existing index to create them, giving
+        the resulting column a unique name (eg, "name").
+
+        In both cases, enforce that the result is unique, and communicate the
+        index column name to the front-end via the obs_names and var_names config
+        (which is incorporated into the schema).
+        """
+        for (ax_name, config_name) in ((Axis.OBS, "obs_names"), (Axis.VAR, "var_names")):
+            name = self.config[config_name]
+            df_axis = getattr(self.data, str(ax_name))
+            if name is None:
+                # Default: create unique names from index
+                if not df_axis.index.is_unique:
+                    raise KeyError(
+                        f"Values in {ax_name}.index must be unique. "
+                        "Please prepare data to contain unique index values, or specify an "
+                        "alternative with --{ax_name}-name."
+                    )
+                name = self._create_unique_column_name(df_axis.columns, "name_")
+                self.config[config_name] = name
+                # reset index to simple range; alias name to point at the
+                # previously specified index.
+                df_axis.rename_axis(name, inplace=True)
+                df_axis.reset_index(inplace=True)
+            elif name in df_axis.columns:
+                # User has specified alternative column for unique names, and it exists
+                if not df_axis[name].is_unique:
+                    raise KeyError(
+                        f"Values in {ax_name}.{name} must be unique. "
+                        "Please prepare data to contain unique values."
+                    )
+                df_axis.reset_index(drop=True, inplace=True)
+            else:
+                # user specified a non-existent column name
                 raise KeyError(
                     f"Annotation name {name}, specified in --{ax_name}-name does not exist."
                 )
-            if not df_axis[name].is_unique:
-                raise KeyError(
-                    f"Values in -{ax_name}-name must be unique. "
-                    "Please prepare data to contain unique values."
-                )
-            # reset index to simple range; alias user-specified annotation to "name"
-            df_axis.reset_index(drop=True, inplace=True)
-            df_axis.rename(inplace=True, columns={name: "name"})
-        else:
-            raise KeyError(
-                f"Annotation name {name}, specified in --{ax_name}_name does not exist."
-            )
 
     @staticmethod
     def _can_cast_to_float32(ann):
@@ -113,7 +134,17 @@ class ScanpyEngine(CXGDriver):
                 "nVar": self.gene_count,
                 "type": str(self.data.X.dtype),
             },
-            "annotations": {"obs": [], "var": []},
+            "annotations": {
+                "obs": {
+                    "index": self.config["obs_names"],
+                    "columns": []
+                },
+                "var": {
+                    "index": self.config["var_names"],
+                    "columns": []
+                }
+            },
+            "layout": {"obs": []}
         }
         for ax in Axis:
             curr_axis = getattr(self.data, str(ax))
@@ -137,14 +168,21 @@ class ScanpyEngine(CXGDriver):
                     raise TypeError(
                         f"Annotations of type {curr_axis[ann].dtype} are unsupported by cellxgene."
                     )
-                self.schema["annotations"][ax].append(ann_schema)
+                self.schema["annotations"][ax]["columns"].append(ann_schema)
+
+        for layout in self.config['layout']:
+            layout_schema = {
+                "name": layout,
+                "type": "float32",
+                "dims": [f"{layout}_0", f"{layout}_1"]
+            }
+            self.schema["layout"]["obs"].append(layout_schema)
 
     def _load_data(self, data):
-        # Based on benchmarking, cache=True has no impact on perf.
-        # Note: as of current scanpy/anndata release, setting backed='r' will
-        # result in an error.  https://github.com/theislab/anndata/issues/79
+        # as of AnnData 0.6.19, backed mode performs initial load fast, but at the
+        # cost of significantly slower access to X data.
         try:
-            self.data = sc.read(data, cache=True)
+            self.data = anndata.read_h5ad(data)
         except ValueError:
             raise ScanpyFileError(
                 "File must be in the .h5ad format. Please read "
@@ -164,16 +202,68 @@ class ScanpyEngine(CXGDriver):
 
     @requires_data
     def _validate_and_initialize(self):
-        self._alias_annotation_names(Axis.OBS, self.config["obs_names"])
-        self._alias_annotation_names(Axis.VAR, self.config["var_names"])
+        # var and obs column names must be unique
+        if not self.data.obs.columns.is_unique or not self.data.var.columns.is_unique:
+            raise KeyError(f"All annotation column names must be unique.")
+
+        self._alias_annotation_names()
         self._validate_data_types()
-        self._validate_data_calculations()
         self.cell_count = self.data.shape[0]
         self.gene_count = self.data.shape[1]
+        self._default_and_validate_layouts()
         self._create_schema()
 
     @requires_data
+    def _default_and_validate_layouts(self):
+        """ function:
+            a) generate list of default layouts, if not already user specified
+            b) validate layouts are legal.  remove/warn on any that are not
+            c) cap total list of layouts at global const MAX_LAYOUTS
+        """
+        layouts = self.config['layout']
+        # handle default
+        if layouts is None or len(layouts) == 0:
+            # load default layouts from the data.
+            layouts = [key[2:] for key in self.data.obsm_keys() if type(key) == str and key.startswith("X_")]
+            if len(layouts) == 0:
+                raise PrepareError(f"Unable to find any precomputed layouts within the dataset.")
+
+        # remove invalid layouts
+        valid_layouts = []
+        obsm_keys = self.data.obsm_keys()
+        for layout in layouts:
+            layout_name = f"X_{layout}"
+            if layout_name not in obsm_keys:
+                warnings.warn(f"Ignoring unknown layout name: {layout}.")
+            elif not self._is_valid_layout(self.data.obsm[layout_name]):
+                warnings.warn(f"Ignoring layout due to malformed shape or data type: {layout}")
+            else:
+                valid_layouts.append(layout)
+
+        if len(valid_layouts) == 0:
+            raise PrepareError(f"No valid layout data.")
+
+        # cap layouts to MAX_LAYOUTS
+        self.config['layout'] = valid_layouts[0:MAX_LAYOUTS]
+
+    @requires_data
+    def _is_valid_layout(self, arr):
+        """ return True if this layout data is a valid array for front-end presentation:
+            * ndarray, with shape (n_obs, >= 2), dtype float/int/uint
+            * contains only finite values
+        """
+        is_valid = type(arr) == np.ndarray and arr.dtype.kind in "fiu"
+        is_valid = is_valid and arr.shape[0] == self.data.n_obs and arr.shape[1] >= 2
+        is_valid = is_valid and np.all(np.isfinite(arr))
+        return is_valid
+
+    @requires_data
     def _validate_data_types(self):
+        if sparse.isspmatrix(self.data.X) and not sparse.isspmatrix_csc(self.data.X):
+            warnings.warn(
+                f"Scanpy data matrix is sparse, but not a CSC (columnar) matrix.  "
+                f"Performance may be improved by using CSC."
+            )
         if self.data.X.dtype != "float32":
             warnings.warn(
                 f"Scanpy data matrix is in {self.data.X.dtype} format not float32. "
@@ -203,20 +293,6 @@ class ScanpyEngine(CXGDriver):
                             f"--max-category-items option to 500, this will hide categorical "
                             f"annotations with more than 500 categories in the UI"
                         )
-
-    @requires_data
-    def _validate_data_calculations(self):
-        layout_key = f"X_{self.config['layout']}"
-        try:
-            assert layout_key in self.data.obsm_keys()
-        except AssertionError:
-            raise PrepareError(
-                f"Cannot find a field with coordinates for the {self.config['layout']} layout requested. A different"
-                f" layout may have been computed. The requested layout must be pre-calculated and saved "
-                f"back in the h5ad file. You can run "
-                f"`cellxgene prepare --layout {self.config['layout']} <datafile>` "
-                f"to solve this problem. "
-            )
 
     @staticmethod
     def _annotation_filter_to_mask(filter, d_axis, count):
@@ -368,15 +444,18 @@ class ScanpyEngine(CXGDriver):
         * only returns Matrix in columnar layout
         """
         try:
-            full_embedding = self.data.obsm[f"X_{self.config['layout']}"]
-            if full_embedding.shape[1] > 2:
-                warnings.warn(f"Warning: found {full_embedding.shape[1]} \
-                components of embedding. Using the first two for layout display.")
-            df_layout = full_embedding[:, :2]
+            layout_data = []
+            for layout in self.config["layout"]:
+                full_embedding = self.data.obsm[f"X_{layout}"]
+                embedding = full_embedding[:, :2]
+                normalized_layout = (embedding - embedding.min()) / (embedding.max() - embedding.min())
+                normalized_layout = normalized_layout.astype(dtype=np.float32)
+                layout_data.append(pandas.DataFrame(normalized_layout, columns=[f"{layout}_0", f"{layout}_1"]))
+
         except ValueError as e:
             raise PrepareError(
                 f"Layout has not been calculated using {self.config['layout']}, "
                 f"please prepare your datafile and relaunch cellxgene") from e
 
-        normalized_layout = (df_layout - df_layout.min()) / (df_layout.max() - df_layout.min())
-        return encode_matrix_fbs(normalized_layout.astype(dtype=np.float32), col_idx=None, row_idx=None)
+        df = pandas.concat(layout_data, axis=1, copy=False)
+        return encode_matrix_fbs(df, col_idx=df.columns, row_idx=None)

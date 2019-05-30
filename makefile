@@ -76,7 +76,7 @@ release-stage-final: twine-prod
 
 # DANGER: releases directly to prod
 # use this if you accidently burned a test release version number,
-release-burned : dev-env pydist twine-prod
+release-directly-to-prod : dev-env pydist twine-prod
 	@echo "Dist built and uploaded to pypi.org"
 	@echo "Test the install:"
 	@echo "    make install-release"
@@ -114,13 +114,17 @@ install-dev : uninstall
 
 # install from test.pypi to test your release
 install-release-test : uninstall
-	pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple cellxgene
+	pip install --no-cache-dir --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple cellxgene
 	@echo "Installed cellxgene from test.pypi.org, now run and smoke test"
 
 # install from pypi to test your release
 install-release : uninstall
-	pip install cellxgene
+	pip install --no-cache-dir cellxgene
 	@echo "Installed cellxgene from pypi.org"
+
+# install from dist
+install-dist : uninstall
+	pip install dist/cellxgene*.tar.gz
 
 uninstall :
 	pip uninstall -y cellxgene || :

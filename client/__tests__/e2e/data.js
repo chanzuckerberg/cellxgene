@@ -1,6 +1,6 @@
 export const datasets = {
   pbmc3k: {
-    title: "cellxgene: pbmc3k",
+    title: "pbmc3k",
     dataframe: {
       nObs: "2638",
       nVar: "1838",
@@ -26,8 +26,8 @@ export const datasets = {
     cellsets: {
       lasso: [
         {
-          "coordinates-as-percent": { x1: 0.25, y1: 0.25, x2: 0.35, y2: 0.35 },
-          count: "26"
+          "coordinates-as-percent": { x1: 0.05, y1: 0.25, x2: 0.15, y2: 0.35 },
+          count: "104"
         }
       ],
       categorical: [
@@ -91,8 +91,8 @@ export const datasets = {
         }
       },
       lasso: {
-        "coordinates-as-percent": { x1: 0.45, y1: 0.45, x2: 0.5, y2: 0.5 },
-        count: "67"
+        "coordinates-as-percent": { x1: 0.45, y1: 0.05, x2: 0.5, y2: 0.1 },
+        count: "76"
       }
     },
     scatter: {
@@ -108,6 +108,15 @@ export const datasets = {
           count: "24"
         }
       }
+    },
+    clip: {
+      min: "30",
+      max: "70",
+      metadata: "n_genes",
+      gene: "S100A8",
+      "coordinates-as-percent": { x1: 0.25, y1: 0.5, x2: 0.55, y2: 0.5 },
+      count: "392",
+      "gene-cell-count": "421"
     }
   }
 };
