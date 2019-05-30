@@ -146,9 +146,10 @@ class Graph extends React.Component {
     const sizeBuffer = regl.buffer();
 
     // preallocate coordinate system transformation between data and gl
+    const fractionToUse = 0.98; // fraction of dimension to use
     const transform = {
-      glScaleX: scaleLinear([0, 1], [-1, 1]),
-      glScaleY: scaleLinear([0, 1], [1, -1])
+      glScaleX: scaleLinear([0, 1], [-1 * fractionToUse, 1 * fractionToUse]),
+      glScaleY: scaleLinear([0, 1], [1 * fractionToUse, -1 * fractionToUse])
     };
 
     /* first time, but this duplicates above function, should be possile to avoid this */
