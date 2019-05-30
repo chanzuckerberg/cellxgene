@@ -11,7 +11,7 @@ import click
 from server.app.app import Server
 from server.app.util.errors import ScanpyFileError
 from server.app.util.utils import custom_format_warning
-from server.utils.utils import find_available_port
+from server.utils.utils import find_available_port, is_port_available
 
 
 # anything bigger than this will generate a special message
@@ -141,7 +141,14 @@ security risk by including the --scripts flag. Make sure you trust the scripts t
         file_parts = splitext(basename(data))
         title = file_parts[0]
 
-    if not port:
+    if port:
+        if debug:
+            raise click.ClickException("--port and --debug may not be used together (try --verbose for error logging).")
+        if not is_port_available(host, int(port)):
+            raise click.ClickException(
+                f"The port selected {port} is in use, please specify an open port using the --port flag."
+            )
+    else:
         port = find_available_port(host)
 
     # Setup app
@@ -199,7 +206,7 @@ security risk by including the --scripts flag. Make sure you trust the scripts t
         sys.stdout = f
 
     try:
-        server.app.run(host=host, debug=debug, port=port, threaded=True)
+        server.app.run(host=host, debug=debug, port=port, threaded=True, use_debugger=False)
     except OSError as e:
         if e.errno == errno.EADDRINUSE:
             raise click.ClickException("Port is in use, please specify an open port using the --port flag.") from e
