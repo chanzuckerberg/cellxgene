@@ -443,7 +443,7 @@ class ScanpyEngine(CXGDriver):
         * does not support filtering
         * only returns Matrix in columnar layout
 
-        All embeddings must be individually centered & scaled (isotropically) 
+        All embeddings must be individually centered & scaled (isotropically)
         to a [0, 1] range.
         """
         try:
