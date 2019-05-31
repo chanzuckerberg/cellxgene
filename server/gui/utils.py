@@ -56,7 +56,7 @@ class Emitter:
         while True:
             try:
                 signature = self.transport.recv()
-            except EOFError:
-                break  
+            except Exception as e:
+                self.signals.error.emit(str(e))
             else:
                 self._emit(*signature)
