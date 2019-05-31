@@ -7,6 +7,8 @@ import Container from "./framework/container";
 import LeftSideBar from "./leftsidebar";
 import Legend from "./continuousLegend";
 import Graph from "./graph/graph";
+import MenuBar from "./menubar";
+
 import actions from "../actions";
 
 @connect(state => ({
@@ -72,6 +74,7 @@ class App extends React.Component {
           </div>
         ) : null}
         <div>
+          {loading ? null : <MenuBar />}
           {loading ? null : <LeftSideBar />}
           <div
             style={{

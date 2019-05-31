@@ -6,11 +6,9 @@ import Continuous from "./continuous/continuous";
 import GeneExpression from "./geneExpression";
 import * as globals from "../globals";
 import DynamicScatterplot from "./scatterplot/scatterplot";
-import Logo from "./framework/logo.js";
 
 @connect(state => ({
   responsive: state.responsive,
-  datasetTitle: state.config?.displayNames?.dataset,
   scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
   scatterplotYYaccessor: state.controls.scatterplotYYaccessor
 }))
@@ -27,7 +25,7 @@ class LeftSideBar extends React.Component {
     this magic number should be made less fragile,
     if cellxgene logo or tabs change, this must as well
     */
-    const metadataSectionPadding = 0;
+    const metadataSectionPadding = 51;
 
     return (
       <div
@@ -35,53 +33,9 @@ class LeftSideBar extends React.Component {
           position: "fixed",
           backgroundColor: "white",
           /* x y blur spread color */
-          boxShadow: "1px 0px 6px 2px rgba(153,153,153,0.4)"
+          boxShadow: "-3px 8px 6px 2px rgba(153,153,153,0.4)"
         }}
       >
-        <p
-          style={{
-            position: "fixed",
-            top: globals.cellxgeneTitleTopPadding,
-            left: globals.leftSidebarWidth + globals.cellxgeneTitleLeftPadding,
-            margin: 0
-          }}
-        >
-          <Logo size={32} />
-          <span
-            style={{
-              fontSize: 28,
-              position: "relative",
-              top: -4,
-              fontWeight: "bold",
-              marginLeft: 5,
-              color: globals.logoColor,
-              userSelect: "none"
-            }}
-          >
-            cell<span
-              style={{
-                position: "relative",
-                top: 1,
-                fontWeight: 300,
-                fontSize: 24
-              }}
-            >
-              ×
-            </span>gene
-          </span>
-          <span
-            data-testid="header"
-            style={{
-              fontSize: 16,
-              display: "block",
-              position: "relative",
-              marginTop: 10,
-              top: -4
-            }}
-          >
-            {datasetTitle}
-          </span>
-        </p>
         <div
           style={{
             height: responsive.height - metadataSectionPadding,
