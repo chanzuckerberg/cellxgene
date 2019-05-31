@@ -74,6 +74,14 @@ class Category extends React.Component {
     });
   };
 
+  handleDuplicateAnno = () => {
+    const { dispatch, metadataField } = this.props;
+    dispatch({
+      type: "duplicate annotation category",
+      metadataField
+    });
+  };
+
   activateEditCategoryMode = () => {
     const { dispatch, metadataField } = this.props;
     dispatch({

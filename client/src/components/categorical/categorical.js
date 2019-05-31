@@ -31,7 +31,12 @@ class Categories extends React.Component {
   };
 
   handleAnnoModeChange = () => {
+    console.log("anno mode changed");
     this.setState({ createAnnoModeActive: true });
+  };
+
+  handleCancelAnnoMode = () => {
+    this.setState({ createAnnoModeActive: false });
   };
 
   render() {
@@ -75,6 +80,7 @@ class Categories extends React.Component {
             position="bottom"
           >
             <Button
+              style={{ marginTop: 10 }}
               data-testclass="createAnnoMode"
               data-testid="createAnnoMode"
               onClick={this.handleAnnoModeChange}
@@ -85,7 +91,7 @@ class Categories extends React.Component {
             </Button>
           </Tooltip>
         ) : (
-          <ControlGroup>
+          <ControlGroup style={{ marginTop: 10 }}>
             <InputGroup leftIcon="tag" />
             <Button
               data-testclass="createUserAnno"
@@ -93,7 +99,15 @@ class Categories extends React.Component {
               onClick={this.handleCreateUserAnno}
               intent="primary"
             >
-              Add category
+              Add Category
+            </Button>
+            <Button
+              data-testclass="cancelAnnoMode"
+              data-testid="cancelAnnoMode"
+              onClick={this.handleCancelAnnoMode}
+              intent="default"
+            >
+              Cancel
             </Button>
           </ControlGroup>
         )}

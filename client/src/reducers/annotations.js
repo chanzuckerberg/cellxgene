@@ -10,6 +10,11 @@ const Annotations = (
 ) => {
   switch (action.type) {
     /* CATEGORY */
+    case "duplicate annotation category":
+      console.log("duplicate category as editable field", action);
+      return {
+        ...state
+      };
     case "add new label to category":
       console.log("add new label to category", action);
       return {
