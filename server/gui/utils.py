@@ -18,7 +18,8 @@ class WorkerSignals(QObject):
         result - `object` data returned from processing, anything
     """
     finished = Signal()
-    error = Signal(str)
+    engine_error = Signal(str)
+    server_error = Signal(str)
     result = Signal(object)
     ready = Signal()
 
@@ -55,7 +56,7 @@ class Emitter:
         while True:
             try:
                 signature = self.transport.recv()
-            except Exception:
-                break
+            except EOFError:
+                break  
             else:
                 self._emit(*signature)

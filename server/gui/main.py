@@ -18,7 +18,7 @@ from server.utils.constants import MODES
 # TODO remember this or calculate it?
 WIDTH = 1024
 HEIGHT = 768
-GUI_PORT = 8000
+GUI_PORT = 8050
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -37,6 +37,15 @@ class MainWindow(QMainWindow):
         self.setFocusPolicy(Qt.StrongFocus)
         self.setupLayout()
         # self.setupMenu()
+
+    def restartOnError(self):
+        self.parent_conn.close()
+        # close emitter on error/finished
+        self.parent_conn, self.child_conn = Pipe()
+        self.load_emitter = Emitter(self.parent_conn, WorkerSignals)
+        self.emitter_thread = threading.Thread(target=self.load_emitter.run, daemon=True)
+        self.emitter_thread.start()
+        # send to load with error message?
 
     def setupLayout(self):
         self.resize(WIDTH, HEIGHT)
@@ -116,6 +125,7 @@ class LoadWidget(QFrame):
         message_layout = QHBoxLayout()
         message_layout.setContentsMargins(0, 0, 0, 0)
 
+        self.serverError = False
         self.title = ""
         self.label = QLabel("cellxgene")
         logo_layout.addWidget(self.label)
@@ -157,10 +167,11 @@ class LoadWidget(QFrame):
         self.embedding_selection = [MODES[idx]]
 
     def createScanpyEngine(self, file_name):
-        worker = Worker((self.window().parent_conn, self.window().child_conn), file_name, self.title, host="127.0.0.1", port=GUI_PORT,
+        worker = Worker(self.window().parent_conn, self.window().child_conn, file_name, self.title, host="127.0.0.1", port=GUI_PORT,
                         layout=self.embedding_selection)
         self.window().load_emitter.signals.ready.connect(self.onDataReady)
-        self.window().load_emitter.signals.error.connect(self.onDataError)
+        self.window().load_emitter.signals.engine_error.connect(self.onEngineError)
+        self.window().load_emitter.signals.server_error.connect(self.onServerError)
         self.window().worker = Process(target=worker.run, daemon=True)
         self.window().worker.start()
         self.window().child_conn.close()
@@ -173,19 +184,48 @@ class LoadWidget(QFrame):
         self.title = splitext(basename(file_name))[0]
         if file_name:
             self.signals.selectedFile.emit(file_name)
+            # Reset error on reload
+            self.serverError = False
 
     def onDataReady(self):
-        site_ready_worker = SiteReadyWorker(self.window().url)
-        site_ready_worker.signals.ready.connect(self.onServerReady)
-        site_ready_worker.signals.error.connect(self.onDataError)
-        srw_thread = threading.Thread(target=site_ready_worker.run, daemon=True)
+        self.site_ready_worker = SiteReadyWorker(self.window().url)
+        self.site_ready_worker.signals.ready.connect(self.onServerReady)
+        self.site_ready_worker.signals.error.connect(self.onDataError)
+
+        srw_thread = threading.Thread(target=self.site_ready_worker.run, daemon=True)
         srw_thread.start()
 
     def onServerReady(self):
-        self.window().cef_widget.browser.Navigate(self.window().url)
-        self.window().stacked_layout.setCurrentIndex(1)
+        if not self.serverError:
+            self.window().cef_widget.browser.Navigate(self.window().url)
+            self.window().stacked_layout.setCurrentIndex(1)
+
+    def onServerError(self, err):
+        # TODO, any difference in data load versus server error?
+        # Restart worker
+        self.serverError = True
+        try:
+            self.window().worker.close()
+        except AttributeError:
+            # python 3.6 does not have close
+            self.window().worker.terminate()
+
+        except Exception as e:
+            self.window().worker.terminate()
+            err += "\n{e}"
+        # Report error and switch to load screen
+        self.window().restartOnError()
+        self.window().stacked_layout.setCurrentIndex(0)
+        self.error_label.setText(f"Error: {err}")
+        self.error_label.resize(self.MAX_CONTENT_WIDTH, self.error_label.height())
+
+    def onEngineError(self, err):
+        self.window().stacked_layout.setCurrentIndex(0)
+        self.error_label.setText(f"Error: {err}")
+        self.error_label.resize(self.MAX_CONTENT_WIDTH, self.error_label.height())
 
     def onDataError(self, err):
+        # Restart worker
         self.window().stacked_layout.setCurrentIndex(0)
         self.error_label.setText(f"Error: {err}")
         self.error_label.resize(self.MAX_CONTENT_WIDTH, self.error_label.height())
