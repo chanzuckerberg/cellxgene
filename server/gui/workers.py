@@ -14,12 +14,10 @@ class EmittingProcess(Process):
         self.child_conn = child_conn
 
     def run(self):
-        pass
-        # self.parent_conn.close()
+        self.parent_conn.close()
 
     def emit(self, signal_name, *args):
         message = (signal_name, *args)
-        print(message)
         self.child_conn.send(message)
 
 
@@ -67,7 +65,6 @@ class Worker(EmittingProcess):
             return
         # launch server
         try:
-            # TODO listen for finished to kill?
             server.app.run(host=self.host, debug=False, port=self.port, threaded=True)
         except Exception as e:
             traceback.print_exc()

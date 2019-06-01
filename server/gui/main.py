@@ -27,6 +27,7 @@ class MainWindow(QMainWindow):
         self.data_widget = None
         self.parent_conn, self.child_conn = Pipe()
         self.load_emitter = Emitter(self.parent_conn, WorkerSignals)
+        self.load_emitter.signals.error.connect(self.restartOnError)
         self.emitter_thread = threading.Thread(target=self.load_emitter.run, daemon=True)
         self.emitter_thread.start()
         self.worker = None
@@ -39,6 +40,8 @@ class MainWindow(QMainWindow):
         # self.setupMenu()
 
     def restartOnError(self):
+        if self.worker:
+            self.terminateWorker()
         self.parent_conn.close()
         # close emitter on error/finished
         self.parent_conn, self.child_conn = Pipe()
@@ -46,6 +49,18 @@ class MainWindow(QMainWindow):
         self.emitter_thread = threading.Thread(target=self.load_emitter.run, daemon=True)
         self.emitter_thread.start()
         # send to load with error message?
+
+    def terminateWorker(self):
+        if not self.worker:
+            return
+        try:
+            self.worker.close()
+        except AttributeError:
+            # python 3.6 does not have close
+            self.worker.terminate()
+        except Exception as e:
+            # TODO log error
+            self.worker.terminate()
 
     def setupLayout(self):
         self.resize(WIDTH, HEIGHT)
@@ -204,15 +219,6 @@ class LoadWidget(QFrame):
         # TODO, any difference in data load versus server error?
         # Restart worker
         self.serverError = True
-        try:
-            self.window().worker.close()
-        except AttributeError:
-            # python 3.6 does not have close
-            self.window().worker.terminate()
-
-        except Exception as e:
-            self.window().worker.terminate()
-            err += "\n{e}"
         # Report error and switch to load screen
         self.window().restartOnError()
         self.window().stacked_layout.setCurrentIndex(0)
@@ -220,12 +226,13 @@ class LoadWidget(QFrame):
         self.error_label.resize(self.MAX_CONTENT_WIDTH, self.error_label.height())
 
     def onEngineError(self, err):
+        self.window().restartOnError()
         self.window().stacked_layout.setCurrentIndex(0)
         self.error_label.setText(f"Error: {err}")
         self.error_label.resize(self.MAX_CONTENT_WIDTH, self.error_label.height())
 
     def onDataError(self, err):
-        # Restart worker
+        self.window().restartOnError()
         self.window().stacked_layout.setCurrentIndex(0)
         self.error_label.setText(f"Error: {err}")
         self.error_label.resize(self.MAX_CONTENT_WIDTH, self.error_label.height())

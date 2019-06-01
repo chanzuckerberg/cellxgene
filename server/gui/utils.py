@@ -20,6 +20,7 @@ class WorkerSignals(QObject):
     finished = Signal()
     engine_error = Signal(str)
     server_error = Signal(str)
+    error = Signal(str)
     result = Signal(object)
     ready = Signal()
 
@@ -47,16 +48,20 @@ class Emitter:
         self.signals = signals()
 
     def _emit(self, signature, args=None):
-        if args:
-            getattr(self.signals, signature).emit(args)
-        else:
+        if args is None:
             getattr(self.signals, signature).emit()
+        else:
+            getattr(self.signals, signature).emit(args)
 
     def run(self):
         while True:
             try:
                 signature = self.transport.recv()
+            except EOFError:
+                # Server done
+                break
             except Exception as e:
                 self.signals.error.emit(str(e))
+                break
             else:
                 self._emit(*signature)
