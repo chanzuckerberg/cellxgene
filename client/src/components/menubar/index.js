@@ -1,7 +1,6 @@
 // jshint esversion: 6
 import React from "react";
 import { connect } from "react-redux";
-import _ from "lodash";
 import {
   Button,
   AnchorButton,
@@ -30,7 +29,9 @@ import CellSetButton from "./cellSetButtons";
   crossfilter: state.crossfilter,
   resettingInterface: state.controls.resettingInterface,
   layoutChoice: state.layoutChoice,
-  graphInteractionMode: state.controls.graphInteractionMode
+  graphInteractionMode: state.controls.graphInteractionMode,
+  clipPercentileMin: Math.round(100 * (state.world?.clipQuantiles?.min ?? 0)),
+  clipPercentileMax: Math.round(100 * (state.world?.clipQuantiles?.max ?? 1))
 }))
 class MenuBar extends React.Component {
   static isValidDigitKeyEvent(e) {
@@ -267,6 +268,8 @@ class MenuBar extends React.Component {
     const haveBothCellSets =
       !!differential.celllist1 && !!differential.celllist2;
 
+    console.log(pendingClipPercentiles);
+
     const clipMin =
       pendingClipPercentiles?.clipPercentileMin ?? clipPercentileMin;
     const clipMax =
@@ -275,8 +278,6 @@ class MenuBar extends React.Component {
       clipPercentileMin > 0 || clipPercentileMax < 100
         ? " bp3-intent-warning"
         : "";
-
-    console.log(clipMin, clipMax);
 
     // constants used to create selection tool button
     let selectionTooltip;
