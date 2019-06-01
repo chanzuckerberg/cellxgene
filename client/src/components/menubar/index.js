@@ -60,9 +60,6 @@ class MenuBar extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      svg: null,
-      tool: null,
-      container: null,
       pendingClipPercentiles: null
     };
   }
@@ -278,6 +275,8 @@ class MenuBar extends React.Component {
       clipPercentileMin > 0 || clipPercentileMax < 100
         ? " bp3-intent-warning"
         : "";
+
+    console.log(clipMin, clipMax);
 
     // constants used to create selection tool button
     let selectionTooltip;
