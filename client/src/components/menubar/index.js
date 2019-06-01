@@ -268,8 +268,6 @@ class MenuBar extends React.Component {
     const haveBothCellSets =
       !!differential.celllist1 && !!differential.celllist2;
 
-    console.log(pendingClipPercentiles);
-
     const clipMin =
       pendingClipPercentiles?.clipPercentileMin ?? clipPercentileMin;
     const clipMax =
