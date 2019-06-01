@@ -309,7 +309,7 @@ class MenuBar extends React.Component {
             style={{
               fontSize: 28,
               position: "relative",
-              top: -5,
+              top: -6,
               fontWeight: "bold",
               marginLeft: 5,
               color: globals.logoColor,
@@ -333,7 +333,7 @@ class MenuBar extends React.Component {
               fontSize: 14,
               position: "relative",
               marginLeft: 7,
-              top: -6
+              top: -8
             }}
           >
             {datasetTitle}
