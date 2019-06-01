@@ -11,6 +11,7 @@ import {
   MenuItem,
   Position,
   NumericInput,
+  Divider,
   Icon,
   RadioGroup,
   Radio
@@ -28,7 +29,8 @@ import CellSetButton from "./cellSetButtons";
   datasetTitle: state.config?.displayNames?.dataset,
   crossfilter: state.crossfilter,
   resettingInterface: state.controls.resettingInterface,
-  layoutChoice: state.layoutChoice
+  layoutChoice: state.layoutChoice,
+  graphInteractionMode: state.controls.graphInteractionMode
 }))
 class MenuBar extends React.Component {
   static isValidDigitKeyEvent(e) {
@@ -61,7 +63,6 @@ class MenuBar extends React.Component {
       svg: null,
       tool: null,
       container: null,
-      mode: "select",
       pendingClipPercentiles: null
     };
   }
@@ -261,9 +262,10 @@ class MenuBar extends React.Component {
       selectionTool,
       clipPercentileMin,
       clipPercentileMax,
-      layoutChoice
+      layoutChoice,
+      graphInteractionMode
     } = this.props;
-    const { mode, pendingClipPercentiles } = this.state;
+    const { pendingClipPercentiles } = this.state;
 
     const haveBothCellSets =
       !!differential.celllist1 && !!differential.celllist2;
@@ -296,8 +298,9 @@ class MenuBar extends React.Component {
           paddingRight: 10,
           backgroundColor: "white",
           display: "flex",
-          justifyContent: "space-between",
-          boxShadow: "0px -3px 6px 2px rgba(153,153,153,0.4)"
+          justifyContent: "space-between"
+          // boxShadow: "0px -3px 6px 2px rgba(153,153,153,0.4)",
+          // borderBottom: "2px solid red"9
         }}
       >
         <div style={{ flexShrink: 0 }}>
@@ -327,7 +330,7 @@ class MenuBar extends React.Component {
           <span
             data-testid="header"
             style={{
-              fontSize: 12,
+              fontSize: 14,
               position: "relative",
               marginLeft: 7,
               top: -6
@@ -408,9 +411,12 @@ class MenuBar extends React.Component {
                   type="button"
                   data-testid="mode-lasso"
                   className={`bp3-button ${selectionButtonClass}`}
-                  active={mode === "select"}
+                  active={graphInteractionMode === "select"}
                   onClick={() => {
-                    this.setState({ mode: "select" });
+                    dispatch({
+                      type: "change graph interaction mode",
+                      data: "select"
+                    });
                   }}
                   style={{
                     cursor: "pointer"
@@ -422,10 +428,12 @@ class MenuBar extends React.Component {
                   type="button"
                   data-testid="mode-pan-zoom"
                   className="bp3-button bp3-icon-zoom-in"
-                  active={mode === "zoom"}
+                  active={graphInteractionMode === "zoom"}
                   onClick={() => {
-                    dispatch({ type: "set graph mode to zoom" });
-                    this.setState({ mode: "zoom" });
+                    dispatch({
+                      type: "change graph interaction mode",
+                      data: "zoom"
+                    });
                   }}
                   style={{
                     cursor: "pointer"
@@ -433,57 +441,6 @@ class MenuBar extends React.Component {
                 />
               </Tooltip>
             </div>
-            <div
-              className="bp3-button-group"
-              style={{
-                marginLeft: 10
-              }}
-            >
-              <Tooltip content="Undo" position="left">
-                <AnchorButton
-                  type="button"
-                  className="bp3-button bp3-icon-undo"
-                  disabled={undoDisabled}
-                  onClick={() => {
-                    dispatch({ type: "@@undoable/undo" });
-                  }}
-                  style={{
-                    cursor: "pointer"
-                  }}
-                />
-              </Tooltip>
-              <Tooltip content="Redo" position="left">
-                <AnchorButton
-                  type="button"
-                  className="bp3-button bp3-icon-redo"
-                  disabled={redoDisabled}
-                  onClick={() => {
-                    dispatch({ type: "@@undoable/redo" });
-                  }}
-                  style={{
-                    cursor: "pointer"
-                  }}
-                />
-              </Tooltip>
-            </div>
-            <Tooltip
-              content="Reset cellxgene, clearing all selections"
-              position="left"
-            >
-              <AnchorButton
-                disabled={this.isResetDisabled()}
-                style={{ marginLeft: 10 }}
-                type="button"
-                loading={resettingInterface}
-                intent="none"
-                icon="refresh"
-                onClick={this.resetInterface}
-                data-testid="reset"
-                data-testclass={`resetting-${resettingInterface}`}
-              >
-                reset
-              </AnchorButton>
-            </Tooltip>
             <div
               className="bp3-button-group"
               style={{
@@ -568,7 +525,7 @@ class MenuBar extends React.Component {
                     >
                       <NumericInput
                         style={{ width: 50 }}
-                        data-testid={"clip-min-input"}
+                        data-testid="clip-min-input"
                         onValueChange={this.handleClipPercentileMinValueChange}
                         onKeyPress={this.handleClipOnKeyPress}
                         value={clipMin}
@@ -589,7 +546,7 @@ class MenuBar extends React.Component {
                       <span style={{ marginRight: 5, marginLeft: 5 }}> - </span>
                       <NumericInput
                         style={{ width: 50 }}
-                        data-testid={"clip-max-input"}
+                        data-testid="clip-max-input"
                         onValueChange={this.handleClipPercentileMaxValueChange}
                         onKeyPress={this.handleClipOnKeyPress}
                         value={clipMax}
@@ -626,6 +583,57 @@ class MenuBar extends React.Component {
                 }
               />
             </div>
+            <div
+              className="bp3-button-group"
+              style={{
+                marginLeft: 10
+              }}
+            >
+              <Tooltip content="Undo" position="left">
+                <AnchorButton
+                  type="button"
+                  className="bp3-button bp3-icon-undo"
+                  disabled={undoDisabled}
+                  onClick={() => {
+                    dispatch({ type: "@@undoable/undo" });
+                  }}
+                  style={{
+                    cursor: "pointer"
+                  }}
+                />
+              </Tooltip>
+              <Tooltip content="Redo" position="left">
+                <AnchorButton
+                  type="button"
+                  className="bp3-button bp3-icon-redo"
+                  disabled={redoDisabled}
+                  onClick={() => {
+                    dispatch({ type: "@@undoable/redo" });
+                  }}
+                  style={{
+                    cursor: "pointer"
+                  }}
+                />
+              </Tooltip>
+            </div>
+            <Tooltip
+              content="Reset cellxgene, clearing all selections"
+              position="left"
+            >
+              <AnchorButton
+                disabled={this.isResetDisabled()}
+                style={{ marginLeft: 10 }}
+                type="button"
+                loading={resettingInterface}
+                intent="none"
+                icon="refresh"
+                onClick={this.resetInterface}
+                data-testid="reset"
+                data-testclass={`resetting-${resettingInterface}`}
+              >
+                reset
+              </AnchorButton>
+            </Tooltip>
 
             <div style={{ marginLeft: 10 }} className="bp3-button-group">
               <Popover

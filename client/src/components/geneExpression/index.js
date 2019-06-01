@@ -179,19 +179,7 @@ class GeneExpression extends React.Component {
 
     return (
       <div>
-        <div
-          style={{
-            marginTop: 30
-          }}
-        >
-          <p
-            style={Object.assign({}, globals.leftSidebarSectionHeading, {
-              paddingLeft: globals.leftSidebarSectionPadding,
-              margin: 0
-            })}
-          >
-            Selected Genes
-          </p>
+        <div>
           <div
             style={{
               padding: globals.leftSidebarSectionPadding
@@ -207,7 +195,7 @@ class GeneExpression extends React.Component {
                 this.setState({ tab: "autosuggest" });
               }}
             >
-              Autosuggest
+              Autosuggest genes
             </Button>
             <Button
               active={tab === "bulkadd"}
@@ -259,7 +247,7 @@ class GeneExpression extends React.Component {
                 data-testid={"add-gene"}
                 loading={userDefinedGenesLoading}
               >
-                Add
+                Add gene
               </Button>
             </ControlGroup>
           ) : null}
@@ -290,7 +278,7 @@ class GeneExpression extends React.Component {
                       onClick={this.handleBulkAddClick.bind(this)}
                       loading={userDefinedGenesLoading}
                     >
-                      Add
+                      Add genes
                     </Button>
                   </ControlGroup>
                 </FormGroup>

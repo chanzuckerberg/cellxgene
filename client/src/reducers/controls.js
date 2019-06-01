@@ -16,7 +16,7 @@ const Controls = (
     diffexpGenes: [],
 
     resettingInterface: false,
-
+    graphInteractionMode: "select",
     opacityForDeselectedCells: 0.2,
     scatterplotXXaccessor: null, // just easier to read
     scatterplotYYaccessor: null,
@@ -138,6 +138,11 @@ const Controls = (
     /*******************************
              User Events
      *******************************/
+    case "change graph interaction mode":
+      return {
+        ...state,
+        graphInteractionMode: action.data
+      };
     case "change opacity deselected cells in 2d graph background":
       return {
         ...state,

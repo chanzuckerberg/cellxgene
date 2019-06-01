@@ -33,7 +33,8 @@ import scaleLinear from "../../util/scaleLinear";
   redoDisabled: state["@@undoable/future"].length === 0,
   selectionTool: state.graphSelection.tool,
   currentSelection: state.graphSelection.selection,
-  layoutChoice: state.layoutChoice
+  layoutChoice: state.layoutChoice,
+  graphInteractionMode: state.controls.graphInteractionMode
 }))
 class Graph extends React.Component {
   computePointPositions = memoize((X, Y, scaleX, scaleY) => {
@@ -84,8 +85,7 @@ class Graph extends React.Component {
     this.state = {
       svg: null,
       tool: null,
-      container: null,
-      mode: "select"
+      container: null
     };
   }
 
@@ -135,7 +135,7 @@ class Graph extends React.Component {
     });
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(prevProps) {
     const { renderCache } = this;
     const {
       world,
@@ -144,14 +144,28 @@ class Graph extends React.Component {
       responsive,
       selectionTool,
       currentSelection,
-      layoutChoice
+      layoutChoice,
+      graphInteractionMode
     } = this.props;
-    const { reglRender, mode, regl, svg } = this.state;
+    const { reglRender, regl, svg } = this.state;
     let stateChanges = {};
 
-    if (reglRender && this.reglRenderState === "rendering" && mode !== "zoom") {
+    if (
+      reglRender &&
+      this.reglRenderState === "rendering" &&
+      graphInteractionMode !== "zoom"
+    ) {
       reglRender.cancel();
       this.reglRenderState = "paused";
+    }
+
+    if (
+      reglRender &&
+      this.reglRenderState !== "rendering" &&
+      graphInteractionMode === "zoom"
+    ) {
+      this.restartReglLoop();
+      this.reglRenderState = "rendering";
     }
 
     if (regl && world) {
@@ -249,7 +263,7 @@ class Graph extends React.Component {
     */
     if (
       currentSelection !== prevProps.currentSelection ||
-      mode !== prevState.mode ||
+      graphInteractionMode !== prevProps.graphInteractionMode ||
       stateChanges.svg
     ) {
       const { tool, container } = this.state;
@@ -566,8 +580,7 @@ class Graph extends React.Component {
   }
 
   render() {
-    const { responsive } = this.props;
-    const { mode } = this.state;
+    const { responsive, graphInteractionMode } = this.props;
 
     return (
       <div id="graphWrapper">
@@ -581,7 +594,7 @@ class Graph extends React.Component {
         >
           <div
             style={{
-              display: mode === "select" ? "inherit" : "none"
+              display: graphInteractionMode === "select" ? "inherit" : "none"
             }}
             id="graphAttachPoint"
           />
