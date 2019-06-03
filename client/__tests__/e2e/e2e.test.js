@@ -54,14 +54,14 @@ afterAll(() => {
   }
 });
 
-describe("did launch", async () => {
+describe("did launch", () => {
   test("page launched", async () => {
     let el = await utils.getOneElementInnerHTML("[data-testid='header']");
     expect(el).toBe(data.title);
   });
 });
 
-describe("metadata loads", async () => {
+describe("metadata loads", () => {
   test("categories and values from dataset appear", async () => {
     for (const label in data.categorical) {
       await utils.waitByID(`category-${label}`);
@@ -87,7 +87,7 @@ describe("metadata loads", async () => {
   });
 });
 
-describe("cell selection", async () => {
+describe("cell selection", () => {
   test("selects all cells cellset 1", async () => {
     const cellCount = await cxgActions.cellSet(1);
     expect(cellCount).toBe(data.dataframe.nObs);
@@ -138,7 +138,7 @@ describe("cell selection", async () => {
   });
 });
 
-describe("gene entry", async () => {
+describe("gene entry", () => {
   test("search for single gene", async () => {
     // blueprint's  typeahead is treating typing weird, clicking & waiting first solves this
     await utils.typeInto("gene-search", data.genes.search);
@@ -161,7 +161,7 @@ describe("gene entry", async () => {
   });
 });
 
-describe("diffexp", async () => {
+describe("diffexp", () => {
   test("selects cells, saves them and performs diffexp", async () => {
     for (const select of data.diffexp.cellset1) {
       if (select.kind === "categorical") {
@@ -183,7 +183,7 @@ describe("diffexp", async () => {
   });
 });
 
-describe("subset/reset", async () => {
+describe("subset/reset", () => {
   test("subset - cell count matches", async () => {
     for (const select of data.subset.cellset1) {
       if (select.kind === "categorical") {
@@ -257,7 +257,7 @@ describe("subset/reset", async () => {
   });
 });
 
-describe("scatter plot", async () => {
+describe("scatter plot", () => {
   test("scatter plot appears", async () => {
     await cxgActions.reset();
     const testGenes = data.scatter.genes;
@@ -270,7 +270,7 @@ describe("scatter plot", async () => {
   });
 });
 
-describe("clipping", async () => {
+describe("clipping", () => {
   test("clip continuous", async () => {
     await cxgActions.clip(data.clip.min, data.clip.max);
     const histId = `histogram-${data.clip.metadata}-plot-brush`;
@@ -300,7 +300,7 @@ describe("clipping", async () => {
 });
 
 // interact with UI elements just that they do not break
-describe("ui elements don't error", async () => {
+describe("ui elements don't error", () => {
   test("color by", async () => {
     for (const label in data.categorical) {
       await utils.clickOn(`colorby-${label}`);
