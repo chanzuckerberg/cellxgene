@@ -16,21 +16,9 @@ import scaleLinear from "../../util/scaleLinear";
 
 @connect(state => ({
   world: state.world,
-  universe: state.universe,
   crossfilter: state.crossfilter,
   responsive: state.responsive,
   colorRGB: state.colors.rgb,
-  opacityForDeselectedCells: state.controls.opacityForDeselectedCells,
-  userDefinedGenes: state.controls.userDefinedGenes,
-  diffexpGenes: state.controls.diffexpGenes,
-  colorAccessor: state.colors.colorAccessor,
-  scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
-  scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
-  celllist1: state.differential.celllist1,
-  celllist2: state.differential.celllist2,
-  libraryVersions: state.config?.library_versions, // eslint-disable-line camelcase
-  undoDisabled: state["@@undoable/past"].length === 0,
-  redoDisabled: state["@@undoable/future"].length === 0,
   selectionTool: state.graphSelection.tool,
   currentSelection: state.graphSelection.selection,
   layoutChoice: state.layoutChoice,

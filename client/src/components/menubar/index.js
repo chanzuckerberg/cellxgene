@@ -22,16 +22,27 @@ import actions from "../../actions";
 import CellSetButton from "./cellSetButtons";
 
 @connect(state => ({
-  differential: state.differential,
+  universe: state.universe,
   world: state.world,
   loading: state.controls.loading,
-  datasetTitle: state.config?.displayNames?.dataset,
   crossfilter: state.crossfilter,
+  differential: state.differential,
+  datasetTitle: state.config?.displayNames?.dataset,
   resettingInterface: state.controls.resettingInterface,
   layoutChoice: state.layoutChoice,
   graphInteractionMode: state.controls.graphInteractionMode,
   clipPercentileMin: Math.round(100 * (state.world?.clipQuantiles?.min ?? 0)),
-  clipPercentileMax: Math.round(100 * (state.world?.clipQuantiles?.max ?? 1))
+  clipPercentileMax: Math.round(100 * (state.world?.clipQuantiles?.max ?? 1)),
+  userDefinedGenes: state.controls.userDefinedGenes,
+  diffexpGenes: state.controls.diffexpGenes,
+  colorAccessor: state.colors.colorAccessor,
+  scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
+  scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
+  celllist1: state.differential.celllist1,
+  celllist2: state.differential.celllist2,
+  libraryVersions: state.config?.library_versions, // eslint-disable-line camelcase
+  undoDisabled: state["@@undoable/past"].length === 0,
+  redoDisabled: state["@@undoable/future"].length === 0
 }))
 class MenuBar extends React.Component {
   static isValidDigitKeyEvent(e) {
