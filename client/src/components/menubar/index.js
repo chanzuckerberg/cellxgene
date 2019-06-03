@@ -10,7 +10,6 @@ import {
   MenuItem,
   Position,
   NumericInput,
-  Divider,
   Icon,
   RadioGroup,
   Radio
@@ -27,7 +26,7 @@ import CellSetButton from "./cellSetButtons";
   loading: state.controls.loading,
   crossfilter: state.crossfilter,
   differential: state.differential,
-  datasetTitle: state.config?.displayNames?.dataset,
+  datasetTitle: state.config?.displayNames?.dataset ?? "",
   resettingInterface: state.controls.resettingInterface,
   layoutChoice: state.layoutChoice,
   graphInteractionMode: state.controls.graphInteractionMode,
@@ -235,7 +234,7 @@ class MenuBar extends React.Component {
     });
   };
 
-  computeDiffExp() {
+  computeDiffExp = () => {
     const { dispatch, differential } = this.props;
     if (differential.celllist1 && differential.celllist2) {
       dispatch(
@@ -245,9 +244,9 @@ class MenuBar extends React.Component {
         )
       );
     }
-  }
+  };
 
-  clearDifferentialExpression() {
+  clearDifferentialExpression = () => {
     const { dispatch, differential } = this.props;
     dispatch({
       type: "clear differential expression",
@@ -256,7 +255,7 @@ class MenuBar extends React.Component {
     dispatch({
       type: "clear scatterplot"
     });
-  }
+  };
 
   render() {
     const {
@@ -308,8 +307,6 @@ class MenuBar extends React.Component {
           backgroundColor: "white",
           display: "flex",
           justifyContent: "space-between"
-          // boxShadow: "0px -3px 6px 2px rgba(153,153,153,0.4)",
-          // borderBottom: "2px solid red"9
         }}
       >
         <div style={{ flexShrink: 0 }}>
@@ -369,7 +366,7 @@ class MenuBar extends React.Component {
                 loading={differential.loading}
                 fill
                 type="button"
-                onClick={this.computeDiffExp.bind(this)}
+                onClick={this.computeDiffExp()}
               >
                 Compute Differential Expression
               </AnchorButton>
@@ -384,7 +381,7 @@ class MenuBar extends React.Component {
                 type="button"
                 fill
                 intent="warning"
-                onClick={this.clearDifferentialExpression.bind(this)}
+                onClick={this.clearDifferentialExpression()}
               >
                 Clear Differential Expression
               </Button>
