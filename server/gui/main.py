@@ -1,4 +1,5 @@
 # flake8: noqa F403, F405
+from functools import partialmethod
 from multiprocessing import Pipe, Process
 from os.path import splitext, basename
 import sys
@@ -26,11 +27,9 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__(None)
         self.cef_widget = None
         self.data_widget = None
-        self.parent_conn, self.child_conn = Pipe()
-        self.load_emitter = Emitter(self.parent_conn, WorkerSignals)
-        self.load_emitter.signals.error.connect(self.restartOnError)
-        self.emitter_thread = threading.Thread(target=self.load_emitter.run, daemon=True)
-        self.emitter_thread.start()
+        self.parent_conn, self.child_conn = None, None
+        self.load_emitter = None
+        self.emitter_thread = None
         self.worker = None
         self.url = f"http://localhost:{GUI_PORT}/"
         self.setWindowTitle("cellxgene")
@@ -38,12 +37,10 @@ class MainWindow(QMainWindow):
         # Strong focus - accepts focus by tab & click
         self.setFocusPolicy(Qt.StrongFocus)
         self.setupLayout()
-        # self.setupMenu()
+        self.setupMenu()
 
     def restartOnError(self):
-        if self.worker:
-            self.worker.terminate()
-        self.parent_conn.close()
+        self.window().shutdownServer()
         # close emitter on error/finished
         self.parent_conn, self.child_conn = Pipe()
         self.load_emitter = Emitter(self.parent_conn, WorkerSignals)
@@ -84,6 +81,21 @@ class MainWindow(QMainWindow):
             self.container = QWidget.createWindowContainer(
                 self.cef_widget.hidden_window, parent=self)
             self.stacked_layout.addWidget(self.container, 1, 0)
+
+    def setupServer(self):
+        self.shutdownServer()
+        # close emitter on error/finished
+        self.parent_conn, self.child_conn = Pipe()
+        self.load_emitter = Emitter(self.parent_conn, WorkerSignals)
+        self.emitter_thread = threading.Thread(target=self.load_emitter.run, daemon=True)
+        self.emitter_thread.start()
+        # send to load with error message?
+
+    def shutdownServer(self):
+        if self.worker:
+            self.worker.terminate()
+        if self.parent_conn:
+            self.parent_conn.close()
 
     def setupMenu(self):
         # TODO add communication to subprocess on reload
@@ -171,10 +183,11 @@ class LoadWidget(QFrame):
         self.embedding_selection = [MODES[idx]]
 
     def createScanpyEngine(self, file_name):
+        self.window().setupServer()
         worker = Worker(self.window().parent_conn, self.window().child_conn, file_name, self.title, host="127.0.0.1", port=GUI_PORT,
                         layout=self.embedding_selection)
         self.window().load_emitter.signals.ready.connect(self.onDataReady)
-        self.window().load_emitter.signals.engine_error.connect(self.onEngineError)
+        self.window().load_emitter.signals.engine_error.connect(self.onServerError)
         self.window().load_emitter.signals.server_error.connect(self.onServerError)
         # Error is generic error from emitter
         self.window().load_emitter.signals.error.connect(self.onServerError)
@@ -196,7 +209,7 @@ class LoadWidget(QFrame):
     def onDataReady(self):
         self.site_ready_worker = SiteReadyWorker(self.window().url)
         self.site_ready_worker.signals.ready.connect(self.onServerReady)
-        self.site_ready_worker.signals.error.connect(self.onDataError)
+        self.site_ready_worker.signals.error.connect(self.onError)
 
         srw_thread = threading.Thread(target=self.site_ready_worker.run, daemon=True)
         srw_thread.start()
@@ -206,26 +219,17 @@ class LoadWidget(QFrame):
             self.window().cef_widget.browser.Navigate(self.window().url)
             self.window().stacked_layout.setCurrentIndex(1)
 
-    def onServerError(self, err):
+    def onError(self, err, server_error=False):
         # Restart worker
-        self.serverError = True
-        # Report error and switch to load screen
-        self.window().restartOnError()
+        if server_error:
+            self.serverError = True
+            # Report error and switch to load screen
+            self.window().shutdownServer()
         self.window().stacked_layout.setCurrentIndex(0)
         self.error_label.setText(f"Error: {err}")
         self.error_label.resize(self.MAX_CONTENT_WIDTH, self.error_label.height())
 
-    def onEngineError(self, err):
-        self.window().restartOnError()
-        self.window().stacked_layout.setCurrentIndex(0)
-        self.error_label.setText(f"Error: {err}")
-        self.error_label.resize(self.MAX_CONTENT_WIDTH, self.error_label.height())
-
-    def onDataError(self, err):
-        self.window().restartOnError()
-        self.window().stacked_layout.setCurrentIndex(0)
-        self.error_label.setText(f"Error: {err}")
-        self.error_label.resize(self.MAX_CONTENT_WIDTH, self.error_label.height())
+    onServerError = partialmethod(onError, server_error=True)
 
 
 def main():
@@ -252,8 +256,7 @@ def main():
         if not cef.GetAppSetting("external_message_pump"):
             app.stopTimer()
 
-        if main_window.worker:
-            main_window.worker.terminate()
+        main_window.shutdownServer()
         del main_window  # Just to be safe, similarly to "del app"
         del app  # Must destroy app object before calling Shutdown
         cef.Shutdown()
