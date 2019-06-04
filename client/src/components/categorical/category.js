@@ -85,8 +85,8 @@ class Category extends React.Component {
   activateEditCategoryMode = () => {
     const { dispatch, metadataField } = this.props;
     dispatch({
-      type: "activate edit category mode",
-      metadataField
+      type: "activate category edit mode",
+      data: metadataField
     });
   };
 
@@ -97,7 +97,8 @@ class Category extends React.Component {
     dispatch({
       type: "category edited",
       metadataField,
-      editedCategoryText
+      editedCategoryText,
+      data: editedCategoryText
     });
   };
 
@@ -222,9 +223,44 @@ class Category extends React.Component {
               }}
             >
               {isUserAnno ? (
-                <Icon style={{ marginRight: 5 }} icon={"tag"} iconSize={16} />
+                <Icon style={{ marginRight: 5 }} icon="tag" iconSize={16} />
               ) : null}
-              {metadataField}
+              {annotations.isEditingCategoryName &&
+              annotations.categoryEditable === metadataField
+                ? null
+                : metadataField}
+              {isUserAnno &&
+              annotations.isEditingCategoryName &&
+              annotations.categoryEditable === metadataField ? (
+                <form
+                  style={{ display: "inline-block" }}
+                  onSubmit={e => {
+                    e.preventDefault();
+                    this.handleEditCategory();
+                  }}
+                >
+                  <InputGroup
+                    style={{ position: "relative", top: -1 }}
+                    autoFocus
+                    small
+                    onChange={e => {
+                      this.setState({ editedCategoryText: e.target.value });
+                    }}
+                    defaultValue={metadataField}
+                    rightElement={
+                      <Button
+                        minimal
+                        style={{ position: "relative", top: -1 }}
+                        type="button"
+                        icon="small-tick"
+                        data-testclass="submitEdit"
+                        data-testid="submitEdit"
+                        onClick={this.handleEditCategory}
+                      />
+                    }
+                  />
+                </form>
+              ) : null}
               {isExpanded ? (
                 <FaChevronDown
                   data-testclass="category-expand-is-expanded"

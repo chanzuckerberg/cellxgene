@@ -3,13 +3,18 @@ const Annotations = (
   state = {
     isEditingCategoryName: false,
     isEditingLabelName: false,
-    categoryEditable: { category: null },
+    categoryEditable: false,
     labelEditable: { category: null, label: null }
   },
   action
 ) => {
   switch (action.type) {
     /* CATEGORY */
+    case "new user annotation category created":
+      console.log("new user annotation category created", action);
+      return {
+        ...state
+      };
     case "duplicate annotation category":
       console.log("duplicate category as editable field", action);
       return {
@@ -19,25 +24,21 @@ const Annotations = (
       console.log("add new label to category", action);
       return {
         ...state
-        /* Bruce to persist new category name */
+        /* This needs UX before we implement */
       };
     case "activate category edit mode":
       console.log("activate category edit mode", action);
       return {
         ...state,
         isEditingCategoryName: true,
-        categoryEditable: {
-          category: action.metadataField
-        }
+        categoryEditable: action.data
       };
     case "category edited":
       console.log("activate category edit mode", action);
       return {
         ...state,
         isEditingCategoryName: true,
-        categoryEditable: {
-          category: null
-        }
+        categoryEditable: null
         /* Bruce to persist new category name */
       };
     case "delete category":

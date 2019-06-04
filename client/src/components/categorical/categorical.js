@@ -19,14 +19,21 @@ class Categories extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      createAnnoModeActive: false
+      createAnnoModeActive: false,
+      newCategoryText: ""
     };
   }
 
   handleCreateUserAnno = () => {
     const { dispatch } = this.props;
+    const { newCategoryText } = this.state;
     dispatch({
-      type: "new user annotation category created"
+      type: "new user annotation category created",
+      data: newCategoryText
+    });
+    this.setState({
+      createAnnoModeActive: false,
+      newCategoryText: ""
     });
   };
 
@@ -91,25 +98,38 @@ class Categories extends React.Component {
             </Button>
           </Tooltip>
         ) : (
-          <ControlGroup style={{ marginTop: 10 }}>
-            <InputGroup leftIcon="tag" />
-            <Button
-              data-testclass="createUserAnno"
-              data-testid="createUserAnno"
-              onClick={this.handleCreateUserAnno}
-              intent="primary"
-            >
-              Add Category
-            </Button>
-            <Button
-              data-testclass="cancelAnnoMode"
-              data-testid="cancelAnnoMode"
-              onClick={this.handleCancelAnnoMode}
-              intent="default"
-            >
-              Cancel
-            </Button>
-          </ControlGroup>
+          <form
+            onSubmit={e => {
+              e.preventDefault();
+              this.handleCreateUserAnno();
+            }}
+          >
+            <ControlGroup style={{ marginTop: 10 }}>
+              <InputGroup
+                autoFocus
+                onChange={e =>
+                  this.setState({ newCategoryText: e.target.value })
+                }
+                leftIcon="tag"
+              />
+              <Button
+                data-testclass="createUserAnno"
+                data-testid="createUserAnno"
+                onClick={this.handleCreateUserAnno}
+                intent="primary"
+              >
+                Add Category
+              </Button>
+              <Button
+                data-testclass="cancelAnnoMode"
+                data-testid="cancelAnnoMode"
+                onClick={this.handleCancelAnnoMode}
+                intent="default"
+              >
+                Cancel
+              </Button>
+            </ControlGroup>
+          </form>
         )}
       </div>
     );
