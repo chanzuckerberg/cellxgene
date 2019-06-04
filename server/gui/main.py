@@ -188,6 +188,8 @@ class LoadWidget(QFrame):
         self.window().load_emitter.signals.ready.connect(self.onDataReady)
         self.window().load_emitter.signals.engine_error.connect(self.onEngineError)
         self.window().load_emitter.signals.server_error.connect(self.onServerError)
+        # Error is generic error from emitter
+        self.window().load_emitter.signals.error.connect(self.onServerError)
         self.window().worker = Process(target=worker.run, daemon=True)
         self.window().worker.start()
         self.window().child_conn.close()
@@ -217,7 +219,6 @@ class LoadWidget(QFrame):
             self.window().stacked_layout.setCurrentIndex(1)
 
     def onServerError(self, err):
-        # TODO, any difference in data load versus server error?
         # Restart worker
         self.serverError = True
         # Report error and switch to load screen
@@ -265,7 +266,6 @@ def main():
 
         if main_window.worker:
             main_window.worker.terminate()
-        # TODO clean up threads when we switch threading model
         del main_window  # Just to be safe, similarly to "del app"
         del app  # Must destroy app object before calling Shutdown
         cef.Shutdown()
