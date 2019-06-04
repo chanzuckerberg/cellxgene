@@ -12,13 +12,14 @@ from server.gui.browser import CefWidget, CefApplication
 from server.gui.workers import Worker, SiteReadyWorker
 from server.gui.utils import WINDOWS, LINUX, MAC, FileLoadSignals, Emitter, WorkerSignals
 from server.utils.constants import MODES
+from server.utils.utils import find_available_port
 
 
 # Configuration
 # TODO remember this or calculate it?
 WIDTH = 1024
 HEIGHT = 768
-GUI_PORT = 8050
+GUI_PORT = find_available_port("localhost")
 
 class MainWindow(QMainWindow):
     def __init__(self):
