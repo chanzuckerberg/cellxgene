@@ -55,7 +55,7 @@ For more detail on these features and where we are going, see [our roadmap](ROAD
 ## risks of hosting cellxgene
 
 _cellxgene_ is built on standard web technologies, but is currently designed as a single-user desktop application.
-We've done this so we can prioritize the items on [our roadmap](ROADMAP.md).
+We've done this so we can prioritize the features on [our roadmap](ROADMAP.md).
 
 Some of our users have experimented with hosting _cellxgene_ either for their lab or for public use, but please note that the _cellxgene_ team does not officially support, troubleshoot, or maintain any web deployments at this time.
 
