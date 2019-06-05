@@ -287,7 +287,6 @@ class MenuBar extends React.Component {
     return (
       <div
         style={{
-          backgroundColor: "white",
           position: "fixed",
           right: 8,
           top: 8

@@ -60,7 +60,7 @@ class Graph extends React.Component {
   constructor(props) {
     super(props);
     this.count = 0;
-    this.graphPaddingTop = 49;
+    this.graphPaddingTop = 0;
     this.graphPaddingRight = globals.leftSidebarWidth;
     this.renderCache = {
       X: null,
@@ -577,7 +577,7 @@ class Graph extends React.Component {
           style={{
             zIndex: -9999,
             position: "fixed",
-            top: 49,
+            top: this.graphPaddingTop,
             right: 0
           }}
         >
