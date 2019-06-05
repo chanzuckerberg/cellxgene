@@ -26,6 +26,8 @@ if WINDOWS or LINUX:
 WIDTH = 1024
 HEIGHT = 768
 GUI_PORT = find_available_port("localhost")
+BROWSER_INDEX = 0
+LOAD_INDEX = 1
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -87,8 +89,7 @@ class MainWindow(QMainWindow):
             self.container = QWidget.createWindowContainer(
                 self.cef_widget.hidden_window, parent=self)
             self.stacked_layout.replaceWidget(self.cef_widget, self.container)
-        # CEF browser
-        self.stacked_layout.setCurrentIndex(1)
+        self.stacked_layout.setCurrentIndex(LOAD_INDEX)
 
     def setupServer(self):
         self.shutdownServer()
@@ -116,7 +117,7 @@ class MainWindow(QMainWindow):
         file_menu.addAction(load_action)
 
     def showLoad(self):
-        self.stacked_layout.setCurrentIndex(0)
+        self.stacked_layout.setCurrentIndex(LOAD_INDEX)
 
     def closeEvent(self, event):
         # Close browser (force=True) and free CEF reference
@@ -225,7 +226,7 @@ class LoadWidget(QFrame):
     def onServerReady(self):
         if not self.serverError:
             self.window().cef_widget.browser.Navigate(self.window().url)
-            self.window().stacked_layout.setCurrentIndex(1)
+            self.window().stacked_layout.setCurrentIndex(BROWSER_INDEX)
 
     def onError(self, err, server_error=False):
         # Restart worker
@@ -233,7 +234,7 @@ class LoadWidget(QFrame):
             self.serverError = True
             # Report error and switch to load screen
             self.window().shutdownServer()
-        self.window().stacked_layout.setCurrentIndex(0)
+        self.window().stacked_layout.setCurrentIndex(LOAD_INDEX)
         self.error_label.setText(f"Error: {err}")
         self.error_label.resize(self.MAX_CONTENT_WIDTH, self.error_label.height())
 
