@@ -4,7 +4,7 @@ import Helmet from "react-helmet";
 import { connect } from "react-redux";
 
 import Container from "./framework/container";
-import LeftSideBar from "./leftsidebar";
+import LeftSideBar from "./leftSidebar";
 import Legend from "./continuousLegend";
 import Graph from "./graph/graph";
 import MenuBar from "./menubar";
@@ -74,8 +74,8 @@ class App extends React.Component {
           </div>
         ) : null}
         <div>
-          {loading ? null : <MenuBar />}
           {loading ? null : <LeftSideBar />}
+          {loading ? null : <MenuBar />}
           <div
             style={{
               padding: 15,

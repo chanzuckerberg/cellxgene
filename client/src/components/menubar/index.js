@@ -6,19 +6,16 @@ import {
   AnchorButton,
   Tooltip,
   Popover,
-  Menu,
-  MenuItem,
   Position,
-  NumericInput,
-  Icon,
   RadioGroup,
   Radio
 } from "@blueprintjs/core";
-import Logo from "../framework/logo";
 import { World } from "../../util/stateManager";
-import * as globals from "../../globals";
 import actions from "../../actions";
 import CellSetButton from "./cellSetButtons";
+import InformationMenu from "./infoMenu";
+import UndoRedoReset from "./undoRedoReset";
+import Clip from "./clip";
 
 @connect(state => ({
   universe: state.universe,
@@ -26,7 +23,6 @@ import CellSetButton from "./cellSetButtons";
   loading: state.controls.loading,
   crossfilter: state.crossfilter,
   differential: state.differential,
-  datasetTitle: state.config?.displayNames?.dataset ?? "",
   resettingInterface: state.controls.resettingInterface,
   layoutChoice: state.layoutChoice,
   graphInteractionMode: state.controls.graphInteractionMode,
@@ -261,7 +257,6 @@ class MenuBar extends React.Component {
     const {
       dispatch,
       differential,
-      datasetTitle,
       crossfilter,
       resettingInterface,
       libraryVersions,
@@ -278,15 +273,6 @@ class MenuBar extends React.Component {
     const haveBothCellSets =
       !!differential.celllist1 && !!differential.celllist2;
 
-    const clipMin =
-      pendingClipPercentiles?.clipPercentileMin ?? clipPercentileMin;
-    const clipMax =
-      pendingClipPercentiles?.clipPercentileMax ?? clipPercentileMax;
-    const activeClipClass =
-      clipPercentileMin > 0 || clipPercentileMax < 100
-        ? " bp3-intent-warning"
-        : "";
-
     // constants used to create selection tool button
     let selectionTooltip;
     let selectionButtonClass;
@@ -301,57 +287,13 @@ class MenuBar extends React.Component {
     return (
       <div
         style={{
-          paddingTop: 10,
-          paddingLeft: 10,
-          paddingRight: 10,
           backgroundColor: "white",
-          display: "flex",
-          justifyContent: "space-between"
+          position: "fixed",
+          right: 8,
+          top: 8
         }}
       >
-        <div style={{ flexShrink: 0 }}>
-          <Logo size={30} />
-          <span
-            style={{
-              fontSize: 28,
-              position: "relative",
-              top: -6,
-              fontWeight: "bold",
-              marginLeft: 5,
-              color: globals.logoColor,
-              userSelect: "none"
-            }}
-          >
-            cell<span
-              style={{
-                position: "relative",
-                top: 1,
-                fontWeight: 300,
-                fontSize: 24
-              }}
-            >
-              ×
-            </span>gene
-          </span>
-          <span
-            data-testid="header"
-            style={{
-              fontSize: 14,
-              position: "relative",
-              marginLeft: 7,
-              top: -8
-            }}
-          >
-            {datasetTitle}
-          </span>
-        </div>
-        <div
-          style={{
-            marginRight: 10,
-            marginBottom: 10,
-            flexShrink: 0
-          }}
-        >
+        <div className="bp3-button-group" style={{ marginRight: 10 }}>
           <CellSetButton {...this.props} eitherCellSetOneOrTwo={1} />
           <CellSetButton {...this.props} eitherCellSetOneOrTwo={2} />
           {!differential.diffExp ? (
@@ -372,6 +314,7 @@ class MenuBar extends React.Component {
               </AnchorButton>
             </Tooltip>
           ) : null}
+
           {differential.diffExp ? (
             <Tooltip
               content="Remove differentially expressed gene list and clear cell selections"
@@ -388,311 +331,131 @@ class MenuBar extends React.Component {
             </Tooltip>
           ) : null}
         </div>
-        <div style={{ flexShrink: 0 }}>
-          <div>
-            <Tooltip
-              content="Show only metadata and cells which are currently selected"
-              position="left"
-            >
-              <AnchorButton
+        <Tooltip
+          content="Show only metadata and cells which are currently selected"
+          position="left"
+        >
+          <AnchorButton
+            type="button"
+            data-testid="subset-button"
+            disabled={
+              crossfilter &&
+              (crossfilter.countSelected() === 0 ||
+                crossfilter.countSelected() === crossfilter.size())
+            }
+            style={{
+              marginRight: 10
+            }}
+            onClick={() => {
+              dispatch(actions.regraph());
+              dispatch({ type: "increment graph render counter" });
+            }}
+          >
+            subset to current selection
+          </AnchorButton>
+        </Tooltip>
+        <div className="bp3-button-group">
+          <Tooltip content={selectionTooltip} position="left">
+            <Button
+              type="button"
+              data-testid="mode-lasso"
+              className={`bp3-button ${selectionButtonClass}`}
+              active={graphInteractionMode === "select"}
+              onClick={() => {
+                dispatch({
+                  type: "change graph interaction mode",
+                  data: "select"
+                });
+              }}
+              style={{
+                cursor: "pointer"
+              }}
+            />
+          </Tooltip>
+          <Tooltip content="Pan and zoom" position="left">
+            <Button
+              type="button"
+              data-testid="mode-pan-zoom"
+              className="bp3-button bp3-icon-zoom-in"
+              active={graphInteractionMode === "zoom"}
+              onClick={() => {
+                dispatch({
+                  type: "change graph interaction mode",
+                  data: "zoom"
+                });
+              }}
+              style={{
+                cursor: "pointer"
+              }}
+            />
+          </Tooltip>
+        </div>
+        <div
+          className="bp3-button-group"
+          style={{
+            marginLeft: 10
+          }}
+        >
+          <Popover
+            target={
+              <Button
                 type="button"
-                data-testid="subset-button"
-                disabled={
-                  crossfilter &&
-                  (crossfilter.countSelected() === 0 ||
-                    crossfilter.countSelected() === crossfilter.size())
-                }
-                style={{ marginRight: 10 }}
-                onClick={() => {
-                  dispatch(actions.regraph());
-                  dispatch({ type: "increment graph render counter" });
+                data-testid="layout-choice"
+                className="bp3-button bp3-icon-heatmap"
+                style={{
+                  cursor: "pointer"
+                }}
+              />
+            }
+            position={Position.BOTTOM_RIGHT}
+            content={
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "flex-start",
+                  alignItems: "flex-start",
+                  flexDirection: "column",
+                  padding: 10
                 }}
               >
-                subset to current selection
-              </AnchorButton>
-            </Tooltip>
-            <div className="bp3-button-group">
-              <Tooltip content={selectionTooltip} position="left">
-                <Button
-                  type="button"
-                  data-testid="mode-lasso"
-                  className={`bp3-button ${selectionButtonClass}`}
-                  active={graphInteractionMode === "select"}
-                  onClick={() => {
-                    dispatch({
-                      type: "change graph interaction mode",
-                      data: "select"
-                    });
-                  }}
-                  style={{
-                    cursor: "pointer"
-                  }}
-                />
-              </Tooltip>
-              <Tooltip content="Pan and zoom" position="left">
-                <Button
-                  type="button"
-                  data-testid="mode-pan-zoom"
-                  className="bp3-button bp3-icon-zoom-in"
-                  active={graphInteractionMode === "zoom"}
-                  onClick={() => {
-                    dispatch({
-                      type: "change graph interaction mode",
-                      data: "zoom"
-                    });
-                  }}
-                  style={{
-                    cursor: "pointer"
-                  }}
-                />
-              </Tooltip>
-            </div>
-            <div
-              className="bp3-button-group"
-              style={{
-                marginLeft: 10
-              }}
-            >
-              <Popover
-                target={
-                  <Button
-                    type="button"
-                    data-testid="layout-choice"
-                    className="bp3-button bp3-icon-heatmap"
-                    style={{
-                      cursor: "pointer"
-                    }}
-                  />
-                }
-                position={Position.BOTTOM_RIGHT}
-                content={
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "flex-start",
-                      alignItems: "flex-start",
-                      flexDirection: "column",
-                      padding: 10
-                    }}
-                  >
-                    <RadioGroup
-                      label="Layout Choice"
-                      onChange={this.handleLayoutChoiceChange}
-                      selectedValue={layoutChoice.current}
-                    >
-                      {layoutChoice.available.map(name => (
-                        <Radio label={name} value={name} key={name} />
-                      ))}
-                    </RadioGroup>
-                  </div>
-                }
-              />
-            </div>
-
-            <div
-              className="bp3-button-group"
-              style={{
-                marginLeft: 10
-              }}
-            >
-              <Popover
-                target={
-                  <Button
-                    type="button"
-                    data-testid="visualization-settings"
-                    className={`bp3-button bp3-icon-timeline-bar-chart ${activeClipClass}`}
-                    style={{
-                      cursor: "pointer"
-                    }}
-                  />
-                }
-                position={Position.BOTTOM_RIGHT}
-                onOpening={this.handleClipOpening}
-                onClosing={this.handleClipClosing}
-                content={
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "flex-start",
-                      alignItems: "flex-start",
-                      flexDirection: "column",
-                      padding: 10
-                    }}
-                  >
-                    <div>Clip all continuous values to percentile range</div>
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        paddingTop: 5,
-                        paddingBottom: 5
-                      }}
-                    >
-                      <NumericInput
-                        style={{ width: 50 }}
-                        data-testid="clip-min-input"
-                        onValueChange={this.handleClipPercentileMinValueChange}
-                        onKeyPress={this.handleClipOnKeyPress}
-                        value={clipMin}
-                        min={0}
-                        max={100}
-                        fill={false}
-                        minorStepSize={null}
-                        rightElement={
-                          <div style={{ padding: "4px 2px" }}>
-                            <Icon
-                              icon="percentage"
-                              intent="primary"
-                              iconSize={14}
-                            />
-                          </div>
-                        }
-                      />
-                      <span style={{ marginRight: 5, marginLeft: 5 }}> - </span>
-                      <NumericInput
-                        style={{ width: 50 }}
-                        data-testid="clip-max-input"
-                        onValueChange={this.handleClipPercentileMaxValueChange}
-                        onKeyPress={this.handleClipOnKeyPress}
-                        value={clipMax}
-                        min={0}
-                        max={100}
-                        fill={false}
-                        minorStepSize={null}
-                        rightElement={
-                          <div style={{ padding: "4px 2px" }}>
-                            <Icon
-                              icon="percentage"
-                              intent="primary"
-                              iconSize={14}
-                            />
-                          </div>
-                        }
-                      />
-                      <Button
-                        type="button"
-                        data-testid="clip-commit"
-                        className="bp3-button"
-                        disabled={this.isClipDisabled()}
-                        style={{
-                          cursor: "pointer",
-                          marginRight: 5,
-                          marginLeft: 5
-                        }}
-                        onClick={this.handleClipCommit}
-                      >
-                        Clip
-                      </Button>
-                    </div>
-                  </div>
-                }
-              />
-            </div>
-            <div
-              className="bp3-button-group"
-              style={{
-                marginLeft: 10
-              }}
-            >
-              <Tooltip content="Undo" position="left">
-                <AnchorButton
-                  type="button"
-                  className="bp3-button bp3-icon-undo"
-                  disabled={undoDisabled}
-                  onClick={() => {
-                    dispatch({ type: "@@undoable/undo" });
-                  }}
-                  style={{
-                    cursor: "pointer"
-                  }}
-                />
-              </Tooltip>
-              <Tooltip content="Redo" position="left">
-                <AnchorButton
-                  type="button"
-                  className="bp3-button bp3-icon-redo"
-                  disabled={redoDisabled}
-                  onClick={() => {
-                    dispatch({ type: "@@undoable/redo" });
-                  }}
-                  style={{
-                    cursor: "pointer"
-                  }}
-                />
-              </Tooltip>
-            </div>
-            <Tooltip
-              content="Reset cellxgene, clearing all selections"
-              position="left"
-            >
-              <AnchorButton
-                disabled={this.isResetDisabled()}
-                style={{ marginLeft: 10 }}
-                type="button"
-                loading={resettingInterface}
-                intent="none"
-                icon="refresh"
-                onClick={this.resetInterface}
-                data-testid="reset"
-                data-testclass={`resetting-${resettingInterface}`}
-              >
-                reset
-              </AnchorButton>
-            </Tooltip>
-
-            <div style={{ marginLeft: 10 }} className="bp3-button-group">
-              <Popover
-                content={
-                  <Menu>
-                    <MenuItem
-                      href="https://chanzuckerberg.github.io/cellxgene/faq.html"
-                      target="_blank"
-                      icon="help"
-                      text="FAQ"
-                    />
-                    <MenuItem
-                      href="https://join-cellxgene-users.herokuapp.com/"
-                      target="_blank"
-                      icon="chat"
-                      text="Chat"
-                    />
-                    <MenuItem
-                      href="https://chanzuckerberg.github.io/cellxgene/"
-                      target="_blank"
-                      icon="book"
-                      text="Docs"
-                    />
-                    <MenuItem
-                      href="https://github.com/chanzuckerberg/cellxgene"
-                      target="_blank"
-                      icon="git-branch"
-                      text="Github"
-                    />
-                    <MenuItem
-                      target="_blank"
-                      text={`cellxgene v${
-                        libraryVersions && libraryVersions.cellxgene
-                          ? libraryVersions.cellxgene
-                          : null
-                      }`}
-                    />
-                    <MenuItem text="MIT License" />
-                  </Menu>
-                }
-                position={Position.BOTTOM_RIGHT}
-              >
-                <Button
-                  type="button"
-                  className="bp3-button bp3-icon-info-sign"
-                  style={{
-                    cursor: "pointer"
-                  }}
-                />
-              </Popover>
-            </div>
-          </div>
+                <RadioGroup
+                  label="Layout Choice"
+                  onChange={this.handleLayoutChoiceChange}
+                  selectedValue={layoutChoice.current}
+                >
+                  {layoutChoice.available.map(name => (
+                    <Radio label={name} value={name} key={name} />
+                  ))}
+                </RadioGroup>
+              </div>
+            }
+          />
         </div>
+        <Clip
+          pendingClipPercentiles={pendingClipPercentiles}
+          clipPercentileMin={clipPercentileMin}
+          clipPercentileMax={clipPercentileMax}
+          handleClipOpening={this.handleClipOpening}
+          handleClipClosing={this.handleClipClosing}
+          handleClipCommit={this.handleClipCommit}
+          isClipDisabled={this.isClipDisabled}
+          handleClipOnKeyPress={this.handleClipOnKeyPress}
+          handleClipPercentileMaxValueChange={
+            this.handleClipPercentileMaxValueChange
+          }
+          handleClipPercentileMinValueChange={
+            this.handleClipPercentileMinValueChange
+          }
+        />
+        <UndoRedoReset
+          dispatch={dispatch}
+          isResetDisabled={this.isResetDisabled}
+          resetInterface={this.resetInterface}
+          resettingInterface={resettingInterface}
+          undoDisabled={undoDisabled}
+          redoDisabled={redoDisabled}
+        />
+        <InformationMenu libraryVersions={libraryVersions} />
       </div>
     );
   }

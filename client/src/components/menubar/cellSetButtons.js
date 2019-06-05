@@ -41,7 +41,6 @@ class CellSetButton extends React.Component {
         position="top"
       >
         <AnchorButton
-          style={{ marginRight: 10 }}
           type="button"
           disabled={differential.diffExp}
           onClick={this.set.bind(this)}

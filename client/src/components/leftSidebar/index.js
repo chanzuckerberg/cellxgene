@@ -1,11 +1,12 @@
 // jshint esversion: 6
 import React from "react";
 import { connect } from "react-redux";
-import Categorical from "./categorical/categorical";
-import Continuous from "./continuous/continuous";
-import GeneExpression from "./geneExpression";
-import * as globals from "../globals";
-import DynamicScatterplot from "./scatterplot/scatterplot";
+import Categorical from "../categorical/categorical";
+import Continuous from "../continuous/continuous";
+import GeneExpression from "../geneExpression";
+import * as globals from "../../globals";
+import DynamicScatterplot from "../scatterplot/scatterplot";
+import TopLeftLogoAndTitle from "./topLeftLogoAndTitle";
 
 @connect(state => ({
   responsive: state.responsive,
@@ -16,7 +17,6 @@ class LeftSideBar extends React.Component {
   render() {
     const {
       responsive,
-      datasetTitle,
       scatterplotXXaccessor,
       scatterplotYYaccessor
     } = this.props;
@@ -25,7 +25,8 @@ class LeftSideBar extends React.Component {
     this magic number should be made less fragile,
     if cellxgene logo or tabs change, this must as well
     */
-    const metadataSectionPadding = 51;
+    const metadataSectionPadding = 0;
+    const logoRelatedPadding = 50;
 
     return (
       <div
@@ -36,9 +37,12 @@ class LeftSideBar extends React.Component {
           boxShadow: "-3px 8px 6px 2px rgba(153,153,153,0.4)"
         }}
       >
+        <TopLeftLogoAndTitle />
+
         <div
           style={{
             height: responsive.height - metadataSectionPadding,
+            paddingTop: logoRelatedPadding,
             width: globals.leftSidebarWidth,
             overflowY: "auto",
             overflowX: "hidden"
