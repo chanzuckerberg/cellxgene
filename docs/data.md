@@ -4,26 +4,51 @@ title: data
 description: Data
 ---
 
-
-# data vignette: how to use cellxgene prepare
+# Data vignette: how to use cellxgene prepare
 
 #### coming soon!
 
-# example datasets to use with cellxgene
+# Example datasets to use with cellxgene
 
-### Examination of single cells from primary human pancreas tissue
-cells: 2,544  
-tissue(s): pancreas  
-data: [Human Cell Atlas Data Portal](https://prod.data.humancellatlas.org/explore/projects?filter=%5B%7B%22facetName%22%3A%22organ%22%2C%22terms%22%3A%5B%22pancreas%22%5D%7D%2C%7B%22facetName%22%3A%22project%22%2C%22terms%22%3A%5B%22Single+cell+transcriptome+analysis+of+human+pancreas%22%5D%7D%5D)  
-paper: [Enge, Martin, et al.](https://www.cell.com/cell/fulltext/S0092-8674(17)31053-X?_returnURL=https%3A%2F%2Flinkinghub.elsevier.com%2Fretrieve%2Fpii%2FS009286741731053X%3Fshowall%3Dtrue)
+Each dataset was preprocessed for use with cellxgene, following the original QC and preprocessing methods as closely as possible.  
+All datasets include several embeddings and labels from multiple clustering methods (see linked notebooks).
 
-### Tabula Muris
-cells: 53,800  
-tissue(s): muscle, pancreas, bone, large intestine, heart, brain, fat, mammary gland, tongue , diaphragm, bladder, spleen, thymus, lung , skin, liver, trachea, kidney  
-data: [Tabula Muris Data](https://github.com/czbiohub/tabula-muris-vignettes/tree/master/data)  
-paper: [Tabula Muris Consortium](https://www.nature.com/articles/s41586-018-0590-4)  
+**To download and use these datasets, run:**  
+`curl -O [downloadURL]`  
+`unzip [filename.zip]`  
+`cellxgene launch [filename.h5ad] --open`
 
-### Transcriptional profiling of 1.3 million brain cells
-cells: 1,330,000  
-tissue(s): brain  
-data: [10x Genomics](https://community.10xgenomics.com/t5/10x-Blog/Our-1-3-million-single-cell-dataset-is-ready-to-download/ba-p/276)  
+### Peripheral blood mononuclear cells
+
+Healthy human PBMCs (10X).
+
+- Source: [10X genomics](https://support.10xgenomics.com/single-cell-gene-expression/datasets/1.1.0/pbmc3k)
+- Cells: 2,638
+- File size: 19MB
+- [Raw data](http://cf.10xgenomics.com/samples/cell-exp/1.1.0/pbmc3k/pbmc3k_filtered_gene_bc_matrices.tar.gz)
+- [Processing](https://github.com/chanzuckerberg/cellxgene-vignettes/blob/master/dataset-processing/pbmc3k-processing.ipynb)
+- Download URL: ``
+
+### Tabula muris
+
+20 organs and tissues from healthy mice (Smart-Seq2).  
+Rich metadata and annotations.
+
+- Source: [CZBiohub](https://www.biorxiv.org/content/10.1101/237446v2)
+- Cells: 45,423
+- File size: 174MB
+- [Raw data](https://figshare.com/projects/Tabula_Muris_Transcriptomic_characterization_of_20_organs_and_tissues_from_Mus_musculus_at_single_cell_resolution/27733)
+- [Processing](https://github.com/chanzuckerberg/cellxgene-vignettes/blob/master/dataset-processing/tabula-muris-processing.ipynb)
+- Download URL: ``
+
+### Tabula muris senis
+
+22 organs and tissues from healthy mice at ages 3mo, 18mo, 21mo, and 24mo (Smart-Seq2).  
+Rich metadata and annotations.
+
+- Source: [CZBiohub]()
+- Cells: 81,478
+- File size: 3.9GB
+- [Raw data]()
+- [Processing]()
+- Download URL: ``
