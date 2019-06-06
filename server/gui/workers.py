@@ -42,7 +42,6 @@ class Worker(EmittingProcess):
             server = Server()
             server.create_app()
         except Exception as e:
-            traceback.print_exc()
             self.emit("server_error", str(e))
             self.emit("finished")
             return
@@ -50,7 +49,6 @@ class Worker(EmittingProcess):
         try:
             args = {
                 "layout": self.layout,
-                "diffexp": "ttest",
                 "max_category_items": 100,
                 "diffexp_lfc_cutoff": 0.01,
                 "obs_names": None,
