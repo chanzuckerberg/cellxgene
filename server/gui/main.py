@@ -1,4 +1,5 @@
 # flake8: noqa F403, F405
+from multiprocessing import Pipe, Process
 from os.path import splitext, basename
 import sys
 import threading
@@ -7,33 +8,48 @@ from cefpython3 import cefpython as cef
 from PySide2.QtCore import *
 from PySide2.QtWidgets import *
 
-from server.app.app import Server
 from server.gui.browser import CefWidget, CefApplication
-from server.gui.workers import DataLoadWorker, ServerRunWorker
-from server.gui.utils import WINDOWS, LINUX, MAC, FileLoadSignals
+from server.gui.workers import Worker, SiteReadyWorker
+from server.gui.utils import WINDOWS, LINUX, MAC, FileLoadSignals, Emitter, WorkerSignals
 from server.utils.constants import MODES
+from server.utils.utils import find_available_port
 
 
 # Configuration
 # TODO remember this or calculate it?
 WIDTH = 1024
 HEIGHT = 768
+GUI_PORT = find_available_port("localhost")
 
-# noinspection PyUnresolvedReferences
 class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__(None)
         self.cef_widget = None
         self.data_widget = None
-        self.server = Server()
-        self.server.create_app()
-        self.runServer()
+        self.parent_conn, self.child_conn = Pipe()
+        self.load_emitter = Emitter(self.parent_conn, WorkerSignals)
+        self.load_emitter.signals.error.connect(self.restartOnError)
+        self.emitter_thread = threading.Thread(target=self.load_emitter.run, daemon=True)
+        self.emitter_thread.start()
+        self.worker = None
+        self.url = f"http://localhost:{GUI_PORT}/"
         self.setWindowTitle("cellxgene")
 
         # Strong focus - accepts focus by tab & click
         self.setFocusPolicy(Qt.StrongFocus)
         self.setupLayout()
-        self.setupMenu()
+        # self.setupMenu()
+
+    def restartOnError(self):
+        if self.worker:
+            self.worker.terminate()
+        self.parent_conn.close()
+        # close emitter on error/finished
+        self.parent_conn, self.child_conn = Pipe()
+        self.load_emitter = Emitter(self.parent_conn, WorkerSignals)
+        self.emitter_thread = threading.Thread(target=self.load_emitter.run, daemon=True)
+        self.emitter_thread.start()
+        # send to load with error message?
 
     def setupLayout(self):
         self.resize(WIDTH, HEIGHT)
@@ -67,9 +83,10 @@ class MainWindow(QMainWindow):
             # cef widget in the layout with the container.
             self.container = QWidget.createWindowContainer(
                 self.cef_widget.hidden_window, parent=self)
-            stacked_layout.addWidget(self.container, 1, 0)
+            self.stacked_layout.addWidget(self.container, 1, 0)
 
     def setupMenu(self):
+        # TODO add communication to subprocess on reload
         main_menu = self.menuBar()
         file_menu = main_menu.addMenu('File')
         load_action = QAction("Load file...", self)
@@ -86,11 +103,6 @@ class MainWindow(QMainWindow):
         if self.cef_widget.browser:
             self.cef_widget.browser.CloseBrowser(True)
             self.clearBrowserReferences()
-
-    def runServer(self):
-        worker = ServerRunWorker(self.server.app, host="127.0.0.1", port=8000)
-        self.httpd = threading.Thread(target=worker.run, daemon=True)
-        self.httpd.start()
 
     def clearBrowserReferences(self):
         # Clear browser references that you keep anywhere in your
@@ -117,6 +129,7 @@ class LoadWidget(QFrame):
         message_layout = QHBoxLayout()
         message_layout.setContentsMargins(0, 0, 0, 0)
 
+        self.serverError = False
         self.title = ""
         self.label = QLabel("cellxgene")
         logo_layout.addWidget(self.label)
@@ -131,7 +144,7 @@ class LoadWidget(QFrame):
         self.embeddings = QComboBox(self)
         self.embeddings.currentIndexChanged.connect(self.updateEmbedding)
         self.embeddings.addItems(MODES)
-        self.embedding_selection = MODES[0]
+        self.embedding_selection = [MODES[0]]
         load_layout.addWidget(self.embeddings, 1, 0)
 
         self.load = QPushButton("Open...")
@@ -155,14 +168,19 @@ class LoadWidget(QFrame):
         self.signals.selectedFile.connect(self.createScanpyEngine)
 
     def updateEmbedding(self, idx):
-        self.embedding_selection = MODES[idx]
+        self.embedding_selection = [MODES[idx]]
 
     def createScanpyEngine(self, file_name):
-        worker = DataLoadWorker(file_name, self.embedding_selection)
-        worker.signals.result.connect(self.onDataSuccess)
-        worker.signals.error.connect(self.onDataError)
-        self.load_worker = threading.Thread(target=worker.run, daemon=True)
-        self.load_worker.start()
+        worker = Worker(self.window().parent_conn, self.window().child_conn, file_name, self.title, host="127.0.0.1", port=GUI_PORT,
+                        layout=self.embedding_selection)
+        self.window().load_emitter.signals.ready.connect(self.onDataReady)
+        self.window().load_emitter.signals.engine_error.connect(self.onEngineError)
+        self.window().load_emitter.signals.server_error.connect(self.onServerError)
+        # Error is generic error from emitter
+        self.window().load_emitter.signals.error.connect(self.onServerError)
+        self.window().worker = Process(target=worker.run, daemon=True)
+        self.window().worker.start()
+        self.window().child_conn.close()
 
     def onLoad(self):
         options = QFileDialog.Options()
@@ -172,20 +190,42 @@ class LoadWidget(QFrame):
         self.title = splitext(basename(file_name))[0]
         if file_name:
             self.signals.selectedFile.emit(file_name)
+            # Reset error on reload
+            self.serverError = False
 
+    def onDataReady(self):
+        self.site_ready_worker = SiteReadyWorker(self.window().url)
+        self.site_ready_worker.signals.ready.connect(self.onServerReady)
+        self.site_ready_worker.signals.error.connect(self.onDataError)
 
-    def onDataSuccess(self, data):
-        self.window().server.attach_data(data, self.title)
-        self.navigateToLocation()
-        # Reveal browser
-        self.window().stacked_layout.setCurrentIndex(1)
+        srw_thread = threading.Thread(target=self.site_ready_worker.run, daemon=True)
+        srw_thread.start()
 
-    def onDataError(self, err):
+    def onServerReady(self):
+        if not self.serverError:
+            self.window().cef_widget.browser.Navigate(self.window().url)
+            self.window().stacked_layout.setCurrentIndex(1)
+
+    def onServerError(self, err):
+        # Restart worker
+        self.serverError = True
+        # Report error and switch to load screen
+        self.window().restartOnError()
+        self.window().stacked_layout.setCurrentIndex(0)
         self.error_label.setText(f"Error: {err}")
         self.error_label.resize(self.MAX_CONTENT_WIDTH, self.error_label.height())
 
-    def navigateToLocation(self, location="http://localhost:8000/"):
-        self.window().cef_widget.browser.Navigate(location)
+    def onEngineError(self, err):
+        self.window().restartOnError()
+        self.window().stacked_layout.setCurrentIndex(0)
+        self.error_label.setText(f"Error: {err}")
+        self.error_label.resize(self.MAX_CONTENT_WIDTH, self.error_label.height())
+
+    def onDataError(self, err):
+        self.window().restartOnError()
+        self.window().stacked_layout.setCurrentIndex(0)
+        self.error_label.setText(f"Error: {err}")
+        self.error_label.resize(self.MAX_CONTENT_WIDTH, self.error_label.height())
 
 
 def main():
@@ -203,16 +243,21 @@ def main():
     main_window.show()
     main_window.activateWindow()
     main_window.raise_()
-    app.exec_()
+    try:
+        app.exec_()
+    except Exception as e:
+        raise
+    finally:
+        # Clean up on close
+        if not cef.GetAppSetting("external_message_pump"):
+            app.stopTimer()
 
-    # Clean up on close
-    if not cef.GetAppSetting("external_message_pump"):
-        app.stopTimer()
-    # TODO clean up threads when we switch threading model
-    del main_window  # Just to be safe, similarly to "del app"
-    del app  # Must destroy app object before calling Shutdown
-    cef.Shutdown()
-    sys.exit(0)
+        if main_window.worker:
+            main_window.worker.terminate()
+        del main_window  # Just to be safe, similarly to "del app"
+        del app  # Must destroy app object before calling Shutdown
+        cef.Shutdown()
+        sys.exit(0)
 
 
 if __name__ == '__main__':
