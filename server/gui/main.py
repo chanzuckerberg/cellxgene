@@ -42,7 +42,7 @@ class MainWindow(QMainWindow):
 
     def restartOnError(self):
         if self.worker:
-            self.terminateWorker()
+            self.worker.terminate()
         self.parent_conn.close()
         # close emitter on error/finished
         self.parent_conn, self.child_conn = Pipe()
@@ -50,18 +50,6 @@ class MainWindow(QMainWindow):
         self.emitter_thread = threading.Thread(target=self.load_emitter.run, daemon=True)
         self.emitter_thread.start()
         # send to load with error message?
-
-    def terminateWorker(self):
-        if not self.worker:
-            return
-        try:
-            self.worker.close()
-        except AttributeError:
-            # python 3.6 does not have close
-            self.worker.terminate()
-        except Exception as e:
-            # TODO log error
-            self.worker.terminate()
 
     def setupLayout(self):
         self.resize(WIDTH, HEIGHT)
