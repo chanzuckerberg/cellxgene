@@ -59,7 +59,8 @@ class CategoryValue extends React.Component {
       colorScale,
       i,
       schema,
-      world
+      world,
+      centroidLabel
     } = this.props;
 
     if (!categoricalSelection) return null;
@@ -95,7 +96,11 @@ class CategoryValue extends React.Component {
         style={{
           display: "flex",
           alignItems: "baseline",
-          justifyContent: "space-between"
+          justifyContent: "space-between",
+          borderRadius: "3px",
+          background: centroidLabel.categoryIndex === categoryIndex &&
+                           centroidLabel.metadataField === metadataField
+                           ? "rgba(115, 134, 148, 0.3)":"inherit"
         }}
         data-testclass="categorical-row"
         onMouseEnter={this.handleMouseEnter.bind(this)}
