@@ -56,6 +56,7 @@ class MainWindow(QMainWindow):
     def setupLayout(self):
         self.resize(WIDTH, HEIGHT)
         self.cef_widget = CefWidget(self)
+        self.cef_widget.setSizePolicy(QSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding))
         self.data_widget = LoadWidget(self)
         self.stacked_layout = QStackedLayout()
         self.stacked_layout.addWidget(self.cef_widget)
