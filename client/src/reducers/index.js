@@ -16,6 +16,7 @@ import layoutChoice from "./layoutChoice";
 import responsive from "./responsive";
 import controls from "./controls";
 import resetCache from "./resetCache";
+import centroidLabel from "./centroidLabel";
 
 import undoableConfig from "./undoableConfig";
 
@@ -33,7 +34,8 @@ const Reducer = undoable(
         ["controls", controls],
         ["differential", differential],
         ["responsive", responsive],
-        ["resetCache", resetCache]
+        ["resetCache", resetCache],
+        ["centroidLabel", centroidLabel],
     ]),
     [
         "world",

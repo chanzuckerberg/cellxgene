@@ -10,7 +10,8 @@ import * as globals from "../../globals";
   colorScale: state.colors.scale,
   colorAccessor: state.colors.colorAccessor,
   schema: state.world?.schema,
-  world: state.world
+  world: state.world,
+  centroidLabel: state.centroidLabel,
 }))
 class CategoryValue extends React.Component {
   toggleOff() {
@@ -29,6 +30,24 @@ class CategoryValue extends React.Component {
       metadataField,
       categoryIndex
     });
+  }
+
+  handleMouseEnter() {
+    const { dispatch, metadataField, categoryIndex } = this.props;
+    dispatch({
+      type: "mouse enter",
+      metadataField,
+      categoryIndex
+    })
+  }
+
+  handleMouseExit() {
+    const { dispatch, metadataField, categoryIndex } = this.props;
+        dispatch({
+      type: "mouse exit",
+      metadataField,
+      categoryIndex
+    })
   }
 
   render() {
@@ -79,6 +98,8 @@ class CategoryValue extends React.Component {
           justifyContent: "space-between"
         }}
         data-testclass="categorical-row"
+        onMouseEnter={this.handleMouseEnter.bind(this)}
+        onMouseLeave={this.handleMouseExit.bind(this)}
       >
         <div
           style={{
