@@ -34,8 +34,8 @@ const Reducer = undoable(
         ["controls", controls],
         ["differential", differential],
         ["responsive", responsive],
-        ["resetCache", resetCache],
         ["centroidLabel", centroidLabel],
+        ["resetCache", resetCache],
     ]),
     [
         "world",
