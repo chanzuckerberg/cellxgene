@@ -6,12 +6,11 @@ const initialState = {
 const CentroidLabel = (
   state = initialState,
   action,
-  nextSharedState,
-  prevSharedState
-) => {
+  sharedNextState
+  ) => {
   const { metadataField, categoryIndex } = action;
   switch (action.type) {
-    case "mouse enter":
+    case "category value mouse hover start":
       console.log(action);
       
       return {
@@ -20,14 +19,15 @@ const CentroidLabel = (
         categoryIndex
       }
 
-    case "mouse exit":
+    case "category value mouse hover end":
       console.log(action);
       
         if (metadataField === state.metadataField &&
-          categoryIndex === state. categoryIndex) {
+          categoryIndex === state.categoryIndex) {
           return initialState
         }
         return state;
+        
       default:
       return state
   }
