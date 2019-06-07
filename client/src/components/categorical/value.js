@@ -44,7 +44,7 @@ class CategoryValue extends React.Component {
   handleMouseExit() {
     const { dispatch, metadataField, categoryIndex } = this.props;
     dispatch({
-      type: "category value mouse hover start",
+      type: "category value mouse hover end",
       metadataField,
       categoryIndex
     })
