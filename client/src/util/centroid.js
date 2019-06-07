@@ -19,10 +19,10 @@ export default function calcCentroid(world, annoName, annoValue, layoutDimNames)
   }, { x: 0, y: 0, count: 0 });
   
 
-  const centroid = { x: 0, y: 0 };
+  const centroid = [0, 0];
 
-  centroid.x = centroidData.x / centroidData.count;
-  centroid.y = centroidData.y / centroidData.count;
+  centroid[0] = centroidData.x / centroidData.count;
+  centroid[1] = centroidData.y / centroidData.count;
 
   return centroid;
 

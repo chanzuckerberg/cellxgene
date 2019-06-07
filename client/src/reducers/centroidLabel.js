@@ -2,7 +2,8 @@ import calcCentroid from "../util/centroid";
 
 const initialState = {
   metadataField: 0,
-  categoryField: 0
+  categoryField: 0,
+  centroidXY: [-1, -1]
 };
 
 const CentroidLabel = (
@@ -19,13 +20,12 @@ const CentroidLabel = (
   switch (action.type) {
     case "category value mouse hover start":
       console.log(action);
-      
-      console.log(calcCentroid(world, metadataField, categoryField, layoutChoice.currentDimNames))
 
       return {
         ...state,
         metadataField,
-        categoryIndex
+        categoryIndex,
+        centroidXY: calcCentroid(world, metadataField, categoryField, layoutChoice.currentDimNames)
       }
 
     case "category value mouse hover end":
