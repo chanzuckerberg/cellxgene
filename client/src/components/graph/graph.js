@@ -8,6 +8,8 @@ import memoize from "memoize-one";
 
 import * as globals from "../../globals";
 import setupSVGandBrushElements from "./setupSVGandBrush";
+import setupCentroidSVG from "./setupCentroidSVG";
+import actions from "../../actions";
 import _camera from "../../util/camera";
 import _drawPoints from "./drawPointsRegl";
 import scaleLinear from "../../util/scaleLinear";
@@ -22,6 +24,7 @@ import scaleLinear from "../../util/scaleLinear";
   selectionTool: state.graphSelection.tool,
   currentSelection: state.graphSelection.selection,
   layoutChoice: state.layoutChoice,
+  centroidLabel: state.centroidLabel,
   graphInteractionMode: state.controls.graphInteractionMode
 }))
 class Graph extends React.Component {
@@ -71,6 +74,7 @@ class Graph extends React.Component {
     };
     this.state = {
       toolSVG: null,
+      centroidSVG: null,
       tool: null,
       container: null
     };
@@ -139,9 +143,10 @@ class Graph extends React.Component {
       selectionTool,
       currentSelection,
       layoutChoice,
-      graphInteractionMode
+      graphInteractionMode,
+      centroidLabel
     } = this.props;
-    const { reglRender, mode, regl, toolSVG } = this.state;
+    const { reglRender, mode, regl, toolSVG, centroidSVG } = this.state;
     let stateChanges = {};
 
     if (reglRender) {
@@ -216,13 +221,7 @@ class Graph extends React.Component {
       );
     }
 
-    if (
-      prevProps.responsive.height !== responsive.height ||
-      prevProps.responsive.width !== responsive.width ||
-      /* first time */
-      (responsive.height && responsive.width && !toolSVG) ||
-      selectionTool !== prevProps.selectionTool
-    ) {
+    const createToolSVG = () => {
       /* clear out whatever was on the div, even if nothing, but usually the brushes etc */
       d3.select("#graphAttachPoint")
         .selectAll("#tool")
@@ -250,8 +249,45 @@ class Graph extends React.Component {
         responsive,
         this.graphPaddingRight
       );
-      
+
       stateChanges = { ...stateChanges, toolSVG: newToolSVG, tool, container };
+    };
+
+    const createCentroidSVG = () => {
+      d3.select("#graphAttachPoint")
+        .selectAll("#centroid ")
+        .remove();
+
+      const centroidScreen = this.mapPointToScreen(centroidLabel.centroidXY);
+
+      const newCentroidSVG = setupCentroidSVG(
+        responsive,
+        this.graphPaddingRight,
+        centroidScreen
+      );
+
+      stateChanges = { ...stateChanges, centroidSVG: newCentroidSVG };
+    };
+
+    if (
+      prevProps.responsive.height !== responsive.height ||
+      prevProps.responsive.width !== responsive.width
+    ) {
+      // If the window size has changed we want to recreate all SVGs
+      createToolSVG();
+      createCentroidSVG();
+    } else if (
+      (responsive.height && responsive.width && !toolSVG) ||
+      selectionTool !== prevProps.selectionTool
+    ) {
+      // first time or change of selection tool
+      createToolSVG();
+    } else if (
+      centroidLabel !== prevProps.centroidLabel ||
+      (responsive.height && responsive.width && !centroidSVG)
+    ) {
+      // First time for centroid or label change
+      createCentroidSVG();
     }
 
     /*
