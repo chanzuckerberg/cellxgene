@@ -4,28 +4,36 @@
 
 */
 
-export default function calcCentroid(world, annoName, annoValue, layoutDimNames) {
+export default function calcCentroid(
+  world,
+  annoName,
+  annoValue,
+  layoutDimNames
+) {
   const annoArray = world.obsAnnotations.col(annoName).asArray();
   const layoutXArray = world.obsLayout.col(layoutDimNames[0]).asArray();
   const layoutYArray = world.obsLayout.col(layoutDimNames[1]).asArray();
 
-  const centroidData = annoArray.reduce((data, val, i) => {
-    if(val === annoValue) {
-      data.x += layoutXArray[i];
-      data.y += layoutYArray[i];
-      data.count += 1;
-    }
-    return data;
-  }, { x: 0, y: 0, count: 0 });
-  
+  const centroidData = annoArray.reduce(
+    (data, val, i) => {
+      if (val === annoValue) {
+        data.x += layoutXArray[i];
+        data.y += layoutYArray[i];
+        data.count += 1;
+      }
+      return data;
+    },
+    { x: 0, y: 0, count: 0 }
+  );
 
-  const centroid = [0, 0];
+  console.log(centroidData.count);
+
+  const centroid = [0, 0, centroidData.count];
 
   centroid[0] = centroidData.x / centroidData.count;
   centroid[1] = centroidData.y / centroidData.count;
 
   return centroid;
-
 
   // Optimization from bruce, cut down on object creation/deletion
   // const {x,y,count } = centroidData;
@@ -40,8 +48,6 @@ export default function calcCentroid(world, annoName, annoValue, layoutDimNames)
   //   if (...) {
   //     x += layoutXarray[i];
   //   }
-
-
 
   // }
 }
