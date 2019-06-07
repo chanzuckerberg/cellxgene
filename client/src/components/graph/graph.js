@@ -70,7 +70,7 @@ class Graph extends React.Component {
       sizes: null
     };
     this.state = {
-      svg: null,
+      toolSVG: null,
       tool: null,
       container: null
     };
@@ -141,7 +141,7 @@ class Graph extends React.Component {
       layoutChoice,
       graphInteractionMode
     } = this.props;
-    const { reglRender, regl, svg } = this.state;
+    const { reglRender, mode, regl, toolSVG } = this.state;
     let stateChanges = {};
 
     if (reglRender) {
@@ -220,12 +220,12 @@ class Graph extends React.Component {
       prevProps.responsive.height !== responsive.height ||
       prevProps.responsive.width !== responsive.width ||
       /* first time */
-      (responsive.height && responsive.width && !svg) ||
+      (responsive.height && responsive.width && !toolSVG) ||
       selectionTool !== prevProps.selectionTool
     ) {
       /* clear out whatever was on the div, even if nothing, but usually the brushes etc */
       d3.select("#graphAttachPoint")
-        .selectAll("svg")
+        .selectAll("#tool")
         .remove();
 
       let handleStart;
@@ -241,7 +241,7 @@ class Graph extends React.Component {
         handleEnd = this.handleLassoEnd.bind(this);
         handleCancel = this.handleLassoCancel.bind(this);
       }
-      const { svg: newSvg, tool, container } = setupSVGandBrushElements(
+      const { svg: newToolSVG, tool, container } = setupSVGandBrushElements(
         selectionTool,
         handleStart,
         handleDrag,
@@ -250,7 +250,8 @@ class Graph extends React.Component {
         responsive,
         this.graphPaddingRight
       );
-      stateChanges = { ...stateChanges, svg: newSvg, tool, container };
+      
+      stateChanges = { ...stateChanges, toolSVG: newToolSVG, tool, container };
     }
 
     /*
@@ -260,7 +261,7 @@ class Graph extends React.Component {
     if (
       currentSelection !== prevProps.currentSelection ||
       graphInteractionMode !== prevProps.graphInteractionMode ||
-      stateChanges.svg
+      stateChanges.toolSVG
     ) {
       const { tool, container } = this.state;
       this.selectionToolUpdate(
