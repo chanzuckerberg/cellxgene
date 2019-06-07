@@ -25,7 +25,8 @@ export default (
     .attr("data-testid", "layout-overlay")
     .attr("width", responsive.width - graphPaddingRight)
     .attr("height", responsive.height)
-    .attr("class", `${styles.graphSVG}`);
+    .attr("class", `${styles.graphSVG}`)
+    .style("z-index", 999);
 
   if (selectionToolType === "brush") {
     const brush = d3
