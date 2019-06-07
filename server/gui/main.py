@@ -1,7 +1,8 @@
 # flake8: noqa F403, F405
 from functools import partialmethod
 from multiprocessing import Pipe, Process
-from os.path import splitext, basename
+from os import environ
+from os.path import splitext, basename, dirname, join
 import sys
 import threading
 
@@ -46,6 +47,8 @@ class MainWindow(QMainWindow):
         self.setupLayout()
         self.setupMenu()
 
+    def showBrowser(self):
+        self.stacked_layout.setCurrentIndex(BROWSER_INDEX)
     def restartOnError(self):
         self.window().shutdownServer()
         # close emitter on error/finished
@@ -226,7 +229,7 @@ class LoadWidget(QFrame):
     def onServerReady(self):
         if not self.serverError:
             self.window().cef_widget.browser.Navigate(self.window().url)
-            self.window().stacked_layout.setCurrentIndex(BROWSER_INDEX)
+            self.window().showBrowser()
 
     def onError(self, err, server_error=False):
         # Restart worker
