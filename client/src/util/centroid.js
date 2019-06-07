@@ -26,12 +26,12 @@ export default function calcCentroid(
     { x: 0, y: 0, count: 0 }
   );
 
-  console.log(centroidData.count);
-
-  const centroid = [0, 0, centroidData.count];
+  const centroid = [];
 
   centroid[0] = centroidData.x / centroidData.count;
   centroid[1] = centroidData.y / centroidData.count;
+  centroid[2] = centroidData.count / world.nObs;
+  
 
   return centroid;
 

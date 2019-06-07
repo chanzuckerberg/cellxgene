@@ -258,12 +258,19 @@ class Graph extends React.Component {
         .selectAll("#centroid ")
         .remove();
 
+      if (centroidLabel.metadataField === "") {
+        return;
+      }
+
       const centroidScreen = this.mapPointToScreen(centroidLabel.centroidXY);
+
+      centroidScreen.push(centroidLabel.centroidXY[2]);
 
       const newCentroidSVG = setupCentroidSVG(
         responsive,
         this.graphPaddingRight,
-        centroidScreen
+        centroidScreen,
+        centroidLabel.categoryField
       );
 
       stateChanges = { ...stateChanges, centroidSVG: newCentroidSVG };
