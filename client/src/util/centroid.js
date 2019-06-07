@@ -17,6 +17,7 @@ export default function calcCentroid(world, annoName, annoValue, layoutDimNames)
     }
     return data;
   }, { x: 0, y: 0, count: 0 });
+  
 
   const centroid = { x: 0, y: 0 };
 
@@ -24,4 +25,23 @@ export default function calcCentroid(world, annoName, annoValue, layoutDimNames)
   centroid.y = centroidData.y / centroidData.count;
 
   return centroid;
+
+
+  // Optimization from bruce, cut down on object creation/deletion
+  // const {x,y,count } = centroidData;
+  // x = x/count;
+  // y = y/count;
+  // return { x, y, count };
+
+  // let x = 0;
+  // let y = 0;
+  // let count = 0;
+  // for (let i =0, l = annoArray.length ; i < l; i += 1) {
+  //   if (...) {
+  //     x += layoutXarray[i];
+  //   }
+
+
+
+  // }
 }

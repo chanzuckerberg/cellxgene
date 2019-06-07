@@ -1,18 +1,27 @@
+import calcCentroid from "../util/centroid";
+
 const initialState = {
-  metadataField: "",
-  categoryIndex: -1
+  metadataField: 0,
+  categoryField: 0
 };
 
 const CentroidLabel = (
   state = initialState,
   action,
   sharedNextState
-  ) => {
+) => {
+  const { categoricalSelection, world, layoutChoice } = sharedNextState;
   const { metadataField, categoryIndex } = action;
+  // TODO: Use the es7 syntatic sugar 
+  const categoryField = categoricalSelection &&
+    categoricalSelection[metadataField]
+    ? categoricalSelection[metadataField].categoryValues[categoryIndex] : "";
   switch (action.type) {
     case "category value mouse hover start":
       console.log(action);
       
+      console.log(calcCentroid(world, metadataField, categoryField, layoutChoice.currentDimNames))
+
       return {
         ...state,
         metadataField,
@@ -21,14 +30,14 @@ const CentroidLabel = (
 
     case "category value mouse hover end":
       console.log(action);
-      
-        if (metadataField === state.metadataField &&
-          categoryIndex === state.categoryIndex) {
-          return initialState
-        }
-        return state;
-        
-      default:
+
+      if (metadataField === state.metadataField &&
+        categoryIndex === state.categoryIndex) {
+        return initialState
+      }
+      return state;
+
+    default:
       return state
   }
 };
