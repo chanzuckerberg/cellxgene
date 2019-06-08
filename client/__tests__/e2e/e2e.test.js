@@ -154,10 +154,18 @@ describe("gene entry", async () => {
     await utils.clickOn("section-bulk-add");
     await utils.typeInto("input-bulk-add", testGenes.join(","));
     await page.keyboard.press("Enter");
-    const userGeneHist = await cxgActions.getAllHistograms(
-      "histogram-user-gene"
+
+    // these load asynchronously, so we need to wait for each histogram individually
+    const elements = await Promise.all(
+      testGenes.map(g => page.waitForSelector(`[data-testid='histogram-${g}']`))
     );
-    expect(userGeneHist).toEqual(expect.arrayContaining(testGenes));
+    const idHandles = await Promise.all(
+      elements.map(el => el.getProperty("id"))
+    );
+    const ids = await Promise.all(idHandles.map(h => h.jsonValue()));
+    expect(ids.map(id => id.substring("histogram_".length))).toEqual(
+      expect.arrayContaining(testGenes)
+    );
   });
 });
 
@@ -176,8 +184,18 @@ describe("diffexp", async () => {
     }
     await cxgActions.cellSet(2);
     await utils.clickOn("diffexp-button");
-    const diffExpHists = await cxgActions.getAllHistograms("histogram-diffexp");
-    expect(diffExpHists).toEqual(
+
+    // these load asynchronously, so we need to wait for each histogram individually
+    const elements = await Promise.all(
+      data.diffexp["gene-results"].map(g =>
+        page.waitForSelector(`[data-testid='histogram-${g}']`)
+      )
+    );
+    const idHandles = await Promise.all(
+      elements.map(el => el.getProperty("id"))
+    );
+    const ids = await Promise.all(idHandles.map(h => h.jsonValue()));
+    expect(ids.map(id => id.substring("histogram_".length))).toEqual(
       expect.arrayContaining(data.diffexp["gene-results"])
     );
   });
