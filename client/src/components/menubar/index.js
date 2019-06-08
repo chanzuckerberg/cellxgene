@@ -307,7 +307,7 @@ class MenuBar extends React.Component {
                 loading={differential.loading}
                 fill
                 type="button"
-                onClick={this.computeDiffExp()}
+                onClick={this.computeDiffExp}
               >
                 Compute Differential Expression
               </AnchorButton>
@@ -323,7 +323,7 @@ class MenuBar extends React.Component {
                 type="button"
                 fill
                 intent="warning"
-                onClick={this.clearDifferentialExpression()}
+                onClick={this.clearDifferentialExpression}
               >
                 Clear Differential Expression
               </Button>
