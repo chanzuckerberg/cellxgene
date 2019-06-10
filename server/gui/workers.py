@@ -65,7 +65,6 @@ class Worker(EmittingProcess):
         try:
             server.app.run(host=self.host, debug=False, port=self.port, threaded=True)
         except Exception as e:
-            traceback.print_exc()
             self.emit("server_error", str(e))
         finally:
             self.emit("finished")
