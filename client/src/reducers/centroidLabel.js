@@ -10,11 +10,8 @@ const initialState = {
 const CentroidLabel = (state = initialState, action, sharedNextState) => {
   const { categoricalSelection, world, layoutChoice } = sharedNextState;
   const { metadataField, categoryIndex } = action;
-  // TODO: Use the es7 syntatic sugar
   const categoryField =
-    categoricalSelection && categoricalSelection[metadataField]
-      ? categoricalSelection[metadataField].categoryValues[categoryIndex]
-      : "";
+    categoricalSelection?.[metadataField]?.categoryValues[categoryIndex];
   switch (action.type) {
     case "category value mouse hover start":
       console.log(action);
