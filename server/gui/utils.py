@@ -1,3 +1,4 @@
+import errno
 import platform
 
 from PySide2.QtCore import QObject, Signal
@@ -60,6 +61,12 @@ class Emitter:
             except EOFError:
                 # Server done
                 break
+            except OSError as e:
+                if e.errno == errno.EBADF:
+                    break
+                else:
+                    self.signals.error.emit(str(e))
+                    break
             except Exception as e:
                 self.signals.error.emit(str(e))
                 break
