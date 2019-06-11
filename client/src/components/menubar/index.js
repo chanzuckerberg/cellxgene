@@ -305,6 +305,7 @@ class MenuBar extends React.Component {
                 intent="primary"
                 data-testid="diffexp-button"
                 loading={differential.loading}
+                icon="left-join"
                 fill
                 type="button"
                 onClick={this.computeDiffExp}

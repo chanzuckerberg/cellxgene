@@ -25,7 +25,6 @@ class LeftSideBar extends React.Component {
     this magic number should be made less fragile,
     if cellxgene logo or tabs change, this must as well
     */
-    const metadataSectionPadding = 0;
     const logoRelatedPadding = 50;
 
     return (
@@ -38,11 +37,10 @@ class LeftSideBar extends React.Component {
         }}
       >
         <TopLeftLogoAndTitle />
-
         <div
           style={{
-            height: responsive.height - metadataSectionPadding,
-            paddingTop: logoRelatedPadding,
+            height: responsive.height - logoRelatedPadding,
+            marginTop: logoRelatedPadding,
             width: globals.leftSidebarWidth,
             overflowY: "auto",
             overflowX: "hidden"

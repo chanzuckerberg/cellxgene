@@ -76,16 +76,8 @@ class App extends React.Component {
         <div>
           {loading ? null : <LeftSideBar />}
           {loading ? null : <MenuBar />}
-          <div
-            style={{
-              padding: 15,
-              width: 1440 - 410 /* but responsive */,
-              marginLeft: 350 /* but responsive */
-            }}
-          >
-            {loading ? null : <Graph key={graphRenderCounter} />}
-            <Legend />
-          </div>
+          {loading ? null : <Graph key={graphRenderCounter} />}
+          <Legend />
         </div>
       </Container>
     );
