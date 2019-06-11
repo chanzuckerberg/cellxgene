@@ -1,5 +1,4 @@
 from multiprocessing import Process
-import traceback
 import time
 
 import requests
