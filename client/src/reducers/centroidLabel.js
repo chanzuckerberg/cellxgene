@@ -14,8 +14,6 @@ const CentroidLabel = (state = initialState, action, sharedNextState) => {
     categoricalSelection?.[metadataField]?.categoryValues[categoryIndex];
   switch (action.type) {
     case "category value mouse hover start":
-      console.log(action);
-
       return {
         ...state,
         metadataField,
@@ -30,8 +28,6 @@ const CentroidLabel = (state = initialState, action, sharedNextState) => {
       };
 
     case "category value mouse hover end":
-      console.log(action);
-
       if (
         metadataField === state.metadataField &&
         categoryIndex === state.categoryIndex
