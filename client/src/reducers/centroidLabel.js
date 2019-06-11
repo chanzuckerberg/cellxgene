@@ -4,7 +4,7 @@ const initialState = {
   metadataField: "",
   categoryIndex: -1,
   categoryField: "",
-  centroidXY: [-1, -1, -1]
+  centroidXY: [-1, -1]
 };
 
 const CentroidLabel = (state = initialState, action, sharedNextState) => {

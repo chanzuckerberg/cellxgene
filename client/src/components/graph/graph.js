@@ -264,8 +264,6 @@ class Graph extends React.Component {
 
       const centroidScreen = this.mapPointToScreen(centroidLabel.centroidXY);
 
-      centroidScreen.push(centroidLabel.centroidXY[2]);
-
       const newCentroidSVG = setupCentroidSVG(
         responsive,
         this.graphPaddingRight,

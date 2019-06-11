@@ -46,9 +46,8 @@ const calcMedianCentroid = (world, annoName, annoValue, layoutDimNames) => {
 
   const medianX = quantile([.5], Float64Array.from(centroidX));
   const medianY = quantile([.5], Float64Array.from(centroidY));
-  const mass = centroidX.length / world.nObs;
 
-  return[medianX, medianY, mass]
+  return[medianX, medianY]
 }
 
 
