@@ -9,9 +9,8 @@ import * as globals from "../../globals";
   categoricalSelection: state.categoricalSelection,
   colorScale: state.colors.scale,
   colorAccessor: state.colors.colorAccessor,
-  schema: state.world ?.schema,
-  world: state.world,
-  centroidLabel: state.centroidLabel,
+  schema: state.world?.schema,
+  world: state.world
 }))
 class CategoryValue extends React.Component {
   toggleOff() {
@@ -38,7 +37,7 @@ class CategoryValue extends React.Component {
       type: "category value mouse hover start",
       metadataField,
       categoryIndex
-    })
+    });
   }
 
   handleMouseExit() {
@@ -47,7 +46,7 @@ class CategoryValue extends React.Component {
       type: "category value mouse hover end",
       metadataField,
       categoryIndex
-    })
+    });
   }
 
   render() {
@@ -59,8 +58,7 @@ class CategoryValue extends React.Component {
       colorScale,
       i,
       schema,
-      world,
-      centroidLabel
+      world
     } = this.props;
 
     if (!categoricalSelection) return null;
@@ -79,7 +77,7 @@ class CategoryValue extends React.Component {
     let occupancy = null;
 
     if (isColorBy && schema) {
-      categories = schema.annotations.obsByName[colorAccessor] ?.categories;
+      categories = schema.annotations.obsByName[colorAccessor]?.categories;
     }
 
     if (colorAccessor && !isColorBy && categoricalSelection[colorAccessor]) {
@@ -96,11 +94,7 @@ class CategoryValue extends React.Component {
         style={{
           display: "flex",
           alignItems: "baseline",
-          justifyContent: "space-between",
-          borderRadius: "3px",
-          background: centroidLabel.categoryIndex === categoryIndex &&
-            centroidLabel.metadataField === metadataField
-            ? "rgba(115, 134, 148, 0.3)" : "inherit"
+          justifyContent: "space-between"
         }}
         data-testclass="categorical-row"
         onMouseEnter={this.handleMouseEnter.bind(this)}
@@ -136,15 +130,15 @@ class CategoryValue extends React.Component {
           </label>
           <span style={{ flexShrink: 0 }}>
             {colorAccessor &&
-              !isColorBy &&
-              categoricalSelection[colorAccessor] ? (
-                <Occupancy
-                  occupancy={occupancy.get(
-                    category.categoryValues[categoryIndex]
-                  )}
-                  {...this.props}
-                />
-              ) : null}
+            !isColorBy &&
+            categoricalSelection[colorAccessor] ? (
+              <Occupancy
+                occupancy={occupancy.get(
+                  category.categoryValues[categoryIndex]
+                )}
+                {...this.props}
+              />
+            ) : null}
           </span>
         </div>
         <span>
