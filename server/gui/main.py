@@ -221,7 +221,7 @@ class LoadWidget(QFrame):
     def onDataReady(self):
         self.site_ready_worker = SiteReadyWorker(self.window().url)
         self.site_ready_worker.signals.ready.connect(self.onServerReady)
-        self.site_ready_worker.signals.error.connect(self.onError)
+        self.site_ready_worker.signals.error.connect(self.onServerError)
 
         srw_thread = threading.Thread(target=self.site_ready_worker.run, daemon=True)
         srw_thread.start()

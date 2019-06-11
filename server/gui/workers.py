@@ -86,6 +86,5 @@ class SiteReadyWorker:
             except requests.exceptions.ConnectionError:
                 time.sleep(1)
             except Exception as e:
-                traceback.print_exc()
                 self.signals.error.emit(str(e))
         self.signals.timeout.emit()
