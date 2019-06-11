@@ -1,5 +1,4 @@
 from multiprocessing import Process
-import traceback
 import time
 
 import requests
@@ -65,7 +64,6 @@ class Worker(EmittingProcess):
         try:
             server.app.run(host=self.host, debug=False, port=self.port, threaded=True)
         except Exception as e:
-            traceback.print_exc()
             self.emit("server_error", str(e))
         finally:
             self.emit("finished")
@@ -87,6 +85,5 @@ class SiteReadyWorker:
             except requests.exceptions.ConnectionError:
                 time.sleep(1)
             except Exception as e:
-                traceback.print_exc()
                 self.signals.error.emit(str(e))
         self.signals.timeout.emit()

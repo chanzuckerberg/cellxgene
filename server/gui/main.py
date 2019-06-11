@@ -1,11 +1,13 @@
 # flake8: noqa F403, F405
 from functools import partialmethod
 from multiprocessing import Pipe, Process
-from os.path import splitext, basename
+from os import environ
+from os.path import splitext, basename, dirname, join
 import sys
 import threading
 
 from cefpython3 import cefpython as cef
+import PySide2
 from PySide2.QtCore import *
 from PySide2.QtWidgets import *
 
@@ -15,12 +17,18 @@ from server.gui.utils import WINDOWS, LINUX, MAC, FileLoadSignals, Emitter, Work
 from server.utils.constants import MODES
 from server.utils.utils import find_available_port
 
+if WINDOWS or LINUX:
+    dirname = dirname(PySide2.__file__)
+    plugin_path = join(dirname, 'plugins', 'platforms')
+    environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = plugin_path
 
 # Configuration
 # TODO remember this or calculate it?
 WIDTH = 1024
 HEIGHT = 768
 GUI_PORT = find_available_port("localhost")
+BROWSER_INDEX = 0
+LOAD_INDEX = 1
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -39,6 +47,8 @@ class MainWindow(QMainWindow):
         self.setupLayout()
         self.setupMenu()
 
+    def showBrowser(self):
+        self.stacked_layout.setCurrentIndex(BROWSER_INDEX)
     def restartOnError(self):
         self.window().shutdownServer()
         # close emitter on error/finished
@@ -51,10 +61,11 @@ class MainWindow(QMainWindow):
     def setupLayout(self):
         self.resize(WIDTH, HEIGHT)
         self.cef_widget = CefWidget(self)
+        self.cef_widget.setSizePolicy(QSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding))
         self.data_widget = LoadWidget(self)
         self.stacked_layout = QStackedLayout()
-        self.stacked_layout.addWidget(self.data_widget)
         self.stacked_layout.addWidget(self.cef_widget)
+        self.stacked_layout.addWidget(self.data_widget)
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
@@ -80,7 +91,8 @@ class MainWindow(QMainWindow):
             # cef widget in the layout with the container.
             self.container = QWidget.createWindowContainer(
                 self.cef_widget.hidden_window, parent=self)
-            self.stacked_layout.addWidget(self.container, 1, 0)
+            self.stacked_layout.replaceWidget(self.cef_widget, self.container)
+        self.stacked_layout.setCurrentIndex(LOAD_INDEX)
 
     def setupServer(self):
         self.shutdownServer()
@@ -108,7 +120,7 @@ class MainWindow(QMainWindow):
         file_menu.addAction(load_action)
 
     def showLoad(self):
-        self.stacked_layout.setCurrentIndex(0)
+        self.stacked_layout.setCurrentIndex(LOAD_INDEX)
 
     def closeEvent(self, event):
         # Close browser (force=True) and free CEF reference
@@ -209,7 +221,7 @@ class LoadWidget(QFrame):
     def onDataReady(self):
         self.site_ready_worker = SiteReadyWorker(self.window().url)
         self.site_ready_worker.signals.ready.connect(self.onServerReady)
-        self.site_ready_worker.signals.error.connect(self.onError)
+        self.site_ready_worker.signals.error.connect(self.onServerError)
 
         srw_thread = threading.Thread(target=self.site_ready_worker.run, daemon=True)
         srw_thread.start()
@@ -217,7 +229,7 @@ class LoadWidget(QFrame):
     def onServerReady(self):
         if not self.serverError:
             self.window().cef_widget.browser.Navigate(self.window().url)
-            self.window().stacked_layout.setCurrentIndex(1)
+            self.window().showBrowser()
 
     def onError(self, err, server_error=False):
         # Restart worker
@@ -225,7 +237,7 @@ class LoadWidget(QFrame):
             self.serverError = True
             # Report error and switch to load screen
             self.window().shutdownServer()
-        self.window().stacked_layout.setCurrentIndex(0)
+        self.window().stacked_layout.setCurrentIndex(LOAD_INDEX)
         self.error_label.setText(f"Error: {err}")
         self.error_label.resize(self.MAX_CONTENT_WIDTH, self.error_label.height())
 
