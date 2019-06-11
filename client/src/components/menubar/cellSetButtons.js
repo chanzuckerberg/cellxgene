@@ -32,7 +32,7 @@ class CellSetButton extends React.Component {
   render() {
     const { differential, eitherCellSetOneOrTwo } = this.props;
     const cellListName = `celllist${eitherCellSetOneOrTwo}`;
-    let cells_selected = differential[cellListName]
+    const cellsSelected = differential[cellListName]
       ? differential[cellListName].length
       : 0;
     return (
@@ -49,7 +49,7 @@ class CellSetButton extends React.Component {
           {eitherCellSetOneOrTwo}
           {": "}
           <span data-testid={`cellset-count-${eitherCellSetOneOrTwo}`}>
-            {cells_selected}
+            {cellsSelected}
           </span>
           {" cells"}
         </AnchorButton>

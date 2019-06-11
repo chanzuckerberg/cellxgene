@@ -436,7 +436,7 @@ class Graph extends React.Component {
     const scale = aspect < 1 ? 1 / aspect : 1;
 
     // compute inverse view matrix
-    let inverse = mat4.invert([], camera.view());
+    const inverse = mat4.invert([], camera.view());
 
     // variable names are choosen to reflect inverse of those used
     // in mapScreenToPoint().

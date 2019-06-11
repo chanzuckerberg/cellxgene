@@ -73,6 +73,18 @@ class App extends React.Component {
             loading cellxgene
           </div>
         ) : null}
+        {error ? (
+          <div
+            style={{
+              position: "fixed",
+              fontWeight: 500,
+              top: window.innerHeight / 2,
+              left: window.innerWidth / 2 - 50
+            }}
+          >
+            error loading
+          </div>
+        ) : null}
         <div>
           {loading ? null : <LeftSideBar />}
           {loading ? null : <MenuBar />}

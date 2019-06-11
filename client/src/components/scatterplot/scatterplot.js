@@ -3,7 +3,6 @@
 // https://peterbeshai.com/scatterplot-in-d3-with-voronoi-interaction.html
 
 import React from "react";
-import _ from "lodash";
 import { connect } from "react-redux";
 import { Button, ButtonGroup } from "@blueprintjs/core";
 import _regl from "regl";
