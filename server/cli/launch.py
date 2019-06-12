@@ -65,7 +65,7 @@ BIG_FILE_SIZE_THRESHOLD = 100 * 2**20  # 100MB
     default=100,
     metavar="",
     show_default=True,
-    help="Limits the number of categorical annotation items displayed.",
+    help="Categories with more distinct values than this will not be displayed.",
 )
 @click.option(
     "--diffexp-lfc-cutoff",
