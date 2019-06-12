@@ -21,13 +21,12 @@ class EmittingProcess(Process):
 
 
 class Worker(EmittingProcess):
-    def __init__(self, parent_conn, child_conn, data_file, title, host, port, layout=["umap"], *args, **kwargs):
+    def __init__(self, parent_conn, child_conn, data_file, host, port, engine_options, *args, **kwargs):
         super(Worker, self).__init__(parent_conn, child_conn)
         self.data_file = data_file
-        self.layout = layout
-        self.title = title
         self.host = host
         self.port = port
+        self.engine_options = engine_options
 
     def run(self):
         super(Worker, self).run()
@@ -47,14 +46,15 @@ class Worker(EmittingProcess):
         # load data
         try:
             args = {
-                "layout": self.layout,
                 "max_category_items": 100,
                 "diffexp_lfc_cutoff": 0.01,
                 "obs_names": None,
                 "var_names": None,
             }
+            args.update(self.engine_options)
+            print("args", args)
             data = ScanpyEngine(self.data_file, args)
-            server.attach_data(data, self.title)
+            server.attach_data(data, self.engine_options["title"])
             self.emit("ready")
         except Exception as e:
             self.emit("engine_error", str(e))

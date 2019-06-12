@@ -30,6 +30,7 @@ GUI_PORT = find_available_port("localhost")
 BROWSER_INDEX = 0
 LOAD_INDEX = 1
 
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__(None)
@@ -49,6 +50,7 @@ class MainWindow(QMainWindow):
 
     def showBrowser(self):
         self.stacked_layout.setCurrentIndex(BROWSER_INDEX)
+
     def restartOnError(self):
         self.window().shutdownServer()
         # close emitter on error/finished
@@ -147,33 +149,52 @@ class LoadWidget(QFrame):
         logo_layout = QHBoxLayout()
         logo_layout.setContentsMargins(0, 0, 0, 20)
 
-        load_layout = QGridLayout()
-        load_layout.setContentsMargins(0, 0, 0, 0)
-        load_layout.setSpacing(0)
+        load_layout = QFormLayout()
+        # load_layout.setContentsMargins(0, 0, 0, 0)
+        # load_layout.setSpacing(0)
         message_layout = QHBoxLayout()
         message_layout.setContentsMargins(0, 0, 0, 0)
 
         self.serverError = False
-        self.title = ""
+        self.engine_options = {}
+
         self.label = QLabel("cellxgene")
         logo_layout.addWidget(self.label)
 
         # UI section
         # TODO add load spinner
         # TODO add cancel button to send back to browser (if available)
-        self.embedding_label = QLabel("embedding: ")
-        load_layout.addWidget(self.embedding_label, 0, 0)
-        self.file_label = QLabel("file: ")
-        load_layout.addWidget(self.file_label, 0, 1)
-        self.embeddings = QComboBox(self)
-        self.embeddings.currentIndexChanged.connect(self.updateEmbedding)
-        self.embeddings.addItems(MODES)
-        self.embedding_selection = [MODES[0]]
-        load_layout.addWidget(self.embeddings, 1, 0)
 
-        self.load = QPushButton("Open...")
-        self.load.clicked.connect(self.onLoad)
-        load_layout.addWidget(self.load, 1, 1)
+        # Options
+        self.title_widget = QLineEdit()
+        self.embedding_widget = QLineEdit()
+        self.obs_widget = QLineEdit()
+        self.var_widget = QLineEdit()
+        self.max_category_items_widget = QSpinBox()
+        self.max_category_items_widget.setRange(1, 100000)
+        self.max_category_items_widget.setValue(100)
+        self.diff_exp_lfc_cutoff_widget = QDoubleSpinBox()
+        self.diff_exp_lfc_cutoff_widget.setRange(0, 1)
+        self.diff_exp_lfc_cutoff_widget.setValue(0.1)
+        self.diff_exp_lfc_cutoff_widget.setDecimals(3)
+        self.diff_exp_lfc_cutoff_widget.setStepType(QAbstractSpinBox.AdaptiveDecimalStepType)
+        self.load_widget = QPushButton("Open...")
+        self.load_widget.clicked.connect(self.onLoad)
+
+        self.title_widget.textChanged.connect(self.updateOpt)
+        self.embedding_widget.textChanged.connect(self.updateOpt)
+        self.obs_widget.textChanged.connect(self.updateOpt)
+        self.var_widget.textChanged.connect(self.updateOpt)
+        self.max_category_items_widget.valueChanged.connect(self.updateOpt)
+        self.diff_exp_lfc_cutoff_widget.valueChanged.connect(self.updateOpt)
+
+        load_layout.addRow(self.tr("&title:"), self.title_widget)
+        load_layout.addRow(self.tr("&embedding:"), self.embedding_widget)
+        load_layout.addRow(self.tr("&obs names:"), self.obs_widget)
+        load_layout.addRow(self.tr("&var names:"), self.var_widget)
+        load_layout.addRow(self.tr("&max categories:"), self.max_category_items_widget)
+        load_layout.addRow(self.tr("&diffexp cutoff:"), self.diff_exp_lfc_cutoff_widget)
+        load_layout.addRow(self.tr("&load file:"), self.load_widget)
 
         # Error section
         self.error_label = QLabel("")
@@ -182,7 +203,7 @@ class LoadWidget(QFrame):
         message_layout.addWidget(self.error_label, alignment=Qt.AlignTop)
 
         # Layout
-        for l in [logo_layout, load_layout, message_layout ]:
+        for l in [logo_layout, load_layout, message_layout]:
             load_ui_layout.addLayout(l)
 
         load_ui_layout.setStretch(2, 10)
@@ -191,13 +212,28 @@ class LoadWidget(QFrame):
         self.signals = FileLoadSignals()
         self.signals.selectedFile.connect(self.createScanpyEngine)
 
-    def updateEmbedding(self, idx):
-        self.embedding_selection = [MODES[idx]]
+    def updateOpt(self, value):
+        # get values
+        if self.title_widget.text():
+            self.engine_options["title"] = self.title_widget.text()
+        if self.embedding_widget.text():
+            self.engine_options["layout"] = self.embedding_widget.text()
+        if self.obs_widget.text():
+            self.engine_options["obs_names"] = self.obs_widget.text()
+        if self.var_widget.text():
+            self.engine_options["var_names"] = self.var_widget.text()
+        if self.max_category_items_widget.value():
+            self.engine_options["max_category_items"] = self.max_category_items_widget.value()
+        if self.diff_exp_lfc_cutoff_widget.value():
+            self.engine_options["diffexp_lfc_cutoff"] = self.diff_exp_lfc_cutoff_widget.value()
+        print(self.engine_options)
+
+        # self.engine_options[key] = value
 
     def createScanpyEngine(self, file_name):
         self.window().setupServer()
-        worker = Worker(self.window().parent_conn, self.window().child_conn, file_name, self.title, host="127.0.0.1", port=GUI_PORT,
-                        layout=self.embedding_selection)
+        worker = Worker(self.window().parent_conn, self.window().child_conn, file_name, host="127.0.0.1",
+                        port=GUI_PORT, engine_options=self.engine_options)
         self.window().load_emitter.signals.ready.connect(self.onDataReady)
         self.window().load_emitter.signals.engine_error.connect(self.onServerError)
         self.window().load_emitter.signals.server_error.connect(self.onServerError)
@@ -211,8 +247,9 @@ class LoadWidget(QFrame):
         options = QFileDialog.Options()
         # options |= QFileDialog.DontUseNativeDialog
         file_name, _ = QFileDialog.getOpenFileName(self,
-                                                  "Open H5AD File", "", "H5AD Files (*.h5ad)", options=options)
-        self.title = splitext(basename(file_name))[0]
+                                                   "Open H5AD File", "", "H5AD Files (*.h5ad)", options=options)
+        if "title" not in self.engine_options or not self.engine_options["title"]:
+            self.engine_options["title"] = splitext(basename(file_name))[0]
         if file_name:
             self.signals.selectedFile.emit(file_name)
             # Reset error on reload
