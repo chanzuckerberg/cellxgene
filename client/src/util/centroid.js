@@ -2,11 +2,7 @@ import quantile from "./quantile";
 
 /*
   Centroid coordinate calculation
-
-
 */
-
-
 const calcMeanCentroid = (world, annoName, annoValue, layoutDimNames) => {
   const centroid = [0, 0, 0];
   const annoArray = world.obsAnnotations.col(annoName).asArray();
@@ -39,17 +35,15 @@ const calcMedianCentroid = (world, annoName, annoValue, layoutDimNames) => {
 
   for (let i = 0, len = annoArray.length; i < len; i += 1) {
     if (annoArray[i] === annoValue) {
-      centroidX.push(layoutXArray[i])
-      centroidY.push(layoutYArray[i])
+      centroidX.push(layoutXArray[i]);
+      centroidY.push(layoutYArray[i]);
     }
   }
 
-  const medianX = quantile([.5], Float64Array.from(centroidX));
-  const medianY = quantile([.5], Float64Array.from(centroidY));
+  const medianX = quantile([0.5], Float64Array.from(centroidX));
+  const medianY = quantile([0.5], Float64Array.from(centroidY));
 
-  return[medianX, medianY]
-}
-
-
+  return [medianX, medianY];
+};
 
 export default calcMedianCentroid;
