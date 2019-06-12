@@ -224,7 +224,7 @@ class Graph extends React.Component {
     const createToolSVG = () => {
       /* clear out whatever was on the div, even if nothing, but usually the brushes etc */
       d3.select("#graphAttachPoint")
-        .selectAll("#tool")
+        .select("#tool")
         .remove();
 
       let handleStart;
@@ -255,7 +255,7 @@ class Graph extends React.Component {
 
     const createCentroidSVG = () => {
       d3.select("#graphAttachPoint")
-        .selectAll("#centroid ")
+        .select("#centroid")
         .remove();
 
       if (centroidLabel.metadataField === "") {
