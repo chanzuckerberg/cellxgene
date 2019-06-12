@@ -255,7 +255,7 @@ class Graph extends React.Component {
 
     const createCentroidSVG = () => {
       d3.select("#graphAttachPoint")
-        .select("#centroid")
+        .select("#centroid-container")
         .remove();
 
       if (centroidLabel.metadataField === "") {

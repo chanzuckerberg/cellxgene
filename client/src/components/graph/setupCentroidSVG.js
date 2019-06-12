@@ -7,7 +7,7 @@ export default (responsive, graphPaddingRight, xy, text) => {
   const svg = d3
     .select("#graphAttachPoint")
     .append("svg")
-    .attr("id", "centroid")
+    .attr("id", "centroid-container")
     .attr("data-testid", "centroid-overlay")
     .attr("width", containerWidth)
     .attr("height", responsive.height)
