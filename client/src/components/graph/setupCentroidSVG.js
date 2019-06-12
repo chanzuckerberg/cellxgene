@@ -24,8 +24,9 @@ export default (responsive, graphPaddingRight, xy, text) => {
     .append("text")
     .attr("text-anchor", "middle")
     .text(text)
-    .style("font-size", "25px")
     .style("font-family", "Roboto Condensed")
+    .style("font-size", "16px")
+    .style("font-weight", "700")
     .style("fill", "white")
     .style("stroke", "black");
 
