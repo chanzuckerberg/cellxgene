@@ -260,8 +260,6 @@ class Graph extends React.Component {
         .select("#centroid-container")
         .remove();
 
-      console.log(colorAccessor);
-
       if (centroidLabel.metadataField === "" || !centroidLabel.centroidXY) {
         return;
       }
