@@ -8,6 +8,7 @@ import threading
 
 from cefpython3 import cefpython as cef
 import PySide2
+from PySide2.QtGui import *
 from PySide2.QtCore import *
 from PySide2.QtWidgets import *
 
@@ -160,7 +161,9 @@ class LoadWidget(QFrame):
 
         self.label = QLabel("cellxgene")
         logo_layout.addWidget(self.label)
-
+        logo = QPixmap()
+        logo.load(":/../../cellxgene_logo.png")
+        load_layout.addWidget(QLabel(logo))
         # UI section
         # TODO add load spinner
         # TODO add cancel button to send back to browser (if available)
