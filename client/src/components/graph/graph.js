@@ -25,7 +25,8 @@ import scaleLinear from "../../util/scaleLinear";
   currentSelection: state.graphSelection.selection,
   layoutChoice: state.layoutChoice,
   centroidLabel: state.centroidLabel,
-  graphInteractionMode: state.controls.graphInteractionMode
+  graphInteractionMode: state.controls.graphInteractionMode,
+  colorAccessor: state.colors.colorAccessor
 }))
 class Graph extends React.Component {
   computePointPositions = memoize((X, Y, scaleX, scaleY) => {
@@ -144,6 +145,7 @@ class Graph extends React.Component {
       currentSelection,
       layoutChoice,
       graphInteractionMode,
+      colorAccessor,
       centroidLabel
     } = this.props;
     const { reglRender, mode, regl, toolSVG, centroidSVG } = this.state;
@@ -258,6 +260,8 @@ class Graph extends React.Component {
         .select("#centroid-container")
         .remove();
 
+      console.log(colorAccessor);
+
       if (centroidLabel.metadataField === "" || !centroidLabel.centroidXY) {
         return;
       }
@@ -268,7 +272,8 @@ class Graph extends React.Component {
         responsive,
         this.graphPaddingRight,
         centroidScreen,
-        centroidLabel.categoryField
+        centroidLabel.categoryField,
+        colorAccessor
       );
 
       stateChanges = { ...stateChanges, centroidSVG: newCentroidSVG };

@@ -1,7 +1,7 @@
 import * as d3 from "d3";
 import styles from "./graph.css";
 
-export default (responsive, graphPaddingRight, xy, text) => {
+export default (responsive, graphPaddingRight, xy, text, colorBy) => {
   const containerWidth = responsive.width - graphPaddingRight;
 
   const svg = d3
@@ -25,10 +25,9 @@ export default (responsive, graphPaddingRight, xy, text) => {
     .attr("text-anchor", "middle")
     .text(text)
     .style("font-family", "Roboto Condensed")
-    .style("font-size", "16px")
+    .style("font-size", "18px")
     .style("font-weight", "700")
-    .style("fill", "white")
-    .style("stroke", "black");
+    .style("fill", colorBy ? "black" : "rgb(32, 178, 212)");
 
   return svg;
 };
