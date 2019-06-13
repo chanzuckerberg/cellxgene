@@ -167,13 +167,19 @@ class LoadWidget(QFrame):
 
         # Options
         self.title_widget = QLineEdit()
+        self.title_widget.setAccessibleName("title")
         self.embedding_widget = QLineEdit()
+        self.embedding_widget.setAccessibleName("layout")
         self.obs_widget = QLineEdit()
+        self.obs_widget.setAccessibleName("obs_names")
         self.var_widget = QLineEdit()
+        self.var_widget.setAccessibleName("var_names")
         self.max_category_items_widget = QSpinBox()
+        self.max_category_items_widget.setAccessibleName("max_category_items")
         self.max_category_items_widget.setRange(1, 100000)
         self.max_category_items_widget.setValue(100)
         self.diff_exp_lfc_cutoff_widget = QDoubleSpinBox()
+        self.diff_exp_lfc_cutoff_widget.setAccessibleName("diffexp_lfc_cutoff")
         self.diff_exp_lfc_cutoff_widget.setRange(0, 1)
         self.diff_exp_lfc_cutoff_widget.setValue(0.1)
         self.diff_exp_lfc_cutoff_widget.setDecimals(3)
@@ -188,13 +194,29 @@ class LoadWidget(QFrame):
         self.max_category_items_widget.valueChanged.connect(self.updateOpt)
         self.diff_exp_lfc_cutoff_widget.valueChanged.connect(self.updateOpt)
 
-        load_layout.addRow(self.tr("&title:"), self.title_widget)
-        load_layout.addRow(self.tr("&embedding:"), self.embedding_widget)
-        load_layout.addRow(self.tr("&obs names:"), self.obs_widget)
-        load_layout.addRow(self.tr("&var names:"), self.var_widget)
-        load_layout.addRow(self.tr("&max categories:"), self.max_category_items_widget)
-        load_layout.addRow(self.tr("&diffexp cutoff:"), self.diff_exp_lfc_cutoff_widget)
-        load_layout.addRow(self.tr("&load file:"), self.load_widget)
+        title_label = QLabel("title:")
+        title_label.setToolTip("Title to display (if omitted will use file name)")
+        embedding_label = QLabel("embedding:")
+        embedding_label.setToolTip("Layout name, eg, 'umap'")
+        obs_label = QLabel("obs names:")
+        obs_label.setToolTip("Name of annotation field to use for observations")
+        var_label = QLabel("var names:")
+        var_label.setToolTip("Name of annotation to use for variables")
+        max_category_items_label = QLabel("max categories:")
+        max_category_items_label.setToolTip("Limits the number of categorical annotation items displayed")
+        diff_exp_lfc_label = QLabel("diffexp cutoff:")
+        diff_exp_lfc_label.setToolTip(
+            "Relative expression cutoff used when selecting top N differentially expressed genes")
+        load_label = QLabel("load file:")
+        load_label.setToolTip("File to load (h5ad format)")
+
+        load_layout.addRow(title_label, self.title_widget)
+        load_layout.addRow(embedding_label, self.embedding_widget)
+        load_layout.addRow(obs_label, self.obs_widget)
+        load_layout.addRow(var_label, self.var_widget)
+        load_layout.addRow(max_category_items_label, self.max_category_items_widget)
+        load_layout.addRow(diff_exp_lfc_label, self.diff_exp_lfc_cutoff_widget)
+        load_layout.addRow(load_label, self.load_widget)
 
         # Error section
         self.error_label = QLabel("")
@@ -212,23 +234,31 @@ class LoadWidget(QFrame):
         self.signals = FileLoadSignals()
         self.signals.selectedFile.connect(self.createScanpyEngine)
 
+
+
     def updateOpt(self, value):
         # get values
-        if self.title_widget.text():
-            self.engine_options["title"] = self.title_widget.text()
-        if self.embedding_widget.text():
-            self.engine_options["layout"] = self.embedding_widget.text()
-        if self.obs_widget.text():
-            self.engine_options["obs_names"] = self.obs_widget.text()
-        if self.var_widget.text():
-            self.engine_options["var_names"] = self.var_widget.text()
-        if self.max_category_items_widget.value():
-            self.engine_options["max_category_items"] = self.max_category_items_widget.value()
-        if self.diff_exp_lfc_cutoff_widget.value():
-            self.engine_options["diffexp_lfc_cutoff"] = self.diff_exp_lfc_cutoff_widget.value()
-        print(self.engine_options)
+        caller = self.sender().accessibleName()
+        val = None
+        # Get value depending on element type
+        if caller == "title":
+            val = self.title_widget.text()
+        elif caller == "layout":
+            val = self.embedding_widget.text()
+        elif caller == "obs_names":
+            val = self.obs_widget.text()
+        elif caller == "var_names":
+            val = self.var_widget.text()
+        elif caller == "max_category_items":
+            val = self.max_category_items_widget.value()
+        elif caller == "diffexp_lfc_cutoff":
+            val = self.diff_exp_lfc_cutoff_widget.value()
 
-        # self.engine_options[key] = value
+        # Update options or delete if missing
+        if val:
+            self.engine_options[caller] = value
+        elif caller in self.engine_options:
+            del self.engine_options[caller]
 
     def createScanpyEngine(self, file_name):
         self.window().setupServer()
