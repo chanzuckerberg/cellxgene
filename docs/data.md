@@ -43,19 +43,15 @@ Our `prepare` compose our command looks like this:
 
 Let's look at what `prepare` is doing to our data, and how each step relates to the command above. You can see a walkthrough of what's going on under the hood for this example in [this notebook](https://github.com/chanzuckerberg/cellxgene-vignettes/blob/master/dataset-processing/pbmc3k-prepare-example.ipynb).
 
-**1 - Compute quality control metrics and store this in our `AnnData` object for later inspection**  
-**2 - Normalize the expression matrix using a basic preprocessing recipe**  
-**3 - Do some preprocessing to run PCA and compute the neighbor graph**  
-*These are run automatically as they are required for the downstream steps, so we don't need an argument for this.*
-**4 - Infer clusters with the Louvain algorithm and store these labels to visualize later**  
-*`cellxgene prepare` always runs louvain clustering, so we don't need to pass an argument for this, either.*
-**5 - Compute and store umap and tsne embeddings**  
-**6 - Write results to file**
+**1 - Compute quality control metrics and store this in our `AnnData` object for later inspection (A)**  
+**2 - Normalize the expression matrix using a basic preprocessing recipe (B)**  
+**3 - Do some preprocessing to run PCA and compute the neighbor graph (auto)**  
+**4 - Infer clusters with the Louvain algorithm and store these labels to visualize later (auto)**  
+**5 - Compute and store umap and tsne embeddings (C)**  
+**6 - Write results to file (D)**
 
 # Example datasets to use with cellxgene
 
-Each dataset was preprocessed for use with cellxgene, following the original QC and preprocessing methods as closely as possible.  
-All datasets include several embeddings and labels from multiple clustering methods (see linked notebooks).
 
 **To download and use these datasets, run:**  
 `curl -O [URL]`  
