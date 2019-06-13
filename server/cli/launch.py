@@ -62,10 +62,10 @@ BIG_FILE_SIZE_THRESHOLD = 100 * 2**20  # 100MB
 @click.option("--host", default="127.0.0.1", help="Host IP address")
 @click.option(
     "--max-category-items",
-    default=100,
+    default=1000,
     metavar="",
     show_default=True,
-    help="Limits the number of categorical annotation items displayed.",
+    help="Categories with more distinct values than this will not be displayed.",
 )
 @click.option(
     "--diffexp-lfc-cutoff",
