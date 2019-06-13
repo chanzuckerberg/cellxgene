@@ -48,7 +48,7 @@ const calcMedianCentroid = (world, annoName, annoValue, layoutDimNames) => {
     return [medianX, medianY];
   }
 
-  return [0.5, 0.5];
+  return null;
 };
 
 export default calcMedianCentroid;

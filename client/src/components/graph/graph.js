@@ -258,7 +258,7 @@ class Graph extends React.Component {
         .select("#centroid-container")
         .remove();
 
-      if (centroidLabel.metadataField === "") {
+      if (centroidLabel.metadataField === "" || !centroidLabel.centroidXY) {
         return;
       }
 
@@ -285,7 +285,7 @@ class Graph extends React.Component {
       (responsive.height && responsive.width && !toolSVG) ||
       selectionTool !== prevProps.selectionTool
     ) {
-      // first time or change of selection tool
+      // first time or change of selection tool6
       createToolSVG();
     } else if (
       centroidLabel !== prevProps.centroidLabel ||
