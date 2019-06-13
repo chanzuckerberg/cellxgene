@@ -13,23 +13,41 @@ import * as globals from "../../globals";
   world: state.world
 }))
 class CategoryValue extends React.Component {
-  toggleOff() {
+  toggleOff = () => {
     const { dispatch, metadataField, categoryIndex } = this.props;
     dispatch({
       type: "categorical metadata filter deselect",
       metadataField,
       categoryIndex
     });
-  }
+  };
 
-  toggleOn() {
+  toggleOn = () => {
     const { dispatch, metadataField, categoryIndex } = this.props;
     dispatch({
       type: "categorical metadata filter select",
       metadataField,
       categoryIndex
     });
-  }
+  };
+
+  handleMouseEnter = () => {
+    const { dispatch, metadataField, categoryIndex } = this.props;
+    dispatch({
+      type: "category value mouse hover start",
+      metadataField,
+      categoryIndex
+    });
+  };
+
+  handleMouseExit = () => {
+    const { dispatch, metadataField, categoryIndex } = this.props;
+    dispatch({
+      type: "category value mouse hover end",
+      metadataField,
+      categoryIndex
+    });
+  };
 
   render() {
     const {
@@ -79,6 +97,8 @@ class CategoryValue extends React.Component {
           justifyContent: "space-between"
         }}
         data-testclass="categorical-row"
+        onMouseEnter={this.handleMouseEnter}
+        onMouseLeave={this.handleMouseExit}
       >
         <div
           style={{
@@ -92,9 +112,7 @@ class CategoryValue extends React.Component {
         >
           <label className="bp3-control bp3-checkbox">
             <input
-              onChange={
-                selected ? this.toggleOff.bind(this) : this.toggleOn.bind(this)
-              }
+              onChange={selected ? this.toggleOff : this.toggleOn}
               data-testclass="categorical-value-select"
               data-testid={`categorical-value-select-${metadataField}-${displayString}`}
               checked={selected}

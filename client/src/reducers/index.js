@@ -16,37 +16,39 @@ import layoutChoice from "./layoutChoice";
 import responsive from "./responsive";
 import controls from "./controls";
 import resetCache from "./resetCache";
+import centroidLabel from "./centroidLabel";
 
 import undoableConfig from "./undoableConfig";
 
 const Reducer = undoable(
-    cascadeReducers([
-        ["config", config],
-        ["universe", universe],
-        ["world", world],
-        ["layoutChoice", layoutChoice],
-        ["categoricalSelection", categoricalSelection],
-        ["continuousSelection", continuousSelection],
-        ["graphSelection", graphSelection],
-        ["crossfilter", crossfilter],
-        ["colors", colors],
-        ["controls", controls],
-        ["differential", differential],
-        ["responsive", responsive],
-        ["resetCache", resetCache]
-    ]),
-    [
-        "world",
-        "categoricalSelection",
-        "continuousSelection",
-        "graphSelection",
-        "crossfilter",
-        "colors",
-        "controls",
-        "differential",
-        "layoutChoice"
-    ],
-    undoableConfig
+  cascadeReducers([
+    ["config", config],
+    ["universe", universe],
+    ["world", world],
+    ["layoutChoice", layoutChoice],
+    ["categoricalSelection", categoricalSelection],
+    ["continuousSelection", continuousSelection],
+    ["graphSelection", graphSelection],
+    ["crossfilter", crossfilter],
+    ["colors", colors],
+    ["controls", controls],
+    ["differential", differential],
+    ["responsive", responsive],
+    ["centroidLabel", centroidLabel],
+    ["resetCache", resetCache]
+  ]),
+  [
+    "world",
+    "categoricalSelection",
+    "continuousSelection",
+    "graphSelection",
+    "crossfilter",
+    "colors",
+    "controls",
+    "differential",
+    "layoutChoice"
+  ],
+  undoableConfig
 );
 
 const store = createStore(Reducer, applyMiddleware(thunk));

@@ -29,7 +29,10 @@ const skipOnActions = new Set([
   "clear all user defined genes",
 
   "get single gene expression for coloring started",
-  "get single gene expression for coloring error"
+  "get single gene expression for coloring error",
+
+  "category value mouse hover start",
+  "category value mouse hover end"
 ]);
 
 /*

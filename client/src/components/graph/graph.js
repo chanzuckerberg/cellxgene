@@ -8,6 +8,8 @@ import memoize from "memoize-one";
 
 import * as globals from "../../globals";
 import setupSVGandBrushElements from "./setupSVGandBrush";
+import setupCentroidSVG from "./setupCentroidSVG";
+import actions from "../../actions";
 import _camera from "../../util/camera";
 import _drawPoints from "./drawPointsRegl";
 import scaleLinear from "../../util/scaleLinear";
@@ -22,7 +24,9 @@ import scaleLinear from "../../util/scaleLinear";
   selectionTool: state.graphSelection.tool,
   currentSelection: state.graphSelection.selection,
   layoutChoice: state.layoutChoice,
-  graphInteractionMode: state.controls.graphInteractionMode
+  centroidLabel: state.centroidLabel,
+  graphInteractionMode: state.controls.graphInteractionMode,
+  colorAccessor: state.colors.colorAccessor
 }))
 class Graph extends React.Component {
   computePointPositions = memoize((X, Y, scaleX, scaleY) => {
@@ -70,7 +74,8 @@ class Graph extends React.Component {
       sizes: null
     };
     this.state = {
-      svg: null,
+      toolSVG: null,
+      centroidSVG: null,
       tool: null,
       container: null
     };
@@ -139,9 +144,11 @@ class Graph extends React.Component {
       selectionTool,
       currentSelection,
       layoutChoice,
-      graphInteractionMode
+      graphInteractionMode,
+      colorAccessor,
+      centroidLabel
     } = this.props;
-    const { reglRender, regl, svg } = this.state;
+    const { reglRender, mode, regl, toolSVG, centroidSVG } = this.state;
     let stateChanges = {};
 
     if (reglRender) {
@@ -216,16 +223,10 @@ class Graph extends React.Component {
       );
     }
 
-    if (
-      prevProps.responsive.height !== responsive.height ||
-      prevProps.responsive.width !== responsive.width ||
-      /* first time */
-      (responsive.height && responsive.width && !svg) ||
-      selectionTool !== prevProps.selectionTool
-    ) {
+    const createToolSVG = () => {
       /* clear out whatever was on the div, even if nothing, but usually the brushes etc */
       d3.select("#graphAttachPoint")
-        .selectAll("svg")
+        .select("#tool")
         .remove();
 
       let handleStart;
@@ -241,16 +242,63 @@ class Graph extends React.Component {
         handleEnd = this.handleLassoEnd.bind(this);
         handleCancel = this.handleLassoCancel.bind(this);
       }
-      const { svg: newSvg, tool, container } = setupSVGandBrushElements(
+
+      const { svg: newToolSVG, tool, container } = setupSVGandBrushElements(
         selectionTool,
         handleStart,
         handleDrag,
         handleEnd,
         handleCancel,
         responsive,
-        this.graphPaddingRight
+        this.graphPaddingRight,
+        graphInteractionMode
       );
-      stateChanges = { ...stateChanges, svg: newSvg, tool, container };
+
+      stateChanges = { ...stateChanges, toolSVG: newToolSVG, tool, container };
+    };
+
+    const createCentroidSVG = () => {
+      d3.select("#graphAttachPoint")
+        .select("#centroid-container")
+        .remove();
+
+      if (centroidLabel.metadataField === "" || !centroidLabel.centroidXY) {
+        return;
+      }
+
+      const centroidScreen = this.mapPointToScreen(centroidLabel.centroidXY);
+
+      const newCentroidSVG = setupCentroidSVG(
+        responsive,
+        this.graphPaddingRight,
+        centroidScreen,
+        centroidLabel.categoryField,
+        colorAccessor
+      );
+
+      stateChanges = { ...stateChanges, centroidSVG: newCentroidSVG };
+    };
+
+    if (
+      prevProps.responsive.height !== responsive.height ||
+      prevProps.responsive.width !== responsive.width
+    ) {
+      // If the window size has changed we want to recreate all SVGs
+      createToolSVG();
+      createCentroidSVG();
+    } else if (
+      (responsive.height && responsive.width && !toolSVG) ||
+      selectionTool !== prevProps.selectionTool ||
+      prevProps.graphInteractionMode !== graphInteractionMode
+    ) {
+      // first time or change of selection tool6
+      createToolSVG();
+    } else if (
+      centroidLabel !== prevProps.centroidLabel ||
+      (responsive.height && responsive.width && !centroidSVG)
+    ) {
+      // First time for centroid or label change
+      createCentroidSVG();
     }
 
     /*
@@ -260,7 +308,7 @@ class Graph extends React.Component {
     if (
       currentSelection !== prevProps.currentSelection ||
       graphInteractionMode !== prevProps.graphInteractionMode ||
-      stateChanges.svg
+      stateChanges.toolSVG
     ) {
       const { tool, container } = this.state;
       this.selectionToolUpdate(
@@ -588,12 +636,7 @@ class Graph extends React.Component {
             right: 0
           }}
         >
-          <div
-            style={{
-              display: graphInteractionMode === "select" ? "inherit" : "none"
-            }}
-            id="graphAttachPoint"
-          />
+          <div id="graphAttachPoint" />
           <div style={{ padding: 0, margin: 0 }}>
             <canvas
               width={responsive.width - this.graphPaddingRight}
