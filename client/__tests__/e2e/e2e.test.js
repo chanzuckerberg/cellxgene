@@ -154,10 +154,13 @@ describe("gene entry", () => {
     await utils.clickOn("section-bulk-add");
     await utils.typeInto("input-bulk-add", testGenes.join(","));
     await page.keyboard.press("Enter");
-    const userGeneHist = await cxgActions.getAllHistograms(
-      "histogram-user-gene"
+
+    const allHistograms = await cxgActions.getAllHistograms(
+      "histogram-user-gene",
+      testGenes
     );
-    expect(userGeneHist).toEqual(expect.arrayContaining(testGenes));
+    expect(allHistograms).toEqual(expect.arrayContaining(testGenes));
+    expect(allHistograms.length).toEqual(testGenes.length);
   });
 });
 
@@ -176,10 +179,14 @@ describe("diffexp", () => {
     }
     await cxgActions.cellSet(2);
     await utils.clickOn("diffexp-button");
-    const diffExpHists = await cxgActions.getAllHistograms("histogram-diffexp");
-    expect(diffExpHists).toEqual(
+    const allHistograms = await cxgActions.getAllHistograms(
+      "histogram-diffexp",
+      data.diffexp["gene-results"]
+    );
+    expect(allHistograms).toEqual(
       expect.arrayContaining(data.diffexp["gene-results"])
     );
+    expect(allHistograms.length).toEqual(data.diffexp["gene-results"].length);
   });
 });
 

@@ -21,7 +21,6 @@ import {
   postUserErrorToast,
   keepAroundErrorToast
 } from "../framework/toasters";
-import ExpressionButtons from "./expressionButtons";
 
 const renderGene = (fuzzySortResult, { handleClick, modifiers, query }) => {
   if (!modifiers.matchesPredicate) {
@@ -180,19 +179,7 @@ class GeneExpression extends React.Component {
 
     return (
       <div>
-        <div
-          style={{
-            marginTop: 30
-          }}
-        >
-          <p
-            style={Object.assign({}, globals.leftSidebarSectionHeading, {
-              paddingLeft: globals.leftSidebarSectionPadding,
-              margin: 0
-            })}
-          >
-            Selected Genes
-          </p>
+        <div>
           <div
             style={{
               padding: globals.leftSidebarSectionPadding
@@ -208,7 +195,7 @@ class GeneExpression extends React.Component {
                 this.setState({ tab: "autosuggest" });
               }}
             >
-              Autosuggest
+              Autosuggest genes
             </Button>
             <Button
               active={tab === "bulkadd"}
@@ -260,7 +247,7 @@ class GeneExpression extends React.Component {
                 data-testid={"add-gene"}
                 loading={userDefinedGenesLoading}
               >
-                Add
+                Add gene
               </Button>
             </ControlGroup>
           ) : null}
@@ -291,7 +278,7 @@ class GeneExpression extends React.Component {
                       onClick={this.handleBulkAddClick.bind(this)}
                       loading={userDefinedGenesLoading}
                     >
-                      Add
+                      Add genes
                     </Button>
                   </ControlGroup>
                 </FormGroup>
@@ -318,15 +305,6 @@ class GeneExpression extends React.Component {
             : null}
         </div>
         <div>
-          <p
-            style={Object.assign({}, globals.leftSidebarSectionHeading, {
-              marginTop: 40,
-              paddingLeft: globals.leftSidebarSectionPadding
-            })}
-          >
-            Differentially Expressed Genes
-          </p>
-          <ExpressionButtons />
           {differential.diffExp
             ? _.map(differential.diffExp, (value, index) => {
                 const name = world.varAnnotations.at(value[0], varIndexName);

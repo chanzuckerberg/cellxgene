@@ -74,7 +74,8 @@ const saveOnActions = new Set([
   "set World to current selection",
   "set clip quantiles",
 
-  "set layout choice"
+  "set layout choice",
+  "change graph interaction mode"
 ]);
 
 /**
