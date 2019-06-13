@@ -32,8 +32,8 @@ export const puppeteerUtils = puppeteerPage => ({
     await puppeteerPage.waitFor(200);
     // select all
 
-    await puppeteerPage.click(selector, {clickCount: 3})
-    await puppeteerPage.keyboard.type("Backspace")
+    await puppeteerPage.click(selector, { clickCount: 3 });
+    await puppeteerPage.keyboard.type("Backspace");
     await puppeteerPage.type(selector, text);
   },
 
@@ -79,6 +79,7 @@ export const cellxgeneActions = puppeteerPage => ({
 
   async getAllHistograms(testclass) {
     await puppeteerUtils(puppeteerPage).waitByClass(testclass);
+
     const histograms = await puppeteerPage.$$eval(
       `[data-testclass=${testclass}]`,
       els => {
@@ -180,11 +181,16 @@ export const cellxgeneActions = puppeteerPage => ({
     await page.waitFor(200);
   },
 
-  async clip(min = 0, max = 100) { 
+  async clip(min = 0, max = 100) {
     await puppeteerUtils(puppeteerPage).clickOn("visualization-settings");
-    await puppeteerUtils(puppeteerPage).clearInputAndTypeInto("clip-min-input", min);
-    await puppeteerUtils(puppeteerPage).clearInputAndTypeInto("clip-max-input", max);
+    await puppeteerUtils(puppeteerPage).clearInputAndTypeInto(
+      "clip-min-input",
+      min
+    );
+    await puppeteerUtils(puppeteerPage).clearInputAndTypeInto(
+      "clip-max-input",
+      max
+    );
     await puppeteerUtils(puppeteerPage).clickOn("clip-commit");
   }
-
 });
