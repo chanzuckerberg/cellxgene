@@ -52,7 +52,6 @@ class Worker(EmittingProcess):
                 "var_names": None,
             }
             args.update(self.engine_options)
-            print("args", args)
             data = ScanpyEngine(self.data_file, args)
             server.attach_data(data, self.engine_options["title"])
             self.emit("ready")
