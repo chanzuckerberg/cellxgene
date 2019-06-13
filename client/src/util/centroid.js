@@ -36,11 +36,15 @@ const calcMedianCentroid = (world, annoName, annoValue, layoutDimNames) => {
 
   for (let i = 0, len = annoArray.length; i < len; i += 1) {
     if (annoArray[i] === annoValue) {
-      hasFinite = Number.isFinite(annoArray[i]) ? true : hasFinite;
+      hasFinite =
+        Number.isFinite(layoutXArray[i]) || Number.isFinite(layoutYArray[i])
+          ? true
+          : hasFinite;
       centroidX.push(layoutXArray[i]);
       centroidY.push(layoutYArray[i]);
     }
   }
+
   if (hasFinite) {
     const medianX = quantile([0.5], Float64Array.from(centroidX));
     const medianY = quantile([0.5], Float64Array.from(centroidY));
