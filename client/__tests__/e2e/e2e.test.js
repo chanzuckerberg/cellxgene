@@ -148,7 +148,7 @@ describe("gene entry", async () => {
     );
   });
 
-  test.only("bulk add genes", async () => {
+  test("bulk add genes", async () => {
     await cxgActions.reset();
     const testGenes = data.genes.bulkadd;
     await utils.clickOn("section-bulk-add");
@@ -165,7 +165,7 @@ describe("gene entry", async () => {
 });
 
 describe("diffexp", async () => {
-  test.only("selects cells, saves them and performs diffexp", async () => {
+  test("selects cells, saves them and performs diffexp", async () => {
     for (const select of data.diffexp.cellset1) {
       if (select.kind === "categorical") {
         await cxgActions.selectCategory(select.metadata, select.values, true);
