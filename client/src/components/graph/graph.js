@@ -242,6 +242,7 @@ class Graph extends React.Component {
         handleEnd = this.handleLassoEnd.bind(this);
         handleCancel = this.handleLassoCancel.bind(this);
       }
+
       const { svg: newToolSVG, tool, container } = setupSVGandBrushElements(
         selectionTool,
         handleStart,
@@ -249,7 +250,8 @@ class Graph extends React.Component {
         handleEnd,
         handleCancel,
         responsive,
-        this.graphPaddingRight
+        this.graphPaddingRight,
+        graphInteractionMode
       );
 
       stateChanges = { ...stateChanges, toolSVG: newToolSVG, tool, container };
@@ -286,7 +288,8 @@ class Graph extends React.Component {
       createCentroidSVG();
     } else if (
       (responsive.height && responsive.width && !toolSVG) ||
-      selectionTool !== prevProps.selectionTool
+      selectionTool !== prevProps.selectionTool ||
+      prevProps.graphInteractionMode !== graphInteractionMode
     ) {
       // first time or change of selection tool6
       createToolSVG();
@@ -633,12 +636,7 @@ class Graph extends React.Component {
             right: 0
           }}
         >
-          <div
-            style={{
-              display: graphInteractionMode === "select" ? "inherit" : "none"
-            }}
-            id="graphAttachPoint"
-          />
+          <div id="graphAttachPoint" />
           <div style={{ padding: 0, margin: 0 }}>
             <canvas
               width={responsive.width - this.graphPaddingRight}

@@ -16,7 +16,8 @@ export default (
   handleEndAction,
   handleCancelAction,
   responsive,
-  graphPaddingRight
+  graphPaddingRight,
+  graphInteractionMode
 ) => {
   const svg = d3
     .select("#graphAttachPoint")
@@ -26,7 +27,8 @@ export default (
     .attr("width", responsive.width - graphPaddingRight)
     .attr("height", responsive.height)
     .attr("class", `${styles.graphSVG}`)
-    .style("z-index", 999);
+    .style("z-index", 999)
+    .style("display", graphInteractionMode === "select" ? "inherit" : "none");
 
   if (selectionToolType === "brush") {
     const brush = d3
