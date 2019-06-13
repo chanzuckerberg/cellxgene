@@ -19,8 +19,8 @@ beforeAll(async () => {
   const browserParams = DEV
     ? { headless: false, slowMo: 5 }
     : DEBUG
-      ? { headless: false, slowMo: 100, devtools: true }
-      : {};
+    ? { headless: false, slowMo: 100, devtools: true }
+    : {};
   browser = await puppeteer.launch(browserParams);
   page = await browser.newPage();
   await page.setViewport(browserViewport);
@@ -148,29 +148,24 @@ describe("gene entry", async () => {
     );
   });
 
-  test("bulk add genes", async () => {
+  test.only("bulk add genes", async () => {
     await cxgActions.reset();
     const testGenes = data.genes.bulkadd;
     await utils.clickOn("section-bulk-add");
     await utils.typeInto("input-bulk-add", testGenes.join(","));
     await page.keyboard.press("Enter");
 
-    // these load asynchronously, so we need to wait for each histogram individually
-    await Promise.all(
-      testGenes.map(g => page.waitForSelector(`[data-testid='histogram-${g}']`))
+    const allHistograms = await cxgActions.getAllHistograms(
+      "histogram-user-gene",
+      testGenes
     );
-    // const idHandles = await Promise.all(
-    //   elements.map(el => el.getProperty("id"))
-    // );
-    // const ids = await Promise.all(idHandles.map(h => h.jsonValue()));
-    // expect(ids.map(id => id.substring("histogram_".length))).toEqual(
-    //   expect.arrayContaining(testGenes)
-    // );
+    expect(allHistograms).toEqual(expect.arrayContaining(testGenes));
+    expect(allHistograms.length).toEqual(testGenes.length);
   });
 });
 
 describe("diffexp", async () => {
-  test("selects cells, saves them and performs diffexp", async () => {
+  test.only("selects cells, saves them and performs diffexp", async () => {
     for (const select of data.diffexp.cellset1) {
       if (select.kind === "categorical") {
         await cxgActions.selectCategory(select.metadata, select.values, true);
@@ -184,20 +179,14 @@ describe("diffexp", async () => {
     }
     await cxgActions.cellSet(2);
     await utils.clickOn("diffexp-button");
-
-    // these load asynchronously, so we need to wait for each histogram individually
-    const elements = await Promise.all(
-      data.diffexp["gene-results"].map(g =>
-        page.waitForSelector(`[data-testid='histogram-${g}']`)
-      )
+    const allHistograms = await cxgActions.getAllHistograms(
+      "histogram-diffexp",
+      data.diffexp["gene-results"]
     );
-    const idHandles = await Promise.all(
-      elements.map(el => el.getProperty("id"))
-    );
-    const ids = await Promise.all(idHandles.map(h => h.jsonValue()));
-    expect(ids.map(id => id.substring("histogram_".length))).toEqual(
+    expect(allHistograms).toEqual(
       expect.arrayContaining(data.diffexp["gene-results"])
     );
+    expect(allHistograms.length).toEqual(data.diffexp["gene-results"].length);
   });
 });
 
