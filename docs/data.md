@@ -39,7 +39,7 @@ As a quick example, let's construct a command to use `prepare` to take a raw exp
 We'll start off using the raw data from the pbmc3k dataset. This dataset is described [here](https://icb-scanpy.readthedocs-hosted.com/en/stable/api/scanpy.datasets.pbmc3k.html), and is available as part of the scanpy API. For this example, we'll assume this raw data is stored in a file called `pbmc3k-raw.h5ad`.
 
 Our `prepare` compose our command looks like this:  
-<img src="prepare-cmd-example.png" width="700" />
+<img src="prepare-cmd-example.jpg" width="700" />
 
 Let's look at what `prepare` is doing to our data, and how each step relates to the command above. You can see a walkthrough of what's going on under the hood for this example in [this notebook](https://github.com/chanzuckerberg/cellxgene-vignettes/blob/master/dataset-processing/pbmc3k-prepare-example.ipynb).
 
