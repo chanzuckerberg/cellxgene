@@ -191,6 +191,7 @@ class LoadWidget(QFrame):
         self.diff_exp_lfc_cutoff_widget.setStepType(QAbstractSpinBox.AdaptiveDecimalStepType)
         self.load_widget = QPushButton("Open...")
         self.load_widget.clicked.connect(self.onLoad)
+        self.progress = QProgressBar()
 
         self.title_widget.textChanged.connect(self.updateOpt)
         self.embedding_widget.textChanged.connect(self.updateOpt)
@@ -222,6 +223,7 @@ class LoadWidget(QFrame):
         load_layout.addRow(max_category_items_label, self.max_category_items_widget)
         load_layout.addRow(diff_exp_lfc_label, self.diff_exp_lfc_cutoff_widget)
         load_layout.addRow(load_label, self.load_widget)
+        load_layout.addRow(QLabel("progress"), self.progress)
 
         # Error section
         self.error_label = QLabel("")
@@ -236,10 +238,21 @@ class LoadWidget(QFrame):
         load_ui_layout.setStretch(2, 10)
         self.setLayout(load_ui_layout)
 
+        self.timer = QTimer()
+        self.timer.setInterval(100)
+        self.timer.timeout.connect(self.updateProgress)
+
         self.signals = FileLoadSignals()
         self.signals.selectedFile.connect(self.createScanpyEngine)
 
+    def updateProgress(self):
+        curr_val = self.progress.value()
+        next_val = (curr_val + 1) % 100
+        self.progress.setValue(next_val)
 
+    def resetProgress(self):
+        self.progress.setValue(0)
+        self.timer.stop()
 
     def updateOpt(self, value):
         # get values
@@ -289,6 +302,8 @@ class LoadWidget(QFrame):
             self.signals.selectedFile.emit(file_name)
             # Reset error on reload
             self.serverError = False
+            self.timer.start()
+
 
     def onDataReady(self):
         self.site_ready_worker = SiteReadyWorker(self.window().url)
@@ -300,6 +315,7 @@ class LoadWidget(QFrame):
 
     def onServerReady(self):
         if not self.serverError:
+            self.resetProgress()
             self.window().cef_widget.browser.Navigate(self.window().url)
             self.window().showBrowser()
 
@@ -309,6 +325,7 @@ class LoadWidget(QFrame):
             self.serverError = True
             # Report error and switch to load screen
             self.window().shutdownServer()
+        self.resetProgress()
         self.window().stacked_layout.setCurrentIndex(LOAD_INDEX)
         self.error_label.setText(f"Error: {err}")
         self.error_label.resize(self.MAX_CONTENT_WIDTH, self.error_label.height())
