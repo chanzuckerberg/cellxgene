@@ -159,11 +159,13 @@ class LoadWidget(QFrame):
         self.serverError = False
         self.engine_options = {}
 
-        self.label = QLabel("cellxgene")
+        self.label = QLabel()
+        logo = QPixmap("cellxgene_logo.png")
+        self.label.setPixmap(logo)
+        self.label.setContentsMargins(100,0,100,0)
         logo_layout.addWidget(self.label)
-        logo = QPixmap()
-        logo.load(":/../../cellxgene_logo.png")
-        load_layout.addWidget(QLabel(logo))
+
+        # load_layout.addWidget(QLabel(logo))
         # UI section
         # TODO add load spinner
         # TODO add cancel button to send back to browser (if available)
