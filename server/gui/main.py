@@ -159,6 +159,8 @@ class LoadWidget(QFrame):
         self.serverError = False
         self.engine_options = {}
 
+        self.file_name = None
+
         self.label = QLabel()
         logo = QPixmap("cellxgene_logo.png")
         self.label.setPixmap(logo)
@@ -189,8 +191,8 @@ class LoadWidget(QFrame):
         self.diff_exp_lfc_cutoff_widget.setValue(0.1)
         self.diff_exp_lfc_cutoff_widget.setDecimals(3)
         self.diff_exp_lfc_cutoff_widget.setStepType(QAbstractSpinBox.AdaptiveDecimalStepType)
-        self.load_widget = QPushButton("Open...")
-        self.load_widget.clicked.connect(self.onLoad)
+        self.launch_widget = QPushButton("Launch cellxgene")
+        self.launch_widget.clicked.connect(self.onLoad)
         self.progress = QProgressBar()
 
         self.title_widget.textChanged.connect(self.updateOpt)
@@ -222,14 +224,19 @@ class LoadWidget(QFrame):
         load_layout.addRow(var_label, self.var_widget)
         load_layout.addRow(max_category_items_label, self.max_category_items_widget)
         load_layout.addRow(diff_exp_lfc_label, self.diff_exp_lfc_cutoff_widget)
-        load_layout.addRow(load_label, self.load_widget)
+        load_layout.addRow(load_label, self.launch_widget)
         load_layout.addRow(QLabel("progress"), self.progress)
+
+        self.file_area = FileArea()
+        load_layout.addRow("file", self.file_area)
+
 
         # Error section
         self.error_label = QLabel("")
         self.error_label.setWordWrap(True)
         self.error_label.setFixedWidth(self.MAX_CONTENT_WIDTH)
         message_layout.addWidget(self.error_label, alignment=Qt.AlignTop)
+
 
         # Layout
         for l in [logo_layout, load_layout, message_layout]:
@@ -244,6 +251,7 @@ class LoadWidget(QFrame):
 
         self.signals = FileLoadSignals()
         self.signals.selectedFile.connect(self.createScanpyEngine)
+        self.signals.error.connect(self.onError)
 
     def updateProgress(self):
         curr_val = self.progress.value()
@@ -279,6 +287,8 @@ class LoadWidget(QFrame):
             del self.engine_options[caller]
 
     def createScanpyEngine(self, file_name):
+        if "title" not in self.engine_options or not self.engine_options["title"]:
+            self.engine_options["title"] = splitext(basename(file_name))[0]
         self.window().setupServer()
         worker = Worker(self.window().parent_conn, self.window().child_conn, file_name, host="127.0.0.1",
                         port=GUI_PORT, engine_options=self.engine_options)
@@ -292,17 +302,13 @@ class LoadWidget(QFrame):
         self.window().child_conn.close()
 
     def onLoad(self):
-        options = QFileDialog.Options()
-        # options |= QFileDialog.DontUseNativeDialog
-        file_name, _ = QFileDialog.getOpenFileName(self,
-                                                   "Open H5AD File", "", "H5AD Files (*.h5ad)", options=options)
-        if "title" not in self.engine_options or not self.engine_options["title"]:
-            self.engine_options["title"] = splitext(basename(file_name))[0]
-        if file_name:
-            self.signals.selectedFile.emit(file_name)
+        if self.file_name:
+            self.signals.selectedFile.emit(self.file_name)
             # Reset error on reload
             self.serverError = False
             self.timer.start()
+        else:
+            self.signals.error.emit("Please select a file before launching.")
 
 
     def onDataReady(self):
@@ -329,8 +335,48 @@ class LoadWidget(QFrame):
         self.window().stacked_layout.setCurrentIndex(LOAD_INDEX)
         self.error_label.setText(f"Error: {err}")
         self.error_label.resize(self.MAX_CONTENT_WIDTH, self.error_label.height())
+        self.error_label.setFrameStyle(QFrame.Panel)
+        return True
 
     onServerError = partialmethod(onError, server_error=True)
+
+
+class FileArea(QLabel):
+    def __init__(self):
+        super(FileArea, self).__init__()
+        self.setFrameShape(QFrame.Box)
+        self.setFixedWidth(100)
+        self.setFixedHeight(100)
+        self.setAcceptDrops(True)
+
+    def dragEnterEvent(self, e):
+        if e.mimeData().hasUrls:
+            e.accept()
+        else:
+            e.ignore()
+
+    def dragMoveEvent(self, e):
+        if e.mimeData().hasUrls:
+            e.accept()
+        else:
+            e.ignore()
+
+    def dropEvent(self, e):
+        """
+        Drop files directly onto the widget
+        File locations are stored in fname
+        :param e:
+        :return:
+        """
+        if e.mimeData().hasUrls:
+            e.setDropAction(Qt.CopyAction)
+            e.accept()
+            for url in e.mimeData().urls():
+                file_name = str(url.toLocalFile())
+            self.setText(file_name)
+            self.parent().file_name = file_name
+        else:
+            e.ignore()
 
 
 def main():

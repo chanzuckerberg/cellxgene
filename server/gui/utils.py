@@ -41,6 +41,7 @@ class SiteReadySignals(QObject):
 
 class FileLoadSignals(QObject):
     selectedFile = Signal(str)
+    error = Signal(str)
 
 
 class Emitter:
