@@ -12,6 +12,7 @@ from PySide2.QtGui import *
 from PySide2.QtCore import *
 from PySide2.QtWidgets import *
 
+import server.gui.cellxgene_rc
 from server.gui.browser import CefWidget, CefApplication
 from server.gui.workers import Worker, SiteReadyWorker
 from server.gui.utils import WINDOWS, LINUX, MAC, FileLoadSignals, Emitter, WorkerSignals, FileChanged
@@ -155,7 +156,9 @@ class LoadWidget(QFrame):
         logo_layout = QHBoxLayout()
         logo_layout.setContentsMargins(0, 0, 0, 20)
 
-        load_layout = QFormLayout()
+        load_layout = QVBoxLayout()
+        file_layout = QVBoxLayout()
+        options_layout = QFormLayout()
         # load_layout.setContentsMargins(0, 0, 0, 0)
         # load_layout.setSpacing(0)
         message_layout = QHBoxLayout()
@@ -167,7 +170,7 @@ class LoadWidget(QFrame):
         self.file_name = FilePath()
 
         self.label = QLabel()
-        logo = QPixmap("cellxgene_logo.png")
+        logo = QPixmap(":/cellxgene_logo.png")
         self.label.setPixmap(logo)
         self.label.setContentsMargins(100, 0, 100, 0)
         logo_layout.addWidget(self.label)
@@ -220,33 +223,38 @@ class LoadWidget(QFrame):
         diff_exp_lfc_label = QLabel("diffexp cutoff:")
         diff_exp_lfc_label.setToolTip(
             "Relative expression cutoff used when selecting top N differentially expressed genes")
-        load_label = QLabel("load file:")
-        load_label.setToolTip("File to load (h5ad format)")
 
-        load_layout.addRow(title_label, self.title_widget)
-        load_layout.addRow(embedding_label, self.embedding_widget)
-        load_layout.addRow(obs_label, self.obs_widget)
-        load_layout.addRow(var_label, self.var_widget)
-        load_layout.addRow(max_category_items_label, self.max_category_items_widget)
-        load_layout.addRow(diff_exp_lfc_label, self.diff_exp_lfc_cutoff_widget)
-        load_layout.addRow(load_label, self.launch_widget)
-        load_layout.addRow(QLabel("progress"), self.progress)
+        options_layout.addRow(title_label, self.title_widget)
+        options_layout.addRow(embedding_label, self.embedding_widget)
+        options_layout.addRow(obs_label, self.obs_widget)
+        options_layout.addRow(var_label, self.var_widget)
+        options_layout.addRow(max_category_items_label, self.max_category_items_widget)
+        options_layout.addRow(diff_exp_lfc_label, self.diff_exp_lfc_cutoff_widget)
 
         self.file_area = FileArea()
         self.file_name.signals.changed.connect(self.updatePath)
-        load_layout.addRow("file", self.file_area)
+        load_label = QLabel("load file:")
+        load_label.setToolTip("File to load (h5ad format)")
+
+        load_layout.addWidget(self.file_area)
+        self.loading_layout = QStackedLayout()
+        self.loading_layout.addWidget(self.launch_widget)
+        self.loading_layout.addWidget(self.progress)
+        load_layout.addLayout(self.loading_layout)
+
+
 
         # Error section
-        self.error_label = QLabel("")
+        self.error_label = QLabel("Err")
         self.error_label.setWordWrap(True)
         self.error_label.setFixedWidth(self.MAX_CONTENT_WIDTH)
-        message_layout.addWidget(self.error_label, alignment=Qt.AlignTop)
+        message_layout.addWidget(self.error_label)
 
         # Layout
-        for l in [logo_layout, load_layout, message_layout]:
+        for l in [logo_layout, load_layout, message_layout, options_layout]:
             load_ui_layout.addLayout(l)
 
-        load_ui_layout.setStretch(2, 10)
+        load_ui_layout.setStretch(3, 10)
         self.setLayout(load_ui_layout)
 
         self.timer = QTimer()
@@ -259,10 +267,11 @@ class LoadWidget(QFrame):
 
     def updatePath(self):
         file_name = self.file_name.value
-        self.file_area.label.setText(file_name)
+        self.file_area.label.setText("File: " + file_name)
         self.launch_widget.setEnabled(bool(file_name))
 
     def reset(self):
+        self.loading_layout.setCurrentIndex(0)
         self.timer.stop()
         self.error_label.setText("")
         self.file_name.updateValue(None)
@@ -274,6 +283,7 @@ class LoadWidget(QFrame):
 
     def resetProgress(self):
         self.progress.setValue(0)
+        self.loading_layout.setCurrentIndex(0)
         self.timer.stop()
 
     def updateOpt(self, value):
@@ -320,6 +330,7 @@ class LoadWidget(QFrame):
             self.signals.selectedFile.emit(self.file_name.value)
             # Reset error on reload
             self.serverError = False
+            self.loading_layout.setCurrentIndex(1)
             self.timer.start()
         else:
             self.signals.error.emit("Please select a file before launching.")
@@ -368,16 +379,17 @@ class FileArea(QFrame):
     def __init__(self):
         super(FileArea, self).__init__()
         self.setFrameShape(QFrame.Box)
-        self.setFixedWidth(100)
         self.setFixedHeight(100)
+        self.setFixedWidth(500)
         self.setAcceptDrops(True)
         self.instructions = QLabel(self)
         self.instructions.setText("Drag & Drop a h5ad file to load.")
-        self.instructions.setFixedWidth(100)
+        self.instructions.setGeometry(0,10,500,self.instructions.height())
         self.loadButton = QPushButton("Open...", parent=self)
+        self.loadButton.setGeometry(100,50,self.loadButton.width(),self.loadButton.height())
         self.loadButton.clicked.connect(self.fileBrowse)
         self.label = QLabel(self)
-        self.label.setFixedWidth(100)
+        self.label.setGeometry(0,75,500,self.label.height())
 
     def fileBrowse(self):
         options = QFileDialog.Options()
