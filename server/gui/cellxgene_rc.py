@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+# flake8: noqa
 # Resource object code
 #
 # Created: Tue Jun 18 16:53:19 2019
