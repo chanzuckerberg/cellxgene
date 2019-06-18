@@ -43,6 +43,9 @@ class FileLoadSignals(QObject):
     selectedFile = Signal(str)
     error = Signal(str)
 
+class FileChanged(QObject):
+    changed = Signal(bool)
+
 
 class Emitter:
     def __init__(self, transport, signals):
