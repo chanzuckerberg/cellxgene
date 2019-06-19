@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-# flake8: noqa
+
 # Resource object code
 #
-# Created: Tue Jun 18 16:53:19 2019
+# Created: Wed Jun 19 13:25:47 2019
 #      by: The Resource Compiler for PySide2 (Qt v5.12.3)
 #
 # WARNING! All changes made in this file will be lost!
@@ -10,6 +10,120 @@
 from PySide2 import QtCore
 
 qt_resource_data = b"\
+\x00\x00\x03l\
+<\
+?xml version=\x221.\
+0\x22 encoding=\x22utf\
+-8\x22?>\x0a<!-- Gener\
+ator: Adobe Illu\
+strator 23.0.1, \
+SVG Export Plug-\
+In . SVG Version\
+: 6.00 Build 0) \
+ -->\x0a<svg versio\
+n=\x221.1\x22 id=\x22Laye\
+r_1\x22 xmlns=\x22http\
+://www.w3.org/20\
+00/svg\x22 xmlns:xl\
+ink=\x22http://www.\
+w3.org/1999/xlin\
+k\x22 x=\x220px\x22 y=\x220p\
+x\x22\x0a\x09 viewBox=\x220 \
+0 100 100\x22 style\
+=\x22enable-backgro\
+und:new 0 0 100 \
+100;transform:sc\
+ale(-1)\x22 xml:spa\
+ce=\x22preserve\x22>\x0a<\
+style type=\x22text\
+/css\x22>\x0a    path{\
+fill:rgb(150, 14\
+6, 144)}\x0a    pol\
+ygon{fill:rgb(15\
+0, 146, 144)}\x0a  \
+  circle{fill:rg\
+b(150, 146, 144)\
+}\x0a    rect{fill:\
+rgb(150, 146, 14\
+4)}\x0a</style><pat\
+h d=\x22M51.3,75.9c\
+-1.9,0-3.8-0.8-5\
+-2.4L18.1,38.4c-\
+2.2-2.8-1.8-6.9,\
+1-9.1c2.8-2.2,6.\
+9-1.8,9.1,1l28.2\
+,35.1c2.2,2.8,1.\
+8,6.9-1,9.1\x0a\x09C54\
+.2,75.5,52.7,75.\
+9,51.3,75.9z\x22/>\x0a\
+<path d=\x22M51.3,7\
+5.9c-1.4,0-2.9-0\
+.5-4-1.4c-2.8-2.\
+2-3.2-6.3-1-9.1l\
+28.2-35.1c2.2-2.\
+8,6.3-3.2,9.1-1c\
+2.8,2.2,3.2,6.3,\
+1,9.1L56.4,73.5\x0a\
+\x09C55.1,75.1,53.2\
+,75.9,51.3,75.9z\
+\x22/>\x0a</svg>\x0a\
+\x00\x00\x03n\
+<\
+?xml version=\x221.\
+0\x22 encoding=\x22utf\
+-8\x22?>\x0a<!-- Gener\
+ator: Adobe Illu\
+strator 23.0.1, \
+SVG Export Plug-\
+In . SVG Version\
+: 6.00 Build 0) \
+ -->\x0a<svg versio\
+n=\x221.1\x22 id=\x22Laye\
+r_1\x22 xmlns=\x22http\
+://www.w3.org/20\
+00/svg\x22 xmlns:xl\
+ink=\x22http://www.\
+w3.org/1999/xlin\
+k\x22 x=\x220px\x22 y=\x220p\
+x\x22\x0a\x09 viewBox=\x220 \
+0 100 100\x22 style\
+=\x22enable-backgro\
+und:new 0 0 100 \
+100;transform:sc\
+ale(-1,1)\x22 xml:s\
+pace=\x22preserve\x22>\
+\x0a<style type=\x22te\
+xt/css\x22>\x0a    pat\
+h{fill:rgb(150, \
+146, 144)}\x0a    p\
+olygon{fill:rgb(\
+150, 146, 144)}\x0a\
+    circle{fill:\
+rgb(150, 146, 14\
+4)}\x0a    rect{fil\
+l:rgb(150, 146, \
+144)}\x0a</style><p\
+ath d=\x22M31.8,56.\
+4c-1.9,0-3.8-0.8\
+-5-2.4c-2.2-2.8-\
+1.8-6.9,1-9.1l35\
+.1-28.2c2.8-2.2,\
+6.9-1.8,9.1,1c2.\
+2,2.8,1.8,6.9-1,\
+9.1L35.8,54.9\x0a\x09C\
+34.6,55.9,33.2,5\
+6.4,31.8,56.4z\x22/\
+>\x0a<path d=\x22M66.9\
+,84.6c-1.4,0-2.9\
+-0.5-4-1.4L27.7,\
+54.9c-2.8-2.2-3.\
+2-6.3-1-9.1c2.2-\
+2.8,6.3-3.2,9.1-\
+1l35.1,28.2c2.8,\
+2.2,3.2,6.3,1,9.\
+1\x0a\x09C70.6,83.8,68\
+.8,84.6,66.9,84.\
+6z\x22/>\x0a</svg>\x0a\
 \x00\x00\x0d\xde\
 \x89\
 PNG\x0d\x0a\x1a\x0a\x00\x00\x00\x0dIHDR\x00\
@@ -237,16 +351,25 @@ u\x167\xe5\xb5\xf3\x88\xe8Gc\xa2\x93\x0b\xb7p4\
 "
 
 qt_resource_name = b"\
-\x00\x12\
-\x04\xdb\xfc\xa7\
+\x00\x0c\
+\x07)\x87\xc7\
+\x00e\
+\x00x\x00p\x00a\x00n\x00d\x00e\x00d\x00.\x00p\x00n\x00g\
+\x00\x0d\
+\x0dq\x06\x07\
 \x00c\
-\x00e\x00l\x00l\x00x\x00g\x00e\x00n\x00e\x00_\x00l\x00o\x00g\x00o\x00.\x00p\x00n\
-\x00g\
+\x00o\x00l\x00l\x00a\x00p\x00s\x00e\x00d\x00.\x00p\x00n\x00g\
+\x00\x08\
+\x05\xe2Y'\
+\x00l\
+\x00o\x00g\x00o\x00.\x00p\x00n\x00g\
 "
 
 qt_resource_struct = b"\
-\x00\x00\x00\x00\x00\x02\x00\x00\x00\x01\x00\x00\x00\x01\
+\x00\x00\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x01\
+\x00\x00\x00>\x00\x00\x00\x00\x00\x01\x00\x00\x06\xe2\
 \x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\
+\x00\x00\x00\x1e\x00\x00\x00\x00\x00\x01\x00\x00\x03p\
 "
 
 def qInitResources():

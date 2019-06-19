@@ -1,5 +1,8 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource>
-    <file>cellxgene_logo.png</file>
+    <file alias="logo.png">images/cellxgene_logo.png</file>
+    <file alias="collapsed.png">images/properties_contract.svg</file>
+    <file alias="expanded.png">images/properties_expand.svg</file>
+
 </qresource>
 </RCC>
