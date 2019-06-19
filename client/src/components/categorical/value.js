@@ -56,14 +56,50 @@ class CategoryValue extends React.Component {
     const isColorBy = metadataField === colorAccessor;
     let categories = null;
     let occupancy = null;
+    let occupancyContinuous = null;
 
     if (isColorBy && schema) {
       categories = schema.annotations.obsByName[colorAccessor]?.categories;
     }
 
-    if (colorAccessor && !isColorBy && categoricalSelection[colorAccessor]) {
-      const groupBy = world.obsAnnotations.col(metadataField);
-      occupancy = world.obsAnnotations.col(colorAccessor).histogram(groupBy);
+    if (colorAccessor && !isColorBy) {
+      if (categoricalSelection[colorAccessor]) {
+        const groupBy = world.obsAnnotations.col(metadataField);
+        occupancy = world.obsAnnotations.col(colorAccessor).histogram(groupBy);
+        // console.log(
+        //   "colorAccessor:",
+        //   colorAccessor,
+        //   "  metadataField:",
+        //   metadataField,
+        //   "  value:",
+        //   value
+        // );
+        // console.log("categoricalSelec:", categoricalSelection[colorAccessor]);
+        // console.log("groupBy:", groupBy);
+
+        // console.log("histogram for value is:", occupancy.get(value));
+
+        console.log(occupancy);
+      } else if (false /* is continuous obsannotation (n_counts) */) {
+        return;
+      } else {
+        const groupBy = world.obsAnnotations.col(metadataField);
+
+        occupancyContinuous = world.varData
+          .col(
+            colorAccessor
+          ) /* this is magic and col knows what kind of data is being used for histo. Could consider separate function names to make the fork explicit*/
+          .histogram(
+            50,
+            [-0.3585, 5.648] /* hardcoded APOD range */,
+            groupBy
+          ); /* Because the signature changes we really need different names for histogram to differentiate signatures  */
+
+        console.log("histogram map:", occupancyContinuous);
+
+        // console.log(occupancyContinuous);
+        // console.log(occupancyContinuous.get("F"));
+      }
     }
 
     return (
