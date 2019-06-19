@@ -11,6 +11,7 @@ import PySide2
 from PySide2.QtGui import *
 from PySide2.QtCore import *
 from PySide2.QtWidgets import *
+from PySide2.QtSvg import *
 
 import server.gui.cellxgene_rc
 from server.gui.browser import CefWidget, CefApplication
@@ -156,11 +157,9 @@ class LoadWidget(QFrame):
         logo_layout = QHBoxLayout()
         logo_layout.setContentsMargins(0, 0, 0, 20)
 
-        load_layout = QVBoxLayout()
         file_layout = QVBoxLayout()
-        options_layout = QFormLayout()
-        # load_layout.setContentsMargins(0, 0, 0, 0)
-        # load_layout.setSpacing(0)
+        options_container_layout = QVBoxLayout()
+        self.options_layout = QFormLayout()
         message_layout = QHBoxLayout()
         message_layout.setContentsMargins(0, 0, 0, 0)
 
@@ -170,7 +169,7 @@ class LoadWidget(QFrame):
         self.file_name = FilePath()
 
         self.label = QLabel()
-        logo = QPixmap(":/cellxgene_logo.png")
+        logo = QPixmap(":/logo.png")
         self.label.setPixmap(logo)
         self.label.setContentsMargins(100, 0, 100, 0)
         logo_layout.addWidget(self.label)
@@ -224,25 +223,38 @@ class LoadWidget(QFrame):
         diff_exp_lfc_label.setToolTip(
             "Relative expression cutoff used when selecting top N differentially expressed genes")
 
-        options_layout.addRow(title_label, self.title_widget)
-        options_layout.addRow(embedding_label, self.embedding_widget)
-        options_layout.addRow(obs_label, self.obs_widget)
-        options_layout.addRow(var_label, self.var_widget)
-        options_layout.addRow(max_category_items_label, self.max_category_items_widget)
-        options_layout.addRow(diff_exp_lfc_label, self.diff_exp_lfc_cutoff_widget)
+        options_header_layout = QHBoxLayout()
+        options_header_layout.addWidget(QLabel("Advanced Options"))
+
+        collapsed = QIcon(":collapsed.svg")
+        self.options_label = QPushButton()
+        self.options_label.setIcon(collapsed)
+        self.options_label.clicked.connect(self.toggleOptionsVisibiltiy)
+        options_header_layout.addWidget(self.options_label)
+
+        options_container_layout.addLayout(options_header_layout)
+
+        self.options_layout.addRow(title_label, self.title_widget)
+        self.options_layout.addRow(embedding_label, self.embedding_widget)
+        self.options_layout.addRow(obs_label, self.obs_widget)
+        self.options_layout.addRow(var_label, self.var_widget)
+        self.options_layout.addRow(max_category_items_label, self.max_category_items_widget)
+        self.options_layout.addRow(diff_exp_lfc_label, self.diff_exp_lfc_cutoff_widget)
+        self.options_container_widget = QFrame()
+        self.options_container_widget.setLayout(self.options_layout)
+        # self.options_container_widget.hide()
+        options_container_layout.addWidget(self.options_container_widget)
 
         self.file_area = FileArea()
         self.file_name.signals.changed.connect(self.updatePath)
         load_label = QLabel("load file:")
         load_label.setToolTip("File to load (h5ad format)")
 
-        load_layout.addWidget(self.file_area)
+        file_layout.addWidget(self.file_area)
         self.loading_layout = QStackedLayout()
         self.loading_layout.addWidget(self.launch_widget)
         self.loading_layout.addWidget(self.progress)
-        load_layout.addLayout(self.loading_layout)
-
-
+        file_layout.addLayout(self.loading_layout)
 
         # Error section
         self.error_label = QLabel("Err")
@@ -251,10 +263,11 @@ class LoadWidget(QFrame):
         message_layout.addWidget(self.error_label)
 
         # Layout
-        for l in [logo_layout, load_layout, message_layout, options_layout]:
+        for l in [logo_layout, file_layout, message_layout, options_container_layout]:
             load_ui_layout.addLayout(l)
 
-        load_ui_layout.setStretch(3, 10)
+        #TODO remove magic number
+        load_ui_layout.setStretch(1, 10)
         self.setLayout(load_ui_layout)
 
         self.timer = QTimer()
@@ -265,9 +278,22 @@ class LoadWidget(QFrame):
         self.signals.selectedFile.connect(self.createScanpyEngine)
         self.signals.error.connect(self.onError)
 
+    def toggleOptionsVisibiltiy(self):
+        print("clicked")
+        print(self.options_container_widget.isVisible())
+        if self.options_container_widget.isVisible():
+            self.options_label.setIcon(QIcon(":expanded.svg"))
+            self.options_container_widget.hide()
+        else:
+            self.options_label.setIcon(QIcon(":collapsed.svg"))
+            self.options_container_widget.show()
+
     def updatePath(self):
         file_name = self.file_name.value
-        self.file_area.label.setText("File: " + file_name)
+        if file_name:
+            self.file_area.label.setText("File: " + file_name)
+        else:
+            self.file_area.label.setText("")
         self.launch_widget.setEnabled(bool(file_name))
 
     def reset(self):
@@ -379,7 +405,7 @@ class FileArea(QFrame):
     def __init__(self):
         super(FileArea, self).__init__()
         self.setFrameShape(QFrame.Box)
-        self.setFixedHeight(100)
+        self.setFixedHeight(300)
         self.setFixedWidth(500)
         self.setAcceptDrops(True)
         self.instructions = QLabel(self)
@@ -440,6 +466,8 @@ def main():
     cef.Initialize(settings)
     app = CefApplication(sys.argv)
     main_window = MainWindow()
+    main_window.setWindowTitle('cellxgene')
+    main_window.setUnifiedTitleAndToolBarOnMac(True)
     main_window.show()
     main_window.activateWindow()
     main_window.raise_()
