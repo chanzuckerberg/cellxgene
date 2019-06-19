@@ -66,20 +66,6 @@ class CategoryValue extends React.Component {
       if (categoricalSelection[colorAccessor]) {
         const groupBy = world.obsAnnotations.col(metadataField);
         occupancy = world.obsAnnotations.col(colorAccessor).histogram(groupBy);
-        // console.log(
-        //   "colorAccessor:",
-        //   colorAccessor,
-        //   "  metadataField:",
-        //   metadataField,
-        //   "  value:",
-        //   value
-        // );
-        // console.log("categoricalSelec:", categoricalSelection[colorAccessor]);
-        // console.log("groupBy:", groupBy);
-
-        // console.log("histogram for value is:", occupancy.get(value));
-
-        console.log(occupancy);
       } else if (false /* is continuous obsannotation (n_counts) */) {
         return;
       } else {
@@ -96,9 +82,6 @@ class CategoryValue extends React.Component {
           ); /* Because the signature changes we really need different names for histogram to differentiate signatures  */
 
         console.log("histogram map:", occupancyContinuous);
-
-        // console.log(occupancyContinuous);
-        // console.log(occupancyContinuous.get("F"));
       }
     }
 
