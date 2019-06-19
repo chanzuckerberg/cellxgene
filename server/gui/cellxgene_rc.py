@@ -2,7 +2,7 @@
 
 # Resource object code
 #
-# Created: Wed Jun 19 14:23:22 2019
+# Created: Wed Jun 19 15:02:04 2019
 #      by: The Resource Compiler for PySide2 (Qt v5.12.3)
 #
 # WARNING! All changes made in this file will be lost!
@@ -346,6 +346,62 @@ c-1.4,0-2.9-0.5-\
 0.6,83.8,68.8,84\
 .6,66.9,84.6z\x22/>\
 \x0a</svg>\x0a\
+\x00\x00\x03X\
+<\
+?xml version=\x221.\
+0\x22 encoding=\x22utf\
+-8\x22?>\x0a<!-- Gener\
+ator: Adobe Illu\
+strator 23.0.1, \
+SVG Export Plug-\
+In . SVG Version\
+: 6.00 Build 0) \
+ -->\x0a<svg versio\
+n=\x221.1\x22 id=\x22Laye\
+r_1\x22 xmlns=\x22http\
+://www.w3.org/20\
+00/svg\x22 xmlns:xl\
+ink=\x22http://www.\
+w3.org/1999/xlin\
+k\x22 x=\x220px\x22 y=\x220p\
+x\x22\x0a\x09 viewBox=\x220 \
+0 100 100\x22 style\
+=\x22enable-backgro\
+und:new 0 0 100 \
+100\x22 xml:space=\x22\
+preserve\x22>\x0a<styl\
+e type=\x22text/css\
+\x22>\x0a    path{fill\
+:rgb(150, 146, 1\
+44)}\x0a    polygon\
+{fill:rgb(150, 1\
+46, 144)}\x0a    ci\
+rcle{fill:rgb(15\
+0, 146, 144)}\x0a  \
+  rect{fill:rgb(\
+150, 146, 144)}\x0a\
+</style><path d=\
+\x22M51.3,75.9c-1.9\
+,0-3.8-0.8-5-2.4\
+L18.1,38.4c-2.2-\
+2.8-1.8-6.9,1-9.\
+1c2.8-2.2,6.9-1.\
+8,9.1,1l28.2,35.\
+1c2.2,2.8,1.8,6.\
+9-1,9.1\x0a\x09C54.2,7\
+5.5,52.7,75.9,51\
+.3,75.9z\x22/>\x0a<pat\
+h d=\x22M51.3,75.9c\
+-1.4,0-2.9-0.5-4\
+-1.4c-2.8-2.2-3.\
+2-6.3-1-9.1l28.2\
+-35.1c2.2-2.8,6.\
+3-3.2,9.1-1c2.8,\
+2.2,3.2,6.3,1,9.\
+1L56.4,73.5\x0a\x09C55\
+.1,75.1,53.2,75.\
+9,51.3,75.9z\x22/>\x0a\
+</svg>\x0a\
 "
 
 qt_resource_name = b"\
@@ -353,21 +409,26 @@ qt_resource_name = b"\
 \x05\xe2Y'\
 \x00l\
 \x00o\x00g\x00o\x00.\x00p\x00n\x00g\
-\x00\x0c\
-\x07)\x8aG\
-\x00e\
-\x00x\x00p\x00a\x00n\x00d\x00e\x00d\x00.\x00s\x00v\x00g\
+\x00\x08\
+\x0aaZ\xa7\
+\x00i\
+\x00c\x00o\x00n\x00.\x00p\x00n\x00g\
 \x00\x0d\
 \x0dq\x0b\x87\
 \x00c\
 \x00o\x00l\x00l\x00a\x00p\x00s\x00e\x00d\x00.\x00s\x00v\x00g\
+\x00\x0c\
+\x07)\x8aG\
+\x00e\
+\x00x\x00p\x00a\x00n\x00d\x00e\x00d\x00.\x00s\x00v\x00g\
 "
 
 qt_resource_struct = b"\
-\x00\x00\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x01\
+\x00\x00\x00\x00\x00\x02\x00\x00\x00\x04\x00\x00\x00\x01\
 \x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\
+\x00\x00\x00L\x00\x00\x00\x00\x00\x01\x00\x00\x14\x9b\
 \x00\x00\x00\x16\x00\x00\x00\x00\x00\x01\x00\x00\x0d\xe2\
-\x00\x00\x004\x00\x00\x00\x00\x00\x01\x00\x00\x11>\
+\x00\x00\x00,\x00\x00\x00\x00\x00\x01\x00\x00\x11>\
 "
 
 def qInitResources():

@@ -3,6 +3,6 @@
     <file alias="logo.png">images/cellxgene_logo.png</file>
     <file alias="collapsed.svg">images/properties_contract.svg</file>
     <file alias="expanded.svg">images/properties_expand.svg</file>
-
+    <file alias="icon.png">images/properties_expand.svg</file>
 </qresource>
 </RCC>
