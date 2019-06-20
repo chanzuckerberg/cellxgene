@@ -38,8 +38,7 @@ class CategoryValue extends React.Component {
       colorAccessor,
       colorScale,
       i,
-      schema,
-      world
+      schema
     } = this.props;
 
     if (!categoricalSelection) return null;
@@ -55,34 +54,9 @@ class CategoryValue extends React.Component {
     /* this is the color scale, so add swatches below */
     const isColorBy = metadataField === colorAccessor;
     let categories = null;
-    let occupancy = null;
-    let occupancyContinuous = null;
 
     if (isColorBy && schema) {
       categories = schema.annotations.obsByName[colorAccessor]?.categories;
-    }
-
-    if (colorAccessor && !isColorBy) {
-      if (categoricalSelection[colorAccessor]) {
-        const groupBy = world.obsAnnotations.col(metadataField);
-        occupancy = world.obsAnnotations.col(colorAccessor).histogram(groupBy);
-      } else if (false /* is continuous obsannotation (n_counts) */) {
-        return;
-      } else {
-        const groupBy = world.obsAnnotations.col(metadataField);
-
-        occupancyContinuous = world.varData
-          .col(
-            colorAccessor
-          ) /* this is magic and col knows what kind of data is being used for histo. Could consider separate function names to make the fork explicit*/
-          .histogram(
-            50,
-            [-0.3585, 5.648] /* hardcoded APOD range */,
-            groupBy
-          ); /* Because the signature changes we really need different names for histogram to differentiate signatures  */
-
-        console.log("histogram map:", occupancyContinuous);
-      }
     }
 
     return (
@@ -125,15 +99,8 @@ class CategoryValue extends React.Component {
           </label>
           {/* color by continuous distribution histogram will go here... */}
           <span style={{ flexShrink: 0 }}>
-            {colorAccessor &&
-            !isColorBy &&
-            categoricalSelection[colorAccessor] ? (
-              <Occupancy
-                occupancy={occupancy.get(
-                  category.categoryValues[categoryIndex]
-                )}
-                {...this.props}
-              />
+            {colorAccessor && !isColorBy ? (
+              <Occupancy category={category} {...this.props} />
             ) : null}
           </span>
         </div>
