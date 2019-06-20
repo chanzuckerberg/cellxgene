@@ -313,7 +313,7 @@ class AdvancedOptionsArea(QFrame):
 
     def reset(self):
         self.title_widget.setText("")
-        self.embedding_widget.setText("")
+        self.embedding_widget.setCurrentIndex(0)
         self.obs_widget.setText("")
         self.var_widget.setText("")
         self.max_category_items_widget.setValue(100)
