@@ -181,6 +181,7 @@ class LoadWidget(QFrame):
         self.launch_widget.clicked.connect(self.onLoad)
 
         self.progress = QProgressBar()
+        self.progress.setTextVisible(False)
 
         file_layout.addWidget(self.file_area)
         self.loading_layout = QStackedLayout()
