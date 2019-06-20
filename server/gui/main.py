@@ -11,7 +11,6 @@ import PySide2
 from PySide2.QtGui import *
 from PySide2.QtCore import *
 from PySide2.QtWidgets import *
-from PySide2.QtSvg import *
 
 import server.gui.cellxgene_rc
 from server.gui.browser import CefWidget, CefApplication
@@ -158,14 +157,11 @@ class LoadWidget(QFrame):
         logo_layout.setContentsMargins(0, 0, 0, 20)
 
         file_layout = QVBoxLayout()
-        options_container_layout = QVBoxLayout()
-        self.options_layout = QFormLayout()
+
         message_layout = QHBoxLayout()
         message_layout.setContentsMargins(0, 0, 0, 0)
 
         self.serverError = False
-        self.engine_options = {}
-
         self.file_name = FilePath()
 
         self.label = QLabel()
@@ -175,96 +171,37 @@ class LoadWidget(QFrame):
         logo_layout.addWidget(self.label)
 
         # UI section
-        # TODO add load spinner
         # TODO add cancel button to send back to browser (if available)
-
-        # Options
-        self.title_widget = QLineEdit()
-        self.title_widget.setAccessibleName("title")
-        self.embedding_widget = QLineEdit()
-        self.embedding_widget.setAccessibleName("layout")
-        self.obs_widget = QLineEdit()
-        self.obs_widget.setAccessibleName("obs_names")
-        self.var_widget = QLineEdit()
-        self.var_widget.setAccessibleName("var_names")
-        self.max_category_items_widget = QSpinBox()
-        self.max_category_items_widget.setAccessibleName("max_category_items")
-        self.max_category_items_widget.setRange(1, 100000)
-        self.max_category_items_widget.setValue(100)
-        self.diff_exp_lfc_cutoff_widget = QDoubleSpinBox()
-        self.diff_exp_lfc_cutoff_widget.setAccessibleName("diffexp_lfc_cutoff")
-        self.diff_exp_lfc_cutoff_widget.setRange(0, 1)
-        self.diff_exp_lfc_cutoff_widget.setValue(0.1)
-        self.diff_exp_lfc_cutoff_widget.setDecimals(3)
-        self.diff_exp_lfc_cutoff_widget.setStepType(QAbstractSpinBox.AdaptiveDecimalStepType)
-        self.launch_widget = QPushButton("Launch cellxgene")
-        self.launch_widget.setEnabled(False)
-        self.launch_widget.clicked.connect(self.onLoad)
-        self.progress = QProgressBar()
-
-        self.title_widget.textChanged.connect(self.updateOpt)
-        self.embedding_widget.textChanged.connect(self.updateOpt)
-        self.obs_widget.textChanged.connect(self.updateOpt)
-        self.var_widget.textChanged.connect(self.updateOpt)
-        self.max_category_items_widget.valueChanged.connect(self.updateOpt)
-        self.diff_exp_lfc_cutoff_widget.valueChanged.connect(self.updateOpt)
-
-        title_label = QLabel("title:")
-        title_label.setToolTip("Title to display (if omitted will use file name)")
-        embedding_label = QLabel("embedding:")
-        embedding_label.setToolTip("Layout name, eg, 'umap'")
-        obs_label = QLabel("obs names:")
-        obs_label.setToolTip("Name of annotation field to use for observations")
-        var_label = QLabel("var names:")
-        var_label.setToolTip("Name of annotation to use for variables")
-        max_category_items_label = QLabel("max categories:")
-        max_category_items_label.setToolTip("Limits the number of categorical annotation items displayed")
-        diff_exp_lfc_label = QLabel("diffexp cutoff:")
-        diff_exp_lfc_label.setToolTip(
-            "Relative expression cutoff used when selecting top N differentially expressed genes")
-
-        options_header_layout = QHBoxLayout()
-        options_header_layout.addWidget(QLabel("Advanced Options"))
-
-        collapsed = QIcon(":collapsed.svg")
-        self.options_label = QPushButton()
-        self.options_label.setIcon(collapsed)
-        self.options_label.clicked.connect(self.toggleOptionsVisibiltiy)
-        options_header_layout.addWidget(self.options_label)
-
-        options_container_layout.addLayout(options_header_layout)
-
-        self.options_layout.addRow(title_label, self.title_widget)
-        self.options_layout.addRow(embedding_label, self.embedding_widget)
-        self.options_layout.addRow(obs_label, self.obs_widget)
-        self.options_layout.addRow(var_label, self.var_widget)
-        self.options_layout.addRow(max_category_items_label, self.max_category_items_widget)
-        self.options_layout.addRow(diff_exp_lfc_label, self.diff_exp_lfc_cutoff_widget)
-        self.options_container_widget = QFrame()
-        self.options_container_widget.setLayout(self.options_layout)
-        # self.options_container_widget.hide()
-        options_container_layout.addWidget(self.options_container_widget)
 
         self.file_area = FileArea()
         self.file_name.signals.changed.connect(self.updatePath)
-        load_label = QLabel("load file:")
-        load_label.setToolTip("File to load (h5ad format)")
+
+        self.launch_widget = QPushButton("Launch cellxgene")
+        self.launch_widget.setEnabled(False)
+        self.launch_widget.clicked.connect(self.onLoad)
+
+        self.progress = QProgressBar()
 
         file_layout.addWidget(self.file_area)
         self.loading_layout = QStackedLayout()
         self.loading_layout.addWidget(self.launch_widget)
         self.loading_layout.addWidget(self.progress)
         file_layout.addLayout(self.loading_layout)
+        file_layout.setStretch(0, 10)
 
         # Error section
-        self.error_label = QLabel("Err")
+        self.error_label = QLabel("")
         self.error_label.setWordWrap(True)
         self.error_label.setFixedWidth(self.MAX_CONTENT_WIDTH)
         message_layout.addWidget(self.error_label)
 
+        # Options Form
+        self.advanced_options = AdvancedOptionsArea(self)
+
         # Layout
-        for l in [logo_layout, file_layout, message_layout, options_container_layout]:
+        for l in [logo_layout, file_layout, message_layout]:
             load_ui_layout.addLayout(l)
+        load_ui_layout.addWidget(self.advanced_options)
 
         #TODO remove magic number
         load_ui_layout.setStretch(1, 10)
@@ -277,16 +214,6 @@ class LoadWidget(QFrame):
         self.signals = FileLoadSignals()
         self.signals.selectedFile.connect(self.createScanpyEngine)
         self.signals.error.connect(self.onError)
-
-    def toggleOptionsVisibiltiy(self):
-        print("clicked")
-        print(self.options_container_widget.isVisible())
-        if self.options_container_widget.isVisible():
-            self.options_label.setIcon(QIcon(":expanded.svg"))
-            self.options_container_widget.hide()
-        else:
-            self.options_label.setIcon(QIcon(":collapsed.svg"))
-            self.options_container_widget.show()
 
     def updatePath(self):
         file_name = self.file_name.value
@@ -301,6 +228,7 @@ class LoadWidget(QFrame):
         self.timer.stop()
         self.error_label.setText("")
         self.file_name.updateValue(None)
+        self.advanced_options.reset()
 
     def updateProgress(self):
         curr_val = self.progress.value()
@@ -312,36 +240,13 @@ class LoadWidget(QFrame):
         self.loading_layout.setCurrentIndex(0)
         self.timer.stop()
 
-    def updateOpt(self, value):
-        # get values
-        caller = self.sender().accessibleName()
-        val = None
-        # Get value depending on element type
-        if caller == "title":
-            val = self.title_widget.text()
-        elif caller == "layout":
-            val = self.embedding_widget.text()
-        elif caller == "obs_names":
-            val = self.obs_widget.text()
-        elif caller == "var_names":
-            val = self.var_widget.text()
-        elif caller == "max_category_items":
-            val = self.max_category_items_widget.value()
-        elif caller == "diffexp_lfc_cutoff":
-            val = self.diff_exp_lfc_cutoff_widget.value()
-
-        # Update options or delete if missing
-        if val:
-            self.engine_options[caller] = value
-        elif caller in self.engine_options:
-            del self.engine_options[caller]
 
     def createScanpyEngine(self, file_name):
-        if "title" not in self.engine_options or not self.engine_options["title"]:
-            self.engine_options["title"] = splitext(basename(file_name))[0]
+        if "title" not in self.advanced_options.engine_options or not self.advanced_options.engine_options["title"]:
+            self.advanced_options.engine_options["title"] = splitext(basename(file_name))[0]
         self.window().setupServer()
         worker = Worker(self.window().parent_conn, self.window().child_conn, file_name, host="127.0.0.1",
-                        port=GUI_PORT, engine_options=self.engine_options)
+                        port=GUI_PORT, engine_options=self.advanced_options.engine_options)
         self.window().load_emitter.signals.ready.connect(self.onDataReady)
         self.window().load_emitter.signals.engine_error.connect(self.onServerError)
         self.window().load_emitter.signals.server_error.connect(self.onServerError)
@@ -390,6 +295,134 @@ class LoadWidget(QFrame):
     onServerError = partialmethod(onError, server_error=True)
 
 
+class AdvancedOptionsArea(QFrame):
+    def __init__(self, parent):
+        super(AdvancedOptionsArea, self).__init__(parent)
+        self.engine_options = {}
+        self.icons = {"collapsed": QIcon(":collapsed.svg"), "expanded": QIcon(":expanded.svg")}
+        self.options_layout = QVBoxLayout()
+        self.header_layout = QHBoxLayout()
+        self.form_layout = QFormLayout()
+        self.form_widget = QFrame()
+        hidden = QSizePolicy()
+        hidden.retainSizeWhenHidden()
+        self.form_widget.setSizePolicy(hidden)
+        self.setupHeader()
+        self.setupForm()
+        self.setLayout(self.options_layout)
+
+    def reset(self):
+        self.title_widget.setText("")
+        self.embedding_widget.setText("")
+        self.obs_widget.setText("")
+        self.var_widget.setText("")
+        self.max_category_items_widget.setValue(100)
+        self.diff_exp_lfc_cutoff_widget.setValue(0.1)
+        self.form_visibility_toggle.setIcon(self.icons["collapsed"])
+        self.form_widget.hide()
+
+    def setupHeader(self):
+        self.header_layout.addWidget(QLabel("Advanced Options"))
+        self.form_visibility_toggle = QPushButton()
+        self.form_visibility_toggle.setIcon(self.icons["expanded"])
+        self.form_visibility_toggle.clicked.connect(self.toggleOptionsVisibilitiy)
+        self.header_layout.addWidget(self.form_visibility_toggle)
+        self.header_layout.setStretch(0, 4)
+        self.options_layout.addLayout(self.header_layout)
+
+    def setupForm(self):
+        # Option Widgets
+        self.title_widget = QLineEdit()
+        self.title_widget.setAccessibleName("title")
+        self.embedding_widget = QComboBox(self)
+        self.embedding_widget.addItems([""] + MODES)
+        self.embedding_widget.setAccessibleName("layout")
+        self.obs_widget = QLineEdit()
+        self.obs_widget.setAccessibleName("obs_names")
+        self.var_widget = QLineEdit()
+        self.var_widget.setAccessibleName("var_names")
+        self.max_category_items_widget = QSpinBox()
+        self.max_category_items_widget.setAccessibleName("max_category_items")
+        self.max_category_items_widget.setRange(1, 100000)
+        self.max_category_items_widget.setValue(100)
+        self.diff_exp_lfc_cutoff_widget = QDoubleSpinBox()
+        self.diff_exp_lfc_cutoff_widget.setAccessibleName("diffexp_lfc_cutoff")
+        self.diff_exp_lfc_cutoff_widget.setRange(0, 1)
+        self.diff_exp_lfc_cutoff_widget.setValue(0.1)
+        self.diff_exp_lfc_cutoff_widget.setDecimals(3)
+        self.diff_exp_lfc_cutoff_widget.setStepType(QAbstractSpinBox.AdaptiveDecimalStepType)
+
+        # Connect change
+        self.title_widget.textChanged.connect(self.updateOpt)
+        self.embedding_widget.currentIndexChanged.connect(self.updateOpt)
+        self.obs_widget.textChanged.connect(self.updateOpt)
+        self.var_widget.textChanged.connect(self.updateOpt)
+        self.max_category_items_widget.valueChanged.connect(self.updateOpt)
+        self.diff_exp_lfc_cutoff_widget.valueChanged.connect(self.updateOpt)
+
+        # Labels and tooltips
+        title_label = QLabel("title:")
+        title_label.setToolTip("Title to display (if omitted will use file name)")
+        embedding_label = QLabel("embedding:")
+        embedding_label.setToolTip("Layout name, eg, 'umap'")
+        obs_label = QLabel("obs names:")
+        obs_label.setToolTip("Name of annotation field to use for observations")
+        var_label = QLabel("var names:")
+        var_label.setToolTip("Name of annotation to use for variables")
+        max_category_items_label = QLabel("max categories:")
+        max_category_items_label.setToolTip("Limits the number of categorical annotation items displayed")
+        diff_exp_lfc_label = QLabel("diffexp cutoff:")
+        diff_exp_lfc_label.setToolTip(
+            "Relative expression cutoff used when selecting top N differentially expressed genes")
+
+        self.form_layout.addRow(title_label, self.title_widget)
+        self.form_layout.addRow(embedding_label, self.embedding_widget)
+        self.form_layout.addRow(obs_label, self.obs_widget)
+        self.form_layout.addRow(var_label, self.var_widget)
+        self.form_layout.addRow(max_category_items_label, self.max_category_items_widget)
+        self.form_layout.addRow(diff_exp_lfc_label, self.diff_exp_lfc_cutoff_widget)
+
+        self.options_container_widget = QFrame()
+        self.form_widget.setLayout(self.form_layout)
+        self.options_layout.addWidget(self.form_widget)
+
+    def toggleOptionsVisibilitiy(self):
+        if self.form_widget.isVisible():
+            self.form_visibility_toggle.setIcon(self.icons["collapsed"])
+            self.form_widget.hide()
+        else:
+            self.form_visibility_toggle.setIcon(self.icons["expanded"])
+            self.form_widget.show()
+        self.window().repaint()
+
+    def updateOpt(self, value):
+        # get values
+        caller = self.sender().accessibleName()
+        val = None
+        # Get value depending on element type
+        if caller == "title":
+            val = self.title_widget.text()
+        elif caller == "layout":
+            if value == 0:
+                val = None
+            else:
+                val = [MODES[value - 1]]
+        elif caller == "obs_names":
+            val = self.obs_widget.text()
+        elif caller == "var_names":
+            val = self.var_widget.text()
+        elif caller == "max_category_items":
+            val = self.max_category_items_widget.value()
+        elif caller == "diffexp_lfc_cutoff":
+            val = self.diff_exp_lfc_cutoff_widget.value()
+
+        # Update options or delete if missing
+        if val:
+            self.engine_options[caller] = val
+        elif caller in self.engine_options:
+            del self.engine_options[caller]
+
+
 class FilePath(QObject):
     def __init__(self):
         super(FilePath, self).__init__()
@@ -405,17 +438,18 @@ class FileArea(QFrame):
     def __init__(self):
         super(FileArea, self).__init__()
         self.setFrameShape(QFrame.Box)
-        self.setFixedHeight(300)
+        self.setMinimumHeight(100)
         self.setFixedWidth(500)
         self.setAcceptDrops(True)
         self.instructions = QLabel(self)
-        self.instructions.setText("Drag & Drop a h5ad file to load.")
-        self.instructions.setGeometry(0,10,500,self.instructions.height())
+        self.instructions.setText("Drag & Drop a h5ad file to load or open")
+        self.instructions.setGeometry(10, 10, 500, self.instructions.height())
         self.loadButton = QPushButton("Open...", parent=self)
-        self.loadButton.setGeometry(100,50,self.loadButton.width(),self.loadButton.height())
+        x_pos = (500 - self.loadButton.width()) / 2
+        self.loadButton.setGeometry(x_pos, 50, self.loadButton.width(), self.loadButton.height())
         self.loadButton.clicked.connect(self.fileBrowse)
         self.label = QLabel(self)
-        self.label.setGeometry(0,75,500,self.label.height())
+        self.label.setGeometry(10, 75, 500, self.label.height())
 
     def fileBrowse(self):
         options = QFileDialog.Options()
