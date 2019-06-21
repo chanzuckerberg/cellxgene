@@ -129,7 +129,7 @@ class Occupancy extends React.Component {
         }}
         ref={ref => {
           this.svg = ref;
-          this.createKDE(occupancy);
+          if (!colorByIsCatagoricalData) this.createKDE(occupancy);
         }}
       >
         {stacks.map(d => (
