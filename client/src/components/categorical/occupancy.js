@@ -14,13 +14,14 @@ class Occupancy extends React.Component {
       .domain([0, occupancy.length])
       .range([0, width]);
 
+    const largestBin = occupancy.reduce((max, length) => Math.max(max, length));
+
     const yScale = d3
       .scaleLinear()
-      .domain([0, 310]) /* Hard Coded to largest bin in mouse.sex */
+      .domain([0, largestBin])
       .range([0, height]);
 
     const svg = d3.select(this.svg);
-    console.log(occupancy);
 
     let counter = -1;
 
@@ -74,13 +75,15 @@ class Occupancy extends React.Component {
     } else {
       const groupBy = world.obsAnnotations.col(metadataField);
 
+      const range = world.varData.col(colorAccessor).summarize();
+
       occupancyMap = world.varData
         .col(
           colorAccessor
         ) /* this is magic and col knows what kind of data is being used for histo. Could consider separate function names to make the fork explicit*/
         .histogram(
           50,
-          [-0.3585, 5.648] /* TODO: hardcoded APOD range */,
+          [range.min, range.max],
           groupBy
         ); /* Because the signature changes we really need different names for histogram to differentiate signatures  */
     }
