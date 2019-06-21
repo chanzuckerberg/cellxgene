@@ -8,61 +8,44 @@ class Occupancy extends React.Component {
   createKDE = occupancy => {
     const width = 100;
     const height = 11;
-    const kernelDensityEstimator = (kernel, X) => {
-      return V => {
-        return X.map(x => {
-          return [
-            x,
-            d3.mean(V, v => {
-              return kernel(x - v);
-            })
-          ];
-        });
-      };
-    };
 
-    const kernelEpanechnikov = k => {
-      return v => {
-        return Math.abs((v /= k)) <= 1 ? (0.75 * (1 - v * v)) / k : 0;
-      };
-    };
-
-    const x = d3
+    const xScale = d3
       .scaleLinear()
       .domain([0, occupancy.length])
       .range([0, width]);
 
-    const y = d3
+    const yScale = d3
       .scaleLinear()
-      .domain([-0.3585, 5.648] /* TODO: hardcoded values for Apod */)
+      .domain([0, 310]) /* Hard Coded to largest bin in mouse.sex */
       .range([0, height]);
 
-    const density = kernelDensityEstimator(kernelEpanechnikov(1), x.ticks(50))(
-      occupancy
-    );
     const svg = d3.select(this.svg);
+    console.log(occupancy);
 
-    console.log(density);
+    let counter = -1;
 
     svg
-      .append("path")
-      .datum(density)
-      .attr("fill", "none")
-      .attr("stroke", "#000")
-      .attr("stroke-width", 1.5)
-      .attr("stroke-linejoin", "round")
-      .attr(
-        "d",
-        d3
-          .line()
-          .curve(d3.curveBasis)
-          .x(d => {
-            return x(d[0]);
-          })
-          .y(d => {
-            return y(d[1]);
-          })
-      );
+      .insert("g", "*")
+      .attr("fill", "#bbb")
+      .selectAll("rect")
+      .data(occupancy)
+      .enter()
+      .append(
+        "rect"
+      ) /* Some of these don't need to be functions since they're constant */
+      .attr("x", d => {
+        counter += 1;
+        return xScale(counter);
+      })
+      .attr("y", d => {
+        return height - yScale(d);
+      })
+      .attr("width", d => {
+        return width / occupancy.length;
+      })
+      .attr("height", d => {
+        return yScale(d);
+      });
   };
 
   render() {
@@ -132,7 +115,6 @@ class Occupancy extends React.Component {
         currentOffset += o ? scaledValue : 0;
         return stackItem;
       });
-    } else {
     }
 
     return (
