@@ -136,4 +136,7 @@ uninstall :
 build-assets :
 	pyside2-rcc server/gui/cellxgene.qrc -o server/gui/cellxgene_rc.py
 
+gui-build : clean-lite
+	pyinstaller -D --additional-hooks-dir server/gui/ -n cellxgene --add-data server/app/web/templates/:server/app/web/templates/ --add-data server/app/web/static/:server/app/web/static/ server/gui/main.py
+
 .PHONY : build-assets

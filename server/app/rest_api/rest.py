@@ -59,16 +59,16 @@ class ConfigAPI(Resource):
                     },
                 ],
                 "displayNames": {
-                    "engine": f"cellxgene Scanpy engine version {pkg_resources.get_distribution('cellxgene').version}",
+                    "engine": f"cellxgene Scanpy engine version ",
                     "dataset": current_app.config["DATASET_TITLE"],
                 },
                 "parameters": {
                     "max-category-items": current_app.data.config["max_category_items"]
                 },
                 "library_versions": {
-                    "scanpy": pkg_resources.get_distribution("scanpy").version,
-                    "cellxgene": pkg_resources.get_distribution("cellxgene").version,
-                    "anndata": pkg_resources.get_distribution("cellxgene").version
+                    "scanpy": "3",
+                    "cellxgene": "3",
+                    "anndata": "3"
                 }
             }
         }

@@ -1,5 +1,6 @@
 black
 bumpversion>=0.5
+PyInstaller>=3.4
 pytest>=3.6.3
 requests>=2.18.4
 twine>=1.12.1
