@@ -95,7 +95,8 @@ class CategoryValue extends React.Component {
         style={{
           display: "flex",
           alignItems: "baseline",
-          justifyContent: "space-between"
+          justifyContent: "space-between",
+          padding: "4px 7px"
         }}
         data-testclass="categorical-row"
         onMouseEnter={this.handleMouseEnter}
