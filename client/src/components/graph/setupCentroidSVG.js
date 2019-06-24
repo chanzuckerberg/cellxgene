@@ -1,6 +1,6 @@
 import * as d3 from "d3";
-import styles from "./graph.css";
 import { IconSvgPaths20 } from "@blueprintjs/icons";
+import styles from "./graph.css";
 
 export default (responsive, graphPaddingRight, xy, text, colorBy) => {
   const containerWidth = responsive.width - graphPaddingRight;
