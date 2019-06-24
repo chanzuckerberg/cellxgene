@@ -1,9 +1,11 @@
 from http import HTTPStatus
-import pkg_resources
 import warnings
 
 from flask import Blueprint, current_app, jsonify, make_response, request
 from flask_restful import Api, Resource
+from scanpy import __version__ as scanpy_version
+from server import __version__ as cellxgene_version
+from anndata import __version__ as anndata_version
 
 from server.app.util.constants import (
     Axis,
@@ -66,9 +68,9 @@ class ConfigAPI(Resource):
                     "max-category-items": current_app.data.config["max_category_items"]
                 },
                 "library_versions": {
-                    "scanpy": "3",
-                    "cellxgene": "3",
-                    "anndata": "3"
+                    "scanpy": scanpy_version,
+                    "cellxgene": cellxgene_version,
+                    "anndata": anndata_version
                 }
             }
         }
