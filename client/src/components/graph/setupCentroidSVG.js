@@ -1,5 +1,6 @@
 import * as d3 from "d3";
 import styles from "./graph.css";
+import { IconSvgPaths20 } from "@blueprintjs/icons";
 
 export default (responsive, graphPaddingRight, xy, text, colorBy) => {
   const containerWidth = responsive.width - graphPaddingRight;
@@ -22,13 +23,12 @@ export default (responsive, graphPaddingRight, xy, text, colorBy) => {
     .attr("transform", `translate(${xy[0]}, ${xy[1]})`);
 
   label
-    .append("text")
+    .append("path")
     .attr("text-anchor", "middle")
-    .text(text)
-    .style("font-family", "Roboto Condensed")
-    .style("font-size", "18px")
-    .style("font-weight", "700")
-    .style("fill", colorBy ? "black" : "rgb(32, 178, 212)");
+    .attr("d", IconSvgPaths20.locate[0])
+    .attr("width", 90)
+    .attr("height", 90)
+    .attr("fill", colorBy ? "black" : "rgb(32, 178, 212)");
 
   return svg;
 };
