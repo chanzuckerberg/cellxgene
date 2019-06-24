@@ -13,10 +13,9 @@ export default (responsive, graphPaddingRight, xy, text, colorBy) => {
     .attr("width", containerWidth)
     .attr("height", responsive.height)
     .attr("class", `${styles.graphSVG}`)
+    /* For now I'm going to put centroid z-index at 998 and lasso on 999 */
     .style("z-index", 998)
     .style("pointer-events", "none");
-  //  TODO: Create own styles, ask Colin for an explanation on the css
-  // For now I'm going to put centroid z-index at 998 and lasso on 999
 
   const label = svg
     .append("g")
@@ -28,7 +27,8 @@ export default (responsive, graphPaddingRight, xy, text, colorBy) => {
     .attr("d", IconSvgPaths20.locate[0])
     .attr("width", 90)
     .attr("height", 90)
-    .attr("fill", colorBy ? "black" : "rgb(32, 178, 212)");
+    .attr("fill", colorBy ? "black" : "rgb(32, 178, 212)")
+    .attr("transform", "scale(3)");
 
   return svg;
 };
