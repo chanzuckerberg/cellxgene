@@ -1,6 +1,7 @@
 // jshint esversion: 6
 import { connect } from "react-redux";
 import React from "react";
+import { Classes } from "@blueprintjs/core";
 import Occupancy from "./occupancy";
 import { countCategoryValues2D } from "../../util/stateManager/worldUtil";
 import * as globals from "../../globals";
@@ -99,6 +100,7 @@ class CategoryValue extends React.Component {
         data-testclass="categorical-row"
         onMouseEnter={this.handleMouseEnter}
         onMouseLeave={this.handleMouseExit}
+        className={Classes.MENU_ITEM}
       >
         <div
           style={{
@@ -110,7 +112,12 @@ class CategoryValue extends React.Component {
             justifyContent: "space-between"
           }}
         >
-          <label className="bp3-control bp3-checkbox">
+          <label
+            className="bp3-control bp3-checkbox"
+            style={{
+              margin: 0
+            }}
+          >
             <input
               onChange={selected ? this.toggleOff : this.toggleOn}
               data-testclass="categorical-value-select"
