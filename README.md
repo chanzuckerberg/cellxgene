@@ -14,21 +14,27 @@ _cellxgene_ (pronounced "sell-by-jean") is an interactive data explorer for sing
 
 ## quick start
 
+<a href="https://heroku.com/deploy?template=https://github.com/chanzuckerberg/cellxgene/tree/heroku">
+  <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy">
+</a>
+
 To install _cellxgene_ you need Python 3.6+. We recommend [installing _cellxgene_ into a conda or virtual environment.](https://chanzuckerberg.github.io/cellxgene/faq.html#how-do-i-create-a-python-36-environment-for-cellxgene)
 
 Install the package.
-``` bash
+
+```bash
 pip install cellxgene
 ```
 
 Download an example [anndata](https://anndata.readthedocs.io/en/latest/) file
 
-``` bash
+```bash
 curl -o pbmc3k.h5ad https://raw.githubusercontent.com/chanzuckerberg/cellxgene/master/example-dataset/pbmc3k.h5ad
 ```
 
 Launch _cellxgene_
-``` bash
+
+```bash
 cellxgene launch pbmc3k.h5ad --open
 ```
 
