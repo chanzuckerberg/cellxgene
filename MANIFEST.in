@@ -1,4 +1,0 @@
-recursive-include server/app/web/templates *
-recursive-include server/app/web/static *
-
-include server/requirements.txt
