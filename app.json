@@ -1,8 +1,8 @@
 {
-  "name": "Node.js Sample",
-  "description": "n interactive explorer for single-cell transcriptomics data",
+  "name": "cellxgene",
+  "description": "An interactive explorer for single-cell transcriptomics data",
   "repository": "https://github.com/chanzuckerberg/cellxgene/",
-  "logo": "https://github.com/chanzuckerberg/cellxgene/blob/master/client/favicon.png",
+  "logo": "https://raw.githubusercontent.com/chanzuckerberg/cellxgene/master/client/favicon.png",
   "keywords": [
     "scientific",
     "visualization",
