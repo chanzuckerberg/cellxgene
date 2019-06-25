@@ -1,3 +1,5 @@
 build:
   docker:
     web: Dockerfile
+run:
+  web: cellxgene launch pbmc3k.h5ad --host 0.0.0.0 --port $PORT
