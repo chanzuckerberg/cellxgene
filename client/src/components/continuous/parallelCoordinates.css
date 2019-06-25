@@ -1,0 +1,94 @@
+/*
+
+This code can be found: https://bl.ocks.org/syntagmatic/05a5b0897a48890133beb59c815bd953
+
+body {
+  min-width: 760px;
+}
+*/
+
+:local(.parcoords) {
+  display: block;
+}
+
+:local(.parcoords) svg,
+:local(.parcoords) canvas {
+  font: 10px sans-serif;
+  position: absolute;
+}
+
+:local(.parcoords) canvas {
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+:local(.axis .title) {
+  font-size: 10px;
+  transform: rotate(-21deg) translate(-5px, -6px);
+  fill: #222;
+  cursor: pointer;
+}
+
+/* -webkit-filter: grayscale(100%);
+ filter: grayscale(100%); */
+
+:local(.axis) line,
+:local(.axis) path {
+  fill: none;
+  stroke: #ccc;
+  stroke-width: 1px;
+}
+
+:local(.axis .tick) text {
+  fill: #222;
+  pointer-events: none;
+}
+
+/*
+old, from reference bl.ocks
+.axis.manufac_name .tick text,
+.axis.food_group .tick text {
+  opacity: 1;
+}
+*/
+
+:local(.axis:hover) line,
+:local(.axis:hover) path,
+:local(.axis.active) line,
+:local(.axis.active) path {
+  fill: none;
+  stroke: #222;
+  stroke-width: 1px;
+}
+
+:local(.axis:hover .title) {
+  font-weight: bold;
+}
+
+:local(.axis:hover .tick) text {
+  opacity: 1;
+}
+
+:local(.axis.active .title) {
+  font-weight: bold;
+}
+
+:local(.axis.active .tick) text {
+  opacity: 1;
+  font-weight: bold;
+}
+
+:local(.brush .extent) {
+  fill-opacity: 0.3;
+  stroke: #fff;
+  stroke-width: 1px;
+}
+
+:local(.pre) {
+  width: 100%;
+  height: 300px;
+  margin: 6px 12px;
+  tab-size: 40;
+  font-size: 10px;
+  overflow: auto;
+}

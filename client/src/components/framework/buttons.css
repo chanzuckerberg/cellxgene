@@ -1,0 +1,6 @@
+:local(.btn) {
+  background: none;
+  cursor: pointer;
+  color: "#FFF";
+  border: "none";
+}
