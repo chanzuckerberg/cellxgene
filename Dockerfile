@@ -1,10 +1,11 @@
-FROM ubuntu:bionic
+FROM python:3.7
 
-ENV LC_ALL=C.UTF-8
-ENV LANG=C.UTF-8
+WORKDIR /usr/src/app
 
-RUN apt-get update && \
-    apt-get install -y build-essential libxml2-dev python3-dev python3-pip zlib1g-dev && \
-    pip3 install cellxgene
+RUN pip3 install cellxgene
 
-ENTRYPOINT ["cellxgene"]
+RUN curl -o pbmc3k.h5ad https://raw.githubusercontent.com/chanzuckerberg/cellxgene/master/example-dataset/pbmc3k.h5ad
+
+expose 5005
+
+CMD ["cellxgene", "launch", "pbmc3k.h5ad", "--host", "0.0.0.0"]
