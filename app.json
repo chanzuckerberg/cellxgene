@@ -9,5 +9,10 @@
     "scrna-seq",
     "transcriptomics",
     "dataviz"
+  ],
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
   ]
 }
