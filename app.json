@@ -10,5 +10,12 @@
     "transcriptomics",
     "dataviz"
   ],
-  "stack": "container"
+  "stack": "container",
+  "env": {
+    "DATASET": {
+      "description": "Link to dataset",
+      "value": "https://raw.githubusercontent.com/chanzuckerberg/cellxgene/master/example-dataset/pbmc3k.h5ad",
+      "required": "true"
+    }
+  }
 }
