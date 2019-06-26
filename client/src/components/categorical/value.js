@@ -21,6 +21,31 @@ class CategoryValue extends React.Component {
     });
   }
 
+  componentWillUpdate = () => {
+    console.log("oh no");
+  };
+
+  shouldComponentUpdate = nextProps => {
+    const {
+      metadataField,
+      categoryIndex,
+      categoricalSelection,
+      colorAccessor
+    } = this.props;
+    const {
+      categoricalSelection: newCategoricalSelection,
+      colorAccessor: newcolorAccessor
+    } = nextProps;
+
+    const valueSelectionChange =
+      newCategoricalSelection[metadataField].categorySelected[categoryIndex] !==
+      categoricalSelection[metadataField].categorySelected[categoryIndex];
+
+    const colorByChange = colorAccessor !== newcolorAccessor;
+
+    return valueSelectionChange || colorByChange;
+  };
+
   toggleOn() {
     const { dispatch, metadataField, categoryIndex } = this.props;
     dispatch({
