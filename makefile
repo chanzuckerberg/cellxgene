@@ -136,8 +136,12 @@ uninstall :
 build-assets :
 	pyside2-rcc server/gui/cellxgene.qrc -o server/gui/cellxgene_rc.py
 
+gui-build-full : clean-lite dev-env
+	pip install -e .[gui]
+	pyinstaller -D -w --additional-hooks-dir server/gui/ -n cellxgene --add-data server/app/web/templates/:server/app/web/templates/ --add-data server/app/web/static/:server/app/web/static/ --icon 'server/gui/images/icon.ico' server/gui/main.py
+
 gui-build : clean-lite dev-env
 	pip install -e .[gui]
-	pyinstaller -D -w --additional-hooks-dir server/gui/ -n cellxgene --add-data server/app/web/templates/:server/app/web/templates/ --add-data server/app/web/static/:server/app/web/static/ server/gui/main.py
+	pyinstaller --clean cellxgene.spec
 
 .PHONY : build-assets
