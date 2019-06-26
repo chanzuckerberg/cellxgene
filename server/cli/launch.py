@@ -28,14 +28,6 @@ BIG_FILE_SIZE_THRESHOLD = 100 * 2**20  # 100MB
     show_default=True,
     help="Layout name, eg, 'umap'."
 )
-@click.option(
-    "--diffexp",
-    "-d",
-    type=click.Choice(["ttest"]),
-    default="ttest",
-    show_default=True,
-    help="Method for differential expression.",
-)
 @click.option("--title", "-t", help="Title to display (if omitted will use file name).", metavar="")
 @click.option(
     "--verbose",
@@ -83,7 +75,6 @@ BIG_FILE_SIZE_THRESHOLD = 100 * 2**20  # 100MB
 def launch(
         data,
         layout,
-        diffexp,
         title,
         verbose,
         debug,
@@ -181,7 +172,6 @@ security risk by including the --scripts flag. Make sure you trust the scripts t
 
     args = {
         "layout": layout,
-        "diffexp": diffexp,
         "max_category_items": max_category_items,
         "diffexp_lfc_cutoff": diffexp_lfc_cutoff,
         "obs_names": obs_names,

@@ -43,7 +43,6 @@ class ScanpyEngine(CXGDriver):
     def _get_default_config():
         return {
             "layout": [],
-            "diffexp": "ttest",
             "max_category_items": 100,
             "obs_names": None,
             "var_names": None,
