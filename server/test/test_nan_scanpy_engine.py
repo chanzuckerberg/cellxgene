@@ -13,7 +13,6 @@ class NaNTest(unittest.TestCase):
     def setUp(self):
         self.args = {
             "layout": ["umap"],
-            "diffexp": "ttest",
             "max_category_items": 100,
             "obs_names": None,
             "var_names": None,
