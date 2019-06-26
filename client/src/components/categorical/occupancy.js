@@ -6,6 +6,7 @@ import * as d3 from "d3";
 @connect()
 class Occupancy extends React.Component {
   createKDE = occupancy => {
+    if (!this.svg) return;
     const width = 100;
     const height = 11;
 
@@ -21,32 +22,20 @@ class Occupancy extends React.Component {
       .domain([0, largestBin])
       .range([0, height]);
 
-    const svg = d3.select(this.svg);
+    const ctx = this.svg.getContext("2d");
 
-    let counter = -1;
+    ctx.fillStyle = "#bbb";
 
-    svg
-      .insert("g", "*")
-      .attr("fill", "#bbb")
-      .selectAll("rect")
-      .data(occupancy)
-      .enter()
-      .append(
-        "rect"
-      ) /* Some of these don't need to be functions since they're constant */
-      .attr("x", d => {
-        counter += 1;
-        return xScale(counter);
-      })
-      .attr("y", d => {
-        return height - yScale(d);
-      })
-      .attr("width", d => {
-        return width / occupancy.length;
-      })
-      .attr("height", d => {
-        return yScale(d);
-      });
+    let x;
+    let y;
+
+    const rectWidth = width / occupancy.length;
+
+    for (let i = 0, { length } = occupancy; i < length; i += 1) {
+      x = xScale(i);
+      y = yScale(occupancy[i]);
+      ctx.fillRect(x, height - y, rectWidth, y);
+    }
   };
 
   render() {
@@ -66,26 +55,23 @@ class Occupancy extends React.Component {
     let occupancyMap = null;
 
     const colorByIsCatagoricalData = !!categoricalSelection[colorAccessor];
-
     if (colorByIsCatagoricalData) {
       const groupBy = world.obsAnnotations.col(metadataField);
       occupancyMap = world.obsAnnotations.col(colorAccessor).histogram(groupBy);
-    } else if (false /* is continuous obsannotation (n_counts) */) {
-      // return;
     } else {
       const groupBy = world.obsAnnotations.col(metadataField);
 
-      const range = world.varData.col(colorAccessor).summarize();
+      const col =
+        world.obsAnnotations.col(colorAccessor) ||
+        world.varData.col(colorAccessor);
 
-      occupancyMap = world.varData
-        .col(
-          colorAccessor
-        ) /* this is magic and col knows what kind of data is being used for histo. Could consider separate function names to make the fork explicit*/
-        .histogram(
-          50,
-          [range.min, range.max],
-          groupBy
-        ); /* Because the signature changes we really need different names for histogram to differentiate signatures  */
+      const range = col.summarize();
+
+      occupancyMap = col.histogram(
+        50,
+        [range.min, range.max],
+        groupBy
+      ); /* Because the signature changes we really need different names for histogram to differentiate signatures  */
     }
 
     const occupancy = occupancyMap.get(category.categoryValues[categoryIndex]);
@@ -121,12 +107,14 @@ class Occupancy extends React.Component {
     }
 
     return (
-      <svg
+      <canvas
         style={{
           marginRight: 5,
           width,
           height
         }}
+        width={width}
+        height={height}
         ref={ref => {
           this.svg = ref;
           if (!colorByIsCatagoricalData) this.createKDE(occupancy);
@@ -142,7 +130,7 @@ class Occupancy extends React.Component {
             fill={d.fill}
           />
         ))}
-      </svg>
+      </canvas>
     );
   }
 }
