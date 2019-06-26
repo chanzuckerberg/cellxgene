@@ -24,6 +24,8 @@ class Occupancy extends React.Component {
 
     const ctx = this.svg.getContext("2d");
 
+    ctx.clearRect(0, 0, width, height);
+
     ctx.fillStyle = "#bbb";
 
     let x;
