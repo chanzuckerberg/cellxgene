@@ -2,4 +2,4 @@ build:
   docker:
     web: Dockerfile
 run:
-  web: cellxgene launch pbmc3k.h5ad --host 0.0.0.0 --port $PORT
+  web: curl -o dataset.h5ad $DATASET && cellxgene launch dataset.h5ad --host 0.0.0.0 --port $PORT
