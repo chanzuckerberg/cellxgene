@@ -4,6 +4,7 @@ import click
 
 from server.cli.launch import common_args
 
+
 @click.command()
 @common_args
 def cli(**kwargs):
