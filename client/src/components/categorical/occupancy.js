@@ -24,8 +24,6 @@ class Occupancy extends React.Component {
 
     const ctx = this.svg.getContext("2d");
 
-    ctx.clearRect(0, 0, width, height);
-
     ctx.fillStyle = "#bbb";
 
     let x;
@@ -53,6 +51,8 @@ class Occupancy extends React.Component {
     } = this.props;
     const width = 100;
     const height = 11;
+
+    this.svg?.clearRect(0, 0, width, height);
 
     let occupancyMap = null;
 
