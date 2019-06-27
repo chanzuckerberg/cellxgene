@@ -38,6 +38,19 @@ class Occupancy extends React.Component {
     }
   };
 
+  createStack = stacks => {
+    const height = 11;
+    const ctx = this.svg?.getContext("2d");
+
+    if (!ctx) return;
+
+    for (let i = 0, { length } = stacks; i < length; i += 1) {
+      const { rectWidth, offset, fill } = stacks[i];
+      ctx.fillStyle = fill;
+      ctx.fillRect(offset, 0, rectWidth, height);
+    }
+  };
+
   render() {
     const {
       colorScale,
@@ -52,7 +65,7 @@ class Occupancy extends React.Component {
     const width = 100;
     const height = 11;
 
-    this.svg?.clearRect(0, 0, width, height);
+    this.svg?.getContext("2d").clearRect(0, 0, width, height);
 
     let occupancyMap = null;
 
@@ -119,20 +132,10 @@ class Occupancy extends React.Component {
         height={height}
         ref={ref => {
           this.svg = ref;
-          if (!colorByIsCatagoricalData) this.createKDE(occupancy);
+          if (colorByIsCatagoricalData) this.createStack(stacks);
+          else this.createKDE(occupancy);
         }}
-      >
-        {stacks.map(d => (
-          <rect
-            key={d.key}
-            width={d.rectWidth}
-            height={height}
-            x={d.offset}
-            title={d.metadataField}
-            fill={d.fill}
-          />
-        ))}
-      </canvas>
+      />
     );
   }
 }
