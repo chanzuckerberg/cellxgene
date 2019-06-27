@@ -17,8 +17,7 @@ from server.gui.browser import CefWidget, CefApplication
 from server.gui.options_parser import parse_opt_string
 from server.cli.launch import parse_engine_args
 from server.gui.workers import Worker, SiteReadyWorker
-from server.gui.utils import WINDOWS, LINUX, MAC, FileLoadSignals, Emitter, WorkerSignals, FileChanged
-from server.utils.constants import MODES
+from server.gui.utils import WINDOWS, LINUX, MAC, FileLoadSignals, Emitter, WorkerSignals, FileChanged, OptionsError
 from server.utils.utils import find_available_port
 
 if WINDOWS or LINUX:
@@ -240,12 +239,17 @@ class LoadWidget(QFrame):
         self.progress.setValue(next_val)
 
     def resetProgress(self):
+        print("here i am")
         self.progress.setValue(0)
         self.loading_layout.setCurrentIndex(0)
         self.timer.stop()
 
     def createScanpyEngine(self, file_name):
-        self.advanced_options.parse()
+        try:
+            self.advanced_options.parse()
+        except OptionsError as e:
+            self.signals.error.emit(f"Options Error: {e}")
+            return
         title = self.advanced_options.title
         if not title:
             title = splitext(basename(file_name))[0]
@@ -263,11 +267,11 @@ class LoadWidget(QFrame):
 
     def onLoad(self):
         if self.file_name.value:
-            self.signals.selectedFile.emit(self.file_name.value)
             # Reset error on reload
             self.serverError = False
             self.loading_layout.setCurrentIndex(1)
             self.timer.start()
+            self.signals.selectedFile.emit(self.file_name.value)
         else:
             self.signals.error.emit("Please select a file before launching.")
 
@@ -290,12 +294,12 @@ class LoadWidget(QFrame):
         if server_error:
             self.serverError = True
             # Report error and switch to load screen
-            self.window().shutdownServer()
+        self.window().shutdownServer()
         self.resetProgress()
         self.window().stacked_layout.setCurrentIndex(LOAD_INDEX)
         self.error_label.setText(f"Error: {err}")
         self.error_label.resize(self.MAX_CONTENT_WIDTH, self.error_label.height())
-        # self.error_label.setFrameStyle(QFrame.Panel)
+        self.window().repaint()
 
     onServerError = partialmethod(onError, server_error=True)
 
