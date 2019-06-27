@@ -21,11 +21,12 @@ class EmittingProcess(Process):
 
 
 class Worker(EmittingProcess):
-    def __init__(self, parent_conn, child_conn, data_file, host, port, engine_options, *args, **kwargs):
+    def __init__(self, parent_conn, child_conn, data_file, host, port, title, engine_options, *args, **kwargs):
         super(Worker, self).__init__(parent_conn, child_conn)
         self.data_file = data_file
         self.host = host
         self.port = port
+        self.title = title
         self.engine_options = engine_options
 
     def run(self):
@@ -53,7 +54,7 @@ class Worker(EmittingProcess):
             }
             args.update(self.engine_options)
             data = ScanpyEngine(self.data_file, args)
-            server.attach_data(data, self.engine_options["title"])
+            server.attach_data(data, self.title)
             self.emit("ready")
         except Exception as e:
             self.emit("engine_error", str(e))
