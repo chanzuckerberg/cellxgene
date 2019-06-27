@@ -19,6 +19,9 @@ BIG_FILE_SIZE_THRESHOLD = 100 * 2 ** 20  # 100MB
 
 
 def common_args(func):
+    """
+    Decorator to contain CLI args that will be common to both CLI and GUI: title and engine args.
+    """
     @click.option("--title", "-t", help="Title to display (if omitted will use file name).")
     @click.option(
         "--layout",
