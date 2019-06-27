@@ -27,8 +27,8 @@ if WINDOWS or LINUX:
 
 # Configuration
 # TODO remember this or calculate it?
-WIDTH = 1024
-HEIGHT = 768
+WIDTH = 1300
+HEIGHT = 800
 GUI_PORT = find_available_port("localhost")
 BROWSER_INDEX = 0
 LOAD_INDEX = 1
