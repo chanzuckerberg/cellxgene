@@ -48,15 +48,6 @@ class FileChanged(QObject):
     changed = Signal(bool)
 
 
-class OptionsError(Exception):
-    """
-    Raised when user specified cli options specified fail parsing
-    """
-
-    def __init__(self, message):
-        self.message = message
-
-
 class Emitter:
     def __init__(self, transport, signals):
         self.transport = transport

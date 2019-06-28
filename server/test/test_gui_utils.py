@@ -1,7 +1,7 @@
 import unittest
 
 from server.gui.options_parser import parse_opt_string
-from server.gui.utils import OptionsError
+from server.utils.errors import OptionsError
 
 default_opts = {'title': None, 'layout': (), 'obs_names': None, 'var_names': None, 'max_category_items': 1000,
                 'diffexp_lfc_cutoff': 0.01}

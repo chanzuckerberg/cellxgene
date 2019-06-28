@@ -17,7 +17,8 @@ from server.gui.browser import CefWidget, CefApplication
 from server.gui.options_parser import parse_opt_string
 from server.cli.launch import parse_engine_args
 from server.gui.workers import Worker, SiteReadyWorker
-from server.gui.utils import WINDOWS, LINUX, MAC, FileLoadSignals, Emitter, WorkerSignals, FileChanged, OptionsError
+from server.gui.utils import WINDOWS, LINUX, MAC, FileLoadSignals, Emitter, WorkerSignals, FileChanged
+from server.utils.errors import OptionsError
 from server.utils.utils import find_available_port
 
 if WINDOWS or LINUX:

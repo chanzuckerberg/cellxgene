@@ -3,7 +3,7 @@ import shlex
 import click
 
 from server.cli.launch import common_args
-from server.gui.utils import OptionsError
+from server.utils.errors import OptionsError
 
 
 @click.command()
