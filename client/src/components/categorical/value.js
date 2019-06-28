@@ -21,10 +21,6 @@ class CategoryValue extends React.Component {
     });
   }
 
-  componentWillUpdate = () => {
-    console.log("oh no");
-  };
-
   shouldComponentUpdate = nextProps => {
     const {
       metadataField,
