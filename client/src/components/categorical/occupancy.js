@@ -5,14 +5,14 @@ import * as d3 from "d3";
 
 @connect()
 class Occupancy extends React.Component {
-  createKDE = occupancy => {
+  createHistogram = bins => {
     if (!this.svg) return;
     const width = 100;
     const height = 11;
 
     const xScale = d3
       .scaleLinear()
-      .domain([0, occupancy.length])
+      .domain([0, bins.length])
       .range([0, width]);
 
     const largestBin = Math.max(...bins);
@@ -29,11 +29,11 @@ class Occupancy extends React.Component {
     let x;
     let y;
 
-    const rectWidth = width / occupancy.length;
+    const rectWidth = width / bins.length;
 
-    for (let i = 0, { length } = occupancy; i < length; i += 1) {
+    for (let i = 0, { length } = bins; i < length; i += 1) {
       x = xScale(i);
-      y = yScale(occupancy[i]);
+      y = yScale(bins[i]);
       ctx.fillRect(x, height - y, rectWidth, y);
     }
   };
@@ -133,7 +133,7 @@ class Occupancy extends React.Component {
         ref={ref => {
           this.svg = ref;
           if (colorByIsCatagoricalData) this.createStack(stacks);
-          else this.createKDE(occupancy);
+          else this.createHistogram(occupancy);
         }}
       />
     );
