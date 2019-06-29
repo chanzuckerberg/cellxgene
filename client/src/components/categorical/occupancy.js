@@ -15,7 +15,7 @@ class Occupancy extends React.Component {
       .domain([0, occupancy.length])
       .range([0, width]);
 
-    const largestBin = occupancy.reduce((max, length) => Math.max(max, length));
+    const largestBin = Math.max(...bins);
 
     const yScale = d3
       .scaleLinear()
