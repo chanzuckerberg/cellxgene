@@ -38,7 +38,7 @@ class Occupancy extends React.Component {
     }
   };
 
-  createStack = stacks => {
+  createOccupancyStack = stacks => {
     const height = 11;
     const ctx = this.canvas?.getContext("2d");
 
@@ -132,7 +132,7 @@ class Occupancy extends React.Component {
         height={height}
         ref={ref => {
             this.canvas = ref;
-          if (colorByIsCatagoricalData) this.createStack(stacks);
+            if (colorByIsCatagoricalData) this.createOccupancyStack(stacks);
           else this.createHistogram(occupancy);
         }}
       />
