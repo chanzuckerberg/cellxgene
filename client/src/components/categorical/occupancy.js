@@ -2,6 +2,17 @@
 import React from "react";
 import { connect } from "react-redux";
 import * as d3 from "d3";
+import {
+  Popover,
+  PopoverInteractionKind,
+  PopoverPosition,
+  Content,
+  Position,
+  Button,
+  Classes,
+  Intent,
+  H5
+} from "@blueprintjs/core";
 
 @connect()
 class Occupancy extends React.Component {
@@ -122,20 +133,56 @@ class Occupancy extends React.Component {
     }
 
     return (
-      <canvas
-        style={{
-          marginRight: 5,
-          width,
-          height
+      <Popover
+        interactionKind={PopoverInteractionKind.HOVER}
+        hoverOpenDelay={1000}
+        position={Position.LEFT}
+        modifiers={{
+          preventOverflow: { enabled: false },
+          hide: { enabled: false }
         }}
-        width={width}
-        height={height}
-        ref={ref => {
+        lazy
+        usePortal
+        popoverClassName={Classes.POPOVER_CONTENT_SIZING}
+      >
+        <canvas
+          className="bp3-popover-targer"
+          style={{
+            marginRight: 5,
+            width,
+            height
+          }}
+          width={width}
+          height={height}
+          ref={ref => {
             this.canvas = ref;
             if (colorByIsCatagoricalData) this.createOccupancyStack(stacks);
-          else this.createHistogram(occupancy);
-        }}
-      />
+            else this.createHistogram(occupancy);
+          }}
+        />
+        <div key="text" style={{ fontFamily: "Roboto" }}>
+          <p>
+            The x axis scale for all mini histograms are the same as the active
+            color scale: {}
+          </p>
+          <p>
+            The y axis scale for each mini histogram is normalized to its
+            largest value
+          </p>
+          <p>
+            {},{} is {}% zeros for {} ({})
+          </p>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              marginTop: 15
+            }}
+          >
+            <Button>Show zeros on all histograms</Button>
+          </div>
+        </div>
+      </Popover>
     );
   }
 }
