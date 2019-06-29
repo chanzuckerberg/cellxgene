@@ -6,7 +6,7 @@ import * as d3 from "d3";
 @connect()
 class Occupancy extends React.Component {
   createHistogram = bins => {
-    if (!this.svg) return;
+    if (!this.canvas) return;
     const width = 100;
     const height = 11;
 
@@ -22,7 +22,7 @@ class Occupancy extends React.Component {
       .domain([0, largestBin])
       .range([0, height]);
 
-    const ctx = this.svg.getContext("2d");
+    const ctx = this.canvas.getContext("2d");
 
     ctx.fillStyle = "#bbb";
 
@@ -40,7 +40,7 @@ class Occupancy extends React.Component {
 
   createStack = stacks => {
     const height = 11;
-    const ctx = this.svg?.getContext("2d");
+    const ctx = this.canvas?.getContext("2d");
 
     if (!ctx) return;
 
@@ -65,7 +65,7 @@ class Occupancy extends React.Component {
     const width = 100;
     const height = 11;
 
-    this.svg?.getContext("2d").clearRect(0, 0, width, height);
+    this.canvas?.getContext("2d").clearRect(0, 0, width, height);
 
     let occupancyMap = null;
 
@@ -131,7 +131,7 @@ class Occupancy extends React.Component {
         width={width}
         height={height}
         ref={ref => {
-          this.svg = ref;
+            this.canvas = ref;
           if (colorByIsCatagoricalData) this.createStack(stacks);
           else this.createHistogram(occupancy);
         }}
