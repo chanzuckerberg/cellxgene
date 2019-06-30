@@ -303,6 +303,31 @@ class Dataframe {
     );
   }
 
+  withColsFrom(dataframe) {
+    /*
+    return a new dataframe containing all columsn from both `this` and the
+    provided dataframe.
+
+    The row index from `this` will be used.  both dataframes must have identical
+    dimensionality, and no overlapping columns labels.
+     */
+    const dims = [this.dims[0], this.dims[1] + dataframe.dims[1]];
+    const { rowIndex } = this;
+    const columns = [...this.__columns, ...dataframe.__columns];
+    const colIndex = this.colIndex.withLabels(dataframe.colIndex.keys());
+    const columnsAccessor = [
+      ...this.__columnsAccessor,
+      ...dataframe.__columnsAccessor
+    ];
+    return new this.constructor(
+      dims,
+      columns,
+      rowIndex,
+      colIndex,
+      columnsAccessor
+    );
+  }
+
   dropCol(label) {
     /*
     Create a new dataframe, omitting one columns.
