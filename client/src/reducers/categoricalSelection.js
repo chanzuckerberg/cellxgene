@@ -21,8 +21,11 @@ const CategoricalSelection = (
     case "set clip quantiles": {
       const { world } = nextSharedState;
       return ControlsHelpers.createCategoricalSelection(
-        maxCategoryItems(prevSharedState),
-        world
+        world,
+        ControlsHelpers.selectableCategoryNames(
+          world,
+          maxCategoryItems(prevSharedState)
+        )
       );
     }
 
@@ -94,6 +97,30 @@ const CategoricalSelection = (
         }
       };
       return newCategoricalSelection;
+    }
+
+    case "new user annotation category created": {
+      const { world } = nextSharedState;
+      const name = action.data;
+      return {
+        ...state,
+        ...ControlsHelpers.createCategoricalSelection(world, [name])
+      };
+    }
+
+    case "duplicate annotation category": {
+      const { world } = nextSharedState;
+      const name = action.metadataField;
+      return {
+        ...state,
+        ...ControlsHelpers.createCategoricalSelection(world, [name])
+      };
+    }
+
+    case "delete category": {
+      const name = action.metadataField;
+      const { [name]: _, ...newState } = state;
+      return newState;
     }
 
     default: {

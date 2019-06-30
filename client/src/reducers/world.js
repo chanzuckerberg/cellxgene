@@ -122,6 +122,39 @@ const WorldReducer = (
       };
     }
 
+    case "new user annotation category created": {
+      const name = action.data;
+      const { universe } = nextSharedState;
+      const { schema } = universe;
+
+      /*
+      if world !== universe, we have to subset the newly created annotation,
+      else, just use it as is.
+      */
+      let newAnnotation = null;
+      if (!World.worldEqUniverse(state, universe)) {
+        newAnnotation = universe.obsAnnotations
+          .subset(state.obsAnnotations.rowIndex.keys(), [name], null)
+          .icol(0)
+          .asArray();
+      } else {
+        newAnnotation = universe.obsAnnotations.col(name).asArray();
+      }
+      const obsAnnotations = state.obsAnnotations.withCol(
+        name,
+        newAnnotation,
+        state.obsAnnotations.rowIndex
+      );
+      return { ...state, schema, obsAnnotations };
+    }
+
+    case "delete category": {
+      const { schema } = nextSharedState.universe;
+      const name = action.metadataField;
+      const obsAnnotations = state.obsAnnotations.dropCol(name);
+      return { ...state, schema, obsAnnotations };
+    }
+
     default: {
       return state;
     }

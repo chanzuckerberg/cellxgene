@@ -1,13 +1,7 @@
 // jshint esversion: 6
 import React from "react";
 import _ from "lodash";
-import {
-  Button,
-  Tooltip,
-  Icon,
-  ControlGroup,
-  InputGroup
-} from "@blueprintjs/core";
+import { Button, Tooltip, ControlGroup, InputGroup } from "@blueprintjs/core";
 import { connect } from "react-redux";
 import * as globals from "../../globals";
 import Category from "./category";
@@ -64,23 +58,14 @@ class Categories extends React.Component {
         >
           Categorical Metadata
         </p>
-        {_.map(
-          categoricalSelection,
-          (catState, catName) =>
-            catName !== "free_annotation" ? (
-              <Category
-                key={catName}
-                metadataField={catName}
-                createAnnoModeActive={createAnnoModeActive}
-              />
-            ) : null
-        )}
-        <Category
-          key={"free_annotation"}
-          metadataField={"free_annotation"}
-          isUserAnno
-          createAnnoModeActive={createAnnoModeActive}
-        />
+        {_.map(categoricalSelection, (catState, catName) => (
+          <Category
+            key={catName}
+            metadataField={catName}
+            createAnnoModeActive={createAnnoModeActive}
+            isUserAnno={catState.isUserAnno}
+          />
+        ))}
         {!createAnnoModeActive ? (
           <Tooltip
             content="Create new categorical metadata field"

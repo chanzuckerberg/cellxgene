@@ -136,6 +136,26 @@ const CrossfilterReducer = (
       return crossfilter;
     }
 
+    case "new user annotation category created": {
+      const name = action.data;
+      const { world } = nextSharedState;
+      const colData = world.obsAnnotations.col(name).asArray();
+      return state.addDimension(obsAnnoDimensionName(name), "enum", colData);
+    }
+
+    case "duplicate annotation category": {
+      // TODO: this code is right, but waiting on world/universe reducers
+      // const name = action.metadataField;
+      // const { world } = nextSharedState;
+      // const colData = world.obsAnnotations.col(name).asArray();
+      // return state.addDimension(obsAnnoDimensionName(name), "enum", colData);
+      return state;
+    }
+
+    case "delete category": {
+      return state.delDimension(obsAnnoDimensionName(action.metadataField));
+    }
+
     case "graph brush end":
     case "graph brush change": {
       const [minX, maxY] = action.brushCoords.northwest;

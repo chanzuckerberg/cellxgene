@@ -1,14 +1,6 @@
-// jshint esversion: 6
-
 import clip from "../clip";
-import {
-  layoutDimensionName,
-  obsAnnoDimensionName,
-  diffexpDimensionName,
-  userDefinedDimensionName
-} from "../nameCreators";
+import { layoutDimensionName, obsAnnoDimensionName } from "../nameCreators";
 import * as Dataframe from "../dataframe";
-import ImmutableTypedCrossfilter from "../typedCrossfilter/crossfilter";
 
 /*
 
@@ -183,7 +175,7 @@ function setClippedDataframes(world) {
 /*
 Subset the current world based upon the current selection, maintaining any existing
 clip.  Returns new world.  Parameters:
-  * unvierse
+  * universe
   * world - the current world
   * crossfilter - the selection state
 */

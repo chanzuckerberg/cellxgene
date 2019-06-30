@@ -25,6 +25,7 @@ const Reducer = undoable(
     ["config", config],
     ["universe", universe],
     ["world", world],
+    ["annotations", annotations],
     ["layoutChoice", layoutChoice],
     ["categoricalSelection", categoricalSelection],
     ["continuousSelection", continuousSelection],
@@ -34,8 +35,7 @@ const Reducer = undoable(
     ["controls", controls],
     ["differential", differential],
     ["responsive", responsive],
-    ["resetCache", resetCache],
-    ["annotations", annotations]
+    ["resetCache", resetCache]
   ]),
   [
     "world",

@@ -1,11 +1,9 @@
-// jshint esversion: 6
-
 import _ from "lodash";
 
 import decodeMatrixFBS from "./matrix";
 import * as Dataframe from "../dataframe";
-import fromEntries from "../fromEntries";
 import { isFpTypedArray } from "../typeHelpers";
+import { indexEntireSchema } from "./schemaHelpers";
 
 /*
 Private helper function - create and return a template Universe
@@ -18,10 +16,13 @@ function templateUniverse() {
     schema: {},
 
     /*
-    Annotations
+    annotations
     */
     obsAnnotations: Dataframe.Dataframe.empty(),
     varAnnotations: Dataframe.Dataframe.empty(),
+    /*
+    layout
+    */
     obsLayout: Dataframe.Dataframe.empty(),
 
     /*
@@ -163,6 +164,7 @@ export function createUniverseFromResponse(
   /* annotations */
   universe.obsAnnotations = AnnotationsFBSToDataframe(annotationsObsResponse);
   universe.varAnnotations = AnnotationsFBSToDataframe(annotationsVarResponse);
+  makeTestUserAnnotations(universe); // TODO/XXX: bootstrap, to be replaced
   /* layout */
   universe.obsLayout = LayoutFBSToDataframe(layoutFBSResponse);
 
@@ -176,20 +178,7 @@ export function createUniverseFromResponse(
   }
 
   reconcileSchemaCategoriesWithSummary(universe);
-
-  /* Index schema for ease of use */
-  universe.schema.annotations.obsByName = fromEntries(
-    universe.schema.annotations.obs.columns.map(v => [v.name, v])
-  );
-  universe.schema.annotations.varByName = fromEntries(
-    universe.schema.annotations.var.columns.map(v => [v.name, v])
-  );
-  universe.schema.layout.obsByName = fromEntries(
-    universe.schema.layout.obs.map(v => [v.name, v])
-  );
-  universe.schema.layout.varByName = fromEntries(
-    universe.schema.layout.var.map(v => [v.name, v])
-  );
+  indexEntireSchema(universe.schema);
   return universe;
 }
 
@@ -219,4 +208,43 @@ export function convertDataFBStoObject(universe, arrayBuffer) {
     result[varName] = columns[c];
   }
   return result;
+}
+
+function makeTestUserAnnotations(universe) {
+  /*
+  make a fake test dataframe containing user annotations.  This is test/bootstrap
+  code just to get the UI running, and will be replaced once we connect to the
+  backend (or mock that properly).
+  */
+  const { schema } = universe;
+  const { nObs } = schema.dataframe;
+  const colOneVals = ["red", "green", "blue"];
+  const colTwoVals = ["horse", "pig", "sheep", "chicken", "cow", "hamster"];
+  schema.annotations.obs.columns.push({
+    name: "user_anno_1",
+    type: "categorical",
+    isUserAnnotation: true,
+    categories: colOneVals
+  });
+  schema.annotations.obs.columns.push({
+    name: "user_anno_2",
+    type: "categorical",
+    isUserAnnotation: true,
+    categories: colTwoVals
+  });
+  const columns = [
+    new Array(nObs)
+      .fill(undefined)
+      .map((v, i) => colOneVals[i % colOneVals.length]),
+    new Array(nObs)
+      .fill(undefined)
+      .map((v, i) => colTwoVals[i % colTwoVals.length])
+  ];
+  const df = new Dataframe.Dataframe(
+    [nObs, 2],
+    columns,
+    null,
+    new Dataframe.KeyIndex(["user_anno_1", "user_anno_2"])
+  );
+  universe.obsAnnotations = universe.obsAnnotations.withColsFrom(df);
 }

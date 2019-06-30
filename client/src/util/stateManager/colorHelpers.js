@@ -50,8 +50,9 @@ function createColorsByCategoricalMetadata(world, accessor) {
   }, {});
 
   const rgb = new Array(world.nObs);
-  const data = world.obsAnnotations.col(accessor).asArray();
-  for (let i = 0, len = world.obsAnnotations.length; i < len; i += 1) {
+  const df = world.obsAnnotations;
+  const data = df.col(accessor).asArray();
+  for (let i = 0, len = df.length; i < len; i += 1) {
     const cat = data[i];
     rgb[i] = colors[cat];
   }

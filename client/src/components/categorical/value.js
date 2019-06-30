@@ -132,11 +132,12 @@ class CategoryValue extends React.Component {
     }
 
     if (colorAccessor && !isColorBy && categoricalSelection[colorAccessor]) {
-      occupancy = countCategoryValues2D(
+      const globalOccupancy = countCategoryValues2D(
         metadataField,
         colorAccessor,
         world.obsAnnotations
       );
+      occupancy = globalOccupancy.get(category.categoryValues[categoryIndex]);
     }
 
     return (
@@ -230,14 +231,8 @@ class CategoryValue extends React.Component {
           /> */}
         </div>
         <span style={{ flexShrink: 0 }}>
-          {colorAccessor &&
-          !annotations.isEditingLabelName &&
-          !isColorBy &&
-          categoricalSelection[colorAccessor] ? (
-            <Occupancy
-              occupancy={occupancy.get(category.categoryValues[categoryIndex])}
-              {...this.props}
-            />
+          {occupancy && !annotations.isEditingLabelName ? (
+            <Occupancy occupancy={occupancy} {...this.props} />
           ) : null}
         </span>
         <span>

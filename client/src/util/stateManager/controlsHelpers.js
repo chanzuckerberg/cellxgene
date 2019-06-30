@@ -37,16 +37,14 @@ Remember that option values can be ANY js type, except undefined/null.
     }
   }
 */
-function topNCategories(summary) {
-  const counts = _.map(summary.categories, cat =>
-    summary.categoryCounts.get(cat)
-  );
-  const sortIndex = fillRange(new Array(summary.numCategories)).sort(
+function topNCategories(colSchema, summary, N) {
+  const { categories } = colSchema;
+  const counts = _.map(categories, cat => summary.categoryCounts.get(cat) ?? 0);
+  const sortIndex = fillRange(new Array(categories.length)).sort(
     (a, b) => counts[b] - counts[a]
   );
-  const sortedCategories = _.map(sortIndex, i => summary.categories[i]);
+  const sortedCategories = _.map(sortIndex, i => categories[i]);
   const sortedCounts = _.map(sortIndex, i => counts[i]);
-  const N = globals.maxCategoricalOptionsToDisplay;
 
   if (sortedCategories.length < N) {
     return [sortedCategories, sortedCounts];
@@ -54,37 +52,55 @@ function topNCategories(summary) {
   return [sortedCategories.slice(0, N), sortedCounts.slice(0, N)];
 }
 
-export function createCategoricalSelection(maxCategoryItems, world) {
-  const res = {};
-  const obsIndexName = world.schema.annotations.obs.index;
-  _.forEach(world.obsAnnotations.colIndex.keys(), key => {
-    const summary = world.obsAnnotations.col(key).summarize();
-    if (summary.categories) {
-      const isColorField = key.includes("color") || key.includes("Color");
-      const isSelectableCategory =
-        !isColorField &&
-        key !== obsIndexName &&
-        summary.categories.length < maxCategoryItems;
-      if (isSelectableCategory) {
-        const [categoryValues, categoryValueCounts] = topNCategories(summary);
-        const categoryValueIndices = new Map(
-          categoryValues.map((v, i) => [v, i])
-        );
-        const numCategoryValues = categoryValueIndices.size;
-        const categoryValueSelected = new Array(numCategoryValues).fill(true);
-        const isTruncated = categoryValues.length < summary.numCategories;
-        res[key] = {
-          categoryValues, // array: of natively typed category values
-          categoryValueIndices, // map: category value (native type) -> category index
-          categoryValueSelected, // array: t/f selection state
-          numCategoryValues, // number: of values in the category
-          isTruncated, // bool: true if list was truncated
-          categoryValueCounts, // array: cardinality of each category,
-          categorySelected: true // bool - default state for entire category
-        };
-      }
-    }
-  });
+export function selectableCategoryNames(world, maxCategoryItems) {
+  const { schema } = world;
+  const { index, columns } = schema.annotations.obs;
+  return columns
+    .filter(colSchema => {
+      const { name, categories } = colSchema;
+      return (
+        categories && categories.length < maxCategoryItems && name !== index
+      );
+    })
+    .map(v => v.name);
+}
+
+export function createCategoricalSelection(world, names) {
+  const N = globals.maxCategoricalOptionsToDisplay;
+  const { obsAnnotations, schema } = world;
+
+  const res = names.reduce((acc, name) => {
+    const colSchema = schema.annotations.obsByName[name];
+    const { isUserAnnotation } = colSchema;
+
+    /*
+    Summarize the annotation data currently in world.  Must return categoryValues
+    in sorted order, and must include all category values even if they are not
+    actively used in the current world.
+    */
+    const summary = obsAnnotations.col(name).summarize();
+    const [categoryValues, categoryValueCounts] = topNCategories(
+      colSchema,
+      summary,
+      N
+    );
+    const categoryValueIndices = new Map(categoryValues.map((v, i) => [v, i]));
+    const numCategoryValues = categoryValueIndices.size;
+    const categoryValueSelected = new Array(numCategoryValues).fill(true);
+    const isTruncated = categoryValues.length < summary.numCategories;
+
+    acc[name] = {
+      categoryValues, // array: of natively typed category values
+      categoryValueIndices, // map: category value (native type) -> category index
+      categoryValueSelected, // array: t/f selection state
+      numCategoryValues, // number: of values in the category
+      isTruncated, // bool: true if list was truncated
+      categoryValueCounts, // array: cardinality of each category,
+      categorySelected: true, // bool - default state for entire category
+      isUserAnno: isUserAnnotation // bool
+    };
+    return acc;
+  }, {});
   return res;
 }
 
