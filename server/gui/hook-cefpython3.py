@@ -155,7 +155,7 @@ def get_cefpython3_datas():
                 absolute_file_path = os.path.join(path, file)
                 dest_path = os.path.relpath(path, CEFPYTHON3_DIR)
                 ret.append((absolute_file_path, dest_path))
-                logger.info("Include cefpython3 data: {}".format(dest_path))
+                logger.info("Include cefpython3 data: {}/{}".format(dest_path, file))
     elif is_win or is_linux:
         # The .pak files in cefpython3/locales/ directory
         locales_dir = os.path.join(CEFPYTHON3_DIR, "locales")
