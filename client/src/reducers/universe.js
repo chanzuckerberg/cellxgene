@@ -38,11 +38,14 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
     case "new user annotation category created": {
       /* create a new annotation category, with all values set to 'unassigned' */
       const name = action.data;
+      /* name must be a string,  non-zero length */
+      if (typeof name !== "string" || name.length === 0)
+        throw new Error("user annotations require string name");
+
       /* ensure the name isn't already in use! */
-      if (state.obsAnnotations.hasCol(name)) {
-        console.error("name collision on annotation category create");
-        return state;
-      }
+      if (state.obsAnnotations.hasCol(name))
+        throw new Error("name collision on annotation category create");
+
       const categories = [unassignedCategoryLabel];
       const schema = AnnotationsHelpers.addObsAnnoSchema(state.schema, name, {
         name,
@@ -71,9 +74,11 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
       const name = action.metadataField;
       const newName = action.editedCategoryText;
       if (!AnnotationsHelpers.isUserAnnotation(state, name)) {
-        console.error("deleting read-only annotation");
+        console.error("unable to edit read-only annotation");
         return state;
       }
+      if (typeof newName !== "string" || newName.length === 0)
+        throw new Error("user annotations require string name");
 
       const colSchema = {
         ...state.schema.annotations.obsByName[name],
@@ -92,7 +97,7 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
       /* delete annotation category from schema and obsAnnotations */
       const name = action.metadataField;
       if (!AnnotationsHelpers.isUserAnnotation(state, name)) {
-        console.error("deleting read-only annotation");
+        console.error("unable to delete read-only annotation");
         return state;
       }
       const schema = AnnotationsHelpers.removeObsAnnoSchema(state.schema, name);
