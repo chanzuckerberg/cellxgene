@@ -2,8 +2,8 @@
 Helper functions for user-editable nnotations state management.
 See also reducers/annotations.js
 */
-
-import { removeObsAnnoColumn, addObsAnnoColumn } from "./schemaHelpers";
+import { unassignedCategoryLabel } from "../../globals";
+import * as SchemaHelpers from "./schemaHelpers";
 
 /*
 There are a number of state constraints assumed throughout the
@@ -32,7 +32,7 @@ export function removeObsAnnoSchema(schema, name) {
 	/* only remove if it exists and is a user annotation */
 	if (!_isUserAnnotation(schema, name))
 		throw new Error("removing non-user-defined schema");
-	return removeObsAnnoColumn(schema, name);
+	return SchemaHelpers.removeObsAnnoColumn(schema, name);
 }
 
 export function addObsAnnoSchema(schema, name, colSchema) {
@@ -44,5 +44,41 @@ export function addObsAnnoSchema(schema, name, colSchema) {
 	if (schema.annotations.obs.columns.some(v => v.name === name))
 		throw Error("annotations may not contain duplicate category names");
 	if (name !== colSchema.name) throw Error("column schema does not match");
-	return addObsAnnoColumn(schema, name, colSchema);
+	return SchemaHelpers.addObsAnnoColumn(schema, name, colSchema);
+}
+
+export function removeObsAnnoCategory(schema, name, category) {
+	/* don't allow deletion of unassigned category on writable annotations */
+
+	if (!_isUserAnnotation(schema, name))
+		throw new Error("unable to modify read-only schema");
+	if (category === unassignedCategoryLabel)
+		throw new Error("may not remove unassigned category lable");
+
+	return SchemaHelpers.removeObsAnnoCategory(schema, name, category);
+}
+
+export function addObsAnnoCategory(schema, name, category) {
+	if (!_isUserAnnotation(schema, name))
+		throw new Error("unable to modify read-only schema");
+
+	return SchemaHelpers.addObsAnnoCategory(schema, name, category);
+}
+
+export function setLabelByValue(df, colName, fromLabel, toLabel) {
+	/* 
+	in the dataframe column `colName`, set any value of `fromLabel` to `toLabel`
+	*/
+	const keys = df.colIndex.keys();
+	const ndf = df.mapColumns((col, colIdx) => {
+		if (colName !== keys[colIdx]) return col;
+
+		/* clone data and return it. */
+		const newCol = col.slice();
+		for (let i = 0, l = newCol.length; i < l; i += 1) {
+			if (newCol[i] === fromLabel) newCol[i] = toLabel;
+		}
+		return newCol;
+	});
+	return ndf;
 }

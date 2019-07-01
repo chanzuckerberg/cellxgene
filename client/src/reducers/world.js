@@ -1,4 +1,9 @@
-import { World, ControlsHelpers } from "../util/stateManager";
+import { unassignedCategoryLabel } from "../globals";
+import {
+  World,
+  ControlsHelpers,
+  AnnotationsHelpers
+} from "../util/stateManager";
 import clip from "../util/clip";
 import quantile from "../util/quantile";
 
@@ -161,6 +166,22 @@ const WorldReducer = (
       const { schema } = nextSharedState.universe;
       const name = action.metadataField;
       const obsAnnotations = state.obsAnnotations.dropCol(name);
+      return { ...state, schema, obsAnnotations };
+    }
+
+    case "delete label": {
+      const { schema } = nextSharedState.universe;
+      const annotationName = action.metadataField;
+      const labelName = action.label;
+
+      /* set all values to unassigned in obsAnnotations */
+      const obsAnnotations = AnnotationsHelpers.setLabelByValue(
+        state.obsAnnotations,
+        annotationName,
+        labelName,
+        unassignedCategoryLabel
+      );
+
       return { ...state, schema, obsAnnotations };
     }
 

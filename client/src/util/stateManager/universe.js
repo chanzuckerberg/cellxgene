@@ -1,5 +1,6 @@
 import _ from "lodash";
 
+import { unassignedCategoryLabel } from "../../globals";
 import decodeMatrixFBS from "./matrix";
 import * as Dataframe from "../dataframe";
 import { isFpTypedArray } from "../typeHelpers";
@@ -218,8 +219,16 @@ function makeTestUserAnnotations(universe) {
   */
   const { schema } = universe;
   const { nObs } = schema.dataframe;
-  const colOneVals = ["red", "green", "blue"];
-  const colTwoVals = ["horse", "pig", "sheep", "chicken", "cow", "hamster"];
+  const colOneVals = ["red", "green", "blue", unassignedCategoryLabel];
+  const colTwoVals = [
+    "horse",
+    "pig",
+    "sheep",
+    "chicken",
+    "cow",
+    "hamster",
+    unassignedCategoryLabel
+  ];
   schema.annotations.obs.columns.push({
     name: "user_anno_1",
     type: "categorical",
@@ -235,10 +244,10 @@ function makeTestUserAnnotations(universe) {
   const columns = [
     new Array(nObs)
       .fill(undefined)
-      .map((v, i) => colOneVals[i % colOneVals.length]),
+      .map((v, i) => colOneVals[i % (colOneVals.length - 1)]),
     new Array(nObs)
       .fill(undefined)
-      .map((v, i) => colTwoVals[i % colTwoVals.length])
+      .map((v, i) => colTwoVals[i % (colTwoVals.length - 1)])
   ];
   const df = new Dataframe.Dataframe(
     [nObs, 2],

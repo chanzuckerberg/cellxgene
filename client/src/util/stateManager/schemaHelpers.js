@@ -28,43 +28,70 @@ export function indexEntireSchema(schema) {
 	return schema;
 }
 
-export function removeObsAnnoColumn(schema, name) {
-	/* redux copy conventions */
-	const newSchema = {
+function _copy(schema) {
+	/* redux copy conventions - WARNING, only for modifyign obs annotations */
+	return {
 		...schema,
 		annotations: {
 			...schema.annotations,
 			obs: {
 				...schema.annotations.obs,
-				columns: schema.annotations.obs.columns.filter(v => v.name !== name)
+				columns: [...schema.annotations.obs.columns]
 			}
 		}
 	};
+}
 
-	/* reindex */
-	newSchema.annotations.obsByName = fromEntries(
-		newSchema.annotations.obs.columns.map(v => [v.name, v])
+function _reindex(schema) {
+	/* reindex obs annotations ONLY */
+	schema.annotations.obsByName = fromEntries(
+		schema.annotations.obs.columns.map(v => [v.name, v])
 	);
+	return schema;
+}
 
-	return newSchema;
+export function removeObsAnnoColumn(schema, name) {
+	const newSchema = _copy(schema);
+	newSchema.annotations.obs.columns = schema.annotations.obs.columns.filter(
+		v => v.name !== name
+	);
+	return _reindex(newSchema);
 }
 
 export function addObsAnnoColumn(schema, name, defn) {
-	const newSchema = {
-		...schema,
-		annotations: {
-			...schema.annotations,
-			obs: {
-				...schema.annotations.obs,
-				columns: schema.annotations.obs.columns.concat([defn])
-			}
-		}
-	};
+	const newSchema = _copy(schema);
+	newSchema.annotations.obs.columns.push(defn);
+	return _reindex(newSchema);
+}
 
-	/* reindex */
-	newSchema.annotations.obsByName = fromEntries(
-		newSchema.annotations.obs.columns.map(v => [v.name, v])
-	);
+export function removeObsAnnoCategory(schema, name, category) {
+	/* remove a category from a categorical annotation */
+	const categories = schema.annotations.obsByName[name]?.categories;
+	if (!categories)
+		throw new Error("column does not exist or is not categorical");
 
+	const idx = categories.indexOf(category);
+	if (idx === -1) throw new Error("category does not exist");
+
+	const newSchema = _reindex(_copy(schema));
+
+	/* remove category */
+	newSchema.annotations.obsByName[name].categories.splice(idx, 1);
+	return newSchema;
+}
+
+export function addObsAnnoCategory(schema, name, category) {
+	/* add a category to a categorical annotation */
+	const categories = schema.annotations.obsByName[name]?.categories;
+	if (!categories)
+		throw new Error("column does not exist or is not categorical");
+
+	const idx = categories.indexOf(category);
+	if (idx !== -1) throw new Error("category already exists");
+
+	const newSchema = _reindex(_copy(schema));
+
+	/* remove category */
+	newSchema.annotations.obsByName[name].categories.push(category);
 	return newSchema;
 }

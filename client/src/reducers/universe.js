@@ -73,10 +73,8 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
       /* change the name of an obs annotation category */
       const name = action.metadataField;
       const newName = action.editedCategoryText;
-      if (!AnnotationsHelpers.isUserAnnotation(state, name)) {
-        console.error("unable to edit read-only annotation");
-        return state;
-      }
+      if (!AnnotationsHelpers.isUserAnnotation(state, name))
+        throw new Error("unable to edit read-only annotation");
       if (typeof newName !== "string" || newName.length === 0)
         throw new Error("user annotations require string name");
 
@@ -96,12 +94,38 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
     case "delete category": {
       /* delete annotation category from schema and obsAnnotations */
       const name = action.metadataField;
-      if (!AnnotationsHelpers.isUserAnnotation(state, name)) {
-        console.error("unable to delete read-only annotation");
-        return state;
-      }
+      if (!AnnotationsHelpers.isUserAnnotation(state, name))
+        throw new Error("unable to delete read-only annotation");
+
       const schema = AnnotationsHelpers.removeObsAnnoSchema(state.schema, name);
       const obsAnnotations = state.obsAnnotations.dropCol(name);
+      return { ...state, schema, obsAnnotations };
+    }
+
+    case "delete label": {
+      /* delete the label from the annotation, and set all cells with this value to unassigned */
+      const annotationName = action.metadataField;
+      const labelName = action.label;
+      if (!AnnotationsHelpers.isUserAnnotation(state, annotationName))
+        throw new Error("unable to modify read-only annotation");
+      if (labelName === unassignedCategoryLabel)
+        throw new Error("may not remove the unassigned label");
+
+      /* remove the category from the schema */
+      const schema = AnnotationsHelpers.removeObsAnnoCategory(
+        state.schema,
+        annotationName,
+        labelName
+      );
+
+      /* set all values to unassigned in obsAnnotations */
+      const obsAnnotations = AnnotationsHelpers.setLabelByValue(
+        state.obsAnnotations,
+        annotationName,
+        labelName,
+        unassignedCategoryLabel
+      );
+
       return { ...state, schema, obsAnnotations };
     }
 

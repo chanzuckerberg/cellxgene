@@ -133,6 +133,17 @@ const CategoricalSelection = (
       return newState;
     }
 
+    case "delete label": {
+      /* need to rebuild the state for this annotation */
+      const { world } = nextSharedState;
+      const name = action.metadataField;
+      const { [name]: _, ...partialState } = state;
+      return {
+        ...partialState,
+        ...ControlsHelpers.createCategoricalSelection(world, [name])
+      };
+    }
+
     default: {
       return state;
     }

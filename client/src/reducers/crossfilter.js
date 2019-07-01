@@ -165,6 +165,15 @@ const CrossfilterReducer = (
       return state.delDimension(obsAnnoDimensionName(action.metadataField));
     }
 
+    case "delete label": {
+      /* we need to reindex the dimension.  For now, just drop it and add another */
+      const name = action.metadataField;
+      const dimName = obsAnnoDimensionName(name);
+      const { world } = nextSharedState;
+      const colData = world.obsAnnotations.col(name).asArray();
+      return state.delDimension(dimName).addDimension(dimName, "enum", colData);
+    }
+
     case "graph brush end":
     case "graph brush change": {
       const [minX, maxY] = action.brushCoords.northwest;
