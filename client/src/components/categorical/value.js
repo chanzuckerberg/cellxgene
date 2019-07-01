@@ -114,6 +114,7 @@ class CategoryValue extends React.Component {
             <span
               data-testid={`categorical-value-${metadataField}-${displayString}`}
               data-testclass="categorical-value"
+              style={{ wordBreak: "break-all" }}
             >
               {displayString}
             </span>
