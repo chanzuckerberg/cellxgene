@@ -35,8 +35,10 @@ class CategoryValue extends React.Component {
     }, {});
 
     const valueSelectionChange =
-      newCategoricalSelection[metadataField].categorySelected[categoryIndex] !==
-      categoricalSelection[metadataField].categorySelected[categoryIndex];
+      newCategoricalSelection[metadataField].categoryValueSelected[
+        categoryIndex
+      ] !==
+      categoricalSelection[metadataField].categoryValueSelected[categoryIndex];
 
     return (
       valueSelectionChange ||
