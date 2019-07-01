@@ -138,7 +138,11 @@ build-assets :
 
 gui-build-full : clean-lite dev-env
 	pip install -e .[gui]
-	pyinstaller -D -w --additional-hooks-dir server/gui/ -n cellxgene --add-data server/app/web/templates/:server/app/web/templates/ --add-data server/app/web/static/:server/app/web/static/ --icon 'server/gui/images/icon.ico' server/gui/main.py
+	pyinstaller -D -w --additional-hooks-dir server/gui/ -n cellxgene  --add-binary='/System/Library/Frameworks/Tk.framework/Tk':'tk' --add-binary='/System/Library/Frameworks/Tcl.framework/Tcl':'tcl'  --add-data server/app/web/templates/:server/app/web/templates/ --add-data server/app/web/static/:server/app/web/static/ --icon='server/gui/images/icon.ico' server/gui/main.py
+
+gui-build-onefile : clean-lite dev-env
+	pip install -e .[gui]
+	pyinstaller -D -w --additional-hooks-dir server/gui/ -n cellxgene  --add-binary='/System/Library/Frameworks/Tk.framework/Tk':'tk' --add-binary='/System/Library/Frameworks/Tcl.framework/Tcl':'tcl'  --add-data server/app/web/templates/:server/app/web/templates/ --add-data server/app/web/static/:server/app/web/static/ --icon 'server/gui/images/icon.ico' server/gui/main.py
 
 gui-build : clean-lite dev-env
 	pip install -e .[gui]
