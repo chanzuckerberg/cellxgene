@@ -5,13 +5,9 @@ import * as d3 from "d3";
 import {
   Popover,
   PopoverInteractionKind,
-  PopoverPosition,
-  Content,
   Position,
   Button,
-  Classes,
-  Intent,
-  H5
+  Classes
 } from "@blueprintjs/core";
 
 @connect()
@@ -160,17 +156,18 @@ class Occupancy extends React.Component {
             else this.createHistogram(occupancy);
           }}
         />
-        <div key="text" style={{ fontFamily: "Roboto" }}>
+        <div key="text" style={{ fontFamily: "Roboto", fontSize: "14px" }}>
           <p>
             The x axis scale for all mini histograms are the same as the active
-            color scale: {}
+            color scale: <strong>{colorAccessor}</strong>
           </p>
           <p>
             The y axis scale for each mini histogram is normalized to its
             largest value
           </p>
           <p>
-            {},{} is {}% zeros for {} ({})
+            {metadataField}, {category.categoryValues[categoryIndex]} is {}%
+            zeros for {colorAccessor} ({})
           </p>
           <div
             style={{
