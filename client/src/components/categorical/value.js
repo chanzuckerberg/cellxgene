@@ -34,7 +34,7 @@ class CategoryValue extends React.Component {
   handleMouseEnter = () => {
     const { dispatch, metadataField, categoryIndex } = this.props;
     dispatch({
-      type: "category value mouse hover start",
+      type: "---DISABLED--- category value mouse hover start",
       metadataField,
       categoryIndex
     });
@@ -43,7 +43,7 @@ class CategoryValue extends React.Component {
   handleMouseExit = () => {
     const { dispatch, metadataField, categoryIndex } = this.props;
     dispatch({
-      type: "category value mouse hover end",
+      type: "---DISABLED--- category value mouse hover end",
       metadataField,
       categoryIndex
     });
