@@ -223,13 +223,13 @@ function makeTestUserAnnotations(universe) {
   schema.annotations.obs.columns.push({
     name: "user_anno_1",
     type: "categorical",
-    isUserAnnotation: true,
+    writable: true,
     categories: colOneVals
   });
   schema.annotations.obs.columns.push({
     name: "user_anno_2",
     type: "categorical",
-    isUserAnnotation: true,
+    writable: true,
     categories: colTwoVals
   });
   const columns = [

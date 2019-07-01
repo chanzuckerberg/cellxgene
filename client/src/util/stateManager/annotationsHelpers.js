@@ -12,12 +12,12 @@ application:
 		regardless of whether or not they are user editable.
 	- the {world|universe}.schema is always up to date and matches
 		the data
-	- the schema flag `isUserAnnotation` correctly indicates whether
+	- the schema flag `writable` correctly indicates whether
 	  the annotation is editable/mutable.
 */
 
 function _isUserAnnotation(schema, name) {
-	return schema.annotations.obsByName[name]?.isUserAnnotation;
+	return schema.annotations.obsByName[name]?.writable;
 }
 
 export function isUserAnnotation(worldOrUniverse, name) {

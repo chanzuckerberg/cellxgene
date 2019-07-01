@@ -71,7 +71,7 @@ export function createCategoricalSelection(world, names) {
 
   const res = names.reduce((acc, name) => {
     const colSchema = schema.annotations.obsByName[name];
-    const { isUserAnnotation } = colSchema;
+    const { writable: isUserAnno } = colSchema;
 
     /*
     Summarize the annotation data currently in world.  Must return categoryValues
@@ -97,7 +97,7 @@ export function createCategoricalSelection(world, names) {
       isTruncated, // bool: true if list was truncated
       categoryValueCounts, // array: cardinality of each category,
       categorySelected: true, // bool - default state for entire category
-      isUserAnno: isUserAnnotation // bool
+      isUserAnno // bool
     };
     return acc;
   }, {});

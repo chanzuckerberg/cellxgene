@@ -51,7 +51,7 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
         name,
         categories,
         type: "categorical",
-        isUserAnnotation: true
+        writable: true
       });
       const data = new Array(state.nObs).fill(unassignedCategoryLabel);
       const obsAnnotations = state.obsAnnotations.withCol(name, data);
