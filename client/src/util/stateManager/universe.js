@@ -104,27 +104,11 @@ function LayoutFBSToDataframe(arrayBuffer) {
     throw new Error("Unexpected layout data type returned from server");
   }
 
-  /*
-  TODO: XXX
-
-  TEMPORARY CODE AND COMMENT to support the progressive implementation
-  of multi-layout support.  For now, we search for one of the following 
-  in the layouts and use it if we find it: umap, then tsne, then pca, 
-  then whatever is first in the list.
-  */
-  let layoutIndex = 0;
-  ["umap", "tsne", "pca"].some(name => {
-    const idx = fbs.colIdx.indexOf(`${name}_0`);
-    if (idx !== -1) {
-      layoutIndex = idx;
-    }
-    return idx !== -1;
-  });
   const df = new Dataframe.Dataframe(
-    [fbs.nRows, 2],
-    [fbs.columns[layoutIndex], fbs.columns[layoutIndex + 1]],
+    [fbs.nRows, fbs.nCols],
+    fbs.columns,
     null,
-    new Dataframe.KeyIndex(["X", "Y"])
+    new Dataframe.KeyIndex(fbs.colIdx)
   );
   return df;
 }
@@ -140,7 +124,7 @@ function reconcileSchemaCategoriesWithSummary(universe) {
   cases, add a 'categories' field to the schema so it is accessible.
   */
 
-  universe.schema.annotations.obs.forEach(s => {
+  universe.schema.annotations.obs.columns.forEach(s => {
     if (
       s.type === "string" ||
       s.type === "boolean" ||
@@ -172,6 +156,9 @@ export function createUniverseFromResponse(
   universe.schema = schema;
   universe.nObs = schema.dataframe.nObs;
   universe.nVar = schema.dataframe.nVar;
+  /* add defaults, as we can't assume back-end will fully populate schema */
+  if (!schema.layout.var) schema.layout.var = [];
+  if (!schema.layout.obs) schema.layout.obs = [];
 
   /* annotations */
   universe.obsAnnotations = AnnotationsFBSToDataframe(annotationsObsResponse);
@@ -192,10 +179,16 @@ export function createUniverseFromResponse(
 
   /* Index schema for ease of use */
   universe.schema.annotations.obsByName = fromEntries(
-    universe.schema.annotations.obs.map(v => [v.name, v])
+    universe.schema.annotations.obs.columns.map(v => [v.name, v])
   );
   universe.schema.annotations.varByName = fromEntries(
-    universe.schema.annotations.var.map(v => [v.name, v])
+    universe.schema.annotations.var.columns.map(v => [v.name, v])
+  );
+  universe.schema.layout.obsByName = fromEntries(
+    universe.schema.layout.obs.map(v => [v.name, v])
+  );
+  universe.schema.layout.varByName = fromEntries(
+    universe.schema.layout.var.map(v => [v.name, v])
   );
   return universe;
 }
@@ -220,8 +213,9 @@ export function convertDataFBStoObject(universe, arrayBuffer) {
     throw new Error("Unexpected non-floating point response from server.");
   }
 
+  const varIndexName = universe.schema.annotations.var.index;
   for (let c = 0; c < colIdx.length; c += 1) {
-    const varName = universe.varAnnotations.at(colIdx[c], "name");
+    const varName = universe.varAnnotations.at(colIdx[c], varIndexName);
     result[varName] = columns[c];
   }
   return result;

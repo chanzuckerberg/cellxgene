@@ -21,24 +21,32 @@ const doInitialDataLoad = () =>
     dispatch({ type: "initial data load start" });
 
     try {
-      const requestJson = _(["config", "schema"])
+      /*
+      Step 1 - config & schema, all JSON
+      */
+      const requestJson = ["config", "schema"]
         .map(r => `${globals.API.prefix}${globals.API.version}${r}`)
-        .map(url => doJsonRequest(url))
-        .value();
-      const requestBinary = _([
-        "annotations/obs",
-        "annotations/var?annotation-name=name",
-        "layout/obs"
-      ])
-        .map(r => `${globals.API.prefix}${globals.API.version}${r}`)
-        .map(url => doBinaryRequest(url))
-        .value();
-
-      const results = await Promise.all(_.concat(requestJson, requestBinary));
-
+        .map(url => doJsonRequest(url));
+      const stepOneResults = await Promise.all(requestJson);
       /* set config defaults */
-      const config = { ...globals.configDefaults, ...results[0].config };
-      const [, schema, obsAnno, varAnno, obsLayout] = [...results];
+      const config = { ...globals.configDefaults, ...stepOneResults[0].config };
+      const schema = stepOneResults[1];
+
+      /*
+      Step 2 - dataframes, all binary.  NOTE: uses results of step 1.
+      */
+      /* only load names for var annotations, if possible*/
+      const varIndexName = schema?.schema?.annotations?.var?.index;
+      const varAnnotationsQuery = varIndexName
+        ? `?annotation-name=${varIndexName}`
+        : "";
+      const varAnnotationsURL = `annotations/var${varAnnotationsQuery}`;
+      const requestBinary = ["annotations/obs", varAnnotationsURL, "layout/obs"]
+        .map(r => `${globals.API.prefix}${globals.API.version}${r}`)
+        .map(url => doBinaryRequest(url));
+      const stepTwoResults = await Promise.all(requestBinary);
+      const [obsAnno, varAnno, obsLayout] = [...stepTwoResults];
+
       const universe = Universe.createUniverseFromResponse(
         config,
         schema,
@@ -91,6 +99,10 @@ needs expression data.
 Transparently utilizes cached data if it is already present.
 */
 async function _doRequestExpressionData(dispatch, getState, genes) {
+  const state = getState();
+  const { universe } = state;
+  const varIndexName = universe.schema.annotations.var.index;
+
   /* helper for this function only */
   const fetchData = async geneNames => {
     const res = await fetch(
@@ -100,7 +112,7 @@ async function _doRequestExpressionData(dispatch, getState, genes) {
         body: JSON.stringify({
           filter: {
             var: {
-              annotation_value: [{ name: "name", values: geneNames }]
+              annotation_value: [{ name: varIndexName, values: geneNames }]
             }
           }
         }),
@@ -123,8 +135,6 @@ async function _doRequestExpressionData(dispatch, getState, genes) {
     return Universe.convertDataFBStoObject(universe, data);
   };
 
-  const state = getState();
-  const { universe } = state;
   /* preload data already in cache */
   let expressionData = _.transform(
     genes,
@@ -241,6 +251,7 @@ const requestDifferentialExpression = (set1, set2, num_genes = 10) => async (
     */
     const state = getState();
     const { universe } = state;
+    const varIndexName = universe.schema.annotations.var.index;
 
     // Legal values are null, Array or TypedArray.  Null is initial state.
     if (!set1) set1 = [];
@@ -277,7 +288,7 @@ const requestDifferentialExpression = (set1, set2, num_genes = 10) => async (
     const data = await res.json();
     // result is [ [varIdx, ...], ... ]
     const topNGenes = _.map(data, r =>
-      universe.varAnnotations.at(r[0], "name")
+      universe.varAnnotations.at(r[0], varIndexName)
     );
 
     /*

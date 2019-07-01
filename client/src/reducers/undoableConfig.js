@@ -29,7 +29,10 @@ const skipOnActions = new Set([
   "clear all user defined genes",
 
   "get single gene expression for coloring started",
-  "get single gene expression for coloring error"
+  "get single gene expression for coloring error",
+
+  "category value mouse hover start",
+  "category value mouse hover end"
 ]);
 
 /*
@@ -59,7 +62,7 @@ const saveOnActions = new Set([
   "categorical metadata filter select",
   "categorical metadata filter deselect",
   "categorical metadata filter all of these",
-  "categorical metadata none of these",
+  "categorical metadata filter none of these",
 
   "color by categorical metadata",
   "color by continuous metadata",
@@ -72,7 +75,10 @@ const saveOnActions = new Set([
   "store current cell selection as differential set 2",
 
   "set World to current selection",
-  "set clip quantiles"
+  "set clip quantiles",
+
+  "set layout choice",
+  "change graph interaction mode"
 ]);
 
 /**
@@ -98,9 +104,15 @@ const applyPending = () => ({
   [actionKey]: "applyPending",
   [stateKey]: { fsm: null }
 });
-const skip = fsm => ({ [actionKey]: "skip", [stateKey]: { fsm } });
+const skip = (fsm, transition) => ({
+  [actionKey]: "skip",
+  [stateKey]: { fsm: transition.to !== "done" ? fsm : null }
+});
 const clear = () => ({ [actionKey]: "clear", [stateKey]: { fsm: null } });
-const save = fsm => ({ [actionKey]: "save", [stateKey]: { fsm } });
+const save = (fsm, transition) => ({
+  [actionKey]: "save",
+  [stateKey]: { fsm: transition.to !== "done" ? fsm : null }
+});
 
 /*
 Error handler for state transitions that are unexpected.  Called by

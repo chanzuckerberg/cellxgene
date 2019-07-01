@@ -13,6 +13,26 @@ export const puppeteerUtils = puppeteerPage => ({
     );
   },
 
+  async waitForAllByIds(testids, props = {}) {
+    await Promise.all(
+      testids.map(testid =>
+        puppeteerPage.waitForSelector(`[data-testid='${testid}']`)
+      )
+    );
+  },
+
+  async getAllByClass(testclass, props = {}) {
+    const elements = await puppeteerPage.$$eval(
+      `[data-testclass=${testclass}]`,
+      els => {
+        return els.map(el => {
+          return el.dataset.testid;
+        });
+      }
+    );
+    return elements;
+  },
+
   async typeInto(testid, text) {
     // only works for text without special characters
     await this.waitByID(testid);
@@ -32,8 +52,8 @@ export const puppeteerUtils = puppeteerPage => ({
     await puppeteerPage.waitFor(200);
     // select all
 
-    await puppeteerPage.click(selector, {clickCount: 3})
-    await puppeteerPage.keyboard.type("Backspace")
+    await puppeteerPage.click(selector, { clickCount: 3 });
+    await puppeteerPage.keyboard.type("Backspace");
     await puppeteerPage.type(selector, text);
   },
 
@@ -77,20 +97,16 @@ export const cellxgeneActions = puppeteerPage => ({
     await puppeteerPage.mouse.up();
   },
 
-  async getAllHistograms(testclass) {
-    await puppeteerUtils(puppeteerPage).waitByClass(testclass);
-    const histograms = await puppeteerPage.$$eval(
-      `[data-testclass=${testclass}]`,
-      els => {
-        return els.map(el => {
-          return el.dataset.testid.substring(
-            "histogram_".length,
-            el.dataset.testid.length
-          );
-        });
-      }
+  async getAllHistograms(testclass, testids) {
+    const histTestIds = testids.map(tid => `histogram-${tid}`);
+    // these load asynchronously, so we need to wait for each histogram individually
+    await puppeteerUtils(puppeteerPage).waitForAllByIds(histTestIds);
+    const allHistograms = await puppeteerUtils(puppeteerPage).getAllByClass(
+      testclass
     );
-    return histograms;
+    return allHistograms.map(hist =>
+      hist.substr("histogram_".length, hist.length)
+    );
   },
 
   async getAllCategoriesAndCounts(category) {
@@ -180,11 +196,16 @@ export const cellxgeneActions = puppeteerPage => ({
     await page.waitFor(200);
   },
 
-  async clip(min = 0, max = 100) { 
+  async clip(min = 0, max = 100) {
     await puppeteerUtils(puppeteerPage).clickOn("visualization-settings");
-    await puppeteerUtils(puppeteerPage).clearInputAndTypeInto("clip-min-input", min);
-    await puppeteerUtils(puppeteerPage).clearInputAndTypeInto("clip-max-input", max);
+    await puppeteerUtils(puppeteerPage).clearInputAndTypeInto(
+      "clip-min-input",
+      min
+    );
+    await puppeteerUtils(puppeteerPage).clearInputAndTypeInto(
+      "clip-max-input",
+      max
+    );
     await puppeteerUtils(puppeteerPage).clickOn("clip-commit");
   }
-
 });

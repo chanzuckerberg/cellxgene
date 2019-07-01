@@ -1,6 +1,6 @@
 export const datasets = {
   pbmc3k: {
-    title: "cellxgene: pbmc3k",
+    title: "pbmc3k",
     dataframe: {
       nObs: "2638",
       nVar: "1838",
@@ -27,7 +27,7 @@ export const datasets = {
       lasso: [
         {
           "coordinates-as-percent": { x1: 0.05, y1: 0.25, x2: 0.15, y2: 0.35 },
-          count: "43"
+          count: "71"
         }
       ],
       categorical: [
@@ -91,8 +91,8 @@ export const datasets = {
         }
       },
       lasso: {
-        "coordinates-as-percent": { x1: 0.45, y1: 0.05, x2: 0.5, y2: 0.1 },
-        count: "65"
+        "coordinates-as-percent": { x1: 0.45, y1: 0.05, x2: 0.65, y2: 0.15 },
+        count: "36"
       }
     },
     scatter: {

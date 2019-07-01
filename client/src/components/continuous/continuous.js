@@ -48,7 +48,7 @@ class Continuous extends React.Component {
     }
 
     /* initial value for iterator to simulate index, ranges is an object */
-    let zebra = -1;
+    let zebra = 0;
 
     return (
       <div>
@@ -66,7 +66,8 @@ class Continuous extends React.Component {
           ? _.map(obsAnnotations.colIndex.keys(), key => {
               const isColorField =
                 key.includes("color") || key.includes("Color");
-              if (key === "name" || isColorField) return null;
+              if (key === schema.annotations.obs.index || isColorField)
+                return null;
 
               const summary = obsAnnotations.col(key).summarize();
               const nonFiniteExtent =

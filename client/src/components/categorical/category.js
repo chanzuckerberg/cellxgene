@@ -27,10 +27,10 @@ class Category extends React.Component {
       const cat = categoricalSelection[metadataField];
       const categoryCount = {
         // total number of categories in this dimension
-        totalCatCount: cat.numCategories,
+        totalCatCount: cat.numCategoryValues,
         // number of selected options in this category
         selectedCatCount: _.reduce(
-          cat.categorySelected,
+          cat.categoryValueSelected,
           (res, cond) => (cond ? res + 1 : res),
           0
         )
@@ -91,7 +91,7 @@ class Category extends React.Component {
     const { categoricalSelection, metadataField } = this.props;
 
     const cat = categoricalSelection[metadataField];
-    const optTuples = sortedCategoryValues([...cat.categoryIndices]);
+    const optTuples = sortedCategoryValues([...cat.categoryValueIndices]);
     return _.map(optTuples, (tuple, i) => (
       <Value
         optTuples={optTuples}

@@ -130,3 +130,10 @@ uninstall :
 	pip uninstall -y cellxgene || :
 
 .PHONY : install install-dev install-release-test install-release uninstall
+
+# GUI
+
+build-assets :
+	pyside2-rcc server/gui/cellxgene.qrc -o server/gui/cellxgene_rc.py
+
+.PHONY : build-assets

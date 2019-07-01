@@ -20,10 +20,11 @@ const CrossfilterReducer = (
 ) => {
   switch (action.type) {
     case "initial data load complete (universe exists)": {
-      const { world } = nextSharedState;
+      const { world, layoutChoice } = nextSharedState;
       const crossfilter = World.createObsDimensions(
         new Crossfilter(world.obsAnnotations),
-        world
+        world,
+        layoutChoice.currentDimNames
       );
       return crossfilter;
     }
@@ -43,9 +44,13 @@ const CrossfilterReducer = (
     case "set clip quantiles":
     case "set World to current selection": {
       const { userDefinedGenes, diffexpGenes } = prevSharedState.controls;
-      const { world } = nextSharedState;
+      const { world, layoutChoice } = nextSharedState;
       let crossfilter = new Crossfilter(world.obsAnnotations);
-      crossfilter = World.createObsDimensions(crossfilter, world);
+      crossfilter = World.createObsDimensions(
+        crossfilter,
+        world,
+        layoutChoice.currentDimNames
+      );
       crossfilter = ControlsHelpers.createGeneDimensions(
         userDefinedGenes,
         diffexpGenes,
@@ -53,6 +58,23 @@ const CrossfilterReducer = (
         crossfilter
       );
       return crossfilter;
+    }
+
+    case "set layout choice": {
+      /*
+      when switching layouts:
+      - delete the existing XY index
+      - add the new XY index (which implicitly selects all on it)
+      */
+      const { world, layoutChoice } = nextSharedState;
+      return state
+        .delDimension(layoutDimensionName("XY"))
+        .addDimension(
+          layoutDimensionName("XY"),
+          "spatial",
+          world.obsLayout.col(layoutChoice.currentDimNames[0]).asArray(),
+          world.obsLayout.col(layoutChoice.currentDimNames[1]).asArray()
+        );
     }
 
     case "request user defined gene success": {
@@ -68,8 +90,9 @@ const CrossfilterReducer = (
 
     case "request differential expression success": {
       const { world } = prevSharedState;
+      const varIndexName = world.schema.annotations.var.index;
       const genes = _.map(action.data, d =>
-        world.varAnnotations.at(d[0], "name")
+        world.varAnnotations.at(d[0], varIndexName)
       );
       const crossfilter = _.reduce(
         genes,
@@ -87,10 +110,11 @@ const CrossfilterReducer = (
 
     case "clear differential expression": {
       const { world } = prevSharedState;
+      const varIndexName = world.schema.annotations.var.index;
       const crossfilter = _.reduce(
         action.diffExp,
         (xfltr, values) => {
-          const name = world.varAnnotations.at(values[0], "name");
+          const name = world.varAnnotations.at(values[0], varIndexName);
           return xfltr.delDimension(diffexpDimensionName(name));
         },
         state
@@ -161,10 +185,12 @@ const CrossfilterReducer = (
     case "categorical metadata filter select":
     case "categorical metadata filter deselect": {
       const { categoricalSelection } = nextSharedState;
+      const { world } = prevSharedState;
       const cat = categoricalSelection[action.metadataField];
+      const col = world.obsAnnotations.col(action.metadataField);
       return state.select(obsAnnoDimensionName(action.metadataField), {
         mode: "exact",
-        values: ControlsHelpers.selectedValuesForCategory(cat)
+        values: ControlsHelpers.selectedValuesForCategory(cat, col)
       });
     }
 

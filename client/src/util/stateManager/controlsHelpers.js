@@ -21,16 +21,16 @@ Remember that option values can be ANY js type, except undefined/null.
   {
     _category_name_1: {
       // map of option value to index
-      categoryIndices: Map([
+      categoryValueIndices: Map([
         catval1: index,
         ...
       ])
 
       // index->selection true/false state
-      categorySelected: [ true/false, true/false, ... ]
+      categoryValueSelected: [ true/false, true/false, ... ]
 
       // number of options
-      numCategories: number,
+      numCategoryValues: number,
 
       // isTruncated - true if the options for selection has
       // been truncated (ie, was too large to implement)
@@ -56,27 +56,31 @@ function topNCategories(summary) {
 
 export function createCategoricalSelection(maxCategoryItems, world) {
   const res = {};
+  const obsIndexName = world.schema.annotations.obs.index;
   _.forEach(world.obsAnnotations.colIndex.keys(), key => {
     const summary = world.obsAnnotations.col(key).summarize();
     if (summary.categories) {
       const isColorField = key.includes("color") || key.includes("Color");
       const isSelectableCategory =
         !isColorField &&
-        key !== "name" &&
+        key !== obsIndexName &&
         summary.categories.length < maxCategoryItems;
       if (isSelectableCategory) {
-        const [categoryValues, categoryCounts] = topNCategories(summary);
-        const categoryIndices = new Map(categoryValues.map((v, i) => [v, i]));
-        const numCategories = categoryIndices.size;
-        const categorySelected = new Array(numCategories).fill(true);
+        const [categoryValues, categoryValueCounts] = topNCategories(summary);
+        const categoryValueIndices = new Map(
+          categoryValues.map((v, i) => [v, i])
+        );
+        const numCategoryValues = categoryValueIndices.size;
+        const categoryValueSelected = new Array(numCategoryValues).fill(true);
         const isTruncated = categoryValues.length < summary.numCategories;
         res[key] = {
           categoryValues, // array: of natively typed category values
-          categoryIndices, // map: category value (native type) -> category index
-          categorySelected, // array: t/f selection state
-          numCategories, // number: of categories
+          categoryValueIndices, // map: category value (native type) -> category index
+          categoryValueSelected, // array: t/f selection state
+          numCategoryValues, // number: of values in the category
           isTruncated, // bool: true if list was truncated
-          categoryCounts // array: cardinality of each category
+          categoryValueCounts, // array: cardinality of each category,
+          categorySelected: true // bool - default state for entire category
         };
       }
     }
@@ -88,12 +92,26 @@ export function createCategoricalSelection(maxCategoryItems, world) {
 given a categoricalSelection, return the list of all category values
 where selection state is true (ie, they are selected).
 */
-export function selectedValuesForCategory(categorySelectionState) {
-  const selectedValues = _([...categorySelectionState.categoryIndices])
-    .filter(tuple => categorySelectionState.categorySelected[tuple[1]])
-    .map(tuple => tuple[0])
-    .value();
-  return selectedValues;
+export function selectedValuesForCategory(categorySelectionState, dfColumn) {
+  const {
+    categorySelected,
+    categoryValueSelected,
+    categoryValueIndices
+  } = categorySelectionState;
+  let selectedValues;
+  if (categorySelected) {
+    selectedValues = new Set(dfColumn.summarize().categories);
+  } else {
+    selectedValues = new Set();
+  }
+  categoryValueIndices.forEach((catIndex, catValue) => {
+    if (!categoryValueSelected[catIndex]) {
+      selectedValues.delete(catValue);
+    } else {
+      selectedValues.add(catValue);
+    }
+  });
+  return [...selectedValues.values()];
 }
 
 /*

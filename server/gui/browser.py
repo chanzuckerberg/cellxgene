@@ -11,10 +11,6 @@ WindowUtils = cef.WindowUtils()
 # OS differences
 # noinspection PyUnresolvedReferences
 CefWidgetParent = QWidget
-if LINUX:
-    # noinspection PyUnresolvedReferences
-    CefWidgetParent = QX11EmbedContainer
-
 
 class CefWidget(CefWidgetParent):
     def __init__(self, parent=None):

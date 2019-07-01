@@ -5,46 +5,61 @@
     "type": "float32"
   },
   "annotations": {
+    "obs": {
+      "index": "name_0",
+      "columns": [
+        {
+          "name": "name_0",
+          "type": "string"
+        },
+        {
+          "name": "n_genes",
+          "type": "int32"
+        },
+        {
+          "name": "percent_mito",
+          "type": "float32"
+        },
+        {
+          "name": "n_counts",
+          "type": "float32"
+        },
+        {
+          "name": "louvain",
+          "type": "categorical",
+          "categories": [
+            "CD4 T cells",
+            "CD14+ Monocytes",
+            "B cells",
+            "CD8 T cells",
+            "NK cells",
+            "FCGR3A+ Monocytes",
+            "Dendritic cells",
+            "Megakaryocytes"
+          ]
+        }
+      ]
+    },
+    "var": {
+      "index": "name_0",
+      "columns": [
+        {
+          "name": "name_0",
+          "type": "string"
+        },
+        {
+          "name": "n_cells",
+          "type": "int32"
+        }
+      ]
+    }
+  },
+  "layout": {
     "obs": [
       {
-        "name": "name",
-        "type": "string"
-      },
-      {
-        "name": "n_genes",
-        "type": "int32"
-      },
-      {
-        "name": "percent_mito",
-        "type": "float32"
-      },
-      {
-        "name": "n_counts",
-        "type": "float32"
-      },
-      {
-        "name": "louvain",
-        "type": "categorical",
-        "categories": [
-          "CD4 T cells",
-          "CD14+ Monocytes",
-          "B cells",
-          "CD8 T cells",
-          "NK cells",
-          "FCGR3A+ Monocytes",
-          "Dendritic cells",
-          "Megakaryocytes"
-        ]
-      }
-    ],
-    "var": [
-      {
-        "name": "name",
-        "type": "string"
-      },
-      {
-        "name": "n_cells",
-        "type": "int32"
+        "name": "umap",
+        "type": "float32",
+        "dims": ["umap_0", "umap_1"]
       }
     ]
   }

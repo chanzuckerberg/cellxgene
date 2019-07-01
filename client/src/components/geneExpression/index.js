@@ -21,7 +21,6 @@ import {
   postUserErrorToast,
   keepAroundErrorToast
 } from "../framework/toasters";
-import ExpressionButtons from "./expressionButtons";
 
 const renderGene = (fuzzySortResult, { handleClick, modifiers, query }) => {
   if (!modifiers.matchesPredicate) {
@@ -85,7 +84,8 @@ class GeneExpression extends React.Component {
     */
     const { world } = this.props;
     const { varAnnotations } = world;
-    const geneNames = varAnnotations.col("name").asArray();
+    const varIndexName = world.schema.annotations.var.index;
+    const geneNames = varAnnotations.col(varIndexName).asArray();
     if (geneNames.length > 0) {
       const placeholder = [];
       let len = geneNames.length;
@@ -107,6 +107,7 @@ class GeneExpression extends React.Component {
 
   handleClick(g) {
     const { world, dispatch, userDefinedGenes } = this.props;
+    const varIndexName = world.schema.annotations.var.index;
     const gene = g.target;
     if (userDefinedGenes.indexOf(gene) !== -1) {
       postUserErrorToast("That gene already exists");
@@ -114,7 +115,9 @@ class GeneExpression extends React.Component {
       postUserErrorToast(
         "That's too many genes, you can have at most 15 user defined genes"
       );
-    } else if (world.varAnnotations.col("name").indexOf(gene) === undefined) {
+    } else if (
+      world.varAnnotations.col(varIndexName).indexOf(gene) === undefined
+    ) {
       postUserErrorToast("That doesn't appear to be a valid gene name.");
     } else {
       dispatch({ type: "single user defined gene start" });
@@ -127,6 +130,7 @@ class GeneExpression extends React.Component {
 
   handleBulkAddClick() {
     const { world, dispatch, userDefinedGenes } = this.props;
+    const varIndexName = world.schema.annotations.var.index;
     const { bulkAdd } = this.state;
 
     /*
@@ -145,7 +149,9 @@ class GeneExpression extends React.Component {
           if (userDefinedGenes.indexOf(gene) !== -1) {
             return keepAroundErrorToast("That gene already exists");
           }
-          if (world.varAnnotations.col("name").indexOf(gene) === undefined) {
+          if (
+            world.varAnnotations.col(varIndexName).indexOf(gene) === undefined
+          ) {
             return keepAroundErrorToast(
               `${gene} doesn't appear to be a valid gene name.`
             );
@@ -168,24 +174,12 @@ class GeneExpression extends React.Component {
       userDefinedGenesLoading,
       differential
     } = this.props;
-
+    const varIndexName = world?.schema?.annotations?.var?.index;
     const { tab, bulkAdd } = this.state;
 
     return (
       <div>
-        <div
-          style={{
-            marginTop: 30
-          }}
-        >
-          <p
-            style={Object.assign({}, globals.leftSidebarSectionHeading, {
-              paddingLeft: globals.leftSidebarSectionPadding,
-              margin: 0
-            })}
-          >
-            Selected Genes
-          </p>
+        <div>
           <div
             style={{
               padding: globals.leftSidebarSectionPadding
@@ -201,7 +195,7 @@ class GeneExpression extends React.Component {
                 this.setState({ tab: "autosuggest" });
               }}
             >
-              Autosuggest
+              Autosuggest genes
             </Button>
             <Button
               active={tab === "bulkadd"}
@@ -243,7 +237,7 @@ class GeneExpression extends React.Component {
                 itemRenderer={renderGene.bind(this)}
                 items={
                   world && world.varAnnotations
-                    ? world.varAnnotations.col("name").asArray()
+                    ? world.varAnnotations.col(varIndexName).asArray()
                     : ["No genes"]
                 }
                 popoverProps={{ minimal: true }}
@@ -253,7 +247,7 @@ class GeneExpression extends React.Component {
                 data-testid={"add-gene"}
                 loading={userDefinedGenesLoading}
               >
-                Add
+                Add gene
               </Button>
             </ControlGroup>
           ) : null}
@@ -284,7 +278,7 @@ class GeneExpression extends React.Component {
                       onClick={this.handleBulkAddClick.bind(this)}
                       loading={userDefinedGenesLoading}
                     >
-                      Add
+                      Add genes
                     </Button>
                   </ControlGroup>
                 </FormGroup>
@@ -311,18 +305,9 @@ class GeneExpression extends React.Component {
             : null}
         </div>
         <div>
-          <p
-            style={Object.assign({}, globals.leftSidebarSectionHeading, {
-              marginTop: 40,
-              paddingLeft: globals.leftSidebarSectionPadding
-            })}
-          >
-            Differentially Expressed Genes
-          </p>
-          <ExpressionButtons />
           {differential.diffExp
             ? _.map(differential.diffExp, (value, index) => {
-                const name = world.varAnnotations.at(value[0], "name");
+                const name = world.varAnnotations.at(value[0], varIndexName);
                 const values = world.varData.col(name);
                 if (!values) {
                   return null;

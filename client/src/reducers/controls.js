@@ -16,7 +16,7 @@ const Controls = (
     diffexpGenes: [],
 
     resettingInterface: false,
-
+    graphInteractionMode: "select",
     opacityForDeselectedCells: 0.2,
     scatterplotXXaccessor: null, // just easier to read
     scatterplotYYaccessor: null,
@@ -93,9 +93,10 @@ const Controls = (
     }
     case "request differential expression success": {
       const { world } = prevSharedState;
+      const varIndexName = world.schema.annotations.var.index;
       const _diffexpGenes = [];
       action.data.forEach(d => {
-        _diffexpGenes.push(world.varAnnotations.at(d[0], "name"));
+        _diffexpGenes.push(world.varAnnotations.at(d[0], varIndexName));
       });
       return {
         ...state,
@@ -137,6 +138,11 @@ const Controls = (
     /*******************************
              User Events
      *******************************/
+    case "change graph interaction mode":
+      return {
+        ...state,
+        graphInteractionMode: action.data
+      };
     case "change opacity deselected cells in 2d graph background":
       return {
         ...state,

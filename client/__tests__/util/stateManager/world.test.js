@@ -29,7 +29,8 @@ const defaultBigBang = () => {
   /* create crossfilter */
   const crossfilter = World.createObsDimensions(
     new Crossfilter(world.obsAnnotations),
-    world
+    world,
+    REST.schema.schema.layout.obs[0].dims
   );
 
   return {
@@ -138,7 +139,9 @@ describe("createWorldFromCurrentSelection", () => {
     expect(world.obsLayout.rowIndex.keys()).toEqual(
       new Int32Array(matchingIndices)
     );
-    expect(world.obsLayout.colIndex.keys()).toEqual(["X", "Y"]);
+    expect(world.obsLayout.colIndex.keys()).toEqual(
+      world.schema.layout.obs[0].dims
+    );
   });
 });
 
@@ -152,14 +155,18 @@ describe("createObsDimensionMap", () => {
 
     const { crossfilter } = defaultBigBang();
     const annotationNames = _.map(
-      REST.schema.schema.annotations.obs,
+      REST.schema.schema.annotations.obs.columns,
       c => c.name
     );
-    const schemaByObsName = _.keyBy(REST.schema.schema.annotations.obs, "name");
+    const obsIndexColName = REST.schema.schema.annotations.obs.index;
+    const schemaByObsName = _.keyBy(
+      REST.schema.schema.annotations.obs.columns,
+      "name"
+    );
     expect(crossfilter).toBeDefined();
     annotationNames.forEach(name => {
       const dim = crossfilter.dimensions[obsAnnoDimensionName(name)];
-      if (name === "name") {
+      if (name === obsIndexColName) {
         expect(dim).toBeUndefined();
       } else {
         const { type } = schemaByObsName[name];
