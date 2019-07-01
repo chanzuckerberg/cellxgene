@@ -33,31 +33,54 @@ class CategoryValue extends React.Component {
   }
 
   handleDeleteValue = () => {
-    const { dispatch, metadataField, categoryIndex } = this.props;
+    const {
+      dispatch,
+      metadataField,
+      categoryIndex,
+      categoricalSelection
+    } = this.props;
+    const category = categoricalSelection[metadataField];
+    const label = category.categoryValues[categoryIndex];
     dispatch({
       type: "delete label",
       metadataField,
-      categoryIndex
+      label
     });
   };
 
   handleAddCurrentSelectionToThisLabel = () => {
-    const { dispatch, metadataField, categoryIndex } = this.props;
+    const {
+      dispatch,
+      metadataField,
+      categoryIndex,
+      categoricalSelection
+    } = this.props;
+    const category = categoricalSelection[metadataField];
+    const label = category.categoryValues[categoryIndex];
     dispatch({
       type: "label current cell selection",
       metadataField,
-      categoryIndex
+      categoryIndex,
+      label
     });
   };
 
   handleEditValue = () => {
-    const { dispatch, metadataField, categoryIndex } = this.props;
+    const {
+      dispatch,
+      metadataField,
+      categoryIndex,
+      categoricalSelection
+    } = this.props;
     const { editedLabelText } = this.state;
+    const category = categoricalSelection[metadataField];
+    const label = category.categoryValues[categoryIndex];
     dispatch({
       type: "label edited",
       editedLabel: editedLabelText,
       metadataField,
-      categoryIndex
+      categoryIndex,
+      label
     });
     this.setState({ editedLabelText: "" });
   };
