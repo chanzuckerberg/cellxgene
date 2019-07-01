@@ -165,19 +165,6 @@ class Occupancy extends React.Component {
             The y axis scale for each mini histogram is normalized to its
             largest value
           </p>
-          <p>
-            {metadataField}, {category.categoryValues[categoryIndex]} is {}%
-            zeros for {colorAccessor} ({})
-          </p>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "flex-end",
-              marginTop: 15
-            }}
-          >
-            <Button>Show zeros on all histograms</Button>
-          </div>
         </div>
       </Popover>
     );
