@@ -24,7 +24,7 @@ export function isUserAnnotation(worldOrUniverse, name) {
 	return _isUserAnnotation(worldOrUniverse.schema, name);
 }
 
-export function removeFromSchema(schema, name) {
+export function removeObsAnnoSchema(schema, name) {
 	/*
 	remove named annotation from obs annotation schema
 	*/
@@ -35,7 +35,7 @@ export function removeFromSchema(schema, name) {
 	return removeObsAnnoColumn(schema, name);
 }
 
-export function addToSchema(schema, name, categories) {
+export function addObsAnnoSchema(schema, name, colSchema) {
 	/*
 	add a categorical type to the obs annotation schema 
 	*/
@@ -43,10 +43,6 @@ export function addToSchema(schema, name, categories) {
 	/* collision detection */
 	if (schema.annotations.obs.columns.some(v => v.name === name))
 		throw Error("annotations may not contain duplicate category names");
-	return addObsAnnoColumn(schema, name, {
-		name,
-		type: "categorical",
-		isUserAnnotation: true,
-		categories
-	});
+	if (name !== colSchema.name) throw Error("column schema does not match");
+	return addObsAnnoColumn(schema, name, colSchema);
 }

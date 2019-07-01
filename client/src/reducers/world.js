@@ -148,6 +148,15 @@ const WorldReducer = (
       return { ...state, schema, obsAnnotations };
     }
 
+    case "category edited": {
+      /* change the name of an obs annotation */
+      const name = action.metadataField;
+      const newName = action.editedCategoryText;
+      const { schema } = nextSharedState.universe;
+      const obsAnnotations = state.obsAnnotations.renameCol(name, newName);
+      return { ...state, schema, obsAnnotations };
+    }
+
     case "delete category": {
       const { schema } = nextSharedState.universe;
       const name = action.metadataField;

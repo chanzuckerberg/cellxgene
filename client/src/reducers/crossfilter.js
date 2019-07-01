@@ -152,6 +152,15 @@ const CrossfilterReducer = (
       return state;
     }
 
+    case "category edited": {
+      const name = action.metadataField;
+      const newName = action.editedCategoryText;
+      return state.renameDimension(
+        obsAnnoDimensionName(name),
+        obsAnnoDimensionName(newName)
+      );
+    }
+
     case "delete category": {
       return state.delDimension(obsAnnoDimensionName(action.metadataField));
     }

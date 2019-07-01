@@ -350,6 +350,30 @@ class Dataframe {
     );
   }
 
+  renameCol(oldLabel, newLabel) {
+    /*
+    Accelerator for dropping a column and then adding it again with a new label
+    */
+    const coffset = this.colIndex.getOffset(oldLabel);
+    const colIndex = this.colIndex.dropLabel(oldLabel).withLabel(newLabel);
+
+    const columns = [...this.__columns];
+    columns.push(columns[coffset]);
+    columns.splice(coffset, 1);
+
+    const columnsAccessor = [...this.__columnsAccessor];
+    columnsAccessor.push(columnsAccessor[coffset]);
+    columnsAccessor.splice(coffset, 1);
+
+    return new this.constructor(
+      this.dims,
+      columns,
+      this.rowIndex,
+      colIndex,
+      columnsAccessor
+    );
+  }
+
   static empty(rowIndex = null, colIndex = null) {
     return new Dataframe([0, 0], [], rowIndex, colIndex);
   }

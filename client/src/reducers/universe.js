@@ -43,10 +43,13 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
         console.error("name collision on annotation category create");
         return state;
       }
-
-      const schema = AnnotationsHelpers.addToSchema(state.schema, name, [
-        unassignedCategoryLabel
-      ]);
+      const categories = [unassignedCategoryLabel];
+      const schema = AnnotationsHelpers.addObsAnnoSchema(state.schema, name, {
+        name,
+        categories,
+        type: "categorical",
+        isUserAnnotation: true
+      });
       const data = new Array(state.nObs).fill(unassignedCategoryLabel);
       const obsAnnotations = state.obsAnnotations.withCol(name, data);
       return { ...state, obsAnnotations, schema };
@@ -63,6 +66,28 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
       return state;
     }
 
+    case "category edited": {
+      /* change the name of an obs annotation category */
+      const name = action.metadataField;
+      const newName = action.editedCategoryText;
+      if (!AnnotationsHelpers.isUserAnnotation(state, name)) {
+        console.error("deleting read-only annotation");
+        return state;
+      }
+
+      const colSchema = {
+        ...state.schema.annotations.obsByName[name],
+        name: newName
+      };
+      const schema = AnnotationsHelpers.addObsAnnoSchema(
+        AnnotationsHelpers.removeObsAnnoSchema(state.schema, name),
+        newName,
+        colSchema
+      );
+      const obsAnnotations = state.obsAnnotations.renameCol(name, newName);
+      return { ...state, schema, obsAnnotations };
+    }
+
     case "delete category": {
       /* delete annotation category from schema and obsAnnotations */
       const name = action.metadataField;
@@ -70,7 +95,7 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
         console.error("deleting read-only annotation");
         return state;
       }
-      const schema = AnnotationsHelpers.removeFromSchema(state.schema, name);
+      const schema = AnnotationsHelpers.removeObsAnnoSchema(state.schema, name);
       const obsAnnotations = state.obsAnnotations.dropCol(name);
       return { ...state, schema, obsAnnotations };
     }

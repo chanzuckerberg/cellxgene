@@ -109,12 +109,22 @@ const CategoricalSelection = (
     }
 
     case "duplicate annotation category": {
-      const { world } = nextSharedState;
+      // this code is probably right, but awaiting cleanup of the actions
+      // const { world } = nextSharedState;
+      // const name = action.metadataField;
+      // return {
+      //   ...state,
+      //   ...ControlsHelpers.createCategoricalSelection(world, [name])
+      // };
+      return state;
+    }
+
+    case "category edited": {
       const name = action.metadataField;
-      return {
-        ...state,
-        ...ControlsHelpers.createCategoricalSelection(world, [name])
-      };
+      const newName = action.editedCategoryText;
+      const { [name]: catSeln, ...newState } = state;
+      newState[newName] = catSeln;
+      return newState;
     }
 
     case "delete category": {
