@@ -31,7 +31,7 @@ class Occupancy extends React.Component {
 
     const ctx = this.canvas.getContext("2d");
 
-    ctx.fillStyle = "#bbb";
+    ctx.fillStyle = "#000";
 
     let x;
     let y;
@@ -146,7 +146,8 @@ class Occupancy extends React.Component {
           style={{
             marginRight: 5,
             width,
-            height
+            height,
+            borderBottom: "solid rgb(230, 230, 230) 0.25px"
           }}
           width={width}
           height={height}
