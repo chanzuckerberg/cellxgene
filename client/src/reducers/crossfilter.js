@@ -165,6 +165,7 @@ const CrossfilterReducer = (
       return state.delDimension(obsAnnoDimensionName(action.metadataField));
     }
 
+    case "label edited":
     case "delete label": {
       /* we need to reindex the dimension.  For now, just drop it and add another */
       const name = action.metadataField;

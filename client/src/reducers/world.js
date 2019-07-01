@@ -169,6 +169,27 @@ const WorldReducer = (
       return { ...state, schema, obsAnnotations };
     }
 
+    case "add new label to category": {
+      const { schema } = nextSharedState.universe;
+      return { ...state, schema };
+    }
+
+    case "label edited": {
+      const { schema } = nextSharedState.universe;
+      const annotationName = action.metadataField;
+      const oldLabelName = action.label;
+      const newLabelName = action.editedLabel;
+
+      /* set all values to to new label */
+      const obsAnnotations = AnnotationsHelpers.setLabelByValue(
+        state.obsAnnotations,
+        annotationName,
+        oldLabelName,
+        newLabelName
+      );
+      return { ...state, schema, obsAnnotations };
+    }
+
     case "delete label": {
       const { schema } = nextSharedState.universe;
       const annotationName = action.metadataField;

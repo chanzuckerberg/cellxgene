@@ -102,6 +102,58 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
       return { ...state, schema, obsAnnotations };
     }
 
+    case "add new label to category": {
+      const annotationName = action.metadataField;
+      const newLabelName = action.newLabelText;
+      if (!AnnotationsHelpers.isUserAnnotation(state, annotationName))
+        throw new Error("unable to modify read-only annotation");
+      if (typeof newLabelName !== "string" || newLabelName.length === 0)
+        throw new Error(
+          "user annotations require a non-zero length string name"
+        );
+
+      /* add the new label to the annotation */
+      const schema = AnnotationsHelpers.addObsAnnoCategory(
+        state.schema,
+        annotationName,
+        newLabelName
+      );
+      return { ...state, schema };
+    }
+
+    case "label edited": {
+      const annotationName = action.metadataField;
+      const oldLabelName = action.label;
+      const newLabelName = action.editedLabel;
+      if (!AnnotationsHelpers.isUserAnnotation(state, annotationName))
+        throw new Error("unable to modify read-only annotation");
+      if (typeof newLabelName !== "string" || newLabelName.length === 0)
+        throw new Error(
+          "user annotations require a non-zero length string name"
+        );
+
+      /* remove old label, add new label */
+      const schema = AnnotationsHelpers.addObsAnnoCategory(
+        AnnotationsHelpers.removeObsAnnoCategory(
+          state.schema,
+          annotationName,
+          oldLabelName
+        ),
+        annotationName,
+        newLabelName
+      );
+
+      /* change all values in obsAnnotation */
+      const obsAnnotations = AnnotationsHelpers.setLabelByValue(
+        state.obsAnnotations,
+        annotationName,
+        oldLabelName,
+        newLabelName
+      );
+
+      return { ...state, schema, obsAnnotations };
+    }
+
     case "delete label": {
       /* delete the label from the annotation, and set all cells with this value to unassigned */
       const annotationName = action.metadataField;

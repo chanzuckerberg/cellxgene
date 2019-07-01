@@ -133,6 +133,8 @@ const CategoricalSelection = (
       return newState;
     }
 
+    case "add new label to category":
+    case "label edited":
     case "delete label": {
       /* need to rebuild the state for this annotation */
       const { world } = nextSharedState;
