@@ -142,7 +142,6 @@ class CategoryValue extends React.Component {
               {displayString}
             </span>
           </label>
-          {/* color by continuous distribution histogram will go here... */}
           <span style={{ flexShrink: 0 }}>
             {colorAccessor && !isColorBy ? (
               <Occupancy category={category} {...this.props} />
