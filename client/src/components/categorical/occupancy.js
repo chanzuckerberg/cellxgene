@@ -145,7 +145,9 @@ class Occupancy extends React.Component {
             marginRight: 5,
             width: this._WIDTH,
             height: this._HEIGHT,
-            borderBottom: "solid rgb(230, 230, 230) 0.25px"
+            borderBottom: colorByIsCatagoricalData
+              ? ""
+              : "solid rgb(230, 230, 230) 0.25px"
           }}
           width={this._WIDTH}
           height={this._HEIGHT}
