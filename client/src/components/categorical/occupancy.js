@@ -6,28 +6,53 @@ import {
   Popover,
   PopoverInteractionKind,
   Position,
-  Button,
   Classes
 } from "@blueprintjs/core";
 
 @connect()
 class Occupancy extends React.Component {
-  createHistogram = bins => {
+  _WIDTH = 100;
+
+  _HEIGHT = 11;
+
+  createHistogram = () => {
+    const {
+      world,
+      metadataField,
+      colorAccessor,
+      category,
+      categoryIndex
+    } = this.props;
+
     if (!this.canvas) return;
-    const width = 100;
-    const height = 11;
+
+    const groupBy = world.obsAnnotations.col(metadataField);
+
+    const col =
+      world.obsAnnotations.col(colorAccessor) ||
+      world.varData.col(colorAccessor);
+
+    const range = col.summarize();
+
+    const histogramMap = col.histogram(
+      50,
+      [range.min, range.max],
+      groupBy
+    ); /* Because the signature changes we really need different names for histogram to differentiate signatures  */
+
+    const bins = histogramMap.get(category.categoryValues[categoryIndex]);
 
     const xScale = d3
       .scaleLinear()
       .domain([0, bins.length])
-      .range([0, width]);
+      .range([0, this._WIDTH]);
 
     const largestBin = Math.max(...bins);
 
     const yScale = d3
       .scaleLinear()
       .domain([0, largestBin])
-      .range([0, height]);
+      .range([0, this._HEIGHT]);
 
     const ctx = this.canvas.getContext("2d");
 
@@ -36,97 +61,70 @@ class Occupancy extends React.Component {
     let x;
     let y;
 
-    const rectWidth = width / bins.length;
+    const rectWidth = this._WIDTH / bins.length;
 
     for (let i = 0, { length } = bins; i < length; i += 1) {
       x = xScale(i);
       y = yScale(bins[i]);
-      ctx.fillRect(x, height - y, rectWidth, y);
+      ctx.fillRect(x, this._HEIGHT - y, rectWidth, y);
     }
   };
 
-  createOccupancyStack = stacks => {
-    const height = 11;
+  createOccupancyStack = () => {
+    const {
+      world,
+      metadataField,
+      colorAccessor,
+      category,
+      categoryIndex,
+      schema,
+      colorScale
+    } = this.props;
+
     const ctx = this.canvas?.getContext("2d");
 
     if (!ctx) return;
 
-    for (let i = 0, { length } = stacks; i < length; i += 1) {
-      const { rectWidth, offset, fill } = stacks[i];
-      ctx.fillStyle = fill;
-      ctx.fillRect(offset, 0, rectWidth, height);
+    const groupBy = world.obsAnnotations.col(metadataField);
+    const occupancyMap = world.obsAnnotations
+      .col(colorAccessor)
+      .histogram(groupBy);
+
+    const occupancy = occupancyMap.get(category.categoryValues[categoryIndex]);
+
+    const x = d3
+      .scaleLinear()
+      /* get all the keys d[1] as an array, then find the sum */
+      .domain([0, d3.sum(Array.from(occupancy, d => d[1]))])
+      .range([0, this._WIDTH]);
+    const categories = schema.annotations.obsByName[colorAccessor]?.categories;
+
+    let currentOffset = 0;
+    const dfColumn = world.obsAnnotations.col(colorAccessor);
+    const categoryValues = dfColumn.summarize().categories;
+
+    let o;
+    let scaledValue;
+    let value;
+
+    for (let i = 0, { length } = categoryValues; i < length; i += 1) {
+      value = categoryValues[i];
+      o = occupancy.get(value);
+      scaledValue = x(o);
+      ctx.fillStyle = o
+        ? colorScale(categories.indexOf(value))
+        : "rgb(255,255,255)";
+      ctx.fillRect(currentOffset, 0, o ? scaledValue : 0, this._HEIGHT);
+      currentOffset += o ? scaledValue : 0;
     }
   };
 
   render() {
-    const {
-      colorScale,
-      colorAccessor,
-      schema,
-      world,
-      categoricalSelection,
-      metadataField,
-      categoryIndex,
-      category
-    } = this.props;
-    const width = 100;
-    const height = 11;
+    const { colorAccessor, categoricalSelection } = this.props;
 
-    this.canvas?.getContext("2d").clearRect(0, 0, width, height);
-
-    let occupancyMap = null;
+    this.canvas?.getContext("2d").clearRect(0, 0, this._WIDTH, this._HEIGHT);
 
     const colorByIsCatagoricalData = !!categoricalSelection[colorAccessor];
-    if (colorByIsCatagoricalData) {
-      const groupBy = world.obsAnnotations.col(metadataField);
-      occupancyMap = world.obsAnnotations.col(colorAccessor).histogram(groupBy);
-    } else {
-      const groupBy = world.obsAnnotations.col(metadataField);
-
-      const col =
-        world.obsAnnotations.col(colorAccessor) ||
-        world.varData.col(colorAccessor);
-
-      const range = col.summarize();
-
-      occupancyMap = col.histogram(
-        50,
-        [range.min, range.max],
-        groupBy
-      ); /* Because the signature changes we really need different names for histogram to differentiate signatures  */
-    }
-
-    const occupancy = occupancyMap.get(category.categoryValues[categoryIndex]);
-    let stacks = [];
-
-    if (colorByIsCatagoricalData) {
-      const x = d3
-        .scaleLinear()
-        /* get all the keys d[1] as an array, then find the sum */
-        .domain([0, d3.sum(Array.from(occupancy, d => d[1]))])
-        .range([0, width]);
-      const categories =
-        schema.annotations.obsByName[colorAccessor]?.categories;
-
-      let currentOffset = 0;
-      const dfColumn = world.obsAnnotations.col(colorAccessor);
-      const categoryValues = dfColumn.summarize().categories;
-      stacks = categoryValues.map(d => {
-        const o = occupancy.get(d);
-
-        const scaledValue = x(o);
-
-        const stackItem = {
-          key: d,
-          value: o || 0,
-          rectWidth: o ? scaledValue : 0,
-          offset: currentOffset,
-          fill: o ? colorScale(categories.indexOf(d)) : "rgb(255,255,255)"
-        };
-        currentOffset += o ? scaledValue : 0;
-        return stackItem;
-      });
-    }
 
     return (
       <Popover
@@ -145,16 +143,16 @@ class Occupancy extends React.Component {
           className="bp3-popover-targer"
           style={{
             marginRight: 5,
-            width,
-            height,
+            width: this._WIDTH,
+            height: this._HEIGHT,
             borderBottom: "solid rgb(230, 230, 230) 0.25px"
           }}
-          width={width}
-          height={height}
+          width={this._WIDTH}
+          height={this._HEIGHT}
           ref={ref => {
             this.canvas = ref;
-            if (colorByIsCatagoricalData) this.createOccupancyStack(stacks);
-            else this.createHistogram(occupancy);
+            if (colorByIsCatagoricalData) this.createOccupancyStack();
+            else this.createHistogram();
           }}
         />
         <div key="text" style={{ fontFamily: "Roboto", fontSize: "14px" }}>
