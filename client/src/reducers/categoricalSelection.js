@@ -14,7 +14,6 @@ const CategoricalSelection = (
   nextSharedState,
   prevSharedState
 ) => {
-  console.log(action);
   switch (action.type) {
     case "initial data load complete (universe exists)":
     case "set World to current selection":
@@ -25,7 +24,6 @@ const CategoricalSelection = (
         world,
         CH.selectableCategoryNames(world, maxCategoryItems(prevSharedState))
       );
-      console.log(newState);
       return newState;
     }
 
