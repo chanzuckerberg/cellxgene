@@ -1,5 +1,5 @@
 build:
   docker:
-    web: Dockerfile
+    web: experiments/heroku/Dockerfile
 run:
   web: curl -o dataset.h5ad $DATASET && cellxgene launch dataset.h5ad --host 0.0.0.0 --port $PORT
