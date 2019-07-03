@@ -1,6 +1,8 @@
 /*
 Helpers for schema management
 */
+import _ from "lodash";
+
 import fromEntries from "../fromEntries";
 
 /*
@@ -34,10 +36,7 @@ function _copy(schema) {
 		...schema,
 		annotations: {
 			...schema.annotations,
-			obs: {
-				...schema.annotations.obs,
-				columns: [...schema.annotations.obs.columns]
-			}
+			obs: _.cloneDeep(schema.annotations.obs)
 		}
 	};
 }

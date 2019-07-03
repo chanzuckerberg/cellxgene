@@ -74,7 +74,16 @@ const saveOnActions = new Set([
   "set World to current selection",
   "set clip quantiles",
 
-  "set layout choice"
+  "set layout choice",
+
+  // user editable annotations
+  "new user annotation category created",
+  "duplicate annotation category",
+  "add new label to category",
+  "delete category",
+  "label edited",
+  "label current cell selection",
+  "delete label"
 ]);
 
 /**
