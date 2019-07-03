@@ -3,10 +3,10 @@
 block_cipher = None
 
 
-a = Analysis(['server/gui/main.py'],
-             pathex=['/Users/charlotteweaver/Documents/Git/cellxgene'],
-             binaries=[('/System/Library/Frameworks/Tk.framework/Tk', 'tk'), ('/System/Library/Frameworks/Tcl.framework/Tcl', 'tcl')],
-             datas=[('server/app/web/templates/', 'server/app/web/templates/'), ('server/app/web/static/', 'server/app/web/static/')],
+a = Analysis(['server\\gui\\main.py'],
+             pathex=['C:\\Users\\Charlotte\\Documents\\git\\cellxgene'],
+             binaries=[],
+             datas=[('server/app/web/templates/', 'server/app/web/templates'), ('server/app/web/static/', 'server/app/web/static')],
              hiddenimports=[],
              hookspath=['server/gui/'],
              runtime_hooks=[],
@@ -26,7 +26,7 @@ exe = EXE(pyz,
           bootloader_ignore_signals=False,
           strip=False,
           upx=True,
-          console=False , icon='server/gui/images/icon.ico')
+          console=True , icon='server\gui\images\icon.ico')
 coll = COLLECT(exe,
                a.binaries,
                a.zipfiles,
@@ -34,7 +34,3 @@ coll = COLLECT(exe,
                strip=False,
                upx=True,
                name='cellxgene')
-app = BUNDLE(coll,
-             name='cellxgene.app',
-             icon='server/gui/images/icon.ico',
-             bundle_identifier=None)
