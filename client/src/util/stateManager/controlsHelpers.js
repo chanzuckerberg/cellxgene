@@ -105,32 +105,6 @@ export function createCategoricalSelection(world, names) {
 }
 
 /*
-given a categoricalSelection, return the list of all category values
-where selection state is true (ie, they are selected).
-*/
-export function selectedValuesForCategory(categorySelectionState, dfColumn) {
-  const {
-    categorySelected,
-    categoryValueSelected,
-    categoryValueIndices
-  } = categorySelectionState;
-  let selectedValues;
-  if (categorySelected) {
-    selectedValues = new Set(dfColumn.summarize().categories);
-  } else {
-    selectedValues = new Set();
-  }
-  categoryValueIndices.forEach((catIndex, catValue) => {
-    if (!categoryValueSelected[catIndex]) {
-      selectedValues.delete(catValue);
-    } else {
-      selectedValues.add(catValue);
-    }
-  });
-  return [...selectedValues.values()];
-}
-
-/*
 build a crossfilter dimensions for all gene expression related dimensions.
 */
 export function createGeneDimensions(

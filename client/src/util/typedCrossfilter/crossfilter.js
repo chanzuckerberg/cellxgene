@@ -5,6 +5,7 @@ import BitArray from "./bitArray";
 import {
   sortArray,
   lowerBound,
+  binarySearch,
   lowerBoundIndirect,
   upperBoundIndirect
 } from "./sort";
@@ -457,7 +458,7 @@ class ImmutableEnumDimension extends ImmutableScalarDimension {
     const { values } = spec;
     return super.selectExact({
       mode: spec.mode,
-      values: values.map(v => lowerBound(enumIndex, v, 0, enumIndex.length))
+      values: values.map(v => binarySearch(enumIndex, v, 0, enumIndex.length))
     });
   }
 
