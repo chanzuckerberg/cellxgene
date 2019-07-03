@@ -4,6 +4,7 @@ See also reducers/annotations.js
 */
 import { unassignedCategoryLabel } from "../../globals";
 import * as SchemaHelpers from "./schemaHelpers";
+import { obsAnnoDimensionName } from "../nameCreators";
 
 /*
 There are a number of state constraints assumed throughout the
@@ -102,6 +103,10 @@ export function setLabelByMask(df, colName, mask, label) {
 }
 
 export function worldToUniverseMask(worldMask, worldObsAnnotations, nObs) {
+	/*
+	given world seleciton mask, return a selection mask for entire universe 
+	that has same selection state.
+	*/
 	const mask = new Uint8Array(nObs);
 	const { rowIndex } = worldObsAnnotations;
 
@@ -112,4 +117,22 @@ export function worldToUniverseMask(worldMask, worldObsAnnotations, nObs) {
 		}
 	}
 	return mask;
+}
+
+export function createWritableAnnotationDimensions(world, crossfilter) {
+	const { obsAnnotations, schema } = world;
+	const writableAnnotations = schema.annotations.obs.columns
+		.filter(s => s.writable)
+		.map(s => s.name);
+
+	crossfilter = writableAnnotations.reduce((xflt, anno) => {
+		const dimName = obsAnnoDimensionName(anno);
+		if (xflt.hasDimension(dimName)) xflt = xflt.delDimension(dimName);
+		return xflt.addDimension(
+			dimName,
+			"enum",
+			obsAnnotations.col(anno).asArray()
+		);
+	}, crossfilter);
+	return crossfilter;
 }

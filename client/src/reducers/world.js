@@ -14,14 +14,11 @@ const WorldReducer = (
   prevSharedState
 ) => {
   switch (action.type) {
-    case "initial data load complete (universe exists)": {
+    case "initial data load complete (universe exists)":
+    case "reset World to eq Universe": {
       const { universe } = nextSharedState;
       const world = World.createWorldFromEntireUniverse(universe);
       return world;
-    }
-
-    case "reset World to eq Universe": {
-      return prevSharedState.resetCache.world;
     }
 
     case "set World to current selection": {

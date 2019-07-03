@@ -1,7 +1,11 @@
 import _ from "lodash";
 
 import Crossfilter from "../util/typedCrossfilter";
-import { World, ControlsHelpers as CH } from "../util/stateManager";
+import {
+  World,
+  ControlsHelpers as CH,
+  AnnotationsHelpers as AH
+} from "../util/stateManager";
 import {
   layoutDimensionName,
   obsAnnoDimensionName,
@@ -32,12 +36,14 @@ const CrossfilterReducer = (
     case "reset World to eq Universe": {
       const { userDefinedGenes, diffexpGenes } = prevSharedState.controls;
       const { world } = nextSharedState;
-      const crossfilter = CH.createGeneDimensions(
+      let { crossfilter } = prevSharedState.resetCache;
+      crossfilter = CH.createGeneDimensions(
         userDefinedGenes,
         diffexpGenes,
         world,
-        prevSharedState.resetCache.crossfilter
+        crossfilter
       );
+      crossfilter = AH.createWritableAnnotationDimensions(world, crossfilter);
       return crossfilter;
     }
 
