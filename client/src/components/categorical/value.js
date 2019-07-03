@@ -26,25 +26,20 @@ class CategoryValue extends React.Component {
     const { metadataField, categoryIndex, categoricalSelection } = props;
     const { categoricalSelection: newCategoricalSelection } = nextProps;
 
-    const diff = Object.keys(this.props).reduce((value, key) => {
-      if (props[key] === nextProps[key]) return value;
-      return {
-        ...value,
-        [key]: nextProps[key]
-      };
-    }, {});
-
     const valueSelectionChange =
       newCategoricalSelection[metadataField].categoryValueSelected[
         categoryIndex
       ] !==
       categoricalSelection[metadataField].categoryValueSelected[categoryIndex];
 
-    return (
-      valueSelectionChange ||
-      Object.keys(diff).includes("world") ||
-      Object.keys(diff).includes("colorAccessor")
-    );
+    const worldChange = props.world !== nextProps.world;
+    const colorAccessorChange = props.colorAccessor !== nextProps.colorAccessor;
+
+    return valueSelectionChange || worldChange || colorAccessorChange;
+  };
+
+  componentDidUpdate = () => {
+    console.log("UPDATED");
   };
 
   toggleOn = () => {
