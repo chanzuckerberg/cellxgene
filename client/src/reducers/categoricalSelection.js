@@ -14,16 +14,19 @@ const CategoricalSelection = (
   nextSharedState,
   prevSharedState
 ) => {
+  console.log(action);
   switch (action.type) {
     case "initial data load complete (universe exists)":
     case "set World to current selection":
     case "reset World to eq Universe":
     case "set clip quantiles": {
       const { world } = nextSharedState;
-      return CH.createCategoricalSelection(
+      const newState = CH.createCategoricalSelection(
         world,
         CH.selectableCategoryNames(world, maxCategoryItems(prevSharedState))
       );
+      console.log(newState);
+      return newState;
     }
 
     case "categorical metadata filter select": {
