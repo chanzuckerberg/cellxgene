@@ -1,7 +1,7 @@
 import _ from "lodash";
 
 import Crossfilter from "../util/typedCrossfilter";
-import { World, ControlsHelpers } from "../util/stateManager";
+import { World, ControlsHelpers as CH } from "../util/stateManager";
 import {
   layoutDimensionName,
   obsAnnoDimensionName,
@@ -32,7 +32,7 @@ const CrossfilterReducer = (
     case "reset World to eq Universe": {
       const { userDefinedGenes, diffexpGenes } = prevSharedState.controls;
       const { world } = nextSharedState;
-      const crossfilter = ControlsHelpers.createGeneDimensions(
+      const crossfilter = CH.createGeneDimensions(
         userDefinedGenes,
         diffexpGenes,
         world,
@@ -51,7 +51,7 @@ const CrossfilterReducer = (
         world,
         layoutChoice.currentDimNames
       );
-      crossfilter = ControlsHelpers.createGeneDimensions(
+      crossfilter = CH.createGeneDimensions(
         userDefinedGenes,
         diffexpGenes,
         world,
@@ -165,6 +165,7 @@ const CrossfilterReducer = (
       return state.delDimension(obsAnnoDimensionName(action.metadataField));
     }
 
+    case "label current cell selection":
     case "label edited":
     case "delete label": {
       /* we need to reindex the dimension.  For now, just drop it and add another */
@@ -229,7 +230,7 @@ const CrossfilterReducer = (
       const col = world.obsAnnotations.col(action.metadataField);
       return state.select(obsAnnoDimensionName(action.metadataField), {
         mode: "exact",
-        values: ControlsHelpers.selectedValuesForCategory(cat, col)
+        values: CH.selectedValuesForCategory(cat, col)
       });
     }
 

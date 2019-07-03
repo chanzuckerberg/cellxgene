@@ -91,6 +91,23 @@ const ColorsReducer = (
       };
     }
 
+    case "label current cell selection":
+    case "delete label": {
+      const { world } = nextSharedState;
+      const { colorMode, colorAccessor } = state;
+      const { metadataField } = action;
+      if (
+        colorMode !== "color by categorical metadata" ||
+        colorAccessor !== metadataField
+      )
+        return state;
+
+      /* else, we need to rebuild colors as labels have changed! */
+      console.log("colors updated");
+      const { rgb, scale } = createColors(world, colorMode, colorAccessor);
+      return { ...state, rgb, scale };
+    }
+
     default: {
       return state;
     }

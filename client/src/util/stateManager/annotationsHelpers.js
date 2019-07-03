@@ -82,3 +82,34 @@ export function setLabelByValue(df, colName, fromLabel, toLabel) {
 	});
 	return ndf;
 }
+
+export function setLabelByMask(df, colName, mask, label) {
+	/* 
+	in the dataframe column `colName`, set the masked rows to 'label'
+	*/
+	const keys = df.colIndex.keys();
+	const ndf = df.mapColumns((col, colIdx) => {
+		if (colName !== keys[colIdx]) return col;
+
+		/* clone data and return it. */
+		const newCol = col.slice();
+		for (let i = 0, l = newCol.length; i < l; i += 1) {
+			if (mask[i]) newCol[i] = label;
+		}
+		return newCol;
+	});
+	return ndf;
+}
+
+export function worldToUniverseMask(worldMask, worldObsAnnotations, nObs) {
+	const mask = new Uint8Array(nObs);
+	const { rowIndex } = worldObsAnnotations;
+
+	for (let i = 0, l = worldMask.length; i < l; i += 1) {
+		if (worldMask[i]) {
+			const label = rowIndex.getLabel(i);
+			mask[label] = 1;
+		}
+	}
+	return mask;
+}

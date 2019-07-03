@@ -1,4 +1,4 @@
-import { ControlsHelpers } from "../util/stateManager";
+import { ControlsHelpers as CH } from "../util/stateManager";
 import * as globals from "../globals";
 
 function maxCategoryItems(state) {
@@ -20,12 +20,9 @@ const CategoricalSelection = (
     case "reset World to eq Universe":
     case "set clip quantiles": {
       const { world } = nextSharedState;
-      return ControlsHelpers.createCategoricalSelection(
+      return CH.createCategoricalSelection(
         world,
-        ControlsHelpers.selectableCategoryNames(
-          world,
-          maxCategoryItems(prevSharedState)
-        )
+        CH.selectableCategoryNames(world, maxCategoryItems(prevSharedState))
       );
     }
 
@@ -104,7 +101,7 @@ const CategoricalSelection = (
       const name = action.data;
       return {
         ...state,
-        ...ControlsHelpers.createCategoricalSelection(world, [name])
+        ...CH.createCategoricalSelection(world, [name])
       };
     }
 
@@ -133,6 +130,7 @@ const CategoricalSelection = (
       return newState;
     }
 
+    case "label current cell selection":
     case "add new label to category":
     case "label edited":
     case "delete label": {
@@ -142,7 +140,7 @@ const CategoricalSelection = (
       const { [name]: _, ...partialState } = state;
       return {
         ...partialState,
-        ...ControlsHelpers.createCategoricalSelection(world, [name])
+        ...CH.createCategoricalSelection(world, [name])
       };
     }
 

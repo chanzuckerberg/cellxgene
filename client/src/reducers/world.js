@@ -1,8 +1,8 @@
 import { unassignedCategoryLabel } from "../globals";
 import {
   World,
-  ControlsHelpers,
-  AnnotationsHelpers
+  ControlsHelpers as CH,
+  AnnotationsHelpers as AH
 } from "../util/stateManager";
 import clip from "../util/clip";
 import quantile from "../util/quantile";
@@ -85,7 +85,7 @@ const WorldReducer = (
           Object.keys(action.expressionData)
         )
       ];
-      unclippedVarData = ControlsHelpers.pruneVarDataCache(
+      unclippedVarData = CH.pruneVarDataCache(
         unclippedVarData,
         allTheGenesWeNeed
       );
@@ -181,7 +181,7 @@ const WorldReducer = (
       const newLabelName = action.editedLabel;
 
       /* set all values to to new label */
-      const obsAnnotations = AnnotationsHelpers.setLabelByValue(
+      const obsAnnotations = AH.setLabelByValue(
         state.obsAnnotations,
         annotationName,
         oldLabelName,
@@ -196,7 +196,7 @@ const WorldReducer = (
       const labelName = action.label;
 
       /* set all values to unassigned in obsAnnotations */
-      const obsAnnotations = AnnotationsHelpers.setLabelByValue(
+      const obsAnnotations = AH.setLabelByValue(
         state.obsAnnotations,
         annotationName,
         labelName,
@@ -204,6 +204,19 @@ const WorldReducer = (
       );
 
       return { ...state, schema, obsAnnotations };
+    }
+
+    case "label current cell selection": {
+      const { metadataField, label } = action;
+      const { crossfilter } = prevSharedState;
+      const mask = crossfilter.allSelectedMask();
+      const obsAnnotations = AH.setLabelByMask(
+        state.obsAnnotations,
+        metadataField,
+        mask,
+        label
+      );
+      return { ...state, obsAnnotations };
     }
 
     default: {
