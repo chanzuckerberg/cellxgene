@@ -34,7 +34,7 @@ class CategoryValue extends React.Component {
   handleMouseEnter = () => {
     const { dispatch, metadataField, categoryIndex } = this.props;
     dispatch({
-      type: "---DISABLED--- category value mouse hover start",
+      type: "category value mouse hover start",
       metadataField,
       categoryIndex
     });
@@ -43,7 +43,7 @@ class CategoryValue extends React.Component {
   handleMouseExit = () => {
     const { dispatch, metadataField, categoryIndex } = this.props;
     dispatch({
-      type: "---DISABLED--- category value mouse hover end",
+      type: "category value mouse hover end",
       metadataField,
       categoryIndex
     });
@@ -97,8 +97,8 @@ class CategoryValue extends React.Component {
           justifyContent: "space-between"
         }}
         data-testclass="categorical-row"
-        onMouseEnter={null}
-        onMouseLeave={null}
+        onMouseEnter={null /* this.handleMouseEnter */}
+        onMouseLeave={null /* this.handleMouseLeave */}
       >
         <div
           style={{
