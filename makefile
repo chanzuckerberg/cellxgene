@@ -84,6 +84,9 @@ release-directly-to-prod : dev-env pydist twine-prod
 dev-env :
 	pip install -r server/requirements-dev.txt
 
+gui-env : dev-env
+	pip install -r server/requirements-gui.txt
+
 # give PART=[major, minor, part] as param to make bump
 bump :
 	bumpversion --config-file .bumpversion.cfg $(PART)
@@ -136,16 +139,22 @@ uninstall :
 build-assets :
 	pyside2-rcc server/gui/cellxgene.qrc -o server/gui/cellxgene_rc.py
 
-gui-build-full : clean-lite dev-env
+gui-build-osx : clean-lite dev-env
 	pip install -e .[gui]
-	pyinstaller -D -w --additional-hooks-dir server/gui/ -n cellxgene  --add-binary='/System/Library/Frameworks/Tk.framework/Tk':'tk' --add-binary='/System/Library/Frameworks/Tcl.framework/Tcl':'tcl'  --add-data server/app/web/templates/:server/app/web/templates/ --add-data server/app/web/static/:server/app/web/static/ --icon='server/gui/images/icon.ico' server/gui/main.py
+	pyi-makespec -D -w --additional-hooks-dir server/gui/ -n cellxgene  --add-binary='/System/Library/Frameworks/Tk.framework/Tk':'tk' --add-binary='/System/Library/Frameworks/Tcl.framework/Tcl':'tcl'  --add-data server/app/web/templates/:server/app/web/templates/ --add-data server/app/web/static/:server/app/web/static/ --icon server/gui/images/cxg_icons.icns server/gui/main.py
+	mv cellxgene.spec cellxgene-osx.spec
 
-gui-build-onefile : clean-lite dev-env
+gui-build-windows : clean-lite dev-env
 	pip install -e .[gui]
-	pyinstaller -D -w --additional-hooks-dir server/gui/ -n cellxgene  --add-binary='/System/Library/Frameworks/Tk.framework/Tk':'tk' --add-binary='/System/Library/Frameworks/Tcl.framework/Tcl':'tcl'  --add-data server/app/web/templates/:server/app/web/templates/ --add-data server/app/web/static/:server/app/web/static/ --icon 'server/gui/images/icon.ico' server/gui/main.py
+	pyi-makespec -D -w --additional-hooks-dir server/gui/ -n cellxgene --add-data server/app/web/templates/:server/app/web/templates/ --add-data server/app/web/static/:server/app/web/static/ --icon 'server/gui/images/icon.ico' server/gui/main.py
+	mv cellxgene.spec cellxgene-windows.spec
 
-gui-build : clean-lite dev-env
+gui-build-osx : clean-lite gui-env
+	pyinstaller --clean cellxgene-osx.spec
+
+gui-build-windows : clean-lite gui-env
 	pip install -e .[gui]
-	pyinstaller --clean cellxgene.spec
+	pyinstaller --clean cellxgene-windows.spec
 
-.PHONY : build-assets
+.PHONY : build-assets gui-build-osx gui-build-windows gui-build-osx gui-build-windows
+
