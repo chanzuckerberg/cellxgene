@@ -74,14 +74,6 @@ class Category extends React.Component {
     });
   };
 
-  handleDuplicateAnno = () => {
-    const { dispatch, metadataField } = this.props;
-    dispatch({
-      type: "duplicate annotation category",
-      metadataField
-    });
-  };
-
   activateEditCategoryMode = () => {
     const { dispatch, metadataField } = this.props;
     dispatch({
@@ -341,20 +333,6 @@ class Category extends React.Component {
                   minimal
                 />
               </Popover>
-            ) : null}
-            {createAnnoModeActive ? (
-              <Tooltip
-                content="Duplicate this field as an editable category"
-                position="bottom"
-              >
-                <Button
-                  style={{ marginRight: 5 }}
-                  data-testclass="duplicateExitingAnno"
-                  data-testid={`duplicateExitingAnno-${metadataField}`}
-                  onClick={this.handleDuplicateAnno}
-                  icon="duplicate"
-                />
-              </Tooltip>
             ) : null}
             <Tooltip content="Use as color scale" position="bottom">
               <Button
