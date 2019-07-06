@@ -16,7 +16,6 @@ class DataLoadEngineTest(unittest.TestCase):
     def test_delayed_load_args(self):
         args = {
             "layout": ["tsne"],
-            "diffexp": "ttest",
             "max_category_items": 1000,
             "obs_names": "foo",
             "var_names": "bar",

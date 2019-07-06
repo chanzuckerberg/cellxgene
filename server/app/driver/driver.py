@@ -28,7 +28,6 @@ class CXGDriver(metaclass=ABCMeta):
     def _get_default_config():
         return {
             "layout": None,
-            "diffexp": None,
             "max_category_items": None,
             "diffexp_lfc_cutoff": None
         }
@@ -38,14 +37,12 @@ class CXGDriver(metaclass=ABCMeta):
         features = {
             "cluster": {"available": False},
             "layout": {"obs": {"available": False}, "var": {"available": False}},
-            "diffexp": {"available": False},
+            "diffexp": {"available": True, "interactiveLimit": 50000}
         }
         # TODO - Interactive limit should be generated from the actual available methods see GH issue #94
         if self.config["layout"]:
             # TODO handle "var" when gene layout becomes available
             features["layout"]["obs"] = {"available": True, "interactiveLimit": 50000}
-        if self.config["diffexp"]:
-            features["diffexp"] = {"available": True, "interactiveLimit": 50000}
         return features
 
     @abstractmethod

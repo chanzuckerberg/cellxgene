@@ -16,7 +16,6 @@ class EngineTest(unittest.TestCase):
     def setUp(self):
         args = {
             "layout": ["umap"],
-            "diffexp": "ttest",
             "max_category_items": 100,
             "obs_names": None,
             "var_names": None,
@@ -78,8 +77,6 @@ class EngineTest(unittest.TestCase):
     def test_schema(self):
         with open(path.join(path.dirname(__file__), "schema.json")) as fh:
             schema = json.load(fh)
-            print(schema)
-            print(self.data.schema)
             self.assertEqual(self.data.schema, schema)
 
     def test_schema_produces_error(self):

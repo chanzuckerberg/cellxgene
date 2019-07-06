@@ -3,82 +3,32 @@ import React from "react";
 import * as d3 from "d3";
 import { connect } from "react-redux";
 import mat4 from "gl-mat4";
-import vec3 from "gl-vec3";
 import _regl from "regl";
 import memoize from "memoize-one";
-import {
-  Button,
-  AnchorButton,
-  Tooltip,
-  Popover,
-  Menu,
-  MenuItem,
-  Position,
-  NumericInput,
-  Icon,
-  RadioGroup,
-  Radio
-} from "@blueprintjs/core";
 
 import * as globals from "../../globals";
 import setupSVGandBrushElements from "./setupSVGandBrush";
+import setupCentroidSVG from "./setupCentroidSVG";
 import actions from "../../actions";
 import _camera from "../../util/camera";
 import _drawPoints from "./drawPointsRegl";
 import scaleLinear from "../../util/scaleLinear";
-import { World } from "../../util/stateManager";
 
 /* https://bl.ocks.org/mbostock/9078690 - quadtree for onClick / hover selections */
 
 @connect(state => ({
   world: state.world,
-  universe: state.universe,
   crossfilter: state.crossfilter,
-  clipPercentileMin: Math.round(100 * (state.world?.clipQuantiles?.min ?? 0)),
-  clipPercentileMax: Math.round(100 * (state.world?.clipQuantiles?.max ?? 1)),
   responsive: state.responsive,
   colorRGB: state.colors.rgb,
-  opacityForDeselectedCells: state.controls.opacityForDeselectedCells,
-  resettingInterface: state.controls.resettingInterface,
-  userDefinedGenes: state.controls.userDefinedGenes,
-  diffexpGenes: state.controls.diffexpGenes,
-  colorAccessor: state.colors.colorAccessor,
-  scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
-  scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
-  celllist1: state.differential.celllist1,
-  celllist2: state.differential.celllist2,
-  libraryVersions: state.config?.library_versions, // eslint-disable-line camelcase
-  undoDisabled: state["@@undoable/past"].length === 0,
-  redoDisabled: state["@@undoable/future"].length === 0,
   selectionTool: state.graphSelection.tool,
   currentSelection: state.graphSelection.selection,
-  layoutChoice: state.layoutChoice
+  layoutChoice: state.layoutChoice,
+  centroidLabel: state.centroidLabel,
+  graphInteractionMode: state.controls.graphInteractionMode,
+  colorAccessor: state.colors.colorAccessor
 }))
 class Graph extends React.Component {
-  static isValidDigitKeyEvent(e) {
-    /*
-    Return true if this event is necessary to enter a percent number input.
-    Return false if not.
-
-    Returns true for events with keys: backspace, control, alt, meta, [0-9],
-    or events that don't have a key.
-    */
-    if (e.key === null) return true;
-    if (e.ctrlKey || e.altKey || e.metaKey) return true;
-
-    // concept borrowed from blueprint's numericInputUtils:
-    // keys that print a single character when pressed have a `key` name of
-    // length 1. every other key has a longer `key` name (e.g. "Backspace",
-    // "ArrowUp", "Shift"). since none of those keys can print a character
-    // to the field--and since they may have important native behaviors
-    // beyond printing a character--we don't want to disable their effects.
-    const isSingleCharKey = e.key.length === 1;
-    if (!isSingleCharKey) return true;
-
-    const key = e.key.charCodeAt(0) - 48; /* "0" */
-    return key >= 0 && key <= 9;
-  }
-
   computePointPositions = memoize((X, Y, scaleX, scaleY) => {
     /*
     compute webgl coordinate buffer for each point
@@ -115,7 +65,6 @@ class Graph extends React.Component {
     super(props);
     this.count = 0;
     this.graphPaddingTop = 0;
-    this.graphPaddingBottom = 45;
     this.graphPaddingRight = globals.leftSidebarWidth;
     this.renderCache = {
       X: null,
@@ -125,11 +74,10 @@ class Graph extends React.Component {
       sizes: null
     };
     this.state = {
-      svg: null,
+      toolSVG: null,
+      centroidSVG: null,
       tool: null,
-      container: null,
-      mode: "select",
-      pendingClipPercentiles: null
+      container: null
     };
   }
 
@@ -146,9 +94,17 @@ class Graph extends React.Component {
     const sizeBuffer = regl.buffer();
 
     // preallocate coordinate system transformation between data and gl
+    const fractionToUse = 0.93; // fraction of dimension to use
+    const shiftForMenuBar = 0.05;
     const transform = {
-      glScaleX: scaleLinear([0, 1], [-1, 1]),
-      glScaleY: scaleLinear([0, 1], [1, -1])
+      glScaleX: scaleLinear([0, 1], [-1 * fractionToUse, 1 * fractionToUse]),
+      glScaleY: scaleLinear(
+        [0, 1],
+        [
+          (1 + shiftForMenuBar) * fractionToUse,
+          (-1 + shiftForMenuBar) * fractionToUse
+        ]
+      )
     };
 
     /* first time, but this duplicates above function, should be possile to avoid this */
@@ -178,7 +134,7 @@ class Graph extends React.Component {
     });
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(prevProps) {
     const { renderCache } = this;
     const {
       world,
@@ -187,14 +143,32 @@ class Graph extends React.Component {
       responsive,
       selectionTool,
       currentSelection,
-      layoutChoice
+      layoutChoice,
+      graphInteractionMode,
+      colorAccessor,
+      centroidLabel
     } = this.props;
-    const { reglRender, mode, regl, svg } = this.state;
+    const { reglRender, mode, regl, toolSVG, centroidSVG } = this.state;
     let stateChanges = {};
 
-    if (reglRender && this.reglRenderState === "rendering" && mode !== "zoom") {
-      reglRender.cancel();
-      this.reglRenderState = "paused";
+    if (reglRender) {
+      if (
+        // If it IS RENDERING and it is NOT IN ZOOM mode, stop rendering.
+        this.reglRenderState === "rendering" &&
+        graphInteractionMode !== "zoom"
+      ) {
+        reglRender.cancel();
+        this.reglRenderState = "paused";
+      }
+
+      if (
+        // If it is NOT RENDERING and it IS IN ZOOM mode, start rendering
+        this.reglRenderState !== "rendering" &&
+        graphInteractionMode === "zoom"
+      ) {
+        this.restartReglLoop();
+        this.reglRenderState = "rendering";
+      }
     }
 
     if (regl && world) {
@@ -249,16 +223,10 @@ class Graph extends React.Component {
       );
     }
 
-    if (
-      prevProps.responsive.height !== responsive.height ||
-      prevProps.responsive.width !== responsive.width ||
-      /* first time */
-      (responsive.height && responsive.width && !svg) ||
-      selectionTool !== prevProps.selectionTool
-    ) {
+    const createToolSVG = () => {
       /* clear out whatever was on the div, even if nothing, but usually the brushes etc */
       d3.select("#graphAttachPoint")
-        .selectAll("svg")
+        .select("#tool")
         .remove();
 
       let handleStart;
@@ -274,16 +242,63 @@ class Graph extends React.Component {
         handleEnd = this.handleLassoEnd.bind(this);
         handleCancel = this.handleLassoCancel.bind(this);
       }
-      const { svg: newSvg, tool, container } = setupSVGandBrushElements(
+
+      const { svg: newToolSVG, tool, container } = setupSVGandBrushElements(
         selectionTool,
         handleStart,
         handleDrag,
         handleEnd,
         handleCancel,
         responsive,
-        this.graphPaddingRight
+        this.graphPaddingRight,
+        graphInteractionMode
       );
-      stateChanges = { ...stateChanges, svg: newSvg, tool, container };
+
+      stateChanges = { ...stateChanges, toolSVG: newToolSVG, tool, container };
+    };
+
+    const createCentroidSVG = () => {
+      d3.select("#graphAttachPoint")
+        .select("#centroid-container")
+        .remove();
+
+      if (centroidLabel.metadataField === "" || !centroidLabel.centroidXY) {
+        return;
+      }
+
+      const centroidScreen = this.mapPointToScreen(centroidLabel.centroidXY);
+
+      const newCentroidSVG = setupCentroidSVG(
+        responsive,
+        this.graphPaddingRight,
+        centroidScreen,
+        centroidLabel.categoryField,
+        colorAccessor
+      );
+
+      stateChanges = { ...stateChanges, centroidSVG: newCentroidSVG };
+    };
+
+    if (
+      prevProps.responsive.height !== responsive.height ||
+      prevProps.responsive.width !== responsive.width
+    ) {
+      // If the window size has changed we want to recreate all SVGs
+      createToolSVG();
+      createCentroidSVG();
+    } else if (
+      (responsive.height && responsive.width && !toolSVG) ||
+      selectionTool !== prevProps.selectionTool ||
+      prevProps.graphInteractionMode !== graphInteractionMode
+    ) {
+      // first time or change of selection tool6
+      createToolSVG();
+    } else if (
+      centroidLabel !== prevProps.centroidLabel ||
+      (responsive.height && responsive.width && !centroidSVG)
+    ) {
+      // First time for centroid or label change
+      createCentroidSVG();
     }
 
     /*
@@ -292,8 +307,8 @@ class Graph extends React.Component {
     */
     if (
       currentSelection !== prevProps.currentSelection ||
-      mode !== prevState.mode ||
-      stateChanges.svg
+      graphInteractionMode !== prevProps.graphInteractionMode ||
+      stateChanges.toolSVG
     ) {
       const { tool, container } = this.state;
       this.selectionToolUpdate(
@@ -306,165 +321,6 @@ class Graph extends React.Component {
       this.setState(stateChanges);
     }
   }
-
-  isResetDisabled = () => {
-    /*
-    Reset should be disabled when all of the following are true:
-      * nothing is selected in the crossfilter
-      * world EQ universe
-      * nothing is colored by
-      * there are no userDefinedGenes or diffexpGenes displayed
-      * scatterplot is not displayed
-      * nothing in cellset1 or cellset2
-      * clip percentiles are [0,100]
-    */
-    const {
-      crossfilter,
-      world,
-      universe,
-      userDefinedGenes,
-      diffexpGenes,
-      colorAccessor,
-      scatterplotXXaccessor,
-      scatterplotYYaccessor,
-      celllist1,
-      celllist2,
-      clipPercentileMin,
-      clipPercentileMax
-    } = this.props;
-
-    if (!crossfilter || !world || !universe) {
-      return false;
-    }
-    const nothingSelected = crossfilter.countSelected() === crossfilter.size();
-    const nothingColoredBy = !colorAccessor;
-    const noGenes = userDefinedGenes.length === 0 && diffexpGenes.length === 0;
-    const scatterNotDpl = !scatterplotXXaccessor || !scatterplotYYaccessor;
-    const nothingInCellsets = !celllist1 && !celllist2;
-
-    return (
-      nothingSelected &&
-      World.worldEqUniverse(world, universe) &&
-      nothingColoredBy &&
-      noGenes &&
-      scatterNotDpl &&
-      nothingInCellsets &&
-      clipPercentileMax === 100 &&
-      clipPercentileMin === 0
-    );
-  };
-
-  resetInterface = () => {
-    const { dispatch } = this.props;
-    dispatch({
-      type: "interface reset started"
-    });
-    dispatch(actions.resetInterface());
-  };
-
-  isClipDisabled = () => {
-    /*
-    return true if clip button should be disabled.
-    */
-    const { pendingClipPercentiles } = this.state;
-    const clipPercentileMin = pendingClipPercentiles?.clipPercentileMin;
-    const clipPercentileMax = pendingClipPercentiles?.clipPercentileMax;
-
-    const { world } = this.props;
-    const currentClipMin = 100 * world?.clipQuantiles?.min;
-    const currentClipMax = 100 * world?.clipQuantiles?.max;
-
-    // if you change this test, be careful with logic around
-    // comparisons between undefined / NaN handling.
-    const isDisabled =
-      !(clipPercentileMin < clipPercentileMax) ||
-      (clipPercentileMin === currentClipMin &&
-        clipPercentileMax === currentClipMax);
-
-    return isDisabled;
-  };
-
-  handleClipOnKeyPress = e => {
-    /*
-    allow only numbers, plus other critical keys which
-    may be required to make a number
-    */
-    if (!Graph.isValidDigitKeyEvent(e)) {
-      e.preventDefault();
-    }
-  };
-
-  handleClipPercentileMinValueChange = v => {
-    /*
-    Ignore anything that isn't a legit number
-    */
-    if (!Number.isFinite(v)) return;
-
-    const { pendingClipPercentiles } = this.state;
-    const clipPercentileMax = pendingClipPercentiles?.clipPercentileMax;
-
-    /*
-    clamp to [0, currentClipPercentileMax]
-    */
-    if (v <= 0) v = 0;
-    if (v > 100) v = 100;
-    const clipPercentileMin = Math.round(v); // paranoia
-    this.setState({
-      pendingClipPercentiles: { clipPercentileMin, clipPercentileMax }
-    });
-  };
-
-  handleClipPercentileMaxValueChange = v => {
-    /*
-    Ignore anything that isn't a legit number
-    */
-    if (!Number.isFinite(v)) return;
-
-    const { pendingClipPercentiles } = this.state;
-    const clipPercentileMin = pendingClipPercentiles?.clipPercentileMin;
-
-    /*
-    clamp to [0, 100]
-    */
-    if (v < 0) v = 0;
-    if (v > 100) v = 100;
-    const clipPercentileMax = Math.round(v); // paranoia
-
-    this.setState({
-      pendingClipPercentiles: { clipPercentileMin, clipPercentileMax }
-    });
-  };
-
-  handleClipCommit = () => {
-    const { dispatch } = this.props;
-    const { pendingClipPercentiles } = this.state;
-    const { clipPercentileMin, clipPercentileMax } = pendingClipPercentiles;
-    const min = clipPercentileMin / 100;
-    const max = clipPercentileMax / 100;
-    dispatch({
-      type: "set clip quantiles",
-      clipQuantiles: { min, max }
-    });
-  };
-
-  handleClipOpening = () => {
-    const { clipPercentileMin, clipPercentileMax } = this.props;
-    this.setState({
-      pendingClipPercentiles: { clipPercentileMin, clipPercentileMax }
-    });
-  };
-
-  handleClipClosing = () => {
-    this.setState({ pendingClipPercentiles: null });
-  };
-
-  handleLayoutChoiceChange = e => {
-    const { dispatch } = this.props;
-    dispatch({
-      type: "set layout choice",
-      layoutChoice: e.currentTarget.value
-    });
-  };
 
   brushToolUpdate(tool, container) {
     /*
@@ -508,7 +364,7 @@ class Graph extends React.Component {
     }
   }
 
-  lassoToolUpdate(tool, container) {
+  lassoToolUpdate(tool) {
     /*
     this is called from componentDidUpdate(), so be very careful using
     anything from this.state, which may be updated asynchronously.
@@ -635,7 +491,7 @@ class Graph extends React.Component {
     const scale = aspect < 1 ? 1 / aspect : 1;
 
     // compute inverse view matrix
-    let inverse = mat4.invert([], camera.view());
+    const inverse = mat4.invert([], camera.view());
 
     // variable names are choosen to reflect inverse of those used
     // in mapScreenToPoint().
@@ -768,370 +624,19 @@ class Graph extends React.Component {
   }
 
   render() {
-    const {
-      dispatch,
-      responsive,
-      crossfilter,
-      resettingInterface,
-      libraryVersions,
-      undoDisabled,
-      redoDisabled,
-      selectionTool,
-      clipPercentileMin,
-      clipPercentileMax,
-      layoutChoice
-    } = this.props;
-    const { mode, pendingClipPercentiles } = this.state;
-
-    const clipMin =
-      pendingClipPercentiles?.clipPercentileMin ?? clipPercentileMin;
-    const clipMax =
-      pendingClipPercentiles?.clipPercentileMax ?? clipPercentileMax;
-    const activeClipClass =
-      clipPercentileMin > 0 || clipPercentileMax < 100
-        ? " bp3-intent-warning"
-        : "";
-
-    // constants used to create selection tool button
-    let selectionTooltip;
-    let selectionButtonClass;
-    if (selectionTool === "brush") {
-      selectionTooltip = "Brush selection";
-      selectionButtonClass = "bp3-icon-select";
-    } else {
-      selectionTooltip = "Lasso selection";
-      selectionButtonClass = "bp3-icon-polygon-filter";
-    }
+    const { responsive, graphInteractionMode } = this.props;
 
     return (
       <div id="graphWrapper">
         <div
           style={{
-            position: "fixed",
-            right: 0,
-            top: 0
-          }}
-        >
-          <div
-            style={{
-              padding: 10,
-              display: "flex",
-              justifyContent: "flex-end",
-              alignItems: "baseline"
-            }}
-          >
-            <Tooltip
-              content="Show only metadata and cells which are currently selected"
-              position="left"
-            >
-              <AnchorButton
-                type="button"
-                data-testid="subset-button"
-                disabled={
-                  crossfilter &&
-                  (crossfilter.countSelected() === 0 ||
-                    crossfilter.countSelected() === crossfilter.size())
-                }
-                style={{ marginRight: 10 }}
-                onClick={() => {
-                  dispatch(actions.regraph());
-                  dispatch({ type: "increment graph render counter" });
-                }}
-              >
-                subset to current selection
-              </AnchorButton>
-            </Tooltip>
-            <Tooltip
-              content="Reset cellxgene, clearing all selections"
-              position="left"
-            >
-              <AnchorButton
-                disabled={this.isResetDisabled()}
-                type="button"
-                loading={resettingInterface}
-                intent="warning"
-                style={{ marginRight: 10 }}
-                onClick={this.resetInterface}
-                data-testid="reset"
-                data-testclass={`resetting-${resettingInterface}`}
-              >
-                reset
-              </AnchorButton>
-            </Tooltip>
-            <div className="bp3-button-group">
-              <Tooltip content={selectionTooltip} position="left">
-                <Button
-                  type="button"
-                  data-testid="mode-lasso"
-                  className={`bp3-button ${selectionButtonClass}`}
-                  active={mode === "select"}
-                  onClick={() => {
-                    this.setState({ mode: "select" });
-                  }}
-                  style={{
-                    cursor: "pointer"
-                  }}
-                />
-              </Tooltip>
-              <Tooltip content="Pan and zoom" position="left">
-                <Button
-                  type="button"
-                  data-testid="mode-pan-zoom"
-                  className="bp3-button bp3-icon-zoom-in"
-                  active={mode === "zoom"}
-                  onClick={() => {
-                    this.restartReglLoop();
-                    this.setState({ mode: "zoom" });
-                  }}
-                  style={{
-                    cursor: "pointer"
-                  }}
-                />
-              </Tooltip>
-            </div>
-            <div
-              className="bp3-button-group"
-              style={{
-                marginLeft: 10
-              }}
-            >
-              <Tooltip content="Undo" position="left">
-                <AnchorButton
-                  type="button"
-                  className="bp3-button bp3-icon-undo"
-                  disabled={undoDisabled}
-                  onClick={() => {
-                    dispatch({ type: "@@undoable/undo" });
-                  }}
-                  style={{
-                    cursor: "pointer"
-                  }}
-                />
-              </Tooltip>
-              <Tooltip content="Redo" position="left">
-                <AnchorButton
-                  type="button"
-                  className="bp3-button bp3-icon-redo"
-                  disabled={redoDisabled}
-                  onClick={() => {
-                    dispatch({ type: "@@undoable/redo" });
-                  }}
-                  style={{
-                    cursor: "pointer"
-                  }}
-                />
-              </Tooltip>
-            </div>
-
-            <div
-              className="bp3-button-group"
-              style={{
-                marginLeft: 10
-              }}
-            >
-              <Popover
-                target={
-                  <Button
-                    type="button"
-                    data-testid="layout-choice"
-                    className="bp3-button bp3-icon-heatmap"
-                    style={{
-                      cursor: "pointer"
-                    }}
-                  />
-                }
-                position={Position.BOTTOM_RIGHT}
-                content={
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "flex-start",
-                      alignItems: "flex-start",
-                      flexDirection: "column",
-                      padding: 10
-                    }}
-                  >
-                    <RadioGroup
-                      label="Layout Choice"
-                      onChange={this.handleLayoutChoiceChange}
-                      selectedValue={layoutChoice.current}
-                    >
-                      {layoutChoice.available.map(name => (
-                        <Radio label={name} value={name} key={name} />
-                      ))}
-                    </RadioGroup>
-                  </div>
-                }
-              />
-            </div>
-
-            <div
-              className="bp3-button-group"
-              style={{
-                marginLeft: 10
-              }}
-            >
-              <Popover
-                target={
-                  <Button
-                    type="button"
-                    data-testid="visualization-settings"
-                    className={`bp3-button bp3-icon-timeline-bar-chart ${activeClipClass}`}
-                    style={{
-                      cursor: "pointer"
-                    }}
-                  />
-                }
-                position={Position.BOTTOM_RIGHT}
-                onOpening={this.handleClipOpening}
-                onClosing={this.handleClipClosing}
-                content={
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "flex-start",
-                      alignItems: "flex-start",
-                      flexDirection: "column",
-                      padding: 10
-                    }}
-                  >
-                    <div>Clip all continuous values to percentile range</div>
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        paddingTop: 5,
-                        paddingBottom: 5
-                      }}
-                    >
-                      <NumericInput
-                        style={{ width: 50 }}
-                        data-testid={"clip-min-input"}
-                        onValueChange={this.handleClipPercentileMinValueChange}
-                        onKeyPress={this.handleClipOnKeyPress}
-                        value={clipMin}
-                        min={0}
-                        max={100}
-                        fill={false}
-                        minorStepSize={null}
-                        rightElement={
-                          <div style={{ padding: "4px 2px" }}>
-                            <Icon
-                              icon="percentage"
-                              intent="primary"
-                              iconSize={14}
-                            />
-                          </div>
-                        }
-                      />
-                      <span style={{ marginRight: 5, marginLeft: 5 }}> - </span>
-                      <NumericInput
-                        style={{ width: 50 }}
-                        data-testid={"clip-max-input"}
-                        onValueChange={this.handleClipPercentileMaxValueChange}
-                        onKeyPress={this.handleClipOnKeyPress}
-                        value={clipMax}
-                        min={0}
-                        max={100}
-                        fill={false}
-                        minorStepSize={null}
-                        rightElement={
-                          <div style={{ padding: "4px 2px" }}>
-                            <Icon
-                              icon="percentage"
-                              intent="primary"
-                              iconSize={14}
-                            />
-                          </div>
-                        }
-                      />
-                      <Button
-                        type="button"
-                        data-testid="clip-commit"
-                        className="bp3-button"
-                        disabled={this.isClipDisabled()}
-                        style={{
-                          cursor: "pointer",
-                          marginRight: 5,
-                          marginLeft: 5
-                        }}
-                        onClick={this.handleClipCommit}
-                      >
-                        Clip
-                      </Button>
-                    </div>
-                  </div>
-                }
-              />
-            </div>
-
-            <div style={{ marginLeft: 10 }} className="bp3-button-group">
-              <Popover
-                content={
-                  <Menu>
-                    <MenuItem
-                      href="https://chanzuckerberg.github.io/cellxgene/faq.html"
-                      target="_blank"
-                      icon="help"
-                      text="FAQ"
-                    />
-                    <MenuItem
-                      href="https://join-cellxgene-users.herokuapp.com/"
-                      target="_blank"
-                      icon="chat"
-                      text="Chat"
-                    />
-                    <MenuItem
-                      href="https://chanzuckerberg.github.io/cellxgene/"
-                      target="_blank"
-                      icon="book"
-                      text="Docs"
-                    />
-                    <MenuItem
-                      href="https://github.com/chanzuckerberg/cellxgene"
-                      target="_blank"
-                      icon="git-branch"
-                      text="Github"
-                    />
-                    <MenuItem
-                      target="_blank"
-                      text={`cellxgene v${
-                        libraryVersions && libraryVersions.cellxgene
-                          ? libraryVersions.cellxgene
-                          : null
-                      }`}
-                    />
-                    <MenuItem text="MIT License" />
-                  </Menu>
-                }
-                position={Position.BOTTOM_RIGHT}
-              >
-                <Button
-                  type="button"
-                  className="bp3-button bp3-icon-info-sign"
-                  style={{
-                    cursor: "pointer"
-                  }}
-                />
-              </Popover>
-            </div>
-          </div>
-        </div>
-        <div
-          style={{
             zIndex: -9999,
             position: "fixed",
-            top: 0,
+            top: this.graphPaddingTop,
             right: 0
           }}
         >
-          <div
-            style={{
-              display: mode === "select" ? "inherit" : "none"
-            }}
-            id="graphAttachPoint"
-          />
+          <div id="graphAttachPoint" />
           <div style={{ padding: 0, margin: 0 }}>
             <canvas
               width={responsive.width - this.graphPaddingRight}

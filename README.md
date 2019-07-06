@@ -32,7 +32,7 @@ Launch _cellxgene_
 cellxgene launch pbmc3k.h5ad --open
 ```
 
-To learn more about what you can do with _cellxgene_, see the [Getting Started](https://chanzuckerberg.github.io/cellxgene/getting-stared/) guide.
+To learn more about what you can do with _cellxgene_, see the [Getting Started](https://chanzuckerberg.github.io/cellxgene/getting-started.html) guide.
 
 ## get in touch
 
@@ -51,6 +51,20 @@ There are 4 key features we plan to implement in the near term.
 - Gene information
 
 For more detail on these features and where we are going, see [our roadmap](ROADMAP.md).
+
+## risks of hosting cellxgene
+
+_cellxgene_ is built on standard web technologies, but is currently designed as a single-user desktop application.
+We've done this so we can prioritize the features on [our roadmap](ROADMAP.md).
+
+Some of our users have experimented with hosting _cellxgene_ either for their lab or for public use, but please note that the _cellxgene_ team does not officially support, troubleshoot, or maintain any web deployments at this time.
+
+If do you choose setup _cellxgene_ as a hosted service, you should be aware of the following risks:
+
+- `$ cellxgene launch` uses Flask's development server, which is not recommended for hosted deployment (see the [Flask documentation](http://flask.pocoo.org/docs/1.0/tutorial/deploy/#run-with-a-production-server))
+- We have no testing or official support for deployments where multiple users are accessing the same _cellxgene_ instance.
+- Your _cellxgene_ instance is likely to hang or crash if too many people access it at the same time, especially if they using functions that call the Python backend (such as differential expression, updating the layout, or coloring by gene).
+- _cellxgene_ only supports one instance per dataset
 
 ## contributing
 

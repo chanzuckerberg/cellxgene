@@ -16,15 +16,19 @@ export default (
   handleEndAction,
   handleCancelAction,
   responsive,
-  graphPaddingRight
+  graphPaddingRight,
+  graphInteractionMode
 ) => {
   const svg = d3
     .select("#graphAttachPoint")
     .append("svg")
+    .attr("id", "tool")
     .attr("data-testid", "layout-overlay")
     .attr("width", responsive.width - graphPaddingRight)
     .attr("height", responsive.height)
-    .attr("class", `${styles.graphSVG}`);
+    .attr("class", `${styles.graphSVG}`)
+    .style("z-index", 999)
+    .style("display", graphInteractionMode === "select" ? "inherit" : "none");
 
   if (selectionToolType === "brush") {
     const brush = d3

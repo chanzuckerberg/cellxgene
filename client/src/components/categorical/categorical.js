@@ -70,13 +70,6 @@ class Categories extends React.Component {
           padding: globals.leftSidebarSectionPadding
         }}
       >
-        <p
-          style={Object.assign({}, globals.leftSidebarSectionHeading, {
-            marginTop: 4
-          })}
-        >
-          Categorical Metadata
-        </p>
         {_.map(categoricalSelection, (catState, catName) => (
           <Category
             key={catName}

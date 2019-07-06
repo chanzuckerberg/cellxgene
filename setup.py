@@ -8,7 +8,7 @@ with open("server/requirements.txt") as fh:
 
 setup(
     name="cellxgene",
-    version="0.10.0",
+    version="0.10.1",
     packages=find_packages(),
     url="https://github.com/chanzuckerberg/cellxgene",
     license="MIT",
@@ -36,5 +36,5 @@ setup(
         "Topic :: Scientific/Engineering :: Bio-Informatics",
     ],
     entry_points={"console_scripts": ["cellxgene = server.cli.cli:cli"]},
-    extras_require=dict(louvain=["python-igraph", "louvain>=0.6"], gui=["PySide2>=5.12.3", "cefpython3>=66"]),
+    extras_require=dict(louvain=["python-igraph", "louvain>=0.6"], gui=["PySide2>=5.12.3", "cefpython3>=66", "requests"]),
 )

@@ -1,54 +1,46 @@
 # cellxgene roadmap
 
-We are very exited for _cellxgene_ to become a valuable tool in collaborations
-between computational biologists and experimental biologists working on
-single-cell transcriptomics data. _cellxgene_ is in active development, and we
-would love to include the community as we plan new features to work on. If you
-have questions of feedback about this roadmap, please submit an issue on
-GitHub.
-
+cellxgene makes it easier for biologists to collaboratively explore and understand their single-cell RNA-seq data. 
+In the near term, we are focused on continuing to enable fast, interactive exploration of single-cell data, supporting collaborative workflows in single-cell analysis, and improving user support. 
+If you have questions or feedback about this roadmap, please submit an issue on GitHub.
 Please note: this roadmap is subject to change.
 
-*Last updated: April 11, 2019*
+Last updated: June 25, 2019
 
-## what we are building now
+## Fast, interactive exploration of single-cell data
 
-In the near term, our goal is to enable teams of computational and experimental
-biologists to collaboratively explore and annotate their single-cell RNA-seq data.
+### Exposing Relationships Between Metadata and Data
+Biologists need to understand how variables (stored in metadata) are associated with one another and how they relate to changes in gene expression. 
+Building upon visualization features that reveal categorical metadata relationships (cluster occupancy) and gene expression relationships (scatterplot), we plan to add exploratory visualization components that enable investigation of relationships between metadata and gene expression. 
+See [issue #616](https://github.com/chanzuckerberg/cellxgene/issues/616) for more details.
 
-There are 4 key features we plan to implement in the near term.
+### Contextualizing Genes
+While exploring a transcriptomics dataset, scientists need to understand the biological context of genes.
+This context may be provided by user-defined gene metadata or publicly available gene databases. 
+We plan to support augmenting gene names with additional information that is useful to biologists. 
+See [issue #96](https://github.com/chanzuckerberg/cellxgene/issues/96) for more detail.
 
-- Click install and launch
-- Manual annotation workflows
-- Toggle embeddings
-- Gene information
+## Support collaborative workflows in single-cell analysis
 
-### simple install and launch
+### Manual Annotations
+cellxgene offers exploratory visualizations that are critical for manual annotation workflows, especially in collaborative environments. 
+We plan to support manually annotating cells with labels (i.e., cell type or QC flags), and their easy export for downstream analysis. 
+See [issue #524](https://github.com/chanzuckerberg/cellxgene/issues/524) for more details.
 
-The command line interface for installing and launching cellxgene is a barrier
-for users who are not used to Python or using the command line. We plan to
-support installation and launch of cellxgene on Mac and Windows. See
-[Issue #687](https://github.com/chanzuckerberg/cellxgene/issues/687) for more details.
+### Simple Click to Launch
 
-### manual annotation workflows
+Many biologists prefer not to interact with the command line and need an OS-native experience when using cellxgene. 
+We plan to implement a point-and-click installation and launch experience so that users can easily load data into cellxgene. 
+See [issue #687](https://github.com/chanzuckerberg/cellxgene/issues/687) for details.
 
-The exploratory visualization that cellxgene offers is critical for manual
-annotation workflows, especially in collaborative environments. We plan to
-support manually annotate cells with labels (i.e., cell type or QC flags) for
-downstream analysis. See [Issue #524](https://github.com/chanzuckerberg/cellxgene/issues/524)
-for more details.
+### Python API
+For computational biologists, saving h5ad files then loading them into cellxgene is a point of friction.  
+We plan to support importing cellxgene as a Python package so that users can launch cellxgene directly from an interactive environment (such as Jupyter, IPython, or Spyder), and pass data to and from the cellxgene UI. 
 
-### toggle embeddings
+## Improving user support
 
-While a single dataset may have multiple embeddings calculated (tSNE, umap, in
-situ coordinates, trajectories, etc), cellxgene currently requires the user to select the
-embedding to use in the main layout at launch. We plan to support letting users
-toggle between any embedding present in a file from the cellxgene interface.
-See [Issue #594](https://github.com/chanzuckerberg/cellxgene/issues/594) for details.
-
-### gene information
-
-Differential expression returns only the names of genes, but no additional information
-about gene metadata, function, or known associations. We plan to help users learn
-more about genes they discover by exposing additional gene metadata. See
-[Issue #96](https://github.com/chanzuckerberg/cellxgene/issues/96) for details.
+### Improved documentation
+cellxgene has some specific expectations about how data is stored. 
+We want to ensure that new users can get started easily and learn how to use cellxgene with their own data. 
+We plan to improve documentation on getting started, installation, data, and contributing. 
+See [issue #533](https://github.com/chanzuckerberg/cellxgene/issues/533) for more details.

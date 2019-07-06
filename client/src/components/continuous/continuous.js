@@ -48,7 +48,7 @@ class Continuous extends React.Component {
     }
 
     /* initial value for iterator to simulate index, ranges is an object */
-    let zebra = -1;
+    let zebra = 0;
 
     return (
       <div>
