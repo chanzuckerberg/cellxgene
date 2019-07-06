@@ -103,7 +103,6 @@ const ColorsReducer = (
         return state;
 
       /* else, we need to rebuild colors as labels have changed! */
-      console.log("colors updated");
       const { rgb, scale } = createColors(world, colorMode, colorAccessor);
       return { ...state, rgb, scale };
     }
