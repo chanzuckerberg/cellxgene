@@ -106,17 +106,6 @@ const CategoricalSelection = (
       };
     }
 
-    case "duplicate annotation category": {
-      // this code is probably right, but awaiting cleanup of the actions
-      // const { world } = nextSharedState;
-      // const name = action.metadataField;
-      // return {
-      //   ...state,
-      //   ...ControlsHelpers.createCategoricalSelection(world, [name])
-      // };
-      return state;
-    }
-
     case "category edited": {
       const name = action.metadataField;
       const newName = action.editedCategoryText;

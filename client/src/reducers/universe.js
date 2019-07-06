@@ -62,17 +62,6 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
       return { ...state, obsAnnotations, schema };
     }
 
-    case "duplicate annotation category": {
-      /* 
-      create a new annotation category, with all values duplicated from an 
-      existing annotation 
-      */
-      // TODO/XXX incomplete action - we need to know BOTH the category
-      // being duplicated, and the new category name.
-
-      return state;
-    }
-
     case "category edited": {
       /* change the name of an obs annotation category */
       const name = action.metadataField;

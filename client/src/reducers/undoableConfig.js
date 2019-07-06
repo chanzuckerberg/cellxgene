@@ -78,7 +78,6 @@ const saveOnActions = new Set([
 
   // user editable annotations
   "new user annotation category created",
-  "duplicate annotation category",
   "add new label to category",
   "delete category",
   "label edited",
