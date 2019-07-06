@@ -48,6 +48,23 @@ export function addObsAnnoSchema(schema, name, colSchema) {
 	return SchemaHelpers.addObsAnnoColumn(schema, name, colSchema);
 }
 
+export function dupObsAnnoSchema(schema, sourceName, dupName, defaultSchema) {
+	/*
+	duplicate the obs annotation `sourceName` schema, but with the name `dupName`
+	*/
+	const colSchema = {
+		...schema.annotations.obsByName[sourceName],
+		...defaultSchema,
+		name: dupName
+	};
+	/* existance check */
+	if (!colSchema) throw Error("source annotation does not exist");
+	/* collision detection */
+	if (schema.annotations.obs.columns.some(v => v.name === dupName))
+		throw Error("annotations may not contain duplicate category names");
+	return SchemaHelpers.addObsAnnoColumn(schema, dupName, colSchema);
+}
+
 export function removeObsAnnoCategory(schema, name, category) {
 	/* don't allow deletion of unassigned category on writable annotations */
 

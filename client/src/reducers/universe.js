@@ -42,6 +42,8 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
     case "new user annotation category created": {
       /* create a new annotation category, with all values set to 'unassigned' */
       const name = action.data;
+      const { categoryToDuplicate } = action;
+
       /* name must be a string,  non-zero length */
       if (typeof name !== "string" || name.length === 0)
         throw new Error("user annotations require string name");
@@ -50,14 +52,33 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
       if (state.obsAnnotations.hasCol(name))
         throw new Error("name collision on annotation category create");
 
-      const categories = [unassignedCategoryLabel];
-      const schema = AH.addObsAnnoSchema(state.schema, name, {
-        name,
-        categories,
-        type: "categorical",
-        writable: true
-      });
-      const data = new Array(state.nObs).fill(unassignedCategoryLabel);
+      /* ensure the duplicate col exists */
+      if (
+        categoryToDuplicate &&
+        !state.obsAnnotations.hasCol(categoryToDuplicate)
+      )
+        throw new Error("categoryToDuplicate does not exist");
+
+      let schema;
+      let data;
+      if (categoryToDuplicate) {
+        /* duplicate the named annotation */
+        schema = AH.dupObsAnnoSchema(state.schema, categoryToDuplicate, name, {
+          writable: true
+        });
+        data = state.obsAnnotations.col(categoryToDuplicate).asArray();
+      } else {
+        /* else, all are unassined */
+        const categories = [unassignedCategoryLabel];
+        schema = AH.addObsAnnoSchema(state.schema, name, {
+          name,
+          categories,
+          type: "categorical",
+          writable: true
+        });
+        data = new Array(state.nObs).fill(unassignedCategoryLabel);
+      }
+
       const obsAnnotations = state.obsAnnotations.withCol(name, data);
       return { ...state, obsAnnotations, schema };
     }
