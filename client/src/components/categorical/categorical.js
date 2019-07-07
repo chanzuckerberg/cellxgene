@@ -15,7 +15,8 @@ import * as globals from "../../globals";
 import Category from "./category";
 
 @connect(state => ({
-  categoricalSelection: state.categoricalSelection
+  categoricalSelection: state.categoricalSelection,
+  writableCategoriesEnabled: state.config?.parameters?.["label_file"] ?? false
 }))
 class Categories extends React.Component {
   constructor(props) {
@@ -57,7 +58,7 @@ class Categories extends React.Component {
 
   render() {
     const { createAnnoModeActive, categoryToDuplicate } = this.state;
-    const { categoricalSelection } = this.props;
+    const { categoricalSelection, writableCategoriesEnabled } = this.props;
     if (!categoricalSelection) return null;
 
     console.log("state", this.state);
@@ -75,62 +76,66 @@ class Categories extends React.Component {
             key={catName}
             metadataField={catName}
             createAnnoModeActive={createAnnoModeActive}
-            isUserAnno={catState.isUserAnno}
+            isUserAnno={writableCategoriesEnabled && catState.isUserAnno}
           />
         ))}
-        <Dialog
-          icon="tag"
-          title="Create new category"
-          isOpen={createAnnoModeActive}
-          onClose={this.handleDisableAnnoMode}
-        >
-          <div className={Classes.DIALOG_BODY}>
-            <div style={{ marginBottom: 20 }}>
-              <p>New, unique category name:</p>
-              <InputGroup
-                autoFocus
-                onChange={e =>
-                  this.setState({ newCategoryText: e.target.value })
-                }
-                leftIcon="tag"
-              />
-            </div>
-            <p>
-              Optionally duplicate all labels & cell assignments from existing
-              category into new category:
-            </p>
-            <Select
-              items={allCategoryNames}
-              filterable={false}
-              itemRenderer={(d, { handleClick }) => {
-                return <MenuItem onClick={handleClick} key={d} text={d} />;
-              }}
-              noResults={<MenuItem disabled text="No results." />}
-              onItemSelect={d => {
-                this.handleModalDuplicateCategorySelection(d);
-              }}
+        {writableCategoriesEnabled ? (
+          <div>
+            <Dialog
+              icon="tag"
+              title="Create new category"
+              isOpen={createAnnoModeActive}
+              onClose={this.handleDisableAnnoMode}
             >
-              {/* children become the popover target; render value here */}
-              <Button
-                text={"None (all cells 'unassigned')"}
-                rightIcon="double-caret-vertical"
-              />
-            </Select>
+              <div className={Classes.DIALOG_BODY}>
+                <div style={{ marginBottom: 20 }}>
+                  <p>New, unique category name:</p>
+                  <InputGroup
+                    autoFocus
+                    onChange={e =>
+                      this.setState({ newCategoryText: e.target.value })
+                    }
+                    leftIcon="tag"
+                  />
+                </div>
+                <p>
+                  Optionally duplicate all labels & cell assignments from
+                  existing category into new category:
+                </p>
+                <Select
+                  items={allCategoryNames}
+                  filterable={false}
+                  itemRenderer={(d, { handleClick }) => {
+                    return <MenuItem onClick={handleClick} key={d} text={d} />;
+                  }}
+                  noResults={<MenuItem disabled text="No results." />}
+                  onItemSelect={d => {
+                    this.handleModalDuplicateCategorySelection(d);
+                  }}
+                >
+                  {/* children become the popover target; render value here */}
+                  <Button
+                    text={"None (all cells 'unassigned')"}
+                    rightIcon="double-caret-vertical"
+                  />
+                </Select>
+              </div>
+              <div className={Classes.DIALOG_FOOTER}>
+                <div className={Classes.DIALOG_FOOTER_ACTIONS}>
+                  <Tooltip content="Close this dialog without creating a category.">
+                    <Button onClick={this.handleDisableAnnoMode}>Cancel</Button>
+                  </Tooltip>
+                  <Button onClick={this.handleCreateUserAnno} intent="primary">
+                    Create new category
+                  </Button>
+                </div>
+              </div>
+            </Dialog>
+            <Button onClick={this.handleEnableAnnoMode} intent="primary">
+              Create new category
+            </Button>
           </div>
-          <div className={Classes.DIALOG_FOOTER}>
-            <div className={Classes.DIALOG_FOOTER_ACTIONS}>
-              <Tooltip content="Close this dialog without creating a category.">
-                <Button onClick={this.handleDisableAnnoMode}>Cancel</Button>
-              </Tooltip>
-              <Button onClick={this.handleCreateUserAnno} intent="primary">
-                Create new category
-              </Button>
-            </div>
-          </div>
-        </Dialog>
-        <Button onClick={this.handleEnableAnnoMode} intent="primary">
-          Create new category
-        </Button>
+        ) : null}
       </div>
     );
   }

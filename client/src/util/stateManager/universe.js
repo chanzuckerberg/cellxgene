@@ -1,7 +1,7 @@
 import _ from "lodash";
 
 import { unassignedCategoryLabel } from "../../globals";
-import decodeMatrixFBS from "./matrix";
+import { decodeMatrixFBS } from "./matrix";
 import * as Dataframe from "../dataframe";
 import { isFpTypedArray } from "../typeHelpers";
 import { indexEntireSchema } from "./schemaHelpers";

@@ -46,6 +46,13 @@ class CXGDriver(metaclass=ABCMeta):
         return features
 
     @abstractmethod
+    def get_schema(self):
+        """
+        Return current schema
+        """
+        pass
+
+    @abstractmethod
     def _load_data(self, data):
         pass
 
@@ -56,6 +63,13 @@ class CXGDriver(metaclass=ABCMeta):
         :param axis: string obs or var
         :param fields: list of keys for annotation to return, returns all annotation values if not set.
         :return: flatbuffer: in fbs/matrix.fbs encoding
+        """
+        pass
+
+    @abstractmethod
+    def annotation_put_fbs(self, axis, fbs):
+        """
+        Put/save FBS as user-defined labels
         """
         pass
 

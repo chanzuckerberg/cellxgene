@@ -533,6 +533,11 @@ class Dataframe {
   Data access with row/col.
   **/
 
+  columns() {
+    /* return all column accessors as an array, in offset order */
+    return [...this.__columnsAccessor];
+  }
+
   col(columnLabel) {
     /*
     Return accessor bound to a column.  Allows random row access

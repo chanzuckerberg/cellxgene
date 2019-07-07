@@ -46,19 +46,28 @@ def common_args(func):
         show_default=True,
         help="Relative expression cutoff used when selecting top N differentially expressed genes",
     )
+    @click.option(
+        "--label-file",
+        default=None,
+        show_default=True,
+        multiple=False,
+        metavar="<user labels CSV file>",
+        help="CSV file containing user annotations; will be overwritten.  Created if does not exist.",
+    )
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         return func(*args, **kwargs)
     return wrapper
 
 
-def parse_engine_args(layout, obs_names, var_names, max_category_items, diffexp_lfc_cutoff):
+def parse_engine_args(layout, obs_names, var_names, max_category_items, diffexp_lfc_cutoff, label_file):
     return {
         "layout": layout,
         "max_category_items": max_category_items,
         "diffexp_lfc_cutoff": diffexp_lfc_cutoff,
         "obs_names": obs_names,
         "var_names": var_names,
+        "label_file": label_file,
     }
 
 
@@ -106,7 +115,8 @@ def launch(
         max_category_items,
         diffexp_lfc_cutoff,
         title,
-        scripts
+        scripts,
+        label_file
 ):
     """Launch the cellxgene data viewer.
     This web app lets you explore single-cell expression data.
@@ -119,7 +129,7 @@ def launch(
 
     > cellxgene launch <your data file> --title <your title>"""
 
-    e_args = parse_engine_args(layout, obs_names, var_names, max_category_items, diffexp_lfc_cutoff)
+    e_args = parse_engine_args(layout, obs_names, var_names, max_category_items, diffexp_lfc_cutoff, label_file)
     # Startup message
     click.echo("[cellxgene] Starting the CLI...")
 
@@ -163,6 +173,11 @@ def launch(
             )
     else:
         port = find_available_port(host)
+
+    if label_file:
+        lf_name, lf_ext = splitext(label_file)
+        if lf_ext and lf_ext != ".csv":
+            raise click.FileError(basename(label_file), hint="label file type must be .csv")
 
     # Setup app
     cellxgene_url = f"http://{host}:{port}"
