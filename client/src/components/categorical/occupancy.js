@@ -16,6 +16,11 @@ class Occupancy extends React.Component {
   _HEIGHT = 11;
 
   createHistogram = () => {
+    /* 
+      Knowing that colorScale is based off continous data, 
+      createHistogram fetches the continous data in relation to the cells releveant to the catagory value.
+      It then seperates that data into 50 bins for drawing the mini-histogram
+    */
     const {
       world,
       metadataField,
@@ -71,6 +76,11 @@ class Occupancy extends React.Component {
   };
 
   createOccupancyStack = () => {
+    /* 
+      Knowing that the color scale is based off of catagorical data, 
+      createOccupancyStack obtains a map showing the number if cells per colored value
+      Using the colorScale a stack of colored bars is drawn representing the map
+     */
     const {
       world,
       metadataField,
