@@ -22,6 +22,14 @@ class CategoryValue extends React.Component {
   };
 
   shouldComponentUpdate = nextProps => {
+    /* 
+    Checks to see if at least one of the following changed:
+    * world state
+    * the color accessor (what is currently being colored by)
+    * if this catagorical value's selection status has changed
+    
+    If and only if true, update the component
+    */
     const { props } = this;
     const { metadataField, categoryIndex, categoricalSelection } = props;
     const { categoricalSelection: newCategoricalSelection } = nextProps;
