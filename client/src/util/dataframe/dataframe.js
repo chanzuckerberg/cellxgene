@@ -256,11 +256,9 @@ class Dataframe {
     if (isTypedArray(column)) {
       const mFn = memoize(histogramContinuous, hashContinuous);
       get.histogram = (bins, domain, by) => mFn(get, bins, domain, by);
-      // console.log("continuous hist call on: ", column);
     } else {
       const mFn = memoize(histogramCategorical, hashCategorical);
       get.histogram = by => mFn(get, by);
-      // console.log("categorical hist call on: ", column);
     }
 
     get.summarize = summarize;

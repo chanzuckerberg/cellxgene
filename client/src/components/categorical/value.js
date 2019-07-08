@@ -48,10 +48,6 @@ class CategoryValue extends React.Component {
     return valueSelectionChange || worldChange || colorAccessorChange;
   };
 
-  componentDidUpdate = () => {
-    console.log("UPDATED");
-  };
-
   toggleOn = () => {
     const { dispatch, metadataField, categoryIndex } = this.props;
     dispatch({
