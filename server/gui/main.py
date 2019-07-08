@@ -27,6 +27,7 @@ if WINDOWS or LINUX:
 # TODO remember this or calculate it?
 WIDTH = 1300
 HEIGHT = 800
+MAX_CONTENT_WIDTH = 700
 GUI_PORT = find_available_port("localhost")
 BROWSER_INDEX = 0
 LOAD_INDEX = 1
@@ -146,9 +147,8 @@ class LoadWidget(QFrame):
     def __init__(self, parent):
         super(LoadWidget, self).__init__(parent=parent)
         # Init layout
-        self.MAX_CONTENT_WIDTH = 500
         load_ui_layout = QVBoxLayout()
-        h_margin = (WIDTH - self.MAX_CONTENT_WIDTH) // 2
+        h_margin = (WIDTH - MAX_CONTENT_WIDTH) // 2
         if h_margin < 10:
             h_margin = 10
         load_ui_layout.setContentsMargins(h_margin, 20, h_margin, 20)
@@ -192,7 +192,7 @@ class LoadWidget(QFrame):
         # Error section
         self.error_label = QLabel("")
         self.error_label.setWordWrap(True)
-        self.error_label.setFixedWidth(self.MAX_CONTENT_WIDTH)
+        self.error_label.setFixedWidth(MAX_CONTENT_WIDTH)
         message_layout.addWidget(self.error_label)
 
         # Options Form
@@ -284,7 +284,7 @@ class LoadWidget(QFrame):
         self.resetProgress()
         self.window().stacked_layout.setCurrentIndex(LOAD_INDEX)
         self.error_label.setText(f"Error: {err}")
-        self.error_label.resize(self.MAX_CONTENT_WIDTH, self.error_label.height())
+        self.error_label.resize(MAX_CONTENT_WIDTH, self.error_label.height())
         self.window().repaint()
 
     onServerError = partialmethod(onError, server_error=True)
@@ -305,17 +305,17 @@ class FileArea(QFrame):
         super(FileArea, self).__init__()
         self.setFrameShape(QFrame.Box)
         self.setMinimumHeight(100)
-        self.setFixedWidth(500)
+        self.setFixedWidth(MAX_CONTENT_WIDTH)
         self.setAcceptDrops(True)
         self.instructions = QLabel(self)
         self.instructions.setText("Drag & Drop a h5ad file to load or open")
-        self.instructions.setGeometry(10, 10, 500, self.instructions.height())
+        self.instructions.setGeometry(10, 10, MAX_CONTENT_WIDTH, self.instructions.height())
         self.loadButton = QPushButton("Open...", parent=self)
-        x_pos = (500 - self.loadButton.width()) / 2
+        x_pos = (MAX_CONTENT_WIDTH - self.loadButton.width()) / 2
         self.loadButton.setGeometry(x_pos, 50, self.loadButton.width(), self.loadButton.height())
         self.loadButton.clicked.connect(self.fileBrowse)
         self.label = QLabel(self)
-        self.label.setGeometry(10, 75, 500, self.label.height())
+        self.label.setGeometry(10, 75, MAX_CONTENT_WIDTH, self.label.height())
 
     def fileBrowse(self):
         options = QFileDialog.Options()
