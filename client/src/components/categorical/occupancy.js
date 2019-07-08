@@ -95,7 +95,7 @@ class Occupancy extends React.Component {
     const x = d3
       .scaleLinear()
       /* get all the keys d[1] as an array, then find the sum */
-      .domain([0, d3.sum(Array.from(occupancy, d => d[1]))])
+      .domain([0, d3.sum(Array.from(occupancy.values()))])
       .range([0, this._WIDTH]);
     const categories = schema.annotations.obsByName[colorAccessor]?.categories;
 
