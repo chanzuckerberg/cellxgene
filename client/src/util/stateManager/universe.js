@@ -1,6 +1,5 @@
 import _ from "lodash";
 
-import { unassignedCategoryLabel } from "../../globals";
 import { decodeMatrixFBS } from "./matrix";
 import * as Dataframe from "../dataframe";
 import { isFpTypedArray } from "../typeHelpers";
@@ -165,7 +164,6 @@ export function createUniverseFromResponse(
   /* annotations */
   universe.obsAnnotations = AnnotationsFBSToDataframe(annotationsObsResponse);
   universe.varAnnotations = AnnotationsFBSToDataframe(annotationsVarResponse);
-  makeTestUserAnnotations(universe); // TODO/XXX: bootstrap, to be replaced
   /* layout */
   universe.obsLayout = LayoutFBSToDataframe(layoutFBSResponse);
 
@@ -209,51 +207,4 @@ export function convertDataFBStoObject(universe, arrayBuffer) {
     result[varName] = columns[c];
   }
   return result;
-}
-
-function makeTestUserAnnotations(universe) {
-  /*
-  make a fake test dataframe containing user annotations.  This is test/bootstrap
-  code just to get the UI running, and will be replaced once we connect to the
-  backend (or mock that properly).
-  */
-  const { schema } = universe;
-  const { nObs } = schema.dataframe;
-  const colOneVals = ["red", "green", "blue", unassignedCategoryLabel];
-  const colTwoVals = [
-    "horse",
-    "pig",
-    "sheep",
-    "chicken",
-    "cow",
-    "hamster",
-    unassignedCategoryLabel
-  ];
-  schema.annotations.obs.columns.push({
-    name: "user_anno_1",
-    type: "categorical",
-    writable: true,
-    categories: colOneVals
-  });
-  schema.annotations.obs.columns.push({
-    name: "user_anno_2",
-    type: "categorical",
-    writable: true,
-    categories: colTwoVals
-  });
-  const columns = [
-    new Array(nObs)
-      .fill(undefined)
-      .map((v, i) => colOneVals[i % (colOneVals.length - 1)]),
-    new Array(nObs)
-      .fill(undefined)
-      .map((v, i) => colTwoVals[i % (colTwoVals.length - 1)])
-  ];
-  const df = new Dataframe.Dataframe(
-    [nObs, 2],
-    columns,
-    null,
-    new Dataframe.KeyIndex(["user_anno_1", "user_anno_2"])
-  );
-  universe.obsAnnotations = universe.obsAnnotations.withColsFrom(df);
 }

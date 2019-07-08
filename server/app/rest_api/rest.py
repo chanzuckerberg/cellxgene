@@ -16,6 +16,7 @@ from server.app.util.errors import (
     InteractiveError,
     JSONEncodingValueError,
     PrepareError,
+    DisabledFeatureError,
 )
 
 """
@@ -106,7 +107,9 @@ class AnnotationsObsAPI(Resource):
             return make_response(
                 res, HTTPStatus.OK, {"Content-Type": "application/json"}
             )
-        except ValueError as e:
+        except (ValueError, DisabledFeatureError, KeyError) as e:
+            return make_response(str(e), HTTPStatus.BAD_REQUEST)
+        except Exception as e:
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
 

@@ -14,6 +14,7 @@ def read_labels(fname):
 
 def write_labels(fname, df):
     """
-    TODO / reminder: need to rotate file if it already exists
+    TODO / reminder:
+    - need to rotate file if it already exists
     """
     df.to_csv(fname, index=False)

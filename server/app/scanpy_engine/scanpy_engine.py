@@ -1,5 +1,6 @@
 import warnings
 import copy
+import threading
 
 import numpy as np
 import pandas
@@ -14,11 +15,12 @@ from server.app.util.errors import (
     JSONEncodingValueError,
     PrepareError,
     ScanpyFileError,
+    DisabledFeatureError,
 )
 from server.app.util.utils import jsonify_scanpy, requires_data
 from server.app.scanpy_engine.diffexp import diffexp_ttest
-from server.app.util.fbs.matrix import encode_matrix_fbs
-from server.app.scanpy_engine.labels import read_labels
+from server.app.util.fbs.matrix import encode_matrix_fbs, decode_matrix_fbs
+from server.app.scanpy_engine.labels import read_labels, write_labels
 
 """
 Sort order for methods
@@ -33,6 +35,8 @@ Sort order for methods
 class ScanpyEngine(CXGDriver):
     def __init__(self, data=None, args={}):
         super().__init__(data, args)
+        # lock used to protect label file write ops
+        self.label_lock = threading.Lock()
         if self.data:
             self._validate_and_initialize()
 
@@ -176,24 +180,6 @@ class ScanpyEngine(CXGDriver):
             for ann in curr_axis:
                 ann_schema = {"name": ann, "writable": False}
                 ann_schema.update(self._get_col_type(curr_axis[ann]))
-                # dtype = curr_axis[ann].dtype
-                # data_kind = dtype.kind
-
-                # if self._can_cast_to_float32(curr_axis[ann]):
-                #     ann_schema["type"] = "float32"
-                # elif self._can_cast_to_int32(curr_axis[ann]):
-                #     ann_schema["type"] = "int32"
-                # elif dtype == np.bool_:
-                #     ann_schema["type"] = "boolean"
-                # elif data_kind == "O" and dtype == "object":
-                #     ann_schema["type"] = "string"
-                # elif data_kind == "O" and dtype == "category":
-                #     ann_schema["type"] = "categorical"
-                #     ann_schema["categories"] = curr_axis[ann].dtype.categories.tolist()
-                # else:
-                #     raise TypeError(
-                #         f"Annotations of type {curr_axis[ann].dtype} are unsupported by cellxgene."
-                #     )
                 self.schema["annotations"][ax]["columns"].append(ann_schema)
 
         for layout in self.config['layout']:
@@ -446,20 +432,24 @@ class ScanpyEngine(CXGDriver):
 
     @requires_data
     def annotation_put_fbs(self, axis, fbs):
-        """
-        TODO reminders:
-        - throw an error if attempts to write a non-writable column
-        - throw error if !label_file
-        - throw error if bad fbs
-        - rotate label_file
-        - overwrite entire label_file, in CSV format
+        fname = self.config["label_file"]
+        if not fname or self.labels is None:
+            raise DisabledFeatureError("Writable annotations are not enabled")
 
-        also, above:
-        - load data
-        - set up schema (writable)
-        """
-        import sys
-        print("OBS Annotations save... (currently a noop)", file=sys.stderr)
+        new_label_df = decode_matrix_fbs(fbs)
+
+        # if any of the new column labels overlap with our existing labels, raise error
+        duplicate_columns = list(set(new_label_df.columns) & set(self.data.obs.columns))
+        if not new_label_df.columns.is_unique or len(duplicate_columns) > 0:
+            raise KeyError(f"Labels file may not contain column names which overlap "
+                           f"with h5ad obs columns {duplicate_columns}")
+
+        # update our internal state and save it.  Multi-threading often enabled,
+        # so treat this as a critical section critical section.
+        with self.label_lock:
+            self.labels = new_label_df
+            write_labels(fname, self.labels)
+
         return jsonify_scanpy({"status": "OK"})
 
     @staticmethod

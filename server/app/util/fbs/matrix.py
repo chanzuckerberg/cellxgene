@@ -2,10 +2,16 @@ import flatbuffers
 import numpy as np
 from scipy import sparse
 import pandas as pd
+import json
 
 import server.app.util.fbs.NetEncoding.Column as Column
 import server.app.util.fbs.NetEncoding.TypedArray as TypedArray
 import server.app.util.fbs.NetEncoding.Matrix as Matrix
+import server.app.util.fbs.NetEncoding.Int32Array as Int32Array
+import server.app.util.fbs.NetEncoding.Uint32Array as Uint32Array
+import server.app.util.fbs.NetEncoding.Float32Array as Float32Array
+import server.app.util.fbs.NetEncoding.Float64Array as Float64Array
+import server.app.util.fbs.NetEncoding.JSONEncodedArray as JSONEncodedArray
 
 
 # Placeholder until recent enhancements to flatbuffers Python
@@ -205,3 +211,66 @@ def encode_matrix_fbs(matrix, row_idx=None, col_idx=None):
 
     builder.Finish(matrix)
     return builder.Output()
+
+
+def deserialize_typed_array(tarr):
+    type_map = {
+        TypedArray.TypedArray.NONE: None,
+        TypedArray.TypedArray.Uint32Array: Uint32Array.Uint32Array,
+        TypedArray.TypedArray.Int32Array: Int32Array.Int32Array,
+        TypedArray.TypedArray.Float32Array: Float32Array.Float32Array,
+        TypedArray.TypedArray.Float64Array: Float64Array.Float64Array,
+        TypedArray.TypedArray.JSONEncodedArray: JSONEncodedArray.JSONEncodedArray
+    }
+    (u_type, u) = tarr
+    TarType = type_map.get(u_type, None)
+    if TarType is None:
+        raise TypeError(f"FBS contains unknown data type: {u_type}")
+
+    arr = TarType()
+    arr.Init(u.Bytes, u.Pos)
+    narr = arr.DataAsNumpy()
+    if u_type == TypedArray.TypedArray.JSONEncodedArray:
+        narr = json.loads(narr.tostring().decode('utf-8'))
+    return narr
+
+
+def decode_matrix_fbs(fbs):
+    """
+    Given an FBS-encoded Matrix, return a Pandas DataFrame the contains the data
+    and indices.
+    """
+    matrix = Matrix.Matrix.GetRootAsMatrix(fbs, 0)
+    n_rows = matrix.NRows()
+    n_cols = matrix.NCols()
+
+    if matrix.RowIndexType() is not TypedArray.TypedArray.NONE:
+        raise ValueError("row indexing not supported for FBS Matrix")
+
+    columns_length = matrix.ColumnsLength()
+
+    columns_index = deserialize_typed_array((matrix.ColIndexType(), matrix.ColIndex()))
+
+    # sanity checks
+    if len(columns_index) != n_cols or columns_length != n_cols:
+        raise ValueError("FBS column count does not match number of columns in underlying matrix")
+
+    columns_data = {}
+    columns_type = {}
+    for col_idx in range(0, columns_length):
+        col = matrix.Columns(col_idx)
+        tarr = (col.UType(), col.U())
+        data = deserialize_typed_array(tarr)
+        columns_data[columns_index[col_idx]] = data
+        if len(data) != n_rows:
+            raise ValueError("FBS column length does not match number of rows")
+        if col.UType() is TypedArray.TypedArray.JSONEncodedArray:
+            columns_type[columns_index[col_idx]] = "category"
+
+    df = pd.DataFrame.from_dict(data=columns_data).astype(columns_type, copy=False)
+
+    # more sanity checks
+    if not df.columns.is_unique or len(df.columns) != n_cols:
+        raise KeyError("FBS column indices are not unique")
+
+    return df
