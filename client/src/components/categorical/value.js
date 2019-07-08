@@ -35,10 +35,12 @@ class CategoryValue extends React.Component {
     const { categoricalSelection: newCategoricalSelection } = nextProps;
 
     const valueSelectionChange =
-      newCategoricalSelection[metadataField].categoryValueSelected[
+      categoricalSelection[metadataField].categoryValueSelected[
         categoryIndex
       ] !==
-      categoricalSelection[metadataField].categoryValueSelected[categoryIndex];
+      newCategoricalSelection[metadataField].categoryValueSelected[
+        categoryIndex
+      ];
 
     const worldChange = props.world !== nextProps.world;
     const colorAccessorChange = props.colorAccessor !== nextProps.colorAccessor;
