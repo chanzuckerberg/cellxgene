@@ -14,11 +14,8 @@ from PySide2.QtWidgets import *
 
 import server.gui.cellxgene_rc
 from server.gui.browser import CefWidget, CefApplication
-from server.gui.options_parser import parse_opt_string
-from server.cli.launch import parse_engine_args
 from server.gui.workers import Worker, SiteReadyWorker
 from server.gui.utils import WINDOWS, LINUX, MAC, FileLoadSignals, Emitter, WorkerSignals, FileChanged
-from server.utils.errors import OptionsError
 from server.utils.utils import find_available_port
 
 if WINDOWS or LINUX:
@@ -178,17 +175,14 @@ class LoadWidget(QFrame):
         self.file_area = FileArea()
         self.file_name.signals.changed.connect(self.updatePath)
 
-        self.launch_widget = QPushButton("Launch cellxgene")
-        self.launch_widget.setEnabled(False)
-        self.launch_widget.clicked.connect(self.onLoad)
+        self.launch_widget = QLabel("Select a file to launch cellxgene")
+        # self.launch_widget.setEnabled(False)
+        # self.launch_widget.clicked.connect(self.onLoad)
 
         self.progress = QProgressBar()
         self.progress.setTextVisible(False)
 
-        self.advanced_options = CLIOptionsArea(self)
-
         file_layout.addWidget(self.file_area)
-        file_layout.addWidget(self.advanced_options)
         self.loading_layout = QStackedLayout()
         self.loading_layout.addWidget(self.launch_widget)
         self.loading_layout.addWidget(self.progress)
@@ -225,14 +219,13 @@ class LoadWidget(QFrame):
             self.file_area.label.setText("File: " + file_name)
         else:
             self.file_area.label.setText("")
-        self.launch_widget.setEnabled(bool(file_name))
+        # self.launch_widget.setEnabled(bool(file_name))
 
     def reset(self):
         self.loading_layout.setCurrentIndex(0)
         self.timer.stop()
         self.error_label.setText("")
         self.file_name.updateValue(None)
-        self.advanced_options.reset()
 
     def updateProgress(self):
         curr_val = self.progress.value()
@@ -240,23 +233,15 @@ class LoadWidget(QFrame):
         self.progress.setValue(next_val)
 
     def resetProgress(self):
-        print("here i am")
         self.progress.setValue(0)
         self.loading_layout.setCurrentIndex(0)
         self.timer.stop()
 
     def createScanpyEngine(self, file_name):
-        try:
-            self.advanced_options.parse()
-        except OptionsError as e:
-            self.signals.error.emit(f"Options Error: {e}")
-            return
-        title = self.advanced_options.title
-        if not title:
-            title = splitext(basename(file_name))[0]
+        title = splitext(basename(file_name))[0]
         self.window().setupServer()
         worker = Worker(self.window().parent_conn, self.window().child_conn, file_name, host="127.0.0.1",
-                        port=GUI_PORT, title=title, engine_options=self.advanced_options.engine_options)
+                        port=GUI_PORT, title=title, engine_options={})
         self.window().load_emitter.signals.ready.connect(self.onDataReady)
         self.window().load_emitter.signals.engine_error.connect(self.onServerError)
         self.window().load_emitter.signals.server_error.connect(self.onServerError)
@@ -304,32 +289,6 @@ class LoadWidget(QFrame):
 
     onServerError = partialmethod(onError, server_error=True)
 
-class CLIOptionsArea(QFrame):
-    def __init__(self, parent):
-        super(CLIOptionsArea, self).__init__(parent)
-        self.engine_options = {}
-        self.setFixedWidth(500)
-        self.title = None
-        self.form_layout = QFormLayout()
-        self.form_layout.setContentsMargins(0,0,0,0)
-        self.cli_label = QLabel("CLI Options:")
-        self.cli_label.setToolTip("Additional options can be passed as cli parameters. See cellxgene --help for more info")
-        self.cli_widget = QLineEdit()
-        self.form_layout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
-        self.form_layout.addRow(self.cli_label, self.cli_widget)
-        self.setLayout(self.form_layout)
-
-    def reset(self):
-        self.cli_widget.setText("")
-        self.engine_options = {}
-        self.title = None
-
-    def parse(self):
-        opts = parse_opt_string(self.cli_widget.text())
-        self.title = opts.pop("title", None)
-        self.engine_options = parse_engine_args(**opts)
-
-
 class FilePath(QObject):
     def __init__(self):
         super(FilePath, self).__init__()
@@ -365,6 +324,7 @@ class FileArea(QFrame):
                                                    "Open H5AD File", "", "H5AD Files (*.h5ad)", options=options)
         if file_name:
             self.parent().file_name.updateValue(file_name)
+            self.parent().onLoad()
 
     def dragEnterEvent(self, e):
         if e.mimeData().hasUrls:
@@ -391,6 +351,7 @@ class FileArea(QFrame):
             for url in e.mimeData().urls():
                 file_name = str(url.toLocalFile())
             self.parent().file_name.updateValue(file_name)
+            self.parent().onLoad()
         else:
             e.ignore()
 
