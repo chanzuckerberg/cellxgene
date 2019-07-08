@@ -126,8 +126,7 @@ export function histogramContinuous(column, bins = 40, domain = [0, 1], by) {
 /*
 Memoization hash for histogramContinuous
 */
-export function hashContinuous(column, bins, domain, by) {
-  bins = bins || "";
+export function hashContinuous(column, bins = "", domain, by) {
   domain = domain || [0, 0];
   const [min, max] = domain;
   if (by) {
