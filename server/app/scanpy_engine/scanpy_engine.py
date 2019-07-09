@@ -436,6 +436,9 @@ class ScanpyEngine(CXGDriver):
         if not fname or self.labels is None:
             raise DisabledFeatureError("Writable annotations are not enabled")
 
+        if axis != Axis.OBS:
+            raise ValueError("Only OBS dimension access is supported")
+
         new_label_df = decode_matrix_fbs(fbs)
 
         # if any of the new column labels overlap with our existing labels, raise error
