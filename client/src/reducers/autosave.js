@@ -20,7 +20,6 @@ const Autosave = (
 		}
 
 		case "writable obs annotations - save started": {
-			console.log(action);
 			return {
 				...state,
 				saveInProgress: true
@@ -28,7 +27,6 @@ const Autosave = (
 		}
 
 		case "writable obs annotations - save error": {
-			console.log(action);
 			const { message } = action;
 			return {
 				...state,
@@ -38,7 +36,6 @@ const Autosave = (
 		}
 
 		case "writable obs annotations - save complete": {
-			console.log(action);
 			const lastSavedObsAnnotations = action.obsAnnotations;
 			return {
 				...state,
