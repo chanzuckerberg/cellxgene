@@ -169,13 +169,11 @@ class Occupancy extends React.Component {
           }}
         />
         <div key="text" style={{ fontFamily: "Roboto", fontSize: "14px" }}>
-          <p>
-            The x axis scale for all mini histograms are the same as the active
-            color scale: <strong>{colorAccessor}</strong>
-          </p>
-          <p>
-            The y axis scale for each mini histogram is normalized to its
-            largest value
+          <p style={{ margin: "0" }}>
+            These histograms show the distribution of{" "}
+            <strong>{colorAccessor}</strong> within each category. The x axis is
+            the same for each histogram, while the y axis is scaled to the
+            highest bin within each histogram.
           </p>
         </div>
       </Popover>
