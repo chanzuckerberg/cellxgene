@@ -2,7 +2,6 @@
 import { connect } from "react-redux";
 import React from "react";
 import Occupancy from "./occupancy";
-import { countCategoryValues2D } from "../../util/stateManager/worldUtil";
 import * as globals from "../../globals";
 
 @connect(state => ({
@@ -20,6 +19,33 @@ class CategoryValue extends React.Component {
       metadataField,
       categoryIndex
     });
+  };
+
+  shouldComponentUpdate = nextProps => {
+    /* 
+    Checks to see if at least one of the following changed:
+    * world state
+    * the color accessor (what is currently being colored by)
+    * if this catagorical value's selection status has changed
+    
+    If and only if true, update the component
+    */
+    const { props } = this;
+    const { metadataField, categoryIndex, categoricalSelection } = props;
+    const { categoricalSelection: newCategoricalSelection } = nextProps;
+
+    const valueSelectionChange =
+      categoricalSelection[metadataField].categoryValueSelected[
+        categoryIndex
+      ] !==
+      newCategoricalSelection[metadataField].categoryValueSelected[
+        categoryIndex
+      ];
+
+    const worldChange = props.world !== nextProps.world;
+    const colorAccessorChange = props.colorAccessor !== nextProps.colorAccessor;
+
+    return valueSelectionChange || worldChange || colorAccessorChange;
   };
 
   toggleOn = () => {
@@ -57,8 +83,7 @@ class CategoryValue extends React.Component {
       colorAccessor,
       colorScale,
       i,
-      schema,
-      world
+      schema
     } = this.props;
 
     if (!categoricalSelection) return null;
@@ -74,18 +99,9 @@ class CategoryValue extends React.Component {
     /* this is the color scale, so add swatches below */
     const isColorBy = metadataField === colorAccessor;
     let categories = null;
-    let occupancy = null;
 
     if (isColorBy && schema) {
       categories = schema.annotations.obsByName[colorAccessor]?.categories;
-    }
-
-    if (colorAccessor && !isColorBy && categoricalSelection[colorAccessor]) {
-      occupancy = countCategoryValues2D(
-        metadataField,
-        colorAccessor,
-        world.obsAnnotations
-      );
     }
 
     return (
@@ -122,20 +138,14 @@ class CategoryValue extends React.Component {
             <span
               data-testid={`categorical-value-${metadataField}-${displayString}`}
               data-testclass="categorical-value"
+              style={{ wordBreak: "break-all" }}
             >
               {displayString}
             </span>
           </label>
           <span style={{ flexShrink: 0 }}>
-            {colorAccessor &&
-            !isColorBy &&
-            categoricalSelection[colorAccessor] ? (
-              <Occupancy
-                occupancy={occupancy.get(
-                  category.categoryValues[categoryIndex]
-                )}
-                {...this.props}
-              />
+            {colorAccessor && !isColorBy ? (
+              <Occupancy category={category} {...this.props} />
             ) : null}
           </span>
         </div>
