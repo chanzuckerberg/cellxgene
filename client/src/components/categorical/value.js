@@ -97,8 +97,8 @@ class CategoryValue extends React.Component {
           justifyContent: "space-between"
         }}
         data-testclass="categorical-row"
-        onMouseEnter={null /* this.handleMouseEnter */}
-        onMouseLeave={null /* this.handleMouseLeave */}
+        onMouseEnter={this.handleMouseEnter}
+        onMouseLeave={this.handleMouseLeave}
       >
         <div
           style={{
