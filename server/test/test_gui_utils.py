@@ -4,7 +4,7 @@ from server.gui.options_parser import parse_opt_string
 from server.utils.errors import OptionsError
 
 default_opts = {'title': None, 'layout': (), 'obs_names': None, 'var_names': None, 'max_category_items': 1000,
-                'diffexp_lfc_cutoff': 0.01}
+                'diffexp_lfc_cutoff': 0.01, 'label_file': None}
 
 
 class UtilsTest(unittest.TestCase):
@@ -28,5 +28,6 @@ class UtilsTest(unittest.TestCase):
             "--title abcde --obs-names zzzzz --var-names 'xxx yyy' --max-category-items 234907 "
             "--diffexp-lfc-cutoff 0.00003847382")
         expected_opts = {'title': 'abcde', 'layout': (), 'obs_names': 'zzzzz', 'var_names': 'xxx yyy',
-                         'max_category_items': 234907, 'diffexp_lfc_cutoff': 3.847382e-05}
+                         'max_category_items': 234907, 'diffexp_lfc_cutoff': 3.847382e-05,
+                         'label_file': None}
         self.assertEqual(result, expected_opts)

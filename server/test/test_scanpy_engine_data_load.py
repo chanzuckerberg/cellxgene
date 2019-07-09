@@ -20,6 +20,7 @@ class DataLoadEngineTest(unittest.TestCase):
             "obs_names": "foo",
             "var_names": "bar",
             "diffexp_lfc_cutoff": 0.1,
+            "label_file": None,
         }
         self.data.update(args=args)
         self.assertEqual(args, self.data.config)
