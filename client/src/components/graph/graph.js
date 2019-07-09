@@ -56,8 +56,24 @@ class Graph extends React.Component {
     /*
     compute webgl dot size for each point
     */
+    console.log("call");
+
+    const centroidLabel = null;
     const sizes = new Float32Array(len);
     crossfilter.fillByIsSelected(sizes, 4, 0.2);
+    if (centroidLabel?.metadataField && centroidLabel?.categoryIndex) {
+      console.log("Dilate");
+
+      const valuesArr = crossfilter.data
+        .col(centroidLabel.metadataField)
+        .asArray();
+
+      for (let i = 0; i < len; i += 1) {
+        if (valuesArr[i] === centroidLabel.categoryField) {
+          sizes[i] = 10;
+        }
+      }
+    }
     return sizes;
   });
 
@@ -203,7 +219,7 @@ class Graph extends React.Component {
       }
 
       /* sizes for each point */
-      const newSizes = this.computePointSizes(nObs, crossfilter);
+      const newSizes = this.computePointSizes(nObs, crossfilter, centroidLabel);
       if (renderCache.sizes !== newSizes) {
         /* update our cache & GL if the buffer changes */
         renderCache.size = newSizes;
