@@ -100,7 +100,8 @@ class CategoryValue extends React.Component {
           padding: "4px 7px",
           display: "flex",
           alignItems: "baseline",
-          justifyContent: "space-between"
+          justifyContent: "space-between",
+          marginBottom: "2px"
         }}
       >
         <div
