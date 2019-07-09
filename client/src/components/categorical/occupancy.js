@@ -147,6 +147,7 @@ class Occupancy extends React.Component {
         }}
         lazy
         usePortal
+        disabled={colorByIsCatagoricalData}
         popoverClassName={Classes.POPOVER_CONTENT_SIZING}
       >
         <canvas
