@@ -4,6 +4,7 @@ import React from "react";
 import Occupancy from "./occupancy";
 import { countCategoryValues2D } from "../../util/stateManager/worldUtil";
 import * as globals from "../../globals";
+import styles from "./categorical.css";
 
 @connect(state => ({
   categoricalSelection: state.categoricalSelection,
@@ -91,14 +92,16 @@ class CategoryValue extends React.Component {
     return (
       <div
         key={i}
+        className={styles.value}
+        data-testclass="categorical-row"
+        onMouseEnter={this.handleMouseEnter}
+        onMouseLeave={this.handleMouseExit}
         style={{
+          padding: "4px 7px",
           display: "flex",
           alignItems: "baseline",
           justifyContent: "space-between"
         }}
-        data-testclass="categorical-row"
-        onMouseEnter={this.handleMouseEnter}
-        onMouseLeave={this.handleMouseLeave}
       >
         <div
           style={{
@@ -110,7 +113,7 @@ class CategoryValue extends React.Component {
             justifyContent: "space-between"
           }}
         >
-          <label className="bp3-control bp3-checkbox">
+          <label className="bp3-control bp3-checkbox" style={{ margin: 0 }}>
             <input
               onChange={selected ? this.toggleOff : this.toggleOn}
               data-testclass="categorical-value-select"
