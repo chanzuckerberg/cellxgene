@@ -298,15 +298,13 @@ class Graph extends React.Component {
       stateChanges = { ...stateChanges, centroidSVG: newCentroidSVG };
     };
 
-    // SVG creation is disabled for now
-
+    // Centroid SVG creation is disabled for now but should go into the first and third cases if enabled
     if (
       prevProps.responsive.height !== responsive.height ||
       prevProps.responsive.width !== responsive.width
     ) {
       // If the window size has changed we want to recreate all SVGs
       createToolSVG();
-      // createCentroidSVG();
     } else if (
       (responsive.height && responsive.width && !toolSVG) ||
       selectionTool !== prevProps.selectionTool ||
@@ -319,7 +317,6 @@ class Graph extends React.Component {
       (responsive.height && responsive.width && !centroidSVG)
     ) {
       // First time for centroid or label change
-      // createCentroidSVG();
     }
 
     /*
