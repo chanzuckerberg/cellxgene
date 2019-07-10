@@ -15,6 +15,7 @@ import styles from "./categorical.css";
 }))
 class CategoryValue extends React.Component {
   toggleOff = () => {
+    this.handleMouseExit();
     const { dispatch, metadataField, categoryIndex } = this.props;
     dispatch({
       type: "categorical metadata filter deselect",
@@ -24,6 +25,7 @@ class CategoryValue extends React.Component {
   };
 
   toggleOn = () => {
+    this.handleMouseExit();
     const { dispatch, metadataField, categoryIndex } = this.props;
     dispatch({
       type: "categorical metadata filter select",
