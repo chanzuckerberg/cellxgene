@@ -110,38 +110,42 @@ def serialize_typed_array(builder, source_array, encoding_info):
     return (array_type, array_value)
 
 
+column_encoding_type_map = {
+    # array protocol string:  ( array_type, as_type )
+    np.dtype(np.float64).str: (TypedArray.TypedArray.Float32Array, np.float32),
+    np.dtype(np.float32).str: (TypedArray.TypedArray.Float32Array, np.float32),
+    np.dtype(np.float16).str: (TypedArray.TypedArray.Float32Array, np.float32),
+
+    np.dtype(np.int8).str: (TypedArray.TypedArray.Int32Array, np.int32),
+    np.dtype(np.int16).str: (TypedArray.TypedArray.Int32Array, np.int32),
+    np.dtype(np.int32).str: (TypedArray.TypedArray.Int32Array, np.int32),
+    np.dtype(np.int64).str: (TypedArray.TypedArray.Int32Array, np.int32),
+
+    np.dtype(np.uint8).str: (TypedArray.TypedArray.Uint32Array, np.uint32),
+    np.dtype(np.uint16).str: (TypedArray.TypedArray.Uint32Array, np.uint32),
+    np.dtype(np.uint32).str: (TypedArray.TypedArray.Uint32Array, np.uint32),
+    np.dtype(np.uint64).str: (TypedArray.TypedArray.Uint32Array, np.uint32)
+}
+column_encoding_default = (TypedArray.TypedArray.JSONEncodedArray, 'json')
+
+
 def column_encoding(arr):
-    type_map = {
-        # dtype:  ( array_type, as_type )
-        np.float64: (TypedArray.TypedArray.Float32Array, np.float32),
-        np.float32: (TypedArray.TypedArray.Float32Array, np.float32),
-        np.float16: (TypedArray.TypedArray.Float32Array, np.float32),
+    return column_encoding_type_map.get(arr.dtype.str, column_encoding_default)
 
-        np.int8: (TypedArray.TypedArray.Int32Array, np.int32),
-        np.int16: (TypedArray.TypedArray.Int32Array, np.int32),
-        np.int32: (TypedArray.TypedArray.Int32Array, np.int32),
-        np.int64: (TypedArray.TypedArray.Int32Array, np.int32),
 
-        np.uint8: (TypedArray.TypedArray.Uint32Array, np.uint32),
-        np.uint16: (TypedArray.TypedArray.Uint32Array, np.uint32),
-        np.uint32: (TypedArray.TypedArray.Uint32Array, np.uint32),
-        np.uint64: (TypedArray.TypedArray.Uint32Array, np.uint32)
-    }
-    type_map_default = (TypedArray.TypedArray.JSONEncodedArray, 'json')
-    return type_map.get(arr.dtype.type, type_map_default)
+index_encoding_type_map = {
+    # array protocol string:  ( array_type, as_type )
+    np.dtype(np.int32).str: (TypedArray.TypedArray.Int32Array, np.int32),
+    np.dtype(np.int64).str: (TypedArray.TypedArray.Int32Array, np.int32),
+
+    np.dtype(np.uint32).str: (TypedArray.TypedArray.Uint32Array, np.uint32),
+    np.dtype(np.uint64).str: (TypedArray.TypedArray.Uint32Array, np.uint32)
+}
+index_encoding_default = (TypedArray.TypedArray.JSONEncodedArray, 'json')
 
 
 def index_encoding(arr):
-    type_map = {
-        # dtype:  ( array_type, as_type )
-        np.int32: (TypedArray.TypedArray.Int32Array, np.int32),
-        np.int64: (TypedArray.TypedArray.Int32Array, np.int32),
-
-        np.uint32: (TypedArray.TypedArray.Uint32Array, np.uint32),
-        np.uint64: (TypedArray.TypedArray.Uint32Array, np.uint32)
-    }
-    type_map_default = (TypedArray.TypedArray.JSONEncodedArray, 'json')
-    return type_map.get(arr.dtype.type, type_map_default)
+    return index_encoding_type_map.get(arr.dtype.str, index_encoding_default)
 
 
 def guess_at_mem_needed(matrix):
