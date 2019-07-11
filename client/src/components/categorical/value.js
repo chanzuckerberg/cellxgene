@@ -99,7 +99,8 @@ class CategoryValue extends React.Component {
           display: "flex",
           alignItems: "baseline",
           justifyContent: "space-between",
-          marginBottom: "2px"
+          marginBottom: "2px",
+          borderRadius: "2px"
         }}
         onMouseEnter={this.handleMouseEnter}
         onMouseLeave={this.handleMouseExit}
