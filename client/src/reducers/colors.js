@@ -1,5 +1,17 @@
 import { createColors } from "../util/stateManager";
 
+const resetColors = (prevSharedState, state) => {
+  const { world } = prevSharedState;
+  const { rgb, scale } = createColors(world);
+  return {
+    ...state,
+    colorMode: null,
+    colorAccessor: null,
+    rgb,
+    scale
+  };
+};
+
 const ColorsReducer = (
   state = {
     colorMode: null,
@@ -40,15 +52,7 @@ const ColorsReducer = (
     }
 
     case "reset colorscale": {
-      const { world } = prevSharedState;
-      const { rgb, scale } = createColors(world);
-      return {
-        ...state,
-        colorMode: null,
-        colorAccessor: null,
-        rgb,
-        scale
-      };
+      return resetColors(prevSharedState, state);
     }
 
     case "color by categorical metadata":
@@ -89,6 +93,13 @@ const ColorsReducer = (
         rgb,
         scale
       };
+    }
+
+    case "clear differential expression": {
+      const { controls } = prevSharedState;
+
+      if (!controls.diffexpGenes.includes(state.colorAccessor)) return state;
+      return resetColors(prevSharedState, state);
     }
 
     default: {
