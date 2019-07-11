@@ -138,8 +138,9 @@ class Occupancy extends React.Component {
 
     return (
       <Popover
-        interactionKind={PopoverInteractionKind.HOVER}
-        hoverOpenDelay={1000}
+        interactionKind={PopoverInteractionKind.HOVER_TARGET_ONLY}
+        hoverOpenDelay={1500}
+        hoverCloseDelay={200}
         position={Position.LEFT}
         modifiers={{
           preventOverflow: { enabled: false },
@@ -172,6 +173,7 @@ class Occupancy extends React.Component {
           <p style={{ margin: "0" }}>
             These histograms show the distribution of{" "}
             <strong>{colorAccessor}</strong> within each category.
+            <br />
             <br />
             The x axis is the same for each histogram, while the y axis is
             scaled to the highest bin within each histogram.
