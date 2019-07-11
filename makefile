@@ -146,7 +146,7 @@ gui-spec-osx : clean-lite gui-env
 
 gui-spec-windows : clean-lite dev-env
 	pip install -e .[gui]
-	pyi-makespec -D -w --additional-hooks-dir server/gui/ -n cellxgene --add-data server/app/web/templates/:server/app/web/templates/ --add-data server/app/web/static/:server/app/web/static/ --icon 'server/gui/images/icon.ico' server/gui/main.py
+	pyi-makespec -D -w --additional-hooks-dir server/gui/ -n cellxgene --add-data server/app/web/templates;server/app/web/templates --add-data server/app/web/static;server/app/web/static --icon server/gui/images/icon.ico server/gui/main.py
 	mv cellxgene.spec cellxgene-windows.spec
 
 gui-build-osx : clean-lite

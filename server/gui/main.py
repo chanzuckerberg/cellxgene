@@ -1,6 +1,6 @@
 # flake8: noqa F403, F405
 from functools import partialmethod
-from multiprocessing import Pipe, Process
+from multiprocessing import Pipe, Process, freeze_support
 from os import environ
 from os.path import splitext, basename, dirname, join
 import sys
@@ -357,6 +357,7 @@ class FileArea(QFrame):
 
 
 def main():
+    freeze_support()
     # This generates an error.log file on error
     sys.excepthook = cef.ExceptHook  # To shutdown all CEF processes on error
     settings = {}
