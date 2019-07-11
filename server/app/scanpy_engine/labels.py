@@ -26,6 +26,13 @@ def rotate_fname(fname):
         ...
         fname-(N-1) -> fname-N
     """
+
+    def rotate(src, dst):
+        if exists(src):
+            if exists(dst):
+                remove(dst)
+            rename(src, dst)
+
     rotation_size = 9  # rotation size
     name, ext = splitext(fname)
 
@@ -33,12 +40,7 @@ def rotate_fname(fname):
     for i in range(rotation_size - 1, 0, -1):
         src = f"{name}-{i}{ext}"
         tgt = f"{name}-{i+1}{ext}"
-        if exists(src):
-            if exists(tgt):
-                remove(tgt)
-            rename(src, tgt)
+        rotate(src, tgt)
 
     tgt = f"{name}-1{ext}"
-    if exists(tgt):
-        remove(tgt)
-    rename(fname, tgt)
+    rotate(fname, tgt)
