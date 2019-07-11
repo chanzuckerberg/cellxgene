@@ -347,10 +347,10 @@ class Dataframe {
 
   withColsFrom(dataframe) {
     /*
-    return a new dataframe containing all columsn from both `this` and the
+    return a new dataframe containing all columns from both `this` and the
     provided dataframe.
 
-    The row index from `this` will be used.  both dataframes must have identical
+    The row index from `this` will be used.  Both dataframes must have identical
     dimensionality, and no overlapping columns labels.
      */
     const dims = [this.dims[0], this.dims[1] + dataframe.dims[1]];

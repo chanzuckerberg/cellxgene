@@ -195,6 +195,11 @@ class KeyIndex {
       index.set(v, i);
     });
 
+    if (index.size !== rindex.length) {
+      /* if true, there was a duplicate in the keys */
+      throw new Error("duplicate label provided to KeyIndex");
+    }
+
     this.index = index;
     this.rindex = rindex;
     this.__compile();
