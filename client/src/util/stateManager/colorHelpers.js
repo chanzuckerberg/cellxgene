@@ -126,3 +126,17 @@ export const resetColors = world => {
     scale
   };
 };
+
+export const checkIfColorByDiffexpAndResetColors = (
+  prevControls,
+  state,
+  prevWorld
+) => {
+  if (prevControls.diffexpGenes.includes(state.colorAccessor)) {
+    return {
+      ...state,
+      ...resetColors(prevWorld)
+    };
+  }
+  return null;
+};
