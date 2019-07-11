@@ -1,6 +1,7 @@
 import { flatbuffers } from "flatbuffers";
 import { NetEncoding } from "./matrix_generated";
 import { isTypedArray } from "../typeHelpers";
+import { IdentityInt32Index, DenseInt32Index, KeyIndex } from "../dataframe";
 
 const utf8Decoder = new TextDecoder("utf-8");
 
@@ -44,23 +45,23 @@ Returns: object containing decoded Matrix:
 */
 export function decodeMatrixFBS(arrayBuffer, inplace = false) {
   const bb = new flatbuffers.ByteBuffer(new Uint8Array(arrayBuffer));
-  const df = NetEncoding.Matrix.getRootAsMatrix(bb);
+  const matrix = NetEncoding.Matrix.getRootAsMatrix(bb);
 
-  const nRows = df.nRows();
-  const nCols = df.nCols();
+  const nRows = matrix.nRows();
+  const nCols = matrix.nCols();
 
   /* decode columns */
-  const columnsLength = df.columnsLength();
+  const columnsLength = matrix.columnsLength();
   const columns = Array(columnsLength).fill(null);
   for (let c = 0; c < columnsLength; c += 1) {
-    const col = df.columns(c);
+    const col = matrix.columns(c);
     columns[c] = decodeTypedArray(col.uType(), col.u.bind(col), inplace);
   }
 
   /* decode col_idx */
   const colIdx = decodeTypedArray(
-    df.colIndexType(),
-    df.colIndex.bind(df),
+    matrix.colIndexType(),
+    matrix.colIndex.bind(matrix),
     inplace
   );
 
@@ -86,8 +87,13 @@ export function encodeMatrixFBS(df) {
   /*
   encode the dataframe as an FBS Matrix
   */
+
+  /* row indexing not supported currently */
+  if (df.rowIndex.constructor !== IdentityInt32Index) {
+    throw new Error("FBS does not support row index encoding at this time");
+  }
+
   const columns = df.columns().map(col => col.asArray());
-  const colIndex = df.colIndex.keys();
 
   const utf8Encoder = new TextEncoder("utf-8");
   const builder = new flatbuffers.Builder(1024);
@@ -95,7 +101,7 @@ export function encodeMatrixFBS(df) {
     let uType;
     let tarr;
     if (isTypedArray(carr)) {
-      uType = NetEncoding.TypedArray[carr.constructor];
+      uType = NetEncoding.TypedArray[carr.constructor.name];
       tarr = encodeTypedArray(builder, uType, carr);
     } else {
       uType = NetEncoding.TypedArray.JSONEncodedArray;
@@ -112,23 +118,36 @@ export function encodeMatrixFBS(df) {
   const encColumns = NetEncoding.Matrix.createColumnsVector(builder, cols);
 
   let encColIndex;
-  if (colIndex) {
-    encColIndex = encodeTypedArray(
-      builder,
-      NetEncoding.TypedArray.JSONEncodedArray,
-      utf8Encoder.encode(JSON.stringify(colIndex))
-    );
+  let encColIndexUType;
+  if (df.colIndex) {
+    const colIndexType = df.colIndex.constructor;
+    if (colIndexType === IdentityInt32Index) {
+      encColIndex = undefined;
+    } else if (colIndexType === DenseInt32Index) {
+      encColIndexUType = NetEncoding.TypedArray.Int32Array;
+      encColIndex = encodeTypedArray(
+        builder,
+        encColIndexUType,
+        df.colIndex.keys()
+      );
+    } else if (colIndexType === KeyIndex) {
+      encColIndexUType = NetEncoding.TypedArray.JSONEncodedArray;
+      encColIndex = encodeTypedArray(
+        builder,
+        encColIndexUType,
+        utf8Encoder.encode(JSON.stringify(df.colIndex.keys()))
+      );
+    } else {
+      throw new Error("Index type FBS encoding unsupported");
+    }
   }
 
   NetEncoding.Matrix.startMatrix(builder);
   NetEncoding.Matrix.addNRows(builder, columns[0].length);
   NetEncoding.Matrix.addNCols(builder, columns.length);
   NetEncoding.Matrix.addColumns(builder, encColumns);
-  if (colIndex) {
-    NetEncoding.Matrix.addColIndexType(
-      builder,
-      NetEncoding.TypedArray.JSONEncodedArray
-    );
+  if (encColIndexUType) {
+    NetEncoding.Matrix.addColIndexType(builder, encColIndexUType);
     NetEncoding.Matrix.addColIndex(builder, encColIndex);
   }
   const root = NetEncoding.Matrix.endMatrix(builder);
