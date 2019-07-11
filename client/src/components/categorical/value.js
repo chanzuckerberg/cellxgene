@@ -15,7 +15,6 @@ import styles from "./categorical.css";
 }))
 class CategoryValue extends React.Component {
   toggleOff = () => {
-    this.handleMouseExit();
     const { dispatch, metadataField, categoryIndex } = this.props;
     dispatch({
       type: "categorical metadata filter deselect",
@@ -25,7 +24,6 @@ class CategoryValue extends React.Component {
   };
 
   toggleOn = () => {
-    this.handleMouseExit();
     const { dispatch, metadataField, categoryIndex } = this.props;
     dispatch({
       type: "categorical metadata filter select",
@@ -96,8 +94,6 @@ class CategoryValue extends React.Component {
         key={i}
         className={styles.value}
         data-testclass="categorical-row"
-        onMouseEnter={this.handleMouseEnter}
-        onMouseLeave={this.handleMouseExit}
         style={{
           padding: "4px 7px",
           display: "flex",
@@ -128,6 +124,8 @@ class CategoryValue extends React.Component {
             <span
               data-testid={`categorical-value-${metadataField}-${displayString}`}
               data-testclass="categorical-value"
+              onMouseEnter={this.handleMouseEnter}
+              onMouseLeave={this.handleMouseExit}
             >
               {displayString}
             </span>
