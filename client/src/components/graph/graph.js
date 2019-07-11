@@ -52,14 +52,27 @@ class Graph extends React.Component {
     return colors;
   });
 
-  computePointSizes = memoize((len, crossfilter) => {
-    /*
+  computePointSizes = memoize(
+    (len, crossfilter, metadataField, categoryField) => {
+      /*
     compute webgl dot size for each point
     */
-    const sizes = new Float32Array(len);
-    crossfilter.fillByIsSelected(sizes, 4, 0.2);
-    return sizes;
-  });
+
+      const sizes = new Float32Array(len);
+      crossfilter.fillByIsSelected(sizes, 4, 0.2);
+
+      if (metadataField && categoryField) {
+        const valuesArr = crossfilter.data.col(metadataField).asArray();
+
+        for (let i = 0; i < len; i += 1) {
+          if (valuesArr[i] === categoryField) {
+            sizes[i] = 10;
+          }
+        }
+      }
+      return sizes;
+    }
+  );
 
   constructor(props) {
     super(props);
@@ -203,7 +216,13 @@ class Graph extends React.Component {
       }
 
       /* sizes for each point */
-      const newSizes = this.computePointSizes(nObs, crossfilter);
+      const { metadataField, categoryField } = centroidLabel;
+      const newSizes = this.computePointSizes(
+        nObs,
+        crossfilter,
+        metadataField,
+        categoryField
+      );
       if (renderCache.sizes !== newSizes) {
         /* update our cache & GL if the buffer changes */
         renderCache.size = newSizes;
@@ -279,13 +298,13 @@ class Graph extends React.Component {
       stateChanges = { ...stateChanges, centroidSVG: newCentroidSVG };
     };
 
+    // Centroid SVG creation is disabled for now but should go into the first and third cases if enabled
     if (
       prevProps.responsive.height !== responsive.height ||
       prevProps.responsive.width !== responsive.width
     ) {
       // If the window size has changed we want to recreate all SVGs
       createToolSVG();
-      createCentroidSVG();
     } else if (
       (responsive.height && responsive.width && !toolSVG) ||
       selectionTool !== prevProps.selectionTool ||
@@ -298,7 +317,6 @@ class Graph extends React.Component {
       (responsive.height && responsive.width && !centroidSVG)
     ) {
       // First time for centroid or label change
-      createCentroidSVG();
     }
 
     /*

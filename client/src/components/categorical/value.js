@@ -3,6 +3,7 @@ import { connect } from "react-redux";
 import React from "react";
 import Occupancy from "./occupancy";
 import * as globals from "../../globals";
+import styles from "./categorical.css";
 
 @connect(state => ({
   categoricalSelection: state.categoricalSelection,
@@ -107,14 +108,18 @@ class CategoryValue extends React.Component {
     return (
       <div
         key={i}
+        className={styles.value}
+        data-testclass="categorical-row"
         style={{
+          padding: "4px 7px",
           display: "flex",
           alignItems: "baseline",
-          justifyContent: "space-between"
+          justifyContent: "space-between",
+          marginBottom: "2px",
+          borderRadius: "2px"
         }}
-        data-testclass="categorical-row"
-        onMouseEnter={null /* this.handleMouseEnter */}
-        onMouseLeave={null /* this.handleMouseLeave */}
+        onMouseEnter={this.handleMouseEnter}
+        onMouseLeave={this.handleMouseExit}
       >
         <div
           style={{
@@ -126,7 +131,7 @@ class CategoryValue extends React.Component {
             justifyContent: "space-between"
           }}
         >
-          <label className="bp3-control bp3-checkbox">
+          <label className="bp3-control bp3-checkbox" style={{ margin: 0 }}>
             <input
               onChange={selected ? this.toggleOff : this.toggleOn}
               data-testclass="categorical-value-select"
@@ -134,7 +139,11 @@ class CategoryValue extends React.Component {
               checked={selected}
               type="checkbox"
             />
-            <span className="bp3-control-indicator" />
+            <span
+              className="bp3-control-indicator"
+              onMouseEnter={this.handleMouseExit}
+              onMouseLeave={this.handleMouseEnter}
+            />
             <span
               data-testid={`categorical-value-${metadataField}-${displayString}`}
               data-testclass="categorical-value"
