@@ -1,4 +1,4 @@
-import { ColorHelpers } from "../util/stateManager";
+import { ColorHelpers as CH } from "../util/stateManager";
 
 const ColorsReducer = (
   state = {
@@ -17,7 +17,7 @@ const ColorsReducer = (
       const { world } = nextSharedState;
       const colorMode = null;
       const colorAccessor = null;
-      const { rgb, scale } = ColorHelpers.createColors(world, colorMode);
+      const { rgb, scale } = CH.createColors(world, colorMode);
       return {
         ...state,
         colorAccessor,
@@ -30,7 +30,7 @@ const ColorsReducer = (
     case "set clip quantiles":
     case "set World to current selection": {
       const { world: prevWorld, controls: prevControls } = prevSharedState;
-      const resetColorState = ColorHelpers.checkIfColorByDiffexpAndResetColors(
+      const resetColorState = CH.checkIfColorByDiffexpAndResetColors(
         prevControls,
         state,
         prevWorld
@@ -41,11 +41,7 @@ const ColorsReducer = (
 
       const { colorMode, colorAccessor } = state;
       const { world } = nextSharedState;
-      const { rgb, scale } = ColorHelpers.createColors(
-        world,
-        colorMode,
-        colorAccessor
-      );
+      const { rgb, scale } = CH.createColors(world, colorMode, colorAccessor);
       return {
         ...state,
         rgb,
@@ -56,7 +52,7 @@ const ColorsReducer = (
     case "reset colorscale": {
       return {
         ...state,
-        ...ColorHelpers.resetColors(prevSharedState.world)
+        ...CH.resetColors(prevSharedState.world)
       };
     }
 
@@ -71,11 +67,7 @@ const ColorsReducer = (
       const colorMode = !resetCurrent ? action.type : null;
       const colorAccessor = !resetCurrent ? action.colorAccessor : null;
 
-      const { rgb, scale } = ColorHelpers.createColors(
-        world,
-        colorMode,
-        colorAccessor
-      );
+      const { rgb, scale } = CH.createColors(world, colorMode, colorAccessor);
       return {
         ...state,
         colorMode,
@@ -94,11 +86,7 @@ const ColorsReducer = (
       const colorMode = !resetCurrent ? action.type : null;
       const colorAccessor = !resetCurrent ? action.gene : null;
 
-      const { rgb, scale } = ColorHelpers.createColors(
-        world,
-        colorMode,
-        colorAccessor
-      );
+      const { rgb, scale } = CH.createColors(world, colorMode, colorAccessor);
       return {
         ...state,
         colorMode,
@@ -110,7 +98,7 @@ const ColorsReducer = (
 
     case "clear differential expression": {
       const { world: prevWorld, controls: prevControls } = prevSharedState;
-      const resetColorState = ColorHelpers.checkIfColorByDiffexpAndResetColors(
+      const resetColorState = CH.checkIfColorByDiffexpAndResetColors(
         prevControls,
         state,
         prevWorld
