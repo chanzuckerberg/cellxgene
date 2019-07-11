@@ -101,6 +101,8 @@ class CategoryValue extends React.Component {
           justifyContent: "space-between",
           marginBottom: "2px"
         }}
+        onMouseEnter={this.handleMouseEnter}
+        onMouseLeave={this.handleMouseExit}
       >
         <div
           style={{
@@ -120,12 +122,14 @@ class CategoryValue extends React.Component {
               checked={selected}
               type="checkbox"
             />
-            <span className="bp3-control-indicator" />
+            <span
+              className="bp3-control-indicator"
+              onMouseEnter={this.handleMouseExit}
+              onMouseLeave={this.handleMouseEnter}
+            />
             <span
               data-testid={`categorical-value-${metadataField}-${displayString}`}
               data-testclass="categorical-value"
-              onMouseEnter={this.handleMouseEnter}
-              onMouseLeave={this.handleMouseExit}
             >
               {displayString}
             </span>
