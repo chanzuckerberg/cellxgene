@@ -4,7 +4,6 @@ import React from "react";
 
 import {
   Button,
-  Tooltip,
   InputGroup,
   Menu,
   MenuItem,
@@ -13,7 +12,6 @@ import {
   PopoverInteractionKind
 } from "@blueprintjs/core";
 import Occupancy from "./occupancy";
-import { countCategoryValues2D } from "../../util/stateManager/worldUtil";
 import * as globals from "../../globals";
 
 @connect(state => ({
@@ -112,6 +110,33 @@ class CategoryValue extends React.Component {
     });
   };
 
+  shouldComponentUpdate = nextProps => {
+    /* 
+    Checks to see if at least one of the following changed:
+    * world state
+    * the color accessor (what is currently being colored by)
+    * if this catagorical value's selection status has changed
+    
+    If and only if true, update the component
+    */
+    const { props } = this;
+    const { metadataField, categoryIndex, categoricalSelection } = props;
+    const { categoricalSelection: newCategoricalSelection } = nextProps;
+
+    const valueSelectionChange =
+      categoricalSelection[metadataField].categoryValueSelected[
+        categoryIndex
+      ] !==
+      newCategoricalSelection[metadataField].categoryValueSelected[
+        categoryIndex
+      ];
+
+    const worldChange = props.world !== nextProps.world;
+    const colorAccessorChange = props.colorAccessor !== nextProps.colorAccessor;
+
+    return valueSelectionChange || worldChange || colorAccessorChange;
+  };
+
   toggleOn = () => {
     const { dispatch, metadataField, categoryIndex } = this.props;
     dispatch({
@@ -148,7 +173,6 @@ class CategoryValue extends React.Component {
       colorScale,
       i,
       schema,
-      world,
       isUserAnno,
       annotations
     } = this.props;
@@ -166,19 +190,9 @@ class CategoryValue extends React.Component {
     /* this is the color scale, so add swatches below */
     const isColorBy = metadataField === colorAccessor;
     let categories = null;
-    let occupancy = null;
 
     if (isColorBy && schema) {
       categories = schema.annotations.obsByName[colorAccessor]?.categories;
-    }
-
-    if (colorAccessor && !isColorBy && categoricalSelection[colorAccessor]) {
-      const globalOccupancy = countCategoryValues2D(
-        metadataField,
-        colorAccessor,
-        world.obsAnnotations
-      );
-      occupancy = globalOccupancy.get(category.categoryValues[categoryIndex]);
     }
 
     return (
@@ -190,8 +204,8 @@ class CategoryValue extends React.Component {
           justifyContent: "space-between"
         }}
         data-testclass="categorical-row"
-        onMouseEnter={this.handleMouseEnter}
-        onMouseLeave={this.handleMouseExit}
+        onMouseEnter={null /* this.handleMouseEnter */}
+        onMouseLeave={null /* this.handleMouseLeave */}
       >
         <div
           style={{
@@ -215,6 +229,7 @@ class CategoryValue extends React.Component {
             <span
               data-testid={`categorical-value-${metadataField}-${displayString}`}
               data-testclass="categorical-value"
+              style={{ wordBreak: "break-all" }}
             >
               {annotations.isEditingLabelName &&
               annotations.labelEditable.category === metadataField &&
@@ -272,8 +287,8 @@ class CategoryValue extends React.Component {
           /> */}
         </div>
         <span style={{ flexShrink: 0 }}>
-          {occupancy && !annotations.isEditingLabelName ? (
-            <Occupancy occupancy={occupancy} {...this.props} />
+          {colorAccessor && !isColorBy && !annotations.isEditingLabelName ? (
+            <Occupancy category={category} {...this.props} />
           ) : null}
         </span>
         <span>
