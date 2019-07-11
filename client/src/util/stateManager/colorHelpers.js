@@ -15,7 +15,7 @@ create new colors state object.   Paramters:
     "color by continuous metadata", "color by categorical metadata"
   -
 */
-function createColors(world, colorMode = null, colorAccessor = null) {
+export function createColors(world, colorMode = null, colorAccessor = null) {
   switch (colorMode) {
     case "color by categorical metadata": {
       return createColorsByCategoricalMetadata(world, colorAccessor);
@@ -118,4 +118,26 @@ function createColorsByExpression(world, accessor) {
   return { rgb, scale };
 }
 
-export default createColors;
+export const resetColors = world => {
+  const { rgb, scale } = createColors(world);
+  return {
+    colorMode: null,
+    colorAccessor: null,
+    rgb,
+    scale
+  };
+};
+
+export const checkIfColorByDiffexpAndResetColors = (
+  prevControls,
+  state,
+  prevWorld
+) => {
+  if (prevControls.diffexpGenes.includes(state.colorAccessor)) {
+    return {
+      ...state,
+      ...resetColors(prevWorld)
+    };
+  }
+  return null;
+};

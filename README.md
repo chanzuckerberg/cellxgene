@@ -10,7 +10,7 @@ _cellxgene_ (pronounced "sell-by-jean") is an interactive data explorer for sing
 
 - Want to install and use cellxgene? Visit the [cellxgene docs](https://chanzuckerberg.github.io/cellxgene/).
 - Want to see where we are going? Check out [our roadmap](ROADMAP.md).
-- Want to contribute? See our [contributors guide](#Contributing)
+- Want to contribute? See our [contributors guide](CONTRIBUTING.md).
 
 ## quick start
 
@@ -36,7 +36,13 @@ To learn more about what you can do with _cellxgene_, see the [Getting Started](
 
 ## get in touch
 
-Have questions, suggestions, or comments? You can come hang out with us by joining the [CZI Science Slack](https://join-cellxgene-users.herokuapp.com/) and posting in the `#cellxgene-users` channel. As mentioned above, please submit any feature requests or bugs as [Github issues](https://github.com/chanzuckerberg/cellxgene/issues). We'd love to hear from you!
+Have questions, suggestions, or comments? You can come hang out with us by joining the [CZI Science Slack](https://join-cellxgene-users.herokuapp.com/) and posting in the `#cellxgene-users` channel. Have feature requests or bugs? Please submit these as [Github issues](https://github.com/chanzuckerberg/cellxgene/issues). We'd love to hear from you!
+
+## contributing
+
+We warmly welcome contributions from the community! Please see our [contributing guide](CONTRIBUTING.md) and don't hesitate to open an issue or send a pull request to improve cellxgene.
+
+This project adheres to the Contributor Covenant [code of conduct](https://github.com/chanzuckerberg/.github/blob/master/CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to opensource@chanzuckerberg.com.
 
 ## where we are going
 
@@ -65,47 +71,6 @@ If do you choose setup _cellxgene_ as a hosted service, you should be aware of t
 - We have no testing or official support for deployments where multiple users are accessing the same _cellxgene_ instance.
 - Your _cellxgene_ instance is likely to hang or crash if too many people access it at the same time, especially if they using functions that call the Python backend (such as differential expression, updating the layout, or coloring by gene).
 - _cellxgene_ only supports one instance per dataset
-
-## contributing
-
-We warmly welcome contributions from the community! Please submit any bug reports and feature requests through [Github issues](https://github.com/chanzuckerberg/cellxgene/issues). Please submit any direct contributions by forking the repository, creating a branch, and submitting a Pull Request. It'd be great for PRs to include test cases and documentation updates where relevant, though we know the core test suite is itself still a work in progress. And all code contributions and dependencies must be compatible with the project's open-source license (MIT). If you have any questions about this stuff, just ask!
-
-### developer guide
-
-This project has made a few key design choices
-
-- The front-end is built with [`regl`](https://github.com/regl-project/regl) (a webgl library), [`react`](https://reactjs.org/), [`redux`](https://redux.js.org/), [`d3`](https://github.com/d3/d3), and [`blueprint`](https://blueprintjs.com/docs/#core) to handle rendering large numbers of cells with lots of complex interactivity
-- The app is designed with a client-server model that can support a range of existing analysis packages for backend computational tasks (currently built for [scanpy](https://github.com/theislab/scanpy))
-- The client uses fast cross-filtering to handle selections and comparisons across subsets of data
-
-Depending on your background and interests, you might want to contribute to the frontend, or backend, or both!
-
-If you are interested in working on `cellxgene` development, we recommend cloning the project from Gitub. First you'll need the following installed on your machine
-
-- python 3.6+
-- node and npm (we recommend using [nvm](https://github.com/creationix/nvm) if this is your first time with node)
-
-Then clone the project
-
-```
-git clone https://github.com/chanzuckerberg/cellxgene.git
-```
-
-Build the client web assets by calling `make` from inside the `cellxgene` folder
-
-```
-make
-```
-
-Install all requirements (we recommend doing this inside a virtual environment)
-
-```
-pip install -e .
-```
-
-You can start the app while developing either by calling `cellxgene` or by calling `python -m server`. We recommend using the `--debug` flag to see more output, which you can include when reporting bugs.
-
-If you have any questions about developing or contributing, come hang out with us by joining the [CZI Science Slack](https://join-cellxgene-users.herokuapp.com/) and posting in the `#cellxgene-dev` channel.
 
 ## inspiration
 
