@@ -110,6 +110,14 @@ function encodeTypedArray(builder, uType, uData) {
 }
 
 function encodeMatrix(columns, colIndex = undefined) {
+  /*
+  IMPORTANT: this is not a general purpose encoder.  in particular,
+  it doesn't correctly handle all column index types, nor does it 
+  handle all column typedarray types.
+
+  encodeMatrixFBS in matrix.py is more general.  This is used only
+  as a testing santity check (alt implementation).
+  */
   const utf8Encoder = new TextEncoder("utf-8");
   const builder = new flatbuffers.Builder(1024);
   const cols = _.map(columns, carr => {
