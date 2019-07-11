@@ -12,7 +12,7 @@ import pandas as pd
 
 from server.app.scanpy_engine.scanpy_engine import ScanpyEngine
 from server.app.util.errors import FilterError, DisabledFeatureError
-from server.app.util.fbs.matrix import encode_matrix_fbs, decode_matrix_fbs
+from server.app.util.fbs.matrix import encode_matrix_fbs
 
 
 class EngineTest(unittest.TestCase):
@@ -287,7 +287,7 @@ class WritableAnnotationTest(unittest.TestCase):
         self.assertEqual(set(expected_files), set(found_files))
 
     def test_put_get_roundtrip(self):
-        # verify that OBS PUTs (annotation_put_fbs) are accessible via 
+        # verify that OBS PUTs (annotation_put_fbs) are accessible via
         # GET (annotation_to_fbs_matrix)
 
         n_rows = self.data.data.obs.shape[0]

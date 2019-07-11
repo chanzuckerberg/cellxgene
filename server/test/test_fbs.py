@@ -56,7 +56,7 @@ class FbsTests(unittest.TestCase):
         self.fbs_checks(fbs, (10, 4), expected_types, ['a', 'b', 'c', 'd'])
 
     def test_encode_ndarray(self):
-        arr = np.zeros((3,2), dtype=np.float32)
+        arr = np.zeros((3, 2), dtype=np.float32)
         expected_types = (
             (np.ndarray, np.float32),
             (np.ndarray, np.float32),
@@ -66,7 +66,7 @@ class FbsTests(unittest.TestCase):
         self.fbs_checks(fbs, (3, 2), expected_types, None)
 
     def test_encode_sparse(self):
-        csc = sparse.csc_matrix(np.array([[0,1, 2], [3, 0, 4]]))
+        csc = sparse.csc_matrix(np.array([[0, 1, 2], [3, 0, 4]]))
         expected_types = (
             (np.ndarray, np.int32),
             (np.ndarray, np.int32),
