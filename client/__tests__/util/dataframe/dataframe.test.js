@@ -620,6 +620,32 @@ describe("dataframe factories", () => {
       expect(dfB.iat(0, 1)).toEqual(1);
       expect(dfB.iat(0, 2)).toEqual(1);
     });
+
+    test("columns", () => {
+      const df = Dataframe.Dataframe.create(
+        [3, 3],
+        [new Array(3).fill(0), new Array(3).fill(0), new Array(3).fill(0)]
+      );
+
+      expect(df).toBeDefined();
+      expect(df.columns()).toHaveLength(3);
+      expect(df.columns()[0]).toEqual(df.icol(0));
+      expect(df.columns()[2]).toEqual(df.icol(2));
+    });
+
+    test("renameCol", () => {
+      const dfA = new Dataframe.Dataframe(
+        [2, 2],
+        [[true, false], [1, 0]],
+        null,
+        new Dataframe.KeyIndex(["A", "B"])
+      );
+      const dfB = dfA.renameCol("B", "C");
+      expect(dfA.colIndex.keys()).toEqual(["A", "B"]);
+      expect(dfB.colIndex.keys()).toEqual(["A", "C"]);
+      expect(dfA.dims).toMatchObject(dfB.dims);
+      expect(dfA.columns()).toMatchObject(dfB.columns());
+    });
   });
 });
 
