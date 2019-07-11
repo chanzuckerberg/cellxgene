@@ -452,6 +452,59 @@ describe("dataframe factories", () => {
     });
   });
 
+  describe("withColsFrom", () => {
+    test("error conditions", () => {
+      /*
+      make sure we catch common errors:
+      - duplicate column names
+      - dimensionality difference
+      */
+      const dfA = new Dataframe.Dataframe(
+        [2, 3],
+        [["red", "blue"], [true, false], [1, 0]],
+        null,
+        new Dataframe.KeyIndex(["colors", "bools", "numbers"])
+      );
+
+      /* different dimensionality should throw error */
+      const dfB = new Dataframe.Dataframe(
+        [3, 1],
+        [["red", "blue", "green"]],
+        null,
+        new Dataframe.KeyIndex(["colorsA"])
+      );
+      expect(() => dfA.withColsFrom(dfB)).toThrow(RangeError);
+
+      /* duplicate labels should throw an error */
+      expect(() => dfA.withColsFrom(dfA)).toThrow(Error);
+    });
+
+    test("simple", () => {
+      /* simple test that it works as expected in common case */
+      const dfA = new Dataframe.Dataframe(
+        [2, 1],
+        [["red", "blue"]],
+        null,
+        new Dataframe.KeyIndex(["colors"])
+      );
+      const dfB = new Dataframe.Dataframe(
+        [2, 1],
+        [[true, false]],
+        null,
+        new Dataframe.KeyIndex(["bools"])
+      );
+
+      const dfC = dfA.withColsFrom(dfB);
+      expect(dfC).toBeDefined();
+      expect(dfC.dims).toEqual([2, 2]);
+      expect(dfC.colIndex.keys()).toEqual(["colors", "bools"]);
+      expect(dfC.rowIndex).toEqual(dfA.rowIndex);
+      expect(dfC.rowIndex.keys()).toEqual(dfA.rowIndex.keys());
+      expect(dfC.col("colors").asArray()).toEqual(["red", "blue"]);
+      expect(dfC.col("bools").asArray()).toEqual([true, false]);
+    });
+  });
+
   describe("dropCol", () => {
     test("KeyIndex", () => {
       const df = new Dataframe.Dataframe(
