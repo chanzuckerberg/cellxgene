@@ -171,11 +171,14 @@ class Occupancy extends React.Component {
         />
         <div key="text" style={{ fontFamily: "Roboto", fontSize: "14px" }}>
           <p style={{ margin: "0" }}>
-            These histograms show the distribution of{" "}
-            <strong>{colorAccessor}</strong> within each category.
+            This histograms shows the distribution of{" "}
+            <strong>{colorAccessor}</strong> within{" "}
+            <strong>{category.categoryValues[categoryIndex]}</strong>.
+            <br />
             <br />
             The x axis is the same for each histogram, while the y axis is
-            scaled to the highest bin within each histogram.
+            scaled to the largest bin within this histogram({largestBin})
+            instead of the largest bin within the whole category.
           </p>
         </div>
       </Popover>
