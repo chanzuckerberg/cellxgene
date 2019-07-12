@@ -1,0 +1,4 @@
+cefpython3>=66
+requests
+PyInstaller>=3.4
+PySide2>=5.12.3
