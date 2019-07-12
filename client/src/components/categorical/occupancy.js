@@ -174,7 +174,6 @@ class Occupancy extends React.Component {
             These histograms show the distribution of{" "}
             <strong>{colorAccessor}</strong> within each category.
             <br />
-            <br />
             The x axis is the same for each histogram, while the y axis is
             scaled to the highest bin within each histogram.
           </p>
