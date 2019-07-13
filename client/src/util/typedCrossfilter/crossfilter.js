@@ -57,6 +57,14 @@ export default class ImmutableTypedCrossfilter {
     return this.data;
   }
 
+  setData(data) {
+    return new ImmutableTypedCrossfilter(
+      data,
+      this.dimensions,
+      this.selectionCache
+    );
+  }
+
   dimensionNames() {
     /* return array of all dimensions (by name) */
     return Object.keys(this.dimensions);

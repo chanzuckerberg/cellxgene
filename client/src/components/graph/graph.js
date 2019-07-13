@@ -55,14 +55,18 @@ class Graph extends React.Component {
   computePointSizes = memoize(
     (len, crossfilter, metadataField, categoryField) => {
       /*
-    compute webgl dot size for each point
-    */
+      compute webgl dot size for each point
+      */
 
       const sizes = new Float32Array(len);
       crossfilter.fillByIsSelected(sizes, 4, 0.2);
 
       if (metadataField && categoryField) {
-        const valuesArr = crossfilter.data.col(metadataField).asArray();
+        console.assert(crossfilter.all() === this.props.world.obsAnnotations);
+        const valuesArr = crossfilter
+          .all()
+          .col(metadataField)
+          .asArray();
 
         for (let i = 0; i < len; i += 1) {
           if (valuesArr[i] === categoryField) {

@@ -41,7 +41,7 @@ class CategoryValue extends React.Component {
     const category = categoricalSelection[metadataField];
     const label = category.categoryValues[categoryIndex];
     dispatch({
-      type: "delete label",
+      type: "annotation: delete label",
       metadataField,
       label
     });
@@ -57,7 +57,7 @@ class CategoryValue extends React.Component {
     const category = categoricalSelection[metadataField];
     const label = category.categoryValues[categoryIndex];
     dispatch({
-      type: "label current cell selection",
+      type: "annotation: label current cell selection",
       metadataField,
       categoryIndex,
       label
@@ -75,7 +75,7 @@ class CategoryValue extends React.Component {
     const category = categoricalSelection[metadataField];
     const label = category.categoryValues[categoryIndex];
     dispatch({
-      type: "label edited",
+      type: "annotation: label edited",
       editedLabel: editedLabelText,
       metadataField,
       categoryIndex,
@@ -87,7 +87,7 @@ class CategoryValue extends React.Component {
   activateEditLabelMode = () => {
     const { dispatch, metadataField, categoryIndex } = this.props;
     dispatch({
-      type: "activate edit label mode",
+      type: "annotation: activate edit label mode",
       metadataField,
       categoryIndex
     });
@@ -96,7 +96,7 @@ class CategoryValue extends React.Component {
   cancelEdit = () => {
     const { dispatch, metadataField, categoryIndex } = this.props;
     dispatch({
-      type: "cancel edit label mode",
+      type: "annotation: cancel edit label mode",
       metadataField,
       categoryIndex
     });

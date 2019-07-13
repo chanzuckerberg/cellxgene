@@ -124,7 +124,7 @@ const WorldReducer = (
       };
     }
 
-    case "new user annotation category created": {
+    case "annotation: create category": {
       const name = action.data;
       const { universe } = nextSharedState;
       const { schema } = universe;
@@ -150,7 +150,7 @@ const WorldReducer = (
       return { ...state, schema, obsAnnotations };
     }
 
-    case "category edited": {
+    case "annotation: category edited": {
       /* change the name of an obs annotation */
       const name = action.metadataField;
       const newName = action.editedCategoryText;
@@ -159,19 +159,19 @@ const WorldReducer = (
       return { ...state, schema, obsAnnotations };
     }
 
-    case "delete category": {
+    case "annotation: delete category": {
       const { schema } = nextSharedState.universe;
       const name = action.metadataField;
       const obsAnnotations = state.obsAnnotations.dropCol(name);
       return { ...state, schema, obsAnnotations };
     }
 
-    case "add new label to category": {
+    case "annotation: add new label to category": {
       const { schema } = nextSharedState.universe;
       return { ...state, schema };
     }
 
-    case "label edited": {
+    case "annotation: label edited": {
       const { schema } = nextSharedState.universe;
       const annotationName = action.metadataField;
       const oldLabelName = action.label;
@@ -187,7 +187,7 @@ const WorldReducer = (
       return { ...state, schema, obsAnnotations };
     }
 
-    case "delete label": {
+    case "annotation: delete label": {
       const { schema } = nextSharedState.universe;
       const annotationName = action.metadataField;
       const labelName = action.label;
@@ -203,7 +203,7 @@ const WorldReducer = (
       return { ...state, schema, obsAnnotations };
     }
 
-    case "label current cell selection": {
+    case "annotation: label current cell selection": {
       const { metadataField, label } = action;
       const { crossfilter } = prevSharedState;
       const mask = crossfilter.allSelectedMask();

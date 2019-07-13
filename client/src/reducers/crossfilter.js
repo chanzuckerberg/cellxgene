@@ -16,7 +16,7 @@ import {
 
 const XYDimName = layoutDimensionName("XY");
 
-const CrossfilterReducer = (
+const CrossfilterReducerBase = (
   state = null,
   action,
   nextSharedState,
@@ -142,14 +142,14 @@ const CrossfilterReducer = (
       return crossfilter;
     }
 
-    case "new user annotation category created": {
+    case "annotation: create category": {
       const name = action.data;
       const { world } = nextSharedState;
       const colData = world.obsAnnotations.col(name).asArray();
       return state.addDimension(obsAnnoDimensionName(name), "enum", colData);
     }
 
-    case "category edited": {
+    case "annotation: category edited": {
       const name = action.metadataField;
       const newName = action.editedCategoryText;
       return state.renameDimension(
@@ -158,13 +158,13 @@ const CrossfilterReducer = (
       );
     }
 
-    case "delete category": {
+    case "annotation: delete category": {
       return state.delDimension(obsAnnoDimensionName(action.metadataField));
     }
 
-    case "label current cell selection":
-    case "label edited":
-    case "delete label": {
+    case "annotation: label current cell selection":
+    case "annotation: label edited":
+    case "annotation: delete label": {
       /* we need to reindex the dimension.  For now, just drop it and add another */
       const name = action.metadataField;
       const dimName = obsAnnoDimensionName(name);
@@ -247,6 +247,31 @@ const CrossfilterReducer = (
       return state;
     }
   }
+};
+
+/*
+  IMPORTANT: the system assumes that crossfilter.data() will point at the
+  same value as world.obsAnnotations.  For actions handled in this reducer,
+  make sure that this remains true.
+
+  This wrapper performs only this function.
+*/
+const CrossfilterReducer = (
+  state,
+  action,
+  nextSharedState,
+  prevSharedState
+) => {
+  const nextState = CrossfilterReducerBase(
+    state,
+    action,
+    nextSharedState,
+    prevSharedState
+  );
+  if (!nextState || nextState.all() === nextSharedState.world.obsAnnotations) {
+    return nextState;
+  }
+  return nextState.setData(nextSharedState.world.obsAnnotations);
 };
 
 export default CrossfilterReducer;

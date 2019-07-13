@@ -32,7 +32,7 @@ class Categories extends React.Component {
     const { dispatch } = this.props;
     const { newCategoryText, categoryToDuplicate } = this.state;
     dispatch({
-      type: "new user annotation category created",
+      type: "annotation: create category",
       data: newCategoryText,
       categoryToDuplicate
     });
@@ -60,8 +60,6 @@ class Categories extends React.Component {
     const { createAnnoModeActive, categoryToDuplicate } = this.state;
     const { categoricalSelection, writableCategoriesEnabled } = this.props;
     if (!categoricalSelection) return null;
-
-    console.log("state", this.state);
 
     const allCategoryNames = Object.keys(categoricalSelection);
 

@@ -81,12 +81,12 @@ const saveOnActions = new Set([
   "change graph interaction mode",
 
   // user editable annotations
-  "new user annotation category created",
-  "add new label to category",
-  "delete category",
-  "label edited",
-  "label current cell selection",
-  "delete label"
+  "annotation: create category",
+  "annotation: add new label to category",
+  "annotation: delete category",
+  "annotation: label edited",
+  "annotation: label current cell selection",
+  "annotation: delete label"
 ]);
 
 /**

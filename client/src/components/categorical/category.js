@@ -68,7 +68,7 @@ class Category extends React.Component {
     const { dispatch, metadataField } = this.props;
     const { newLabelText } = this.state;
     dispatch({
-      type: "add new label to category",
+      type: "annotation: add new label to category",
       metadataField,
       newLabelText
     });
@@ -77,7 +77,7 @@ class Category extends React.Component {
   activateEditCategoryMode = () => {
     const { dispatch, metadataField } = this.props;
     dispatch({
-      type: "activate category edit mode",
+      type: "annotation: activate category edit mode",
       data: metadataField
     });
   };
@@ -87,7 +87,7 @@ class Category extends React.Component {
     const { editedCategoryText } = this.state;
 
     dispatch({
-      type: "category edited",
+      type: "annotation: category edited",
       metadataField,
       editedCategoryText,
       data: editedCategoryText
@@ -97,7 +97,7 @@ class Category extends React.Component {
   handleDeleteCategory = () => {
     const { dispatch, metadataField } = this.props;
     dispatch({
-      type: "delete category",
+      type: "annotation: delete category",
       metadataField
     });
   };

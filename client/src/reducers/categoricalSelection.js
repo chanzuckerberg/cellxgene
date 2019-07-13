@@ -97,7 +97,7 @@ const CategoricalSelection = (
       return newCategoricalSelection;
     }
 
-    case "new user annotation category created": {
+    case "annotation: create category": {
       const { world } = nextSharedState;
       const name = action.data;
       return {
@@ -106,7 +106,7 @@ const CategoricalSelection = (
       };
     }
 
-    case "category edited": {
+    case "annotation: category edited": {
       const name = action.metadataField;
       const newName = action.editedCategoryText;
       const { [name]: catSeln, ...newState } = state;
@@ -114,16 +114,16 @@ const CategoricalSelection = (
       return newState;
     }
 
-    case "delete category": {
+    case "annotation: delete category": {
       const name = action.metadataField;
       const { [name]: _, ...newState } = state;
       return newState;
     }
 
-    case "label current cell selection":
-    case "add new label to category":
-    case "label edited":
-    case "delete label": {
+    case "annotation: label current cell selection":
+    case "annotation: add new label to category":
+    case "annotation: label edited":
+    case "annotation: delete label": {
       /* need to rebuild the state for this annotation */
       const { world } = nextSharedState;
       const name = action.metadataField;

@@ -39,7 +39,7 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
       return { ...state, varData };
     }
 
-    case "new user annotation category created": {
+    case "annotation: create category": {
       /* create a new annotation category, with all values set to 'unassigned' */
       const name = action.data;
       const { categoryToDuplicate } = action;
@@ -83,7 +83,7 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
       return { ...state, obsAnnotations, schema };
     }
 
-    case "category edited": {
+    case "annotation: category edited": {
       /* change the name of an obs annotation category */
       const name = action.metadataField;
       const newName = action.editedCategoryText;
@@ -105,7 +105,7 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
       return { ...state, schema, obsAnnotations };
     }
 
-    case "delete category": {
+    case "annotation: delete category": {
       /* delete annotation category from schema and obsAnnotations */
       const name = action.metadataField;
       if (!AH.isUserAnnotation(state, name))
@@ -116,7 +116,7 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
       return { ...state, schema, obsAnnotations };
     }
 
-    case "add new label to category": {
+    case "annotation: add new label to category": {
       const annotationName = action.metadataField;
       const newLabelName = action.newLabelText;
       if (!AH.isUserAnnotation(state, annotationName))
@@ -135,7 +135,7 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
       return { ...state, schema };
     }
 
-    case "label edited": {
+    case "annotation: label edited": {
       const annotationName = action.metadataField;
       const oldLabelName = action.label;
       const newLabelName = action.editedLabel;
@@ -164,7 +164,7 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
       return { ...state, schema, obsAnnotations };
     }
 
-    case "delete label": {
+    case "annotation: delete label": {
       /* delete the label from the annotation, and set all cells with this value to unassigned */
       const annotationName = action.metadataField;
       const labelName = action.label;
@@ -191,7 +191,7 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
       return { ...state, schema, obsAnnotations };
     }
 
-    case "label current cell selection": {
+    case "annotation: label current cell selection": {
       const { metadataField, label } = action;
       const { world, crossfilter } = prevSharedState;
 
