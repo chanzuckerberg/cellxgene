@@ -130,7 +130,12 @@ class Occupancy extends React.Component {
   };
 
   render() {
-    const { colorAccessor, categoricalSelection } = this.props;
+    const {
+      colorAccessor,
+      categoricalSelection,
+      category,
+      categoryIndex
+    } = this.props;
 
     this.canvas?.getContext("2d").clearRect(0, 0, this._WIDTH, this._HEIGHT);
 
@@ -138,8 +143,9 @@ class Occupancy extends React.Component {
 
     return (
       <Popover
-        interactionKind={PopoverInteractionKind.HOVER}
-        hoverOpenDelay={1000}
+        interactionKind={PopoverInteractionKind.HOVER_TARGET_ONLY}
+        hoverOpenDelay={1500}
+        hoverCloseDelay={200}
         position={Position.LEFT}
         modifiers={{
           preventOverflow: { enabled: false },
@@ -170,11 +176,14 @@ class Occupancy extends React.Component {
         />
         <div key="text" style={{ fontFamily: "Roboto", fontSize: "14px" }}>
           <p style={{ margin: "0" }}>
-            These histograms show the distribution of{" "}
-            <strong>{colorAccessor}</strong> within each category.
+            This histograms shows the distribution of{" "}
+            <strong>{colorAccessor}</strong> within{" "}
+            <strong>{category.categoryValues[categoryIndex]}</strong>.
+            <br />
             <br />
             The x axis is the same for each histogram, while the y axis is
-            scaled to the highest bin within each histogram.
+            scaled to the largest bin within this histogram instead of the
+            largest bin within the whole category.
           </p>
         </div>
       </Popover>
