@@ -61,7 +61,8 @@ class Categories extends React.Component {
     const { categoricalSelection, writableCategoriesEnabled } = this.props;
     if (!categoricalSelection) return null;
 
-    const allCategoryNames = Object.keys(categoricalSelection);
+    /* all names, sorted in display order.  Will be rendered in this order */
+    const allCategoryNames = Object.keys(categoricalSelection).sort();
 
     return (
       <div
@@ -69,12 +70,15 @@ class Categories extends React.Component {
           padding: globals.leftSidebarSectionPadding
         }}
       >
-        {_.map(categoricalSelection, (catState, catName) => (
+        {_.map(allCategoryNames, catName => (
           <Category
             key={catName}
             metadataField={catName}
             createAnnoModeActive={createAnnoModeActive}
-            isUserAnno={writableCategoriesEnabled && catState.isUserAnno}
+            isUserAnno={
+              writableCategoriesEnabled &&
+              categoricalSelection[catName].isUserAnno
+            }
           />
         ))}
         {writableCategoriesEnabled ? (
