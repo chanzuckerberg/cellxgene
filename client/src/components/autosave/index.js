@@ -25,7 +25,7 @@ class Autosave extends React.Component {
 		let { timer } = this.state;
 		if (timer) clearInterval(timer);
 		if (writableCategoriesEnabled) {
-			timer = setInterval(this.tick, 5000);
+			timer = setInterval(this.tick, 2500);
 		} else {
 			timer = null;
 		}
