@@ -57,12 +57,10 @@ class Graph extends React.Component {
       /*
       compute webgl dot size for each point
       */
-
       const sizes = new Float32Array(len);
       crossfilter.fillByIsSelected(sizes, 4, 0.2);
 
       if (metadataField && categoryField) {
-        console.assert(crossfilter.all() === this.props.world.obsAnnotations);
         const valuesArr = crossfilter
           .all()
           .col(metadataField)
