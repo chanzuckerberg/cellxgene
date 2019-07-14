@@ -321,46 +321,51 @@ class CategoryValue extends React.Component {
             }}
           />
           {isUserAnno ? (
-            <Popover
-              interactionKind={PopoverInteractionKind.HOVER}
-              boundary="window"
-              position={Position.RIGHT}
-              content={
-                <Menu>
-                  <MenuItem
-                    icon="plus"
-                    data-testclass="handleAddCurrentSelectionToThisLabel"
-                    data-testid={`handleAddCurrentSelectionToThisLabel-${metadataField}`}
-                    onClick={this.handleAddCurrentSelectionToThisLabel}
-                    text="Add current cell selection to this label"
-                  />
-                  <MenuItem
-                    icon="edit"
-                    text="Edit this label's name"
-                    data-testclass="handleEditValue"
-                    data-testid={`handleEditValue-${metadataField}`}
-                    onClick={this.activateEditLabelMode}
-                  />
-                  <MenuItem
-                    icon="delete"
-                    intent="danger"
-                    data-testclass="handleDeleteValue"
-                    data-testid={`handleDeleteValue-${metadataField}`}
-                    onClick={this.handleDeleteValue}
-                    text="Delete this value, and reassign all cells to type 'unknown'"
-                  />
-                </Menu>
-              }
+            <span
+              onMouseEnter={this.handleMouseExit}
+              onMouseLeave={this.handleMouseEnter}
             >
-              <Button
-                style={{ marginLeft: 0, position: "relative", top: -1 }}
-                data-testclass="seeActions"
-                data-testid={`seeActions-${metadataField}`}
-                icon="more"
-                small
-                minimal
-              />
-            </Popover>
+              <Popover
+                interactionKind={PopoverInteractionKind.HOVER}
+                boundary="window"
+                position={Position.RIGHT}
+                content={
+                  <Menu>
+                    <MenuItem
+                      icon="plus"
+                      data-testclass="handleAddCurrentSelectionToThisLabel"
+                      data-testid={`handleAddCurrentSelectionToThisLabel-${metadataField}`}
+                      onClick={this.handleAddCurrentSelectionToThisLabel}
+                      text="Add current cell selection to this label"
+                    />
+                    <MenuItem
+                      icon="edit"
+                      text="Edit this label's name"
+                      data-testclass="handleEditValue"
+                      data-testid={`handleEditValue-${metadataField}`}
+                      onClick={this.activateEditLabelMode}
+                    />
+                    <MenuItem
+                      icon="delete"
+                      intent="danger"
+                      data-testclass="handleDeleteValue"
+                      data-testid={`handleDeleteValue-${metadataField}`}
+                      onClick={this.handleDeleteValue}
+                      text="Delete this value, and reassign all cells to type 'unknown'"
+                    />
+                  </Menu>
+                }
+              >
+                <Button
+                  style={{ marginLeft: 0, position: "relative", top: -1 }}
+                  data-testclass="seeActions"
+                  data-testid={`seeActions-${metadataField}`}
+                  icon="more"
+                  small
+                  minimal
+                />
+              </Popover>
+            </span>
           ) : null}
         </span>
       </div>
