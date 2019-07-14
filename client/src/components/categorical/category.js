@@ -66,7 +66,13 @@ class Category extends React.Component {
 
   handleAddNewLabelToCategory = () => {
     const { dispatch, metadataField } = this.props;
+    /*
+    XXX TODO - temporary code generates random label string.   Remove
+    when the label creation UI is implemented.
+
     const { newLabelText } = this.state;
+    */
+    const newLabelText = `label${Math.random()}`;
     dispatch({
       type: "annotation: add new label to category",
       metadataField,
