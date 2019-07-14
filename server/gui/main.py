@@ -1,6 +1,6 @@
 # flake8: noqa F403, F405
 from functools import partialmethod
-from multiprocessing import Pipe, Process
+from multiprocessing import Pipe, Process, freeze_support
 from os import environ
 from os.path import splitext, basename, dirname, join
 import sys
@@ -172,7 +172,7 @@ class LoadWidget(QFrame):
         # UI section
         # TODO add cancel button to send back to browser (if available)
 
-        self.file_area = FileArea()
+        self.file_area = FileArea(self)
         self.file_name.signals.changed.connect(self.updatePath)
 
         self.launch_widget = QLabel("Select a file to launch cellxgene")
@@ -301,7 +301,7 @@ class FilePath(QObject):
 
 
 class FileArea(QFrame):
-    def __init__(self):
+    def __init__(self, parent):
         super(FileArea, self).__init__()
         self.setFrameShape(QFrame.Box)
         self.setMinimumHeight(100)
@@ -357,6 +357,7 @@ class FileArea(QFrame):
 
 
 def main():
+    freeze_support()
     # This generates an error.log file on error
     sys.excepthook = cef.ExceptHook  # To shutdown all CEF processes on error
     settings = {}

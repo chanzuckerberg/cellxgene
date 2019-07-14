@@ -1,10 +1,11 @@
 from http import HTTPStatus
-import pkg_resources
 import warnings
 from os.path import basename
 
 from flask import Blueprint, current_app, jsonify, make_response, request
 from flask_restful import Api, Resource
+from server import __version__ as cellxgene_version
+from anndata import __version__ as anndata_version
 
 from server.app.util.constants import (
     Axis,
@@ -61,16 +62,15 @@ class ConfigAPI(Resource):
                     },
                 ],
                 "displayNames": {
-                    "engine": f"cellxgene Scanpy engine version {pkg_resources.get_distribution('cellxgene').version}",
+                    "engine": f"cellxgene Scanpy engine version ",
                     "dataset": current_app.config["DATASET_TITLE"],
                 },
                 "parameters": {
                     "max-category-items": current_app.data.config["max_category_items"]
                 },
                 "library_versions": {
-                    "scanpy": pkg_resources.get_distribution("scanpy").version,
-                    "cellxgene": pkg_resources.get_distribution("cellxgene").version,
-                    "anndata": pkg_resources.get_distribution("cellxgene").version
+                    "cellxgene": cellxgene_version,
+                    "anndata": anndata_version
                 }
             }
         }
