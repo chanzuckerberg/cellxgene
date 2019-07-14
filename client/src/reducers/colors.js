@@ -108,8 +108,9 @@ const ColorsReducer = (
       };
     }
 
-    case "label current cell selection":
-    case "delete label": {
+    case "annotation: add new label to category":
+    case "annotation: label current cell selection":
+    case "annotation: delete label": {
       const { world } = nextSharedState;
       const { colorMode, colorAccessor } = state;
       const { metadataField } = action;
