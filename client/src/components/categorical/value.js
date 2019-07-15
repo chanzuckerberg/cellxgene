@@ -222,19 +222,21 @@ class CategoryValue extends React.Component {
             justifyContent: "flex-start"
           }}
         >
-          <label className="bp3-control bp3-checkbox" style={{ margin: 0 }}>
-            <input
-              onChange={selected ? this.toggleOff : this.toggleOn}
-              data-testclass="categorical-value-select"
-              data-testid={`categorical-value-select-${metadataField}-${displayString}`}
-              checked={selected}
-              type="checkbox"
-            />
-            <span
-              className="bp3-control-indicator"
-              onMouseEnter={this.handleMouseExit}
-              onMouseLeave={this.handleMouseEnter}
-            />
+          <div style={{ display: "flex" }}>
+            <label className="bp3-control bp3-checkbox" style={{ margin: 0 }}>
+              <input
+                onChange={selected ? this.toggleOff : this.toggleOn}
+                data-testclass="categorical-value-select"
+                data-testid={`categorical-value-select-${metadataField}-${displayString}`}
+                checked={selected}
+                type="checkbox"
+              />
+              <span
+                className="bp3-control-indicator"
+                onMouseEnter={this.handleMouseExit}
+                onMouseLeave={this.handleMouseEnter}
+              />
+            </label>
             <span
               data-testid={`categorical-value-${metadataField}-${displayString}`}
               data-testclass="categorical-value"
@@ -246,8 +248,7 @@ class CategoryValue extends React.Component {
                 ? null
                 : displayString}
             </span>
-          </label>
-
+          </div>
           {isUserAnno &&
           annotations.isEditingLabelName &&
           annotations.labelEditable.category === metadataField &&

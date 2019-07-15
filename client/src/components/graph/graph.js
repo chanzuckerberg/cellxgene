@@ -52,15 +52,27 @@ class Graph extends React.Component {
     return colors;
   });
 
+  computePointSizesFromCrossfilter = memoize((len, crossfilter) => {
+    const sizes = new Float32Array(len);
+    crossfilter.fillByIsSelected(sizes, 4, 0.2);
+
+    return sizes;
+  });
+
   computePointSizes = memoize(
     (len, crossfilter, metadataField, categoryField) => {
       /*
-      compute webgl dot size for each point
-      */
-      const sizes = new Float32Array(len);
-      crossfilter.fillByIsSelected(sizes, 4, 0.2);
+    compute webgl dot size for each point
+    */
+
+      const selectionSizes = this.computePointSizesFromCrossfilter(
+        len,
+        crossfilter
+      );
+      let sizes;
 
       if (metadataField && categoryField) {
+        sizes = selectionSizes.slice();
         const valuesArr = crossfilter
           .all()
           .col(metadataField)
@@ -71,6 +83,8 @@ class Graph extends React.Component {
             sizes[i] = 10;
           }
         }
+      } else {
+        sizes = selectionSizes;
       }
       return sizes;
     }

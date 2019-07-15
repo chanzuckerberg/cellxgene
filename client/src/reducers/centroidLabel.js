@@ -19,12 +19,12 @@ const CentroidLabel = (state = initialState, action, sharedNextState) => {
         metadataField,
         categoryIndex,
         categoryField,
-        centroidXY: calcCentroid(
+        centroidXY: null /* calcCentroid(  This function call is computationally heavy and also leading to large GC. Before reimplementation, look into optimization and memoization
           world,
           metadataField,
           categoryField,
           layoutChoice.currentDimNames
-        )
+        ) */
       };
 
     case "category value mouse hover end":
