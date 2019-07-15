@@ -71,7 +71,10 @@ class Continuous extends React.Component {
 
               const summary = obsAnnotations.col(key).summarize();
               const nonFiniteExtent =
-                summary.min === undefined || summary.max === undefined;
+                summary.min === undefined ||
+                summary.max === undefined ||
+                Number.isNaN(summary.min) ||
+                Number.isNaN(summary.max);
               if (!summary.categorical && !nonFiniteExtent) {
                 zebra += 1;
                 return (
