@@ -21,7 +21,7 @@ export function callOnceLazy(f) {
   return result;
 }
 
-export function memoize(fn, hashFn) {
+export function memoize(fn, hashFn, maxResultsCached = -1) {
   /* 
   function memoization, with user-provided hash.  hashFn must return a
   key which will be unique as a Map key (ie, obeys "sameValueZero" algorithm
@@ -36,7 +36,19 @@ export function memoize(fn, hashFn) {
     }
     const result = fn(...args);
     cache.set(key, result);
+
+    if (maxResultsCached > -1 && cache.size > maxResultsCached) {
+      /* Least recent insertion deletion */
+      cache.delete(cache.keys().next().value);
+    }
+
     return result;
   };
+
+  wrap.clear = function clear() {
+    /* clear memoization cache */
+    cache.clear();
+  };
+
   return wrap;
 }
