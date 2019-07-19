@@ -39,7 +39,7 @@ If you want to quickly deploy an instance of cellxgene and, if not using a small
 ## Why Shouldn't I Use It?
 
 - The default free dyno offered by Heroku is limited in memory to 512 MBs
-  - Heroku offers tiered paid dynos. More can be found [here](https://www.heroku.com/pricing
+  - Heroku offers tiered paid dynos. More can be found [here](https://www.heroku.com/pricing)
   - The amount of memory needed for the dyno is equal to the the size of the h5ad file
   - This can get _very_ expensive for larger datasets
 - Inorder for the dataset to be downloaded during app setup, your dataset must be hosted on a publicly accessable url
