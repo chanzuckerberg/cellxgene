@@ -8,7 +8,7 @@ Clicking on the following button will forward you to heroku to begin the deploym
   <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy">
 </a>
 
-If not already logged in, there you will be prompted to login or sign up for an account.
+If not already logged in to heroku, there you will be prompted to login or sign up for an account.
 
 Once logged in you will be sent to the setup page. Here you can set some of the basic settings for the app:
 
