@@ -117,7 +117,9 @@ class Categories extends React.Component {
                 >
                   {/* children become the popover target; render value here */}
                   <Button
-                    text={"None (all cells 'unassigned')"}
+                    text={
+                      categoryToDuplicate || "None (all cells 'unassigned')"
+                    }
                     rightIcon="double-caret-vertical"
                   />
                 </Select>
