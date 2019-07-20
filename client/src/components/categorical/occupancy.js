@@ -45,7 +45,10 @@ class Occupancy extends React.Component {
       groupBy
     ); /* Because the signature changes we really need different names for histogram to differentiate signatures  */
 
-    const bins = histogramMap.get(category.categoryValues[categoryIndex]);
+    const categoryValue = category.categoryValues[categoryIndex];
+    const bins = histogramMap.has(categoryValue)
+      ? histogramMap.get(categoryValue)
+      : new Array(50).fill(0);
 
     const xScale = d3
       .scaleLinear()
