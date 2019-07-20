@@ -15,7 +15,20 @@ application:
 		the data
 	- the schema flag `writable` correctly indicates whether
 	  the annotation is editable/mutable.
+
+In addition, the current state management only allows for
+categorical annotations to be writable.
 */
+
+export function isCategoricalAnnotation(schema, name) {
+	/* we treat any string, categorical or boolean as a categorical */
+	const { type } = schema.annotations.obsByName[name];
+	return type === "string" || type === "boolean" || type === "categorical";
+}
+
+export function isContinuousAnnotation(schema, name) {
+	return !isCategoricalAnnotation(schema, name);
+}
 
 function _isUserAnnotation(schema, name) {
 	return schema.annotations.obsByName[name]?.writable;

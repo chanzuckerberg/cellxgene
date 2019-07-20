@@ -416,6 +416,26 @@ class Dataframe {
     );
   }
 
+  replaceColData(label, newColData) {
+    /*
+    Accelerator for dropping a column then adding it again with same
+    label and different values.
+    */
+    const coffset = this.colIndex.getOffset(label);
+    const columns = [...this.__columns];
+    columns[coffset] = newColData;
+    const columnsAccessor = [...this.__columnsAccessor];
+    columnsAccessor[coffset] = null;
+
+    return new this.constructor(
+      this.dims,
+      columns,
+      this.rowIndex,
+      this.colIndex,
+      columnsAccessor
+    );
+  }
+
   static empty(rowIndex = null, colIndex = null) {
     return new Dataframe([0, 0], [], rowIndex, colIndex);
   }

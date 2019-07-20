@@ -7,6 +7,16 @@ import {
 import clip from "../util/clip";
 import quantile from "../util/quantile";
 
+/*
+important note: much of this code assumes that wriable (user) annotations
+will NOT contain scalar data (ie, will only contain categorical labelled
+data), and therefore will never need to be clipped.  Put another way, it
+assumes that for these annotations, the clipped & unclipped data is equal.
+
+If we ever start allowing user editable scalar data, this assumption will
+need to be revisited.
+*/
+
 const WorldReducer = (
   state = null,
   action,
@@ -147,7 +157,15 @@ const WorldReducer = (
         newAnnotation,
         state.obsAnnotations.rowIndex
       );
-      return { ...state, schema, obsAnnotations };
+      const unclipped = {
+        ...state.unclipped,
+        obsAnnotations: state.unclipped.obsAnnotations.withCol(
+          name,
+          newAnnotation,
+          state.unclipped.obsAnnotations.rowIndex
+        )
+      };
+      return { ...state, schema, obsAnnotations, unclipped };
     }
 
     case "annotation: category edited": {
@@ -156,64 +174,93 @@ const WorldReducer = (
       const newName = action.editedCategoryText;
       const { schema } = nextSharedState.universe;
       const obsAnnotations = state.obsAnnotations.renameCol(name, newName);
-      return { ...state, schema, obsAnnotations };
+      const unclipped = {
+        ...state.unclipped,
+        obsAnnotations: state.unclipped.ations.renameCol(name, newName)
+      };
+      return { ...state, schema, obsAnnotations, unclipped };
     }
 
     case "annotation: delete category": {
+      /* remove a category from obs annotation */
       const { schema } = nextSharedState.universe;
       const name = action.metadataField;
       const obsAnnotations = state.obsAnnotations.dropCol(name);
-      return { ...state, schema, obsAnnotations };
+      const unclipped = {
+        ...state.unclipped,
+        obsAnnotations: state.unclipped.obsAnnotations.dropCol(name)
+      };
+      return { ...state, schema, obsAnnotations, unclipped };
     }
 
     case "annotation: add new label to category": {
+      /* add a new label to the schema - schema updated by universe reducer, we just need to note it */
       const { schema } = nextSharedState.universe;
       return { ...state, schema };
     }
 
     case "annotation: label edited": {
       const { schema } = nextSharedState.universe;
-      const annotationName = action.metadataField;
+      const { metadataField } = action;
       const oldLabelName = action.label;
       const newLabelName = action.editedLabel;
 
       /* set all values to to new label */
-      const obsAnnotations = AH.setLabelByValue(
-        state.obsAnnotations,
-        annotationName,
-        oldLabelName,
-        newLabelName
+      const unclipped = {
+        ...state.unclipped,
+        obsAnnotations: AH.setLabelByValue(
+          state.unclipped.obsAnnotations,
+          metadataField,
+          oldLabelName,
+          newLabelName
+        )
+      };
+      const obsAnnotations = state.obsAnnotations.replaceColData(
+        metadataField,
+        unclipped.obsAnnotation.col(metadataField).asArray()
       );
-      return { ...state, schema, obsAnnotations };
+      return { ...state, schema, obsAnnotations, unclipped };
     }
 
     case "annotation: delete label": {
       const { schema } = nextSharedState.universe;
-      const annotationName = action.metadataField;
-      const labelName = action.label;
+      const { label, metadataField } = action;
 
       /* set all values to unassigned in obsAnnotations */
-      const obsAnnotations = AH.setLabelByValue(
-        state.obsAnnotations,
-        annotationName,
-        labelName,
-        unassignedCategoryLabel
+      const unclipped = {
+        ...state.unclipped,
+        obsAnnotations: AH.setLabelByValue(
+          state.unclipped.obsAnnotations,
+          metadataField,
+          label,
+          unassignedCategoryLabel
+        )
+      };
+      const obsAnnotations = state.obsAnnotations.replaceColData(
+        metadataField,
+        unclipped.obsAnnotations.col(metadataField).asArray()
       );
-
-      return { ...state, schema, obsAnnotations };
+      return { ...state, schema, obsAnnotations, unclipped };
     }
 
     case "annotation: label current cell selection": {
       const { metadataField, label } = action;
       const { crossfilter } = prevSharedState;
       const mask = crossfilter.allSelectedMask();
-      const obsAnnotations = AH.setLabelByMask(
-        state.obsAnnotations,
+      const unclipped = {
+        ...state.unclipped,
+        obsAnnotations: AH.setLabelByMask(
+          state.unclipped.obsAnnotations,
+          metadataField,
+          mask,
+          label
+        )
+      };
+      const obsAnnotations = state.obsAnnotations.replaceColData(
         metadataField,
-        mask,
-        label
+        unclipped.obsAnnotations.col(metadataField).asArray()
       );
-      return { ...state, obsAnnotations };
+      return { ...state, obsAnnotations, unclipped };
     }
 
     default: {

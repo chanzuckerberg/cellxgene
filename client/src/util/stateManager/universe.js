@@ -4,6 +4,7 @@ import { decodeMatrixFBS } from "./matrix";
 import * as Dataframe from "../dataframe";
 import { isFpTypedArray } from "../typeHelpers";
 import { indexEntireSchema } from "./schemaHelpers";
+import { isCategoricalAnnotation } from "./annotationsHelpers";
 
 /*
 Private helper function - create and return a template Universe
@@ -167,7 +168,7 @@ export function createUniverseFromResponse(
   /* layout */
   universe.obsLayout = LayoutFBSToDataframe(layoutFBSResponse);
 
-  /* sanity check */
+  /* sanity checks */
   if (
     universe.nObs !== universe.obsLayout.length ||
     universe.nObs !== universe.obsAnnotations.length ||
@@ -178,6 +179,18 @@ export function createUniverseFromResponse(
 
   reconcileSchemaCategoriesWithSummary(universe);
   indexEntireSchema(universe.schema);
+
+  /* sanity checks */
+  if (
+    schema.annotations.obs.columns.some(
+      s => s.writable && !isCategoricalAnnotation(schema, s.name)
+    )
+  ) {
+    throw new Error(
+      "Writable continuous obs annotations are not supproted - failed to laod"
+    );
+  }
+
   return universe;
 }
 

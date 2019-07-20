@@ -1,6 +1,7 @@
 import clip from "../clip";
 import { layoutDimensionName, obsAnnoDimensionName } from "../nameCreators";
 import * as Dataframe from "../dataframe";
+import { isContinuousAnnotation } from "./annotationsHelpers";
 
 /*
 
@@ -150,7 +151,7 @@ and world.varData.
 function setClippedDataframes(world) {
   const { schema } = world;
   const isContinuousObsAnnotation = (df, idx, label) =>
-    deduceDimensionType(schema.annotations.obsByName[label], label) !== "enum";
+    isContinuousAnnotation(schema, label);
   const obsQuantile = (label, q) =>
     world.unclipped.obsAnnotations.col(label).summarize().percentiles[100 * q];
   world.obsAnnotations = clipDataframe(
