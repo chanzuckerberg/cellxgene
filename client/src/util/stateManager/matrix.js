@@ -93,59 +93,67 @@ export function encodeMatrixFBS(df) {
     throw new Error("FBS does not support row index encoding at this time");
   }
 
-  const columns = df.columns().map(col => col.asArray());
-
+  const shape = df.dims;
   const utf8Encoder = new TextEncoder("utf-8");
   const builder = new flatbuffers.Builder(1024);
-  const cols = columns.map(carr => {
-    let uType;
-    let tarr;
-    if (isTypedArray(carr)) {
-      uType = NetEncoding.TypedArray[carr.constructor.name];
-      tarr = encodeTypedArray(builder, uType, carr);
-    } else {
-      uType = NetEncoding.TypedArray.JSONEncodedArray;
-      const json = JSON.stringify(carr);
-      const jsonUTF8 = utf8Encoder.encode(json);
-      tarr = encodeTypedArray(builder, uType, jsonUTF8);
-    }
-    NetEncoding.Column.startColumn(builder);
-    NetEncoding.Column.addUType(builder, uType);
-    NetEncoding.Column.addU(builder, tarr);
-    return NetEncoding.Column.endColumn(builder);
-  });
-
-  const encColumns = NetEncoding.Matrix.createColumnsVector(builder, cols);
 
   let encColIndex;
   let encColIndexUType;
-  if (df.colIndex) {
-    const colIndexType = df.colIndex.constructor;
-    if (colIndexType === IdentityInt32Index) {
-      encColIndex = undefined;
-    } else if (colIndexType === DenseInt32Index) {
-      encColIndexUType = NetEncoding.TypedArray.Int32Array;
-      encColIndex = encodeTypedArray(
-        builder,
-        encColIndexUType,
-        df.colIndex.keys()
-      );
-    } else if (colIndexType === KeyIndex) {
-      encColIndexUType = NetEncoding.TypedArray.JSONEncodedArray;
-      encColIndex = encodeTypedArray(
-        builder,
-        encColIndexUType,
-        utf8Encoder.encode(JSON.stringify(df.colIndex.keys()))
-      );
-    } else {
-      throw new Error("Index type FBS encoding unsupported");
+  let encColumns;
+
+  if (shape[0] > 0 && shape[1] > 0) {
+    const columns = df.columns().map(col => col.asArray());
+
+    const cols = columns.map(carr => {
+      let uType;
+      let tarr;
+      if (isTypedArray(carr)) {
+        uType = NetEncoding.TypedArray[carr.constructor.name];
+        tarr = encodeTypedArray(builder, uType, carr);
+      } else {
+        uType = NetEncoding.TypedArray.JSONEncodedArray;
+        const json = JSON.stringify(carr);
+        const jsonUTF8 = utf8Encoder.encode(json);
+        tarr = encodeTypedArray(builder, uType, jsonUTF8);
+      }
+      NetEncoding.Column.startColumn(builder);
+      NetEncoding.Column.addUType(builder, uType);
+      NetEncoding.Column.addU(builder, tarr);
+      return NetEncoding.Column.endColumn(builder);
+    });
+
+    encColumns = NetEncoding.Matrix.createColumnsVector(builder, cols);
+
+    if (df.colIndex && shape[1] > 0) {
+      const colIndexType = df.colIndex.constructor;
+      if (colIndexType === IdentityInt32Index) {
+        encColIndex = undefined;
+      } else if (colIndexType === DenseInt32Index) {
+        encColIndexUType = NetEncoding.TypedArray.Int32Array;
+        encColIndex = encodeTypedArray(
+          builder,
+          encColIndexUType,
+          df.colIndex.keys()
+        );
+      } else if (colIndexType === KeyIndex) {
+        encColIndexUType = NetEncoding.TypedArray.JSONEncodedArray;
+        encColIndex = encodeTypedArray(
+          builder,
+          encColIndexUType,
+          utf8Encoder.encode(JSON.stringify(df.colIndex.keys()))
+        );
+      } else {
+        throw new Error("Index type FBS encoding unsupported");
+      }
     }
   }
 
   NetEncoding.Matrix.startMatrix(builder);
-  NetEncoding.Matrix.addNRows(builder, columns[0].length);
-  NetEncoding.Matrix.addNCols(builder, columns.length);
-  NetEncoding.Matrix.addColumns(builder, encColumns);
+  NetEncoding.Matrix.addNRows(builder, shape[0]);
+  NetEncoding.Matrix.addNCols(builder, shape[1]);
+  if (encColumns) {
+    NetEncoding.Matrix.addColumns(builder, encColumns);
+  }
   if (encColIndexUType) {
     NetEncoding.Matrix.addColIndexType(builder, encColIndexUType);
     NetEncoding.Matrix.addColIndex(builder, encColIndex);

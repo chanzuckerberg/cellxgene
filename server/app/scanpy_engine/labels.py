@@ -1,13 +1,13 @@
 """
 Helpers for user annotations / label_file parameter
 """
-from os.path import exists, splitext
+from os.path import exists, splitext, getsize
 from os import remove, rename
 import pandas as pd
 
 
 def read_labels(fname):
-    if exists(fname):
+    if exists(fname) and getsize(fname) > 0:
         return pd.read_csv(fname, dtype='category')
     else:
         return pd.DataFrame()
@@ -15,7 +15,10 @@ def read_labels(fname):
 
 def write_labels(fname, df):
     rotate_fname(fname)
-    df.to_csv(fname, index=False)
+    if not df.empty:
+        df.to_csv(fname, index=False)
+    else:
+        open(fname, 'a').close()
 
 
 def rotate_fname(fname):

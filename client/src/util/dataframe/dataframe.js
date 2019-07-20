@@ -375,7 +375,20 @@ class Dataframe {
     Create a new dataframe, omitting one columns.
 
     const newDf = df.dropCol("colors");
+
+    Corner case to manage: if dropping the last column, return an empty dataframe.
     */
+    if (!this.hasCol(label)) {
+      throw new RangeError(`unknown label: ${label}`);
+    }
+
+    /* 
+    Corner case to manage: if dropping the last column, return an empty dataframe. 
+    */
+    if (this.dims[1] === 1) {
+      return Dataframe.empty();
+    }
+
     const dims = [this.dims[0], this.dims[1] - 1];
     const coffset = this.colIndex.getOffset(label);
     const columns = [...this.__columns];
@@ -512,6 +525,8 @@ class Dataframe {
         return newCol;
       });
     }
+
+    if (dims[0] === 0 || dims[1] === 0) return Dataframe.empty();
     return new Dataframe(dims, columns, rowIndex, colIndex);
   }
 

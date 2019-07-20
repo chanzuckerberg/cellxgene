@@ -227,6 +227,9 @@ def deserialize_typed_array(tarr):
         TypedArray.TypedArray.JSONEncodedArray: JSONEncodedArray.JSONEncodedArray
     }
     (u_type, u) = tarr
+    if u_type is TypedArray.TypedArray.NONE:
+        return None
+
     TarType = type_map.get(u_type, None)
     if TarType is None:
         raise TypeError(f"FBS contains unknown data type: {u_type}")
@@ -247,6 +250,8 @@ def decode_matrix_fbs(fbs):
     matrix = Matrix.Matrix.GetRootAsMatrix(fbs, 0)
     n_rows = matrix.NRows()
     n_cols = matrix.NCols()
+    if n_rows == 0 or n_cols == 0:
+        return pd.DataFrame()
 
     if matrix.RowIndexType() is not TypedArray.TypedArray.NONE:
         raise ValueError("row indexing not supported for FBS Matrix")
@@ -254,6 +259,8 @@ def decode_matrix_fbs(fbs):
     columns_length = matrix.ColumnsLength()
 
     columns_index = deserialize_typed_array((matrix.ColIndexType(), matrix.ColIndex()))
+    if columns_index is None:
+        columns_index = range(0, n_cols)
 
     # sanity checks
     if len(columns_index) != n_cols or columns_length != n_cols:
