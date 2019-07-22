@@ -9,8 +9,8 @@ _cellxgene_ (pronounced "sell-by-jean") is an interactive data explorer for sing
 <img src="https://raw.githubusercontent.com/chanzuckerberg/cellxgene/master/docs/cellxgene-demo-1.gif" width="200" height="200" hspace="30"><img src="https://raw.githubusercontent.com/chanzuckerberg/cellxgene/master/docs/cellxgene-demo-2.gif" width="200" height="200" hspace="30"><img src="https://raw.githubusercontent.com/chanzuckerberg/cellxgene/master/docs/cellxgene-demo-3.gif" width="200" height="200" hspace="30">
 
 - Want to install and use cellxgene? Visit the [cellxgene docs](https://chanzuckerberg.github.io/cellxgene/).
-- Want to see where we are going? Check out [our roadmap](ROADMAP.md).
-- Want to contribute? See our [contributors guide](CONTRIBUTING.md).
+- Want to see where we are going? Check out [our roadmap](https://github.com/chanzuckerberg/cellxgene/blob/master/ROADMAP.md).
+- Want to contribute? See our [contributors guide](https://github.com/chanzuckerberg/cellxgene/blob/master/CONTRIBUTING.md).
 
 ## quick start
 
@@ -40,7 +40,7 @@ Have questions, suggestions, or comments? You can come hang out with us by joini
 
 ## contributing
 
-We warmly welcome contributions from the community! Please see our [contributing guide](CONTRIBUTING.md) and don't hesitate to open an issue or send a pull request to improve cellxgene.
+We warmly welcome contributions from the community! Please see our [contributing guide](https://github.com/chanzuckerberg/cellxgene/blob/master/CONTRIBUTING.md) and don't hesitate to open an issue or send a pull request to improve cellxgene.
 
 This project adheres to the Contributor Covenant [code of conduct](https://github.com/chanzuckerberg/.github/blob/master/CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to opensource@chanzuckerberg.com.
 
@@ -56,12 +56,12 @@ There are 4 key features we plan to implement in the near term.
 - Toggle embeddings
 - Gene information
 
-For more detail on these features and where we are going, see [our roadmap](ROADMAP.md).
+For more detail on these features and where we are going, see [our roadmap](https://github.com/chanzuckerberg/cellxgene/blob/master/ROADMAP.md).
 
 ## risks of hosting cellxgene
 
 _cellxgene_ is built on standard web technologies, but is currently designed as a single-user desktop application.
-We've done this so we can prioritize the features on [our roadmap](ROADMAP.md).
+We've done this so we can prioritize the features on [our roadmap](https://github.com/chanzuckerberg/cellxgene/blob/master/ROADMAP.md).
 
 Some of our users have experimented with hosting _cellxgene_ either for their lab or for public use, but please note that the _cellxgene_ team does not officially support, troubleshoot, or maintain any web deployments at this time.
 
