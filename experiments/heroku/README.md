@@ -26,11 +26,13 @@ Once logged in you will be sent to the setup page. Here you can set some of the 
 
 After filling out the settings and pressing the `Deploy app` button heroku will begin building your deployment. This process will take a few minutes, but once completed you will have a personal free hosted version of cell×gene!
 
-## What is heroku and why should I use it?
+## What is Heroku
 
 > Heroku is a cloud platform that lets companies build, deliver, monitor and scale apps — we're the fastest way to go from idea to URL, bypassing all those infrastructure headaches.
 
 A Heroku deployment of cell×gene means that the app is not running on your local machine. Instead, the app is installed, configured, and ran on the Heroku servers (read: cloud).
+
+## Why should I use Heroku to deploy cellxgene?
 
 What this enables is a quick, non-technical method of setting up a cell×gene instance. No command line knowledge needed. This also allows machines anywhere to access the instance, so sharing a visualized dataset is as simple as sharing a link.
 
@@ -43,5 +45,6 @@ If you want to quickly deploy an instance of cellxgene and, if not using a small
   - The amount of memory needed for the dyno is roughly the same size as the h5ad file
   - This can get _very_ expensive for larger datasets
 - Inorder for the dataset to be downloaded during app setup, your dataset must be hosted on a publicly accessable url
+- For the dataset to be downloaded during app setup, your dataset must be hosted on a publicly accessible URL
 - The server is still easily overwhelmed by many concurrent users
   - This can be combatted by paying for a higher tiered dyno
