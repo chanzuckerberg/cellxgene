@@ -1,30 +1,30 @@
 # Heroku deployment for cellxgene
 
-## Quick start
+## Quickstart
 
-Clicking on the following button will forward you to heroku to begin the deployment process
+Clicking on the following button will forward you to Heroku to begin the deployment process
 
 <a href="https://heroku.com/deploy?template=https://github.com/chanzuckerberg/cellxgene/tree/heroku">
   <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy">
 </a>
 
-If not already logged in, there you will be prompted to login or sign up for an account.
+If not already logged in, there you will be prompted to log in or sign up for an account.
 
 Once logged in you will be sent to the setup page. Here you can set some of the basic settings for the app:
 
 #### Default settings
 
-- `App name`: the unique name name for your deployment.
-  - This will also serve as the default url (e.g. https://cellxgene.herokapp.com/)
-- `App owner`: Who will own this app. Either you personally or an organiziation/team
-- `Region`: Location of server where app will be deployed (EU or US)
+- `App name`: the unique name for your deployment.
+  - This will also serve as the default URL (e.g. https://cellxgene.herokapp.com/)
+- `App owner`: Who will own this app. Either you personally or an organization/team
+- `Region`: Location of the server where the app will be deployed (EU or US)
 
 #### Configuration
 
-- `DATASET`: A _publicly_ accessable URL pointing to a .h5ad file to view
-  - This is defaulted to pbm3k.h5ad
+- `DATASET`: A _publicly_ accessible URL pointing to a .h5ad file to view
+  - This defaults to pbm3k.h5ad
 
-After filling out the settings and pressing the `Deploy app` button heroku will begin building your deployment. This process will take a few minutes, but once completed you will have a personal free hosted version of cell×gene!
+After filling out the settings and pressing the `Deploy app` button Heroku will begin building your deployment. This process will take a few minutes, but once completed you will have a personal free hosted version of cell×gene!
 
 ## What is Heroku
 
