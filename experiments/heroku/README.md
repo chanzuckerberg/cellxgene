@@ -1,4 +1,4 @@
-# Heroku deployment for cellxgene
+# cellxgene cloud deployment with Heroku
 
 ## Quickstart
 
