@@ -44,7 +44,7 @@ If you want to quickly deploy an instance of cellxgene and, if not using a small
   - Heroku offers tiered paid dynos. More can be found [here](https://www.heroku.com/pricing
   - The amount of memory needed for the dyno is roughly the same size as the h5ad file
   - This can get _very_ expensive for larger datasets
-- Inorder for the dataset to be downloaded during app setup, your dataset must be hosted on a publicly accessable url
+- On the free dyno, after 30 minutes of inactivity, Heroku will put your app into a hibernation mode. Requiring it to boot up on the next access
 - For the dataset to be downloaded during app setup, your dataset must be hosted on a publicly accessible URL
 - The server is still easily overwhelmed by many concurrent users
   - This can be combatted by paying for a higher tiered dyno
