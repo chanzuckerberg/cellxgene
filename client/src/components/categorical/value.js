@@ -2,8 +2,8 @@
 import { connect } from "react-redux";
 import React from "react";
 import Occupancy from "./occupancy";
-import { countCategoryValues2D } from "../../util/stateManager/worldUtil";
 import * as globals from "../../globals";
+import styles from "./categorical.css";
 
 @connect(state => ({
   categoricalSelection: state.categoricalSelection,
@@ -20,6 +20,33 @@ class CategoryValue extends React.Component {
       metadataField,
       categoryIndex
     });
+  };
+
+  shouldComponentUpdate = nextProps => {
+    /* 
+    Checks to see if at least one of the following changed:
+    * world state
+    * the color accessor (what is currently being colored by)
+    * if this catagorical value's selection status has changed
+    
+    If and only if true, update the component
+    */
+    const { props } = this;
+    const { metadataField, categoryIndex, categoricalSelection } = props;
+    const { categoricalSelection: newCategoricalSelection } = nextProps;
+
+    const valueSelectionChange =
+      categoricalSelection[metadataField].categoryValueSelected[
+        categoryIndex
+      ] !==
+      newCategoricalSelection[metadataField].categoryValueSelected[
+        categoryIndex
+      ];
+
+    const worldChange = props.world !== nextProps.world;
+    const colorAccessorChange = props.colorAccessor !== nextProps.colorAccessor;
+
+    return valueSelectionChange || worldChange || colorAccessorChange;
   };
 
   toggleOn = () => {
@@ -57,8 +84,7 @@ class CategoryValue extends React.Component {
       colorAccessor,
       colorScale,
       i,
-      schema,
-      world
+      schema
     } = this.props;
 
     if (!categoricalSelection) return null;
@@ -74,29 +100,24 @@ class CategoryValue extends React.Component {
     /* this is the color scale, so add swatches below */
     const isColorBy = metadataField === colorAccessor;
     let categories = null;
-    let occupancy = null;
 
     if (isColorBy && schema) {
       categories = schema.annotations.obsByName[colorAccessor]?.categories;
     }
 
-    if (colorAccessor && !isColorBy && categoricalSelection[colorAccessor]) {
-      occupancy = countCategoryValues2D(
-        metadataField,
-        colorAccessor,
-        world.obsAnnotations
-      );
-    }
-
     return (
       <div
         key={i}
+        className={styles.value}
+        data-testclass="categorical-row"
         style={{
+          padding: "4px 7px",
           display: "flex",
           alignItems: "baseline",
-          justifyContent: "space-between"
+          justifyContent: "space-between",
+          marginBottom: "2px",
+          borderRadius: "2px"
         }}
-        data-testclass="categorical-row"
         onMouseEnter={this.handleMouseEnter}
         onMouseLeave={this.handleMouseExit}
       >
@@ -110,32 +131,32 @@ class CategoryValue extends React.Component {
             justifyContent: "space-between"
           }}
         >
-          <label className="bp3-control bp3-checkbox">
-            <input
-              onChange={selected ? this.toggleOff : this.toggleOn}
-              data-testclass="categorical-value-select"
-              data-testid={`categorical-value-select-${metadataField}-${displayString}`}
-              checked={selected}
-              type="checkbox"
-            />
-            <span className="bp3-control-indicator" />
+          <div style={{ display: "flex" }}>
+            <label className="bp3-control bp3-checkbox" style={{ margin: 0 }}>
+              <input
+                onChange={selected ? this.toggleOff : this.toggleOn}
+                data-testclass="categorical-value-select"
+                data-testid={`categorical-value-select-${metadataField}-${displayString}`}
+                checked={selected}
+                type="checkbox"
+              />
+              <span
+                className="bp3-control-indicator"
+                onMouseEnter={this.handleMouseExit}
+                onMouseLeave={this.handleMouseEnter}
+              />
+            </label>
             <span
               data-testid={`categorical-value-${metadataField}-${displayString}`}
               data-testclass="categorical-value"
+              style={{ wordBreak: "break-all" }}
             >
               {displayString}
             </span>
-          </label>
+          </div>
           <span style={{ flexShrink: 0 }}>
-            {colorAccessor &&
-            !isColorBy &&
-            categoricalSelection[colorAccessor] ? (
-              <Occupancy
-                occupancy={occupancy.get(
-                  category.categoryValues[categoryIndex]
-                )}
-                {...this.props}
-              />
+            {colorAccessor && !isColorBy ? (
+              <Occupancy category={category} {...this.props} />
             ) : null}
           </span>
         </div>

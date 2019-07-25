@@ -5,6 +5,10 @@ Private utility code for dataframe
 export { isTypedArray, isArrayOrTypedArray } from "../typeHelpers";
 
 export function callOnceLazy(f) {
+  /*
+  call function once, and save the result, regardless of arguments (this is not
+  the same as typical memoization).
+  */
   let value;
   let calledOnce = false;
   const result = function result(...args) {
@@ -14,6 +18,25 @@ export function callOnceLazy(f) {
     }
     return value;
   };
-
   return result;
+}
+
+export function memoize(fn, hashFn) {
+  /* 
+  function memoization, with user-provided hash.  hashFn must return a
+  key which will be unique as a Map key (ie, obeys "sameValueZero" algorithm
+  as defined in the JS spec).  For more info on hash key, see:
+  https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map#Key_equality
+  */
+  const cache = new Map();
+  const wrap = function wrap(...args) {
+    const key = hashFn(...args);
+    if (cache.has(key)) {
+      return cache.get(key);
+    }
+    const result = fn(...args);
+    cache.set(key, result);
+    return result;
+  };
+  return wrap;
 }

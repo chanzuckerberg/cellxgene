@@ -1,6 +1,6 @@
 # flake8: noqa F403, F405
 from functools import partialmethod
-from multiprocessing import Pipe, Process
+from multiprocessing import Pipe, Process, freeze_support
 from os import environ
 from os.path import splitext, basename, dirname, join
 import sys
@@ -8,13 +8,14 @@ import threading
 
 from cefpython3 import cefpython as cef
 import PySide2
+from PySide2.QtGui import *
 from PySide2.QtCore import *
 from PySide2.QtWidgets import *
 
+import server.gui.cellxgene_rc
 from server.gui.browser import CefWidget, CefApplication
 from server.gui.workers import Worker, SiteReadyWorker
-from server.gui.utils import WINDOWS, LINUX, MAC, FileLoadSignals, Emitter, WorkerSignals
-from server.utils.constants import MODES
+from server.gui.utils import WINDOWS, LINUX, MAC, FileLoadSignals, Emitter, WorkerSignals, FileChanged
 from server.utils.utils import find_available_port
 
 if WINDOWS or LINUX:
@@ -24,17 +25,20 @@ if WINDOWS or LINUX:
 
 # Configuration
 # TODO remember this or calculate it?
-WIDTH = 1024
-HEIGHT = 768
+WIDTH = 1300
+HEIGHT = 800
+MAX_CONTENT_WIDTH = 700
 GUI_PORT = find_available_port("localhost")
 BROWSER_INDEX = 0
 LOAD_INDEX = 1
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__(None)
         self.cef_widget = None
         self.data_widget = None
+        self.stacked_layout = None
         self.parent_conn, self.child_conn = None, None
         self.load_emitter = None
         self.emitter_thread = None
@@ -49,6 +53,7 @@ class MainWindow(QMainWindow):
 
     def showBrowser(self):
         self.stacked_layout.setCurrentIndex(BROWSER_INDEX)
+
     def restartOnError(self):
         self.window().shutdownServer()
         # close emitter on error/finished
@@ -120,7 +125,11 @@ class MainWindow(QMainWindow):
         file_menu.addAction(load_action)
 
     def showLoad(self):
+        self.clearMessages()
         self.stacked_layout.setCurrentIndex(LOAD_INDEX)
+
+    def clearMessages(self):
+        self.data_widget.reset()
 
     def closeEvent(self, event):
         # Close browser (force=True) and free CEF reference
@@ -138,66 +147,101 @@ class LoadWidget(QFrame):
     def __init__(self, parent):
         super(LoadWidget, self).__init__(parent=parent)
         # Init layout
-        self.MAX_CONTENT_WIDTH = 500
         load_ui_layout = QVBoxLayout()
-        h_margin = (WIDTH - self.MAX_CONTENT_WIDTH) // 2
+        h_margin = (WIDTH - MAX_CONTENT_WIDTH) // 2
         if h_margin < 10:
             h_margin = 10
         load_ui_layout.setContentsMargins(h_margin, 20, h_margin, 20)
         logo_layout = QHBoxLayout()
         logo_layout.setContentsMargins(0, 0, 0, 20)
 
-        load_layout = QGridLayout()
-        load_layout.setContentsMargins(0, 0, 0, 0)
-        load_layout.setSpacing(0)
+        file_layout = QVBoxLayout()
+
         message_layout = QHBoxLayout()
         message_layout.setContentsMargins(0, 0, 0, 0)
 
         self.serverError = False
-        self.title = ""
-        self.label = QLabel("cellxgene")
+        self.file_name = FilePath()
+
+        self.label = QLabel()
+        logo = QPixmap(":/logo.png")
+        self.label.setPixmap(logo)
+        self.label.setContentsMargins(100, 0, 100, 0)
         logo_layout.addWidget(self.label)
 
         # UI section
-        # TODO add load spinner
         # TODO add cancel button to send back to browser (if available)
-        self.embedding_label = QLabel("embedding: ")
-        load_layout.addWidget(self.embedding_label, 0, 0)
-        self.file_label = QLabel("file: ")
-        load_layout.addWidget(self.file_label, 0, 1)
-        self.embeddings = QComboBox(self)
-        self.embeddings.currentIndexChanged.connect(self.updateEmbedding)
-        self.embeddings.addItems(MODES)
-        self.embedding_selection = [MODES[0]]
-        load_layout.addWidget(self.embeddings, 1, 0)
 
-        self.load = QPushButton("Open...")
-        self.load.clicked.connect(self.onLoad)
-        load_layout.addWidget(self.load, 1, 1)
+        self.file_area = FileArea(self)
+        self.file_name.signals.changed.connect(self.updatePath)
+
+        self.launch_widget = QLabel("Select a file to launch cellxgene")
+        # self.launch_widget.setEnabled(False)
+        # self.launch_widget.clicked.connect(self.onLoad)
+
+        self.progress = QProgressBar()
+        self.progress.setTextVisible(False)
+
+        file_layout.addWidget(self.file_area)
+        self.loading_layout = QStackedLayout()
+        self.loading_layout.addWidget(self.launch_widget)
+        self.loading_layout.addWidget(self.progress)
+        file_layout.addLayout(self.loading_layout)
+        file_layout.setStretch(0, 10)
 
         # Error section
         self.error_label = QLabel("")
         self.error_label.setWordWrap(True)
-        self.error_label.setFixedWidth(self.MAX_CONTENT_WIDTH)
-        message_layout.addWidget(self.error_label, alignment=Qt.AlignTop)
+        self.error_label.setFixedWidth(MAX_CONTENT_WIDTH)
+        message_layout.addWidget(self.error_label)
+
+        # Options Form
 
         # Layout
-        for l in [logo_layout, load_layout, message_layout ]:
+        for l in [logo_layout, file_layout, message_layout]:
             load_ui_layout.addLayout(l)
 
-        load_ui_layout.setStretch(2, 10)
+        #TODO remove magic number
+        load_ui_layout.setStretch(1, 10)
         self.setLayout(load_ui_layout)
+
+        self.timer = QTimer()
+        self.timer.setInterval(100)
+        self.timer.timeout.connect(self.updateProgress)
 
         self.signals = FileLoadSignals()
         self.signals.selectedFile.connect(self.createScanpyEngine)
+        self.signals.error.connect(self.onError)
 
-    def updateEmbedding(self, idx):
-        self.embedding_selection = [MODES[idx]]
+    def updatePath(self):
+        file_name = self.file_name.value
+        if file_name:
+            self.file_area.label.setText("File: " + file_name)
+        else:
+            self.file_area.label.setText("")
+        # self.launch_widget.setEnabled(bool(file_name))
+
+    def reset(self):
+        self.loading_layout.setCurrentIndex(0)
+        self.timer.stop()
+        self.error_label.setText("")
+        self.file_name.updateValue(None)
+
+    def updateProgress(self):
+        curr_val = self.progress.value()
+        next_val = (curr_val + 1) % 100
+        self.progress.setValue(next_val)
+
+    def resetProgress(self):
+        self.progress.setValue(0)
+        self.loading_layout.setCurrentIndex(0)
+        self.timer.stop()
 
     def createScanpyEngine(self, file_name):
+        title = splitext(basename(file_name))[0]
         self.window().setupServer()
-        worker = Worker(self.window().parent_conn, self.window().child_conn, file_name, self.title, host="127.0.0.1", port=GUI_PORT,
-                        layout=self.embedding_selection)
+        worker = Worker(self.window().parent_conn, self.window().child_conn, file_name, host="127.0.0.1",
+                        port=GUI_PORT, title=title, engine_options={})
         self.window().load_emitter.signals.ready.connect(self.onDataReady)
         self.window().load_emitter.signals.engine_error.connect(self.onServerError)
         self.window().load_emitter.signals.server_error.connect(self.onServerError)
@@ -208,15 +252,14 @@ class LoadWidget(QFrame):
         self.window().child_conn.close()
 
     def onLoad(self):
-        options = QFileDialog.Options()
-        # options |= QFileDialog.DontUseNativeDialog
-        file_name, _ = QFileDialog.getOpenFileName(self,
-                                                  "Open H5AD File", "", "H5AD Files (*.h5ad)", options=options)
-        self.title = splitext(basename(file_name))[0]
-        if file_name:
-            self.signals.selectedFile.emit(file_name)
+        if self.file_name.value:
             # Reset error on reload
             self.serverError = False
+            self.loading_layout.setCurrentIndex(1)
+            self.timer.start()
+            self.signals.selectedFile.emit(self.file_name.value)
+        else:
+            self.signals.error.emit("Please select a file before launching.")
 
     def onDataReady(self):
         self.site_ready_worker = SiteReadyWorker(self.window().url)
@@ -228,6 +271,7 @@ class LoadWidget(QFrame):
 
     def onServerReady(self):
         if not self.serverError:
+            self.resetProgress()
             self.window().cef_widget.browser.Navigate(self.window().url)
             self.window().showBrowser()
 
@@ -236,15 +280,84 @@ class LoadWidget(QFrame):
         if server_error:
             self.serverError = True
             # Report error and switch to load screen
-            self.window().shutdownServer()
+        self.window().shutdownServer()
+        self.resetProgress()
         self.window().stacked_layout.setCurrentIndex(LOAD_INDEX)
         self.error_label.setText(f"Error: {err}")
-        self.error_label.resize(self.MAX_CONTENT_WIDTH, self.error_label.height())
+        self.error_label.resize(MAX_CONTENT_WIDTH, self.error_label.height())
+        self.window().repaint()
 
     onServerError = partialmethod(onError, server_error=True)
 
+class FilePath(QObject):
+    def __init__(self):
+        super(FilePath, self).__init__()
+        self.value = ""
+        self.signals = FileChanged()
+
+    def updateValue(self, path=None):
+        self.value = path
+        self.signals.changed.emit(self.value != path)
+
+
+class FileArea(QFrame):
+    def __init__(self, parent):
+        super(FileArea, self).__init__()
+        self.setFrameShape(QFrame.Box)
+        self.setMinimumHeight(100)
+        self.setFixedWidth(MAX_CONTENT_WIDTH)
+        self.setAcceptDrops(True)
+        self.instructions = QLabel(self)
+        self.instructions.setText("Drag & Drop a h5ad file to load or open")
+        self.instructions.setGeometry(10, 10, MAX_CONTENT_WIDTH, self.instructions.height())
+        self.loadButton = QPushButton("Open...", parent=self)
+        x_pos = (MAX_CONTENT_WIDTH - self.loadButton.width()) / 2
+        self.loadButton.setGeometry(x_pos, 50, self.loadButton.width(), self.loadButton.height())
+        self.loadButton.clicked.connect(self.fileBrowse)
+        self.label = QLabel(self)
+        self.label.setGeometry(10, 75, MAX_CONTENT_WIDTH, self.label.height())
+
+    def fileBrowse(self):
+        options = QFileDialog.Options()
+        # options |= QFileDialog.DontUseNativeDialog
+        file_name, _ = QFileDialog.getOpenFileName(self,
+                                                   "Open H5AD File", "", "H5AD Files (*.h5ad)", options=options)
+        if file_name:
+            self.parent().file_name.updateValue(file_name)
+            self.parent().onLoad()
+
+    def dragEnterEvent(self, e):
+        if e.mimeData().hasUrls:
+            e.accept()
+        else:
+            e.ignore()
+
+    def dragMoveEvent(self, e):
+        if e.mimeData().hasUrls:
+            e.accept()
+        else:
+            e.ignore()
+
+    def dropEvent(self, e):
+        """
+        Drop files directly onto the widget
+        File locations are stored in fname
+        :param e:
+        :return:
+        """
+        if e.mimeData().hasUrls:
+            e.setDropAction(Qt.CopyAction)
+            e.accept()
+            for url in e.mimeData().urls():
+                file_name = str(url.toLocalFile())
+            self.parent().file_name.updateValue(file_name)
+            self.parent().onLoad()
+        else:
+            e.ignore()
+
 
 def main():
+    freeze_support()
     # This generates an error.log file on error
     sys.excepthook = cef.ExceptHook  # To shutdown all CEF processes on error
     settings = {}
@@ -256,6 +369,9 @@ def main():
     cef.Initialize(settings)
     app = CefApplication(sys.argv)
     main_window = MainWindow()
+    main_window.setWindowTitle("cellxgene")
+    main_window.setUnifiedTitleAndToolBarOnMac(True)
+    main_window.setWindowIcon(QIcon(":icon.png"))
     main_window.show()
     main_window.activateWindow()
     main_window.raise_()
