@@ -43,13 +43,12 @@ What Heroku enables is a quick, non-technical method of setting up a cell×gene 
 
 This is a good option if you want to quickly deploy an instance of cellxgene to the web. Heroku deployments are free for small datasets up to around 500MBs in size. See below regarding larger datasets.
 
-## Why shouldn't I use it?
+## When should I not deploy with Heroku?
 
 - The default free dyno offered by Heroku is limited in memory to 512 MBs
-  - Heroku offers tiered paid dynos. More can be found [here](https://www.heroku.com/pricing)
   - The amount of memory needed for the dyno is roughly the same size as the h5ad file
-  - This can get _very_ expensive for larger datasets
+  - Heroku offers tiered paid dynos. More can be found [here](https://www.heroku.com/pricing)
+  - Note that this can get _very_ expensive for larger datasets
 - On the free dyno, after 30 minutes of inactivity, Heroku will put your app into a hibernation mode. Requiring it to boot up on the next access
-- For the dataset to be downloaded during app setup, your dataset must be hosted on a publicly accessible URL
-- The server is still easily overwhelmed by many concurrent users
-  - This can be combatted by paying for a higher tiered dyno
+- Having multiple simultaneous users requires more memory. This means that the free container size is easily overwhelmed by multiple users, even with small datasets; this can be addressed by purchasing a larger container size.
+- For the dataset to be downloaded onto the distro, your dataset must be hosted on a publicly accessible URL
