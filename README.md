@@ -2,7 +2,9 @@
 
 > an interactive explorer for single-cell transcriptomics data
 
-[![DOI](https://zenodo.org/badge/105615409.svg)](https://zenodo.org/badge/latestdoi/105615409)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3338548.svg)](https://doi.org/10.5281/zenodo.3338548)
+![PyPI](https://img.shields.io/pypi/v/cellxgene) ![PyPI - Downloads](https://img.shields.io/pypi/dm/cellxgene)
+![GitHub last commit](https://img.shields.io/github/last-commit/chanzuckerberg/cellxgene)
 
 _cellxgene_ (pronounced "sell-by-jean") is an interactive data explorer for single-cell transcriptomics datasets, such as those coming from the [Human Cell Atlas](https://humancellatlas.org). Leveraging modern web development techniques to enable fast visualizations of at least 1 million cells, we hope to enable biologists and computational researchers to explore their data, and to demonstrate general, scalable, and reusable patterns for scientific data visualization.
 
