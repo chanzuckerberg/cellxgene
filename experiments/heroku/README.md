@@ -8,7 +8,7 @@ Clicking on the following button will forward you to Heroku to begin the deploym
   <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy">
 </a>
 
-If not already logged in, there you will be prompted to log in or sign up for an account.
+If not already logged in to Heroku, there you will be prompted to log in or sign up for an account.
 
 Once logged in you will be sent to the setup page. Here you can set some of the basic settings for the app:
 
@@ -28,20 +28,25 @@ After filling out the settings and pressing the `Deploy app` button Heroku will 
 
 ## What is Heroku
 
-> Heroku is a cloud platform that lets companies build, deliver, monitor and scale apps — we're the fastest way to go from idea to URL, bypassing all those infrastructure headaches.
+Heroku is a service provided by Salesforce which offers a quick and easy substitute for hosting applications on the cloud.
 
 A Heroku deployment of cell×gene means that the app is not running on your local machine. Instead, the app is installed, configured, and ran on the Heroku servers (read: cloud).
 
+Heroku is one of many options available for hosting instances of cellxgene on the web.
+Some other options include: Amazon Web Services, Google Cloud Platform, Digital Ocean, and Microsoft Azure
+
 ## Why should I use Heroku to deploy cellxgene?
 
-What this enables is a quick, non-technical method of setting up a cell×gene instance. No command line knowledge needed. This also allows machines anywhere to access the instance, so sharing a visualized dataset is as simple as sharing a link.
+Because cellxgene currently heavily relies on its Python backend for providing the client with the necessary data and tooling, it is currently not possible to host cellxgene as a static webpage via Netlify, AWS, GitHub Pages, etc.
+
+What Heroku enables is a quick, non-technical method of setting up a cell×gene instance. No command line knowledge needed. This also allows machines anywhere to access the instance, so sharing a visualized dataset is as simple as sharing a link.
 
 If you want to quickly deploy an instance of cellxgene and, if not using a small dataset, okay with paying for a tiered dyno, this is a viable solution.
 
 ## Why shouldn't I use it?
 
 - The default free dyno offered by Heroku is limited in memory to 512 MBs
-  - Heroku offers tiered paid dynos. More can be found [here](https://www.heroku.com/pricing
+  - Heroku offers tiered paid dynos. More can be found [here](https://www.heroku.com/pricing)
   - The amount of memory needed for the dyno is roughly the same size as the h5ad file
   - This can get _very_ expensive for larger datasets
 - On the free dyno, after 30 minutes of inactivity, Heroku will put your app into a hibernation mode. Requiring it to boot up on the next access
