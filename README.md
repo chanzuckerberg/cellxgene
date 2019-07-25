@@ -2,7 +2,7 @@
 
 > an interactive explorer for single-cell transcriptomics data
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3338548.svg)](https://doi.org/10.5281/zenodo.3338548)
+[![DOI](https://zenodo.org/badge/105615409.svg)](https://zenodo.org/badge/latestdoi/105615409)
 
 [![PyPI](https://img.shields.io/pypi/v/cellxgene)](https://pypi.org/project/cellxgene/) [![PyPI - Downloads](https://img.shields.io/pypi/dm/cellxgene)](https://pypistats.org/packages/cellxgene)
 
