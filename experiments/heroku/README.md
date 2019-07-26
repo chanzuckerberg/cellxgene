@@ -41,7 +41,7 @@ Because cellxgene currently heavily relies on its Python backend for providing t
 
 What Heroku enables is a quick, non-technical method of setting up a cell×gene instance. No command line knowledge needed. This also allows machines anywhere to access the instance, so sharing a visualized dataset is as simple as sharing a link.
 
-This is a good option if you want to quickly deploy an instance of cellxgene to the web. Heroku deployments are free for small datasets up to around 500MBs in size. See below regarding larger datasets.
+This is a good option if you want to quickly deploy an instance of cellxgene to the web. Heroku deployments are free for small datasets up to around 250MBs in size. See below regarding larger datasets.
 
 ## When should I not deploy with Heroku?
 
