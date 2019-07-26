@@ -30,7 +30,7 @@ After filling out the settings and pressing the `Deploy app` button Heroku will 
 
 Heroku is a service provided by Salesforce which offers a quick and easy substitute for hosting applications on the cloud.
 
-A Heroku deployment of cell×gene means that the app is not running on your local machine. Instead, the app is installed, configured, and ran on the Heroku servers (read: cloud).
+A Heroku deployment of cellxgene means that the app is not running on your local machine. Instead, the app is installed, configured, and ran on the Heroku servers (read: cloud).
 
 Heroku is one of many options available for hosting instances of cellxgene on the web.
 Some other options include: Amazon Web Services, Google Cloud Platform, Digital Ocean, and Microsoft Azure
