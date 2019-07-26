@@ -14,7 +14,7 @@ Once logged in you will be sent to the setup page. Here you can set some of the 
 
 #### Default settings
 
-- `App name`: the unique name for your deployment.
+- `App name`: the unique name for your deployment
   - This will also serve as the default URL (e.g. https://cellxgene.herokapp.com/)
 - `App owner`: Who will own this app. Either you personally or an organization/team
 - `Region`: Location of the server where the app will be deployed (EU or US)
