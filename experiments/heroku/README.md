@@ -28,7 +28,7 @@ After filling out the settings and pressing the `Deploy app` button Heroku will 
 
 ## What is Heroku
 
-Heroku is a service provided by Salesforce which offers a quick and easy substitute for hosting applications on the cloud.
+Heroku is a quick and easy substitute for hosting applications on the cloud.
 
 A Heroku deployment of cellxgene means that the app is not running on your local machine. Instead, the app is installed, configured, and ran on the Heroku servers (read: cloud).
 
@@ -37,9 +37,9 @@ Some other options include: Amazon Web Services, Google Cloud Platform, Digital 
 
 ## Why use Heroku to deploy cellxgene?
 
-Because cellxgene currently heavily relies on its Python backend for providing the client with the necessary data and tooling, it is currently not possible to host cellxgene as a static webpage via Netlify, AWS, GitHub Pages, etc.
+What Heroku enables is a quick, non-technical method of setting up a cellxgene instance. No command line knowledge needed. This also allows machines to access the instance via the internet, so sharing a visualized dataset is as simple as sharing a link.
 
-What Heroku enables is a quick, non-technical method of setting up a cell×gene instance. No command line knowledge needed. This also allows machines anywhere to access the instance, so sharing a visualized dataset is as simple as sharing a link.
+Because cellxgene currently heavily relies on its Python backend for providing the client with the necessary data and tooling, it is currently not possible to host cellxgene as a static webpage via Netlify, AWS, GitHub Pages, etc.
 
 This is a good option if you want to quickly deploy an instance of cellxgene to the web. Heroku deployments are free for small datasets up to around 250MBs in size. See below regarding larger datasets.
 
@@ -52,3 +52,5 @@ This is a good option if you want to quickly deploy an instance of cellxgene to 
 - On the free dyno, after 30 minutes of inactivity, Heroku will put your app into a hibernation mode. Requiring it to boot up on the next access
 - Having multiple simultaneous users requires more memory. This means that the free container size is easily overwhelmed by multiple users, even with small datasets; this can be addressed by purchasing a larger container size.
 - For the dataset to be downloaded onto the distro, your dataset must be hosted on a publicly accessible URL
+- By default, Heroku publically shares your instance to anyone with the URL.
+  - There are many ways of securing your instance. One quick and simple way is by installing [wwwhisper](https://elements.heroku.com/addons/wwwhisper), a Heroku addon
