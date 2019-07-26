@@ -35,7 +35,7 @@ A Heroku deployment of cellxgene means that the app is not running on your local
 Heroku is one of many options available for hosting instances of cellxgene on the web.
 Some other options include: Amazon Web Services, Google Cloud Platform, Digital Ocean, and Microsoft Azure
 
-## Why should I use Heroku to deploy cellxgene?
+## Why use Heroku to deploy cellxgene?
 
 Because cellxgene currently heavily relies on its Python backend for providing the client with the necessary data and tooling, it is currently not possible to host cellxgene as a static webpage via Netlify, AWS, GitHub Pages, etc.
 
