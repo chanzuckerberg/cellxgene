@@ -24,7 +24,7 @@ Once logged in you will be sent to the setup page. Here you can set some of the 
 - `DATASET`: A _publicly_ accessible URL pointing to a .h5ad file to view
   - This defaults to pbm3k.h5ad
 
-After filling out the settings and pressing the `Deploy app` button Heroku will begin building your deployment. This process will take a few minutes, but once completed you will have a personal free hosted version of cell×gene!
+After filling out the settings and pressing the `Deploy app` button Heroku will begin building your deployment. This process will take a few minutes, but once completed you will have a personal free hosted version of cellxgene!
 
 ## What is Heroku
 
