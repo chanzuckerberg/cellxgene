@@ -50,7 +50,7 @@ This is a good option if you want to quickly deploy an instance of cellxgene to 
   - Heroku offers tiered paid dynos. More can be found [here](https://www.heroku.com/pricing)
   - Note that this can get _very_ expensive for larger datasets
 - On the free dyno, after 30 minutes of inactivity, Heroku will put your app into a hibernation mode. Requiring it to boot up on the next access
-- Having multiple simultaneous users requires more memory. This means that the free container size is easily overwhelmed by multiple users, even with small datasets; this can be addressed by purchasing a larger container size.
+- Having multiple simultaneous users requires more memory. This means that the free container size is easily overwhelmed by multiple users, even with small datasets; this can be addressed by purchasing a larger container size
 - For the dataset to be downloaded onto the distro, your dataset must be hosted on a publicly accessible URL
 - By default, Heroku publically shares your instance to anyone with the URL.
   - There are many ways of securing your instance. One quick and simple way is by installing [wwwhisper](https://elements.heroku.com/addons/wwwhisper), a Heroku addon
