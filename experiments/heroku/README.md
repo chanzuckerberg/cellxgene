@@ -33,7 +33,7 @@ Heroku is a quick and easy way to host applications on the cloud.
 A Heroku deployment of cellxgene means that the app is not running on your local machine. Instead, the app is installed, configured, and ran on the Heroku servers (read: cloud).
 
 Heroku is one of many options available for hosting instances of cellxgene on the web.
-Some other options include: Amazon Web Services, Google Cloud Platform, Digital Ocean, and Microsoft Azure
+Some other options include: Amazon Web Services, Google Cloud Platform, Digital Ocean, and Microsoft Azure.
 
 ## Why use Heroku to deploy cellxgene?
 
