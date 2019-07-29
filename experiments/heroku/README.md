@@ -26,7 +26,7 @@ Once logged in you will be sent to the setup page. Here you can set some of the 
 
 After filling out the settings and pressing the `Deploy app` button Heroku will begin building your deployment. This process will take a few minutes, but once completed you will have a personal free hosted version of cellxgene!
 
-## What is Heroku
+## What is Heroku?
 
 Heroku is a quick and easy substitute for hosting applications on the cloud.
 
