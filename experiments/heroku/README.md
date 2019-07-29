@@ -28,7 +28,7 @@ After filling out the settings and pressing the `Deploy app` button Heroku will 
 
 ## What is Heroku?
 
-Heroku is a quick and easy substitute for hosting applications on the cloud.
+Heroku is a quick and easy way to host applications on the cloud.
 
 A Heroku deployment of cellxgene means that the app is not running on your local machine. Instead, the app is installed, configured, and ran on the Heroku servers (read: cloud).
 
