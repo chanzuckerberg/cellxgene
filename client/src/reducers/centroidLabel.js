@@ -1,23 +1,44 @@
-const initialState = {
+import calcCentroid from "../util/centroid";
+
+/* const initialState = {
   metadataField: "",
   categoryIndex: -1,
   categoryField: "",
   centroidXY: [-1, -1]
+}; */
+
+const initialState = {
+  labeledCategory: "",
+  labels: []
 };
 
 const CentroidLabel = (state = initialState, action, sharedNextState) => {
-  const { categoricalSelection } = sharedNextState;
+  /* const { categoricalSelection, world, layoutChoice } = sharedNextState;
   const { metadataField, categoryIndex } = action;
   const categoryField =
-    categoricalSelection?.[metadataField]?.categoryValues[categoryIndex];
+    categoricalSelection?.[metadataField]?.categoryValues[categoryIndex]; */
+  const { world, layoutChoice } = sharedNextState;
+  const { metadataField } = action;
+
   switch (action.type) {
-    case "category value mouse hover start":
+    case "show centroid labels for category":
+      return {
+        ...state,
+        labeledCategory: metadataField,
+        labels: calcCentroid(world, metadataField, layoutChoice.currentDimNames)
+      };
+    /*     case "category value mouse hover start":
       return {
         ...state,
         metadataField,
         categoryIndex,
         categoryField,
-        centroidXY: null
+        centroidXY: calcCentroid(  //This function call is computationally heavy and also leading to large GC. Before reimplementation, look into optimization and memoization
+          world,
+          metadataField,
+          categoryField,
+          layoutChoice.currentDimNames
+        )
       };
 
     case "category value mouse hover end":
@@ -27,7 +48,7 @@ const CentroidLabel = (state = initialState, action, sharedNextState) => {
       ) {
         return initialState;
       }
-      return state;
+      return state; */
 
     default:
       return state;
