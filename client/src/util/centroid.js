@@ -28,34 +28,43 @@ const calcMeanCentroid = (world, annoName, annoValue, layoutDimNames) => {
 };
 */
 
-const calcMedianCentroid = (world, annoName, annoValue, layoutDimNames) => {
-  const centroidX = [];
-  const centroidY = [];
-  let hasFinite = false;
-
+const calcMedianCentroid = (world, annoName, layoutDimNames) => {
   const annoArray = world.obsAnnotations.col(annoName).asArray();
   const layoutXArray = world.obsLayout.col(layoutDimNames[0]).asArray();
   const layoutYArray = world.obsLayout.col(layoutDimNames[1]).asArray();
 
+  const coordinates = new Map();
+
   for (let i = 0, len = annoArray.length; i < len; i += 1) {
-    if (annoArray[i] === annoValue) {
-      hasFinite =
-        Number.isFinite(layoutXArray[i]) || Number.isFinite(layoutYArray[i])
-          ? true
-          : hasFinite;
-      centroidX.push(layoutXArray[i]);
-      centroidY.push(layoutYArray[i]);
-    }
+    const valueArray = coordinates.get(annoArray[i]) || [false, [], []];
+    let hasFinite = valueArray[0];
+    hasFinite =
+      Number.isFinite(layoutXArray[i]) || Number.isFinite(layoutYArray[i])
+        ? true
+        : hasFinite;
+    valueArray[0] = hasFinite;
+    valueArray[1].push(layoutXArray[i]);
+    valueArray[2].push(layoutYArray[i]);
+    coordinates.set(annoArray[i], valueArray);
   }
 
-  if (hasFinite) {
-    const medianX = quantile([0.5], Float64Array.from(centroidX));
-    const medianY = quantile([0.5], Float64Array.from(centroidY));
+  const centroidCoordinates = [];
 
-    return [medianX, medianY];
+  const iter = coordinates.entries();
+
+  let { value } = iter.next();
+  while (value) {
+    centroidCoordinates.push([
+      value[0],
+      ...quantile([0.5], new Float64Array(value[1][1])),
+      ...quantile([0.5], new Float64Array(value[1][2]))
+    ]);
+    ({ value } = iter.next());
   }
+  return centroidCoordinates;
+};
 
-  return null;
+const hashMedianCentroid = (world, annoName, layoutDimNames) => {
 };
 
 export default calcMedianCentroid;
