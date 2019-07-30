@@ -22,6 +22,9 @@ const CentroidLabel = (state = initialState, action, sharedNextState) => {
 
   switch (action.type) {
     case "show centroid labels for category":
+      if (state.labeledCategory === metadataField) {
+        return initialState;
+      }
       return {
         ...state,
         labeledCategory: metadataField,
