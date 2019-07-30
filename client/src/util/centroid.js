@@ -1,4 +1,5 @@
 import quantile from "./quantile";
+import { memoize } from "./dataframe/util";
 
 /*
   Centroid coordinate calculation
@@ -65,6 +66,8 @@ const calcMedianCentroid = (world, annoName, layoutDimNames) => {
 };
 
 const hashMedianCentroid = (world, annoName, layoutDimNames) => {
+  return `${world.varAnnotations.__id}+${world.obsLayout.__id}+${
+    world.varData.__id
+  }::${annoName}:${layoutDimNames}`;
 };
-
-export default calcMedianCentroid;
+export default memoize(calcMedianCentroid, hashMedianCentroid);
