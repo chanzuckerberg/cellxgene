@@ -15,7 +15,8 @@ import {
   Icon,
   Position,
   PopoverInteractionKind,
-  Colors
+  Colors,
+  ButtonGroup
 } from "@blueprintjs/core";
 
 import * as globals from "../../globals";
@@ -27,7 +28,8 @@ import { AnnotationsHelpers } from "../../util/stateManager";
   colorAccessor: state.colors.colorAccessor,
   categoricalSelection: state.categoricalSelection,
   annotations: state.annotations,
-  universe: state.universe
+  universe: state.universe,
+  labeledCategory: state.centroidLabel.labeledCategory
 }))
 class Category extends React.Component {
   constructor(props) {
@@ -150,6 +152,14 @@ class Category extends React.Component {
     dispatch({
       type: "color by categorical metadata",
       colorAccessor: metadataField
+    });
+  };
+
+  handleCentroidChange = () => {
+    const { dispatch, metadataField } = this.props;
+    dispatch({
+      type: "show centroid labels for category",
+      metadataField
     });
   };
 
@@ -318,7 +328,9 @@ class Category extends React.Component {
       colorAccessor,
       categoricalSelection,
       isUserAnno,
-      annotations
+      annotations,
+      universe,
+      labeledCategory
     } = this.props;
     const { isTruncated } = categoricalSelection[metadataField];
     const cat = categoricalSelection[metadataField];
@@ -545,11 +557,19 @@ class Category extends React.Component {
                 </Popover>
               </>
             ) : null}
+          <ButtonGroup>
             <Tooltip
-              content="Use as color scale"
+              content="View the centroids for all values"
               position="bottom"
-              hoverOpenDelay={globals.tooltipHoverOpenDelay}
             >
+              <Button
+                icon="numbered-list"
+                onClick={this.handleCentroidChange}
+                active={labeledCategory === metadataField}
+                intent={labeledCategory === metadataField ? "primary" : "none"}
+              />
+            </Tooltip>
+            <Tooltip content="Use as color scale" position="bottom">
               <Button
                 data-testclass="colorby"
                 data-testid={`colorby-${metadataField}`}
@@ -559,6 +579,7 @@ class Category extends React.Component {
                 icon="tint"
               />
             </Tooltip>
+          </ButtonGroup>
           </div>
         </div>
         <div style={{ marginLeft: 26 }}>
