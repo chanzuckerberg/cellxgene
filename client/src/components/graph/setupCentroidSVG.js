@@ -17,19 +17,27 @@ export default (responsive, graphPaddingRight, labels, colorBy) => {
   //  TODO: Create own styles, ask Colin for an explanation on the css
   // For now I'm going to put centroid z-index at 998 and lasso on 999
 
-  for (let i = 0, { length } = labels; i < length; i += 1) {
+  // for (let i = 0, { length } = labels; i < length; i += 1) {
+  const iter = labels.entries();
+  let pair = iter.next().value;
+  let value;
+  let key;
+  while (pair) {
+    key = pair[0];
+    value = pair[1];
     const label = svg
       .append("g")
-      .attr("transform", `translate(${labels[i][1]}, ${labels[i][2]})`);
+      .attr("transform", `translate(${value[0]}, ${value[1]})`);
 
     label
       .append("text")
       .attr("text-anchor", "middle")
-      .text(labels[i][0])
+      .text(key)
       .style("font-family", "Roboto Condensed")
       .style("font-size", "18px")
       .style("font-weight", "700")
       .style("fill", colorBy ? "black" : "rgb(32, 178, 212)");
+    pair = iter.next().value;
   }
 
   return svg;
