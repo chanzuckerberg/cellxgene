@@ -49,20 +49,17 @@ const calcMedianCentroid = (world, annoName, layoutDimNames) => {
     coordinates.set(annoArray[i], valueArray);
   }
 
-  const centroidCoordinates = [];
+  coordinates.forEach((value, key, map) => {
+    if (value[0]) {
+      value[0] = quantile([0.5], new Float64Array(value[1]))[0];
+      value[1] = quantile([0.5], new Float64Array(value[2]))[0];
+      value.pop();
+    } else {
+      map.delete(key);
+    }
+  });
 
-  const iter = coordinates.entries();
-
-  let { value } = iter.next();
-  while (value) {
-    centroidCoordinates.push([
-      value[0],
-      ...quantile([0.5], new Float64Array(value[1][1])),
-      ...quantile([0.5], new Float64Array(value[1][2]))
-    ]);
-    ({ value } = iter.next());
-  }
-  return centroidCoordinates;
+  return coordinates;
 };
 
 const hashMedianCentroid = (world, annoName, layoutDimNames) => {
