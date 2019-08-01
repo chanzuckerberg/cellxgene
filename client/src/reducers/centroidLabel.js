@@ -17,7 +17,7 @@ const CentroidLabel = (state = initialState, action, sharedNextState) => {
   const { metadataField, categoryIndex } = action;
   const categoryField =
     categoricalSelection?.[metadataField]?.categoryValues[categoryIndex]; */
-  const { world, layoutChoice } = sharedNextState;
+  const { world, layoutChoice, categoricalSelection } = sharedNextState;
   const { metadataField } = action;
 
   switch (action.type) {
@@ -28,7 +28,12 @@ const CentroidLabel = (state = initialState, action, sharedNextState) => {
       return {
         ...state,
         labeledCategory: metadataField,
-        labels: calcCentroid(world, metadataField, layoutChoice.currentDimNames)
+        labels: calcCentroid(
+          world,
+          metadataField,
+          layoutChoice.currentDimNames,
+          categoricalSelection
+        )
       };
     /*     case "category value mouse hover start":
       return {
