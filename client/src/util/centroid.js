@@ -49,15 +49,22 @@ const calcMedianCentroid = (world, annoName, layoutDimNames) => {
     coordinates.set(annoArray[i], valueArray);
   }
 
-  coordinates.forEach((value, key, map) => {
+  const iter = coordinates.entries();
+  let pair = iter.next().value;
+  let value;
+  let key;
+  while (pair) {
+    key = pair[0];
+    value = pair[1];
     if (value[0]) {
       value[0] = quantile([0.5], new Float64Array(value[1]))[0];
       value[1] = quantile([0.5], new Float64Array(value[2]))[0];
       value.pop();
     } else {
-      map.delete(key);
+      coordinates.delete(key);
     }
-  });
+    pair = iter.next().value;
+  }
 
   return coordinates;
 };
