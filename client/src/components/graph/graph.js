@@ -371,19 +371,22 @@ class Graph extends React.PureComponent {
         return;
       }
 
-      const copy = [...centroidLabel.labels];
-
-      for (let i = 0, { length } = centroidLabel.labels; i < length; i += 1) {
-        copy[i] = [
-          copy[i][0],
-          ...this.mapPointToScreen([copy[i][1], copy[i][2]])
-        ];
+      const iter = centroidLabel.labels.entries();
+      let pair = iter.next().value;
+      let value;
+      while (pair) {
+        value = pair[1];
+        if (!value[2]) {
+          value.splice(0, 2, ...this.mapPointToScreen([value[0], value[1]]));
+          value[2] = true;
+        }
+        pair = iter.next().value;
       }
 
       const newCentroidSVG = setupCentroidSVG(
         responsive,
         this.graphPaddingRight,
-        copy,
+        centroidLabel.labels,
         colorAccessor
       );
 
