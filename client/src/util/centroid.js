@@ -39,7 +39,7 @@ const calcMedianCentroid = (
   const layoutXArray = world.obsLayout.col(layoutDimNames[0]).asArray();
   const layoutYArray = world.obsLayout.col(layoutDimNames[1]).asArray();
 
-  const coordinates = new Map();
+  const coordinates = new Map(); // map: annoValue -> [hasFinite, counter, [x Float32], [y Float32]]
   for (let i = 0, len = annoArray.length; i < len; i += 1) {
     const categoryValue = annoArray[i];
 
