@@ -363,34 +363,40 @@ class Graph extends React.PureComponent {
     };
 
     const createCentroidSVG = (
-      viewportChange = true /* this should be defaulted to false */
+      viewportChange = true /* this should be defaulted to false
+      , but leaving it like this utill I find out how to fix */
     ) => {
+      // Remove pre-existing SVG layer
       d3.select("#graphAttachPoint")
         .select("#centroid-container")
         .remove();
 
+      // If there is no currently selected cateogry for viewing
+      // Or if the graph is currently in zoom/pan mode
       if (
         centroidLabel.labeledCategory === "" ||
         !centroidLabel.labels ||
         graphInteractionMode === "zoom"
       ) {
+        // Return without redrawing the svg layer
         return;
       }
 
+      // Iterate over all the key-value pairs in labels
+      // key value pair looks like:
+      // categoryValue -> [layoutX, layoutY, calculatedScreenX, calculatedScreenY]
       const iter = centroidLabel.labels.entries();
       let pair = iter.next().value;
-      let value;
+      // While there are pairs
       while (pair) {
-        value = pair[1];
-        if (!value[2] || viewportChange) {
-          console.log("before:", value);
-
-          value[2] = true;
-
-          value.splice(3, 2, ...this.mapPointToScreen([value[0], value[1]]));
-
-          console.log(value);
+        const value = pair[1];
+        // If the screen coordinates haven't been calculated
+        // or if the viewport has changed
+        if (value.length > 2 || viewportChange) {
+          // replace indicies 2 and 3 with screen calculated coordinates
+          value.splice(2, 2, ...this.mapPointToScreen([value[0], value[1]]));
         }
+        // Iterate
         pair = iter.next().value;
       }
 
@@ -416,9 +422,10 @@ class Graph extends React.PureComponent {
       (responsive.height && responsive.width && !toolSVG) ||
       selectionTool !== prevProps.selectionTool
     ) {
-      // first time or change of selection tool6
+      // first time or change of selection tool
       createToolSVG();
     } else if (prevProps.graphInteractionMode !== graphInteractionMode) {
+      // If lasso/zoom is switched
       createToolSVG();
       createCentroidSVG();
     } else if (
