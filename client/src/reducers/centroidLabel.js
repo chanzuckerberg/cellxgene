@@ -17,10 +17,24 @@ const CentroidLabel = (state = initialState, action, sharedNextState) => {
   const { metadataField, categoryIndex } = action;
   const categoryField =
     categoricalSelection?.[metadataField]?.categoryValues[categoryIndex]; */
-  const { world, layoutChoice, categoricalSelection } = sharedNextState;
+  const {
+    world,
+    layoutChoice,
+    categoricalSelection,
+    controls
+  } = sharedNextState;
   const { metadataField } = action;
 
   switch (action.type) {
+    // case "change graph interaction mode":
+    //   if (action.data === "zoom") {
+    //     return {
+    //       ...initialState,
+    //       labeledCategory: "-1"
+    //     };
+    //   }
+    //   return initialState;
+
     case "show centroid labels for category":
       if (state.labeledCategory === metadataField) {
         return initialState;
