@@ -17,7 +17,7 @@ export default (responsive, graphPaddingRight, labels, colorBy) => {
   //  TODO: Create own styles, ask Colin for an explanation on the css
   // For now I'm going to put centroid z-index at 998 and lasso on 999
 
-  // for (let i = 0, { length } = labels; i < length; i += 1) {
+  // Iterate over the categoryValue -> coordinates, Map
   const iter = labels.entries();
   let pair = iter.next().value;
   let value;
@@ -25,10 +25,11 @@ export default (responsive, graphPaddingRight, labels, colorBy) => {
   while (pair) {
     key = pair[0];
     value = pair[1];
+    // Create the label using the screen calculated coordinates
     const label = svg
       .append("g")
       .attr("transform", `translate(${value[3]}, ${value[4]})`);
-
+    // And the key as the text
     label
       .append("text")
       .attr("text-anchor", "middle")
