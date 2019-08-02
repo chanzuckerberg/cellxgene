@@ -27,7 +27,7 @@ export default (responsive, graphPaddingRight, labels, colorBy) => {
     value = pair[1];
     const label = svg
       .append("g")
-      .attr("transform", `translate(${value[0]}, ${value[1]})`);
+      .attr("transform", `translate(${value[3]}, ${value[4]})`);
 
     label
       .append("text")
