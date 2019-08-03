@@ -66,4 +66,28 @@ describe("Dataframe column histogram", () => {
     // memoized?
     expect(df.col("value").histogram(3, [0, 2])).toMatchObject(h1);
   });
+
+  test("continuous thesholds correct", () => {
+    const vals = [0, 1, 9, 10, 11, 20, 99, 100];
+    const df = new Dataframe.Dataframe(
+      [8, 2],
+      [new Int32Array(vals), new Float32Array(vals)]
+    );
+
+    expect(df.col(0).histogram(5, [0, 100])).toEqual([5, 1, 0, 0, 2]);
+    expect(df.col(1).histogram(5, [0, 100])).toEqual([5, 1, 0, 0, 2]);
+    expect(df.col(0).histogram(2, [0, 10])).toEqual([2, 2]);
+    expect(df.col(0).histogram(10, [0, 100])).toEqual([
+      3,
+      2,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      2
+    ]);
+  });
 });
