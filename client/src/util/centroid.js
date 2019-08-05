@@ -46,40 +46,48 @@ const calcMedianCentroid = (
   const layoutXArray = world.obsLayout.col(layoutDimNames[0]).asArray();
   const layoutYArray = world.obsLayout.col(layoutDimNames[1]).asArray();
   const coordinates = new Map();
+
   // Iterate over all the cells in the category
   for (let i = 0, len = categoryArray.length; i < len; i += 1) {
     const categoryValue = categoryArray[i];
 
     // Get the index of the categoryValue within the category
+    // If the category is truncated and this value is removed,
+    // it will not be assigned a category value and will not be
+    // labeled on the graph
     const categoryValueIndex = categoricalSelection[
       categoryName
     ].categoryValueIndices.get(categoryValue);
 
-    // Get the number of cells which are in the category value
-    const numInCategoryValue =
-      categoricalSelection[categoryName].categoryValueCounts[
-        categoryValueIndex
-      ];
+    if (categoryValueIndex) {
+      // Get the number of cells which are in the category value
+      const numInCategoryValue =
+        categoricalSelection[categoryName].categoryValueCounts[
+          categoryValueIndex
+        ];
 
-    // Create/fetcht the valueArray,
-    // which is what the key points to in the `coordinates` hashmap
-    const valueArray = coordinates.get(categoryValue) || [
-      false, // hasFinte
-      0, // index
-      new Float32Array(numInCategoryValue), // x coorindates
-      new Float32Array(numInCategoryValue) // y coorindates
-    ];
-    const index = valueArray[1];
-    let hasFinite = valueArray[0];
-    hasFinite =
-      Number.isFinite(layoutXArray[i]) || Number.isFinite(layoutYArray[i])
-        ? true
-        : hasFinite;
-    valueArray[0] = hasFinite;
-    valueArray[1] = index + 1;
-    valueArray[2][index] = layoutXArray[i];
-    valueArray[3][index] = layoutYArray[i];
-    coordinates.set(categoryValue, valueArray);
+      // Create/fetch the valueArray,
+      // which is what the key points to in the `coordinates` hashmap
+      const valueArray = coordinates.get(categoryValue) || [
+        false, // hasFinte
+        0, // index
+        new Float32Array(numInCategoryValue), // x coorindates
+        new Float32Array(numInCategoryValue) // y coorindates
+      ];
+      const index = valueArray[1];
+      let hasFinite = valueArray[0];
+
+      hasFinite =
+        Number.isFinite(layoutXArray[i]) && Number.isFinite(layoutYArray[i])
+          ? true
+          : hasFinite;
+      valueArray[0] = hasFinite;
+      valueArray[1] = index + 1;
+      valueArray[2][index] = layoutXArray[i];
+      valueArray[3][index] = layoutYArray[i];
+
+      coordinates.set(categoryValue, valueArray);
+    }
   }
 
   // Iterate over the recently created map
@@ -90,8 +98,9 @@ const calcMedianCentroid = (
   while (pair) {
     key = pair[0];
     value = pair[1];
-    // If there is a finite coordinate for the category value
-    if (value[0]) {
+    // If there are coordinates for this cateogrical value,
+    // and there is a finite coordinate for the category value
+    if (value[2].length > 0 && value[3].length > 0 && value[0]) {
       // Find the median x and y coordinate
       // and insert them into the first two indices
       value[0] = quantile([0.5], value[2])[0];

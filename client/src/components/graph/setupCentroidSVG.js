@@ -26,8 +26,6 @@ export default (responsive, graphPaddingRight, labels, colorBy) => {
     key = pair[0];
     value = pair[1];
     // Create the label using the screen calculated coordinates
-    console.log(value);
-
     const label = svg
       .append("g")
       .attr("transform", `translate(${value[2]}, ${value[3]})`);
