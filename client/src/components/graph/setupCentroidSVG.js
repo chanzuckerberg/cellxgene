@@ -13,7 +13,8 @@ export default (responsive, graphPaddingRight, labels, colorBy) => {
     .attr("height", responsive.height)
     .attr("class", `${styles.graphSVG}`)
     .style("z-index", 998)
-    .style("pointer-events", "none");
+    .style("pointer-events", "none")
+    .style("background", "rgba(255, 255, 255, 0.8");
   //  TODO: Create own styles, ask Colin for an explanation on the css
   // For now I'm going to put centroid z-index at 998 and lasso on 999
 
@@ -33,11 +34,10 @@ export default (responsive, graphPaddingRight, labels, colorBy) => {
     label
       .append("text")
       .attr("text-anchor", "middle")
-      .text(key)
+      .text(key.length > 20 ? `${key.substr(0, 20)}...` : key)
       .style("font-family", "Roboto Condensed")
-      .style("font-size", "18px")
-      .style("font-weight", "700")
-      .style("fill", colorBy ? "black" : "rgb(32, 178, 212)");
+      .style("font-size", "12px")
+      .style("fill", "black");
     pair = iter.next().value;
   }
 
