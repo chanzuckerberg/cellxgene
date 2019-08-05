@@ -52,17 +52,21 @@ class LeftSideBar extends React.Component {
             ×
           </span>gene
         </span>
-        <span
+        <div
           data-testid="header"
           style={{
             fontSize: 14,
             position: "relative",
+            top: -2,
+            display: "inline-block",
             marginLeft: 7,
-            top: -8
+            width: 170,
+            overflow: "hidden"
           }}
+          title={datasetTitle}
         >
           {datasetTitle}
-        </span>
+        </div>
       </div>
     );
   }
