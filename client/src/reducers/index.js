@@ -19,6 +19,7 @@ import resetCache from "./resetCache";
 import annotations from "./annotations";
 import autosave from "./autosave";
 import centroidLabels from "./centroidLabels";
+import pointDialation from "./pointDilation";
 
 import undoableConfig from "./undoableConfig";
 
@@ -38,20 +39,21 @@ const Reducer = undoable(
         ["differential", differential],
         ["responsive", responsive],
     ["centroidLabels", centroidLabels],
+    ["pointDilation", pointDialation],
         ["autosave", autosave],
         ["resetCache", resetCache]
     ]),
     [
         "universe",
-        "world",
         "categoricalSelection",
+        "world",
         "continuousSelection",
         "graphSelection",
         "crossfilter",
-        "colors",
         "controls",
         "differential",
         "layoutChoice",
+        "colors",
         "annotations"
 );
 
