@@ -246,7 +246,6 @@ class Graph extends React.PureComponent {
       currentSelection,
       layoutChoice,
       graphInteractionMode,
-      colorAccessor,
       centroidLabels,
       pointDilation
     } = this.props;
