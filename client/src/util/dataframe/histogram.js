@@ -8,13 +8,13 @@ function _histogramContinuous(column, bins, min, max) {
   if (!column) {
     return valBins;
   }
-  const binWidth = (max - min) / (bins - 1);
+  const binWidth = (max - min) / bins;
   const colArray = column.asArray();
   for (let r = 0, len = colArray.length; r < len; r += 1) {
     const val = colArray[r];
     if (val <= max && val >= min) {
       // ensure test excludes NaN values
-      const valBin = (val - min) / binWidth;
+      const valBin = Math.min(Math.floor((val - min) / binWidth), bins - 1);
       valBins[valBin] += 1;
     }
   }
@@ -26,7 +26,7 @@ function _histogramContinuousBy(column, bins, min, max, by) {
   if (!column || !by) {
     return byMap;
   }
-  const binWidth = (max - min) / (bins - 1);
+  const binWidth = (max - min) / bins;
   const byArray = by.asArray();
   const colArray = column.asArray();
   for (let r = 0, len = colArray.length; r < len; r += 1) {
@@ -39,8 +39,8 @@ function _histogramContinuousBy(column, bins, min, max, by) {
     const val = colArray[r];
     if (val <= max && val >= min) {
       // ensure test excludes NaN values
-      const valBin = (val - min) / binWidth;
-      valBins[Math.floor(valBin)] += 1;
+      const valBin = Math.min(Math.floor((val - min) / binWidth), bins - 1);
+      valBins[valBin] += 1;
     }
   }
   return byMap;
