@@ -566,7 +566,7 @@ class Category extends React.Component {
               disabled={graphInteractionMode === "zoom"}
             >
               <Button
-                icon="numbered-list"
+                icon="property"
                 onClick={this.handleCentroidChange}
                 active={labeledCategory === metadataField}
                 intent={labeledCategory === metadataField ? "primary" : "none"}
