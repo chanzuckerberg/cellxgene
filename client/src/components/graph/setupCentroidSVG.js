@@ -1,7 +1,7 @@
 import * as d3 from "d3";
 import styles from "./graph.css";
 
-export default (responsive, graphPaddingRight, labels, colorBy) => {
+export default (responsive, graphPaddingRight, labels) => {
   const containerWidth = responsive.width - graphPaddingRight;
 
   const svg = d3

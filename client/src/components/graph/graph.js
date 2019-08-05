@@ -406,8 +406,7 @@ class Graph extends React.PureComponent {
       const newCentroidSVG = setupCentroidSVG(
         responsive,
         this.graphPaddingRight,
-        centroidLabels.labels,
-        colorAccessor
+        centroidLabels.labels
       );
 
       stateChanges = { ...stateChanges, centroidSVG: newCentroidSVG };
