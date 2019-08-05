@@ -50,10 +50,11 @@ const Reducer = undoable(
         "continuousSelection",
         "graphSelection",
         "crossfilter",
+        "layoutChoice",
         "controls",
         "differential",
-        "layoutChoice",
         "colors",
+    "centroidLabels",
         "annotations"
 );
 
