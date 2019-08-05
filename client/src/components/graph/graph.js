@@ -79,7 +79,7 @@ function renderThrottle(callback) {
   selectionTool: state.graphSelection.tool,
   currentSelection: state.graphSelection.selection,
   layoutChoice: state.layoutChoice,
-  centroidLabel: state.centroidLabel,
+  centroidLabels: state.centroidLabels,
   graphInteractionMode: state.controls.graphInteractionMode,
   colorAccessor: state.colors.colorAccessor
 }))
@@ -246,7 +246,7 @@ class Graph extends React.PureComponent {
       layoutChoice,
       graphInteractionMode,
       colorAccessor,
-      centroidLabel
+      centroidLabels
     } = this.props;
     const { reglRender, regl, toolSVG, centroidSVG } = this.state;
     let stateChanges = {};
@@ -301,6 +301,7 @@ class Graph extends React.PureComponent {
       }
 
       /* flags for each point */
+      const { metadataField, categoryField } = centroidLabels;
       const newFlags = this.computePointFlags(
         world,
         crossfilter,
@@ -374,8 +375,8 @@ class Graph extends React.PureComponent {
       // If there is no currently selected cateogry for viewing
       // Or if the graph is currently in zoom/pan mode
       if (
-        centroidLabel.labeledCategory === "" ||
-        !centroidLabel.labels ||
+        centroidLabels.labeledCategory === "" ||
+        !centroidLabels.labels ||
         graphInteractionMode === "zoom"
       ) {
         // Return without redrawing the svg layer
@@ -385,7 +386,7 @@ class Graph extends React.PureComponent {
       // Iterate over all the key-value pairs in labels
       // key value pair looks like:
       // categoryValue -> [layoutX, layoutY, calculatedScreenX, calculatedScreenY]
-      const iter = centroidLabel.labels.entries();
+      const iter = centroidLabels.labels.entries();
       let pair = iter.next().value;
       // While there are pairs
       while (pair) {
@@ -403,7 +404,7 @@ class Graph extends React.PureComponent {
       const newCentroidSVG = setupCentroidSVG(
         responsive,
         this.graphPaddingRight,
-        centroidLabel.labels,
+        centroidLabels.labels,
         colorAccessor
       );
 
@@ -430,7 +431,7 @@ class Graph extends React.PureComponent {
       // if we just switched from zoom, lets assume that the camera changed
       createCentroidSVG(prevProps.graphInteractionMode === "zoom");
     } else if (
-      centroidLabel !== prevProps.centroidLabel ||
+      centroidLabels !== prevProps.centroidLabels ||
       (responsive.height && responsive.width && !centroidSVG)
     ) {
       // First time for centroid or label change

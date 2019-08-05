@@ -16,16 +16,16 @@ import layoutChoice from "./layoutChoice";
 import responsive from "./responsive";
 import controls from "./controls";
 import resetCache from "./resetCache";
-import centroidLabel from "./centroidLabel";
 import annotations from "./annotations";
 import autosave from "./autosave";
+import centroidLabels from "./centroidLabels";
 
 import undoableConfig from "./undoableConfig";
 
 const Reducer = undoable(
     cascadeReducers([
-        ["config", config],
         ["universe", universe],
+        ["config", config],
         ["world", world],
         ["annotations", annotations],
         ["layoutChoice", layoutChoice],
@@ -37,7 +37,7 @@ const Reducer = undoable(
         ["controls", controls],
         ["differential", differential],
         ["responsive", responsive],
-        ["centroidLabel", centroidLabel],
+    ["centroidLabels", centroidLabels],
         ["autosave", autosave],
         ["resetCache", resetCache]
     ]),
@@ -53,8 +53,6 @@ const Reducer = undoable(
         "differential",
         "layoutChoice",
         "annotations"
-    ],
-    undoableConfig
 );
 
 const store = createStore(Reducer, applyMiddleware(thunk));

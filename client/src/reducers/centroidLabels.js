@@ -12,7 +12,7 @@ const initialState = {
   labels: []
 };
 
-const CentroidLabel = (state = initialState, action, sharedNextState) => {
+const centroidLabels = (state = initialState, action, sharedNextState) => {
   /* const { categoricalSelection, world, layoutChoice } = sharedNextState;
   const { metadataField, categoryIndex } = action;
   const categoryField =
@@ -63,4 +63,4 @@ const CentroidLabel = (state = initialState, action, sharedNextState) => {
   }
 };
 
-export default CentroidLabel;
+export default centroidLabels;
