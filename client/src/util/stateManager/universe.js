@@ -1,5 +1,6 @@
 import _ from "lodash";
 
+import { unassignedCategoryLabel } from "../../globals";
 import { decodeMatrixFBS } from "./matrix";
 import * as Dataframe from "../dataframe";
 import { isFpTypedArray } from "../typeHelpers";
@@ -124,6 +125,10 @@ function reconcileSchemaCategoriesWithSummary(universe) {
   For example, boolean defined fields in the schema do not contain
   explicit declaration of categories (nor do string fields).  In these
   cases, add a 'categories' field to the schema so it is accessible.
+
+  In addition, we have a client-side convention (UI) that all writable
+  annotations must have an 'unassigned' category, even if it is not currently
+  in use.
   */
 
   universe.schema.annotations.obs.columns.forEach(s => {
@@ -137,6 +142,10 @@ function reconcileSchemaCategoriesWithSummary(universe) {
         universe.obsAnnotations.col(s.name).summarize().categories ?? []
       );
       s.categories = categories;
+    }
+
+    if (s.writable && s.categories.indexOf(unassignedCategoryLabel) == -1) {
+      s.categories = s.categories.concat(unassignedCategoryLabel);
     }
   });
 }
