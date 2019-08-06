@@ -14,7 +14,7 @@ export default (responsive, graphPaddingRight, labels) => {
     .attr("class", `${styles.graphSVG}`)
     .style("z-index", 998)
     .style("pointer-events", "none")
-    .style("background", "rgba(255, 255, 255, 0.8");
+    .style("background", "rgba(255, 255, 255, 0.625");
   //  TODO: Create own styles, ask Colin for an explanation on the css
   // For now I'm going to put centroid z-index at 998 and lasso on 999
 
