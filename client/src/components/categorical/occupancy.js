@@ -105,30 +105,34 @@ class Occupancy extends React.Component {
 
     const occupancy = occupancyMap.get(category.categoryValues[categoryIndex]);
 
-    const x = d3
-      .scaleLinear()
-      /* get all the keys d[1] as an array, then find the sum */
-      .domain([0, d3.sum(Array.from(occupancy.values()))])
-      .range([0, this._WIDTH]);
-    const categories = schema.annotations.obsByName[colorAccessor]?.categories;
+    if (occupancy && occupancy.size > 0) {
+      // not all categories have occupancy, so occupancy may be undefined.
+      const x = d3
+        .scaleLinear()
+        /* get all the keys d[1] as an array, then find the sum */
+        .domain([0, d3.sum(Array.from(occupancy.values()))])
+        .range([0, this._WIDTH]);
+      const categories =
+        schema.annotations.obsByName[colorAccessor]?.categories;
 
-    let currentOffset = 0;
-    const dfColumn = world.obsAnnotations.col(colorAccessor);
-    const categoryValues = dfColumn.summarize().categories;
+      let currentOffset = 0;
+      const dfColumn = world.obsAnnotations.col(colorAccessor);
+      const categoryValues = dfColumn.summarize().categories;
 
-    let o;
-    let scaledValue;
-    let value;
+      let o;
+      let scaledValue;
+      let value;
 
-    for (let i = 0, { length } = categoryValues; i < length; i += 1) {
-      value = categoryValues[i];
-      o = occupancy.get(value);
-      scaledValue = x(o);
-      ctx.fillStyle = o
-        ? colorScale(categories.indexOf(value))
-        : "rgb(255,255,255)";
-      ctx.fillRect(currentOffset, 0, o ? scaledValue : 0, this._HEIGHT);
-      currentOffset += o ? scaledValue : 0;
+      for (let i = 0, { length } = categoryValues; i < length; i += 1) {
+        value = categoryValues[i];
+        o = occupancy.get(value);
+        scaledValue = x(o);
+        ctx.fillStyle = o
+          ? colorScale(categories.indexOf(value))
+          : "rgb(255,255,255)";
+        ctx.fillRect(currentOffset, 0, o ? scaledValue : 0, this._HEIGHT);
+        currentOffset += o ? scaledValue : 0;
+      }
     }
   };
 
