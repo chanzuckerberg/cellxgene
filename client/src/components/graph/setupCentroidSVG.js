@@ -34,7 +34,7 @@ export default (responsive, graphPaddingRight, labels) => {
     label
       .append("text")
       .attr("text-anchor", "middle")
-      .attr("id", `svg${key}-label`)
+      .attr("id", `svg${key.replace(/[^\w\s]/gi, "")}-label`)
       .text(key.length > 20 ? `${key.substr(0, 20)}...` : key)
       .style("font-family", "Roboto Condensed")
       .style("font-size", "12px")
