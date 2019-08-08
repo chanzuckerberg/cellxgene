@@ -463,7 +463,7 @@ class Graph extends React.PureComponent {
     if (pointDilation.categoryField) {
       svg
         ?.select(
-          `#svg${pointDilation.categoryField.replace(/[^\w\s]/gi, "")}-label`
+          `#svg${pointDilation.categoryField.replace(/[^\w]/gi, "")}-label`
         )
         .style("font-size", "18px")
         .style("font-weight", "800");
