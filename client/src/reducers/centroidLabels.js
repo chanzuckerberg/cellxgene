@@ -1,40 +1,50 @@
 import calcCentroid from "../util/centroid";
 
 const initialState = {
-  labeledCategory: "",
-  labels: []
+  labels: [],
+  toggle: false
 };
 
 const centroidLabels = (state = initialState, action, sharedNextState) => {
-  const { world, layoutChoice, categoricalSelection } = sharedNextState;
-  const { metadataField } = action;
+  const { world, layoutChoice, categoricalSelection, colors } = sharedNextState;
+  const { colorAccessor } = colors;
 
   switch (action.type) {
     case "set World to current selection":
       return {
         ...state,
-        labels: state.labeledCategory
+        labels: colorAccessor
           ? calcCentroid(
               world,
-              state.labeledCategory,
+              colorAccessor,
               layoutChoice.currentDimNames,
               categoricalSelection
             )
           : []
       };
+
+    case "color by categorical metadata":
     case "show centroid labels for category":
-      if (state.labeledCategory === metadataField) {
-        return initialState;
+      if (
+        !colorAccessor ||
+        !(action.toggle || (action.toggle === undefined && state.toggle))
+      ) {
+        return {
+          ...state,
+          labels: [],
+          toggle: action.toggle === undefined ? state.toggle : action.toggle
+        };
       }
+
       return {
         ...state,
-        labeledCategory: metadataField,
         labels: calcCentroid(
           world,
-          metadataField,
+          colorAccessor,
           layoutChoice.currentDimNames,
           categoricalSelection
-        )
+        ),
+        toggle: action.toggle === undefined ? state.toggle : action.toggle
       };
 
     default:
