@@ -13,12 +13,14 @@ const centroidLabels = (state = initialState, action, sharedNextState) => {
     case "set World to current selection":
       return {
         ...state,
-        labels: calcCentroid(
-          world,
-          state.labeledCategory,
-          layoutChoice.currentDimNames,
-          categoricalSelection
-        )
+        labels: state.labeledCategory
+          ? calcCentroid(
+              world,
+              state.labeledCategory,
+              layoutChoice.currentDimNames,
+              categoricalSelection
+            )
+          : []
       };
     case "show centroid labels for category":
       if (state.labeledCategory === metadataField) {
