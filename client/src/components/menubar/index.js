@@ -17,6 +17,8 @@ import CellSetButton from "./cellSetButtons";
 import InformationMenu from "./infoMenu";
 import UndoRedoReset from "./undoRedoReset";
 import Clip from "./clip";
+import { tooltipHoverOpenDelay } from "../../globals";
+import centroidLabels from "../../reducers/centroidLabels";
 import * as globals from "../../globals";
 
 @connect(state => ({
@@ -42,7 +44,8 @@ import * as globals from "../../globals";
   redoDisabled: state["@@undoable/future"].length === 0,
   aboutLink: state.config?.links?.["about-dataset"],
   disableDiffexp: state.config?.parameters?.["disable-diffexp"] ?? false,
-  diffexpMayBeSlow: state.config?.parameters?.["diffexp-may-be-slow"] ?? false
+  diffexpMayBeSlow: state.config?.parameters?.["diffexp-may-be-slow"] ?? false,
+  centroidToggle: state.centroidLabels.toggle
 }))
 class MenuBar extends React.Component {
   static isValidDigitKeyEvent(e) {
@@ -314,6 +317,15 @@ class MenuBar extends React.Component {
     );
   }
 
+  handleCentroidChange = () => {
+    const { dispatch, centroidToggle } = this.props;
+
+    dispatch({
+      type: "show centroid labels for category",
+      toggle: !centroidToggle
+    });
+  };
+
   render() {
     const {
       dispatch,
@@ -327,7 +339,8 @@ class MenuBar extends React.Component {
       clipPercentileMax,
       layoutChoice,
       graphInteractionMode,
-      aboutLink
+      aboutLink,
+      centroidToggle
     } = this.props;
     const { pendingClipPercentiles } = this.state;
 
@@ -419,6 +432,22 @@ class MenuBar extends React.Component {
             />
           </Tooltip>
         </div>
+        <Tooltip
+          content="View the centroids for all values"
+          position="bottom"
+          disabled={graphInteractionMode === "zoom"}
+        >
+          <Button
+            icon="property"
+            onClick={this.handleCentroidChange}
+            active={centroidToggle}
+            intent={centroidToggle ? "primary" : "none"}
+            disabled={graphInteractionMode === "zoom"}
+            style={{
+              marginLeft: 10
+            }}
+          />
+        </Tooltip>
         <div
           className="bp3-button-group"
           style={{
