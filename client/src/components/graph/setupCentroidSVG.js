@@ -6,14 +6,10 @@ export default (responsive, graphPaddingRight, labels) => {
 
   const svg = d3
     .select("#graphAttachPoint")
-    .append("svg")
-    .attr("id", "centroid-container")
-    .attr("data-testid", "centroid-overlay")
+    .select("svg")
     .attr("width", containerWidth)
     .attr("height", responsive.height)
     .attr("class", `${styles.graphSVG}`)
-    .style("z-index", 998)
-    .style("pointer-events", "none")
     .style("background", "rgba(255, 255, 255, 0.625");
   //  TODO: Create own styles, ask Colin for an explanation on the css
   // For now I'm going to put centroid z-index at 998 and lasso on 999
@@ -29,7 +25,8 @@ export default (responsive, graphPaddingRight, labels) => {
     // Create the label using the screen calculated coordinates
     const label = svg
       .append("g")
-      .attr("transform", `translate(${value[2]}, ${value[3]})`);
+      .attr("class", "centroid-label")
+      .attr("transform", `translate(${value[2]}, ${value[3]})`)
     // And the key as the text
     label
       .append("text")

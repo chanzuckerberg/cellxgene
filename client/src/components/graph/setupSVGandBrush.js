@@ -21,7 +21,7 @@ export default (
 ) => {
   const svg = d3
     .select("#graphAttachPoint")
-    .append("svg")
+    .select("svg")
     .attr("id", "tool")
     .attr("data-testid", "layout-overlay")
     .attr("width", responsive.width - graphPaddingRight)

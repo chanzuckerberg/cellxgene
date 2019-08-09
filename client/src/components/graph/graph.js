@@ -334,8 +334,9 @@ class Graph extends React.PureComponent {
     const createToolSVG = () => {
       /* clear out whatever was on the div, even if nothing, but usually the brushes etc */
       d3.select("#graphAttachPoint")
-        .select("#tool")
-        .remove();
+        .select("svg")
+        .selectAll(".lasso-svg")
+        .html(null);
 
       let handleStart;
       let handleDrag;
@@ -371,8 +372,10 @@ class Graph extends React.PureComponent {
     ) => {
       // Remove pre-existing SVG layer
       d3.select("#graphAttachPoint")
-        .select("#centroid-container")
-        .remove();
+        .select("svg")
+        .style("background", null)
+        .selectAll(".centroid-label")
+        .html(null);
 
       // If there is no currently selected cateogry for viewing
       // Or if the graph is currently in zoom/pan mode
@@ -860,7 +863,9 @@ class Graph extends React.PureComponent {
             right: globals.leftSidebarWidth
           }}
         >
-          <div id="graphAttachPoint" />
+          <div id="graphAttachPoint">
+            <svg />
+          </div>
           <div style={{ padding: 0, margin: 0 }}>
             <canvas
               width={responsive.width - this.graphPaddingRightLeft}

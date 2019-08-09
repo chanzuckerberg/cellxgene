@@ -28,6 +28,7 @@ const Lasso = () => {
 
       lassoPath = g
         .append("path")
+        .attr("class", "lasso-svg")
         .attr("data-testid", "lasso-element")
         .attr("fill", "#0bb")
         .attr("fill-opacity", 0.1)
@@ -36,6 +37,7 @@ const Lasso = () => {
 
       closePath = g
         .append("line")
+        .attr("class", "lasso-svg")
         .attr("x2", lassoPolygon[0][0])
         .attr("y2", lassoPolygon[0][1])
         .attr("stroke", "#0bb")
@@ -91,6 +93,7 @@ const Lasso = () => {
     const bbox = svg.node().getBoundingClientRect();
     const area = g
       .append("rect")
+      .attr("class", "lasso-svg")
       .attr("width", bbox.width)
       .attr("height", bbox.height)
       .attr("opacity", 0);
@@ -123,6 +126,7 @@ const Lasso = () => {
         lassoPolygon = polygon;
         lassoPath = g
           .append("path")
+          .attr("class", "lasso-svg")
           .attr("data-testid", "lasso-element")
           .attr("fill", "#0bb")
           .attr("fill-opacity", 0.1)
