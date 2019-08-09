@@ -408,9 +408,6 @@ class Graph extends React.PureComponent {
       }
 
       const handleMouseEnter = d => {
-        console.log("colorAccessor", colorAccessor);
-        console.log("key", d.key);
-
         dispatch({
           type: "category value mouse hover start",
           metadataField: colorAccessor,
