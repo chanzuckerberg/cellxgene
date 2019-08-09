@@ -248,7 +248,8 @@ class Graph extends React.PureComponent {
       graphInteractionMode,
       centroidLabels,
       pointDilation,
-      colorAccessor
+      colorAccessor,
+      dispatch
     } = this.props;
     const { reglRender, regl, toolSVG, centroidSVG } = this.state;
     let stateChanges = {};
@@ -406,10 +407,31 @@ class Graph extends React.PureComponent {
         pair = iter.next().value;
       }
 
+      const handleMouseEnter = d => {
+        console.log("colorAccessor", colorAccessor);
+        console.log("key", d.key);
+
+        dispatch({
+          type: "category value mouse hover start",
+          metadataField: colorAccessor,
+          categoryField: d.key
+        });
+      };
+
+      const handleMouseExit = d => {
+        dispatch({
+          type: "category value mouse hover end",
+          metadataField: colorAccessor,
+          categoryField: d.key
+        });
+      };
+
       const newCentroidSVG = setupCentroidSVG(
         responsive,
         this.graphPaddingRight,
-        centroidLabels.labels
+        centroidLabels.labels,
+        handleMouseEnter,
+        handleMouseExit
       );
 
       stateChanges = { ...stateChanges, centroidSVG: newCentroidSVG };
