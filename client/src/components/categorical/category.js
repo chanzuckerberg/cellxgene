@@ -7,8 +7,10 @@ import {
   Tooltip,
   InputGroup,
   Menu,
+  Dialog,
   MenuItem,
   Popover,
+  Classes,
   Icon,
   Position,
   PopoverInteractionKind
@@ -21,7 +23,8 @@ import sortedCategoryValues from "./util";
 @connect(state => ({
   colorAccessor: state.colors.colorAccessor,
   categoricalSelection: state.categoricalSelection,
-  annotations: state.annotations
+  annotations: state.annotations,
+  universe: state.universe
 }))
 class Category extends React.Component {
   constructor(props) {
@@ -64,20 +67,38 @@ class Category extends React.Component {
     }
   }
 
+  activateAddNewLabelMode = () => {
+    const { dispatch, metadataField } = this.props;
+    dispatch({
+      type: "annotation: activate add new label mode",
+      data: metadataField
+    });
+  };
+
+  disableAddNewLabelMode = () => {
+    const { dispatch, metadataField } = this.props;
+    dispatch({
+      type: "annotation: disable add new label mode",
+      data: metadataField
+    });
+  };
+
   handleAddNewLabelToCategory = () => {
     const { dispatch, metadataField } = this.props;
+    const { newLabelText } = this.state;
     /*
     XXX TODO - temporary code generates random label string.   Remove
     when the label creation UI is implemented.
 
     const { newLabelText } = this.state;
     */
-    const newLabelText = `label${Math.random()}`;
+    // const newLabelText = `label${Math.random()}`;
     dispatch({
       type: "annotation: add new label to category",
       metadataField,
       newLabelText
     });
+    this.setState({ newLabelText: "" });
   };
 
   activateEditCategoryMode = () => {
@@ -162,16 +183,23 @@ class Category extends React.Component {
   }
 
   render() {
-    const { isExpanded, isChecked } = this.state;
+    const { isExpanded, isChecked, newLabelText } = this.state;
     const {
       metadataField,
       colorAccessor,
       categoricalSelection,
       isUserAnno,
       createAnnoModeActive,
-      annotations
+      annotations,
+      universe
     } = this.props;
     const { isTruncated } = categoricalSelection[metadataField];
+    console.log(
+      "is it in it",
+      universe.schema.annotations.obsByName[metadataField].categories.indexOf(
+        newLabelText
+      ) !== -1
+    );
     return (
       <div
         style={{
@@ -274,71 +302,87 @@ class Category extends React.Component {
           </div>
           <div>
             {isUserAnno ? (
-              <Popover
-                interactionKind={PopoverInteractionKind.HOVER}
-                boundary="window"
-                position={Position.RIGHT}
-                content={
-                  <Menu>
-                    {annotations.isEditingCategoryName &&
-                    annotations.categoryEditable === metadataField ? (
+              <>
+                <Dialog
+                  icon="tag"
+                  title="Add new label"
+                  isOpen={annotations.isAddingNewLabel}
+                  onClose={this.disableAddNewLabelMode}
+                >
+                  <div className={Classes.DIALOG_BODY}>
+                    <div style={{ marginBottom: 20 }}>
+                      <p>New, unique label name:</p>
                       <InputGroup
-                        style={{ position: "relative", top: -1 }}
-                        ref={input => {
-                          this.editableInput = input;
-                        }}
-                        small
-                        onChange={e => {
-                          this.setState({ editedCategoryText: e.target.value });
-                        }}
-                        defaultValue={metadataField}
-                        rightElement={
-                          <Button
-                            minimal
-                            style={{ position: "relative", top: -1 }}
-                            type="button"
-                            icon="small-tick"
-                            data-testclass="submitEditCategory"
-                            data-testid="submitEditCategory"
-                            onClick={this.handleEditCategory}
-                          />
+                        autoFocus
+                        onChange={e =>
+                          this.setState({ newLabelText: e.target.value })
                         }
+                        leftIcon="tag"
                       />
-                    ) : (
+                    </div>
+                  </div>
+                  <div className={Classes.DIALOG_FOOTER}>
+                    <div className={Classes.DIALOG_FOOTER_ACTIONS}>
+                      <Tooltip content="Close this dialog without creating a category.">
+                        <Button onClick={this.disableAddNewLabelMode}>
+                          Cancel
+                        </Button>
+                      </Tooltip>
+                      <Button
+                        disabled={
+                          newLabelText.length === 0 ||
+                          universe.schema.annotations.obsByName[
+                            metadataField
+                          ].categories.indexOf(newLabelText) !== -1
+                        }
+                        onClick={this.handleAddNewLabelToCategory}
+                        intent="primary"
+                      >
+                        Add new label to category
+                      </Button>
+                    </div>
+                  </div>
+                </Dialog>
+                <Popover
+                  interactionKind={PopoverInteractionKind.HOVER}
+                  boundary="window"
+                  position={Position.RIGHT}
+                  content={
+                    <Menu>
                       <MenuItem
                         icon="tag"
                         data-testclass="handleAddNewLabelToCategory"
                         data-testid={`handleAddNewLabelToCategory-${metadataField}`}
-                        onClick={this.handleAddNewLabelToCategory}
+                        onClick={this.activateAddNewLabelMode}
                         text="Add a new label to this category"
                       />
-                    )}
-                    <MenuItem
-                      icon="edit"
-                      data-testclass="activateEditCategoryMode"
-                      data-testid={`activateEditCategoryMode-${metadataField}`}
-                      onClick={this.activateEditCategoryMode}
-                      text="Edit this category's name"
-                    />
-                    <MenuItem
-                      icon="delete"
-                      intent="danger"
-                      data-testclass="handleDeleteCategory"
-                      data-testid={`handleDeleteCategory-${metadataField}`}
-                      onClick={this.handleDeleteCategory}
-                      text="Delete this category, all associated labels, and remove all cell assignments"
-                    />
-                  </Menu>
-                }
-              >
-                <Button
-                  style={{ marginLeft: 0 }}
-                  data-testclass="seeActions"
-                  data-testid={`seeActions-${metadataField}`}
-                  icon="more"
-                  minimal
-                />
-              </Popover>
+                      <MenuItem
+                        icon="edit"
+                        data-testclass="activateEditCategoryMode"
+                        data-testid={`activateEditCategoryMode-${metadataField}`}
+                        onClick={this.activateEditCategoryMode}
+                        text="Edit this category's name"
+                      />
+                      <MenuItem
+                        icon="delete"
+                        intent="danger"
+                        data-testclass="handleDeleteCategory"
+                        data-testid={`handleDeleteCategory-${metadataField}`}
+                        onClick={this.handleDeleteCategory}
+                        text="Delete this category, all associated labels, and remove all cell assignments"
+                      />
+                    </Menu>
+                  }
+                >
+                  <Button
+                    style={{ marginLeft: 0 }}
+                    data-testclass="seeActions"
+                    data-testid={`seeActions-${metadataField}`}
+                    icon="more"
+                    minimal
+                  />
+                </Popover>
+              </>
             ) : null}
             <Tooltip content="Use as color scale" position="bottom">
               <Button

@@ -112,12 +112,12 @@ class CategoryValue extends React.Component {
   };
 
   shouldComponentUpdate = nextProps => {
-    /* 
+    /*
     Checks to see if at least one of the following changed:
     * world state
     * the color accessor (what is currently being colored by)
     * if this catagorical value's selection status has changed
-    
+
     If and only if true, update the component
     */
     const { props } = this;
@@ -349,6 +349,9 @@ class CategoryValue extends React.Component {
                     <MenuItem
                       icon="delete"
                       intent="danger"
+                      disabled={
+                        displayString === globals.unassignedCategoryLabel
+                      }
                       data-testclass="handleDeleteValue"
                       data-testid={`handleDeleteValue-${metadataField}`}
                       onClick={this.handleDeleteValue}

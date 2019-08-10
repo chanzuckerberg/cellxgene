@@ -12,6 +12,26 @@ const Annotations = (
 ) => {
   switch (action.type) {
     /* CATEGORY */
+    case "annotation: activate add new label mode":
+      console.log(action.type, action);
+      return {
+        ...state,
+        isAddingNewLabel: true,
+        categoryAddingNewLabel: action.data
+      };
+    case "annotation: disable add new label mode":
+      return {
+        ...state,
+        isAddingNewLabel: false,
+        categoryAddingNewLabel: null
+      };
+    case "annotation: add new label to category":
+      console.log(action.type, action);
+      return {
+        ...state,
+        isAddingNewLabel: false,
+        categoryAddingNewLabel: null
+      };
     case "annotation: activate category edit mode":
       console.log(action.type, action);
       return {
