@@ -1,6 +1,6 @@
-# cellxgene
+<img src="./docs/cellxgene-logo.svg" width="300">
 
-> an interactive explorer for single-cell transcriptomics data
+_an interactive explorer for single-cell transcriptomics data_
 
 [![DOI](https://zenodo.org/badge/105615409.svg)](https://zenodo.org/badge/latestdoi/105615409)
 
