@@ -22,13 +22,16 @@ export default (
   const svg = d3
     .select("#graphAttachPoint")
     .select("svg")
-    .attr("id", "tool")
     .attr("data-testid", "layout-overlay")
     .attr("width", responsive.width - graphPaddingRight)
     .attr("height", responsive.height)
     .attr("class", `${styles.graphSVG}`)
     .style("z-index", 999)
-    .style("display", graphInteractionMode === "select" ? "inherit" : "none");
+    .attr(
+      "pointer-events",
+      graphInteractionMode === "select" ? "auto" : "none"
+    );
+  /* .style("display", graphInteractionMode === "select" ? "inherit" : "none"); */
 
   if (selectionToolType === "brush") {
     const brush = d3
