@@ -3,11 +3,8 @@
 > an interactive explorer for single-cell transcriptomics data
 
 [![DOI](https://zenodo.org/badge/105615409.svg)](https://zenodo.org/badge/latestdoi/105615409)
-[![PyPI](https://img.shields.io/pypi/v/cellxgene)](https://pypi.org/project/cellxgene/) 
-[![PyPI - Downloads](https://img.shields.io/pypi/dm/cellxgene)](https://pypistats.org/packages/cellxgene)
-[![GitHub last commit](https://img.shields.io/github/last-commit/chanzuckerberg/cellxgene)](https://github.com/chanzuckerberg/cellxgene/pulse)
 
-_cellxgene_ (pronounced "sell-by-jean") is an interactive data explorer for single-cell transcriptomics datasets, such as those coming from the [Human Cell Atlas](https://humancellatlas.org). Leveraging modern web development techniques to enable fast visualizations of at least 1 million cells, we hope to enable biologists and computational researchers to explore their data, and to demonstrate general, scalable, and reusable patterns for scientific data visualization.
+cellxgene (pronounced "cell-by-gene") is an interactive data explorer for single-cell transcriptomics datasets, such as those coming from the [Human Cell Atlas](https://humancellatlas.org). Leveraging modern web development techniques to enable fast visualizations of at least 1 million cells, we hope to enable biologists and computational researchers to explore their data.
 
 <img src="https://raw.githubusercontent.com/chanzuckerberg/cellxgene/master/docs/cellxgene-demo-1.gif" width="200" height="200" hspace="30"><img src="https://raw.githubusercontent.com/chanzuckerberg/cellxgene/master/docs/cellxgene-demo-2.gif" width="200" height="200" hspace="30"><img src="https://raw.githubusercontent.com/chanzuckerberg/cellxgene/master/docs/cellxgene-demo-3.gif" width="200" height="200" hspace="30">
 
@@ -17,7 +14,7 @@ _cellxgene_ (pronounced "sell-by-jean") is an interactive data explorer for sing
 
 ## quick start
 
-To install _cellxgene_ you need Python 3.6+. We recommend [installing _cellxgene_ into a conda or virtual environment.](https://chanzuckerberg.github.io/cellxgene/faq.html#how-do-i-create-a-python-36-environment-for-cellxgene)
+To install cellxgene you need Python 3.6+. We recommend [installing cellxgene into a conda or virtual environment.](https://chanzuckerberg.github.io/cellxgene/faq.html#how-do-i-create-a-python-36-environment-for-cellxgene)
 
 Install the package.
 
@@ -28,16 +25,17 @@ pip install cellxgene
 Download an example [anndata](https://anndata.readthedocs.io/en/latest/) file
 
 ```bash
-curl -o pbmc3k.h5ad https://raw.githubusercontent.com/chanzuckerberg/cellxgene/master/example-dataset/pbmc3k.h5ad
+curl -O https://cellxgene-example-data.czi.technology/pbmc3k.h5ad.zip
+unzip pbmc3k.h5ad
 ```
 
-Launch _cellxgene_
+Launch cellxgene
 
 ```bash
 cellxgene launch pbmc3k.h5ad --open
 ```
 
-To learn more about what you can do with _cellxgene_, see the [Getting Started](https://chanzuckerberg.github.io/cellxgene/getting-started.html) guide.
+To learn more about what you can do with cellxgene, see the [Getting Started](https://chanzuckerberg.github.io/cellxgene/getting-started.html) guide.
 
 ## get in touch
 
@@ -48,6 +46,15 @@ Have questions, suggestions, or comments? You can come hang out with us by joini
 We warmly welcome contributions from the community! Please see our [contributing guide](https://github.com/chanzuckerberg/cellxgene/blob/master/CONTRIBUTING.md) and don't hesitate to open an issue or send a pull request to improve cellxgene.
 
 This project adheres to the Contributor Covenant [code of conduct](https://github.com/chanzuckerberg/.github/blob/master/CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to opensource@chanzuckerberg.com.
+
+## core team
+
+- Colin Megill, frontend & product design
+- Charlotte Weaver, software engineer
+- Bruce Martin, software engineer
+- Sidney Bell, computational biologist
+- Justin Kiggins, product manager
+- Lia Prins, designer
 
 ## where we are going
 
@@ -63,38 +70,15 @@ There are 4 key features we plan to implement in the near term.
 
 For more detail on these features and where we are going, see [our roadmap](https://github.com/chanzuckerberg/cellxgene/blob/master/ROADMAP.md).
 
-## risks of hosting cellxgene
-
-_cellxgene_ is built on standard web technologies, but is currently designed as a single-user desktop application.
-We've done this so we can prioritize the features on [our roadmap](https://github.com/chanzuckerberg/cellxgene/blob/master/ROADMAP.md).
-
-Some of our users have experimented with hosting _cellxgene_ either for their lab or for public use, but please note that the _cellxgene_ team does not officially support, troubleshoot, or maintain any web deployments at this time.
-
-If do you choose setup _cellxgene_ as a hosted service, you should be aware of the following risks:
-
-- `$ cellxgene launch` uses Flask's development server, which is not recommended for hosted deployment (see the [Flask documentation](http://flask.pocoo.org/docs/1.0/tutorial/deploy/#run-with-a-production-server))
-- We have no testing or official support for deployments where multiple users are accessing the same _cellxgene_ instance.
-- Your _cellxgene_ instance is likely to hang or crash if too many people access it at the same time, especially if they using functions that call the Python backend (such as differential expression, updating the layout, or coloring by gene).
-- _cellxgene_ only supports one instance per dataset
-
 ## inspiration
 
 We've been heavily inspired by several other related single-cell visualization projects, including the [UCSC Cell Browswer](http://cells.ucsc.edu/), [Cytoscape](http://www.cytoscape.org/), [Xena](https://xena.ucsc.edu/), [ASAP](https://asap.epfl.ch/), [Gene Pattern](http://genepattern-notebook.org/), and many others. We hope to explore collaborations where useful as this community works together on improving interactive visualization for single-cell data.
 
 We were inspired by Mike Bostock and the [crossfilter](https://github.com/crossfilter) team for the design of our filtering implementation.
 
-We have been working closely with the [`scanpy`](https://github.com/theislab/scanpy) team to integrate with their awesome analysis tools. Special thanks to Alex Wolf, Fabian Theis, and the rest of the team for their help during development and for providing an example dataset.
+We have been working closely with the [scanpy](https://github.com/theislab/scanpy) team to integrate with their awesome analysis tools. Special thanks to Alex Wolf, Fabian Theis, and the rest of the team for their help during development and for providing an example dataset.
 
-We are eager to explore integrations with other computational backends such as [`Seurat`](https://github.com/satijalab/seurat) or [`Bioconductor`](https://github.com/Bioconductor)
-
-## core team
-
-- Colin Megill, frontend & product design
-- Charlotte Weaver, software engineer
-- Bruce Martin, software engineer
-- Sidney Bell, computational biologist
-- Justin Kiggins, product manager
-- Lia Prins, designer
+We are eager to explore integrations with other computational backends such as [Seurat](https://github.com/satijalab/seurat) or [Bioconductor](https://github.com/Bioconductor)
 
 ## reuse
 
