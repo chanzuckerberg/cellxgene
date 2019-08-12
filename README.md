@@ -94,6 +94,7 @@ We are eager to explore integrations with other computational backends such as [
 - Bruce Martin, software engineer
 - Sidney Bell, computational biologist
 - Justin Kiggins, product manager
+- Lia Prins, designer
 
 ## reuse
 
