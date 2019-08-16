@@ -289,7 +289,7 @@ class Graph extends React.PureComponent {
         // If the screen coordinates haven't been calculated
         // or if the viewport has changed
 
-        if (
+        if (value.length < 4 || viewportChange) {
           value.length < 8 ||
           false /* value.length < 3  */ ||
           viewportChange
