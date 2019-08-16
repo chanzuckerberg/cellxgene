@@ -190,7 +190,7 @@ class Graph extends React.PureComponent {
       centroidSVG: null,
       tool: null,
       container: null,
-      cameraUpdate: 0
+      cameraUpdate: 0 /* this is a horrible way to do this */
     };
   }
 
@@ -290,10 +290,6 @@ class Graph extends React.PureComponent {
         // or if the viewport has changed
 
         if (value.length < 4 || viewportChange) {
-          value.length < 8 ||
-          false /* value.length < 3  */ ||
-          viewportChange
-        ) {
           // replace indicies 2 and 3 with screen calculated coordinates
           value.splice(2, 2, ...this.mapPointToScreen([value[0], value[1]]));
         }
@@ -512,18 +508,27 @@ class Graph extends React.PureComponent {
     }
 
     const svg = stateChanges.centroidSVG || centroidSVG;
-    svg
-      ?.selectAll("text")
-      .style("font-size", "12")
-      .style("font-weight", null);
 
-    if (pointDilation.categoryField) {
-      svg
-        ?.select(
-          `#svg${pointDilation.categoryField.replace(/[^\w]/gi, "")}-label`
-        )
-        .style("font-size", "18px")
-        .style("font-weight", "800");
+    if (prevProps.pointDilation.categoryField !== pointDilation.categoryField) {
+      if (prevProps.pointDilation.categoryField) {
+        stateChanges.svg = svg
+          ?.select(
+            `#svg${prevProps.pointDilation.categoryField.replace(
+              /[^\w]/gi,
+              ""
+            )}-label`
+          )
+          .style("font-size", "12px")
+          .style("font-weight", null);
+      }
+      if (pointDilation.categoryField) {
+        stateChanges.svg = svg
+          ?.select(
+            `#svg${pointDilation.categoryField.replace(/[^\w]/gi, "")}-label`
+          )
+          .style("font-size", "18px")
+          .style("font-weight", "800");
+      }
     }
     if (Object.keys(stateChanges).length > 0) {
       this.setState(stateChanges);
