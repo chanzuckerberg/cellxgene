@@ -56,7 +56,7 @@ The `launch` command assumes that the data is stored in the `.h5ad` format from 
 
 The `prepare` command is included to help you format your data. It uses `scanpy` under the hood. This is especially useful if you are starting with raw unanalyzed data and are unfamiliar with `scanpy`.
 
-To install cellxgene prepare alongside cellxgene launch
+To install `cellxgene prepare` alongside `cellxgene launch`
 
 ```
 pip install cellxgene[prepare]
