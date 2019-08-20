@@ -12,6 +12,8 @@ Currently, you can go straight into `cellxgene launch` with your own analyzed da
 
 If your data is in a different format, and/or you still need to perform dimensionality reduction and clustering, `cellxgene` can do that for you with the `prepare` command. `cellxgene prepare` runs `scanpy` under the hood and can read in any format that is currently supported by `scanpy` (including mtx, loom, and more listed [here](https://scanpy.readthedocs.io/en/latest/api/index.html#reading)).
 
+To add `cellxgene prepare` to your cellxgene installation run `pip install cellxgene[prepare]`. 
+
 The output of `cellxgene prepare` is a h5ad file with your computed clusters and tsne/umap projections that can be used in `cellxgene launch`.
 
 #### I have a directory of 10X-Genomics data with _mtx_ files and I've never used _scanpy_, can I use _cellxgene_?
