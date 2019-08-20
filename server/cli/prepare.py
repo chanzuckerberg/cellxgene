@@ -41,18 +41,18 @@ from scipy.sparse.csc import csc_matrix
     "--make-var-names-unique", default=True, is_flag=True, help="Ensure var index is unique.", show_default=True
 )
 def prepare(
-    data,
-    layout,
-    recipe,
-    output,
-    plotting,
-    sparse,
-    overwrite,
-    set_obs_names,
-    set_var_names,
-    run_qc,
-    make_obs_names_unique,
-    make_var_names_unique,
+        data,
+        layout,
+        recipe,
+        output,
+        plotting,
+        sparse,
+        overwrite,
+        set_obs_names,
+        set_var_names,
+        run_qc,
+        make_obs_names_unique,
+        make_var_names_unique,
 ):
     """Preprocesses data for use with cellxgene.
 
@@ -65,10 +65,16 @@ def prepare(
 
     # collect slow imports here to make CLI startup more responsive
     click.echo("[cellxgene] Starting CLI...")
-    import matplotlib
+    try:
+        import matplotlib
 
-    matplotlib.use("Agg")
-    import scanpy as sc
+        matplotlib.use("Agg")
+        import scanpy as sc
+    except ImportError:
+        raise click.ClickException(
+            "[cellxgene] cellxgene prepare has not been installed. Please run `pip install cellxgene[prepare]` "
+            "to install the necessary requirements."
+        )
 
     # scanpy settings
     sc.settings.verbosity = 0
