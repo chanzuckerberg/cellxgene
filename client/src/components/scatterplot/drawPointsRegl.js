@@ -1,8 +1,6 @@
 // jshint esversion: 6
 const mat4 = require("gl-mat4");
 
-// opacity: https://github.com/spacetx/starfish/blob/master/viz/draw/regions.js
-
 export default function(regl) {
   return regl({
     vert: `
@@ -10,12 +8,12 @@ export default function(regl) {
     attribute vec2 position;
     attribute vec3 color;
     attribute float size;
-    uniform float distance;
-    uniform mat4 projection, view;
+    uniform mat3 projection;
     varying vec3 fragColor;
     void main() {
-      gl_PointSize = 7.0 / pow(distance, 2.5) + size;
-      gl_Position = projection * view * vec4(position.x, -position.y, 0, 1);
+      gl_PointSize = 0.5 + size;
+      vec3 xy = projection * vec3(position, 1.);
+      gl_Position = vec4(xy.xy, 0., 1.);
       fragColor = color;
     }`,
 
@@ -26,7 +24,7 @@ export default function(regl) {
       if (length(gl_PointCoord.xy - 0.5) > 0.5) {
         discard;
       }
-      gl_FragColor = vec4(fragColor, 1);
+      gl_FragColor = vec4(fragColor, 1.);
     }`,
 
     attributes: {
@@ -36,9 +34,7 @@ export default function(regl) {
     },
 
     uniforms: {
-      distance: regl.prop("distance"),
-      view: regl.prop("view"),
-      projection: () => mat4.perspective([], Math.PI / 2, 1, 0.01, 1000)
+      projection: regl.prop("projection")
     },
 
     count: regl.prop("count"),

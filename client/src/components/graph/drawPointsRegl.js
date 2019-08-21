@@ -1,9 +1,3 @@
-// jshint esversion: 6
-const mat4 = require("gl-mat4");
-const vec3 = require("gl-vec3");
-
-// opacity: https://github.com/spacetx/starfish/blob/master/viz/draw/regions.js
-
 export default function(regl) {
   return regl({
     vert: `
@@ -12,11 +6,12 @@ export default function(regl) {
     attribute vec3 color;
     attribute float size;
     uniform float distance;
-    uniform mat4 projection, view;
+    uniform mat3 projView;
     varying vec3 fragColor;
     void main() {
-      gl_PointSize = 7.0 / pow(distance, 2.5) + size;
-      gl_Position = projection * view * vec4(position.x, -position.y, 0, 1);
+      gl_PointSize = (0.5 * pow(distance, 2.5)) + size;
+      vec3 xy = projView * vec3(position, 1.);
+      gl_Position = vec4(xy.xy, 0., 1.);
       fragColor = color;
     }`,
 
@@ -27,7 +22,7 @@ export default function(regl) {
       if (length(gl_PointCoord.xy - 0.5) > 0.5) {
         discard;
       }
-      gl_FragColor = vec4(fragColor, 1);
+      gl_FragColor = vec4(fragColor, 1.);
     }`,
 
     attributes: {
@@ -38,21 +33,7 @@ export default function(regl) {
 
     uniforms: {
       distance: regl.prop("distance"),
-      view: regl.prop("view"),
-      projection: ({ viewportWidth, viewportHeight }) => {
-        const aspectRatio = viewportWidth / viewportHeight;
-        let m = mat4.perspective(
-          [],
-          Math.PI / 2,
-          viewportWidth / viewportHeight,
-          0.01,
-          1000
-        );
-        if (aspectRatio < 1) {
-          m = mat4.scale(m, m, vec3.fromValues(1, 1, 1 / aspectRatio));
-        }
-        return m;
-      }
+      projView: regl.prop("projView")
     },
 
     count: regl.prop("count"),
