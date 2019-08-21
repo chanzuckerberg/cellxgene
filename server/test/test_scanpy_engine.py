@@ -14,6 +14,7 @@ from server.app.util.errors import FilterError
 
 class EngineTest(unittest.TestCase):
     def setUp(self):
+        # TODO Figure out how to run for several datasets
         args = {
             "layout": ["umap"],
             "max_category_items": 100,
