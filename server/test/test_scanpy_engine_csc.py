@@ -29,7 +29,6 @@ class EngineTest(unittest.TestCase):
         epsilon = 0.000_005
         self.assertTrue(self.data.data.X[0, 0] - -0.171_469_51 < epsilon)
 
-
     def test_mandatory_annotations(self):
         obs_index_col_name = self.data.schema["annotations"]["obs"]["index"]
         self.assertIn(obs_index_col_name, self.data.data.obs)
