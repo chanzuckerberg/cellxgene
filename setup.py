@@ -6,6 +6,9 @@ with open("README.md", "rb") as fh:
 with open("server/requirements.txt") as fh:
     requirements = fh.read().splitlines()
 
+with open("server/requirements-prepare.txt") as fh:
+    requirements_prepare = fh.read().splitlines()
+
 setup(
     name="cellxgene",
     version="0.11.0",
@@ -36,5 +39,5 @@ setup(
         "Topic :: Scientific/Engineering :: Bio-Informatics",
     ],
     entry_points={"console_scripts": ["cellxgene = server.cli.cli:cli"]},
-    extras_require=dict(louvain=["python-igraph", "louvain>=0.6"], gui=["PySide2>=5.12.3", "cefpython3>=66", "requests"]),
+    extras_require=dict(prepare=requirements_prepare, louvain=["python-igraph", "louvain>=0.6"], gui=["PySide2>=5.12.3", "cefpython3>=66", "requests"]),
 )

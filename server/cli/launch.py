@@ -185,11 +185,6 @@ def launch(
     else:
         click.echo(f"[cellxgene] Loading data from {basename(data)}.")
 
-    # Fix for anaconda python. matplotlib typically expects python to be installed as a framework TKAgg is usually
-    # available and fixes this issue. See https://matplotlib.org/faq/virtualenv_faq.html
-    import matplotlib as mpl
-
-    mpl.use("TkAgg")
     from server.app.scanpy_engine.scanpy_engine import ScanpyEngine
 
     try:
