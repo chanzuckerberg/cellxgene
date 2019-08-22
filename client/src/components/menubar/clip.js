@@ -8,6 +8,7 @@ import {
   Icon,
   Tooltip
 } from "@blueprintjs/core";
+import { tooltipHoverOpenDelay } from "../../globals";
 
 function Clip(props) {
   const {
@@ -44,6 +45,7 @@ function Clip(props) {
           <Tooltip
             content="Clip all continuous values to a percentile range"
             position="bottom"
+            hoverOpenDelay={tooltipHoverOpenDelay}
           >
             <Button
               type="button"

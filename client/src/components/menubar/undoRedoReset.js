@@ -1,6 +1,7 @@
 // jshint esversion: 6
 import React from "react";
 import { AnchorButton, Tooltip } from "@blueprintjs/core";
+import { tooltipHoverOpenDelay } from "../../globals";
 
 function InformationMenu(props) {
   const {
@@ -13,7 +14,11 @@ function InformationMenu(props) {
   } = props;
   return (
     <div style={{ marginLeft: 10 }} className="bp3-button-group">
-      <Tooltip content="Undo" position="bottom">
+      <Tooltip
+        content="Undo"
+        position="bottom"
+        hoverOpenDelay={tooltipHoverOpenDelay}
+      >
         <AnchorButton
           type="button"
           className="bp3-button bp3-icon-undo"
@@ -26,7 +31,11 @@ function InformationMenu(props) {
           }}
         />
       </Tooltip>
-      <Tooltip content="Redo" position="bottom">
+      <Tooltip
+        content="Redo"
+        position="bottom"
+        hoverOpenDelay={tooltipHoverOpenDelay}
+      >
         <AnchorButton
           type="button"
           className="bp3-button bp3-icon-redo"
@@ -42,6 +51,7 @@ function InformationMenu(props) {
       <Tooltip
         content="Reset cellxgene, clearing all selections"
         position="bottom"
+        hoverOpenDelay={tooltipHoverOpenDelay}
       >
         <AnchorButton
           disabled={isResetDisabled()}

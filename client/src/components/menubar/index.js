@@ -16,6 +16,7 @@ import CellSetButton from "./cellSetButtons";
 import InformationMenu from "./infoMenu";
 import UndoRedoReset from "./undoRedoReset";
 import Clip from "./clip";
+import { tooltipHoverOpenDelay } from "../../globals";
 
 @connect(state => ({
   universe: state.universe,
@@ -299,6 +300,7 @@ class MenuBar extends React.Component {
             <Tooltip
               content="Add two cells selections, see the top 15 differentially expressed genes between them"
               position="bottom"
+              hoverOpenDelay={tooltipHoverOpenDelay}
             >
               <AnchorButton
                 disabled={!haveBothCellSets}
@@ -319,6 +321,7 @@ class MenuBar extends React.Component {
             <Tooltip
               content="Remove differentially expressed gene list and clear cell selections"
               position="bottom"
+              hoverOpenDelay={tooltipHoverOpenDelay}
             >
               <Button
                 type="button"
@@ -334,6 +337,7 @@ class MenuBar extends React.Component {
         <Tooltip
           content="Show only metadata and cells which are currently selected"
           position="bottom"
+          hoverOpenDelay={tooltipHoverOpenDelay}
         >
           <AnchorButton
             type="button"
@@ -355,7 +359,11 @@ class MenuBar extends React.Component {
           </AnchorButton>
         </Tooltip>
         <div className="bp3-button-group">
-          <Tooltip content={selectionTooltip} position="bottom">
+          <Tooltip
+            content={selectionTooltip}
+            position="bottom"
+            hoverOpenDelay={tooltipHoverOpenDelay}
+          >
             <Button
               type="button"
               data-testid="mode-lasso"
@@ -372,7 +380,11 @@ class MenuBar extends React.Component {
               }}
             />
           </Tooltip>
-          <Tooltip content="Drag to pan, scroll to zoom" position="bottom">
+          <Tooltip
+            content="Drag to pan, scroll to zoom"
+            position="bottom"
+            hoverOpenDelay={tooltipHoverOpenDelay}
+          >
             <Button
               type="button"
               data-testid="mode-pan-zoom"
@@ -401,6 +413,7 @@ class MenuBar extends React.Component {
               <Tooltip
                 content="Select embedding for visualization"
                 position="bottom"
+                hoverOpenDelay={tooltipHoverOpenDelay}
               >
                 <Button
                   type="button"

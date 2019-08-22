@@ -461,7 +461,11 @@ class HistogramBrush extends React.Component {
               remove
             </Button>
           ) : null}
-          <Tooltip content="Use as color scale" position="bottom">
+          <Tooltip
+            content="Use as color scale"
+            position="bottom"
+            hoverOpenDelay={globals.tooltipHoverOpenDelay}
+          >
             <Button
               onClick={this.handleColorAction.bind(this)}
               active={colorAccessor === field}
