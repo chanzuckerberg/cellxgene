@@ -43,7 +43,7 @@ function Clip(props) {
         target={
           <Tooltip
             content="Clip all continuous values to a percentile range"
-            position="left"
+            position="bottom"
           >
             <Button
               type="button"

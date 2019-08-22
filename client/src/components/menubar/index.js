@@ -333,7 +333,7 @@ class MenuBar extends React.Component {
         </div>
         <Tooltip
           content="Show only metadata and cells which are currently selected"
-          position="left"
+          position="bottom"
         >
           <AnchorButton
             type="button"
@@ -355,7 +355,7 @@ class MenuBar extends React.Component {
           </AnchorButton>
         </Tooltip>
         <div className="bp3-button-group">
-          <Tooltip content={selectionTooltip} position="left">
+          <Tooltip content={selectionTooltip} position="bottom">
             <Button
               type="button"
               data-testid="mode-lasso"
@@ -372,7 +372,7 @@ class MenuBar extends React.Component {
               }}
             />
           </Tooltip>
-          <Tooltip content="Drag to pan, scroll to zoom" position="left">
+          <Tooltip content="Drag to pan, scroll to zoom" position="bottom">
             <Button
               type="button"
               data-testid="mode-pan-zoom"
@@ -400,7 +400,7 @@ class MenuBar extends React.Component {
             target={
               <Tooltip
                 content="Select embedding for visualization"
-                position="left"
+                position="bottom"
               >
                 <Button
                   type="button"

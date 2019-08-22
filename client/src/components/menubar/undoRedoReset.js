@@ -13,7 +13,7 @@ function InformationMenu(props) {
   } = props;
   return (
     <div style={{ marginLeft: 10 }} className="bp3-button-group">
-      <Tooltip content="Undo" position="left">
+      <Tooltip content="Undo" position="bottom">
         <AnchorButton
           type="button"
           className="bp3-button bp3-icon-undo"
@@ -26,7 +26,7 @@ function InformationMenu(props) {
           }}
         />
       </Tooltip>
-      <Tooltip content="Redo" position="left">
+      <Tooltip content="Redo" position="bottom">
         <AnchorButton
           type="button"
           className="bp3-button bp3-icon-redo"
@@ -41,7 +41,7 @@ function InformationMenu(props) {
       </Tooltip>
       <Tooltip
         content="Reset cellxgene, clearing all selections"
-        position="left"
+        position="bottom"
       >
         <AnchorButton
           disabled={isResetDisabled()}
