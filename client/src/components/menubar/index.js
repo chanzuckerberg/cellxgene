@@ -372,7 +372,7 @@ class MenuBar extends React.Component {
               }}
             />
           </Tooltip>
-          <Tooltip content="Pan and zoom" position="left">
+          <Tooltip content="Drag to pan, scroll to zoom" position="left">
             <Button
               type="button"
               data-testid="mode-pan-zoom"
@@ -398,14 +398,19 @@ class MenuBar extends React.Component {
         >
           <Popover
             target={
-              <Button
-                type="button"
-                data-testid="layout-choice"
-                className="bp3-button bp3-icon-heatmap"
-                style={{
-                  cursor: "pointer"
-                }}
-              />
+              <Tooltip
+                content="Select embedding for visualization"
+                position="left"
+              >
+                <Button
+                  type="button"
+                  data-testid="layout-choice"
+                  className="bp3-button bp3-icon-heatmap"
+                  style={{
+                    cursor: "pointer"
+                  }}
+                />
+              </Tooltip>
             }
             position={Position.BOTTOM_RIGHT}
             content={
