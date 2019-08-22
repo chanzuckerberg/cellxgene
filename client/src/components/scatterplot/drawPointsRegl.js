@@ -1,5 +1,4 @@
-// jshint esversion: 6
-const mat4 = require("gl-mat4");
+import { glPointFlags } from "../../util/glHelpers";
 
 export default function(regl) {
   return regl({
@@ -13,33 +12,12 @@ export default function(regl) {
     uniform float minViewportDimension;
     varying vec4 fragColor;
 
-    const float flagSelected = 1.;
-    const float flagNaN = 2.;
-    const float flagHighlight = 4.;
-
     const float zBottom = 0.99;
     const float zMiddle = 0.;
     const float zTop = -1.;
 
-    bool isLowBitSet(float f) {
-      f = mod(f, 2.);
-      return (f > 0.9 && f <= 1.1);
-    }
-
-    float shiftRightOne(float f) {
-      return floor(f / 2.);
-    }
-
-    void getFlags(in float flag,
-                  out bool isNaN,
-                  out bool isSelected,
-                  out bool isHighlight) {
-      isSelected = isLowBitSet(flag);
-      flag = shiftRightOne(flag);
-      isNaN = isLowBitSet(flag);
-      flag = shiftRightOne(flag);
-      isHighlight = isLowBitSet(flag);
-    }
+    // import getFlags()
+    ${glPointFlags}
 
     void main() {
       bool isNaN, isSelected, isHighlight;
