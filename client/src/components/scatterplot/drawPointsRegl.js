@@ -74,7 +74,7 @@ export default function(regl) {
 
     uniforms: {
       projection: regl.prop("projection"),
-      nPoints: regl.prop("count"),
+      nPoints: regl.prop("nPoints"),
       minViewportDimension: regl.prop("minViewportDimension")
     },
 

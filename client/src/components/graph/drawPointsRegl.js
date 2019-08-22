@@ -61,7 +61,6 @@ export default function(regl) {
       if (length(gl_PointCoord.xy - 0.5) > 0.5) {
         discard;
       }
-      // gl_FragColor = vec4(fragColor, 1.);
       gl_FragColor = fragColor;
     }`,
 
@@ -74,7 +73,7 @@ export default function(regl) {
     uniforms: {
       distance: regl.prop("distance"),
       projView: regl.prop("projView"),
-      nPoints: regl.prop("count"),
+      nPoints: regl.prop("nPoints"),
       minViewportDimension: regl.prop("minViewportDimension")
     },
 
