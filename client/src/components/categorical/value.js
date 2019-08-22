@@ -212,78 +212,79 @@ class CategoryValue extends React.Component {
         onMouseEnter={this.handleMouseEnter}
         onMouseLeave={this.handleMouseExit}
       >
-        <div
-          style={{
-            margin: 0,
-            padding: 0,
-            userSelect: "none",
-            width: globals.leftSidebarWidth - 240,
-            display: "flex",
-            justifyContent: "flex-start"
-          }}
-        >
-          <div style={{ display: "flex" }}>
-            <label className="bp3-control bp3-checkbox" style={{ margin: 0 }}>
-              <input
-                onChange={selected ? this.toggleOff : this.toggleOn}
-                data-testclass="categorical-value-select"
-                data-testid={`categorical-value-select-${metadataField}-${displayString}`}
-                checked={selected}
-                type="checkbox"
-              />
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <div
+            style={{
+              margin: 0,
+              padding: 0,
+              userSelect: "none",
+              width: globals.leftSidebarWidth - 240,
+              display: "flex",
+              justifyContent: "flex-start"
+            }}
+          >
+            <div style={{ display: "flex" }}>
+              <label className="bp3-control bp3-checkbox" style={{ margin: 0 }}>
+                <input
+                  onChange={selected ? this.toggleOff : this.toggleOn}
+                  data-testclass="categorical-value-select"
+                  data-testid={`categorical-value-select-${metadataField}-${displayString}`}
+                  checked={selected}
+                  type="checkbox"
+                />
+                <span
+                  className="bp3-control-indicator"
+                  onMouseEnter={this.handleMouseExit}
+                  onMouseLeave={this.handleMouseEnter}
+                />
+              </label>
               <span
-                className="bp3-control-indicator"
-                onMouseEnter={this.handleMouseExit}
-                onMouseLeave={this.handleMouseEnter}
-              />
-            </label>
-            <span
-              data-testid={`categorical-value-${metadataField}-${displayString}`}
-              data-testclass="categorical-value"
-              style={{ wordBreak: "break-all" }}
-            >
-              {annotations.isEditingLabelName &&
-              annotations.labelEditable.category === metadataField &&
-              annotations.labelEditable.label === categoryIndex
-                ? null
-                : displayString}
-            </span>
-          </div>
-          {isUserAnno &&
-          annotations.isEditingLabelName &&
-          annotations.labelEditable.category === metadataField &&
-          annotations.labelEditable.label === categoryIndex ? (
-            <form
-              onSubmit={e => {
-                e.preventDefault();
-                this.handleEditValue();
-              }}
-            >
-              <InputGroup
-                style={{ position: "relative", top: -1 }}
-                ref={input => {
-                  this.editableInput = input;
+                data-testid={`categorical-value-${metadataField}-${displayString}`}
+                data-testclass="categorical-value"
+                style={{ wordBreak: "break-all" }}
+              >
+                {annotations.isEditingLabelName &&
+                annotations.labelEditable.category === metadataField &&
+                annotations.labelEditable.label === categoryIndex
+                  ? null
+                  : displayString}
+              </span>
+            </div>
+            {isUserAnno &&
+            annotations.isEditingLabelName &&
+            annotations.labelEditable.category === metadataField &&
+            annotations.labelEditable.label === categoryIndex ? (
+              <form
+                onSubmit={e => {
+                  e.preventDefault();
+                  this.handleEditValue();
                 }}
-                small
-                onChange={e => {
-                  this.setState({ editedLabelText: e.target.value });
-                }}
-                defaultValue={displayString}
-                rightElement={
-                  <Button
-                    minimal
-                    style={{ position: "relative", top: -1 }}
-                    type="button"
-                    icon="small-tick"
-                    data-testclass="submitEdit"
-                    data-testid="submitEdit"
-                    onClick={this.handleEditValue}
-                  />
-                }
-              />
-            </form>
-          ) : null}
-          {/*
+              >
+                <InputGroup
+                  style={{ position: "relative", top: -1 }}
+                  ref={input => {
+                    this.editableInput = input;
+                  }}
+                  small
+                  onChange={e => {
+                    this.setState({ editedLabelText: e.target.value });
+                  }}
+                  defaultValue={displayString}
+                  rightElement={
+                    <Button
+                      minimal
+                      style={{ position: "relative", top: -1 }}
+                      type="button"
+                      icon="small-tick"
+                      data-testclass="submitEdit"
+                      data-testid="submitEdit"
+                      onClick={this.handleEditValue}
+                    />
+                  }
+                />
+              </form>
+            ) : null}
+            {/*
             CANCEL IT, WITH BUTTON, ESCAPE KEY, CLICK OUT, UNDO?
 
             <Button
@@ -295,12 +296,13 @@ class CategoryValue extends React.Component {
             data-testid="submitEdit"
             onClick={this.cancelEdit}
           /> */}
+          </div>
+          <span style={{ flexShrink: 0 }}>
+            {colorAccessor && !isColorBy && !annotations.isEditingLabelName ? (
+              <Occupancy category={category} {...this.props} />
+            ) : null}
+          </span>
         </div>
-        <span style={{ flexShrink: 0 }}>
-          {colorAccessor && !isColorBy && !annotations.isEditingLabelName ? (
-            <Occupancy category={category} {...this.props} />
-          ) : null}
-        </span>
         <span>
           <span
             data-testclass="categorical-value-count"

@@ -32,7 +32,7 @@ class Category extends React.Component {
     this.state = {
       isChecked: true,
       isExpanded: false,
-      editedCategoryText: "",
+      newCategoryText: "",
       newLabelText: ""
     };
   }
@@ -76,10 +76,9 @@ class Category extends React.Component {
   };
 
   disableAddNewLabelMode = () => {
-    const { dispatch, metadataField } = this.props;
+    const { dispatch } = this.props;
     dispatch({
-      type: "annotation: disable add new label mode",
-      data: metadataField
+      type: "annotation: disable add new label mode"
     });
   };
 
@@ -109,15 +108,22 @@ class Category extends React.Component {
     });
   };
 
+  disableEditCategoryMode = () => {
+    const { dispatch } = this.props;
+    dispatch({
+      type: "annotation: disable category edit mode"
+    });
+  };
+
   handleEditCategory = () => {
     const { dispatch, metadataField } = this.props;
-    const { editedCategoryText } = this.state;
+    const { newCategoryText } = this.state;
 
     dispatch({
       type: "annotation: category edited",
       metadataField,
-      editedCategoryText,
-      data: editedCategoryText
+      newCategoryText,
+      data: newCategoryText
     });
   };
 
@@ -183,23 +189,17 @@ class Category extends React.Component {
   }
 
   render() {
-    const { isExpanded, isChecked, newLabelText } = this.state;
+    const { isExpanded, isChecked, newLabelText, newCategoryText } = this.state;
     const {
       metadataField,
       colorAccessor,
       categoricalSelection,
       isUserAnno,
-      createAnnoModeActive,
       annotations,
       universe
     } = this.props;
     const { isTruncated } = categoricalSelection[metadataField];
-    console.log(
-      "is it in it",
-      universe.schema.annotations.obsByName[metadataField].categories.indexOf(
-        newLabelText
-      ) !== -1
-    );
+
     return (
       <div
         style={{
@@ -237,7 +237,45 @@ class Category extends React.Component {
               <span className="bp3-control-indicator" />
               {""}
             </label>
-
+            {/* Dialog uses portal, can be anywhere/factored out */}
+            <Dialog
+              icon="tag"
+              title="Edit category name"
+              isOpen={
+                annotations.isEditingCategoryName &&
+                annotations.categoryEditable === metadataField
+              }
+              onClose={this.disableEditCategoryMode}
+            >
+              <div className={Classes.DIALOG_BODY}>
+                <div style={{ marginBottom: 20 }}>
+                  <p>New, unique category name:</p>
+                  <InputGroup
+                    autoFocus
+                    onChange={e =>
+                      this.setState({ newCategoryText: e.target.value })
+                    }
+                    leftIcon="tag"
+                  />
+                </div>
+              </div>
+              <div className={Classes.DIALOG_FOOTER}>
+                <div className={Classes.DIALOG_FOOTER_ACTIONS}>
+                  <Tooltip content="Close this dialog without editing the category.">
+                    <Button onClick={this.disableEditCategoryMode}>
+                      Cancel
+                    </Button>
+                  </Tooltip>
+                  <Button
+                    disabled={newCategoryText.length === 0}
+                    onClick={this.handleEditCategory}
+                    intent="primary"
+                  >
+                    Edit category name
+                  </Button>
+                </div>
+              </div>
+            </Dialog>
             <span
               data-testid={`category-expand-${metadataField}`}
               style={{
@@ -251,42 +289,7 @@ class Category extends React.Component {
               {isUserAnno ? (
                 <Icon style={{ marginRight: 5 }} icon="tag" iconSize={16} />
               ) : null}
-              {annotations.isEditingCategoryName &&
-              annotations.categoryEditable === metadataField
-                ? null
-                : metadataField}
-              {isUserAnno &&
-              annotations.isEditingCategoryName &&
-              annotations.categoryEditable === metadataField ? (
-                <form
-                  style={{ display: "inline-block" }}
-                  onSubmit={e => {
-                    e.preventDefault();
-                    this.handleEditCategory();
-                  }}
-                >
-                  <InputGroup
-                    style={{ position: "relative", top: -1 }}
-                    autoFocus
-                    small
-                    onChange={e => {
-                      this.setState({ editedCategoryText: e.target.value });
-                    }}
-                    defaultValue={metadataField}
-                    rightElement={
-                      <Button
-                        minimal
-                        style={{ position: "relative", top: -1 }}
-                        type="button"
-                        icon="small-tick"
-                        data-testclass="submitEdit"
-                        data-testid="submitEdit"
-                        onClick={this.handleEditCategory}
-                      />
-                    }
-                  />
-                </form>
-              ) : null}
+              {metadataField}
               {isExpanded ? (
                 <FaChevronDown
                   data-testclass="category-expand-is-expanded"
@@ -323,7 +326,7 @@ class Category extends React.Component {
                   </div>
                   <div className={Classes.DIALOG_FOOTER}>
                     <div className={Classes.DIALOG_FOOTER_ACTIONS}>
-                      <Tooltip content="Close this dialog without creating a category.">
+                      <Tooltip content="Close this dialog without adding a label.">
                         <Button onClick={this.disableAddNewLabelMode}>
                           Cancel
                         </Button>

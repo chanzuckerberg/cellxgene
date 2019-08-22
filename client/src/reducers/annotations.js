@@ -39,6 +39,13 @@ const Annotations = (
         isEditingCategoryName: true,
         categoryEditable: action.data
       };
+    case "annotation: disable category edit mode":
+      console.log(action.type, action);
+      return {
+        ...state,
+        isEditingCategoryName: false,
+        categoryEditable: null
+      };
     case "annotation: category edited":
       console.log(action.type, action);
       return {
