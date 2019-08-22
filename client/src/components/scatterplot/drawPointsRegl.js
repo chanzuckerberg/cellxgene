@@ -4,12 +4,15 @@ export default function(regl) {
   return regl({
     vert: `
     precision mediump float;
+
     attribute vec2 position;
     attribute vec3 color;
     attribute float flag;
+
     uniform mat3 projection;
     uniform float nPoints;
     uniform float minViewportDimension;
+
     varying vec4 fragColor;
 
     const float zBottom = 0.99;

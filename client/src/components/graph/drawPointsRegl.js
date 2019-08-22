@@ -13,7 +13,7 @@ export default function(regl) {
     uniform mat3 projView;
     uniform float nPoints;
     uniform float minViewportDimension;
-    
+
     varying vec4 fragColor;
 
     const float zBottom = 0.99;
