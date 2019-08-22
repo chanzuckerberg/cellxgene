@@ -7,34 +7,75 @@ export default function(regl) {
     precision mediump float;
     attribute vec2 position;
     attribute vec3 color;
-    attribute float size;
+    attribute float flag;
     uniform mat3 projection;
-    varying vec3 fragColor;
+    uniform float nPoints;
+    uniform float minViewportDimension;
+    varying vec4 fragColor;
+
+    const float flagSelected = 1.;
+    const float flagNaN = 2.;
+    const float flagHighlight = 4.;
+
+    const float zBottom = 0.99;
+    const float zMiddle = 0.;
+    const float zTop = -1.;
+
+    bool isLowBitSet(float f) {
+      f = mod(f, 2.);
+      return (f > 0.9 && f <= 1.1);
+    }
+
+    float shiftRightOne(float f) {
+      return floor(f / 2.);
+    }
+
+    void getFlags(in float flag,
+                  out bool isNaN,
+                  out bool isSelected,
+                  out bool isHighlight) {
+      isSelected = isLowBitSet(flag);
+      flag = shiftRightOne(flag);
+      isNaN = isLowBitSet(flag);
+      flag = shiftRightOne(flag);
+      isHighlight = isLowBitSet(flag);
+    }
+
     void main() {
-      gl_PointSize = 0.5 + size;
+      bool isNaN, isSelected, isHighlight;
+      getFlags(flag, isNaN, isSelected, isHighlight);
+
+      float size = isHighlight ? 8. : isSelected ? 4. : 1.;
+      gl_PointSize = size;
+
+      float z = isNaN ? zBottom : (isHighlight ? zTop : zMiddle);
       vec3 xy = projection * vec3(position, 1.);
-      gl_Position = vec4(xy.xy, 0., 1.);
-      fragColor = color;
+      gl_Position = vec4(xy.xy, z, 1.);
+
+      float alpha = isNaN ? 0.9 : 1.0;
+      fragColor = vec4(color, alpha);
     }`,
 
     frag: `
     precision mediump float;
-    varying vec3 fragColor;
+    varying vec4 fragColor;
     void main() {
       if (length(gl_PointCoord.xy - 0.5) > 0.5) {
         discard;
       }
-      gl_FragColor = vec4(fragColor, 1.);
+      gl_FragColor = fragColor;
     }`,
 
     attributes: {
       position: regl.prop("position"),
       color: regl.prop("color"),
-      size: regl.prop("size")
+      flag: regl.prop("flag")
     },
 
     uniforms: {
-      projection: regl.prop("projection")
+      projection: regl.prop("projection"),
+      nPoints: regl.prop("count"),
+      minViewportDimension: regl.prop("minViewportDimension")
     },
 
     count: regl.prop("count"),

@@ -11,6 +11,7 @@ import setupSVGandBrushElements from "./setupSVGandBrush";
 import setupCentroidSVG from "./setupCentroidSVG";
 import _camera from "../../util/camera";
 import _drawPoints from "./drawPointsRegl";
+import { isTypedArray } from "../../util/typeHelpers";
 
 /*
 Simple 2D transforms control all point painting.  There are three:
@@ -64,6 +65,7 @@ function renderThrottle(callback) {
 }
 
 @connect(state => ({
+  universe: state.universe,
   world: state.world,
   crossfilter: state.crossfilter,
   responsive: state.responsive,
@@ -101,36 +103,65 @@ class Graph extends React.Component {
     return colors;
   });
 
-  computePointSizesFromCrossfilter = memoize((len, crossfilter) => {
-    const sizes = new Float32Array(len);
-    crossfilter.fillByIsSelected(sizes, 4, 0.2);
-    return sizes;
-  });
-
-  computePointSizes = memoize(
-    (len, crossfilter, metadataField, categoryField) => {
-      /*
-      compute webgl dot size for each point
-      */
-      const selectionSizes = this.computePointSizesFromCrossfilter(
-        len,
-        crossfilter
+  computeSelectedFlags = memoize(
+    (crossfilter, flagSelected, flagUnselected) => {
+      const x = crossfilter.fillByIsSelected(
+        new Float32Array(crossfilter.size()),
+        flagSelected,
+        flagUnselected
       );
-      let sizes;
+      return x;
+    }
+  );
 
-      if (metadataField && categoryField) {
-        sizes = selectionSizes.slice();
-        const valuesArr = crossfilter.data.col(metadataField).asArray();
+  computePointFlags = memoize(
+    (world, crossfilter, colorAccessor, centroidLabel) => {
+      /*
+      We communicate with the shader using three flags:
+      - isNaN -- the value is a NaN. Only makes sense when we have a colorAccessor
+      - isSelected -- the value is selected
+      - isHightlighted -- the value is highlighted in the UI (orthogonal from selection highlighting)
 
-        for (let i = 0; i < len; i += 1) {
-          if (valuesArr[i] === categoryField) {
-            sizes[i] = 10;
+      Due to constraints in webgl vertex shader attributes, these are encoded in a float, "kinda"
+      like bitmasks.
+
+      We also have separate code paths for generating flags for categorical and
+      continuous metadata, as they rely on different tests, and some of the flags
+      (eg, isNaN) are meaningless in the face of categorical metadata.
+      */
+
+      const flagSelected = 1;
+      const flagNaN = 2;
+      const flagHighlight = 4;
+
+      const flags = this.computeSelectedFlags(
+        crossfilter,
+        flagSelected,
+        0
+      ).slice();
+
+      const { metadataField, categoryField } = centroidLabel;
+      const highlightData = metadataField
+        ? world.obsAnnotations.col(metadataField)?.asArray()
+        : null;
+      const colorByColumn = colorAccessor
+        ? world.obsAnnotations.col(colorAccessor)?.asArray() ||
+          world.varData.col(colorAccessor)?.asArray()
+        : null;
+      const colorByData =
+        colorByColumn && isTypedArray(colorByColumn) ? colorByColumn : null;
+
+      if (colorByData || highlightData) {
+        for (let i = 0, len = flags.length; i < len; i += 1) {
+          if (highlightData) {
+            flags[i] += highlightData[i] === categoryField ? flagHighlight : 0;
+          }
+          if (colorByData) {
+            flags[i] += Number.isFinite(colorByData[i]) ? 0 : flagNaN;
           }
         }
-      } else {
-        sizes = selectionSizes;
       }
-      return sizes;
+      return flags;
     }
   );
 
@@ -144,7 +175,8 @@ class Graph extends React.Component {
       Y: null,
       positions: null,
       colors: null,
-      sizes: null
+      sizes: null,
+      flags: null
     };
     this.state = {
       toolSVG: null,
@@ -167,7 +199,7 @@ class Graph extends React.Component {
     // preallocate webgl buffers
     const pointBuffer = regl.buffer();
     const colorBuffer = regl.buffer();
-    const sizeBuffer = regl.buffer();
+    const flagBuffer = regl.buffer();
 
     // create all default rendering transformations
     const modelTF = createModelTF();
@@ -180,9 +212,9 @@ class Graph extends React.Component {
     this.renderPoints(
       regl,
       drawPoints,
-      sizeBuffer,
       colorBuffer,
       pointBuffer,
+      flagBuffer,
       camera,
       projectionTF
     );
@@ -192,7 +224,7 @@ class Graph extends React.Component {
       drawPoints,
       pointBuffer,
       colorBuffer,
-      sizeBuffer,
+      flagBuffer,
       camera,
       modelTF,
       modelInvTF: mat3.invert([], modelTF),
@@ -225,7 +257,7 @@ class Graph extends React.Component {
         camera,
         pointBuffer,
         colorBuffer,
-        sizeBuffer,
+        flagBuffer,
         modelTF
       } = this.state;
       let { projectionTF } = this.state;
@@ -266,18 +298,16 @@ class Graph extends React.Component {
         needsRepaint = true;
       }
 
-      /* sizes for each point */
-      const { metadataField, categoryField } = centroidLabel;
-      const newSizes = this.computePointSizes(
-        nObs,
+      /* flags for each point */
+      const newFlags = this.computePointFlags(
+        world,
         crossfilter,
-        metadataField,
-        categoryField
+        colorAccessor,
+        centroidLabel
       );
-      if (renderCache.sizes !== newSizes) {
-        /* update our cache & GL if the buffer changes */
-        renderCache.sizes = newSizes;
-        sizeBuffer({ data: newSizes, dimension: 1 });
+      if (renderCache.flags !== newFlags) {
+        renderCache.flags = newFlags;
+        flagBuffer({ data: newFlags, dimension: 1 });
         needsRepaint = true;
       }
 
@@ -287,9 +317,9 @@ class Graph extends React.Component {
         this.renderPoints(
           regl,
           drawPoints,
-          sizeBuffer,
           colorBuffer,
           pointBuffer,
+          flagBuffer,
           camera,
           projectionTF
         );
@@ -648,23 +678,31 @@ class Graph extends React.Component {
   renderPoints(
     regl,
     drawPoints,
-    sizeBuffer,
     colorBuffer,
     pointBuffer,
+    flagBuffer,
     camera,
     projectionTF
   ) {
-    if (!this.reglCanvas) return;
+    const { universe } = this.props;
+    if (!this.reglCanvas || !universe) return;
     const cameraTF = camera.view();
     const projView = mat3.multiply(mat3.create(), projectionTF, cameraTF);
+    const { width, height } = this.reglCanvas;
     regl.poll();
+    regl.clear({
+      depth: 1,
+      color: [1, 1, 1, 1]
+    });
     drawPoints({
-      size: sizeBuffer,
       distance: camera.distance(),
       color: colorBuffer,
       position: pointBuffer,
+      flag: flagBuffer,
       count: this.count,
-      projView
+      projView,
+      nPoints: universe.nObs,
+      minViewportDimension: Math.min(width || 800, height || 600)
     });
     regl._gl.flush();
   }
@@ -673,18 +711,18 @@ class Graph extends React.Component {
     const {
       regl,
       drawPoints,
-      sizeBuffer,
       colorBuffer,
       pointBuffer,
+      flagBuffer,
       camera,
       projectionTF
     } = this.state;
     this.renderPoints(
       regl,
       drawPoints,
-      sizeBuffer,
       colorBuffer,
       pointBuffer,
+      flagBuffer,
       camera,
       projectionTF
     );
