@@ -2,21 +2,70 @@
 import React from "react";
 import * as d3 from "d3";
 import { connect } from "react-redux";
-import mat4 from "gl-mat4";
+import { mat3, vec2 } from "gl-matrix";
 import _regl from "regl";
 import memoize from "memoize-one";
 
 import * as globals from "../../globals";
 import setupSVGandBrushElements from "./setupSVGandBrush";
 import setupCentroidSVG from "./setupCentroidSVG";
-import actions from "../../actions";
 import _camera from "../../util/camera";
 import _drawPoints from "./drawPointsRegl";
-import scaleLinear from "../../util/scaleLinear";
+import { isTypedArray } from "../../util/typeHelpers";
 
-/* https://bl.ocks.org/mbostock/9078690 - quadtree for onClick / hover selections */
+/*
+Simple 2D transforms control all point painting.  There are three:
+  * model - convert from underlying per-point coordinate to a layout.
+    Currently used to move from data to webgl coordinate system.
+  * camera - apply a 2D camera transformation (pan, zoom)
+  * projection - apply any transformation required for screen size and layout
+*/
+
+function createProjectionTF(viewportWidth, viewportHeight) {
+  /*
+  the projection transform accounts for the screen size & other layout
+  */
+  const fractionToUse = 0.95; // fraction of min dimension to use
+  const topGutterSizePx = 32; // toolbar box height
+  const heightMinusGutter = viewportHeight - topGutterSizePx;
+  const minDim = Math.min(viewportWidth, heightMinusGutter);
+  const aspectScale = [
+    (fractionToUse * minDim) / viewportWidth,
+    (fractionToUse * minDim) / viewportHeight
+  ];
+  const m = mat3.create();
+  mat3.fromTranslation(m, [
+    0,
+    -topGutterSizePx / viewportHeight / aspectScale[1]
+  ]);
+  mat3.scale(m, m, aspectScale);
+  return m;
+}
+
+function createModelTF() {
+  /*
+  preallocate coordinate system transformation between data and gl.
+  Data arrives in a [0,1] range, and we operate elsewhere in [-1,1].
+  */
+  const m = mat3.fromScaling(mat3.create(), [2, 2]);
+  mat3.translate(m, m, [-0.5, -0.5]);
+  return m;
+}
+
+function renderThrottle(callback) {
+  let rafCurrentlyInProgress = null;
+  return function f() {
+    if (rafCurrentlyInProgress) return;
+    const context = this;
+    rafCurrentlyInProgress = window.requestAnimationFrame(() => {
+      callback.apply(context);
+      rafCurrentlyInProgress = null;
+    });
+  };
+}
 
 @connect(state => ({
+  universe: state.universe,
   world: state.world,
   crossfilter: state.crossfilter,
   responsive: state.responsive,
@@ -29,14 +78,16 @@ import scaleLinear from "../../util/scaleLinear";
   colorAccessor: state.colors.colorAccessor
 }))
 class Graph extends React.Component {
-  computePointPositions = memoize((X, Y, scaleX, scaleY) => {
+  computePointPositions = memoize((X, Y, modelTF) => {
     /*
-    compute webgl coordinate buffer for each point
+    compute the model coordinate for each point
     */
     const positions = new Float32Array(2 * X.length);
     for (let i = 0, len = X.length; i < len; i += 1) {
-      positions[2 * i] = scaleX(X[i]);
-      positions[2 * i + 1] = scaleY(Y[i]);
+      const p = vec2.fromValues(X[i], Y[i]);
+      vec2.transformMat3(p, p, modelTF);
+      positions[2 * i] = p[0];
+      positions[2 * i + 1] = p[1];
     }
     return positions;
   });
@@ -52,38 +103,65 @@ class Graph extends React.Component {
     return colors;
   });
 
-  computePointSizesFromCrossfilter = memoize((len, crossfilter) => {
-    const sizes = new Float32Array(len);
-    crossfilter.fillByIsSelected(sizes, 4, 0.2);
-
-    return sizes;
-  });
-
-  computePointSizes = memoize(
-    (len, crossfilter, metadataField, categoryField) => {
-      /*
-    compute webgl dot size for each point
-    */
-
-      const selectionSizes = this.computePointSizesFromCrossfilter(
-        len,
-        crossfilter
+  computeSelectedFlags = memoize(
+    (crossfilter, flagSelected, flagUnselected) => {
+      const x = crossfilter.fillByIsSelected(
+        new Float32Array(crossfilter.size()),
+        flagSelected,
+        flagUnselected
       );
-      let sizes;
+      return x;
+    }
+  );
 
-      if (metadataField && categoryField) {
-        sizes = selectionSizes.slice();
-        const valuesArr = crossfilter.data.col(metadataField).asArray();
+  computePointFlags = memoize(
+    (world, crossfilter, colorAccessor, centroidLabel) => {
+      /*
+      We communicate with the shader using three flags:
+      - isNaN -- the value is a NaN. Only makes sense when we have a colorAccessor
+      - isSelected -- the value is selected
+      - isHightlighted -- the value is highlighted in the UI (orthogonal from selection highlighting)
 
-        for (let i = 0; i < len; i += 1) {
-          if (valuesArr[i] === categoryField) {
-            sizes[i] = 10;
+      Due to constraints in webgl vertex shader attributes, these are encoded in a float, "kinda"
+      like bitmasks.
+
+      We also have separate code paths for generating flags for categorical and
+      continuous metadata, as they rely on different tests, and some of the flags
+      (eg, isNaN) are meaningless in the face of categorical metadata.
+      */
+
+      const flagSelected = 1;
+      const flagNaN = 2;
+      const flagHighlight = 4;
+
+      const flags = this.computeSelectedFlags(
+        crossfilter,
+        flagSelected,
+        0
+      ).slice();
+
+      const { metadataField, categoryField } = centroidLabel;
+      const highlightData = metadataField
+        ? world.obsAnnotations.col(metadataField)?.asArray()
+        : null;
+      const colorByColumn = colorAccessor
+        ? world.obsAnnotations.col(colorAccessor)?.asArray() ||
+          world.varData.col(colorAccessor)?.asArray()
+        : null;
+      const colorByData =
+        colorByColumn && isTypedArray(colorByColumn) ? colorByColumn : null;
+
+      if (colorByData || highlightData) {
+        for (let i = 0, len = flags.length; i < len; i += 1) {
+          if (highlightData) {
+            flags[i] += highlightData[i] === categoryField ? flagHighlight : 0;
+          }
+          if (colorByData) {
+            flags[i] += Number.isFinite(colorByData[i]) ? 0 : flagNaN;
           }
         }
-      } else {
-        sizes = selectionSizes;
       }
-      return sizes;
+      return flags;
     }
   );
 
@@ -97,7 +175,8 @@ class Graph extends React.Component {
       Y: null,
       positions: null,
       colors: null,
-      sizes: null
+      sizes: null,
+      flags: null
     };
     this.state = {
       toolSVG: null,
@@ -108,55 +187,48 @@ class Graph extends React.Component {
   }
 
   componentDidMount() {
-    // setup canvas and camera
-    const camera = _camera(this.reglCanvas, { scale: true, rotate: false });
+    // setup canvas, webgl draw function and camera
+    const camera = _camera(this.reglCanvas, {
+      pan: true,
+      scale: true,
+      rotate: false
+    });
     const regl = _regl(this.reglCanvas);
-
     const drawPoints = _drawPoints(regl);
 
-    // preallocate buffers
+    // preallocate webgl buffers
     const pointBuffer = regl.buffer();
     const colorBuffer = regl.buffer();
-    const sizeBuffer = regl.buffer();
+    const flagBuffer = regl.buffer();
 
-    // preallocate coordinate system transformation between data and gl
-    const fractionToUse = 0.93; // fraction of dimension to use
-    const shiftForMenuBar = 0.05;
-    const transform = {
-      glScaleX: scaleLinear([0, 1], [-1 * fractionToUse, 1 * fractionToUse]),
-      glScaleY: scaleLinear(
-        [0, 1],
-        [
-          (1 + shiftForMenuBar) * fractionToUse,
-          (-1 + shiftForMenuBar) * fractionToUse
-        ]
-      )
-    };
+    // create all default rendering transformations
+    const modelTF = createModelTF();
+    const projectionTF = createProjectionTF(
+      this.reglCanvas.width,
+      this.reglCanvas.height
+    );
 
-    /* first time, but this duplicates above function, should be possile to avoid this */
-    const reglRender = regl.frame(() => {
-      this.reglDraw(
-        regl,
-        drawPoints,
-        sizeBuffer,
-        colorBuffer,
-        pointBuffer,
-        camera
-      );
-      camera.tick();
-    });
-
-    this.reglRenderState = "rendering";
+    // initial draw to canvas
+    this.renderPoints(
+      regl,
+      drawPoints,
+      colorBuffer,
+      pointBuffer,
+      flagBuffer,
+      camera,
+      projectionTF
+    );
 
     this.setState({
       regl,
       drawPoints,
       pointBuffer,
       colorBuffer,
-      sizeBuffer,
+      flagBuffer,
       camera,
-      reglRender,
-      transform
+      modelTF,
+      modelInvTF: mat3.invert([], modelTF),
+      projectionTF
     });
   }
 
@@ -174,50 +246,47 @@ class Graph extends React.Component {
       colorAccessor,
       centroidLabel
     } = this.props;
-    const { reglRender, mode, regl, toolSVG, centroidSVG } = this.state;
+    const { regl, toolSVG, centroidSVG } = this.state;
     let stateChanges = {};
 
-    if (reglRender) {
-      if (
-        // If it IS RENDERING and it is NOT IN ZOOM mode, stop rendering.
-        this.reglRenderState === "rendering" &&
-        graphInteractionMode !== "zoom"
-      ) {
-        reglRender.cancel();
-        this.reglRenderState = "paused";
-      }
-
-      if (
-        // If it is NOT RENDERING and it IS IN ZOOM mode, start rendering
-        this.reglRenderState !== "rendering" &&
-        graphInteractionMode === "zoom"
-      ) {
-        this.restartReglLoop();
-        this.reglRenderState = "rendering";
-      }
-    }
-
     if (regl && world) {
-      /* update the regl state */
+      /* update the regl and point rendering state */
       const { obsLayout, nObs } = world;
       const {
         drawPoints,
-        transform,
         camera,
         pointBuffer,
         colorBuffer,
-        sizeBuffer
+        flagBuffer,
+        modelTF
       } = this.state;
+      let { projectionTF } = this.state;
+      let needsRepaint = false;
+
+      if (
+        prevProps.responsive.height !== responsive.height ||
+        prevProps.responsive.width !== responsive.width
+      ) {
+        projectionTF = createProjectionTF(
+          this.reglCanvas.width,
+          this.reglCanvas.height
+        );
+        needsRepaint = true;
+        stateChanges = {
+          ...stateChanges,
+          projectionTF
+        };
+      }
 
       /* coordinates for each point */
-      const { glScaleX, glScaleY } = transform;
       const X = obsLayout.col(layoutChoice.currentDimNames[0]).asArray();
       const Y = obsLayout.col(layoutChoice.currentDimNames[1]).asArray();
-      const newPositions = this.computePointPositions(X, Y, glScaleX, glScaleY);
+      const newPositions = this.computePointPositions(X, Y, modelTF);
       if (renderCache.positions !== newPositions) {
         /* update our cache & GL if the buffer changes */
         renderCache.positions = newPositions;
         pointBuffer({ data: newPositions, dimension: 2 });
+        needsRepaint = true;
       }
 
       /* colors for each point */
@@ -226,33 +295,35 @@ class Graph extends React.Component {
         /* update our cache & GL if the buffer changes */
         renderCache.colors = newColors;
         colorBuffer({ data: newColors, dimension: 3 });
+        needsRepaint = true;
       }
 
-      /* sizes for each point */
-      const { metadataField, categoryField } = centroidLabel;
-      const newSizes = this.computePointSizes(
-        nObs,
+      /* flags for each point */
+      const newFlags = this.computePointFlags(
+        world,
         crossfilter,
-        metadataField,
-        categoryField
+        colorAccessor,
+        centroidLabel
       );
-      if (renderCache.sizes !== newSizes) {
-        /* update our cache & GL if the buffer changes */
-        renderCache.size = newSizes;
-        sizeBuffer({ data: newSizes, dimension: 1 });
+      if (renderCache.flags !== newFlags) {
+        renderCache.flags = newFlags;
+        flagBuffer({ data: newFlags, dimension: 1 });
+        needsRepaint = true;
       }
 
       this.count = nObs;
 
-      regl._refresh();
-      this.reglDraw(
-        regl,
-        drawPoints,
-        sizeBuffer,
-        colorBuffer,
-        pointBuffer,
-        camera
-      );
+      if (needsRepaint) {
+        this.renderPoints(
+          regl,
+          drawPoints,
+          colorBuffer,
+          pointBuffer,
+          flagBuffer,
+          camera,
+          projectionTF
+        );
+      }
     }
 
     const createToolSVG = () => {
@@ -311,7 +382,8 @@ class Graph extends React.Component {
       stateChanges = { ...stateChanges, centroidSVG: newCentroidSVG };
     };
 
-    // Centroid SVG creation is disabled for now but should go into the first and third cases if enabled
+    // Centroid SVG creation is disabled for now but should go into the
+    // first and third cases if enabled
     if (
       prevProps.responsive.height !== responsive.height ||
       prevProps.responsive.width !== responsive.width
@@ -352,6 +424,14 @@ class Graph extends React.Component {
       this.setState(stateChanges);
     }
   }
+
+  handleCanvasEvent = e => {
+    const { camera, projectionTF } = this.state;
+    if (e.type !== "wheel") e.preventDefault();
+    if (camera.handleEvent(e, projectionTF)) {
+      this.renderCanvas();
+    }
+  };
 
   brushToolUpdate(tool, container) {
     /*
@@ -433,76 +513,25 @@ class Graph extends React.Component {
     }
   }
 
-  reglDraw(regl, drawPoints, sizeBuffer, colorBuffer, pointBuffer, camera) {
-    regl.clear({
-      depth: 1,
-      color: [1, 1, 1, 1]
-    });
-    drawPoints({
-      size: sizeBuffer,
-      distance: camera.distance,
-      color: colorBuffer,
-      position: pointBuffer,
-      count: this.count,
-      view: camera.view()
-    });
-  }
-
-  restartReglLoop() {
-    const {
-      regl,
-      drawPoints,
-      sizeBuffer,
-      colorBuffer,
-      pointBuffer,
-      camera
-    } = this.state;
-    const reglRender = regl.frame(() => {
-      this.reglDraw(
-        regl,
-        drawPoints,
-        sizeBuffer,
-        colorBuffer,
-        pointBuffer,
-        camera
-      );
-      camera.tick();
-    });
-
-    this.reglRenderState = "rendering";
-
-    this.setState({
-      reglRender
-    });
-  }
-
   mapScreenToPoint(pin) {
     /*
     Map an XY coordinates from screen domain to cell/point range,
     accounting for current pan/zoom camera.
     */
+
     const { responsive } = this.props;
-    const { regl, camera, transform } = this.state;
-    const { glScaleX, glScaleY } = transform;
+    const { camera, projectionTF, modelInvTF } = this.state;
+    const cameraInvTF = camera.invView();
 
-    const gl = regl._gl;
-
-    // get aspect ratio
-    const aspect = gl.drawingBufferWidth / gl.drawingBufferHeight;
-    const scale = aspect < 1 ? 1 / aspect : 1;
-
-    // compute inverse view matrix
-    const inverse = mat4.invert([], camera.view());
-
-    // transform screen coordinates -> cell coordinates
+    /* screen -> gl */
     const x = (2 * pin[0]) / (responsive.width - this.graphPaddingRight) - 1;
     const y = 2 * (1 - pin[1] / (responsive.height - this.graphPaddingTop)) - 1;
-    const pout = [
-      x * inverse[14] * aspect * scale + inverse[12],
-      -(y * inverse[14] * scale + inverse[13])
-    ];
 
-    const xy = [glScaleX.invert(pout[0]), glScaleY.invert(pout[1])];
+    const xy = vec2.fromValues(x, y);
+    const projectionInvTF = mat3.invert(mat3.create(), projectionTF);
+    vec2.transformMat3(xy, xy, projectionInvTF);
+    vec2.transformMat3(xy, xy, cameraInvTF);
+    vec2.transformMat3(xy, xy, modelInvTF);
     return xy;
   }
 
@@ -511,29 +540,21 @@ class Graph extends React.Component {
     Map an XY coordinate from cell/point domain to screen range.  Inverse
     of mapScreenToPoint()
     */
+
     const { responsive } = this.props;
-    const { regl, camera, transform } = this.state;
-    const { glScaleX, glScaleY } = transform;
+    const { camera, projectionTF, modelTF } = this.state;
+    const cameraTF = camera.view();
 
-    const gl = regl._gl;
-
-    // get aspect ratio
-    const aspect = gl.drawingBufferWidth / gl.drawingBufferHeight;
-    const scale = aspect < 1 ? 1 / aspect : 1;
-
-    // compute inverse view matrix
-    const inverse = mat4.invert([], camera.view());
-
-    // variable names are choosen to reflect inverse of those used
-    // in mapScreenToPoint().
-    const pout = [glScaleX(xyCell[0]), glScaleY(xyCell[1])];
-    const x = (pout[0] - inverse[12]) / aspect / scale / inverse[14];
-    const y = (-pout[1] - inverse[13]) / scale / inverse[14];
+    const xy = vec2.transformMat3(vec2.create(), xyCell, modelTF);
+    vec2.transformMat3(xy, xy, cameraTF);
+    vec2.transformMat3(xy, xy, projectionTF);
 
     const pin = [
-      Math.round(((x + 1) * (responsive.width - this.graphPaddingRight)) / 2),
       Math.round(
-        -((y + 1) / 2 - 1) * (responsive.height - this.graphPaddingTop)
+        ((xy[0] + 1) * (responsive.width - this.graphPaddingRight)) / 2
+      ),
+      Math.round(
+        -((xy[1] + 1) / 2 - 1) * (responsive.height - this.graphPaddingTop)
       )
     ];
     return pin;
@@ -654,8 +675,61 @@ class Graph extends React.Component {
     });
   }
 
+  renderPoints(
+    regl,
+    drawPoints,
+    colorBuffer,
+    pointBuffer,
+    flagBuffer,
+    camera,
+    projectionTF
+  ) {
+    const { universe } = this.props;
+    if (!this.reglCanvas || !universe) return;
+    const cameraTF = camera.view();
+    const projView = mat3.multiply(mat3.create(), projectionTF, cameraTF);
+    const { width, height } = this.reglCanvas;
+    regl.poll();
+    regl.clear({
+      depth: 1,
+      color: [1, 1, 1, 1]
+    });
+    drawPoints({
+      distance: camera.distance(),
+      color: colorBuffer,
+      position: pointBuffer,
+      flag: flagBuffer,
+      count: this.count,
+      projView,
+      nPoints: universe.nObs,
+      minViewportDimension: Math.min(width || 800, height || 600)
+    });
+    regl._gl.flush();
+  }
+
+  renderCanvas = renderThrottle(() => {
+    const {
+      regl,
+      drawPoints,
+      colorBuffer,
+      pointBuffer,
+      flagBuffer,
+      camera,
+      projectionTF
+    } = this.state;
+    this.renderPoints(
+      regl,
+      drawPoints,
+      colorBuffer,
+      pointBuffer,
+      flagBuffer,
+      camera,
+      projectionTF
+    );
+  });
+
   render() {
-    const { responsive, graphInteractionMode } = this.props;
+    const { responsive } = this.props;
 
     return (
       <div id="graphWrapper">
@@ -676,6 +750,11 @@ class Graph extends React.Component {
               ref={canvas => {
                 this.reglCanvas = canvas;
               }}
+              onMouseDown={this.handleCanvasEvent}
+              onMouseUp={this.handleCanvasEvent}
+              onMouseMove={this.handleCanvasEvent}
+              onDoubleClick={this.handleCanvasEvent}
+              onWheel={this.handleCanvasEvent}
             />
           </div>
         </div>

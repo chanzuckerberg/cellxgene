@@ -1,43 +1,40 @@
-// jshint esversion: 6
-// https://bl.ocks.org/Jverma/076377dd0125b1a508621441752735fc
-// https://peterbeshai.com/scatterplot-in-d3-with-voronoi-interaction.html
-
 import React from "react";
 import { connect } from "react-redux";
 import { Button, ButtonGroup } from "@blueprintjs/core";
 import _regl from "regl";
 import * as d3 from "d3";
+import { mat3 } from "gl-matrix";
+import memoize from "memoize-one";
+import { isTypedArray } from "../../util/typeHelpers";
+
 import * as globals from "../../globals";
-
-import _camera from "../../util/camera";
-
 import setupScatterplot from "./setupScatterplot";
 import styles from "./scatterplot.css";
-
 import _drawPoints from "./drawPointsRegl";
-import scaleLinear from "../../util/scaleLinear";
-
 import { margin, width, height } from "./util";
 import finiteExtent from "../../util/finiteExtent";
 
+function createProjectionTF(viewportWidth, viewportHeight) {
+  /*
+  the projection transform accounts for the screen size & other layout
+  */
+  const m = mat3.create();
+  return mat3.projection(m, viewportWidth, viewportHeight);
+}
+
 @connect(state => {
-  const { world, crossfilter } = state;
+  const { world, crossfilter, universe } = state;
   const { scatterplotXXaccessor, scatterplotYYaccessor } = state.controls;
   const expressionX =
-    world &&
     scatterplotXXaccessor &&
-    world.varData.hasCol(scatterplotXXaccessor)
-      ? world.varData.col(scatterplotXXaccessor).asArray()
-      : null;
+    world.varData.col(scatterplotXXaccessor)?.asArray();
   const expressionY =
-    world &&
     scatterplotYYaccessor &&
-    world.varData.hasCol(scatterplotYYaccessor)
-      ? world.varData.col(scatterplotYYaccessor).asArray()
-      : null;
+    world.varData.col(scatterplotYYaccessor)?.asArray();
 
   return {
     world,
+    universe,
 
     colorRGB: state.colors.rgb,
     colorScale: state.colors.scale,
@@ -57,6 +54,64 @@ import finiteExtent from "../../util/finiteExtent";
   };
 })
 class Scatterplot extends React.Component {
+  computePointPositions = memoize((X, Y, xScale, yScale) => {
+    const positions = new Float32Array(2 * X.length);
+    for (let i = 0, len = X.length; i < len; i += 1) {
+      positions[2 * i] = xScale(X[i]);
+      positions[2 * i + 1] = yScale(Y[i]);
+    }
+    return positions;
+  });
+
+  computePointColors = memoize(rgb => {
+    /*
+    compute webgl colors for each point
+    */
+    const colors = new Float32Array(3 * rgb.length);
+    for (let i = 0, len = rgb.length; i < len; i += 1) {
+      colors.set(rgb[i], 3 * i);
+    }
+    return colors;
+  });
+
+  computeSelectedFlags = memoize(
+    (crossfilter, flagSelected, flagUnselected) => {
+      const x = crossfilter.fillByIsSelected(
+        new Float32Array(crossfilter.size()),
+        flagSelected,
+        flagUnselected
+      );
+      return x;
+    }
+  );
+
+  computePointFlags = memoize((world, crossfilter, colorAccessor) => {
+    const flagSelected = 1;
+    const flagNaN = 2;
+    // XXX - coming soon.
+    // const flagHighlight = 4;
+
+    const flags = this.computeSelectedFlags(
+      crossfilter,
+      flagSelected,
+      0
+    ).slice();
+
+    const colorByColumn = colorAccessor
+      ? world.obsAnnotations.col(colorAccessor)?.asArray() ||
+        world.varData.col(colorAccessor)?.asArray()
+      : null;
+    const colorByData =
+      colorByColumn && isTypedArray(colorByColumn) ? colorByColumn : null;
+
+    if (colorByData) {
+      for (let i = 0, len = flags.length; i < len; i += 1) {
+        flags[i] += Number.isFinite(colorByData[i]) ? 0 : flagNaN;
+      }
+    }
+    return flags;
+  });
+
   constructor(props) {
     super(props);
     this.count = 0;
@@ -64,7 +119,7 @@ class Scatterplot extends React.Component {
     this.renderCache = {
       positions: null,
       colors: null,
-      sizes: null,
+      flags: null,
       xScale: null,
       yScale: null
     };
@@ -85,39 +140,37 @@ class Scatterplot extends React.Component {
       this.renderCache = { ...this.renderCache, ...scales };
     }
 
-    const camera = _camera(this.reglCanvas, { scale: true, rotate: false });
     const regl = _regl(this.reglCanvas);
-
     const drawPoints = _drawPoints(regl);
+
+    // Create render transform
+    const projectionTF = createProjectionTF(
+      this.reglCanvas.width,
+      this.reglCanvas.height
+    );
 
     // preallocate buffers
     const pointBuffer = regl.buffer();
     const colorBuffer = regl.buffer();
-    const sizeBuffer = regl.buffer();
+    const flagBuffer = regl.buffer();
 
-    const reglRender = regl.frame(() => {
-      this.reglDraw(
-        regl,
-        drawPoints,
-        sizeBuffer,
-        colorBuffer,
-        pointBuffer,
-        camera
-      );
-      camera.tick();
-    });
-
-    this.reglRenderState = "rendering";
+    this.renderPoints(
+      regl,
+      drawPoints,
+      flagBuffer,
+      colorBuffer,
+      pointBuffer,
+      projectionTF
+    );
 
     this.setState({
       regl,
-      sizeBuffer,
+      flagBuffer,
       pointBuffer,
       colorBuffer,
       svg,
-      reglRender,
-      camera,
-      drawPoints
+      drawPoints,
+      projectionTF
     });
   }
 
@@ -129,22 +182,22 @@ class Scatterplot extends React.Component {
       scatterplotYYaccessor,
       expressionX,
       expressionY,
-      colorRGB
+      colorRGB,
+      colorAccessor
     } = this.props;
     const {
-      reglRender,
       regl,
       pointBuffer,
       colorBuffer,
-      sizeBuffer,
+      flagBuffer,
       svg,
       drawPoints,
-      camera
+      projectionTF
     } = this.state;
 
     if (
-      scatterplotXXaccessor !== prevProps.scatterplotXXaccessor || // was CLU now FTH1 etc
-      scatterplotYYaccessor !== prevProps.scatterplotYYaccessor || // was CLU now FTH1 etc
+      scatterplotXXaccessor !== prevProps.scatterplotXXaccessor ||
+      scatterplotYYaccessor !== prevProps.scatterplotYYaccessor ||
       world !== prevProps.world // shape or clip of world changed
     ) {
       const scales = Scatterplot.setupScales(expressionX, expressionY);
@@ -152,76 +205,54 @@ class Scatterplot extends React.Component {
       this.renderCache = { ...this.renderCache, ...scales };
     }
 
-    if (reglRender && this.reglRenderState === "rendering") {
-      reglRender.cancel();
-      this.reglRenderState = "paused";
-    }
-
-    if (
-      world &&
-      regl &&
-      pointBuffer &&
-      colorBuffer &&
-      sizeBuffer &&
-      expressionX &&
-      expressionY &&
-      scatterplotXXaccessor &&
-      scatterplotYYaccessor
-    ) {
+    if (world && regl) {
       const { renderCache } = this;
       const { xScale, yScale } = this.renderCache;
-      const cellCount = expressionX.length;
+      let needsRepaint = false;
 
-      // Points change when expressionX or expressionY change.
-      if (
-        !renderCache.positions ||
-        expressionX !== prevProps.expressionX ||
-        expressionY !== prevProps.expressionY
-      ) {
-        if (!renderCache.positions) {
-          renderCache.positions = new Float32Array(2 * cellCount);
-        }
-        const glScaleX = scaleLinear([0, width], [-0.95, 0.95]);
-        const glScaleY = scaleLinear([0, height], [-1, 1]);
-        for (let i = 0, { positions } = renderCache; i < cellCount; i += 1) {
-          positions[2 * i] = glScaleX(xScale(expressionX[i]));
-          positions[2 * i + 1] = glScaleY(yScale(expressionY[i]));
-        }
-        pointBuffer({ data: renderCache.positions, dimension: 2 });
-      }
-
-      // Colors for each point - change only when props.colorsRGB change.
-      if (!renderCache.colors || colorRGB !== prevProps.colorRGB) {
-        if (!renderCache.colors) {
-          renderCache.colors = new Float32Array(3 * cellCount);
-        }
-        for (let i = 0, { colors } = renderCache; i < cellCount; i += 1) {
-          colors.set(colorRGB[i], 3 * i);
-        }
-        colorBuffer({ data: renderCache.colors, dimension: 3 });
-      }
-
-      // Sizes for each point - updates are triggered only when selected
-      // obs change
-      if (!renderCache.sizes || crossfilter !== prevProps.crossfilter) {
-        if (!renderCache.sizes) {
-          renderCache.sizes = new Float32Array(cellCount);
-        }
-        crossfilter.fillByIsSelected(renderCache.sizes, 4, 0.2);
-        sizeBuffer({ data: renderCache.sizes, dimension: 1 });
-      }
-
-      this.count = cellCount;
-
-      regl._refresh();
-      this.reglDraw(
-        regl,
-        drawPoints,
-        sizeBuffer,
-        colorBuffer,
-        pointBuffer,
-        camera
+      const newPositions = this.computePointPositions(
+        expressionX,
+        expressionY,
+        xScale,
+        yScale
       );
+      if (renderCache.positions !== newPositions) {
+        renderCache.positions = newPositions;
+        pointBuffer({ data: renderCache.positions, dimension: 2 });
+        needsRepaint = true;
+      }
+
+      /* colors for each point */
+      const newColors = this.computePointColors(colorRGB);
+      if (renderCache.colors !== newColors) {
+        renderCache.colors = newColors;
+        colorBuffer({ data: renderCache.colors, dimension: 3 });
+        needsRepaint = true;
+      }
+
+      const newFlags = this.computePointFlags(
+        world,
+        crossfilter,
+        colorAccessor
+      );
+      if (renderCache.flags !== newFlags) {
+        renderCache.flags = newFlags;
+        flagBuffer({ data: renderCache.flags, dimension: 1 });
+        needsRepaint = true;
+      }
+
+      this.count = expressionX.length;
+
+      if (needsRepaint) {
+        this.renderPoints(
+          regl,
+          drawPoints,
+          flagBuffer,
+          colorBuffer,
+          pointBuffer,
+          projectionTF
+        );
+      }
     }
   }
 
@@ -239,22 +270,6 @@ class Scatterplot extends React.Component {
       xScale,
       yScale
     };
-  }
-
-  reglDraw(regl, drawPoints, sizeBuffer, colorBuffer, pointBuffer, camera) {
-    regl.clear({
-      depth: 1,
-      color: [1, 1, 1, 1]
-    });
-
-    drawPoints({
-      size: sizeBuffer,
-      distance: camera.distance,
-      color: colorBuffer,
-      position: pointBuffer,
-      count: this.count,
-      view: camera.view()
-    });
   }
 
   drawAxesSVG(xScale, yScale, svg) {
@@ -305,6 +320,34 @@ class Scatterplot extends React.Component {
       .attr("class", "label")
       .style("font-style", "italic")
       .text(scatterplotXXaccessor);
+  }
+
+  renderPoints(
+    regl,
+    drawPoints,
+    flagBuffer,
+    colorBuffer,
+    pointBuffer,
+    projectionTF
+  ) {
+    if (!this.reglCanvas) return;
+    const { universe } = this.props;
+    const { width: cvWidth, height: cvHeight } = this.reglCanvas;
+    regl.poll();
+    regl.clear({
+      depth: 1,
+      color: [1, 1, 1, 1]
+    });
+    drawPoints({
+      flag: flagBuffer,
+      color: colorBuffer,
+      position: pointBuffer,
+      projection: projectionTF,
+      count: this.count,
+      nPoints: universe.nObs,
+      minViewportDimension: Math.min(cvWidth || width, cvHeight || height)
+    });
+    regl._gl.flush();
   }
 
   render() {
@@ -367,7 +410,7 @@ class Scatterplot extends React.Component {
             height={height}
             data-testid="scatterplot"
             style={{
-              marginLeft: margin.left - 7,
+              marginLeft: margin.left,
               marginTop: margin.top
             }}
             ref={canvas => {
