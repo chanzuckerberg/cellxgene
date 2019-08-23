@@ -26,8 +26,7 @@ export default function(regl) {
       bool isNaN, isSelected, isHighlight;
       getFlags(flag, isNaN, isSelected, isHighlight);
 
-      float size = isHighlight ? 8. : isSelected ? 4. : 1.;
-      gl_PointSize = size;
+      gl_PointSize = isHighlight ? 8. : isSelected ? 4. : 1.;
 
       float z = isNaN ? zBottom : (isHighlight ? zTop : zMiddle);
       vec3 xy = projection * vec3(position, 1.);
