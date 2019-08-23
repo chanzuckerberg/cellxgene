@@ -53,6 +53,12 @@ function createModelTF() {
 }
 
 function renderThrottle(callback) {
+  /*
+  This wraps a call to requestAnimationFrame(), enforcing a single
+  render callback at any given time (ie, you can call this any number
+  of times, and it will coallesce multiple inter-frame calls into a
+  single render).
+  */
   let rafCurrentlyInProgress = null;
   return function f() {
     if (rafCurrentlyInProgress) return;
@@ -326,62 +332,6 @@ class Graph extends React.Component {
       }
     }
 
-    const createToolSVG = () => {
-      /* clear out whatever was on the div, even if nothing, but usually the brushes etc */
-      d3.select("#graphAttachPoint")
-        .select("#tool")
-        .remove();
-
-      let handleStart;
-      let handleDrag;
-      let handleEnd;
-      let handleCancel;
-      if (selectionTool === "brush") {
-        handleStart = this.handleBrushStartAction.bind(this);
-        handleDrag = this.handleBrushDragAction.bind(this);
-        handleEnd = this.handleBrushEndAction.bind(this);
-      } else {
-        handleStart = this.handleLassoStart.bind(this);
-        handleEnd = this.handleLassoEnd.bind(this);
-        handleCancel = this.handleLassoCancel.bind(this);
-      }
-
-      const { svg: newToolSVG, tool, container } = setupSVGandBrushElements(
-        selectionTool,
-        handleStart,
-        handleDrag,
-        handleEnd,
-        handleCancel,
-        responsive,
-        this.graphPaddingRight,
-        graphInteractionMode
-      );
-
-      stateChanges = { ...stateChanges, toolSVG: newToolSVG, tool, container };
-    };
-
-    const createCentroidSVG = () => {
-      d3.select("#graphAttachPoint")
-        .select("#centroid-container")
-        .remove();
-
-      if (centroidLabel.metadataField === "" || !centroidLabel.centroidXY) {
-        return;
-      }
-
-      const centroidScreen = this.mapPointToScreen(centroidLabel.centroidXY);
-
-      const newCentroidSVG = setupCentroidSVG(
-        responsive,
-        this.graphPaddingRight,
-        centroidScreen,
-        centroidLabel.categoryField,
-        colorAccessor
-      );
-
-      stateChanges = { ...stateChanges, centroidSVG: newCentroidSVG };
-    };
-
     // Centroid SVG creation is disabled for now but should go into the
     // first and third cases if enabled
     if (
@@ -389,14 +339,14 @@ class Graph extends React.Component {
       prevProps.responsive.width !== responsive.width
     ) {
       // If the window size has changed we want to recreate all SVGs
-      createToolSVG();
+      stateChanges = { ...stateChanges, ...this.createToolSVG() };
     } else if (
       (responsive.height && responsive.width && !toolSVG) ||
       selectionTool !== prevProps.selectionTool ||
       prevProps.graphInteractionMode !== graphInteractionMode
     ) {
       // first time or change of selection tool6
-      createToolSVG();
+      stateChanges = { ...stateChanges, ...this.createToolSVG() };
     } else if (
       centroidLabel !== prevProps.centroidLabel ||
       (responsive.height && responsive.width && !centroidSVG)
@@ -432,6 +382,75 @@ class Graph extends React.Component {
       this.renderCanvas();
     }
   };
+
+  createToolSVG() {
+    /*
+    Called from componentDidUpdate. Create the tool SVG, and return any
+    state changes that should be passed to setState().
+    */
+    const { responsive, selectionTool, graphInteractionMode } = this.props;
+
+    /* clear out whatever was on the div, even if nothing, but usually the brushes etc */
+    d3.select("#graphAttachPoint")
+      .select("#tool")
+      .remove();
+
+    let handleStart;
+    let handleDrag;
+    let handleEnd;
+    let handleCancel;
+    if (selectionTool === "brush") {
+      handleStart = this.handleBrushStartAction.bind(this);
+      handleDrag = this.handleBrushDragAction.bind(this);
+      handleEnd = this.handleBrushEndAction.bind(this);
+    } else {
+      handleStart = this.handleLassoStart.bind(this);
+      handleEnd = this.handleLassoEnd.bind(this);
+      handleCancel = this.handleLassoCancel.bind(this);
+    }
+
+    const { svg: newToolSVG, tool, container } = setupSVGandBrushElements(
+      selectionTool,
+      handleStart,
+      handleDrag,
+      handleEnd,
+      handleCancel,
+      responsive,
+      this.graphPaddingRight,
+      graphInteractionMode
+    );
+
+    return { toolSVG: newToolSVG, tool, container };
+  }
+
+  createCentroidSVG() {
+    /*
+    Called from componentDidUpdate. Create the centroid SVG, and return any
+    state changes that should be passed to setState().
+
+    CURRENTLY UNUSED
+    */
+    const { responsive, centroidLabel, colorAccessor } = this.props;
+    d3.select("#graphAttachPoint")
+      .select("#centroid-container")
+      .remove();
+
+    if (centroidLabel.metadataField === "" || !centroidLabel.centroidXY) {
+      return {};
+    }
+
+    const centroidScreen = this.mapPointToScreen(centroidLabel.centroidXY);
+
+    const newCentroidSVG = setupCentroidSVG(
+      responsive,
+      this.graphPaddingRight,
+      centroidScreen,
+      centroidLabel.categoryField,
+      colorAccessor
+    );
+
+    return { centroidSVG: newCentroidSVG };
+  }
 
   brushToolUpdate(tool, container) {
     /*
