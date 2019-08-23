@@ -63,6 +63,9 @@ export const leftSidebarSectionHeading = {
 };
 export const leftSidebarSectionPadding = 10;
 
+/* various timing-related behaviors */
+export const tooltipHoverOpenDelay = 1000; /* ms delay before a tooltip displays */
+
 let _API = {
   // prefix: "http://api.clustering.czi.technology/api/",
   // prefix: "http://tabulamuris.cxg.czi.technology/api/",

@@ -3,6 +3,7 @@ import React from "react";
 import { AnchorButton, Tooltip } from "@blueprintjs/core";
 import { connect } from "react-redux";
 import { World } from "../../util/stateManager";
+import { tooltipHoverOpenDelay } from "../../globals";
 
 @connect()
 class CellSetButton extends React.Component {
@@ -38,7 +39,8 @@ class CellSetButton extends React.Component {
     return (
       <Tooltip
         content="Save current selection for differential expression computation"
-        position="top"
+        position="bottom"
+        hoverOpenDelay={tooltipHoverOpenDelay}
       >
         <AnchorButton
           type="button"
