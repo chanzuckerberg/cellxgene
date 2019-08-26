@@ -1,5 +1,5 @@
 /*
-Utility code for our WebGL shaders
+Utility code for WebGL shaders
 */
 
 /*
@@ -51,9 +51,13 @@ Point Size:
   Current approach: linear scaling of point size, clamped to [1,10],
   between two points that are based on empirical testing.
 
-    - 1M points on a 500x500 canvas: 1M/(500*500) -> 1
-    - 1000 points on a 1440x1440 canvas:  1000/(1440*1440) -> 10
+    - 1M points on a 500x500 canvas: 1M/(500*500) -> 0.5
+    - 1000 points on a 1440x1440 canvas:  1000/(1440*1440) -> 5
+
+  The domain is pseudo density (numPoints / minViewportDimension^2)
+  The range is web gl point size.
 */
+
 // configuration
 const domain = [1000000 / (500 * 500), 1000 / (1440 * 1440)];
 const range = [0.5, 5];
