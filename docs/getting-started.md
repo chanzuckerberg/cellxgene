@@ -62,6 +62,12 @@ To install `cellxgene prepare` alongside `cellxgene launch`
 pip install cellxgene[prepare]
 ```
 
+If the aforementioned optional package installation fails, you can also install these packages directly:
+
+```
+pip install scanpy>=1.3.7 python-igraph louvain>=0.6
+```
+
 To prepare from an existing `.h5ad` file use
 
 ```
@@ -82,17 +88,6 @@ To see all options call
 cellxgene prepare --help
 ```
 
-**Note**: `cellxgene prepare` will only perform `louvain` clustering if you have the `python-igraph` and `louvain` packages installed. To make sure they are installed alongside `cellxgene` use
-
-```
-pip install cellxgene[louvain]
-```
-
-If the aforementioned optional package installation fails, you can also install these packages directly:
-
-```
-pip install python-igraph louvain>=0.6
-```
 
 ## conda and virtual environments
 

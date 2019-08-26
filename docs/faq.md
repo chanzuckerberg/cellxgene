@@ -18,7 +18,7 @@ The output of `cellxgene prepare` is a h5ad file with your computed clusters and
 
 #### I have a directory of 10X-Genomics data with _mtx_ files and I've never used _scanpy_, can I use _cellxgene_?
 
-Yep! This should only take a couple steps. We'll assume your data is in a folder called `data/` and you've successfully installed `cellxgene` with the `louvain` packages as described above. Just run
+Yep! This should only take a couple steps. We'll assume your data is in a folder called `data/` and you've successfully installed `cellxgene` with the `prepare` packages as described above. Just run
 
 ```
 cellxgene prepare data/ --output=data-processed.h5ad --layout=umap
@@ -75,14 +75,6 @@ ENV_NAME=cellxgene
 python3.7 -m venv ${ENV_NAME}
 source ${ENV_NAME}/bin/activate
 pip install cellxgene
-```
-
-#### In my _prepare_ command I received the following error `Warning: louvain module is not installed, no clusters will be calculated. To fix this please install cellxgene with the optional feature louvain enabled`
-
-Louvain clustering requires additional dependencies, so we don't include them by default. For now, you need to specify that you want these packages by using
-
-```
-pip install cellxgene[louvain]
 ```
 
 #### I ran _prepare_ and I'm getting results that look unexpected
