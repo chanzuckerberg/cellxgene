@@ -3,10 +3,11 @@ Utility code for our WebGL shaders
 */
 
 /*
-Point flags - used in graph & scatter plots
+PointFlags:
+  Point flags are used in graph & scatter plots.
 
-We want a bitmask-like flag structure, but due to webgl limitations
-must emulate it with floats.
+  We want a bitmask-like flag structure, but due to webgl limitations
+  must emulate it with floats.
 */
 
 // for JS
@@ -41,4 +42,36 @@ export const glPointFlags = `
     isHighlight = isLowBitSet(flag);
   }
 
+`;
+
+/*
+Point Size:
+  Calculate point size for scatter plot based upon pseudo density.
+
+  Current approach: linear scaling of point size, clamped to [1,10],
+  between two points that are based on empirical testing.
+
+    - 1M points on a 500x500 canvas: 1M/(500*500) -> 1
+    - 1000 points on a 1440x1440 canvas:  1000/(1440*1440) -> 10
+*/
+// configuration
+const domain = [1000000 / (500 * 500), 1000 / (1440 * 1440)];
+const range = [0.5, 5];
+
+// derived from configuration
+const scale = (range[1] - range[0]) / (domain[1] - domain[0]);
+const offset = scale * -domain[0] + range[0];
+
+export const glPointSize = `
+  float pointSize(float nPoints, float minViewportDimension, bool isSelected, bool isHighlight) {
+    float density = nPoints / (minViewportDimension * minViewportDimension);
+    float pointSize = (${scale.toFixed(4)}*density) + ${offset.toFixed(4)};
+    pointSize = clamp(pointSize, 
+      ${range[0].toFixed(4)}, 
+      ${range[1].toFixed(4)});
+
+    if (isHighlight) return 2. * pointSize;
+    if (isSelected) return pointSize;
+    return pointSize / 3.;
+  }
 `;

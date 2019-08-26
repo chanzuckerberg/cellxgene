@@ -1,4 +1,4 @@
-import { glPointFlags } from "../../util/glHelpers";
+import { glPointFlags, glPointSize } from "../../util/glHelpers";
 
 export default function(regl) {
   return regl({
@@ -23,12 +23,15 @@ export default function(regl) {
     // import getFlags()
     ${glPointFlags}
 
+    // get pointSize()
+    ${glPointSize}
+
     void main() {
       bool isNaN, isSelected, isHighlight;
       getFlags(flag, isNaN, isSelected, isHighlight);
 
-      float size = isHighlight ? 8. : isSelected ? 4. : 1.;
-      gl_PointSize = (0.5 * pow(distance, 2.5)) + size;
+      float size = pointSize(nPoints, minViewportDimension, isSelected, isHighlight);
+      gl_PointSize = size * pow(distance, 1.2);
 
       float z = isNaN ? zBottom : (isHighlight ? zTop : zMiddle);
       vec3 xy = projView * vec3(position, 1.);
