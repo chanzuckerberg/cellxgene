@@ -1,12 +1,19 @@
 import { vec2, mat3 } from "gl-matrix";
 
+const EPSILON = 0.000001;
+
 const scaleSpeed = 0.5;
 const scaleMax = 3.0;
 const scaleMin = 0.5;
+const panBound = 0.8;
 
 // private
 const scratch0 = new Float32Array(16);
 const scratch1 = new Float32Array(16);
+
+function clamp(val, rng) {
+  return Math.max(Math.min(val, rng[1]), rng[0]);
+}
 
 class Camera {
   constructor(canvas) {
@@ -33,24 +40,42 @@ class Camera {
   }
 
   pan(dx, dy) {
-    mat3.translate(this.viewMatrix, this.viewMatrix, [dx, dy]);
-    mat3.invert(this.viewMatrixInv, this.viewMatrix);
+    const m = this.viewMatrix;
+    const dyRange = [
+      -panBound - (m[7] + 1) / m[4],
+      panBound - (m[7] - 1) / m[4]
+    ];
+    const dxRange = [
+      -panBound - (m[6] + 1) / m[0],
+      panBound - (m[6] - 1) / m[0]
+    ];
+
+    const dxClamped = clamp(dx, dxRange);
+    const dyClamped = clamp(dy, dyRange);
+    if (Math.abs(dxClamped) <= EPSILON && Math.abs(dyClamped) <= EPSILON)
+      return;
+
+    mat3.translate(m, m, [dxClamped, dyClamped]);
+    mat3.invert(this.viewMatrixInv, m);
   }
 
   zoomAt(d, x = 0, y = 0) {
     /*
-    Set camera zoom at [x,y]
+    Camera zoom at [x,y]
     */
-    const dClamped =
-      Math.max(Math.min(d * this.viewMatrix[0], scaleMax), scaleMin) /
-      this.viewMatrix[0];
-    if (dClamped === 1) return;
+    const m = this.viewMatrix;
+    const bounds = [-panBound, panBound];
+    x = clamp(x, bounds);
+    y = clamp(y, bounds);
 
-    mat3.translate(this.viewMatrix, this.viewMatrix, [x, y]);
-    mat3.scale(this.viewMatrix, this.viewMatrix, [dClamped, dClamped]);
-    mat3.translate(this.viewMatrix, this.viewMatrix, [-x, -y]);
+    const dClamped = clamp(d * m[0], [scaleMin, scaleMax]) / m[0];
+    if (Math.abs(1 - dClamped) <= EPSILON) return; // noop request
 
-    mat3.invert(this.viewMatrixInv, this.viewMatrix);
+    mat3.translate(m, m, [x, y]);
+    mat3.scale(m, m, [dClamped, dClamped]);
+    mat3.translate(m, m, [-x, -y]);
+
+    mat3.invert(this.viewMatrixInv, m);
   }
 
   /*
