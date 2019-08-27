@@ -25,12 +25,12 @@ function createProjectionTF(viewportWidth, viewportHeight) {
 @connect(state => {
   const { world, crossfilter, universe } = state;
   const { scatterplotXXaccessor, scatterplotYYaccessor } = state.controls;
-  const expressionX =
-    scatterplotXXaccessor &&
-    world.varData.col(scatterplotXXaccessor)?.asArray();
-  const expressionY =
-    scatterplotYYaccessor &&
-    world.varData.col(scatterplotYYaccessor)?.asArray();
+  const expressionX = scatterplotXXaccessor
+    ? world.varData.col(scatterplotXXaccessor)?.asArray()
+    : null;
+  const expressionY = scatterplotYYaccessor
+    ? world.varData.col(scatterplotYYaccessor)?.asArray()
+    : null;
 
   return {
     world,
@@ -39,6 +39,8 @@ function createProjectionTF(viewportWidth, viewportHeight) {
     colorRGB: state.colors.rgb,
     colorScale: state.colors.scale,
     colorAccessor: state.colors.colorAccessor,
+
+    centroidLabel: state.centroidLabel,
 
     // Accessors are var/gene names (strings)
     scatterplotXXaccessor,
@@ -85,32 +87,42 @@ class Scatterplot extends React.Component {
     }
   );
 
-  computePointFlags = memoize((world, crossfilter, colorAccessor) => {
-    const flagSelected = 1;
-    const flagNaN = 2;
-    // XXX - coming soon.
-    // const flagHighlight = 4;
+  computePointFlags = memoize(
+    (world, crossfilter, colorAccessor, centroidLabel) => {
+      const flagSelected = 1;
+      const flagNaN = 2;
+      const flagHighlight = 4;
 
-    const flags = this.computeSelectedFlags(
-      crossfilter,
-      flagSelected,
-      0
-    ).slice();
+      const flags = this.computeSelectedFlags(
+        crossfilter,
+        flagSelected,
+        0
+      ).slice();
 
-    const colorByColumn = colorAccessor
-      ? world.obsAnnotations.col(colorAccessor)?.asArray() ||
-        world.varData.col(colorAccessor)?.asArray()
-      : null;
-    const colorByData =
-      colorByColumn && isTypedArray(colorByColumn) ? colorByColumn : null;
+      const { metadataField, categoryField } = centroidLabel;
+      const highlightData = metadataField
+        ? world.obsAnnotations.col(metadataField)?.asArray()
+        : null;
+      const colorByColumn = colorAccessor
+        ? world.obsAnnotations.col(colorAccessor)?.asArray() ||
+          world.varData.col(colorAccessor)?.asArray()
+        : null;
+      const colorByData =
+        colorByColumn && isTypedArray(colorByColumn) ? colorByColumn : null;
 
-    if (colorByData) {
-      for (let i = 0, len = flags.length; i < len; i += 1) {
-        flags[i] += Number.isFinite(colorByData[i]) ? 0 : flagNaN;
+      if (colorByData || highlightData) {
+        for (let i = 0, len = flags.length; i < len; i += 1) {
+          if (highlightData) {
+            flags[i] += highlightData[i] === categoryField ? flagHighlight : 0;
+          }
+          if (colorByData) {
+            flags[i] += Number.isFinite(colorByData[i]) ? 0 : flagNaN;
+          }
+        }
       }
+      return flags;
     }
-    return flags;
-  });
+  );
 
   constructor(props) {
     super(props);
@@ -183,7 +195,8 @@ class Scatterplot extends React.Component {
       expressionX,
       expressionY,
       colorRGB,
-      colorAccessor
+      colorAccessor,
+      centroidLabel
     } = this.props;
     const {
       regl,
@@ -233,7 +246,8 @@ class Scatterplot extends React.Component {
       const newFlags = this.computePointFlags(
         world,
         crossfilter,
-        colorAccessor
+        colorAccessor,
+        centroidLabel
       );
       if (renderCache.flags !== newFlags) {
         renderCache.flags = newFlags;
