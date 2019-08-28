@@ -86,7 +86,7 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
     case "annotation: category edited": {
       /* change the name of an obs annotation category */
       const name = action.metadataField;
-      const newName = action.editedCategoryText;
+      const newName = action.newCategoryText;
       if (!AH.isUserAnnotation(state, name))
         throw new Error("unable to edit read-only annotation");
       if (typeof newName !== "string" || newName.length === 0)

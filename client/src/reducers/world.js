@@ -23,6 +23,7 @@ const WorldReducer = (
   nextSharedState,
   prevSharedState
 ) => {
+  console.log(action);
   switch (action.type) {
     case "initial data load complete (universe exists)":
     case "reset World to eq Universe": {
@@ -171,12 +172,12 @@ const WorldReducer = (
     case "annotation: category edited": {
       /* change the name of an obs annotation */
       const name = action.metadataField;
-      const newName = action.editedCategoryText;
+      const newName = action.newCategoryText;
       const { schema } = nextSharedState.universe;
       const obsAnnotations = state.obsAnnotations.renameCol(name, newName);
       const unclipped = {
         ...state.unclipped,
-        obsAnnotations: state.unclipped.ations.renameCol(name, newName)
+        obsAnnotations: state.unclipped.obsAnnotations.renameCol(name, newName)
       };
       return { ...state, schema, obsAnnotations, unclipped };
     }

@@ -108,7 +108,7 @@ const CategoricalSelection = (
 
     case "annotation: category edited": {
       const name = action.metadataField;
-      const newName = action.editedCategoryText;
+      const newName = action.newCategoryText;
       const { [name]: catSeln, ...newState } = state;
       newState[newName] = catSeln;
       return newState;

@@ -151,7 +151,7 @@ const CrossfilterReducerBase = (
 
     case "annotation: category edited": {
       const name = action.metadataField;
-      const newName = action.editedCategoryText;
+      const newName = action.newCategoryText;
       return state.renameDimension(
         obsAnnoDimensionName(name),
         obsAnnoDimensionName(newName)
