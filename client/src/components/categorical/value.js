@@ -134,8 +134,14 @@ class CategoryValue extends React.Component {
 
     const worldChange = props.world !== nextProps.world;
     const colorAccessorChange = props.colorAccessor !== nextProps.colorAccessor;
+    const annotationsChange = props.annotations !== nextProps.annotations;
 
-    return valueSelectionChange || worldChange || colorAccessorChange;
+    return (
+      valueSelectionChange ||
+      worldChange ||
+      colorAccessorChange ||
+      annotationsChange
+    );
   };
 
   toggleOn = () => {

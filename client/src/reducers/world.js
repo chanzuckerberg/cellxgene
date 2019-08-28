@@ -217,7 +217,7 @@ const WorldReducer = (
       };
       const obsAnnotations = state.obsAnnotations.replaceColData(
         metadataField,
-        unclipped.obsAnnotation.col(metadataField).asArray()
+        unclipped.obsAnnotations.col(metadataField).asArray()
       );
       return { ...state, schema, obsAnnotations, unclipped };
     }
