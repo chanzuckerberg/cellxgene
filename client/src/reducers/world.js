@@ -23,7 +23,6 @@ const WorldReducer = (
   nextSharedState,
   prevSharedState
 ) => {
-  console.log(action);
   switch (action.type) {
     case "initial data load complete (universe exists)":
     case "reset World to eq Universe": {
