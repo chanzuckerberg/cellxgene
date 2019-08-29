@@ -160,14 +160,7 @@ def prepare(
         sc.pp.neighbors(adata)
 
     def run_louvain(adata):
-        try:
-            sc.tl.louvain(adata)
-        except ModuleNotFoundError:
-            click.echo(
-                "\nWarning: louvain module is not installed, no clusters will be calculated. "
-                "To fix this please install cellxgene with the optional feature louvain enabled: "
-                "`pip install cellxgene[louvain]`"
-            )
+        sc.tl.louvain(adata)
 
     def run_layout(adata):
         if len(unique(adata.obs["louvain"].values)) < 10:
