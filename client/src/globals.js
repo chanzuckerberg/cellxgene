@@ -15,7 +15,8 @@ export const configDefaults = {
   displayNames: {},
   parameters: {
     "max-category-items": 1000
-  }
+  },
+  links: {}
 };
 
 /* colors */
