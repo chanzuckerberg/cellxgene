@@ -236,7 +236,6 @@ def launch(
 
     from server.app.scanpy_engine.scanpy_engine import ScanpyEngine
 
-
     try:
         server.attach_data(ScanpyEngine(data_locator, e_args), title=title)
     except ScanpyFileError as e:
