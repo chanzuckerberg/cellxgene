@@ -3,12 +3,23 @@ import React from "react";
 import { Button, Popover, Menu, MenuItem, Position } from "@blueprintjs/core";
 
 function InformationMenu(props) {
-  const { libraryVersions } = props;
+  const { libraryVersions, aboutLink } = props;
   return (
     <div style={{ marginLeft: 10 }} className="bp3-button-group">
       <Popover
         content={
           <Menu>
+            {aboutLink ? (
+              <MenuItem
+                href={aboutLink}
+                target="_blank"
+                icon="info-sign"
+                text="About This Dataset"
+              />
+            ) : (
+              ""
+            )}
+
             <MenuItem
               href="https://chanzuckerberg.github.io/cellxgene/faq.html"
               target="_blank"

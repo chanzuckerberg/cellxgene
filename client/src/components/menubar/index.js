@@ -38,7 +38,8 @@ import { tooltipHoverOpenDelay } from "../../globals";
   celllist2: state.differential.celllist2,
   libraryVersions: state.config?.library_versions, // eslint-disable-line camelcase
   undoDisabled: state["@@undoable/past"].length === 0,
-  redoDisabled: state["@@undoable/future"].length === 0
+  redoDisabled: state["@@undoable/future"].length === 0,
+  aboutLink: state.config?.links?.["about-dataset"]
 }))
 class MenuBar extends React.Component {
   static isValidDigitKeyEvent(e) {
@@ -267,7 +268,8 @@ class MenuBar extends React.Component {
       clipPercentileMin,
       clipPercentileMax,
       layoutChoice,
-      graphInteractionMode
+      graphInteractionMode,
+      aboutLink
     } = this.props;
     const { pendingClipPercentiles } = this.state;
 
@@ -473,7 +475,10 @@ class MenuBar extends React.Component {
           undoDisabled={undoDisabled}
           redoDisabled={redoDisabled}
         />
-        <InformationMenu libraryVersions={libraryVersions} />
+        <InformationMenu
+          libraryVersions={libraryVersions}
+          aboutLink={aboutLink}
+        />
       </div>
     );
   }

@@ -7,14 +7,25 @@ import Logo from "../framework/logo";
 @connect(state => ({
   responsive: state.responsive,
   datasetTitle: state.config?.displayNames?.dataset ?? "",
+  aboutLink: state.config?.links?.["about-dataset"],
   scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
   scatterplotYYaccessor: state.controls.scatterplotYYaccessor
 }))
 class LeftSideBar extends React.Component {
   render() {
-    const { datasetTitle } = this.props;
+    const { datasetTitle, aboutLink } = this.props;
 
     const paddingToAvoidScrollBar = 15;
+
+    const displayTitle =
+      datasetTitle.length > globals.datasetTitleMaxCharacterCount
+        ? `${datasetTitle.substring(
+            0,
+            Math.floor(globals.datasetTitleMaxCharacterCount / 2)
+          )}…${datasetTitle.slice(
+            -Math.floor(globals.datasetTitleMaxCharacterCount / 2)
+          )}`
+        : datasetTitle;
 
     return (
       <div
@@ -69,14 +80,7 @@ class LeftSideBar extends React.Component {
           }}
           title={datasetTitle}
         >
-          {datasetTitle.length > globals.datasetTitleMaxCharacterCount
-            ? `${datasetTitle.substring(
-                0,
-                Math.floor(globals.datasetTitleMaxCharacterCount / 2)
-              )}…${datasetTitle.slice(
-                -Math.floor(globals.datasetTitleMaxCharacterCount / 2)
-              )}`
-            : datasetTitle}
+          {aboutLink ? <a href={aboutLink}>{displayTitle}</a> : displayTitle}
         </div>
       </div>
     );
