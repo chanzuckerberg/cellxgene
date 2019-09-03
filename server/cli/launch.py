@@ -6,6 +6,7 @@ from os.path import splitext, basename
 import sys
 import warnings
 import webbrowser
+from urllib.parse import urlparse
 
 import click
 
@@ -198,6 +199,19 @@ def launch(
         lf_name, lf_ext = splitext(experimental_label_file)
         if lf_ext and lf_ext != ".csv":
             raise click.FileError(basename(experimental_label_file), hint="label file type must be .csv")
+            
+    if about:
+        def url_check(url):
+            try:
+                result = urlparse(url)
+                if all([result.scheme, result.netloc]):
+                    return True
+                else:
+                    return False
+            except ValueError:
+                return False
+        if not url_check(about):
+            raise click.ClickException("Incorrect URL specified for --about. (Example format: http://example.com)")
 
     # Setup app
     cellxgene_url = f"http://{host}:{port}"
