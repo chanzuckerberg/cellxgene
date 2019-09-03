@@ -102,6 +102,7 @@ def parse_engine_args(embedding, obs_names, var_names, max_category_items, diffe
     help="Additional script files to include in html page",
     show_default=True,
 )
+@click.option("--about", help="A link to more information about the dataset")
 @common_args
 def launch(
         data,
@@ -117,6 +118,7 @@ def launch(
         diffexp_lfc_cutoff,
         title,
         scripts,
+        about,
         experimental_label_file
 ):
     """Launch the cellxgene data viewer.
