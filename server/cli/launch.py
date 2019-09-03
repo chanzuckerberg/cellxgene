@@ -220,7 +220,7 @@ def launch(
     server = Server()
 
     server.create_app()
-    server.app.config.update(SCRIPTS=scripts)
+    server.app.config.update(SCRIPTS=scripts, ABOUT_DATASET=about)
 
     if not verbose:
         log = logging.getLogger("werkzeug")
@@ -235,6 +235,7 @@ def launch(
         click.echo(f"[cellxgene] Loading data from {basename(data)}.")
 
     from server.app.scanpy_engine.scanpy_engine import ScanpyEngine
+
 
     try:
         server.attach_data(ScanpyEngine(data_locator, e_args), title=title)
