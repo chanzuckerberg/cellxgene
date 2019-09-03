@@ -254,6 +254,7 @@ class GeneExpression extends React.Component {
                 itemDisabled={
                   userDefinedGenesLoading ? () => true : () => false
                 }
+                initialContent={<MenuItem disabled text="..." />}
                 noResults={<MenuItem disabled text="No matching genes." />}
                 onItemSelect={g => {
                   /* this happens on 'enter' */
