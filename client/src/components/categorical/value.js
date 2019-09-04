@@ -9,6 +9,7 @@ import {
   MenuItem,
   Popover,
   Position,
+  Icon,
   PopoverInteractionKind
 } from "@blueprintjs/core";
 import Occupancy from "./occupancy";
@@ -247,7 +248,17 @@ class CategoryValue extends React.Component {
               <span
                 data-testid={`categorical-value-${metadataField}-${displayString}`}
                 data-testclass="categorical-value"
-                style={{ wordBreak: "break-all" }}
+                style={{
+                  wordBreak: "break-all",
+                  color:
+                    displayString === globals.unassignedCategoryLabel
+                      ? "#ababab"
+                      : "black",
+                  fontStyle:
+                    displayString === globals.unassignedCategoryLabel
+                      ? "italic"
+                      : "auto"
+                }}
               >
                 {annotations.isEditingLabelName &&
                 annotations.labelEditable.category === metadataField &&
@@ -313,6 +324,16 @@ class CategoryValue extends React.Component {
           <span
             data-testclass="categorical-value-count"
             data-testid={`categorical-value-count-${metadataField}-${displayString}`}
+            style={{
+              color:
+                displayString === globals.unassignedCategoryLabel
+                  ? "#ababab"
+                  : "black",
+              fontStyle:
+                displayString === globals.unassignedCategoryLabel
+                  ? "italic"
+                  : "auto"
+            }}
           >
             {count}
           </span>
@@ -347,24 +368,25 @@ class CategoryValue extends React.Component {
                       onClick={this.handleAddCurrentSelectionToThisLabel}
                       text="Add current cell selection to this label"
                     />
-                    <MenuItem
-                      icon="edit"
-                      text="Edit this label's name"
-                      data-testclass="handleEditValue"
-                      data-testid={`handleEditValue-${metadataField}`}
-                      onClick={this.activateEditLabelMode}
-                    />
-                    <MenuItem
-                      icon="delete"
-                      intent="danger"
-                      disabled={
-                        displayString === globals.unassignedCategoryLabel
-                      }
-                      data-testclass="handleDeleteValue"
-                      data-testid={`handleDeleteValue-${metadataField}`}
-                      onClick={this.handleDeleteValue}
-                      text="Delete this value, and reassign all cells to type 'unknown'"
-                    />
+                    {displayString !== globals.unassignedCategoryLabel ? (
+                      <MenuItem
+                        icon="edit"
+                        text="Edit this label's name"
+                        data-testclass="handleEditValue"
+                        data-testid={`handleEditValue-${metadataField}`}
+                        onClick={this.activateEditLabelMode}
+                      />
+                    ) : null}
+                    {displayString !== globals.unassignedCategoryLabel ? (
+                      <MenuItem
+                        icon="delete"
+                        intent="danger"
+                        data-testclass="handleDeleteValue"
+                        data-testid={`handleDeleteValue-${metadataField}`}
+                        onClick={this.handleDeleteValue}
+                        text="Delete this value, and reassign all cells to type 'unknown'"
+                      />
+                    ) : null}
                   </Menu>
                 }
               >
