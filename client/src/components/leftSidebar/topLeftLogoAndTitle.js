@@ -61,14 +61,12 @@ class LeftSideBar extends React.Component {
             position: "relative",
             top: -2,
             display: "inline-block",
-            marginLeft: 7,
-            width: 170,
-            overflow: "hidden"
+            marginLeft: 7
           }}
           title={datasetTitle}
         >
-          {datasetTitle.length > 15
-            ? `${datasetTitle.substring(0, 6)}...${datasetTitle.slice(-6)}`
+          {datasetTitle.length > 29
+            ? `${datasetTitle.substring(0, 14)}…${datasetTitle.slice(-14)}`
             : datasetTitle}
         </div>
       </div>
