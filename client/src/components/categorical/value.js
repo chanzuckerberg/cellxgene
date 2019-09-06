@@ -4,6 +4,7 @@ import React from "react";
 import Occupancy from "./occupancy";
 import * as globals from "../../globals";
 import styles from "./categorical.css";
+import { Tooltip } from "@blueprintjs/core";
 
 @connect(state => ({
   categoricalSelection: state.categoricalSelection,
@@ -105,6 +106,22 @@ class CategoryValue extends React.Component {
       categories = schema.annotations.obsByName[colorAccessor]?.categories;
     }
 
+    let truncatedString = null;
+
+    if (colorAccessor && displayString.length > 17) {
+      truncatedString = `${displayString.slice(0, 8)}…${displayString.slice(
+        -8
+      )}`;
+    } else if (displayString.length > 37) {
+      truncatedString = `${displayString.slice(0, 18)}…${displayString.slice(
+        -18
+      )}`;
+    }
+
+    if (truncatedString) {
+      console.log("TRUNCATED:", displayString);
+    }
+
     return (
       <div
         key={i}
@@ -131,7 +148,7 @@ class CategoryValue extends React.Component {
             justifyContent: "space-between"
           }}
         >
-          <div style={{ display: "flex" }}>
+          <div style={{ display: "flex", alignItems: "baseline" }}>
             <label className="bp3-control bp3-checkbox" style={{ margin: 0 }}>
               <input
                 onChange={selected ? this.toggleOff : this.toggleOn}
@@ -146,13 +163,24 @@ class CategoryValue extends React.Component {
                 onMouseLeave={this.handleMouseEnter}
               />
             </label>
-            <span
-              data-testid={`categorical-value-${metadataField}-${displayString}`}
-              data-testclass="categorical-value"
-              style={{ wordBreak: "break-all" }}
+            <Tooltip
+              content={displayString}
+              disabled={truncatedString === null}
             >
-              {displayString}
-            </span>
+              <span
+                data-testid={`categorical-value-${metadataField}-${displayString}`}
+                data-testclass="categorical-value"
+                style={{
+                  overflow: "hidden",
+                  height: "1.1em",
+                  lineHeight: "1.1em",
+                  wordBreak: "break-all",
+                  display: "inline-block"
+                }}
+              >
+                {truncatedString || displayString}
+              </span>
+            </Tooltip>
           </div>
           <span style={{ flexShrink: 0 }}>
             {colorAccessor && !isColorBy ? (
