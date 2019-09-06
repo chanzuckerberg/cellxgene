@@ -41,7 +41,8 @@ class LeftSideBar extends React.Component {
             userSelect: "none"
           }}
         >
-          cell<span
+          cell
+          <span
             style={{
               position: "relative",
               top: 1,
@@ -50,7 +51,8 @@ class LeftSideBar extends React.Component {
             }}
           >
             ×
-          </span>gene
+          </span>
+          gene
         </span>
         <div
           data-testid="header"
@@ -65,7 +67,9 @@ class LeftSideBar extends React.Component {
           }}
           title={datasetTitle}
         >
-          {datasetTitle}
+          {datasetTitle.length > 15
+            ? `${datasetTitle.substring(0, 6)}...${datasetTitle.slice(-6)}`
+            : datasetTitle}
         </div>
       </div>
     );
