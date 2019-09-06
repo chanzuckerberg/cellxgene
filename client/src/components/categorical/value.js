@@ -118,10 +118,6 @@ class CategoryValue extends React.Component {
       )}`;
     }
 
-    if (truncatedString) {
-      console.log("TRUNCATED:", displayString);
-    }
-
     return (
       <div
         key={i}
