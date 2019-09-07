@@ -105,25 +105,13 @@ install-dist - installs from local dist folder
 uninstall - uninstalls cellxgene 
 ```
 
-### gui 
-build-assets :
-	pyside2-rcc server/gui/cellxgene.qrc -o server/gui/cellxgene_rc.py
+### gui
+Commands for building the native app
 
-gui-spec-osx : clean-lite gui-env
-	pip install -e .[gui]
-	pyi-makespec -D -w --additional-hooks-dir server/gui/ -n cellxgene  --add-binary='/System/Library/Frameworks/Tk.framework/Tk':'tk' --add-binary='/System/Library/Frameworks/Tcl.framework/Tcl':'tcl'  --add-data server/app/web/templates/:server/app/web/templates/ --add-data server/app/web/static/:server/app/web/static/ --icon server/gui/images/cxg_icons.icns server/gui/main.py
-	mv cellxgene.spec cellxgene-osx.spec
-
-gui-spec-windows : clean-lite dev-env
-	pip install -e .[gui]
-	pyi-makespec -D -w --additional-hooks-dir server/gui/ -n cellxgene --add-data server/app/web/templates;server/app/web/templates --add-data server/app/web/static;server/app/web/static --icon server/gui/images/icon.ico server/gui/main.py
-	mv cellxgene.spec cellxgene-windows.spec
-
-gui-build-osx : clean-lite
-	pyinstaller --clean cellxgene-osx.spec
-
-gui-build-windows : clean-lite
-	pyinstaller --clean cellxgene-windows.spec
-
-.PHONY : build-assets gui-build-osx gui-build-windows gui-build-osx gui-build-windows
-
+```
+build-assets - builds the image and icon assets for the gui to pull from
+gui-spec-osx - creates the initial spec file for osx, do not run unless you are starting from scratch, one time only
+gui-spec-windows - creates the initial spec file for windows, do not run unless you are starting from scratch, one time only
+gui-build-osx - builds the app from the osx spec file
+gui-build-windows - builds the app from the windows spec file
+```
