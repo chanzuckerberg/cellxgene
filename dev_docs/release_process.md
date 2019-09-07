@@ -32,7 +32,14 @@ Follow these steps to create a release.
 5.  Create a PR for the release.
     - [optional] As needed, conduct PR review.
 6.  Merge to master
-7.  Create Github release using the version number and release notes
+7. Publish to pypi by performing the following steps (assumes you that you have registered for pypi,
+and that you have write access to the cellxgene pypi package):
+    - Build the distribution and upload to test pypi `make release-stage-2`
+    - Test the test installation in a fresh virtual environment using `make install-release-test`
+    - Upload the package to real pypi using `make release-stage-final`
+    - Test the installation in a fresh virtual environment using
+      `pip install cellxgene`
+8.  Create Github release using the version number and release notes
     ([instructions](https://help.github.com/articles/creating-releases/)).
     - Draft new release
     - Type version name matching release version number from (1)
