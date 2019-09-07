@@ -155,5 +155,5 @@ gui-build-osx : clean-lite
 gui-build-windows : clean-lite
 	pyinstaller --clean cellxgene-windows.spec
 
-.PHONY : build-assets gui-build-osx gui-build-windows gui-build-osx gui-build-windows
+.PHONY : build-assets gui-spec-osx gui-spec-windows gui-build-osx gui-build-windows
 
