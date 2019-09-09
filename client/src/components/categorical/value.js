@@ -106,15 +106,17 @@ class CategoryValue extends React.Component {
       categories = schema.annotations.obsByName[colorAccessor]?.categories;
     }
 
+    const LONG_TRUNCATED_LENGTH = 35;
+    const SHORT_TRUNCATED_LENGTH = 15;
     let truncatedString = null;
 
-    if (colorAccessor && displayString.length > 17) {
-      truncatedString = `${displayString.slice(0, 8)}…${displayString.slice(
-        -8
+    if (colorAccessor && displayString.length > 15) {
+      truncatedString = `${displayString.slice(0, 7)}…${displayString.slice(
+        -7
       )}`;
-    } else if (displayString.length > 37) {
-      truncatedString = `${displayString.slice(0, 18)}…${displayString.slice(
-        -18
+    } else if (displayString.length > 35) {
+      truncatedString = `${displayString.slice(0, 17)}…${displayString.slice(
+        -17
       )}`;
     }
 
