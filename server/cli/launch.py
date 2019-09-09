@@ -25,6 +25,7 @@ def common_args(func):
     Decorator to contain CLI args that will be common to both CLI and GUI: title and engine args.
     """
     @click.option("--title", "-t", help="Title to display (if omitted will use file name).")
+    @click.option("--about", help="A link to more information about the dataset")
     @click.option(
         "--embedding",
         "-e",
@@ -103,7 +104,7 @@ def parse_engine_args(embedding, obs_names, var_names, max_category_items, diffe
     help="Additional script files to include in html page",
     show_default=True,
 )
-@click.option("--about", help="A link to more information about the dataset")
+
 @common_args
 def launch(
         data,
