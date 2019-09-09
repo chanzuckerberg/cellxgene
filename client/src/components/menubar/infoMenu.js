@@ -14,7 +14,7 @@ function InformationMenu(props) {
                 href={aboutLink}
                 target="_blank"
                 icon="info-sign"
-                text="About This Dataset"
+                text="About this dataset"
               />
             ) : (
               ""
