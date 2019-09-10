@@ -24,8 +24,8 @@ import { makeContinuousDimensionName } from "../../util/nameCreators";
 class HistogramBrush extends React.Component {
   static getColumn(world, field, clipped = true) {
     /*
-    Return the underlying Dataframe column for our field.   By default, 
-    returns the clipped column.   If clipped===false, will return the 
+    Return the underlying Dataframe column for our field.   By default,
+    returns the clipped column.   If clipped===false, will return the
     unclipped column.
     */
     const obsAnnotations = clipped
@@ -357,14 +357,24 @@ class HistogramBrush extends React.Component {
       .append("g")
       .attr("class", "axis axis--x")
       .attr("transform", `translate(0,${this.height - this.marginBottom})`)
-      .call(d3.axisBottom(x).ticks(5));
+      .call(
+        d3
+          .axisBottom(x)
+          .ticks(5)
+          .tickFormat(d3.format(".0s"))
+      );
 
     /* Y AXIS */
     svg
       .append("g")
       .attr("class", "axis axis--y")
       .attr("transform", `translate(${this.width - this.marginRight},0)`)
-      .call(d3.axisRight(y).ticks(3));
+      .call(
+        d3
+          .axisRight(y)
+          .ticks(3)
+          .tickFormat(d3.format(".0s"))
+      );
 
     /* axis style */
     svg.selectAll(".axis text").style("fill", "rgb(80,80,80)");
@@ -407,8 +417,8 @@ class HistogramBrush extends React.Component {
           isDiffExp
             ? "histogram-diffexp"
             : isUserDefined
-            ? "histogram-user-gene"
-            : "histogram-continuous-metadata"
+              ? "histogram-user-gene"
+              : "histogram-continuous-metadata"
         }
         style={{
           padding: globals.leftSidebarSectionPadding,
