@@ -358,7 +358,7 @@ class CategoryValue extends React.Component {
               <Popover
                 interactionKind={PopoverInteractionKind.HOVER}
                 boundary="window"
-                position={Position.RIGHT}
+                position={Position.RIGHT_TOP}
                 content={
                   <Menu>
                     <MenuItem
@@ -366,7 +366,7 @@ class CategoryValue extends React.Component {
                       data-testclass="handleAddCurrentSelectionToThisLabel"
                       data-testid={`handleAddCurrentSelectionToThisLabel-${metadataField}`}
                       onClick={this.handleAddCurrentSelectionToThisLabel}
-                      text="Add current cell selection to this label"
+                      text={`Label currently selected cells as ${displayString}`}
                     />
                     {displayString !== globals.unassignedCategoryLabel ? (
                       <MenuItem
