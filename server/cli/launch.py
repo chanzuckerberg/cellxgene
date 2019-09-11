@@ -27,7 +27,8 @@ def common_args(func):
 
     @click.option("--title", "-t", help="Title to display (if omitted will use file name).")
     @click.option("--about",
-                  help="A URL to more information about the dataset.(This must be an absolute URL including HTTP(S) protocol")
+                  help="A URL to more information about the dataset."
+                       "(This must be an absolute URL including HTTP(S) protocol")
     @click.option(
         "--embedding",
         "-e",
