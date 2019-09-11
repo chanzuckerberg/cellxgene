@@ -215,7 +215,7 @@ def launch(
                 return False
 
         if not url_check(about):
-            raise click.ClickException("Incorrect URL specified for --about. (Example format: http://example.com)")
+            raise click.ClickException("Must provide an absolute URL for --about. (Example format: http://example.com)")
 
     # Setup app
     cellxgene_url = f"http://{host}:{port}"
