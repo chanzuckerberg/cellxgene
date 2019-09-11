@@ -7,13 +7,13 @@ import Logo from "../framework/logo";
 @connect(state => ({
   responsive: state.responsive,
   datasetTitle: state.config?.displayNames?.dataset ?? "",
-  aboutLink: state.config?.links?.["about-dataset"],
+  aboutURL: state.config?.links?.["about-dataset"],
   scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
   scatterplotYYaccessor: state.controls.scatterplotYYaccessor
 }))
 class LeftSideBar extends React.Component {
   render() {
-    const { datasetTitle, aboutLink } = this.props;
+    const { datasetTitle, aboutURL } = this.props;
 
     const paddingToAvoidScrollBar = 15;
 
@@ -80,7 +80,7 @@ class LeftSideBar extends React.Component {
           }}
           title={datasetTitle}
         >
-          {aboutLink ? <a href={aboutLink}>{displayTitle}</a> : displayTitle}
+          {aboutURL ? <a href={aboutURL}>{displayTitle}</a> : displayTitle}
         </div>
       </div>
     );
