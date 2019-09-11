@@ -139,24 +139,33 @@ class GeneExpression extends React.Component {
     */
     if (bulkAdd !== "") {
       const genes = _.pull(_.uniq(bulkAdd.split(/[ ,]+/)), "");
+      const uppercaseGenes = genes.map(gene => gene.toUpperCase());
 
       dispatch({ type: "bulk user defined gene start" });
       Promise.all(
-        genes.map(gene => {
+        uppercaseGenes.map(gene => {
           if (gene.length === 0) {
             return keepAroundErrorToast("Must enter a gene name.");
           }
-          if (userDefinedGenes.indexOf(gene) !== -1) {
+          const upperUserDefinedGenes = userDefinedGenes.map(gene =>
+            gene.toUpperCase()
+          );
+          if (upperUserDefinedGenes.indexOf(gene) !== -1) {
             return keepAroundErrorToast("That gene already exists");
           }
-          if (
-            world.varAnnotations.col(varIndexName).indexOf(gene) === undefined
-          ) {
+          const worldGenes = world.varAnnotations.col(varIndexName);
+          const worldGenesUpper = worldGenes.asArray.map(worldGene =>
+            worldGene.toUpperCase()
+          );
+          const indexOfGene = worldGenesUpper.indexOf(gene);
+          if (indexOfGene === undefined) {
             return keepAroundErrorToast(
               `${gene} doesn't appear to be a valid gene name.`
             );
           }
-          return dispatch(actions.requestUserDefinedGene(gene));
+          return dispatch(
+            actions.requestUserDefinedGene(worldGenes[indexOfGene])
+          );
         })
       ).then(
         () => dispatch({ type: "bulk user defined gene complete" }),
