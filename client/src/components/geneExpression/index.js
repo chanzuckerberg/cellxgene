@@ -108,7 +108,7 @@ class GeneExpression extends React.Component {
   handleClick(g) {
     const { world, dispatch, userDefinedGenes } = this.props;
     const varIndexName = world.schema.annotations.var.index;
-    const gene = g.target;
+    const gene = g?.target;
     if (userDefinedGenes.indexOf(gene) !== -1) {
       postUserErrorToast("That gene already exists");
     } else if (userDefinedGenes.length > 15) {
@@ -175,7 +175,7 @@ class GeneExpression extends React.Component {
       differential
     } = this.props;
     const varIndexName = world?.schema?.annotations?.var?.index;
-    const { tab, bulkAdd } = this.state;
+    const { tab, bulkAdd, activeItem } = this.state;
 
     return (
       <div>
@@ -234,6 +234,7 @@ class GeneExpression extends React.Component {
                   return "";
                 }}
                 itemListPredicate={filterGenes}
+                onActiveItemChange={item => this.setState({ activeItem: item })}
                 itemRenderer={renderGene.bind(this)}
                 items={
                   world && world.varAnnotations
@@ -246,6 +247,7 @@ class GeneExpression extends React.Component {
                 className="bp3-button bp3-intent-primary"
                 data-testid={"add-gene"}
                 loading={userDefinedGenesLoading}
+                onClick={() => this.handleClick(activeItem)}
               >
                 Add gene
               </Button>
