@@ -10,3 +10,5 @@ numpy>=1.15.2
 pandas>=0.23.1
 scipy>=1.1.0
 tables==3.5.1
+# TEMP workaround for https://github.com/theislab/scanpy/issues/832 aka h5py regression
+h5py==2.9.0
