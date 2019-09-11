@@ -24,8 +24,10 @@ def common_args(func):
     """
     Decorator to contain CLI args that will be common to both CLI and GUI: title and engine args.
     """
+
     @click.option("--title", "-t", help="Title to display (if omitted will use file name).")
-    @click.option("--about", help="A link to more information about the dataset")
+    @click.option("--about",
+                  help="A URL to more information about the dataset.(This must be an absolute URL including HTTP(S) protocol")
     @click.option(
         "--embedding",
         "-e",
@@ -60,6 +62,7 @@ def common_args(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         return func(*args, **kwargs)
+
     return wrapper
 
 
@@ -104,7 +107,6 @@ def parse_engine_args(embedding, obs_names, var_names, max_category_items, diffe
     help="Additional script files to include in html page",
     show_default=True,
 )
-
 @common_args
 def launch(
         data,
@@ -211,6 +213,7 @@ def launch(
                     return False
             except ValueError:
                 return False
+
         if not url_check(about):
             raise click.ClickException("Incorrect URL specified for --about. (Example format: http://example.com)")
 
