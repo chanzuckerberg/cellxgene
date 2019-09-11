@@ -224,7 +224,7 @@ def launch(
     server = Server()
 
     server.create_app()
-    server.app.config.update(SCRIPTS=scripts, ABOUT_DATASET=about)
+    server.app.config.update(SCRIPTS=scripts)
 
     if not verbose:
         log = logging.getLogger("werkzeug")
@@ -241,7 +241,7 @@ def launch(
     from server.app.scanpy_engine.scanpy_engine import ScanpyEngine
 
     try:
-        server.attach_data(ScanpyEngine(data_locator, e_args), title=title)
+        server.attach_data(ScanpyEngine(data_locator, e_args), title=title, about=about)
     except ScanpyFileError as e:
         raise click.ClickException(f"{e}")
 

@@ -33,6 +33,6 @@ class Server:
         self.app.register_blueprint(resources.blueprint)
         self.app.add_url_rule("/", endpoint="index")
 
-    def attach_data(self, data, title="Demo"):
-        self.app.config.update(DATASET_TITLE=title)
+    def attach_data(self, data, title="Demo", about=""):
+        self.app.config.update(DATASET_TITLE=title, ABOUT_DATASET=about)
         self.app.data = data
