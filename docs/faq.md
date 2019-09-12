@@ -100,3 +100,23 @@ This may happen, especially as we work out bugs in our installation process! Ple
 #### I'm following the developer instructions and get an error about "missing files and directories” when trying to build the client
 
 This is likely because you do not have node and npm installed, we recommend using [nvm](https://github.com/creationix/nvm) if you're new to using these tools.
+
+# Data access
+
+#### Can I use an _s3:_ or _gs:_ URL with `cellxgene launch`?
+
+cellxgene currently uses the [fsspec](https://filesystem-spec.readthedocs.io/en/latest/index.html) package to
+access remote data. Direct support for S3 and GCS is not enabled by default, but optional packages may be
+installed.
+
+If you wish to directly access S3 or GFS, install one or both of the following packages:
+
+- [s3fs](https://s3fs.readthedocs.io/en/latest/) for S3 support
+- [gcsfs](https://gcsfs.readthedocs.io/en/latest/) for GCS support
+
+For example:
+
+```
+pip install s3fs
+cellxgene launch s3://mybucket.s3-us-west-2.amazonaws.com/mydata.h5ad
+```

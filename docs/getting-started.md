@@ -21,6 +21,12 @@ If you want an example dataset download [this file](https://github.com/chanzucke
 cellxgene launch pbmc3k.h5ad --open
 ```
 
+You can also directly specify URLs as a data source, and the data will be downloaded during launch
+
+```
+cellxgene launch https://raw.githubusercontent.com/chanzuckerberg/cellxgene/master/example-dataset/pbmc3k.h5ad
+```
+
 On Mac OS and Ubuntu, you should see your web browser open with the following
 
 <img width="450" src="https://raw.githubusercontent.com/chanzuckerberg/cellxgene/master/docs/cellxgene-opening-screenshot.png" pad="50px">

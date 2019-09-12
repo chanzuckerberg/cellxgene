@@ -177,11 +177,16 @@ class ScanpyEngine(CXGDriver):
             }
             self.schema["layout"]["obs"].append(layout_schema)
 
-    def _load_data(self, data):
-        # as of AnnData 0.6.19, backed mode performs initial load fast, but at the
-        # cost of significantly slower access to X data.
+    def _load_data(self, data_locator):
         try:
-            self.data = anndata.read_h5ad(data)
+            # there is no guarantee data_locator indicates a local file.  The AnnData
+            # API will only consume local file objects.  If we get a non-local object,
+            # make a copy in tmp, and delete it after we load into memory.
+            with data_locator.local_handle() as lh:
+                # as of AnnData 0.6.19, backed mode performs initial load fast, but at the
+                # cost of significantly slower access to X data.
+                self.data = anndata.read_h5ad(lh)
+
         except ValueError:
             raise ScanpyFileError(
                 "File must be in the .h5ad format. Please read "
@@ -191,12 +196,11 @@ class ScanpyEngine(CXGDriver):
                 "information."
             )
         except MemoryError:
-            raise ScanpyFileError("Error while loading file: out of memory, file is too large"
-                                  " for memory available")
+            raise ScanpyFileError("Out of memory - file is too large for available memory.")
         except Exception as e:
             raise ScanpyFileError(
-                f"Error while loading file: {e}, File must be in the .h5ad format, please check "
-                f"that your input and try again."
+                f"{e} - file not found or is inaccessible.  File must be an .h5ad object.  "
+                f"Please check your input and try again."
             )
 
     @requires_data
