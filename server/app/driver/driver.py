@@ -27,7 +27,7 @@ class CXGDriver(metaclass=ABCMeta):
     @staticmethod
     def _get_default_config():
         return {
-            "layout": None,
+            "embedding": None,
             "max_category_items": None,
             "diffexp_lfc_cutoff": None
         }
