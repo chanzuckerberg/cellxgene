@@ -3,11 +3,12 @@ import json
 
 from server.app.scanpy_engine.scanpy_engine import ScanpyEngine
 from server.app.util.errors import DriverError
+from server.app.util.data_locator import DataLocator
 
 
 class DataLoadEngineTest(unittest.TestCase):
     def setUp(self):
-        self.data_file = "example-dataset/pbmc3k.h5ad"
+        self.data_file = DataLocator("example-dataset/pbmc3k.h5ad")
         self.data = ScanpyEngine()
 
     def test_init(self):
