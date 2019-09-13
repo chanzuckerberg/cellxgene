@@ -2,7 +2,7 @@ import errno
 import functools
 import logging
 from os import devnull
-from os.path import splitext, basename, getsize
+from os.path import splitext, basename
 import sys
 import warnings
 import webbrowser
@@ -140,7 +140,7 @@ def launch(
         if not data_locator.exists():
             raise click.FileError(data, hint="file does not exist")
         if not data_locator.isfile():
-            raise click.FileError(data, hint="data is not a file")      
+            raise click.FileError(data, hint="data is not a file")
         name, extension = splitext(data)
         if extension != ".h5ad":
             raise click.FileError(basename(data), hint="file type must be .h5ad")
