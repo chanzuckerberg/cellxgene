@@ -75,11 +75,13 @@ class DataLocatorEngineTest(unittest.TestCase):
         self.stdAsserts(data)
 
     def test_url_https(self):
-        locator = DataLocator("https://raw.githubusercontent.com/chanzuckerberg/cellxgene/master/example-dataset/pbmc3k.h5ad")
+        url = "https://raw.githubusercontent.com/chanzuckerberg/cellxgene/master/example-dataset/pbmc3k.h5ad"
+        locator = DataLocator(url)
         data = ScanpyEngine(locator, self.args)
         self.stdAsserts(data)
 
     def test_url_http(self):
-        locator = DataLocator("http://raw.githubusercontent.com/chanzuckerberg/cellxgene/master/example-dataset/pbmc3k.h5ad")
+        url = "http://raw.githubusercontent.com/chanzuckerberg/cellxgene/master/example-dataset/pbmc3k.h5ad"
+        locator = DataLocator(url)
         data = ScanpyEngine(locator, self.args)
         self.stdAsserts(data)
