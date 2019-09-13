@@ -43,7 +43,7 @@ Our `prepare` compose our command looks like this:
 ```
 cellxgene prepare pbmc3k-raw.h5ad \
 	--run-qc \                                  # (A)
-	-- --recipe seurat \                        # (B)
+	--recipe seurat \                           # (B)
 	--layout tsne --layout umap \               # (C)
 	--output pbmc3k-prepared.h5ad               # (D)
 ```
