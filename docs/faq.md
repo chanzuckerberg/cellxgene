@@ -105,11 +105,7 @@ This is likely because you do not have node and npm installed, we recommend usin
 
 #### Can I use a _s3:_ or _gs:_ URL with `cellxgene launch`?
 
-cellxgene currently uses the [fsspec](https://filesystem-spec.readthedocs.io/en/latest/index.html) package to
-access remote data. Direct support for S3 and GCS is not enabled by default, but optional packages may be
-installed.
-
-If you wish to directly access S3 or GFS, install one or both of the following packages using `pip`:
+Yes. Support for S3 and GCS is not enabled by default. If you wish to directly access S3 or GFS, install one or both of the following packages using `pip`:
 
 - [s3fs](https://s3fs.readthedocs.io/en/latest/) for S3 support
 - [gcsfs](https://gcsfs.readthedocs.io/en/latest/) for GCS support
