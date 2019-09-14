@@ -28,8 +28,8 @@ def common_args(func):
         "-e",
         default=[],
         multiple=True,
-        show_default=True,
-        help="Embedding name, eg, 'umap'."
+        show_default=False,
+        help="Embedding name, eg, 'umap'. Repeat option for multiple embeddings. Defaults to all."
     )
     @click.option("--obs-names", default=None, metavar="", help="Name of annotation field to use for observations.")
     @click.option("--var-names", default=None, metavar="", help="Name of annotation to use for variables.")
