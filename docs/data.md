@@ -14,6 +14,14 @@ description: Data
 
 `cellxgene prepare` is not meant as a way to formally process or analyze your data. It's simply a utility for quickly wrangling your data into cellxgene-compatible format and computing a "vanilla" embedding so you can try out `cellxgene` and get a general sense of a dataset.
 
+#### How do I install `cellxgene prepare`?
+
+The `cellxgene prepare` command is an optional install that you can install alongside `cellxgene launch` by running
+
+```
+pip install cellxgene[prepare]
+```
+
 #### What input formats does it accept?
 
 Currently, we accept `h5ad` and `loom` files, as well as `10x` directories, and are hoping to accept more formats in the future.
