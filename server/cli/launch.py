@@ -2,7 +2,7 @@ import errno
 import functools
 import logging
 from os import devnull
-from os.path import splitext, basename, getsize
+from os.path import splitext, basename
 import sys
 import warnings
 import webbrowser
@@ -13,6 +13,7 @@ from server.app.app import Server
 from server.app.util.errors import ScanpyFileError
 from server.app.util.utils import custom_format_warning
 from server.utils.utils import find_available_port, is_port_available
+from server.app.util.data_locator import DataLocator
 
 # anything bigger than this will generate a special message
 BIG_FILE_SIZE_THRESHOLD = 100 * 2 ** 20  # 100MB
@@ -63,7 +64,7 @@ def parse_engine_args(layout, obs_names, var_names, max_category_items, diffexp_
 
 
 @click.command()
-@click.argument("data", metavar="<data file>", type=click.Path(exists=True, file_okay=True, dir_okay=False))
+@click.argument("data", nargs=1, metavar="<data file>", required=True)
 @click.option(
     "--verbose",
     "-v",
@@ -117,16 +118,32 @@ def launch(
 
     > cellxgene launch example_dataset/pbmc3k.h5ad --title pbmc3k
 
-    > cellxgene launch <your data file> --title <your title>"""
+    > cellxgene launch <your data file> --title <your title>
+
+    > cellxgene launch <url>"""
 
     e_args = parse_engine_args(layout, obs_names, var_names, max_category_items, diffexp_lfc_cutoff)
+    try:
+        data_locator = DataLocator(data)
+    except RuntimeError as re:
+        raise click.ClickException(f"Unable to access data at {data}.  {str(re)}")
+
     # Startup message
     click.echo("[cellxgene] Starting the CLI...")
 
     # Argument checking
-    name, extension = splitext(data)
-    if extension != ".h5ad":
-        raise click.FileError(basename(data), hint="file type must be .h5ad")
+    if data_locator.islocal():
+        # if data locator is local, apply file system conventions and other "cheap"
+        # validation checks.  If a URI, defer until we actually fetch the data and
+        # try to read it.  Many of these tests don't make sense for URIs (eg, extension-
+        # based typing).
+        if not data_locator.exists():
+            raise click.FileError(data, hint="file does not exist")
+        if not data_locator.isfile():
+            raise click.FileError(data, hint="data is not a file")
+        name, extension = splitext(data)
+        if extension != ".h5ad":
+            raise click.FileError(basename(data), hint="file type must be .h5ad")
 
     if debug:
         verbose = True
@@ -177,18 +194,18 @@ def launch(
         log = logging.getLogger("werkzeug")
         log.setLevel(logging.ERROR)
 
-    file_size = getsize(data)
+    file_size = data_locator.size() if data_locator.islocal() else 0
 
     # if a big file, let the user know it may take a while to load.
     if file_size > BIG_FILE_SIZE_THRESHOLD:
-        click.echo(f"[cellxgene] Loading data from {basename(data)}, this may take awhile...")
+        click.echo(f"[cellxgene] Loading data from {basename(data)}, this may take a while...")
     else:
         click.echo(f"[cellxgene] Loading data from {basename(data)}.")
 
     from server.app.scanpy_engine.scanpy_engine import ScanpyEngine
 
     try:
-        server.attach_data(ScanpyEngine(data, e_args), title=title)
+        server.attach_data(ScanpyEngine(data_locator, e_args), title=title)
     except ScanpyFileError as e:
         raise click.ClickException(f"{e}")
 
