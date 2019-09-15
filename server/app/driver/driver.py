@@ -46,7 +46,7 @@ class CXGDriver(metaclass=ABCMeta):
         return features
 
     @abstractmethod
-    def _load_data(self, data):
+    def _load_data(self, data_locator):
         pass
 
     @abstractmethod

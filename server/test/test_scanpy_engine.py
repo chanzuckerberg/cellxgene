@@ -10,6 +10,7 @@ from pandas import Series
 
 from server.app.scanpy_engine.scanpy_engine import ScanpyEngine
 from server.app.util.errors import FilterError
+from server.app.util.data_locator import DataLocator
 
 
 class EngineTest(unittest.TestCase):
@@ -22,7 +23,7 @@ class EngineTest(unittest.TestCase):
             "var_names": None,
             "diffexp_lfc_cutoff": 0.01,
         }
-        self.data = ScanpyEngine("example-dataset/pbmc3k.h5ad", args)
+        self.data = ScanpyEngine(DataLocator("example-dataset/pbmc3k.h5ad"), args)
 
     def test_init(self):
         self.assertEqual(self.data.cell_count, 2638)
