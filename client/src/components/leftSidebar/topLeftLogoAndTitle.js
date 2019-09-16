@@ -61,7 +61,11 @@ class LeftSideBar extends React.Component {
             position: "relative",
             top: -2,
             display: "inline-block",
-            marginLeft: 7
+            width: "190px",
+            marginLeft: "7px",
+            height: "1.1em",
+            overflow: "hidden",
+            wordBreak: "break-all"
           }}
           title={datasetTitle}
         >
