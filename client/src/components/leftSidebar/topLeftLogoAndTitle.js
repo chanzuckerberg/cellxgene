@@ -59,7 +59,7 @@ class LeftSideBar extends React.Component {
           style={{
             fontSize: 14,
             position: "relative",
-            top: -2,
+            top: -6,
             display: "inline-block",
             width: "190px",
             marginLeft: "7px",
