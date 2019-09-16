@@ -25,12 +25,12 @@ def common_args(func):
     """
     @click.option("--title", "-t", help="Title to display (if omitted will use file name).")
     @click.option(
-        "--layout",
-        "-l",
+        "--embedding",
+        "-e",
         default=[],
         multiple=True,
-        show_default=True,
-        help="Layout name, eg, 'umap'."
+        show_default=False,
+        help="Embedding name, eg, 'umap'. Repeat option for multiple embeddings. Defaults to all."
     )
     @click.option("--obs-names", default=None, metavar="", help="Name of annotation field to use for observations.")
     @click.option("--var-names", default=None, metavar="", help="Name of annotation to use for variables.")
@@ -53,9 +53,9 @@ def common_args(func):
     return wrapper
 
 
-def parse_engine_args(layout, obs_names, var_names, max_category_items, diffexp_lfc_cutoff):
+def parse_engine_args(embedding, obs_names, var_names, max_category_items, diffexp_lfc_cutoff):
     return {
-        "layout": layout,
+        "layout": embedding,
         "max_category_items": max_category_items,
         "diffexp_lfc_cutoff": diffexp_lfc_cutoff,
         "obs_names": obs_names,
@@ -101,7 +101,7 @@ def launch(
         open_browser,
         port,
         host,
-        layout,
+        embedding,
         obs_names,
         var_names,
         max_category_items,
@@ -122,7 +122,7 @@ def launch(
 
     > cellxgene launch <url>"""
 
-    e_args = parse_engine_args(layout, obs_names, var_names, max_category_items, diffexp_lfc_cutoff)
+    e_args = parse_engine_args(embedding, obs_names, var_names, max_category_items, diffexp_lfc_cutoff)
     try:
         data_locator = DataLocator(data)
     except RuntimeError as re:

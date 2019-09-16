@@ -21,13 +21,13 @@ The output of `cellxgene prepare` is a h5ad file with your computed clusters and
 Yep! This should only take a couple steps. We'll assume your data is in a folder called `data/` and you've successfully installed `cellxgene` with the `prepare` packages as described above. Just run
 
 ```
-cellxgene prepare data/ --output=data-processed.h5ad --layout=umap
+cellxgene prepare data/ --output=data-processed.h5ad --embedding=umap
 ```
 
 Depending on the size of the dataset, this may take some time. Once it's done, call
 
 ```
-cellxgene launch data-processed.h5ad --layout=umap --open
+cellxgene launch data-processed.h5ad --embedding=umap --open
 ```
 
 And your web browser should open with an interactive view of your data.
@@ -40,7 +40,7 @@ Currently this is not supported directly, but you should be able to do this your
 
 - `.obs` and `.var` annotations are use to extract metadata for filtering
 - `.X` is used to display expression (histograms, scatterplot & colorscale) and to compute differential expression
-- `.obsm` is used for layout. If an embedding has more than two components, the first two will be used for visualization.
+- `.obsm` is used for embedding(s). If an embedding has more than two components, the first two will be used for visualization.
 
 #### I have a BIG dataset - how can I make cellxgene run as fast as possible?
 

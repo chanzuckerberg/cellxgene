@@ -35,7 +35,7 @@ On Mac OS and Ubuntu, you should see your web browser open with the following
 
 There are several options available, such as:
 
-- `--layout` to specify the layout as `tsne`, `umap`, `diffmap`, `phate`, `draw_graph_fa`, or `draw_graph_fr`
+- `--embedding` to restrict available emdeddings in the UI, eg, `tsne`, `umap`, `diffmap`, `phate`, `draw_graph_fa`, or `draw_graph_fr`
 - `--title` to show a title on the explorer
 - `--open` to automatically open the web browser after launching (OS X only)
 
@@ -55,7 +55,7 @@ The `launch` command assumes that the data is stored in the `.h5ad` format from 
 
 - an `obs` field has a unique identifier for every cell (you can specify which field to use with the `--obs-names` option, by default it will use the value of `data.obs_names`)
 - a `var` field has a unique identifier for every gene (you can specify which field to use with the `--var-names` option, by default it will use the value of `data.var_names`)
-- an `obsm` field contains the two-dimensional coordinates for the layout that you want to render (e.g. `X_umap` for the `umap` layout)
+- an `obsm` field contains the two-dimensional coordinates for the embedding that you want to render (e.g. `X_umap` for the `umap` embedding)
 - any additional `obs` fields will be rendered as per-cell continuous or categorical metadata by the app (e.g. `louvain` cluster assignments)
 
 ### prepare
@@ -80,12 +80,12 @@ To prepare from an existing `.h5ad` file use
 cellxgene prepare dataset.h5ad --output=dataset-processed.h5ad
 ```
 
-This will load the input data, perform PCA and nearest neighbor calculations, compute `umap` and `tsne` layouts and `louvain` cluster assignments, and save the results in a new file called `dataset-processed.h5ad` that can be loaded using `cellxgene launch`. Data can be loaded from several formats, including `.h5ad` `.loom` and a `10-Genomics-formatted` `mtx` directory. Several options are available, including running one of the preprocessing `recipes` included with `scanpy`, which include steps like cell filtering and gene selection. To learn more about the `recipes` please see the `scanpy` [documentation](https://scanpy.readthedocs.io/en/latest/api/index.html#recipes).
+This will load the input data, perform PCA and nearest neighbor calculations, compute `umap` and `tsne` embeddings and `louvain` cluster assignments, and save the results in a new file called `dataset-processed.h5ad` that can be loaded using `cellxgene launch`. Data can be loaded from several formats, including `.h5ad` `.loom` and a `10-Genomics-formatted` `mtx` directory. Several options are available, including running one of the preprocessing `recipes` included with `scanpy`, which include steps like cell filtering and gene selection. To learn more about the `recipes` please see the `scanpy` [documentation](https://scanpy.readthedocs.io/en/latest/api/index.html#recipes).
 
-Depending on the options chosen, `prepare` can take a long time to run (a few minutes for datasets with 10-100k cells, up to an hour or more for datasets with >100k cells). If you want `prepare` to run faster we recommend using the `sparse` option and only computing the layout for `umap`, using a call like this
+Depending on the options chosen, `prepare` can take a long time to run (a few minutes for datasets with 10-100k cells, up to an hour or more for datasets with >100k cells). If you want `prepare` to run faster we recommend using the `sparse` option and only computing the embedding for `umap`, using a call like this
 
 ```
-cellxgene prepare dataset.h5ad --output=dataset-processed.h5ad --layout=umap --sparse
+cellxgene prepare dataset.h5ad --output=dataset-processed.h5ad --embedding=umap --sparse
 ```
 
 To see all options call
