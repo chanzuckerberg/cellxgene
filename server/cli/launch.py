@@ -48,7 +48,7 @@ def common_args(func):
         help="Relative expression cutoff used when selecting top N differentially expressed genes",
     )
     @click.option(
-        "--label-file",
+        "--experimental-label-file",
         default=None,
         show_default=True,
         multiple=False,
@@ -61,14 +61,14 @@ def common_args(func):
     return wrapper
 
 
-def parse_engine_args(embedding, obs_names, var_names, max_category_items, diffexp_lfc_cutoff, label_file):
+def parse_engine_args(embedding, obs_names, var_names, max_category_items, diffexp_lfc_cutoff, experimental_label_file):
     return {
         "layout": embedding,
         "max_category_items": max_category_items,
         "diffexp_lfc_cutoff": diffexp_lfc_cutoff,
         "obs_names": obs_names,
         "var_names": var_names,
-        "label_file": label_file,
+        "label_file": experimental_label_file,
     }
 
 
@@ -117,7 +117,7 @@ def launch(
         diffexp_lfc_cutoff,
         title,
         scripts,
-        label_file
+        experimental_label_file
 ):
     """Launch the cellxgene data viewer.
     This web app lets you explore single-cell expression data.
@@ -132,7 +132,7 @@ def launch(
 
     > cellxgene launch <url>"""
 
-    e_args = parse_engine_args(embedding, obs_names, var_names, max_category_items, diffexp_lfc_cutoff, label_file)
+    e_args = parse_engine_args(embedding, obs_names, var_names, max_category_items, diffexp_lfc_cutoff, experimental_label_file)
     try:
         data_locator = DataLocator(data)
     except RuntimeError as re:
@@ -191,10 +191,10 @@ def launch(
     else:
         port = find_available_port(host)
 
-    if label_file:
-        lf_name, lf_ext = splitext(label_file)
+    if experimental_label_file:
+        lf_name, lf_ext = splitext(experimental_label_file)
         if lf_ext and lf_ext != ".csv":
-            raise click.FileError(basename(label_file), hint="label file type must be .csv")
+            raise click.FileError(basename(experimental_label_file), hint="label file type must be .csv")
 
     # Setup app
     cellxgene_url = f"http://{host}:{port}"

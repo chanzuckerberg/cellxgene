@@ -6,7 +6,7 @@
   "repository": "https://github.com/chanzuckerberg/cellxgene",
   "scripts": {
     "backend-dev": "python3.6 -m venv cellxgene && source cellxgene/bin/activate && yes | pip uninstall cellxgene || true && pip install -e .. && cellxgene launch ",
-    "backend-dev-anno": "python3.6 -m venv cellxgene && source cellxgene/bin/activate && yes | pip uninstall cellxgene || true && pip install -e .. && cellxgene launch --label-file labels.csv ",
+    "backend-dev-anno": "python3.6 -m venv cellxgene && source cellxgene/bin/activate && yes | pip uninstall cellxgene || true && pip install -e .. && cellxgene launch --experimental-label-file labels.csv ",
     "build": "npm run clean && webpack --config configuration/webpack/webpack.config.prod.js",
     "clean": "rimraf build",
     "dev": "npm run clean && webpack --config configuration/webpack/webpack.config.dev.js",
