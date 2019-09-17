@@ -401,20 +401,6 @@ class Category extends React.Component {
                 icon="tint"
               />
             </Tooltip>
-            <Tooltip
-              content="Use as color scale"
-              position="bottom"
-              hoverOpenDelay={globals.tooltipHoverOpenDelay}
-            >
-              <Button
-                data-testclass="colorby"
-                data-testid={`colorby-${metadataField}`}
-                onClick={this.handleColorChange}
-                active={colorAccessor === metadataField}
-                intent={colorAccessor === metadataField ? "primary" : "none"}
-                icon="tint"
-              />
-            </Tooltip>
           </div>
         </div>
         <div style={{ marginLeft: 26 }}>
