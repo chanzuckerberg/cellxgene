@@ -13,10 +13,12 @@ import pandas as pd
 from server.app.scanpy_engine.scanpy_engine import ScanpyEngine
 from server.app.util.errors import FilterError, DisabledFeatureError
 from server.app.util.fbs.matrix import encode_matrix_fbs
+from server.app.util.data_locator import DataLocator
 
 
 class EngineTest(unittest.TestCase):
     def setUp(self):
+        # TODO Figure out how to run for several datasets
         args = {
             "layout": ["umap"],
             "max_category_items": 100,
@@ -25,7 +27,7 @@ class EngineTest(unittest.TestCase):
             "diffexp_lfc_cutoff": 0.01,
             "layout_file": None,
         }
-        self.data = ScanpyEngine("example-dataset/pbmc3k.h5ad", args)
+        self.data = ScanpyEngine(DataLocator("example-dataset/pbmc3k.h5ad"), args)
 
     def test_init(self):
         self.assertEqual(self.data.cell_count, 2638)

@@ -1,5 +1,8 @@
-_cellxgene_ is an interactive data explorer for single-cell transcriptomics data. Whether you need to visualize one thousand cells or one million, _cellxgene_ helps you gain insight into your single-cell data.
+<img src="cellxgene-logo.svg" width="300">
 
+_an interactive explorer for single-cell transcriptomics data_
+
+Whether you need to visualize one thousand cells or one million, cellxgene helps you gain insight into your single-cell data.
 ## features
 
 #### flexible selections, coloring, and differential expression of your selected sets of cells
@@ -10,7 +13,7 @@ _cellxgene_ is an interactive data explorer for single-cell transcriptomics data
 
 ## quick start
 
-To install _cellxgene_ you need Python 3.6+. We recommend [installing _cellxgene_ into a conda or virtual environment.](/faq.html#how-do-i-create-a-python-environment-for-cellxgene)
+To install cellxgene you need Python 3.6+. We recommend [installing cellxgene into a conda or virtual environment.](/faq.html#how-do-i-create-a-python-environment-for-cellxgene)
 
 Install the package.
 ``` bash
@@ -23,14 +26,14 @@ Download an example [anndata](https://anndata.readthedocs.io/en/latest/) file
 curl -o pbmc3k.h5ad https://raw.githubusercontent.com/chanzuckerberg/cellxgene/master/example-dataset/pbmc3k.h5ad
 ```
 
-Launch _cellxgene_
+Launch cellxgene
 ``` bash
 cellxgene launch pbmc3k.h5ad --open
 ```
 
-To explore more datasets already formatted for _cellxgene_, see [Data](data) or
+To explore more datasets already formatted for cellxgene, see [Data](data) or
 visit [Getting Started](getting-started) to learn more about formatting your own
-data for _cellxgene_.
+data for cellxgene.
 
 ## getting help
 

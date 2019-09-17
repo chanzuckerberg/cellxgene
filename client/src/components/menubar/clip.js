@@ -5,8 +5,10 @@ import {
   Button,
   Popover,
   NumericInput,
-  Icon
+  Icon,
+  Tooltip
 } from "@blueprintjs/core";
+import { tooltipHoverOpenDelay } from "../../globals";
 
 function Clip(props) {
   const {
@@ -40,14 +42,20 @@ function Clip(props) {
     >
       <Popover
         target={
-          <Button
-            type="button"
-            data-testid="visualization-settings"
-            className={`bp3-button bp3-icon-timeline-bar-chart ${activeClipClass}`}
-            style={{
-              cursor: "pointer"
-            }}
-          />
+          <Tooltip
+            content="Clip all continuous values to a percentile range"
+            position="bottom"
+            hoverOpenDelay={tooltipHoverOpenDelay}
+          >
+            <Button
+              type="button"
+              data-testid="visualization-settings"
+              className={`bp3-button bp3-icon-timeline-bar-chart ${activeClipClass}`}
+              style={{
+                cursor: "pointer"
+              }}
+            />
+          </Tooltip>
         }
         position={Position.BOTTOM_RIGHT}
         onOpening={handleClipOpening}

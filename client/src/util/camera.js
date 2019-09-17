@@ -1,66 +1,181 @@
-// jshint esversion: 6
-const createCamera = require("orbit-camera");
-const createScroll = require("scroll-speed");
-const mp = require("mouse-position");
-const mb = require("mouse-pressed");
-const key = require("key-pressed");
+import { vec2, mat3 } from "gl-matrix";
 
-const panSpeed = 1.0; // changed from 0.4 to 1.0 per issue #722
+const EPSILON = 0.000001;
+
 const scaleSpeed = 0.5;
-const scaleMax = 3;
-const scaleMin = 1.03;
+const scaleMax = 3.0;
+const scaleMin = 0.5;
+const panBound = 0.8;
 
-function attachCamera(canvas, opts) {
-  opts = opts || {};
-  opts.pan = opts.pan !== false;
-  opts.scale = opts.scale !== false;
-  opts.rotate = opts.rotate !== false;
+// private
+const scratch0 = new Float32Array(16);
+const scratch1 = new Float32Array(16);
 
-  const scroll = createScroll(canvas, opts.scale);
-  const mbut = mb(canvas, opts.rotate);
-  const mpos = mp(canvas);
-  const camera = createCamera([0, 0, 1], [0, 0, -1], [0, 1, 0]);
+function clamp(val, rng) {
+  return Math.max(Math.min(val, rng[1]), rng[0]);
+}
 
-  camera.tick = tick;
-
-  return camera;
-
-  function tick() {
-    const ctrl = key("<control>") || key("<alt>");
-    const alt = key("<shift>");
-    const { height, width } = canvas;
-
-    if (opts.rotate && mbut.left && ctrl && !alt) {
-      camera.rotate(
-        [mpos.x / width - 0.5, mpos.y / height - 0.5],
-        [mpos.prevX / width - 0.5, mpos.prevY / height - 0.5]
-      );
-    }
-
-    if ((opts.pan && mbut.right) || (mbut.left && !ctrl && !alt)) {
-      camera.pan([
-        ((panSpeed * (mpos[0] - mpos.prev[0])) / width) * camera.distance,
-        ((panSpeed * (mpos[1] - mpos.prev[1])) / height) * camera.distance
-      ]);
-    }
-
-    if (opts.scale && scroll[1]) {
-      camera.distance *= Math.exp((scroll[1] * scaleSpeed) / height);
-    }
-
-    if (opts.scale && (mbut.middle || (mbut.left && !ctrl && alt))) {
-      const d = mpos.y - mpos.prevY;
-      if (!d) return;
-
-      camera.distance *= Math.exp(d / height);
-    }
-
-    if (camera.distance > scaleMax) camera.distance = scaleMax;
-    if (camera.distance < scaleMin) camera.distance = scaleMin;
-
-    scroll.flush();
-    mpos.flush();
+class Camera {
+  constructor(canvas) {
+    this.prevEvent = {
+      clientX: 0,
+      clientY: 0,
+      type: 0
+    };
+    this.canvas = canvas;
+    this.viewMatrix = mat3.create();
+    this.viewMatrixInv = mat3.create();
   }
+
+  view() {
+    return this.viewMatrix;
+  }
+
+  invView() {
+    return this.viewMatrixInv;
+  }
+
+  distance() {
+    return this.viewMatrix[0];
+  }
+
+  pan(dx, dy) {
+    const m = this.viewMatrix;
+    const dyRange = [
+      -panBound - (m[7] + 1) / m[4],
+      panBound - (m[7] - 1) / m[4]
+    ];
+    const dxRange = [
+      -panBound - (m[6] + 1) / m[0],
+      panBound - (m[6] - 1) / m[0]
+    ];
+
+    const dxClamped = clamp(dx, dxRange);
+    const dyClamped = clamp(dy, dyRange);
+    if (Math.abs(dxClamped) <= EPSILON && Math.abs(dyClamped) <= EPSILON)
+      return;
+
+    mat3.translate(m, m, [dxClamped, dyClamped]);
+    mat3.invert(this.viewMatrixInv, m);
+  }
+
+  zoomAt(d, x = 0, y = 0) {
+    /*
+    Camera zoom at [x,y]
+    */
+    const m = this.viewMatrix;
+    const bounds = [-panBound, panBound];
+    x = clamp(x, bounds);
+    y = clamp(y, bounds);
+
+    const dClamped = clamp(d * m[0], [scaleMin, scaleMax]) / m[0];
+    if (Math.abs(1 - dClamped) <= EPSILON) return; // noop request
+
+    mat3.translate(m, m, [x, y]);
+    mat3.scale(m, m, [dClamped, dClamped]);
+    mat3.translate(m, m, [-x, -y]);
+
+    mat3.invert(this.viewMatrixInv, m);
+  }
+
+  /*
+  Event handling
+  */
+
+  flush(e) {
+    this.prevEvent.type = e.type;
+    this.prevEvent.clientX = e.clientX;
+    this.prevEvent.clientY = e.clientY;
+  }
+
+  localPosition(target, canvasX, canvasY, projectionInvTF) {
+    /*
+    Convert mouse position to local
+    */
+    const { height, width } = target;
+    const targetRect = target.getBoundingClientRect();
+    canvasX -= targetRect.left;
+    canvasY -= targetRect.top;
+
+    const pos = vec2.fromValues(
+      2 * (canvasX / width) - 1,
+      -2 * (canvasY / height) + 1
+    );
+    if (projectionInvTF) {
+      vec2.transformMat3(pos, pos, projectionInvTF);
+    }
+    vec2.transformMat3(pos, pos, this.invView());
+    return pos;
+  }
+
+  mousePan(e, projectionTF) {
+    const projectionInvTF = mat3.invert(scratch0, projectionTF);
+    const pos = this.localPosition(
+      this.canvas,
+      e.clientX,
+      e.clientY,
+      projectionInvTF
+    );
+    const prev = this.localPosition(
+      this.canvas,
+      this.prevEvent.clientX,
+      this.prevEvent.clientY,
+      projectionInvTF
+    );
+
+    const delta = vec2.sub(scratch1, pos, prev);
+    this.pan(delta[0], delta[1]);
+    return true;
+  }
+
+  wheelZoom(e, projectionTF) {
+    const { height } = this.canvas;
+    const { deltaY, deltaMode, clientX, clientY } = e;
+    const scale = scaleSpeed * (deltaMode === 1 ? 12 : 1) * (deltaY || 0);
+
+    const projectionInvTF = mat3.invert(scratch0, projectionTF);
+    const pos = this.localPosition(
+      this.canvas,
+      clientX,
+      clientY,
+      projectionInvTF
+    );
+    this.zoomAt(1 / Math.exp(scale / height), pos[0], pos[1]);
+    return true;
+  }
+
+  handleEvent(e, projectionTF) {
+    /*
+    process the event, and return true if camera view changed
+    */
+    let viewChanged = false;
+    switch (e.type) {
+      case "mousemove": {
+        /* eslint-disable no-bitwise */
+        if (e.buttons & 0x1) {
+          viewChanged = this.mousePan(e, projectionTF);
+        }
+        /* eslint-enable no-bitwise */
+        this.flush(e);
+        break;
+      }
+
+      case "wheel": {
+        viewChanged = this.wheelZoom(e, projectionTF);
+        this.flush(e);
+        break;
+      }
+
+      default:
+        // noop
+        break;
+    }
+    return viewChanged;
+  }
+}
+
+function attachCamera(canvas) {
+  return new Camera(canvas);
 }
 
 export default attachCamera;

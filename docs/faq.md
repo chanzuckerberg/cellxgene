@@ -12,20 +12,22 @@ Currently, you can go straight into `cellxgene launch` with your own analyzed da
 
 If your data is in a different format, and/or you still need to perform dimensionality reduction and clustering, `cellxgene` can do that for you with the `prepare` command. `cellxgene prepare` runs `scanpy` under the hood and can read in any format that is currently supported by `scanpy` (including mtx, loom, and more listed [here](https://scanpy.readthedocs.io/en/latest/api/index.html#reading)).
 
+To add `cellxgene prepare` to your cellxgene installation run `pip install cellxgene[prepare]`. 
+
 The output of `cellxgene prepare` is a h5ad file with your computed clusters and tsne/umap projections that can be used in `cellxgene launch`.
 
 #### I have a directory of 10X-Genomics data with _mtx_ files and I've never used _scanpy_, can I use _cellxgene_?
 
-Yep! This should only take a couple steps. We'll assume your data is in a folder called `data/` and you've successfully installed `cellxgene` with the `louvain` packages as described above. Just run
+Yep! This should only take a couple steps. We'll assume your data is in a folder called `data/` and you've successfully installed `cellxgene` with the `prepare` packages as described above. Just run
 
 ```
-cellxgene prepare data/ --output=data-processed.h5ad --layout=umap
+cellxgene prepare data/ --output=data-processed.h5ad --embedding=umap
 ```
 
 Depending on the size of the dataset, this may take some time. Once it's done, call
 
 ```
-cellxgene launch data-processed.h5ad --layout=umap --open
+cellxgene launch data-processed.h5ad --embedding=umap --open
 ```
 
 And your web browser should open with an interactive view of your data.
@@ -38,7 +40,7 @@ Currently this is not supported directly, but you should be able to do this your
 
 - `.obs` and `.var` annotations are use to extract metadata for filtering
 - `.X` is used to display expression (histograms, scatterplot & colorscale) and to compute differential expression
-- `.obsm` is used for layout. If an embedding has more than two components, the first two will be used for visualization.
+- `.obsm` is used for embedding(s). If an embedding has more than two components, the first two will be used for visualization.
 
 #### I have a BIG dataset - how can I make cellxgene run as fast as possible?
 
@@ -75,14 +77,6 @@ source ${ENV_NAME}/bin/activate
 pip install cellxgene
 ```
 
-#### In my _prepare_ command I received the following error `Warning: louvain module is not installed, no clusters will be calculated. To fix this please install cellxgene with the optional feature louvain enabled`
-
-Louvain clustering requires additional dependencies, so we don't include them by default. For now, you need to specify that you want these packages by using
-
-```
-pip install cellxgene[louvain]
-```
-
 #### I ran _prepare_ and I'm getting results that look unexpected
 
 You might want to try running one of the preprocessing recipes included with `scanpy` (read more about them [here](https://scanpy.readthedocs.io/en/latest/api/index.html#recipes)). You can specify this with the `--recipe` option, such as
@@ -100,3 +94,19 @@ This may happen, especially as we work out bugs in our installation process! Ple
 #### I'm following the developer instructions and get an error about "missing files and directories” when trying to build the client
 
 This is likely because you do not have node and npm installed, we recommend using [nvm](https://github.com/creationix/nvm) if you're new to using these tools.
+
+# Data access
+
+#### Can I use a _s3:_ or _gs:_ URL with `cellxgene launch`?
+
+Yes. Support for S3 and GCS is not enabled by default. If you wish to directly access S3 or GFS, install one or both of the following packages using `pip`:
+
+- [s3fs](https://s3fs.readthedocs.io/en/latest/) for S3 support
+- [gcsfs](https://gcsfs.readthedocs.io/en/latest/) for GCS support
+
+For example:
+
+```
+pip install s3fs
+cellxgene launch s3://mybucket.s3-us-west-2.amazonaws.com/mydata.h5ad
+```

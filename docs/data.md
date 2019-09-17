@@ -14,6 +14,14 @@ description: Data
 
 `cellxgene prepare` is not meant as a way to formally process or analyze your data. It's simply a utility for quickly wrangling your data into cellxgene-compatible format and computing a "vanilla" embedding so you can try out `cellxgene` and get a general sense of a dataset.
 
+#### How do I install `cellxgene prepare`?
+
+The `cellxgene prepare` command is an optional install that you can install alongside `cellxgene launch` by running
+
+```
+pip install cellxgene[prepare]
+```
+
 #### What input formats does it accept?
 
 Currently, we accept `h5ad` and `loom` files, as well as `10x` directories, and are hoping to accept more formats in the future.
@@ -38,8 +46,15 @@ As a quick example, let's construct a command to use `prepare` to take a raw exp
 
 We'll start off using the raw data from the pbmc3k dataset. This dataset is described [here](https://icb-scanpy.readthedocs-hosted.com/en/stable/api/scanpy.datasets.pbmc3k.html), and is available as part of the scanpy API. For this example, we'll assume this raw data is stored in a file called `pbmc3k-raw.h5ad`.
 
-Our `prepare` compose our command looks like this:  
-<img src="prepare-cmd-example.jpg" width="700" />
+Our `prepare` compose our command looks like this:
+
+```
+cellxgene prepare pbmc3k-raw.h5ad \
+	--run-qc \                                  # (A)
+	--recipe seurat \                           # (B)
+	--layout tsne --layout umap \               # (C)
+	--output pbmc3k-prepared.h5ad               # (D)
+```
 
 Let's look at what `prepare` is doing to our data, and how each step relates to the command above. You can see a walkthrough of what's going on under the hood for this example in [this notebook](https://github.com/chanzuckerberg/cellxgene-vignettes/blob/master/dataset-processing/pbmc3k-prepare-example.ipynb).
 
@@ -52,10 +67,9 @@ Let's look at what `prepare` is doing to our data, and how each step relates to 
 
 # Example datasets to use with cellxgene
 
-
-**To download and use these datasets, run:**  
-`curl -O [URL]`  
-`unzip [filename.zip]`  
+**To download and use these datasets, run:**
+`curl -O [URL]`
+`unzip [filename.zip]`
 `cellxgene launch [filename.h5ad] --open`
 
 ### Peripheral blood mononuclear cells
