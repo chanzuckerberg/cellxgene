@@ -132,7 +132,8 @@ def launch(
 
     > cellxgene launch <url>"""
 
-    e_args = parse_engine_args(embedding, obs_names, var_names, max_category_items, diffexp_lfc_cutoff, experimental_label_file)
+    e_args = parse_engine_args(embedding, obs_names, var_names, max_category_items,
+                               diffexp_lfc_cutoff, experimental_label_file)
     try:
         data_locator = DataLocator(data)
     except RuntimeError as re:
