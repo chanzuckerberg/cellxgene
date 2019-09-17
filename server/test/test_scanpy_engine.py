@@ -213,7 +213,7 @@ class WritableAnnotationTest(unittest.TestCase):
             "diffexp_lfc_cutoff": 0.01,
             "label_file": self.label_file
         }
-        self.data = ScanpyEngine("example-dataset/pbmc3k.h5ad", args)
+        self.data = ScanpyEngine(DataLocator("example-dataset/pbmc3k.h5ad"), args)
 
     def tearDown(self):
         shutil.rmtree(self.tmpDir)
@@ -251,7 +251,6 @@ class WritableAnnotationTest(unittest.TestCase):
         df = pd.read_csv(self.label_file)
         self.assertEqual(df.shape, (n_rows, 2))
         self.assertEqual(set(df.columns), set(['cat_A', 'cat_B']))
-        print(df['cat_A'].values)
         self.assertTrue(np.all(df['cat_A'] == ['label_A' for l in range(0, n_rows)]))
         self.assertTrue(np.all(df['cat_B'] == ['label_B' for l in range(0, n_rows)]))
 
