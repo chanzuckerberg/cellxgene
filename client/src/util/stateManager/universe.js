@@ -144,7 +144,7 @@ function reconcileSchemaCategoriesWithSummary(universe) {
       s.categories = categories;
     }
 
-    if (s.writable && s.categories.indexOf(unassignedCategoryLabel) == -1) {
+    if (s.writable && s.categories.indexOf(unassignedCategoryLabel) === -1) {
       s.categories = s.categories.concat(unassignedCategoryLabel);
     }
   });

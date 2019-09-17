@@ -66,6 +66,11 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
         schema = AH.dupObsAnnoSchema(state.schema, categoryToDuplicate, name, {
           writable: true
         });
+        /* if we are duplicating a non-writable annotation, it may not have an unassigned category */
+        const s = schema.annotations.obsByName[categoryToDuplicate];
+        if (s.categories.indexOf(unassignedCategoryLabel) === -1) {
+          s.categories = s.categories.concat(unassignedCategoryLabel);
+        }
         data = state.obsAnnotations.col(categoryToDuplicate).asArray();
       } else {
         /* else, all are unassined */

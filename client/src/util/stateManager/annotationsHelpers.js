@@ -84,7 +84,7 @@ export function removeObsAnnoCategory(schema, name, category) {
 	if (!_isUserAnnotation(schema, name))
 		throw new Error("unable to modify read-only schema");
 	if (category === unassignedCategoryLabel)
-		throw new Error("may not remove unassigned category lable");
+		throw new Error("may not remove unassigned category label");
 
 	return SchemaHelpers.removeObsAnnoCategory(schema, name, category);
 }
