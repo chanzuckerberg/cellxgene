@@ -60,6 +60,7 @@ def common_args(func):
         return func(*args, **kwargs)
     return wrapper
 
+
 def parse_engine_args(embedding, obs_names, var_names, max_category_items, diffexp_lfc_cutoff, label_file):
     return {
         "layout": embedding,
