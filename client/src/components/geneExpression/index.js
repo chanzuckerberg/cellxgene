@@ -22,6 +22,8 @@ import {
   keepAroundErrorToast
 } from "../framework/toasters";
 
+import { memoize } from "../../util/dataframe/util";
+
 const renderGene = (fuzzySortResult, { handleClick, modifiers, query }) => {
   if (!modifiers.matchesPredicate) {
     return null;
@@ -128,6 +130,20 @@ class GeneExpression extends React.Component {
     }
   }
 
+  _genesToUpper = listGenes => {
+    const upperGenes = new Array(listGenes.length);
+    for (let i = 0, { length } = listGenes; i < length; i += 1) {
+      upperGenes[i] = listGenes[i].toUpperCase();
+    }
+    return upperGenes;
+  };
+
+  // eslint-disable-next-line react/sort-comp
+  _memoGenesToUpper = memoize(
+    this._genesToUpper,
+    listGenes => listGenes.toString() /* This hash is order specific*/
+  );
+
   handleBulkAddClick() {
     const { world, dispatch, userDefinedGenes } = this.props;
     const varIndexName = world.schema.annotations.var.index;
@@ -139,35 +155,38 @@ class GeneExpression extends React.Component {
     */
     if (bulkAdd !== "") {
       const genes = _.pull(_.uniq(bulkAdd.split(/[ ,]+/)), "");
-      const uppercaseGenes = genes.map(gene => gene.toUpperCase());
+      const worldGenes = world.varAnnotations.col(varIndexName).asArray();
+
+      const upperGenes = this._memoGenesToUpper(genes);
+      const upperWorldGenes = this._memoGenesToUpper(worldGenes);
+      const upperUserDefinedGenes = this._memoGenesToUpper(userDefinedGenes);
 
       dispatch({ type: "bulk user defined gene start" });
-      Promise.all(
-        uppercaseGenes.map(gene => {
-          if (gene.length === 0) {
-            return keepAroundErrorToast("Must enter a gene name.");
-          }
-          const upperUserDefinedGenes = userDefinedGenes.map(gene =>
-            gene.toUpperCase()
+
+      const promises = [];
+      for (let i = 0, { length } = upperGenes; i < length; i += 1) {
+        const upperGene = upperGenes[i];
+
+        if (genes.length === 0) {
+          /* Because of _.pull() this case is unreachable */
+          return keepAroundErrorToast("Must enter a gene name.");
+        }
+        if (upperUserDefinedGenes.indexOf(upperGene) !== -1) {
+          return keepAroundErrorToast("That gene already exists");
+        }
+
+        const indexOfGene = upperWorldGenes.indexOf(upperGene);
+
+        if (indexOfGene === -1) {
+          return keepAroundErrorToast(
+            `${genes[i]} doesn't appear to be a valid gene name.`
           );
-          if (upperUserDefinedGenes.indexOf(gene) !== -1) {
-            return keepAroundErrorToast("That gene already exists");
-          }
-          const worldGenes = world.varAnnotations.col(varIndexName);
-          const worldGenesUpper = worldGenes.asArray.map(worldGene =>
-            worldGene.toUpperCase()
-          );
-          const indexOfGene = worldGenesUpper.indexOf(gene);
-          if (indexOfGene === undefined) {
-            return keepAroundErrorToast(
-              `${gene} doesn't appear to be a valid gene name.`
-            );
-          }
-          return dispatch(
-            actions.requestUserDefinedGene(worldGenes[indexOfGene])
-          );
-        })
-      ).then(
+        }
+        promises.push(
+          dispatch(actions.requestUserDefinedGene(worldGenes[indexOfGene]))
+        );
+      }
+      Promise.all(promises).then(
         () => dispatch({ type: "bulk user defined gene complete" }),
         () => dispatch({ type: "bulk user defined gene error" })
       );
