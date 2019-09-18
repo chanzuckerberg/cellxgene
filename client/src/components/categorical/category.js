@@ -349,7 +349,7 @@ class Category extends React.Component {
                 <Popover
                   interactionKind={PopoverInteractionKind.HOVER}
                   boundary="window"
-                  position={Position.RIGHT}
+                  position={Position.RIGHT_TOP}
                   content={
                     <Menu>
                       <MenuItem
