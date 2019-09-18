@@ -257,7 +257,7 @@ class CategoryValue extends React.Component {
                   fontStyle:
                     displayString === globals.unassignedCategoryLabel
                       ? "italic"
-                      : "auto"
+                      : "normal"
                 }}
               >
                 {annotations.isEditingLabelName &&
