@@ -75,6 +75,20 @@ class GeneExpression extends React.Component {
     };
   }
 
+  _genesToUpper = listGenes => {
+    const upperGenes = new Array(listGenes.length);
+    for (let i = 0, { length } = listGenes; i < length; i += 1) {
+      upperGenes[i] = listGenes[i].toUpperCase();
+    }
+    return upperGenes;
+  };
+
+  // eslint-disable-next-line react/sort-comp
+  _memoGenesToUpper = memoize(
+    this._genesToUpper,
+    listGenes => listGenes.toString() /* This hash is order specific*/
+  );
+
   placeholderGeneNames() {
     /*
     return a string containing gene name suggestions for use as a user hint.
@@ -130,20 +144,6 @@ class GeneExpression extends React.Component {
     }
   }
 
-  _genesToUpper = listGenes => {
-    const upperGenes = new Array(listGenes.length);
-    for (let i = 0, { length } = listGenes; i < length; i += 1) {
-      upperGenes[i] = listGenes[i].toUpperCase();
-    }
-    return upperGenes;
-  };
-
-  // eslint-disable-next-line react/sort-comp
-  _memoGenesToUpper = memoize(
-    this._genesToUpper,
-    listGenes => listGenes.toString() /* This hash is order specific*/
-  );
-
   handleBulkAddClick() {
     const { world, dispatch, userDefinedGenes } = this.props;
     const varIndexName = world.schema.annotations.var.index;
@@ -157,9 +157,11 @@ class GeneExpression extends React.Component {
       const genes = _.pull(_.uniq(bulkAdd.split(/[ ,]+/)), "");
       const worldGenes = world.varAnnotations.col(varIndexName).asArray();
 
-      const upperGenes = this._memoGenesToUpper(genes);
+      // These gene lists are unique enough where memoization is useless
+      const upperGenes = this._genesToUpper(genes);
+      const upperUserDefinedGenes = this._genesToUpper(userDefinedGenes);
+
       const upperWorldGenes = this._memoGenesToUpper(worldGenes);
-      const upperUserDefinedGenes = this._memoGenesToUpper(userDefinedGenes);
 
       dispatch({ type: "bulk user defined gene start" });
 
