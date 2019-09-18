@@ -346,7 +346,8 @@ class ScanpyEngine(CXGDriver):
 
         # the label index must be unique, and must have same values the anndata obs index
         if not self.labels.index.is_unique:
-            raise KeyError(f"All row index values specified in the label file `{self.config['label_file']}` must be unique.")
+            raise KeyError(f"All row index values specified in the label file "
+                           f"`{self.config['label_file']}` must be unique.")
 
         if not self.labels.index.equals(self.original_obs_index):
             raise KeyError("Label file row index does not match H5AD file index. "
