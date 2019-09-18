@@ -384,7 +384,7 @@ class CategoryValue extends React.Component {
                         data-testclass="handleDeleteValue"
                         data-testid={`handleDeleteValue-${metadataField}`}
                         onClick={this.handleDeleteValue}
-                        text="Delete this value, and reassign all cells to type 'unknown'"
+                        text="Delete this label, and reassign all cells to type 'unknown'"
                       />
                     ) : null}
                   </Menu>
