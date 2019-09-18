@@ -22,15 +22,6 @@ from server.app.scanpy_engine.diffexp import diffexp_ttest
 from server.app.util.fbs.matrix import encode_matrix_fbs, decode_matrix_fbs
 from server.app.scanpy_engine.labels import read_labels, write_labels
 
-"""
-Sort order for methods
-1. Initialize
-2. Helper
-3. Filter
-4. Data & Metadata
-5. Computation
-"""
-
 
 class ScanpyEngine(CXGDriver):
     def __init__(self, data=None, args={}):
@@ -81,6 +72,8 @@ class ScanpyEngine(CXGDriver):
         index column name to the front-end via the obs_names and var_names config
         (which is incorporated into the schema).
         """
+        self.original_obs_index = self.data.obs.index
+
         for (ax_name, config_name) in ((Axis.OBS, "obs_names"), (Axis.VAR, "var_names")):
             name = self.config[config_name]
             df_axis = getattr(self.data, str(ax_name))
@@ -255,7 +248,7 @@ class ScanpyEngine(CXGDriver):
         self.cell_count = self.data.shape[0]
         self.gene_count = self.data.shape[1]
         self._default_and_validate_layouts()
-        self._validate_label_file()
+        self._validate_label_data()
         self._create_schema()
 
     @requires_data
@@ -340,7 +333,7 @@ class ScanpyEngine(CXGDriver):
                         )
 
     @requires_data
-    def _validate_label_file(self):
+    def _validate_label_data(self):
         """
         labels is None if disabled, empty if enabled by no data
         """
@@ -350,6 +343,16 @@ class ScanpyEngine(CXGDriver):
         # all lables must have a name, which must be unique and not used in obs column names
         if not self.labels.columns.is_unique:
             raise KeyError(f"All column names specified in {self.config['label_file']} must be unique.")
+
+        # the label index must be unique, and must have same values the anndata obs index
+        if not self.labels.index.is_unique:
+            raise KeyError(f"All row index values specified in the label file `{self.config['label_file']}` must be unique.")
+
+        if not self.labels.index.equals(self.original_obs_index):
+            raise KeyError("Label file row index does not match H5AD file index. "
+                           "Please ensure that column zero (0) in the label file contain the same "
+                           "index values as the H5AD file.")
+
         duplicate_columns = list(set(self.labels.columns) & set(self.data.obs.columns))
         if len(duplicate_columns) > 0:
             raise KeyError(f"Labels file may not contain column names which overlap "
@@ -427,7 +430,7 @@ class ScanpyEngine(CXGDriver):
     def annotation_to_fbs_matrix(self, axis, fields=None):
         if axis == Axis.OBS:
             if self.labels is not None and not self.labels.empty:
-                df = pandas.concat([self.data.obs, self.labels], axis=1, join_axes=[self.data.obs.index], copy=False)
+                df = self.data.obs.join(self.labels, self.config['obs_names'])
             else:
                 df = self.data.obs
         else:
@@ -446,6 +449,8 @@ class ScanpyEngine(CXGDriver):
             raise ValueError("Only OBS dimension access is supported")
 
         new_label_df = decode_matrix_fbs(fbs)
+        new_label_df.index = self.original_obs_index
+        self._validate_label_data()  # paranoia
 
         # if any of the new column labels overlap with our existing labels, raise error
         duplicate_columns = list(set(new_label_df.columns) & set(self.data.obs.columns))
