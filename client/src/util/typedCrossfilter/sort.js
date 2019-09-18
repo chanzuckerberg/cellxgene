@@ -413,3 +413,16 @@ export function upperBoundIndirect(valueArray, indexArray, value, first, last) {
   }
   return upperBoundNonFloatIndirect(valueArray, indexArray, value, first, last);
 }
+
+// Search for `value` in the sorted array `arr`, in the range [first, last).
+// Return the first index where arr[index] == value, OR if value not present,
+// return `last`
+//
+// The same semantics/behavior as:
+//    C++: binary_search()
+//
+export function binarySearch(valueArray, value, first, last) {
+  const index = lowerBound(valueArray, value, first, last);
+  if (index !== last && value === valueArray[index]) return index;
+  return last;
+}

@@ -1,14 +1,7 @@
-// jshint esversion: 6
-
 import clip from "../clip";
-import {
-  layoutDimensionName,
-  obsAnnoDimensionName,
-  diffexpDimensionName,
-  userDefinedDimensionName
-} from "../nameCreators";
+import { layoutDimensionName, obsAnnoDimensionName } from "../nameCreators";
 import * as Dataframe from "../dataframe";
-import ImmutableTypedCrossfilter from "../typedCrossfilter/crossfilter";
+import { isContinuousAnnotation } from "./annotationsHelpers";
 
 /*
 
@@ -158,7 +151,7 @@ and world.varData.
 function setClippedDataframes(world) {
   const { schema } = world;
   const isContinuousObsAnnotation = (df, idx, label) =>
-    deduceDimensionType(schema.annotations.obsByName[label], label) !== "enum";
+    isContinuousAnnotation(schema, label);
   const obsQuantile = (label, q) =>
     world.unclipped.obsAnnotations.col(label).summarize().percentiles[100 * q];
   world.obsAnnotations = clipDataframe(
@@ -183,7 +176,7 @@ function setClippedDataframes(world) {
 /*
 Subset the current world based upon the current selection, maintaining any existing
 clip.  Returns new world.  Parameters:
-  * unvierse
+  * universe
   * world - the current world
   * crossfilter - the selection state
 */

@@ -1,7 +1,11 @@
 import _ from "lodash";
 
 import Crossfilter from "../util/typedCrossfilter";
-import { World, ControlsHelpers } from "../util/stateManager";
+import {
+  World,
+  ControlsHelpers as CH,
+  AnnotationsHelpers as AH
+} from "../util/stateManager";
 import {
   layoutDimensionName,
   obsAnnoDimensionName,
@@ -12,7 +16,7 @@ import {
 
 const XYDimName = layoutDimensionName("XY");
 
-const CrossfilterReducer = (
+const CrossfilterReducerBase = (
   state = null,
   action,
   nextSharedState,
@@ -32,12 +36,14 @@ const CrossfilterReducer = (
     case "reset World to eq Universe": {
       const { userDefinedGenes, diffexpGenes } = prevSharedState.controls;
       const { world } = nextSharedState;
-      const crossfilter = ControlsHelpers.createGeneDimensions(
+      let { crossfilter } = prevSharedState.resetCache;
+      crossfilter = CH.createGeneDimensions(
         userDefinedGenes,
         diffexpGenes,
         world,
-        prevSharedState.resetCache.crossfilter
+        crossfilter
       );
+      crossfilter = AH.createWritableAnnotationDimensions(world, crossfilter);
       return crossfilter;
     }
 
@@ -51,7 +57,7 @@ const CrossfilterReducer = (
         world,
         layoutChoice.currentDimNames
       );
-      crossfilter = ControlsHelpers.createGeneDimensions(
+      crossfilter = CH.createGeneDimensions(
         userDefinedGenes,
         diffexpGenes,
         world,
@@ -136,6 +142,37 @@ const CrossfilterReducer = (
       return crossfilter;
     }
 
+    case "annotation: create category": {
+      const name = action.data;
+      const { world } = nextSharedState;
+      const colData = world.obsAnnotations.col(name).asArray();
+      return state.addDimension(obsAnnoDimensionName(name), "enum", colData);
+    }
+
+    case "annotation: category edited": {
+      const name = action.metadataField;
+      const newName = action.newCategoryText;
+      return state.renameDimension(
+        obsAnnoDimensionName(name),
+        obsAnnoDimensionName(newName)
+      );
+    }
+
+    case "annotation: delete category": {
+      return state.delDimension(obsAnnoDimensionName(action.metadataField));
+    }
+
+    case "annotation: label current cell selection":
+    case "annotation: label edited":
+    case "annotation: delete label": {
+      /* we need to reindex the dimension.  For now, just drop it and add another */
+      const name = action.metadataField;
+      const dimName = obsAnnoDimensionName(name);
+      const { world } = nextSharedState;
+      const colData = world.obsAnnotations.col(name).asArray();
+      return state.delDimension(dimName).addDimension(dimName, "enum", colData);
+    }
+
     case "graph brush end":
     case "graph brush change": {
       const [minX, maxY] = action.brushCoords.northwest;
@@ -185,12 +222,12 @@ const CrossfilterReducer = (
     case "categorical metadata filter select":
     case "categorical metadata filter deselect": {
       const { categoricalSelection } = nextSharedState;
-      const { world } = prevSharedState;
       const cat = categoricalSelection[action.metadataField];
-      const col = world.obsAnnotations.col(action.metadataField);
+      const { categoryValues, categoryValueSelected } = cat;
+      const values = categoryValues.filter((v, i) => categoryValueSelected[i]);
       return state.select(obsAnnoDimensionName(action.metadataField), {
         mode: "exact",
-        values: ControlsHelpers.selectedValuesForCategory(cat, col)
+        values
       });
     }
 
@@ -210,6 +247,31 @@ const CrossfilterReducer = (
       return state;
     }
   }
+};
+
+/*
+  IMPORTANT: the system assumes that crossfilter.data() will point at the
+  same value as world.obsAnnotations.  For actions handled in this reducer,
+  make sure that this remains true.
+
+  This wrapper performs only this function.
+*/
+const CrossfilterReducer = (
+  state,
+  action,
+  nextSharedState,
+  prevSharedState
+) => {
+  const nextState = CrossfilterReducerBase(
+    state,
+    action,
+    nextSharedState,
+    prevSharedState
+  );
+  if (!nextState || nextState.all() === nextSharedState.world.obsAnnotations) {
+    return nextState;
+  }
+  return nextState.setData(nextSharedState.world.obsAnnotations);
 };
 
 export default CrossfilterReducer;

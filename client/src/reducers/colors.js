@@ -108,6 +108,27 @@ const ColorsReducer = (
       };
     }
 
+    case "annotation: add new label to category":
+    case "annotation: label current cell selection":
+    case "annotation: delete label": {
+      const { world } = nextSharedState;
+      const { colorMode, colorAccessor } = state;
+      const { metadataField } = action;
+      if (
+        colorMode !== "color by categorical metadata" ||
+        colorAccessor !== metadataField
+      )
+        return state;
+
+      /* else, we need to rebuild colors as labels have changed! */
+      const { rgb, scale } = ColorHelpers.createColors(
+        world,
+        colorMode,
+        colorAccessor
+      );
+      return { ...state, rgb, scale };
+    }
+
     case "clear differential expression": {
       const { world: prevWorld, controls: prevControls } = prevSharedState;
       const resetColorState = ColorHelpers.checkIfColorByDiffexpAndResetColors(

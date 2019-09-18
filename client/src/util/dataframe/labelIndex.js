@@ -80,6 +80,10 @@ class IdentityInt32Index {
     return this.__promote([...this.keys(), label]);
   }
 
+  withLabels(labels) {
+    return this.__promote([...this.keys(), ...labels]);
+  }
+
   dropLabel(label) {
     if (label === this.maxOffset - 1) {
       return new IdentityInt32Index(label);
@@ -163,6 +167,10 @@ class DenseInt32Index {
     return this.__promote([...this.keys(), label]);
   }
 
+  withLabels(labels) {
+    return this.__promote([...this.keys(), ...labels]);
+  }
+
   dropLabel(label) {
     const labelArray = [...this.keys()];
     labelArray.splice(labelArray.indexOf(label), 1);
@@ -186,6 +194,11 @@ class KeyIndex {
     labels.forEach((v, i) => {
       index.set(v, i);
     });
+
+    if (index.size !== rindex.length) {
+      /* if true, there was a duplicate in the keys */
+      throw new Error("duplicate label provided to KeyIndex");
+    }
 
     this.index = index;
     this.rindex = rindex;
@@ -216,6 +229,10 @@ class KeyIndex {
 
   withLabel(label) {
     return new KeyIndex([...this.rindex, label]);
+  }
+
+  withLabels(labels) {
+    return new KeyIndex([...this.rindex, ...labels]);
   }
 
   dropLabel(label) {

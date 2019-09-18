@@ -19,3 +19,6 @@ export * as Universe from "./universe";
 export * as World from "./world";
 export * as WorldUtil from "./worldUtil";
 export * as ControlsHelpers from "./controlsHelpers";
+export * as AnnotationsHelpers from "./annotationsHelpers";
+export * as SchemaHelpers from "./schemaHelpers";
+export * as MatrixFBS from "./matrix";

@@ -1,18 +1,108 @@
 // jshint esversion: 6
 import { connect } from "react-redux";
 import React from "react";
+
+import {
+  Button,
+  InputGroup,
+  Menu,
+  MenuItem,
+  Popover,
+  Position,
+  Icon,
+  PopoverInteractionKind
+} from "@blueprintjs/core";
 import Occupancy from "./occupancy";
 import * as globals from "../../globals";
 import styles from "./categorical.css";
 
 @connect(state => ({
   categoricalSelection: state.categoricalSelection,
+  annotations: state.annotations,
   colorScale: state.colors.scale,
   colorAccessor: state.colors.colorAccessor,
   schema: state.world?.schema,
   world: state.world
 }))
 class CategoryValue extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      editedLabelText: ""
+    };
+  }
+
+  handleDeleteValue = () => {
+    const {
+      dispatch,
+      metadataField,
+      categoryIndex,
+      categoricalSelection
+    } = this.props;
+    const category = categoricalSelection[metadataField];
+    const label = category.categoryValues[categoryIndex];
+    dispatch({
+      type: "annotation: delete label",
+      metadataField,
+      label
+    });
+  };
+
+  handleAddCurrentSelectionToThisLabel = () => {
+    const {
+      dispatch,
+      metadataField,
+      categoryIndex,
+      categoricalSelection
+    } = this.props;
+    const category = categoricalSelection[metadataField];
+    const label = category.categoryValues[categoryIndex];
+    dispatch({
+      type: "annotation: label current cell selection",
+      metadataField,
+      categoryIndex,
+      label
+    });
+  };
+
+  handleEditValue = () => {
+    const {
+      dispatch,
+      metadataField,
+      categoryIndex,
+      categoricalSelection
+    } = this.props;
+    const { editedLabelText } = this.state;
+    const category = categoricalSelection[metadataField];
+    const label = category.categoryValues[categoryIndex];
+    dispatch({
+      type: "annotation: label edited",
+      editedLabel: editedLabelText,
+      metadataField,
+      categoryIndex,
+      label
+    });
+    this.setState({ editedLabelText: "" });
+  };
+
+  activateEditLabelMode = () => {
+    const { dispatch, metadataField, categoryIndex } = this.props;
+    dispatch({
+      type: "annotation: activate edit label mode",
+      metadataField,
+      categoryIndex
+    });
+  };
+
+  cancelEdit = () => {
+    const { dispatch, metadataField, categoryIndex } = this.props;
+    dispatch({
+      type: "annotation: cancel edit label mode",
+      metadataField,
+      categoryIndex
+    });
+  };
+
   toggleOff = () => {
     const { dispatch, metadataField, categoryIndex } = this.props;
     dispatch({
@@ -23,12 +113,12 @@ class CategoryValue extends React.Component {
   };
 
   shouldComponentUpdate = nextProps => {
-    /* 
+    /*
     Checks to see if at least one of the following changed:
     * world state
     * the color accessor (what is currently being colored by)
     * if this catagorical value's selection status has changed
-    
+
     If and only if true, update the component
     */
     const { props } = this;
@@ -45,8 +135,14 @@ class CategoryValue extends React.Component {
 
     const worldChange = props.world !== nextProps.world;
     const colorAccessorChange = props.colorAccessor !== nextProps.colorAccessor;
+    const annotationsChange = props.annotations !== nextProps.annotations;
 
-    return valueSelectionChange || worldChange || colorAccessorChange;
+    return (
+      valueSelectionChange ||
+      worldChange ||
+      colorAccessorChange ||
+      annotationsChange
+    );
   };
 
   toggleOn = () => {
@@ -84,7 +180,9 @@ class CategoryValue extends React.Component {
       colorAccessor,
       colorScale,
       i,
-      schema
+      schema,
+      isUserAnno,
+      annotations
     } = this.props;
 
     if (!categoricalSelection) return null;
@@ -121,41 +219,103 @@ class CategoryValue extends React.Component {
         onMouseEnter={this.handleMouseEnter}
         onMouseLeave={this.handleMouseExit}
       >
-        <div
-          style={{
-            margin: 0,
-            padding: 0,
-            userSelect: "none",
-            width: globals.leftSidebarWidth - 130,
-            display: "flex",
-            justifyContent: "space-between"
-          }}
-        >
-          <div style={{ display: "flex" }}>
-            <label className="bp3-control bp3-checkbox" style={{ margin: 0 }}>
-              <input
-                onChange={selected ? this.toggleOff : this.toggleOn}
-                data-testclass="categorical-value-select"
-                data-testid={`categorical-value-select-${metadataField}-${displayString}`}
-                checked={selected}
-                type="checkbox"
-              />
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <div
+            style={{
+              margin: 0,
+              padding: 0,
+              userSelect: "none",
+              width: globals.leftSidebarWidth - 240,
+              display: "flex",
+              justifyContent: "flex-start"
+            }}
+          >
+            <div style={{ display: "flex" }}>
+              <label className="bp3-control bp3-checkbox" style={{ margin: 0 }}>
+                <input
+                  onChange={selected ? this.toggleOff : this.toggleOn}
+                  data-testclass="categorical-value-select"
+                  data-testid={`categorical-value-select-${metadataField}-${displayString}`}
+                  checked={selected}
+                  type="checkbox"
+                />
+                <span
+                  className="bp3-control-indicator"
+                  onMouseEnter={this.handleMouseExit}
+                  onMouseLeave={this.handleMouseEnter}
+                />
+              </label>
               <span
-                className="bp3-control-indicator"
-                onMouseEnter={this.handleMouseExit}
-                onMouseLeave={this.handleMouseEnter}
-              />
-            </label>
-            <span
-              data-testid={`categorical-value-${metadataField}-${displayString}`}
-              data-testclass="categorical-value"
-              style={{ wordBreak: "break-all" }}
-            >
-              {displayString}
-            </span>
+                data-testid={`categorical-value-${metadataField}-${displayString}`}
+                data-testclass="categorical-value"
+                style={{
+                  wordBreak: "break-all",
+                  color:
+                    displayString === globals.unassignedCategoryLabel
+                      ? "#ababab"
+                      : "black",
+                  fontStyle:
+                    displayString === globals.unassignedCategoryLabel
+                      ? "italic"
+                      : "auto"
+                }}
+              >
+                {annotations.isEditingLabelName &&
+                annotations.labelEditable.category === metadataField &&
+                annotations.labelEditable.label === categoryIndex
+                  ? null
+                  : displayString}
+              </span>
+            </div>
+            {isUserAnno &&
+            annotations.isEditingLabelName &&
+            annotations.labelEditable.category === metadataField &&
+            annotations.labelEditable.label === categoryIndex ? (
+              <form
+                onSubmit={e => {
+                  e.preventDefault();
+                  this.handleEditValue();
+                }}
+              >
+                <InputGroup
+                  style={{ position: "relative", top: -1 }}
+                  ref={input => {
+                    this.editableInput = input;
+                  }}
+                  small
+                  onChange={e => {
+                    this.setState({ editedLabelText: e.target.value });
+                  }}
+                  defaultValue={displayString}
+                  rightElement={
+                    <Button
+                      minimal
+                      style={{ position: "relative", top: -1 }}
+                      type="button"
+                      icon="small-tick"
+                      data-testclass="submitEdit"
+                      data-testid="submitEdit"
+                      onClick={this.handleEditValue}
+                    />
+                  }
+                />
+              </form>
+            ) : null}
+            {/*
+            CANCEL IT, WITH BUTTON, ESCAPE KEY, CLICK OUT, UNDO?
+
+            <Button
+            minimal
+            style={{ position: "relative", top: -1 }}
+            type="button"
+            icon="cross"
+            data-testclass="submitEdit"
+            data-testid="submitEdit"
+            onClick={this.cancelEdit}
+          /> */}
           </div>
           <span style={{ flexShrink: 0 }}>
-            {colorAccessor && !isColorBy ? (
+            {colorAccessor && !isColorBy && !annotations.isEditingLabelName ? (
               <Occupancy category={category} {...this.props} />
             ) : null}
           </span>
@@ -164,10 +324,22 @@ class CategoryValue extends React.Component {
           <span
             data-testclass="categorical-value-count"
             data-testid={`categorical-value-count-${metadataField}-${displayString}`}
+            style={{
+              color:
+                displayString === globals.unassignedCategoryLabel
+                  ? "#ababab"
+                  : "black",
+              fontStyle:
+                displayString === globals.unassignedCategoryLabel
+                  ? "italic"
+                  : "auto"
+            }}
           >
             {count}
           </span>
+
           <svg
+            display={isColorBy && categories ? "auto" : "none"}
             style={{
               marginLeft: 5,
               width: 11,
@@ -178,6 +350,57 @@ class CategoryValue extends React.Component {
                   : "inherit"
             }}
           />
+          {isUserAnno ? (
+            <span
+              onMouseEnter={this.handleMouseExit}
+              onMouseLeave={this.handleMouseEnter}
+            >
+              <Popover
+                interactionKind={PopoverInteractionKind.HOVER}
+                boundary="window"
+                position={Position.RIGHT_TOP}
+                content={
+                  <Menu>
+                    <MenuItem
+                      icon="plus"
+                      data-testclass="handleAddCurrentSelectionToThisLabel"
+                      data-testid={`handleAddCurrentSelectionToThisLabel-${metadataField}`}
+                      onClick={this.handleAddCurrentSelectionToThisLabel}
+                      text={`Label currently selected cells as ${displayString}`}
+                    />
+                    {displayString !== globals.unassignedCategoryLabel ? (
+                      <MenuItem
+                        icon="edit"
+                        text="Edit this label's name"
+                        data-testclass="handleEditValue"
+                        data-testid={`handleEditValue-${metadataField}`}
+                        onClick={this.activateEditLabelMode}
+                      />
+                    ) : null}
+                    {displayString !== globals.unassignedCategoryLabel ? (
+                      <MenuItem
+                        icon="delete"
+                        intent="danger"
+                        data-testclass="handleDeleteValue"
+                        data-testid={`handleDeleteValue-${metadataField}`}
+                        onClick={this.handleDeleteValue}
+                        text="Delete this value, and reassign all cells to type 'unknown'"
+                      />
+                    ) : null}
+                  </Menu>
+                }
+              >
+                <Button
+                  style={{ marginLeft: 0, position: "relative", top: -1 }}
+                  data-testclass="seeActions"
+                  data-testid={`seeActions-${metadataField}`}
+                  icon="more"
+                  small
+                  minimal
+                />
+              </Popover>
+            </span>
+          ) : null}
         </span>
       </div>
     );

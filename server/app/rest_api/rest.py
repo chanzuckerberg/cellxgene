@@ -1,5 +1,6 @@
 from http import HTTPStatus
 import warnings
+from os.path import basename
 
 from flask import Blueprint, current_app, jsonify, make_response, request
 from flask_restful import Api, Resource
@@ -16,6 +17,7 @@ from server.app.util.errors import (
     InteractiveError,
     JSONEncodingValueError,
     PrepareError,
+    DisabledFeatureError,
 )
 
 """
@@ -29,7 +31,7 @@ Sort order for routes
 class SchemaAPI(Resource):
     def get(self):
         return make_response(
-            jsonify({"schema": current_app.data.schema}), HTTPStatus.OK
+            jsonify({"schema": current_app.data.get_schema()}), HTTPStatus.OK
         )
 
 
@@ -72,6 +74,11 @@ class ConfigAPI(Resource):
                 }
             }
         }
+
+        label_file = current_app.data.config["label_file"]
+        if label_file:
+            config["config"]["parameters"]["label_file"] = basename(label_file)
+
         return make_response(jsonify(config), HTTPStatus.OK)
 
 
@@ -91,6 +98,18 @@ class AnnotationsObsAPI(Resource):
         except KeyError:
             return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
         except ValueError as e:
+            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+
+    def put(self):
+        try:
+            fbs = request.get_data()
+            res = current_app.data.annotation_put_fbs("obs", fbs)
+            return make_response(
+                res, HTTPStatus.OK, {"Content-Type": "application/json"}
+            )
+        except (ValueError, DisabledFeatureError, KeyError) as e:
+            return make_response(str(e), HTTPStatus.BAD_REQUEST)
+        except Exception as e:
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
 

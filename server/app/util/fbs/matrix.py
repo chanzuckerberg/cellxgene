@@ -2,10 +2,16 @@ import flatbuffers
 import numpy as np
 from scipy import sparse
 import pandas as pd
+import json
 
 import server.app.util.fbs.NetEncoding.Column as Column
 import server.app.util.fbs.NetEncoding.TypedArray as TypedArray
 import server.app.util.fbs.NetEncoding.Matrix as Matrix
+import server.app.util.fbs.NetEncoding.Int32Array as Int32Array
+import server.app.util.fbs.NetEncoding.Uint32Array as Uint32Array
+import server.app.util.fbs.NetEncoding.Float32Array as Float32Array
+import server.app.util.fbs.NetEncoding.Float64Array as Float64Array
+import server.app.util.fbs.NetEncoding.JSONEncodedArray as JSONEncodedArray
 
 
 # Placeholder until recent enhancements to flatbuffers Python
@@ -104,38 +110,42 @@ def serialize_typed_array(builder, source_array, encoding_info):
     return (array_type, array_value)
 
 
+column_encoding_type_map = {
+    # array protocol string:  ( array_type, as_type )
+    np.dtype(np.float64).str: (TypedArray.TypedArray.Float32Array, np.float32),
+    np.dtype(np.float32).str: (TypedArray.TypedArray.Float32Array, np.float32),
+    np.dtype(np.float16).str: (TypedArray.TypedArray.Float32Array, np.float32),
+
+    np.dtype(np.int8).str: (TypedArray.TypedArray.Int32Array, np.int32),
+    np.dtype(np.int16).str: (TypedArray.TypedArray.Int32Array, np.int32),
+    np.dtype(np.int32).str: (TypedArray.TypedArray.Int32Array, np.int32),
+    np.dtype(np.int64).str: (TypedArray.TypedArray.Int32Array, np.int32),
+
+    np.dtype(np.uint8).str: (TypedArray.TypedArray.Uint32Array, np.uint32),
+    np.dtype(np.uint16).str: (TypedArray.TypedArray.Uint32Array, np.uint32),
+    np.dtype(np.uint32).str: (TypedArray.TypedArray.Uint32Array, np.uint32),
+    np.dtype(np.uint64).str: (TypedArray.TypedArray.Uint32Array, np.uint32)
+}
+column_encoding_default = (TypedArray.TypedArray.JSONEncodedArray, 'json')
+
+
 def column_encoding(arr):
-    type_map = {
-        # dtype:  ( array_type, as_type )
-        np.float64: (TypedArray.TypedArray.Float32Array, np.float32),
-        np.float32: (TypedArray.TypedArray.Float32Array, np.float32),
-        np.float16: (TypedArray.TypedArray.Float32Array, np.float32),
+    return column_encoding_type_map.get(arr.dtype.str, column_encoding_default)
 
-        np.int8: (TypedArray.TypedArray.Int32Array, np.int32),
-        np.int16: (TypedArray.TypedArray.Int32Array, np.int32),
-        np.int32: (TypedArray.TypedArray.Int32Array, np.int32),
-        np.int64: (TypedArray.TypedArray.Int32Array, np.int32),
 
-        np.uint8: (TypedArray.TypedArray.Uint32Array, np.uint32),
-        np.uint16: (TypedArray.TypedArray.Uint32Array, np.uint32),
-        np.uint32: (TypedArray.TypedArray.Uint32Array, np.uint32),
-        np.uint64: (TypedArray.TypedArray.Uint32Array, np.uint32)
-    }
-    type_map_default = (TypedArray.TypedArray.JSONEncodedArray, 'json')
-    return type_map.get(arr.dtype.type, type_map_default)
+index_encoding_type_map = {
+    # array protocol string:  ( array_type, as_type )
+    np.dtype(np.int32).str: (TypedArray.TypedArray.Int32Array, np.int32),
+    np.dtype(np.int64).str: (TypedArray.TypedArray.Int32Array, np.int32),
+
+    np.dtype(np.uint32).str: (TypedArray.TypedArray.Uint32Array, np.uint32),
+    np.dtype(np.uint64).str: (TypedArray.TypedArray.Uint32Array, np.uint32)
+}
+index_encoding_default = (TypedArray.TypedArray.JSONEncodedArray, 'json')
 
 
 def index_encoding(arr):
-    type_map = {
-        # dtype:  ( array_type, as_type )
-        np.int32: (TypedArray.TypedArray.Int32Array, np.int32),
-        np.int64: (TypedArray.TypedArray.Int32Array, np.int32),
-
-        np.uint32: (TypedArray.TypedArray.Uint32Array, np.uint32),
-        np.uint64: (TypedArray.TypedArray.Uint32Array, np.uint32)
-    }
-    type_map_default = (TypedArray.TypedArray.JSONEncodedArray, 'json')
-    return type_map.get(arr.dtype.type, type_map_default)
+    return index_encoding_type_map.get(arr.dtype.str, index_encoding_default)
 
 
 def guess_at_mem_needed(matrix):
@@ -205,3 +215,73 @@ def encode_matrix_fbs(matrix, row_idx=None, col_idx=None):
 
     builder.Finish(matrix)
     return builder.Output()
+
+
+def deserialize_typed_array(tarr):
+    type_map = {
+        TypedArray.TypedArray.NONE: None,
+        TypedArray.TypedArray.Uint32Array: Uint32Array.Uint32Array,
+        TypedArray.TypedArray.Int32Array: Int32Array.Int32Array,
+        TypedArray.TypedArray.Float32Array: Float32Array.Float32Array,
+        TypedArray.TypedArray.Float64Array: Float64Array.Float64Array,
+        TypedArray.TypedArray.JSONEncodedArray: JSONEncodedArray.JSONEncodedArray
+    }
+    (u_type, u) = tarr
+    if u_type is TypedArray.TypedArray.NONE:
+        return None
+
+    TarType = type_map.get(u_type, None)
+    if TarType is None:
+        raise TypeError(f"FBS contains unknown data type: {u_type}")
+
+    arr = TarType()
+    arr.Init(u.Bytes, u.Pos)
+    narr = arr.DataAsNumpy()
+    if u_type == TypedArray.TypedArray.JSONEncodedArray:
+        narr = json.loads(narr.tostring().decode('utf-8'))
+    return narr
+
+
+def decode_matrix_fbs(fbs):
+    """
+    Given an FBS-encoded Matrix, return a Pandas DataFrame the contains the data
+    and indices.
+    """
+    matrix = Matrix.Matrix.GetRootAsMatrix(fbs, 0)
+    n_rows = matrix.NRows()
+    n_cols = matrix.NCols()
+    if n_rows == 0 or n_cols == 0:
+        return pd.DataFrame()
+
+    if matrix.RowIndexType() is not TypedArray.TypedArray.NONE:
+        raise ValueError("row indexing not supported for FBS Matrix")
+
+    columns_length = matrix.ColumnsLength()
+
+    columns_index = deserialize_typed_array((matrix.ColIndexType(), matrix.ColIndex()))
+    if columns_index is None:
+        columns_index = range(0, n_cols)
+
+    # sanity checks
+    if len(columns_index) != n_cols or columns_length != n_cols:
+        raise ValueError("FBS column count does not match number of columns in underlying matrix")
+
+    columns_data = {}
+    columns_type = {}
+    for col_idx in range(0, columns_length):
+        col = matrix.Columns(col_idx)
+        tarr = (col.UType(), col.U())
+        data = deserialize_typed_array(tarr)
+        columns_data[columns_index[col_idx]] = data
+        if len(data) != n_rows:
+            raise ValueError("FBS column length does not match number of rows")
+        if col.UType() is TypedArray.TypedArray.JSONEncodedArray:
+            columns_type[columns_index[col_idx]] = "category"
+
+    df = pd.DataFrame.from_dict(data=columns_data).astype(columns_type, copy=False)
+
+    # more sanity checks
+    if not df.columns.is_unique or len(df.columns) != n_cols:
+        raise KeyError("FBS column indices are not unique")
+
+    return df

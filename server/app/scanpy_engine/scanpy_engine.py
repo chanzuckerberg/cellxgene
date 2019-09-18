@@ -1,4 +1,6 @@
 import warnings
+import copy
+import threading
 
 import numpy as np
 import pandas
@@ -13,10 +15,12 @@ from server.app.util.errors import (
     JSONEncodingValueError,
     PrepareError,
     ScanpyFileError,
+    DisabledFeatureError,
 )
 from server.app.util.utils import jsonify_scanpy, requires_data
 from server.app.scanpy_engine.diffexp import diffexp_ttest
-from server.app.util.fbs.matrix import encode_matrix_fbs
+from server.app.util.fbs.matrix import encode_matrix_fbs, decode_matrix_fbs
+from server.app.scanpy_engine.labels import read_labels, write_labels
 
 """
 Sort order for methods
@@ -31,6 +35,8 @@ Sort order for methods
 class ScanpyEngine(CXGDriver):
     def __init__(self, data=None, args={}):
         super().__init__(data, args)
+        # lock used to protect label file write ops
+        self.label_lock = threading.Lock()
         if self.data:
             self._validate_and_initialize()
 
@@ -47,6 +53,7 @@ class ScanpyEngine(CXGDriver):
             "obs_names": None,
             "var_names": None,
             "diffexp_lfc_cutoff": 0.01,
+            "label_file": None,
         }
 
     @staticmethod
@@ -125,6 +132,29 @@ class ScanpyEngine(CXGDriver):
                 return True
         return False
 
+    @staticmethod
+    def _get_col_type(col):
+        dtype = col.dtype
+        data_kind = dtype.kind
+        schema = {}
+
+        if ScanpyEngine._can_cast_to_float32(col):
+            schema["type"] = "float32"
+        elif ScanpyEngine._can_cast_to_int32(col):
+            schema["type"] = "int32"
+        elif dtype == np.bool_:
+            schema["type"] = "boolean"
+        elif data_kind == "O" and dtype == "object":
+            schema["type"] = "string"
+        elif data_kind == "O" and dtype == "category":
+            schema["type"] = "categorical"
+            schema["categories"] = dtype.categories.tolist()
+        else:
+            raise TypeError(
+                f"Annotations of type {dtype} are unsupported by cellxgene."
+            )
+        return schema
+
     @requires_data
     def _create_schema(self):
         self.schema = {
@@ -148,25 +178,8 @@ class ScanpyEngine(CXGDriver):
         for ax in Axis:
             curr_axis = getattr(self.data, str(ax))
             for ann in curr_axis:
-                ann_schema = {"name": ann}
-                dtype = curr_axis[ann].dtype
-                data_kind = dtype.kind
-
-                if self._can_cast_to_float32(curr_axis[ann]):
-                    ann_schema["type"] = "float32"
-                elif self._can_cast_to_int32(curr_axis[ann]):
-                    ann_schema["type"] = "int32"
-                elif dtype == np.bool_:
-                    ann_schema["type"] = "boolean"
-                elif data_kind == "O" and dtype == "object":
-                    ann_schema["type"] = "string"
-                elif data_kind == "O" and dtype == "category":
-                    ann_schema["type"] = "categorical"
-                    ann_schema["categories"] = curr_axis[ann].dtype.categories.tolist()
-                else:
-                    raise TypeError(
-                        f"Annotations of type {curr_axis[ann].dtype} are unsupported by cellxgene."
-                    )
+                ann_schema = {"name": ann, "writable": False}
+                ann_schema.update(self._get_col_type(curr_axis[ann]))
                 self.schema["annotations"][ax]["columns"].append(ann_schema)
 
         for layout in self.config['layout']:
@@ -177,7 +190,24 @@ class ScanpyEngine(CXGDriver):
             }
             self.schema["layout"]["obs"].append(layout_schema)
 
+    @requires_data
+    def get_schema(self):
+        schema = self.schema  # base schema
+        # add label obs annotations as needed
+        if self.labels is not None:
+            schema = copy.deepcopy(schema)
+            for col in self.labels.columns:
+                col_schema = {
+                    "name": col,
+                    "writable": True,
+                }
+                col_schema.update(self._get_col_type(self.labels[col]))
+                schema["annotations"]["obs"]["columns"].append(col_schema)
+        return schema
+
     def _load_data(self, data_locator):
+        # as of AnnData 0.6.19, backed mode performs initial load fast, but at the
+        # cost of significantly slower access to X data.
         try:
             # there is no guarantee data_locator indicates a local file.  The AnnData
             # API will only consume local file objects.  If we get a non-local object,
@@ -203,6 +233,17 @@ class ScanpyEngine(CXGDriver):
                 f"Please check your input and try again."
             )
 
+        if self.config["label_file"]:
+            try:
+                self.labels = read_labels(self.config["label_file"])
+            except Exception as e:
+                raise ScanpyFileError(
+                    f"Error while loading label file: {e}, File must be in the .csv format, please check "
+                    f"your input and try again."
+                )
+        else:
+            self.labels = None
+
     @requires_data
     def _validate_and_initialize(self):
         # var and obs column names must be unique
@@ -214,6 +255,7 @@ class ScanpyEngine(CXGDriver):
         self.cell_count = self.data.shape[0]
         self.gene_count = self.data.shape[1]
         self._default_and_validate_layouts()
+        self._validate_label_file()
         self._create_schema()
 
     @requires_data
@@ -297,6 +339,26 @@ class ScanpyEngine(CXGDriver):
                             f"annotations with more than 500 categories in the UI"
                         )
 
+    @requires_data
+    def _validate_label_file(self):
+        """
+        labels is None if disabled, empty if enabled by no data
+        """
+        if self.labels is None or self.labels.empty:
+            return
+
+        # all lables must have a name, which must be unique and not used in obs column names
+        if not self.labels.columns.is_unique:
+            raise KeyError(f"All column names specified in {self.config['label_file']} must be unique.")
+        duplicate_columns = list(set(self.labels.columns) & set(self.data.obs.columns))
+        if len(duplicate_columns) > 0:
+            raise KeyError(f"Labels file may not contain column names which overlap "
+                           f"with h5ad obs columns {duplicate_columns}")
+
+        # labels must have same count as obs annotations
+        if self.labels.shape[0] != self.data.obs.shape[0]:
+            raise ValueError("Labels file must have same number of rows as h5ad file.")
+
     @staticmethod
     def _annotation_filter_to_mask(filter, d_axis, count):
         mask = np.ones((count,), dtype=bool)
@@ -364,12 +426,40 @@ class ScanpyEngine(CXGDriver):
     @requires_data
     def annotation_to_fbs_matrix(self, axis, fields=None):
         if axis == Axis.OBS:
-            df = self.data.obs
+            if self.labels is not None and not self.labels.empty:
+                df = pandas.concat([self.data.obs, self.labels], axis=1, join_axes=[self.data.obs.index], copy=False)
+            else:
+                df = self.data.obs
         else:
             df = self.data.var
         if fields is not None and len(fields) > 0:
             df = df[fields]
         return encode_matrix_fbs(df, col_idx=df.columns)
+
+    @requires_data
+    def annotation_put_fbs(self, axis, fbs):
+        fname = self.config["label_file"]
+        if not fname or self.labels is None:
+            raise DisabledFeatureError("Writable annotations are not enabled")
+
+        if axis != Axis.OBS:
+            raise ValueError("Only OBS dimension access is supported")
+
+        new_label_df = decode_matrix_fbs(fbs)
+
+        # if any of the new column labels overlap with our existing labels, raise error
+        duplicate_columns = list(set(new_label_df.columns) & set(self.data.obs.columns))
+        if not new_label_df.columns.is_unique or len(duplicate_columns) > 0:
+            raise KeyError(f"Labels file may not contain column names which overlap "
+                           f"with h5ad obs columns {duplicate_columns}")
+
+        # update our internal state and save it.  Multi-threading often enabled,
+        # so treat this as a critical section critical section.
+        with self.label_lock:
+            self.labels = new_label_df
+            write_labels(fname, self.labels)
+
+        return jsonify_scanpy({"status": "OK"})
 
     @staticmethod
     def slice_columns(X, var_mask):

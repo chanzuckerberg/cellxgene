@@ -1,4 +1,4 @@
-import { ControlsHelpers } from "../util/stateManager";
+import { ControlsHelpers as CH } from "../util/stateManager";
 import * as globals from "../globals";
 
 function maxCategoryItems(state) {
@@ -20,10 +20,11 @@ const CategoricalSelection = (
     case "reset World to eq Universe":
     case "set clip quantiles": {
       const { world } = nextSharedState;
-      return ControlsHelpers.createCategoricalSelection(
-        maxCategoryItems(prevSharedState),
-        world
+      const newState = CH.createCategoricalSelection(
+        world,
+        CH.selectableCategoryNames(world, maxCategoryItems(prevSharedState))
       );
+      return newState;
     }
 
     case "categorical metadata filter select": {
@@ -94,6 +95,43 @@ const CategoricalSelection = (
         }
       };
       return newCategoricalSelection;
+    }
+
+    case "annotation: create category": {
+      const { world } = nextSharedState;
+      const name = action.data;
+      return {
+        ...state,
+        ...CH.createCategoricalSelection(world, [name])
+      };
+    }
+
+    case "annotation: category edited": {
+      const name = action.metadataField;
+      const newName = action.newCategoryText;
+      const { [name]: catSeln, ...newState } = state;
+      newState[newName] = catSeln;
+      return newState;
+    }
+
+    case "annotation: delete category": {
+      const name = action.metadataField;
+      const { [name]: _, ...newState } = state;
+      return newState;
+    }
+
+    case "annotation: label current cell selection":
+    case "annotation: add new label to category":
+    case "annotation: label edited":
+    case "annotation: delete label": {
+      /* need to rebuild the state for this annotation */
+      const { world } = nextSharedState;
+      const name = action.metadataField;
+      const { [name]: _, ...partialState } = state;
+      return {
+        ...partialState,
+        ...CH.createCategoricalSelection(world, [name])
+      };
     }
 
     default: {
