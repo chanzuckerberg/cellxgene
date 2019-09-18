@@ -13,7 +13,7 @@ function InformationMenu(props) {
               <MenuItem
                 href={aboutLink}
                 target="_blank"
-                icon="info-sign"
+                icon="document-open"
                 text="About this dataset"
               />
             ) : (
