@@ -75,19 +75,25 @@ class GeneExpression extends React.Component {
     };
   }
 
-  _genesToUpper = listGenes => {
-    const upperGenes = new Array(listGenes.length);
-    for (let i = 0, { length } = listGenes; i < length; i += 1) {
-      upperGenes[i] = listGenes[i].toUpperCase();
+  _genesToUpper = col => {
+    // Has to be a Map to preserve index
+    let listGenes = col;
+
+    // Extract the array from column if applicable
+    if (typeof col.asArray === "function") {
+      listGenes = col.asArray();
     }
+
+    const upperGenes = new Map();
+    for (let i = 0, { length } = listGenes; i < length; i += 1) {
+      upperGenes.set(listGenes[i].toUpperCase(), i);
+    }
+
     return upperGenes;
   };
 
   // eslint-disable-next-line react/sort-comp
-  _memoGenesToUpper = memoize(
-    this._genesToUpper,
-    listGenes => listGenes.toString() /* This hash is order specific*/
-  );
+  _memoGenesToUpper = memoize(this._genesToUpper, col => col.__id);
 
   placeholderGeneNames() {
     /*
@@ -154,14 +160,16 @@ class GeneExpression extends React.Component {
       Apod,,, Cd74,,    ,,,    Foo,    Bar-2,,
     */
     if (bulkAdd !== "") {
+      const column = world.varAnnotations.col(varIndexName);
+
       const genes = _.pull(_.uniq(bulkAdd.split(/[ ,]+/)), "");
-      const worldGenes = world.varAnnotations.col(varIndexName).asArray();
+      const worldGenes = column.asArray();
 
       // These gene lists are unique enough where memoization is useless
       const upperGenes = this._genesToUpper(genes);
       const upperUserDefinedGenes = this._genesToUpper(userDefinedGenes);
 
-      const upperWorldGenes = this._memoGenesToUpper(worldGenes);
+      const upperWorldGenes = this._memoGenesToUpper(column);
 
       dispatch({ type: "bulk user defined gene start" });
 
@@ -177,9 +185,9 @@ class GeneExpression extends React.Component {
           return keepAroundErrorToast("That gene already exists");
         }
 
-        const indexOfGene = upperWorldGenes.indexOf(upperGene);
+        const indexOfGene = upperWorldGenes.get(upperGene);
 
-        if (indexOfGene === -1) {
+        if (indexOfGene) {
           return keepAroundErrorToast(
             `${genes[i]} doesn't appear to be a valid gene name.`
           );
