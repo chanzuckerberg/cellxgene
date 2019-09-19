@@ -55,13 +55,20 @@ def common_args(func):
         metavar="<user labels CSV file>",
         help="CSV file containing user annotations; will be overwritten.  Created if does not exist.",
     )
+    @click.option(
+        "--backed",
+        is_flag=True,
+        default=False,
+        show_default=True,
+        help="Load data in file-backed mode, which may save memory, but result in slower overall performance."
+    )
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         return func(*args, **kwargs)
     return wrapper
 
 
-def parse_engine_args(embedding, obs_names, var_names, max_category_items, diffexp_lfc_cutoff, experimental_label_file):
+def parse_engine_args(embedding, obs_names, var_names, max_category_items, diffexp_lfc_cutoff, experimental_label_file, backed):
     return {
         "layout": embedding,
         "max_category_items": max_category_items,
@@ -69,6 +76,7 @@ def parse_engine_args(embedding, obs_names, var_names, max_category_items, diffe
         "obs_names": obs_names,
         "var_names": var_names,
         "label_file": experimental_label_file,
+        "backed": backed
     }
 
 
@@ -117,7 +125,8 @@ def launch(
         diffexp_lfc_cutoff,
         title,
         scripts,
-        experimental_label_file
+        experimental_label_file,
+        backed
 ):
     """Launch the cellxgene data viewer.
     This web app lets you explore single-cell expression data.
@@ -133,7 +142,7 @@ def launch(
     > cellxgene launch <url>"""
 
     e_args = parse_engine_args(embedding, obs_names, var_names, max_category_items,
-                               diffexp_lfc_cutoff, experimental_label_file)
+                               diffexp_lfc_cutoff, experimental_label_file, backed)
     try:
         data_locator = DataLocator(data)
     except RuntimeError as re:

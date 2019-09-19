@@ -45,6 +45,7 @@ class ScanpyEngine(CXGDriver):
             "var_names": None,
             "diffexp_lfc_cutoff": 0.01,
             "label_file": None,
+            "backed": False
         }
 
     @staticmethod
@@ -208,7 +209,8 @@ class ScanpyEngine(CXGDriver):
             with data_locator.local_handle() as lh:
                 # as of AnnData 0.6.19, backed mode performs initial load fast, but at the
                 # cost of significantly slower access to X data.
-                self.data = anndata.read_h5ad(lh)
+                backed = 'r' if self.config['backed'] else None
+                self.data = anndata.read_h5ad(lh, backed=backed)
 
         except ValueError:
             raise ScanpyFileError(
@@ -476,7 +478,9 @@ class ScanpyEngine(CXGDriver):
         """
         if var_mask is None:    # noop
             return X
-        if sparse.issparse(X):  # use tuned getcol/hstack for performance
+        # use tuned getcol/hstack for performance if sparse.
+        # NOTE: AnnData h5py does not have these methods, so be wary.
+        if sparse.issparse(X) and has_method(X, 'getcol'):
             indices = np.nonzero(var_mask)[0]
             cols = [X.getcol(i) for i in indices]
             return sparse.hstack(cols, format="csc")
