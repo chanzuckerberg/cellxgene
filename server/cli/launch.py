@@ -203,7 +203,7 @@ def launch(
         lf_name, lf_ext = splitext(experimental_label_file)
         if lf_ext and lf_ext != ".csv":
             raise click.FileError(basename(experimental_label_file), hint="label file type must be .csv")
-            
+
     if about:
         def url_check(url):
             try:
