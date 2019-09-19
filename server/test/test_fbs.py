@@ -25,7 +25,6 @@ class FbsTests(unittest.TestCase):
 
     def fbs_checks(self, fbs, dims, expected_types, expected_column_idx):
         d = decode_fbs.decode_matrix_FBS(fbs)
-        print(d)
         self.assertEqual(d["n_rows"], dims[0])
         self.assertEqual(d["n_cols"], dims[1])
         self.assertIsNone(d["row_idx"])
