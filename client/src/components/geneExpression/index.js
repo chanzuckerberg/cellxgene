@@ -71,19 +71,13 @@ class GeneExpression extends React.Component {
     super(props);
     this.state = {
       bulkAdd: "",
-      tab: "autosuggest"
+      tab: "autosuggest",
+      activeItem: null
     };
   }
 
-  _genesToUpper = col => {
+  _genesToUpper = listGenes => {
     // Has to be a Map to preserve index
-    let listGenes = col;
-
-    // Extract the array from column if applicable
-    if (typeof col.asArray === "function") {
-      listGenes = col.asArray();
-    }
-
     const upperGenes = new Map();
     for (let i = 0, { length } = listGenes; i < length; i += 1) {
       upperGenes.set(listGenes[i].toUpperCase(), i);
@@ -93,7 +87,7 @@ class GeneExpression extends React.Component {
   };
 
   // eslint-disable-next-line react/sort-comp
-  _memoGenesToUpper = memoize(this._genesToUpper, col => col.__id);
+  _memoGenesToUpper = memoize(this._genesToUpper, arr => arr);
 
   placeholderGeneNames() {
     /*
@@ -130,7 +124,8 @@ class GeneExpression extends React.Component {
   handleClick(g) {
     const { world, dispatch, userDefinedGenes } = this.props;
     const varIndexName = world.schema.annotations.var.index;
-    const gene = g?.target;
+    if (!g) return;
+    const gene = g.target;
     if (userDefinedGenes.indexOf(gene) !== -1) {
       postUserErrorToast("That gene already exists");
     } else if (userDefinedGenes.length > 15) {
@@ -160,43 +155,40 @@ class GeneExpression extends React.Component {
       Apod,,, Cd74,,    ,,,    Foo,    Bar-2,,
     */
     if (bulkAdd !== "") {
-      const column = world.varAnnotations.col(varIndexName);
-
       const genes = _.pull(_.uniq(bulkAdd.split(/[ ,]+/)), "");
-      const worldGenes = column.asArray();
+      if (genes.length === 0) {
+        return keepAroundErrorToast("Must enter a gene name.");
+      }
+      const worldGenes = world.varAnnotations.col(varIndexName).asArray();
 
       // These gene lists are unique enough where memoization is useless
       const upperGenes = this._genesToUpper(genes);
       const upperUserDefinedGenes = this._genesToUpper(userDefinedGenes);
 
-      const upperWorldGenes = this._memoGenesToUpper(column);
+      const upperWorldGenes = this._memoGenesToUpper(worldGenes);
 
       dispatch({ type: "bulk user defined gene start" });
 
-      const promises = [];
-      for (let i = 0, { length } = upperGenes; i < length; i += 1) {
-        const upperGene = upperGenes[i];
+      Promise.all(
+        [...upperGenes.keys()].map(upperGene => {
+          if (upperUserDefinedGenes.get(upperGene) !== undefined) {
+            return keepAroundErrorToast("That gene already exists");
+          }
 
-        if (genes.length === 0) {
-          /* Because of _.pull() this case is unreachable */
-          return keepAroundErrorToast("Must enter a gene name.");
-        }
-        if (upperUserDefinedGenes.indexOf(upperGene) !== -1) {
-          return keepAroundErrorToast("That gene already exists");
-        }
+          const indexOfGene = upperWorldGenes.get(upperGene);
 
-        const indexOfGene = upperWorldGenes.get(upperGene);
-
-        if (indexOfGene) {
-          return keepAroundErrorToast(
-            `${genes[i]} doesn't appear to be a valid gene name.`
+          if (!indexOfGene) {
+            return keepAroundErrorToast(
+              `${
+                genes[upperGenes.get(upperGene)]
+              } doesn't appear to be a valid gene name.`
+            );
+          }
+          return dispatch(
+            actions.requestUserDefinedGene(worldGenes[indexOfGene])
           );
-        }
-        promises.push(
-          dispatch(actions.requestUserDefinedGene(worldGenes[indexOfGene]))
-        );
-      }
-      Promise.all(promises).then(
+        })
+      ).then(
         () => dispatch({ type: "bulk user defined gene complete" }),
         () => dispatch({ type: "bulk user defined gene error" })
       );
