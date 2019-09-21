@@ -18,10 +18,10 @@ Test the scanpy engine using the pbmc3k data set.
 """
 
 
-@parameterized_class(("data_locator",), [
-    ("example-dataset/pbmc3k.h5ad",),
-    ("server/test/test_datasets/pbmc3k-CSC-gz.h5ad",),
-    ("server/test/test_datasets/pbmc3k-CSR-gz.h5ad",)
+@parameterized_class(("data_locator", "backed"), [
+    ("example-dataset/pbmc3k.h5ad", False),
+    ("server/test/test_datasets/pbmc3k-CSC-gz.h5ad", False),
+    ("server/test/test_datasets/pbmc3k-CSR-gz.h5ad", False),
 ])
 class EngineTest(unittest.TestCase):
     def setUp(self):
@@ -31,7 +31,8 @@ class EngineTest(unittest.TestCase):
             "obs_names": None,
             "var_names": None,
             "diffexp_lfc_cutoff": 0.01,
-            "layout_file": None
+            "layout_file": None,
+            "backed": self.backed
         }
         self.data = ScanpyEngine(DataLocator(self.data_locator), args)
 
