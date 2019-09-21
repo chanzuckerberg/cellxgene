@@ -62,13 +62,12 @@ def diffexp_ttest(adata, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
     :param diffexp_lfc_cutoff: minimum
     :return:  for top N genes, [ varindex, logfoldchange, pval, pval_adj ]
     """
-
     if top_n > adata.n_obs:
         top_n = adata.n_obs
 
     # mean, variance, N - calculate for both selections
-    meanA, vA, nA = _mean_var_n(adata._X[maskA])
-    meanB, vB, nB = _mean_var_n(adata._X[maskB])
+    meanA, vA, nA = _mean_var_n(adata.X[maskA, :])
+    meanB, vB, nB = _mean_var_n(adata.X[maskB, :])
 
     # variance / N
     vnA = vA / min(nA, nB)  # overestimate variance, would normally be nA
@@ -87,7 +86,7 @@ def diffexp_ttest(adata, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
 
     # p-value
     pvals = stats.t.sf(np.abs(tscores), dof) * 2
-    pvals_adj = pvals * adata._X.shape[1]
+    pvals_adj = pvals * adata.X.shape[1]
     pvals_adj[pvals_adj > 1] = 1  # cap adjusted p-value at 1
 
     # logfoldchanges: log2(meanA / meanB)

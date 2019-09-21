@@ -23,6 +23,12 @@ from server.app.util.fbs.matrix import encode_matrix_fbs, decode_matrix_fbs
 from server.app.scanpy_engine.labels import read_labels, write_labels
 
 
+def has_method(o, name):
+    """ return True if `o` has callable method `name` """
+    op = getattr(o, name, None)
+    return op is not None and callable(op)
+
+
 class ScanpyEngine(CXGDriver):
     def __init__(self, data=None, args={}):
         super().__init__(data, args)
@@ -473,19 +479,24 @@ class ScanpyEngine(CXGDriver):
     def slice_columns(X, var_mask):
         """
         Slice columns from the matrix X, as specified by the mask
-        Semantically equivalent to X[:, var_mask], but handles sparse
-        matrices in a more performant manner.
+        Semantically equivalent to X[:, var_mask], but handles various
+        optimization paths.
         """
         if var_mask is None:    # noop
             return X
-        # use tuned getcol/hstack for performance if sparse.
-        # NOTE: AnnData h5py does not have these methods, so be wary.
+
+        # use tuned getcol/hstack for performance if sparse, as sparse classes
+        # do not reliably implement a fast-path for full-column slices.
+        #
+        # NOTE: AnnData h5py does not have getcol/getrow methods, so be wary and
+        # fall back to slow path.
         if sparse.issparse(X) and has_method(X, 'getcol'):
             indices = np.nonzero(var_mask)[0]
             cols = [X.getcol(i) for i in indices]
             return sparse.hstack(cols, format="csc")
-        else:   # else, just use standard slicing, which is fine for dense arrays
-            return X[:, var_mask]
+
+        # else, just use standard slicing, which is fine for dense arrays
+        return X[:, var_mask]
 
     @requires_data
     def data_frame_to_fbs_matrix(self, filter, axis):
@@ -509,7 +520,7 @@ class ScanpyEngine(CXGDriver):
             raise FilterError("filtering on obs unsupported")
 
         # Currently only handles VAR dimension
-        X = self.slice_columns(self.data._X, var_selector)
+        X = self.slice_columns(self.data.X, var_selector)
         return encode_matrix_fbs(X, col_idx=np.nonzero(var_selector)[0], row_idx=None)
 
     @requires_data
