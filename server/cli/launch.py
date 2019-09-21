@@ -247,7 +247,7 @@ def launch(
         sys.stdout = f
 
     try:
-        server.app.run(host=host, debug=debug, port=port, threaded=True, use_debugger=False)
+        server.app.run(host=host, debug=debug, port=port, threaded=False if debug else True, use_debugger=False)
     except OSError as e:
         if e.errno == errno.EADDRINUSE:
             raise click.ClickException("Port is in use, please specify an open port using the --port flag.") from e
