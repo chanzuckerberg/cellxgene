@@ -59,7 +59,7 @@ def common_args(func):
         "--backed",
         is_flag=True,
         default=False,
-        show_default=True,
+        show_default=False,
         help="Load data in file-backed mode, which may save memory, but result in slower overall performance."
     )
     @functools.wraps(func)
