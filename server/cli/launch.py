@@ -68,7 +68,8 @@ def common_args(func):
     return wrapper
 
 
-def parse_engine_args(embedding, obs_names, var_names, max_category_items, diffexp_lfc_cutoff, experimental_label_file, backed):
+def parse_engine_args(embedding, obs_names, var_names, max_category_items,
+                      diffexp_lfc_cutoff, experimental_label_file, backed):
     return {
         "layout": embedding,
         "max_category_items": max_category_items,
