@@ -50,6 +50,8 @@ export const maxParagraphWidth = 600;
 export const cellxgeneTitleLeftPadding = 14;
 export const cellxgeneTitleTopPadding = 7;
 
+export const datasetTitleMaxCharacterCount = 25;
+
 export const maxControlsWidth = 800;
 
 export const graphMargin = { top: 20, right: 10, bottom: 30, left: 40 };

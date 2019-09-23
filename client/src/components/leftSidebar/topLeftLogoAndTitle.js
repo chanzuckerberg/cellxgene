@@ -41,7 +41,8 @@ class LeftSideBar extends React.Component {
             userSelect: "none"
           }}
         >
-          cell<span
+          cell
+          <span
             style={{
               position: "relative",
               top: 1,
@@ -50,22 +51,32 @@ class LeftSideBar extends React.Component {
             }}
           >
             ×
-          </span>gene
+          </span>
+          gene
         </span>
         <div
           data-testid="header"
           style={{
             fontSize: 14,
             position: "relative",
-            top: -2,
+            top: -6,
             display: "inline-block",
-            marginLeft: 7,
-            width: 170,
-            overflow: "hidden"
+            width: "190px",
+            marginLeft: "7px",
+            height: "1.1em",
+            overflow: "hidden",
+            wordBreak: "break-all"
           }}
           title={datasetTitle}
         >
-          {datasetTitle}
+          {datasetTitle.length > globals.datasetTitleMaxCharacterCount
+            ? `${datasetTitle.substring(
+                0,
+                Math.floor(globals.datasetTitleMaxCharacterCount / 2)
+              )}…${datasetTitle.slice(
+                -Math.floor(globals.datasetTitleMaxCharacterCount / 2)
+              )}`
+            : datasetTitle}
         </div>
       </div>
     );
