@@ -69,8 +69,13 @@ class LeftSideBar extends React.Component {
           }}
           title={datasetTitle}
         >
-          {datasetTitle.length > 29
-            ? `${datasetTitle.substring(0, 14)}…${datasetTitle.slice(-14)}`
+          {datasetTitle.length > globals.datasetTitleMaxCharacterCount
+            ? `${datasetTitle.substring(
+                0,
+                Math.floor(globals.datasetTitleMaxCharacterCount / 2)
+              )}…${datasetTitle.slice(
+                -Math.floor(globals.datasetTitleMaxCharacterCount / 2)
+              )}`
             : datasetTitle}
         </div>
       </div>
