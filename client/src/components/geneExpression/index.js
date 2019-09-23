@@ -259,6 +259,7 @@ class GeneExpression extends React.Component {
                   /* this happens on 'enter' */
                   this.handleClick(g);
                 }}
+                initialContent={<MenuItem disabled text="Enter a gene…" />}
                 inputProps={{ "data-testid": "gene-search" }}
                 inputValueRenderer={g => {
                   return "";
