@@ -106,20 +106,28 @@ class CategoryValue extends React.Component {
       categories = schema.annotations.obsByName[colorAccessor]?.categories;
     }
 
-    const longLength = 35;
-    const shortLength = 15;
     let truncatedString = null;
 
-    if (colorAccessor && !isColorBy && displayString.length > shortLength) {
+    if (
+      colorAccessor &&
+      !isColorBy &&
+      displayString.length > globals.categoryLabelDisplayStringShortLength
+    ) {
       truncatedString = `${displayString.slice(
         0,
-        shortLength / 2
-      )}…${displayString.slice(-shortLength / 2)}`;
-    } else if (displayString.length > longLength) {
+        globals.categoryLabelDisplayStringShortLength / 2
+      )}…${displayString.slice(
+        -globals.categoryLabelDisplayStringShortLength / 2
+      )}`;
+    } else if (
+      displayString.length > globals.categoryLabelDisplayStringLongLength
+    ) {
       truncatedString = `${displayString.slice(
         0,
-        longLength / 2
-      )}…${displayString.slice(-longLength / 2)}`;
+        globals.categoryLabelDisplayStringLongLength / 2
+      )}…${displayString.slice(
+        -globals.categoryLabelDisplayStringLongLength / 2
+      )}`;
     }
 
     return (
