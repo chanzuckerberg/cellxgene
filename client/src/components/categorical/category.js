@@ -312,39 +312,47 @@ class Category extends React.Component {
                   isOpen={annotations.isAddingNewLabel}
                   onClose={this.disableAddNewLabelMode}
                 >
-                  <div className={Classes.DIALOG_BODY}>
-                    <div style={{ marginBottom: 20 }}>
-                      <p>New, unique label name:</p>
-                      <InputGroup
-                        autoFocus
-                        onChange={e =>
-                          this.setState({ newLabelText: e.target.value })
-                        }
-                        leftIcon="tag"
-                      />
+                  <form
+                    onSubmit={e => {
+                      e.preventDefault();
+                      this.handleAddNewLabelToCategory();
+                    }}
+                  >
+                    <div className={Classes.DIALOG_BODY}>
+                      <div style={{ marginBottom: 20 }}>
+                        <p>New, unique label name:</p>
+                        <InputGroup
+                          autoFocus
+                          onChange={e =>
+                            this.setState({ newLabelText: e.target.value })
+                          }
+                          leftIcon="tag"
+                        />
+                      </div>
                     </div>
-                  </div>
-                  <div className={Classes.DIALOG_FOOTER}>
-                    <div className={Classes.DIALOG_FOOTER_ACTIONS}>
-                      <Tooltip content="Close this dialog without adding a label.">
-                        <Button onClick={this.disableAddNewLabelMode}>
-                          Cancel
+                    <div className={Classes.DIALOG_FOOTER}>
+                      <div className={Classes.DIALOG_FOOTER_ACTIONS}>
+                        <Tooltip content="Close this dialog without adding a label.">
+                          <Button onClick={this.disableAddNewLabelMode}>
+                            Cancel
+                          </Button>
+                        </Tooltip>
+                        <Button
+                          disabled={
+                            newLabelText.length === 0 ||
+                            universe.schema.annotations.obsByName[
+                              metadataField
+                            ].categories.indexOf(newLabelText) !== -1
+                          }
+                          onClick={this.handleAddNewLabelToCategory}
+                          intent="primary"
+                          type="submit"
+                        >
+                          Add new label to category
                         </Button>
-                      </Tooltip>
-                      <Button
-                        disabled={
-                          newLabelText.length === 0 ||
-                          universe.schema.annotations.obsByName[
-                            metadataField
-                          ].categories.indexOf(newLabelText) !== -1
-                        }
-                        onClick={this.handleAddNewLabelToCategory}
-                        intent="primary"
-                      >
-                        Add new label to category
-                      </Button>
+                      </div>
                     </div>
-                  </div>
+                  </form>
                 </Dialog>
                 <Popover
                   interactionKind={PopoverInteractionKind.HOVER}

@@ -76,26 +76,30 @@ class Categories extends React.Component {
       >
         {/* READ ONLY CATEGORICAL FIELDS */}
         {/* this is duplicative but flat, could be abstracted */}
-        {_.map(allCategoryNames, catName =>
-          !schema.annotations.obsByName[catName].writable ? (
-            <Category
-              key={catName}
-              metadataField={catName}
-              createAnnoModeActive={createAnnoModeActive}
-              isUserAnno={false}
-            />
-          ) : null
+        {_.map(
+          allCategoryNames,
+          catName =>
+            !schema.annotations.obsByName[catName].writable ? (
+              <Category
+                key={catName}
+                metadataField={catName}
+                createAnnoModeActive={createAnnoModeActive}
+                isUserAnno={false}
+              />
+            ) : null
         )}
         {/* WRITEABLE FIELDS */}
-        {_.map(allCategoryNames, catName =>
-          schema.annotations.obsByName[catName].writable ? (
-            <Category
-              key={catName}
-              metadataField={catName}
-              createAnnoModeActive={createAnnoModeActive}
-              isUserAnno
-            />
-          ) : null
+        {_.map(
+          allCategoryNames,
+          catName =>
+            schema.annotations.obsByName[catName].writable ? (
+              <Category
+                key={catName}
+                metadataField={catName}
+                createAnnoModeActive={createAnnoModeActive}
+                isUserAnno
+              />
+            ) : null
         )}
         {writableCategoriesEnabled ? (
           <div>
@@ -105,51 +109,66 @@ class Categories extends React.Component {
               isOpen={createAnnoModeActive}
               onClose={this.handleDisableAnnoMode}
             >
-              <div className={Classes.DIALOG_BODY}>
-                <div style={{ marginBottom: 20 }}>
-                  <p>New, unique category name:</p>
-                  <InputGroup
-                    autoFocus
-                    onChange={e =>
-                      this.setState({ newCategoryText: e.target.value })
-                    }
-                    leftIcon="tag"
-                  />
+              <form
+                onSubmit={e => {
+                  e.preventDefault();
+                  this.handleCreateUserAnno();
+                }}
+              >
+                <div className={Classes.DIALOG_BODY}>
+                  <div style={{ marginBottom: 20 }}>
+                    <p>New, unique category name:</p>
+                    <InputGroup
+                      autoFocus
+                      onChange={e =>
+                        this.setState({ newCategoryText: e.target.value })
+                      }
+                      leftIcon="tag"
+                    />
+                  </div>
+                  <p>
+                    Optionally duplicate all labels & cell assignments from
+                    existing category into new category:
+                  </p>
+                  <Select
+                    items={allCategoryNames}
+                    filterable={false}
+                    itemRenderer={(d, { handleClick }) => {
+                      return (
+                        <MenuItem onClick={handleClick} key={d} text={d} />
+                      );
+                    }}
+                    noResults={<MenuItem disabled text="No results." />}
+                    onItemSelect={d => {
+                      this.handleModalDuplicateCategorySelection(d);
+                    }}
+                  >
+                    {/* children become the popover target; render value here */}
+                    <Button
+                      text={
+                        categoryToDuplicate || "None (all cells 'unassigned')"
+                      }
+                      rightIcon="double-caret-vertical"
+                    />
+                  </Select>
                 </div>
-                <p>
-                  Optionally duplicate all labels & cell assignments from
-                  existing category into new category:
-                </p>
-                <Select
-                  items={allCategoryNames}
-                  filterable={false}
-                  itemRenderer={(d, { handleClick }) => {
-                    return <MenuItem onClick={handleClick} key={d} text={d} />;
-                  }}
-                  noResults={<MenuItem disabled text="No results." />}
-                  onItemSelect={d => {
-                    this.handleModalDuplicateCategorySelection(d);
-                  }}
-                >
-                  {/* children become the popover target; render value here */}
-                  <Button
-                    text={
-                      categoryToDuplicate || "None (all cells 'unassigned')"
-                    }
-                    rightIcon="double-caret-vertical"
-                  />
-                </Select>
-              </div>
-              <div className={Classes.DIALOG_FOOTER}>
-                <div className={Classes.DIALOG_FOOTER_ACTIONS}>
-                  <Tooltip content="Close this dialog without creating a category.">
-                    <Button onClick={this.handleDisableAnnoMode}>Cancel</Button>
-                  </Tooltip>
-                  <Button onClick={this.handleCreateUserAnno} intent="primary">
-                    Create new category
-                  </Button>
+                <div className={Classes.DIALOG_FOOTER}>
+                  <div className={Classes.DIALOG_FOOTER_ACTIONS}>
+                    <Tooltip content="Close this dialog without creating a category.">
+                      <Button onClick={this.handleDisableAnnoMode}>
+                        Cancel
+                      </Button>
+                    </Tooltip>
+                    <Button
+                      onClick={this.handleCreateUserAnno}
+                      intent="primary"
+                      type="submit"
+                    >
+                      Create new category
+                    </Button>
+                  </div>
                 </div>
-              </div>
+              </form>
             </Dialog>
             <Button onClick={this.handleEnableAnnoMode} intent="primary">
               Create new category
