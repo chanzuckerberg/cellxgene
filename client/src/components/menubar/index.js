@@ -437,7 +437,7 @@ class MenuBar extends React.Component {
                 }}
               >
                 <RadioGroup
-                  label="Layout Choice"
+                  label="Embedding Choice"
                   onChange={this.handleLayoutChoiceChange}
                   selectedValue={layoutChoice.current}
                 >

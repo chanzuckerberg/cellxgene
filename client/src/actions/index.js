@@ -1,7 +1,7 @@
 // jshint esversion: 6
 import _ from "lodash";
 import * as globals from "../globals";
-import { Universe } from "../util/stateManager";
+import { Universe, MatrixFBS } from "../util/stateManager";
 import {
   catchErrorsWrap,
   doJsonRequest,
@@ -340,11 +340,57 @@ const resetInterface = () => (dispatch, getState) => {
   });
 };
 
+const saveObsAnnotations = () => async (dispatch, getState) => {
+  const { universe } = getState();
+  const { obsAnnotations, schema } = universe;
+
+  dispatch({
+    type: "writable obs annotations - save started"
+  });
+
+  const writableAnnotations = schema.annotations.obs.columns
+    .filter(s => s.writable)
+    .map(s => s.name);
+  const df = obsAnnotations.subset(null, writableAnnotations);
+  const matrix = MatrixFBS.encodeMatrixFBS(df);
+  try {
+    const res = await fetch(
+      `${globals.API.prefix}${globals.API.version}annotations/obs`,
+      {
+        method: "PUT",
+        body: matrix,
+        headers: new Headers({
+          "Content-Type": "application/octet-stream"
+        })
+      }
+    );
+    if (res.ok) {
+      dispatch({
+        type: "writable obs annotations - save complete",
+        obsAnnotations
+      });
+    } else {
+      dispatch({
+        type: "writable obs annotations - save error",
+        message: `HTTP error ${res.status} - ${res.statusText}`,
+        res
+      });
+    }
+  } catch (error) {
+    dispatch({
+      type: "writable obs annotations - save error",
+      message: error.toString(),
+      error
+    });
+  }
+};
+
 export default {
   regraph,
   resetInterface,
   requestSingleGeneExpressionCountsForColoringPOST,
   requestDifferentialExpression,
   requestUserDefinedGene,
-  doInitialDataLoad
+  doInitialDataLoad,
+  saveObsAnnotations
 };

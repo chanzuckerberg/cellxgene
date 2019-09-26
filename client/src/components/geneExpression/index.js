@@ -22,6 +22,8 @@ import {
   keepAroundErrorToast
 } from "../framework/toasters";
 
+import { memoize } from "../../util/dataframe/util";
+
 const renderGene = (fuzzySortResult, { handleClick, modifiers, query }) => {
   if (!modifiers.matchesPredicate) {
     return null;
@@ -69,9 +71,23 @@ class GeneExpression extends React.Component {
     super(props);
     this.state = {
       bulkAdd: "",
-      tab: "autosuggest"
+      tab: "autosuggest",
+      activeItem: null
     };
   }
+
+  _genesToUpper = listGenes => {
+    // Has to be a Map to preserve index
+    const upperGenes = new Map();
+    for (let i = 0, { length } = listGenes; i < length; i += 1) {
+      upperGenes.set(listGenes[i].toUpperCase(), i);
+    }
+
+    return upperGenes;
+  };
+
+  // eslint-disable-next-line react/sort-comp
+  _memoGenesToUpper = memoize(this._genesToUpper, arr => arr);
 
   placeholderGeneNames() {
     /*
@@ -108,6 +124,7 @@ class GeneExpression extends React.Component {
   handleClick(g) {
     const { world, dispatch, userDefinedGenes } = this.props;
     const varIndexName = world.schema.annotations.var.index;
+    if (!g) return;
     const gene = g.target;
     if (userDefinedGenes.indexOf(gene) !== -1) {
       postUserErrorToast("That gene already exists");
@@ -139,24 +156,37 @@ class GeneExpression extends React.Component {
     */
     if (bulkAdd !== "") {
       const genes = _.pull(_.uniq(bulkAdd.split(/[ ,]+/)), "");
+      if (genes.length === 0) {
+        return keepAroundErrorToast("Must enter a gene name.");
+      }
+      const worldGenes = world.varAnnotations.col(varIndexName).asArray();
+
+      // These gene lists are unique enough where memoization is useless
+      const upperGenes = this._genesToUpper(genes);
+      const upperUserDefinedGenes = this._genesToUpper(userDefinedGenes);
+
+      const upperWorldGenes = this._memoGenesToUpper(worldGenes);
 
       dispatch({ type: "bulk user defined gene start" });
+
       Promise.all(
-        genes.map(gene => {
-          if (gene.length === 0) {
-            return keepAroundErrorToast("Must enter a gene name.");
-          }
-          if (userDefinedGenes.indexOf(gene) !== -1) {
+        [...upperGenes.keys()].map(upperGene => {
+          if (upperUserDefinedGenes.get(upperGene) !== undefined) {
             return keepAroundErrorToast("That gene already exists");
           }
-          if (
-            world.varAnnotations.col(varIndexName).indexOf(gene) === undefined
-          ) {
+
+          const indexOfGene = upperWorldGenes.get(upperGene);
+
+          if (!indexOfGene) {
             return keepAroundErrorToast(
-              `${gene} doesn't appear to be a valid gene name.`
+              `${
+                genes[upperGenes.get(upperGene)]
+              } doesn't appear to be a valid gene name.`
             );
           }
-          return dispatch(actions.requestUserDefinedGene(gene));
+          return dispatch(
+            actions.requestUserDefinedGene(worldGenes[indexOfGene])
+          );
         })
       ).then(
         () => dispatch({ type: "bulk user defined gene complete" }),
@@ -175,7 +205,7 @@ class GeneExpression extends React.Component {
       differential
     } = this.props;
     const varIndexName = world?.schema?.annotations?.var?.index;
-    const { tab, bulkAdd } = this.state;
+    const { tab, bulkAdd, activeItem } = this.state;
 
     return (
       <div>
@@ -229,11 +259,13 @@ class GeneExpression extends React.Component {
                   /* this happens on 'enter' */
                   this.handleClick(g);
                 }}
+                initialContent={<MenuItem disabled text="Enter a gene…" />}
                 inputProps={{ "data-testid": "gene-search" }}
                 inputValueRenderer={g => {
                   return "";
                 }}
                 itemListPredicate={filterGenes}
+                onActiveItemChange={item => this.setState({ activeItem: item })}
                 itemRenderer={renderGene.bind(this)}
                 items={
                   world && world.varAnnotations
@@ -246,6 +278,7 @@ class GeneExpression extends React.Component {
                 className="bp3-button bp3-intent-primary"
                 data-testid={"add-gene"}
                 loading={userDefinedGenesLoading}
+                onClick={() => this.handleClick(activeItem)}
               >
                 Add gene
               </Button>

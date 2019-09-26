@@ -87,7 +87,13 @@ export const datasets = {
       categorical: {
         louvain: {
           "B cells": "342",
-          Megakaryocytes: "15"
+          "CD14+ Monocytes": "0",
+          "CD4 T cells": "0",
+          "CD8 T cells": "0",
+          "Dendritic cells": "0",
+          "FCGR3A+ Monocytes": "0",
+          Megakaryocytes: "15",
+          "NK cells": "0"
         }
       },
       lasso: {

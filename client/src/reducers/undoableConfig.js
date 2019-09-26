@@ -78,7 +78,15 @@ const saveOnActions = new Set([
   "set clip quantiles",
 
   "set layout choice",
-  "change graph interaction mode"
+  "change graph interaction mode",
+
+  // user editable annotations
+  "annotation: create category",
+  "annotation: add new label to category",
+  "annotation: delete category",
+  "annotation: label edited",
+  "annotation: label current cell selection",
+  "annotation: delete label"
 ]);
 
 /**

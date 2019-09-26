@@ -3,6 +3,9 @@ import { Colors } from "@blueprintjs/core";
 /* if a categorical metadata field has more options than this, truncate */
 export const maxCategoricalOptionsToDisplay = 100;
 
+/* default "unassigned" value for user-created categorical metadata */
+export const unassignedCategoryLabel = "unassigned";
+
 /*
 these are default values for configuration  the CLI may supply.
 See the REST API and CLI specs for more info.
@@ -46,6 +49,8 @@ export const maxParagraphWidth = 600;
 
 export const cellxgeneTitleLeftPadding = 14;
 export const cellxgeneTitleTopPadding = 7;
+
+export const datasetTitleMaxCharacterCount = 25;
 
 export const maxControlsWidth = 800;
 

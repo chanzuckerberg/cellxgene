@@ -345,12 +345,50 @@ class Dataframe {
     );
   }
 
+  withColsFrom(dataframe) {
+    /*
+    return a new dataframe containing all columns from both `this` and the
+    provided dataframe.
+
+    The row index from `this` will be used.  Both dataframes must have identical
+    dimensionality, and no overlapping columns labels.
+     */
+    const dims = [this.dims[0], this.dims[1] + dataframe.dims[1]];
+    const { rowIndex } = this;
+    const columns = [...this.__columns, ...dataframe.__columns];
+    const colIndex = this.colIndex.withLabels(dataframe.colIndex.keys());
+    const columnsAccessor = [
+      ...this.__columnsAccessor,
+      ...dataframe.__columnsAccessor
+    ];
+    return new this.constructor(
+      dims,
+      columns,
+      rowIndex,
+      colIndex,
+      columnsAccessor
+    );
+  }
+
   dropCol(label) {
     /*
     Create a new dataframe, omitting one columns.
 
     const newDf = df.dropCol("colors");
+
+    Corner case to manage: if dropping the last column, return an empty dataframe.
     */
+    if (!this.hasCol(label)) {
+      throw new RangeError(`unknown label: ${label}`);
+    }
+
+    /* 
+    Corner case to manage: if dropping the last column, return an empty dataframe. 
+    */
+    if (this.dims[1] === 1) {
+      return Dataframe.empty();
+    }
+
     const dims = [this.dims[0], this.dims[1] - 1];
     const coffset = this.colIndex.getOffset(label);
     const columns = [...this.__columns];
@@ -363,6 +401,50 @@ class Dataframe {
       columns,
       this.rowIndex,
       colIndex,
+      columnsAccessor
+    );
+  }
+
+  renameCol(oldLabel, newLabel) {
+    /*
+    Accelerator for dropping a column and then adding it again with a new label
+    */
+    const coffset = this.colIndex.getOffset(oldLabel);
+    const colIndex = this.colIndex.dropLabel(oldLabel).withLabel(newLabel);
+
+    const columns = [...this.__columns];
+    columns.push(columns[coffset]);
+    columns.splice(coffset, 1);
+
+    const columnsAccessor = [...this.__columnsAccessor];
+    columnsAccessor.push(columnsAccessor[coffset]);
+    columnsAccessor.splice(coffset, 1);
+
+    return new this.constructor(
+      this.dims,
+      columns,
+      this.rowIndex,
+      colIndex,
+      columnsAccessor
+    );
+  }
+
+  replaceColData(label, newColData) {
+    /*
+    Accelerator for dropping a column then adding it again with same
+    label and different values.
+    */
+    const coffset = this.colIndex.getOffset(label);
+    const columns = [...this.__columns];
+    columns[coffset] = newColData;
+    const columnsAccessor = [...this.__columnsAccessor];
+    columnsAccessor[coffset] = null;
+
+    return new this.constructor(
+      this.dims,
+      columns,
+      this.rowIndex,
+      this.colIndex,
       columnsAccessor
     );
   }
@@ -443,6 +525,8 @@ class Dataframe {
         return newCol;
       });
     }
+
+    if (dims[0] === 0 || dims[1] === 0) return Dataframe.empty();
     return new Dataframe(dims, columns, rowIndex, colIndex);
   }
 
@@ -525,6 +609,11 @@ class Dataframe {
   /**
   Data access with row/col.
   **/
+
+  columns() {
+    /* return all column accessors as an array, in offset order */
+    return [...this.__columnsAccessor];
+  }
 
   col(columnLabel) {
     /*

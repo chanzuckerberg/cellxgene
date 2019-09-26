@@ -8,12 +8,12 @@ from scipy.sparse.csc import csc_matrix
 @click.command()
 @click.argument("data", nargs=1, metavar="<dataset: file or path to data>", required=True)
 @click.option(
-    "--layout",
-    "-l",
+    "--embedding",
+    "-e",
     default=["umap", "tsne"],
     multiple=True,
     type=click.Choice(["umap", "tsne"]),
-    help="Layout algorithm",
+    help="Embedding algorithm",
     show_default=True,
 )
 @click.option(
@@ -42,7 +42,7 @@ from scipy.sparse.csc import csc_matrix
 )
 def prepare(
         data,
-        layout,
+        embedding,
         recipe,
         output,
         plotting,
@@ -59,7 +59,7 @@ def prepare(
     This tool runs a series of scanpy routines for preparing a dataset
     for use with cellxgene. It loads data from different formats
     (h5ad, loom, or a 10x directory), runs dimensionality reduction,
-    computes nearest neighbors, computes a layout, performs clustering,
+    computes nearest neighbors, computes an embedding, performs clustering,
     and saves the results. Includes additional options for naming
     annotations, ensuring sparsity, and plotting results."""
 
@@ -162,18 +162,18 @@ def prepare(
     def run_louvain(adata):
         sc.tl.louvain(adata)
 
-    def run_layout(adata):
+    def run_embedding(adata):
         if len(unique(adata.obs["louvain"].values)) < 10:
             palette = "tab10"
         else:
             palette = "tab20"
 
-        if "umap" in layout:
+        if "umap" in embedding:
             sc.tl.umap(adata)
             if plotting:
                 sc.pl.umap(adata, color="louvain", palette=palette, save="_louvain")
 
-        if "tsne" in layout:
+        if "tsne" in embedding:
             sc.tl.tsne(adata)
             if plotting:
                 sc.pl.tsne(adata, color="louvain", palette=palette, save="_louvain")
@@ -190,12 +190,12 @@ def prepare(
             "run_pca": "Running PCA",
             "run_neighbors": "Calculating neighbors",
             "run_louvain": "Calculating clusters",
-            "run_layout": "Computing layout",
+            "run_embedding": "Computing embedding",
         }
         if item is not None:
             return names[item.__name__]
 
-    steps = [calculate_qc_metrics, make_sparse, run_recipe, run_pca, run_neighbors, run_louvain, run_layout]
+    steps = [calculate_qc_metrics, make_sparse, run_recipe, run_pca, run_neighbors, run_louvain, run_embedding]
 
     click.echo(f"[cellxgene] Loading data from {data}, please wait...")
     adata = load_data(data)

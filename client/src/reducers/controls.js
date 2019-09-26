@@ -7,7 +7,7 @@ import { WorldUtil } from "../util/stateManager";
 const Controls = (
   state = {
     // data loading flag
-    loading: false,
+    loading: true,
     error: null,
 
     // all of the data + selection state

@@ -4,26 +4,36 @@ import pytest
 import time
 import unittest
 import decode_fbs
+from parameterized import parameterized_class
 
 import numpy as np
-from pandas import Series
+import pandas as pd
 
 from server.app.scanpy_engine.scanpy_engine import ScanpyEngine
-from server.app.util.errors import FilterError
+from server.app.util.errors import FilterError, DisabledFeatureError
 from server.app.util.data_locator import DataLocator
 
+"""
+Test the scanpy engine using the pbmc3k data set.
+"""
 
+
+@parameterized_class(("data_locator",), [
+    ("example-dataset/pbmc3k.h5ad",),
+    ("server/test/test_datasets/pbmc3k-CSC-gz.h5ad",),
+    ("server/test/test_datasets/pbmc3k-CSR-gz.h5ad",)
+])
 class EngineTest(unittest.TestCase):
     def setUp(self):
-        # TODO Figure out how to run for several datasets
         args = {
             "layout": ["umap"],
             "max_category_items": 100,
             "obs_names": None,
             "var_names": None,
             "diffexp_lfc_cutoff": 0.01,
+            "layout_file": None
         }
-        self.data = ScanpyEngine(DataLocator("example-dataset/pbmc3k.h5ad"), args)
+        self.data = ScanpyEngine(DataLocator(self.data_locator), args)
 
     def test_init(self):
         self.assertEqual(self.data.cell_count, 2638)
@@ -32,10 +42,10 @@ class EngineTest(unittest.TestCase):
         self.assertTrue(self.data.data.X[0, 0] - -0.171_469_51 < epsilon)
 
     def test_mandatory_annotations(self):
-        obs_index_col_name = self.data.schema["annotations"]["obs"]["index"]
+        obs_index_col_name = self.data.get_schema()["annotations"]["obs"]["index"]
         self.assertIn(obs_index_col_name, self.data.data.obs)
         self.assertEqual(list(self.data.data.obs.index), list(range(2638)))
-        var_index_col_name = self.data.schema["annotations"]["var"]["index"]
+        var_index_col_name = self.data.get_schema()["annotations"]["var"]["index"]
         self.assertIn(var_index_col_name, self.data.data.var)
         self.assertEqual(list(self.data.data.var.index), list(range(1838)))
 
@@ -73,16 +83,16 @@ class EngineTest(unittest.TestCase):
         self.assertEqual(data["n_cols"], 91)
 
     def test_obs_and_var_names(self):
-        self.assertEqual(np.sum(self.data.data.var[self.data.schema["annotations"]["var"]["index"]].isna()), 0)
-        self.assertEqual(np.sum(self.data.data.obs[self.data.schema["annotations"]["obs"]["index"]].isna()), 0)
+        self.assertEqual(np.sum(self.data.data.var[self.data.get_schema()["annotations"]["var"]["index"]].isna()), 0)
+        self.assertEqual(np.sum(self.data.data.obs[self.data.get_schema()["annotations"]["obs"]["index"]].isna()), 0)
 
-    def test_schema(self):
+    def test_get_schema(self):
         with open(path.join(path.dirname(__file__), "schema.json")) as fh:
             schema = json.load(fh)
-            self.assertEqual(self.data.schema, schema)
+            self.assertEqual(self.data.get_schema(), schema)
 
     def test_schema_produces_error(self):
-        self.data.data.obs["time"] = Series(
+        self.data.data.obs["time"] = pd.Series(
             list([time.time() for i in range(self.data.cell_count)]),
             dtype="datetime64[ns]",
         )
@@ -111,7 +121,7 @@ class EngineTest(unittest.TestCase):
         annotations = decode_fbs.decode_matrix_FBS(fbs)
         self.assertEqual(annotations["n_rows"], 2638)
         self.assertEqual(annotations["n_cols"], 5)
-        obs_index_col_name = self.data.schema["annotations"]["obs"]["index"]
+        obs_index_col_name = self.data.get_schema()["annotations"]["obs"]["index"]
         self.assertEqual(
             annotations["col_idx"],
             [obs_index_col_name, "n_genes", "percent_mito", "n_counts", "louvain"],
@@ -121,7 +131,7 @@ class EngineTest(unittest.TestCase):
         annotations = decode_fbs.decode_matrix_FBS(fbs)
         self.assertEqual(annotations['n_rows'], 1838)
         self.assertEqual(annotations['n_cols'], 2)
-        var_index_col_name = self.data.schema["annotations"]["var"]["index"]
+        var_index_col_name = self.data.get_schema()["annotations"]["var"]["index"]
         self.assertEqual(annotations["col_idx"], [var_index_col_name, "n_cells"])
 
     def test_annotation_fields(self):
@@ -130,11 +140,15 @@ class EngineTest(unittest.TestCase):
         self.assertEqual(annotations["n_rows"], 2638)
         self.assertEqual(annotations['n_cols'], 2)
 
-        var_index_col_name = self.data.schema["annotations"]["var"]["index"]
+        var_index_col_name = self.data.get_schema()["annotations"]["var"]["index"]
         fbs = self.data.annotation_to_fbs_matrix("var", [var_index_col_name])
         annotations = decode_fbs.decode_matrix_FBS(fbs)
         self.assertEqual(annotations['n_rows'], 1838)
         self.assertEqual(annotations['n_cols'], 1)
+
+    def test_annotation_put(self):
+        with self.assertRaises(DisabledFeatureError):
+            self.data.annotation_put_fbs(None, "obs")
 
     def test_diffexp_topN(self):
         f1 = {"filter": {"obs": {"index": [[0, 500]]}}}
@@ -169,7 +183,7 @@ class EngineTest(unittest.TestCase):
             self.data.data_frame_to_fbs_matrix(filter_["filter"], "var")
 
     def test_data_named_gene(self):
-        var_index_col_name = self.data.schema["annotations"]["var"]["index"]
+        var_index_col_name = self.data.get_schema()["annotations"]["var"]["index"]
         filter_ = {
             "filter": {
                 "var": {"annotation_value": [{"name": var_index_col_name, "values": ["RER1"]}]}
@@ -191,6 +205,3 @@ class EngineTest(unittest.TestCase):
         self.assertEqual(data["n_rows"], 2638)
         self.assertEqual(data["n_cols"], 3)
         self.assertTrue((data["col_idx"] == [15, 1818, 1837]).all())
-
-    if __name__ == "__main__":
-        unittest.main()

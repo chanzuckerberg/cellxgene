@@ -5,6 +5,7 @@ import BitArray from "./bitArray";
 import {
   sortArray,
   lowerBound,
+  binarySearch,
   lowerBoundIndirect,
   upperBoundIndirect
 } from "./sort";
@@ -54,6 +55,14 @@ export default class ImmutableTypedCrossfilter {
 
   all() {
     return this.data;
+  }
+
+  setData(data) {
+    return new ImmutableTypedCrossfilter(
+      data,
+      this.dimensions,
+      this.selectionCache
+    );
   }
 
   dimensionNames() {
@@ -111,6 +120,23 @@ export default class ImmutableTypedCrossfilter {
       selectionCache.freeDimension(id);
     }
     return new ImmutableTypedCrossfilter(data, dimensions, selectionCache);
+  }
+
+  renameDimension(oldName, newName) {
+    /*
+    rename a dimension
+    */
+    const { [oldName]: dim, ...dimensions } = this.dimensions;
+    const { data, selectionCache } = this;
+    dim.dim.rename(newName);
+    return new ImmutableTypedCrossfilter(
+      data,
+      {
+        ...dimensions,
+        [newName]: dim
+      },
+      selectionCache
+    );
   }
 
   select(name, spec) {
@@ -288,6 +314,10 @@ class _ImmutableBaseDimension {
     this.name = name;
   }
 
+  rename(name) {
+    this.name = name;
+  }
+
   select(spec) {
     const { mode } = spec;
     if (mode === undefined) {
@@ -436,7 +466,7 @@ class ImmutableEnumDimension extends ImmutableScalarDimension {
     const { values } = spec;
     return super.selectExact({
       mode: spec.mode,
-      values: values.map(v => lowerBound(enumIndex, v, 0, enumIndex.length))
+      values: values.map(v => binarySearch(enumIndex, v, 0, enumIndex.length))
     });
   }
 

@@ -59,3 +59,12 @@ class DriverError(Exception):
 
     def __init__(self, message):
         self.message = message
+
+
+class DisabledFeatureError(Exception):
+    """
+    Raised when an attempt to use a disabled feature occurs
+    """
+
+    def __init__(self, message):
+        self.message = message

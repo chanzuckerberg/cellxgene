@@ -180,6 +180,7 @@ describe("lowerBound", () => {
     expect(lowerBound([0, 1, 2, 3], 1, 0, 4)).toEqual(1);
     expect(lowerBound([0, 1, 2, 3], 3, 0, 4)).toEqual(3);
     expect(lowerBound([0, 1, 2, 3], 4, 0, 4)).toEqual(4);
+    expect(lowerBound([0, 1, 2, 3], 4, 0, 3)).toEqual(3);
 
     expect(lowerBound([0, 1, 2, 3, 4], -1, 0, 5)).toEqual(0);
     expect(lowerBound([0, 1, 2, 3, 4], 0, 0, 5)).toEqual(0);
@@ -204,6 +205,7 @@ describe("lowerBound", () => {
     expect(lowerBound(new Float32Array([0, 1, 2, 3]), 1, 0, 4)).toEqual(1);
     expect(lowerBound(new Float32Array([0, 1, 2, 3]), 3, 0, 4)).toEqual(3);
     expect(lowerBound(new Float32Array([0, 1, 2, 3]), 4, 0, 4)).toEqual(4);
+    expect(lowerBound(new Float32Array([0, 1, 2, 3]), 4, 0, 3)).toEqual(3);
 
     expect(lowerBound(new Float32Array([0, 1, 2, 3, 4]), -1, 0, 5)).toEqual(0);
     expect(lowerBound(new Float32Array([0, 1, 2, 3, 4]), 0, 0, 5)).toEqual(0);

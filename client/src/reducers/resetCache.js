@@ -1,13 +1,13 @@
 /*
 Reducer which caches derived state to be used in a reset or other 
-recomputation.
+recomputation.  Add stuff here you want stashed at init time (or whenever),
+for later use.
 
-Currently this only caches the baseline (full universe) world & crossfilter, 
-for use in a Reset.
+Currently this only caches the baseline (full universe) crossfilter, 
+which improves Reset UI performance.
 */
 const ResetCacheReducer = (
   state = {
-    world: null,
     crossfilter: null
   },
   action,
@@ -15,10 +15,9 @@ const ResetCacheReducer = (
 ) => {
   switch (action.type) {
     case "initial data load complete (universe exists)": {
-      const { world, crossfilter } = nextSharedState;
+      const { crossfilter } = nextSharedState;
       return {
         ...state,
-        world,
         crossfilter
       };
     }

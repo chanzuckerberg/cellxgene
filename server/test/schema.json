@@ -10,19 +10,23 @@
       "columns": [
         {
           "name": "name_0",
-          "type": "string"
+          "type": "string",
+          "writable": false
         },
         {
           "name": "n_genes",
-          "type": "int32"
+          "type": "int32",
+          "writable": false
         },
         {
           "name": "percent_mito",
-          "type": "float32"
+          "type": "float32",
+          "writable": false
         },
         {
           "name": "n_counts",
-          "type": "float32"
+          "type": "float32",
+          "writable": false
         },
         {
           "name": "louvain",
@@ -36,7 +40,8 @@
             "FCGR3A+ Monocytes",
             "Dendritic cells",
             "Megakaryocytes"
-          ]
+          ],
+          "writable": false
         }
       ]
     },
@@ -45,11 +50,13 @@
       "columns": [
         {
           "name": "name_0",
-          "type": "string"
+          "type": "string",
+          "writable": false
         },
         {
           "name": "n_cells",
-          "type": "int32"
+          "type": "int32",
+          "writable": false
         }
       ]
     }

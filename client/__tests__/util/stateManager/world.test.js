@@ -18,11 +18,11 @@ const defaultBigBang = () => {
   /* create unverse, world, crossfilter and dimensionMap */
   /* create universe */
   const universe = Universe.createUniverseFromResponse(
-    REST.config,
-    REST.schema,
-    REST.annotationsObs,
-    REST.annotationsVar,
-    REST.layoutObs
+    _.cloneDeep(REST.config),
+    _.cloneDeep(REST.schema),
+    _.cloneDeep(REST.annotationsObs),
+    _.cloneDeep(REST.annotationsVar),
+    _.cloneDeep(REST.layoutObs)
   );
   /* create world */
   const world = World.createWorldFromEntireUniverse(universe);
@@ -43,11 +43,11 @@ const defaultBigBang = () => {
 describe("createWorldFromEntireUniverse", () => {
   test("create from REST sample", () => {
     const universe = Universe.createUniverseFromResponse(
-      REST.config,
-      REST.schema,
-      REST.annotationsObs,
-      REST.annotationsVar,
-      REST.layoutObs
+      _.cloneDeep(REST.config),
+      _.cloneDeep(REST.schema),
+      _.cloneDeep(REST.annotationsObs),
+      _.cloneDeep(REST.annotationsVar),
+      _.cloneDeep(REST.layoutObs)
     );
     expect(universe).toBeDefined();
 

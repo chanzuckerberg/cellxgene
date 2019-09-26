@@ -1,11 +1,11 @@
-// jshint esversion: 6
-
 import _ from "lodash";
 
-import decodeMatrixFBS from "./matrix";
+import { unassignedCategoryLabel } from "../../globals";
+import { decodeMatrixFBS } from "./matrix";
 import * as Dataframe from "../dataframe";
-import fromEntries from "../fromEntries";
 import { isFpTypedArray } from "../typeHelpers";
+import { indexEntireSchema } from "./schemaHelpers";
+import { isCategoricalAnnotation } from "./annotationsHelpers";
 
 /*
 Private helper function - create and return a template Universe
@@ -18,10 +18,13 @@ function templateUniverse() {
     schema: {},
 
     /*
-    Annotations
+    annotations
     */
     obsAnnotations: Dataframe.Dataframe.empty(),
     varAnnotations: Dataframe.Dataframe.empty(),
+    /*
+    layout
+    */
     obsLayout: Dataframe.Dataframe.empty(),
 
     /*
@@ -122,6 +125,10 @@ function reconcileSchemaCategoriesWithSummary(universe) {
   For example, boolean defined fields in the schema do not contain
   explicit declaration of categories (nor do string fields).  In these
   cases, add a 'categories' field to the schema so it is accessible.
+
+  In addition, we have a client-side convention (UI) that all writable
+  annotations must have an 'unassigned' category, even if it is not currently
+  in use.
   */
 
   universe.schema.annotations.obs.columns.forEach(s => {
@@ -135,6 +142,10 @@ function reconcileSchemaCategoriesWithSummary(universe) {
         universe.obsAnnotations.col(s.name).summarize().categories ?? []
       );
       s.categories = categories;
+    }
+
+    if (s.writable && s.categories.indexOf(unassignedCategoryLabel) === -1) {
+      s.categories = s.categories.concat(unassignedCategoryLabel);
     }
   });
 }
@@ -166,7 +177,7 @@ export function createUniverseFromResponse(
   /* layout */
   universe.obsLayout = LayoutFBSToDataframe(layoutFBSResponse);
 
-  /* sanity check */
+  /* sanity checks */
   if (
     universe.nObs !== universe.obsLayout.length ||
     universe.nObs !== universe.obsAnnotations.length ||
@@ -176,20 +187,19 @@ export function createUniverseFromResponse(
   }
 
   reconcileSchemaCategoriesWithSummary(universe);
+  indexEntireSchema(universe.schema);
 
-  /* Index schema for ease of use */
-  universe.schema.annotations.obsByName = fromEntries(
-    universe.schema.annotations.obs.columns.map(v => [v.name, v])
-  );
-  universe.schema.annotations.varByName = fromEntries(
-    universe.schema.annotations.var.columns.map(v => [v.name, v])
-  );
-  universe.schema.layout.obsByName = fromEntries(
-    universe.schema.layout.obs.map(v => [v.name, v])
-  );
-  universe.schema.layout.varByName = fromEntries(
-    universe.schema.layout.var.map(v => [v.name, v])
-  );
+  /* sanity checks */
+  if (
+    schema.annotations.obs.columns.some(
+      s => s.writable && !isCategoricalAnnotation(schema, s.name)
+    )
+  ) {
+    throw new Error(
+      "Writable continuous obs annotations are not supproted - failed to laod"
+    );
+  }
+
   return universe;
 }
 
