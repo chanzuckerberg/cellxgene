@@ -67,6 +67,7 @@ export const categoryLabelDisplayStringShortLength = 15;
 
 /* various timing-related behaviors */
 export const tooltipHoverOpenDelay = 1000; /* ms delay before a tooltip displays */
+export const tooltipHoverOpenDelayQuick = 500;
 
 let _API = {
   // prefix: "http://api.clustering.czi.technology/api/",

@@ -174,7 +174,7 @@ class CategoryValue extends React.Component {
             <Tooltip
               content={displayString}
               disabled={truncatedString === null}
-              hoverOpenDelay={globals.tooltipHoverOpenDelay}
+              hoverOpenDelay={globals.tooltipHoverOpenDelayQuick}
             >
               <span
                 data-testid={`categorical-value-${metadataField}-${displayString}`}
