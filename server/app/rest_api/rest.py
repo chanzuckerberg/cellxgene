@@ -65,6 +65,9 @@ class ConfigAPI(Resource):
                     "engine": f"cellxgene Scanpy engine version ",
                     "dataset": current_app.config["DATASET_TITLE"],
                 },
+                "links": {
+                    "about-dataset": current_app.config["ABOUT_DATASET"]
+                },
                 "parameters": {
                     "max-category-items": current_app.data.config["max_category_items"]
                 },
