@@ -180,11 +180,12 @@ class CategoryValue extends React.Component {
                 data-testid={`categorical-value-${metadataField}-${displayString}`}
                 data-testclass="categorical-value"
                 style={{
+                  display: "inline-block",
                   overflow: "hidden",
-                  height: "1.1em",
                   lineHeight: "1.1em",
+                  height: "1.1em",
                   wordBreak: "break-all",
-                  display: "inline-block"
+                  verticalAlign: "middle"
                 }}
               >
                 {truncatedString || displayString}
