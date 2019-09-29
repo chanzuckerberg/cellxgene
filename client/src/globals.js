@@ -15,7 +15,8 @@ export const configDefaults = {
   displayNames: {},
   parameters: {
     "max-category-items": 1000
-  }
+  },
+  links: {}
 };
 
 /* colors */
@@ -49,6 +50,8 @@ export const maxParagraphWidth = 600;
 
 export const cellxgeneTitleLeftPadding = 14;
 export const cellxgeneTitleTopPadding = 7;
+
+export const datasetTitleMaxCharacterCount = 25;
 
 export const maxControlsWidth = 800;
 

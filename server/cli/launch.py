@@ -6,6 +6,7 @@ from os.path import splitext, basename
 import sys
 import warnings
 import webbrowser
+from urllib.parse import urlparse
 
 import click
 
@@ -23,7 +24,11 @@ def common_args(func):
     """
     Decorator to contain CLI args that will be common to both CLI and GUI: title and engine args.
     """
+
     @click.option("--title", "-t", help="Title to display (if omitted will use file name).")
+    @click.option("--about",
+                  help="A URL to more information about the dataset."
+                       "(This must be an absolute URL including HTTP(S) protocol)")
     @click.option(
         "--embedding",
         "-e",
@@ -65,6 +70,7 @@ def common_args(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         return func(*args, **kwargs)
+
     return wrapper
 
 
@@ -126,6 +132,7 @@ def launch(
         diffexp_lfc_cutoff,
         title,
         scripts,
+        about,
         experimental_label_file,
         backed
 ):
@@ -207,6 +214,20 @@ def launch(
         if lf_ext and lf_ext != ".csv":
             raise click.FileError(basename(experimental_label_file), hint="label file type must be .csv")
 
+    if about:
+        def url_check(url):
+            try:
+                result = urlparse(url)
+                if all([result.scheme, result.netloc]):
+                    return True
+                else:
+                    return False
+            except ValueError:
+                return False
+
+        if not url_check(about):
+            raise click.ClickException("Must provide an absolute URL for --about. (Example format: http://example.com)")
+
     # Setup app
     cellxgene_url = f"http://{host}:{port}"
 
@@ -231,7 +252,7 @@ def launch(
     from server.app.scanpy_engine.scanpy_engine import ScanpyEngine
 
     try:
-        server.attach_data(ScanpyEngine(data_locator, e_args), title=title)
+        server.attach_data(ScanpyEngine(data_locator, e_args), title=title, about=about)
     except ScanpyFileError as e:
         raise click.ClickException(f"{e}")
 
