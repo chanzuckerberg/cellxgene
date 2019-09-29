@@ -22,6 +22,10 @@ Test the scanpy engine using the pbmc3k data set.
     ("example-dataset/pbmc3k.h5ad", False),
     ("server/test/test_datasets/pbmc3k-CSC-gz.h5ad", False),
     ("server/test/test_datasets/pbmc3k-CSR-gz.h5ad", False),
+
+    ("example-dataset/pbmc3k.h5ad", True),
+    ("server/test/test_datasets/pbmc3k-CSC-gz.h5ad", True),
+    ("server/test/test_datasets/pbmc3k-CSR-gz.h5ad", True),
 ])
 class EngineTest(unittest.TestCase):
     def setUp(self):
@@ -52,9 +56,12 @@ class EngineTest(unittest.TestCase):
 
     @pytest.mark.filterwarnings("ignore:Scanpy data matrix")
     def test_data_type(self):
-        self.data.data.X = self.data.data.X.astype("float64")
-        with self.assertWarns(UserWarning):
-            self.data._validate_data_types()
+        # don't run the test on the more exotic data types, as they don't
+        # support the astype() interface (used by this test, but not underlying app)
+        if isinstance(self.data.data.X, np.ndarray):
+            self.data.data.X = self.data.data.X.astype("float64")
+            with self.assertWarns(UserWarning):
+                self.data._validate_data_types()
 
     def test_filter_idx(self):
         filter_ = {
@@ -160,10 +167,11 @@ class EngineTest(unittest.TestCase):
         self.assertEqual(len(result), 20)
 
     def test_data_frame(self):
-        fbs = self.data.data_frame_to_fbs_matrix(None, "var")
+        f1 = {"var": {"index": [[0, 10]]}}
+        fbs = self.data.data_frame_to_fbs_matrix(f1, "var")
         data = decode_fbs.decode_matrix_FBS(fbs)
         self.assertEqual(data["n_rows"], 2638)
-        self.assertEqual(data["n_cols"], 1838)
+        self.assertEqual(data["n_cols"], 10)
 
         with self.assertRaises(ValueError):
             self.data.data_frame_to_fbs_matrix(None, "obs")
