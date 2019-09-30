@@ -100,8 +100,11 @@ def serialize_typed_array(builder, source_array, encoding_info):
             arr = arr.astype(as_type)
 
     # serialize the ndarray into a vector
-    if arr.ndim == 2 and arr.shape[0] == 1:
-        arr = arr[0]
+    if arr.ndim == 2:
+        if arr.shape[0] == 1:
+            arr = arr[0]
+        elif arr.shape[1] == 1:
+            arr = arr.T[0]
     vec = CreateNumpyVector(builder, arr)
 
     # serialize the typed array table
@@ -186,15 +189,12 @@ def encode_matrix_fbs(matrix, row_idx=None, col_idx=None):
     # estimate size needed, so we don't unnecessarily realloc.
     builder = flatbuffers.Builder(guess_at_mem_needed(matrix))
 
-    if isinstance(matrix, pd.DataFrame):
-        matrix_columns = reversed(tuple(matrix[name] for name in matrix))
-    else:
-        matrix_columns = reversed(tuple(c for c in matrix.T))
-
     columns = []
-    for c in matrix_columns:
+    # for c in matrix_columns:
+    for cidx in range(n_cols-1, -1, -1):
         # serialize the typed array
-        typed_arr = serialize_typed_array(builder, c, column_encoding)
+        col = matrix.iloc[:, cidx] if isinstance(matrix, pd.DataFrame) else matrix[:, cidx]
+        typed_arr = serialize_typed_array(builder, col, column_encoding)
 
         # serialize the Column union
         columns.append(serialize_column(builder, typed_arr))
