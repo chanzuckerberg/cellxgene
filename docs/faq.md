@@ -12,7 +12,7 @@ Currently, you can go straight into `cellxgene launch` with your own analyzed da
 
 If your data is in a different format, and/or you still need to perform dimensionality reduction and clustering, `cellxgene` can do that for you with the `prepare` command. `cellxgene prepare` runs `scanpy` under the hood and can read in any format that is currently supported by `scanpy` (including mtx, loom, and more listed [here](https://scanpy.readthedocs.io/en/latest/api/index.html#reading)).
 
-To add `cellxgene prepare` to your cellxgene installation run `pip install cellxgene[prepare]`. 
+To add `cellxgene prepare` to your cellxgene installation run `pip install cellxgene[prepare]`.
 
 The output of `cellxgene prepare` is a h5ad file with your computed clusters and tsne/umap projections that can be used in `cellxgene launch`.
 
@@ -110,3 +110,14 @@ For example:
 pip install s3fs
 cellxgene launch s3://mybucket.s3-us-west-2.amazonaws.com/mydata.h5ad
 ```
+
+#### What does the command line option `--backed` do?
+
+The `--backed` option instructs `cellxgene launch` to read the H5AD file in "backed" mode (for more information, see the
+[anndata.read_h5ad() documentation](https://anndata.readthedocs.io/en/latest/anndata.read_h5ad.html#anndata.read_h5ad)).
+
+By default, cellxgene will read the entire H5AD will be into memory at startup, improving application speed and performance.
+Very large datasets may not fit in memory. The "--backed" mode will read the file incrementally, reducing memory
+use, and for large files, improving startup speed. _However_, this option will also significantly slow
+down access to gene expression histograms, and may render differential expression calculations too slow
+to use.
