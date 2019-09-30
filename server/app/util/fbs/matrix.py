@@ -190,8 +190,7 @@ def encode_matrix_fbs(matrix, row_idx=None, col_idx=None):
     builder = flatbuffers.Builder(guess_at_mem_needed(matrix))
 
     columns = []
-    # for c in matrix_columns:
-    for cidx in range(n_cols-1, -1, -1):
+    for cidx in range(n_cols - 1, -1, -1):
         # serialize the typed array
         col = matrix.iloc[:, cidx] if isinstance(matrix, pd.DataFrame) else matrix[:, cidx]
         typed_arr = serialize_typed_array(builder, col, column_encoding)
