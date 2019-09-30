@@ -15,7 +15,7 @@ setup(
     packages=find_packages(),
     url="https://github.com/chanzuckerberg/cellxgene",
     license="MIT",
-    author="Chan Zuckergerg Initiative",
+    author="Chan Zuckerberg Initiative",
     author_email="cellxgene@chanzuckerberg.com",
     description="Web application for exploration of large scale scRNA-seq datasets",
     long_description=long_description,
