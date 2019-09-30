@@ -49,12 +49,17 @@ This project adheres to the Contributor Covenant [code of conduct](https://githu
 
 ## core team
 
+The current core team:
+
 - Colin Megill, frontend & product design
-- Charlotte Weaver, software engineer
 - Bruce Martin, software engineer
 - Sidney Bell, computational biologist
-- Justin Kiggins, product manager
 - Lia Prins, designer
+- Severiano Badajoz, software engineer
+
+We would also like to gratefully acknowledge contributions from past core team members:
+
+- Charlotte Weaver, software engineer
 
 ## where we are going
 
