@@ -52,7 +52,9 @@ function createProjectionTF(viewportWidth, viewportHeight) {
     expressionX,
     expressionY,
 
-    crossfilter
+    crossfilter,
+
+    responsive: state.responsive
   };
 })
 class Scatterplot extends React.Component {
@@ -345,8 +347,12 @@ class Scatterplot extends React.Component {
     projectionTF
   ) {
     if (!this.reglCanvas) return;
-    const { universe } = this.props;
-    const { width: cvWidth, height: cvHeight } = this.reglCanvas;
+    const { universe, responsive } = this.props;
+    // The viewport dimension is used to scale points, so we want to pass
+    // the dimension of the MAIN viewport, not the scatterplot viewport.
+    // Slightly hacky, but we want all points to scale uniformly.  Perhaps
+    // this should move to the redux state and be shared?
+    const { width: cvWidth, height: cvHeight } = responsive;
     regl.poll();
     regl.clear({
       depth: 1,
@@ -359,7 +365,10 @@ class Scatterplot extends React.Component {
       projection: projectionTF,
       count: this.count,
       nPoints: universe.nObs,
-      minViewportDimension: Math.min(cvWidth || width, cvHeight || height)
+      minViewportDimension: Math.min(
+        cvWidth - globals.leftSidebarWidth || width,
+        cvHeight || height
+      )
     });
     regl._gl.flush();
   }
