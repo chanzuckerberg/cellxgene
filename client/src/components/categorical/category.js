@@ -238,44 +238,7 @@ class Category extends React.Component {
               {""}
             </label>
             {/* Dialog uses portal, can be anywhere/factored out */}
-            <Dialog
-              icon="tag"
-              title="Edit category name"
-              isOpen={
-                annotations.isEditingCategoryName &&
-                annotations.categoryEditable === metadataField
-              }
-              onClose={this.disableEditCategoryMode}
-            >
-              <div className={Classes.DIALOG_BODY}>
-                <div style={{ marginBottom: 20 }}>
-                  <p>New, unique category name:</p>
-                  <InputGroup
-                    autoFocus
-                    onChange={e =>
-                      this.setState({ newCategoryText: e.target.value })
-                    }
-                    leftIcon="tag"
-                  />
-                </div>
-              </div>
-              <div className={Classes.DIALOG_FOOTER}>
-                <div className={Classes.DIALOG_FOOTER_ACTIONS}>
-                  <Tooltip content="Close this dialog without editing the category.">
-                    <Button onClick={this.disableEditCategoryMode}>
-                      Cancel
-                    </Button>
-                  </Tooltip>
-                  <Button
-                    disabled={newCategoryText.length === 0}
-                    onClick={this.handleEditCategory}
-                    intent="primary"
-                  >
-                    Edit category name
-                  </Button>
-                </div>
-              </div>
-            </Dialog>
+
             <span
               data-testid={`category-expand-${metadataField}`}
               style={{
@@ -283,13 +246,58 @@ class Category extends React.Component {
                 display: "inline-block"
               }}
               onClick={() => {
-                this.setState({ isExpanded: !isExpanded });
+                const editingCategory =
+                  annotations.isEditingCategoryName &&
+                  annotations.categoryEditable === metadataField;
+                if (!editingCategory) {
+                  this.setState({ isExpanded: !isExpanded });
+                }
               }}
             >
               {isUserAnno ? (
                 <Icon style={{ marginRight: 5 }} icon="tag" iconSize={16} />
               ) : null}
-              {metadataField}
+
+              {annotations.isEditingCategoryName &&
+              annotations.categoryEditable === metadataField ? (
+                <form
+                  style={{ display: "inline-block" }}
+                  onSubmit={e => {
+                    e.preventDefault();
+                    this.handleEditCategory();
+                  }}
+                >
+                  <InputGroup
+                    style={{ position: "relative", top: -1 }}
+                    ref={input => {
+                      this.editableCategoryInput = input;
+                    }}
+                    small
+                    autoFocus
+                    onChange={e => {
+                      this.setState({
+                        newCategoryText: e.target.value
+                      });
+                    }}
+                    defaultValue={metadataField}
+                    rightElement={
+                      <Button
+                        minimal
+                        disabled={newCategoryText.length === 0}
+                        style={{ position: "relative", top: -1 }}
+                        type="button"
+                        icon="small-tick"
+                        data-testclass="submitCategoryNameEdit"
+                        data-testid="submitCategoryNameEdit"
+                        onClick={this.handleEditCategory}
+                      />
+                    }
+                  />
+                </form>
+              ) : (
+                metadataField
+              )}
+
               {isExpanded ? (
                 <FaChevronDown
                   data-testclass="category-expand-is-expanded"
