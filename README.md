@@ -2,7 +2,7 @@
 
 _an interactive explorer for single-cell transcriptomics data_
 
-[![DOI](https://zenodo.org/badge/105615409.svg)](https://zenodo.org/badge/latestdoi/105615409)
+[![DOI](https://zenodo.org/badge/105615409.svg)](https://zenodo.org/badge/latestdoi/105615409) [![PyPI](https://img.shields.io/pypi/v/cellxgene)](https://pypi.org/project/cellxgene/) [![PyPI - Downloads](https://img.shields.io/pypi/dm/cellxgene)](https://pypistats.org/packages/cellxgene) [![GitHub last commit](https://img.shields.io/github/last-commit/chanzuckerberg/cellxgene)](https://github.com/chanzuckerberg/cellxgene/pulse)
 
 cellxgene (pronounced "cell-by-gene") is an interactive data explorer for single-cell transcriptomics datasets, such as those coming from the [Human Cell Atlas](https://humancellatlas.org). Leveraging modern web development techniques to enable fast visualizations of at least 1 million cells, we hope to enable biologists and computational researchers to explore their data.
 
@@ -49,12 +49,17 @@ This project adheres to the Contributor Covenant [code of conduct](https://githu
 
 ## core team
 
+The current core team:
+
 - Colin Megill, frontend & product design
-- Charlotte Weaver, software engineer
 - Bruce Martin, software engineer
 - Sidney Bell, computational biologist
-- Justin Kiggins, product manager
 - Lia Prins, designer
+- Severiano Badajoz, software engineer
+
+We would also like to gratefully acknowledge contributions from past core team members:
+
+- Charlotte Weaver, software engineer
 
 ## where we are going
 

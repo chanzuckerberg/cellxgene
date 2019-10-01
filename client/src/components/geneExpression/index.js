@@ -177,7 +177,7 @@ class GeneExpression extends React.Component {
 
           const indexOfGene = upperWorldGenes.get(upperGene);
 
-          if (!indexOfGene) {
+          if (indexOfGene === undefined) {
             return keepAroundErrorToast(
               `${
                 genes[upperGenes.get(upperGene)]
