@@ -47,6 +47,7 @@ export default class ImmutableTypedCrossfilter {
     this.data = data;
     this.selectionCache = selectionCache; /* BitArray */
     this.dimensions = dimensions; /* name: { id, dim, name, selection } */
+    Object.preventExtensions(this);
   }
 
   size() {
@@ -94,6 +95,7 @@ export default class ImmutableTypedCrossfilter {
     }
     const DimensionType = DimTypes[type];
     const dim = new DimensionType(name, data, ...rest);
+    Object.freeze(dim);
     const dimensions = {
       ...this.dimensions,
       [name]: {

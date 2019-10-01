@@ -127,6 +127,7 @@ class Dataframe {
     this.__id = Dataframe.__getId();
 
     this.__compile(__columnsAccessor);
+    Object.freeze(this);
   }
 
   static __errorChecks(dims, columnarData, rowIndex, colIndex) {
@@ -269,6 +270,7 @@ class Dataframe {
     get.iget = iget;
     get.__id = __id;
 
+    Object.freeze(get);
     return get;
   }
 
@@ -288,6 +290,7 @@ class Dataframe {
       }
       return Dataframe.__compileColumn(column, getRowByOffset, getRowByLabel);
     });
+    Object.freeze(this.__columnsAccessor);
   }
 
   clone() {
