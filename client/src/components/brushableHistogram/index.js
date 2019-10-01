@@ -18,7 +18,6 @@ import { makeContinuousDimensionName } from "../../util/nameCreators";
   scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
   scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
   continuousSelection: state.continuousSelection,
-  differential: state.differential,
   colorAccessor: state.colors.colorAccessor
 }))
 class HistogramBrush extends React.Component {
@@ -112,16 +111,14 @@ class HistogramBrush extends React.Component {
     if the selection has changed, ensure that the brush correctly reflects
     the underlying selection.
     */
-    if (
-      forceBrushUpdate ||
-      continuousSelection !== prevProps.continuousSelection
-    ) {
-      const { isObs, isUserDefined, isDiffExp } = this.props;
-      const myName = makeContinuousDimensionName(
-        { isObs, isUserDefined, isDiffExp },
-        field
-      );
-      const range = continuousSelection[myName];
+    const { isObs, isUserDefined, isDiffExp } = this.props;
+    const myName = makeContinuousDimensionName(
+      { isObs, isUserDefined, isDiffExp },
+      field
+    );
+    const range = continuousSelection[myName];
+    const prevRange = prevProps.continuousSelection[myName];
+    if (forceBrushUpdate || range !== prevRange) {
       if (brushXselection) {
         const selection = d3.brushSelection(brushXselection.node());
         if (!range && selection) {
@@ -149,6 +146,32 @@ class HistogramBrush extends React.Component {
         }
       }
     }
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    const { props } = this;
+
+    const shallow = [
+      "world",
+      "field",
+      "scatterplotXXaccessor",
+      "scatterplotYYaccessor",
+      "colorAccessor",
+      "isObs",
+      "isUserDefined",
+      "isDiffExp"
+    ].some(el => nextProps[el] !== props[el]);
+    if (shallow) return true;
+
+    const { isObs, isUserDefined, isDiffExp, field } = props;
+    const myName = makeContinuousDimensionName(
+      { isObs, isUserDefined, isDiffExp },
+      field
+    );
+    return (
+      props.continuousSelection[myName] !==
+      nextProps.continuousSelection[myName]
+    );
   }
 
   onBrush(selection, x, eventType) {
@@ -417,8 +440,8 @@ class HistogramBrush extends React.Component {
           isDiffExp
             ? "histogram-diffexp"
             : isUserDefined
-              ? "histogram-user-gene"
-              : "histogram-continuous-metadata"
+            ? "histogram-user-gene"
+            : "histogram-continuous-metadata"
         }
         style={{
           padding: globals.leftSidebarSectionPadding,
