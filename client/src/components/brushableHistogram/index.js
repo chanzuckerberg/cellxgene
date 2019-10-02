@@ -150,7 +150,6 @@ class HistogramBrush extends React.Component {
 
   shouldComponentUpdate(nextProps, nextState) {
     const { props } = this;
-
     const shallow = [
       "world",
       "field",

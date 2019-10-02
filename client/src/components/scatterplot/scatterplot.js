@@ -57,7 +57,7 @@ function createProjectionTF(viewportWidth, viewportHeight) {
     responsive: state.responsive
   };
 })
-class Scatterplot extends React.Component {
+class Scatterplot extends React.PureComponent {
   computePointPositions = memoize((X, Y, xScale, yScale) => {
     const positions = new Float32Array(2 * X.length);
     for (let i = 0, len = X.length; i < len; i += 1) {
