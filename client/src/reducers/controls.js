@@ -2,8 +2,6 @@
 
 import _ from "lodash";
 
-import { WorldUtil } from "../util/stateManager";
-
 const Controls = (
   state = {
     // data loading flag
@@ -45,7 +43,6 @@ const Controls = (
     }
     case "initial data load complete (universe exists)": {
       /* first light - create world & other data-driven defaults */
-      WorldUtil.clearCaches();
       return {
         ...state,
         loading: false,
@@ -54,14 +51,12 @@ const Controls = (
       };
     }
     case "reset World to eq Universe": {
-      WorldUtil.clearCaches();
       return {
         ...state,
         resettingInterface: false
       };
     }
     case "set World to current selection": {
-      WorldUtil.clearCaches();
       return {
         ...state,
         loading: false,
