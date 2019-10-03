@@ -237,8 +237,6 @@ class Category extends React.Component {
               <span className="bp3-control-indicator" />
               {""}
             </label>
-            {/* Dialog uses portal, can be anywhere/factored out */}
-
             <span
               data-testid={`category-expand-${metadataField}`}
               style={{
@@ -248,7 +246,7 @@ class Category extends React.Component {
               onClick={() => {
                 const editingCategory =
                   annotations.isEditingCategoryName &&
-                  annotations.categoryEditable === metadataField;
+                  annotations.categoryBeingEdited === metadataField;
                 if (!editingCategory) {
                   this.setState({ isExpanded: !isExpanded });
                 }
@@ -259,7 +257,7 @@ class Category extends React.Component {
               ) : null}
 
               {annotations.isEditingCategoryName &&
-              annotations.categoryEditable === metadataField ? (
+              annotations.categoryBeingEdited === metadataField ? (
                 <form
                   style={{ display: "inline-block" }}
                   onSubmit={e => {
