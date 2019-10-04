@@ -317,6 +317,7 @@ class CategoryValue extends React.Component {
                     this.editableInput = input;
                   }}
                   small
+                  autoFocus
                   onChange={e => {
                     this.setState({ editedLabelText: e.target.value });
                   }}
