@@ -25,7 +25,9 @@ class DataLoadEngineTest(unittest.TestCase):
             "var_names": "bar",
             "diffexp_lfc_cutoff": 0.1,
             "label_file": None,
-            "backed": False
+            "backed": False,
+            "diffexp_may_be_slow": False,
+            "disable_diffexp": False
         }
         self.data.update(args=args)
         self.assertEqual(args, self.data.config)
