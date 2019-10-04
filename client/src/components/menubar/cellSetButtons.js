@@ -6,7 +6,7 @@ import { World } from "../../util/stateManager";
 import { tooltipHoverOpenDelay } from "../../globals";
 
 @connect()
-class CellSetButton extends React.Component {
+class CellSetButton extends React.PureComponent {
   set() {
     const {
       differential,

@@ -83,7 +83,7 @@ function renderThrottle(callback) {
   graphInteractionMode: state.controls.graphInteractionMode,
   colorAccessor: state.colors.colorAccessor
 }))
-class Graph extends React.Component {
+class Graph extends React.PureComponent {
   computePointPositions = memoize((X, Y, modelTF) => {
     /*
     compute the model coordinate for each point
