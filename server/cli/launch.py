@@ -268,7 +268,7 @@ def launch(
         raise click.ClickException(f"{e}")
 
     if not disable_diffexp and server.app.data.config['diffexp_may_be_slow']:
-        click.echo(f"[cellxgene] Due to the size of your dataset, "
+        click.echo(f"[cellxgene] CAUTION: due to the size of your dataset, "
                    f"running differential expression may take longer or fail.")
 
     if open_browser:

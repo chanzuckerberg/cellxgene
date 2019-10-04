@@ -268,7 +268,7 @@ class MenuBar extends React.Component {
     const tipMessage =
       "See top 10 differentially expressed genes" +
       (diffexpMayBeSlow
-        ? " (NOTE: large dataset - may take longer or fail)"
+        ? " (CAUTION: large dataset - may take longer or fail)"
         : "");
 
     return (
