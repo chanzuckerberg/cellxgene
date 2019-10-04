@@ -400,7 +400,7 @@ class CategoryValue extends React.Component {
                       data-testclass="handleAddCurrentSelectionToThisLabel"
                       data-testid={`handleAddCurrentSelectionToThisLabel-${metadataField}`}
                       onClick={this.handleAddCurrentSelectionToThisLabel}
-                      text={`Label currently selected cells as ${displayString}`}
+                      text={`Re-label currently selected cells as ${displayString}`}
                     />
                     {displayString !== globals.unassignedCategoryLabel ? (
                       <MenuItem
