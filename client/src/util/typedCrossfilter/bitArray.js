@@ -35,6 +35,7 @@ class BitArray {
 
     this.bitmask = new Int32Array(this.width); // dimension allocation mask
     this.bitarray = new Int32Array(this.width * this.length);
+    Object.seal(this);
   }
 
   // Return the number of records that are selected, ie, have a one bit in

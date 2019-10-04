@@ -83,7 +83,7 @@ function renderThrottle(callback) {
   graphInteractionMode: state.controls.graphInteractionMode,
   colorAccessor: state.colors.colorAccessor
 }))
-class Graph extends React.Component {
+class Graph extends React.PureComponent {
   computePointPositions = memoize((X, Y, modelTF) => {
     /*
     compute the model coordinate for each point
@@ -194,11 +194,7 @@ class Graph extends React.Component {
 
   componentDidMount() {
     // setup canvas, webgl draw function and camera
-    const camera = _camera(this.reglCanvas, {
-      pan: true,
-      scale: true,
-      rotate: false
-    });
+    const camera = _camera(this.reglCanvas);
     const regl = _regl(this.reglCanvas);
     const drawPoints = _drawPoints(regl);
 

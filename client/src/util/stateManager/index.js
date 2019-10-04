@@ -17,7 +17,6 @@ exists to support those concepts.
 export * as ColorHelpers from "./colorHelpers";
 export * as Universe from "./universe";
 export * as World from "./world";
-export * as WorldUtil from "./worldUtil";
 export * as ControlsHelpers from "./controlsHelpers";
 export * as AnnotationsHelpers from "./annotationsHelpers";
 export * as SchemaHelpers from "./schemaHelpers";

@@ -15,6 +15,7 @@ import {
 import Occupancy from "./occupancy";
 import * as globals from "../../globals";
 import styles from "./categorical.css";
+import { Tooltip } from "@blueprintjs/core";
 
 @connect(state => ({
   categoricalSelection: state.categoricalSelection,
@@ -203,6 +204,30 @@ class CategoryValue extends React.Component {
       categories = schema.annotations.obsByName[colorAccessor]?.categories;
     }
 
+    let truncatedString = null;
+
+    if (
+      colorAccessor &&
+      !isColorBy &&
+      displayString.length > globals.categoryLabelDisplayStringShortLength
+    ) {
+      truncatedString = `${displayString.slice(
+        0,
+        globals.categoryLabelDisplayStringShortLength / 2
+      )}…${displayString.slice(
+        -globals.categoryLabelDisplayStringShortLength / 2
+      )}`;
+    } else if (
+      displayString.length > globals.categoryLabelDisplayStringLongLength
+    ) {
+      truncatedString = `${displayString.slice(
+        0,
+        globals.categoryLabelDisplayStringLongLength / 2
+      )}…${displayString.slice(
+        -globals.categoryLabelDisplayStringLongLength / 2
+      )}`;
+    }
+
     return (
       <div
         key={i}
@@ -219,37 +244,40 @@ class CategoryValue extends React.Component {
         onMouseEnter={this.handleMouseEnter}
         onMouseLeave={this.handleMouseExit}
       >
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <div
-            style={{
-              margin: 0,
-              padding: 0,
-              userSelect: "none",
-              width: globals.leftSidebarWidth - 240,
-              display: "flex",
-              justifyContent: "flex-start"
-            }}
-          >
-            <div style={{ display: "flex" }}>
-              <label className="bp3-control bp3-checkbox" style={{ margin: 0 }}>
-                <input
-                  onChange={selected ? this.toggleOff : this.toggleOn}
-                  data-testclass="categorical-value-select"
-                  data-testid={`categorical-value-select-${metadataField}-${displayString}`}
-                  checked={selected}
-                  type="checkbox"
-                />
-                <span
-                  className="bp3-control-indicator"
-                  onMouseEnter={this.handleMouseExit}
-                  onMouseLeave={this.handleMouseEnter}
-                />
-              </label>
+        <div
+          style={{
+            margin: 0,
+            padding: 0,
+            userSelect: "none",
+            width: globals.leftSidebarWidth - 130,
+            display: "flex",
+            justifyContent: "space-between"
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "baseline" }}>
+            <label className="bp3-control bp3-checkbox" style={{ margin: 0 }}>
+              <input
+                onChange={selected ? this.toggleOff : this.toggleOn}
+                data-testclass="categorical-value-select"
+                data-testid={`categorical-value-select-${metadataField}-${displayString}`}
+                checked={selected}
+                type="checkbox"
+              />
+              <span
+                className="bp3-control-indicator"
+                onMouseEnter={this.handleMouseExit}
+                onMouseLeave={this.handleMouseEnter}
+              />
+            </label>
+            <Tooltip
+              content={displayString}
+              disabled={truncatedString === null}
+              hoverOpenDelay={globals.tooltipHoverOpenDelayQuick}
+            >
               <span
                 data-testid={`categorical-value-${metadataField}-${displayString}`}
                 data-testclass="categorical-value"
                 style={{
-                  wordBreak: "break-all",
                   color:
                     displayString === globals.unassignedCategoryLabel
                       ? "#ababab"
@@ -257,19 +285,25 @@ class CategoryValue extends React.Component {
                   fontStyle:
                     displayString === globals.unassignedCategoryLabel
                       ? "italic"
-                      : "normal"
+                      : "normal",
+                  display: "inline-block",
+                  overflow: "hidden",
+                  lineHeight: "1.1em",
+                  height: "1.1em",
+                  wordBreak: "break-all",
+                  verticalAlign: "middle"
                 }}
               >
                 {annotations.isEditingLabelName &&
                 annotations.labelEditable.category === metadataField &&
                 annotations.labelEditable.label === categoryIndex
                   ? null
-                  : displayString}
+                  : truncatedString || displayString}
               </span>
-            </div>
+            </Tooltip>
             {isUserAnno &&
-            annotations.isEditingLabelName &&
             annotations.labelEditable.category === metadataField &&
+            annotations.isEditingLabelName &&
             annotations.labelEditable.label === categoryIndex ? (
               <form
                 onSubmit={e => {
