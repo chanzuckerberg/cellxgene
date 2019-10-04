@@ -267,7 +267,7 @@ def launch(
     except ScanpyFileError as e:
         raise click.ClickException(f"{e}")
 
-    if server.app.data.config['diffexp_may_be_slow']:
+    if not disable_diffexp and server.app.data.config['diffexp_may_be_slow']:
         click.echo(f"[cellxgene] Due to the size of your dataset, "
                    f"running differential expression may take longer or fail.")
 
