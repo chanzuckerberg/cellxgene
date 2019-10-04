@@ -31,7 +31,7 @@ export default function(regl) {
       getFlags(flag, isNaN, isSelected, isHighlight);
 
       float size = pointSize(nPoints, minViewportDimension, isSelected, isHighlight);
-      gl_PointSize = size * pow(distance, 1.2);
+      gl_PointSize = size * pow(distance, 0.5);
 
       float z = isNaN ? zBottom : (isHighlight ? zTop : zMiddle);
       vec3 xy = projView * vec3(position, 1.);

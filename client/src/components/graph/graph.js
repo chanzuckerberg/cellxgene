@@ -194,11 +194,7 @@ class Graph extends React.Component {
 
   componentDidMount() {
     // setup canvas, webgl draw function and camera
-    const camera = _camera(this.reglCanvas, {
-      pan: true,
-      scale: true,
-      rotate: false
-    });
+    const camera = _camera(this.reglCanvas);
     const regl = _regl(this.reglCanvas);
     const drawPoints = _drawPoints(regl);
 
