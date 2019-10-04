@@ -67,6 +67,13 @@ def common_args(func):
         show_default=False,
         help="Load data in file-backed mode, which may save memory, but result in slower overall performance."
     )
+    @click.option(
+        "--disable-diffexp",
+        is_flag=True,
+        default=False,
+        show_default=False,
+        help="Disable on-demand differential expression."
+    )
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         return func(*args, **kwargs)
@@ -75,7 +82,8 @@ def common_args(func):
 
 
 def parse_engine_args(embedding, obs_names, var_names, max_category_items,
-                      diffexp_lfc_cutoff, experimental_label_file, backed):
+                      diffexp_lfc_cutoff, experimental_label_file, backed,
+                      disable_diffexp):
     return {
         "layout": embedding,
         "max_category_items": max_category_items,
@@ -83,7 +91,8 @@ def parse_engine_args(embedding, obs_names, var_names, max_category_items,
         "obs_names": obs_names,
         "var_names": var_names,
         "label_file": experimental_label_file,
-        "backed": backed
+        "backed": backed,
+        "disable_diffexp": disable_diffexp
     }
 
 
@@ -134,7 +143,8 @@ def launch(
         scripts,
         about,
         experimental_label_file,
-        backed
+        backed,
+        disable_diffexp
 ):
     """Launch the cellxgene data viewer.
     This web app lets you explore single-cell expression data.
@@ -150,7 +160,8 @@ def launch(
     > cellxgene launch <url>"""
 
     e_args = parse_engine_args(embedding, obs_names, var_names, max_category_items,
-                               diffexp_lfc_cutoff, experimental_label_file, backed)
+                               diffexp_lfc_cutoff, experimental_label_file, backed,
+                               disable_diffexp)
     try:
         data_locator = DataLocator(data)
     except RuntimeError as re:
@@ -255,6 +266,10 @@ def launch(
         server.attach_data(ScanpyEngine(data_locator, e_args), title=title, about=about)
     except ScanpyFileError as e:
         raise click.ClickException(f"{e}")
+
+    if server.app.data.config['diffexp_may_be_slow']:
+        click.echo(f"[cellxgene] Due to the size of your dataset, "
+                   f"running differential expression may take longer or fail.")
 
     if open_browser:
         click.echo(f"[cellxgene] Launching! Opening your browser to {cellxgene_url} now.")

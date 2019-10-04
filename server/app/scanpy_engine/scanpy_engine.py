@@ -53,7 +53,9 @@ class ScanpyEngine(CXGDriver):
             "var_names": None,
             "diffexp_lfc_cutoff": 0.01,
             "label_file": None,
-            "backed": False
+            "backed": False,
+            "disable_diffexp": False,
+            "diffexp_may_be_slow": False
         }
 
     @staticmethod
@@ -260,6 +262,10 @@ class ScanpyEngine(CXGDriver):
         self._default_and_validate_layouts()
         self._validate_label_data()
         self._create_schema()
+
+        # heuristic
+        if (self.data.shape[0] * self.data.shape[1]) > (100 * 10 ** 6):
+            self.config.update({"diffexp_may_be_slow": True})
 
     @requires_data
     def _default_and_validate_layouts(self):

@@ -14,7 +14,9 @@ export const configDefaults = {
   features: {},
   displayNames: {},
   parameters: {
-    "max-category-items": 1000
+    "max-category-items": 1000,
+    "disable-diffexp": false,
+    "diffexp-may-be-slow": false
   },
   links: {}
 };

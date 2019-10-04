@@ -39,7 +39,9 @@ import { tooltipHoverOpenDelay } from "../../globals";
   libraryVersions: state.config?.library_versions, // eslint-disable-line camelcase
   undoDisabled: state["@@undoable/past"].length === 0,
   redoDisabled: state["@@undoable/future"].length === 0,
-  aboutLink: state.config?.links?.["about-dataset"]
+  aboutLink: state.config?.links?.["about-dataset"],
+  disableDiffexp: state.config?.parameters?.["disable-diffexp"] ?? false,
+  diffexpMayBeSlow: state.config?.parameters?.["diffexp-may-be-slow"] ?? false
 }))
 class MenuBar extends React.Component {
   static isValidDigitKeyEvent(e) {
@@ -255,6 +257,65 @@ class MenuBar extends React.Component {
     });
   };
 
+  renderDiffExp() {
+    /* diffexp-related buttons may be disabled */
+    const { disableDiffexp, differential, diffexpMayBeSlow } = this.props;
+    if (disableDiffexp) return null;
+
+    const haveBothCellSets =
+      !!differential.celllist1 && !!differential.celllist2;
+
+    const tipMessage =
+      "See top 10 differentially expressed genes" +
+      (diffexpMayBeSlow
+        ? " (NOTE: large dataset - may take longer or fail)"
+        : "");
+
+    return (
+      <div className="bp3-button-group" style={{ marginRight: 10 }}>
+        <CellSetButton {...this.props} eitherCellSetOneOrTwo={1} />
+        <CellSetButton {...this.props} eitherCellSetOneOrTwo={2} />
+        {!differential.diffExp ? (
+          <Tooltip
+            content={tipMessage}
+            position="bottom"
+            hoverOpenDelay={tooltipHoverOpenDelay}
+          >
+            <AnchorButton
+              disabled={!haveBothCellSets}
+              intent="primary"
+              data-testid="diffexp-button"
+              loading={differential.loading}
+              icon="left-join"
+              fill
+              type="button"
+              onClick={this.computeDiffExp}
+            >
+              Compute Differential Expression
+            </AnchorButton>
+          </Tooltip>
+        ) : null}
+
+        {differential.diffExp ? (
+          <Tooltip
+            content="Remove differentially expressed gene list and clear cell selections"
+            position="bottom"
+            hoverOpenDelay={tooltipHoverOpenDelay}
+          >
+            <Button
+              type="button"
+              fill
+              intent="warning"
+              onClick={this.clearDifferentialExpression}
+            >
+              Clear Differential Expression
+            </Button>
+          </Tooltip>
+        ) : null}
+      </div>
+    );
+  }
+
   render() {
     const {
       dispatch,
@@ -272,9 +333,6 @@ class MenuBar extends React.Component {
       aboutLink
     } = this.props;
     const { pendingClipPercentiles } = this.state;
-
-    const haveBothCellSets =
-      !!differential.celllist1 && !!differential.celllist2;
 
     // constants used to create selection tool button
     let selectionTooltip;
@@ -295,47 +353,7 @@ class MenuBar extends React.Component {
           top: 8
         }}
       >
-        <div className="bp3-button-group" style={{ marginRight: 10 }}>
-          <CellSetButton {...this.props} eitherCellSetOneOrTwo={1} />
-          <CellSetButton {...this.props} eitherCellSetOneOrTwo={2} />
-          {!differential.diffExp ? (
-            <Tooltip
-              content="Add two cells selections, see the top 15 differentially expressed genes between them"
-              position="bottom"
-              hoverOpenDelay={tooltipHoverOpenDelay}
-            >
-              <AnchorButton
-                disabled={!haveBothCellSets}
-                intent="primary"
-                data-testid="diffexp-button"
-                loading={differential.loading}
-                icon="left-join"
-                fill
-                type="button"
-                onClick={this.computeDiffExp}
-              >
-                Compute Differential Expression
-              </AnchorButton>
-            </Tooltip>
-          ) : null}
-
-          {differential.diffExp ? (
-            <Tooltip
-              content="Remove differentially expressed gene list and clear cell selections"
-              position="bottom"
-              hoverOpenDelay={tooltipHoverOpenDelay}
-            >
-              <Button
-                type="button"
-                fill
-                intent="warning"
-                onClick={this.clearDifferentialExpression}
-              >
-                Clear Differential Expression
-              </Button>
-            </Tooltip>
-          ) : null}
-        </div>
+        {this.renderDiffExp()}
         <Tooltip
           content="Show only metadata and cells which are currently selected"
           position="bottom"
