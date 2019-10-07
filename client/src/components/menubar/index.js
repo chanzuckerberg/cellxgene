@@ -16,7 +16,10 @@ import CellSetButton from "./cellSetButtons";
 import InformationMenu from "./infoMenu";
 import UndoRedoReset from "./undoRedoReset";
 import Clip from "./clip";
-import { tooltipHoverOpenDelay } from "../../globals";
+import {
+  tooltipHoverOpenDelay,
+  tooltipHoverOpenDelayQuick
+} from "../../globals";
 
 @connect(state => ({
   universe: state.universe,
@@ -279,7 +282,7 @@ class MenuBar extends React.Component {
           <Tooltip
             content={tipMessage}
             position="bottom"
-            hoverOpenDelay={tooltipHoverOpenDelay}
+            hoverOpenDelay={tooltipHoverOpenDelayQuick}
           >
             <AnchorButton
               disabled={!haveBothCellSets}
@@ -300,7 +303,7 @@ class MenuBar extends React.Component {
           <Tooltip
             content="Remove differentially expressed gene list and clear cell selections"
             position="bottom"
-            hoverOpenDelay={tooltipHoverOpenDelay}
+            hoverOpenDelay={tooltipHoverOpenDelayQuick}
           >
             <Button
               type="button"
