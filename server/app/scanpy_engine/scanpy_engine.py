@@ -264,7 +264,8 @@ class ScanpyEngine(CXGDriver):
         self._create_schema()
 
         # heuristic
-        if (self.data.shape[0] * self.data.shape[1]) > (100 * 10 ** 6):
+        n_values = self.data.shape[0] * self.data.shape[1]
+        if (n_values > 1e8 and self.config['backed'] is True) or (n_values > 5e8):
             self.config.update({"diffexp_may_be_slow": True})
 
     @requires_data
