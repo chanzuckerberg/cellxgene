@@ -45,7 +45,7 @@ To see all options call
 cellxgene launch --help
 ```
 
-There is an additional subcommand called `cellxgene prepare` that takes an existing dataset in one of several formats and applies minimal preprocessing and reformatting so that `launch` can use it (see [the next section](##data-formatting) for more info on `prepare`).
+There is an additional subcommand called `cellxgene prepare` that takes an existing dataset in one of several formats and applies minimal preprocessing and reformatting so that `launch` can use it (see [the next section](#data-formatting) for more info on `prepare`).
 
 ## data formatting
 
@@ -93,7 +93,6 @@ To see all options call
 ```
 cellxgene prepare --help
 ```
-
 
 ## conda and virtual environments
 
