@@ -24,38 +24,39 @@ import pointDialation from "./pointDilation";
 import undoableConfig from "./undoableConfig";
 
 const Reducer = undoable(
-    cascadeReducers([
-        ["universe", universe],
-        ["config", config],
-        ["world", world],
-        ["annotations", annotations],
-        ["layoutChoice", layoutChoice],
-        ["categoricalSelection", categoricalSelection],
-        ["continuousSelection", continuousSelection],
-        ["graphSelection", graphSelection],
-        ["crossfilter", crossfilter],
-        ["colors", colors],
-        ["controls", controls],
-        ["differential", differential],
-        ["responsive", responsive],
+  cascadeReducers([
+    ["universe", universe],
+    ["config", config],
+    ["world", world],
+    ["annotations", annotations],
+    ["layoutChoice", layoutChoice],
+    ["categoricalSelection", categoricalSelection],
+    ["continuousSelection", continuousSelection],
+    ["graphSelection", graphSelection],
+    ["crossfilter", crossfilter],
+    ["colors", colors],
+    ["controls", controls],
+    ["differential", differential],
+    ["responsive", responsive],
     ["centroidLabels", centroidLabels],
     ["pointDilation", pointDialation],
-        ["autosave", autosave],
-        ["resetCache", resetCache]
-    ]),
-    [
-        "universe",
-        "categoricalSelection",
-        "world",
-        "continuousSelection",
-        "graphSelection",
-        "crossfilter",
-        "layoutChoice",
-        "controls",
-        "differential",
-        "colors",
+    ["autosave", autosave],
+    ["resetCache", resetCache]
+  ]),
+  [
+    "universe",
+    "categoricalSelection",
+    "world",
+    "continuousSelection",
+    "graphSelection",
+    "crossfilter",
+    "layoutChoice",
+    "controls",
+    "differential",
+    "colors",
     "centroidLabels",
-        "annotations"
+    "annotations"
+  ]
 );
 
 const store = createStore(Reducer, applyMiddleware(thunk));
