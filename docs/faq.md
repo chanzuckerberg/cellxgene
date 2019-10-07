@@ -120,4 +120,11 @@ By default, cellxgene will read the entire H5AD will be into memory at startup, 
 Very large datasets may not fit in memory. The "--backed" mode will read the file incrementally, reducing memory
 use, and for large files, improving startup speed. _However_, this option will also significantly slow
 down access to gene expression histograms, and may render differential expression calculations too slow
-to use.
+to use (see `--disable-diffexp` for an option to disable this feature).
+
+#### What does the command line option `--disable-diffexp` do?
+
+The `--disable-diffexp` option will disable and hide the `Compute Differential Expression` feature.
+For large datasets, or datasets loaded with the `--backed` option, computing differential expression may
+be extremely slow or use excessive reources on the host computer (eg, memory thrasing).
+Disabling the feature will ensure that the end-user does not accidentally initiate this computation.
