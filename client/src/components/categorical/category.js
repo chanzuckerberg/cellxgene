@@ -29,7 +29,7 @@ import { AnnotationsHelpers } from "../../util/stateManager";
   categoricalSelection: state.categoricalSelection,
   annotations: state.annotations,
   universe: state.universe,
-  labeledCategory: state.centroidLabel.labeledCategory,
+  labeledCategory: state.centroidLabels.labeledCategory,
   graphInteractionMode: state.controls.graphInteractionMode
 }))
 class Category extends React.Component {
@@ -559,20 +559,6 @@ class Category extends React.Component {
                 </Popover>
               </>
             ) : null}
-          <ButtonGroup>
-            <Tooltip
-              content="View the centroids for all values"
-              position="bottom"
-              disabled={graphInteractionMode === "zoom"}
-            >
-              <Button
-                icon="property"
-                onClick={this.handleCentroidChange}
-                active={labeledCategory === metadataField}
-                intent={labeledCategory === metadataField ? "primary" : "none"}
-                disabled={graphInteractionMode === "zoom"}
-              />
-            </Tooltip>
             <Tooltip content="Use as color scale" position="bottom">
               <Button
                 data-testclass="colorby"
@@ -583,7 +569,6 @@ class Category extends React.Component {
                 icon="tint"
               />
             </Tooltip>
-          </ButtonGroup>
           </div>
         </div>
         <div style={{ marginLeft: 26 }}>
