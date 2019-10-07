@@ -122,7 +122,7 @@ class Graph extends React.PureComponent {
   );
 
   computePointFlags = memoize(
-    (world, crossfilter, colorAccessor, centroidLabel) => {
+    (world, crossfilter, colorAccessor, pointDilation) => {
       /*
       We communicate with the shader using three flags:
       - isNaN -- the value is a NaN. Only makes sense when we have a colorAccessor
@@ -147,7 +147,7 @@ class Graph extends React.PureComponent {
         0
       ).slice();
 
-      const { metadataField, categoryField } = centroidLabel;
+      const { metadataField, categoryField } = pointDilation;
       const highlightData = metadataField
         ? world.obsAnnotations.col(metadataField)?.asArray()
         : null;
@@ -249,8 +249,7 @@ class Graph extends React.PureComponent {
       graphInteractionMode,
       centroidLabels,
       pointDilation,
-      colorAccessor,
-      dispatch
+      colorAccessor
     } = this.props;
     const { reglRender, regl, toolSVG, centroidSVG, cameraUpdate } = this.state;
     let stateChanges = {};
@@ -330,7 +329,7 @@ class Graph extends React.PureComponent {
         world,
         crossfilter,
         colorAccessor,
-        centroidLabels
+        pointDilation
       );
       if (renderCache.flags !== newFlags) {
         renderCache.flags = newFlags;
@@ -491,7 +490,7 @@ class Graph extends React.PureComponent {
 
     CURRENTLY UNUSED
     */
-    const { responsive, centroidLabels, colorAccessor } = this.props;
+    const { responsive, centroidLabels, colorAccessor, dispatch } = this.props;
 
     // Remove pre-existing SVG layer
     d3.select("#graphAttachPoint")
