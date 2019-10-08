@@ -69,7 +69,9 @@ class ConfigAPI(Resource):
                     "about-dataset": current_app.config["ABOUT_DATASET"]
                 },
                 "parameters": {
-                    "max-category-items": current_app.data.config["max_category_items"]
+                    "max-category-items": current_app.data.config["max_category_items"],
+                    "disable-diffexp": current_app.data.config["disable_diffexp"],
+                    "diffexp-may-be-slow": current_app.data.config["diffexp_may_be_slow"]
                 },
                 "library_versions": {
                     "cellxgene": cellxgene_version,

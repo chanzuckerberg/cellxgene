@@ -60,6 +60,20 @@ def common_args(func):
         metavar="<user labels CSV file>",
         help="CSV file containing user annotations; will be overwritten.  Created if does not exist.",
     )
+    @click.option(
+        "--backed",
+        is_flag=True,
+        default=False,
+        show_default=False,
+        help="Load data in file-backed mode, which may save memory, but result in slower overall performance."
+    )
+    @click.option(
+        "--disable-diffexp",
+        is_flag=True,
+        default=False,
+        show_default=False,
+        help="Disable on-demand differential expression."
+    )
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         return func(*args, **kwargs)
@@ -67,7 +81,9 @@ def common_args(func):
     return wrapper
 
 
-def parse_engine_args(embedding, obs_names, var_names, max_category_items, diffexp_lfc_cutoff, experimental_label_file):
+def parse_engine_args(embedding, obs_names, var_names, max_category_items,
+                      diffexp_lfc_cutoff, experimental_label_file, backed,
+                      disable_diffexp):
     return {
         "layout": embedding,
         "max_category_items": max_category_items,
@@ -75,6 +91,8 @@ def parse_engine_args(embedding, obs_names, var_names, max_category_items, diffe
         "obs_names": obs_names,
         "var_names": var_names,
         "label_file": experimental_label_file,
+        "backed": backed,
+        "disable_diffexp": disable_diffexp
     }
 
 
@@ -124,7 +142,9 @@ def launch(
         title,
         scripts,
         about,
-        experimental_label_file
+        experimental_label_file,
+        backed,
+        disable_diffexp
 ):
     """Launch the cellxgene data viewer.
     This web app lets you explore single-cell expression data.
@@ -140,7 +160,8 @@ def launch(
     > cellxgene launch <url>"""
 
     e_args = parse_engine_args(embedding, obs_names, var_names, max_category_items,
-                               diffexp_lfc_cutoff, experimental_label_file)
+                               diffexp_lfc_cutoff, experimental_label_file, backed,
+                               disable_diffexp)
     try:
         data_locator = DataLocator(data)
     except RuntimeError as re:
@@ -246,6 +267,10 @@ def launch(
     except ScanpyFileError as e:
         raise click.ClickException(f"{e}")
 
+    if not disable_diffexp and server.app.data.config['diffexp_may_be_slow']:
+        click.echo(f"[cellxgene] CAUTION: due to the size of your dataset, "
+                   f"running differential expression may take longer or fail.")
+
     if open_browser:
         click.echo(f"[cellxgene] Launching! Opening your browser to {cellxgene_url} now.")
         webbrowser.open(cellxgene_url)
@@ -259,7 +284,7 @@ def launch(
         sys.stdout = f
 
     try:
-        server.app.run(host=host, debug=debug, port=port, threaded=True, use_debugger=False)
+        server.app.run(host=host, debug=debug, port=port, threaded=False if debug else True, use_debugger=False)
     except OSError as e:
         if e.errno == errno.EADDRINUSE:
             raise click.ClickException("Port is in use, please specify an open port using the --port flag.") from e

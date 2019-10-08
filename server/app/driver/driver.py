@@ -29,7 +29,9 @@ class CXGDriver(metaclass=ABCMeta):
         return {
             "layout": None,
             "max_category_items": None,
-            "diffexp_lfc_cutoff": None
+            "diffexp_lfc_cutoff": None,
+            "disable_diffexp": False,
+            "diffexp_may_be_slow": False
         }
 
     @property

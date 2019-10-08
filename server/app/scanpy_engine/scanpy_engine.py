@@ -21,6 +21,14 @@ from server.app.util.utils import jsonify_scanpy, requires_data
 from server.app.scanpy_engine.diffexp import diffexp_ttest
 from server.app.util.fbs.matrix import encode_matrix_fbs, decode_matrix_fbs
 from server.app.scanpy_engine.labels import read_labels, write_labels
+import server.app.scanpy_engine.matrix_proxy  # noqa: F401
+from server.app.util.matrix_proxy import MatrixProxy
+
+
+def has_method(o, name):
+    """ return True if `o` has callable method `name` """
+    op = getattr(o, name, None)
+    return op is not None and callable(op)
 
 
 class ScanpyEngine(CXGDriver):
@@ -45,6 +53,9 @@ class ScanpyEngine(CXGDriver):
             "var_names": None,
             "diffexp_lfc_cutoff": 0.01,
             "label_file": None,
+            "backed": False,
+            "disable_diffexp": False,
+            "diffexp_may_be_slow": False
         }
 
     @staticmethod
@@ -208,7 +219,8 @@ class ScanpyEngine(CXGDriver):
             with data_locator.local_handle() as lh:
                 # as of AnnData 0.6.19, backed mode performs initial load fast, but at the
                 # cost of significantly slower access to X data.
-                self.data = anndata.read_h5ad(lh)
+                backed = 'r' if self.config['backed'] else None
+                self.data = anndata.read_h5ad(lh, backed=backed)
 
         except ValueError:
             raise ScanpyFileError(
@@ -250,6 +262,11 @@ class ScanpyEngine(CXGDriver):
         self._default_and_validate_layouts()
         self._validate_label_data()
         self._create_schema()
+
+        # heuristic
+        n_values = self.data.shape[0] * self.data.shape[1]
+        if (n_values > 1e8 and self.config['backed'] is True) or (n_values > 5e8):
+            self.config.update({"diffexp_may_be_slow": True})
 
     @requires_data
     def _default_and_validate_layouts(self):
@@ -467,22 +484,6 @@ class ScanpyEngine(CXGDriver):
 
         return jsonify_scanpy({"status": "OK"})
 
-    @staticmethod
-    def slice_columns(X, var_mask):
-        """
-        Slice columns from the matrix X, as specified by the mask
-        Semantically equivalent to X[:, var_mask], but handles sparse
-        matrices in a more performant manner.
-        """
-        if var_mask is None:    # noop
-            return X
-        if sparse.issparse(X):  # use tuned getcol/hstack for performance
-            indices = np.nonzero(var_mask)[0]
-            cols = [X.getcol(i) for i in indices]
-            return sparse.hstack(cols, format="csc")
-        else:   # else, just use standard slicing, which is fine for dense arrays
-            return X[:, var_mask]
-
     @requires_data
     def data_frame_to_fbs_matrix(self, filter, axis):
         """
@@ -505,7 +506,8 @@ class ScanpyEngine(CXGDriver):
             raise FilterError("filtering on obs unsupported")
 
         # Currently only handles VAR dimension
-        X = self.slice_columns(self.data._X, var_selector)
+        X = MatrixProxy.create(self.data.X if var_selector is None
+                               else self.data.X[:, var_selector])
         return encode_matrix_fbs(X, col_idx=np.nonzero(var_selector)[0], row_idx=None)
 
     @requires_data
