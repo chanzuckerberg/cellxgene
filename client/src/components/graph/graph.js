@@ -12,6 +12,7 @@ import setupCentroidSVG from "./setupCentroidSVG";
 import _camera from "../../util/camera";
 import _drawPoints from "./drawPointsRegl";
 import { isTypedArray } from "../../util/typeHelpers";
+import styles from "./graph.css";
 
 /*
 Simple 2D transforms control all point painting.  There are three:
@@ -450,10 +451,14 @@ class Graph extends React.PureComponent {
     const { responsive, selectionTool, graphInteractionMode } = this.props;
 
     /* clear out whatever was on the div, even if nothing, but usually the brushes etc */
+
     d3.select("#graphAttachPoint")
       .select("svg")
-      .selectAll(".lasso-svg")
+      .selectAll(".lasso-group")
       .remove();
+
+    // Don't render or recreate toolSVG if currently in zoom mode
+    if (graphInteractionMode !== "select") return;
 
     let handleStart;
     let handleDrag;
@@ -854,7 +859,7 @@ class Graph extends React.PureComponent {
   });
 
   render() {
-    const { responsive } = this.props;
+    const { responsive, graphInteractionMode } = this.props;
 
     return (
       <div id="graphWrapper">
@@ -867,7 +872,16 @@ class Graph extends React.PureComponent {
           }}
         >
           <div id="graphAttachPoint">
-            <svg />
+            <svg
+              data-testid="layout-overlay"
+              width={responsive.width - this.graphPaddingRight}
+              height={responsive.height}
+              className={styles.graphSVG}
+              style={{ zIndex: 999 }}
+              pointerEvents={
+                graphInteractionMode === "select" ? "auto" : "none"
+              }
+            />
           </div>
           <div style={{ padding: 0, margin: 0 }}>
             <canvas

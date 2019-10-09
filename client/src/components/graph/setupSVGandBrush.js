@@ -19,19 +19,7 @@ export default (
   graphPaddingRight,
   graphInteractionMode
 ) => {
-  const svg = d3
-    .select("#graphAttachPoint")
-    .select("svg")
-    .attr("data-testid", "layout-overlay")
-    .attr("width", responsive.width - graphPaddingRight)
-    .attr("height", responsive.height)
-    .attr("class", `${styles.graphSVG}`)
-    .style("z-index", 999)
-    .attr(
-      "pointer-events",
-      graphInteractionMode === "select" ? "auto" : "none"
-    );
-  /* .style("display", graphInteractionMode === "select" ? "inherit" : "none"); */
+  const svg = d3.select("#graphAttachPoint").select("svg");
 
   if (selectionToolType === "brush") {
     const brush = d3
