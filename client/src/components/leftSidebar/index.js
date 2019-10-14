@@ -47,8 +47,6 @@ class LeftSideBar extends React.Component {
           }}
         >
           <Categorical />
-          <GeneExpression />
-          <Continuous />
         </div>
         {scatterplotXXaccessor && scatterplotYYaccessor ? (
           <DynamicScatterplot />

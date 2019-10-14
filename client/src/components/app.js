@@ -5,6 +5,7 @@ import { connect } from "react-redux";
 
 import Container from "./framework/container";
 import LeftSideBar from "./leftSidebar";
+import RightSideBar from "./rightSidebar";
 import Legend from "./continuousLegend";
 import Graph from "./graph/graph";
 import MenuBar from "./menubar";
@@ -88,6 +89,7 @@ class App extends React.Component {
         ) : null}
         <div>
           {loading ? null : <LeftSideBar />}
+          {loading ? null : <RightSideBar />}
           {loading ? null : <MenuBar />}
           {loading ? null : <Graph key={graphRenderCounter} />}
           {loading ? null : <Autosave />}
