@@ -33,7 +33,7 @@ class LeftSideBar extends React.Component {
           position: "fixed",
           backgroundColor: "white",
           /* x y blur spread color */
-          boxShadow: "-3px 0px 6px 2px rgba(153,153,153,0.4)"
+          borderRight: `1px solid ${globals.lightGrey}`
         }}
       >
         <TopLeftLogoAndTitle />

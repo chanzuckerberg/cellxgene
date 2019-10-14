@@ -63,9 +63,7 @@ function InformationMenu(props) {
           onClick={resetInterface}
           data-testid="reset"
           data-testclass={`resetting-${resettingInterface}`}
-        >
-          reset
-        </AnchorButton>
+        />
       </Tooltip>
     </div>
   );
