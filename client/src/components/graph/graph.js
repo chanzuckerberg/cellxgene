@@ -175,7 +175,7 @@ class Graph extends React.PureComponent {
     super(props);
     this.count = 0;
     this.graphPaddingTop = 0;
-    this.graphPaddingRight = globals.leftSidebarWidth;
+    this.graphPaddingRightLeft = globals.leftSidebarWidth * 2;
     this.renderCache = {
       X: null,
       Y: null,
@@ -412,7 +412,7 @@ class Graph extends React.PureComponent {
       handleEnd,
       handleCancel,
       responsive,
-      this.graphPaddingRight,
+      this.graphPaddingRightLeft,
       graphInteractionMode
     );
 
@@ -439,7 +439,7 @@ class Graph extends React.PureComponent {
 
     const newCentroidSVG = setupCentroidSVG(
       responsive,
-      this.graphPaddingRight,
+      this.graphPaddingRightLeft,
       centroidScreen,
       centroidLabel.categoryField,
       colorAccessor
@@ -539,7 +539,8 @@ class Graph extends React.PureComponent {
     const cameraInvTF = camera.invView();
 
     /* screen -> gl */
-    const x = (2 * pin[0]) / (responsive.width - this.graphPaddingRight) - 1;
+    const x =
+      (2 * pin[0]) / (responsive.width - this.graphPaddingRightLeft) - 1;
     const y = 2 * (1 - pin[1] / (responsive.height - this.graphPaddingTop)) - 1;
 
     const xy = vec2.fromValues(x, y);
@@ -566,7 +567,7 @@ class Graph extends React.PureComponent {
 
     const pin = [
       Math.round(
-        ((xy[0] + 1) * (responsive.width - this.graphPaddingRight)) / 2
+        ((xy[0] + 1) * (responsive.width - this.graphPaddingRightLeft)) / 2
       ),
       Math.round(
         -((xy[1] + 1) / 2 - 1) * (responsive.height - this.graphPaddingTop)
@@ -753,13 +754,13 @@ class Graph extends React.PureComponent {
             zIndex: -9999,
             position: "fixed",
             top: this.graphPaddingTop,
-            right: 0
+            right: globals.leftSidebarWidth
           }}
         >
           <div id="graphAttachPoint" />
           <div style={{ padding: 0, margin: 0 }}>
             <canvas
-              width={responsive.width - this.graphPaddingRight}
+              width={responsive.width - this.graphPaddingRightLeft}
               height={responsive.height - this.graphPaddingTop}
               data-testid="layout-graph"
               ref={canvas => {
