@@ -436,9 +436,14 @@ class Graph extends React.PureComponent {
   }
 
   handleCanvasEvent = e => {
-    const { camera, projectionTF } = this.state;
+    const { camera, projectionTF, modelTF } = this.state;
     if (e.type !== "wheel") e.preventDefault();
     if (camera.handleEvent(e, projectionTF)) {
+      const transform = mat3.clone(camera.view());
+      mat3.multiply(transform, transform, modelTF);
+      mat3.multiply(transform, transform, camera.view());
+      mat3.multiply(transform, transform, projectionTF);
+      this.setState({ transformTF: transform });
       this.renderCanvas();
     }
   };
@@ -507,10 +512,11 @@ class Graph extends React.PureComponent {
     // If there is no currently selected cateogry for viewing
     // Or if the graph is currently in zoom/pan mode
     if (
-      !colorAccessor ||
-      centroidLabels.labels.length ===
-        0 /* ||
+      false /* ||
     graphInteractionMode === "zoom" */
+      /* !colorAccessor ||
+      centroidLabels.labels.length ===
+        0 */
     ) {
       // Return without redrawing the svg layer
       return;
@@ -522,7 +528,7 @@ class Graph extends React.PureComponent {
     const iter = centroidLabels.labels.entries();
     let pair = iter.next().value;
     // While there are pairs
-    while (pair) {
+    while (false /* pair */) {
       const value = pair[1];
       // If the screen coordinates haven't been calculated
       // or if the viewport has changed
@@ -551,15 +557,18 @@ class Graph extends React.PureComponent {
       });
     };
 
-    const newCentroidSVG = setupCentroidSVG(
-      responsive,
-      this.graphPaddingRight,
-      centroidLabels.labels,
-      handleMouseEnter,
-      handleMouseExit
-    );
+    // Disconnected while creating pan interation
 
-    return { centroidSVG: newCentroidSVG };
+    // const newCentroidSVG = setupCentroidSVG(
+    //   responsive,
+    //   this.graphPaddingRight,
+    //   centroidLabels.labels,
+    //   handleMouseEnter,
+    //   handleMouseExit
+    // );
+
+    // return { centroidSVG: newCentroidSVG };
+    return;
   }
 
   brushToolUpdate(tool, container) {
@@ -860,6 +869,9 @@ class Graph extends React.PureComponent {
 
   render() {
     const { responsive, graphInteractionMode } = this.props;
+    const { transformTF } = this.state;
+
+    console.log(transformTF);
 
     return (
       <div id="graphWrapper">
@@ -881,7 +893,40 @@ class Graph extends React.PureComponent {
               pointerEvents={
                 graphInteractionMode === "select" ? "auto" : "none"
               }
-            />
+            >
+              <g
+                transform={
+                  transformTF
+                    ? "matrix(" +
+                      transformTF[0] +
+                      " " +
+                      transformTF[3] +
+                      " " +
+                      transformTF[1] +
+                      " " +
+                      transformTF[4] +
+                      " " +
+                      transformTF[2] +
+                      " " +
+                      transformTF[5] +
+                      ")"
+                    : "matrix(1 0 0 1 0 0)"
+                }
+              >
+                <rect
+                  x="0"
+                  y={responsive.height / 2}
+                  width={responsive.width}
+                  height={5}
+                />
+                <rect
+                  x={(responsive.width - this.graphPaddingRight) / 2}
+                  y={0}
+                  width={5}
+                  height={responsive.height}
+                />
+              </g>
+            </svg>
           </div>
           <div style={{ padding: 0, margin: 0 }}>
             <canvas
