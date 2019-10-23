@@ -435,14 +435,32 @@ class Graph extends React.PureComponent {
     }
   }
 
+  printTF = (name, tf) => {
+    console.log("-----", name, "-----");
+    console.log("Xscale[0]:", tf[0]);
+    console.log("Yscale[4]:", tf[4]);
+    console.log("Xtranslate[6]:", tf[6]);
+    console.log("Ytranslate[7]:", tf[7]);
+    console.log("zeros:", tf[1], tf[3], tf[2], tf[5]);
+    console.log("ones:", tf[8]);
+  };
+
   handleCanvasEvent = e => {
     const { camera, projectionTF, modelTF } = this.state;
     if (e.type !== "wheel") e.preventDefault();
     if (camera.handleEvent(e, projectionTF)) {
-      const transform = mat3.clone(camera.view());
+      console.log("+++++++++++++++++++++++++++++++++++++++");
+      const cameraTF = camera.view();
+      // this.printTF("model", modelTF);
+      // this.printTF("camera", cameraTF);
+      // this.printTF("projection", projectionTF);
+
+      const transform = mat3.clone(projectionTF);
+      mat3.multiply(transform, transform, cameraTF);
       mat3.multiply(transform, transform, modelTF);
-      mat3.multiply(transform, transform, camera.view());
-      mat3.multiply(transform, transform, projectionTF);
+
+      this.printTF("transform", transform);
+
       this.setState({ transformTF: transform });
       this.renderCanvas();
     }
@@ -871,8 +889,6 @@ class Graph extends React.PureComponent {
     const { responsive, graphInteractionMode } = this.props;
     const { transformTF } = this.state;
 
-    console.log(transformTF);
-
     return (
       <div id="graphWrapper">
         <div
@@ -894,36 +910,48 @@ class Graph extends React.PureComponent {
                 graphInteractionMode === "select" ? "auto" : "none"
               }
             >
+              {/* 
+                [ a, b, 0       
+                  c, d, 0,  =>  matrix(0, 3, 1, 4, 2, 5) => matrix(sx, 0, 0, sy, tx, ty)
+                  e, f, 1 ]   
+              */}
               <g
                 transform={
                   transformTF
                     ? "matrix(" +
-                      transformTF[0] +
+                      transformTF[0] / 2 +
                       " " +
                       transformTF[3] +
                       " " +
                       transformTF[1] +
                       " " +
-                      transformTF[4] +
+                      transformTF[4] / -2 +
                       " " +
-                      transformTF[2] +
+                      Math.round(
+                        ((transformTF[6] + 1) *
+                          (responsive.width - this.graphPaddingRight)) /
+                          2
+                      ) +
                       " " +
-                      transformTF[5] +
+                      Math.round(
+                        -((transformTF[7] + 1) / 2 - 1) *
+                          (responsive.height - this.graphPaddingTop)
+                      ) +
                       ")"
                     : "matrix(1 0 0 1 0 0)"
                 }
               >
                 <rect
                   x="0"
-                  y={responsive.height / 2}
-                  width={responsive.width}
+                  y={(responsive.height - this.graphPaddingTop) / 2}
+                  width={responsive.width - this.graphPaddingRight}
                   height={5}
                 />
                 <rect
                   x={(responsive.width - this.graphPaddingRight) / 2}
                   y={0}
                   width={5}
-                  height={responsive.height}
+                  height={responsive.height - this.graphPaddingTop}
                 />
               </g>
             </svg>
