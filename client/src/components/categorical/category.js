@@ -86,7 +86,7 @@ class Category extends React.Component {
     const { dispatch, metadataField } = this.props;
     const { newLabelText } = this.state;
     /*
-    XXX TODO - temporary code generates random label string.   Remove
+    XXX TODO - temporary code generates random label string. Remove
     when the label creation UI is implemented.
 
     const { newLabelText } = this.state;
@@ -315,7 +315,10 @@ class Category extends React.Component {
                 <Dialog
                   icon="tag"
                   title="Add new label"
-                  isOpen={annotations.isAddingNewLabel}
+                  isOpen={
+                    annotations.isAddingNewLabel &&
+                    annotations.categoryAddingNewLabel === metadataField
+                  }
                   onClose={this.disableAddNewLabelMode}
                 >
                   <form
