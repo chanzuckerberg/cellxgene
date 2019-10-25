@@ -6,6 +6,7 @@ const Annotations = (
     isEditingCategoryName: false,
     isEditingLabelName: false,
     categoryBeingEdited: false,
+    categoryAddingNewLabel: null,
     labelEditable: { category: null, label: null }
   },
   action
