@@ -102,6 +102,7 @@ class Category extends React.Component {
 
   activateEditCategoryMode = () => {
     const { dispatch, metadataField } = this.props;
+
     dispatch({
       type: "annotation: activate category edit mode",
       data: metadataField
@@ -378,6 +379,7 @@ class Category extends React.Component {
                       />
                       <MenuItem
                         icon="edit"
+                        disabled={annotations.isEditingCategoryName}
                         data-testclass="activateEditCategoryMode"
                         data-testid={`activateEditCategoryMode-${metadataField}`}
                         onClick={this.activateEditCategoryMode}
