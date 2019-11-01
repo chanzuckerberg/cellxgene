@@ -184,7 +184,9 @@ class CategoryValue extends React.Component {
       schema,
       isUserAnno,
       annotations,
-      flippedProps /* potentially brittle, their docs want {...flippedProps} on our div, our lint doesn't like that, we are version pinned 
+      // flippedProps is potentially brittle, their docs want {...flippedProps} on our div,
+      // our lint doesn't like jsx spread, we are version pinned to prevent api change on their part
+      flippedProps
     } = this.props;
 
     if (!categoricalSelection) return null;
