@@ -48,6 +48,7 @@
     "react": "^16.9.0",
     "react-autocomplete": "^1.7.2",
     "react-dom": "^16.9.0",
+    "react-flip-toolkit": "7.0.6",
     "react-helmet": "^5.2.1",
     "react-icons": "^3.7.0",
     "react-redux": "^7.1.1",

@@ -183,7 +183,8 @@ class CategoryValue extends React.Component {
       i,
       schema,
       isUserAnno,
-      annotations
+      annotations,
+      flippedProps /* potentially brittle, their docs want {...flippedProps} on our div, our lint doesn't like that, we are version pinned 
     } = this.props;
 
     if (!categoricalSelection) return null;
@@ -231,6 +232,9 @@ class CategoryValue extends React.Component {
     return (
       <div
         key={i}
+        data-flip-config={flippedProps["data-flip-config"]}
+        data-flip-id={flippedProps["data-flip-id"]}
+        data-portal-key={flippedProps["data-portal-key"]}
         className={styles.value}
         data-testclass="categorical-row"
         style={{
