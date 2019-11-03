@@ -125,20 +125,17 @@ export default class ImmutableTypedCrossfilter {
   }
 
   renameDimension(oldName, newName) {
-    /*
-    rename a dimension
-    */
     const { [oldName]: dim, ...dimensions } = this.dimensions;
     const { data, selectionCache } = this;
-    dim.dim.rename(newName);
-    return new ImmutableTypedCrossfilter(
-      data,
-      {
-        ...dimensions,
-        [newName]: dim
-      },
-      selectionCache
-    );
+    const newDimensions = {
+      ...dimensions,
+      [newName]: {
+        ...dim,
+        name: newName,
+        dim: dim.dim.rename(newName)
+      }
+    };
+    return new ImmutableTypedCrossfilter(data, newDimensions, selectionCache);
   }
 
   select(name, spec) {
@@ -316,8 +313,14 @@ class _ImmutableBaseDimension {
     this.name = name;
   }
 
+  clone() {
+    return Object.assign(Object.create(Object.getPrototypeOf(this)), this);
+  }
+
   rename(name) {
-    this.name = name;
+    const d = this.clone();
+    d.name = name;
+    return d;
   }
 
   select(spec) {
