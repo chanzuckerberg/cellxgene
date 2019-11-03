@@ -168,6 +168,9 @@ describe("ImmutableTypedCrossfilter", () => {
 
     const p4 = p3.delDimension("quantity");
     expect(p4).not.toBe(p3);
+
+    const p5 = p2.renameDimension("quantity", "Quantity");
+    expect(p5).not.toBe(p2);
   });
 
   test("select all and none", () => {
