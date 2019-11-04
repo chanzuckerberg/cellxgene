@@ -2,6 +2,7 @@ import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
 import { FaChevronRight, FaChevronDown } from "react-icons/fa";
+import { Flipper, Flipped, Spring } from "react-flip-toolkit";
 import {
   Button,
   Tooltip,
@@ -172,21 +173,26 @@ class Category extends React.Component {
     }
   }
 
-  renderCategoryItems() {
-    const { categoricalSelection, metadataField, isUserAnno } = this.props;
+  renderCategoryItems(optTuples) {
+    const { metadataField, isUserAnno } = this.props;
 
-    const cat = categoricalSelection[metadataField];
-    const optTuples = sortedCategoryValues([...cat.categoryValueIndices]);
-    return _.map(optTuples, (tuple, i) => (
-      <Value
-        isUserAnno={isUserAnno}
-        optTuples={optTuples}
-        key={tuple[1]}
-        metadataField={metadataField}
-        categoryIndex={tuple[1]}
-        i={i}
-      />
-    ));
+    return _.map(optTuples, (tuple, i) => {
+      return (
+        <Flipped key={tuple[1]} flipId={tuple[1]}>
+          {flippedProps => (
+            <Value
+              isUserAnno={isUserAnno}
+              optTuples={optTuples}
+              key={tuple[1]}
+              metadataField={metadataField}
+              categoryIndex={tuple[1]}
+              i={i}
+              flippedProps={flippedProps}
+            />
+          )}
+        </Flipped>
+      );
+    });
   }
 
   render() {
@@ -200,6 +206,10 @@ class Category extends React.Component {
       universe
     } = this.props;
     const { isTruncated } = categoricalSelection[metadataField];
+
+    const cat = categoricalSelection[metadataField];
+    const optTuples = sortedCategoryValues([...cat.categoryValueIndices]);
+    const optTuplesAsKey = _.map(optTuples, t => t[0]).join(""); // animation
 
     return (
       <div
@@ -423,7 +433,9 @@ class Category extends React.Component {
           </div>
         </div>
         <div style={{ marginLeft: 26 }}>
-          {isExpanded ? this.renderCategoryItems() : null}
+          <Flipper spring="veryGentle" flipKey={optTuplesAsKey}>
+            {isExpanded ? this.renderCategoryItems(optTuples) : null}
+          </Flipper>
         </div>
         <div>
           {isExpanded && isTruncated ? (
