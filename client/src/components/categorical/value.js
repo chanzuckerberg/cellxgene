@@ -17,13 +17,16 @@ import * as globals from "../../globals";
 import styles from "./categorical.css";
 import { Tooltip } from "@blueprintjs/core";
 
+import { AnnotationsHelpers as AH } from "../../util/stateManager";
+
 @connect(state => ({
   categoricalSelection: state.categoricalSelection,
   annotations: state.annotations,
   colorScale: state.colors.scale,
   colorAccessor: state.colors.colorAccessor,
   schema: state.world?.schema,
-  world: state.world
+  world: state.world,
+  crossfilter: state.crossfilter
 }))
 class CategoryValue extends React.Component {
   constructor(props) {
@@ -119,6 +122,7 @@ class CategoryValue extends React.Component {
     * world state
     * the color accessor (what is currently being colored by)
     * if this catagorical value's selection status has changed
+    * the crossfilter (ie, global selection state)
 
     If and only if true, update the component
     */
@@ -137,12 +141,14 @@ class CategoryValue extends React.Component {
     const worldChange = props.world !== nextProps.world;
     const colorAccessorChange = props.colorAccessor !== nextProps.colorAccessor;
     const annotationsChange = props.annotations !== nextProps.annotations;
+    const crossfilterChange = props.crossfilter !== nextProps.crossfilter;
 
     return (
       valueSelectionChange ||
       worldChange ||
       colorAccessorChange ||
-      annotationsChange
+      annotationsChange ||
+      crossfilterChange
     );
   };
 
@@ -172,6 +178,27 @@ class CategoryValue extends React.Component {
       categoryIndex
     });
   };
+
+  isAddCurrentSelectionDisabled(category, value) {
+    /*
+    disable "add current selection to label", if one of the following is true:
+    1. no cells are selected
+    2. all currently selected cells already have this label, on this category
+    */
+    const { crossfilter, world } = this.props;
+
+    // 1. no cells selected?
+    if (crossfilter.countSelected() == 0) {
+      return true;
+    }
+    // 2. all selected cells already have the label
+    const mask = crossfilter.allSelectedMask();
+    if (AH.allHaveLabelByMask(world.obsAnnotations, category, value, mask)) {
+      return true;
+    }
+    // else, don't disable
+    return false;
+  }
 
   render() {
     const {
@@ -401,7 +428,26 @@ class CategoryValue extends React.Component {
                       data-testclass="handleAddCurrentSelectionToThisLabel"
                       data-testid={`handleAddCurrentSelectionToThisLabel-${metadataField}`}
                       onClick={this.handleAddCurrentSelectionToThisLabel}
-                      text={`Re-label currently selected cells as ${displayString}`}
+                      text={
+                        <span>
+                          Re-label currently selected cells as
+                          <span
+                            style={{
+                              fontStyle:
+                                displayString ===
+                                globals.unassignedCategoryLabel
+                                  ? "italic"
+                                  : "auto"
+                            }}
+                          >
+                            {` ${displayString}`}
+                          </span>
+                        </span>
+                      }
+                      disabled={this.isAddCurrentSelectionDisabled(
+                        metadataField,
+                        value
+                      )}
                     />
                     {displayString !== globals.unassignedCategoryLabel ? (
                       <MenuItem
@@ -419,7 +465,9 @@ class CategoryValue extends React.Component {
                         data-testclass="handleDeleteValue"
                         data-testid={`handleDeleteValue-${metadataField}`}
                         onClick={this.handleDeleteValue}
-                        text="Delete this label, and reassign all cells to type 'unknown'"
+                        text={`Delete this label, and reassign all cells to type '${
+                          globals.unassignedCategoryLabel
+                        }'`}
                       />
                     ) : null}
                   </Menu>
