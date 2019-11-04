@@ -23,7 +23,7 @@ class NotImplementedError extends Error {
 }
 
 export default class ImmutableTypedCrossfilter {
-  constructor(data, dimensions = {}, selectionCache = null) {
+  constructor(data, dimensions = {}, selectionCache = {}) {
     /*
     Typically, parameter 'data' is one of:
       - Array of objects/records
@@ -32,12 +32,14 @@ export default class ImmutableTypedCrossfilter {
 
     Object field description:
     - data: reference to the array of records in the crossfilter
-    - selectionBitArray: bit array containing the flatted selection state
-      of all dimensions.  This is lazily created and is effectively
+    - selectionCache: object which may contains a bit array indicating
+      the flatted selection state for all dimensions, plus other state
+      summarizing the selection.  This is lazily created and is effectively
       a perfomance cache.  Methods which return a new crossfilter,
       such as select(), addDimention() and delDimension(), will pass
       the cache forward to the new object, as the typical "immutable API"
       usage pattern is to retain the new crossfilter and discard the old.
+      If the cache object is empty, it will be rebuilt.
     - dimensions: contains each dimension and its current state:
         - id: bit offset in the cached bit array
         - dim: the dimension object
@@ -45,7 +47,7 @@ export default class ImmutableTypedCrossfilter {
         - selection: the dimension's current selection
     */
     this.data = data;
-    this.selectionCache = selectionCache; /* BitArray */
+    this.selectionCache = selectionCache; /* { BitArray, ... }*/
     this.dimensions = dimensions; /* name: { id, dim, name, selection } */
     Object.preventExtensions(this);
   }
@@ -59,11 +61,9 @@ export default class ImmutableTypedCrossfilter {
   }
 
   setData(data) {
-    return new ImmutableTypedCrossfilter(
-      data,
-      this.dimensions,
-      this.selectionCache
-    );
+    const { selectionCache } = this;
+    this.selectionCache = null;
+    return new ImmutableTypedCrossfilter(data, this.dimensions, selectionCache);
   }
 
   dimensionNames() {
@@ -80,18 +80,19 @@ export default class ImmutableTypedCrossfilter {
     Add a new dimension to this crossfilter, of type DimensionType.
     Remainder of parameters are dimension-type-specific.
     */
-    const { data, selectionCache } = this;
+    const { data } = this;
+    const { bitArray } = this.selectionCache;
 
     if (this.dimensions[name] !== undefined) {
       throw new Error(`Adding duplicate dimension name ${name}`);
     }
 
-    this.selectionCache = null; // pass ownership to new crossfilter
+    this._clearSelectionCache();
 
     let id;
-    if (selectionCache) {
-      id = selectionCache.allocDimension();
-      selectionCache.selectAll(id);
+    if (bitArray) {
+      id = bitArray.allocDimension();
+      bitArray.selectAll(id);
     }
     const DimensionType = DimTypes[type];
     const dim = new DimensionType(name, data, ...rest);
@@ -105,11 +106,15 @@ export default class ImmutableTypedCrossfilter {
         selection: dim.select({ mode: "all" })
       }
     };
-    return new ImmutableTypedCrossfilter(data, dimensions, selectionCache);
+
+    return new ImmutableTypedCrossfilter(data, dimensions, {
+      bitArray: bitArray
+    });
   }
 
   delDimension(name) {
-    const { data, selectionCache } = this;
+    const { data } = this;
+    const { bitArray } = this.selectionCache;
     const dimensions = { ...this.dimensions };
     if (dimensions[name] === undefined) {
       throw new ReferenceError(`Unable to delete unknown dimension ${name}`);
@@ -117,11 +122,14 @@ export default class ImmutableTypedCrossfilter {
 
     const { id } = dimensions[name];
     delete dimensions[name];
-    this.selectionCache = null; // pass ownership to new crossfilter
-    if (selectionCache) {
-      selectionCache.freeDimension(id);
+    this._clearSelectionCache();
+    if (bitArray) {
+      bitArray.freeDimension(id);
     }
-    return new ImmutableTypedCrossfilter(data, dimensions, selectionCache);
+
+    return new ImmutableTypedCrossfilter(data, dimensions, {
+      bitArray: bitArray
+    });
   }
 
   renameDimension(oldName, newName) {
@@ -160,13 +168,13 @@ export default class ImmutableTypedCrossfilter {
     const newSelection = dim.select(spec);
     newSelection.ranges = PositiveIntervals.canonicalize(newSelection.ranges);
     dimensions[name] = { id, dim, name, selection: newSelection };
-    ImmutableTypedCrossfilter._dimSelnHasUpdated(
+    const newSelectionCache = ImmutableTypedCrossfilter._dimSelnHasUpdated(
       selectionCache,
       id,
       newSelection,
       oldSelection
     );
-    return new ImmutableTypedCrossfilter(data, dimensions, selectionCache);
+    return new ImmutableTypedCrossfilter(data, dimensions, newSelectionCache);
   }
 
   static _dimSelnHasUpdated(selectionCache, id, newSeln, oldSeln) {
@@ -175,68 +183,82 @@ export default class ImmutableTypedCrossfilter {
     bit array if it exists.  If not, we will lazy create it when
     needed.
     */
-    if (selectionCache) {
-      /*
+    if (!selectionCache || !selectionCache.bitArray) return {};
+
+    const { bitArray } = selectionCache;
+
+    /*
       if both new and old selection use the same index, we can
       perform an incremental update. If the index changed, we have
       to do a suboptimal full deselect/select.
       */
-      let adds;
-      let dels;
-      if (newSeln.index === oldSeln.index) {
-        adds = PositiveIntervals.difference(newSeln.ranges, oldSeln.ranges);
-        dels = PositiveIntervals.difference(oldSeln.ranges, newSeln.ranges);
-      } else {
-        // console.log("suboptimal selection update - index changed");
-        adds = newSeln.ranges;
-        dels = oldSeln.ranges;
-      }
+    let adds;
+    let dels;
+    if (newSeln.index === oldSeln.index) {
+      adds = PositiveIntervals.difference(newSeln.ranges, oldSeln.ranges);
+      dels = PositiveIntervals.difference(oldSeln.ranges, newSeln.ranges);
+    } else {
+      // console.log("suboptimal selection update - index changed");
+      adds = newSeln.ranges;
+      dels = oldSeln.ranges;
+    }
 
-      /*
+    /*
       allow dimensions to return selected ranges in either dimension sort
       order (indirect via index), or in original record order.
 
       If sort index exists in the dimension, assume sort ordered ranges.
       */
-      if (oldSeln.index) {
-        dels.forEach(interval =>
-          selectionCache.deselectIndirectFromRange(id, oldSeln.index, interval)
-        );
-      } else {
-        dels.forEach(interval =>
-          selectionCache.deselectFromRange(id, interval)
-        );
-      }
-
-      if (newSeln.index) {
-        adds.forEach(interval =>
-          selectionCache.selectIndirectFromRange(id, newSeln.index, interval)
-        );
-      } else {
-        adds.forEach(interval => selectionCache.selectFromRange(id, interval));
-      }
+    if (oldSeln.index) {
+      dels.forEach(interval =>
+        bitArray.deselectIndirectFromRange(id, oldSeln.index, interval)
+      );
+    } else {
+      dels.forEach(interval => bitArray.deselectFromRange(id, interval));
     }
+
+    if (newSeln.index) {
+      adds.forEach(interval =>
+        bitArray.selectIndirectFromRange(id, newSeln.index, interval)
+      );
+    } else {
+      adds.forEach(interval => bitArray.selectFromRange(id, interval));
+    }
+
+    return { bitArray };
   }
 
   _getSelectionCache() {
-    if (!this.selectionCache) {
+    if (!this.selectionCache) this.selectionCache = {};
+
+    if (!this.selectionCache.bitArray) {
       // console.log("...rebuilding crossfilter cache...");
-      const selectionCache = new BitArray(this.data.length);
+      const bitArray = new BitArray(this.data.length);
       Object.keys(this.dimensions).forEach(name => {
         const { selection } = this.dimensions[name];
-        const id = selectionCache.allocDimension();
+        const id = bitArray.allocDimension();
         this.dimensions[name].id = id;
         const { ranges, index } = selection;
         ranges.forEach(range => {
           if (index) {
-            selectionCache.selectIndirectFromRange(id, index, range);
+            bitArray.selectIndirectFromRange(id, index, range);
           } else {
-            selectionCache.selectFromRange(id, range);
+            bitArray.selectFromRange(id, range);
           }
         });
       });
-      this.selectionCache = selectionCache;
+      this.selectionCache.bitArray = bitArray;
     }
+    return this.selectionCache;
+  }
+
+  _clearSelectionCache() {
+    this.selectionCache = {};
+    return this.selectionCache;
+  }
+
+  _setSelectionCache(vals = {}) {
+    Object.assign(this.selectionCache, vals);
     return this.selectionCache;
   }
 
@@ -245,11 +267,12 @@ export default class ImmutableTypedCrossfilter {
     return array of all records currently selected by all dimensions
     */
     const selectionCache = this._getSelectionCache();
+    const { bitArray } = selectionCache;
     const { data } = this;
     if (Array.isArray(data)) {
       const res = [];
       for (let i = 0, len = data.length; i < len; i += 1) {
-        if (selectionCache.isSelected(i)) {
+        if (bitArray.isSelected(i)) {
           res.push(data[i]);
         }
       }
@@ -264,11 +287,17 @@ export default class ImmutableTypedCrossfilter {
     return Uint8Array containing selection state (truthy/falsey) for each record.
     */
     const selectionCache = this._getSelectionCache();
-    return selectionCache.fillBySelection(
+    let { allSelectedMask } = selectionCache;
+
+    if (allSelectedMask !== undefined) return allSelectedMask;
+
+    allSelectedMask = selectionCache.bitArray.fillBySelection(
       new Uint8Array(this.data.length),
       1,
       0
     );
+    this._setSelectionCache({ allSelectedMask });
+    return allSelectedMask;
   }
 
   countSelected() {
@@ -276,7 +305,13 @@ export default class ImmutableTypedCrossfilter {
     return number of records selected on all dimensions
     */
     const selectionCache = this._getSelectionCache();
-    return selectionCache.selectionCount();
+    let { countSelected } = selectionCache;
+
+    if (countSelected !== undefined) return countSelected;
+
+    countSelected = selectionCache.bitArray.selectionCount();
+    this._setSelectionCache({ countSelected });
+    return countSelected;
   }
 
   isElementSelected(i) {
@@ -284,7 +319,7 @@ export default class ImmutableTypedCrossfilter {
     return truthy/falsey if this record is selected on all dimensions
     */
     const selectionCache = this._getSelectionCache();
-    return selectionCache.isSelected(i);
+    return selectionCache.bitArray.isSelected(i);
   }
 
   fillByIsSelected(array, selectedValue, deselectedValue) {
@@ -292,7 +327,7 @@ export default class ImmutableTypedCrossfilter {
     fill array with one of two values, based upon selection state.
     */
     const selectionCache = this._getSelectionCache();
-    return selectionCache.fillBySelection(
+    return selectionCache.bitArray.fillBySelection(
       array,
       selectedValue,
       deselectedValue
