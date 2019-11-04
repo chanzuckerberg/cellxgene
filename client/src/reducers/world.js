@@ -1,8 +1,8 @@
 import { unassignedCategoryLabel } from "../globals";
 import {
   World,
-  ControlsHelpers as CH,
-  AnnotationsHelpers as AH
+  ControlsHelpers,
+  AnnotationsHelpers
 } from "../util/stateManager";
 import clip from "../util/clip";
 import quantile from "../util/quantile";
@@ -92,7 +92,7 @@ const WorldReducer = (
           Object.keys(action.expressionData)
         )
       ];
-      unclippedVarData = CH.pruneVarDataCache(
+      unclippedVarData = ControlsHelpers.pruneVarDataCache(
         unclippedVarData,
         allTheGenesWeNeed
       );
@@ -208,7 +208,7 @@ const WorldReducer = (
       /* set all values to to new label */
       const unclipped = {
         ...state.unclipped,
-        obsAnnotations: AH.setLabelByValue(
+        obsAnnotations: AnnotationsHelpers.setLabelByValue(
           state.unclipped.obsAnnotations,
           metadataField,
           oldLabelName,
@@ -229,7 +229,7 @@ const WorldReducer = (
       /* set all values to unassigned in obsAnnotations */
       const unclipped = {
         ...state.unclipped,
-        obsAnnotations: AH.setLabelByValue(
+        obsAnnotations: AnnotationsHelpers.setLabelByValue(
           state.unclipped.obsAnnotations,
           metadataField,
           label,
@@ -249,7 +249,7 @@ const WorldReducer = (
       const mask = crossfilter.allSelectedMask();
       const unclipped = {
         ...state.unclipped,
-        obsAnnotations: AH.setLabelByMask(
+        obsAnnotations: AnnotationsHelpers.setLabelByMask(
           state.unclipped.obsAnnotations,
           metadataField,
           mask,

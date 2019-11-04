@@ -132,6 +132,22 @@ export function setLabelByMask(df, colName, mask, label) {
 	return ndf;
 }
 
+export function allHaveLabelByMask(df, colName, label, mask) {
+	// return true if all rows as indicated by mask have the colname set to label.
+	// False if not.
+	const col = df.col(colName);
+	if (!col) return false;
+	if (df.length !== mask.length)
+		throw new InternalError("mismatch on mask length");
+
+	for (let i = 0; i < df.length; i += 1) {
+		if (mask[i]) {
+			if (col.iget(i) !== label) return false;
+		}
+	}
+	return true;
+}
+
 export function worldToUniverseMask(worldMask, worldObsAnnotations, nObs) {
 	/*
 	given world seleciton mask, return a selection mask for entire universe 

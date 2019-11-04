@@ -3,8 +3,8 @@ import _ from "lodash";
 import Crossfilter from "../util/typedCrossfilter";
 import {
   World,
-  ControlsHelpers as CH,
-  AnnotationsHelpers as AH
+  ControlsHelpers,
+  AnnotationsHelpers
 } from "../util/stateManager";
 import {
   layoutDimensionName,
@@ -37,13 +37,16 @@ const CrossfilterReducerBase = (
       const { userDefinedGenes, diffexpGenes } = prevSharedState.controls;
       const { world } = nextSharedState;
       let { crossfilter } = prevSharedState.resetCache;
-      crossfilter = CH.createGeneDimensions(
+      crossfilter = ControlsHelpers.createGeneDimensions(
         userDefinedGenes,
         diffexpGenes,
         world,
         crossfilter
       );
-      crossfilter = AH.createWritableAnnotationDimensions(world, crossfilter);
+      crossfilter = AnnotationsHelpers.createWritableAnnotationDimensions(
+        world,
+        crossfilter
+      );
       return crossfilter;
     }
 
@@ -57,7 +60,7 @@ const CrossfilterReducerBase = (
         world,
         layoutChoice.currentDimNames
       );
-      crossfilter = CH.createGeneDimensions(
+      crossfilter = ControlsHelpers.createGeneDimensions(
         userDefinedGenes,
         diffexpGenes,
         world,

@@ -1,8 +1,8 @@
 import { unassignedCategoryLabel } from "../globals";
 import {
   World,
-  ControlsHelpers as CH,
-  AnnotationsHelpers as AH
+  ControlsHelpers,
+  AnnotationsHelpers
 } from "../util/stateManager";
 
 const Universe = (state = null, action, nextSharedState, prevSharedState) => {
@@ -35,7 +35,7 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
           Object.keys(action.expressionData)
         )
       ];
-      varData = CH.pruneVarDataCache(varData, allTheGenesWeNeed);
+      varData = ControlsHelpers.pruneVarDataCache(varData, allTheGenesWeNeed);
       return { ...state, varData };
     }
 
@@ -63,9 +63,14 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
       let data;
       if (categoryToDuplicate) {
         /* duplicate the named annotation */
-        schema = AH.dupObsAnnoSchema(state.schema, categoryToDuplicate, name, {
-          writable: true
-        });
+        schema = AnnotationsHelpers.dupObsAnnoSchema(
+          state.schema,
+          categoryToDuplicate,
+          name,
+          {
+            writable: true
+          }
+        );
         /* if we are duplicating a non-writable annotation, it may not have an unassigned category */
         const s = schema.annotations.obsByName[categoryToDuplicate];
         if (s.categories.indexOf(unassignedCategoryLabel) === -1) {
@@ -75,7 +80,7 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
       } else {
         /* else, all are unassined */
         const categories = [unassignedCategoryLabel];
-        schema = AH.addObsAnnoSchema(state.schema, name, {
+        schema = AnnotationsHelpers.addObsAnnoSchema(state.schema, name, {
           name,
           categories,
           type: "categorical",
@@ -92,7 +97,7 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
       /* change the name of an obs annotation category */
       const name = action.metadataField;
       const newName = action.newCategoryText;
-      if (!AH.isUserAnnotation(state, name))
+      if (!AnnotationsHelpers.isUserAnnotation(state, name))
         throw new Error("unable to edit read-only annotation");
       if (typeof newName !== "string" || newName.length === 0)
         throw new Error("user annotations require string name");
@@ -101,8 +106,8 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
         ...state.schema.annotations.obsByName[name],
         name: newName
       };
-      const schema = AH.addObsAnnoSchema(
-        AH.removeObsAnnoSchema(state.schema, name),
+      const schema = AnnotationsHelpers.addObsAnnoSchema(
+        AnnotationsHelpers.removeObsAnnoSchema(state.schema, name),
         newName,
         colSchema
       );
@@ -113,10 +118,10 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
     case "annotation: delete category": {
       /* delete annotation category from schema and obsAnnotations */
       const name = action.metadataField;
-      if (!AH.isUserAnnotation(state, name))
+      if (!AnnotationsHelpers.isUserAnnotation(state, name))
         throw new Error("unable to delete read-only annotation");
 
-      const schema = AH.removeObsAnnoSchema(state.schema, name);
+      const schema = AnnotationsHelpers.removeObsAnnoSchema(state.schema, name);
       const obsAnnotations = state.obsAnnotations.dropCol(name);
       return { ...state, schema, obsAnnotations };
     }
@@ -124,7 +129,7 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
     case "annotation: add new label to category": {
       const annotationName = action.metadataField;
       const newLabelName = action.newLabelText;
-      if (!AH.isUserAnnotation(state, annotationName))
+      if (!AnnotationsHelpers.isUserAnnotation(state, annotationName))
         throw new Error("unable to modify read-only annotation");
       if (typeof newLabelName !== "string" || newLabelName.length === 0)
         throw new Error(
@@ -132,7 +137,7 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
         );
 
       /* add the new label to the annotation */
-      const schema = AH.addObsAnnoCategory(
+      const schema = AnnotationsHelpers.addObsAnnoCategory(
         state.schema,
         annotationName,
         newLabelName
@@ -144,7 +149,7 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
       const annotationName = action.metadataField;
       const oldLabelName = action.label;
       const newLabelName = action.editedLabel;
-      if (!AH.isUserAnnotation(state, annotationName))
+      if (!AnnotationsHelpers.isUserAnnotation(state, annotationName))
         throw new Error("unable to modify read-only annotation");
       if (typeof newLabelName !== "string" || newLabelName.length === 0)
         throw new Error(
@@ -152,14 +157,18 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
         );
 
       /* remove old label, add new label */
-      const schema = AH.addObsAnnoCategory(
-        AH.removeObsAnnoCategory(state.schema, annotationName, oldLabelName),
+      const schema = AnnotationsHelpers.addObsAnnoCategory(
+        AnnotationsHelpers.removeObsAnnoCategory(
+          state.schema,
+          annotationName,
+          oldLabelName
+        ),
         annotationName,
         newLabelName
       );
 
       /* change all values in obsAnnotation */
-      const obsAnnotations = AH.setLabelByValue(
+      const obsAnnotations = AnnotationsHelpers.setLabelByValue(
         state.obsAnnotations,
         annotationName,
         oldLabelName,
@@ -173,20 +182,20 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
       /* delete the label from the annotation, and set all cells with this value to unassigned */
       const annotationName = action.metadataField;
       const labelName = action.label;
-      if (!AH.isUserAnnotation(state, annotationName))
+      if (!AnnotationsHelpers.isUserAnnotation(state, annotationName))
         throw new Error("unable to modify read-only annotation");
       if (labelName === unassignedCategoryLabel)
         throw new Error("may not remove the unassigned label");
 
       /* remove the category from the schema */
-      const schema = AH.removeObsAnnoCategory(
+      const schema = AnnotationsHelpers.removeObsAnnoCategory(
         state.schema,
         annotationName,
         labelName
       );
 
       /* set all values to unassigned in obsAnnotations */
-      const obsAnnotations = AH.setLabelByValue(
+      const obsAnnotations = AnnotationsHelpers.setLabelByValue(
         state.obsAnnotations,
         annotationName,
         labelName,
@@ -207,8 +216,12 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
       const worldMask = crossfilter.allSelectedMask();
       const mask = World.worldEqUniverse(world, state)
         ? worldMask
-        : AH.worldToUniverseMask(worldMask, world.obsAnnotations, state.nObs);
-      const obsAnnotations = AH.setLabelByMask(
+        : AnnotationsHelpers.worldToUniverseMask(
+            worldMask,
+            world.obsAnnotations,
+            state.nObs
+          );
+      const obsAnnotations = AnnotationsHelpers.setLabelByMask(
         state.obsAnnotations,
         metadataField,
         mask,
