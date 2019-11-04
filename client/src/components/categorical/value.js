@@ -17,7 +17,7 @@ import * as globals from "../../globals";
 import styles from "./categorical.css";
 import { Tooltip } from "@blueprintjs/core";
 
-import { AnnotationsHelpers as AH } from "../../util/stateManager";
+import { AnnotationsHelpers } from "../../util/stateManager";
 
 @connect(state => ({
   categoricalSelection: state.categoricalSelection,
@@ -188,12 +188,19 @@ class CategoryValue extends React.Component {
     const { crossfilter, world } = this.props;
 
     // 1. no cells selected?
-    if (crossfilter.countSelected() == 0) {
+    if (crossfilter.countSelected() === 0) {
       return true;
     }
     // 2. all selected cells already have the label
     const mask = crossfilter.allSelectedMask();
-    if (AH.allHaveLabelByMask(world.obsAnnotations, category, value, mask)) {
+    if (
+      AnnotationHelpers.allHaveLabelByMask(
+        world.obsAnnotations,
+        category,
+        value,
+        mask
+      )
+    ) {
       return true;
     }
     // else, don't disable
