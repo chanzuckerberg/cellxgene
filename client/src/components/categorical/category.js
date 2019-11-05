@@ -208,7 +208,9 @@ class Category extends React.Component {
     const { isTruncated } = categoricalSelection[metadataField];
 
     const cat = categoricalSelection[metadataField];
-    const optTuples = sortedCategoryValues([...cat.categoryValueIndices]);
+    const optTuples = sortedCategoryValues(isUserAnno, [
+      ...cat.categoryValueIndices
+    ]);
     const optTuplesAsKey = _.map(optTuples, t => t[0]).join(""); // animation
 
     return (
