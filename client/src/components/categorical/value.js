@@ -194,7 +194,7 @@ class CategoryValue extends React.Component {
     // 2. all selected cells already have the label
     const mask = crossfilter.allSelectedMask();
     if (
-      AnnotationHelpers.allHaveLabelByMask(
+      AnnotationsHelpers.allHaveLabelByMask(
         world.obsAnnotations,
         category,
         value,
