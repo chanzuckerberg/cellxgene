@@ -3,6 +3,7 @@ import React from "react";
 import { connect } from "react-redux";
 import * as d3 from "d3";
 import { interpolateCool } from "d3-scale-chromatic";
+import * as globals from "../../globals";
 
 // create continuous color legend
 // http://bl.ocks.org/syntagmatic/e8ccca52559796be775553b467593a9f
@@ -142,7 +143,7 @@ class ContinuousLegend extends React.Component {
         style={{
           position: "fixed",
           display: colorAccessor ? "inherit" : "none",
-          right: 0,
+          right: globals.leftSidebarWidth,
           top: responsive.height / 2
         }}
       />

@@ -1,19 +1,16 @@
 // jshint esversion: 6
 import React from "react";
 import { connect } from "react-redux";
-import Categorical from "../categorical/categorical";
 import Continuous from "../continuous/continuous";
 import GeneExpression from "../geneExpression";
 import * as globals from "../../globals";
-import DynamicScatterplot from "../scatterplot/scatterplot";
-import TopLeftLogoAndTitle from "./topLeftLogoAndTitle";
 
 @connect(state => ({
   responsive: state.responsive,
   scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
   scatterplotYYaccessor: state.controls.scatterplotYYaccessor
 }))
-class LeftSideBar extends React.Component {
+class RightSidebar extends React.Component {
   render() {
     const {
       responsive,
@@ -31,29 +28,26 @@ class LeftSideBar extends React.Component {
       <div
         style={{
           position: "fixed",
+          right: 0,
           backgroundColor: "white",
           /* x y blur spread color */
-          borderRight: `1px solid ${globals.lightGrey}`
+          borderLeft: `1px solid ${globals.lightGrey}`
         }}
       >
-        <TopLeftLogoAndTitle />
         <div
           style={{
-            height: responsive.height - logoRelatedPadding,
-            marginTop: logoRelatedPadding,
+            height: responsive.height,
             width: globals.leftSidebarWidth,
             overflowY: "auto",
             overflowX: "hidden"
           }}
         >
-          <Categorical />
+          <GeneExpression />
+          <Continuous />
         </div>
-        {scatterplotXXaccessor && scatterplotYYaccessor ? (
-          <DynamicScatterplot />
-        ) : null}
       </div>
     );
   }
 }
 
-export default LeftSideBar;
+export default RightSidebar;

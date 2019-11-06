@@ -8,7 +8,8 @@ import {
   Popover,
   Position,
   RadioGroup,
-  Radio
+  Radio,
+  Icon
 } from "@blueprintjs/core";
 import { World } from "../../util/stateManager";
 import actions from "../../actions";
@@ -16,10 +17,7 @@ import CellSetButton from "./cellSetButtons";
 import InformationMenu from "./infoMenu";
 import UndoRedoReset from "./undoRedoReset";
 import Clip from "./clip";
-import {
-  tooltipHoverOpenDelay,
-  tooltipHoverOpenDelayQuick
-} from "../../globals";
+import * as globals from "../../globals";
 
 @connect(state => ({
   universe: state.universe,
@@ -282,7 +280,7 @@ class MenuBar extends React.Component {
           <Tooltip
             content={tipMessage}
             position="bottom"
-            hoverOpenDelay={tooltipHoverOpenDelayQuick}
+            hoverOpenDelay={globals.tooltipHoverOpenDelayQuick}
           >
             <AnchorButton
               disabled={!haveBothCellSets}
@@ -293,9 +291,7 @@ class MenuBar extends React.Component {
               fill
               type="button"
               onClick={this.computeDiffExp}
-            >
-              Compute Differential Expression
-            </AnchorButton>
+            />
           </Tooltip>
         ) : null}
 
@@ -303,7 +299,7 @@ class MenuBar extends React.Component {
           <Tooltip
             content="Remove differentially expressed gene list and clear cell selections"
             position="bottom"
-            hoverOpenDelay={tooltipHoverOpenDelayQuick}
+            hoverOpenDelay={globals.tooltipHoverOpenDelayQuick}
           >
             <Button
               type="button"
@@ -352,7 +348,7 @@ class MenuBar extends React.Component {
       <div
         style={{
           position: "fixed",
-          right: 8,
+          right: globals.leftSidebarWidth + 8,
           top: 8
         }}
       >
@@ -360,7 +356,7 @@ class MenuBar extends React.Component {
         <Tooltip
           content="Show only metadata and cells which are currently selected"
           position="bottom"
-          hoverOpenDelay={tooltipHoverOpenDelay}
+          hoverOpenDelay={globals.tooltipHoverOpenDelay}
         >
           <AnchorButton
             type="button"
@@ -378,14 +374,14 @@ class MenuBar extends React.Component {
               dispatch({ type: "increment graph render counter" });
             }}
           >
-            subset to current selection
+            <Icon icon="double-chevron-down" />
           </AnchorButton>
         </Tooltip>
         <div className="bp3-button-group">
           <Tooltip
             content={selectionTooltip}
             position="bottom"
-            hoverOpenDelay={tooltipHoverOpenDelay}
+            hoverOpenDelay={globals.tooltipHoverOpenDelay}
           >
             <Button
               type="button"
@@ -406,7 +402,7 @@ class MenuBar extends React.Component {
           <Tooltip
             content="Drag to pan, scroll to zoom"
             position="bottom"
-            hoverOpenDelay={tooltipHoverOpenDelay}
+            hoverOpenDelay={globals.tooltipHoverOpenDelay}
           >
             <Button
               type="button"
@@ -436,7 +432,7 @@ class MenuBar extends React.Component {
               <Tooltip
                 content="Select embedding for visualization"
                 position="bottom"
-                hoverOpenDelay={tooltipHoverOpenDelay}
+                hoverOpenDelay={globals.tooltipHoverOpenDelay}
               >
                 <Button
                   type="button"

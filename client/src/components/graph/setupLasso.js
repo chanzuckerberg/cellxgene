@@ -93,7 +93,6 @@ const Lasso = () => {
       .append("rect")
       .attr("width", bbox.width)
       .attr("height", bbox.height)
-      .attr("fill", "tomato")
       .attr("opacity", 0);
 
     const drag = d3
