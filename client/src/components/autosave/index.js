@@ -1,6 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
-
+import * as globals from "../../globals";
 import actions from "../../actions";
 
 @connect(state => ({
@@ -68,7 +68,7 @@ class Autosave extends React.Component {
         style={{
           position: "fixed",
           display: "inherit",
-          right: 5,
+          right: globals.leftSidebarWidth + 5,
           bottom: 5
         }}
       >
