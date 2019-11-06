@@ -2,7 +2,7 @@ import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
 import { FaChevronRight, FaChevronDown } from "react-icons/fa";
-import { Flipper, Flipped, Spring } from "react-flip-toolkit";
+import { Flipper, Flipped } from "react-flip-toolkit";
 import {
   Button,
   Tooltip,
@@ -14,7 +14,8 @@ import {
   Classes,
   Icon,
   Position,
-  PopoverInteractionKind
+  PopoverInteractionKind,
+  Colors
 } from "@blueprintjs/core";
 
 import * as globals from "../../globals";
@@ -345,11 +346,32 @@ class Category extends React.Component {
                         <p>New, unique label name:</p>
                         <InputGroup
                           autoFocus
+                          intent={
+                            universe.schema.annotations.obsByName[
+                              metadataField
+                            ].categories.indexOf(newLabelText) !== -1
+                              ? "warning"
+                              : "none"
+                          }
                           onChange={e =>
                             this.setState({ newLabelText: e.target.value })
                           }
                           leftIcon="tag"
                         />
+                        <p
+                          style={{
+                            marginTop: 7,
+                            visibility:
+                              universe.schema.annotations.obsByName[
+                                metadataField
+                              ].categories.indexOf(newLabelText) !== -1
+                                ? "visible"
+                                : "hidden",
+                            color: Colors.ORANGE3
+                          }}
+                        >
+                          {newLabelText} already exists within {metadataField}
+                        </p>
                       </div>
                     </div>
                     <div className={Classes.DIALOG_FOOTER}>
