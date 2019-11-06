@@ -30,6 +30,7 @@ export default (
     value = pair[1];
     // Create the label using the screen calculated coordinates
     const label = svg
+      .select(".transform-group")
       .append("g")
       .attr("class", "centroid-label")
       .attr("transform", `translate(${value[2]}, ${value[3]})`)

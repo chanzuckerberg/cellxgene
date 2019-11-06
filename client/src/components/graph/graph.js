@@ -446,23 +446,11 @@ class Graph extends React.PureComponent {
   };
 
   handleCanvasEvent = e => {
-    const { camera, projectionTF, modelTF } = this.state;
+    const { camera, projectionTF } = this.state;
     if (e.type !== "wheel") e.preventDefault();
     if (camera.handleEvent(e, projectionTF)) {
-      console.log("+++++++++++++++++++++++++++++++++++++++");
-      const cameraTF = camera.view();
-      // this.printTF("model", modelTF);
-      // this.printTF("camera", cameraTF);
-      // this.printTF("projection", projectionTF);
-
-      const transform = mat3.clone(projectionTF);
-      mat3.multiply(transform, transform, cameraTF);
-      mat3.multiply(transform, transform, modelTF);
-
-      this.printTF("transform", transform);
-
-      this.setState({ transformTF: transform });
       this.renderCanvas();
+      this.render();
     }
   };
 
@@ -530,15 +518,53 @@ class Graph extends React.PureComponent {
     // If there is no currently selected cateogry for viewing
     // Or if the graph is currently in zoom/pan mode
     if (
-      false /* ||
+      false && //TEMP
+      (!colorAccessor || centroidLabels.labels.length === 0)
+      /* ||
     graphInteractionMode === "zoom" */
-      /* !colorAccessor ||
-      centroidLabels.labels.length ===
-        0 */
     ) {
       // Return without redrawing the svg layer
       return;
     }
+
+    const lower = 0.25;
+    const higher = 0.75;
+    const fontSize = "5px";
+
+    d3.select(".transform-group")
+      .append("g")
+      .attr("class", "centroid-label")
+      .append("text")
+      .style("font-size", fontSize)
+      .text("1")
+      .style("font-size", fontSize)
+      .attr("x", lower)
+      .attr("y", lower);
+    d3.select(".transform-group")
+      .append("g")
+      .attr("class", "centroid-label")
+      .append("text")
+      .style("font-size", fontSize)
+      .text("2")
+      .attr("x", lower)
+      .attr("y", higher);
+    d3.select(".transform-group")
+      .append("g")
+      .attr("class", "centroid-label")
+      .append("text")
+      .style("font-size", fontSize)
+      .text("3")
+      .attr("x", lower)
+      .attr("y", higher);
+    d3.select(".transform-group")
+      .append("g")
+      .attr("class", "centroid-label")
+      .append("text")
+      .style("font-size", fontSize)
+      .text("4")
+      .attr("x", higher)
+      .attr("y", higher);
+    return;
 
     // Iterate over all the key-value pairs in labels
     // key value pair looks like:
@@ -546,7 +572,7 @@ class Graph extends React.PureComponent {
     const iter = centroidLabels.labels.entries();
     let pair = iter.next().value;
     // While there are pairs
-    while (false /* pair */) {
+    while (pair) {
       const value = pair[1];
       // If the screen coordinates haven't been calculated
       // or if the viewport has changed
@@ -577,16 +603,15 @@ class Graph extends React.PureComponent {
 
     // Disconnected while creating pan interation
 
-    // const newCentroidSVG = setupCentroidSVG(
-    //   responsive,
-    //   this.graphPaddingRight,
-    //   centroidLabels.labels,
-    //   handleMouseEnter,
-    //   handleMouseExit
-    // );
+    const newCentroidSVG = setupCentroidSVG(
+      responsive,
+      this.graphPaddingRight,
+      centroidLabels.labels,
+      handleMouseEnter,
+      handleMouseExit
+    );
 
-    // return { centroidSVG: newCentroidSVG };
-    return;
+    return { centroidSVG: newCentroidSVG };
   }
 
   brushToolUpdate(tool, container) {
@@ -886,8 +911,49 @@ class Graph extends React.PureComponent {
   });
 
   render() {
-    const { responsive, graphInteractionMode } = this.props;
-    const { transformTF } = this.state;
+    const {
+      responsive,
+      graphInteractionMode,
+      world,
+      layoutChoice
+    } = this.props;
+    const { modelTF, projectionTF, camera } = this.state;
+
+    const cameraTF = camera?.view();
+
+    if (cameraTF !== undefined) {
+      const v = vec2.fromValues(0.25, 0.25);
+      console.log("before any transform:", v);
+      vec2.transformMat3(v, v, modelTF);
+      console.log("after model transform(", mat3.str(modelTF), "):", v);
+      vec2.transformMat3(v, v, cameraTF);
+      console.log("after camera transform(", mat3.str(cameraTF), "):", v);
+      vec2.transformMat3(v, v, projectionTF);
+      console.log(
+        "after projection transform(",
+        mat3.str(projectionTF),
+        "):",
+        v
+      );
+      console.log(
+        "after ?? transform:",
+        Math.round(
+          ((v[0] + 1) * (responsive.width - this.graphPaddingRight)) / 2
+        ),
+        Math.round(
+          -((v[1] + 1) / 2 - 1) * (responsive.height - this.graphPaddingTop)
+        )
+      );
+    }
+
+    d3.select("#centroid-label").attr(
+      "transform",
+      `scale(1 -${responsive.height -
+        this
+          .graphPaddingTop}) translate(0 -1) scale(1 2) translate(0 1) scale(${(responsive.width -
+        this.graphPaddingRight) /
+        2} 1)  translate(1 0)`
+    );
 
     return (
       <div id="graphWrapper">
@@ -902,9 +968,9 @@ class Graph extends React.PureComponent {
           <div id="graphAttachPoint">
             <svg
               data-testid="layout-overlay"
+              className={styles.graphSVG}
               width={responsive.width - this.graphPaddingRight}
               height={responsive.height}
-              className={styles.graphSVG}
               style={{ zIndex: 999 }}
               pointerEvents={
                 graphInteractionMode === "select" ? "auto" : "none"
@@ -913,47 +979,40 @@ class Graph extends React.PureComponent {
               {/* 
                 [ a, b, 0       
                   c, d, 0,  =>  matrix(0, 3, 1, 4, 2, 5) => matrix(sx, 0, 0, sy, tx, ty)
-                  e, f, 1 ]   
-              */}
-              <g
-                transform={
-                  transformTF
-                    ? "matrix(" +
-                      transformTF[0] / 2 +
-                      " " +
-                      transformTF[3] +
-                      " " +
-                      transformTF[1] +
-                      " " +
-                      transformTF[4] / -2 +
-                      " " +
-                      Math.round(
-                        ((transformTF[6] + 1) *
-                          (responsive.width - this.graphPaddingRight)) /
-                          2
-                      ) +
-                      " " +
-                      Math.round(
-                        -((transformTF[7] + 1) / 2 - 1) *
-                          (responsive.height - this.graphPaddingTop)
-                      ) +
-                      ")"
-                    : "matrix(1 0 0 1 0 0)"
-                }
-              >
-                <rect
-                  x="0"
-                  y={(responsive.height - this.graphPaddingTop) / 2}
-                  width={responsive.width - this.graphPaddingRight}
-                  height={5}
-                />
-                <rect
-                  x={(responsive.width - this.graphPaddingRight) / 2}
-                  y={0}
-                  width={5}
-                  height={responsive.height - this.graphPaddingTop}
-                />
-              </g>
+                  e, f, 1 ]     matrix(a, b, c, d, e, f)
+              */
+
+              cameraTF !== undefined && (
+                <g
+                  transform={`scale(1 -${responsive.height -
+                    this
+                      .graphPaddingTop}) translate(0 -1) scale(1 2) translate(0 1) scale(${(responsive.width -
+                    this.graphPaddingRight) /
+                    2} 1)  translate(1 0) 
+`}
+                >
+                  <g
+                    transform={`matrix(${projectionTF[0]} ${projectionTF[3]} ${
+                      projectionTF[1]
+                    } ${projectionTF[4]} ${projectionTF[6]} ${
+                      projectionTF[7]
+                    })`}
+                  >
+                    <g
+                      transform={`matrix(${cameraTF[0]} ${cameraTF[3]} ${
+                        cameraTF[1]
+                      } ${cameraTF[4]} ${cameraTF[6]} ${cameraTF[7]})`}
+                    >
+                      <g
+                        className="transform-group"
+                        transform={`matrix(${modelTF[0]} ${modelTF[3]} ${
+                          modelTF[1]
+                        } ${modelTF[4]} ${modelTF[6]} ${modelTF[7]})`}
+                      />
+                    </g>
+                  </g>
+                </g>
+              )}
             </svg>
           </div>
           <div style={{ padding: 0, margin: 0 }}>
