@@ -5,7 +5,7 @@ const Annotations = (
   state = {
     isEditingCategoryName: false,
     isEditingLabelName: false,
-    categoryBeingEdited: false,
+    categoryBeingEdited: null,
     categoryAddingNewLabel: null,
     labelEditable: { category: null, label: null }
   },
@@ -46,7 +46,7 @@ const Annotations = (
     case "annotation: category edited":
       return {
         ...state,
-        isEditingCategoryName: true,
+        isEditingCategoryName: false,
         categoryBeingEdited: null
       };
 

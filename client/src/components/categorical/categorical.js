@@ -7,7 +7,8 @@ import {
   InputGroup,
   Dialog,
   Classes,
-  MenuItem
+  MenuItem,
+  Colors
 } from "@blueprintjs/core";
 import { Select } from "@blueprintjs/select";
 import { connect } from "react-redux";
@@ -57,7 +58,11 @@ class Categories extends React.Component {
   };
 
   render() {
-    const { createAnnoModeActive, categoryToDuplicate } = this.state;
+    const {
+      createAnnoModeActive,
+      categoryToDuplicate,
+      newCategoryText
+    } = this.state;
     const {
       categoricalSelection,
       writableCategoriesEnabled,
@@ -76,26 +81,30 @@ class Categories extends React.Component {
       >
         {/* READ ONLY CATEGORICAL FIELDS */}
         {/* this is duplicative but flat, could be abstracted */}
-        {_.map(allCategoryNames, catName =>
-          !schema.annotations.obsByName[catName].writable ? (
-            <Category
-              key={catName}
-              metadataField={catName}
-              createAnnoModeActive={createAnnoModeActive}
-              isUserAnno={false}
-            />
-          ) : null
+        {_.map(
+          allCategoryNames,
+          catName =>
+            !schema.annotations.obsByName[catName].writable ? (
+              <Category
+                key={catName}
+                metadataField={catName}
+                createAnnoModeActive={createAnnoModeActive}
+                isUserAnno={false}
+              />
+            ) : null
         )}
         {/* WRITEABLE FIELDS */}
-        {_.map(allCategoryNames, catName =>
-          schema.annotations.obsByName[catName].writable ? (
-            <Category
-              key={catName}
-              metadataField={catName}
-              createAnnoModeActive={createAnnoModeActive}
-              isUserAnno
-            />
-          ) : null
+        {_.map(
+          allCategoryNames,
+          catName =>
+            schema.annotations.obsByName[catName].writable ? (
+              <Category
+                key={catName}
+                metadataField={catName}
+                createAnnoModeActive={createAnnoModeActive}
+                isUserAnno
+              />
+            ) : null
         )}
         {writableCategoriesEnabled ? (
           <div>
@@ -116,12 +125,33 @@ class Categories extends React.Component {
                     <p>New, unique category name:</p>
                     <InputGroup
                       autoFocus
+                      intent={
+                        allCategoryNames.indexOf(newCategoryText) !== -1
+                          ? "warning"
+                          : "none"
+                      }
                       onChange={e =>
                         this.setState({ newCategoryText: e.target.value })
                       }
                       leftIcon="tag"
                     />
+                    <p
+                      style={{
+                        marginTop: 7,
+                        visibility:
+                          allCategoryNames.indexOf(newCategoryText) !== -1
+                            ? "visible"
+                            : "hidden",
+                        color: Colors.ORANGE3
+                      }}
+                    >
+                      <span style={{ fontStyle: "italic" }}>
+                        {newCategoryText}
+                      </span>{" "}
+                      already exists
+                    </p>
                   </div>
+
                   <p>
                     Optionally duplicate all labels & cell assignments from
                     existing category into new category:
@@ -157,6 +187,9 @@ class Categories extends React.Component {
                     </Tooltip>
                     <Button
                       onClick={this.handleCreateUserAnno}
+                      disabled={
+                        allCategoryNames.indexOf(newCategoryText) !== -1
+                      }
                       intent="primary"
                       type="submit"
                     >
