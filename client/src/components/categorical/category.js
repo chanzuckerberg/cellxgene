@@ -370,7 +370,13 @@ class Category extends React.Component {
                             color: Colors.ORANGE3
                           }}
                         >
-                          {newLabelText} already exists within {metadataField}
+                          <span style={{ fontStyle: "italic" }}>
+                            {newLabelText}
+                          </span>{" "}
+                          already exists within{" "}
+                          <span style={{ fontStyle: "italic" }}>
+                            {metadataField}
+                          </span>
                         </p>
                       </div>
                     </div>

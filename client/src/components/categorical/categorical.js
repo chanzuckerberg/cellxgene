@@ -145,7 +145,10 @@ class Categories extends React.Component {
                         color: Colors.ORANGE3
                       }}
                     >
-                      That category already exists
+                      <span style={{ fontStyle: "italic" }}>
+                        {newCategoryText}
+                      </span>{" "}
+                      already exists
                     </p>
                   </div>
 
