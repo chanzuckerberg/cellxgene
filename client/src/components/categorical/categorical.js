@@ -50,7 +50,10 @@ class Categories extends React.Component {
   };
 
   handleDisableAnnoMode = () => {
-    this.setState({ createAnnoModeActive: false });
+    this.setState({
+      createAnnoModeActive: false,
+      newCategoryText: ""
+    });
   };
 
   handleModalDuplicateCategorySelection = d => {
