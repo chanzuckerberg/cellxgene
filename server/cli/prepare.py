@@ -29,7 +29,7 @@ from server.utils.utils import sort_options
     show_default=True,
 )
 @click.option("--output", "-o", default="", help="Save a new file to filename.", metavar="<filename>")
-@click.option("--plotting", "-p", default=False, is_flag=True, help="Whether to generate plots.", show_default=True)
+@click.option("--plotting", "-p", default=False, is_flag=True, help="Generate plots.", show_default=True)
 @click.option("--sparse", default=False, is_flag=True, help="Whether to force sparsity.", show_default=True)
 @click.option("--overwrite", default=False, is_flag=True, help="Allow file overwriting.", show_default=True)
 @click.option("--set-obs-names", default="", help="Named field to set as index for obs.", metavar="<name>")
