@@ -95,7 +95,7 @@ def serialize_typed_array(builder, source_array, encoding_info):
         if MatrixProxy.ismatrixproxy(arr) or sparse.issparse(arr):
             arr = arr.toarray()
         elif isinstance(arr, pd.Series):
-            arr = arr.get_values()
+            arr = arr.to_numpy()
         if arr.dtype != as_type:
             arr = arr.astype(as_type)
 
