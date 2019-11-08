@@ -13,16 +13,11 @@ import click
 from server.app.app import Server
 from server.app.util.errors import ScanpyFileError
 from server.app.util.utils import custom_format_warning
-from server.utils.utils import find_available_port, is_port_available
+from server.utils.utils import find_available_port, is_port_available, sort_options
 from server.app.util.data_locator import DataLocator
 
 # anything bigger than this will generate a special message
 BIG_FILE_SIZE_THRESHOLD = 100 * 2 ** 20  # 100MB
-
-
-def sort_options(command):
-    command.params.sort(key=lambda p: p.name)
-    return command
 
 
 def common_args(func):
@@ -31,7 +26,8 @@ def common_args(func):
     """
 
     @click.option(
-        "--title", "-t",
+        "--title",
+        "-t",
         metavar="<text>",
         help="Title to display. If omitted will use file name.")
     @click.option(
@@ -50,11 +46,13 @@ def common_args(func):
     )
     @click.option(
         "--obs-names",
+        "-obs",
         default=None,
         metavar="<text>",
         help="Name of annotation field to use for observations. If not specified cellxgene will use the the obs index.")
     @click.option(
         "--var-names",
+        "-var",
         default=None,
         metavar="<text>",
         help="Name of annotation to use for variables. If not specified cellxgene will use the the var index.")
@@ -66,6 +64,7 @@ def common_args(func):
         help="Will not display categories with more distinct values than specified.",)
     @click.option(
         "--diffexp-lfc-cutoff",
+        "-de",
         default=0.01,
         show_default=True,
         metavar="<float>",
@@ -79,6 +78,7 @@ def common_args(func):
         help="CSV file containing user annotations; will be overwritten.  Created if does not exist.",)
     @click.option(
         "--backed",
+        "-b",
         is_flag=True,
         default=False,
         show_default=False,
@@ -112,8 +112,9 @@ def parse_engine_args(embedding, obs_names, var_names, max_category_items,
 
 
 @sort_options
-@click.command()
-@click.argument("data", nargs=1, metavar="<data file>", required=True)
+@click.command(short_help="Launch the cellxgene data viewer. "
+                          "Run `cellxgene launch --help` for more information.")
+@click.argument("data", nargs=1, metavar="<path to data file>", required=True)
 @click.option(
     "--verbose",
     "-v",
@@ -123,8 +124,11 @@ def parse_engine_args(embedding, obs_names, var_names, max_category_items,
     help="Provide verbose output, including warnings and all server requests.",)
 @click.option(
     "--debug",
-    is_flag=True, default=False, show_default=True,
-    help="Run in debug mode.  This is helpful for cellxgene developers, "
+    "-d",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="Run in debug mode. This is helpful for cellxgene developers, "
          "or when you want more information about an error condition.",)
 @click.option(
     "--open",
@@ -135,7 +139,8 @@ def parse_engine_args(embedding, obs_names, var_names, max_category_items,
     show_default=True,
     help="Open web browser after launch.",)
 @click.option(
-    "--port", "-p",
+    "--port",
+    "-p",
     metavar="<port>",
     show_default=True,
     help="Port to run server on. If not specified cellxgene will find an available port.",)
@@ -143,15 +148,18 @@ def parse_engine_args(embedding, obs_names, var_names, max_category_items,
     "--host",
     metavar="<IP address>",
     default="127.0.0.1",
-    help="Host IP address.")
+    show_default=False,
+    help="Host IP address. By default cellxgene will use localhost (e.g. 127.0.0.1).")
 @click.option(
     "--scripts",
+    "-s",
     default=[],
     multiple=True,
     metavar="<text>",
     help="Additional script files to include in HTML page. If not specified, "
          "no additional script files will be included.",
     show_default=True,)
+@click.help_option("--help", "-h", help="Show this message and exit.")
 @common_args
 def launch(
         data,
@@ -174,8 +182,9 @@ def launch(
 ):
     """Launch the cellxgene data viewer.
     This web app lets you explore single-cell expression data.
-    Data must be in a format that cellxgene expects, read the
-    "getting started" guide.
+    Data must be in a format that cellxgene expects.
+    Read the "getting started" guide to learn more:
+    https://chanzuckerberg.github.io/cellxgene/getting-started.html
 
     Examples:
 
