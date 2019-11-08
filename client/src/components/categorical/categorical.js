@@ -117,7 +117,6 @@ class Categories extends React.Component {
               <form
                 onSubmit={e => {
                   e.preventDefault();
-                  this.handleCreateUserAnno();
                 }}
               >
                 <div className={Classes.DIALOG_BODY}>
