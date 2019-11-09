@@ -30,7 +30,7 @@ from server.utils.utils import sort_options
 )
 @click.option("--output", "-o", default="", help="Save a new file to filename.", metavar="<filename>")
 @click.option("--plotting", "-p", default=False, is_flag=True, help="Generate plots.", show_default=True)
-@click.option("--sparse", default=False, is_flag=True, help="Whether to force sparsity.", show_default=True)
+@click.option("--sparse", default=False, is_flag=True, help="Force sparsity.", show_default=True)
 @click.option("--overwrite", default=False, is_flag=True, help="Allow file overwriting.", show_default=True)
 @click.option("--set-obs-names", default="", help="Named field to set as index for obs.", metavar="<name>")
 @click.option("--set-var-names", default="", help="Named field to set as index for var.", metavar="<name>")
@@ -68,7 +68,6 @@ def prepare(
 ):
     """
     Preprocess data for use with cellxgene.
-
     This tool runs a series of scanpy routines for preparing a dataset for use
     with cellxgene. It loads data from different formats
     (h5ad, loom, or a 10x directory), runs dimensionality reduction,

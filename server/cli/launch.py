@@ -158,7 +158,7 @@ def parse_engine_args(embedding, obs_names, var_names, max_category_items,
     metavar="<text>",
     help="Additional script files to include in HTML page. If not specified, "
          "no additional script files will be included.",
-    show_default=True,)
+    show_default=False,)
 @click.help_option("--help", "-h", help="Show this message and exit.")
 @common_args
 def launch(
