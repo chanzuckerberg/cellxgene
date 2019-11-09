@@ -113,7 +113,8 @@ def parse_engine_args(embedding, obs_names, var_names, max_category_items,
 
 @sort_options
 @click.command(short_help="Launch the cellxgene data viewer. "
-                          "Run `cellxgene launch --help` for more information.")
+                          "Run `cellxgene launch --help` for more information.",
+               options_metavar="<options>",)
 @click.argument("data", nargs=1, metavar="<path to data file>", required=True)
 @click.option(
     "--verbose",

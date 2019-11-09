@@ -9,7 +9,8 @@ from server.utils.utils import sort_options
 
 @sort_options
 @click.command(short_help="Preprocess data for use with cellxgene. "
-                          "Run `cellxgene prepare --help` for more information.")
+                          "Run `cellxgene prepare --help` for more information.",
+               options_metavar="<options>",)
 @click.argument("data", nargs=1, metavar="<path to data file>", required=True)
 @click.option(
     "--embedding",
