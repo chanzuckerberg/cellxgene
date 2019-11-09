@@ -7,28 +7,34 @@ description: Demo datasets
 # Launching cellxgene with your dataset
 
 ## Quickstart
-Once you've [prepared your data](prepare) for cellxgene, you can launch the app using  
+
+Once you've [prepared your data](prepare) for cellxgene, you can launch the app using
+
 ```
 cellgene launch mydataset.h5ad --open
 ```
-On Mac OS and Ubuntu, you should see your web browser open with the following
+
+You should see your web browser open with the following
 
 <img width="450" src="https://raw.githubusercontent.com/chanzuckerberg/cellxgene/master/docs/cellxgene-opening-screenshot.png" pad="50px">
 
-**Note**: automatic opening of the browser with the `--open` flag only works on OS X, on other platforms you'll need to directly point to the provided link in your browser.
+**Note**: automatic opening of the browser with the `--open` flag only works on some platforms (eg, OSX). On other platforms you'll need to directly point to the provided link in your browser.
 
 ## Launching from a URL
 
 You can also launch from a URL directly like this:
+
 ```
 cellxgene launch https://github.com/chanzuckerberg/cellxgene/blob/master/example-dataset/pbmc3k.h5ad
 ```
-Support for S3 and GCS is not enabled by default. If you wish to directly access S3 or GFS, install one or both of the following packages using `pip`:
+
+Support for S3 and GCS is not enabled by default. If you wish to directly access S3 or GFS, install one or both of the following packages:
 
 - [s3fs](https://s3fs.readthedocs.io/en/latest/) for S3 support
 - [gcsfs](https://gcsfs.readthedocs.io/en/latest/) for GCS support
 
 For example:
+
 ```
 pip install s3fs
 cellxgene launch s3://mybucket.s3-us-west-2.amazonaws.com/mydata.h5ad
@@ -38,7 +44,7 @@ cellxgene launch s3://mybucket.s3-us-west-2.amazonaws.com/mydata.h5ad
 
 **For the most up-to-date and comprehensive list of options, run `cellxgene launch --help`**
 
-`--open` automatically opens the web browser after launching (OS X only).
+`--open` automatically opens the web browser after launching (caveat: only works on some operating systems).
 
 `--experimental-label-file` enables an experimental feature to allow users to create new categorical annotations in the application. These newly-created annotations are saved in the specified CSV file. If the specified file already exists, the previously-contained annotations will be loaded as mutable (changeable) values and the CSV will be updated (overwritten) with any edits made. If the file does not exist, it will be created. See [here](annotations) for more details.
 
