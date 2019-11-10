@@ -182,3 +182,8 @@ export function createWritableAnnotationDimensions(world, crossfilter) {
 	}, crossfilter);
 	return crossfilter;
 }
+
+const legalNames = /^\w+$/;
+export function isLegalAnnotationName(name) {
+	return legalNames.test(name);
+}
