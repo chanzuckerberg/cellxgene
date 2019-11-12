@@ -4,6 +4,17 @@ Cellxgene is intended to be used by researchers on their local machines. However
 
 In the meantime, you can see examples of how other groups have approached this [here](gallery). While we don't officially support web deployment, we've offered some guidance below on one way to deploy cellxgene to the web.
 
+### Third-party deployments:
+
+- Chan Zuckerberg BioHub's [Tabula Muris Senis](https://tabula-muris-senis.ds.czbiohub.org/)
+- Novartis's [cellxgene gateway](https://github.com/Novartis/cellxgene-gateway)
+- Interactive Enviroment in the [Galaxy Project](https://galaxyproject.org/) ([patch notes](https://docs.galaxyproject.org/en/release_19.05/releases/19.05_announce.html))
+- Various instances by the Wellcome Sanger Institute
+  - [Tissue Stability Cell Atlas](https://www.tissuestabilitycellatlas.org/)
+  - [Human Kidney Cell Atlas](https://www.kidneycellatlas.org/)
+  - [Atlas of Anopheles hemocytes](https://hemocytes.cellgeni.sanger.ac.uk/)
+  - [Murine melanoma atlas](https://melanoma.cellgeni.sanger.ac.uk/)
+
 # Deploying cellxgene with Heroku
 
 ## Quickstart
