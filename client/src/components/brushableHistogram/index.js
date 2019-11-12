@@ -333,10 +333,22 @@ class HistogramBrush extends React.PureComponent {
       .attr("class", "histogram-container")
       .attr("transform", `translate(${this.marginLeft},${this.marginTop})`);
 
+    const yMax = d3.max(bins, function (d) { return d.length });
+    const yMin = d3.min(bins, function (d) { return d.length });
+
+    const colorScale = d3.scaleSequential(d3.interpolateViridis)
+      .domain([yMin, yMax]);
+
+    const legendscale = d3.scaleLinear()
+      .range([yMin, yMax])
+      .domain([
+        colorScale.domain()[1],
+        colorScale.domain()[0]
+      ]); /* we flip this to make viridis colors dark if high in the color scale */
+
     /* BINS */
     container
       .insert("g", "*")
-      .attr("fill", "#bbb")
       .selectAll("rect")
       .data(bins)
       .enter()
@@ -344,7 +356,8 @@ class HistogramBrush extends React.PureComponent {
       .attr("x", d => x(d.x0) + 1)
       .attr("y", d => y(d.length))
       .attr("width", d => Math.abs(x(d.x1) - x(d.x0) - 1))
-      .attr("height", d => y(0) - y(d.length));
+      .attr("height", d => y(0) - y(d.length))
+      .style("fill", function (d) { return colorScale(legendscale.invert(d.length)) });
 
     // BRUSH
     // Note the brushable area is bounded by the data on three sides, but goes down to cover the x-axis
