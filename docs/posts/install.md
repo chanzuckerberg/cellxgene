@@ -41,6 +41,13 @@ _Note: if the aforementioned optional `prepare` package installation fails, you 
 pip install scanpy>=1.3.7 python-igraph louvain>=0.6
 ```
 
+_On various Linux platforms, you may also need to install build dependencies first:_
+
+```
+sudo apt-get install build-essential python-dev
+pip install scanpy>=1.3.7 python-igraph louvain>=0.6
+```
+
 If you already have `cellxgene` installed, you can update to the most recent version by running:
 
 ```
