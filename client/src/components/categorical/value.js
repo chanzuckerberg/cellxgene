@@ -10,7 +10,8 @@ import {
   Popover,
   Position,
   Icon,
-  PopoverInteractionKind
+  PopoverInteractionKind,
+  Colors
 } from "@blueprintjs/core";
 import Occupancy from "./occupancy";
 import * as globals from "../../globals";
@@ -32,7 +33,11 @@ class CategoryValue extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      editedLabelText: ""
+      editedLabelText: String(
+        props.categoricalSelection[props.metadataField].categoryValues[
+          props.categoryIndex
+        ]
+      ).valueOf()
     };
   }
 
@@ -86,7 +91,6 @@ class CategoryValue extends React.Component {
       categoryIndex,
       label
     });
-    this.setState({ editedLabelText: "" });
   };
 
   activateEditLabelMode = () => {
@@ -116,7 +120,7 @@ class CategoryValue extends React.Component {
     });
   };
 
-  shouldComponentUpdate = nextProps => {
+  shouldComponentUpdate = (nextProps, nextState) => {
     /*
     Checks to see if at least one of the following changed:
     * world state
@@ -126,7 +130,7 @@ class CategoryValue extends React.Component {
 
     If and only if true, update the component
     */
-    const { props } = this;
+    const { props, state } = this;
     const { metadataField, categoryIndex, categoricalSelection } = props;
     const { categoricalSelection: newCategoricalSelection } = nextProps;
 
@@ -142,13 +146,15 @@ class CategoryValue extends React.Component {
     const colorAccessorChange = props.colorAccessor !== nextProps.colorAccessor;
     const annotationsChange = props.annotations !== nextProps.annotations;
     const crossfilterChange = props.crossfilter !== nextProps.crossfilter;
+    const editingLabel = state.editedLabelText !== nextState.editedLabelText;
 
     return (
       valueSelectionChange ||
       worldChange ||
       colorAccessorChange ||
       annotationsChange ||
-      crossfilterChange
+      crossfilterChange ||
+      editingLabel
     );
   };
 
@@ -222,6 +228,8 @@ class CategoryValue extends React.Component {
       // our lint doesn't like jsx spread, we are version pinned to prevent api change on their part
       flippedProps
     } = this.props;
+
+    const { editedLabelText } = this.state;
 
     if (!categoricalSelection) return null;
 
@@ -348,6 +356,13 @@ class CategoryValue extends React.Component {
               <form
                 onSubmit={e => {
                   e.preventDefault();
+                  if (
+                    (category.categoryValues.indexOf(editedLabelText) > -1 &&
+                      editedLabelText !== displayString) ||
+                    editedLabelText === ""
+                  ) {
+                    return;
+                  }
                   this.handleEditValue();
                 }}
               >
@@ -358,6 +373,13 @@ class CategoryValue extends React.Component {
                   }}
                   small
                   autoFocus
+                  intent={
+                    (category.categoryValues.indexOf(editedLabelText) > -1 &&
+                      editedLabelText !== displayString) ||
+                    editedLabelText === ""
+                      ? "warning"
+                      : "none"
+                  }
                   onChange={e => {
                     this.setState({ editedLabelText: e.target.value });
                   }}
@@ -366,6 +388,12 @@ class CategoryValue extends React.Component {
                     <Button
                       minimal
                       style={{ position: "relative", top: -1 }}
+                      disabled={
+                        (category.categoryValues.indexOf(editedLabelText) >
+                          -1 &&
+                          editedLabelText !== displayString) ||
+                        editedLabelText === ""
+                      }
                       type="button"
                       icon="small-tick"
                       data-testclass="submitEdit"
@@ -374,6 +402,22 @@ class CategoryValue extends React.Component {
                     />
                   }
                 />
+                {(category.categoryValues.indexOf(editedLabelText) > -1 &&
+                  editedLabelText !== displayString) ||
+                editedLabelText === "" ? (
+                  <span
+                    style={{
+                      fontStyle: "italic",
+                      fontSize: 12,
+                      marginTop: 5,
+                      color: Colors.ORANGE3
+                    }}
+                  >
+                    {editedLabelText === ""
+                      ? "Label cannot be blank"
+                      : `${editedLabelText} already exists`}
+                  </span>
+                ) : null}
               </form>
             ) : null}
             {/*
