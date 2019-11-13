@@ -478,16 +478,19 @@ class CategoryValue extends React.Component {
                         data-testclass="handleDeleteValue"
                         data-testid={`handleDeleteValue-${metadataField}`}
                         onClick={this.handleDeleteValue}
-                        text={`Delete this label, and reassign all cells to type '${
-                          globals.unassignedCategoryLabel
-                        }'`}
+                        text={`Delete this label, and reassign all cells to type '${globals.unassignedCategoryLabel}'`}
                       />
                     ) : null}
                   </Menu>
                 }
               >
                 <Button
-                  style={{ marginLeft: 0, position: "relative", top: -1 }}
+                  style={{
+                    marginLeft: 0,
+                    position: "relative",
+                    top: -1,
+                    minHeight: 16
+                  }}
                   data-testclass="seeActions"
                   data-testid={`seeActions-${metadataField}`}
                   icon="more"
