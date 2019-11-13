@@ -420,7 +420,9 @@ class Category extends React.Component {
                           </Button>
                         </Tooltip>
                         <Button
-                          disabled={this.labelNameError(newLabelText)}
+                          disabled={
+                            !newLabelText || this.labelNameError(newLabelText)
+                          }
                           onClick={this.handleAddNewLabelToCategory}
                           intent="primary"
                           type="submit"

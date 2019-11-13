@@ -227,7 +227,10 @@ class Categories extends React.Component {
                     </Tooltip>
                     <Button
                       onClick={this.handleCreateUserAnno}
-                      disabled={this.categoryNameError(newCategoryText)}
+                      disabled={
+                        !newCategoryText ||
+                        this.categoryNameError(newCategoryText)
+                      }
                       intent="primary"
                       type="submit"
                     >
