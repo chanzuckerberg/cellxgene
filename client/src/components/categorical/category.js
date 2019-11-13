@@ -21,6 +21,7 @@ import {
 import * as globals from "../../globals";
 import Value from "./value";
 import sortedCategoryValues from "./util";
+import { AnnotationsHelpers } from "../../util/stateManager";
 
 @connect(state => ({
   colorAccessor: state.colors.colorAccessor,
@@ -82,18 +83,14 @@ class Category extends React.Component {
     dispatch({
       type: "annotation: disable add new label mode"
     });
+    this.setState({
+      newLabelText: ""
+    });
   };
 
   handleAddNewLabelToCategory = () => {
     const { dispatch, metadataField } = this.props;
     const { newLabelText } = this.state;
-    /*
-    XXX TODO - temporary code generates random label string. Remove
-    when the label creation UI is implemented.
-
-    const { newLabelText } = this.state;
-    */
-    // const newLabelText = `label${Math.random()}`;
     dispatch({
       type: "annotation: add new label to category",
       metadataField,
@@ -144,6 +141,48 @@ class Category extends React.Component {
       type: "color by categorical metadata",
       colorAccessor: metadataField
     });
+  };
+
+  labelNameError = name => {
+    /*
+    return false if this is a LEGAL/acceptable category name,
+    or return an error type.
+    */
+    const { metadataField, universe } = this.props;
+    const obsByName = universe.schema.annotations.obsByName;
+
+    if (obsByName[metadataField].categories.indexOf(name) !== -1) {
+      return "duplicate";
+    }
+
+    if (!AnnotationsHelpers.isLegalAnnotationName(name)) {
+      return "characters";
+    }
+
+    return false;
+  };
+
+  labelNameErrorMessage = name => {
+    const { metadataField } = this.props;
+    const err = this.labelNameError(name);
+    if (err == "duplicate") {
+      return (
+        <span>
+          <span style={{ fontStyle: "italic" }}>{name}</span> already exists
+          already exists within{" "}
+          <span style={{ fontStyle: "italic" }}>{metadataField}</span>{" "}
+        </span>
+      );
+    }
+    if (err == "characters") {
+      return (
+        <span>
+          <span style={{ fontStyle: "italic" }}>{name}</span> contains illegal
+          characters. Hint: use alpha-numeric and underscore
+        </span>
+      );
+    }
+    return err;
   };
 
   toggleAll() {
@@ -346,10 +385,12 @@ class Category extends React.Component {
                         <p>New, unique label name:</p>
                         <InputGroup
                           autoFocus
+                          value={newLabelText}
                           intent={
-                            universe.schema.annotations.obsByName[
-                              metadataField
-                            ].categories.indexOf(newLabelText) !== -1
+                            // universe.schema.annotations.obsByName[
+                            //   metadataField
+                            // ].categories.indexOf(newLabelText) !== -1
+                            newLabelText && this.labelNameError(newLabelText)
                               ? "warning"
                               : "none"
                           }
@@ -362,21 +403,16 @@ class Category extends React.Component {
                           style={{
                             marginTop: 7,
                             visibility:
-                              universe.schema.annotations.obsByName[
-                                metadataField
-                              ].categories.indexOf(newLabelText) !== -1
+                              // universe.schema.annotations.obsByName[
+                              //   metadataField
+                              // ].categories.indexOf(newLabelText) !== -1
+                              newLabelText && this.labelNameError(newLabelText)
                                 ? "visible"
                                 : "hidden",
                             color: Colors.ORANGE3
                           }}
                         >
-                          <span style={{ fontStyle: "italic" }}>
-                            {newLabelText}
-                          </span>{" "}
-                          already exists within{" "}
-                          <span style={{ fontStyle: "italic" }}>
-                            {metadataField}
-                          </span>
+                          {this.labelNameErrorMessage(newLabelText)}
                         </p>
                       </div>
                     </div>
@@ -390,9 +426,10 @@ class Category extends React.Component {
                         <Button
                           disabled={
                             newLabelText.length === 0 ||
-                            universe.schema.annotations.obsByName[
-                              metadataField
-                            ].categories.indexOf(newLabelText) !== -1
+                            // universe.schema.annotations.obsByName[
+                            //   metadataField
+                            // ].categories.indexOf(newLabelText) !== -1
+                            this.labelNameError(newLabelText)
                           }
                           onClick={this.handleAddNewLabelToCategory}
                           intent="primary"
