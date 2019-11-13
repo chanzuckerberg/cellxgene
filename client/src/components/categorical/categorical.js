@@ -64,9 +64,11 @@ class Categories extends React.Component {
 
   categoryNameError = name => {
     /*
-    return false if this is a LEGAL/acceptable category name,
+    return false if this is a LEGAL/acceptable category name or NULL/empty string,
     or return an error type.
     */
+    if (!name) return false;
+
     const { categoricalSelection } = this.props;
     const allCategoryNames = Object.keys(categoricalSelection);
 
@@ -83,6 +85,7 @@ class Categories extends React.Component {
 
   categoryNameErrorMessage = name => {
     const err = this.categoryNameError(name);
+    if (err === false) return null;
     if (err == "duplicate") {
       return (
         <span>
@@ -167,7 +170,6 @@ class Categories extends React.Component {
                       autoFocus
                       value={newCategoryText}
                       intent={
-                        newCategoryText &&
                         this.categoryNameError(newCategoryText)
                           ? "warning"
                           : "none"
@@ -180,11 +182,9 @@ class Categories extends React.Component {
                     <p
                       style={{
                         marginTop: 7,
-                        visibility:
-                          newCategoryText &&
-                          this.categoryNameError(newCategoryText)
-                            ? "visible"
-                            : "hidden",
+                        visibility: this.categoryNameError(newCategoryText)
+                          ? "visible"
+                          : "hidden",
                         color: Colors.ORANGE3
                       }}
                     >

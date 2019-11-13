@@ -145,9 +145,11 @@ class Category extends React.Component {
 
   labelNameError = name => {
     /*
-    return false if this is a LEGAL/acceptable category name,
+    return false if this is a LEGAL/acceptable category name or NULL/empty string,
     or return an error type.
     */
+    if (!name) return false;
+
     const { metadataField, universe } = this.props;
     const obsByName = universe.schema.annotations.obsByName;
 
@@ -165,6 +167,7 @@ class Category extends React.Component {
   labelNameErrorMessage = name => {
     const { metadataField } = this.props;
     const err = this.labelNameError(name);
+    if (err === false) return null;
     if (err == "duplicate") {
       return (
         <span>
@@ -387,10 +390,7 @@ class Category extends React.Component {
                           autoFocus
                           value={newLabelText}
                           intent={
-                            // universe.schema.annotations.obsByName[
-                            //   metadataField
-                            // ].categories.indexOf(newLabelText) !== -1
-                            newLabelText && this.labelNameError(newLabelText)
+                            this.labelNameError(newLabelText)
                               ? "warning"
                               : "none"
                           }
@@ -402,13 +402,9 @@ class Category extends React.Component {
                         <p
                           style={{
                             marginTop: 7,
-                            visibility:
-                              // universe.schema.annotations.obsByName[
-                              //   metadataField
-                              // ].categories.indexOf(newLabelText) !== -1
-                              newLabelText && this.labelNameError(newLabelText)
-                                ? "visible"
-                                : "hidden",
+                            visibility: this.labelNameError(newLabelText)
+                              ? "visible"
+                              : "hidden",
                             color: Colors.ORANGE3
                           }}
                         >
@@ -424,13 +420,7 @@ class Category extends React.Component {
                           </Button>
                         </Tooltip>
                         <Button
-                          disabled={
-                            newLabelText.length === 0 ||
-                            // universe.schema.annotations.obsByName[
-                            //   metadataField
-                            // ].categories.indexOf(newLabelText) !== -1
-                            this.labelNameError(newLabelText)
-                          }
+                          disabled={this.labelNameError(newLabelText)}
                           onClick={this.handleAddNewLabelToCategory}
                           intent="primary"
                           type="submit"
