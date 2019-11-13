@@ -3,6 +3,7 @@ import tempfile
 import fsspec
 from datetime import datetime
 
+
 class DataLocator():
     """
     DataLocator is a simple wrapper around fsspec functionality, and provides a
