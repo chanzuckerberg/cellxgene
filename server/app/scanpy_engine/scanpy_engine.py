@@ -1,6 +1,7 @@
 import warnings
 import copy
 import threading
+from datetime import datetime
 
 import numpy as np
 import pandas
@@ -8,6 +9,7 @@ from pandas.core.dtypes.dtypes import CategoricalDtype
 import anndata
 from scipy import sparse
 
+from server import __version__ as cellxgene_version
 from server.app.driver.driver import CXGDriver
 from server.app.util.constants import Axis, DEFAULT_TOP_N, MAX_LAYOUTS
 from server.app.util.errors import (
@@ -32,15 +34,15 @@ def has_method(o, name):
 
 
 class ScanpyEngine(CXGDriver):
-    def __init__(self, data=None, args={}):
-        super().__init__(data, args)
+    def __init__(self, data_locator=None, args={}):
+        super().__init__(data_locator, args)
         # lock used to protect label file write ops
         self.label_lock = threading.Lock()
         if self.data:
             self._validate_and_initialize()
 
-    def update(self, data=None, args={}):
-        super().__init__(data, args)
+    def update(self, data_locator=None, args={}):
+        super().__init__(data_locator, args)
         if self.data:
             self._validate_and_initialize()
 
@@ -484,7 +486,13 @@ class ScanpyEngine(CXGDriver):
         # so treat this as a critical section.
         with self.label_lock:
             self.labels = new_label_df
-            write_labels(fname, self.labels)
+            lastmod = self.data_locator.lastmodtime()
+            lastmodstr = "'unknown'" if lastmod is None else lastmod.isoformat()
+            header = f"# Annotations generated on {datetime.now().isoformat()} " \
+                     f"using cellxgene version {cellxgene_version}\n" \
+                     f"# Input data file was {self.data_locator.uri_or_path}, " \
+                     f"which was last modified on {lastmodstr}\n"
+            write_labels(fname, self.labels, header)
 
         return jsonify_scanpy({"status": "OK"})
 
