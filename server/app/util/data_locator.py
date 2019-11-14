@@ -1,6 +1,7 @@
 import os
 import tempfile
 import fsspec
+from datetime import datetime
 
 
 class DataLocator():
@@ -47,6 +48,14 @@ class DataLocator():
 
     def size(self):
         return self.fs.size(self.cname)
+
+    def lastmodtime(self):
+        """ return datetime object representing last modification time, or None if unavailable """
+        info = self.fs.info(self.cname)
+        if self.islocal() and info is not None:
+            return datetime.fromtimestamp(info['mtime'])
+        else:
+            return getattr(info, 'LastModified', None)
 
     def isfile(self):
         return self.fs.isfile(self.cname)

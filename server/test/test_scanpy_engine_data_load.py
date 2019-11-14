@@ -37,7 +37,7 @@ class DataLoadEngineTest(unittest.TestCase):
             self.data._create_schema()
 
     def test_delayed_load_data(self):
-        self.data.update(data=self.data_file)
+        self.data.update(data_locator=self.data_file)
         self.data._create_schema()
         self.assertEqual(self.data.cell_count, 2638)
         self.assertEqual(self.data.gene_count, 1838)
@@ -45,7 +45,7 @@ class DataLoadEngineTest(unittest.TestCase):
         self.assertTrue(self.data.data.X[0, 0] - -0.171_469_51 < epsilon)
 
     def test_diffexp_topN(self):
-        self.data.update(data=self.data_file)
+        self.data.update(data_locator=self.data_file)
         f1 = {"filter": {"obs": {"index": [[0, 500]]}}}
         f2 = {"filter": {"obs": {"index": [[500, 1000]]}}}
         result = json.loads(self.data.diffexp_topN(f1["filter"], f2["filter"]))

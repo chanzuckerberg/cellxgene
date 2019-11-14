@@ -11,18 +11,20 @@ Sort order for methods
 
 
 class CXGDriver(metaclass=ABCMeta):
-    def __init__(self, data=None, args={}):
+    def __init__(self, data_locator=None, args={}):
         self.config = self._get_default_config()
         self.config.update(args)
-        if data:
-            self._load_data(data)
+        if data_locator:
+            self._load_data(data_locator)
+            self.data_locator = data_locator
         else:
             self.data = None
 
-    def update(self, data=None, args={}):
+    def update(self, data_locator=None, args={}):
         self.config.update(args)
-        if data:
-            self._load_data(data)
+        if data_locator:
+            self._load_data(data_locator)
+            self.data_locator = data_locator
 
     @staticmethod
     def _get_default_config():
