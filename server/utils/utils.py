@@ -24,3 +24,12 @@ def is_port_available(host, port):
         except socket.error:
             pass
     return is_available
+
+
+def sort_options(command):
+    """
+    Helper for the click options - will sort options in a command, and can
+    be used as a decorator.
+    """
+    command.params.sort(key=lambda p: p.name)
+    return command
