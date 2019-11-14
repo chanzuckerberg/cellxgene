@@ -487,8 +487,8 @@ class ScanpyEngine(CXGDriver):
         with self.label_lock:
             self.labels = new_label_df
             lastmod = self.data_locator.lastmodtime()
-            lastmodstr = "'unknown'" if lastmod is None else lastmod.isoformat()
-            header = f"# Annotations generated on {datetime.now().isoformat()} " \
+            lastmodstr = "'unknown'" if lastmod is None else lastmod.isoformat(timespec="seconds")
+            header = f"# Annotations generated on {datetime.now().isoformat(timespec='seconds')} " \
                      f"using cellxgene version {cellxgene_version}\n" \
                      f"# Input data file was {self.data_locator.uri_or_path}, " \
                      f"which was last modified on {lastmodstr}\n"
