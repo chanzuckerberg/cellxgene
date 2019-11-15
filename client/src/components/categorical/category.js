@@ -35,7 +35,7 @@ class Category extends React.Component {
     this.state = {
       isChecked: true,
       isExpanded: false,
-      newCategoryText: "",
+      newCategoryText: props.metadataField,
       newLabelText: ""
     };
   }
@@ -116,8 +116,18 @@ class Category extends React.Component {
   };
 
   handleEditCategory = () => {
-    const { dispatch, metadataField } = this.props;
+    const { dispatch, metadataField, categoricalSelection } = this.props;
     const { newCategoryText } = this.state;
+
+    const allCategoryNames = _.keys(categoricalSelection);
+
+    if (
+      (allCategoryNames.indexOf(newCategoryText) > -1 &&
+        newCategoryText !== metadataField) ||
+      newCategoryText === ""
+    ) {
+      return;
+    }
 
     dispatch({
       type: "annotation: category edited",
@@ -168,7 +178,7 @@ class Category extends React.Component {
     const { metadataField } = this.props;
     const err = this.labelNameError(name);
     if (err === false) return null;
-    if (err == "duplicate") {
+    if (err === "duplicate") {
       return (
         <span>
           <span style={{ fontStyle: "italic" }}>{name}</span> already exists
@@ -177,7 +187,7 @@ class Category extends React.Component {
         </span>
       );
     }
-    if (err == "characters") {
+    if (err === "characters") {
       return (
         <span>
           <span style={{ fontStyle: "italic" }}>{name}</span> contains illegal
@@ -245,8 +255,7 @@ class Category extends React.Component {
       colorAccessor,
       categoricalSelection,
       isUserAnno,
-      annotations,
-      universe
+      annotations
     } = this.props;
     const { isTruncated } = categoricalSelection[metadataField];
 
@@ -255,6 +264,7 @@ class Category extends React.Component {
       ...cat.categoryValueIndices
     ]);
     const optTuplesAsKey = _.map(optTuples, t => t[0]).join(""); // animation
+    const allCategoryNames = _.keys(categoricalSelection);
 
     return (
       <div
@@ -337,7 +347,11 @@ class Category extends React.Component {
                     rightElement={
                       <Button
                         minimal
-                        disabled={newCategoryText.length === 0}
+                        disabled={
+                          (allCategoryNames.indexOf(newCategoryText) > -1 &&
+                            newCategoryText !== metadataField) ||
+                          newCategoryText === ""
+                        }
                         style={{ position: "relative", top: -1 }}
                         type="button"
                         icon="small-tick"
@@ -347,6 +361,23 @@ class Category extends React.Component {
                       />
                     }
                   />
+                  {(allCategoryNames.indexOf(newCategoryText) > -1 &&
+                    newCategoryText !== metadataField) ||
+                  newCategoryText === "" ? (
+                    <span
+                      style={{
+                        display: "block",
+                        fontStyle: "italic",
+                        fontSize: 12,
+                        marginTop: 5,
+                        color: Colors.ORANGE3
+                      }}
+                    >
+                      {newCategoryText === ""
+                        ? "Category name cannot be blank"
+                        : `${newCategoryText} already exists`}
+                    </span>
+                  ) : null}
                 </form>
               ) : (
                 metadataField

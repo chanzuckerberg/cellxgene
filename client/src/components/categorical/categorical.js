@@ -86,7 +86,7 @@ class Categories extends React.Component {
   categoryNameErrorMessage = name => {
     const err = this.categoryNameError(name);
     if (err === false) return null;
-    if (err == "duplicate") {
+    if (err === "duplicate") {
       return (
         <span>
           <span style={{ fontStyle: "italic" }}>{name}</span> already exists -
@@ -94,7 +94,7 @@ class Categories extends React.Component {
         </span>
       );
     }
-    if (err == "characters") {
+    if (err === "characters") {
       return (
         <span>
           <span style={{ fontStyle: "italic" }}>{name}</span> contains illegal
@@ -129,26 +129,30 @@ class Categories extends React.Component {
       >
         {/* READ ONLY CATEGORICAL FIELDS */}
         {/* this is duplicative but flat, could be abstracted */}
-        {_.map(allCategoryNames, catName =>
-          !schema.annotations.obsByName[catName].writable ? (
-            <Category
-              key={catName}
-              metadataField={catName}
-              createAnnoModeActive={createAnnoModeActive}
-              isUserAnno={false}
-            />
-          ) : null
+        {_.map(
+          allCategoryNames,
+          catName =>
+            !schema.annotations.obsByName[catName].writable ? (
+              <Category
+                key={catName}
+                metadataField={catName}
+                createAnnoModeActive={createAnnoModeActive}
+                isUserAnno={false}
+              />
+            ) : null
         )}
         {/* WRITEABLE FIELDS */}
-        {_.map(allCategoryNames, catName =>
-          schema.annotations.obsByName[catName].writable ? (
-            <Category
-              key={catName}
-              metadataField={catName}
-              createAnnoModeActive={createAnnoModeActive}
-              isUserAnno
-            />
-          ) : null
+        {_.map(
+          allCategoryNames,
+          catName =>
+            schema.annotations.obsByName[catName].writable ? (
+              <Category
+                key={catName}
+                metadataField={catName}
+                createAnnoModeActive={createAnnoModeActive}
+                isUserAnno
+              />
+            ) : null
         )}
         {writableCategoriesEnabled ? (
           <div>
