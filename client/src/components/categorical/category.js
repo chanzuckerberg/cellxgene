@@ -285,7 +285,7 @@ class Category extends React.Component {
             style={{
               display: "flex",
               justifyContent: "flex-start",
-              alignItems: "baseline"
+              alignItems: "flex-start"
             }}
           >
             <label className="bp3-control bp3-checkbox">
