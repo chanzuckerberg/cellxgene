@@ -16,14 +16,16 @@ from server.app.util.data_locator import DataLocator
 class WritableAnnotationTest(unittest.TestCase):
     def setUp(self):
         self.tmpDir = tempfile.mkdtemp()
-        self.label_file = path.join(self.tmpDir, "labels.csv")
+        self.annotations_file = path.join(self.tmpDir, "test_annotations.csv")
         args = {
             "layout": ["umap"],
             "max_category_items": 100,
             "obs_names": None,
             "var_names": None,
             "diffexp_lfc_cutoff": 0.01,
-            "label_file": self.label_file
+            "annotations": True,
+            "annotations_file": self.annotations_file,
+            "annotations_output_dir": None
         }
         self.data = ScanpyEngine(DataLocator("example-dataset/pbmc3k.h5ad"), args)
 
@@ -59,8 +61,8 @@ class WritableAnnotationTest(unittest.TestCase):
         })
         res = self.data.annotation_put_fbs("obs", fbs)
         self.assertEqual(res, json.dumps({"status": "OK"}))
-        self.assertTrue(path.exists(self.label_file))
-        df = pd.read_csv(self.label_file, index_col=0, header=0, comment='#')
+        self.assertTrue(path.exists(self.annotations_file))
+        df = pd.read_csv(self.annotations_file, index_col=0, header=0, comment='#')
         self.assertEqual(df.shape, (n_rows, 2))
         self.assertEqual(set(df.columns), set(['cat_A', 'cat_B']))
         self.assertTrue(self.data.original_obs_index.equals(df.index))
@@ -74,15 +76,18 @@ class WritableAnnotationTest(unittest.TestCase):
         })
         res = self.data.annotation_put_fbs("obs", fbs)
         self.assertEqual(res, json.dumps({"status": "OK"}))
-        self.assertTrue(path.exists(self.label_file))
-        df = pd.read_csv(self.label_file, index_col=0, header=0, comment='#')
+        self.assertTrue(path.exists(self.annotations_file))
+        df = pd.read_csv(self.annotations_file, index_col=0, header=0, comment='#')
         self.assertEqual(set(df.columns), set(['cat_A', 'cat_C']))
         self.assertTrue(np.all(df['cat_A'] == ['label_A1' for l in range(0, n_rows)]))
         self.assertTrue(np.all(df['cat_C'] == ['label_C' for l in range(0, n_rows)]))
 
         # rotation
-        name, ext = path.splitext(self.label_file)
-        self.assertTrue(path.exists(f"{name}-1{ext}"))
+        name, ext = path.splitext(self.annotations_file)
+        backup_dir = f"{name}-backups"
+        self.assertTrue(path.isdir(backup_dir))
+        found_files = listdir(backup_dir)
+        self.assertEqual(len(found_files), 1)
 
     def test_file_rotation_to_max_9(self):
         # verify we stop rotation at 9
@@ -95,10 +100,11 @@ class WritableAnnotationTest(unittest.TestCase):
             res = self.data.annotation_put_fbs("obs", fbs)
             self.assertEqual(res, json.dumps({"status": "OK"}))
 
-        name, ext = path.splitext(self.label_file)
-        expected_files = [self.label_file] + [f"{name}-{i}{ext}" for i in range(1, 10)]
-        found_files = [path.join(self.tmpDir, p) for p in listdir(self.tmpDir)]
-        self.assertEqual(set(expected_files), set(found_files))
+        name, ext = path.splitext(self.annotations_file)
+        backup_dir = f"{name}-backups"
+        self.assertTrue(path.isdir(backup_dir))
+        found_files = listdir(backup_dir)
+        self.assertTrue(len(found_files) <= 9)
 
     def test_put_get_roundtrip(self):
         # verify that OBS PUTs (annotation_put_fbs) are accessible via

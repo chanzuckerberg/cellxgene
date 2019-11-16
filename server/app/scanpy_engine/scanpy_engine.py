@@ -2,6 +2,7 @@ import warnings
 import copy
 import threading
 from datetime import datetime
+import os.path
 
 import numpy as np
 import pandas
@@ -54,10 +55,20 @@ class ScanpyEngine(CXGDriver):
             "obs_names": None,
             "var_names": None,
             "diffexp_lfc_cutoff": 0.01,
-            "label_file": None,
+            "annotations": False,
+            "annotations_file": None,
+            "annotations_output_dir": None,
             "backed": False,
             "disable_diffexp": False,
             "diffexp_may_be_slow": False
+        }
+
+    def get_config_parameters(self):
+        return {
+            "max-category-items": self.config["max_category_items"],
+            "disable-diffexp": self.config["disable_diffexp"],
+            "diffexp-may-be-slow": self.config["diffexp_may_be_slow"],
+            "annotations": self.config["annotations"]
         }
 
     @staticmethod
@@ -211,6 +222,40 @@ class ScanpyEngine(CXGDriver):
                 schema["annotations"]["obs"]["columns"].append(col_schema)
         return schema
 
+    def get_anno_fname(self):
+        """ return the current annotation file name """
+        if not self.config["annotations"]:
+            return None
+
+        if self.config["annotations_file"] is not None:
+            return self.config["annotations_file"]
+
+        # we need to generate a file name
+        # TODO: this is a temporary name
+        return os.path.join(self.get_anno_output_dir(), "myannotations.csv")
+
+    def get_anno_output_dir(self):
+        """ return the current annotation output directory """
+        if not self.config["annotations"]:
+            return None
+
+        if self.config['annotations_output_dir']:
+            return self.config['annotations_output_dir']
+
+        if self.config['annotations_file']:
+            return os.path.dirname(os.path.abspath(self.config['annotations_file']))
+
+        return os.getcwd()
+
+    def get_anno_backup_dir(self):
+        """ return the current annotation backup directory """
+        if not self.config["annotations"]:
+            return None
+
+        fname = self.get_anno_fname()
+        root, ext = os.path.splitext(fname)
+        return f"{root}-backups"
+
     def _load_data(self, data_locator):
         # as of AnnData 0.6.19, backed mode performs initial load fast, but at the
         # cost of significantly slower access to X data.
@@ -240,9 +285,9 @@ class ScanpyEngine(CXGDriver):
                 f"Please check your input and try again."
             )
 
-        if self.config["label_file"]:
+        if self.config["annotations"]:
             try:
-                self.labels = read_labels(self.config["label_file"])
+                self.labels = read_labels(self.get_anno_fname())
             except Exception as e:
                 raise ScanpyFileError(
                     f"Error while loading label file: {e}, File must be in the .csv format, please check "
@@ -364,12 +409,11 @@ class ScanpyEngine(CXGDriver):
 
         # all lables must have a name, which must be unique and not used in obs column names
         if not labels.columns.is_unique:
-            raise KeyError(f"All column names specified in {self.config['label_file']} must be unique.")
+            raise KeyError(f"All column names specified in user annotations must be unique.")
 
         # the label index must be unique, and must have same values the anndata obs index
         if not labels.index.is_unique:
-            raise KeyError(f"All row index values specified in the label file "
-                           f"`{self.config['label_file']}` must be unique.")
+            raise KeyError(f"All row index values specified in user annotations must be unique.")
 
         if not labels.index.equals(self.original_obs_index):
             raise KeyError("Label file row index does not match H5AD file index. "
@@ -464,7 +508,7 @@ class ScanpyEngine(CXGDriver):
 
     @requires_data
     def annotation_put_fbs(self, axis, fbs):
-        fname = self.config["label_file"]
+        fname = self.get_anno_fname()
         if not fname or self.labels is None:
             raise DisabledFeatureError("Writable annotations are not enabled")
 
@@ -492,7 +536,7 @@ class ScanpyEngine(CXGDriver):
                      f"using cellxgene version {cellxgene_version}\n" \
                      f"# Input data file was {self.data_locator.uri_or_path}, " \
                      f"which was last modified on {lastmodstr}\n"
-            write_labels(fname, self.labels, header)
+            write_labels(fname, self.labels, header, backup_dir=self.get_anno_backup_dir())
 
         return jsonify_scanpy({"status": "OK"})
 

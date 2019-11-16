@@ -1,8 +1,8 @@
 import errno
 import functools
 import logging
-from os import devnull
-from os.path import splitext, basename
+from os import devnull, getcwd
+from os.path import splitext, basename, dirname, abspath, isdir
 import sys
 import warnings
 import webbrowser
@@ -70,12 +70,28 @@ def common_args(func):
         metavar="<float>",
         help="Minimum log fold change threshold for differential expression.",)
     @click.option(
-        "--experimental-label-file",
+        "--experimental-annotations",
+        is_flag=True,
+        default=False,
+        show_default=True,
+        help="Enable user annotation of data."
+    )
+    @click.option(
+        "--experimental-annotations-file",
         default=None,
         show_default=True,
         multiple=False,
         metavar="<path>",
         help="CSV file containing user annotations; will be overwritten.  Created if does not exist.",)
+    @click.option(
+        "--experimental-annotations-output-dir",
+        default=None,
+        show_default=False,
+        multiple=False,
+        metavar="<directory path>",
+        help="Directory where annotation CSV files will be written (directory must exist). "
+             "Defaults to current directory.",
+    )
     @click.option(
         "--backed",
         "-b",
@@ -96,16 +112,20 @@ def common_args(func):
     return wrapper
 
 
-def parse_engine_args(embedding, obs_names, var_names, max_category_items,
-                      diffexp_lfc_cutoff, experimental_label_file, backed,
-                      disable_diffexp):
+def parse_engine_args(embedding, obs_names, var_names, max_category_items, diffexp_lfc_cutoff,
+                      experimental_annotations, experimental_annotations_file,
+                      experimental_annotations_output_dir, backed, disable_diffexp):
+    annotations_file = experimental_annotations_file if experimental_annotations else None
+    annotations_output_dir = experimental_annotations_output_dir if experimental_annotations else None
     return {
         "layout": embedding,
         "max_category_items": max_category_items,
         "diffexp_lfc_cutoff": diffexp_lfc_cutoff,
         "obs_names": obs_names,
         "var_names": var_names,
-        "label_file": experimental_label_file,
+        "annotations": experimental_annotations,
+        "annotations_file": annotations_file,
+        "annotations_output_dir": annotations_output_dir,
         "backed": backed,
         "disable_diffexp": disable_diffexp
     }
@@ -177,7 +197,9 @@ def launch(
         title,
         scripts,
         about,
-        experimental_label_file,
+        experimental_annotations,
+        experimental_annotations_file,
+        experimental_annotations_output_dir,
         backed,
         disable_diffexp
 ):
@@ -196,7 +218,11 @@ def launch(
     > cellxgene launch <url>"""
 
     e_args = parse_engine_args(embedding, obs_names, var_names, max_category_items,
-                               diffexp_lfc_cutoff, experimental_label_file, backed,
+                               diffexp_lfc_cutoff,
+                               experimental_annotations,
+                               experimental_annotations_file,
+                               experimental_annotations_output_dir,
+                               backed,
                                disable_diffexp)
     try:
         data_locator = DataLocator(data)
@@ -256,10 +282,23 @@ def launch(
     else:
         port = find_available_port(host)
 
-    if experimental_label_file:
-        lf_name, lf_ext = splitext(experimental_label_file)
-        if lf_ext and lf_ext != ".csv":
-            raise click.FileError(basename(experimental_label_file), hint="label file type must be .csv")
+    if not experimental_annotations:
+        if experimental_annotations_file is not None:
+            click.echo("Warning: --experimental-annotations-file ignored as --annotations not enabled.")
+        if experimental_annotations_output_dir is not None:
+            click.echo("Warning: --experimental-annotations-output-dir ignored as --annotations not enabled.")
+    else:
+        if experimental_annotations_file is not None and experimental_annotations_output_dir is not None:
+            click.ClickException("--experimental-annotations-file and --experimental-annotations-output-dir "
+                                 "may not be used toether.")
+
+        if experimental_annotations_file is not None:
+            lf_name, lf_ext = splitext(experimental_annotations_file)
+            if lf_ext and lf_ext != ".csv":
+                raise click.FileError(basename(experimental_annotations_file), hint="annotation file type must be .csv")
+
+        if experimental_annotations_output_dir is not None and not isdir(experimental_annotations_output_dir):
+            click.ClickException('--experimental-annotations-output-dir must specify an existing directory.')
 
     if about:
         def url_check(url):

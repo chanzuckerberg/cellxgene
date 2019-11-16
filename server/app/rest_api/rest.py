@@ -69,9 +69,7 @@ class ConfigAPI(Resource):
                     "about-dataset": current_app.config["ABOUT_DATASET"]
                 },
                 "parameters": {
-                    "max-category-items": current_app.data.config["max_category_items"],
-                    "disable-diffexp": current_app.data.config["disable_diffexp"],
-                    "diffexp-may-be-slow": current_app.data.config["diffexp_may_be_slow"]
+                    **current_app.data.get_config_parameters()
                 },
                 "library_versions": {
                     "cellxgene": cellxgene_version,
@@ -79,10 +77,6 @@ class ConfigAPI(Resource):
                 }
             }
         }
-
-        label_file = current_app.data.config["label_file"]
-        if label_file:
-            config["config"]["parameters"]["label_file"] = basename(label_file)
 
         return make_response(jsonify(config), HTTPStatus.OK)
 

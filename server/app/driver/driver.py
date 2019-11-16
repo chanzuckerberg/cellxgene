@@ -36,6 +36,16 @@ class CXGDriver(metaclass=ABCMeta):
             "diffexp_may_be_slow": False
         }
 
+    @abstractmethod
+    def get_config_parameters(self):
+        """ 
+            return a dict of properties that will be used to set the engine-specific
+            "parameters" info for client-side configuration.
+
+            See rest.py /config route for use
+        """
+        pass
+
     @property
     def features(self):
         features = {
