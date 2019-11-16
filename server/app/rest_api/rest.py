@@ -1,6 +1,5 @@
 from http import HTTPStatus
 import warnings
-from os.path import basename
 
 from flask import Blueprint, current_app, jsonify, make_response, request
 from flask_restful import Api, Resource

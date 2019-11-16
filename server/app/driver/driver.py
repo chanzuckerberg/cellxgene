@@ -38,7 +38,7 @@ class CXGDriver(metaclass=ABCMeta):
 
     @abstractmethod
     def get_config_parameters(self):
-        """ 
+        """
             return a dict of properties that will be used to set the engine-specific
             "parameters" info for client-side configuration.
 

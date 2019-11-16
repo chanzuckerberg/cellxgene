@@ -1,8 +1,8 @@
 import errno
 import functools
 import logging
-from os import devnull, getcwd
-from os.path import splitext, basename, dirname, abspath, isdir
+from os import devnull
+from os.path import splitext, basename, isdir
 import sys
 import warnings
 import webbrowser
