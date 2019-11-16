@@ -9,7 +9,7 @@ import actions from "../../actions";
   saveInProgress: state.autosave?.saveInProgress ?? false,
   lastSavedObsAnnotations: state.autosave?.lastSavedObsAnnotations,
   error: state.autosave?.error,
-  writableCategoriesEnabled: state.config?.parameters?.["label_file"] ?? false
+  writableCategoriesEnabled: state.config?.parameters?.["annotations"] ?? false
 }))
 class Autosave extends React.Component {
   constructor(props) {

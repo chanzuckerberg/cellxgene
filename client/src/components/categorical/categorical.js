@@ -18,7 +18,7 @@ import { AnnotationsHelpers } from "../../util/stateManager";
 
 @connect(state => ({
   categoricalSelection: state.categoricalSelection,
-  writableCategoriesEnabled: state.config?.parameters?.["label_file"] ?? false,
+  writableCategoriesEnabled: state.config?.parameters?.["annotations"] ?? false,
   schema: state.world?.schema
 }))
 class Categories extends React.Component {
