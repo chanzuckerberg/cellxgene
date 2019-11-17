@@ -48,13 +48,14 @@ def backup(fname, backup_dir, max_backups=9):
     # don't use ISO standard time format, as it contains characters illegal on some filesytems.
     nowish = datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
     backup_fname = os.path.join(backup_dir, f"{fname_base_root}-{nowish}{fname_base_ext}")
-    os.replace(fname, backup_fname)
+    if os.path.exists(backup_fname):
+        os.remove(backup_fname)
+    os.rename(fname, backup_fname)
 
     # prune the backup_dir to max number of backup files, keeping the most recent backups
-    backups = os.listdir(backup_dir)
+    backups = list(filter(lambda s: s.startswith(fname_base_root), os.listdir(backup_dir)))
     excess_count = len(backups) - max_backups
     if excess_count > 0:
         backups.sort()
         for bu in backups[0:excess_count]:
-            print('deleting', bu)
             os.remove(os.path.join(backup_dir, bu))

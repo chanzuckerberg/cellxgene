@@ -3,6 +3,8 @@ import copy
 import threading
 from datetime import datetime
 import os.path
+from hashlib import blake2b
+import base64
 
 import numpy as np
 import pandas
@@ -38,7 +40,7 @@ class ScanpyEngine(CXGDriver):
     def __init__(self, data_locator=None, args={}):
         super().__init__(data_locator, args)
         # lock used to protect label file write ops
-        self.label_lock = threading.Lock()
+        self.label_lock = threading.RLock()
         if self.data:
             self._validate_and_initialize()
 
@@ -208,21 +210,22 @@ class ScanpyEngine(CXGDriver):
             self.schema["layout"]["obs"].append(layout_schema)
 
     @requires_data
-    def get_schema(self):
+    def get_schema(self, uid=None):
         schema = self.schema  # base schema
         # add label obs annotations as needed
-        if self.labels is not None:
+        labels = read_labels(self.get_anno_fname(uid))
+        if labels is not None and not labels.empty:
             schema = copy.deepcopy(schema)
-            for col in self.labels.columns:
+            for col in labels.columns:
                 col_schema = {
                     "name": col,
                     "writable": True,
                 }
-                col_schema.update(self._get_col_type(self.labels[col]))
+                col_schema.update(self._get_col_type(labels[col]))
                 schema["annotations"]["obs"]["columns"].append(col_schema)
         return schema
 
-    def get_anno_fname(self):
+    def get_anno_fname(self, uid=None):
         """ return the current annotation file name """
         if not self.config["annotations"]:
             return None
@@ -230,9 +233,13 @@ class ScanpyEngine(CXGDriver):
         if self.config["annotations_file"] is not None:
             return self.config["annotations_file"]
 
-        # we need to generate a file name
-        # TODO: this is a temporary name
-        return os.path.join(self.get_anno_output_dir(), "myannotations.csv")
+        # we need to generate a file name, which we can only do if we have a UID
+        if uid is None:
+            return None
+        data_collection_name = "myannotations"  # TODO XXX temp name of collection
+        id = (data_collection_name + uid + self.data_locator.abspath()).encode()
+        idhash = base64.b32encode(blake2b(id, digest_size=5).digest()).decode('utf-8')
+        return os.path.join(self.get_anno_output_dir(), f"{data_collection_name}-{idhash}.csv")
 
     def get_anno_output_dir(self):
         """ return the current annotation output directory """
@@ -247,12 +254,12 @@ class ScanpyEngine(CXGDriver):
 
         return os.getcwd()
 
-    def get_anno_backup_dir(self):
+    def get_anno_backup_dir(self, uid):
         """ return the current annotation backup directory """
         if not self.config["annotations"]:
             return None
 
-        fname = self.get_anno_fname()
+        fname = self.get_anno_fname(uid)
         root, ext = os.path.splitext(fname)
         return f"{root}-backups"
 
@@ -285,17 +292,6 @@ class ScanpyEngine(CXGDriver):
                 f"Please check your input and try again."
             )
 
-        if self.config["annotations"]:
-            try:
-                self.labels = read_labels(self.get_anno_fname())
-            except Exception as e:
-                raise ScanpyFileError(
-                    f"Error while loading label file: {e}, File must be in the .csv format, please check "
-                    f"your input and try again."
-                )
-        else:
-            self.labels = None
-
     @requires_data
     def _validate_and_initialize(self):
         # var and obs column names must be unique
@@ -307,8 +303,12 @@ class ScanpyEngine(CXGDriver):
         self.cell_count = self.data.shape[0]
         self.gene_count = self.data.shape[1]
         self._default_and_validate_layouts()
-        self._validate_label_data()
         self._create_schema()
+
+        # if the user has specified a fixed label file, go ahead and validate it
+        # so that we can remove errors early in the process.
+        if self.config["annotations_file"]:
+            self._validate_label_data(read_labels(self.get_anno_fname(uid=None)))
 
         # heuristic
         n_values = self.data.shape[0] * self.data.shape[1]
@@ -397,13 +397,10 @@ class ScanpyEngine(CXGDriver):
                         )
 
     @requires_data
-    def _validate_label_data(self, labels=None):
+    def _validate_label_data(self, labels):
         """
         labels is None if disabled, empty if enabled by no data
         """
-        if labels is None:
-            labels = self.labels
-
         if labels is None or labels.empty:
             return
 
@@ -494,10 +491,21 @@ class ScanpyEngine(CXGDriver):
         return obs_selector, var_selector
 
     @requires_data
-    def annotation_to_fbs_matrix(self, axis, fields=None):
+    def annotation_to_fbs_matrix(self, axis, fields=None, uid=None):
         if axis == Axis.OBS:
-            if self.labels is not None and not self.labels.empty:
-                df = self.data.obs.join(self.labels, self.config['obs_names'])
+            if self.config["annotations"]:
+                try:
+                    labels = read_labels(self.get_anno_fname(uid))
+                except Exception as e:
+                    raise ScanpyFileError(
+                        f"Error while loading label file: {e}, File must be in the .csv format, please check "
+                        f"your input and try again."
+                    )
+            else:
+                labels = None
+
+            if labels is not None and not labels.empty:
+                df = self.data.obs.join(labels, self.config['obs_names'])
             else:
                 df = self.data.obs
         else:
@@ -507,9 +515,9 @@ class ScanpyEngine(CXGDriver):
         return encode_matrix_fbs(df, col_idx=df.columns)
 
     @requires_data
-    def annotation_put_fbs(self, axis, fbs):
-        fname = self.get_anno_fname()
-        if not fname or self.labels is None:
+    def annotation_put_fbs(self, axis, fbs, uid=None):
+        fname = self.get_anno_fname(uid)
+        if not fname or not self.config["annotations"]:
             raise DisabledFeatureError("Writable annotations are not enabled")
 
         if axis != Axis.OBS:
@@ -518,7 +526,7 @@ class ScanpyEngine(CXGDriver):
         new_label_df = decode_matrix_fbs(fbs)
         if not new_label_df.empty:
             new_label_df.index = self.original_obs_index
-        self._validate_label_data(labels=new_label_df)  # paranoia
+        self._validate_label_data(new_label_df)  # paranoia
 
         # if any of the new column labels overlap with our existing labels, raise error
         duplicate_columns = list(set(new_label_df.columns) & set(self.data.obs.columns))
@@ -529,14 +537,13 @@ class ScanpyEngine(CXGDriver):
         # update our internal state and save it.  Multi-threading often enabled,
         # so treat this as a critical section.
         with self.label_lock:
-            self.labels = new_label_df
             lastmod = self.data_locator.lastmodtime()
             lastmodstr = "'unknown'" if lastmod is None else lastmod.isoformat(timespec="seconds")
             header = f"# Annotations generated on {datetime.now().isoformat(timespec='seconds')} " \
                      f"using cellxgene version {cellxgene_version}\n" \
                      f"# Input data file was {self.data_locator.uri_or_path}, " \
                      f"which was last modified on {lastmodstr}\n"
-            write_labels(fname, self.labels, header, backup_dir=self.get_anno_backup_dir())
+            write_labels(fname, new_label_df, header, backup_dir=self.get_anno_backup_dir(uid))
 
         return jsonify_scanpy({"status": "OK"})
 

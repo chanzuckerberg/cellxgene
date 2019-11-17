@@ -57,6 +57,16 @@ class DataLocator():
         else:
             return getattr(info, 'LastModified', None)
 
+    def abspath(self):
+        """
+        return the absolute path for the locator - only really does something
+        for file: protocol, as all others are already absolute
+        """
+        if self.islocal():
+            return os.path.abspath(self.path)
+        else:
+            return self.uri_or_path
+
     def isfile(self):
         return self.fs.isfile(self.cname)
 
