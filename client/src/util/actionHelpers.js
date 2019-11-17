@@ -33,7 +33,8 @@ const doFetch = async (url, acceptType) => {
     method: "get",
     headers: new Headers({
       Accept: acceptType
-    })
+    }),
+    credentials: "include"
   });
   if (res.ok && res.headers.get("Content-Type").includes(acceptType)) {
     return res;
