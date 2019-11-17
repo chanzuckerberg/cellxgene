@@ -289,8 +289,8 @@ def launch(
             click.echo("Warning: --experimental-annotations-output-dir ignored as --annotations not enabled.")
     else:
         if experimental_annotations_file is not None and experimental_annotations_output_dir is not None:
-            click.ClickException("--experimental-annotations-file and --experimental-annotations-output-dir "
-                                 "may not be used toether.")
+            raise click.ClickException("--experimental-annotations-file and --experimental-annotations-output-dir "
+                                       "may not be used together.")
 
         if experimental_annotations_file is not None:
             lf_name, lf_ext = splitext(experimental_annotations_file)
@@ -298,7 +298,8 @@ def launch(
                 raise click.FileError(basename(experimental_annotations_file), hint="annotation file type must be .csv")
 
         if experimental_annotations_output_dir is not None and not isdir(experimental_annotations_output_dir):
-            click.ClickException('--experimental-annotations-output-dir must specify an existing directory.')
+            raise click.ClickException('--experimental-annotations-output-dir must specify an existing directory. '
+                                       f'"{experimental_annotations_output_dir}" does not exist.')
 
     if about:
         def url_check(url):
