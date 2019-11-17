@@ -32,6 +32,7 @@ class SchemaAPI(Resource):
 
 class ConfigAPI(Resource):
     def get(self):
+        cxguid = get_userid(session)
         config = {
             "config": {
                 "features": [
@@ -64,7 +65,7 @@ class ConfigAPI(Resource):
                     "about-dataset": current_app.config["ABOUT_DATASET"]
                 },
                 "parameters": {
-                    **current_app.data.get_config_parameters()
+                    **current_app.data.get_config_parameters(uid=cxguid)
                 },
                 "library_versions": {
                     "cellxgene": cellxgene_version,

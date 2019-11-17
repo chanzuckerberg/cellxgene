@@ -65,13 +65,16 @@ class ScanpyEngine(CXGDriver):
             "diffexp_may_be_slow": False
         }
 
-    def get_config_parameters(self):
-        return {
+    def get_config_parameters(self, uid=None):
+        params = {
             "max-category-items": self.config["max_category_items"],
             "disable-diffexp": self.config["disable_diffexp"],
             "diffexp-may-be-slow": self.config["diffexp_may_be_slow"],
             "annotations": self.config["annotations"]
         }
+        if uid is not None:
+            params["user-data-idhash"] = self.get_userdata_idhash(uid)
+        return params
 
     @staticmethod
     def _create_unique_column_name(df, col_name_prefix):
@@ -225,6 +228,15 @@ class ScanpyEngine(CXGDriver):
                 schema["annotations"]["obs"]["columns"].append(col_schema)
         return schema
 
+    def get_userdata_idhash(self, uid):
+        """
+        Return a short hash that weakly identifies the user and dataset.
+        Used to create safe annotations output file names.
+        """
+        id = (uid + self.data_locator.abspath()).encode()
+        idhash = base64.b32encode(blake2b(id, digest_size=5).digest()).decode('utf-8')
+        return idhash
+
     def get_anno_fname(self, uid=None):
         """ return the current annotation file name """
         if not self.config["annotations"]:
@@ -237,8 +249,7 @@ class ScanpyEngine(CXGDriver):
         if uid is None:
             return None
         data_collection_name = "myannotations"  # TODO XXX temp name of collection
-        id = (data_collection_name + uid + self.data_locator.abspath()).encode()
-        idhash = base64.b32encode(blake2b(id, digest_size=5).digest()).decode('utf-8')
+        idhash = self.get_userdata_idhash(uid)
         return os.path.join(self.get_anno_output_dir(), f"{data_collection_name}-{idhash}.csv")
 
     def get_anno_output_dir(self):
