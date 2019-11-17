@@ -71,7 +71,7 @@ class CXGDriver(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def annotation_to_fbs_matrix(self, axis, field=None):
+    def annotation_to_fbs_matrix(self, axis, field=None, uid=None):
         """
         Gets annotation value for each observation
         :param axis: string obs or var
@@ -81,7 +81,7 @@ class CXGDriver(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def annotation_put_fbs(self, axis, fbs):
+    def annotation_put_fbs(self, axis, fbs, uid=None):
         """
         Put/save FBS as user-defined labels
         """

@@ -1,7 +1,8 @@
 from http import HTTPStatus
 import warnings
+from uuid import uuid4
 
-from flask import Blueprint, current_app, jsonify, make_response, request
+from flask import Blueprint, current_app, jsonify, make_response, request, session
 from flask_restful import Api, Resource
 from server import __version__ as cellxgene_version
 from anndata import __version__ as anndata_version
@@ -10,6 +11,7 @@ from server.app.util.constants import (
     Axis,
     DiffExpMode,
     JSON_NaN_to_num_warning_msg,
+    CXGUID,
 )
 from server.app.util.errors import (
     FilterError,
@@ -19,18 +21,12 @@ from server.app.util.errors import (
     DisabledFeatureError,
 )
 
-"""
-Sort order for routes
-1. Initialize
-2. Data & Metadata
-3. Computation
-"""
-
 
 class SchemaAPI(Resource):
     def get(self):
+        cxguid = get_userid(session)
         return make_response(
-            jsonify({"schema": current_app.data.get_schema()}), HTTPStatus.OK
+            jsonify({"schema": current_app.data.get_schema(uid=cxguid)}), HTTPStatus.OK
         )
 
 
@@ -86,9 +82,10 @@ class AnnotationsObsAPI(Resource):
         preferred_mimetype = request.accept_mimetypes.best_match(
             ["application/octet-stream"]
         )
+        cxguid = get_userid(session)
         try:
             if preferred_mimetype == "application/octet-stream":
-                return make_response(current_app.data.annotation_to_fbs_matrix("obs", fields),
+                return make_response(current_app.data.annotation_to_fbs_matrix("obs", fields, uid=cxguid),
                                      HTTPStatus.OK,
                                      {"Content-Type": "application/octet-stream"})
             else:
@@ -100,8 +97,9 @@ class AnnotationsObsAPI(Resource):
 
     def put(self):
         try:
+            cxguid = get_userid(session)
             fbs = request.get_data()
-            res = current_app.data.annotation_put_fbs("obs", fbs)
+            res = current_app.data.annotation_put_fbs("obs", fbs, uid=cxguid)
             return make_response(
                 res, HTTPStatus.OK, {"Content-Type": "application/json"}
             )
@@ -237,6 +235,13 @@ class LayoutObsAPI(Resource):
             return make_response(e.message, HTTPStatus.INTERNAL_SERVER_ERROR)
         except ValueError as e:
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+
+
+def get_userid(ss):
+    if CXGUID not in ss:
+        ss[CXGUID] = uuid4().hex
+        ss.permanent = True
+    return ss[CXGUID]
 
 
 def get_api_resources():
