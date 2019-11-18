@@ -381,7 +381,7 @@ class Scatterplot extends React.PureComponent {
       <div
         style={{
           position: "fixed",
-          bottom: minimized ? -height + -margin.top : 0,
+          bottom: minimized ? -height + -margin.top - 2 : 0,
           borderRadius: "3px 3px 0px 0px",
           left: globals.leftSidebarWidth + globals.scatterplotMarginLeft,
           padding: "0px 20px 20px 0px",
