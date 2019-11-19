@@ -1,6 +1,7 @@
 from http import HTTPStatus
 import warnings
 from uuid import uuid4
+import re
 
 from flask import Blueprint, current_app, jsonify, make_response, request, session
 from flask_restful import Api, Resource
@@ -12,6 +13,7 @@ from server.app.util.constants import (
     DiffExpMode,
     JSON_NaN_to_num_warning_msg,
     CXGUID,
+    CXG_ANNO_COLLECTION
 )
 from server.app.util.errors import (
     FilterError,
@@ -25,14 +27,16 @@ from server.app.util.errors import (
 class SchemaAPI(Resource):
     def get(self):
         cxguid = get_userid(session)
+        anno_collection = get_anno_collection(session)
         return make_response(
-            jsonify({"schema": current_app.data.get_schema(uid=cxguid)}), HTTPStatus.OK
+            jsonify({"schema": current_app.data.get_schema(uid=cxguid, collection=anno_collection)}), HTTPStatus.OK
         )
 
 
 class ConfigAPI(Resource):
     def get(self):
         cxguid = get_userid(session)
+        anno_collection = get_anno_collection(session)
         config = {
             "config": {
                 "features": [
@@ -65,7 +69,7 @@ class ConfigAPI(Resource):
                     "about-dataset": current_app.config["ABOUT_DATASET"]
                 },
                 "parameters": {
-                    **current_app.data.get_config_parameters(uid=cxguid)
+                    **current_app.data.get_config_parameters(uid=cxguid, collection=anno_collection)
                 },
                 "library_versions": {
                     "cellxgene": cellxgene_version,
@@ -84,9 +88,11 @@ class AnnotationsObsAPI(Resource):
             ["application/octet-stream"]
         )
         cxguid = get_userid(session)
+        anno_collection = get_anno_collection(session)
         try:
             if preferred_mimetype == "application/octet-stream":
-                return make_response(current_app.data.annotation_to_fbs_matrix("obs", fields, uid=cxguid),
+                fbs = current_app.data.annotation_to_fbs_matrix("obs", fields, uid=cxguid, collection=anno_collection)
+                return make_response(fbs,
                                      HTTPStatus.OK,
                                      {"Content-Type": "application/octet-stream"})
             else:
@@ -97,10 +103,18 @@ class AnnotationsObsAPI(Resource):
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
     def put(self):
+        cxguid = get_userid(session)
+        anno_collection = request.args.get("annotation-collection-name", default=None)
+        if anno_collection is not None:
+            if not is_safe_collection_name(anno_collection):
+                return make_response(f"Error, bad annotation collection name", HTTPStatus.BAD_REQUEST)
+            set_anno_collection(session, anno_collection)
+        else:
+            anno_collection = get_anno_collection(session)
+
         try:
-            cxguid = get_userid(session)
             fbs = request.get_data()
-            res = current_app.data.annotation_put_fbs("obs", fbs, uid=cxguid)
+            res = current_app.data.annotation_put_fbs("obs", fbs, uid=cxguid, collection=anno_collection)
             return make_response(
                 res, HTTPStatus.OK, {"Content-Type": "application/json"}
             )
@@ -243,6 +257,28 @@ def get_userid(ss):
         ss[CXGUID] = uuid4().hex
         ss.permanent = True
     return ss[CXGUID]
+
+
+def get_anno_collection(ss):
+    collection = ss[CXG_ANNO_COLLECTION] if CXG_ANNO_COLLECTION in ss else None
+    return collection
+
+
+def set_anno_collection(ss, name):
+    ss[CXG_ANNO_COLLECTION] = name
+    ss.permanent = True
+
+
+def is_safe_collection_name(name):
+    """
+    return true if this is a safe collection name
+
+    this is ultra convervative. If we want to allow full legal file name syntax,
+    we could look at modules like `pathvalidate`
+    """
+    if name is None:
+        return False
+    return re.match(r'^\w+$', name) is not None
 
 
 def get_api_resources():

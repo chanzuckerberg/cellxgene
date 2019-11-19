@@ -65,15 +65,31 @@ class ScanpyEngine(CXGDriver):
             "diffexp_may_be_slow": False
         }
 
-    def get_config_parameters(self, uid=None):
+    def get_config_parameters(self, uid=None, collection=None):
         params = {
             "max-category-items": self.config["max_category_items"],
             "disable-diffexp": self.config["disable_diffexp"],
             "diffexp-may-be-slow": self.config["diffexp_may_be_slow"],
             "annotations": self.config["annotations"]
         }
-        if uid is not None:
-            params["user-data-idhash"] = self.get_userdata_idhash(uid)
+        if self.config["annotations"]:
+            if uid is not None:
+                params.update({
+                    "annotations-user-data-idhash": self.get_userdata_idhash(uid)
+                })
+            if self.config['annotations_file'] is not None:
+                # user has hard-wired the name of the annotation data collection
+                fname = os.path.basename(self.config['annotations_file'])
+                collection_fname = os.path.splitext(fname)[0]
+                params.update({
+                    'annotations-data-collection-is-read-only': True,
+                    'annotations-data-collection-name': collection_fname
+                })
+            elif collection is not None:
+                params.update({
+                    'annotations-data-collection-is-read-only': False,
+                    'annotations-data-collection-name': collection
+                })
         return params
 
     @staticmethod
@@ -213,10 +229,10 @@ class ScanpyEngine(CXGDriver):
             self.schema["layout"]["obs"].append(layout_schema)
 
     @requires_data
-    def get_schema(self, uid=None):
+    def get_schema(self, uid=None, collection=None):
         schema = self.schema  # base schema
         # add label obs annotations as needed
-        labels = read_labels(self.get_anno_fname(uid))
+        labels = read_labels(self.get_anno_fname(uid, collection))
         if labels is not None and not labels.empty:
             schema = copy.deepcopy(schema)
             for col in labels.columns:
@@ -237,7 +253,7 @@ class ScanpyEngine(CXGDriver):
         idhash = base64.b32encode(blake2b(id, digest_size=5).digest()).decode('utf-8')
         return idhash
 
-    def get_anno_fname(self, uid=None):
+    def get_anno_fname(self, uid=None, collection=None):
         """ return the current annotation file name """
         if not self.config["annotations"]:
             return None
@@ -245,12 +261,11 @@ class ScanpyEngine(CXGDriver):
         if self.config["annotations_file"] is not None:
             return self.config["annotations_file"]
 
-        # we need to generate a file name, which we can only do if we have a UID
-        if uid is None:
+        # we need to generate a file name, which we can only do if we have a UID and collection name
+        if uid is None or collection is None:
             return None
-        data_collection_name = "myannotations"  # TODO XXX temp name of collection
         idhash = self.get_userdata_idhash(uid)
-        return os.path.join(self.get_anno_output_dir(), f"{data_collection_name}-{idhash}.csv")
+        return os.path.join(self.get_anno_output_dir(), f"{collection}-{idhash}.csv")
 
     def get_anno_output_dir(self):
         """ return the current annotation output directory """
@@ -265,12 +280,12 @@ class ScanpyEngine(CXGDriver):
 
         return os.getcwd()
 
-    def get_anno_backup_dir(self, uid):
+    def get_anno_backup_dir(self, uid, collection=None):
         """ return the current annotation backup directory """
         if not self.config["annotations"]:
             return None
 
-        fname = self.get_anno_fname(uid)
+        fname = self.get_anno_fname(uid, collection)
         root, ext = os.path.splitext(fname)
         return f"{root}-backups"
 
@@ -319,7 +334,7 @@ class ScanpyEngine(CXGDriver):
         # if the user has specified a fixed label file, go ahead and validate it
         # so that we can remove errors early in the process.
         if self.config["annotations_file"]:
-            self._validate_label_data(read_labels(self.get_anno_fname(uid=None)))
+            self._validate_label_data(read_labels(self.get_anno_fname()))
 
         # heuristic
         n_values = self.data.shape[0] * self.data.shape[1]
@@ -502,11 +517,11 @@ class ScanpyEngine(CXGDriver):
         return obs_selector, var_selector
 
     @requires_data
-    def annotation_to_fbs_matrix(self, axis, fields=None, uid=None):
+    def annotation_to_fbs_matrix(self, axis, fields=None, uid=None, collection=None):
         if axis == Axis.OBS:
             if self.config["annotations"]:
                 try:
-                    labels = read_labels(self.get_anno_fname(uid))
+                    labels = read_labels(self.get_anno_fname(uid, collection))
                 except Exception as e:
                     raise ScanpyFileError(
                         f"Error while loading label file: {e}, File must be in the .csv format, please check "
@@ -526,10 +541,13 @@ class ScanpyEngine(CXGDriver):
         return encode_matrix_fbs(df, col_idx=df.columns)
 
     @requires_data
-    def annotation_put_fbs(self, axis, fbs, uid=None):
-        fname = self.get_anno_fname(uid)
-        if not fname or not self.config["annotations"]:
+    def annotation_put_fbs(self, axis, fbs, uid=None, collection=None):
+        if not self.config["annotations"]:
             raise DisabledFeatureError("Writable annotations are not enabled")
+
+        fname = self.get_anno_fname(uid, collection)
+        if not fname:
+            raise ScanpyFileError("Writable annotations - unable to determine file name for annotations")
 
         if axis != Axis.OBS:
             raise ValueError("Only OBS dimension access is supported")
@@ -554,7 +572,7 @@ class ScanpyEngine(CXGDriver):
                      f"using cellxgene version {cellxgene_version}\n" \
                      f"# Input data file was {self.data_locator.uri_or_path}, " \
                      f"which was last modified on {lastmodstr}\n"
-            write_labels(fname, new_label_df, header, backup_dir=self.get_anno_backup_dir(uid))
+            write_labels(fname, new_label_df, header, backup_dir=self.get_anno_backup_dir(uid, collection))
 
         return jsonify_scanpy({"status": "OK"})
 
