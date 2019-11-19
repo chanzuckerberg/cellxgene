@@ -62,7 +62,7 @@ export default class ImmutableTypedCrossfilter {
 
   setData(data) {
     const { selectionCache } = this;
-    this.selectionCache = null;
+    this.selectionCache = {};
     return new ImmutableTypedCrossfilter(data, this.dimensions, selectionCache);
   }
 
@@ -159,7 +159,7 @@ export default class ImmutableTypedCrossfilter {
       select("blort", {mode: "range", lo: 0, hi: 999.99});
     */
     const { data, selectionCache } = this;
-    this.selectionCache = null;
+    this.selectionCache = {};
     const dimensions = { ...this.dimensions };
     const { dim, id, selection: oldSelection } = dimensions[name];
     const newSelection = dim.select(spec);
