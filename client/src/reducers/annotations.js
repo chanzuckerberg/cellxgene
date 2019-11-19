@@ -7,17 +7,19 @@ const Annotations = (
     Annotations collection name - which will be used to save the named set of annotations
     in some persistent store (database, file system, etc).
 
-    Backend may expect this to be a legal file name, which is typically alpha-numeric, plus [_-,.].
-    Keep it simple.
+    The backend may expect this to be a legal file name, which is typically alpha-numeric, plus [_-,.].
+    Keep it simple or the server may return an error.
 
-    If `annotationDataCollectionNameIsReadOnly` is true, you may NOT change the data collection name.
-    If it is true, you may change it and it will be used at the time the annotations are written to the
-    back-end.
+    If `dataCollectionNameIsReadOnly` is true, you may NOT change the data collection name.
+    If false, you may change `dataCollectionName` and it will be used at the time the annotations are 
+    written to the back-end.
     */
     dataCollectionNameIsReadOnly: true,
     dataCollectionName: null,
 
-    /* UI component state */
+    /*
+    Annotations UI component state
+    */
     isEditingCategoryName: false,
     isEditingLabelName: false,
     categoryBeingEdited: null,
