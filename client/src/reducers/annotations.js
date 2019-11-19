@@ -30,8 +30,14 @@ const Annotations = (
 ) => {
   switch (action.type) {
     case "configuration load complete": {
+      /* 
+      TODO: remove the defaulting when we implement UI to ask user.  At
+      that point, default should just be null.
+      */
+      const DefaultDataCollectionName = "FAKE_data_collection_name";
       const dataCollectionName =
-        action.config.parameters?.["annotations-data-collection-name"] ?? null;
+        action.config.parameters?.["annotations-data-collection-name"] ??
+        DefaultDataCollectionName;
       const dataCollectionNameIsReadOnly =
         action.config.parameters?.[
           "annotations-data-collection-name-is-read-only"
