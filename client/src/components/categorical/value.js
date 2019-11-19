@@ -9,13 +9,12 @@ import {
   MenuItem,
   Popover,
   Position,
-  Icon,
-  PopoverInteractionKind
+  PopoverInteractionKind,
+  Tooltip
 } from "@blueprintjs/core";
 import Occupancy from "./occupancy";
 import * as globals from "../../globals";
 import styles from "./categorical.css";
-import { Tooltip } from "@blueprintjs/core";
 
 import { AnnotationsHelpers } from "../../util/stateManager";
 

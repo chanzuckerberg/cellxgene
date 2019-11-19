@@ -44,7 +44,7 @@ class HistogramBrush extends React.PureComponent {
     return varData.col(field);
   }
 
-  calcHistogramCache = memoize((col, field) => {
+  calcHistogramCache = memoize(col => {
     /*
      recalculate expensive stuff, notably bins, summaries, etc.
     */
@@ -240,15 +240,27 @@ class HistogramBrush extends React.PureComponent {
     };
   }
 
-  drawHistogram(svgRef) {
-    const { field, world } = this.props;
-    const col = HistogramBrush.getColumn(world, field);
-    const histogramCache = this.calcHistogramCache(col, field);
-    const { x, y, bins } = histogramCache;
-    this._histogram = { x, y, bins, svgRef };
-  }
+  handleSetGeneAsScatterplotX = () => {
+    return () => {
+      const { dispatch, field } = this.props;
+      dispatch({
+        type: "set scatterplot x",
+        data: field
+      });
+    };
+  };
 
-  handleColorAction() {
+  handleSetGeneAsScatterplotY = () => {
+    return () => {
+      const { dispatch, field } = this.props;
+      dispatch({
+        type: "set scatterplot y",
+        data: field
+      });
+    };
+  };
+
+  handleColorAction = () => {
     const { dispatch, field, world, ranges } = this.props;
 
     if (world.obsAnnotations.hasCol(field)) {
@@ -260,9 +272,9 @@ class HistogramBrush extends React.PureComponent {
     } else if (world.varData.hasCol(field)) {
       dispatch(actions.requestSingleGeneExpressionCountsForColoringPOST(field));
     }
-  }
+  };
 
-  removeHistogram() {
+  removeHistogram = () => {
     const {
       dispatch,
       field,
@@ -291,26 +303,14 @@ class HistogramBrush extends React.PureComponent {
         data: null
       });
     }
-  }
+  };
 
-  handleSetGeneAsScatterplotX() {
-    return () => {
-      const { dispatch, field } = this.props;
-      dispatch({
-        type: "set scatterplot x",
-        data: field
-      });
-    };
-  }
-
-  handleSetGeneAsScatterplotY() {
-    return () => {
-      const { dispatch, field } = this.props;
-      dispatch({
-        type: "set scatterplot y",
-        data: field
-      });
-    };
+  drawHistogram(svgRef) {
+    const { field, world } = this.props;
+    const col = HistogramBrush.getColumn(world, field);
+    const histogramCache = this.calcHistogramCache(col);
+    const { x, y, bins } = histogramCache;
+    this._histogram = { x, y, bins, svgRef };
   }
 
   renderAxesBrushBins(x, y, bins, svgRef, field) {
@@ -439,7 +439,7 @@ class HistogramBrush extends React.PureComponent {
               <ButtonGroup style={{ marginRight: 7 }}>
                 <Button
                   data-testid={`plot-x-${field}`}
-                  onClick={this.handleSetGeneAsScatterplotX(field).bind(this)}
+                  onClick={this.handleSetGeneAsScatterplotX}
                   active={scatterplotXXaccessor === field}
                   intent={scatterplotXXaccessor === field ? "primary" : "none"}
                 >
@@ -447,7 +447,7 @@ class HistogramBrush extends React.PureComponent {
                 </Button>
                 <Button
                   data-testid={`plot-y-${field}`}
-                  onClick={this.handleSetGeneAsScatterplotY(field).bind(this)}
+                  onClick={this.handleSetGeneAsScatterplotY}
                   active={scatterplotYYaccessor === field}
                   intent={scatterplotYYaccessor === field ? "primary" : "none"}
                 >
@@ -459,7 +459,7 @@ class HistogramBrush extends React.PureComponent {
           {isUserDefined ? (
             <Button
               minimal
-              onClick={this.removeHistogram.bind(this)}
+              onClick={this.removeHistogram}
               style={{
                 color: globals.blue,
                 cursor: "pointer",
@@ -475,7 +475,7 @@ class HistogramBrush extends React.PureComponent {
             hoverOpenDelay={globals.tooltipHoverOpenDelay}
           >
             <Button
-              onClick={this.handleColorAction.bind(this)}
+              onClick={this.handleColorAction}
               active={colorAccessor === field}
               intent={colorAccessor === field ? "primary" : "none"}
               data-testclass="colorby"

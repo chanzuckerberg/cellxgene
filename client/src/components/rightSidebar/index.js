@@ -12,17 +12,7 @@ import * as globals from "../../globals";
 }))
 class RightSidebar extends React.Component {
   render() {
-    const {
-      responsive,
-      scatterplotXXaccessor,
-      scatterplotYYaccessor
-    } = this.props;
-
-    /*
-    this magic number should be made less fragile,
-    if cellxgene logo or tabs change, this must as well
-    */
-    const logoRelatedPadding = 50;
+    const { responsive } = this.props;
 
     return (
       <div
