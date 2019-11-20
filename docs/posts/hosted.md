@@ -4,7 +4,7 @@ Cellxgene is intended to be used by researchers on their local machines. However
 
 In the meantime, you can see examples of how other groups have approached this [here](gallery). While we don't officially support web deployment, we've offered some guidance below on one way to deploy cellxgene to the web.
 
-## General Notes
+## General notes
 
 Please consider the following when deploying cellxgene in any "hosted" environment, especially where access from the broader Internet is possible:
 
@@ -13,7 +13,7 @@ Please consider the following when deploying cellxgene in any "hosted" environme
 
 If you believe you have found a security-related issue with cellxgene, please report the issue immediately to <security@chanzuckerberg.com>.
 
-## Configuration Options Discussion
+## Configuration options discussion
 
 The following configuration options require special consideration in any multi-user or hosted environment:
 
@@ -23,13 +23,24 @@ The following configuration options require special consideration in any multi-u
 
 `--experimental-annotations-file`: this specifies a single file for all end-user annotations, and is incompatible with hosted or multi-user use of cellxgene. Using it will cause loss of user annotation data (ie, the CSV file will be overwritten). If you wish to explore using the _experimental_ annotations feature in a multi-user environment, please refer to the [annotations documentation](annotations).
 
-## Useful Community Projects
+## Community software projects
 
 There are a number of teams building tools or infrastructure to better utilize cellxgene in a multiple user environment. While we do not endorse any particular solution, you may find the following helpful.
 
 - [Novartis Cellxgene Gateway](https://github.com/Novartis/cellxgene-gateway) - a multiple-user and multiple-dataset gateway for cellxgene.
 
 If you know of other solutions, drop us a note and we'll add to this list.
+
+## Third-party deployments
+
+- Chan Zuckerberg BioHub's [Tabula Muris Senis](https://tabula-muris-senis.ds.czbiohub.org/)
+- Novartis's [cellxgene gateway](https://github.com/Novartis/cellxgene-gateway)
+- Interactive Enviroment in the [Galaxy Project](https://galaxyproject.org/) ([patch notes](https://docs.galaxyproject.org/en/release_19.05/releases/19.05_announce.html))
+- Various instances by the Wellcome Sanger Institute
+  - [Tissue Stability Cell Atlas](https://www.tissuestabilitycellatlas.org/)
+  - [Human Kidney Cell Atlas](https://www.kidneycellatlas.org/)
+  - [Atlas of Anopheles hemocytes](https://hemocytes.cellgeni.sanger.ac.uk/)
+  - [Murine melanoma atlas](https://melanoma.cellgeni.sanger.ac.uk/)
 
 # Deploying cellxgene with Heroku
 
