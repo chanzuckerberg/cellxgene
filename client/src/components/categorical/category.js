@@ -159,22 +159,16 @@ class Category extends React.Component {
     or return an error type.
     */
     let error = false;
+    if (name) {
+      const { metadataField, universe } = this.props;
+      const { obsByName } = universe.schema.annotations;
 
-    if (!name) {
-      error = false;
+      if (obsByName[metadataField].categories.indexOf(name) !== -1) {
+        error = "duplicate";
+      } else if (!AnnotationsHelpers.isLegalAnnotationName(name)) {
+        error = "characters";
+      }
     }
-
-    const { metadataField, universe } = this.props;
-    const { obsByName } = universe.schema.annotations;
-
-    if (obsByName[metadataField].categories.indexOf(name) !== -1) {
-      error = "duplicate";
-    }
-
-    if (!AnnotationsHelpers.isLegalAnnotationName(name)) {
-      error = "characters";
-    }
-
     return error;
   };
 
@@ -223,9 +217,7 @@ class Category extends React.Component {
           {"Category name cannot be blank"}
         </span>
       );
-    }
-
-    if (err === "already_exists") {
+    } else if (err === "already_exists") {
       markup = (
         <span
           style={{
@@ -237,6 +229,20 @@ class Category extends React.Component {
           }}
         >
           {`${newCategoryText} already exists`}
+        </span>
+      );
+    } else if (err === "characters") {
+      markup = (
+        <span
+          style={{
+            display: "block",
+            fontStyle: "italic",
+            fontSize: 12,
+            marginTop: 5,
+            color: Colors.ORANGE3
+          }}
+        >
+          {`${newCategoryText} contains illegal characters`}
         </span>
       );
     }
@@ -258,10 +264,10 @@ class Category extends React.Component {
 
     if (isEmptyString) {
       error = "empty_string";
-    }
-
-    if (categoryNameAlreadyExists && !sameName) {
+    } else if (categoryNameAlreadyExists && !sameName) {
       error = "already_exists";
+    } else if (!AnnotationsHelpers.isLegalAnnotationName(newCategoryText)) {
+      error = "characters";
     }
 
     return error;

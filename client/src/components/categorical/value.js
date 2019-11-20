@@ -104,9 +104,7 @@ class CategoryValue extends React.Component {
           {"Label cannot be blank"}
         </span>
       );
-    }
-
-    if (err === "duplicate") {
+    } else if (err === "duplicate") {
       markup = (
         <span
           style={{
@@ -119,8 +117,20 @@ class CategoryValue extends React.Component {
           {`${editedLabelText} already exists`}
         </span>
       );
+    } else if (err === "characters") {
+      markup = (
+        <span
+          style={{
+            fontStyle: "italic",
+            fontSize: 12,
+            marginTop: 5,
+            color: Colors.ORANGE3
+          }}
+        >
+          {`${editedLabelText} contains illegal characters.`}
+        </span>
+      );
     }
-
     return markup;
   };
 
@@ -137,15 +147,14 @@ class CategoryValue extends React.Component {
 
     if (editedLabelText === "") {
       err = "empty_string";
-    }
-
-    if (
+    } else if (
       category.categoryValues.indexOf(editedLabelText) > -1 &&
       editedLabelText !== displayString
     ) {
       err = "duplicate";
+    } else if (!AnnotationsHelpers.isLegalAnnotationName(editedLabelText)) {
+      err = "characters";
     }
-
     return err;
   };
 
@@ -552,9 +561,7 @@ class CategoryValue extends React.Component {
                         data-testclass="handleDeleteValue"
                         data-testid={`handleDeleteValue-${metadataField}`}
                         onClick={this.handleDeleteValue}
-                        text={`Delete this label, and reassign all cells to type '${
-                          globals.unassignedCategoryLabel
-                        }'`}
+                        text={`Delete this label, and reassign all cells to type '${globals.unassignedCategoryLabel}'`}
                       />
                     ) : null}
                   </Menu>
