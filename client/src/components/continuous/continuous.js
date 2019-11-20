@@ -85,7 +85,7 @@ class Continuous extends React.Component {
                     isObs
                     zebra={zebra % 2 === 0}
                     ranges={summary}
-                    handleColorAction={this.handleColorAction}
+                    handleColorAction={this.handleColorAction(key)}
                   />
                 );
               }

@@ -241,23 +241,19 @@ class HistogramBrush extends React.PureComponent {
   }
 
   handleSetGeneAsScatterplotX = () => {
-    return () => {
-      const { dispatch, field } = this.props;
-      dispatch({
-        type: "set scatterplot x",
-        data: field
-      });
-    };
+    const { dispatch, field } = this.props;
+    dispatch({
+      type: "set scatterplot x",
+      data: field
+    });
   };
 
   handleSetGeneAsScatterplotY = () => {
-    return () => {
-      const { dispatch, field } = this.props;
-      dispatch({
-        type: "set scatterplot y",
-        data: field
-      });
-    };
+    const { dispatch, field } = this.props;
+    dispatch({
+      type: "set scatterplot y",
+      data: field
+    });
   };
 
   handleColorAction = () => {
