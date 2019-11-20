@@ -4,6 +4,33 @@ Cellxgene is intended to be used by researchers on their local machines. However
 
 In the meantime, you can see examples of how other groups have approached this [here](gallery). While we don't officially support web deployment, we've offered some guidance below on one way to deploy cellxgene to the web.
 
+## General Notes
+
+Please consider the following when deploying cellxgene in any "hosted" environment, especially where access from the broader Internet is possible:
+
+- information security requires careful configuration of the host environment, including firewall, logging, etc. Please follow best practices.
+- cellxgene has features which may be inappropriate for a hosted deployment. You may wish to use the following command line options: `--disable-diffexp` and `--experimental-annotations`
+
+If you believe you have found a security-related issue with cellxgene, please report the issue immediately to <security@chanzuckerberg.com>.
+
+## Configuration Options Discussion
+
+The following configuration options require special consideration in any multi-user or hosted environment:
+
+`--disable-diffexp`: the differential expression computation can be resource intensive, in particular for large datasets. If many differential expression calculation requests are made in rapid seuqence, it may cause the server CPU or memory resources to be exhausted, and impact the ability of other users to access data. This command line option will disable the differential expression feature, including the removal of the web UI (diffexp button).
+
+`--experimental-annotations`: this feature, which is disabled by default, may not be appropriate for hosted environments. It will write to the local file system, and in extreme cases could be used to abuse (or exceed) file system capacity on the hosting server.
+
+`--experimental-annotations-file`: this specifies a single file for all end-user annotations, and is incompatible with hosted or multi-user use of cellxgene. Using it will cause loss of user annotation data (ie, the CSV file will be overwritten). If you wish to explore using the _experimental_ annotations feature in a multi-user environment, please refer to the [annotations documentation](annotations).
+
+## Useful Community Projects
+
+There are a number of teams building tools or infrastructure to better utilize cellxgene in a multiple user environment. While we do not endorse any particular solution, you may find the following helpful.
+
+- [Novartis Cellxgene Gateway](https://github.com/Novartis/cellxgene-gateway) - a multiple-user and multiple-dataset gateway for cellxgene.
+
+If you know of other solutions, drop us a note and we'll add to this list.
+
 # Deploying cellxgene with Heroku
 
 ## Quickstart
