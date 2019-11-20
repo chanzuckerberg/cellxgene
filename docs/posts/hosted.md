@@ -4,12 +4,16 @@ Cellxgene is intended to be used by researchers on their local machines. However
 
 In the meantime, you can see examples of how other groups have approached this [here](gallery). While we don't officially support web deployment, we've offered some guidance below on one way to deploy cellxgene to the web.
 
-## General notes
+## General notes and cautions
 
 Please consider the following when deploying cellxgene in any "hosted" environment, especially where access from the broader Internet is possible:
 
 - information security requires careful configuration of the host environment, including firewall, logging, etc. Please follow best practices.
-- cellxgene has features which may be inappropriate for a hosted deployment. You may wish to use the following command line options: `--disable-diffexp` and `--experimental-annotations`
+- cellxgene includes features which may be inappropriate for a hosted deployment. You may wish to use the following command line options: `--disable-diffexp` and `--experimental-annotations`
+- `cellxgene launch` currently uses Flask's development server, which is not recommended for hosted deployment (see the [Flask documentation](https://flask.palletsprojects.com/en/1.1.x/tutorial/deploy/#run-with-a-production-server))
+- We have no testing or official support for deployments where multiple users are accessing the same _cellxgene_ instance.
+- Your _cellxgene_ instance is likely to hang or crash if too many people access it at the same time, especially if they using functions that call the Python backend (such as differential expression, noted above).
+- _cellxgene_ only supports one instance per dataset
 
 If you believe you have found a security-related issue with cellxgene, please report the issue immediately to <security@chanzuckerberg.com>.
 
