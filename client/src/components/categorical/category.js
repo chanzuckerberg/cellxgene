@@ -158,20 +158,24 @@ class Category extends React.Component {
     return false if this is a LEGAL/acceptable category name or NULL/empty string,
     or return an error type.
     */
-    if (!name) return false;
+    let error = false;
+
+    if (!name) {
+      error = false;
+    }
 
     const { metadataField, universe } = this.props;
-    const obsByName = universe.schema.annotations.obsByName;
+    const { obsByName } = universe.schema.annotations;
 
     if (obsByName[metadataField].categories.indexOf(name) !== -1) {
-      return "duplicate";
+      error = "duplicate";
     }
 
     if (!AnnotationsHelpers.isLegalAnnotationName(name)) {
-      return "characters";
+      error = "characters";
     }
 
-    return false;
+    return error;
   };
 
   labelNameErrorMessage = name => {
@@ -196,6 +200,71 @@ class Category extends React.Component {
       );
     }
     return err;
+  };
+
+  categoryNameErrorMessage = () => {
+    const { newCategoryText } = this.state;
+    const err = this.editedCategoryNameError();
+    if (err === false) return null;
+
+    let markup = null;
+
+    if (err === "empty_string") {
+      markup = (
+        <span
+          style={{
+            display: "block",
+            fontStyle: "italic",
+            fontSize: 12,
+            marginTop: 5,
+            color: Colors.ORANGE3
+          }}
+        >
+          {"Category name cannot be blank"}
+        </span>
+      );
+    }
+
+    if (err === "already_exists") {
+      markup = (
+        <span
+          style={{
+            display: "block",
+            fontStyle: "italic",
+            fontSize: 12,
+            marginTop: 5,
+            color: Colors.ORANGE3
+          }}
+        >
+          {`${newCategoryText} already exists`}
+        </span>
+      );
+    }
+
+    return markup;
+  };
+
+  editedCategoryNameError = () => {
+    const { metadataField, categoricalSelection } = this.props;
+    const { newCategoryText } = this.state;
+    const allCategoryNames = _.keys(categoricalSelection);
+
+    const isEmptyString = newCategoryText === "";
+    const categoryNameAlreadyExists =
+      allCategoryNames.indexOf(newCategoryText) > -1;
+    const sameName = newCategoryText === metadataField;
+
+    let error = false;
+
+    if (isEmptyString) {
+      error = "empty_string";
+    }
+
+    if (categoryNameAlreadyExists && !sameName) {
+      error = "already_exists";
+    }
+
+    return error;
   };
 
   toggleAll() {
@@ -347,11 +416,7 @@ class Category extends React.Component {
                     rightElement={
                       <Button
                         minimal
-                        disabled={
-                          (allCategoryNames.indexOf(newCategoryText) > -1 &&
-                            newCategoryText !== metadataField) ||
-                          newCategoryText === ""
-                        }
+                        disabled={this.editedCategoryNameError()}
                         style={{ position: "relative", top: -1 }}
                         type="button"
                         icon="small-tick"
@@ -361,23 +426,7 @@ class Category extends React.Component {
                       />
                     }
                   />
-                  {(allCategoryNames.indexOf(newCategoryText) > -1 &&
-                    newCategoryText !== metadataField) ||
-                  newCategoryText === "" ? (
-                    <span
-                      style={{
-                        display: "block",
-                        fontStyle: "italic",
-                        fontSize: 12,
-                        marginTop: 5,
-                        color: Colors.ORANGE3
-                      }}
-                    >
-                      {newCategoryText === ""
-                        ? "Category name cannot be blank"
-                        : `${newCategoryText} already exists`}
-                    </span>
-                  ) : null}
+                  {this.categoryNameErrorMessage()}
                 </form>
               ) : (
                 metadataField

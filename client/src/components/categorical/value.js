@@ -41,15 +41,18 @@ class CategoryValue extends React.Component {
     };
   }
 
-  handleDeleteValue = () => {
-    const {
-      dispatch,
-      metadataField,
-      categoryIndex,
-      categoricalSelection
-    } = this.props;
+  getLabel = () => {
+    const { metadataField, categoryIndex, categoricalSelection } = this.props;
     const category = categoricalSelection[metadataField];
     const label = category.categoryValues[categoryIndex];
+
+    return label;
+  };
+
+  handleDeleteValue = () => {
+    const { dispatch, metadataField } = this.props;
+    const label = this.getLabel();
+
     dispatch({
       type: "annotation: delete label",
       metadataField,
@@ -58,14 +61,8 @@ class CategoryValue extends React.Component {
   };
 
   handleAddCurrentSelectionToThisLabel = () => {
-    const {
-      dispatch,
-      metadataField,
-      categoryIndex,
-      categoricalSelection
-    } = this.props;
-    const category = categoricalSelection[metadataField];
-    const label = category.categoryValues[categoryIndex];
+    const { dispatch, metadataField, categoryIndex } = this.props;
+    const label = this.getLabel();
     dispatch({
       type: "annotation: label current cell selection",
       metadataField,
@@ -75,15 +72,9 @@ class CategoryValue extends React.Component {
   };
 
   handleEditValue = () => {
-    const {
-      dispatch,
-      metadataField,
-      categoryIndex,
-      categoricalSelection
-    } = this.props;
+    const { dispatch, metadataField, categoryIndex } = this.props;
     const { editedLabelText } = this.state;
-    const category = categoricalSelection[metadataField];
-    const label = category.categoryValues[categoryIndex];
+    const label = this.getLabel();
     dispatch({
       type: "annotation: label edited",
       editedLabel: editedLabelText,
@@ -91,6 +82,71 @@ class CategoryValue extends React.Component {
       categoryIndex,
       label
     });
+  };
+
+  valueNameErrorMessage = () => {
+    const { editedLabelText } = this.state;
+    const err = this.valueNameError();
+    if (!err) return null;
+
+    let markup = null;
+
+    if (err === "empty_string") {
+      markup = (
+        <span
+          style={{
+            fontStyle: "italic",
+            fontSize: 12,
+            marginTop: 5,
+            color: Colors.ORANGE3
+          }}
+        >
+          {"Label cannot be blank"}
+        </span>
+      );
+    }
+
+    if (err === "duplicate") {
+      markup = (
+        <span
+          style={{
+            fontStyle: "italic",
+            fontSize: 12,
+            marginTop: 5,
+            color: Colors.ORANGE3
+          }}
+        >
+          {`${editedLabelText} already exists`}
+        </span>
+      );
+    }
+
+    return markup;
+  };
+
+  valueNameError = () => {
+    const { editedLabelText } = this.state;
+    const { categoricalSelection, metadataField, categoryIndex } = this.props;
+
+    let err = null;
+
+    const category = categoricalSelection[metadataField];
+    const displayString = String(
+      category.categoryValues[categoryIndex]
+    ).valueOf();
+
+    if (editedLabelText === "") {
+      err = "empty_string";
+    }
+
+    if (
+      category.categoryValues.indexOf(editedLabelText) > -1 &&
+      editedLabelText !== displayString
+    ) {
+      err = "duplicate";
+    }
+
+    return err;
   };
 
   activateEditLabelMode = () => {
@@ -373,13 +429,7 @@ class CategoryValue extends React.Component {
                   }}
                   small
                   autoFocus
-                  intent={
-                    (category.categoryValues.indexOf(editedLabelText) > -1 &&
-                      editedLabelText !== displayString) ||
-                    editedLabelText === ""
-                      ? "warning"
-                      : "none"
-                  }
+                  intent={this.valueNameError() ? "warning" : "none"}
                   onChange={e => {
                     this.setState({ editedLabelText: e.target.value });
                   }}
@@ -388,12 +438,7 @@ class CategoryValue extends React.Component {
                     <Button
                       minimal
                       style={{ position: "relative", top: -1 }}
-                      disabled={
-                        (category.categoryValues.indexOf(editedLabelText) >
-                          -1 &&
-                          editedLabelText !== displayString) ||
-                        editedLabelText === ""
-                      }
+                      disabled={this.valueNameError()}
                       type="button"
                       icon="small-tick"
                       data-testclass="submitEdit"
@@ -402,22 +447,7 @@ class CategoryValue extends React.Component {
                     />
                   }
                 />
-                {(category.categoryValues.indexOf(editedLabelText) > -1 &&
-                  editedLabelText !== displayString) ||
-                editedLabelText === "" ? (
-                  <span
-                    style={{
-                      fontStyle: "italic",
-                      fontSize: 12,
-                      marginTop: 5,
-                      color: Colors.ORANGE3
-                    }}
-                  >
-                    {editedLabelText === ""
-                      ? "Label cannot be blank"
-                      : `${editedLabelText} already exists`}
-                  </span>
-                ) : null}
+                {this.valueNameErrorMessage()}
               </form>
             ) : null}
             {/*
