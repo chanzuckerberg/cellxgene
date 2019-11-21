@@ -114,7 +114,7 @@ class CategoryValue extends React.Component {
             color: Colors.ORANGE3
           }}
         >
-          {`${editedLabelText} already exists`}
+          {"Label must be unique"}
         </span>
       );
     } else if (err === "characters") {
@@ -127,7 +127,7 @@ class CategoryValue extends React.Component {
             color: Colors.ORANGE3
           }}
         >
-          {`${editedLabelText} contains illegal characters.`}
+          {"Only alphanumeric and underscore allowed"}
         </span>
       );
     }
@@ -421,11 +421,7 @@ class CategoryValue extends React.Component {
               <form
                 onSubmit={e => {
                   e.preventDefault();
-                  if (
-                    (category.categoryValues.indexOf(editedLabelText) > -1 &&
-                      editedLabelText !== displayString) ||
-                    editedLabelText === ""
-                  ) {
+                  if (this.valueNameError()) {
                     return;
                   }
                   this.handleEditValue();

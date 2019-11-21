@@ -228,7 +228,7 @@ class Category extends React.Component {
             color: Colors.ORANGE3
           }}
         >
-          {`${newCategoryText} already exists`}
+          {"Category name must be unique"}
         </span>
       );
     } else if (err === "characters") {
@@ -242,7 +242,7 @@ class Category extends React.Component {
             color: Colors.ORANGE3
           }}
         >
-          {`${newCategoryText} contains illegal characters`}
+          {"Only alphanumeric and underscore allowed"}
         </span>
       );
     }
