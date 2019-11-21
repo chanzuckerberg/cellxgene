@@ -149,7 +149,7 @@ class Category extends React.Component {
     or return an error type.
     */
     const { metadataField, universe } = this.props;
-    const obsByName = universe.schema.annotations.obsByName;
+    const { obsByName } = universe.schema.annotations;
 
     if (obsByName[metadataField].categories.indexOf(name) !== -1) {
       return "duplicate";
@@ -165,7 +165,7 @@ class Category extends React.Component {
   labelNameErrorMessage = name => {
     const { metadataField } = this.props;
     const err = this.labelNameError(name);
-    if (err == "duplicate") {
+    if (err === "duplicate") {
       return (
         <span>
           <span style={{ fontStyle: "italic" }}>{name}</span> already exists
@@ -174,7 +174,7 @@ class Category extends React.Component {
         </span>
       );
     }
-    if (err == "characters") {
+    if (err === "characters") {
       return (
         <span>
           <span style={{ fontStyle: "italic" }}>{name}</span> contains illegal
@@ -242,8 +242,7 @@ class Category extends React.Component {
       colorAccessor,
       categoricalSelection,
       isUserAnno,
-      annotations,
-      universe
+      annotations
     } = this.props;
     const { isTruncated } = categoricalSelection[metadataField];
 
@@ -288,7 +287,6 @@ class Category extends React.Component {
                 type="checkbox"
               />
               <span className="bp3-control-indicator" />
-              {""}
             </label>
             <span
               data-testid={`category-expand-${metadataField}`}

@@ -108,7 +108,7 @@ export default class ImmutableTypedCrossfilter {
     };
 
     return new ImmutableTypedCrossfilter(data, dimensions, {
-      bitArray: bitArray
+      bitArray
     });
   }
 
@@ -128,7 +128,7 @@ export default class ImmutableTypedCrossfilter {
     }
 
     return new ImmutableTypedCrossfilter(data, dimensions, {
-      bitArray: bitArray
+      bitArray
     });
   }
 

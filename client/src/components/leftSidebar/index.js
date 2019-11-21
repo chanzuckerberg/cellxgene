@@ -2,8 +2,6 @@
 import React from "react";
 import { connect } from "react-redux";
 import Categorical from "../categorical/categorical";
-import Continuous from "../continuous/continuous";
-import GeneExpression from "../geneExpression";
 import * as globals from "../../globals";
 import DynamicScatterplot from "../scatterplot/scatterplot";
 import TopLeftLogoAndTitle from "./topLeftLogoAndTitle";

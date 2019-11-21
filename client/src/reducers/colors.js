@@ -55,7 +55,7 @@ const ColorsReducer = (
 
     case "annotation: delete category": {
       const { colorAccessor } = state;
-      if (action.metadataField != colorAccessor) {
+      if (action.metadataField !== colorAccessor) {
         return state;
       }
       /* else reset */
