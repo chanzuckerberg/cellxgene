@@ -83,7 +83,7 @@ class Categories extends React.Component {
 
   categoryNameErrorMessage = name => {
     const err = this.categoryNameError(name);
-    if (err == "duplicate") {
+    if (err === "duplicate") {
       return (
         <span>
           <span style={{ fontStyle: "italic" }}>{name}</span> already exists -
@@ -91,7 +91,7 @@ class Categories extends React.Component {
         </span>
       );
     }
-    if (err == "characters") {
+    if (err === "characters") {
       return (
         <span>
           <span style={{ fontStyle: "italic" }}>{name}</span> contains illegal

@@ -24,7 +24,7 @@ import {
 
 import { memoize } from "../../util/dataframe/util";
 
-const renderGene = (fuzzySortResult, { handleClick, modifiers, query }) => {
+const renderGene = (fuzzySortResult, { handleClick, modifiers }) => {
   if (!modifiers.matchesPredicate) {
     return null;
   }
@@ -89,6 +89,59 @@ class GeneExpression extends React.Component {
   // eslint-disable-next-line react/sort-comp
   _memoGenesToUpper = memoize(this._genesToUpper, arr => arr);
 
+  handleBulkAddClick = () => {
+    const { world, dispatch, userDefinedGenes } = this.props;
+    const varIndexName = world.schema.annotations.var.index;
+    const { bulkAdd } = this.state;
+
+    /*
+      test:
+      Apod,,, Cd74,,    ,,,    Foo,    Bar-2,,
+    */
+    if (bulkAdd !== "") {
+      const genes = _.pull(_.uniq(bulkAdd.split(/[ ,]+/)), "");
+      if (genes.length === 0) {
+        return keepAroundErrorToast("Must enter a gene name.");
+      }
+      const worldGenes = world.varAnnotations.col(varIndexName).asArray();
+
+      // These gene lists are unique enough where memoization is useless
+      const upperGenes = this._genesToUpper(genes);
+      const upperUserDefinedGenes = this._genesToUpper(userDefinedGenes);
+
+      const upperWorldGenes = this._memoGenesToUpper(worldGenes);
+
+      dispatch({ type: "bulk user defined gene start" });
+
+      Promise.all(
+        [...upperGenes.keys()].map(upperGene => {
+          if (upperUserDefinedGenes.get(upperGene) !== undefined) {
+            return keepAroundErrorToast("That gene already exists");
+          }
+
+          const indexOfGene = upperWorldGenes.get(upperGene);
+
+          if (indexOfGene === undefined) {
+            return keepAroundErrorToast(
+              `${
+                genes[upperGenes.get(upperGene)]
+              } doesn't appear to be a valid gene name.`
+            );
+          }
+          return dispatch(
+            actions.requestUserDefinedGene(worldGenes[indexOfGene])
+          );
+        })
+      ).then(
+        () => dispatch({ type: "bulk user defined gene complete" }),
+        () => dispatch({ type: "bulk user defined gene error" })
+      );
+    }
+
+    this.setState({ bulkAdd: "" });
+    return undefined;
+  };
+
   placeholderGeneNames() {
     /*
     return a string containing gene name suggestions for use as a user hint.
@@ -143,58 +196,6 @@ class GeneExpression extends React.Component {
         () => dispatch({ type: "single user defined gene error" })
       );
     }
-  }
-
-  handleBulkAddClick() {
-    const { world, dispatch, userDefinedGenes } = this.props;
-    const varIndexName = world.schema.annotations.var.index;
-    const { bulkAdd } = this.state;
-
-    /*
-      test:
-      Apod,,, Cd74,,    ,,,    Foo,    Bar-2,,
-    */
-    if (bulkAdd !== "") {
-      const genes = _.pull(_.uniq(bulkAdd.split(/[ ,]+/)), "");
-      if (genes.length === 0) {
-        return keepAroundErrorToast("Must enter a gene name.");
-      }
-      const worldGenes = world.varAnnotations.col(varIndexName).asArray();
-
-      // These gene lists are unique enough where memoization is useless
-      const upperGenes = this._genesToUpper(genes);
-      const upperUserDefinedGenes = this._genesToUpper(userDefinedGenes);
-
-      const upperWorldGenes = this._memoGenesToUpper(worldGenes);
-
-      dispatch({ type: "bulk user defined gene start" });
-
-      Promise.all(
-        [...upperGenes.keys()].map(upperGene => {
-          if (upperUserDefinedGenes.get(upperGene) !== undefined) {
-            return keepAroundErrorToast("That gene already exists");
-          }
-
-          const indexOfGene = upperWorldGenes.get(upperGene);
-
-          if (indexOfGene === undefined) {
-            return keepAroundErrorToast(
-              `${
-                genes[upperGenes.get(upperGene)]
-              } doesn't appear to be a valid gene name.`
-            );
-          }
-          return dispatch(
-            actions.requestUserDefinedGene(worldGenes[indexOfGene])
-          );
-        })
-      ).then(
-        () => dispatch({ type: "bulk user defined gene complete" }),
-        () => dispatch({ type: "bulk user defined gene error" })
-      );
-    }
-
-    this.setState({ bulkAdd: "" });
   }
 
   render() {
@@ -261,7 +262,7 @@ class GeneExpression extends React.Component {
                 }}
                 initialContent={<MenuItem disabled text="Enter a gene…" />}
                 inputProps={{ "data-testid": "gene-search" }}
-                inputValueRenderer={g => {
+                inputValueRenderer={() => {
                   return "";
                 }}
                 itemListPredicate={filterGenes}
@@ -276,7 +277,7 @@ class GeneExpression extends React.Component {
               />
               <Button
                 className="bp3-button bp3-intent-primary"
-                data-testid={"add-gene"}
+                data-testid="add-gene"
                 loading={userDefinedGenesLoading}
                 onClick={() => this.handleClick(activeItem)}
               >
@@ -308,7 +309,7 @@ class GeneExpression extends React.Component {
                     />
                     <Button
                       intent="primary"
-                      onClick={this.handleBulkAddClick.bind(this)}
+                      onClick={this.handleBulkAddClick}
                       loading={userDefinedGenesLoading}
                     >
                       Add genes
