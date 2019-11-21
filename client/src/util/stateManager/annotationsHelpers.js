@@ -138,7 +138,7 @@ export function allHaveLabelByMask(df, colName, label, mask) {
 	const col = df.col(colName);
 	if (!col) return false;
 	if (df.length !== mask.length)
-		throw new InternalError("mismatch on mask length");
+		throw new RangeError("mismatch on mask length");
 
 	for (let i = 0; i < df.length; i += 1) {
 		if (mask[i]) {

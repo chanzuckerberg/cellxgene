@@ -13,7 +13,7 @@ import click
 from server.app.app import Server
 from server.app.util.errors import ScanpyFileError
 from server.app.util.utils import custom_format_warning
-from server.utils.utils import find_available_port, is_port_available
+from server.utils.utils import find_available_port, is_port_available, sort_options
 from server.app.util.data_locator import DataLocator
 
 # anything bigger than this will generate a special message
@@ -25,55 +25,70 @@ def common_args(func):
     Decorator to contain CLI args that will be common to both CLI and GUI: title and engine args.
     """
 
-    @click.option("--title", "-t", help="Title to display (if omitted will use file name).")
-    @click.option("--about",
-                  help="A URL to more information about the dataset."
-                       "(This must be an absolute URL including HTTP(S) protocol)")
+    @click.option(
+        "--title",
+        "-t",
+        metavar="<text>",
+        help="Title to display. If omitted will use file name.")
+    @click.option(
+        "--about",
+        metavar="<URL>",
+        help="URL providing more information about the dataset "
+             "(hint: must be a fully specified absolute URL).")
     @click.option(
         "--embedding",
         "-e",
         default=[],
         multiple=True,
         show_default=False,
+        metavar="<text>",
         help="Embedding name, eg, 'umap'. Repeat option for multiple embeddings. Defaults to all."
     )
-    @click.option("--obs-names", default=None, metavar="", help="Name of annotation field to use for observations.")
-    @click.option("--var-names", default=None, metavar="", help="Name of annotation to use for variables.")
+    @click.option(
+        "--obs-names",
+        "-obs",
+        default=None,
+        metavar="<text>",
+        help="Name of annotation field to use for observations. If not specified cellxgene will use the the obs index.")
+    @click.option(
+        "--var-names",
+        "-var",
+        default=None,
+        metavar="<text>",
+        help="Name of annotation to use for variables. If not specified cellxgene will use the the var index.")
     @click.option(
         "--max-category-items",
         default=1000,
-        metavar="",
+        metavar="<integer>",
         show_default=True,
-        help="Categories with more distinct values than this will not be displayed.",
-    )
+        help="Will not display categories with more distinct values than specified.",)
     @click.option(
         "--diffexp-lfc-cutoff",
+        "-de",
         default=0.01,
         show_default=True,
-        help="Relative expression cutoff used when selecting top N differentially expressed genes",
-    )
+        metavar="<float>",
+        help="Minimum log fold change threshold for differential expression.",)
     @click.option(
         "--experimental-label-file",
         default=None,
         show_default=True,
         multiple=False,
-        metavar="<user labels CSV file>",
-        help="CSV file containing user annotations; will be overwritten.  Created if does not exist.",
-    )
+        metavar="<path>",
+        help="CSV file containing user annotations; will be overwritten.  Created if does not exist.",)
     @click.option(
         "--backed",
+        "-b",
         is_flag=True,
         default=False,
         show_default=False,
-        help="Load data in file-backed mode, which may save memory, but result in slower overall performance."
-    )
+        help="Load data in file-backed mode. This may save memory, but may result in slower overall performance.")
     @click.option(
         "--disable-diffexp",
         is_flag=True,
         default=False,
         show_default=False,
-        help="Disable on-demand differential expression."
-    )
+        help="Disable on-demand differential expression.")
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         return func(*args, **kwargs)
@@ -96,17 +111,26 @@ def parse_engine_args(embedding, obs_names, var_names, max_category_items,
     }
 
 
-@click.command()
-@click.argument("data", nargs=1, metavar="<data file>", required=True)
+@sort_options
+@click.command(short_help="Launch the cellxgene data viewer. "
+                          "Run `cellxgene launch --help` for more information.",
+               options_metavar="<options>",)
+@click.argument("data", nargs=1, metavar="<path to data file>", required=True)
 @click.option(
     "--verbose",
     "-v",
     is_flag=True,
     default=False,
     show_default=True,
-    help="Provide verbose output, including warnings and all server requests.",
-)
-@click.option("--debug", is_flag=True, default=False, show_default=True, help="Run in debug mode.")
+    help="Provide verbose output, including warnings and all server requests.",)
+@click.option(
+    "--debug",
+    "-d",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="Run in debug mode. This is helpful for cellxgene developers, "
+         "or when you want more information about an error condition.",)
 @click.option(
     "--open",
     "-o",
@@ -114,18 +138,29 @@ def parse_engine_args(embedding, obs_names, var_names, max_category_items,
     is_flag=True,
     default=False,
     show_default=True,
-    help="Open the web browser after launch.",
-)
-@click.option("--port", "-p", help="Port to run server on, if not specified cellxgene will find an available port.",
-              metavar="", show_default=True)
-@click.option("--host", default="127.0.0.1", help="Host IP address")
+    help="Open web browser after launch.",)
+@click.option(
+    "--port",
+    "-p",
+    metavar="<port>",
+    show_default=True,
+    help="Port to run server on. If not specified cellxgene will find an available port.",)
+@click.option(
+    "--host",
+    metavar="<IP address>",
+    default="127.0.0.1",
+    show_default=False,
+    help="Host IP address. By default cellxgene will use localhost (e.g. 127.0.0.1).")
 @click.option(
     "--scripts",
+    "-s",
     default=[],
     multiple=True,
-    help="Additional script files to include in html page",
-    show_default=True,
-)
+    metavar="<text>",
+    help="Additional script files to include in HTML page. If not specified, "
+         "no additional script files will be included.",
+    show_default=False,)
+@click.help_option("--help", "-h", help="Show this message and exit.")
 @common_args
 def launch(
         data,
@@ -148,8 +183,9 @@ def launch(
 ):
     """Launch the cellxgene data viewer.
     This web app lets you explore single-cell expression data.
-    Data must be in a format that cellxgene expects, read the
-    "getting started" guide.
+    Data must be in a format that cellxgene expects.
+    Read the "getting started" guide to learn more:
+    https://chanzuckerberg.github.io/cellxgene/getting-started.html
 
     Examples:
 

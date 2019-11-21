@@ -74,7 +74,7 @@ class LeftSideBar extends React.Component {
             display: "inline-block",
             width: "190px",
             marginLeft: "7px",
-            height: "1.1em",
+            height: "1.2em",
             overflow: "hidden",
             wordBreak: "break-all"
           }}

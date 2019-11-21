@@ -129,30 +129,26 @@ class Categories extends React.Component {
       >
         {/* READ ONLY CATEGORICAL FIELDS */}
         {/* this is duplicative but flat, could be abstracted */}
-        {_.map(
-          allCategoryNames,
-          catName =>
-            !schema.annotations.obsByName[catName].writable ? (
-              <Category
-                key={catName}
-                metadataField={catName}
-                createAnnoModeActive={createAnnoModeActive}
-                isUserAnno={false}
-              />
-            ) : null
+        {_.map(allCategoryNames, catName =>
+          !schema.annotations.obsByName[catName].writable ? (
+            <Category
+              key={catName}
+              metadataField={catName}
+              createAnnoModeActive={createAnnoModeActive}
+              isUserAnno={false}
+            />
+          ) : null
         )}
         {/* WRITEABLE FIELDS */}
-        {_.map(
-          allCategoryNames,
-          catName =>
-            schema.annotations.obsByName[catName].writable ? (
-              <Category
-                key={catName}
-                metadataField={catName}
-                createAnnoModeActive={createAnnoModeActive}
-                isUserAnno
-              />
-            ) : null
+        {_.map(allCategoryNames, catName =>
+          schema.annotations.obsByName[catName].writable ? (
+            <Category
+              key={catName}
+              metadataField={catName}
+              createAnnoModeActive={createAnnoModeActive}
+              isUserAnno
+            />
+          ) : null
         )}
         {writableCategoriesEnabled ? (
           <div>

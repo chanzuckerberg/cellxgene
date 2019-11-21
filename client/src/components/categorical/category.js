@@ -376,7 +376,6 @@ class Category extends React.Component {
                 type="checkbox"
               />
               <span className="bp3-control-indicator" />
-              {""}
             </label>
             <span
               data-testid={`category-expand-${metadataField}`}

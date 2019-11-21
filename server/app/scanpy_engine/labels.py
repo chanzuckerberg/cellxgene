@@ -8,15 +8,18 @@ import pandas as pd
 
 def read_labels(fname):
     if exists(fname) and getsize(fname) > 0:
-        return pd.read_csv(fname, dtype='category', index_col=0)
+        return pd.read_csv(fname, dtype='category', index_col=0, header=0, comment='#')
     else:
         return pd.DataFrame()
 
 
-def write_labels(fname, df):
+def write_labels(fname, df, header=None):
     rotate_fname(fname)
     if not df.empty:
-        df.to_csv(fname)
+        f = open(fname, 'a', newline="")
+        if header is not None:
+            f.write(header)
+        df.to_csv(f)
     else:
         open(fname, 'a').close()
 

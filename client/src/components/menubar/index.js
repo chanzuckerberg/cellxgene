@@ -266,11 +266,10 @@ class MenuBar extends React.Component {
     const haveBothCellSets =
       !!differential.celllist1 && !!differential.celllist2;
 
-    const tipMessage =
-      "See top 10 differentially expressed genes" +
-      (diffexpMayBeSlow
-        ? " (CAUTION: large dataset - may take longer or fail)"
-        : "");
+    const slowMsg = diffexpMayBeSlow
+      ? " (CAUTION: large dataset - may take longer or fail)"
+      : "";
+    const tipMessage = `See top 10 differentially expressed genes${slowMsg}`;
 
     return (
       <div className="bp3-button-group" style={{ marginRight: 10 }}>
@@ -318,7 +317,6 @@ class MenuBar extends React.Component {
   render() {
     const {
       dispatch,
-      differential,
       crossfilter,
       resettingInterface,
       libraryVersions,

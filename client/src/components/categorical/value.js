@@ -9,14 +9,12 @@ import {
   MenuItem,
   Popover,
   Position,
-  Icon,
   PopoverInteractionKind,
-  Colors
+  Tooltip
 } from "@blueprintjs/core";
 import Occupancy from "./occupancy";
 import * as globals from "../../globals";
 import styles from "./categorical.css";
-import { Tooltip } from "@blueprintjs/core";
 
 import { AnnotationsHelpers } from "../../util/stateManager";
 
@@ -564,7 +562,12 @@ class CategoryValue extends React.Component {
                 }
               >
                 <Button
-                  style={{ marginLeft: 0, position: "relative", top: -1 }}
+                  style={{
+                    marginLeft: 0,
+                    position: "relative",
+                    top: -1,
+                    minHeight: 16
+                  }}
                   data-testclass="seeActions"
                   data-testid={`seeActions-${metadataField}`}
                   icon="more"

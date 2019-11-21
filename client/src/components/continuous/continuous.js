@@ -25,7 +25,7 @@ class Continuous extends React.Component {
 
   componentDidUpdate() {}
 
-  handleColorAction(key) {
+  handleColorAction = key => {
     return () => {
       const { dispatch, obsAnnotations } = this.props;
       const summary = obsAnnotations.col(key).summarize();
@@ -35,7 +35,7 @@ class Continuous extends React.Component {
         rangeForColorAccessor: summary
       });
     };
-  }
+  };
 
   render() {
     const { obsAnnotations, schema } = this.props;
@@ -54,10 +54,11 @@ class Continuous extends React.Component {
       <div>
         {this.hasContinuous ? (
           <p
-            style={Object.assign({}, globals.leftSidebarSectionHeading, {
+            style={{
+              ...globals.leftSidebarSectionHeading,
               marginTop: 40,
               paddingLeft: globals.leftSidebarSectionPadding
-            })}
+            }}
           >
             Continuous metadata
           </p>
@@ -84,7 +85,7 @@ class Continuous extends React.Component {
                     isObs
                     zebra={zebra % 2 === 0}
                     ranges={summary}
-                    handleColorAction={this.handleColorAction(key).bind(this)}
+                    handleColorAction={this.handleColorAction(key)}
                   />
                 );
               }
