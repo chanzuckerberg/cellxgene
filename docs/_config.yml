@@ -2,7 +2,7 @@ theme: jekyll-theme-minimal
 show_downloads: false
 baseurl: ""
 
-logo: cellxgene-logo.svg
+logo: cellxgene-logo.png
 
 nav:
 - title: Installation
