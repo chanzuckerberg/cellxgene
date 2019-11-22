@@ -70,8 +70,8 @@ export const leftSidebarSectionHeading = {
   letterSpacing: ".05em"
 };
 export const leftSidebarSectionPadding = 10;
-export const categoryLabelDisplayStringLongLength = 35;
-export const categoryLabelDisplayStringShortLength = 15;
+export const categoryLabelDisplayStringLongLength = 27;
+export const categoryLabelDisplayStringShortLength = 11;
 
 /* various timing-related behaviors */
 export const tooltipHoverOpenDelay = 1000; /* ms delay before a tooltip displays */

@@ -360,7 +360,7 @@ class CategoryValue extends React.Component {
             margin: 0,
             padding: 0,
             userSelect: "none",
-            width: globals.leftSidebarWidth - 130,
+            width: globals.leftSidebarWidth - 145,
             display: "flex",
             justifyContent: "space-between"
           }}
