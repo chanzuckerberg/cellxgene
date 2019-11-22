@@ -183,7 +183,35 @@ export function createWritableAnnotationDimensions(world, crossfilter) {
 	return crossfilter;
 }
 
-const legalNames = /^\w+$/;
-export function isLegalAnnotationName(name) {
-	return legalNames.test(name);
+const legalCharacters = /^(\w|[ .])+$/;
+export function annotationNameIsErroneous(name) {
+	/*
+	Validate the name - return:
+	* false - a valid name
+	* string - a named error, indicating why it was invalid.
+
+	Tests:
+	0. must be string, non-null
+	1. no leading or trailing spaces
+	2. only accept alpha, numeric, underscore, period and space
+	3. no runs of multiple spaces
+	*/
+
+	if (name === "") {
+		return "empty-string";
+	}
+	if (name[0] === " " || name[name.length - 1] === " ") {
+		return "trim-spaces";
+	}
+	if (!legalCharacters.test(name)) {
+		return "illegal-characters";
+	}
+	for (let i = 1, l = name.length; i < l; i += 1) {
+		if (name[i] === " " && name[i - 1] === " ") {
+			return "multi-space-run";
+		}
+	}
+
+	/* all is well!  Indicte not erroneous with a false */
+	return false;
 }

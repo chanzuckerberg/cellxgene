@@ -10,7 +10,8 @@ import {
   Popover,
   Position,
   PopoverInteractionKind,
-  Tooltip
+  Tooltip,
+  Colors
 } from "@blueprintjs/core";
 import Occupancy from "./occupancy";
 import * as globals from "../../globals";
@@ -85,75 +86,58 @@ class CategoryValue extends React.Component {
   valueNameErrorMessage = () => {
     const { editedLabelText } = this.state;
     const err = this.valueNameError();
-    if (!err) return null;
+    if (err === false) return null;
 
-    let markup = null;
-
-    if (err === "empty_string") {
-      markup = (
-        <span
-          style={{
-            fontStyle: "italic",
-            fontSize: 12,
-            marginTop: 5,
-            color: Colors.ORANGE3
-          }}
-        >
-          {"Label cannot be blank"}
-        </span>
-      );
-    } else if (err === "duplicate") {
-      markup = (
-        <span
-          style={{
-            fontStyle: "italic",
-            fontSize: 12,
-            marginTop: 5,
-            color: Colors.ORANGE3
-          }}
-        >
-          {"Label must be unique"}
-        </span>
-      );
-    } else if (err === "characters") {
-      markup = (
-        <span
-          style={{
-            fontStyle: "italic",
-            fontSize: 12,
-            marginTop: 5,
-            color: Colors.ORANGE3
-          }}
-        >
-          {"Only alphanumeric and underscore allowed"}
-        </span>
-      );
-    }
-    return markup;
+    const errorMessageMap = {
+      /* map error code to human readable error message */
+      "empty-string": "Blank names not allowed",
+      duplicate: "Label must be unique",
+      "trim-spaces": "Leading and trailing spaces not allowed",
+      "illegal-characters": "Only alphanumeric, underscore and period allowed",
+      "multi-space-run": "Multiple consecutive spaces not allowed"
+    };
+    const errorMessage = errorMessageMap[err] ?? "error";
+    return (
+      <span
+        style={{
+          fontStyle: "italic",
+          fontSize: 12,
+          marginTop: 5,
+          color: Colors.ORANGE3
+        }}
+      >
+        {errorMessage}
+      </span>
+    );
   };
 
   valueNameError = () => {
     const { editedLabelText } = this.state;
     const { categoricalSelection, metadataField, categoryIndex } = this.props;
 
-    let err = null;
+    /* 
+    check label syntax
+    */
+    const err = AnnotationsHelpers.annotationNameIsErroneous(editedLabelText);
+    if (err) return err;
 
+    /*
+    disallow duplicates
+    */
     const category = categoricalSelection[metadataField];
     const displayString = String(
       category.categoryValues[categoryIndex]
     ).valueOf();
-
-    if (editedLabelText === "") {
-      err = "empty_string";
-    } else if (
+    if (
       category.categoryValues.indexOf(editedLabelText) > -1 &&
       editedLabelText !== displayString
-    ) {
-      err = "duplicate";
-    } else if (!AnnotationsHelpers.isLegalAnnotationName(editedLabelText)) {
-      err = "characters";
-    }
-    return err;
+    )
+      return "duplicate";
+
+    /*
+    otherwise, all good!
+    */
+    return false;
   };
 
   activateEditLabelMode = () => {
@@ -220,6 +204,21 @@ class CategoryValue extends React.Component {
       editingLabel
     );
   };
+
+  componentDidUpdate(prevProps) {
+    const { categoricalSelection, metadataField, categoryIndex } = this.props;
+    if (
+      prevProps.categoricalSelection !== categoricalSelection ||
+      prevProps.metadataField !== metadataField ||
+      prevProps.categoryIndex !== categoryIndex
+    ) {
+      this.setState({
+        editedLabelText: String(
+          categoricalSelection[metadataField].categoryValues[categoryIndex]
+        ).valueOf()
+      });
+    }
+  }
 
   toggleOn = () => {
     const { dispatch, metadataField, categoryIndex } = this.props;
@@ -546,6 +545,7 @@ class CategoryValue extends React.Component {
                         data-testclass="handleEditValue"
                         data-testid={`handleEditValue-${metadataField}`}
                         onClick={this.activateEditLabelMode}
+                        disabled={annotations.isEditingLabelName}
                       />
                     ) : null}
                     {displayString !== globals.unassignedCategoryLabel ? (
