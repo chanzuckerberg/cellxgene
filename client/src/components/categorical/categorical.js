@@ -67,42 +67,42 @@ class Categories extends React.Component {
     return false if this is a LEGAL/acceptable category name or NULL/empty string,
     or return an error type.
     */
-    if (!name) return false;
+
+    /* allow empty string */
+    if (name === "") return false;
 
     const { categoricalSelection } = this.props;
     const allCategoryNames = Object.keys(categoricalSelection);
 
+    /* check category name syntax */
+    const error = AnnotationsHelpers.annotationNameIsErroneous(name);
+    if (error) {
+      return error;
+    }
+
+    /* disallow duplicates */
     if (allCategoryNames.indexOf(name) !== -1) {
       return "duplicate";
     }
 
-    if (!AnnotationsHelpers.isLegalAnnotationName(name)) {
-      return "characters";
-    }
-
+    /* otherwise, no error */
     return false;
   };
 
   categoryNameErrorMessage = name => {
     const err = this.categoryNameError(name);
     if (err === false) return null;
-    if (err === "duplicate") {
-      return (
-        <span>
-          <span style={{ fontStyle: "italic" }}>{name}</span> already exists -
-          no duplicates allowed
-        </span>
-      );
-    }
-    if (err === "characters") {
-      return (
-        <span>
-          <span style={{ fontStyle: "italic" }}>{name}</span> contains illegal
-          characters. Hint: use alpha-numeric and underscore
-        </span>
-      );
-    }
-    return err;
+
+    const errorMessageMap = {
+      /* map error code to human readable error message */
+      "empty-string": "Blank names not allowed",
+      duplicate: "Name must be unique",
+      "trim-spaces": "Leading and trailing spaces not allowed",
+      "illegal-characters": "Only alphanumeric, underscore and period allowed",
+      "multi-space-run": "Multiple consecutive spaces not allowed"
+    };
+    const errorMessage = errorMessageMap[err] ?? "error";
+    return <span>{errorMessage}</span>;
   };
 
   render() {

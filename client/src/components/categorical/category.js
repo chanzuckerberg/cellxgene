@@ -158,25 +158,30 @@ class Category extends React.Component {
     return false if this is a LEGAL/acceptable category name or NULL/empty string,
     or return an error type.
     */
-    let error = false;
-    if (name) {
-      const { metadataField, universe } = this.props;
-      const { obsByName } = universe.schema.annotations;
 
-      if (obsByName[metadataField].categories.indexOf(name) !== -1) {
-        error = "duplicate";
-      } else if (!AnnotationsHelpers.isLegalAnnotationName(name)) {
-        error = "characters";
-      }
-    }
-    return error;
+    /* allow empty string */
+    if (name === "") return false;
+
+    /* check for label syntax errors */
+    const error = AnnotationsHelpers.annotationNameIsErroneous(name);
+    if (error) return error;
+
+    /* disallow duplicates */
+    const { metadataField, universe } = this.props;
+    const { obsByName } = universe.schema.annotations;
+    if (obsByName[metadataField].categories.indexOf(name) !== -1)
+      return "duplicate";
+
+    /* otherwise, no error */
+    return false;
   };
 
   labelNameErrorMessage = name => {
     const { metadataField } = this.props;
     const err = this.labelNameError(name);
-    if (err === false) return null;
+
     if (err === "duplicate") {
+      /* duplicate error is special cased because it has special formatting */
       return (
         <span>
           <span style={{ fontStyle: "italic" }}>{name}</span> already exists
@@ -185,15 +190,23 @@ class Category extends React.Component {
         </span>
       );
     }
-    if (err === "characters") {
-      return (
-        <span>
-          <span style={{ fontStyle: "italic" }}>{name}</span> contains illegal
-          characters. Hint: use alpha-numeric and underscore
-        </span>
-      );
+
+    if (err) {
+      /* all other errors - map code to human error message */
+      const errorMessageMap = {
+        "empty-string": "Blank names not allowed",
+        duplicate: "Name must be unique",
+        "trim-spaces": "Leading and trailing spaces not allowed",
+        "illegal-characters":
+          "Only alphanumeric, underscore and period allowed",
+        "multi-space-run": "Multiple consecutive spaces not allowed"
+      };
+      const errorMessage = errorMessageMap[err] ?? "error";
+      return <span>{errorMessage}</span>;
     }
-    return err;
+
+    /* no error, no message generated */
+    return null;
   };
 
   categoryNameErrorMessage = () => {
@@ -201,76 +214,51 @@ class Category extends React.Component {
     const err = this.editedCategoryNameError();
     if (err === false) return null;
 
-    let markup = null;
-
-    if (err === "empty_string") {
-      markup = (
-        <span
-          style={{
-            display: "block",
-            fontStyle: "italic",
-            fontSize: 12,
-            marginTop: 5,
-            color: Colors.ORANGE3
-          }}
-        >
-          {"Category name cannot be blank"}
-        </span>
-      );
-    } else if (err === "already_exists") {
-      markup = (
-        <span
-          style={{
-            display: "block",
-            fontStyle: "italic",
-            fontSize: 12,
-            marginTop: 5,
-            color: Colors.ORANGE3
-          }}
-        >
-          {"Category name must be unique"}
-        </span>
-      );
-    } else if (err === "characters") {
-      markup = (
-        <span
-          style={{
-            display: "block",
-            fontStyle: "italic",
-            fontSize: 12,
-            marginTop: 5,
-            color: Colors.ORANGE3
-          }}
-        >
-          {"Only alphanumeric and underscore allowed"}
-        </span>
-      );
-    }
-
-    return markup;
+    const errorMessageMap = {
+      /* map error code to human readable error message */
+      "empty-string": "Blank names not allowed",
+      duplicate: "Category name must be unique",
+      "trim-spaces": "Leading and trailing spaces not allowed",
+      "illegal-characters": "Only alphanumeric, underscore and period allowed",
+      "multi-space-run": "Multiple consecutive spaces not allowed"
+    };
+    const errorMessage = errorMessageMap[err] ?? "error";
+    return (
+      <span
+        style={{
+          display: "block",
+          fontStyle: "italic",
+          fontSize: 12,
+          marginTop: 5,
+          color: Colors.ORANGE3
+        }}
+      >
+        {errorMessage}
+      </span>
+    );
   };
 
   editedCategoryNameError = () => {
     const { metadataField, categoricalSelection } = this.props;
     const { newCategoryText } = this.state;
-    const allCategoryNames = _.keys(categoricalSelection);
 
-    const isEmptyString = newCategoryText === "";
+    /* check for syntax errors in category name */
+    const error = AnnotationsHelpers.annotationNameIsErroneous(newCategoryText);
+    if (error) {
+      return error;
+    }
+
+    /* check for duplicative categories */
+    const allCategoryNames = _.keys(categoricalSelection);
     const categoryNameAlreadyExists =
       allCategoryNames.indexOf(newCategoryText) > -1;
     const sameName = newCategoryText === metadataField;
-
-    let error = false;
-
-    if (isEmptyString) {
-      error = "empty_string";
-    } else if (categoryNameAlreadyExists && !sameName) {
-      error = "already_exists";
-    } else if (!AnnotationsHelpers.isLegalAnnotationName(newCategoryText)) {
-      error = "characters";
+    if (categoryNameAlreadyExists && !sameName) {
+      return "duplicate";
     }
 
-    return error;
+    /* otherwise, no error */
+    return false;
   };
 
   toggleAll() {
