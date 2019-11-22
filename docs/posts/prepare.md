@@ -12,26 +12,26 @@ If your data is in `h5ad` file (from the [`anndata`](https://anndata.readthedocs
 - A unique identifier for every cell is available in an `anndata.obs` field (you can specify this with the `--obs-names` option)  
 - A unique identifier for every gene is available in an `anndata.var` field (you can specify which field to use with the `--var-names` option)  
 
-#### What about R objects from seurat / bioconductor!?**  
+#### What about R objects from seurat / bioconductor!?  
 We hear you! We'd also love to be able to ingest these files directly. This isn't currently possible, but in the meantime, you can use one of [these handy adapters](https://satijalab.org/seurat/v3.0/conversion_vignette.html) to convert to `h5ad`.
 
 #### Can I use data hosted on the web somewhere?  
 Yes! You can launch from a URL instead of a filepath. The same data format requirements apply. Please see [here](launch) for more details.
 
-# Using cellxgene `prepare`  
+# Using `cellxgene prepare`  
 
 If your data is in a different format, and/or you still need to perform dimensionality reduction and/or clustering, `cellxgene` can do that for you with the `prepare` command.
 
-## What is cellxgene `prepare`?
+## What is `cellxgene prepare`?
 
-`cellxgene prepare` offers an easy command line interface (CLI) to preliminarily wrangle your data into the required format for previewing it with `cellxgene`. It runs `scanpy` under the hood and can read in any format that is currently supported by `scanpy` (including mtx, loom, and more listed [here](https://scanpy.readthedocs.io/en/latest/api/index.html#reading)).
+`cellxgene prepare` offers an easy command line interface (CLI) to preliminarily wrangle your data into the required format for previewing it with cellxgene. It runs `scanpy` under the hood and can read in any format that is currently supported by `scanpy` (including mtx, loom, and more listed [in the scanpy documentation](https://scanpy.readthedocs.io/en/latest/api/index.html#reading)).
 
 `prepare` uses scanpy to:
 
 - Handle simple data normalization (from a [recipe](https://www.pydoc.io/pypi/scanpy-0.2.3/autoapi/preprocessing/recipes/index.html))
 - Do basic preprocessing to run PCA and compute the neighbor graph
+- Reduce dimensionality to generate embeddings  
 - Infer clusters
-- Reduce dimensionality to generate embeddings.  
 
 You can control which steps to run and their methods (when applicable), via the CLI. The CLI also includes options for computing QC metrics, enforcing matrix sparcity, specifying index names, and plotting output.
 
@@ -48,7 +48,7 @@ Then run `prepare` on your data with:
 cellxgene prepare dataset.h5ad --output=dataset-processed.h5ad
 ```
 
-This will load the input data, perform PCA and nearest neighbor calculations, compute `umap` and `tsne` embeddings and `louvain` cluster assignments, and save the results in a new file called `dataset-processed.h5ad` that can be loaded using `cellxgene launch`.
+This will load the input data, perform PCA and nearest neighbor calculations, compute `UMAP` and `tSNE` embeddings and `louvain` cluster assignments, and save the results in a new file called `dataset-processed.h5ad` that can be loaded using `cellxgene launch`.
 
 ## Example usage
 
@@ -56,7 +56,7 @@ As a quick example, let's construct a command to use `prepare` to take a raw exp
 
 We'll start off using the raw data from the pbmc3k dataset. This dataset is described [here](https://icb-scanpy.readthedocs-hosted.com/en/stable/api/scanpy.datasets.pbmc3k.html), and is available as part of the scanpy package. For this example, we'll assume this raw data is stored in a file called `pbmc3k-raw.h5ad`.
 
-Our `prepare` compose our command looks like this:
+Our `prepare` command looks like this:
 
 ```
 cellxgene prepare pbmc3k-raw.h5ad \
@@ -72,7 +72,7 @@ Let's look at what `prepare` is doing to our data, and how each step relates to 
 **(B) - Normalize the expression matrix using a basic preprocessing recipe**   
 **(auto) - Do some preprocessing to run PCA and compute the neighbor graph**  
 **(auto) - Infer clusters with the Louvain algorithm and store these labels to visualize later**  
-**(C) - Compute and store umap and tsne embeddings**  
+**(C) - Compute and store UMAP and tSNE embeddings**  
 **(D) - Write results to file**
 
 ## Options for cellxgene `prepare`
@@ -89,11 +89,10 @@ Options are `none`, `seurat`, or `zheng17`. Defaults to `none`.
 `--sparse` is a flag determines whether to enforce a sparse matrix. For large datasets, `prepare` can take a long time to run (a few minutes for datasets with 10-100k cells, up to an hour or more for datasets with >100k cells). If you want `prepare` to run faster we recommend using the `sparse` option.  
 If this flag is not included, default is `False`
 
-`--run-qc / --skip-qc` is a flag that determines whether to calculate QC metrics (saved to `anndata.obs` and `anndata.var`). See the `scanpy` [documentation](https://scanpy.readthedocs.io/en/stable/api/scanpy.pp.calculate_qc_metrics.html) for details.
-Default is `run-qc`
+`--skip-qc` by default, `cellxgene prepare` will compute quality control metrics (saved to `anndata.obs` and `anndata.var`) as described in the `scanpy` [documentation](https://scanpy.readthedocs.io/en/stable/api/scanpy.pp.calculate_qc_metrics.html). Pass this flag if you would like to skip this step.
 
-`--make-obs-names-unique` / `--make-var-names-unique` are flags that determine whether to rename `obs` (cell) / `var` (gene) names, respectively, to be unique.  
-Default is `True`
+`--make-obs-names-unique` / `--make-var-names-unique` determine whether to rename `obs` (cell) / `var` (gene) names, respectively, to be unique.  
+Default is `True`.
 
 `--set-obs-names` controls which field in `anndata.obs` (cell metadata) is used as the _index_ for cells (e.g., a cell ID column).  
 Default is `anndata.obs.names`
