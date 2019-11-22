@@ -8,12 +8,12 @@ const Annotations = (
     in some persistent store (database, file system, etc).
 
     The backend may expect this to be a legal file name, which is typically alpha-numeric, plus [_-,.].
-    Keep it simple or the server may return an error.
+    Keep it simple or the server may return an error. 
 
     If `dataCollectionNameIsReadOnly` is true, you may NOT change the data collection name.
     If false, you may change `dataCollectionName` and it will be used at the time the annotations are
     written to the back-end.
-    
+
     */
     dataCollectionNameIsReadOnly: true,
     dataCollectionName: null,
