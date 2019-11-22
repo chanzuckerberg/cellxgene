@@ -7,12 +7,14 @@ import {
   InputGroup,
   Dialog,
   Classes,
-  MenuItem
+  MenuItem,
+  Colors
 } from "@blueprintjs/core";
 import { Select } from "@blueprintjs/select";
 import { connect } from "react-redux";
 import * as globals from "../../globals";
 import Category from "./category";
+import { AnnotationsHelpers } from "../../util/stateManager";
 
 @connect(state => ({
   categoricalSelection: state.categoricalSelection,
@@ -49,15 +51,66 @@ class Categories extends React.Component {
   };
 
   handleDisableAnnoMode = () => {
-    this.setState({ createAnnoModeActive: false });
+    this.setState({
+      createAnnoModeActive: false,
+      categoryToDuplicate: null,
+      newCategoryText: ""
+    });
   };
 
   handleModalDuplicateCategorySelection = d => {
     this.setState({ categoryToDuplicate: d });
   };
 
+  categoryNameError = name => {
+    /*
+    return false if this is a LEGAL/acceptable category name or NULL/empty string,
+    or return an error type.
+    */
+    if (!name) return false;
+
+    const { categoricalSelection } = this.props;
+    const allCategoryNames = Object.keys(categoricalSelection);
+
+    if (allCategoryNames.indexOf(name) !== -1) {
+      return "duplicate";
+    }
+
+    if (!AnnotationsHelpers.isLegalAnnotationName(name)) {
+      return "characters";
+    }
+
+    return false;
+  };
+
+  categoryNameErrorMessage = name => {
+    const err = this.categoryNameError(name);
+    if (err === false) return null;
+    if (err === "duplicate") {
+      return (
+        <span>
+          <span style={{ fontStyle: "italic" }}>{name}</span> already exists -
+          no duplicates allowed
+        </span>
+      );
+    }
+    if (err === "characters") {
+      return (
+        <span>
+          <span style={{ fontStyle: "italic" }}>{name}</span> contains illegal
+          characters. Hint: use alpha-numeric and underscore
+        </span>
+      );
+    }
+    return err;
+  };
+
   render() {
-    const { createAnnoModeActive, categoryToDuplicate } = this.state;
+    const {
+      createAnnoModeActive,
+      categoryToDuplicate,
+      newCategoryText
+    } = this.state;
     const {
       categoricalSelection,
       writableCategoriesEnabled,
@@ -108,7 +161,6 @@ class Categories extends React.Component {
               <form
                 onSubmit={e => {
                   e.preventDefault();
-                  this.handleCreateUserAnno();
                 }}
               >
                 <div className={Classes.DIALOG_BODY}>
@@ -116,12 +168,30 @@ class Categories extends React.Component {
                     <p>New, unique category name:</p>
                     <InputGroup
                       autoFocus
+                      value={newCategoryText}
+                      intent={
+                        this.categoryNameError(newCategoryText)
+                          ? "warning"
+                          : "none"
+                      }
                       onChange={e =>
                         this.setState({ newCategoryText: e.target.value })
                       }
                       leftIcon="tag"
                     />
+                    <p
+                      style={{
+                        marginTop: 7,
+                        visibility: this.categoryNameError(newCategoryText)
+                          ? "visible"
+                          : "hidden",
+                        color: Colors.ORANGE3
+                      }}
+                    >
+                      {this.categoryNameErrorMessage(newCategoryText)}
+                    </p>
                   </div>
+
                   <p>
                     Optionally duplicate all labels & cell assignments from
                     existing category into new category:
@@ -157,6 +227,10 @@ class Categories extends React.Component {
                     </Tooltip>
                     <Button
                       onClick={this.handleCreateUserAnno}
+                      disabled={
+                        !newCategoryText ||
+                        this.categoryNameError(newCategoryText)
+                      }
                       intent="primary"
                       type="submit"
                     >

@@ -2,7 +2,7 @@ import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
 import { FaChevronRight, FaChevronDown } from "react-icons/fa";
-import { Flipper, Flipped, Spring } from "react-flip-toolkit";
+import { Flipper, Flipped } from "react-flip-toolkit";
 import {
   Button,
   Tooltip,
@@ -14,12 +14,14 @@ import {
   Classes,
   Icon,
   Position,
-  PopoverInteractionKind
+  PopoverInteractionKind,
+  Colors
 } from "@blueprintjs/core";
 
 import * as globals from "../../globals";
 import Value from "./value";
 import sortedCategoryValues from "./util";
+import { AnnotationsHelpers } from "../../util/stateManager";
 
 @connect(state => ({
   colorAccessor: state.colors.colorAccessor,
@@ -33,7 +35,7 @@ class Category extends React.Component {
     this.state = {
       isChecked: true,
       isExpanded: false,
-      newCategoryText: "",
+      newCategoryText: props.metadataField,
       newLabelText: ""
     };
   }
@@ -81,18 +83,14 @@ class Category extends React.Component {
     dispatch({
       type: "annotation: disable add new label mode"
     });
+    this.setState({
+      newLabelText: ""
+    });
   };
 
   handleAddNewLabelToCategory = () => {
     const { dispatch, metadataField } = this.props;
     const { newLabelText } = this.state;
-    /*
-    XXX TODO - temporary code generates random label string. Remove
-    when the label creation UI is implemented.
-
-    const { newLabelText } = this.state;
-    */
-    // const newLabelText = `label${Math.random()}`;
     dispatch({
       type: "annotation: add new label to category",
       metadataField,
@@ -118,8 +116,18 @@ class Category extends React.Component {
   };
 
   handleEditCategory = () => {
-    const { dispatch, metadataField } = this.props;
+    const { dispatch, metadataField, categoricalSelection } = this.props;
     const { newCategoryText } = this.state;
+
+    const allCategoryNames = _.keys(categoricalSelection);
+
+    if (
+      (allCategoryNames.indexOf(newCategoryText) > -1 &&
+        newCategoryText !== metadataField) ||
+      newCategoryText === ""
+    ) {
+      return;
+    }
 
     dispatch({
       type: "annotation: category edited",
@@ -143,6 +151,126 @@ class Category extends React.Component {
       type: "color by categorical metadata",
       colorAccessor: metadataField
     });
+  };
+
+  labelNameError = name => {
+    /*
+    return false if this is a LEGAL/acceptable category name or NULL/empty string,
+    or return an error type.
+    */
+    let error = false;
+    if (name) {
+      const { metadataField, universe } = this.props;
+      const { obsByName } = universe.schema.annotations;
+
+      if (obsByName[metadataField].categories.indexOf(name) !== -1) {
+        error = "duplicate";
+      } else if (!AnnotationsHelpers.isLegalAnnotationName(name)) {
+        error = "characters";
+      }
+    }
+    return error;
+  };
+
+  labelNameErrorMessage = name => {
+    const { metadataField } = this.props;
+    const err = this.labelNameError(name);
+    if (err === false) return null;
+    if (err === "duplicate") {
+      return (
+        <span>
+          <span style={{ fontStyle: "italic" }}>{name}</span> already exists
+          already exists within{" "}
+          <span style={{ fontStyle: "italic" }}>{metadataField}</span>{" "}
+        </span>
+      );
+    }
+    if (err === "characters") {
+      return (
+        <span>
+          <span style={{ fontStyle: "italic" }}>{name}</span> contains illegal
+          characters. Hint: use alpha-numeric and underscore
+        </span>
+      );
+    }
+    return err;
+  };
+
+  categoryNameErrorMessage = () => {
+    const { newCategoryText } = this.state;
+    const err = this.editedCategoryNameError();
+    if (err === false) return null;
+
+    let markup = null;
+
+    if (err === "empty_string") {
+      markup = (
+        <span
+          style={{
+            display: "block",
+            fontStyle: "italic",
+            fontSize: 12,
+            marginTop: 5,
+            color: Colors.ORANGE3
+          }}
+        >
+          {"Category name cannot be blank"}
+        </span>
+      );
+    } else if (err === "already_exists") {
+      markup = (
+        <span
+          style={{
+            display: "block",
+            fontStyle: "italic",
+            fontSize: 12,
+            marginTop: 5,
+            color: Colors.ORANGE3
+          }}
+        >
+          {"Category name must be unique"}
+        </span>
+      );
+    } else if (err === "characters") {
+      markup = (
+        <span
+          style={{
+            display: "block",
+            fontStyle: "italic",
+            fontSize: 12,
+            marginTop: 5,
+            color: Colors.ORANGE3
+          }}
+        >
+          {"Only alphanumeric and underscore allowed"}
+        </span>
+      );
+    }
+
+    return markup;
+  };
+
+  editedCategoryNameError = () => {
+    const { metadataField, categoricalSelection } = this.props;
+    const { newCategoryText } = this.state;
+    const allCategoryNames = _.keys(categoricalSelection);
+
+    const isEmptyString = newCategoryText === "";
+    const categoryNameAlreadyExists =
+      allCategoryNames.indexOf(newCategoryText) > -1;
+    const sameName = newCategoryText === metadataField;
+
+    let error = false;
+
+    if (isEmptyString) {
+      error = "empty_string";
+    } else if (categoryNameAlreadyExists && !sameName) {
+      error = "already_exists";
+    } else if (!AnnotationsHelpers.isLegalAnnotationName(newCategoryText)) {
+      error = "characters";
+    }
+
+    return error;
   };
 
   toggleAll() {
@@ -202,8 +330,7 @@ class Category extends React.Component {
       colorAccessor,
       categoricalSelection,
       isUserAnno,
-      annotations,
-      universe
+      annotations
     } = this.props;
     const { isTruncated } = categoricalSelection[metadataField];
 
@@ -212,6 +339,7 @@ class Category extends React.Component {
       ...cat.categoryValueIndices
     ]);
     const optTuplesAsKey = _.map(optTuples, t => t[0]).join(""); // animation
+    const allCategoryNames = _.keys(categoricalSelection);
 
     return (
       <div
@@ -232,7 +360,7 @@ class Category extends React.Component {
             style={{
               display: "flex",
               justifyContent: "flex-start",
-              alignItems: "baseline"
+              alignItems: "flex-start"
             }}
           >
             <label className="bp3-control bp3-checkbox">
@@ -248,7 +376,6 @@ class Category extends React.Component {
                 type="checkbox"
               />
               <span className="bp3-control-indicator" />
-              {""}
             </label>
             <span
               data-testid={`category-expand-${metadataField}`}
@@ -294,7 +421,7 @@ class Category extends React.Component {
                     rightElement={
                       <Button
                         minimal
-                        disabled={newCategoryText.length === 0}
+                        disabled={this.editedCategoryNameError()}
                         style={{ position: "relative", top: -1 }}
                         type="button"
                         icon="small-tick"
@@ -304,6 +431,7 @@ class Category extends React.Component {
                       />
                     }
                   />
+                  {this.categoryNameErrorMessage()}
                 </form>
               ) : (
                 metadataField
@@ -345,11 +473,28 @@ class Category extends React.Component {
                         <p>New, unique label name:</p>
                         <InputGroup
                           autoFocus
+                          value={newLabelText}
+                          intent={
+                            this.labelNameError(newLabelText)
+                              ? "warning"
+                              : "none"
+                          }
                           onChange={e =>
                             this.setState({ newLabelText: e.target.value })
                           }
                           leftIcon="tag"
                         />
+                        <p
+                          style={{
+                            marginTop: 7,
+                            visibility: this.labelNameError(newLabelText)
+                              ? "visible"
+                              : "hidden",
+                            color: Colors.ORANGE3
+                          }}
+                        >
+                          {this.labelNameErrorMessage(newLabelText)}
+                        </p>
                       </div>
                     </div>
                     <div className={Classes.DIALOG_FOOTER}>
@@ -361,10 +506,7 @@ class Category extends React.Component {
                         </Tooltip>
                         <Button
                           disabled={
-                            newLabelText.length === 0 ||
-                            universe.schema.annotations.obsByName[
-                              metadataField
-                            ].categories.indexOf(newLabelText) !== -1
+                            !newLabelText || this.labelNameError(newLabelText)
                           }
                           onClick={this.handleAddNewLabelToCategory}
                           intent="primary"

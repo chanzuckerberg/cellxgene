@@ -4,16 +4,21 @@ import click
 from numpy import ndarray, unique
 from scipy.sparse.csc import csc_matrix
 
+from server.utils.utils import sort_options
 
-@click.command()
-@click.argument("data", nargs=1, metavar="<dataset: file or path to data>", required=True)
+
+@sort_options
+@click.command(short_help="Preprocess data for use with cellxgene. "
+                          "Run `cellxgene prepare --help` for more information.",
+               options_metavar="<options>",)
+@click.argument("data", nargs=1, metavar="<path to data file>", required=True)
 @click.option(
     "--embedding",
     "-e",
     default=["umap", "tsne"],
     multiple=True,
     type=click.Choice(["umap", "tsne"]),
-    help="Embedding algorithm",
+    help="Embedding algorithm(s). Repeat option for multiple embeddings.",
     show_default=True,
 )
 @click.option(
@@ -25,21 +30,29 @@ from scipy.sparse.csc import csc_matrix
     show_default=True,
 )
 @click.option("--output", "-o", default="", help="Save a new file to filename.", metavar="<filename>")
-@click.option("--plotting", "-p", default=False, is_flag=True, help="Whether to generate plots.", show_default=True)
-@click.option("--sparse", default=False, is_flag=True, help="Whether to force sparsity.", show_default=True)
+@click.option("--plotting", "-p", default=False, is_flag=True, help="Generate plots.", show_default=True)
+@click.option("--sparse", default=False, is_flag=True, help="Force sparsity.", show_default=True)
 @click.option("--overwrite", default=False, is_flag=True, help="Allow file overwriting.", show_default=True)
 @click.option("--set-obs-names", default="", help="Named field to set as index for obs.", metavar="<name>")
 @click.option("--set-var-names", default="", help="Named field to set as index for var.", metavar="<name>")
+@click.option("--skip-qc", default=False, is_flag=True,
+              help="Do not run quality control metrics. By default cellxgene runs them "
+                   "(saved to adata.obs and adata.var; see scanpy.pp.calculate_qc_metrics for details).")
 @click.option(
-    "--run-qc/--skip-qc", default=True, is_flag=True,
-    help="Whether to calculate QC metrics (saved to adata.obs and adata.var). \
-    See scanpy.pp.calculate_qc_metrics for details.", show_default=True)
-@click.option(
-    "--make-obs-names-unique", default=True, is_flag=True, help="Ensure obs index is unique.", show_default=True
+    "--make-obs-names-unique",
+    default=True,
+    is_flag=True,
+    help="Ensure obs index is unique.",
+    show_default=True
 )
 @click.option(
-    "--make-var-names-unique", default=True, is_flag=True, help="Ensure var index is unique.", show_default=True
+    "--make-var-names-unique",
+    default=True,
+    is_flag=True,
+    help="Ensure var index is unique.",
+    show_default=True
 )
+@click.help_option("--help", "-h", help="Show this message and exit.")
 def prepare(
         data,
         embedding,
@@ -50,18 +63,18 @@ def prepare(
         overwrite,
         set_obs_names,
         set_var_names,
-        run_qc,
+        skip_qc,
         make_obs_names_unique,
         make_var_names_unique,
 ):
-    """Preprocesses data for use with cellxgene.
-
-    This tool runs a series of scanpy routines for preparing a dataset
-    for use with cellxgene. It loads data from different formats
+    """
+    Preprocess data for use with cellxgene.
+    This tool runs a series of scanpy routines for preparing a dataset for use
+    with cellxgene. It loads data from different formats
     (h5ad, loom, or a 10x directory), runs dimensionality reduction,
     computes nearest neighbors, computes an embedding, performs clustering,
-    and saves the results. Includes additional options for naming
-    annotations, ensuring sparsity, and plotting results."""
+    and saves the results. Includes additional options for naming annotations,
+    ensuring sparsity, and plotting results."""
 
     # collect slow imports here to make CLI startup more responsive
     click.echo("[cellxgene] Starting CLI...")
@@ -129,7 +142,7 @@ def prepare(
         return adata
 
     def calculate_qc_metrics(adata):
-        if run_qc:
+        if not skip_qc:
             sc.pp.calculate_qc_metrics(adata, inplace=True)
         return adata
 
@@ -179,7 +192,7 @@ def prepare(
                 sc.pl.tsne(adata, color="louvain", palette=palette, save="_louvain")
 
     def show_step(item):
-        if run_qc:
+        if not skip_qc:
             qc_name = "Calculating QC metrics"
         else:
             qc_name = "Skipping QC"
