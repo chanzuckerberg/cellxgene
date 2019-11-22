@@ -46,7 +46,7 @@ cellxgene launch s3://mybucket.s3-us-west-2.amazonaws.com/mydata.h5ad
 
 `--open` automatically opens the web browser after launching (caveat: only works on some operating systems).
 
-`--experimental-label-file` enables an experimental feature to allow users to create new categorical annotations in the application. These newly-created annotations are saved in the specified CSV file. If the specified file already exists, the previously-contained annotations will be loaded as mutable (changeable) values and the CSV will be updated (overwritten) with any edits made. If the file does not exist, it will be created. See [the annotations documentation](annotations) for more details.
+`--experimental-annotations`, `--experimental-annotations-file` & `--experimental-annotations-output-dir` all have to do with an experimental feature to allow users to create new categorical annotations in the application. We have a [whole separate page](annotations) about their usage! :)
 
 `--diffexp-lfc-cutoff` as explained [in the methods](methods), genes are only returned in differential expression if the effect size is above the specified threshold for log fold change. Defaults to 0.01.
 

@@ -8,17 +8,18 @@ description: Creating annotations
 
 We are _piloting_ a new feature in cellxgene that enables users to create and edit categorical annotations within the app. We'd love for you to try it out and [give us feedback](contact)!
 
-## Quick start for annotations  
+## Quick start for annotations (RECOMMENDED for most users)
 
 You can enable this experimental feature like so:
 
 `cellxgene launch mydata.h5ad --experimental-annotations`
 
-To preserve data provenance, **`cellxgene` does not alter the input h5ad file**.  
-Rather, newly-created annotations are saved in a specified CSV file:  
+To preserve data provenance, **`cellxgene` does not alter the input h5ad file**.  Rather, newly-created annotations are saved in a specified CSV file:  
 - You will be prompted to enter a name for your annotations the first time you create a new category.  
 - We also assign a unique identifier in the form of an 8-character suffix, `########`; this helps cellxgene identify your file to avoid overwriting your work.
 - Any annotations you create in the application will be autosaved in `cwd/name-########.csv`, where `cwd` is your current working directory (i.e., the directory you were in when you started cellxgene).
+
+If you quit cellxgene and relaunch it with the same h5ad, we will check for this annotations csv and load it in editable mode alongside.
 
 ## Data management
 
@@ -73,6 +74,9 @@ anndata.obs = anndata.obs.join(new_annotations)
 
 ### How do I know my annotations are saved?
 `cellxgene` autosaves any changes made to your annotations every 3 seconds.
+
+### I think I deleted my annotations! Oh noes!  
+Not to worry! We save the last 10 versions of your annotations in `annotations-directory/NAME-backups/`
 
 ### What about creating continuous annotations?  
 Continuous metadata is important! However, these values (e.g., pseudotime) are the result of statistical analyses that are beyond cellxgene's visualization- and exploration-focused scope. We do, of course, provide visualization of continuous metadata values computed elsewhere and stored in `anndata.obs`.
