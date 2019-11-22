@@ -46,14 +46,14 @@ cellxgene launch s3://mybucket.s3-us-west-2.amazonaws.com/mydata.h5ad
 
 `--open` automatically opens the web browser after launching (caveat: only works on some operating systems).
 
-`--experimental-label-file` enables an experimental feature to allow users to create new categorical annotations in the application. These newly-created annotations are saved in the specified CSV file. If the specified file already exists, the previously-contained annotations will be loaded as mutable (changeable) values and the CSV will be updated (overwritten) with any edits made. If the file does not exist, it will be created. See [here](annotations) for more details.
+`--experimental-label-file` enables an experimental feature to allow users to create new categorical annotations in the application. These newly-created annotations are saved in the specified CSV file. If the specified file already exists, the previously-contained annotations will be loaded as mutable (changeable) values and the CSV will be updated (overwritten) with any edits made. If the file does not exist, it will be created. See [the annotations documentation](annotations) for more details.
 
-`--diffexp-lfc-cutoff` as explained [here](methods), genes are only returned in differential expression if the effect size is above the specified threshold for log fold change. Defaults to 0.01.
+`--diffexp-lfc-cutoff` as explained [in the methods](methods), genes are only returned in differential expression if the effect size is above the specified threshold for log fold change. Defaults to 0.01.
 
 `--disable-diffexp` will disable and hide the `Compute Differential Expression` feature.
 For large datasets, or datasets loaded with the `--backed` option, computing differential expression may
-be extremely slow or use excessive reources on the host computer (eg, memory thrasing).
-Disabling the feature will ensure that the end-user does not accidentally initiate this computation.
+be extremely slow or use excessive resources on the host computer (e.g., memory thrashing).
+Disabling the feature will ensure that this computation is not initiated accidentally.
 
 `--backed` option instructs `cellxgene launch` to read the H5AD file in "backed" mode (for more information, see the
 [anndata.read_h5ad() documentation](https://anndata.readthedocs.io/en/latest/anndata.read_h5ad.html#anndata.read_h5ad)).
