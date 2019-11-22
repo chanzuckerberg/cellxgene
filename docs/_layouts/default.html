@@ -18,15 +18,22 @@
 
         <p>{{ site.description | default: site.github.project_tagline }}</p>
         <p>
-      {% if site.nav %}
+
+        {% if page.url == "/" %}
+        <a href="{{ site.baseurl }}/" class="btn"><b>Quick start</b></a><br>
+        {% else %}
         <a href="{{ site.baseurl }}/" class="btn">Quick start</a><br>
+        {% endif %}
+
         {% for item in site.nav %}
-          <a href="{{ item.url | relative_url}}" class="btn">{{ item.title }}</a><br>
+        {% if page.url contains item.url %}
+        <a href="{{ item.url | relative_url}}" class="btn"><b>{{ item.title }}</b></a><br>
+        {% else %}
+        <a href="{{ item.url | relative_url}}" class="btn">{{ item.title }}</a><br>
+        {% endif %}
         {% endfor %}
-      {% endif %}
-      {% if site.github.is_project_page %}
+
         <a href="{{ site.github.repository_url }}" class="btn" target="_blank">Code</a>
-      {% endif %}
     </p>
     </header>
 
