@@ -2,11 +2,9 @@
 ---
 
 @import "{{ site.theme }}";
+body { color: #3b3a3a;}
 section { width: 500px; float: right; padding-bottom: 50px; padding-top:15px}
 a { color: #9E2364; text-decoration: none; }
-
 a:hover, a:focus { color: #9E2364; font-weight: bold; }
-
 a small { font-size: 11px; color: #9E2364; margin-top: -0.3em; display: block; }
-
 a:hover small { color: #9E2364; }
