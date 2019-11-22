@@ -1,17 +1,11 @@
-<img src="cellxgene-logo.svg" width="300">
-
-_an interactive explorer for single-cell transcriptomics data_
+---
+title: Index
+subtitle: Index
+layout: default
+---
+# Quick start
 
 Whether you need to visualize one thousand cells or one million, cellxgene helps you gain insight into your single-cell data.
-## features
-
-#### flexible selections, coloring, and differential expression of your selected sets of cells
-<img src="diffexp.gif" width="600"/>
-
-#### single-gene analyses (e.g. expression analysis)
-<img src="customGene.gif" width="600" />
-
-## quick start
 
 To install cellxgene you need Python 3.6+. We recommend [installing cellxgene into a conda or virtual environment.](/faq.html#how-do-i-create-a-python-environment-for-cellxgene)
 
@@ -23,19 +17,20 @@ pip install cellxgene
 Download an example [anndata](https://anndata.readthedocs.io/en/latest/) file
 
 ``` bash
-curl -o pbmc3k.h5ad https://raw.githubusercontent.com/chanzuckerberg/cellxgene/master/example-dataset/pbmc3k.h5ad
+curl -o tabula-muris.h5ad https://cellxgene-example-data.czi.technology/tabula-muris.h5ad.zip
+unzip tabula-muris.h5ad.zip
 ```
 
 Launch cellxgene
 ``` bash
-cellxgene launch pbmc3k.h5ad --open
+cellxgene launch tabula-muris.h5ad --open
 ```
 
-To explore more datasets already formatted for cellxgene, see [Data](data) or
-visit [Getting Started](getting-started) to learn more about formatting your own
+To explore more datasets already formatted for cellxgene, check out the [Demo data](demo-data) or
+see [Preparing your data](prepare) to learn more about formatting your own
 data for cellxgene.
 
-## getting help
+# Getting help
 
 We'd love to hear from you!
 

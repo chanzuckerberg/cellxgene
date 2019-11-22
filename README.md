@@ -88,3 +88,7 @@ We are eager to explore integrations with other computational backends such as [
 ## reuse
 
 This project was started with the sole goal of empowering the scientific community to explore and understand their data. As such, we encourage other scientific tool builders in academia or industry to adopt the patterns, tools, and code from this project, and reach out to us with ideas or questions. All code is freely available for reuse under the [MIT license](https://opensource.org/licenses/MIT).
+
+## security
+
+If you believe you have found a security issue, we would appreciate notification. Please send email to <security@chanzuckerberg.com>.
