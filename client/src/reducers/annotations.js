@@ -3,7 +3,7 @@ Reducers for annotation UI-state.
 */
 const Annotations = (
   state = {
-    /* 
+    /*
     Annotations collection name - which will be used to save the named set of annotations
     in some persistent store (database, file system, etc).
 
@@ -11,8 +11,9 @@ const Annotations = (
     Keep it simple or the server may return an error.
 
     If `dataCollectionNameIsReadOnly` is true, you may NOT change the data collection name.
-    If false, you may change `dataCollectionName` and it will be used at the time the annotations are 
+    If false, you may change `dataCollectionName` and it will be used at the time the annotations are
     written to the back-end.
+    
     */
     dataCollectionNameIsReadOnly: true,
     dataCollectionName: null,
@@ -30,7 +31,7 @@ const Annotations = (
 ) => {
   switch (action.type) {
     case "configuration load complete": {
-      /* 
+      /*
       TODO: remove the defaulting when we implement UI to ask user.  At
       that point, default should just be null.
       */
