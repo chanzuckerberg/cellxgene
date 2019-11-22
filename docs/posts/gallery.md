@@ -6,11 +6,20 @@ layout: default
 
 # Features
 
-### Flexible selections, coloring, and differential expression of your selected sets of cells
+### Cross-filter cells and color by metadata  
+<img src="../images/crossfilter.gif" width="600"/>
+
+### Compare groups of cells with differential expression  
 <img src="../images/diffexp.gif" width="600"/>
 
-### Single-gene analyses (e.g. expression analysis)
-<img src="../images/customGene.gif" width="600" />
+### See how metadata and gene expression break down across categories  
+<img src="../images/category-breakdown.gif" width="600"/>
+
+### Find cells where a gene is expressed  
+<img src="../images/gene-expression.gif" width="600"/>
+
+### Compare expression of multiple genes  
+<img src="../images/compare-genes.gif" width="600"/>
 
 # Interactive demos  
 
