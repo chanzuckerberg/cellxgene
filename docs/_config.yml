@@ -1,6 +1,6 @@
 theme: jekyll-theme-minimal
 show_downloads: false
-baseurl: ""
+baseurl: "/cellxgene"
 
 logo: cellxgene-logo.png
 
