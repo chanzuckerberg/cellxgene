@@ -10,7 +10,8 @@ import {
   Popover,
   Position,
   PopoverInteractionKind,
-  Tooltip
+  Tooltip,
+  Colors
 } from "@blueprintjs/core";
 import Occupancy from "./occupancy";
 import * as globals from "../../globals";
@@ -83,7 +84,6 @@ class CategoryValue extends React.Component {
   };
 
   valueNameErrorMessage = () => {
-    const { editedLabelText } = this.state;
     const err = this.valueNameError();
     if (!err) return null;
 
@@ -555,7 +555,9 @@ class CategoryValue extends React.Component {
                         data-testclass="handleDeleteValue"
                         data-testid={`handleDeleteValue-${metadataField}`}
                         onClick={this.handleDeleteValue}
-                        text={`Delete this label, and reassign all cells to type '${globals.unassignedCategoryLabel}'`}
+                        text={`Delete this label, and reassign all cells to type '${
+                          globals.unassignedCategoryLabel
+                        }'`}
                       />
                     ) : null}
                   </Menu>

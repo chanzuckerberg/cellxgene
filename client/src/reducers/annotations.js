@@ -8,7 +8,7 @@ const Annotations = (
     in some persistent store (database, file system, etc).
 
     The backend may expect this to be a legal file name, which is typically alpha-numeric, plus [_-,.].
-    Keep it simple or the server may return an error. 
+    Keep it simple or the server may return an error.
 
     If `dataCollectionNameIsReadOnly` is true, you may NOT change the data collection name.
     If false, you may change `dataCollectionName` and it will be used at the time the annotations are
@@ -31,14 +31,13 @@ const Annotations = (
 ) => {
   switch (action.type) {
     case "configuration load complete": {
-      /*
-      TODO: remove the defaulting when we implement UI to ask user.  At
-      that point, default should just be null.
-      */
-      const DefaultDataCollectionName = "FAKE_data_collection_name";
+      const DefaultDataCollectionName = null;
       const dataCollectionName =
-        action.config.parameters?.["annotations-data-collection-name"] ??
-        DefaultDataCollectionName;
+        action.config.parameters?.["annotations-data-collection-name"] &&
+        action.config.parameters?.["annotations-data-collection-name"] !==
+          "FAKE_data_collection_name"
+          ? action.config.parameters?.["annotations-data-collection-name"]
+          : DefaultDataCollectionName;
       const dataCollectionNameIsReadOnly =
         action.config.parameters?.[
           "annotations-data-collection-name-is-read-only"
@@ -49,6 +48,12 @@ const Annotations = (
         dataCollectionName
       };
     }
+
+    case "set annotations filename":
+      return {
+        ...state,
+        dataCollectionName: action.data
+      };
 
     /* CATEGORY */
     case "annotation: activate add new label mode":
