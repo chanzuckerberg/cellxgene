@@ -33,11 +33,7 @@ const Annotations = (
     case "configuration load complete": {
       const DefaultDataCollectionName = null;
       const dataCollectionName =
-        action.config.parameters?.["annotations-data-collection-name"] &&
-        action.config.parameters?.["annotations-data-collection-name"] !==
-          "FAKE_data_collection_name"
-          ? action.config.parameters?.["annotations-data-collection-name"]
-          : DefaultDataCollectionName;
+        action.config.parameters?.["annotations-data-collection-name"] ?? null;
       const dataCollectionNameIsReadOnly =
         action.config.parameters?.[
           "annotations-data-collection-name-is-read-only"
@@ -49,11 +45,15 @@ const Annotations = (
       };
     }
 
-    case "set annotations filename":
+    case "set annotations collection name": {
+      if (state.dataCollectionNameIsReadOnly) {
+        throw new Error("data collection name is read only");
+      }
       return {
         ...state,
         dataCollectionName: action.data
       };
+    }
 
     /* CATEGORY */
     case "annotation: activate add new label mode":
