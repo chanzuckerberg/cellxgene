@@ -84,7 +84,6 @@ class CategoryValue extends React.Component {
   };
 
   valueNameErrorMessage = () => {
-    const { editedLabelText } = this.state;
     const err = this.valueNameError();
     if (err === false) return null;
 
@@ -555,7 +554,9 @@ class CategoryValue extends React.Component {
                         data-testclass="handleDeleteValue"
                         data-testid={`handleDeleteValue-${metadataField}`}
                         onClick={this.handleDeleteValue}
-                        text={`Delete this label, and reassign all cells to type '${globals.unassignedCategoryLabel}'`}
+                        text={`Delete this label, and reassign all cells to type '${
+                          globals.unassignedCategoryLabel
+                        }'`}
                       />
                     ) : null}
                   </Menu>

@@ -36,6 +36,16 @@ class CXGDriver(metaclass=ABCMeta):
             "diffexp_may_be_slow": False
         }
 
+    @abstractmethod
+    def get_config_parameters(self, uid=None):
+        """
+            return a dict of properties that will be used to set the engine-specific
+            "parameters" info for client-side configuration.
+
+            See rest.py /config route for use
+        """
+        pass
+
     @property
     def features(self):
         features = {
@@ -61,7 +71,7 @@ class CXGDriver(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def annotation_to_fbs_matrix(self, axis, field=None):
+    def annotation_to_fbs_matrix(self, axis, field=None, uid=None):
         """
         Gets annotation value for each observation
         :param axis: string obs or var
@@ -71,7 +81,7 @@ class CXGDriver(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def annotation_put_fbs(self, axis, fbs):
+    def annotation_put_fbs(self, axis, fbs, uid=None):
         """
         Put/save FBS as user-defined labels
         """

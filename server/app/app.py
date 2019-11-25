@@ -1,4 +1,5 @@
 import os
+import datetime
 
 from flask import Flask
 from flask_caching import Cache
@@ -21,7 +22,10 @@ class Server:
         self.app.json_encoder = Float32JSONEncoder
         self.cache.init_app(self.app)
         Compress(self.app)
-        CORS(self.app)
+        CORS(self.app, supports_credentials=True)
+
+        # enable session data
+        self.app.permanent_session_lifetime = datetime.timedelta(days=50 * 365)
 
         # Config
         SECRET_KEY = os.environ.get("CXG_SECRET_KEY", default="SparkleAndShine")

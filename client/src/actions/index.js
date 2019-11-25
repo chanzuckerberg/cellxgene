@@ -38,7 +38,7 @@ const doInitialDataLoad = () =>
       /* only load names for var annotations, if possible*/
       const varIndexName = schema?.schema?.annotations?.var?.index;
       const varAnnotationsQuery = varIndexName
-        ? `?annotation-name=${varIndexName}`
+        ? `?annotation-name=${encodeURIComponent(varIndexName)}`
         : "";
       const varAnnotationsURL = `annotations/var${varAnnotationsQuery}`;
       const requestBinary = ["annotations/obs", varAnnotationsURL, "layout/obs"]
@@ -84,9 +84,7 @@ const regraph = () => (dispatch, getState) => {
 
 // Throws
 const dispatchExpressionErrors = (dispatch, res) => {
-  const msg = `Unexpected HTTP response while fetching expression data ${
-    res.status
-  }, ${res.statusText}`;
+  const msg = `Unexpected HTTP response while fetching expression data ${res.status}, ${res.statusText}`;
   dispatchNetworkErrorMessageToUser(msg);
   throw new Error(msg);
 };
@@ -119,7 +117,8 @@ async function _doRequestExpressionData(dispatch, getState, genes) {
         headers: new Headers({
           accept: "application/octet-stream",
           "Content-Type": "application/json"
-        })
+        }),
+        credentials: "include"
       }
     );
 
@@ -226,9 +225,7 @@ const dispatchDiffExpErrors = (dispatch, response) => {
       );
       break;
     default: {
-      const msg = `Unexpected differential expression HTTP response ${
-        response.status
-      }, ${response.statusText}`;
+      const msg = `Unexpected differential expression HTTP response ${response.status}, ${response.statusText}`;
       dispatchNetworkErrorMessageToUser(msg);
       dispatch({
         type: "request differential expression error",
@@ -277,7 +274,8 @@ const requestDifferentialExpression = (set1, set2, num_genes = 10) => async (
           count: num_genes,
           set1: { filter: { obs: { index: set1 } } },
           set2: { filter: { obs: { index: set2 } } }
-        })
+        }),
+        credentials: "include"
       }
     );
 
@@ -341,8 +339,9 @@ const resetInterface = () => (dispatch, getState) => {
 };
 
 const saveObsAnnotations = () => async (dispatch, getState) => {
-  const { universe } = getState();
+  const { universe, annotations } = getState();
   const { obsAnnotations, schema } = universe;
+  const { dataCollectionNameIsReadOnly, dataCollectionName } = annotations;
 
   dispatch({
     type: "writable obs annotations - save started"
@@ -354,14 +353,21 @@ const saveObsAnnotations = () => async (dispatch, getState) => {
   const df = obsAnnotations.subset(null, writableAnnotations);
   const matrix = MatrixFBS.encodeMatrixFBS(df);
   try {
+    const queryString =
+      !dataCollectionNameIsReadOnly && !!dataCollectionName
+        ? `?annotation-collection-name=${encodeURIComponent(
+            dataCollectionName
+          )}`
+        : "";
     const res = await fetch(
-      `${globals.API.prefix}${globals.API.version}annotations/obs`,
+      `${globals.API.prefix}${globals.API.version}annotations/obs${queryString}`,
       {
         method: "PUT",
         body: matrix,
         headers: new Headers({
           "Content-Type": "application/octet-stream"
-        })
+        }),
+        credentials: "include"
       }
     );
     if (res.ok) {

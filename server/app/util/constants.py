@@ -33,3 +33,6 @@ JSON_NaN_to_num_warning_msg = (
 REACTIVE_LIMIT = 1_000_000
 
 MAX_LAYOUTS = 30
+
+CXGUID = "cxguid"
+CXG_ANNO_COLLECTION = "cxg_anno_collection"
