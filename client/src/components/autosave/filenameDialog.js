@@ -12,6 +12,7 @@ import {
 
 @connect(state => ({
   universe: state.universe,
+  idhash: state.config?.parameters?.["annotations-user-data-idhash"] ?? null,
   annotations: state.annotations,
   obsAnnotations: state.universe.obsAnnotations,
   saveInProgress: state.autosave?.saveInProgress ?? false,
@@ -47,7 +48,7 @@ class FilenameDialog extends React.Component {
       err = "empty_string";
     }
 
-    /* add legal character check */
+    /* Todo Bruce add legal character check */
 
     return err;
   };
@@ -89,7 +90,7 @@ class FilenameDialog extends React.Component {
   };
 
   render() {
-    const { writableCategoriesEnabled, annotations } = this.props;
+    const { writableCategoriesEnabled, annotations, idhash } = this.props;
     const { filenameText } = this.state;
 
     return writableCategoriesEnabled &&
@@ -97,7 +98,7 @@ class FilenameDialog extends React.Component {
       !annotations.dataCollectionName ? (
       <Dialog
         icon="tag"
-        title="Filename"
+        title="Annotations Collection"
         isOpen={!annotations.dataCollectionName}
         onClose={this.dismissFilenameDialog}
       >
@@ -109,7 +110,7 @@ class FilenameDialog extends React.Component {
         >
           <div className={Classes.DIALOG_BODY}>
             <div style={{ marginBottom: 20 }}>
-              <p>Set a filename:</p>
+              <p>Name your collection of user generated annotations:</p>
               <InputGroup
                 autoFocus
                 value={filenameText}
@@ -129,10 +130,18 @@ class FilenameDialog extends React.Component {
                 {this.filenameErrorMessage(filenameText)}
               </p>
             </div>
+            <div>
+              <p>
+                You can find your collection at:{" "}
+                <code className="bp3-code">
+                  {filenameText}-{idhash}.csv
+                </code>
+              </p>
+            </div>
           </div>
           <div className={Classes.DIALOG_FOOTER}>
             <div className={Classes.DIALOG_FOOTER_ACTIONS}>
-              <Tooltip content="Cancel naming CSV">
+              <Tooltip content="Cancel naming collection">
                 <Button onClick={this.dismissFilenameDialog}>Cancel</Button>
               </Tooltip>
               <Button
@@ -141,7 +150,7 @@ class FilenameDialog extends React.Component {
                 intent="primary"
                 type="submit"
               >
-                Create CSV
+                Create annotations collection
               </Button>
             </div>
           </div>
