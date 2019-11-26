@@ -137,10 +137,13 @@ class FilenameDialog extends React.Component {
             </div>
             <div>
               <p>
-                Your annotations are stored in this file:{" "}
+                Your annotations are stored in this file:
                 <code className="bp3-code">
                   {filenameText}-{idhash}.csv
                 </code>
+              </p>
+              <p style={{ fontStyle: "italic" }}>
+                (We added a unique ID to your filename)
               </p>
             </div>
           </div>
