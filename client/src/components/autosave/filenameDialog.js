@@ -74,7 +74,7 @@ class FilenameDialog extends React.Component {
             color: Colors.ORANGE3
           }}
         >
-          {"Filename cannot be blank"}
+          {"Name cannot be blank"}
         </span>
       );
     } else if (err === "characters") {
@@ -115,7 +115,7 @@ class FilenameDialog extends React.Component {
         >
           <div className={Classes.DIALOG_BODY}>
             <div style={{ marginBottom: 20 }}>
-              <p>Name your collection of user generated annotations:</p>
+              <p>Name your annotations collection:</p>
               <InputGroup
                 autoFocus
                 value={filenameText}
@@ -137,7 +137,7 @@ class FilenameDialog extends React.Component {
             </div>
             <div>
               <p>
-                Your annotations are stored in this file name:{" "}
+                Your annotations are stored in this file:{" "}
                 <code className="bp3-code">
                   {filenameText}-{idhash}.csv
                 </code>
