@@ -1,7 +1,7 @@
 import errno
 import functools
 import logging
-from os import devnull
+from os import devnull, mkdir
 from os.path import splitext, basename, isdir
 import sys
 import warnings
@@ -298,8 +298,10 @@ def launch(
                 raise click.FileError(basename(experimental_annotations_file), hint="annotation file type must be .csv")
 
         if experimental_annotations_output_dir is not None and not isdir(experimental_annotations_output_dir):
-            raise click.ClickException('--experimental-annotations-output-dir must specify an existing directory. '
-                                       f'"{experimental_annotations_output_dir}" does not exist.')
+            try:
+                mkdir(experimental_annotations_output_dir)
+            except OSError:
+                raise click.ClickException("Unable to create directory specified by --experimental-annotations-output-dir")
 
     if about:
         def url_check(url):
