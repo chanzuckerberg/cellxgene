@@ -82,16 +82,16 @@ def common_args(func):
         show_default=True,
         multiple=False,
         metavar="<path>",
-        help="CSV file containing user annotations; will be overwritten.  Created if does not exist.",)
+        help="CSV file to initialize editing of existing annotations; will be altered in-place. "
+             "Incompatible with --annotations-output-dir.",)
     @click.option(
         "--experimental-annotations-output-dir",
         default=None,
         show_default=False,
         multiple=False,
         metavar="<directory path>",
-        help="Directory where annotation CSV files will be written (directory must exist). "
-             "Defaults to current directory.",
-    )
+        help="Directory of where to save output annotations; filename will be specified in the application. "
+             "Incompatible with --annotations-input-file.",)
     @click.option(
         "--backed",
         "-b",
