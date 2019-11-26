@@ -10,7 +10,7 @@ import {
 } from "@blueprintjs/core";
 
 @connect()
-class Occupancy extends React.Component {
+class Occupancy extends React.PureComponent {
   _WIDTH = 100;
 
   _HEIGHT = 11;

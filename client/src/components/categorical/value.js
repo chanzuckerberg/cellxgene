@@ -191,7 +191,8 @@ class CategoryValue extends React.Component {
     const worldChange = props.world !== nextProps.world;
     const colorAccessorChange = props.colorAccessor !== nextProps.colorAccessor;
     const annotationsChange = props.annotations !== nextProps.annotations;
-    const crossfilterChange = props.crossfilter !== nextProps.crossfilter;
+    const crossfilterChange =
+      props.isUserAnno && props.crossfilter !== nextProps.crossfilter;
     const editingLabel = state.editedLabelText !== nextState.editedLabelText;
 
     return (
@@ -554,9 +555,7 @@ class CategoryValue extends React.Component {
                         data-testclass="handleDeleteValue"
                         data-testid={`handleDeleteValue-${metadataField}`}
                         onClick={this.handleDeleteValue}
-                        text={`Delete this label, and reassign all cells to type '${
-                          globals.unassignedCategoryLabel
-                        }'`}
+                        text={`Delete this label, and reassign all cells to type '${globals.unassignedCategoryLabel}'`}
                       />
                     ) : null}
                   </Menu>
