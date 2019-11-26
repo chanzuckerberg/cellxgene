@@ -301,7 +301,8 @@ def launch(
             try:
                 mkdir(experimental_annotations_output_dir)
             except OSError:
-                raise click.ClickException("Unable to create directory specified by --experimental-annotations-output-dir")
+                raise click.ClickException("Unable to create directory specified by "
+                                           "--experimental-annotations-output-dir")
 
     if about:
         def url_check(url):
