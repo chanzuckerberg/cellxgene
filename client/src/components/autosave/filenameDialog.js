@@ -137,7 +137,7 @@ class FilenameDialog extends React.Component {
             </div>
             <div>
               <p>
-                You can find your collection at:{" "}
+                Your annotations are stored in this file name:{" "}
                 <code className="bp3-code">
                   {filenameText}-{idhash}.csv
                 </code>
