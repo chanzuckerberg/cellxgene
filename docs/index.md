@@ -7,23 +7,17 @@ layout: default
 
 Whether you need to visualize one thousand cells or one million, cellxgene helps you gain insight into your single-cell data.
 
-To install cellxgene you need Python 3.6+. We recommend [installing cellxgene into a conda or virtual environment.](/faq.html#how-do-i-create-a-python-environment-for-cellxgene)
+To install cellxgene you need Python 3.6+. We recommend [installing cellxgene into a conda or virtual environment.](install)
 
 Install the package.
 ``` bash
 pip install cellxgene
 ```
 
-Download an example [anndata](https://anndata.readthedocs.io/en/latest/) file
+Launch cellxgene with an example [anndata](https://anndata.readthedocs.io/en/latest/) file
 
 ``` bash
-curl -o tabula-muris.h5ad https://cellxgene-example-data.czi.technology/tabula-muris.h5ad.zip
-unzip tabula-muris.h5ad.zip
-```
-
-Launch cellxgene
-``` bash
-cellxgene launch tabula-muris.h5ad --open
+cellxgene launch https://cellxgene-example-data.czi.technology/pbmc3k.h5ad
 ```
 
 To explore more datasets already formatted for cellxgene, check out the [Demo data](demo-data) or
