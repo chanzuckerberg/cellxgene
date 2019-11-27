@@ -13,7 +13,7 @@ If your data is in `h5ad` file (from the [`anndata`](https://anndata.readthedocs
 - A unique identifier for every gene is available in an `anndata.var` field (you can specify which field to use with the `--var-names` option)  
 
 #### What about R objects from seurat / bioconductor!?  
-We hear you! We'd also love to be able to ingest these files directly. This isn't currently possible, but in the meantime, you can use one of [these handy adapters](https://satijalab.org/seurat/v3.0/conversion_vignette.html) to convert to `h5ad`.
+We hear you! We'd also love to be able to ingest these files directly. This isn't currently possible, but in the meantime, you can use [sceasy](https://bioconda.github.io/recipes/r-sceasy/README.html) ([docs](https://cellgeni.readthedocs.io/en/latest/visualisations.html)) to convert to `h5ad`. Seurat also has some [handy conversion tools](https://satijalab.org/seurat/v3.0/conversion_vignette.html) that you can try out.
 
 #### Can I use data hosted on the web somewhere?  
 Yes! You can launch from a URL instead of a filepath. The same data format requirements apply. Please see [here](launch) for more details.
