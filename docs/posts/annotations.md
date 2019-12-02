@@ -27,7 +27,7 @@ If you quit cellxgene and relaunch it with the same h5ad, we will check for this
 
 If you'd like to specify the complete file path for your annotations, you can do so by running:  
 ```
-cellxgene launch mydata.h5ad --experimental-annotations-file path/to/myfile.csv
+cellxgene launch mydata.h5ad --experimental-annotations --experimental-annotations-file path/to/myfile.csv
 ```
 
 If this file already exists and contains compatible annotations, these annotations will be loaded as editable categories that you can update directly. Compatible annotations are tabular, with category names as column headers; `anndata.obs.index` as the index; and categorical values (i.e., fewer unique values per column than specified in `--max-category-items`, default 1000).
@@ -44,7 +44,7 @@ As described in the [hosted](hosted) section, we do not officially support hoste
 
 To specify an output directory, run:  
 ```
-cellxgene launch mydata.h5ad --experimental-annotations-output-dir path/to/annotations-directory/
+cellxgene launch mydata.h5ad --experimental-annotations --experimental-annotations-output-dir path/to/annotations-directory/
 ```
 
 For each user, annotations will be saved as follows:  
