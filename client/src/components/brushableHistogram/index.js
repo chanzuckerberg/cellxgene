@@ -12,6 +12,7 @@ import memoize from "memoize-one";
 import * as globals from "../../globals";
 import actions from "../../actions";
 import { makeContinuousDimensionName } from "../../util/nameCreators";
+import { interpolateCool } from "d3-scale-chromatic";
 
 @connect((state, ownProps) => {
   const { isObs, isUserDefined, isDiffExp, field } = ownProps;
@@ -319,13 +320,14 @@ class HistogramBrush extends React.PureComponent {
     /* Remove everything */
     svg.selectAll("*").remove();
 
-    var yMax = d3.max(bins, function (d) { return d.length });
-    var yMin = d3.min(bins, function (d) { return d.length });
+    const yMax = d3.max(bins, function (d) { return d.length });
+    const yMin = d3.min(bins, function (d) { return d.length });
 
-    var colorScale = d3.scaleSequential(d3.interpolateViridis)
+    const colorScale = d3.scaleSequential(interpolateCool)
       .domain([yMin, yMax]);
 
-    var legendscale = d3.scaleLinear()
+    const histogramScale = d3
+      .scaleLinear()
       .range([yMin, yMax])
       .domain([
         colorScale.domain()[1],
@@ -343,7 +345,7 @@ class HistogramBrush extends React.PureComponent {
       .attr("y", d => y(d.length))
       .attr("width", d => Math.abs(x(d.x1) - x(d.x0) - 1))
       .attr("height", d => y(0) - y(d.length))
-      .style("fill", function (d) { return colorScale(legendscale.invert(d.length)) });
+      .style("fill", function (d) { return colorScale(histogramScale.invert(d.length)) });
 
     /* BRUSH */
     const brushX = d3
