@@ -446,15 +446,15 @@ class Graph extends React.PureComponent {
   };
 
   handleCanvasEvent = e => {
-    const { camera, projectionTF } = this.state;
+    const { camera, projectionTF, cameraChange } = this.state;
     if (e.type !== "wheel") e.preventDefault();
     if (camera.handleEvent(e, projectionTF)) {
       this.renderCanvas();
-      this.render();
+      this.setState({ cameraChange: cameraChange + 1 });
     }
   };
 
-  createToolSVG() {
+  createToolSVG = () => {
     /*
     Called from componentDidUpdate. Create the tool SVG, and return any
     state changes that should be passed to setState().
@@ -497,9 +497,9 @@ class Graph extends React.PureComponent {
     );
 
     return { toolSVG: newToolSVG, tool, container };
-  }
+  };
 
-  createCentroidSVG(viewportChange = false) {
+  createCentroidSVG = (viewportChange = false) => {
     /*
     Called from componentDidUpdate. Create the centroid SVG, and return any
     state changes that should be passed to setState().
@@ -527,12 +527,13 @@ class Graph extends React.PureComponent {
       return;
     }
 
-    const lower = 0.25;
-    const higher = 0.75;
-    const fontSize = "5px";
+    const lower = 0.0;
+    const higher = 1.0;
+    const fontSize = "0.5px";
 
-    d3.select(".transform-group")
+    d3.select("#model-transformation-group")
       .append("g")
+      .attr("id", "small")
       .attr("class", "centroid-label")
       .append("text")
       .style("font-size", fontSize)
@@ -540,15 +541,15 @@ class Graph extends React.PureComponent {
       .style("font-size", fontSize)
       .attr("x", lower)
       .attr("y", lower);
-    d3.select(".transform-group")
+    d3.select("#model-transformation-group")
       .append("g")
       .attr("class", "centroid-label")
       .append("text")
       .style("font-size", fontSize)
       .text("2")
-      .attr("x", lower)
-      .attr("y", higher);
-    d3.select(".transform-group")
+      .attr("x", higher)
+      .attr("y", lower);
+    d3.select("#model-transformation-group")
       .append("g")
       .attr("class", "centroid-label")
       .append("text")
@@ -556,7 +557,7 @@ class Graph extends React.PureComponent {
       .text("3")
       .attr("x", lower)
       .attr("y", higher);
-    d3.select(".transform-group")
+    d3.select("#model-transformation-group")
       .append("g")
       .attr("class", "centroid-label")
       .append("text")
@@ -564,6 +565,7 @@ class Graph extends React.PureComponent {
       .text("4")
       .attr("x", higher)
       .attr("y", higher);
+
     return;
 
     // Iterate over all the key-value pairs in labels
@@ -612,7 +614,19 @@ class Graph extends React.PureComponent {
     );
 
     return { centroidSVG: newCentroidSVG };
-  }
+  };
+
+  matrixToTransformString = m => {
+    /* 
+      Translates the gl-matrix mat3 to SVG matrix transform style
+
+          mat3         HTML Transform Function
+      [ a, b, 0       
+        c, d, 0,  =>  matrix(a, b, c, d, e, f) / matrix(sx, 0, 0, sy, tx, ty) / matrix(m[0] m[3] m[1] m[4] m[6] m[7])
+        e, f, 1 ]     
+    */
+    return `matrix(${m[0]} ${m[1]} ${m[3]} ${m[4]} ${m[6]} ${m[7]})`;
+  };
 
   brushToolUpdate(tool, container) {
     /*
@@ -911,18 +925,13 @@ class Graph extends React.PureComponent {
   });
 
   render() {
-    const {
-      responsive,
-      graphInteractionMode,
-      world,
-      layoutChoice
-    } = this.props;
+    const { responsive, graphInteractionMode } = this.props;
     const { modelTF, projectionTF, camera } = this.state;
 
     const cameraTF = camera?.view();
 
     if (cameraTF !== undefined) {
-      const v = vec2.fromValues(0.25, 0.25);
+      const v = vec2.fromValues(0.5, 0.5);
       console.log("before any transform:", v);
       vec2.transformMat3(v, v, modelTF);
       console.log("after model transform(", mat3.str(modelTF), "):", v);
@@ -946,14 +955,46 @@ class Graph extends React.PureComponent {
       );
     }
 
-    d3.select("#centroid-label").attr(
-      "transform",
-      `scale(1 -${responsive.height -
-        this
-          .graphPaddingTop}) translate(0 -1) scale(1 2) translate(0 1) scale(${(responsive.width -
-        this.graphPaddingRight) /
-        2} 1)  translate(1 0)`
-    );
+    const label = d3.select("#small");
+
+    if (label.size() > 0) {
+      console.log(d3.select("#thisisatempiddeletethislaterplease").node());
+      const position = d3
+        .select("#thisisatempiddeletethislaterplease")
+        .node()
+        .createSVGPoint();
+
+      position.x = 0.5;
+      position.y = 0.5;
+
+      const matrix = label.node().getCTM();
+
+      console.log("cooridates before transform:", position);
+      console.log("matrix", matrix);
+      console.log(
+        "coordinates after transform:",
+        position.matrixTransform(matrix)
+      );
+
+      console.log("************");
+
+      const vecCoordinates = vec2.fromValues(0.5, 0.5);
+      const transformedVecCoordinates = vec2.create();
+
+      const matTran = mat3.create();
+
+      mat3.multiply(matTran, projectionTF, cameraTF);
+      mat3.multiply(matTran, matTran, modelTF);
+
+      vec2.transformMat3(transformedVecCoordinates, vecCoordinates, matTran);
+
+      console.log("vec coordinates before transform:", vecCoordinates);
+      console.log("matTran:", this.matrixToTransformString(matTran));
+      console.log(
+        "vec coordinates after transform:",
+        transformedVecCoordinates
+      );
+    }
 
     return (
       <div id="graphWrapper">
@@ -967,6 +1008,7 @@ class Graph extends React.PureComponent {
         >
           <div id="graphAttachPoint">
             <svg
+              id="thisisatempiddeletethislaterplease"
               data-testid="layout-overlay"
               className={styles.graphSVG}
               width={responsive.width - this.graphPaddingRight}
@@ -976,39 +1018,38 @@ class Graph extends React.PureComponent {
                 graphInteractionMode === "select" ? "auto" : "none"
               }
             >
-              {/* 
-                [ a, b, 0       
-                  c, d, 0,  =>  matrix(0, 3, 1, 4, 2, 5) => matrix(sx, 0, 0, sy, tx, ty)
-                  e, f, 1 ]     matrix(a, b, c, d, e, f)
-              */
-
-              cameraTF !== undefined && (
+              {cameraTF !== undefined && (
+                /* <g id="canvas-transformation-group">
+                  <g id="projection-transformation-group">
+                    <g id="camera-transformation-group">
+                      <g id="model-transformation-group" />
+                    </g>
+                  </g>
+                </g> */
                 <g
-                  transform={`scale(1 -${responsive.height -
-                    this
-                      .graphPaddingTop}) translate(0 -1) scale(1 2) translate(0 1) scale(${(responsive.width -
-                    this.graphPaddingRight) /
-                    2} 1)  translate(1 0) 
-`}
+                  id="canvas-transformation-group-x"
+                  transform={`scale(0.5, 1) scale(${responsive.width -
+                    this.graphPaddingRight}, 1) scale(.5, 1)`}
                 >
                   <g
-                    transform={`matrix(${projectionTF[0]} ${projectionTF[3]} ${
-                      projectionTF[1]
-                    } ${projectionTF[4]} ${projectionTF[6]} ${
-                      projectionTF[7]
-                    })`}
+                    id="canvas-transformation-group-y"
+                    transform={`scale(1, ${-(
+                      responsive.height - this.graphPaddingTop
+                    )}) translate(0, -1) scale(1, .5) translate(0, 1)`}
                   >
                     <g
-                      transform={`matrix(${cameraTF[0]} ${cameraTF[3]} ${
-                        cameraTF[1]
-                      } ${cameraTF[4]} ${cameraTF[6]} ${cameraTF[7]})`}
+                      id="projection-transformation-group"
+                      transform={this.matrixToTransformString(projectionTF)}
                     >
                       <g
-                        className="transform-group"
-                        transform={`matrix(${modelTF[0]} ${modelTF[3]} ${
-                          modelTF[1]
-                        } ${modelTF[4]} ${modelTF[6]} ${modelTF[7]})`}
-                      />
+                        id="camera-transformation-group"
+                        transform={this.matrixToTransformString(cameraTF)}
+                      >
+                        <g
+                          id="model-transformation-group"
+                          transform={this.matrixToTransformString(modelTF)}
+                        />
+                      </g>
                     </g>
                   </g>
                 </g>
