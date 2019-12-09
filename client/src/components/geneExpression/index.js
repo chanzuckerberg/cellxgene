@@ -4,8 +4,8 @@
 import React from "react";
 import _ from "lodash";
 import fuzzysort from "fuzzysort";
-
 import { connect } from "react-redux";
+import { Suggest } from "@blueprintjs/select";
 import {
   MenuItem,
   Button,
@@ -13,7 +13,6 @@ import {
   InputGroup,
   ControlGroup,
 } from "@blueprintjs/core";
-import { Suggest } from "@blueprintjs/select";
 import HistogramBrush from "../brushableHistogram";
 import * as globals from "../../globals";
 import actions from "../../actions";
@@ -21,8 +20,10 @@ import {
   postUserErrorToast,
   keepAroundErrorToast,
 } from "../framework/toasters";
+import GeneSet from "./geneSet";
 
 import { memoize } from "../../util/dataframe/util";
+import testGeneSets from "./test_data";
 
 const renderGene = (fuzzySortResult, { handleClick, modifiers }) => {
   if (!modifiers.matchesPredicate) {
@@ -141,6 +142,18 @@ class GeneExpression extends React.Component {
 
     this.setState({ bulkAdd: "" });
     return undefined;
+  };
+
+  renderTestGeneSets = () => {
+    const sets = [];
+
+    _.forEach(testGeneSets, (setGenes, setName) => {
+      sets.push(
+        <GeneSet key={setName} setGenes={setGenes} setName={setName} />
+      );
+    });
+
+    return sets;
   };
 
   placeholderGeneNames() {
@@ -369,6 +382,7 @@ class GeneExpression extends React.Component {
               })
             : null}
         </div>
+        <div>{this.renderTestGeneSets()}</div>
       </div>
     );
   }
