@@ -312,7 +312,7 @@ class Graph extends React.PureComponent {
           )} scale(1 2) scale(1 ${1 /
             -(responsive.height - this.graphPaddingTop)})
            scale(2 1) scale(${1 /
-             (responsive.width - this.graphPaddingRight)} 1) scale(2 1)`
+             (responsive.width - this.graphPaddingRight)} 1)`
         );
       });
     }
@@ -571,7 +571,7 @@ class Graph extends React.PureComponent {
 
     const lower = 0.0;
     const higher = 1.0;
-    const fontSize = "10px";
+    const fontSize = "20px";
     const container = "#model-transformation-group";
 
     const centroids = [];
@@ -585,7 +585,6 @@ class Graph extends React.PureComponent {
         .attr("transform", `translate(${lower} ${higher})`)
         .append("text")
         .attr("text-anchor", "middle")
-
         .style("font-size", fontSize)
         .text("kittens")
     );
@@ -594,11 +593,9 @@ class Graph extends React.PureComponent {
         .select(container)
         .append("g")
         .attr("transform", `translate(${higher} ${higher})`)
-
         .attr("class", "centroid-label")
         .append("text")
         .attr("text-anchor", "middle")
-
         .style("font-size", fontSize)
         .text("2")
     );
@@ -607,11 +604,9 @@ class Graph extends React.PureComponent {
         .select(container)
         .append("g")
         .attr("transform", `translate(${lower} ${lower})`)
-
         .attr("class", "centroid-label")
         .append("text")
         .attr("text-anchor", "middle")
-
         .style("font-size", fontSize)
         .text("3")
     );
@@ -1031,7 +1026,7 @@ class Graph extends React.PureComponent {
                 </g> */
                 <g
                   id="canvas-transformation-group-x"
-                  transform={`scale(0.5 1) scale(${responsive.width -
+                  transform={`scale(${responsive.width -
                     this.graphPaddingRight} 1) scale(.5 1) translate(1 0)`}
                 >
                   <g
