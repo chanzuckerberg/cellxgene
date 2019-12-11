@@ -252,8 +252,19 @@ class Graph extends React.PureComponent {
       pointDilation,
       colorAccessor
     } = this.props;
-    const { reglRender, regl, toolSVG, centroidSVG, cameraUpdate } = this.state;
+    const {
+      reglRender,
+      regl,
+      toolSVG,
+      centroidSVG,
+      cameraUpdate,
+      camera,
+      modelTF,
+      projectionTF
+    } = this.state;
     let stateChanges = {};
+
+    const cameraTF = camera.view();
 
     if (reglRender) {
       if (
@@ -273,6 +284,37 @@ class Graph extends React.PureComponent {
         this.restartReglLoop();
         this.reglRenderState = "rendering";
       }
+    }
+
+    if (cameraTF && centroidSVG?.length > 1) {
+      // smallCentroid.attr(
+      //   "transform",
+      //   `${this.reverseMatrixScaleTransformString(
+      //     modelTF
+      //   )} ${this.reverseMatrixScaleTransformString(
+      //     cameraTF
+      //   )} ${this.reverseMatrixScaleTransformString(
+      //     projectionTF
+      //   )} scale(1 ${-1 /
+      //     (responsive.height - this.graphPaddingTop)}) scale(${1 /
+      //     (responsive.width - this.graphPaddingRight / 2)} 1) scale(1 2) `
+      // );
+
+      centroidSVG.forEach(centroid => {
+        centroid.attr(
+          "transform",
+          `${this.reverseMatrixScaleTransformString(
+            modelTF
+          )} ${this.reverseMatrixScaleTransformString(
+            cameraTF
+          )} ${this.reverseMatrixScaleTransformString(
+            projectionTF
+          )} scale(1 2) scale(1 ${1 /
+            -(responsive.height - this.graphPaddingTop)})
+           scale(2 1) scale(${1 /
+             (responsive.width - this.graphPaddingRight)} 1) scale(2 1)`
+        );
+      });
     }
 
     if (regl && world) {
@@ -377,10 +419,10 @@ class Graph extends React.PureComponent {
         ...this.createCentroidSVG()
       };
     } else if (
-      centroidLabels !== prevProps.centroidLabels ||
-      (responsive.height &&
-        responsive.width &&
-        !(centroidSVG || stateChanges.centroidSVG))
+      // centroidLabels !== prevProps.centroidLabels ||
+      responsive.height &&
+      responsive.width &&
+      !(centroidSVG || stateChanges.centroidSVG)
     ) {
       // First time for centroid or label change
       stateChanges = { ...stateChanges, ...this.createCentroidSVG(true) };
@@ -524,47 +566,70 @@ class Graph extends React.PureComponent {
     graphInteractionMode === "zoom" */
     ) {
       // Return without redrawing the svg layer
-      return;
+      return null;
     }
 
     const lower = 0.0;
     const higher = 1.0;
-    const fontSize = "0.5px";
+    const fontSize = "10px";
+    const container = "#model-transformation-group";
 
-    d3.select("#model-transformation-group")
-      .append("g")
-      .attr("id", "small")
-      .attr("class", "centroid-label")
-      .append("text")
-      .style("font-size", fontSize)
-      .text("1")
-      .style("font-size", fontSize)
-      .attr("x", lower)
-      .attr("y", lower);
-    d3.select("#model-transformation-group")
-      .append("g")
-      .attr("class", "centroid-label")
-      .append("text")
-      .style("font-size", fontSize)
-      .text("2")
-      .attr("x", higher)
-      .attr("y", lower);
-    d3.select("#model-transformation-group")
-      .append("g")
-      .attr("class", "centroid-label")
-      .append("text")
-      .style("font-size", fontSize)
-      .text("3")
-      .attr("x", lower)
-      .attr("y", higher);
-    d3.select("#model-transformation-group")
-      .append("g")
-      .attr("class", "centroid-label")
-      .append("text")
-      .style("font-size", fontSize)
-      .text("4")
-      .attr("x", higher)
-      .attr("y", higher);
+    const centroids = [];
+
+    centroids.push(
+      d3
+        .select(container)
+        .append("g")
+        .attr("id", "small")
+        .attr("class", "centroid-label")
+        .attr("transform", `translate(${lower} ${higher})`)
+        .append("text")
+        .attr("text-anchor", "middle")
+
+        .style("font-size", fontSize)
+        .text("kittens")
+    );
+    centroids.push(
+      d3
+        .select(container)
+        .append("g")
+        .attr("transform", `translate(${higher} ${higher})`)
+
+        .attr("class", "centroid-label")
+        .append("text")
+        .attr("text-anchor", "middle")
+
+        .style("font-size", fontSize)
+        .text("2")
+    );
+    centroids.push(
+      d3
+        .select(container)
+        .append("g")
+        .attr("transform", `translate(${lower} ${lower})`)
+
+        .attr("class", "centroid-label")
+        .append("text")
+        .attr("text-anchor", "middle")
+
+        .style("font-size", fontSize)
+        .text("3")
+    );
+    centroids.push(
+      d3
+        .select(container)
+        .append("g")
+        .attr("transform", `translate(${higher} ${lower})`)
+
+        .attr("class", "centroid-label")
+        .append("text")
+        .attr("text-anchor", "middle")
+
+        .style("font-size", fontSize)
+        .text("4")
+    );
+
+    return { centroidSVG: centroids };
 
     return;
 
@@ -626,6 +691,10 @@ class Graph extends React.PureComponent {
         e, f, 1 ]     
     */
     return `matrix(${m[0]} ${m[1]} ${m[3]} ${m[4]} ${m[6]} ${m[7]})`;
+  };
+
+  reverseMatrixScaleTransformString = m => {
+    return `matrix(${1 / m[0]} 0 0 ${1 / m[4]} 0 0)`;
   };
 
   brushToolUpdate(tool, container) {
@@ -930,72 +999,6 @@ class Graph extends React.PureComponent {
 
     const cameraTF = camera?.view();
 
-    if (cameraTF !== undefined) {
-      const v = vec2.fromValues(0.5, 0.5);
-      console.log("before any transform:", v);
-      vec2.transformMat3(v, v, modelTF);
-      console.log("after model transform(", mat3.str(modelTF), "):", v);
-      vec2.transformMat3(v, v, cameraTF);
-      console.log("after camera transform(", mat3.str(cameraTF), "):", v);
-      vec2.transformMat3(v, v, projectionTF);
-      console.log(
-        "after projection transform(",
-        mat3.str(projectionTF),
-        "):",
-        v
-      );
-      console.log(
-        "after ?? transform:",
-        Math.round(
-          ((v[0] + 1) * (responsive.width - this.graphPaddingRight)) / 2
-        ),
-        Math.round(
-          -((v[1] + 1) / 2 - 1) * (responsive.height - this.graphPaddingTop)
-        )
-      );
-    }
-
-    const label = d3.select("#small");
-
-    if (label.size() > 0) {
-      console.log(d3.select("#thisisatempiddeletethislaterplease").node());
-      const position = d3
-        .select("#thisisatempiddeletethislaterplease")
-        .node()
-        .createSVGPoint();
-
-      position.x = 0.5;
-      position.y = 0.5;
-
-      const matrix = label.node().getCTM();
-
-      console.log("cooridates before transform:", position);
-      console.log("matrix", matrix);
-      console.log(
-        "coordinates after transform:",
-        position.matrixTransform(matrix)
-      );
-
-      console.log("************");
-
-      const vecCoordinates = vec2.fromValues(0.5, 0.5);
-      const transformedVecCoordinates = vec2.create();
-
-      const matTran = mat3.create();
-
-      mat3.multiply(matTran, projectionTF, cameraTF);
-      mat3.multiply(matTran, matTran, modelTF);
-
-      vec2.transformMat3(transformedVecCoordinates, vecCoordinates, matTran);
-
-      console.log("vec coordinates before transform:", vecCoordinates);
-      console.log("matTran:", this.matrixToTransformString(matTran));
-      console.log(
-        "vec coordinates after transform:",
-        transformedVecCoordinates
-      );
-    }
-
     return (
       <div id="graphWrapper">
         <div
@@ -1028,14 +1031,14 @@ class Graph extends React.PureComponent {
                 </g> */
                 <g
                   id="canvas-transformation-group-x"
-                  transform={`scale(0.5, 1) scale(${responsive.width -
-                    this.graphPaddingRight}, 1) scale(.5, 1)`}
+                  transform={`scale(0.5 1) scale(${responsive.width -
+                    this.graphPaddingRight} 1) scale(.5 1) translate(1 0)`}
                 >
                   <g
                     id="canvas-transformation-group-y"
-                    transform={`scale(1, ${-(
+                    transform={`scale(1 ${-(
                       responsive.height - this.graphPaddingTop
-                    )}) translate(0, -1) scale(1, .5) translate(0, 1)`}
+                    )}) translate(0 -1) scale(1 .5) translate(0 1)`}
                   >
                     <g
                       id="projection-transformation-group"
