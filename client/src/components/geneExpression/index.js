@@ -101,6 +101,7 @@ class GeneExpression extends React.Component {
     */
     if (bulkAdd !== "") {
       const genes = _.pull(_.uniq(bulkAdd.split(/[ ,]+/)), "");
+      console.log("geneExpression genes", genes);
       if (genes.length === 0) {
         return keepAroundErrorToast("Must enter a gene name.");
       }
