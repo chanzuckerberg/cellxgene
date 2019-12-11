@@ -8,18 +8,9 @@ export default (
   handleMouseEnter,
   handleMouseExit
 ) => {
-  const containerWidth = responsive.width - graphPaddingRight;
-
-  const svg = d3
-    .select("#graphAttachPoint")
-    .select("svg")
-    .attr("width", containerWidth)
-    .attr("height", responsive.height)
-    .attr("class", `${styles.graphSVG}`)
-    .style("background", "rgba(255, 255, 255, 0.625");
-  //  TODO: Create own styles, ask Colin for an explanation on the css
-  // For now I'm going to put centroid z-index at 998 and lasso on 999
-
+  const centroids = [];
+  const fontSize = "20px";
+  const container = "#model-transformation-group";
   // Iterate over the categoryValue -> coordinates, Map
   const iter = labels.entries();
   let pair = iter.next().value;
@@ -29,25 +20,25 @@ export default (
     key = pair[0];
     value = pair[1];
     // Create the label using the screen calculated coordinates
-    const label = svg
-      .select(".transform-group")
-      .append("g")
-      .attr("class", "centroid-label")
-      .attr("transform", `translate(${value[2]}, ${value[3]})`)
-      .datum({ key })
-      .on("mouseover", handleMouseEnter)
-      .on("mouseout", handleMouseExit);
-    // And the key as the text
-    label
-      .append("text")
-      .attr("text-anchor", "middle")
-      .attr("id", `svg${key.replace(/[^\w]/gi, "")}-label`)
-      .text(key.length > 20 ? `${key.substr(0, 20)}...` : key)
-      .style("font-family", "Roboto Condensed")
-      .style("font-size", "12px")
-      .style("fill", "black");
+    centroids.push(
+      d3
+        .select(container)
+        .append("g")
+        .attr("class", "centroid-label")
+        .attr("transform", `translate(${value[0]}, ${value[1]})`)
+        .datum({ key })
+        .on("mouseover", handleMouseEnter)
+        .on("mouseout", handleMouseExit)
+        .append("text") // And the key as the text
+        .attr("text-anchor", "middle")
+        .attr("id", `svg${key.replace(/[^\w]/gi, "")}-label`)
+        .text(key.length > 20 ? `${key.substr(0, 20)}...` : key)
+        .style("font-family", "Roboto Condensed")
+        .style("font-size", fontSize)
+        .style("fill", "black")
+    );
     pair = iter.next().value;
   }
 
-  return svg;
+  return centroids;
 };
