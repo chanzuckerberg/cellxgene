@@ -19,42 +19,44 @@ import resetCache from "./resetCache";
 import centroidLabel from "./centroidLabel";
 import annotations from "./annotations";
 import autosave from "./autosave";
+import ontology from "./ontology";
 
 import undoableConfig from "./undoableConfig";
 
 const Reducer = undoable(
-    cascadeReducers([
-        ["config", config],
-        ["universe", universe],
-        ["world", world],
-        ["annotations", annotations],
-        ["layoutChoice", layoutChoice],
-        ["categoricalSelection", categoricalSelection],
-        ["continuousSelection", continuousSelection],
-        ["graphSelection", graphSelection],
-        ["crossfilter", crossfilter],
-        ["colors", colors],
-        ["controls", controls],
-        ["differential", differential],
-        ["responsive", responsive],
-        ["centroidLabel", centroidLabel],
-        ["autosave", autosave],
-        ["resetCache", resetCache]
-    ]),
-    [
-        "universe",
-        "world",
-        "categoricalSelection",
-        "continuousSelection",
-        "graphSelection",
-        "crossfilter",
-        "colors",
-        "controls",
-        "differential",
-        "layoutChoice",
-        "annotations"
-    ],
-    undoableConfig
+  cascadeReducers([
+    ["config", config],
+    ["universe", universe],
+    ["world", world],
+    ["ontology", ontology],
+    ["annotations", annotations],
+    ["layoutChoice", layoutChoice],
+    ["categoricalSelection", categoricalSelection],
+    ["continuousSelection", continuousSelection],
+    ["graphSelection", graphSelection],
+    ["crossfilter", crossfilter],
+    ["colors", colors],
+    ["controls", controls],
+    ["differential", differential],
+    ["responsive", responsive],
+    ["centroidLabel", centroidLabel],
+    ["autosave", autosave],
+    ["resetCache", resetCache]
+  ]),
+  [
+    "universe",
+    "world",
+    "categoricalSelection",
+    "continuousSelection",
+    "graphSelection",
+    "crossfilter",
+    "colors",
+    "controls",
+    "differential",
+    "layoutChoice",
+    "annotations"
+  ],
+  undoableConfig
 );
 
 const store = createStore(Reducer, applyMiddleware(thunk));
