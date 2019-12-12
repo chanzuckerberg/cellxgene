@@ -8,7 +8,7 @@ import Category from "./category";
 import { AnnotationsHelpers } from "../../util/stateManager";
 import AnnoDialog from "./annoDialog";
 import AnnoInputs from "./annoInputs";
-import InputValidation from "./annoValidation";
+import AnnoSelect from "./annoSelect";
 
 @connect(state => ({
   categoricalSelection: state.categoricalSelection,
@@ -126,16 +126,15 @@ class Categories extends React.Component {
         }}
       >
         <AnnoDialog
-          isCreatingNewCategory
           isActive={createAnnoModeActive}
           handleUserTyping={this.handleNewCategoryText}
           text={newCategoryText}
-          allCategoryNames={allCategoryNames}
           categoryToDuplicate={categoryToDuplicate}
+          validationError={this.categoryNameError(newCategoryText)}
+          errorMessage={this.categoryNameErrorMessage(newCategoryText)}
         >
           <AnnoInputs useSuggest />
-          <InputValidation />
-          <CategoryToDuplicate />
+          <AnnoSelect allCategoryNames={allCategoryNames} />
         </AnnoDialog>
         {/* READ ONLY CATEGORICAL FIELDS */}
         {/* this is duplicative but flat, could be abstracted */}

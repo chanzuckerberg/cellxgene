@@ -1,35 +1,13 @@
 import React from "react";
-import _ from "lodash";
 import { connect } from "react-redux";
 import {
   Button,
   Tooltip,
   InputGroup,
-  Menu,
   Dialog,
-  MenuItem,
-  Popover,
   Classes,
-  Icon,
-  Position,
-  PopoverInteractionKind,
   Colors
 } from "@blueprintjs/core";
-import { Suggest, Select } from "@blueprintjs/select";
-import fuzzysort from "fuzzysort";
-import actions from "../../actions";
-
-import * as globals from "../../globals";
-import Value from "./value";
-import sortedCategoryValues from "./util";
-import { AnnotationsHelpers } from "../../util/stateManager";
-
-const filterOntology = (query, genes) =>
-  /* fires on load, once, and then for each character typed into the input */
-  fuzzysort.go(query, genes, {
-    limit: 5,
-    threshold: -10000 // don't return bad results
-  });
 
 @connect(state => ({
   colorAccessor: state.colors.colorAccessor,
@@ -50,8 +28,9 @@ class AnnoDialog extends React.Component {
       isActive,
       handleUserTyping,
       newCategoryText,
-      isCreatingNewCategory,
-      allCategoryNames
+      errorMessage,
+      validationError,
+      annoSelect
     } = this.props;
     return (
       <Dialog
@@ -71,9 +50,7 @@ class AnnoDialog extends React.Component {
               <InputGroup
                 autoFocus
                 value={newCategoryText}
-                intent={
-                  this.categoryNameError(newCategoryText) ? "warning" : "none"
-                }
+                intent={validationError ? "warning" : "none"}
                 onChange={e => handleUserTyping(e)}
                 leftIcon="tag"
               />
@@ -87,15 +64,10 @@ class AnnoDialog extends React.Component {
                   color: Colors.ORANGE3
                 }}
               >
-                {this.categoryNameErrorMessage(newCategoryText)}
+                {errorMessage}
               </p>
             </div>
-
-            <p>
-              Optionally duplicate all labels & cell assignments from existing
-              category into new category:
-            </p>
-            {this.children}
+            {annoSelect || null}
           </div>
           <div className={Classes.DIALOG_FOOTER}>
             <div className={Classes.DIALOG_FOOTER_ACTIONS}>
