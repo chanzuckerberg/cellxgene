@@ -17,17 +17,27 @@ import {
   PopoverInteractionKind,
   Colors
 } from "@blueprintjs/core";
+import { Suggest } from "@blueprintjs/select";
 
 import * as globals from "../../globals";
 import Value from "./value";
 import sortedCategoryValues from "./util";
 import { AnnotationsHelpers } from "../../util/stateManager";
 
+const filterOntology = (query, genes) =>
+  /* fires on load, once, and then for each character typed into the input */
+  fuzzysort.go(query, genes, {
+    limit: 5,
+    threshold: -10000 // don't return bad results
+  });
+
 @connect(state => ({
   colorAccessor: state.colors.colorAccessor,
   categoricalSelection: state.categoricalSelection,
   annotations: state.annotations,
-  universe: state.universe
+  universe: state.universe,
+  ontology: state.ontology,
+  ontologyLoading: state.ontology?.loading
 }))
 class Category extends React.Component {
   constructor(props) {
@@ -318,7 +328,9 @@ class Category extends React.Component {
       colorAccessor,
       categoricalSelection,
       isUserAnno,
-      annotations
+      annotations,
+      ontology,
+      ontologyLoading
     } = this.props;
     const { isTruncated } = categoricalSelection[metadataField];
 
@@ -472,6 +484,7 @@ class Category extends React.Component {
                           }
                           leftIcon="tag"
                         />
+
                         <p
                           style={{
                             marginTop: 7,
