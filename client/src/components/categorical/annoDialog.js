@@ -1,13 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
-import {
-  Button,
-  Tooltip,
-  InputGroup,
-  Dialog,
-  Classes,
-  Colors
-} from "@blueprintjs/core";
+import { Button, Tooltip, Dialog, Classes, Colors } from "@blueprintjs/core";
 
 @connect(state => ({
   colorAccessor: state.colors.colorAccessor,
@@ -30,7 +23,8 @@ class AnnoDialog extends React.Component {
       newCategoryText,
       errorMessage,
       validationError,
-      annoSelect
+      annoSelect,
+      annoInput
     } = this.props;
     return (
       <Dialog
@@ -47,20 +41,11 @@ class AnnoDialog extends React.Component {
           <div className={Classes.DIALOG_BODY}>
             <div style={{ marginBottom: 20 }}>
               <p>New, unique category name:</p>
-              <InputGroup
-                autoFocus
-                value={newCategoryText}
-                intent={validationError ? "warning" : "none"}
-                onChange={e => handleUserTyping(e)}
-                leftIcon="tag"
-              />
-
+              {annoInput || null}
               <p
                 style={{
                   marginTop: 7,
-                  visibility: this.categoryNameError(newCategoryText)
-                    ? "visible"
-                    : "hidden",
+                  visibility: validationError ? "visible" : "hidden",
                   color: Colors.ORANGE3
                 }}
               >
@@ -76,9 +61,7 @@ class AnnoDialog extends React.Component {
               </Tooltip>
               <Button
                 onClick={this.handleCreateUserAnno}
-                disabled={
-                  !newCategoryText || this.categoryNameError(newCategoryText)
-                }
+                disabled={!newCategoryText || validationError}
                 intent="primary"
                 type="submit"
               >

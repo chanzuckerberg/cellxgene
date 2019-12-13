@@ -132,10 +132,10 @@ class Categories extends React.Component {
           categoryToDuplicate={categoryToDuplicate}
           validationError={this.categoryNameError(newCategoryText)}
           errorMessage={this.categoryNameErrorMessage(newCategoryText)}
-        >
-          <AnnoInputs useSuggest />
-          <AnnoSelect allCategoryNames={allCategoryNames} />
-        </AnnoDialog>
+          annoInput={<AnnoInputs useSuggest />}
+          annoSelect={<AnnoSelect allCategoryNames={allCategoryNames} />}
+        />
+
         {/* READ ONLY CATEGORICAL FIELDS */}
         {/* this is duplicative but flat, could be abstracted */}
         {_.map(
