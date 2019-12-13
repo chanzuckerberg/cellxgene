@@ -21,7 +21,8 @@ class Categories extends React.Component {
     this.state = {
       createAnnoModeActive: false,
       newCategoryText: "",
-      categoryToDuplicate: null
+      categoryToDuplicate: null,
+      activeSuggestItem: null
     };
   }
 
@@ -103,6 +104,15 @@ class Categories extends React.Component {
     this.setState({ newCategoryText: e.target.value });
   };
 
+  handleChoice = e => {
+    /* Blueprint Suggest format */
+    this.setState({ newCategoryText: e.target });
+  };
+
+  handleSuggestActiveItemChange = item => {
+    this.setState({ activeSuggestItem: item });
+  };
+
   render() {
     const {
       createAnnoModeActive,
@@ -127,12 +137,21 @@ class Categories extends React.Component {
       >
         <AnnoDialog
           isActive={createAnnoModeActive}
-          handleUserTyping={this.handleNewCategoryText}
           text={newCategoryText}
           categoryToDuplicate={categoryToDuplicate}
           validationError={this.categoryNameError(newCategoryText)}
           errorMessage={this.categoryNameErrorMessage(newCategoryText)}
-          annoInput={<AnnoInputs useSuggest />}
+          handleSubmit={this.handleCreateUserAnno}
+          handleCancel={this.handleDisableAnnoMode}
+          annoInput={
+            <AnnoInputs
+              useSuggest
+              text={newCategoryText}
+              handleItemChange={this.handleSuggestActiveItemChange}
+              handleChoice={this.handleChoice}
+              handleTextChange={this.handleNewCategoryText}
+            />
+          }
           annoSelect={<AnnoSelect allCategoryNames={allCategoryNames} />}
         />
 

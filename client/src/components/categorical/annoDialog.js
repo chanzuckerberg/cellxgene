@@ -19,19 +19,20 @@ class AnnoDialog extends React.Component {
   render() {
     const {
       isActive,
-      handleUserTyping,
-      newCategoryText,
+      text,
       errorMessage,
       validationError,
       annoSelect,
-      annoInput
+      annoInput,
+      handleCancel,
+      handleSubmit
     } = this.props;
     return (
       <Dialog
         icon="tag"
         title="Create new category"
         isOpen={isActive}
-        onClose={this.handleDisableAnnoMode}
+        onClose={handleCancel}
       >
         <form
           onSubmit={e => {
@@ -57,11 +58,11 @@ class AnnoDialog extends React.Component {
           <div className={Classes.DIALOG_FOOTER}>
             <div className={Classes.DIALOG_FOOTER_ACTIONS}>
               <Tooltip content="Close this dialog without creating a category.">
-                <Button onClick={this.handleDisableAnnoMode}>Cancel</Button>
+                <Button onClick={handleCancel}>Cancel</Button>
               </Tooltip>
               <Button
-                onClick={this.handleCreateUserAnno}
-                disabled={!newCategoryText || validationError}
+                onClick={handleSubmit}
+                disabled={!text || validationError}
                 intent="primary"
                 type="submit"
               >

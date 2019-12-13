@@ -4,10 +4,10 @@ import { InputGroup, MenuItem } from "@blueprintjs/core";
 import { Suggest } from "@blueprintjs/select";
 import fuzzysort from "fuzzysort";
 
-const filterOntology = (query, genes) =>
+const filterOntology = (query, ontology) =>
   /* fires on load, once, and then for each character typed into the input */
-  fuzzysort.go(query, genes, {
-    limit: 5,
+  fuzzysort.go(query, ontology, {
+    limit: 100,
     threshold: -10000 // don't return bad results
   });
 
@@ -36,43 +36,48 @@ const renderListItem = (fuzzySortResult, { handleClick, modifiers }) => {
   );
 };
 
-const AnnoSuggest = (world, varIndexName, ontologyLoading) => {
+const AnnoSuggest = props => {
+  const {
+    ontologyLoading,
+    handleItemChange,
+    handleChoice,
+    ontology,
+    text
+  } = props;
   return (
     <Suggest
+      fill
       resetOnSelect
       closeOnSelect
       resetOnClose
       itemDisabled={ontologyLoading ? () => true : () => false}
-      noResults={<MenuItem disabled text="No matching genes." />}
-      onItemSelect={g => {
-        /* this happens on 'enter' */
-        console.log("annoInput Suggest sees an item selected...", g);
-      }}
-      initialContent={<MenuItem disabled text="Enter a gene…" />}
+      noResults={<MenuItem disabled text="No matching ontology identifier" />}
+      onItemSelect={handleChoice}
+      initialContent={
+        <MenuItem disabled text="Enter an ontology identifier…" />
+      }
       inputProps={{ "data-testid": "gene-search" }}
       inputValueRenderer={() => {
-        return "";
+        console.log("text", text);
+        return text || "";
       }}
       itemListPredicate={filterOntology}
-      onActiveItemChange={item => this.setState({ activeItem: item })}
+      onActiveItemChange={handleItemChange}
       itemRenderer={renderListItem.bind(this)}
-      items={
-        world && world.varAnnotations
-          ? world.varAnnotations.col(varIndexName).asArray()
-          : ["No genes"]
-      }
+      items={!ontologyLoading && ontology ? ontology : ["No ontology loaded"]}
       popoverProps={{ minimal: true }}
     />
   );
 };
 
-const VanillaInput = () => {
+const VanillaInput = props => {
+  const { text, handleTextChange } = props;
   return (
     <InputGroup
       autoFocus
-      value={newCategoryText}
-      intent={this.categoryNameError(newCategoryText) ? "warning" : "none"}
-      onChange={e => handleUserTyping(e)}
+      value={text}
+      intent="none"
+      onChange={e => handleTextChange(e)}
       leftIcon="tag"
     />
   );
@@ -84,7 +89,7 @@ const VanillaInput = () => {
   annotations: state.annotations,
   universe: state.universe,
   world: state.world,
-  ontology: state.ontology,
+  ontology: state.ontology?.data,
   ontologyLoading: state.ontology?.loading
 }))
 class AnnoInputs extends React.Component {
@@ -96,23 +101,27 @@ class AnnoInputs extends React.Component {
   render() {
     const {
       useSuggest,
-      handleUserTyping,
-      newCategoryText,
+      handleTextChange,
+      text,
       ontologyLoading,
-      world
+      world,
+      handleChoice,
+      handleItemChange,
+      ontology
     } = this.props;
-    const varIndexName = world.schema.annotations.var.index;
-
     return (
       <div>
         {useSuggest ? (
           <AnnoSuggest
             world={world}
-            varIndexName={varIndexName}
+            text={text}
+            handleChoice={handleChoice}
             ontologyLoading={ontologyLoading}
+            handleItemChange={handleItemChange}
+            ontology={ontology}
           />
         ) : (
-          <VanillaInput />
+          <VanillaInput text={text} handleTextChange={handleTextChange} />
         )}
       </div>
     );
