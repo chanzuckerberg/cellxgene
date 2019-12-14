@@ -8,28 +8,21 @@ import {
   Tooltip,
   InputGroup,
   Menu,
-  Dialog,
   MenuItem,
   Popover,
-  Classes,
   Icon,
   Position,
   PopoverInteractionKind,
   Colors
 } from "@blueprintjs/core";
-import { Suggest } from "@blueprintjs/select";
+import AnnoDialog from "./annoDialog";
+import AnnoInputs from "./annoInputs";
+import AnnoSelect from "./annoSelect";
 
 import * as globals from "../../globals";
 import Value from "./value";
 import sortedCategoryValues from "./util";
 import { AnnotationsHelpers } from "../../util/stateManager";
-
-const filterOntology = (query, genes) =>
-  /* fires on load, once, and then for each character typed into the input */
-  fuzzysort.go(query, genes, {
-    limit: 5,
-    threshold: -10000 // don't return bad results
-  });
 
 @connect(state => ({
   colorAccessor: state.colors.colorAccessor,
@@ -271,6 +264,15 @@ class Category extends React.Component {
     return false;
   };
 
+  /* leaky to have both of these in multiple components */
+  handleChoice = e => {
+    this.setState({ newLabelText: e.target });
+  };
+
+  handleTextChange = e => {
+    this.setState({ newLabelText: e.target.value });
+  };
+
   toggleAll() {
     const { dispatch, metadataField } = this.props;
     dispatch({
@@ -328,9 +330,7 @@ class Category extends React.Component {
       colorAccessor,
       categoricalSelection,
       isUserAnno,
-      annotations,
-      ontology,
-      ontologyLoading
+      annotations
     } = this.props;
     const { isTruncated } = categoricalSelection[metadataField];
 
@@ -339,7 +339,6 @@ class Category extends React.Component {
       ...cat.categoryValueIndices
     ]);
     const optTuplesAsKey = _.map(optTuples, t => t[0]).join(""); // animation
-    const allCategoryNames = _.keys(categoricalSelection);
 
     return (
       <div
@@ -453,72 +452,30 @@ class Category extends React.Component {
           <div>
             {isUserAnno ? (
               <>
-                <Dialog
-                  icon="tag"
-                  title="Add new label"
-                  isOpen={
+                <AnnoDialog
+                  isActive={
                     annotations.isAddingNewLabel &&
                     annotations.categoryAddingNewLabel === metadataField
                   }
-                  onClose={this.disableAddNewLabelMode}
-                >
-                  <form
-                    onSubmit={e => {
-                      e.preventDefault();
-                      this.handleAddNewLabelToCategory();
-                    }}
-                  >
-                    <div className={Classes.DIALOG_BODY}>
-                      <div style={{ marginBottom: 20 }}>
-                        <p>New, unique label name:</p>
-                        <InputGroup
-                          autoFocus
-                          value={newLabelText}
-                          intent={
-                            this.labelNameError(newLabelText)
-                              ? "warning"
-                              : "none"
-                          }
-                          onChange={e =>
-                            this.setState({ newLabelText: e.target.value })
-                          }
-                          leftIcon="tag"
-                        />
-
-                        <p
-                          style={{
-                            marginTop: 7,
-                            visibility: this.labelNameError(newLabelText)
-                              ? "visible"
-                              : "hidden",
-                            color: Colors.ORANGE3
-                          }}
-                        >
-                          {this.labelNameErrorMessage(newLabelText)}
-                        </p>
-                      </div>
-                    </div>
-                    <div className={Classes.DIALOG_FOOTER}>
-                      <div className={Classes.DIALOG_FOOTER_ACTIONS}>
-                        <Tooltip content="Close this dialog without adding a label.">
-                          <Button onClick={this.disableAddNewLabelMode}>
-                            Cancel
-                          </Button>
-                        </Tooltip>
-                        <Button
-                          disabled={
-                            !newLabelText || this.labelNameError(newLabelText)
-                          }
-                          onClick={this.handleAddNewLabelToCategory}
-                          intent="primary"
-                          type="submit"
-                        >
-                          Add new label to category
-                        </Button>
-                      </div>
-                    </div>
-                  </form>
-                </Dialog>
+                  title="Add new label"
+                  instruction="New, unique label name:"
+                  cancelTooltipContent="Close this dialog without adding a label."
+                  primaryButtonText="Add new label to category"
+                  text={newLabelText}
+                  validationError={this.labelNameError(newLabelText)}
+                  errorMessage={this.labelNameErrorMessage(newLabelText)}
+                  handleSubmit={this.handleAddNewLabelToCategory}
+                  handleCancel={this.disableAddNewLabelMode}
+                  annoInput={
+                    <AnnoInputs
+                      useSuggest
+                      text={newLabelText}
+                      handleItemChange={this.handleSuggestActiveItemChange}
+                      handleChoice={this.handleChoice}
+                      handleTextChange={this.handleNewCategoryText}
+                    />
+                  }
+                />
                 <Popover
                   interactionKind={PopoverInteractionKind.HOVER}
                   boundary="window"

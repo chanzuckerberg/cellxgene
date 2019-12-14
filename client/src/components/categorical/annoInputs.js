@@ -47,6 +47,7 @@ const AnnoSuggest = props => {
   return (
     <Suggest
       fill
+      autoFocus
       resetOnSelect
       closeOnSelect
       resetOnClose
@@ -58,7 +59,6 @@ const AnnoSuggest = props => {
       }
       inputProps={{ "data-testid": "gene-search" }}
       inputValueRenderer={() => {
-        console.log("text", text);
         return text || "";
       }}
       itemListPredicate={filterOntology}

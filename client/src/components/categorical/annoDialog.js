@@ -20,20 +20,19 @@ class AnnoDialog extends React.Component {
     const {
       isActive,
       text,
+      title,
+      instruction,
+      cancelTooltipContent,
       errorMessage,
       validationError,
       annoSelect,
       annoInput,
       handleCancel,
-      handleSubmit
+      handleSubmit,
+      primaryButtonText
     } = this.props;
     return (
-      <Dialog
-        icon="tag"
-        title="Create new category"
-        isOpen={isActive}
-        onClose={handleCancel}
-      >
+      <Dialog icon="tag" title={title} isOpen={isActive} onClose={handleCancel}>
         <form
           onSubmit={e => {
             e.preventDefault();
@@ -41,7 +40,7 @@ class AnnoDialog extends React.Component {
         >
           <div className={Classes.DIALOG_BODY}>
             <div style={{ marginBottom: 20 }}>
-              <p>New, unique category name:</p>
+              <p>{instruction}</p>
               {annoInput || null}
               <p
                 style={{
@@ -57,7 +56,7 @@ class AnnoDialog extends React.Component {
           </div>
           <div className={Classes.DIALOG_FOOTER}>
             <div className={Classes.DIALOG_FOOTER_ACTIONS}>
-              <Tooltip content="Close this dialog without creating a category.">
+              <Tooltip content={cancelTooltipContent}>
                 <Button onClick={handleCancel}>Cancel</Button>
               </Tooltip>
               <Button
@@ -66,7 +65,7 @@ class AnnoDialog extends React.Component {
                 intent="primary"
                 type="submit"
               >
-                Create new category
+                {primaryButtonText}
               </Button>
             </div>
           </div>

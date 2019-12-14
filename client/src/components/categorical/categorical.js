@@ -137,6 +137,10 @@ class Categories extends React.Component {
       >
         <AnnoDialog
           isActive={createAnnoModeActive}
+          title="Create new category"
+          instruction="New, unique category name:"
+          cancelTooltipContent="Close this dialog without creating a category."
+          primaryButtonText="Create new category"
           text={newCategoryText}
           categoryToDuplicate={categoryToDuplicate}
           validationError={this.categoryNameError(newCategoryText)}
@@ -145,7 +149,6 @@ class Categories extends React.Component {
           handleCancel={this.handleDisableAnnoMode}
           annoInput={
             <AnnoInputs
-              useSuggest
               text={newCategoryText}
               handleItemChange={this.handleSuggestActiveItemChange}
               handleChoice={this.handleChoice}
