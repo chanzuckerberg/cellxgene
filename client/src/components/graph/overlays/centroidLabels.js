@@ -21,16 +21,6 @@ export default class CentroidLabels extends PureComponent {
           className="centroid-label"
           transform={`translate(${value[0]}, ${value[1]})`}
           key={key}
-          onMouseEnter={e => {
-            console.log(e);
-            console.log("HELLO");
-          }}
-          onMouseOut={mouseExit}
-          style={{
-            pointerEvents: "all",
-            zIndex: 99
-          }}
-          pointerEvents="all"
         >
           <text
             transform={inverseScale}
@@ -39,16 +29,14 @@ export default class CentroidLabels extends PureComponent {
             style={{
               fontFamily: "Roboto Condensed",
               fontSize,
-              fill: "black",
-              pointerEvents: "all",
-              zIndex: 99
+              fill: "black"
             }}
             onMouseEnter={e => {
               console.log(e);
               console.log("HELLO");
             }}
             onMouseOut={mouseExit}
-            pointerEvents="all"
+            pointerEvents="visiblePainted"
           >
             {key.length > 20 ? `${key.substr(0, 20)}...` : key}
           </text>
