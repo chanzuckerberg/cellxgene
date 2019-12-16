@@ -19,7 +19,7 @@ export default (
   graphPaddingRight,
   graphInteractionMode
 ) => {
-  const svg = d3.select("#graphAttachPoint").select("svg");
+  const svg = d3.select("#graphAttachPoint").select("#lasso-layer");
 
   if (selectionToolType === "brush") {
     const brush = d3

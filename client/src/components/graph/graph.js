@@ -827,17 +827,14 @@ class Graph extends React.PureComponent {
           }}
         >
           <div id="graphAttachPoint">
-            <svg
-              data-testid="layout-overlay"
-              className={styles.graphSVG}
-              width={responsive.width - this.graphPaddingRight}
-              height={responsive.height}
-              style={{ zIndex: 999 }}
-              pointerEvents={
-                graphInteractionMode === "select" ? "auto" : "none"
-              }
-            >
-              {cameraTF !== undefined && (
+            {cameraTF !== undefined && (
+              <svg
+                className={styles.graphSVG}
+                width={responsive.width - this.graphPaddingRight}
+                height={responsive.height}
+                pointerEvents="none"
+                style={{ zIndex: 99 }}
+              >
                 <g
                   id="canvas-transformation-group-x"
                   transform={`scale(${responsive.width -
@@ -882,8 +879,19 @@ class Graph extends React.PureComponent {
                     </g>
                   </g>
                 </g>
-              )}
-            </svg>
+              </svg>
+            )}
+            <svg
+              id="lasso-layer"
+              data-testid="layout-overlay"
+              className={styles.graphSVG}
+              width={responsive.width - this.graphPaddingRight}
+              height={responsive.height}
+              pointerEvents={
+                graphInteractionMode === "select" ? "auto" : "none"
+              }
+              style={{ zIndex: 89 }}
+            />
           </div>
           <div style={{ padding: 0, margin: 0 }}>
             <canvas
