@@ -802,17 +802,15 @@ class Graph extends React.PureComponent {
       dispatch({
         type: "category value mouse hover start",
         metadataField: colorAccessor,
-        categoryField: d.key
+        categoryField: e.target.getAttribute("data-label")
       });
     };
 
     const handleMouseExit = e => {
-      console.log(e);
-
       dispatch({
         type: "category value mouse hover end",
         metadataField: colorAccessor,
-        categoryField: d.key
+        categoryField: e.target.getAttribute("data-label")
       });
     };
 

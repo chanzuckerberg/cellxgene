@@ -18,23 +18,21 @@ export default class CentroidLabels extends PureComponent {
       value = pair[1];
       labelSVGS.push(
         <g
+          key={key}
           className="centroid-label"
           transform={`translate(${value[0]}, ${value[1]})`}
-          key={key}
         >
           <text
             transform={inverseScale}
             textAnchor="middle"
+            data-label={key}
             id={`svg${key.replace(/[^\w]/gi, "")}-label`}
             style={{
               fontFamily: "Roboto Condensed",
               fontSize,
               fill: "black"
             }}
-            onMouseEnter={e => {
-              console.log(e);
-              console.log("HELLO");
-            }}
+            onMouseEnter={mouseEnter}
             onMouseOut={mouseExit}
             pointerEvents="visiblePainted"
           >
