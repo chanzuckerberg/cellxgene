@@ -3,9 +3,13 @@ import React, { PureComponent } from "react";
 
 export default class CentroidLabels extends PureComponent {
   render() {
-    const fontSize = "20px";
-
-    const { labels, inverseScale, mouseEnter, mouseExit } = this.props;
+    const {
+      labels,
+      inverseScale,
+      mouseEnter,
+      mouseExit,
+      dilatedValue
+    } = this.props;
 
     const iter = labels.entries();
     let pair = iter.next().value;
@@ -13,9 +17,17 @@ export default class CentroidLabels extends PureComponent {
     let key;
 
     const labelSVGS = [];
+    let fontSize = "15px";
+    let fontWeight = null;
     while (pair) {
       key = pair[0];
       value = pair[1];
+      fontSize = "15px";
+      fontWeight = null;
+      if (key === dilatedValue) {
+        fontSize = "18px";
+        fontWeight = "800";
+      }
       labelSVGS.push(
         <g
           key={key}
@@ -30,6 +42,7 @@ export default class CentroidLabels extends PureComponent {
             style={{
               fontFamily: "Roboto Condensed",
               fontSize,
+              fontWeight,
               fill: "black"
             }}
             onMouseEnter={mouseEnter}

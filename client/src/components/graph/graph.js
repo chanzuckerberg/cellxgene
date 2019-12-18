@@ -792,7 +792,8 @@ class Graph extends React.PureComponent {
       graphInteractionMode,
       centroidLabels,
       colorAccessor,
-      dispatch
+      dispatch,
+      pointDilation
     } = this.props;
     const { modelTF, projectionTF, camera } = this.state;
 
@@ -814,6 +815,19 @@ class Graph extends React.PureComponent {
       });
     };
 
+    const inverseScaleTransform =
+      cameraTF !== undefined
+        ? `${this.reverseMatrixScaleTransformString(
+            modelTF
+          )} ${this.reverseMatrixScaleTransformString(
+            cameraTF
+          )} ${this.reverseMatrixScaleTransformString(
+            projectionTF
+          )} scale(1 2) scale(1 ${1 /
+            -(responsive.height - this.graphPaddingTop)}) scale(2 1) scale(${1 /
+            (responsive.width - this.graphPaddingRight)} 1)`
+        : undefined;
+
     return (
       <div id="graphWrapper">
         <div
@@ -825,7 +839,7 @@ class Graph extends React.PureComponent {
           }}
         >
           <div id="graphAttachPoint">
-            {cameraTF !== undefined && (
+            {inverseScaleTransform && (
               <svg
                 className={styles.graphSVG}
                 width={responsive.width - this.graphPaddingRight}
@@ -860,17 +874,8 @@ class Graph extends React.PureComponent {
                             labels={centroidLabels.labels}
                             mouseEnter={handleMouseEnter}
                             mouseExit={handleMouseExit}
-                            inverseScale={`${this.reverseMatrixScaleTransformString(
-                              modelTF
-                            )} ${this.reverseMatrixScaleTransformString(
-                              cameraTF
-                            )} ${this.reverseMatrixScaleTransformString(
-                              projectionTF
-                            )} scale(1 2) scale(1 ${1 /
-                              -(
-                                responsive.height - this.graphPaddingTop
-                              )}) scale(2 1) scale(${1 /
-                              (responsive.width - this.graphPaddingRight)} 1)`}
+                            inverseScale={inverseScaleTransform}
+                            dilatedValue={pointDilation.categoryField}
                           />
                         </g>
                       </g>

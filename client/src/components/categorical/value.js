@@ -24,6 +24,7 @@ import { AnnotationsHelpers } from "../../util/stateManager";
   annotations: state.annotations,
   colorScale: state.colors.scale,
   colorAccessor: state.colors.colorAccessor,
+  pointDilation: state.pointDilation,
   schema: state.world?.schema,
   world: state.world,
   crossfilter: state.crossfilter
@@ -194,6 +195,7 @@ class CategoryValue extends React.Component {
     const crossfilterChange =
       props.isUserAnno && props.crossfilter !== nextProps.crossfilter;
     const editingLabel = state.editedLabelText !== nextState.editedLabelText;
+    const dilationChange = props.pointDilation !== nextProps.pointDilation;
 
     return (
       valueSelectionChange ||
@@ -201,7 +203,8 @@ class CategoryValue extends React.Component {
       colorAccessorChange ||
       annotationsChange ||
       crossfilterChange ||
-      editingLabel
+      editingLabel ||
+      dilationChange
     );
   };
 
@@ -288,7 +291,8 @@ class CategoryValue extends React.Component {
       annotations,
       // flippedProps is potentially brittle, their docs want {...flippedProps} on our div,
       // our lint doesn't like jsx spread, we are version pinned to prevent api change on their part
-      flippedProps
+      flippedProps,
+      pointDilation
     } = this.props;
 
     const { editedLabelText } = this.state;
@@ -341,7 +345,12 @@ class CategoryValue extends React.Component {
         data-flip-config={flippedProps["data-flip-config"]}
         data-flip-id={flippedProps["data-flip-id"]}
         data-portal-key={flippedProps["data-portal-key"]}
-        className={styles.value}
+        className={`${styles.value}${
+          pointDilation.metadataField === metadataField &&
+          pointDilation.categoryField === displayString
+            ? ` ${styles.hover}`
+            : ""
+        }`}
         data-testclass="categorical-row"
         style={{
           padding: "4px 7px",

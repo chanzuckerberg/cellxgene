@@ -1,3 +1,4 @@
+:local(.hover),
 :local(.value):hover {
   background: rgba(167, 182, 194, 0.3);
 }
