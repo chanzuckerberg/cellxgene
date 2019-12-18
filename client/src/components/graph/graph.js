@@ -12,8 +12,7 @@ import _camera from "../../util/camera";
 import _drawPoints from "./drawPointsRegl";
 import { isTypedArray } from "../../util/typeHelpers";
 import styles from "./graph.css";
-
-import CentroidLabels from "./overlays/centroidLabels";
+import GraphOverlayLayer from "./overlays/graphOverlayLayer";
 
 /*
 Simple 2D transforms control all point painting.  There are three:
@@ -262,6 +261,18 @@ class Graph extends React.PureComponent {
 
     const cameraTF = camera.view();
 
+    // CHECKING RERENDERS DELETE BEFORE MERGE
+    Object.entries(this.props).forEach(
+      ([key, val]) =>
+        prevProps[key] !== val && console.log(`GRAPH Prop '${key}' changed`)
+    );
+    if (this.state) {
+      Object.entries(this.state).forEach(
+        ([key, val]) =>
+          prevState[key] !== val && console.log(`GRAPH State '${key}' changed`)
+      );
+    }
+
     if (reglRender) {
       if (
         // If it IS RENDERING and it is NOT IN ZOOM mode, stop rendering.
@@ -421,11 +432,10 @@ class Graph extends React.PureComponent {
   }
 
   handleCanvasEvent = e => {
-    const { camera, projectionTF, cameraChange } = this.state;
+    const { camera, projectionTF } = this.state;
     if (e.type !== "wheel") e.preventDefault();
     if (camera.handleEvent(e, projectionTF)) {
       this.renderCanvas();
-      this.setState({ cameraChange: cameraChange + 1 });
     }
   };
 
@@ -472,22 +482,6 @@ class Graph extends React.PureComponent {
     );
 
     return { toolSVG: newToolSVG, tool, container };
-  };
-
-  matrixToTransformString = m => {
-    /* 
-      Translates the gl-matrix mat3 to SVG matrix transform style
-
-          mat3         HTML Transform Function
-      [ a, b, 0       
-        c, d, 0,  =>  matrix(a, b, c, d, e, f) / matrix(sx, 0, 0, sy, tx, ty) / matrix(m[0] m[3] m[1] m[4] m[6] m[7])
-        e, f, 1 ]     
-    */
-    return `matrix(${m[0]} ${m[1]} ${m[3]} ${m[4]} ${m[6]} ${m[7]})`;
-  };
-
-  reverseMatrixScaleTransformString = m => {
-    return `matrix(${1 / m[0]} 0 0 ${1 / m[4]} 0 0)`;
   };
 
   brushToolUpdate(tool, container) {
@@ -787,46 +781,10 @@ class Graph extends React.PureComponent {
   });
 
   render() {
-    const {
-      responsive,
-      graphInteractionMode,
-      centroidLabels,
-      colorAccessor,
-      dispatch,
-      pointDilation
-    } = this.props;
+    const { responsive, graphInteractionMode } = this.props;
     const { modelTF, projectionTF, camera } = this.state;
 
     const cameraTF = camera?.view();
-
-    const handleMouseEnter = e => {
-      dispatch({
-        type: "category value mouse hover start",
-        metadataField: colorAccessor,
-        categoryField: e.target.getAttribute("data-label")
-      });
-    };
-
-    const handleMouseExit = e => {
-      dispatch({
-        type: "category value mouse hover end",
-        metadataField: colorAccessor,
-        categoryField: e.target.getAttribute("data-label")
-      });
-    };
-
-    const inverseScaleTransform =
-      cameraTF !== undefined
-        ? `${this.reverseMatrixScaleTransformString(
-            modelTF
-          )} ${this.reverseMatrixScaleTransformString(
-            cameraTF
-          )} ${this.reverseMatrixScaleTransformString(
-            projectionTF
-          )} scale(1 2) scale(1 ${1 /
-            -(responsive.height - this.graphPaddingTop)}) scale(2 1) scale(${1 /
-            (responsive.width - this.graphPaddingRight)} 1)`
-        : undefined;
 
     return (
       <div id="graphWrapper">
@@ -839,56 +797,19 @@ class Graph extends React.PureComponent {
           }}
         >
           <div id="graphAttachPoint">
-            {inverseScaleTransform && (
-              <svg
-                className={styles.graphSVG}
-                width={responsive.width - this.graphPaddingRight}
-                height={responsive.height}
-                pointerEvents="none"
-                style={{ zIndex: 99 }}
-              >
-                <g
-                  id="canvas-transformation-group-x"
-                  transform={`scale(${responsive.width -
-                    this.graphPaddingRight} 1) scale(.5 1) translate(1 0)`}
-                >
-                  <g
-                    id="canvas-transformation-group-y"
-                    transform={`scale(1 ${-(
-                      responsive.height - this.graphPaddingTop
-                    )}) translate(0 -1) scale(1 .5) translate(0 1)`}
-                  >
-                    <g
-                      id="projection-transformation-group"
-                      transform={this.matrixToTransformString(projectionTF)}
-                    >
-                      <g
-                        id="camera-transformation-group"
-                        transform={this.matrixToTransformString(cameraTF)}
-                      >
-                        <g
-                          id="model-transformation-group"
-                          transform={this.matrixToTransformString(modelTF)}
-                        >
-                          <CentroidLabels
-                            labels={centroidLabels.labels}
-                            mouseEnter={handleMouseEnter}
-                            mouseExit={handleMouseExit}
-                            inverseScale={inverseScaleTransform}
-                            dilatedValue={pointDilation.categoryField}
-                          />
-                        </g>
-                      </g>
-                    </g>
-                  </g>
-                </g>
-              </svg>
-            )}
+            <GraphOverlayLayer
+              cameraTF={cameraTF}
+              modelTF={modelTF}
+              projectionTF={projectionTF}
+              graphPaddingRightLeft={this.graphPaddingRightLeft}
+              graphPaddingTop={this.graphPaddingTop}
+            />
+
             <svg
               id="lasso-layer"
               data-testid="layout-overlay"
               className={styles.graphSVG}
-              width={responsive.width - this.graphPaddingRight}
+              width={responsive.width - this.graphPaddingRightLeft}
               height={responsive.height}
               pointerEvents={
                 graphInteractionMode === "select" ? "auto" : "none"

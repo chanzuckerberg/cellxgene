@@ -1,0 +1,136 @@
+import React, { PureComponent } from "react";
+import { connect } from "react-redux";
+
+import CentroidLabels from "./centroidLabels";
+import styles from "../graph.css";
+
+export default
+@connect(state => ({
+  responsive: state.responsive,
+  centroidLabels: state.centroidLabels,
+  colorAccessor: state.colors.colorAccessor,
+  pointDilation: state.pointDilation
+}))
+class GraphOverlayLayer extends PureComponent {
+  // CHECKING RERENDERS DELETE BEFORE MERGE
+  componentDidUpdate(prevProps, prevState) {
+    Object.entries(this.props).forEach(
+      ([key, val]) =>
+        prevProps[key] !== val && console.log(`OVERLAY Prop '${key}' changed`)
+    );
+    if (this.state) {
+      Object.entries(this.state).forEach(
+        ([key, val]) =>
+          prevState[key] !== val &&
+          console.log(`OVERLAY State '${key}' changed`)
+      );
+    }
+  }
+
+  matrixToTransformString = m => {
+    /* 
+      Translates the gl-matrix mat3 to SVG matrix transform style
+
+          mat3         HTML Transform Function
+      [ a, b, 0       
+        c, d, 0,  =>  matrix(a, b, c, d, e, f) / matrix(sx, 0, 0, sy, tx, ty) / matrix(m[0] m[3] m[1] m[4] m[6] m[7])
+        e, f, 1 ]     
+    */
+    return `matrix(${m[0]} ${m[1]} ${m[3]} ${m[4]} ${m[6]} ${m[7]})`;
+  };
+
+  reverseMatrixScaleTransformString = m => {
+    return `matrix(${1 / m[0]} 0 0 ${1 / m[4]} 0 0)`;
+  };
+
+  render() {
+    const {
+      dispatch,
+      colorAccessor,
+      cameraTF,
+      modelTF,
+      projectionTF,
+      responsive,
+      centroidLabels,
+      pointDilation,
+      graphPaddingRightLeft,
+      graphPaddingTop
+    } = this.props;
+    const handleMouseEnter = e => {
+      dispatch({
+        type: "category value mouse hover start",
+        metadataField: colorAccessor,
+        categoryField: e.target.getAttribute("data-label")
+      });
+    };
+
+    const handleMouseExit = e => {
+      dispatch({
+        type: "category value mouse hover end",
+        metadataField: colorAccessor,
+        categoryField: e.target.getAttribute("data-label")
+      });
+    };
+
+    const inverseScaleTransform =
+      cameraTF !== undefined
+        ? `${this.reverseMatrixScaleTransformString(
+            modelTF
+          )} ${this.reverseMatrixScaleTransformString(
+            cameraTF
+          )} ${this.reverseMatrixScaleTransformString(
+            projectionTF
+          )} scale(1 2) scale(1 ${1 /
+            -(responsive.height - graphPaddingTop)}) scale(2 1) scale(${1 /
+            (responsive.width - graphPaddingRightLeft)} 1)`
+        : undefined;
+    if (inverseScaleTransform) {
+      return (
+        <svg
+          className={styles.graphSVG}
+          width={responsive.width - graphPaddingRightLeft}
+          height={responsive.height}
+          pointerEvents="none"
+          style={{ zIndex: 99 }}
+        >
+          <g
+            id="canvas-transformation-group-x"
+            transform={`scale(${responsive.width -
+              graphPaddingRightLeft} 1) scale(.5 1) translate(1 0)`}
+          >
+            <g
+              id="canvas-transformation-group-y"
+              transform={`scale(1 ${-(
+                responsive.height - graphPaddingTop
+              )}) translate(0 -1) scale(1 .5) translate(0 1)`}
+            >
+              <g
+                id="projection-transformation-group"
+                transform={this.matrixToTransformString(projectionTF)}
+              >
+                <g
+                  id="camera-transformation-group"
+                  transform={this.matrixToTransformString(cameraTF)}
+                >
+                  <g
+                    id="model-transformation-group"
+                    transform={this.matrixToTransformString(modelTF)}
+                  >
+                    <CentroidLabels
+                      labels={centroidLabels.labels}
+                      mouseEnter={handleMouseEnter}
+                      mouseExit={handleMouseExit}
+                      inverseScale={inverseScaleTransform}
+                      dilatedValue={pointDilation.categoryField}
+                    />
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </svg>
+      );
+    }
+    return null;
+  }
+}
