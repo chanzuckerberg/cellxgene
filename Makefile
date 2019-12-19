@@ -121,7 +121,7 @@ release-directly-to-prod: dev-env pydist twine-prod
 
 .PHONY: dev-env
 dev-env:
-	cd client && make install
+	cd client && $(MAKE) install
 	pip install -r server/requirements-dev.txt
 
 .PHONY: gui-env
