@@ -1,23 +1,16 @@
+.PHONY: clean
+clean:
+	rm -rf node_modules
+
 .PHONY: install
 install:
 	npm install client
 
 .PHONY: build
-build: install
+build:
 	npm run build
 
-.PHONY: fmt
-fmt:
-	npm run fmt
+# pass remaining commands through to npm run
+%:
+	npm run $(*)
 
-.PHONY: clean
-clean:
-	rm -rf node_modules
-
-.PHONY: unit-test
-unit-test:
-	npm run unit-test
-
-.PHONY: smoke-test
-smoke-test:
-	npm run smoke-test
