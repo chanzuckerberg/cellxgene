@@ -2,6 +2,7 @@
 
 # namespace: NetEncoding
 
+
 class TypedArray(object):
     NONE = 0
     Float32Array = 1
@@ -9,4 +10,3 @@ class TypedArray(object):
     Uint32Array = 3
     Float64Array = 4
     JSONEncodedArray = 5
-

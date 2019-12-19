@@ -32,8 +32,8 @@ def _mean_var_n(X):
             v = sumsq / (n - 1)
 
     if fp_err_occurred:
-        mean[np.isfinite(mean) == False] = 0    # noqa: E712
-        v[np.isfinite(v) == False] = 0          # noqa: E712
+        mean[np.isfinite(mean) == False] = 0  # noqa: E712
+        v[np.isfinite(v) == False] = 0  # noqa: E712
     return mean, v, n
 
 
@@ -76,7 +76,7 @@ def diffexp_ttest(adata, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
 
     # degrees of freedom for Welch's t-test
     with np.errstate(divide="ignore", invalid="ignore"):
-        dof = sum_vn ** 2 / (vnA ** 2 / (nA - 1) + vnB ** 2 / (nB - 1))
+        dof = sum_vn**2 / (vnA**2 / (nA - 1) + vnB**2 / (nB - 1))
     dof[np.isnan(dof)] = 1
 
     # Welch's t-test score calculation
@@ -93,13 +93,15 @@ def diffexp_ttest(adata, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
     logfoldchanges = np.log2(np.abs((meanA + 1e-9) / (meanB + 1e-9)))
 
     # find all with lfc > cutoff
-    lfc_above_cutoff_idx = np.nonzero(np.abs(logfoldchanges) > diffexp_lfc_cutoff)[0]
+    lfc_above_cutoff_idx = np.nonzero(
+        np.abs(logfoldchanges) > diffexp_lfc_cutoff)[0]
     stats_to_sort = np.abs(tscores)
 
     # derive sort order
     if lfc_above_cutoff_idx.shape[0] > top_n:
         # partition top N
-        rel_t_partition = np.argpartition(stats_to_sort[lfc_above_cutoff_idx], -top_n)[-top_n:]
+        rel_t_partition = np.argpartition(stats_to_sort[lfc_above_cutoff_idx],
+                                          -top_n)[-top_n:]
         t_partition = lfc_above_cutoff_idx[rel_t_partition]
         # sort the top N partition
         rel_sort_order = np.argsort(stats_to_sort[t_partition])[::-1]
@@ -117,5 +119,8 @@ def diffexp_ttest(adata, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
     pvals_adj_top_n = pvals_adj[sort_order]
 
     # varIndex, logfoldchange, pval, pval_adj
-    result = [[sort_order[i], logfoldchanges_top_n[i], pvals_top_n[i], pvals_adj_top_n[i]] for i in range(top_n)]
+    result = [[
+        sort_order[i], logfoldchanges_top_n[i], pvals_top_n[i],
+        pvals_adj_top_n[i]
+    ] for i in range(top_n)]
     return result

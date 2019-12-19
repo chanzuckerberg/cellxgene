@@ -1,4 +1,3 @@
-
 """
 Code to decode, for testing purposes, the flatbuffer encoded blobs.
 This code will need to be updated if fbs/matrix.fbs changes.
@@ -18,18 +17,23 @@ import server.app.util.fbs.NetEncoding.JSONEncodedArray as JSONEncodedArray
 
 def decode_typed_array(tarr):
     type_map = {
-        TypedArray.TypedArray.Uint32Array: Uint32Array.Uint32Array,
-        TypedArray.TypedArray.Int32Array: Int32Array.Int32Array,
-        TypedArray.TypedArray.Float32Array: Float32Array.Float32Array,
-        TypedArray.TypedArray.Float64Array: Float64Array.Float64Array,
-        TypedArray.TypedArray.JSONEncodedArray: JSONEncodedArray.JSONEncodedArray
+        TypedArray.TypedArray.Uint32Array:
+            Uint32Array.Uint32Array,
+        TypedArray.TypedArray.Int32Array:
+            Int32Array.Int32Array,
+        TypedArray.TypedArray.Float32Array:
+            Float32Array.Float32Array,
+        TypedArray.TypedArray.Float64Array:
+            Float64Array.Float64Array,
+        TypedArray.TypedArray.JSONEncodedArray:
+            JSONEncodedArray.JSONEncodedArray
     }
     (u_type, u) = tarr
     if u_type == TypedArray.TypedArray.NONE:
         return None
 
     TarType = type_map.get(u_type, None)
-    assert(TarType is not None)
+    assert (TarType is not None)
 
     arr = TarType()
     arr.Init(u.Bytes, u.Pos)

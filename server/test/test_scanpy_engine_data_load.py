@@ -10,6 +10,7 @@ class DataLoadEngineTest(unittest.TestCase):
     """
     Test file loading, including deferred loading/update.
     """
+
     def setUp(self):
         self.data_file = DataLocator("../example-dataset/pbmc3k.h5ad")
         self.data = ScanpyEngine()
@@ -52,7 +53,8 @@ class DataLoadEngineTest(unittest.TestCase):
         f2 = {"filter": {"obs": {"index": [[500, 1000]]}}}
         result = json.loads(self.data.diffexp_topN(f1["filter"], f2["filter"]))
         self.assertEqual(len(result), 10)
-        result = json.loads(self.data.diffexp_topN(f1["filter"], f2["filter"], 20))
+        result = json.loads(
+            self.data.diffexp_topN(f1["filter"], f2["filter"], 20))
         self.assertEqual(len(result), 20)
 
 
@@ -60,6 +62,7 @@ class DataLocatorEngineTest(unittest.TestCase):
     """
     Test various types of data locators we expect to consume
     """
+
     def setUp(self):
         self.args = {
             "layout": ["umap"],

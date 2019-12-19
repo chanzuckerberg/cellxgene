@@ -1,6 +1,6 @@
 .PHONY: fmt
 fmt:
-	yapf -ir .
+	yapf -ipr .
 
 .PHONY: lint
 lint:

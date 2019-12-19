@@ -7,6 +7,7 @@ from server.gui.utils import SiteReadySignals
 
 
 class EmittingProcess(Process):
+
     def __init__(self, parent_conn, child_conn, *arg, **kwargs):
         super(EmittingProcess, self).__init__()
         self.parent_conn = parent_conn
@@ -21,7 +22,9 @@ class EmittingProcess(Process):
 
 
 class Worker(EmittingProcess):
-    def __init__(self, parent_conn, child_conn, data_file, host, port, title, engine_options, *args, **kwargs):
+
+    def __init__(self, parent_conn, child_conn, data_file, host, port, title,
+                 engine_options, *args, **kwargs):
         super(Worker, self).__init__(parent_conn, child_conn)
         self.data_file = data_file
         self.host = host
@@ -62,7 +65,10 @@ class Worker(EmittingProcess):
             return
         # launch server
         try:
-            server.app.run(host=self.host, debug=False, port=self.port, threaded=True)
+            server.app.run(host=self.host,
+                           debug=False,
+                           port=self.port,
+                           threaded=True)
         except Exception as e:
             self.emit("server_error", str(e))
         finally:
@@ -70,6 +76,7 @@ class Worker(EmittingProcess):
 
 
 class SiteReadyWorker:
+
     def __init__(self, location):
         super(SiteReadyWorker, self).__init__()
         self.signals = SiteReadySignals()

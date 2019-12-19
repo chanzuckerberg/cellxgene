@@ -34,6 +34,7 @@ LOAD_INDEX = 1
 
 
 class MainWindow(QMainWindow):
+
     def __init__(self):
         super(MainWindow, self).__init__(None)
         self.cef_widget = None
@@ -59,14 +60,17 @@ class MainWindow(QMainWindow):
         # close emitter on error/finished
         self.parent_conn, self.child_conn = Pipe()
         self.load_emitter = Emitter(self.parent_conn, WorkerSignals)
-        self.emitter_thread = threading.Thread(target=self.load_emitter.run, daemon=True)
+        self.emitter_thread = threading.Thread(target=self.load_emitter.run,
+                                               daemon=True)
         self.emitter_thread.start()
         # send to load with error message?
 
     def setupLayout(self):
         self.resize(WIDTH, HEIGHT)
         self.cef_widget = CefWidget(self)
-        self.cef_widget.setSizePolicy(QSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding))
+        self.cef_widget.setSizePolicy(
+            QSizePolicy(QSizePolicy.MinimumExpanding,
+                        QSizePolicy.MinimumExpanding))
         self.data_widget = LoadWidget(self)
         self.stacked_layout = QStackedLayout()
         self.stacked_layout.addWidget(self.cef_widget)
@@ -104,7 +108,8 @@ class MainWindow(QMainWindow):
         # close emitter on error/finished
         self.parent_conn, self.child_conn = Pipe()
         self.load_emitter = Emitter(self.parent_conn, WorkerSignals)
-        self.emitter_thread = threading.Thread(target=self.load_emitter.run, daemon=True)
+        self.emitter_thread = threading.Thread(target=self.load_emitter.run,
+                                               daemon=True)
         self.emitter_thread.start()
         # send to load with error message?
 
@@ -144,6 +149,7 @@ class MainWindow(QMainWindow):
 
 
 class LoadWidget(QFrame):
+
     def __init__(self, parent):
         super(LoadWidget, self).__init__(parent=parent)
         # Init layout
@@ -240,11 +246,18 @@ class LoadWidget(QFrame):
     def createScanpyEngine(self, file_name):
         title = splitext(basename(file_name))[0]
         self.window().setupServer()
-        worker = Worker(self.window().parent_conn, self.window().child_conn, file_name, host="127.0.0.1",
-                        port=GUI_PORT, title=title, engine_options={})
+        worker = Worker(self.window().parent_conn,
+                        self.window().child_conn,
+                        file_name,
+                        host="127.0.0.1",
+                        port=GUI_PORT,
+                        title=title,
+                        engine_options={})
         self.window().load_emitter.signals.ready.connect(self.onDataReady)
-        self.window().load_emitter.signals.engine_error.connect(self.onServerError)
-        self.window().load_emitter.signals.server_error.connect(self.onServerError)
+        self.window().load_emitter.signals.engine_error.connect(
+            self.onServerError)
+        self.window().load_emitter.signals.server_error.connect(
+            self.onServerError)
         # Error is generic error from emitter
         self.window().load_emitter.signals.error.connect(self.onServerError)
         self.window().worker = Process(target=worker.run, daemon=True)
@@ -266,7 +279,8 @@ class LoadWidget(QFrame):
         self.site_ready_worker.signals.ready.connect(self.onServerReady)
         self.site_ready_worker.signals.error.connect(self.onServerError)
 
-        srw_thread = threading.Thread(target=self.site_ready_worker.run, daemon=True)
+        srw_thread = threading.Thread(target=self.site_ready_worker.run,
+                                      daemon=True)
         srw_thread.start()
 
     def onServerReady(self):
@@ -289,7 +303,9 @@ class LoadWidget(QFrame):
 
     onServerError = partialmethod(onError, server_error=True)
 
+
 class FilePath(QObject):
+
     def __init__(self):
         super(FilePath, self).__init__()
         self.value = ""
@@ -301,6 +317,7 @@ class FilePath(QObject):
 
 
 class FileArea(QFrame):
+
     def __init__(self, parent):
         super(FileArea, self).__init__()
         self.setFrameShape(QFrame.Box)
@@ -309,10 +326,12 @@ class FileArea(QFrame):
         self.setAcceptDrops(True)
         self.instructions = QLabel(self)
         self.instructions.setText("Drag & Drop a h5ad file to load or open")
-        self.instructions.setGeometry(10, 10, MAX_CONTENT_WIDTH, self.instructions.height())
+        self.instructions.setGeometry(10, 10, MAX_CONTENT_WIDTH,
+                                      self.instructions.height())
         self.loadButton = QPushButton("Open...", parent=self)
         x_pos = (MAX_CONTENT_WIDTH - self.loadButton.width()) / 2
-        self.loadButton.setGeometry(x_pos, 50, self.loadButton.width(), self.loadButton.height())
+        self.loadButton.setGeometry(x_pos, 50, self.loadButton.width(),
+                                    self.loadButton.height())
         self.loadButton.clicked.connect(self.fileBrowse)
         self.label = QLabel(self)
         self.label.setGeometry(10, 75, MAX_CONTENT_WIDTH, self.label.height())
@@ -321,7 +340,10 @@ class FileArea(QFrame):
         options = QFileDialog.Options()
         # options |= QFileDialog.DontUseNativeDialog
         file_name, _ = QFileDialog.getOpenFileName(self,
-                                                   "Open H5AD File", "", "H5AD Files (*.h5ad)", options=options)
+                                                   "Open H5AD File",
+                                                   "",
+                                                   "H5AD Files (*.h5ad)",
+                                                   options=options)
         if file_name:
             self.parent().file_name.updateValue(file_name)
             self.parent().onLoad()

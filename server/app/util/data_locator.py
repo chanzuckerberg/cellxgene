@@ -27,7 +27,8 @@ class DataLocator():
 
     def __init__(self, uri_or_path):
         self.uri_or_path = uri_or_path
-        self.protocol, self.path = DataLocator._get_protocol_and_path(uri_or_path)
+        self.protocol, self.path = DataLocator._get_protocol_and_path(
+            uri_or_path)
         # work-around for LocalFileSystem not treating file: and None as the same scheme/protocol
         self.cname = self.path if self.protocol == 'file' else self.uri_or_path
         # will throw RuntimeError if the protocol is unsupported
@@ -82,7 +83,8 @@ class DataLocator():
 
         # if not local, create a tmp file system object to contain the data,
         # and clean it up when done.
-        with self.open() as src, tempfile.NamedTemporaryFile(prefix="cellxgene_", delete=False) as tmp:
+        with self.open() as src, tempfile.NamedTemporaryFile(
+                prefix="cellxgene_", delete=False) as tmp:
             tmp.write(src.read())
             tmp.close()
             src.close()
@@ -91,6 +93,7 @@ class DataLocator():
 
 
 class LocalFilePath():
+
     def __init__(self, tmp_path, delete=False):
         self.tmp_path = tmp_path
         self.delete = delete

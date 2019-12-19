@@ -1,6 +1,4 @@
-
 from server.app.util.matrix_proxy import MatrixProxyView, ArrayProxyView
-
 """
 AnnData/h5py are inconsistent in the API supported by various types of
 X matrices.  Sometimes you get a fully ndarray, sometims a Scipy sparse
@@ -17,6 +15,7 @@ class ArrayProxyView_anndata_h5py(ArrayProxyView):
     override to handle sparse getitem semantics, which differ
     from numpy.
     """
+
     def toarray(self):
         """ sadly, sparse indexing doesn't drop dimensions like numpy! """
         arr = self.m[self._index[0], self._index[1]]
@@ -30,6 +29,7 @@ class MatrixProxy_anndata_h5py(MatrixProxyView):
     AnnData sparse array stored in H5AD, or proxies for backed data.
     None of these handle indexing very well, so we plop a proxy on top.
     """
+
     @classmethod
     def __supports__(cls):
         return ("anndata.h5py.h5sparse.SparseDataset",

@@ -4,6 +4,7 @@
 
 import flatbuffers
 
+
 class Column(object):
     __slots__ = ['_tab']
 
@@ -22,7 +23,8 @@ class Column(object):
     def UType(self):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(4))
         if o != 0:
-            return self._tab.Get(flatbuffers.number_types.Uint8Flags, o + self._tab.Pos)
+            return self._tab.Get(flatbuffers.number_types.Uint8Flags,
+                                 o + self._tab.Pos)
         return 0
 
     # Column
@@ -35,7 +37,19 @@ class Column(object):
             return obj
         return None
 
-def ColumnStart(builder): builder.StartObject(2)
-def ColumnAddUType(builder, uType): builder.PrependUint8Slot(0, uType, 0)
-def ColumnAddU(builder, u): builder.PrependUOffsetTRelativeSlot(1, flatbuffers.number_types.UOffsetTFlags.py_type(u), 0)
-def ColumnEnd(builder): return builder.EndObject()
+
+def ColumnStart(builder):
+    builder.StartObject(2)
+
+
+def ColumnAddUType(builder, uType):
+    builder.PrependUint8Slot(0, uType, 0)
+
+
+def ColumnAddU(builder, u):
+    builder.PrependUOffsetTRelativeSlot(
+        1, flatbuffers.number_types.UOffsetTFlags.py_type(u), 0)
+
+
+def ColumnEnd(builder):
+    return builder.EndObject()

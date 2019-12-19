@@ -2,7 +2,6 @@ import abc
 from itertools import zip_longest
 from copy import copy
 import numpy as np
-
 """
 cellxgene deals with a variety of matrix data types, many of which do
 not support a consistent API.  This framework allows proxies to be created
@@ -18,6 +17,7 @@ class _ArrayProxyBase(abc.ABC):
     Private base class for array or matrix proxy.  This summarizes
     the interface used by the rest of cellxgene.
     """
+
     @property
     @abc.abstractmethod
     def dtype(self):
@@ -59,7 +59,6 @@ class MatrixProxy(_ArrayProxyBase):
     This class primarily provides the factory method and related support.
     All other functionality is delegated to subclasses.
     """
-
     """
     Registry of types to proxy class, where values are:
     * None: unsupported
@@ -128,21 +127,25 @@ class MatrixProxyView(MatrixProxy):
     """
     2D matrix view to a 2D matrix
     """
-    def __init__(self, arg1, shape=None, index=(),
-                 transposed=False, copy=False):
+
+    def __init__(self,
+                 arg1,
+                 shape=None,
+                 index=(),
+                 transposed=False,
+                 copy=False):
         if not copy:
             m = arg1
             super().__init__(m)
 
             if shape is None:
                 shape = m.shape
-            assert(len(shape) == 2)
+            assert (len(shape) == 2)
 
             index = tuple(
-                map(lambda s_i:
-                    slice(0, s_i[0], 1) if s_i[1] is None else s_i[1],
-                    zip_longest(shape, index))
-            )
+                map(
+                    lambda s_i: slice(0, s_i[0], 1)
+                    if s_i[1] is None else s_i[1], zip_longest(shape, index)))
 
             self._shape = shape
             self._index = index
@@ -234,21 +237,29 @@ class MatrixProxyView(MatrixProxy):
     NOTE: these follow the numpy rules for dimensionality reduction
     when an integer index is specified.
     """
+
     def _getitem_intXint(self, row, col):
         return self.m[row, col]
 
     def _getitem_intXslice(self, row, col):
-        shape = (_slice_length(col, self.m.shape[1]), )
-        return self.__class__.create_array(self.m, shape=shape, index=(row, col))
+        shape = (_slice_length(col, self.m.shape[1]),)
+        return self.__class__.create_array(self.m,
+                                           shape=shape,
+                                           index=(row, col))
 
     def _getitem_sliceXint(self, row, col):
-        shape = (_slice_length(row, self.m.shape[0]), )
-        return self.__class__.create_array(self.m, shape=shape, index=(row, col))
+        shape = (_slice_length(row, self.m.shape[0]),)
+        return self.__class__.create_array(self.m,
+                                           shape=shape,
+                                           index=(row, col))
 
     def _getitem_sliceXslice(self, row, col):
         shape = (_slice_length(row, self.m.shape[0]),
                  _slice_length(col, self.m.shape[1]))
-        return self.__class__(self.m, shape=shape, index=(row, col), transposed=self.transposed)
+        return self.__class__(self.m,
+                              shape=shape,
+                              index=(row, col),
+                              transposed=self.transposed)
 
     def toarray(self):
         arr = self.m[self._index]
@@ -261,22 +272,24 @@ class ArrayProxyView(_ArrayProxyBase):
     """
     1D array view to a 2D matrix
     """
+
     def __init__(self, arg1, shape=None, index=None, copy=False):
         super().__init__()
         if not copy:
             m = arg1
 
             # one index MUST be an integer and the other MUST be a slice
-            assert(len(index) == 2)
-            assert(all(isinstance(idx, INT_TYPES + (slice, )) for idx in index))
-            assert(isinstance(index[0], INT_TYPES) != isinstance(index[1], INT_TYPES))
+            assert (len(index) == 2)
+            assert (all(isinstance(idx, INT_TYPES + (slice,)) for idx in index))
+            assert (isinstance(index[0], INT_TYPES) != isinstance(
+                index[1], INT_TYPES))
 
             if shape is None:
                 if isinstance(index[0], INT_TYPES):
-                    shape = (m.shape[0], )
+                    shape = (m.shape[0],)
                 else:
-                    shape = (m.shape[1], )
-            assert(len(shape) == 1)
+                    shape = (m.shape[1],)
+            assert (len(shape) == 1)
 
             self._shape = shape
             self.m = m
@@ -336,7 +349,7 @@ class ArrayProxyView(_ArrayProxyBase):
             elif isinstance(col, slice):
                 return self._getitem_intXslice(row, col)
         elif isinstance(row, slice):
-            assert(isinstance(col, INT_TYPES))
+            assert (isinstance(col, INT_TYPES))
             return self._getitem_sliceXint(row, col)
 
         raise IndexError("unsupported column index types")
@@ -345,11 +358,11 @@ class ArrayProxyView(_ArrayProxyBase):
         return self.m[row, col]
 
     def _getitem_intXslice(self, row, col):
-        shape = (_slice_length(col, self.m.shape[1]), )
+        shape = (_slice_length(col, self.m.shape[1]),)
         return self.__class__(self.m, shape=shape, index=(row, col))
 
     def _getitem_sliceXint(self, row, col):
-        shape = (_slice_length(row, self.m.shape[0]), )
+        shape = (_slice_length(row, self.m.shape[0]),)
         return self.__class__(self.m, shape=shape, index=(row, col))
 
     def toarray(self):
@@ -358,7 +371,7 @@ class ArrayProxyView(_ArrayProxyBase):
 
 def _unpack_index(index, shape):
     if not isinstance(index, tuple):
-        index = (index, )
+        index = (index,)
     if len(shape) < len(index):
         raise IndexError("invalid index dimensionality - must be 2")
 
@@ -366,7 +379,7 @@ def _unpack_index(index, shape):
     for shp, idx in zip_longest(shape, index):
         idx = slice(None) if idx is None else idx
         idx = _slice_defaults(idx, shp) if isinstance(idx, slice) else idx
-        unpacked += (idx, )
+        unpacked += (idx,)
 
     return unpacked
 
@@ -376,7 +389,7 @@ def _slice_slice(outer, outer_len, inner, inner_len):
     slice a slice - we take advantage of Python 3 range's support
     for indexing.
     """
-    assert(outer_len >= inner_len)
+    assert (outer_len >= inner_len)
     outer_rng = range(*outer.indices(outer_len))
     rng = outer_rng[inner]
     start, stop, step = rng.start, rng.stop, rng.step
@@ -387,8 +400,8 @@ def _slice_slice(outer, outer_len, inner, inner_len):
 
 def _range_length(start, stop, step):
     """ return length of range """
-    assert(step != 0)
-    assert(start is not None and stop is not None and step is not None)
+    assert (step != 0)
+    assert (start is not None and stop is not None and step is not None)
     if step > 0 and start < stop:
         return 1 + (stop - 1 - start) // step
     elif step < 0 and start > stop:
@@ -404,7 +417,7 @@ def _slice_length(s, length):
 
 def _slice_defaults(s, length):
     """ apply slice defaulting conventions """
-    assert(length >= 0)
+    assert (length >= 0)
 
     step = 1 if s.step is None else s.step
 

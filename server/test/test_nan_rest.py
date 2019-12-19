@@ -20,9 +20,10 @@ class WithNaNs(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.ps = Popen(
-            ["cellxgene", "launch", "test/test_datasets/nan.h5ad", "--verbose", "--port", "5006"]
-        )
+        cls.ps = Popen([
+            "cellxgene", "launch", "test/test_datasets/nan.h5ad", "--verbose",
+            "--port", "5006"
+        ])
         session = requests.Session()
         for i in range(90):
             try:
@@ -51,7 +52,8 @@ class WithNaNs(unittest.TestCase):
         url = f"{URL_BASE}{endpoint}"
         result = self.session.put(url)
         self.assertEqual(result.status_code, HTTPStatus.OK)
-        self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
+        self.assertEqual(result.headers["Content-Type"],
+                         "application/octet-stream")
         df = decode_fbs.decode_matrix_FBS(result.content)
         self.assertTrue(math.isnan(df["columns"][3][3]))
 
@@ -60,7 +62,8 @@ class WithNaNs(unittest.TestCase):
         url = f"{URL_BASE}{endpoint}"
         result = self.session.get(url)
         self.assertEqual(result.status_code, HTTPStatus.OK)
-        self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
+        self.assertEqual(result.headers["Content-Type"],
+                         "application/octet-stream")
         df = decode_fbs.decode_matrix_FBS(result.content)
         self.assertTrue(math.isnan(df["columns"][2][0]))
 
@@ -69,6 +72,7 @@ class WithNaNs(unittest.TestCase):
         url = f"{URL_BASE}{endpoint}"
         result = self.session.get(url)
         self.assertEqual(result.status_code, HTTPStatus.OK)
-        self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
+        self.assertEqual(result.headers["Content-Type"],
+                         "application/octet-stream")
         df = decode_fbs.decode_matrix_FBS(result.content)
         self.assertTrue(math.isnan(df["columns"][2][0]))

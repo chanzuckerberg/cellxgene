@@ -19,7 +19,10 @@ class EndPoints(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.ps = Popen(["cellxgene", "launch", "../example-dataset/pbmc3k.h5ad", "--verbose", "--port", "5005"])
+        cls.ps = Popen([
+            "cellxgene", "launch", "../example-dataset/pbmc3k.h5ad",
+            "--verbose", "--port", "5005"
+        ])
         session = requests.Session()
         for i in range(90):
             try:
@@ -47,7 +50,8 @@ class EndPoints(unittest.TestCase):
         result_data = result.json()
         self.assertEqual(result_data["schema"]["dataframe"]["nObs"], 2638)
         self.assertEqual(len(result_data["schema"]["annotations"]["obs"]), 2)
-        self.assertEqual(len(result_data["schema"]["annotations"]["obs"]["columns"]), 5)
+        self.assertEqual(
+            len(result_data["schema"]["annotations"]["obs"]["columns"]), 5)
 
     def test_config(self):
         endpoint = "config"
@@ -57,7 +61,8 @@ class EndPoints(unittest.TestCase):
         self.assertEqual(result.headers["Content-Type"], "application/json")
         result_data = result.json()
         self.assertIn("library_versions", result_data["config"])
-        self.assertEqual(result_data["config"]["displayNames"]["dataset"], "pbmc3k")
+        self.assertEqual(result_data["config"]["displayNames"]["dataset"],
+                         "pbmc3k")
         self.assertEqual(len(result_data["config"]["features"]), 4)
 
     def test_get_layout_fbs(self):
@@ -66,13 +71,15 @@ class EndPoints(unittest.TestCase):
         header = {"Accept": "application/octet-stream"}
         result = self.session.get(url, headers=header)
         self.assertEqual(result.status_code, HTTPStatus.OK)
-        self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
+        self.assertEqual(result.headers["Content-Type"],
+                         "application/octet-stream")
         df = decode_fbs.decode_matrix_FBS(result.content)
         self.assertEqual(df['n_rows'], 2638)
         self.assertEqual(df['n_cols'], 8)
         self.assertIsNotNone(df['columns'])
         self.assertListEqual(df['col_idx'], [
-            'pca_0', 'pca_1', 'tsne_0', 'tsne_1', 'umap_0', 'umap_1', 'draw_graph_fr_0', 'draw_graph_fr_1'
+            'pca_0', 'pca_1', 'tsne_0', 'tsne_1', 'umap_0', 'umap_1',
+            'draw_graph_fr_0', 'draw_graph_fr_1'
         ])
         self.assertIsNone(df['row_idx'])
         self.assertEqual(len(df['columns']), df['n_cols'])
@@ -89,7 +96,8 @@ class EndPoints(unittest.TestCase):
         header = {"Accept": "application/octet-stream"}
         result = self.session.get(url, headers=header)
         self.assertEqual(result.status_code, HTTPStatus.OK)
-        self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
+        self.assertEqual(result.headers["Content-Type"],
+                         "application/octet-stream")
         df = decode_fbs.decode_matrix_FBS(result.content)
         self.assertEqual(df['n_rows'], 2638)
         self.assertEqual(df['n_cols'], 5)
@@ -97,8 +105,11 @@ class EndPoints(unittest.TestCase):
         self.assertIsNotNone(df['col_idx'])
         self.assertIsNone(df['row_idx'])
         self.assertEqual(len(df['columns']), df['n_cols'])
-        obs_index_col_name = self.schema["schema"]["annotations"]["obs"]["index"]
-        self.assertListEqual(df['col_idx'], [obs_index_col_name, 'n_genes', 'percent_mito', 'n_counts', 'louvain'])
+        obs_index_col_name = self.schema["schema"]["annotations"]["obs"][
+            "index"]
+        self.assertListEqual(df['col_idx'], [
+            obs_index_col_name, 'n_genes', 'percent_mito', 'n_counts', 'louvain'
+        ])
 
     def test_get_annotations_obs_keys_fbs(self):
         endpoint = "annotations/obs"
@@ -107,7 +118,8 @@ class EndPoints(unittest.TestCase):
         header = {"Accept": "application/octet-stream"}
         result = self.session.get(url, headers=header)
         self.assertEqual(result.status_code, HTTPStatus.OK)
-        self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
+        self.assertEqual(result.headers["Content-Type"],
+                         "application/octet-stream")
         df = decode_fbs.decode_matrix_FBS(result.content)
         self.assertEqual(df['n_rows'], 2638)
         self.assertEqual(df['n_cols'], 2)
@@ -129,8 +141,26 @@ class EndPoints(unittest.TestCase):
         url = f"{URL_BASE}{endpoint}"
         params = {
             "mode": "topN",
-            "set1": {"filter": {"obs": {"annotation_value": [{"name": "louvain", "values": ["NK cells"]}]}}},
-            "set2": {"filter": {"obs": {"annotation_value": [{"name": "louvain", "values": ["CD8 T cells"]}]}}},
+            "set1": {
+                "filter": {
+                    "obs": {
+                        "annotation_value": [{
+                            "name": "louvain",
+                            "values": ["NK cells"]
+                        }]
+                    }
+                }
+            },
+            "set2": {
+                "filter": {
+                    "obs": {
+                        "annotation_value": [{
+                            "name": "louvain",
+                            "values": ["CD8 T cells"]
+                        }]
+                    }
+                }
+            },
             "count": 7,
         }
         result = self.session.post(url, json=params)
@@ -145,8 +175,20 @@ class EndPoints(unittest.TestCase):
         params = {
             "mode": "topN",
             "count": 10,
-            "set1": {"filter": {"obs": {"index": [[0, 500]]}}},
-            "set2": {"filter": {"obs": {"index": [[500, 1000]]}}},
+            "set1": {
+                "filter": {
+                    "obs": {
+                        "index": [[0, 500]]
+                    }
+                }
+            },
+            "set2": {
+                "filter": {
+                    "obs": {
+                        "index": [[500, 1000]]
+                    }
+                }
+            },
         }
         result = self.session.post(url, json=params)
         self.assertEqual(result.status_code, HTTPStatus.OK)
@@ -160,7 +202,8 @@ class EndPoints(unittest.TestCase):
         header = {"Accept": "application/octet-stream"}
         result = self.session.get(url, headers=header)
         self.assertEqual(result.status_code, HTTPStatus.OK)
-        self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
+        self.assertEqual(result.headers["Content-Type"],
+                         "application/octet-stream")
         df = decode_fbs.decode_matrix_FBS(result.content)
         self.assertEqual(df['n_rows'], 1838)
         self.assertEqual(df['n_cols'], 2)
@@ -168,7 +211,8 @@ class EndPoints(unittest.TestCase):
         self.assertIsNotNone(df['col_idx'])
         self.assertIsNone(df['row_idx'])
         self.assertEqual(len(df['columns']), df['n_cols'])
-        var_index_col_name = self.schema["schema"]["annotations"]["var"]["index"]
+        var_index_col_name = self.schema["schema"]["annotations"]["var"][
+            "index"]
         self.assertListEqual(df['col_idx'], [var_index_col_name, 'n_cells'])
 
     def test_get_annotations_var_keys_fbs(self):
@@ -178,7 +222,8 @@ class EndPoints(unittest.TestCase):
         header = {"Accept": "application/octet-stream"}
         result = self.session.get(url, headers=header)
         self.assertEqual(result.status_code, HTTPStatus.OK)
-        self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
+        self.assertEqual(result.headers["Content-Type"],
+                         "application/octet-stream")
         df = decode_fbs.decode_matrix_FBS(result.content)
         self.assertEqual(df['n_rows'], 1838)
         self.assertEqual(df['n_cols'], 1)
@@ -207,7 +252,8 @@ class EndPoints(unittest.TestCase):
         url = f"{URL_BASE}{endpoint}"
         result = self.session.put(url)
         self.assertEqual(result.status_code, HTTPStatus.OK)
-        self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
+        self.assertEqual(result.headers["Content-Type"],
+                         "application/octet-stream")
 
     def test_data_put_fbs(self):
         endpoint = f"data/var"
@@ -215,7 +261,8 @@ class EndPoints(unittest.TestCase):
         header = {"Accept": "application/octet-stream"}
         result = self.session.put(url, headers=header)
         self.assertEqual(result.status_code, HTTPStatus.OK)
-        self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
+        self.assertEqual(result.headers["Content-Type"],
+                         "application/octet-stream")
         df = decode_fbs.decode_matrix_FBS(result.content)
         self.assertEqual(df['n_rows'], 2638)
         self.assertEqual(df['n_cols'], 1838)
@@ -228,16 +275,11 @@ class EndPoints(unittest.TestCase):
         endpoint = f"data/var"
         url = f"{URL_BASE}{endpoint}"
         header = {"Accept": "application/octet-stream"}
-        filter = {
-            "filter": {
-                "var": {
-                    "index": [0, 1, 4]
-                }
-            }
-        }
+        filter = {"filter": {"var": {"index": [0, 1, 4]}}}
         result = self.session.put(url, headers=header, json=filter)
         self.assertEqual(result.status_code, HTTPStatus.OK)
-        self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
+        self.assertEqual(result.headers["Content-Type"],
+                         "application/octet-stream")
         df = decode_fbs.decode_matrix_FBS(result.content)
         self.assertEqual(df['n_rows'], 2638)
         self.assertEqual(df['n_cols'], 3)
@@ -252,10 +294,20 @@ class EndPoints(unittest.TestCase):
         url = f"{URL_BASE}{endpoint}"
         header = {"Accept": "application/octet-stream"}
         index_col_name = self.schema["schema"]["annotations"]["var"]["index"]
-        var_filter = {"filter": {"var": {"annotation_value": [{"name": index_col_name, "values": ["RER1"]}]}}}
+        var_filter = {
+            "filter": {
+                "var": {
+                    "annotation_value": [{
+                        "name": index_col_name,
+                        "values": ["RER1"]
+                    }]
+                }
+            }
+        }
         result = self.session.put(url, headers=header, json=var_filter)
         self.assertEqual(result.status_code, HTTPStatus.OK)
-        self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
+        self.assertEqual(result.headers["Content-Type"],
+                         "application/octet-stream")
         df = decode_fbs.decode_matrix_FBS(result.content)
         self.assertEqual(df["n_rows"], 2638)
         self.assertEqual(df["n_cols"], 1)

@@ -12,7 +12,9 @@ WindowUtils = cef.WindowUtils()
 # noinspection PyUnresolvedReferences
 CefWidgetParent = QWidget
 
+
 class CefWidget(CefWidgetParent):
+
     def __init__(self, parent=None):
         super(CefWidget, self).__init__(parent)
         self.parent = parent
@@ -58,8 +60,8 @@ class CefWidget(CefWidgetParent):
             if WINDOWS:
                 WindowUtils.OnSize(self.getHandle(), 0, 0, 0)
             elif LINUX:
-                self.browser.SetBounds(self.x, self.y,
-                                       self.width(), self.height())
+                self.browser.SetBounds(self.x, self.y, self.width(),
+                                       self.height())
             self.browser.NotifyMoveOrResizeStarted()
 
     def resizeEvent(self, event):
@@ -68,12 +70,13 @@ class CefWidget(CefWidgetParent):
             if WINDOWS:
                 WindowUtils.OnSize(self.getHandle(), 0, 0, 0)
             elif LINUX:
-                self.browser.SetBounds(self.x, self.y,
-                                       size.width(), size.height())
+                self.browser.SetBounds(self.x, self.y, size.width(),
+                                       size.height())
             self.browser.NotifyMoveOrResizeStarted()
 
 
 class CefApplication(QApplication):
+
     def __init__(self, args):
         super(CefApplication, self).__init__(args)
         if not cef.GetAppSetting("external_message_pump"):
