@@ -5,7 +5,7 @@ export default class CentroidLabels extends PureComponent {
   render() {
     const {
       labels,
-      inverseScale,
+      inverseTransform,
       mouseEnter,
       mouseExit,
       dilatedValue
@@ -35,7 +35,7 @@ export default class CentroidLabels extends PureComponent {
           transform={`translate(${value[0]}, ${value[1]})`}
         >
           <text
-            transform={inverseScale}
+            transform={inverseTransform}
             textAnchor="middle"
             data-label={key}
             id={`svg${key.replace(/[^\w]/gi, "")}-label`}

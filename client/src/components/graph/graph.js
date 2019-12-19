@@ -12,7 +12,9 @@ import _camera from "../../util/camera";
 import _drawPoints from "./drawPointsRegl";
 import { isTypedArray } from "../../util/typeHelpers";
 import styles from "./graph.css";
+
 import GraphOverlayLayer from "./overlays/graphOverlayLayer";
+import CentroidLabels from "./overlays/centroidLabels";
 
 /*
 Simple 2D transforms control all point painting.  There are three:
@@ -189,7 +191,8 @@ class Graph extends React.PureComponent {
     this.state = {
       toolSVG: null,
       tool: null,
-      container: null
+      container: null,
+      cameraRender: 0
     };
   }
 
@@ -258,8 +261,6 @@ class Graph extends React.PureComponent {
       modelTF
     } = this.state;
     let stateChanges = {};
-
-    const cameraTF = camera.view();
 
     // CHECKING RERENDERS DELETE BEFORE MERGE
     Object.entries(this.props).forEach(
@@ -781,11 +782,19 @@ class Graph extends React.PureComponent {
   });
 
   render() {
-    const { responsive, graphInteractionMode } = this.props;
+    const {
+      responsive,
+      graphInteractionMode,
+      dispatch,
+      colorAccessor,
+      pointDilation,
+      centroidLabels
+    } = this.props;
     const { modelTF, projectionTF, camera } = this.state;
 
     const cameraTF = camera?.view();
 
+    console.log("graph render ", cameraTF);
     return (
       <div id="graphWrapper">
         <div
@@ -803,7 +812,27 @@ class Graph extends React.PureComponent {
               projectionTF={projectionTF}
               graphPaddingRightLeft={this.graphPaddingRightLeft}
               graphPaddingTop={this.graphPaddingTop}
-            />
+              responsive={responsive}
+            >
+              <CentroidLabels
+                labels={centroidLabels.labels}
+                mouseEnter={e =>
+                  dispatch({
+                    type: "category value mouse hover start",
+                    metadataField: colorAccessor,
+                    categoryField: e.target.getAttribute("data-label")
+                  })
+                }
+                mouseExit={e =>
+                  dispatch({
+                    type: "category value mouse hover end",
+                    metadataField: colorAccessor,
+                    categoryField: e.target.getAttribute("data-label")
+                  })
+                }
+                dilatedValue={pointDilation.categoryField}
+              />
+            </GraphOverlayLayer>
 
             <svg
               id="lasso-layer"

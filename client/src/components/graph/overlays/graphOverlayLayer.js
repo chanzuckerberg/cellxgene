@@ -1,17 +1,55 @@
-import React, { PureComponent } from "react";
+import React, { Component, cloneElement } from "react";
 import { connect } from "react-redux";
+import { mat3 } from "gl-matrix";
 
-import CentroidLabels from "./centroidLabels";
 import styles from "../graph.css";
 
 export default
 @connect(state => ({
-  responsive: state.responsive,
-  centroidLabels: state.centroidLabels,
-  colorAccessor: state.colors.colorAccessor,
-  pointDilation: state.pointDilation
+  responsive: state.responsive
 }))
-class GraphOverlayLayer extends PureComponent {
+class GraphOverlayLayer extends Component {
+  // shouldComponentUpdate(nextProps, nextState) {
+  //   const {
+  //     cameraTF,
+  //     modelTF,
+  //     projectionTF,
+  //     responsive,
+  //     graphPaddingRightLeft,
+  //     graphPaddingTop,
+  //     children
+  //   } = this.props;
+
+  //   if (cameraTF !== undefined) {
+  //     console.log("EQ", mat3.exactEquals(cameraTF, nextProps.cameraTF));
+  //     console.log("cameraTF", cameraTF);
+  //     console.log("nextProps.cameraTF", nextProps.cameraTF);
+  //     console.log(
+  //       "cameraTF !== nextProps.cameraTF",
+  //       cameraTF !== nextProps.cameraTF
+  //     );
+  //   }
+
+  //   const cameraTFChange = cameraTF !== nextProps.cameraTF;
+  //   const modelTFChange = modelTF !== nextProps.modelTF;
+  //   const projectionTFChange = projectionTF !== nextProps.projectionTF;
+  //   const responsiveChange = responsive !== nextProps.responsive;
+  //   const graphPaddingRightLeftChange =
+  //     graphPaddingRightLeft !== nextProps.graphPaddingRightLeft;
+  //   const graphPaddingTopChange = graphPaddingTop !== nextProps.graphPaddingTop;
+  //   const childrenChange = children !== nextProps.children;
+
+  //   return (
+  //     cameraTFChange ||
+  //     modelTFChange ||
+  //     projectionTFChange ||
+  //     responsiveChange ||
+  //     graphPaddingRightLeftChange ||
+  //     graphPaddingTopChange ||
+  //     childrenChange
+  //   );
+  // }
+
   // CHECKING RERENDERS DELETE BEFORE MERGE
   componentDidUpdate(prevProps, prevState) {
     Object.entries(this.props).forEach(
@@ -45,34 +83,17 @@ class GraphOverlayLayer extends PureComponent {
 
   render() {
     const {
-      dispatch,
-      colorAccessor,
       cameraTF,
       modelTF,
       projectionTF,
       responsive,
-      centroidLabels,
-      pointDilation,
       graphPaddingRightLeft,
-      graphPaddingTop
+      graphPaddingTop,
+      children
     } = this.props;
-    const handleMouseEnter = e => {
-      dispatch({
-        type: "category value mouse hover start",
-        metadataField: colorAccessor,
-        categoryField: e.target.getAttribute("data-label")
-      });
-    };
+    console.log("overlay render: ", cameraTF);
 
-    const handleMouseExit = e => {
-      dispatch({
-        type: "category value mouse hover end",
-        metadataField: colorAccessor,
-        categoryField: e.target.getAttribute("data-label")
-      });
-    };
-
-    const inverseScaleTransform =
+    const inverseTransform =
       cameraTF !== undefined
         ? `${this.reverseMatrixScaleTransformString(
             modelTF
@@ -84,7 +105,10 @@ class GraphOverlayLayer extends PureComponent {
             -(responsive.height - graphPaddingTop)}) scale(2 1) scale(${1 /
             (responsive.width - graphPaddingRightLeft)} 1)`
         : undefined;
-    if (inverseScaleTransform) {
+
+    const newChildren = React.Children.toArray(children);
+
+    if (inverseTransform) {
       return (
         <svg
           className={styles.graphSVG}
@@ -116,13 +140,9 @@ class GraphOverlayLayer extends PureComponent {
                     id="model-transformation-group"
                     transform={this.matrixToTransformString(modelTF)}
                   >
-                    <CentroidLabels
-                      labels={centroidLabels.labels}
-                      mouseEnter={handleMouseEnter}
-                      mouseExit={handleMouseExit}
-                      inverseScale={inverseScaleTransform}
-                      dilatedValue={pointDilation.categoryField}
-                    />
+                    {newChildren.map(child =>
+                      cloneElement(child, { inverseTransform })
+                    )}
                   </g>
                 </g>
               </g>
