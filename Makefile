@@ -54,6 +54,13 @@ build-for-server-dev: clean-server build-client
 	cp client/build/service-worker.js server/app/web/static/js/
 
 
+# FORMATTING CODE
+
+.PHOHY: fmt
+fmt: fmt-client fmt-server
+
+fmt-%:
+	cd $(*) && $(MAKE) fmt
 
 
 # CREATING DISTRIBUTION RELEASE

@@ -1,3 +1,7 @@
+.PHONY: fmt
+fmt:
+	yapf -ir .
+
 .PHONY: clean
 clean:
 	rm -f app/web/templates/index.html
