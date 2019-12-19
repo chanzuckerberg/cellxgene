@@ -55,6 +55,9 @@ build-for-server-dev: clean-server build-client
 
 
 # TESTING
+.PHONY: test
+test: unit-test smoke-test
+
 .PHONY: unit-test
 unit-test: unit-test-server unit-test-client
 
