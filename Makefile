@@ -5,11 +5,29 @@ CLEANFILES :=  $(BUILDDIR)/ client/build build dist cellxgene.egg-info
 
 PART ?= patch
 
+
+# CLEANING
+.PHONY: clean
+clean: clean-lite clean-server clean-client
+
+# cleaning the client's node_modules is the longest one, so we avoid that if possible
+.PHONY: clean-lite
+clean-lite:
+	rm -rf $(CLEANFILES)
+
+clean-%:
+	cd $(*) && $(MAKE) clean
+
+
 # BUILDING PACKAGE
 
 .PHONY: build
 build: clean build-server
 	@echo "done"
+
+.PHONY: build-client
+build-client:
+	cd client && $(MAKE) install build
 
 .PHONY: build-server
 build-server: build-client
@@ -24,11 +42,6 @@ build-server: build-client
 	cp $(CLIENTBUILD)/service-worker.js $(SERVERBUILD)/app/web/static/js/
 	cp MANIFEST.in README.md setup.cfg setup.py $(BUILDDIR)
 
-.PHONY: build-client
-build-client:
-	npm install --prefix client/ client
-	npm run  --prefix client build
-
 # If you are actively developing in the server folder use this, dirties the source tree
 .PHONY: build-for-server-dev
 build-for-server-dev: clean-server build-client
@@ -40,19 +53,8 @@ build-for-server-dev: clean-server build-client
 	cp client/build/favicon.png server/app/web/static/img
 	cp client/build/service-worker.js server/app/web/static/js/
 
-.PHONY: clean
-clean: clean-lite clean-server
-	rm -rf client/node_modules
 
-# cleaning node_modules is the longest one, so we avoid that if possible
-.PHONY: clean-lite
-clean-lite:
-	rm -rf $(CLEANFILES)
 
-.PHONY: clean-server
-clean-server:
-	rm -f server/app/web/templates/index.html
-	rm -rf server/app/web/static
 
 # CREATING DISTRIBUTION RELEASE
 
@@ -60,6 +62,7 @@ clean-server:
 pydist: build
 	cd $(BUILDDIR); python setup.py sdist -d ../dist
 	@echo "done"
+
 
 # RELEASE HELPERS
 
@@ -91,6 +94,7 @@ release-directly-to-prod: dev-env pydist twine-prod
 
 .PHONY: dev-env
 dev-env:
+	cd client && make install
 	pip install -r server/requirements-dev.txt
 
 .PHONY: gui-env
@@ -113,7 +117,7 @@ twine-prod:
 # quicker than re-building client
 .PHONY: gen-package-lock
 gen-package-lock:
-	npm install --prefix client/ client
+	cd client && $(MAKE) install
 
 
 # INSTALL
