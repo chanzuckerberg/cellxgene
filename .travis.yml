@@ -8,7 +8,7 @@ cache:
   - npm
 install:
   - set -eo pipefail
-  - pip install flake8
+  - pip install yapf flake8
   - make pydist
   - make install-dist
   - pip install -r server/requirements-dev.txt

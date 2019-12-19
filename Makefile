@@ -62,6 +62,12 @@ fmt: fmt-client fmt-server
 fmt-%:
 	cd $(*) && $(MAKE) fmt
 
+.PHONY: lint
+lint: lint-server
+
+lint-%:
+	cd $(*) && $(MAKE) lint
+
 
 # CREATING DISTRIBUTION RELEASE
 
