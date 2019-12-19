@@ -43,12 +43,12 @@ def CreateNumpyVector(builder, x):
         x_little_endian = x.byteswap(inplace=False)
 
     # Calculate total length
-    len = int(x_little_endian.itemsize * x_little_endian.size)
-    builder.head = int(builder.Head() - len)
+    length = int(x_little_endian.itemsize * x_little_endian.size)
+    builder.head = int(builder.Head() - length)
 
     # tobytes ensures c_contiguous ordering
     builder.Bytes[builder.Head():builder.Head() +
-                  len] = x_little_endian.tobytes(order='C')
+                  length] = x_little_endian.tobytes(order='C')
 
     return builder.EndVector(x.size)
 
