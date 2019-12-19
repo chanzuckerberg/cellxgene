@@ -27,7 +27,7 @@ class WritableAnnotationTest(unittest.TestCase):
             "annotations_file": self.annotations_file,
             "annotations_output_dir": None
         }
-        self.data = ScanpyEngine(DataLocator("example-dataset/pbmc3k.h5ad"), args)
+        self.data = ScanpyEngine(DataLocator("../example-dataset/pbmc3k.h5ad"), args)
 
     def tearDown(self):
         shutil.rmtree(self.tmpDir)

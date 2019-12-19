@@ -19,13 +19,13 @@ Test the scanpy engine using the pbmc3k data set.
 
 
 @parameterized_class(("data_locator", "backed"), [
-    ("example-dataset/pbmc3k.h5ad", False),
-    ("server/test/test_datasets/pbmc3k-CSC-gz.h5ad", False),
-    ("server/test/test_datasets/pbmc3k-CSR-gz.h5ad", False),
+    ("../example-dataset/pbmc3k.h5ad", False),
+    ("test/test_datasets/pbmc3k-CSC-gz.h5ad", False),
+    ("test/test_datasets/pbmc3k-CSR-gz.h5ad", False),
 
-    ("example-dataset/pbmc3k.h5ad", True),
-    ("server/test/test_datasets/pbmc3k-CSC-gz.h5ad", True),
-    ("server/test/test_datasets/pbmc3k-CSR-gz.h5ad", True),
+    ("../example-dataset/pbmc3k.h5ad", True),
+    ("test/test_datasets/pbmc3k-CSC-gz.h5ad", True),
+    ("test/test_datasets/pbmc3k-CSR-gz.h5ad", True),
 ])
 class EngineTest(unittest.TestCase):
     def setUp(self):

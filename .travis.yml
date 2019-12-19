@@ -8,24 +8,21 @@ cache:
   - npm
 install:
   - set -eo pipefail
-  - pip install yapf flake8
-  - make pydist
-  - make install-dist
-  - pip install -r server/requirements-dev.txt
+  - pip install flake8
+  - make pydist install-dist dev-env
 
 jobs:
   include:
   - name: "Branch Tests 3.7"
     python: "3.7"
-    script: ./travis-build.sh
+    script: make build-client lint unit-test
   - name: "Branch Tests 3.6"
     python: "3.6"
-    script: ./travis-build.sh
+    script: make build-client lint unit-test
   - name: "Docker Build"
     install: skip
     python: "3.6"
     script: docker build .
   - name: "Smoke Tests"
     python: "3.6"
-    script:
-      - npm run --prefix client/ smoke-test
+    script: make smoke-test

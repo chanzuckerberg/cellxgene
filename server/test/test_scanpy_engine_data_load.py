@@ -11,7 +11,7 @@ class DataLoadEngineTest(unittest.TestCase):
     Test file loading, including deferred loading/update.
     """
     def setUp(self):
-        self.data_file = DataLocator("example-dataset/pbmc3k.h5ad")
+        self.data_file = DataLocator("../example-dataset/pbmc3k.h5ad")
         self.data = ScanpyEngine()
 
     def test_init(self):
@@ -76,7 +76,7 @@ class DataLocatorEngineTest(unittest.TestCase):
         self.assertEqual(data.gene_count, 1838)
 
     def test_posix_file(self):
-        locator = DataLocator("example-dataset/pbmc3k.h5ad")
+        locator = DataLocator("../example-dataset/pbmc3k.h5ad")
         data = ScanpyEngine(locator, self.args)
         self.stdAsserts(data)
 

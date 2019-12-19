@@ -54,6 +54,17 @@ build-for-server-dev: clean-server build-client
 	cp client/build/service-worker.js server/app/web/static/js/
 
 
+# TESTING
+.PHONY: unit-test
+unit-test: unit-test-server unit-test-client
+
+unit-test-%:
+	cd $(*) && $(MAKE) unit-test
+
+.PHONY: smoke-test
+smoke-test:
+	cd client && $(MAKE) smoke-test
+
 # FORMATTING CODE
 
 .PHOHY: fmt
