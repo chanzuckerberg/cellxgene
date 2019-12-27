@@ -61,7 +61,7 @@ To auto-format code run `make fmt`. To run lint checks on the code run `make lin
 ### Test
 If you would like to run the server tests individually, follow the steps below
 1. Install development requirements `make dev-env`
-1. Run `make unit-test` in the `server` directory.
+1. Run `make unit-test` in the `server` directory or `make unit-test-server` in the root directory.
 
 ### Tips
 * Install in a virtualenv
