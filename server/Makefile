@@ -1,7 +1,3 @@
-.PHONY: lint
-lint:
-	flake8
-
 .PHONY: clean
 clean:
 	rm -f app/web/templates/index.html

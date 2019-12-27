@@ -79,8 +79,9 @@ fmt-client:
 fmt-py:
 	black .
 
-lint-%:
-	cd $(*) && $(MAKE) lint
+.PHONY: lint
+lint:
+	flake8 server
 
 
 # CREATING DISTRIBUTION RELEASE
