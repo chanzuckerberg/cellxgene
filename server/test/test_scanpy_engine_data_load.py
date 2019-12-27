@@ -10,8 +10,9 @@ class DataLoadEngineTest(unittest.TestCase):
     """
     Test file loading, including deferred loading/update.
     """
+
     def setUp(self):
-        self.data_file = DataLocator("example-dataset/pbmc3k.h5ad")
+        self.data_file = DataLocator("../example-dataset/pbmc3k.h5ad")
         self.data = ScanpyEngine()
 
     def test_init(self):
@@ -29,7 +30,7 @@ class DataLoadEngineTest(unittest.TestCase):
             "annotations_output_dir": None,
             "backed": False,
             "diffexp_may_be_slow": False,
-            "disable_diffexp": False
+            "disable_diffexp": False,
         }
         self.data.update(args=args)
         self.assertEqual(args, self.data.config)
@@ -60,6 +61,7 @@ class DataLocatorEngineTest(unittest.TestCase):
     """
     Test various types of data locators we expect to consume
     """
+
     def setUp(self):
         self.args = {
             "layout": ["umap"],
@@ -76,7 +78,7 @@ class DataLocatorEngineTest(unittest.TestCase):
         self.assertEqual(data.gene_count, 1838)
 
     def test_posix_file(self):
-        locator = DataLocator("example-dataset/pbmc3k.h5ad")
+        locator = DataLocator("../example-dataset/pbmc3k.h5ad")
         data = ScanpyEngine(locator, self.args)
         self.stdAsserts(data)
 

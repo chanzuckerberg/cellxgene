@@ -20,8 +20,8 @@ from server.utils.utils import find_available_port
 
 if WINDOWS or LINUX:
     dirname = dirname(PySide2.__file__)
-    plugin_path = join(dirname, 'plugins', 'platforms')
-    environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = plugin_path
+    plugin_path = join(dirname, "plugins", "platforms")
+    environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = plugin_path
 
 # Configuration
 # TODO remember this or calculate it?
@@ -94,8 +94,7 @@ class MainWindow(QMainWindow):
             # a hidden window, embed CEF browser in it and then
             # create a container for that hidden window and replace
             # cef widget in the layout with the container.
-            self.container = QWidget.createWindowContainer(
-                self.cef_widget.hidden_window, parent=self)
+            self.container = QWidget.createWindowContainer(self.cef_widget.hidden_window, parent=self)
             self.stacked_layout.replaceWidget(self.cef_widget, self.container)
         self.stacked_layout.setCurrentIndex(LOAD_INDEX)
 
@@ -117,7 +116,7 @@ class MainWindow(QMainWindow):
     def setupMenu(self):
         # TODO add communication to subprocess on reload
         main_menu = self.menuBar()
-        file_menu = main_menu.addMenu('File')
+        file_menu = main_menu.addMenu("File")
         load_action = QAction("Load file...", self)
         load_action.setStatusTip("Load file")
         load_action.setShortcut("Ctrl+O")
@@ -201,7 +200,7 @@ class LoadWidget(QFrame):
         for l in [logo_layout, file_layout, message_layout]:
             load_ui_layout.addLayout(l)
 
-        #TODO remove magic number
+        # TODO remove magic number
         load_ui_layout.setStretch(1, 10)
         self.setLayout(load_ui_layout)
 
@@ -240,8 +239,15 @@ class LoadWidget(QFrame):
     def createScanpyEngine(self, file_name):
         title = splitext(basename(file_name))[0]
         self.window().setupServer()
-        worker = Worker(self.window().parent_conn, self.window().child_conn, file_name, host="127.0.0.1",
-                        port=GUI_PORT, title=title, engine_options={})
+        worker = Worker(
+            self.window().parent_conn,
+            self.window().child_conn,
+            file_name,
+            host="127.0.0.1",
+            port=GUI_PORT,
+            title=title,
+            engine_options={},
+        )
         self.window().load_emitter.signals.ready.connect(self.onDataReady)
         self.window().load_emitter.signals.engine_error.connect(self.onServerError)
         self.window().load_emitter.signals.server_error.connect(self.onServerError)
@@ -289,6 +295,7 @@ class LoadWidget(QFrame):
 
     onServerError = partialmethod(onError, server_error=True)
 
+
 class FilePath(QObject):
     def __init__(self):
         super(FilePath, self).__init__()
@@ -320,8 +327,7 @@ class FileArea(QFrame):
     def fileBrowse(self):
         options = QFileDialog.Options()
         # options |= QFileDialog.DontUseNativeDialog
-        file_name, _ = QFileDialog.getOpenFileName(self,
-                                                   "Open H5AD File", "", "H5AD Files (*.h5ad)", options=options)
+        file_name, _ = QFileDialog.getOpenFileName(self, "Open H5AD File", "", "H5AD Files (*.h5ad)", options=options)
         if file_name:
             self.parent().file_name.updateValue(file_name)
             self.parent().onLoad()
@@ -391,5 +397,5 @@ def main():
         sys.exit(0)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
