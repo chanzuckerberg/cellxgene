@@ -25,7 +25,7 @@ class WritableAnnotationTest(unittest.TestCase):
             "diffexp_lfc_cutoff": 0.01,
             "annotations": True,
             "annotations_file": self.annotations_file,
-            "annotations_output_dir": None
+            "annotations_output_dir": None,
         }
         self.data = ScanpyEngine(DataLocator("../example-dataset/pbmc3k.h5ad"), args)
 
@@ -40,9 +40,7 @@ class WritableAnnotationTest(unittest.TestCase):
         # verify that the expected errors are generated
 
         n_rows = self.data.data.obs.shape[0]
-        fbs_bad = self.make_fbs({
-            'louvain': pd.Series(['undefined' for l in range(0, n_rows)], dtype='category')
-        })
+        fbs_bad = self.make_fbs({"louvain": pd.Series(["undefined" for l in range(0, n_rows)], dtype="category")})
 
         # ensure attempt to change VAR annotation
         with self.assertRaises(ValueError):
@@ -55,32 +53,36 @@ class WritableAnnotationTest(unittest.TestCase):
     def test_write_to_file(self):
         # verify the file is written as expected
         n_rows = self.data.data.obs.shape[0]
-        fbs = self.make_fbs({
-            'cat_A': pd.Series(['label_A' for l in range(0, n_rows)], dtype='category'),
-            'cat_B': pd.Series(['label_B' for l in range(0, n_rows)], dtype='category')
-        })
+        fbs = self.make_fbs(
+            {
+                "cat_A": pd.Series(["label_A" for l in range(0, n_rows)], dtype="category"),
+                "cat_B": pd.Series(["label_B" for l in range(0, n_rows)], dtype="category"),
+            }
+        )
         res = self.data.annotation_put_fbs("obs", fbs)
         self.assertEqual(res, json.dumps({"status": "OK"}))
         self.assertTrue(path.exists(self.annotations_file))
-        df = pd.read_csv(self.annotations_file, index_col=0, header=0, comment='#')
+        df = pd.read_csv(self.annotations_file, index_col=0, header=0, comment="#")
         self.assertEqual(df.shape, (n_rows, 2))
-        self.assertEqual(set(df.columns), set(['cat_A', 'cat_B']))
+        self.assertEqual(set(df.columns), set(["cat_A", "cat_B"]))
         self.assertTrue(self.data.original_obs_index.equals(df.index))
-        self.assertTrue(np.all(df['cat_A'] == ['label_A' for l in range(0, n_rows)]))
-        self.assertTrue(np.all(df['cat_B'] == ['label_B' for l in range(0, n_rows)]))
+        self.assertTrue(np.all(df["cat_A"] == ["label_A" for l in range(0, n_rows)]))
+        self.assertTrue(np.all(df["cat_B"] == ["label_B" for l in range(0, n_rows)]))
 
         # verify complete overwrite on second attempt, AND rotation occurs
-        fbs = self.make_fbs({
-            'cat_A': pd.Series(['label_A1' for l in range(0, n_rows)], dtype='category'),
-            'cat_C': pd.Series(['label_C' for l in range(0, n_rows)], dtype='category')
-        })
+        fbs = self.make_fbs(
+            {
+                "cat_A": pd.Series(["label_A1" for l in range(0, n_rows)], dtype="category"),
+                "cat_C": pd.Series(["label_C" for l in range(0, n_rows)], dtype="category"),
+            }
+        )
         res = self.data.annotation_put_fbs("obs", fbs)
         self.assertEqual(res, json.dumps({"status": "OK"}))
         self.assertTrue(path.exists(self.annotations_file))
-        df = pd.read_csv(self.annotations_file, index_col=0, header=0, comment='#')
-        self.assertEqual(set(df.columns), set(['cat_A', 'cat_C']))
-        self.assertTrue(np.all(df['cat_A'] == ['label_A1' for l in range(0, n_rows)]))
-        self.assertTrue(np.all(df['cat_C'] == ['label_C' for l in range(0, n_rows)]))
+        df = pd.read_csv(self.annotations_file, index_col=0, header=0, comment="#")
+        self.assertEqual(set(df.columns), set(["cat_A", "cat_C"]))
+        self.assertTrue(np.all(df["cat_A"] == ["label_A1" for l in range(0, n_rows)]))
+        self.assertTrue(np.all(df["cat_C"] == ["label_C" for l in range(0, n_rows)]))
 
         # rotation
         name, ext = path.splitext(self.annotations_file)
@@ -92,10 +94,12 @@ class WritableAnnotationTest(unittest.TestCase):
     def test_file_rotation_to_max_9(self):
         # verify we stop rotation at 9
         n_rows = self.data.data.obs.shape[0]
-        fbs = self.make_fbs({
-            'cat_A': pd.Series(['label_A' for l in range(0, n_rows)], dtype='category'),
-            'cat_B': pd.Series(['label_B' for l in range(0, n_rows)], dtype='category')
-        })
+        fbs = self.make_fbs(
+            {
+                "cat_A": pd.Series(["label_A" for l in range(0, n_rows)], dtype="category"),
+                "cat_B": pd.Series(["label_B" for l in range(0, n_rows)], dtype="category"),
+            }
+        )
         for i in range(0, 11):
             res = self.data.annotation_put_fbs("obs", fbs)
             self.assertEqual(res, json.dumps({"status": "OK"}))
@@ -111,10 +115,12 @@ class WritableAnnotationTest(unittest.TestCase):
         # GET (annotation_to_fbs_matrix)
 
         n_rows = self.data.data.obs.shape[0]
-        fbs = self.make_fbs({
-            'cat_A': pd.Series(['label_A' for l in range(0, n_rows)], dtype='category'),
-            'cat_B': pd.Series(['label_B' for l in range(0, n_rows)], dtype='category')
-        })
+        fbs = self.make_fbs(
+            {
+                "cat_A": pd.Series(["label_A" for l in range(0, n_rows)], dtype="category"),
+                "cat_B": pd.Series(["label_B" for l in range(0, n_rows)], dtype="category"),
+            }
+        )
 
         # put
         res = self.data.annotation_put_fbs("obs", fbs)
@@ -128,28 +134,21 @@ class WritableAnnotationTest(unittest.TestCase):
         self.assertEqual(annotations["n_rows"], n_rows)
         self.assertEqual(annotations["n_cols"], 7)
         self.assertIsNone(annotations["row_idx"])
-        self.assertEqual(annotations["col_idx"], [
-            obs_index_col_name, "n_genes", "percent_mito", "n_counts", "louvain", "cat_A", "cat_B"
-        ])
+        self.assertEqual(
+            annotations["col_idx"],
+            [obs_index_col_name, "n_genes", "percent_mito", "n_counts", "louvain", "cat_A", "cat_B"],
+        )
         col_idx = annotations["col_idx"]
-        self.assertEqual(annotations["columns"][col_idx.index('cat_A')], [
-            'label_A' for l in range(0, n_rows)
-        ])
-        self.assertEqual(annotations["columns"][col_idx.index('cat_B')], [
-            'label_B' for l in range(0, n_rows)
-        ])
+        self.assertEqual(annotations["columns"][col_idx.index("cat_A")], ["label_A" for l in range(0, n_rows)])
+        self.assertEqual(annotations["columns"][col_idx.index("cat_B")], ["label_B" for l in range(0, n_rows)])
 
         # verify the schema was updated
         all_col_schema = {c["name"]: c for c in schema["annotations"]["obs"]["columns"]}
-        self.assertEqual(all_col_schema["cat_A"], {
-            "name": "cat_A",
-            "type": "categorical",
-            "categories": ["label_A"],
-            "writable": True
-        })
-        self.assertEqual(all_col_schema["cat_B"], {
-            "name": "cat_B",
-            "type": "categorical",
-            "categories": ["label_B"],
-            "writable": True
-        })
+        self.assertEqual(
+            all_col_schema["cat_A"],
+            {"name": "cat_A", "type": "categorical", "categories": ["label_A"], "writable": True},
+        )
+        self.assertEqual(
+            all_col_schema["cat_B"],
+            {"name": "cat_B", "type": "categorical", "categories": ["label_B"], "writable": True},
+        )

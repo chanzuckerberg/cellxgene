@@ -18,15 +18,17 @@ Test the scanpy engine using the pbmc3k data set.
 """
 
 
-@parameterized_class(("data_locator", "backed"), [
-    ("../example-dataset/pbmc3k.h5ad", False),
-    ("test/test_datasets/pbmc3k-CSC-gz.h5ad", False),
-    ("test/test_datasets/pbmc3k-CSR-gz.h5ad", False),
-
-    ("../example-dataset/pbmc3k.h5ad", True),
-    ("test/test_datasets/pbmc3k-CSC-gz.h5ad", True),
-    ("test/test_datasets/pbmc3k-CSR-gz.h5ad", True),
-])
+@parameterized_class(
+    ("data_locator", "backed"),
+    [
+        ("../example-dataset/pbmc3k.h5ad", False),
+        ("test/test_datasets/pbmc3k-CSC-gz.h5ad", False),
+        ("test/test_datasets/pbmc3k-CSR-gz.h5ad", False),
+        ("../example-dataset/pbmc3k.h5ad", True),
+        ("test/test_datasets/pbmc3k-CSC-gz.h5ad", True),
+        ("test/test_datasets/pbmc3k-CSR-gz.h5ad", True),
+    ],
+)
 class EngineTest(unittest.TestCase):
     def setUp(self):
         args = {
@@ -36,7 +38,7 @@ class EngineTest(unittest.TestCase):
             "var_names": None,
             "diffexp_lfc_cutoff": 0.01,
             "layout_file": None,
-            "backed": self.backed
+            "backed": self.backed,
         }
         self.data = ScanpyEngine(DataLocator(self.data_locator), args)
 
@@ -64,11 +66,7 @@ class EngineTest(unittest.TestCase):
                 self.data._validate_data_types()
 
     def test_filter_idx(self):
-        filter_ = {
-            "filter": {
-                "var": {"index": [1, 99, [200, 300]]}
-            }
-        }
+        filter_ = {"filter": {"var": {"index": [1, 99, [200, 300]]}}}
         fbs = self.data.data_frame_to_fbs_matrix(filter_["filter"], "var")
         data = decode_fbs.decode_matrix_FBS(fbs)
         self.assertEqual(data["n_rows"], 2638)
@@ -76,14 +74,7 @@ class EngineTest(unittest.TestCase):
 
     def test_filter_complex(self):
         filter_ = {
-            "filter": {
-                "var": {
-                    "annotation_value": [
-                        {"name": "n_cells", "min": 10}
-                    ],
-                    "index": [1, 99, [200, 300]]
-                }
-            }
+            "filter": {"var": {"annotation_value": [{"name": "n_cells", "min": 10}], "index": [1, 99, [200, 300]]}}
         }
         fbs = self.data.data_frame_to_fbs_matrix(filter_["filter"], "var")
         data = decode_fbs.decode_matrix_FBS(fbs)
@@ -101,16 +92,14 @@ class EngineTest(unittest.TestCase):
 
     def test_schema_produces_error(self):
         self.data.data.obs["time"] = pd.Series(
-            list([time.time() for i in range(self.data.cell_count)]),
-            dtype="datetime64[ns]",
+            list([time.time() for i in range(self.data.cell_count)]), dtype="datetime64[ns]",
         )
         with pytest.raises(TypeError):
             self.data._create_schema()
 
     def test_config(self):
         self.assertEqual(
-            self.data.features["layout"]["obs"],
-            {"available": True, "interactiveLimit": 50000},
+            self.data.features["layout"]["obs"], {"available": True, "interactiveLimit": 50000},
         )
 
     def test_layout(self):
@@ -131,14 +120,13 @@ class EngineTest(unittest.TestCase):
         self.assertEqual(annotations["n_cols"], 5)
         obs_index_col_name = self.data.get_schema()["annotations"]["obs"]["index"]
         self.assertEqual(
-            annotations["col_idx"],
-            [obs_index_col_name, "n_genes", "percent_mito", "n_counts", "louvain"],
+            annotations["col_idx"], [obs_index_col_name, "n_genes", "percent_mito", "n_counts", "louvain"],
         )
 
         fbs = self.data.annotation_to_fbs_matrix("var")
         annotations = decode_fbs.decode_matrix_FBS(fbs)
-        self.assertEqual(annotations['n_rows'], 1838)
-        self.assertEqual(annotations['n_cols'], 2)
+        self.assertEqual(annotations["n_rows"], 1838)
+        self.assertEqual(annotations["n_cols"], 2)
         var_index_col_name = self.data.get_schema()["annotations"]["var"]["index"]
         self.assertEqual(annotations["col_idx"], [var_index_col_name, "n_cells"])
 
@@ -146,13 +134,13 @@ class EngineTest(unittest.TestCase):
         fbs = self.data.annotation_to_fbs_matrix("obs", ["n_genes", "n_counts"])
         annotations = decode_fbs.decode_matrix_FBS(fbs)
         self.assertEqual(annotations["n_rows"], 2638)
-        self.assertEqual(annotations['n_cols'], 2)
+        self.assertEqual(annotations["n_cols"], 2)
 
         var_index_col_name = self.data.get_schema()["annotations"]["var"]["index"]
         fbs = self.data.annotation_to_fbs_matrix("var", [var_index_col_name])
         annotations = decode_fbs.decode_matrix_FBS(fbs)
-        self.assertEqual(annotations['n_rows'], 1838)
-        self.assertEqual(annotations['n_cols'], 1)
+        self.assertEqual(annotations["n_rows"], 1838)
+        self.assertEqual(annotations["n_cols"], 1)
 
     def test_annotation_put(self):
         with self.assertRaises(DisabledFeatureError):
@@ -177,27 +165,19 @@ class EngineTest(unittest.TestCase):
             self.data.data_frame_to_fbs_matrix(None, "obs")
 
     def test_filtered_data_frame(self):
-        filter_ = {
-            "filter": {"var": {"annotation_value": [{"name": "n_cells", "min": 100}]}}
-        }
+        filter_ = {"filter": {"var": {"annotation_value": [{"name": "n_cells", "min": 100}]}}}
         fbs = self.data.data_frame_to_fbs_matrix(filter_["filter"], "var")
         data = decode_fbs.decode_matrix_FBS(fbs)
         self.assertEqual(data["n_rows"], 2638)
         self.assertEqual(data["n_cols"], 1040)
 
-        filter_ = {
-            "filter": {"obs": {"annotation_value": [{"name": "n_counts", "min": 3000}]}}
-        }
+        filter_ = {"filter": {"obs": {"annotation_value": [{"name": "n_counts", "min": 3000}]}}}
         with self.assertRaises(FilterError):
             self.data.data_frame_to_fbs_matrix(filter_["filter"], "var")
 
     def test_data_named_gene(self):
         var_index_col_name = self.data.get_schema()["annotations"]["var"]["index"]
-        filter_ = {
-            "filter": {
-                "var": {"annotation_value": [{"name": var_index_col_name, "values": ["RER1"]}]}
-            }
-        }
+        filter_ = {"filter": {"var": {"annotation_value": [{"name": var_index_col_name, "values": ["RER1"]}]}}}
         fbs = self.data.data_frame_to_fbs_matrix(filter_["filter"], "var")
         data = decode_fbs.decode_matrix_FBS(fbs)
         self.assertEqual(data["n_rows"], 2638)
@@ -205,9 +185,7 @@ class EngineTest(unittest.TestCase):
         self.assertEqual(data["col_idx"], [4])
 
         filter_ = {
-            "filter": {
-                "var": {"annotation_value": [{"name": var_index_col_name, "values": ["SPEN", "TYMP", "PRMT2"]}]}
-            }
+            "filter": {"var": {"annotation_value": [{"name": var_index_col_name, "values": ["SPEN", "TYMP", "PRMT2"]}]}}
         }
         fbs = self.data.data_frame_to_fbs_matrix(filter_["filter"], "var")
         data = decode_fbs.decode_matrix_FBS(fbs)

@@ -27,7 +27,7 @@ def CreateNumpyVector(builder, x):
     if not isinstance(x, np.ndarray):
         raise TypeError(f"non-numpy-ndarray passed to CreateNumpyVector ({type(x)}")
 
-    if x.dtype.kind not in ['b', 'i', 'u', 'f']:
+    if x.dtype.kind not in ["b", "i", "u", "f"]:
         raise TypeError("numpy-ndarray holds elements of unsupported datatype")
 
     if x.ndim > 1:
@@ -46,8 +46,7 @@ def CreateNumpyVector(builder, x):
     builder.head = int(builder.Head() - length)
 
     # tobytes ensures c_contiguous ordering
-    builder.Bytes[builder.Head():builder.Head() +
-                  length] = x_little_endian.tobytes(order='C')
+    builder.Bytes[builder.Head() : builder.Head() + length] = x_little_endian.tobytes(order="C")
 
     return builder.EndVector(x.size)
 
@@ -89,9 +88,9 @@ def serialize_typed_array(builder, source_array, encoding_info):
         arr = arr.to_series()
 
     # convert to a simple ndarray
-    if as_type == 'json':
-        as_json = arr.to_json(orient='records')
-        arr = np.array(bytearray(as_json, 'utf-8'))
+    if as_type == "json":
+        as_json = arr.to_json(orient="records")
+        arr = np.array(bytearray(as_json, "utf-8"))
     else:
         if MatrixProxy.ismatrixproxy(arr) or sparse.issparse(arr):
             arr = arr.toarray()
@@ -120,18 +119,16 @@ column_encoding_type_map = {
     np.dtype(np.float64).str: (TypedArray.TypedArray.Float32Array, np.float32),
     np.dtype(np.float32).str: (TypedArray.TypedArray.Float32Array, np.float32),
     np.dtype(np.float16).str: (TypedArray.TypedArray.Float32Array, np.float32),
-
     np.dtype(np.int8).str: (TypedArray.TypedArray.Int32Array, np.int32),
     np.dtype(np.int16).str: (TypedArray.TypedArray.Int32Array, np.int32),
     np.dtype(np.int32).str: (TypedArray.TypedArray.Int32Array, np.int32),
     np.dtype(np.int64).str: (TypedArray.TypedArray.Int32Array, np.int32),
-
     np.dtype(np.uint8).str: (TypedArray.TypedArray.Uint32Array, np.uint32),
     np.dtype(np.uint16).str: (TypedArray.TypedArray.Uint32Array, np.uint32),
     np.dtype(np.uint32).str: (TypedArray.TypedArray.Uint32Array, np.uint32),
-    np.dtype(np.uint64).str: (TypedArray.TypedArray.Uint32Array, np.uint32)
+    np.dtype(np.uint64).str: (TypedArray.TypedArray.Uint32Array, np.uint32),
 }
-column_encoding_default = (TypedArray.TypedArray.JSONEncodedArray, 'json')
+column_encoding_default = (TypedArray.TypedArray.JSONEncodedArray, "json")
 
 
 def column_encoding(arr):
@@ -142,11 +139,10 @@ index_encoding_type_map = {
     # array protocol string:  ( array_type, as_type )
     np.dtype(np.int32).str: (TypedArray.TypedArray.Int32Array, np.int32),
     np.dtype(np.int64).str: (TypedArray.TypedArray.Int32Array, np.int32),
-
     np.dtype(np.uint32).str: (TypedArray.TypedArray.Uint32Array, np.uint32),
-    np.dtype(np.uint64).str: (TypedArray.TypedArray.Uint32Array, np.uint32)
+    np.dtype(np.uint64).str: (TypedArray.TypedArray.Uint32Array, np.uint32),
 }
-index_encoding_default = (TypedArray.TypedArray.JSONEncodedArray, 'json')
+index_encoding_default = (TypedArray.TypedArray.JSONEncodedArray, "json")
 
 
 def index_encoding(arr):
@@ -164,7 +160,7 @@ def guess_at_mem_needed(matrix):
         guess = 1
 
     # round up to nearest 1024 bytes
-    guess = (guess + 0x400) & (~0x3ff)
+    guess = (guess + 0x400) & (~0x3FF)
     return guess
 
 
@@ -224,7 +220,7 @@ def deserialize_typed_array(tarr):
         TypedArray.TypedArray.Int32Array: Int32Array.Int32Array,
         TypedArray.TypedArray.Float32Array: Float32Array.Float32Array,
         TypedArray.TypedArray.Float64Array: Float64Array.Float64Array,
-        TypedArray.TypedArray.JSONEncodedArray: JSONEncodedArray.JSONEncodedArray
+        TypedArray.TypedArray.JSONEncodedArray: JSONEncodedArray.JSONEncodedArray,
     }
     (u_type, u) = tarr
     if u_type is TypedArray.TypedArray.NONE:
@@ -238,7 +234,7 @@ def deserialize_typed_array(tarr):
     arr.Init(u.Bytes, u.Pos)
     narr = arr.DataAsNumpy()
     if u_type == TypedArray.TypedArray.JSONEncodedArray:
-        narr = json.loads(narr.tostring().decode('utf-8'))
+        narr = json.loads(narr.tostring().decode("utf-8"))
     return narr
 
 
