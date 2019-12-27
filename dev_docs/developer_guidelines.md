@@ -54,7 +54,7 @@ If you install cellxgene using `make install-dev` the server will be restarted e
 
 ### Linter
 
-We use `yapf` to auto-format and lint python.
+We use [`flake8`](https://github.com/PyCQA/flake8) to lint python and [`black`](https://pypi.org/project/black/) for auto-formatting.
 
 To auto-format code run `make fmt`. To run lint checks on the code run `make lint`.
 

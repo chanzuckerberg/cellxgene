@@ -1,7 +1,3 @@
-.PHONY: fmt
-fmt:
-	yapf -ipr .
-
 .PHONY: lint
 lint:
 	flake8

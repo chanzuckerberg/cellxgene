@@ -71,13 +71,13 @@ smoke-test:
 # FORMATTING CODE
 
 .PHOHY: fmt
-fmt: fmt-client fmt-server
+fmt: fmt-client fmt-py
 
-fmt-%:
-	cd $(*) && $(MAKE) fmt
+fmt-client:
+	cd client && $(MAKE) fmt
 
-.PHONY: lint
-lint: lint-server
+fmt-py:
+	black .
 
 lint-%:
 	cd $(*) && $(MAKE) lint
