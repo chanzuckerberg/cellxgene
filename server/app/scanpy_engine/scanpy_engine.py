@@ -188,7 +188,7 @@ class ScanpyEngine(CXGDriver):
     @requires_data
     def _create_schema(self):
         self.schema = {
-            "dataframe": {"nObs": self.cell_count, "nVar": self.gene_count, "type": str(self.data.X.dtype),},
+            "dataframe": {"nObs": self.cell_count, "nVar": self.gene_count, "type": str(self.data.X.dtype)},
             "annotations": {
                 "obs": {"index": self.config["obs_names"], "columns": []},
                 "var": {"index": self.config["var_names"], "columns": []},
