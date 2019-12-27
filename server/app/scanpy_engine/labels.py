@@ -8,13 +8,8 @@ import pandas as pd
 
 
 def read_labels(fname):
-    if fname is not None and os.path.exists(
-            fname) and os.path.getsize(fname) > 0:
-        return pd.read_csv(fname,
-                           dtype='category',
-                           index_col=0,
-                           header=0,
-                           comment='#')
+    if fname is not None and os.path.exists(fname) and os.path.getsize(fname) > 0:
+        return pd.read_csv(fname, dtype='category', index_col=0, header=0, comment='#')
     else:
         return pd.DataFrame()
 
@@ -52,15 +47,13 @@ def backup(fname, backup_dir, max_backups=9):
     fname_base_root, fname_base_ext = os.path.splitext(fname_base)
     # don't use ISO standard time format, as it contains characters illegal on some filesytems.
     nowish = datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
-    backup_fname = os.path.join(backup_dir,
-                                f"{fname_base_root}-{nowish}{fname_base_ext}")
+    backup_fname = os.path.join(backup_dir, f"{fname_base_root}-{nowish}{fname_base_ext}")
     if os.path.exists(backup_fname):
         os.remove(backup_fname)
     os.rename(fname, backup_fname)
 
     # prune the backup_dir to max number of backup files, keeping the most recent backups
-    backups = list(
-        filter(lambda s: s.startswith(fname_base_root), os.listdir(backup_dir)))
+    backups = list(filter(lambda s: s.startswith(fname_base_root), os.listdir(backup_dir)))
     excess_count = len(backups) - max_backups
     if excess_count > 0:
         backups.sort()

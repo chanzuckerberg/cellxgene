@@ -40,52 +40,49 @@ class FbsTests(unittest.TestCase):
     def test_encode_DataFrame(self):
         df = pd.DataFrame(
             data={
-                'a':
-                    np.zeros((10,), dtype=np.float32),
-                'b':
-                    np.ones((10,), dtype=np.int64),
-                'c':
-                    np.array([i for i in range(0, 10)], dtype=np.uint16),
-                'd':
-                    pd.Series(
-                        ['x', 'y', 'z', 'x', 'y', 'z', 'a', 'x', 'y', 'z'],
-                        dtype='category')
+                'a': np.zeros((10,), dtype=np.float32),
+                'b': np.ones((10,), dtype=np.int64),
+                'c': np.array([i for i in range(0, 10)], dtype=np.uint16),
+                'd': pd.Series(['x', 'y', 'z', 'x', 'y', 'z', 'a', 'x', 'y', 'z'], dtype='category')
             })
-        expected_types = ((np.ndarray, np.float32), (np.ndarray, np.int32),
-                          (np.ndarray, np.uint32), (list, None))
+        expected_types = (
+            (np.ndarray, np.float32),
+            (np.ndarray, np.int32),
+            (np.ndarray, np.uint32),
+            (list, None)
+        )
         fbs = encode_matrix_fbs(matrix=df, row_idx=None, col_idx=df.columns)
         self.fbs_checks(fbs, (10, 4), expected_types, ['a', 'b', 'c', 'd'])
 
     def test_encode_ndarray(self):
         arr = np.zeros((3, 2), dtype=np.float32)
-        expected_types = ((np.ndarray, np.float32), (np.ndarray, np.float32),
-                          (np.ndarray, np.float32))
+        expected_types = (
+            (np.ndarray, np.float32),
+            (np.ndarray, np.float32),
+            (np.ndarray, np.float32)
+        )
         fbs = encode_matrix_fbs(matrix=arr, row_idx=None, col_idx=None)
         self.fbs_checks(fbs, (3, 2), expected_types, None)
 
     def test_encode_sparse(self):
         csc = sparse.csc_matrix(np.array([[0, 1, 2], [3, 0, 4]]))
-        expected_types = ((np.ndarray, np.int32), (np.ndarray, np.int32),
-                          (np.ndarray, np.int32))
+        expected_types = (
+            (np.ndarray, np.int32),
+            (np.ndarray, np.int32),
+            (np.ndarray, np.int32)
+        )
         fbs = encode_matrix_fbs(matrix=csc, row_idx=None, col_idx=None)
         self.fbs_checks(fbs, (2, 3), expected_types, None)
 
     def test_roundtrip(self):
         dfSrc = pd.DataFrame(
             data={
-                'a':
-                    np.zeros((10,), dtype=np.float32),
-                'b':
-                    np.ones((10,), dtype=np.int64),
-                'c':
-                    np.array([i for i in range(0, 10)], dtype=np.uint16),
-                'd':
-                    pd.Series(
-                        ['x', 'y', 'z', 'x', 'y', 'z', 'a', 'x', 'y', 'z'],
-                        dtype='category')
+                'a': np.zeros((10,), dtype=np.float32),
+                'b': np.ones((10,), dtype=np.int64),
+                'c': np.array([i for i in range(0, 10)], dtype=np.uint16),
+                'd': pd.Series(['x', 'y', 'z', 'x', 'y', 'z', 'a', 'x', 'y', 'z'], dtype='category')
             })
-        dfDst = decode_matrix_fbs(
-            encode_matrix_fbs(matrix=dfSrc, col_idx=dfSrc.columns))
+        dfDst = decode_matrix_fbs(encode_matrix_fbs(matrix=dfSrc, col_idx=dfSrc.columns))
         self.assertEqual(dfSrc.shape, dfDst.shape)
         self.assertEqual(set(dfSrc.columns), set(dfDst.columns))
         for c in dfSrc.columns:

@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod
+
 """
 Sort order for methods
 1. Initialize
@@ -10,7 +11,6 @@ Sort order for methods
 
 
 class CXGDriver(metaclass=ABCMeta):
-
     def __init__(self, data_locator=None, args={}):
         self.config = self._get_default_config()
         self.config.update(args)
@@ -49,29 +49,14 @@ class CXGDriver(metaclass=ABCMeta):
     @property
     def features(self):
         features = {
-            "cluster": {
-                "available": False
-            },
-            "layout": {
-                "obs": {
-                    "available": False
-                },
-                "var": {
-                    "available": False
-                }
-            },
-            "diffexp": {
-                "available": True,
-                "interactiveLimit": 50000
-            }
+            "cluster": {"available": False},
+            "layout": {"obs": {"available": False}, "var": {"available": False}},
+            "diffexp": {"available": True, "interactiveLimit": 50000}
         }
         # TODO - Interactive limit should be generated from the actual available methods see GH issue #94
         if self.config["layout"]:
             # TODO handle "var" when gene layout becomes available
-            features["layout"]["obs"] = {
-                "available": True,
-                "interactiveLimit": 50000
-            }
+            features["layout"]["obs"] = {"available": True, "interactiveLimit": 50000}
         return features
 
     @abstractmethod
@@ -107,11 +92,7 @@ class CXGDriver(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def diffexp_topN(self,
-                     obsFilter1,
-                     obsFilter2,
-                     top_n=None,
-                     interactive_limit=None):
+    def diffexp_topN(self, obsFilter1, obsFilter2, top_n=None, interactive_limit=None):
         """
         Computes the top N differentially expressed variables between two observation sets. If mode
         is "TOP_N", then stats for the top N

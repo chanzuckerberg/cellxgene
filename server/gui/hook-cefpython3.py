@@ -50,22 +50,22 @@ def check_pyinstaller_version():
     version = PyInstaller.__version__
     match = re.search(r"^\d+\.\d+(\.\d+)?", version)
     if not (match.group(0) >= PYINSTALLER_MIN_VERSION):
-        raise SystemExit("Error: pyinstaller %s or higher is required" %
-                         PYINSTALLER_MIN_VERSION)
+        raise SystemExit("Error: pyinstaller %s or higher is required"
+                         % PYINSTALLER_MIN_VERSION)
 
 
 def check_cefpython3_version():
     if not is_module_satisfies("cefpython3 >= %s" % CEFPYTHON_MIN_VERSION):
-        raise SystemExit("Error: cefpython3 %s or higher is required" %
-                         CEFPYTHON_MIN_VERSION)
+        raise SystemExit("Error: cefpython3 %s or higher is required"
+                         % CEFPYTHON_MIN_VERSION)
 
 
 def get_cefpython_modules():
     """Get all cefpython Cython modules in the cefpython3 package.
     It returns a list of names without file extension. Eg.
     'cefpython_py27'. """
-    pyds = glob.glob(
-        os.path.join(CEFPYTHON3_DIR, "cefpython_py*" + CYTHON_MODULE_EXT))
+    pyds = glob.glob(os.path.join(CEFPYTHON3_DIR,
+                                  "cefpython_py*" + CYTHON_MODULE_EXT))
     assert len(pyds) > 1, "Missing cefpython3 Cython modules"
     modules = []
     for path in pyds:
@@ -155,8 +155,7 @@ def get_cefpython3_datas():
                 absolute_file_path = os.path.join(path, file)
                 dest_path = os.path.relpath(path, CEFPYTHON3_DIR)
                 ret.append((absolute_file_path, dest_path))
-                logger.info("Include cefpython3 data: {}/{}".format(
-                    dest_path, file))
+                logger.info("Include cefpython3 data: {}/{}".format(dest_path, file))
     elif is_win or is_linux:
         # The .pak files in cefpython3/locales/ directory
         locales_dir = os.path.join(CEFPYTHON3_DIR, "locales")
@@ -165,9 +164,8 @@ def get_cefpython3_datas():
         for filename in os.listdir(locales_dir):
             logger.info("Include cefpython3 data: {}/{}".format(
                 os.path.basename(locales_dir), filename))
-            ret.append(
-                (os.path.join(locales_dir,
-                              filename), os.path.join(cefdatadir, "locales")))
+            ret.append((os.path.join(locales_dir, filename),
+                        os.path.join(cefdatadir, "locales")))
 
         # Optional .so/.dll files in cefpython3/swiftshader/ directory
         swiftshader_dir = os.path.join(CEFPYTHON3_DIR, "swiftshader")

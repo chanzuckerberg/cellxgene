@@ -1,10 +1,10 @@
 from enum import Enum
 
+
 DEFAULT_TOP_N = 10
 
 
 class AugmentedEnum(Enum):
-
     def __hash__(self):
         return self.value.__hash__()
 

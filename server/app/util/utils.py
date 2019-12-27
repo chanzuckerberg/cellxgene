@@ -7,7 +7,6 @@ from server.app.util.errors import DriverError
 
 
 class Float32JSONEncoder(json.JSONEncoder):
-
     def __init__(self, *args, **kwargs):
         """
         NaN/Infinities are illegal in standard JSON.  Python extends JSON with
@@ -36,12 +35,9 @@ def jsonify_scanpy(data):
 
 
 def requires_data(func):
-
     @wraps(func)
     def wrapped_function(self, *args, **kwargs):
         if self.data is None:
-            raise DriverError(
-                f"error data must be loaded before you call {func.__name__}")
+            raise DriverError(f"error data must be loaded before you call {func.__name__}")
         return func(self, *args, **kwargs)
-
     return wrapped_function

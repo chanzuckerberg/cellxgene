@@ -12,13 +12,9 @@ from server.app.web import webapp
 
 
 class Server:
-
     def __init__(self):
         self.data = None
-        self.cache = Cache(config={
-            "CACHE_TYPE": "simple",
-            "CACHE_DEFAULT_TIMEOUT": 860_000
-        })
+        self.cache = Cache(config={"CACHE_TYPE": "simple", "CACHE_DEFAULT_TIMEOUT": 860_000})
         self.app = None
 
     def create_app(self):

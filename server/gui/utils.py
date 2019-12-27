@@ -49,7 +49,6 @@ class FileChanged(QObject):
 
 
 class Emitter:
-
     def __init__(self, transport, signals):
         self.transport = transport
         self.signals = signals()

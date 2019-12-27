@@ -25,8 +25,7 @@ def CreateNumpyVector(builder, x):
     """CreateNumpyVector writes a numpy array into the buffer."""
 
     if not isinstance(x, np.ndarray):
-        raise TypeError(
-            f"non-numpy-ndarray passed to CreateNumpyVector ({type(x)}")
+        raise TypeError(f"non-numpy-ndarray passed to CreateNumpyVector ({type(x)}")
 
     if x.dtype.kind not in ['b', 'i', 'u', 'f']:
         raise TypeError("numpy-ndarray holds elements of unsupported datatype")
@@ -121,10 +120,12 @@ column_encoding_type_map = {
     np.dtype(np.float64).str: (TypedArray.TypedArray.Float32Array, np.float32),
     np.dtype(np.float32).str: (TypedArray.TypedArray.Float32Array, np.float32),
     np.dtype(np.float16).str: (TypedArray.TypedArray.Float32Array, np.float32),
+
     np.dtype(np.int8).str: (TypedArray.TypedArray.Int32Array, np.int32),
     np.dtype(np.int16).str: (TypedArray.TypedArray.Int32Array, np.int32),
     np.dtype(np.int32).str: (TypedArray.TypedArray.Int32Array, np.int32),
     np.dtype(np.int64).str: (TypedArray.TypedArray.Int32Array, np.int32),
+
     np.dtype(np.uint8).str: (TypedArray.TypedArray.Uint32Array, np.uint32),
     np.dtype(np.uint16).str: (TypedArray.TypedArray.Uint32Array, np.uint32),
     np.dtype(np.uint32).str: (TypedArray.TypedArray.Uint32Array, np.uint32),
@@ -141,6 +142,7 @@ index_encoding_type_map = {
     # array protocol string:  ( array_type, as_type )
     np.dtype(np.int32).str: (TypedArray.TypedArray.Int32Array, np.int32),
     np.dtype(np.int64).str: (TypedArray.TypedArray.Int32Array, np.int32),
+
     np.dtype(np.uint32).str: (TypedArray.TypedArray.Uint32Array, np.uint32),
     np.dtype(np.uint64).str: (TypedArray.TypedArray.Uint32Array, np.uint32)
 }
@@ -191,8 +193,7 @@ def encode_matrix_fbs(matrix, row_idx=None, col_idx=None):
     columns = []
     for cidx in range(n_cols - 1, -1, -1):
         # serialize the typed array
-        col = matrix.iloc[:, cidx] if isinstance(
-            matrix, pd.DataFrame) else matrix[:, cidx]
+        col = matrix.iloc[:, cidx] if isinstance(matrix, pd.DataFrame) else matrix[:, cidx]
         typed_arr = serialize_typed_array(builder, col, column_encoding)
 
         # serialize the Column union
@@ -218,18 +219,12 @@ def encode_matrix_fbs(matrix, row_idx=None, col_idx=None):
 
 def deserialize_typed_array(tarr):
     type_map = {
-        TypedArray.TypedArray.NONE:
-            None,
-        TypedArray.TypedArray.Uint32Array:
-            Uint32Array.Uint32Array,
-        TypedArray.TypedArray.Int32Array:
-            Int32Array.Int32Array,
-        TypedArray.TypedArray.Float32Array:
-            Float32Array.Float32Array,
-        TypedArray.TypedArray.Float64Array:
-            Float64Array.Float64Array,
-        TypedArray.TypedArray.JSONEncodedArray:
-            JSONEncodedArray.JSONEncodedArray
+        TypedArray.TypedArray.NONE: None,
+        TypedArray.TypedArray.Uint32Array: Uint32Array.Uint32Array,
+        TypedArray.TypedArray.Int32Array: Int32Array.Int32Array,
+        TypedArray.TypedArray.Float32Array: Float32Array.Float32Array,
+        TypedArray.TypedArray.Float64Array: Float64Array.Float64Array,
+        TypedArray.TypedArray.JSONEncodedArray: JSONEncodedArray.JSONEncodedArray
     }
     (u_type, u) = tarr
     if u_type is TypedArray.TypedArray.NONE:
@@ -263,16 +258,13 @@ def decode_matrix_fbs(fbs):
 
     columns_length = matrix.ColumnsLength()
 
-    columns_index = deserialize_typed_array(
-        (matrix.ColIndexType(), matrix.ColIndex()))
+    columns_index = deserialize_typed_array((matrix.ColIndexType(), matrix.ColIndex()))
     if columns_index is None:
         columns_index = range(0, n_cols)
 
     # sanity checks
     if len(columns_index) != n_cols or columns_length != n_cols:
-        raise ValueError(
-            "FBS column count does not match number of columns in underlying matrix"
-        )
+        raise ValueError("FBS column count does not match number of columns in underlying matrix")
 
     columns_data = {}
     columns_type = {}
@@ -286,8 +278,7 @@ def decode_matrix_fbs(fbs):
         if col.UType() is TypedArray.TypedArray.JSONEncodedArray:
             columns_type[columns_index[col_idx]] = "category"
 
-    df = pd.DataFrame.from_dict(data=columns_data).astype(columns_type,
-                                                          copy=False)
+    df = pd.DataFrame.from_dict(data=columns_data).astype(columns_type, copy=False)
 
     # more sanity checks
     if not df.columns.is_unique or len(df.columns) != n_cols:

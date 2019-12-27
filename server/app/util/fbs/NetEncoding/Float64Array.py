@@ -4,7 +4,6 @@
 
 import flatbuffers
 
-
 class Float64Array(object):
     __slots__ = ['_tab']
 
@@ -24,17 +23,14 @@ class Float64Array(object):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(4))
         if o != 0:
             a = self._tab.Vector(o)
-            return self._tab.Get(
-                flatbuffers.number_types.Float64Flags,
-                a + flatbuffers.number_types.UOffsetTFlags.py_type(j * 8))
+            return self._tab.Get(flatbuffers.number_types.Float64Flags, a + flatbuffers.number_types.UOffsetTFlags.py_type(j * 8))
         return 0
 
     # Float64Array
     def DataAsNumpy(self):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(4))
         if o != 0:
-            return self._tab.GetVectorAsNumpy(
-                flatbuffers.number_types.Float64Flags, o)
+            return self._tab.GetVectorAsNumpy(flatbuffers.number_types.Float64Flags, o)
         return 0
 
     # Float64Array
@@ -44,19 +40,7 @@ class Float64Array(object):
             return self._tab.VectorLen(o)
         return 0
 
-
-def Float64ArrayStart(builder):
-    builder.StartObject(1)
-
-
-def Float64ArrayAddData(builder, data):
-    builder.PrependUOffsetTRelativeSlot(
-        0, flatbuffers.number_types.UOffsetTFlags.py_type(data), 0)
-
-
-def Float64ArrayStartDataVector(builder, numElems):
-    return builder.StartVector(8, numElems, 8)
-
-
-def Float64ArrayEnd(builder):
-    return builder.EndObject()
+def Float64ArrayStart(builder): builder.StartObject(1)
+def Float64ArrayAddData(builder, data): builder.PrependUOffsetTRelativeSlot(0, flatbuffers.number_types.UOffsetTFlags.py_type(data), 0)
+def Float64ArrayStartDataVector(builder, numElems): return builder.StartVector(8, numElems, 8)
+def Float64ArrayEnd(builder): return builder.EndObject()

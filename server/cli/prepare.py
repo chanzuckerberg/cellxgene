@@ -8,11 +8,9 @@ from server.utils.utils import sort_options
 
 
 @sort_options
-@click.command(
-    short_help="Preprocess data for use with cellxgene. "
-    "Run `cellxgene prepare --help` for more information.",
-    options_metavar="<options>",
-)
+@click.command(short_help="Preprocess data for use with cellxgene. "
+                          "Run `cellxgene prepare --help` for more information.",
+               options_metavar="<options>",)
 @click.argument("data", nargs=1, metavar="<path to data file>", required=True)
 @click.option(
     "--embedding",
@@ -31,66 +29,43 @@ from server.utils.utils import sort_options
     help="Preprocessing to run.",
     show_default=True,
 )
-@click.option("--output",
-              "-o",
-              default="",
-              help="Save a new file to filename.",
-              metavar="<filename>")
-@click.option("--plotting",
-              "-p",
-              default=False,
-              is_flag=True,
-              help="Generate plots.",
-              show_default=True)
-@click.option("--sparse",
-              default=False,
-              is_flag=True,
-              help="Force sparsity.",
-              show_default=True)
-@click.option("--overwrite",
-              default=False,
-              is_flag=True,
-              help="Allow file overwriting.",
-              show_default=True)
-@click.option("--set-obs-names",
-              default="",
-              help="Named field to set as index for obs.",
-              metavar="<name>")
-@click.option("--set-var-names",
-              default="",
-              help="Named field to set as index for var.",
-              metavar="<name>")
+@click.option("--output", "-o", default="", help="Save a new file to filename.", metavar="<filename>")
+@click.option("--plotting", "-p", default=False, is_flag=True, help="Generate plots.", show_default=True)
+@click.option("--sparse", default=False, is_flag=True, help="Force sparsity.", show_default=True)
+@click.option("--overwrite", default=False, is_flag=True, help="Allow file overwriting.", show_default=True)
+@click.option("--set-obs-names", default="", help="Named field to set as index for obs.", metavar="<name>")
+@click.option("--set-var-names", default="", help="Named field to set as index for var.", metavar="<name>")
+@click.option("--skip-qc", default=False, is_flag=True,
+              help="Do not run quality control metrics. By default cellxgene runs them "
+                   "(saved to adata.obs and adata.var; see scanpy.pp.calculate_qc_metrics for details).")
 @click.option(
-    "--skip-qc",
-    default=False,
+    "--make-obs-names-unique",
+    default=True,
     is_flag=True,
-    help="Do not run quality control metrics. By default cellxgene runs them "
-    "(saved to adata.obs and adata.var; see scanpy.pp.calculate_qc_metrics for details)."
+    help="Ensure obs index is unique.",
+    show_default=True
 )
-@click.option("--make-obs-names-unique",
-              default=True,
-              is_flag=True,
-              help="Ensure obs index is unique.",
-              show_default=True)
-@click.option("--make-var-names-unique",
-              default=True,
-              is_flag=True,
-              help="Ensure var index is unique.",
-              show_default=True)
+@click.option(
+    "--make-var-names-unique",
+    default=True,
+    is_flag=True,
+    help="Ensure var index is unique.",
+    show_default=True
+)
 @click.help_option("--help", "-h", help="Show this message and exit.")
 def prepare(
-    data,
-    embedding,
-    recipe,
-    output,
-    plotting,
-    sparse,
-    overwrite,
-    set_obs_names,
-    set_var_names,
-    skip_qc,
-    make_obs_names_unique,
-    make_var_names_unique,
+        data,
+        embedding,
+        recipe,
+        output,
+        plotting,
+        sparse,
+        overwrite,
+        set_obs_names,
+        set_var_names,
+        skip_qc,
+        make_obs_names_unique,
+        make_var_names_unique,
 ):
     """
     Preprocess data for use with cellxgene.
@@ -111,7 +86,8 @@ def prepare(
     except ImportError:
         raise click.ClickException(
             "[cellxgene] cellxgene prepare has not been installed. Please run `pip install cellxgene[prepare]` "
-            "to install the necessary requirements.")
+            "to install the necessary requirements."
+        )
 
     # scanpy settings
     sc.settings.verbosity = 0
@@ -126,11 +102,10 @@ def prepare(
     if not output:
         click.echo(
             "Warning: No file will be saved, to save the results of cellxgene prepare include "
-            "--output <filename> to save output to a new file")
-    if isfile(output) and not overwrite:
-        raise click.UsageError(
-            f"Cannot overwrite existing file {output}, try using the flag --overwrite"
+            "--output <filename> to save output to a new file"
         )
+    if isfile(output) and not overwrite:
+        raise click.UsageError(f"Cannot overwrite existing file {output}, try using the flag --overwrite")
 
     def load_data(data):
         if isfile(data):
@@ -140,9 +115,7 @@ def prepare(
             elif extension == ".loom":
                 adata = sc.read_loom(data)
             else:
-                raise click.FileError(
-                    data,
-                    hint="does not have a valid extension [.h5ad | .loom]")
+                raise click.FileError(data, hint="does not have a valid extension [.h5ad | .loom]")
         elif isdir(data):
             if not data.endswith(sep):
                 data += sep
@@ -152,15 +125,11 @@ def prepare(
 
         if not set_obs_names == "":
             if set_obs_names not in adata.obs_keys():
-                raise click.UsageError(
-                    f"obs {set_obs_names} not found, options are: {adata.obs_keys()}"
-                )
+                raise click.UsageError(f"obs {set_obs_names} not found, options are: {adata.obs_keys()}")
             adata.obs_names = adata.obs[set_obs_names]
         if not set_var_names == "":
             if set_var_names not in adata.var_keys():
-                raise click.UsageError(
-                    f"var {set_var_names} not found, options are: {adata.var_keys()}"
-                )
+                raise click.UsageError(f"var {set_var_names} not found, options are: {adata.var_keys()}")
             adata.var_names = adata.var[set_var_names]
         if make_obs_names_unique:
             adata.obs_names_make_unique()
@@ -215,18 +184,12 @@ def prepare(
         if "umap" in embedding:
             sc.tl.umap(adata)
             if plotting:
-                sc.pl.umap(adata,
-                           color="louvain",
-                           palette=palette,
-                           save="_louvain")
+                sc.pl.umap(adata, color="louvain", palette=palette, save="_louvain")
 
         if "tsne" in embedding:
             sc.tl.tsne(adata)
             if plotting:
-                sc.pl.tsne(adata,
-                           color="louvain",
-                           palette=palette,
-                           save="_louvain")
+                sc.pl.tsne(adata, color="louvain", palette=palette, save="_louvain")
 
     def show_step(item):
         if not skip_qc:
@@ -245,19 +208,13 @@ def prepare(
         if item is not None:
             return names[item.__name__]
 
-    steps = [
-        calculate_qc_metrics, make_sparse, run_recipe, run_pca, run_neighbors,
-        run_louvain, run_embedding
-    ]
+    steps = [calculate_qc_metrics, make_sparse, run_recipe, run_pca, run_neighbors, run_louvain, run_embedding]
 
     click.echo(f"[cellxgene] Loading data from {data}, please wait...")
     adata = load_data(data)
 
     click.echo("[cellxgene] Beginning preprocessing...")
-    with click.progressbar(steps,
-                           label="[cellxgene] Progress",
-                           show_eta=False,
-                           item_show_func=show_step) as bar:
+    with click.progressbar(steps, label="[cellxgene] Progress", show_eta=False, item_show_func=show_step) as bar:
         for step in bar:
             step(adata)
 
