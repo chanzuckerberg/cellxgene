@@ -17,7 +17,6 @@ def read_labels(fname):
 def write_labels(fname, df, header=None, backup_dir=None):
     if backup_dir is not None:
         backup(fname, backup_dir)
-        # rotate_fname(fname, backup_dir)
     if not df.empty:
         with open(fname, 'w', newline="") as f:
             if header is not None:
