@@ -6,6 +6,7 @@ const SWPrecacheWebpackPlugin = require("sw-precache-webpack-plugin");
 const HtmlWebpackInlineSourcePlugin = require("html-webpack-inline-source-plugin");
 
 const src = path.resolve("src");
+const fonts = path.resolve("src/fonts");
 const nodeModules = path.resolve("node_modules");
 
 const babelOptions = require("../babel/babel.prod");
@@ -69,12 +70,15 @@ module.exports = {
       },
       {
         test: /\.(jpg|png|gif|eot|svg|ttf|woff|woff2)(\?.*)?$/,
-        include: [src, nodeModules],
+        include: nodeModules,
         loader: "file-loader",
-        options: {
-          name: "[name].[hash:8].[ext]",
-          outputPath: "static/media/"
-        }
+        query: { name: "static/media/[name].[ext]" }
+      },
+      {
+        test: /\.(woff|woff2|eot|ttf|otf)$/,
+        include: fonts,
+        loader: "file-loader",
+        query: { name: "static/fonts/[name].[ext]" }
       },
       {
         test: /\.(mp4|webm)(\?.*)?$/,
