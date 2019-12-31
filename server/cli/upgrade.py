@@ -1,7 +1,7 @@
 import click
 import re
+import requests
 
-from github import Github, RateLimitExceededException
 from requests.exceptions import ConnectionError
 from .. import __version__
 
@@ -20,15 +20,33 @@ def log_upgrade_check():
 
     # Get the current latest release
     try:
-        github = Github(retry=0, timeout=5)
-        cellxgene = github.get_organization("chanzuckerberg").get_repo("cellxgene")
-        release_tag_generator = (release.tag_name for release in cellxgene.get_releases())
-        latest_release = next(release_tag_generator, lambda ver_str: validate_version_str(ver_str))
+        release_tag_generator = (r['tag_name'] for r in _request_cellxgene_releases())
+        latest_release = next(release_tag_generator, lambda tag_name: validate_version_str(tag_name))
         if version_gt(latest_release, __version__):
             click.echo(f"There's a new version of cellxgene available ({latest_release})!")
             click.echo("To upgrade, run the following: pip install --upgrade cellxgene\n")
-    except (RateLimitExceededException, ConnectionError):
+    except (ConnectionError, RateLimitException):
         click.echo("Upgrade check failed.\n")
+
+
+class RateLimitException(Exception):
+    """
+    Github API Rate Limit Exception
+    """
+
+
+def _request_cellxgene_releases():
+    def raise_on_rate_limit(response):
+        if response.status_code == 403 and res.headers.get('X-RateLimit-Remaining') == '0':
+            raise RateLimitException
+    url = "https://api.github.com/repos/chanzuckerberg/cellxgene/releases"
+    res = requests.get(url)
+    for release in res.json():
+        yield release
+    while 'next' in res.links.keys():
+        res = requests.get(res.links['next']['url'])
+        for release in res.json():
+            yield release
 
 
 def validate_version_str(version_str, release_only=True):
