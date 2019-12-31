@@ -30,7 +30,8 @@ import { AnnotationsHelpers } from "../../util/stateManager";
   annotations: state.annotations,
   universe: state.universe,
   ontology: state.ontology,
-  ontologyLoading: state.ontology?.loading
+  ontologyLoading: state.ontology?.loading,
+  ontologyEnabled: state.ontology?.enabled
 }))
 class Category extends React.Component {
   constructor(props) {
@@ -330,7 +331,8 @@ class Category extends React.Component {
       colorAccessor,
       categoricalSelection,
       isUserAnno,
-      annotations
+      annotations,
+      ontologyEnabled
     } = this.props;
     const { isTruncated } = categoricalSelection[metadataField];
 
@@ -468,7 +470,7 @@ class Category extends React.Component {
                   handleCancel={this.disableAddNewLabelMode}
                   annoInput={
                     <AnnoInputs
-                      useSuggest
+                      useSuggest={ontologyEnabled}
                       text={newLabelText}
                       handleItemChange={this.handleSuggestActiveItemChange}
                       handleChoice={this.handleChoice}

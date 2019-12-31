@@ -89,7 +89,7 @@ const VanillaInput = props => {
   annotations: state.annotations,
   universe: state.universe,
   world: state.world,
-  ontology: state.ontology?.data,
+  ontology: state.ontology?.terms,
   ontologyLoading: state.ontology?.loading
 }))
 class AnnoInputs extends React.Component {

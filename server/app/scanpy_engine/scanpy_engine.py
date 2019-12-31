@@ -60,6 +60,9 @@ class ScanpyEngine(CXGDriver):
             "annotations": False,
             "annotations_file": None,
             "annotations_output_dir": None,
+            "annotations_cell_ontology_enabled": False,
+            "annotations_cell_ontology_obopath": None,
+            "annotations_cell_ontology_terms": None,
             "backed": False,
             "disable_diffexp": False,
             "diffexp_may_be_slow": False
@@ -70,7 +73,9 @@ class ScanpyEngine(CXGDriver):
             "max-category-items": self.config["max_category_items"],
             "disable-diffexp": self.config["disable_diffexp"],
             "diffexp-may-be-slow": self.config["diffexp_may_be_slow"],
-            "annotations": self.config["annotations"]
+            "annotations": self.config["annotations"],
+            "annotations_cell_ontology_enabled": self.config["annotations_cell_ontology_enabled"],
+            "annotations_cell_ontology_terms": self.config["annotations_cell_ontology_terms"],
         }
         if self.config["annotations"]:
             if uid is not None:

@@ -278,7 +278,7 @@ def is_safe_collection_name(name):
     """
     if name is None:
         return False
-    return re.match(r'^\w+$', name) is not None
+    return re.match(r'^[\w-]+$', name) is not None
 
 
 def get_api_resources():
