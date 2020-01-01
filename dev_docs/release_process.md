@@ -9,10 +9,12 @@ to PyPi, with a matching tagged release on github.
 
 The release process should result in the following side-effects:
 
--   Version number bump, using semantic versioning
+-   Version number bump, using [semantic versioning](https://semver.org/)
 -   JS assets built & packaged, committed to the repo
 -   Tagged github release
 -   Publication to PyPi
+
+Note all release tags pushed to GitHub should follow semantic versioning.
 
 ## Recipe
 
