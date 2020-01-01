@@ -14,7 +14,7 @@ The release process should result in the following side-effects:
 -   Tagged github release
 -   Publication to PyPi
 
-Note all release tags pushed to GitHub should follow semantic versioning.
+Note all release tags pushed to GitHub MUST follow semantic versioning.
 
 ## Recipe
 
