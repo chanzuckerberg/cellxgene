@@ -20,6 +20,7 @@ cellxgene/
 server/app/web/static/css/
 server/app/web/static/img/
 server/app/web/static/media/
+server/app/web/static/fonts/
 server/app/web/static/js/
 server/app/web/templates/index\.html
 
