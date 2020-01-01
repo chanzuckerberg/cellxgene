@@ -41,10 +41,12 @@ def _request_cellxgene_releases():
             raise RateLimitException
     url = "https://api.github.com/repos/chanzuckerberg/cellxgene/releases"
     res = requests.get(url)
+    raise_on_rate_limit(res)
     for release in res.json():
         yield release
     while 'next' in res.links.keys():
         res = requests.get(res.links['next']['url'])
+        raise_on_rate_limit(res)
         for release in res.json():
             yield release
 
@@ -58,8 +60,8 @@ def validate_version_str(version_str, release_only=True):
     """
     match = SEMVER_FORMAT.match(version_str)
     has_match = match is not None
-    if release_only:
-        return has_match and not match.group("prerelease")
+    if has_match and release_only:
+        return not match.group("prerelease")
     return has_match
 
 
