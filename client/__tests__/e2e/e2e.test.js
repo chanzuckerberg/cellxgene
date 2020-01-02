@@ -126,12 +126,12 @@ describe("cell selection", () => {
 
   test("selects cells via continuous", async () => {
     for (const cellset of data.cellsets.continuous) {
-      const histId = `histogram-${cellset.metadata}-plot-brush`;
+      const histBrushableAreaId = `histogram-${cellset.metadata}-plot-brushable-area`;
       const coords = await cxgActions.calcDragCoordinates(
-        histId,
+        histBrushableAreaId,
         cellset["coordinates-as-percent"]
       );
-      await cxgActions.drag(histId, coords.start, coords.end);
+      await cxgActions.drag(histBrushableAreaId, coords.start, coords.end);
       const cellCount = await cxgActions.cellSet(1);
       expect(cellCount).toBe(cellset.count);
     }
@@ -280,12 +280,12 @@ describe("scatter plot", () => {
 describe("clipping", () => {
   test("clip continuous", async () => {
     await cxgActions.clip(data.clip.min, data.clip.max);
-    const histId = `histogram-${data.clip.metadata}-plot-brush`;
+    const histBrushableAreaId = `histogram-${data.clip.metadata}-plot-brushable-area`;
     const coords = await cxgActions.calcDragCoordinates(
-      histId,
+      histBrushableAreaId,
       data.clip["coordinates-as-percent"]
     );
-    await cxgActions.drag(histId, coords.start, coords.end);
+    await cxgActions.drag(histBrushableAreaId, coords.start, coords.end);
     const cellCount = await cxgActions.cellSet(1);
     expect(cellCount).toBe(data.clip.count);
   });
@@ -295,12 +295,12 @@ describe("clipping", () => {
     await page.keyboard.press("Enter");
     await page.waitForSelector(`[data-testid='histogram-${data.clip.gene}']`);
     await cxgActions.clip(data.clip.min, data.clip.max);
-    const histId = `histogram-${data.clip.gene}-plot-brush`;
+    const histBrushableAreaId = `histogram-${data.clip.gene}-plot-brushable-area`;
     const coords = await cxgActions.calcDragCoordinates(
-      histId,
+      histBrushableAreaId,
       data.clip["coordinates-as-percent"]
     );
-    await cxgActions.drag(histId, coords.start, coords.end);
+    await cxgActions.drag(histBrushableAreaId, coords.start, coords.end);
     const cellCount = await cxgActions.cellSet(1);
     expect(cellCount).toBe(data.clip["gene-cell-count"]);
   });
