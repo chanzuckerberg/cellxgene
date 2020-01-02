@@ -55,7 +55,7 @@ class HistogramBrush extends React.PureComponent {
     histogramCache.x = d3
       .scaleLinear()
       .domain([domainMin, domainMax])
-      .range([0, this.width - this.marginRight]);
+      .range([this.marginLeft, this.width - this.marginRight]);
 
     histogramCache.bins = d3
       .histogram()
@@ -79,6 +79,7 @@ class HistogramBrush extends React.PureComponent {
     this.width = 340;
     this.height = 100;
     this.marginBottom = 20; // space for X axis & labels
+    this.marginLeft = 3; // Space for 0 tick label on X axis
     this.marginRight = 40; // space for Y axis & labels
   }
 
