@@ -27,7 +27,7 @@ build: clean build-server
 
 .PHONY: build-client
 build-client:
-	cd client && $(MAKE) install build
+	cd client && $(MAKE) ci build
 
 .PHONY: build-server
 build-server: build-client
@@ -122,7 +122,7 @@ release-directly-to-prod: dev-env pydist twine-prod
 
 .PHONY: dev-env
 dev-env:
-	cd client && $(MAKE) install
+	cd client && $(MAKE) ci
 	pip install -r server/requirements-dev.txt
 
 .PHONY: gui-env

@@ -2,6 +2,10 @@
 clean:
 	rm -rf node_modules
 
+.PHONY: ci
+ci:
+	npm ci client
+
 .PHONY: install
 install:
 	npm install client
