@@ -41,7 +41,7 @@ export const datasets = {
         {
           metadata: "n_genes",
           "coordinates-as-percent": { x1: 0.25, y1: 0.5, x2: 0.55, y2: 0.5 },
-          count: "1537"
+          count: "1589"
         }
       ]
     },
@@ -120,9 +120,9 @@ export const datasets = {
       max: "70",
       metadata: "n_genes",
       gene: "S100A8",
-      "coordinates-as-percent": { x1: 0.25, y1: 0.5, x2: 0.55, y2: 0.5 },
-      count: "392",
-      "gene-cell-count": "421"
+      "coordinates-as-percent": { x1: 0.25, y1: 0.25, x2: 0.55, y2: 0.25 },
+      count: "398",
+      "gene-cell-count": "440"
     }
   }
 };

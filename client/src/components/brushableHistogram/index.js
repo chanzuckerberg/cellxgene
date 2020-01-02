@@ -344,7 +344,6 @@ class HistogramBrush extends React.PureComponent {
       .select(svgRef)
       .append("g")
       .attr("class", "brush")
-      .attr("data-testid", `${svgRef.dataset.testid}-brush`)
       .call(brushX);
 
     /* X AXIS */
@@ -357,7 +356,8 @@ class HistogramBrush extends React.PureComponent {
           .axisBottom(x)
           .ticks(5)
           .tickFormat(d3.format(".0s"))
-      );
+      )
+      .attr("data-testid", `${svgRef.dataset.testid}-axisx`);
 
     /* Y AXIS */
     svg
