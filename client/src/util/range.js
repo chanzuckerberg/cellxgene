@@ -43,3 +43,8 @@ export function range(start, stop, step) {
 	const len = Math.max(Math.ceil((stop - start) / step), 0);
 	return _doFill(new Array(len), start, step, len);
 }
+
+export function linspace(start, stop, nsteps) {
+	const delta = (stop - start) / (nsteps - 1).toFixed();
+	return range(0, nsteps, 1).map(i => start + i * delta);
+}
