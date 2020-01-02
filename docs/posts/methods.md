@@ -16,6 +16,9 @@ cellxgene looks for embeddings (e.g., tSNE, UMAP, PCA, spatial coordinates) in `
 
 ## Differential expression
 
-We're actively working on how to improve differential expression within the app.  
+We're actively working on how to improve differential expression within the app.
+**N.B.: this implementation assumes normally distributed values on a linear scale.**
 
-Currently, we use a [Welch's _t_-test](https://en.wikipedia.org/wiki/Welch%27s_t-test) implementation, including the same variance overestimation correction as used in `scanpy`. We sort the `tscore` to identify the top 15 genes, and then filter to remove any that fall below a cutoff log fold change value, which can help remove spurious test results. The default threshold is `0.01` and can be changed using the option `--diffexp-lfc-cutoff`.
+Currently, we use a [Welch's _t_-test](https://en.wikipedia.org/wiki/Welch%27s_t-test), which assumes that the two populations are normally distributed (but may have unequal variance). We use a two-sided test against the null hypothesis that the two populations have **equal** means (i.e., based on the magnitude of the difference in means, regardless of directionality). We also use the same variance overestimation correction as in `scanpy`.
+
+We sort genes by `|t values|`, and return the top 15 that have a `log fold change >= 0.01`. Both the number of genes returned and the log fold change threshold can be [configured in the CLI](launch).
