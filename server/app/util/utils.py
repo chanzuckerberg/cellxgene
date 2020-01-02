@@ -40,4 +40,5 @@ def requires_data(func):
         if self.data is None:
             raise DriverError(f"error data must be loaded before you call {func.__name__}")
         return func(self, *args, **kwargs)
+
     return wrapped_function

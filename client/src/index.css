@@ -7,3 +7,24 @@ namespace mangling on these definitions.  See webpack config for specifics.
 @import "~@blueprintjs/core/lib/css/blueprint.css";
 @import "~@blueprintjs/icons/lib/css/blueprint-icons.css";
 @import "~@blueprintjs/select/lib/css/blueprint-select.css";
+
+@font-face {
+    font-family: 'Roboto Condensed';
+    font-style: italic;
+    src: url('./fonts/RobotoCondensed-Italic.ttf') format('truetype');
+    font-weight: 400;
+}
+
+@font-face {
+    font-family: 'Roboto Condensed';
+    font-style: normal;
+    src: url('./fonts/RobotoCondensed-Regular.ttf') format('truetype');
+    font-weight: 400;
+}
+
+@font-face {
+    font-family: 'Roboto Condensed';
+    font-style: normal;
+    src: url('./fonts/RobotoCondensed-Bold.ttf') format('truetype');
+    font-weight: 700;
+}

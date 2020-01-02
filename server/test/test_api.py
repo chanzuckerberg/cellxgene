@@ -19,7 +19,17 @@ class EndPoints(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.ps = Popen(["cellxgene", "launch", "example-dataset/pbmc3k.h5ad", "--verbose", "--port", "5005"])
+        cls.ps = Popen(
+            [
+                "cellxgene",
+                "--no-upgrade-check",
+                "launch",
+                "../example-dataset/pbmc3k.h5ad",
+                "--verbose",
+                "--port",
+                "5005",
+            ]
+        )
         session = requests.Session()
         for i in range(90):
             try:
@@ -68,14 +78,15 @@ class EndPoints(unittest.TestCase):
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
         df = decode_fbs.decode_matrix_FBS(result.content)
-        self.assertEqual(df['n_rows'], 2638)
-        self.assertEqual(df['n_cols'], 8)
-        self.assertIsNotNone(df['columns'])
-        self.assertListEqual(df['col_idx'], [
-            'pca_0', 'pca_1', 'tsne_0', 'tsne_1', 'umap_0', 'umap_1', 'draw_graph_fr_0', 'draw_graph_fr_1'
-        ])
-        self.assertIsNone(df['row_idx'])
-        self.assertEqual(len(df['columns']), df['n_cols'])
+        self.assertEqual(df["n_rows"], 2638)
+        self.assertEqual(df["n_cols"], 8)
+        self.assertIsNotNone(df["columns"])
+        self.assertListEqual(
+            df["col_idx"],
+            ["pca_0", "pca_1", "tsne_0", "tsne_1", "umap_0", "umap_1", "draw_graph_fr_0", "draw_graph_fr_1"],
+        )
+        self.assertIsNone(df["row_idx"])
+        self.assertEqual(len(df["columns"]), df["n_cols"])
 
     def test_bad_filter(self):
         endpoint = "data/var"
@@ -91,14 +102,14 @@ class EndPoints(unittest.TestCase):
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
         df = decode_fbs.decode_matrix_FBS(result.content)
-        self.assertEqual(df['n_rows'], 2638)
-        self.assertEqual(df['n_cols'], 5)
-        self.assertIsNotNone(df['columns'])
-        self.assertIsNotNone(df['col_idx'])
-        self.assertIsNone(df['row_idx'])
-        self.assertEqual(len(df['columns']), df['n_cols'])
+        self.assertEqual(df["n_rows"], 2638)
+        self.assertEqual(df["n_cols"], 5)
+        self.assertIsNotNone(df["columns"])
+        self.assertIsNotNone(df["col_idx"])
+        self.assertIsNone(df["row_idx"])
+        self.assertEqual(len(df["columns"]), df["n_cols"])
         obs_index_col_name = self.schema["schema"]["annotations"]["obs"]["index"]
-        self.assertListEqual(df['col_idx'], [obs_index_col_name, 'n_genes', 'percent_mito', 'n_counts', 'louvain'])
+        self.assertListEqual(df["col_idx"], [obs_index_col_name, "n_genes", "percent_mito", "n_counts", "louvain"])
 
     def test_get_annotations_obs_keys_fbs(self):
         endpoint = "annotations/obs"
@@ -109,13 +120,13 @@ class EndPoints(unittest.TestCase):
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
         df = decode_fbs.decode_matrix_FBS(result.content)
-        self.assertEqual(df['n_rows'], 2638)
-        self.assertEqual(df['n_cols'], 2)
-        self.assertIsNotNone(df['columns'])
-        self.assertIsNotNone(df['col_idx'])
-        self.assertIsNone(df['row_idx'])
-        self.assertEqual(len(df['columns']), df['n_cols'])
-        self.assertListEqual(df['col_idx'], ['n_genes', 'percent_mito'])
+        self.assertEqual(df["n_rows"], 2638)
+        self.assertEqual(df["n_cols"], 2)
+        self.assertIsNotNone(df["columns"])
+        self.assertIsNotNone(df["col_idx"])
+        self.assertIsNone(df["row_idx"])
+        self.assertEqual(len(df["columns"]), df["n_cols"])
+        self.assertListEqual(df["col_idx"], ["n_genes", "percent_mito"])
 
     def test_get_annotations_obs_error(self):
         endpoint = "annotations/obs"
@@ -162,14 +173,14 @@ class EndPoints(unittest.TestCase):
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
         df = decode_fbs.decode_matrix_FBS(result.content)
-        self.assertEqual(df['n_rows'], 1838)
-        self.assertEqual(df['n_cols'], 2)
-        self.assertIsNotNone(df['columns'])
-        self.assertIsNotNone(df['col_idx'])
-        self.assertIsNone(df['row_idx'])
-        self.assertEqual(len(df['columns']), df['n_cols'])
+        self.assertEqual(df["n_rows"], 1838)
+        self.assertEqual(df["n_cols"], 2)
+        self.assertIsNotNone(df["columns"])
+        self.assertIsNotNone(df["col_idx"])
+        self.assertIsNone(df["row_idx"])
+        self.assertEqual(len(df["columns"]), df["n_cols"])
         var_index_col_name = self.schema["schema"]["annotations"]["var"]["index"]
-        self.assertListEqual(df['col_idx'], [var_index_col_name, 'n_cells'])
+        self.assertListEqual(df["col_idx"], [var_index_col_name, "n_cells"])
 
     def test_get_annotations_var_keys_fbs(self):
         endpoint = "annotations/var"
@@ -180,13 +191,13 @@ class EndPoints(unittest.TestCase):
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
         df = decode_fbs.decode_matrix_FBS(result.content)
-        self.assertEqual(df['n_rows'], 1838)
-        self.assertEqual(df['n_cols'], 1)
-        self.assertIsNotNone(df['columns'])
-        self.assertIsNotNone(df['col_idx'])
-        self.assertIsNone(df['row_idx'])
-        self.assertEqual(len(df['columns']), df['n_cols'])
-        self.assertListEqual(df['col_idx'], ['n_cells'])
+        self.assertEqual(df["n_rows"], 1838)
+        self.assertEqual(df["n_cols"], 1)
+        self.assertIsNotNone(df["columns"])
+        self.assertIsNotNone(df["col_idx"])
+        self.assertIsNone(df["row_idx"])
+        self.assertEqual(len(df["columns"]), df["n_cols"])
+        self.assertListEqual(df["col_idx"], ["n_cells"])
 
     def test_get_annotations_var_error(self):
         endpoint = "annotations/var"
@@ -217,35 +228,29 @@ class EndPoints(unittest.TestCase):
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
         df = decode_fbs.decode_matrix_FBS(result.content)
-        self.assertEqual(df['n_rows'], 2638)
-        self.assertEqual(df['n_cols'], 1838)
-        self.assertIsNotNone(df['columns'])
-        self.assertListEqual(df['col_idx'].tolist(), [])
-        self.assertIsNone(df['row_idx'])
-        self.assertEqual(len(df['columns']), df['n_cols'])
+        self.assertEqual(df["n_rows"], 2638)
+        self.assertEqual(df["n_cols"], 1838)
+        self.assertIsNotNone(df["columns"])
+        self.assertListEqual(df["col_idx"].tolist(), [])
+        self.assertIsNone(df["row_idx"])
+        self.assertEqual(len(df["columns"]), df["n_cols"])
 
     def test_data_put_filter_fbs(self):
         endpoint = f"data/var"
         url = f"{URL_BASE}{endpoint}"
         header = {"Accept": "application/octet-stream"}
-        filter = {
-            "filter": {
-                "var": {
-                    "index": [0, 1, 4]
-                }
-            }
-        }
+        filter = {"filter": {"var": {"index": [0, 1, 4]}}}
         result = self.session.put(url, headers=header, json=filter)
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
         df = decode_fbs.decode_matrix_FBS(result.content)
-        self.assertEqual(df['n_rows'], 2638)
-        self.assertEqual(df['n_cols'], 3)
-        self.assertIsNotNone(df['columns'])
-        self.assertIsNotNone(df['col_idx'])
-        self.assertIsNone(df['row_idx'])
-        self.assertEqual(len(df['columns']), df['n_cols'])
-        self.assertListEqual(df['col_idx'].tolist(), [0, 1, 4])
+        self.assertEqual(df["n_rows"], 2638)
+        self.assertEqual(df["n_cols"], 3)
+        self.assertIsNotNone(df["columns"])
+        self.assertIsNotNone(df["col_idx"])
+        self.assertIsNone(df["row_idx"])
+        self.assertEqual(len(df["columns"]), df["n_cols"])
+        self.assertListEqual(df["col_idx"].tolist(), [0, 1, 4])
 
     def test_data_put_single_var(self):
         endpoint = f"data/var"

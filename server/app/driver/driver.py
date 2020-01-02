@@ -33,7 +33,7 @@ class CXGDriver(metaclass=ABCMeta):
             "max_category_items": None,
             "diffexp_lfc_cutoff": None,
             "disable_diffexp": False,
-            "diffexp_may_be_slow": False
+            "diffexp_may_be_slow": False,
         }
 
     @abstractmethod
@@ -51,7 +51,7 @@ class CXGDriver(metaclass=ABCMeta):
         features = {
             "cluster": {"available": False},
             "layout": {"obs": {"available": False}, "var": {"available": False}},
-            "diffexp": {"available": True, "interactiveLimit": 50000}
+            "diffexp": {"available": True, "interactiveLimit": 50000},
         }
         # TODO - Interactive limit should be generated from the actual available methods see GH issue #94
         if self.config["layout"]:
