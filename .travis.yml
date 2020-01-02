@@ -2,7 +2,7 @@ language: python
 dist: xenial
 sudo: required
 node_js:
-  - 8
+  - 10
 cache:
   - pip
   - npm
@@ -13,16 +13,16 @@ install:
 
 jobs:
   include:
-  - name: "Branch Tests 3.7"
-    python: "3.7"
-    script: make build-client lint unit-test
-  - name: "Branch Tests 3.6"
-    python: "3.6"
-    script: make build-client lint unit-test
-  - name: "Docker Build"
-    install: skip
-    python: "3.6"
-    script: docker build .
-  - name: "Smoke Tests"
-    python: "3.6"
-    script: make smoke-test
+    - name: "Branch Tests 3.7"
+      python: "3.7"
+      script: make build-client lint unit-test
+    - name: "Branch Tests 3.6"
+      python: "3.6"
+      script: make build-client lint unit-test
+    - name: "Docker Build"
+      install: skip
+      python: "3.6"
+      script: docker build .
+    - name: "Smoke Tests"
+      python: "3.6"
+      script: make smoke-test
