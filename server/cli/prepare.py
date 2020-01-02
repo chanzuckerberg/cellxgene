@@ -8,9 +8,10 @@ from server.utils.utils import sort_options
 
 
 @sort_options
-@click.command(short_help="Preprocess data for use with cellxgene. "
-                          "Run `cellxgene prepare --help` for more information.",
-               options_metavar="<options>",)
+@click.command(
+    short_help="Preprocess data for use with cellxgene. " "Run `cellxgene prepare --help` for more information.",
+    options_metavar="<options>",
+)
 @click.argument("data", nargs=1, metavar="<path to data file>", required=True)
 @click.option(
     "--embedding",
@@ -35,37 +36,33 @@ from server.utils.utils import sort_options
 @click.option("--overwrite", default=False, is_flag=True, help="Allow file overwriting.", show_default=True)
 @click.option("--set-obs-names", default="", help="Named field to set as index for obs.", metavar="<name>")
 @click.option("--set-var-names", default="", help="Named field to set as index for var.", metavar="<name>")
-@click.option("--skip-qc", default=False, is_flag=True,
-              help="Do not run quality control metrics. By default cellxgene runs them "
-                   "(saved to adata.obs and adata.var; see scanpy.pp.calculate_qc_metrics for details).")
 @click.option(
-    "--make-obs-names-unique",
-    default=True,
+    "--skip-qc",
+    default=False,
     is_flag=True,
-    help="Ensure obs index is unique.",
-    show_default=True
+    help="Do not run quality control metrics. By default cellxgene runs them "
+    "(saved to adata.obs and adata.var; see scanpy.pp.calculate_qc_metrics for details).",
 )
 @click.option(
-    "--make-var-names-unique",
-    default=True,
-    is_flag=True,
-    help="Ensure var index is unique.",
-    show_default=True
+    "--make-obs-names-unique", default=True, is_flag=True, help="Ensure obs index is unique.", show_default=True
+)
+@click.option(
+    "--make-var-names-unique", default=True, is_flag=True, help="Ensure var index is unique.", show_default=True
 )
 @click.help_option("--help", "-h", help="Show this message and exit.")
 def prepare(
-        data,
-        embedding,
-        recipe,
-        output,
-        plotting,
-        sparse,
-        overwrite,
-        set_obs_names,
-        set_var_names,
-        skip_qc,
-        make_obs_names_unique,
-        make_var_names_unique,
+    data,
+    embedding,
+    recipe,
+    output,
+    plotting,
+    sparse,
+    overwrite,
+    set_obs_names,
+    set_var_names,
+    skip_qc,
+    make_obs_names_unique,
+    make_var_names_unique,
 ):
     """
     Preprocess data for use with cellxgene.

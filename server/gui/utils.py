@@ -4,9 +4,9 @@ import platform
 from PySide2.QtCore import QObject, Signal
 
 # Detect OS
-WINDOWS = (platform.system() == "Windows")
-LINUX = (platform.system() == "Linux")
-MAC = (platform.system() == "Darwin")
+WINDOWS = platform.system() == "Windows"
+LINUX = platform.system() == "Linux"
+MAC = platform.system() == "Darwin"
 
 
 class WorkerSignals(QObject):
@@ -18,6 +18,7 @@ class WorkerSignals(QObject):
         error - `str` error message
         result - `object` data returned from processing, anything
     """
+
     finished = Signal()
     engine_error = Signal(str)
     server_error = Signal(str)
@@ -34,6 +35,7 @@ class SiteReadySignals(QObject):
         ready
         error - `str` error message
     """
+
     ready = Signal()
     timeout = Signal()
     error = Signal(str)

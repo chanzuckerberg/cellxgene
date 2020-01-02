@@ -4,6 +4,7 @@ const webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 const src = path.resolve("src");
+const fonts = path.resolve("src/fonts");
 const nodeModules = path.resolve("node_modules");
 
 const babelOptions = require("../babel/babel.dev");
@@ -60,9 +61,15 @@ module.exports = {
       { test: /\.json$/, include: [src, nodeModules], loader: "json-loader" },
       {
         test: /\.(jpg|png|gif|eot|svg|ttf|woff|woff2)(\?.*)?$/,
-        include: [src, nodeModules],
+        include: nodeModules,
         loader: "file-loader",
         query: { name: "static/media/[name].[ext]" }
+      },
+      {
+        test: /\.(woff|woff2|eot|ttf|otf)$/,
+        include: fonts,
+        loader: "file-loader",
+        query: { name: "static/fonts/[name].[ext]" }
       },
       {
         test: /\.(mp4|webm)(\?.*)?$/,

@@ -36,6 +36,7 @@ class Worker(EmittingProcess):
             return
         from server.app.app import Server
         from server.app.scanpy_engine.scanpy_engine import ScanpyEngine
+
         # create server
         try:
             server = Server()

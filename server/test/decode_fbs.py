@@ -1,4 +1,3 @@
-
 """
 Code to decode, for testing purposes, the flatbuffer encoded blobs.
 This code will need to be updated if fbs/matrix.fbs changes.
@@ -22,20 +21,20 @@ def decode_typed_array(tarr):
         TypedArray.TypedArray.Int32Array: Int32Array.Int32Array,
         TypedArray.TypedArray.Float32Array: Float32Array.Float32Array,
         TypedArray.TypedArray.Float64Array: Float64Array.Float64Array,
-        TypedArray.TypedArray.JSONEncodedArray: JSONEncodedArray.JSONEncodedArray
+        TypedArray.TypedArray.JSONEncodedArray: JSONEncodedArray.JSONEncodedArray,
     }
     (u_type, u) = tarr
     if u_type == TypedArray.TypedArray.NONE:
         return None
 
     TarType = type_map.get(u_type, None)
-    assert(TarType is not None)
+    assert TarType is not None
 
     arr = TarType()
     arr.Init(u.Bytes, u.Pos)
     narr = arr.DataAsNumpy()
     if u_type == TypedArray.TypedArray.JSONEncodedArray:
-        narr = json.loads(narr.tostring().decode('utf-8'))
+        narr = json.loads(narr.tostring().decode("utf-8"))
     return narr
 
 
@@ -60,10 +59,4 @@ def decode_matrix_FBS(buf):
 
     cidx = decode_typed_array((df.ColIndexType(), df.ColIndex()))
 
-    return {
-        "n_rows": n_rows,
-        "n_cols": n_cols,
-        "columns": decoded_columns,
-        "col_idx": cidx,
-        "row_idx": None
-    }
+    return {"n_rows": n_rows, "n_cols": n_cols, "columns": decoded_columns, "col_idx": cidx, "row_idx": None}
