@@ -62,7 +62,7 @@ class HistogramBrush extends React.PureComponent {
       .range([this.marginLeft, this.marginLeft + this.width]);
 
     const [xStart, xStop] = histogramCache.x.domain();
-    const histThresholds = linspace(xStart, xStop, numBins);
+    const histThresholds = linspace(xStart, xStop, numBins + 1);
 
     histogramCache.bins = d3
       .histogram()
