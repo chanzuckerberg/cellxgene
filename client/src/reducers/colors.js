@@ -53,6 +53,18 @@ const ColorsReducer = (
       };
     }
 
+    case "annotation: delete category": {
+      const { colorAccessor } = state;
+      if (action.metadataField !== colorAccessor) {
+        return state;
+      }
+      /* else reset */
+      return {
+        ...state,
+        ...ColorHelpers.resetColors(prevSharedState.world)
+      };
+    }
+
     case "reset colorscale": {
       return {
         ...state,

@@ -11,18 +11,20 @@ Sort order for methods
 
 
 class CXGDriver(metaclass=ABCMeta):
-    def __init__(self, data=None, args={}):
+    def __init__(self, data_locator=None, args={}):
         self.config = self._get_default_config()
         self.config.update(args)
-        if data:
-            self._load_data(data)
+        if data_locator:
+            self._load_data(data_locator)
+            self.data_locator = data_locator
         else:
             self.data = None
 
-    def update(self, data=None, args={}):
+    def update(self, data_locator=None, args={}):
         self.config.update(args)
-        if data:
-            self._load_data(data)
+        if data_locator:
+            self._load_data(data_locator)
+            self.data_locator = data_locator
 
     @staticmethod
     def _get_default_config():
@@ -31,15 +33,25 @@ class CXGDriver(metaclass=ABCMeta):
             "max_category_items": None,
             "diffexp_lfc_cutoff": None,
             "disable_diffexp": False,
-            "diffexp_may_be_slow": False
+            "diffexp_may_be_slow": False,
         }
+
+    @abstractmethod
+    def get_config_parameters(self, uid=None):
+        """
+            return a dict of properties that will be used to set the engine-specific
+            "parameters" info for client-side configuration.
+
+            See rest.py /config route for use
+        """
+        pass
 
     @property
     def features(self):
         features = {
             "cluster": {"available": False},
             "layout": {"obs": {"available": False}, "var": {"available": False}},
-            "diffexp": {"available": True, "interactiveLimit": 50000}
+            "diffexp": {"available": True, "interactiveLimit": 50000},
         }
         # TODO - Interactive limit should be generated from the actual available methods see GH issue #94
         if self.config["layout"]:
@@ -59,7 +71,7 @@ class CXGDriver(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def annotation_to_fbs_matrix(self, axis, field=None):
+    def annotation_to_fbs_matrix(self, axis, field=None, uid=None):
         """
         Gets annotation value for each observation
         :param axis: string obs or var
@@ -69,7 +81,7 @@ class CXGDriver(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def annotation_put_fbs(self, axis, fbs):
+    def annotation_put_fbs(self, axis, fbs, uid=None):
         """
         Put/save FBS as user-defined labels
         """

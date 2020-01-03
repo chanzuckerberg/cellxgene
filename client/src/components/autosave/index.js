@@ -2,14 +2,16 @@ import React from "react";
 import { connect } from "react-redux";
 import * as globals from "../../globals";
 import actions from "../../actions";
+import FilenameDialog from "./filenameDialog";
 
 @connect(state => ({
   universe: state.universe,
+  annotations: state.annotations,
   obsAnnotations: state.universe.obsAnnotations,
   saveInProgress: state.autosave?.saveInProgress ?? false,
   lastSavedObsAnnotations: state.autosave?.lastSavedObsAnnotations,
   error: state.autosave?.error,
-  writableCategoriesEnabled: state.config?.parameters?.["label_file"] ?? false
+  writableCategoriesEnabled: state.config?.parameters?.["annotations"] ?? false
 }))
 class Autosave extends React.Component {
   constructor(props) {
@@ -73,6 +75,7 @@ class Autosave extends React.Component {
         }}
       >
         {this.statusMessage()}
+        <FilenameDialog />
       </div>
     ) : null;
   }

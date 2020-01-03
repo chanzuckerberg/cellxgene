@@ -1,9 +1,10 @@
 import os
 import tempfile
 import fsspec
+from datetime import datetime
 
 
-class DataLocator():
+class DataLocator:
     """
     DataLocator is a simple wrapper around fsspec functionality, and provides a
     set of functions to encapsulate a data location (URI or path), interogate
@@ -28,7 +29,7 @@ class DataLocator():
         self.uri_or_path = uri_or_path
         self.protocol, self.path = DataLocator._get_protocol_and_path(uri_or_path)
         # work-around for LocalFileSystem not treating file: and None as the same scheme/protocol
-        self.cname = self.path if self.protocol == 'file' else self.uri_or_path
+        self.cname = self.path if self.protocol == "file" else self.uri_or_path
         # will throw RuntimeError if the protocol is unsupported
         self.fs = fsspec.filesystem(self.protocol)
 
@@ -48,6 +49,24 @@ class DataLocator():
     def size(self):
         return self.fs.size(self.cname)
 
+    def lastmodtime(self):
+        """ return datetime object representing last modification time, or None if unavailable """
+        info = self.fs.info(self.cname)
+        if self.islocal() and info is not None:
+            return datetime.fromtimestamp(info["mtime"])
+        else:
+            return getattr(info, "LastModified", None)
+
+    def abspath(self):
+        """
+        return the absolute path for the locator - only really does something
+        for file: protocol, as all others are already absolute
+        """
+        if self.islocal():
+            return os.path.abspath(self.path)
+        else:
+            return self.uri_or_path
+
     def isfile(self):
         return self.fs.isfile(self.cname)
 
@@ -55,7 +74,7 @@ class DataLocator():
         return self.fs.open(self.uri_or_path, *args)
 
     def islocal(self):
-        return self.protocol is None or self.protocol == 'file'
+        return self.protocol is None or self.protocol == "file"
 
     def local_handle(self):
         if self.islocal():
@@ -71,7 +90,7 @@ class DataLocator():
             return LocalFilePath(tmp_path, delete=True)
 
 
-class LocalFilePath():
+class LocalFilePath:
     def __init__(self, tmp_path, delete=False):
         self.tmp_path = tmp_path
         self.delete = delete

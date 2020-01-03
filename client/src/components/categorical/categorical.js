@@ -14,10 +14,11 @@ import { Select } from "@blueprintjs/select";
 import { connect } from "react-redux";
 import * as globals from "../../globals";
 import Category from "./category";
+import { AnnotationsHelpers } from "../../util/stateManager";
 
 @connect(state => ({
   categoricalSelection: state.categoricalSelection,
-  writableCategoriesEnabled: state.config?.parameters?.["label_file"] ?? false,
+  writableCategoriesEnabled: state.config?.parameters?.["annotations"] ?? false,
   schema: state.world?.schema
 }))
 class Categories extends React.Component {
@@ -50,11 +51,58 @@ class Categories extends React.Component {
   };
 
   handleDisableAnnoMode = () => {
-    this.setState({ createAnnoModeActive: false });
+    this.setState({
+      createAnnoModeActive: false,
+      categoryToDuplicate: null,
+      newCategoryText: ""
+    });
   };
 
   handleModalDuplicateCategorySelection = d => {
     this.setState({ categoryToDuplicate: d });
+  };
+
+  categoryNameError = name => {
+    /*
+    return false if this is a LEGAL/acceptable category name or NULL/empty string,
+    or return an error type.
+    */
+
+    /* allow empty string */
+    if (name === "") return false;
+
+    const { categoricalSelection } = this.props;
+    const allCategoryNames = Object.keys(categoricalSelection);
+
+    /* check category name syntax */
+    const error = AnnotationsHelpers.annotationNameIsErroneous(name);
+    if (error) {
+      return error;
+    }
+
+    /* disallow duplicates */
+    if (allCategoryNames.indexOf(name) !== -1) {
+      return "duplicate";
+    }
+
+    /* otherwise, no error */
+    return false;
+  };
+
+  categoryNameErrorMessage = name => {
+    const err = this.categoryNameError(name);
+    if (err === false) return null;
+
+    const errorMessageMap = {
+      /* map error code to human readable error message */
+      "empty-string": "Blank names not allowed",
+      duplicate: "Name must be unique",
+      "trim-spaces": "Leading and trailing spaces not allowed",
+      "illegal-characters": "Only alphanumeric, underscore and period allowed",
+      "multi-space-run": "Multiple consecutive spaces not allowed"
+    };
+    const errorMessage = errorMessageMap[err] ?? "error";
+    return <span>{errorMessage}</span>;
   };
 
   render() {
@@ -81,30 +129,26 @@ class Categories extends React.Component {
       >
         {/* READ ONLY CATEGORICAL FIELDS */}
         {/* this is duplicative but flat, could be abstracted */}
-        {_.map(
-          allCategoryNames,
-          catName =>
-            !schema.annotations.obsByName[catName].writable ? (
-              <Category
-                key={catName}
-                metadataField={catName}
-                createAnnoModeActive={createAnnoModeActive}
-                isUserAnno={false}
-              />
-            ) : null
+        {_.map(allCategoryNames, catName =>
+          !schema.annotations.obsByName[catName].writable ? (
+            <Category
+              key={catName}
+              metadataField={catName}
+              createAnnoModeActive={createAnnoModeActive}
+              isUserAnno={false}
+            />
+          ) : null
         )}
         {/* WRITEABLE FIELDS */}
-        {_.map(
-          allCategoryNames,
-          catName =>
-            schema.annotations.obsByName[catName].writable ? (
-              <Category
-                key={catName}
-                metadataField={catName}
-                createAnnoModeActive={createAnnoModeActive}
-                isUserAnno
-              />
-            ) : null
+        {_.map(allCategoryNames, catName =>
+          schema.annotations.obsByName[catName].writable ? (
+            <Category
+              key={catName}
+              metadataField={catName}
+              createAnnoModeActive={createAnnoModeActive}
+              isUserAnno
+            />
+          ) : null
         )}
         {writableCategoriesEnabled ? (
           <div>
@@ -124,8 +168,9 @@ class Categories extends React.Component {
                     <p>New, unique category name:</p>
                     <InputGroup
                       autoFocus
+                      value={newCategoryText}
                       intent={
-                        allCategoryNames.indexOf(newCategoryText) !== -1
+                        this.categoryNameError(newCategoryText)
                           ? "warning"
                           : "none"
                       }
@@ -137,17 +182,13 @@ class Categories extends React.Component {
                     <p
                       style={{
                         marginTop: 7,
-                        visibility:
-                          allCategoryNames.indexOf(newCategoryText) !== -1
-                            ? "visible"
-                            : "hidden",
+                        visibility: this.categoryNameError(newCategoryText)
+                          ? "visible"
+                          : "hidden",
                         color: Colors.ORANGE3
                       }}
                     >
-                      <span style={{ fontStyle: "italic" }}>
-                        {newCategoryText}
-                      </span>{" "}
-                      already exists
+                      {this.categoryNameErrorMessage(newCategoryText)}
                     </p>
                   </div>
 
@@ -187,7 +228,8 @@ class Categories extends React.Component {
                     <Button
                       onClick={this.handleCreateUserAnno}
                       disabled={
-                        allCategoryNames.indexOf(newCategoryText) !== -1
+                        !newCategoryText ||
+                        this.categoryNameError(newCategoryText)
                       }
                       intent="primary"
                       type="submit"

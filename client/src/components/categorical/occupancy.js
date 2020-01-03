@@ -10,7 +10,7 @@ import {
 } from "@blueprintjs/core";
 
 @connect()
-class Occupancy extends React.Component {
+class Occupancy extends React.PureComponent {
   _WIDTH = 100;
 
   _HEIGHT = 11;
@@ -144,7 +144,9 @@ class Occupancy extends React.Component {
       categoryIndex
     } = this.props;
 
-    this.canvas?.getContext("2d").clearRect(0, 0, this._WIDTH, this._HEIGHT);
+    const { canvas } = this;
+    if (canvas)
+      canvas.getContext("2d").clearRect(0, 0, this._WIDTH, this._HEIGHT);
 
     const colorByIsCatagoricalData = !!categoricalSelection[colorAccessor];
 

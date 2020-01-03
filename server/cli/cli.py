@@ -1,13 +1,30 @@
 import click
 
+from .. import __version__
 from .launch import launch
 from .prepare import prepare
+from .upgrade import log_upgrade_check
 
 
-@click.group(name="cellxgene", context_settings=dict(max_content_width=85))
-@click.version_option(version="0.12.0", prog_name="cellxgene", message="[%(prog)s] Version %(version)s")
-def cli():
-    pass
+@click.group(
+    name="cellxgene",
+    subcommand_metavar="COMMAND <args>",
+    options_metavar="<options>",
+    context_settings=dict(max_content_width=85, help_option_names=["-h", "--help"]),
+)
+@click.help_option("--help", "-h", help="Show this message and exit.")
+@click.version_option(
+    version=__version__,
+    prog_name="cellxgene",
+    message="[%(prog)s] Version %(version)s",
+    help="Show the software version and exit.",
+)
+@click.option(
+    "--upgrade-check/--no-upgrade-check", default=True, show_default=True, help="Check for release upgrades on start.",
+)
+def cli(upgrade_check):
+    if upgrade_check:
+        log_upgrade_check()
 
 
 cli.add_command(launch)

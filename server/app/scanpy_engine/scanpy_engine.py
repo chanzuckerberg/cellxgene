@@ -1,6 +1,10 @@
 import warnings
 import copy
 import threading
+from datetime import datetime
+import os.path
+from hashlib import blake2b
+import base64
 
 import numpy as np
 import pandas
@@ -8,6 +12,7 @@ from pandas.core.dtypes.dtypes import CategoricalDtype
 import anndata
 from scipy import sparse
 
+from server import __version__ as cellxgene_version
 from server.app.driver.driver import CXGDriver
 from server.app.util.constants import Axis, DEFAULT_TOP_N, MAX_LAYOUTS
 from server.app.util.errors import (
@@ -32,15 +37,15 @@ def has_method(o, name):
 
 
 class ScanpyEngine(CXGDriver):
-    def __init__(self, data=None, args={}):
-        super().__init__(data, args)
+    def __init__(self, data_locator=None, args={}):
+        super().__init__(data_locator, args)
         # lock used to protect label file write ops
-        self.label_lock = threading.Lock()
+        self.label_lock = threading.RLock()
         if self.data:
             self._validate_and_initialize()
 
-    def update(self, data=None, args={}):
-        super().__init__(data, args)
+    def update(self, data_locator=None, args={}):
+        super().__init__(data_locator, args)
         if self.data:
             self._validate_and_initialize()
 
@@ -52,11 +57,39 @@ class ScanpyEngine(CXGDriver):
             "obs_names": None,
             "var_names": None,
             "diffexp_lfc_cutoff": 0.01,
-            "label_file": None,
+            "annotations": False,
+            "annotations_file": None,
+            "annotations_output_dir": None,
             "backed": False,
             "disable_diffexp": False,
-            "diffexp_may_be_slow": False
+            "diffexp_may_be_slow": False,
         }
+
+    def get_config_parameters(self, uid=None, collection=None):
+        params = {
+            "max-category-items": self.config["max_category_items"],
+            "disable-diffexp": self.config["disable_diffexp"],
+            "diffexp-may-be-slow": self.config["diffexp_may_be_slow"],
+            "annotations": self.config["annotations"],
+        }
+        if self.config["annotations"]:
+            if uid is not None:
+                params.update({"annotations-user-data-idhash": self.get_userdata_idhash(uid)})
+            if self.config["annotations_file"] is not None:
+                # user has hard-wired the name of the annotation data collection
+                fname = os.path.basename(self.config["annotations_file"])
+                collection_fname = os.path.splitext(fname)[0]
+                params.update(
+                    {
+                        "annotations-data-collection-is-read-only": True,
+                        "annotations-data-collection-name": collection_fname,
+                    }
+                )
+            elif collection is not None:
+                params.update(
+                    {"annotations-data-collection-is-read-only": False, "annotations-data-collection-name": collection}
+                )
+        return params
 
     @staticmethod
     def _create_unique_column_name(df, col_name_prefix):
@@ -106,23 +139,18 @@ class ScanpyEngine(CXGDriver):
                 # User has specified alternative column for unique names, and it exists
                 if not df_axis[name].is_unique:
                     raise KeyError(
-                        f"Values in {ax_name}.{name} must be unique. "
-                        "Please prepare data to contain unique values."
+                        f"Values in {ax_name}.{name} must be unique. " "Please prepare data to contain unique values."
                     )
                 df_axis.reset_index(drop=True, inplace=True)
             else:
                 # user specified a non-existent column name
-                raise KeyError(
-                    f"Annotation name {name}, specified in --{ax_name}-name does not exist."
-                )
+                raise KeyError(f"Annotation name {name}, specified in --{ax_name}-name does not exist.")
 
     @staticmethod
     def _can_cast_to_float32(ann):
         if ann.dtype.kind == "f":
             if not np.can_cast(ann.dtype, np.float32):
-                warnings.warn(
-                    f"Annotation {ann.name} will be converted to 32 bit float and may lose precision."
-                )
+                warnings.warn(f"Annotation {ann.name} will be converted to 32 bit float and may lose precision.")
             return True
         return False
 
@@ -154,30 +182,18 @@ class ScanpyEngine(CXGDriver):
             schema["type"] = "categorical"
             schema["categories"] = dtype.categories.tolist()
         else:
-            raise TypeError(
-                f"Annotations of type {dtype} are unsupported by cellxgene."
-            )
+            raise TypeError(f"Annotations of type {dtype} are unsupported by cellxgene.")
         return schema
 
     @requires_data
     def _create_schema(self):
         self.schema = {
-            "dataframe": {
-                "nObs": self.cell_count,
-                "nVar": self.gene_count,
-                "type": str(self.data.X.dtype),
-            },
+            "dataframe": {"nObs": self.cell_count, "nVar": self.gene_count, "type": str(self.data.X.dtype)},
             "annotations": {
-                "obs": {
-                    "index": self.config["obs_names"],
-                    "columns": []
-                },
-                "var": {
-                    "index": self.config["var_names"],
-                    "columns": []
-                }
+                "obs": {"index": self.config["obs_names"], "columns": []},
+                "var": {"index": self.config["var_names"], "columns": []},
             },
-            "layout": {"obs": []}
+            "layout": {"obs": []},
         }
         for ax in Axis:
             curr_axis = getattr(self.data, str(ax))
@@ -186,28 +202,70 @@ class ScanpyEngine(CXGDriver):
                 ann_schema.update(self._get_col_type(curr_axis[ann]))
                 self.schema["annotations"][ax]["columns"].append(ann_schema)
 
-        for layout in self.config['layout']:
-            layout_schema = {
-                "name": layout,
-                "type": "float32",
-                "dims": [f"{layout}_0", f"{layout}_1"]
-            }
+        for layout in self.config["layout"]:
+            layout_schema = {"name": layout, "type": "float32", "dims": [f"{layout}_0", f"{layout}_1"]}
             self.schema["layout"]["obs"].append(layout_schema)
 
     @requires_data
-    def get_schema(self):
+    def get_schema(self, uid=None, collection=None):
         schema = self.schema  # base schema
         # add label obs annotations as needed
-        if self.labels is not None:
+        labels = read_labels(self.get_anno_fname(uid, collection))
+        if labels is not None and not labels.empty:
             schema = copy.deepcopy(schema)
-            for col in self.labels.columns:
+            for col in labels.columns:
                 col_schema = {
                     "name": col,
                     "writable": True,
                 }
-                col_schema.update(self._get_col_type(self.labels[col]))
+                col_schema.update(self._get_col_type(labels[col]))
                 schema["annotations"]["obs"]["columns"].append(col_schema)
         return schema
+
+    def get_userdata_idhash(self, uid):
+        """
+        Return a short hash that weakly identifies the user and dataset.
+        Used to create safe annotations output file names.
+        """
+        id = (uid + self.data_locator.abspath()).encode()
+        idhash = base64.b32encode(blake2b(id, digest_size=5).digest()).decode("utf-8")
+        return idhash
+
+    def get_anno_fname(self, uid=None, collection=None):
+        """ return the current annotation file name """
+        if not self.config["annotations"]:
+            return None
+
+        if self.config["annotations_file"] is not None:
+            return self.config["annotations_file"]
+
+        # we need to generate a file name, which we can only do if we have a UID and collection name
+        if uid is None or collection is None:
+            return None
+        idhash = self.get_userdata_idhash(uid)
+        return os.path.join(self.get_anno_output_dir(), f"{collection}-{idhash}.csv")
+
+    def get_anno_output_dir(self):
+        """ return the current annotation output directory """
+        if not self.config["annotations"]:
+            return None
+
+        if self.config["annotations_output_dir"]:
+            return self.config["annotations_output_dir"]
+
+        if self.config["annotations_file"]:
+            return os.path.dirname(os.path.abspath(self.config["annotations_file"]))
+
+        return os.getcwd()
+
+    def get_anno_backup_dir(self, uid, collection=None):
+        """ return the current annotation backup directory """
+        if not self.config["annotations"]:
+            return None
+
+        fname = self.get_anno_fname(uid, collection)
+        root, ext = os.path.splitext(fname)
+        return f"{root}-backups"
 
     def _load_data(self, data_locator):
         # as of AnnData 0.6.19, backed mode performs initial load fast, but at the
@@ -219,7 +277,7 @@ class ScanpyEngine(CXGDriver):
             with data_locator.local_handle() as lh:
                 # as of AnnData 0.6.19, backed mode performs initial load fast, but at the
                 # cost of significantly slower access to X data.
-                backed = 'r' if self.config['backed'] else None
+                backed = "r" if self.config["backed"] else None
                 self.data = anndata.read_h5ad(lh, backed=backed)
 
         except ValueError:
@@ -238,17 +296,6 @@ class ScanpyEngine(CXGDriver):
                 f"Please check your input and try again."
             )
 
-        if self.config["label_file"]:
-            try:
-                self.labels = read_labels(self.config["label_file"])
-            except Exception as e:
-                raise ScanpyFileError(
-                    f"Error while loading label file: {e}, File must be in the .csv format, please check "
-                    f"your input and try again."
-                )
-        else:
-            self.labels = None
-
     @requires_data
     def _validate_and_initialize(self):
         # var and obs column names must be unique
@@ -260,12 +307,16 @@ class ScanpyEngine(CXGDriver):
         self.cell_count = self.data.shape[0]
         self.gene_count = self.data.shape[1]
         self._default_and_validate_layouts()
-        self._validate_label_data()
         self._create_schema()
+
+        # if the user has specified a fixed label file, go ahead and validate it
+        # so that we can remove errors early in the process.
+        if self.config["annotations_file"]:
+            self._validate_label_data(read_labels(self.get_anno_fname()))
 
         # heuristic
         n_values = self.data.shape[0] * self.data.shape[1]
-        if (n_values > 1e8 and self.config['backed'] is True) or (n_values > 5e8):
+        if (n_values > 1e8 and self.config["backed"] is True) or (n_values > 5e8):
             self.config.update({"diffexp_may_be_slow": True})
 
     @requires_data
@@ -275,7 +326,7 @@ class ScanpyEngine(CXGDriver):
             b) validate layouts are legal.  remove/warn on any that are not
             c) cap total list of layouts at global const MAX_LAYOUTS
         """
-        layouts = self.config['layout']
+        layouts = self.config["layout"]
         # handle default
         if layouts is None or len(layouts) == 0:
             # load default layouts from the data.
@@ -299,7 +350,7 @@ class ScanpyEngine(CXGDriver):
             raise PrepareError(f"No valid layout data.")
 
         # cap layouts to MAX_LAYOUTS
-        self.config['layout'] = valid_layouts[0:MAX_LAYOUTS]
+        self.config["layout"] = valid_layouts[0:MAX_LAYOUTS]
 
     @requires_data
     def _is_valid_layout(self, arr):
@@ -321,8 +372,7 @@ class ScanpyEngine(CXGDriver):
             )
         if self.data.X.dtype != "float32":
             warnings.warn(
-                f"Scanpy data matrix is in {self.data.X.dtype} format not float32. "
-                f"Precision may be truncated."
+                f"Scanpy data matrix is in {self.data.X.dtype} format not float32. " f"Precision may be truncated."
             )
         for ax in Axis:
             curr_axis = getattr(self.data, str(ax))
@@ -341,7 +391,7 @@ class ScanpyEngine(CXGDriver):
                     )
                 if isinstance(datatype, CategoricalDtype):
                     category_num = len(curr_axis[ann].dtype.categories)
-                    if category_num > 500 and category_num > self.config['max_category_items']:
+                    if category_num > 500 and category_num > self.config["max_category_items"]:
                         warnings.warn(
                             f"{str(ax).title()} annotation '{ann}' has {category_num} categories, this may be "
                             f"cumbersome or slow to display. We recommend setting the "
@@ -350,34 +400,33 @@ class ScanpyEngine(CXGDriver):
                         )
 
     @requires_data
-    def _validate_label_data(self, labels=None):
+    def _validate_label_data(self, labels):
         """
         labels is None if disabled, empty if enabled by no data
         """
-        if labels is None:
-            labels = self.labels
-
         if labels is None or labels.empty:
             return
 
         # all lables must have a name, which must be unique and not used in obs column names
         if not labels.columns.is_unique:
-            raise KeyError(f"All column names specified in {self.config['label_file']} must be unique.")
+            raise KeyError(f"All column names specified in user annotations must be unique.")
 
         # the label index must be unique, and must have same values the anndata obs index
         if not labels.index.is_unique:
-            raise KeyError(f"All row index values specified in the label file "
-                           f"`{self.config['label_file']}` must be unique.")
+            raise KeyError(f"All row index values specified in user annotations must be unique.")
 
         if not labels.index.equals(self.original_obs_index):
-            raise KeyError("Label file row index does not match H5AD file index. "
-                           "Please ensure that column zero (0) in the label file contain the same "
-                           "index values as the H5AD file.")
+            raise KeyError(
+                "Label file row index does not match H5AD file index. "
+                "Please ensure that column zero (0) in the label file contain the same "
+                "index values as the H5AD file."
+            )
 
         duplicate_columns = list(set(labels.columns) & set(self.data.obs.columns))
         if len(duplicate_columns) > 0:
-            raise KeyError(f"Labels file may not contain column names which overlap "
-                           f"with h5ad obs columns {duplicate_columns}")
+            raise KeyError(
+                f"Labels file may not contain column names which overlap " f"with h5ad obs columns {duplicate_columns}"
+            )
 
         # labels must have same count as obs annotations
         if labels.shape[0] != self.data.obs.shape[0]:
@@ -406,7 +455,7 @@ class ScanpyEngine(CXGDriver):
         mask = np.zeros((count,), dtype=bool)
         for i in filter:
             if type(i) == list:
-                mask[i[0]: i[1]] = True
+                mask[i[0] : i[1]] = True
             else:
                 mask[i] = True
         return mask
@@ -415,15 +464,10 @@ class ScanpyEngine(CXGDriver):
     def _axis_filter_to_mask(filter, d_axis, count):
         mask = np.ones((count,), dtype=bool)
         if "index" in filter:
-            mask = np.logical_and(
-                mask, ScanpyEngine._index_filter_to_mask(filter["index"], count)
-            )
+            mask = np.logical_and(mask, ScanpyEngine._index_filter_to_mask(filter["index"], count))
         if "annotation_value" in filter:
             mask = np.logical_and(
-                mask,
-                ScanpyEngine._annotation_filter_to_mask(
-                    filter["annotation_value"], d_axis, count
-                ),
+                mask, ScanpyEngine._annotation_filter_to_mask(filter["annotation_value"], d_axis, count),
             )
         return mask
 
@@ -438,20 +482,27 @@ class ScanpyEngine(CXGDriver):
 
         if filter is not None:
             if Axis.OBS in filter:
-                obs_selector = self._axis_filter_to_mask(
-                    filter["obs"], self.data.obs, self.data.n_obs
-                )
+                obs_selector = self._axis_filter_to_mask(filter["obs"], self.data.obs, self.data.n_obs)
             if Axis.VAR in filter:
-                var_selector = self._axis_filter_to_mask(
-                    filter["var"], self.data.var, self.data.n_vars
-                )
+                var_selector = self._axis_filter_to_mask(filter["var"], self.data.var, self.data.n_vars)
         return obs_selector, var_selector
 
     @requires_data
-    def annotation_to_fbs_matrix(self, axis, fields=None):
+    def annotation_to_fbs_matrix(self, axis, fields=None, uid=None, collection=None):
         if axis == Axis.OBS:
-            if self.labels is not None and not self.labels.empty:
-                df = self.data.obs.join(self.labels, self.config['obs_names'])
+            if self.config["annotations"]:
+                try:
+                    labels = read_labels(self.get_anno_fname(uid, collection))
+                except Exception as e:
+                    raise ScanpyFileError(
+                        f"Error while loading label file: {e}, File must be in the .csv format, please check "
+                        f"your input and try again."
+                    )
+            else:
+                labels = None
+
+            if labels is not None and not labels.empty:
+                df = self.data.obs.join(labels, self.config["obs_names"])
             else:
                 df = self.data.obs
         else:
@@ -461,10 +512,13 @@ class ScanpyEngine(CXGDriver):
         return encode_matrix_fbs(df, col_idx=df.columns)
 
     @requires_data
-    def annotation_put_fbs(self, axis, fbs):
-        fname = self.config["label_file"]
-        if not fname or self.labels is None:
+    def annotation_put_fbs(self, axis, fbs, uid=None, collection=None):
+        if not self.config["annotations"]:
             raise DisabledFeatureError("Writable annotations are not enabled")
+
+        fname = self.get_anno_fname(uid, collection)
+        if not fname:
+            raise ScanpyFileError("Writable annotations - unable to determine file name for annotations")
 
         if axis != Axis.OBS:
             raise ValueError("Only OBS dimension access is supported")
@@ -472,19 +526,27 @@ class ScanpyEngine(CXGDriver):
         new_label_df = decode_matrix_fbs(fbs)
         if not new_label_df.empty:
             new_label_df.index = self.original_obs_index
-        self._validate_label_data(labels=new_label_df)  # paranoia
+        self._validate_label_data(new_label_df)  # paranoia
 
         # if any of the new column labels overlap with our existing labels, raise error
         duplicate_columns = list(set(new_label_df.columns) & set(self.data.obs.columns))
         if not new_label_df.columns.is_unique or len(duplicate_columns) > 0:
-            raise KeyError(f"Labels file may not contain column names which overlap "
-                           f"with h5ad obs columns {duplicate_columns}")
+            raise KeyError(
+                f"Labels file may not contain column names which overlap " f"with h5ad obs columns {duplicate_columns}"
+            )
 
         # update our internal state and save it.  Multi-threading often enabled,
         # so treat this as a critical section.
         with self.label_lock:
-            self.labels = new_label_df
-            write_labels(fname, self.labels)
+            lastmod = self.data_locator.lastmodtime()
+            lastmodstr = "'unknown'" if lastmod is None else lastmod.isoformat(timespec="seconds")
+            header = (
+                f"# Annotations generated on {datetime.now().isoformat(timespec='seconds')} "
+                f"using cellxgene version {cellxgene_version}\n"
+                f"# Input data file was {self.data_locator.uri_or_path}, "
+                f"which was last modified on {lastmodstr}\n"
+            )
+            write_labels(fname, new_label_df, header, backup_dir=self.get_anno_backup_dir(uid, collection))
 
         return jsonify_scanpy({"status": "OK"})
 
@@ -510,8 +572,7 @@ class ScanpyEngine(CXGDriver):
             raise FilterError("filtering on obs unsupported")
 
         # Currently only handles VAR dimension
-        X = MatrixProxy.create(self.data.X if var_selector is None
-                               else self.data.X[:, var_selector])
+        X = MatrixProxy.create(self.data.X if var_selector is None else self.data.X[:, var_selector])
         return encode_matrix_fbs(X, col_idx=np.nonzero(var_selector)[0], row_idx=None)
 
     @requires_data
@@ -519,25 +580,17 @@ class ScanpyEngine(CXGDriver):
         if Axis.VAR in obsFilterA or Axis.VAR in obsFilterB:
             raise FilterError("Observation filters may not contain vaiable conditions")
         try:
-            obs_mask_A = self._axis_filter_to_mask(
-                obsFilterA["obs"], self.data.obs, self.data.n_obs
-            )
-            obs_mask_B = self._axis_filter_to_mask(
-                obsFilterB["obs"], self.data.obs, self.data.n_obs
-            )
+            obs_mask_A = self._axis_filter_to_mask(obsFilterA["obs"], self.data.obs, self.data.n_obs)
+            obs_mask_B = self._axis_filter_to_mask(obsFilterB["obs"], self.data.obs, self.data.n_obs)
         except (KeyError, IndexError) as e:
             raise FilterError(f"Error parsing filter: {e}") from e
         if top_n is None:
             top_n = DEFAULT_TOP_N
-        result = diffexp_ttest(
-            self.data, obs_mask_A, obs_mask_B, top_n, self.config['diffexp_lfc_cutoff']
-        )
+        result = diffexp_ttest(self.data, obs_mask_A, obs_mask_B, top_n, self.config["diffexp_lfc_cutoff"])
         try:
             return jsonify_scanpy(result)
         except ValueError:
-            raise JSONEncodingValueError(
-                "Error encoding differential expression to JSON"
-            )
+            raise JSONEncodingValueError("Error encoding differential expression to JSON")
 
     @requires_data
     def layout_to_fbs_matrix(self):
@@ -573,7 +626,8 @@ class ScanpyEngine(CXGDriver):
         except ValueError as e:
             raise PrepareError(
                 f"Layout has not been calculated using {self.config['layout']}, "
-                f"please prepare your datafile and relaunch cellxgene") from e
+                f"please prepare your datafile and relaunch cellxgene"
+            ) from e
 
         df = pandas.concat(layout_data, axis=1, copy=False)
         return encode_matrix_fbs(df, col_idx=df.columns, row_idx=None)

@@ -3,6 +3,24 @@ Reducers for annotation UI-state.
 */
 const Annotations = (
   state = {
+    /*
+    Annotations collection name - which will be used to save the named set of annotations
+    in some persistent store (database, file system, etc).
+
+    The backend may expect this to be a legal file name, which is typically alpha-numeric, plus [_-,.].
+    Keep it simple or the server may return an error.
+
+    If `dataCollectionNameIsReadOnly` is true, you may NOT change the data collection name.
+    If false, you may change `dataCollectionName` and it will be used at the time the annotations are
+    written to the back-end.
+
+    */
+    dataCollectionNameIsReadOnly: true,
+    dataCollectionName: null,
+
+    /*
+    Annotations UI component state
+    */
     isEditingCategoryName: false,
     isEditingLabelName: false,
     categoryBeingEdited: null,
@@ -12,6 +30,31 @@ const Annotations = (
   action
 ) => {
   switch (action.type) {
+    case "configuration load complete": {
+      const DefaultDataCollectionName = null;
+      const dataCollectionName =
+        action.config.parameters?.["annotations-data-collection-name"] ?? null;
+      const dataCollectionNameIsReadOnly =
+        action.config.parameters?.[
+          "annotations-data-collection-name-is-read-only"
+        ] ?? false;
+      return {
+        ...state,
+        dataCollectionNameIsReadOnly,
+        dataCollectionName
+      };
+    }
+
+    case "set annotations collection name": {
+      if (state.dataCollectionNameIsReadOnly) {
+        throw new Error("data collection name is read only");
+      }
+      return {
+        ...state,
+        dataCollectionName: action.data
+      };
+    }
+
     /* CATEGORY */
     case "annotation: activate add new label mode":
       return {

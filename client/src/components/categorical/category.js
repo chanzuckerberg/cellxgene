@@ -21,6 +21,7 @@ import {
 import * as globals from "../../globals";
 import Value from "./value";
 import sortedCategoryValues from "./util";
+import { AnnotationsHelpers } from "../../util/stateManager";
 
 @connect(state => ({
   colorAccessor: state.colors.colorAccessor,
@@ -34,7 +35,7 @@ class Category extends React.Component {
     this.state = {
       isChecked: true,
       isExpanded: false,
-      newCategoryText: "",
+      newCategoryText: props.metadataField,
       newLabelText: ""
     };
   }
@@ -82,18 +83,14 @@ class Category extends React.Component {
     dispatch({
       type: "annotation: disable add new label mode"
     });
+    this.setState({
+      newLabelText: ""
+    });
   };
 
   handleAddNewLabelToCategory = () => {
     const { dispatch, metadataField } = this.props;
     const { newLabelText } = this.state;
-    /*
-    XXX TODO - temporary code generates random label string. Remove
-    when the label creation UI is implemented.
-
-    const { newLabelText } = this.state;
-    */
-    // const newLabelText = `label${Math.random()}`;
     dispatch({
       type: "annotation: add new label to category",
       metadataField,
@@ -119,8 +116,18 @@ class Category extends React.Component {
   };
 
   handleEditCategory = () => {
-    const { dispatch, metadataField } = this.props;
+    const { dispatch, metadataField, categoricalSelection } = this.props;
     const { newCategoryText } = this.state;
+
+    const allCategoryNames = _.keys(categoricalSelection);
+
+    if (
+      (allCategoryNames.indexOf(newCategoryText) > -1 &&
+        newCategoryText !== metadataField) ||
+      newCategoryText === ""
+    ) {
+      return;
+    }
 
     dispatch({
       type: "annotation: category edited",
@@ -144,6 +151,114 @@ class Category extends React.Component {
       type: "color by categorical metadata",
       colorAccessor: metadataField
     });
+  };
+
+  labelNameError = name => {
+    /*
+    return false if this is a LEGAL/acceptable category name or NULL/empty string,
+    or return an error type.
+    */
+
+    /* allow empty string */
+    if (name === "") return false;
+
+    /* check for label syntax errors */
+    const error = AnnotationsHelpers.annotationNameIsErroneous(name);
+    if (error) return error;
+
+    /* disallow duplicates */
+    const { metadataField, universe } = this.props;
+    const { obsByName } = universe.schema.annotations;
+    if (obsByName[metadataField].categories.indexOf(name) !== -1)
+      return "duplicate";
+
+    /* otherwise, no error */
+    return false;
+  };
+
+  labelNameErrorMessage = name => {
+    const { metadataField } = this.props;
+    const err = this.labelNameError(name);
+
+    if (err === "duplicate") {
+      /* duplicate error is special cased because it has special formatting */
+      return (
+        <span>
+          <span style={{ fontStyle: "italic" }}>{name}</span> already exists
+          already exists within{" "}
+          <span style={{ fontStyle: "italic" }}>{metadataField}</span>{" "}
+        </span>
+      );
+    }
+
+    if (err) {
+      /* all other errors - map code to human error message */
+      const errorMessageMap = {
+        "empty-string": "Blank names not allowed",
+        duplicate: "Name must be unique",
+        "trim-spaces": "Leading and trailing spaces not allowed",
+        "illegal-characters":
+          "Only alphanumeric, underscore and period allowed",
+        "multi-space-run": "Multiple consecutive spaces not allowed"
+      };
+      const errorMessage = errorMessageMap[err] ?? "error";
+      return <span>{errorMessage}</span>;
+    }
+
+    /* no error, no message generated */
+    return null;
+  };
+
+  categoryNameErrorMessage = () => {
+    const { newCategoryText } = this.state;
+    const err = this.editedCategoryNameError();
+    if (err === false) return null;
+
+    const errorMessageMap = {
+      /* map error code to human readable error message */
+      "empty-string": "Blank names not allowed",
+      duplicate: "Category name must be unique",
+      "trim-spaces": "Leading and trailing spaces not allowed",
+      "illegal-characters": "Only alphanumeric, underscore and period allowed",
+      "multi-space-run": "Multiple consecutive spaces not allowed"
+    };
+    const errorMessage = errorMessageMap[err] ?? "error";
+    return (
+      <span
+        style={{
+          display: "block",
+          fontStyle: "italic",
+          fontSize: 12,
+          marginTop: 5,
+          color: Colors.ORANGE3
+        }}
+      >
+        {errorMessage}
+      </span>
+    );
+  };
+
+  editedCategoryNameError = () => {
+    const { metadataField, categoricalSelection } = this.props;
+    const { newCategoryText } = this.state;
+
+    /* check for syntax errors in category name */
+    const error = AnnotationsHelpers.annotationNameIsErroneous(newCategoryText);
+    if (error) {
+      return error;
+    }
+
+    /* check for duplicative categories */
+    const allCategoryNames = _.keys(categoricalSelection);
+    const categoryNameAlreadyExists =
+      allCategoryNames.indexOf(newCategoryText) > -1;
+    const sameName = newCategoryText === metadataField;
+    if (categoryNameAlreadyExists && !sameName) {
+      return "duplicate";
+    }
+
+    /* otherwise, no error */
+    return false;
   };
 
   toggleAll() {
@@ -203,8 +318,7 @@ class Category extends React.Component {
       colorAccessor,
       categoricalSelection,
       isUserAnno,
-      annotations,
-      universe
+      annotations
     } = this.props;
     const { isTruncated } = categoricalSelection[metadataField];
 
@@ -213,6 +327,7 @@ class Category extends React.Component {
       ...cat.categoryValueIndices
     ]);
     const optTuplesAsKey = _.map(optTuples, t => t[0]).join(""); // animation
+    const allCategoryNames = _.keys(categoricalSelection);
 
     return (
       <div
@@ -233,7 +348,7 @@ class Category extends React.Component {
             style={{
               display: "flex",
               justifyContent: "flex-start",
-              alignItems: "baseline"
+              alignItems: "flex-start"
             }}
           >
             <label className="bp3-control bp3-checkbox">
@@ -249,7 +364,6 @@ class Category extends React.Component {
                 type="checkbox"
               />
               <span className="bp3-control-indicator" />
-              {""}
             </label>
             <span
               data-testid={`category-expand-${metadataField}`}
@@ -295,7 +409,7 @@ class Category extends React.Component {
                     rightElement={
                       <Button
                         minimal
-                        disabled={newCategoryText.length === 0}
+                        disabled={this.editedCategoryNameError()}
                         style={{ position: "relative", top: -1 }}
                         type="button"
                         icon="small-tick"
@@ -305,6 +419,7 @@ class Category extends React.Component {
                       />
                     }
                   />
+                  {this.categoryNameErrorMessage()}
                 </form>
               ) : (
                 metadataField
@@ -346,10 +461,9 @@ class Category extends React.Component {
                         <p>New, unique label name:</p>
                         <InputGroup
                           autoFocus
+                          value={newLabelText}
                           intent={
-                            universe.schema.annotations.obsByName[
-                              metadataField
-                            ].categories.indexOf(newLabelText) !== -1
+                            this.labelNameError(newLabelText)
                               ? "warning"
                               : "none"
                           }
@@ -361,22 +475,13 @@ class Category extends React.Component {
                         <p
                           style={{
                             marginTop: 7,
-                            visibility:
-                              universe.schema.annotations.obsByName[
-                                metadataField
-                              ].categories.indexOf(newLabelText) !== -1
-                                ? "visible"
-                                : "hidden",
+                            visibility: this.labelNameError(newLabelText)
+                              ? "visible"
+                              : "hidden",
                             color: Colors.ORANGE3
                           }}
                         >
-                          <span style={{ fontStyle: "italic" }}>
-                            {newLabelText}
-                          </span>{" "}
-                          already exists within{" "}
-                          <span style={{ fontStyle: "italic" }}>
-                            {metadataField}
-                          </span>
+                          {this.labelNameErrorMessage(newLabelText)}
                         </p>
                       </div>
                     </div>
@@ -389,10 +494,7 @@ class Category extends React.Component {
                         </Tooltip>
                         <Button
                           disabled={
-                            newLabelText.length === 0 ||
-                            universe.schema.annotations.obsByName[
-                              metadataField
-                            ].categories.indexOf(newLabelText) !== -1
+                            !newLabelText || this.labelNameError(newLabelText)
                           }
                           onClick={this.handleAddNewLabelToCategory}
                           intent="primary"

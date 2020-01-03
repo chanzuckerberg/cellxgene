@@ -10,8 +10,9 @@ class DataLoadEngineTest(unittest.TestCase):
     """
     Test file loading, including deferred loading/update.
     """
+
     def setUp(self):
-        self.data_file = DataLocator("example-dataset/pbmc3k.h5ad")
+        self.data_file = DataLocator("../example-dataset/pbmc3k.h5ad")
         self.data = ScanpyEngine()
 
     def test_init(self):
@@ -24,10 +25,12 @@ class DataLoadEngineTest(unittest.TestCase):
             "obs_names": "foo",
             "var_names": "bar",
             "diffexp_lfc_cutoff": 0.1,
-            "label_file": None,
+            "annotations": False,
+            "annotations_file": None,
+            "annotations_output_dir": None,
             "backed": False,
             "diffexp_may_be_slow": False,
-            "disable_diffexp": False
+            "disable_diffexp": False,
         }
         self.data.update(args=args)
         self.assertEqual(args, self.data.config)
@@ -37,7 +40,7 @@ class DataLoadEngineTest(unittest.TestCase):
             self.data._create_schema()
 
     def test_delayed_load_data(self):
-        self.data.update(data=self.data_file)
+        self.data.update(data_locator=self.data_file)
         self.data._create_schema()
         self.assertEqual(self.data.cell_count, 2638)
         self.assertEqual(self.data.gene_count, 1838)
@@ -45,7 +48,7 @@ class DataLoadEngineTest(unittest.TestCase):
         self.assertTrue(self.data.data.X[0, 0] - -0.171_469_51 < epsilon)
 
     def test_diffexp_topN(self):
-        self.data.update(data=self.data_file)
+        self.data.update(data_locator=self.data_file)
         f1 = {"filter": {"obs": {"index": [[0, 500]]}}}
         f2 = {"filter": {"obs": {"index": [[500, 1000]]}}}
         result = json.loads(self.data.diffexp_topN(f1["filter"], f2["filter"]))
@@ -58,6 +61,7 @@ class DataLocatorEngineTest(unittest.TestCase):
     """
     Test various types of data locators we expect to consume
     """
+
     def setUp(self):
         self.args = {
             "layout": ["umap"],
@@ -74,7 +78,7 @@ class DataLocatorEngineTest(unittest.TestCase):
         self.assertEqual(data.gene_count, 1838)
 
     def test_posix_file(self):
-        locator = DataLocator("example-dataset/pbmc3k.h5ad")
+        locator = DataLocator("../example-dataset/pbmc3k.h5ad")
         data = ScanpyEngine(locator, self.args)
         self.stdAsserts(data)
 
