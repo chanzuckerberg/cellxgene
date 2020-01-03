@@ -29,17 +29,16 @@ End to end tests use two env variables:
 
 On CI the end to end tests are run with `JEST_ENV` set to `prod` using the `smoke-test` make target.
 
-To run end to end tests as they will be run on CI
-1. cellxgene should be built and installed as [specified in server dev](#install)
-2. `export JEST_ENV='prod'`
-3. `export JEST_CXG_PORT=5000`
-4. Run `npm run --prefix client/ smoke-test`
+To run end to end tests as they will be run on CI use the following command:
+```
+JEST_ENV=prod JEST_CXG_PORT=5000 make pydist install-dist dev-env smoke-test
+```
 
 Run end to end tests interactively during development
 1. cellxgene should be installed as [specified in client dev](#install-1)
-2. Follow [launch](#launch-1) instructions for client dev with dataset `example-dataset/pbmc3k`
-3. Run `make smoke-test`
-4. To debug a failing test `export JEST_ENV='debug'` and re-run.
+1. Follow [launch](#launch-1) instructions for client dev with dataset `example-dataset/pbmc3k`
+1. Run `npm run e2e` or `make e2e` from the `client` directory
+1. To debug a failing test `export JEST_ENV='debug'` and re-run.
 
 ## Server dev
 ### Install
