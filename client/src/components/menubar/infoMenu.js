@@ -21,22 +21,16 @@ function InformationMenu(props) {
             )}
 
             <MenuItem
-              href="https://chanzuckerberg.github.io/cellxgene/faq.html"
+              href="https://chanzuckerberg.github.io/cellxgene/"
               target="_blank"
               icon="help"
-              text="FAQ"
+              text="Help"
             />
             <MenuItem
               href="https://join-cellxgene-users.herokuapp.com/"
               target="_blank"
               icon="chat"
               text="Chat"
-            />
-            <MenuItem
-              href="https://chanzuckerberg.github.io/cellxgene/"
-              target="_blank"
-              icon="book"
-              text="Docs"
             />
             <MenuItem
               href="https://github.com/chanzuckerberg/cellxgene"
