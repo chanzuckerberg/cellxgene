@@ -2,6 +2,5 @@ black
 bumpversion>=0.5
 parameterized>=0.7.0
 pytest>=3.6.3
-requests>=2.18.4
 twine>=1.12.1
 -r requirements.txt
