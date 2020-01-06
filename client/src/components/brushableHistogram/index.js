@@ -12,6 +12,7 @@ import * as d3 from "d3";
 import memoize from "memoize-one";
 import * as globals from "../../globals";
 import actions from "../../actions";
+import { linspace } from "../../util/range";
 import { makeContinuousDimensionName } from "../../util/nameCreators";
 
 @connect((state, ownProps) => {
@@ -53,15 +54,20 @@ class HistogramBrush extends React.PureComponent {
     const values = col.asArray();
     const summary = col.summarize();
     const { min: domainMin, max: domainMax } = summary;
+    const numBins = 40;
+
     histogramCache.x = d3
       .scaleLinear()
       .domain([domainMin, domainMax])
       .range([this.marginLeft, this.marginLeft + this.width]);
 
+    const [xStart, xStop] = histogramCache.x.domain();
+    const histThresholds = linspace(xStart, xStop, numBins + 1);
+
     histogramCache.bins = d3
       .histogram()
       .domain(histogramCache.x.domain())
-      .thresholds(40)(values);
+      .thresholds(histThresholds)(values);
 
     const yMax = histogramCache.bins
       .map(b => b.length)
