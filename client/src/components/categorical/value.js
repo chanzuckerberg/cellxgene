@@ -11,7 +11,9 @@ import {
   Position,
   PopoverInteractionKind,
   Tooltip,
-  Colors
+  Colors,
+  Dialog,
+  Classes
 } from "@blueprintjs/core";
 import Occupancy from "./occupancy";
 import * as globals from "../../globals";
@@ -114,7 +116,7 @@ class CategoryValue extends React.Component {
     const { editedLabelText } = this.state;
     const { categoricalSelection, metadataField, categoryIndex } = this.props;
 
-    /* 
+    /*
     check label syntax
     */
     const err = AnnotationsHelpers.annotationNameIsErroneous(editedLabelText);
@@ -404,180 +406,196 @@ class CategoryValue extends React.Component {
                   verticalAlign: "middle"
                 }}
               >
-                {annotations.isEditingLabelName &&
-                annotations.labelEditable.category === metadataField &&
-                annotations.labelEditable.label === categoryIndex
-                  ? null
-                  : truncatedString || displayString}
+                {truncatedString || displayString}
               </span>
             </Tooltip>
             {isUserAnno &&
             annotations.labelEditable.category === metadataField &&
             annotations.isEditingLabelName &&
             annotations.labelEditable.label === categoryIndex ? (
-              <form
-                onSubmit={e => {
-                  e.preventDefault();
-                  if (this.valueNameError()) {
-                    return;
-                  }
-                  this.handleEditValue();
-                }}
-              >
-                <InputGroup
-                  style={{ position: "relative", top: -1 }}
-                  ref={input => {
-                    this.editableInput = input;
-                  }}
-                  small
-                  autoFocus
-                  intent={this.valueNameError() ? "warning" : "none"}
-                  onChange={e => {
-                    this.setState({ editedLabelText: e.target.value });
-                  }}
-                  defaultValue={displayString}
-                  rightElement={
-                    <Button
-                      minimal
-                      style={{ position: "relative", top: -1 }}
-                      disabled={this.valueNameError()}
-                      type="button"
-                      icon="small-tick"
-                      data-testclass="submitEdit"
-                      data-testid="submitEdit"
-                      onClick={this.handleEditValue}
-                    />
-                  }
-                />
-                {this.valueNameErrorMessage()}
-              </form>
+              <div>
+                <Dialog
+                  icon="tag"
+                  title="Edit label"
+                  isOpen
+                  onClose={this.cancelEdit}
+                >
+                  <form
+                    onSubmit={e => {
+                      e.preventDefault();
+                      if (this.valueNameError()) {
+                        return;
+                      }
+                      this.handleEditValue();
+                    }}
+                  >
+                    <div className={Classes.DIALOG_BODY}>
+                      <div style={{ marginBottom: 20 }}>
+                        <p>
+                          New label text must be unique within category{" "}
+                          {metadataField}:
+                        </p>
+                        <InputGroup
+                          autoFocus
+                          value={
+                            editedLabelText /* editedLabelText displayString */
+                          }
+                          intent={this.valueNameError() ? "warning" : "none"}
+                          onChange={e =>
+                            this.setState({ editedLabelText: e.target.value })
+                          }
+                          leftIcon="tag"
+                        />
+                        <p
+                          style={{
+                            marginTop: 7,
+                            visibility: this.valueNameError()
+                              ? "visible"
+                              : "hidden",
+                            color: Colors.ORANGE3
+                          }}
+                        >
+                          {this.valueNameErrorMessage()}
+                        </p>
+                      </div>
+                    </div>
+                    <div className={Classes.DIALOG_FOOTER}>
+                      <div className={Classes.DIALOG_FOOTER_ACTIONS}>
+                        <Tooltip content="Close this dialog without editing label text.">
+                          <Button onClick={this.cancelEdit}>Cancel</Button>
+                        </Tooltip>
+                        <Button
+                          onClick={this.handleEditValue}
+                          disabled={!editedLabelText || this.valueNameError()}
+                          intent="primary"
+                          type="submit"
+                        >
+                          Change label text
+                        </Button>
+                      </div>
+                    </div>
+                  </form>
+                </Dialog>
+              </div>
             ) : null}
-            {/*
-            CANCEL IT, WITH BUTTON, ESCAPE KEY, CLICK OUT, UNDO?
-
-            <Button
-            minimal
-            style={{ position: "relative", top: -1 }}
-            type="button"
-            icon="cross"
-            data-testclass="submitEdit"
-            data-testid="submitEdit"
-            onClick={this.cancelEdit}
-          /> */}
+            <span style={{ flexShrink: 0 }}>
+              {colorAccessor &&
+              !isColorBy &&
+              !annotations.isEditingLabelName ? (
+                <Occupancy category={category} {...this.props} />
+              ) : null}
+            </span>
           </div>
-          <span style={{ flexShrink: 0 }}>
-            {colorAccessor && !isColorBy && !annotations.isEditingLabelName ? (
-              <Occupancy category={category} {...this.props} />
+          <span>
+            <span
+              data-testclass="categorical-value-count"
+              data-testid={`categorical-value-count-${metadataField}-${displayString}`}
+              style={{
+                color:
+                  displayString === globals.unassignedCategoryLabel
+                    ? "#ababab"
+                    : "black",
+                fontStyle:
+                  displayString === globals.unassignedCategoryLabel
+                    ? "italic"
+                    : "auto"
+              }}
+            >
+              {count}
+            </span>
+
+            <svg
+              display={isColorBy && categories ? "auto" : "none"}
+              style={{
+                marginLeft: 5,
+                width: 11,
+                height: 11,
+                backgroundColor:
+                  isColorBy && categories
+                    ? colorScale(categories.indexOf(value))
+                    : "inherit"
+              }}
+            />
+            {isUserAnno ? (
+              <span
+                onMouseEnter={this.handleMouseExit}
+                onMouseLeave={this.handleMouseEnter}
+              >
+                <Popover
+                  interactionKind={PopoverInteractionKind.HOVER}
+                  boundary="window"
+                  position={Position.RIGHT_TOP}
+                  content={
+                    <Menu>
+                      <MenuItem
+                        icon="plus"
+                        data-testclass="handleAddCurrentSelectionToThisLabel"
+                        data-testid={`handleAddCurrentSelectionToThisLabel-${metadataField}`}
+                        onClick={this.handleAddCurrentSelectionToThisLabel}
+                        text={
+                          <span>
+                            Re-label currently selected cells as
+                            <span
+                              style={{
+                                fontStyle:
+                                  displayString ===
+                                  globals.unassignedCategoryLabel
+                                    ? "italic"
+                                    : "auto"
+                              }}
+                            >
+                              {` ${displayString}`}
+                            </span>
+                          </span>
+                        }
+                        disabled={this.isAddCurrentSelectionDisabled(
+                          metadataField,
+                          value
+                        )}
+                      />
+                      {displayString !== globals.unassignedCategoryLabel ? (
+                        <MenuItem
+                          icon="edit"
+                          text="Edit this label's name"
+                          data-testclass="handleEditValue"
+                          data-testid={`handleEditValue-${metadataField}`}
+                          onClick={this.activateEditLabelMode}
+                          disabled={annotations.isEditingLabelName}
+                        />
+                      ) : null}
+                      {displayString !== globals.unassignedCategoryLabel ? (
+                        <MenuItem
+                          icon="delete"
+                          intent="danger"
+                          data-testclass="handleDeleteValue"
+                          data-testid={`handleDeleteValue-${metadataField}`}
+                          onClick={this.handleDeleteValue}
+                          text={`Delete this label, and reassign all cells to type '${
+                            globals.unassignedCategoryLabel
+                          }'`}
+                        />
+                      ) : null}
+                    </Menu>
+                  }
+                >
+                  <Button
+                    style={{
+                      marginLeft: 0,
+                      position: "relative",
+                      top: -1,
+                      minHeight: 16
+                    }}
+                    data-testclass="seeActions"
+                    data-testid={`seeActions-${metadataField}`}
+                    icon="more"
+                    small
+                    minimal
+                  />
+                </Popover>
+              </span>
             ) : null}
           </span>
         </div>
-        <span>
-          <span
-            data-testclass="categorical-value-count"
-            data-testid={`categorical-value-count-${metadataField}-${displayString}`}
-            style={{
-              color:
-                displayString === globals.unassignedCategoryLabel
-                  ? "#ababab"
-                  : "black",
-              fontStyle:
-                displayString === globals.unassignedCategoryLabel
-                  ? "italic"
-                  : "auto"
-            }}
-          >
-            {count}
-          </span>
-
-          <svg
-            display={isColorBy && categories ? "auto" : "none"}
-            style={{
-              marginLeft: 5,
-              width: 11,
-              height: 11,
-              backgroundColor:
-                isColorBy && categories
-                  ? colorScale(categories.indexOf(value))
-                  : "inherit"
-            }}
-          />
-          {isUserAnno ? (
-            <span
-              onMouseEnter={this.handleMouseExit}
-              onMouseLeave={this.handleMouseEnter}
-            >
-              <Popover
-                interactionKind={PopoverInteractionKind.HOVER}
-                boundary="window"
-                position={Position.RIGHT_TOP}
-                content={
-                  <Menu>
-                    <MenuItem
-                      icon="plus"
-                      data-testclass="handleAddCurrentSelectionToThisLabel"
-                      data-testid={`handleAddCurrentSelectionToThisLabel-${metadataField}`}
-                      onClick={this.handleAddCurrentSelectionToThisLabel}
-                      text={
-                        <span>
-                          Re-label currently selected cells as
-                          <span
-                            style={{
-                              fontStyle:
-                                displayString ===
-                                globals.unassignedCategoryLabel
-                                  ? "italic"
-                                  : "auto"
-                            }}
-                          >
-                            {` ${displayString}`}
-                          </span>
-                        </span>
-                      }
-                      disabled={this.isAddCurrentSelectionDisabled(
-                        metadataField,
-                        value
-                      )}
-                    />
-                    {displayString !== globals.unassignedCategoryLabel ? (
-                      <MenuItem
-                        icon="edit"
-                        text="Edit this label's name"
-                        data-testclass="handleEditValue"
-                        data-testid={`handleEditValue-${metadataField}`}
-                        onClick={this.activateEditLabelMode}
-                        disabled={annotations.isEditingLabelName}
-                      />
-                    ) : null}
-                    {displayString !== globals.unassignedCategoryLabel ? (
-                      <MenuItem
-                        icon="delete"
-                        intent="danger"
-                        data-testclass="handleDeleteValue"
-                        data-testid={`handleDeleteValue-${metadataField}`}
-                        onClick={this.handleDeleteValue}
-                        text={`Delete this label, and reassign all cells to type '${globals.unassignedCategoryLabel}'`}
-                      />
-                    ) : null}
-                  </Menu>
-                }
-              >
-                <Button
-                  style={{
-                    marginLeft: 0,
-                    position: "relative",
-                    top: -1,
-                    minHeight: 16
-                  }}
-                  data-testclass="seeActions"
-                  data-testid={`seeActions-${metadataField}`}
-                  icon="more"
-                  small
-                  minimal
-                />
-              </Popover>
-            </span>
-          ) : null}
-        </span>
       </div>
     );
   }
