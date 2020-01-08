@@ -4,6 +4,7 @@ Helpers for schema management
 import _ from "lodash";
 
 import fromEntries from "../fromEntries";
+import catLabelSort from "../catLabelSort";
 
 /*
 System wide schema assumptions:
@@ -28,6 +29,15 @@ export function indexEntireSchema(schema) {
 	);
 
 	return schema;
+}
+
+export function sortAllCategorical(schema) {
+	/* UI relies on OBS annotation categories being in presentation sort order */
+	schema.annotations.obs.columns.forEach(c => {
+		if (c.categories) {
+			c.categories = catLabelSort(c.writable, c.categories);
+		}
+	});
 }
 
 function _copy(schema) {
@@ -74,7 +84,7 @@ export function removeObsAnnoCategory(schema, name, category) {
 
 	const newSchema = _reindex(_copy(schema));
 
-	/* remove category */
+	/* remove category.  Do not need to resort as this can't change presentation order */
 	newSchema.annotations.obsByName[name].categories.splice(idx, 1);
 	return newSchema;
 }
@@ -90,7 +100,11 @@ export function addObsAnnoCategory(schema, name, category) {
 
 	const newSchema = _reindex(_copy(schema));
 
-	/* remove category */
-	newSchema.annotations.obsByName[name].categories.push(category);
+	/* add category, retaining presentation sort order */
+	const catAnno = newSchema.annotations.obsByName[name];
+	catAnno.categories = catLabelSort(catAnno.writable, [
+		...catAnno.categories,
+		category
+	]);
 	return newSchema;
 }

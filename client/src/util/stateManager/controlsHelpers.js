@@ -38,18 +38,28 @@ Remember that option values can be ANY js type, except undefined/null.
   }
 */
 function topNCategories(colSchema, summary, N) {
+  /* return top N by occurance in the data, preserving original category order */
   const { categories } = colSchema;
-  const counts = _.map(categories, cat => summary.categoryCounts.get(cat) ?? 0);
+  const counts = categories.map(cat => summary.categoryCounts.get(cat) ?? 0);
+
+  if (categories.length <= N) {
+    return [categories, counts];
+  }
+
   const sortIndex = fillRange(new Array(categories.length)).sort(
     (a, b) => counts[b] - counts[a]
   );
-  const sortedCategories = _.map(sortIndex, i => categories[i]);
-  const sortedCounts = _.map(sortIndex, i => counts[i]);
+  const topNindices = new Set(sortIndex.slice(0, N));
 
-  if (sortedCategories.length < N) {
-    return [sortedCategories, sortedCounts];
+  const topNCategories = [];
+  const topNCounts = [];
+  for (let i = 0; i < categories.length; i += 1) {
+    if (topNindices.has(i)) {
+      topNCategories.push(categories[i]);
+      topNCounts.push(counts[i]);
+    }
   }
-  return [sortedCategories.slice(0, N), sortedCounts.slice(0, N)];
+  return [topNCategories, topNCounts];
 }
 
 export function selectableCategoryNames(world, maxCategoryItems) {

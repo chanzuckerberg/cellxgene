@@ -4,7 +4,7 @@ import { unassignedCategoryLabel } from "../../globals";
 import { decodeMatrixFBS } from "./matrix";
 import * as Dataframe from "../dataframe";
 import { isFpTypedArray } from "../typeHelpers";
-import { indexEntireSchema } from "./schemaHelpers";
+import { indexEntireSchema, sortAllCategorical } from "./schemaHelpers";
 import { isCategoricalAnnotation } from "./annotationsHelpers";
 
 /*
@@ -187,6 +187,7 @@ export function createUniverseFromResponse(
   }
 
   reconcileSchemaCategoriesWithSummary(universe);
+  sortAllCategorical(universe.schema);
   indexEntireSchema(universe.schema);
 
   /* sanity checks */
@@ -196,7 +197,7 @@ export function createUniverseFromResponse(
     )
   ) {
     throw new Error(
-      "Writable continuous obs annotations are not supproted - failed to laod"
+      "Writable continuous obs annotations are not supported - failed to load"
     );
   }
 

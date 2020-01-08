@@ -1,47 +1,47 @@
-// jshint esversion: 6
-
-// values is [ [optVal, optIdx], ...]
-// index is range array
-// return sorted index
-
 /*
 Sort category values (labels) in the order we want for presentation.
 
-TL;DR: numeric sort for number-like strings, then strings in case-ignoring alpha
-order.  Except, when isUserAnno is true, pin globals.unassignedCategoryLabel 
-to the end.
-
+TL;DR: sort order is:
+* numbers or number-like strings first, in numeric order
+* most strings, in case-insenstive unicode sort order
+* then 'nan' (any case)
+* then, IF isUseAnno is true, globals.unassignedCategoryLabel
 */
 
 import isNumber from "is-number";
 import * as globals from "../globals";
+import { memoize } from "./dataframe/util";
 
-const sortedCategoryValues = (isUserAnno, values) => {
+function caseInsensitiveCompare(a, b) {
+  const textA = String(a).toUpperCase();
+  const textB = String(b).toUpperCase();
+  return textA < textB ? -1 : textA > textB ? 1 : 0;
+}
+
+const catLabelSort = (isUserAnno, values) => {
   /* this sort could be memoized for perf */
 
   const strings = [];
   const ints = [];
-  const unassigned = [];
+  const unassignedOrNaN = [];
 
   values.forEach(v => {
-    if (isUserAnno && v[0] === globals.unassignedCategoryLabel) {
-      unassigned.push(v);
-    } else if (isNumber(v[0])) {
+    if (isUserAnno && v === globals.unassignedCategoryLabel) {
+      unassignedOrNaN.push(v);
+    } else if (String(v).toLowerCase() === "nan") {
+      unassignedOrNaN.push(v);
+    } else if (isNumber(v)) {
       ints.push(v);
     } else {
       strings.push(v);
     }
   });
 
-  strings.sort((a, b) => {
-    const textA = String(a[0]).toUpperCase();
-    const textB = String(b[0]).toUpperCase();
-    return textA < textB ? -1 : textA > textB ? 1 : 0;
-  });
+  strings.sort(caseInsensitiveCompare);
+  ints.sort((a, b) => +a - +b);
+  unassignedOrNaN.sort(caseInsensitiveCompare);
 
-  ints.sort((a, b) => +a[0] - +b[0]);
-
-  return ints.concat(strings, unassigned);
+  return ints.concat(strings, unassignedOrNaN);
 };
 
-export default sortedCategoryValues;
+export default catLabelSort;
