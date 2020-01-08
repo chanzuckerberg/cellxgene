@@ -48,6 +48,9 @@ const centroidLabels = (state = initialState, action, sharedNextState) => {
         toggle: action.toggle === undefined ? state.toggle : action.toggle
       };
 
+    case "color by continuous metadata":
+      return { ...state, labels: [] };
+
     default:
       return state;
   }
