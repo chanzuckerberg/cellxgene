@@ -452,13 +452,12 @@ class Graph extends React.PureComponent {
 
     /* clear out whatever was on the div, even if nothing, but usually the brushes etc */
 
-    d3.select("#graphAttachPoint")
-      .select("svg")
+    d3.select("#lasso-layer")
       .selectAll(".lasso-group")
       .remove();
 
     // Don't render or recreate toolSVG if currently in zoom mode
-    if (graphInteractionMode !== "select") return undefined;
+    if (graphInteractionMode !== "select") return { toolSVG: undefined };
 
     let handleStart;
     let handleDrag;
