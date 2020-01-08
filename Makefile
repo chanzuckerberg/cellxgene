@@ -31,8 +31,7 @@ build-client:
 
 .PHONY: build-server
 build-server: build-client
-	mkdir -p $(SERVERBUILD)
-	cp -r server/* $(SERVERBUILD)
+	git ls-files server/ | cpio -pdm $(BUILDDIR)
 	cp -r client/build/  $(CLIENTBUILD)
 	mkdir -p $(SERVERBUILD)/app/web/static/img
 	mkdir -p $(SERVERBUILD)/app/web/templates/
