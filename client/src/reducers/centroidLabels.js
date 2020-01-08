@@ -13,14 +13,15 @@ const centroidLabels = (state = initialState, action, sharedNextState) => {
     case "set World to current selection":
       return {
         ...state,
-        labels: colorAccessor
-          ? calcCentroid(
-              world,
-              colorAccessor,
-              layoutChoice.currentDimNames,
-              categoricalSelection
-            )
-          : []
+        labels:
+          colorAccessor && !!categoricalSelection[colorAccessor]
+            ? calcCentroid(
+                world,
+                colorAccessor,
+                layoutChoice.currentDimNames,
+                categoricalSelection
+              )
+            : []
       };
 
     case "color by categorical metadata":
