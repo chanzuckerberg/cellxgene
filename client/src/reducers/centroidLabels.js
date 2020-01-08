@@ -6,8 +6,12 @@ const initialState = {
 };
 
 const centroidLabels = (state = initialState, action, sharedNextState) => {
-  const { world, layoutChoice, categoricalSelection, colors } = sharedNextState;
-  const { colorAccessor } = colors;
+  const {
+    world,
+    layoutChoice,
+    categoricalSelection,
+    colors: { colorAccessor }
+  } = sharedNextState;
 
   switch (action.type) {
     case "set World to current selection":
