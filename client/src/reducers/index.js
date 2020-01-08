@@ -25,8 +25,8 @@ import undoableConfig from "./undoableConfig";
 
 const Reducer = undoable(
   cascadeReducers([
-    ["universe", universe],
     ["config", config],
+    ["universe", universe],
     ["world", world],
     ["annotations", annotations],
     ["layoutChoice", layoutChoice],
@@ -56,7 +56,8 @@ const Reducer = undoable(
     "colors",
     "centroidLabels",
     "annotations"
-  ]
+  ],
+  undoableConfig
 );
 
 const store = createStore(Reducer, applyMiddleware(thunk));
