@@ -20,7 +20,7 @@ import {
 
 import * as globals from "../../globals";
 import Value from "./value";
-import sortedCategoryValues from "./util";
+import sortedCategoryValues from "../../util/catLabelSort";
 import { AnnotationsHelpers } from "../../util/stateManager";
 
 @connect(state => ({

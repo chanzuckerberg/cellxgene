@@ -14,7 +14,7 @@ to the end.
 */
 
 import isNumber from "is-number";
-import * as globals from "../../globals";
+import * as globals from "../globals";
 
 const sortedCategoryValues = (isUserAnno, values) => {
   /* this sort could be memoized for perf */
