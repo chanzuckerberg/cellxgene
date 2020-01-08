@@ -9,62 +9,6 @@ export default
   responsive: state.responsive
 }))
 class GraphOverlayLayer extends Component {
-  // shouldComponentUpdate(nextProps, nextState) {
-  //   const {
-  //     cameraTF,
-  //     modelTF,
-  //     projectionTF,
-  //     responsive,
-  //     graphPaddingRightLeft,
-  //     graphPaddingTop,
-  //     children
-  //   } = this.props;
-
-  //   if (cameraTF !== undefined) {
-  //     console.log("EQ", mat3.exactEquals(cameraTF, nextProps.cameraTF));
-  //     console.log("cameraTF", cameraTF);
-  //     console.log("nextProps.cameraTF", nextProps.cameraTF);
-  //     console.log(
-  //       "cameraTF !== nextProps.cameraTF",
-  //       cameraTF !== nextProps.cameraTF
-  //     );
-  //   }
-
-  //   const cameraTFChange = cameraTF !== nextProps.cameraTF;
-  //   const modelTFChange = modelTF !== nextProps.modelTF;
-  //   const projectionTFChange = projectionTF !== nextProps.projectionTF;
-  //   const responsiveChange = responsive !== nextProps.responsive;
-  //   const graphPaddingRightLeftChange =
-  //     graphPaddingRightLeft !== nextProps.graphPaddingRightLeft;
-  //   const graphPaddingTopChange = graphPaddingTop !== nextProps.graphPaddingTop;
-  //   const childrenChange = children !== nextProps.children;
-
-  //   return (
-  //     cameraTFChange ||
-  //     modelTFChange ||
-  //     projectionTFChange ||
-  //     responsiveChange ||
-  //     graphPaddingRightLeftChange ||
-  //     graphPaddingTopChange ||
-  //     childrenChange
-  //   );
-  // }
-
-  // CHECKING RERENDERS DELETE BEFORE MERGE
-  componentDidUpdate(prevProps, prevState) {
-    Object.entries(this.props).forEach(
-      ([key, val]) =>
-        prevProps[key] !== val && console.log(`OVERLAY Prop '${key}' changed`)
-    );
-    if (this.state) {
-      Object.entries(this.state).forEach(
-        ([key, val]) =>
-          prevState[key] !== val &&
-          console.log(`OVERLAY State '${key}' changed`)
-      );
-    }
-  }
-
   matrixToTransformString = m => {
     /* 
       Translates the gl-matrix mat3 to SVG matrix transform style

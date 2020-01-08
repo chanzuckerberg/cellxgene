@@ -262,18 +262,6 @@ class Graph extends React.PureComponent {
     } = this.state;
     let stateChanges = {};
 
-    // CHECKING RERENDERS DELETE BEFORE MERGE
-    Object.entries(this.props).forEach(
-      ([key, val]) =>
-        prevProps[key] !== val && console.log(`GRAPH Prop '${key}' changed`)
-    );
-    if (this.state) {
-      Object.entries(this.state).forEach(
-        ([key, val]) =>
-          prevState[key] !== val && console.log(`GRAPH State '${key}' changed`)
-      );
-    }
-
     if (reglRender) {
       if (
         // If it IS RENDERING and it is NOT IN ZOOM mode, stop rendering.
