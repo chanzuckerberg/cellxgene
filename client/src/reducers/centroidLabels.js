@@ -2,7 +2,7 @@ import calcCentroid from "../util/centroid";
 
 const initialState = {
   labels: [],
-  toggle: true // TODO: Change to default false
+  toggle: false
 };
 
 const centroidLabels = (state = initialState, action, sharedNextState) => {
