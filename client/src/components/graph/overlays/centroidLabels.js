@@ -43,7 +43,8 @@ export default class CentroidLabels extends PureComponent {
               fontFamily: "Roboto Condensed",
               fontSize,
               fontWeight,
-              fill: "black"
+              fill: "black",
+              userSelect: "none"
             }}
             onMouseEnter={e =>
               dispatch({
