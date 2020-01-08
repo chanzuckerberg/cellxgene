@@ -437,6 +437,9 @@ class Graph extends React.PureComponent {
     if (e.type !== "wheel") e.preventDefault();
     if (camera.handleEvent(e, projectionTF)) {
       this.renderCanvas();
+      this.setState(state => {
+        return { ...state, updateOverlay: !state.updateOverlay };
+      });
     }
   };
 
@@ -794,7 +797,6 @@ class Graph extends React.PureComponent {
 
     const cameraTF = camera?.view();
 
-    console.log("graph render ", cameraTF);
     return (
       <div id="graphWrapper">
         <div
@@ -816,21 +818,9 @@ class Graph extends React.PureComponent {
             >
               <CentroidLabels
                 labels={centroidLabels.labels}
-                mouseEnter={e =>
-                  dispatch({
-                    type: "category value mouse hover start",
-                    metadataField: colorAccessor,
-                    categoryField: e.target.getAttribute("data-label")
-                  })
-                }
-                mouseExit={e =>
-                  dispatch({
-                    type: "category value mouse hover end",
-                    metadataField: colorAccessor,
-                    categoryField: e.target.getAttribute("data-label")
-                  })
-                }
                 dilatedValue={pointDilation.categoryField}
+                colorAccessor={colorAccessor}
+                dispatch={dispatch}
               />
             </GraphOverlayLayer>
 

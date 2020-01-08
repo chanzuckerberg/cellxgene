@@ -6,9 +6,9 @@ export default class CentroidLabels extends PureComponent {
     const {
       labels,
       inverseTransform,
-      mouseEnter,
-      mouseExit,
-      dilatedValue
+      dilatedValue,
+      dispatch,
+      colorAccessor
     } = this.props;
 
     const iter = labels.entries();
@@ -45,8 +45,20 @@ export default class CentroidLabels extends PureComponent {
               fontWeight,
               fill: "black"
             }}
-            onMouseEnter={mouseEnter}
-            onMouseOut={mouseExit}
+            onMouseEnter={e =>
+              dispatch({
+                type: "category value mouse hover start",
+                metadataField: colorAccessor,
+                categoryField: e.target.getAttribute("data-label")
+              })
+            }
+            onMouseOut={e =>
+              dispatch({
+                type: "category value mouse hover end",
+                metadataField: colorAccessor,
+                categoryField: e.target.getAttribute("data-label")
+              })
+            }
             pointerEvents="visiblePainted"
           >
             {key.length > 20 ? `${key.substr(0, 20)}...` : key}

@@ -91,7 +91,6 @@ class GraphOverlayLayer extends Component {
       graphPaddingTop,
       children
     } = this.props;
-    console.log("overlay render: ", cameraTF);
 
     const inverseTransform =
       cameraTF !== undefined
