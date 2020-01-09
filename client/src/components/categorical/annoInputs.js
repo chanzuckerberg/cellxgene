@@ -44,13 +44,25 @@ const AnnoSuggest = props => {
     ontology,
     text
   } = props;
+  console.log("props", props);
   return (
     <Suggest
       fill
-      autoFocus
       resetOnSelect
       closeOnSelect
       resetOnClose
+      createNewItemFromQuery={str => str}
+      createNewItemRenderer={() => {
+        return (
+          <MenuItem
+            icon="add"
+            text="Create a label not in the ontology"
+            active
+            onClick={handleChoice}
+            shouldDismissPopover={false}
+          />
+        );
+      }}
       itemDisabled={ontologyLoading ? () => true : () => false}
       noResults={<MenuItem disabled text="No matching ontology identifier" />}
       onItemSelect={handleChoice}

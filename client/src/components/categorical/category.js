@@ -181,6 +181,7 @@ class Category extends React.Component {
   };
 
   labelNameErrorMessage = name => {
+    console.log("category error check for new label:", typeof name, name);
     const { metadataField } = this.props;
     const err = this.labelNameError(name);
 
@@ -267,6 +268,7 @@ class Category extends React.Component {
 
   /* leaky to have both of these in multiple components */
   handleChoice = e => {
+    console.log("in category handlechoice", e);
     this.setState({ newLabelText: e.target });
   };
 

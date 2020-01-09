@@ -39,7 +39,7 @@ class CategoryValue extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      activeSuggestItem: null,
+      activeSuggestItem: "",
       editedLabelText: String(
         props.categoricalSelection[props.metadataField].categoryValues[
           props.categoryIndex
