@@ -42,9 +42,7 @@ Entire action must be identical (all keys).
 const debounceOnActions = new Set([
   "color by categorical metadata",
   "color by continuous metadata",
-  "color by expression",
-
-  "show centroid labels for category"
+  "color by expression"
 ]);
 
 /*
@@ -69,8 +67,6 @@ const saveOnActions = new Set([
   "color by categorical metadata",
   "color by continuous metadata",
   "color by expression",
-
-  "show centroid labels for category",
 
   "set scatterplot x",
   "set scatterplot y",
