@@ -5,30 +5,6 @@ import { memoize } from "./dataframe/util";
   Centroid coordinate calculation
 */
 
-/* Unused - please cleanup
-const calcMeanCentroid = (world, annoName, annoValue, layoutDimNames) => {
-  const centroid = { x: 0, y: 0, size: 0 };
-  const annoArray = world.obsAnnotations.col(categoryName).asArray();
-  const layoutXArray = world.obsLayout.col(layoutDimNames[0]).asArray();
-  const layoutYArray = world.obsLayout.col(layoutDimNames[1]).asArray();
-
-  for (let i = 0, len = annoArray.length; i < len; i += 1) {
-    if (annoArray[i] === annoValue) {
-      centroid.x += layoutXArray[i];
-      centroid.y += layoutYArray[i];
-      centroid.size += 1;
-    }
-  }
-
-  if (centroid[2] !== 0) {
-    centroid.x /= centroid.size;
-    centroid.y /= centroid.size;
-  }
-
-  return [centroid.x, centroid.y];
-};
-*/
-
 /* 
   calcMedianCentroid goes through a given metadata category
   fetches each cell's coordinates grouping by category value.
@@ -121,9 +97,7 @@ const calcMedianCentroid = (
 // A simple function to hash the parameters
 // (not 100% on world hash, Bruce will have to check this one out)
 const hashMedianCentroid = (world, categoryName, layoutDimNames) => {
-  return `${world.varAnnotations.__id}+${world.obsLayout.__id}+${
-    world.varData.__id
-  }::${categoryName}:${layoutDimNames}`;
+  return `${world.varAnnotations.__id}+${world.obsLayout.__id}+${world.varData.__id}::${categoryName}:${layoutDimNames}`;
 };
 // export the mmemoized calculation function
 export default memoize(calcMedianCentroid, hashMedianCentroid);
