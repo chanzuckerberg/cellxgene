@@ -252,35 +252,8 @@ class Graph extends React.PureComponent {
       pointDilation,
       colorAccessor
     } = this.props;
-    const {
-      reglRender,
-      regl,
-      toolSVG,
-      centroids,
-      camera,
-      modelTF
-    } = this.state;
+    const { regl, toolSVG, centroids, camera, modelTF } = this.state;
     let stateChanges = {};
-
-    if (reglRender) {
-      if (
-        // If it IS RENDERING and it is NOT IN ZOOM mode, stop rendering.
-        this.reglRenderState === "rendering" &&
-        graphInteractionMode !== "zoom"
-      ) {
-        reglRender.cancel();
-        this.reglRenderState = "paused";
-      }
-
-      if (
-        // If it is NOT RENDERING and it IS IN ZOOM mode, start rendering
-        this.reglRenderState !== "rendering" &&
-        graphInteractionMode === "zoom"
-      ) {
-        this.restartReglLoop();
-        this.reglRenderState = "rendering";
-      }
-    }
 
     if (regl && world) {
       /* update the regl and point rendering state */
