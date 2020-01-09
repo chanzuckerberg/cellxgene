@@ -14,11 +14,22 @@ const centroidLabels = (state = initialState, action, sharedNextState) => {
   } = sharedNextState;
 
   switch (action.type) {
+    case "annotation: label current cell selection":
+    case "annotation: label edited":
+    case "annotation: delete label":
     case "set World to current selection":
+      console.log(
+        !!colorAccessor,
+        state.toggle,
+        !!categoricalSelection[colorAccessor]
+      );
+
       return {
         ...state,
         labels:
-          colorAccessor && !!categoricalSelection[colorAccessor]
+          !!colorAccessor &&
+          state.toggle &&
+          !!categoricalSelection[colorAccessor]
             ? calcCentroid(
                 world,
                 colorAccessor,
