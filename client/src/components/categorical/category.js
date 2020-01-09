@@ -15,8 +15,7 @@ import {
   Icon,
   Position,
   PopoverInteractionKind,
-  Colors,
-  ButtonGroup
+  Colors
 } from "@blueprintjs/core";
 
 import * as globals from "../../globals";
@@ -28,9 +27,7 @@ import { AnnotationsHelpers } from "../../util/stateManager";
   colorAccessor: state.colors.colorAccessor,
   categoricalSelection: state.categoricalSelection,
   annotations: state.annotations,
-  universe: state.universe,
-  labeledCategory: state.centroidLabels.labeledCategory,
-  graphInteractionMode: state.controls.graphInteractionMode
+  universe: state.universe
 }))
 class Category extends React.Component {
   constructor(props) {
@@ -321,10 +318,7 @@ class Category extends React.Component {
       colorAccessor,
       categoricalSelection,
       isUserAnno,
-      annotations,
-      universe,
-      labeledCategory,
-      graphInteractionMode
+      annotations
     } = this.props;
     const { isTruncated } = categoricalSelection[metadataField];
     const cat = categoricalSelection[metadataField];
