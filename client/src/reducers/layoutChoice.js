@@ -28,7 +28,7 @@ const LayoutChoice = (
     case "reset World to eq Universe": {
       // set default to default
       const { schema } = nextSharedState.world;
-      const available = schema.layout.obs.map(v => v.name);
+      const available = schema.layout.obs.map(v => v.name).sort();
       const current = bestDefaultLayout(available);
       const currentDimNames = schema.layout.obsByName[current].dims;
       return { available, current, currentDimNames };
