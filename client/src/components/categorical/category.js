@@ -474,7 +474,7 @@ class Category extends React.Component {
                       text={newLabelText}
                       handleItemChange={this.handleSuggestActiveItemChange}
                       handleChoice={this.handleChoice}
-                      handleTextChange={this.handleNewCategoryText}
+                      handleTextChange={this.handleTextChange}
                     />
                   }
                 />

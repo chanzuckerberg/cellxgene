@@ -111,6 +111,7 @@ class AnnoInputs extends React.Component {
     } = this.props;
     return (
       <div>
+        {/* Le sigh https://github.com/palantir/blueprint/issues/2864 */}
         {useSuggest ? (
           <AnnoSuggest
             world={world}

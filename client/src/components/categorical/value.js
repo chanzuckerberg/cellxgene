@@ -18,6 +18,8 @@ import {
 import Occupancy from "./occupancy";
 import * as globals from "../../globals";
 import styles from "./categorical.css";
+import AnnoDialog from "./annoDialog";
+import AnnoInputs from "./annoInputs";
 
 import { AnnotationsHelpers } from "../../util/stateManager";
 
@@ -28,12 +30,16 @@ import { AnnotationsHelpers } from "../../util/stateManager";
   colorAccessor: state.colors.colorAccessor,
   schema: state.world?.schema,
   world: state.world,
-  crossfilter: state.crossfilter
+  crossfilter: state.crossfilter,
+  ontology: state.ontology,
+  ontologyLoading: state.ontology?.loading,
+  ontologyEnabled: state.ontology?.enabled
 }))
 class CategoryValue extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      activeSuggestItem: null,
       editedLabelText: String(
         props.categoricalSelection[props.metadataField].categoryValues[
           props.categoryIndex
@@ -277,6 +283,19 @@ class CategoryValue extends React.Component {
     return false;
   }
 
+  handleTextChange = e => {
+    this.setState({ editedLabelText: e.target.value });
+  };
+
+  handleChoice = e => {
+    /* Blueprint Suggest format */
+    this.setState({ editedLabelText: e.target });
+  };
+
+  handleSuggestActiveItemChange = item => {
+    this.setState({ activeSuggestItem: item });
+  };
+
   render() {
     const {
       categoricalSelection,
@@ -288,6 +307,7 @@ class CategoryValue extends React.Component {
       schema,
       isUserAnno,
       annotations,
+      ontologyEnabled,
       // flippedProps is potentially brittle, their docs want {...flippedProps} on our div,
       // our lint doesn't like jsx spread, we are version pinned to prevent api change on their part
       flippedProps
@@ -336,6 +356,12 @@ class CategoryValue extends React.Component {
         -globals.categoryLabelDisplayStringLongLength / 2
       )}`;
     }
+
+    const editModeActive =
+      isUserAnno &&
+      annotations.labelEditable.category === metadataField &&
+      annotations.isEditingLabelName &&
+      annotations.labelEditable.label === categoryIndex;
 
     return (
       <div
@@ -409,73 +435,31 @@ class CategoryValue extends React.Component {
                 {truncatedString || displayString}
               </span>
             </Tooltip>
-            {isUserAnno &&
-            annotations.labelEditable.category === metadataField &&
-            annotations.isEditingLabelName &&
-            annotations.labelEditable.label === categoryIndex ? (
+            {editModeActive ? (
               <div>
-                <Dialog
-                  icon="tag"
+                <AnnoDialog
+                  isActive={editModeActive}
                   title="Edit label"
-                  isOpen
-                  onClose={this.cancelEdit}
-                >
-                  <form
-                    onSubmit={e => {
-                      e.preventDefault();
-                      if (this.valueNameError()) {
-                        return;
-                      }
-                      this.handleEditValue();
-                    }}
-                  >
-                    <div className={Classes.DIALOG_BODY}>
-                      <div style={{ marginBottom: 20 }}>
-                        <p>
-                          New label text must be unique within category{" "}
-                          {metadataField}:
-                        </p>
-                        <InputGroup
-                          autoFocus
-                          value={
-                            editedLabelText /* editedLabelText displayString */
-                          }
-                          intent={this.valueNameError() ? "warning" : "none"}
-                          onChange={e =>
-                            this.setState({ editedLabelText: e.target.value })
-                          }
-                          leftIcon="tag"
-                        />
-                        <p
-                          style={{
-                            marginTop: 7,
-                            visibility: this.valueNameError()
-                              ? "visible"
-                              : "hidden",
-                            color: Colors.ORANGE3
-                          }}
-                        >
-                          {this.valueNameErrorMessage()}
-                        </p>
-                      </div>
-                    </div>
-                    <div className={Classes.DIALOG_FOOTER}>
-                      <div className={Classes.DIALOG_FOOTER_ACTIONS}>
-                        <Tooltip content="Close this dialog without editing label text.">
-                          <Button onClick={this.cancelEdit}>Cancel</Button>
-                        </Tooltip>
-                        <Button
-                          onClick={this.handleEditValue}
-                          disabled={!editedLabelText || this.valueNameError()}
-                          intent="primary"
-                          type="submit"
-                        >
-                          Change label text
-                        </Button>
-                      </div>
-                    </div>
-                  </form>
-                </Dialog>
+                  instruction={`New label text must be unique within category ${metadataField}:`}
+                  cancelTooltipContent="Close this dialog without editing label text."
+                  primaryButtonText="Change label text"
+                  text={editedLabelText}
+                  categoryToDuplicate={null}
+                  validationError={this.valueNameError()}
+                  errorMessage={this.valueNameErrorMessage()}
+                  handleSubmit={this.handleEditValue}
+                  handleCancel={this.cancelEdit}
+                  annoInput={
+                    <AnnoInputs
+                      useSuggest={ontologyEnabled}
+                      text={editedLabelText}
+                      handleItemChange={this.handleSuggestActiveItemChange}
+                      handleChoice={this.handleChoice}
+                      handleTextChange={this.handleTextChange}
+                    />
+                  }
+                  annoSelect={null}
+                />
               </div>
             ) : null}
             <span style={{ flexShrink: 0 }}>
