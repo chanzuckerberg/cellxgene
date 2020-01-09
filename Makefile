@@ -22,15 +22,15 @@ clean-%:
 # BUILDING PACKAGE
 
 .PHONY: build
-build: clean build-server
+build: clean build-cli
 	@echo "done"
 
 .PHONY: build-client
 build-client:
 	cd client && $(MAKE) ci build
 
-.PHONY: build-server
-build-server: build-client
+.PHONY: build-cli
+build-cli: build-client
 	git ls-files server/ | cpio -pdm $(BUILDDIR)
 	cp -r client/build/  $(CLIENTBUILD)
 	mkdir -p $(SERVERBUILD)/app/web/static/img
