@@ -1,6 +1,8 @@
 language: python
 dist: xenial
 sudo: required
+before_install:
+  - nvm install node
 node_js:
   - node
 cache:
