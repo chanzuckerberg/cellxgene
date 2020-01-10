@@ -2,7 +2,7 @@ language: python
 dist: xenial
 sudo: required
 node_js:
-  - 12
+  - 11
 cache:
   - pip
   - npm
