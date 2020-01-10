@@ -42,6 +42,7 @@ const defaultBigBang = () => {
 
 describe("createWorldFromEntireUniverse", () => {
   test("create from REST sample", () => {
+    console.log("Node version:", process.version);
     const universe = Universe.createUniverseFromResponse(
       _.cloneDeep(REST.config),
       _.cloneDeep(REST.schema),
