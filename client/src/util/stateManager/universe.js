@@ -86,7 +86,7 @@ function AnnotationsFBSToDataframe(arrayBuffers) {
   All float data from the server is left as is.  All non-float is promoted
   to an appropriate float.
   */
-  if (arrayBuffers instanceof ArrayBuffer) {
+  if (!(arrayBuffers instanceof Array)) {
     arrayBuffers = [arrayBuffers];
   }
   if (arrayBuffers.length === 0) {
