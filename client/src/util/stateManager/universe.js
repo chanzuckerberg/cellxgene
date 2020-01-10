@@ -74,7 +74,7 @@ function promoteTypedArray(o) {
   return new TyepdArrayCtor(o);
 }
 
-function AnnotationsFBSToDataframe(arrayBuffer) {
+function AnnotationsFBSToDataframe(arrayBuffers) {
   /*
   Convert a Matrix FBS to a Dataframe.
 
@@ -86,32 +86,36 @@ function AnnotationsFBSToDataframe(arrayBuffer) {
   All float data from the server is left as is.  All non-float is promoted
   to an appropriate float.
   */
-  const fbs = decodeMatrixFBS(arrayBuffer, true); // leave in place
-  const columns = fbs.columns.map(c => {
-    if (isFpTypedArray(c) || Array.isArray(c)) return c;
-    return promoteTypedArray(c);
-  });
-  const df = new Dataframe.Dataframe(
-    [fbs.nRows, fbs.nCols],
-    columns,
-    null,
-    new Dataframe.KeyIndex(fbs.colIdx)
-  );
-  return df;
-}
-
-function LayoutFBSToDataframe(arrayBuffer) {
-  const fbs = decodeMatrixFBS(arrayBuffer, true);
-  if (fbs.columns.length < 2 || !fbs.columns.every(isFpTypedArray)) {
-    // We have strong assumptions about the shape & type of layout data.
-    throw new Error("Unexpected layout data type returned from server");
+  if (arrayBuffers instanceof ArrayBuffer) {
+    arrayBuffers = [arrayBuffers];
+  }
+  if (arrayBuffers.length === 0) {
+    return Dataframe.Dataframe.empty();
   }
 
+  const fbs = arrayBuffers.map(ab => decodeMatrixFBS(ab, true)); // leave in place
+  /* check that all FBS have same row dimensionality */
+  const nRows = fbs[0].nRows;
+  fbs.forEach(b => {
+    if (b.nRows !== nRows)
+      throw new Error("FBS with inconsistent dimensionality");
+  });
+  const columns = fbs
+    .map(fb =>
+      fb.columns.map(c => {
+        if (isFpTypedArray(c) || Array.isArray(c)) return c;
+        return promoteTypedArray(c);
+      })
+    )
+    .flat();
+  const colIdx = fbs.map(b => b.colIdx).flat();
+  const nCols = columns.length;
+
   const df = new Dataframe.Dataframe(
-    [fbs.nRows, fbs.nCols],
-    fbs.columns,
+    [nRows, nCols],
+    columns,
     null,
-    new Dataframe.KeyIndex(fbs.colIdx)
+    new Dataframe.KeyIndex(colIdx)
   );
   return df;
 }
@@ -132,19 +136,18 @@ function reconcileSchemaCategoriesWithSummary(universe) {
   */
 
   universe.schema.annotations.obs.columns.forEach(s => {
-    if (
-      s.type === "string" ||
-      s.type === "boolean" ||
-      s.type === "categorical"
-    ) {
-      const categories = _.union(
-        s.categories ?? [],
-        universe.obsAnnotations.col(s.name).summarize().categories ?? []
-      );
-      s.categories = categories;
+    const { type, name, writable } = s;
+    if (type === "string" || type === "boolean" || type === "categorical") {
+      if (universe.obsAnnotations.hasCol(name)) {
+        const categories = _.union(
+          s.categories ?? [],
+          universe.obsAnnotations.col(name).summarize().categories ?? []
+        );
+        s.categories = categories;
+      }
     }
 
-    if (s.writable && s.categories.indexOf(unassignedCategoryLabel) === -1) {
+    if (writable && s.categories.indexOf(unassignedCategoryLabel) === -1) {
       s.categories = s.categories.concat(unassignedCategoryLabel);
     }
   });
@@ -175,7 +178,8 @@ export function createUniverseFromResponse(
   universe.obsAnnotations = AnnotationsFBSToDataframe(annotationsObsResponse);
   universe.varAnnotations = AnnotationsFBSToDataframe(annotationsVarResponse);
   /* layout */
-  universe.obsLayout = LayoutFBSToDataframe(layoutFBSResponse);
+  // universe.obsLayout = LayoutFBSToDataframe(layoutFBSResponse);
+  universe.obsLayout = AnnotationsFBSToDataframe(layoutFBSResponse);
 
   /* sanity checks */
   if (

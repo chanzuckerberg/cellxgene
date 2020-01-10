@@ -10,6 +10,55 @@ import {
 } from "../util/actionHelpers";
 
 /*
+return promise to fetch the OBS annotations we need to load.  Omit anything
+we don't need.
+*/
+function obsAnnotationFetch(schema) {
+  const obsAnnotations = schema?.schema?.annotations?.obs ?? {};
+  const columns = obsAnnotations.columns ?? [];
+  const index = obsAnnotations.index ?? false;
+
+  return Promise.all(
+    columns
+      .map(col => col.name)
+      .filter(name => name !== index)
+      .map(
+        name => `annotations/obs?annotation-name=${encodeURIComponent(name)}`
+      )
+      .map(path => `${globals.API.prefix}${globals.API.version}${path}`)
+      .map(url => doBinaryRequest(url))
+  );
+}
+
+/*
+return promise fetching VAR annotations we need to load.  Only index is currently used.
+*/
+function varAnnotationFetch(schema) {
+  const varAnnotations = schema?.schema?.annotations?.var ?? {};
+  const index = varAnnotations.index ?? false;
+  const names = index ? [index] : [];
+  return Promise.all(
+    names
+      .map(
+        name => `annotations/var?annotation-name=${encodeURIComponent(name)}`
+      )
+      .map(path => `${globals.API.prefix}${globals.API.version}${path}`)
+      .map(url => doBinaryRequest(url))
+  );
+}
+
+/*
+return promise fetching layout we need
+*/
+function layoutFetch(schema) {
+  return Promise.all(
+    ["layout/obs"]
+      .map(path => `${globals.API.prefix}${globals.API.version}${path}`)
+      .map(url => doBinaryRequest(url))
+  );
+}
+
+/*
 Bootstrap application with the initial data loading.
   * /config - application configuration
   * /schema - schema of dataframe
@@ -35,18 +84,12 @@ const doInitialDataLoad = () =>
       /*
       Step 2 - dataframes, all binary.  NOTE: uses results of step 1.
       */
-      /* only load names for var annotations, if possible*/
-      const varIndexName = schema?.schema?.annotations?.var?.index;
-      const varAnnotationsQuery = varIndexName
-        ? `?annotation-name=${encodeURIComponent(varIndexName)}`
-        : "";
-      const varAnnotationsURL = `annotations/var${varAnnotationsQuery}`;
-      const requestBinary = ["annotations/obs", varAnnotationsURL, "layout/obs"]
-        .map(r => `${globals.API.prefix}${globals.API.version}${r}`)
-        .map(url => doBinaryRequest(url));
-      const stepTwoResults = await Promise.all(requestBinary);
+      const stepTwoResults = await Promise.all([
+        obsAnnotationFetch(schema),
+        varAnnotationFetch(schema),
+        layoutFetch(schema)
+      ]);
       const [obsAnno, varAnno, obsLayout] = [...stepTwoResults];
-
       const universe = Universe.createUniverseFromResponse(
         config,
         schema,
