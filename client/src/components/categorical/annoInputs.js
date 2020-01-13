@@ -44,21 +44,25 @@ const AnnoSuggest = props => {
     ontology,
     text
   } = props;
-  console.log("props", props);
   return (
     <Suggest
       fill
       resetOnSelect
       closeOnSelect
       resetOnClose
-      createNewItemFromQuery={str => str}
-      createNewItemRenderer={() => {
+      createNewItemFromQuery={str => {
+        console.log("rendering", str);
+      }}
+      createNewItemRenderer={userInputStr => {
         return (
           <MenuItem
             icon="add"
             text="Create a label not in the ontology"
             active
-            onClick={handleChoice}
+            onClick={() => {
+              console.log(userInputStr);
+              handleChoice(userInputStr);
+            }}
             shouldDismissPopover={false}
           />
         );
