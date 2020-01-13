@@ -13,14 +13,16 @@ import { memoize } from "./dataframe/util";
 */
 
 const calcMedianCentroid = (
-  world,
+  obsAnnotations,
+  obsLayout,
   categoryName,
   layoutDimNames,
   categoricalSelection
 ) => {
-  const categoryArray = world.obsAnnotations.col(categoryName).asArray();
-  const layoutXArray = world.obsLayout.col(layoutDimNames[0]).asArray();
-  const layoutYArray = world.obsLayout.col(layoutDimNames[1]).asArray();
+  const categoryArray = obsAnnotations.col(categoryName).asArray();
+
+  const layoutXArray = obsLayout.col(layoutDimNames[0]).asArray();
+  const layoutYArray = obsLayout.col(layoutDimNames[1]).asArray();
   const coordinates = new Map();
 
   // Iterate over all the cells in the category
@@ -96,8 +98,16 @@ const calcMedianCentroid = (
 
 // A simple function to hash the parameters
 // (not 100% on world hash, Bruce will have to check this one out)
-const hashMedianCentroid = (world, categoryName, layoutDimNames) => {
-  return `${world.varAnnotations.__id}+${world.obsLayout.__id}+${world.varData.__id}::${categoryName}:${layoutDimNames}`;
+const hashMedianCentroid = (
+  obsAnnotations,
+  obsLayout,
+  categoryName,
+  layoutDimNames,
+  categorySelection
+) => {
+  return `${obsAnnotations.__id}+${
+    obsLayout.__id
+  }:${categoryName}:${layoutDimNames}:${Object.keys(categorySelection)}`;
 };
 // export the mmemoized calculation function
 export default memoize(calcMedianCentroid, hashMedianCentroid);

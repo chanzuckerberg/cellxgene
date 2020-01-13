@@ -18,12 +18,7 @@ const centroidLabels = (state = initialState, action, sharedNextState) => {
     case "annotation: label edited":
     case "annotation: delete label":
     case "set World to current selection":
-      console.log(
-        !!colorAccessor,
-        state.toggle,
-        !!categoricalSelection[colorAccessor]
-      );
-
+    case "reset World to eq Universe":
       return {
         ...state,
         labels:
@@ -31,7 +26,8 @@ const centroidLabels = (state = initialState, action, sharedNextState) => {
           state.toggle &&
           !!categoricalSelection[colorAccessor]
             ? calcCentroid(
-                world,
+                world.obsAnnotations,
+                world.obsLayout,
                 colorAccessor,
                 layoutChoice.currentDimNames,
                 categoricalSelection
@@ -55,7 +51,8 @@ const centroidLabels = (state = initialState, action, sharedNextState) => {
       return {
         ...state,
         labels: calcCentroid(
-          world,
+          world.obsAnnotations,
+          world.obsLayout,
           colorAccessor,
           layoutChoice.currentDimNames,
           categoricalSelection
