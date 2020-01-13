@@ -17,6 +17,7 @@ const centroidLabels = (state = initialState, action, sharedNextState) => {
     case "annotation: label current cell selection":
     case "annotation: label edited":
     case "annotation: delete label":
+    case "set layout choice":
     case "set World to current selection":
     case "reset World to eq Universe":
       return {
