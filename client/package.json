@@ -46,7 +46,6 @@
     "is-number": "^7.0.0",
     "lodash": "^4.17.15",
     "memoize-one": "^5.1.1",
-    "point-in-polygon": "^1.0.1",
     "react": "^16.12.0",
     "react-autocomplete": "^1.7.2",
     "react-dom": "^16.12.0",

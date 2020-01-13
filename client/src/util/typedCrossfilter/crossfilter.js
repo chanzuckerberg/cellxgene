@@ -1,3 +1,5 @@
+import { polygonContains } from "d3";
+
 import PositiveIntervals from "./positiveIntervals";
 import BitArray from "./bitArray";
 import {
@@ -8,8 +10,6 @@ import {
   upperBoundIndirect
 } from "./sort";
 import { makeSortIndex } from "./util";
-
-const pointInPolygon = require("point-in-polygon");
 
 class NotImplementedError extends Error {
   constructor(...params) {
@@ -617,7 +617,7 @@ class ImmutableSpatialDimension extends _ImmutableBaseDimension {
         x < maxX &&
         minY <= y &&
         y < maxY &&
-        pointInPolygon([x, y], polygon);
+        withinPolygon(polygon, x, y);
 
       if (inside && start === -1) start = i;
       if (!inside && start !== -1) {
@@ -662,3 +662,7 @@ function polygonBoundingBox(polygon) {
   return [minX, minY, maxX, maxY];
 }
 
+function withinPolygon(polygon, x, y) {
+  // TODO XXX replace
+  return polygonContains(polygon, [x, y]);
+}
