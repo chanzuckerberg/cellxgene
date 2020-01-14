@@ -1,5 +1,3 @@
-import { polygonContains } from "d3";
-
 import PositiveIntervals from "./positiveIntervals";
 import BitArray from "./bitArray";
 import {
@@ -662,7 +660,31 @@ function polygonBoundingBox(polygon) {
   return [minX, minY, maxX, maxY];
 }
 
+/**
+ *  withinPolygon determines if a point is within a polygon
+ *  Code adapted from https://github.com/d3/d3-polygon/blob/master/src/contains.js
+ *  @param {array} polygon - is an array of point arrays of format [[x1, y1], [x2, y2], ...]
+ *  @param {float} x - point x coordinate
+ *  @param {float} y - point y coordinate
+ *  @type {boolean}
+ */
 function withinPolygon(polygon, x, y) {
-  // TODO XXX replace
-  return polygonContains(polygon, [x, y]);
+  const n = polygon.length;
+  let p = polygon[n - 1];
+  let x0 = p[0];
+  let y0 = p[1];
+  let x1;
+  let y1;
+  let inside = false;
+
+  for (let i = 0; i < n; i += 1) {
+    p = polygon[i];
+    x1 = p[0];
+    y1 = p[1];
+
+    if (((y1 > y) !== (y0 > y)) && (x < (x0 - x1) * (y - y1) / (y0 - y1) + x1)) inside = !inside;
+    x0 = x1;
+    y0 = y1;
+  }
+  return inside;
 }
