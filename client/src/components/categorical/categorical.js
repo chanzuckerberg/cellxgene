@@ -155,7 +155,15 @@ class Categories extends React.Component {
               handleTextChange={this.handleNewCategoryText}
             />
           }
-          annoSelect={<AnnoSelect allCategoryNames={allCategoryNames} />}
+          annoSelect={
+            <AnnoSelect
+              handleModalDuplicateCategorySelection={
+                this.handleModalDuplicateCategorySelection
+              }
+              categoryToDuplicate={categoryToDuplicate}
+              allCategoryNames={allCategoryNames}
+            />
+          }
         />
 
         {/* READ ONLY CATEGORICAL FIELDS */}
