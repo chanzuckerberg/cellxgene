@@ -1,5 +1,10 @@
 import { unassignedCategoryLabel } from "../globals";
 import {
+  addObsAnnotations,
+  addVarAnnotations,
+  addObsLayout
+} from "../util/stateManager/universe";
+import {
   World,
   ControlsHelpers,
   AnnotationsHelpers
@@ -7,9 +12,36 @@ import {
 
 const Universe = (state = null, action, nextSharedState, prevSharedState) => {
   switch (action.type) {
-    case "initial data load complete (universe exists)": {
+    case "universe exists, but loading is still in progress": {
       const { universe } = action;
       return universe;
+    }
+
+    case "universe: column load success": {
+      const { dim, dataframe } = action;
+      switch (dim) {
+        case "obsAnnotations": {
+          return {
+            ...state,
+            obsAnnotations: addObsAnnotations(state, dataframe)
+          };
+        }
+        case "varAnnotations": {
+          return {
+            ...state,
+            varAnnotations: addVarAnnotations(state, dataframe)
+          };
+        }
+        case "obsLayout": {
+          return {
+            ...state,
+            obsLayout: addObsLayout(state, dataframe)
+          };
+        }
+        default: {
+          throw new Error("action handler not implemented");
+        }
+      }
     }
 
     case "expression load success": {

@@ -20,9 +20,9 @@ const defaultBigBang = () => {
   const universe = Universe.createUniverseFromResponse(
     _.cloneDeep(REST.config),
     _.cloneDeep(REST.schema),
-    _.cloneDeep(REST.annotationsObs),
-    _.cloneDeep(REST.annotationsVar),
-    _.cloneDeep(REST.layoutObs)
+    Universe.matrixFBSToDataframe(_.cloneDeep(REST.annotationsObs)),
+    Universe.matrixFBSToDataframe(_.cloneDeep(REST.annotationsVar)),
+    Universe.matrixFBSToDataframe(_.cloneDeep(REST.layoutObs))
   );
   /* create world */
   const world = World.createWorldFromEntireUniverse(universe);
@@ -45,9 +45,9 @@ describe("createWorldFromEntireUniverse", () => {
     const universe = Universe.createUniverseFromResponse(
       _.cloneDeep(REST.config),
       _.cloneDeep(REST.schema),
-      _.cloneDeep(REST.annotationsObs),
-      _.cloneDeep(REST.annotationsVar),
-      _.cloneDeep(REST.layoutObs)
+      Universe.matrixFBSToDataframe(_.cloneDeep(REST.annotationsObs)),
+      Universe.matrixFBSToDataframe(_.cloneDeep(REST.annotationsVar)),
+      Universe.matrixFBSToDataframe(_.cloneDeep(REST.layoutObs))
     );
     expect(universe).toBeDefined();
 

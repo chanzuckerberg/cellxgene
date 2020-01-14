@@ -23,14 +23,26 @@ const CrossfilterReducerBase = (
   prevSharedState
 ) => {
   switch (action.type) {
-    case "initial data load complete (universe exists)": {
-      const { world, layoutChoice } = nextSharedState;
-      const crossfilter = World.createObsDimensions(
-        new Crossfilter(world.obsAnnotations),
-        world,
-        layoutChoice.currentDimNames
-      );
-      return crossfilter;
+    case "universe: column load success": {
+      const { schema, world, layoutChoice } = nextSharedState;
+      const { dim, dataframe } = action;
+      // ignore var dimension loads as these are not currently selectable
+      if (action.dim === "varAnnotations") return state;
+
+      const crossfilter = state ?? new Crossfilter(world.obsAnnotations);
+      if (action.dim === "obsLayout") {
+        if (!world.obsLayout.hasCol(layoutChoice.currentDimNames[0]))
+          return state;
+        return crossfilter.addDimension(
+          XYDimName,
+          "spatial",
+          world.obsLayout.col(layoutChoice.currentDimNames[0]).asArray(),
+          world.obsLayout.col(layoutChoice.currentDimNames[1]).asArray()
+        );
+      } else if (action.dim === "obsAnnotations") {
+        return World.addObsDimensions(crossfilter, world);
+      }
+      throw new Error(`unable to add unknown dimension ${dim} to crossfilter`);
     }
 
     case "reset World to eq Universe": {

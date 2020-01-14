@@ -33,9 +33,9 @@ describe("createUniverseFromResponse", () => {
     const universe = Universe.createUniverseFromResponse(
       REST.config,
       REST.schema,
-      REST.annotationsObs,
-      REST.annotationsVar,
-      REST.layoutObs
+      Universe.matrixFBSToDataframe(REST.annotationsObs),
+      Universe.matrixFBSToDataframe(REST.annotationsVar),
+      Universe.matrixFBSToDataframe(REST.layoutObs)
     );
 
     expect(universe).toBeDefined();

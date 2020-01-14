@@ -351,8 +351,8 @@ class HistogramBrush extends React.PureComponent {
     const brushX = d3
       .brushX()
       .extent([
-          [x.range()[0], y.range()[1]],
-          [x.range()[1], this.marginTop + this.height + this.marginBottom]
+        [x.range()[0], y.range()[1]],
+        [x.range()[1], this.marginTop + this.height + this.marginBottom]
       ])
       /*
       emit start so that the Undoable history can save an undo point

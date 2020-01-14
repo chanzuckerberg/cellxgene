@@ -4,7 +4,7 @@ import { unassignedCategoryLabel } from "../../globals";
 import { decodeMatrixFBS } from "./matrix";
 import * as Dataframe from "../dataframe";
 import { isFpTypedArray } from "../typeHelpers";
-import { indexEntireSchema, sortAllCategorical } from "./schemaHelpers";
+import { indexEntireSchema } from "./schemaHelpers";
 import { isCategoricalAnnotation } from "./annotationsHelpers";
 
 /*
@@ -74,9 +74,9 @@ function promoteTypedArray(o) {
   return new TyepdArrayCtor(o);
 }
 
-function AnnotationsFBSToDataframe(arrayBuffers) {
+export function matrixFBSToDataframe(arrayBuffers) {
   /*
-  Convert a Matrix FBS to a Dataframe.
+  Convert array of Matrix FBS to a Dataframe.
 
   The application has strong assumptions that all scalar data will be
   stored as a float32 or float64 (regardless of underlying data types).
@@ -86,7 +86,7 @@ function AnnotationsFBSToDataframe(arrayBuffers) {
   All float data from the server is left as is.  All non-float is promoted
   to an appropriate float.
   */
-  if (!(arrayBuffers instanceof Array)) {
+  if (!Array.isArray(arrayBuffers)) {
     arrayBuffers = [arrayBuffers];
   }
   if (arrayBuffers.length === 0) {
@@ -120,46 +120,7 @@ function AnnotationsFBSToDataframe(arrayBuffers) {
   return df;
 }
 
-function reconcileSchemaCategoriesWithSummary(universe) {
-  /*
-  where we treat types as (essentially) categorical metadata, update
-  the schema with data-derived categories (in addition to those in
-  the server declared schema).
-
-  For example, boolean defined fields in the schema do not contain
-  explicit declaration of categories (nor do string fields).  In these
-  cases, add a 'categories' field to the schema so it is accessible.
-
-  In addition, we have a client-side convention (UI) that all writable
-  annotations must have an 'unassigned' category, even if it is not currently
-  in use.
-  */
-
-  universe.schema.annotations.obs.columns.forEach(s => {
-    const { type, name, writable } = s;
-    if (type === "string" || type === "boolean" || type === "categorical") {
-      if (universe.obsAnnotations.hasCol(name)) {
-        const categories = _.union(
-          s.categories ?? [],
-          universe.obsAnnotations.col(name).summarize().categories ?? []
-        );
-        s.categories = categories;
-      }
-    }
-
-    if (writable && s.categories.indexOf(unassignedCategoryLabel) === -1) {
-      s.categories = s.categories.concat(unassignedCategoryLabel);
-    }
-  });
-}
-
-export function createUniverseFromResponse(
-  configResponse,
-  schemaResponse,
-  annotationsObsResponse,
-  annotationsVarResponse,
-  layoutFBSResponse
-) {
+export function createUniverseFromResponse(configResponse, schemaResponse) {
   /*
   build & return universe from a REST 0.2 /config, /schema and /annotations/obs response
   */
@@ -170,42 +131,72 @@ export function createUniverseFromResponse(
   universe.schema = schema;
   universe.nObs = schema.dataframe.nObs;
   universe.nVar = schema.dataframe.nVar;
+
   /* add defaults, as we can't assume back-end will fully populate schema */
   if (!schema.layout.var) schema.layout.var = [];
   if (!schema.layout.obs) schema.layout.obs = [];
-
-  /* annotations */
-  universe.obsAnnotations = AnnotationsFBSToDataframe(annotationsObsResponse);
-  universe.varAnnotations = AnnotationsFBSToDataframe(annotationsVarResponse);
-  /* layout */
-  // universe.obsLayout = LayoutFBSToDataframe(layoutFBSResponse);
-  universe.obsLayout = AnnotationsFBSToDataframe(layoutFBSResponse);
-
-  /* sanity checks */
-  if (
-    universe.nObs !== universe.obsLayout.length ||
-    universe.nObs !== universe.obsAnnotations.length ||
-    universe.nVar !== universe.varAnnotations.length
-  ) {
-    throw new Error("Universe dimensionality mismatch - failed to load");
-  }
-
-  reconcileSchemaCategoriesWithSummary(universe);
-  sortAllCategorical(universe.schema);
   indexEntireSchema(universe.schema);
 
-  /* sanity checks */
-  if (
-    schema.annotations.obs.columns.some(
-      s => s.writable && !isCategoricalAnnotation(schema, s.name)
-    )
-  ) {
+  return universe;
+}
+
+function normalizeSchemaCategory(colSchema, col) {
+  const { type, writable } = colSchema;
+  if (type === "string" || type === "boolean" || type === "categorical") {
+    const categories = [
+      ...new Set([
+        ...(colSchema.categories ?? []),
+        ...(col.summarize().categories ?? [])
+      ])
+    ];
+    if (writable && categories.indexOf(unassignedCategoryLabel) === -1) {
+      categories = categories.concat(unassignedCategoryLabel);
+    }
+    colSchema.categories = categories;
+  } else if (writable) {
     throw new Error(
       "Writable continuous obs annotations are not supported - failed to load"
     );
   }
 
-  return universe;
+  if (colSchema.categories) {
+    colSchema.categories = catLabelSort(writable, colSchema.categories);
+  }
+}
+
+export function addObsAnnotations(universe, df) {
+  const obsAnnotations = universe.obsAnnotations.withColsFromAll(df);
+  if (universe.nObs !== obsAnnotations.length) {
+    throw new Error("Universe dimensionality mismatch - failed to load");
+  }
+
+  // for all of the new data, reconcile with schema and sort categories.
+  const dfs = Array.isArray(df) ? df : [df];
+  const keys = dfs.map(df => df.colIndex.keys()).flat();
+  const { schema } = universe;
+  keys.forEach(k => {
+    const colSchema = schema.annotations.obsByName[k];
+    const col = obsAnnotations.col(name);
+    normalizeSchemaCategory(schema, name, col);
+  });
+
+  return obsAnnotations;
+}
+
+export function addVarAnnotations(universe, df) {
+  const varAnnotations = universe.varAnnotations.withColsFromAll(df);
+  if (universe.nVar !== varAnnotations.length) {
+    throw new Error("Universe dimensionality mismatch - failed to load");
+  }
+  return varAnnotations;
+}
+
+export function addObsLayout(universe, df) {
+  const obsLayout = universe.obsLayout.withColsFromAll(df);
+  if (universe.nObs !== obsLayout.length) {
+    throw new Error("Universe dimensionality mismatch - failed to load");
+  }
+  return obsLayout;
 }
 
 export function convertDataFBStoObject(universe, arrayBuffer) {
