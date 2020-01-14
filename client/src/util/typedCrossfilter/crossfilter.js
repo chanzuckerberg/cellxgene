@@ -665,7 +665,7 @@ function polygonBoundingBox(polygon) {
  *  Code adapted from https://github.com/d3/d3-polygon/blob/master/src/contains.js
  *  @param {array} polygon - is an array of point arrays of format [[x1, y1], [x2, y2], ...]
  *  @param {float} x - point x coordinate
- *  @param {float} y - point x coordinate
+ *  @param {float} y - point y coordinate
  *  @type {boolean}
  */
 function withinPolygon(polygon, x, y) {
