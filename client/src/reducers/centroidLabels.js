@@ -31,7 +31,8 @@ const centroidLabels = (state = initialState, action, sharedNextState) => {
                 world.obsLayout,
                 colorAccessor,
                 layoutChoice.currentDimNames,
-                categoricalSelection
+                categoricalSelection,
+                world.schema.annotations.obsByName
               )
             : []
       };
@@ -56,7 +57,8 @@ const centroidLabels = (state = initialState, action, sharedNextState) => {
           world.obsLayout,
           colorAccessor,
           layoutChoice.currentDimNames,
-          categoricalSelection
+          categoricalSelection,
+          world.schema.annotations.obsByName
         ),
         toggle: action.toggle === undefined ? state.toggle : action.toggle
       };

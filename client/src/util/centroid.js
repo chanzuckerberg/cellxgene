@@ -1,5 +1,6 @@
 import quantile from "./quantile";
 import { memoize } from "./dataframe/util";
+import { unassignedCategoryLabel } from "../globals";
 
 /*
   Centroid coordinate calculation
@@ -17,7 +18,8 @@ const calcMedianCentroid = (
   obsLayout,
   categoryName,
   layoutDimNames,
-  categoricalSelection
+  categoricalSelection,
+  schemaObsByName
 ) => {
   const categoryArray = obsAnnotations.col(categoryName).asArray();
 
@@ -37,7 +39,14 @@ const calcMedianCentroid = (
       categoryName
     ].categoryValueIndices.get(categoryValue);
 
-    if (categoryValueIndex !== undefined) {
+    // Check to see if the current category is a user created annotation
+    // if the user created this category, do not create a label for the `unassigned` value
+    const isUserAnno = schemaObsByName[categoryName].writable;
+
+    if (
+      categoryValueIndex !== undefined &&
+      !(isUserAnno && categoryValue === unassignedCategoryLabel)
+    ) {
       // Get the number of cells which are in the category value
       const numInCategoryValue =
         categoricalSelection[categoryName].categoryValueCounts[
@@ -103,11 +112,14 @@ const hashMedianCentroid = (
   obsLayout,
   categoryName,
   layoutDimNames,
-  categorySelection
+  categorySelection,
+  schemaObsByName
 ) => {
   return `${obsAnnotations.__id}+${
     obsLayout.__id
-  }:${categoryName}:${layoutDimNames}:${Object.keys(categorySelection)}`;
+  }:${categoryName}:${layoutDimNames}:${Object.keys(
+    categorySelection
+  )}:${Object.keys(schemaObsByName)}`;
 };
 // export the mmemoized calculation function
 export default memoize(calcMedianCentroid, hashMedianCentroid);
