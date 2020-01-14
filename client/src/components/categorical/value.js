@@ -345,12 +345,15 @@ class CategoryValue extends React.Component {
         data-flip-config={flippedProps["data-flip-config"]}
         data-flip-id={flippedProps["data-flip-id"]}
         data-portal-key={flippedProps["data-portal-key"]}
-        className={`${styles.value}${
-          pointDilation.metadataField === metadataField &&
-          pointDilation.categoryField === displayString
-            ? ` ${styles.hover}`
-            : ""
-        }`}
+        className={
+          /* This code is to change the styles on centroid label hover is causing over-rendering */
+          `${styles.value}${
+            pointDilation.metadataField === metadataField &&
+            pointDilation.categoryField === displayString
+              ? ` ${styles.hover}`
+              : ""
+          }`
+        }
         data-testclass="categorical-row"
         style={{
           padding: "4px 7px",
