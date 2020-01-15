@@ -196,6 +196,21 @@ const WorldReducer = (
     case "annotation: add new label to category": {
       /* add a new label to the schema - schema updated by universe reducer, we just need to note it */
       const { schema } = nextSharedState.universe;
+      const { metadataField, newLabelText } = action;
+      const { crossfilter } = prevSharedState;
+
+      if (action.assignSelectedCells) {
+        return {
+          ...state,
+          schema,
+          ...setLabelOnCurrentSelection(
+            state,
+            crossfilter,
+            metadataField,
+            newLabelText
+          )
+        };
+      }
       return { ...state, schema };
     }
 
@@ -246,21 +261,25 @@ const WorldReducer = (
     case "annotation: label current cell selection": {
       const { metadataField, label } = action;
       const { crossfilter } = prevSharedState;
-      const mask = crossfilter.allSelectedMask();
-      const unclipped = {
-        ...state.unclipped,
-        obsAnnotations: AnnotationsHelpers.setLabelByMask(
-          state.unclipped.obsAnnotations,
-          metadataField,
-          mask,
-          label
-        )
+      return {
+        ...state,
+        ...setLabelOnCurrentSelection(state, crossfilter, metadataField, label)
       };
-      const obsAnnotations = state.obsAnnotations.replaceColData(
-        metadataField,
-        unclipped.obsAnnotations.col(metadataField).asArray()
-      );
-      return { ...state, obsAnnotations, unclipped };
+      // const mask = crossfilter.allSelectedMask();
+      // const unclipped = {
+      //   ...state.unclipped,
+      //   obsAnnotations: AnnotationsHelpers.setLabelByMask(
+      //     state.unclipped.obsAnnotations,
+      //     metadataField,
+      //     mask,
+      //     label
+      //   )
+      // };
+      // const obsAnnotations = state.obsAnnotations.replaceColData(
+      //   metadataField,
+      //   unclipped.obsAnnotations.col(metadataField).asArray()
+      // );
+      // return { ...state, obsAnnotations, unclipped };
     }
 
     default: {
@@ -268,5 +287,28 @@ const WorldReducer = (
     }
   }
 };
+
+function setLabelOnCurrentSelection(world, crossfilter, metadataField, label) {
+  /*
+  Set category `metadataField` to value `label` for anything currently selected.
+  Used by several action type reducers.
+  */
+  const mask = crossfilter.allSelectedMask();
+  const unclipped = {
+    ...world.unclipped,
+    obsAnnotations: AnnotationsHelpers.setLabelByMask(
+      world.unclipped.obsAnnotations,
+      metadataField,
+      mask,
+      label
+    )
+  };
+  const obsAnnotations = world.obsAnnotations.replaceColData(
+    metadataField,
+    unclipped.obsAnnotations.col(metadataField).asArray()
+  );
+
+  return { obsAnnotations, unclipped };
+}
 
 export default WorldReducer;

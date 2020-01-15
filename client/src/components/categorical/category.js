@@ -99,7 +99,8 @@ class Category extends React.Component {
     dispatch({
       type: "annotation: add new label to category",
       metadataField,
-      newLabelText
+      newLabelText,
+      assignSelectedCells: false
     });
     this.setState({ newLabelText: "" });
   };
@@ -111,19 +112,11 @@ class Category extends React.Component {
     dispatch({
       type: "annotation: add new label to category",
       metadataField,
-      newLabelText
+      newLabelText,
+      assignSelectedCells: true
     });
 
     this.setState({ newLabelText: "" });
-    // TODO BRUCE
-    // categoryIndex
-    // const label = this.getLabel();
-    // dispatch({
-    //   type: "annotation: label current cell selection",
-    //   metadataField,
-    //   categoryIndex,
-    //   label
-    // });
   };
 
   handleCreateArbitraryLabel = newLabelTextNotInOntology => {
@@ -132,7 +125,8 @@ class Category extends React.Component {
     dispatch({
       type: "annotation: add new label to category",
       metadataField,
-      newLabelText: newLabelTextNotInOntology
+      newLabelText: newLabelTextNotInOntology,
+      assignSelectedCells: false
     });
     this.setState({ newLabelText: "" });
   };
