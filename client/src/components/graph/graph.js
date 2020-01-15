@@ -251,7 +251,7 @@ class Graph extends React.PureComponent {
     const { regl, toolSVG, centroidSVG } = this.state;
     let stateChanges = {};
 
-    if (regl && world) {
+    if (regl && world && crossfilter) {
       /* update the regl and point rendering state */
       const { obsLayout, nObs } = world;
       const {

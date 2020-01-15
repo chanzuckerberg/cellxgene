@@ -41,8 +41,35 @@ const Controls = (
     case "initial data load start": {
       return { ...state, loading: true };
     }
+    case "universe: column load success": {
+      /* 
+      we are in a loading state until the following are true:
+        * universe exists (if partially)
+        * embeddings (obsLayout) are loaded
+        * varAnnotations index is loaded
+      */
+      const universeExists = !!nextSharedState.universe;
+      const embeddingsExist =
+        !nextSharedState.universe?.obsLayout?.isEmpty() ?? false;
+      const varIndex = nextSharedState.universe.schema.annotations.var.index;
+      const varAnnotationsIndexExists =
+        universeExists &&
+        nextSharedState.universe.varAnnotations.hasCol(varIndex);
+      console.log(
+        "loading:",
+        !(universeExists && embeddingsExist && varAnnotationsIndexExists)
+      );
+      return {
+        ...state,
+        loading: !(
+          universeExists &&
+          embeddingsExist &&
+          varAnnotationsIndexExists
+        )
+      };
+    }
     case "initial data load complete (universe exists)": {
-      /* first light - create world & other data-driven defaults */
+      /* now fully loaded */
       return {
         ...state,
         loading: false,

@@ -25,24 +25,31 @@ const CrossfilterReducerBase = (
   switch (action.type) {
     case "universe: column load success": {
       const { schema, world, layoutChoice } = nextSharedState;
+      const { obsAnnotations, obsLayout } = world;
       const { dim, dataframe } = action;
       // ignore var dimension loads as these are not currently selectable
       if (action.dim === "varAnnotations") return state;
+      // we can't load dimensions until we have the first obs annotation
+      if (obsAnnotations.isEmpty()) return state;
 
-      const crossfilter = state ?? new Crossfilter(world.obsAnnotations);
-      if (action.dim === "obsLayout") {
-        if (!world.obsLayout.hasCol(layoutChoice.currentDimNames[0]))
-          return state;
-        return crossfilter.addDimension(
+      let crossfilter = state ?? new Crossfilter(obsAnnotations);
+
+      // add layout dimension, if not already present
+      if (
+        obsLayout.hasCol(layoutChoice.currentDimNames[0]) &&
+        !crossfilter.hasDimension(XYDimName)
+      ) {
+        crossfilter = crossfilter.addDimension(
           XYDimName,
           "spatial",
-          world.obsLayout.col(layoutChoice.currentDimNames[0]).asArray(),
-          world.obsLayout.col(layoutChoice.currentDimNames[1]).asArray()
+          obsLayout.col(layoutChoice.currentDimNames[0]).asArray(),
+          obsLayout.col(layoutChoice.currentDimNames[1]).asArray()
         );
-      } else if (action.dim === "obsAnnotations") {
-        return World.addObsDimensions(crossfilter, world);
       }
-      throw new Error(`unable to add unknown dimension ${dim} to crossfilter`);
+
+      // add any missing obsAnnotations
+      crossfilter = World.addObsDimensions(crossfilter, world);
+      return crossfilter;
     }
 
     case "reset World to eq Universe": {
