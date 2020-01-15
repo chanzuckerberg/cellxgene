@@ -752,12 +752,7 @@ class Graph extends React.PureComponent {
               graphPaddingTop={this.graphPaddingTop}
               responsive={responsive}
             >
-              <CentroidLabels
-                labels={centroidLabels.labels}
-                dilatedValue={pointDilation.categoryField}
-                colorAccessor={colorAccessor}
-                dispatch={dispatch}
-              />
+              <CentroidLabels />
             </GraphOverlayLayer>
 
             <svg

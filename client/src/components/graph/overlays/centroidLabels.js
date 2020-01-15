@@ -1,7 +1,14 @@
 /* eslint-disable jsx-a11y/mouse-events-have-key-events */
 import React, { PureComponent } from "react";
+import { connect } from "react-redux";
 
-export default class CentroidLabels extends PureComponent {
+export default
+@connect(state => ({
+  colorAccessor: state.colors.colorAccessor,
+  dilatedValue: state.pointDilation.categoryField,
+  labels: state.centroidLabels.labels
+}))
+class CentroidLabels extends PureComponent {
   render() {
     const {
       labels,
