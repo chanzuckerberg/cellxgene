@@ -13,6 +13,8 @@ const centroidLabels = (state = initialState, action, sharedNextState) => {
     colors: { colorAccessor }
   } = sharedNextState;
 
+  const showLabels = action.showLabels ?? state.showLabels;
+
   switch (action.type) {
     case "annotation: label current cell selection":
     case "annotation: label edited":
@@ -23,9 +25,7 @@ const centroidLabels = (state = initialState, action, sharedNextState) => {
       return {
         ...state,
         labels:
-          !!colorAccessor &&
-          state.showLabels &&
-          !!categoricalSelection[colorAccessor]
+          !!colorAccessor && showLabels && !!categoricalSelection[colorAccessor]
             ? calcCentroid(
                 world.obsAnnotations,
                 world.obsLayout,
@@ -39,20 +39,13 @@ const centroidLabels = (state = initialState, action, sharedNextState) => {
 
     case "color by categorical metadata":
     case "show centroid labels for category":
-      if (
-        !colorAccessor ||
-        !(
-          action.showLabels ||
-          (action.showLabels === undefined && state.showLabels)
-        )
-      ) {
+      // If colorby is not enabled or labels are not toggled to show
+      // then clear the labels and make sure the toggle is off
+      if (!colorAccessor || !showLabels) {
         return {
           ...state,
           labels: [],
-          showLabels:
-            action.showLabels === undefined
-              ? state.showLabels
-              : action.showLabels
+          showLabels
         };
       }
 
@@ -66,8 +59,7 @@ const centroidLabels = (state = initialState, action, sharedNextState) => {
           categoricalSelection,
           world.schema.annotations.obsByName
         ),
-        showLabels:
-          action.showLabels === undefined ? state.showLabels : action.showLabels
+        showLabels
       };
 
     case "color by continuous metadata":
