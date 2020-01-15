@@ -31,6 +31,9 @@ class DataLoadEngineTest(unittest.TestCase):
             "backed": False,
             "diffexp_may_be_slow": False,
             "disable_diffexp": False,
+            "annotations_cell_ontology_enabled": False,
+            "annotations_cell_ontology_obopath": None,
+            "annotations_cell_ontology_terms": None,
         }
         self.data.update(args=args)
         self.assertEqual(args, self.data.config)
