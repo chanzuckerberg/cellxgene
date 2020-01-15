@@ -298,7 +298,7 @@ export function createObsDimensions(crossfilter, world, XYdimNames) {
     anno => anno.name !== indexName
   );
   crossfilter = annoList.reduce((xfltr, anno) => {
-    return addObsDimension(xfltr, anno);
+    return addObsDimension(xfltr, world, anno);
   }, crossfilter);
 
   return crossfilter.addDimension(

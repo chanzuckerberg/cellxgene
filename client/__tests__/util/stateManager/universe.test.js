@@ -32,13 +32,34 @@ describe("createUniverseFromResponse", () => {
     const { nObs, nVar } = REST.schema.schema.dataframe;
     const universe = Universe.createUniverseFromResponse(
       REST.config,
-      REST.schema,
-      Universe.matrixFBSToDataframe(REST.annotationsObs),
-      Universe.matrixFBSToDataframe(REST.annotationsVar),
+      REST.schema
+    );
+    expect(universe).toBeDefined();
+    expect(universe).toMatchObject(
+      expect.objectContaining({
+        nObs,
+        nVar,
+        schema: REST.schema.schema,
+        obsAnnotations: expect.any(Dataframe.Dataframe),
+        varAnnotations: expect.any(Dataframe.Dataframe),
+        obsLayout: expect.any(Dataframe.Dataframe),
+        varData: expect.any(Dataframe.Dataframe)
+      })
+    );
+
+    universe.obsAnnotations = Universe.addObsAnnotations(
+      universe,
+      Universe.matrixFBSToDataframe(REST.annotationsObs)
+    );
+    universe.varAnnotations = Universe.addVarAnnotations(
+      universe,
+      Universe.matrixFBSToDataframe(REST.annotationsVar)
+    );
+    universe.obsLayout = Universe.addObsLayout(
+      universe,
       Universe.matrixFBSToDataframe(REST.layoutObs)
     );
 
-    expect(universe).toBeDefined();
     expect(universe).toMatchObject(
       expect.objectContaining({
         nObs,

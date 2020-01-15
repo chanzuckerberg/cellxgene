@@ -19,11 +19,21 @@ const defaultBigBang = () => {
   /* create universe */
   const universe = Universe.createUniverseFromResponse(
     _.cloneDeep(REST.config),
-    _.cloneDeep(REST.schema),
-    Universe.matrixFBSToDataframe(_.cloneDeep(REST.annotationsObs)),
-    Universe.matrixFBSToDataframe(_.cloneDeep(REST.annotationsVar)),
-    Universe.matrixFBSToDataframe(_.cloneDeep(REST.layoutObs))
+    _.cloneDeep(REST.schema)
   );
+  universe.obsAnnotations = Universe.addObsAnnotations(
+    universe,
+    Universe.matrixFBSToDataframe(REST.annotationsObs)
+  );
+  universe.varAnnotations = Universe.addVarAnnotations(
+    universe,
+    Universe.matrixFBSToDataframe(REST.annotationsVar)
+  );
+  universe.obsLayout = Universe.addObsLayout(
+    universe,
+    Universe.matrixFBSToDataframe(REST.layoutObs)
+  );
+
   /* create world */
   const world = World.createWorldFromEntireUniverse(universe);
   /* create crossfilter */
