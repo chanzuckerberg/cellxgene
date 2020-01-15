@@ -1,6 +1,5 @@
-import React, { Component, cloneElement } from "react";
+import React, { PureComponent, cloneElement } from "react";
 import { connect } from "react-redux";
-import { mat3 } from "gl-matrix";
 
 import styles from "../graph.css";
 
@@ -8,7 +7,7 @@ export default
 @connect(state => ({
   responsive: state.responsive
 }))
-class GraphOverlayLayer extends Component {
+class GraphOverlayLayer extends PureComponent {
   /*
     This component takes its children (assumed in the data coordinate space ([0, 1] range, origin in bottom left corner))
     and transforms itself multiple times resulting in screen space ([0, screenWidth/Height] range, origin in top left corner)
