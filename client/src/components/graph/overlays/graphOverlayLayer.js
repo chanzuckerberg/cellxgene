@@ -9,6 +9,12 @@ export default
   responsive: state.responsive
 }))
 class GraphOverlayLayer extends Component {
+  /*
+    This component takes its children (assumed in the data coordinate space ([0, 1] range, origin in bottom left corner))
+    and transforms itself multiple times resulting in screen space ([0, screenWidth/Height] range, origin in top left corner)
+
+    Children are assigned in the graph component
+   */
   matrixToTransformString = m => {
     /* 
       Translates the gl-matrix mat3 to SVG matrix transform style
