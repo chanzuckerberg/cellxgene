@@ -5,7 +5,7 @@ import { Button, Popover, Menu, MenuItem, Position } from "@blueprintjs/core";
 function InformationMenu(props) {
   const { libraryVersions, aboutLink } = props;
   return (
-    <div style={{ marginLeft: 10 }} className="bp3-button-group">
+    <div style={{}} className="bp3-button-group">
       <Popover
         content={
           <Menu>
