@@ -21,7 +21,7 @@ import AnnoSelect from "./annoSelect";
 
 import * as globals from "../../globals";
 import Value from "./value";
-import sortedCategoryValues from "./util";
+import sortedCategoryLabels from "../../util/catLabelSort";
 import { AnnotationsHelpers } from "../../util/stateManager";
 
 @connect(state => ({
@@ -347,11 +347,8 @@ class Category extends React.Component {
       ontologyEnabled
     } = this.props;
     const { isTruncated } = categoricalSelection[metadataField];
-
     const cat = categoricalSelection[metadataField];
-    const optTuples = sortedCategoryValues(isUserAnno, [
-      ...cat.categoryValueIndices
-    ]);
+    const optTuples = [...cat.categoryValueIndices];
     const optTuplesAsKey = _.map(optTuples, t => t[0]).join(""); // animation
 
     return (

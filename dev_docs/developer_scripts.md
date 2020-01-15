@@ -58,7 +58,7 @@ builds source code
 
 ```
 build - builds whole app client and server
-build-server - makes build dir and moves python and client files
+build-cli - makes build dir and moves python and client files
 build-client - runs webpack build
 build-for-server-dev - builds client and copies output directly into source tree (only for server devlopment)
 ```

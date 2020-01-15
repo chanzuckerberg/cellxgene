@@ -9,7 +9,7 @@ import pandas as pd
 
 def read_labels(fname):
     if fname is not None and os.path.exists(fname) and os.path.getsize(fname) > 0:
-        return pd.read_csv(fname, dtype='category', index_col=0, header=0, comment='#')
+        return pd.read_csv(fname, dtype="category", index_col=0, header=0, comment="#")
     else:
         return pd.DataFrame()
 
@@ -17,14 +17,13 @@ def read_labels(fname):
 def write_labels(fname, df, header=None, backup_dir=None):
     if backup_dir is not None:
         backup(fname, backup_dir)
-        # rotate_fname(fname, backup_dir)
     if not df.empty:
-        with open(fname, 'w', newline="") as f:
+        with open(fname, "w", newline="") as f:
             if header is not None:
                 f.write(header)
             df.to_csv(f)
     else:
-        open(fname, 'w').close()
+        open(fname, "w").close()
 
 
 def backup(fname, backup_dir, max_backups=9):
@@ -46,7 +45,7 @@ def backup(fname, backup_dir, max_backups=9):
     fname_base = os.path.basename(fname)
     fname_base_root, fname_base_ext = os.path.splitext(fname_base)
     # don't use ISO standard time format, as it contains characters illegal on some filesytems.
-    nowish = datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
+    nowish = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
     backup_fname = os.path.join(backup_dir, f"{fname_base_root}-{nowish}{fname_base_ext}")
     if os.path.exists(backup_fname):
         os.remove(backup_fname)

@@ -2,6 +2,7 @@
 https://bl.ocks.org/mbostock/4341954
 https://bl.ocks.org/mbostock/34f08d5e11952a80609169b7917d4172
 https://bl.ocks.org/SpaceActuary/2f004899ea1b2bd78d6f1dbb2febf771
+https://bl.ocks.org/mbostock/3019563
 */
 // jshint esversion: 6
 import React from "react";
@@ -11,6 +12,7 @@ import * as d3 from "d3";
 import memoize from "memoize-one";
 import * as globals from "../../globals";
 import actions from "../../actions";
+import { linspace } from "../../util/range";
 import { makeContinuousDimensionName } from "../../util/nameCreators";
 
 @connect((state, ownProps) => {
@@ -52,15 +54,20 @@ class HistogramBrush extends React.PureComponent {
     const values = col.asArray();
     const summary = col.summarize();
     const { min: domainMin, max: domainMax } = summary;
+    const numBins = 40;
+
     histogramCache.x = d3
       .scaleLinear()
       .domain([domainMin, domainMax])
-      .range([0, this.width - this.marginRight]);
+      .range([this.marginLeft, this.marginLeft + this.width]);
+
+    const [xStart, xStop] = histogramCache.x.domain();
+    const histThresholds = linspace(xStart, xStop, numBins + 1);
 
     histogramCache.bins = d3
       .histogram()
       .domain(histogramCache.x.domain())
-      .thresholds(40)(values);
+      .thresholds(histThresholds)(values);
 
     const yMax = histogramCache.bins
       .map(b => b.length)
@@ -68,7 +75,7 @@ class HistogramBrush extends React.PureComponent {
     histogramCache.y = d3
       .scaleLinear()
       .domain([0, yMax])
-      .range([this.height - this.marginBottom, 0]);
+      .range([this.marginTop + this.height, this.marginTop]);
 
     return histogramCache;
   });
@@ -76,10 +83,13 @@ class HistogramBrush extends React.PureComponent {
   constructor(props) {
     super(props);
 
-    this.width = 340;
-    this.height = 100;
-    this.marginBottom = 20; // space for X axis & labels
+    this.marginLeft = 3; // Space for 0 tick label on X axis
     this.marginRight = 40; // space for Y axis & labels
+    this.marginBottom = 25; // space for X axis & labels
+    this.marginTop = 3;
+
+    this.width = 340 - this.marginLeft - this.marginRight;
+    this.height = 135 - this.marginTop - this.marginBottom;
   }
 
   componentDidMount() {
@@ -315,8 +325,16 @@ class HistogramBrush extends React.PureComponent {
     /* Remove everything */
     svg.selectAll("*").remove();
 
+    /* Set margins within the SVG */
+    const container = svg
+      .attr("width", this.width + this.marginLeft + this.marginRight)
+      .attr("height", this.height + this.marginTop + this.marginBottom)
+      .append("g")
+      .attr("class", "histogram-container")
+      .attr("transform", `translate(${this.marginLeft},${this.marginTop})`);
+
     /* BINS */
-    svg
+    container
       .insert("g", "*")
       .attr("fill", "#bbb")
       .selectAll("rect")
@@ -328,10 +346,14 @@ class HistogramBrush extends React.PureComponent {
       .attr("width", d => Math.abs(x(d.x1) - x(d.x0) - 1))
       .attr("height", d => y(0) - y(d.length));
 
-    /* BRUSH */
+    // BRUSH
+    // Note the brushable area is bounded by the data on three sides, but goes down to cover the x-axis
     const brushX = d3
       .brushX()
-      .extent([[0, 0], [this.width - this.marginRight, this.height]])
+      .extent([
+          [x.range()[0], y.range()[1]],
+          [x.range()[1], this.marginTop + this.height + this.marginBottom]
+      ])
       /*
       emit start so that the Undoable history can save an undo point
       upon drag start, and ignore the subsequent intermediate drag events.
@@ -339,18 +361,18 @@ class HistogramBrush extends React.PureComponent {
       .on("start", this.onBrush(field, x.invert, "start").bind(this))
       .on("brush", this.onBrush(field, x.invert, "brush").bind(this))
       .on("end", this.onBrushEnd(field, x.invert).bind(this));
-    const brushXselection = d3
-      .select(svgRef)
-      .append("g")
+
+    const brushXselection = container
+      .insert("g")
       .attr("class", "brush")
-      .attr("data-testid", `${svgRef.dataset.testid}-brush`)
+      .attr("data-testid", `${svgRef.dataset.testid}-brushable-area`)
       .call(brushX);
 
     /* X AXIS */
-    svg
-      .append("g")
+    container
+      .insert("g")
       .attr("class", "axis axis--x")
-      .attr("transform", `translate(0,${this.height - this.marginBottom})`)
+      .attr("transform", `translate(0,${this.marginTop + this.height})`)
       .call(
         d3
           .axisBottom(x)
@@ -359,10 +381,10 @@ class HistogramBrush extends React.PureComponent {
       );
 
     /* Y AXIS */
-    svg
-      .append("g")
+    container
+      .insert("g")
       .attr("class", "axis axis--y")
-      .attr("transform", `translate(${this.width - this.marginRight},0)`)
+      .attr("transform", `translate(${this.marginLeft + this.width},0)`)
       .call(
         d3
           .axisRight(y)

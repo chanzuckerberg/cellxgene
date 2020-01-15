@@ -1,5 +1,4 @@
 import _ from "lodash";
-import { polygonContains } from "d3";
 
 import Crossfilter from "../../../src/util/typedCrossfilter";
 
@@ -334,12 +333,17 @@ describe("ImmutableTypedCrossfilter", () => {
     );
 
     test.each([
-      [[[0, 0], [0, 1], [1, 1], [1, 0]]],
-      [[[0, 0], [0, 0.5], [0.5, 0.5], [0.5, 0]]]
-    ])("within-polygon %p", polygon => {
-      expect(
-        p.select("coords", { mode: "within-polygon", polygon }).allSelected()
-      ).toEqual(_.filter(someData, d => polygonContains(polygon, d.coords)));
+      [
+          [[0, 0], [0, 1], [1, 1], [1, 0]],
+          [true, true, true, true, true, false, true, true, true, true, true, true]
+      ],
+      [
+          [[0, 0], [0, 0.5], [0.5, 0.5], [0.5, 0]],
+          [true, true, true, true, false, false, false, true, true, true, false, false]
+      ]
+    ])("within-polygon %p", (polygon, expected) => {
+      expect(p.select("coords", { mode: "within-polygon", polygon }).allSelected())
+          .toEqual(_.zip(someData, expected).filter(x => x[1]).map(x => x[0]));
     });
   });
 

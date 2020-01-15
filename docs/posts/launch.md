@@ -11,7 +11,7 @@ description: Demo datasets
 Once you've [prepared your data](prepare) for cellxgene, you can launch the app using
 
 ```
-cellgene launch mydataset.h5ad --open
+cellxgene launch mydataset.h5ad --open
 ```
 
 You should see your web browser open with the following

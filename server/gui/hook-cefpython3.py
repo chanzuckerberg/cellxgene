@@ -37,8 +37,7 @@ logger = logging.getLogger(__name__)
 # Functions
 def check_platforms():
     if not is_win and not is_darwin and not is_linux:
-        raise SystemExit("Error: Currently only Windows, Linux and Darwin "
-                         "platforms are  supported, see Issue #135.")
+        raise SystemExit("Error: Currently only Windows, Linux and Darwin " "platforms are  supported, see Issue #135.")
 
 
 def check_pyinstaller_version():
@@ -50,22 +49,19 @@ def check_pyinstaller_version():
     version = PyInstaller.__version__
     match = re.search(r"^\d+\.\d+(\.\d+)?", version)
     if not (match.group(0) >= PYINSTALLER_MIN_VERSION):
-        raise SystemExit("Error: pyinstaller %s or higher is required"
-                         % PYINSTALLER_MIN_VERSION)
+        raise SystemExit("Error: pyinstaller %s or higher is required" % PYINSTALLER_MIN_VERSION)
 
 
 def check_cefpython3_version():
     if not is_module_satisfies("cefpython3 >= %s" % CEFPYTHON_MIN_VERSION):
-        raise SystemExit("Error: cefpython3 %s or higher is required"
-                         % CEFPYTHON_MIN_VERSION)
+        raise SystemExit("Error: cefpython3 %s or higher is required" % CEFPYTHON_MIN_VERSION)
 
 
 def get_cefpython_modules():
     """Get all cefpython Cython modules in the cefpython3 package.
     It returns a list of names without file extension. Eg.
     'cefpython_py27'. """
-    pyds = glob.glob(os.path.join(CEFPYTHON3_DIR,
-                                  "cefpython_py*" + CYTHON_MODULE_EXT))
+    pyds = glob.glob(os.path.join(CEFPYTHON3_DIR, "cefpython_py*" + CYTHON_MODULE_EXT))
     assert len(pyds) > 1, "Missing cefpython3 Cython modules"
     modules = []
     for path in pyds:
@@ -130,14 +126,21 @@ def get_cefpython3_datas():
     for filename in os.listdir(CEFPYTHON3_DIR):
         # Ignore Cython modules which are already handled by
         # pyinstaller automatically.
-        if filename[:-len(CYTHON_MODULE_EXT)] in get_cefpython_modules():
+        if filename[: -len(CYTHON_MODULE_EXT)] in get_cefpython_modules():
             continue
 
         # CEF binaries and datas
         extension = os.path.splitext(filename)[1]
-        if extension in \
-            [".exe", ".dll", ".pak", ".dat", ".bin", ".txt", ".so", ".plist"] \
-                or filename.lower().startswith("license"):
+        if extension in [
+            ".exe",
+            ".dll",
+            ".pak",
+            ".dat",
+            ".bin",
+            ".txt",
+            ".so",
+            ".plist",
+        ] or filename.lower().startswith("license"):
             logger.info("Include cefpython3 data: {}".format(filename))
             ret.append((os.path.join(CEFPYTHON3_DIR, filename), cefdatadir))
 
@@ -145,11 +148,9 @@ def get_cefpython3_datas():
         # "Chromium Embedded Framework.framework/Resources" with subdirectories
         # is required. Contain .pak files and locales (each locale in separate
         # subdirectory).
-        resources_subdir = \
-            os.path.join("Chromium Embedded Framework.framework", "Resources")
+        resources_subdir = os.path.join("Chromium Embedded Framework.framework", "Resources")
         base_path = os.path.join(CEFPYTHON3_DIR, resources_subdir)
-        assert os.path.exists(base_path), \
-            "{} dir not found in cefpython3".format(resources_subdir)
+        assert os.path.exists(base_path), "{} dir not found in cefpython3".format(resources_subdir)
         for path, dirs, files in os.walk(base_path):
             for file in files:
                 absolute_file_path = os.path.join(path, file)
@@ -159,22 +160,17 @@ def get_cefpython3_datas():
     elif is_win or is_linux:
         # The .pak files in cefpython3/locales/ directory
         locales_dir = os.path.join(CEFPYTHON3_DIR, "locales")
-        assert os.path.exists(locales_dir), \
-            "locales/ dir not found in cefpython3"
+        assert os.path.exists(locales_dir), "locales/ dir not found in cefpython3"
         for filename in os.listdir(locales_dir):
-            logger.info("Include cefpython3 data: {}/{}".format(
-                os.path.basename(locales_dir), filename))
-            ret.append((os.path.join(locales_dir, filename),
-                        os.path.join(cefdatadir, "locales")))
+            logger.info("Include cefpython3 data: {}/{}".format(os.path.basename(locales_dir), filename))
+            ret.append((os.path.join(locales_dir, filename), os.path.join(cefdatadir, "locales")))
 
         # Optional .so/.dll files in cefpython3/swiftshader/ directory
         swiftshader_dir = os.path.join(CEFPYTHON3_DIR, "swiftshader")
         if os.path.isdir(swiftshader_dir):
             for filename in os.listdir(swiftshader_dir):
-                logger.info("Include cefpython3 data: {}/{}".format(
-                    os.path.basename(swiftshader_dir), filename))
-                ret.append((os.path.join(swiftshader_dir, filename),
-                            os.path.join(cefdatadir, "swiftshader")))
+                logger.info("Include cefpython3 data: {}/{}".format(os.path.basename(swiftshader_dir), filename))
+                ret.append((os.path.join(swiftshader_dir, filename), os.path.join(cefdatadir, "swiftshader")))
     return ret
 
 
