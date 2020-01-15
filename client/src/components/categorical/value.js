@@ -479,14 +479,14 @@ class CategoryValue extends React.Component {
                 />
               </div>
             ) : null}
-            <span style={{ flexShrink: 0 }}>
-              {colorAccessor &&
-              !isColorBy &&
-              !annotations.isEditingLabelName ? (
-                <Occupancy category={category} {...this.props} />
-              ) : null}
-            </span>
           </div>
+          <span style={{ flexShrink: 0 }}>
+            {colorAccessor && !isColorBy && !annotations.isEditingLabelName ? (
+              <Occupancy category={category} {...this.props} />
+            ) : null}
+          </span>
+        </div>
+        <div>
           <span>
             <span
               data-testclass="categorical-value-count"
