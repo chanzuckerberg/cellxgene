@@ -104,6 +104,28 @@ class Category extends React.Component {
     this.setState({ newLabelText: "" });
   };
 
+  addLabelAndAssignCells = () => {
+    const { dispatch, metadataField } = this.props;
+    const { newLabelText } = this.state;
+
+    dispatch({
+      type: "annotation: add new label to category",
+      metadataField,
+      newLabelText
+    });
+
+    this.setState({ newLabelText: "" });
+    // TODO BRUCE
+    // categoryIndex
+    // const label = this.getLabel();
+    // dispatch({
+    //   type: "annotation: label current cell selection",
+    //   metadataField,
+    //   categoryIndex,
+    //   label
+    // });
+  };
+
   handleCreateArbitraryLabel = newLabelTextNotInOntology => {
     const { dispatch, metadataField } = this.props;
 
@@ -462,6 +484,8 @@ class Category extends React.Component {
                   instruction="New, unique label name:"
                   cancelTooltipContent="Close this dialog without adding a label."
                   primaryButtonText="Add new label to category"
+                  secondaryButtonText="Add new label to category & assign currently selected cells"
+                  handleSecondaryButtonSubmit={this.addLabelAndAssignCells}
                   text={newLabelText}
                   validationError={this.labelNameError(newLabelText)}
                   errorMessage={this.labelNameErrorMessage(newLabelText)}

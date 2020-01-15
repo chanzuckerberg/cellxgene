@@ -29,7 +29,9 @@ class AnnoDialog extends React.Component {
       annoInput,
       handleCancel,
       handleSubmit,
-      primaryButtonText
+      primaryButtonText,
+      secondaryButtonText,
+      handleSecondaryButtonSubmit
     } = this.props;
     return (
       <Dialog icon="tag" title={title} isOpen={isActive} onClose={handleCancel}>
@@ -59,6 +61,16 @@ class AnnoDialog extends React.Component {
               <Tooltip content={cancelTooltipContent}>
                 <Button onClick={handleCancel}>Cancel</Button>
               </Tooltip>
+              {handleSecondaryButtonSubmit && secondaryButtonText ? (
+                <Button
+                  onClick={handleSecondaryButtonSubmit}
+                  disabled={!text || validationError}
+                  intent="none"
+                  type="submit"
+                >
+                  {secondaryButtonText}
+                </Button>
+              ) : null}
               <Button
                 onClick={handleSubmit}
                 disabled={!text || validationError}
