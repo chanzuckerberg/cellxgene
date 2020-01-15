@@ -433,7 +433,7 @@ class MenuBar extends React.Component {
           </Tooltip>
         </div>
         <Tooltip
-          content="View the centroids for all values"
+          content="Label categorical values on the graph"
           position="bottom"
           disabled={graphInteractionMode === "zoom"}
         >
