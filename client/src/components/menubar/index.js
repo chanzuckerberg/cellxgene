@@ -17,8 +17,6 @@ import CellSetButton from "./cellSetButtons";
 import InformationMenu from "./infoMenu";
 import UndoRedoReset from "./undoRedoReset";
 import Clip from "./clip";
-import { tooltipHoverOpenDelay } from "../../globals";
-import centroidLabels from "../../reducers/centroidLabels";
 import * as globals from "../../globals";
 
 @connect(state => ({
@@ -45,7 +43,7 @@ import * as globals from "../../globals";
   aboutLink: state.config?.links?.["about-dataset"],
   disableDiffexp: state.config?.parameters?.["disable-diffexp"] ?? false,
   diffexpMayBeSlow: state.config?.parameters?.["diffexp-may-be-slow"] ?? false,
-  centroidToggle: state.centroidLabels.toggle
+  showCentroidLabels: state.centroidLabels.showLabels
 }))
 class MenuBar extends React.Component {
   static isValidDigitKeyEvent(e) {
@@ -318,11 +316,11 @@ class MenuBar extends React.Component {
   }
 
   handleCentroidChange = () => {
-    const { dispatch, centroidToggle } = this.props;
+    const { dispatch, showCentroidLabels } = this.props;
 
     dispatch({
       type: "show centroid labels for category",
-      toggle: !centroidToggle
+      showLabels: !showCentroidLabels
     });
   };
 
@@ -340,7 +338,7 @@ class MenuBar extends React.Component {
       layoutChoice,
       graphInteractionMode,
       aboutLink,
-      centroidToggle
+      showCentroidLabels
     } = this.props;
     const { pendingClipPercentiles } = this.state;
 
@@ -440,8 +438,8 @@ class MenuBar extends React.Component {
           <Button
             icon="property"
             onClick={this.handleCentroidChange}
-            active={centroidToggle}
-            intent={centroidToggle ? "primary" : "none"}
+            active={showCentroidLabels}
+            intent={showCentroidLabels ? "primary" : "none"}
             style={{
               marginLeft: 10
             }}

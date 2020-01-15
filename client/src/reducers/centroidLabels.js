@@ -2,7 +2,7 @@ import calcCentroid from "../util/centroid";
 
 const initialState = {
   labels: [],
-  toggle: false
+  showLabels: false
 };
 
 const centroidLabels = (state = initialState, action, sharedNextState) => {
@@ -24,7 +24,7 @@ const centroidLabels = (state = initialState, action, sharedNextState) => {
         ...state,
         labels:
           !!colorAccessor &&
-          state.toggle &&
+          state.showLabels &&
           !!categoricalSelection[colorAccessor]
             ? calcCentroid(
                 world.obsAnnotations,
@@ -41,12 +41,18 @@ const centroidLabels = (state = initialState, action, sharedNextState) => {
     case "show centroid labels for category":
       if (
         !colorAccessor ||
-        !(action.toggle || (action.toggle === undefined && state.toggle))
+        !(
+          action.showLabels ||
+          (action.showLabels === undefined && state.showLabels)
+        )
       ) {
         return {
           ...state,
           labels: [],
-          toggle: action.toggle === undefined ? state.toggle : action.toggle
+          showLabels:
+            action.showLabels === undefined
+              ? state.showLabels
+              : action.showLabels
         };
       }
 
@@ -60,7 +66,8 @@ const centroidLabels = (state = initialState, action, sharedNextState) => {
           categoricalSelection,
           world.schema.annotations.obsByName
         ),
-        toggle: action.toggle === undefined ? state.toggle : action.toggle
+        showLabels:
+          action.showLabels === undefined ? state.showLabels : action.showLabels
       };
 
     case "color by continuous metadata":
