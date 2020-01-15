@@ -1,5 +1,3 @@
-import TEST_ONTOLOGIES from "./TEST_ONTOLOGIES";
-
 // jshint esversion: 6
 const Ontology = (
   state = {
