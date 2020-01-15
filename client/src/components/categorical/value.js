@@ -48,14 +48,6 @@ class CategoryValue extends React.Component {
     };
   }
 
-  getLabel = () => {
-    const { metadataField, categoryIndex, categoricalSelection } = this.props;
-    const category = categoricalSelection[metadataField];
-    const label = category.categoryValues[categoryIndex];
-
-    return label;
-  };
-
   handleDeleteValue = () => {
     const { dispatch, metadataField } = this.props;
     const label = this.getLabel();
@@ -89,6 +81,20 @@ class CategoryValue extends React.Component {
       categoryIndex,
       label
     });
+  };
+
+  handleCreateArbitraryLabel = editedLabelTextNotInOntology => {
+    const { dispatch, metadataField, categoryIndex } = this.props;
+    const label = this.getLabel();
+
+    dispatch({
+      type: "annotation: label edited",
+      metadataField,
+      editedLabel: editedLabelTextNotInOntology,
+      categoryIndex,
+      label
+    });
+    // this.setState({ newLabelText: "" });
   };
 
   valueNameErrorMessage = () => {
@@ -296,6 +302,14 @@ class CategoryValue extends React.Component {
     this.setState({ activeSuggestItem: item });
   };
 
+  getLabel = () => {
+    const { metadataField, categoryIndex, categoricalSelection } = this.props;
+    const category = categoricalSelection[metadataField];
+    const label = category.categoryValues[categoryIndex];
+
+    return label;
+  };
+
   render() {
     const {
       categoricalSelection,
@@ -453,6 +467,9 @@ class CategoryValue extends React.Component {
                     <AnnoInputs
                       useSuggest={ontologyEnabled}
                       text={editedLabelText}
+                      handleCreateArbitraryLabel={
+                        this.handleCreateArbitraryLabel
+                      }
                       handleItemChange={this.handleSuggestActiveItemChange}
                       handleChoice={this.handleChoice}
                       handleTextChange={this.handleTextChange}

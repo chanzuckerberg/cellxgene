@@ -42,7 +42,8 @@ const AnnoSuggest = props => {
     handleItemChange,
     handleChoice,
     ontology,
-    text
+    text,
+    handleCreateArbitraryLabel
   } = props;
   return (
     <Suggest
@@ -50,9 +51,7 @@ const AnnoSuggest = props => {
       resetOnSelect
       closeOnSelect
       resetOnClose
-      createNewItemFromQuery={str => {
-        console.log("rendering", str);
-      }}
+      createNewItemFromQuery={str => {}}
       createNewItemRenderer={userInputStr => {
         return (
           <MenuItem
@@ -60,8 +59,7 @@ const AnnoSuggest = props => {
             text="Create a label not in the ontology"
             active
             onClick={() => {
-              console.log(userInputStr);
-              handleChoice(userInputStr);
+              handleCreateArbitraryLabel(userInputStr);
             }}
             shouldDismissPopover={false}
           />
@@ -123,6 +121,7 @@ class AnnoInputs extends React.Component {
       world,
       handleChoice,
       handleItemChange,
+      handleCreateArbitraryLabel,
       ontology
     } = this.props;
     return (
@@ -134,6 +133,7 @@ class AnnoInputs extends React.Component {
             text={text}
             handleChoice={handleChoice}
             ontologyLoading={ontologyLoading}
+            handleCreateArbitraryLabel={handleCreateArbitraryLabel}
             handleItemChange={handleItemChange}
             ontology={ontology}
           />

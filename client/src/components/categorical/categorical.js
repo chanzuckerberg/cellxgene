@@ -142,7 +142,6 @@ class Categories extends React.Component {
           cancelTooltipContent="Close this dialog without creating a category."
           primaryButtonText="Create new category"
           text={newCategoryText}
-          categoryToDuplicate={categoryToDuplicate}
           validationError={this.categoryNameError(newCategoryText)}
           errorMessage={this.categoryNameErrorMessage(newCategoryText)}
           handleSubmit={this.handleCreateUserAnno}

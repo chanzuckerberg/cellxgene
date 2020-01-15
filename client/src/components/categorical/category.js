@@ -95,10 +95,22 @@ class Category extends React.Component {
   handleAddNewLabelToCategory = () => {
     const { dispatch, metadataField } = this.props;
     const { newLabelText } = this.state;
+
     dispatch({
       type: "annotation: add new label to category",
       metadataField,
       newLabelText
+    });
+    this.setState({ newLabelText: "" });
+  };
+
+  handleCreateArbitraryLabel = newLabelTextNotInOntology => {
+    const { dispatch, metadataField } = this.props;
+
+    dispatch({
+      type: "annotation: add new label to category",
+      metadataField,
+      newLabelText: newLabelTextNotInOntology
     });
     this.setState({ newLabelText: "" });
   };
@@ -181,7 +193,6 @@ class Category extends React.Component {
   };
 
   labelNameErrorMessage = name => {
-    console.log("category error check for new label:", typeof name, name);
     const { metadataField } = this.props;
     const err = this.labelNameError(name);
 
@@ -268,7 +279,6 @@ class Category extends React.Component {
 
   /* leaky to have both of these in multiple components */
   handleChoice = e => {
-    console.log("in category handlechoice", e);
     this.setState({ newLabelText: e.target });
   };
 
@@ -474,6 +484,9 @@ class Category extends React.Component {
                     <AnnoInputs
                       useSuggest={ontologyEnabled}
                       text={newLabelText}
+                      handleCreateArbitraryLabel={
+                        this.handleCreateArbitraryLabel
+                      }
                       handleItemChange={this.handleSuggestActiveItemChange}
                       handleChoice={this.handleChoice}
                       handleTextChange={this.handleTextChange}
