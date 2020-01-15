@@ -41,64 +41,60 @@ class GraphOverlayLayer extends PureComponent {
       children
     } = this.props;
 
-    const inverseTransform =
-      cameraTF !== undefined
-        ? `${this.reverseMatrixScaleTransformString(
-            modelTF
-          )} ${this.reverseMatrixScaleTransformString(
-            cameraTF
-          )} ${this.reverseMatrixScaleTransformString(
-            projectionTF
-          )} scale(1 2) scale(1 ${1 /
-            -(responsive.height - graphPaddingTop)}) scale(2 1) scale(${1 /
-            (responsive.width - graphPaddingRightLeft)} 1)`
-        : undefined;
+    if (!cameraTF) return null;
+
+    const inverseTransform = `${this.reverseMatrixScaleTransformString(
+      modelTF
+    )} ${this.reverseMatrixScaleTransformString(
+      cameraTF
+    )} ${this.reverseMatrixScaleTransformString(
+      projectionTF
+    )} scale(1 2) scale(1 ${1 /
+      -(responsive.height - graphPaddingTop)}) scale(2 1) scale(${1 /
+      (responsive.width - graphPaddingRightLeft)} 1)`;
 
     const newChildren = React.Children.toArray(children);
 
-    if (inverseTransform) {
-      return (
-        <svg
-          className={styles.graphSVG}
-          width={responsive.width - graphPaddingRightLeft}
-          height={responsive.height}
-          pointerEvents="none"
-          style={{ zIndex: 99 }}
+    return (
+      <svg
+        className={styles.graphSVG}
+        width={responsive.width - graphPaddingRightLeft}
+        height={responsive.height}
+        pointerEvents="none"
+        style={{ zIndex: 99 }}
+      >
+        <g
+          id="canvas-transformation-group-x"
+          transform={`scale(${responsive.width -
+            graphPaddingRightLeft} 1) scale(.5 1) translate(1 0)`}
         >
           <g
-            id="canvas-transformation-group-x"
-            transform={`scale(${responsive.width -
-              graphPaddingRightLeft} 1) scale(.5 1) translate(1 0)`}
+            id="canvas-transformation-group-y"
+            transform={`scale(1 ${-(
+              responsive.height - graphPaddingTop
+            )}) translate(0 -1) scale(1 .5) translate(0 1)`}
           >
             <g
-              id="canvas-transformation-group-y"
-              transform={`scale(1 ${-(
-                responsive.height - graphPaddingTop
-              )}) translate(0 -1) scale(1 .5) translate(0 1)`}
+              id="projection-transformation-group"
+              transform={this.matrixToTransformString(projectionTF)}
             >
               <g
-                id="projection-transformation-group"
-                transform={this.matrixToTransformString(projectionTF)}
+                id="camera-transformation-group"
+                transform={this.matrixToTransformString(cameraTF)}
               >
                 <g
-                  id="camera-transformation-group"
-                  transform={this.matrixToTransformString(cameraTF)}
+                  id="model-transformation-group"
+                  transform={this.matrixToTransformString(modelTF)}
                 >
-                  <g
-                    id="model-transformation-group"
-                    transform={this.matrixToTransformString(modelTF)}
-                  >
-                    {newChildren.map(child =>
-                      cloneElement(child, { inverseTransform })
-                    )}
-                  </g>
+                  {newChildren.map(child =>
+                    cloneElement(child, { inverseTransform })
+                  )}
                 </g>
               </g>
             </g>
           </g>
-        </svg>
-      );
-    }
-    return null;
+        </g>
+      </svg>
+    );
   }
 }
