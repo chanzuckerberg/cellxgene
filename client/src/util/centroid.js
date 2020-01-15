@@ -56,10 +56,10 @@ const calcMedianCentroid = (
       // Create/fetch the valueArray,
       // which is what the key points to in the `coordinates` hashmap
       const valueArray = coordinates.get(categoryValue) || [
-        false, // hasFinte
+        false, // hasFinite
         0, // index
-        new Float32Array(numInCategoryValue), // x coorindates
-        new Float32Array(numInCategoryValue) // y coorindates
+        new Float32Array(numInCategoryValue), // x coordinates
+        new Float32Array(numInCategoryValue) // y coordinates
       ];
       const index = valueArray[1];
       let hasFinite = valueArray[0];
