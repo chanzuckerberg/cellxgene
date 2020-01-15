@@ -13,10 +13,10 @@ class GraphOverlayLayer extends Component {
     /* 
       Translates the gl-matrix mat3 to SVG matrix transform style
 
-          mat3         HTML Transform Function
-      [ a, b, 0       
-        c, d, 0,  =>  matrix(a, b, c, d, e, f) / matrix(sx, 0, 0, sy, tx, ty) / matrix(m[0] m[3] m[1] m[4] m[6] m[7])
-        e, f, 1 ]     
+                            mat3                    SVG Transform Function          
+        a  c  e       
+        b  d  f / [a, b, 0, c, d, 0, e, f, 1] =>  matrix(a, b, c, d, e, f) / matrix(sx, 0, 0, sy, tx, ty) / matrix(m[0] m[3] m[1] m[4] m[6] m[7])
+        0  0  1      
     */
     return `matrix(${m[0]} ${m[1]} ${m[3]} ${m[4]} ${m[6]} ${m[7]})`;
   };
