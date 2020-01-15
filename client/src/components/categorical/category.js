@@ -115,6 +115,12 @@ class Category extends React.Component {
     this.setState({ newLabelText: "" });
   };
 
+  handleCategoryEditTextChange = e => {
+    this.setState({
+      newCategoryText: e.target.value
+    });
+  };
+
   activateEditCategoryMode = () => {
     const { dispatch, metadataField } = this.props;
 
@@ -406,46 +412,30 @@ class Category extends React.Component {
                 <Icon style={{ marginRight: 5 }} icon="tag" iconSize={16} />
               ) : null}
 
-              {annotations.isEditingCategoryName &&
-              annotations.categoryBeingEdited === metadataField ? (
-                <form
-                  style={{ display: "inline-block" }}
-                  onSubmit={e => {
-                    e.preventDefault();
-                    this.handleEditCategory();
-                  }}
-                >
-                  <InputGroup
-                    style={{ position: "relative", top: -1 }}
-                    ref={input => {
-                      this.editableCategoryInput = input;
-                    }}
-                    small
-                    autoFocus
-                    onChange={e => {
-                      this.setState({
-                        newCategoryText: e.target.value
-                      });
-                    }}
-                    defaultValue={metadataField}
-                    rightElement={
-                      <Button
-                        minimal
-                        disabled={this.editedCategoryNameError()}
-                        style={{ position: "relative", top: -1 }}
-                        type="button"
-                        icon="small-tick"
-                        data-testclass="submitCategoryNameEdit"
-                        data-testid="submitCategoryNameEdit"
-                        onClick={this.handleEditCategory}
-                      />
-                    }
+              {metadataField}
+
+              <AnnoDialog
+                isActive={
+                  annotations.isEditingCategoryName &&
+                  annotations.categoryBeingEdited === metadataField
+                }
+                title="Edit category name"
+                instruction="New, unique category name:"
+                cancelTooltipContent="Close this dialog without editing this category."
+                primaryButtonText="Edit category name"
+                text={newCategoryText}
+                validationError={this.editedCategoryNameError(newCategoryText)}
+                errorMessage={this.categoryNameErrorMessage(newCategoryText)}
+                handleSubmit={this.handleEditCategory}
+                handleCancel={this.disableEditCategoryMode}
+                annoInput={
+                  <AnnoInputs
+                    useSuggest={false}
+                    text={newCategoryText}
+                    handleTextChange={this.handleCategoryEditTextChange}
                   />
-                  {this.categoryNameErrorMessage()}
-                </form>
-              ) : (
-                metadataField
-              )}
+                }
+              />
 
               {isExpanded ? (
                 <FaChevronDown
