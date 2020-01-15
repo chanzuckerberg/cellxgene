@@ -364,30 +364,6 @@ class Graph extends React.PureComponent {
         stateChanges.container ? stateChanges.container : container
       );
     }
-
-    const svg = stateChanges.centroids || centroids;
-
-    if (prevProps.pointDilation.categoryField !== pointDilation.categoryField) {
-      if (prevProps.pointDilation.categoryField) {
-        stateChanges.svg = svg
-          ?.select(
-            `#svg${prevProps.pointDilation.categoryField.replace(
-              /[^\w]/gi,
-              ""
-            )}-label`
-          )
-          .style("font-size", "12px")
-          .style("font-weight", null);
-      }
-      if (pointDilation.categoryField) {
-        stateChanges.svg = svg
-          ?.select(
-            `#svg${pointDilation.categoryField.replace(/[^\w]/gi, "")}-label`
-          )
-          .style("font-size", "18px")
-          .style("font-weight", "800");
-      }
-    }
     if (Object.keys(stateChanges).length > 0) {
       this.setState(stateChanges);
     }

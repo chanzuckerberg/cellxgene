@@ -38,7 +38,6 @@ export default class CentroidLabels extends PureComponent {
             transform={inverseTransform}
             textAnchor="middle"
             data-label={key}
-            id={`svg${key.replace(/[^\w]/gi, "")}-label`}
             style={{
               fontFamily: "Roboto Condensed",
               fontSize,
