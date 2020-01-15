@@ -55,10 +55,6 @@ const Controls = (
       const varAnnotationsIndexExists =
         universeExists &&
         nextSharedState.universe.varAnnotations.hasCol(varIndex);
-      console.log(
-        "loading:",
-        !(universeExists && embeddingsExist && varAnnotationsIndexExists)
-      );
       return {
         ...state,
         loading: !(

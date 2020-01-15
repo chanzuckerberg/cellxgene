@@ -6,6 +6,7 @@ import * as Dataframe from "../dataframe";
 import { isFpTypedArray } from "../typeHelpers";
 import { indexEntireSchema } from "./schemaHelpers";
 import { isCategoricalAnnotation } from "./annotationsHelpers";
+import catLabelSort from "../catLabelSort";
 
 /*
 Private helper function - create and return a template Universe
@@ -136,17 +137,18 @@ export function createUniverseFromResponse(configResponse, schemaResponse) {
   if (!schema.layout.var) schema.layout.var = [];
   if (!schema.layout.obs) schema.layout.obs = [];
   indexEntireSchema(universe.schema);
+  normalizeEntireSchema(universe.schema);
 
   return universe;
 }
 
-function normalizeSchemaCategory(colSchema, col) {
+function normalizeSchemaCategory(colSchema, col = undefined) {
   const { type, writable } = colSchema;
   if (type === "string" || type === "boolean" || type === "categorical") {
     const categories = [
       ...new Set([
         ...(colSchema.categories ?? []),
-        ...(col.summarize().categories ?? [])
+        ...(col?.summarize?.().categories ?? [])
       ])
     ];
     if (writable && categories.indexOf(unassignedCategoryLabel) === -1) {
@@ -164,6 +166,13 @@ function normalizeSchemaCategory(colSchema, col) {
   }
 }
 
+function normalizeEntireSchema(schema) {
+  // currently only needed for obsAnnotations
+  schema.annotations.obs.columns.forEach(colSchema =>
+    normalizeSchemaCategory(colSchema)
+  );
+}
+
 export function addObsAnnotations(universe, df) {
   const obsAnnotations = universe.obsAnnotations.withColsFromAll(df);
   if (universe.nObs !== obsAnnotations.length) {
@@ -177,7 +186,7 @@ export function addObsAnnotations(universe, df) {
   keys.forEach(k => {
     const colSchema = schema.annotations.obsByName[k];
     const col = obsAnnotations.col(name);
-    normalizeSchemaCategory(schema, name, col);
+    normalizeSchemaCategory(colSchema, col);
   });
 
   return obsAnnotations;
