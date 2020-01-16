@@ -19,6 +19,7 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
 
     case "universe: column load success": {
       const { dim, dataframe } = action;
+      console.log("loaded", dataframe.colIndex.keys());
       switch (dim) {
         case "obsAnnotations": {
           return {

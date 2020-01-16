@@ -14,12 +14,12 @@ import { Select } from "@blueprintjs/select";
 import { connect } from "react-redux";
 import * as globals from "../../globals";
 import Category from "./category";
-import { AnnotationsHelpers } from "../../util/stateManager";
+import { AnnotationsHelpers, ControlsHelpers } from "../../util/stateManager";
 
 @connect(state => ({
-  categoricalSelection: state.categoricalSelection,
   writableCategoriesEnabled: state.config?.parameters?.["annotations"] ?? false,
-  schema: state.world?.schema
+  schema: state.world?.schema,
+  config: state.config
 }))
 class Categories extends React.Component {
   constructor(props) {
@@ -71,8 +71,8 @@ class Categories extends React.Component {
     /* allow empty string */
     if (name === "") return false;
 
-    const { categoricalSelection } = this.props;
-    const allCategoryNames = Object.keys(categoricalSelection);
+    const { schema } = this.props;
+    const allCategoryNames = schema.annotations.obs.columns.map(c => c.name);
 
     /* check category name syntax */
     const error = AnnotationsHelpers.annotationNameIsErroneous(name);
@@ -114,12 +114,15 @@ class Categories extends React.Component {
     const {
       categoricalSelection,
       writableCategoriesEnabled,
-      schema
+      schema,
+      config
     } = this.props;
-    if (!categoricalSelection) return null;
 
     /* all names, sorted in display order.  Will be rendered in this order */
-    const allCategoryNames = Object.keys(categoricalSelection).sort();
+    const allCategoryNames = ControlsHelpers.selectableCategoryNames(
+      schema,
+      ControlsHelpers.maxCategoryItems(config)
+    ).sort();
 
     return (
       <div

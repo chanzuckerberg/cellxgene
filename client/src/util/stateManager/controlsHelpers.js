@@ -11,6 +11,13 @@ import {
   diffexpDimensionName
 } from "../nameCreators";
 
+export function maxCategoryItems(config) {
+  return (
+    config.parameters?.["max-category-items"] ??
+    globals.configDefaults.parameters["max-category-items"]
+  );
+}
+
 /*
 Selection state for categoricals are tracked in an Object that
 has two main components for each category:
@@ -62,10 +69,18 @@ function topNCategories(colSchema, summary, N) {
   return [topNCategories, topNCounts];
 }
 
-export function selectableCategoryNames(world, maxCategoryItems) {
-  const { schema } = world;
+export function selectableCategoryNames(schema, maxCategoryItems, names) {
+  /*
+  return all obs annotation names that are categorical AND have a
+  "reasonably" small number of categories AND are not the index column.
+
+  If the initial name list not provided, use everything in the schema.
+  */
+  if (!schema) return [];
   const { index, columns } = schema.annotations.obs;
+
   return columns
+    .filter(colSchema => !names || names.indexOf(colSchema.name) !== -1)
     .filter(colSchema => {
       const { name, categories } = colSchema;
       return (

@@ -15,7 +15,8 @@ import {
   Icon,
   Position,
   PopoverInteractionKind,
-  Colors
+  Colors,
+  Spinner
 } from "@blueprintjs/core";
 
 import * as globals from "../../globals";
@@ -310,6 +311,62 @@ class Category extends React.Component {
     });
   }
 
+  renderIsStillLoading(metadataField) {
+    /*
+    We are still loading this category, so render a "busy" signal.
+
+    Temp code until we finalize UI/design.
+    */
+    return (
+      <div
+        style={{
+          maxWidth: globals.maxControlsWidth
+        }}
+        data-testclass="category"
+        data-testid={`category-${metadataField}`}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "baseline"
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-start",
+              alignItems: "flex-start"
+            }}
+          >
+            <label className="bp3-control bp3-checkbox">
+              <input
+                data-testclass="category-select"
+                data-testid={`category-select-${metadataField}`}
+                disabled
+                checked={true}
+                type="checkbox"
+              />
+              <span className="bp3-control-indicator" />
+            </label>
+            <span
+              data-testid={`category-expand-${metadataField}`}
+              style={{
+                cursor: "pointer",
+                display: "inline-block"
+              }}
+            >
+              {metadataField} loading...
+            </span>
+          </div>
+          <div>
+            <Spinner intent="primary" size="20" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   render() {
     const { isExpanded, isChecked, newLabelText, newCategoryText } = this.state;
     const {
@@ -319,9 +376,15 @@ class Category extends React.Component {
       isUserAnno,
       annotations
     } = this.props;
-    const { isTruncated } = categoricalSelection[metadataField];
-    const cat = categoricalSelection[metadataField];
-    const optTuples = [...cat.categoryValueIndices];
+
+    const category = categoricalSelection?.[metadataField];
+    const isStillLoading = !categoricalSelection || !category;
+    if (isStillLoading) {
+      return this.renderIsStillLoading(metadataField);
+    }
+
+    const { isTruncated } = category;
+    const optTuples = [...category.categoryValueIndices];
     const optTuplesAsKey = _.map(optTuples, t => t[0]).join(""); // animation
     const allCategoryNames = _.keys(categoricalSelection);
 
