@@ -78,13 +78,7 @@ const calcMedianCentroid = (
   }
 
   // Iterate over the recently created map
-  const iter = coordinates.entries();
-  let pair = iter.next().value;
-  let value;
-  let key;
-  while (pair) {
-    key = pair[0];
-    value = pair[1];
+  coordinates.forEach((value, key) => {
     // If there are coordinates for this cateogrical value,
     // and there is a finite coordinate for the category value
     if (value[2].length > 0 && value[3].length > 0 && value[0]) {
@@ -99,8 +93,7 @@ const calcMedianCentroid = (
       // remove the entry if not
       coordinates.delete(key);
     }
-    pair = iter.next().value;
-  }
+  });
   // return the map: categoricalValue -> [medianXCoordinate, medianYCoordinate]
   return coordinates;
 };

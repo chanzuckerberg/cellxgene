@@ -18,17 +18,10 @@ class CentroidLabels extends PureComponent {
       colorAccessor
     } = this.props;
 
-    const iter = labels.entries();
-    let pair = iter.next().value;
-    let value;
-    let key;
-
     const labelSVGS = [];
     let fontSize = "15px";
     let fontWeight = null;
-    while (pair) {
-      key = pair[0];
-      value = pair[1];
+    labels.forEach((value, key) => {
       fontSize = "15px";
       fontWeight = null;
       if (key === dilatedValue) {
@@ -37,6 +30,7 @@ class CentroidLabels extends PureComponent {
       }
       labelSVGS.push(
         <g
+          // eslint-disable-next-line react/no-array-index-key
           key={key}
           className="centroid-label"
           transform={`translate(${value[0]}, ${value[1]})`}
@@ -72,8 +66,7 @@ class CentroidLabels extends PureComponent {
           </text>
         </g>
       );
-      pair = iter.next().value;
-    }
+    });
 
     return <>{labelSVGS}</>;
   }
