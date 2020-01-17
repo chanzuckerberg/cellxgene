@@ -145,7 +145,7 @@ export function createUniverseFromResponse(configResponse, schemaResponse) {
 function normalizeSchemaCategory(colSchema, col = undefined) {
   const { type, writable } = colSchema;
   if (type === "string" || type === "boolean" || type === "categorical") {
-    const categories = [
+    let categories = [
       ...new Set([
         ...(colSchema.categories ?? []),
         ...(col?.summarize?.().categories ?? [])

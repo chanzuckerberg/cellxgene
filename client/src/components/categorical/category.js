@@ -42,8 +42,8 @@ class Category extends React.Component {
 
   componentDidUpdate(prevProps) {
     const { categoricalSelection, metadataField } = this.props;
-    if (categoricalSelection !== prevProps.categoricalSelection) {
-      const cat = categoricalSelection[metadataField];
+    const cat = categoricalSelection?.[metadataField];
+    if (categoricalSelection !== prevProps.categoricalSelection && !!cat) {
       const categoryCount = {
         // total number of categories in this dimension
         totalCatCount: cat.numCategoryValues,
@@ -356,10 +356,8 @@ class Category extends React.Component {
                 display: "inline-block"
               }}
             >
-              {metadataField} loading...
+              {metadataField} is loading...
             </span>
-          </div>
-          <div>
             <Spinner intent="primary" size="20" />
           </div>
         </div>
