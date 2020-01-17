@@ -9,7 +9,7 @@ import pandas as pd
 
 def read_labels(fname):
     if fname is not None and os.path.exists(fname) and os.path.getsize(fname) > 0:
-        return pd.read_csv(fname, dtype="category", index_col=0, header=0, comment="#")
+        return pd.read_csv(fname, dtype="category", index_col=0, header=0, comment="#", keep_default_na=False)
     else:
         return pd.DataFrame()
 
