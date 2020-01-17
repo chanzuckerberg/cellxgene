@@ -16,7 +16,7 @@ import server.gui.cellxgene_rc
 from server.gui.browser import CefWidget, CefApplication
 from server.gui.workers import Worker, SiteReadyWorker
 from server.gui.utils import WINDOWS, LINUX, MAC, FileLoadSignals, Emitter, WorkerSignals, FileChanged
-from server.utils.utils import find_available_port
+from server.common.utils import find_available_port
 
 if WINDOWS or LINUX:
     dirname = dirname(PySide2.__file__)

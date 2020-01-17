@@ -1,5 +1,5 @@
-recursive-include server/app/web/templates *
-recursive-include server/app/web/static *
+recursive-include server/common/web/templates *
+recursive-include server/common/web/static *
 
 include server/requirements.txt
 include server/requirements-prepare.txt

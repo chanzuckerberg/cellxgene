@@ -4,15 +4,15 @@ from scipy import sparse
 import pandas as pd
 import json
 
-import server.app.util.fbs.NetEncoding.Column as Column
-import server.app.util.fbs.NetEncoding.TypedArray as TypedArray
-import server.app.util.fbs.NetEncoding.Matrix as Matrix
-import server.app.util.fbs.NetEncoding.Int32Array as Int32Array
-import server.app.util.fbs.NetEncoding.Uint32Array as Uint32Array
-import server.app.util.fbs.NetEncoding.Float32Array as Float32Array
-import server.app.util.fbs.NetEncoding.Float64Array as Float64Array
-import server.app.util.fbs.NetEncoding.JSONEncodedArray as JSONEncodedArray
-from server.app.util.matrix_proxy import MatrixProxy
+import server.data_common.fbs.NetEncoding.Column as Column
+import server.data_common.fbs.NetEncoding.TypedArray as TypedArray
+import server.data_common.fbs.NetEncoding.Matrix as Matrix
+import server.data_common.fbs.NetEncoding.Int32Array as Int32Array
+import server.data_common.fbs.NetEncoding.Uint32Array as Uint32Array
+import server.data_common.fbs.NetEncoding.Float32Array as Float32Array
+import server.data_common.fbs.NetEncoding.Float64Array as Float64Array
+import server.data_common.fbs.NetEncoding.JSONEncodedArray as JSONEncodedArray
+from server.data_common.matrix_proxy import MatrixProxy
 
 
 # Placeholder until recent enhancements to flatbuffers Python

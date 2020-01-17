@@ -9,9 +9,9 @@ from parameterized import parameterized_class
 import numpy as np
 import pandas as pd
 
-from server.app.scanpy_engine.scanpy_engine import ScanpyEngine
-from server.app.util.errors import FilterError, DisabledFeatureError
-from server.app.util.data_locator import DataLocator
+from server.data_scanpy.scanpy_engine import ScanpyEngine
+from server.common.errors import FilterError, DisabledFeatureError
+from server.common.data_locator import DataLocator
 
 """
 Test the scanpy engine using the pbmc3k data set.

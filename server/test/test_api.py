@@ -269,5 +269,6 @@ class EndPoints(unittest.TestCase):
         endpoint = "static"
         file = "js/service-worker.js"
         url = f"{LOCAL_URL}{endpoint}/{file}"
+        print("URL", url)
         result = self.session.get(url)
         self.assertEqual(result.status_code, HTTPStatus.OK)

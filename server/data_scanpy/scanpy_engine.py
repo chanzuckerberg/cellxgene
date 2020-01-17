@@ -13,21 +13,21 @@ import anndata
 from scipy import sparse
 
 from server import __version__ as cellxgene_version
-from server.app.driver.driver import CXGDriver
-from server.app.util.constants import Axis, DEFAULT_TOP_N, MAX_LAYOUTS
-from server.app.util.errors import (
+from server.data_common.driver.driver import CXGDriver
+from server.common.constants import Axis, DEFAULT_TOP_N, MAX_LAYOUTS
+from server.common.errors import (
     FilterError,
     JSONEncodingValueError,
     PrepareError,
     ScanpyFileError,
     DisabledFeatureError,
 )
-from server.app.util.utils import jsonify_scanpy, requires_data
-from server.app.scanpy_engine.diffexp import diffexp_ttest
-from server.app.util.fbs.matrix import encode_matrix_fbs, decode_matrix_fbs
-from server.app.scanpy_engine.labels import read_labels, write_labels
-import server.app.scanpy_engine.matrix_proxy  # noqa: F401
-from server.app.util.matrix_proxy import MatrixProxy
+from server.data_common.utils import jsonify_scanpy, requires_data
+from server.data_scanpy.diffexp import diffexp_ttest
+from server.data_common.fbs.matrix import encode_matrix_fbs, decode_matrix_fbs
+import server.data_scanpy.matrix_proxy  # noqa: F401
+from server.data_scanpy.labels import read_labels, write_labels
+from server.data_common.matrix_proxy import MatrixProxy
 
 
 def has_method(o, name):

@@ -5,9 +5,9 @@ import math
 
 import decode_fbs
 
-from server.app.scanpy_engine.scanpy_engine import ScanpyEngine
-from server.app.util.errors import FilterError
-from server.app.util.data_locator import DataLocator
+from server.data_scanpy.scanpy_engine import ScanpyEngine
+from server.common.errors import FilterError
+from server.common.data_locator import DataLocator
 
 
 class NaNTest(unittest.TestCase):

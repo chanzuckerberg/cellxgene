@@ -1,9 +1,9 @@
 import unittest
 import json
 
-from server.app.scanpy_engine.scanpy_engine import ScanpyEngine
-from server.app.util.errors import DriverError
-from server.app.util.data_locator import DataLocator
+from server.data_scanpy.scanpy_engine import ScanpyEngine
+from server.common.errors import DriverError
+from server.common.data_locator import DataLocator
 
 
 class DataLoadEngineTest(unittest.TestCase):

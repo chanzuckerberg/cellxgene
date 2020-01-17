@@ -4,7 +4,7 @@ import click
 from numpy import ndarray, unique
 from scipy.sparse.csc import csc_matrix
 
-from server.utils.utils import sort_options
+from server.common.utils import sort_options
 
 
 @sort_options

@@ -8,9 +8,9 @@ import shutil
 import numpy as np
 import pandas as pd
 
-from server.app.scanpy_engine.scanpy_engine import ScanpyEngine
-from server.app.util.fbs.matrix import encode_matrix_fbs
-from server.app.util.data_locator import DataLocator
+from server.data_scanpy.scanpy_engine import ScanpyEngine
+from server.data_common.fbs.matrix import encode_matrix_fbs
+from server.common.data_locator import DataLocator
 
 
 class WritableAnnotationTest(unittest.TestCase):

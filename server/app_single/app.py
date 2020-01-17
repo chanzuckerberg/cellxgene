@@ -6,9 +6,9 @@ from flask_caching import Cache
 from flask_compress import Compress
 from flask_cors import CORS
 
-from server.app.rest_api.rest import get_api_resources
-from server.app.util.utils import Float32JSONEncoder
-from server.app.web import webapp
+from server.app_single.rest import get_api_resources
+from server.data_common.utils import Float32JSONEncoder
+from server.common.web import webapp
 
 
 class Server:
@@ -18,7 +18,7 @@ class Server:
         self.app = None
 
     def create_app(self):
-        self.app = Flask(__name__, static_folder="web/static")
+        self.app = Flask(__name__, static_folder="../common/web/static")
         self.app.json_encoder = Float32JSONEncoder
         self.cache.init_app(self.app)
         Compress(self.app)

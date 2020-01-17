@@ -33,24 +33,24 @@ build-client:
 build-cli: build-client
 	git ls-files server/ | cpio -pdm $(BUILDDIR)
 	cp -r client/build/  $(CLIENTBUILD)
-	mkdir -p $(SERVERBUILD)/app/web/static/img
-	mkdir -p $(SERVERBUILD)/app/web/templates/
-	cp $(CLIENTBUILD)/index.html $(SERVERBUILD)/app/web/templates/
-	cp -r $(CLIENTBUILD)/static $(SERVERBUILD)/app/web/
-	cp $(CLIENTBUILD)/favicon.png $(SERVERBUILD)/app/web/static/img
-	cp $(CLIENTBUILD)/service-worker.js $(SERVERBUILD)/app/web/static/js/
+	mkdir -p $(SERVERBUILD)/common/web/static/img
+	mkdir -p $(SERVERBUILD)/common/web/templates/
+	cp $(CLIENTBUILD)/index.html $(SERVERBUILD)/common/web/templates/
+	cp -r $(CLIENTBUILD)/static $(SERVERBUILD)/common/web/
+	cp $(CLIENTBUILD)/favicon.png $(SERVERBUILD)/common/web/static/img
+	cp $(CLIENTBUILD)/service-worker.js $(SERVERBUILD)/common/web/static/js/
 	cp MANIFEST.in README.md setup.cfg setup.py $(BUILDDIR)
 
 # If you are actively developing in the server folder use this, dirties the source tree
 .PHONY: build-for-server-dev
 build-for-server-dev: clean-server build-client
-	mkdir -p server/app/web/static/img
-	mkdir -p server/app/web/static/js
-	mkdir -p server/app/web/templates/
-	cp client/build/index.html server/app/web/templates/
-	cp -r client/build/static server/app/web/
-	cp client/build/favicon.png server/app/web/static/img
-	cp client/build/service-worker.js server/app/web/static/js/
+	mkdir -p server/common/web/static/img
+	mkdir -p server/common/web/static/js
+	mkdir -p server/common/web/templates/
+	cp client/build/index.html server/common/web/templates/
+	cp -r client/build/static server/common/web/
+	cp client/build/favicon.png server/common/web/static/img
+	cp client/build/service-worker.js server/common/web/static/js/
 
 
 # TESTING
@@ -192,13 +192,13 @@ build-assets:
 .PHONY: gui-spec-osx
 gui-spec-osx: clean-lite gui-env
 	pip install -e .[gui]
-	pyi-makespec -D -w --additional-hooks-dir server/gui/ -n cellxgene  --add-binary='/System/Library/Frameworks/Tk.framework/Tk':'tk' --add-binary='/System/Library/Frameworks/Tcl.framework/Tcl':'tcl'  --add-data server/app/web/templates/:server/app/web/templates/ --add-data server/app/web/static/:server/app/web/static/ --icon server/gui/images/cxg_icons.icns server/gui/main.py
+	pyi-makespec -D -w --additional-hooks-dir server/gui/ -n cellxgene  --add-binary='/System/Library/Frameworks/Tk.framework/Tk':'tk' --add-binary='/System/Library/Frameworks/Tcl.framework/Tcl':'tcl'  --add-data server/common/web/templates/:server/common/web/templates/ --add-data server/common/web/static/:server/common/web/static/ --icon server/gui/images/cxg_icons.icns server/gui/main.py
 	mv cellxgene.spec cellxgene-osx.spec
 
 .PHONY: gui-spec-windows
 gui-spec-windows: clean-lite dev-env
 	pip install -e .[gui]
-	pyi-makespec -D -w --additional-hooks-dir server/gui/ -n cellxgene --add-data server/app/web/templates;server/app/web/templates --add-data server/app/web/static;server/app/web/static --icon server/gui/images/icon.ico server/gui/main.py
+	pyi-makespec -D -w --additional-hooks-dir server/gui/ -n cellxgene --add-data server/common/web/templates;server/common/web/templates --add-data server/common/web/static;server/common/web/static --icon server/gui/images/icon.ico server/gui/main.py
 	mv cellxgene.spec cellxgene-windows.spec
 
 .PHONY: gui-build-osx

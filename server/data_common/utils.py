@@ -3,7 +3,7 @@ from functools import wraps
 from flask import json
 from numpy import float32, integer
 
-from server.app.util.errors import DriverError
+from server.common.errors import DriverError
 
 
 class Float32JSONEncoder(json.JSONEncoder):

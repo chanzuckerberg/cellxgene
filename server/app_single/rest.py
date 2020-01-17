@@ -8,8 +8,8 @@ from flask_restful import Api, Resource
 from server import __version__ as cellxgene_version
 from anndata import __version__ as anndata_version
 
-from server.app.util.constants import Axis, DiffExpMode, JSON_NaN_to_num_warning_msg, CXGUID, CXG_ANNO_COLLECTION
-from server.app.util.errors import (
+from server.common.constants import Axis, DiffExpMode, JSON_NaN_to_num_warning_msg, CXGUID, CXG_ANNO_COLLECTION
+from server.common.errors import (
     FilterError,
     InteractiveError,
     JSONEncodingValueError,

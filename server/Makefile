@@ -1,7 +1,7 @@
 .PHONY: clean
 clean:
-	rm -f app/web/templates/index.html
-	rm -rf app/web/static
+	rm -f common/web/templates/index.html
+	rm -rf common/web/static
 
 .PHONY: unit-test
 unit-test:

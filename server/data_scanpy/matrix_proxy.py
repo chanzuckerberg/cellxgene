@@ -1,4 +1,4 @@
-from server.app.util.matrix_proxy import MatrixProxyView, ArrayProxyView
+from server.data_common.matrix_proxy import MatrixProxyView, ArrayProxyView
 
 """
 AnnData/h5py are inconsistent in the API supported by various types of

@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from server.app.util.matrix_proxy import MatrixProxyView, MatrixProxy
+from server.data_common.matrix_proxy import MatrixProxyView, MatrixProxy
 
 
 class NdArrayProxyView(MatrixProxyView):

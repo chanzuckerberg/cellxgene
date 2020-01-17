@@ -10,11 +10,11 @@ from urllib.parse import urlparse
 
 import click
 
-from server.app.app import Server
-from server.app.util.errors import ScanpyFileError
-from server.app.util.utils import custom_format_warning
-from server.utils.utils import find_available_port, is_port_available, sort_options
-from server.app.util.data_locator import DataLocator
+from server.app_single.app import Server
+from server.common.errors import ScanpyFileError
+from server.data_common.utils import custom_format_warning
+from server.common.utils import find_available_port, is_port_available, sort_options
+from server.common.data_locator import DataLocator
 
 # anything bigger than this will generate a special message
 BIG_FILE_SIZE_THRESHOLD = 100 * 2 ** 20  # 100MB
@@ -369,7 +369,7 @@ def launch(
     else:
         click.echo(f"[cellxgene] Loading data from {basename(data)}.")
 
-    from server.app.scanpy_engine.scanpy_engine import ScanpyEngine
+    from server.data_scanpy.scanpy_engine import ScanpyEngine
 
     try:
         server.attach_data(ScanpyEngine(data_locator, e_args), title=title, about=about)
