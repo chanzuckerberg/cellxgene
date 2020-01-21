@@ -72,7 +72,7 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
           }
         );
         /* if we are duplicating a non-writable annotation, it may not have an unassigned category */
-        const s = schema.annotations.obsByName[categoryToDuplicate];
+        const s = schema.annotations.obsByName[name];
         if (s.categories.indexOf(unassignedCategoryLabel) === -1) {
           s.categories = s.categories.concat(unassignedCategoryLabel);
         }

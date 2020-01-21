@@ -1,9 +1,9 @@
 /*
-A redo/undo meta reducer for Redux.   Designed to work well with the cascadeReducer().
+A redo/undo meta reducer for Redux.  Designed to work well with the cascadeReducer().
 
 Requires three parameters:
 * reducer - a reducer, which MUST return an object as state.
-* undoableKeys - an array of object keys (strings).   If any of these keys
+* undoableKeys - an array of object keys (strings).  If any of these keys
   are in the object/state returned by the reducer, they will be treated as
   state to be made "undoable".
 * options - an optional object, which may contain the following parameters:

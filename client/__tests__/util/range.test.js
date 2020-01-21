@@ -1,4 +1,4 @@
-import { range, rangeFill } from "../../src/util/range";
+import { range, rangeFill, linspace } from "../../src/util/range";
 
 describe("range", () => {
 	test("no defaults", () => {
@@ -37,6 +37,14 @@ describe("rangefill", () => {
 	test("rangeFill(arr, start, step)", () => {
 		expect(rangeFill(new Int32Array(3), 2, -1)).toMatchObject(
 			new Int32Array([2, 1, 0])
+		);
+	});
+});
+
+describe("linspace", () => {
+	test("linspace(arr, start, step)", () => {
+		expect(linspace(0.0, 2.0, 5)).toMatchObject(
+		    [0.0, 0.5, 1.0, 1.5, 2.0]
 		);
 	});
 });
