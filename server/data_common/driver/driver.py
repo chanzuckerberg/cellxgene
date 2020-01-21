@@ -81,13 +81,6 @@ class CXGDriver(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def annotation_put_fbs(self, axis, fbs, uid=None):
-        """
-        Put/save FBS as user-defined labels
-        """
-        pass
-
-    @abstractmethod
     def data_frame_to_fbs_matrix(self, filter, axis):
         pass
 

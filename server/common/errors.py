@@ -68,3 +68,12 @@ class DisabledFeatureError(Exception):
 
     def __init__(self, message):
         self.message = message
+
+
+class AnnotationsError(Exception):
+    """
+    Raised when an attempt to use a the annotations feature fails
+    """
+
+    def __init__(self, message):
+        self.message = message

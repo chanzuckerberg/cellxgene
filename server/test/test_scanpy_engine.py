@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 
 from server.data_scanpy.scanpy_engine import ScanpyEngine
-from server.common.errors import FilterError, DisabledFeatureError
+from server.common.errors import FilterError
 from server.common.data_locator import DataLocator
 
 """
@@ -141,10 +141,6 @@ class EngineTest(unittest.TestCase):
         annotations = decode_fbs.decode_matrix_FBS(fbs)
         self.assertEqual(annotations["n_rows"], 1838)
         self.assertEqual(annotations["n_cols"], 1)
-
-    def test_annotation_put(self):
-        with self.assertRaises(DisabledFeatureError):
-            self.data.annotation_put_fbs(None, "obs")
 
     def test_diffexp_topN(self):
         f1 = {"filter": {"obs": {"index": [[0, 500]]}}}

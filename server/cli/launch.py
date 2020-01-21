@@ -15,6 +15,7 @@ from server.common.errors import ScanpyFileError
 from server.data_common.utils import custom_format_warning
 from server.common.utils import find_available_port, is_port_available, sort_options
 from server.common.data_locator import DataLocator
+from server.common.annotations import AnnotationsLocalFile
 
 # anything bigger than this will generate a special message
 BIG_FILE_SIZE_THRESHOLD = 100 * 2 ** 20  # 100MB
@@ -116,34 +117,6 @@ def common_args(func):
     return wrapper
 
 
-def parse_engine_args(
-    embedding,
-    obs_names,
-    var_names,
-    max_category_items,
-    diffexp_lfc_cutoff,
-    experimental_annotations,
-    experimental_annotations_file,
-    experimental_annotations_output_dir,
-    backed,
-    disable_diffexp,
-):
-    annotations_file = experimental_annotations_file if experimental_annotations else None
-    annotations_output_dir = experimental_annotations_output_dir if experimental_annotations else None
-    return {
-        "layout": embedding,
-        "max_category_items": max_category_items,
-        "diffexp_lfc_cutoff": diffexp_lfc_cutoff,
-        "obs_names": obs_names,
-        "var_names": var_names,
-        "annotations": experimental_annotations,
-        "annotations_file": annotations_file,
-        "annotations_output_dir": annotations_output_dir,
-        "backed": backed,
-        "disable_diffexp": disable_diffexp,
-    }
-
-
 @sort_options
 @click.command(
     short_help="Launch the cellxgene data viewer. " "Run `cellxgene launch --help` for more information.",
@@ -237,18 +210,16 @@ def launch(
 
     > cellxgene launch <url>"""
 
-    e_args = parse_engine_args(
-        embedding,
-        obs_names,
-        var_names,
-        max_category_items,
-        diffexp_lfc_cutoff,
-        experimental_annotations,
-        experimental_annotations_file,
-        experimental_annotations_output_dir,
-        backed,
-        disable_diffexp,
-    )
+    e_args = {
+        "layout": embedding,
+        "max_category_items": max_category_items,
+        "diffexp_lfc_cutoff": diffexp_lfc_cutoff,
+        "obs_names": obs_names,
+        "var_names": var_names,
+        "backed": backed,
+        "disable_diffexp": disable_diffexp,
+    }
+
     try:
         data_locator = DataLocator(data)
     except RuntimeError as re:
@@ -351,16 +322,7 @@ def launch(
     # Setup app
     cellxgene_url = f"http://{host}:{port}"
 
-    # Import Flask app
-    server = Server()
-
-    server.create_app()
-    server.app.config.update(SCRIPTS=scripts)
-
-    if not verbose:
-        log = logging.getLogger("werkzeug")
-        log.setLevel(logging.ERROR)
-
+    # open the data
     file_size = data_locator.size() if data_locator.islocal() else 0
 
     # if a big file, let the user know it may take a while to load.
@@ -369,12 +331,32 @@ def launch(
     else:
         click.echo(f"[cellxgene] Loading data from {basename(data)}.")
 
-    from server.data_scanpy.scanpy_engine import ScanpyEngine
-
     try:
-        server.attach_data(ScanpyEngine(data_locator, e_args), title=title, about=about)
+        from server.data_scanpy.scanpy_engine import ScanpyEngine
+        cxg_data = ScanpyEngine(data_locator, e_args)
     except ScanpyFileError as e:
         raise click.ClickException(f"{e}")
+
+    # create an annotations object.  Only AnnotationsLocalFile is used (for now)
+    annotations = None
+    if experimental_annotations:
+        annotations = AnnotationsLocalFile(data_locator,
+                                           experimental_annotations_output_dir,
+                                           experimental_annotations_file)
+
+        # if the user has specified a fixed label file, go ahead and validate it
+        # so that we can remove errors early in the process.
+
+        if experimental_annotations_file:
+            cxg_data.validate_label_data(annotations.read_labels())
+
+    # create the server
+    server = Server(cxg_data, annotations, title=title, about=about)
+    server.app.config.update(SCRIPTS=scripts)
+
+    if not verbose:
+        log = logging.getLogger("werkzeug")
+        log.setLevel(logging.ERROR)
 
     if not disable_diffexp and server.app.data.config["diffexp_may_be_slow"]:
         click.echo(

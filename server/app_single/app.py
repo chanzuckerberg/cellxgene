@@ -12,15 +12,13 @@ from server.common.web import webapp
 
 
 class Server:
-    def __init__(self):
-        self.data = None
-        self.cache = Cache(config={"CACHE_TYPE": "simple", "CACHE_DEFAULT_TIMEOUT": 860_000})
-        self.app = None
-
-    def create_app(self):
+    def __init__(self, data, annotations, title="Demo", about=""):
         self.app = Flask(__name__, static_folder="../common/web/static")
         self.app.json_encoder = Float32JSONEncoder
+
+        self.cache = Cache(config={"CACHE_TYPE": "simple", "CACHE_DEFAULT_TIMEOUT": 860_000})
         self.cache.init_app(self.app)
+
         Compress(self.app)
         CORS(self.app, supports_credentials=True)
 
@@ -36,7 +34,7 @@ class Server:
         self.app.register_blueprint(webapp.bp)
         self.app.register_blueprint(resources.blueprint)
         self.app.add_url_rule("/", endpoint="index")
-
-    def attach_data(self, data, title="Demo", about=""):
         self.app.config.update(DATASET_TITLE=title, ABOUT_DATASET=about)
+
         self.app.data = data
+        self.app.annotations = annotations

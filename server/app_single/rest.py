@@ -1,14 +1,12 @@
 from http import HTTPStatus
 import warnings
-from uuid import uuid4
-import re
 
 from flask import Blueprint, current_app, jsonify, make_response, request, session
 from flask_restful import Api, Resource
 from server import __version__ as cellxgene_version
 from anndata import __version__ as anndata_version
 
-from server.common.constants import Axis, DiffExpMode, JSON_NaN_to_num_warning_msg, CXGUID, CXG_ANNO_COLLECTION
+from server.common.constants import Axis, DiffExpMode, JSON_NaN_to_num_warning_msg
 from server.common.errors import (
     FilterError,
     InteractiveError,
@@ -17,20 +15,26 @@ from server.common.errors import (
     DisabledFeatureError,
 )
 
+import json
+from server.common.utils import get_schema, annotation_put_fbs
+
 
 class SchemaAPI(Resource):
     def get(self):
-        cxguid = get_userid(session)
-        anno_collection = get_anno_collection(session)
+        schema = get_schema(current_app.data, current_app.annotations, session)
         return make_response(
-            jsonify({"schema": current_app.data.get_schema(uid=cxguid, collection=anno_collection)}), HTTPStatus.OK
+            jsonify({"schema": schema}), HTTPStatus.OK
         )
 
 
 class ConfigAPI(Resource):
     def get(self):
-        cxguid = get_userid(session)
-        anno_collection = get_anno_collection(session)
+        parameters = current_app.data.get_config_parameters()
+        if current_app.annotations:
+            parameters.update(current_app.annotations.get_config_params(session))
+        else:
+            parameters["annotations"] = False
+
         config = {
             "config": {
                 "features": [
@@ -44,7 +48,7 @@ class ConfigAPI(Resource):
                     "dataset": current_app.config["DATASET_TITLE"],
                 },
                 "links": {"about-dataset": current_app.config["ABOUT_DATASET"]},
-                "parameters": {**current_app.data.get_config_parameters(uid=cxguid, collection=anno_collection)},
+                "parameters": parameters,
                 "library_versions": {"cellxgene": cellxgene_version, "anndata": anndata_version},
             }
         }
@@ -56,11 +60,12 @@ class AnnotationsObsAPI(Resource):
     def get(self):
         fields = request.args.getlist("annotation-name", None)
         preferred_mimetype = request.accept_mimetypes.best_match(["application/octet-stream"])
-        cxguid = get_userid(session)
-        anno_collection = get_anno_collection(session)
         try:
             if preferred_mimetype == "application/octet-stream":
-                fbs = current_app.data.annotation_to_fbs_matrix("obs", fields, uid=cxguid, collection=anno_collection)
+                labels = None
+                if current_app.annotations:
+                    labels = current_app.annotations.read_labels(session)
+                fbs = current_app.data.annotation_to_fbs_matrix(Axis.OBS, fields, labels)
                 return make_response(fbs, HTTPStatus.OK, {"Content-Type": "application/octet-stream"})
             else:
                 return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
@@ -68,20 +73,24 @@ class AnnotationsObsAPI(Resource):
             return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
         except ValueError as e:
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+        except Exception as e:
+            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
     def put(self):
-        cxguid = get_userid(session)
         anno_collection = request.args.get("annotation-collection-name", default=None)
+        annotations = current_app.annotations
+        if annotations is None:
+            return make_response("Error, annotations are not configured", HTTPStatus.BAD_REQUEST)
+
         if anno_collection is not None:
-            if not is_safe_collection_name(anno_collection):
+            if not annotations.is_safe_collection_name(anno_collection):
                 return make_response(f"Error, bad annotation collection name", HTTPStatus.BAD_REQUEST)
-            set_anno_collection(session, anno_collection)
-        else:
-            anno_collection = get_anno_collection(session)
+            annotations.set_collection(anno_collection, session)
 
         try:
             fbs = request.get_data()
-            res = current_app.data.annotation_put_fbs("obs", fbs, uid=cxguid, collection=anno_collection)
+            annotation_put_fbs(fbs, current_app.data, current_app.annotations, session)
+            res = json.dumps({"status": "OK"})
             return make_response(res, HTTPStatus.OK, {"Content-Type": "application/json"})
         except (ValueError, DisabledFeatureError, KeyError) as e:
             return make_response(str(e), HTTPStatus.BAD_REQUEST)
@@ -92,11 +101,15 @@ class AnnotationsObsAPI(Resource):
 class AnnotationsVarAPI(Resource):
     def get(self):
         fields = request.args.getlist("annotation-name", None)
+
         preferred_mimetype = request.accept_mimetypes.best_match(["application/octet-stream"])
         try:
             if preferred_mimetype == "application/octet-stream":
+                labels = None
+                if current_app.annotations is not None:
+                    labels = current_app.annotations.read_labels(session)
                 return make_response(
-                    current_app.data.annotation_to_fbs_matrix("var", fields),
+                    current_app.data.annotation_to_fbs_matrix(Axis.VAR, fields, labels),
                     HTTPStatus.OK,
                     {"Content-Type": "application/octet-stream"},
                 )
@@ -105,6 +118,8 @@ class AnnotationsVarAPI(Resource):
         except KeyError:
             return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
         except ValueError as e:
+            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+        except Exception as e:
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
@@ -193,35 +208,6 @@ class LayoutObsAPI(Resource):
             return make_response(e.message, HTTPStatus.INTERNAL_SERVER_ERROR)
         except ValueError as e:
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
-
-
-def get_userid(ss):
-    if CXGUID not in ss:
-        ss[CXGUID] = uuid4().hex
-        ss.permanent = True
-    return ss[CXGUID]
-
-
-def get_anno_collection(ss):
-    collection = ss[CXG_ANNO_COLLECTION] if CXG_ANNO_COLLECTION in ss else None
-    return collection
-
-
-def set_anno_collection(ss, name):
-    ss[CXG_ANNO_COLLECTION] = name
-    ss.permanent = True
-
-
-def is_safe_collection_name(name):
-    """
-    return true if this is a safe collection name
-
-    this is ultra convervative. If we want to allow full legal file name syntax,
-    we could look at modules like `pathvalidate`
-    """
-    if name is None:
-        return False
-    return re.match(r"^[\w\-]+$", name) is not None
 
 
 def get_api_resources():
