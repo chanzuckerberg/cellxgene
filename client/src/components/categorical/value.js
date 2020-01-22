@@ -117,7 +117,7 @@ class CategoryValue extends React.Component {
       "empty-string": "Blank names not allowed",
       duplicate: "Label must be unique",
       "trim-spaces": "Leading and trailing spaces not allowed",
-      "illegal-characters": "Only alphanumeric, underscore and period allowed",
+      "illegal-characters": "Only alphanumeric and special characters (-_.) allowed",
       "multi-space-run": "Multiple consecutive spaces not allowed"
     };
     const errorMessage = errorMessageMap[err] ?? "error";
