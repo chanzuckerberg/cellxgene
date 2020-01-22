@@ -33,6 +33,7 @@ class AnnoDialog extends React.Component {
       secondaryButtonText,
       handleSecondaryButtonSubmit
     } = this.props;
+
     return (
       <Dialog icon="tag" title={title} isOpen={isActive} onClose={handleCancel}>
         <form

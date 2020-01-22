@@ -6,7 +6,6 @@ import { Flipper, Flipped } from "react-flip-toolkit";
 import {
   Button,
   Tooltip,
-  InputGroup,
   Menu,
   MenuItem,
   Popover,
@@ -17,11 +16,9 @@ import {
 } from "@blueprintjs/core";
 import AnnoDialog from "./annoDialog";
 import AnnoInputs from "./annoInputs";
-import AnnoSelect from "./annoSelect";
 
 import * as globals from "../../globals";
 import Value from "./value";
-import sortedCategoryLabels from "../../util/catLabelSort";
 import { AnnotationsHelpers } from "../../util/stateManager";
 
 @connect(state => ({
@@ -474,11 +471,11 @@ class Category extends React.Component {
                     annotations.isAddingNewLabel &&
                     annotations.categoryAddingNewLabel === metadataField
                   }
-                  title="Add new label"
+                  title="Add new label to category"
                   instruction="New, unique label name:"
                   cancelTooltipContent="Close this dialog without adding a label."
-                  primaryButtonText="Add new label to category"
-                  secondaryButtonText="Add new label to category & assign currently selected cells"
+                  primaryButtonText="Add"
+                  secondaryButtonText="Add label & assign currently selected cells"
                   handleSecondaryButtonSubmit={this.addLabelAndAssignCells}
                   text={newLabelText}
                   validationError={this.labelNameError(newLabelText)}

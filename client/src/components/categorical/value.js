@@ -4,16 +4,13 @@ import React from "react";
 
 import {
   Button,
-  InputGroup,
   Menu,
   MenuItem,
   Popover,
   Position,
   PopoverInteractionKind,
   Tooltip,
-  Colors,
-  Dialog,
-  Classes
+  Colors
 } from "@blueprintjs/core";
 import Occupancy from "./occupancy";
 import * as globals from "../../globals";
@@ -46,6 +43,21 @@ class CategoryValue extends React.Component {
         ]
       ).valueOf()
     };
+  }
+
+  componentDidUpdate(prevProps) {
+    const { categoricalSelection, metadataField, categoryIndex } = this.props;
+    if (
+      prevProps.categoricalSelection !== categoricalSelection ||
+      prevProps.metadataField !== metadataField ||
+      prevProps.categoryIndex !== categoryIndex
+    ) {
+      this.setState({
+        editedLabelText: String(
+          categoricalSelection[metadataField].categoryValues[categoryIndex]
+        ).valueOf()
+      });
+    }
   }
 
   handleDeleteValue = () => {
@@ -94,7 +106,6 @@ class CategoryValue extends React.Component {
       categoryIndex,
       label
     });
-    // this.setState({ newLabelText: "" });
   };
 
   valueNameErrorMessage = () => {
@@ -219,21 +230,6 @@ class CategoryValue extends React.Component {
     );
   };
 
-  componentDidUpdate(prevProps) {
-    const { categoricalSelection, metadataField, categoryIndex } = this.props;
-    if (
-      prevProps.categoricalSelection !== categoricalSelection ||
-      prevProps.metadataField !== metadataField ||
-      prevProps.categoryIndex !== categoryIndex
-    ) {
-      this.setState({
-        editedLabelText: String(
-          categoricalSelection[metadataField].categoryValues[categoryIndex]
-        ).valueOf()
-      });
-    }
-  }
-
   toggleOn = () => {
     const { dispatch, metadataField, categoryIndex } = this.props;
     dispatch({
@@ -259,6 +255,27 @@ class CategoryValue extends React.Component {
       metadataField,
       categoryIndex
     });
+  };
+
+  handleTextChange = e => {
+    this.setState({ editedLabelText: e.target.value });
+  };
+
+  handleChoice = e => {
+    /* Blueprint Suggest format */
+    this.setState({ editedLabelText: e.target });
+  };
+
+  handleSuggestActiveItemChange = item => {
+    this.setState({ activeSuggestItem: item });
+  };
+
+  getLabel = () => {
+    const { metadataField, categoryIndex, categoricalSelection } = this.props;
+    const category = categoricalSelection[metadataField];
+    const label = category.categoryValues[categoryIndex];
+
+    return label;
   };
 
   isAddCurrentSelectionDisabled(category, value) {
@@ -288,27 +305,6 @@ class CategoryValue extends React.Component {
     // else, don't disable
     return false;
   }
-
-  handleTextChange = e => {
-    this.setState({ editedLabelText: e.target.value });
-  };
-
-  handleChoice = e => {
-    /* Blueprint Suggest format */
-    this.setState({ editedLabelText: e.target });
-  };
-
-  handleSuggestActiveItemChange = item => {
-    this.setState({ activeSuggestItem: item });
-  };
-
-  getLabel = () => {
-    const { metadataField, categoryIndex, categoricalSelection } = this.props;
-    const category = categoricalSelection[metadataField];
-    const label = category.categoryValues[categoryIndex];
-
-    return label;
-  };
 
   render() {
     const {
