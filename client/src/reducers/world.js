@@ -265,21 +265,6 @@ const WorldReducer = (
         ...state,
         ...setLabelOnCurrentSelection(state, crossfilter, metadataField, label)
       };
-      // const mask = crossfilter.allSelectedMask();
-      // const unclipped = {
-      //   ...state.unclipped,
-      //   obsAnnotations: AnnotationsHelpers.setLabelByMask(
-      //     state.unclipped.obsAnnotations,
-      //     metadataField,
-      //     mask,
-      //     label
-      //   )
-      // };
-      // const obsAnnotations = state.obsAnnotations.replaceColData(
-      //   metadataField,
-      //   unclipped.obsAnnotations.col(metadataField).asArray()
-      // );
-      // return { ...state, obsAnnotations, unclipped };
     }
 
     default: {

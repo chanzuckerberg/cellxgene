@@ -1,6 +1,5 @@
 // jshint esversion: 6
 import React from "react";
-import _ from "lodash";
 import { Button } from "@blueprintjs/core";
 import { connect } from "react-redux";
 import * as globals from "../../globals";
@@ -21,8 +20,7 @@ class Categories extends React.Component {
     this.state = {
       createAnnoModeActive: false,
       newCategoryText: "",
-      categoryToDuplicate: null,
-      activeSuggestItem: null
+      categoryToDuplicate: null
     };
   }
 
@@ -66,7 +64,7 @@ class Categories extends React.Component {
     /* allow empty string */
     if (name === "") return false;
 
-    /* 
+    /*
     test for uniqueness against *all* annotation names, not just the subset
     we render as categorical.
     */
@@ -97,7 +95,8 @@ class Categories extends React.Component {
       "empty-string": "Blank names not allowed",
       duplicate: "Name must be unique",
       "trim-spaces": "Leading and trailing spaces not allowed",
-      "illegal-characters": "Only alphanumeric and special characters (-_.) allowed",
+      "illegal-characters":
+        "Only alphanumeric and special characters (-_.) allowed",
       "multi-space-run": "Multiple consecutive spaces not allowed"
     };
     const errorMessage = errorMessageMap[err] ?? "error";
@@ -113,9 +112,7 @@ class Categories extends React.Component {
     this.setState({ newCategoryText: e.target });
   };
 
-  handleSuggestActiveItemChange = item => {
-    this.setState({ activeSuggestItem: item });
-  };
+  handleSuggestActiveItemChange = () => {};
 
   render() {
     const {
@@ -171,8 +168,7 @@ class Categories extends React.Component {
 
         {/* READ ONLY CATEGORICAL FIELDS */}
         {/* this is duplicative but flat, could be abstracted */}
-        {_.map(
-          allCategoryNames,
+        {allCategoryNames.map(
           catName =>
             !schema.annotations.obsByName[catName].writable ? (
               <Category
@@ -184,8 +180,7 @@ class Categories extends React.Component {
             ) : null
         )}
         {/* WRITEABLE FIELDS */}
-        {_.map(
-          allCategoryNames,
+        {allCategoryNames.map(
           catName =>
             schema.annotations.obsByName[catName].writable ? (
               <Category

@@ -250,7 +250,6 @@ class Category extends React.Component {
   };
 
   categoryNameErrorMessage = () => {
-    const { newCategoryText } = this.state;
     const err = this.editedCategoryNameError();
     if (err === false) return null;
 
