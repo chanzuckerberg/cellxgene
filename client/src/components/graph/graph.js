@@ -238,7 +238,7 @@ class Graph extends React.PureComponent {
     });
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(prevProps) {
     const { renderCache } = this;
     const {
       world,
@@ -252,7 +252,7 @@ class Graph extends React.PureComponent {
       pointDilation,
       colorAccessor
     } = this.props;
-    const { regl, toolSVG, centroids, camera, modelTF } = this.state;
+    const { regl, toolSVG, camera, modelTF } = this.state;
     let stateChanges = {};
 
     if (regl && world) {
@@ -721,14 +721,7 @@ class Graph extends React.PureComponent {
   });
 
   render() {
-    const {
-      responsive,
-      graphInteractionMode,
-      dispatch,
-      colorAccessor,
-      pointDilation,
-      centroidLabels
-    } = this.props;
+    const { responsive, graphInteractionMode } = this.props;
     const { modelTF, projectionTF, camera } = this.state;
 
     const cameraTF = camera?.view();

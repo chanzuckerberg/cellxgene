@@ -1,6 +1,5 @@
 // jshint esversion: 6
 import * as d3 from "d3";
-import styles from "./graph.css";
 import Lasso from "./setupLasso";
 
 /******************************************
@@ -16,8 +15,7 @@ export default (
   handleEndAction,
   handleCancelAction,
   responsive,
-  graphPaddingRight,
-  graphInteractionMode
+  graphPaddingRight
 ) => {
   const svg = d3.select("#graphAttachPoint").select("#lasso-layer");
 
