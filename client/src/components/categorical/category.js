@@ -201,7 +201,9 @@ class Category extends React.Component {
     if (name === "") return false;
 
     /* allow any term in the ontology */
-    if (this.props.ontology.termSet.has(name)) return false;
+    const { ontology } = this.props;
+    const termInOntology = ontology?.termSet.has(name) ?? false;
+    if (termInOntology) return false;
 
     /* check for label syntax errors */
     const error = AnnotationsHelpers.annotationNameIsErroneous(name);
