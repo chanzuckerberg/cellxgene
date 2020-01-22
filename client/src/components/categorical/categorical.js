@@ -66,8 +66,12 @@ class Categories extends React.Component {
     /* allow empty string */
     if (name === "") return false;
 
-    const { categoricalSelection } = this.props;
-    const allCategoryNames = Object.keys(categoricalSelection);
+    /* 
+    test for uniqueness against *all* annotation names, not just the subset
+    we render as categorical.
+    */
+    const { schema } = this.props;
+    const allCategoryNames = schema.annotations.obs.columns.map(c => c.name);
 
     /* check category name syntax */
     const error = AnnotationsHelpers.annotationNameIsErroneous(name);
