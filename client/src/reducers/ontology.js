@@ -3,6 +3,7 @@ const Ontology = (
   state = {
     enabled: false, // are ontology terms enabled?
     terms: null, // an array of term names, eg, ['cell', 'lung cell', ...]
+    termSet: null, // a Set object containing all terms, for fast lookup
     loading: true
   },
   action
@@ -12,11 +13,13 @@ const Ontology = (
       const enabled =
         action.config?.parameters?.annotations_cell_ontology_enabled;
       const terms = action.config?.parameters?.annotations_cell_ontology_terms;
+      const termSet = new Set(terms);
       return {
         ...state,
         loading: false,
         enabled,
-        terms
+        terms,
+        termSet
       };
     default:
       return state;

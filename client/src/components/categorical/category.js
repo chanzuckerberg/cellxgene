@@ -201,7 +201,7 @@ class Category extends React.Component {
     if (name === "") return false;
 
     /* allow any term in the ontology */
-    if (this.props.ontology.terms.includes(name)) return false;
+    if (this.props.ontology.termSet.has(name)) return false;
 
     /* check for label syntax errors */
     const error = AnnotationsHelpers.annotationNameIsErroneous(name);
@@ -260,7 +260,8 @@ class Category extends React.Component {
       "empty-string": "Blank names not allowed",
       duplicate: "Category name must be unique",
       "trim-spaces": "Leading and trailing spaces not allowed",
-      "illegal-characters": "Only alphanumeric and special characters (-_.) allowed",
+      "illegal-characters":
+        "Only alphanumeric and special characters (-_.) allowed",
       "multi-space-run": "Multiple consecutive spaces not allowed"
     };
     const errorMessage = errorMessageMap[err] ?? "error";
