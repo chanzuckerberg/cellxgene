@@ -16,10 +16,11 @@ import layoutChoice from "./layoutChoice";
 import responsive from "./responsive";
 import controls from "./controls";
 import resetCache from "./resetCache";
-import centroidLabel from "./centroidLabel";
 import annotations from "./annotations";
 import autosave from "./autosave";
 import ontology from "./ontology";
+import centroidLabels from "./centroidLabels";
+import pointDialation from "./pointDilation";
 
 import undoableConfig from "./undoableConfig";
 
@@ -39,7 +40,8 @@ const Reducer = undoable(
     ["controls", controls],
     ["differential", differential],
     ["responsive", responsive],
-    ["centroidLabel", centroidLabel],
+    ["centroidLabels", centroidLabels],
+    ["pointDilation", pointDialation],
     ["autosave", autosave],
     ["resetCache", resetCache]
   ]),
@@ -54,6 +56,7 @@ const Reducer = undoable(
     "controls",
     "differential",
     "layoutChoice",
+    "centroidLabels",
     "annotations"
   ],
   undoableConfig
