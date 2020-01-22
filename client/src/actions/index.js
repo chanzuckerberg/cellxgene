@@ -324,6 +324,9 @@ const resetInterface = () => (dispatch, getState) => {
     type: "reset colorscale"
   });
   dispatch({
+    type: "reset centroid labels"
+  });
+  dispatch({
     type: "clear scatterplot"
   });
   dispatch({

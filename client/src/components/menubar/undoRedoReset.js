@@ -13,7 +13,7 @@ function InformationMenu(props) {
     dispatch
   } = props;
   return (
-    <div style={{ marginLeft: 10 }} className="bp3-button-group">
+    <div style={{ marginRight: 10 }} className="bp3-button-group">
       <Tooltip
         content="Undo"
         position="bottom"
