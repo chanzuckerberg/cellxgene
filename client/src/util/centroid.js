@@ -65,9 +65,9 @@ const calcMedianCentroid = (
       let hasFinite = valueArray[0];
 
       hasFinite =
-        Number.isFinite(layoutXArray[i]) && Number.isFinite(layoutYArray[i])
-          ? true
-          : hasFinite;
+        hasFinite ||
+        (Number.isFinite(layoutXArray[i]) && Number.isFinite(layoutYArray[i]));
+
       valueArray[0] = hasFinite;
       valueArray[1] = index + 1;
       valueArray[2][index] = layoutXArray[i];
