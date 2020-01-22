@@ -54,7 +54,7 @@ const AnnoSuggest = props => {
       resetOnSelect
       closeOnSelect
       resetOnClose
-      createNewItemFromQuery={str => str}
+      createNewItemFromQuery={str => {}}
       createNewItemRenderer={userInputStr => {
         return isTextInvalid?.(userInputStr) ? (
           <MenuItem disabled text={isTextInvalidErrorMessage(userInputStr)} />
@@ -77,15 +77,16 @@ const AnnoSuggest = props => {
         <MenuItem disabled text="Enter an ontology identifier…" />
       }
       inputProps={{ "data-testid": "gene-search" }}
-      inputValueRenderer={() => {
-        return text || "";
-      }}
+      inputValueRenderer={t => t.target}
       itemListPredicate={filterOntology}
-      onActiveItemChange={handleItemChange}
+      onActiveItemChange={t => handleItemChange(t)}
       itemRenderer={renderListItem.bind(this)}
       items={!ontologyLoading && ontology ? ontology : ["No ontology loaded"]}
       popoverProps={{ minimal: true }}
-      onQueryChange={(s, e) => handleTextChange(s)}
+      onQueryChange={(s, e) => {
+        // undefined event means resetOnSelect
+        if (e !== undefined) handleTextChange(s);
+      }}
     />
   );
 };

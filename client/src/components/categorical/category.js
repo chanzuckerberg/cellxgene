@@ -128,9 +128,9 @@ class Category extends React.Component {
     this.setState({ newLabelText: "" });
   };
 
-  handleCategoryEditTextChange = e => {
+  handleCategoryEditTextChange = txt => {
     this.setState({
-      newCategoryText: e.target.value
+      newCategoryText: txt
     });
   };
 
@@ -197,14 +197,11 @@ class Category extends React.Component {
     /* allow empty string */
     if (name === "") return false;
 
-    /* allow any term in the ontology */
+    /* check for label syntax errors, but allow terms in ontology */
     const { ontology } = this.props;
     const termInOntology = ontology?.termSet.has(name) ?? false;
-    if (termInOntology) return false;
-
-    /* check for label syntax errors */
     const error = AnnotationsHelpers.annotationNameIsErroneous(name);
-    if (error) return error;
+    if (error && !termInOntology) return error;
 
     /* disallow duplicates */
     const { metadataField, universe } = this.props;
