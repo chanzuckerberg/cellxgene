@@ -1,6 +1,5 @@
 // jshint esversion: 6
 import * as d3 from "d3";
-import styles from "./graph.css";
 import Lasso from "./setupLasso";
 
 /******************************************
@@ -16,19 +15,9 @@ export default (
   handleEndAction,
   handleCancelAction,
   responsive,
-  graphPaddingRight,
-  graphInteractionMode
+  graphPaddingRight
 ) => {
-  const svg = d3
-    .select("#graphAttachPoint")
-    .append("svg")
-    .attr("id", "tool")
-    .attr("data-testid", "layout-overlay")
-    .attr("width", responsive.width - graphPaddingRight)
-    .attr("height", responsive.height)
-    .attr("class", `${styles.graphSVG}`)
-    .style("z-index", 999)
-    .style("display", graphInteractionMode === "select" ? "inherit" : "none");
+  const svg = d3.select("#graphAttachPoint").select("#lasso-layer");
 
   if (selectionToolType === "brush") {
     const brush = d3

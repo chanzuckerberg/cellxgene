@@ -3,6 +3,7 @@ import React from "react";
 import { connect } from "react-redux";
 import {
   Button,
+  ButtonGroup,
   AnchorButton,
   Tooltip,
   Popover,
@@ -42,7 +43,8 @@ import * as globals from "../../globals";
   redoDisabled: state["@@undoable/future"].length === 0,
   aboutLink: state.config?.links?.["about-dataset"],
   disableDiffexp: state.config?.parameters?.["disable-diffexp"] ?? false,
-  diffexpMayBeSlow: state.config?.parameters?.["diffexp-may-be-slow"] ?? false
+  diffexpMayBeSlow: state.config?.parameters?.["diffexp-may-be-slow"] ?? false,
+  showCentroidLabels: state.centroidLabels.showLabels
 }))
 class MenuBar extends React.Component {
   static isValidDigitKeyEvent(e) {
@@ -258,6 +260,15 @@ class MenuBar extends React.Component {
     });
   };
 
+  handleCentroidChange = () => {
+    const { dispatch, showCentroidLabels } = this.props;
+
+    dispatch({
+      type: "show centroid labels for category",
+      showLabels: !showCentroidLabels
+    });
+  };
+
   renderDiffExp() {
     /* diffexp-related buttons may be disabled */
     const { disableDiffexp, differential, diffexpMayBeSlow } = this.props;
@@ -272,7 +283,7 @@ class MenuBar extends React.Component {
     const tipMessage = `See top 10 differentially expressed genes${slowMsg}`;
 
     return (
-      <div className="bp3-button-group" style={{ marginRight: 10 }}>
+      <ButtonGroup style={{ marginRight: 10 }}>
         <CellSetButton {...this.props} eitherCellSetOneOrTwo={1} />
         <CellSetButton {...this.props} eitherCellSetOneOrTwo={2} />
         {!differential.diffExp ? (
@@ -288,7 +299,6 @@ class MenuBar extends React.Component {
               loading={differential.loading}
               icon="left-join"
               fill
-              type="button"
               onClick={this.computeDiffExp}
             />
           </Tooltip>
@@ -310,7 +320,7 @@ class MenuBar extends React.Component {
             </Button>
           </Tooltip>
         ) : null}
-      </div>
+      </ButtonGroup>
     );
   }
 
@@ -327,19 +337,20 @@ class MenuBar extends React.Component {
       clipPercentileMax,
       layoutChoice,
       graphInteractionMode,
-      aboutLink
+      aboutLink,
+      showCentroidLabels
     } = this.props;
     const { pendingClipPercentiles } = this.state;
 
     // constants used to create selection tool button
     let selectionTooltip;
-    let selectionButtonClass;
+    let selectionButtonIcon;
     if (selectionTool === "brush") {
       selectionTooltip = "Brush selection";
-      selectionButtonClass = "bp3-icon-select";
+      selectionButtonIcon = "select";
     } else {
       selectionTooltip = "Lasso selection";
-      selectionButtonClass = "bp3-icon-polygon-filter";
+      selectionButtonIcon = "polygon-filter";
     }
 
     return (
@@ -347,7 +358,8 @@ class MenuBar extends React.Component {
         style={{
           position: "fixed",
           right: globals.leftSidebarWidth + 8,
-          top: 8
+          top: 8,
+          display: "flex"
         }}
       >
         {this.renderDiffExp()}
@@ -357,7 +369,6 @@ class MenuBar extends React.Component {
           hoverOpenDelay={globals.tooltipHoverOpenDelay}
         >
           <AnchorButton
-            type="button"
             data-testid="subset-button"
             disabled={
               crossfilter &&
@@ -375,16 +386,16 @@ class MenuBar extends React.Component {
             <Icon icon="double-chevron-down" />
           </AnchorButton>
         </Tooltip>
-        <div className="bp3-button-group">
+        <ButtonGroup style={{ marginRight: "10px" }}>
           <Tooltip
             content={selectionTooltip}
             position="bottom"
             hoverOpenDelay={globals.tooltipHoverOpenDelay}
           >
-            <Button
+            <AnchorButton
               type="button"
               data-testid="mode-lasso"
-              className={`bp3-button ${selectionButtonClass}`}
+              icon={selectionButtonIcon}
               active={graphInteractionMode === "select"}
               onClick={() => {
                 dispatch({
@@ -402,10 +413,10 @@ class MenuBar extends React.Component {
             position="bottom"
             hoverOpenDelay={globals.tooltipHoverOpenDelay}
           >
-            <Button
+            <AnchorButton
               type="button"
               data-testid="mode-pan-zoom"
-              className="bp3-button bp3-icon-zoom-in"
+              icon="zoom-in"
               active={graphInteractionMode === "zoom"}
               onClick={() => {
                 dispatch({
@@ -418,11 +429,25 @@ class MenuBar extends React.Component {
               }}
             />
           </Tooltip>
-        </div>
-        <div
-          className="bp3-button-group"
+        </ButtonGroup>
+        <Tooltip
+          content="When a category is colored by, show labels on the graph"
+          position="bottom"
+          disabled={graphInteractionMode === "zoom"}
+        >
+          <Button
+            icon="property"
+            onClick={this.handleCentroidChange}
+            active={showCentroidLabels}
+            intent={showCentroidLabels ? "primary" : "none"}
+            style={{
+              marginRight: 10
+            }}
+          />
+        </Tooltip>
+        <ButtonGroup
           style={{
-            marginLeft: 10
+            marginRight: 10
           }}
         >
           <Popover
@@ -435,7 +460,7 @@ class MenuBar extends React.Component {
                 <Button
                   type="button"
                   data-testid="layout-choice"
-                  className="bp3-button bp3-icon-heatmap"
+                  icon="heatmap"
                   style={{
                     cursor: "pointer"
                   }}
@@ -465,7 +490,7 @@ class MenuBar extends React.Component {
               </div>
             }
           />
-        </div>
+        </ButtonGroup>
         <Clip
           pendingClipPercentiles={pendingClipPercentiles}
           clipPercentileMin={clipPercentileMin}
