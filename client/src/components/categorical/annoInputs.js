@@ -42,7 +42,6 @@ const AnnoSuggest = props => {
     handleItemChange,
     handleChoice,
     ontology,
-    text,
     handleCreateArbitraryLabel,
     handleTextChange,
     isTextInvalid,
@@ -54,7 +53,7 @@ const AnnoSuggest = props => {
       resetOnSelect
       closeOnSelect
       resetOnClose
-      createNewItemFromQuery={str => {}}
+      createNewItemFromQuery={() => {}}
       createNewItemRenderer={userInputStr => {
         return isTextInvalid?.(userInputStr) ? (
           <MenuItem disabled text={isTextInvalidErrorMessage(userInputStr)} />
@@ -79,13 +78,13 @@ const AnnoSuggest = props => {
       inputProps={{ "data-testid": "gene-search" }}
       inputValueRenderer={t => t.target}
       itemListPredicate={filterOntology}
-      onActiveItemChange={t => handleItemChange(t)}
+      onActiveItemChange={handleItemChange}
       itemRenderer={renderListItem.bind(this)}
       items={!ontologyLoading && ontology ? ontology : ["No ontology loaded"]}
       popoverProps={{ minimal: true }}
       onQueryChange={(s, e) => {
         // undefined event means resetOnSelect
-        if (e !== undefined) handleTextChange(s);
+        if (e !== undefined) handleTextChange?.(s);
       }}
     />
   );
@@ -98,7 +97,7 @@ const VanillaInput = props => {
       autoFocus
       value={text}
       intent="none"
-      onChange={e => handleTextChange(e.target.value)}
+      onChange={e => handleTextChange?.(e.target.value)}
       leftIcon="tag"
     />
   );

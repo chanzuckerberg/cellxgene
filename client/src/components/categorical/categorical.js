@@ -103,8 +103,8 @@ class Categories extends React.Component {
     return <span>{errorMessage}</span>;
   };
 
-  handleNewCategoryText = e => {
-    this.setState({ newCategoryText: e.target.value });
+  handleNewCategoryText = txt => {
+    this.setState({ newCategoryText: txt });
   };
 
   handleChoice = e => {
@@ -168,28 +168,26 @@ class Categories extends React.Component {
 
         {/* READ ONLY CATEGORICAL FIELDS */}
         {/* this is duplicative but flat, could be abstracted */}
-        {allCategoryNames.map(
-          catName =>
-            !schema.annotations.obsByName[catName].writable ? (
-              <Category
-                key={catName}
-                metadataField={catName}
-                createAnnoModeActive={createAnnoModeActive}
-                isUserAnno={false}
-              />
-            ) : null
+        {allCategoryNames.map(catName =>
+          !schema.annotations.obsByName[catName].writable ? (
+            <Category
+              key={catName}
+              metadataField={catName}
+              createAnnoModeActive={createAnnoModeActive}
+              isUserAnno={false}
+            />
+          ) : null
         )}
         {/* WRITEABLE FIELDS */}
-        {allCategoryNames.map(
-          catName =>
-            schema.annotations.obsByName[catName].writable ? (
-              <Category
-                key={catName}
-                metadataField={catName}
-                createAnnoModeActive={createAnnoModeActive}
-                isUserAnno
-              />
-            ) : null
+        {allCategoryNames.map(catName =>
+          schema.annotations.obsByName[catName].writable ? (
+            <Category
+              key={catName}
+              metadataField={catName}
+              createAnnoModeActive={createAnnoModeActive}
+              isUserAnno
+            />
+          ) : null
         )}
         {writableCategoriesEnabled ? (
           <div>
