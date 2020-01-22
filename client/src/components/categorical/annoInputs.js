@@ -43,7 +43,10 @@ const AnnoSuggest = props => {
     handleChoice,
     ontology,
     text,
-    handleCreateArbitraryLabel
+    handleCreateArbitraryLabel,
+    handleTextChange,
+    isTextInvalid,
+    isTextInvalidErrorMessage
   } = props;
   return (
     <Suggest
@@ -51,9 +54,11 @@ const AnnoSuggest = props => {
       resetOnSelect
       closeOnSelect
       resetOnClose
-      createNewItemFromQuery={str => {}}
+      createNewItemFromQuery={str => str}
       createNewItemRenderer={userInputStr => {
-        return (
+        return isTextInvalid?.(userInputStr) ? (
+          <MenuItem disabled text={isTextInvalidErrorMessage(userInputStr)} />
+        ) : (
           <MenuItem
             icon="add"
             text="Create a label not in the ontology"
@@ -80,6 +85,7 @@ const AnnoSuggest = props => {
       itemRenderer={renderListItem.bind(this)}
       items={!ontologyLoading && ontology ? ontology : ["No ontology loaded"]}
       popoverProps={{ minimal: true }}
+      onQueryChange={(s, e) => handleTextChange(s)}
     />
   );
 };
@@ -91,7 +97,7 @@ const VanillaInput = props => {
       autoFocus
       value={text}
       intent="none"
-      onChange={e => handleTextChange(e)}
+      onChange={e => handleTextChange(e.target.value)}
       leftIcon="tag"
     />
   );
@@ -122,7 +128,9 @@ class AnnoInputs extends React.Component {
       handleChoice,
       handleItemChange,
       handleCreateArbitraryLabel,
-      ontology
+      ontology,
+      isTextInvalid,
+      isTextInvalidErrorMessage
     } = this.props;
     return (
       <div>
@@ -136,6 +144,9 @@ class AnnoInputs extends React.Component {
             handleCreateArbitraryLabel={handleCreateArbitraryLabel}
             handleItemChange={handleItemChange}
             ontology={ontology}
+            handleTextChange={handleTextChange}
+            isTextInvalid={isTextInvalid}
+            isTextInvalidErrorMessage={isTextInvalidErrorMessage}
           />
         ) : (
           <VanillaInput text={text} handleTextChange={handleTextChange} />

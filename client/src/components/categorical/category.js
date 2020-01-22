@@ -306,8 +306,8 @@ class Category extends React.Component {
     this.setState({ newLabelText: e.target });
   };
 
-  handleTextChange = e => {
-    this.setState({ newLabelText: e.target.value });
+  handleTextChange = text => {
+    this.setState({ newLabelText: text });
   };
 
   toggleAll() {
@@ -497,6 +497,8 @@ class Category extends React.Component {
                       handleItemChange={this.handleSuggestActiveItemChange}
                       handleChoice={this.handleChoice}
                       handleTextChange={this.handleTextChange}
+                      isTextInvalid={this.labelNameError}
+                      isTextInvalidErrorMessage={this.labelNameErrorMessage}
                     />
                   }
                 />
