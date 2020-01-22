@@ -431,7 +431,7 @@ class MenuBar extends React.Component {
           </Tooltip>
         </ButtonGroup>
         <Tooltip
-          content="When a category is colored by, label categorical values on the graph"
+          content="When a category is colored by, show labels on the graph"
           position="bottom"
           disabled={graphInteractionMode === "zoom"}
         >
