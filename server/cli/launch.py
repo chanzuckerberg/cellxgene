@@ -340,7 +340,7 @@ def launch(
             click.echo("Warning: --experimental-annotations-file ignored as --annotations not enabled.")
         if experimental_annotations_output_dir is not None:
             click.echo("Warning: --experimental-annotations-output-dir ignored as --annotations not enabled.")
-        if experimental_annotations_ontology is not None:
+        if experimental_annotations_ontology:
             click.echo("Warning: --experimental-annotations-ontology ignored as --annotations not enabled.")
         if experimental_annotations_ontology_obo is not None:
             click.echo("Warning: --experimental-annotations-ontology-obo ignored as --annotations not enabled.")
