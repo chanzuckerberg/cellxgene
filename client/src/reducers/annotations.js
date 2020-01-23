@@ -31,7 +31,6 @@ const Annotations = (
 ) => {
   switch (action.type) {
     case "configuration load complete": {
-      const DefaultDataCollectionName = null;
       const dataCollectionName =
         action.config.parameters?.["annotations-data-collection-name"] ?? null;
       const dataCollectionNameIsReadOnly =

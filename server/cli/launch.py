@@ -15,6 +15,7 @@ from server.app.util.errors import ScanpyFileError
 from server.app.util.utils import custom_format_warning
 from server.utils.utils import find_available_port, is_port_available, sort_options
 from server.app.util.data_locator import DataLocator
+from server.app.util.ontology import load_obo, OntologyLoadFailure
 
 # anything bigger than this will generate a special message
 BIG_FILE_SIZE_THRESHOLD = 100 * 2 ** 20  # 100MB
@@ -95,6 +96,18 @@ def common_args(func):
         "Incompatible with --annotations-input-file.",
     )
     @click.option(
+        "--experimental-annotations-ontology",
+        is_flag=True,
+        default=False,
+        show_default=True,
+        help="When creating annotations, optionally autocomplete names from ontology terms.",)
+    @click.option(
+        "--experimental-annotations-ontology-obo",
+        default=None,
+        show_default=True,
+        metavar="<path or url>",
+        help="Location of OBO file defining cell annotatoin autosuggest terms.",)
+    @click.option(
         "--backed",
         "-b",
         is_flag=True,
@@ -127,9 +140,15 @@ def parse_engine_args(
     experimental_annotations_output_dir,
     backed,
     disable_diffexp,
+    experimental_annotations_ontology,
+    experimental_annotations_ontology_obo
 ):
     annotations_file = experimental_annotations_file if experimental_annotations else None
     annotations_output_dir = experimental_annotations_output_dir if experimental_annotations else None
+    annotations_cell_ontology_enabled = experimental_annotations and (
+        experimental_annotations_ontology or bool(experimental_annotations_ontology_obo)
+    )
+    annotations_ontology_obopath = experimental_annotations_ontology_obo if annotations_cell_ontology_enabled else None
     return {
         "layout": embedding,
         "max_category_items": max_category_items,
@@ -139,6 +158,9 @@ def parse_engine_args(
         "annotations": experimental_annotations,
         "annotations_file": annotations_file,
         "annotations_output_dir": annotations_output_dir,
+        "annotations_cell_ontology_enabled": annotations_cell_ontology_enabled,
+        "annotations_cell_ontology_obopath": annotations_ontology_obopath,
+        "annotations_cell_ontology_terms": None,
         "backed": backed,
         "disable_diffexp": disable_diffexp,
     }
@@ -222,6 +244,8 @@ def launch(
     experimental_annotations_output_dir,
     backed,
     disable_diffexp,
+    experimental_annotations_ontology,
+    experimental_annotations_ontology_obo
 ):
     """Launch the cellxgene data viewer.
     This web app lets you explore single-cell expression data.
@@ -248,6 +272,8 @@ def launch(
         experimental_annotations_output_dir,
         backed,
         disable_diffexp,
+        experimental_annotations_ontology,
+        experimental_annotations_ontology_obo,
     )
     try:
         data_locator = DataLocator(data)
@@ -314,6 +340,10 @@ def launch(
             click.echo("Warning: --experimental-annotations-file ignored as --annotations not enabled.")
         if experimental_annotations_output_dir is not None:
             click.echo("Warning: --experimental-annotations-output-dir ignored as --annotations not enabled.")
+        if experimental_annotations_ontology:
+            click.echo("Warning: --experimental-annotations-ontology ignored as --annotations not enabled.")
+        if experimental_annotations_ontology_obo is not None:
+            click.echo("Warning: --experimental-annotations-ontology-obo ignored as --annotations not enabled.")
     else:
         if experimental_annotations_file is not None and experimental_annotations_output_dir is not None:
             raise click.ClickException(
@@ -332,6 +362,14 @@ def launch(
                 raise click.ClickException(
                     "Unable to create directory specified by " "--experimental-annotations-output-dir"
                 )
+
+        if e_args.get('annotations_cell_ontology_enabled', False):
+            try:
+                e_args['annotations_cell_ontology_terms'] = load_obo(
+                    e_args.get('annotations_cell_ontology_obopath', None)
+                )
+            except OntologyLoadFailure as e:
+                raise click.ClickException("Unable to load ontology terms\n" + str(e))
 
     if about:
 

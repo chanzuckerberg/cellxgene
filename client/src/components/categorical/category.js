@@ -6,28 +6,30 @@ import { Flipper, Flipped } from "react-flip-toolkit";
 import {
   Button,
   Tooltip,
-  InputGroup,
   Menu,
-  Dialog,
   MenuItem,
   Popover,
-  Classes,
   Icon,
   Position,
   PopoverInteractionKind,
   Colors
 } from "@blueprintjs/core";
+import AnnoDialog from "./annoDialog";
+import AnnoInputs from "./annoInputs";
 
 import * as globals from "../../globals";
 import Value from "./value";
-import sortedCategoryLabels from "../../util/catLabelSort";
 import { AnnotationsHelpers } from "../../util/stateManager";
+import { labelErrorMessage, isLabelErroneous } from "./labelUtil";
 
 @connect(state => ({
   colorAccessor: state.colors.colorAccessor,
   categoricalSelection: state.categoricalSelection,
   annotations: state.annotations,
-  universe: state.universe
+  universe: state.universe,
+  ontology: state.ontology,
+  ontologyLoading: state.ontology?.loading,
+  ontologyEnabled: state.ontology?.enabled
 }))
 class Category extends React.Component {
   constructor(props) {
@@ -91,12 +93,46 @@ class Category extends React.Component {
   handleAddNewLabelToCategory = () => {
     const { dispatch, metadataField } = this.props;
     const { newLabelText } = this.state;
+
     dispatch({
       type: "annotation: add new label to category",
       metadataField,
-      newLabelText
+      newLabelText,
+      assignSelectedCells: false
     });
     this.setState({ newLabelText: "" });
+  };
+
+  addLabelAndAssignCells = () => {
+    const { dispatch, metadataField } = this.props;
+    const { newLabelText } = this.state;
+
+    dispatch({
+      type: "annotation: add new label to category",
+      metadataField,
+      newLabelText,
+      assignSelectedCells: true
+    });
+
+    this.setState({ newLabelText: "" });
+  };
+
+  handleCreateArbitraryLabel = newLabelTextNotInOntology => {
+    const { dispatch, metadataField } = this.props;
+
+    dispatch({
+      type: "annotation: add new label to category",
+      metadataField,
+      newLabelText: newLabelTextNotInOntology,
+      assignSelectedCells: false
+    });
+    this.setState({ newLabelText: "" });
+  };
+
+  handleCategoryEditTextChange = txt => {
+    this.setState({
+      newCategoryText: txt
+    });
   };
 
   activateEditCategoryMode = () => {
@@ -154,63 +190,16 @@ class Category extends React.Component {
   };
 
   labelNameError = name => {
-    /*
-    return false if this is a LEGAL/acceptable category name or NULL/empty string,
-    or return an error type.
-    */
-
-    /* allow empty string */
-    if (name === "") return false;
-
-    /* check for label syntax errors */
-    const error = AnnotationsHelpers.annotationNameIsErroneous(name);
-    if (error) return error;
-
-    /* disallow duplicates */
-    const { metadataField, universe } = this.props;
-    const { obsByName } = universe.schema.annotations;
-    if (obsByName[metadataField].categories.indexOf(name) !== -1)
-      return "duplicate";
-
-    /* otherwise, no error */
-    return false;
+    const { metadataField, ontology, universe } = this.props;
+    return isLabelErroneous(name, metadataField, ontology, universe.schema);
   };
 
   labelNameErrorMessage = name => {
-    const { metadataField } = this.props;
-    const err = this.labelNameError(name);
-
-    if (err === "duplicate") {
-      /* duplicate error is special cased because it has special formatting */
-      return (
-        <span>
-          <span style={{ fontStyle: "italic" }}>{name}</span> already exists
-          already exists within{" "}
-          <span style={{ fontStyle: "italic" }}>{metadataField}</span>{" "}
-        </span>
-      );
-    }
-
-    if (err) {
-      /* all other errors - map code to human error message */
-      const errorMessageMap = {
-        "empty-string": "Blank names not allowed",
-        duplicate: "Name must be unique",
-        "trim-spaces": "Leading and trailing spaces not allowed",
-        "illegal-characters":
-          "Only alphanumeric, underscore and period allowed",
-        "multi-space-run": "Multiple consecutive spaces not allowed"
-      };
-      const errorMessage = errorMessageMap[err] ?? "error";
-      return <span>{errorMessage}</span>;
-    }
-
-    /* no error, no message generated */
-    return null;
+    const { metadataField, ontology, universe } = this.props;
+    return labelErrorMessage(name, metadataField, ontology, universe.schema);
   };
 
   categoryNameErrorMessage = () => {
-    const { newCategoryText } = this.state;
     const err = this.editedCategoryNameError();
     if (err === false) return null;
 
@@ -219,7 +208,8 @@ class Category extends React.Component {
       "empty-string": "Blank names not allowed",
       duplicate: "Category name must be unique",
       "trim-spaces": "Leading and trailing spaces not allowed",
-      "illegal-characters": "Only alphanumeric, underscore and period allowed",
+      "illegal-characters":
+        "Only alphanumeric and special characters (-_.) allowed",
       "multi-space-run": "Multiple consecutive spaces not allowed"
     };
     const errorMessage = errorMessageMap[err] ?? "error";
@@ -259,6 +249,15 @@ class Category extends React.Component {
 
     /* otherwise, no error */
     return false;
+  };
+
+  /* leaky to have both of these in multiple components */
+  handleChoice = e => {
+    this.setState({ newLabelText: e.target });
+  };
+
+  handleTextChange = text => {
+    this.setState({ newLabelText: text });
   };
 
   toggleAll() {
@@ -318,13 +317,13 @@ class Category extends React.Component {
       colorAccessor,
       categoricalSelection,
       isUserAnno,
-      annotations
+      annotations,
+      ontologyEnabled
     } = this.props;
     const { isTruncated } = categoricalSelection[metadataField];
     const cat = categoricalSelection[metadataField];
     const optTuples = [...cat.categoryValueIndices];
     const optTuplesAsKey = _.map(optTuples, t => t[0]).join(""); // animation
-    const allCategoryNames = _.keys(categoricalSelection);
 
     return (
       <div
@@ -381,46 +380,30 @@ class Category extends React.Component {
                 <Icon style={{ marginRight: 5 }} icon="tag" iconSize={16} />
               ) : null}
 
-              {annotations.isEditingCategoryName &&
-              annotations.categoryBeingEdited === metadataField ? (
-                <form
-                  style={{ display: "inline-block" }}
-                  onSubmit={e => {
-                    e.preventDefault();
-                    this.handleEditCategory();
-                  }}
-                >
-                  <InputGroup
-                    style={{ position: "relative", top: -1 }}
-                    ref={input => {
-                      this.editableCategoryInput = input;
-                    }}
-                    small
-                    autoFocus
-                    onChange={e => {
-                      this.setState({
-                        newCategoryText: e.target.value
-                      });
-                    }}
-                    defaultValue={metadataField}
-                    rightElement={
-                      <Button
-                        minimal
-                        disabled={this.editedCategoryNameError()}
-                        style={{ position: "relative", top: -1 }}
-                        type="button"
-                        icon="small-tick"
-                        data-testclass="submitCategoryNameEdit"
-                        data-testid="submitCategoryNameEdit"
-                        onClick={this.handleEditCategory}
-                      />
-                    }
+              {metadataField}
+
+              <AnnoDialog
+                isActive={
+                  annotations.isEditingCategoryName &&
+                  annotations.categoryBeingEdited === metadataField
+                }
+                title="Edit category name"
+                instruction="New, unique category name:"
+                cancelTooltipContent="Close this dialog without editing this category."
+                primaryButtonText="Edit category name"
+                text={newCategoryText}
+                validationError={this.editedCategoryNameError(newCategoryText)}
+                errorMessage={this.categoryNameErrorMessage(newCategoryText)}
+                handleSubmit={this.handleEditCategory}
+                handleCancel={this.disableEditCategoryMode}
+                annoInput={
+                  <AnnoInputs
+                    useSuggest={false}
+                    text={newCategoryText}
+                    handleTextChange={this.handleCategoryEditTextChange}
                   />
-                  {this.categoryNameErrorMessage()}
-                </form>
-              ) : (
-                metadataField
-              )}
+                }
+              />
 
               {isExpanded ? (
                 <FaChevronDown
@@ -438,71 +421,37 @@ class Category extends React.Component {
           <div>
             {isUserAnno ? (
               <>
-                <Dialog
-                  icon="tag"
-                  title="Add new label"
-                  isOpen={
+                <AnnoDialog
+                  isActive={
                     annotations.isAddingNewLabel &&
                     annotations.categoryAddingNewLabel === metadataField
                   }
-                  onClose={this.disableAddNewLabelMode}
-                >
-                  <form
-                    onSubmit={e => {
-                      e.preventDefault();
-                      this.handleAddNewLabelToCategory();
-                    }}
-                  >
-                    <div className={Classes.DIALOG_BODY}>
-                      <div style={{ marginBottom: 20 }}>
-                        <p>New, unique label name:</p>
-                        <InputGroup
-                          autoFocus
-                          value={newLabelText}
-                          intent={
-                            this.labelNameError(newLabelText)
-                              ? "warning"
-                              : "none"
-                          }
-                          onChange={e =>
-                            this.setState({ newLabelText: e.target.value })
-                          }
-                          leftIcon="tag"
-                        />
-                        <p
-                          style={{
-                            marginTop: 7,
-                            visibility: this.labelNameError(newLabelText)
-                              ? "visible"
-                              : "hidden",
-                            color: Colors.ORANGE3
-                          }}
-                        >
-                          {this.labelNameErrorMessage(newLabelText)}
-                        </p>
-                      </div>
-                    </div>
-                    <div className={Classes.DIALOG_FOOTER}>
-                      <div className={Classes.DIALOG_FOOTER_ACTIONS}>
-                        <Tooltip content="Close this dialog without adding a label.">
-                          <Button onClick={this.disableAddNewLabelMode}>
-                            Cancel
-                          </Button>
-                        </Tooltip>
-                        <Button
-                          disabled={
-                            !newLabelText || this.labelNameError(newLabelText)
-                          }
-                          onClick={this.handleAddNewLabelToCategory}
-                          intent="primary"
-                          type="submit"
-                        >
-                          Add new label to category
-                        </Button>
-                      </div>
-                    </div>
-                  </form>
-                </Dialog>
+                  title="Add new label to category"
+                  instruction="New, unique label name:"
+                  cancelTooltipContent="Close this dialog without adding a label."
+                  primaryButtonText="Add"
+                  secondaryButtonText="Add label & assign currently selected cells"
+                  handleSecondaryButtonSubmit={this.addLabelAndAssignCells}
+                  text={newLabelText}
+                  validationError={this.labelNameError(newLabelText)}
+                  errorMessage={this.labelNameErrorMessage(newLabelText)}
+                  handleSubmit={this.handleAddNewLabelToCategory}
+                  handleCancel={this.disableAddNewLabelMode}
+                  annoInput={
+                    <AnnoInputs
+                      useSuggest={ontologyEnabled}
+                      text={newLabelText}
+                      handleCreateArbitraryLabel={
+                        this.handleCreateArbitraryLabel
+                      }
+                      handleItemChange={this.handleSuggestActiveItemChange}
+                      handleChoice={this.handleChoice}
+                      handleTextChange={this.handleTextChange}
+                      isTextInvalid={this.labelNameError}
+                      isTextInvalidErrorMessage={this.labelNameErrorMessage}
+                    />
+                  }
+                />
                 <Popover
                   interactionKind={PopoverInteractionKind.HOVER}
                   boundary="window"

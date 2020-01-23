@@ -165,9 +165,16 @@ const CrossfilterReducerBase = (
       return state.delDimension(obsAnnoDimensionName(action.metadataField));
     }
 
+    case "annotation: add new label to category":
     case "annotation: label current cell selection":
     case "annotation: label edited":
     case "annotation: delete label": {
+      if (
+        action.type === "annotation: add new label to category" &&
+        !action.assignSelectedCells
+      )
+        return state;
+
       /* we need to reindex the dimension.  For now, just drop it and add another */
       const name = action.metadataField;
       const dimName = obsAnnoDimensionName(name);
