@@ -20,6 +20,7 @@ import AnnoInputs from "./annoInputs";
 import * as globals from "../../globals";
 import Value from "./value";
 import { AnnotationsHelpers } from "../../util/stateManager";
+import { labelErrorMessage, isLabelErroneous } from "./labelUtil";
 
 @connect(state => ({
   colorAccessor: state.colors.colorAccessor,
@@ -189,61 +190,13 @@ class Category extends React.Component {
   };
 
   labelNameError = name => {
-    /*
-    return false if this is a LEGAL/acceptable category name or NULL/empty string,
-    or return an error type.
-    */
-
-    /* allow empty string */
-    if (name === "") return false;
-
-    /* check for label syntax errors, but allow terms in ontology */
-    const { ontology } = this.props;
-    const termInOntology = ontology?.termSet.has(name) ?? false;
-    const error = AnnotationsHelpers.annotationNameIsErroneous(name);
-    if (error && !termInOntology) return error;
-
-    /* disallow duplicates */
-    const { metadataField, universe } = this.props;
-    const { obsByName } = universe.schema.annotations;
-    if (obsByName[metadataField].categories.indexOf(name) !== -1)
-      return "duplicate";
-
-    /* otherwise, no error */
-    return false;
+    const { metadataField, ontology, universe } = this.props;
+    return isLabelErroneous(name, metadataField, ontology, universe.schema);
   };
 
   labelNameErrorMessage = name => {
-    const { metadataField } = this.props;
-    const err = this.labelNameError(name);
-
-    if (err === "duplicate") {
-      /* duplicate error is special cased because it has special formatting */
-      return (
-        <span>
-          <span style={{ fontStyle: "italic" }}>{name}</span> already exists
-          already exists within{" "}
-          <span style={{ fontStyle: "italic" }}>{metadataField}</span>{" "}
-        </span>
-      );
-    }
-
-    if (err) {
-      /* all other errors - map code to human error message */
-      const errorMessageMap = {
-        "empty-string": "Blank names not allowed",
-        duplicate: "Name must be unique",
-        "trim-spaces": "Leading and trailing spaces not allowed",
-        "illegal-characters":
-          "Only alphanumeric and special characters (-_.) allowed",
-        "multi-space-run": "Multiple consecutive spaces not allowed"
-      };
-      const errorMessage = errorMessageMap[err] ?? "error";
-      return <span>{errorMessage}</span>;
-    }
-
-    /* no error, no message generated */
-    return null;
+    const { metadataField, ontology, universe } = this.props;
+    return labelErrorMessage(name, metadataField, ontology, universe.schema);
   };
 
   categoryNameErrorMessage = () => {

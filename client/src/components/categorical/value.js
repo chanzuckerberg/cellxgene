@@ -19,6 +19,7 @@ import AnnoDialog from "./annoDialog";
 import AnnoInputs from "./annoInputs";
 
 import { AnnotationsHelpers } from "../../util/stateManager";
+import { labelErrorMessage, isLabelErroneous } from "./labelUtil";
 
 @connect(state => ({
   categoricalSelection: state.categoricalSelection,
@@ -108,61 +109,36 @@ class CategoryValue extends React.Component {
     });
   };
 
-  valueNameErrorMessage = () => {
-    const err = this.valueNameError();
-    if (err === false) return null;
-
-    const errorMessageMap = {
-      /* map error code to human readable error message */
-      "empty-string": "Blank names not allowed",
-      duplicate: "Label must be unique",
-      "trim-spaces": "Leading and trailing spaces not allowed",
-      "illegal-characters":
-        "Only alphanumeric and special characters (-_.) allowed",
-      "multi-space-run": "Multiple consecutive spaces not allowed"
-    };
-    const errorMessage = errorMessageMap[err] ?? "error";
-    return (
-      <span
-        style={{
-          fontStyle: "italic",
-          fontSize: 12,
-          marginTop: 5,
-          color: Colors.ORANGE3
-        }}
-      >
-        {errorMessage}
-      </span>
-    );
-  };
-
-  valueNameError = () => {
-    const { editedLabelText } = this.state;
-    const { categoricalSelection, metadataField, categoryIndex } = this.props;
-
-    /*
-    check label syntax
-    */
-    const err = AnnotationsHelpers.annotationNameIsErroneous(editedLabelText);
-    if (err) return err;
-
-    /*
-    disallow duplicates
-    */
+  labelNameError = name => {
+    const {
+      metadataField,
+      ontology,
+      schema,
+      categoricalSelection,
+      categoryIndex
+    } = this.props;
     const category = categoricalSelection[metadataField];
     const displayString = String(
       category.categoryValues[categoryIndex]
     ).valueOf();
-    if (
-      category.categoryValues.indexOf(editedLabelText) > -1 &&
-      editedLabelText !== displayString
-    )
-      return "duplicate";
+    if (name === displayString) return false;
+    return isLabelErroneous(name, metadataField, ontology, schema);
+  };
 
-    /*
-    otherwise, all good!
-    */
-    return false;
+  labelNameErrorMessage = name => {
+    const {
+      metadataField,
+      ontology,
+      schema,
+      categoricalSelection,
+      categoryIndex
+    } = this.props;
+    const category = categoricalSelection[metadataField];
+    const displayString = String(
+      category.categoryValues[categoryIndex]
+    ).valueOf();
+    if (name === displayString) return null;
+    return labelErrorMessage(name, metadataField, ontology, schema);
   };
 
   activateEditLabelMode = () => {
@@ -260,16 +236,14 @@ class CategoryValue extends React.Component {
     });
   };
 
-  handleTextChange = txt => {
-    this.setState({ editedLabelText: txt });
+  handleTextChange = text => {
+    this.setState({ editedLabelText: text });
   };
 
   handleChoice = e => {
     /* Blueprint Suggest format */
     this.setState({ editedLabelText: e.target });
   };
-
-  handleSuggestActiveItemChange = () => {};
 
   getLabel = () => {
     const { metadataField, categoryIndex, categoricalSelection } = this.props;
@@ -465,8 +439,8 @@ class CategoryValue extends React.Component {
                   primaryButtonText="Change label text"
                   text={editedLabelText}
                   categoryToDuplicate={null}
-                  validationError={this.valueNameError()}
-                  errorMessage={this.valueNameErrorMessage()}
+                  validationError={this.labelNameError(editedLabelText)}
+                  errorMessage={this.labelNameErrorMessage(editedLabelText)}
                   handleSubmit={this.handleEditValue}
                   handleCancel={this.cancelEdit}
                   annoInput={
@@ -479,6 +453,8 @@ class CategoryValue extends React.Component {
                       handleItemChange={this.handleSuggestActiveItemChange}
                       handleChoice={this.handleChoice}
                       handleTextChange={this.handleTextChange}
+                      isTextInvalid={this.labelNameError}
+                      isTextInvalidErrorMessage={this.labelNameErrorMessage}
                     />
                   }
                   annoSelect={null}
