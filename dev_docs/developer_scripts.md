@@ -91,7 +91,6 @@ Installs requirements files
 
 ```
 dev-env - installs requirements and requirments-dev (for building code)
-gui-env - installs requirements and requirments-dev and requirments-gui (for building native app)
 ```
 
 ### install commands
@@ -107,14 +106,3 @@ install-dist - installs from local dist folder
 uninstall - uninstalls cellxgene
 ```
 
-### gui
-
-Commands for building the native app
-
-```
-build-assets - builds the image and icon assets for the gui to pull from
-gui-spec-osx - creates the initial spec file for osx, do not run unless you are starting from scratch, one time only
-gui-spec-windows - creates the initial spec file for windows, do not run unless you are starting from scratch, one time only
-gui-build-osx - builds the app from the osx spec file
-gui-build-windows - builds the app from the windows spec file
-```

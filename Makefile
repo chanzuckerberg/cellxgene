@@ -124,10 +124,6 @@ dev-env:
 	cd client && $(MAKE) ci
 	pip install -r server/requirements-dev.txt
 
-.PHONY: gui-env
-gui-env: dev-env
-	pip install -r server/requirements-gui.txt
-
 # give PART=[major, minor, part] as param to make bump
 .PHONY: bump
 bump:
@@ -181,31 +177,4 @@ install-dist: uninstall
 .PHONY: uninstall
 uninstall:
 	pip uninstall -y cellxgene || :
-
-
-# GUI
-
-.PHONY: build-assets
-build-assets:
-	pyside2-rcc server/gui/cellxgene.qrc -o server/gui/cellxgene_rc.py
-
-.PHONY: gui-spec-osx
-gui-spec-osx: clean-lite gui-env
-	pip install -e .[gui]
-	pyi-makespec -D -w --additional-hooks-dir server/gui/ -n cellxgene  --add-binary='/System/Library/Frameworks/Tk.framework/Tk':'tk' --add-binary='/System/Library/Frameworks/Tcl.framework/Tcl':'tcl'  --add-data server/common/web/templates/:server/common/web/templates/ --add-data server/common/web/static/:server/common/web/static/ --icon server/gui/images/cxg_icons.icns server/gui/main.py
-	mv cellxgene.spec cellxgene-osx.spec
-
-.PHONY: gui-spec-windows
-gui-spec-windows: clean-lite dev-env
-	pip install -e .[gui]
-	pyi-makespec -D -w --additional-hooks-dir server/gui/ -n cellxgene --add-data server/common/web/templates;server/common/web/templates --add-data server/common/web/static;server/common/web/static --icon server/gui/images/icon.ico server/gui/main.py
-	mv cellxgene.spec cellxgene-windows.spec
-
-.PHONY: gui-build-osx
-gui-build-osx: clean-lite
-	pyinstaller --clean cellxgene-osx.spec
-
-.PHONY: gui-build-windows
-gui-build-windows: clean-lite
-	pyinstaller --clean cellxgene-windows.spec
 
