@@ -208,6 +208,7 @@ const Undoable = (reducer, undoableKeys, options = {}) => {
     };
     return nextState;
   }
+
   return (
     currentState = {
       [pastKey]: [],
