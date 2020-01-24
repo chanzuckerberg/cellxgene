@@ -2,6 +2,7 @@ import React from "react";
 import { connect } from "react-redux";
 import AnnoDialog from "./annoDialog";
 import AnnoInputs from "./annoInputs";
+import OntologySelect from "./ontologySelect";
 
 import { labelErrorMessage, isLabelErroneous } from "./labelUtil";
 
@@ -22,10 +23,10 @@ class Category extends React.Component {
     };
   }
 
-  disableAddNewLabelMode = () => {
+  disableAddNewLabelFromOntologyMode = () => {
     const { dispatch } = this.props;
     dispatch({
-      type: "annotation: disable add new label mode"
+      type: "annotation: disable add new ontology label mode"
     });
     this.setState({
       newLabelText: ""
@@ -92,17 +93,17 @@ class Category extends React.Component {
 
   render() {
     const { newLabelText } = this.state;
-    const { metadataField, annotations, ontologyEnabled } = this.props;
+    const { metadataField, annotations, ontology } = this.props;
 
     return (
       <>
         <AnnoDialog
           isActive={
-            annotations.isAddingNewLabel &&
-            annotations.categoryAddingNewLabel === metadataField
+            annotations.isAddingNewLabelFromOntology &&
+            annotations.categoryAddingNewLabelFromOntology === metadataField
           }
-          title="Add new label to category"
-          instruction="New, unique label name:"
+          title="Add new label to category from existing ontology terms"
+          instruction="Choose an ontology term to use as a label name:"
           cancelTooltipContent="Close this dialog without adding a label."
           primaryButtonText="Add label"
           secondaryButtonText="Add label and assign currently selected cells"
@@ -111,19 +112,18 @@ class Category extends React.Component {
           validationError={this.labelNameError(newLabelText)}
           errorMessage={this.labelNameErrorMessage(newLabelText)}
           handleSubmit={this.handleAddNewLabelToCategory}
-          handleCancel={this.disableAddNewLabelMode}
-          annoInput={
-            <AnnoInputs
-              useSuggest={ontologyEnabled}
-              text={newLabelText}
-              handleCreateArbitraryLabel={this.handleCreateArbitraryLabel}
-              handleItemChange={this.handleSuggestActiveItemChange}
-              handleChoice={this.handleChoice}
-              handleTextChange={this.handleTextChange}
-              isTextInvalid={this.labelNameError}
-              isTextInvalidErrorMessage={this.labelNameErrorMessage}
+          handleCancel={this.disableAddNewLabelFromOntologyMode}
+          ontologySelect={
+            <OntologySelect
+              handleChooseOntologyTermFromDropdown={term => {
+                console.log("handleChooseOntologyTermFromDropdown", term);
+                this.handleChoice(term);
+              }}
+              categoryToDuplicate={newLabelText}
+              ontology={ontology}
             />
           }
+          annoInput={null}
         />
       </>
     );

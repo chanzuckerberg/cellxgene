@@ -7,6 +7,7 @@ import CategoryFlipperLayout from "./categoryFlipperLayout";
 import AnnoMenu from "./annoMenuCategory";
 import AnnoDialogEditCategoryName from "./annoDialogEditCategoryName";
 import AnnoDialogAddLabel from "./annoDialogAddLabel";
+import AnnoDialogAddLabelFromOntology from "./annoDialogAddLabelFromOntology";
 
 import * as globals from "../../globals";
 
@@ -149,8 +150,6 @@ class Category extends React.Component {
               <Icon style={{ marginRight: 5 }} icon="tag" iconSize={16} />
             ) : null}
             {metadataField}
-            {<AnnoDialogEditCategoryName metadataField={metadataField} />}
-            {<AnnoDialogAddLabel metadataField={metadataField} />}
             {isExpanded ? (
               <FaChevronDown
                 data-testclass="category-expand-is-expanded"
@@ -164,11 +163,15 @@ class Category extends React.Component {
             )}
           </span>
         </div>
+        {<AnnoDialogEditCategoryName metadataField={metadataField} />}
+        {<AnnoDialogAddLabel metadataField={metadataField} />}
+        {<AnnoDialogAddLabelFromOntology metadataField={metadataField} />}
         <div>
           <AnnoMenu
             metadataField={metadataField}
             isUserAnno={isUserAnno}
             createText="Add a new label to this category"
+            createFromOntologyText="Add a new label to this category using existing ontology terms"
             editText="Edit this category's name"
             deleteText="Delete this category, all associated labels, and remove all cell assignments"
           />

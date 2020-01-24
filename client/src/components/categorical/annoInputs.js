@@ -119,38 +119,10 @@ class AnnoInputs extends React.Component {
   }
 
   render() {
-    const {
-      useSuggest,
-      handleTextChange,
-      text,
-      ontologyLoading,
-      world,
-      handleChoice,
-      handleItemChange,
-      handleCreateArbitraryLabel,
-      ontology,
-      isTextInvalid,
-      isTextInvalidErrorMessage
-    } = this.props;
+    const { handleTextChange, text } = this.props;
     return (
       <div>
-        {/* Le sigh https://github.com/palantir/blueprint/issues/2864 */}
-        {useSuggest ? (
-          <AnnoSuggest
-            world={world}
-            text={text}
-            handleChoice={handleChoice}
-            ontologyLoading={ontologyLoading}
-            handleCreateArbitraryLabel={handleCreateArbitraryLabel}
-            handleItemChange={handleItemChange}
-            ontology={ontology}
-            handleTextChange={handleTextChange}
-            isTextInvalid={isTextInvalid}
-            isTextInvalidErrorMessage={isTextInvalidErrorMessage}
-          />
-        ) : (
-          <VanillaInput text={text} handleTextChange={handleTextChange} />
-        )}
+        <VanillaInput text={text} handleTextChange={handleTextChange} />
       </div>
     );
   }

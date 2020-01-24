@@ -2,15 +2,16 @@ import React from "react";
 import { connect } from "react-redux";
 import { Button, MenuItem } from "@blueprintjs/core";
 import { Select } from "@blueprintjs/select";
+import fuzzysort from "fuzzysort";
 
-@connect(state => ({
-  colorAccessor: state.colors.colorAccessor,
-  categoricalSelection: state.categoricalSelection,
-  annotations: state.annotations,
-  universe: state.universe,
-  ontology: state.ontology,
-  ontologyLoading: state.ontology?.loading
-}))
+const filterOntology = (query, ontology) =>
+  /* fires on load, once, and then for each character typed into the input */
+  fuzzysort.go(query, ontology, {
+    limit: 100,
+    threshold: -10000 // don't return bad results
+  });
+
+@connect()
 class ChooseOntologySelect extends React.Component {
   constructor(props) {
     super(props);
@@ -19,30 +20,32 @@ class ChooseOntologySelect extends React.Component {
 
   render() {
     const {
-      allCategoryNames,
+      ontology,
       categoryToDuplicate,
-      handleModalDuplicateCategorySelection
+      handleChooseOntologyTermFromDropdown
     } = this.props;
     return (
       <div>
-        <p>Optionally choose a label name from the existing ontology:</p>
         <Select
           items={
-            allCategoryNames ||
+            ontology?.terms ||
             [] /* this is a placeholder, could be  a subcomponent to avoid this */
           }
-          filterable={false}
+          filterable
+          itemListPredicate={filterOntology}
           itemRenderer={(d, { handleClick }) => {
-            return <MenuItem onClick={handleClick} key={d} text={d} />;
+            return (
+              <MenuItem onClick={handleClick} key={d.target} text={d.target} />
+            );
           }}
           noResults={<MenuItem disabled text="No results." />}
           onItemSelect={d => {
-            handleModalDuplicateCategorySelection(d);
+            handleChooseOntologyTermFromDropdown(d);
           }}
         >
           {/* children become the popover target; render value here */}
           <Button
-            text={categoryToDuplicate || "None (all cells 'unassigned')"}
+            text={categoryToDuplicate || "Choose an Ontology Term"}
             rightIcon="double-caret-vertical"
           />
         </Select>
