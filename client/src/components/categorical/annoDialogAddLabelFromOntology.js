@@ -1,7 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
 import AnnoDialog from "./annoDialog";
-import AnnoInputs from "./annoInputs";
 import OntologySelect from "./ontologySelect";
 
 import { labelErrorMessage, isLabelErroneous } from "./labelUtil";
