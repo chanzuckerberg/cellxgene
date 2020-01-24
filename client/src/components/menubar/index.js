@@ -18,6 +18,7 @@ import CellSetButton from "./cellSetButtons";
 import InformationMenu from "./infoMenu";
 import UndoRedoReset from "./undoRedoReset";
 import Clip from "./clip";
+import Shutdown from "./shutdown";
 import * as globals from "../../globals";
 
 @connect(state => ({
@@ -42,6 +43,7 @@ import * as globals from "../../globals";
   undoDisabled: state["@@undoable/past"].length === 0,
   redoDisabled: state["@@undoable/future"].length === 0,
   aboutLink: state.config?.links?.["about-dataset"],
+  shutdownServer: state.config?.["server-shutdown"] ?? false,
   disableDiffexp: state.config?.parameters?.["disable-diffexp"] ?? false,
   diffexpMayBeSlow: state.config?.parameters?.["diffexp-may-be-slow"] ?? false,
   showCentroidLabels: state.centroidLabels.showLabels
@@ -269,6 +271,16 @@ class MenuBar extends React.Component {
     });
   };
 
+  handleShutdownServer = () => {
+    const { dispatch } = this.props;
+    if (window.confirm("Are you sure you want to shutdown the server?")){
+      dispatch({
+        type: "server shutdown started"
+      });
+      dispatch(actions.shutdownServer());
+    };
+  };
+
   renderDiffExp() {
     /* diffexp-related buttons may be disabled */
     const { disableDiffexp, differential, diffexpMayBeSlow } = this.props;
@@ -338,6 +350,7 @@ class MenuBar extends React.Component {
       layoutChoice,
       graphInteractionMode,
       aboutLink,
+      shutdownServer,
       showCentroidLabels
     } = this.props;
     const { pendingClipPercentiles } = this.state;
@@ -515,6 +528,13 @@ class MenuBar extends React.Component {
           undoDisabled={undoDisabled}
           redoDisabled={redoDisabled}
         />
+        {shutdownServer ? (
+          <Shutdown
+          dispatch={dispatch}
+          shutdownServer={shutdownServer}
+          handleShutdownServer={this.handleShutdownServer}
+          />
+        ) : null }
         <InformationMenu
           libraryVersions={libraryVersions}
           aboutLink={aboutLink}

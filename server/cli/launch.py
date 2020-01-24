@@ -213,6 +213,13 @@ def parse_engine_args(
     help="Host IP address. By default cellxgene will use localhost (e.g. 127.0.0.1).",
 )
 @click.option(
+    "--server-shutdown",
+    is_flag=True,
+    default=False,
+    show_default=False,
+    help="Enable user server shutdown.",
+)
+@click.option(
     "--scripts",
     "-s",
     default=[],
@@ -231,6 +238,7 @@ def launch(
     open_browser,
     port,
     host,
+    server_shutdown,
     embedding,
     obs_names,
     var_names,
@@ -394,6 +402,8 @@ def launch(
 
     server.create_app()
     server.app.config.update(SCRIPTS=scripts)
+
+    server.app.config.update(SERVER_SHUTDOWN=server_shutdown)
 
     if not verbose:
         log = logging.getLogger("werkzeug")

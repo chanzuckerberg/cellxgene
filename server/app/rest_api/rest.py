@@ -46,6 +46,7 @@ class ConfigAPI(Resource):
                 "links": {"about-dataset": current_app.config["ABOUT_DATASET"]},
                 "parameters": {**current_app.data.get_config_parameters(uid=cxguid, collection=anno_collection)},
                 "library_versions": {"cellxgene": cellxgene_version, "anndata": anndata_version},
+                "server-shutdown": current_app.config["SERVER_SHUTDOWN"],
             }
         }
 
@@ -195,6 +196,17 @@ class LayoutObsAPI(Resource):
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
+class ShutdownAPI(Resource):
+    def post(self):
+        if current_app.config.get("SERVER_SHUTDOWN"):
+            func = request.environ.get('werkzeug.server.shutdown')
+            if func is None:
+                raise RuntimeError('Not running with the Werkzeug Server')
+            func()
+        else:
+            return make_response("Server shutdown is not enabled", HTTPStatus.FORBIDDEN)
+        return make_response("Server has been shutdown", HTTPStatus.OK)
+
 def get_userid(ss):
     if CXGUID not in ss:
         ss[CXGUID] = uuid4().hex
@@ -230,6 +242,7 @@ def get_api_resources():
     # Initialization routes
     api.add_resource(SchemaAPI, "/schema")
     api.add_resource(ConfigAPI, "/config")
+    api.add_resource(ShutdownAPI, "/shutdown")
     # Data routes
     api.add_resource(AnnotationsObsAPI, "/annotations/obs")
     api.add_resource(AnnotationsVarAPI, "/annotations/var")

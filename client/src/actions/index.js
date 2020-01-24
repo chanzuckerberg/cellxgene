@@ -394,6 +394,42 @@ const saveObsAnnotations = () => async (dispatch, getState) => {
   }
 };
 
+const shutdownServer = () => async (dispatch, getState) => {
+  dispatch({
+    type: "User requested server shutdown"
+  });
+  try {
+    const res = await fetch(
+      `${globals.API.prefix}${globals.API.version}shutdown`,
+      {
+        method: "POST",
+        headers: new Headers({
+          "Content-Type": "application/octet-stream"
+        }),
+        credentials: "include"
+      }
+    );
+    if (res.ok) {
+      dispatch({
+        type: "Shutdown request was successful",
+        message: "Server has been shutdown"
+      });
+    } else {
+      dispatch({
+        type: "Unable to shutdown server",
+        message: `HTTP error ${res.status} - ${res.statusText}`,
+        res
+      });
+    }
+  } catch (error) {
+    dispatch({
+      type: "Unable to shutdown server",
+      message: error.toString(),
+      error
+    });
+  }
+};
+
 export default {
   regraph,
   resetInterface,
@@ -401,5 +437,6 @@ export default {
   requestDifferentialExpression,
   requestUserDefinedGene,
   doInitialDataLoad,
-  saveObsAnnotations
+  saveObsAnnotations,
+  shutdownServer
 };
