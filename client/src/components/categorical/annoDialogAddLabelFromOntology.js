@@ -116,7 +116,6 @@ class Category extends React.Component {
           ontologySelect={
             <OntologySelect
               handleChooseOntologyTermFromDropdown={term => {
-                console.log("handleChooseOntologyTermFromDropdown", term);
                 this.handleChoice(term);
               }}
               categoryToDuplicate={newLabelText}
