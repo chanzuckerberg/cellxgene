@@ -26,6 +26,7 @@ class AnnoDialog extends React.Component {
       errorMessage,
       validationError,
       annoSelect,
+      ontologySelect,
       annoInput,
       handleCancel,
       handleSubmit,
@@ -56,6 +57,7 @@ class AnnoDialog extends React.Component {
               </p>
             </div>
             {annoSelect || null}
+            {ontologySelect || null}
           </div>
           <div className={Classes.DIALOG_FOOTER}>
             <div className={Classes.DIALOG_FOOTER_ACTIONS}>
