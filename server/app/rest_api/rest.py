@@ -207,6 +207,7 @@ class ShutdownAPI(Resource):
             return make_response("Server shutdown is not enabled", HTTPStatus.FORBIDDEN)
         return make_response("Server has been shutdown", HTTPStatus.OK)
 
+
 def get_userid(ss):
     if CXGUID not in ss:
         ss[CXGUID] = uuid4().hex
