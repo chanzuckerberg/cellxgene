@@ -11,20 +11,10 @@ Sort order for methods
 
 
 class CXGDriver(metaclass=ABCMeta):
-    def __init__(self, data_locator=None, args={}):
-        self.config = self._get_default_config()
-        self.config.update(args)
-        if data_locator:
-            self._load_data(data_locator)
-            self.data_locator = data_locator
-        else:
-            self.data = None
 
+    @abstractmethod
     def update(self, data_locator=None, args={}):
-        self.config.update(args)
-        if data_locator:
-            self._load_data(data_locator)
-            self.data_locator = data_locator
+        pass
 
     @staticmethod
     def _get_default_config():
@@ -64,10 +54,6 @@ class CXGDriver(metaclass=ABCMeta):
         """
         Return current schema
         """
-        pass
-
-    @abstractmethod
-    def _load_data(self, data_locator):
         pass
 
     @abstractmethod

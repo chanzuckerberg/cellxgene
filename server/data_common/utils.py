@@ -4,6 +4,7 @@ from flask import json
 from numpy import float32, integer
 
 from server.common.errors import DriverError
+from enum import Enum
 
 
 class Float32JSONEncoder(json.JSONEncoder):
@@ -42,3 +43,48 @@ def requires_data(func):
         return func(self, *args, **kwargs)
 
     return wrapped_function
+
+
+class MatrixDataType(Enum):
+    H5AD = "h5ad"
+    TILEDB = "tiledb"
+    UNKNOWN = "unknown"
+
+
+class MatrixDataLoader(object):
+
+    def __init__(self, location):
+        self.location = location
+        self.etype = self.matrix_data_type()
+        self.matrix_type = None
+        if self.etype == MatrixDataType.H5AD:
+            from server.data_scanpy.scanpy_engine import ScanpyEngine
+            self.matrix_type = ScanpyEngine
+        elif self.etype == MatrixDataType.TILEDB:
+            from server.data_tiledb.tiledb_engine import TileDbEngine
+            self.matrix_type = TileDbEngine
+
+    def matrix_data_type(self):
+        if self.location.endswith(".h5ad"):
+            return MatrixDataType.H5AD
+        elif ".cxg" in self.location or ".tdb" in self.location:
+            return MatrixDataType.TILEDB
+        elif self.location.startswith("s3://"):
+            return MatrixDataType.TILEDB
+        else:
+            return MatrixDataType.UNKNOWN
+
+    def pre_checks(self):
+        if self.etype == MatrixDataType.UNKNOWN:
+            raise RuntimeError(f"{self.location} does not have a recognized type: .h5ad or .tdb/.cxg")
+        self.matrix_type.pre_check(self.location)
+
+    def file_size(self):
+        return self.matrix_type.file_size(self.location)
+
+    def open(self, args):
+        try:
+            # create and return an object to the matrix_type
+            return self.matrix_type.open(self.location, args)
+        except Exception as e:
+            raise RuntimeError(str(e))

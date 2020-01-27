@@ -8,6 +8,7 @@ import base64
 from server import __version__ as cellxgene_version
 import threading
 from server.common.errors import AnnotationsError
+from server.common.data_locator import DataLocator
 
 
 class AnnotationsLocalFile(object):
@@ -16,7 +17,7 @@ class AnnotationsLocalFile(object):
     CXG_ANNO_COLLECTION = "cxg_anno_collection"
 
     def __init__(self, data_locator, output_dir, output_file):
-        self.data_locator = data_locator
+        self.data = data_locator
         self.output_dir = output_dir
         self.output_file = output_file
         # lock used to protect label file write ops
@@ -53,12 +54,16 @@ class AnnotationsLocalFile(object):
         # update our internal state and save it.  Multi-threading often enabled,
         # so treat this as a critical section.
         with self.label_lock:
-            lastmod = self.data_locator.lastmodtime()
+            try:
+                data_locator = DataLocator(self.data)
+                lastmod = data_locator.lastmodtime()
+            except RuntimeError:
+                lastmod = None
             lastmodstr = "'unknown'" if lastmod is None else lastmod.isoformat(timespec="seconds")
             header = (
                 f"# Annotations generated on {datetime.now().isoformat(timespec='seconds')} "
                 f"using cellxgene version {cellxgene_version}\n"
-                f"# Input data file was {self.data_locator.uri_or_path}, "
+                f"# Input data file was {self.data}, "
                 f"which was last modified on {lastmodstr}\n"
             )
 

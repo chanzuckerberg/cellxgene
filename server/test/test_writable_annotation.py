@@ -26,9 +26,10 @@ class WritableAnnotationTest(unittest.TestCase):
             "var_names": None,
             "diffexp_lfc_cutoff": 0.01,
         }
-        data_locator = DataLocator("../example-dataset/pbmc3k.h5ad")
+        fname = "../example-dataset/pbmc3k.h5ad"
+        data_locator = DataLocator(fname)
         self.data = ScanpyEngine(data_locator, args)
-        self.annotations = AnnotationsLocalFile(data_locator, None, self.annotations_file)
+        self.annotations = AnnotationsLocalFile(fname, None, self.annotations_file)
 
     def tearDown(self):
         shutil.rmtree(self.tmpDir)

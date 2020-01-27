@@ -6,7 +6,7 @@ from pandas.core.dtypes.dtypes import CategoricalDtype
 import anndata
 from scipy import sparse
 
-from server.data_common.driver.driver import CXGDriver
+from server.data_common.driver import CXGDriver
 from server.common.constants import Axis, DEFAULT_TOP_N, MAX_LAYOUTS
 from server.common.errors import (
     FilterError,
@@ -20,18 +20,45 @@ from server.data_common.fbs.matrix import encode_matrix_fbs
 import server.data_scanpy.matrix_proxy  # noqa: F401
 
 from server.data_common.matrix_proxy import MatrixProxy
+from server.common.data_locator import DataLocator
 
 
 class ScanpyEngine(CXGDriver):
     def __init__(self, data_locator=None, args={}):
-        super().__init__(data_locator, args)
-        if self.data:
-            self._validate_and_initialize()
+        self.data = None
+        self.data_locator = None
+        self.config = self._get_default_config()
+        self.update(data_locator, args)
 
     def update(self, data_locator=None, args={}):
-        super().__init__(data_locator, args)
-        if self.data:
+        self.config.update(args)
+        if data_locator:
+            self.data_locator = data_locator
+            self._load_data(data_locator)
             self._validate_and_initialize()
+
+    @staticmethod
+    def pre_check(location):
+        data_locator = DataLocator(location)
+        if data_locator.islocal():
+            # if data locator is local, apply file system conventions and other "cheap"
+            # validation checks.  If a URI, defer until we actually fetch the data and
+            # try to read it.  Many of these tests don't make sense for URIs (eg, extension-
+            # based typing).
+            if not data_locator.exists():
+                raise RuntimeError(f"{location} does not exist")
+            if not data_locator.isfile():
+                raise RuntimeError(f"{location} is not a file")
+
+    @staticmethod
+    def file_size(location):
+        data_locator = DataLocator(location)
+        return data_locator.size() if data_locator.islocal() else 0
+
+    @staticmethod
+    def open(location, args):
+        data_locator = DataLocator(location)
+        return ScanpyEngine(data_locator, args)
 
     @staticmethod
     def _get_default_config():

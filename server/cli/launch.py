@@ -15,6 +15,7 @@ from server.common.errors import ScanpyFileError
 from server.data_common.utils import custom_format_warning
 from server.common.utils import find_available_port, is_port_available, sort_options
 from server.common.data_locator import DataLocator
+from server.data_common.utils import MatrixDataLoader
 from server.common.annotations import AnnotationsLocalFile
 
 # anything bigger than this will generate a special message
@@ -219,28 +220,15 @@ def launch(
         "backed": backed,
         "disable_diffexp": disable_diffexp,
     }
-
-    try:
-        data_locator = DataLocator(data)
-    except RuntimeError as re:
-        raise click.ClickException(f"Unable to access data at {data}.  {str(re)}")
-
     # Startup message
     click.echo("[cellxgene] Starting the CLI...")
 
-    # Argument checking
-    if data_locator.islocal():
-        # if data locator is local, apply file system conventions and other "cheap"
-        # validation checks.  If a URI, defer until we actually fetch the data and
-        # try to read it.  Many of these tests don't make sense for URIs (eg, extension-
-        # based typing).
-        if not data_locator.exists():
-            raise click.FileError(data, hint="file does not exist")
-        if not data_locator.isfile():
-            raise click.FileError(data, hint="data is not a file")
-        name, extension = splitext(data)
-        if extension != ".h5ad":
-            raise click.FileError(basename(data), hint="file type must be .h5ad")
+    matrix_data_loader = MatrixDataLoader(data)
+
+    try:
+        matrix_data_loader.pre_checks()
+    except RuntimeError as e:
+        raise click.ClickException(str(e))
 
     if debug:
         verbose = True
@@ -322,25 +310,21 @@ def launch(
     # Setup app
     cellxgene_url = f"http://{host}:{port}"
 
-    # open the data
-    file_size = data_locator.size() if data_locator.islocal() else 0
-
-    # if a big file, let the user know it may take a while to load.
+    file_size = matrix_data_loader.file_size()
     if file_size > BIG_FILE_SIZE_THRESHOLD:
         click.echo(f"[cellxgene] Loading data from {basename(data)}, this may take a while...")
     else:
         click.echo(f"[cellxgene] Loading data from {basename(data)}.")
 
     try:
-        from server.data_scanpy.scanpy_engine import ScanpyEngine
-        cxg_data = ScanpyEngine(data_locator, e_args)
-    except ScanpyFileError as e:
-        raise click.ClickException(f"{e}")
+        cxg_data = matrix_data_loader.open(e_args)
+    except RuntimeError as e:
+        raise click.ClickException(str(e))
 
     # create an annotations object.  Only AnnotationsLocalFile is used (for now)
     annotations = None
     if experimental_annotations:
-        annotations = AnnotationsLocalFile(data_locator,
+        annotations = AnnotationsLocalFile(data,
                                            experimental_annotations_output_dir,
                                            experimental_annotations_file)
 
