@@ -11,10 +11,8 @@ from urllib.parse import urlparse
 import click
 
 from server.app_single.app import Server
-from server.common.errors import ScanpyFileError
 from server.data_common.utils import custom_format_warning
 from server.common.utils import find_available_port, is_port_available, sort_options
-from server.common.data_locator import DataLocator
 from server.data_common.utils import MatrixDataLoader
 from server.common.annotations import AnnotationsLocalFile
 

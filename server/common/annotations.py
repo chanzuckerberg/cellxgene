@@ -16,8 +16,8 @@ class AnnotationsLocalFile(object):
     CXGUID = "cxguid"
     CXG_ANNO_COLLECTION = "cxg_anno_collection"
 
-    def __init__(self, data_locator, output_dir, output_file):
-        self.data = data_locator
+    def __init__(self, data, output_dir, output_file):
+        self.data = data
         self.output_dir = output_dir
         self.output_file = output_file
         # lock used to protect label file write ops
@@ -89,7 +89,7 @@ class AnnotationsLocalFile(object):
         Used to create safe annotations output file names.
         """
         uid = self._get_userid(session)
-        id = (uid + self.data_locator.abspath()).encode()
+        id = (uid + self.data).encode()
         idhash = base64.b32encode(blake2b(id, digest_size=5).digest()).decode("utf-8")
         return idhash
 
@@ -116,7 +116,7 @@ class AnnotationsLocalFile(object):
             return None
 
         idhash = self._get_userdata_idhash(session)
-        return os.path.join(self.get_output_dir(), f"{collection}-{idhash}.csv")
+        return os.path.join(self._get_output_dir(), f"{collection}-{idhash}.csv")
 
     def _backup(self, fname, max_backups=9):
         """

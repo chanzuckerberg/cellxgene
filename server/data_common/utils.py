@@ -31,7 +31,7 @@ def custom_format_warning(msg, *args, **kwargs):
     return f"[cellxgene] Warning: {msg} \n"
 
 
-def jsonify_scanpy(data):
+def jsonify_numpy(data):
     return json.dumps(data, cls=Float32JSONEncoder, allow_nan=False)
 
 

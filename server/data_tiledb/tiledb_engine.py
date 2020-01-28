@@ -3,10 +3,10 @@ import json
 from server.data_common.driver import CXGDriver
 from urllib.parse import urlsplit, urljoin
 import tiledb
-from server_timing import Timing as ServerTiming
 import numpy as np
 import pandas as pd
 from server.data_common.fbs.matrix import encode_matrix_fbs
+from server_timing import Timing as ServerTiming
 
 
 class TileDbEngine(CXGDriver):
@@ -53,18 +53,20 @@ class TileDbEngine(CXGDriver):
             "diffexp_may_be_slow": False,
         }
 
-    @staticmethod
-    def join(base, *urls):
+    def get_path(self, *urls):
         """
         this is like urllib.parse.urljoin, except it works around the scheme-specific
         cleverness in the aforementioned code, ignores anything in the url except the path,
         and accepts more than one url.
         """
-        btpl = urlsplit(base)
+        btpl = urlsplit(self.url)
         path = btpl.path
         for url in urls:
             utpl = urlsplit(url)
-            path = urljoin(path, utpl.path)
+            if btpl.scheme == "":
+                path = os.path.join(path, utpl.path)
+            else:
+                path = urljoin(path, utpl.path)
         return btpl._replace(path=path).geturl()
 
     def lsuri(self, uri):
@@ -98,18 +100,19 @@ class TileDbEngine(CXGDriver):
         """
         if not tiledb.object_type(self.url) == "group":
             return False
-        if not tiledb.object_type(self.obs) == "array":
+        if not tiledb.object_type(self.get_path("obs")) == "array":
             return False
-        if not tiledb.object_type(self.var) == "array":
+        if not tiledb.object_type(self.get_path("var")) == "array":
             return False
-        if not tiledb.object_type(self.X) == "array":
+        if not tiledb.object_type(self.get_path("X")) == "array":
             return False
-        if not tiledb.object_type(self.emb) == "group":
+        if not tiledb.object_type(self.get_path("emb")) == "group":
             return False
         return True
 
     def _validate_and_initialize(self):
-        pass
+        if not self.isvalid():
+            raise RuntimeError(f"invalid tiledb dataset {self.url}")
 
     def get_config_parameters(self, uid=None):
         # TODO
@@ -120,24 +123,66 @@ class TileDbEngine(CXGDriver):
         }
         return params
 
-    @property
-    def obs(self):
-        return self.join(self.url, 'obs')
+    def get_array(self, name, items=None):
+        p = self.get_path(name)
+        if items is None:
+            items = slice(None)
+        with tiledb.DenseArray(p, mode="r", ctx=self.tiledb_ctx) as A:
+            data = A[items]
+        return data
 
-    @property
-    def var(self):
-        return self.join(self.url, 'var')
+    def get_embedding_array(self, ename, items=None):
+        return self.get_array(f"emb/{ename}", items)
 
-    @property
-    def X(self):
-        return self.join(self.url, 'X')
+    def get_X_array(self, obs_items=None, var_items=None):
+        p = self.get_path("X")
+        if obs_items is None:
+            obs_items = slice(None)
+        if var_items is None:
+            var_items = slice(None)
+        # FIXME, the is a problem retrieving index sets from tiledb
+        with tiledb.DenseArray(p, mode="r", ctx=self.tiledb_ctx) as X:
+            tdata = X[:, :]
+            data = tdata[obs_items, var_items]
+        return data
 
-    @property
-    def emb(self):
-        return self.join(self.url, 'emb')
+    def get_X_array_shape(self):
+        p = self.get_path("X")
+        with tiledb.DenseArray(p, mode="r", ctx=self.tiledb_ctx) as A:
+            return A.shape
 
-    def embedding(self, ename):
-        return self.join(self.url, 'emb/', ename)
+    def get_X_array_dtype(self):
+        p = self.get_path("X")
+        with tiledb.DenseArray(p, mode="r", ctx=self.tiledb_ctx) as A:
+            return A.dtype
+
+    def query_var_array(self, term_name):
+        p = self.get_path("var")
+        try:
+            with tiledb.DenseArray(p, mode='r', ctx=self.tiledb_ctx) as A:
+                anno_data = A.query(attrs=[term_name])[:][term_name]
+        except tiledb.libtiledb.TileDBError as e:
+            raise AttributeError(str(e))
+        return anno_data
+
+    def query_obs_array(self, term_name):
+        p = self.get_path("obs")
+        try:
+            with tiledb.DenseArray(p, mode='r', ctx=self.tiledb_ctx) as A:
+                anno_data = A.query(attrs=[term_name])[:][term_name]
+        except tiledb.libtiledb.TileDBError as e:
+            raise AttributeError(str(e))
+        return anno_data
+
+    # function to get the embedding
+    # this function to iterate through embeddings.
+    def get_embedding_names(self):
+        with ServerTiming.time(f'layout.lsuri'):
+            pemb = self.get_path("emb")
+            embeddings = [
+                os.path.basename(p) for (p, t) in self.lsuri(pemb) if t == 'array'
+            ]
+        return embeddings
 
     @staticmethod
     def _get_col_type(attr, schema_hints={}):
@@ -164,17 +209,20 @@ class TileDbEngine(CXGDriver):
             schema['categories'] = schema_hints['categories']
         return schema
 
-    def get_schema(self, uid=None, collection=None):
-        with tiledb.Array(self.X, ctx=self.tiledb_ctx) as X:
-            dataframe = {
-                'nObs': X.shape[0],
-                'nVar': X.shape[1],
-                'type': str(X.dtype)
-            }
+    def get_schema(self):
+        shape = self.get_X_array_shape()
+        dtype = self.get_X_array_dtype()
+
+        dataframe = {
+            'nObs': shape[0],
+            'nVar': shape[1],
+            'type': dtype.name
+        }
 
         annotations = {}
         for ax in ('obs', 'var'):
-            with tiledb.Array(getattr(self, ax), ctx=self.tiledb_ctx) as A:
+            p = self.get_path(ax)
+            with tiledb.Array(p, ctx=self.tiledb_ctx) as A:
                 schema_hints = json.loads(A.meta['cxg_schema']) if 'cxg_schema' in A.meta else {}
                 if type(schema_hints) is not dict:
                     raise TypeError(f'Array schema was malformed.')
@@ -192,11 +240,9 @@ class TileDbEngine(CXGDriver):
                     annotations[ax].update({'index': schema_hints['index']})
 
         obs_layout = []
-        embeddings = [
-            os.path.basename(p) for (p, t) in self.lsuri(self.emb) if t == 'array'
-        ]
+        embeddings = self.get_embedding_names()
         for ename in embeddings:
-            with tiledb.DenseArray(self.embedding(ename), ctx=self.tiledb_ctx) as A:
+            with tiledb.DenseArray(self.get_path(f"emb/{ename}"), ctx=self.tiledb_ctx) as A:
                 obs_layout.append({
                     'name': ename,
                     'type': A.dtype.name,
@@ -210,85 +256,21 @@ class TileDbEngine(CXGDriver):
         }
         return schema
 
-    def layout_to_fbs_matrix(self):
-        """
-        return all embeddings as a flatbuffer, using the cellxgene matrix fbs encoding.
-
-        * returns only first two dimensions, with name {ename}_0 and {ename}_1,
-          where {ename} is the embedding name.
-        * client assumes each will be individually centered & scaled (isotropically)
-          to a [0, 1] range.
-
-        """
-        with ServerTiming.time(f'layout.lsuri'):
-            embeddings = [
-                os.path.basename(p) for (p, t) in self.lsuri(self.emb) if t == 'array'
-            ]
-
-        layout_data = []
-        with ServerTiming.time(f'layout.query'):
-            for ename in embeddings:
-                with tiledb.DenseArray(self.embedding(ename), mode='r', ctx=self.tiledb_ctx) as E:
-                    embedding = E[:, 0:2]
-
-                    # scale isotropically
-                    min = embedding.min(axis=0)
-                    max = embedding.max(axis=0)
-                    scale = np.amax(max - min)
-                    normalized_layout = (embedding - min) / scale
-
-                    # translate to center on both axis
-                    translate = 0.5 - ((max - min) / scale / 2)
-                    normalized_layout = normalized_layout + translate
-
-                    normalized_layout = normalized_layout.astype(dtype=np.float32)
-                    layout_data.append(pd.DataFrame(normalized_layout, columns=[f"{ename}_0", f"{ename}_1"]))
-
-        with ServerTiming.time(f'layout.encode'):
-            if layout_data:
-                df = pd.concat(layout_data, axis=1, copy=False)
-            else:
-                df = pd.DataFrame()
-            fbs = encode_matrix_fbs(df, col_idx=df.columns, row_idx=None)
-
-        return fbs
-
     def annotation_to_fbs_matrix(self, axis, fields=None, labels=None):
         with ServerTiming.time(f'annotations.{axis}.query'):
-            with tiledb.DenseArray(getattr(self, str(axis)), mode='r', ctx=self.tiledb_ctx) as A:
+            p = self.get_path(str(axis))
+            with tiledb.DenseArray(p, mode='r', ctx=self.tiledb_ctx) as A:
                 # FIXME handle labels
                 if not fields:
                     data = A[:]
                 else:
-                    data = A.query(attrs=fields)[:]
-
+                    try:
+                        data = A.query(attrs=fields)[:]
+                    except tiledb.libtiledb.TileDBError:
+                        raise KeyError("bad field {fields}")
                 df = pd.DataFrame.from_dict(data)
 
         with ServerTiming.time(f'annotations.{axis}.encode'):
             fbs = encode_matrix_fbs(df, col_idx=df.columns)
 
         return fbs
-
-    def data_frame_to_fbs_matrix(self, filter, axis):
-        if axis != 'var':
-            # not yet implemented in the FBS encoder.
-            raise ValueError('Obs dimension slicing not yet supported')
-
-        with ServerTiming.time(f'data.{axis}.query'):
-            with tiledb.DenseArray(self.X, mode='r', ctx=self.tiledb_ctx) as X:
-                shape = X.shape
-                (obs_selector, var_selector) = self.filter_parse(filter, shape)
-
-                # multi_index only accepts lists or slices
-                oidx = obs_selector.tolist() if type(obs_selector) is np.ndarray else obs_selector
-                vidx = var_selector.tolist() if type(var_selector) is np.ndarray else var_selector
-                data = X.multi_index[oidx, vidx]['']
-
-        with ServerTiming.time(f'data.{axis}.encode'):
-            fbs = encode_matrix_fbs(data, col_idx=var_selector, row_idx=None)
-
-        return fbs
-
-    def diffexp_topN(self, *args):
-        # TODO
-        raise RuntimeError("Not implemented yet")

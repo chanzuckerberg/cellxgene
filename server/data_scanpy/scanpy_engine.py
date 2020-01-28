@@ -1,25 +1,20 @@
 import warnings
 
 import numpy as np
-import pandas
 from pandas.core.dtypes.dtypes import CategoricalDtype
 import anndata
 from scipy import sparse
 
 from server.data_common.driver import CXGDriver
-from server.common.constants import Axis, DEFAULT_TOP_N, MAX_LAYOUTS
+from server.common.constants import Axis, MAX_LAYOUTS
 from server.common.errors import (
-    FilterError,
-    JSONEncodingValueError,
     PrepareError,
     ScanpyFileError,
 )
-from server.data_common.utils import jsonify_scanpy, requires_data
-from server.data_scanpy.diffexp import diffexp_ttest
+from server.data_common.utils import requires_data
 from server.data_common.fbs.matrix import encode_matrix_fbs
 import server.data_scanpy.matrix_proxy  # noqa: F401
 
-from server.data_common.matrix_proxy import MatrixProxy
 from server.common.data_locator import DataLocator
 
 
@@ -360,61 +355,6 @@ class ScanpyEngine(CXGDriver):
         if labels.shape[0] != self.data.obs.shape[0]:
             raise ValueError("Labels file must have same number of rows as h5ad file.")
 
-    @staticmethod
-    def _annotation_filter_to_mask(filter, d_axis, count):
-        mask = np.ones((count,), dtype=bool)
-        for v in filter:
-            if d_axis[v["name"]].dtype.name in ["boolean", "category", "object"]:
-                key_idx = np.in1d(getattr(d_axis, v["name"]), v["values"])
-                mask = np.logical_and(mask, key_idx)
-            else:
-                min_ = v.get("min", None)
-                max_ = v.get("max", None)
-                if min_ is not None:
-                    key_idx = (getattr(d_axis, v["name"]) >= min_).ravel()
-                    mask = np.logical_and(mask, key_idx)
-                if max_ is not None:
-                    key_idx = (getattr(d_axis, v["name"]) <= max_).ravel()
-                    mask = np.logical_and(mask, key_idx)
-        return mask
-
-    @staticmethod
-    def _index_filter_to_mask(filter, count):
-        mask = np.zeros((count,), dtype=bool)
-        for i in filter:
-            if type(i) == list:
-                mask[i[0] : i[1]] = True
-            else:
-                mask[i] = True
-        return mask
-
-    @staticmethod
-    def _axis_filter_to_mask(filter, d_axis, count):
-        mask = np.ones((count,), dtype=bool)
-        if "index" in filter:
-            mask = np.logical_and(mask, ScanpyEngine._index_filter_to_mask(filter["index"], count))
-        if "annotation_value" in filter:
-            mask = np.logical_and(
-                mask, ScanpyEngine._annotation_filter_to_mask(filter["annotation_value"], d_axis, count),
-            )
-        return mask
-
-    @requires_data
-    def _filter_to_mask(self, filter, use_slices=True):
-        if use_slices:
-            obs_selector = slice(0, self.data.n_obs)
-            var_selector = slice(0, self.data.n_vars)
-        else:
-            obs_selector = None
-            var_selector = None
-
-        if filter is not None:
-            if Axis.OBS in filter:
-                obs_selector = self._axis_filter_to_mask(filter["obs"], self.data.obs, self.data.n_obs)
-            if Axis.VAR in filter:
-                var_selector = self._axis_filter_to_mask(filter["var"], self.data.var, self.data.n_vars)
-        return obs_selector, var_selector
-
     @requires_data
     def annotation_to_fbs_matrix(self, axis, fields=None, labels=None):
         if axis == Axis.OBS:
@@ -429,84 +369,28 @@ class ScanpyEngine(CXGDriver):
             df = df[fields]
         return encode_matrix_fbs(df, col_idx=df.columns)
 
-    @requires_data
-    def data_frame_to_fbs_matrix(self, filter, axis):
-        """
-        Retrieves data 'X' and returns in a flatbuffer Matrix.
-        :param filter: filter: dictionary with filter params
-        :param axis: string obs or var
-        :return: flatbuffer Matrix
+    def get_embedding_names(self):
+        return self.config["layout"]
 
-        Caveats:
-        * currently only supports access on VAR axis
-        * currently only supports filtering on VAR axis
-        """
-        if axis != Axis.VAR:
-            raise ValueError("Only VAR dimension access is supported")
-        try:
-            obs_selector, var_selector = self._filter_to_mask(filter, use_slices=False)
-        except (KeyError, IndexError, TypeError) as e:
-            raise FilterError(f"Error parsing filter: {e}") from e
-        if obs_selector is not None:
-            raise FilterError("filtering on obs unsupported")
+    def get_embedding_array(self, ename, items=None):
+        if items is None:
+            items = slice(None)
+        full_embedding = self.data.obsm[f"X_{ename}"]
+        return full_embedding[items]
 
-        # Currently only handles VAR dimension
-        X = MatrixProxy.create(self.data.X if var_selector is None else self.data.X[:, var_selector])
-        return encode_matrix_fbs(X, col_idx=np.nonzero(var_selector)[0], row_idx=None)
+    def get_X_array(self, obs_items=None, var_items=None):
+        if obs_items is None:
+            obs_items = slice(None)
+        if var_items is None:
+            var_items = slice(None)
+        X = self.data.X[obs_items, var_items]
+        return X
 
-    @requires_data
-    def diffexp_topN(self, obsFilterA, obsFilterB, top_n=None, interactive_limit=None):
-        if Axis.VAR in obsFilterA or Axis.VAR in obsFilterB:
-            raise FilterError("Observation filters may not contain vaiable conditions")
-        try:
-            obs_mask_A = self._axis_filter_to_mask(obsFilterA["obs"], self.data.obs, self.data.n_obs)
-            obs_mask_B = self._axis_filter_to_mask(obsFilterB["obs"], self.data.obs, self.data.n_obs)
-        except (KeyError, IndexError) as e:
-            raise FilterError(f"Error parsing filter: {e}") from e
-        if top_n is None:
-            top_n = DEFAULT_TOP_N
-        result = diffexp_ttest(self.data, obs_mask_A, obs_mask_B, top_n, self.config["diffexp_lfc_cutoff"])
-        try:
-            return jsonify_scanpy(result)
-        except ValueError:
-            raise JSONEncodingValueError("Error encoding differential expression to JSON")
+    def get_X_array_shape(self):
+        return self.data.shape
 
-    @requires_data
-    def layout_to_fbs_matrix(self):
-        """
-        Return the default 2-D layout for cells as a FBS Matrix.
+    def query_var_array(self, term_name):
+        return getattr(self.data.var, term_name)
 
-        Caveats:
-        * does not support filtering
-        * only returns Matrix in columnar layout
-
-        All embeddings must be individually centered & scaled (isotropically)
-        to a [0, 1] range.
-        """
-        try:
-            layout_data = []
-            for layout in self.config["layout"]:
-                full_embedding = self.data.obsm[f"X_{layout}"]
-                embedding = full_embedding[:, :2]
-
-                # scale isotropically
-                min = embedding.min(axis=0)
-                max = embedding.max(axis=0)
-                scale = np.amax(max - min)
-                normalized_layout = (embedding - min) / scale
-
-                # translate to center on both axis
-                translate = 0.5 - ((max - min) / scale / 2)
-                normalized_layout = normalized_layout + translate
-
-                normalized_layout = normalized_layout.astype(dtype=np.float32)
-                layout_data.append(pandas.DataFrame(normalized_layout, columns=[f"{layout}_0", f"{layout}_1"]))
-
-        except ValueError as e:
-            raise PrepareError(
-                f"Layout has not been calculated using {self.config['layout']}, "
-                f"please prepare your datafile and relaunch cellxgene"
-            ) from e
-
-        df = pandas.concat(layout_data, axis=1, copy=False)
-        return encode_matrix_fbs(df, col_idx=df.columns, row_idx=None)
+    def query_obs_array(self, term_name):
+        return getattr(self.data.obs, term_name)
