@@ -73,6 +73,8 @@ class MatrixProxy(_ArrayProxyBase):
         "numpy.ndarray": True,
         "scipy.sparse.csc.csc_matrix": True,
         "scipy.sparse.csr.csr_matrix": True,
+        "anndata._core.sparse_dataset.backed_csr_matrix": "MatrixProxy_anndata_h5py",
+        "anndata._core.sparse_dataset.backed_csc_matrix": "MatrixProxy_anndata_h5py",
     }
     proxy_registry = None
     last_cache_token = None
