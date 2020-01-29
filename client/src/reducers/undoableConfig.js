@@ -170,6 +170,8 @@ const actionFilter = debug => (state, action, prevFilterState) => {
   }
   if (
     debounceOnActions.has(actionType) &&
+    prevFilterState !== undefined &&
+    prevFilterState.prevAction !== undefined &&
     shallowObjectEq(action, prevFilterState.prevAction)
   ) {
     return { [actionKey]: "skip", [stateKey]: filterState };

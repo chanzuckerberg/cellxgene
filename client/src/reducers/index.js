@@ -18,6 +18,7 @@ import controls from "./controls";
 import resetCache from "./resetCache";
 import annotations from "./annotations";
 import autosave from "./autosave";
+import ontology from "./ontology";
 import centroidLabels from "./centroidLabels";
 import pointDialation from "./pointDilation";
 
@@ -28,6 +29,7 @@ const Reducer = undoable(
     ["config", config],
     ["universe", universe],
     ["world", world],
+    ["ontology", ontology],
     ["annotations", annotations],
     ["layoutChoice", layoutChoice],
     ["categoricalSelection", categoricalSelection],
@@ -45,15 +47,15 @@ const Reducer = undoable(
   ]),
   [
     "universe",
-    "categoricalSelection",
     "world",
+    "categoricalSelection",
     "continuousSelection",
     "graphSelection",
     "crossfilter",
-    "layoutChoice",
+    "colors",
     "controls",
     "differential",
-    "colors",
+    "layoutChoice",
     "centroidLabels",
     "annotations"
   ],

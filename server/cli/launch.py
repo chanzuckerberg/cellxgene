@@ -15,6 +15,7 @@ from server.data_common.utils import custom_format_warning
 from server.common.utils import find_available_port, is_port_available, sort_options
 from server.data_common.utils import MatrixDataLoader
 from server.common.annotations import AnnotationsLocalFile
+from server.common.errors import OntologyLoadFailure
 
 # anything bigger than this will generate a special message
 BIG_FILE_SIZE_THRESHOLD = 100 * 2 ** 20  # 100MB
@@ -94,6 +95,18 @@ def common_args(func):
         help="Directory of where to save output annotations; filename will be specified in the application. "
         "Incompatible with --annotations-input-file.",
     )
+    @click.option(
+        "--experimental-annotations-ontology",
+        is_flag=True,
+        default=False,
+        show_default=True,
+        help="When creating annotations, optionally autocomplete names from ontology terms.",)
+    @click.option(
+        "--experimental-annotations-ontology-obo",
+        default=None,
+        show_default=True,
+        metavar="<path or url>",
+        help="Location of OBO file defining cell annotatoin autosuggest terms.",)
     @click.option(
         "--backed",
         "-b",
@@ -194,6 +207,8 @@ def launch(
     experimental_annotations_output_dir,
     backed,
     disable_diffexp,
+    experimental_annotations_ontology,
+    experimental_annotations_ontology_obo
 ):
     """Launch the cellxgene data viewer.
     This web app lets you explore single-cell expression data.
@@ -218,6 +233,7 @@ def launch(
         "backed": backed,
         "disable_diffexp": disable_diffexp,
     }
+
     # Startup message
     click.echo("[cellxgene] Starting the CLI...")
 
@@ -271,6 +287,10 @@ def launch(
             click.echo("Warning: --experimental-annotations-file ignored as --annotations not enabled.")
         if experimental_annotations_output_dir is not None:
             click.echo("Warning: --experimental-annotations-output-dir ignored as --annotations not enabled.")
+        if experimental_annotations_ontology:
+            click.echo("Warning: --experimental-annotations-ontology ignored as --annotations not enabled.")
+        if experimental_annotations_ontology_obo is not None:
+            click.echo("Warning: --experimental-annotations-ontology-obo ignored as --annotations not enabled.")
     else:
         if experimental_annotations_file is not None and experimental_annotations_output_dir is not None:
             raise click.ClickException(
@@ -321,6 +341,7 @@ def launch(
 
     # create an annotations object.  Only AnnotationsLocalFile is used (for now)
     annotations = None
+
     if experimental_annotations:
         annotations = AnnotationsLocalFile(data,
                                            experimental_annotations_output_dir,
@@ -331,6 +352,12 @@ def launch(
 
         if experimental_annotations_file:
             cxg_data.validate_label_data(annotations.read_labels())
+
+        if experimental_annotations_ontology or bool(experimental_annotations_ontology_obo):
+            try:
+                annotations.load_ontology(experimental_annotations_ontology_obo)
+            except OntologyLoadFailure as e:
+                raise click.ClickException("Unable to load ontology terms\n" + str(e))
 
     # create the server
     server = Server(cxg_data, annotations, title=title, about=about)

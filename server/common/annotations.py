@@ -7,11 +7,47 @@ from hashlib import blake2b
 import base64
 from server import __version__ as cellxgene_version
 import threading
-from server.common.errors import AnnotationsError
+from server.common.errors import AnnotationsError, OntologyLoadFailure
 from server.common.data_locator import DataLocator
+import fsspec
+import fastobo
+import traceback  # use built-in formatter for SyntaxError
 
 
-class AnnotationsLocalFile(object):
+class Annotations(object):
+    """ baseclass for annotations, including ontologies"""
+
+    """ our default ontology is the PURL for the Cell Ontology.
+    See http://www.obofoundry.org/ontology/cl.html """
+    DefaultOnotology = "http://purl.obolibrary.org/obo/cl.obo"
+
+    def __init__(self):
+        self.ontology_data = None
+
+    def load_ontology(self, path):
+        """Load and parse ontologies - currently support OBO files only."""
+        if path is None:
+            path = self.DefaultOnotology
+
+        try:
+            with fsspec.open(path) as f:
+                obo = fastobo.iter(f)
+                terms = filter(lambda stanza: type(stanza) is fastobo.term.TermFrame, obo)
+                names = [tag.name for term in terms for tag in term if type(tag) is fastobo.term.NameClause]
+                self.ontology_data = names
+
+        except FileNotFoundError as e:
+            raise OntologyLoadFailure(f"Unable to find OBO ontology path: {path}") from e
+
+        except SyntaxError as e:
+            msg = ''.join(traceback.format_exception_only(SyntaxError, e))
+            raise OntologyLoadFailure(msg) from e
+
+        except Exception as e:
+            raise OntologyLoadFailure(f"Error loading OBO file {path}") from e
+
+
+class AnnotationsLocalFile(Annotations):
 
     CXGUID = "cxguid"
     CXG_ANNO_COLLECTION = "cxg_anno_collection"
@@ -156,6 +192,10 @@ class AnnotationsLocalFile(object):
     def get_config_params(self, session=None):
         params = {}
         params["annotations"] = True
+
+        if self.ontology_data:
+            params["annotations_cell_ontology_enabled"] = True
+            params["annotations_cell_ontology_terms"] = self.ontology_data
 
         if self.output_file is not None:
             # user has hard-wired the name of the annotation data collection

@@ -31,7 +31,6 @@ const Annotations = (
 ) => {
   switch (action.type) {
     case "configuration load complete": {
-      const DefaultDataCollectionName = null;
       const dataCollectionName =
         action.config.parameters?.["annotations-data-collection-name"] ?? null;
       const dataCollectionNameIsReadOnly =
@@ -62,17 +61,33 @@ const Annotations = (
         isAddingNewLabel: true,
         categoryAddingNewLabel: action.data
       };
+    case "annotation: activate add new ontology label mode":
+      return {
+        ...state,
+        isAddingNewLabelFromOntology: true,
+        categoryAddingNewLabelFromOntology: action.data
+      };
+    case "annotation: disable add new ontology label mode":
+      return {
+        ...state,
+        isAddingNewLabelFromOntology: false,
+        categoryAddingNewLabelFromOntology: null
+      };
+
     case "annotation: disable add new label mode":
       return {
         ...state,
         isAddingNewLabel: false,
         categoryAddingNewLabel: null
       };
+    /* this handles both cases, since at this point it's just a string */
     case "annotation: add new label to category":
       return {
         ...state,
         isAddingNewLabel: false,
-        categoryAddingNewLabel: null
+        categoryAddingNewLabel: null,
+        isAddingNewLabelFromOntology: false,
+        categoryAddingNewLabelFromOntology: null
       };
     case "annotation: activate category edit mode":
       return {

@@ -2,78 +2,67 @@ class FilterError(Exception):
     """
     Raised when filter is malformed
     """
-
-    def __init__(self, message):
-        self.message = message
+    pass
 
 
 class InteractiveError(Exception):
     """
     Raised when computation would exceed interactive time
     """
-
-    def __init__(self, message):
-        self.message = message
+    pass
 
 
 class JSONEncodingValueError(Exception):
     """
     Raised when file loaded into scanpy is misformatted
     """
-
-    def __init__(self, message):
-        self.message = message
+    pass
 
 
 class MimeTypeError(Exception):
     """
     Raised when incompatible MIME type selected
     """
-
-    def __init__(self, message):
-        self.message = message
+    pass
 
 
 class PrepareError(Exception):
     """
     Raised when data is misprepared
     """
-
-    def __init__(self, message):
-        self.message = message
+    pass
 
 
 class ScanpyFileError(Exception):
     """
     Raised when file loaded into scanpy is misformatted
     """
-
-    def __init__(self, message):
-        self.message = message
+    pass
 
 
 class DriverError(Exception):
     """
     Raised when file loaded into scanpy is misformatted
     """
-
-    def __init__(self, message):
-        self.message = message
+    pass
 
 
 class DisabledFeatureError(Exception):
     """
     Raised when an attempt to use a disabled feature occurs
     """
-
-    def __init__(self, message):
-        self.message = message
+    pass
 
 
 class AnnotationsError(Exception):
     """
-    Raised when an attempt to use a the annotations feature fails
+    Raised when an attempt to use the annotations feature fails
     """
+    pass
 
-    def __init__(self, message):
-        self.message = message
+
+class OntologyLoadFailure(Exception):
+    """
+    Raised when reading the ontology file fails
+    """
+    pass

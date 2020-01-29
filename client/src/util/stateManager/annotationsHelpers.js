@@ -183,7 +183,7 @@ export function createWritableAnnotationDimensions(world, crossfilter) {
 	return crossfilter;
 }
 
-const legalCharacters = /^(\w|[ .])+$/;
+const legalCharacters = /^(\w|[ .()-])+$/;
 export function annotationNameIsErroneous(name) {
 	/*
 	Validate the name - return:
@@ -193,10 +193,9 @@ export function annotationNameIsErroneous(name) {
 	Tests:
 	0. must be string, non-null
 	1. no leading or trailing spaces
-	2. only accept alpha, numeric, underscore, period and space
+	2. only accept alpha, numeric, underscore, period, parens, hyphen and space
 	3. no runs of multiple spaces
 	*/
-
 	if (name === "") {
 		return "empty-string";
 	}
