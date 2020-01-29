@@ -38,6 +38,8 @@ class MatrixProxy_anndata_h5py(MatrixProxyView):
             "anndata.h5py.h5sparse.backed_csc_matrix",
             "anndata.h5py.h5sparse.backed_csr_matrix",
             "h5py._hl.dataset.Dataset",
+            "anndata._core.sparse_dataset.backed_csr_matrix",
+            "anndata._core.sparse_dataset.backed_csc_matrix",
         )
 
     @classmethod

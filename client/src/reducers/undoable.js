@@ -85,6 +85,7 @@ const Undoable = (reducer, undoableKeys, options = {}) => {
     );
     const newPast = [...past];
     const newState = newPast.pop();
+    const newStateFilterState = newState[filterStateKey];
     const newFuture = push(future, currentUndoableState);
     const nextState = {
       ...currentState,
@@ -93,6 +94,7 @@ const Undoable = (reducer, undoableKeys, options = {}) => {
       [futureKey]: newFuture,
       [pendingKey]: null
     };
+    nextState[filterStateKey] = newStateFilterState;
     return nextState;
   }
 
