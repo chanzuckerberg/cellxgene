@@ -38,12 +38,12 @@ def sort_options(command):
     return command
 
 
-def get_schema(data, annotations=None, session=None):
+def get_schema(data_engine, annotations=None):
     """helper function to gather the schema from the data source and annotations"""
-    schema = data.get_schema()
+    schema = data_engine.get_schema()
     # add label obs annotations as needed
     if annotations is not None:
-        labels = annotations.read_labels(session)
+        labels = annotations.read_labels()
         if labels is not None and not labels.empty:
             schema = copy.deepcopy(schema)
             for col in labels.columns:
@@ -52,13 +52,13 @@ def get_schema(data, annotations=None, session=None):
                     "writable": True,
                 }
                 # FIXME: data._get_col_type needs to be refactored.
-                col_schema.update(data._get_col_type(labels[col]))
+                col_schema.update(data_engine._get_col_type(labels[col]))
                 schema["annotations"]["obs"]["columns"].append(col_schema)
 
     return schema
 
 
-def annotation_put_fbs(fbs, data, annotations=None, session=None):
+def annotation_put_fbs(fbs, data, annotations=None):
     """helper function to write annotations from fbs"""
     if annotations is None:
         raise DisabledFeatureError("Writable annotations are not enabled")
@@ -69,4 +69,4 @@ def annotation_put_fbs(fbs, data, annotations=None, session=None):
         new_label_df.index = data.original_obs_index
 
     data.validate_label_data(new_label_df)
-    annotations.write_labels(new_label_df, session)
+    annotations.write_labels(new_label_df)

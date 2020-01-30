@@ -12,7 +12,7 @@ from server.common.data_locator import DataLocator
 import fsspec
 import fastobo
 import traceback  # use built-in formatter for SyntaxError
-
+from flask import session
 
 class Annotations(object):
     """ baseclass for annotations, including ontologies"""
@@ -53,6 +53,7 @@ class AnnotationsLocalFile(Annotations):
     CXG_ANNO_COLLECTION = "cxg_anno_collection"
 
     def __init__(self, data, output_dir, output_file):
+        super().__init__()
         self.data = data
         self.output_dir = output_dir
         self.output_file = output_file
@@ -70,23 +71,23 @@ class AnnotationsLocalFile(Annotations):
             return False
         return re.match(r"^[\w\-]+$", name) is not None
 
-    def set_collection(self, name, session):
+    def set_collection(self, name):
         session[self.CXG_ANNO_COLLECTION] = name
         session.permanent = True
 
-    def get_collection(self, session=None):
+    def get_collection(self):
         if session is None:
             return None
         return session.get(self.CXG_ANNO_COLLECTION)
 
-    def read_labels(self, session=None):
-        fname = self._get_filename(session)
+    def read_labels(self):
+        fname = self._get_filename()
         if fname is not None and os.path.exists(fname) and os.path.getsize(fname) > 0:
             return pd.read_csv(fname, dtype="category", index_col=0, header=0, comment="#", keep_default_na=False)
         else:
             return pd.DataFrame()
 
-    def write_labels(self, df, session=None):
+    def write_labels(self, df):
         # update our internal state and save it.  Multi-threading often enabled,
         # so treat this as a critical section.
         with self.label_lock:
@@ -103,7 +104,7 @@ class AnnotationsLocalFile(Annotations):
                 f"which was last modified on {lastmodstr}\n"
             )
 
-            fname = self._get_filename(session)
+            fname = self._get_filename()
             self._backup(fname)
             if not df.empty:
                 with open(fname, "w", newline="") as f:
@@ -113,18 +114,18 @@ class AnnotationsLocalFile(Annotations):
             else:
                 open(fname, "w").close()
 
-    def _get_userid(self, session):
+    def _get_userid(self):
         if self.CXGUID not in session:
             session[self.CXGUID] = uuid4().hex
             session.permanent = True
         return session[self.CXGUID]
 
-    def _get_userdata_idhash(self, session):
+    def _get_userdata_idhash(self):
         """
         Return a short hash that weakly identifies the user and dataset.
         Used to create safe annotations output file names.
         """
-        uid = self._get_userid(session)
+        uid = self._get_userid()
         id = (uid + self.data).encode()
         idhash = base64.b32encode(blake2b(id, digest_size=5).digest()).decode("utf-8")
         return idhash
@@ -138,7 +139,7 @@ class AnnotationsLocalFile(Annotations):
 
         return os.getcwd()
 
-    def _get_filename(self, session=None):
+    def _get_filename(self):
         """ return the current annotation file name """
         if self.output_file:
             return self.output_file
@@ -147,11 +148,11 @@ class AnnotationsLocalFile(Annotations):
         if session is None:
             raise AnnotationsError("unable to determine file name for annotations")
 
-        collection = self.get_collection(session)
+        collection = self.get_collection()
         if collection is None:
             return None
 
-        idhash = self._get_userdata_idhash(session)
+        idhash = self._get_userdata_idhash()
         return os.path.join(self._get_output_dir(), f"{collection}-{idhash}.csv")
 
     def _backup(self, fname, max_backups=9):
@@ -189,13 +190,15 @@ class AnnotationsLocalFile(Annotations):
             for bu in backups[0:excess_count]:
                 os.remove(os.path.join(backup_dir, bu))
 
-    def get_config_params(self, session=None):
+    def update_parameters(self, parameters):
         params = {}
         params["annotations"] = True
 
         if self.ontology_data:
             params["annotations_cell_ontology_enabled"] = True
             params["annotations_cell_ontology_terms"] = self.ontology_data
+        else:
+            params["annotations_cell_ontology_enabled"] = False
 
         if self.output_file is not None:
             # user has hard-wired the name of the annotation data collection
@@ -205,9 +208,9 @@ class AnnotationsLocalFile(Annotations):
             params["annotations-data-collection-name"] = collection_fname
 
         elif session is not None:
-            collection = self.get_collection(session)
-            params["annotations-user-data-idhash"] = self._get_userdata_idhash(session)
+            collection = self.get_collection()
+            params["annotations-user-data-idhash"] = self._get_userdata_idhash()
             params["annotations-data-collection-is-read-only"] = False
             params["annotations-data-collection-name"] = collection
 
-        return params
+        parameters.update(params)

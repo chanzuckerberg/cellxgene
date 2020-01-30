@@ -3,8 +3,6 @@ import warnings
 
 from flask import Blueprint, current_app, jsonify, make_response, request, session
 from flask_restful import Api, Resource
-from server import __version__ as cellxgene_version
-from anndata import __version__ as anndata_version
 
 from server.common.constants import Axis, DiffExpMode, JSON_NaN_to_num_warning_msg
 from server.common.errors import (
@@ -21,7 +19,7 @@ from server.common.utils import get_schema, annotation_put_fbs
 
 class SchemaAPI(Resource):
     def get(self):
-        schema = get_schema(current_app.data, current_app.annotations, session)
+        schema = get_schema(current_app.data, current_app.annotations)
         return make_response(
             jsonify({"schema": schema}), HTTPStatus.OK
         )
@@ -29,31 +27,10 @@ class SchemaAPI(Resource):
 
 class ConfigAPI(Resource):
     def get(self):
-        parameters = current_app.data.get_config_parameters()
-        if current_app.annotations:
-            parameters.update(current_app.annotations.get_config_params(session))
-        else:
-            parameters["annotations"] = False
-
-        config = {
-            "config": {
-                "features": [
-                    {"method": "POST", "path": "/cluster/", **current_app.data.features["cluster"]},
-                    {"method": "POST", "path": "/layout/obs", **current_app.data.features["layout"]["obs"]},
-                    {"method": "POST", "path": "/layout/var", **current_app.data.features["layout"]["var"]},
-                    {"method": "POST", "path": "/diffexp/", **current_app.data.features["diffexp"]},
-                ],
-                "displayNames": {
-                    "engine": f"cellxgene Scanpy engine version ",
-                    "dataset": current_app.config["DATASET_TITLE"],
-                },
-                "links": {"about-dataset": current_app.config["ABOUT_DATASET"]},
-                "parameters": parameters,
-                "library_versions": {"cellxgene": cellxgene_version, "anndata": str(anndata_version)},
-            }
-        }
-
-        return make_response(jsonify(config), HTTPStatus.OK)
+        config = current_app.app_config.get_config(
+            current_app.data,
+            current_app.annotations)
+        return make_response(make_response(jsonify(config), HTTPStatus.OK))
 
 
 class AnnotationsObsAPI(Resource):
@@ -64,7 +41,7 @@ class AnnotationsObsAPI(Resource):
             if preferred_mimetype == "application/octet-stream":
                 labels = None
                 if current_app.annotations:
-                    labels = current_app.annotations.read_labels(session)
+                    labels = current_app.annotations.read_labels()
                 fbs = current_app.data.annotation_to_fbs_matrix(Axis.OBS, fields, labels)
                 return make_response(fbs, HTTPStatus.OK, {"Content-Type": "application/octet-stream"})
             else:
@@ -85,11 +62,11 @@ class AnnotationsObsAPI(Resource):
         if anno_collection is not None:
             if not annotations.is_safe_collection_name(anno_collection):
                 return make_response(f"Error, bad annotation collection name", HTTPStatus.BAD_REQUEST)
-            annotations.set_collection(anno_collection, session)
+            annotations.set_collection(anno_collection)
 
         try:
             fbs = request.get_data()
-            annotation_put_fbs(fbs, current_app.data, current_app.annotations, session)
+            annotation_put_fbs(fbs, current_app.data, current_app.annotations)
             res = json.dumps({"status": "OK"})
             return make_response(res, HTTPStatus.OK, {"Content-Type": "application/json"})
         except (ValueError, DisabledFeatureError, KeyError) as e:
@@ -107,7 +84,7 @@ class AnnotationsVarAPI(Resource):
             if preferred_mimetype == "application/octet-stream":
                 labels = None
                 if current_app.annotations is not None:
-                    labels = current_app.annotations.read_labels(session)
+                    labels = current_app.annotations.read_labels()
                 return make_response(
                     current_app.data.annotation_to_fbs_matrix(Axis.VAR, fields, labels),
                     HTTPStatus.OK,
@@ -138,7 +115,7 @@ class DataVarAPI(Resource):
             else:
                 return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
         except FilterError as e:
-            return make_response(e.message, HTTPStatus.BAD_REQUEST)
+            return make_response(str(e), HTTPStatus.BAD_REQUEST)
         except ValueError as e:
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
@@ -183,7 +160,7 @@ class DiffExpObsAPI(Resource):
             )
             return make_response(diffexp, HTTPStatus.OK, {"Content-Type": "application/json"})
         except (ValueError, FilterError) as e:
-            return make_response(e.message, HTTPStatus.BAD_REQUEST)
+            return make_response(str(e), HTTPStatus.BAD_REQUEST)
         except InteractiveError:
             return make_response("Non-interactive request", HTTPStatus.FORBIDDEN)
         except JSONEncodingValueError as e:
@@ -205,7 +182,7 @@ class LayoutObsAPI(Resource):
             else:
                 return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
         except PrepareError as e:
-            return make_response(e.message, HTTPStatus.INTERNAL_SERVER_ERROR)
+            return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
         except ValueError as e:
             return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 

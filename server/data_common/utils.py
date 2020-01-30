@@ -82,9 +82,9 @@ class MatrixDataLoader(object):
     def file_size(self):
         return self.matrix_type.file_size(self.location)
 
-    def open(self, args):
+    def open(self, app_config):
         try:
             # create and return an object to the matrix_type
-            return self.matrix_type.open(self.location, args)
+            return self.matrix_type.open(self.location, app_config)
         except Exception as e:
             raise RuntimeError(str(e))

@@ -10,17 +10,16 @@ from server_timing import Timing as ServerTiming
 
 
 class TileDbEngine(CXGDriver):
-    def __init__(self, location=None, args={}):
+    def __init__(self, location=None, config=None):
         self.url = location
-        self.update(location, args)
-        self.config = self._get_default_config()
-        self.config.update(args)
+        self.update(location, config)
         self.tiledb_ctx = tiledb.Ctx({
             'sm.tile_cache_size': 8 * 1024 * 1024 * 1024,
             'sm.num_reader_threads': 32,
         })
 
-    def update(self, location=None, args={}):
+    def update(self, location=None, config=None):
+        self.config = config
         if location:
             self.url = location
             if self.url[-1] != '/':
@@ -40,18 +39,11 @@ class TileDbEngine(CXGDriver):
     def open(location, args):
         return TileDbEngine(location, args)
 
-    @staticmethod
-    def _get_default_config():
-        return {
-            "layout": [],
-            "max_category_items": 100,
-            "obs_names": None,
-            "var_names": None,
-            "diffexp_lfc_cutoff": 0.01,
-            "backed": False,
-            "disable_diffexp": False,
-            "diffexp_may_be_slow": False,
-        }
+    def get_name(self):
+        return "cellxgene TileDb engine version"
+
+    def get_library_versions(self):
+        return dict(tiledb=tiledb.__version__)
 
     def get_path(self, *urls):
         """
@@ -113,15 +105,6 @@ class TileDbEngine(CXGDriver):
     def _validate_and_initialize(self):
         if not self.isvalid():
             raise RuntimeError(f"invalid tiledb dataset {self.url}")
-
-    def get_config_parameters(self, uid=None):
-        # TODO
-        params = {
-            "max-category-items": self.config["max_category_items"],
-            "disable-diffexp": self.config["disable_diffexp"],
-            "diffexp-may-be-slow": self.config["diffexp_may_be_slow"],
-        }
-        return params
 
     def get_array(self, name, items=None):
         p = self.get_path(name)

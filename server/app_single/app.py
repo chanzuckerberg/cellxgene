@@ -12,7 +12,8 @@ from server.common.web import webapp
 
 
 class Server:
-    def __init__(self, data, annotations, title="Demo", about=""):
+    def __init__(self, data, annotations, app_config):
+
         self.app = Flask(__name__, static_folder="../common/web/static")
         self.app.json_encoder = Float32JSONEncoder
 
@@ -34,7 +35,7 @@ class Server:
         self.app.register_blueprint(webapp.bp)
         self.app.register_blueprint(resources.blueprint)
         self.app.add_url_rule("/", endpoint="index")
-        self.app.config.update(DATASET_TITLE=title, ABOUT_DATASET=about)
 
         self.app.data = data
         self.app.annotations = annotations
+        self.app.app_config = app_config

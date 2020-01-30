@@ -7,8 +7,8 @@ bp = Blueprint("webapp", __name__, template_folder="templates")
 
 @bp.route("/")
 def index():
-    dataset_title = current_app.config["DATASET_TITLE"]
-    scripts = current_app.config["SCRIPTS"]
+    dataset_title = current_app.app_config.title
+    scripts = current_app.app_config.scripts
     return render_template("index.html", datasetTitle=dataset_title, SCRIPTS=scripts)
 
 

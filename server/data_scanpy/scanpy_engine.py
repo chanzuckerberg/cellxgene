@@ -19,18 +19,13 @@ from server.common.data_locator import DataLocator
 
 
 class ScanpyEngine(CXGDriver):
-    def __init__(self, data_locator=None, args={}):
+    def __init__(self, data_locator=None, config=None):
+        super().__init__(config)
         self.data = None
         self.data_locator = None
-        self.config = self._get_default_config()
-        self.update(data_locator, args)
-
-    def update(self, data_locator=None, args={}):
-        self.config.update(args)
-        if data_locator:
-            self.data_locator = data_locator
-            self._load_data(data_locator)
-            self._validate_and_initialize()
+        self.parameters = {}
+        self._load_data(data_locator)
+        self._validate_and_initialize()
 
     @staticmethod
     def pre_check(location):
@@ -55,26 +50,11 @@ class ScanpyEngine(CXGDriver):
         data_locator = DataLocator(location)
         return ScanpyEngine(data_locator, args)
 
-    @staticmethod
-    def _get_default_config():
-        return {
-            "layout": [],
-            "max_category_items": 100,
-            "obs_names": None,
-            "var_names": None,
-            "diffexp_lfc_cutoff": 0.01,
-            "backed": False,
-            "disable_diffexp": False,
-            "diffexp_may_be_slow": False,
-        }
+    def get_name(self):
+        return "cellxgene Scanpy engine version "
 
-    def get_config_parameters(self):
-        params = {
-            "max-category-items": self.config["max_category_items"],
-            "disable-diffexp": self.config["disable_diffexp"],
-            "diffexp-may-be-slow": self.config["diffexp_may_be_slow"],
-        }
-        return params
+    def get_library_versions(self):
+        return dict(anndata=anndata.__version__)
 
     @staticmethod
     def _create_unique_column_name(df, col_name_prefix):
@@ -104,7 +84,7 @@ class ScanpyEngine(CXGDriver):
         self.original_obs_index = self.data.obs.index
 
         for (ax_name, config_name) in ((Axis.OBS, "obs_names"), (Axis.VAR, "var_names")):
-            name = self.config[config_name]
+            name = getattr(self.config, config_name)
             df_axis = getattr(self.data, str(ax_name))
             if name is None:
                 # Default: create unique names from index
@@ -115,7 +95,7 @@ class ScanpyEngine(CXGDriver):
                         "alternative with --{ax_name}-name."
                     )
                 name = self._create_unique_column_name(df_axis.columns, "name_")
-                self.config[config_name] = name
+                self.parameters[config_name] = name
                 # reset index to simple range; alias name to point at the
                 # previously specified index.
                 df_axis.rename_axis(name, inplace=True)
@@ -175,8 +155,8 @@ class ScanpyEngine(CXGDriver):
         self.schema = {
             "dataframe": {"nObs": self.cell_count, "nVar": self.gene_count, "type": str(self.data.X.dtype)},
             "annotations": {
-                "obs": {"index": self.config["obs_names"], "columns": []},
-                "var": {"index": self.config["var_names"], "columns": []},
+                "obs": {"index": self.parameters.get("obs_names"), "columns": []},
+                "var": {"index": self.parameters.get("var_names"), "columns": []},
             },
             "layout": {"obs": []},
         }
@@ -187,7 +167,7 @@ class ScanpyEngine(CXGDriver):
                 ann_schema.update(self._get_col_type(curr_axis[ann]))
                 self.schema["annotations"][ax]["columns"].append(ann_schema)
 
-        for layout in self.config["layout"]:
+        for layout in self.get_embedding_names():
             layout_schema = {"name": layout, "type": "float32", "dims": [f"{layout}_0", f"{layout}_1"]}
             self.schema["layout"]["obs"].append(layout_schema)
 
@@ -205,8 +185,8 @@ class ScanpyEngine(CXGDriver):
             with data_locator.local_handle() as lh:
                 # as of AnnData 0.6.19, backed mode performs initial load fast, but at the
                 # cost of significantly slower access to X data.
-                backed = "r" if self.config["backed"] else None
-                self.data = anndata.read_h5ad(lh, backed=backed)
+                backed = "r" if self.config.scanpy_backed else None
+                self.data = anndata.read_h5ad(lh, backed=self.config.scanpy_backed)
 
         except ValueError:
             raise ScanpyFileError(
@@ -234,46 +214,12 @@ class ScanpyEngine(CXGDriver):
         self._validate_data_types()
         self.cell_count = self.data.shape[0]
         self.gene_count = self.data.shape[1]
-        self._default_and_validate_layouts()
         self._create_schema()
 
         # heuristic
         n_values = self.data.shape[0] * self.data.shape[1]
-        if (n_values > 1e8 and self.config["backed"] is True) or (n_values > 5e8):
-            self.config.update({"diffexp_may_be_slow": True})
-
-    @requires_data
-    def _default_and_validate_layouts(self):
-        """ function:
-            a) generate list of default layouts, if not already user specified
-            b) validate layouts are legal.  remove/warn on any that are not
-            c) cap total list of layouts at global const MAX_LAYOUTS
-        """
-        layouts = self.config["layout"]
-        # handle default
-        if layouts is None or len(layouts) == 0:
-            # load default layouts from the data.
-            layouts = [key[2:] for key in self.data.obsm_keys() if type(key) == str and key.startswith("X_")]
-            if len(layouts) == 0:
-                raise PrepareError(f"Unable to find any precomputed layouts within the dataset.")
-
-        # remove invalid layouts
-        valid_layouts = []
-        obsm_keys = self.data.obsm_keys()
-        for layout in layouts:
-            layout_name = f"X_{layout}"
-            if layout_name not in obsm_keys:
-                warnings.warn(f"Ignoring unknown layout name: {layout}.")
-            elif not self._is_valid_layout(self.data.obsm[layout_name]):
-                warnings.warn(f"Ignoring layout due to malformed shape or data type: {layout}")
-            else:
-                valid_layouts.append(layout)
-
-        if len(valid_layouts) == 0:
-            raise PrepareError(f"No valid layout data.")
-
-        # cap layouts to MAX_LAYOUTS
-        self.config["layout"] = valid_layouts[0:MAX_LAYOUTS]
+        if (n_values > 1e8 and self.config.backed is True) or (n_values > 5e8):
+            self.parameters.update({"diffexp_may_be_slow": True})
 
     @requires_data
     def _is_valid_layout(self, arr):
@@ -314,7 +260,7 @@ class ScanpyEngine(CXGDriver):
                     )
                 if isinstance(datatype, CategoricalDtype):
                     category_num = len(curr_axis[ann].dtype.categories)
-                    if category_num > 500 and category_num > self.config["max_category_items"]:
+                    if category_num > 500 and category_num > self.config.max_category_items:
                         warnings.warn(
                             f"{str(ax).title()} annotation '{ann}' has {category_num} categories, this may be "
                             f"cumbersome or slow to display. We recommend setting the "
@@ -359,7 +305,7 @@ class ScanpyEngine(CXGDriver):
     def annotation_to_fbs_matrix(self, axis, fields=None, labels=None):
         if axis == Axis.OBS:
             if labels is not None and not labels.empty:
-                df = self.data.obs.join(labels, self.config["obs_names"])
+                df = self.data.obs.join(labels, self.config.obs_names)
             else:
                 df = self.data.obs
         else:
@@ -370,7 +316,31 @@ class ScanpyEngine(CXGDriver):
         return encode_matrix_fbs(df, col_idx=df.columns)
 
     def get_embedding_names(self):
-        return self.config["layout"]
+        """ function:
+            a) generate list of default layouts
+            b) validate layouts are legal.  remove/warn on any that are not
+            c) cap total list of layouts at global const MAX_LAYOUTS
+        """
+        # load default layouts from the data.
+        layouts = [key[2:] for key in self.data.obsm_keys() if type(key) == str and key.startswith("X_")]
+
+        # remove invalid layouts
+        valid_layouts = []
+        obsm_keys = self.data.obsm_keys()
+        for layout in layouts:
+            layout_name = f"X_{layout}"
+            if layout_name not in obsm_keys:
+                warnings.warn(f"Ignoring unknown layout name: {layout}.")
+            elif not self._is_valid_layout(self.data.obsm[layout_name]):
+                warnings.warn(f"Ignoring layout due to malformed shape or data type: {layout}")
+            else:
+                valid_layouts.append(layout)
+
+        if len(valid_layouts) == 0:
+            raise PrepareError(f"No valid layout data.")
+
+        # cap layouts to MAX_LAYOUTS
+        return layouts[0:MAX_LAYOUTS]
 
     def get_embedding_array(self, ename, items=None):
         if items is None:

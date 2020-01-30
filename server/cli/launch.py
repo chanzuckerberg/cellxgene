@@ -15,6 +15,8 @@ from server.data_common.utils import custom_format_warning
 from server.common.utils import find_available_port, is_port_available, sort_options
 from server.data_common.utils import MatrixDataLoader
 from server.common.annotations import AnnotationsLocalFile
+from server.common.app_config import AppConfig
+
 from server.common.errors import OntologyLoadFailure
 
 # anything bigger than this will generate a special message
@@ -224,16 +226,6 @@ def launch(
 
     > cellxgene launch <url>"""
 
-    e_args = {
-        "layout": embedding,
-        "max_category_items": max_category_items,
-        "diffexp_lfc_cutoff": diffexp_lfc_cutoff,
-        "obs_names": obs_names,
-        "var_names": var_names,
-        "backed": backed,
-        "disable_diffexp": disable_diffexp,
-    }
-
     # Startup message
     click.echo("[cellxgene] Starting the CLI...")
 
@@ -281,6 +273,7 @@ def launch(
             )
     else:
         port = find_available_port(host)
+
 
     if not experimental_annotations:
         if experimental_annotations_file is not None:
@@ -334,8 +327,21 @@ def launch(
     else:
         click.echo(f"[cellxgene] Loading data from {basename(data)}.")
 
+    # app config
+    app_config = AppConfig(
+        title=title,
+        about=about,
+        scripts=scripts,
+        layout=embedding,
+        max_category_items=max_category_items,
+        diffexp_lfc_cutoff=diffexp_lfc_cutoff,
+        obs_names=obs_names,
+        var_names=var_names,
+        scanpy_backed=backed,
+        disable_diffexp=disable_diffexp)
+
     try:
-        cxg_data = matrix_data_loader.open(e_args)
+        cxg_data = matrix_data_loader.open(app_config)
     except RuntimeError as e:
         raise click.ClickException(str(e))
 
@@ -360,14 +366,13 @@ def launch(
                 raise click.ClickException("Unable to load ontology terms\n" + str(e))
 
     # create the server
-    server = Server(cxg_data, annotations, title=title, about=about)
-    server.app.config.update(SCRIPTS=scripts)
+    server = Server(cxg_data, annotations, app_config)
 
     if not verbose:
         log = logging.getLogger("werkzeug")
         log.setLevel(logging.ERROR)
 
-    if not disable_diffexp and server.app.data.config["diffexp_may_be_slow"]:
+    if not disable_diffexp and server.app.data.parameters.get("diffexp_may_be_slow",False):
         click.echo(
             f"[cellxgene] CAUTION: due to the size of your dataset, "
             f"running differential expression may take longer or fail."
