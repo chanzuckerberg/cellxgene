@@ -4,11 +4,11 @@ import numpy as np
 import pandas as pd
 from server.data_common.fbs.matrix import encode_matrix_fbs
 from server.common.constants import Axis, DEFAULT_TOP_N
-from server.common.errors import FilterError, JSONEncodingValueError, PrepareError
+from server.common.errors import FilterError, JSONEncodingValueError
 from server.compute.diffexp import diffexp_ttest
 from server.data_common.utils import jsonify_numpy
 from server.data_common.matrix_proxy import MatrixProxy
-from server.common.app_config import AppFeature
+from server.common.app_config import AppFeature, AppConfig
 
 """
 Sort order for methods
@@ -23,34 +23,40 @@ Sort order for methods
 class CXGDriver(metaclass=ABCMeta):
 
     def __init__(self, config):
+        # config will normally be of type AppConfig.
+        # the following is for backwards compatability with tests
+        if config is None:
+            config = AppConfig()
+        elif type(config) == dict:
+            config = AppConfig(**config)
+
+        # config is the application configuration
         self.config = config
+
+        # parameters set by this data engine based on the data.
         self.parameters = {}
 
     def get_features(self):
-        cluster = AppFeature("/cluster/")
+        features = {}
+        features["cluster"] = AppFeature("/cluster/")
 
         if self.get_embedding_names():
             # TODO handle "var" when gene layout becomes available
             # TODO - Interactive limit should be generated from the actual available methods see GH issue #94
-            layout_obs = AppFeature("/layout/obs", available=True,
-                                    extra={"interactiveLimit": 50000})
+            features["layout_obs"] = AppFeature(
+                "/layout/obs", available=True, extra={"interactiveLimit": 50000})
         else:
-            layout_obs = AppFeature("/layout/obs")
+            features["layout_obs"] = AppFeature("/layout/obs")
 
-        layout_var = AppFeature("/layout/var")
+        features["layout_var"] = AppFeature("/layout/var")
 
         if self.config.disable_diffexp:
-            diffexp = AppFeature("/diffexp/")
+            features["diffexp"] = AppFeature("/diffexp/")
         else:
-            diffexp = AppFeature("/diffexp/", available=True,
-                                 extra={"interactiveLimit" : 50000})
+            features["diffexp"] = AppFeature(
+                "/diffexp/", available=True, extra={"interactiveLimit" : 50000})
 
-        return [
-            cluster,
-            layout_obs,
-            layout_var,
-            diffexp
-        ]
+        return features
 
     def update_parameters(self, parameters):
         parameters.update(self.parameters)
@@ -191,7 +197,7 @@ class CXGDriver(metaclass=ABCMeta):
         except ValueError:
             raise JSONEncodingValueError("Error encoding differential expression to JSON")
 
-    def layout_to_fbs_matrix(self, specified_layouts=[]):
+    def layout_to_fbs_matrix(self):
         """ same as layout, except returns a flatbuffer """
         """
         return all embeddings as a flatbuffer, using the cellxgene matrix fbs encoding.
@@ -204,17 +210,7 @@ class CXGDriver(metaclass=ABCMeta):
 
         """
 
-        embeddings_all = self.get_embedding_names()
-        if len(specified_layouts) == 0:
-            embeddings = embeddings_all
-        else:
-            embeddings = []
-            for e in specified_layouts:
-                if e in embeddings_all:
-                    embeddings.append(e)
-            if len(embeddings) == 0:
-                raise PrepareError(f"Unable to find any precomputed layouts within the dataset.")
-
+        embeddings = self.get_embedding_names()
         layout_data = []
         with ServerTiming.time(f'layout.query'):
             for ename in embeddings:

@@ -11,6 +11,7 @@ from server_timing import Timing as ServerTiming
 
 class TileDbEngine(CXGDriver):
     def __init__(self, location=None, config=None):
+        super().__init__(config)
         self.url = location
         self.update(location, config)
         self.tiledb_ctx = tiledb.Ctx({

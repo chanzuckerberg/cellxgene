@@ -1,7 +1,7 @@
 from http import HTTPStatus
 import warnings
 
-from flask import Blueprint, current_app, jsonify, make_response, request, session
+from flask import Blueprint, current_app, jsonify, make_response, request
 from flask_restful import Api, Resource
 
 from server.common.constants import Axis, DiffExpMode, JSON_NaN_to_num_warning_msg
@@ -155,9 +155,8 @@ class DiffExpObsAPI(Resource):
         # mode=topN
         count = args.get("count", None)
         try:
-            diffexp = current_app.data.diffexp_topN(
-                set1_filter, set2_filter, count, current_app.data.features["diffexp"]["interactiveLimit"],
-            )
+            interactive_limit = current_app.data.get_features()["diffexp"].interactiveLimit
+            diffexp = current_app.data.diffexp_topN(set1_filter, set2_filter, count, interactive_limit)
             return make_response(diffexp, HTTPStatus.OK, {"Content-Type": "application/json"})
         except (ValueError, FilterError) as e:
             return make_response(str(e), HTTPStatus.BAD_REQUEST)

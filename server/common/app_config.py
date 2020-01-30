@@ -9,6 +9,8 @@ class AppFeature(object):
         self.available = available
         self.method = method
         self.extra = extra
+        for k, v in extra.items():
+            setattr(self, k, v)
 
     def todict(self):
         d = dict(
@@ -34,24 +36,26 @@ class AppConfig(object):
         self.scanpy_backed = False
         self.disable_diffexp = False
 
-        inputs = ["title","about","scripts","layout","max_category_items","diffexp_lfc_cutoff",
-                  "obs_names","var_names","scanpy_backed","disable_diffexp"]
-        for k,v in kw.items():
+        inputs = ["title", "about", "scripts", "layout",
+                  "max_category_items", "diffexp_lfc_cutoff",
+                  "obs_names", "var_names",
+                  "scanpy_backed", "disable_diffexp"]
+        for k, v in kw.items():
             if k in inputs:
-                setattr(self,k,v)
+                setattr(self, k, v)
             else:
                 raise RuntimeError(f"unknown config parameter {k}.")
 
         # parameters
         self.diffexp_may_be_slow = False
 
-    def get_config(self, data_engine, annotation):
+    def get_config(self, data_engine, annotation=None):
 
         # FIXME The current set of config is not consistently presented:
         # we have camalCase, hyphen-text, and underscore_text
 
         # features
-        features = [ f.todict() for f in data_engine.get_features() ]
+        features = [f.todict() for f in data_engine.get_features().values()]
 
         # display_names
         display_names = dict(

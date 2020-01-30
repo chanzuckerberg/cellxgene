@@ -14,6 +14,7 @@ import fastobo
 import traceback  # use built-in formatter for SyntaxError
 from flask import session
 
+
 class Annotations(object):
     """ baseclass for annotations, including ontologies"""
 

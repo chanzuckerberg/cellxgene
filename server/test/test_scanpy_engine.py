@@ -37,8 +37,7 @@ class EngineTest(unittest.TestCase):
             "obs_names": None,
             "var_names": None,
             "diffexp_lfc_cutoff": 0.01,
-            "layout_file": None,
-            "backed": self.backed,
+            "scanpy_backed": self.backed,
         }
         self.data = ScanpyEngine(DataLocator(self.data_locator), args)
 
@@ -98,9 +97,8 @@ class EngineTest(unittest.TestCase):
             self.data._create_schema()
 
     def test_config(self):
-        self.assertEqual(
-            self.data.features["layout"]["obs"], {"available": True, "interactiveLimit": 50000},
-        )
+        self.assertEqual(self.data.get_features()["layout_obs"].available, True)
+        self.assertEqual(self.data.get_features()["layout_obs"].interactiveLimit, 50000)
 
     def test_layout(self):
         fbs = self.data.layout_to_fbs_matrix()

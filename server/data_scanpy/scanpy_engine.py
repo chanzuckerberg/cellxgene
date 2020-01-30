@@ -23,9 +23,14 @@ class ScanpyEngine(CXGDriver):
         super().__init__(config)
         self.data = None
         self.data_locator = None
-        self.parameters = {}
-        self._load_data(data_locator)
-        self._validate_and_initialize()
+        self.update(data_locator, config)
+
+    def update(self, data_locator=None, config=None):
+        super().__init__(config)
+        if data_locator:
+            self.data_locator = data_locator
+            self._load_data(data_locator)
+            self._validate_and_initialize()
 
     @staticmethod
     def pre_check(location):
@@ -54,7 +59,7 @@ class ScanpyEngine(CXGDriver):
         return "cellxgene Scanpy engine version "
 
     def get_library_versions(self):
-        return dict(anndata=anndata.__version__)
+        return dict(anndata=str(anndata.__version__))
 
     @staticmethod
     def _create_unique_column_name(df, col_name_prefix):
@@ -186,7 +191,7 @@ class ScanpyEngine(CXGDriver):
                 # as of AnnData 0.6.19, backed mode performs initial load fast, but at the
                 # cost of significantly slower access to X data.
                 backed = "r" if self.config.scanpy_backed else None
-                self.data = anndata.read_h5ad(lh, backed=self.config.scanpy_backed)
+                self.data = anndata.read_h5ad(lh, backed=backed)
 
         except ValueError:
             raise ScanpyFileError(
@@ -305,7 +310,7 @@ class ScanpyEngine(CXGDriver):
     def annotation_to_fbs_matrix(self, axis, fields=None, labels=None):
         if axis == Axis.OBS:
             if labels is not None and not labels.empty:
-                df = self.data.obs.join(labels, self.config.obs_names)
+                df = self.data.obs.join(labels, self.parameters.get("obs_names"))
             else:
                 df = self.data.obs
         else:
@@ -322,7 +327,10 @@ class ScanpyEngine(CXGDriver):
             c) cap total list of layouts at global const MAX_LAYOUTS
         """
         # load default layouts from the data.
-        layouts = [key[2:] for key in self.data.obsm_keys() if type(key) == str and key.startswith("X_")]
+        layouts = self.config.layout
+
+        if layouts is None or len(layouts) == 0:
+            layouts = [key[2:] for key in self.data.obsm_keys() if type(key) == str and key.startswith("X_")]
 
         # remove invalid layouts
         valid_layouts = []

@@ -25,18 +25,12 @@ class DataLoadEngineTest(unittest.TestCase):
             "obs_names": "foo",
             "var_names": "bar",
             "diffexp_lfc_cutoff": 0.1,
-            "annotations": False,
-            "annotations_file": None,
-            "annotations_output_dir": None,
-            "backed": False,
-            "diffexp_may_be_slow": False,
+            "scanpy_backed": False,
             "disable_diffexp": False,
-            "annotations_cell_ontology_enabled": False,
-            "annotations_cell_ontology_obopath": None,
-            "annotations_cell_ontology_terms": None,
         }
-        self.data.update(args=args)
-        self.assertEqual(args, self.data.config)
+        self.data.update(config=args)
+        for k, v in args.items():
+            self.assertEqual(v, getattr(self.data.config, k))
 
     def test_requires_data(self):
         with self.assertRaises(DriverError):

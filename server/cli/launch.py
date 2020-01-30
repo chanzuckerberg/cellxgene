@@ -274,7 +274,6 @@ def launch(
     else:
         port = find_available_port(host)
 
-
     if not experimental_annotations:
         if experimental_annotations_file is not None:
             click.echo("Warning: --experimental-annotations-file ignored as --annotations not enabled.")
@@ -372,7 +371,7 @@ def launch(
         log = logging.getLogger("werkzeug")
         log.setLevel(logging.ERROR)
 
-    if not disable_diffexp and server.app.data.parameters.get("diffexp_may_be_slow",False):
+    if not disable_diffexp and server.app.data.parameters.get("diffexp_may_be_slow", False):
         click.echo(
             f"[cellxgene] CAUTION: due to the size of your dataset, "
             f"running differential expression may take longer or fail."
