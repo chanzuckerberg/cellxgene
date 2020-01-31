@@ -1,6 +1,6 @@
 {
   "name": "cellxgene",
-  "version": "0.14.0",
+  "version": "0.14.1",
   "license": "MIT",
   "description": "cellxgene is a web application for the interactive exploration of single cell sequence data.",
   "repository": "https://github.com/chanzuckerberg/cellxgene",
@@ -37,6 +37,7 @@
     "@blueprintjs/core": "^3.22.3",
     "@blueprintjs/icons": "^3.13.0",
     "@blueprintjs/select": "^3.11.2",
+    "client": "0.0.1",
     "d3": "^4.10.0",
     "d3-scale-chromatic": "^1.5.0",
     "flatbuffers": "^1.11.0",
