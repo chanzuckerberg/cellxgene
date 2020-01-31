@@ -77,7 +77,7 @@ class MatrixDataLoader(object):
     def pre_checks(self):
         if self.etype == MatrixDataType.UNKNOWN:
             raise RuntimeError(f"{self.location} does not have a recognized type: .h5ad or .tdb/.cxg")
-        self.matrix_type.pre_check(self.location)
+        self.matrix_type.pre_checks(self.location)
 
     def file_size(self):
         return self.matrix_type.file_size(self.location)

@@ -53,9 +53,8 @@ class AnnotationsLocalFile(Annotations):
     CXGUID = "cxguid"
     CXG_ANNO_COLLECTION = "cxg_anno_collection"
 
-    def __init__(self, data, output_dir, output_file):
+    def __init__(self, output_dir, output_file):
         super().__init__()
-        self.data = data
         self.output_dir = output_dir
         self.output_file = output_file
         # lock used to protect label file write ops
@@ -81,19 +80,19 @@ class AnnotationsLocalFile(Annotations):
             return None
         return session.get(self.CXG_ANNO_COLLECTION)
 
-    def read_labels(self):
-        fname = self._get_filename()
+    def read_labels(self, data_engine):
+        fname = self._get_filename(data_engine)
         if fname is not None and os.path.exists(fname) and os.path.getsize(fname) > 0:
             return pd.read_csv(fname, dtype="category", index_col=0, header=0, comment="#", keep_default_na=False)
         else:
             return pd.DataFrame()
 
-    def write_labels(self, df):
+    def write_labels(self, df, data_engine):
         # update our internal state and save it.  Multi-threading often enabled,
         # so treat this as a critical section.
         with self.label_lock:
             try:
-                data_locator = DataLocator(self.data)
+                data_locator = DataLocator(data_engine.get_location())
                 lastmod = data_locator.lastmodtime()
             except RuntimeError:
                 lastmod = None
@@ -101,11 +100,11 @@ class AnnotationsLocalFile(Annotations):
             header = (
                 f"# Annotations generated on {datetime.now().isoformat(timespec='seconds')} "
                 f"using cellxgene version {cellxgene_version}\n"
-                f"# Input data file was {self.data}, "
+                f"# Input data file was {data_engine.get_location()}, "
                 f"which was last modified on {lastmodstr}\n"
             )
 
-            fname = self._get_filename()
+            fname = self._get_filename(data_engine)
             self._backup(fname)
             if not df.empty:
                 with open(fname, "w", newline="") as f:
@@ -121,13 +120,13 @@ class AnnotationsLocalFile(Annotations):
             session.permanent = True
         return session[self.CXGUID]
 
-    def _get_userdata_idhash(self):
+    def _get_userdata_idhash(self, data_engine):
         """
         Return a short hash that weakly identifies the user and dataset.
         Used to create safe annotations output file names.
         """
         uid = self._get_userid()
-        id = (uid + self.data).encode()
+        id = (uid + data_engine.get_location()).encode()
         idhash = base64.b32encode(blake2b(id, digest_size=5).digest()).decode("utf-8")
         return idhash
 
@@ -140,7 +139,7 @@ class AnnotationsLocalFile(Annotations):
 
         return os.getcwd()
 
-    def _get_filename(self):
+    def _get_filename(self, data_engine):
         """ return the current annotation file name """
         if self.output_file:
             return self.output_file
@@ -153,7 +152,10 @@ class AnnotationsLocalFile(Annotations):
         if collection is None:
             return None
 
-        idhash = self._get_userdata_idhash()
+        if data_engine is None:
+            raise AnnotationsError("unable to determine file name for annotations")
+
+        idhash = self._get_userdata_idhash(data_engine)
         return os.path.join(self._get_output_dir(), f"{collection}-{idhash}.csv")
 
     def _backup(self, fname, max_backups=9):
@@ -191,7 +193,7 @@ class AnnotationsLocalFile(Annotations):
             for bu in backups[0:excess_count]:
                 os.remove(os.path.join(backup_dir, bu))
 
-    def update_parameters(self, parameters):
+    def update_parameters(self, parameters, data_engine):
         params = {}
         params["annotations"] = True
 
@@ -210,7 +212,7 @@ class AnnotationsLocalFile(Annotations):
 
         elif session is not None:
             collection = self.get_collection()
-            params["annotations-user-data-idhash"] = self._get_userdata_idhash()
+            params["annotations-user-data-idhash"] = self._get_userdata_idhash(data_engine)
             params["annotations-data-collection-is-read-only"] = False
             params["annotations-data-collection-name"] = collection
 

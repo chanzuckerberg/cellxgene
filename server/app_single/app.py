@@ -8,7 +8,7 @@ from flask_cors import CORS
 
 from server.app_single.rest import get_api_resources
 from server.data_common.utils import Float32JSONEncoder
-from server.common.web import webapp
+from server.app_single import webapp
 
 
 class Server:
@@ -29,7 +29,6 @@ class Server:
         # Config
         SECRET_KEY = os.environ.get("CXG_SECRET_KEY", default="SparkleAndShine")
         self.app.config.update(SECRET_KEY=SECRET_KEY)
-        self.app.config.update(SCRIPTS=[])
 
         resources = get_api_resources()
         self.app.register_blueprint(webapp.bp)

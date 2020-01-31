@@ -8,7 +8,7 @@ from server.common.errors import FilterError, JSONEncodingValueError
 from server.compute.diffexp import diffexp_ttest
 from server.data_common.utils import jsonify_numpy
 from server.data_common.matrix_proxy import MatrixProxy
-from server.common.app_config import AppFeature, AppConfig
+from server.common.app_config import AppFeature, AppSingleConfig
 
 """
 Sort order for methods
@@ -23,12 +23,12 @@ Sort order for methods
 class CXGDriver(metaclass=ABCMeta):
 
     def __init__(self, config):
-        # config will normally be of type AppConfig.
+        # config will normally be a type that inherits from AppConfig.
         # the following is for backwards compatability with tests
         if config is None:
-            config = AppConfig()
+            config = AppSingleConfig()
         elif type(config) == dict:
-            config = AppConfig(**config)
+            config = AppSingleConfig(**config)
 
         # config is the application configuration
         self.config = config
@@ -60,6 +60,10 @@ class CXGDriver(metaclass=ABCMeta):
 
     def update_parameters(self, parameters):
         parameters.update(self.parameters)
+
+    @abstractmethod
+    def get_location(self):
+        pass
 
     @abstractmethod
     def get_schema(self):

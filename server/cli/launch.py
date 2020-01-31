@@ -10,12 +10,11 @@ from urllib.parse import urlparse
 
 import click
 
-from server.app_single.app import Server
 from server.data_common.utils import custom_format_warning
 from server.common.utils import find_available_port, is_port_available, sort_options
 from server.data_common.utils import MatrixDataLoader
 from server.common.annotations import AnnotationsLocalFile
-from server.common.app_config import AppConfig
+from server.common.app_config import AppSingleConfig, AppMultiConfig
 
 from server.common.errors import OntologyLoadFailure
 
@@ -23,55 +22,7 @@ from server.common.errors import OntologyLoadFailure
 BIG_FILE_SIZE_THRESHOLD = 100 * 2 ** 20  # 100MB
 
 
-def common_args(func):
-    """
-    Decorator to contain CLI args that will be common to both CLI and GUI: title and engine args.
-    """
-
-    @click.option("--title", "-t", metavar="<text>", help="Title to display. If omitted will use file name.")
-    @click.option(
-        "--about",
-        metavar="<URL>",
-        help="URL providing more information about the dataset " "(hint: must be a fully specified absolute URL).",
-    )
-    @click.option(
-        "--embedding",
-        "-e",
-        default=[],
-        multiple=True,
-        show_default=False,
-        metavar="<text>",
-        help="Embedding name, eg, 'umap'. Repeat option for multiple embeddings. Defaults to all.",
-    )
-    @click.option(
-        "--obs-names",
-        "-obs",
-        default=None,
-        metavar="<text>",
-        help="Name of annotation field to use for observations. If not specified cellxgene will use the the obs index.",
-    )
-    @click.option(
-        "--var-names",
-        "-var",
-        default=None,
-        metavar="<text>",
-        help="Name of annotation to use for variables. If not specified cellxgene will use the the var index.",
-    )
-    @click.option(
-        "--max-category-items",
-        default=1000,
-        metavar="<integer>",
-        show_default=True,
-        help="Will not display categories with more distinct values than specified.",
-    )
-    @click.option(
-        "--diffexp-lfc-cutoff",
-        "-de",
-        default=0.01,
-        show_default=True,
-        metavar="<float>",
-        help="Minimum log fold change threshold for differential expression.",
-    )
+def annotation_args(func):
     @click.option(
         "--experimental-annotations",
         is_flag=True,
@@ -102,27 +53,14 @@ def common_args(func):
         is_flag=True,
         default=False,
         show_default=True,
-        help="When creating annotations, optionally autocomplete names from ontology terms.",)
+        help="When creating annotations, optionally autocomplete names from ontology terms."
+    )
     @click.option(
         "--experimental-annotations-ontology-obo",
         default=None,
         show_default=True,
         metavar="<path or url>",
-        help="Location of OBO file defining cell annotatoin autosuggest terms.",)
-    @click.option(
-        "--backed",
-        "-b",
-        is_flag=True,
-        default=False,
-        show_default=False,
-        help="Load data in file-backed mode. This may save memory, but may result in slower overall performance.",
-    )
-    @click.option(
-        "--disable-diffexp",
-        is_flag=True,
-        default=False,
-        show_default=False,
-        help="Disable on-demand differential expression.",
+        help="Location of OBO file defining cell annotatoin autosuggest terms."
     )
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
@@ -131,64 +69,189 @@ def common_args(func):
     return wrapper
 
 
+def config_args(func):
+    @click.option(
+        "--max-category-items",
+        default=1000,
+        metavar="<integer>",
+        show_default=True,
+        help="Will not display categories with more distinct values than specified.",
+    )
+    @click.option(
+        "--diffexp-lfc-cutoff",
+        "-de",
+        default=0.01,
+        show_default=True,
+        metavar="<float>",
+        help="Minimum log fold change threshold for differential expression.",
+    )
+    @click.option(
+        "--disable-diffexp",
+        is_flag=True,
+        default=False,
+        show_default=False,
+        help="Disable on-demand differential expression.",
+    )
+    @click.option(
+        "--embedding",
+        "-e",
+        default=[],
+        multiple=True,
+        show_default=False,
+        metavar="<text>",
+        help="Embedding name, eg, 'umap'. Repeat option for multiple embeddings. Defaults to all.",
+    )
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
+def dataset_args(func):
+
+    @click.option(
+        "--obs-names",
+        "-obs",
+        default=None,
+        metavar="<text>",
+        help="Name of annotation field to use for observations. If not specified cellxgene will use the the obs index.",
+    )
+    @click.option(
+        "--var-names",
+        "-var",
+        default=None,
+        metavar="<text>",
+        help="Name of annotation to use for variables. If not specified cellxgene will use the the var index.",
+    )
+    @click.option(
+        "--backed",
+        "-b",
+        is_flag=True,
+        default=False,
+        show_default=False,
+        help="Load scanpy anndata in file-backed mode. "
+             "This may save memory, but may result in slower overall performance.",
+    )
+    @click.option(
+        "--title",
+        "-t",
+        metavar="<text>",
+        help="Title to display. If omitted will use file name."
+    )
+    @click.option(
+        "--about",
+        metavar="<URL>",
+        help="URL providing more information about the dataset " "(hint: must be a fully specified absolute URL).",
+    )
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
+def server_args(func):
+    @click.option(
+        "--debug",
+        "-d",
+        is_flag=True,
+        default=False,
+        show_default=True,
+        help="Run in debug mode. This is helpful for cellxgene developers, "
+        "or when you want more information about an error condition.",
+    )
+    @click.option(
+        "--verbose",
+        "-v",
+        is_flag=True,
+        default=False,
+        show_default=True,
+        help="Provide verbose output, including warnings and all server requests.",
+    )
+    @click.option(
+        "--port",
+        "-p",
+        metavar="<port>",
+        show_default=True,
+        help="Port to run server on. If not specified cellxgene will find an available port.",
+    )
+    @click.option(
+        "--host",
+        metavar="<IP address>",
+        default="127.0.0.1",
+        show_default=False,
+        help="Host IP address. By default cellxgene will use localhost (e.g. 127.0.0.1).",
+    )
+    @click.option(
+        "--scripts",
+        "-s",
+        default=[],
+        multiple=True,
+        metavar="<text>",
+        help="Additional script files to include in HTML page. If not specified, "
+        "no additional script files will be included.",
+        show_default=False,
+    )
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
+def launch_args(func):
+    @annotation_args
+    @config_args
+    @dataset_args
+    @server_args
+    @functools.wraps(func)
+    @click.argument("data", nargs=1, metavar="<path to data file>", required=True)
+    @click.option(
+        "--open",
+        "-o",
+        "open_browser",
+        is_flag=True,
+        default=False,
+        show_default=True,
+        help="Open web browser after launch.",
+    )
+    @click.help_option("--help", "-h", help="Show this message and exit.")
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
+def handle_scripts(scripts):
+    if scripts:
+        click.echo(
+            r"""
+    / / /\ \ \__ _ _ __ _ __ (_)_ __   __ _
+    \ \/  \/ / _` | '__| '_ \| | '_ \ / _` |
+     \  /\  / (_| | |  | | | | | | | | (_| |
+      \/  \/ \__,_|_|  |_| |_|_|_| |_|\__, |
+                                      |___/
+    The --scripts flag is intended for developers to include google analytics etc. You could be opening yourself to a
+    security risk by including the --scripts flag. Make sure you trust the scripts that you are including.
+            """
+        )
+        scripts_pretty = ", ".join(scripts)
+        click.confirm(f"Are you sure you want to inject these scripts: {scripts_pretty}?", abort=True)
+
+
+def handle_verbose(verbose):
+    if not verbose:
+        sys.tracebacklimit = 0
+
+
 @sort_options
 @click.command(
     short_help="Launch the cellxgene data viewer. " "Run `cellxgene launch --help` for more information.",
     options_metavar="<options>",
 )
-@click.argument("data", nargs=1, metavar="<path to data file>", required=True)
-@click.option(
-    "--verbose",
-    "-v",
-    is_flag=True,
-    default=False,
-    show_default=True,
-    help="Provide verbose output, including warnings and all server requests.",
-)
-@click.option(
-    "--debug",
-    "-d",
-    is_flag=True,
-    default=False,
-    show_default=True,
-    help="Run in debug mode. This is helpful for cellxgene developers, "
-    "or when you want more information about an error condition.",
-)
-@click.option(
-    "--open",
-    "-o",
-    "open_browser",
-    is_flag=True,
-    default=False,
-    show_default=True,
-    help="Open web browser after launch.",
-)
-@click.option(
-    "--port",
-    "-p",
-    metavar="<port>",
-    show_default=True,
-    help="Port to run server on. If not specified cellxgene will find an available port.",
-)
-@click.option(
-    "--host",
-    metavar="<IP address>",
-    default="127.0.0.1",
-    show_default=False,
-    help="Host IP address. By default cellxgene will use localhost (e.g. 127.0.0.1).",
-)
-@click.option(
-    "--scripts",
-    "-s",
-    default=[],
-    multiple=True,
-    metavar="<text>",
-    help="Additional script files to include in HTML page. If not specified, "
-    "no additional script files will be included.",
-    show_default=False,
-)
-@click.help_option("--help", "-h", help="Show this message and exit.")
-@common_args
+@launch_args
 def launch(
     data,
     verbose,
@@ -242,23 +305,8 @@ def launch(
     else:
         warnings.formatwarning = custom_format_warning
 
-    if not verbose:
-        sys.tracebacklimit = 0
-
-    if scripts:
-        click.echo(
-            r"""
-    / / /\ \ \__ _ _ __ _ __ (_)_ __   __ _
-    \ \/  \/ / _` | '__| '_ \| | '_ \ / _` |
-     \  /\  / (_| | |  | | | | | | | | (_| |
-      \/  \/ \__,_|_|  |_| |_|_|_| |_|\__, |
-                                      |___/
-    The --scripts flag is intended for developers to include google analytics etc. You could be opening yourself to a
-    security risk by including the --scripts flag. Make sure you trust the scripts that you are including.
-            """
-        )
-        scripts_pretty = ", ".join(scripts)
-        click.confirm(f"Are you sure you want to inject these scripts: {scripts_pretty}?", abort=True)
+    handle_verbose(verbose)
+    handle_scripts(scripts)
 
     if not title:
         file_parts = splitext(basename(data))
@@ -303,7 +351,6 @@ def launch(
                 )
 
     if about:
-
         def url_check(url):
             try:
                 result = urlparse(url)
@@ -327,7 +374,7 @@ def launch(
         click.echo(f"[cellxgene] Loading data from {basename(data)}.")
 
     # app config
-    app_config = AppConfig(
+    app_config = AppSingleConfig(
         title=title,
         about=about,
         scripts=scripts,
@@ -348,15 +395,14 @@ def launch(
     annotations = None
 
     if experimental_annotations:
-        annotations = AnnotationsLocalFile(data,
-                                           experimental_annotations_output_dir,
+        annotations = AnnotationsLocalFile(experimental_annotations_output_dir,
                                            experimental_annotations_file)
 
         # if the user has specified a fixed label file, go ahead and validate it
         # so that we can remove errors early in the process.
 
         if experimental_annotations_file:
-            cxg_data.validate_label_data(annotations.read_labels())
+            cxg_data.validate_label_data(annotations.read_labels(cxg_data))
 
         if experimental_annotations_ontology or bool(experimental_annotations_ontology_obo):
             try:
@@ -365,6 +411,7 @@ def launch(
                 raise click.ClickException("Unable to load ontology terms\n" + str(e))
 
     # create the server
+    from server.app_single.app import Server
     server = Server(cxg_data, annotations, app_config)
 
     if not verbose:
@@ -382,6 +429,133 @@ def launch(
         webbrowser.open(cellxgene_url)
     else:
         click.echo(f"[cellxgene] Launching! Please go to {cellxgene_url} in your browser.")
+
+    click.echo("[cellxgene] Type CTRL-C at any time to exit.")
+
+    if not verbose:
+        f = open(devnull, "w")
+        sys.stdout = f
+
+    try:
+        server.app.run(host=host, debug=debug, port=port, threaded=False if debug else True, use_debugger=False)
+    except OSError as e:
+        if e.errno == errno.EADDRINUSE:
+            raise click.ClickException("Port is in use, please specify an open port using the --port flag.") from e
+        raise
+
+
+def launch_multi_args(func):
+    @annotation_args
+    @config_args
+    @server_args
+    @functools.wraps(func)
+    @click.argument("dataroot", nargs=1, metavar="<path to data files root>", required=True)
+    @click.help_option("--help", "-h", help="Show this message and exit.")
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
+@sort_options
+@click.command(
+    short_help="Launch the cellxgene data viewer. " "Run `cellxgene launch_multi --help` for more information.",
+    options_metavar="<options>",
+)
+@launch_multi_args
+def launch_multi(
+    dataroot,
+    verbose,
+    debug,
+    port,
+    host,
+    embedding,
+    max_category_items,
+    diffexp_lfc_cutoff,
+    scripts,
+    experimental_annotations,
+    experimental_annotations_file,
+    experimental_annotations_output_dir,
+    disable_diffexp,
+    experimental_annotations_ontology,
+    experimental_annotations_ontology_obo
+):
+    """Launch the cellxgene data viewer.
+    This web app lets you explore single-cell expression data.
+    Data must be in a format that cellxgene expects.
+    Read the "getting started" guide to learn more:
+    https://chanzuckerberg.github.io/cellxgene/getting-started.html
+
+    Examples:
+
+    > cellxgene launch-multi example_dataset_directory"""
+
+    # Startup message
+    click.echo("[cellxgene] Starting the CLI...")
+
+    if debug:
+        verbose = True
+    else:
+        warnings.formatwarning = custom_format_warning
+
+    handle_verbose(verbose)
+    handle_scripts(scripts)
+
+    if port:
+        if debug:
+            raise click.ClickException("--port and --debug may not be used together (try --verbose for error logging).")
+        if not is_port_available(host, int(port)):
+            raise click.ClickException(
+                f"The port selected {port} is in use, please specify an open port using the --port flag."
+            )
+    else:
+        port = find_available_port(host)
+
+    if experimental_annotations:
+        if experimental_annotations_file is not None:
+            raise click.ClickException(
+                "--experimental-annotations-file cannot be set in launch-multi"
+            )
+
+        if experimental_annotations_output_dir is not None and not isdir(experimental_annotations_output_dir):
+            try:
+                mkdir(experimental_annotations_output_dir)
+            except OSError:
+                raise click.ClickException(
+                    "Unable to create directory specified by --experimental-annotations-output-dir"
+                )
+
+    # create an annotations object.  Only AnnotationsLocalFile is used (for now)
+    annotations = None
+
+    if experimental_annotations:
+        annotations = AnnotationsLocalFile(experimental_annotations_output_dir,
+                                           experimental_annotations_file)
+
+        if experimental_annotations_ontology or bool(experimental_annotations_ontology_obo):
+            try:
+                annotations.load_ontology(experimental_annotations_ontology_obo)
+            except OntologyLoadFailure as e:
+                raise click.ClickException("Unable to load ontology terms\n" + str(e))
+
+    # app config
+    from server.app_multi.app import ServerMulti
+
+    app_config = AppMultiConfig(
+        dataroot=dataroot,
+        scripts=scripts,
+        layout=embedding,
+        max_category_items=max_category_items,
+        diffexp_lfc_cutoff=diffexp_lfc_cutoff,
+        disable_diffexp=disable_diffexp)
+
+    # create the server
+    server = ServerMulti(app_config, annotations)
+
+    if not verbose:
+        log = logging.getLogger("werkzeug")
+        log.setLevel(logging.ERROR)
 
     click.echo("[cellxgene] Type CTRL-C at any time to exit.")
 

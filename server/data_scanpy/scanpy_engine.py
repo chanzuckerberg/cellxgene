@@ -33,7 +33,7 @@ class ScanpyEngine(CXGDriver):
             self._validate_and_initialize()
 
     @staticmethod
-    def pre_check(location):
+    def pre_checks(location):
         data_locator = DataLocator(location)
         if data_locator.islocal():
             # if data locator is local, apply file system conventions and other "cheap"
@@ -54,6 +54,9 @@ class ScanpyEngine(CXGDriver):
     def open(location, args):
         data_locator = DataLocator(location)
         return ScanpyEngine(data_locator, args)
+
+    def get_location(self):
+        return self.data_locator.uri_or_path
 
     def get_name(self):
         return "cellxgene Scanpy engine version "

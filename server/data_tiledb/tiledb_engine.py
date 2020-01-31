@@ -1,11 +1,11 @@
 import os
 import json
 from server.data_common.driver import CXGDriver
-from urllib.parse import urlsplit, urljoin
 import tiledb
 import numpy as np
 import pandas as pd
 from server.data_common.fbs.matrix import encode_matrix_fbs
+from server.common.utils import path_join
 from server_timing import Timing as ServerTiming
 
 
@@ -29,8 +29,9 @@ class TileDbEngine(CXGDriver):
             self._validate_and_initialize()
 
     @staticmethod
-    def pre_check(location):
-        pass
+    def pre_checks(location):
+        if not TileDbEngine.isvalid(location):
+            raise RuntimeError(f"tiledb matrix is not valid: {location}")
 
     @staticmethod
     def file_size(location):
@@ -40,6 +41,9 @@ class TileDbEngine(CXGDriver):
     def open(location, args):
         return TileDbEngine(location, args)
 
+    def get_location(self):
+        return self.url
+
     def get_name(self):
         return "cellxgene TileDb engine version"
 
@@ -47,20 +51,7 @@ class TileDbEngine(CXGDriver):
         return dict(tiledb=tiledb.__version__)
 
     def get_path(self, *urls):
-        """
-        this is like urllib.parse.urljoin, except it works around the scheme-specific
-        cleverness in the aforementioned code, ignores anything in the url except the path,
-        and accepts more than one url.
-        """
-        btpl = urlsplit(self.url)
-        path = btpl.path
-        for url in urls:
-            utpl = urlsplit(url)
-            if btpl.scheme == "":
-                path = os.path.join(path, utpl.path)
-            else:
-                path = urljoin(path, utpl.path)
-        return btpl._replace(path=path).geturl()
+        return path_join(self.url, *urls)
 
     def lsuri(self, uri):
         """
@@ -86,25 +77,26 @@ class TileDbEngine(CXGDriver):
                   ctx=self.tiledb_ctx)
         return result
 
-    def isvalid(self):
+    @staticmethod
+    def isvalid(url):
         """
         Return True if this looks like a valid CXG, False if not.  Just a quick/cheap
         test, not to be fully trusted.
         """
-        if not tiledb.object_type(self.url) == "group":
+        if not tiledb.object_type(url) == "group":
             return False
-        if not tiledb.object_type(self.get_path("obs")) == "array":
+        if not tiledb.object_type(path_join(url, "obs")) == "array":
             return False
-        if not tiledb.object_type(self.get_path("var")) == "array":
+        if not tiledb.object_type(path_join(url, "var")) == "array":
             return False
-        if not tiledb.object_type(self.get_path("X")) == "array":
+        if not tiledb.object_type(path_join(url, "X")) == "array":
             return False
-        if not tiledb.object_type(self.get_path("emb")) == "group":
+        if not tiledb.object_type(path_join(url, "emb")) == "group":
             return False
         return True
 
     def _validate_and_initialize(self):
-        if not self.isvalid():
+        if not self.isvalid(self.url):
             raise RuntimeError(f"invalid tiledb dataset {self.url}")
 
     def get_array(self, name, items=None):

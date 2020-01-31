@@ -12,7 +12,7 @@ from server.data_scanpy.scanpy_engine import ScanpyEngine
 from server.data_common.fbs.matrix import encode_matrix_fbs
 from server.common.data_locator import DataLocator
 from server.common.annotations import AnnotationsLocalFile
-from server.common.utils import get_schema, annotation_put_fbs
+from server.common.rest import schema_get_helper, annotations_put_fbs_helper
 
 
 class WritableAnnotationTest(unittest.TestCase):
@@ -29,7 +29,7 @@ class WritableAnnotationTest(unittest.TestCase):
         fname = "../example-dataset/pbmc3k.h5ad"
         data_locator = DataLocator(fname)
         self.data = ScanpyEngine(data_locator, args)
-        self.annotations = AnnotationsLocalFile(fname, None, self.annotations_file)
+        self.annotations = AnnotationsLocalFile(None, self.annotations_file)
 
     def tearDown(self):
         shutil.rmtree(self.tmpDir)
@@ -39,7 +39,7 @@ class WritableAnnotationTest(unittest.TestCase):
         return encode_matrix_fbs(matrix=df, row_idx=None, col_idx=df.columns)
 
     def annotation_put_fbs(self, fbs):
-        annotation_put_fbs(fbs, self.data, self.annotations)
+        annotations_put_fbs_helper(self.data, self.annotations, fbs)
         res = json.dumps({"status": "OK"})
         return res
 
@@ -130,9 +130,9 @@ class WritableAnnotationTest(unittest.TestCase):
         self.assertEqual(res, json.dumps({"status": "OK"}))
 
         # get
-        labels = self.annotations.read_labels()
+        labels = self.annotations.read_labels(None)
         fbsAll = self.data.annotation_to_fbs_matrix("obs", None, labels)
-        schema = get_schema(self.data, self.annotations)
+        schema = schema_get_helper(self.data, self.annotations)
         annotations = decode_fbs.decode_matrix_FBS(fbsAll)
         obs_index_col_name = schema["annotations"]["obs"]["index"]
         self.assertEqual(annotations["n_rows"], n_rows)

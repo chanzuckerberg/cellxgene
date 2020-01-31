@@ -1,8 +1,7 @@
 import os
 from flask import Blueprint, render_template, send_from_directory, current_app
 
-
-bp = Blueprint("webapp", __name__, template_folder="templates")
+bp = Blueprint("webapp", "server.common.web", template_folder="templates")
 
 
 @bp.route("/")
