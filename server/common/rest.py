@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from http import HTTPStatus
 import warnings
 from flask import make_response, jsonify
@@ -76,11 +74,8 @@ def annotations_put_fbs_helper(data_engine, annotations, fbs):
 
     new_label_df = decode_matrix_fbs(fbs)
     if not new_label_df.empty:
-        # FIXME - refactor original_obs_index
-        new_label_df.index = data_engine.original_obs_index
-
-    data_engine.validate_label_data(new_label_df)
-    annotations.write_labels(new_label_df, data_engine)
+        data_engine.check_new_labels(new_label_df)
+        annotations.write_labels(new_label_df, data_engine)
 
 
 def annotations_obs_put(request, data_engine, annotations):

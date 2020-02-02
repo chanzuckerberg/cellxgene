@@ -7,6 +7,7 @@ import pandas as pd
 from server.data_common.fbs.matrix import encode_matrix_fbs
 from server.common.utils import path_join
 from server_timing import Timing as ServerTiming
+from server.common.constants import Axis
 
 
 class TileDbEngine(CXGDriver):
@@ -150,6 +151,34 @@ class TileDbEngine(CXGDriver):
             raise AttributeError(str(e))
         return anno_data
 
+    def get_obs_names(self):
+        # get the index from the meta data
+        p = self.get_path("obs")
+        with tiledb.DenseArray(p, mode='r', ctx=self.tiledb_ctx) as A:
+            meta = json.loads(A.meta["cxg_schema"])
+            index_name = meta["index"]
+            return index_name
+
+    def get_obs_index(self):
+        p = self.get_path("obs")
+        with tiledb.DenseArray(p, mode='r', ctx=self.tiledb_ctx) as A:
+            meta = json.loads(A.meta["cxg_schema"])
+            index_name = meta["index"]
+            data = A.query(attrs=[index_name])[:][index_name]
+            return data
+
+    def get_obs_columns(self):
+        p = self.get_path("obs")
+        with tiledb.DenseArray(p, mode='r', ctx=self.tiledb_ctx) as A:
+            schema = A.schema
+            col_names = [attr.name for attr in schema]
+            return pd.Index(col_names)
+
+    def get_obs_shape(self):
+        p = self.get_path("obs")
+        with tiledb.DenseArray(p, mode='r', ctx=self.tiledb_ctx) as A:
+            return A.shape
+
     # function to get the embedding
     # this function to iterate through embeddings.
     def get_embedding_names(self):
@@ -176,6 +205,9 @@ class TileDbEngine(CXGDriver):
             schema['type'] = 'boolean'
         elif dtype == np.str:
             schema['type'] = 'string'
+        elif dtype == "category":
+            schema["type"] = "categorical"
+            schema["categories"] = dtype.categories.tolist()
         else:
             raise TypeError(
                 f"Annotations of type {dtype} are unsupported."
@@ -236,15 +268,19 @@ class TileDbEngine(CXGDriver):
         with ServerTiming.time(f'annotations.{axis}.query'):
             p = self.get_path(str(axis))
             with tiledb.DenseArray(p, mode='r', ctx=self.tiledb_ctx) as A:
-                # FIXME handle labels
-                if not fields:
-                    data = A[:]
-                else:
+                if fields is not None and len(fields) > 0:
                     try:
-                        data = A.query(attrs=fields)[:]
+                        df = pd.DataFrame(A.query(attrs=fields)[:])
                     except tiledb.libtiledb.TileDBError:
                         raise KeyError("bad field {fields}")
-                df = pd.DataFrame.from_dict(data)
+
+                else:
+                    df = pd.DataFrame.from_dict(A[:])
+
+                if axis == Axis.OBS:
+                    if labels is not None and not labels.empty:
+                        obs_names = self.get_obs_names()
+                        df = df.join(labels, obs_names)
 
         with ServerTiming.time(f'annotations.{axis}.encode'):
             fbs = encode_matrix_fbs(df, col_idx=df.columns)

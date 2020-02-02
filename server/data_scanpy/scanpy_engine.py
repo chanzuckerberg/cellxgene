@@ -277,39 +277,6 @@ class ScanpyEngine(CXGDriver):
                         )
 
     @requires_data
-    def validate_label_data(self, labels):
-        """
-        labels is None if disabled, empty if enabled by no data
-        """
-        if labels is None or labels.empty:
-            return
-
-        # all lables must have a name, which must be unique and not used in obs column names
-        if not labels.columns.is_unique:
-            raise KeyError(f"All column names specified in user annotations must be unique.")
-
-        # the label index must be unique, and must have same values the anndata obs index
-        if not labels.index.is_unique:
-            raise KeyError(f"All row index values specified in user annotations must be unique.")
-
-        if not labels.index.equals(self.original_obs_index):
-            raise KeyError(
-                "Label file row index does not match H5AD file index. "
-                "Please ensure that column zero (0) in the label file contain the same "
-                "index values as the H5AD file."
-            )
-
-        duplicate_columns = list(set(labels.columns) & set(self.data.obs.columns))
-        if len(duplicate_columns) > 0:
-            raise KeyError(
-                f"Labels file may not contain column names which overlap " f"with h5ad obs columns {duplicate_columns}"
-            )
-
-        # labels must have same count as obs annotations
-        if labels.shape[0] != self.data.obs.shape[0]:
-            raise ValueError("Labels file must have same number of rows as h5ad file.")
-
-    @requires_data
     def annotation_to_fbs_matrix(self, axis, fields=None, labels=None):
         if axis == Axis.OBS:
             if labels is not None and not labels.empty:
@@ -375,3 +342,12 @@ class ScanpyEngine(CXGDriver):
 
     def query_obs_array(self, term_name):
         return getattr(self.data.obs, term_name)
+
+    def get_obs_index(self):
+        return self.original_obs_index
+
+    def get_obs_columns(self):
+        return self.data.obs.columns
+
+    def get_obs_shape(self):
+        return self.data.obs.shape

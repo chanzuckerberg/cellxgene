@@ -143,6 +143,34 @@ class CXGDriver(metaclass=ABCMeta):
 
         return (obs_selector, var_selector)
 
+    def check_new_labels(self, labels_df):
+        """Check the new annotations labels, then set the labels_df index"""
+        if labels_df is None or labels_df.empty:
+            return
+
+        labels_df.index = self.get_obs_index()
+
+        # all lables must have a name, which must be unique and not used in obs column names
+        if not labels_df.columns.is_unique:
+            raise KeyError(f"All column names specified in user annotations must be unique.")
+
+        # the label index must be unique, and must have same values the anndata obs index
+        if not labels_df.index.is_unique:
+            raise KeyError(f"All row index values specified in user annotations must be unique.")
+
+        obs_columns = self.get_obs_columns()
+
+        duplicate_columns = list(set(labels_df.columns) & set(obs_columns))
+        if len(duplicate_columns) > 0:
+            raise KeyError(
+                f"Labels file may not contain column names which overlap " f"with h5ad obs columns {duplicate_columns}"
+            )
+
+        # labels must have same count as obs annotations
+        obs_shape = self.get_obs_shape()
+        if labels_df.shape[0] != obs_shape[0]:
+            raise ValueError("Labels file must have same number of rows as data file.")
+
     def data_frame_to_fbs_matrix(self, filter, axis):
         """
         Retrieves data 'X' and returns in a flatbuffer Matrix.
@@ -276,4 +304,16 @@ class CXGDriver(metaclass=ABCMeta):
 
     @abstractmethod
     def query_obs_array(self, term_var):
+        pass
+
+    @abstractmethod
+    def get_obs_index(self):
+        pass
+
+    @abstractmethod
+    def get_obs_columns(self):
+        pass
+
+    @abstractmethod
+    def get_obs_shape(self):
         pass
