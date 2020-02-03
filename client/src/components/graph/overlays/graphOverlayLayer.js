@@ -12,7 +12,7 @@ class GraphOverlayLayer extends PureComponent {
     This component takes its children (assumed in the data coordinate space ([0, 1] range, origin in bottom left corner))
     and transforms itself multiple times resulting in screen space ([0, screenWidth/Height] range, origin in top left corner)
 
-    Children are assigned in the graph component
+    Children are assigned in the graph component and must implement onDisplayChange()
    */
   constructor(props) {
     super(props);
@@ -36,6 +36,13 @@ class GraphOverlayLayer extends PureComponent {
 
   reverseMatrixScaleTransformString = m => {
     return `matrix(${1 / m[0]} 0 0 ${1 / m[4]} 0 0)`;
+  };
+
+  // This is passed to all children, should be called when an overlay's display state is toggled with the overlay name and its new display state in boolean form
+  onDisplayChange = (overlay, displaying) => {
+    this.setState(state => {
+      return { ...state, display: { ...state.display, [overlay]: displaying } };
+    });
   };
 
   render() {
