@@ -58,6 +58,9 @@ class GraphOverlayLayer extends PureComponent {
 
     if (!cameraTF) return null;
 
+    const { display } = this.state;
+    const displaying = Object.values(display).some(value => value); // check to see if at least one overlay is currently displayed
+
     const inverseTransform = `${this.reverseMatrixScaleTransformString(
       modelTF
     )} ${this.reverseMatrixScaleTransformString(
@@ -76,7 +79,10 @@ class GraphOverlayLayer extends PureComponent {
         width={responsive.width - graphPaddingRightLeft}
         height={responsive.height}
         pointerEvents="none"
-        style={{ zIndex: 99 }}
+        style={{
+          zIndex: 99,
+          backgroundColor: displaying ? "rgba(255, 255, 255, 0.55)" : ""
+        }}
       >
         <g
           id="canvas-transformation-group-x"
