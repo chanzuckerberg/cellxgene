@@ -108,7 +108,10 @@ class GraphOverlayLayer extends PureComponent {
                   transform={this.matrixToTransformString(modelTF)}
                 >
                   {newChildren.map(child =>
-                    cloneElement(child, { inverseTransform })
+                    cloneElement(child, {
+                      inverseTransform,
+                      onDisplayChange: this.onDisplayChange
+                    })
                   )}
                 </g>
               </g>
