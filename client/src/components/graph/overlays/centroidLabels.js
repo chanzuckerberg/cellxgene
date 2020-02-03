@@ -1,6 +1,9 @@
+/* eslint-disable max-classes-per-file */
 /* eslint-disable jsx-a11y/mouse-events-have-key-events */
-import React, { PureComponent } from "react";
+import React, { PureComponent, Component } from "react";
 import { connect } from "react-redux";
+
+import { categoryLabelDisplayStringLongLength } from "../../../globals";
 
 export default
 @connect(state => ({
@@ -41,6 +44,16 @@ class CentroidLabels extends PureComponent {
         fontSize = "18px";
         fontWeight = "800";
       }
+
+      // Mirror LSB middle truncation
+      let label = key;
+      if (label.length > categoryLabelDisplayStringLongLength) {
+        label = `${key.slice(
+          0,
+          categoryLabelDisplayStringLongLength / 2
+        )}…${key.slice(-categoryLabelDisplayStringLongLength / 2)}`;
+      }
+
       labelSVGS.push(
         <g
           // eslint-disable-next-line react/no-array-index-key
@@ -75,7 +88,7 @@ class CentroidLabels extends PureComponent {
             }
             pointerEvents="visiblePainted"
           >
-            {key.length > 20 ? `${key.substr(0, 20)}...` : key}
+            {label}
           </text>
         </g>
       );
