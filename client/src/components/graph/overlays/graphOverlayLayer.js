@@ -14,6 +14,14 @@ class GraphOverlayLayer extends PureComponent {
 
     Children are assigned in the graph component
    */
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      display: {}
+    };
+  }
+
   matrixToTransformString = m => {
     /* 
       Translates the gl-matrix mat3 to SVG matrix transform style
