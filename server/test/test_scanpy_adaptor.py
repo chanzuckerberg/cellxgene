@@ -98,7 +98,6 @@ class AdaptorTest(unittest.TestCase):
 
     def test_config(self):
         self.assertEqual(self.data.get_features()["layout_obs"].available, True)
-        self.assertEqual(self.data.get_features()["layout_obs"].interactiveLimit, 50000)
 
     def test_layout(self):
         fbs = self.data.layout_to_fbs_matrix()

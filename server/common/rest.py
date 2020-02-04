@@ -6,7 +6,6 @@ import copy
 from server.common.constants import Axis, DiffExpMode, JSON_NaN_to_num_warning_msg
 from server.common.errors import (
     FilterError,
-    InteractiveError,
     JSONEncodingValueError,
     PrepareError,
     DisabledFeatureError,
@@ -175,13 +174,10 @@ def diffexp_obs_post(request, data_adaptor):
     # mode=topN
     count = args.get("count", None)
     try:
-        interactive_limit = data_adaptor.get_features()["diffexp"].interactiveLimit
-        diffexp = data_adaptor.diffexp_topN(set1_filter, set2_filter, count, interactive_limit)
+        diffexp = data_adaptor.diffexp_topN(set1_filter, set2_filter, count)
         return make_response(diffexp, HTTPStatus.OK, {"Content-Type": "application/json"})
     except (ValueError, FilterError) as e:
         return make_response(str(e), HTTPStatus.BAD_REQUEST)
-    except InteractiveError:
-        return make_response("Non-interactive request", HTTPStatus.FORBIDDEN)
     except JSONEncodingValueError as e:
         # JSON encoding failure, usually due to bad data
         warnings.warn(JSON_NaN_to_num_warning_msg)

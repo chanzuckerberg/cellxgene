@@ -11,23 +11,18 @@ from server.common.constants import Axis
 
 
 class TileDbAdaptor(DataAdaptor):
-    def __init__(self, location=None, config=None):
+    def __init__(self, location, config=None):
         super().__init__(config)
         self.url = location
-        self.update(location, config)
         self.tiledb_ctx = tiledb.Ctx({
             'sm.tile_cache_size': 8 * 1024 * 1024 * 1024,
             'sm.num_reader_threads': 32,
         })
+        self.url = location
+        if self.url[-1] != '/':
+            self.url += '/'
 
-    def update(self, location=None, config=None):
-        self.config = config
-        if location:
-            self.url = location
-            if self.url[-1] != '/':
-                self.url += '/'
-
-            self._validate_and_initialize()
+        self._validate_and_initialize()
 
     @staticmethod
     def pre_checks(location):

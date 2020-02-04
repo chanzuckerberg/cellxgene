@@ -13,31 +13,16 @@ class DataLoadAdaptorTest(unittest.TestCase):
 
     def setUp(self):
         self.data_file = DataLocator("../example-dataset/pbmc3k.h5ad")
-        self.data = ScanpyAdaptor()
+        self.data = ScanpyAdaptor(self.data_file)
 
     def test_init(self):
         self.assertIsNone(self.data.data)
-
-    def test_delayed_load_args(self):
-        args = {
-            "layout": ["tsne"],
-            "max_category_items": 1000,
-            "obs_names": "foo",
-            "var_names": "bar",
-            "diffexp_lfc_cutoff": 0.1,
-            "scanpy_backed": False,
-            "disable_diffexp": False,
-        }
-        self.data.update(config=args)
-        for k, v in args.items():
-            self.assertEqual(v, getattr(self.data.config, k))
 
     def test_requires_data(self):
         with self.assertRaises(DataAdaptorError):
             self.data._create_schema()
 
     def test_delayed_load_data(self):
-        self.data.update(data_locator=self.data_file)
         self.data._create_schema()
         self.assertEqual(self.data.cell_count, 2638)
         self.assertEqual(self.data.gene_count, 1838)
@@ -45,7 +30,6 @@ class DataLoadAdaptorTest(unittest.TestCase):
         self.assertTrue(self.data.data.X[0, 0] - -0.171_469_51 < epsilon)
 
     def test_diffexp_topN(self):
-        self.data.update(data_locator=self.data_file)
         f1 = {"filter": {"obs": {"index": [[0, 500]]}}}
         f2 = {"filter": {"obs": {"index": [[500, 1000]]}}}
         result = json.loads(self.data.diffexp_topN(f1["filter"], f2["filter"]))

@@ -5,13 +5,6 @@ class FilterError(Exception):
     pass
 
 
-class InteractiveError(Exception):
-    """
-    Raised when computation would exceed interactive time
-    """
-    pass
-
-
 class JSONEncodingValueError(Exception):
     """
     Raised when file loaded into scanpy is misformatted

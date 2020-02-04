@@ -11,7 +11,6 @@ from server.common.errors import (
     PrepareError,
     ScanpyFileError,
 )
-from server.data_common.utils import requires_data
 from server.data_common.fbs.matrix import encode_matrix_fbs
 import server.data_scanpy.matrix_proxy  # noqa: F401
 
@@ -20,18 +19,12 @@ from server.common.data_locator import DataLocator
 
 class ScanpyAdaptor(DataAdaptor):
 
-    def __init__(self, data_locator=None, config=None):
+    def __init__(self, data_locator, config=None):
         super().__init__(config)
         self.data = None
-        self.data_locator = None
-        self.update(data_locator, config)
-
-    def update(self, data_locator=None, config=None):
-        super().__init__(config)
-        if data_locator:
-            self.data_locator = data_locator
-            self._load_data(data_locator)
-            self._validate_and_initialize()
+        self.data_locator = data_locator
+        self._load_data(data_locator)
+        self._validate_and_initialize()
 
     @staticmethod
     def pre_checks(location):
@@ -159,7 +152,6 @@ class ScanpyAdaptor(DataAdaptor):
             raise TypeError(f"Annotations of type {dtype} are unsupported by cellxgene.")
         return schema
 
-    @requires_data
     def _create_schema(self):
         self.schema = {
             "dataframe": {"nObs": self.cell_count, "nVar": self.gene_count, "type": str(self.data.X.dtype)},
@@ -180,7 +172,6 @@ class ScanpyAdaptor(DataAdaptor):
             layout_schema = {"name": layout, "type": "float32", "dims": [f"{layout}_0", f"{layout}_1"]}
             self.schema["layout"]["obs"].append(layout_schema)
 
-    @requires_data
     def get_schema(self):
         return self.schema
 
@@ -213,7 +204,6 @@ class ScanpyAdaptor(DataAdaptor):
                 f"Please check your input and try again."
             )
 
-    @requires_data
     def _validate_and_initialize(self):
         # var and obs column names must be unique
         if not self.data.obs.columns.is_unique or not self.data.var.columns.is_unique:
@@ -230,7 +220,6 @@ class ScanpyAdaptor(DataAdaptor):
         if (n_values > 1e8 and self.config.backed is True) or (n_values > 5e8):
             self.parameters.update({"diffexp_may_be_slow": True})
 
-    @requires_data
     def _is_valid_layout(self, arr):
         """ return True if this layout data is a valid array for front-end presentation:
             * ndarray, with shape (n_obs, >= 2), dtype float/int/uint
@@ -241,7 +230,6 @@ class ScanpyAdaptor(DataAdaptor):
         is_valid = is_valid and np.all(np.isfinite(arr))
         return is_valid
 
-    @requires_data
     def _validate_data_types(self):
         if sparse.isspmatrix(self.data.X) and not sparse.isspmatrix_csc(self.data.X):
             warnings.warn(
@@ -277,7 +265,6 @@ class ScanpyAdaptor(DataAdaptor):
                             f"annotations with more than 500 categories in the UI"
                         )
 
-    @requires_data
     def annotation_to_fbs_matrix(self, axis, fields=None, labels=None):
         if axis == Axis.OBS:
             if labels is not None and not labels.empty:

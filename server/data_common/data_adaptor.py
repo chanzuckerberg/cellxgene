@@ -42,19 +42,16 @@ class DataAdaptor(metaclass=ABCMeta):
 
         if self.get_embedding_names():
             # TODO handle "var" when gene layout becomes available
-            # TODO - Interactive limit should be generated from the actual available methods see GH issue #94
             features["layout_obs"] = AppFeature(
-                "/layout/obs", available=True, extra={"interactiveLimit": 50000})
+                "/layout/obs", available=True)
         else:
             features["layout_obs"] = AppFeature("/layout/obs")
-
-        features["layout_var"] = AppFeature("/layout/var")
 
         if self.config.disable_diffexp:
             features["diffexp"] = AppFeature("/diffexp/")
         else:
             features["diffexp"] = AppFeature(
-                "/diffexp/", available=True, extra={"interactiveLimit" : 50000})
+                "/diffexp/", available=True)
 
         return features
 
@@ -198,7 +195,7 @@ class DataAdaptor(metaclass=ABCMeta):
         X = MatrixProxy.create(X)
         return encode_matrix_fbs(X, col_idx=np.nonzero(var_selector)[0], row_idx=None)
 
-    def diffexp_topN(self, obsFilterA, obsFilterB, top_n=None, interactive_limit=None):
+    def diffexp_topN(self, obsFilterA, obsFilterB, top_n=None):
         """
         Computes the top N differentially expressed variables between two observation sets. If mode
         is "TOP_N", then stats for the top N
@@ -208,7 +205,6 @@ class DataAdaptor(metaclass=ABCMeta):
         :param obsFilterA: filter: dictionary with filter params for first set of observations
         :param obsFilterB: filter: dictionary with filter params for second set of observations
         :param top_n: Limit results to top N (Top var mode only)
-        :param interactive_limit: -- don't compute if total # genes in dataframes are larger than this
         :return: top N genes and corresponding stats
         """
         if Axis.VAR in obsFilterA or Axis.VAR in obsFilterB:

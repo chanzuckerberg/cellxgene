@@ -35,16 +35,6 @@ def jsonify_numpy(data):
     return json.dumps(data, cls=Float32JSONEncoder, allow_nan=False)
 
 
-def requires_data(func):
-    @wraps(func)
-    def wrapped_function(self, *args, **kwargs):
-        if self.data is None:
-            raise DataAdaptorError(f"error data must be loaded before you call {func.__name__}")
-        return func(self, *args, **kwargs)
-
-    return wrapped_function
-
-
 class MatrixDataType(Enum):
     H5AD = "h5ad"
     TILEDB = "tiledb"
