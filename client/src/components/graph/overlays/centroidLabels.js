@@ -1,6 +1,6 @@
 /* eslint-disable max-classes-per-file */
 /* eslint-disable jsx-a11y/mouse-events-have-key-events */
-import React, { PureComponent, Component } from "react";
+import React, { PureComponent } from "react";
 import { connect } from "react-redux";
 
 import { categoryLabelDisplayStringLongLength } from "../../../globals";
