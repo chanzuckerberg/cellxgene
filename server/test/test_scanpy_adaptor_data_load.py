@@ -1,19 +1,19 @@
 import unittest
 import json
 
-from server.data_scanpy.scanpy_engine import ScanpyEngine
-from server.common.errors import DriverError
+from server.data_scanpy.scanpy_adaptor import ScanpyAdaptor
+from server.common.errors import DataAdaptorError
 from server.common.data_locator import DataLocator
 
 
-class DataLoadEngineTest(unittest.TestCase):
+class DataLoadAdaptorTest(unittest.TestCase):
     """
     Test file loading, including deferred loading/update.
     """
 
     def setUp(self):
         self.data_file = DataLocator("../example-dataset/pbmc3k.h5ad")
-        self.data = ScanpyEngine()
+        self.data = ScanpyAdaptor()
 
     def test_init(self):
         self.assertIsNone(self.data.data)
@@ -33,7 +33,7 @@ class DataLoadEngineTest(unittest.TestCase):
             self.assertEqual(v, getattr(self.data.config, k))
 
     def test_requires_data(self):
-        with self.assertRaises(DriverError):
+        with self.assertRaises(DataAdaptorError):
             self.data._create_schema()
 
     def test_delayed_load_data(self):
@@ -54,7 +54,7 @@ class DataLoadEngineTest(unittest.TestCase):
         self.assertEqual(len(result), 20)
 
 
-class DataLocatorEngineTest(unittest.TestCase):
+class DataLocatorAdaptorTest(unittest.TestCase):
     """
     Test various types of data locators we expect to consume
     """
@@ -76,17 +76,17 @@ class DataLocatorEngineTest(unittest.TestCase):
 
     def test_posix_file(self):
         locator = DataLocator("../example-dataset/pbmc3k.h5ad")
-        data = ScanpyEngine(locator, self.args)
+        data = ScanpyAdaptor(locator, self.args)
         self.stdAsserts(data)
 
     def test_url_https(self):
         url = "https://raw.githubusercontent.com/chanzuckerberg/cellxgene/master/example-dataset/pbmc3k.h5ad"
         locator = DataLocator(url)
-        data = ScanpyEngine(locator, self.args)
+        data = ScanpyAdaptor(locator, self.args)
         self.stdAsserts(data)
 
     def test_url_http(self):
         url = "http://raw.githubusercontent.com/chanzuckerberg/cellxgene/master/example-dataset/pbmc3k.h5ad"
         locator = DataLocator(url)
-        data = ScanpyEngine(locator, self.args)
+        data = ScanpyAdaptor(locator, self.args)
         self.stdAsserts(data)

@@ -34,32 +34,32 @@ class AppConfig(metaclass=ABCMeta):
                 raise RuntimeError(f"unknown config parameter {k}.")
 
     @abstractmethod
-    def get_title(self, data_engine):
+    def get_title(self, data_adaptor):
         pass
 
     @abstractmethod
-    def get_about(self, data_engine):
+    def get_about(self, data_adaptor):
         pass
 
-    def get_config(self, data_engine, annotation=None):
+    def get_config(self, data_adaptor, annotation=None):
 
         # FIXME The current set of config is not consistently presented:
         # we have camalCase, hyphen-text, and underscore_text
 
         # features
-        features = [f.todict() for f in data_engine.get_features().values()]
+        features = [f.todict() for f in data_adaptor.get_features().values()]
 
         # display_names
-        title = self.get_title(data_engine)
-        about = self.get_about(data_engine)
+        title = self.get_title(data_adaptor)
+        about = self.get_about(data_adaptor)
 
         display_names = dict(
-            engine=data_engine.get_name(),
+            adaptor=data_adaptor.get_name(),
             dataset=title)
 
         # library_versions
         library_versions = {}
-        library_versions.update(data_engine.get_library_versions())
+        library_versions.update(data_adaptor.get_library_versions())
         library_versions["cellxgene"] = cellxgene_version
 
         # links
@@ -83,9 +83,9 @@ class AppConfig(metaclass=ABCMeta):
             "diffexp_may_be_slow": False,
         }
 
-        data_engine.update_parameters(parameters)
+        data_adaptor.update_parameters(parameters)
         if annotation:
-            annotation.update_parameters(parameters, data_engine)
+            annotation.update_parameters(parameters, data_adaptor)
 
         # gather it all together
         c = {}
@@ -126,10 +126,10 @@ class AppSingleConfig(AppConfig):
 
         self.update(inputs, kw)
 
-    def get_title(self, data_engine):
+    def get_title(self, data_adaptor):
         return self.title
 
-    def get_about(self, data_engine):
+    def get_about(self, data_adaptor):
         return self.about
 
 
@@ -164,13 +164,13 @@ class AppMultiConfig(AppConfig):
 
         self.update(inputs, kw)
 
-    def get_title(self, data_engine):
+    def get_title(self, data_adaptor):
         # TODO:  find a place to stash the dataset title, such as a
         # json file at the same location as the data matrix.
-        # for example, if the datamset is at abc.tdb then a file with
-        # the title and about info could be at abc.tdb.metadata.
+        # for example, if the dataset is at abc.cxg then a file with
+        # the title and about info could be at abc.cxg.metadata.
         # for now just return the basename
-        return splitext(basename(data_engine.get_location()))
+        return splitext(basename(data_adaptor.get_location()))
 
-    def get_about(self, data_engine):
+    def get_about(self, data_adaptor):
         return ""

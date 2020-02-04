@@ -55,7 +55,7 @@ def diffexp_ttest(data, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
     - p-values adjusted with Bonferroni correction.
       https://en.wikipedia.org/wiki/Bonferroni_correction
 
-    :param data: CXGDriver instance
+    :param data: DataAdaptor instance
     :param maskA: observation selection mask for set 1
     :param maskB: observation selection mask for set 2
     :param top_n: number of variables to return stats for

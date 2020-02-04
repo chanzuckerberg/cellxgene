@@ -16,12 +16,12 @@ import json
 from server.data_common.fbs.matrix import decode_matrix_fbs
 
 
-def schema_get_helper(data_engine, annotations):
+def schema_get_helper(data_adaptor, annotations):
     """helper function to gather the schema from the data source and annotations"""
-    schema = data_engine.get_schema()
+    schema = data_adaptor.get_schema()
     # add label obs annotations as needed
     if annotations is not None:
-        labels = annotations.read_labels(data_engine)
+        labels = annotations.read_labels(data_adaptor)
         if labels is not None and not labels.empty:
             schema = copy.deepcopy(schema)
             for col in labels.columns:
@@ -30,25 +30,25 @@ def schema_get_helper(data_engine, annotations):
                     "writable": True,
                 }
                 # FIXME: data._get_col_type needs to be refactored.
-                col_schema.update(data_engine._get_col_type(labels[col]))
+                col_schema.update(data_adaptor._get_col_type(labels[col]))
                 schema["annotations"]["obs"]["columns"].append(col_schema)
 
     return schema
 
 
-def schema_get(data_engine, annotations):
-    schema = schema_get_helper(data_engine, annotations)
+def schema_get(data_adaptor, annotations):
+    schema = schema_get_helper(data_adaptor, annotations)
     return make_response(
         jsonify({"schema": schema}), HTTPStatus.OK
     )
 
 
-def config_get(app_config, data_engine, annotations):
-    config = app_config.get_config(data_engine, annotations)
+def config_get(app_config, data_adaptor, annotations):
+    config = app_config.get_config(data_adaptor, annotations)
     return make_response(make_response(jsonify(config), HTTPStatus.OK))
 
 
-def annotations_obs_get(request, data_engine, annotations):
+def annotations_obs_get(request, data_adaptor, annotations):
     fields = request.args.getlist("annotation-name", None)
     preferred_mimetype = request.accept_mimetypes.best_match(["application/octet-stream"])
     if preferred_mimetype != "application/octet-stream":
@@ -56,8 +56,8 @@ def annotations_obs_get(request, data_engine, annotations):
     try:
         labels = None
         if annotations:
-            labels = annotations.read_labels(data_engine)
-        fbs = data_engine.annotation_to_fbs_matrix(Axis.OBS, fields, labels)
+            labels = annotations.read_labels(data_adaptor)
+        fbs = data_adaptor.annotation_to_fbs_matrix(Axis.OBS, fields, labels)
         return make_response(fbs, HTTPStatus.OK, {"Content-Type": "application/octet-stream"})
     except KeyError:
         return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
@@ -67,18 +67,18 @@ def annotations_obs_get(request, data_engine, annotations):
         return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
-def annotations_put_fbs_helper(data_engine, annotations, fbs):
+def annotations_put_fbs_helper(data_adaptor, annotations, fbs):
     """helper function to write annotations from fbs"""
     if annotations is None:
         raise DisabledFeatureError("Writable annotations are not enabled")
 
     new_label_df = decode_matrix_fbs(fbs)
     if not new_label_df.empty:
-        data_engine.check_new_labels(new_label_df)
-        annotations.write_labels(new_label_df, data_engine)
+        data_adaptor.check_new_labels(new_label_df)
+        annotations.write_labels(new_label_df, data_adaptor)
 
 
-def annotations_obs_put(request, data_engine, annotations):
+def annotations_obs_put(request, data_adaptor, annotations):
     anno_collection = request.args.get("annotation-collection-name", default=None)
     fbs = request.get_data()
 
@@ -91,7 +91,7 @@ def annotations_obs_put(request, data_engine, annotations):
         annotations.set_collection(anno_collection)
 
     try:
-        annotations_put_fbs_helper(data_engine, annotations, fbs)
+        annotations_put_fbs_helper(data_adaptor, annotations, fbs)
         res = json.dumps({"status": "OK"})
         return make_response(res, HTTPStatus.OK, {"Content-Type": "application/json"})
     except (ValueError, DisabledFeatureError, KeyError) as e:
@@ -100,7 +100,7 @@ def annotations_obs_put(request, data_engine, annotations):
         return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
-def annotations_var_get(request, data_engine, annotations):
+def annotations_var_get(request, data_adaptor, annotations):
     fields = request.args.getlist("annotation-name", None)
     preferred_mimetype = request.accept_mimetypes.best_match(["application/octet-stream"])
     if preferred_mimetype != "application/octet-stream":
@@ -108,9 +108,9 @@ def annotations_var_get(request, data_engine, annotations):
     try:
         labels = None
         if annotations is not None:
-            labels = annotations.read_labels(data_engine)
+            labels = annotations.read_labels(data_adaptor)
         return make_response(
-            data_engine.annotation_to_fbs_matrix(Axis.VAR, fields, labels),
+            data_adaptor.annotation_to_fbs_matrix(Axis.VAR, fields, labels),
             HTTPStatus.OK,
             {"Content-Type": "application/octet-stream"},
         )
@@ -122,7 +122,7 @@ def annotations_var_get(request, data_engine, annotations):
         return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
-def data_var_put(request, data_engine):
+def data_var_put(request, data_adaptor):
     preferred_mimetype = request.accept_mimetypes.best_match(["application/octet-stream"])
     if preferred_mimetype != "application/octet-stream":
         return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
@@ -131,7 +131,7 @@ def data_var_put(request, data_engine):
     filter = filter_json["filter"] if filter_json else None
     try:
         return make_response(
-            data_engine.data_frame_to_fbs_matrix(filter, axis=Axis.VAR),
+            data_adaptor.data_frame_to_fbs_matrix(filter, axis=Axis.VAR),
             HTTPStatus.OK,
             {"Content-Type": "application/octet-stream"},
         )
@@ -141,7 +141,7 @@ def data_var_put(request, data_engine):
         return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
-def diffexp_obs_post(request, data_engine):
+def diffexp_obs_post(request, data_adaptor):
     args = request.get_json()
     # confirm mode is present and legal
     try:
@@ -175,8 +175,8 @@ def diffexp_obs_post(request, data_engine):
     # mode=topN
     count = args.get("count", None)
     try:
-        interactive_limit = data_engine.get_features()["diffexp"].interactiveLimit
-        diffexp = data_engine.diffexp_topN(set1_filter, set2_filter, count, interactive_limit)
+        interactive_limit = data_adaptor.get_features()["diffexp"].interactiveLimit
+        diffexp = data_adaptor.diffexp_topN(set1_filter, set2_filter, count, interactive_limit)
         return make_response(diffexp, HTTPStatus.OK, {"Content-Type": "application/json"})
     except (ValueError, FilterError) as e:
         return make_response(str(e), HTTPStatus.BAD_REQUEST)
@@ -190,12 +190,12 @@ def diffexp_obs_post(request, data_engine):
         return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
-def layout_obs_get(request, data_engine):
+def layout_obs_get(request, data_adaptor):
     preferred_mimetype = request.accept_mimetypes.best_match(["application/octet-stream"])
     try:
         if preferred_mimetype == "application/octet-stream":
             return make_response(
-                data_engine.layout_to_fbs_matrix(), HTTPStatus.OK, {"Content-Type": "application/octet-stream"}
+                data_adaptor.layout_to_fbs_matrix(), HTTPStatus.OK, {"Content-Type": "application/octet-stream"}
             )
         else:
             return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)

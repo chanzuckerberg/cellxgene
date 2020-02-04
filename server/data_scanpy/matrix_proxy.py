@@ -6,7 +6,7 @@ X matrices.  Sometimes you get a fully ndarray, sometims a Scipy sparse
 matrix, sometimes h5py proxies with a subset of our needed interfaces.
 
 This glue code paves over all of that, providing the core set of methods
-that the cellxgene ScanPy driver assumes are in existance.  Put another
+that the cellxgene ScanPy adaptor assumes are in existance.  Put another
 way, all of the non-portable assumptions are here.
 """
 

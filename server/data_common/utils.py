@@ -3,7 +3,7 @@ from functools import wraps
 from flask import json
 from numpy import float32, integer
 
-from server.common.errors import DriverError
+from server.common.errors import DataAdaptorError
 from enum import Enum
 
 
@@ -39,7 +39,7 @@ def requires_data(func):
     @wraps(func)
     def wrapped_function(self, *args, **kwargs):
         if self.data is None:
-            raise DriverError(f"error data must be loaded before you call {func.__name__}")
+            raise DataAdaptorError(f"error data must be loaded before you call {func.__name__}")
         return func(self, *args, **kwargs)
 
     return wrapped_function
@@ -58,16 +58,16 @@ class MatrixDataLoader(object):
         self.etype = self.matrix_data_type()
         self.matrix_type = None
         if self.etype == MatrixDataType.H5AD:
-            from server.data_scanpy.scanpy_engine import ScanpyEngine
-            self.matrix_type = ScanpyEngine
+            from server.data_scanpy.scanpy_adaptor import ScanpyAdaptor
+            self.matrix_type = ScanpyAdaptor
         elif self.etype == MatrixDataType.TILEDB:
-            from server.data_tiledb.tiledb_engine import TileDbEngine
-            self.matrix_type = TileDbEngine
+            from server.data_tiledb.tiledb_adaptor import TileDbAdaptor
+            self.matrix_type = TileDbAdaptor
 
     def matrix_data_type(self):
         if self.location.endswith(".h5ad"):
             return MatrixDataType.H5AD
-        elif ".cxg" in self.location or ".tdb" in self.location:
+        elif ".cxg" in self.location:
             return MatrixDataType.TILEDB
         elif self.location.startswith("s3://"):
             return MatrixDataType.TILEDB
@@ -76,7 +76,7 @@ class MatrixDataLoader(object):
 
     def pre_checks(self):
         if self.etype == MatrixDataType.UNKNOWN:
-            raise RuntimeError(f"{self.location} does not have a recognized type: .h5ad or .tdb/.cxg")
+            raise RuntimeError(f"{self.location} does not have a recognized type: .h5ad or .cxg")
         self.matrix_type.pre_checks(self.location)
 
     def file_size(self):

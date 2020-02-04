@@ -25,7 +25,7 @@ def index():
     return "<H1>Welcome to cellxgene<H1>"
 
 
-def get_data_engine(dataset):
+def get_data_adaptor(dataset):
     config = current_app.app_config
     location = path_join(config.dataroot, dataset)
     matrix_data_loader = MatrixDataLoader(location)
@@ -34,12 +34,12 @@ def get_data_engine(dataset):
     return data
 
 
-def rest_get_data_engine(func):
+def rest_get_data_adaptor(func):
     @wraps(func)
     def wrapped_function(self, dataset):
         try:
-            data_engine = get_data_engine(dataset)
-            return func(self, data_engine)
+            data_adaptor = get_data_adaptor(dataset)
+            return func(self, data_adaptor)
         except RuntimeError as e:
             return make_response(f"Invalid dataset {dataset}: {str(e)}", HTTPStatus.BAD_REQUEST)
     return wrapped_function
@@ -69,52 +69,52 @@ def favicon_redirect(dataset):
 
 
 class SchemaAPI(Resource):
-    @rest_get_data_engine
-    def get(self, data_engine):
-        return common_rest.schema_get(data_engine, current_app.annotations)
+    @rest_get_data_adaptor
+    def get(self, data_adaptor):
+        return common_rest.schema_get(data_adaptor, current_app.annotations)
 
 
 class ConfigAPI(Resource):
-    @rest_get_data_engine
-    def get(self, data_engine):
+    @rest_get_data_adaptor
+    def get(self, data_adaptor):
         return common_rest.config_get(
-            current_app.app_config, data_engine, current_app.annotations)
+            current_app.app_config, data_adaptor, current_app.annotations)
 
 
 class AnnotationsObsAPI(Resource):
-    @rest_get_data_engine
-    def get(self, data_engine):
+    @rest_get_data_adaptor
+    def get(self, data_adaptor):
         return common_rest.annotations_obs_get(
-            request, data_engine, current_app.annotations)
+            request, data_adaptor, current_app.annotations)
 
-    @rest_get_data_engine
-    def put(self, data_engine):
+    @rest_get_data_adaptor
+    def put(self, data_adaptor):
         return common_rest.annotations_obs_put(
-            request, data_engine, current_app.annotations)
+            request, data_adaptor, current_app.annotations)
 
 
 class AnnotationsVarAPI(Resource):
-    @rest_get_data_engine
-    def get(self, data_engine):
-        return common_rest.annotations_var_get(request, data_engine, current_app.annotations)
+    @rest_get_data_adaptor
+    def get(self, data_adaptor):
+        return common_rest.annotations_var_get(request, data_adaptor, current_app.annotations)
 
 
 class DataVarAPI(Resource):
-    @rest_get_data_engine
-    def put(self, data_engine):
-        return common_rest.data_var_put(request, data_engine)
+    @rest_get_data_adaptor
+    def put(self, data_adaptor):
+        return common_rest.data_var_put(request, data_adaptor)
 
 
 class DiffExpObsAPI(Resource):
-    @rest_get_data_engine
-    def post(self, data_engine):
-        return common_rest.diffexp_obs_post(request, data_engine)
+    @rest_get_data_adaptor
+    def post(self, data_adaptor):
+        return common_rest.diffexp_obs_post(request, data_adaptor)
 
 
 class LayoutObsAPI(Resource):
-    @rest_get_data_engine
-    def get(self, data_engine):
-        return common_rest.layout_obs_get(request, data_engine)
+    @rest_get_data_adaptor
+    def get(self, data_adaptor):
+        return common_rest.layout_obs_get(request, data_adaptor)
 
 
 def get_api_resources():

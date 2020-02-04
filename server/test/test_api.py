@@ -293,7 +293,7 @@ class EndPointsTiledb(unittest.TestCase, EndPoints):
                 "cellxgene",
                 "--no-upgrade-check",
                 "launch",
-                "../example-dataset/pbmc3k.tdb",
+                "../example-dataset/pbmc3k.cxg",
                 "--verbose",
                 "--port",
                 str(cls.PORT),

@@ -5,7 +5,7 @@ import math
 
 import decode_fbs
 
-from server.data_scanpy.scanpy_engine import ScanpyEngine
+from server.data_scanpy.scanpy_adaptor import ScanpyAdaptor
 from server.common.errors import FilterError
 from server.common.data_locator import DataLocator
 
@@ -21,12 +21,12 @@ class NaNTest(unittest.TestCase):
         }
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=UserWarning)
-            self.data = ScanpyEngine(DataLocator("test/test_datasets/nan.h5ad"), self.args)
+            self.data = ScanpyAdaptor(DataLocator("test/test_datasets/nan.h5ad"), self.args)
             self.data._create_schema()
 
     def test_load(self):
         with self.assertWarns(UserWarning):
-            ScanpyEngine(DataLocator("test/test_datasets/nan.h5ad"), self.args)
+            ScanpyAdaptor(DataLocator("test/test_datasets/nan.h5ad"), self.args)
 
     def test_init(self):
         self.assertEqual(self.data.cell_count, 100)

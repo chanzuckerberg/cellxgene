@@ -9,12 +9,12 @@ from parameterized import parameterized_class
 import numpy as np
 import pandas as pd
 
-from server.data_scanpy.scanpy_engine import ScanpyEngine
+from server.data_scanpy.scanpy_adaptor import ScanpyAdaptor
 from server.common.errors import FilterError
 from server.common.data_locator import DataLocator
 
 """
-Test the scanpy engine using the pbmc3k data set.
+Test the scanpy adaptor using the pbmc3k data set.
 """
 
 
@@ -29,7 +29,7 @@ Test the scanpy engine using the pbmc3k data set.
         ("test/test_datasets/pbmc3k-CSR-gz.h5ad", True),
     ],
 )
-class EngineTest(unittest.TestCase):
+class AdaptorTest(unittest.TestCase):
     def setUp(self):
         args = {
             "layout": ["umap"],
@@ -39,7 +39,7 @@ class EngineTest(unittest.TestCase):
             "diffexp_lfc_cutoff": 0.01,
             "scanpy_backed": self.backed,
         }
-        self.data = ScanpyEngine(DataLocator(self.data_locator), args)
+        self.data = ScanpyAdaptor(DataLocator(self.data_locator), args)
 
     def test_init(self):
         self.assertEqual(self.data.cell_count, 2638)

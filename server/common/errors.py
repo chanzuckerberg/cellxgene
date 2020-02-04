@@ -40,7 +40,7 @@ class ScanpyFileError(Exception):
     pass
 
 
-class DriverError(Exception):
+class DataAdaptorError(Exception):
     """
     Raised when file loaded into scanpy is misformatted
     """

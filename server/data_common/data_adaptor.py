@@ -20,7 +20,7 @@ Sort order for methods
 """
 
 
-class CXGDriver(metaclass=ABCMeta):
+class DataAdaptor(metaclass=ABCMeta):
 
     def __init__(self, config):
         # config will normally be a type that inherits from AppConfig.
@@ -33,7 +33,7 @@ class CXGDriver(metaclass=ABCMeta):
         # config is the application configuration
         self.config = config
 
-        # parameters set by this data engine based on the data.
+        # parameters set by this data adaptor based on the data.
         self.parameters = {}
 
     def get_features(self):
@@ -272,7 +272,7 @@ class CXGDriver(metaclass=ABCMeta):
 
     @abstractmethod
     def get_name(self):
-        """return a string name for this data engine"""
+        """return a string name for this data adaptor"""
         pass
 
     @abstractmethod

@@ -8,7 +8,7 @@ import shutil
 import numpy as np
 import pandas as pd
 
-from server.data_scanpy.scanpy_engine import ScanpyEngine
+from server.data_scanpy.scanpy_adaptor import ScanpyAdaptor
 from server.data_common.fbs.matrix import encode_matrix_fbs
 from server.common.data_locator import DataLocator
 from server.common.annotations import AnnotationsLocalFile
@@ -28,7 +28,7 @@ class WritableAnnotationTest(unittest.TestCase):
         }
         fname = "../example-dataset/pbmc3k.h5ad"
         data_locator = DataLocator(fname)
-        self.data = ScanpyEngine(data_locator, args)
+        self.data = ScanpyAdaptor(data_locator, args)
         self.annotations = AnnotationsLocalFile(None, self.annotations_file)
 
     def tearDown(self):

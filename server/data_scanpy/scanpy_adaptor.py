@@ -5,7 +5,7 @@ from pandas.core.dtypes.dtypes import CategoricalDtype
 import anndata
 from scipy import sparse
 
-from server.data_common.driver import CXGDriver
+from server.data_common.data_adaptor import DataAdaptor
 from server.common.constants import Axis, MAX_LAYOUTS
 from server.common.errors import (
     PrepareError,
@@ -18,7 +18,8 @@ import server.data_scanpy.matrix_proxy  # noqa: F401
 from server.common.data_locator import DataLocator
 
 
-class ScanpyEngine(CXGDriver):
+class ScanpyAdaptor(DataAdaptor):
+
     def __init__(self, data_locator=None, config=None):
         super().__init__(config)
         self.data = None
@@ -53,13 +54,13 @@ class ScanpyEngine(CXGDriver):
     @staticmethod
     def open(location, args):
         data_locator = DataLocator(location)
-        return ScanpyEngine(data_locator, args)
+        return ScanpyAdaptor(data_locator, args)
 
     def get_location(self):
         return self.data_locator.uri_or_path
 
     def get_name(self):
-        return "cellxgene Scanpy engine version "
+        return "cellxgene Scanpy adaptor version"
 
     def get_library_versions(self):
         return dict(anndata=str(anndata.__version__))
@@ -143,9 +144,9 @@ class ScanpyEngine(CXGDriver):
         data_kind = dtype.kind
         schema = {}
 
-        if ScanpyEngine._can_cast_to_float32(col):
+        if ScanpyAdaptor._can_cast_to_float32(col):
             schema["type"] = "float32"
-        elif ScanpyEngine._can_cast_to_int32(col):
+        elif ScanpyAdaptor._can_cast_to_int32(col):
             schema["type"] = "int32"
         elif dtype == np.bool_:
             schema["type"] = "boolean"

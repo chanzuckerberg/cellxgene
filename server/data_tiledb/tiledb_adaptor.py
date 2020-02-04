@@ -1,6 +1,6 @@
 import os
 import json
-from server.data_common.driver import CXGDriver
+from server.data_common.data_adaptor import DataAdaptor
 import tiledb
 import numpy as np
 import pandas as pd
@@ -10,7 +10,7 @@ from server_timing import Timing as ServerTiming
 from server.common.constants import Axis
 
 
-class TileDbEngine(CXGDriver):
+class TileDbAdaptor(DataAdaptor):
     def __init__(self, location=None, config=None):
         super().__init__(config)
         self.url = location
@@ -31,7 +31,7 @@ class TileDbEngine(CXGDriver):
 
     @staticmethod
     def pre_checks(location):
-        if not TileDbEngine.isvalid(location):
+        if not TileDbAdaptor.isvalid(location):
             raise RuntimeError(f"tiledb matrix is not valid: {location}")
 
     @staticmethod
@@ -40,13 +40,13 @@ class TileDbEngine(CXGDriver):
 
     @staticmethod
     def open(location, args):
-        return TileDbEngine(location, args)
+        return TileDbAdaptor(location, args)
 
     def get_location(self):
         return self.url
 
     def get_name(self):
-        return "cellxgene TileDb engine version"
+        return "cellxgene TileDb adaptor version"
 
     def get_library_versions(self):
         return dict(tiledb=tiledb.__version__)
