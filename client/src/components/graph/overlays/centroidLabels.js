@@ -12,15 +12,17 @@ export default
   labels: state.centroidLabels.labels
 }))
 class CentroidLabels extends PureComponent {
+  // Check to see if centroids have either just been displayed or removed from the overlay
   componentDidUpdate = prevProps => {
-    // obj.keys(obj).length
     const { labels, onDisplayChange } = this.props;
     const prevSize = prevProps.labels.size;
     const { size } = labels;
+
     const displayChangeOff = prevSize > 0 && size === undefined;
     const displayChangeOn = prevSize === undefined && size > 0;
 
     if (displayChangeOn || displayChangeOff) {
+      // Notify overlay layer of display change
       onDisplayChange("centroidLabels", displayChangeOn);
     }
   };

@@ -38,7 +38,7 @@ class GraphOverlayLayer extends PureComponent {
     return `matrix(${1 / m[0]} 0 0 ${1 / m[4]} 0 0)`;
   };
 
-  // This is passed to all children, should be called when an overlay's display state is toggled with the overlay name and its new display state in boolean form
+  // This is passed to all children, should be called when an overlay's display state is toggled along with the overlay name and its new display state in boolean form
   onDisplayChange = (overlay, displaying) => {
     this.setState(state => {
       return { ...state, display: { ...state.display, [overlay]: displaying } };
