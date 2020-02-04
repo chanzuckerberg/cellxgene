@@ -113,14 +113,13 @@ class TileDbEngine(CXGDriver):
 
     def get_X_array(self, obs_items=None, var_items=None):
         p = self.get_path("X")
-        if obs_items is None:
-            obs_items = slice(None)
-        if var_items is None:
-            var_items = slice(None)
-        # FIXME, the is a problem retrieving index sets from tiledb
+        obs_items = self._convert_mask(obs_items)
+        var_items = self._convert_mask(var_items)
         with tiledb.DenseArray(p, mode="r", ctx=self.tiledb_ctx) as X:
-            tdata = X[:, :]
-            data = tdata[obs_items, var_items]
+            if obs_items == slice(None) and var_items == slice(None):
+                data = X[:, :]
+            else:
+                data = X.multi_index[obs_items, var_items]['']
         return data
 
     def get_X_array_shape(self):
@@ -286,3 +285,30 @@ class TileDbEngine(CXGDriver):
             fbs = encode_matrix_fbs(df, col_idx=df.columns)
 
         return fbs
+
+    @staticmethod
+    def _convert_mask(boolarray):
+        """Convert an index mask to a list of ranges or indices that can be used in a multi_index."""
+        if boolarray is None:
+            return slice(None)
+        assert type(boolarray) == np.ndarray
+        assert(boolarray.dtype) == bool
+
+        selector = np.nonzero(boolarray)[0]
+
+        if len(selector) == 0:
+            return slice(None)
+
+        result = []
+        current = slice(selector[0], selector[0])
+        for sel in selector[1:]:
+            if sel == current.stop + 1:
+                current = slice(current.start, sel)
+            else:
+                result.append(current if current.start != current.stop else current.start)
+                current = slice(sel, sel)
+
+        if len(result) == 0 or result[-1] != current:
+            result.append(current if current.start != current.stop else current.start)
+
+        return result
