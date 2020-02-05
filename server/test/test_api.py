@@ -36,7 +36,7 @@ class EndPoints(object):
         result_data = result.json()
         self.assertIn("library_versions", result_data["config"])
         self.assertEqual(result_data["config"]["displayNames"]["dataset"], "pbmc3k")
-        self.assertEqual(len(result_data["config"]["features"]), 4)
+        self.assertEqual(len(result_data["config"]["features"]), 3)
 
     def test_get_layout_fbs(self):
         endpoint = "layout/obs"

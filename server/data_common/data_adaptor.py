@@ -8,7 +8,7 @@ from server.common.errors import FilterError, JSONEncodingValueError
 from server.compute.diffexp import diffexp_ttest
 from server.data_common.utils import jsonify_numpy
 from server.data_common.matrix_proxy import MatrixProxy
-from server.common.app_config import AppFeature, AppSingleConfig
+from server.common.app_config import AppFeature, AppConfig
 
 """
 Sort order for methods
@@ -26,9 +26,9 @@ class DataAdaptor(metaclass=ABCMeta):
         # config will normally be a type that inherits from AppConfig.
         # the following is for backwards compatability with tests
         if config is None:
-            config = AppSingleConfig()
+            config = AppConfig()
         elif type(config) == dict:
-            config = AppSingleConfig(**config)
+            config = AppConfig(**config)
 
         # config is the application configuration
         self.config = config

@@ -15,13 +15,6 @@ class DataLoadAdaptorTest(unittest.TestCase):
         self.data_file = DataLocator("../example-dataset/pbmc3k.h5ad")
         self.data = ScanpyAdaptor(self.data_file)
 
-    def test_init(self):
-        self.assertIsNone(self.data.data)
-
-    def test_requires_data(self):
-        with self.assertRaises(DataAdaptorError):
-            self.data._create_schema()
-
     def test_delayed_load_data(self):
         self.data._create_schema()
         self.assertEqual(self.data.cell_count, 2638)

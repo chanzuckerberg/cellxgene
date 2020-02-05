@@ -1,7 +1,7 @@
 import click
 
 from .. import __version__
-from .launch import launch, launch_multi
+from .launch import launch
 from .prepare import prepare
 from .upgrade import log_upgrade_check
 
@@ -28,5 +28,4 @@ def cli(upgrade_check):
 
 
 cli.add_command(launch)
-cli.add_command(launch_multi)
 cli.add_command(prepare)

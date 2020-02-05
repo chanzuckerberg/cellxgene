@@ -14,7 +14,7 @@ from server.data_common.utils import custom_format_warning
 from server.common.utils import find_available_port, is_port_available, sort_options
 from server.data_common.utils import MatrixDataLoader
 from server.common.annotations import AnnotationsLocalFile
-from server.common.app_config import AppSingleConfig, AppMultiConfig
+from server.common.app_config import AppConfig
 
 from server.common.errors import OntologyLoadFailure
 
@@ -205,8 +205,8 @@ def launch_args(func):
     @config_args
     @dataset_args
     @server_args
-    @functools.wraps(func)
-    @click.argument("data", nargs=1, metavar="<path to data file>", required=True)
+    @click.option("--dataroot", default=None, metavar="<data files root>")
+    @click.argument("data", required=False, metavar="<path to data file>")
     @click.option(
         "--open",
         "-o",
@@ -254,6 +254,7 @@ def handle_verbose(verbose):
 @launch_args
 def launch(
     data,
+    dataroot,
     verbose,
     debug,
     open_browser,
@@ -292,12 +293,24 @@ def launch(
     # Startup message
     click.echo("[cellxgene] Starting the CLI...")
 
-    matrix_data_loader = MatrixDataLoader(data)
+    if data is None and dataroot is None:
+        raise click.ClickException("must supply either <path to data file> or --dataroot")
 
-    try:
-        matrix_data_loader.pre_checks()
-    except RuntimeError as e:
-        raise click.ClickException(str(e))
+    matrix_data_loader = None
+    if data:
+        # preload this data set
+        matrix_data_loader = MatrixDataLoader(data)
+
+        try:
+            matrix_data_loader.pre_checks()
+        except RuntimeError as e:
+            raise click.ClickException(str(e))
+
+        file_size = matrix_data_loader.file_size()
+        if file_size > BIG_FILE_SIZE_THRESHOLD:
+            click.echo(f"[cellxgene] Loading data from {basename(data)}, this may take a while...")
+        else:
+            click.echo(f"[cellxgene] Loading data from {basename(data)}.")
 
     if debug:
         verbose = True
@@ -308,7 +321,7 @@ def launch(
     handle_verbose(verbose)
     handle_scripts(scripts)
 
-    if not title:
+    if not title and data is not None:
         file_parts = splitext(basename(data))
         title = file_parts[0]
 
@@ -367,14 +380,8 @@ def launch(
     # Setup app
     cellxgene_url = f"http://{host}:{port}"
 
-    file_size = matrix_data_loader.file_size()
-    if file_size > BIG_FILE_SIZE_THRESHOLD:
-        click.echo(f"[cellxgene] Loading data from {basename(data)}, this may take a while...")
-    else:
-        click.echo(f"[cellxgene] Loading data from {basename(data)}.")
-
     # app config
-    app_config = AppSingleConfig(
+    app_config = AppConfig(
         title=title,
         about=about,
         scripts=scripts,
@@ -384,12 +391,21 @@ def launch(
         obs_names=obs_names,
         var_names=var_names,
         scanpy_backed=backed,
-        disable_diffexp=disable_diffexp)
+        disable_diffexp=disable_diffexp,
+        dataroot=dataroot)
 
-    try:
-        cxg_data = matrix_data_loader.open(app_config)
-    except RuntimeError as e:
-        raise click.ClickException(str(e))
+    cxg_data = None
+    if matrix_data_loader:
+        try:
+            cxg_data = matrix_data_loader.open(app_config)
+        except RuntimeError as e:
+            raise click.ClickException(str(e))
+
+        if not disable_diffexp and cxg_data.parameters.get("diffexp_may_be_slow", False):
+            click.echo(
+                f"[cellxgene] CAUTION: due to the size of your dataset, "
+                f"running differential expression may take longer or fail."
+            )
 
     # create an annotations object.  Only AnnotationsLocalFile is used (for now)
     annotations = None
@@ -411,151 +427,18 @@ def launch(
                 raise click.ClickException("Unable to load ontology terms\n" + str(e))
 
     # create the server
-    from server.app_single.app import Server
+    from server.app.app import Server
     server = Server(cxg_data, annotations, app_config)
 
     if not verbose:
         log = logging.getLogger("werkzeug")
         log.setLevel(logging.ERROR)
 
-    if not disable_diffexp and server.app.data.parameters.get("diffexp_may_be_slow", False):
-        click.echo(
-            f"[cellxgene] CAUTION: due to the size of your dataset, "
-            f"running differential expression may take longer or fail."
-        )
-
     if open_browser:
         click.echo(f"[cellxgene] Launching! Opening your browser to {cellxgene_url} now.")
         webbrowser.open(cellxgene_url)
     else:
         click.echo(f"[cellxgene] Launching! Please go to {cellxgene_url} in your browser.")
-
-    click.echo("[cellxgene] Type CTRL-C at any time to exit.")
-
-    if not verbose:
-        f = open(devnull, "w")
-        sys.stdout = f
-
-    try:
-        server.app.run(host=host, debug=debug, port=port, threaded=False if debug else True, use_debugger=False)
-    except OSError as e:
-        if e.errno == errno.EADDRINUSE:
-            raise click.ClickException("Port is in use, please specify an open port using the --port flag.") from e
-        raise
-
-
-def launch_multi_args(func):
-    @annotation_args
-    @config_args
-    @server_args
-    @functools.wraps(func)
-    @click.argument("dataroot", nargs=1, metavar="<path to data files root>", required=True)
-    @click.help_option("--help", "-h", help="Show this message and exit.")
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        return func(*args, **kwargs)
-
-    return wrapper
-
-
-@sort_options
-@click.command(
-    short_help="Launch the cellxgene data viewer. " "Run `cellxgene launch_multi --help` for more information.",
-    options_metavar="<options>",
-)
-@launch_multi_args
-def launch_multi(
-    dataroot,
-    verbose,
-    debug,
-    port,
-    host,
-    embedding,
-    max_category_items,
-    diffexp_lfc_cutoff,
-    scripts,
-    experimental_annotations,
-    experimental_annotations_file,
-    experimental_annotations_output_dir,
-    disable_diffexp,
-    experimental_annotations_ontology,
-    experimental_annotations_ontology_obo
-):
-    """Launch the cellxgene data viewer.
-    This web app lets you explore single-cell expression data.
-    Data must be in a format that cellxgene expects.
-    Read the "getting started" guide to learn more:
-    https://chanzuckerberg.github.io/cellxgene/getting-started.html
-
-    Examples:
-
-    > cellxgene launch-multi example_dataset_directory"""
-
-    # Startup message
-    click.echo("[cellxgene] Starting the CLI...")
-
-    if debug:
-        verbose = True
-    else:
-        warnings.formatwarning = custom_format_warning
-
-    handle_verbose(verbose)
-    handle_scripts(scripts)
-
-    if port:
-        if debug:
-            raise click.ClickException("--port and --debug may not be used together (try --verbose for error logging).")
-        if not is_port_available(host, int(port)):
-            raise click.ClickException(
-                f"The port selected {port} is in use, please specify an open port using the --port flag."
-            )
-    else:
-        port = find_available_port(host)
-
-    if experimental_annotations:
-        if experimental_annotations_file is not None:
-            raise click.ClickException(
-                "--experimental-annotations-file cannot be set in launch-multi"
-            )
-
-        if experimental_annotations_output_dir is not None and not isdir(experimental_annotations_output_dir):
-            try:
-                mkdir(experimental_annotations_output_dir)
-            except OSError:
-                raise click.ClickException(
-                    "Unable to create directory specified by --experimental-annotations-output-dir"
-                )
-
-    # create an annotations object.  Only AnnotationsLocalFile is used (for now)
-    annotations = None
-
-    if experimental_annotations:
-        annotations = AnnotationsLocalFile(experimental_annotations_output_dir,
-                                           experimental_annotations_file)
-
-        if experimental_annotations_ontology or bool(experimental_annotations_ontology_obo):
-            try:
-                annotations.load_ontology(experimental_annotations_ontology_obo)
-            except OntologyLoadFailure as e:
-                raise click.ClickException("Unable to load ontology terms\n" + str(e))
-
-    # app config
-    from server.app_multi.app import ServerMulti
-
-    app_config = AppMultiConfig(
-        dataroot=dataroot,
-        scripts=scripts,
-        layout=embedding,
-        max_category_items=max_category_items,
-        diffexp_lfc_cutoff=diffexp_lfc_cutoff,
-        disable_diffexp=disable_diffexp)
-
-    # create the server
-    server = ServerMulti(app_config, annotations)
-
-    if not verbose:
-        log = logging.getLogger("werkzeug")
-        log.setLevel(logging.ERROR)
 
     click.echo("[cellxgene] Type CTRL-C at any time to exit.")
 
