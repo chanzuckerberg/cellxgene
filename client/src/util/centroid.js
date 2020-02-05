@@ -27,40 +27,41 @@ const calcMedianCentroid = (
   const layoutYArray = obsLayout.col(layoutDimNames[1]).asArray();
   const coordinates = new Map();
 
+  const { categoryValueIndices, categoryValueCounts } = categoricalSelection[
+    categoryName
+  ];
+
+  // Check to see if the current category is a user created annotation
+  const isUserAnno = schemaObsByName[categoryName].writable;
+
   // Iterate over all the cells in the category
   for (let i = 0, len = categoryArray.length; i < len; i += 1) {
     const categoryValue = categoryArray[i];
 
     // Get the index of the categoryValue within the category
+    const categoryValueIndex = categoryValueIndices.get(categoryValue);
+
+    // If the user created this category, do not create a label for the `unassigned` value
     // If the category is truncated and this value is removed,
     // it will not be assigned a category value and will not be
     // labeled on the graph
-    const categoryValueIndex = categoricalSelection[
-      categoryName
-    ].categoryValueIndices.get(categoryValue);
-
-    // Check to see if the current category is a user created annotation
-    // if the user created this category, do not create a label for the `unassigned` value
-    const isUserAnno = schemaObsByName[categoryName].writable;
-
     if (
       categoryValueIndex !== undefined &&
       !(isUserAnno && categoryValue === unassignedCategoryLabel)
     ) {
-      // Get the number of cells which are in the category value
-      const numInCategoryValue =
-        categoricalSelection[categoryName].categoryValueCounts[
-          categoryValueIndex
-        ];
-
       // Create/fetch the valueArray,
       // which is what the key points to in the `coordinates` hashmap
-      const valueArray = coordinates.get(categoryValue) || [
-        false, // hasFinite
-        0, // index
-        new Float32Array(numInCategoryValue), // x coordinates
-        new Float32Array(numInCategoryValue) // y coordinates
-      ];
+      let valueArray = coordinates.get(categoryValue);
+      if (!valueArray) {
+        // Get the number of cells which are in the category value
+        const numInCategoryValue = categoryValueCounts[categoryValueIndex];
+        valueArray = [
+          false, // hasFinite
+          0, // index
+          new Float32Array(numInCategoryValue), // x coordinates
+          new Float32Array(numInCategoryValue) // y coordinates
+        ];
+      }
       const index = valueArray[1];
       let hasFinite = valueArray[0];
 
