@@ -8,10 +8,13 @@ import memoize from "memoize-one";
 
 import * as globals from "../../globals";
 import setupSVGandBrushElements from "./setupSVGandBrush";
-import setupCentroidSVG from "./setupCentroidSVG";
 import _camera from "../../util/camera";
 import _drawPoints from "./drawPointsRegl";
 import { isTypedArray } from "../../util/typeHelpers";
+import styles from "./graph.css";
+
+import GraphOverlayLayer from "./overlays/graphOverlayLayer";
+import CentroidLabels from "./overlays/centroidLabels";
 
 /*
 Simple 2D transforms control all point painting.  There are three:
@@ -79,11 +82,12 @@ function renderThrottle(callback) {
   selectionTool: state.graphSelection.tool,
   currentSelection: state.graphSelection.selection,
   layoutChoice: state.layoutChoice,
-  centroidLabel: state.centroidLabel,
+  centroidLabels: state.centroidLabels,
   graphInteractionMode: state.controls.graphInteractionMode,
-  colorAccessor: state.colors.colorAccessor
+  colorAccessor: state.colors.colorAccessor,
+  pointDilation: state.pointDilation
 }))
-class Graph extends React.PureComponent {
+class Graph extends React.Component {
   computePointPositions = memoize((X, Y, modelTF) => {
     /*
     compute the model coordinate for each point
@@ -121,7 +125,7 @@ class Graph extends React.PureComponent {
   );
 
   computePointFlags = memoize(
-    (world, crossfilter, colorAccessor, centroidLabel) => {
+    (world, crossfilter, colorAccessor, pointDilation) => {
       /*
       We communicate with the shader using three flags:
       - isNaN -- the value is a NaN. Only makes sense when we have a colorAccessor
@@ -146,7 +150,7 @@ class Graph extends React.PureComponent {
         0
       ).slice();
 
-      const { metadataField, categoryField } = centroidLabel;
+      const { metadataField, categoryField } = pointDilation;
       const highlightData = metadataField
         ? world.obsAnnotations.col(metadataField)?.asArray()
         : null;
@@ -186,9 +190,9 @@ class Graph extends React.PureComponent {
     };
     this.state = {
       toolSVG: null,
-      centroidSVG: null,
       tool: null,
-      container: null
+      container: null,
+      cameraRender: 0
     };
   }
 
@@ -245,23 +249,17 @@ class Graph extends React.PureComponent {
       currentSelection,
       layoutChoice,
       graphInteractionMode,
-      colorAccessor,
-      centroidLabel
+      pointDilation,
+      colorAccessor
     } = this.props;
-    const { regl, toolSVG, centroidSVG } = this.state;
+    const { regl, toolSVG, camera, modelTF } = this.state;
     let stateChanges = {};
 
     if (regl && world && crossfilter) {
       /* update the regl and point rendering state */
       const { obsLayout, nObs } = world;
-      const {
-        drawPoints,
-        camera,
-        pointBuffer,
-        colorBuffer,
-        flagBuffer,
-        modelTF
-      } = this.state;
+      const { drawPoints, pointBuffer, colorBuffer, flagBuffer } = this.state;
+
       let { projectionTF } = this.state;
       let needsRepaint = false;
 
@@ -305,12 +303,12 @@ class Graph extends React.PureComponent {
         world,
         crossfilter,
         colorAccessor,
-        centroidLabel
+        pointDilation
       );
       if (renderCache.flags !== newFlags) {
         renderCache.flags = newFlags;
-        flagBuffer({ data: newFlags, dimension: 1 });
         needsRepaint = true;
+        flagBuffer({ data: newFlags, dimension: 1 });
       }
 
       this.count = nObs;
@@ -328,26 +326,27 @@ class Graph extends React.PureComponent {
       }
     }
 
-    // Centroid SVG creation is disabled for now but should go into the
-    // first and third cases if enabled
     if (
       prevProps.responsive.height !== responsive.height ||
       prevProps.responsive.width !== responsive.width
     ) {
       // If the window size has changed we want to recreate all SVGs
-      stateChanges = { ...stateChanges, ...this.createToolSVG() };
+      stateChanges = {
+        ...stateChanges,
+        ...this.createToolSVG()
+      };
     } else if (
       (responsive.height && responsive.width && !toolSVG) ||
-      selectionTool !== prevProps.selectionTool ||
-      prevProps.graphInteractionMode !== graphInteractionMode
+      selectionTool !== prevProps.selectionTool
     ) {
-      // first time or change of selection tool6
+      // first time or change of selection tool
       stateChanges = { ...stateChanges, ...this.createToolSVG() };
-    } else if (
-      centroidLabel !== prevProps.centroidLabel ||
-      (responsive.height && responsive.width && !centroidSVG)
-    ) {
-      // First time for centroid or label change
+    } else if (prevProps.graphInteractionMode !== graphInteractionMode) {
+      // If lasso/zoom is switched
+      stateChanges = {
+        ...stateChanges,
+        ...this.createToolSVG()
+      };
     }
 
     /*
@@ -365,7 +364,6 @@ class Graph extends React.PureComponent {
         stateChanges.container ? stateChanges.container : container
       );
     }
-
     if (Object.keys(stateChanges).length > 0) {
       this.setState(stateChanges);
     }
@@ -376,10 +374,13 @@ class Graph extends React.PureComponent {
     if (e.type !== "wheel") e.preventDefault();
     if (camera.handleEvent(e, projectionTF)) {
       this.renderCanvas();
+      this.setState(state => {
+        return { ...state, updateOverlay: !state.updateOverlay };
+      });
     }
   };
 
-  createToolSVG() {
+  createToolSVG = () => {
     /*
     Called from componentDidUpdate. Create the tool SVG, and return any
     state changes that should be passed to setState().
@@ -387,9 +388,18 @@ class Graph extends React.PureComponent {
     const { responsive, selectionTool, graphInteractionMode } = this.props;
 
     /* clear out whatever was on the div, even if nothing, but usually the brushes etc */
-    d3.select("#graphAttachPoint")
-      .select("#tool")
+
+    d3.select("#lasso-layer")
+      .selectAll(".lasso-group")
       .remove();
+
+    // Don't render or recreate toolSVG if currently in zoom mode
+    if (graphInteractionMode !== "select") {
+      // don't return "change" of state unless we are really changing it!
+      const { toolSVG } = this.state;
+      if (toolSVG === undefined) return {};
+      else return { toolSVG: undefined };
+    }
 
     let handleStart;
     let handleDrag;
@@ -417,36 +427,7 @@ class Graph extends React.PureComponent {
     );
 
     return { toolSVG: newToolSVG, tool, container };
-  }
-
-  createCentroidSVG() {
-    /*
-    Called from componentDidUpdate. Create the centroid SVG, and return any
-    state changes that should be passed to setState().
-
-    CURRENTLY UNUSED
-    */
-    const { responsive, centroidLabel, colorAccessor } = this.props;
-    d3.select("#graphAttachPoint")
-      .select("#centroid-container")
-      .remove();
-
-    if (centroidLabel.metadataField === "" || !centroidLabel.centroidXY) {
-      return {};
-    }
-
-    const centroidScreen = this.mapPointToScreen(centroidLabel.centroidXY);
-
-    const newCentroidSVG = setupCentroidSVG(
-      responsive,
-      this.graphPaddingRightLeft,
-      centroidScreen,
-      centroidLabel.categoryField,
-      colorAccessor
-    );
-
-    return { centroidSVG: newCentroidSVG };
-  }
+  };
 
   brushToolUpdate(tool, container) {
     /*
@@ -745,7 +726,10 @@ class Graph extends React.PureComponent {
   });
 
   render() {
-    const { responsive } = this.props;
+    const { responsive, graphInteractionMode } = this.props;
+    const { modelTF, projectionTF, camera } = this.state;
+
+    const cameraTF = camera?.view()?.slice();
 
     return (
       <div id="graphWrapper">
@@ -757,7 +741,30 @@ class Graph extends React.PureComponent {
             right: globals.leftSidebarWidth
           }}
         >
-          <div id="graphAttachPoint" />
+          <div id="graphAttachPoint">
+            <GraphOverlayLayer
+              cameraTF={cameraTF}
+              modelTF={modelTF}
+              projectionTF={projectionTF}
+              graphPaddingRightLeft={this.graphPaddingRightLeft}
+              graphPaddingTop={this.graphPaddingTop}
+              responsive={responsive}
+            >
+              <CentroidLabels />
+            </GraphOverlayLayer>
+
+            <svg
+              id="lasso-layer"
+              data-testid="layout-overlay"
+              className={styles.graphSVG}
+              width={responsive.width - this.graphPaddingRightLeft}
+              height={responsive.height}
+              pointerEvents={
+                graphInteractionMode === "select" ? "auto" : "none"
+              }
+              style={{ zIndex: 89 }}
+            />
+          </div>
           <div style={{ padding: 0, margin: 0 }}>
             <canvas
               width={responsive.width - this.graphPaddingRightLeft}

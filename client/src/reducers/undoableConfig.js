@@ -18,6 +18,7 @@ const skipOnActions = new Set([
   "window resize",
   "user reset start",
   "reset colorscale",
+  "reset centroid labels",
 
   "graph brush change",
   "continuous metadata histogram brush",
@@ -69,6 +70,8 @@ const saveOnActions = new Set([
   "color by categorical metadata",
   "color by continuous metadata",
   "color by expression",
+
+  "show centroid labels for category",
 
   "set scatterplot x",
   "set scatterplot y",
@@ -169,6 +172,8 @@ const actionFilter = debug => (state, action, prevFilterState) => {
   }
   if (
     debounceOnActions.has(actionType) &&
+    prevFilterState !== undefined &&
+    prevFilterState.prevAction !== undefined &&
     shallowObjectEq(action, prevFilterState.prevAction)
   ) {
     return { [actionKey]: "skip", [stateKey]: filterState };

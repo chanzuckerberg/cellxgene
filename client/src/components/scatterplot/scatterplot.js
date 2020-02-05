@@ -40,7 +40,7 @@ function createProjectionTF(viewportWidth, viewportHeight) {
     colorScale: state.colors.scale,
     colorAccessor: state.colors.colorAccessor,
 
-    centroidLabel: state.centroidLabel,
+    pointDilation: state.pointDilation,
 
     // Accessors are var/gene names (strings)
     scatterplotXXaccessor,
@@ -90,7 +90,7 @@ class Scatterplot extends React.PureComponent {
   );
 
   computePointFlags = memoize(
-    (world, crossfilter, colorAccessor, centroidLabel) => {
+    (world, crossfilter, colorAccessor, pointDilation) => {
       const flagSelected = 1;
       const flagNaN = 2;
       const flagHighlight = 4;
@@ -101,7 +101,7 @@ class Scatterplot extends React.PureComponent {
         0
       ).slice();
 
-      const { metadataField, categoryField } = centroidLabel;
+      const { metadataField, categoryField } = pointDilation;
       const highlightData = metadataField
         ? world.obsAnnotations.col(metadataField)?.asArray()
         : null;
@@ -198,7 +198,7 @@ class Scatterplot extends React.PureComponent {
       expressionY,
       colorRGB,
       colorAccessor,
-      centroidLabel
+      pointDilation
     } = this.props;
     const {
       regl,
@@ -249,7 +249,7 @@ class Scatterplot extends React.PureComponent {
         world,
         crossfilter,
         colorAccessor,
-        centroidLabel
+        pointDilation
       );
       if (renderCache.flags !== newFlags) {
         renderCache.flags = newFlags;

@@ -1,12 +1,13 @@
 {
   "name": "cellxgene",
-  "version": "0.13.0",
+  "version": "0.14.0",
   "license": "MIT",
   "description": "cellxgene is a web application for the interactive exploration of single cell sequence data.",
   "repository": "https://github.com/chanzuckerberg/cellxgene",
   "scripts": {
     "backend-dev": "python3.6 -m venv cellxgene && source cellxgene/bin/activate && yes | pip uninstall cellxgene || true && pip install -e .. && cellxgene launch ",
-    "backend-dev-anno": "python3.6 -m venv cellxgene && source cellxgene/bin/activate && yes | pip uninstall cellxgene || true && pip install -e .. && cellxgene launch --experimental-annotations ",
+    "backend-dev-anno-ontology": "python3.6 -m venv cellxgene && source cellxgene/bin/activate && yes | pip uninstall cellxgene || true && pip install -e .. && cellxgene launch --experimental-annotations --experimental-annotations-ontology",
+    "backend-dev-anno": "python3.6 -m venv cellxgene && source cellxgene/bin/activate && yes | pip uninstall cellxgene || true && pip install -e .. && cellxgene launch --experimental-annotations",
     "build": "npm run clean && webpack --config configuration/webpack/webpack.config.prod.js",
     "clean": "rimraf build",
     "dev": "npm run clean && webpack --config configuration/webpack/webpack.config.dev.js",

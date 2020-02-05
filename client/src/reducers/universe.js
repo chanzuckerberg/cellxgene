@@ -168,13 +168,27 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
           "user annotations require a non-zero length string name"
         );
 
-      /* add the new label to the annotation */
+      /* add the new label to the annotation schema */
       const schema = AnnotationsHelpers.addObsAnnoCategory(
         state.schema,
         annotationName,
         newLabelName
       );
-      return { ...state, schema };
+
+      /* if so requested, label the current selection */
+      const { world, crossfilter } = prevSharedState;
+      const { metadataField, newLabelText } = action;
+      const obsAnnotations = !action.assignSelectedCells
+        ? state.obsAnnotations
+        : setLabelOnCurrentSelection(
+            state,
+            world,
+            crossfilter,
+            metadataField,
+            newLabelText
+          );
+
+      return { ...state, schema, obsAnnotations };
     }
 
     case "annotation: label edited": {
@@ -240,23 +254,11 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
     case "annotation: label current cell selection": {
       const { metadataField, label } = action;
       const { world, crossfilter } = prevSharedState;
-
-      /*
-      selection state is relative to world.  We need to convert it
-      to a mask for Universe before applying it.
-      */
-      const worldMask = crossfilter.allSelectedMask();
-      const mask = World.worldEqUniverse(world, state)
-        ? worldMask
-        : AnnotationsHelpers.worldToUniverseMask(
-            worldMask,
-            world.obsAnnotations,
-            state.nObs
-          );
-      const obsAnnotations = AnnotationsHelpers.setLabelByMask(
-        state.obsAnnotations,
+      const obsAnnotations = setLabelOnCurrentSelection(
+        state,
+        world,
+        crossfilter,
         metadataField,
-        mask,
         label
       );
       return { ...state, obsAnnotations };
@@ -267,5 +269,40 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
     }
   }
 };
+
+function setLabelOnCurrentSelection(
+  universe,
+  world,
+  crossfilter,
+  metadataField,
+  label
+) {
+  /*
+  Set category `metadataField` to value `label` for anything currently selected.
+  Used by several action type reducers.
+
+  Returns the new obsAnnotations dataframe.
+  */
+
+  /*
+  selection state is relative to world.  We need to convert it
+  to a mask for Universe before applying it.
+  */
+  const worldMask = crossfilter.allSelectedMask();
+  const mask = World.worldEqUniverse(world, universe)
+    ? worldMask
+    : AnnotationsHelpers.worldToUniverseMask(
+        worldMask,
+        world.obsAnnotations,
+        universe.nObs
+      );
+  const obsAnnotations = AnnotationsHelpers.setLabelByMask(
+    universe.obsAnnotations,
+    metadataField,
+    mask,
+    label
+  );
+  return obsAnnotations;
+}
 
 export default Universe;

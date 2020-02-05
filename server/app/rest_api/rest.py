@@ -45,7 +45,7 @@ class ConfigAPI(Resource):
                 },
                 "links": {"about-dataset": current_app.config["ABOUT_DATASET"]},
                 "parameters": {**current_app.data.get_config_parameters(uid=cxguid, collection=anno_collection)},
-                "library_versions": {"cellxgene": cellxgene_version, "anndata": anndata_version},
+                "library_versions": {"cellxgene": cellxgene_version, "anndata": str(anndata_version)},
             }
         }
 

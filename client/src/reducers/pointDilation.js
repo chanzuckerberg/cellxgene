@@ -1,29 +1,27 @@
 const initialState = {
   metadataField: "",
-  categoryIndex: -1,
-  categoryField: "",
-  centroidXY: [-1, -1]
+  categoryField: ""
 };
 
-const CentroidLabel = (state = initialState, action, sharedNextState) => {
+const pointDialation = (state = initialState, action, sharedNextState) => {
   const { categoricalSelection } = sharedNextState;
   const { metadataField, categoryIndex } = action;
   const categoryField =
+    action.categoryField ||
     categoricalSelection?.[metadataField]?.categoryValues[categoryIndex];
+
   switch (action.type) {
     case "category value mouse hover start":
       return {
         ...state,
         metadataField,
-        categoryIndex,
-        categoryField,
-        centroidXY: null
+        categoryField
       };
 
     case "category value mouse hover end":
       if (
         metadataField === state.metadataField &&
-        categoryIndex === state.categoryIndex
+        categoryField === state.categoryField
       ) {
         return initialState;
       }
@@ -34,4 +32,4 @@ const CentroidLabel = (state = initialState, action, sharedNextState) => {
   }
 };
 
-export default CentroidLabel;
+export default pointDialation;

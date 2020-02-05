@@ -4,7 +4,6 @@ import React from "react";
 
 import {
   Button,
-  InputGroup,
   Menu,
   MenuItem,
   Popover,
@@ -16,17 +15,24 @@ import {
 import Occupancy from "./occupancy";
 import * as globals from "../../globals";
 import styles from "./categorical.css";
+import AnnoDialog from "./annoDialog";
+import AnnoInputs from "./annoInputs";
 
 import { AnnotationsHelpers } from "../../util/stateManager";
+import { labelErrorMessage, isLabelErroneous } from "./labelUtil";
 
 @connect(state => ({
   categoricalSelection: state.categoricalSelection,
   annotations: state.annotations,
   colorScale: state.colors.scale,
   colorAccessor: state.colors.colorAccessor,
+  pointDilation: state.pointDilation,
   schema: state.world?.schema,
   world: state.world,
-  crossfilter: state.crossfilter
+  crossfilter: state.crossfilter,
+  ontology: state.ontology,
+  ontologyLoading: state.ontology?.loading,
+  ontologyEnabled: state.ontology?.enabled
 }))
 class CategoryValue extends React.Component {
   constructor(props) {
@@ -40,13 +46,20 @@ class CategoryValue extends React.Component {
     };
   }
 
-  getLabel = () => {
-    const { metadataField, categoryIndex, categoricalSelection } = this.props;
-    const category = categoricalSelection[metadataField];
-    const label = category.categoryValues[categoryIndex];
-
-    return label;
-  };
+  componentDidUpdate(prevProps) {
+    const { categoricalSelection, metadataField, categoryIndex } = this.props;
+    if (
+      prevProps.categoricalSelection !== categoricalSelection ||
+      prevProps.metadataField !== metadataField ||
+      prevProps.categoryIndex !== categoryIndex
+    ) {
+      this.setState({
+        editedLabelText: String(
+          categoricalSelection[metadataField].categoryValues[categoryIndex]
+        ).valueOf()
+      });
+    }
+  }
 
   handleDeleteValue = () => {
     const { dispatch, metadataField } = this.props;
@@ -83,60 +96,49 @@ class CategoryValue extends React.Component {
     });
   };
 
-  valueNameErrorMessage = () => {
-    const err = this.valueNameError();
-    if (err === false) return null;
+  handleCreateArbitraryLabel = editedLabelTextNotInOntology => {
+    const { dispatch, metadataField, categoryIndex } = this.props;
+    const label = this.getLabel();
 
-    const errorMessageMap = {
-      /* map error code to human readable error message */
-      "empty-string": "Blank names not allowed",
-      duplicate: "Label must be unique",
-      "trim-spaces": "Leading and trailing spaces not allowed",
-      "illegal-characters": "Only alphanumeric, underscore and period allowed",
-      "multi-space-run": "Multiple consecutive spaces not allowed"
-    };
-    const errorMessage = errorMessageMap[err] ?? "error";
-    return (
-      <span
-        style={{
-          fontStyle: "italic",
-          fontSize: 12,
-          marginTop: 5,
-          color: Colors.ORANGE3
-        }}
-      >
-        {errorMessage}
-      </span>
-    );
+    dispatch({
+      type: "annotation: label edited",
+      metadataField,
+      editedLabel: editedLabelTextNotInOntology,
+      categoryIndex,
+      label
+    });
   };
 
-  valueNameError = () => {
-    const { editedLabelText } = this.state;
-    const { categoricalSelection, metadataField, categoryIndex } = this.props;
-
-    /* 
-    check label syntax
-    */
-    const err = AnnotationsHelpers.annotationNameIsErroneous(editedLabelText);
-    if (err) return err;
-
-    /*
-    disallow duplicates
-    */
+  labelNameError = name => {
+    const {
+      metadataField,
+      ontology,
+      schema,
+      categoricalSelection,
+      categoryIndex
+    } = this.props;
     const category = categoricalSelection[metadataField];
     const displayString = String(
       category.categoryValues[categoryIndex]
     ).valueOf();
-    if (
-      category.categoryValues.indexOf(editedLabelText) > -1 &&
-      editedLabelText !== displayString
-    )
-      return "duplicate";
+    if (name === displayString) return false;
+    return isLabelErroneous(name, metadataField, ontology, schema);
+  };
 
-    /*
-    otherwise, all good!
-    */
-    return false;
+  labelNameErrorMessage = name => {
+    const {
+      metadataField,
+      ontology,
+      schema,
+      categoricalSelection,
+      categoryIndex
+    } = this.props;
+    const category = categoricalSelection[metadataField];
+    const displayString = String(
+      category.categoryValues[categoryIndex]
+    ).valueOf();
+    if (name === displayString) return null;
+    return labelErrorMessage(name, metadataField, ontology, schema);
   };
 
   activateEditLabelMode = () => {
@@ -194,6 +196,7 @@ class CategoryValue extends React.Component {
     const crossfilterChange =
       props.isUserAnno && props.crossfilter !== nextProps.crossfilter;
     const editingLabel = state.editedLabelText !== nextState.editedLabelText;
+    const dilationChange = props.pointDilation !== nextProps.pointDilation;
 
     return (
       valueSelectionChange ||
@@ -201,24 +204,10 @@ class CategoryValue extends React.Component {
       colorAccessorChange ||
       annotationsChange ||
       crossfilterChange ||
-      editingLabel
+      editingLabel ||
+      dilationChange
     );
   };
-
-  componentDidUpdate(prevProps) {
-    const { categoricalSelection, metadataField, categoryIndex } = this.props;
-    if (
-      prevProps.categoricalSelection !== categoricalSelection ||
-      prevProps.metadataField !== metadataField ||
-      prevProps.categoryIndex !== categoryIndex
-    ) {
-      this.setState({
-        editedLabelText: String(
-          categoricalSelection[metadataField].categoryValues[categoryIndex]
-        ).valueOf()
-      });
-    }
-  }
 
   toggleOn = () => {
     const { dispatch, metadataField, categoryIndex } = this.props;
@@ -245,6 +234,23 @@ class CategoryValue extends React.Component {
       metadataField,
       categoryIndex
     });
+  };
+
+  handleTextChange = text => {
+    this.setState({ editedLabelText: text });
+  };
+
+  handleChoice = e => {
+    /* Blueprint Suggest format */
+    this.setState({ editedLabelText: e.target });
+  };
+
+  getLabel = () => {
+    const { metadataField, categoryIndex, categoricalSelection } = this.props;
+    const category = categoricalSelection[metadataField];
+    const label = category.categoryValues[categoryIndex];
+
+    return label;
   };
 
   isAddCurrentSelectionDisabled(category, value) {
@@ -286,9 +292,11 @@ class CategoryValue extends React.Component {
       schema,
       isUserAnno,
       annotations,
+      ontologyEnabled,
       // flippedProps is potentially brittle, their docs want {...flippedProps} on our div,
       // our lint doesn't like jsx spread, we are version pinned to prevent api change on their part
-      flippedProps
+      flippedProps,
+      pointDilation
     } = this.props;
 
     const { editedLabelText } = this.state;
@@ -335,13 +343,27 @@ class CategoryValue extends React.Component {
       )}`;
     }
 
+    const editModeActive =
+      isUserAnno &&
+      annotations.labelEditable.category === metadataField &&
+      annotations.isEditingLabelName &&
+      annotations.labelEditable.label === categoryIndex;
+
     return (
       <div
         key={i}
         data-flip-config={flippedProps["data-flip-config"]}
         data-flip-id={flippedProps["data-flip-id"]}
         data-portal-key={flippedProps["data-portal-key"]}
-        className={styles.value}
+        className={
+          /* This code is to change the styles on centroid label hover is causing over-rendering */
+          `${styles.value}${
+            pointDilation.metadataField === metadataField &&
+            pointDilation.categoryField === displayString
+              ? ` ${styles.hover}`
+              : ""
+          }`
+        }
         data-testclass="categorical-row"
         style={{
           padding: "4px 7px",
@@ -404,66 +426,41 @@ class CategoryValue extends React.Component {
                   verticalAlign: "middle"
                 }}
               >
-                {annotations.isEditingLabelName &&
-                annotations.labelEditable.category === metadataField &&
-                annotations.labelEditable.label === categoryIndex
-                  ? null
-                  : truncatedString || displayString}
+                {truncatedString || displayString}
               </span>
             </Tooltip>
-            {isUserAnno &&
-            annotations.labelEditable.category === metadataField &&
-            annotations.isEditingLabelName &&
-            annotations.labelEditable.label === categoryIndex ? (
-              <form
-                onSubmit={e => {
-                  e.preventDefault();
-                  if (this.valueNameError()) {
-                    return;
-                  }
-                  this.handleEditValue();
-                }}
-              >
-                <InputGroup
-                  style={{ position: "relative", top: -1 }}
-                  ref={input => {
-                    this.editableInput = input;
-                  }}
-                  small
-                  autoFocus
-                  intent={this.valueNameError() ? "warning" : "none"}
-                  onChange={e => {
-                    this.setState({ editedLabelText: e.target.value });
-                  }}
-                  defaultValue={displayString}
-                  rightElement={
-                    <Button
-                      minimal
-                      style={{ position: "relative", top: -1 }}
-                      disabled={this.valueNameError()}
-                      type="button"
-                      icon="small-tick"
-                      data-testclass="submitEdit"
-                      data-testid="submitEdit"
-                      onClick={this.handleEditValue}
+            {editModeActive ? (
+              <div>
+                <AnnoDialog
+                  isActive={editModeActive}
+                  title="Edit label"
+                  instruction={`New label text must be unique within category ${metadataField}:`}
+                  cancelTooltipContent="Close this dialog without editing label text."
+                  primaryButtonText="Change label text"
+                  text={editedLabelText}
+                  categoryToDuplicate={null}
+                  validationError={this.labelNameError(editedLabelText)}
+                  errorMessage={this.labelNameErrorMessage(editedLabelText)}
+                  handleSubmit={this.handleEditValue}
+                  handleCancel={this.cancelEdit}
+                  annoInput={
+                    <AnnoInputs
+                      useSuggest={ontologyEnabled}
+                      text={editedLabelText}
+                      handleCreateArbitraryLabel={
+                        this.handleCreateArbitraryLabel
+                      }
+                      handleItemChange={this.handleSuggestActiveItemChange}
+                      handleChoice={this.handleChoice}
+                      handleTextChange={this.handleTextChange}
+                      isTextInvalid={this.labelNameError}
+                      isTextInvalidErrorMessage={this.labelNameErrorMessage}
                     />
                   }
+                  annoSelect={null}
                 />
-                {this.valueNameErrorMessage()}
-              </form>
+              </div>
             ) : null}
-            {/*
-            CANCEL IT, WITH BUTTON, ESCAPE KEY, CLICK OUT, UNDO?
-
-            <Button
-            minimal
-            style={{ position: "relative", top: -1 }}
-            type="button"
-            icon="cross"
-            data-testclass="submitEdit"
-            data-testid="submitEdit"
-            onClick={this.cancelEdit}
-          /> */}
           </div>
           <span style={{ flexShrink: 0 }}>
             {colorAccessor && !isColorBy && !annotations.isEditingLabelName ? (
@@ -471,113 +468,115 @@ class CategoryValue extends React.Component {
             ) : null}
           </span>
         </div>
-        <span>
-          <span
-            data-testclass="categorical-value-count"
-            data-testid={`categorical-value-count-${metadataField}-${displayString}`}
-            style={{
-              color:
-                displayString === globals.unassignedCategoryLabel
-                  ? "#ababab"
-                  : "black",
-              fontStyle:
-                displayString === globals.unassignedCategoryLabel
-                  ? "italic"
-                  : "auto"
-            }}
-          >
-            {count}
-          </span>
-
-          <svg
-            display={isColorBy && categories ? "auto" : "none"}
-            style={{
-              marginLeft: 5,
-              width: 11,
-              height: 11,
-              backgroundColor:
-                isColorBy && categories
-                  ? colorScale(categories.indexOf(value))
-                  : "inherit"
-            }}
-          />
-          {isUserAnno ? (
+        <div>
+          <span>
             <span
-              onMouseEnter={this.handleMouseExit}
-              onMouseLeave={this.handleMouseEnter}
+              data-testclass="categorical-value-count"
+              data-testid={`categorical-value-count-${metadataField}-${displayString}`}
+              style={{
+                color:
+                  displayString === globals.unassignedCategoryLabel
+                    ? "#ababab"
+                    : "black",
+                fontStyle:
+                  displayString === globals.unassignedCategoryLabel
+                    ? "italic"
+                    : "auto"
+              }}
             >
-              <Popover
-                interactionKind={PopoverInteractionKind.HOVER}
-                boundary="window"
-                position={Position.RIGHT_TOP}
-                content={
-                  <Menu>
-                    <MenuItem
-                      icon="plus"
-                      data-testclass="handleAddCurrentSelectionToThisLabel"
-                      data-testid={`handleAddCurrentSelectionToThisLabel-${metadataField}`}
-                      onClick={this.handleAddCurrentSelectionToThisLabel}
-                      text={
-                        <span>
-                          Re-label currently selected cells as
-                          <span
-                            style={{
-                              fontStyle:
-                                displayString ===
-                                globals.unassignedCategoryLabel
-                                  ? "italic"
-                                  : "auto"
-                            }}
-                          >
-                            {` ${displayString}`}
-                          </span>
-                        </span>
-                      }
-                      disabled={this.isAddCurrentSelectionDisabled(
-                        metadataField,
-                        value
-                      )}
-                    />
-                    {displayString !== globals.unassignedCategoryLabel ? (
-                      <MenuItem
-                        icon="edit"
-                        text="Edit this label's name"
-                        data-testclass="handleEditValue"
-                        data-testid={`handleEditValue-${metadataField}`}
-                        onClick={this.activateEditLabelMode}
-                        disabled={annotations.isEditingLabelName}
-                      />
-                    ) : null}
-                    {displayString !== globals.unassignedCategoryLabel ? (
-                      <MenuItem
-                        icon="delete"
-                        intent="danger"
-                        data-testclass="handleDeleteValue"
-                        data-testid={`handleDeleteValue-${metadataField}`}
-                        onClick={this.handleDeleteValue}
-                        text={`Delete this label, and reassign all cells to type '${globals.unassignedCategoryLabel}'`}
-                      />
-                    ) : null}
-                  </Menu>
-                }
-              >
-                <Button
-                  style={{
-                    marginLeft: 0,
-                    position: "relative",
-                    top: -1,
-                    minHeight: 16
-                  }}
-                  data-testclass="seeActions"
-                  data-testid={`seeActions-${metadataField}`}
-                  icon="more"
-                  small
-                  minimal
-                />
-              </Popover>
+              {count}
             </span>
-          ) : null}
-        </span>
+
+            <svg
+              display={isColorBy && categories ? "auto" : "none"}
+              style={{
+                marginLeft: 5,
+                width: 11,
+                height: 11,
+                backgroundColor:
+                  isColorBy && categories
+                    ? colorScale(categories.indexOf(value))
+                    : "inherit"
+              }}
+            />
+            {isUserAnno ? (
+              <span
+                onMouseEnter={this.handleMouseExit}
+                onMouseLeave={this.handleMouseEnter}
+              >
+                <Popover
+                  interactionKind={PopoverInteractionKind.HOVER}
+                  boundary="window"
+                  position={Position.RIGHT_TOP}
+                  content={
+                    <Menu>
+                      <MenuItem
+                        icon="plus"
+                        data-testclass="handleAddCurrentSelectionToThisLabel"
+                        data-testid={`handleAddCurrentSelectionToThisLabel-${metadataField}`}
+                        onClick={this.handleAddCurrentSelectionToThisLabel}
+                        text={
+                          <span>
+                            Re-label currently selected cells as
+                            <span
+                              style={{
+                                fontStyle:
+                                  displayString ===
+                                  globals.unassignedCategoryLabel
+                                    ? "italic"
+                                    : "auto"
+                              }}
+                            >
+                              {` ${displayString}`}
+                            </span>
+                          </span>
+                        }
+                        disabled={this.isAddCurrentSelectionDisabled(
+                          metadataField,
+                          value
+                        )}
+                      />
+                      {displayString !== globals.unassignedCategoryLabel ? (
+                        <MenuItem
+                          icon="edit"
+                          text="Edit this label's name"
+                          data-testclass="handleEditValue"
+                          data-testid={`handleEditValue-${metadataField}`}
+                          onClick={this.activateEditLabelMode}
+                          disabled={annotations.isEditingLabelName}
+                        />
+                      ) : null}
+                      {displayString !== globals.unassignedCategoryLabel ? (
+                        <MenuItem
+                          icon="delete"
+                          intent="danger"
+                          data-testclass="handleDeleteValue"
+                          data-testid={`handleDeleteValue-${metadataField}`}
+                          onClick={this.handleDeleteValue}
+                          text={`Delete this label, and reassign all cells to type '${globals.unassignedCategoryLabel}'`}
+                        />
+                      ) : null}
+                    </Menu>
+                  }
+                >
+                  <Button
+                    style={{
+                      marginLeft: 0,
+                      position: "relative",
+                      top: -1,
+                      minHeight: 16
+                    }}
+                    data-testclass="seeActions"
+                    data-testid={`seeActions-${metadataField}`}
+                    icon="more"
+                    small
+                    minimal
+                  />
+                </Popover>
+              </span>
+            ) : null}
+          </span>
+        </div>
       </div>
     );
   }
