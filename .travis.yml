@@ -10,6 +10,7 @@ install:
   - set -eo pipefail
   - pip install flake8
   - make pydist install-dist dev-env
+  - source environment.ci
 
 jobs:
   include:

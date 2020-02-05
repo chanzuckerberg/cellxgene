@@ -14,9 +14,9 @@
     "e2e": "node node_modules/jest/bin/jest.js --verbose false --config __tests__/e2e/e2eJestConfig.json e2e/e2e.test.js",
     "fmt": "eslint --fix src",
     "lint": "eslint src",
-    "smoke-test": "start-server-and-test start-server-for-test :5000 e2e",
+    "smoke-test": "start-server-and-test start-server-for-test :$CXG_SERVER_PORT e2e",
     "start": "node server/development.js",
-    "start-server-for-test": "cellxgene launch -p 5000 ../example-dataset/pbmc3k.h5ad",
+    "start-server-for-test": "cellxgene launch -p $CXG_SERVER_PORT ../example-dataset/pbmc3k.h5ad",
     "test": "node node_modules/jest/bin/jest.js",
     "unit-test": "node node_modules/jest/bin/jest.js --testPathIgnorePatterns e2e"
   },

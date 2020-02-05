@@ -9,36 +9,42 @@
 
 **All instructions are expected to be run from the top level cellxgene directory unless otherwise specified.**
 
+### Environment
+
+* To load the development environment: `source environment.dev`
+* To load the CI environment: `source environment.ci`
+
 ## Running test suite
 Client and server tests run on Travis CI for every push, PR, and commit to master on github. End to end tests run nightly on master only. 
 
 ### Unit tests
 Steps to run the all unit tests:
 1. Start in the project root directory
+1. [Load an environment](#Environment)
 1. `make dev-env`
 1. `make unit-test`
 
 ### End to end tests
 
-End to end tests use two env variables:
-* `JEST_ENV` - environment to run end to end tests. Default `dev`
-    * `prod` - run headless with no slowdown, chromium will not open.
-    * `dev` - opens chromimum, runs tests with minimal slowdown, close on exit.
-    * `debug` - opens chromium, runs tests with 100ms slowdown, dev tools open, chrome stays open on exit.
-* `JEST_CXG_PORT` - port that end to end tests are being run on. Default `3000` (client hosted port).
+To run E2E tests:
+1. [Load an environment](#Environment)
+1. `cd client` and `make smoke-test`
 
-On CI the end to end tests are run with `JEST_ENV` set to `prod` using the `smoke-test` make target.
-
-To run end to end tests as they will be run on CI use the following command:
-```
-JEST_ENV=prod JEST_CXG_PORT=5000 make pydist install-dist dev-env smoke-test
-```
+The `JEST_ENV` environment variable enables the following E2E test options:
+* `dev` - opens chromimum, runs tests with minimal slowdown, close on exit.
+* `debug` - opens chromium, runs tests with 100ms slowdown, dev tools open, chrome stays open on exit.
+* `prod` - run headless with no slowdown, chromium will not open.
 
 Run end to end tests interactively during development
 1. cellxgene should be installed as [specified in client dev](#install-1)
 1. Follow [launch](#launch-1) instructions for client dev with dataset `example-dataset/pbmc3k`
 1. Run `npm run e2e` or `make e2e` from the `client` directory
 1. To debug a failing test `export JEST_ENV='debug'` and re-run.
+
+To run end to end tests _exactly_ as they will be run on CI use the following command:
+```
+source environment.ci && make pydist install-dist dev-env smoke-test
+```
 
 ## Server dev
 ### Install

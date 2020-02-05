@@ -1,0 +1,6 @@
+# Default environment variables for cellxgene development
+set -a
+CXG_SERVER_PORT=5000
+CXG_CLIENT_PORT=3000
+JEST_ENV=dev
+set +a

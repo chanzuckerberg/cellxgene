@@ -38,7 +38,7 @@
 
 **About** Starts backend development server and runs end to end tests. This is what travis runs. It depends on the `e2e` and the `start-server-for-test` node scripts. One starts the server, the other runs the tests. If developing a front-end feature and just checking if tests pass, this is probabaly the one you want to run.
 
-**Requirements** Must set env variable for port. In terminal `export JEST_ENV='dev'` `export JEST_CXG_PORT=5000`
+**Requirements** Must set env variable for port. In terminal `export JEST_ENV='dev'`, `source environment.dev` or `source environment.ci`
 
 **Usage** `npm run smoke-test`
 
@@ -46,7 +46,7 @@
 
 **About** Runs backend tests without starting the server. You will need to start the rest api separately with the pbmc3k.h5ad file.
 
-**Requirements** Must set env variable for port. In terminal `export JEST_ENV='dev'` `export JEST_CXG_PORT=5000`
+**Requirements** Must set env variable for port. In terminal either `source environment.dev` or `source environment.ci`.
 
 **Usage** `npm run e2e`
 
