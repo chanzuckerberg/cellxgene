@@ -71,7 +71,13 @@ class GraphOverlayLayer extends PureComponent {
       -(responsive.height - graphPaddingTop)}) scale(2 1) scale(${1 /
       (responsive.width - graphPaddingRightLeft)} 1)`;
 
-    const newChildren = React.Children.toArray(children);
+    // Copy the children passed with the overlay and add the inverse transform and onDisplayChange props
+    const newChildren = React.Children.map(children, child =>
+      cloneElement(child, {
+        inverseTransform,
+        onDisplayChange: this.onDisplayChange
+      })
+    );
 
     return (
       <svg
@@ -107,12 +113,7 @@ class GraphOverlayLayer extends PureComponent {
                   id="model-transformation-group"
                   transform={this.matrixToTransformString(modelTF)}
                 >
-                  {newChildren.map(child =>
-                    cloneElement(child, {
-                      inverseTransform,
-                      onDisplayChange: this.onDisplayChange
-                    })
-                  )}
+                  {newChildren}
                 </g>
               </g>
             </g>
