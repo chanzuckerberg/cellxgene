@@ -102,53 +102,36 @@ class Category extends React.Component {
   renderIsStillLoading(metadataField) {
     /*
     We are still loading this category, so render a "busy" signal.
-
-    Temp code until we finalize UI/design.
     */
     return (
       <div
         style={{
-          maxWidth: globals.maxControlsWidth
+          display: "flex",
+          justifyContent: "flex-start",
+          alignItems: "flex-start"
         }}
-        data-testclass="category"
-        data-testid={`category-${metadataField}`}
       >
-        <div
+        <label className="bp3-control bp3-checkbox">
+          <input
+            data-testclass="category-select"
+            data-testid={`category-select-${metadataField}`}
+            disabled
+            checked={true}
+            type="checkbox"
+          />
+          <span className="bp3-control-indicator" />
+        </label>
+        <span
+          data-testid={`category-expand-${metadataField}`}
           style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "baseline"
+            cursor: "pointer",
+            display: "inline-block",
+            fontStyle: "italic"
           }}
         >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "flex-start",
-              alignItems: "flex-start"
-            }}
-          >
-            <label className="bp3-control bp3-checkbox">
-              <input
-                data-testclass="category-select"
-                data-testid={`category-select-${metadataField}`}
-                disabled
-                checked={true}
-                type="checkbox"
-              />
-              <span className="bp3-control-indicator" />
-            </label>
-            <span
-              data-testid={`category-expand-${metadataField}`}
-              style={{
-                cursor: "pointer",
-                display: "inline-block"
-              }}
-            >
-              {metadataField} is loading...
-            </span>
-            <Spinner intent="primary" size="20" />
-          </div>
-        </div>
+          {metadataField} is loading...
+        </span>
+        <Spinner intent="primary" size="20" />
       </div>
     );
   }
@@ -165,7 +148,7 @@ class Category extends React.Component {
 
     const category = categoricalSelection?.[metadataField];
     const isStillLoading = !categoricalSelection || !category;
-    if (true || isStillLoading) {
+    if (isStillLoading) {
       return this.renderIsStillLoading(metadataField);
     }
 
