@@ -136,7 +136,11 @@ class Category extends React.Component {
               {metadataField}
             </span>
           </div>
-          <Spinner intent="primary" size="20" />
+          <div>
+            <Button active={false} intent="none" disabled minimal>
+              <Spinner intent="primary" size="10" />
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -152,8 +156,7 @@ class Category extends React.Component {
       annotations
     } = this.props;
 
-    const category = categoricalSelection?.[metadataField];
-    const isStillLoading = !categoricalSelection || !category;
+    const isStillLoading = !(categoricalSelection?.[metadataField] ?? false);
     if (isStillLoading) {
       return this.renderIsStillLoading(metadataField);
     }
