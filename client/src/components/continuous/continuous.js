@@ -45,7 +45,7 @@ class Continuous extends React.PureComponent {
             alignItems: "center"
           }}
         >
-          <div />
+          <div style={{ minWidth: 30 }}></div>
           <div style={{ display: "flex", alignSelf: "center" }}>
             <span style={{ fontStyle: "italic" }}>{key}</span>
           </div>
