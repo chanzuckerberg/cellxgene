@@ -23,19 +23,19 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
         case "obsAnnotations": {
           return {
             ...state,
-            obsAnnotations: addObsAnnotations(state, dataframe)
+            ...addObsAnnotations(state, dataframe)
           };
         }
         case "varAnnotations": {
           return {
             ...state,
-            varAnnotations: addVarAnnotations(state, dataframe)
+            ...addVarAnnotations(state, dataframe)
           };
         }
         case "obsLayout": {
           return {
             ...state,
-            obsLayout: addObsLayout(state, dataframe)
+            ...addObsLayout(state, dataframe)
           };
         }
         default: {

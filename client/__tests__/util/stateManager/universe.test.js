@@ -30,7 +30,7 @@ describe("createUniverseFromResponse", () => {
     create a universe from sample data nad validate its shape & contents
     */
     const { nObs, nVar } = REST.schema.schema.dataframe;
-    const universe = Universe.createUniverseFromResponse(
+    let universe = Universe.createUniverseFromResponse(
       REST.config,
       REST.schema
     );
@@ -47,18 +47,21 @@ describe("createUniverseFromResponse", () => {
       })
     );
 
-    universe.obsAnnotations = Universe.addObsAnnotations(
-      universe,
-      Universe.matrixFBSToDataframe(REST.annotationsObs)
-    );
-    universe.varAnnotations = Universe.addVarAnnotations(
-      universe,
-      Universe.matrixFBSToDataframe(REST.annotationsVar)
-    );
-    universe.obsLayout = Universe.addObsLayout(
-      universe,
-      Universe.matrixFBSToDataframe(REST.layoutObs)
-    );
+    universe = {
+      ...universe,
+      ...Universe.addObsAnnotations(
+        universe,
+        Universe.matrixFBSToDataframe(REST.annotationsObs)
+      ),
+      ...Universe.addVarAnnotations(
+        universe,
+        Universe.matrixFBSToDataframe(REST.annotationsVar)
+      ),
+      ...Universe.addObsLayout(
+        universe,
+        Universe.matrixFBSToDataframe(REST.layoutObs)
+      )
+    };
 
     expect(universe).toMatchObject(
       expect.objectContaining({

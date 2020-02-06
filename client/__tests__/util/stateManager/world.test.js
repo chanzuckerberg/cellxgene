@@ -17,22 +17,26 @@ the default REST test response.
 const defaultBigBang = () => {
   /* create unverse, world, crossfilter and dimensionMap */
   /* create universe */
-  const universe = Universe.createUniverseFromResponse(
+  let universe = Universe.createUniverseFromResponse(
     _.cloneDeep(REST.config),
     _.cloneDeep(REST.schema)
   );
-  universe.obsAnnotations = Universe.addObsAnnotations(
-    universe,
-    Universe.matrixFBSToDataframe(REST.annotationsObs)
-  );
-  universe.varAnnotations = Universe.addVarAnnotations(
-    universe,
-    Universe.matrixFBSToDataframe(REST.annotationsVar)
-  );
-  universe.obsLayout = Universe.addObsLayout(
-    universe,
-    Universe.matrixFBSToDataframe(REST.layoutObs)
-  );
+
+  universe = {
+    ...universe,
+    ...Universe.addObsAnnotations(
+      universe,
+      Universe.matrixFBSToDataframe(REST.annotationsObs)
+    ),
+    ...Universe.addVarAnnotations(
+      universe,
+      Universe.matrixFBSToDataframe(REST.annotationsVar)
+    ),
+    ...Universe.addObsLayout(
+      universe,
+      Universe.matrixFBSToDataframe(REST.layoutObs)
+    )
+  };
 
   /* create world */
   const world = World.createWorldFromEntireUniverse(universe);

@@ -185,11 +185,11 @@ export function addObsAnnotations(universe, df) {
   const { schema } = universe;
   keys.forEach(k => {
     const colSchema = schema.annotations.obsByName[k];
-    const col = obsAnnotations.col(name);
+    const col = obsAnnotations.col(k);
     normalizeSchemaCategory(colSchema, col);
   });
 
-  return obsAnnotations;
+  return { obsAnnotations, schema };
 }
 
 export function addVarAnnotations(universe, df) {
@@ -197,7 +197,7 @@ export function addVarAnnotations(universe, df) {
   if (universe.nVar !== varAnnotations.length) {
     throw new Error("Universe dimensionality mismatch - failed to load");
   }
-  return varAnnotations;
+  return { varAnnotations };
 }
 
 export function addObsLayout(universe, df) {
@@ -205,7 +205,7 @@ export function addObsLayout(universe, df) {
   if (universe.nObs !== obsLayout.length) {
     throw new Error("Universe dimensionality mismatch - failed to load");
   }
-  return obsLayout;
+  return { obsLayout };
 }
 
 export function convertDataFBStoObject(universe, arrayBuffer) {

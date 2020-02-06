@@ -82,10 +82,10 @@ export function selectableCategoryNames(schema, maxCategoryItems, names) {
   return columns
     .filter(colSchema => !names || names.indexOf(colSchema.name) !== -1)
     .filter(colSchema => {
-      const { name, categories } = colSchema;
-      return (
-        categories && categories.length < maxCategoryItems && name !== index
-      );
+      const { type, name } = colSchema;
+      const isSelectableType =
+        type === "string" || type === "boolean" || type === "categorical";
+      return isSelectableType && name !== index;
     })
     .map(v => v.name);
 }

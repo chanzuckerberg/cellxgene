@@ -36,6 +36,7 @@ const WorldReducer = (
       const { dim } = action;
       return {
         ...state,
+        schema: universe.schema,
         [dim]: universe[dim].clone(),
         unclipped: {
           ...state.unclipped,
