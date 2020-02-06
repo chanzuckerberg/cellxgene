@@ -137,9 +137,7 @@ class Category extends React.Component {
             </span>
           </div>
           <div>
-            <Button active={false} intent="none" disabled minimal>
-              <Spinner intent="primary" size="10" />
-            </Button>
+            <Button minimal loading intent="primary" />
           </div>
         </div>
       </div>

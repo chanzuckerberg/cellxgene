@@ -5,7 +5,7 @@ import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
 import * as globals from "../../globals";
-import { Spinner } from "@blueprintjs/core";
+import { Button } from "@blueprintjs/core";
 
 import HistogramBrush from "../brushableHistogram";
 
@@ -28,6 +28,40 @@ class Continuous extends React.PureComponent {
     };
   };
 
+  renderIsStillLoading(zebra, key) {
+    return (
+      <div
+        key={key}
+        style={{
+          padding: globals.leftSidebarSectionPadding,
+          backgroundColor: zebra % 2 === 0 ? globals.lightestGrey : "white"
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            justifyItems: "center",
+            alignItems: "center"
+          }}
+        >
+          <div />
+          <div style={{ display: "flex", alignSelf: "center" }}>
+            <span style={{ fontStyle: "italic" }}>{key}</span>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end"
+            }}
+          >
+            <Button minimal loading intent="primary" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   render() {
     const { obsAnnotations, schema } = this.props;
 
@@ -46,27 +80,7 @@ class Continuous extends React.PureComponent {
           if (!obsAnnotations.hasCol(key)) {
             // still loading!
             zebra += 1;
-            return (
-              <div
-                key={key}
-                style={{
-                  padding: globals.leftSidebarSectionPadding,
-                  backgroundColor:
-                    zebra % 2 === 0 ? globals.lightestGrey : "white"
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "flex-end",
-                    paddingBottom: "8px"
-                  }}
-                >
-                  <span style={{ fontStyle: "italic" }}>{key} loading...</span>
-                  <Spinner intent="primary" size="20" />
-                </div>
-              </div>
-            );
+            return this.renderIsStillLoading(zebra, key);
           } else {
             // data loaded and available
             const summary = obsAnnotations.col(key).summarize();
