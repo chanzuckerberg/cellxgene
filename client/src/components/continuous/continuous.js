@@ -62,9 +62,7 @@ class Continuous extends React.PureComponent {
                     paddingBottom: "8px"
                   }}
                 >
-                  <span style={{ fontStyle: "italic" }}>
-                    {key} is loading...
-                  </span>
+                  <span style={{ fontStyle: "italic" }}>{key} loading...</span>
                   <Spinner intent="primary" size="20" />
                 </div>
               </div>

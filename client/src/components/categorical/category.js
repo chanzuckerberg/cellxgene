@@ -106,32 +106,38 @@ class Category extends React.Component {
     return (
       <div
         style={{
-          display: "flex",
-          justifyContent: "flex-start",
-          alignItems: "flex-start"
+          maxWidth: globals.maxControlsWidth
         }}
       >
-        <label className="bp3-control bp3-checkbox">
-          <input
-            data-testclass="category-select"
-            data-testid={`category-select-${metadataField}`}
-            disabled
-            checked={true}
-            type="checkbox"
-          />
-          <span className="bp3-control-indicator" />
-        </label>
-        <span
-          data-testid={`category-expand-${metadataField}`}
+        <div
           style={{
-            cursor: "pointer",
-            display: "inline-block",
-            fontStyle: "italic"
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "baseline"
           }}
         >
-          {metadataField} is loading...
-        </span>
-        <Spinner intent="primary" size="20" />
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-start",
+              alignItems: "flex-start"
+            }}
+          >
+            <label className="bp3-control bp3-checkbox">
+              <input disabled checked={true} type="checkbox" />
+              <span className="bp3-control-indicator" />
+            </label>
+            <span
+              style={{
+                cursor: "pointer",
+                display: "inline-block"
+              }}
+            >
+              {metadataField}
+            </span>
+          </div>
+          <Spinner intent="primary" size="20" />
+        </div>
       </div>
     );
   }
