@@ -6,7 +6,7 @@ from server.data_common.fbs.matrix import encode_matrix_fbs
 from server.common.constants import Axis, DEFAULT_TOP_N
 from server.common.errors import FilterError, JSONEncodingValueError
 from server.compute.diffexp import diffexp_ttest
-from server.data_common.utils import jsonify_numpy
+from server.common.utils import jsonify_numpy
 from server.data_common.matrix_proxy import MatrixProxy
 from server.common.app_config import AppFeature, AppConfig
 
@@ -35,6 +35,10 @@ class DataAdaptor(metaclass=ABCMeta):
 
         # parameters set by this data adaptor based on the data.
         self.parameters = {}
+
+    @abstractmethod
+    def cleanup(self):
+        pass
 
     def get_features(self):
         features = {}

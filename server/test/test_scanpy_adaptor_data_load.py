@@ -2,7 +2,6 @@ import unittest
 import json
 
 from server.data_scanpy.scanpy_adaptor import ScanpyAdaptor
-from server.common.errors import DataAdaptorError
 from server.common.data_locator import DataLocator
 
 

@@ -10,9 +10,9 @@ from urllib.parse import urlparse
 
 import click
 
-from server.data_common.utils import custom_format_warning
+from server.common.utils import custom_format_warning
 from server.common.utils import find_available_port, is_port_available, sort_options
-from server.data_common.utils import MatrixDataLoader
+from server.data_common.matrix_loader import MatrixDataLoader
 from server.common.annotations import AnnotationsLocalFile
 from server.common.app_config import AppConfig
 

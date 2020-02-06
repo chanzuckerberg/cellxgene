@@ -8,12 +8,16 @@ from server.data_common.fbs.matrix import encode_matrix_fbs
 from server.common.utils import path_join
 from server_timing import Timing as ServerTiming
 from server.common.constants import Axis
+import threading
 
 
 class TileDbAdaptor(DataAdaptor):
     def __init__(self, location, config=None):
         super().__init__(config)
         self.url = location
+        self.arrays = {}
+        self.lock = threading.Lock()
+
         self.tiledb_ctx = tiledb.Ctx({
             'sm.tile_cache_size': 8 * 1024 * 1024 * 1024,
             'sm.num_reader_threads': 32,
@@ -23,6 +27,12 @@ class TileDbAdaptor(DataAdaptor):
             self.url += '/'
 
         self._validate_and_initialize()
+
+    def cleanup(self):
+        """close all the open tiledb arrays"""
+        for array in self.arrays.values():
+            array.close()
+        self.arrays.clear()
 
     @staticmethod
     def pre_checks(location):
@@ -95,83 +105,83 @@ class TileDbAdaptor(DataAdaptor):
         if not self.isvalid(self.url):
             raise RuntimeError(f"invalid tiledb dataset {self.url}")
 
-    def get_array(self, name, items=None):
-        p = self.get_path(name)
-        if items is None:
-            items = slice(None)
-        with tiledb.DenseArray(p, mode="r", ctx=self.tiledb_ctx) as A:
-            data = A[items]
-        return data
+    def open_array(self, name):
+        try:
+            with self.lock:
+                array = self.arrays.get(name)
+                if array:
+                    return array
+                p = self.get_path(name)
+                try:
+                    array = tiledb.DenseArray(p, mode="r", ctx=self.tiledb_ctx)
+                except tiledb.libtiledb.TileDBError as e:
+                    raise AttributeError(str(e))
+                self.arrays[name] = array
+                return array
+        except tiledb.libtiledb.TileDBError as e:
+            raise AttributeError(str(e))
+
 
     def get_embedding_array(self, ename, items=None):
-        return self.get_array(f"emb/{ename}", items)
+        array = self.open_array(f"emb/{ename}")
+        if items is None:
+            items = slice(None)
+        return array[items]
 
     def get_X_array(self, obs_items=None, var_items=None):
-        p = self.get_path("X")
         obs_items = self._convert_mask(obs_items)
         var_items = self._convert_mask(var_items)
-        with tiledb.DenseArray(p, mode="r", ctx=self.tiledb_ctx) as X:
-            if obs_items == slice(None) and var_items == slice(None):
-                data = X[:, :]
-            else:
-                data = X.multi_index[obs_items, var_items]['']
+        X = self.open_array("X")
+        if obs_items == slice(None) and var_items == slice(None):
+            data = X[:, :]
+        else:
+            data = X.multi_index[obs_items, var_items]['']
         return data
 
     def get_X_array_shape(self):
-        p = self.get_path("X")
-        with tiledb.DenseArray(p, mode="r", ctx=self.tiledb_ctx) as A:
-            return A.shape
+        X = self.open_array("X")
+        return X.shape
 
     def get_X_array_dtype(self):
-        p = self.get_path("X")
-        with tiledb.DenseArray(p, mode="r", ctx=self.tiledb_ctx) as A:
-            return A.dtype
+        X = self.open_array("X")
+        return X.dtype
 
     def query_var_array(self, term_name):
-        p = self.get_path("var")
-        try:
-            with tiledb.DenseArray(p, mode='r', ctx=self.tiledb_ctx) as A:
-                anno_data = A.query(attrs=[term_name])[:][term_name]
-        except tiledb.libtiledb.TileDBError as e:
-            raise AttributeError(str(e))
-        return anno_data
+        var = self.open_array("var")
+        data = var.query(attrs=[term_name])[:][term_name]
+        return data
 
     def query_obs_array(self, term_name):
-        p = self.get_path("obs")
+        var = self.open_array("obs")
         try:
-            with tiledb.DenseArray(p, mode='r', ctx=self.tiledb_ctx) as A:
-                anno_data = A.query(attrs=[term_name])[:][term_name]
+            data = var.query(attrs=[term_name])[:][term_name]
         except tiledb.libtiledb.TileDBError as e:
             raise AttributeError(str(e))
-        return anno_data
+        return data
 
     def get_obs_names(self):
         # get the index from the meta data
-        p = self.get_path("obs")
-        with tiledb.DenseArray(p, mode='r', ctx=self.tiledb_ctx) as A:
-            meta = json.loads(A.meta["cxg_schema"])
-            index_name = meta["index"]
-            return index_name
+        obs = self.open_array("obs")
+        meta = json.loads(obs.meta["cxg_schema"])
+        index_name = meta["index"]
+        return index_name
 
     def get_obs_index(self):
-        p = self.get_path("obs")
-        with tiledb.DenseArray(p, mode='r', ctx=self.tiledb_ctx) as A:
-            meta = json.loads(A.meta["cxg_schema"])
-            index_name = meta["index"]
-            data = A.query(attrs=[index_name])[:][index_name]
-            return data
+        obs = self.open_array("obs")
+        meta = json.loads(obs.meta["cxg_schema"])
+        index_name = meta["index"]
+        data = obs.query(attrs=[index_name])[:][index_name]
+        return data
 
     def get_obs_columns(self):
-        p = self.get_path("obs")
-        with tiledb.DenseArray(p, mode='r', ctx=self.tiledb_ctx) as A:
-            schema = A.schema
-            col_names = [attr.name for attr in schema]
-            return pd.Index(col_names)
+        obs = self.open_array("obs")
+        schema = obs.schema
+        col_names = [attr.name for attr in schema]
+        return pd.Index(col_names)
 
     def get_obs_shape(self):
-        p = self.get_path("obs")
-        with tiledb.DenseArray(p, mode='r', ctx=self.tiledb_ctx) as A:
-            return A.shape
+        obs = self.open_array("obs")
+        return obs.shape
 
     # function to get the embedding
     # this function to iterate through embeddings.
@@ -244,12 +254,12 @@ class TileDbAdaptor(DataAdaptor):
         obs_layout = []
         embeddings = self.get_embedding_names()
         for ename in embeddings:
-            with tiledb.DenseArray(self.get_path(f"emb/{ename}"), ctx=self.tiledb_ctx) as A:
-                obs_layout.append({
-                    'name': ename,
-                    'type': A.dtype.name,
-                    'dims': [f'{ename}_{d}' for d in range(0, A.ndim)]
-                })
+            A = self.open_array(f"emb/{ename}")
+            obs_layout.append({
+                'name': ename,
+                'type': A.dtype.name,
+                'dims': [f'{ename}_{d}' for d in range(0, A.ndim)]
+            })
 
         schema = {
             'dataframe': dataframe,
@@ -260,21 +270,20 @@ class TileDbAdaptor(DataAdaptor):
 
     def annotation_to_fbs_matrix(self, axis, fields=None, labels=None):
         with ServerTiming.time(f'annotations.{axis}.query'):
-            p = self.get_path(str(axis))
-            with tiledb.DenseArray(p, mode='r', ctx=self.tiledb_ctx) as A:
-                if fields is not None and len(fields) > 0:
-                    try:
-                        df = pd.DataFrame(A.query(attrs=fields)[:])
-                    except tiledb.libtiledb.TileDBError:
-                        raise KeyError("bad field {fields}")
+            A = self.open_array(str(axis))
+            if fields is not None and len(fields) > 0:
+                try:
+                    df = pd.DataFrame(A.query(attrs=fields)[:])
+                except tiledb.libtiledb.TileDBError:
+                    raise KeyError("bad field {fields}")
 
-                else:
-                    df = pd.DataFrame.from_dict(A[:])
+            else:
+                df = pd.DataFrame.from_dict(A[:])
 
-                if axis == Axis.OBS:
-                    if labels is not None and not labels.empty:
-                        obs_names = self.get_obs_names()
-                        df = df.join(labels, obs_names)
+            if axis == Axis.OBS:
+                if labels is not None and not labels.empty:
+                    obs_names = self.get_obs_names()
+                    df = df.join(labels, obs_names)
 
         with ServerTiming.time(f'annotations.{axis}.encode'):
             fbs = encode_matrix_fbs(df, col_idx=df.columns)

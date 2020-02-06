@@ -26,6 +26,9 @@ class ScanpyAdaptor(DataAdaptor):
         self._load_data(data_locator)
         self._validate_and_initialize()
 
+    def cleanup(self):
+        pass
+
     @staticmethod
     def pre_checks(location):
         data_locator = DataLocator(location)

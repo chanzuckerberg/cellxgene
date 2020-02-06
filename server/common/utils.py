@@ -3,6 +3,8 @@ import errno
 import socket
 from urllib.parse import urlsplit, urljoin
 import os
+from flask import json
+from numpy import float32, integer
 
 
 def find_available_port(host, port=5005):
@@ -52,3 +54,31 @@ def path_join(base, *urls):
         else:
             path = urljoin(path, utpl.path)
     return btpl._replace(path=path).geturl()
+
+
+class Float32JSONEncoder(json.JSONEncoder):
+    def __init__(self, *args, **kwargs):
+        """
+        NaN/Infinities are illegal in standard JSON.  Python extends JSON with
+        non-standard symbols that most JavaScript JSON parsers do not understand.
+        The `allow_nan` parameter will force Python simplejson to throw an ValueError
+        if it runs into non-finite floating point values which are unsupported by
+        standard JSON.
+        """
+        kwargs["allow_nan"] = False
+        super().__init__(*args, **kwargs)
+
+    def default(self, obj):
+        if isinstance(obj, float32):
+            return float(obj)
+        elif isinstance(obj, integer):
+            return int(obj)
+        return json.JSONEncoder.default(self, obj)
+
+
+def custom_format_warning(msg, *args, **kwargs):
+    return f"[cellxgene] Warning: {msg} \n"
+
+
+def jsonify_numpy(data):
+    return json.dumps(data, cls=Float32JSONEncoder, allow_nan=False)
