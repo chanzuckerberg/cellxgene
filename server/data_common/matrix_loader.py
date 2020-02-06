@@ -54,7 +54,7 @@ class MatrixDataCacheManager(object):
     for handling api requests.  When the context is created, the data_adator is either loaded or
     retrieved from a cache.  In either case, the reader lock is taken during this time, and release
     when the context ends.  This class currently implements a simple least recently used cache,
-    which man remove a dataset from the cache to make room for a new oneo
+    which can delete a dataset from the cache to make room for a new oneo
 
     This is the indended usage pattern:
 
@@ -71,7 +71,7 @@ class MatrixDataCacheManager(object):
     MAX_CACHED = 3
 
     # FIXME:   If the number of active datasets exceeds the MAX_CACHED, then each request could
-    # lead to a dataset being remove and a new only being opened: the cache will get thrashed.
+    # lead to a dataset being deleted and a new only being opened: the cache will get thrashed.
     # In this case, we may need to send back a 503 (Server Unavailable), or some other error message.
 
     # FIXME:  If the actual dataset is changed.  E.g. a new set of datafiles replaces an existing set,
@@ -106,7 +106,7 @@ class MatrixDataCacheManager(object):
                     oldest = items[0]
                     oldest_cache = oldest[1][0]
                     oldest_key = oldest[0]
-                    oldest_cache.remove()
+                    oldest_cache.delete()
                     del self.datasets[oldest_key]
 
                 last_accessed = time.time()

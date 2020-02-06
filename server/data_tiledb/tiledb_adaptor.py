@@ -121,7 +121,6 @@ class TileDbAdaptor(DataAdaptor):
         except tiledb.libtiledb.TileDBError as e:
             raise AttributeError(str(e))
 
-
     def get_embedding_array(self, ename, items=None):
         array = self.open_array(f"emb/{ename}")
         if items is None:

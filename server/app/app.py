@@ -24,7 +24,6 @@ def index():
     if current_app.data is None:
         return dataroot_index()
 
-    print("INDEX=", index)
     dataset_title = current_app.app_config.title
     scripts = current_app.app_config.scripts
     return render_template("index.html", datasetTitle=dataset_title, SCRIPTS=scripts)
@@ -38,8 +37,6 @@ def favicon():
 def get_data_adaptor(dataset):
     config = current_app.app_config
     location = path_join(config.dataroot, dataset)
-    # BCM
-    print("DATASET", dataset)
     matrix_data_loader = MatrixDataLoader(location)
     matrix_data_loader.pre_checks()
     data = matrix_data_loader.open(current_app.app_config)
@@ -60,7 +57,6 @@ def rest_get_data_adaptor(func):
             config = current_app.app_config
             location = path_join(config.dataroot, dataset)
             cache_manager = current_app.matrix_data_cache_manager
-            print("WITH CACHE MANAGER", location)
             with cache_manager.data_adaptor(location, config) as data_adaptor:
                 return func(self, data_adaptor)
         except RuntimeError as e:
@@ -69,7 +65,6 @@ def rest_get_data_adaptor(func):
 
 
 def dataset_index(dataset):
-    print("DATASET INDEX", dataset)
     config = current_app.app_config
     location = path_join(config.dataroot, dataset)
     matrix_data_loader = MatrixDataLoader(location)
