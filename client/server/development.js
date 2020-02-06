@@ -11,7 +11,7 @@ var utils = require("./utils");
 
 process.env.NODE_ENV = "development";
 
-var PORT = process.env.PORT || 3000;
+var PORT = process.env.CXG_CLIENT_PORT;
 
 // Set up compiler
 var compiler = webpack(config);
