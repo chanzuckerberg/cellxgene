@@ -1,10 +1,11 @@
+include common.mk
+
 BUILDDIR := build
 CLIENTBUILD := $(BUILDDIR)/client
 SERVERBUILD := $(BUILDDIR)/server
 CLEANFILES :=  $(BUILDDIR)/ client/build build dist cellxgene.egg-info
 
 PART ?= patch
-
 
 # CLEANING
 .PHONY: clean
