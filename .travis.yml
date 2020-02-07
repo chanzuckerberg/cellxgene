@@ -9,7 +9,7 @@ cache:
 install:
   - set -eo pipefail
   - pip install flake8
-  - source environment.ci
+  - export JEST_ENV=prod
   - make pydist install-dist dev-env
 
 jobs:

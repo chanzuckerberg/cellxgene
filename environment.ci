@@ -1,6 +1,0 @@
-# These environment variables are used to parameterize cellxgene's CI builds
-set -a
-CXG_SERVER_PORT=5000
-CXG_CLIENT_PORT=3000
-JEST_ENV=prod
-set +a
