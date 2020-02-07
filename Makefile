@@ -1,3 +1,5 @@
+include common.mk
+
 BUILDDIR := build
 CLIENTBUILD := $(BUILDDIR)/client
 SERVERBUILD := $(BUILDDIR)/server

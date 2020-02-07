@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set -e
+
+# start_server_and_test
+# Replicates the basic functionality of the start-server-and-test npm package
+# https://www.npmjs.com/package/start-server-and-test
+
+if [[ $# -ne 3 ]]; then
+  echo "Usage: start_server_and_test \'[start server script]\' [port] \'[test script]\'"
+  exit 1
+fi
+
+START_SERVER_SCRIPT="$1"
+PORT="$2"
+TEST_SCRIPT="$3"
+
+eval "$START_SERVER_SCRIPT &"
+SERVER_PID=$!
+
+function finish {
+  kill $SERVER_PID
+}
+
+trap finish EXIT
+
+await_port --await-active "$PORT"
+
+eval "$TEST_SCRIPT"

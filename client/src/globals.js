@@ -77,11 +77,13 @@ export const categoryLabelDisplayStringShortLength = 11;
 export const tooltipHoverOpenDelay = 1000; /* ms delay before a tooltip displays */
 export const tooltipHoverOpenDelayQuick = 500;
 
+const serverPort = process.env.CXG_SERVER_PORT || 5005;
+
 let _API = {
   // prefix: "http://api.clustering.czi.technology/api/",
   // prefix: "http://tabulamuris.cxg.czi.technology/api/",
   // prefix: "http://api-staging.clustering.czi.technology/api/",
-  prefix: "http://localhost:5005/api/",
+  prefix: `http://localhost:${serverPort}/api/`,
   version: "v0.2/"
 };
 

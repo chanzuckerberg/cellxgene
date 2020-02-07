@@ -1,3 +1,5 @@
+include ../common.mk
+
 .PHONY: clean
 clean:
 	rm -rf node_modules

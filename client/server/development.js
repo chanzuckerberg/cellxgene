@@ -11,7 +11,7 @@ var utils = require("./utils");
 
 process.env.NODE_ENV = "development";
 
-var PORT = process.env.PORT || 3000;
+const CLIENT_PORT = process.env.CXG_CLIENT_PORT;
 
 // Set up compiler
 var compiler = webpack(config);
@@ -22,7 +22,7 @@ compiler.plugin("invalid", () => {
 });
 
 compiler.plugin("done", stats => {
-  utils.formatStats(stats, PORT);
+  utils.formatStats(stats, CLIENT_PORT);
 });
 
 // Launch server
@@ -43,7 +43,7 @@ app.get("*", (req, res) => {
   res.sendFile(path.resolve("index.html"));
 });
 
-app.listen(PORT, err => {
+app.listen(CLIENT_PORT, err => {
   if (err) {
     console.log(err);
     return;

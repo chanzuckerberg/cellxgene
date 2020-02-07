@@ -88,6 +88,9 @@ module.exports = {
     new webpack.NoEmitOnErrorsPlugin(),
     new webpack.DefinePlugin({
       __REACT_DEVTOOLS_GLOBAL_HOOK__: "({ isDisabled: true })"
+    }),
+    new webpack.DefinePlugin({
+      "process.env.CXG_SERVER_PORT": JSON.stringify(process.env.CXG_SERVER_PORT),
     })
   ]
 };

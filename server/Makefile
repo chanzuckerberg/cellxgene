@@ -1,3 +1,5 @@
+include ../common.mk
+
 .PHONY: clean
 clean:
 	rm -f app/web/templates/index.html
