@@ -7,7 +7,6 @@ CLEANFILES :=  $(BUILDDIR)/ client/build build dist cellxgene.egg-info
 
 PART ?= patch
 
-
 # CLEANING
 .PHONY: clean
 clean: clean-lite clean-server clean-client

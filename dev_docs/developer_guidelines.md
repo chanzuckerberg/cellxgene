@@ -11,8 +11,9 @@
 
 ### Environment
 
-* To load the development environment: `source environment.dev`
-* To load the CI environment: `source environment.ci`
+For all `make` commands, `common.mk` automatically checks whether required environment variables are set and, if they are not set, assigns them default values from `environment.default`.
+
+You can set these environment variables manually with the `export` shell command, as in `export JEST_ENV=debug`.
 
 ## Running test suite
 Client and server tests run on Travis CI for every push, PR, and commit to master on github. End to end tests run nightly on master only. 
@@ -20,15 +21,12 @@ Client and server tests run on Travis CI for every push, PR, and commit to maste
 ### Unit tests
 Steps to run the all unit tests:
 1. Start in the project root directory
-1. [Load an environment](#Environment)
 1. `make dev-env`
 1. `make unit-test`
 
 ### End to end tests
 
-To run E2E tests:
-1. [Load an environment](#Environment)
-1. `cd client` and `make smoke-test`
+To run E2E tests, run `cd client` and `make smoke-test`
 
 The `JEST_ENV` environment variable enables the following E2E test options:
 * `dev` - opens chromimum, runs tests with minimal slowdown, close on exit.
@@ -43,7 +41,7 @@ Run end to end tests interactively during development
 
 To run end to end tests _exactly_ as they will be run on CI use the following command:
 ```
-source environment.ci && make pydist install-dist dev-env smoke-test
+JEST_ENV=prod make pydist install-dist dev-env smoke-test
 ```
 
 ## Server dev
