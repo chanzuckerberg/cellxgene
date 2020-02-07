@@ -65,7 +65,7 @@ test:
 smoke-test:
 	npm run start-server-and-test \
 		'cellxgene launch -p $(CXG_SERVER_PORT) $(DATASET)' :$(CXG_SERVER_PORT) \
-		'make e2e'
+		'$(MAKE) e2e'
 
 .PHONY: unit-test
 unit-test:
