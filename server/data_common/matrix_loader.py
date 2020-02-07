@@ -30,7 +30,7 @@ class MatrixDataCacheItem(object):
         with self.data_lock.w_locked():
             # the data may have been loaded while waiting on the lock
             if not self.data_adaptor:
-                self.loader.pre_checks()
+                self.loader.pre_load_validation()
                 self.data_adaptor = self.loader.open(app_config)
 
         self.data_lock.r_acquire()
@@ -149,10 +149,10 @@ class MatrixDataLoader(object):
         else:
             return MatrixDataType.UNKNOWN
 
-    def pre_checks(self):
+    def pre_load_validation(self):
         if self.etype == MatrixDataType.UNKNOWN:
             raise RuntimeError(f"{self.location} does not have a recognized type: .h5ad or .cxg")
-        self.matrix_type.pre_checks(self.location)
+        self.matrix_type.pre_load_validation(self.location)
 
     def file_size(self):
         return self.matrix_type.file_size(self.location)

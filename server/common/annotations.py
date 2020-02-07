@@ -9,6 +9,7 @@ from server import __version__ as cellxgene_version
 import threading
 from server.common.errors import AnnotationsError, OntologyLoadFailure
 from server.common.data_locator import DataLocator
+from server.common.utils import series_to_schema
 import fsspec
 import fastobo
 import traceback  # use built-in formatter for SyntaxError
@@ -46,6 +47,17 @@ class Annotations(object):
 
         except Exception as e:
             raise OntologyLoadFailure(f"Error loading OBO file {path}") from e
+
+    def get_schema(self, data_adaptor):
+        labels = self.read_labels(data_adaptor)
+        schema = []
+        if labels is not None and not labels.empty:
+            for col in labels.columns:
+                col_schema = dict(name=col, writable=True)
+                col_schema.update(series_to_schema(labels[col]))
+                schema.append(col_schema)
+
+        return schema
 
 
 class AnnotationsLocalFile(Annotations):

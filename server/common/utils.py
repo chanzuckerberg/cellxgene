@@ -4,7 +4,9 @@ import socket
 from urllib.parse import urlsplit, urljoin
 import os
 from flask import json
-from numpy import float32, integer
+import numpy as np
+import pandas as pd
+import warnings
 
 
 def find_available_port(host, port=5005):
@@ -69,9 +71,9 @@ class Float32JSONEncoder(json.JSONEncoder):
         super().__init__(*args, **kwargs)
 
     def default(self, obj):
-        if isinstance(obj, float32):
+        if isinstance(obj, np.float32):
             return float(obj)
-        elif isinstance(obj, integer):
+        elif isinstance(obj, np.integer):
             return int(obj)
         return json.JSONEncoder.default(self, obj)
 
@@ -82,3 +84,60 @@ def custom_format_warning(msg, *args, **kwargs):
 
 def jsonify_numpy(data):
     return json.dumps(data, cls=Float32JSONEncoder, allow_nan=False)
+
+
+def dtype_to_schema(dtype):
+    schema = {}
+    if dtype == np.float32:
+        schema['type'] = 'float32'
+    elif dtype == np.int32:
+        schema['type'] = 'int32'
+    elif dtype == np.bool_:
+        schema['type'] = 'boolean'
+    elif dtype == np.str:
+        schema['type'] = 'string'
+    elif dtype == "category":
+        schema["type"] = "categorical"
+        schema["categories"] = dtype.categories.tolist()
+    else:
+        raise TypeError(
+            f"Annotations of type {dtype} are unsupported."
+        )
+    return schema
+
+
+def can_cast_to_float32(array):
+    if array.dtype.kind == "f":
+        if not np.can_cast(array.dtype, np.float32):
+            warnings.warn(f"Annotation {array.name} will be converted to 32 bit float and may lose precision.")
+        return True
+    return False
+
+
+def can_cast_to_int32(array):
+    if array.dtype.kind in ["i", "u"]:
+        if np.can_cast(array.dtype, np.int32):
+            return True
+        ii32 = np.iinfo(np.int32)
+        if array.min() >= ii32.min and array.max() <= ii32.max:
+            return True
+    return False
+
+
+def series_to_schema(array):
+    assert type(array) == pd.Series
+    try:
+        return dtype_to_schema(array.dtype)
+    except TypeError:
+        dtype = array.dtype
+        data_kind = dtype.kind
+        schema = {}
+        if can_cast_to_float32(array):
+            schema["type"] = "float32"
+        elif can_cast_to_int32(array):
+            schema["type"] = "int32"
+        elif data_kind == "O" and dtype == "object":
+            schema["type"] = "string"
+        else:
+            raise TypeError(f"Annotations of type {dtype} are unsupported.")
+        return schema

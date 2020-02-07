@@ -302,7 +302,7 @@ def launch(
         matrix_data_loader = MatrixDataLoader(data)
 
         try:
-            matrix_data_loader.pre_checks()
+            matrix_data_loader.pre_load_validation()
         except RuntimeError as e:
             raise click.ClickException(str(e))
 

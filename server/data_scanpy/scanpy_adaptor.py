@@ -6,6 +6,9 @@ import anndata
 from scipy import sparse
 
 from server.data_common.data_adaptor import DataAdaptor
+from server.common.utils import series_to_schema
+
+
 from server.common.constants import Axis, MAX_LAYOUTS
 from server.common.errors import (
     PrepareError,
@@ -30,7 +33,7 @@ class ScanpyAdaptor(DataAdaptor):
         pass
 
     @staticmethod
-    def pre_checks(location):
+    def pre_load_validation(location):
         data_locator = DataLocator(location)
         if data_locator.islocal():
             # if data locator is local, apply file system conventions and other "cheap"
@@ -116,50 +119,12 @@ class ScanpyAdaptor(DataAdaptor):
                 # user specified a non-existent column name
                 raise KeyError(f"Annotation name {name}, specified in --{ax_name}-name does not exist.")
 
-    @staticmethod
-    def _can_cast_to_float32(ann):
-        if ann.dtype.kind == "f":
-            if not np.can_cast(ann.dtype, np.float32):
-                warnings.warn(f"Annotation {ann.name} will be converted to 32 bit float and may lose precision.")
-            return True
-        return False
-
-    @staticmethod
-    def _can_cast_to_int32(ann):
-        if ann.dtype.kind in ["i", "u"]:
-            if np.can_cast(ann.dtype, np.int32):
-                return True
-            ii32 = np.iinfo(np.int32)
-            if ann.min() >= ii32.min and ann.max() <= ii32.max:
-                return True
-        return False
-
-    @staticmethod
-    def _get_col_type(col):
-        dtype = col.dtype
-        data_kind = dtype.kind
-        schema = {}
-
-        if ScanpyAdaptor._can_cast_to_float32(col):
-            schema["type"] = "float32"
-        elif ScanpyAdaptor._can_cast_to_int32(col):
-            schema["type"] = "int32"
-        elif dtype == np.bool_:
-            schema["type"] = "boolean"
-        elif data_kind == "O" and dtype == "object":
-            schema["type"] = "string"
-        elif data_kind == "O" and dtype == "category":
-            schema["type"] = "categorical"
-            schema["categories"] = dtype.categories.tolist()
-        else:
-            raise TypeError(f"Annotations of type {dtype} are unsupported by cellxgene.")
-        return schema
-
     def _create_schema(self):
         self.schema = {
             "dataframe": {"nObs": self.cell_count, "nVar": self.gene_count, "type": str(self.data.X.dtype)},
             "annotations": {
                 "obs": {"index": self.parameters.get("obs_names"), "columns": []},
+
                 "var": {"index": self.parameters.get("var_names"), "columns": []},
             },
             "layout": {"obs": []},
@@ -168,7 +133,7 @@ class ScanpyAdaptor(DataAdaptor):
             curr_axis = getattr(self.data, str(ax))
             for ann in curr_axis:
                 ann_schema = {"name": ann, "writable": False}
-                ann_schema.update(self._get_col_type(curr_axis[ann]))
+                ann_schema.update(series_to_schema(curr_axis[ann]))
                 self.schema["annotations"][ax]["columns"].append(ann_schema)
 
         for layout in self.get_embedding_names():
@@ -311,18 +276,16 @@ class ScanpyAdaptor(DataAdaptor):
         # cap layouts to MAX_LAYOUTS
         return layouts[0:MAX_LAYOUTS]
 
-    def get_embedding_array(self, ename, items=None):
-        if items is None:
-            items = slice(None)
+    def get_embedding_array(self, ename, dims=2):
         full_embedding = self.data.obsm[f"X_{ename}"]
-        return full_embedding[items]
+        return full_embedding[:, 0:dims]
 
-    def get_X_array(self, obs_items=None, var_items=None):
-        if obs_items is None:
-            obs_items = slice(None)
-        if var_items is None:
-            var_items = slice(None)
-        X = self.data.X[obs_items, var_items]
+    def get_X_array(self, obs_mask=None, var_mask=None):
+        if obs_mask is None:
+            obs_mask = slice(None)
+        if var_mask is None:
+            var_mask = slice(None)
+        X = self.data.X[obs_mask, var_mask]
         return X
 
     def get_X_array_shape(self):

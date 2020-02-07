@@ -10,17 +10,9 @@ from server.common.utils import jsonify_numpy
 from server.data_common.matrix_proxy import MatrixProxy
 from server.common.app_config import AppFeature, AppConfig
 
-"""
-Sort order for methods
-1. Initialize
-2. Helper
-3. Filter
-4. Data & Metadata
-5. Computation
-"""
-
 
 class DataAdaptor(metaclass=ABCMeta):
+    """Base class for loading and accessing matrix data"""
 
     def __init__(self, config):
         # config will normally be a type that inherits from AppConfig.
@@ -246,7 +238,7 @@ class DataAdaptor(metaclass=ABCMeta):
         layout_data = []
         with ServerTiming.time(f'layout.query'):
             for ename in embeddings:
-                embedding = self.get_embedding_array(ename, (slice(None), slice(0, 2)))
+                embedding = self.get_embedding_array(ename, 2)
 
                 # scale isotropically
                 min = embedding.min(axis=0)
@@ -286,12 +278,13 @@ class DataAdaptor(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def get_embedding_array(self, ename, items=None):
-        """return an numpy array for the given embedding name"""
+    def get_embedding_array(self, ename, dims=2):
+        """return an numpy array for the given embedding name."""
         pass
 
     @abstractmethod
-    def get_X_array(self, items=None):
+    def get_X_array(self, obs_mask=None, var_mask=None):
+        """return the X array, possibly filtered by obs_mask or var_mask.  return an ndarray"""
         pass
 
     @abstractmethod

@@ -38,7 +38,7 @@ def get_data_adaptor(dataset):
     config = current_app.app_config
     location = path_join(config.dataroot, dataset)
     matrix_data_loader = MatrixDataLoader(location)
-    matrix_data_loader.pre_checks()
+    matrix_data_loader.pre_load_validation()
     data = matrix_data_loader.open(current_app.app_config)
     return data
 
@@ -69,7 +69,7 @@ def dataset_index(dataset):
     location = path_join(config.dataroot, dataset)
     matrix_data_loader = MatrixDataLoader(location)
     try:
-        matrix_data_loader.pre_checks()
+        matrix_data_loader.pre_load_validation()
         return render_template("index.html")
     except RuntimeError as e:
         return make_response(f"CXG load error {dataset}: {str(e)}", HTTPStatus.BAD_REQUEST)

@@ -1,6 +1,7 @@
 import os
 import json
 from server.data_common.data_adaptor import DataAdaptor
+from server.common.utils import dtype_to_schema
 import tiledb
 import numpy as np
 import pandas as pd
@@ -12,16 +13,19 @@ import threading
 
 
 class TileDbAdaptor(DataAdaptor):
+
+    # TODO:  The tiledb context parameters should be a configuration option
+    tiledb_ctx = tiledb.Ctx({
+        'sm.tile_cache_size': 8 * 1024 * 1024 * 1024,
+        'sm.num_reader_threads': 32,
+    })
+
     def __init__(self, location, config=None):
         super().__init__(config)
         self.url = location
         self.arrays = {}
         self.lock = threading.Lock()
 
-        self.tiledb_ctx = tiledb.Ctx({
-            'sm.tile_cache_size': 8 * 1024 * 1024 * 1024,
-            'sm.num_reader_threads': 32,
-        })
         self.url = location
         if self.url[-1] != '/':
             self.url += '/'
@@ -35,7 +39,7 @@ class TileDbAdaptor(DataAdaptor):
         self.arrays.clear()
 
     @staticmethod
-    def pre_checks(location):
+    def pre_load_validation(location):
         if not TileDbAdaptor.isvalid(location):
             raise RuntimeError(f"tiledb matrix is not valid: {location}")
 
@@ -121,15 +125,13 @@ class TileDbAdaptor(DataAdaptor):
         except tiledb.libtiledb.TileDBError as e:
             raise AttributeError(str(e))
 
-    def get_embedding_array(self, ename, items=None):
+    def get_embedding_array(self, ename, dims=2):
         array = self.open_array(f"emb/{ename}")
-        if items is None:
-            items = slice(None)
-        return array[items]
+        return array[:, 0:dims]
 
-    def get_X_array(self, obs_items=None, var_items=None):
-        obs_items = self._convert_mask(obs_items)
-        var_items = self._convert_mask(var_items)
+    def get_X_array(self, obs_mask=None, var_mask=None):
+        obs_items = self._convert_mask(obs_mask)
+        var_items = self._convert_mask(var_mask)
         X = self.open_array("X")
         if obs_items == slice(None) and var_items == slice(None):
             data = X[:, :]
@@ -232,23 +234,28 @@ class TileDbAdaptor(DataAdaptor):
 
         annotations = {}
         for ax in ('obs', 'var'):
-            p = self.get_path(ax)
-            with tiledb.Array(p, ctx=self.tiledb_ctx) as A:
-                schema_hints = json.loads(A.meta['cxg_schema']) if 'cxg_schema' in A.meta else {}
-                if type(schema_hints) is not dict:
-                    raise TypeError(f'Array schema was malformed.')
+            A = self.open_array(ax)
+            schema_hints = json.loads(A.meta['cxg_schema']) if 'cxg_schema' in A.meta else {}
+            if type(schema_hints) is not dict:
+                raise TypeError(f'Array schema was malformed.')
 
-                annotations[ax] = {
-                    'columns': [
-                        {
-                            'name': attr.name,
-                            'writable': False,
-                            **self._get_col_type(attr, schema_hints)
-                        } for attr in A.schema
-                    ]
-                }
-                if 'index' in schema_hints:
-                    annotations[ax].update({'index': schema_hints['index']})
+            cols = []
+            for attr in A.schema:
+                schema = dict(name=attr.name, writable=False)
+                type_hint = schema_hints.get(attr.name, {})
+                # type hints take precedence
+                if 'type' in type_hint:
+                    schema['type'] = type_hint['type']
+                    if schema['type'] == 'categorical' and 'categories' in type_hint:
+                        schema['categories'] = type_hint['categories']
+                else:
+                    schema.update(dtype_to_schema(attr.dtype))
+                cols.append(schema)
+
+            annotations[ax] = dict(columns=cols)
+
+            if 'index' in schema_hints:
+                annotations[ax].update({'index': schema_hints['index']})
 
         obs_layout = []
         embeddings = self.get_embedding_names()
