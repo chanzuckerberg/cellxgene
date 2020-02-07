@@ -175,7 +175,7 @@ class Category extends React.Component {
           <label className="bp3-control bp3-checkbox">
             <input
               data-testclass="category-select"
-              data-testid={`category-select-${metadataField}`}
+              data-testid={`${metadataField}:category-select`}
               onChange={this.handleToggleAllClick.bind(this)}
               ref={el => {
                 this.checkbox = el;
@@ -187,7 +187,7 @@ class Category extends React.Component {
             <span className="bp3-control-indicator" />
           </label>
           <span
-            data-testid={`category-expand-${metadataField}`}
+            data-testid={`${metadataField}:category-expand`}
             style={{
               cursor: "pointer",
               display: "inline-block"

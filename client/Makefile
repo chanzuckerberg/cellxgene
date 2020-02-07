@@ -1,9 +1,9 @@
 include ../common.mk
 
 DATASET := $(if $(DATASET),$(DATASET),../example-dataset/pbmc3k.h5ad)
+ANNOTATIONS := $(if $(ANNOTATIONS),$(ANNOTATIONS),../example-dataset/pbmc3k-annotations.csv)
 
 # Packaging
-
 .PHONY: clean
 clean:
 	rm -rf node_modules
@@ -52,6 +52,10 @@ backend-dev-anno-ontology: server-requirements
 	CXG_OPTIONS='--experimental-annotations --experimental-annotations-ontology' \
 		$(MAKE) backend-dev
 
+.PHONY: test
+test:
+	node node_modules/jest/bin/jest.js
+
 .PHONY: e2e
 e2e:
 	node node_modules/jest/bin/jest.js \
@@ -59,13 +63,23 @@ e2e:
 		--config __tests__/e2e/e2eJestConfig.json \
 		e2e/e2e.test.js
 
-.PHONY: test
-test:
-	node node_modules/jest/bin/jest.js
+.PHONY: e2e-annotations
+e2e-annotations:
+	node node_modules/jest/bin/jest.js \
+		--verbose false \
+		--config __tests__/e2e/e2eJestConfig.json \
+		e2e/e2eAnnotations.test.js
 
 .PHONY: smoke-test
 smoke-test:
 	start_server_and_test '$(MAKE) start-server' $(CXG_SERVER_PORT) '$(MAKE) e2e'
+
+.PHONY: smoke-test-annotations
+smoke-test-annotations:
+	start_server_and_test \
+		'CXG_OPTIONS="--experimental-annotations --experimental-annotations-file $(ANNOTATIONS)" $(MAKE) start-server' \
+		$(CXG_SERVER_PORT) \
+		'$(MAKE) e2e-annotations'
 
 .PHONY: unit-test
 unit-test:

@@ -21,6 +21,7 @@ Client and server tests run on Travis CI for every push, PR, and commit to maste
 ### Unit tests
 Steps to run the all unit tests:
 1. Start in the project root directory
+1. [Load an environment](#Environment)
 1. `make dev-env`
 1. `make unit-test`
 

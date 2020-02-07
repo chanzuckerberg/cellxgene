@@ -32,7 +32,8 @@ class AnnoDialog extends React.Component {
       handleSubmit,
       primaryButtonText,
       secondaryButtonText,
-      handleSecondaryButtonSubmit
+      handleSecondaryButtonSubmit,
+      primaryButtonProps
     } = this.props;
 
     return (
@@ -75,6 +76,7 @@ class AnnoDialog extends React.Component {
                 </Button>
               ) : null}
               <Button
+                {...primaryButtonProps}
                 onClick={handleSubmit}
                 disabled={!text || validationError}
                 intent="primary"

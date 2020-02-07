@@ -121,6 +121,8 @@ class AnnoDialogEditCategoryName extends React.Component {
             annotations.isEditingCategoryName &&
             annotations.categoryBeingEdited === metadataField
           }
+          inputProps={{ "data-testid": `${metadataField}:edit-category-name-dialog` }}
+          primaryButtonProps={{ "data-testid": `${metadataField}:submit-category-edit` }}
           title="Edit category name"
           instruction="New, unique category name:"
           cancelTooltipContent="Close this dialog without editing this category."
@@ -132,6 +134,7 @@ class AnnoDialogEditCategoryName extends React.Component {
           handleCancel={this.disableEditCategoryMode}
           annoInput={
             <AnnoInputs
+              inputProps={{ "data-testid": `${metadataField}:edit-category-name-text`}}
               useSuggest={false}
               text={newCategoryText}
               handleTextChange={this.handleCategoryEditTextChange}
