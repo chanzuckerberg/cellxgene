@@ -11,6 +11,8 @@ const skipOnActions = new Set([
   "url changed",
   "interface reset started",
   "initial data load start",
+  "universe: column load success",
+  "universe exists, but loading is still in progress",
   "configuration load complete",
   "increment graph render counter",
   "window resize",

@@ -23,13 +23,38 @@ const CrossfilterReducerBase = (
   prevSharedState
 ) => {
   switch (action.type) {
-    case "initial data load complete (universe exists)": {
-      const { world, layoutChoice } = nextSharedState;
-      const crossfilter = World.createObsDimensions(
-        new Crossfilter(world.obsAnnotations),
-        world,
-        layoutChoice.currentDimNames
-      );
+    case "universe: column load success": {
+      const { schema, world, layoutChoice } = nextSharedState;
+      const { obsAnnotations, obsLayout } = world;
+      const { dim, dataframe } = action;
+
+      // ignore var dimension loads as these are not currently selectable
+      if (action.dim === "varAnnotations") return state;
+
+      /* 
+      during bootstrap loading, we don't know if obsLayout or obsAnnotations
+      will load first. Take whichever arrives and is not empty (so that our
+      crossfilter has the right dimensionality).
+      */
+      let crossfilter =
+        state ??
+        new Crossfilter(obsAnnotations.isEmpty() ? obsLayout : obsAnnotations);
+
+      // add layout dimension, if not already present
+      if (
+        obsLayout.hasCol(layoutChoice.currentDimNames[0]) &&
+        !crossfilter.hasDimension(XYDimName)
+      ) {
+        crossfilter = crossfilter.addDimension(
+          XYDimName,
+          "spatial",
+          obsLayout.col(layoutChoice.currentDimNames[0]).asArray(),
+          obsLayout.col(layoutChoice.currentDimNames[1]).asArray()
+        );
+      }
+
+      // add any missing obsAnnotations
+      crossfilter = World.addObsDimensions(crossfilter, world);
       return crossfilter;
     }
 
@@ -278,10 +303,19 @@ const CrossfilterReducer = (
     nextSharedState,
     prevSharedState
   );
-  if (!nextState || nextState.all() === nextSharedState.world.obsAnnotations) {
+  /*
+  update the data in the crossfilter to point at the current obsAnnotations, IF
+  they are not empty.  If empty, leave it alone (can occur during boostrap loading).
+  */
+  const nextObsAnnotations = nextSharedState.world?.obsAnnotations;
+  if (
+    !nextState ||
+    nextState.all() === nextObsAnnotations ||
+    nextObsAnnotations.isEmpty()
+  ) {
     return nextState;
   }
-  return nextState.setData(nextSharedState.world.obsAnnotations);
+  return nextState.setData(nextObsAnnotations);
 };
 
 export default CrossfilterReducer;

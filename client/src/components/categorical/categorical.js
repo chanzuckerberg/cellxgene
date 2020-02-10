@@ -4,15 +4,15 @@ import { Button } from "@blueprintjs/core";
 import { connect } from "react-redux";
 import * as globals from "../../globals";
 import Category from "./category";
-import { AnnotationsHelpers } from "../../util/stateManager";
+import { AnnotationsHelpers, ControlsHelpers } from "../../util/stateManager";
 import AnnoDialog from "./annoDialog";
 import AnnoInputs from "./annoInputs";
 import AnnoSelect from "./annoSelect";
 
 @connect(state => ({
-  categoricalSelection: state.categoricalSelection,
   writableCategoriesEnabled: state.config?.parameters?.["annotations"] ?? false,
-  schema: state.world?.schema
+  schema: state.world?.schema,
+  config: state.config
 }))
 class Categories extends React.Component {
   constructor(props) {
@@ -123,12 +123,15 @@ class Categories extends React.Component {
     const {
       categoricalSelection,
       writableCategoriesEnabled,
-      schema
+      schema,
+      config
     } = this.props;
-    if (!categoricalSelection) return null;
 
     /* all names, sorted in display order.  Will be rendered in this order */
-    const allCategoryNames = Object.keys(categoricalSelection).sort();
+    const allCategoryNames = ControlsHelpers.selectableCategoryNames(
+      schema,
+      ControlsHelpers.maxCategoryItems(config)
+    ).sort();
 
     return (
       <div

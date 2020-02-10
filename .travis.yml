@@ -1,8 +1,8 @@
 language: python
 dist: xenial
 sudo: required
-node_js:
-  - 10
+before_install:
+  - nvm install node
 cache:
   - pip
   - npm

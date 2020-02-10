@@ -255,7 +255,7 @@ class Graph extends React.Component {
     const { regl, toolSVG, camera, modelTF } = this.state;
     let stateChanges = {};
 
-    if (regl && world) {
+    if (regl && world && crossfilter) {
       /* update the regl and point rendering state */
       const { obsLayout, nObs } = world;
       const { drawPoints, pointBuffer, colorBuffer, flagBuffer } = this.state;
