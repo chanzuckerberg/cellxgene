@@ -124,13 +124,17 @@ const doInitialDataLoad = () =>
       });
 
       /*
-      Step 2 - dataframes, all binary.  NOTE: uses results of step 1.
+      Step 2 - load the minimum stuff required to display.
       */
       await Promise.all([
         layoutFetchAndLoad(dispatch, schema, universe),
-        varAnnotationFetchAndLoad(dispatch, schema, universe),
-        obsAnnotationFetchAndLoad(dispatch, schema, universe)
+        varAnnotationFetchAndLoad(dispatch, schema, universe)
       ]);
+
+      /*
+      Step 3 - load everything else
+      */
+      await obsAnnotationFetchAndLoad(dispatch, schema, universe);
 
       dispatch({
         type: "initial data load complete (universe exists)",
