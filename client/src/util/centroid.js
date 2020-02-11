@@ -6,11 +6,87 @@ import { unassignedCategoryLabel } from "../globals";
   Centroid coordinate calculation
 */
 
-/* 
-  calcMedianCentroid goes through a given metadata category
-  fetches each cell's coordinates grouping by category value.
+// Generates a mapping of categorical values to data needed to calculate centroids
+// categoricalValue -> {
+//  size: int,
+//  holdsFinite: Boolean,
+//  xCoordinates: Float32Array,
+//  yCoordinates: F32 Array
+// }
+const getCoordinatesByCategoricalValues = (
+  obsAnnotations,
+  categoryName,
+  obsLayout,
+  layoutDimNames,
+  categoricalSelection,
+  schemaObsByName
+) => {
+  console.time("create scratch pad");
+  const categoryArray = obsAnnotations.col(categoryName).asArray();
 
-  It then calculates the median value and puts that in the array
+  const layoutXArray = obsLayout.col(layoutDimNames[0]).asArray();
+  const layoutYArray = obsLayout.col(layoutDimNames[1]).asArray();
+
+  const scratchPad = new Map();
+
+  const { categoryValueIndices, categoryValueCounts } = categoricalSelection[
+    categoryName
+  ];
+
+  // Check to see if the current category is a user created annotation
+  const isUserAnno = schemaObsByName[categoryName].writable;
+
+  // Iterate over all cells
+  for (let i = 0, len = categoryArray.length; i < len; i += 1) {
+    // Fetch the categorical value of the current cell
+    const categoryValue = categoryArray[i];
+
+    // Get the index of the categoryValue within the category
+    const categoryValueIndex = categoryValueIndices.get(categoryValue);
+
+    // If the category is truncated and this value is removed,
+    //  it will not be assigned a category value and will not be
+    //  labeled on the graph
+    // If the user created this category,
+    //  do not create a label for the `unassigned` value
+    if (
+      categoryValueIndex !== undefined &&
+      !(isUserAnno && categoryValue === unassignedCategoryLabel)
+    ) {
+      // Create/fetch the scratchpad value
+      let value = scratchPad.get(categoryValue);
+      if (value === undefined) {
+        // Get the number of cells which are in the categorical value
+        const numInCategoricalValue = categoryValueCounts[categoryValueIndex];
+        value = {
+          hasFinite: false,
+          xCoordinates: new Float32Array(numInCategoricalValue),
+          yCoordinates: new Float32Array(numInCategoricalValue),
+          length: 0
+        };
+      }
+
+      value.hasFinite =
+        value.hasFinite ||
+        (Number.isFinite(layoutXArray[i]) && Number.isFinite(layoutYArray[i]));
+
+      const coordinatesLength = value.length;
+
+      value.xCoordinates[coordinatesLength] = layoutXArray[i];
+      value.yCoordinates[coordinatesLength] = layoutYArray[i];
+
+      value.length = coordinatesLength + 1;
+
+      scratchPad.set(categoryValue, value);
+    }
+  }
+
+  console.timeEnd("create scratch pad");
+  return scratchPad;
+};
+
+/* 
+  calcMedianCentroid calculates the median coordinates for categorical values in a given metadata annotation 
 */
 
 const calcMedianCentroid = (
@@ -21,80 +97,41 @@ const calcMedianCentroid = (
   categoricalSelection,
   schemaObsByName
 ) => {
-  const categoryArray = obsAnnotations.col(categoryName).asArray();
+  console.time("overall");
 
-  const layoutXArray = obsLayout.col(layoutDimNames[0]).asArray();
-  const layoutYArray = obsLayout.col(layoutDimNames[1]).asArray();
+  const scratchPad = getCoordinatesByCategoricalValues(
+    obsAnnotations,
+    obsLayout,
+    categoryName,
+    layoutDimNames,
+    categoricalSelection,
+    schemaObsByName
+  );
+
+  console.time("calculate coordinate");
+
+  // categoricalValue => [medianXCoordinate, medianYCoordinate]
   const coordinates = new Map();
 
-  const { categoryValueIndices, categoryValueCounts } = categoricalSelection[
-    categoryName
-  ];
-
-  // Check to see if the current category is a user created annotation
-  const isUserAnno = schemaObsByName[categoryName].writable;
-
-  // Iterate over all the cells in the category
-  for (let i = 0, len = categoryArray.length; i < len; i += 1) {
-    const categoryValue = categoryArray[i];
-
-    // Get the index of the categoryValue within the category
-    const categoryValueIndex = categoryValueIndices.get(categoryValue);
-
-    // If the user created this category, do not create a label for the `unassigned` value
-    // If the category is truncated and this value is removed,
-    // it will not be assigned a category value and will not be
-    // labeled on the graph
-    if (
-      categoryValueIndex !== undefined &&
-      !(isUserAnno && categoryValue === unassignedCategoryLabel)
-    ) {
-      // Create/fetch the valueArray,
-      // which is what the key points to in the `coordinates` hashmap
-      let valueArray = coordinates.get(categoryValue);
-      if (!valueArray) {
-        // Get the number of cells which are in the category value
-        const numInCategoryValue = categoryValueCounts[categoryValueIndex];
-        valueArray = [
-          false, // hasFinite
-          0, // index
-          new Float32Array(numInCategoryValue), // x coordinates
-          new Float32Array(numInCategoryValue) // y coordinates
-        ];
-      }
-      const index = valueArray[1];
-      let hasFinite = valueArray[0];
-
-      hasFinite =
-        hasFinite ||
-        (Number.isFinite(layoutXArray[i]) && Number.isFinite(layoutYArray[i]));
-
-      valueArray[0] = hasFinite;
-      valueArray[1] = index + 1;
-      valueArray[2][index] = layoutXArray[i];
-      valueArray[3][index] = layoutYArray[i];
-
-      coordinates.set(categoryValue, valueArray);
-    }
-  }
-
   // Iterate over the recently created map
-  coordinates.forEach((value, key) => {
+  scratchPad.forEach((value, key) => {
     // If there are coordinates for this cateogrical value,
     // and there is a finite coordinate for the category value
-    if (value[2].length > 0 && value[3].length > 0 && value[0]) {
-      // Find the median x and y coordinate
-      // and insert them into the first two indices
-      value[0] = quantile([0.5], value[2])[0];
-      value[1] = quantile([0.5], value[3])[0];
-      // Remove the last two elements (where the arrays of coordinates were)
-      value.pop();
-      value.pop();
-    } else {
-      // remove the entry if not
-      coordinates.delete(key);
+    if (value.xCoordinates.length > 0 && value.hasFinite) {
+      const calculatedCoordinates = [];
+
+      // Find and store the median x and y coordinate
+      calculatedCoordinates[0] = quantile([0.5], value.xCoordinates)[0];
+      calculatedCoordinates[1] = quantile([0.5], value.yCoordinates)[0];
+
+      coordinates.set(key, calculatedCoordinates);
     }
   });
+
+  console.timeEnd("calculate coordinate");
+
+  console.timeEnd("overall");
+
   // return the map: categoricalValue -> [medianXCoordinate, medianYCoordinate]
   return coordinates;
 };
@@ -109,11 +146,12 @@ const hashMedianCentroid = (
   categorySelection,
   schemaObsByName
 ) => {
-  return `${obsAnnotations.__id}+${
-    obsLayout.__id
-  }:${categoryName}:${layoutDimNames}:${Object.keys(
-    categorySelection
-  )}:${Object.keys(schemaObsByName)}`;
+  // return `${obsAnnotations.__id}+${
+  //   obsLayout.__id
+  // }:${categoryName}:${layoutDimNames}:${Object.keys(
+  //   categorySelection
+  // )}:${Object.keys(schemaObsByName)}`;
+  return Math.random();
 };
-// export the mmemoized calculation function
+// export the memoized calculation function
 export default memoize(calcMedianCentroid, hashMedianCentroid);
