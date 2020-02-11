@@ -81,12 +81,11 @@ const getCoordinatesByCategoricalValues = (
       scratchPad.set(categoryValue, value);
     }
   }
-
   return scratchPad;
 };
 
 /* 
-  calcMedianCentroid calculates the median coordinates for categorical values in a given metadata annotation 
+  calcMedianCentroid calculates the median coordinates for categorical values in a given metadata field 
 
   categoricalValue -> [x-Coordinate, y-Coordinate]
 */
@@ -99,7 +98,8 @@ const calcMedianCentroid = (
   categoricalSelection,
   schemaObsByName
 ) => {
-  const scratchPad = getCoordinatesByCategoricalValues(
+  // generate a map describing the coordinates for each value within the given category
+  const dataMap = getCoordinatesByCategoricalValues(
     obsAnnotations,
     obsLayout,
     categoryName,
@@ -112,10 +112,10 @@ const calcMedianCentroid = (
   const coordinates = new Map();
 
   // Iterate over the recently created map
-  scratchPad.forEach((value, key) => {
+  dataMap.forEach((value, key) => {
     // If there are coordinates for this categorical value,
     // and there is a finite coordinate for the category value
-    if (value.xCoordinates.length > 0 && value.hasFinite) {
+    if (value.length > 0 && value.hasFinite) {
       const calculatedCoordinates = [];
 
       // Find and store the median x and y coordinate
