@@ -12,6 +12,10 @@ export default
   labels: state.centroidLabels.labels
 }))
 class CentroidLabels extends PureComponent {
+  componentDidUpdate = () => {
+    console.timeEnd("labelsGenerated");
+  };
+
   // Check to see if centroids have either just been displayed or removed from the overlay
   componentDidUpdate = prevProps => {
     const { labels, overlayToggled } = this.props;

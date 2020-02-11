@@ -261,6 +261,7 @@ class MenuBar extends React.Component {
 
   handleCentroidChange = () => {
     const { dispatch, showCentroidLabels } = this.props;
+    console.time("labelsGenerated");
 
     dispatch({
       type: "show centroid labels for category",
