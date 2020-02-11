@@ -17,8 +17,8 @@ categoricalValue -> {
 */
 const getCoordinatesByCategoricalValues = (
   obsAnnotations,
-  categoryName,
   obsLayout,
+  categoryName,
   layoutDimNames,
   categoricalSelection,
   schemaObsByName
