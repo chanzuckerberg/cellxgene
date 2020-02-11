@@ -21,7 +21,6 @@ const getCoordinatesByCategoricalValues = (
   categoricalSelection,
   schemaObsByName
 ) => {
-  console.time("create scratch pad");
   const categoryArray = obsAnnotations.col(categoryName).asArray();
 
   const layoutXArray = obsLayout.col(layoutDimNames[0]).asArray();
@@ -81,7 +80,6 @@ const getCoordinatesByCategoricalValues = (
     }
   }
 
-  console.timeEnd("create scratch pad");
   return scratchPad;
 };
 
@@ -97,8 +95,6 @@ const calcMedianCentroid = (
   categoricalSelection,
   schemaObsByName
 ) => {
-  console.time("overall");
-
   const scratchPad = getCoordinatesByCategoricalValues(
     obsAnnotations,
     obsLayout,
@@ -107,8 +103,6 @@ const calcMedianCentroid = (
     categoricalSelection,
     schemaObsByName
   );
-
-  console.time("calculate coordinate");
 
   // categoricalValue => [medianXCoordinate, medianYCoordinate]
   const coordinates = new Map();
@@ -128,10 +122,6 @@ const calcMedianCentroid = (
     }
   });
 
-  console.timeEnd("calculate coordinate");
-
-  console.timeEnd("overall");
-
   // return the map: categoricalValue -> [medianXCoordinate, medianYCoordinate]
   return coordinates;
 };
@@ -146,12 +136,11 @@ const hashMedianCentroid = (
   categorySelection,
   schemaObsByName
 ) => {
-  // return `${obsAnnotations.__id}+${
-  //   obsLayout.__id
-  // }:${categoryName}:${layoutDimNames}:${Object.keys(
-  //   categorySelection
-  // )}:${Object.keys(schemaObsByName)}`;
-  return Math.random();
+  return `${obsAnnotations.__id}+${
+    obsLayout.__id
+  }:${categoryName}:${layoutDimNames}:${Object.keys(
+    categorySelection
+  )}:${Object.keys(schemaObsByName)}`;
 };
 // export the memoized calculation function
 export default memoize(calcMedianCentroid, hashMedianCentroid);
