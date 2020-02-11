@@ -25,7 +25,7 @@ build:
 
 .PHONY: server-requirements
 server-requirements:
-	virtualenv -p python3.6 ../venv
+	virtualenv -p python3 ../venv
 	source ../venv/bin/activate && \
 		pip install -r ../server/requirements-dev.txt && \
 		yes | pip uninstall cellxgene || true && \
@@ -35,10 +35,13 @@ server-requirements:
 start-frontend:
 	node server/development.js
 
+.PHONY: start-server
+start-server:
+	cellxgene launch -p $(CXG_SERVER_PORT) $(CXG_OPTIONS) $(DATASET)
+
 .PHONY: backend-dev
 backend-dev: server-requirements
-	source ../venv/bin/activate && \
-		cellxgene launch -p $(CXG_SERVER_PORT) $(CXG_OPTIONS) $(DATASET)
+	source ../venv/bin/activate && $(MAKE) start-server
 
 .PHONY: backend-dev-anno
 backend-dev-anno: server-requirements
@@ -62,10 +65,7 @@ test:
 
 .PHONY: smoke-test
 smoke-test:
-	start_server_and_test \
-		'cellxgene launch -p $(CXG_SERVER_PORT) $(DATASET)' \
-		$(CXG_SERVER_PORT) \
-		'$(MAKE) e2e'
+	start_server_and_test '$(MAKE) start-server' $(CXG_SERVER_PORT) '$(MAKE) e2e'
 
 .PHONY: unit-test
 unit-test:
@@ -74,4 +74,3 @@ unit-test:
 # pass remaining commands through to npm run
 %:
 	npm run $(*)
-

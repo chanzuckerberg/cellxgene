@@ -5,22 +5,35 @@ import socket
 import sys
 import time
 
-parser = argparse.ArgumentParser(description='Wait for a port to be available.')
+# await_port
+#
+# Functionality:
+# 1. Wait for a process to be listening on a port - await_port will poll the address with a bind request and close it
+#    until another process takes the address.
+# 2. Wait for a port to be free - await_port will poll the address with a bind request and close it until the port is
+#    free.
+
+parser = argparse.ArgumentParser(description='Wait for a port either to be bound to or to be free.')
 parser.add_argument('port', type=int, help='port to wait for')
-parser.add_argument('--sleep-increment', type=int, default=1.0, help='sleep duration in between checks of the port')
+parser.add_argument('--sleep-increment', type=int, default=2.0, help='sleep duration in between checks of the port')
 parser.add_argument('--timeout', type=int, default=20.0, help='How long should we wait before timing out?')
-parser.add_argument('--await-active', default=False, action='store_true', help='Wait for the port to be active or free?')
+parser.add_argument('--await-free', default=False, action='store_true',
+                    help='Wait for the port to be active or free?')
 
 args = parser.parse_args()
 
 start = time.time()
 
-port_in_use = True
+port_in_use = None
+
+desired_state = 'free' if args.await_free else 'in use'
+
 
 def condition_reached(port_in_use):
-    return port_in_use if args.await_active else not port_in_use
+    return not port_in_use if args.await_free else port_in_use
 
-while not condition_reached(port_in_use):
+
+while True:
     # halt if we've reached the timeout
     elapsed = time.time() - start
     if elapsed > args.timeout:
@@ -32,10 +45,14 @@ while not condition_reached(port_in_use):
             s.bind(('localhost', args.port))
             port_in_use = False
         except socket.error as e:
-            if e.errno == errno.EADDRINUSE:
-                print(f"Waiting for port {args.port} to be available... sleeping for {args.sleep_increment} seconds.")
-                time.sleep(args.sleep_increment)
-            else:
+            if e.errno != errno.EADDRINUSE:
                 raise e
+            port_in_use = True
 
-print(f"Port {args.port} is {'active' if args.await_active else 'free'}!")
+    if condition_reached(port_in_use):
+        break
+
+    print(f"Waiting for port {args.port} to be {desired_state}... sleeping for {args.sleep_increment} seconds.")
+    time.sleep(args.sleep_increment)
+
+print(f"Port {args.port} is {desired_state}!")

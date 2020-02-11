@@ -92,7 +92,10 @@ The following phony `make` targets in `client/Makefile` are convenience methods 
 
 **Requires** Python3.6 - `virtual-env`, `pip`
 
-**Usage** `make backend-dev`. Optionally, you can then launch the node development server to serve the current state of the FE with `make start-frontend`. You can also select a specific dataset using `DATASET=<dataset path> make backend-dev`.
+**Usage** `make backend-dev`. Optionally, you can then launch the node development server to serve the current state of
+the FE with `make start-frontend`. You can also select a specific dataset using `DATASET=<dataset path> make backend-dev`.
+You can also use `CXG_OPTIONS` to pass options to the `cellxgene launch` command, as in
+`CXG_OPTIONS='--experimental-annotations --experimental-annotations-file annotations.csv' make backend-dev`.
 
 **Tips** Developers will probably want to run this in parallel with the node dev server. You can either do this by running each in a separate termanial window or by running `backend-dev` in the background (add an `&` at the end of the command to run in the background: `DATASET=<dataset> make backend-dev &`).
 
@@ -103,8 +106,8 @@ The following phony `make` targets in `client/Makefile` are convenience methods 
 | python3.6 -m venv cellxgene              | creates cellxgene virtual environment                     |
 | source cellxgene/bin/activate            | activates virtual environment                             |
 | yes \| pip uninstall cellxgene \|\| true | uninstalls cellxgene (if installed)                       |
-| pip install -e ..                        | installs current local version of cellxgene               |
-| cellxgene launch                         | launches cellxgene (must supply dataset as last parameter |
+| pip install -e .                        | installs current local version of cellxgene               |
+| cellxgene launch                         | launches cellxgene (must supply dataset as last parameter) |
 
 ### Test scripts
 

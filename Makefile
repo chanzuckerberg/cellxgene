@@ -73,9 +73,11 @@ smoke-test:
 .PHOHY: fmt
 fmt: fmt-client fmt-py
 
+.PHONY: fmt-client
 fmt-client:
 	cd client && $(MAKE) fmt
 
+.PHONY: fmt
 fmt-py:
 	black .
 

@@ -1,7 +1,7 @@
 PROJECT_ROOT := $(shell git rev-parse --show-toplevel)
 PATH := $(PATH):$(PROJECT_ROOT)/scripts
 
-SHELL := env PATH=$(PATH) /bin/bash
+SHELL := env PATH='$(PATH)' /bin/bash
 
 # get_or_else_dev_env_default
 # - If a variable is defined, return its value

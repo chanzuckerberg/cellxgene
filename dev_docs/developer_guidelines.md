@@ -24,6 +24,11 @@ Steps to run the all unit tests:
 1. `make dev-env`
 1. `make unit-test`
 
+To run unit tests for the `client` code only:
+1. Start in the project root directory
+1. `cd client`
+1. `make unit-test`
+
 ### End to end tests
 
 To run E2E tests, run `cd client` and `make smoke-test`

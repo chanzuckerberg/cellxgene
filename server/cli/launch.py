@@ -19,7 +19,7 @@ from server.app.util.ontology import load_obo, OntologyLoadFailure
 
 # anything bigger than this will generate a special message
 BIG_FILE_SIZE_THRESHOLD = 100 * 2 ** 20  # 100MB
-DEFAULT_SERVER_PORT = int(environ.get('CXG_SERVER_PORT')) if environ.get('CXG_SERVER_PORT') else 5005
+DEFAULT_SERVER_PORT = int(environ.get('CXG_SERVER_PORT', '5005'))
 
 
 def common_args(func):
