@@ -6,13 +6,15 @@ import { unassignedCategoryLabel } from "../globals";
   Centroid coordinate calculation
 */
 
-// Generates a mapping of categorical values to data needed to calculate centroids
-// categoricalValue -> {
-//  size: int,
-//  holdsFinite: Boolean,
-//  xCoordinates: Float32Array,
-//  yCoordinates: F32 Array
-// }
+/*
+Generates a mapping of categorical values to data needed to calculate centroids
+categoricalValue -> {
+ size: int,
+ holdsFinite: Boolean,
+ xCoordinates: Float32Array,
+ yCoordinates: F32 Array
+}
+*/
 const getCoordinatesByCategoricalValues = (
   obsAnnotations,
   categoryName,
@@ -21,12 +23,12 @@ const getCoordinatesByCategoricalValues = (
   categoricalSelection,
   schemaObsByName
 ) => {
+  const scratchPad = new Map();
+
   const categoryArray = obsAnnotations.col(categoryName).asArray();
 
   const layoutXArray = obsLayout.col(layoutDimNames[0]).asArray();
   const layoutYArray = obsLayout.col(layoutDimNames[1]).asArray();
-
-  const scratchPad = new Map();
 
   const { categoryValueIndices, categoryValueCounts } = categoricalSelection[
     categoryName
@@ -85,6 +87,8 @@ const getCoordinatesByCategoricalValues = (
 
 /* 
   calcMedianCentroid calculates the median coordinates for categorical values in a given metadata annotation 
+
+  categoricalValue -> [x-Coordinate, y-Coordinate]
 */
 
 const calcMedianCentroid = (
@@ -109,7 +113,7 @@ const calcMedianCentroid = (
 
   // Iterate over the recently created map
   scratchPad.forEach((value, key) => {
-    // If there are coordinates for this cateogrical value,
+    // If there are coordinates for this categorical value,
     // and there is a finite coordinate for the category value
     if (value.xCoordinates.length > 0 && value.hasFinite) {
       const calculatedCoordinates = [];
@@ -127,7 +131,6 @@ const calcMedianCentroid = (
 };
 
 // A simple function to hash the parameters
-// (not 100% on world hash, Bruce will have to check this one out)
 const hashMedianCentroid = (
   obsAnnotations,
   obsLayout,
