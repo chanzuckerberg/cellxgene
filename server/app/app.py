@@ -39,7 +39,8 @@ def dataset_index(dataset=None):
             dataset_title = config.get_title(data_adaptor)
             return render_template("index.html", datasetTitle=dataset_title, SCRIPTS=scripts)
     except DatasetAccessError as e:
-            return make_response(f"Invalid dataset {dataset}: {str(e)}", HTTPStatus.BAD_REQUEST)
+        return make_response(f"Invalid dataset {dataset}: {str(e)}", HTTPStatus.BAD_REQUEST)
+
 
 @webbp.route("/favicon.png")
 def favicon():
@@ -76,7 +77,6 @@ def rest_get_data_adaptor(func):
             return make_response(f"Invalid dataset {dataset}: {str(e)}", HTTPStatus.BAD_REQUEST)
 
     return wrapped_function
-
 
 
 def static_redirect(dataset, therest):

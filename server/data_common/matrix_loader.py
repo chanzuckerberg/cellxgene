@@ -147,8 +147,8 @@ class MatrixDataLoader(object):
             from server.data_anndata.anndata_adaptor import AnndataAdaptor
             self.matrix_type = AnndataAdaptor
         elif self.etype == MatrixDataType.CXG:
-            from server.data_tiledb.tiledb_adaptor import TileDbAdaptor
-            self.matrix_type = TileDbAdaptor
+            from server.data_cxg.cxg_adaptor import CxgAdaptor
+            self.matrix_type = CxgAdaptor
 
     def matrix_data_type(self):
         if self.location.endswith(".h5ad"):

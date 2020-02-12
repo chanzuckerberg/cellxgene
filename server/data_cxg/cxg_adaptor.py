@@ -13,7 +13,7 @@ from server_timing import Timing as ServerTiming
 import threading
 
 
-class TileDbAdaptor(DataAdaptor):
+class CxgAdaptor(DataAdaptor):
 
     # TODO:  The tiledb context parameters should be a configuration option
     tiledb_ctx = tiledb.Ctx({
@@ -41,8 +41,8 @@ class TileDbAdaptor(DataAdaptor):
 
     @staticmethod
     def pre_load_validation(location):
-        if not TileDbAdaptor.isvalid(location):
-            raise DatasetAccessError(f"tiledb matrix is not valid: {location}")
+        if not CxgAdaptor.isvalid(location):
+            raise DatasetAccessError(f"cxg matrix is not valid: {location}")
 
     @staticmethod
     def file_size(location):
@@ -50,13 +50,13 @@ class TileDbAdaptor(DataAdaptor):
 
     @staticmethod
     def open(location, args):
-        return TileDbAdaptor(location, args)
+        return CxgAdaptor(location, args)
 
     def get_location(self):
         return self.url
 
     def get_name(self):
-        return "cellxgene TileDb adaptor version"
+        return "cellxgene cxcxgg adaptor version"
 
     def get_library_versions(self):
         return dict(tiledb=tiledb.__version__)
@@ -108,7 +108,7 @@ class TileDbAdaptor(DataAdaptor):
 
     def _validate_and_initialize(self):
         if not self.isvalid(self.url):
-            raise DatasetAccessError(f"invalid tiledb dataset {self.url}")
+            raise DatasetAccessError(f"invalid cxg dataset {self.url}")
 
     def open_array(self, name):
         try:

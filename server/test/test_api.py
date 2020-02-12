@@ -278,7 +278,7 @@ class EndPointsAnndata(unittest.TestCase, EndPoints):
             pass
 
 
-class EndPointsTiledb(unittest.TestCase, EndPoints):
+class EndPointsCxg(unittest.TestCase, EndPoints):
     """Test Case for endpoints"""
 
     PORT = 5011
