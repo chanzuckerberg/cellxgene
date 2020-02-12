@@ -1,7 +1,7 @@
 import errno
 import functools
 import logging
-from os import devnull, mkdir
+from os import devnull, mkdir, environ
 from os.path import splitext, basename, isdir
 import sys
 import warnings
@@ -19,6 +19,7 @@ from server.app.util.ontology import load_obo, OntologyLoadFailure
 
 # anything bigger than this will generate a special message
 BIG_FILE_SIZE_THRESHOLD = 100 * 2 ** 20  # 100MB
+DEFAULT_SERVER_PORT = int(environ.get('CXG_SERVER_PORT', '5005'))
 
 
 def common_args(func):
@@ -202,6 +203,7 @@ def parse_engine_args(
     "--port",
     "-p",
     metavar="<port>",
+    default=DEFAULT_SERVER_PORT,
     show_default=True,
     help="Port to run server on. If not specified cellxgene will find an available port.",
 )
@@ -333,7 +335,7 @@ def launch(
                 f"The port selected {port} is in use, please specify an open port using the --port flag."
             )
     else:
-        port = find_available_port(host)
+        port = find_available_port(host, DEFAULT_SERVER_PORT)
 
     if not experimental_annotations:
         if experimental_annotations_file is not None:

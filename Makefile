@@ -1,10 +1,11 @@
+include common.mk
+
 BUILDDIR := build
 CLIENTBUILD := $(BUILDDIR)/client
 SERVERBUILD := $(BUILDDIR)/server
 CLEANFILES :=  $(BUILDDIR)/ client/build build dist cellxgene.egg-info
 
 PART ?= patch
-
 
 # CLEANING
 .PHONY: clean
@@ -72,9 +73,11 @@ smoke-test:
 .PHOHY: fmt
 fmt: fmt-client fmt-py
 
+.PHONY: fmt-client
 fmt-client:
 	cd client && $(MAKE) fmt
 
+.PHONY: fmt
 fmt-py:
 	black .
 
