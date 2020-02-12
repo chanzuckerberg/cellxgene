@@ -9,12 +9,12 @@ from parameterized import parameterized_class
 import numpy as np
 import pandas as pd
 
-from server.data_scanpy.scanpy_adaptor import ScanpyAdaptor
+from server.data_anndata.anndata_adaptor import AnndataAdaptor
 from server.common.errors import FilterError
 from server.common.data_locator import DataLocator
 
 """
-Test the scanpy adaptor using the pbmc3k data set.
+Test the anndata adaptor using the pbmc3k data set.
 """
 
 
@@ -37,9 +37,9 @@ class AdaptorTest(unittest.TestCase):
             "obs_names": None,
             "var_names": None,
             "diffexp_lfc_cutoff": 0.01,
-            "scanpy_backed": self.backed,
+            "anndata_backed": self.backed,
         }
-        self.data = ScanpyAdaptor(DataLocator(self.data_locator), args)
+        self.data = AnndataAdaptor(DataLocator(self.data_locator), args)
 
     def test_init(self):
         self.assertEqual(self.data.cell_count, 2638)
@@ -55,7 +55,7 @@ class AdaptorTest(unittest.TestCase):
         self.assertIn(var_index_col_name, self.data.data.var)
         self.assertEqual(list(self.data.data.var.index), list(range(1838)))
 
-    @pytest.mark.filterwarnings("ignore:Scanpy data matrix")
+    @pytest.mark.filterwarnings("ignore:Anndata data matrix")
     def test_data_type(self):
         # don't run the test on the more exotic data types, as they don't
         # support the astype() interface (used by this test, but not underlying app)

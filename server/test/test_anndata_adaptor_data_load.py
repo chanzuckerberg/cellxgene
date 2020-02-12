@@ -1,7 +1,7 @@
 import unittest
 import json
 
-from server.data_scanpy.scanpy_adaptor import ScanpyAdaptor
+from server.data_anndata.anndata_adaptor import AnndataAdaptor
 from server.common.data_locator import DataLocator
 
 
@@ -12,7 +12,7 @@ class DataLoadAdaptorTest(unittest.TestCase):
 
     def setUp(self):
         self.data_file = DataLocator("../example-dataset/pbmc3k.h5ad")
-        self.data = ScanpyAdaptor(self.data_file)
+        self.data = AnndataAdaptor(self.data_file)
 
     def test_delayed_load_data(self):
         self.data._create_schema()
@@ -52,17 +52,17 @@ class DataLocatorAdaptorTest(unittest.TestCase):
 
     def test_posix_file(self):
         locator = DataLocator("../example-dataset/pbmc3k.h5ad")
-        data = ScanpyAdaptor(locator, self.args)
+        data = AnndataAdaptor(locator, self.args)
         self.stdAsserts(data)
 
     def test_url_https(self):
         url = "https://raw.githubusercontent.com/chanzuckerberg/cellxgene/master/example-dataset/pbmc3k.h5ad"
         locator = DataLocator(url)
-        data = ScanpyAdaptor(locator, self.args)
+        data = AnndataAdaptor(locator, self.args)
         self.stdAsserts(data)
 
     def test_url_http(self):
         url = "http://raw.githubusercontent.com/chanzuckerberg/cellxgene/master/example-dataset/pbmc3k.h5ad"
         locator = DataLocator(url)
-        data = ScanpyAdaptor(locator, self.args)
+        data = AnndataAdaptor(locator, self.args)
         self.stdAsserts(data)

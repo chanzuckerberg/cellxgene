@@ -8,19 +8,16 @@ from scipy import sparse
 from server.data_common.data_adaptor import DataAdaptor
 from server.common.utils import series_to_schema
 
-
 from server.common.constants import Axis, MAX_LAYOUTS
-from server.common.errors import (
-    PrepareError,
-    ScanpyFileError,
-)
+from server.common.errors import PrepareError, DatasetAccessError
+
 from server.data_common.fbs.matrix import encode_matrix_fbs
-import server.data_scanpy.matrix_proxy  # noqa: F401
+import server.data_anndata.matrix_proxy  # noqa: F401
 
 from server.common.data_locator import DataLocator
 
 
-class ScanpyAdaptor(DataAdaptor):
+class AnndataAdaptor(DataAdaptor):
 
     def __init__(self, data_locator, config=None):
         super().__init__(config)
@@ -53,13 +50,13 @@ class ScanpyAdaptor(DataAdaptor):
     @staticmethod
     def open(location, config):
         data_locator = DataLocator(location)
-        return ScanpyAdaptor(data_locator, config)
+        return AnndataAdaptor(data_locator, config)
 
     def get_location(self):
         return self.data_locator.uri_or_path
 
     def get_name(self):
-        return "cellxgene Scanpy adaptor version"
+        return "cellxgene anndata adaptor version"
 
     def get_library_versions(self):
         return dict(anndata=str(anndata.__version__))
@@ -154,11 +151,11 @@ class ScanpyAdaptor(DataAdaptor):
             with data_locator.local_handle() as lh:
                 # as of AnnData 0.6.19, backed mode performs initial load fast, but at the
                 # cost of significantly slower access to X data.
-                backed = "r" if self.config.scanpy_backed else None
+                backed = "r" if self.config.anndata_backed else None
                 self.data = anndata.read_h5ad(lh, backed=backed)
 
         except ValueError:
-            raise ScanpyFileError(
+            raise DatasetAccessError(
                 "File must be in the .h5ad format. Please read "
                 "https://github.com/theislab/scanpy_usage/blob/master/170505_seurat/info_h5ad.md to "
                 "learn more about this format. You may be able to convert your file into this format "
@@ -166,9 +163,9 @@ class ScanpyAdaptor(DataAdaptor):
                 "information."
             )
         except MemoryError:
-            raise ScanpyFileError("Out of memory - file is too large for available memory.")
+            raise DatasetAccessError("Out of memory - file is too large for available memory.")
         except Exception as e:
-            raise ScanpyFileError(
+            raise DatasetAccessError(
                 f"{e} - file not found or is inaccessible.  File must be an .h5ad object.  "
                 f"Please check your input and try again."
             )
@@ -186,7 +183,7 @@ class ScanpyAdaptor(DataAdaptor):
 
         # heuristic
         n_values = self.data.shape[0] * self.data.shape[1]
-        if (n_values > 1e8 and self.config.scanpy_backed is True) or (n_values > 5e8):
+        if (n_values > 1e8 and self.config.anndata_backed is True) or (n_values > 5e8):
             self.parameters.update({"diffexp_may_be_slow": True})
 
     def _is_valid_layout(self, arr):
@@ -202,12 +199,12 @@ class ScanpyAdaptor(DataAdaptor):
     def _validate_data_types(self):
         if sparse.isspmatrix(self.data.X) and not sparse.isspmatrix_csc(self.data.X):
             warnings.warn(
-                f"Scanpy data matrix is sparse, but not a CSC (columnar) matrix.  "
+                f"Anndata data matrix is sparse, but not a CSC (columnar) matrix.  "
                 f"Performance may be improved by using CSC."
             )
         if self.data.X.dtype != "float32":
             warnings.warn(
-                f"Scanpy data matrix is in {self.data.X.dtype} format not float32. " f"Precision may be truncated."
+                f"Anndata data matrix is in {self.data.X.dtype} format not float32. " f"Precision may be truncated."
             )
         for ax in Axis:
             curr_axis = getattr(self.data, str(ax))
@@ -221,7 +218,7 @@ class ScanpyAdaptor(DataAdaptor):
                 }
                 if datatype in downcast_map:
                     warnings.warn(
-                        f"Scanpy annotation {ax}:{ann} is in unsupported format: {datatype}. "
+                        f"Anndata annotation {ax}:{ann} is in unsupported format: {datatype}. "
                         f"Data will be downcast to {downcast_map[datatype]}."
                     )
                 if isinstance(datatype, CategoricalDtype):

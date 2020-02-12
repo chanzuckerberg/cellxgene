@@ -129,7 +129,7 @@ class MatrixDataCacheManager(object):
 
 class MatrixDataType(Enum):
     H5AD = "h5ad"
-    TILEDB = "tiledb"
+    CXG = "cxg"
     UNKNOWN = "unknown"
 
 
@@ -143,9 +143,9 @@ class MatrixDataLoader(object):
             self.etype = etype
         self.matrix_type = None
         if self.etype == MatrixDataType.H5AD:
-            from server.data_scanpy.scanpy_adaptor import ScanpyAdaptor
-            self.matrix_type = ScanpyAdaptor
-        elif self.etype == MatrixDataType.TILEDB:
+            from server.data_anndata.anndata_adaptor import AnndataAdaptor
+            self.matrix_type = AnndataAdaptor
+        elif self.etype == MatrixDataType.CXG:
             from server.data_tiledb.tiledb_adaptor import TileDbAdaptor
             self.matrix_type = TileDbAdaptor
 
@@ -153,7 +153,7 @@ class MatrixDataLoader(object):
         if self.location.endswith(".h5ad"):
             return MatrixDataType.H5AD
         elif ".cxg" in self.location:
-            return MatrixDataType.TILEDB
+            return MatrixDataType.CXG
         else:
             return MatrixDataType.UNKNOWN
 

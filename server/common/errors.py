@@ -7,7 +7,7 @@ class FilterError(Exception):
 
 class JSONEncodingValueError(Exception):
     """
-    Raised when file loaded into scanpy is misformatted
+    Raised when data cannot be encoded into json
     """
     pass
 
@@ -26,16 +26,9 @@ class PrepareError(Exception):
     pass
 
 
-class ScanpyFileError(Exception):
+class DatasetAccessError(Exception):
     """
-    Raised when file loaded into scanpy is misformatted
-    """
-    pass
-
-
-class DataAdaptorError(Exception):
-    """
-    Raised when file loaded into scanpy is misformatted
+    Raised when file loaded into a DataAdaptor is misformatted
     """
     pass
 

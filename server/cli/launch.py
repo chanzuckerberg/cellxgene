@@ -130,7 +130,7 @@ def dataset_args(func):
         is_flag=True,
         default=False,
         show_default=False,
-        help="Load scanpy anndata in file-backed mode. "
+        help="Load anndata in file-backed mode. "
              "This may save memory, but may result in slower overall performance.",
     )
     @click.option(
@@ -404,7 +404,7 @@ def launch(
         diffexp_lfc_cutoff=diffexp_lfc_cutoff,
         obs_names=obs_names,
         var_names=var_names,
-        scanpy_backed=backed,
+        anndata_backed=backed,
         disable_diffexp=disable_diffexp)
 
     matrix_data_cache_manager = MatrixDataCacheManager()

@@ -241,7 +241,7 @@ class EndPoints(object):
         self.assertEqual(result.status_code, HTTPStatus.OK)
 
 
-class EndPointsScanpy(unittest.TestCase, EndPoints):
+class EndPointsAnndata(unittest.TestCase, EndPoints):
     """Test Case for endpoints"""
 
     PORT = 5010

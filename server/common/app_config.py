@@ -37,12 +37,11 @@ class AppConfig(object):
         self.max_category_items = 100
         self.diffexp_lfc_cutoff = 0.01
         self.disable_diffexp = False
+        self.anndata_backed = False
 
-        # all scanpy files are backed in the app multi, due to concerns about memory.
-        # the obs_names and var_names are given the defaults.
-        # TODO: If we want to change
-        # that in the future, then see comment under "get_title" for a possible solution.
-        self.scanpy_backed = True  # all scanpy files are backed in app multi
+        # TODO these options may not apply to all datasets in the multi dataset.
+        # may need to invent a way to associate these config parameters with
+        # specific datasets.
         self.obs_names = None
         self.var_names = None
 
@@ -52,7 +51,7 @@ class AppConfig(object):
         inputs = ["datapath", "dataroot", "title", "about", "scripts", "layout",
                   "max_category_items", "diffexp_lfc_cutoff",
                   "obs_names", "var_names",
-                  "scanpy_backed", "disable_diffexp"]
+                  "anndata_backed", "disable_diffexp"]
 
         self.update(inputs, kw)
 
@@ -109,7 +108,7 @@ class AppConfig(object):
             "obs_names": self.obs_names,
             "var_names": self.var_names,
             "diffexp_lfc_cutoff": self.diffexp_lfc_cutoff,
-            "backed": self.scanpy_backed,
+            "backed": self.anndata_backed,
             "disable_diffexp": self.disable_diffexp,
             "annotations": False,
             "annotations_file": None,
