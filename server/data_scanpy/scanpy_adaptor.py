@@ -51,9 +51,9 @@ class ScanpyAdaptor(DataAdaptor):
         return data_locator.size() if data_locator.islocal() else 0
 
     @staticmethod
-    def open(location, args):
+    def open(location, config):
         data_locator = DataLocator(location)
-        return ScanpyAdaptor(data_locator, args)
+        return ScanpyAdaptor(data_locator, config)
 
     def get_location(self):
         return self.data_locator.uri_or_path
@@ -115,6 +115,7 @@ class ScanpyAdaptor(DataAdaptor):
                         f"Values in {ax_name}.{name} must be unique. " "Please prepare data to contain unique values."
                     )
                 df_axis.reset_index(drop=True, inplace=True)
+                self.parameters[config_name] = name
             else:
                 # user specified a non-existent column name
                 raise KeyError(f"Annotation name {name}, specified in --{ax_name}-name does not exist.")
@@ -185,7 +186,7 @@ class ScanpyAdaptor(DataAdaptor):
 
         # heuristic
         n_values = self.data.shape[0] * self.data.shape[1]
-        if (n_values > 1e8 and self.config.backed is True) or (n_values > 5e8):
+        if (n_values > 1e8 and self.config.scanpy_backed is True) or (n_values > 5e8):
             self.parameters.update({"diffexp_may_be_slow": True})
 
     def _is_valid_layout(self, arr):
@@ -288,7 +289,7 @@ class ScanpyAdaptor(DataAdaptor):
         X = self.data.X[obs_mask, var_mask]
         return X
 
-    def get_X_array_shape(self):
+    def get_shape(self):
         return self.data.shape
 
     def query_var_array(self, term_name):
@@ -302,6 +303,3 @@ class ScanpyAdaptor(DataAdaptor):
 
     def get_obs_columns(self):
         return self.data.obs.columns
-
-    def get_obs_shape(self):
-        return self.data.obs.shape

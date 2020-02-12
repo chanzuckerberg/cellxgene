@@ -9,6 +9,7 @@ from server.compute.diffexp import diffexp_ttest
 from server.common.utils import jsonify_numpy
 from server.data_common.matrix_proxy import MatrixProxy
 from server.common.app_config import AppFeature, AppConfig
+from server.common.data_locator import DataLocator
 
 
 class DataAdaptor(metaclass=ABCMeta):
@@ -28,8 +29,90 @@ class DataAdaptor(metaclass=ABCMeta):
         # parameters set by this data adaptor based on the data.
         self.parameters = {}
 
+    @staticmethod
+    @abstractmethod
+    def pre_load_validation(location):
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def open(location, config):
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def file_size(location):
+        pass
+
+    @abstractmethod
+    def get_name(self):
+        """return a string name for this data adaptor"""
+        pass
+
+    @abstractmethod
+    def get_library_versions(self):
+        """return a dictionary of library name to library versions"""
+        pass
+
+    @abstractmethod
+    def get_embedding_names(self):
+        """return a list of embedding names"""
+        pass
+
+    @abstractmethod
+    def get_embedding_array(self, ename, dims=2):
+        """return an numpy array for the given embedding name."""
+        pass
+
+    @abstractmethod
+    def get_X_array(self, obs_mask=None, var_mask=None):
+        """return the X array, possibly filtered by obs_mask or var_mask.
+        the return type is either ndarray or scipy.sparse.spmatrix."""
+        pass
+
+    @abstractmethod
+    def get_shape(self):
+        pass
+
+    @abstractmethod
+    def query_var_array(self, term_var):
+        pass
+
+    @abstractmethod
+    def query_obs_array(self, term_var):
+        pass
+
+    @abstractmethod
+    def get_obs_index(self):
+        pass
+
+    @abstractmethod
+    def get_obs_columns(self):
+        pass
+
     @abstractmethod
     def cleanup(self):
+        pass
+
+    @abstractmethod
+    def get_location(self):
+        pass
+
+    @abstractmethod
+    def get_schema(self):
+        """
+        Return current schema
+        """
+        pass
+
+    @abstractmethod
+    def annotation_to_fbs_matrix(self, axis, field=None, uid=None):
+        """
+        Gets annotation value for each observation
+        :param axis: string obs or var
+        :param fields: list of keys for annotation to return, returns all annotation values if not set.
+        :return: flatbuffer: in fbs/matrix.fbs encoding
+        """
         pass
 
     def get_features(self):
@@ -53,27 +136,6 @@ class DataAdaptor(metaclass=ABCMeta):
 
     def update_parameters(self, parameters):
         parameters.update(self.parameters)
-
-    @abstractmethod
-    def get_location(self):
-        pass
-
-    @abstractmethod
-    def get_schema(self):
-        """
-        Return current schema
-        """
-        pass
-
-    @abstractmethod
-    def annotation_to_fbs_matrix(self, axis, field=None, uid=None):
-        """
-        Gets annotation value for each observation
-        :param axis: string obs or var
-        :param fields: list of keys for annotation to return, returns all annotation values if not set.
-        :return: flatbuffer: in fbs/matrix.fbs encoding
-        """
-        pass
 
     def _index_filter_to_mask(self, filter, count):
         mask = np.zeros((count,), dtype=np.bool)
@@ -124,7 +186,7 @@ class DataAdaptor(metaclass=ABCMeta):
         Return the filter as a row and column selection list.
         No filter on a dimension means 'all'
         """
-        shape = self.get_X_array_shape()
+        shape = self.get_shape()
         var_selector = None
         obs_selector = None
         if filter is not None:
@@ -160,8 +222,8 @@ class DataAdaptor(metaclass=ABCMeta):
             )
 
         # labels must have same count as obs annotations
-        obs_shape = self.get_obs_shape()
-        if labels_df.shape[0] != obs_shape[0]:
+        shape = self.get_shape()
+        if labels_df.shape[0] != shape[0]:
             raise ValueError("Labels file must have same number of rows as data file.")
 
     def data_frame_to_fbs_matrix(self, filter, axis):
@@ -206,7 +268,7 @@ class DataAdaptor(metaclass=ABCMeta):
         if Axis.VAR in obsFilterA or Axis.VAR in obsFilterB:
             raise FilterError("Observation filters may not contain variable conditions")
         try:
-            shape = self.get_X_array_shape()
+            shape = self.get_shape()
             obs_mask_A = self._axis_filter_to_mask(Axis.OBS, obsFilterA["obs"], shape[0])
             obs_mask_B = self._axis_filter_to_mask(Axis.OBS, obsFilterB["obs"], shape[0])
         except (KeyError, IndexError) as e:
@@ -262,51 +324,10 @@ class DataAdaptor(metaclass=ABCMeta):
 
         return fbs
 
-    @abstractmethod
-    def get_name(self):
-        """return a string name for this data adaptor"""
-        pass
-
-    @abstractmethod
-    def get_library_versions(self):
-        """return a dictionary of library name to library versions"""
-        pass
-
-    @abstractmethod
-    def get_embedding_names(self):
-        """return a list of embedding names"""
-        pass
-
-    @abstractmethod
-    def get_embedding_array(self, ename, dims=2):
-        """return an numpy array for the given embedding name."""
-        pass
-
-    @abstractmethod
-    def get_X_array(self, obs_mask=None, var_mask=None):
-        """return the X array, possibly filtered by obs_mask or var_mask.  return an ndarray"""
-        pass
-
-    @abstractmethod
-    def get_X_array_shape(self):
-        pass
-
-    @abstractmethod
-    def query_var_array(self, term_var):
-        pass
-
-    @abstractmethod
-    def query_obs_array(self, term_var):
-        pass
-
-    @abstractmethod
-    def get_obs_index(self):
-        pass
-
-    @abstractmethod
-    def get_obs_columns(self):
-        pass
-
-    @abstractmethod
-    def get_obs_shape(self):
-        pass
+    def get_last_mod_time(self):
+        try:
+            data_locator = DataLocator(self.get_location())
+            lastmod = data_locator.lastmodtime()
+        except RuntimeError:
+            lastmod = None
+        return lastmod

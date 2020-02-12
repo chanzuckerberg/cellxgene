@@ -8,15 +8,15 @@ import base64
 from server import __version__ as cellxgene_version
 import threading
 from server.common.errors import AnnotationsError, OntologyLoadFailure
-from server.common.data_locator import DataLocator
 from server.common.utils import series_to_schema
 import fsspec
 import fastobo
 import traceback  # use built-in formatter for SyntaxError
 from flask import session
+from abc import ABCMeta, abstractmethod
 
 
-class Annotations(object):
+class Annotations(metaclass=ABCMeta):
     """ baseclass for annotations, including ontologies"""
 
     """ our default ontology is the PURL for the Cell Ontology.
@@ -59,6 +59,26 @@ class Annotations(object):
 
         return schema
 
+    @abstractmethod
+    def set_collection(self, name):
+        """set or create a new annotation collection"""
+        pass
+
+    @abstractmethod
+    def read_labels(self, data_adaptor):
+        """Return the labels as a pandas.DataFrame"""
+        pass
+
+    @abstractmethod
+    def write_labels(self, df, data_adaptor):
+        """Write the labels (df) to a persistent storage such that it can later be read"""
+        pass
+
+    @abstractmethod
+    def update_parameters(self, parameters, data_adaptor):
+        """Update configuration parameters that describe information about the annotations feature"""
+        pass
+
 
 class AnnotationsLocalFile(Annotations):
 
@@ -76,7 +96,7 @@ class AnnotationsLocalFile(Annotations):
         """
         return true if this is a safe collection name
 
-        this is ultra convervative. If we want to allow full legal file name syntax,
+        this is ultra conservative. If we want to allow full legal file name syntax,
         we could look at modules like `pathvalidate`
         """
         if name is None:
@@ -103,11 +123,7 @@ class AnnotationsLocalFile(Annotations):
         # update our internal state and save it.  Multi-threading often enabled,
         # so treat this as a critical section.
         with self.label_lock:
-            try:
-                data_locator = DataLocator(data_adaptor.get_location())
-                lastmod = data_locator.lastmodtime()
-            except RuntimeError:
-                lastmod = None
+            lastmod = data_adaptor.get_last_mod_time()
             lastmodstr = "'unknown'" if lastmod is None else lastmod.isoformat(timespec="seconds")
             header = (
                 f"# Annotations generated on {datetime.now().isoformat(timespec='seconds')} "

@@ -12,7 +12,7 @@ from http import HTTPStatus
 
 import server.common.rest as common_rest
 from server.common.utils import path_join, Float32JSONEncoder
-from server.data_common.matrix_loader import MatrixDataLoader, MatrixDataType, MatrixDataCacheManager
+from server.data_common.matrix_loader import MatrixDataLoader, MatrixDataType
 
 from functools import wraps
 
@@ -21,7 +21,7 @@ webbp = Blueprint("webapp", "server.common.web", template_folder="templates")
 
 @webbp.route("/")
 def index():
-    if current_app.data is None:
+    if current_app.app_config.datapath is None:
         return dataroot_index()
 
     dataset_title = current_app.app_config.title
@@ -34,30 +34,31 @@ def favicon():
     return send_from_directory(os.path.join(webbp.root_path, "static/img/"), "favicon.png")
 
 
-def get_data_adaptor(dataset):
+def get_data_adaptor(dataset=None):
     config = current_app.app_config
-    location = path_join(config.dataroot, dataset)
-    matrix_data_loader = MatrixDataLoader(location)
-    matrix_data_loader.pre_load_validation()
-    data = matrix_data_loader.open(current_app.app_config)
-    return data
+
+    if dataset is None:
+        datapath = config.datapath
+    else:
+        datapath = path_join(config.dataroot, dataset)
+        # path_join returns a normalized path.  Therefore it is
+        # sufficient to check that the datapath starts with the
+        # dataroot to determine that the datapath is under the dataroot.
+        if not datapath.startswith(config.dataroot):
+            raise RuntimeError("Invalid dataset {dataset}")
+
+    if datapath is None:
+        return make_response("Dataset must be supplied", HTTPStatus.BAD_REQUEST)
+
+    cache_manager = current_app.matrix_data_cache_manager
+    return cache_manager.data_adaptor(datapath, config)
 
 
 def rest_get_data_adaptor(func):
     @wraps(func)
     def wrapped_function(self, dataset=None):
         try:
-            if dataset is None:
-                # use the default dataset
-                data_adaptor = current_app.data
-                if data_adaptor is None:
-                    return make_response("Dataset must be supplied", HTTPStatus.BAD_REQUEST)
-                return func(self, data_adaptor)
-
-            config = current_app.app_config
-            location = path_join(config.dataroot, dataset)
-            cache_manager = current_app.matrix_data_cache_manager
-            with cache_manager.data_adaptor(location, config) as data_adaptor:
+            with get_data_adaptor(dataset) as data_adaptor:
                 return func(self, data_adaptor)
         except RuntimeError as e:
             return make_response(f"Invalid dataset {dataset}: {str(e)}", HTTPStatus.BAD_REQUEST)
@@ -176,7 +177,7 @@ def get_api_resources(bp_api):
 
 
 class Server:
-    def __init__(self, data, annotations, app_config):
+    def __init__(self, matrix_data_cache_manager, annotations, app_config):
 
         self.app = Flask(__name__, static_folder="../common/web/static")
         self.app.json_encoder = Float32JSONEncoder
@@ -197,13 +198,16 @@ class Server:
         self.app.register_blueprint(webbp)
 
         api_version = "/api/v0.2"
-        if data:
+        if app_config.datapath:
             bp_api = Blueprint("api", __name__, url_prefix=api_version)
             resources = get_api_resources(bp_api)
             self.app.register_blueprint(resources.blueprint)
             self.app.add_url_rule("/", "index", index)
 
-        if app_config.dataroot:
+        else:
+            # NOTE:  These routes only allow the dataset to be in the directory
+            # of the dataroot, and not a subdirectory.  We may want to change
+            # the route format at some point
             bp_api = Blueprint("api_dataset", __name__, url_prefix="/<dataset>" + api_version)
             resources = get_api_resources(bp_api)
             self.app.register_blueprint(resources.blueprint)
@@ -211,7 +215,6 @@ class Server:
             self.app.add_url_rule("/<dataset>/static/<path:therest>", "static_redirect", static_redirect)
             self.app.add_url_rule("/<dataset>/favicon.png", "favicon_redirect", favicon_redirect)
 
-        self.app.data = data
+        self.app.matrix_data_cache_manager = matrix_data_cache_manager
         self.app.annotations = annotations
         self.app.app_config = app_config
-        self.app.matrix_data_cache_manager = MatrixDataCacheManager()

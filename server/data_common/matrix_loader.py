@@ -27,11 +27,18 @@ class MatrixDataCacheItem(object):
             return self.data_adaptor
 
         self.data_lock.r_release()
-        with self.data_lock.w_locked():
-            # the data may have been loaded while waiting on the lock
-            if not self.data_adaptor:
-                self.loader.pre_load_validation()
-                self.data_adaptor = self.loader.open(app_config)
+        try:
+            with self.data_lock.w_locked():
+                # the data may have been loaded while waiting on the lock
+                if not self.data_adaptor:
+                    self.loader.pre_load_validation()
+                    self.data_adaptor = self.loader.open(app_config)
+
+        except Exception:
+            # necessary to acquire after an exception, since the release will occur when
+            # the context exits
+            self.data_lock.r_acquire()
+            raise
 
         self.data_lock.r_acquire()
         if self.data_adaptor:
@@ -128,9 +135,12 @@ class MatrixDataType(Enum):
 
 class MatrixDataLoader(object):
 
-    def __init__(self, location):
+    def __init__(self, location, etype=None):
         self.location = location
-        self.etype = self.matrix_data_type()
+        if etype is None:
+            self.etype = self.matrix_data_type()
+        else:
+            self.etype = etype
         self.matrix_type = None
         if self.etype == MatrixDataType.H5AD:
             from server.data_scanpy.scanpy_adaptor import ScanpyAdaptor
@@ -143,8 +153,6 @@ class MatrixDataLoader(object):
         if self.location.endswith(".h5ad"):
             return MatrixDataType.H5AD
         elif ".cxg" in self.location:
-            return MatrixDataType.TILEDB
-        elif self.location.startswith("s3://"):
             return MatrixDataType.TILEDB
         else:
             return MatrixDataType.UNKNOWN

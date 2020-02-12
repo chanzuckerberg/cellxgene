@@ -28,6 +28,7 @@ class AppConfig(object):
         super().__init__()
 
         # app inputs
+        self.datapath = None
         self.dataroot = None
         self.title = ""
         self.about = None
@@ -48,7 +49,7 @@ class AppConfig(object):
         # parameters
         self.diffexp_may_be_slow = False
 
-        inputs = ["dataroot", "title", "about", "scripts", "layout",
+        inputs = ["datapath", "dataroot", "title", "about", "scripts", "layout",
                   "max_category_items", "diffexp_lfc_cutoff",
                   "obs_names", "var_names",
                   "scanpy_backed", "disable_diffexp"]
@@ -105,17 +106,17 @@ class AppConfig(object):
         parameters = {
             "layout": self.layout,
             "max_category_items": self.max_category_items,
-            "obs_names": None,
-            "var_names": None,
+            "obs_names": self.obs_names,
+            "var_names": self.var_names,
             "diffexp_lfc_cutoff": self.diffexp_lfc_cutoff,
+            "backed": self.scanpy_backed,
+            "disable_diffexp": self.disable_diffexp,
             "annotations": False,
             "annotations_file": None,
             "annotations_output_dir": None,
             "annotations_cell_ontology_enabled": False,
             "annotations_cell_ontology_obopath": None,
             "annotations_cell_ontology_terms": None,
-            "backed": False,
-            "disable_diffexp": False,
             "diffexp_may_be_slow": False,
         }
 

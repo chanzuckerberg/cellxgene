@@ -62,7 +62,7 @@ def diffexp_ttest(data, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
     :param diffexp_lfc_cutoff: minimum
     :return:  for top N genes, [ varindex, logfoldchange, pval, pval_adj ]
     """
-    shape = data.get_X_array_shape()
+    shape = data.get_shape()
     n_obs = shape[0]
     n_var = shape[1]
     if top_n > n_obs:

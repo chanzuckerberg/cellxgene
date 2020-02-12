@@ -12,7 +12,7 @@ import click
 
 from server.common.utils import custom_format_warning
 from server.common.utils import find_available_port, is_port_available, sort_options
-from server.data_common.matrix_loader import MatrixDataLoader
+from server.data_common.matrix_loader import MatrixDataLoader, MatrixDataCacheManager
 from server.common.annotations import AnnotationsLocalFile
 from server.common.app_config import AppConfig
 
@@ -60,7 +60,7 @@ def annotation_args(func):
         default=None,
         show_default=True,
         metavar="<path or url>",
-        help="Location of OBO file defining cell annotatoin autosuggest terms."
+        help="Location of OBO file defining cell annotation autosuggest terms."
     )
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
@@ -205,8 +205,14 @@ def launch_args(func):
     @config_args
     @dataset_args
     @server_args
-    @click.option("--dataroot", default=None, metavar="<data files root>")
-    @click.argument("data", required=False, metavar="<path to data file>")
+    @click.option(
+        "--dataroot",
+        default=None,
+        metavar="<data directory>",
+        help="Enable cellxgene to serve multiple files. Supply path (local directory or URL)"
+             " to folder containing H5AD and/or CXG datasets.",
+        hidden=True)  # TODO, unhide when dataroot is supported)
+    @click.argument("datapath", required=False, metavar="<path to data file>")
     @click.option(
         "--open",
         "-o",
@@ -253,7 +259,7 @@ def handle_verbose(verbose):
 )
 @launch_args
 def launch(
-    data,
+    datapath,
     dataroot,
     verbose,
     debug,
@@ -284,22 +290,28 @@ def launch(
 
     Examples:
 
-    > cellxgene launch example_dataset/pbmc3k.h5ad --title pbmc3k
+    > cellxgene launch example-dataset/pbmc3k.h5ad --title pbmc3k
 
     > cellxgene launch <your data file> --title <your title>
 
     > cellxgene launch <url>"""
 
+    # TODO Examples to provide when "--dataroot" is unhidden
+    # > cellxgene launch --dataroot example-dataset/
+    #
+    # > cellxgene launch --dataroot <url>
+
     # Startup message
     click.echo("[cellxgene] Starting the CLI...")
 
-    if data is None and dataroot is None:
+    if datapath is None and dataroot is None:
         raise click.ClickException("must supply either <path to data file> or --dataroot")
+    if datapath is not None and dataroot is not None:
+        raise click.ClickException("must supply only one of <path to data file> or --dataroot")
 
-    matrix_data_loader = None
-    if data:
+    if datapath:
         # preload this data set
-        matrix_data_loader = MatrixDataLoader(data)
+        matrix_data_loader = MatrixDataLoader(datapath)
 
         try:
             matrix_data_loader.pre_load_validation()
@@ -308,9 +320,9 @@ def launch(
 
         file_size = matrix_data_loader.file_size()
         if file_size > BIG_FILE_SIZE_THRESHOLD:
-            click.echo(f"[cellxgene] Loading data from {basename(data)}, this may take a while...")
+            click.echo(f"[cellxgene] Loading data from {basename(datapath)}, this may take a while...")
         else:
-            click.echo(f"[cellxgene] Loading data from {basename(data)}.")
+            click.echo(f"[cellxgene] Loading data from {basename(datapath)}.")
 
     if debug:
         verbose = True
@@ -321,8 +333,8 @@ def launch(
     handle_verbose(verbose)
     handle_scripts(scripts)
 
-    if not title and data is not None:
-        file_parts = splitext(basename(data))
+    if not title and datapath is not None:
+        file_parts = splitext(basename(datapath))
         title = file_parts[0]
 
     if port:
@@ -382,6 +394,8 @@ def launch(
 
     # app config
     app_config = AppConfig(
+        datapath=datapath,
+        dataroot=dataroot,
         title=title,
         about=about,
         scripts=scripts,
@@ -391,21 +405,20 @@ def launch(
         obs_names=obs_names,
         var_names=var_names,
         scanpy_backed=backed,
-        disable_diffexp=disable_diffexp,
-        dataroot=dataroot)
+        disable_diffexp=disable_diffexp)
 
-    cxg_data = None
-    if matrix_data_loader:
+    matrix_data_cache_manager = MatrixDataCacheManager()
+    data_adaptor = None
+    if datapath:
         try:
-            cxg_data = matrix_data_loader.open(app_config)
-        except RuntimeError as e:
+            with matrix_data_cache_manager.data_adaptor(datapath, app_config) as data_adaptor:
+                if not disable_diffexp and data_adaptor.parameters.get("diffexp_may_be_slow", False):
+                    click.echo(
+                        f"[cellxgene] CAUTION: due to the size of your dataset, "
+                        f"running differential expression may take longer or fail."
+                    )
+        except Exception as e:
             raise click.ClickException(str(e))
-
-        if not disable_diffexp and cxg_data.parameters.get("diffexp_may_be_slow", False):
-            click.echo(
-                f"[cellxgene] CAUTION: due to the size of your dataset, "
-                f"running differential expression may take longer or fail."
-            )
 
     # create an annotations object.  Only AnnotationsLocalFile is used (for now)
     annotations = None
@@ -417,8 +430,8 @@ def launch(
         # if the user has specified a fixed label file, go ahead and validate it
         # so that we can remove errors early in the process.
 
-        if experimental_annotations_file:
-            cxg_data.validate_label_data(annotations.read_labels(cxg_data))
+        if experimental_annotations_file and data_adaptor:
+            data_adaptor.check_new_labels(annotations.read_labels(data_adaptor))
 
         if experimental_annotations_ontology or bool(experimental_annotations_ontology_obo):
             try:
@@ -428,7 +441,7 @@ def launch(
 
     # create the server
     from server.app.app import Server
-    server = Server(cxg_data, annotations, app_config)
+    server = Server(matrix_data_cache_manager, annotations, app_config)
 
     if not verbose:
         log = logging.getLogger("werkzeug")

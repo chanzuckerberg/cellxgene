@@ -139,7 +139,7 @@ class TileDbAdaptor(DataAdaptor):
             data = X.multi_index[obs_items, var_items]['']
         return data
 
-    def get_X_array_shape(self):
+    def get_shape(self):
         X = self.open_array("X")
         return X.shape
 
@@ -180,10 +180,6 @@ class TileDbAdaptor(DataAdaptor):
         col_names = [attr.name for attr in schema]
         return pd.Index(col_names)
 
-    def get_obs_shape(self):
-        obs = self.open_array("obs")
-        return obs.shape
-
     # function to get the embedding
     # this function to iterate through embeddings.
     def get_embedding_names(self):
@@ -223,7 +219,7 @@ class TileDbAdaptor(DataAdaptor):
         return schema
 
     def get_schema(self):
-        shape = self.get_X_array_shape()
+        shape = self.get_shape()
         dtype = self.get_X_array_dtype()
 
         dataframe = {
