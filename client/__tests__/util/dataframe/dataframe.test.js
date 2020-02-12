@@ -481,6 +481,7 @@ describe("dataframe factories", () => {
 
     test("simple", () => {
       /* simple test that it works as expected in common case */
+      const dfEmpty = Dataframe.Dataframe.empty();
       const dfA = new Dataframe.Dataframe(
         [2, 1],
         [["red", "blue"]],
@@ -493,6 +494,22 @@ describe("dataframe factories", () => {
         null,
         new Dataframe.KeyIndex(["bools"])
       );
+
+      const dfLikeA = dfEmpty.withColsFrom(dfA);
+      expect(dfLikeA).toBeDefined();
+      expect(dfLikeA.dims).toEqual(dfA.dims);
+      expect(dfLikeA.colIndex.keys()).toEqual(dfA.colIndex.keys());
+      expect(dfLikeA.rowIndex).toEqual(dfA.rowIndex);
+      expect(dfLikeA.rowIndex.keys()).toEqual(dfA.rowIndex.keys());
+      expect(dfLikeA.icol(0).asArray()).toEqual(dfA.icol(0).asArray());
+
+      const dfAlsoLikeA = dfA.withColsFrom(dfEmpty);
+      expect(dfAlsoLikeA).toBeDefined();
+      expect(dfAlsoLikeA.dims).toEqual(dfA.dims);
+      expect(dfAlsoLikeA.colIndex.keys()).toEqual(dfA.colIndex.keys());
+      expect(dfAlsoLikeA.rowIndex).toEqual(dfA.rowIndex);
+      expect(dfAlsoLikeA.rowIndex.keys()).toEqual(dfA.rowIndex.keys());
+      expect(dfAlsoLikeA.icol(0).asArray()).toEqual(dfA.icol(0).asArray());
 
       const dfC = dfA.withColsFrom(dfB);
       expect(dfC).toBeDefined();

@@ -17,13 +17,27 @@ the default REST test response.
 const defaultBigBang = () => {
   /* create unverse, world, crossfilter and dimensionMap */
   /* create universe */
-  const universe = Universe.createUniverseFromResponse(
+  let universe = Universe.createUniverseFromResponse(
     _.cloneDeep(REST.config),
-    _.cloneDeep(REST.schema),
-    _.cloneDeep(REST.annotationsObs),
-    _.cloneDeep(REST.annotationsVar),
-    _.cloneDeep(REST.layoutObs)
+    _.cloneDeep(REST.schema)
   );
+
+  universe = {
+    ...universe,
+    ...Universe.addObsAnnotations(
+      universe,
+      Universe.matrixFBSToDataframe(REST.annotationsObs)
+    ),
+    ...Universe.addVarAnnotations(
+      universe,
+      Universe.matrixFBSToDataframe(REST.annotationsVar)
+    ),
+    ...Universe.addObsLayout(
+      universe,
+      Universe.matrixFBSToDataframe(REST.layoutObs)
+    )
+  };
+
   /* create world */
   const world = World.createWorldFromEntireUniverse(universe);
   /* create crossfilter */
@@ -45,9 +59,9 @@ describe("createWorldFromEntireUniverse", () => {
     const universe = Universe.createUniverseFromResponse(
       _.cloneDeep(REST.config),
       _.cloneDeep(REST.schema),
-      _.cloneDeep(REST.annotationsObs),
-      _.cloneDeep(REST.annotationsVar),
-      _.cloneDeep(REST.layoutObs)
+      Universe.matrixFBSToDataframe(_.cloneDeep(REST.annotationsObs)),
+      Universe.matrixFBSToDataframe(_.cloneDeep(REST.annotationsVar)),
+      Universe.matrixFBSToDataframe(_.cloneDeep(REST.layoutObs))
     );
     expect(universe).toBeDefined();
 

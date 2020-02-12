@@ -23,7 +23,6 @@ import * as globals from "../../globals";
 @connect(state => ({
   universe: state.universe,
   world: state.world,
-  loading: state.controls.loading,
   crossfilter: state.crossfilter,
   differential: state.differential,
   resettingInterface: state.controls.resettingInterface,

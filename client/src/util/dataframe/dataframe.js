@@ -351,11 +351,26 @@ class Dataframe {
   withColsFrom(dataframe) {
     /*
     return a new dataframe containing all columns from both `this` and the
-    provided dataframe.
+    provided of dataframe.
 
-    The row index from `this` will be used.  Both dataframes must have identical
+    The row index from `this` will be used.  All dataframes must have identical
     dimensionality, and no overlapping columns labels.
+
+    Special case, if either dataframe is empty, the other is returned unchanged.
      */
+    if (this.isEmpty()) {
+      return dataframe;
+    }
+    if (dataframe.isEmpty()) {
+      return this;
+    }
+
+    this.colIndex.keys().forEach(key => {
+      if (dataframe.has(key)) {
+        throw new Error("duplicate key collision");
+      }
+    });
+
     const dims = [this.dims[0], this.dims[1] + dataframe.dims[1]];
     const { rowIndex } = this;
     const columns = [...this.__columns, ...dataframe.__columns];
@@ -371,6 +386,11 @@ class Dataframe {
       colIndex,
       columnsAccessor
     );
+  }
+
+  withColsFromAll(dataframes = []) {
+    dataframes = Array.isArray(dataframes) ? dataframes : [dataframes];
+    return dataframes.reduce((acc, df) => acc.withColsFrom(df), this);
   }
 
   dropCol(label) {

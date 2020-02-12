@@ -31,15 +31,6 @@ export function indexEntireSchema(schema) {
   return schema;
 }
 
-export function sortAllCategorical(schema) {
-  /* UI relies on OBS annotation categories being in presentation sort order */
-  schema.annotations.obs.columns.forEach(c => {
-    if (c.categories) {
-      c.categories = catLabelSort(c.writable, c.categories);
-    }
-  });
-}
-
 function _copy(schema) {
   /* redux copy conventions - WARNING, only for modifyign obs annotations */
   return {
