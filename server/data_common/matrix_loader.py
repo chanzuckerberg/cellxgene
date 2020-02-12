@@ -2,6 +2,7 @@ from enum import Enum
 import threading
 import time
 from server.data_common.rwlock import RWLock
+from server.common.errors import DatasetAccessError
 from contextlib import contextmanager
 
 
@@ -159,15 +160,12 @@ class MatrixDataLoader(object):
 
     def pre_load_validation(self):
         if self.etype == MatrixDataType.UNKNOWN:
-            raise RuntimeError(f"{self.location} does not have a recognized type: .h5ad or .cxg")
+            raise DatasetAccessError(f"{self.location} does not have a recognized type: .h5ad or .cxg")
         self.matrix_type.pre_load_validation(self.location)
 
     def file_size(self):
         return self.matrix_type.file_size(self.location)
 
     def open(self, app_config):
-        try:
-            # create and return an object to the matrix_type
-            return self.matrix_type.open(self.location, app_config)
-        except Exception as e:
-            raise RuntimeError(str(e))
+        # create and return a DataAdaptor object
+        return self.matrix_type.open(self.location, app_config)

@@ -11,6 +11,7 @@ from flask_restful import Api, Resource
 from http import HTTPStatus
 
 import server.common.rest as common_rest
+from server.common.errors import DatasetAccessError
 from server.common.utils import path_join, Float32JSONEncoder
 from server.data_common.matrix_loader import MatrixDataLoader, MatrixDataType
 
@@ -37,8 +38,8 @@ def dataset_index(dataset=None):
         with cache_manager.data_adaptor(location, config) as data_adaptor:
             dataset_title = config.get_title(data_adaptor)
             return render_template("index.html", datasetTitle=dataset_title, SCRIPTS=scripts)
-    except Exception as e:
-        return make_response(f"CXG load error {dataset}: {str(e)}", HTTPStatus.BAD_REQUEST)
+    except DatasetAccessError as e:
+            return make_response(f"Invalid dataset {dataset}: {str(e)}", HTTPStatus.BAD_REQUEST)
 
 @webbp.route("/favicon.png")
 def favicon():
@@ -56,7 +57,7 @@ def get_data_adaptor(dataset=None):
         # sufficient to check that the datapath starts with the
         # dataroot to determine that the datapath is under the dataroot.
         if not datapath.startswith(config.dataroot):
-            raise RuntimeError("Invalid dataset {dataset}")
+            raise DatasetAccessError("Invalid dataset {dataset}")
 
     if datapath is None:
         return make_response("Dataset must be supplied", HTTPStatus.BAD_REQUEST)
@@ -71,8 +72,9 @@ def rest_get_data_adaptor(func):
         try:
             with get_data_adaptor(dataset) as data_adaptor:
                 return func(self, data_adaptor)
-        except RuntimeError as e:
+        except DatasetAccessError as e:
             return make_response(f"Invalid dataset {dataset}: {str(e)}", HTTPStatus.BAD_REQUEST)
+
     return wrapped_function
 
 

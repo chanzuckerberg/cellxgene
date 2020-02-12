@@ -38,9 +38,9 @@ class AnndataAdaptor(DataAdaptor):
             # try to read it.  Many of these tests don't make sense for URIs (eg, extension-
             # based typing).
             if not data_locator.exists():
-                raise RuntimeError(f"{location} does not exist")
+                raise DatasetAccessError(f"{location} does not exist")
             if not data_locator.isfile():
-                raise RuntimeError(f"{location} is not a file")
+                raise DatasetAccessError(f"{location} is not a file")
 
     @staticmethod
     def file_size(location):

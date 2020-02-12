@@ -1,14 +1,15 @@
 import os
 import json
-from server.data_common.data_adaptor import DataAdaptor
 from server.common.utils import dtype_to_schema
+from server.common.errors import DatasetAccessError
+from server.common.utils import path_join
+from server.common.constants import Axis
+from server.data_common.data_adaptor import DataAdaptor
+from server.data_common.fbs.matrix import encode_matrix_fbs
 import tiledb
 import numpy as np
 import pandas as pd
-from server.data_common.fbs.matrix import encode_matrix_fbs
-from server.common.utils import path_join
 from server_timing import Timing as ServerTiming
-from server.common.constants import Axis
 import threading
 
 
@@ -41,7 +42,7 @@ class TileDbAdaptor(DataAdaptor):
     @staticmethod
     def pre_load_validation(location):
         if not TileDbAdaptor.isvalid(location):
-            raise RuntimeError(f"tiledb matrix is not valid: {location}")
+            raise DatasetAccessError(f"tiledb matrix is not valid: {location}")
 
     @staticmethod
     def file_size(location):
@@ -107,7 +108,7 @@ class TileDbAdaptor(DataAdaptor):
 
     def _validate_and_initialize(self):
         if not self.isvalid(self.url):
-            raise RuntimeError(f"invalid tiledb dataset {self.url}")
+            raise DatasetAccessError(f"invalid tiledb dataset {self.url}")
 
     def open_array(self, name):
         try:
