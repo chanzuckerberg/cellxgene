@@ -20,14 +20,25 @@ webbp = Blueprint("webapp", "server.common.web", template_folder="templates")
 
 
 @webbp.route("/")
-def index():
-    if current_app.app_config.datapath is None:
-        return dataroot_index()
+def dataset_index(dataset=None):
+    config = current_app.app_config
+    if dataset is None:
+        if config.datapath:
+            location = config.datapath
+        else:
+            return dataroot_index()
+    else:
+        location = path_join(config.dataroot, dataset)
 
-    dataset_title = current_app.app_config.title
-    scripts = current_app.app_config.scripts
-    return render_template("index.html", datasetTitle=dataset_title, SCRIPTS=scripts)
+    scripts = config.scripts
 
+    try:
+        cache_manager = current_app.matrix_data_cache_manager
+        with cache_manager.data_adaptor(location, config) as data_adaptor:
+            dataset_title = config.get_title(data_adaptor)
+            return render_template("index.html", datasetTitle=dataset_title, SCRIPTS=scripts)
+    except Exception as e:
+        return make_response(f"CXG load error {dataset}: {str(e)}", HTTPStatus.BAD_REQUEST)
 
 @webbp.route("/favicon.png")
 def favicon():
@@ -64,18 +75,6 @@ def rest_get_data_adaptor(func):
             return make_response(f"Invalid dataset {dataset}: {str(e)}", HTTPStatus.BAD_REQUEST)
     return wrapped_function
 
-
-def dataset_index(dataset):
-    config = current_app.app_config
-    location = path_join(config.dataroot, dataset)
-    matrix_data_loader = MatrixDataLoader(location)
-    try:
-        matrix_data_loader.pre_load_validation()
-        return render_template("index.html")
-    except RuntimeError as e:
-        return make_response(f"CXG load error {dataset}: {str(e)}", HTTPStatus.BAD_REQUEST)
-    except Exception as e:
-        return make_response(f"CXG load error {dataset}: {str(e)}", HTTPStatus.BAD_REQUEST)
 
 
 def static_redirect(dataset, therest):
@@ -202,7 +201,6 @@ class Server:
             bp_api = Blueprint("api", __name__, url_prefix=api_version)
             resources = get_api_resources(bp_api)
             self.app.register_blueprint(resources.blueprint)
-            self.app.add_url_rule("/", "index", index)
 
         else:
             # NOTE:  These routes only allow the dataset to be in the directory

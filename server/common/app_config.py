@@ -72,7 +72,10 @@ class AppConfig(object):
         # for example, if the dataset is at abc.cxg then a file with
         # the title and about info could be at abc.cxg.metadata.
         # for now just return the basename
-        return splitext(basename(data_adaptor.get_location()))
+        location = data_adaptor.get_location()
+        if location.endswith("/"):
+            location = location[:-1]
+        return splitext(basename(location))[0]
 
     def get_about(self, data_adaptor):
         return self.about
