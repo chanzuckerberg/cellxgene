@@ -50,7 +50,7 @@ class Autosave extends React.Component {
     /* return true if we need to save, false if we don't */
     const { obsAnnotations, lastSavedObsAnnotations } = this.props;
     return (
-      lastSavedObsAnnotations && obsAnnotations !== lastSavedObsAnnotations
+      globals.autosaveEnabled && lastSavedObsAnnotations && obsAnnotations !== lastSavedObsAnnotations
     );
   };
 

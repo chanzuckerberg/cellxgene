@@ -77,7 +77,7 @@ smoke-test:
 .PHONY: smoke-test-annotations
 smoke-test-annotations:
 	start_server_and_test \
-		'CXG_OPTIONS="--experimental-annotations --experimental-annotations-file $(ANNOTATIONS)" $(MAKE) start-server' \
+		'AUTOSAVE_ENABLED=false CXG_OPTIONS="--experimental-annotations --experimental-annotations-file $(ANNOTATIONS)" $(MAKE) start-server' \
 		$(CXG_SERVER_PORT) \
 		'$(MAKE) e2e-annotations'
 

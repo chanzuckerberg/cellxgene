@@ -1,6 +1,9 @@
 import { Colors } from "@blueprintjs/core";
 import { dispatchNetworkErrorMessageToUser } from "./util/actionHelpers";
 
+/* flags for testing */
+export const autosaveEnabled = process.env.AUTOSAVE_ENABLED ? process.env.AUTOSAVE_ENABLED === "true" : true;
+
 /* if a categorical metadata field has more options than this, truncate */
 export const maxCategoricalOptionsToDisplay = 100;
 
