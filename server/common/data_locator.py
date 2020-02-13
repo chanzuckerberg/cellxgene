@@ -89,6 +89,10 @@ class DataLocator:
             tmp_path = tmp.name
             return LocalFilePath(tmp_path, delete=True)
 
+    def ls(self):
+        paths = self.fs.ls(self.uri_or_path)
+        return [os.path.basename(p) for p in paths]
+
 
 class LocalFilePath:
     def __init__(self, tmp_path, delete=False):

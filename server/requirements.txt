@@ -17,3 +17,4 @@ tables==3.5.1
 h5py==2.9.0
 requests>=2.22.0
 tiledb>=0.5.3
+s3fs>=0.4.0

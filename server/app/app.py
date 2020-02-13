@@ -13,6 +13,7 @@ from http import HTTPStatus
 import server.common.rest as common_rest
 from server.common.errors import DatasetAccessError
 from server.common.utils import path_join, Float32JSONEncoder
+from server.common.data_locator import DataLocator
 from server.data_common.matrix_loader import MatrixDataLoader, MatrixDataType
 
 from functools import wraps
@@ -95,20 +96,24 @@ def dataroot_index():
     data = "<H1>Welcome to cellxgene</H1>"
 
     # the following is just for demo purposes...
-    config = current_app.app_config
-    datasets = []
-    for fname in os.listdir(config.dataroot):
-        location = path_join(config.dataroot, fname)
-        matrix_data_loader = MatrixDataLoader(location)
-        if matrix_data_loader.etype != MatrixDataType.UNKNOWN:
-            datasets.append(fname)
+    try:
+        config = current_app.app_config
+        locator = DataLocator(config.dataroot)
+        datasets = []
+        for fname in locator.ls():
+            location = path_join(config.dataroot, fname)
+            matrix_data_loader = MatrixDataLoader(location)
+            if matrix_data_loader.etype != MatrixDataType.UNKNOWN:
+                datasets.append(fname)
 
-    data += "<br/>Select one of these datasets...<br/>"
-    data += "<ul>"
-    datasets.sort()
-    for dataset in datasets:
-        data += f"<li><a href={dataset}>{dataset}</a></li>"
-    data += "</ul>"
+        data += "<br/>Select one of these datasets...<br/>"
+        data += "<ul>"
+        datasets.sort()
+        for dataset in datasets:
+            data += f"<li><a href={dataset}>{dataset}</a></li>"
+        data += "</ul>"
+    except Exception:
+        pass
 
     return make_response(data)
 

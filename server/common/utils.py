@@ -47,6 +47,8 @@ def path_join(base, *urls):
     cleverness in the aforementioned code, ignores anything in the url except the path,
     and accepts more than one url.
     """
+    if not base.endswith("/"):
+        base += "/"
     btpl = urlsplit(base)
     path = btpl.path
     for url in urls:
@@ -142,3 +144,4 @@ def series_to_schema(array):
         else:
             raise TypeError(f"Annotations of type {dtype} are unsupported.")
         return schema
+
