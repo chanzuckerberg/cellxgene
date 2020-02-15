@@ -145,6 +145,7 @@ class Categories extends React.Component {
           instruction="New, unique category name:"
           cancelTooltipContent="Close this dialog without creating a category."
           primaryButtonText="Create new category"
+          primaryButtonProps={{ "data-testid": "submit-category" }}
           text={newCategoryText}
           validationError={this.categoryNameError(newCategoryText)}
           errorMessage={this.categoryNameErrorMessage(newCategoryText)}
@@ -153,6 +154,7 @@ class Categories extends React.Component {
           annoInput={
             <AnnoInputs
               text={newCategoryText}
+              inputProps={{ "data-testid": "new-category-name" }}
               handleItemChange={this.handleSuggestActiveItemChange}
               handleChoice={this.handleChoice}
               handleTextChange={this.handleNewCategoryText}
@@ -194,7 +196,11 @@ class Categories extends React.Component {
         )}
         {writableCategoriesEnabled ? (
           <div>
-            <Button onClick={this.handleEnableAnnoMode} intent="primary">
+            <Button
+              data-testid="open-annotation-dialog"
+              onClick={this.handleEnableAnnoMode}
+              intent="primary"
+            >
               Create new category
             </Button>
           </div>

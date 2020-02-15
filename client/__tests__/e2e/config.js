@@ -4,3 +4,6 @@ export const appUrlBase = `http://localhost:${appPort}`;
 export const DEV = jest_env === "dev";
 export const DEBUG = jest_env === "debug";
 export const DATASET = "pbmc3k";
+
+if (DEBUG) jest.setTimeout(100000);
+if (DEV) jest.setTimeout(10000);

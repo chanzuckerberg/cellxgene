@@ -3,9 +3,10 @@ import { connect } from "react-redux";
 import { InputGroup } from "@blueprintjs/core";
 
 const VanillaInput = props => {
-  const { text, handleTextChange } = props;
+  const { text, handleTextChange, inputProps } = props;
   return (
     <InputGroup
+      {...inputProps}
       autoFocus
       value={text}
       intent="none"
@@ -31,10 +32,14 @@ class AnnoInputs extends React.Component {
   }
 
   render() {
-    const { handleTextChange, text } = this.props;
+    const { handleTextChange, text, ...restProps } = this.props;
     return (
       <div>
-        <VanillaInput text={text} handleTextChange={handleTextChange} />
+        <VanillaInput
+          {...restProps}
+          text={text}
+          handleTextChange={handleTextChange}
+        />
       </div>
     );
   }

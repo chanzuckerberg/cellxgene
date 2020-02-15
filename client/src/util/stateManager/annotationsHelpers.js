@@ -1,5 +1,5 @@
 /*
-Helper functions for user-editable nnotations state management.
+Helper functions for user-editable annotations state management.
 See also reducers/annotations.js
 */
 import { unassignedCategoryLabel } from "../../globals";

@@ -23,6 +23,9 @@ jobs:
       install: skip
       python: "3.6"
       script: docker build .
-    - name: "Smoke Tests"
+    - name: "Smoke Tests (with Annotations)"
       python: "3.6"
-      script: make smoke-test
+      script: cd client && make smoke-test
+    - name: "Smoke Tests (without Annotations)"
+      python: "3.6"
+      script: cd client && make smoke-test-annotations

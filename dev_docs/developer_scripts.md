@@ -134,4 +134,3 @@ You can also use `CXG_OPTIONS` to pass options to the `cellxgene launch` command
 **About** Runs backend tests without starting the server. You will need to start the rest api separately with the pbmc3k.h5ad file. Note you can use the `JEST_ENV` environment variable to change how JEST runs in the browser.
 
 **Usage** `make e2e`
-

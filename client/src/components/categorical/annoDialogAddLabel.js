@@ -101,6 +101,8 @@ class Category extends React.Component {
             annotations.isAddingNewLabel &&
             annotations.categoryAddingNewLabel === metadataField
           }
+          inputProps={{ "data-testid": `${metadataField}:create-label-dialog` }}
+          primaryButtonProps={{ "data-testid": `${metadataField}:submit-label` }}
           title="Add new label to category"
           instruction="New, unique label name:"
           cancelTooltipContent="Close this dialog without adding a label."
@@ -116,6 +118,7 @@ class Category extends React.Component {
             <AnnoInputs
               useSuggest={ontologyEnabled}
               text={newLabelText}
+              inputProps={{ "data-testid": `${metadataField}:new-label-name` }}
               handleCreateArbitraryLabel={this.handleCreateArbitraryLabel}
               handleItemChange={this.handleSuggestActiveItemChange}
               handleChoice={this.handleChoice}

@@ -3,45 +3,16 @@ Smoke test suite that will be run in Travis CI
 
 Tests included in this file are expected to be relatively stable and test core features
  */
-import puppeteer from "puppeteer";
-import { appUrlBase, DEBUG, DEV, DATASET } from "./config";
-import { puppeteerUtils, cellxgeneActions } from "./puppeteerUtils";
+import { appUrlBase, DEBUG, DATASET } from "./config";
+import { setupTestBrowser } from "./puppeteerUtils";
 import { datasets } from "./data";
 
 let browser, page, utils, cxgActions, spy;
 const browserViewport = { width: 1280, height: 960 };
 let data = datasets[DATASET];
 
-if (DEBUG) jest.setTimeout(100000);
-if (DEV) jest.setTimeout(10000);
-
 beforeAll(async () => {
-  const browserParams = DEV
-    ? { headless: false, slowMo: 5 }
-    : DEBUG
-    ? { headless: false, slowMo: 100, devtools: true }
-    : {};
-  browser = await puppeteer.launch(browserParams);
-  page = await browser.newPage();
-  await page.setViewport(browserViewport);
-  if (DEV || DEBUG) {
-    page.on("console", async msg => {
-      // If there is a console.error but an error is not thrown, this will ensure the test fails
-      if (msg.type() === "error") {
-        const errorMsgText = await Promise.all(
-          // TODO can we do this without internal properties?
-          msg.args().map(arg => arg._remoteObject.description)
-        );
-        throw new Error(`Console error: ${errorMsgText}`);
-      }
-      console.log(`PAGE LOG: ${msg.text()}`);
-    });
-  }
-  page.on("pageerror", err => {
-    throw new Error(`Console error: ${err}`);
-  });
-  utils = puppeteerUtils(page);
-  cxgActions = cellxgeneActions(page);
+    [browser, page, utils, cxgActions] = await setupTestBrowser(browserViewport);
 });
 
 beforeEach(async () => {
@@ -69,7 +40,7 @@ describe("metadata loads", () => {
         `[data-testid="category-${label}"]`
       );
       expect(categoryName).toMatch(label);
-      await utils.clickOn(`category-expand-${label}`);
+      await utils.clickOn(`${label}:category-expand`);
       const categories = await cxgActions.getAllCategoriesAndCounts(label);
       expect(Object.keys(categories)).toMatchObject(
         Object.keys(data.categorical[label])
@@ -112,8 +83,8 @@ describe("cell selection", () => {
 
   test("selects cells via categorical", async () => {
     for (const cellset of data.cellsets.categorical) {
-      await utils.clickOn(`category-expand-${cellset.metadata}`);
-      await utils.clickOn(`category-select-${cellset.metadata}`);
+      await utils.clickOn(`${cellset.metadata}:category-expand`);
+      await utils.clickOn(`${cellset.metadata}:category-select`);
       for (const val of cellset.values) {
         await utils.clickOn(
           `categorical-value-select-${cellset.metadata}-${val}`

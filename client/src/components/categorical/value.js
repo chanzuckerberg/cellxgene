@@ -433,6 +433,8 @@ class CategoryValue extends React.Component {
               <div>
                 <AnnoDialog
                   isActive={editModeActive}
+                  inputProps={{ "data-testid": `${metadataField}:edit-label-name-dialog` }}
+                  primaryButtonProps={{ "data-testid": `${metadataField}:${displayString}:submit-label-edit` }}
                   title="Edit label"
                   instruction={`New label text must be unique within category ${metadataField}:`}
                   cancelTooltipContent="Close this dialog without editing label text."
@@ -447,6 +449,7 @@ class CategoryValue extends React.Component {
                     <AnnoInputs
                       useSuggest={ontologyEnabled}
                       text={editedLabelText}
+                      inputProps={{ "data-testid": `${metadataField}:${displayString}:edit-label-name` }}
                       handleCreateArbitraryLabel={
                         this.handleCreateArbitraryLabel
                       }
@@ -513,7 +516,7 @@ class CategoryValue extends React.Component {
                       <MenuItem
                         icon="plus"
                         data-testclass="handleAddCurrentSelectionToThisLabel"
-                        data-testid={`handleAddCurrentSelectionToThisLabel-${metadataField}`}
+                        data-testid={`${metadataField}:${displayString}:add-current-selection-to-this-label`}
                         onClick={this.handleAddCurrentSelectionToThisLabel}
                         text={
                           <span>
@@ -541,7 +544,7 @@ class CategoryValue extends React.Component {
                           icon="edit"
                           text="Edit this label's name"
                           data-testclass="handleEditValue"
-                          data-testid={`handleEditValue-${metadataField}`}
+                          data-testid={`${metadataField}:${displayString}:edit-label`}
                           onClick={this.activateEditLabelMode}
                           disabled={annotations.isEditingLabelName}
                         />
@@ -551,7 +554,7 @@ class CategoryValue extends React.Component {
                           icon="delete"
                           intent="danger"
                           data-testclass="handleDeleteValue"
-                          data-testid={`handleDeleteValue-${metadataField}`}
+                          data-testid={`${metadataField}:${displayString}:delete-label`}
                           onClick={this.handleDeleteValue}
                           text={`Delete this label, and reassign all cells to type '${globals.unassignedCategoryLabel}'`}
                         />
@@ -567,7 +570,7 @@ class CategoryValue extends React.Component {
                       minHeight: 16
                     }}
                     data-testclass="seeActions"
-                    data-testid={`seeActions-${metadataField}`}
+                    data-testid={`${metadataField}:${displayString}:see-actions`}
                     icon="more"
                     small
                     minimal
