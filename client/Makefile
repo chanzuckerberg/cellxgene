@@ -2,6 +2,7 @@ include ../common.mk
 
 DATASET := $(if $(DATASET),$(DATASET),../example-dataset/pbmc3k.h5ad)
 ANNOTATIONS := $(if $(ANNOTATIONS),$(ANNOTATIONS),../example-dataset/pbmc3k-annotations.csv)
+ANNOTATIONS_FILENAME := $(shell basename $(ANNOTATIONS))
 
 # Packaging
 .PHONY: clean
@@ -74,12 +75,16 @@ e2e-annotations:
 smoke-test:
 	start_server_and_test '$(MAKE) start-server' $(CXG_SERVER_PORT) '$(MAKE) e2e'
 
+
 .PHONY: smoke-test-annotations
 smoke-test-annotations:
+	$(eval TMP_DIR := $(shell  mktemp -d /tmp/cellxgene_XXXXXX))
+	cp $(ANNOTATIONS) $(TMP_DIR)/ && \
 	start_server_and_test \
-		'CXG_OPTIONS="--experimental-annotations --experimental-annotations-file $(ANNOTATIONS)" $(MAKE) start-server' \
+		'CXG_OPTIONS="--experimental-annotations --experimental-annotations-file $(TMP_DIR)/$(ANNOTATIONS_FILENAME)" $(MAKE) start-server' \
 		$(CXG_SERVER_PORT) \
 		'$(MAKE) e2e-annotations'
+	rm -rf $(TMP_DIR)
 
 .PHONY: unit-test
 unit-test:
