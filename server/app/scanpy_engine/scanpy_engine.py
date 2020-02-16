@@ -5,6 +5,7 @@ from datetime import datetime
 import os.path
 from hashlib import blake2b
 import base64
+import collections
 
 import numpy as np
 import pandas
@@ -27,7 +28,6 @@ from server.app.scanpy_engine.diffexp import diffexp_ttest
 from server.app.util.fbs.matrix import encode_matrix_fbs, decode_matrix_fbs
 from server.app.scanpy_engine.labels import read_labels, write_labels
 import server.app.scanpy_engine.matrix_proxy  # noqa: F401
-from server.app.util.matrix_proxy import MatrixProxy
 
 
 def has_method(o, name):
@@ -301,12 +301,35 @@ class ScanpyEngine(CXGDriver):
                 f"Please check your input and try again."
             )
 
+    def _uns_perf_workaround(self):
+        """
+        anndata slicing in 0.6.* and 0.7.* is extremely slow if there is sparse data
+        stored in adata.uns object.  See https://github.com/theislab/anndata/issues/317
+
+        The workaround suggested by the scanpy/anndata team (in the same issue) is to
+        remove any unnecessary data from uns, with a specific focus on adata.uns['neighbors'].
+        This routine currently accomplishes the suggestion by removing *everything* from adata.uns,
+        thereby ensuring that other (future) items do not have the same effect.
+
+        In a future release of cellxgene, there may be some use for various items stored in uns.
+        For example, see https://github.com/chanzuckerberg/cellxgene/issues/1152. In this situation,
+        suggest that this routine implement a whitelist.
+
+        The cleanup of adata.varm is similarily conservative - cellxgene doesn't currently
+        depend on it, so it is cleaned up.
+        """
+        if self.data.uns and isinstance(self.data.uns, collections.abc.MutableMapping):
+            self.data.uns.clear()
+        if self.data.varm and isinstance(self.data.varm, collections.abc.MutableMapping):
+            self.data.varm.clear()
+
     @requires_data
     def _validate_and_initialize(self):
         # var and obs column names must be unique
         if not self.data.obs.columns.is_unique or not self.data.var.columns.is_unique:
             raise KeyError(f"All annotation column names must be unique.")
 
+        self._uns_perf_workaround()
         self._alias_annotation_names()
         self._validate_data_types()
         self.cell_count = self.data.shape[0]
@@ -370,7 +393,10 @@ class ScanpyEngine(CXGDriver):
 
     @requires_data
     def _validate_data_types(self):
-        if sparse.isspmatrix(self.data.X) and not sparse.isspmatrix_csc(self.data.X):
+        # The backed API does not support interogation of the underlying sparsity or sparse matrix type
+        # Fake it by asking for one value.
+        X0 = self.data[0, 0].X
+        if sparse.isspmatrix(X0) and not sparse.isspmatrix_csc(X0):
             warnings.warn(
                 f"Scanpy data matrix is sparse, but not a CSC (columnar) matrix.  "
                 f"Performance may be improved by using CSC."
@@ -577,7 +603,8 @@ class ScanpyEngine(CXGDriver):
             raise FilterError("filtering on obs unsupported")
 
         # Currently only handles VAR dimension
-        X = MatrixProxy.create(self.data.X if var_selector is None else self.data.X[:, var_selector])
+        var_selector = slice(None) if var_selector is None else var_selector
+        X = self.data[:, var_selector].X
         return encode_matrix_fbs(X, col_idx=np.nonzero(var_selector)[0], row_idx=None)
 
     @requires_data
