@@ -123,8 +123,14 @@ release-directly-to-prod: dev-env pydist twine-prod
 	@echo "    make install-release"
 
 .PHONY: dev-env
-dev-env:
+dev-env: dev-env-client dev-env-server
+
+.PHONY: dev-env-client
+dev-env-client:
 	cd client && $(MAKE) ci
+
+.PHONY: dev-env-server
+dev-env-server:
 	pip install -r server/requirements-dev.txt
 
 .PHONY: gui-env
