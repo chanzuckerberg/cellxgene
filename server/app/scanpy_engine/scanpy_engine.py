@@ -6,6 +6,7 @@ import os.path
 from hashlib import blake2b
 import base64
 import collections
+from packaging import version
 
 import numpy as np
 import pandas
@@ -27,13 +28,28 @@ from server.app.util.utils import jsonify_scanpy, requires_data
 from server.app.scanpy_engine.diffexp import diffexp_ttest
 from server.app.util.fbs.matrix import encode_matrix_fbs, decode_matrix_fbs
 from server.app.scanpy_engine.labels import read_labels, write_labels
-import server.app.scanpy_engine.matrix_proxy  # noqa: F401
 
 
 def has_method(o, name):
     """ return True if `o` has callable method `name` """
     op = getattr(o, name, None)
     return op is not None and callable(op)
+
+
+anndata_version = version.parse(str(anndata.__version__)).release
+
+
+def slice_X(adata, oidx, vidx):
+    """
+    slice into X, but in a way that will work around various anndata bugs
+    pre-0.7.
+    """
+    major, minor, micro = anndata_version
+    if major == 0 and minor <= 6:
+        # old style slicing
+        return adata.X[oidx, vidx]
+    else:
+        return adata[oidx, vidx].X
 
 
 class ScanpyEngine(CXGDriver):
@@ -395,7 +411,7 @@ class ScanpyEngine(CXGDriver):
     def _validate_data_types(self):
         # The backed API does not support interogation of the underlying sparsity or sparse matrix type
         # Fake it by asking for one value.
-        X0 = self.data[0, 0].X
+        X0 = slice_X(self.data, 0, 0)
         if sparse.isspmatrix(X0) and not sparse.isspmatrix_csc(X0):
             warnings.warn(
                 f"Scanpy data matrix is sparse, but not a CSC (columnar) matrix.  "
@@ -604,7 +620,7 @@ class ScanpyEngine(CXGDriver):
 
         # Currently only handles VAR dimension
         var_selector = slice(None) if var_selector is None else var_selector
-        X = self.data[:, var_selector].X
+        X = slice_X(self.data, slice(None), var_selector)
         return encode_matrix_fbs(X, col_idx=np.nonzero(var_selector)[0], row_idx=None)
 
     @requires_data
