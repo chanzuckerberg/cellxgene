@@ -1,0 +1,101 @@
+name: Compatability Tests
+
+on:
+  schedule:
+    - cron: '0 8 7 * 2'
+
+env:
+  JEST_ENV: prod
+
+jobs:
+  docker-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Build docker image
+        run: docker build .
+
+  cellxgene-master-with-python-and-anndata-versions:
+    name: python versions x anndata versions
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7, 3.8]
+        anndata-version: [0.6.22.post1, 0.7.1]
+        test-suite: [smoke-test, smoke-test-annotations]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        sudo apt-get install libhdf5-serial-dev
+        make pydist install-dist dev-env
+        pip install anndata==${{ matrix.anndata-version }}
+        # workaround for anndata 0.6.22.post1 bug
+        [[ "0.6.22.post1" = "${{ matrix.anndata-version }}" ]] && pip install h5py==2.9.0 || true
+    - name: Tests
+      run: make unit-test ${{ matrix.test-suite }}
+
+  cellxgene-release-with-anndata-master:
+    name: cellxgene release with anndata master
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        test-suite: [smoke-test, smoke-test-annotations]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          path: cellxgene
+      - name: Checkout tools repo
+        uses: actions/checkout@v2
+        with:
+          repository: theislab/anndata
+          path: anndata
+      - name: Install dependencies
+        run: |
+          pip install --upgrade cellxgene
+          cd cellxgene && make dev-env
+          cd ../anndata && pip install -e .
+      - name: Tests
+        run: cd cellxgene && make unit-test ${{ matrix.test-suite }}
+
+  cellxgene-master-with-anndata-master:
+    name: cellxgene master with anndata master
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        test-suite: [smoke-test, smoke-test-annotations]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          path: cellxgene
+      - name: Checkout tools repo
+        uses: actions/checkout@v2
+        with:
+          repository: theislab/anndata
+          path: anndata
+      - name: Install dependencies
+        run: |
+          cd cellxgene && make pydist install-dist dev-env
+          cd ../anndata && pip install -e .
+      - name: Tests
+        run: cd cellxgene && make unit-test ${{ matrix.test-suite }}
