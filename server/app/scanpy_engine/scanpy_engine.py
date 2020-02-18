@@ -33,7 +33,8 @@ anndata_version = version.parse(str(anndata.__version__)).release
 
 
 def anndata_version_is_pre_070():
-    major, minor, micro = anndata_version
+    major = anndata_version[0]
+    minor = anndata_version[1] if len(anndata_version) > 1 else 0
     return major == 0 and minor < 7
 
 
