@@ -1,10 +1,11 @@
+include common.mk
+
 BUILDDIR := build
 CLIENTBUILD := $(BUILDDIR)/client
 SERVERBUILD := $(BUILDDIR)/server
 CLEANFILES :=  $(BUILDDIR)/ client/build build dist cellxgene.egg-info
 
 PART ?= patch
-
 
 # CLEANING
 .PHONY: clean
@@ -67,14 +68,20 @@ unit-test-%:
 smoke-test:
 	cd client && $(MAKE) smoke-test
 
+.PHONY: smoke-test-annotations
+smoke-test-annotations:
+	cd client && $(MAKE) smoke-test-annotations
+
 # FORMATTING CODE
 
 .PHOHY: fmt
 fmt: fmt-client fmt-py
 
+.PHONY: fmt-client
 fmt-client:
 	cd client && $(MAKE) fmt
 
+.PHONY: fmt
 fmt-py:
 	black .
 
@@ -120,8 +127,14 @@ release-directly-to-prod: dev-env pydist twine-prod
 	@echo "    make install-release"
 
 .PHONY: dev-env
-dev-env:
+dev-env: dev-env-client dev-env-server
+
+.PHONY: dev-env-client
+dev-env-client:
 	cd client && $(MAKE) ci
+
+.PHONY: dev-env-server
+dev-env-server:
 	pip install -r server/requirements-dev.txt
 
 # give PART=[major, minor, part] as param to make bump

@@ -1,3 +1,6 @@
+import {DEBUG, DEV} from "./config";
+import puppeteer from "puppeteer";
+
 export const puppeteerUtils = puppeteerPage => ({
   async waitByID(testid, props = {}) {
     return await puppeteerPage.waitForSelector(
@@ -63,6 +66,12 @@ export const puppeteerUtils = puppeteerPage => ({
     await puppeteerPage.waitFor(50);
   },
 
+  async hoverOn(testid) {
+    await this.waitByID(testid);
+    await puppeteerPage.hover(`[data-testid='${testid}']`);
+    await puppeteerPage.waitFor(50);
+  },
+
   async getOneElementInnerHTML(selector) {
     await puppeteerPage.waitForSelector(selector);
     let text = await puppeteerPage.$eval(selector, el => el.innerHTML);
@@ -95,6 +104,14 @@ export const cellxgeneActions = puppeteerPage => ({
       await puppeteerPage.mouse.move(x2, y2);
     }
     await puppeteerPage.mouse.up();
+  },
+
+  async clickOnCoordinate(testid, coord) {
+    const layout = await puppeteerUtils(puppeteerPage).waitByID(testid);
+    const elBox = await layout.boxModel();
+    const x = elBox.content[0].x + coord.x;
+    const y = elBox.content[0].y + coord.y;
+    await puppeteerPage.mouse.click(x, y);
   },
 
   async getAllHistograms(testclass, testids) {
@@ -137,7 +154,7 @@ export const cellxgeneActions = puppeteerPage => ({
   },
 
   async resetCategory(category) {
-    const checkboxId = `category-select-${category}`;
+    const checkboxId = `${category}:category-select`;
     await puppeteerUtils(puppeteerPage).waitByID(checkboxId);
     const checkedPseudoclass = await puppeteerPage.$eval(
       `[data-testid='${checkboxId}']`,
@@ -150,44 +167,51 @@ export const cellxgeneActions = puppeteerPage => ({
     }
     try {
       const categoryRow = await puppeteerUtils(puppeteerPage).waitByID(
-        `category-expand-${category}`
+        `${category}:category-expand`
       );
       const isExpanded = await categoryRow.$(
         "[data-testclass='category-expand-is-expanded']"
       );
       if (isExpanded) {
         await puppeteerUtils(puppeteerPage).clickOn(
-          `category-expand-${category}`
+          `${category}:category-expand`
         );
       }
     } catch {}
   },
 
-  async calcDragCoordinates(testid, coordinateAsPercent) {
+  async calcCoordinate(testid, xAsPercent, yAsPercent) {
     const el = await puppeteerUtils(puppeteerPage).waitByID(testid);
     const size = await el.boxModel();
+    return {
+      x: Math.floor(size.width * xAsPercent),
+      y: Math.floor(size.height * yAsPercent)
+    }
+  },
+
+  async calcDragCoordinates(testid, coordinateAsPercent) {
     const coords = {
-      start: {
-        x: Math.floor(size.width * coordinateAsPercent.x1),
-        y: Math.floor(size.height * coordinateAsPercent.y1)
-      },
-      end: {
-        x: Math.floor(size.width * coordinateAsPercent.x2),
-        y: Math.floor(size.height * coordinateAsPercent.y2)
-      }
+      start: await this.calcCoordinate(testid, coordinateAsPercent.x1, coordinateAsPercent.y1),
+      end: await this.calcCoordinate(testid, coordinateAsPercent.x2, coordinateAsPercent.y2)
     };
     return coords;
   },
 
   async selectCategory(category, values, reset = true) {
     if (reset) await this.resetCategory(category);
-    await puppeteerUtils(puppeteerPage).clickOn(`category-expand-${category}`);
-    await puppeteerUtils(puppeteerPage).clickOn(`category-select-${category}`);
+    await puppeteerUtils(puppeteerPage).clickOn(`${category}:category-expand`);
+    await puppeteerUtils(puppeteerPage).clickOn(`${category}:category-select`);
     for (const val of values) {
       await puppeteerUtils(puppeteerPage).clickOn(
         `categorical-value-select-${category}-${val}`
       );
     }
+  },
+
+  async expandCategory(category) {
+    const expand = await puppeteerUtils(puppeteerPage).waitByID(`${category}:category-expand`);
+    const expandArrow = await expand.$("[data-testclass='category-expand-is-not-expanded']");
+    await expandArrow.click();
   },
 
   async reset() {
@@ -209,3 +233,33 @@ export const cellxgeneActions = puppeteerPage => ({
     await puppeteerUtils(puppeteerPage).clickOn("clip-commit");
   }
 });
+
+export async function setupTestBrowser(browserViewport) {
+  const browserParams = DEV
+      ? { headless: false, slowMo: 5 }
+      : DEBUG
+          ? { headless: false, slowMo: 100, devtools: true }
+          : {};
+  const browser = await puppeteer.launch(browserParams);
+  const page = await browser.newPage();
+  await page.setViewport(browserViewport);
+  if (DEV || DEBUG) {
+    page.on("console", async msg => {
+      // If there is a console.error but an error is not thrown, this will ensure the test fails
+      if (msg.type() === "error") {
+        const errorMsgText = await Promise.all(
+            // TODO can we do this without internal properties?
+            msg.args().map(arg => arg._remoteObject.description)
+        );
+        throw new Error(`Console error: ${errorMsgText}`);
+      }
+      console.log(`PAGE LOG: ${msg.text()}`);
+    });
+  }
+  page.on("pageerror", err => {
+    throw new Error(`Console error: ${err}`);
+  });
+  const utils = puppeteerUtils(page);
+  const cxgActions = cellxgeneActions(page);
+  return [browser, page, utils, cxgActions];
+}

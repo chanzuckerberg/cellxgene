@@ -1,6 +1,9 @@
+/* eslint-disable max-classes-per-file */
 /* eslint-disable jsx-a11y/mouse-events-have-key-events */
 import React, { PureComponent } from "react";
 import { connect } from "react-redux";
+
+import { categoryLabelDisplayStringLongLength } from "../../../globals";
 
 export default
 @connect(state => ({
@@ -9,6 +12,21 @@ export default
   labels: state.centroidLabels.labels
 }))
 class CentroidLabels extends PureComponent {
+  // Check to see if centroids have either just been displayed or removed from the overlay
+  componentDidUpdate = prevProps => {
+    const { labels, overlayToggled } = this.props;
+    const prevSize = prevProps.labels.size;
+    const { size } = labels;
+
+    const displayChangeOff = prevSize > 0 && size === undefined;
+    const displayChangeOn = prevSize === undefined && size > 0;
+
+    if (displayChangeOn || displayChangeOff) {
+      // Notify overlay layer of display change
+      overlayToggled("centroidLabels", displayChangeOn);
+    }
+  };
+
   render() {
     const {
       labels,
@@ -28,6 +46,16 @@ class CentroidLabels extends PureComponent {
         fontSize = "18px";
         fontWeight = "800";
       }
+
+      // Mirror LSB middle truncation
+      let label = key;
+      if (label.length > categoryLabelDisplayStringLongLength) {
+        label = `${key.slice(
+          0,
+          categoryLabelDisplayStringLongLength / 2
+        )}…${key.slice(-categoryLabelDisplayStringLongLength / 2)}`;
+      }
+
       labelSVGS.push(
         <g
           // eslint-disable-next-line react/no-array-index-key
@@ -62,7 +90,7 @@ class CentroidLabels extends PureComponent {
             }
             pointerEvents="visiblePainted"
           >
-            {key.length > 20 ? `${key.substr(0, 20)}...` : key}
+            {label}
           </text>
         </g>
       );

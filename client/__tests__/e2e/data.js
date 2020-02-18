@@ -115,6 +115,18 @@ export const datasets = {
         }
       }
     },
+    categoryLabel: {
+      lasso: {
+        "coordinates-as-percent": { x1: 0.3, y1: 0.3, x2: 0.5, y2: 0.5 },
+        count: "38"
+      },
+      newCount: {
+        bySubsetConfig: {
+          false: "199",
+          true: "193"
+        }
+      }
+    },
     clip: {
       min: "30",
       max: "70",

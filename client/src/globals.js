@@ -1,4 +1,5 @@
 import { Colors } from "@blueprintjs/core";
+import { dispatchNetworkErrorMessageToUser } from "./util/actionHelpers";
 
 /* if a categorical metadata field has more options than this, truncate */
 export const maxCategoricalOptionsToDisplay = 100;
@@ -77,13 +78,23 @@ export const categoryLabelDisplayStringShortLength = 11;
 export const tooltipHoverOpenDelay = 1000; /* ms delay before a tooltip displays */
 export const tooltipHoverOpenDelayQuick = 500;
 
-let _API = {
-  // prefix: "http://api.clustering.czi.technology/api/",
-  // prefix: "http://tabulamuris.cxg.czi.technology/api/",
-  // prefix: "http://api-staging.clustering.czi.technology/api/",
-  prefix: "http://localhost:5005/api/",
-  version: "v0.2/"
-};
+let _API;
 
-if (window.CELLXGENE && window.CELLXGENE.API) _API = window.CELLXGENE.API;
+if (window.CELLXGENE && window.CELLXGENE.API) {
+  _API = window.CELLXGENE.API;
+} else {
+  if (process.env.CXG_SERVER_PORT === undefined) {
+    const errorMessage = "Please set the CXG_SERVER_PORT environment variable.";
+    dispatchNetworkErrorMessageToUser(errorMessage);
+    throw new Error(errorMessage);
+  }
+  _API = {
+    // prefix: "http://api.clustering.czi.technology/api/",
+    // prefix: "http://tabulamuris.cxg.czi.technology/api/",
+    // prefix: "http://api-staging.clustering.czi.technology/api/",
+    prefix: `http://localhost:${process.env.CXG_SERVER_PORT}/api/`,
+    version: "v0.2/"
+  };
+}
+
 export const API = _API;

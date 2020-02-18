@@ -45,7 +45,6 @@ class WritableAnnotationTest(unittest.TestCase):
 
     def test_error_checks(self):
         # verify that the expected errors are generated
-
         n_rows = self.data.data.obs.shape[0]
         fbs_bad = self.make_fbs({"louvain": pd.Series(["undefined" for l in range(0, n_rows)], dtype="category")})
 
@@ -67,7 +66,7 @@ class WritableAnnotationTest(unittest.TestCase):
         self.assertTrue(path.exists(self.annotations_file))
         df = pd.read_csv(self.annotations_file, index_col=0, header=0, comment="#")
         self.assertEqual(df.shape, (n_rows, 2))
-        self.assertEqual(set(df.columns), set(["cat_A", "cat_B"]))
+        self.assertEqual(set(df.columns), {"cat_A", "cat_B"})
         self.assertTrue(self.data.original_obs_index.equals(df.index))
         self.assertTrue(np.all(df["cat_A"] == ["label_A" for l in range(0, n_rows)]))
         self.assertTrue(np.all(df["cat_B"] == ["label_B" for l in range(0, n_rows)]))
@@ -83,7 +82,7 @@ class WritableAnnotationTest(unittest.TestCase):
         self.assertEqual(res, json.dumps({"status": "OK"}))
         self.assertTrue(path.exists(self.annotations_file))
         df = pd.read_csv(self.annotations_file, index_col=0, header=0, comment="#")
-        self.assertEqual(set(df.columns), set(["cat_A", "cat_C"]))
+        self.assertEqual(set(df.columns), {"cat_A", "cat_C"})
         self.assertTrue(np.all(df["cat_A"] == ["label_A1" for l in range(0, n_rows)]))
         self.assertTrue(np.all(df["cat_C"] == ["label_C" for l in range(0, n_rows)]))
 
