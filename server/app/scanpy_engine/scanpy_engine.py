@@ -5,7 +5,6 @@ from datetime import datetime
 import os.path
 from hashlib import blake2b
 import base64
-import collections
 from packaging import version
 
 import numpy as np
@@ -309,39 +308,16 @@ class ScanpyEngine(CXGDriver):
                 f"Please check your input and try again."
             )
 
-    def _uns_perf_workaround(self):
-        """
-        anndata slicing in 0.6.* and 0.7.* is extremely slow if there is sparse data
-        stored in adata.uns object.  See https://github.com/theislab/anndata/issues/317
-
-        The workaround suggested by the scanpy/anndata team (in the same issue) is to
-        remove any unnecessary data from uns, with a specific focus on adata.uns['neighbors'].
-        This routine currently accomplishes the suggestion by removing *everything* from adata.uns,
-        thereby ensuring that other (future) items do not have the same effect.
-
-        In a future release of cellxgene, there may be some use for various items stored in uns.
-        For example, see https://github.com/chanzuckerberg/cellxgene/issues/1152. In this situation,
-        suggest that this routine implement a whitelist.
-
-        The cleanup of adata.varm is similarily conservative - cellxgene doesn't currently
-        depend on it, so it is cleaned up.
-        """
-        if self.data.uns and isinstance(self.data.uns, collections.abc.MutableMapping):
-            self.data.uns.clear()
-        if self.data.varm and isinstance(self.data.varm, collections.abc.MutableMapping):
-            self.data.varm.clear()
-
     @requires_data
     def _validate_and_initialize(self):
         if anndata_version_is_pre_070() and self.config['backed']:
-            warnings.warn(f"Use of --backed mode with anndata versions older than 0.7 will have serious performance issues.  "
-                          "Please update to at least anndata 0.7 or later.")
+            warnings.warn(f"Use of --backed mode with anndata versions older than 0.7 will have serious "
+                          "performance issues. Please update to at least anndata 0.7 or later.")
 
         # var and obs column names must be unique
         if not self.data.obs.columns.is_unique or not self.data.var.columns.is_unique:
             raise KeyError(f"All annotation column names must be unique.")
 
-        self._uns_perf_workaround()
         self._alias_annotation_names()
         self._validate_data_types()
         self.cell_count = self.data.shape[0]
