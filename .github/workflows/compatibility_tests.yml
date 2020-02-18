@@ -1,8 +1,8 @@
 name: Compatability Tests
 
-on: [push]
-#  schedule:
-#    cron: '* 8 * * * 2'
+on:
+  schedule:
+    cron: '* 8 * * * 2'
 
 env:
   JEST_ENV: prod
