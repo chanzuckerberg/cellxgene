@@ -6,7 +6,7 @@ import os.path
 from hashlib import blake2b
 import base64
 import collections
-# from packaging import version
+from packaging import version
 
 import numpy as np
 import pandas
@@ -30,26 +30,18 @@ from server.app.util.fbs.matrix import encode_matrix_fbs, decode_matrix_fbs
 from server.app.scanpy_engine.labels import read_labels, write_labels
 
 
+anndata_version = version.parse(str(anndata.__version__)).release
+
+
+def anndata_version_is_pre_070():
+    major, minor, micro = anndata_version
+    return major == 0 and minor < 7
+
+
 def has_method(o, name):
     """ return True if `o` has callable method `name` """
     op = getattr(o, name, None)
     return op is not None and callable(op)
-
-
-# anndata_version = version.parse(str(anndata.__version__)).release
-
-
-# def slice_X(adata, oidx, vidx):
-#     """
-#     slice into X, but in a way that will work around various anndata bugs
-#     pre-0.7.
-#     """
-#     major, minor, micro = anndata_version
-#     if major == 0 and minor <= 6:
-#         # old style slicing
-#         return adata.X[oidx, vidx]
-#     else:
-#         return adata[oidx, vidx].X
 
 
 class ScanpyEngine(CXGDriver):
@@ -341,6 +333,10 @@ class ScanpyEngine(CXGDriver):
 
     @requires_data
     def _validate_and_initialize(self):
+        if anndata_version_is_pre_070() and self.config['backed']:
+            warnings.warn(f"Use of --backed mode with anndata versions older than 0.7 will have serious performance issues.  "
+                          "Please update to at least anndata 0.7 or later.")
+
         # var and obs column names must be unique
         if not self.data.obs.columns.is_unique or not self.data.var.columns.is_unique:
             raise KeyError(f"All annotation column names must be unique.")
