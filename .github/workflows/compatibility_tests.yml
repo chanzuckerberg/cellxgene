@@ -39,7 +39,7 @@ jobs:
         make pydist install-dist dev-env
         pip install anndata==${{ matrix.anndata-version }}
         # workaround for anndata 0.6.22.post1 bug
-        [[ "0.6.22.post1" = "${{ matrix.anndata-version }}" ]] && pip install h5py==0.2.10 || true
+        [[ "0.6.22.post1" = "${{ matrix.anndata-version }}" ]] && pip install h5py==2.9.0 || true
     - name: Tests
       run: make unit-test ${{ matrix.test-suite }}
 
