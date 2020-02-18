@@ -619,8 +619,7 @@ class ScanpyEngine(CXGDriver):
             raise FilterError("filtering on obs unsupported")
 
         # Currently only handles VAR dimension
-        var_selector = slice(None) if var_selector is None else var_selector
-        X = slice_X(self.data, slice(None), var_selector)
+        X = slice_X(self.data, slice(None), slice(None) if var_selector is None else var_selector)
         return encode_matrix_fbs(X, col_idx=np.nonzero(var_selector)[0], row_idx=None)
 
     @requires_data
