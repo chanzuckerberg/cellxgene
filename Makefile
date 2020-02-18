@@ -68,6 +68,10 @@ unit-test-%:
 smoke-test:
 	cd client && $(MAKE) smoke-test
 
+.PHONY: smoke-test-annotations
+smoke-test-annotations:
+	cd client && $(MAKE) smoke-test-annotations
+
 # FORMATTING CODE
 
 .PHOHY: fmt

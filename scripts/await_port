@@ -16,7 +16,7 @@ import time
 parser = argparse.ArgumentParser(description='Wait for a port either to be bound to or to be free.')
 parser.add_argument('port', type=int, help='port to wait for')
 parser.add_argument('--sleep-increment', type=int, default=2.0, help='sleep duration in between checks of the port')
-parser.add_argument('--timeout', type=int, default=20.0, help='How long should we wait before timing out?')
+parser.add_argument('--timeout', type=int, default=60.0, help='How long should we wait before timing out?')
 parser.add_argument('--await-free', default=False, action='store_true',
                     help='Wait for the port to be active or free?')
 
