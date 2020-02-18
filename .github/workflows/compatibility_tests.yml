@@ -2,7 +2,7 @@ name: Compatability Tests
 
 on:
   schedule:
-    cron: '* 8 * * * 2'
+    - cron: '0 8 7 * 2'
 
 env:
   JEST_ENV: prod
