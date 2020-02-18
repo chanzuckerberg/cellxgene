@@ -107,19 +107,19 @@ class AppConfig(object):
         # parameters
         parameters = {
             "layout": self.layout,
-            "max_category_items": self.max_category_items,
+            "max-category-items": self.max_category_items,
             "obs_names": self.obs_names,
             "var_names": self.var_names,
             "diffexp_lfc_cutoff": self.diffexp_lfc_cutoff,
             "backed": self.anndata_backed,
-            "disable_diffexp": self.disable_diffexp,
+            "disable-diffexp": self.disable_diffexp,
             "annotations": False,
             "annotations_file": None,
             "annotations_output_dir": None,
             "annotations_cell_ontology_enabled": False,
             "annotations_cell_ontology_obopath": None,
             "annotations_cell_ontology_terms": None,
-            "diffexp_may_be_slow": False,
+            "diffexp-may-be-slow": False,
         }
 
         data_adaptor.update_parameters(parameters)

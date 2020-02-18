@@ -144,4 +144,3 @@ def series_to_schema(array):
         else:
             raise TypeError(f"Annotations of type {dtype} are unsupported.")
         return schema
-

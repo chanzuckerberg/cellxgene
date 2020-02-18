@@ -205,7 +205,7 @@ class DataAdaptor(metaclass=ABCMeta):
 
         labels_df.index = self.get_obs_index()
 
-        # all lables must have a name, which must be unique and not used in obs column names
+        # all labels must have a name, which must be unique and not used in obs column names
         if not labels_df.columns.is_unique:
             raise KeyError(f"All column names specified in user annotations must be unique.")
 

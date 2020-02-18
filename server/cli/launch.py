@@ -305,7 +305,9 @@ def launch(
     click.echo("[cellxgene] Starting the CLI...")
 
     if datapath is None and dataroot is None:
-        raise click.ClickException("must supply either <path to data file> or --dataroot")
+        # TODO:  change the error message once dataroot is fully supported
+        raise click.ClickException("Missing argument \"<path to data file>.\"")
+        # raise click.ClickException("must supply either <path to data file> or --dataroot")
     if datapath is not None and dataroot is not None:
         raise click.ClickException("must supply only one of <path to data file> or --dataroot")
 

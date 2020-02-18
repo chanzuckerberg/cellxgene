@@ -296,7 +296,11 @@ class AnndataAdaptor(DataAdaptor):
         return getattr(self.data.obs, term_name)
 
     def get_obs_index(self):
-        return self.original_obs_index
+        name = getattr(self.config, "obs_names")
+        if name is None:
+            return self.original_obs_index
+        else:
+            return self.data.obs[name]
 
     def get_obs_columns(self):
         return self.data.obs.columns
