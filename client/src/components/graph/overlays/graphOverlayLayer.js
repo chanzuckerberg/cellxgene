@@ -53,7 +53,8 @@ class GraphOverlayLayer extends PureComponent {
       responsive,
       graphPaddingRightLeft,
       graphPaddingTop,
-      children
+      children,
+      handleCanvasEvent
     } = this.props;
 
     if (!cameraTF) return null;
@@ -89,6 +90,8 @@ class GraphOverlayLayer extends PureComponent {
           zIndex: 99,
           backgroundColor: displaying ? "rgba(255, 255, 255, 0.55)" : ""
         }}
+        onMouseMove={handleCanvasEvent}
+        onWheel={handleCanvasEvent}
       >
         <g
           id="canvas-transformation-group-x"
