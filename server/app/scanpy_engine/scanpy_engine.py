@@ -382,10 +382,12 @@ class ScanpyEngine(CXGDriver):
 
     @requires_data
     def _validate_data_types(self):
-        # The backed API does not support interogation of the underlying sparsity or sparse matrix type
+        # The backed API does not support interrogation of the underlying sparsity or sparse matrix type
         # Fake it by asking for a small subarray and testing it.   NOTE: if the user has ignored our
-        # anndata <= 0.7 warning, and run in backed mode with a large sparse dataset, this "small"
-        # indexing request will load the entire X array.
+        # anndata <= 0.7 warning, opted for the --backed option, and specified a large, sparse dataset,
+        # this "small" indexing request will load the entire X array. This is due to a bug in anndata<=0.7
+        # which will load the entire X matrix to fullfill any slicing request if X is sparse.  See
+        # user warning in _load_data().
         X0 = self.data.X[0, 0:1]
         if sparse.isspmatrix(X0) and not sparse.isspmatrix_csc(X0):
             warnings.warn(
