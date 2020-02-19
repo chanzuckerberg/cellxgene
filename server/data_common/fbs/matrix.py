@@ -12,7 +12,6 @@ import server.data_common.fbs.NetEncoding.Uint32Array as Uint32Array
 import server.data_common.fbs.NetEncoding.Float32Array as Float32Array
 import server.data_common.fbs.NetEncoding.Float64Array as Float64Array
 import server.data_common.fbs.NetEncoding.JSONEncodedArray as JSONEncodedArray
-from server.data_common.matrix_proxy import MatrixProxy
 
 
 # Placeholder until recent enhancements to flatbuffers Python
@@ -92,7 +91,7 @@ def serialize_typed_array(builder, source_array, encoding_info):
         as_json = arr.to_json(orient="records")
         arr = np.array(bytearray(as_json, "utf-8"))
     else:
-        if MatrixProxy.ismatrixproxy(arr) or sparse.issparse(arr):
+        if sparse.issparse(arr):
             arr = arr.toarray()
         elif isinstance(arr, pd.Series):
             arr = arr.to_numpy()

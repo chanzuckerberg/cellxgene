@@ -4,17 +4,22 @@ import numpy as np
 from pandas.core.dtypes.dtypes import CategoricalDtype
 import anndata
 from scipy import sparse
+from packaging import version
 
 from server.data_common.data_adaptor import DataAdaptor
+from server.data_common.fbs.matrix import encode_matrix_fbs
 from server.common.utils import series_to_schema
-
 from server.common.constants import Axis, MAX_LAYOUTS
 from server.common.errors import PrepareError, DatasetAccessError
-
-from server.data_common.fbs.matrix import encode_matrix_fbs
-import server.data_anndata.matrix_proxy  # noqa: F401
-
 from server.common.data_locator import DataLocator
+
+anndata_version = version.parse(str(anndata.__version__)).release
+
+
+def anndata_version_is_pre_070():
+    major = anndata_version[0]
+    minor = anndata_version[1] if len(anndata_version) > 1 else 0
+    return major == 0 and minor < 7
 
 
 class AnndataAdaptor(DataAdaptor):
@@ -171,6 +176,10 @@ class AnndataAdaptor(DataAdaptor):
             )
 
     def _validate_and_initialize(self):
+        if anndata_version_is_pre_070() and self.config.anndata_backed:
+            warnings.warn(f"Use of --backed mode with anndata versions older than 0.7 will have serious "
+                          "performance issues. Please update to at least anndata 0.7 or later.")
+
         # var and obs column names must be unique
         if not self.data.obs.columns.is_unique or not self.data.var.columns.is_unique:
             raise KeyError(f"All annotation column names must be unique.")
@@ -197,7 +206,14 @@ class AnndataAdaptor(DataAdaptor):
         return is_valid
 
     def _validate_data_types(self):
-        if sparse.isspmatrix(self.data.X) and not sparse.isspmatrix_csc(self.data.X):
+        # The backed API does not support interrogation of the underlying sparsity or sparse matrix type
+        # Fake it by asking for a small subarray and testing it.   NOTE: if the user has ignored our
+        # anndata <= 0.7 warning, opted for the --backed option, and specified a large, sparse dataset,
+        # this "small" indexing request will load the entire X array. This is due to a bug in anndata<=0.7
+        # which will load the entire X matrix to fullfill any slicing request if X is sparse.  See
+        # user warning in _load_data().
+        X0 = self.data.X[0, 0:1]
+        if sparse.isspmatrix(X0) and not sparse.isspmatrix_csc(X0):
             warnings.warn(
                 f"Anndata data matrix is sparse, but not a CSC (columnar) matrix.  "
                 f"Performance may be improved by using CSC."

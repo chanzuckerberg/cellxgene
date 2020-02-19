@@ -7,7 +7,6 @@ from server.common.constants import Axis, DEFAULT_TOP_N
 from server.common.errors import FilterError, JSONEncodingValueError
 from server.compute.diffexp import diffexp_ttest
 from server.common.utils import jsonify_numpy
-from server.data_common.matrix_proxy import MatrixProxy
 from server.common.app_config import AppFeature, AppConfig
 from server.common.data_locator import DataLocator
 
@@ -250,8 +249,8 @@ class DataAdaptor(metaclass=ABCMeta):
             raise FilterError("filtering on obs unsupported")
 
         X = self.get_X_array(obs_selector, var_selector)
-        X = MatrixProxy.create(X)
-        return encode_matrix_fbs(X, col_idx=np.nonzero(var_selector)[0], row_idx=None)
+        col_idx = np.nonzero([] if var_selector is None else var_selector)[0]
+        return encode_matrix_fbs(X, col_idx=col_idx, row_idx=None)
 
     def diffexp_topN(self, obsFilterA, obsFilterB, top_n=None):
         """
