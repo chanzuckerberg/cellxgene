@@ -1,5 +1,6 @@
 from http import HTTPStatus
 import warnings
+import copy
 from flask import make_response, jsonify
 from server.common.constants import Axis, DiffExpMode, JSON_NaN_to_num_warning_msg
 from server.common.errors import (
@@ -16,6 +17,7 @@ from server.data_common.fbs.matrix import decode_matrix_fbs
 def schema_get_helper(data_adaptor, annotations):
     """helper function to gather the schema from the data source and annotations"""
     schema = data_adaptor.get_schema()
+    schema = copy.deepcopy(schema)
 
     # add label obs annotations as needed
     if annotations is not None:

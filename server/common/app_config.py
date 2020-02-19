@@ -93,7 +93,7 @@ class AppConfig(object):
         about = self.get_about(data_adaptor)
 
         display_names = dict(
-            adaptor=data_adaptor.get_name(),
+            engine=data_adaptor.get_name(),
             dataset=title)
 
         # library_versions
