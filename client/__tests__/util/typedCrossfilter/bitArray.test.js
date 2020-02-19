@@ -183,3 +183,24 @@ describe("fillBySelection", () => {
     expect(arr).toEqual(truth);
   });
 });
+
+describe("wide bitarray", () => {
+  test.each([9, 30, 31, 32, 33, 54, 63, 64, 65, 127, 128, 129])(
+    "more than %d dimensions",
+    ndim => {
+      /* ensure we move across the uint boundary correctly */
+
+      const ba = new BitArray(defaultTestLength);
+      expect(ba).toBeDefined();
+
+      for (let i = 0; i < ndim; i += 1) {
+        expect(ba.allocDimension()).toEqual(i);
+      }
+      ba.freeDimension(0);
+      expect(ba.allocDimension()).toEqual(0);
+
+      ba.freeDimension(ndim - 1);
+      expect(ba.allocDimension()).toEqual(ndim - 1);
+    }
+  );
+});
