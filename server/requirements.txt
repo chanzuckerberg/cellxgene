@@ -1,4 +1,4 @@
-anndata>=0.6.2
+anndata>=0.6.20
 click>=6.7
 fastobo>=0.6.1
 Flask>=1.0.2
@@ -9,9 +9,8 @@ Flask-RESTful>=0.3.6
 flatbuffers>=1.10.0
 fsspec>=0.4.4
 numpy>=1.15.2
+packaging>=20.0
 pandas>=0.24.2
 scipy>=1.3.0
 tables==3.5.1
-# TEMP workaround for https://github.com/theislab/scanpy/issues/832 aka h5py regression
-h5py==2.9.0
 requests>=2.22.0

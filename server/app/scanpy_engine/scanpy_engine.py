@@ -5,6 +5,7 @@ from datetime import datetime
 import os.path
 from hashlib import blake2b
 import base64
+from packaging import version
 
 import numpy as np
 import pandas
@@ -26,8 +27,15 @@ from server.app.util.utils import jsonify_scanpy, requires_data
 from server.app.scanpy_engine.diffexp import diffexp_ttest
 from server.app.util.fbs.matrix import encode_matrix_fbs, decode_matrix_fbs
 from server.app.scanpy_engine.labels import read_labels, write_labels
-import server.app.scanpy_engine.matrix_proxy  # noqa: F401
-from server.app.util.matrix_proxy import MatrixProxy
+
+
+anndata_version = version.parse(str(anndata.__version__)).release
+
+
+def anndata_version_is_pre_070():
+    major = anndata_version[0]
+    minor = anndata_version[1] if len(anndata_version) > 1 else 0
+    return major == 0 and minor < 7
 
 
 def has_method(o, name):
@@ -303,6 +311,10 @@ class ScanpyEngine(CXGDriver):
 
     @requires_data
     def _validate_and_initialize(self):
+        if anndata_version_is_pre_070() and self.config['backed']:
+            warnings.warn(f"Use of --backed mode with anndata versions older than 0.7 will have serious "
+                          "performance issues. Please update to at least anndata 0.7 or later.")
+
         # var and obs column names must be unique
         if not self.data.obs.columns.is_unique or not self.data.var.columns.is_unique:
             raise KeyError(f"All annotation column names must be unique.")
@@ -370,7 +382,14 @@ class ScanpyEngine(CXGDriver):
 
     @requires_data
     def _validate_data_types(self):
-        if sparse.isspmatrix(self.data.X) and not sparse.isspmatrix_csc(self.data.X):
+        # The backed API does not support interrogation of the underlying sparsity or sparse matrix type
+        # Fake it by asking for a small subarray and testing it.   NOTE: if the user has ignored our
+        # anndata <= 0.7 warning, opted for the --backed option, and specified a large, sparse dataset,
+        # this "small" indexing request will load the entire X array. This is due to a bug in anndata<=0.7
+        # which will load the entire X matrix to fullfill any slicing request if X is sparse.  See
+        # user warning in _load_data().
+        X0 = self.data.X[0, 0:1]
+        if sparse.isspmatrix(X0) and not sparse.isspmatrix_csc(X0):
             warnings.warn(
                 f"Scanpy data matrix is sparse, but not a CSC (columnar) matrix.  "
                 f"Performance may be improved by using CSC."
@@ -577,8 +596,9 @@ class ScanpyEngine(CXGDriver):
             raise FilterError("filtering on obs unsupported")
 
         # Currently only handles VAR dimension
-        X = MatrixProxy.create(self.data.X if var_selector is None else self.data.X[:, var_selector])
-        return encode_matrix_fbs(X, col_idx=np.nonzero(var_selector)[0], row_idx=None)
+        X = self.data.X[:, slice(None) if var_selector is None else var_selector]
+        col_idx = np.nonzero([] if var_selector is None else var_selector)[0]
+        return encode_matrix_fbs(X, col_idx=col_idx, row_idx=None)
 
     @requires_data
     def diffexp_topN(self, obsFilterA, obsFilterB, top_n=None, interactive_limit=None):
