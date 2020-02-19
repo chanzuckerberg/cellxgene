@@ -19,7 +19,6 @@ exclude = '''
     | dist
     | server/app/util/fbs/NetEncoding
   )/
-  | server/gui/cellxgene_rc.py
 
 )
 '''

@@ -17,12 +17,12 @@ venv/
 cellxgene/
 
 # client build
-server/app/web/static/css/
-server/app/web/static/img/
-server/app/web/static/media/
-server/app/web/static/fonts/
-server/app/web/static/js/
-server/app/web/templates/index\.html
+server/common/web/static/css/
+server/common/web/static/img/
+server/common/web/static/media/
+server/common/web/static/fonts/
+server/common/web/static/js/
+server/common/web/templates/index\.html
 
 # Jupyter Notebook
 .ipynb_checkpoints

@@ -8,9 +8,11 @@ import shutil
 import numpy as np
 import pandas as pd
 
-from server.app.scanpy_engine.scanpy_engine import ScanpyEngine
-from server.app.util.fbs.matrix import encode_matrix_fbs
-from server.app.util.data_locator import DataLocator
+from server.data_anndata.anndata_adaptor import AnndataAdaptor
+from server.data_common.fbs.matrix import encode_matrix_fbs
+from server.common.data_locator import DataLocator
+from server.common.annotations import AnnotationsLocalFile
+from server.common.rest import schema_get_helper, annotations_put_fbs_helper
 
 
 class WritableAnnotationTest(unittest.TestCase):
@@ -23,11 +25,11 @@ class WritableAnnotationTest(unittest.TestCase):
             "obs_names": None,
             "var_names": None,
             "diffexp_lfc_cutoff": 0.01,
-            "annotations": True,
-            "annotations_file": self.annotations_file,
-            "annotations_output_dir": None,
         }
-        self.data = ScanpyEngine(DataLocator("../example-dataset/pbmc3k.h5ad"), args)
+        fname = "../example-dataset/pbmc3k.h5ad"
+        data_locator = DataLocator(fname)
+        self.data = AnndataAdaptor(data_locator, args)
+        self.annotations = AnnotationsLocalFile(None, self.annotations_file)
 
     def tearDown(self):
         shutil.rmtree(self.tmpDir)
@@ -36,18 +38,19 @@ class WritableAnnotationTest(unittest.TestCase):
         df = pd.DataFrame(data)
         return encode_matrix_fbs(matrix=df, row_idx=None, col_idx=df.columns)
 
+    def annotation_put_fbs(self, fbs):
+        annotations_put_fbs_helper(self.data, self.annotations, fbs)
+        res = json.dumps({"status": "OK"})
+        return res
+
     def test_error_checks(self):
         # verify that the expected errors are generated
         n_rows = self.data.data.obs.shape[0]
         fbs_bad = self.make_fbs({"louvain": pd.Series(["undefined" for l in range(0, n_rows)], dtype="category")})
 
-        # ensure attempt to change VAR annotation
-        with self.assertRaises(ValueError):
-            self.data.annotation_put_fbs("var", fbs_bad)
-
         # ensure we catch attempt to overwrite non-writable data
         with self.assertRaises(KeyError):
-            self.data.annotation_put_fbs("obs", fbs_bad)
+            self.annotation_put_fbs(fbs_bad)
 
     def test_write_to_file(self):
         # verify the file is written as expected
@@ -58,7 +61,7 @@ class WritableAnnotationTest(unittest.TestCase):
                 "cat_B": pd.Series(["label_B" for l in range(0, n_rows)], dtype="category"),
             }
         )
-        res = self.data.annotation_put_fbs("obs", fbs)
+        res = self.annotation_put_fbs(fbs)
         self.assertEqual(res, json.dumps({"status": "OK"}))
         self.assertTrue(path.exists(self.annotations_file))
         df = pd.read_csv(self.annotations_file, index_col=0, header=0, comment="#")
@@ -75,7 +78,7 @@ class WritableAnnotationTest(unittest.TestCase):
                 "cat_C": pd.Series(["label_C" for l in range(0, n_rows)], dtype="category"),
             }
         )
-        res = self.data.annotation_put_fbs("obs", fbs)
+        res = self.annotation_put_fbs(fbs)
         self.assertEqual(res, json.dumps({"status": "OK"}))
         self.assertTrue(path.exists(self.annotations_file))
         df = pd.read_csv(self.annotations_file, index_col=0, header=0, comment="#")
@@ -100,7 +103,7 @@ class WritableAnnotationTest(unittest.TestCase):
             }
         )
         for i in range(0, 11):
-            res = self.data.annotation_put_fbs("obs", fbs)
+            res = self.annotation_put_fbs(fbs)
             self.assertEqual(res, json.dumps({"status": "OK"}))
 
         name, ext = path.splitext(self.annotations_file)
@@ -122,12 +125,13 @@ class WritableAnnotationTest(unittest.TestCase):
         )
 
         # put
-        res = self.data.annotation_put_fbs("obs", fbs)
+        res = self.annotation_put_fbs(fbs)
         self.assertEqual(res, json.dumps({"status": "OK"}))
 
         # get
-        fbsAll = self.data.annotation_to_fbs_matrix("obs")
-        schema = self.data.get_schema()
+        labels = self.annotations.read_labels(None)
+        fbsAll = self.data.annotation_to_fbs_matrix("obs", None, labels)
+        schema = schema_get_helper(self.data, self.annotations)
         annotations = decode_fbs.decode_matrix_FBS(fbsAll)
         obs_index_col_name = schema["annotations"]["obs"]["index"]
         self.assertEqual(annotations["n_rows"], n_rows)
