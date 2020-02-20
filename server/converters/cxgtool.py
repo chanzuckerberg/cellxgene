@@ -260,7 +260,7 @@ def save_dataframe(container, name, df, index_col_name, ctx):
 
 
 def create_emb(e_name, emb):
-    filters = tiledb.FilterList([tiledb.ZstdFilter(),])
+    filters = tiledb.FilterList([tiledb.ZstdFilter(), ])
     attrs = [tiledb.Attr(dtype=emb.dtype, filters=filters)]
     dims = []
     for d in range(emb.ndim):
