@@ -15,6 +15,12 @@ The organization of the TileDB structure is:
     |-- cxg_group_metadata  Empty array used only to stash metadata about the overall object.
     ...
 
+All arrays are defined to have a uint32 domain, zero based.  All X counds and embedding
+coordinates are coerced to float32, which is ample precision for visualization purposes.
+Dataframe (metadata) types are generally preserved, or where that is not possible,
+converted to somemthing with equal representative value in the cellxgene application
+(eg, categorical types are converted to string, bools to uint8, etc).
+
 The following objects are also decorated with auxilliary metadata using TileDB
 array metadata:
 
@@ -26,8 +32,13 @@ array metadata:
 * obs, var: both contain an optional 'cxg_schema' field that is a json string,
   containing per-column (attribute) schema hinting.  This is used where the TileDB
   native typing information is insufficient to reconstruct useful information
-  such as categorical typing from Pandas DataFrams, and to communicate which column
+  such as categorical typing from Pandas DataFrames, and to communicate which column
   is the preferred human-readable index for obs & var.
+
+This file also embodies a number of empirically derived tiledb schema parameters,
+including the global data layout, spatial tile size, and the like. The CXG is
+self-describing in these areas, and the actual values (eg, tile size) are empirically
+derived from benchmarking. They may change in the future.
 
 ---
 
@@ -175,6 +186,14 @@ def cxg_dtype(col):
 
 
 def create_dataframe(name, df, ctx):
+    """
+    Current access patterns are oriented toward reading very large slices of
+    the dataframe, one attribute at a time.  Attribute data also tends to be
+    (often) repetitive (bools, categories, strings).
+    Given this, we use:
+    * a large tile size (1000)
+    * very aggressive compression levels
+    """
     filter = tiledb.FilterList(
         [
             # attempt aggressive compression as many of these dataframes are very repetitive
@@ -191,11 +210,12 @@ def create_dataframe(name, df, ctx):
 
 
 def create_unique_column_name(df_cols, col_name_prefix):
-    """ given the columns of a dataframe, and a name prefix, return a column name which
-        does not exist in the dataframe, AND which is prefixed by `prefix`
+    """
+    given the columns of a dataframe, and a name prefix, return a column name which
+    does not exist in the dataframe, AND which is prefixed by `prefix`
 
-        The approach is to append a numeric suffix, starting at zero and increasing by
-        one, until an unused name is found (eg, prefix_0, prefix_1, ...).
+    The approach is to append a numeric suffix, starting at zero and increasing by
+    one, until an unused name is found (eg, prefix_0, prefix_1, ...).
     """
     suffix = 0
     while f"{col_name_prefix}{suffix}" in df_cols:
@@ -260,6 +280,13 @@ def save_dataframe(container, name, df, index_col_name, ctx):
 
 
 def create_emb(e_name, emb):
+    """
+    Embeddings are typically accessed with very large slices (or all of the embedding),
+    and do not benefit from overly aggressive compression due to their format.  Given
+    this, we use:
+    * large tile size (1000)
+    * default compression level
+    """
     filters = tiledb.FilterList([tiledb.ZstdFilter(), ])
     attrs = [tiledb.Attr(dtype=emb.dtype, filters=filters)]
     dims = []
@@ -298,8 +325,15 @@ def save_embeddings(container, adata, ctx):
 
 
 def create_X(X_name, shape):
-    # Dense, always.  Future task: explore if sparse encoding is worth the trouble
-    # below a sparsity threshold.
+    """
+    Dense, always.  Future task: explore if sparse encoding is worth the trouble
+    below a sparsity threshold.
+
+    The X matrix is access in both row and column oriented patterns, depending on the
+    particular operation.  Because of the data type, default compression works best.
+    The tile size (50, 100) and global layout (row/col) was choosen empirically, by benchmarking
+    the current cellxgene backend.
+    """
     filters = tiledb.FilterList([tiledb.ZstdFilter()])
     attrs = [tiledb.Attr(dtype=np.float32, filters=filters)]
     domain = tiledb.Domain(
