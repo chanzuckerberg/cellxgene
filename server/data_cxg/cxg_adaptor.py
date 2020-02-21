@@ -132,7 +132,7 @@ class CxgAdaptor(DataAdaptor):
             cxg_version = "0.0"
             title = None
             about = None
-        elif a_type is "array":
+        elif a_type == "array":
             # version >0
             gmd = self.open_array("cxg_group_metadata")
             cxg_version = gmd.meta['cxg_version']

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from server import __version__ as cellxgene_version
-from os.path import basename, splitext
 
 
 class AppFeature(object):
