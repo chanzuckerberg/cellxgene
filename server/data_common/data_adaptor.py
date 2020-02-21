@@ -2,6 +2,8 @@ from abc import ABCMeta, abstractmethod
 from server_timing import Timing as ServerTiming
 import numpy as np
 import pandas as pd
+from os.path import basename, splitext
+
 from server.data_common.fbs.matrix import encode_matrix_fbs
 from server.common.constants import Axis, DEFAULT_TOP_N
 from server.common.errors import FilterError, JSONEncodingValueError
@@ -96,6 +98,16 @@ class DataAdaptor(metaclass=ABCMeta):
     @abstractmethod
     def get_location(self):
         pass
+
+    def get_about(self):
+        return None
+
+    def get_title(self):
+        # default to file name
+        location = self.get_location()
+        if location.endswith("/"):
+            location = location[:-1]
+        return splitext(basename(location))[0]
 
     @abstractmethod
     def get_schema(self):

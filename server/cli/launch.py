@@ -337,10 +337,6 @@ def launch(
     handle_verbose(verbose)
     handle_scripts(scripts)
 
-    if not title and datapath is not None:
-        file_parts = splitext(basename(datapath))
-        title = file_parts[0]
-
     if port:
         if debug:
             raise click.ClickException("--port and --debug may not be used together (try --verbose for error logging).")
