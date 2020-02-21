@@ -52,11 +52,17 @@ class CxgAdaptor(DataAdaptor):
     def open(location, args):
         return CxgAdaptor(location, args)
 
+    def get_about(self):
+        return self.about if self.about else super().get_about()
+
+    def get_title(self):
+        return self.title if self.title else super().get_title()
+
     def get_location(self):
         return self.url
 
     def get_name(self):
-        return "cellxgene cxcxgg adaptor version"
+        return "cellxgene cxg adaptor version"
 
     def get_library_versions(self):
         return dict(tiledb=tiledb.__version__)
@@ -107,8 +113,40 @@ class CxgAdaptor(DataAdaptor):
         return True
 
     def _validate_and_initialize(self):
-        if not self.isvalid(self.url):
-            raise DatasetAccessError(f"invalid cxg dataset {self.url}")
+        """
+        remember, preload_validation() has already been called, so
+        no need to repeat anything it has done.
+
+        Load the CXG "group" metadata and cache instance values.
+        Be very aware of multiple versions of the CXG object.
+
+        CXG versions in the wild:
+        * version 0, aka "no version" -- can be detected by the lack
+          of a cxg_group_metadata array.
+        * version 0.1 -- metadata attache to cxg_group_metadata array.
+          Same as 0, except it adds group metadata.
+        """
+        a_type = tiledb.object_type(path_join(self.url, "cxg_group_metadata"))
+        if a_type is None:
+            # version 0
+            cxg_version = "0.0"
+            title = None
+            about = None
+        elif a_type == "array":
+            # version >0
+            gmd = self.open_array("cxg_group_metadata")
+            cxg_version = gmd.meta['cxg_version']
+            if cxg_version == "0.1":
+                cxg_properties = json.loads(gmd.meta['cxg_properties'])
+                title = cxg_properties.get('title', None)
+                about = cxg_properties.get('about', None)
+
+        if cxg_version not in ['0.0', '0.1']:
+            raise DatasetAccessError(f"cxg matrix is not valid: {self.url}")
+
+        self.title = title
+        self.about = about
+        self.cxg_version = cxg_version
 
     def open_array(self, name):
         try:

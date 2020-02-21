@@ -36,7 +36,7 @@ def schema_get(data_adaptor, annotations):
 
 def config_get(app_config, data_adaptor, annotations):
     config = app_config.get_config(data_adaptor, annotations)
-    return make_response(make_response(jsonify(config), HTTPStatus.OK))
+    return make_response(jsonify(config), HTTPStatus.OK)
 
 
 def annotations_obs_get(request, data_adaptor, annotations):

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from server import __version__ as cellxgene_version
-from os.path import basename, splitext
 
 
 class AppFeature(object):
@@ -64,21 +63,10 @@ class AppConfig(object):
                 raise RuntimeError(f"unknown config parameter {k}.")
 
     def get_title(self, data_adaptor):
-        if self.title:
-            return self.title
-
-        # TODO:  find a place to stash the dataset title, such as a
-        # json file at the same location as the data matrix.
-        # for example, if the dataset is at abc.cxg then a file with
-        # the title and about info could be at abc.cxg.metadata.
-        # for now just return the basename
-        location = data_adaptor.get_location()
-        if location.endswith("/"):
-            location = location[:-1]
-        return splitext(basename(location))[0]
+        return self.title if self.title else data_adaptor.get_title()
 
     def get_about(self, data_adaptor):
-        return self.about
+        return self.about if self.about else data_adaptor.get_about()
 
     def get_config(self, data_adaptor, annotation=None):
 
