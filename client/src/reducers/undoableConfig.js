@@ -35,7 +35,22 @@ const skipOnActions = new Set([
   "get single gene expression for coloring error",
 
   "category value mouse hover start",
-  "category value mouse hover end"
+  "category value mouse hover end",
+
+  /* autosave annotations */
+  "writable obs annotations - save complete",
+  "writable obs annotations - save started",
+  "writable obs annotations - save error",
+
+  /* annotation component action */
+  "annotation: activate add new label mode",
+  "annotation: activate add new ontology label mode",
+  "annotation: disable add new ontology label mode",
+  "annotation: disable add new label mode",
+  "annotation: activate category edit mode",
+  "annotation: disable category edit mode",
+  "annotation: activate edit label mode",
+  "annotation: cancel edit label mode"
 ]);
 
 /*
@@ -91,7 +106,8 @@ const saveOnActions = new Set([
   "annotation: delete category",
   "annotation: label edited",
   "annotation: label current cell selection",
-  "annotation: delete label"
+  "annotation: delete label",
+  "annotation: category edited"
 ]);
 
 /**

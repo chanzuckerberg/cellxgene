@@ -36,39 +36,38 @@ class Category extends React.Component {
     const { dispatch, metadataField } = this.props;
     const { newLabelText } = this.state;
 
+    this.disableAddNewLabelFromOntologyMode();
     dispatch({
       type: "annotation: add new label to category",
       metadataField,
       newLabelText,
       assignSelectedCells: false
     });
-    this.setState({ newLabelText: "" });
   };
 
   addLabelAndAssignCells = () => {
     const { dispatch, metadataField } = this.props;
     const { newLabelText } = this.state;
 
+    this.disableAddNewLabelFromOntologyMode();
     dispatch({
       type: "annotation: add new label to category",
       metadataField,
       newLabelText,
       assignSelectedCells: true
     });
-
-    this.setState({ newLabelText: "" });
   };
 
   handleCreateArbitraryLabel = newLabelTextNotInOntology => {
     const { dispatch, metadataField } = this.props;
 
+    this.disableAddNewLabelFromOntologyMode();
     dispatch({
       type: "annotation: add new label to category",
       metadataField,
       newLabelText: newLabelTextNotInOntology,
       assignSelectedCells: false
     });
-    this.setState({ newLabelText: "" });
   };
 
   labelNameError = name => {

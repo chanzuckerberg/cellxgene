@@ -218,6 +218,7 @@ const Undoable = (reducer, undoableKeys, options = {}) => {
     },
     action
   ) => {
+    if (debug > 1) console.log("---- ACTION", action.type);
     const aType = action.type;
     switch (aType) {
       case "@@undoable/undo": {
