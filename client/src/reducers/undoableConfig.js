@@ -57,11 +57,7 @@ const skipOnActions = new Set([
 identical, repeated occurances of these action types will be debounced.
 Entire action must be identical (all keys).
 */
-const debounceOnActions = new Set([
-  "color by categorical metadata",
-  "color by continuous metadata",
-  "color by expression"
-]);
+const debounceOnActions = new Set([]);
 
 /*
 history will be cleared when these actions occur
@@ -188,8 +184,6 @@ const actionFilter = debug => (state, action, prevFilterState) => {
   }
   if (
     debounceOnActions.has(actionType) &&
-    prevFilterState !== undefined &&
-    prevFilterState.prevAction !== undefined &&
     shallowObjectEq(action, prevFilterState.prevAction)
   ) {
     return { [actionKey]: "skip", [stateKey]: filterState };
@@ -245,7 +239,7 @@ function shallowArrayEq(arrA, arrB) {
 }
 
 /* configuration for the undoable meta reducer */
-const debug = false; // set truish for undoble debugging
+const debug = false; // set truish for undoble debugging. Higher number is more verbose.
 const undoableConfig = {
   debug,
   historyLimit: 50, // maximum history size
