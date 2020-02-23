@@ -8,13 +8,13 @@ import requests
 import pandas as pd
 
 import server.test.decode_fbs as decode_fbs
-from server.test import data_with_tmp_annotations, make_fbs, skip_if_equal
+from server.test import data_with_tmp_annotations, make_fbs, skip_if
 from server.data_common.matrix_loader import MatrixDataType
 
 BAD_FILTER = {"filter": {"obs": {"annotation_value": [{"name": "xyz"}]}}}
 
 # TODO (mweiden): remove ANNOTATIONS_ENABLED and Annotation subclasses when annotations are no longer experimental
-# TODO (mweiden): remove MATRIX_DATA_TYPE and skip_if_equal when user annotations for the CXG format is complete
+# TODO (mweiden): remove MATRIX_DATA_TYPE and skip_if when user annotations for the CXG format is complete
 
 
 class EndPoints(object):
@@ -91,7 +91,10 @@ class EndPoints(object):
             + (["cluster-test"] if self.ANNOTATIONS_ENABLED else []),
         )
 
-    @skip_if_equal("MATRIX_DATA_TYPE", MatrixDataType.CXG, "Annotations not fully implemented for CXG format!")
+    @skip_if(
+        lambda slf: hasattr(slf, "MATRIX_DATA_TYPE") and slf.MATRIX_DATA_TYPE == MatrixDataType.CXG,
+        "CXG file annotations are not feature-complete!",
+    )
     def test_get_annotations_obs_keys_fbs(self):
         endpoint = "annotations/obs"
         query = "annotation-name=n_genes&annotation-name=percent_mito"
@@ -272,13 +275,13 @@ class EndPointsAnnotations(EndPoints):
     def test_get_schema_existing_writable(self):
         self._test_get_schema_writable("cluster-test")
 
-    @skip_if_equal("MATRIX_DATA_TYPE", MatrixDataType.CXG, "Annotations not fully implemented for CXG format!")
+    @skip_if(lambda slf: slf.MATRIX_DATA_TYPE == MatrixDataType.CXG, "CXG file annotations are not feature-complete!")
     def test_get_user_annotations_existing_obs_keys_fbs(self):
         self._test_get_user_annotations_obs_keys_fbs(
             "cluster-test", {"unassigned", "one", "two", "three", "four", "five"},
         )
 
-    @skip_if_equal("MATRIX_DATA_TYPE", MatrixDataType.CXG, "Annotations not fully implemented for CXG format!")
+    @skip_if(lambda slf: slf.MATRIX_DATA_TYPE == MatrixDataType.CXG, "CXG file annotations are not feature-complete!")
     def test_put_user_annotations_obs_fbs(self):
         endpoint = "annotations/obs"
         query = "annotation-collection-name=test_annotations"

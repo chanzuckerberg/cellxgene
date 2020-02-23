@@ -34,10 +34,10 @@ def make_fbs(data):
     return encode_matrix_fbs(matrix=df, row_idx=None, col_idx=df.columns)
 
 
-def skip_if_equal(property_name: str, value, reason: str):
+def skip_if(condition, reason: str):
     def decorator(f):
         def wraps(self, *args, **kwargs):
-            if hasattr(self, property_name) and getattr(self, property_name) == value:
+            if condition(self):
                 self.skipTest(reason)
             else:
                 f(self, *args, **kwargs)
