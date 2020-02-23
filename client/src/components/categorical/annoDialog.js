@@ -70,7 +70,7 @@ class AnnoDialog extends React.Component {
                   onClick={handleSecondaryButtonSubmit}
                   disabled={!text || validationError}
                   intent="none"
-                  type="submit"
+                  type="button"
                 >
                   {secondaryButtonText}
                 </Button>

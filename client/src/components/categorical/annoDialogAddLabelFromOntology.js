@@ -32,7 +32,7 @@ class Category extends React.Component {
     });
   };
 
-  handleAddNewLabelToCategory = () => {
+  handleAddNewLabelToCategory = e => {
     const { dispatch, metadataField } = this.props;
     const { newLabelText } = this.state;
 
@@ -43,6 +43,7 @@ class Category extends React.Component {
       newLabelText,
       assignSelectedCells: false
     });
+    e.preventDefault();
   };
 
   addLabelAndAssignCells = () => {

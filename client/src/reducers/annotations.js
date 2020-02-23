@@ -92,12 +92,6 @@ const Annotations = (
         isEditingCategoryName: false,
         categoryBeingEdited: null
       };
-    case "annotation: category edited":
-      return {
-        ...state,
-        isEditingCategoryName: false,
-        categoryBeingEdited: null
-      };
 
     /* LABEL */
     case "annotation: activate edit label mode":
@@ -110,12 +104,6 @@ const Annotations = (
         }
       };
     case "annotation: cancel edit label mode":
-      return {
-        ...state,
-        isEditingLabelName: false,
-        labelEditable: { category: null, label: null }
-      };
-    case "annotation: label edited":
       return {
         ...state,
         isEditingLabelName: false,

@@ -83,10 +83,11 @@ class CategoryValue extends React.Component {
     });
   };
 
-  handleEditValue = () => {
+  handleEditValue = e => {
     const { dispatch, metadataField, categoryIndex } = this.props;
     const { editedLabelText } = this.state;
     const label = this.getLabel();
+    this.cancelEditMode();
     dispatch({
       type: "annotation: label edited",
       editedLabel: editedLabelText,
@@ -94,12 +95,13 @@ class CategoryValue extends React.Component {
       categoryIndex,
       label
     });
+    e.preventDefault();
   };
 
   handleCreateArbitraryLabel = editedLabelTextNotInOntology => {
     const { dispatch, metadataField, categoryIndex } = this.props;
     const label = this.getLabel();
-
+    this.cancelEditMode();
     dispatch({
       type: "annotation: label edited",
       metadataField,
@@ -150,7 +152,7 @@ class CategoryValue extends React.Component {
     });
   };
 
-  cancelEdit = () => {
+  cancelEditMode = () => {
     const { dispatch, metadataField, categoryIndex } = this.props;
     dispatch({
       type: "annotation: cancel edit label mode",
@@ -433,8 +435,12 @@ class CategoryValue extends React.Component {
               <div>
                 <AnnoDialog
                   isActive={editModeActive}
-                  inputProps={{ "data-testid": `${metadataField}:edit-label-name-dialog` }}
-                  primaryButtonProps={{ "data-testid": `${metadataField}:${displayString}:submit-label-edit` }}
+                  inputProps={{
+                    "data-testid": `${metadataField}:edit-label-name-dialog`
+                  }}
+                  primaryButtonProps={{
+                    "data-testid": `${metadataField}:${displayString}:submit-label-edit`
+                  }}
                   title="Edit label"
                   instruction={`New label text must be unique within category ${metadataField}:`}
                   cancelTooltipContent="Close this dialog without editing label text."
@@ -444,12 +450,14 @@ class CategoryValue extends React.Component {
                   validationError={this.labelNameError(editedLabelText)}
                   errorMessage={this.labelNameErrorMessage(editedLabelText)}
                   handleSubmit={this.handleEditValue}
-                  handleCancel={this.cancelEdit}
+                  handleCancel={this.cancelEditMode}
                   annoInput={
                     <AnnoInputs
                       useSuggest={ontologyEnabled}
                       text={editedLabelText}
-                      inputProps={{ "data-testid": `${metadataField}:${displayString}:edit-label-name` }}
+                      inputProps={{
+                        "data-testid": `${metadataField}:${displayString}:edit-label-name`
+                      }}
                       handleCreateArbitraryLabel={
                         this.handleCreateArbitraryLabel
                       }

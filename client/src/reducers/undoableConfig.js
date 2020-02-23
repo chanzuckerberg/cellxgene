@@ -50,7 +50,8 @@ const skipOnActions = new Set([
   "annotation: activate category edit mode",
   "annotation: disable category edit mode",
   "annotation: activate edit label mode",
-  "annotation: cancel edit label mode"
+  "annotation: cancel edit label mode",
+  "set annotations collection name"
 ]);
 
 /*
