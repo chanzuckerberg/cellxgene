@@ -14,7 +14,7 @@ def data_with_tmp_annotations(ext: MatrixDataType, annotations_fixture=False):
     tmp_dir = tempfile.mkdtemp()
     annotations_file = path.join(tmp_dir, "test_annotations.csv")
     if annotations_fixture:
-        shutil.copyfile(f"../example-dataset/pbmc3k-annotations.csv", annotations_file)
+        shutil.copyfile(f"test/test_datasets/pbmc3k-annotations.csv", annotations_file)
     args = {
         "layout": ["umap"],
         "max_category_items": 100,
@@ -22,7 +22,10 @@ def data_with_tmp_annotations(ext: MatrixDataType, annotations_fixture=False):
         "var_names": None,
         "diffexp_lfc_cutoff": 0.01,
     }
-    fname = f"../example-dataset/pbmc3k.{ext.value}"
+    fname = {
+        MatrixDataType.H5AD: "../example-dataset/pbmc3k.h5ad",
+        MatrixDataType.CXG: "test/test_datasets/pbmc3k.cxg",
+    }[ext]
     data_locator = DataLocator(fname)
     data = MatrixDataLoader(data_locator.abspath()).open(args)
     annotations = AnnotationsLocalFile(None, annotations_file)

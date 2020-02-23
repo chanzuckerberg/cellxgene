@@ -1,7 +1,7 @@
 include ../common.mk
 
 DATASET := $(if $(DATASET),$(DATASET),../example-dataset/pbmc3k.h5ad)
-ANNOTATIONS := $(if $(ANNOTATIONS),$(ANNOTATIONS),../example-dataset/pbmc3k-annotations.csv)
+ANNOTATIONS := $(if $(ANNOTATIONS),$(ANNOTATIONS),../server/test/test_datasets/pbmc3k-annotations.csv)
 ANNOTATIONS_FILENAME := $(shell basename $(ANNOTATIONS))
 
 # Packaging

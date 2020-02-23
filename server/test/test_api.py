@@ -4,11 +4,11 @@ import unittest
 from http import HTTPStatus
 from subprocess import Popen
 
-import requests
 import pandas as pd
+import requests
 
 import server.test.decode_fbs as decode_fbs
-from server.test import data_with_tmp_annotations, make_fbs, skip_if
+from server.test import skip_if, data_with_tmp_annotations, make_fbs
 from server.data_common.matrix_loader import MatrixDataType
 
 BAD_FILTER = {"filter": {"obs": {"annotation_value": [{"name": "xyz"}]}}}
@@ -372,7 +372,7 @@ class EndPointsCxg(unittest.TestCase, EndPoints):
                 "cellxgene",
                 "--no-upgrade-check",
                 "launch",
-                "../example-dataset/pbmc3k.cxg",
+                "test/test_datasets/pbmc3k.cxg",
                 "--verbose",
                 "--port",
                 str(cls.PORT),
