@@ -25,6 +25,7 @@ from threading import Lock
 # _______________________________________________________________________
 # Class
 
+
 class RWLock(object):
     """ RWLock class; this is meant to allow an object to be read from by
         multiple threads, but only written to by a single thread at a time. See:

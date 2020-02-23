@@ -3,7 +3,7 @@ from os import path
 import pytest
 import time
 import unittest
-import decode_fbs
+import server.test.decode_fbs as decode_fbs
 from parameterized import parameterized_class
 
 import numpy as np

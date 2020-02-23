@@ -1,17 +1,24 @@
+import shutil
+import time
+import unittest
 from http import HTTPStatus
 from subprocess import Popen
-import unittest
-import time
 
+import pandas as pd
 import requests
 
-import decode_fbs
-
+import server.test.decode_fbs as decode_fbs
+from server.test import skip_if, data_with_tmp_annotations, make_fbs
+from server.data_common.matrix_loader import MatrixDataType
 
 BAD_FILTER = {"filter": {"obs": {"annotation_value": [{"name": "xyz"}]}}}
 
+# TODO (mweiden): remove ANNOTATIONS_ENABLED and Annotation subclasses when annotations are no longer experimental
+# TODO (mweiden): remove MATRIX_DATA_TYPE and skip_if when user annotations for the CXG format is complete
+
 
 class EndPoints(object):
+    ANNOTATIONS_ENABLED = False
 
     def setUp(self):
         self.session = requests.Session()
@@ -25,7 +32,9 @@ class EndPoints(object):
         result_data = result.json()
         self.assertEqual(result_data["schema"]["dataframe"]["nObs"], 2638)
         self.assertEqual(len(result_data["schema"]["annotations"]["obs"]), 2)
-        self.assertEqual(len(result_data["schema"]["annotations"]["obs"]["columns"]), 5)
+        self.assertEqual(
+            len(result_data["schema"]["annotations"]["obs"]["columns"]), 6 if self.ANNOTATIONS_ENABLED else 5
+        )
 
     def test_config(self):
         endpoint = "config"
@@ -51,7 +60,7 @@ class EndPoints(object):
         self.assertIsNotNone(df["columns"])
         self.assertSetEqual(
             set(df["col_idx"]),
-            set(["pca_0", "pca_1", "tsne_0", "tsne_1", "umap_0", "umap_1", "draw_graph_fr_0", "draw_graph_fr_1"]),
+            {"pca_0", "pca_1", "tsne_0", "tsne_1", "umap_0", "umap_1", "draw_graph_fr_0", "draw_graph_fr_1"},
         )
         self.assertIsNone(df["row_idx"])
         self.assertEqual(len(df["columns"]), df["n_cols"])
@@ -71,14 +80,21 @@ class EndPoints(object):
         self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
         df = decode_fbs.decode_matrix_FBS(result.content)
         self.assertEqual(df["n_rows"], 2638)
-        self.assertEqual(df["n_cols"], 5)
+        self.assertEqual(df["n_cols"], 6 if self.ANNOTATIONS_ENABLED else 5)
         self.assertIsNotNone(df["columns"])
-        self.assertIsNotNone(df["col_idx"])
         self.assertIsNone(df["row_idx"])
         self.assertEqual(len(df["columns"]), df["n_cols"])
         obs_index_col_name = self.schema["schema"]["annotations"]["obs"]["index"]
-        self.assertListEqual(df["col_idx"], [obs_index_col_name, "n_genes", "percent_mito", "n_counts", "louvain"])
+        self.assertListEqual(
+            df["col_idx"],
+            [obs_index_col_name, "n_genes", "percent_mito", "n_counts", "louvain"]
+            + (["cluster-test"] if self.ANNOTATIONS_ENABLED else []),
+        )
 
+    @skip_if(
+        lambda slf: hasattr(slf, "MATRIX_DATA_TYPE") and slf.MATRIX_DATA_TYPE == MatrixDataType.CXG,
+        "CXG file annotations are not feature-complete!",
+    )
     def test_get_annotations_obs_keys_fbs(self):
         endpoint = "annotations/obs"
         query = "annotation-name=n_genes&annotation-name=percent_mito"
@@ -91,7 +107,6 @@ class EndPoints(object):
         self.assertEqual(df["n_rows"], 2638)
         self.assertEqual(df["n_cols"], 2)
         self.assertIsNotNone(df["columns"])
-        self.assertIsNotNone(df["col_idx"])
         self.assertIsNone(df["row_idx"])
         self.assertEqual(len(df["columns"]), df["n_cols"])
         self.assertListEqual(df["col_idx"], ["n_genes", "percent_mito"])
@@ -144,7 +159,6 @@ class EndPoints(object):
         self.assertEqual(df["n_rows"], 1838)
         self.assertEqual(df["n_cols"], 2)
         self.assertIsNotNone(df["columns"])
-        self.assertIsNotNone(df["col_idx"])
         self.assertIsNone(df["row_idx"])
         self.assertEqual(len(df["columns"]), df["n_cols"])
         var_index_col_name = self.schema["schema"]["annotations"]["var"]["index"]
@@ -162,7 +176,6 @@ class EndPoints(object):
         self.assertEqual(df["n_rows"], 1838)
         self.assertEqual(df["n_cols"], 1)
         self.assertIsNotNone(df["columns"])
-        self.assertIsNotNone(df["col_idx"])
         self.assertIsNone(df["row_idx"])
         self.assertEqual(len(df["columns"]), df["n_cols"])
         self.assertListEqual(df["col_idx"], ["n_cells"])
@@ -215,7 +228,6 @@ class EndPoints(object):
         self.assertEqual(df["n_rows"], 2638)
         self.assertEqual(df["n_cols"], 3)
         self.assertIsNotNone(df["columns"])
-        self.assertIsNotNone(df["col_idx"])
         self.assertIsNone(df["row_idx"])
         self.assertEqual(len(df["columns"]), df["n_cols"])
         self.assertListEqual(df["col_idx"].tolist(), [0, 1, 4])
@@ -240,6 +252,77 @@ class EndPoints(object):
         result = self.session.get(url)
         self.assertEqual(result.status_code, HTTPStatus.OK)
 
+    @staticmethod
+    def _setUpClass(child_class, start_command):
+        child_class.ps = Popen(start_command)
+        child_class.session = requests.Session()
+        for i in range(90):
+            try:
+                result = child_class.session.get(f"{child_class.URL_BASE}schema")
+                child_class.schema = result.json()
+            except requests.exceptions.ConnectionError:
+                time.sleep(1)
+
+    @staticmethod
+    def _tearDownClass(child_class):
+        try:
+            child_class.ps.terminate()
+        except ProcessLookupError:
+            pass
+
+
+class EndPointsAnnotations(EndPoints):
+    def test_get_schema_existing_writable(self):
+        self._test_get_schema_writable("cluster-test")
+
+    @skip_if(lambda slf: slf.MATRIX_DATA_TYPE == MatrixDataType.CXG, "CXG file annotations are not feature-complete!")
+    def test_get_user_annotations_existing_obs_keys_fbs(self):
+        self._test_get_user_annotations_obs_keys_fbs(
+            "cluster-test", {"unassigned", "one", "two", "three", "four", "five"},
+        )
+
+    @skip_if(lambda slf: slf.MATRIX_DATA_TYPE == MatrixDataType.CXG, "CXG file annotations are not feature-complete!")
+    def test_put_user_annotations_obs_fbs(self):
+        endpoint = "annotations/obs"
+        query = "annotation-collection-name=test_annotations"
+        url = f"{self.URL_BASE}{endpoint}?{query}"
+        n_rows = self.data.get_shape()[0]
+        fbs = make_fbs({"cat_A": pd.Series(["label_A" for l in range(0, n_rows)], dtype="category")})
+        result = self.session.put(url, data=fbs)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "application/json")
+        self.assertEqual(result.json(), {"status": "OK"})
+        self._test_get_schema_writable("cat_A")
+        self._test_get_user_annotations_obs_keys_fbs("cat_A", {"label_A"})
+
+    def _test_get_user_annotations_obs_keys_fbs(self, annotation_name, columns):
+        endpoint = "annotations/obs"
+        query = f"annotation-name={annotation_name}"
+        url = f"{self.URL_BASE}{endpoint}?{query}"
+        header = {"Accept": "application/octet-stream"}
+        result = self.session.get(url, headers=header)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
+        df = decode_fbs.decode_matrix_FBS(result.content)
+        self.assertEqual(df["n_rows"], 2638)
+        self.assertEqual(df["n_cols"], 1)
+        self.assertListEqual(df["col_idx"], [annotation_name])
+        self.assertEqual(set(df["columns"][0]), columns)
+        self.assertIsNone(df["row_idx"])
+        self.assertEqual(len(df["columns"]), df["n_cols"])
+
+    def _test_get_schema_writable(self, cluster_name):
+        endpoint = "schema"
+        url = f"{self.URL_BASE}{endpoint}"
+        result = self.session.get(url)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "application/json")
+        result_data = result.json()
+        columns = result_data["schema"]["annotations"]["obs"]["columns"]
+        matching_columns = [c for c in columns if c["name"] == cluster_name]
+        self.assertEqual(len(matching_columns), 1)
+        self.assertTrue(matching_columns[0]["writable"])
+
 
 class EndPointsAnndata(unittest.TestCase, EndPoints):
     """Test Case for endpoints"""
@@ -251,7 +334,8 @@ class EndPointsAnndata(unittest.TestCase, EndPoints):
 
     @classmethod
     def setUpClass(cls):
-        cls.ps = Popen(
+        cls._setUpClass(
+            cls,
             [
                 "cellxgene",
                 "--no-upgrade-check",
@@ -260,22 +344,16 @@ class EndPointsAnndata(unittest.TestCase, EndPoints):
                 "--verbose",
                 "--port",
                 str(cls.PORT),
-            ]
+            ],
         )
-        cls.session = requests.Session()
-        for i in range(90):
-            try:
-                result = cls.session.get(f"{cls.URL_BASE}schema")
-                cls.schema = result.json()
-            except requests.exceptions.ConnectionError:
-                time.sleep(1)
 
     @classmethod
     def tearDownClass(cls):
-        try:
-            cls.ps.terminate()
-        except ProcessLookupError:
-            pass
+        cls._tearDownClass(cls)
+
+    @property
+    def annotations_enabled(self):
+        return False
 
 
 class EndPointsCxg(unittest.TestCase, EndPoints):
@@ -288,28 +366,91 @@ class EndPointsCxg(unittest.TestCase, EndPoints):
 
     @classmethod
     def setUpClass(cls):
-        cls.ps = Popen(
+        cls._setUpClass(
+            cls,
             [
                 "cellxgene",
                 "--no-upgrade-check",
                 "launch",
-                "../example-dataset/pbmc3k.cxg",
+                "test/test_datasets/pbmc3k.cxg",
                 "--verbose",
                 "--port",
                 str(cls.PORT),
-            ]
+            ],
         )
-        cls.session = requests.Session()
-        for i in range(90):
-            try:
-                result = cls.session.get(f"{cls.URL_BASE}schema")
-                cls.schema = result.json()
-            except requests.exceptions.ConnectionError:
-                time.sleep(1)
 
     @classmethod
     def tearDownClass(cls):
-        try:
-            cls.ps.terminate()
-        except ProcessLookupError:
-            pass
+        cls._tearDownClass(cls)
+
+
+class EndPointsAnndataAnnotations(unittest.TestCase, EndPointsAnnotations):
+    """Test Case for endpoints"""
+
+    PORT = 5012
+    LOCAL_URL = f"http://127.0.0.1:{PORT}/"
+    VERSION = "v0.2"
+    URL_BASE = f"{LOCAL_URL}api/{VERSION}/"
+    ANNOTATIONS_ENABLED = True
+    MATRIX_DATA_TYPE = MatrixDataType.H5AD
+
+    @classmethod
+    def setUpClass(cls):
+        cls.data, cls.tmp_dir, cls.annotations = data_with_tmp_annotations(
+            MatrixDataType.H5AD, annotations_fixture=True
+        )
+        cls._setUpClass(
+            cls,
+            [
+                "cellxgene",
+                "--no-upgrade-check",
+                "launch",
+                "--experimental-annotations",
+                "--experimental-annotations-file",
+                cls.annotations.output_file,
+                "--verbose",
+                "--port",
+                str(cls.PORT),
+                cls.data.get_location(),
+            ],
+        )
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.tmp_dir)
+        cls._tearDownClass(cls)
+
+
+class EndPointsCxgAnnotations(unittest.TestCase, EndPointsAnnotations):
+    """Test Case for endpoints"""
+
+    PORT = 5013
+    LOCAL_URL = f"http://127.0.0.1:{PORT}/"
+    VERSION = "v0.2"
+    URL_BASE = f"{LOCAL_URL}api/{VERSION}/"
+    ANNOTATIONS_ENABLED = True
+    MATRIX_DATA_TYPE = MatrixDataType.CXG
+
+    @classmethod
+    def setUpClass(cls):
+        cls.data, cls.tmp_dir, cls.annotations = data_with_tmp_annotations(MatrixDataType.CXG, annotations_fixture=True)
+        cls._setUpClass(
+            cls,
+            [
+                "cellxgene",
+                "--no-upgrade-check",
+                "launch",
+                "--experimental-annotations",
+                "--experimental-annotations-file",
+                cls.annotations.output_file,
+                "--verbose",
+                "--port",
+                str(cls.PORT),
+                cls.data.get_location(),
+            ],
+        )
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.tmp_dir)
+        cls._tearDownClass(cls)

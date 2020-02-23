@@ -84,7 +84,7 @@ class DataLocator:
         # and clean it up when done.  If the path has a suffix/extension,
         # do our best to create a file with the same.
         ext = os.path.splitext(self.path)
-        suffix = None if ext[1] == '' else ext[1]
+        suffix = None if ext[1] == "" else ext[1]
         with self.open() as src, tempfile.NamedTemporaryFile(prefix="cellxgene_", suffix=suffix, delete=False) as tmp:
             tmp.write(src.read())
             tmp.close()

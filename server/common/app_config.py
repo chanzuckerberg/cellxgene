@@ -13,16 +13,12 @@ class AppFeature(object):
             setattr(self, k, v)
 
     def todict(self):
-        d = dict(
-            available=self.available,
-            method=self.method,
-            path=self.path)
+        d = dict(available=self.available, method=self.method, path=self.path)
         d.update(self.extra)
         return d
 
 
 class AppConfig(object):
-
     def __init__(self, **kw):
         super().__init__()
 
@@ -47,10 +43,20 @@ class AppConfig(object):
         # parameters
         self.diffexp_may_be_slow = False
 
-        inputs = ["datapath", "dataroot", "title", "about", "scripts", "layout",
-                  "max_category_items", "diffexp_lfc_cutoff",
-                  "obs_names", "var_names",
-                  "anndata_backed", "disable_diffexp"]
+        inputs = [
+            "datapath",
+            "dataroot",
+            "title",
+            "about",
+            "scripts",
+            "layout",
+            "max_category_items",
+            "diffexp_lfc_cutoff",
+            "obs_names",
+            "var_names",
+            "anndata_backed",
+            "disable_diffexp",
+        ]
 
         self.update(inputs, kw)
 
@@ -80,9 +86,7 @@ class AppConfig(object):
         title = self.get_title(data_adaptor)
         about = self.get_about(data_adaptor)
 
-        display_names = dict(
-            engine=data_adaptor.get_name(),
-            dataset=title)
+        display_names = dict(engine=data_adaptor.get_name(), dataset=title)
 
         # library_versions
         library_versions = {}
@@ -90,7 +94,7 @@ class AppConfig(object):
         library_versions["cellxgene"] = cellxgene_version
 
         # links
-        links = {"about-dataset" : about}
+        links = {"about-dataset": about}
 
         # parameters
         parameters = {

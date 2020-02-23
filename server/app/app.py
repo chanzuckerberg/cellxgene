@@ -82,12 +82,12 @@ def rest_get_data_adaptor(func):
 
 def static_redirect(dataset, therest):
     """ redirect all static requests to the standard location """
-    return redirect(f'/static/{therest}', code=301)
+    return redirect(f"/static/{therest}", code=301)
 
 
 def favicon_redirect(dataset):
     """ redirect favicon to static dir """
-    return redirect('/static/favicon.png', code=301)
+    return redirect("/static/favicon.png", code=301)
 
 
 def dataroot_index():
@@ -127,20 +127,17 @@ class SchemaAPI(Resource):
 class ConfigAPI(Resource):
     @rest_get_data_adaptor
     def get(self, data_adaptor):
-        return common_rest.config_get(
-            current_app.app_config, data_adaptor, current_app.annotations)
+        return common_rest.config_get(current_app.app_config, data_adaptor, current_app.annotations)
 
 
 class AnnotationsObsAPI(Resource):
     @rest_get_data_adaptor
     def get(self, data_adaptor):
-        return common_rest.annotations_obs_get(
-            request, data_adaptor, current_app.annotations)
+        return common_rest.annotations_obs_get(request, data_adaptor, current_app.annotations)
 
     @rest_get_data_adaptor
     def put(self, data_adaptor):
-        return common_rest.annotations_obs_put(
-            request, data_adaptor, current_app.annotations)
+        return common_rest.annotations_obs_put(request, data_adaptor, current_app.annotations)
 
 
 class AnnotationsVarAPI(Resource):
@@ -216,7 +213,7 @@ class Server:
             bp_api = Blueprint("api_dataset", __name__, url_prefix="/<dataset>" + api_version)
             resources = get_api_resources(bp_api)
             self.app.register_blueprint(resources.blueprint)
-            self.app.add_url_rule("/<dataset>/", 'dataset_index', dataset_index)
+            self.app.add_url_rule("/<dataset>/", "dataset_index", dataset_index)
             self.app.add_url_rule("/<dataset>/static/<path:therest>", "static_redirect", static_redirect)
             self.app.add_url_rule("/<dataset>/favicon.png", "favicon_redirect", favicon_redirect)
 

@@ -16,10 +16,7 @@ import threading
 class CxgAdaptor(DataAdaptor):
 
     # TODO:  The tiledb context parameters should be a configuration option
-    tiledb_ctx = tiledb.Ctx({
-        'sm.tile_cache_size': 8 * 1024 * 1024 * 1024,
-        'sm.num_reader_threads': 32,
-    })
+    tiledb_ctx = tiledb.Ctx({"sm.tile_cache_size": 8 * 1024 * 1024 * 1024, "sm.num_reader_threads": 32})
 
     def __init__(self, location, config=None):
         super().__init__(config)
@@ -28,8 +25,8 @@ class CxgAdaptor(DataAdaptor):
         self.lock = threading.Lock()
 
         self.url = location
-        if self.url[-1] != '/':
-            self.url += '/'
+        if self.url[-1] != "/":
+            self.url += "/"
 
         self._validate_and_initialize()
 
@@ -79,19 +76,18 @@ class CxgAdaptor(DataAdaptor):
         returns list of (absolute paths, type) *without* trailing slash
         in the path.
         """
+
         def _cleanpath(p):
-            if p[-1] == '/':
+            if p[-1] == "/":
                 return p[:-1]
             else:
                 return p
 
-        if uri[-1] != '/':
-            uri += '/'
+        if uri[-1] != "/":
+            uri += "/"
 
         result = []
-        tiledb.ls(uri,
-                  lambda path, type: result.append((_cleanpath(path), type)),
-                  ctx=self.tiledb_ctx)
+        tiledb.ls(uri, lambda path, type: result.append((_cleanpath(path), type)), ctx=self.tiledb_ctx)
         return result
 
     @staticmethod
@@ -135,13 +131,13 @@ class CxgAdaptor(DataAdaptor):
         elif a_type == "array":
             # version >0
             gmd = self.open_array("cxg_group_metadata")
-            cxg_version = gmd.meta['cxg_version']
+            cxg_version = gmd.meta["cxg_version"]
             if cxg_version == "0.1":
-                cxg_properties = json.loads(gmd.meta['cxg_properties'])
-                title = cxg_properties.get('title', None)
-                about = cxg_properties.get('about', None)
+                cxg_properties = json.loads(gmd.meta["cxg_properties"])
+                title = cxg_properties.get("title", None)
+                about = cxg_properties.get("about", None)
 
-        if cxg_version not in ['0.0', '0.1']:
+        if cxg_version not in ["0.0", "0.1"]:
             raise DatasetAccessError(f"cxg matrix is not valid: {self.url}")
 
         self.title = title
@@ -175,7 +171,7 @@ class CxgAdaptor(DataAdaptor):
         if obs_items == slice(None) and var_items == slice(None):
             data = X[:, :]
         else:
-            data = X.multi_index[obs_items, var_items]['']
+            data = X.multi_index[obs_items, var_items][""]
         return data
 
     def get_shape(self):
@@ -222,11 +218,9 @@ class CxgAdaptor(DataAdaptor):
     # function to get the embedding
     # this function to iterate through embeddings.
     def get_embedding_names(self):
-        with ServerTiming.time(f'layout.lsuri'):
+        with ServerTiming.time(f"layout.lsuri"):
             pemb = self.get_path("emb")
-            embeddings = [
-                os.path.basename(p) for (p, t) in self.lsuri(pemb) if t == 'array'
-            ]
+            embeddings = [os.path.basename(p) for (p, t) in self.lsuri(pemb) if t == "array"]
         return embeddings
 
     @staticmethod
@@ -235,82 +229,68 @@ class CxgAdaptor(DataAdaptor):
         dtype = attr.dtype
         schema = {}
         # type hints take precedence
-        if 'type' in type_hint:
-            schema['type'] = type_hint['type']
+        if "type" in type_hint:
+            schema["type"] = type_hint["type"]
         elif dtype == np.float32:
-            schema['type'] = 'float32'
+            schema["type"] = "float32"
         elif dtype == np.int32:
-            schema['type'] = 'int32'
+            schema["type"] = "int32"
         elif dtype == np.bool_:
-            schema['type'] = 'boolean'
+            schema["type"] = "boolean"
         elif dtype == np.str:
-            schema['type'] = 'string'
+            schema["type"] = "string"
         elif dtype == "category":
             schema["type"] = "categorical"
             schema["categories"] = dtype.categories.tolist()
         else:
-            raise TypeError(
-                f"Annotations of type {dtype} are unsupported."
-            )
+            raise TypeError(f"Annotations of type {dtype} are unsupported.")
 
-        if schema['type'] == 'categorical' and 'categories' in schema_hints:
-            schema['categories'] = schema_hints['categories']
+        if schema["type"] == "categorical" and "categories" in schema_hints:
+            schema["categories"] = schema_hints["categories"]
         return schema
 
     def get_schema(self):
         shape = self.get_shape()
         dtype = self.get_X_array_dtype()
 
-        dataframe = {
-            'nObs': shape[0],
-            'nVar': shape[1],
-            'type': dtype.name
-        }
+        dataframe = {"nObs": shape[0], "nVar": shape[1], "type": dtype.name}
 
         annotations = {}
-        for ax in ('obs', 'var'):
+        for ax in ("obs", "var"):
             A = self.open_array(ax)
-            schema_hints = json.loads(A.meta['cxg_schema']) if 'cxg_schema' in A.meta else {}
+            schema_hints = json.loads(A.meta["cxg_schema"]) if "cxg_schema" in A.meta else {}
             if type(schema_hints) is not dict:
-                raise TypeError(f'Array schema was malformed.')
+                raise TypeError(f"Array schema was malformed.")
 
             cols = []
             for attr in A.schema:
                 schema = dict(name=attr.name, writable=False)
                 type_hint = schema_hints.get(attr.name, {})
                 # type hints take precedence
-                if 'type' in type_hint:
-                    schema['type'] = type_hint['type']
-                    if schema['type'] == 'categorical' and 'categories' in type_hint:
-                        schema['categories'] = type_hint['categories']
+                if "type" in type_hint:
+                    schema["type"] = type_hint["type"]
+                    if schema["type"] == "categorical" and "categories" in type_hint:
+                        schema["categories"] = type_hint["categories"]
                 else:
                     schema.update(dtype_to_schema(attr.dtype))
                 cols.append(schema)
 
             annotations[ax] = dict(columns=cols)
 
-            if 'index' in schema_hints:
-                annotations[ax].update({'index': schema_hints['index']})
+            if "index" in schema_hints:
+                annotations[ax].update({"index": schema_hints["index"]})
 
         obs_layout = []
         embeddings = self.get_embedding_names()
         for ename in embeddings:
             A = self.open_array(f"emb/{ename}")
-            obs_layout.append({
-                'name': ename,
-                'type': A.dtype.name,
-                'dims': [f'{ename}_{d}' for d in range(0, A.ndim)]
-            })
+            obs_layout.append({"name": ename, "type": A.dtype.name, "dims": [f"{ename}_{d}" for d in range(0, A.ndim)]})
 
-        schema = {
-            'dataframe': dataframe,
-            'annotations': annotations,
-            'layout': {'obs': obs_layout}
-        }
+        schema = {"dataframe": dataframe, "annotations": annotations, "layout": {"obs": obs_layout}}
         return schema
 
     def annotation_to_fbs_matrix(self, axis, fields=None, labels=None):
-        with ServerTiming.time(f'annotations.{axis}.query'):
+        with ServerTiming.time(f"annotations.{axis}.query"):
             A = self.open_array(str(axis))
             if fields is not None and len(fields) > 0:
                 try:
@@ -326,7 +306,7 @@ class CxgAdaptor(DataAdaptor):
                     obs_names = self.get_obs_names()
                     df = df.join(labels, obs_names)
 
-        with ServerTiming.time(f'annotations.{axis}.encode'):
+        with ServerTiming.time(f"annotations.{axis}.encode"):
             fbs = encode_matrix_fbs(df, col_idx=df.columns)
 
         return fbs
@@ -337,7 +317,7 @@ class CxgAdaptor(DataAdaptor):
         if boolarray is None:
             return slice(None)
         assert type(boolarray) == np.ndarray
-        assert(boolarray.dtype) == bool
+        assert (boolarray.dtype) == bool
 
         selector = np.nonzero(boolarray)[0]
 

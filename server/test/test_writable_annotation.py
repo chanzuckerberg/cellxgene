@@ -1,42 +1,23 @@
 import json
 from os import path, listdir
 import unittest
-import decode_fbs
-import tempfile
+import server.test.decode_fbs as decode_fbs
 import shutil
 
 import numpy as np
 import pandas as pd
 
-from server.data_anndata.anndata_adaptor import AnndataAdaptor
-from server.data_common.fbs.matrix import encode_matrix_fbs
-from server.common.data_locator import DataLocator
-from server.common.annotations import AnnotationsLocalFile
 from server.common.rest import schema_get_helper, annotations_put_fbs_helper
+from server.test import data_with_tmp_annotations, make_fbs
+from server.data_common.matrix_loader import MatrixDataType
 
 
 class WritableAnnotationTest(unittest.TestCase):
     def setUp(self):
-        self.tmpDir = tempfile.mkdtemp()
-        self.annotations_file = path.join(self.tmpDir, "test_annotations.csv")
-        args = {
-            "layout": ["umap"],
-            "max_category_items": 100,
-            "obs_names": None,
-            "var_names": None,
-            "diffexp_lfc_cutoff": 0.01,
-        }
-        fname = "../example-dataset/pbmc3k.h5ad"
-        data_locator = DataLocator(fname)
-        self.data = AnndataAdaptor(data_locator, args)
-        self.annotations = AnnotationsLocalFile(None, self.annotations_file)
+        self.data, self.tmp_dir, self.annotations = data_with_tmp_annotations(MatrixDataType.H5AD)
 
     def tearDown(self):
-        shutil.rmtree(self.tmpDir)
-
-    def make_fbs(self, data):
-        df = pd.DataFrame(data)
-        return encode_matrix_fbs(matrix=df, row_idx=None, col_idx=df.columns)
+        shutil.rmtree(self.tmp_dir)
 
     def annotation_put_fbs(self, fbs):
         annotations_put_fbs_helper(self.data, self.annotations, fbs)
@@ -45,8 +26,8 @@ class WritableAnnotationTest(unittest.TestCase):
 
     def test_error_checks(self):
         # verify that the expected errors are generated
-        n_rows = self.data.data.obs.shape[0]
-        fbs_bad = self.make_fbs({"louvain": pd.Series(["undefined" for l in range(0, n_rows)], dtype="category")})
+        n_rows = self.data.get_shape()[0]
+        fbs_bad = make_fbs({"louvain": pd.Series(["undefined" for l in range(0, n_rows)], dtype="category")})
 
         # ensure we catch attempt to overwrite non-writable data
         with self.assertRaises(KeyError):
@@ -54,8 +35,8 @@ class WritableAnnotationTest(unittest.TestCase):
 
     def test_write_to_file(self):
         # verify the file is written as expected
-        n_rows = self.data.data.obs.shape[0]
-        fbs = self.make_fbs(
+        n_rows = self.data.get_shape()[0]
+        fbs = make_fbs(
             {
                 "cat_A": pd.Series(["label_A" for l in range(0, n_rows)], dtype="category"),
                 "cat_B": pd.Series(["label_B" for l in range(0, n_rows)], dtype="category"),
@@ -63,8 +44,8 @@ class WritableAnnotationTest(unittest.TestCase):
         )
         res = self.annotation_put_fbs(fbs)
         self.assertEqual(res, json.dumps({"status": "OK"}))
-        self.assertTrue(path.exists(self.annotations_file))
-        df = pd.read_csv(self.annotations_file, index_col=0, header=0, comment="#")
+        self.assertTrue(path.exists(self.annotations.output_file))
+        df = pd.read_csv(self.annotations.output_file, index_col=0, header=0, comment="#")
         self.assertEqual(df.shape, (n_rows, 2))
         self.assertEqual(set(df.columns), {"cat_A", "cat_B"})
         self.assertTrue(self.data.original_obs_index.equals(df.index))
@@ -72,7 +53,7 @@ class WritableAnnotationTest(unittest.TestCase):
         self.assertTrue(np.all(df["cat_B"] == ["label_B" for l in range(0, n_rows)]))
 
         # verify complete overwrite on second attempt, AND rotation occurs
-        fbs = self.make_fbs(
+        fbs = make_fbs(
             {
                 "cat_A": pd.Series(["label_A1" for l in range(0, n_rows)], dtype="category"),
                 "cat_C": pd.Series(["label_C" for l in range(0, n_rows)], dtype="category"),
@@ -80,14 +61,14 @@ class WritableAnnotationTest(unittest.TestCase):
         )
         res = self.annotation_put_fbs(fbs)
         self.assertEqual(res, json.dumps({"status": "OK"}))
-        self.assertTrue(path.exists(self.annotations_file))
-        df = pd.read_csv(self.annotations_file, index_col=0, header=0, comment="#")
+        self.assertTrue(path.exists(self.annotations.output_file))
+        df = pd.read_csv(self.annotations.output_file, index_col=0, header=0, comment="#")
         self.assertEqual(set(df.columns), {"cat_A", "cat_C"})
         self.assertTrue(np.all(df["cat_A"] == ["label_A1" for l in range(0, n_rows)]))
         self.assertTrue(np.all(df["cat_C"] == ["label_C" for l in range(0, n_rows)]))
 
         # rotation
-        name, ext = path.splitext(self.annotations_file)
+        name, ext = path.splitext(self.annotations.output_file)
         backup_dir = f"{name}-backups"
         self.assertTrue(path.isdir(backup_dir))
         found_files = listdir(backup_dir)
@@ -95,8 +76,8 @@ class WritableAnnotationTest(unittest.TestCase):
 
     def test_file_rotation_to_max_9(self):
         # verify we stop rotation at 9
-        n_rows = self.data.data.obs.shape[0]
-        fbs = self.make_fbs(
+        n_rows = self.data.get_shape()[0]
+        fbs = make_fbs(
             {
                 "cat_A": pd.Series(["label_A" for l in range(0, n_rows)], dtype="category"),
                 "cat_B": pd.Series(["label_B" for l in range(0, n_rows)], dtype="category"),
@@ -106,7 +87,7 @@ class WritableAnnotationTest(unittest.TestCase):
             res = self.annotation_put_fbs(fbs)
             self.assertEqual(res, json.dumps({"status": "OK"}))
 
-        name, ext = path.splitext(self.annotations_file)
+        name, ext = path.splitext(self.annotations.output_file)
         backup_dir = f"{name}-backups"
         self.assertTrue(path.isdir(backup_dir))
         found_files = listdir(backup_dir)
@@ -116,8 +97,8 @@ class WritableAnnotationTest(unittest.TestCase):
         # verify that OBS PUTs (annotation_put_fbs) are accessible via
         # GET (annotation_to_fbs_matrix)
 
-        n_rows = self.data.data.obs.shape[0]
-        fbs = self.make_fbs(
+        n_rows = self.data.get_shape()[0]
+        fbs = make_fbs(
             {
                 "cat_A": pd.Series(["label_A" for l in range(0, n_rows)], dtype="category"),
                 "cat_B": pd.Series(["label_B" for l in range(0, n_rows)], dtype="category"),

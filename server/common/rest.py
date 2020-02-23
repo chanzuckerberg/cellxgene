@@ -29,9 +29,7 @@ def schema_get_helper(data_adaptor, annotations):
 
 def schema_get(data_adaptor, annotations):
     schema = schema_get_helper(data_adaptor, annotations)
-    return make_response(
-        jsonify({"schema": schema}), HTTPStatus.OK
-    )
+    return make_response(jsonify({"schema": schema}), HTTPStatus.OK)
 
 
 def config_get(app_config, data_adaptor, annotations):
