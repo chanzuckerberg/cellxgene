@@ -66,7 +66,7 @@ def annotations_put_fbs_helper(data_adaptor, annotations, fbs):
     new_label_df = decode_matrix_fbs(fbs)
     if not new_label_df.empty:
         data_adaptor.check_new_labels(new_label_df)
-        annotations.write_labels(new_label_df, data_adaptor)
+    annotations.write_labels(new_label_df, data_adaptor)
 
 
 def annotations_obs_put(request, data_adaptor, annotations):
