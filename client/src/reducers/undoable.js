@@ -93,7 +93,6 @@ const Undoable = (reducer, undoableKeys, options = {}) => {
       [futureKey]: newFuture,
       [pendingKey]: null
     };
-    console.log("undo", currentState, nextState);
     return nextState;
   }
 
