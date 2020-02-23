@@ -287,7 +287,7 @@ def create_emb(e_name, emb):
     * large tile size (1000)
     * default compression level
     """
-    filters = tiledb.FilterList([tiledb.ZstdFilter(), ])
+    filters = tiledb.FilterList([tiledb.ZstdFilter()])
     attrs = [tiledb.Attr(dtype=emb.dtype, filters=filters)]
     dims = []
     for d in range(emb.ndim):

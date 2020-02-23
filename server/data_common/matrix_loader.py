@@ -135,7 +135,6 @@ class MatrixDataType(Enum):
 
 
 class MatrixDataLoader(object):
-
     def __init__(self, location, etype=None):
         self.location = location
         if etype is None:
@@ -145,9 +144,11 @@ class MatrixDataLoader(object):
         self.matrix_type = None
         if self.etype == MatrixDataType.H5AD:
             from server.data_anndata.anndata_adaptor import AnndataAdaptor
+
             self.matrix_type = AnndataAdaptor
         elif self.etype == MatrixDataType.CXG:
             from server.data_cxg.cxg_adaptor import CxgAdaptor
+
             self.matrix_type = CxgAdaptor
 
     def matrix_data_type(self):

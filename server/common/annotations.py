@@ -42,7 +42,7 @@ class Annotations(metaclass=ABCMeta):
             raise OntologyLoadFailure(f"Unable to find OBO ontology path: {path}") from e
 
         except SyntaxError as e:
-            msg = ''.join(traceback.format_exception_only(SyntaxError, e))
+            msg = "".join(traceback.format_exception_only(SyntaxError, e))
             raise OntologyLoadFailure(msg) from e
 
         except Exception as e:

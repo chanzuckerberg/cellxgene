@@ -20,7 +20,7 @@ from server.common.errors import OntologyLoadFailure
 
 # anything bigger than this will generate a special message
 BIG_FILE_SIZE_THRESHOLD = 100 * 2 ** 20  # 100MB
-DEFAULT_SERVER_PORT = int(environ.get('CXG_SERVER_PORT', '5005'))
+DEFAULT_SERVER_PORT = int(environ.get("CXG_SERVER_PORT", "5005"))
 
 
 def annotation_args(func):
@@ -54,14 +54,14 @@ def annotation_args(func):
         is_flag=True,
         default=False,
         show_default=True,
-        help="When creating annotations, optionally autocomplete names from ontology terms."
+        help="When creating annotations, optionally autocomplete names from ontology terms.",
     )
     @click.option(
         "--experimental-annotations-ontology-obo",
         default=None,
         show_default=True,
         metavar="<path or url>",
-        help="Location of OBO file defining cell annotation autosuggest terms."
+        help="Location of OBO file defining cell annotation autosuggest terms.",
     )
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
@@ -110,7 +110,6 @@ def config_args(func):
 
 
 def dataset_args(func):
-
     @click.option(
         "--obs-names",
         "-obs",
@@ -131,15 +130,9 @@ def dataset_args(func):
         is_flag=True,
         default=False,
         show_default=False,
-        help="Load anndata in file-backed mode. "
-             "This may save memory, but may result in slower overall performance.",
+        help="Load anndata in file-backed mode. " "This may save memory, but may result in slower overall performance.",
     )
-    @click.option(
-        "--title",
-        "-t",
-        metavar="<text>",
-        help="Title to display. If omitted will use file name."
-    )
+    @click.option("--title", "-t", metavar="<text>", help="Title to display. If omitted will use file name.")
     @click.option(
         "--about",
         metavar="<URL>",
@@ -212,8 +205,9 @@ def launch_args(func):
         default=None,
         metavar="<data directory>",
         help="Enable cellxgene to serve multiple files. Supply path (local directory or URL)"
-             " to folder containing H5AD and/or CXG datasets.",
-        hidden=True)  # TODO, unhide when dataroot is supported)
+        " to folder containing H5AD and/or CXG datasets.",
+        hidden=True,
+    )  # TODO, unhide when dataroot is supported)
     @click.argument("datapath", required=False, metavar="<path to data file>")
     @click.option(
         "--open",
@@ -282,7 +276,7 @@ def launch(
     backed,
     disable_diffexp,
     experimental_annotations_ontology,
-    experimental_annotations_ontology_obo
+    experimental_annotations_ontology_obo,
 ):
     """Launch the cellxgene data viewer.
     This web app lets you explore single-cell expression data.
@@ -308,7 +302,7 @@ def launch(
 
     if datapath is None and dataroot is None:
         # TODO:  change the error message once dataroot is fully supported
-        raise click.ClickException("Missing argument \"<path to data file>.\"")
+        raise click.ClickException('Missing argument "<path to data file>."')
         # raise click.ClickException("must supply either <path to data file> or --dataroot")
     if datapath is not None and dataroot is not None:
         raise click.ClickException("must supply only one of <path to data file> or --dataroot")
@@ -376,6 +370,7 @@ def launch(
                 )
 
     if about:
+
         def url_check(url):
             try:
                 result = urlparse(url)
@@ -405,7 +400,8 @@ def launch(
         obs_names=obs_names,
         var_names=var_names,
         anndata_backed=backed,
-        disable_diffexp=disable_diffexp)
+        disable_diffexp=disable_diffexp,
+    )
 
     matrix_data_cache_manager = MatrixDataCacheManager()
     data_adaptor = None
@@ -424,8 +420,7 @@ def launch(
     annotations = None
 
     if experimental_annotations:
-        annotations = AnnotationsLocalFile(experimental_annotations_output_dir,
-                                           experimental_annotations_file)
+        annotations = AnnotationsLocalFile(experimental_annotations_output_dir, experimental_annotations_file)
 
         # if the user has specified a fixed label file, go ahead and validate it
         # so that we can remove errors early in the process.
@@ -441,6 +436,7 @@ def launch(
 
     # create the server
     from server.app.app import Server
+
     server = Server(matrix_data_cache_manager, annotations, app_config)
 
     if not verbose:

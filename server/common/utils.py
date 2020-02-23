@@ -92,20 +92,18 @@ def jsonify_numpy(data):
 def dtype_to_schema(dtype):
     schema = {}
     if dtype == np.float32:
-        schema['type'] = 'float32'
+        schema["type"] = "float32"
     elif dtype == np.int32:
-        schema['type'] = 'int32'
+        schema["type"] = "int32"
     elif dtype == np.bool_:
-        schema['type'] = 'boolean'
+        schema["type"] = "boolean"
     elif dtype == np.str:
-        schema['type'] = 'string'
+        schema["type"] = "string"
     elif dtype == "category":
         schema["type"] = "categorical"
         schema["categories"] = dtype.categories.tolist()
     else:
-        raise TypeError(
-            f"Annotations of type {dtype} are unsupported."
-        )
+        raise TypeError(f"Annotations of type {dtype} are unsupported.")
     return schema
 
 

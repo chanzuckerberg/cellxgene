@@ -32,7 +32,9 @@ class EndPoints(object):
         result_data = result.json()
         self.assertEqual(result_data["schema"]["dataframe"]["nObs"], 2638)
         self.assertEqual(len(result_data["schema"]["annotations"]["obs"]), 2)
-        self.assertEqual(len(result_data["schema"]["annotations"]["obs"]["columns"]), 6 if self.ANNOTATIONS_ENABLED else 5)
+        self.assertEqual(
+            len(result_data["schema"]["annotations"]["obs"]["columns"]), 6 if self.ANNOTATIONS_ENABLED else 5
+        )
 
     def test_config(self):
         endpoint = "config"
@@ -85,8 +87,8 @@ class EndPoints(object):
         obs_index_col_name = self.schema["schema"]["annotations"]["obs"]["index"]
         self.assertListEqual(
             df["col_idx"],
-            [obs_index_col_name, "n_genes", "percent_mito", "n_counts", "louvain"] +
-            (['cluster-test'] if self.ANNOTATIONS_ENABLED else [])
+            [obs_index_col_name, "n_genes", "percent_mito", "n_counts", "louvain"]
+            + (["cluster-test"] if self.ANNOTATIONS_ENABLED else []),
         )
 
     @skip_if_equal("MATRIX_DATA_TYPE", MatrixDataType.CXG, "Annotations not fully implemented for CXG format!")
@@ -282,11 +284,7 @@ class EndPointsAnnotations(EndPoints):
         query = "annotation-collection-name=test_annotations"
         url = f"{self.URL_BASE}{endpoint}?{query}"
         n_rows = self.data.get_shape()[0]
-        fbs = make_fbs(
-            {
-                "cat_A": pd.Series(["label_A" for l in range(0, n_rows)], dtype="category"),
-            }
-        )
+        fbs = make_fbs({"cat_A": pd.Series(["label_A" for l in range(0, n_rows)], dtype="category")})
         result = self.session.put(url, data=fbs)
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/json")
@@ -317,10 +315,10 @@ class EndPointsAnnotations(EndPoints):
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/json")
         result_data = result.json()
-        columns = result_data['schema']['annotations']['obs']['columns']
-        matching_columns = [c for c in columns if c['name'] == cluster_name]
+        columns = result_data["schema"]["annotations"]["obs"]["columns"]
+        matching_columns = [c for c in columns if c["name"] == cluster_name]
         self.assertEqual(len(matching_columns), 1)
-        self.assertTrue(matching_columns[0]['writable'])
+        self.assertTrue(matching_columns[0]["writable"])
 
 
 class EndPointsAnndata(unittest.TestCase, EndPoints):
@@ -343,7 +341,7 @@ class EndPointsAnndata(unittest.TestCase, EndPoints):
                 "--verbose",
                 "--port",
                 str(cls.PORT),
-            ]
+            ],
         )
 
     @classmethod
@@ -375,7 +373,7 @@ class EndPointsCxg(unittest.TestCase, EndPoints):
                 "--verbose",
                 "--port",
                 str(cls.PORT),
-            ]
+            ],
         )
 
     @classmethod
@@ -395,7 +393,9 @@ class EndPointsAnndataAnnotations(unittest.TestCase, EndPointsAnnotations):
 
     @classmethod
     def setUpClass(cls):
-        cls.data, cls.tmp_dir, cls.annotations = data_with_tmp_annotations(MatrixDataType.H5AD, annotations_fixture=True)
+        cls.data, cls.tmp_dir, cls.annotations = data_with_tmp_annotations(
+            MatrixDataType.H5AD, annotations_fixture=True
+        )
         cls._setUpClass(
             cls,
             [
@@ -409,7 +409,7 @@ class EndPointsAnndataAnnotations(unittest.TestCase, EndPointsAnnotations):
                 "--port",
                 str(cls.PORT),
                 cls.data.get_location(),
-            ]
+            ],
         )
 
     @classmethod
@@ -444,11 +444,10 @@ class EndPointsCxgAnnotations(unittest.TestCase, EndPointsAnnotations):
                 "--port",
                 str(cls.PORT),
                 cls.data.get_location(),
-            ]
+            ],
         )
 
     @classmethod
     def tearDownClass(cls):
         shutil.rmtree(cls.tmp_dir)
         cls._tearDownClass(cls)
-

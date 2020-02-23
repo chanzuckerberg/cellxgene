@@ -23,7 +23,6 @@ def anndata_version_is_pre_070():
 
 
 class AnndataAdaptor(DataAdaptor):
-
     def __init__(self, data_locator, config=None):
         super().__init__(config)
         self.data = None
@@ -127,7 +126,6 @@ class AnndataAdaptor(DataAdaptor):
             "dataframe": {"nObs": self.cell_count, "nVar": self.gene_count, "type": str(self.data.X.dtype)},
             "annotations": {
                 "obs": {"index": self.parameters.get("obs_names"), "columns": []},
-
                 "var": {"index": self.parameters.get("var_names"), "columns": []},
             },
             "layout": {"obs": []},
@@ -177,8 +175,10 @@ class AnndataAdaptor(DataAdaptor):
 
     def _validate_and_initialize(self):
         if anndata_version_is_pre_070() and self.config.anndata_backed:
-            warnings.warn(f"Use of --backed mode with anndata versions older than 0.7 will have serious "
-                          "performance issues. Please update to at least anndata 0.7 or later.")
+            warnings.warn(
+                f"Use of --backed mode with anndata versions older than 0.7 will have serious "
+                "performance issues. Please update to at least anndata 0.7 or later."
+            )
 
         # var and obs column names must be unique
         if not self.data.obs.columns.is_unique or not self.data.var.columns.is_unique:

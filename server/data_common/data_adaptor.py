@@ -132,16 +132,14 @@ class DataAdaptor(metaclass=ABCMeta):
 
         if self.get_embedding_names():
             # TODO handle "var" when gene layout becomes available
-            features["layout_obs"] = AppFeature(
-                "/layout/obs", available=True)
+            features["layout_obs"] = AppFeature("/layout/obs", available=True)
         else:
             features["layout_obs"] = AppFeature("/layout/obs")
 
         if self.config.disable_diffexp:
             features["diffexp"] = AppFeature("/diffexp/")
         else:
-            features["diffexp"] = AppFeature(
-                "/diffexp/", available=True)
+            features["diffexp"] = AppFeature("/diffexp/", available=True)
 
         return features
 
@@ -152,17 +150,17 @@ class DataAdaptor(metaclass=ABCMeta):
         mask = np.zeros((count,), dtype=np.bool)
         for i in filter:
             if type(i) == list:
-                mask[i[0]: i[1]] = True
+                mask[i[0] : i[1]] = True
             else:
                 mask[i] = True
         return mask
 
     def _axis_filter_to_mask(self, axis, filter, count):
-        mask = np.ones((count, ), dtype=np.bool)
-        if 'index' in filter:
-            mask = np.logical_and(mask, self._index_filter_to_mask(filter['index'], count))
-        if 'annotation_value' in filter:
-            mask = np.logical_and(mask, self._annotation_filter_to_mask(axis, filter['annotation_value'], count))
+        mask = np.ones((count,), dtype=np.bool)
+        if "index" in filter:
+            mask = np.logical_and(mask, self._index_filter_to_mask(filter["index"], count))
+        if "annotation_value" in filter:
+            mask = np.logical_and(mask, self._annotation_filter_to_mask(axis, filter["annotation_value"], count))
 
         return mask
 
@@ -176,7 +174,7 @@ class DataAdaptor(metaclass=ABCMeta):
                 anno_data = self.query_obs_array(name)
 
             if anno_data.dtype.name in ["boolean", "category", "object"]:
-                values = v.get('values', [])
+                values = v.get("values", [])
                 key_idx = np.in1d(anno_data, values)
                 mask = np.logical_and(mask, key_idx)
 
@@ -202,10 +200,10 @@ class DataAdaptor(metaclass=ABCMeta):
         obs_selector = None
         if filter is not None:
             if Axis.OBS in filter:
-                obs_selector = self._axis_filter_to_mask(Axis.OBS, filter['obs'], shape[0])
+                obs_selector = self._axis_filter_to_mask(Axis.OBS, filter["obs"], shape[0])
 
             if Axis.VAR in filter:
-                var_selector = self._axis_filter_to_mask(Axis.VAR, filter['var'], shape[1])
+                var_selector = self._axis_filter_to_mask(Axis.VAR, filter["var"], shape[1])
 
         return (obs_selector, var_selector)
 
@@ -309,7 +307,7 @@ class DataAdaptor(metaclass=ABCMeta):
 
         embeddings = self.get_embedding_names()
         layout_data = []
-        with ServerTiming.time(f'layout.query'):
+        with ServerTiming.time(f"layout.query"):
             for ename in embeddings:
                 embedding = self.get_embedding_array(ename, 2)
 
@@ -326,7 +324,7 @@ class DataAdaptor(metaclass=ABCMeta):
                 normalized_layout = normalized_layout.astype(dtype=np.float32)
                 layout_data.append(pd.DataFrame(normalized_layout, columns=[f"{ename}_0", f"{ename}_1"]))
 
-        with ServerTiming.time(f'layout.encode'):
+        with ServerTiming.time(f"layout.encode"):
             if layout_data:
                 df = pd.concat(layout_data, axis=1, copy=False)
             else:
