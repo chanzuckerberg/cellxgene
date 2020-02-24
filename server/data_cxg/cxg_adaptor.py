@@ -292,19 +292,17 @@ class CxgAdaptor(DataAdaptor):
     def annotation_to_fbs_matrix(self, axis, fields=None, labels=None):
         with ServerTiming.time(f"annotations.{axis}.query"):
             A = self.open_array(str(axis))
-            if fields is not None and len(fields) > 0:
-                try:
-                    df = pd.DataFrame(A.query(attrs=fields)[:])
-                except tiledb.libtiledb.TileDBError:
-                    raise KeyError("bad field {fields}")
-
+            if axis == Axis.OBS:
+                if labels is not None and not labels.empty:
+                    df = pd.DataFrame.from_dict(A[:])
+                    df = df.join(labels, self.get_obs_names())
+                else:
+                    df = pd.DataFrame.from_dict(A[:])
             else:
                 df = pd.DataFrame.from_dict(A[:])
 
-            if axis == Axis.OBS:
-                if labels is not None and not labels.empty:
-                    obs_names = self.get_obs_names()
-                    df = df.join(labels, obs_names)
+            if fields is not None and len(fields) > 0:
+                df = df[fields]
 
         with ServerTiming.time(f"annotations.{axis}.encode"):
             fbs = encode_matrix_fbs(df, col_idx=df.columns)

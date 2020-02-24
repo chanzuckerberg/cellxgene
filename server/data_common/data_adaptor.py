@@ -213,6 +213,8 @@ class DataAdaptor(metaclass=ABCMeta):
             return
 
         labels_df.index = self.get_obs_index()
+        if labels_df.index.name is None:
+            labels_df.index.name = "index"
 
         # all labels must have a name, which must be unique and not used in obs column names
         if not labels_df.columns.is_unique:
