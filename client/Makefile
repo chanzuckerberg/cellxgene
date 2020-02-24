@@ -88,7 +88,8 @@ smoke-test-annotations:
 
 .PHONY: unit-test
 unit-test:
-	node node_modules/jest/bin/jest.js --testPathIgnorePatterns e2e
+	node node_modules/jest/bin/jest.js \
+	    --testPathIgnorePatterns e2e
 
 # pass remaining commands through to npm run
 %:

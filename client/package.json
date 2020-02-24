@@ -69,6 +69,7 @@
     "babel-loader": "^8.0.6",
     "babel-preset-modern-browsers": "^14.1.1",
     "chalk": "^3.0.0",
+    "codecov": "^3.6.5",
     "connect-history-api-fallback": "^1.6.0",
     "copy-webpack-plugin": "^5.1.1",
     "css-loader": "^3.4.2",
@@ -107,7 +108,9 @@
     "testURL": "http://localhost/",
     "setupFiles": [
       "./__tests__/setupMissingGlobals.js"
-    ]
+    ],
+    "coverageDirectory": "./coverage/",
+    "collectCoverage": true
   },
   "babel": {
     "env": {
