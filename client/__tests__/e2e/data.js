@@ -117,13 +117,20 @@ export const datasets = {
     },
     categoryLabel: {
       lasso: {
-        "coordinates-as-percent": { x1: 0.3, y1: 0.3, x2: 0.5, y2: 0.5 },
-        count: "38"
+        "coordinates-as-percent": { x1: 0.05, y1: 0.3, x2: 0.5, y2: 0.5 },
       },
       newCount: {
         bySubsetConfig: {
-          false: "186",
-          true: "180"
+          false: "600",
+          true: "591"
+        }
+      }
+    },
+    annotationsFromFile: {
+      count: {
+        bySubsetConfig: {
+          false: "1161",
+          true: "856"
         }
       }
     },

@@ -13,22 +13,9 @@ beforeAll(async () => {
   [browser, page, utils, cxgActions] = await setupTestBrowser(browserViewport);
 });
 
-beforeEach(async (done) => {
-  await page.goto(appUrlBase);
-  done();
-});
-
 afterAll(() => {
   if (!DEBUG) browser.close();
 });
-
-describe("did launch", () => {
-  test("page launched", async () => {
-    let el = await utils.getOneElementInnerHTML("[data-testid='header']");
-    expect(el).toBe(data.title);
-  });
-});
-
 
 describe.each([
   {withSubset: true, tag: "subset"},
@@ -38,7 +25,7 @@ describe.each([
   async function subset() {
     const lassoSelection = await cxgActions.calcDragCoordinates(
       "layout-graph",
-      { x1: 0.10, y1: 0.10, x2: 0.80, y2: 0.80 }
+      {x1: 0.10, y1: 0.10, x2: 0.80, y2: 0.80}
     );
     await cxgActions.drag(
       "layout-graph",
@@ -51,69 +38,76 @@ describe.each([
     await cxgActions.clickOnCoordinate("layout-graph", coordinate);
   }
 
-  beforeEach(async (done) => {
+  const perTestCategoryName = "per-test-category";
+  const perTestLabelName = "per-test-label";
+
+  beforeEach(async () => {
+    await page.goto(appUrlBase);
+    // wait for the page to load
+    await utils.waitByClass("autosave-complete");
+    // setup the test fixtures
+    await cxgActions.createCategory(perTestCategoryName);
+    await cxgActions.createLabel(perTestCategoryName, perTestLabelName);
     if (config.withSubset) await subset();
-    done(); // https://github.com/facebook/jest/issues/1256
+    await utils.waitByClass("autosave-complete");
+  });
+
+  afterEach(async () => {
+    await deleteCategoryIfExists(perTestCategoryName);
+    await utils.waitByClass("autosave-complete");
   });
 
   test("create a category", async () => {
-    const categoryName = `category-created-${config.tag}`
+    const categoryName = `category-created-${config.tag}`;
     await assertCategoryDoesNotExist(categoryName);
     await cxgActions.createCategory(categoryName);
     await assertCategoryExists(categoryName);
   });
 
   test("delete a category", async () => {
-    const categoryName = `category-deleted-${config.tag}`;
-    await cxgActions.createCategory(categoryName);
-    await assertCategoryExists(categoryName);
-    await cxgActions.deleteCategory(categoryName);
-    await assertCategoryDoesNotExist(categoryName);
+    await cxgActions.deleteCategory(perTestCategoryName);
+    await assertCategoryDoesNotExist(perTestCategoryName);
   });
 
-
   test("rename a category", async () => {
-    const oldCategoryName = `category-renamed-${config.tag}`;
     const newCategoryName = `cluster-for-real-${config.tag}`;
-    await cxgActions.createCategory(oldCategoryName);
-    await assertCategoryExists(oldCategoryName);
-    await cxgActions.renameCategory(oldCategoryName, newCategoryName);
-    await assertCategoryDoesNotExist(oldCategoryName);
+    await cxgActions.renameCategory(perTestCategoryName, newCategoryName);
+    await assertCategoryDoesNotExist(perTestCategoryName);
     await assertCategoryExists(newCategoryName);
   });
 
   test("create a label", async () => {
-    const categoryName = "cluster-test";
     const labelName = `new-label-${config.tag}`;
-    await assertLabelDoesNotExist(categoryName, labelName);
-    await cxgActions.createLabel(categoryName, labelName);
-    await assertLabelExists(categoryName, labelName);
+    await assertLabelDoesNotExist(perTestCategoryName, labelName);
+    await cxgActions.createLabel(perTestCategoryName, labelName);
+    await assertLabelExists(perTestCategoryName, labelName);
   });
 
   test("delete a label", async () => {
-    const categoryName = "cluster-test";
-    const labelName = `label-deleted-${config.tag}`;
-    await cxgActions.createLabel(categoryName, labelName);
-    await assertLabelExists(categoryName, labelName);
-    await cxgActions.deleteLabel(categoryName, labelName);
-    await assertLabelDoesNotExist(categoryName, labelName);
+    await cxgActions.deleteLabel(perTestCategoryName, perTestLabelName);
+    await assertLabelDoesNotExist(perTestCategoryName, perTestLabelName);
   });
 
   test("rename a label", async () => {
+    const newLabelName = "my-cool-new-label";
+    await assertLabelDoesNotExist(perTestCategoryName, newLabelName);
+    await cxgActions.renameLabel(perTestCategoryName, perTestLabelName, newLabelName);
+    await assertLabelDoesNotExist(perTestCategoryName, perTestLabelName);
+    await assertLabelExists(perTestCategoryName, newLabelName);
+  });
+
+  test("check cell count for a label loaded from file", async () => {
     const categoryName = "cluster-test";
-    const oldLabelName = `label-renamed-${config.tag}`;
-    const newLabelName = `bazillion-${config.tag}`;
-    await cxgActions.createLabel(categoryName, oldLabelName);
-    await assertLabelExists(categoryName, oldLabelName);
-    await cxgActions.renameLabel(categoryName, oldLabelName, newLabelName);
-    await assertLabelDoesNotExist(categoryName, oldLabelName);
-    await assertLabelExists(categoryName, newLabelName);
+    const labelName = "four";
+    await cxgActions.expandCategory(categoryName);
+    const result = await utils.waitByID(`categorical-value-count-${categoryName}-${labelName}`);
+    expect(await result.evaluate(node => node.innerText)).toBe(
+      data.annotationsFromFile.count.bySubsetConfig[config.withSubset]
+    );
   });
 
   test("assign cells to a label", async () => {
-    const categoryName = "cluster-test";
-    const labelName = "one";
-    await cxgActions.expandCategory(categoryName);
+    await cxgActions.expandCategory(perTestCategoryName);
     const lassoSelection = await cxgActions.calcDragCoordinates(
       "layout-graph",
       data.categoryLabel.lasso["coordinates-as-percent"]
@@ -125,11 +119,9 @@ describe.each([
       true
     );
     await utils.waitByID("lasso-element", {visible: true});
-    const initialCount = await cxgActions.cellSet(1);
-    expect(initialCount).toBe(data.categoryLabel.lasso.count);
-    await utils.hoverOn(`${categoryName}:${labelName}:see-actions`);
-    await utils.clickOn(`${categoryName}:${labelName}:add-current-selection-to-this-label`);
-    const result = await utils.waitByID(`categorical-value-count-${categoryName}-${labelName}`);
+    await utils.clickOn(`${perTestCategoryName}:${perTestLabelName}:see-actions`);
+    await utils.clickOn(`${perTestCategoryName}:${perTestLabelName}:add-current-selection-to-this-label`);
+    const result = await utils.waitByID(`categorical-value-count-${perTestCategoryName}-${perTestLabelName}`);
     expect(await result.evaluate(node => node.innerText)).toBe(
       data.categoryLabel.newCount.bySubsetConfig[config.withSubset]
     );
@@ -159,63 +151,51 @@ describe.each([
   });
 
   test("undo/redo category rename", async () => {
-    const oldCategoryName = `category-renamed-undo-${config.tag}`;
-    const newCategoryName = `category-renamed-undo2-${config.tag}`;
-    await cxgActions.createCategory(oldCategoryName);
-    await assertCategoryExists(oldCategoryName);
+    const newCategoryName = `category-renamed-undo-${config.tag}`;
     await assertCategoryDoesNotExist(newCategoryName);
-    await cxgActions.renameCategory(oldCategoryName, newCategoryName);
+    await cxgActions.renameCategory(perTestCategoryName, newCategoryName);
     await assertCategoryExists(newCategoryName);
-    await assertCategoryDoesNotExist(oldCategoryName);
+    await assertCategoryDoesNotExist(perTestCategoryName);
     await utils.clickOn("undo");
-    await assertCategoryExists(oldCategoryName);
+    await assertCategoryExists(perTestCategoryName);
     await assertCategoryDoesNotExist(newCategoryName);
     await utils.clickOn("redo");
     await assertCategoryExists(newCategoryName);
-    await assertCategoryDoesNotExist(oldCategoryName);
+    await assertCategoryDoesNotExist(perTestCategoryName);
   });
 
   test("undo/redo label creation", async () => {
-    const categoryName = "cluster-test";
     const labelName = `label-created-undo-${config.tag}`;
-    await assertLabelDoesNotExist(categoryName, labelName);
-    await cxgActions.createLabel(categoryName, labelName);
-    await assertLabelExists(categoryName, labelName);
+    await assertLabelDoesNotExist(perTestCategoryName, labelName);
+    await cxgActions.createLabel(perTestCategoryName, labelName);
+    await assertLabelExists(perTestCategoryName, labelName);
     await utils.clickOn("undo");
-    await assertLabelDoesNotExist(categoryName);
+    await assertLabelDoesNotExist(perTestCategoryName);
     await utils.clickOn("redo");
-    await assertLabelExists(categoryName, labelName);
+    await assertLabelExists(perTestCategoryName, labelName);
   });
 
   test("undo/redo label deletion", async () => {
-    const categoryName = "cluster-test";
-    const labelName = `label-deleted-undo-${config.tag}`;
-    await cxgActions.createLabel(categoryName, labelName)
-    await assertLabelExists(categoryName, labelName);
-    await cxgActions.deleteLabel(categoryName, labelName);
-    await assertLabelDoesNotExist(categoryName);
+    await cxgActions.deleteLabel(perTestCategoryName, perTestLabelName);
+    await assertLabelDoesNotExist(perTestCategoryName);
     await utils.clickOn("undo");
-    await assertLabelExists(categoryName, labelName);
+    await assertLabelExists(perTestCategoryName, perTestLabelName);
     await utils.clickOn("redo");
-    await assertLabelDoesNotExist(categoryName);
+    await assertLabelDoesNotExist(perTestCategoryName);
   });
 
   test("undo/redo label rename", async () => {
-    const categoryName = "cluster-test";
-    const oldLabelName = `label-renamed-undo-${config.tag}`;
-    const newLabelName = `label-renamed-undo2-${config.tag}`;
-    await cxgActions.createLabel(categoryName, oldLabelName);
-    await assertLabelExists(categoryName, oldLabelName);
-    await assertLabelDoesNotExist(categoryName, newLabelName);
-    await cxgActions.renameLabel(categoryName, oldLabelName, newLabelName);
-    await assertLabelExists(categoryName, newLabelName);
-    await assertLabelDoesNotExist(categoryName, oldLabelName);
+    const newLabelName = `label-renamed-undo-${config.tag}`;
+    await assertLabelDoesNotExist(perTestCategoryName, newLabelName);
+    await cxgActions.renameLabel(perTestCategoryName, perTestLabelName, newLabelName);
+    await assertLabelExists(perTestCategoryName, newLabelName);
+    await assertLabelDoesNotExist(perTestCategoryName, perTestLabelName);
     await utils.clickOn("undo");
-    await assertLabelExists(categoryName, oldLabelName);
-    await assertLabelDoesNotExist(categoryName, newLabelName);
+    await assertLabelExists(perTestCategoryName, perTestLabelName);
+    await assertLabelDoesNotExist(perTestCategoryName, newLabelName);
     await utils.clickOn("redo");
-    await assertLabelExists(categoryName, newLabelName);
-    await assertLabelDoesNotExist(categoryName, oldLabelName);
+    await assertLabelExists(perTestCategoryName, newLabelName);
+    await assertLabelDoesNotExist(perTestCategoryName, perTestLabelName);
   });
 
   async function assertCategoryExists(categoryName) {
@@ -240,5 +220,17 @@ describe.each([
     await cxgActions.expandCategory(categoryName);
     const result = await page.$(`[data-testid='categorical-value-${categoryName}-${labelName}']`);
     expect(result).toBeNull();
+  }
+
+  async function deleteCategoryIfExists(categoryName) {
+    try {
+      const category = await page.waitForSelector(
+        `[data-testid='${categoryName}:category-expand']`,
+        {timeout: 200}
+      );
+      if (category !== null) return await cxgActions.deleteCategory(categoryName);
+    } catch (error) {
+    }
+    return null
   }
 });
