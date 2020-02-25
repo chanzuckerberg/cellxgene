@@ -13,8 +13,9 @@ beforeAll(async () => {
   [browser, page, utils, cxgActions] = await setupTestBrowser(browserViewport);
 });
 
-beforeEach(async () => {
+beforeEach(async (done) => {
   await page.goto(appUrlBase);
+  done();
 });
 
 afterAll(() => {
@@ -50,8 +51,9 @@ describe.each([
     await cxgActions.clickOnCoordinate("layout-graph", coordinate);
   }
 
-  beforeEach(async () => {
+  beforeEach(async (done) => {
     if (config.withSubset) await subset();
+    done(); // https://github.com/facebook/jest/issues/1256
   });
 
   test("create a category", async () => {
