@@ -11,7 +11,8 @@ import FilenameDialog from "./filenameDialog";
   saveInProgress: state.autosave?.saveInProgress ?? false,
   lastSavedObsAnnotations: state.autosave?.lastSavedObsAnnotations,
   error: state.autosave?.error,
-  writableCategoriesEnabled: state.config?.parameters?.["annotations"] ?? false
+  writableCategoriesEnabled: state.config?.parameters?.["annotations"] ?? false,
+  initialDataLoadComplete: state.autosave?.initialDataLoadComplete
 }))
 class Autosave extends React.Component {
   constructor(props) {
@@ -63,10 +64,17 @@ class Autosave extends React.Component {
   }
 
   render() {
-    const { writableCategoriesEnabled } = this.props;
+    const { writableCategoriesEnabled, saveInProgress, initialDataLoadComplete } = this.props;
     return writableCategoriesEnabled ? (
       <div
         id="autosave"
+        data-testclass={
+          !initialDataLoadComplete
+            ? "autosave-init"
+            : (this.needToSave() || saveInProgress)
+              ? "autosave-incomplete"
+              : "autosave-complete"
+        }
         style={{
           position: "fixed",
           display: "inherit",
