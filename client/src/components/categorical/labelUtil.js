@@ -24,6 +24,33 @@ export function isLabelErroneous(label, metadataField, ontology, schema) {
 	return false;
 }
 
+/* all other errors - map code to human error message */
+const errorMessageMap = {
+	"empty-string": "Blank names not allowed",
+	duplicate: "Name must be unique",
+	"trim-spaces": "Leading and trailing spaces not allowed",
+	"illegal-characters":
+		"Only alphanumeric and special characters (-_.) allowed",
+	"multi-space-run": "Multiple consecutive spaces not allowed"
+};
+
+export function labelErrorSimpleMessage(
+	label,
+	metadataField,
+	ontology,
+	schema,
+	toUpper = true
+) {
+	const err = isLabelErroneous(label, metadataField, ontology, schema);
+	if (!err) return null;
+
+	let errMsg = errorMessageMap[err] ?? "error";
+	errMsg =
+		(toUpper ? errMsg[0].toUpperCase() : errMsg[0].toLowerCase()) +
+		errMsg.slice(1);
+	return <span>{errMsg}</span>;
+}
+
 export function labelErrorMessage(label, metadataField, ontology, schema) {
 	const err = isLabelErroneous(label, metadataField, ontology, schema);
 
@@ -31,23 +58,14 @@ export function labelErrorMessage(label, metadataField, ontology, schema) {
 		/* duplicate error is special cased because it has special formatting */
 		return (
 			<span>
-				<span style={{ fontStyle: "italic" }}>{label}</span> already
-				exists already exists within{" "}
+				<span style={{ fontStyle: "italic" }}>{label}</span> already exists
+				already exists within{" "}
 				<span style={{ fontStyle: "italic" }}>{metadataField}</span>{" "}
 			</span>
 		);
 	}
 
 	if (err) {
-		/* all other errors - map code to human error message */
-		const errorMessageMap = {
-			"empty-string": "Blank names not allowed",
-			duplicate: "Name must be unique",
-			"trim-spaces": "Leading and trailing spaces not allowed",
-			"illegal-characters":
-				"Only alphanumeric and special characters (-_.) allowed",
-			"multi-space-run": "Multiple consecutive spaces not allowed"
-		};
 		const errorMessage = errorMessageMap[err] ?? "error";
 		return <span>{errorMessage}</span>;
 	}
