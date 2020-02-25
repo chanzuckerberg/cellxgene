@@ -1,4 +1,3 @@
-// jshint esversion: 6
 import _ from "lodash";
 import * as globals from "../globals";
 import { Universe, MatrixFBS } from "../util/stateManager";
@@ -8,6 +7,89 @@ import {
   doBinaryRequest,
   dispatchNetworkErrorMessageToUser
 } from "../util/actionHelpers";
+
+/*
+return promise to fetch the OBS annotations we need to load.  Omit anything
+we don't need.
+*/
+function obsAnnotationFetchAndLoad(dispatch, schema, universe) {
+  const obsAnnotations = schema?.schema?.annotations?.obs ?? {};
+  const columns = obsAnnotations.columns ?? [];
+  const index = obsAnnotations.index ?? false;
+  return Promise.all(
+    columns
+      .filter(col => col.name !== index)
+      .map(col => {
+        const path = `annotations/obs?annotation-name=${encodeURIComponent(
+          col.name
+        )}`;
+        const url = `${globals.API.prefix}${globals.API.version}${path}`;
+        return doBinaryRequest(url);
+      })
+      .map(rqst => rqst.then(buffer => Universe.matrixFBSToDataframe(buffer)))
+      .map(resp =>
+        resp.then(df =>
+          dispatch({
+            type: "universe: column load success",
+            dim: "obsAnnotations",
+            dataframe: df
+          })
+        )
+      )
+  );
+}
+
+/*
+return promise fetching VAR annotations we need to load.  Only index is currently used.
+*/
+function varAnnotationFetchAndLoad(dispatch, schema, universe) {
+  const varAnnotations = schema?.schema?.annotations?.var ?? {};
+  const index = varAnnotations.index ?? false;
+  const names = index ? [index] : [];
+  return Promise.all(
+    names
+      .map(name => {
+        const path = `annotations/var?annotation-name=${encodeURIComponent(
+          name
+        )}`;
+        const url = `${globals.API.prefix}${globals.API.version}${path}`;
+        return doBinaryRequest(url);
+      })
+      .map(rqst => rqst.then(buffer => Universe.matrixFBSToDataframe(buffer)))
+      .map(resp =>
+        resp.then(df =>
+          dispatch({
+            type: "universe: column load success",
+            dim: "varAnnotations",
+            dataframe: df
+          })
+        )
+      )
+  );
+}
+
+/*
+return promise fetching layout we need
+*/
+function layoutFetchAndLoad(dispatch, schema, universe) {
+  return Promise.all(
+    ["layout/obs"]
+      .map(path => {
+        const url = `${globals.API.prefix}${globals.API.version}${path}`;
+        return doBinaryRequest(url);
+      })
+      .map(rqst => rqst.then(buffer => Universe.matrixFBSToDataframe(buffer)))
+      .map(resp =>
+        resp.then(df =>
+          dispatch({
+            type: "universe: column load success",
+            dim: "obsLayout",
+            dataframe: df
+          })
+        )
+      )
+  );
+}
 
 /*
 Bootstrap application with the initial data loading.
@@ -31,34 +113,29 @@ const doInitialDataLoad = () =>
       /* set config defaults */
       const config = { ...globals.configDefaults, ...stepOneResults[0].config };
       const schema = stepOneResults[1];
-
-      /*
-      Step 2 - dataframes, all binary.  NOTE: uses results of step 1.
-      */
-      /* only load names for var annotations, if possible*/
-      const varIndexName = schema?.schema?.annotations?.var?.index;
-      const varAnnotationsQuery = varIndexName
-        ? `?annotation-name=${encodeURIComponent(varIndexName)}`
-        : "";
-      const varAnnotationsURL = `annotations/var${varAnnotationsQuery}`;
-      const requestBinary = ["annotations/obs", varAnnotationsURL, "layout/obs"]
-        .map(r => `${globals.API.prefix}${globals.API.version}${r}`)
-        .map(url => doBinaryRequest(url));
-      const stepTwoResults = await Promise.all(requestBinary);
-      const [obsAnno, varAnno, obsLayout] = [...stepTwoResults];
-
-      const universe = Universe.createUniverseFromResponse(
-        config,
-        schema,
-        obsAnno,
-        varAnno,
-        obsLayout
-      );
-
+      const universe = Universe.createUniverseFromResponse(config, schema);
+      dispatch({
+        type: "universe exists, but loading is still in progress",
+        universe
+      });
       dispatch({
         type: "configuration load complete",
         config
       });
+
+      /*
+      Step 2 - load the minimum stuff required to display.
+      */
+      await Promise.all([
+        layoutFetchAndLoad(dispatch, schema, universe),
+        varAnnotationFetchAndLoad(dispatch, schema, universe)
+      ]);
+
+      /*
+      Step 3 - load everything else
+      */
+      await obsAnnotationFetchAndLoad(dispatch, schema, universe);
+
       dispatch({
         type: "initial data load complete (universe exists)",
         universe

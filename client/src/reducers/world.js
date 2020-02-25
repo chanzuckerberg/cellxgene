@@ -24,11 +24,25 @@ const WorldReducer = (
   prevSharedState
 ) => {
   switch (action.type) {
-    case "initial data load complete (universe exists)":
+    case "universe exists, but loading is still in progress":
     case "reset World to eq Universe": {
       const { universe } = nextSharedState;
       const world = World.createWorldFromEntireUniverse(universe);
       return world;
+    }
+
+    case "universe: column load success": {
+      const { universe } = nextSharedState;
+      const { dim } = action;
+      return {
+        ...state,
+        schema: universe.schema,
+        [dim]: universe[dim].clone(),
+        unclipped: {
+          ...state.unclipped,
+          [dim]: universe[dim].clone()
+        }
+      };
     }
 
     case "set World to current selection": {

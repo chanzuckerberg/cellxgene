@@ -87,7 +87,7 @@ function renderThrottle(callback) {
   colorAccessor: state.colors.colorAccessor,
   pointDilation: state.pointDilation
 }))
-class Graph extends React.PureComponent {
+class Graph extends React.Component {
   computePointPositions = memoize((X, Y, modelTF) => {
     /*
     compute the model coordinate for each point
@@ -255,7 +255,7 @@ class Graph extends React.PureComponent {
     const { regl, toolSVG, camera, modelTF } = this.state;
     let stateChanges = {};
 
-    if (regl && world) {
+    if (regl && world && crossfilter) {
       /* update the regl and point rendering state */
       const { obsLayout, nObs } = world;
       const { drawPoints, pointBuffer, colorBuffer, flagBuffer } = this.state;
@@ -340,7 +340,7 @@ class Graph extends React.PureComponent {
       selectionTool !== prevProps.selectionTool
     ) {
       // first time or change of selection tool
-      stateChanges = { ...stateChanges, ...this.createToolSVG(true) };
+      stateChanges = { ...stateChanges, ...this.createToolSVG() };
     } else if (prevProps.graphInteractionMode !== graphInteractionMode) {
       // If lasso/zoom is switched
       stateChanges = {
@@ -394,7 +394,12 @@ class Graph extends React.PureComponent {
       .remove();
 
     // Don't render or recreate toolSVG if currently in zoom mode
-    if (graphInteractionMode !== "select") return { toolSVG: undefined };
+    if (graphInteractionMode !== "select") {
+      // don't return "change" of state unless we are really changing it!
+      const { toolSVG } = this.state;
+      if (toolSVG === undefined) return {};
+      else return { toolSVG: undefined };
+    }
 
     let handleStart;
     let handleDrag;
@@ -724,7 +729,7 @@ class Graph extends React.PureComponent {
     const { responsive, graphInteractionMode } = this.props;
     const { modelTF, projectionTF, camera } = this.state;
 
-    const cameraTF = camera?.view();
+    const cameraTF = camera?.view()?.slice();
 
     return (
       <div id="graphWrapper">

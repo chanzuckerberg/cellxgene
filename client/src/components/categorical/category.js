@@ -2,7 +2,7 @@ import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
 import { FaChevronRight, FaChevronDown } from "react-icons/fa";
-import { Button, Tooltip, Icon } from "@blueprintjs/core";
+import { Button, Tooltip, Icon, Spinner } from "@blueprintjs/core";
 import CategoryFlipperLayout from "./categoryFlipperLayout";
 import AnnoMenu from "./annoMenuCategory";
 import AnnoDialogEditCategoryName from "./annoDialogEditCategoryName";
@@ -31,8 +31,12 @@ class Category extends React.Component {
 
   componentDidUpdate(prevProps) {
     const { categoricalSelection, metadataField } = this.props;
-    if (categoricalSelection !== prevProps.categoricalSelection) {
-      const cat = categoricalSelection[metadataField];
+    const cat = categoricalSelection?.[metadataField];
+    if (
+      categoricalSelection !== prevProps.categoricalSelection &&
+      !!cat &&
+      !!this.checkbox
+    ) {
       const categoryCount = {
         // total number of categories in this dimension
         totalCatCount: cat.numCategoryValues,
@@ -95,14 +99,65 @@ class Category extends React.Component {
     }
   }
 
+  renderIsStillLoading(metadataField) {
+    /*
+    We are still loading this category, so render a "busy" signal.
+    */
+    return (
+      <div
+        style={{
+          maxWidth: globals.maxControlsWidth
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "baseline"
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-start",
+              alignItems: "flex-start"
+            }}
+          >
+            <label className="bp3-control bp3-checkbox">
+              <input disabled checked={true} type="checkbox" />
+              <span className="bp3-control-indicator" />
+            </label>
+            <span
+              style={{
+                cursor: "pointer",
+                display: "inline-block"
+              }}
+            >
+              {metadataField}
+            </span>
+          </div>
+          <div>
+            <Button minimal loading intent="primary" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   render() {
     const { isExpanded, isChecked } = this.state;
     const {
       metadataField,
+      categoricalSelection,
       colorAccessor,
       isUserAnno,
       annotations
     } = this.props;
+
+    const isStillLoading = !(categoricalSelection?.[metadataField] ?? false);
+    if (isStillLoading) {
+      return this.renderIsStillLoading(metadataField);
+    }
 
     return (
       <CategoryFlipperLayout
@@ -120,7 +175,7 @@ class Category extends React.Component {
           <label className="bp3-control bp3-checkbox">
             <input
               data-testclass="category-select"
-              data-testid={`category-select-${metadataField}`}
+              data-testid={`${metadataField}:category-select`}
               onChange={this.handleToggleAllClick.bind(this)}
               ref={el => {
                 this.checkbox = el;
@@ -132,7 +187,7 @@ class Category extends React.Component {
             <span className="bp3-control-indicator" />
           </label>
           <span
-            data-testid={`category-expand-${metadataField}`}
+            data-testid={`${metadataField}:category-expand`}
             style={{
               cursor: "pointer",
               display: "inline-block"

@@ -12,7 +12,7 @@ const ColorsReducer = (
   prevSharedState
 ) => {
   switch (action.type) {
-    case "initial data load complete (universe exists)":
+    case "universe exists, but loading is still in progress":
     case "reset World to eq Universe": {
       const { world } = nextSharedState;
       const colorMode = null;

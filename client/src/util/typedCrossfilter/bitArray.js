@@ -98,6 +98,7 @@ class BitArray {
       if (lowestZeroBit) {
         this.bitmask[col] |= lowestZeroBit;
         dim = 32 * col + BitArray.ctz(lowestZeroBit);
+        break;
       }
     }
     return dim;

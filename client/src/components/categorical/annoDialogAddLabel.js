@@ -32,43 +32,43 @@ class Category extends React.Component {
     });
   };
 
-  handleAddNewLabelToCategory = () => {
+  handleAddNewLabelToCategory = e => {
     const { dispatch, metadataField } = this.props;
     const { newLabelText } = this.state;
 
+    this.disableAddNewLabelMode();
     dispatch({
       type: "annotation: add new label to category",
       metadataField,
       newLabelText,
       assignSelectedCells: false
     });
-    this.setState({ newLabelText: "" });
+    e.preventDefault();
   };
 
   addLabelAndAssignCells = () => {
     const { dispatch, metadataField } = this.props;
     const { newLabelText } = this.state;
 
+    this.disableAddNewLabelMode();
     dispatch({
       type: "annotation: add new label to category",
       metadataField,
       newLabelText,
       assignSelectedCells: true
     });
-
-    this.setState({ newLabelText: "" });
   };
 
   handleCreateArbitraryLabel = newLabelTextNotInOntology => {
     const { dispatch, metadataField } = this.props;
 
+    this.disableAddNewLabelMode();
     dispatch({
       type: "annotation: add new label to category",
       metadataField,
       newLabelText: newLabelTextNotInOntology,
       assignSelectedCells: false
     });
-    this.setState({ newLabelText: "" });
   };
 
   labelNameError = name => {
@@ -101,6 +101,10 @@ class Category extends React.Component {
             annotations.isAddingNewLabel &&
             annotations.categoryAddingNewLabel === metadataField
           }
+          inputProps={{ "data-testid": `${metadataField}:create-label-dialog` }}
+          primaryButtonProps={{
+            "data-testid": `${metadataField}:submit-label`
+          }}
           title="Add new label to category"
           instruction="New, unique label name:"
           cancelTooltipContent="Close this dialog without adding a label."
@@ -116,6 +120,7 @@ class Category extends React.Component {
             <AnnoInputs
               useSuggest={ontologyEnabled}
               text={newLabelText}
+              inputProps={{ "data-testid": `${metadataField}:new-label-name` }}
               handleCreateArbitraryLabel={this.handleCreateArbitraryLabel}
               handleItemChange={this.handleSuggestActiveItemChange}
               handleChoice={this.handleChoice}

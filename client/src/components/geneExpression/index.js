@@ -103,7 +103,8 @@ class GeneExpression extends React.Component {
       if (genes.length === 0) {
         return keepAroundErrorToast("Must enter a gene name.");
       }
-      const worldGenes = world.varAnnotations.col(varIndexName).asArray();
+      const worldGenes =
+        world.varAnnotations?.col(varIndexName)?.asArray() || [];
 
       // These gene lists are unique enough where memoization is useless
       const upperGenes = this._genesToUpper(genes);
@@ -206,7 +207,11 @@ class GeneExpression extends React.Component {
       differential
     } = this.props;
     const varIndexName = world?.schema?.annotations?.var?.index;
+    const varIndex = world?.varAnnotations?.col(varIndexName)?.asArray();
     const { tab, bulkAdd, activeItem } = this.state;
+
+    // may still be loading!
+    if (!varIndex) return null;
 
     return (
       <div>
@@ -268,11 +273,7 @@ class GeneExpression extends React.Component {
                 itemListPredicate={filterGenes}
                 onActiveItemChange={item => this.setState({ activeItem: item })}
                 itemRenderer={renderGene.bind(this)}
-                items={
-                  world && world.varAnnotations
-                    ? world.varAnnotations.col(varIndexName).asArray()
-                    : ["No genes"]
-                }
+                items={varIndex || ["No genes"]}
                 popoverProps={{ minimal: true }}
               />
               <Button

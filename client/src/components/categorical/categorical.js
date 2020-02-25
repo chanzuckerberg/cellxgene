@@ -4,15 +4,15 @@ import { Button } from "@blueprintjs/core";
 import { connect } from "react-redux";
 import * as globals from "../../globals";
 import Category from "./category";
-import { AnnotationsHelpers } from "../../util/stateManager";
+import { AnnotationsHelpers, ControlsHelpers } from "../../util/stateManager";
 import AnnoDialog from "./annoDialog";
 import AnnoInputs from "./annoInputs";
 import AnnoSelect from "./annoSelect";
 
 @connect(state => ({
-  categoricalSelection: state.categoricalSelection,
   writableCategoriesEnabled: state.config?.parameters?.["annotations"] ?? false,
-  schema: state.world?.schema
+  schema: state.world?.schema,
+  config: state.config
 }))
 class Categories extends React.Component {
   constructor(props) {
@@ -24,7 +24,7 @@ class Categories extends React.Component {
     };
   }
 
-  handleCreateUserAnno = () => {
+  handleCreateUserAnno = e => {
     const { dispatch } = this.props;
     const { newCategoryText, categoryToDuplicate } = this.state;
     dispatch({
@@ -37,6 +37,7 @@ class Categories extends React.Component {
       categoryToDuplicate: null,
       newCategoryText: ""
     });
+    e.preventDefault();
   };
 
   handleEnableAnnoMode = () => {
@@ -123,12 +124,15 @@ class Categories extends React.Component {
     const {
       categoricalSelection,
       writableCategoriesEnabled,
-      schema
+      schema,
+      config
     } = this.props;
-    if (!categoricalSelection) return null;
 
     /* all names, sorted in display order.  Will be rendered in this order */
-    const allCategoryNames = Object.keys(categoricalSelection).sort();
+    const allCategoryNames = ControlsHelpers.selectableCategoryNames(
+      schema,
+      ControlsHelpers.maxCategoryItems(config)
+    ).sort();
 
     return (
       <div
@@ -142,6 +146,7 @@ class Categories extends React.Component {
           instruction="New, unique category name:"
           cancelTooltipContent="Close this dialog without creating a category."
           primaryButtonText="Create new category"
+          primaryButtonProps={{ "data-testid": "submit-category" }}
           text={newCategoryText}
           validationError={this.categoryNameError(newCategoryText)}
           errorMessage={this.categoryNameErrorMessage(newCategoryText)}
@@ -150,6 +155,7 @@ class Categories extends React.Component {
           annoInput={
             <AnnoInputs
               text={newCategoryText}
+              inputProps={{ "data-testid": "new-category-name" }}
               handleItemChange={this.handleSuggestActiveItemChange}
               handleChoice={this.handleChoice}
               handleTextChange={this.handleNewCategoryText}
@@ -191,7 +197,11 @@ class Categories extends React.Component {
         )}
         {writableCategoriesEnabled ? (
           <div>
-            <Button onClick={this.handleEnableAnnoMode} intent="primary">
+            <Button
+              data-testid="open-annotation-dialog"
+              onClick={this.handleEnableAnnoMode}
+              intent="primary"
+            >
               Create new category
             </Button>
           </div>

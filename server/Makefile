@@ -1,8 +1,17 @@
+include ../common.mk
+
 .PHONY: clean
 clean:
-	rm -f app/web/templates/index.html
-	rm -rf app/web/static
+	rm -f common/web/templates/index.html
+	rm -rf common/web/static
 
 .PHONY: unit-test
 unit-test:
-	pytest -s test
+	PYTHONWARNINGS=ignore:ResourceWarning coverage run \
+		--source=app,cli,common,compute,converters,data_anndata,data_common,data_cxg \
+		--omit=.coverage,data_common/fbs/NetEncoding,venv \
+		-m unittest discover \
+		--start-directory test/ \
+		--top-level-directory ../ \
+		--verbose
+

@@ -113,7 +113,6 @@ function clipDataframe(
 
 /*
 Create World with contents eq entire universe.   Commonly used to initialize World.
-If clipQuantiles
 */
 export function createWorldFromEntireUniverse(universe) {
   const world = templateWorld();
@@ -253,6 +252,40 @@ function deduceDimensionType(attributes, fieldName) {
   return dimensionType;
 }
 
+function addObsDimension(crossfilter, world, anno) {
+  /*
+  add single dimension to the crosfilter
+  */
+  const { obsAnnotations } = world;
+  if (obsAnnotations.hasCol(anno.name)) {
+    const dimType = deduceDimensionType(anno, anno.name);
+    const colData = obsAnnotations.col(anno.name).asArray();
+    const name = obsAnnoDimensionName(anno.name);
+    if (dimType === "enum") {
+      return crossfilter.addDimension(name, "enum", colData);
+    }
+    if (dimType) {
+      return crossfilter.addDimension(name, "scalar", colData, dimType);
+    }
+  }
+  return crossfilter;
+}
+
+export function addObsDimensions(crossfilter, world) {
+  /*
+  Add to crossfilter any dimension present in world.obsAnnotations
+  but not yet in the crossfilter
+  */
+  const schema = world.schema.annotations.obsByName;
+  const dimsWeNeed = world.obsAnnotations.colIndex.keys();
+  crossfilter = dimsWeNeed.reduce((xfltr, name) => {
+    const dimName = obsAnnoDimensionName(name);
+    if (xfltr.hasDimension(dimName)) return xfltr;
+    return addObsDimension(xfltr, world, schema[name]);
+  }, crossfilter);
+  return crossfilter;
+}
+
 export function createObsDimensions(crossfilter, world, XYdimNames) {
   /*
   create and return a crossfilter with a dimension for every obs annotation
@@ -265,16 +298,7 @@ export function createObsDimensions(crossfilter, world, XYdimNames) {
     anno => anno.name !== indexName
   );
   crossfilter = annoList.reduce((xfltr, anno) => {
-    const dimType = deduceDimensionType(anno, anno.name);
-    const colData = obsAnnotations.col(anno.name).asArray();
-    const name = obsAnnoDimensionName(anno.name);
-    if (dimType === "enum") {
-      return xfltr.addDimension(name, "enum", colData);
-    }
-    if (dimType) {
-      return xfltr.addDimension(name, "scalar", colData, dimType);
-    }
-    return xfltr;
+    return addObsDimension(xfltr, world, anno);
   }, crossfilter);
 
   return crossfilter.addDimension(

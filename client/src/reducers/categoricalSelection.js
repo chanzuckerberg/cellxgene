@@ -1,13 +1,6 @@
 import { ControlsHelpers as CH } from "../util/stateManager";
 import * as globals from "../globals";
 
-function maxCategoryItems(state) {
-  return (
-    state.config.parameters?.["max-category-items"] ??
-    globals.configDefaults.parameters["max-category-items"]
-  );
-}
-
 const CategoricalSelection = (
   state,
   action,
@@ -22,9 +15,30 @@ const CategoricalSelection = (
       const { world } = nextSharedState;
       const newState = CH.createCategoricalSelection(
         world,
-        CH.selectableCategoryNames(world, maxCategoryItems(prevSharedState))
+        CH.selectableCategoryNames(
+          world.schema,
+          CH.maxCategoryItems(prevSharedState.config)
+        )
       );
       return newState;
+    }
+
+    case "universe: column load success": {
+      const { dim } = action;
+      if (dim !== "obsAnnotations") return state;
+
+      const { dataframe } = action;
+      const { world } = nextSharedState;
+      const names = CH.selectableCategoryNames(
+        world.schema,
+        CH.maxCategoryItems(prevSharedState.config),
+        dataframe.colIndex.keys()
+      );
+      if (names.length === 0) return state;
+      return {
+        ...state,
+        ...CH.createCategoricalSelection(world, names)
+      };
     }
 
     case "categorical metadata filter select": {

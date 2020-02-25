@@ -30,13 +30,14 @@ class AnnoDialogEditCategoryName extends React.Component {
   };
 
   disableEditCategoryMode = () => {
-    const { dispatch } = this.props;
+    const { dispatch, metadataField } = this.props;
     dispatch({
       type: "annotation: disable category edit mode"
     });
+    this.setState({ newCategoryText: metadataField });
   };
 
-  handleEditCategory = () => {
+  handleEditCategory = e => {
     const { dispatch, metadataField, categoricalSelection } = this.props;
     const { newCategoryText } = this.state;
 
@@ -50,12 +51,14 @@ class AnnoDialogEditCategoryName extends React.Component {
       return;
     }
 
+    this.disableEditCategoryMode();
     dispatch({
       type: "annotation: category edited",
       metadataField,
       newCategoryText,
       data: newCategoryText
     });
+    e.preventDefault();
   };
 
   categoryNameErrorMessage = () => {
@@ -121,6 +124,12 @@ class AnnoDialogEditCategoryName extends React.Component {
             annotations.isEditingCategoryName &&
             annotations.categoryBeingEdited === metadataField
           }
+          inputProps={{
+            "data-testid": `${metadataField}:edit-category-name-dialog`
+          }}
+          primaryButtonProps={{
+            "data-testid": `${metadataField}:submit-category-edit`
+          }}
           title="Edit category name"
           instruction="New, unique category name:"
           cancelTooltipContent="Close this dialog without editing this category."
@@ -132,6 +141,9 @@ class AnnoDialogEditCategoryName extends React.Component {
           handleCancel={this.disableEditCategoryMode}
           annoInput={
             <AnnoInputs
+              inputProps={{
+                "data-testid": `${metadataField}:edit-category-name-text`
+              }}
               useSuggest={false}
               text={newCategoryText}
               handleTextChange={this.handleCategoryEditTextChange}

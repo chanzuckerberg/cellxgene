@@ -76,7 +76,7 @@ class AnnoMenuCategory extends React.Component {
                 <MenuItem
                   icon="tag"
                   data-testclass="handleAddNewLabelToCategory"
-                  data-testid={`handleAddNewLabelToCategory-${metadataField}`}
+                  data-testid={`${metadataField}:add-new-label-to-category`}
                   onClick={this.activateAddNewLabelMode}
                   text={createText}
                 />
@@ -84,7 +84,7 @@ class AnnoMenuCategory extends React.Component {
                   <MenuItem
                     icon="book"
                     data-testclass="activateAddNewOntologyLabelMode"
-                    data-testid={`activateAddNewOntologyLabelMode-${metadataField}`}
+                    data-testid={`${metadataField}:add-new-ontology-label-mode`}
                     onClick={this.activateAddNewOntologyLabelMode}
                     text={createFromOntologyText}
                   />
@@ -93,7 +93,7 @@ class AnnoMenuCategory extends React.Component {
                   icon="edit"
                   disabled={annotations.isEditingCategoryName}
                   data-testclass="activateEditCategoryMode"
-                  data-testid={`activateEditCategoryMode-${metadataField}`}
+                  data-testid={`${metadataField}:edit-category-mode`}
                   onClick={this.activateEditCategoryMode}
                   text={editText}
                 />
@@ -101,7 +101,7 @@ class AnnoMenuCategory extends React.Component {
                   icon="delete"
                   intent="danger"
                   data-testclass="handleDeleteCategory"
-                  data-testid={`handleDeleteCategory-${metadataField}`}
+                  data-testid={`${metadataField}:delete-category`}
                   onClick={this.handleDeleteCategory}
                   text={deleteText}
                 />
@@ -111,7 +111,7 @@ class AnnoMenuCategory extends React.Component {
             <Button
               style={{ marginLeft: 0 }}
               data-testclass="seeActions"
-              data-testid={`seeActions-${metadataField}`}
+              data-testid={`${metadataField}:see-actions`}
               icon="more"
               minimal
             />

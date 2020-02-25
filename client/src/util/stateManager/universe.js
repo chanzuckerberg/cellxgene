@@ -4,8 +4,9 @@ import { unassignedCategoryLabel } from "../../globals";
 import { decodeMatrixFBS } from "./matrix";
 import * as Dataframe from "../dataframe";
 import { isFpTypedArray } from "../typeHelpers";
-import { indexEntireSchema, sortAllCategorical } from "./schemaHelpers";
+import { indexEntireSchema } from "./schemaHelpers";
 import { isCategoricalAnnotation } from "./annotationsHelpers";
+import catLabelSort from "../catLabelSort";
 
 /*
 Private helper function - create and return a template Universe
@@ -74,9 +75,9 @@ function promoteTypedArray(o) {
   return new TyepdArrayCtor(o);
 }
 
-function AnnotationsFBSToDataframe(arrayBuffer) {
+export function matrixFBSToDataframe(arrayBuffers) {
   /*
-  Convert a Matrix FBS to a Dataframe.
+  Convert array of Matrix FBS to a Dataframe.
 
   The application has strong assumptions that all scalar data will be
   stored as a float32 or float64 (regardless of underlying data types).
@@ -86,77 +87,41 @@ function AnnotationsFBSToDataframe(arrayBuffer) {
   All float data from the server is left as is.  All non-float is promoted
   to an appropriate float.
   */
-  const fbs = decodeMatrixFBS(arrayBuffer, true); // leave in place
-  const columns = fbs.columns.map(c => {
-    if (isFpTypedArray(c) || Array.isArray(c)) return c;
-    return promoteTypedArray(c);
-  });
-  const df = new Dataframe.Dataframe(
-    [fbs.nRows, fbs.nCols],
-    columns,
-    null,
-    new Dataframe.KeyIndex(fbs.colIdx)
-  );
-  return df;
-}
-
-function LayoutFBSToDataframe(arrayBuffer) {
-  const fbs = decodeMatrixFBS(arrayBuffer, true);
-  if (fbs.columns.length < 2 || !fbs.columns.every(isFpTypedArray)) {
-    // We have strong assumptions about the shape & type of layout data.
-    throw new Error("Unexpected layout data type returned from server");
+  if (!Array.isArray(arrayBuffers)) {
+    arrayBuffers = [arrayBuffers];
+  }
+  if (arrayBuffers.length === 0) {
+    return Dataframe.Dataframe.empty();
   }
 
+  const fbs = arrayBuffers.map(ab => decodeMatrixFBS(ab, true)); // leave in place
+  /* check that all FBS have same row dimensionality */
+  const nRows = fbs[0].nRows;
+  fbs.forEach(b => {
+    if (b.nRows !== nRows)
+      throw new Error("FBS with inconsistent dimensionality");
+  });
+  const columns = fbs
+    .map(fb =>
+      fb.columns.map(c => {
+        if (isFpTypedArray(c) || Array.isArray(c)) return c;
+        return promoteTypedArray(c);
+      })
+    )
+    .flat();
+  const colIdx = fbs.map(b => b.colIdx).flat();
+  const nCols = columns.length;
+
   const df = new Dataframe.Dataframe(
-    [fbs.nRows, fbs.nCols],
-    fbs.columns,
+    [nRows, nCols],
+    columns,
     null,
-    new Dataframe.KeyIndex(fbs.colIdx)
+    new Dataframe.KeyIndex(colIdx)
   );
   return df;
 }
 
-function reconcileSchemaCategoriesWithSummary(universe) {
-  /*
-  where we treat types as (essentially) categorical metadata, update
-  the schema with data-derived categories (in addition to those in
-  the server declared schema).
-
-  For example, boolean defined fields in the schema do not contain
-  explicit declaration of categories (nor do string fields).  In these
-  cases, add a 'categories' field to the schema so it is accessible.
-
-  In addition, we have a client-side convention (UI) that all writable
-  annotations must have an 'unassigned' category, even if it is not currently
-  in use.
-  */
-
-  universe.schema.annotations.obs.columns.forEach(s => {
-    if (
-      s.type === "string" ||
-      s.type === "boolean" ||
-      s.type === "categorical"
-    ) {
-      const categories = _.union(
-        s.categories ?? [],
-        universe.obsAnnotations.col(s.name).summarize().categories ?? []
-      );
-      s.categories = categories;
-    }
-
-    if (s.writable && s.categories.indexOf(unassignedCategoryLabel) === -1) {
-      s.categories = s.categories.concat(unassignedCategoryLabel);
-    }
-  });
-}
-
-export function createUniverseFromResponse(
-  configResponse,
-  schemaResponse,
-  annotationsObsResponse,
-  annotationsVarResponse,
-  layoutFBSResponse
-) {
+export function createUniverseFromResponse(configResponse, schemaResponse) {
   /*
   build & return universe from a REST 0.2 /config, /schema and /annotations/obs response
   */
@@ -167,41 +132,80 @@ export function createUniverseFromResponse(
   universe.schema = schema;
   universe.nObs = schema.dataframe.nObs;
   universe.nVar = schema.dataframe.nVar;
+
   /* add defaults, as we can't assume back-end will fully populate schema */
   if (!schema.layout.var) schema.layout.var = [];
   if (!schema.layout.obs) schema.layout.obs = [];
-
-  /* annotations */
-  universe.obsAnnotations = AnnotationsFBSToDataframe(annotationsObsResponse);
-  universe.varAnnotations = AnnotationsFBSToDataframe(annotationsVarResponse);
-  /* layout */
-  universe.obsLayout = LayoutFBSToDataframe(layoutFBSResponse);
-
-  /* sanity checks */
-  if (
-    universe.nObs !== universe.obsLayout.length ||
-    universe.nObs !== universe.obsAnnotations.length ||
-    universe.nVar !== universe.varAnnotations.length
-  ) {
-    throw new Error("Universe dimensionality mismatch - failed to load");
-  }
-
-  reconcileSchemaCategoriesWithSummary(universe);
-  sortAllCategorical(universe.schema);
   indexEntireSchema(universe.schema);
+  normalizeEntireSchema(universe.schema);
 
-  /* sanity checks */
-  if (
-    schema.annotations.obs.columns.some(
-      s => s.writable && !isCategoricalAnnotation(schema, s.name)
-    )
-  ) {
+  return universe;
+}
+
+function normalizeSchemaCategory(colSchema, col = undefined) {
+  const { type, writable } = colSchema;
+  if (type === "string" || type === "boolean" || type === "categorical") {
+    let categories = [
+      ...new Set([
+        ...(colSchema.categories ?? []),
+        ...(col?.summarize?.().categories ?? [])
+      ])
+    ];
+    if (writable && categories.indexOf(unassignedCategoryLabel) === -1) {
+      categories = categories.concat(unassignedCategoryLabel);
+    }
+    colSchema.categories = categories;
+  } else if (writable) {
     throw new Error(
       "Writable continuous obs annotations are not supported - failed to load"
     );
   }
 
-  return universe;
+  if (colSchema.categories) {
+    colSchema.categories = catLabelSort(writable, colSchema.categories);
+  }
+}
+
+function normalizeEntireSchema(schema) {
+  // currently only needed for obsAnnotations
+  schema.annotations.obs.columns.forEach(colSchema =>
+    normalizeSchemaCategory(colSchema)
+  );
+}
+
+export function addObsAnnotations(universe, df) {
+  const obsAnnotations = universe.obsAnnotations.withColsFromAll(df);
+  if (universe.nObs !== obsAnnotations.length) {
+    throw new Error("Universe dimensionality mismatch - failed to load");
+  }
+
+  // for all of the new data, reconcile with schema and sort categories.
+  const dfs = Array.isArray(df) ? df : [df];
+  const keys = dfs.map(df => df.colIndex.keys()).flat();
+  const { schema } = universe;
+  keys.forEach(k => {
+    const colSchema = schema.annotations.obsByName[k];
+    const col = obsAnnotations.col(k);
+    normalizeSchemaCategory(colSchema, col);
+  });
+
+  return { obsAnnotations, schema };
+}
+
+export function addVarAnnotations(universe, df) {
+  const varAnnotations = universe.varAnnotations.withColsFromAll(df);
+  if (universe.nVar !== varAnnotations.length) {
+    throw new Error("Universe dimensionality mismatch - failed to load");
+  }
+  return { varAnnotations };
+}
+
+export function addObsLayout(universe, df) {
+  const obsLayout = universe.obsLayout.withColsFromAll(df);
+  if (universe.nObs !== obsLayout.length) {
+    throw new Error("Universe dimensionality mismatch - failed to load");
+  }
+  return { obsLayout };
 }
 
 export function convertDataFBStoObject(universe, arrayBuffer) {

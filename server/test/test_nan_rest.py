@@ -4,7 +4,7 @@ import unittest
 import time
 import math
 
-import decode_fbs
+import server.test.decode_fbs as decode_fbs
 
 import requests
 

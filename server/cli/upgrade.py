@@ -20,7 +20,7 @@ def log_upgrade_check():
 
     # Get the current latest release
     try:
-        release_tag_generator = (r['tag_name'] for r in _request_cellxgene_releases())
+        release_tag_generator = (r["tag_name"] for r in _request_cellxgene_releases())
         latest_release = next(release_tag_generator, lambda tag_name: validate_version_str(tag_name))
         if version_gt(latest_release, __version__):
             click.echo(f"There's a new version of cellxgene available ({latest_release})!")
@@ -37,15 +37,16 @@ class RateLimitException(Exception):
 
 def _request_cellxgene_releases():
     def raise_on_rate_limit(response):
-        if response.status_code == 403 and res.headers.get('X-RateLimit-Remaining') == '0':
+        if response.status_code == 403 and res.headers.get("X-RateLimit-Remaining") == "0":
             raise RateLimitException
+
     url = "https://api.github.com/repos/chanzuckerberg/cellxgene/releases"
     res = requests.get(url)
     raise_on_rate_limit(res)
     for release in res.json():
         yield release
-    while 'next' in res.links.keys():
-        res = requests.get(res.links['next']['url'])
+    while "next" in res.links.keys():
+        res = requests.get(res.links["next"]["url"])
         raise_on_rate_limit(res)
         for release in res.json():
             yield release

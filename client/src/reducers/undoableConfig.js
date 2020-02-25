@@ -11,6 +11,8 @@ const skipOnActions = new Set([
   "url changed",
   "interface reset started",
   "initial data load start",
+  "universe: column load success",
+  "universe exists, but loading is still in progress",
   "configuration load complete",
   "increment graph render counter",
   "window resize",
@@ -33,18 +35,30 @@ const skipOnActions = new Set([
   "get single gene expression for coloring error",
 
   "category value mouse hover start",
-  "category value mouse hover end"
+  "category value mouse hover end",
+
+  /* autosave annotations */
+  "writable obs annotations - save complete",
+  "writable obs annotations - save started",
+  "writable obs annotations - save error",
+
+  /* annotation component action */
+  "annotation: activate add new label mode",
+  "annotation: activate add new ontology label mode",
+  "annotation: disable add new ontology label mode",
+  "annotation: disable add new label mode",
+  "annotation: activate category edit mode",
+  "annotation: disable category edit mode",
+  "annotation: activate edit label mode",
+  "annotation: cancel edit label mode",
+  "set annotations collection name"
 ]);
 
 /*
 identical, repeated occurances of these action types will be debounced.
 Entire action must be identical (all keys).
 */
-const debounceOnActions = new Set([
-  "color by categorical metadata",
-  "color by continuous metadata",
-  "color by expression"
-]);
+const debounceOnActions = new Set([]);
 
 /*
 history will be cleared when these actions occur
@@ -89,7 +103,8 @@ const saveOnActions = new Set([
   "annotation: delete category",
   "annotation: label edited",
   "annotation: label current cell selection",
-  "annotation: delete label"
+  "annotation: delete label",
+  "annotation: category edited"
 ]);
 
 /**
@@ -170,8 +185,6 @@ const actionFilter = debug => (state, action, prevFilterState) => {
   }
   if (
     debounceOnActions.has(actionType) &&
-    prevFilterState !== undefined &&
-    prevFilterState.prevAction !== undefined &&
     shallowObjectEq(action, prevFilterState.prevAction)
   ) {
     return { [actionKey]: "skip", [stateKey]: filterState };
@@ -227,7 +240,12 @@ function shallowArrayEq(arrA, arrB) {
 }
 
 /* configuration for the undoable meta reducer */
-const debug = false; // set truish for undoble debugging
+/*
+debug: set to any falsish value to disable logging of helpful debugging information.
+Set to true or 1 for base logging, high number for more verbosity (currently only 1/true
+or 2).
+*/
+const debug = false;
 const undoableConfig = {
   debug,
   historyLimit: 50, // maximum history size
