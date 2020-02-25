@@ -240,7 +240,12 @@ function shallowArrayEq(arrA, arrB) {
 }
 
 /* configuration for the undoable meta reducer */
-const debug = false; // set truish for undoble debugging. Higher number is more verbose.
+/*
+debug: set to any falsish value to disable logging of helpful debugging information.
+Set to true or 1 for base logging, high number for more verbosity (currently only 1/true
+or 2).
+*/
+const debug = false;
 const undoableConfig = {
   debug,
   historyLimit: 50, // maximum history size
