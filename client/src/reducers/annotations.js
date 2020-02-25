@@ -80,15 +80,6 @@ const Annotations = (
         isAddingNewLabel: false,
         categoryAddingNewLabel: null
       };
-    /* this handles both cases, since at this point it's just a string */
-    case "annotation: add new label to category":
-      return {
-        ...state,
-        isAddingNewLabel: false,
-        categoryAddingNewLabel: null,
-        isAddingNewLabelFromOntology: false,
-        categoryAddingNewLabelFromOntology: null
-      };
     case "annotation: activate category edit mode":
       return {
         ...state,
@@ -96,12 +87,6 @@ const Annotations = (
         categoryBeingEdited: action.data
       };
     case "annotation: disable category edit mode":
-      return {
-        ...state,
-        isEditingCategoryName: false,
-        categoryBeingEdited: null
-      };
-    case "annotation: category edited":
       return {
         ...state,
         isEditingCategoryName: false,
@@ -119,12 +104,6 @@ const Annotations = (
         }
       };
     case "annotation: cancel edit label mode":
-      return {
-        ...state,
-        isEditingLabelName: false,
-        labelEditable: { category: null, label: null }
-      };
-    case "annotation: label edited":
       return {
         ...state,
         isEditingLabelName: false,

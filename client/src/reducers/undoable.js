@@ -85,7 +85,6 @@ const Undoable = (reducer, undoableKeys, options = {}) => {
     );
     const newPast = [...past];
     const newState = newPast.pop();
-    const newStateFilterState = newState[filterStateKey];
     const newFuture = push(future, currentUndoableState);
     const nextState = {
       ...currentState,
@@ -94,7 +93,6 @@ const Undoable = (reducer, undoableKeys, options = {}) => {
       [futureKey]: newFuture,
       [pendingKey]: null
     };
-    nextState[filterStateKey] = newStateFilterState;
     return nextState;
   }
 
@@ -139,12 +137,13 @@ const Undoable = (reducer, undoableKeys, options = {}) => {
   */
   function skip(currentState, action, filterState) {
     const past = currentState[pastKey] || [];
+    const future = currentState[futureKey] || [];
     const pending = currentState[pendingKey];
     const res = reducer(currentState, action);
     return {
       ...res,
       [pastKey]: past,
-      [futureKey]: [],
+      [futureKey]: future,
       [filterStateKey]: filterState,
       [pendingKey]: pending
     };
@@ -218,6 +217,7 @@ const Undoable = (reducer, undoableKeys, options = {}) => {
     },
     action
   ) => {
+    if (debug > 1) console.log("---- ACTION", action.type);
     const aType = action.type;
     switch (aType) {
       case "@@undoable/undo": {

@@ -24,7 +24,7 @@ class Categories extends React.Component {
     };
   }
 
-  handleCreateUserAnno = () => {
+  handleCreateUserAnno = e => {
     const { dispatch } = this.props;
     const { newCategoryText, categoryToDuplicate } = this.state;
     dispatch({
@@ -37,6 +37,7 @@ class Categories extends React.Component {
       categoryToDuplicate: null,
       newCategoryText: ""
     });
+    e.preventDefault();
   };
 
   handleEnableAnnoMode = () => {
