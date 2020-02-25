@@ -122,8 +122,8 @@ export const datasets = {
       },
       newCount: {
         bySubsetConfig: {
-          false: "199",
-          true: "193"
+          false: "186",
+          true: "180"
         }
       }
     },

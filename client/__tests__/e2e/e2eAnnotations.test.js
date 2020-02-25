@@ -55,63 +55,52 @@ describe.each([
   });
 
   test("create a category", async () => {
-    await utils.clickOn("open-annotation-dialog");
-    await utils.typeInto("new-category-name", "test-category-name");
-    await utils.clickOn("submit-category");
-    const result = await utils.waitByID("test-category-name:category-expand");
-    expect(await result.evaluate(node => node.innerText)).toBe("test-category-name");
+    await assertCategoryDoesNotExist("test-category");
+    await cxgActions.createCategory("test-category");
+    await assertCategoryExists("test-category");
   });
 
   test("delete a category", async () => {
-    const previous = await utils.waitByID("cluster-test:category-expand");
-    expect(await previous.evaluate(node => node.innerText)).toBe("cluster-test");
-    await utils.hoverOn("cluster-test:see-actions");
-    await utils.clickOn("cluster-test:delete-category");
-    const result = await page.$("[data-testid='cluster-test:category-expand']");
-    expect(result).toBeNull();
+    const categoryName = "cluster-test";
+    await assertCategoryExists(categoryName);
+    await cxgActions.deleteCategory(categoryName);
+    await assertCategoryDoesNotExist(categoryName);
   });
 
+
   test("rename a category", async () => {
-    const previous = await utils.waitByID("cluster-test:category-expand");
-    expect(await previous.evaluate(node => node.innerText)).toBe("cluster-test");
-    await utils.hoverOn("cluster-test:see-actions");
-    await utils.clickOn("cluster-test:edit-category-mode");
-    await utils.typeInto("cluster-test:edit-category-name-text", "-renamed");
-    await utils.clickOn("cluster-test:submit-category-edit");
-    const result = await utils.waitByID("cluster-test-renamed:category-expand");
-    expect(await result.evaluate(node => node.innerText)).toBe("cluster-test-renamed");
+    const oldCategoryName = "cluster-test";
+    const newCategoryName = "cluster-for-real";
+    await assertCategoryExists(oldCategoryName);
+    await cxgActions.renameCategory(oldCategoryName, newCategoryName);
+    await assertCategoryDoesNotExist(oldCategoryName);
+    await assertCategoryExists(newCategoryName);
   });
 
   test("create a label", async () => {
-    await utils.hoverOn("cluster-test:see-actions");
-    await utils.clickOn("cluster-test:add-new-label-to-category");
-    await utils.typeInto("cluster-test:new-label-name", "test-label-name");
-    await utils.clickOn("cluster-test:submit-label");
-    await cxgActions.expandCategory("cluster-test");
-    const result = await utils.waitByID("categorical-value-cluster-test-test-label-name");
-    expect(await result.evaluate(node => node.innerText)).toBe("test-label-name");
+    const categoryName = "cluster-test";
+    const labelName = "new-label";
+    await assertLabelDoesNotExist(categoryName, labelName);
+    await cxgActions.createLabel(categoryName, labelName);
+    await assertLabelExists(categoryName, labelName);
   });
 
   test("delete a label", async () => {
-    await cxgActions.expandCategory("cluster-test");
-    const previous = await utils.waitByID("categorical-value-cluster-test-three");
-    expect(await previous.evaluate(node => node.innerText)).toBe("three");
-    await utils.hoverOn("cluster-test:three:see-actions");
-    await utils.clickOn("cluster-test:three:delete-label");
-    const result = await page.$("[data-testid='categorical-value-cluster-test-three']");
-    expect(result).toBeNull();
+    const categoryName = "cluster-test";
+    const labelName = "three";
+    await assertLabelExists(categoryName, labelName);
+    await cxgActions.deleteLabel(categoryName, labelName);
+    await assertLabelDoesNotExist(categoryName, labelName);
   });
 
   test("rename a label", async () => {
-    await cxgActions.expandCategory("cluster-test");
-    const previous = await utils.waitByID("categorical-value-cluster-test-four");
-    expect(await previous.evaluate(node => node.innerText)).toBe("four");
-    await utils.hoverOn("cluster-test:four:see-actions");
-    await utils.clickOn("cluster-test:four:edit-label");
-    await utils.typeInto("cluster-test:four:edit-label-name", ".");
-    await utils.clickOn("cluster-test:four:submit-label-edit");
-    const result = await utils.waitByID("categorical-value-cluster-test-four.");
-    expect(await result.evaluate(node => node.innerText)).toBe("four.");
+    const categoryName = "cluster-test";
+    const oldLabelName = "two";
+    const newLabelName = "bazillion";
+    await assertLabelExists(categoryName, oldLabelName);
+    await cxgActions.renameLabel(categoryName, oldLabelName, newLabelName);
+    await assertLabelDoesNotExist(categoryName, oldLabelName);
+    await assertLabelExists(categoryName, newLabelName);
   });
 
   test("assign cells to a label", async () => {
@@ -137,4 +126,107 @@ describe.each([
       data.categoryLabel.newCount.bySubsetConfig[config.withSubset]
     );
   });
+
+  test("undo/redo category creation", async () => {
+    const categoryName = "heisenbug-category";
+    await assertCategoryDoesNotExist(categoryName);
+    await cxgActions.createCategory(categoryName);
+    await assertCategoryExists(categoryName);
+    await utils.clickOn("undo");
+    await assertCategoryDoesNotExist(categoryName);
+    await utils.clickOn("redo");
+    await assertCategoryExists(categoryName);
+  });
+
+  test("undo/redo category deletion", async () => {
+    const categoryName = "cluster-test";
+    await assertCategoryExists(categoryName);
+    await cxgActions.deleteCategory(categoryName);
+    await assertCategoryDoesNotExist(categoryName);
+    await utils.clickOn("undo");
+    await assertCategoryExists(categoryName);
+    await utils.clickOn("redo");
+    await assertCategoryDoesNotExist(categoryName);
+  });
+
+  test("undo/redo category rename", async () => {
+    const oldCategoryName = "cluster-test";
+    const newCategoryName = "heisenbug-category";
+    await assertCategoryExists(oldCategoryName);
+    await assertCategoryDoesNotExist(newCategoryName);
+    await cxgActions.renameCategory(oldCategoryName, newCategoryName);
+    await assertCategoryExists(newCategoryName);
+    await assertCategoryDoesNotExist(oldCategoryName);
+    await utils.clickOn("undo");
+    await assertCategoryExists(oldCategoryName);
+    await assertCategoryDoesNotExist(newCategoryName);
+    await utils.clickOn("redo");
+    await assertCategoryExists(newCategoryName);
+    await assertCategoryDoesNotExist(oldCategoryName);
+  });
+
+  test("undo/redo label creation", async () => {
+    const categoryName = "cluster-test";
+    const labelName = "heisenbug-label";
+    await assertLabelDoesNotExist(categoryName, labelName);
+    await cxgActions.createLabel(categoryName, labelName);
+    await assertLabelExists(categoryName, labelName);
+    await utils.clickOn("undo");
+    await assertLabelDoesNotExist(categoryName);
+    await utils.clickOn("redo");
+    await assertLabelExists(categoryName, labelName);
+  });
+
+  test("undo/redo label deletion", async () => {
+    const categoryName = "cluster-test";
+    const labelName = "five";
+    await assertLabelExists(categoryName, labelName);
+    await cxgActions.deleteLabel(categoryName, labelName);
+    await assertLabelDoesNotExist(categoryName);
+    await utils.clickOn("undo");
+    await assertLabelExists(categoryName, labelName);
+    await utils.clickOn("redo");
+    await assertLabelDoesNotExist(categoryName);
+  });
+
+  test("undo/redo label rename", async () => {
+    const categoryName = "cluster-test";
+    const oldLabelName = "six";
+    const newLabelName = "schroedinger-label";
+    await assertLabelExists(categoryName, oldLabelName);
+    await assertLabelDoesNotExist(categoryName, newLabelName);
+    await cxgActions.renameLabel(categoryName, oldLabelName, newLabelName);
+    await assertLabelExists(categoryName, newLabelName);
+    await assertLabelDoesNotExist(categoryName, oldLabelName);
+    await utils.clickOn("undo");
+    await assertLabelExists(categoryName, oldLabelName);
+    await assertLabelDoesNotExist(categoryName, newLabelName);
+    await utils.clickOn("redo");
+    await assertLabelExists(categoryName, newLabelName);
+    await assertLabelDoesNotExist(categoryName, oldLabelName);
+  });
+
+  async function assertCategoryExists(categoryName) {
+    const result = await utils.waitByID(`${categoryName}:category-expand`);
+    expect(await result.evaluate(node => node.innerText)).toBe(categoryName);
+  }
+
+  async function assertCategoryDoesNotExist(categoryName) {
+    const result = await page.$(`[data-testid='${categoryName}:category-expand']`);
+    expect(result).toBeNull();
+  }
+
+  async function assertLabelExists(categoryName, labelName) {
+    const category = await utils.waitByID(`${categoryName}:category-expand`);
+    expect(category).not.toBeNull();
+    await cxgActions.expandCategory(categoryName);
+    const previous = await utils.waitByID(`categorical-value-${categoryName}-${labelName}`);
+    expect(await previous.evaluate(node => node.innerText)).toBe(labelName);
+  }
+
+  async function assertLabelDoesNotExist(categoryName, labelName) {
+    await cxgActions.expandCategory(categoryName);
+    const result = await page.$(`[data-testid='categorical-value-${categoryName}-${labelName}']`);
+    expect(result).toBeNull();
+  }
 });

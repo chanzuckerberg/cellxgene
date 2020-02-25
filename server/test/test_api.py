@@ -272,7 +272,7 @@ class EndPointsAnnotations(EndPoints):
 
     def test_get_user_annotations_existing_obs_keys_fbs(self):
         self._test_get_user_annotations_obs_keys_fbs(
-            "cluster-test", {"unassigned", "one", "two", "three", "four", "five"},
+            "cluster-test", {"unassigned", "one", "two", "three", "four", "five", "six", "seven"},
         )
 
     def test_put_user_annotations_obs_fbs(self):
