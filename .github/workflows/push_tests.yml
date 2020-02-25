@@ -4,6 +4,7 @@ on: [push]
 
 env:
   JEST_ENV: prod
+  CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
 jobs:
   lint:
@@ -44,7 +45,10 @@ jobs:
     - name: Install dependencies
       run: make pydist install-dist dev-env-server
     - name: Unit tests
-      run: make unit-test
+      run: |
+        make unit-test
+        bash <(curl -s https://codecov.io/bash) -k server -cF backend,python,unitTest
+        cd client && ./node_modules/codecov/bin/codecov --root=../ --gcov-root=../ -C -F frontend,javascript,unitTest
 
   smoke-tests:
     runs-on: ubuntu-latest
@@ -71,7 +75,9 @@ jobs:
     - name: Install dependencies
       run: make pydist install-dist
     - name: Smoke tests (without annotations feature)
-      run: cd client && make smoke-test
+      run: |
+        cd client && make smoke-test
+        ./node_modules/codecov/bin/codecov --root=../ --gcov-root=../ -C -F frontend,javascript,smokeTest
 
   smoke-tests-annotations:
     runs-on: ubuntu-latest
@@ -98,4 +104,6 @@ jobs:
     - name: Install dependencies
       run: make pydist install-dist
     - name: Smoke tests (with annotations feature)
-      run: cd client && make smoke-test-annotations
+      run: |
+        cd client && make smoke-test-annotations
+        ./node_modules/codecov/bin/codecov --root=../ --gcov-root=../ -C -F frontend,javascript,smokeTestAnnotations

@@ -3,6 +3,8 @@ node_modules/
 
 # coverage
 coverage
+coverage.xml
+.coverage
 .nyc_output
 
 .pytest_cache/
