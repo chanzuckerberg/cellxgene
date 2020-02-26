@@ -69,12 +69,14 @@ function topNCategories(colSchema, summary, N) {
   return [topNCategories, topNCounts];
 }
 
-export function selectableCategoryNames(schema, maxCategoryItems, names) {
+export function selectableCategoryNames(schema, names) {
   /*
   return all obs annotation names that are categorical AND have a
   "reasonably" small number of categories AND are not the index column.
 
   If the initial name list not provided, use everything in the schema.
+
+  Names are returned with writable categories first, sorted then by name
   */
   if (!schema) return [];
   const { index, columns } = schema.annotations.obs;
@@ -86,6 +88,11 @@ export function selectableCategoryNames(schema, maxCategoryItems, names) {
       const isSelectableType =
         type === "string" || type === "boolean" || type === "categorical";
       return isSelectableType && name !== index;
+    })
+    .sort((a, b) => {
+      if (a.writable && !b.writable) return 1;
+      if (!a.writable && b.writable) return -1;
+      return a.name.localeCompare(b.name);
     })
     .map(v => v.name);
 }

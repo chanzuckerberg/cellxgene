@@ -121,18 +121,10 @@ class Categories extends React.Component {
       categoryToDuplicate,
       newCategoryText
     } = this.state;
-    const {
-      categoricalSelection,
-      writableCategoriesEnabled,
-      schema,
-      config
-    } = this.props;
+    const { writableCategoriesEnabled, schema } = this.props;
 
     /* all names, sorted in display order.  Will be rendered in this order */
-    const allCategoryNames = ControlsHelpers.selectableCategoryNames(
-      schema,
-      ControlsHelpers.maxCategoryItems(config)
-    ).sort();
+    const allCategoryNames = ControlsHelpers.selectableCategoryNames(schema);
 
     return (
       <div
@@ -172,28 +164,13 @@ class Categories extends React.Component {
           }
         />
 
-        {/* READ ONLY CATEGORICAL FIELDS */}
-        {/* this is duplicative but flat, could be abstracted */}
         {allCategoryNames.map(catName =>
-          !schema.annotations.obsByName[catName].writable ? (
-            <Category
-              key={catName}
-              metadataField={catName}
-              createAnnoModeActive={createAnnoModeActive}
-              isUserAnno={false}
-            />
-          ) : null
-        )}
-        {/* WRITEABLE FIELDS */}
-        {allCategoryNames.map(catName =>
-          schema.annotations.obsByName[catName].writable ? (
-            <Category
-              key={catName}
-              metadataField={catName}
-              createAnnoModeActive={createAnnoModeActive}
-              isUserAnno
-            />
-          ) : null
+          <Category
+            key={catName}
+            metadataField={catName}
+            createAnnoModeActive={createAnnoModeActive}
+            isUserAnno={schema.annotations.obsByName[catName].writable}
+          />
         )}
         {writableCategoriesEnabled ? (
           <div>

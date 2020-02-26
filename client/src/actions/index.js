@@ -1,12 +1,13 @@
 import _ from "lodash";
 import * as globals from "../globals";
-import { Universe, MatrixFBS } from "../util/stateManager";
+import {Universe, MatrixFBS, ControlsHelpers} from "../util/stateManager";
 import {
   catchErrorsWrap,
   doJsonRequest,
   doBinaryRequest,
   dispatchNetworkErrorMessageToUser
 } from "../util/actionHelpers";
+import { ControlsHelper } from "../util/stateManager";
 
 /*
 return promise to fetch the OBS annotations we need to load.  Omit anything
@@ -135,13 +136,11 @@ const doInitialDataLoad = () =>
       Step 3 - load everything else
       */
       await obsAnnotationFetchAndLoad(dispatch, schema, universe);
-      const firstCategory = (schema.schema.annotations?.obs?.columns || []).find(
-        ele => ele.type === "categorical"
-      );
+      const firstCategory = ControlsHelpers.selectableCategoryNames(schema.schema)[0];
       if (firstCategory !== undefined) {
         dispatch({
           type: "color by categorical metadata",
-          colorAccessor: firstCategory.name
+          colorAccessor: firstCategory
         });
       }
       dispatch({

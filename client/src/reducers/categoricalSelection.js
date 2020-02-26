@@ -15,10 +15,7 @@ const CategoricalSelection = (
       const { world } = nextSharedState;
       const newState = CH.createCategoricalSelection(
         world,
-        CH.selectableCategoryNames(
-          world.schema,
-          CH.maxCategoryItems(prevSharedState.config)
-        )
+        CH.selectableCategoryNames(world.schema)
       );
       return newState;
     }
@@ -29,11 +26,7 @@ const CategoricalSelection = (
 
       const { dataframe } = action;
       const { world } = nextSharedState;
-      const names = CH.selectableCategoryNames(
-        world.schema,
-        CH.maxCategoryItems(prevSharedState.config),
-        dataframe.colIndex.keys()
-      );
+      const names = CH.selectableCategoryNames(world.schema, dataframe.colIndex.keys());
       if (names.length === 0) return state;
       return {
         ...state,
