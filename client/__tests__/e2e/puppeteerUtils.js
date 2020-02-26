@@ -56,19 +56,13 @@ export const puppeteerUtils = puppeteerPage => ({
     // select all
 
     await puppeteerPage.click(selector, { clickCount: 3 });
-    await puppeteerPage.keyboard.type("Backspace");
+    await puppeteerPage.keyboard.press("Backspace");
     await puppeteerPage.type(selector, text);
   },
 
-  async clickOn(testid) {
+  async clickOn(testid, options={}) {
     await this.waitByID(testid);
-    await puppeteerPage.click(`[data-testid='${testid}']`);
-    await puppeteerPage.waitFor(50);
-  },
-
-  async hoverOn(testid) {
-    await this.waitByID(testid);
-    await puppeteerPage.hover(`[data-testid='${testid}']`);
+    await puppeteerPage.click(`[data-testid='${testid}']`, options);
     await puppeteerPage.waitFor(50);
   },
 
@@ -210,8 +204,10 @@ export const cellxgeneActions = puppeteerPage => ({
 
   async expandCategory(category) {
     const expand = await puppeteerUtils(puppeteerPage).waitByID(`${category}:category-expand`);
-    const expandArrow = await expand.$("[data-testclass='category-expand-is-not-expanded']");
-    await expandArrow.click();
+    const notExpanded = await expand.$("[data-testclass='category-expand-is-not-expanded']");
+    if (notExpanded) {
+      await puppeteerUtils(puppeteerPage).clickOn(`${category}:category-expand`);
+    }
   },
 
   async reset() {
@@ -231,6 +227,48 @@ export const cellxgeneActions = puppeteerPage => ({
       max
     );
     await puppeteerUtils(puppeteerPage).clickOn("clip-commit");
+  },
+
+  async createCategory(categoryName) {
+    await puppeteerUtils(puppeteerPage).clickOn("open-annotation-dialog");
+    await puppeteerUtils(puppeteerPage).typeInto("new-category-name", categoryName);
+    await puppeteerUtils(puppeteerPage).clickOn("submit-category");
+  },
+
+  async renameCategory(oldCatgoryName, newCategoryName) {
+    await puppeteerUtils(puppeteerPage).clickOn(`${oldCatgoryName}:see-actions`);
+    await puppeteerUtils(puppeteerPage).clickOn(`${oldCatgoryName}:edit-category-mode`);
+    await puppeteerUtils(puppeteerPage).clearInputAndTypeInto(`${oldCatgoryName}:edit-category-name-text`, newCategoryName);
+    await puppeteerUtils(puppeteerPage).clickOn(`${oldCatgoryName}:submit-category-edit`);
+  },
+
+  async deleteCategory(categoryName) {
+    await puppeteerUtils(puppeteerPage).clickOn(`${categoryName}:see-actions`);
+    await puppeteerUtils(puppeteerPage).clickOn(`${categoryName}:delete-category`);
+  },
+
+  async createLabel(categoryName, labelName) {
+    await puppeteerUtils(puppeteerPage).clickOn(`${categoryName}:see-actions`);
+    await puppeteerUtils(puppeteerPage).clickOn(`${categoryName}:add-new-label-to-category`);
+    await puppeteerUtils(puppeteerPage).typeInto(`${categoryName}:new-label-name`, labelName);
+    await puppeteerUtils(puppeteerPage).clickOn(`${categoryName}:submit-label`);
+  },
+
+  async deleteLabel(categoryName, labelName) {
+    await this.expandCategory(categoryName);
+    await puppeteerUtils(puppeteerPage).clickOn(`${categoryName}:${labelName}:see-actions`);
+    await puppeteerUtils(puppeteerPage).clickOn( `${categoryName}:${labelName}:delete-label`);
+  },
+
+  async renameLabel(categoryName, oldLabelName, newLabelName) {
+    await this.expandCategory(categoryName);
+    await puppeteerUtils(puppeteerPage).clickOn(`${categoryName}:${oldLabelName}:see-actions`);
+    await puppeteerUtils(puppeteerPage).clickOn(`${categoryName}:${oldLabelName}:edit-label`);
+    await puppeteerUtils(puppeteerPage).clearInputAndTypeInto(
+      `${categoryName}:${oldLabelName}:edit-label-name`,
+      newLabelName
+    );
+    await puppeteerUtils(puppeteerPage).clickOn(`${categoryName}:${oldLabelName}:submit-label-edit`);
   }
 });
 

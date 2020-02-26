@@ -29,6 +29,7 @@ function InformationMenu(props) {
           style={{
             cursor: "pointer"
           }}
+          data-testid="undo"
         />
       </Tooltip>
       <Tooltip
@@ -46,6 +47,7 @@ function InformationMenu(props) {
           style={{
             cursor: "pointer"
           }}
+          data-testid="redo"
         />
       </Tooltip>
       <Tooltip

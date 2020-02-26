@@ -2,7 +2,8 @@ const Autosave = (
 	state = {
 		saveInProgress: false,
 		error: false,
-		lastSavedObsAnnotations: null
+		lastSavedObsAnnotations: null,
+		initialDataLoadComplete: false
 	},
 	action,
 	nextSharedState
@@ -15,7 +16,8 @@ const Autosave = (
 				...state,
 				error: false,
 				saveInProgress: false,
-				lastSavedObsAnnotations: universe.obsAnnotations
+				lastSavedObsAnnotations: universe.obsAnnotations,
+				initialDataLoadComplete: true,
 			};
 		}
 
