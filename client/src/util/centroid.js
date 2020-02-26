@@ -114,5 +114,5 @@ const hashMedianCentroid = (
     categorySelection
   )}:${Object.keys(schemaObsByName)}`;
 };
-// export the mmemoized calculation function
+// export the memoized calculation function
 export default memoize(calcMedianCentroid, hashMedianCentroid);
