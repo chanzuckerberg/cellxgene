@@ -47,8 +47,8 @@ jobs:
     - name: Unit tests
       run: |
         make unit-test
-        bash <(curl -s https://codecov.io/bash) -k server -cF backend,python,unitTest
-        cd client && ./node_modules/codecov/bin/codecov --root=../ --gcov-root=../ -C -F frontend,javascript,unitTest
+        bash <(curl -s https://codecov.io/bash) -y .codecov.yml -k server -cF backend,python,unitTest
+        cd client && ./node_modules/codecov/bin/codecov --yml=../.codecov.yml --root=../ --gcov-root=../ -C -F frontend,javascript,unitTest
 
   smoke-tests:
     runs-on: ubuntu-latest
@@ -77,7 +77,7 @@ jobs:
     - name: Smoke tests (without annotations feature)
       run: |
         cd client && make smoke-test
-        ./node_modules/codecov/bin/codecov --root=../ --gcov-root=../ -C -F frontend,javascript,smokeTest
+        ./node_modules/codecov/bin/codecov --yml=../.codecov.yml --root=../ --gcov-root=../ -C -F frontend,javascript,smokeTest
 
   smoke-tests-annotations:
     runs-on: ubuntu-latest
@@ -106,4 +106,4 @@ jobs:
     - name: Smoke tests (with annotations feature)
       run: |
         cd client && make smoke-test-annotations
-        ./node_modules/codecov/bin/codecov --root=../ --gcov-root=../ -C -F frontend,javascript,smokeTestAnnotations
+        ./node_modules/codecov/bin/codecov --yml=../.codecov.yml --root=../ --gcov-root=../ -C -F frontend,javascript,smokeTestAnnotations
