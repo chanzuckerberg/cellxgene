@@ -309,6 +309,6 @@ describe("ui elements don't error", () => {
       panCoords.end,
       false
     );
-    await page.evaluate(`window.scrollBy(0, 1000);`);
+    await page.evaluate("window.scrollBy(0, 1000);");
   });
 });

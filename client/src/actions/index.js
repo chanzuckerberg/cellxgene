@@ -135,7 +135,15 @@ const doInitialDataLoad = () =>
       Step 3 - load everything else
       */
       await obsAnnotationFetchAndLoad(dispatch, schema, universe);
-
+      const firstCategory = (schema.schema.annotations?.obs?.columns || []).find(
+        ele => ele.type === "categorical"
+      );
+      if (firstCategory !== undefined) {
+        dispatch({
+          type: "color by categorical metadata",
+          colorAccessor: firstCategory.name
+        });
+      }
       dispatch({
         type: "initial data load complete (universe exists)",
         universe
