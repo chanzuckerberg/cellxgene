@@ -22,13 +22,7 @@ class AnnoDialogEditCategoryName extends React.PureComponent {
     };
   }
 
-  handleChange = name => {
-    this.setState({
-      newCategoryText: name
-    });
-  };
-
-  handleSelect = name => {
+  handleChangeOrSelect = name => {
     this.setState({
       newCategoryText: name
     });
@@ -125,8 +119,8 @@ class AnnoDialogEditCategoryName extends React.PureComponent {
             <LabelInput
               label={newCategoryText}
               labelSuggestions={ontologyEnabled ? ontology.terms : null}
-              onChange={this.handleChange}
-              onSelect={this.handleSelect}
+              onChange={this.handleChangeOrSelect}
+              onSelect={this.handleChangeOrSelect}
               inputProps={{
                 "data-testid": `${metadataField}:edit-category-name-text`,
                 leftIcon: "tag",

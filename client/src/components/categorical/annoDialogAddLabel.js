@@ -67,11 +67,7 @@ class Category extends React.PureComponent {
     return labelPrompt(this.labelNameError(label), "New, unique label", ":");
   };
 
-  handleChange = label => {
-    this.setState({ newLabelText: label });
-  };
-
-  handleSelect = label => {
+  handleChangeOrSelect = label => {
     this.setState({ newLabelText: label });
   };
 
@@ -104,8 +100,8 @@ class Category extends React.PureComponent {
           annoInput={
             <LabelInput
               labelSuggestions={ontologyEnabled ? ontology.terms : null}
-              onChange={this.handleChange}
-              onSelect={this.handleSelect}
+              onChange={this.handleChangeOrSelect}
+              onSelect={this.handleChangeOrSelect}
               inputProps={{
                 "data-testid": `${metadataField}:new-label-name`,
                 leftIcon: "tag",

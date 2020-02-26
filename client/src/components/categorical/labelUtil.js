@@ -61,26 +61,3 @@ export function labelPrompt(err, prolog, epilog) {
 		</span>
 	);
 }
-
-export function labelErrorMessage(label, metadataField, ontology, schema) {
-	const err = isLabelErroneous(label, metadataField, ontology, schema);
-
-	if (err === "duplicate") {
-		/* duplicate error is special cased because it has special formatting */
-		return (
-			<span>
-				<span style={{ fontStyle: "italic" }}>{label}</span> already exists
-				already exists within{" "}
-				<span style={{ fontStyle: "italic" }}>{metadataField}</span>{" "}
-			</span>
-		);
-	}
-
-	if (err) {
-		const errorMessage = errorMessageMap[err] ?? "error";
-		return <span>{errorMessage}</span>;
-	}
-
-	/* no error, no message generated */
-	return null;
-}

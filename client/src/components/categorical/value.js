@@ -85,7 +85,6 @@ class CategoryValue extends React.Component {
     const { dispatch, metadataField, categoryIndex } = this.props;
     const { editedLabelText } = this.state;
     const label = this.getLabel();
-    console.log("handleEditValue", editedLabelText);
     this.cancelEditMode();
     dispatch({
       type: "annotation: label edited",
