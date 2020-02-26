@@ -14,7 +14,7 @@ import { AnnotationsHelpers } from "../../util/stateManager";
   universe: state.universe,
   ontology: state.ontology
 }))
-class AnnoDialogEditCategoryName extends React.Component {
+class AnnoDialogEditCategoryName extends React.PureComponent {
   constructor(props) {
     super(props);
     this.state = {

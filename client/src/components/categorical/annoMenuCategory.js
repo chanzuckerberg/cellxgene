@@ -12,7 +12,7 @@ import {
 @connect(state => ({
   annotations: state.annotations
 }))
-class AnnoMenuCategory extends React.Component {
+class AnnoMenuCategory extends React.PureComponent {
   constructor(props) {
     super(props);
     this.state = {};

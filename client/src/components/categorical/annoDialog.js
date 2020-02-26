@@ -8,7 +8,7 @@ import { Button, Tooltip, Dialog, Classes, Colors } from "@blueprintjs/core";
   annotations: state.annotations,
   universe: state.universe
 }))
-class AnnoDialog extends React.Component {
+class AnnoDialog extends React.PureComponent {
   constructor(props) {
     super(props);
     this.state = {};

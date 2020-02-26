@@ -9,7 +9,7 @@ import { Select } from "@blueprintjs/select";
   annotations: state.annotations,
   universe: state.universe
 }))
-class DuplicateCategorySelect extends React.Component {
+class DuplicateCategorySelect extends React.PureComponent {
   constructor(props) {
     super(props);
     this.state = {};

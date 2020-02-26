@@ -11,7 +11,7 @@ import { labelPrompt, isLabelErroneous } from "./labelUtil";
   universe: state.universe,
   ontology: state.ontology
 }))
-class Category extends React.Component {
+class Category extends React.PureComponent {
   constructor(props) {
     super(props);
     this.state = {
