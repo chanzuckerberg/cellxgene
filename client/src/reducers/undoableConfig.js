@@ -44,8 +44,6 @@ const skipOnActions = new Set([
 
   /* annotation component action */
   "annotation: activate add new label mode",
-  "annotation: activate add new ontology label mode",
-  "annotation: disable add new ontology label mode",
   "annotation: disable add new label mode",
   "annotation: activate category edit mode",
   "annotation: disable category edit mode",

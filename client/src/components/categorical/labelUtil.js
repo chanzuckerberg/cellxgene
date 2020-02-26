@@ -1,4 +1,6 @@
 import React from "react";
+import { Colors } from "@blueprintjs/core";
+
 import { AnnotationsHelpers } from "../../util/stateManager";
 
 export function isLabelErroneous(label, metadataField, ontology, schema) {
@@ -34,21 +36,30 @@ const errorMessageMap = {
 	"multi-space-run": "Multiple consecutive spaces not allowed"
 };
 
-export function labelErrorSimpleMessage(
-	label,
-	metadataField,
-	ontology,
-	schema,
-	toUpper = true
-) {
-	const err = isLabelErroneous(label, metadataField, ontology, schema);
-	if (!err) return null;
-
-	let errMsg = errorMessageMap[err] ?? "error";
-	errMsg =
-		(toUpper ? errMsg[0].toUpperCase() : errMsg[0].toLowerCase()) +
-		errMsg.slice(1);
-	return <span>{errMsg}</span>;
+export function labelPrompt(err, prolog, epilog) {
+	let errPrompt = null;
+	if (err) {
+		let errMsg = errorMessageMap[err] ?? "error";
+		errMsg = errMsg[0].toLowerCase() + errMsg.slice(1);
+		errPrompt = (
+			<span
+				style={{
+					marginTop: 7,
+					color: Colors.ORANGE3
+				}}
+			>
+				{errMsg}
+			</span>
+		);
+	}
+	return (
+		<span>
+			{prolog}
+			{err ? " - " : null}
+			{errPrompt}
+			{epilog}
+		</span>
+	);
 }
 
 export function labelErrorMessage(label, metadataField, ontology, schema) {

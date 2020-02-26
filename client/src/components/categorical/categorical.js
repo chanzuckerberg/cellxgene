@@ -6,13 +6,15 @@ import * as globals from "../../globals";
 import Category from "./category";
 import { AnnotationsHelpers, ControlsHelpers } from "../../util/stateManager";
 import AnnoDialog from "./annoDialog";
-import AnnoInputs from "./annoInputs";
 import AnnoSelect from "./annoSelect";
+import LabelInput from "./labelInput";
+import { labelPrompt } from "./labelUtil";
 
 @connect(state => ({
   writableCategoriesEnabled: state.config?.parameters?.["annotations"] ?? false,
   schema: state.world?.schema,
-  config: state.config
+  config: state.config,
+  ontology: state.ontology
 }))
 class Categories extends React.Component {
   constructor(props) {
@@ -87,33 +89,21 @@ class Categories extends React.Component {
     return false;
   };
 
-  categoryNameErrorMessage = name => {
-    const err = this.categoryNameError(name);
-    if (err === false) return null;
-
-    const errorMessageMap = {
-      /* map error code to human readable error message */
-      "empty-string": "Blank names not allowed",
-      duplicate: "Name must be unique",
-      "trim-spaces": "Leading and trailing spaces not allowed",
-      "illegal-characters":
-        "Only alphanumeric and special characters (-_.) allowed",
-      "multi-space-run": "Multiple consecutive spaces not allowed"
-    };
-    const errorMessage = errorMessageMap[err] ?? "error";
-    return <span>{errorMessage}</span>;
+  handleChange = name => {
+    this.setState({ newCategoryText: name });
   };
 
-  handleNewCategoryText = txt => {
-    this.setState({ newCategoryText: txt });
+  handleSelect = name => {
+    this.setState({ newCategoryText: name });
   };
 
-  handleChoice = e => {
-    /* Blueprint Suggest format */
-    this.setState({ newCategoryText: e.target });
+  instruction = name => {
+    return labelPrompt(
+      this.categoryNameError(name),
+      "New, unique category name",
+      ":"
+    );
   };
-
-  handleSuggestActiveItemChange = () => {};
 
   render() {
     const {
@@ -125,8 +115,10 @@ class Categories extends React.Component {
       categoricalSelection,
       writableCategoriesEnabled,
       schema,
-      config
+      config,
+      ontology
     } = this.props;
+    const ontologyEnabled = ontology?.enabled ?? false;
 
     /* all names, sorted in display order.  Will be rendered in this order */
     const allCategoryNames = ControlsHelpers.selectableCategoryNames(
@@ -143,22 +135,25 @@ class Categories extends React.Component {
         <AnnoDialog
           isActive={createAnnoModeActive}
           title="Create new category"
-          instruction="New, unique category name:"
+          instruction={this.instruction(newCategoryText)}
           cancelTooltipContent="Close this dialog without creating a category."
           primaryButtonText="Create new category"
           primaryButtonProps={{ "data-testid": "submit-category" }}
           text={newCategoryText}
           validationError={this.categoryNameError(newCategoryText)}
-          errorMessage={this.categoryNameErrorMessage(newCategoryText)}
           handleSubmit={this.handleCreateUserAnno}
           handleCancel={this.handleDisableAnnoMode}
           annoInput={
-            <AnnoInputs
-              text={newCategoryText}
-              inputProps={{ "data-testid": "new-category-name" }}
-              handleItemChange={this.handleSuggestActiveItemChange}
-              handleChoice={this.handleChoice}
-              handleTextChange={this.handleNewCategoryText}
+            <LabelInput
+              labelSuggestions={ontologyEnabled ? ontology.terms : null}
+              onChange={this.handleChange}
+              onSelect={this.handleSelect}
+              inputProps={{
+                "data-testid": "new-category-name",
+                leftIcon: "tag",
+                intent: "none",
+                autoFocus: true
+              }}
             />
           }
           annoSelect={

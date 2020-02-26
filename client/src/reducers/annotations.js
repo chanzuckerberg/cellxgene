@@ -55,46 +55,40 @@ const Annotations = (
     }
 
     /* CATEGORY */
-    case "annotation: activate add new label mode":
+    case "annotation: activate add new label mode": {
       return {
         ...state,
         isAddingNewLabel: true,
         categoryAddingNewLabel: action.data
       };
-    case "annotation: activate add new ontology label mode":
-      return {
-        ...state,
-        isAddingNewLabelFromOntology: true,
-        categoryAddingNewLabelFromOntology: action.data
-      };
-    case "annotation: disable add new ontology label mode":
-      return {
-        ...state,
-        isAddingNewLabelFromOntology: false,
-        categoryAddingNewLabelFromOntology: null
-      };
+    }
 
-    case "annotation: disable add new label mode":
+    case "annotation: disable add new label mode": {
       return {
         ...state,
         isAddingNewLabel: false,
         categoryAddingNewLabel: null
       };
-    case "annotation: activate category edit mode":
+    }
+
+    case "annotation: activate category edit mode": {
       return {
         ...state,
         isEditingCategoryName: true,
         categoryBeingEdited: action.data
       };
-    case "annotation: disable category edit mode":
+    }
+
+    case "annotation: disable category edit mode": {
       return {
         ...state,
         isEditingCategoryName: false,
         categoryBeingEdited: null
       };
+    }
 
     /* LABEL */
-    case "annotation: activate edit label mode":
+    case "annotation: activate edit label mode": {
       return {
         ...state,
         isEditingLabelName: true,
@@ -103,12 +97,16 @@ const Annotations = (
           label: action.categoryIndex
         }
       };
-    case "annotation: cancel edit label mode":
+    }
+
+    case "annotation: cancel edit label mode": {
       return {
         ...state,
         isEditingLabelName: false,
         labelEditable: { category: null, label: null }
       };
+    }
+
     default:
       return state;
   }

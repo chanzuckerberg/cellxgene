@@ -10,8 +10,7 @@ import {
 } from "@blueprintjs/core";
 
 @connect(state => ({
-  annotations: state.annotations,
-  ontologyEnabled: state.ontology?.enabled
+  annotations: state.annotations
 }))
 class AnnoMenuCategory extends React.Component {
   constructor(props) {
@@ -23,14 +22,6 @@ class AnnoMenuCategory extends React.Component {
     const { dispatch, metadataField } = this.props;
     dispatch({
       type: "annotation: activate add new label mode",
-      data: metadataField
-    });
-  };
-
-  activateAddNewOntologyLabelMode = () => {
-    const { dispatch, metadataField } = this.props;
-    dispatch({
-      type: "annotation: activate add new ontology label mode",
       data: metadataField
     });
   };
@@ -57,9 +48,7 @@ class AnnoMenuCategory extends React.Component {
       metadataField,
       annotations,
       isUserAnno,
-      ontologyEnabled,
       createText,
-      createFromOntologyText,
       editText,
       deleteText
     } = this.props;
@@ -80,15 +69,6 @@ class AnnoMenuCategory extends React.Component {
                   onClick={this.activateAddNewLabelMode}
                   text={createText}
                 />
-                {ontologyEnabled ? (
-                  <MenuItem
-                    icon="book"
-                    data-testclass="activateAddNewOntologyLabelMode"
-                    data-testid={`${metadataField}:add-new-ontology-label-mode`}
-                    onClick={this.activateAddNewOntologyLabelMode}
-                    text={createFromOntologyText}
-                  />
-                ) : null}
                 <MenuItem
                   icon="edit"
                   disabled={annotations.isEditingCategoryName}

@@ -7,7 +7,6 @@ import CategoryFlipperLayout from "./categoryFlipperLayout";
 import AnnoMenu from "./annoMenuCategory";
 import AnnoDialogEditCategoryName from "./annoDialogEditCategoryName";
 import AnnoDialogAddLabel from "./annoDialogAddLabel";
-import AnnoDialogAddLabelFromOntology from "./annoDialogAddLabelFromOntology";
 
 import * as globals from "../../globals";
 
@@ -15,10 +14,7 @@ import * as globals from "../../globals";
   colorAccessor: state.colors.colorAccessor,
   categoricalSelection: state.categoricalSelection,
   annotations: state.annotations,
-  universe: state.universe,
-  ontology: state.ontology,
-  ontologyLoading: state.ontology?.loading,
-  ontologyEnabled: state.ontology?.enabled
+  universe: state.universe
 }))
 class Category extends React.Component {
   constructor(props) {
@@ -220,13 +216,11 @@ class Category extends React.Component {
         </div>
         {<AnnoDialogEditCategoryName metadataField={metadataField} />}
         {<AnnoDialogAddLabel metadataField={metadataField} />}
-        {<AnnoDialogAddLabelFromOntology metadataField={metadataField} />}
         <div>
           <AnnoMenu
             metadataField={metadataField}
             isUserAnno={isUserAnno}
             createText="Add a new label to this category"
-            createFromOntologyText="Add a new label to this category using existing ontology terms"
             editText="Edit this category's name"
             deleteText="Delete this category, all associated labels, and remove all cell assignments"
           />

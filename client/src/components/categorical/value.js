@@ -1,4 +1,3 @@
-// jshint esversion: 6
 import { connect } from "react-redux";
 import React from "react";
 
@@ -16,10 +15,10 @@ import Occupancy from "./occupancy";
 import * as globals from "../../globals";
 import styles from "./categorical.css";
 import AnnoDialog from "./annoDialog";
-import AnnoInputs from "./annoInputs";
+import LabelInput from "./labelInput";
 
 import { AnnotationsHelpers } from "../../util/stateManager";
-import { labelErrorMessage, isLabelErroneous } from "./labelUtil";
+import { labelPrompt, isLabelErroneous } from "./labelUtil";
 
 @connect(state => ({
   categoricalSelection: state.categoricalSelection,
@@ -30,20 +29,21 @@ import { labelErrorMessage, isLabelErroneous } from "./labelUtil";
   schema: state.world?.schema,
   world: state.world,
   crossfilter: state.crossfilter,
-  ontology: state.ontology,
-  ontologyLoading: state.ontology?.loading,
-  ontologyEnabled: state.ontology?.enabled
+  ontology: state.ontology
 }))
 class CategoryValue extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      editedLabelText: String(
-        props.categoricalSelection[props.metadataField].categoryValues[
-          props.categoryIndex
-        ]
-      ).valueOf()
+      editedLabelText: this.currentLabel()
     };
+  }
+
+  currentLabel() {
+    const { categoricalSelection, metadataField, categoryIndex } = this.props;
+    return String(
+      categoricalSelection[metadataField].categoryValues[categoryIndex]
+    ).valueOf();
   }
 
   componentDidUpdate(prevProps) {
@@ -54,9 +54,7 @@ class CategoryValue extends React.Component {
       prevProps.categoryIndex !== categoryIndex
     ) {
       this.setState({
-        editedLabelText: String(
-          categoricalSelection[metadataField].categoryValues[categoryIndex]
-        ).valueOf()
+        editedLabelText: this.currentLabel()
       });
     }
   }
@@ -87,6 +85,7 @@ class CategoryValue extends React.Component {
     const { dispatch, metadataField, categoryIndex } = this.props;
     const { editedLabelText } = this.state;
     const label = this.getLabel();
+    console.log("handleEditValue", editedLabelText);
     this.cancelEditMode();
     dispatch({
       type: "annotation: label edited",
@@ -98,49 +97,27 @@ class CategoryValue extends React.Component {
     e.preventDefault();
   };
 
-  handleCreateArbitraryLabel = editedLabelTextNotInOntology => {
+  handleCreateArbitraryLabel = txt => {
     const { dispatch, metadataField, categoryIndex } = this.props;
     const label = this.getLabel();
     this.cancelEditMode();
     dispatch({
       type: "annotation: label edited",
       metadataField,
-      editedLabel: editedLabelTextNotInOntology,
+      editedLabel: txt,
       categoryIndex,
       label
     });
   };
 
   labelNameError = name => {
-    const {
-      metadataField,
-      ontology,
-      schema,
-      categoricalSelection,
-      categoryIndex
-    } = this.props;
-    const category = categoricalSelection[metadataField];
-    const displayString = String(
-      category.categoryValues[categoryIndex]
-    ).valueOf();
-    if (name === displayString) return false;
+    const { metadataField, ontology, schema } = this.props;
+    if (name === this.currentLabel()) return false;
     return isLabelErroneous(name, metadataField, ontology, schema);
   };
 
-  labelNameErrorMessage = name => {
-    const {
-      metadataField,
-      ontology,
-      schema,
-      categoricalSelection,
-      categoryIndex
-    } = this.props;
-    const category = categoricalSelection[metadataField];
-    const displayString = String(
-      category.categoryValues[categoryIndex]
-    ).valueOf();
-    if (name === displayString) return null;
-    return labelErrorMessage(name, metadataField, ontology, schema);
+  instruction = label => {
+    return labelPrompt(this.labelNameError(label), "New, unique label", ":");
   };
 
   activateEditLabelMode = () => {
@@ -154,6 +131,9 @@ class CategoryValue extends React.Component {
 
   cancelEditMode = () => {
     const { dispatch, metadataField, categoryIndex } = this.props;
+    this.setState({
+      editedLabelText: this.currentLabel()
+    });
     dispatch({
       type: "annotation: cancel edit label mode",
       metadataField,
@@ -294,12 +274,13 @@ class CategoryValue extends React.Component {
       schema,
       isUserAnno,
       annotations,
-      ontologyEnabled,
+      ontology,
       // flippedProps is potentially brittle, their docs want {...flippedProps} on our div,
       // our lint doesn't like jsx spread, we are version pinned to prevent api change on their part
       flippedProps,
       pointDilation
     } = this.props;
+    const ontologyEnabled = ontology?.enabled ?? false;
 
     const { editedLabelText } = this.state;
 
@@ -309,9 +290,7 @@ class CategoryValue extends React.Component {
     const selected = category.categoryValueSelected[categoryIndex];
     const count = category.categoryValueCounts[categoryIndex];
     const value = category.categoryValues[categoryIndex];
-    const displayString = String(
-      category.categoryValues[categoryIndex]
-    ).valueOf();
+    const displayString = this.currentLabel();
 
     /* this is the color scale, so add swatches below */
     const isColorBy = metadataField === colorAccessor;
@@ -442,30 +421,26 @@ class CategoryValue extends React.Component {
                     "data-testid": `${metadataField}:${displayString}:submit-label-edit`
                   }}
                   title="Edit label"
-                  instruction={`New label text must be unique within category ${metadataField}:`}
+                  instruction={this.instruction(editedLabelText)}
                   cancelTooltipContent="Close this dialog without editing label text."
                   primaryButtonText="Change label text"
                   text={editedLabelText}
                   categoryToDuplicate={null}
                   validationError={this.labelNameError(editedLabelText)}
-                  errorMessage={this.labelNameErrorMessage(editedLabelText)}
                   handleSubmit={this.handleEditValue}
                   handleCancel={this.cancelEditMode}
                   annoInput={
-                    <AnnoInputs
-                      useSuggest={ontologyEnabled}
-                      text={editedLabelText}
+                    <LabelInput
+                      label={editedLabelText}
+                      labelSuggestions={ontologyEnabled ? ontology.terms : null}
+                      onChange={this.handleTextChange}
+                      onSelect={this.handleTextChange}
                       inputProps={{
-                        "data-testid": `${metadataField}:${displayString}:edit-label-name`
+                        "data-testid": `${metadataField}:${displayString}:edit-label-name`,
+                        leftIcon: "tag",
+                        intent: "none",
+                        autoFocus: true
                       }}
-                      handleCreateArbitraryLabel={
-                        this.handleCreateArbitraryLabel
-                      }
-                      handleItemChange={this.handleSuggestActiveItemChange}
-                      handleChoice={this.handleChoice}
-                      handleTextChange={this.handleTextChange}
-                      isTextInvalid={this.labelNameError}
-                      isTextInvalidErrorMessage={this.labelNameErrorMessage}
                     />
                   }
                   annoSelect={null}
