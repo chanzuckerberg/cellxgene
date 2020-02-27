@@ -74,7 +74,7 @@ class FilenameDialog extends React.Component {
             color: Colors.ORANGE3
           }}
         >
-          {"Name cannot be blank"}
+          Name cannot be blank
         </span>
       );
     } else if (err === "characters") {
@@ -87,7 +87,7 @@ class FilenameDialog extends React.Component {
             color: Colors.ORANGE3
           }}
         >
-          {"Only alphanumeric and underscore allowed"}
+          Only alphanumeric and underscore allowed
         </span>
       );
     }

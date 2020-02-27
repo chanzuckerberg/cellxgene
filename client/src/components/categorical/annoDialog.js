@@ -72,7 +72,7 @@ class AnnoDialog extends React.PureComponent {
                 </Button>
               ) : null}
               <Button
-                {...primaryButtonProps}
+                {...primaryButtonProps} // eslint-disable-line react/jsx-props-no-spreading
                 onClick={handleSubmit}
                 disabled={!text || validationError}
                 intent="primary"

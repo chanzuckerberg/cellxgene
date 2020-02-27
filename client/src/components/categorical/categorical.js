@@ -111,13 +111,7 @@ class Categories extends React.Component {
       categoryToDuplicate,
       newCategoryText
     } = this.state;
-    const {
-      categoricalSelection,
-      writableCategoriesEnabled,
-      schema,
-      config,
-      ontology
-    } = this.props;
+    const { writableCategoriesEnabled, schema, config, ontology } = this.props;
     const ontologyEnabled = ontology?.enabled ?? false;
 
     /* all names, sorted in display order.  Will be rendered in this order */

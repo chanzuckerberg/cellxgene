@@ -1,7 +1,6 @@
 import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
-import { Colors } from "@blueprintjs/core";
 import AnnoDialog from "./annoDialog";
 import LabelInput from "./labelInput";
 import { labelPrompt } from "./labelUtil";

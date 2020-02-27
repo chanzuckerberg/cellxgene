@@ -12,7 +12,7 @@ import {
 return promise to fetch the OBS annotations we need to load.  Omit anything
 we don't need.
 */
-function obsAnnotationFetchAndLoad(dispatch, schema, universe) {
+function obsAnnotationFetchAndLoad(dispatch, schema) {
   const obsAnnotations = schema?.schema?.annotations?.obs ?? {};
   const columns = obsAnnotations.columns ?? [];
   const index = obsAnnotations.index ?? false;
@@ -42,7 +42,7 @@ function obsAnnotationFetchAndLoad(dispatch, schema, universe) {
 /*
 return promise fetching VAR annotations we need to load.  Only index is currently used.
 */
-function varAnnotationFetchAndLoad(dispatch, schema, universe) {
+function varAnnotationFetchAndLoad(dispatch, schema) {
   const varAnnotations = schema?.schema?.annotations?.var ?? {};
   const index = varAnnotations.index ?? false;
   const names = index ? [index] : [];
@@ -71,7 +71,7 @@ function varAnnotationFetchAndLoad(dispatch, schema, universe) {
 /*
 return promise fetching layout we need
 */
-function layoutFetchAndLoad(dispatch, schema, universe) {
+function layoutFetchAndLoad(dispatch) {
   return Promise.all(
     ["layout/obs"]
       .map(path => {

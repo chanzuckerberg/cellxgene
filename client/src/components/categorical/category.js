@@ -2,7 +2,7 @@ import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
 import { FaChevronRight, FaChevronDown } from "react-icons/fa";
-import { Button, Tooltip, Icon, Spinner } from "@blueprintjs/core";
+import { Button, Tooltip, Icon } from "@blueprintjs/core";
 import CategoryFlipperLayout from "./categoryFlipperLayout";
 import AnnoMenu from "./annoMenuCategory";
 import AnnoDialogEditCategoryName from "./annoDialogEditCategoryName";
@@ -95,10 +95,11 @@ class Category extends React.Component {
     }
   }
 
-  renderIsStillLoading(metadataField) {
+  renderIsStillLoading() {
     /*
     We are still loading this category, so render a "busy" signal.
     */
+    const { metadataField } = this.props;
     return (
       <div
         style={{
@@ -152,7 +153,7 @@ class Category extends React.Component {
 
     const isStillLoading = !(categoricalSelection?.[metadataField] ?? false);
     if (isStillLoading) {
-      return this.renderIsStillLoading(metadataField);
+      return this.renderIsStillLoading();
     }
 
     return (

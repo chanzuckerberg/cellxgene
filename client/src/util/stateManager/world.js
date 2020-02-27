@@ -292,7 +292,7 @@ export function createObsDimensions(crossfilter, world, XYdimNames) {
   for which we have a supported type, *except* for the index column, indicated
   by schema.annotations.obs.index.
   */
-  const { schema, obsLayout, obsAnnotations } = world;
+  const { schema, obsLayout } = world;
   const indexName = schema.annotations.obs.index;
   const annoList = schema.annotations.obs.columns.filter(
     anno => anno.name !== indexName

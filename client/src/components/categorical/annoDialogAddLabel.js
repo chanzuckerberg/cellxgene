@@ -27,7 +27,7 @@ class Category extends React.PureComponent {
     dispatch({
       type: "annotation: disable add new label mode"
     });
-    e?.preventDefault();
+    if (e) e.preventDefault();
   };
 
   handleAddNewLabelToCategory = e => {

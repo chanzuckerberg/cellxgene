@@ -283,8 +283,14 @@ class MenuBar extends React.Component {
 
     return (
       <ButtonGroup style={{ marginRight: 10 }}>
-        <CellSetButton {...this.props} eitherCellSetOneOrTwo={1} />
-        <CellSetButton {...this.props} eitherCellSetOneOrTwo={2} />
+        <CellSetButton
+          {...this.props} // eslint-disable-line react/jsx-props-no-spreading
+          eitherCellSetOneOrTwo={1}
+        />
+        <CellSetButton
+          {...this.props} // eslint-disable-line react/jsx-props-no-spreading
+          eitherCellSetOneOrTwo={2}
+        />
         {!differential.diffExp ? (
           <Tooltip
             content={tipMessage}

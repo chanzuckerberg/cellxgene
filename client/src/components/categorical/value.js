@@ -8,8 +8,7 @@ import {
   Popover,
   Position,
   PopoverInteractionKind,
-  Tooltip,
-  Colors
+  Tooltip
 } from "@blueprintjs/core";
 import Occupancy from "./occupancy";
 import * as globals from "../../globals";
@@ -37,13 +36,6 @@ class CategoryValue extends React.Component {
     this.state = {
       editedLabelText: this.currentLabel()
     };
-  }
-
-  currentLabel() {
-    const { categoricalSelection, metadataField, categoryIndex } = this.props;
-    return String(
-      categoricalSelection[metadataField].categoryValues[categoryIndex]
-    ).valueOf();
   }
 
   componentDidUpdate(prevProps) {
@@ -233,6 +225,13 @@ class CategoryValue extends React.Component {
 
     return label;
   };
+
+  currentLabel() {
+    const { categoricalSelection, metadataField, categoryIndex } = this.props;
+    return String(
+      categoricalSelection[metadataField].categoryValues[categoryIndex]
+    ).valueOf();
+  }
 
   isAddCurrentSelectionDisabled(category, value) {
     /*
@@ -449,7 +448,10 @@ class CategoryValue extends React.Component {
           </div>
           <span style={{ flexShrink: 0 }}>
             {colorAccessor && !isColorBy && !annotations.isEditingLabelName ? (
-              <Occupancy category={category} {...this.props} />
+              <Occupancy
+                category={category}
+                {...this.props} // eslint-disable-line react/jsx-props-no-spreading
+              />
             ) : null}
           </span>
         </div>

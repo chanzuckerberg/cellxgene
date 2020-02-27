@@ -24,9 +24,8 @@ const CrossfilterReducerBase = (
 ) => {
   switch (action.type) {
     case "universe: column load success": {
-      const { schema, world, layoutChoice } = nextSharedState;
+      const { world, layoutChoice } = nextSharedState;
       const { obsAnnotations, obsLayout } = world;
-      const { dim, dataframe } = action;
 
       // ignore var dimension loads as these are not currently selectable
       if (action.dim === "varAnnotations") return state;

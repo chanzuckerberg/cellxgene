@@ -1,5 +1,5 @@
 import React from "react";
-import { InputGroup, Menu, MenuItem, Keys } from "@blueprintjs/core";
+import { InputGroup, MenuItem, Keys } from "@blueprintjs/core";
 import { Suggest } from "@blueprintjs/select";
 import fuzzysort from "fuzzysort";
 
@@ -23,9 +23,6 @@ export default class LabelInput extends React.PureComponent {
   * popoverProps -- will be passed to <Suggest>
   */
 
-  /* maxinum number of suggestions */
-  static QueryResultLimit = 100;
-
   constructor(props) {
     super(props);
 
@@ -37,6 +34,77 @@ export default class LabelInput extends React.PureComponent {
       queryResults
     };
   }
+
+  handleQueryChange = (query, event) => {
+    // https://github.com/palantir/blueprint/issues/2983
+    if (!event) return;
+
+    const queryResults = this.filterLabels(query);
+    this.setState({
+      query,
+      queryResults
+    });
+
+    const { onChange } = this.props;
+    if (onChange) onChange(query, event);
+  };
+
+  handleItemSelect = (item, event) => {
+    /* only report the select if not already reported via onChange() */
+    const { target } = item;
+    const { query } = this.state;
+    const { onSelect } = this.props;
+    if (target !== query && onSelect) onSelect(target, event);
+  };
+
+  handleKeyDown = e => {
+    /* 
+    prevent these events from propagating to containing form/dialog
+    and causing further side effects (eg, closing dialog, submitting
+    form, etc).
+    */
+    const { keyCode } = e;
+    if (keyCode === Keys.ENTER || keyCode === Keys.ESCAPE) {
+      e.preventDefault();
+    }
+    if (keyCode === Keys.ESCAPE) {
+      e.stopPropagation();
+    }
+  };
+
+  handleChange = e => {
+    const { onChange } = this.props;
+    if (onChange) onChange(e.target.value);
+  };
+
+  renderLabelSuggestion = (queryResult, { handleClick, modifiers }) => {
+    if (queryResult.newLabel) {
+      const { newLabelMessage } = this.props;
+      return (
+        <MenuItem
+          icon="flag"
+          active={modifiers.active}
+          disabled={modifiers.disabled}
+          key={queryResult.target}
+          onClick={handleClick}
+          text={<em>{queryResult.target}</em>}
+          label={newLabelMessage || "New label"}
+        />
+      );
+    }
+    return (
+      <MenuItem
+        active={modifiers.active}
+        disabled={modifiers.disabled}
+        key={queryResult.target}
+        onClick={handleClick}
+        text={queryResult.target}
+      />
+    );
+  };
+
+  /* maxinum number of suggestions */
+  static QueryResultLimit = 100;
 
   filterLabels(query) {
     const { labelSuggestions } = this.props;
@@ -51,7 +119,7 @@ export default class LabelInput extends React.PureComponent {
     }
 
     /* else, do a fuzzy query */
-    let options = {
+    const options = {
       limit: LabelInput.QueryResultLimit,
       threshold: -10000 // don't return bad results
     };
@@ -63,70 +131,6 @@ export default class LabelInput extends React.PureComponent {
     return queryResults;
   }
 
-  handleQueryChange = (query, event) => {
-    // https://github.com/palantir/blueprint/issues/2983
-    if (!event) return;
-
-    let queryResults = this.filterLabels(query);
-    this.setState({
-      query,
-      queryResults
-    });
-    this.props.onChange?.(query, event);
-  };
-
-  handleItemSelect = (item, event) => {
-    /* only report the select if not already reported via onChange() */
-    const { target } = item;
-    const { query } = this.state;
-    if (target != query) this.props.onSelect?.(target, event);
-  };
-
-  handleKeyDown = e => {
-    /* 
-    prevent these events from propagating to containing form/dialog
-    and causing further side effects (eg, closing dialog, submitting
-    form, etc).
-    */
-    const { keyCode } = e;
-    if (keyCode == Keys.ENTER || keyCode == Keys.ESCAPE) {
-      e.preventDefault();
-    }
-    if (keyCode == Keys.ESCAPE) {
-      e.stopPropagation();
-    }
-  };
-
-  handleChange = e => {
-    this.props.onChange?.(e.target.value);
-  };
-
-  renderLabelSuggestion = (queryResult, { handleClick, modifiers, query }) => {
-    if (queryResult.newLabel) {
-      return (
-        <MenuItem
-          icon="flag"
-          active={modifiers.active}
-          disabled={modifiers.disabled}
-          key={queryResult.target}
-          onClick={handleClick}
-          text={<em>{queryResult.target}</em>}
-          label={this.props.newLabelMessage || "New label"}
-        />
-      );
-    } else {
-      return (
-        <MenuItem
-          active={modifiers.active}
-          disabled={modifiers.disabled}
-          key={queryResult.target}
-          onClick={handleClick}
-          text={queryResult.target}
-        />
-      );
-    }
-  };
-
   render() {
     const { props } = this;
     const { labelSuggestions, label, autoFocus = true } = props;
@@ -136,36 +140,37 @@ export default class LabelInput extends React.PureComponent {
       return (
         <InputGroup
           autoFocus={autoFocus}
-          {...props.inputProps}
+          {...props.inputProps} // eslint-disable-line react/jsx-props-no-spreading
           value={label}
           onChange={this.handleChange}
         />
       );
-    } else {
-      const popoverProps = {
-        minimal: true,
-        ...props.popoverProps
-      };
-      const inputProps = {
-        ...props.inputProps,
-        autoFocus: false
-      };
-      return (
-        <>
-          <Suggest
-            fill={true}
-            inputValueRenderer={i => i.target}
-            items={this.state.queryResults}
-            itemRenderer={this.renderLabelSuggestion}
-            onItemSelect={this.handleItemSelect}
-            query={label}
-            onQueryChange={this.handleQueryChange}
-            popoverProps={popoverProps}
-            inputProps={inputProps}
-            onKeyDown={this.handleKeyDown}
-          />
-        </>
-      );
     }
+
+    const popoverProps = {
+      minimal: true,
+      ...props.popoverProps
+    };
+    const inputProps = {
+      ...props.inputProps,
+      autoFocus: false
+    };
+    const { queryResults } = this.state;
+    return (
+      <>
+        <Suggest
+          fill
+          inputValueRenderer={i => i.target}
+          items={queryResults}
+          itemRenderer={this.renderLabelSuggestion}
+          onItemSelect={this.handleItemSelect}
+          query={label}
+          onQueryChange={this.handleQueryChange}
+          popoverProps={popoverProps}
+          inputProps={inputProps}
+          onKeyDown={this.handleKeyDown}
+        />
+      </>
+    );
   }
 }
