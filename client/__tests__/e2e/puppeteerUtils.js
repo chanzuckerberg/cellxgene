@@ -45,10 +45,14 @@ export const puppeteerUtils = page => ({
     await page.type(selector, text);
   },
 
-  async clickOn(testId, options={}) {
-    await this.waitByID(testId);
-    await page.click(`[data-testid='${testId}']`, options);
-    await page.waitFor(50);
+  async clickOn(testid, options = {}) {
+    await this.waitByID(testid);
+    const click = await puppeteerPage.click(
+      `[data-testid='${testid}']`,
+      options
+    );
+    await puppeteerPage.waitFor(50);
+    return click;
   },
 
   async getOneElementInnerHTML(selector) {
