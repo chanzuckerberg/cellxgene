@@ -116,7 +116,7 @@ function Clip(props) {
               <Button
                 type="button"
                 data-testid="clip-commit"
-                className="bp3-button"
+                intent="primary"
                 disabled={isClipDisabled()}
                 style={{
                   cursor: "pointer",
