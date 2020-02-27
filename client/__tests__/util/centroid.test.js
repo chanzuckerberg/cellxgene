@@ -38,7 +38,7 @@ describe("centroid", () => {
     // Create categorical selection from world
     categoricalSelection = CH.createCategoricalSelection(
       world,
-      CH.selectableCategoryNames(world.schema, CH.maxCategoryItems(REST.config))
+      CH.selectableCategoryNames(world.schema)
     );
   });
 

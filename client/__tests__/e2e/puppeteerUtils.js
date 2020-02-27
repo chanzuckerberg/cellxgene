@@ -2,7 +2,7 @@ import {DEBUG, DEV} from "./config";
 import puppeteer from "puppeteer";
 
 export const puppeteerUtils = puppeteerPage => ({
-  async waitByID(testid, props = {}) {
+  async waitByID(testid, props = { timeout: 2000 }) {
     return await puppeteerPage.waitForSelector(
       `[data-testid='${testid}']`,
       props
