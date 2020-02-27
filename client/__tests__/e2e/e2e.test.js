@@ -281,3 +281,20 @@ describe("ui elements don't error", () => {
     await page.evaluate("window.scrollBy(0, 1000);");
   });
 });
+
+describe("centroid labels", () => {
+  test.only("labels are created", async () => {
+    console.log(await utils.clickOn("centroid-label-toggle"));
+    Object.keys(data.categorical).forEach(async label => {
+      console.log("button", await utils.clickOn(`colorby-${label}`));
+      // console.log(button);
+      const labels = await utils.getAllByClass("centroid-label");
+      console.log(labels);
+
+      // expect(labels).toHaveLength(Object.keys(data.categorical[label]).length);
+      console.log(labels.length);
+
+      expect(labels).toHaveLength(2);
+    });
+  });
+});
