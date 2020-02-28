@@ -1,11 +1,8 @@
-import _ from "lodash";
-
 import { unassignedCategoryLabel } from "../../globals";
 import { decodeMatrixFBS } from "./matrix";
 import * as Dataframe from "../dataframe";
 import { isFpTypedArray } from "../typeHelpers";
 import { indexEntireSchema } from "./schemaHelpers";
-import { isCategoricalAnnotation } from "./annotationsHelpers";
 import catLabelSort from "../catLabelSort";
 
 /*
@@ -96,7 +93,7 @@ export function matrixFBSToDataframe(arrayBuffers) {
 
   const fbs = arrayBuffers.map(ab => decodeMatrixFBS(ab, true)); // leave in place
   /* check that all FBS have same row dimensionality */
-  const nRows = fbs[0].nRows;
+  const { nRows } = fbs[0];
   fbs.forEach(b => {
     if (b.nRows !== nRows)
       throw new Error("FBS with inconsistent dimensionality");
@@ -181,7 +178,7 @@ export function addObsAnnotations(universe, df) {
 
   // for all of the new data, reconcile with schema and sort categories.
   const dfs = Array.isArray(df) ? df : [df];
-  const keys = dfs.map(df => df.colIndex.keys()).flat();
+  const keys = dfs.map(d => d.colIndex.keys()).flat();
   const { schema } = universe;
   keys.forEach(k => {
     const colSchema = schema.annotations.obsByName[k];

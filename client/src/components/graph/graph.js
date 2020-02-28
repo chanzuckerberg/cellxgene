@@ -398,7 +398,7 @@ class Graph extends React.Component {
       // don't return "change" of state unless we are really changing it!
       const { toolSVG } = this.state;
       if (toolSVG === undefined) return {};
-      else return { toolSVG: undefined };
+      return { toolSVG: undefined };
     }
 
     let handleStart;

@@ -1,9 +1,9 @@
 import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
-import { Colors } from "@blueprintjs/core";
 import AnnoDialog from "./annoDialog";
-import AnnoInputs from "./annoInputs";
+import LabelInput from "./labelInput";
+import { labelPrompt } from "./labelUtil";
 
 import { AnnotationsHelpers } from "../../util/stateManager";
 
@@ -11,11 +11,9 @@ import { AnnotationsHelpers } from "../../util/stateManager";
   categoricalSelection: state.categoricalSelection,
   annotations: state.annotations,
   universe: state.universe,
-  ontology: state.ontology,
-  ontologyLoading: state.ontology?.loading,
-  ontologyEnabled: state.ontology?.enabled
+  ontology: state.ontology
 }))
-class AnnoDialogEditCategoryName extends React.Component {
+class AnnoDialogEditCategoryName extends React.PureComponent {
   constructor(props) {
     super(props);
     this.state = {
@@ -23,9 +21,9 @@ class AnnoDialogEditCategoryName extends React.Component {
     };
   }
 
-  handleCategoryEditTextChange = txt => {
+  handleChangeOrSelect = name => {
     this.setState({
-      newCategoryText: txt
+      newCategoryText: name
     });
   };
 
@@ -61,50 +59,19 @@ class AnnoDialogEditCategoryName extends React.Component {
     e.preventDefault();
   };
 
-  categoryNameErrorMessage = () => {
-    const err = this.editedCategoryNameError();
-    if (err === false) return null;
-
-    const errorMessageMap = {
-      /* map error code to human readable error message */
-      "empty-string": "Blank names not allowed",
-      duplicate: "Category name must be unique",
-      "trim-spaces": "Leading and trailing spaces not allowed",
-      "illegal-characters":
-        "Only alphanumeric and special characters (-_.) allowed",
-      "multi-space-run": "Multiple consecutive spaces not allowed"
-    };
-    const errorMessage = errorMessageMap[err] ?? "error";
-    return (
-      <span
-        style={{
-          display: "block",
-          fontStyle: "italic",
-          fontSize: 12,
-          marginTop: 5,
-          color: Colors.ORANGE3
-        }}
-      >
-        {errorMessage}
-      </span>
-    );
-  };
-
-  editedCategoryNameError = () => {
+  editedCategoryNameError = name => {
     const { metadataField, categoricalSelection } = this.props;
-    const { newCategoryText } = this.state;
 
     /* check for syntax errors in category name */
-    const error = AnnotationsHelpers.annotationNameIsErroneous(newCategoryText);
+    const error = AnnotationsHelpers.annotationNameIsErroneous(name);
     if (error) {
       return error;
     }
 
     /* check for duplicative categories */
     const allCategoryNames = _.keys(categoricalSelection);
-    const categoryNameAlreadyExists =
-      allCategoryNames.indexOf(newCategoryText) > -1;
-    const sameName = newCategoryText === metadataField;
+    const categoryNameAlreadyExists = allCategoryNames.indexOf(name) > -1;
+    const sameName = name === metadataField;
     if (categoryNameAlreadyExists && !sameName) {
       return "duplicate";
     }
@@ -113,9 +80,18 @@ class AnnoDialogEditCategoryName extends React.Component {
     return false;
   };
 
+  instruction = name => {
+    return labelPrompt(
+      this.editedCategoryNameError(name),
+      "New, unique category name",
+      ":"
+    );
+  };
+
   render() {
     const { newCategoryText } = this.state;
-    const { metadataField, annotations } = this.props;
+    const { metadataField, annotations, ontology } = this.props;
+    const ontologyEnabled = ontology?.enabled ?? false;
 
     return (
       <>
@@ -131,22 +107,26 @@ class AnnoDialogEditCategoryName extends React.Component {
             "data-testid": `${metadataField}:submit-category-edit`
           }}
           title="Edit category name"
-          instruction="New, unique category name:"
+          instruction={this.instruction(newCategoryText)}
           cancelTooltipContent="Close this dialog without editing this category."
           primaryButtonText="Edit category name"
           text={newCategoryText}
           validationError={this.editedCategoryNameError(newCategoryText)}
-          errorMessage={this.categoryNameErrorMessage(newCategoryText)}
           handleSubmit={this.handleEditCategory}
           handleCancel={this.disableEditCategoryMode}
           annoInput={
-            <AnnoInputs
+            <LabelInput
+              label={newCategoryText}
+              labelSuggestions={ontologyEnabled ? ontology.terms : null}
+              onChange={this.handleChangeOrSelect}
+              onSelect={this.handleChangeOrSelect}
               inputProps={{
-                "data-testid": `${metadataField}:edit-category-name-text`
+                "data-testid": `${metadataField}:edit-category-name-text`,
+                leftIcon: "tag",
+                intent: "none",
+                autoFocus: true
               }}
-              useSuggest={false}
-              text={newCategoryText}
-              handleTextChange={this.handleCategoryEditTextChange}
+              newLabelMessage="New category"
             />
           }
         />

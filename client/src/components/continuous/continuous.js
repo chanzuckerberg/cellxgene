@@ -2,11 +2,10 @@
 /* rc slider https://www.npmjs.com/package/rc-slider */
 
 import React from "react";
-import _ from "lodash";
 import { connect } from "react-redux";
-import * as globals from "../../globals";
 import { Button } from "@blueprintjs/core";
 
+import * as globals from "../../globals";
 import HistogramBrush from "../brushableHistogram";
 
 @connect(state => ({
@@ -28,7 +27,7 @@ class Continuous extends React.PureComponent {
     };
   };
 
-  renderIsStillLoading(zebra, key) {
+  static renderIsStillLoading(zebra, key) {
     return (
       <div
         key={key}
@@ -45,7 +44,7 @@ class Continuous extends React.PureComponent {
             alignItems: "center"
           }}
         >
-          <div style={{ minWidth: 30 }}></div>
+          <div style={{ minWidth: 30 }} />
           <div style={{ display: "flex", alignSelf: "center" }}>
             <span style={{ fontStyle: "italic" }}>{key}</span>
           </div>
@@ -68,7 +67,7 @@ class Continuous extends React.PureComponent {
     const obsIndex = schema.annotations.obs.index;
     const allContinuousNames = schema.annotations.obs.columns
       .filter(col => col.type === "int32" || col.type === "float32")
-      .filter(col => col.name != obsIndex)
+      .filter(col => col.name !== obsIndex)
       .map(col => col.name);
 
     /* initial value for iterator to simulate index, ranges is an object */
@@ -80,29 +79,31 @@ class Continuous extends React.PureComponent {
           if (!obsAnnotations.hasCol(key)) {
             // still loading!
             zebra += 1;
-            return this.renderIsStillLoading(zebra, key);
-          } else {
-            // data loaded and available
-            const summary = obsAnnotations.col(key).summarize();
-            const nonFiniteExtent =
-              summary.min === undefined ||
-              summary.max === undefined ||
-              Number.isNaN(summary.min) ||
-              Number.isNaN(summary.max);
-            if (!summary.categorical && !nonFiniteExtent) {
-              zebra += 1;
-              return (
-                <HistogramBrush
-                  key={key}
-                  field={key}
-                  isObs
-                  zebra={zebra % 2 === 0}
-                  ranges={summary}
-                  handleColorAction={this.handleColorAction(key)}
-                />
-              );
-            }
+            return Continuous.renderIsStillLoading(zebra, key);
           }
+
+          // data loaded and available
+          const summary = obsAnnotations.col(key).summarize();
+          const nonFiniteExtent =
+            summary.min === undefined ||
+            summary.max === undefined ||
+            Number.isNaN(summary.min) ||
+            Number.isNaN(summary.max);
+          if (!summary.categorical && !nonFiniteExtent) {
+            zebra += 1;
+            return (
+              <HistogramBrush
+                key={key}
+                field={key}
+                isObs
+                zebra={zebra % 2 === 0}
+                ranges={summary}
+                handleColorAction={this.handleColorAction(key)}
+              />
+            );
+          }
+
+          return null;
         })}
       </div>
     );
