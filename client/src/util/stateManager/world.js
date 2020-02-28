@@ -5,8 +5,8 @@ import { isContinuousAnnotation } from "./annotationsHelpers";
 
 /*
 
-World is a subset of universe.   Most code should use world, and should
-(generally) not use Universe.   World contains any per-obs or per-var data
+World is a subset of universe.  Most code should use world, and should
+(generally) not use Universe.  World contains any per-obs or per-var data
 that must be consistent acorss the app when we view/manipulate subsets
 of Universe.
 

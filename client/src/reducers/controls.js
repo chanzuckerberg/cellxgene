@@ -1,6 +1,7 @@
 // jshint esversion: 6
 
 import _ from "lodash";
+import * as globals from "../globals";
 
 const Controls = (
   state = {
@@ -74,9 +75,12 @@ const Controls = (
       };
     }
     case "reset World to eq Universe": {
+      const { userDefinedGenes, diffexpGenes } = state;
       return {
         ...state,
-        resettingInterface: false
+        resettingInterface: false,
+        userDefinedGenes: [].concat(userDefinedGenes, diffexpGenes).slice(0,globals.maxUserDefinedGenes),
+        diffexpGenes: [],
       };
     }
     case "set World to current selection": {

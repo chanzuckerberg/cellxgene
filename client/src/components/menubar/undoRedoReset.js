@@ -5,11 +5,8 @@ import { tooltipHoverOpenDelay } from "../../globals";
 
 function InformationMenu(props) {
   const {
-    resettingInterface,
     undoDisabled,
     redoDisabled,
-    resetInterface,
-    isResetDisabled,
     dispatch
   } = props;
   return (
@@ -48,23 +45,6 @@ function InformationMenu(props) {
             cursor: "pointer"
           }}
           data-testid="redo"
-        />
-      </Tooltip>
-      <Tooltip
-        content="Reset cellxgene, clearing all selections"
-        position="bottom"
-        hoverOpenDelay={tooltipHoverOpenDelay}
-      >
-        <AnchorButton
-          disabled={isResetDisabled()}
-          style={{ marginLeft: 10 }}
-          type="button"
-          loading={resettingInterface}
-          intent="none"
-          icon="refresh"
-          onClick={resetInterface}
-          data-testid="reset"
-          data-testclass={`resetting-${resettingInterface}`}
         />
       </Tooltip>
     </div>

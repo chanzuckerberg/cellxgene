@@ -20,9 +20,7 @@ beforeEach(async () => {
 });
 
 afterAll(() => {
-  if (!DEBUG) {
-    browser.close();
-  }
+  browser.close();
 });
 
 describe("did launch", () => {
@@ -112,15 +110,10 @@ describe("cell selection", () => {
 describe("gene entry", () => {
   test("search for single gene", async () => {
     // blueprint's  typeahead is treating typing weird, clicking & waiting first solves this
-    await utils.typeInto("gene-search", data.genes.search);
-    await page.keyboard.press("Enter");
-    await page.waitForSelector(
-      `[data-testid='histogram-${data.genes.search}']`
-    );
+    await cxgActions.addGeneToSearch(data.genes.search);
   });
 
   test("bulk add genes", async () => {
-    await cxgActions.reset();
     const testGenes = data.genes.bulkadd;
     await utils.clickOn("section-bulk-add");
     await utils.typeInto("input-bulk-add", testGenes.join(","));
@@ -135,21 +128,9 @@ describe("gene entry", () => {
   });
 });
 
-describe("diffexp", () => {
+describe("differential expression", () => {
   test("selects cells, saves them and performs diffexp", async () => {
-    for (const select of data.diffexp.cellset1) {
-      if (select.kind === "categorical") {
-        await cxgActions.selectCategory(select.metadata, select.values, true);
-      }
-    }
-    await cxgActions.cellSet(1);
-    for (const select of data.diffexp.cellset2) {
-      if (select.kind === "categorical") {
-        await cxgActions.selectCategory(select.metadata, select.values, true);
-      }
-    }
-    await cxgActions.cellSet(2);
-    await utils.clickOn("diffexp-button");
+    await cxgActions.runDiffExp(data.diffexp.cellset1, data.diffexp.cellset2);
     const allHistograms = await cxgActions.getAllHistograms(
       "histogram-diffexp",
       data.diffexp["gene-results"]
@@ -161,7 +142,7 @@ describe("diffexp", () => {
   });
 });
 
-describe("subset/reset", () => {
+describe("subset", () => {
   test("subset - cell count matches", async () => {
     for (const select of data.subset.cellset1) {
       if (select.kind === "categorical") {
@@ -176,39 +157,6 @@ describe("subset/reset", () => {
       );
       expect(Object.values(categories)).toMatchObject(
         Object.values(data.subset.categorical[label])
-      );
-    }
-  });
-
-  test("reset after subset", async () => {
-    for (const select of data.subset.cellset1) {
-      if (select.kind === "categorical") {
-        await cxgActions.selectCategory(select.metadata, select.values, true);
-      }
-    }
-    await utils.clickOn("subset-button");
-    for (const label in data.subset.categorical) {
-      const categories = await cxgActions.getAllCategoriesAndCounts(label);
-      expect(Object.keys(categories)).toMatchObject(
-        Object.keys(data.subset.categorical[label])
-      );
-      expect(Object.values(categories)).toMatchObject(
-        Object.values(data.subset.categorical[label])
-      );
-    }
-    await cxgActions.reset();
-    for (const label in data.categorical) {
-      await utils.waitByID(`category-${label}`);
-      const categoryName = await utils.getOneElementInnerText(
-        `[data-testid="category-${label}"]`
-      );
-      expect(categoryName).toMatch(label);
-      const categories = await cxgActions.getAllCategoriesAndCounts(label);
-      expect(Object.keys(categories)).toMatchObject(
-        Object.keys(data.categorical[label])
-      );
-      expect(Object.values(categories)).toMatchObject(
-        Object.values(data.categorical[label])
       );
     }
   });
@@ -233,11 +181,31 @@ describe("subset/reset", () => {
     const cellCount = await cxgActions.cellSet(1);
     expect(cellCount).toBe(data.subset.lasso.count);
   });
+
+  test("undo selection appends the top diff exp genes to user defined genes", async () => {
+    const userDefinedGenes = ["ACD", "AAR2", "AATF", "ARSG"];
+    const diffExpGenes = data.diffexp["gene-results"];
+    for (const userDefinedGene of userDefinedGenes) {
+      await cxgActions.addGeneToSearch(userDefinedGene);
+    }
+    const userDefinedHistograms = await cxgActions.getAllHistograms("histogram-user-gene", userDefinedGenes);
+    expect(userDefinedHistograms).toStrictEqual(userDefinedGenes);
+    await cxgActions.subset({x1: 0.15, y1: 0.10, x2: 0.98, y2: 0.98});
+    await cxgActions.runDiffExp(data.diffexp.cellset1, data.diffexp.cellset2);
+    const diffExpHistograms = await cxgActions.getAllHistograms("histogram-diffexp", diffExpGenes);
+    expect(diffExpHistograms).toStrictEqual(diffExpGenes);
+    await utils.clickOn("reset-subset-button");
+    const expected = [].concat(userDefinedGenes, diffExpGenes);
+    const userDefinedHistogramsAfterSubset = await cxgActions.getAllHistograms(
+      "histogram-user-gene",
+      expected
+    );
+    expect(userDefinedHistogramsAfterSubset).toStrictEqual(expected);
+  });
 });
 
 describe("scatter plot", () => {
   test("scatter plot appears", async () => {
-    await cxgActions.reset();
     const testGenes = data.scatter.genes;
     await utils.clickOn("section-bulk-add");
     await utils.typeInto("input-bulk-add", Object.values(testGenes).join(","));

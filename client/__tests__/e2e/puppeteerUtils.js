@@ -1,5 +1,6 @@
 import {DEBUG, DEV} from "./config";
 import puppeteer from "puppeteer";
+import { strict as assert } from "assert";
 
 export const puppeteerUtils = puppeteerPage => ({
   async waitByID(testid, props = {}) {
@@ -16,7 +17,7 @@ export const puppeteerUtils = puppeteerPage => ({
     );
   },
 
-  async waitForAllByIds(testids, props = {}) {
+  async waitForAllByIds(testids) {
     await Promise.all(
       testids.map(testid =>
         puppeteerPage.waitForSelector(`[data-testid='${testid}']`)
@@ -24,14 +25,10 @@ export const puppeteerUtils = puppeteerPage => ({
     );
   },
 
-  async getAllByClass(testclass, props = {}) {
+  async getAllByClass(testclass) {
     const elements = await puppeteerPage.$$eval(
       `[data-testclass=${testclass}]`,
-      els => {
-        return els.map(el => {
-          return el.dataset.testid;
-        });
-      }
+      eles => eles.map(ele => ele.dataset.testid)
     );
     return elements;
   },
@@ -80,6 +77,7 @@ export const puppeteerUtils = puppeteerPage => ({
 });
 
 export const cellxgeneActions = puppeteerPage => ({
+
   async drag(testid, start, end, lasso = false) {
     const layout = await puppeteerUtils(puppeteerPage).waitByID(testid);
     const elBox = await layout.boxModel();
@@ -116,7 +114,7 @@ export const cellxgeneActions = puppeteerPage => ({
       testclass
     );
     return allHistograms.map(hist =>
-      hist.substr("histogram_".length, hist.length)
+      hist.substr("histogram-".length, hist.length)
     );
   },
 
@@ -196,9 +194,7 @@ export const cellxgeneActions = puppeteerPage => ({
     await puppeteerUtils(puppeteerPage).clickOn(`${category}:category-expand`);
     await puppeteerUtils(puppeteerPage).clickOn(`${category}:category-select`);
     for (const val of values) {
-      await puppeteerUtils(puppeteerPage).clickOn(
-        `categorical-value-select-${category}-${val}`
-      );
+      await puppeteerUtils(puppeteerPage).clickOn(`categorical-value-select-${category}-${val}`);
     }
   },
 
@@ -208,12 +204,6 @@ export const cellxgeneActions = puppeteerPage => ({
     if (notExpanded) {
       await puppeteerUtils(puppeteerPage).clickOn(`${category}:category-expand`);
     }
-  },
-
-  async reset() {
-    await puppeteerUtils(puppeteerPage).clickOn("reset");
-    // loading state never actually happens, reset is too fast
-    await page.waitFor(200);
   },
 
   async clip(min = 0, max = 100) {
@@ -269,6 +259,44 @@ export const cellxgeneActions = puppeteerPage => ({
       newLabelName
     );
     await puppeteerUtils(puppeteerPage).clickOn(`${categoryName}:${oldLabelName}:submit-label-edit`);
+  },
+
+  async addGeneToSearch(geneName) {
+    await puppeteerUtils(puppeteerPage).typeInto("gene-search", geneName);
+    await puppeteerPage.keyboard.press("Enter");
+    await puppeteerPage.waitForSelector(
+      `[data-testid='histogram-${geneName}']`
+    );
+  },
+
+  async subset(coordinatesAsPercent) {
+    // In order to deselect the selection after the subset, make sure we have some clear part
+    // of the scatterplot we can click on
+    assert(coordinatesAsPercent.x2 < 0.99 || coordinatesAsPercent.y2 < 0.99);
+    const lassoSelection = await this.calcDragCoordinates( "layout-graph", coordinatesAsPercent);
+    await this.drag("layout-graph", lassoSelection.start, lassoSelection.end, true );
+    await puppeteerUtils(puppeteerPage).clickOn("subset-button");
+    const clearCoordinate = await this.calcCoordinate(
+      "layout-graph",
+      0.5,
+      0.99
+    );
+    await this.clickOnCoordinate("layout-graph", clearCoordinate);
+  },
+
+  async setSellSet(cellSet, cellSetNum) {
+    for (const selection of cellSet) {
+      if (selection.kind === "categorical") {
+        await this.selectCategory(selection.metadata, selection.values, true);
+      }
+    }
+    await this.cellSet(cellSetNum);
+  },
+
+  async runDiffExp(cellSet1, cellSet2) {
+    await this.setSellSet(cellSet1, 1);
+    await this.setSellSet(cellSet2, 2);
+    await puppeteerUtils(puppeteerPage).clickOn("diffexp-button");
   }
 });
 
