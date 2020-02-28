@@ -1,0 +1,18 @@
+branch-defaults:
+  master:
+    environment: cellxgene
+    group_suffix: null
+global:
+  application_name: cellxgene
+  branch: null
+  default_ec2_keyname: null
+  default_platform: python-3.6
+  default_region: us-east-1
+  include_git_submodules: true
+  instance_profile: null
+  platform_name: null
+  platform_version: null
+  profile: czi-stp
+  repository: null
+  sc: git
+  workspace_type: Application
