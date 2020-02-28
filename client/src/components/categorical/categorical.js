@@ -148,6 +148,7 @@ class Categories extends React.Component {
                 intent: "none",
                 autoFocus: true
               }}
+              newLabelMessage="New category"
             />
           }
           annoSelect={

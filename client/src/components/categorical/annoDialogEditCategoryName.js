@@ -126,6 +126,7 @@ class AnnoDialogEditCategoryName extends React.PureComponent {
                 intent: "none",
                 autoFocus: true
               }}
+              newLabelMessage="New category"
             />
           }
         />
