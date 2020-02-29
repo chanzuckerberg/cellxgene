@@ -325,7 +325,7 @@ class MenuBar extends React.Component {
             <AnchorButton
               data-testid="subset-button"
               active={!this.subsetPossible()}
-              icon="group-objects"
+              icon="pie-chart"
               onClick={() => {
                 if (this.subsetPossible()) {
                   dispatch(actions.regraph());
@@ -342,7 +342,7 @@ class MenuBar extends React.Component {
             <AnchorButton
               data-testid="reset-subset-button"
               active={!this.subsetResetPossible()}
-              icon="layout-skew-grid"
+              icon="full-circle"
               onClick={() => {
                 if (this.subsetResetPossible()) {
                   actions.resetWorldToUniverse()(dispatch, () => this.state);
