@@ -165,7 +165,7 @@ def diffexp_obs_post(request, data_adaptor):
     try:
         diffexp = data_adaptor.diffexp_topN(set1_filter, set2_filter, count)
         return make_response(diffexp, HTTPStatus.OK, {"Content-Type": "application/json"})
-    except (ValueError, FilterError) as e:
+    except (ValueError, DisabledFeatureError, FilterError) as e:
         return make_response(str(e), HTTPStatus.BAD_REQUEST)
     except JSONEncodingValueError as e:
         # JSON encoding failure, usually due to bad data
@@ -188,3 +188,26 @@ def layout_obs_get(request, data_adaptor):
         return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
     except ValueError as e:
         return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+
+
+def layout_obs_put(request, data_adaptor):
+    preferred_mimetype = request.accept_mimetypes.best_match(["application/octet-stream"])
+    if preferred_mimetype != "application/octet-stream":
+        return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
+    if not data_adaptor.config.enable_reembedding:
+        return make_response(f"Computed embedding not supported.", HTTPStatus.BAD_REQUEST)
+
+    args = request.get_json()
+    filter = args["filter"] if args else None
+    if not filter:
+        return make_response("Error: obs filter is required", HTTPStatus.BAD_REQUEST)
+    method = args["method"] if args else "umap"
+
+    try:
+        return make_response(
+            data_adaptor.compute_embedding(method, filter), HTTPStatus.OK, {"Content-Type": "application/octet-stream"}
+        )
+    except NotImplementedError as e:
+        return make_response(str(e), HTTPStatus.NOT_IMPLEMENTED)
+    except (ValueError, DisabledFeatureError, FilterError) as e:
+        return make_response(str(e), HTTPStatus.BAD_REQUEST)

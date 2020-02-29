@@ -1,17 +1,20 @@
 import warnings
 
 import numpy as np
+import pandas as pd
 from pandas.core.dtypes.dtypes import CategoricalDtype
 import anndata
 from scipy import sparse
 from packaging import version
+from server_timing import Timing as ServerTiming
 
 from server.data_common.data_adaptor import DataAdaptor
 from server.data_common.fbs.matrix import encode_matrix_fbs
 from server.common.utils import series_to_schema
 from server.common.constants import Axis, MAX_LAYOUTS
-from server.common.errors import PrepareError, DatasetAccessError
+from server.common.errors import PrepareError, DatasetAccessError, FilterError
 from server.common.data_locator import DataLocator
+from server.compute.scanpy import scanpy_umap
 
 anndata_version = version.parse(str(anndata.__version__)).release
 
@@ -261,7 +264,10 @@ class AnndataAdaptor(DataAdaptor):
         return encode_matrix_fbs(df, col_idx=df.columns)
 
     def get_embedding_names(self):
-        """ function:
+        """
+        Return pre-computed embeddings.
+
+        function:
             a) generate list of default layouts
             b) validate layouts are legal.  remove/warn on any that are not
             c) cap total list of layouts at global const MAX_LAYOUTS
@@ -293,6 +299,25 @@ class AnndataAdaptor(DataAdaptor):
     def get_embedding_array(self, ename, dims=2):
         full_embedding = self.data.obsm[f"X_{ename}"]
         return full_embedding[:, 0:dims]
+
+    def compute_embedding(self, method, obsFilter):
+        if Axis.VAR in obsFilter:
+            raise FilterError("Observation filters may not contain variable conditions")
+        if method != "umap":
+            raise NotImplementedError(f"re-embedding method {method} is not available.")
+        try:
+            shape = self.get_shape()
+            obs_mask = self._axis_filter_to_mask(Axis.OBS, obsFilter["obs"], shape[0])
+        except (KeyError, IndexError) as e:
+            raise FilterError(f"Error parsing filter: {e}") from e
+
+        with ServerTiming.time("layout.compute"):
+            X_umap = scanpy_umap(self.data, obs_mask)
+            normalized_layout = DataAdaptor.normalize_embedding(X_umap)
+
+        df = pd.DataFrame(normalized_layout, columns=["X_umap_0", "X_umap_1"])
+        fbs = encode_matrix_fbs(df, col_idx=df.columns, row_idx=None)
+        return fbs
 
     def get_X_array(self, obs_mask=None, var_mask=None):
         if obs_mask is None:

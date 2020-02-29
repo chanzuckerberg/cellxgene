@@ -32,6 +32,7 @@ class AppConfig(object):
         self.max_category_items = 100
         self.diffexp_lfc_cutoff = 0.01
         self.disable_diffexp = False
+        self.enable_reembedding = False
         self.anndata_backed = False
 
         # TODO these options may not apply to all datasets in the multi dataset.
@@ -56,6 +57,7 @@ class AppConfig(object):
             "var_names",
             "anndata_backed",
             "disable_diffexp",
+            "enable_reembedding",
         ]
 
         self.update(inputs, kw)
@@ -80,7 +82,7 @@ class AppConfig(object):
         # we have camalCase, hyphen-text, and underscore_text
 
         # features
-        features = [f.todict() for f in data_adaptor.get_features().values()]
+        features = [f.todict() for f in data_adaptor.get_features(annotation)]
 
         # display_names
         title = self.get_title(data_adaptor)

@@ -163,6 +163,10 @@ class LayoutObsAPI(Resource):
     def get(self, data_adaptor):
         return common_rest.layout_obs_get(request, data_adaptor)
 
+    @rest_get_data_adaptor
+    def put(self, data_adaptor):
+        return common_rest.layout_obs_put(request, data_adaptor)
+
 
 def get_api_resources(bp_api):
     api = Api(bp_api)
