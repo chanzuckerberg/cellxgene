@@ -107,6 +107,7 @@ class AppConfig(object):
             "diffexp_lfc_cutoff": self.diffexp_lfc_cutoff,
             "backed": self.anndata_backed,
             "disable-diffexp": self.disable_diffexp,
+            "enable-reembedding": self.enable_reembedding,
             "annotations": False,
             "annotations_file": None,
             "annotations_output_dir": None,
