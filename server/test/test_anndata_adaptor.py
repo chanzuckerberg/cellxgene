@@ -97,7 +97,22 @@ class AdaptorTest(unittest.TestCase):
             self.data._create_schema()
 
     def test_config(self):
-        self.assertEqual(self.data.get_features()["layout_obs"].available, True)
+        features = self.data.get_features(annotations=None)
+
+        # test each for singular presence and accuracy of available flag
+        def check_feature(method, path, available):
+            feature = list(filter(
+                lambda f: f.method == method and f.path == path and f.available == available,
+                features
+            ))
+            self.assertIsNotNone(feature)
+            self.assertEqual(len(feature), 1)
+
+        check_feature("POST", "/cluster/", False)
+        check_feature("POST", "/diffexp/", not self.data.config.disable_diffexp)
+        check_feature("GET", "/layout/obs", True)
+        check_feature("PUT", "/layout/obs", self.data.config.enable_reembedding)
+        check_feature("PUT", "/annotations/obs", False)
 
     def test_layout(self):
         fbs = self.data.layout_to_fbs_matrix()
