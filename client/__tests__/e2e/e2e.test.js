@@ -316,8 +316,6 @@ describe("graph overlay", () => {
     const initialCoordinates = await utils.getElementCoordinates(
       `${categoryValue}-centroid-label`
     );
-    console.log("panCoords", panCoords);
-    console.log("initialCoordinates", initialCoordinates);
     await cxgActions.drag(
       "layout-graph",
       panCoords.start,
