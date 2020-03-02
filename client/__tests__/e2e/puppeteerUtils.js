@@ -63,6 +63,13 @@ export const puppeteerUtils = page => ({
   async getOneElementInnerText(selector) {
     await page.waitForSelector(selector);
     return page.$eval(selector, el => el.innerText);
+  },
+
+  async getElementCoordinates(testid) {
+    return puppeteerPage.$eval(`[data-testid='${testid}']`, elem => {
+      const { left, top } = elem.getBoundingClientRect();
+      return [left, top];
+    });
   }
 });
 
