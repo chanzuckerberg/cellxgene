@@ -22,22 +22,6 @@ describe.each([
   {withSubset: false, tag: "whole"}
 ])("annotations", (config) => {
 
-  async function subset() {
-    const lassoSelection = await cxgActions.calcDragCoordinates(
-      "layout-graph",
-      {x1: 0.10, y1: 0.10, x2: 0.80, y2: 0.80}
-    );
-    await cxgActions.drag(
-      "layout-graph",
-      lassoSelection.start,
-      lassoSelection.end,
-      true
-    );
-    await utils.clickOn("subset-button");
-    const coordinate = await cxgActions.calcCoordinate("layout-graph", 0.9, 0.9);
-    await cxgActions.clickOnCoordinate("layout-graph", coordinate);
-  }
-
   const perTestCategoryName = "per-test-category";
   const perTestLabelName = "per-test-label";
 
@@ -48,7 +32,7 @@ describe.each([
     // setup the test fixtures
     await cxgActions.createCategory(perTestCategoryName);
     await cxgActions.createLabel(perTestCategoryName, perTestLabelName);
-    if (config.withSubset) await subset();
+    if (config.withSubset) await cxgActions.subset({x1: 0.10, y1: 0.10, x2: 0.80, y2: 0.80});
     await utils.waitByClass("autosave-complete");
   });
 

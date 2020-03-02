@@ -586,7 +586,7 @@ class Dataframe {
 
     withRowIndex allows assignment of new row index during subset operation.
     If withRowIndex === null, it will reset the index to identity (offset)
-    indexing.  if withRowIndex is a label index object, it will be used
+    indexing. If withRowIndex is a label index object, it will be used
     for the new dataframe.
     */
     return this.__subset(rowOffsets, colOffsets, withRowIndex);

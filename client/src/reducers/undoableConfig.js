@@ -16,7 +16,6 @@ const skipOnActions = new Set([
   "configuration load complete",
   "increment graph render counter",
   "window resize",
-  "user reset start",
   "reset colorscale",
   "reset centroid labels",
 
@@ -65,7 +64,6 @@ const clearOnActions = new Set([
   "initial data load complete (universe exists)",
   "reset World to eq Universe",
   "initial data load error",
-  "user reset end"
 ]);
 
 /*

@@ -149,7 +149,7 @@ const doInitialDataLoad = () =>
 Set the view (world) to current selection.   Placeholder for an async action
 which also does re-layout.
 */
-const regraph = () => (dispatch, getState) => {
+const setWorldToSelection = () => (dispatch, getState) => {
   const { universe, world, crossfilter } = getState();
   dispatch({
     type: "set World to current selection",
@@ -167,7 +167,7 @@ const dispatchExpressionErrors = (dispatch, res) => {
 };
 
 /*
-Fetch expression vectors for each gene in genes.   This is NOT an action
+Fetch expression vectors for each gene in genes.  This is NOT an action
 function, but rather a helper to be called from an action helper that
 needs expression data.
 
@@ -385,36 +385,11 @@ const requestDifferentialExpression = (set1, set2, num_genes = 10) => async (
   }
 };
 
-const resetInterface = () => (dispatch, getState) => {
+const resetWorldToUniverse = () => (dispatch, getState) => {
   const { universe } = getState();
-
-  dispatch({
-    type: "user reset start"
-  });
-  dispatch({
-    type: "clear all user defined genes"
-  });
-  dispatch({
-    type: "clear differential expression"
-  });
-  dispatch({
-    type: "reset colorscale"
-  });
-  dispatch({
-    type: "reset centroid labels"
-  });
-  dispatch({
-    type: "clear scatterplot"
-  });
   dispatch({
     type: "reset World to eq Universe",
     universe
-  });
-  dispatch({
-    type: "increment graph render counter"
-  });
-  dispatch({
-    type: "user reset end"
   });
 };
 
@@ -472,11 +447,11 @@ const saveObsAnnotations = () => async (dispatch, getState) => {
 };
 
 export default {
-  regraph,
-  resetInterface,
-  requestSingleGeneExpressionCountsForColoringPOST,
-  requestDifferentialExpression,
-  requestUserDefinedGene,
   doInitialDataLoad,
-  saveObsAnnotations
+  requestDifferentialExpression,
+  requestSingleGeneExpressionCountsForColoringPOST,
+  requestUserDefinedGene,
+  resetWorldToUniverse,
+  saveObsAnnotations,
+  setWorldToSelection,
 };
