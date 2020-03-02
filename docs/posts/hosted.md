@@ -42,7 +42,7 @@ If you know of other solutions, drop us a note and we'll add to this list.
 
 Clicking on the following button will forward you to Heroku to begin the deployment process:
 
-<a href="https://heroku.com/deploy?template=https://github.com/chanzuckerberg/cellxgene/tree/heroku">
+<a href="https://heroku.com/deploy?template=https://github.com/chanzuckerberg/cellxgene">
  <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy">
 </a>
 
