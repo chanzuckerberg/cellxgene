@@ -300,3 +300,38 @@ describe("centroid labels", () => {
     /* eslint-enable no-await-in-loop */
   });
 });
+
+describe("graph overlay", () => {
+  test("transform centroids correctly", async () => {
+    const category = Object.keys(data.categorical)[0];
+    await utils.clickOn("centroid-label-toggle");
+    await utils.clickOn(`colorby-${category}`);
+    await utils.clickOn("mode-pan-zoom");
+    const panCoords = await cxgActions.calcDragCoordinates(
+      "layout-graph",
+      data.pan["coordinates-as-percent"]
+    );
+
+    const categoryValue = Object.keys(data.categorical[category])[0];
+    const initialCoordinates = await utils.getElementCoordinates(
+      `${categoryValue}-centroid-label`
+    );
+    console.log("panCoords", panCoords);
+    console.log("initialCoordinates", initialCoordinates);
+    await cxgActions.drag(
+      "layout-graph",
+      panCoords.start,
+      panCoords.end,
+      false
+    );
+    const terminalCoordinates = await utils.getElementCoordinates(
+      `${categoryValue}-centroid-label`
+    );
+    expect(terminalCoordinates[0] - initialCoordinates[0]).toBeCloseTo(
+      panCoords.end.x - panCoords.start.x
+    );
+    expect(terminalCoordinates[1] - initialCoordinates[1]).toBeCloseTo(
+      panCoords.end.y - panCoords.start.y
+    );
+  });
+});
