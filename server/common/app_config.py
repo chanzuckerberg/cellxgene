@@ -28,7 +28,7 @@ class AppConfig(object):
         self.title = ""
         self.about = None
         self.scripts = []
-        self.layout = None
+        self.layout = []
         self.max_category_items = 100
         self.diffexp_lfc_cutoff = 0.01
         self.disable_diffexp = False

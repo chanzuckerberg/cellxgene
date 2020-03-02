@@ -1,7 +1,0 @@
-notes.md
-__pycache__
-.idea
-.python-version
-.venv
-tmp
-tmp/*
