@@ -334,15 +334,11 @@ class HistogramBrush extends React.PureComponent {
       .attr("class", "histogram-container")
       .attr("transform", `translate(${this.marginLeft},${this.marginTop})`);
 
-    const yMax = d3.max(bins, function (d) { return d.length });
-    const yMin = d3.min(bins, function (d) { return d.length });
-
-    const colorScale = d3.scaleSequential(interpolateCool)
-      .domain([yMin, yMax]);
+    const colorScale = d3.scaleSequential(interpolateCool).domain([0, bins.length]);
 
     const histogramScale = d3
       .scaleLinear()
-      .range([yMin, yMax])
+      .range([1, this.width + this.marginLeft + this.marginRight])
       .domain([
         colorScale.domain()[1],
         colorScale.domain()[0]
@@ -359,7 +355,7 @@ class HistogramBrush extends React.PureComponent {
       .attr("y", d => y(d.length))
       .attr("width", d => Math.abs(x(d.x1) - x(d.x0) - 1))
       .attr("height", d => y(0) - y(d.length))
-      .style("fill", function (d) { return colorScale(histogramScale.invert(d.length)) });
+      .style("fill", function (d) { return colorScale(histogramScale.invert(x(d.x0) + 1)) });
 
     // BRUSH
     // Note the brushable area is bounded by the data on three sides, but goes down to cover the x-axis
