@@ -283,18 +283,20 @@ describe("ui elements don't error", () => {
 });
 
 describe("centroid labels", () => {
-  test.only("labels are created", async () => {
-    console.log(await utils.clickOn("centroid-label-toggle"));
-    Object.keys(data.categorical).forEach(async label => {
-      console.log("button", await utils.clickOn(`colorby-${label}`));
-      // console.log(button);
-      const labels = await utils.getAllByClass("centroid-label");
-      console.log(labels);
-
-      // expect(labels).toHaveLength(Object.keys(data.categorical[label]).length);
-      console.log(labels.length);
-
-      expect(labels).toHaveLength(2);
-    });
+  test("labels are created", async () => {
+    await utils.clickOn("centroid-label-toggle");
+    const labels = Object.keys(data.categorical);
+    /* eslint-disable no-await-in-loop */
+    // Toggle colorby for each category and check to see if labels are generated
+    for (let i = 0, { length } = labels; i < length; i += 1) {
+      const label = labels[i];
+      await utils.clickOn(`colorby-${label}`);
+      const generatedLabels = await utils.getAllByClass("centroid-label");
+      // Number of labels generated should be equal to size of the object
+      expect(generatedLabels).toHaveLength(
+        Object.keys(data.categorical[label]).length
+      );
+    }
+    /* eslint-enable no-await-in-loop */
   });
 });
