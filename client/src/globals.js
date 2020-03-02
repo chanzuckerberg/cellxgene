@@ -75,6 +75,7 @@ export const categoryLabelDisplayStringLongLength = 27;
 export const categoryLabelDisplayStringShortLength = 11;
 
 export const maxUserDefinedGenes = 25;
+export const maxGenes = 100;
 
 /* various timing-related behaviors */
 export const tooltipHoverOpenDelay = 1000; /* ms delay before a tooltip displays */

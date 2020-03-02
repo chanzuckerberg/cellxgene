@@ -523,7 +523,6 @@ class HistogramBrush extends React.PureComponent {
           </span>
           <span
             data-testclass="brushable-histogram-field-name"
-            data-testid={`${field}:field-name`}
             style={{ fontStyle: "italic" }}
           >
             {field}

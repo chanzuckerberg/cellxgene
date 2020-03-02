@@ -7,46 +7,18 @@ import * as globals from "../../../src/globals";
 describe("controls helpers", () => {
 
   test("subsetAndResetGeneLists", () => {
-    const geneList = [
-      "Ak7",
-      "Agt",
-      "Alb",
-      "Aqp6",
-      "Aqp8",
-      "Bves",
-      "Bhmt",
-      "Bcan",
-      "Bfar",
-      "Bpgm",
-      "Cfd",
-      "Clu",
-      "Cel",
-      "Ckm",
-      "Cnp",
-      "Ddo",
-      "Dld",
-      "Ddn",
-      "Des",
-      "Dmd",
-      "Egf",
-      "Epc1",
-      "Expi",
-      "Eno2",
-      "Eno3",
-      "Fga",
-      "Fos",
-      "Fgb",
-      "Fgg",
-      "Fmn2",
-    ];
+    const geneList = [...Array(150).keys()].map(() =>
+      Math.random().toString(36).substring(2, 6) // random string of 4 characters
+    );
     const state = {
-      userDefinedGenes: geneList.slice(0, 15),
-      diffexpGenes: geneList.slice(15),
+      userDefinedGenes: geneList.slice(0, 20),
+      diffexpGenes: geneList.slice(20),
     };
     const [newUserDefinedGenes, newDiffExpGenes] = subsetAndResetGeneLists(state);
-    expect(geneList.length).toBeGreaterThan(globals.maxUserDefinedGenes);
-    expect(newUserDefinedGenes).toHaveLength(globals.maxUserDefinedGenes);
-    expect(newUserDefinedGenes).toStrictEqual(geneList.slice(0, globals.maxUserDefinedGenes));
+    expect(globals.maxUserDefinedGenes).toBeLessThan(globals.maxGenes);
+    expect(geneList.length).toBeGreaterThan(globals.maxGenes);
+    expect(newUserDefinedGenes).toHaveLength(globals.maxGenes);
+    expect(newUserDefinedGenes).toStrictEqual(geneList.slice(0, globals.maxGenes));
     expect(newDiffExpGenes).toStrictEqual([]);
   });
 });

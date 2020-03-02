@@ -202,7 +202,7 @@ describe("subset", () => {
     expect(userDefinedHistogramsAfterSubset).toStrictEqual(expected);
   });
 
-  test.only("subset selection appends the top diff exp genes to user defined genes", async () => {
+  test("subset selection appends the top diff exp genes to user defined genes", async () => {
     const userDefinedGenes = ["ACD", "AAR2", "AATF", "ARSG"];
     const diffExpGenes = data.diffexp["gene-results"];
     for (const userDefinedGene of userDefinedGenes) {

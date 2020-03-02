@@ -11,12 +11,13 @@ import {
   RadioGroup,
   Radio,
 } from "@blueprintjs/core";
+import * as globals from "../../globals";
 import actions from "../../actions";
 import CellSetButton from "./cellSetButtons";
-import InformationMenu from "./infoMenu";
-import UndoRedoReset from "./undoRedoReset";
 import Clip from "./clip";
-import * as globals from "../../globals";
+import InformationMenu from "./infoMenu";
+import Subset from "./subset";
+import UndoRedoReset from "./undoRedo";
 
 @connect(state => ({
   universe: state.universe,
@@ -316,42 +317,18 @@ class MenuBar extends React.Component {
         }}
       >
         {this.renderDiffExp()}
-        <ButtonGroup style={{marginRight: "10px"}}>
-          <Tooltip
-            content="Subset to currently selected cells and associated metadata"
-            position="bottom"
-            hoverOpenDelay={globals.tooltipHoverOpenDelay}
-          >
-            <AnchorButton
-              data-testid="subset-button"
-              active={!this.subsetPossible()}
-              icon="pie-chart"
-              onClick={() => {
-                if (this.subsetPossible()) {
-                  dispatch(actions.setWorldToSelection());
-                  dispatch({ type: "increment graph render counter" });
-                }
-              }}
-            />
-          </Tooltip>
-          <Tooltip
-            content="Undo subset and show all cells and associated metadata"
-            position="bottom"
-            hoverOpenDelay={globals.tooltipHoverOpenDelay}
-          >
-            <AnchorButton
-              data-testid="reset-subset-button"
-              active={!this.subsetResetPossible()}
-              icon="full-circle"
-              onClick={() => {
-                if (this.subsetResetPossible()) {
-                  dispatch(actions.resetWorldToUniverse());
-                  dispatch({ type: "increment graph render counter" });
-                }
-              }}
-            />
-          </Tooltip>
-        </ButtonGroup>
+        <Subset
+          subsetPossible={this.subsetPossible()}
+          subsetResetPossible={this.subsetResetPossible()}
+          handleSubset={() => {
+            dispatch(actions.setWorldToSelection());
+            dispatch({ type: "increment graph render counter" });
+          }}
+          handleSubsetReset={() => {
+            dispatch(actions.resetWorldToUniverse());
+            dispatch({ type: "increment graph render counter" });
+          }}
+        />
         <ButtonGroup style={{marginRight: "10px"}}>
           <Tooltip
             content={selectionTooltip}
