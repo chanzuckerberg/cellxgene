@@ -63,6 +63,7 @@ class CentroidLabels extends PureComponent {
           className="centroid-label"
           transform={`translate(${value[0]}, ${value[1]})`}
           data-testclass="centroid-label"
+          data-testid={`${key}-centroid-label`}
         >
           <text
             transform={inverseTransform}
