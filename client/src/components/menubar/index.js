@@ -328,8 +328,8 @@ class MenuBar extends React.Component {
               icon="pie-chart"
               onClick={() => {
                 if (this.subsetPossible()) {
-                  dispatch(actions.regraph());
-                  dispatch({type: "increment graph render counter"});
+                  dispatch(actions.setWorldToSelection());
+                  dispatch({ type: "increment graph render counter" });
                 }
               }}
             />
@@ -345,8 +345,8 @@ class MenuBar extends React.Component {
               icon="full-circle"
               onClick={() => {
                 if (this.subsetResetPossible()) {
-                  actions.resetWorldToUniverse()(dispatch, () => this.state);
-                  dispatch({type: "increment graph render counter"});
+                  dispatch(actions.resetWorldToUniverse());
+                  dispatch({ type: "increment graph render counter" });
                 }
               }}
             />

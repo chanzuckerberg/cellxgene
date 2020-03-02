@@ -34,6 +34,7 @@ export const puppeteerUtils = puppeteerPage => ({
   },
 
   async typeInto(testid, text) {
+    // blueprint's  typeahead is treating typing weird, clicking & waiting first solves this
     // only works for text without special characters
     await this.waitByID(testid);
     const selector = `[data-testid='${testid}']`;

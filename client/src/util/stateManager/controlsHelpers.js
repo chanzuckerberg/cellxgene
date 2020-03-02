@@ -200,3 +200,10 @@ export function pruneVarDataCache(varData, needed) {
   }
   return varData;
 }
+
+export function subsetAndResetGeneLists(state) {
+  const { userDefinedGenes, diffexpGenes } = state;
+  const newUserDefinedGenes = [].concat(userDefinedGenes, diffexpGenes).slice(0, globals.maxUserDefinedGenes);
+  const newDiffExpGenes = [];
+  return [newUserDefinedGenes, newDiffExpGenes];
+}

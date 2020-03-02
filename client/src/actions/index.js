@@ -149,7 +149,7 @@ const doInitialDataLoad = () =>
 Set the view (world) to current selection.   Placeholder for an async action
 which also does re-layout.
 */
-const regraph = () => (dispatch, getState) => {
+const setWorldToSelection = () => (dispatch, getState) => {
   const { universe, world, crossfilter } = getState();
   dispatch({
     type: "set World to current selection",
@@ -448,10 +448,10 @@ const saveObsAnnotations = () => async (dispatch, getState) => {
 
 export default {
   doInitialDataLoad,
-  regraph,
   requestDifferentialExpression,
   requestSingleGeneExpressionCountsForColoringPOST,
   requestUserDefinedGene,
   resetWorldToUniverse,
   saveObsAnnotations,
+  setWorldToSelection,
 };

@@ -109,7 +109,6 @@ describe("cell selection", () => {
 
 describe("gene entry", () => {
   test("search for single gene", async () => {
-    // blueprint's  typeahead is treating typing weird, clicking & waiting first solves this
     await cxgActions.addGeneToSearch(data.genes.search);
   });
 
@@ -195,6 +194,27 @@ describe("subset", () => {
     const diffExpHistograms = await cxgActions.getAllHistograms("histogram-diffexp", diffExpGenes);
     expect(diffExpHistograms).toStrictEqual(diffExpGenes);
     await utils.clickOn("reset-subset-button");
+    const expected = [].concat(userDefinedGenes, diffExpGenes);
+    const userDefinedHistogramsAfterSubset = await cxgActions.getAllHistograms(
+      "histogram-user-gene",
+      expected
+    );
+    expect(userDefinedHistogramsAfterSubset).toStrictEqual(expected);
+  });
+
+  test.only("subset selection appends the top diff exp genes to user defined genes", async () => {
+    const userDefinedGenes = ["ACD", "AAR2", "AATF", "ARSG"];
+    const diffExpGenes = data.diffexp["gene-results"];
+    for (const userDefinedGene of userDefinedGenes) {
+      await cxgActions.addGeneToSearch(userDefinedGene);
+    }
+    const userDefinedHistograms = await cxgActions.getAllHistograms("histogram-user-gene", userDefinedGenes);
+    expect(userDefinedHistograms).toStrictEqual(userDefinedGenes);
+    await cxgActions.subset({x1: 0.15, y1: 0.10, x2: 0.98, y2: 0.98});
+    await cxgActions.runDiffExp(data.diffexp.cellset1, data.diffexp.cellset2);
+    const diffExpHistograms = await cxgActions.getAllHistograms("histogram-diffexp", diffExpGenes);
+    expect(diffExpHistograms).toStrictEqual(diffExpGenes);
+    await cxgActions.subset({x1: 0.16, y1: 0.11, x2: 0.97, y2: 0.97});
     const expected = [].concat(userDefinedGenes, diffExpGenes);
     const userDefinedHistogramsAfterSubset = await cxgActions.getAllHistograms(
       "histogram-user-gene",

@@ -2,6 +2,7 @@
 
 import _ from "lodash";
 import * as globals from "../globals";
+import { subsetAndResetGeneLists } from "../util/stateManager/controlsHelpers";
 
 const Controls = (
   state = {
@@ -75,19 +76,22 @@ const Controls = (
       };
     }
     case "reset World to eq Universe": {
-      const { userDefinedGenes, diffexpGenes } = state;
+      const [ newUserDefinedGenes, newDiffExpGenes ] = subsetAndResetGeneLists(state);
       return {
         ...state,
         resettingInterface: false,
-        userDefinedGenes: [].concat(userDefinedGenes, diffexpGenes).slice(0,globals.maxUserDefinedGenes),
-        diffexpGenes: [],
+        userDefinedGenes: newUserDefinedGenes,
+        diffexpGenes: newDiffExpGenes
       };
     }
     case "set World to current selection": {
+      const [ newUserDefinedGenes, newDiffExpGenes ] = subsetAndResetGeneLists(state);
       return {
         ...state,
         loading: false,
-        error: null
+        error: null,
+        userDefinedGenes: newUserDefinedGenes,
+        diffexpGenes: newDiffExpGenes
       };
     }
     case "request user defined gene started": {
