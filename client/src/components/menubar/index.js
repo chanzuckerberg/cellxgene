@@ -6,10 +6,6 @@ import {
   ButtonGroup,
   AnchorButton,
   Tooltip,
-  Popover,
-  Position,
-  RadioGroup,
-  Radio,
   Icon
 } from "@blueprintjs/core";
 import { World } from "../../util/stateManager";
