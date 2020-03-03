@@ -1,4 +1,7 @@
-const ReembedController = (
+/*
+controller state is not part of the undo/redo history
+*/
+export const reembedController = (
 	state = {
 		pendingFetch: null
 	},
@@ -25,4 +28,24 @@ const ReembedController = (
 	}
 };
 
-export default ReembedController;
+/*
+actual reembedding data is part of the undo/redo history
+*/
+export const reembedding = (
+	state = {
+		reembedding: null
+	},
+	action
+) => {
+	switch (action.type) {
+		case "reembed: request completed": {
+			return {
+				...state,
+				reembedding: action.reembedding
+			};
+		}
+		default: {
+			return state;
+		}
+	}
+};

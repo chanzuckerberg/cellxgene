@@ -21,7 +21,7 @@ import autosave from "./autosave";
 import ontology from "./ontology";
 import centroidLabels from "./centroidLabels";
 import pointDialation from "./pointDilation";
-import reembedController from "./reembed";
+import { reembedController, reembedding } from "./reembed";
 
 import undoableConfig from "./undoableConfig";
 
@@ -32,6 +32,7 @@ const Reducer = undoable(
         ["world", world],
         ["ontology", ontology],
         ["annotations", annotations],
+        ["reembedding", reembedding],
         ["layoutChoice", layoutChoice],
         ["categoricalSelection", categoricalSelection],
         ["continuousSelection", continuousSelection],
@@ -59,7 +60,8 @@ const Reducer = undoable(
         "differential",
         "layoutChoice",
         "centroidLabels",
-        "annotations"
+        "annotations",
+        "reembedding"
     ],
     undoableConfig
 );

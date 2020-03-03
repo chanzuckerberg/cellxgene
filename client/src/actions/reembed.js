@@ -97,7 +97,7 @@ export function requestReembed() {
 			const df = Universe.matrixFBSToDataframe(buffer);
 			dispatch({
 				type: "reembed: request completed",
-				dataframe: df
+				reembedding: df
 			});
 			postAsyncSuccessToast("Re-embedding has completed.");
 		} catch (error) {
