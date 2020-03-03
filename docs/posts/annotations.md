@@ -13,7 +13,7 @@ We are _piloting_ a new feature in cellxgene that enables users to create and ed
 
 To get started, run:
 ```
-cellxgene launch mydata.h5ad --experimental-annotations
+cellxgene launch mydata.h5ad
 ```
 
 To preserve data provenance, **`cellxgene` does not alter the input h5ad file**.  Rather, newly-created annotations are saved in a specified CSV file:  
@@ -21,8 +21,7 @@ To preserve data provenance, **`cellxgene` does not alter the input h5ad file**.
 annotations-directory/name-########.csv
 ```
 
-- The default `annotations-directory` is  your current working directory (i.e., the directory you were in when you started cellxgene).
-
+- The default `annotations-directory` is the directory where `mydata.h5ad` is saved; if we can't find that directory (e.g., you're loading an h5ad from a URL), it falls back to your current working directory (i.e., the directory you were in when you started cellxgene).
 - You will be prompted to enter a name for your annotations the first time you create a new category.  
 - We also assign a unique identifier in the form of an 8-character suffix, `########`; this helps cellxgene identify your file to avoid overwriting your work.
 
@@ -36,10 +35,7 @@ There are two options for updating draft annotations.
 
 ### Autodetect annotations csv
 
-Cellxgene can automatically find and reload your draft annotations in editable mode like so:  
-```
-annotations-directory$ cellxgene launch mydata.h5ad --experimental-annotations
-```
+Cellxgene will automatically find and reload your draft annotations in editable mode like so:
 
 This assumes that:
 1 - The h5ad filename is the same  
@@ -52,7 +48,7 @@ This assumes that:
 
 If you'd like to specify the complete file path for your annotations, you can do so by running:  
 ```
-cellxgene launch mydata.h5ad --experimental-annotations --experimental-annotations-file path/to/myfile.csv
+cellxgene launch mydata.h5ad --annotations-input-file path/to/myfile.csv
 ```
 
 Any changes you make will be reflected in the original CSV. If the file does not exist, it will be created.  
@@ -83,15 +79,13 @@ Specifying a single file name for multiple contributors will result in data over
 
 To specify an output directory, run:  
 ```
-cellxgene launch mydata.h5ad --experimental-annotations --experimental-annotations-output-dir path/to/annotations-directory/
+cellxgene launch mydata.h5ad --annotations-output-dir path/to/annotations-directory/
 ```
 
 For each user, annotations will be saved as follows:  
 - Each user will be prompted to enter a name for their annotations the first time they create a new category.  
 - We also assign a unique identifier in the form of an 8-character suffix, `########`; this helps cellxgene identify their specific file to avoid overwriting others' work.
 - Any annotations created in the application will be autosaved in `annotations-directory/name-########.csv`
-
-
 
 
 
@@ -113,4 +107,4 @@ This is most likely because the h5ad file you are working with is not the origin
 We place a small cookie (file) in your browser that identifies where your draft annotations are saved. This file never leaves your machine, and is never sent to the cellxgene team or anyone else.
 
 ### I have feedback and ideas for you!
-Wonderful! This is a very new and complex feature; we would _love_ to [hear your feedback](contact) :)
+Wonderful! This is a relatively new feature; we would _love_ to [hear your feedback](contact) :)
