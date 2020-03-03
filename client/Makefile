@@ -44,13 +44,9 @@ start-server:
 backend-dev: server-requirements
 	source ../venv/bin/activate && $(MAKE) start-server
 
-.PHONY: backend-dev-anno
-backend-dev-anno: server-requirements
-	CXG_OPTIONS='--experimental-annotations' $(MAKE) backend-dev
-
 .PHONY: backend-dev-anno-ontology
 backend-dev-anno-ontology: server-requirements
-	CXG_OPTIONS='--experimental-annotations --experimental-annotations-ontology' \
+	CXG_OPTIONS='--annotations-ontology' \
 		$(MAKE) backend-dev
 
 .PHONY: test
@@ -81,7 +77,7 @@ smoke-test-annotations:
 	$(eval TMP_DIR := $(shell  mktemp -d /tmp/cellxgene_XXXXXX))
 	cp $(ANNOTATIONS) $(TMP_DIR)/ && \
 	start_server_and_test \
-		'CXG_OPTIONS="--experimental-annotations --experimental-annotations-file $(TMP_DIR)/$(ANNOTATIONS_FILENAME)" $(MAKE) start-server' \
+		'CXG_OPTIONS="--annotations-input-file $(TMP_DIR)/$(ANNOTATIONS_FILENAME)" $(MAKE) start-server' \
 		$(CXG_SERVER_PORT) \
 		'$(MAKE) e2e-annotations'
 	rm -rf $(TMP_DIR)
