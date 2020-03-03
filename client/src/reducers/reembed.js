@@ -7,8 +7,8 @@ const ReembedController = (
 	switch (action.type) {
 		case "reembed: request start": {
 			return {
-				pendingFetch: action.abortableFetch,
-				...state
+				...state,
+				pendingFetch: action.abortableFetch
 			};
 		}
 		case "reembed: request aborted":

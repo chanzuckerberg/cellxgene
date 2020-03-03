@@ -17,6 +17,7 @@ import actions from "../../actions";
 	universe: state.universe,
 	world: state.world,
 	layoutChoice: state.layoutChoice,
+	reembedController: state.reembedController,
 	enableReembedding: state.config?.parameters?.["enable-reembedding"] ?? false
 }))
 class Embedding extends React.PureComponent {
@@ -29,10 +30,17 @@ class Embedding extends React.PureComponent {
 	};
 
 	renderReembedding() {
-		const { enableReembedding, world, universe, dispatch } = this.props;
+		const {
+			enableReembedding,
+			world,
+			universe,
+			dispatch,
+			reembedController
+		} = this.props;
 
 		if (!enableReembedding) return null;
 
+		const loading = !!reembedController?.pendingFetch;
 		const disabled = World.worldEqUniverse(world, universe);
 		const tipContent = disabled
 			? "Subset cells first, then click to recompute UMAP embedding."
@@ -42,13 +50,14 @@ class Embedding extends React.PureComponent {
 			<Tooltip
 				content={tipContent}
 				position="bottom"
-				overOpenDelay={globals.tooltipHoverOpenDelayQuick}
+				hoverOpenDelay={globals.tooltipHoverOpenDelay}
 			>
 				<Button
 					icon="new-object"
 					style={{ marginRight: 10 }}
 					disabled={disabled}
 					onClick={() => dispatch(actions.requestReembed())}
+					loading={loading}
 				/>
 			</Tooltip>
 		);
