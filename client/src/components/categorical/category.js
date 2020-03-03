@@ -156,6 +156,8 @@ class Category extends React.Component {
       return this.renderIsStillLoading();
     }
 
+    const isTruncated = _.get(categoricalSelection, [metadataField, "isTruncated"], false);
+
     return (
       <CategoryFlipperLayout
         metadataField={metadataField}
@@ -227,16 +229,22 @@ class Category extends React.Component {
           />
 
           <Tooltip
-            content="Use as color scale"
+            content={
+              isTruncated
+              ? `Can't color by this category, too many label values (max ${globals.maxCategoricalOptionsToDisplay})`
+              : "Use as color scale"
+            }
             position="bottom"
             hoverOpenDelay={globals.tooltipHoverOpenDelay}
           >
             <Button
               data-testclass="colorby"
               data-testid={`colorby-${metadataField}`}
-              onClick={this.handleColorChange}
-              active={colorAccessor === metadataField}
-              intent={colorAccessor === metadataField ? "primary" : "none"}
+              onClick={() => {
+                if (!isTruncated) this.handleColorChange();
+              }}
+              active={colorAccessor === metadataField || isTruncated}
+              intent={colorAccessor === metadataField && !isTruncated ? "primary" : "none"}
               icon="tint"
             />
           </Tooltip>
