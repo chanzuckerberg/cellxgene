@@ -45,7 +45,7 @@ Remember that option values can be ANY js type, except undefined/null.
   }
 */
 function topNCategories(colSchema, summary, N) {
-  /* return top N by occurance in the data, preserving original category order */
+  /* return top N by occurrences in the data, preserving original category order */
   const { categories } = colSchema;
   const counts = categories.map(cat => summary.categoryCounts.get(cat) ?? 0);
 

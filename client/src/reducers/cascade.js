@@ -1,6 +1,6 @@
 export default function cascadeReducers(arg) {
   /*
-  Combined a set of cascading reducers into a single reducer.  Cascading
+  Combine a set of cascading reducers into a single reducer.  Cascading
   reducers are reducers which may rely on state computed by another reducer.
   Therefore, they:
   - must be composed in a particular order (currently, this is a simple
@@ -13,7 +13,7 @@ export default function cascadeReducers(arg) {
   - an array of tuples, [ [key1, reducer1], [key2, reducer2], ... ]
   Ie,  cascadeReducers([ ["a", reduceA], ["b", reduceB] ])
 
-  Each reducer will be called with the sigature:
+  Each reducer will be called with the signature:
       (prevState, action, sharedNextState, sharedPrevState) => newState
 
   cascadeReducers will build a composite newState object, much
