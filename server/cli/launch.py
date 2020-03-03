@@ -26,11 +26,11 @@ DEFAULT_SERVER_PORT = int(environ.get("CXG_SERVER_PORT", "5005"))
 
 def annotation_args(func):
     @click.option(
-        "--experimental-annotations",
+        "--disable-annotations",
         is_flag=True,
         default=False,
         show_default=True,
-        help="Enable user annotation of data.",
+        help="Disable user annotation of data.",
     )
     @click.option(
         "--experimental-annotations-file",
@@ -271,7 +271,7 @@ def launch(
     title,
     scripts,
     about,
-    experimental_annotations,
+    disable_annotations,
     experimental_annotations_file,
     experimental_annotations_output_dir,
     backed,
@@ -342,7 +342,7 @@ def launch(
     else:
         port = find_available_port(host, DEFAULT_SERVER_PORT)
 
-    if not experimental_annotations:
+    if disable_annotations:
         if experimental_annotations_file is not None:
             click.echo("Warning: --experimental-annotations-file ignored as --annotations not enabled.")
         if experimental_annotations_output_dir is not None:
@@ -420,7 +420,7 @@ def launch(
     # create an annotations object.  Only AnnotationsLocalFile is used (for now)
     annotations = None
 
-    if experimental_annotations:
+    if not disable_annotations:
         annotations = AnnotationsLocalFile(experimental_annotations_output_dir, experimental_annotations_file)
 
         # if the user has specified a fixed label file, go ahead and validate it
