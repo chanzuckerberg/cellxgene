@@ -471,6 +471,7 @@ const saveObsAnnotations = () => async (dispatch, getState) => {
   }
 };
 
+import { reembed } from "./reembed";
 export default {
   regraph,
   resetInterface,
@@ -478,5 +479,6 @@ export default {
   requestDifferentialExpression,
   requestUserDefinedGene,
   doInitialDataLoad,
-  saveObsAnnotations
+  saveObsAnnotations,
+  reembed
 };

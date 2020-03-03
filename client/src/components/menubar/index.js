@@ -18,6 +18,7 @@ import CellSetButton from "./cellSetButtons";
 import InformationMenu from "./infoMenu";
 import UndoRedoReset from "./undoRedoReset";
 import Clip from "./clip";
+import Embedding from "./embedding";
 import * as globals from "../../globals";
 
 @connect(state => ({
@@ -26,7 +27,6 @@ import * as globals from "../../globals";
   crossfilter: state.crossfilter,
   differential: state.differential,
   resettingInterface: state.controls.resettingInterface,
-  layoutChoice: state.layoutChoice,
   graphInteractionMode: state.controls.graphInteractionMode,
   clipPercentileMin: Math.round(100 * (state.world?.clipQuantiles?.min ?? 0)),
   clipPercentileMax: Math.round(100 * (state.world?.clipQuantiles?.max ?? 1)),
@@ -228,14 +228,6 @@ class MenuBar extends React.Component {
     this.setState({ pendingClipPercentiles: null });
   };
 
-  handleLayoutChoiceChange = e => {
-    const { dispatch } = this.props;
-    dispatch({
-      type: "set layout choice",
-      layoutChoice: e.currentTarget.value
-    });
-  };
-
   computeDiffExp = () => {
     const { dispatch, differential } = this.props;
     if (differential.celllist1 && differential.celllist2) {
@@ -334,7 +326,6 @@ class MenuBar extends React.Component {
       selectionTool,
       clipPercentileMin,
       clipPercentileMax,
-      layoutChoice,
       graphInteractionMode,
       aboutLink,
       showCentroidLabels
@@ -444,52 +435,7 @@ class MenuBar extends React.Component {
             }}
           />
         </Tooltip>
-        <ButtonGroup
-          style={{
-            marginRight: 10
-          }}
-        >
-          <Popover
-            target={
-              <Tooltip
-                content="Select embedding for visualization"
-                position="bottom"
-                hoverOpenDelay={globals.tooltipHoverOpenDelay}
-              >
-                <Button
-                  type="button"
-                  data-testid="layout-choice"
-                  icon="heatmap"
-                  style={{
-                    cursor: "pointer"
-                  }}
-                />
-              </Tooltip>
-            }
-            position={Position.BOTTOM_RIGHT}
-            content={
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "flex-start",
-                  alignItems: "flex-start",
-                  flexDirection: "column",
-                  padding: 10
-                }}
-              >
-                <RadioGroup
-                  label="Embedding Choice"
-                  onChange={this.handleLayoutChoiceChange}
-                  selectedValue={layoutChoice.current}
-                >
-                  {layoutChoice.available.map(name => (
-                    <Radio label={name} value={name} key={name} />
-                  ))}
-                </RadioGroup>
-              </div>
-            }
-          />
-        </ButtonGroup>
+        <Embedding />
         <Clip
           pendingClipPercentiles={pendingClipPercentiles}
           clipPercentileMin={clipPercentileMin}
