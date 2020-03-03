@@ -58,18 +58,18 @@ function topNCategories(colSchema, summary, N) {
   );
   const topNindices = new Set(sortIndex.slice(0, N));
 
-  const topNCategories = [];
+  const _topNCategories = [];
   const topNCounts = [];
   for (let i = 0; i < categories.length; i += 1) {
     if (topNindices.has(i)) {
-      topNCategories.push(categories[i]);
+      _topNCategories.push(categories[i]);
       topNCounts.push(counts[i]);
     }
   }
-  return [topNCategories, topNCounts];
+  return [_topNCategories, topNCounts];
 }
 
-export function selectableCategoryNames(schema, maxCategoryItems, names) {
+export function selectableCategoryNames(schema, maxCatItems, names) {
   /*
   return all obs annotation names that are categorical AND have a
   "reasonably" small number of categories AND are not the index column.
@@ -199,4 +199,11 @@ export function pruneVarDataCache(varData, needed) {
     }
   }
   return varData;
+}
+
+export function subsetAndResetGeneLists(state) {
+  const { userDefinedGenes, diffexpGenes } = state;
+  const newUserDefinedGenes = [].concat(userDefinedGenes, diffexpGenes).slice(0, globals.maxGenes);
+  const newDiffExpGenes = [];
+  return [newUserDefinedGenes, newDiffExpGenes];
 }

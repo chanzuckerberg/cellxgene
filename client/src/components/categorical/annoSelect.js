@@ -7,11 +7,9 @@ import { Select } from "@blueprintjs/select";
   colorAccessor: state.colors.colorAccessor,
   categoricalSelection: state.categoricalSelection,
   annotations: state.annotations,
-  universe: state.universe,
-  ontology: state.ontology,
-  ontologyLoading: state.ontology?.loading
+  universe: state.universe
 }))
-class DuplicateCategorySelect extends React.Component {
+class DuplicateCategorySelect extends React.PureComponent {
   constructor(props) {
     super(props);
     this.state = {};

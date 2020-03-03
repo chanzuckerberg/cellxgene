@@ -5,8 +5,8 @@ import { isContinuousAnnotation } from "./annotationsHelpers";
 
 /*
 
-World is a subset of universe.   Most code should use world, and should
-(generally) not use Universe.   World contains any per-obs or per-var data
+World is a subset of universe.  Most code should use world, and should
+(generally) not use Universe.  World contains any per-obs or per-var data
 that must be consistent acorss the app when we view/manipulate subsets
 of Universe.
 
@@ -292,7 +292,7 @@ export function createObsDimensions(crossfilter, world, XYdimNames) {
   for which we have a supported type, *except* for the index column, indicated
   by schema.annotations.obs.index.
   */
-  const { schema, obsLayout, obsAnnotations } = world;
+  const { schema, obsLayout } = world;
   const indexName = schema.annotations.obs.index;
   const annoList = schema.annotations.obs.columns.filter(
     anno => anno.name !== indexName

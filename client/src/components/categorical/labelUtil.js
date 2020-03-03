@@ -1,4 +1,6 @@
 import React from "react";
+import { Colors } from "@blueprintjs/core";
+
 import { AnnotationsHelpers } from "../../util/stateManager";
 
 export function isLabelErroneous(label, metadataField, ontology, schema) {
@@ -24,34 +26,38 @@ export function isLabelErroneous(label, metadataField, ontology, schema) {
 	return false;
 }
 
-export function labelErrorMessage(label, metadataField, ontology, schema) {
-	const err = isLabelErroneous(label, metadataField, ontology, schema);
+/* all other errors - map code to human error message */
+const errorMessageMap = {
+	"empty-string": "Blank names not allowed",
+	duplicate: "Name must be unique",
+	"trim-spaces": "Leading and trailing spaces not allowed",
+	"illegal-characters":
+		"Only alphanumeric and special characters (-_.) allowed",
+	"multi-space-run": "Multiple consecutive spaces not allowed"
+};
 
-	if (err === "duplicate") {
-		/* duplicate error is special cased because it has special formatting */
-		return (
-			<span>
-				<span style={{ fontStyle: "italic" }}>{label}</span> already
-				exists already exists within{" "}
-				<span style={{ fontStyle: "italic" }}>{metadataField}</span>{" "}
+export function labelPrompt(err, prolog, epilog) {
+	let errPrompt = null;
+	if (err) {
+		let errMsg = errorMessageMap[err] ?? "error";
+		errMsg = errMsg[0].toLowerCase() + errMsg.slice(1);
+		errPrompt = (
+			<span
+				style={{
+					marginTop: 7,
+					color: Colors.ORANGE3
+				}}
+			>
+				{errMsg}
 			</span>
 		);
 	}
-
-	if (err) {
-		/* all other errors - map code to human error message */
-		const errorMessageMap = {
-			"empty-string": "Blank names not allowed",
-			duplicate: "Name must be unique",
-			"trim-spaces": "Leading and trailing spaces not allowed",
-			"illegal-characters":
-				"Only alphanumeric and special characters (-_.) allowed",
-			"multi-space-run": "Multiple consecutive spaces not allowed"
-		};
-		const errorMessage = errorMessageMap[err] ?? "error";
-		return <span>{errorMessage}</span>;
-	}
-
-	/* no error, no message generated */
-	return null;
+	return (
+		<span>
+			{prolog}
+			{err ? " - " : null}
+			{errPrompt}
+			{epilog}
+		</span>
+	);
 }

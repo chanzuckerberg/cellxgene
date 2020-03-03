@@ -6,11 +6,9 @@ import { Button, Tooltip, Dialog, Classes, Colors } from "@blueprintjs/core";
   colorAccessor: state.colors.colorAccessor,
   categoricalSelection: state.categoricalSelection,
   annotations: state.annotations,
-  universe: state.universe,
-  ontology: state.ontology,
-  ontologyLoading: state.ontology?.loading
+  universe: state.universe
 }))
-class AnnoDialog extends React.Component {
+class AnnoDialog extends React.PureComponent {
   constructor(props) {
     super(props);
     this.state = {};
@@ -26,7 +24,6 @@ class AnnoDialog extends React.Component {
       errorMessage,
       validationError,
       annoSelect,
-      ontologySelect,
       annoInput,
       handleCancel,
       handleSubmit,
@@ -58,7 +55,6 @@ class AnnoDialog extends React.Component {
               </p>
             </div>
             {annoSelect || null}
-            {ontologySelect || null}
           </div>
           <div className={Classes.DIALOG_FOOTER}>
             <div className={Classes.DIALOG_FOOTER_ACTIONS}>
@@ -76,7 +72,7 @@ class AnnoDialog extends React.Component {
                 </Button>
               ) : null}
               <Button
-                {...primaryButtonProps}
+                {...primaryButtonProps} // eslint-disable-line react/jsx-props-no-spreading
                 onClick={handleSubmit}
                 disabled={!text || validationError}
                 intent="primary"

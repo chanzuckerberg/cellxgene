@@ -182,9 +182,9 @@ class GeneExpression extends React.Component {
     const gene = g.target;
     if (userDefinedGenes.indexOf(gene) !== -1) {
       postUserErrorToast("That gene already exists");
-    } else if (userDefinedGenes.length > 15) {
+    } else if (userDefinedGenes.length > globals.maxUserDefinedGenes) {
       postUserErrorToast(
-        "That's too many genes, you can have at most 15 user defined genes"
+        `That's too many genes, you can have at most ${globals.maxUserDefinedGenes} user defined genes`
       );
     } else if (
       world.varAnnotations.col(varIndexName).indexOf(gene) === undefined

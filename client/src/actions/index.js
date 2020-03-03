@@ -12,7 +12,7 @@ import {
 return promise to fetch the OBS annotations we need to load.  Omit anything
 we don't need.
 */
-function obsAnnotationFetchAndLoad(dispatch, schema, universe) {
+function obsAnnotationFetchAndLoad(dispatch, schema) {
   const obsAnnotations = schema?.schema?.annotations?.obs ?? {};
   const columns = obsAnnotations.columns ?? [];
   const index = obsAnnotations.index ?? false;
@@ -42,7 +42,7 @@ function obsAnnotationFetchAndLoad(dispatch, schema, universe) {
 /*
 return promise fetching VAR annotations we need to load.  Only index is currently used.
 */
-function varAnnotationFetchAndLoad(dispatch, schema, universe) {
+function varAnnotationFetchAndLoad(dispatch, schema) {
   const varAnnotations = schema?.schema?.annotations?.var ?? {};
   const index = varAnnotations.index ?? false;
   const names = index ? [index] : [];
@@ -71,7 +71,7 @@ function varAnnotationFetchAndLoad(dispatch, schema, universe) {
 /*
 return promise fetching layout we need
 */
-function layoutFetchAndLoad(dispatch, schema, universe) {
+function layoutFetchAndLoad(dispatch) {
   return Promise.all(
     ["layout/obs"]
       .map(path => {
@@ -149,7 +149,7 @@ const doInitialDataLoad = () =>
 Set the view (world) to current selection.   Placeholder for an async action
 which also does re-layout.
 */
-const regraph = () => (dispatch, getState) => {
+const setWorldToSelection = () => (dispatch, getState) => {
   const { universe, world, crossfilter } = getState();
   dispatch({
     type: "set World to current selection",
@@ -167,7 +167,7 @@ const dispatchExpressionErrors = (dispatch, res) => {
 };
 
 /*
-Fetch expression vectors for each gene in genes.   This is NOT an action
+Fetch expression vectors for each gene in genes.  This is NOT an action
 function, but rather a helper to be called from an action helper that
 needs expression data.
 
@@ -385,36 +385,11 @@ const requestDifferentialExpression = (set1, set2, num_genes = 10) => async (
   }
 };
 
-const resetInterface = () => (dispatch, getState) => {
+const resetWorldToUniverse = () => (dispatch, getState) => {
   const { universe } = getState();
-
-  dispatch({
-    type: "user reset start"
-  });
-  dispatch({
-    type: "clear all user defined genes"
-  });
-  dispatch({
-    type: "clear differential expression"
-  });
-  dispatch({
-    type: "reset colorscale"
-  });
-  dispatch({
-    type: "reset centroid labels"
-  });
-  dispatch({
-    type: "clear scatterplot"
-  });
   dispatch({
     type: "reset World to eq Universe",
     universe
-  });
-  dispatch({
-    type: "increment graph render counter"
-  });
-  dispatch({
-    type: "user reset end"
   });
 };
 
@@ -471,14 +446,14 @@ const saveObsAnnotations = () => async (dispatch, getState) => {
   }
 };
 
-import { reembed } from "./reembed";
+import { requestReembed } from "./reembed";
 export default {
-  regraph,
-  resetInterface,
-  requestSingleGeneExpressionCountsForColoringPOST,
-  requestDifferentialExpression,
-  requestUserDefinedGene,
   doInitialDataLoad,
+  requestDifferentialExpression,
+  requestSingleGeneExpressionCountsForColoringPOST,
+  requestUserDefinedGene,
+  requestReembed,
+  resetWorldToUniverse,
   saveObsAnnotations,
-  reembed
+  setWorldToSelection
 };

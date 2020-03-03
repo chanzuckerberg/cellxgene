@@ -12,6 +12,7 @@ import click
 
 from server.common.utils import custom_format_warning
 from server.common.utils import find_available_port, is_port_available, sort_options
+from server.common.errors import DatasetAccessError
 from server.data_common.matrix_loader import MatrixDataLoader, MatrixDataCacheManager, MatrixDataType
 from server.common.annotations import AnnotationsLocalFile
 from server.common.app_config import AppConfig
@@ -174,7 +175,7 @@ def server_args(func):
         "--port",
         "-p",
         metavar="<port>",
-        default=DEFAULT_SERVER_PORT,
+        default=None,
         show_default=True,
         help="Port to run server on. If not specified cellxgene will find an available port.",
     )
@@ -321,7 +322,7 @@ def launch(
 
         try:
             matrix_data_loader.pre_load_validation()
-        except RuntimeError as e:
+        except DatasetAccessError as e:
             raise click.ClickException(str(e))
 
         if experimental_enable_reembedding and matrix_data_loader.matrix_data_type() != MatrixDataType.H5AD:

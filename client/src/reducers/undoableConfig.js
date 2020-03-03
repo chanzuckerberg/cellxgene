@@ -16,7 +16,6 @@ const skipOnActions = new Set([
   "configuration load complete",
   "increment graph render counter",
   "window resize",
-  "user reset start",
   "reset colorscale",
   "reset centroid labels",
 
@@ -44,8 +43,6 @@ const skipOnActions = new Set([
 
   /* annotation component action */
   "annotation: activate add new label mode",
-  "annotation: activate add new ontology label mode",
-  "annotation: disable add new ontology label mode",
   "annotation: disable add new label mode",
   "annotation: activate category edit mode",
   "annotation: disable category edit mode",
@@ -67,7 +64,6 @@ const clearOnActions = new Set([
   "initial data load complete (universe exists)",
   "reset World to eq Universe",
   "initial data load error",
-  "user reset end"
 ]);
 
 /*

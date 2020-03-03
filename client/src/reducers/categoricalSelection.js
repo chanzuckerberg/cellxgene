@@ -1,5 +1,4 @@
 import { ControlsHelpers as CH } from "../util/stateManager";
-import * as globals from "../globals";
 
 const CategoricalSelection = (
   state,

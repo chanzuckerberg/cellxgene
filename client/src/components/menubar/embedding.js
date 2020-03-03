@@ -48,7 +48,7 @@ class Embedding extends React.PureComponent {
 					icon="new-object"
 					style={{ marginRight: 10 }}
 					disabled={disabled}
-					onClick={() => dispatch(actions.reembed())}
+					onClick={() => dispatch(actions.requestReembed())}
 				/>
 			</Tooltip>
 		);

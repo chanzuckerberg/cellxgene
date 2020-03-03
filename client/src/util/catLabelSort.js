@@ -10,7 +10,6 @@ TL;DR: sort order is:
 
 import isNumber from "is-number";
 import * as globals from "../globals";
-import { memoize } from "./dataframe/util";
 
 function caseInsensitiveCompare(a, b) {
   const textA = String(a).toUpperCase();

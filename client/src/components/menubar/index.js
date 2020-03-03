@@ -8,21 +8,20 @@ import {
   Tooltip,
   Icon
 } from "@blueprintjs/core";
-import { World } from "../../util/stateManager";
+import * as globals from "../../globals";
 import actions from "../../actions";
 import CellSetButton from "./cellSetButtons";
-import InformationMenu from "./infoMenu";
-import UndoRedoReset from "./undoRedoReset";
 import Clip from "./clip";
 import Embedding from "./embedding";
-import * as globals from "../../globals";
+import InformationMenu from "./infoMenu";
+import Subset from "./subset";
+import UndoRedoReset from "./undoRedo";
 
 @connect(state => ({
   universe: state.universe,
   world: state.world,
   crossfilter: state.crossfilter,
   differential: state.differential,
-  resettingInterface: state.controls.resettingInterface,
   graphInteractionMode: state.controls.graphInteractionMode,
   clipPercentileMin: Math.round(100 * (state.world?.clipQuantiles?.min ?? 0)),
   clipPercentileMax: Math.round(100 * (state.world?.clipQuantiles?.max ?? 1)),
@@ -93,61 +92,6 @@ class MenuBar extends React.Component {
         clipPercentileMax === currentClipMax);
 
     return isDisabled;
-  };
-
-  isResetDisabled = () => {
-    /*
-    Reset should be disabled when all of the following are true:
-      * nothing is selected in the crossfilter
-      * world EQ universe
-      * nothing is colored by
-      * there are no userDefinedGenes or diffexpGenes displayed
-      * scatterplot is not displayed
-      * nothing in cellset1 or cellset2
-      * clip percentiles are [0,100]
-    */
-    const {
-      crossfilter,
-      world,
-      universe,
-      userDefinedGenes,
-      diffexpGenes,
-      colorAccessor,
-      scatterplotXXaccessor,
-      scatterplotYYaccessor,
-      celllist1,
-      celllist2,
-      clipPercentileMin,
-      clipPercentileMax
-    } = this.props;
-
-    if (!crossfilter || !world || !universe) {
-      return false;
-    }
-    const nothingSelected = crossfilter.countSelected() === crossfilter.size();
-    const nothingColoredBy = !colorAccessor;
-    const noGenes = userDefinedGenes.length === 0 && diffexpGenes.length === 0;
-    const scatterNotDpl = !scatterplotXXaccessor || !scatterplotYYaccessor;
-    const nothingInCellsets = !celllist1 && !celllist2;
-
-    return (
-      nothingSelected &&
-      World.worldEqUniverse(world, universe) &&
-      nothingColoredBy &&
-      noGenes &&
-      scatterNotDpl &&
-      nothingInCellsets &&
-      clipPercentileMax === 100 &&
-      clipPercentileMin === 0
-    );
-  };
-
-  resetInterface = () => {
-    const { dispatch } = this.props;
-    dispatch({
-      type: "interface reset started"
-    });
-    dispatch(actions.resetInterface());
   };
 
   handleClipOnKeyPress = e => {
@@ -256,6 +200,19 @@ class MenuBar extends React.Component {
     });
   };
 
+  subsetPossible = () => {
+    const { crossfilter } = this.props;
+    return (
+      crossfilter.countSelected() !== 0 &&
+      crossfilter.countSelected() !== crossfilter.size()
+    );
+  };
+
+  subsetResetPossible = () => {
+    const { world, universe } = this.props;
+    return world.nObs !== universe.nObs;
+  };
+
   renderDiffExp() {
     /* diffexp-related buttons may be disabled */
     const { disableDiffexp, differential, diffexpMayBeSlow } = this.props;
@@ -271,8 +228,14 @@ class MenuBar extends React.Component {
 
     return (
       <ButtonGroup style={{ marginRight: 10 }}>
-        <CellSetButton {...this.props} eitherCellSetOneOrTwo={1} />
-        <CellSetButton {...this.props} eitherCellSetOneOrTwo={2} />
+        <CellSetButton
+          {...this.props} // eslint-disable-line react/jsx-props-no-spreading
+          eitherCellSetOneOrTwo={1}
+        />
+        <CellSetButton
+          {...this.props} // eslint-disable-line react/jsx-props-no-spreading
+          eitherCellSetOneOrTwo={2}
+        />
         {!differential.diffExp ? (
           <Tooltip
             content={tipMessage}
@@ -314,8 +277,6 @@ class MenuBar extends React.Component {
   render() {
     const {
       dispatch,
-      crossfilter,
-      resettingInterface,
       libraryVersions,
       undoDisabled,
       redoDisabled,
@@ -349,29 +310,18 @@ class MenuBar extends React.Component {
         }}
       >
         {this.renderDiffExp()}
-        <Tooltip
-          content="Show only metadata and cells which are currently selected"
-          position="bottom"
-          hoverOpenDelay={globals.tooltipHoverOpenDelay}
-        >
-          <AnchorButton
-            data-testid="subset-button"
-            disabled={
-              crossfilter &&
-              (crossfilter.countSelected() === 0 ||
-                crossfilter.countSelected() === crossfilter.size())
-            }
-            style={{
-              marginRight: 10
-            }}
-            onClick={() => {
-              dispatch(actions.regraph());
-              dispatch({ type: "increment graph render counter" });
-            }}
-          >
-            <Icon icon="double-chevron-down" />
-          </AnchorButton>
-        </Tooltip>
+        <Subset
+          subsetPossible={this.subsetPossible()}
+          subsetResetPossible={this.subsetResetPossible()}
+          handleSubset={() => {
+            dispatch(actions.setWorldToSelection());
+            dispatch({ type: "increment graph render counter" });
+          }}
+          handleSubsetReset={() => {
+            dispatch(actions.resetWorldToUniverse());
+            dispatch({ type: "increment graph render counter" });
+          }}
+        />
         <ButtonGroup style={{ marginRight: "10px" }}>
           <Tooltip
             content={selectionTooltip}
@@ -450,9 +400,6 @@ class MenuBar extends React.Component {
         />
         <UndoRedoReset
           dispatch={dispatch}
-          isResetDisabled={this.isResetDisabled}
-          resetInterface={this.resetInterface}
-          resettingInterface={resettingInterface}
           undoDisabled={undoDisabled}
           redoDisabled={redoDisabled}
         />

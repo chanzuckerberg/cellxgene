@@ -89,7 +89,7 @@ function cancelReembed() {
 	};
 }
 
-export function reembed() {
+export function requestReembed() {
 	return async (dispatch, getState) => {
 		try {
 			const res = await doReembedFetch(dispatch, getState);
@@ -114,4 +114,4 @@ export function reembed() {
 	};
 }
 
-reembed.cancel = cancelReembed;
+requestReembed.cancel = cancelReembed;
