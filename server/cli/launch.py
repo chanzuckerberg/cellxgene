@@ -33,7 +33,7 @@ def annotation_args(func):
         help="Disable user annotation of data.",
     )
     @click.option(
-        "--experimental-annotations-file",
+        "--annotations-input-file",
         default=None,
         show_default=True,
         multiple=False,
@@ -42,7 +42,7 @@ def annotation_args(func):
         "Incompatible with --annotations-output-dir.",
     )
     @click.option(
-        "--experimental-annotations-output-dir",
+        "--annotations-output-dir",
         default=None,
         show_default=False,
         multiple=False,
@@ -51,14 +51,14 @@ def annotation_args(func):
         "Incompatible with --annotations-input-file.",
     )
     @click.option(
-        "--experimental-annotations-ontology",
+        "--annotations-ontology",
         is_flag=True,
         default=False,
         show_default=True,
         help="When creating annotations, optionally autocomplete names from ontology terms.",
     )
     @click.option(
-        "--experimental-annotations-ontology-obo",
+        "--annotations-ontology-obo",
         default=None,
         show_default=True,
         metavar="<path or url>",
@@ -272,12 +272,12 @@ def launch(
     scripts,
     about,
     disable_annotations,
-    experimental_annotations_file,
-    experimental_annotations_output_dir,
+    annotations_input_file,
+    annotations_output_dir,
     backed,
     disable_diffexp,
-    experimental_annotations_ontology,
-    experimental_annotations_ontology_obo,
+    annotations_ontology,
+    annotations_ontology_obo,
 ):
     """Launch the cellxgene data viewer.
     This web app lets you explore single-cell expression data.
@@ -343,31 +343,31 @@ def launch(
         port = find_available_port(host, DEFAULT_SERVER_PORT)
 
     if disable_annotations:
-        if experimental_annotations_file is not None:
-            click.echo("Warning: --experimental-annotations-file ignored as --annotations not enabled.")
-        if experimental_annotations_output_dir is not None:
-            click.echo("Warning: --experimental-annotations-output-dir ignored as --annotations not enabled.")
-        if experimental_annotations_ontology:
-            click.echo("Warning: --experimental-annotations-ontology ignored as --annotations not enabled.")
-        if experimental_annotations_ontology_obo is not None:
-            click.echo("Warning: --experimental-annotations-ontology-obo ignored as --annotations not enabled.")
+        if annotations_input_file is not None:
+            click.echo("Warning: --annotations-input-file ignored as annotations are disabled.")
+        if annotations_output_dir is not None:
+            click.echo("Warning: --annotations-output-dir ignored as annotations are disabled.")
+        if annotations_ontology:
+            click.echo("Warning: --annotations-ontology ignored as annotations are disabled.")
+        if annotations_ontology_obo is not None:
+            click.echo("Warning: --annotations-ontology-obo ignored as annotations are disabled.")
     else:
-        if experimental_annotations_file is not None and experimental_annotations_output_dir is not None:
+        if annotations_input_file is not None and annotations_output_dir is not None:
             raise click.ClickException(
-                "--experimental-annotations-file and --experimental-annotations-output-dir " "may not be used together."
+                "--annotations-input-file and --annotations-output-dir " "may not be used together."
             )
 
-        if experimental_annotations_file is not None:
-            lf_name, lf_ext = splitext(experimental_annotations_file)
+        if annotations_input_file is not None:
+            lf_name, lf_ext = splitext(annotations_input_file)
             if lf_ext and lf_ext != ".csv":
-                raise click.FileError(basename(experimental_annotations_file), hint="annotation file type must be .csv")
+                raise click.FileError(basename(annotations_input_file), hint="annotation file type must be .csv")
 
-        if experimental_annotations_output_dir is not None and not isdir(experimental_annotations_output_dir):
+        if annotations_output_dir is not None and not isdir(annotations_output_dir):
             try:
-                mkdir(experimental_annotations_output_dir)
+                mkdir(annotations_output_dir)
             except OSError:
                 raise click.ClickException(
-                    "Unable to create directory specified by " "--experimental-annotations-output-dir"
+                    "Unable to create directory specified by " "--annotations-output-dir"
                 )
 
     if about:
@@ -421,17 +421,17 @@ def launch(
     annotations = None
 
     if not disable_annotations:
-        annotations = AnnotationsLocalFile(experimental_annotations_output_dir, experimental_annotations_file)
+        annotations = AnnotationsLocalFile(annotations_output_dir, annotations_input_file)
 
         # if the user has specified a fixed label file, go ahead and validate it
         # so that we can remove errors early in the process.
 
-        if experimental_annotations_file and data_adaptor:
+        if annotations_input_file and data_adaptor:
             data_adaptor.check_new_labels(annotations.read_labels(data_adaptor))
 
-        if experimental_annotations_ontology or bool(experimental_annotations_ontology_obo):
+        if annotations_ontology or bool(annotations_ontology_obo):
             try:
-                annotations.load_ontology(experimental_annotations_ontology_obo)
+                annotations.load_ontology(annotations_ontology_obo)
             except OntologyLoadFailure as e:
                 raise click.ClickException("Unable to load ontology terms\n" + str(e))
 
