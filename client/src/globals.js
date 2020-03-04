@@ -2,7 +2,7 @@ import { Colors } from "@blueprintjs/core";
 import { dispatchNetworkErrorMessageToUser } from "./util/actionHelpers";
 
 /* if a categorical metadata field has more options than this, truncate */
-export const maxCategoricalOptionsToDisplay = 100;
+export const maxCategoricalOptionsToDisplay = 200;
 
 /* default "unassigned" value for user-created categorical metadata */
 export const unassignedCategoryLabel = "unassigned";
