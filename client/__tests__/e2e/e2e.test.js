@@ -3,13 +3,13 @@ Smoke test suite that will be run in Travis CI
 
 Tests included in this file are expected to be relatively stable and test core features
  */
-import { appUrlBase, DEBUG, DATASET } from "./config";
+import { appUrlBase, DATASET } from "./config";
 import { setupTestBrowser } from "./puppeteerUtils";
 import { datasets } from "./data";
 
-let browser, page, utils, cxgActions, spy;
+let browser, page, utils, cxgActions;
 const browserViewport = { width: 1280, height: 960 };
-let data = datasets[DATASET];
+const data = datasets[DATASET];
 
 beforeAll(async () => {
     [browser, page, utils, cxgActions] = await setupTestBrowser(browserViewport);
@@ -25,8 +25,8 @@ afterAll(() => {
 
 describe("did launch", () => {
   test("page launched", async () => {
-    let el = await utils.getOneElementInnerHTML("[data-testid='header']");
-    expect(el).toBe(data.title);
+    const element = await utils.getOneElementInnerHTML("[data-testid='header']");
+    expect(element).toBe(data.title);
   });
 });
 
@@ -34,9 +34,7 @@ describe("metadata loads", () => {
   test("categories and values from dataset appear", async () => {
     for (const label in data.categorical) {
       await utils.waitByID(`category-${label}`);
-      const categoryName = await utils.getOneElementInnerText(
-        `[data-testid="category-${label}"]`
-      );
+      const categoryName = await utils.getOneElementInnerText(`[data-testid="category-${label}"]`);
       expect(categoryName).toMatch(label);
       await utils.clickOn(`${label}:category-expand`);
       const categories = await cxgActions.getAllCategoriesAndCounts(label);
@@ -84,9 +82,7 @@ describe("cell selection", () => {
       await utils.clickOn(`${cellset.metadata}:category-expand`);
       await utils.clickOn(`${cellset.metadata}:category-select`);
       for (const val of cellset.values) {
-        await utils.clickOn(
-          `categorical-value-select-${cellset.metadata}-${val}`
-        );
+        await utils.clickOn(`categorical-value-select-${cellset.metadata}-${val}`);
       }
       const cellCount = await cxgActions.cellSet(1);
       expect(cellCount).toBe(cellset.count);
@@ -108,17 +104,12 @@ describe("cell selection", () => {
 });
 
 describe("gene entry", () => {
-  test("search for single gene", async () => {
-    await cxgActions.addGeneToSearch(data.genes.search);
-  });
+  test("search for single gene", async () => cxgActions.addGeneToSearch(data.genes.search));
 
   test("bulk add genes", async () => {
     const testGenes = data.genes.bulkadd;
     await cxgActions.bulkAddGenes(testGenes);
-    const allHistograms = await cxgActions.getAllHistograms(
-      "histogram-user-gene",
-      testGenes
-    );
+    const allHistograms = await cxgActions.getAllHistograms("histogram-user-gene", testGenes);
     expect(allHistograms).toEqual(expect.arrayContaining(testGenes));
     expect(allHistograms.length).toEqual(testGenes.length);
   });

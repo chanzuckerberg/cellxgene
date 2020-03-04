@@ -4,17 +4,11 @@ import { strict as assert } from "assert";
 
 export const puppeteerUtils = puppeteerPage => ({
   async waitByID(testId, props = {}) {
-    return await puppeteerPage.waitForSelector(
-      `[data-testid='${testId}']`,
-      props
-    );
+    return puppeteerPage.waitForSelector(`[data-testid='${testId}']`, props);
   },
 
   async waitByClass(testClass, props = {}) {
-    return await puppeteerPage.waitForSelector(
-      `[data-testclass='${testClass}']`,
-      props
-    );
+    return puppeteerPage.waitForSelector(`[data-testclass='${testClass}']`, props);
   },
 
   async waitForAllByIds(testIds) {
@@ -30,54 +24,51 @@ export const puppeteerUtils = puppeteerPage => ({
     );
   },
 
-  async typeInto(testid, text) {
+  async typeInto(testId, text) {
     // blueprint's  typeahead is treating typing weird, clicking & waiting first solves this
     // only works for text without special characters
-    await this.waitByID(testid);
-    const selector = `[data-testid='${testid}']`;
+    await this.waitByID(testId);
+    const selector = `[data-testid='${testId}']`;
     // type ahead can be annoying if you don't pause before you type
     await puppeteerPage.click(selector);
     await puppeteerPage.waitFor(200);
     await puppeteerPage.type(selector, text);
   },
 
-  async clearInputAndTypeInto(testid, text) {
-    await this.waitByID(testid);
-    const selector = `[data-testid='${testid}']`;
+  async clearInputAndTypeInto(testId, text) {
+    await this.waitByID(testId);
+    const selector = `[data-testid='${testId}']`;
     // only works for text without special characters
     // type ahead can be annoying if you don't pause before you type
     await puppeteerPage.click(selector);
     await puppeteerPage.waitFor(200);
     // select all
-
     await puppeteerPage.click(selector, { clickCount: 3 });
     await puppeteerPage.keyboard.press("Backspace");
     await puppeteerPage.type(selector, text);
   },
 
-  async clickOn(testid, options={}) {
-    await this.waitByID(testid);
-    await puppeteerPage.click(`[data-testid='${testid}']`, options);
+  async clickOn(testId, options={}) {
+    await this.waitByID(testId);
+    await puppeteerPage.click(`[data-testid='${testId}']`, options);
     await puppeteerPage.waitFor(50);
   },
 
   async getOneElementInnerHTML(selector) {
     await puppeteerPage.waitForSelector(selector);
-    let text = await puppeteerPage.$eval(selector, el => el.innerHTML);
-    return text;
+    return puppeteerPage.$eval(selector, el => el.innerHTML);
   },
 
   async getOneElementInnerText(selector) {
     await puppeteerPage.waitForSelector(selector);
-    let text = await puppeteerPage.$eval(selector, el => el.innerText);
-    return text;
+    return puppeteerPage.$eval(selector, el => el.innerText);
   }
 });
 
 export const cellxgeneActions = puppeteerPage => ({
 
-  async drag(testid, start, end, lasso = false) {
-    const layout = await puppeteerUtils(puppeteerPage).waitByID(testid);
+  async drag(testId, start, end, lasso = false) {
+    const layout = await puppeteerUtils(puppeteerPage).waitByID(testId);
     const elBox = await layout.boxModel();
     const x1 = elBox.content[0].x + start.x;
     const x2 = elBox.content[0].x + end.x;
@@ -96,16 +87,16 @@ export const cellxgeneActions = puppeteerPage => ({
     await puppeteerPage.mouse.up();
   },
 
-  async clickOnCoordinate(testid, coord) {
-    const layout = await puppeteerUtils(puppeteerPage).waitByID(testid);
+  async clickOnCoordinate(testId, coord) {
+    const layout = await puppeteerUtils(puppeteerPage).waitByID(testId);
     const elBox = await layout.boxModel();
     const x = elBox.content[0].x + coord.x;
     const y = elBox.content[0].y + coord.y;
     await puppeteerPage.mouse.click(x, y);
   },
 
-  async getAllHistograms(testclass, testids) {
-    const histTestIds = testids.map(tid => `histogram-${tid}`);
+  async getAllHistograms(testclass, testIds) {
+    const histTestIds = testIds.map(tid => `histogram-${tid}`);
     // these load asynchronously, so we need to wait for each histogram individually
     await puppeteerUtils(puppeteerPage).waitForAllByIds(histTestIds);
     const allHistograms = await puppeteerUtils(puppeteerPage).getAllByClass(
@@ -116,29 +107,20 @@ export const cellxgeneActions = puppeteerPage => ({
 
   async getAllCategoriesAndCounts(category) {
     await puppeteerUtils(puppeteerPage).waitByClass("categorical-row");
-    const categories = await puppeteerPage.$$eval(
+    return puppeteerPage.$$eval(
       `[data-testid="category-${category}"] [data-testclass='categorical-row']`,
-      els => {
-        let result = {};
-        els.forEach(el => {
-          const cat = el.querySelector("[data-testclass='categorical-value']")
-            .innerText;
-          const count = el.querySelector(
-            "[data-testclass='categorical-value-count']"
-          ).innerText;
-          result[cat] = count;
-        });
-        return result;
-      }
+      rows => Object.fromEntries(rows.map(row => {
+          const cat = row.querySelector("[data-testclass='categorical-value']").innerText;
+          const count = row.querySelector("[data-testclass='categorical-value-count']").innerText;
+          return [cat, count];
+        }))
     );
-    return categories;
   },
 
   async cellSet(num) {
-    await puppeteerUtils(puppeteerPage).clickOn(`cellset-button-${num}`);
-    return await puppeteerUtils(puppeteerPage).getOneElementInnerText(
-      `[data-testid='cellset-count-${num}']`
-    );
+    const utils = puppeteerUtils(puppeteerPage);
+    await utils.clickOn(`cellset-button-${num}`);
+    return utils.getOneElementInnerText(`[data-testid='cellset-count-${num}']`);
   },
 
   async resetCategory(category) {
@@ -147,30 +129,18 @@ export const cellxgeneActions = puppeteerPage => ({
     await utils.waitByID(checkboxId);
     const checkedPseudoclass = await puppeteerPage.$eval(
       `[data-testid='${checkboxId}']`,
-      el => {
-        return el.matches(":checked");
-      }
+      el => el.matches(":checked")
     );
-    if (!checkedPseudoclass) {
-      await utils.clickOn(checkboxId);
-    }
+    if (!checkedPseudoclass) await utils.clickOn(checkboxId);
     try {
-      const categoryRow = await utils.waitByID(
-        `${category}:category-expand`
-      );
-      const isExpanded = await categoryRow.$(
-        "[data-testclass='category-expand-is-expanded']"
-      );
-      if (isExpanded) {
-        await utils.clickOn(
-          `${category}:category-expand`
-        );
-      }
+      const categoryRow = await utils.waitByID(`${category}:category-expand`);
+      const isExpanded = await categoryRow.$("[data-testclass='category-expand-is-expanded']");
+      if (isExpanded) await utils.clickOn(`${category}:category-expand`);
     } catch {}
   },
 
-  async calcCoordinate(testid, xAsPercent, yAsPercent) {
-    const el = await puppeteerUtils(puppeteerPage).waitByID(testid);
+  async calcCoordinate(testId, xAsPercent, yAsPercent) {
+    const el = await puppeteerUtils(puppeteerPage).waitByID(testId);
     const size = await el.boxModel();
     return {
       x: Math.floor(size.width * xAsPercent),
@@ -178,12 +148,11 @@ export const cellxgeneActions = puppeteerPage => ({
     }
   },
 
-  async calcDragCoordinates(testid, coordinateAsPercent) {
-    const coords = {
-      start: await this.calcCoordinate(testid, coordinateAsPercent.x1, coordinateAsPercent.y1),
-      end: await this.calcCoordinate(testid, coordinateAsPercent.x2, coordinateAsPercent.y2)
+  async calcDragCoordinates(testId, coordinateAsPercent) {
+    return {
+      start: await this.calcCoordinate(testId, coordinateAsPercent.x1, coordinateAsPercent.y1),
+      end: await this.calcCoordinate(testId, coordinateAsPercent.x2, coordinateAsPercent.y2)
     };
-    return coords;
   },
 
   async selectCategory(category, values, reset = true) {
@@ -200,22 +169,14 @@ export const cellxgeneActions = puppeteerPage => ({
     const utils = puppeteerUtils(puppeteerPage);
     const expand = await utils.waitByID(`${category}:category-expand`);
     const notExpanded = await expand.$("[data-testclass='category-expand-is-not-expanded']");
-    if (notExpanded) {
-      await utils.clickOn(`${category}:category-expand`);
-    }
+    if (notExpanded) await utils.clickOn(`${category}:category-expand`);
   },
 
   async clip(min = 0, max = 100) {
     const utils = puppeteerUtils(puppeteerPage);
     await utils.clickOn("visualization-settings");
-    await utils.clearInputAndTypeInto(
-      "clip-min-input",
-      min
-    );
-    await utils.clearInputAndTypeInto(
-      "clip-max-input",
-      max
-    );
+    await utils.clearInputAndTypeInto("clip-min-input", min);
+    await utils.clearInputAndTypeInto("clip-max-input", max);
     await utils.clickOn("clip-commit");
   },
 
@@ -320,7 +281,7 @@ export async function setupTestBrowser(browserViewport) {
           ? { headless: false, slowMo: 100, devtools: true }
           : {};
   const browser = await puppeteer.launch(browserParams);
-  const page = await browser.newPage();
+  const page = await browser.pages().then(pages => pages[0]);
   await page.setViewport(browserViewport);
   if (DEV || DEBUG) {
     page.on("console", async msg => {
