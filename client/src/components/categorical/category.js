@@ -231,10 +231,11 @@ class Category extends React.Component {
           <Tooltip
             content={
               isTruncated
-              ? `Can't color by this category, too many label values (max ${globals.maxCategoricalOptionsToDisplay})`
+              ? `This category exceeds the label limit (${globals.maxCategoricalOptionsToDisplay}) and can't be colored by`
               : "Use as color scale"
             }
             position="bottom"
+            usePortal={false}
             hoverOpenDelay={globals.tooltipHoverOpenDelay}
           >
             <Button
