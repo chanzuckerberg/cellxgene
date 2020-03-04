@@ -231,8 +231,8 @@ class Category extends React.Component {
           <Tooltip
             content={
               isTruncated
-              ? `This category exceeds the label limit (${globals.maxCategoricalOptionsToDisplay}) and can't be colored by`
-              : "Use as color scale"
+                ? `Coloring by ${metadataField} is disabled, as it exceeds the limit of ${globals.maxCategoricalOptionsToDisplay} labels`
+                : "Use as color scale"
             }
             position="bottom"
             usePortal={false}
