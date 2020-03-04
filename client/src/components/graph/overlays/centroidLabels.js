@@ -25,8 +25,6 @@ class CentroidLabels extends PureComponent {
       // Notify overlay layer of display change
       overlayToggled("centroidLabels", displayChangeOn);
     }
-
-    console.timeEnd("labelsGenerated");
   };
 
   render() {
