@@ -1,7 +1,7 @@
 {
   "name": "cellxgene",
   "description": "An interactive explorer for single-cell transcriptomics data",
-  "repository": "https://github.com/chanzuckerberg/cellxgene/",
+  "repository": "https://github.com/chanzuckerberg/cellxgene",
   "logo": "https://cellxgene-example-data.czi.technology/favicon.png",
   "keywords": [
     "scientific",

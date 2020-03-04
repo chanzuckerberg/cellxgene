@@ -749,6 +749,11 @@ class Graph extends React.Component {
               graphPaddingRightLeft={this.graphPaddingRightLeft}
               graphPaddingTop={this.graphPaddingTop}
               responsive={responsive}
+              handleCanvasEvent={
+                graphInteractionMode === "zoom"
+                  ? this.handleCanvasEvent
+                  : undefined
+              }
             >
               <CentroidLabels />
             </GraphOverlayLayer>
