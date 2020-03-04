@@ -4,15 +4,15 @@ Smoke test suite that will be run in Travis CI
 Tests included in this file are expected to be relatively stable and test core features
  */
 import { appUrlBase, DATASET } from "./config";
-import { setupTestBrowser } from "./puppeteerUtils";
+import { setupTestBrowser } from "./testBrowser";
 import { datasets } from "./data";
 
 let browser, page, utils, cxgActions;
-const browserViewport = { width: 1280, height: 960 };
 const data = datasets[DATASET];
 
 beforeAll(async () => {
-    [browser, page, utils, cxgActions] = await setupTestBrowser(browserViewport);
+  const browserViewport = { width: 1280, height: 960 };
+  [browser, page, utils, cxgActions] = await setupTestBrowser(browserViewport);
 });
 
 beforeEach(async () => {
@@ -20,7 +20,7 @@ beforeEach(async () => {
 });
 
 afterAll(() => {
-  browser.close();
+  if (browser !== undefined) browser.close();
 });
 
 describe("did launch", () => {
@@ -278,6 +278,6 @@ describe("ui elements don't error", () => {
       panCoords.end,
       false
     );
-    await page.evaluate(`window.scrollBy(0, 1000);`);
+    await page.evaluate("window.scrollBy(0, 1000);");
   });
 });
