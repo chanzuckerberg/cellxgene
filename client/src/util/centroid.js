@@ -37,6 +37,11 @@ const getCoordinatesByCategoricalValues = (
     categoryName
   ];
 
+  // If the coloredBy is not a categorical col
+  if (categoryValueIndices === undefined) {
+    return coordinates;
+  }
+  
   // Check to see if the current category is a user created annotation
   const isUserAnno = schemaObsByName[categoryName].writable;
 
