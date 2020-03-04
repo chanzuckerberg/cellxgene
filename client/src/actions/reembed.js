@@ -93,11 +93,16 @@ export function requestReembed() {
 	return async (dispatch, getState) => {
 		try {
 			const res = await doReembedFetch(dispatch, getState);
+			const schema = JSON.parse(res.headers.get("CxG-Schema"));
 			const buffer = await res.arrayBuffer();
 			const df = Universe.matrixFBSToDataframe(buffer);
 			dispatch({
-				type: "reembed: request completed",
-				reembedding: df
+				type: "reembed: request completed"
+			});
+			dispatch({
+				type: "reembed: add reembedding",
+				embedding: df,
+				schema
 			});
 			postAsyncSuccessToast("Re-embedding has completed.");
 		} catch (error) {
@@ -105,7 +110,7 @@ export function requestReembed() {
 				type: "reembed: request aborted"
 			});
 			if (error.name === "AbortError") {
-				postAsyncFailureToast("Re-embedding: took too long and was aborted.");
+				postAsyncFailureToast("Re-embedding calculation was aborted.");
 			} else {
 				postNetworkErrorToast(`Re-embedding: ${error.message}`);
 			}
@@ -114,4 +119,10 @@ export function requestReembed() {
 	};
 }
 
-requestReembed.cancel = cancelReembed;
+export function reembedResetWorldToUniverse(dispatch, getState) {
+	const { reembedController } = getState();
+	reembedController.pendingFetch?.abort();
+	dispatch({
+		type: "reembed: clear all reembeddings"
+	});
+}

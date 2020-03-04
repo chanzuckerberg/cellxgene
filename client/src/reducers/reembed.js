@@ -33,15 +33,28 @@ actual reembedding data is part of the undo/redo history
 */
 export const reembedding = (
 	state = {
-		reembedding: null
+		reembeddings: new Map()
 	},
 	action
 ) => {
 	switch (action.type) {
-		case "reembed: request completed": {
+		case "reembed: add reembedding": {
+			const { schema, embedding } = action;
+			const { name } = schema.name;
+			const { reembeddings } = state;
 			return {
 				...state,
-				reembedding: action.reembedding
+				reembeddings: new Map(reembeddings).set(name, {
+					name,
+					schema,
+					embedding
+				})
+			};
+		}
+		case "reembed: clear all reembeddings": {
+			return {
+				...state,
+				reembeddings: new Map()
 			};
 		}
 		default: {

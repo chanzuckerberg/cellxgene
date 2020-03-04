@@ -40,7 +40,7 @@ export const postAsyncSuccessToast = message =>
 		intent: Intent.SUCCESS
 	});
 
-export const postAsyncFailureToast = messsage =>
+export const postAsyncFailureToast = message =>
 	ToastTopCenter.show({
 		message,
 		timeout: 10000,

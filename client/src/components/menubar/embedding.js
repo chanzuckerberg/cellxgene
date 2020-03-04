@@ -1,5 +1,6 @@
 import React from "react";
 import {
+	AnchorButton,
 	ButtonGroup,
 	Popover,
 	Button,
@@ -52,7 +53,7 @@ class Embedding extends React.PureComponent {
 				position="bottom"
 				hoverOpenDelay={globals.tooltipHoverOpenDelay}
 			>
-				<Button
+				<AnchorButton
 					icon="new-object"
 					style={{ marginRight: 10 }}
 					disabled={disabled}

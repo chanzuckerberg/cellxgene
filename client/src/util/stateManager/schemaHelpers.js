@@ -1,5 +1,8 @@
 /*
 Helpers for schema management
+
+TODO: all this would be much more natural if done with a framework
+like immutable.js
 */
 import _ from "lodash";
 
@@ -31,8 +34,8 @@ export function indexEntireSchema(schema) {
   return schema;
 }
 
-function _copy(schema) {
-  /* redux copy conventions - WARNING, only for modifyign obs annotations */
+function _copyObsAnno(schema) {
+  /* redux copy conventions - WARNING, only for modifying obs annotations */
   return {
     ...schema,
     annotations: {
@@ -42,7 +45,17 @@ function _copy(schema) {
   };
 }
 
-function _reindex(schema) {
+function _copyObsLayout(schema) {
+  return {
+    ...schema,
+    layout: {
+      ...schema.layout,
+      obs: _.cloneDeep(schema.layout.obs)
+    }
+  };
+}
+
+function _reindexObsAnno(schema) {
   /* reindex obs annotations ONLY */
   schema.annotations.obsByName = fromEntries(
     schema.annotations.obs.columns.map(v => [v.name, v])
@@ -50,18 +63,25 @@ function _reindex(schema) {
   return schema;
 }
 
+function _reindexObsLayout(schema) {
+  schema.layout.obsByName = fromEntries(
+    schema.layout.obs.map(v => [v.name, v])
+  );
+  return schema;
+}
+
 export function removeObsAnnoColumn(schema, name) {
-  const newSchema = _copy(schema);
+  const newSchema = _copyObsAnno(schema);
   newSchema.annotations.obs.columns = schema.annotations.obs.columns.filter(
     v => v.name !== name
   );
-  return _reindex(newSchema);
+  return _reindexObsAnno(newSchema);
 }
 
 export function addObsAnnoColumn(schema, name, defn) {
-  const newSchema = _copy(schema);
+  const newSchema = _copyObsAnno(schema);
   newSchema.annotations.obs.columns.push(defn);
-  return _reindex(newSchema);
+  return _reindexObsAnno(newSchema);
 }
 
 export function removeObsAnnoCategory(schema, name, category) {
@@ -73,7 +93,7 @@ export function removeObsAnnoCategory(schema, name, category) {
   const idx = categories.indexOf(category);
   if (idx === -1) throw new Error("category does not exist");
 
-  const newSchema = _reindex(_copy(schema));
+  const newSchema = _reindexObsAnno(_copyObsAnno(schema));
 
   /* remove category.  Do not need to resort as this can't change presentation order */
   newSchema.annotations.obsByName[name].categories.splice(idx, 1);
@@ -89,7 +109,7 @@ export function addObsAnnoCategory(schema, name, category) {
   const idx = categories.indexOf(category);
   if (idx !== -1) throw new Error("category already exists");
 
-  const newSchema = _reindex(_copy(schema));
+  const newSchema = _reindexObsAnno(_copyObsAnno(schema));
 
   /* add category, retaining presentation sort order */
   const catAnno = newSchema.annotations.obsByName[name];
@@ -98,4 +118,18 @@ export function addObsAnnoCategory(schema, name, category) {
     category
   ]);
   return newSchema;
+}
+
+export function addObsLayout(schema, layout) {
+  /* add or replace a layout */
+  const newSchema = _copyObsLayout(schema);
+  newSchema.layout.obs.push(layout);
+  return _reindexObsLayout(newSchema);
+}
+
+export function removeObsLayout(schema, name) {
+  /* remove a layout */
+  const newSchema = _copyObsLayout(schema);
+  newSchema.layout.obs = schema.layout.obs.filter(v => v.name !== name);
+  return _reindexObsLayout(newSchema);
 }
