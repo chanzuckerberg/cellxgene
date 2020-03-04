@@ -114,10 +114,7 @@ describe("gene entry", () => {
 
   test("bulk add genes", async () => {
     const testGenes = data.genes.bulkadd;
-    await utils.clickOn("section-bulk-add");
-    await utils.typeInto("input-bulk-add", testGenes.join(","));
-    await page.keyboard.press("Enter");
-
+    await cxgActions.bulkAddGenes(testGenes);
     const allHistograms = await cxgActions.getAllHistograms(
       "histogram-user-gene",
       testGenes
@@ -182,54 +179,47 @@ describe("subset", () => {
   });
 
   test("undo selection appends the top diff exp genes to user defined genes", async () => {
-    const userDefinedGenes = ["ACD", "AAR2", "AATF", "ARSG"];
+    const userDefinedGenes = data.genes.bulkadd;
     const diffExpGenes = data.diffexp["gene-results"];
-    for (const userDefinedGene of userDefinedGenes) {
-      await cxgActions.addGeneToSearch(userDefinedGene);
-    }
+    await cxgActions.bulkAddGenes(userDefinedGenes);
     const userDefinedHistograms = await cxgActions.getAllHistograms("histogram-user-gene", userDefinedGenes);
-    expect(userDefinedHistograms).toStrictEqual(userDefinedGenes);
+    expect(userDefinedHistograms).toEqual(expect.arrayContaining(userDefinedGenes));
     await cxgActions.subset({x1: 0.15, y1: 0.10, x2: 0.98, y2: 0.98});
     await cxgActions.runDiffExp(data.diffexp.cellset1, data.diffexp.cellset2);
     const diffExpHistograms = await cxgActions.getAllHistograms("histogram-diffexp", diffExpGenes);
-    expect(diffExpHistograms).toStrictEqual(diffExpGenes);
+    expect(diffExpHistograms).toEqual(expect.arrayContaining(diffExpGenes));
     await utils.clickOn("reset-subset-button");
     const expected = [].concat(userDefinedGenes, diffExpGenes);
     const userDefinedHistogramsAfterSubset = await cxgActions.getAllHistograms(
       "histogram-user-gene",
       expected
     );
-    expect(userDefinedHistogramsAfterSubset).toStrictEqual(expected);
+    expect(userDefinedHistogramsAfterSubset).toEqual(expect.arrayContaining(expected));
   });
 
   test("subset selection appends the top diff exp genes to user defined genes", async () => {
-    const userDefinedGenes = ["ACD", "AAR2", "AATF", "ARSG"];
+    const userDefinedGenes = data.genes.bulkadd;
     const diffExpGenes = data.diffexp["gene-results"];
-    for (const userDefinedGene of userDefinedGenes) {
-      await cxgActions.addGeneToSearch(userDefinedGene);
-    }
+    await cxgActions.bulkAddGenes(userDefinedGenes);
     const userDefinedHistograms = await cxgActions.getAllHistograms("histogram-user-gene", userDefinedGenes);
-    expect(userDefinedHistograms).toStrictEqual(userDefinedGenes);
+    expect(userDefinedHistograms).toEqual(expect.arrayContaining(userDefinedGenes));
     await cxgActions.subset({x1: 0.15, y1: 0.10, x2: 0.98, y2: 0.98});
     await cxgActions.runDiffExp(data.diffexp.cellset1, data.diffexp.cellset2);
     const diffExpHistograms = await cxgActions.getAllHistograms("histogram-diffexp", diffExpGenes);
-    expect(diffExpHistograms).toStrictEqual(diffExpGenes);
+    expect(diffExpHistograms).toEqual(expect.arrayContaining(diffExpGenes));
     await cxgActions.subset({x1: 0.16, y1: 0.11, x2: 0.97, y2: 0.97});
     const expected = [].concat(userDefinedGenes, diffExpGenes);
     const userDefinedHistogramsAfterSubset = await cxgActions.getAllHistograms(
       "histogram-user-gene",
       expected
     );
-    expect(userDefinedHistogramsAfterSubset).toStrictEqual(expected);
+    expect(userDefinedHistogramsAfterSubset).toEqual(expect.arrayContaining(expected));
   });
 });
 
 describe("scatter plot", () => {
   test("scatter plot appears", async () => {
-    const testGenes = data.scatter.genes;
-    await utils.clickOn("section-bulk-add");
-    await utils.typeInto("input-bulk-add", Object.values(testGenes).join(","));
-    await page.keyboard.press("Enter");
+    await cxgActions.bulkAddGenes(Object.values(data.scatter.genes));
     await utils.clickOn(`plot-x-${data.scatter.genes.x}`);
     await utils.clickOn(`plot-y-${data.scatter.genes.y}`);
     await utils.waitByID("scatterplot");

@@ -3,34 +3,31 @@ import puppeteer from "puppeteer";
 import { strict as assert } from "assert";
 
 export const puppeteerUtils = puppeteerPage => ({
-  async waitByID(testid, props = {}) {
+  async waitByID(testId, props = {}) {
     return await puppeteerPage.waitForSelector(
-      `[data-testid='${testid}']`,
+      `[data-testid='${testId}']`,
       props
     );
   },
 
-  async waitByClass(testclass, props = {}) {
+  async waitByClass(testClass, props = {}) {
     return await puppeteerPage.waitForSelector(
-      `[data-testclass='${testclass}']`,
+      `[data-testclass='${testClass}']`,
       props
     );
   },
 
-  async waitForAllByIds(testids) {
+  async waitForAllByIds(testIds) {
     await Promise.all(
-      testids.map(testid =>
-        puppeteerPage.waitForSelector(`[data-testid='${testid}']`)
-      )
+      testIds.map(testId => puppeteerPage.waitForSelector(`[data-testid='${testId}']`))
     );
   },
 
-  async getAllByClass(testclass) {
-    const elements = await puppeteerPage.$$eval(
-      `[data-testclass=${testclass}]`,
+  async getAllByClass(testClass) {
+    return puppeteerPage.$$eval(
+      `[data-testclass=${testClass}]`,
       eles => eles.map(ele => ele.dataset.testid)
     );
-    return elements;
   },
 
   async typeInto(testid, text) {
@@ -114,9 +111,7 @@ export const cellxgeneActions = puppeteerPage => ({
     const allHistograms = await puppeteerUtils(puppeteerPage).getAllByClass(
       testclass
     );
-    return allHistograms.map(hist =>
-      hist.substr("histogram-".length, hist.length)
-    );
+    return allHistograms.map(hist => hist.replace(/^histogram-/, ""));
   },
 
   async getAllCategoriesAndCounts(category) {
@@ -148,7 +143,8 @@ export const cellxgeneActions = puppeteerPage => ({
 
   async resetCategory(category) {
     const checkboxId = `${category}:category-select`;
-    await puppeteerUtils(puppeteerPage).waitByID(checkboxId);
+    const utils = puppeteerUtils(puppeteerPage);
+    await utils.waitByID(checkboxId);
     const checkedPseudoclass = await puppeteerPage.$eval(
       `[data-testid='${checkboxId}']`,
       el => {
@@ -156,17 +152,17 @@ export const cellxgeneActions = puppeteerPage => ({
       }
     );
     if (!checkedPseudoclass) {
-      await puppeteerUtils(puppeteerPage).clickOn(checkboxId);
+      await utils.clickOn(checkboxId);
     }
     try {
-      const categoryRow = await puppeteerUtils(puppeteerPage).waitByID(
+      const categoryRow = await utils.waitByID(
         `${category}:category-expand`
       );
       const isExpanded = await categoryRow.$(
         "[data-testclass='category-expand-is-expanded']"
       );
       if (isExpanded) {
-        await puppeteerUtils(puppeteerPage).clickOn(
+        await utils.clickOn(
           `${category}:category-expand`
         );
       }
@@ -192,70 +188,79 @@ export const cellxgeneActions = puppeteerPage => ({
 
   async selectCategory(category, values, reset = true) {
     if (reset) await this.resetCategory(category);
-    await puppeteerUtils(puppeteerPage).clickOn(`${category}:category-expand`);
-    await puppeteerUtils(puppeteerPage).clickOn(`${category}:category-select`);
+    const utils = puppeteerUtils(puppeteerPage);
+    await utils.clickOn(`${category}:category-expand`);
+    await utils.clickOn(`${category}:category-select`);
     for (const val of values) {
-      await puppeteerUtils(puppeteerPage).clickOn(`categorical-value-select-${category}-${val}`);
+      await utils.clickOn(`categorical-value-select-${category}-${val}`);
     }
   },
 
   async expandCategory(category) {
-    const expand = await puppeteerUtils(puppeteerPage).waitByID(`${category}:category-expand`);
+    const utils = puppeteerUtils(puppeteerPage);
+    const expand = await utils.waitByID(`${category}:category-expand`);
     const notExpanded = await expand.$("[data-testclass='category-expand-is-not-expanded']");
     if (notExpanded) {
-      await puppeteerUtils(puppeteerPage).clickOn(`${category}:category-expand`);
+      await utils.clickOn(`${category}:category-expand`);
     }
   },
 
   async clip(min = 0, max = 100) {
-    await puppeteerUtils(puppeteerPage).clickOn("visualization-settings");
-    await puppeteerUtils(puppeteerPage).clearInputAndTypeInto(
+    const utils = puppeteerUtils(puppeteerPage);
+    await utils.clickOn("visualization-settings");
+    await utils.clearInputAndTypeInto(
       "clip-min-input",
       min
     );
-    await puppeteerUtils(puppeteerPage).clearInputAndTypeInto(
+    await utils.clearInputAndTypeInto(
       "clip-max-input",
       max
     );
-    await puppeteerUtils(puppeteerPage).clickOn("clip-commit");
+    await utils.clickOn("clip-commit");
   },
 
   async createCategory(categoryName) {
-    await puppeteerUtils(puppeteerPage).clickOn("open-annotation-dialog");
-    await puppeteerUtils(puppeteerPage).typeInto("new-category-name", categoryName);
-    await puppeteerUtils(puppeteerPage).clickOn("submit-category");
+    const utils = puppeteerUtils(puppeteerPage);
+    await utils.clickOn("open-annotation-dialog");
+    await utils.typeInto("new-category-name", categoryName);
+    await utils.clickOn("submit-category");
   },
 
   async renameCategory(oldCatgoryName, newCategoryName) {
-    await puppeteerUtils(puppeteerPage).clickOn(`${oldCatgoryName}:see-actions`);
-    await puppeteerUtils(puppeteerPage).clickOn(`${oldCatgoryName}:edit-category-mode`);
-    await puppeteerUtils(puppeteerPage).clearInputAndTypeInto(`${oldCatgoryName}:edit-category-name-text`, newCategoryName);
-    await puppeteerUtils(puppeteerPage).clickOn(`${oldCatgoryName}:submit-category-edit`);
+    const utils = puppeteerUtils(puppeteerPage);
+    await utils.clickOn(`${oldCatgoryName}:see-actions`);
+    await utils.clickOn(`${oldCatgoryName}:edit-category-mode`);
+    await utils.clearInputAndTypeInto(`${oldCatgoryName}:edit-category-name-text`, newCategoryName);
+    await utils.clickOn(`${oldCatgoryName}:submit-category-edit`);
   },
 
   async deleteCategory(categoryName) {
-    await puppeteerUtils(puppeteerPage).clickOn(`${categoryName}:see-actions`);
-    await puppeteerUtils(puppeteerPage).clickOn(`${categoryName}:delete-category`);
+    const utils = puppeteerUtils(puppeteerPage);
+    await utils.clickOn(`${categoryName}:see-actions`);
+    await utils.clickOn(`${categoryName}:delete-category`);
   },
 
   async createLabel(categoryName, labelName) {
-    await puppeteerUtils(puppeteerPage).clickOn(`${categoryName}:see-actions`);
-    await puppeteerUtils(puppeteerPage).clickOn(`${categoryName}:add-new-label-to-category`);
-    await puppeteerUtils(puppeteerPage).typeInto(`${categoryName}:new-label-name`, labelName);
-    await puppeteerUtils(puppeteerPage).clickOn(`${categoryName}:submit-label`);
+    const utils = puppeteerUtils(puppeteerPage);
+    await utils.clickOn(`${categoryName}:see-actions`);
+    await utils.clickOn(`${categoryName}:add-new-label-to-category`);
+    await utils.typeInto(`${categoryName}:new-label-name`, labelName);
+    await utils.clickOn(`${categoryName}:submit-label`);
   },
 
   async deleteLabel(categoryName, labelName) {
     await this.expandCategory(categoryName);
-    await puppeteerUtils(puppeteerPage).clickOn(`${categoryName}:${labelName}:see-actions`);
-    await puppeteerUtils(puppeteerPage).clickOn( `${categoryName}:${labelName}:delete-label`);
+    const utils = puppeteerUtils(puppeteerPage);
+    await utils.clickOn(`${categoryName}:${labelName}:see-actions`);
+    await utils.clickOn( `${categoryName}:${labelName}:delete-label`);
   },
 
   async renameLabel(categoryName, oldLabelName, newLabelName) {
     await this.expandCategory(categoryName);
-    await puppeteerUtils(puppeteerPage).clickOn(`${categoryName}:${oldLabelName}:see-actions`);
-    await puppeteerUtils(puppeteerPage).clickOn(`${categoryName}:${oldLabelName}:edit-label`);
-    await puppeteerUtils(puppeteerPage).clearInputAndTypeInto(
+    const utils = puppeteerUtils(puppeteerPage);
+    await utils.clickOn(`${categoryName}:${oldLabelName}:see-actions`);
+    await utils.clickOn(`${categoryName}:${oldLabelName}:edit-label`);
+    await utils.clearInputAndTypeInto(
       `${categoryName}:${oldLabelName}:edit-label-name`,
       newLabelName
     );
@@ -298,6 +303,13 @@ export const cellxgeneActions = puppeteerPage => ({
     await this.setSellSet(cellSet1, 1);
     await this.setSellSet(cellSet2, 2);
     await puppeteerUtils(puppeteerPage).clickOn("diffexp-button");
+  },
+
+  async bulkAddGenes(geneNames) {
+    const utils = puppeteerUtils(puppeteerPage);
+    await utils.clickOn("section-bulk-add");
+    await utils.typeInto("input-bulk-add", geneNames.join(","));
+    await puppeteerPage.keyboard.press("Enter");
   }
 });
 
