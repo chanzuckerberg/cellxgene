@@ -67,7 +67,8 @@ class DataAdaptor(metaclass=ABCMeta):
 
     @abstractmethod
     def compute_embedding(self, method, filter):
-        """compute a new embedding on the specified obs subset, and return it."""
+        """compute a new embedding on the specified obs subset, and return a 
+           tuple of (schema, fbs)."""
         pass
 
     @abstractmethod
