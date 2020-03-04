@@ -142,10 +142,9 @@ class WritableAnnotationTest(unittest.TestCase):
 
         # test each for singular presence and accuracy of available flag
         def check_feature(method, path, available):
-            feature = list(filter(
-                lambda f: f.method == method and f.path == path and f.available == available,
-                features
-            ))
+            feature = list(
+                filter(lambda f: f.method == method and f.path == path and f.available == available, features)
+            )
             self.assertIsNotNone(feature)
             self.assertEqual(len(feature), 1)
 

@@ -206,11 +206,13 @@ def layout_obs_put(request, data_adaptor):
     try:
         schema, fbs = data_adaptor.compute_embedding(method, filter)
         return make_response(
-            fbs, HTTPStatus.OK, {
+            fbs,
+            HTTPStatus.OK,
+            {
                 "Content-Type": "application/octet-stream",
                 "CxG-Schema": json.dumps(schema),
-                "Access-Control-Expose-Headers": "CxG-Schema"
-            }
+                "Access-Control-Expose-Headers": "CxG-Schema",
+            },
         )
     except NotImplementedError as e:
         return make_response(str(e), HTTPStatus.NOT_IMPLEMENTED)

@@ -322,11 +322,7 @@ class AnndataAdaptor(DataAdaptor):
         dims = [f"{name}_0", f"{name}_1"]
         df = pd.DataFrame(normalized_layout, columns=dims)
         fbs = encode_matrix_fbs(df, col_idx=df.columns, row_idx=None)
-        schema = {
-            "name": name,
-            "type": "float32",
-            "dims": dims
-        }
+        schema = {"name": name, "type": "float32", "dims": dims}
         return (schema, fbs)
 
     def get_X_array(self, obs_mask=None, var_mask=None):
