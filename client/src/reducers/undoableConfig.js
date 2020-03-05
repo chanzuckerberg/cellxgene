@@ -145,7 +145,7 @@ Signature:  (fsm, event, from) => undoableAction
 const onFsmError = (fsm, event, from) => {
   console.error(`FSM error [event: "${event}", state: "${from}"]`, fsm);
   // In production, try to recover gracefully if we have unexpected state
-  return clear(fsm);
+  return clear();
 };
 
 /*

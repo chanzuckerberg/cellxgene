@@ -1,7 +1,6 @@
 // jshint esversion: 6
 
 import _ from "lodash";
-import * as globals from "../globals";
 import { subsetAndResetGeneLists } from "../util/stateManager/controlsHelpers";
 
 const Controls = (
