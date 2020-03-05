@@ -20,11 +20,9 @@ function Subset(props) {
       >
         <AnchorButton
           data-testid="subset-button"
-          active={!subsetPossible}
+          disabled={!subsetPossible}
           icon="pie-chart"
-          onClick={() => {
-            if (subsetPossible) handleSubset();
-          }}
+          onClick={handleSubset}
         />
       </Tooltip>
       <Tooltip
@@ -34,11 +32,9 @@ function Subset(props) {
       >
         <AnchorButton
           data-testid="reset-subset-button"
-          active={!subsetResetPossible}
+          disabled={!subsetResetPossible}
           icon="full-circle"
-          onClick={() => {
-            if (subsetResetPossible) handleSubsetReset();
-          }}
+          onClick={handleSubsetReset}
         />
       </Tooltip>
     </ButtonGroup>

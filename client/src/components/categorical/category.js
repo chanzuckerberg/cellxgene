@@ -241,11 +241,10 @@ class Category extends React.Component {
             <Button
               data-testclass="colorby"
               data-testid={`colorby-${metadataField}`}
-              onClick={() => {
-                if (!isTruncated) this.handleColorChange();
-              }}
-              active={colorAccessor === metadataField || isTruncated}
-              intent={colorAccessor === metadataField && !isTruncated ? "primary" : "none"}
+              onClick={this.handleColorChange}
+              active={colorAccessor === metadataField}
+              intent={colorAccessor === metadataField ? "primary" : "none"}
+              disabled={isTruncated}
               icon="tint"
             />
           </Tooltip>
