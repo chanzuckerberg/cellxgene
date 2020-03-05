@@ -1,13 +1,7 @@
 // jshint esversion: 6
 import React from "react";
 import { connect } from "react-redux";
-import {
-  Button,
-  ButtonGroup,
-  AnchorButton,
-  Tooltip,
-  Icon
-} from "@blueprintjs/core";
+import { Button, ButtonGroup, AnchorButton, Tooltip } from "@blueprintjs/core";
 import * as globals from "../../globals";
 import actions from "../../actions";
 import CellSetButton from "./cellSetButtons";

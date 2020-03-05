@@ -378,10 +378,12 @@ class Dataframe {
     let dstLabels;
     if (!labels) {
       // combine all columns
-      srcLabels = dstLabels = dataframe.colIndex.keys();
+      dstLabels = dataframe.colIndex.keys();
+      srcLabels = dstLabels;
     } else if (Array.isArray(labels)) {
       // combine subset of keys with no aliasing
-      srcLabels = dstLabels = labels;
+      dstLabels = labels;
+      srcLabels = labels;
     } else if (labels instanceof Map) {
       // aliasing with a Map
       srcLabels = Array.from(labels.keys());
@@ -394,7 +396,7 @@ class Dataframe {
 
     // if datafame is empty, and no specific labels specified, noop.
     if (dataframe.isEmpty()) {
-      if (!labels || srcLabels.length == 0) return this;
+      if (!labels || srcLabels.length === 0) return this;
       throw new Error("Empty dataframe, unable to pick columns");
     }
 

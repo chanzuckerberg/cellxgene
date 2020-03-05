@@ -1,19 +1,14 @@
 import { API } from "../globals";
-import { Universe, MatrixFBS } from "../util/stateManager";
+import { Universe } from "../util/stateManager";
 import {
-  postUserErrorToast,
   postNetworkErrorToast,
   postAsyncSuccessToast,
   postAsyncFailureToast
 } from "../components/framework/toasters";
 
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
 function abortableFetch(request, opts, timeout = 0) {
   const controller = new AbortController();
-  const signal = controller.signal;
+  const { signal } = controller;
 
   return {
     abort: () => controller.abort(),
@@ -77,18 +72,8 @@ async function doReembedFetch(dispatch, getState) {
 }
 
 /*
-below are dispatch-able
+functions below are dispatch-able
 */
-
-function cancelReembed() {
-  return (dispatch, getState) => {
-    const state = getState();
-    const { pendingFetch } = state.reembedController;
-    dispatch({ type: "reembed: request cancel" });
-    pendingFetch?.abort();
-  };
-}
-
 export function requestReembed() {
   return async (dispatch, getState) => {
     try {
@@ -121,7 +106,7 @@ export function requestReembed() {
 
 export function reembedResetWorldToUniverse(dispatch, getState) {
   const { reembedController } = getState();
-  reembedController.pendingFetch?.abort();
+  if (reembedController.pendingFetch) reembedController.pendingFetch.abort();
   dispatch({
     type: "reembed: clear all reembeddings"
   });
