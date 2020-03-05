@@ -241,9 +241,7 @@ class Category extends React.Component {
             <Button
               data-testclass="colorby"
               data-testid={`colorby-${metadataField}`}
-              onClick={() => {
-                if (!isTruncated) this.handleColorChange();
-              }}
+              onClick={this.handleColorChange}
               active={colorAccessor === metadataField}
               intent={colorAccessor === metadataField ? "primary" : "none"}
               disabled={isTruncated}
