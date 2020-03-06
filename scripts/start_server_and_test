@@ -27,6 +27,4 @@ trap finish EXIT
 
 await_port "$PORT"
 
-sleep 30s
-
 eval "$TEST_SCRIPT"
