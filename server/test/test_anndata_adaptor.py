@@ -206,13 +206,15 @@ class AdaptorTest(unittest.TestCase):
 
         # Verify that we correctly handle the case where we lack scanpy
         import unittest.mock
-        with unittest.mock.patch.dict(sys.modules, {'scanpy': None}):
+
+        with unittest.mock.patch.dict(sys.modules, {"scanpy": None}):
             with self.assertRaises(NotImplementedError):
                 self.data.compute_embedding("umap", filter)
 
         # if we happen to have scanpy, test the full API, else punt
         import importlib
-        scanpy_spec = importlib.util.find_spec('scanpy')
+
+        scanpy_spec = importlib.util.find_spec("scanpy")
         if scanpy_spec is None:
             print("Skipping compute_embedding test as ScanPy not installed")
             return
