@@ -127,14 +127,14 @@ const doInitialDataLoad = () =>
       Step 2 - load the minimum stuff required to display.
       */
       await Promise.all([
-        layoutFetchAndLoad(dispatch, schema, universe),
-        varAnnotationFetchAndLoad(dispatch, schema, universe)
+        layoutFetchAndLoad(dispatch),
+        varAnnotationFetchAndLoad(dispatch, schema)
       ]);
 
       /*
       Step 3 - load everything else
       */
-      await obsAnnotationFetchAndLoad(dispatch, schema, universe);
+      await obsAnnotationFetchAndLoad(dispatch, schema);
 
       dispatch({
         type: "initial data load complete (universe exists)",

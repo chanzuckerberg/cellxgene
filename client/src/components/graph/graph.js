@@ -422,8 +422,7 @@ class Graph extends React.Component {
       handleEnd,
       handleCancel,
       responsive,
-      this.graphPaddingRightLeft,
-      graphInteractionMode
+      this.graphPaddingRightLeft
     );
 
     return { toolSVG: newToolSVG, tool, container };

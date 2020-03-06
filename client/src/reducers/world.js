@@ -101,15 +101,10 @@ const WorldReducer = (
       const { userDefinedGenes, diffexpGenes } = prevSharedState;
       const allTheGenesWeNeed = [
         ...new Set(
-          userDefinedGenes,
-          diffexpGenes,
-          Object.keys(action.expressionData)
+          [userDefinedGenes, diffexpGenes, Object.keys(action.expressionData)].filter(ele => ele).flat()
         )
       ];
-      unclippedVarData = ControlsHelpers.pruneVarDataCache(
-        unclippedVarData,
-        allTheGenesWeNeed
-      );
+      unclippedVarData = ControlsHelpers.pruneVarDataCache(unclippedVarData, allTheGenesWeNeed);
 
       // at this point, we have the unclipped data in unclippedVarData.
       // Now create clipped.

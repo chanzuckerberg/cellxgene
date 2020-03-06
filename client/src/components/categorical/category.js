@@ -90,7 +90,7 @@ class Category extends React.Component {
     // || this.checkbox.indeterminate === false
     if (isChecked) {
       this.toggleNone();
-    } else if (!isChecked) {
+    } else {
       this.toggleAll();
     }
   }

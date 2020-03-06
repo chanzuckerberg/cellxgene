@@ -62,9 +62,7 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
       const { userDefinedGenes, diffexpGenes } = prevSharedState;
       const allTheGenesWeNeed = [
         ...new Set(
-          userDefinedGenes,
-          diffexpGenes,
-          Object.keys(action.expressionData)
+          [userDefinedGenes, diffexpGenes, Object.keys(action.expressionData)].filter(ele => ele).flat()
         )
       ];
       varData = ControlsHelpers.pruneVarDataCache(varData, allTheGenesWeNeed);

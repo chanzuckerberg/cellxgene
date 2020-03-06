@@ -172,7 +172,7 @@ export function pruneVarDataCache(varData, needed) {
   */
 
   /*
-  VarDataCacheLowWatermark - this cofig value sets the minimum cache size,
+  VarDataCacheLowWatermark - this config value sets the minimum cache size,
   in columns, below which we don't throw away data.
 
   The value should be high enough so we are caching the maximum which will

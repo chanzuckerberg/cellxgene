@@ -221,15 +221,15 @@ const Undoable = (reducer, undoableKeys, options = {}) => {
     const aType = action.type;
     switch (aType) {
       case "@@undoable/undo": {
-        return undo(currentState, action);
+        return undo(currentState);
       }
 
       case "@@undoable/redo": {
-        return redo(currentState, action);
+        return redo(currentState);
       }
 
       case "@@undoable/clear": {
-        return clear(currentState, action);
+        return clear(currentState);
       }
 
       default: {
