@@ -325,8 +325,11 @@ def launch(
         except DatasetAccessError as e:
             raise click.ClickException(str(e))
 
-        if experimental_enable_reembedding and matrix_data_loader.matrix_data_type() != MatrixDataType.H5AD:
-            raise click.ClickException("--experimental_enable_reembedding is only supported with H5AD files.")
+        if experimental_enable_reembedding:
+            if matrix_data_loader.matrix_data_type() != MatrixDataType.H5AD:
+                raise click.ClickException("--experimental-enable-reembedding is only supported with H5AD files.")
+            if backed:
+                raise click.ClickException("--experimental-enable-reembedding is not supported when run in --backed mode.")
 
         file_size = matrix_data_loader.file_size()
         if file_size > BIG_FILE_SIZE_THRESHOLD:

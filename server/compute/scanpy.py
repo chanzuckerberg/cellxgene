@@ -25,6 +25,12 @@ def scanpy_umap(adata, obs_mask=None, pca_options={}, neighbors_options={}, umap
 
     Do NOT mutate adata.
     """
+
+    # backed mode is incompatible with the current implementation
+    if adata.isbacked:
+        raise NotImplementedError("Backed mode is incompatible with re-embedding")
+
+    # safely get scanpy module, which may not be present.
     sc = get_scanpy_module()
 
     # https://github.com/theislab/anndata/issues/311
