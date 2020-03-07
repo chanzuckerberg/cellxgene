@@ -34,9 +34,7 @@ try:
     matrix_data_cache_manager = MatrixDataCacheManager()
     annotations = None
 
-    print("HERE")
     server = Server(matrix_data_cache_manager, annotations, app_config)
-    print("HERE2")
 
     debug = False
     application = server.app
