@@ -34,25 +34,13 @@ build-client:
 build-cli: build-client
 	git ls-files server/ | cpio -pdm $(BUILDDIR)
 	cp -r client/build/  $(CLIENTBUILD)
-	mkdir -p $(SERVERBUILD)/common/web/static/img
-	mkdir -p $(SERVERBUILD)/common/web/templates/
-	cp $(CLIENTBUILD)/index.html $(SERVERBUILD)/common/web/templates/
-	cp -r $(CLIENTBUILD)/static $(SERVERBUILD)/common/web/
-	cp $(CLIENTBUILD)/favicon.png $(SERVERBUILD)/common/web/static/img
-	cp $(CLIENTBUILD)/service-worker.js $(SERVERBUILD)/common/web/static/js/
+	$(call copy_client_assets,$(CLIENTBUILD),$(SERVERBUILD))
 	cp MANIFEST.in README.md setup.cfg setup.py $(BUILDDIR)
 
 # If you are actively developing in the server folder use this, dirties the source tree
 .PHONY: build-for-server-dev
 build-for-server-dev: clean-server build-client
-	mkdir -p server/common/web/static/img
-	mkdir -p server/common/web/static/js
-	mkdir -p server/common/web/templates/
-	cp client/build/index.html server/common/web/templates/
-	cp -r client/build/static server/common/web/
-	cp client/build/favicon.png server/common/web/static/img
-	cp client/build/service-worker.js server/common/web/static/js/
-
+	$(call copy_client_assets,client/build,server)
 
 # TESTING
 .PHONY: test
