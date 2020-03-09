@@ -69,7 +69,10 @@ e2e-annotations:
 
 .PHONY: smoke-test
 smoke-test:
-	start_server_and_test '$(MAKE) start-server' $(CXG_SERVER_PORT) '$(MAKE) e2e'
+	start_server_and_test \
+		'CXG_OPTIONS="--disable-annotations" $(MAKE) start-server' \
+		$(CXG_SERVER_PORT) \
+		'$(MAKE) e2e'
 
 
 .PHONY: smoke-test-annotations
