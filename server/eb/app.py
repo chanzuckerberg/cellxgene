@@ -4,12 +4,16 @@ import sys
 import os
 import logging
 
-logging.basicConfig(
-    filename="/opt/python/log/app.log",
-    level=logging.DEBUG,
-    format="%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-)
+if os.path.isdir("/opt/python/log"):
+    # This is the standard location where Amazon EC2 instances store the application logs.
+    logging.basicConfig(
+        filename="/opt/python/log/app.log",
+        level=logging.DEBUG,
+        format="%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
+
+# echo the logs to stdout.  Useful for local testing
 logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
 
 SERVERDIR = os.path.dirname(os.path.realpath(__file__))
@@ -29,7 +33,19 @@ try:
         logging.error("CXG_DATAROOT environment variable must be set")
         sys.exit(1)
 
-    app_config = AppConfig(dataroot=dataroot)
+    app_config = AppConfig(
+        datapath = None,
+        dataroot = dataroot,
+        title = "",
+        about = None,
+        scripts = [],
+        layout = [],
+        max_category_items = 100,
+        diffexp_lfc_cutoff = 0.01,
+        obs_names = None,
+        var_names = None,
+        anndata_backed = False,
+        disable_diffexp = False)
 
     matrix_data_cache_manager = MatrixDataCacheManager()
     annotations = None

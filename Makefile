@@ -34,13 +34,13 @@ build-client:
 build-cli: build-client
 	git ls-files server/ | cpio -pdm $(BUILDDIR)
 	cp -r client/build/  $(CLIENTBUILD)
-	scripts/copy_client_assets.sh $(CLIENTBUILD) $(SERVERBUILD)
+	$(call copy_client_assets,$(CLIENTBUILD),$(SERVERBUILD))
 	cp MANIFEST.in README.md setup.cfg setup.py $(BUILDDIR)
 
 # If you are actively developing in the server folder use this, dirties the source tree
 .PHONY: build-for-server-dev
 build-for-server-dev: clean-server build-client
-	scripts/copy_client_assets.sh client/build server
+	$(call copy_client_assets,client/build,server)
 
 # TESTING
 .PHONY: test

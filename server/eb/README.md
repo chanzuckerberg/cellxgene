@@ -3,6 +3,15 @@
 This directory contains script to aid in creating and deploying cellxgene on
 an AWS Elastic Beanstalk instance.
 
+This will result in a variant of cellxgene, running on AWS EC2 instances, serving data from S3. 
+All datasets must be in the new CXG (tiledb) format - see the converter script cxgtool.py 
+in server/converters - and located in a single S3 prefix, which is accessible to the instance. 
+In the current incarnation, no access control or authentication support is available 
+(outside of anything you configure yourself), so this is most appropriate for public datasets.
+
+This is early development work, and will change significantly in the near future. 
+We would love feedback on it, but please assume it will change.
+
 ## Prerequisites
 
 1. Some familiarity with AWS EB, S3, and IAM are needed.

@@ -17,3 +17,17 @@ export JEST_ENV := $(call get_or_else_dev_env_default,JEST_ENV)
 export CXG_SERVER_PORT
 export CXG_CLIENT_PORT
 export JEST_ENV
+
+# copy the client assests to a location known to the server
+# $(1) is the source of the client assets
+# $(2) is the destination
+define copy_client_assets
+	mkdir -p $(2)/common/web/static/img
+	mkdir -p $(2)/common/web/static/js
+	mkdir -p $(2)/common/web/templates/
+	cp $(1)/index.html $(2)/common/web/templates/
+	cp -r $(1)/static $(2)/common/web/
+	cp $(1)/favicon.png $(2)/common/web/static/img
+	cp $(1)/service-worker.js $(2)/common/web/static/js/
+endef
+

@@ -15,8 +15,8 @@ clean:
 build: clean
 	mkdir artifact.dir; \
 	(cd ../.. ; \
-	    git ls-files server/ | cpio -pdm server/eb/artifact.dir ; \
-	    ./scripts/copy_client_assets.sh client/build server/eb/artifact.dir/server ; ); \
+	    git ls-files server/ | cpio -pdm server/eb/artifact.dir ; ); \
+	$(call copy_client_assets,../../client/build,artifact.dir/server) ; \
 	cp app.py artifact.dir/application.py; \
 	cp ../requirements.txt artifact.dir; \
 	cp -r .ebextensions artifact.dir; \
