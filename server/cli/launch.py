@@ -108,6 +108,7 @@ def config_args(func):
         is_flag=True,
         default=False,
         show_default=False,
+        hidden=True,
         help="Enable experimental on-demand re-embedding using UMAP. WARNING: may be very slow.",
     )
     @functools.wraps(func)
