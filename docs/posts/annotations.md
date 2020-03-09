@@ -21,7 +21,7 @@ To preserve data provenance, **`cellxgene` does not alter the input h5ad file**.
 annotations-directory/name-########.csv
 ```
 
-- The default `annotations-directory` is the directory where `mydata.h5ad` is saved; if we can't find that directory (e.g., you're loading an h5ad from a URL), it falls back to your current working directory (i.e., the directory you were in when you started cellxgene).
+- The default `annotations-directory` is the directory where `mydata.h5ad` is saved; if we can't find that directory (e.g., you're loading an h5ad from a URL or the location of the h5ad is not writable), it falls back to your current working directory (i.e., the directory you were in when you started cellxgene).
 - You will be prompted to enter a name for your annotations the first time you create a new category.  
 - We also assign a unique identifier in the form of an 8-character suffix, `########`; this helps cellxgene identify your file to avoid overwriting your work.
 
