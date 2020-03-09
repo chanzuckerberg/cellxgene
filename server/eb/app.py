@@ -34,18 +34,18 @@ try:
         sys.exit(1)
 
     app_config = AppConfig(
-        datapath = None,
-        dataroot = dataroot,
-        title = "",
-        about = None,
-        scripts = [],
-        layout = [],
-        max_category_items = 100,
-        diffexp_lfc_cutoff = 0.01,
-        obs_names = None,
-        var_names = None,
-        anndata_backed = False,
-        disable_diffexp = False)
+        datapath=None,
+        dataroot=dataroot,
+        title="",
+        about=None,
+        scripts=[],
+        layout=[],
+        max_category_items=100,
+        diffexp_lfc_cutoff=0.01,
+        obs_names=None,
+        var_names=None,
+        anndata_backed=False,
+        disable_diffexp=False)
 
     matrix_data_cache_manager = MatrixDataCacheManager()
     annotations = None
