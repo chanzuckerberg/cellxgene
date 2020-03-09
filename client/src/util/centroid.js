@@ -4,15 +4,18 @@ import { unassignedCategoryLabel } from "../globals";
 
 /*
   Centroid coordinate calculation
+  Calculates centroids for displaying
+  In the case that a category is truncated, the truncated labels will not have
+    centroids calculated
 */
 
 /*
 Generates a mapping of categorical values to data needed to calculate centroids
 categoricalValue -> {
- size: int,
+ length: int,
  holdsFinite: Boolean,
  xCoordinates: Float32Array,
- yCoordinates: F32 Array
+ yCoordinates: Float32Array
 }
 */
 const getCoordinatesByCategoricalValues = (
@@ -23,7 +26,7 @@ const getCoordinatesByCategoricalValues = (
   categoricalSelection,
   schemaObsByName
 ) => {
-  const scratchPad = new Map();
+  const coordsByCategoryLabel = new Map();
 
   const categoryArray = obsAnnotations.col(categoryName).asArray();
 
@@ -55,11 +58,11 @@ const getCoordinatesByCategoricalValues = (
       !(isUserAnno && categoryValue === unassignedCategoryLabel)
     ) {
       // Create/fetch the scratchpad value
-      let value = scratchPad.get(categoryValue);
-      if (value === undefined) {
+      let coords = coordsByCategoryLabel.get(categoryValue);
+      if (coords === undefined) {
         // Get the number of cells which are in the categorical value
         const numInCategoricalValue = categoryValueCounts[categoryValueIndex];
-        value = {
+        coords = {
           hasFinite: false,
           xCoordinates: new Float32Array(numInCategoricalValue),
           yCoordinates: new Float32Array(numInCategoricalValue),
@@ -67,21 +70,21 @@ const getCoordinatesByCategoricalValues = (
         };
       }
 
-      value.hasFinite =
-        value.hasFinite ||
+      coords.hasFinite =
+        coords.hasFinite ||
         (Number.isFinite(layoutXArray[i]) && Number.isFinite(layoutYArray[i]));
 
-      const coordinatesLength = value.length;
+      const coordinatesLength = coords.length;
 
-      value.xCoordinates[coordinatesLength] = layoutXArray[i];
-      value.yCoordinates[coordinatesLength] = layoutYArray[i];
+      coords.xCoordinates[coordinatesLength] = layoutXArray[i];
+      coords.yCoordinates[coordinatesLength] = layoutYArray[i];
 
-      value.length = coordinatesLength + 1;
+      coords.length = coordinatesLength + 1;
 
-      scratchPad.set(categoryValue, value);
+      coordsByCategoryLabel.set(categoryValue, coords);
     }
   }
-  return scratchPad;
+  return coordsByCategoryLabel;
 };
 
 /* 
