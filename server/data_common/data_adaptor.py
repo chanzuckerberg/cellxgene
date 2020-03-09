@@ -57,12 +57,18 @@ class DataAdaptor(metaclass=ABCMeta):
 
     @abstractmethod
     def get_embedding_names(self):
-        """return a list of embedding names"""
+        """return a list of pre-computed embedding names"""
         pass
 
     @abstractmethod
     def get_embedding_array(self, ename, dims=2):
-        """return an numpy array for the given embedding name."""
+        """return an numpy array for the given pre-computed embedding name."""
+        pass
+
+    @abstractmethod
+    def compute_embedding(self, method, filter):
+        """compute a new embedding on the specified obs subset, and return a
+           tuple of (schema, fbs)."""
         pass
 
     @abstractmethod
@@ -126,21 +132,15 @@ class DataAdaptor(metaclass=ABCMeta):
         """
         pass
 
-    def get_features(self):
-        features = {}
-        features["cluster"] = AppFeature("/cluster/")
-
-        if self.get_embedding_names():
-            # TODO handle "var" when gene layout becomes available
-            features["layout_obs"] = AppFeature("/layout/obs", available=True)
-        else:
-            features["layout_obs"] = AppFeature("/layout/obs")
-
-        if self.config.disable_diffexp:
-            features["diffexp"] = AppFeature("/diffexp/")
-        else:
-            features["diffexp"] = AppFeature("/diffexp/", available=True)
-
+    def get_features(self, annotations=None):
+        """Return list of features, to return as part of the config route"""
+        features = [
+            AppFeature("/cluster/", method="POST", available=False),
+            AppFeature("/layout/obs", method="GET", available=self.get_embedding_names() is not None),
+            AppFeature("/layout/obs", method="PUT", available=self.config.enable_reembedding),
+            AppFeature("/diffexp/", method="POST", available=not self.config.disable_diffexp),
+            AppFeature("/annotations/obs", method="PUT", available=annotations is not None),
+        ]
         return features
 
     def update_parameters(self, parameters):
@@ -294,6 +294,25 @@ class DataAdaptor(metaclass=ABCMeta):
         except ValueError:
             raise JSONEncodingValueError("Error encoding differential expression to JSON")
 
+    @staticmethod
+    def normalize_embedding(embedding):
+        """Normalize embedding layout to meet client assumptions.
+           Embedding is an ndarray, shape (n_obs, n)., where n is normally 2
+        """
+
+        # scale isotropically
+        min = embedding.min(axis=0)
+        max = embedding.max(axis=0)
+        scale = np.amax(max - min)
+        normalized_layout = (embedding - min) / scale
+
+        # translate to center on both axis
+        translate = 0.5 - ((max - min) / scale / 2)
+        normalized_layout = normalized_layout + translate
+
+        normalized_layout = normalized_layout.astype(dtype=np.float32)
+        return normalized_layout
+
     def layout_to_fbs_matrix(self):
         """ same as layout, except returns a flatbuffer """
         """
@@ -312,18 +331,7 @@ class DataAdaptor(metaclass=ABCMeta):
         with ServerTiming.time(f"layout.query"):
             for ename in embeddings:
                 embedding = self.get_embedding_array(ename, 2)
-
-                # scale isotropically
-                min = embedding.min(axis=0)
-                max = embedding.max(axis=0)
-                scale = np.amax(max - min)
-                normalized_layout = (embedding - min) / scale
-
-                # translate to center on both axis
-                translate = 0.5 - ((max - min) / scale / 2)
-                normalized_layout = normalized_layout + translate
-
-                normalized_layout = normalized_layout.astype(dtype=np.float32)
+                normalized_layout = DataAdaptor.normalize_embedding(embedding)
                 layout_data.append(pd.DataFrame(normalized_layout, columns=[f"{ename}_0", f"{ename}_1"]))
 
         with ServerTiming.time(f"layout.encode"):

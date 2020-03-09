@@ -321,7 +321,10 @@ describe("dataframe factories", () => {
     test("KeyIndex", () => {
       const df = new Dataframe.Dataframe(
         [2, 2],
-        [["red", "blue"], [true, false]],
+        [
+          ["red", "blue"],
+          [true, false]
+        ],
         null,
         new Dataframe.KeyIndex(["colors", "bools"])
       );
@@ -341,7 +344,10 @@ describe("dataframe factories", () => {
     test("DenseInt32Index", () => {
       const df = new Dataframe.Dataframe(
         [2, 2],
-        [["red", "blue"], [true, false]],
+        [
+          ["red", "blue"],
+          [true, false]
+        ],
         null,
         new Dataframe.DenseInt32Index([74, 75])
       );
@@ -363,7 +369,10 @@ describe("dataframe factories", () => {
     test("DenseInt32Index promote", () => {
       const df = new Dataframe.Dataframe(
         [2, 2],
-        [["red", "blue"], [true, false]],
+        [
+          ["red", "blue"],
+          [true, false]
+        ],
         null,
         new Dataframe.DenseInt32Index([74, 75])
       );
@@ -385,7 +394,10 @@ describe("dataframe factories", () => {
     test("IdentityInt32Index with last", () => {
       const df = new Dataframe.Dataframe(
         [2, 2],
-        [["red", "blue"], [true, false]],
+        [
+          ["red", "blue"],
+          [true, false]
+        ],
         null,
         null
       );
@@ -407,7 +419,10 @@ describe("dataframe factories", () => {
     test("IdentityInt32Index promote", () => {
       const df = new Dataframe.Dataframe(
         [2, 2],
-        [["red", "blue"], [true, false]],
+        [
+          ["red", "blue"],
+          [true, false]
+        ],
         null,
         null
       );
@@ -461,7 +476,11 @@ describe("dataframe factories", () => {
       */
       const dfA = new Dataframe.Dataframe(
         [2, 3],
-        [["red", "blue"], [true, false], [1, 0]],
+        [
+          ["red", "blue"],
+          [true, false],
+          [1, 0]
+        ],
         null,
         new Dataframe.KeyIndex(["colors", "bools", "numbers"])
       );
@@ -520,13 +539,87 @@ describe("dataframe factories", () => {
       expect(dfC.col("colors").asArray()).toEqual(["red", "blue"]);
       expect(dfC.col("bools").asArray()).toEqual([true, false]);
     });
+
+    test("column picking", () => {
+      const dfEmpty = Dataframe.Dataframe.empty();
+      const dfA = new Dataframe.Dataframe(
+        [2, 1],
+        [["red", "blue"]],
+        null,
+        new Dataframe.KeyIndex(["colors"])
+      );
+      const dfB = new Dataframe.Dataframe(
+        [2, 3],
+        [
+          ["red", "blue"],
+          [true, false],
+          [1, 0]
+        ],
+        null,
+        new Dataframe.KeyIndex(["colors", "bools", "numbers"])
+      );
+
+      const dfX = dfEmpty.withColsFrom(dfB, ["colors", "bools"]);
+      expect(dfX).toBeDefined();
+      expect(dfX.dims).toEqual([2, 2]);
+      expect(dfX.colIndex.keys()).toEqual(["colors", "bools"]);
+      expect(dfX.rowIndex).toEqual(dfB.rowIndex);
+      expect(dfX.icol(0).asArray()).toEqual(dfB.icol(0).asArray());
+
+      const dfY = dfA.withColsFrom(dfB, ["numbers"]);
+      expect(dfY).toBeDefined();
+      expect(dfY.dims).toEqual([2, 2]);
+      expect(dfY.colIndex.keys()).toEqual(["colors", "numbers"]);
+      expect(dfY.rowIndex).toEqual(dfA.rowIndex);
+      expect(dfY.icol(0).asArray()).toEqual(dfA.icol(0).asArray());
+
+      const dfZ = dfA.withColsFrom(dfEmpty, []);
+      expect(dfZ).toBeDefined();
+      expect(dfZ.dims).toEqual(dfA.dims);
+      expect(dfZ.colIndex.keys()).toEqual(dfA.colIndex.keys());
+      expect(dfZ.rowIndex).toEqual(dfA.rowIndex);
+      expect(dfZ.icol(0).asArray()).toEqual(dfA.icol(0).asArray());
+
+      expect(() => dfA.withColsFrom(dfB, ["bools", "colors"])).toThrow();
+    });
+
+    test("column aliasing", () => {
+      const dfA = new Dataframe.Dataframe(
+        [2, 1],
+        [["red", "blue"]],
+        null,
+        new Dataframe.KeyIndex(["colors"])
+      );
+      const dfB = new Dataframe.Dataframe(
+        [2, 3],
+        [
+          ["red", "blue"],
+          [true, false],
+          [1, 0]
+        ],
+        null,
+        new Dataframe.KeyIndex(["colors", "bools", "numbers"])
+      );
+
+      const dfX = dfA.withColsFrom(dfB, { colors: "_colors", bools: "_bools" });
+      expect(dfX).toBeDefined();
+      expect(dfX.dims).toEqual([2, 3]);
+      expect(dfX.colIndex.keys()).toEqual(["colors", "_colors", "_bools"]);
+      expect(dfX.rowIndex).toEqual(dfA.rowIndex);
+      expect(dfX.icol(0).asArray()).toEqual(dfA.icol(0).asArray());
+      expect(dfX.col("_colors").asArray()).toBe(dfB.col("colors").asArray());
+    });
   });
 
   describe("dropCol", () => {
     test("KeyIndex", () => {
       const df = new Dataframe.Dataframe(
         [2, 3],
-        [["red", "blue"], [true, false], [1, 0]],
+        [
+          ["red", "blue"],
+          [true, false],
+          [1, 0]
+        ],
         null,
         new Dataframe.KeyIndex(["colors", "bools", "numbers"])
       );
@@ -545,7 +638,11 @@ describe("dataframe factories", () => {
     test("IdentityInt32Index drop first", () => {
       const df = new Dataframe.Dataframe(
         [2, 3],
-        [["red", "blue"], [true, false], [1, 0]],
+        [
+          ["red", "blue"],
+          [true, false],
+          [1, 0]
+        ],
         null,
         null
       );
@@ -565,7 +662,11 @@ describe("dataframe factories", () => {
     test("IdentityInt32Index drop last", () => {
       const df = new Dataframe.Dataframe(
         [2, 3],
-        [["red", "blue"], [true, false], [1, 0]],
+        [
+          ["red", "blue"],
+          [true, false],
+          [1, 0]
+        ],
         null,
         null
       );
@@ -585,7 +686,11 @@ describe("dataframe factories", () => {
     test("DenseInt32Index", () => {
       const df = new Dataframe.Dataframe(
         [2, 3],
-        [["red", "blue"], [true, false], [1, 0]],
+        [
+          ["red", "blue"],
+          [true, false],
+          [1, 0]
+        ],
         null,
         new Dataframe.DenseInt32Index([102, 101, 100])
       );
@@ -653,7 +758,10 @@ describe("dataframe factories", () => {
     test("renameCol", () => {
       const dfA = new Dataframe.Dataframe(
         [2, 2],
-        [[true, false], [1, 0]],
+        [
+          [true, false],
+          [1, 0]
+        ],
         null,
         new Dataframe.KeyIndex(["A", "B"])
       );
@@ -671,7 +779,10 @@ describe("dataframe col", () => {
   beforeEach(() => {
     df = new Dataframe.Dataframe(
       [2, 2],
-      [[true, false], [1, 0]],
+      [
+        [true, false],
+        [1, 0]
+      ],
       null,
       new Dataframe.KeyIndex(["A", "B"])
     );

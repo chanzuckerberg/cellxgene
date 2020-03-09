@@ -13,7 +13,7 @@ import click
 from server.common.utils import custom_format_warning
 from server.common.utils import find_available_port, is_port_available, sort_options
 from server.common.errors import DatasetAccessError
-from server.data_common.matrix_loader import MatrixDataLoader, MatrixDataCacheManager
+from server.data_common.matrix_loader import MatrixDataLoader, MatrixDataCacheManager, MatrixDataType
 from server.common.annotations import AnnotationsLocalFile
 from server.common.app_config import AppConfig
 
@@ -102,6 +102,14 @@ def config_args(func):
         show_default=False,
         metavar="<text>",
         help="Embedding name, eg, 'umap'. Repeat option for multiple embeddings. Defaults to all.",
+    )
+    @click.option(
+        "--experimental-enable-reembedding",
+        is_flag=True,
+        default=False,
+        show_default=False,
+        hidden=True,
+        help="Enable experimental on-demand re-embedding using UMAP. WARNING: may be very slow.",
     )
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
@@ -278,6 +286,7 @@ def launch(
     disable_diffexp,
     experimental_annotations_ontology,
     experimental_annotations_ontology_obo,
+    experimental_enable_reembedding,
 ):
     """Launch the cellxgene data viewer.
     This web app lets you explore single-cell expression data.
@@ -316,6 +325,14 @@ def launch(
             matrix_data_loader.pre_load_validation()
         except DatasetAccessError as e:
             raise click.ClickException(str(e))
+
+        if experimental_enable_reembedding:
+            if matrix_data_loader.matrix_data_type() != MatrixDataType.H5AD:
+                raise click.ClickException("--experimental-enable-reembedding is only supported with H5AD files.")
+            if backed:
+                raise click.ClickException(
+                    "--experimental-enable-reembedding is not supported when run in --backed mode."
+                )
 
         file_size = matrix_data_loader.file_size()
         if file_size > BIG_FILE_SIZE_THRESHOLD:
@@ -402,6 +419,7 @@ def launch(
         var_names=var_names,
         anndata_backed=backed,
         disable_diffexp=disable_diffexp,
+        enable_reembedding=experimental_enable_reembedding,
     )
 
     matrix_data_cache_manager = MatrixDataCacheManager()

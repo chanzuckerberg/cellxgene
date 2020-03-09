@@ -12,16 +12,32 @@ const ColorsReducer = (
   prevSharedState
 ) => {
   switch (action.type) {
-    case "universe exists, but loading is still in progress":
-    case "reset World to eq Universe": {
+    case "universe exists, but loading is still in progress": {
+      /* initialize everything with default colors, no mode, no color-by accessor */
       const { world } = nextSharedState;
       const colorMode = null;
       const colorAccessor = null;
-      const { rgb, scale } = ColorHelpers.createColors(world, colorMode);
+      const { rgb, scale } = ColorHelpers.createColors(world);
       return {
         ...state,
         colorAccessor,
         colorMode,
+        rgb,
+        scale
+      };
+    }
+
+    case "reset World to eq Universe": {
+      /* need to rebuild colors as world may have changed, but don't switch modes */
+      const { world } = nextSharedState;
+      const { colorMode, colorAccessor } = state;
+      const { rgb, scale } = ColorHelpers.createColors(
+        world,
+        colorMode,
+        colorAccessor
+      );
+      return {
+        ...state,
         rgb,
         scale
       };

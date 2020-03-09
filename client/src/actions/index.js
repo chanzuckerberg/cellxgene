@@ -7,6 +7,7 @@ import {
   doBinaryRequest,
   dispatchNetworkErrorMessageToUser
 } from "../util/actionHelpers";
+import { requestReembed, reembedResetWorldToUniverse } from "./reembed";
 
 /*
 return promise to fetch the OBS annotations we need to load.  Omit anything
@@ -387,6 +388,7 @@ const requestDifferentialExpression = (set1, set2, num_genes = 10) => async (
 
 const resetWorldToUniverse = () => (dispatch, getState) => {
   const { universe } = getState();
+  reembedResetWorldToUniverse(dispatch, getState);
   dispatch({
     type: "reset World to eq Universe",
     universe
@@ -451,7 +453,8 @@ export default {
   requestDifferentialExpression,
   requestSingleGeneExpressionCountsForColoringPOST,
   requestUserDefinedGene,
+  requestReembed,
   resetWorldToUniverse,
   saveObsAnnotations,
-  setWorldToSelection,
+  setWorldToSelection
 };

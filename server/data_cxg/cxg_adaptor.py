@@ -164,6 +164,9 @@ class CxgAdaptor(DataAdaptor):
         array = self.open_array(f"emb/{ename}")
         return array[:, 0:dims]
 
+    def compute_embedding(self, method, filter):
+        raise NotImplementedError("CXG does not yet support re-embedding")
+
     def get_X_array(self, obs_mask=None, var_mask=None):
         obs_items = self._convert_mask(obs_mask)
         var_items = self._convert_mask(var_mask)

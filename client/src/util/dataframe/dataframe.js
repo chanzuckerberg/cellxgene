@@ -348,37 +348,90 @@ class Dataframe {
     );
   }
 
-  withColsFrom(dataframe) {
+  withColsFrom(dataframe, labels) {
     /*
     return a new dataframe containing all columns from both `this` and the
-    provided of dataframe.
+    provided dataframe argument.
 
     The row index from `this` will be used.  All dataframes must have identical
     dimensionality, and no overlapping columns labels.
 
     Special case, if either dataframe is empty, the other is returned unchanged.
+
+    Arguments:
+    * dataframe: a dataframe to combine with `this`
+    * labels: columns to pull from `dataframe` and combine with `this`.  If falsey,
+      all columns are used.  If an array, must contain a list of labels.  If an
+      Object or Map, the key is the columns to pull, which will be stored into the
+      new dataframe as the value.
+
+    Example:
+
+    newDf = df.withColsFrom(otherDf);         // combines all columns from both
+    newDf = df.withColsFrom(otherDf, ['a']);  // combines df with otherDf['a']
+    newDf = df.withColsFrom(otherDf, {a: 'b'}); // combines df with otherDf['a'], but calls it 'b'
+
      */
+
+    // resolve the source and dest label names.
+    let srcLabels;
+    let dstLabels;
+    if (!labels) {
+      // combine all columns
+      dstLabels = dataframe.colIndex.keys();
+      srcLabels = dstLabels;
+    } else if (Array.isArray(labels)) {
+      // combine subset of keys with no aliasing
+      dstLabels = labels;
+      srcLabels = labels;
+    } else if (labels instanceof Map) {
+      // aliasing with a Map
+      srcLabels = Array.from(labels.keys());
+      dstLabels = Array.from(labels.values());
+    } else {
+      // aliasing with an Object
+      srcLabels = Object.keys(labels);
+      dstLabels = Object.values(labels);
+    }
+
+    // if datafame is empty, and no specific labels specified, noop.
+    if (dataframe.isEmpty()) {
+      if (!labels || srcLabels.length === 0) return this;
+      throw new Error("Empty dataframe, unable to pick columns");
+    }
+
     if (this.isEmpty()) {
+      // 1. subset dataframe from source keys
+      // 2. alias names
+      dataframe = dataframe.subset(null, srcLabels);
+      for (let i = 0; i < srcLabels.length; i += 1) {
+        dataframe = dataframe.renameCol(srcLabels[i], dstLabels[i]);
+      }
       return dataframe;
     }
-    if (dataframe.isEmpty()) {
-      return this;
+
+    // otherwise, bulid a new dataframe combining columns from both
+
+    const srcOffsets = srcLabels.map(l => dataframe.colIndex.getOffset(l));
+
+    // check for label collisions
+    if (dstLabels.some(this.hasCol, this)) {
+      throw new Error("duplicate key collision");
     }
 
-    this.colIndex.keys().forEach(key => {
-      if (dataframe.has(key)) {
-        throw new Error("duplicate key collision");
-      }
-    });
-
-    const dims = [this.dims[0], this.dims[1] + dataframe.dims[1]];
+    // const dims = [this.dims[0], this.dims[1] + dataframe.dims[1]];
+    const dims = [this.dims[0], this.dims[1] + srcOffsets.length];
     const { rowIndex } = this;
-    const columns = [...this.__columns, ...dataframe.__columns];
-    const colIndex = this.colIndex.withLabels(dataframe.colIndex.keys());
+    const columns = [
+      ...this.__columns,
+      ...srcOffsets.map(i => dataframe.__columns[i])
+    ];
+    const colIndex = this.colIndex.withLabels(dstLabels);
     const columnsAccessor = [
       ...this.__columnsAccessor,
-      ...dataframe.__columnsAccessor
+      ...srcOffsets.map(i => dataframe.__columnsAccessor[i])
     ];
+
     return new this.constructor(
       dims,
       columns,

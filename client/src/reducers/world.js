@@ -4,6 +4,10 @@ import {
   ControlsHelpers,
   AnnotationsHelpers
 } from "../util/stateManager";
+import {
+  addObsLayout,
+  removeObsLayout
+} from "../util/stateManager/schemaHelpers";
 import clip from "../util/clip";
 import quantile from "../util/quantile";
 
@@ -32,6 +36,7 @@ const WorldReducer = (
     }
 
     case "universe: column load success": {
+      /* incremental initial data load - always assumes world == universe */
       const { universe } = nextSharedState;
       const { dim } = action;
       return {
@@ -273,6 +278,52 @@ const WorldReducer = (
       return {
         ...state,
         ...setLabelOnCurrentSelection(state, crossfilter, metadataField, label)
+      };
+    }
+
+    case "reembed: add reembedding": {
+      // new embedding loaded, which *only* affects world's layout.
+      // It may be new, or it may replace a previous re-embedding.
+      const { obsLayout: origObsLayout, schema: origSchema } = state;
+      const { embedding, schema: embeddingSchema } = action;
+
+      const { dims, name } = embeddingSchema;
+      let obsLayout = origObsLayout;
+      let schema = origSchema;
+
+      // alias the names the server sent us, in case they were not the same as the schema
+      const embedingLabels = embedding.colIndex.keys();
+      const labels = {
+        [embedingLabels[0]]: dims[0],
+        [embedingLabels[1]]: dims[1]
+      };
+      obsLayout = obsLayout.withColsFrom(embedding, labels);
+      schema = addObsLayout(schema, embeddingSchema);
+      return {
+        ...state,
+        obsLayout,
+        schema
+      };
+    }
+
+    case "reembed: clear all reembeddings": {
+      // reembedding was cleared -- remove from layout
+      const { obsLayout: origObsLayout, schema: origSchema } = state;
+      const { reembedding } = prevSharedState;
+
+      let schema = origSchema;
+      let obsLayout = origObsLayout;
+
+      reembedding.reembeddings.forEach((emb, name) => {
+        const { dims } = emb.schema;
+        obsLayout = obsLayout.dropCol(dims[0]);
+        obsLayout = obsLayout.dropCol(dims[1]);
+        schema = removeObsLayout(schema, name);
+      });
+      return {
+        ...state,
+        obsLayout,
+        schema
       };
     }
 

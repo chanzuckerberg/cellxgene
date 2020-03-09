@@ -1,20 +1,12 @@
 // jshint esversion: 6
 import React from "react";
 import { connect } from "react-redux";
-import {
-  Button,
-  ButtonGroup,
-  AnchorButton,
-  Tooltip,
-  Popover,
-  Position,
-  RadioGroup,
-  Radio,
-} from "@blueprintjs/core";
+import { Button, ButtonGroup, AnchorButton, Tooltip } from "@blueprintjs/core";
 import * as globals from "../../globals";
 import actions from "../../actions";
 import CellSetButton from "./cellSetButtons";
 import Clip from "./clip";
+import Embedding from "./embedding";
 import InformationMenu from "./infoMenu";
 import Subset from "./subset";
 import UndoRedoReset from "./undoRedo";
@@ -24,7 +16,6 @@ import UndoRedoReset from "./undoRedo";
   world: state.world,
   crossfilter: state.crossfilter,
   differential: state.differential,
-  layoutChoice: state.layoutChoice,
   graphInteractionMode: state.controls.graphInteractionMode,
   clipPercentileMin: Math.round(100 * (state.world?.clipQuantiles?.min ?? 0)),
   clipPercentileMax: Math.round(100 * (state.world?.clipQuantiles?.max ?? 1)),
@@ -171,14 +162,6 @@ class MenuBar extends React.Component {
     this.setState({ pendingClipPercentiles: null });
   };
 
-  handleLayoutChoiceChange = e => {
-    const { dispatch } = this.props;
-    dispatch({
-      type: "set layout choice",
-      layoutChoice: e.currentTarget.value
-    });
-  };
-
   computeDiffExp = () => {
     const { dispatch, differential } = this.props;
     if (differential.celllist1 && differential.celllist2) {
@@ -223,7 +206,6 @@ class MenuBar extends React.Component {
     const { world, universe } = this.props;
     return world.nObs !== universe.nObs;
   };
-
 
   renderDiffExp() {
     /* diffexp-related buttons may be disabled */
@@ -295,7 +277,6 @@ class MenuBar extends React.Component {
       selectionTool,
       clipPercentileMin,
       clipPercentileMax,
-      layoutChoice,
       graphInteractionMode,
       aboutLink,
       showCentroidLabels
@@ -335,7 +316,7 @@ class MenuBar extends React.Component {
             dispatch({ type: "increment graph render counter" });
           }}
         />
-        <ButtonGroup style={{marginRight: "10px"}}>
+        <ButtonGroup style={{ marginRight: "10px" }}>
           <Tooltip
             content={selectionTooltip}
             position="bottom"
@@ -394,52 +375,7 @@ class MenuBar extends React.Component {
             }}
           />
         </Tooltip>
-        <ButtonGroup
-          style={{
-            marginRight: 10
-          }}
-        >
-          <Popover
-            target={
-              <Tooltip
-                content="Select embedding for visualization"
-                position="bottom"
-                hoverOpenDelay={globals.tooltipHoverOpenDelay}
-              >
-                <Button
-                  type="button"
-                  data-testid="layout-choice"
-                  icon="heatmap"
-                  style={{
-                    cursor: "pointer"
-                  }}
-                />
-              </Tooltip>
-            }
-            position={Position.BOTTOM_RIGHT}
-            content={
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "flex-start",
-                  alignItems: "flex-start",
-                  flexDirection: "column",
-                  padding: 10
-                }}
-              >
-                <RadioGroup
-                  label="Embedding Choice"
-                  onChange={this.handleLayoutChoiceChange}
-                  selectedValue={layoutChoice.current}
-                >
-                  {layoutChoice.available.map(name => (
-                    <Radio label={name} value={name} key={name} />
-                  ))}
-                </RadioGroup>
-              </div>
-            }
-          />
-        </ButtonGroup>
+        <Embedding />
         <Clip
           pendingClipPercentiles={pendingClipPercentiles}
           clipPercentileMin={clipPercentileMin}

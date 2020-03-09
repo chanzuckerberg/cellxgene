@@ -1,18 +1,17 @@
 import React from "react";
-import {AnchorButton, ButtonGroup, Tooltip} from "@blueprintjs/core";
+import { AnchorButton, ButtonGroup, Tooltip } from "@blueprintjs/core";
 import * as globals from "../../globals";
-
 
 function Subset(props) {
   const {
     subsetPossible,
     subsetResetPossible,
     handleSubset,
-    handleSubsetReset,
+    handleSubsetReset
   } = props;
 
   return (
-    <ButtonGroup style={{marginRight: "10px"}}>
+    <ButtonGroup style={{ marginRight: "10px" }}>
       <Tooltip
         content="Subset to currently selected cells and associated metadata"
         position="bottom"
