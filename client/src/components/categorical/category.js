@@ -20,8 +20,7 @@ class Category extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      isChecked: true,
-      isExpanded: false
+      isChecked: true
     };
   }
 
@@ -142,13 +141,15 @@ class Category extends React.Component {
   }
 
   render() {
-    const { isExpanded, isChecked } = this.state;
+    const { isChecked } = this.state;
     const {
       metadataField,
       categoricalSelection,
       colorAccessor,
       isUserAnno,
-      annotations
+      annotations,
+      isExpanded,
+      onExpansionChange
     } = this.props;
 
     const isStillLoading = !(categoricalSelection?.[metadataField] ?? false);
@@ -196,7 +197,7 @@ class Category extends React.Component {
                 annotations.isEditingCategoryName &&
                 annotations.categoryBeingEdited === metadataField;
               if (!editingCategory) {
-                this.setState({ isExpanded: !isExpanded });
+                onExpansionChange(metadataField)
               }
             }}
           >
