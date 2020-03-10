@@ -16,7 +16,6 @@ from server.common.errors import DatasetAccessError
 from server.data_common.matrix_loader import MatrixDataLoader, MatrixDataCacheManager, MatrixDataType
 from server.common.annotations import AnnotationsLocalFile
 from server.common.app_config import AppConfig
-from server.common.data_locator import DataLocator
 
 from server.common.errors import OntologyLoadFailure
 
