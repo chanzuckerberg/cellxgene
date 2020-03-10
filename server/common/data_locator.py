@@ -26,10 +26,18 @@ class DataLocator:
     """
 
     def __init__(self, uri_or_path):
-        self.uri_or_path = uri_or_path
-        self.protocol, self.path = DataLocator._get_protocol_and_path(uri_or_path)
-        # work-around for LocalFileSystem not treating file: and None as the same scheme/protocol
-        self.cname = self.path if self.protocol == "file" else self.uri_or_path
+        if isinstance(uri_or_path, DataLocator):
+            locator = uri_or_path
+            self.uri_or_path = locator.uri_or_path
+            self.protocol = locator.protocol
+            self.path = locator.path
+            self.cname = locator.cname
+        else:
+            self.uri_or_path = uri_or_path
+            self.protocol, self.path = DataLocator._get_protocol_and_path(uri_or_path)
+            # work-around for LocalFileSystem not treating file: and None as the same scheme/protocol
+            self.cname = self.path if self.protocol == "file" else self.uri_or_path
+
         # will throw RuntimeError if the protocol is unsupported
         self.fs = fsspec.filesystem(self.protocol)
 
