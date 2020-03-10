@@ -101,60 +101,48 @@ class HistogramBrush extends React.PureComponent {
   }
 
   componentDidUpdate(prevProps) {
-    const { field, world } = this.props;
+    const { field, world, continuousSelectionRange: range, colorAccessor } = this.props;
     const { x, y, bins, svgRef } = this._histogram;
-    let { brushXselection, brushX } = this.state;
-    let forceBrushUpdate = false;
+    let { brushX, brushXselection } = this.state;
 
-    /*
-    Update our axis if the underlying dataframe column has changed
-    */
     const dfColumn = HistogramBrush.getColumn(world, field);
-    const oldDfColumn = HistogramBrush.getColumn(
-      prevProps.world,
-      prevProps.field
-    );
-    if (dfColumn !== oldDfColumn) {
-      ({ brushXselection, brushX } = this.renderAxesBrushBins(
-        x,
-        y,
-        bins,
-        svgRef,
-        field
-      ));
-      forceBrushUpdate = true;
+    const oldDfColumn = HistogramBrush.getColumn(prevProps.world, prevProps.field);
+
+    const rangeChanged = range !== prevProps.continuousSelectionRange;
+    const dfChanged = dfColumn !== oldDfColumn;
+    const colorSelectionChanged = prevProps.colorAccessor !== colorAccessor;
+
+    if (dfChanged || colorSelectionChanged) {
+      ({brushX, brushXselection} = this.renderAxesBrushBins(x, y, bins, svgRef, field));
     }
 
     /*
     if the selection has changed, ensure that the brush correctly reflects
     the underlying selection.
     */
-    const { continuousSelectionRange: range } = this.props;
-    if (forceBrushUpdate || range !== prevProps.continuousSelectionRange) {
-      if (brushXselection) {
-        const selection = d3.brushSelection(brushXselection.node());
-        if (!range && selection) {
-          /* no active selection - clear brush */
-          brushXselection.call(brushX.move, null);
-        } else if (range && !selection) {
-          /* there is an active selection, but no brush - set the brush */
-          const x0 = x(range[0]);
-          const x1 = x(range[1]);
+    if ((dfChanged || rangeChanged) && brushXselection) {
+      const selection = d3.brushSelection(brushXselection.node());
+      if (!range && selection) {
+        /* no active selection - clear brush */
+        brushXselection.call(brushX.move, null);
+      } else if (range && !selection) {
+        /* there is an active selection, but no brush - set the brush */
+        const x0 = x(range[0]);
+        const x1 = x(range[1]);
+        brushXselection.call(brushX.move, [x0, x1]);
+      } else if (range && selection) {
+        /* there is an active selection and a brush - make sure they match */
+        const moveDeltaThreshold = 1;
+        const x0 = x(range[0]);
+        const x1 = x(range[1]);
+        const dX0 = Math.abs(x0 - selection[0]);
+        const dX1 = Math.abs(x1 - selection[1]);
+        /*
+        only update the brush if it is grossly incorrect,
+        as defined by the moveDeltaThreshold
+        */
+        if (dX0 > moveDeltaThreshold || dX1 > moveDeltaThreshold) {
           brushXselection.call(brushX.move, [x0, x1]);
-        } else if (range && selection) {
-          /* there is an active selection and a brush - make sure they match */
-          const moveDeltaThreshold = 1;
-          const x0 = x(range[0]);
-          const x1 = x(range[1]);
-          const dX0 = Math.abs(x0 - selection[0]);
-          const dX1 = Math.abs(x1 - selection[1]);
-          /*
-          only update the brush if it is grossly incorrect,
-          as defined by the moveDeltaThreshold
-          */
-          if (dX0 > moveDeltaThreshold || dX1 > moveDeltaThreshold) {
-            brushXselection.call(brushX.move, [x0, x1]);
-          }
         }
       }
     }
@@ -321,6 +309,7 @@ class HistogramBrush extends React.PureComponent {
   }
 
   renderAxesBrushBins(x, y, bins, svgRef, field) {
+    const { colorAccessor } = this.props;
     const svg = d3.select(svgRef);
 
     /* Remove everything */
@@ -355,7 +344,7 @@ class HistogramBrush extends React.PureComponent {
       .attr("y", d => y(d.length))
       .attr("width", d => Math.abs(x(d.x1) - x(d.x0) - 1))
       .attr("height", d => y(0) - y(d.length))
-      .style("fill", function (d) { return colorScale(histogramScale.invert(x(d.x0) + 1)) });
+      .style("fill", colorAccessor === field ? d => colorScale(histogramScale.invert(x(d.x0) + 1)) : "#bbb");
 
     // BRUSH
     // Note the brushable area is bounded by the data on three sides, but goes down to cover the x-axis
