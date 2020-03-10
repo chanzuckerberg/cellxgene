@@ -95,7 +95,10 @@ jobs:
           path: anndata
       - name: Install dependencies
         run: |
-          cd cellxgene && make pydist install-dist dev-env
-          cd ../anndata && pip install -e .
+          cd cellxgene
+          sed -i.bu -E 's/^anndata[>=]=[0-9]+.[0-9]+.[0-9]+$/anndata/g' server/requirements.txt
+          make pydist install-dist dev-env
+          cd ../anndata
+          pip install -e .
       - name: Tests
         run: cd cellxgene && make unit-test ${{ matrix.test-suite }}
