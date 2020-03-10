@@ -281,3 +281,55 @@ describe("ui elements don't error", () => {
     await page.evaluate("window.scrollBy(0, 1000);");
   });
 });
+
+describe("centroid labels", () => {
+  test("labels are created", async () => {
+    await utils.clickOn("centroid-label-toggle");
+    const labels = Object.keys(data.categorical);
+    /* eslint-disable no-await-in-loop */
+    // Toggle colorby for each category and check to see if labels are generated
+    for (let i = 0, { length } = labels; i < length; i += 1) {
+      const label = labels[i];
+      await utils.clickOn(`colorby-${label}`);
+      const generatedLabels = await utils.getAllByClass("centroid-label");
+      // Number of labels generated should be equal to size of the object
+      expect(generatedLabels).toHaveLength(
+        Object.keys(data.categorical[label]).length
+      );
+    }
+    /* eslint-enable no-await-in-loop */
+  });
+});
+
+describe("graph overlay", () => {
+  test("transform centroids correctly", async () => {
+    const category = Object.keys(data.categorical)[0];
+    await utils.clickOn("centroid-label-toggle");
+    await utils.clickOn(`colorby-${category}`);
+    await utils.clickOn("mode-pan-zoom");
+    const panCoords = await cxgActions.calcDragCoordinates(
+      "layout-graph",
+      data.pan["coordinates-as-percent"]
+    );
+
+    const categoryValue = Object.keys(data.categorical[category])[0];
+    const initialCoordinates = await utils.getElementCoordinates(
+      `${categoryValue}-centroid-label`
+    );
+    await cxgActions.drag(
+      "layout-graph",
+      panCoords.start,
+      panCoords.end,
+      false
+    );
+    const terminalCoordinates = await utils.getElementCoordinates(
+      `${categoryValue}-centroid-label`
+    );
+    expect(terminalCoordinates[0] - initialCoordinates[0]).toBeCloseTo(
+      panCoords.end.x - panCoords.start.x
+    );
+    expect(terminalCoordinates[1] - initialCoordinates[1]).toBeCloseTo(
+      panCoords.end.y - panCoords.start.y
+    );
+  });
+});

@@ -366,6 +366,8 @@ class MenuBar extends React.Component {
           disabled={graphInteractionMode === "zoom"}
         >
           <Button
+            type="button"
+            data-testid="centroid-label-toggle"
             icon="property"
             onClick={this.handleCentroidChange}
             active={showCentroidLabels}
