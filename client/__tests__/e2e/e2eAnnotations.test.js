@@ -4,7 +4,7 @@ Tests included in this file are specific to annotation features
 import { appUrlBase, DATASET } from "./config";
 import { setupTestBrowser } from "./testBrowser";
 import { datasets } from "./data";
-import {maybeTruncateString} from "../../src/util"
+import {maybeTruncateString} from "../../src/util/maybeTruncateString"
 
 let browser, page, utils, actions;
 const data = datasets[DATASET];
