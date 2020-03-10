@@ -108,11 +108,14 @@ class Categories extends React.Component {
 
   onExpansionChange = catName => {
     const {expandedCats} = this.state;
-    console.log("onExp", expandedCats.has(catName))
     if (expandedCats.has(catName)) {
-      this.setState({expandedCats: new Set(expandedCats).delete(catName)}) 
+      const _expandedCats = new Set(expandedCats);
+      _expandedCats.delete(catName)
+      this.setState({expandedCats: _expandedCats}) 
     } else {
-      this.setState({expandedCats: new Set(expandedCats).add(catName)})
+      const _expandedCats = new Set(expandedCats);
+      _expandedCats.add(catName)
+      this.setState({expandedCats: _expandedCats})
     }
   }
 
@@ -130,8 +133,6 @@ class Categories extends React.Component {
       schema,
       ControlsHelpers.maxCategoryItems(config)
     ).sort();
-
-    console.log('in render', this.state)
 
     return (
       <div
