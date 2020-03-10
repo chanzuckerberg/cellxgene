@@ -388,14 +388,6 @@ def launch(
                     "Unable to create directory specified by " "--experimental-annotations-output-dir"
                 )
 
-        # Annotations can only guess file location if data file is local
-        if not experimental_annotations_file and not experimental_annotations_output_dir:
-            if (dataroot and not DataLocator(dataroot).islocal()) or (datapath and not DataLocator(datapath).islocal()):
-                raise click.ClickException(
-                    "To use annotations, you must specify one of --experimental-annotations-file or "
-                    "--experimental-annotations-output-dir"
-                )
-
     if about:
 
         def url_check(url):

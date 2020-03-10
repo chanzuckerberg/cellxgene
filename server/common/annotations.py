@@ -158,18 +158,14 @@ class AnnotationsLocalFile(Annotations):
         idhash = base64.b32encode(blake2b(id, digest_size=5).digest()).decode("utf-8")
         return idhash
 
-    def _get_output_dir(self, data_adaptor):
+    def _get_output_dir(self):
         if self.output_dir:
             return self.output_dir
 
         if self.output_file:
             return os.path.dirname(self.path.abspath(self.output_dir))
 
-        data_locator = data_adaptor.get_data_locator()
-        if not data_locator.islocal():
-            raise AnnotationsError("unable to determine output directory for annotations")
-
-        return os.path.dirname(data_locator.path)
+        return os.getcwd()
 
     def _get_filename(self, data_adaptor):
         """ return the current annotation file name """
@@ -188,7 +184,7 @@ class AnnotationsLocalFile(Annotations):
             raise AnnotationsError("unable to determine file name for annotations")
 
         idhash = self._get_userdata_idhash(data_adaptor)
-        return os.path.join(self._get_output_dir(data_adaptor), f"{collection}-{idhash}.csv")
+        return os.path.join(self._get_output_dir(), f"{collection}-{idhash}.csv")
 
     def _backup(self, fname, max_backups=9):
         """
