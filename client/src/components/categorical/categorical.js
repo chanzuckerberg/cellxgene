@@ -22,7 +22,8 @@ class Categories extends React.Component {
     this.state = {
       createAnnoModeActive: false,
       newCategoryText: "",
-      categoryToDuplicate: null
+      categoryToDuplicate: null,
+      expandedCats: new Set()
     };
   }
 
@@ -105,15 +106,28 @@ class Categories extends React.Component {
     );
   };
 
+  onExpansionChange = catName => {
+    const {expandedCats} = this.state;
+    if (expandedCats.has(catName)) {
+      const _expandedCats = new Set(expandedCats);
+      _expandedCats.delete(catName)
+      this.setState({expandedCats: _expandedCats}) 
+    } else {
+      const _expandedCats = new Set(expandedCats);
+      _expandedCats.add(catName)
+      this.setState({expandedCats: _expandedCats})
+    }
+  }
+
   render() {
     const {
       createAnnoModeActive,
       categoryToDuplicate,
-      newCategoryText
+      newCategoryText,
+      expandedCats      
     } = this.state;
     const { writableCategoriesEnabled, schema, config, ontology } = this.props;
     const ontologyEnabled = ontology?.enabled ?? false;
-
     /* all names, sorted in display order.  Will be rendered in this order */
     const allCategoryNames = ControlsHelpers.selectableCategoryNames(
       schema,
@@ -169,6 +183,8 @@ class Categories extends React.Component {
             <Category
               key={catName}
               metadataField={catName}
+              onExpansionChange={this.onExpansionChange}
+              isExpanded={expandedCats.has(catName)}
               createAnnoModeActive={createAnnoModeActive}
               isUserAnno={false}
             />
@@ -180,6 +196,8 @@ class Categories extends React.Component {
             <Category
               key={catName}
               metadataField={catName}
+              onExpansionChange={this.onExpansionChange}
+              isExpanded={expandedCats.has(catName)}
               createAnnoModeActive={createAnnoModeActive}
               isUserAnno
             />
