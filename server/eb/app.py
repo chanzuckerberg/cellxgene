@@ -45,7 +45,8 @@ try:
         obs_names=None,
         var_names=None,
         anndata_backed=False,
-        disable_diffexp=False)
+        disable_diffexp=False,
+    )
 
     matrix_data_cache_manager = MatrixDataCacheManager()
     annotations = None
