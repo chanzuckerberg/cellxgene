@@ -3,6 +3,10 @@ name: Compatibility Tests
 on:
   schedule:
     - cron: '0 8 7 * 2'
+  push:
+    branches:
+      - master
+      - mweiden/compatibility-test-fixes
 
 env:
   JEST_ENV: prod
