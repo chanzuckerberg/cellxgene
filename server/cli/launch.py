@@ -16,6 +16,7 @@ from server.common.errors import DatasetAccessError
 from server.data_common.matrix_loader import MatrixDataLoader, MatrixDataCacheManager, MatrixDataType
 from server.common.annotations import AnnotationsLocalFile
 from server.common.app_config import AppConfig
+from server.common.data_locator import DataLocator
 
 from server.common.errors import OntologyLoadFailure
 
@@ -385,6 +386,13 @@ def launch(
             except OSError:
                 raise click.ClickException(
                     "Unable to create directory specified by " "--experimental-annotations-output-dir"
+                )
+
+        # Annotations can only guess file location if data file is local
+        if not experimental_annotations_file and not experimental_annotations_output_dir:
+            if (dataroot and not DataLocator(dataroot).islocal()) or (datapath and not DataLocator(datapath).islocal()):
+                raise click.ClickException(
+                    "To use annotations, you must specify one of --experimental-annotations-file or --experimental-annotations-output-dir"
                 )
 
     if about:
