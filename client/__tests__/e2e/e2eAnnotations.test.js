@@ -4,6 +4,7 @@ Tests included in this file are specific to annotation features
 import { appUrlBase, DATASET } from "./config";
 import { setupTestBrowser } from "./testBrowser";
 import { datasets } from "./data";
+import {maybeTruncateString} from "../../src/util"
 
 let browser, page, utils, actions;
 const data = datasets[DATASET];
@@ -184,7 +185,7 @@ describe.each([
 
   async function assertCategoryExists(categoryName) {
     const result = await utils.waitByID(`${categoryName}:category-expand`);
-    expect(await result.evaluate(node => node.innerText)).toBe(categoryName);
+    expect(await result.evaluate(node => node.innerText)).toBe(maybeTruncateString(categoryName));
   }
 
   async function assertCategoryDoesNotExist(categoryName) {
