@@ -68,6 +68,7 @@ const getCoordinatesByCategoricalValues = (
           yCoordinates: new Float32Array(numInCategoricalValue),
           length: 0
         };
+        coordsByCategoryLabel.set(categoryValue, coords);
       }
 
       coords.hasFinite =
@@ -80,8 +81,6 @@ const getCoordinatesByCategoricalValues = (
       coords.yCoordinates[coordinatesLength] = layoutYArray[i];
 
       coords.length = coordinatesLength + 1;
-
-      coordsByCategoryLabel.set(categoryValue, coords);
     }
   }
   return coordsByCategoryLabel;
