@@ -107,7 +107,7 @@ class AppConfig(object):
             "disable-diffexp": self.disable_diffexp,
             "annotations": False,
             "annotations_file": None,
-            "annotations_output_dir": None,
+            "annotations_dir": None,
             "annotations_cell_ontology_enabled": False,
             "annotations_cell_ontology_obopath": None,
             "annotations_cell_ontology_terms": None,

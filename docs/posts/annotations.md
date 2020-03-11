@@ -48,7 +48,7 @@ This assumes that:
 
 If you'd like to specify the complete file path for your annotations, you can do so by running:  
 ```
-cellxgene launch mydata.h5ad --annotations-input-file path/to/myfile.csv
+cellxgene launch mydata.h5ad --annotations-file path/to/myfile.csv
 ```
 
 Any changes you make will be reflected in the original CSV. If the file does not exist, it will be created.  
@@ -79,7 +79,7 @@ Specifying a single file name for multiple contributors will result in data over
 
 To specify an output directory, run:  
 ```
-cellxgene launch mydata.h5ad --annotations-output-dir path/to/annotations-directory/
+cellxgene launch mydata.h5ad --annotations-dir path/to/annotations-directory/
 ```
 
 For each user, annotations will be saved as follows:  
