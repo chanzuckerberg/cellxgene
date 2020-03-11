@@ -17,7 +17,7 @@ BAD_FILTER = {"filter": {"obs": {"annotation_value": [{"name": "xyz"}]}}}
 
 
 class EndPoints(object):
-    ANNOTATIONS_ENABLED = False
+    ANNOTATIONS_ENABLED = True
 
     def setUp(self):
         self.session = requests.Session()
@@ -324,6 +324,7 @@ class EndPointsAnndata(unittest.TestCase, EndPoints):
     LOCAL_URL = f"http://127.0.0.1:{PORT}/"
     VERSION = "v0.2"
     URL_BASE = f"{LOCAL_URL}api/{VERSION}/"
+    ANNOTATIONS_ENABLED = False
 
     @classmethod
     def setUpClass(cls):
@@ -334,6 +335,7 @@ class EndPointsAnndata(unittest.TestCase, EndPoints):
                 "--no-upgrade-check",
                 "launch",
                 "../example-dataset/pbmc3k.h5ad",
+                "--disable-annotations",
                 "--verbose",
                 "--port",
                 str(cls.PORT),
@@ -356,6 +358,7 @@ class EndPointsCxg(unittest.TestCase, EndPoints):
     LOCAL_URL = f"http://127.0.0.1:{PORT}/"
     VERSION = "v0.2"
     URL_BASE = f"{LOCAL_URL}api/{VERSION}/"
+    ANNOTATIONS_ENABLED = False
 
     @classmethod
     def setUpClass(cls):
@@ -366,6 +369,7 @@ class EndPointsCxg(unittest.TestCase, EndPoints):
                 "--no-upgrade-check",
                 "launch",
                 "test/test_datasets/pbmc3k.cxg",
+                "--disable-annotations",
                 "--verbose",
                 "--port",
                 str(cls.PORT),
@@ -398,8 +402,7 @@ class EndPointsAnndataAnnotations(unittest.TestCase, EndPointsAnnotations):
                 "cellxgene",
                 "--no-upgrade-check",
                 "launch",
-                "--experimental-annotations",
-                "--experimental-annotations-file",
+                "--annotations-file",
                 cls.annotations.output_file,
                 "--verbose",
                 "--port",
@@ -433,8 +436,7 @@ class EndPointsCxgAnnotations(unittest.TestCase, EndPointsAnnotations):
                 "cellxgene",
                 "--no-upgrade-check",
                 "launch",
-                "--experimental-annotations",
-                "--experimental-annotations-file",
+                "--annotations-file",
                 cls.annotations.output_file,
                 "--verbose",
                 "--port",

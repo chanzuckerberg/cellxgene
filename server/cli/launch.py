@@ -26,29 +26,29 @@ DEFAULT_SERVER_PORT = int(environ.get("CXG_SERVER_PORT", "5005"))
 
 def annotation_args(func):
     @click.option(
-        "--experimental-annotations",
+        "--disable-annotations",
         is_flag=True,
         default=False,
         show_default=True,
-        help="Enable user annotation of data.",
+        help="Disable user annotation of data.",
     )
     @click.option(
-        "--experimental-annotations-file",
+        "--annotations-file",
         default=None,
         show_default=True,
         multiple=False,
         metavar="<path>",
         help="CSV file to initialize editing of existing annotations; will be altered in-place. "
-        "Incompatible with --annotations-output-dir.",
+        "Incompatible with --annotations-dir.",
     )
     @click.option(
-        "--experimental-annotations-output-dir",
+        "--annotations-dir",
         default=None,
         show_default=False,
         multiple=False,
         metavar="<directory path>",
         help="Directory of where to save output annotations; filename will be specified in the application. "
-        "Incompatible with --annotations-input-file.",
+        "Incompatible with --annotations-file.",
     )
     @click.option(
         "--experimental-annotations-ontology",
@@ -279,9 +279,9 @@ def launch(
     title,
     scripts,
     about,
-    experimental_annotations,
-    experimental_annotations_file,
-    experimental_annotations_output_dir,
+    disable_annotations,
+    annotations_file,
+    annotations_dir,
     backed,
     disable_diffexp,
     experimental_annotations_ontology,
@@ -359,32 +359,32 @@ def launch(
     else:
         port = find_available_port(host, DEFAULT_SERVER_PORT)
 
-    if not experimental_annotations:
-        if experimental_annotations_file is not None:
-            click.echo("Warning: --experimental-annotations-file ignored as --annotations not enabled.")
-        if experimental_annotations_output_dir is not None:
-            click.echo("Warning: --experimental-annotations-output-dir ignored as --annotations not enabled.")
+    if disable_annotations:
+        if annotations_file is not None:
+            click.echo("Warning: --annotations-file ignored as annotations are disabled.")
+        if annotations_dir is not None:
+            click.echo("Warning: --annotations-dir ignored as annotations are disabled.")
         if experimental_annotations_ontology:
-            click.echo("Warning: --experimental-annotations-ontology ignored as --annotations not enabled.")
+            click.echo("Warning: --experimental-annotations-ontology ignored as annotations are disabled.")
         if experimental_annotations_ontology_obo is not None:
-            click.echo("Warning: --experimental-annotations-ontology-obo ignored as --annotations not enabled.")
+            click.echo("Warning: --experimental-annotations-ontology-obo ignored as annotations are disabled.")
     else:
-        if experimental_annotations_file is not None and experimental_annotations_output_dir is not None:
+        if annotations_file is not None and annotations_dir is not None:
             raise click.ClickException(
-                "--experimental-annotations-file and --experimental-annotations-output-dir " "may not be used together."
+                "--annotations-file and --annotations-dir " "may not be used together."
             )
 
-        if experimental_annotations_file is not None:
-            lf_name, lf_ext = splitext(experimental_annotations_file)
+        if annotations_file is not None:
+            lf_name, lf_ext = splitext(annotations_file)
             if lf_ext and lf_ext != ".csv":
-                raise click.FileError(basename(experimental_annotations_file), hint="annotation file type must be .csv")
+                raise click.FileError(basename(annotations_file), hint="annotation file type must be .csv")
 
-        if experimental_annotations_output_dir is not None and not isdir(experimental_annotations_output_dir):
+        if annotations_dir is not None and not isdir(annotations_dir):
             try:
-                mkdir(experimental_annotations_output_dir)
+                mkdir(annotations_dir)
             except OSError:
                 raise click.ClickException(
-                    "Unable to create directory specified by " "--experimental-annotations-output-dir"
+                    "Unable to create directory specified by " "--annotations-dir"
                 )
 
     if about:
@@ -438,13 +438,13 @@ def launch(
     # create an annotations object.  Only AnnotationsLocalFile is used (for now)
     annotations = None
 
-    if experimental_annotations:
-        annotations = AnnotationsLocalFile(experimental_annotations_output_dir, experimental_annotations_file)
+    if not disable_annotations:
+        annotations = AnnotationsLocalFile(annotations_dir, annotations_file)
 
         # if the user has specified a fixed label file, go ahead and validate it
         # so that we can remove errors early in the process.
 
-        if experimental_annotations_file and data_adaptor:
+        if annotations_file and data_adaptor:
             data_adaptor.check_new_labels(annotations.read_labels(data_adaptor))
 
         if experimental_annotations_ontology or bool(experimental_annotations_ontology_obo):

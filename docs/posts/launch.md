@@ -46,7 +46,7 @@ cellxgene launch s3://mybucket.s3-us-west-2.amazonaws.com/mydata.h5ad
 
 `--open` automatically opens the web browser after launching (caveat: only works on some operating systems).
 
-`--experimental-annotations`, `--experimental-annotations-file` & `--experimental-annotations-output-dir` all have to do with an experimental feature to allow users to create new categorical annotations in the application. We have a [whole separate page](annotations) about their usage! :)
+`--disable-annotations`, `--annotations-file` & `--annotations-dir` all have to do with creating new categorical annotations in the application. We have a [whole separate page](annotations) about their usage! :)
 
 `--diffexp-lfc-cutoff` as explained [in the methods](methods), genes are only returned in differential expression if the effect size is above the specified threshold for log fold change. Defaults to 0.01.
 
