@@ -33,15 +33,14 @@ const getCoordinatesByCategoricalValues = (
   const layoutXArray = obsLayout.col(layoutDimNames[0]).asArray();
   const layoutYArray = obsLayout.col(layoutDimNames[1]).asArray();
 
-  const { categoryValueIndices, categoryValueCounts } = categoricalSelection[
-    categoryName
-  ];
+  const { categoryValueIndices, categoryValueCounts } =
+    categoricalSelection?.[categoryName] || {};
 
   // If the coloredBy is not a categorical col
   if (categoryValueIndices === undefined) {
-    return coordinates;
+    return coordsByCategoryLabel;
   }
-  
+
   // Check to see if the current category is a user created annotation
   const isUserAnno = schemaObsByName[categoryName].writable;
 
