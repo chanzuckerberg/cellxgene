@@ -6,6 +6,7 @@ on:
   push:
     branches:
       - master
+      - mweiden/compatibility-test-fixes-pt2
 
 env:
   JEST_ENV: prod
