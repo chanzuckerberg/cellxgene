@@ -38,8 +38,13 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
-        sudo apt-get install libhdf5-serial-dev
-        make pydist install-dist dev-env
+        # 1. only install the dev requirements on top of what is in the cellxgene pip package
+        sudo apt-get update && sudo apt-get install -y libhdf5-serial-dev
+        sed -i 's/-r requirements.txt//' server/requirements-dev.txt
+        pip install -r server/requirements-dev.txt
+        # 2. install cellxgene
+        make pydist install-dist
+        # 3. install anndata
         pip install anndata==${{ matrix.anndata-version }}
         # workaround for anndata 0.6.22.post1 bug
         [[ "0.6.22.post1" = "${{ matrix.anndata-version }}" ]] && pip install h5py==2.9.0 || true
@@ -69,8 +74,14 @@ jobs:
           path: anndata
       - name: Install dependencies
         run: |
+          cd cellxgene
+          # 1. only install the dev requirements on top of what is in the cellxgene pip package
+          make dev-env-client
+          sed -i 's/-r requirements.txt//' server/requirements-dev.txt
+          pip install -r server/requirements-dev.txt
+          # 2. install cellxgene
           pip install --upgrade cellxgene
-          cd cellxgene && make dev-env
+          # 3. install anndata
           cd ../anndata && pip install -e .
       - name: Tests
         run: cd cellxgene && make unit-test ${{ matrix.test-suite }}
@@ -99,7 +110,7 @@ jobs:
       - name: Install dependencies
         run: |
           cd cellxgene
-          sed -i.bu -E 's/^anndata[>=]=[0-9]+.[0-9]+.[0-9]+$/anndata/g' server/requirements.txt
+          sed -i -E 's/^anndata[>=]=[0-9]+.[0-9]+.[0-9]+$/anndata/g' server/requirements.txt
           make pydist install-dist dev-env
           cd ../anndata
           pip install -e .
