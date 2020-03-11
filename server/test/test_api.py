@@ -369,7 +369,7 @@ class EndPointsCxg(unittest.TestCase, EndPoints):
                 "--no-upgrade-check",
                 "launch",
                 "test/test_datasets/pbmc3k.cxg",
-                "--disable-annotations"
+                "--disable-annotations",
                 "--verbose",
                 "--port",
                 str(cls.PORT),
