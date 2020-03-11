@@ -18,13 +18,13 @@ class CxgAdaptor(DataAdaptor):
     # TODO:  The tiledb context parameters should be a configuration option
     tiledb_ctx = tiledb.Ctx({"sm.tile_cache_size": 8 * 1024 * 1024 * 1024, "sm.num_reader_threads": 32})
 
-    def __init__(self, location, config=None):
+    def __init__(self, data_locator, config=None):
         super().__init__(config)
-        self.url = location
         self.arrays = {}
         self.lock = threading.Lock()
 
-        self.url = location
+        self.data_locator = data_locator
+        self.url = data_locator.uri_or_path
         if self.url[-1] != "/":
             self.url += "/"
 
@@ -37,17 +37,18 @@ class CxgAdaptor(DataAdaptor):
         self.arrays.clear()
 
     @staticmethod
-    def pre_load_validation(location):
+    def pre_load_validation(data_locator):
+        location = data_locator.uri_or_path
         if not CxgAdaptor.isvalid(location):
             raise DatasetAccessError(f"cxg matrix is not valid: {location}")
 
     @staticmethod
-    def file_size(location):
+    def file_size(data_locator):
         return 0
 
     @staticmethod
-    def open(location, args):
-        return CxgAdaptor(location, args)
+    def open(data_locator, args):
+        return CxgAdaptor(data_locator, args)
 
     def get_about(self):
         return self.about if self.about else super().get_about()
@@ -57,6 +58,9 @@ class CxgAdaptor(DataAdaptor):
 
     def get_location(self):
         return self.url
+
+    def get_data_locator(self):
+        return self.data_locator
 
     def get_name(self):
         return "cellxgene cxg adaptor version"

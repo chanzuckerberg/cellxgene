@@ -14,7 +14,6 @@ from server.data_common.fbs.matrix import encode_matrix_fbs
 from server.common.utils import series_to_schema
 from server.common.constants import Axis, MAX_LAYOUTS
 from server.common.errors import PrepareError, DatasetAccessError, FilterError
-from server.common.data_locator import DataLocator
 from server.compute.scanpy import scanpy_umap
 
 anndata_version = version.parse(str(anndata.__version__)).release
@@ -38,30 +37,30 @@ class AnndataAdaptor(DataAdaptor):
         pass
 
     @staticmethod
-    def pre_load_validation(location):
-        data_locator = DataLocator(location)
+    def pre_load_validation(data_locator):
         if data_locator.islocal():
             # if data locator is local, apply file system conventions and other "cheap"
             # validation checks.  If a URI, defer until we actually fetch the data and
             # try to read it.  Many of these tests don't make sense for URIs (eg, extension-
             # based typing).
             if not data_locator.exists():
-                raise DatasetAccessError(f"{location} does not exist")
+                raise DatasetAccessError(f"{data_locator.uri_or_path} does not exist")
             if not data_locator.isfile():
-                raise DatasetAccessError(f"{location} is not a file")
+                raise DatasetAccessError(f"{data_locator.uri_or_path} is not a file")
 
     @staticmethod
-    def file_size(location):
-        data_locator = DataLocator(location)
+    def file_size(data_locator):
         return data_locator.size() if data_locator.islocal() else 0
 
     @staticmethod
-    def open(location, config):
-        data_locator = DataLocator(location)
+    def open(data_locator, config):
         return AnndataAdaptor(data_locator, config)
 
     def get_location(self):
         return self.data_locator.uri_or_path
+
+    def get_data_locator(self):
+        return self.data_locator
 
     def get_name(self):
         return "cellxgene anndata adaptor version"

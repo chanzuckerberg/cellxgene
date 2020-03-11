@@ -3,6 +3,7 @@ import threading
 import time
 from server.data_common.rwlock import RWLock
 from server.common.errors import DatasetAccessError
+from server.common.data_locator import DataLocator
 from contextlib import contextmanager
 
 
@@ -136,7 +137,8 @@ class MatrixDataType(Enum):
 
 class MatrixDataLoader(object):
     def __init__(self, location, etype=None):
-        self.location = location
+        """ location can be a string or DataLocator """
+        self.location = DataLocator(location)
         if etype is None:
             self.etype = self.matrix_data_type()
         else:
@@ -152,9 +154,9 @@ class MatrixDataLoader(object):
             self.matrix_type = CxgAdaptor
 
     def matrix_data_type(self):
-        if self.location.endswith(".h5ad"):
+        if self.location.path.endswith(".h5ad"):
             return MatrixDataType.H5AD
-        elif ".cxg" in self.location:
+        elif ".cxg" in self.location.path:
             return MatrixDataType.CXG
         else:
             return MatrixDataType.UNKNOWN

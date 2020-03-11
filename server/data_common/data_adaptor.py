@@ -10,7 +10,6 @@ from server.common.errors import FilterError, JSONEncodingValueError
 from server.compute.diffexp import diffexp_ttest
 from server.common.utils import jsonify_numpy
 from server.common.app_config import AppFeature, AppConfig
-from server.common.data_locator import DataLocator
 
 
 class DataAdaptor(metaclass=ABCMeta):
@@ -32,17 +31,17 @@ class DataAdaptor(metaclass=ABCMeta):
 
     @staticmethod
     @abstractmethod
-    def pre_load_validation(location):
+    def pre_load_validation(data_locator):
         pass
 
     @staticmethod
     @abstractmethod
-    def open(location, config):
+    def open(data_locator, config):
         pass
 
     @staticmethod
     @abstractmethod
-    def file_size(location):
+    def file_size(data_locator):
         pass
 
     @abstractmethod
@@ -103,6 +102,10 @@ class DataAdaptor(metaclass=ABCMeta):
 
     @abstractmethod
     def get_location(self):
+        pass
+
+    @abstractmethod
+    def get_data_locator(self):
         pass
 
     def get_about(self):
@@ -345,8 +348,7 @@ class DataAdaptor(metaclass=ABCMeta):
 
     def get_last_mod_time(self):
         try:
-            data_locator = DataLocator(self.get_location())
-            lastmod = data_locator.lastmodtime()
+            lastmod = self.get_data_locator().lastmodtime()
         except RuntimeError:
             lastmod = None
         return lastmod
