@@ -45,9 +45,9 @@ jobs:
         pip install -r server/requirements-dev.txt
         # 2. install cellxgene
         make pydist install-dist
-        # install anndata
+        # 3. install anndata
         pip install anndata==${{ matrix.anndata-version }}
-        # 3. workaround for anndata 0.6.22.post1 bug
+        # workaround for anndata 0.6.22.post1 bug
         [[ "0.6.22.post1" = "${{ matrix.anndata-version }}" ]] && pip install h5py==2.9.0 || true
     - name: Tests
       run: make unit-test ${{ matrix.test-suite }}
