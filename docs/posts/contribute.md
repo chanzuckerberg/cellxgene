@@ -24,7 +24,7 @@ We have several "rules" for contributions:
 
 1. If your contribution is complex, adds new features, new UI design or otherwise warrants discussion, we highly recommend that you submit a github issue, and engage other contributors in a discussion about the details of your proposed PR. This will save you time in the long run, as many details and decisions can be hashed out ahead-of-time.
 
-2. Please submit any direct contributions by [forking the repository](https://www.youtube.com/watch?v=Lb4yvfrX_7I&list=PLe6EXFvnTV7-_41SpakZoTIYCgX4aMTdU&index=3&t=9s), creating a branch, and [submitting a Pull Request](https://www.youtube.com/watch?v=2VX1ISk9XH8&list=PLe6EXFvnTV7-_41SpakZoTIYCgX4aMTdU&index=9&t=0s). **Do not submit pull requests against master.**
+2. Please submit any direct contributions by [forking the repository](https://www.youtube.com/watch?v=Lb4yvfrX_7I&list=PLe6EXFvnTV7-_41SpakZoTIYCgX4aMTdU&index=3&t=9s), creating a feature branch, and [submitting a Pull Request](https://www.youtube.com/watch?v=2VX1ISk9XH8&list=PLe6EXFvnTV7-_41SpakZoTIYCgX4aMTdU&index=9&t=0s). **Do not submit pull requests against master.**
 
 First, you'll need the following installed on your machine
 
