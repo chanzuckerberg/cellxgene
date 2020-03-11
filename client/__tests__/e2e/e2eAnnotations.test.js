@@ -183,8 +183,11 @@ describe.each([
   });
 
   async function assertCategoryExists(categoryName) {
-    const result = await utils.waitByID(`${categoryName}:category-expand`);
-    expect(await result.evaluate(node => node.innerText)).toBe(categoryName);
+    const handle = await utils.waitByID(`${categoryName}:category-expand`);
+    const result = await handle.evaluate(node => node.innerText);
+    // slice beginning and end of category name result to account for truncation of long names
+    expect(result.slice(0, 10)).toBe(categoryName.slice(0, 10));
+    expect(result.slice(-10)).toBe(categoryName.slice(-10));
   }
 
   async function assertCategoryDoesNotExist(categoryName) {

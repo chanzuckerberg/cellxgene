@@ -9,6 +9,7 @@ import AnnoDialogEditCategoryName from "./annoDialogEditCategoryName";
 import AnnoDialogAddLabel from "./annoDialogAddLabel";
 
 import * as globals from "../../globals";
+import maybeTruncateString from "../../util/maybeTruncateString";
 
 @connect(state => ({
   colorAccessor: state.colors.colorAccessor,
@@ -204,7 +205,7 @@ class Category extends React.Component {
             {isUserAnno ? (
               <Icon style={{ marginRight: 5 }} icon="tag" iconSize={16} />
             ) : null}
-            {metadataField}
+            {maybeTruncateString(metadataField, globals.categoryDisplayStringMaxLength)}
             {isExpanded ? (
               <FaChevronDown
                 data-testclass="category-expand-is-expanded"

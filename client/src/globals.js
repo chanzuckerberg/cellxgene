@@ -73,6 +73,7 @@ export const leftSidebarSectionHeading = {
 export const leftSidebarSectionPadding = 10;
 export const categoryLabelDisplayStringLongLength = 27;
 export const categoryLabelDisplayStringShortLength = 11;
+export const categoryDisplayStringMaxLength = 27;
 
 export const maxUserDefinedGenes = 25;
 export const maxGenes = 100;
