@@ -1,4 +1,5 @@
 # Code of conduct
+
 We warmly welcome contributions from the community!
 
 To ensure a welcoming experience for our entire community, this project adheres to the Contributor Covenant
@@ -13,12 +14,17 @@ If you have any questions about any of this stuff, just ask! :)
 We'd love to hear from you! Please submit any bug reports and feature requests through [Github issues](https://github.com/chanzuckerberg/cellxgene/issues).
 
 # Direct contributions
+
 ## Getting started
 
 If you are interested in working on `cellxgene` development, you'll need to use git to make a copy of the [project repository](https://www.youtube.com/watch?v=A-4WltCTVms&list=PLe6EXFvnTV7-_41SpakZoTIYCgX4aMTdU&index=2&t=0s) and share your changes.
 If you're new to git, we recommend [GitKraken](https://www.gitkraken.com/) for an intuitive interface.
 
-Please submit any direct contributions by [forking the repository](https://www.youtube.com/watch?v=Lb4yvfrX_7I&list=PLe6EXFvnTV7-_41SpakZoTIYCgX4aMTdU&index=3&t=9s), creating a branch, and [submitting a Pull Request](https://www.youtube.com/watch?v=2VX1ISk9XH8&list=PLe6EXFvnTV7-_41SpakZoTIYCgX4aMTdU&index=9&t=0s).
+We have several "rules" for contributions:
+
+1. If your contribution is complex, adds new features, new UI design or otherwise warrants discussion, we highly recommend that you submit a github issue, and engaging other contributors in a discussion of your proposed PR. This will save you time in the long run, as many details and decisions can be hashed out ahead-of-tinme.
+
+2. Please submit any direct contributions by [forking the repository](https://www.youtube.com/watch?v=Lb4yvfrX_7I&list=PLe6EXFvnTV7-_41SpakZoTIYCgX4aMTdU&index=3&t=9s), creating a branch, and [submitting a Pull Request](https://www.youtube.com/watch?v=2VX1ISk9XH8&list=PLe6EXFvnTV7-_41SpakZoTIYCgX4aMTdU&index=9&t=0s). **Please do not submit pull requests against master.**
 
 First, you'll need the following installed on your machine
 
