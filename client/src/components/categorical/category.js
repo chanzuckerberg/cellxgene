@@ -2,7 +2,7 @@ import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
 import { FaChevronRight, FaChevronDown } from "react-icons/fa";
-import { Button, Tooltip, Icon } from "@blueprintjs/core";
+import { AnchorButton, Button, Tooltip, Icon } from "@blueprintjs/core";
 import CategoryFlipperLayout from "./categoryFlipperLayout";
 import AnnoMenu from "./annoMenuCategory";
 import AnnoDialogEditCategoryName from "./annoDialogEditCategoryName";
@@ -158,7 +158,11 @@ class Category extends React.Component {
       return this.renderIsStillLoading();
     }
 
-    const isTruncated = _.get(categoricalSelection, [metadataField, "isTruncated"], false);
+    const isTruncated = _.get(
+      categoricalSelection,
+      [metadataField, "isTruncated"],
+      false
+    );
 
     return (
       <CategoryFlipperLayout
@@ -198,14 +202,17 @@ class Category extends React.Component {
                 annotations.isEditingCategoryName &&
                 annotations.categoryBeingEdited === metadataField;
               if (!editingCategory) {
-                onExpansionChange(metadataField)
+                onExpansionChange(metadataField);
               }
             }}
           >
             {isUserAnno ? (
               <Icon style={{ marginRight: 5 }} icon="tag" iconSize={16} />
             ) : null}
-            {maybeTruncateString(metadataField, globals.categoryDisplayStringMaxLength)}
+            {maybeTruncateString(
+              metadataField,
+              globals.categoryDisplayStringMaxLength
+            )}
             {isExpanded ? (
               <FaChevronDown
                 data-testclass="category-expand-is-expanded"
@@ -240,7 +247,7 @@ class Category extends React.Component {
             usePortal={false}
             hoverOpenDelay={globals.tooltipHoverOpenDelay}
           >
-            <Button
+            <AnchorButton
               data-testclass="colorby"
               data-testid={`colorby-${metadataField}`}
               onClick={this.handleColorChange}
