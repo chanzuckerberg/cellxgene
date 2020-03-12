@@ -19,17 +19,33 @@ import LabelInput from "./labelInput";
 import { AnnotationsHelpers } from "../../util/stateManager";
 import { labelPrompt, isLabelErroneous } from "./labelUtil";
 
-@connect(state => ({
-  categoricalSelection: state.categoricalSelection,
-  annotations: state.annotations,
-  colorScale: state.colors.scale,
-  colorAccessor: state.colors.colorAccessor,
-  pointDilation: state.pointDilation,
-  schema: state.world?.schema,
-  world: state.world,
-  crossfilter: state.crossfilter,
-  ontology: state.ontology
-}))
+/* this is defined outside of the class so we can use it in connect() */
+function _currentLabel(ownProps, categoricalSelection) {
+  const { metadataField, categoryIndex } = ownProps;
+  return String(
+    categoricalSelection[metadataField].categoryValues[categoryIndex]
+  ).valueOf();
+}
+
+@connect((state, ownProps) => {
+  const { pointDilation, categoricalSelection } = state;
+  const { metadataField, categoryField } = ownProps;
+  const isDilated =
+    pointDilation.metadataField === metadataField &&
+    pointDilation.categoryField ===
+      _currentLabel(ownProps, categoricalSelection);
+  return {
+    categoricalSelection,
+    annotations: state.annotations,
+    colorScale: state.colors.scale,
+    colorAccessor: state.colors.colorAccessor,
+    schema: state.world?.schema,
+    world: state.world,
+    crossfilter: state.crossfilter,
+    ontology: state.ontology,
+    isDilated
+  };
+})
 class CategoryValue extends React.Component {
   constructor(props) {
     super(props);
@@ -169,7 +185,7 @@ class CategoryValue extends React.Component {
     const crossfilterChange =
       props.isUserAnno && props.crossfilter !== nextProps.crossfilter;
     const editingLabel = state.editedLabelText !== nextState.editedLabelText;
-    const dilationChange = props.pointDilation !== nextProps.pointDilation;
+    const dilationChange = props.isDilated !== nextProps.isDilated;
 
     return (
       valueSelectionChange ||
@@ -227,10 +243,8 @@ class CategoryValue extends React.Component {
   };
 
   currentLabel() {
-    const { categoricalSelection, metadataField, categoryIndex } = this.props;
-    return String(
-      categoricalSelection[metadataField].categoryValues[categoryIndex]
-    ).valueOf();
+    const { categoricalSelection } = this.props;
+    return _currentLabel(this.props, categoricalSelection);
   }
 
   isAddCurrentSelectionDisabled(category, value) {
@@ -276,7 +290,7 @@ class CategoryValue extends React.Component {
       // flippedProps is potentially brittle, their docs want {...flippedProps} on our div,
       // our lint doesn't like jsx spread, we are version pinned to prevent api change on their part
       flippedProps,
-      pointDilation
+      isDilated
     } = this.props;
     const ontologyEnabled = ontology?.enabled ?? false;
 
@@ -336,12 +350,7 @@ class CategoryValue extends React.Component {
         data-portal-key={flippedProps["data-portal-key"]}
         className={
           /* This code is to change the styles on centroid label hover is causing over-rendering */
-          `${styles.value}${
-            pointDilation.metadataField === metadataField &&
-            pointDilation.categoryField === displayString
-              ? ` ${styles.hover}`
-              : ""
-          }`
+          `${styles.value}${isDilated ? ` ${styles.hover}` : ""}`
         }
         data-testclass="categorical-row"
         style={{
