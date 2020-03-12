@@ -39,10 +39,10 @@ git clone https://github.com/chanzuckerberg/cellxgene.git
 
 This is enough to get you started with editing documentation. If you'd like to contribute code:
 
-Build the client web assets by calling `make` from inside the `cellxgene` folder
+Build the client web assets from inside the `cellxgene` folder
 
 ```
-make
+make build-for-server-dev
 ```
 
 Install all requirements (we recommend doing this inside a [virtual environment](install))
@@ -65,7 +65,7 @@ This project has made a few key design choices:
 
 Depending on your background and interests, you might want to contribute to the frontend, or backend, or both!
 
-Please submit any direct contributions via a Pull Request. It'd be great for PRs to include test cases and documentation updates where relevant, though we know the core test suite is itself still a work in progress.
+Please submit any direct contributions via a Pull Request. It'd be great for PRs to include test cases and documentation updates where relevant, though we know the core test suite is itself still a work in progress. **Please remember to create a feature branch for your PR - we do not accept PRs against master.**
 
 ## Contributing documentation
 
