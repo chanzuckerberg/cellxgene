@@ -241,7 +241,7 @@ debug: set to any falsish value to disable logging of helpful debugging informat
 Set to true or 1 for base logging, high number for more verbosity (currently only 1/true
 or 2).
 */
-const debug = true;
+const debug = false;
 const undoableConfig = {
   debug,
   historyLimit: 50, // maximum history size
