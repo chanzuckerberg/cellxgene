@@ -92,6 +92,10 @@ class AnnotationsLocalFile(Annotations):
         # lock used to protect label file write ops
         self.label_lock = threading.RLock()
 
+        # cache the most recent annotations
+        self.last_fname = None
+        self.last_labels = None
+
     def is_safe_collection_name(self, name):
         """
         return true if this is a safe collection name
@@ -114,10 +118,20 @@ class AnnotationsLocalFile(Annotations):
 
     def read_labels(self, data_adaptor):
         fname = self._get_filename(data_adaptor)
-        if fname is not None and os.path.exists(fname) and os.path.getsize(fname) > 0:
-            return pd.read_csv(fname, dtype="category", index_col=0, header=0, comment="#", keep_default_na=False)
-        else:
-            return pd.DataFrame()
+        with self.label_lock:
+            if fname is not None and os.path.exists(fname) and os.path.getsize(fname) > 0:
+                # returned the cached labels if possible, otherwise read them from the file
+                if fname == self.last_fname:
+                    return self.last_labels
+                else:
+                    labels = pd.read_csv(fname, dtype="category",
+                                         index_col=0, header=0, comment="#", keep_default_na=False)
+                    # update the cache
+                    self.last_fname = fname
+                    self.last_labels = labels
+                    return labels
+            else:
+                return pd.DataFrame()
 
     def write_labels(self, df, data_adaptor):
         # update our internal state and save it.  Multi-threading often enabled,
@@ -141,6 +155,10 @@ class AnnotationsLocalFile(Annotations):
                     df.to_csv(f)
             else:
                 open(fname, "w").close()
+
+            # update the cache
+            self.last_fname = fname
+            self.last_labels = df
 
     def _get_userid(self):
         if self.CXGUID not in session:
