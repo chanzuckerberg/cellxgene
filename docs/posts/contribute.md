@@ -44,7 +44,7 @@ Build the client web assets from inside the `cellxgene` folder
 make build-for-server-dev
 ```
 
-Install all requirements (we recommend doing this inside a [virtual environment](install))
+Install all requirements (we recommend doing this inside a [virtual environment](https://docs.python.org/3/tutorial/venv.html))
 
 ```
 pip install -e .
