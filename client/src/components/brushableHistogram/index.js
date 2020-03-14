@@ -67,7 +67,7 @@ class HistogramBrush extends React.PureComponent {
     histogramCache.binStart = i => domainMin + i * histogramCache.binWidth;
     histogramCache.binEnd = i => domainMin + (i + 1) * histogramCache.binWidth;
 
-    const yMax = Math.max(...histogramCache.bins);
+    const yMax = histogramCache.bins.reduce((l, r) => l > r ? l : r);
 
     histogramCache.y = d3
       .scaleLinear()
@@ -115,7 +115,7 @@ class HistogramBrush extends React.PureComponent {
     if the selection has changed, ensure that the brush correctly reflects
     the underlying selection.
     */
-    if ((dfChanged || rangeChanged) && brushXselection) {
+    if ((dfChanged || rangeChanged || colorSelectionChanged) && brushXselection) {
       const selection = d3.brushSelection(brushXselection.node());
       if (!range && selection) {
         /* no active selection - clear brush */
