@@ -10,9 +10,10 @@ import { Button, ButtonGroup, Tooltip } from "@blueprintjs/core";
 import { connect } from "react-redux";
 import * as d3 from "d3";
 import memoize from "memoize-one";
+import { interpolateCool } from "d3-scale-chromatic";
 import * as globals from "../../globals";
 import actions from "../../actions";
-import { linspace } from "../../util/range";
+import { histogramContinuous } from "../../util/dataframe/histogram";
 import { makeContinuousDimensionName } from "../../util/nameCreators";
 
 @connect((state, ownProps) => {
@@ -51,7 +52,6 @@ class HistogramBrush extends React.PureComponent {
      recalculate expensive stuff, notably bins, summaries, etc.
     */
     const histogramCache = {};
-    const values = col.asArray();
     const summary = col.summarize();
     const { min: domainMin, max: domainMax } = summary;
     const numBins = 40;
@@ -61,17 +61,14 @@ class HistogramBrush extends React.PureComponent {
       .domain([domainMin, domainMax])
       .range([this.marginLeft, this.marginLeft + this.width]);
 
-    const [xStart, xStop] = histogramCache.x.domain();
-    const histThresholds = linspace(xStart, xStop, numBins + 1);
+    histogramCache.bins = histogramContinuous(col, numBins, [domainMin, domainMax]);
+    histogramCache.binWidth = (domainMax - domainMin) / numBins;
 
-    histogramCache.bins = d3
-      .histogram()
-      .domain(histogramCache.x.domain())
-      .thresholds(histThresholds)(values);
+    histogramCache.binStart = i => domainMin + i * histogramCache.binWidth;
+    histogramCache.binEnd = i => domainMin + (i + 1) * histogramCache.binWidth;
 
-    const yMax = histogramCache.bins
-      .map(b => b.length)
-      .reduce((a, b) => Math.max(a, b));
+    const yMax = histogramCache.bins.reduce((l, r) => l > r ? l : r);
+
     histogramCache.y = d3
       .scaleLinear()
       .domain([0, yMax])
@@ -93,67 +90,54 @@ class HistogramBrush extends React.PureComponent {
   }
 
   componentDidMount() {
-    const { field } = this.props;
-    const { x, y, bins, svgRef } = this._histogram;
+    const { field, colorAccessor } = this.props;
 
-    this.renderAxesBrushBins(x, y, bins, svgRef, field);
+    this.renderHistogram(this._histogram, field, colorAccessor);
   }
 
   componentDidUpdate(prevProps) {
-    const { field, world } = this.props;
-    const { x, y, bins, svgRef } = this._histogram;
-    let { brushXselection, brushX } = this.state;
-    let forceBrushUpdate = false;
+    const { field, world, continuousSelectionRange: range, colorAccessor } = this.props;
+    const { x } = this._histogram;
+    let { brushX, brushXselection } = this.state;
 
-    /*
-    Update our axis if the underlying dataframe column has changed
-    */
     const dfColumn = HistogramBrush.getColumn(world, field);
-    const oldDfColumn = HistogramBrush.getColumn(
-      prevProps.world,
-      prevProps.field
-    );
-    if (dfColumn !== oldDfColumn) {
-      ({ brushXselection, brushX } = this.renderAxesBrushBins(
-        x,
-        y,
-        bins,
-        svgRef,
-        field
-      ));
-      forceBrushUpdate = true;
+    const oldDfColumn = HistogramBrush.getColumn(prevProps.world, prevProps.field);
+
+    const rangeChanged = range !== prevProps.continuousSelectionRange;
+    const dfChanged = dfColumn !== oldDfColumn;
+    const colorSelectionChanged = prevProps.colorAccessor !== colorAccessor;
+
+    if (dfChanged || colorSelectionChanged) {
+      ({brushX, brushXselection} = this.renderHistogram(this._histogram, field, colorAccessor));
     }
 
     /*
     if the selection has changed, ensure that the brush correctly reflects
     the underlying selection.
     */
-    const { continuousSelectionRange: range } = this.props;
-    if (forceBrushUpdate || range !== prevProps.continuousSelectionRange) {
-      if (brushXselection) {
-        const selection = d3.brushSelection(brushXselection.node());
-        if (!range && selection) {
-          /* no active selection - clear brush */
-          brushXselection.call(brushX.move, null);
-        } else if (range && !selection) {
-          /* there is an active selection, but no brush - set the brush */
-          const x0 = x(range[0]);
-          const x1 = x(range[1]);
+    if ((dfChanged || rangeChanged || colorSelectionChanged) && brushXselection) {
+      const selection = d3.brushSelection(brushXselection.node());
+      if (!range && selection) {
+        /* no active selection - clear brush */
+        brushXselection.call(brushX.move, null);
+      } else if (range && !selection) {
+        /* there is an active selection, but no brush - set the brush */
+        const x0 = x(range[0]);
+        const x1 = x(range[1]);
+        brushXselection.call(brushX.move, [x0, x1]);
+      } else if (range && selection) {
+        /* there is an active selection and a brush - make sure they match */
+        const moveDeltaThreshold = 1;
+        const x0 = x(range[0]);
+        const x1 = x(range[1]);
+        const dX0 = Math.abs(x0 - selection[0]);
+        const dX1 = Math.abs(x1 - selection[1]);
+        /*
+        only update the brush if it is grossly incorrect,
+        as defined by the moveDeltaThreshold
+        */
+        if (dX0 > moveDeltaThreshold || dX1 > moveDeltaThreshold) {
           brushXselection.call(brushX.move, [x0, x1]);
-        } else if (range && selection) {
-          /* there is an active selection and a brush - make sure they match */
-          const moveDeltaThreshold = 1;
-          const x0 = x(range[0]);
-          const x1 = x(range[1]);
-          const dX0 = Math.abs(x0 - selection[0]);
-          const dX1 = Math.abs(x1 - selection[1]);
-          /*
-          only update the brush if it is grossly incorrect,
-          as defined by the moveDeltaThreshold
-          */
-          if (dX0 > moveDeltaThreshold || dX1 > moveDeltaThreshold) {
-            brushXselection.call(brushX.move, [x0, x1]);
-          }
         }
       }
     }
@@ -314,12 +298,14 @@ class HistogramBrush extends React.PureComponent {
   drawHistogram(svgRef) {
     const { field, world } = this.props;
     const col = HistogramBrush.getColumn(world, field);
-    const histogramCache = this.calcHistogramCache(col);
-    const { x, y, bins } = histogramCache;
-    this._histogram = { x, y, bins, svgRef };
+    this._histogram = {
+      ...this.calcHistogramCache(col),
+      svgRef
+    };
   }
 
-  renderAxesBrushBins(x, y, bins, svgRef, field) {
+  renderHistogram(histogram, field, colorAccessor) {
+    const { x, y, bins, svgRef, binStart, binEnd, binWidth } = histogram;
     const svg = d3.select(svgRef);
 
     /* Remove everything */
@@ -333,18 +319,30 @@ class HistogramBrush extends React.PureComponent {
       .attr("class", "histogram-container")
       .attr("transform", `translate(${this.marginLeft},${this.marginTop})`);
 
-    /* BINS */
-    container
-      .insert("g", "*")
-      .attr("fill", "#bbb")
-      .selectAll("rect")
-      .data(bins)
-      .enter()
-      .append("rect")
-      .attr("x", d => x(d.x0) + 1)
-      .attr("y", d => y(d.length))
-      .attr("width", d => Math.abs(x(d.x1) - x(d.x0) - 1))
-      .attr("height", d => y(0) - y(d.length));
+    const colorScale = d3.scaleSequential(interpolateCool).domain([0, bins.length]);
+
+    const histogramScale = d3
+      .scaleLinear()
+      .domain(x.domain())
+      .range([
+        colorScale.domain()[1],
+        colorScale.domain()[0]
+      ]); /* we flip this to make colors dark if high in the color scale */
+
+    if (binWidth > 0) {
+      /* BINS */
+      container
+        .insert("g", "*")
+        .selectAll("rect")
+        .data(bins)
+        .enter()
+        .append("rect")
+        .attr("x", (d, i) => x(binStart(i)) + 1)
+        .attr("y", d => y(d))
+        .attr("width", (d, i) => x(binEnd(i)) - x(binStart(i)) - 1)
+        .attr("height", d => y(0) - y(d))
+        .style("fill", colorAccessor === field ? (d, i) => colorScale(histogramScale(binStart(i))) : "#bbb");
+    }
 
     // BRUSH
     // Note the brushable area is bounded by the data on three sides, but goes down to cover the x-axis
@@ -508,9 +506,7 @@ class HistogramBrush extends React.PureComponent {
           id={`histogram_${fieldForId}_svg`}
           data-testclass="histogram-plot"
           data-testid={`histogram-${field}-plot`}
-          ref={svgRef => {
-            this.drawHistogram(svgRef);
-          }}
+          ref={svgRef => this.drawHistogram(svgRef)}
         />
         <div
           style={{
