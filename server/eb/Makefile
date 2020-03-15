@@ -20,7 +20,9 @@ build: clean
 	cp app.py artifact.dir/application.py; \
 	cp ../requirements.txt artifact.dir; \
 	cp -r .ebextensions artifact.dir; \
-	(cd artifact.dir; zip -r ../artifact.zip . --exclude server/test/\* server/eb/\* ); \
+	(cd artifact.dir; \
+	  cp -r server/common/web/static static; \
+	  zip -r ../artifact.zip . --exclude server/test/\* server/eb/\* ; ); \
 	if ! grep artifact.zip .elasticbeanstalk/config.yml ; then \
 	    mkdir -p .elasticbeanstalk ; cat config_deploy.yaml >> .elasticbeanstalk/config.yml ; fi
 
