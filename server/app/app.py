@@ -85,17 +85,16 @@ def static_redirect(dataset, therest):
     return redirect(f"/static/{therest}", code=301)
 
 
-def favicon_redirect(dataset):
-    """ redirect favicon to static dir """
-    return redirect("/static/favicon.png", code=301)
-
-
 def dataroot_index():
     # FIXME with a splash screen that includes a listing of all the datasets.
-    # or perhaps a login screen if this is a hosted environment
-    data = "<H1>Welcome to cellxgene</H1>"
+    # or perhaps a login screen if this is a hosted environment,
+    # or have a configuration option to redirect to a user specified page.
 
     # the following is just for demo purposes...
+    data = '<!doctype html><html lang="en">'
+    data += '<head><title>Hosted Cellxgene</title></head>'
+    data += '<body><H1>Welcome to cellxgene</H1>'
+
     try:
         config = current_app.app_config
         locator = DataLocator(config.dataroot)
@@ -106,15 +105,16 @@ def dataroot_index():
             if matrix_data_loader.etype != MatrixDataType.UNKNOWN:
                 datasets.append(fname)
 
-        data += "<br/>Select one of these datasets...<br/>"
-        data += "<ul>"
+        data += '<br/>Select one of these datasets...<br/>'
+        data += '<ul>'
         datasets.sort()
         for dataset in datasets:
-            data += f"<li><a href={dataset}>{dataset}</a></li>"
-        data += "</ul>"
-    except Exception:
-        pass
+            data += f'<li><a href={dataset}>{dataset}</a></li>'
+        data += '</ul>'
+    except Exception as e:
+        data += f'<br/>Unable to locate datasets from {config.dataroot}: {str(e)}'
 
+    data += '</body></html>'
     return make_response(data)
 
 
@@ -219,7 +219,6 @@ class Server:
             self.app.register_blueprint(resources.blueprint)
             self.app.add_url_rule("/<dataset>/", "dataset_index", dataset_index)
             self.app.add_url_rule("/<dataset>/static/<path:therest>", "static_redirect", static_redirect)
-            self.app.add_url_rule("/<dataset>/favicon.png", "favicon_redirect", favicon_redirect)
 
         self.app.matrix_data_cache_manager = matrix_data_cache_manager
         self.app.annotations = annotations

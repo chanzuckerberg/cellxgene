@@ -70,5 +70,5 @@ There are many more options to these commands that may be important or necessary
 7. Open the application in a browser
 
    ```
-   eb open
+   eb open $EB_ENV
    ```
