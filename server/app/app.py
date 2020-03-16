@@ -89,10 +89,12 @@ def dataroot_index():
     # FIXME with a splash screen that includes a listing of all the datasets.
     # or perhaps a login screen if this is a hosted environment,
     # or have a configuration option to redirect to a user specified page.
-    data = '<!doctype html><html lang="en"><head>'
-    data += '<body><H1>Welcome to cellxgene</H1>'
 
     # the following is just for demo purposes...
+    data = '<!doctype html><html lang="en">'
+    data += '<head><title>Hosted Cellxgene</title></head>'
+    data += '<body><H1>Welcome to cellxgene</H1>'
+
     try:
         config = current_app.app_config
         locator = DataLocator(config.dataroot)
