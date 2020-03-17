@@ -1,13 +1,13 @@
 import datetime
 import logging
+from http import HTTPStatus
 
 from flask import Flask, redirect, current_app, make_response, render_template, abort
 from flask import Blueprint, request
 from flask_restful import Api, Resource
 from server_timing import Timing as ServerTiming
 
-from http import HTTPStatus
-
+from server import __git_sha__
 import server.common.rest as common_rest
 from server.common.errors import DatasetAccessError
 from server.common.utils import path_join, Float32JSONEncoder
@@ -257,6 +257,16 @@ class Server:
         pass
 
     def __init__(self, app_config):
+
+        if app_config.server__error_aggregation:
+            import sentry_sdk
+            from sentry_sdk.integrations.flask import FlaskIntegration
+            sentry_sdk.init(
+                dsn=app_config.server__error_aggregation,
+                release=f"cellxgene@{__git_sha__}",
+                integrations=[FlaskIntegration()],
+            )
+
         self.app = Flask(__name__, static_folder="../common/web/static")
         self._before_adding_routes(self.app, app_config)
         self.app.json_encoder = Float32JSONEncoder

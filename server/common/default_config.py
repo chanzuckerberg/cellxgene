@@ -16,6 +16,7 @@ server:
   flask_secret_key: null
   generate_cache_control_headers: false
   server_timing_headers: false
+  error_aggregation: null
 
 presentation:
   max_categories: 1000

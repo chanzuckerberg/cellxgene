@@ -3,3 +3,4 @@ recursive-include server/common/web/static *
 
 include server/requirements.txt
 include server/requirements-prepare.txt
+include server/requirements-hosted.txt

@@ -10,11 +10,17 @@ define get_or_else_dev_env_default
 $(if $($(1)),$($(1)),$(shell VAR=$$(sed -n 's/$(1)=\(.*\)/\1/p' $(PROJECT_ROOT)/environment.default); eval "echo \"$$VAR\""))
 endef
 
+export CELLXGENE_COMMIT := $(shell git rev-parse --short HEAD)
 export CXG_SERVER_PORT := $(call get_or_else_dev_env_default,CXG_SERVER_PORT)
 export CXG_CLIENT_PORT := $(call get_or_else_dev_env_default,CXG_CLIENT_PORT)
 export JEST_ENV := $(call get_or_else_dev_env_default,JEST_ENV)
 export DATASET := $(call get_or_else_dev_env_default,DATASET)
 export CXG_OPTIONS := $(call get_or_else_dev_env_default,CXG_OPTIONS)
+
+# https://stackoverflow.com/a/14777895/9587410
+ifeq ($(shell uname),Darwin)     # is Windows_NT on XP, 2000, 7, Vista, 10...
+    export IS_DARWIN := true
+endif
 
 .PHONY: start-server
 start-server:
@@ -30,4 +36,3 @@ define copy_client_assets
 	cp -r $(1)/static $(2)/common/web/
 	cp $(1)/csp-hashes.json $(2)/common/web/
 endef
-

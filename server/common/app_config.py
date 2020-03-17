@@ -38,6 +38,7 @@ class AppFeature(object):
 
 
 class AppConfig(object):
+
     def __init__(self):
 
         self.default_config = get_default_config()
@@ -57,6 +58,7 @@ class AppConfig(object):
             self.server__flask_secret_key = dc["server"]["flask_secret_key"]
             self.server__generate_cache_control_headers = dc["server"]["generate_cache_control_headers"]
             self.server__server_timing_headers = dc["server"]["server_timing_headers"]
+            self.server__error_aggregation = dc["server"]["error_aggregation"]
 
             self.multi_dataset__dataroot = dc["multi_dataset"]["dataroot"]
             self.multi_dataset__index = dc["multi_dataset"]["index"]
@@ -238,6 +240,7 @@ class AppConfig(object):
         self.__check_attr("server__about_legal_tos", (type(None), str))
         self.__check_attr("server__about_legal_privacy", (type(None), str))
         self.__check_attr("server__server_timing_headers", bool)
+        self.__check_attr("server__error_aggregation", (type(None), str))
 
         if self.server__port:
             if not is_port_available(self.server__host, self.server__port):
@@ -513,6 +516,7 @@ class AppConfig(object):
             "backed": self.adaptor__anndata_adaptor__backed,
             "disable-diffexp": not self.diffexp__enable,
             "enable-reembedding": self.embeddings__enable_reembedding,
+            "error_aggregation": self.server__error_aggregation,
             "annotations": False,
             "annotations_file": None,
             "annotations_dir": None,

@@ -32,6 +32,7 @@ build: clean build-client
 	cp -r client/build/  $(CLIENTBUILD)
 	$(call copy_client_assets,$(CLIENTBUILD),$(SERVERBUILD))
 	cp MANIFEST.in README.md setup.cfg setup.py $(BUILDDIR)
+	sed -i$(if $(IS_DARWIN), '',) 's/<placeholder>/$(CELLXGENE_COMMIT)/' $(BUILDDIR)/server/__init__.py
 
 # If you are actively developing in the server folder use this, dirties the source tree
 .PHONY: build-for-server-dev

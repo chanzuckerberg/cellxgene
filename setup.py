@@ -9,6 +9,9 @@ with open("server/requirements.txt") as fh:
 with open("server/requirements-prepare.txt") as fh:
     requirements_prepare = fh.read().splitlines()
 
+with open("server/requirements-hosted.txt") as fh:
+    requirements_hosted = fh.read().splitlines()
+
 setup(
     name="cellxgene",
     version="0.15.0",
@@ -39,5 +42,8 @@ setup(
         "Topic :: Scientific/Engineering :: Bio-Informatics",
     ],
     entry_points={"console_scripts": ["cellxgene = server.cli.cli:cli"]},
-    extras_require=dict(prepare=requirements_prepare),
+    extras_require=dict(
+        prepare=requirements_prepare,
+        hosted=requirements_hosted
+    ),
 )

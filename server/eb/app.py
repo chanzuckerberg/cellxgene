@@ -1,5 +1,4 @@
 """cellxgene AWS elastic beanstalk application"""
-
 import sys
 import os
 from flask import json

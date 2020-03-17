@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/browser';
 import * as globals from "../globals";
 import { Universe, MatrixFBS } from "../util/stateManager";
 import * as Dataframe from "../util/dataframe";
@@ -10,6 +11,7 @@ import {
 import { PromiseLimit } from "../util/promiseLimit";
 import { requestReembed, reembedResetWorldToUniverse } from "./reembed";
 import { loadUserColorConfig } from "../util/stateManager/colorHelpers";
+
 
 /*
 return promise to fetch the OBS annotations we need to load.  Omit anything
@@ -118,6 +120,11 @@ const doInitialDataLoad = () =>
       const [responseConfig, schema] = await Promise.all(requestJson);
       /* set config defaults */
       const config = { ...globals.configDefaults, ...responseConfig.config };
+      if (config.parameters.error_aggregation) {
+        Sentry.init({
+          dsn: config.parameters.error_aggregation,
+        });
+      }
       const universe = Universe.createUniverseFromResponse(config, schema);
       dispatch({
         type: "universe exists, but loading is still in progress",
