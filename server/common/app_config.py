@@ -35,6 +35,15 @@ class AppConfig(object):
         self.enable_reembedding = False
         self.anndata_backed = False
 
+        # The index page when in multi-dataset mode:
+        #   None:  this returns a 404 code
+        #   "test":  loads a test index page, which links to the datasets that are available in the dataroot
+        #   <redirect>:  anything else will result in a redirect:  flask.redirect(config.dataroot_index)
+        self.multi_dataset_index = "test"
+
+        # A list of allowed matrix types.  If an empty list, then all matrix types are allowed
+        self.multi_dataset_allowed_matrix_type = []
+
         # TODO these options may not apply to all datasets in the multi dataset.
         # may need to invent a way to associate these config parameters with
         # specific datasets.
@@ -58,12 +67,13 @@ class AppConfig(object):
             "anndata_backed",
             "disable_diffexp",
             "enable_reembedding",
+            "multi_dataset_index",
+            "multi_dataset_allowed_matrix_type",
         ]
 
         self.update(inputs, kw)
 
     def update(self, inputs, kw):
-
         for k, v in kw.items():
             if k in inputs:
                 setattr(self, k, v)
