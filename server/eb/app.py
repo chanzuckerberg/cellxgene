@@ -48,8 +48,6 @@ try:
         disable_diffexp=True,
         multi_dataset_index=None,
         multi_dataset_allowed_matrix_type=["cxg"],
-
-
     )
 
     matrix_data_cache_manager = MatrixDataCacheManager()

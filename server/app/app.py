@@ -36,10 +36,6 @@ def dataset_index(dataset=None):
 
     try:
         cache_manager = current_app.matrix_data_cache_manager
-        loader = MatrixDataLoader(location)
-        if not loader.matrix_data_type_allowed(config):
-            return make_response(f"Invalid matrix type: {loader.matrix_data_type}", HTTPStatus.BAD_REQUEST)
-
         with cache_manager.data_adaptor(location, config) as data_adaptor:
             dataset_title = config.get_title(data_adaptor)
             return render_template("index.html", datasetTitle=dataset_title, SCRIPTS=scripts)
@@ -101,9 +97,12 @@ def dataroot_test_index():
         datasets = []
         for fname in locator.ls():
             location = path_join(config.dataroot, fname)
-            matrix_data_loader = MatrixDataLoader(location)
-            if matrix_data_loader.matrix_data_type_allowed(config):
+            try:
+                MatrixDataLoader(location, app_config=config)
                 datasets.append(fname)
+            except DatasetAccessError:
+                # skip over invalid datasets
+                pass
 
         data += '<br/>Select one of these datasets...<br/>'
         data += '<ul>'
@@ -121,9 +120,9 @@ def dataroot_test_index():
 def dataroot_index():
     # Handle the base url for the cellxgene server when running in multi dataset mode
     config = current_app.app_config
-    if config.multi_dataset_index is None:
+    if not config.multi_dataset_index:
         abort(404)
-    elif config.multi_dataset_index == "test":
+    elif config.multi_dataset_index is True:
         return dataroot_test_index()
     else:
         return redirect(config.dataroot_index)

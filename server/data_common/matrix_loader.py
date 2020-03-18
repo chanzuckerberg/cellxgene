@@ -119,7 +119,7 @@ class MatrixDataCacheManager(object):
                     del self.datasets[oldest_key]
 
                 last_accessed = time.time()
-                loader = MatrixDataLoader(location)
+                loader = MatrixDataLoader(location, app_config=app_config)
                 cache_item = MatrixDataCacheItem(loader)
                 self.datasets[location] = (cache_item, last_accessed)
         try:
@@ -136,7 +136,7 @@ class MatrixDataType(Enum):
 
 
 class MatrixDataLoader(object):
-    def __init__(self, location, matrix_data_type=None):
+    def __init__(self, location, matrix_data_type=None, app_config=None):
         """ location can be a string or DataLocator """
         self.location = DataLocator(location)
         # matrix_data_type is an enum value of type MatrixDataType
@@ -146,6 +146,10 @@ class MatrixDataLoader(object):
 
         if matrix_data_type is None:
             self.matrix_data_type = self.__matrix_data_type()
+
+        if not self.__matrix_data_type_allowed(app_config):
+            raise DatasetAccessError(
+                f"{self.location} does not have an allowed type: {str(self.matrix_data_type)}")
 
         if self.matrix_data_type == MatrixDataType.H5AD:
             from server.data_anndata.anndata_adaptor import AnndataAdaptor
@@ -164,9 +168,12 @@ class MatrixDataLoader(object):
         else:
             return MatrixDataType.UNKNOWN
 
-    def matrix_data_type_allowed(self, app_config):
+    def __matrix_data_type_allowed(self, app_config):
         if self.matrix_data_type == MatrixDataType.UNKNOWN:
             return False
+
+        if not app_config:
+            return True
         if not app_config.dataroot:
             return True
         if len(app_config.multi_dataset_allowed_matrix_type) == 0:

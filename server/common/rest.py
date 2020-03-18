@@ -68,10 +68,11 @@ def annotations_put_fbs_helper(data_adaptor, annotations, fbs):
 
 
 def annotations_obs_put(request, data_adaptor, annotations):
-    anno_collection = request.args.get("annotation-collection-name", default=None)
-    fbs = request.get_data()
     if annotations is None:
         return make_response("Error, annotations are not configured", HTTPStatus.BAD_REQUEST)
+
+    anno_collection = request.args.get("annotation-collection-name", default=None)
+    fbs = request.get_data()
 
     if anno_collection is not None:
         if not annotations.is_safe_collection_name(anno_collection):

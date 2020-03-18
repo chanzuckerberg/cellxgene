@@ -36,10 +36,10 @@ class AppConfig(object):
         self.anndata_backed = False
 
         # The index page when in multi-dataset mode:
-        #   None:  this returns a 404 code
-        #   "test":  loads a test index page, which links to the datasets that are available in the dataroot
-        #   <redirect>:  anything else will result in a redirect:  flask.redirect(config.dataroot_index)
-        self.multi_dataset_index = "test"
+        #   False or None:  this returns a 404 code
+        #   True:  loads a test index page, which links to the datasets that are available in the dataroot
+        #   string/URL:  redirect to this URL:  flask.redirect(config.multi_dataset_index)
+        self.multi_dataset_index = True
 
         # A list of allowed matrix types.  If an empty list, then all matrix types are allowed
         self.multi_dataset_allowed_matrix_type = []
