@@ -119,7 +119,7 @@ class MatrixDataCacheManager(object):
                     del self.datasets[oldest_key]
 
                 last_accessed = time.time()
-                loader = MatrixDataLoader(location)
+                loader = MatrixDataLoader(location, app_config=app_config)
                 cache_item = MatrixDataCacheItem(loader)
                 self.datasets[location] = (cache_item, last_accessed)
         try:
@@ -136,24 +136,31 @@ class MatrixDataType(Enum):
 
 
 class MatrixDataLoader(object):
-    def __init__(self, location, etype=None):
+    def __init__(self, location, matrix_data_type=None, app_config=None):
         """ location can be a string or DataLocator """
         self.location = DataLocator(location)
-        if etype is None:
-            self.etype = self.matrix_data_type()
-        else:
-            self.etype = etype
+        # matrix_data_type is an enum value of type MatrixDataType
+        self.matrix_data_type = matrix_data_type
+        # matrix_type is a DataAdaptor type, which corresonds to the matrix_data_type
         self.matrix_type = None
-        if self.etype == MatrixDataType.H5AD:
+
+        if matrix_data_type is None:
+            self.matrix_data_type = self.__matrix_data_type()
+
+        if not self.__matrix_data_type_allowed(app_config):
+            raise DatasetAccessError(
+                f"{self.location} does not have an allowed type: {str(self.matrix_data_type)}")
+
+        if self.matrix_data_type == MatrixDataType.H5AD:
             from server.data_anndata.anndata_adaptor import AnndataAdaptor
 
             self.matrix_type = AnndataAdaptor
-        elif self.etype == MatrixDataType.CXG:
+        elif self.matrix_data_type == MatrixDataType.CXG:
             from server.data_cxg.cxg_adaptor import CxgAdaptor
 
             self.matrix_type = CxgAdaptor
 
-    def matrix_data_type(self):
+    def __matrix_data_type(self):
         if self.location.path.endswith(".h5ad"):
             return MatrixDataType.H5AD
         elif ".cxg" in self.location.path:
@@ -161,8 +168,31 @@ class MatrixDataLoader(object):
         else:
             return MatrixDataType.UNKNOWN
 
+    def __matrix_data_type_allowed(self, app_config):
+        if self.matrix_data_type == MatrixDataType.UNKNOWN:
+            return False
+
+        if not app_config:
+            return True
+        if not app_config.dataroot:
+            return True
+        if len(app_config.multi_dataset_allowed_matrix_type) == 0:
+            return True
+
+        for val in app_config.multi_dataset_allowed_matrix_type:
+            try:
+                if self.matrix_data_type == MatrixDataType(val):
+                    return True
+            except ValueError:
+                # Check case where multi_dataset_allowed_matrix_type does not have a
+                # valid MatrixDataType value.  TODO:  Add a feature to check
+                # the AppConfig for errors on startup
+                return False
+
+        return False
+
     def pre_load_validation(self):
-        if self.etype == MatrixDataType.UNKNOWN:
+        if self.matrix_data_type == MatrixDataType.UNKNOWN:
             raise DatasetAccessError(f"{self.location} does not have a recognized type: .h5ad or .cxg")
         self.matrix_type.pre_load_validation(self.location)
 
