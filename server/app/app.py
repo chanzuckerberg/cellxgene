@@ -1,7 +1,7 @@
 import os
 import datetime
 
-from flask import Flask, redirect, current_app, make_response, render_template
+from flask import Flask, redirect, current_app, make_response, render_template, abort
 from flask import Blueprint, request, send_from_directory
 from flask_caching import Cache
 from flask_compress import Compress
@@ -14,7 +14,7 @@ import server.common.rest as common_rest
 from server.common.errors import DatasetAccessError
 from server.common.utils import path_join, Float32JSONEncoder
 from server.common.data_locator import DataLocator
-from server.data_common.matrix_loader import MatrixDataLoader, MatrixDataType
+from server.data_common.matrix_loader import MatrixDataLoader
 
 from functools import wraps
 
@@ -36,6 +36,10 @@ def dataset_index(dataset=None):
 
     try:
         cache_manager = current_app.matrix_data_cache_manager
+        loader = MatrixDataLoader(location)
+        if not loader.matrix_data_type_allowed(config):
+            return make_response(f"Invalid matrix type: {loader.matrix_data_type}", HTTPStatus.BAD_REQUEST)
+
         with cache_manager.data_adaptor(location, config) as data_adaptor:
             dataset_title = config.get_title(data_adaptor)
             return render_template("index.html", datasetTitle=dataset_title, SCRIPTS=scripts)
@@ -85,12 +89,8 @@ def static_redirect(dataset, therest):
     return redirect(f"/static/{therest}", code=301)
 
 
-def dataroot_index():
-    # FIXME with a splash screen that includes a listing of all the datasets.
-    # or perhaps a login screen if this is a hosted environment,
-    # or have a configuration option to redirect to a user specified page.
-
-    # the following is just for demo purposes...
+def dataroot_test_index():
+    # the following index page is meant for testing/debugging purposes
     data = '<!doctype html><html lang="en">'
     data += '<head><title>Hosted Cellxgene</title></head>'
     data += '<body><H1>Welcome to cellxgene</H1>'
@@ -102,7 +102,7 @@ def dataroot_index():
         for fname in locator.ls():
             location = path_join(config.dataroot, fname)
             matrix_data_loader = MatrixDataLoader(location)
-            if matrix_data_loader.etype != MatrixDataType.UNKNOWN:
+            if matrix_data_loader.matrix_data_type_allowed(config):
                 datasets.append(fname)
 
         data += '<br/>Select one of these datasets...<br/>'
@@ -116,6 +116,17 @@ def dataroot_index():
 
     data += '</body></html>'
     return make_response(data)
+
+
+def dataroot_index():
+    # Handle the base url for the cellxgene server when running in multi dataset mode
+    config = current_app.app_config
+    if config.multi_dataset_index is None:
+        abort(404)
+    elif config.multi_dataset_index == "test":
+        return dataroot_test_index()
+    else:
+        return redirect(config.dataroot_index)
 
 
 class SchemaAPI(Resource):

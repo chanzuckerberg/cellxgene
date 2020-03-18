@@ -130,11 +130,14 @@ def data_var_put(request, data_adaptor):
 
 
 def diffexp_obs_post(request, data_adaptor):
+    if data_adaptor.config.disable_diffexp:
+        return make_response(f"diffexp not supported.", HTTPStatus.BAD_REQUEST)
+
     args = request.get_json()
     # confirm mode is present and legal
     try:
         mode = DiffExpMode(args["mode"])
-    except KeyError:
+    except (KeyError, TypeError):
         return make_response("Error: mode is required", HTTPStatus.BAD_REQUEST)
     except ValueError:
         return make_response(f"Error: invalid mode option {args['mode']}", HTTPStatus.BAD_REQUEST)

@@ -45,7 +45,11 @@ try:
         obs_names=None,
         var_names=None,
         anndata_backed=False,
-        disable_diffexp=False,
+        disable_diffexp=True,
+        multi_dataset_index=None,
+        multi_dataset_allowed_matrix_type=["cxg"],
+
+
     )
 
     matrix_data_cache_manager = MatrixDataCacheManager()
