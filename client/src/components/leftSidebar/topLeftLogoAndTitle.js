@@ -80,7 +80,7 @@ class LeftSideBar extends React.Component {
           }}
           title={datasetTitle}
         >
-          {aboutURL ? <a href={aboutURL}>{displayTitle}</a> : displayTitle}
+          {aboutURL ? <a href={aboutURL} target="_blank">{displayTitle}</a> : displayTitle}
         </div>
       </div>
     );
