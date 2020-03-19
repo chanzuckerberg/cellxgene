@@ -11,11 +11,11 @@ clean:
 
 .PHONY: ci
 ci:
-	npm ci client
+	npm ci
 
 .PHONY: install
 install:
-	npm install client
+	npm install
 
 .PHONY: build
 build:
