@@ -1,5 +1,4 @@
-
-    help="Preprocessing to run.",from os.path import expanduser, isdir, isfile, sep, splitext
+from os.path import expanduser, isdir, isfile, sep, splitext
 
 import click
 from numpy import ndarray, unique
