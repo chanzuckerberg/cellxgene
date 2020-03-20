@@ -11,10 +11,8 @@ def _is_accessible(path):
 
     try:
         dl = DataLocator(path)
-        print("exists", dl.exists())
         return dl.exists()
     except RuntimeError as e:
-        print(e)
         return False
 
 
