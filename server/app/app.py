@@ -14,6 +14,7 @@ import server.common.rest as common_rest
 from server.common.errors import DatasetAccessError
 from server.common.utils import path_join, Float32JSONEncoder
 from server.common.data_locator import DataLocator
+from server.common.health import health_check
 from server.data_common.matrix_loader import MatrixDataLoader
 
 from functools import wraps
@@ -46,6 +47,12 @@ def dataset_index(dataset=None):
 @webbp.route("/favicon.png")
 def favicon():
     return send_from_directory(os.path.join(webbp.root_path, "static/img/"), "favicon.png")
+
+
+@webbp.route("/health")
+def health():
+    config = current_app.app_config
+    return health_check(config)
 
 
 def get_data_adaptor(dataset=None):
