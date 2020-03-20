@@ -12,7 +12,7 @@ def _is_accessible(path):
     try:
         dl = DataLocator(path)
         return dl.exists()
-    except RuntimeError as e:
+    except RuntimeError:
         return False
 
 
