@@ -1,4 +1,5 @@
-from os.path import expanduser, isdir, isfile, sep, splitext
+
+    help="Preprocessing to run.",from os.path import expanduser, isdir, isfile, sep, splitext
 
 import click
 from numpy import ndarray, unique
@@ -27,7 +28,6 @@ from server.common.utils import sort_options
     "-r",
     default="none",
     type=click.Choice(["none", "seurat", "zheng17"]),
-    help="Preprocessing to run.",
     show_default=True,
 )
 @click.option("--output", "-o", default="", help="Save a new file to filename.", metavar="<filename>")
@@ -44,10 +44,16 @@ from server.common.utils import sort_options
     "(saved to adata.obs and adata.var; see scanpy.pp.calculate_qc_metrics for details).",
 )
 @click.option(
-    "--make-obs-names-unique", default=True, is_flag=True, help="Ensure obs index is unique.", show_default=True
+    "--make-obs-names-unique/--no-make-obs-names-unique",
+    default=True,
+    help="Ensure obs index is unique.",
+    show_default=True,
 )
 @click.option(
-    "--make-var-names-unique", default=True, is_flag=True, help="Ensure var index is unique.", show_default=True
+    "--make-var-names-unique/--no-make-var-names-unique",
+    default=True,
+    help="Ensure var index is unique.",
+    show_default=True,
 )
 @click.help_option("--help", "-h", help="Show this message and exit.")
 def prepare(
@@ -129,8 +135,12 @@ def prepare(
                 raise click.UsageError(f"var {set_var_names} not found, options are: {adata.var_keys()}")
             adata.var_names = adata.var[set_var_names]
         if make_obs_names_unique:
+            # call twice intentionally.  See https://github.com/theislab/anndata/issues/344
+            adata.obs_names_make_unique()
             adata.obs_names_make_unique()
         if make_var_names_unique:
+            # call twice intentionally.  See https://github.com/theislab/anndata/issues/344
+            adata.var_names_make_unique()
             adata.var_names_make_unique()
         if not adata._obs.index.is_unique:
             click.echo("Warning: obs index is not unique")
