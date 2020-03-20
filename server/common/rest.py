@@ -33,7 +33,7 @@ def schema_get(data_adaptor, annotations):
 
 
 def config_get(app_config, data_adaptor, annotations):
-    config = app_config.get_config(data_adaptor, annotations)
+    config = app_config.get_client_config(data_adaptor, annotations)
     return make_response(jsonify(config), HTTPStatus.OK)
 
 
@@ -131,7 +131,7 @@ def data_var_put(request, data_adaptor):
 
 
 def diffexp_obs_post(request, data_adaptor):
-    if data_adaptor.config.disable_diffexp:
+    if not data_adaptor.config.diffexp__enable:
         return make_response(f"diffexp not supported.", HTTPStatus.BAD_REQUEST)
 
     args = request.get_json()
@@ -198,7 +198,7 @@ def layout_obs_put(request, data_adaptor):
     preferred_mimetype = request.accept_mimetypes.best_match(["application/octet-stream"])
     if preferred_mimetype != "application/octet-stream":
         return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
-    if not data_adaptor.config.enable_reembedding:
+    if not data_adaptor.config.embedding__enable_reembedding:
         return make_response(f"Computed embedding not supported.", HTTPStatus.BAD_REQUEST)
 
     args = request.get_json()

@@ -26,14 +26,14 @@ webbp = Blueprint("webapp", "server.common.web", template_folder="templates")
 def dataset_index(dataset=None):
     config = current_app.app_config
     if dataset is None:
-        if config.datapath:
-            location = config.datapath
+        if config.single_dataset__datapath:
+            location = config.single_dataset__datapath
         else:
             return dataroot_index()
     else:
-        location = path_join(config.dataroot, dataset)
+        location = path_join(config.multi_dataset__dataroot, dataset)
 
-    scripts = config.scripts
+    scripts = config.server__scripts
 
     try:
         cache_manager = current_app.matrix_data_cache_manager
@@ -59,13 +59,13 @@ def get_data_adaptor(dataset=None):
     config = current_app.app_config
 
     if dataset is None:
-        datapath = config.datapath
+        datapath = config.single_dataset__datapath
     else:
-        datapath = path_join(config.dataroot, dataset)
+        datapath = path_join(config.multi_dataset__dataroot, dataset)
         # path_join returns a normalized path.  Therefore it is
         # sufficient to check that the datapath starts with the
         # dataroot to determine that the datapath is under the dataroot.
-        if not datapath.startswith(config.dataroot):
+        if not datapath.startswith(config.multi_dataset__dataroot):
             raise DatasetAccessError("Invalid dataset {dataset}")
 
     if datapath is None:
@@ -100,10 +100,10 @@ def dataroot_test_index():
 
     try:
         config = current_app.app_config
-        locator = DataLocator(config.dataroot)
+        locator = DataLocator(config.multi_dataset__dataroot)
         datasets = []
         for fname in locator.ls():
-            location = path_join(config.dataroot, fname)
+            location = path_join(config.multi_dataset__dataroot, fname)
             try:
                 MatrixDataLoader(location, app_config=config)
                 datasets.append(fname)
@@ -118,7 +118,7 @@ def dataroot_test_index():
             data += f'<li><a href={dataset}>{dataset}</a></li>'
         data += '</ul>'
     except Exception as e:
-        data += f'<br/>Unable to locate datasets from {config.dataroot}: {str(e)}'
+        data += f'<br/>Unable to locate datasets from {config.multi_dataset__dataroot}: {str(e)}'
 
     data += '</body></html>'
     return make_response(data)
@@ -127,12 +127,12 @@ def dataroot_test_index():
 def dataroot_index():
     # Handle the base url for the cellxgene server when running in multi dataset mode
     config = current_app.app_config
-    if not config.multi_dataset_index:
+    if not config.multi_dataset__index:
         abort(404)
-    elif config.multi_dataset_index is True:
+    elif config.multi_dataset__index is True:
         return dataroot_test_index()
     else:
-        return redirect(config.dataroot_index)
+        return redirect(config.multi_dataset__index)
 
 
 class SchemaAPI(Resource):
@@ -222,7 +222,7 @@ class Server:
         self.app.register_blueprint(webbp)
 
         api_version = "/api/v0.2"
-        if app_config.datapath:
+        if app_config.single_dataset__datapath:
             bp_api = Blueprint("api", __name__, url_prefix=api_version)
             resources = get_api_resources(bp_api)
             self.app.register_blueprint(resources.blueprint)

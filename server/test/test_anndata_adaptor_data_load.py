@@ -37,11 +37,11 @@ class DataLocatorAdaptorTest(unittest.TestCase):
 
     def setUp(self):
         self.args = {
-            "layout": ["umap"],
-            "max_category_items": 100,
-            "obs_names": None,
-            "var_names": None,
-            "diffexp_lfc_cutoff": 0.01,
+            "embeddings__names": ["umap"],
+            "annotations__max_categories": 100,
+            "single_dataset__obs_names": None,
+            "single_dataset__var_names": None,
+            "diffexp__lfc_cutoff": 0.01,
         }
 
     def stdAsserts(self, data):

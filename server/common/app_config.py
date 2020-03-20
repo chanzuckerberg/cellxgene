@@ -1,6 +1,25 @@
 # -*- coding: utf-8 -*-
 
+
 from server import __version__ as cellxgene_version
+import pkg_resources
+from flatten_dict import flatten
+import yaml
+from os import mkdir, environ
+from os.path import splitext, basename, isdir
+import sys
+from urllib.parse import urlparse
+
+from server.common.errors import ConfigurationError, DatasetAccessError, OntologyLoadFailure
+from server.data_common.matrix_loader import MatrixDataLoader, MatrixDataCacheManager, MatrixDataType
+from server.common.utils import find_available_port, is_port_available
+import warnings
+from server.common.annotations import AnnotationsLocalFile
+from server.common.utils import custom_format_warning
+
+DEFAULT_SERVER_PORT = int(environ.get("CXG_SERVER_PORT", "5005"))
+# anything bigger than this will generate a special message
+BIG_FILE_SIZE_THRESHOLD = 100 * 2 ** 20  # 100MB
 
 
 class AppFeature(object):
@@ -19,74 +38,312 @@ class AppFeature(object):
 
 
 class AppConfig(object):
-    def __init__(self, **kw):
-        super().__init__()
+    def __init__(self):
 
-        # app inputs
-        self.datapath = None
-        self.dataroot = None
-        self.title = ""
-        self.about = None
-        self.scripts = []
-        self.layout = []
-        self.max_category_items = 100
-        self.diffexp_lfc_cutoff = 0.01
-        self.disable_diffexp = False
-        self.enable_reembedding = False
-        self.anndata_backed = False
+        # load from default_config.yaml
+        default_config_file = pkg_resources.resource_filename(__name__, "default_config.yaml")
+        with open(default_config_file) as fyaml:
+            self.default_config = yaml.load(fyaml, Loader=yaml.FullLoader)
 
-        # The index page when in multi-dataset mode:
-        #   False or None:  this returns a 404 code
-        #   True:  loads a test index page, which links to the datasets that are available in the dataroot
-        #   string/URL:  redirect to this URL:  flask.redirect(config.multi_dataset_index)
-        self.multi_dataset_index = False
+        dc = self.default_config
+        self.server__verbose = dc["server"]["verbose"]
+        self.server__debug = dc["server"]["debug"]
+        self.server__host = dc["server"]["host"]
+        self.server__port = dc["server"]["port"]
+        self.server__scripts = dc["server"]["scripts"]
+        self.server__open_browser = dc["server"]["open_browser"]
+        self.multi_dataset__dataroot = dc["multi_dataset"]["dataroot"]
+        self.multi_dataset__index = dc["multi_dataset"]["index"]
+        self.multi_dataset__allowed_matrix_types = dc["multi_dataset"]["allowed_matrix_types"]
+        self.single_dataset__datapath = dc["single_dataset"]["datapath"]
+        self.single_dataset__obs_names = dc["single_dataset"]["obs_names"]
+        self.single_dataset__var_names = dc["single_dataset"]["var_names"]
+        self.single_dataset__about = dc["single_dataset"]["about"]
+        self.single_dataset__title = dc["single_dataset"]["title"]
+        self.annotations__enable = dc["annotations"]["enable"]
+        self.annotations__type = dc["annotations"]["type"]
+        self.annotations__local_file_csv__directory = dc["annotations"]["local_file_csv"]["directory"]
+        self.annotations__local_file_csv__file = dc["annotations"]["local_file_csv"]["file"]
+        self.annotations__ontology__enable = dc["annotations"]["ontology"]["enable"]
+        self.annotations__ontology__obo_location = dc["annotations"]["ontology"]["obo_location"]
+        self.annotations__max_categories = dc["annotations"]["max_categories"]
+        self.embeddings__names = dc["embeddings"]["names"]
+        self.embeddings__enable_reembedding = dc["embeddings"]["enable_reembedding"]
+        self.diffexp__enable = dc["diffexp"]["enable"]
+        self.diffexp__lfc_cutoff = dc["diffexp"]["lfc_cutoff"]
+        self.cxg_adaptor__tiledb_ctx = dc["cxg_adaptor"]["tiledb_ctx"]
+        self.anndata_adaptor__backed = dc["anndata_adaptor"]["backed"]
 
-        # A list of allowed matrix types.  If an empty list, then all matrix types are allowed
-        self.multi_dataset_allowed_matrix_type = []
+        # The annotation object is created during complete_config and stored here.
+        self.annotations = None
 
-        # TODO these options may not apply to all datasets in the multi dataset.
-        # may need to invent a way to associate these config parameters with
-        # specific datasets.
-        self.obs_names = None
-        self.var_names = None
+    def update_from_config_file(self, config_file):
+        with open(config_file) as fyaml:
+            config = yaml.load(fyaml, Loader=yaml.FullLoader)
 
-        # parameters
-        self.diffexp_may_be_slow = False
+        # special cae for tiledb_ctx whose value is a dict, and cannot
+        # be handled by the flattening below
+        if config.get("cxg_adaptor", {}).get("tiledb_ctx"):
+            value = config["cxg_adaptor"]["tiledb_ctx"]
+            self.cxg_adaptor__tiledb_ctx = value
+            del config["cxg_adaptor"]["tiledb_ctx"]
 
-        inputs = [
-            "datapath",
-            "dataroot",
-            "title",
-            "about",
-            "scripts",
-            "layout",
-            "max_category_items",
-            "diffexp_lfc_cutoff",
-            "obs_names",
-            "var_names",
-            "anndata_backed",
-            "disable_diffexp",
-            "enable_reembedding",
-            "multi_dataset_index",
-            "multi_dataset_allowed_matrix_type",
-        ]
+        flat_config = flatten(config)
+        for key, value in flat_config.items():
+            # name of the attribute
+            attr = "__".join(key)
+            if not hasattr(self, attr):
+                raise ConfigurationError(f"Unknown key from config file: {key}")
+            try:
+                setattr(self, attr, value)
+            except KeyError:
+                raise ConfigurationError(f"Unable to set config attribute: {key}")
 
-        self.update(inputs, kw)
+    def update(self, **kw):
+        for key, value in kw.items():
+            if not hasattr(self, key):
+                raise ConfigurationError(f"unknown config parameter {key}.")
+            try:
+                setattr(self, key, value)
+            except KeyError:
+                raise ConfigurationError(f"Unable to set config parameter {key}.")
 
-    def update(self, inputs, kw):
-        for k, v in kw.items():
-            if k in inputs:
-                setattr(self, k, v)
-            else:
-                raise RuntimeError(f"unknown config parameter {k}.")
+    def complete_config(self, matrix_data_cache_manager=None, messagefn=None):
+        """The configure options are checked, and any additional setup based on the config
+        parameters is done"""
+        if matrix_data_cache_manager is None:
+            matrix_data_cache_manager = MatrixDataCacheManager()
+        if messagefn is None:
+
+            def noop(message):
+                pass
+
+            messagefn = noop
+
+        # TODO: to give better error messages we can add a mapping between where each config
+        # attribute originated (e.g. command line argument or config file), then in the error
+        # messages we can give correct context for attributes with bad value.
+        context = dict(matrix_cache=matrix_data_cache_manager, messagefn=messagefn)
+
+        self.handle_server(context)
+        self.handle_single_dataset(context)
+        self.handle_multi_dataset(context)
+        self.handle_annotations(context)
+        self.handle_embeddings(context)
+        self.handle_diffexp(context)
+        self.handle_cxg_adaptor(context)
+        self.handle_anndata_adaptor(context)
+
+    def __check_attr(self, attrname, vtype):
+        val = getattr(self, attrname)
+        if type(vtype) in (list, tuple):
+            if type(val) not in vtype:
+                tnames = ",".join([x.__name__ for x in vtype])
+                raise ConfigurationError(
+                    f"Invalid type for attribute: {attrname}, expected types ({tnames}), got {type(val).__name__}"
+                )
+        else:
+            if type(val) != vtype:
+                raise ConfigurationError(
+                    f"Invalid type for attribute: {attrname}, "
+                    f"expected type {vtype.__name__}, got {type(val).__name__}"
+                )
+
+    def handle_server(self, context):
+        self.__check_attr("server__verbose", bool)
+        self.__check_attr("server__debug", bool)
+        self.__check_attr("server__host", str)
+        self.__check_attr("server__port", (type(None), int))
+        self.__check_attr("server__scripts", (list, tuple))
+        self.__check_attr("server__open_browser", bool)
+
+        if self.server__port:
+            if self.server__debug:
+                raise ConfigurationError(
+                    "'port' and 'debug' may not be used together (try 'verbose' for error logging)."
+                )
+            if not is_port_available(self.server__host, self.server__port):
+                raise ConfigurationError(
+                    f"The port selected {self.server__port} is in use, please configure an open port."
+                )
+        else:
+            self.server__port = find_available_port(self.server__host, DEFAULT_SERVER_PORT)
+
+        if self.server__debug:
+            context["messagefn"]("in debug mode, setting verbose=True and open_browser=False")
+            self.server__verbose = True
+            self.server__open_browser = False
+        else:
+            warnings.formatwarning = custom_format_warning
+
+        if not self.server__verbose:
+            sys.tracebacklimit = 0
+
+    def handle_single_dataset(self, context):
+        self.__check_attr("single_dataset__datapath", (str, type(None)))
+        self.__check_attr("single_dataset__title", (str, type(None)))
+        self.__check_attr("single_dataset__about", (str, type(None)))
+        self.__check_attr("single_dataset__obs_names", (str, type(None)))
+        self.__check_attr("single_dataset__var_names", (str, type(None)))
+
+        if self.single_dataset__datapath is None:
+            if self.multi_dataset__dataroot is None:
+                # TODO:  change the error message once dataroot is fully supported
+                raise ConfigurationError("missing datapath")
+            return
+        else:
+            if self.multi_dataset__dataroot is not None:
+                raise ConfigurationError("must supply only one of datapath or dataroot")
+
+        # preload this data set
+        matrix_data_loader = MatrixDataLoader(self.single_dataset__datapath)
+        try:
+            matrix_data_loader.pre_load_validation()
+        except DatasetAccessError as e:
+            raise ConfigurationError(str(e))
+
+        file_size = matrix_data_loader.file_size()
+        file_basename = basename(self.single_dataset__datapath)
+        if file_size > BIG_FILE_SIZE_THRESHOLD:
+            context["messagefn"](f"Loading data from {file_basename}, this may take a while...")
+        else:
+            context["messagefn"](f"Loading data from {file_basename}.")
+
+        if self.single_dataset__about:
+
+            def url_check(url):
+                try:
+                    result = urlparse(url)
+                    if all([result.scheme, result.netloc]):
+                        return True
+                    else:
+                        return False
+                except ValueError:
+                    return False
+
+            if not url_check(self.single_dataset__about):
+                raise ConfigurationError(
+                    "Must provide an absolute URL for --about. (Example format: http://example.com)"
+                )
+
+    def handle_multi_dataset(self, context):
+        self.__check_attr("multi_dataset__dataroot", (type(None), str))
+        self.__check_attr("multi_dataset__index", (type(None), bool, str))
+        self.__check_attr("multi_dataset__allowed_matrix_types", (list))
+
+        if self.multi_dataset__dataroot is None:
+            return
+
+        # error checking
+        for mtype in self.multi_dataset__allowed_matrix_types:
+            try:
+                MatrixDataType(mtype)
+            except ValueError:
+                raise ConfigurationError(f'Invalid matrix type in "allowed_matrix_types": {mtype}')
+
+    def handle_annotations(self, context):
+        self.__check_attr("annotations__enable", bool)
+        self.__check_attr("annotations__type", str)
+        self.__check_attr("annotations__local_file_csv__directory", (type(None), str))
+        self.__check_attr("annotations__local_file_csv__file", (type(None), str))
+        self.__check_attr("annotations__ontology__enable", bool)
+        self.__check_attr("annotations__ontology__obo_location", (type(None), str))
+        self.__check_attr("annotations__max_categories", int)
+
+        if self.annotations__enable:
+            # TODO, replace this with a factory pattern once we have more than one way
+            # to do annotations.  currently only local_file_csv
+            if self.annotations__type != "local_file_csv":
+                raise ConfigurationError('The only annotation type support is "local_file_csv"')
+
+            dirname = self.annotations__local_file_csv__directory
+            filename = self.annotations__local_file_csv__file
+
+            if filename is not None and dirname is not None:
+                raise ConfigurationError("'annotations-file' and 'annotations-dir' may not be used together.")
+
+            if filename is not None:
+                lf_name, lf_ext = splitext(filename)
+                if lf_ext and lf_ext != ".csv":
+                    raise ConfigurationError(f"annotation file type must be .csv: {filename}")
+
+            if dirname is not None and not isdir(dirname):
+                try:
+                    mkdir(dirname)
+                except OSError:
+                    raise ConfigurationError("Unable to create directory specified by --annotations-dir")
+
+            self.annotations = AnnotationsLocalFile(dirname, filename)
+
+            # if the user has specified a fixed label file, go ahead and validate it
+            # so that we can remove errors early in the process.
+            if self.single_dataset__datapath and self.annotations__local_file_csv__file:
+                with context["matrix_cache"].data_adaptor(self.single_dataset__datapath, self) as data_adaptor:
+                    data_adaptor.check_new_labels(self.annotations.read_labels(data_adaptor))
+
+            if self.annotations__ontology__enable or self.annotations__ontology__obo_location:
+                try:
+                    self.annotations.load_ontology(self.annotations__ontology__obo_location)
+                except OntologyLoadFailure as e:
+                    raise ConfigurationError("Unable to load ontology terms\n" + str(e))
+
+        else:
+            if self.annotations__type == "local_file_csv":
+                dirname = self.annotations__local_file_csv__directory
+                filename = self.annotations__local_file_csv__file
+                if filename is not None:
+                    context["messsagefn"]("Warning: --annotations-file ignored as annotations are disabled.")
+                if dirname is not None:
+                    context["messagefn"]("Warning: --annotations-dir ignored as annotations are disabled.")
+
+            if self.annotations__ontology__enable:
+                context["messagefn"](
+                    "Warning: --experimental-annotations-ontology" " ignored as annotations are disabled."
+                )
+            if self.annotations__ontology__obo_location is not None:
+                context["messagefn"](
+                    "Warning: --experimental-annotations-ontology-obo" " ignored as annotations are disabled."
+                )
+
+    def handle_embeddings(self, context):
+        self.__check_attr("embeddings__names", (list, tuple))
+        self.__check_attr("embeddings__enable_reembedding", bool)
+
+        if self.single_dataset__datapath:
+            if self.embeddings__enable_reembedding:
+                matrix_data_loader = MatrixDataLoader(self.single_dataset__datapath)
+                if matrix_data_loader.matrix_data_type() != MatrixDataType.H5AD:
+                    raise ConfigurationError("'enable-reembedding is only supported with H5AD files.")
+                if self.anndata_adaptor__backed:
+                    raise ConfigurationError("enable-reembedding is not supported when run in --backed mode.")
+
+    def handle_diffexp(self, context):
+        self.__check_attr("diffexp__enable", bool)
+        self.__check_attr("diffexp__lfc_cutoff", float)
+
+        if self.single_dataset__datapath:
+            with context["matrix_cache"].data_adaptor(self.single_dataset__datapath, self) as data_adaptor:
+                if self.diffexp__enable and data_adaptor.parameters.get("diffexp_may_be_slow", False):
+                    context["messagefn"](
+                        f"CAUTION: due to the size of your dataset, "
+                        f"running differential expression may take longer or fail."
+                    )
+
+    def handle_cxg_adaptor(self, context):
+        self.__check_attr("cxg_adaptor__tiledb_ctx", dict)
+        from server.data_cxg.cxg_adaptor import CxgAdaptor
+        CxgAdaptor.set_tiledb_context(self.cxg_adaptor__tiledb_ctx)
+
+    def handle_anndata_adaptor(self, context):
+        self.__check_attr("anndata_adaptor__backed", bool)
 
     def get_title(self, data_adaptor):
-        return self.title if self.title else data_adaptor.get_title()
+        return self.single_dataset__title if self.single_dataset__title else data_adaptor.get_title()
 
     def get_about(self, data_adaptor):
-        return self.about if self.about else data_adaptor.get_about()
+        return self.single_dataset__about if self.single_dataset__about else data_adaptor.get_about()
 
-    def get_config(self, data_adaptor, annotation=None):
+    def get_client_config(self, data_adaptor, annotation=None):
 
         # FIXME The current set of config is not consistently presented:
         # we have camalCase, hyphen-text, and underscore_text
@@ -110,14 +367,14 @@ class AppConfig(object):
 
         # parameters
         parameters = {
-            "layout": self.layout,
-            "max-category-items": self.max_category_items,
-            "obs_names": self.obs_names,
-            "var_names": self.var_names,
-            "diffexp_lfc_cutoff": self.diffexp_lfc_cutoff,
-            "backed": self.anndata_backed,
-            "disable-diffexp": self.disable_diffexp,
-            "enable-reembedding": self.enable_reembedding,
+            "layout": self.embeddings__names,
+            "max-category-items": self.annotations__max_categories,
+            "obs_names": self.single_dataset__obs_names,
+            "var_names": self.single_dataset__var_names,
+            "diffexp_lfc_cutoff": self.diffexp__lfc_cutoff,
+            "backed": self.anndata_adaptor__backed,
+            "disable-diffexp": not self.diffexp__enable,
+            "enable-reembedding": self.embeddings__enable_reembedding,
             "annotations": False,
             "annotations_file": None,
             "annotations_dir": None,

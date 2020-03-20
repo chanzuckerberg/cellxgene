@@ -29,29 +29,30 @@ except Exception:
 
 try:
     dataroot = os.getenv("CXG_DATAROOT")
-    if dataroot is None:
-        logging.error("CXG_DATAROOT environment variable must be set")
-        sys.exit(1)
+    app_config = AppConfig()
 
-    app_config = AppConfig(
-        datapath=None,
-        dataroot=dataroot,
-        title="",
-        about=None,
-        scripts=[],
-        layout=[],
-        max_category_items=100,
-        diffexp_lfc_cutoff=0.01,
-        obs_names=None,
-        var_names=None,
-        anndata_backed=False,
-        disable_diffexp=True,
-        multi_dataset_index=None,
-        multi_dataset_allowed_matrix_type=["cxg"],
+    config_file = "config.yaml"
+    if os.path.exists(config_file):
+        logging.info(f"Configuration from {config_file}")
+        app_config.update_from_config_file(config_file)
+
+    if dataroot:
+        logging.info(f"Configuration from CXG_DATAROOT")
+        app_config.update(
+            multi_dataset__dataroot=dataroot,
+        )
+
+    # verify certain features are set for the hosted server
+    app_config.update(
+        diffexp__enable=False,
+        annotations__enable=False,
+        embeddings__enable_reembedding=False,
+        multi_dataset__allowed_matrix_types=["cxg"],
     )
 
     matrix_data_cache_manager = MatrixDataCacheManager()
-    annotations = None
+    app_config.complete_config(matrix_data_cache_manager, logging.info)
+    annotations = app_config.annotations
 
     server = Server(matrix_data_cache_manager, annotations, app_config)
 
@@ -62,7 +63,10 @@ except Exception:
     logging.exception("Caught exception during initialization")
     sys.exit(1)
 
-logging.info(f"starting server with CXG_DATAROOT={dataroot}")
+if app_config.multi_dataset__dataroot:
+    logging.info(f"starting server with multi_dataset__dataroot={app_config.multi_dataset__dataroot}")
+elif app_config.single_dataset__datapath:
+    logging.info(f"starting server with single_dataset__datapath={app_config.single_dataset__datapath}")
 
 if __name__ == "__main__":
     try:

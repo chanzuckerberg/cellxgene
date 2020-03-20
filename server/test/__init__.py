@@ -16,11 +16,11 @@ def data_with_tmp_annotations(ext: MatrixDataType, annotations_fixture=False):
     if annotations_fixture:
         shutil.copyfile(f"test/test_datasets/pbmc3k-annotations.csv", annotations_file)
     args = {
-        "layout": ["umap"],
-        "max_category_items": 100,
-        "obs_names": None,
-        "var_names": None,
-        "diffexp_lfc_cutoff": 0.01,
+        "embeddings__names": ["umap"],
+        "annotations__max_categories": 100,
+        "single_dataset__obs_names": None,
+        "single_dataset__var_names": None,
+        "diffexp__lfc_cutoff": 0.01,
     }
     fname = {
         MatrixDataType.H5AD: "../example-dataset/pbmc3k.h5ad",

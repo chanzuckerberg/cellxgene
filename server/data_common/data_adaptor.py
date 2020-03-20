@@ -21,7 +21,9 @@ class DataAdaptor(metaclass=ABCMeta):
         if config is None:
             config = AppConfig()
         elif type(config) == dict:
-            config = AppConfig(**config)
+            temp = AppConfig()
+            temp.update(**config)
+            config = temp
 
         # config is the application configuration
         self.config = config
@@ -140,8 +142,8 @@ class DataAdaptor(metaclass=ABCMeta):
         features = [
             AppFeature("/cluster/", method="POST", available=False),
             AppFeature("/layout/obs", method="GET", available=self.get_embedding_names() is not None),
-            AppFeature("/layout/obs", method="PUT", available=self.config.enable_reembedding),
-            AppFeature("/diffexp/", method="POST", available=not self.config.disable_diffexp),
+            AppFeature("/layout/obs", method="PUT", available=self.config.embeddings__enable_reembedding),
+            AppFeature("/diffexp/", method="POST", available=self.config.diffexp__enable),
             AppFeature("/annotations/obs", method="PUT", available=annotations is not None),
         ]
         return features
@@ -290,7 +292,7 @@ class DataAdaptor(metaclass=ABCMeta):
         if top_n is None:
             top_n = DEFAULT_TOP_N
 
-        result = diffexp_ttest(self, obs_mask_A, obs_mask_B, top_n, self.config.diffexp_lfc_cutoff)
+        result = diffexp_ttest(self, obs_mask_A, obs_mask_B, top_n, self.config.diffexp__lfc_cutoff)
 
         try:
             return jsonify_numpy(result)

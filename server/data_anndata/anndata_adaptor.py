@@ -95,7 +95,9 @@ class AnndataAdaptor(DataAdaptor):
         """
         self.original_obs_index = self.data.obs.index
 
-        for (ax_name, config_name) in ((Axis.OBS, "obs_names"), (Axis.VAR, "var_names")):
+        for (ax_name, var_name) in ((Axis.OBS, "obs"), (Axis.VAR, "var")):
+            config_name = f"single_dataset__{var_name}_names"
+            parameter_name = f"{var_name}_names"
             name = getattr(self.config, config_name)
             df_axis = getattr(self.data, str(ax_name))
             if name is None:
@@ -107,7 +109,7 @@ class AnndataAdaptor(DataAdaptor):
                         "alternative with --{ax_name}-name."
                     )
                 name = self._create_unique_column_name(df_axis.columns, "name_")
-                self.parameters[config_name] = name
+                self.parameters[parameter_name] = name
                 # reset index to simple range; alias name to point at the
                 # previously specified index.
                 df_axis.rename_axis(name, inplace=True)
@@ -119,7 +121,7 @@ class AnndataAdaptor(DataAdaptor):
                         f"Values in {ax_name}.{name} must be unique. " "Please prepare data to contain unique values."
                     )
                 df_axis.reset_index(drop=True, inplace=True)
-                self.parameters[config_name] = name
+                self.parameters[parameter_name] = name
             else:
                 # user specified a non-existent column name
                 raise KeyError(f"Annotation name {name}, specified in --{ax_name}-name does not exist.")
@@ -157,7 +159,7 @@ class AnndataAdaptor(DataAdaptor):
             with data_locator.local_handle() as lh:
                 # as of AnnData 0.6.19, backed mode performs initial load fast, but at the
                 # cost of significantly slower access to X data.
-                backed = "r" if self.config.anndata_backed else None
+                backed = "r" if self.config.anndata_adaptor__backed else None
                 self.data = anndata.read_h5ad(lh, backed=backed)
 
         except ValueError:
@@ -177,7 +179,7 @@ class AnndataAdaptor(DataAdaptor):
             )
 
     def _validate_and_initialize(self):
-        if anndata_version_is_pre_070() and self.config.anndata_backed:
+        if anndata_version_is_pre_070() and self.config.anndata_adaptor__backed:
             warnings.warn(
                 f"Use of --backed mode with anndata versions older than 0.7 will have serious "
                 "performance issues. Please update to at least anndata 0.7 or later."
@@ -195,7 +197,7 @@ class AnndataAdaptor(DataAdaptor):
 
         # heuristic
         n_values = self.data.shape[0] * self.data.shape[1]
-        if (n_values > 1e8 and self.config.anndata_backed is True) or (n_values > 5e8):
+        if (n_values > 1e8 and self.config.anndata_adaptor__backed is True) or (n_values > 5e8):
             self.parameters.update({"diffexp_may_be_slow": True})
 
     def _is_valid_layout(self, arr):
@@ -242,7 +244,7 @@ class AnndataAdaptor(DataAdaptor):
                     )
                 if isinstance(datatype, CategoricalDtype):
                     category_num = len(curr_axis[ann].dtype.categories)
-                    if category_num > 500 and category_num > self.config.max_category_items:
+                    if category_num > 500 and category_num > self.config.annotations__max_categories:
                         warnings.warn(
                             f"{str(ax).title()} annotation '{ann}' has {category_num} categories, this may be "
                             f"cumbersome or slow to display. We recommend setting the "
@@ -273,7 +275,7 @@ class AnndataAdaptor(DataAdaptor):
             c) cap total list of layouts at global const MAX_LAYOUTS
         """
         # load default layouts from the data.
-        layouts = self.config.layout
+        layouts = self.config.embeddings__names
 
         if layouts is None or len(layouts) == 0:
             layouts = [key[2:] for key in self.data.obsm_keys() if type(key) == str and key.startswith("X_")]
@@ -342,7 +344,7 @@ class AnndataAdaptor(DataAdaptor):
         return getattr(self.data.obs, term_name)
 
     def get_obs_index(self):
-        name = getattr(self.config, "obs_names")
+        name = self.config.single_dataset__obs_names
         if name is None:
             return self.original_obs_index
         else:

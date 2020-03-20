@@ -149,7 +149,7 @@ class WritableAnnotationTest(unittest.TestCase):
             self.assertEqual(len(feature), 1)
 
         check_feature("POST", "/cluster/", False)
-        check_feature("POST", "/diffexp/", not self.data.config.disable_diffexp)
+        check_feature("POST", "/diffexp/", self.data.config.diffexp__enable)
         check_feature("GET", "/layout/obs", True)
-        check_feature("PUT", "/layout/obs", self.data.config.enable_reembedding)
+        check_feature("PUT", "/layout/obs", self.data.config.embeddings__enable_reembedding)
         check_feature("PUT", "/annotations/obs", True)
