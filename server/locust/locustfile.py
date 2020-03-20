@@ -23,24 +23,42 @@ class ViewDataset(TaskSet):
         self.dataset = random.choice(DataSets)
 
         with self.client.get(f"{self.dataset}{API}/config", catch_response=True) as r:
-            self.config = r.json()["config"]
+            if r.status_code == 200:
+                self.config = r.json()["config"]
+                r.success()
+            else:
+                self.config = None
+                r.failure(f"bad response code {r.status_code}")
 
         with self.client.get(f"{self.dataset}{API}/schema", catch_response=True) as r:
-            self.schema = r.json()["schema"]
+            if r.status_code == 200:
+                self.schema = r.json()["schema"]
+                r.success()
+            else:
+                self.schema = None
+                r.failure(f"bad response code {r.status_code}")
 
         with self.client.get(
             f"{self.dataset}{API}/annotations/var?annotation-name={self.var_index_name()}",
             headers={"Accept": "application/octet-stream"},
             catch_response=True
         ) as r:
-            df = decode_fbs.decode_matrix_FBS(r.content)
-            gene_names_idx = df["col_idx"].index(self.var_index_name())
-            self.gene_names = df["columns"][gene_names_idx]
+            if r.status_code == 200:
+                df = decode_fbs.decode_matrix_FBS(r.content)
+                gene_names_idx = df["col_idx"].index(self.var_index_name())
+                self.gene_names = df["columns"][gene_names_idx]
+            else:
+                self.gene_names = None
+                r.failure(f"bad response code {r.status_code}")
 
     def var_index_name(self):
+        if self.schema is None:
+            return None
         return self.schema["annotations"]["var"]["index"]
 
     def obs_annotation_names(self):
+        if self.schema is None:
+            return []
         return [col["name"] for col in self.schema["annotations"]["obs"]["columns"]]
 
     @task(2)
@@ -68,15 +86,15 @@ class ViewDataset(TaskSet):
 
         @seq_task(1)
         def index(self):
-            self.client.get(f"{self.dataset}/").close()
+            self.client.get(f"{self.dataset}/", stream=True).close()
 
         @seq_task(2)
         def loadConfigSchema(self):
             def config():
-                self.client.get(f"{self.dataset}{API}/config").close()
+                self.client.get(f"{self.dataset}{API}/config", stream=True).close()
 
             def schema():
-                self.client.get(f"{self.dataset}{API}/schema").close()
+                self.client.get(f"{self.dataset}{API}/schema", stream=True).close()
 
             group = Group()
             group.spawn(config)
@@ -87,13 +105,14 @@ class ViewDataset(TaskSet):
         def loadBootstrapData(self):
             def layout():
                 self.client.get(
-                    f"{self.dataset}{API}/layout/obs", headers={"Accept": "application/octet-stream"}
+                    f"{self.dataset}{API}/layout/obs", headers={"Accept": "application/octet-stream"}, stream=True
                 ).close()
 
             def varAnnotationIndex():
                 self.client.get(
                     f"{self.dataset}{API}/annotations/var?annotation-name={self.parent.var_index_name()}",
                     headers={"Accept": "application/octet-stream"},
+                    stream=True
                 ).close()
 
             group = Group()
@@ -107,6 +126,7 @@ class ViewDataset(TaskSet):
                 self.client.get(
                     f"{self.dataset}{API}/annotations/obs?annotation-name={name}",
                     headers={"Accept": "application/octet-stream"},
+                    stream=True
                 ).close()
 
             obs_names = self.parent.obs_annotation_names()
@@ -130,6 +150,7 @@ class ViewDataset(TaskSet):
             f"{self.dataset}{API}/data/var",
             data=json.dumps(filter),
             headers={"Content-Type": "application/json", "Accept": "application/octet-stream"},
+            stream=True
         ).close()
 
 
