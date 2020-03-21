@@ -124,8 +124,9 @@ class AnnotationsLocalFile(Annotations):
                 if fname == self.last_fname:
                     return self.last_labels
                 else:
-                    labels = pd.read_csv(fname, dtype="category",
-                                         index_col=0, header=0, comment="#", keep_default_na=False)
+                    labels = pd.read_csv(
+                        fname, dtype="category", index_col=0, header=0, comment="#", keep_default_na=False
+                    )
                     # update the cache
                     self.last_fname = fname
                     self.last_labels = labels
