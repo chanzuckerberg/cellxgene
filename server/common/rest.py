@@ -153,7 +153,7 @@ def diffexp_obs_post(request, data_adaptor):
         return make_response(diffexp, HTTPStatus.OK, {"Content-Type": "application/json"})
     except (ValueError, DisabledFeatureError, FilterError) as e:
         return abort_and_log(HTTPStatus.BAD_REQUEST, str(e))
-    except JSONEncodingValueError as e:
+    except JSONEncodingValueError:
         # JSON encoding failure, usually due to bad data
         current_app.logger.warning(JSON_NaN_to_num_warning_msg)
         raise
