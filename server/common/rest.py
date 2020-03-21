@@ -1,7 +1,7 @@
 from http import HTTPStatus
-import warnings
 import copy
-from flask import make_response, jsonify
+import logging
+from flask import make_response, jsonify, current_app, abort
 from server.common.constants import Axis, DiffExpMode, JSON_NaN_to_num_warning_msg
 from server.common.errors import (
     FilterError,
@@ -12,6 +12,12 @@ from server.common.errors import (
 
 import json
 from server.data_common.fbs.matrix import decode_matrix_fbs
+
+
+def abort_and_log(code, logmsg, loglevel=logging.DEBUG):
+    """ Debug-level log the message, then abort with HTTP code """
+    current_app.logger.log(loglevel, logmsg)
+    return abort(code)
 
 
 def schema_get_helper(data_adaptor, annotations):
@@ -41,19 +47,15 @@ def annotations_obs_get(request, data_adaptor, annotations):
     fields = request.args.getlist("annotation-name", None)
     preferred_mimetype = request.accept_mimetypes.best_match(["application/octet-stream"])
     if preferred_mimetype != "application/octet-stream":
-        return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
+        return abort(HTTPStatus.NOT_ACCEPTABLE)
     try:
         labels = None
         if annotations:
             labels = annotations.read_labels(data_adaptor)
         fbs = data_adaptor.annotation_to_fbs_matrix(Axis.OBS, fields, labels)
         return make_response(fbs, HTTPStatus.OK, {"Content-Type": "application/octet-stream"})
-    except KeyError:
-        return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
-    except ValueError as e:
-        return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
-    except Exception as e:
-        return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+    except KeyError as e:
+        return abort_and_log(HTTPStatus.BAD_REQUEST, str(e))
 
 
 def annotations_put_fbs_helper(data_adaptor, annotations, fbs):
@@ -69,14 +71,14 @@ def annotations_put_fbs_helper(data_adaptor, annotations, fbs):
 
 def annotations_obs_put(request, data_adaptor, annotations):
     if annotations is None:
-        return make_response("Error, annotations are not configured", HTTPStatus.BAD_REQUEST)
+        return abort(HTTPStatus.NOT_IMPLEMENTED)
 
     anno_collection = request.args.get("annotation-collection-name", default=None)
     fbs = request.get_data()
 
     if anno_collection is not None:
         if not annotations.is_safe_collection_name(anno_collection):
-            return make_response(f"Error, bad annotation collection name", HTTPStatus.BAD_REQUEST)
+            return abort(HTTPStatus.BAD_REQUEST, "Bad annotation collection name")
         annotations.set_collection(anno_collection)
 
     try:
@@ -84,16 +86,14 @@ def annotations_obs_put(request, data_adaptor, annotations):
         res = json.dumps({"status": "OK"})
         return make_response(res, HTTPStatus.OK, {"Content-Type": "application/json"})
     except (ValueError, DisabledFeatureError, KeyError) as e:
-        return make_response(str(e), HTTPStatus.BAD_REQUEST)
-    except Exception as e:
-        return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+        return abort_and_log(HTTPStatus.BAD_REQUEST, str(e))
 
 
 def annotations_var_get(request, data_adaptor, annotations):
     fields = request.args.getlist("annotation-name", None)
     preferred_mimetype = request.accept_mimetypes.best_match(["application/octet-stream"])
     if preferred_mimetype != "application/octet-stream":
-        return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
+        return abort(HTTPStatus.NOT_ACCEPTABLE)
     try:
         labels = None
         if annotations is not None:
@@ -103,18 +103,14 @@ def annotations_var_get(request, data_adaptor, annotations):
             HTTPStatus.OK,
             {"Content-Type": "application/octet-stream"},
         )
-    except KeyError:
-        return make_response(f"Error bad key in {fields}", HTTPStatus.BAD_REQUEST)
-    except ValueError as e:
-        return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
-    except Exception as e:
-        return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+    except KeyError as e:
+        return abort_and_log(HTTPStatus.BAD_REQUEST, str(e))
 
 
 def data_var_put(request, data_adaptor):
     preferred_mimetype = request.accept_mimetypes.best_match(["application/octet-stream"])
     if preferred_mimetype != "application/octet-stream":
-        return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
+        return abort(HTTPStatus.NOT_ACCEPTABLE)
 
     filter_json = request.get_json()
     filter = filter_json["filter"] if filter_json else None
@@ -125,58 +121,42 @@ def data_var_put(request, data_adaptor):
             {"Content-Type": "application/octet-stream"},
         )
     except FilterError as e:
-        return make_response(str(e), HTTPStatus.BAD_REQUEST)
-    except ValueError as e:
-        return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+        return abort_and_log(HTTPStatus.BAD_REQUEST, str(e))
 
 
 def diffexp_obs_post(request, data_adaptor):
     if data_adaptor.config.disable_diffexp:
-        return make_response(f"diffexp not supported.", HTTPStatus.BAD_REQUEST)
+        return abort(HTTPStatus.NOT_IMPLEMENTED)
 
     args = request.get_json()
-    # confirm mode is present and legal
     try:
+        # TODO: implement varfilter mode
         mode = DiffExpMode(args["mode"])
-    except (KeyError, TypeError):
-        return make_response("Error: mode is required", HTTPStatus.BAD_REQUEST)
-    except ValueError:
-        return make_response(f"Error: invalid mode option {args['mode']}", HTTPStatus.BAD_REQUEST)
-    # Validate filters
-    if mode == DiffExpMode.VAR_FILTER or "varFilter" in args:
-        # not NOT_IMPLEMENTED
-        return make_response("mode=varfilter not implemented", HTTPStatus.NOT_IMPLEMENTED)
-    if mode == DiffExpMode.TOP_N and "count" not in args:
-        return make_response("mode=topN requires a count parameter", HTTPStatus.BAD_REQUEST)
 
-    if "set1" not in args:
-        return make_response("set1 is required.", HTTPStatus.BAD_REQUEST)
-    if Axis.VAR in args["set1"]["filter"]:
-        return make_response("Var filter not allowed for set1", HTTPStatus.BAD_REQUEST)
-    # set2
-    if "set2" not in args:
-        return make_response("Set2 as inverse of set1 is not implemented", HTTPStatus.NOT_IMPLEMENTED)
-    if Axis.VAR in args["set2"]["filter"]:
-        return make_response("Var filter not allowed for set2", HTTPStatus.BAD_REQUEST)
+        if mode == DiffExpMode.VAR_FILTER or "varFilter" in args:
+            return abort_and_log(HTTPStatus.NOT_IMPLEMENTED, "varFilter not enabled")
 
-    set1_filter = args["set1"]["filter"]
-    set2_filter = args.get("set2", {"filter": {}})["filter"]
+        set1_filter = args.get("set1", {"filter": {}})["filter"]
+        set2_filter = args.get("set2", {"filter": {}})["filter"]
+        count = args.get("count", None)
 
-    # TODO: implement varfilter mode
+        if set1_filter is None or set2_filter is None or count is None:
+            return abort_and_log(HTTPStatus.BAD_REQUEST, "missing required parameter")
+        if Axis.VAR in set1_filter or Axis.VAR in set2_filter:
+            return abort_and_log(HTTPStatus.BAD_REQUEST, "var axis filter not enabled")
 
-    # mode=topN
-    count = args.get("count", None)
+    except (KeyError, TypeError) as e:
+        return abort_and_log(HTTPStatus.BAD_REQUEST, str(e))
+
     try:
         diffexp = data_adaptor.diffexp_topN(set1_filter, set2_filter, count)
         return make_response(diffexp, HTTPStatus.OK, {"Content-Type": "application/json"})
     except (ValueError, DisabledFeatureError, FilterError) as e:
-        return make_response(str(e), HTTPStatus.BAD_REQUEST)
+        return abort_and_log(HTTPStatus.BAD_REQUEST, str(e))
     except JSONEncodingValueError as e:
         # JSON encoding failure, usually due to bad data
-        warnings.warn(JSON_NaN_to_num_warning_msg)
-        return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
-    except ValueError as e:
-        return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+        current_app.logger.warning(JSON_NaN_to_num_warning_msg)
+        raise
 
 
 def layout_obs_get(request, data_adaptor):
@@ -187,24 +167,25 @@ def layout_obs_get(request, data_adaptor):
                 data_adaptor.layout_to_fbs_matrix(), HTTPStatus.OK, {"Content-Type": "application/octet-stream"}
             )
         else:
-            return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
-    except PrepareError as e:
-        return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
-    except ValueError as e:
-        return make_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+            return abort(HTTPStatus.NOT_ACCEPTABLE)
+    except PrepareError:
+        current_app.logger.warning(f"Dataset is missing embeddings {request.path}")
+        return abort_and_log(
+            HTTPStatus.NOT_IMPLEMENTED, f"No embedding available {request.path}", loglevel=logging.WARNING
+        )
 
 
 def layout_obs_put(request, data_adaptor):
     preferred_mimetype = request.accept_mimetypes.best_match(["application/octet-stream"])
     if preferred_mimetype != "application/octet-stream":
-        return make_response(f"Unsupported MIME type '{request.accept_mimetypes}'", HTTPStatus.NOT_ACCEPTABLE)
+        return abort(HTTPStatus.NOT_ACCEPTABLE)
     if not data_adaptor.config.enable_reembedding:
-        return make_response(f"Computed embedding not supported.", HTTPStatus.BAD_REQUEST)
+        return abort(HTTPStatus.NOT_IMPLEMENTED)
 
     args = request.get_json()
     filter = args["filter"] if args else None
     if not filter:
-        return make_response("Error: obs filter is required", HTTPStatus.BAD_REQUEST)
+        return abort_and_log(HTTPStatus.BAD_REQUEST, "obs filter is required")
     method = args["method"] if args else "umap"
 
     try:
@@ -219,6 +200,6 @@ def layout_obs_put(request, data_adaptor):
             },
         )
     except NotImplementedError as e:
-        return make_response(str(e), HTTPStatus.NOT_IMPLEMENTED)
-    except (ValueError, DisabledFeatureError, FilterError) as e:
-        return make_response(str(e), HTTPStatus.BAD_REQUEST)
+        return abort_and_log(HTTPStatus.NOT_IMPLEMENTED, str(e))
+    except (NotImplementedError, ValueError, DisabledFeatureError, FilterError) as e:
+        return abort_and_log(HTTPStatus.BAD_REQUEST, str(e))
