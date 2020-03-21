@@ -257,8 +257,8 @@ class DataAdaptor(metaclass=ABCMeta):
 
         try:
             obs_selector, var_selector = self._filter_to_mask(filter)
-        except (KeyError, IndexError, TypeError, AttributeError) as e:
-            raise FilterError(f"Error parsing filter: {e}") from e
+        except (KeyError, IndexError, TypeError, AttributeError):
+            raise FilterError("Error parsing filter")
 
         if obs_selector is not None:
             raise FilterError("filtering on obs unsupported")
@@ -286,7 +286,7 @@ class DataAdaptor(metaclass=ABCMeta):
             obs_mask_A = self._axis_filter_to_mask(Axis.OBS, obsFilterA["obs"], shape[0])
             obs_mask_B = self._axis_filter_to_mask(Axis.OBS, obsFilterB["obs"], shape[0])
         except (KeyError, IndexError) as e:
-            raise FilterError(f"Error parsing filter: {e}") from e
+            raise FilterError("Error parsing filter")
         if top_n is None:
             top_n = DEFAULT_TOP_N
 

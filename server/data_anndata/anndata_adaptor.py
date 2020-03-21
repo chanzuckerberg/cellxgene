@@ -44,9 +44,9 @@ class AnndataAdaptor(DataAdaptor):
             # try to read it.  Many of these tests don't make sense for URIs (eg, extension-
             # based typing).
             if not data_locator.exists():
-                raise DatasetAccessError(f"{data_locator.uri_or_path} does not exist")
+                raise DatasetAccessError("does not exist")
             if not data_locator.isfile():
-                raise DatasetAccessError(f"{data_locator.uri_or_path} is not a file")
+                raise DatasetAccessError("is not a file")
 
     @staticmethod
     def file_size(data_locator):
@@ -172,8 +172,8 @@ class AnndataAdaptor(DataAdaptor):
             raise DatasetAccessError("Out of memory - file is too large for available memory.")
         except Exception as e:
             raise DatasetAccessError(
-                f"{e} - file not found or is inaccessible.  File must be an .h5ad object.  "
-                f"Please check your input and try again."
+                "File not found or is inaccessible. File must be an .h5ad object. "
+                "Please check your input and try again."
             )
 
     def _validate_and_initialize(self):
@@ -309,8 +309,7 @@ class AnndataAdaptor(DataAdaptor):
             shape = self.get_shape()
             obs_mask = self._axis_filter_to_mask(Axis.OBS, obsFilter["obs"], shape[0])
         except (KeyError, IndexError) as e:
-            raise FilterError(f"Error parsing filter: {e}") from e
-
+            raise FilterError("Error parsing filter")
         with ServerTiming.time("layout.compute"):
             X_umap = scanpy_umap(self.data, obs_mask)
             normalized_layout = DataAdaptor.normalize_embedding(X_umap)

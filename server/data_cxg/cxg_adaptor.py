@@ -1,5 +1,6 @@
 import os
 import json
+import logging
 from server.common.utils import dtype_to_schema
 from server.common.errors import DatasetAccessError
 from server.common.utils import path_join
@@ -40,7 +41,8 @@ class CxgAdaptor(DataAdaptor):
     def pre_load_validation(data_locator):
         location = data_locator.uri_or_path
         if not CxgAdaptor.isvalid(location):
-            raise DatasetAccessError(f"cxg matrix is not valid: {location}")
+            logging.error(f"cxg matrix is not valid: {location}")
+            raise DatasetAccessError("cxg matrix is not valid")
 
     @staticmethod
     def file_size(data_locator):
@@ -157,12 +159,12 @@ class CxgAdaptor(DataAdaptor):
                 p = self.get_path(name)
                 try:
                     array = tiledb.DenseArray(p, mode="r", ctx=self.tiledb_ctx)
-                except tiledb.libtiledb.TileDBError as e:
-                    raise AttributeError(str(e))
+                except tiledb.libtiledb.TileDBError:
+                    raise DatasetAccessError(name)
                 self.arrays[name] = array
                 return array
-        except tiledb.libtiledb.TileDBError as e:
-            raise AttributeError(str(e))
+        except tiledb.libtiledb.TileDBError:
+            raise DatasetAccessError(name)
 
     def get_embedding_array(self, ename, dims=2):
         array = self.open_array(f"emb/{ename}")
@@ -198,8 +200,8 @@ class CxgAdaptor(DataAdaptor):
         var = self.open_array("obs")
         try:
             data = var.query(attrs=[term_name])[:][term_name]
-        except tiledb.libtiledb.TileDBError as e:
-            raise AttributeError(str(e))
+        except tiledb.libtiledb.TileDBError:
+            raise DatasetAccessError("query_obs")
         return data
 
     def get_obs_names(self):

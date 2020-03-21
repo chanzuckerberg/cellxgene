@@ -11,7 +11,6 @@ from server.common.errors import AnnotationsError, OntologyLoadFailure
 from server.common.utils import series_to_schema
 import fsspec
 import fastobo
-import traceback  # use built-in formatter for SyntaxError
 from flask import session
 from abc import ABCMeta, abstractmethod
 
@@ -39,14 +38,13 @@ class Annotations(metaclass=ABCMeta):
                 self.ontology_data = names
 
         except FileNotFoundError as e:
-            raise OntologyLoadFailure(f"Unable to find OBO ontology path: {path}") from e
+            raise OntologyLoadFailure("Unable to find OBO ontology path") from e
 
         except SyntaxError as e:
-            msg = "".join(traceback.format_exception_only(SyntaxError, e))
-            raise OntologyLoadFailure(msg) from e
+            raise OntologyLoadFailure("Syntax error loading OBO ontology") from e
 
         except Exception as e:
-            raise OntologyLoadFailure(f"Error loading OBO file {path}") from e
+            raise OntologyLoadFailure("Error loading OBO file") from e
 
     def get_schema(self, data_adaptor):
         labels = self.read_labels(data_adaptor)
