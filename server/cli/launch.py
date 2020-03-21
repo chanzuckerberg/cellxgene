@@ -370,9 +370,7 @@ def launch(
             click.echo("Warning: --experimental-annotations-ontology-obo ignored as annotations are disabled.")
     else:
         if annotations_file is not None and annotations_dir is not None:
-            raise click.ClickException(
-                "--annotations-file and --annotations-dir " "may not be used together."
-            )
+            raise click.ClickException("--annotations-file and --annotations-dir " "may not be used together.")
 
         if annotations_file is not None:
             lf_name, lf_ext = splitext(annotations_file)
@@ -383,9 +381,7 @@ def launch(
             try:
                 mkdir(annotations_dir)
             except OSError:
-                raise click.ClickException(
-                    "Unable to create directory specified by " "--annotations-dir"
-                )
+                raise click.ClickException("Unable to create directory specified by " "--annotations-dir")
 
     if about:
 

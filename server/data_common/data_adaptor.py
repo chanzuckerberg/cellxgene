@@ -285,7 +285,7 @@ class DataAdaptor(metaclass=ABCMeta):
             shape = self.get_shape()
             obs_mask_A = self._axis_filter_to_mask(Axis.OBS, obsFilterA["obs"], shape[0])
             obs_mask_B = self._axis_filter_to_mask(Axis.OBS, obsFilterB["obs"], shape[0])
-        except (KeyError, IndexError) as e:
+        except (KeyError, IndexError):
             raise FilterError("Error parsing filter")
         if top_n is None:
             top_n = DEFAULT_TOP_N

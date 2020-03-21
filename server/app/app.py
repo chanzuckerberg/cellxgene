@@ -98,8 +98,8 @@ def static_redirect(dataset, therest):
 def dataroot_test_index():
     # the following index page is meant for testing/debugging purposes
     data = '<!doctype html><html lang="en">'
-    data += '<head><title>Hosted Cellxgene</title></head>'
-    data += '<body><H1>Welcome to cellxgene</H1>'
+    data += "<head><title>Hosted Cellxgene</title></head>"
+    data += "<body><H1>Welcome to cellxgene</H1>"
 
     config = current_app.app_config
     locator = DataLocator(config.dataroot)
@@ -113,13 +113,13 @@ def dataroot_test_index():
             # skip over invalid datasets
             pass
 
-    data += '<br/>Select one of these datasets...<br/>'
-    data += '<ul>'
+    data += "<br/>Select one of these datasets...<br/>"
+    data += "<ul>"
     datasets.sort()
     for dataset in datasets:
-        data += f'<li><a href={dataset}>{dataset}</a></li>'
-    data += '</ul>'
-    data += '</body></html>'
+        data += f"<li><a href={dataset}>{dataset}</a></li>"
+    data += "</ul>"
+    data += "</body></html>"
     return make_response(data)
 
 

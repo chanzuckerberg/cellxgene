@@ -41,7 +41,7 @@ class ViewDataset(TaskSet):
         with self.client.get(
             f"{self.dataset}{API}/annotations/var?annotation-name={self.var_index_name()}",
             headers={"Accept": "application/octet-stream"},
-            catch_response=True
+            catch_response=True,
         ) as r:
             if r.status_code == 200:
                 df = decode_fbs.decode_matrix_FBS(r.content)
@@ -112,7 +112,7 @@ class ViewDataset(TaskSet):
                 self.client.get(
                     f"{self.dataset}{API}/annotations/var?annotation-name={self.parent.var_index_name()}",
                     headers={"Accept": "application/octet-stream"},
-                    stream=True
+                    stream=True,
                 ).close()
 
             group = Group()
@@ -126,7 +126,7 @@ class ViewDataset(TaskSet):
                 self.client.get(
                     f"{self.dataset}{API}/annotations/obs?annotation-name={name}",
                     headers={"Accept": "application/octet-stream"},
-                    stream=True
+                    stream=True,
                 ).close()
 
             obs_names = self.parent.obs_annotation_names()
@@ -150,7 +150,7 @@ class ViewDataset(TaskSet):
             f"{self.dataset}{API}/data/var",
             data=json.dumps(filter),
             headers={"Content-Type": "application/json", "Accept": "application/octet-stream"},
-            stream=True
+            stream=True,
         ).close()
 
 

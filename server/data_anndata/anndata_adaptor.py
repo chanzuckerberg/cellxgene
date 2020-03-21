@@ -170,7 +170,7 @@ class AnndataAdaptor(DataAdaptor):
             )
         except MemoryError:
             raise DatasetAccessError("Out of memory - file is too large for available memory.")
-        except Exception as e:
+        except Exception:
             raise DatasetAccessError(
                 "File not found or is inaccessible. File must be an .h5ad object. "
                 "Please check your input and try again."
@@ -308,7 +308,7 @@ class AnndataAdaptor(DataAdaptor):
         try:
             shape = self.get_shape()
             obs_mask = self._axis_filter_to_mask(Axis.OBS, obsFilter["obs"], shape[0])
-        except (KeyError, IndexError) as e:
+        except (KeyError, IndexError):
             raise FilterError("Error parsing filter")
         with ServerTiming.time("layout.compute"):
             X_umap = scanpy_umap(self.data, obs_mask)
