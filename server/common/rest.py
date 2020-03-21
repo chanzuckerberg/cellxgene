@@ -17,6 +17,7 @@ from server.data_common.fbs.matrix import decode_matrix_fbs
 def abort_and_log(code, logmsg, loglevel=logging.DEBUG):
     """ Debug-level log the message, then abort with HTTP code """
     current_app.logger.log(loglevel, logmsg)
+    # Do NOT send log message to HTTP response.
     return abort(code)
 
 
@@ -154,7 +155,8 @@ def diffexp_obs_post(request, data_adaptor):
     except (ValueError, DisabledFeatureError, FilterError) as e:
         return abort_and_log(HTTPStatus.BAD_REQUEST, str(e))
     except JSONEncodingValueError:
-        # JSON encoding failure, usually due to bad data
+        # JSON encoding failure, usually due to bad data. Just let it ripple up
+        # to default exception handler.
         current_app.logger.warning(JSON_NaN_to_num_warning_msg)
         raise
 
@@ -169,18 +171,18 @@ def layout_obs_get(request, data_adaptor):
         else:
             return abort(HTTPStatus.NOT_ACCEPTABLE)
     except PrepareError:
-        current_app.logger.warning(f"Dataset is missing embeddings {request.path}")
         return abort_and_log(
-            HTTPStatus.NOT_IMPLEMENTED, f"No embedding available {request.path}", loglevel=logging.WARNING
+            HTTPStatus.NOT_IMPLEMENTED, f"No embedding available {request.path}", loglevel=logging.ERROR
         )
 
 
 def layout_obs_put(request, data_adaptor):
+    if not data_adaptor.config.enable_reembedding:
+        return abort(HTTPStatus.NOT_IMPLEMENTED)
+
     preferred_mimetype = request.accept_mimetypes.best_match(["application/octet-stream"])
     if preferred_mimetype != "application/octet-stream":
         return abort(HTTPStatus.NOT_ACCEPTABLE)
-    if not data_adaptor.config.enable_reembedding:
-        return abort(HTTPStatus.NOT_IMPLEMENTED)
 
     args = request.get_json()
     filter = args["filter"] if args else None
