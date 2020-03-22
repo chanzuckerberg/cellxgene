@@ -11,6 +11,7 @@ from server.common.utils import sort_options
 from server.common.errors import DatasetAccessError, ConfigurationError
 from server.data_common.matrix_loader import MatrixDataCacheManager
 from server.common.app_config import AppConfig
+from server.common.default_config import default_config
 
 DEFAULT_CONFIG = AppConfig()
 
@@ -235,6 +236,14 @@ def launch_args(func):
         show_default=True,
         help="Location to yaml file with configuration settings",
     )
+    @click.option(
+        "--dump-default-config",
+        "dump_default_config",
+        is_flag=True,
+        default=False,
+        show_default=True,
+        help="Print default configuration settings and exit",
+    )
     @click.help_option("--help", "-h", help="Show this message and exit.")
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
@@ -291,6 +300,7 @@ def launch(
     experimental_annotations_ontology_obo,
     experimental_enable_reembedding,
     config_file,
+    dump_default_config
 ):
     """Launch the cellxgene data viewer.
     This web app lets you explore single-cell expression data.
@@ -310,6 +320,10 @@ def launch(
     # > cellxgene launch --dataroot example-dataset/
     #
     # > cellxgene launch --dataroot <url>
+
+    if dump_default_config:
+        print(default_config)
+        sys.exit(0)
 
     # Startup message
     click.echo("[cellxgene] Starting the CLI...")
