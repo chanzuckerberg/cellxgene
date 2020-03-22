@@ -52,9 +52,9 @@ try:
 
     matrix_data_cache_manager = MatrixDataCacheManager()
     app_config.complete_config(matrix_data_cache_manager, logging.info)
-    annotations = app_config.annotations
+    user_annotations = app_config.user_annotations
 
-    server = Server(matrix_data_cache_manager, annotations, app_config)
+    server = Server(matrix_data_cache_manager, user_annotations, app_config)
 
     debug = False
     application = server.app
