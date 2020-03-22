@@ -134,7 +134,7 @@ def data_var_put(request, data_adaptor):
 
 
 def diffexp_obs_post(request, data_adaptor):
-    if data_adaptor.config.diffexp__enable:
+    if not data_adaptor.config.diffexp__enable:
         return abort(HTTPStatus.NOT_IMPLEMENTED)
 
     args = request.get_json()
