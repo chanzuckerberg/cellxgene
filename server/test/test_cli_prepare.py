@@ -12,4 +12,4 @@ class CLIPrepareTests(unittest.TestCase):
         index = pd.Index(["SNORD113", "SNORD113", "SNORD113-1"])
         result = make_index_unique(index)
         expected = pd.Index(["SNORD113", "SNORD113-2", "SNORD113-1"])
-        self.assertTrue(all(l == r for l, r in zip(result.values, expected.values)))
+        self.assertTrue(all(left == right for left, right in zip(result.values, expected.values)))
