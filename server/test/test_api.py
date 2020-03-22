@@ -79,7 +79,6 @@ class EndPoints(object):
         self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
         df = decode_fbs.decode_matrix_FBS(result.content)
         self.assertEqual(df["n_rows"], 2638)
-        print("ANNOTATIONS ENABLED", self.ANNOTATIONS_ENABLED)
         self.assertEqual(df["n_cols"], 6 if self.ANNOTATIONS_ENABLED else 5)
         self.assertIsNotNone(df["columns"])
         self.assertIsNone(df["row_idx"])

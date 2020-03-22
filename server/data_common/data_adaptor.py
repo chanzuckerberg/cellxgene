@@ -16,16 +16,8 @@ class DataAdaptor(metaclass=ABCMeta):
     """Base class for loading and accessing matrix data"""
 
     def __init__(self, config):
-        # config will normally be a type that inherits from AppConfig.
-        # the following is for backwards compatability with tests
-        if config is None:
-            config = AppConfig()
-            assert(False)
-        elif type(config) == dict:
-            temp = AppConfig()
-            temp.update(**config)
-            config = temp
-            assert(False)
+        if type(config) != AppConfig:
+            raise TypeError("config expected to be of type AppConfig")
 
         # config is the application configuration
         self.config = config
