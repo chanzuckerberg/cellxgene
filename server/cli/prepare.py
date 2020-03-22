@@ -229,7 +229,8 @@ def prepare(
     click.echo("[cellxgene] Success!")
 
 
-# TODO (mweiden): remove this once https://github.com/theislab/anndata/pull/345 is merged and released
+# TODO (mweiden): remove this once this issue is resolved https://github.com/theislab/anndata/issues/344
+# Note: tentative solution here https://github.com/theislab/anndata/pull/345
 def make_index_unique(index: pd.Index, join: str = "-"):
     """
     Makes the index unique by appending a number string to each duplicate index element: '1', '2', etc.
