@@ -19,32 +19,33 @@ class MatrixDataCacheItem(object):
         self.data_adaptor = None
         self.data_lock = RWLock()
 
-    def acquire(self, app_config):
-        """returns the data_adaptor if cached.  opens the data_adaptor if not.
-        In either case, the a reader lock is taken.  Must call release when
-        the data_adaptor is no longer needed"""
-
+    def acquire_existing(self):
+        """If the data_adaptor exists, take a read lock and return it, else return None"""
         self.data_lock.r_acquire()
         if self.data_adaptor:
             return self.data_adaptor
 
         self.data_lock.r_release()
-        try:
-            with self.data_lock.w_locked():
-                # the data may have been loaded while waiting on the lock
-                if not self.data_adaptor:
-                    self.loader.pre_load_validation()
-                    self.data_adaptor = self.loader.open(app_config)
+        return None
 
-        except Exception:
-            # necessary to acquire after an exception, since the release will occur when
-            # the context exits
-            self.data_lock.r_acquire()
-            raise
-
+    def acquire(self, app_config):
+        """returns the data_adaptor if cached.  opens the data_adaptor if not.
+        In either case, the a reader lock is taken.  Must call release when
+        the data_adaptor is no longer needed"""
         self.data_lock.r_acquire()
         if self.data_adaptor:
             return self.data_adaptor
+        self.data_lock.r_release()
+
+        self.data_lock.w_acquire()
+        # the data may have been loaded while waiting on the lock
+        if not self.data_adaptor:
+            self.loader.pre_load_validation()
+            self.data_adaptor = self.loader.open(app_config)
+
+        # demote the write lock to a read lock.
+        self.data_lock.w_demote()
+        return self.data_adaptor
 
     def release(self):
         """Release the reader lock"""
@@ -65,7 +66,7 @@ class MatrixDataCacheManager(object):
     when the context ends.  This class currently implements a simple least recently used cache,
     which can delete a dataset from the cache to make room for a new oneo
 
-    This is the indended usage pattern:
+    This is the intended usage pattern:
 
            m = MatrixDataCacheManager()
            with m.data_adaptor(location, app_config) as data_adaptor:
@@ -77,7 +78,11 @@ class MatrixDataCacheManager(object):
     #  TODO:  This is very simple.  This can be improved by taking into account how much space is actually
     #         taken by each dataset, instead of arbitrarily picking a max datasets to cache.
     #         Also, this should be controlled by a configuration parameter.
-    MAX_CACHED = 3
+    MAX_CACHED = 5
+
+    @staticmethod
+    def set_max_datasets(max_cached):
+        MatrixDataCacheManager.MAX_CACHED = max_cached
 
     # FIXME:   If the number of active datasets exceeds the MAX_CACHED, then each request could
     # lead to a dataset being deleted and a new only being opened: the cache will get thrashed.
@@ -97,6 +102,8 @@ class MatrixDataCacheManager(object):
     @contextmanager
     def data_adaptor(self, location, app_config):
         # create a loader for to this location if it does not already exist
+
+        delete_adaptor = None
         with self.lock:
             value = self.datasets.get(location)
             if value is not None:
@@ -115,14 +122,17 @@ class MatrixDataCacheManager(object):
                     oldest = items[0]
                     oldest_cache = oldest[1][0]
                     oldest_key = oldest[0]
-                    oldest_cache.delete()
                     del self.datasets[oldest_key]
+                    delete_adaptor = oldest_cache
 
                 last_accessed = time.time()
                 loader = MatrixDataLoader(location, app_config=app_config)
                 cache_item = MatrixDataCacheItem(loader)
                 self.datasets[location] = (cache_item, last_accessed)
+
         try:
+            if delete_adaptor:
+                delete_adaptor.delete()
             data_adaptor = cache_item.acquire(app_config)
             yield data_adaptor
         finally:

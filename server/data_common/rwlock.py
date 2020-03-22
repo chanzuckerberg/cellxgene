@@ -12,6 +12,8 @@
     Code written by Tyler Neylon at Unbox Research.
 
     This file is public domain.
+
+    Modified to add a w_demote function to convert a writer lock to a reader lock
 """
 
 
@@ -87,6 +89,12 @@ class RWLock(object):
 
     def w_release(self):
         self.w_lock.release()
+
+    def w_demote(self):
+        """demote a write lock to a reader lock"""
+        self.num_r_lock.acquire()
+        self.num_r += 1
+        self.num_r_lock.release()
 
     @contextmanager
     def w_locked(self):
