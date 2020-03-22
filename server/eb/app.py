@@ -38,9 +38,7 @@ try:
 
     if dataroot:
         logging.info(f"Configuration from CXG_DATAROOT")
-        app_config.update(
-            multi_dataset__dataroot=dataroot,
-        )
+        app_config.update(multi_dataset__dataroot=dataroot,)
 
     # features are unsupported in the current hosted server
     app_config.update(

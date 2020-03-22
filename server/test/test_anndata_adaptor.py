@@ -40,7 +40,7 @@ class AdaptorTest(unittest.TestCase):
             "single_dataset__var_names": None,
             "diffexp__lfc_cutoff": 0.01,
             "adaptor__anndata_adaptor__backed": self.backed,
-            "single_dataset__datapath" : self.data_locator
+            "single_dataset__datapath": self.data_locator,
         }
         config = AppConfig()
         config.update(**args)

@@ -17,11 +17,9 @@ import threading
 class CxgAdaptor(DataAdaptor):
 
     # TODO:  The tiledb context parameters should be a configuration option
-    tiledb_ctx = tiledb.Ctx({
-        "sm.tile_cache_size": 8 * 1024 * 1024 * 1024,
-        "sm.num_reader_threads": 32,
-        "vfs.s3.region": "us-east-1"
-    })
+    tiledb_ctx = tiledb.Ctx(
+        {"sm.tile_cache_size": 8 * 1024 * 1024 * 1024, "sm.num_reader_threads": 32, "vfs.s3.region": "us-east-1"}
+    )
 
     def __init__(self, data_locator, config=None):
         super().__init__(config)
