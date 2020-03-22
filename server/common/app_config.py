@@ -344,6 +344,7 @@ class AppConfig(object):
         # cxg
         self.__check_attr("adaptor__cxg_adaptor__tiledb_ctx", dict)
         from server.data_cxg.cxg_adaptor import CxgAdaptor
+
         CxgAdaptor.set_tiledb_context(self.adaptor__cxg_adaptor__tiledb_ctx)
 
         # anndata

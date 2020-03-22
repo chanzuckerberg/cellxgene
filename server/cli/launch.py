@@ -138,7 +138,7 @@ def dataset_args(func):
         "-t",
         default=DEFAULT_CONFIG.single_dataset__title,
         metavar="<text>",
-        help="Title to display. If omitted will use file name."
+        help="Title to display. If omitted will use file name.",
     )
     @click.option(
         "--about",
@@ -300,7 +300,7 @@ def launch(
     experimental_annotations_ontology_obo,
     experimental_enable_reembedding,
     config_file,
-    dump_default_config
+    dump_default_config,
 ):
     """Launch the cellxgene data viewer.
     This web app lets you explore single-cell expression data.
@@ -342,29 +342,22 @@ def launch(
             server__port=port,
             server__scripts=scripts,
             server__open_browser=open_browser,
-
             single_dataset__datapath=datapath,
             single_dataset__title=title,
             single_dataset__about=about,
             single_dataset__obs_names=obs_names,
             single_dataset__var_names=var_names,
-
             multi_dataset__dataroot=dataroot,
-
             user_annotations__enable=not disable_annotations,
             user_annotations__local_file_csv__file=annotations_file,
             user_annotations__local_file_csv__directory=annotations_dir,
             user_annotations__ontology__enable=experimental_annotations_ontology,
             user_annotations__ontology__obo_location=experimental_annotations_ontology_obo,
-
             presentation__max_categories=max_category_items,
-
             embeddings__names=embedding,
             embeddings__enable_reembedding=experimental_enable_reembedding,
-
             diffexp__enable=not disable_diffexp,
             diffexp__lfc_cutoff=diffexp_lfc_cutoff,
-
             adaptor__anndata_adaptor__backed=backed,
         )
 
@@ -386,6 +379,7 @@ def launch(
 
     # create the server
     from server.app.app import Server
+
     server = Server(matrix_data_cache_manager, user_annotations, app_config)
 
     if not app_config.server__verbose:
@@ -411,7 +405,8 @@ def launch(
             debug=app_config.server__debug,
             port=app_config.server__port,
             threaded=not app_config.server__debug,
-            use_debugger=False)
+            use_debugger=False,
+        )
     except OSError as e:
         if e.errno == errno.EADDRINUSE:
             raise click.ClickException("Port is in use, please specify an open port using the --port flag.") from e
