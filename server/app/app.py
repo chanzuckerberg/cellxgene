@@ -95,8 +95,8 @@ def static_redirect(dataset, therest):
 def dataroot_test_index():
     # the following index page is meant for testing/debugging purposes
     data = '<!doctype html><html lang="en">'
-    data += '<head><title>Hosted Cellxgene</title></head>'
-    data += '<body><H1>Welcome to cellxgene</H1>'
+    data += "<head><title>Hosted Cellxgene</title></head>"
+    data += "<body><H1>Welcome to cellxgene</H1>"
 
     try:
         config = current_app.app_config
@@ -111,16 +111,16 @@ def dataroot_test_index():
                 # skip over invalid datasets
                 pass
 
-        data += '<br/>Select one of these datasets...<br/>'
-        data += '<ul>'
+        data += "<br/>Select one of these datasets...<br/>"
+        data += "<ul>"
         datasets.sort()
         for dataset in datasets:
-            data += f'<li><a href={dataset}>{dataset}</a></li>'
-        data += '</ul>'
+            data += f"<li><a href={dataset}>{dataset}</a></li>"
+        data += "</ul>"
     except Exception as e:
-        data += f'<br/>Unable to locate datasets from {config.dataroot}: {str(e)}'
+        data += f"<br/>Unable to locate datasets from {config.dataroot}: {str(e)}"
 
-    data += '</body></html>'
+    data += "</body></html>"
     return make_response(data)
 
 
@@ -235,7 +235,9 @@ class Server:
             resources = get_api_resources(bp_api)
             self.app.register_blueprint(resources.blueprint)
             self.app.add_url_rule("/<dataset>/", "dataset_index", dataset_index, methods=["GET"])
-            self.app.add_url_rule("/<dataset>/static/<path:therest>", "static_redirect", static_redirect, methods=["GET"])
+            self.app.add_url_rule(
+                "/<dataset>/static/<path:therest>", "static_redirect", static_redirect, methods=["GET"]
+            )
 
         self.app.matrix_data_cache_manager = matrix_data_cache_manager
         self.app.annotations = annotations
