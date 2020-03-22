@@ -2,14 +2,14 @@
 
 
 from server import __version__ as cellxgene_version
-import pkg_resources
 from flatten_dict import flatten
-import yaml
 from os import mkdir, environ
 from os.path import splitext, basename, isdir
 import sys
 from urllib.parse import urlparse
+import yaml
 
+from server.common.default_config import get_default_config
 from server.common.errors import ConfigurationError, DatasetAccessError, OntologyLoadFailure
 from server.data_common.matrix_loader import MatrixDataLoader, MatrixDataCacheManager, MatrixDataType
 from server.common.utils import find_available_port, is_port_available
@@ -40,53 +40,56 @@ class AppFeature(object):
 class AppConfig(object):
     def __init__(self):
 
-        # load from default_config.yaml
-        default_config_file = pkg_resources.resource_filename(__name__, "default_config.yaml")
-        with open(default_config_file) as fyaml:
-            self.default_config = yaml.load(fyaml, Loader=yaml.FullLoader)
+        self.default_config = get_default_config()
 
         dc = self.default_config
-        self.server__verbose = dc["server"]["verbose"]
-        self.server__debug = dc["server"]["debug"]
-        self.server__host = dc["server"]["host"]
-        self.server__port = dc["server"]["port"]
-        self.server__scripts = dc["server"]["scripts"]
-        self.server__open_browser = dc["server"]["open_browser"]
-        self.multi_dataset__dataroot = dc["multi_dataset"]["dataroot"]
-        self.multi_dataset__index = dc["multi_dataset"]["index"]
-        self.multi_dataset__allowed_matrix_types = dc["multi_dataset"]["allowed_matrix_types"]
-        self.single_dataset__datapath = dc["single_dataset"]["datapath"]
-        self.single_dataset__obs_names = dc["single_dataset"]["obs_names"]
-        self.single_dataset__var_names = dc["single_dataset"]["var_names"]
-        self.single_dataset__about = dc["single_dataset"]["about"]
-        self.single_dataset__title = dc["single_dataset"]["title"]
-        self.annotations__enable = dc["annotations"]["enable"]
-        self.annotations__type = dc["annotations"]["type"]
-        self.annotations__local_file_csv__directory = dc["annotations"]["local_file_csv"]["directory"]
-        self.annotations__local_file_csv__file = dc["annotations"]["local_file_csv"]["file"]
-        self.annotations__ontology__enable = dc["annotations"]["ontology"]["enable"]
-        self.annotations__ontology__obo_location = dc["annotations"]["ontology"]["obo_location"]
-        self.annotations__max_categories = dc["annotations"]["max_categories"]
-        self.embeddings__names = dc["embeddings"]["names"]
-        self.embeddings__enable_reembedding = dc["embeddings"]["enable_reembedding"]
-        self.diffexp__enable = dc["diffexp"]["enable"]
-        self.diffexp__lfc_cutoff = dc["diffexp"]["lfc_cutoff"]
-        self.cxg_adaptor__tiledb_ctx = dc["cxg_adaptor"]["tiledb_ctx"]
-        self.anndata_adaptor__backed = dc["anndata_adaptor"]["backed"]
+        try:
+            self.server__verbose = dc["server"]["verbose"]
+            self.server__debug = dc["server"]["debug"]
+            self.server__host = dc["server"]["host"]
+            self.server__port = dc["server"]["port"]
+            self.server__scripts = dc["server"]["scripts"]
+            self.server__open_browser = dc["server"]["open_browser"]
+            self.multi_dataset__dataroot = dc["multi_dataset"]["dataroot"]
+            self.multi_dataset__index = dc["multi_dataset"]["index"]
+            self.multi_dataset__allowed_matrix_types = dc["multi_dataset"]["allowed_matrix_types"]
+            self.single_dataset__datapath = dc["single_dataset"]["datapath"]
+            self.single_dataset__obs_names = dc["single_dataset"]["obs_names"]
+            self.single_dataset__var_names = dc["single_dataset"]["var_names"]
+            self.single_dataset__about = dc["single_dataset"]["about"]
+            self.single_dataset__title = dc["single_dataset"]["title"]
+            self.user_annotations__enable = dc["user_annotations"]["enable"]
+            self.user_annotations__type = dc["user_annotations"]["type"]
+            self.user_annotations__local_file_csv__directory = dc["user_annotations"]["local_file_csv"]["directory"]
+            self.user_annotations__local_file_csv__file = dc["user_annotations"]["local_file_csv"]["file"]
+            self.user_annotations__ontology__enable = dc["user_annotations"]["ontology"]["enable"]
+            self.user_annotations__ontology__obo_location = dc["user_annotations"]["ontology"]["obo_location"]
+            self.presentation__max_categories = dc["presentation"]["max_categories"]
+            self.embeddings__names = dc["embeddings"]["names"]
+            self.embeddings__enable_reembedding = dc["embeddings"]["enable_reembedding"]
+            self.diffexp__enable = dc["diffexp"]["enable"]
+            self.diffexp__lfc_cutoff = dc["diffexp"]["lfc_cutoff"]
+            self.adaptor__cxg_adaptor__tiledb_ctx = dc["adaptor"]["cxg_adaptor"]["tiledb_ctx"]
+            self.adaptor__anndata_adaptor__backed = dc["adaptor"]["anndata_adaptor"]["backed"]
+        except KeyError as e:
+            raise ConfigurationError(f"Unexpected config: {str(e)}")
 
         # The annotation object is created during complete_config and stored here.
-        self.annotations = None
+        self.user_annotations = None
+
+        # Set to true when config_completed is called
+        self.is_completed = False
 
     def update_from_config_file(self, config_file):
         with open(config_file) as fyaml:
             config = yaml.load(fyaml, Loader=yaml.FullLoader)
 
-        # special cae for tiledb_ctx whose value is a dict, and cannot
+        # special case for tiledb_ctx whose value is a dict, and cannot
         # be handled by the flattening below
-        if config.get("cxg_adaptor", {}).get("tiledb_ctx"):
-            value = config["cxg_adaptor"]["tiledb_ctx"]
-            self.cxg_adaptor__tiledb_ctx = value
-            del config["cxg_adaptor"]["tiledb_ctx"]
+        if config.get("adaptor", {}).get("cxg_adaptor", {}).get("tiledb_ctx"):
+            value = config["adaptor"]["cxg_adaptor"]["tiledb_ctx"]
+            self.adaptor__cxg_adaptor__tiledb_ctx = value
+            del config["adaptor"]["cxg_adaptor"]["tiledb_ctx"]
 
         flat_config = flatten(config)
         for key, value in flat_config.items():
@@ -99,6 +102,8 @@ class AppConfig(object):
             except KeyError:
                 raise ConfigurationError(f"Unable to set config attribute: {key}")
 
+        self.is_completed = False
+
     def update(self, **kw):
         for key, value in kw.items():
             if not hasattr(self, key):
@@ -108,9 +113,12 @@ class AppConfig(object):
             except KeyError:
                 raise ConfigurationError(f"Unable to set config parameter {key}.")
 
+        self.is_completed = False
+
     def complete_config(self, matrix_data_cache_manager=None, messagefn=None):
         """The configure options are checked, and any additional setup based on the config
         parameters is done"""
+
         if matrix_data_cache_manager is None:
             matrix_data_cache_manager = MatrixDataCacheManager()
         if messagefn is None:
@@ -128,11 +136,12 @@ class AppConfig(object):
         self.handle_server(context)
         self.handle_single_dataset(context)
         self.handle_multi_dataset(context)
-        self.handle_annotations(context)
+        self.handle_user_annotations(context)
         self.handle_embeddings(context)
         self.handle_diffexp(context)
-        self.handle_cxg_adaptor(context)
-        self.handle_anndata_adaptor(context)
+        self.handle_adaptor(context)
+
+        self.is_completed = True
 
     def __check_attr(self, attrname, vtype):
         val = getattr(self, attrname)
@@ -178,6 +187,9 @@ class AppConfig(object):
 
         if not self.server__verbose:
             sys.tracebacklimit = 0
+
+    def handle_presentation(self, context):
+        self.__check_attr("presentation__max_categories", int)
 
     def handle_single_dataset(self, context):
         self.__check_attr("single_dataset__datapath", (str, type(None)))
@@ -241,23 +253,22 @@ class AppConfig(object):
             except ValueError:
                 raise ConfigurationError(f'Invalid matrix type in "allowed_matrix_types": {mtype}')
 
-    def handle_annotations(self, context):
-        self.__check_attr("annotations__enable", bool)
-        self.__check_attr("annotations__type", str)
-        self.__check_attr("annotations__local_file_csv__directory", (type(None), str))
-        self.__check_attr("annotations__local_file_csv__file", (type(None), str))
-        self.__check_attr("annotations__ontology__enable", bool)
-        self.__check_attr("annotations__ontology__obo_location", (type(None), str))
-        self.__check_attr("annotations__max_categories", int)
+    def handle_user_annotations(self, context):
+        self.__check_attr("user_annotations__enable", bool)
+        self.__check_attr("user_annotations__type", str)
+        self.__check_attr("user_annotations__local_file_csv__directory", (type(None), str))
+        self.__check_attr("user_annotations__local_file_csv__file", (type(None), str))
+        self.__check_attr("user_annotations__ontology__enable", bool)
+        self.__check_attr("user_annotations__ontology__obo_location", (type(None), str))
 
-        if self.annotations__enable:
+        if self.user_annotations__enable:
             # TODO, replace this with a factory pattern once we have more than one way
             # to do annotations.  currently only local_file_csv
-            if self.annotations__type != "local_file_csv":
+            if self.user_annotations__type != "local_file_csv":
                 raise ConfigurationError('The only annotation type support is "local_file_csv"')
 
-            dirname = self.annotations__local_file_csv__directory
-            filename = self.annotations__local_file_csv__file
+            dirname = self.user_annotations__local_file_csv__directory
+            filename = self.user_annotations__local_file_csv__file
 
             if filename is not None and dirname is not None:
                 raise ConfigurationError("'annotations-file' and 'annotations-dir' may not be used together.")
@@ -273,34 +284,34 @@ class AppConfig(object):
                 except OSError:
                     raise ConfigurationError("Unable to create directory specified by --annotations-dir")
 
-            self.annotations = AnnotationsLocalFile(dirname, filename)
+            self.user_annotations = AnnotationsLocalFile(dirname, filename)
 
             # if the user has specified a fixed label file, go ahead and validate it
             # so that we can remove errors early in the process.
-            if self.single_dataset__datapath and self.annotations__local_file_csv__file:
+            if self.single_dataset__datapath and self.user_annotations__local_file_csv__file:
                 with context["matrix_cache"].data_adaptor(self.single_dataset__datapath, self) as data_adaptor:
-                    data_adaptor.check_new_labels(self.annotations.read_labels(data_adaptor))
+                    data_adaptor.check_new_labels(self.user_annotations.read_labels(data_adaptor))
 
-            if self.annotations__ontology__enable or self.annotations__ontology__obo_location:
+            if self.user_annotations__ontology__enable or self.user_annotations__ontology__obo_location:
                 try:
-                    self.annotations.load_ontology(self.annotations__ontology__obo_location)
+                    self.user_annotations.load_ontology(self.user_annotations__ontology__obo_location)
                 except OntologyLoadFailure as e:
                     raise ConfigurationError("Unable to load ontology terms\n" + str(e))
 
         else:
-            if self.annotations__type == "local_file_csv":
-                dirname = self.annotations__local_file_csv__directory
-                filename = self.annotations__local_file_csv__file
+            if self.user_annotations__type == "local_file_csv":
+                dirname = self.user_annotations__local_file_csv__directory
+                filename = self.user_annotations__local_file_csv__file
                 if filename is not None:
                     context["messsagefn"]("Warning: --annotations-file ignored as annotations are disabled.")
                 if dirname is not None:
                     context["messagefn"]("Warning: --annotations-dir ignored as annotations are disabled.")
 
-            if self.annotations__ontology__enable:
+            if self.user_annotations__ontology__enable:
                 context["messagefn"](
                     "Warning: --experimental-annotations-ontology" " ignored as annotations are disabled."
                 )
-            if self.annotations__ontology__obo_location is not None:
+            if self.user_annotations__ontology__obo_location is not None:
                 context["messagefn"](
                     "Warning: --experimental-annotations-ontology-obo" " ignored as annotations are disabled."
                 )
@@ -314,7 +325,7 @@ class AppConfig(object):
                 matrix_data_loader = MatrixDataLoader(self.single_dataset__datapath)
                 if matrix_data_loader.matrix_data_type() != MatrixDataType.H5AD:
                     raise ConfigurationError("'enable-reembedding is only supported with H5AD files.")
-                if self.anndata_adaptor__backed:
+                if self.adaptor__anndata_adaptor__backed:
                     raise ConfigurationError("enable-reembedding is not supported when run in --backed mode.")
 
     def handle_diffexp(self, context):
@@ -329,13 +340,14 @@ class AppConfig(object):
                         f"running differential expression may take longer or fail."
                     )
 
-    def handle_cxg_adaptor(self, context):
-        self.__check_attr("cxg_adaptor__tiledb_ctx", dict)
+    def handle_adaptor(self, context):
+        # cxg
+        self.__check_attr("adaptor__cxg_adaptor__tiledb_ctx", dict)
         from server.data_cxg.cxg_adaptor import CxgAdaptor
-        CxgAdaptor.set_tiledb_context(self.cxg_adaptor__tiledb_ctx)
+        CxgAdaptor.set_tiledb_context(self.adaptor__cxg_adaptor__tiledb_ctx)
 
-    def handle_anndata_adaptor(self, context):
-        self.__check_attr("anndata_adaptor__backed", bool)
+        # anndata
+        self.__check_attr("adaptor__anndata_adaptor__backed", bool)
 
     def get_title(self, data_adaptor):
         return self.single_dataset__title if self.single_dataset__title else data_adaptor.get_title()
@@ -344,9 +356,15 @@ class AppConfig(object):
         return self.single_dataset__about if self.single_dataset__about else data_adaptor.get_about()
 
     def get_client_config(self, data_adaptor, annotation=None):
+        """
+        Return the configuration as required by the /config REST route
+        """
 
         # FIXME The current set of config is not consistently presented:
         # we have camalCase, hyphen-text, and underscore_text
+
+        if not self.is_completed:
+            raise ConfigurationError("The configuration has not been completed")
 
         # features
         features = [f.todict() for f in data_adaptor.get_features(annotation)]
@@ -368,11 +386,11 @@ class AppConfig(object):
         # parameters
         parameters = {
             "layout": self.embeddings__names,
-            "max-category-items": self.annotations__max_categories,
+            "max-category-items": self.presentation__max_categories,
             "obs_names": self.single_dataset__obs_names,
             "var_names": self.single_dataset__var_names,
             "diffexp_lfc_cutoff": self.diffexp__lfc_cutoff,
-            "backed": self.anndata_adaptor__backed,
+            "backed": self.adaptor__anndata_adaptor__backed,
             "disable-diffexp": not self.diffexp__enable,
             "enable-reembedding": self.embeddings__enable_reembedding,
             "annotations": False,

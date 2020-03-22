@@ -1,11 +1,18 @@
+import yaml
+
+default_config = """
+# cellxgene configuration
 
 server:
-  verbose: true
+  verbose: false
   debug: false
   host: "127.0.0.1"
   port : null
   scripts : []
   open_browser: false
+
+presentation:
+  max_categories: 1000
 
 multi_dataset:
   dataroot: null
@@ -26,7 +33,7 @@ single_dataset:
   about: null
   title: null
 
-annotations:
+user_annotations:
   enable: true
   type: local_file_csv
   local_file_csv:
@@ -35,7 +42,6 @@ annotations:
   ontology:
     enable: false
     obo_location: null
-  max_categories: 1000
 
 embeddings:
   names : []
@@ -45,11 +51,17 @@ diffexp:
   enable: true
   lfc_cutoff: 0.01
 
-cxg_adaptor:
-  tiledb_ctx:
-    sm.tile_cache_size:  8589934592
-    sm.num_reader_threads:  32
-    vfs.s3.region: us-east-1
+adaptor:
+  cxg_adaptor:
+    tiledb_ctx:
+      sm.tile_cache_size:  8589934592
+      sm.num_reader_threads:  32
+      vfs.s3.region: us-east-1
 
-anndata_adaptor:
-    backed: false
+  anndata_adaptor:
+      backed: false
+"""
+
+
+def get_default_config():
+    return yaml.load(default_config, Loader=yaml.Loader)

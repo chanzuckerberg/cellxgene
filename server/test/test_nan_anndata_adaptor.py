@@ -8,25 +8,37 @@ import server.test.decode_fbs as decode_fbs
 from server.data_anndata.anndata_adaptor import AnndataAdaptor
 from server.common.errors import FilterError
 from server.common.data_locator import DataLocator
+from server.common.app_config import AppConfig
 
 
 class NaNTest(unittest.TestCase):
     def setUp(self):
         self.args = {
             "embeddings__names": ["umap"],
-            "annotations__max_categories": 100,
+            "presentation__max_categories": 100,
             "single_dataset__obs_names": None,
             "single_dataset__var_names": None,
             "diffexp__lfc_cutoff": 0.01,
         }
+        config = AppConfig()
+        config.update(**self.args)
+        locator = DataLocator("test/test_datasets/nan.h5ad")
+        config.update(single_dataset__datapath=locator.path)
+        config.complete_config()
+
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=UserWarning)
-            self.data = AnndataAdaptor(DataLocator("test/test_datasets/nan.h5ad"), self.args)
+            self.data = AnndataAdaptor(locator, config)
             self.data._create_schema()
 
     def test_load(self):
         with self.assertWarns(UserWarning):
-            AnndataAdaptor(DataLocator("test/test_datasets/nan.h5ad"), self.args)
+            config = AppConfig()
+            config.update(**self.args)
+            locator = DataLocator("test/test_datasets/nan.h5ad")
+            config.update(single_dataset__datapath=locator.path)
+            config.complete_config()
+            self.data = AnndataAdaptor(locator, config)
 
     def test_init(self):
         self.assertEqual(self.data.cell_count, 100)

@@ -19,13 +19,13 @@ def annotation_args(func):
     @click.option(
         "--disable-annotations",
         is_flag=True,
-        default=not DEFAULT_CONFIG.annotations__enable,
+        default=not DEFAULT_CONFIG.user_annotations__enable,
         show_default=True,
         help="Disable user annotation of data.",
     )
     @click.option(
         "--annotations-file",
-        default=DEFAULT_CONFIG.annotations__local_file_csv__file,
+        default=DEFAULT_CONFIG.user_annotations__local_file_csv__file,
         show_default=True,
         multiple=False,
         metavar="<path>",
@@ -34,7 +34,7 @@ def annotation_args(func):
     )
     @click.option(
         "--annotations-dir",
-        default=DEFAULT_CONFIG.annotations__local_file_csv__directory,
+        default=DEFAULT_CONFIG.user_annotations__local_file_csv__directory,
         show_default=False,
         multiple=False,
         metavar="<directory path>",
@@ -44,13 +44,13 @@ def annotation_args(func):
     @click.option(
         "--experimental-annotations-ontology",
         is_flag=True,
-        default=DEFAULT_CONFIG.annotations__ontology__enable,
+        default=DEFAULT_CONFIG.user_annotations__ontology__enable,
         show_default=True,
         help="When creating annotations, optionally autocomplete names from ontology terms.",
     )
     @click.option(
         "--experimental-annotations-ontology-obo",
-        default=DEFAULT_CONFIG.annotations__ontology__obo_location,
+        default=DEFAULT_CONFIG.user_annotations__ontology__obo_location,
         show_default=True,
         metavar="<path or url>",
         help="Location of OBO file defining cell annotation autosuggest terms.",
@@ -65,7 +65,7 @@ def annotation_args(func):
 def config_args(func):
     @click.option(
         "--max-category-items",
-        default=DEFAULT_CONFIG.annotations__max_categories,
+        default=DEFAULT_CONFIG.presentation__max_categories,
         metavar="<integer>",
         show_default=True,
         help="Will not display categories with more distinct values than specified.",
@@ -128,7 +128,7 @@ def dataset_args(func):
         "--backed",
         "-b",
         is_flag=True,
-        default=DEFAULT_CONFIG.anndata_adaptor__backed,
+        default=DEFAULT_CONFIG.adaptor__anndata_adaptor__backed,
         show_default=False,
         help="Load anndata in file-backed mode. " "This may save memory, but may result in slower overall performance.",
     )
@@ -337,12 +337,13 @@ def launch(
 
             multi_dataset__dataroot=dataroot,
 
-            annotations__enable=not disable_annotations,
-            annotations__local_file_csv__file=annotations_file,
-            annotations__local_file_csv__directory=annotations_dir,
-            annotations__ontology__enable=experimental_annotations_ontology,
-            annotations__ontology__obo_location=experimental_annotations_ontology_obo,
-            annotations__max_categories=max_category_items,
+            user_annotations__enable=not disable_annotations,
+            user_annotations__local_file_csv__file=annotations_file,
+            user_annotations__local_file_csv__directory=annotations_dir,
+            user_annotations__ontology__enable=experimental_annotations_ontology,
+            user_annotations__ontology__obo_location=experimental_annotations_ontology_obo,
+
+            presentation__max_categories=max_category_items,
 
             embeddings__names=embedding,
             embeddings__enable_reembedding=experimental_enable_reembedding,
@@ -350,7 +351,7 @@ def launch(
             diffexp__enable=not disable_diffexp,
             diffexp__lfc_cutoff=diffexp_lfc_cutoff,
 
-            anndata_adaptor__backed=backed,
+            adaptor__anndata_adaptor__backed=backed,
         )
 
         # process the configuration
@@ -367,11 +368,11 @@ def launch(
         raise click.ClickException(e)
 
     handle_scripts(scripts)
-    annotations = app_config.annotations
+    user_annotations = app_config.user_annotations
 
     # create the server
     from server.app.app import Server
-    server = Server(matrix_data_cache_manager, annotations, app_config)
+    server = Server(matrix_data_cache_manager, user_annotations, app_config)
 
     if not app_config.server__verbose:
         log = logging.getLogger("werkzeug")

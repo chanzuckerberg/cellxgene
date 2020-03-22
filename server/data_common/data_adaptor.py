@@ -20,10 +20,12 @@ class DataAdaptor(metaclass=ABCMeta):
         # the following is for backwards compatability with tests
         if config is None:
             config = AppConfig()
+            assert(False)
         elif type(config) == dict:
             temp = AppConfig()
             temp.update(**config)
             config = temp
+            assert(False)
 
         # config is the application configuration
         self.config = config

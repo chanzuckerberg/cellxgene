@@ -24,7 +24,7 @@ try:
     from server.app.app import Server
     from server.data_common.matrix_loader import MatrixDataCacheManager
 except Exception:
-    logging.exception("Exception importing server modules")
+    logging.critical("Exception importing server modules", exc_info=True)
     sys.exit(1)
 
 try:
@@ -42,10 +42,10 @@ try:
             multi_dataset__dataroot=dataroot,
         )
 
-    # verify certain features are set for the hosted server
+    # features are unsupported in the current hosted server
     app_config.update(
         diffexp__enable=False,
-        annotations__enable=False,
+        user_annotations__enable=False,
         embeddings__enable_reembedding=False,
         multi_dataset__allowed_matrix_types=["cxg"],
     )
@@ -60,7 +60,7 @@ try:
     application = server.app
 
 except Exception:
-    logging.exception("Caught exception during initialization")
+    logging.critical("Caught exception during initialization", exc_info=True)
     sys.exit(1)
 
 if app_config.multi_dataset__dataroot:
@@ -72,5 +72,5 @@ if __name__ == "__main__":
     try:
         application.run(debug=debug, threaded=not debug, use_debugger=False)
     except Exception:
-        logging.exception("Caught exception during server run")
+        logging.critical("Caught exception during initialization", exc_info=True)
         sys.exit(1)

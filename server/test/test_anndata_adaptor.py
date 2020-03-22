@@ -13,6 +13,7 @@ import pandas as pd
 from server.data_anndata.anndata_adaptor import AnndataAdaptor
 from server.common.errors import FilterError
 from server.common.data_locator import DataLocator
+from server.common.app_config import AppConfig
 
 """
 Test the anndata adaptor using the pbmc3k data set.
@@ -34,13 +35,17 @@ class AdaptorTest(unittest.TestCase):
     def setUp(self):
         args = {
             "embeddings__names": ["umap"],
-            "annotations__max_categories": 100,
+            "presentation__max_categories": 100,
             "single_dataset__obs_names": None,
             "single_dataset__var_names": None,
             "diffexp__lfc_cutoff": 0.01,
-            "anndata_adaptor__backed": self.backed,
+            "adaptor__anndata_adaptor__backed": self.backed,
+            "single_dataset__datapath" : self.data_locator
         }
-        self.data = AnndataAdaptor(DataLocator(self.data_locator), args)
+        config = AppConfig()
+        config.update(**args)
+        config.complete_config()
+        self.data = AnndataAdaptor(DataLocator(self.data_locator), config)
 
     def test_init(self):
         self.assertEqual(self.data.cell_count, 2638)

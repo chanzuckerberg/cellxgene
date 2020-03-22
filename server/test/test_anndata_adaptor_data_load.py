@@ -3,6 +3,7 @@ import json
 
 from server.data_anndata.anndata_adaptor import AnndataAdaptor
 from server.common.data_locator import DataLocator
+from server.common.app_config import AppConfig
 
 
 class DataLoadAdaptorTest(unittest.TestCase):
@@ -12,7 +13,10 @@ class DataLoadAdaptorTest(unittest.TestCase):
 
     def setUp(self):
         self.data_file = DataLocator("../example-dataset/pbmc3k.h5ad")
-        self.data = AnndataAdaptor(self.data_file)
+        config = AppConfig()
+        config.update(single_dataset__datapath=self.data_file.path)
+        config.complete_config()
+        self.data = AnndataAdaptor(self.data_file, config)
 
     def test_delayed_load_data(self):
         self.data._create_schema()
@@ -38,7 +42,7 @@ class DataLocatorAdaptorTest(unittest.TestCase):
     def setUp(self):
         self.args = {
             "embeddings__names": ["umap"],
-            "annotations__max_categories": 100,
+            "presentation__max_categories": 100,
             "single_dataset__obs_names": None,
             "single_dataset__var_names": None,
             "diffexp__lfc_cutoff": 0.01,
@@ -52,17 +56,25 @@ class DataLocatorAdaptorTest(unittest.TestCase):
 
     def test_posix_file(self):
         locator = DataLocator("../example-dataset/pbmc3k.h5ad")
-        data = AnndataAdaptor(locator, self.args)
+        config = AppConfig()
+        config.update(**self.args)
+        config.update(single_dataset__datapath=locator.path)
+        config.complete_config()
+        data = AnndataAdaptor(locator, config)
         self.stdAsserts(data)
 
     def test_url_https(self):
         url = "https://raw.githubusercontent.com/chanzuckerberg/cellxgene/master/example-dataset/pbmc3k.h5ad"
         locator = DataLocator(url)
-        data = AnndataAdaptor(locator, self.args)
+        config = AppConfig()
+        config.update(**self.args)
+        data = AnndataAdaptor(locator, config)
         self.stdAsserts(data)
 
     def test_url_http(self):
         url = "http://raw.githubusercontent.com/chanzuckerberg/cellxgene/master/example-dataset/pbmc3k.h5ad"
         locator = DataLocator(url)
-        data = AnndataAdaptor(locator, self.args)
+        config = AppConfig()
+        config.update(**self.args)
+        data = AnndataAdaptor(locator, config)
         self.stdAsserts(data)

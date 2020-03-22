@@ -159,7 +159,7 @@ class AnndataAdaptor(DataAdaptor):
             with data_locator.local_handle() as lh:
                 # as of AnnData 0.6.19, backed mode performs initial load fast, but at the
                 # cost of significantly slower access to X data.
-                backed = "r" if self.config.anndata_adaptor__backed else None
+                backed = "r" if self.config.adaptor__anndata_adaptor__backed else None
                 self.data = anndata.read_h5ad(lh, backed=backed)
 
         except ValueError:
@@ -179,7 +179,7 @@ class AnndataAdaptor(DataAdaptor):
             )
 
     def _validate_and_initialize(self):
-        if anndata_version_is_pre_070() and self.config.anndata_adaptor__backed:
+        if anndata_version_is_pre_070() and self.config.adaptor__anndata_adaptor__backed:
             warnings.warn(
                 f"Use of --backed mode with anndata versions older than 0.7 will have serious "
                 "performance issues. Please update to at least anndata 0.7 or later."
@@ -197,7 +197,7 @@ class AnndataAdaptor(DataAdaptor):
 
         # heuristic
         n_values = self.data.shape[0] * self.data.shape[1]
-        if (n_values > 1e8 and self.config.anndata_adaptor__backed is True) or (n_values > 5e8):
+        if (n_values > 1e8 and self.config.adaptor__anndata_adaptor__backed is True) or (n_values > 5e8):
             self.parameters.update({"diffexp_may_be_slow": True})
 
     def _is_valid_layout(self, arr):
@@ -244,7 +244,7 @@ class AnndataAdaptor(DataAdaptor):
                     )
                 if isinstance(datatype, CategoricalDtype):
                     category_num = len(curr_axis[ann].dtype.categories)
-                    if category_num > 500 and category_num > self.config.annotations__max_categories:
+                    if category_num > 500 and category_num > self.config.presentation__max_categories:
                         warnings.warn(
                             f"{str(ax).title()} annotation '{ann}' has {category_num} categories, this may be "
                             f"cumbersome or slow to display. We recommend setting the "
