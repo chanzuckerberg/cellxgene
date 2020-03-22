@@ -1,3 +1,4 @@
+import sys
 from http import HTTPStatus
 import copy
 import logging
@@ -14,9 +15,16 @@ import json
 from server.data_common.fbs.matrix import decode_matrix_fbs
 
 
-def abort_and_log(code, logmsg, loglevel=logging.DEBUG):
-    """ Debug-level log the message, then abort with HTTP code """
-    current_app.logger.log(loglevel, logmsg)
+def abort_and_log(code, logmsg, loglevel=logging.DEBUG, include_exc_info=False):
+    """
+    Log the message, then abort with HTTP code. If include_exc_info is true,
+    also include current exception via sys.exc_info().
+    """
+    if include_exc_info:
+        exc_info = sys.exc_info()
+    else:
+        exc_info = False
+    current_app.logger.log(loglevel, logmsg, exc_info=exc_info)
     # Do NOT send log message to HTTP response.
     return abort(code)
 
@@ -56,7 +64,7 @@ def annotations_obs_get(request, data_adaptor, annotations):
         fbs = data_adaptor.annotation_to_fbs_matrix(Axis.OBS, fields, labels)
         return make_response(fbs, HTTPStatus.OK, {"Content-Type": "application/octet-stream"})
     except KeyError as e:
-        return abort_and_log(HTTPStatus.BAD_REQUEST, str(e))
+        return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)
 
 
 def annotations_put_fbs_helper(data_adaptor, annotations, fbs):
@@ -87,7 +95,7 @@ def annotations_obs_put(request, data_adaptor, annotations):
         res = json.dumps({"status": "OK"})
         return make_response(res, HTTPStatus.OK, {"Content-Type": "application/json"})
     except (ValueError, DisabledFeatureError, KeyError) as e:
-        return abort_and_log(HTTPStatus.BAD_REQUEST, str(e))
+        return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)
 
 
 def annotations_var_get(request, data_adaptor, annotations):
@@ -105,7 +113,7 @@ def annotations_var_get(request, data_adaptor, annotations):
             {"Content-Type": "application/octet-stream"},
         )
     except KeyError as e:
-        return abort_and_log(HTTPStatus.BAD_REQUEST, str(e))
+        return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)
 
 
 def data_var_put(request, data_adaptor):
@@ -122,7 +130,7 @@ def data_var_put(request, data_adaptor):
             {"Content-Type": "application/octet-stream"},
         )
     except FilterError as e:
-        return abort_and_log(HTTPStatus.BAD_REQUEST, str(e))
+        return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)
 
 
 def diffexp_obs_post(request, data_adaptor):
@@ -147,13 +155,13 @@ def diffexp_obs_post(request, data_adaptor):
             return abort_and_log(HTTPStatus.BAD_REQUEST, "var axis filter not enabled")
 
     except (KeyError, TypeError) as e:
-        return abort_and_log(HTTPStatus.BAD_REQUEST, str(e))
+        return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)
 
     try:
         diffexp = data_adaptor.diffexp_topN(set1_filter, set2_filter, count)
         return make_response(diffexp, HTTPStatus.OK, {"Content-Type": "application/json"})
     except (ValueError, DisabledFeatureError, FilterError) as e:
-        return abort_and_log(HTTPStatus.BAD_REQUEST, str(e))
+        return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)
     except JSONEncodingValueError:
         # JSON encoding failure, usually due to bad data. Just let it ripple up
         # to default exception handler.
@@ -172,7 +180,10 @@ def layout_obs_get(request, data_adaptor):
             return abort(HTTPStatus.NOT_ACCEPTABLE)
     except PrepareError:
         return abort_and_log(
-            HTTPStatus.NOT_IMPLEMENTED, f"No embedding available {request.path}", loglevel=logging.ERROR
+            HTTPStatus.NOT_IMPLEMENTED,
+            f"No embedding available {request.path}",
+            loglevel=logging.ERROR,
+            include_exc_info=True,
         )
 
 
@@ -202,6 +213,6 @@ def layout_obs_put(request, data_adaptor):
             },
         )
     except NotImplementedError as e:
-        return abort_and_log(HTTPStatus.NOT_IMPLEMENTED, str(e))
-    except (NotImplementedError, ValueError, DisabledFeatureError, FilterError) as e:
-        return abort_and_log(HTTPStatus.BAD_REQUEST, str(e))
+        return abort_and_log(HTTPStatus.NOT_IMPLEMENTED, str(e), include_exc_info=True)
+    except (ValueError, DisabledFeatureError, FilterError) as e:
+        return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)

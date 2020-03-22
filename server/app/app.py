@@ -1,5 +1,6 @@
 import os
 import datetime
+import logging
 
 from flask import Flask, redirect, current_app, make_response, render_template, abort
 from flask import Blueprint, request, send_from_directory
@@ -41,8 +42,9 @@ def dataset_index(dataset=None):
             dataset_title = config.get_title(data_adaptor)
             return render_template("index.html", datasetTitle=dataset_title, SCRIPTS=scripts)
     except DatasetAccessError:
-        current_app.logger.info(f"Invalid dataset {dataset}")
-        return abort(HTTPStatus.BAD_REQUEST)
+        return common_rest.abort_and_log(
+            HTTPStatus.BAD_REQUEST, f"Invalid dataset {dataset}", loglevel=logging.INFO, include_exc_info=True
+        )
 
 
 @webbp.route("/favicon.png")
@@ -70,8 +72,7 @@ def get_data_adaptor(dataset=None):
             raise DatasetAccessError("Invalid dataset {dataset}")
 
     if datapath is None:
-        current_app.logger.info("Invalid dataset NONE")
-        return abort(HTTPStatus.BAD_REQUEST)
+        return common_rest.abort_and_log(HTTPStatus.BAD_REQUEST, f"Invalid dataset NONE", loglevel=logging.INFO)
 
     cache_manager = current_app.matrix_data_cache_manager
     return cache_manager.data_adaptor(datapath, config)
@@ -84,8 +85,9 @@ def rest_get_data_adaptor(func):
             with get_data_adaptor(dataset) as data_adaptor:
                 return func(self, data_adaptor)
         except DatasetAccessError:
-            current_app.logger.info(f"Invalid dataset {dataset}")
-            return abort(HTTPStatus.BAD_REQUEST)
+            return common_rest.abort_and_log(
+                HTTPStatus.BAD_REQUEST, f"Invalid dataset {dataset}", loglevel=logging.INFO, include_exc_info=True
+            )
 
     return wrapped_function
 
