@@ -60,3 +60,11 @@ class OntologyLoadFailure(Exception):
     """
 
     pass
+
+
+class ConfigurationError(Exception):
+    """
+    Raised when checking configuration errors
+    """
+
+    pass

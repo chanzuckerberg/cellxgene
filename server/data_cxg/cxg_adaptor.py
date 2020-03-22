@@ -2,7 +2,7 @@ import os
 import json
 import logging
 from server.common.utils import dtype_to_schema
-from server.common.errors import DatasetAccessError
+from server.common.errors import DatasetAccessError, ConfigurationError
 from server.common.utils import path_join
 from server.common.constants import Axis
 from server.data_common.data_adaptor import DataAdaptor
@@ -17,7 +17,11 @@ import threading
 class CxgAdaptor(DataAdaptor):
 
     # TODO:  The tiledb context parameters should be a configuration option
-    tiledb_ctx = tiledb.Ctx({"sm.tile_cache_size": 8 * 1024 * 1024 * 1024, "sm.num_reader_threads": 32})
+    tiledb_ctx = tiledb.Ctx({
+        "sm.tile_cache_size": 8 * 1024 * 1024 * 1024,
+        "sm.num_reader_threads": 32,
+        "vfs.s3.region": "us-east-1"
+    })
 
     def __init__(self, data_locator, config=None):
         super().__init__(config)
@@ -36,6 +40,14 @@ class CxgAdaptor(DataAdaptor):
         for array in self.arrays.values():
             array.close()
         self.arrays.clear()
+
+    @staticmethod
+    def set_tiledb_context(context_params):
+        """Set the tiledb context.  This should be set before any instances of CxgAdaptor are created"""
+        try:
+            CxgAdaptor.tiledb_ctx = tiledb.Ctx(context_params)
+        except tiledb.libtiledb.TileDBError as e:
+            raise ConfigurationError(f"Invalid tiledb context: {str(e)}")
 
     @staticmethod
     def pre_load_validation(data_locator):
@@ -102,15 +114,15 @@ class CxgAdaptor(DataAdaptor):
         Return True if this looks like a valid CXG, False if not.  Just a quick/cheap
         test, not to be fully trusted.
         """
-        if not tiledb.object_type(url) == "group":
+        if not tiledb.object_type(url, ctx=CxgAdaptor.tiledb_ctx) == "group":
             return False
-        if not tiledb.object_type(path_join(url, "obs")) == "array":
+        if not tiledb.object_type(path_join(url, "obs"), ctx=CxgAdaptor.tiledb_ctx) == "array":
             return False
-        if not tiledb.object_type(path_join(url, "var")) == "array":
+        if not tiledb.object_type(path_join(url, "var"), ctx=CxgAdaptor.tiledb_ctx) == "array":
             return False
-        if not tiledb.object_type(path_join(url, "X")) == "array":
+        if not tiledb.object_type(path_join(url, "X"), ctx=CxgAdaptor.tiledb_ctx) == "array":
             return False
-        if not tiledb.object_type(path_join(url, "emb")) == "group":
+        if not tiledb.object_type(path_join(url, "emb"), ctx=CxgAdaptor.tiledb_ctx) == "group":
             return False
         return True
 
@@ -128,7 +140,7 @@ class CxgAdaptor(DataAdaptor):
         * version 0.1 -- metadata attache to cxg_group_metadata array.
           Same as 0, except it adds group metadata.
         """
-        a_type = tiledb.object_type(path_join(self.url, "cxg_group_metadata"))
+        a_type = tiledb.object_type(path_join(self.url, "cxg_group_metadata"), ctx=self.tiledb_ctx)
         if a_type is None:
             # version 0
             cxg_version = "0.0"

@@ -48,7 +48,7 @@ def schema_get(data_adaptor, annotations):
 
 
 def config_get(app_config, data_adaptor, annotations):
-    config = app_config.get_config(data_adaptor, annotations)
+    config = app_config.get_client_config(data_adaptor, annotations)
     return make_response(jsonify(config), HTTPStatus.OK)
 
 
@@ -134,7 +134,7 @@ def data_var_put(request, data_adaptor):
 
 
 def diffexp_obs_post(request, data_adaptor):
-    if data_adaptor.config.disable_diffexp:
+    if data_adaptor.config.diffexp__enable:
         return abort(HTTPStatus.NOT_IMPLEMENTED)
 
     args = request.get_json()
@@ -188,7 +188,7 @@ def layout_obs_get(request, data_adaptor):
 
 
 def layout_obs_put(request, data_adaptor):
-    if not data_adaptor.config.enable_reembedding:
+    if not data_adaptor.config.embedding__enable_reembedding:
         return abort(HTTPStatus.NOT_IMPLEMENTED)
 
     preferred_mimetype = request.accept_mimetypes.best_match(["application/octet-stream"])

@@ -173,12 +173,12 @@ class MatrixDataLoader(object):
 
         if not app_config:
             return True
-        if not app_config.dataroot:
+        if not app_config.multi_dataset__dataroot:
             return True
-        if len(app_config.multi_dataset_allowed_matrix_type) == 0:
+        if len(app_config.multi_dataset__allowed_matrix_types) == 0:
             return True
 
-        for val in app_config.multi_dataset_allowed_matrix_type:
+        for val in app_config.multi_dataset__allowed_matrix_types:
             try:
                 if self.matrix_data_type == MatrixDataType(val):
                     return True

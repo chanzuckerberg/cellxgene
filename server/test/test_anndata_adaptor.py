@@ -13,6 +13,7 @@ import pandas as pd
 from server.data_anndata.anndata_adaptor import AnndataAdaptor
 from server.common.errors import FilterError
 from server.common.data_locator import DataLocator
+from server.common.app_config import AppConfig
 
 """
 Test the anndata adaptor using the pbmc3k data set.
@@ -33,14 +34,18 @@ Test the anndata adaptor using the pbmc3k data set.
 class AdaptorTest(unittest.TestCase):
     def setUp(self):
         args = {
-            "layout": ["umap"],
-            "max_category_items": 100,
-            "obs_names": None,
-            "var_names": None,
-            "diffexp_lfc_cutoff": 0.01,
-            "anndata_backed": self.backed,
+            "embeddings__names": ["umap"],
+            "presentation__max_categories": 100,
+            "single_dataset__obs_names": None,
+            "single_dataset__var_names": None,
+            "diffexp__lfc_cutoff": 0.01,
+            "adaptor__anndata_adaptor__backed": self.backed,
+            "single_dataset__datapath" : self.data_locator
         }
-        self.data = AnndataAdaptor(DataLocator(self.data_locator), args)
+        config = AppConfig()
+        config.update(**args)
+        config.complete_config()
+        self.data = AnndataAdaptor(DataLocator(self.data_locator), config)
 
     def test_init(self):
         self.assertEqual(self.data.cell_count, 2638)
@@ -88,7 +93,7 @@ class AdaptorTest(unittest.TestCase):
     def test_get_schema(self):
         with open(path.join(path.dirname(__file__), "schema.json")) as fh:
             schema = json.load(fh)
-            self.assertEqual(self.data.get_schema(), schema)
+            self.assertDictEqual(self.data.get_schema(), schema)
 
     def test_schema_produces_error(self):
         self.data.data.obs["time"] = pd.Series(
@@ -109,9 +114,9 @@ class AdaptorTest(unittest.TestCase):
             self.assertEqual(len(feature), 1)
 
         check_feature("POST", "/cluster/", False)
-        check_feature("POST", "/diffexp/", not self.data.config.disable_diffexp)
+        check_feature("POST", "/diffexp/", self.data.config.diffexp__enable)
         check_feature("GET", "/layout/obs", True)
-        check_feature("PUT", "/layout/obs", self.data.config.enable_reembedding)
+        check_feature("PUT", "/layout/obs", self.data.config.embeddings__enable_reembedding)
         check_feature("PUT", "/annotations/obs", False)
 
     def test_layout(self):
