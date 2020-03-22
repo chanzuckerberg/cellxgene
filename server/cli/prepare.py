@@ -1,6 +1,7 @@
 from os.path import expanduser, isdir, isfile, sep, splitext
 
 import click
+import pandas as pd
 from numpy import ndarray, unique
 from scipy.sparse.csc import csc_matrix
 
@@ -134,13 +135,9 @@ def prepare(
                 raise click.UsageError(f"var {set_var_names} not found, options are: {adata.var_keys()}")
             adata.var_names = adata.var[set_var_names]
         if make_obs_names_unique:
-            # call twice intentionally.  See https://github.com/theislab/anndata/issues/344
-            adata.obs_names_make_unique()
-            adata.obs_names_make_unique()
+            adata.obs.index = make_index_unique(adata.obs.index)
         if make_var_names_unique:
-            # call twice intentionally.  See https://github.com/theislab/anndata/issues/344
-            adata.var_names_make_unique()
-            adata.var_names_make_unique()
+            adata.var.index = make_index_unique(adata.var.index)
         if not adata._obs.index.is_unique:
             click.echo("Warning: obs index is not unique")
         if not adata._var.index.is_unique:
@@ -230,3 +227,50 @@ def prepare(
         adata.write(output)
 
     click.echo("[cellxgene] Success!")
+
+
+# TODO (mweiden): remove this once https://github.com/theislab/anndata/pull/345 is merged and released
+def make_index_unique(index: pd.Index, join: str = "-"):
+    """
+    Makes the index unique by appending a number string to each duplicate index element: '1', '2', etc.
+
+    If a tentative name created by the algorithm already exists in the index, it tries the next integer in the sequence.
+
+    The first occurrence of a non-unique value is ignored.
+    Parameters
+    ----------
+    join
+         The connecting string between name and integer.
+    Examples
+    --------
+    >>> from anndata import AnnData
+    >>> adata1 = AnnData(np.ones((3, 2)), dict(obs_names=['a', 'b', 'c']))
+    >>> adata2 = AnnData(np.zeros((3, 2)), dict(obs_names=['d', 'b', 'b']))
+    >>> adata = adata1.concatenate(adata2)
+    >>> adata.obs_names
+    Index(['a', 'b', 'c', 'd', 'b', 'b'], dtype='object')
+    >>> adata.obs_names_make_unique()
+    >>> adata.obs_names
+    Index(['a', 'b', 'c', 'd', 'b-1', 'b-2'], dtype='object')
+    """
+    if index.is_unique:
+        return index
+    from collections import defaultdict
+
+    values = index.values
+    values_set = set(values)
+    indices_dup = index.duplicated(keep="first")
+    values_dup = values[indices_dup]
+    counter = defaultdict(lambda: 0)
+    for i, v in enumerate(values_dup):
+        while True:
+            counter[v] += 1
+            tentative_new_name = v + join + str(counter[v])
+            if tentative_new_name not in values_set:
+                values_set.add(tentative_new_name)
+                values_dup[i] = tentative_new_name
+                break
+
+    values[indices_dup] = values_dup
+    index = pd.Index(values)
+    return index
