@@ -1,5 +1,6 @@
 import os
 import datetime
+import logging
 
 from flask import Flask, redirect, current_app, make_response, render_template, abort
 from flask import Blueprint, request, send_from_directory
@@ -40,8 +41,10 @@ def dataset_index(dataset=None):
         with cache_manager.data_adaptor(location, config) as data_adaptor:
             dataset_title = config.get_title(data_adaptor)
             return render_template("index.html", datasetTitle=dataset_title, SCRIPTS=scripts)
-    except DatasetAccessError as e:
-        return make_response(f"Invalid dataset {dataset}: {str(e)}", HTTPStatus.BAD_REQUEST)
+    except DatasetAccessError:
+        return common_rest.abort_and_log(
+            HTTPStatus.BAD_REQUEST, f"Invalid dataset {dataset}", loglevel=logging.INFO, include_exc_info=True
+        )
 
 
 @webbp.route("/favicon.png", methods=["GET"])
@@ -69,7 +72,7 @@ def get_data_adaptor(dataset=None):
             raise DatasetAccessError("Invalid dataset {dataset}")
 
     if datapath is None:
-        return make_response("Dataset must be supplied", HTTPStatus.BAD_REQUEST)
+        return common_rest.abort_and_log(HTTPStatus.BAD_REQUEST, f"Invalid dataset NONE", loglevel=logging.INFO)
 
     cache_manager = current_app.matrix_data_cache_manager
     return cache_manager.data_adaptor(datapath, config)
@@ -81,8 +84,10 @@ def rest_get_data_adaptor(func):
         try:
             with get_data_adaptor(dataset) as data_adaptor:
                 return func(self, data_adaptor)
-        except DatasetAccessError as e:
-            return make_response(f"Invalid dataset {dataset}: {str(e)}", HTTPStatus.BAD_REQUEST)
+        except DatasetAccessError:
+            return common_rest.abort_and_log(
+                HTTPStatus.BAD_REQUEST, f"Invalid dataset {dataset}", loglevel=logging.INFO, include_exc_info=True
+            )
 
     return wrapped_function
 
@@ -98,29 +103,26 @@ def dataroot_test_index():
     data += "<head><title>Hosted Cellxgene</title></head>"
     data += "<body><H1>Welcome to cellxgene</H1>"
 
-    try:
-        config = current_app.app_config
-        locator = DataLocator(config.multi_dataset__dataroot)
-        datasets = []
-        for fname in locator.ls():
-            location = path_join(config.multi_dataset__dataroot, fname)
-            try:
-                MatrixDataLoader(location, app_config=config)
-                datasets.append(fname)
-            except DatasetAccessError:
-                # skip over invalid datasets
-                pass
+    config = current_app.app_config
+    locator = DataLocator(config.multi_dataset__dataroot)
+    datasets = []
+    for fname in locator.ls():
+        location = path_join(config.multi_dataset__dataroot, fname)
+        try:
+            MatrixDataLoader(location, app_config=config)
+            datasets.append(fname)
+        except DatasetAccessError:
+            # skip over invalid datasets
+            pass
 
-        data += "<br/>Select one of these datasets...<br/>"
-        data += "<ul>"
-        datasets.sort()
-        for dataset in datasets:
-            data += f"<li><a href={dataset}>{dataset}</a></li>"
-        data += "</ul>"
-    except Exception as e:
-        data += f'<br/>Unable to locate datasets from {config.multi_dataset__dataroot}: {str(e)}'
-
+    data += "<br/>Select one of these datasets...<br/>"
+    data += "<ul>"
+    datasets.sort()
+    for dataset in datasets:
+        data += f"<li><a href={dataset}>{dataset}</a></li>"
+    data += "</ul>"
     data += "</body></html>"
+
     return make_response(data)
 
 
@@ -128,7 +130,7 @@ def dataroot_index():
     # Handle the base url for the cellxgene server when running in multi dataset mode
     config = current_app.app_config
     if not config.multi_dataset__index:
-        abort(404)
+        abort(HTTPStatus.NOT_FOUND)
     elif config.multi_dataset__index is True:
         return dataroot_test_index()
     else:

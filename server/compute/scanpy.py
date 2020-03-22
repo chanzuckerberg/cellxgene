@@ -15,7 +15,7 @@ def get_scanpy_module():
         raise NotImplementedError("Please install scanpy to enable UMAP re-embedding")
     except Exception as e:
         # will capture other ImportError corner cases
-        raise NotImplementedError(str(e))
+        raise NotImplementedError() from e
 
 
 def scanpy_umap(adata, obs_mask=None, pca_options={}, neighbors_options={}, umap_options={}):

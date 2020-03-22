@@ -148,8 +148,7 @@ class MatrixDataLoader(object):
             self.matrix_data_type = self.__matrix_data_type()
 
         if not self.__matrix_data_type_allowed(app_config):
-            raise DatasetAccessError(
-                f"{self.location} does not have an allowed type: {str(self.matrix_data_type)}")
+            raise DatasetAccessError(f"{self.location} does not have an allowed type: {str(self.matrix_data_type)}")
 
         if self.matrix_data_type == MatrixDataType.H5AD:
             from server.data_anndata.anndata_adaptor import AnndataAdaptor
