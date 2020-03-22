@@ -20,6 +20,9 @@ build: clean
 	cp app.py artifact.dir/application.py; \
 	cp ../requirements.txt artifact.dir; \
 	cp -r .ebextensions artifact.dir; \
+	if [ -f config.yaml ] ; then \
+	  cp config.yaml artifact.dir;  \
+	fi; \
 	(cd artifact.dir; \
 	  cp -r server/common/web/static static; \
 	  zip -r ../artifact.zip . --exclude server/test/\* server/eb/\* ; ); \

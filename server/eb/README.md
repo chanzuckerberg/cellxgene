@@ -40,6 +40,10 @@ There are many more options to these commands that may be important or necessary
 
 3. Create the artifact.zip file for the application
 
+    If you have additional configuration for the application,
+    place that application in server/eb/config.yaml.  This will
+    be included in the eb deployment.
+    
    ```
    make build
    ```
