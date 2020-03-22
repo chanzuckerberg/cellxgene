@@ -231,7 +231,6 @@ def launch_args(func):
         "--config-file",
         "-c",
         "config_file",
-        is_flag=True,
         default=None,
         show_default=True,
         help="Location to yaml file with configuration settings",

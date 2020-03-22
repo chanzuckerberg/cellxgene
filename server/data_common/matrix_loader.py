@@ -65,7 +65,7 @@ class MatrixDataCacheManager(object):
     when the context ends.  This class currently implements a simple least recently used cache,
     which can delete a dataset from the cache to make room for a new oneo
 
-    This is the indended usage pattern:
+    This is the intended usage pattern:
 
            m = MatrixDataCacheManager()
            with m.data_adaptor(location, app_config) as data_adaptor:
@@ -77,7 +77,11 @@ class MatrixDataCacheManager(object):
     #  TODO:  This is very simple.  This can be improved by taking into account how much space is actually
     #         taken by each dataset, instead of arbitrarily picking a max datasets to cache.
     #         Also, this should be controlled by a configuration parameter.
-    MAX_CACHED = 3
+    MAX_CACHED = 5
+
+    @staticmethod
+    def set_max_datasets(max_cached):
+        MatrixDataCacheManager.MAX_CACHED = max_cached
 
     # FIXME:   If the number of active datasets exceeds the MAX_CACHED, then each request could
     # lead to a dataset being deleted and a new only being opened: the cache will get thrashed.
@@ -122,11 +126,12 @@ class MatrixDataCacheManager(object):
                 loader = MatrixDataLoader(location, app_config=app_config)
                 cache_item = MatrixDataCacheItem(loader)
                 self.datasets[location] = (cache_item, last_accessed)
-        try:
-            data_adaptor = cache_item.acquire(app_config)
-            yield data_adaptor
-        finally:
-            cache_item.release()
+
+            try:
+                data_adaptor = cache_item.acquire(app_config)
+                yield data_adaptor
+            finally:
+                cache_item.release()
 
 
 class MatrixDataType(Enum):
