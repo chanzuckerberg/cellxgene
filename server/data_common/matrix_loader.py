@@ -104,13 +104,17 @@ class MatrixDataCacheManager(object):
         # create a loader for to this location if it does not already exist
 
         delete_adaptor = None
+        data_adaptor = None
+
         with self.lock:
             value = self.datasets.get(location)
             if value is not None:
                 cache_item = value[0]
                 last_accessed = time.time()
                 self.datasets[location] = (cache_item, last_accessed)
-            else:
+                data_adaptor = cache_item.acquire_existing()
+
+            if data_adaptor is None:
                 while True:
                     # find the last access times for each loader
                     items = list(self.datasets.items())
@@ -133,7 +137,8 @@ class MatrixDataCacheManager(object):
         try:
             if delete_adaptor:
                 delete_adaptor.delete()
-            data_adaptor = cache_item.acquire(app_config)
+            if data_adaptor is None:
+                data_adaptor = cache_item.acquire(app_config)
             yield data_adaptor
         finally:
             cache_item.release()
