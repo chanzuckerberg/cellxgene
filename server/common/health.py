@@ -24,7 +24,7 @@ def health_check(config):
     health = {"status": None, "version": "1", "releaseID": cellxgene_version}
 
     checks = [
-        lambda: config.single_dataset__datapath is not None or config.multi_dataset__dataroot is not None,
+        (config.single_dataset__datapath is not None or config.multi_dataset__dataroot is not None),
         _is_accessible(config.single_dataset__datapath),
         _is_accessible(config.multi_dataset__dataroot),
     ]
