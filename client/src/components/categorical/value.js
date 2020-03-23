@@ -6,7 +6,7 @@ import {
   Menu,
   MenuItem,
   Popover,
-  Position,
+  PopoverPosition,
   PopoverInteractionKind,
   Tooltip
 } from "@blueprintjs/core";
@@ -393,6 +393,12 @@ class CategoryValue extends React.Component {
               content={displayString}
               disabled={truncatedString === null}
               hoverOpenDelay={globals.tooltipHoverOpenDelayQuick}
+              position={PopoverPosition.LEFT}
+              usePortal
+              modifiers={{
+                preventOverflow: { enabled: false },
+                hide: { enabled: false }
+              }}
             >
               <span
                 data-testid={`categorical-value-${metadataField}-${displayString}`}
