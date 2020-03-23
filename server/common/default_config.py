@@ -10,6 +10,8 @@ server:
   port : null
   scripts : []
   open_browser: false
+  about_legal_tos: null
+  about_legal_privacy: null 
 
 presentation:
   max_categories: 1000

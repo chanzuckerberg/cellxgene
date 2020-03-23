@@ -50,6 +50,8 @@ class AppConfig(object):
             self.server__port = dc["server"]["port"]
             self.server__scripts = dc["server"]["scripts"]
             self.server__open_browser = dc["server"]["open_browser"]
+            self.server__about_legal_tos = dc["server"]["about_legal_tos"]
+            self.server__about_legal_privacy = dc["server"]["about_legal_privacy"]
             self.multi_dataset__dataroot = dc["multi_dataset"]["dataroot"]
             self.multi_dataset__index = dc["multi_dataset"]["index"]
             self.multi_dataset__allowed_matrix_types = dc["multi_dataset"]["allowed_matrix_types"]
@@ -401,6 +403,8 @@ class AppConfig(object):
             "annotations_cell_ontology_obopath": None,
             "annotations_cell_ontology_terms": None,
             "diffexp-may-be-slow": False,
+            "about_legal_tos": self.server__about_legal_tos,
+            "about_legal_privacy": self.server__about_legal_privacy,
         }
 
         data_adaptor.update_parameters(parameters)
