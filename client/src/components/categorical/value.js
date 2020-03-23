@@ -6,7 +6,7 @@ import {
   Menu,
   MenuItem,
   Popover,
-  PopoverPosition,
+  Position,
   PopoverInteractionKind,
   Tooltip
 } from "@blueprintjs/core";
@@ -393,7 +393,7 @@ class CategoryValue extends React.Component {
               content={displayString}
               disabled={truncatedString === null}
               hoverOpenDelay={globals.tooltipHoverOpenDelayQuick}
-              position={PopoverPosition.LEFT}
+              position={Position.LEFT}
               usePortal
               modifiers={{
                 preventOverflow: { enabled: false },

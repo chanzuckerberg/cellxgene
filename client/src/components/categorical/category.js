@@ -7,7 +7,7 @@ import {
   Button,
   Tooltip,
   Icon,
-  PopoverPosition
+  Position
 } from "@blueprintjs/core";
 import CategoryFlipperLayout from "./categoryFlipperLayout";
 import AnnoMenu from "./annoMenuCategory";
@@ -206,7 +206,7 @@ class Category extends React.Component {
             content={metadataField}
             disabled={truncatedString === null}
             hoverOpenDelay={globals.tooltipHoverOpenDelayQuick}
-            position={PopoverPosition.LEFT}
+            position={Position.LEFT}
             usePortal
             modifiers={{
               preventOverflow: { enabled: false },
