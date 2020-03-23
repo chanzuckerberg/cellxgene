@@ -23,7 +23,11 @@ def health_check(config):
     """
     health = {"status": None, "version": "1", "releaseID": cellxgene_version}
 
-    checks = [_is_accessible(config.datapath), _is_accessible(config.dataroot)]
+    checks = [
+        lambda: config.single_dataset__datapath is not None or config.multi_dataset__dataroot is not None,
+        _is_accessible(config.single_dataset__datapath),
+        _is_accessible(config.multi_dataset__dataroot),
+    ]
     health["status"] = "pass" if all(checks) else "fail"
     code = HTTPStatus.OK if health["status"] == "pass" else HTTPStatus.BAD_REQUEST
     return make_response(jsonify(health), code, {"Content-Type": "application/health+json"},)
