@@ -6,12 +6,14 @@ import sys
 import webbrowser
 
 import click
+from flask_compress import Compress
 
 from server.common.utils import sort_options
 from server.common.errors import DatasetAccessError, ConfigurationError
 from server.data_common.matrix_loader import MatrixDataCacheManager
 from server.common.app_config import AppConfig
 from server.common.default_config import default_config
+from server.app.app import Server
 
 DEFAULT_CONFIG = AppConfig()
 
@@ -268,6 +270,24 @@ def handle_scripts(scripts):
         click.confirm(f"Are you sure you want to inject these scripts: {scripts_pretty}?", abort=True)
 
 
+class CliLaunchServer(Server):
+    """
+    the CLI runs a local web server, and needs to enable a few more features.
+    """
+    def __init__(self, matrix_data_cache_manager, annotations, app_config):
+        super().__init__(matrix_data_cache_manager, annotations, app_config)
+        self.app.config["COMPRESS_MIMETYPES"] = [
+            "text/html",
+            "text/css",
+            "text/xml",
+            "application/json",
+            "application/javascript",
+            "application/octet-stream",
+        ]
+        compress = Compress(self.app)
+        compress.init_app(self.app)
+
+
 @sort_options
 @click.command(
     short_help="Launch the cellxgene data viewer. " "Run `cellxgene launch --help` for more information.",
@@ -377,9 +397,7 @@ def launch(
     user_annotations = app_config.user_annotations
 
     # create the server
-    from server.app.app import Server
-
-    server = Server(matrix_data_cache_manager, user_annotations, app_config)
+    server = CliLaunchServer(matrix_data_cache_manager, user_annotations, app_config)
 
     if not app_config.server__verbose:
         log = logging.getLogger("werkzeug")
