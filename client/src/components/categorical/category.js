@@ -2,7 +2,13 @@ import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
 import { FaChevronRight, FaChevronDown } from "react-icons/fa";
-import { AnchorButton, Button, Tooltip, Icon } from "@blueprintjs/core";
+import {
+  AnchorButton,
+  Button,
+  Tooltip,
+  Icon,
+  PopoverPosition
+} from "@blueprintjs/core";
 import CategoryFlipperLayout from "./categoryFlipperLayout";
 import AnnoMenu from "./annoMenuCategory";
 import AnnoDialogEditCategoryName from "./annoDialogEditCategoryName";
@@ -164,6 +170,11 @@ class Category extends React.Component {
       false
     );
 
+    const truncatedString = maybeTruncateString(
+      metadataField,
+      globals.categoryDisplayStringMaxLength
+    );
+
     return (
       <CategoryFlipperLayout
         metadataField={metadataField}
@@ -191,40 +202,49 @@ class Category extends React.Component {
             />
             <span className="bp3-control-indicator" />
           </label>
-          <span
-            data-testid={`${metadataField}:category-expand`}
-            style={{
-              cursor: "pointer",
-              display: "inline-block"
-            }}
-            onClick={() => {
-              const editingCategory =
-                annotations.isEditingCategoryName &&
-                annotations.categoryBeingEdited === metadataField;
-              if (!editingCategory) {
-                onExpansionChange(metadataField);
-              }
+          <Tooltip
+            content={metadataField}
+            disabled={truncatedString === null}
+            hoverOpenDelay={globals.tooltipHoverOpenDelayQuick}
+            position={PopoverPosition.LEFT}
+            usePortal
+            modifiers={{
+              preventOverflow: { enabled: false },
+              hide: { enabled: false }
             }}
           >
-            {isUserAnno ? (
-              <Icon style={{ marginRight: 5 }} icon="tag" iconSize={16} />
-            ) : null}
-            {maybeTruncateString(
-              metadataField,
-              globals.categoryDisplayStringMaxLength
-            )}
-            {isExpanded ? (
-              <FaChevronDown
-                data-testclass="category-expand-is-expanded"
-                style={{ fontSize: 10, marginLeft: 5 }}
-              />
-            ) : (
-              <FaChevronRight
-                data-testclass="category-expand-is-not-expanded"
-                style={{ fontSize: 10, marginLeft: 5 }}
-              />
-            )}
-          </span>
+            <span
+              data-testid={`${metadataField}:category-expand`}
+              style={{
+                cursor: "pointer",
+                display: "inline-block"
+              }}
+              onClick={() => {
+                const editingCategory =
+                  annotations.isEditingCategoryName &&
+                  annotations.categoryBeingEdited === metadataField;
+                if (!editingCategory) {
+                  onExpansionChange(metadataField);
+                }
+              }}
+            >
+              {isUserAnno ? (
+                <Icon style={{ marginRight: 5 }} icon="tag" iconSize={16} />
+              ) : null}
+              {truncatedString || metadataField}
+              {isExpanded ? (
+                <FaChevronDown
+                  data-testclass="category-expand-is-expanded"
+                  style={{ fontSize: 10, marginLeft: 5 }}
+                />
+              ) : (
+                <FaChevronRight
+                  data-testclass="category-expand-is-not-expanded"
+                  style={{ fontSize: 10, marginLeft: 5 }}
+                />
+              )}
+            </span>
+          </Tooltip>
         </div>
         {<AnnoDialogEditCategoryName metadataField={metadataField} />}
         {<AnnoDialogAddLabel metadataField={metadataField} />}
