@@ -11,7 +11,7 @@ server:
   scripts : []
   open_browser: false
   about_legal_tos: null
-  about_legal_privacy: null 
+  about_legal_privacy: null
 
 presentation:
   max_categories: 1000
