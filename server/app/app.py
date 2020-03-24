@@ -5,7 +5,6 @@ import logging
 from flask import Flask, redirect, current_app, make_response, render_template, abort
 from flask import Blueprint, request, send_from_directory
 from flask_restful import Api, Resource
-from flask_cors import CORS
 
 from http import HTTPStatus
 
