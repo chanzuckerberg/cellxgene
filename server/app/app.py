@@ -4,8 +4,8 @@ import logging
 
 from flask import Flask, redirect, current_app, make_response, render_template, abort
 from flask import Blueprint, request, send_from_directory
-from flask_cors import CORS
 from flask_restful import Api, Resource
+from flask_cors import CORS
 
 from http import HTTPStatus
 
@@ -204,9 +204,8 @@ class Server:
     def __init__(self, matrix_data_cache_manager, annotations, app_config):
 
         self.app = Flask(__name__, static_folder="../common/web/static")
+        self._before_adding_routes(app_config)
         self.app.json_encoder = Float32JSONEncoder
-
-        CORS(self.app, supports_credentials=True)
 
         # enable session data
         self.app.permanent_session_lifetime = datetime.timedelta(days=50 * 365)
@@ -238,3 +237,7 @@ class Server:
         self.app.matrix_data_cache_manager = matrix_data_cache_manager
         self.app.annotations = annotations
         self.app.app_config = app_config
+
+    def _before_adding_routes(self, app_config):
+        """ will be called before routes are added.  Subclass protocol """
+        pass

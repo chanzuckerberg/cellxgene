@@ -12,6 +12,7 @@ server:
   open_browser: false
   about_legal_tos: null
   about_legal_privacy: null
+  force_https: false
 
 presentation:
   max_categories: 1000
