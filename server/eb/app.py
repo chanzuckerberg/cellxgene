@@ -34,10 +34,7 @@ class WSGIServer(Server):
         super().__init__(matrix_data_cache_manager, annotations, app_config)
 
     def _before_adding_routes(self, app_config):
-        csp = {
-            "default-src": "'self' 'unsafe-inline' 'unsafe-eval'",
-            "img-src": ["'self'", "data:"]
-        }
+        csp = {"default-src": "'self' 'unsafe-inline' 'unsafe-eval'", "img-src": ["'self'", "data:"]}
         Talisman(self.app, force_https=app_config.server__force_https, content_security_policy=csp)
 
 
