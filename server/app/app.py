@@ -4,8 +4,6 @@ import logging
 
 from flask import Flask, redirect, current_app, make_response, render_template, abort
 from flask import Blueprint, request, send_from_directory
-from flask_caching import Cache
-from flask_compress import Compress
 from flask_cors import CORS
 from flask_restful import Api, Resource
 
@@ -208,10 +206,6 @@ class Server:
         self.app = Flask(__name__, static_folder="../common/web/static")
         self.app.json_encoder = Float32JSONEncoder
 
-        self.cache = Cache(config={"CACHE_TYPE": "simple", "CACHE_DEFAULT_TIMEOUT": 860_000})
-        self.cache.init_app(self.app)
-
-        Compress(self.app)
         CORS(self.app, supports_credentials=True)
 
         # enable session data
