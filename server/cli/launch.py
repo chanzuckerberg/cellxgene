@@ -7,6 +7,7 @@ import webbrowser
 
 import click
 from flask_compress import Compress
+from flask_cors import CORS
 
 from server.common.utils import sort_options
 from server.common.errors import DatasetAccessError, ConfigurationError
@@ -276,6 +277,8 @@ class CliLaunchServer(Server):
     """
     def __init__(self, matrix_data_cache_manager, annotations, app_config):
         super().__init__(matrix_data_cache_manager, annotations, app_config)
+
+    def _before_adding_routes(self, app_config):
         self.app.config["COMPRESS_MIMETYPES"] = [
             "text/html",
             "text/css",
@@ -284,8 +287,9 @@ class CliLaunchServer(Server):
             "application/javascript",
             "application/octet-stream",
         ]
-        compress = Compress(self.app)
-        compress.init_app(self.app)
+        Compress(self.app)
+        if app_config.server__debug:
+            CORS(self.app, supports_credentials=True)
 
 
 @sort_options

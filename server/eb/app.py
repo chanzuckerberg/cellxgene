@@ -3,6 +3,7 @@
 import sys
 import os
 import logging
+from flask_talisman import Talisman
 
 if os.path.isdir("/opt/python/log"):
     # This is the standard location where Amazon EC2 instances store the application logs.
@@ -27,6 +28,16 @@ except Exception:
     logging.critical("Exception importing server modules", exc_info=True)
     sys.exit(1)
 
+
+class WSGIServer(Server):
+    def __init__(self, matrix_data_cache_manager, annotations, app_config):
+        super().__init__(matrix_data_cache_manager, annotations, app_config)
+
+    def _before_adding_routes(self, app_config):
+        csp = {"default-src": "'self' 'unsafe-inline' 'unsafe-eval'", "img-src": ["'self'", "data:"]}
+        Talisman(self.app, force_https=app_config.server__force_https, content_security_policy=csp)
+
+
 try:
     dataroot = os.getenv("CXG_DATAROOT")
     app_config = AppConfig()
@@ -38,7 +49,7 @@ try:
 
     if dataroot:
         logging.info(f"Configuration from CXG_DATAROOT")
-        app_config.update(multi_dataset__dataroot=dataroot,)
+        app_config.update(multi_dataset__dataroot=dataroot)
 
     # features are unsupported in the current hosted server
     app_config.update(
@@ -52,7 +63,7 @@ try:
     app_config.complete_config(matrix_data_cache_manager, logging.info)
     user_annotations = app_config.user_annotations
 
-    server = Server(matrix_data_cache_manager, user_annotations, app_config)
+    server = WSGIServer(matrix_data_cache_manager, user_annotations, app_config)
 
     debug = False
     application = server.app
