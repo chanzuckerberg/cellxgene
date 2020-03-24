@@ -117,11 +117,11 @@ class MatrixDataCacheManager(object):
             if data_adaptor is None:
                 while True:
                     # find the last access times for each loader
-                    items = list(self.datasets.items())
-                    sorted(items, key=lambda x: x[1][1])
-                    if len(items) < self.MAX_CACHED:
+                    if len(self.datasets) < self.MAX_CACHED:
                         break
 
+                    items = list(self.datasets.items())
+                    sorted(items, key=lambda x: x[1][1])
                     # close the least recently used loader
                     oldest = items[0]
                     oldest_cache = oldest[1][0]
