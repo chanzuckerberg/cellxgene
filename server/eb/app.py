@@ -24,6 +24,7 @@ try:
     from server.common.app_config import AppConfig
     from server.app.app import Server
     from server.data_common.matrix_loader import MatrixDataCacheManager
+    from server.common.data_locator import DataLocator
 except Exception:
     logging.critical("Exception importing server modules", exc_info=True)
     sys.exit(1)
@@ -39,13 +40,28 @@ class WSGIServer(Server):
 
 
 try:
-    dataroot = os.getenv("CXG_DATAROOT")
     app_config = AppConfig()
 
-    config_file = "config.yaml"
-    if os.path.exists(config_file):
-        logging.info(f"Configuration from {config_file}")
-        app_config.update_from_config_file(config_file)
+    dataroot = os.getenv("CXG_DATAROOT")
+    config_file = os.getenv("CXG_CONFIG_FILE")
+
+    if config_file:
+        config_location = DataLocator(config_file)
+        if config_location.exists():
+            with config_location.local_handle() as lh:
+                logging.info(f"Configuration from {config_file}")
+                app_config.update_from_config_file(lh)
+        else:
+            logging.critical(f"Configuration file not found {config_file}")
+            sys.exit(1)
+    else:
+        # no config file specified, try "config.yaml" in the current working directory
+        config_file = "config.yaml"
+        config_location = DataLocator(config_file)
+        if config_location.exists():
+            with config_location.local_handle() as lh:
+                logging.info(f"Configuration from {config_file}")
+                app_config.update_from_config_file(lh)
 
     if dataroot:
         logging.info(f"Configuration from CXG_DATAROOT")
