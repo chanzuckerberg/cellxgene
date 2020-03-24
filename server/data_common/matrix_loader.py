@@ -28,7 +28,7 @@ class MatrixDataCacheItem(object):
         self.data_lock.r_release()
         return None
 
-    def acquire(self, app_config):
+    def acquire_and_open(self, app_config):
         """returns the data_adaptor if cached.  opens the data_adaptor if not.
         In either case, the a reader lock is taken.  Must call release when
         the data_adaptor is no longer needed"""
@@ -138,7 +138,7 @@ class MatrixDataCacheManager(object):
             if delete_adaptor:
                 delete_adaptor.delete()
             if data_adaptor is None:
-                data_adaptor = cache_item.acquire(app_config)
+                data_adaptor = cache_item.acquire_and_open(app_config)
             yield data_adaptor
         finally:
             cache_item.release()
