@@ -7,7 +7,10 @@ import webbrowser
 
 import click
 from flask_compress import Compress
+<<<<<<< HEAD
 from flask_cors import CORS
+=======
+>>>>>>> master
 
 from server.common.utils import sort_options
 from server.common.errors import DatasetAccessError, ConfigurationError
@@ -275,7 +278,6 @@ class CliLaunchServer(Server):
     """
     the CLI runs a local web server, and needs to enable a few more features.
     """
-
     def __init__(self, matrix_data_cache_manager, annotations, app_config):
         super().__init__(matrix_data_cache_manager, annotations, app_config)
 
