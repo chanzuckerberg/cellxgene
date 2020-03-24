@@ -12,6 +12,8 @@
     Code written by Tyler Neylon at Unbox Research.
 
     This file is public domain.
+
+    Modified to add a w_demote function to convert a writer lock to a reader lock
 """
 
 
@@ -52,15 +54,26 @@ class RWLock(object):
         self.num_r_lock = Lock()
         self.num_r = 0
 
+        # The d_lock is needed to handle the demotion case,
+        # so that the writer can become a reader without releasing the w_lock.
+        # the d_lock is held by the writer, and prevents any other thread from taking the
+        # num_r_lock during that time, which means the writer thread is able to take the
+        # num_r_lock to update the num_r.
+        self.d_lock = Lock()
+
     # ___________________________________________________________________
     # Reading methods.
 
     def r_acquire(self):
+        self.d_lock.acquire()
         self.num_r_lock.acquire()
         self.num_r += 1
+
         if self.num_r == 1:
             self.w_lock.acquire()
+
         self.num_r_lock.release()
+        self.d_lock.release()
 
     def r_release(self):
         assert self.num_r > 0
@@ -68,6 +81,7 @@ class RWLock(object):
         self.num_r -= 1
         if self.num_r == 0:
             self.w_lock.release()
+
         self.num_r_lock.release()
 
     @contextmanager
@@ -83,10 +97,23 @@ class RWLock(object):
     # Writing methods.
 
     def w_acquire(self):
+        self.d_lock.acquire()
         self.w_lock.acquire()
 
     def w_release(self):
         self.w_lock.release()
+        self.d_lock.release()
+
+    def w_demote(self):
+        """demote a writer lock to a reader lock"""
+
+        # the d_lock is already held from w_acquire.
+        # releasing the d_lock at the end of this function allows multiple readers.
+        # incrementing num_r makes this thread one of those readers.
+        self.num_r_lock.acquire()
+        self.num_r += 1
+        self.num_r_lock.release()
+        self.d_lock.release()
 
     @contextmanager
     def w_locked(self):

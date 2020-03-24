@@ -29,6 +29,11 @@ multi_dataset:
   # A list of allowed matrix types.  If an empty list, then all matrix types are allowed
   allowed_matrix_types: []
 
+  matrix_cache:
+    # The maximum number of datasets that may be opened at one time.  The least recently used dataset
+    # is evicted from the cache first.
+    max_datasets: 5
+
 single_dataset:
   datapath: null
   obs_names: null
@@ -63,6 +68,7 @@ adaptor:
 
   anndata_adaptor:
       backed: false
+
 """
 
 

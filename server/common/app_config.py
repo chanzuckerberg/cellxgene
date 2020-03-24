@@ -56,6 +56,7 @@ class AppConfig(object):
             self.multi_dataset__dataroot = dc["multi_dataset"]["dataroot"]
             self.multi_dataset__index = dc["multi_dataset"]["index"]
             self.multi_dataset__allowed_matrix_types = dc["multi_dataset"]["allowed_matrix_types"]
+            self.multi_dataset__matrix_cache__max_datasets = dc["multi_dataset"]["matrix_cache"]["max_datasets"]
             self.single_dataset__datapath = dc["single_dataset"]["datapath"]
             self.single_dataset__obs_names = dc["single_dataset"]["obs_names"]
             self.single_dataset__var_names = dc["single_dataset"]["var_names"]
@@ -244,7 +245,8 @@ class AppConfig(object):
     def handle_multi_dataset(self, context):
         self.__check_attr("multi_dataset__dataroot", (type(None), str))
         self.__check_attr("multi_dataset__index", (type(None), bool, str))
-        self.__check_attr("multi_dataset__allowed_matrix_types", (list))
+        self.__check_attr("multi_dataset__allowed_matrix_types", (tuple, list))
+        self.__check_attr("multi_dataset__matrix_cache__max_datasets", int)
 
         if self.multi_dataset__dataroot is None:
             return
@@ -255,6 +257,9 @@ class AppConfig(object):
                 MatrixDataType(mtype)
             except ValueError:
                 raise ConfigurationError(f'Invalid matrix type in "allowed_matrix_types": {mtype}')
+
+        # matrix cache
+        MatrixDataCacheManager.set_max_datasets(self.multi_dataset__matrix_cache__max_datasets)
 
     def handle_user_annotations(self, context):
         self.__check_attr("user_annotations__enable", bool)
