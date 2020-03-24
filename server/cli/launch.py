@@ -7,10 +7,7 @@ import webbrowser
 
 import click
 from flask_compress import Compress
-<<<<<<< HEAD
 from flask_cors import CORS
-=======
->>>>>>> master
 
 from server.common.utils import sort_options
 from server.common.errors import DatasetAccessError, ConfigurationError
