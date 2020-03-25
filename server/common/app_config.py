@@ -90,7 +90,7 @@ class AppConfig(object):
         except KeyError as e:
             raise ConfigurationError(f"Unexpected config: {str(e)}")
 
-        # quotas are used for various limits, eg, size of requests.  Not currently configurable.
+        # Used for various limits, eg, size of requests.  Not currently configurable.
         self.limits = Default_Limits
 
         # The annotation object is created during complete_config and stored here.
