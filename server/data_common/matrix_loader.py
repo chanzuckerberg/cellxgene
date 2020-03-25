@@ -40,8 +40,14 @@ class MatrixDataCacheItem(object):
         self.data_lock.w_acquire()
         # the data may have been loaded while waiting on the lock
         if not self.data_adaptor:
-            self.loader.pre_load_validation()
-            self.data_adaptor = self.loader.open(app_config)
+            try:
+                self.loader.pre_load_validation()
+                self.data_adaptor = self.loader.open(app_config)
+            except Exception as e:
+                # necessary to hold the reader lock after an exception, since
+                # the release will occur when the context exits.
+                self.data_lock.w_demote()
+                raise e
 
         # demote the write lock to a read lock.
         self.data_lock.w_demote()
