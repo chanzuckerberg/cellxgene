@@ -154,6 +154,9 @@ class MatrixDataLoader(object):
     def __init__(self, location, matrix_data_type=None, app_config=None):
         """ location can be a string or DataLocator """
         self.location = DataLocator(location)
+        if not self.location.exists():
+            raise DatasetAccessError("Dataset does not exist.")
+
         # matrix_data_type is an enum value of type MatrixDataType
         self.matrix_data_type = matrix_data_type
         # matrix_type is a DataAdaptor type, which corresonds to the matrix_data_type
@@ -163,7 +166,7 @@ class MatrixDataLoader(object):
             self.matrix_data_type = self.__matrix_data_type()
 
         if not self.__matrix_data_type_allowed(app_config):
-            raise DatasetAccessError(f"{self.location} does not have an allowed type: {str(self.matrix_data_type)}")
+            raise DatasetAccessError(f"Dataset does not have an allowed type.")
 
         if self.matrix_data_type == MatrixDataType.H5AD:
             from server.data_anndata.anndata_adaptor import AnndataAdaptor
@@ -207,7 +210,7 @@ class MatrixDataLoader(object):
 
     def pre_load_validation(self):
         if self.matrix_data_type == MatrixDataType.UNKNOWN:
-            raise DatasetAccessError(f"{self.location} does not have a recognized type: .h5ad or .cxg")
+            raise DatasetAccessError(f"Dataset does not have a recognized type: .h5ad or .cxg")
         self.matrix_type.pre_load_validation(self.location)
 
     def file_size(self):
