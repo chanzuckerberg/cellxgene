@@ -56,7 +56,6 @@ def config_get(app_config, data_adaptor, annotations):
 def annotations_obs_get(request, data_adaptor, annotations):
     fields = request.args.getlist("annotation-name", None)
     num_columns_requested = len(data_adaptor.get_obs_keys()) if len(fields) == 0 else len(fields)
-    print("OBS", num_columns_requested)
     if data_adaptor.config.exceeds_limit("column_request_max", num_columns_requested):
         return abort(HTTPStatus.BAD_REQUEST)
     preferred_mimetype = request.accept_mimetypes.best_match(["application/octet-stream"])
@@ -107,7 +106,6 @@ def annotations_obs_put(request, data_adaptor, annotations):
 def annotations_var_get(request, data_adaptor, annotations):
     fields = request.args.getlist("annotation-name", None)
     num_columns_requested = len(data_adaptor.get_var_keys()) if len(fields) == 0 else len(fields)
-    print("VAR", num_columns_requested)
     if data_adaptor.config.exceeds_limit("column_request_max", num_columns_requested):
         return abort(HTTPStatus.BAD_REQUEST)
     preferred_mimetype = request.accept_mimetypes.best_match(["application/octet-stream"])
