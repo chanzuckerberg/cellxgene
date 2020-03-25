@@ -84,7 +84,7 @@ def prepare(
         import scanpy as sc
     except ImportError:
         raise click.ClickException(
-            "[cellxgene] cellxgene prepare has not been installed. Please run `pip install cellxgene[prepare]` "
+            "[cellxgene] cellxgene prepare has not been installed. Please run `pip install 'cellxgene[prepare]'` "
             "to install the necessary requirements."
         )
 
