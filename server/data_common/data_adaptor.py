@@ -6,7 +6,7 @@ from os.path import basename, splitext
 
 from server.data_common.fbs.matrix import encode_matrix_fbs
 from server.common.constants import Axis, DEFAULT_TOP_N
-from server.common.errors import FilterError, JSONEncodingValueError
+from server.common.errors import FilterError, JSONEncodingValueError, ExceedsLimitError
 from server.compute.diffexp import diffexp_ttest
 from server.common.utils import jsonify_numpy
 from server.common.app_config import AppFeature, AppConfig
@@ -259,6 +259,10 @@ class DataAdaptor(metaclass=ABCMeta):
         if obs_selector is not None:
             raise FilterError("filtering on obs unsupported")
 
+        num_columns = np.count_nonzero(var_selector)
+        if num_columns == 0 or num_columns > self.config.quotas["column_request_max"]:
+            raise ExceedsLimitError("Requested X columns exceed column request limit")
+
         X = self.get_X_array(obs_selector, var_selector)
         col_idx = np.nonzero([] if var_selector is None else var_selector)[0]
         return encode_matrix_fbs(X, col_idx=col_idx, row_idx=None)
@@ -285,6 +289,11 @@ class DataAdaptor(metaclass=ABCMeta):
             raise FilterError("Error parsing filter")
         if top_n is None:
             top_n = DEFAULT_TOP_N
+
+        cellcount_max_limit = self.config.quotas["diffexp_cellcount_max"]
+        if cellcount_max_limit is not None:
+            if np.count_nonzero(obs_mask_A) + np.count_nonzero(obs_mask_B) > cellcount_max_limit:
+                raise ExceedsLimitError("Diffexp request exceeds max cell count limit")
 
         result = diffexp_ttest(self, obs_mask_A, obs_mask_B, top_n, self.config.diffexp__lfc_cutoff)
 
