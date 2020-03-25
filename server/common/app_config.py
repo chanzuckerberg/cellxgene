@@ -21,8 +21,8 @@ DEFAULT_SERVER_PORT = int(environ.get("CXG_SERVER_PORT", "5005"))
 # anything bigger than this will generate a special message
 BIG_FILE_SIZE_THRESHOLD = 100 * 2 ** 20  # 100MB
 
-""" Default quotas """
-Default_Quotas = {
+""" Default limits for requests """
+Default_Limits = {
     # Max number of columns that may be requested for /annotations or /data routes.
     # This is a simplistic means of preventing excess resource consumption (eg,
     # requesting the entire X matrix in one request) or other DoS style attacks/errors.
@@ -91,7 +91,7 @@ class AppConfig(object):
             raise ConfigurationError(f"Unexpected config: {str(e)}")
 
         # quotas are used for various limits, eg, size of requests.  Not currently configurable.
-        self.quotas = Default_Quotas
+        self.limits = Default_Limits
 
         # The annotation object is created during complete_config and stored here.
         self.user_annotations = None
@@ -440,11 +440,12 @@ class AppConfig(object):
         config["library_versions"] = library_versions
         config["links"] = links
         config["parameters"] = parameters
+        config["limits"] = self.limits
 
         return c
 
     def exceeds_limit(self, limit_name, value):
-        limit_value = self.quotas.get(limit_name, None)
+        limit_value = self.limits.get(limit_name, None)
         if limit_value is None:  # disabled
             return False
         return value > limit_value
