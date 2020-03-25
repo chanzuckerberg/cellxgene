@@ -193,7 +193,10 @@ class EndPoints(object):
         endpoint = f"data/var"
         url = f"{self.URL_BASE}{endpoint}"
         result = self.session.put(url)
-        self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.status_code, HTTPStatus.BAD_REQUEST)
+
+        filter = {"filter": {"var": {"index": [0, 1, 4]}}}
+        result = self.session.put(url, json=filter)
         self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
 
     def test_data_put_fbs(self):
@@ -201,15 +204,7 @@ class EndPoints(object):
         url = f"{self.URL_BASE}{endpoint}"
         header = {"Accept": "application/octet-stream"}
         result = self.session.put(url, headers=header)
-        self.assertEqual(result.status_code, HTTPStatus.OK)
-        self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
-        df = decode_fbs.decode_matrix_FBS(result.content)
-        self.assertEqual(df["n_rows"], 2638)
-        self.assertEqual(df["n_cols"], 1838)
-        self.assertIsNotNone(df["columns"])
-        self.assertListEqual(df["col_idx"].tolist(), [])
-        self.assertIsNone(df["row_idx"])
-        self.assertEqual(len(df["columns"]), df["n_cols"])
+        self.assertEqual(result.status_code, HTTPStatus.BAD_REQUEST)
 
     def test_data_put_filter_fbs(self):
         endpoint = f"data/var"

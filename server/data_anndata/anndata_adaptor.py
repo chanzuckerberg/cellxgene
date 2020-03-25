@@ -351,3 +351,11 @@ class AnndataAdaptor(DataAdaptor):
 
     def get_obs_columns(self):
         return self.data.obs.columns
+
+    def get_obs_keys(self):
+        # return list of keys
+        return self.data.obs.keys().to_list()
+
+    def get_var_keys(self):
+        # return list of keys
+        return self.data.var.keys().to_list()

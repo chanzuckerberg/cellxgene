@@ -24,6 +24,8 @@ class NaNTest(unittest.TestCase):
         config.update(**self.args)
         locator = DataLocator("test/test_datasets/nan.h5ad")
         config.update(single_dataset__datapath=locator.path)
+        for k in config.quotas.keys():
+            config.quotas[k] = None
         config.complete_config()
 
         with warnings.catch_warnings():

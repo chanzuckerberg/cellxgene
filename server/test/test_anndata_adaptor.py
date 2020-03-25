@@ -44,6 +44,8 @@ class AdaptorTest(unittest.TestCase):
         }
         config = AppConfig()
         config.update(**args)
+        for k in config.quotas.keys():
+            config.quotas[k] = None
         config.complete_config()
         self.data = AnndataAdaptor(DataLocator(self.data_locator), config)
 

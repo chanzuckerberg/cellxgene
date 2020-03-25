@@ -26,6 +26,7 @@ Default_Quotas = {
     # Max number of columns that may be requested for /annotations or /data routes.
     # This is a simplistic means of preventing excess resource consumption (eg,
     # requesting the entire X matrix in one request) or other DoS style attacks/errors.
+    # Set to None to disable check.
     "column_request_max": 32,
     # Max number of cells that will be accepted for differential expression.
     # Set to None to disable the check.
@@ -441,3 +442,9 @@ class AppConfig(object):
         config["parameters"] = parameters
 
         return c
+
+    def exceeds_limit(self, limit_name, value):
+        limit_value = self.quotas.get(limit_name, None)
+        if limit_value is None:  # disabled
+            return False
+        return value > limit_value
