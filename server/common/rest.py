@@ -9,6 +9,7 @@ from server.common.errors import (
     JSONEncodingValueError,
     PrepareError,
     DisabledFeatureError,
+    ExceedsLimitError,
 )
 
 import json
@@ -54,9 +55,13 @@ def config_get(app_config, data_adaptor, annotations):
 
 def annotations_obs_get(request, data_adaptor, annotations):
     fields = request.args.getlist("annotation-name", None)
+    num_columns_requested = len(data_adaptor.get_obs_keys()) if len(fields) == 0 else len(fields)
+    if data_adaptor.config.exceeds_limit("column_request_max", num_columns_requested):
+        return abort(HTTPStatus.BAD_REQUEST)
     preferred_mimetype = request.accept_mimetypes.best_match(["application/octet-stream"])
     if preferred_mimetype != "application/octet-stream":
         return abort(HTTPStatus.NOT_ACCEPTABLE)
+
     try:
         labels = None
         if annotations:
@@ -100,9 +105,13 @@ def annotations_obs_put(request, data_adaptor, annotations):
 
 def annotations_var_get(request, data_adaptor, annotations):
     fields = request.args.getlist("annotation-name", None)
+    num_columns_requested = len(data_adaptor.get_var_keys()) if len(fields) == 0 else len(fields)
+    if data_adaptor.config.exceeds_limit("column_request_max", num_columns_requested):
+        return abort(HTTPStatus.BAD_REQUEST)
     preferred_mimetype = request.accept_mimetypes.best_match(["application/octet-stream"])
     if preferred_mimetype != "application/octet-stream":
         return abort(HTTPStatus.NOT_ACCEPTABLE)
+
     try:
         labels = None
         if annotations is not None:
@@ -129,7 +138,7 @@ def data_var_put(request, data_adaptor):
             HTTPStatus.OK,
             {"Content-Type": "application/octet-stream"},
         )
-    except FilterError as e:
+    except (FilterError, ValueError, ExceedsLimitError) as e:
         return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)
 
 
@@ -160,7 +169,7 @@ def diffexp_obs_post(request, data_adaptor):
     try:
         diffexp = data_adaptor.diffexp_topN(set1_filter, set2_filter, count)
         return make_response(diffexp, HTTPStatus.OK, {"Content-Type": "application/json"})
-    except (ValueError, DisabledFeatureError, FilterError) as e:
+    except (ValueError, DisabledFeatureError, FilterError, ExceedsLimitError) as e:
         return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)
     except JSONEncodingValueError:
         # JSON encoding failure, usually due to bad data. Just let it ripple up
@@ -171,13 +180,13 @@ def diffexp_obs_post(request, data_adaptor):
 
 def layout_obs_get(request, data_adaptor):
     preferred_mimetype = request.accept_mimetypes.best_match(["application/octet-stream"])
+    if preferred_mimetype != "application/octet-stream":
+        return abort(HTTPStatus.NOT_ACCEPTABLE)
+
     try:
-        if preferred_mimetype == "application/octet-stream":
-            return make_response(
-                data_adaptor.layout_to_fbs_matrix(), HTTPStatus.OK, {"Content-Type": "application/octet-stream"}
-            )
-        else:
-            return abort(HTTPStatus.NOT_ACCEPTABLE)
+        return make_response(
+            data_adaptor.layout_to_fbs_matrix(), HTTPStatus.OK, {"Content-Type": "application/octet-stream"}
+        )
     except PrepareError:
         return abort_and_log(
             HTTPStatus.NOT_IMPLEMENTED,

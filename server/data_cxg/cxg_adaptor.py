@@ -234,6 +234,16 @@ class CxgAdaptor(DataAdaptor):
         col_names = [attr.name for attr in schema]
         return pd.Index(col_names)
 
+    def get_obs_keys(self):
+        obs = self.open_array("obs")
+        schema = obs.schema
+        return [attr.name for attr in schema]
+
+    def get_var_keys(self):
+        var = self.open_array("var")
+        schema = var.schema
+        return [attr.name for attr in schema]
+
     # function to get the embedding
     # this function to iterate through embeddings.
     def get_embedding_names(self):

@@ -21,6 +21,18 @@ DEFAULT_SERVER_PORT = int(environ.get("CXG_SERVER_PORT", "5005"))
 # anything bigger than this will generate a special message
 BIG_FILE_SIZE_THRESHOLD = 100 * 2 ** 20  # 100MB
 
+""" Default limits for requests """
+Default_Limits = {
+    # Max number of columns that may be requested for /annotations or /data routes.
+    # This is a simplistic means of preventing excess resource consumption (eg,
+    # requesting the entire X matrix in one request) or other DoS style attacks/errors.
+    # Set to None to disable check.
+    "column_request_max": 32,
+    # Max number of cells that will be accepted for differential expression.
+    # Set to None to disable the check.
+    "diffexp_cellcount_max": None,  # None is disabled
+}
+
 
 class AppFeature(object):
     def __init__(self, path, available=False, method="POST", extra={}):
@@ -77,6 +89,9 @@ class AppConfig(object):
             self.adaptor__anndata_adaptor__backed = dc["adaptor"]["anndata_adaptor"]["backed"]
         except KeyError as e:
             raise ConfigurationError(f"Unexpected config: {str(e)}")
+
+        # Used for various limits, eg, size of requests.  Not currently configurable.
+        self.limits = Default_Limits
 
         # The annotation object is created during complete_config and stored here.
         self.user_annotations = None
@@ -425,5 +440,12 @@ class AppConfig(object):
         config["library_versions"] = library_versions
         config["links"] = links
         config["parameters"] = parameters
+        config["limits"] = self.limits
 
         return c
+
+    def exceeds_limit(self, limit_name, value):
+        limit_value = self.limits.get(limit_name, None)
+        if limit_value is None:  # disabled
+            return False
+        return value > limit_value

@@ -68,3 +68,11 @@ class ConfigurationError(Exception):
     """
 
     pass
+
+
+class ExceedsLimitError(Exception):
+    """
+    Raised when an HTTP request exceeds a limit/quota
+    """
+
+    pass

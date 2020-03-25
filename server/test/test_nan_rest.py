@@ -47,7 +47,8 @@ class WithNaNs(unittest.TestCase):
     def test_data(self):
         endpoint = "data/var"
         url = f"{URL_BASE}{endpoint}"
-        result = self.session.put(url)
+        filter = {"filter": {"var": {"index": [[0, 20]]}}}
+        result = self.session.put(url, json=filter)
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
         df = decode_fbs.decode_matrix_FBS(result.content)
