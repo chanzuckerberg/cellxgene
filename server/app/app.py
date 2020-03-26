@@ -45,7 +45,7 @@ def dataset_index(dataset=None):
 
 
 @webbp.route("/favicon.png", methods=["GET"])
-def favicon():
+def favicon(dataset=None):
     return send_from_directory(os.path.join(webbp.root_path, "static/img/"), "favicon.png")
 
 
@@ -229,9 +229,12 @@ class Server:
             resources = get_api_resources(bp_api)
             self.app.register_blueprint(resources.blueprint)
             self.app.add_url_rule("/<dataset>/", "dataset_index", dataset_index, methods=["GET"])
-            self.app.add_url_rule(
-                "/<dataset>/static/<path:therest>", "static_redirect", static_redirect, methods=["GET"]
-            )
+            self.app.add_url_rule("/<dataset>/favicon.png", "favicon", favicon, methods=["GET"])
+
+            if app_config.server__redirect_static:
+                self.app.add_url_rule(
+                    "/<dataset>/static/<path:therest>", "static_redirect", static_redirect, methods=["GET"]
+                )
 
         self.app.matrix_data_cache_manager = matrix_data_cache_manager
         self.app.annotations = annotations
