@@ -47,16 +47,16 @@ function InformationMenu(props) {
               }`}
             />
             <MenuItem text="MIT License" />
-            <MenuItem
+            {tosURL ? <MenuItem
               href={tosURL}
               target="_blank"
               text="Terms of Service"
-            />
-            <MenuItem
+            /> : null }
+            {privacyURL ? <MenuItem
               href={privacyURL}
               target="_blank"
               text="Privacy Policy"
-            />
+            /> : null }
           </Menu>
         }
         position={Position.BOTTOM_RIGHT}
