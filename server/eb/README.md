@@ -62,40 +62,68 @@ There are many more options to these commands that may be important or necessary
    and cannot be enabled using configuration.  They may be enabled manually by modifying app.py, however
    this is not supported or recommended at this time.
    
-4. Create the artifact.zip file for the application
+4. Prepare static endpoints
+
+   The cellxgene server can server additional static webpages that may be associated with the deployment.
+   These include the about_legal_tos (terms of service), and bout_legal_privacy, for example.  
+   To use this feature, do the following:
+
+   * In this directory, create a sub directory called "static".  
+   * Copy the files you want to server into this directory
+   * modify your configuration file to set the location to these file:  /static/deploy/<filename>
+
+   Example:  you want to include an "about_legal_tos" and "about_legal_privacy" page to cellxgene.
+   Assume files called "tos.html" and "privacy.html" exist.
 
    ```
-   make build
+   $ mkdir static
+   $ cp <source_dir>/tos.html static/tos.html
+   $ cp <source_dir>/privacy.html static/privacy.html
+
+   # edit config.yaml
+   $ grep "/static/deploy" config.yaml
+   about_legal_tos: /static/deploy/tos.html
+   about_legal_privacy: /static/deploy/privacy.html
    ```
    
-5. Create an environment
+   The next step will place these files into the deployment.
+   
+5. Create the artifact.zip file for the application
+
+   ```
+   $ make build
+   ```
+   
+6. Create an environment
 
     ```
     # name of the environment
-    EB_ENV=cellxgene-env
-    # type of ec2 instance to run the cellxgene server.     
-    EB_INSTANCE=m5.large 
-    # One or both of the following environment variables needs to be set
-    CXG_DATAROOT=<location to your S3 bucket>
-    CXG_CONFIG_FILE=<location to your config file>
+    $ EB_ENV=cellxgene-env
    
-    eb create $EB_ENV --instance-type $EB_INSTANCE \
+    # type of ec2 instance to run the cellxgene server (for example)
+    $ EB_INSTANCE=m5.large 
+   
+    # One or both of the following environment variables needs to be set
+    $ CXG_DATAROOT=<location to your S3 bucket>
+    $ CXG_CONFIG_FILE=<location to your config file>
+   
+    $ eb create $EB_ENV --instance-type $EB_INSTANCE \
        --envvars CXG_DATAROOT=$CXG_DATAROOT,CXG_CONFIG_FILE=$CXG_CONFIG_FILE
     ```
 
-6. Give the elastic beanstalk environment access to the S3 bucket.
+7. Give the elastic beanstalk environment access to the S3 bucket.
 
     This link may provide some useful information:
     https://aws.amazon.com/premiumsupport/knowledge-center/elastic-beanstalk-s3-bucket-instance/
     
-7. Deploy the application
+8. Deploy the application
 
     ```
-    eb deploy $EB_ENV 
+    $ eb deploy $EB_ENV 
     ```
    
-7. Open the application in a browser
+9. Open the application in a browser
 
    ```
-   eb open $EB_ENV
+   $ eb open $EB_ENV
    ```
