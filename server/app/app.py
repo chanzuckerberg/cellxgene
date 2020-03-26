@@ -47,7 +47,7 @@ def dataset_index(dataset=None):
 # TODO: remove the top-level /favicon route once the build problem with index.html is resolved
 @webbp.route("/favicon.png", methods=["GET"])
 @webbp.route("/static/img/favicon.png", methods=["GET"])
-def favicon(dataset=None):
+def favicon():
     return send_from_directory(os.path.join(webbp.root_path, "static/img/"), "favicon.png")
 
 
