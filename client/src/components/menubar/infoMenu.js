@@ -3,7 +3,7 @@ import React from "react";
 import { Button, Popover, Menu, MenuItem, Position } from "@blueprintjs/core";
 
 function InformationMenu(props) {
-  const { libraryVersions, aboutLink } = props;
+  const { libraryVersions, aboutLink, tosURL, privacyURL } = props;
   return (
     <div style={{}} className="bp3-button-group">
       <Popover
@@ -47,6 +47,16 @@ function InformationMenu(props) {
               }`}
             />
             <MenuItem text="MIT License" />
+            {tosURL ? <MenuItem
+              href={tosURL}
+              target="_blank"
+              text="Terms of Servce"
+            /> : null}
+            {privacyURL ? <MenuItem
+              href={privacyURL}
+              target="_blank"
+              text="Privacy Policy"
+            /> : null}
           </Menu>
         }
         position={Position.BOTTOM_RIGHT}
