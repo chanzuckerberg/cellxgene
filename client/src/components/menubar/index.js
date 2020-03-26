@@ -32,7 +32,9 @@ import UndoRedoReset from "./undoRedo";
   aboutLink: state.config?.links?.["about-dataset"],
   disableDiffexp: state.config?.parameters?.["disable-diffexp"] ?? false,
   diffexpMayBeSlow: state.config?.parameters?.["diffexp-may-be-slow"] ?? false,
-  showCentroidLabels: state.centroidLabels.showLabels
+  showCentroidLabels: state.centroidLabels.showLabels,
+  tosURL: state.config?.parameters?.about_legal_tos,
+  privacyURL: state.config?.parameters?.about_legal_privacy
 }))
 class MenuBar extends React.Component {
   static isValidDigitKeyEvent(e) {
@@ -279,7 +281,9 @@ class MenuBar extends React.Component {
       clipPercentileMax,
       graphInteractionMode,
       aboutLink,
-      showCentroidLabels
+      showCentroidLabels,
+      privacyURL,
+      tosURL
     } = this.props;
     const { pendingClipPercentiles } = this.state;
 
@@ -402,6 +406,8 @@ class MenuBar extends React.Component {
         <InformationMenu
           libraryVersions={libraryVersions}
           aboutLink={aboutLink}
+          tosURL={tosURL}
+          privacyURL={privacyURL}
         />
       </div>
     );
