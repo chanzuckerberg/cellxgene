@@ -77,6 +77,13 @@ try:
 
     matrix_data_cache_manager = MatrixDataCacheManager()
     app_config.complete_config(matrix_data_cache_manager, logging.info)
+
+    if not app_config.server__flask_secret_key:
+        logging.critical(
+            f"flask_secret_key is not provided.  Either set in config file, or in CXG_SECRET_KEY environment variable"
+        )
+        sys.exit(1)
+
     user_annotations = app_config.user_annotations
 
     server = WSGIServer(matrix_data_cache_manager, user_annotations, app_config)

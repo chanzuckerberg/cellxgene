@@ -8,7 +8,6 @@ from os.path import splitext, basename, isdir
 import sys
 from urllib.parse import urlparse
 import yaml
-import secrets
 
 from server.common.default_config import get_default_config
 from server.common.errors import ConfigurationError, DatasetAccessError, OntologyLoadFailure
@@ -220,12 +219,9 @@ class AppConfig(object):
             sys.tracebacklimit = 0
 
         # secret key:
-        #   first, check environment variable
-        #   second, check config file
-        #   last, randomly generate a key
+        #   first, from CXG_SECRET_KEY environment variable
+        #   second, from config file
         self.server__flask_secret_key = environ.get("CXG_SECRET_KEY", self.server__flask_secret_key)
-        if self.server__flask_secret_key is None:
-            self.server__flask_secret_key = secrets.token_hex(nbytes=32)
 
     def handle_presentation(self, context):
         self.__check_attr("presentation__max_categories", int)
