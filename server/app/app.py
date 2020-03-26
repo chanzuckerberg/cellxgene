@@ -116,7 +116,7 @@ def dataroot_test_index():
     data += "<ul>"
     datasets.sort()
     for dataset in datasets:
-        data += f"<li><a href={dataset}>{dataset}</a></li>"
+        data += f"<li><a href=d/{dataset}>{dataset}</a></li>"
     data += "</ul>"
     data += "</body></html>"
 
@@ -225,12 +225,12 @@ class Server:
             # NOTE:  These routes only allow the dataset to be in the directory
             # of the dataroot, and not a subdirectory.  We may want to change
             # the route format at some point
-            bp_api = Blueprint("api_dataset", __name__, url_prefix="/<dataset>" + api_version)
+            bp_api = Blueprint("api_dataset", __name__, url_prefix="/d/<dataset>" + api_version)
             resources = get_api_resources(bp_api)
             self.app.register_blueprint(resources.blueprint)
-            self.app.add_url_rule("/<dataset>/", "dataset_index", dataset_index, methods=["GET"])
+            self.app.add_url_rule("/d/<dataset>/", "dataset_index", dataset_index, methods=["GET"])
             self.app.add_url_rule(
-                "/<dataset>/static/<path:therest>", "static_redirect", static_redirect, methods=["GET"]
+                "/d/<dataset>/static/<path:therest>", "static_redirect", static_redirect, methods=["GET"]
             )
 
         self.app.matrix_data_cache_manager = matrix_data_cache_manager
