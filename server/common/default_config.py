@@ -13,7 +13,6 @@ server:
   about_legal_tos: null
   about_legal_privacy: null
   force_https: false
-  redirect_static: true
 
 presentation:
   max_categories: 1000
