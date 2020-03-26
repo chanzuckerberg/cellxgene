@@ -65,28 +65,37 @@ class AppConfig(object):
             self.server__about_legal_tos = dc["server"]["about_legal_tos"]
             self.server__about_legal_privacy = dc["server"]["about_legal_privacy"]
             self.server__force_https = dc["server"]["force_https"]
+            self.server__flask_secret_key = dc["server"]["flask_secret_key"]
+
             self.multi_dataset__dataroot = dc["multi_dataset"]["dataroot"]
             self.multi_dataset__index = dc["multi_dataset"]["index"]
             self.multi_dataset__allowed_matrix_types = dc["multi_dataset"]["allowed_matrix_types"]
             self.multi_dataset__matrix_cache__max_datasets = dc["multi_dataset"]["matrix_cache"]["max_datasets"]
+
             self.single_dataset__datapath = dc["single_dataset"]["datapath"]
             self.single_dataset__obs_names = dc["single_dataset"]["obs_names"]
             self.single_dataset__var_names = dc["single_dataset"]["var_names"]
             self.single_dataset__about = dc["single_dataset"]["about"]
             self.single_dataset__title = dc["single_dataset"]["title"]
+
             self.user_annotations__enable = dc["user_annotations"]["enable"]
             self.user_annotations__type = dc["user_annotations"]["type"]
             self.user_annotations__local_file_csv__directory = dc["user_annotations"]["local_file_csv"]["directory"]
             self.user_annotations__local_file_csv__file = dc["user_annotations"]["local_file_csv"]["file"]
             self.user_annotations__ontology__enable = dc["user_annotations"]["ontology"]["enable"]
             self.user_annotations__ontology__obo_location = dc["user_annotations"]["ontology"]["obo_location"]
+
             self.presentation__max_categories = dc["presentation"]["max_categories"]
+
             self.embeddings__names = dc["embeddings"]["names"]
             self.embeddings__enable_reembedding = dc["embeddings"]["enable_reembedding"]
+
             self.diffexp__enable = dc["diffexp"]["enable"]
             self.diffexp__lfc_cutoff = dc["diffexp"]["lfc_cutoff"]
+
             self.adaptor__cxg_adaptor__tiledb_ctx = dc["adaptor"]["cxg_adaptor"]["tiledb_ctx"]
             self.adaptor__anndata_adaptor__backed = dc["adaptor"]["anndata_adaptor"]["backed"]
+
         except KeyError as e:
             raise ConfigurationError(f"Unexpected config: {str(e)}")
 
@@ -184,6 +193,8 @@ class AppConfig(object):
         self.__check_attr("server__port", (type(None), int))
         self.__check_attr("server__scripts", (list, tuple))
         self.__check_attr("server__open_browser", bool)
+        self.__check_attr("server__force_https", bool)
+        self.__check_attr("server__flask_secret_key", (type(None), str))
 
         if self.server__port:
             if not is_port_available(self.server__host, self.server__port):
@@ -202,6 +213,11 @@ class AppConfig(object):
 
         if not self.server__verbose:
             sys.tracebacklimit = 0
+
+        # secret key:
+        #   first, from CXG_SECRET_KEY environment variable
+        #   second, from config file
+        self.server__flask_secret_key = environ.get("CXG_SECRET_KEY", self.server__flask_secret_key)
 
     def handle_presentation(self, context):
         self.__check_attr("presentation__max_categories", int)

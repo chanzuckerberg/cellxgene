@@ -13,6 +13,7 @@ server:
   about_legal_tos: null
   about_legal_privacy: null
   force_https: false
+  flask_secret_key: null
 
 presentation:
   max_categories: 1000

@@ -275,6 +275,7 @@ class CliLaunchServer(Server):
     """
     the CLI runs a local web server, and needs to enable a few more features.
     """
+
     def __init__(self, matrix_data_cache_manager, annotations, app_config):
         super().__init__(matrix_data_cache_manager, annotations, app_config)
 
@@ -393,6 +394,10 @@ def launch(
             click.echo("[cellxgene] " + message)
 
         app_config.complete_config(matrix_data_cache_manager, messagefn)
+
+        # Use a default secret if one is not provided
+        if not app_config.server__flask_secret_key:
+            app_config.server__flask_secret_key = "SparkleAndShine"
 
     except (ConfigurationError, DatasetAccessError) as e:
         raise click.ClickException(e)
