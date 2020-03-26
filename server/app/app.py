@@ -210,8 +210,8 @@ class Server:
         self.app.permanent_session_lifetime = datetime.timedelta(days=50 * 365)
 
         # Config
-        SECRET_KEY = os.environ.get("CXG_SECRET_KEY", default="SparkleAndShine")
-        self.app.config.update(SECRET_KEY=SECRET_KEY)
+        secret_key = app_config.server__flask_secret_key
+        self.app.config.update(SECRET_KEY=secret_key)
 
         self.app.register_blueprint(webbp)
 
