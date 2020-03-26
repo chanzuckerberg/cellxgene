@@ -90,7 +90,7 @@ module.exports = {
       __REACT_DEVTOOLS_GLOBAL_HOOK__: "({ isDisabled: true })"
     }),
     new webpack.DefinePlugin({
-      "process.env.CXG_SERVER_PORT": JSON.stringify(process.env.CXG_SERVER_PORT),
+      "process.env.CXG_SERVER_PORT": JSON.stringify(process.env.CXG_SERVER_PORT)
     })
   ]
 };

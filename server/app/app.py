@@ -44,7 +44,9 @@ def dataset_index(dataset=None):
         )
 
 
+# TODO: remove the top-level /favicon route once the build problem with index.html is resolved
 @webbp.route("/favicon.png", methods=["GET"])
+@webbp.route("/static/img/favicon.png", methods=["GET"])
 def favicon():
     return send_from_directory(os.path.join(webbp.root_path, "static/img/"), "favicon.png")
 
@@ -87,11 +89,6 @@ def rest_get_data_adaptor(func):
             )
 
     return wrapped_function
-
-
-def static_redirect(dataset, therest):
-    """ redirect all static requests to the standard location """
-    return redirect(f"/static/{therest}", code=301)
 
 
 def dataroot_test_index():
@@ -229,9 +226,6 @@ class Server:
             resources = get_api_resources(bp_api)
             self.app.register_blueprint(resources.blueprint)
             self.app.add_url_rule("/d/<dataset>/", "dataset_index", dataset_index, methods=["GET"])
-            self.app.add_url_rule(
-                "/d/<dataset>/static/<path:therest>", "static_redirect", static_redirect, methods=["GET"]
-            )
 
         self.app.matrix_data_cache_manager = matrix_data_cache_manager
         self.app.annotations = annotations
