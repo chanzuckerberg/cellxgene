@@ -186,10 +186,6 @@ class AppConfig(object):
         self.__check_attr("server__open_browser", bool)
 
         if self.server__port:
-            if self.server__debug:
-                raise ConfigurationError(
-                    "'port' and 'debug' may not be used together (try 'verbose' for error logging)."
-                )
             if not is_port_available(self.server__host, self.server__port):
                 raise ConfigurationError(
                     f"The port selected {self.server__port} is in use, please configure an open port."
