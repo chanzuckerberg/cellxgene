@@ -23,6 +23,10 @@ build: clean
 	if [ -f config.yaml ] ; then \
 	  cp config.yaml artifact.dir;  \
 	fi; \
+	if [ -d static ] ; then \
+	  mkdir -p artifact.dir/server/common/web/static/deploy; \
+	  cp -r static/* artifact.dir/server/common/web/static/deploy;  \
+	fi; \
 	(cd artifact.dir; \
 	  cp -r server/common/web/static static; \
 	  zip -r ../artifact.zip . --exclude server/test/\* server/eb/\* ; ); \
