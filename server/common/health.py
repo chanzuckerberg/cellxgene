@@ -5,12 +5,12 @@ from server import __version__ as cellxgene_version
 from server.common.data_locator import DataLocator
 
 
-def _is_accessible(path):
+def _is_accessible(path, config):
     if path is None:
         return True
 
     try:
-        dl = DataLocator(path)
+        dl = DataLocator(path, config)
         return dl.exists()
     except RuntimeError:
         return False
@@ -25,8 +25,8 @@ def health_check(config):
 
     checks = [
         (config.single_dataset__datapath is not None or config.multi_dataset__dataroot is not None),
-        _is_accessible(config.single_dataset__datapath),
-        _is_accessible(config.multi_dataset__dataroot),
+        _is_accessible(config.single_dataset__datapath, config),
+        _is_accessible(config.multi_dataset__dataroot, config),
     ]
     health["status"] = "pass" if all(checks) else "fail"
     code = HTTPStatus.OK if health["status"] == "pass" else HTTPStatus.BAD_REQUEST
