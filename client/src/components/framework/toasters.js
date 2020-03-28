@@ -7,6 +7,11 @@ const ToastTopCenter = Toaster.create({
   position: Position.TOP
 });
 
+const ToastBottomCenter = Toaster.create({
+  className: "recipe-toaster",
+  position: Position.BOTTOM
+});
+
 /*
 A "user" error - eg, bad input
 */
@@ -46,3 +51,11 @@ export const postAsyncFailureToast = message =>
     timeout: 10000,
     intent: Intent.WARNING
   });
+
+export const termsOfServiceToast = message, _onDismiss =>
+  ToastBottomCenter.show({
+    message,
+    timeout: 0,
+    intent: Intent.PRIMARY,
+    onDismiss: _onDismiss
+});
