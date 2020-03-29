@@ -10,6 +10,7 @@ import Legend from "./continuousLegend";
 import Graph from "./graph/graph";
 import MenuBar from "./menubar";
 import Autosave from "./autosave";
+import TermsOfServicePrompt from "./termsPrompt";
 
 import actions from "../actions";
 
@@ -93,6 +94,7 @@ class App extends React.Component {
           {loading ? null : <MenuBar />}
           {loading ? null : <Graph key={graphRenderCounter} />}
           {loading ? null : <Autosave />}
+          {loading ? null : <TermsOfServicePrompt />}
           <Legend />
         </div>
       </Container>
