@@ -52,10 +52,10 @@ export const postAsyncFailureToast = message =>
     intent: Intent.WARNING
   });
 
-export const termsOfServiceToast = message, _onDismiss =>
+export const termsOfServiceToast = (message, _onDismiss) =>
   ToastBottomCenter.show({
     message,
     timeout: 0,
     intent: Intent.PRIMARY,
     onDismiss: _onDismiss
-});
+  });
