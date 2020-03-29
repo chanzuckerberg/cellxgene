@@ -25,7 +25,7 @@ class DataLocator:
 
     """
 
-    def __init__(self, uri_or_path):
+    def __init__(self, uri_or_path, app_config=None):
         if isinstance(uri_or_path, DataLocator):
             locator = uri_or_path
             self.uri_or_path = locator.uri_or_path
@@ -38,8 +38,17 @@ class DataLocator:
             # work-around for LocalFileSystem not treating file: and None as the same scheme/protocol
             self.cname = self.path if self.protocol == "file" else self.uri_or_path
 
-        # will throw RuntimeError if the protocol is unsupported
-        self.fs = fsspec.filesystem(self.protocol)
+        # fsspec.filesystem will throw RuntimeError if the protocol is unsupported
+        if self.protocol == "s3" and app_config.data_locator__s3__region_name:
+            self.fs = fsspec.filesystem(
+                self.protocol, config_kwargs={"region_name": app_config.data_locator__s3__region_name}
+            )
+        else:
+            self.fs = fsspec.filesystem(self.protocol)
+
+    def __repr__(self):
+        return f"DataLocator(protocol={self.protocol}, cname={self.cname}, "
+        f"path={self.path}, uri_or_path={self.uri_or_path})"
 
     @staticmethod
     def _get_protocol_and_path(uri_or_path):

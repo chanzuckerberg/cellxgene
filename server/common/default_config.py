@@ -60,6 +60,10 @@ diffexp:
   enable: true
   lfc_cutoff: 0.01
 
+data_locator:
+  s3:
+    region_name: us-east-1
+
 adaptor:
   cxg_adaptor:
     tiledb_ctx:

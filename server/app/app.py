@@ -98,7 +98,7 @@ def dataroot_test_index():
     data += "<body><H1>Welcome to cellxgene</H1>"
 
     config = current_app.app_config
-    locator = DataLocator(config.multi_dataset__dataroot)
+    locator = DataLocator(config.multi_dataset__dataroot, config=config)
     datasets = []
     for fname in locator.ls():
         location = path_join(config.multi_dataset__dataroot, fname)
