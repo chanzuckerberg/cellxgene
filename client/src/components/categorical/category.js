@@ -106,6 +106,11 @@ class Category extends React.Component {
     We are still loading this category, so render a "busy" signal.
     */
     const { metadataField } = this.props;
+    const truncatedString = maybeTruncateString(
+      metadataField,
+      globals.categoryDisplayStringMaxLength
+    );
+
     return (
       <div
         style={{
@@ -130,14 +135,26 @@ class Category extends React.Component {
               <input disabled checked={true} type="checkbox" />
               <span className="bp3-control-indicator" />
             </label>
-            <span
-              style={{
-                cursor: "pointer",
-                display: "inline-block"
+            <Tooltip
+              content={metadataField}
+              disabled={truncatedString === null}
+              hoverOpenDelay={globals.tooltipHoverOpenDelayQuick}
+              position={Position.LEFT}
+              usePortal
+              modifiers={{
+                preventOverflow: { enabled: false },
+                hide: { enabled: false }
               }}
             >
-              {metadataField}
-            </span>
+              <span
+                style={{
+                  cursor: "pointer",
+                  display: "inline-block"
+                }}
+              >
+                {truncatedString || metadataField}
+              </span>
+            </Tooltip>
           </div>
           <div>
             <Button minimal loading intent="primary" />
