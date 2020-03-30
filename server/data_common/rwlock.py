@@ -100,6 +100,16 @@ class RWLock(object):
         self.d_lock.acquire()
         self.w_lock.acquire()
 
+    def w_acquire_non_blocking(self):
+        # if d_lock and w_lock can be acquired without blocking, acquire and return True,
+        # else immediately return False.
+        if self.d_lock.acquire(blocking=False):
+            if self.w_lock.acquire(blocking=False):
+                return True
+            else:
+                self.d_lock.release()
+        return False
+
     def w_release(self):
         self.w_lock.release()
         self.d_lock.release()

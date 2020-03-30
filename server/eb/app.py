@@ -23,7 +23,6 @@ sys.path.append(SERVERDIR)
 try:
     from server.common.app_config import AppConfig
     from server.app.app import Server
-    from server.data_common.matrix_loader import MatrixDataCacheManager
     from server.common.data_locator import DataLocator
 except Exception:
     logging.critical("Exception importing server modules", exc_info=True)
@@ -31,8 +30,8 @@ except Exception:
 
 
 class WSGIServer(Server):
-    def __init__(self, matrix_data_cache_manager, annotations, app_config):
-        super().__init__(matrix_data_cache_manager, annotations, app_config)
+    def __init__(self, app_config):
+        super().__init__(app_config)
 
     def _before_adding_routes(self, app_config):
         csp = {"default-src": "'self' 'unsafe-inline' 'unsafe-eval'", "img-src": ["'self'", "data:"]}
@@ -75,8 +74,7 @@ try:
         multi_dataset__allowed_matrix_types=["cxg"],
     )
 
-    matrix_data_cache_manager = MatrixDataCacheManager()
-    app_config.complete_config(matrix_data_cache_manager, logging.info)
+    app_config.complete_config(logging.info)
 
     if not app_config.server__flask_secret_key:
         logging.critical(
@@ -86,7 +84,7 @@ try:
 
     user_annotations = app_config.user_annotations
 
-    server = WSGIServer(matrix_data_cache_manager, user_annotations, app_config)
+    server = WSGIServer(app_config)
 
     debug = False
     application = server.app
