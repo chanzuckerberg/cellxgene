@@ -7,6 +7,7 @@ import {
   doBinaryRequest,
   dispatchNetworkErrorMessageToUser
 } from "../util/actionHelpers";
+import { PromiseLimit } from "../util/promiseLimit";
 import { requestReembed, reembedResetWorldToUniverse } from "./reembed";
 
 /*
@@ -15,28 +16,29 @@ we don't need.
 */
 function obsAnnotationFetchAndLoad(dispatch, schema) {
   const obsAnnotations = schema?.schema?.annotations?.obs ?? {};
-  const columns = obsAnnotations.columns ?? [];
   const index = obsAnnotations.index ?? false;
+  const columns = (obsAnnotations.columns ?? []).filter(
+    col => col.name !== index
+  );
+
+  const plimit = new PromiseLimit(4);
   return Promise.all(
-    columns
-      .filter(col => col.name !== index)
-      .map(col => {
+    columns.map(col =>
+      plimit.add(() => {
         const path = `annotations/obs?annotation-name=${encodeURIComponent(
           col.name
         )}`;
         const url = `${globals.API.prefix}${globals.API.version}${path}`;
-        return doBinaryRequest(url);
-      })
-      .map(rqst => rqst.then(buffer => Universe.matrixFBSToDataframe(buffer)))
-      .map(resp =>
-        resp.then(df =>
+        return doBinaryRequest(url).then(buffer => {
+          const df = Universe.matrixFBSToDataframe(buffer);
           dispatch({
             type: "universe: column load success",
             dim: "obsAnnotations",
             dataframe: df
-          })
-        )
-      )
+          });
+        });
+      })
+    )
   );
 }
 
