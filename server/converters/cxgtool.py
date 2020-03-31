@@ -411,10 +411,8 @@ def sanitize_keys(keys):
 
     Returned new keys will be both safe and unique.
     """
-    print(keys)
     p = re.compile(r"[^a-zA-Z0-9!\-_\.\*'\(\)&$@=;:\+ ,\?]")
     clean_keys = {k: p.sub('_', k) for k in keys}
-    print(clean_keys)
 
     used_keys = set()
     clean_unique_keys = {}
@@ -433,7 +431,6 @@ def sanitize_keys(keys):
                 clean_unique_keys[k] = candidate_name
                 break
 
-    print(clean_unique_keys)
     for k, v, in clean_unique_keys.items():
         if k != v:
             log(1, f"Renaming {k} to {v}")
