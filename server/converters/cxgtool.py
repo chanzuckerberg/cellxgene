@@ -439,7 +439,7 @@ def sanitize_keys(keys):
 
 
 def sanitize_df(df):
-    df.rename(columns=sanitize_keys(df.keys.tolist()), inplace=True)
+    df.rename(columns=sanitize_keys(df.keys().tolist()), inplace=True)
 
 
 def clean_all_column_names(adata):
