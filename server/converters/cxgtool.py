@@ -411,11 +411,13 @@ def sanitize_keys(keys):
 
     Returned new keys will be both safe and unique.
     """
+    print(keys)
     p = re.compile(r"[^a-zA-Z0-9!-_.*'()&$@=;:+ ,?]")
     clean_keys = {k: p.sub('_', k) for k in keys}
+    print(clean_keys)
+
     used_keys = set()
     clean_unique_keys = {}
-
     for k, v in clean_keys.items():
         if v not in used_keys:
             used_keys.add(v)
