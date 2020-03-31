@@ -442,10 +442,18 @@ def sanitize_df(df):
     df.rename(columns=sanitize_keys(df.keys().tolist()), inplace=True)
 
 
+def sanitize_mapping(mapping):
+    clean_keys = sanitize_keys([k for k in mapping.keys()])
+    for old_key, new_key in clean_keys.items():
+        if old_key != new_key:
+            mapping[new_key] = mapping[old_key]
+            del mapping[old_key]
+
+
 def clean_all_column_names(adata):
     sanitize_df(adata.obs)
     sanitize_df(adata.var)
-    sanitize_df(adata.obsm)
+    sanitize_mapping(adata.obsm)
 
 
 if __name__ == "__main__":
