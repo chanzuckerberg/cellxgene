@@ -47,6 +47,7 @@ TODO/ISSUES:
 * Possible future work: accept Loom files
 
 """
+import re
 import anndata
 import tiledb
 import argparse
@@ -85,7 +86,7 @@ def main():
         metavar="<URL>",
         help="URL providing more information about the dataset (hint: must be a fully specified absolute URL).",
     )
-    parser.add_argument("--out", "-o", help="output CXG file name")
+    parser.add_argument("--out", "--output", "-o", help="output CXG file name")
     args = parser.parse_args()
 
     global log_level
@@ -109,6 +110,13 @@ def write_cxg(adata, container, title, var_names=None, obs_names=None, about=Non
         raise ValueError("Variable index is not unique - unable to convert.")
     if not adata.obs.index.is_unique:
         raise ValueError("Observation index is not unique - unable to convert.")
+
+    """
+    TileDB bug TileDB-Inc/TileDB#1575 requires that we sanitize all column names
+    prior to saving.  This can be reverted when the bug is fixed.
+    """
+    log(0, "Warning: sanitizing all dataframe column names.")
+    clean_all_column_names(adata)
 
     ctx = tiledb.Ctx(
         {
@@ -383,6 +391,61 @@ def save_metadata(container, metadata):
     with tiledb.DenseArray(a_name, mode="w") as A:
         A.meta["cxg_version"] = CXG_VERSION
         A.meta["cxg_properties"] = json.dumps(metadata)
+
+
+def sanitize_keys(keys):
+    """
+    We need names to be safe to use as S3 object keys or Posix file names.
+
+    Posix reserved characters:  null and '/'
+    S3 guidance: https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html
+
+    Short term, to be conservative, we are following the AWS S3 guidance, and
+    only allowing:
+        * known safe: [0-9][A-Z][a-z][!-_.*'()]
+        * mostly safe, but assume URL encoding, etc: [&$@=;:+ ,?]
+    Anything outside of these will be replaced with an underscore.
+
+    Args: list of keys
+    Returns: dict of {old_key: new_key, ...}
+
+    Returned new keys will be both safe and unique.
+    """
+    p = re.compile(r"[^a-zA-Z0-9!-_.*'()&$@=;:+ ,?]")
+    clean_keys = {k: p.sub('_', k) for k in keys}
+    used_keys = set()
+    clean_unique_keys = {}
+
+    for k, v in clean_keys.items():
+        if v not in used_keys:
+            used_keys.add(v)
+            clean_unique_keys[k] = v
+            continue
+
+        # else, needs deduping.
+        counter = 1
+        while True:
+            candidate_name = v + '-' + str(counter)
+            if candidate_name not in used_keys:
+                used_keys.add(candidate_name)
+                clean_unique_keys[k] = candidate_name
+                break
+
+    print(clean_unique_keys)
+    for k, v, in clean_unique_keys.items():
+        if k != v:
+            log(1, f"Renaming {k} to {v}")
+    return clean_unique_keys
+
+
+def sanitize_df(df):
+    df.rename(columns=sanitize_keys(df.keys.tolist()), inplace=True)
+
+
+def clean_all_column_names(adata):
+    sanitize_df(adata.obs)
+    sanitize_df(adata.var)
+    sanitize_df(adata.obsm)
 
 
 if __name__ == "__main__":
