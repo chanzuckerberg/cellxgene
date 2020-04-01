@@ -4,12 +4,12 @@ import { connect } from "react-redux";
 import { Button, ButtonGroup, AnchorButton, Tooltip } from "@blueprintjs/core";
 import * as globals from "../../globals";
 import actions from "../../actions";
-import CellSetButton from "./cellSetButtons";
 import Clip from "./clip";
 import Embedding from "./embedding";
 import InformationMenu from "./infoMenu";
 import Subset from "./subset";
 import UndoRedoReset from "./undoRedo";
+import DiffexpButtons from "./diffexpButtons";
 
 @connect(state => ({
   universe: state.universe,
@@ -164,29 +164,6 @@ class MenuBar extends React.Component {
     this.setState({ pendingClipPercentiles: null });
   };
 
-  computeDiffExp = () => {
-    const { dispatch, differential } = this.props;
-    if (differential.celllist1 && differential.celllist2) {
-      dispatch(
-        actions.requestDifferentialExpression(
-          differential.celllist1,
-          differential.celllist2
-        )
-      );
-    }
-  };
-
-  clearDifferentialExpression = () => {
-    const { dispatch, differential } = this.props;
-    dispatch({
-      type: "clear differential expression",
-      diffExp: differential.diffExp
-    });
-    dispatch({
-      type: "clear scatterplot"
-    });
-  };
-
   handleCentroidChange = () => {
     const { dispatch, showCentroidLabels } = this.props;
 
@@ -209,71 +186,11 @@ class MenuBar extends React.Component {
     return world.nObs !== universe.nObs;
   };
 
-  renderDiffExp() {
-    /* diffexp-related buttons may be disabled */
-    const { disableDiffexp, differential, diffexpMayBeSlow } = this.props;
-    if (disableDiffexp) return null;
-
-    const haveBothCellSets =
-      !!differential.celllist1 && !!differential.celllist2;
-
-    const slowMsg = diffexpMayBeSlow
-      ? " (CAUTION: large dataset - may take longer or fail)"
-      : "";
-    const tipMessage = `See top 10 differentially expressed genes${slowMsg}`;
-
-    return (
-      <ButtonGroup style={{ marginRight: 10 }}>
-        <CellSetButton
-          {...this.props} // eslint-disable-line react/jsx-props-no-spreading
-          eitherCellSetOneOrTwo={1}
-        />
-        <CellSetButton
-          {...this.props} // eslint-disable-line react/jsx-props-no-spreading
-          eitherCellSetOneOrTwo={2}
-        />
-        {!differential.diffExp ? (
-          <Tooltip
-            content={tipMessage}
-            position="bottom"
-            hoverOpenDelay={globals.tooltipHoverOpenDelayQuick}
-          >
-            <AnchorButton
-              disabled={!haveBothCellSets}
-              intent="primary"
-              data-testid="diffexp-button"
-              loading={differential.loading}
-              icon="left-join"
-              fill
-              onClick={this.computeDiffExp}
-            />
-          </Tooltip>
-        ) : null}
-
-        {differential.diffExp ? (
-          <Tooltip
-            content="Remove differentially expressed gene list and clear cell selections"
-            position="bottom"
-            hoverOpenDelay={globals.tooltipHoverOpenDelayQuick}
-          >
-            <Button
-              type="button"
-              fill
-              intent="warning"
-              onClick={this.clearDifferentialExpression}
-            >
-              Clear Differential Expression
-            </Button>
-          </Tooltip>
-        ) : null}
-      </ButtonGroup>
-    );
-  }
-
   render() {
     const {
       dispatch,
       libraryVersions,
+      disableDiffexp,
       undoDisabled,
       redoDisabled,
       selectionTool,
@@ -307,7 +224,7 @@ class MenuBar extends React.Component {
           display: "flex"
         }}
       >
-        {this.renderDiffExp()}
+        {disableDiffexp ? null : <DiffexpButtons/>}
         <Subset
           subsetPossible={this.subsetPossible()}
           subsetResetPossible={this.subsetResetPossible()}
