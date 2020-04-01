@@ -20,7 +20,39 @@ from functools import wraps
 webbp = Blueprint("webapp", "server.common.web", template_folder="templates")
 
 
+def _cache_control(always, **cache_kwargs):
+    """
+    Used to easily manage cache control headers on responses.
+    See Werkzeug for attributes that can be set, eg, no_cache, private, max_age, etc.
+    https://werkzeug.palletsprojects.com/en/1.0.x/datastructures/#werkzeug.datastructures.ResponseCacheControl
+    """
+    def inner_cache_control(f):
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            response = make_response(f(*args, **kwargs))
+            if not always and not current_app.app_config.server__generate_cache_control_headers:
+                return response
+            if response.status_code >= 400:
+                return response
+            for k, v in cache_kwargs.items():
+                setattr(response.cache_control, k, v)
+            return response
+        return wrapper
+    return inner_cache_control
+
+
+def cache_control(**cache_kwargs):
+    """ configu driven """
+    return _cache_control(False, **cache_kwargs)
+
+
+def cache_control_always(**cache_kwargs):
+    """ always generate headers, regardless of the config """
+    return _cache_control(True, **cache_kwargs)
+
+
 @webbp.route("/", methods=["GET"])
+@cache_control(public=True, max_age=3600)
 def dataset_index(dataset=None):
     config = current_app.app_config
     if dataset is None:
@@ -52,6 +84,7 @@ def favicon():
 
 
 @webbp.route("/health", methods=["GET"])
+@cache_control_always(no_cache=True)
 def health():
     config = current_app.app_config
     return health_check(config)
@@ -132,50 +165,59 @@ def dataroot_index():
 
 
 class SchemaAPI(Resource):
+    @cache_control(public=True, max_age=3600)
     @rest_get_data_adaptor
     def get(self, data_adaptor):
         return common_rest.schema_get(data_adaptor, current_app.annotations)
 
 
 class ConfigAPI(Resource):
+    @cache_control(public=True, max_age=3600)
     @rest_get_data_adaptor
     def get(self, data_adaptor):
         return common_rest.config_get(current_app.app_config, data_adaptor, current_app.annotations)
 
 
 class AnnotationsObsAPI(Resource):
+    @cache_control(public=True, max_age=3600)
     @rest_get_data_adaptor
     def get(self, data_adaptor):
         return common_rest.annotations_obs_get(request, data_adaptor, current_app.annotations)
 
+    @cache_control(no_cache=True)
     @rest_get_data_adaptor
     def put(self, data_adaptor):
         return common_rest.annotations_obs_put(request, data_adaptor, current_app.annotations)
 
 
 class AnnotationsVarAPI(Resource):
+    @cache_control(public=True, max_age=3600)
     @rest_get_data_adaptor
     def get(self, data_adaptor):
         return common_rest.annotations_var_get(request, data_adaptor, current_app.annotations)
 
 
 class DataVarAPI(Resource):
+    @cache_control(no_cache=True)
     @rest_get_data_adaptor
     def put(self, data_adaptor):
         return common_rest.data_var_put(request, data_adaptor)
 
 
 class DiffExpObsAPI(Resource):
+    @cache_control(no_cache=True)
     @rest_get_data_adaptor
     def post(self, data_adaptor):
         return common_rest.diffexp_obs_post(request, data_adaptor)
 
 
 class LayoutObsAPI(Resource):
+    @cache_control(public=True, max_age=3600)
     @rest_get_data_adaptor
     def get(self, data_adaptor):
         return common_rest.layout_obs_get(request, data_adaptor)
 
+    @cache_control(no_cache=True)
     @rest_get_data_adaptor
     def put(self, data_adaptor):
         return common_rest.layout_obs_put(request, data_adaptor)
