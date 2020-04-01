@@ -21,7 +21,7 @@ DEFAULT_SERVER_PORT = int(environ.get("CXG_SERVER_PORT", "5005"))
 # anything bigger than this will generate a special message
 BIG_FILE_SIZE_THRESHOLD = 100 * 2 ** 20  # 100MB
 
-""" Default limits for requests """
+""" Default limits for requests.  Some of these may be overridden by the app config """
 Default_Limits = {
     # Max number of columns that may be requested for /annotations or /data routes.
     # This is a simplistic means of preventing excess resource consumption (eg,
