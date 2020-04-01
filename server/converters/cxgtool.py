@@ -408,7 +408,7 @@ def sanitize_keys(keys):
     Masking out [~/.] and anything outside the ASCII range.
     """
     # p = re.compile(r"[^a-zA-Z0-9!\-_\.\*'\(\)&$@=;:\+ ,\?]")
-    p = re.compile(r"[^ -\.0-\[\]-\}")
+    p = re.compile(r"[^ -\.0-\[\]-\}]")
     clean_keys = {k: p.sub('_', k) for k in keys}
 
     used_keys = set()
