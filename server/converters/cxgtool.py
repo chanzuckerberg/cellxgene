@@ -395,23 +395,20 @@ def save_metadata(container, metadata):
 
 def sanitize_keys(keys):
     """
-    We need names to be safe to use as S3 object keys or Posix file names.
-
-    Posix reserved characters:  null and '/'
-    S3 guidance: https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html
-
-    Short term, to be conservative, we are following the AWS S3 guidance, and
-    only allowing:
-        * known safe: [0-9][A-Z][a-z][!-_.*'()]
-        * mostly safe, but assume URL encoding, etc: [&$@=;:+ ,?]
-    Anything outside of these will be replaced with an underscore.
+    We need names to be safe to use as attribute names in tiledb.  See:
+        TileDB-Inc/TileDB#1575
+        TileDB-Inc/TileDB-Py#294
+    This can be entirely removed once they add proper escaping.
 
     Args: list of keys
     Returns: dict of {old_key: new_key, ...}
 
     Returned new keys will be both safe and unique.
+
+    Masking out [~/.] and anything outside the ASCII range.
     """
-    p = re.compile(r"[^a-zA-Z0-9!\-_\.\*'\(\)&$@=;:\+ ,\?]")
+    # p = re.compile(r"[^a-zA-Z0-9!\-_\.\*'\(\)&$@=;:\+ ,\?]")
+    p = re.compile(r"[^ -\.0-\[\]-\}")
     clean_keys = {k: p.sub('_', k) for k in keys}
 
     used_keys = set()
