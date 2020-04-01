@@ -6,11 +6,6 @@ import * as globals from "../../globals";
 import actions from "../../actions";
 import CellSetButton from "./cellSetButtons";
 
-/* 
-  no check at all if value is null or zero
-  else if a number, it is the limit of the sum of cellset1.length + cellset2.length
-*/ 
-
 @connect(state => ({
   config: state.config,
   crossfilter: state.crossfilter,
@@ -97,8 +92,6 @@ class DiffexpButtons extends React.Component {
         diffexpCellcountMax
       )
     
-    console.log('diffexp props', this.props)
-
     return (
       <ButtonGroup style={{ marginRight: 10 }}>
         <CellSetButton
