@@ -66,6 +66,7 @@ class AppConfig(object):
             self.server__about_legal_privacy = dc["server"]["about_legal_privacy"]
             self.server__force_https = dc["server"]["force_https"]
             self.server__flask_secret_key = dc["server"]["flask_secret_key"]
+            self.server__generate_cache_control_headers = dc["server"]["generate_cache_control_headers"]
 
             self.multi_dataset__dataroot = dc["multi_dataset"]["dataroot"]
             self.multi_dataset__index = dc["multi_dataset"]["index"]
@@ -197,6 +198,7 @@ class AppConfig(object):
         self.__check_attr("server__open_browser", bool)
         self.__check_attr("server__force_https", bool)
         self.__check_attr("server__flask_secret_key", (type(None), str))
+        self.__check_attr("server__generate_cache_control_headers", bool)
 
         if self.server__port:
             if not is_port_available(self.server__host, self.server__port):
