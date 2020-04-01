@@ -26,16 +26,9 @@ jobs:
         run: |
           pip install flake8
           make lint
-      - name: Lint diff with eslint
-        branches-ignore:
-          - master
-        run: |
-          cd client && make lint-diff-client
       - name: Lint with eslint
-        branches:
-          - master
         run: |
-        make lint-client
+          if(${GITHUB_REF} == "refs/heads/master") then make lint-client; else make lint-diff-client; fi
 
 
   unit-test:
