@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: |
-        git fetch --no-tags --prune --depth=1 origin +refs/heads/*:refs/remotes/origin/*
+          git fetch --no-tags --prune --depth=1 origin +refs/heads/*:refs/remotes/origin/*
       - name: Set up Python 3.7
         uses: actions/setup-python@v1
         with:
@@ -30,8 +30,7 @@ jobs:
           make lint
       - name: Lint with eslint
         run: |
-          if(${GITHUB_REF} == "refs/heads/master") then make lint-client; else make lint-diff-client; fi
-
+          if("$GITHUB_REF" == "refs/heads/master") then make lint-client; else make lint-diff-client; fi
 
   unit-test:
     runs-on: ubuntu-latest
