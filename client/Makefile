@@ -29,7 +29,7 @@ lint:
 
 .PHONY: lint-diff
 lint-diff:
-	$(shell LIST=`git diff-index --name-only --diff-filter=d origin/master -- client/ | grep -E "(.*)\.(jsx|js)"`; if [ $(LIST) ]; then npx eslint $(LIST); fi )
+	$(shell git diff-index --name-only --diff-filter=d origin/master -- ../client/ | grep -E "(.*)\.(jsx|js)" | sed "s/client\///" | xargs npx eslint)
 
 
 # Development convenience methods
