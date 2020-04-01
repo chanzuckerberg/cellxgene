@@ -427,6 +427,7 @@ def sanitize_keys(keys):
                 used_keys.add(candidate_name)
                 clean_unique_keys[k] = candidate_name
                 break
+            counter += 1
 
     for k, v, in clean_unique_keys.items():
         if k != v:
