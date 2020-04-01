@@ -62,7 +62,7 @@ const getCoordinatesByCategoricalValues = (
       !(isUserAnno && categoryValue === unassignedCategoryLabel)
     ) {
       // Create/fetch the scratchpad value
-      let coords = coordsByCategoryLabel.get(categoryValue);
+      let coords = coordsByCategoryLabel.get(categoryValue);'''';
       if (coords === undefined) {
         // Get the number of cells which are in the categorical value
         const numInCategoricalValue = categoryValueCounts[categoryValueIndex];
