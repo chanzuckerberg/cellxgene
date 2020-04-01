@@ -21,6 +21,16 @@ install:
 build:
 	npm run build
 
+# Formatting code
+
+.PHONY: lint
+lint:
+	npx eslint .
+
+.PHONY: lint-diff
+lint-diff:
+	$(shell LIST=`git diff-index --name-only --diff-filter=d origin/master -- client/ | grep -E "(.*)\.(jsx|js)"`; if [ $(LIST) ]; then npx eslint $(LIST); fi )
+
 
 # Development convenience methods
 
