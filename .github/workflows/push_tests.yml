@@ -25,9 +25,18 @@ jobs:
       - name: Lint with flake8
         run: |
           pip install flake8
+          make lint
       - name: Lint diff with eslint
+        branches-ignore:
+          - master
         run: |
-          cd client && make lint-diff
+          cd client && make lint-diff-client
+      - name: Lint with eslint
+        branches:
+          - master
+        run: |
+        make lint-client
+
 
   unit-test:
     runs-on: ubuntu-latest
