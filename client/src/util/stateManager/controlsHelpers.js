@@ -103,7 +103,7 @@ export function createCategoricalSelection(world, names) {
     in sorted order, and must include all category values even if they are not
     actively used in the current world.
     */
-    const summary = obsAnnotations.col(name).summarize();
+    const summary = obsAnnotations.col(name).summarizeCategorical();
     const [categoryValues, categoryValueCounts] = topNCategories(
       colSchema,
       summary,
@@ -203,7 +203,9 @@ export function pruneVarDataCache(varData, needed) {
 
 export function subsetAndResetGeneLists(state) {
   const { userDefinedGenes, diffexpGenes } = state;
-  const newUserDefinedGenes = [].concat(userDefinedGenes, diffexpGenes).slice(0, globals.maxGenes);
+  const newUserDefinedGenes = []
+    .concat(userDefinedGenes, diffexpGenes)
+    .slice(0, globals.maxGenes);
   const newDiffExpGenes = [];
   return [newUserDefinedGenes, newDiffExpGenes];
 }

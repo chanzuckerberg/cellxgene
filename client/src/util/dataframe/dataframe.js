@@ -7,7 +7,10 @@ import {
   callOnceLazy,
   memoize
 } from "./util";
-import { summarizeContinuous, summarizeCategorical } from "./summarize";
+import {
+  summarizeContinuous,
+  summarizeCategorical as _summarizeCategorical
+} from "./summarize";
 import {
   histogramCategorical,
   hashCategorical,
@@ -243,8 +246,11 @@ class Dataframe {
     };
 
     /*
-    Summarize the column data. Lazy eval;
+    Summarize the column data. Lazy eval, memoized
     */
+    const summarizeCategorical = callOnceLazy(() =>
+      _summarizeCategorical(column)
+    );
     const summarize = callOnceLazy(() =>
       isTypedArray(column)
         ? summarizeContinuous(column)
@@ -263,6 +269,7 @@ class Dataframe {
     }
 
     get.summarize = summarize;
+    get.summarizeCategorical = summarizeCategorical;
     get.asArray = asArray;
     get.has = has;
     get.ihas = ihas;
