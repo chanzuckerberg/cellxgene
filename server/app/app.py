@@ -84,7 +84,7 @@ def favicon():
 
 
 @webbp.route("/health", methods=["GET"])
-@cache_control_always(no_cache=True)
+@cache_control_always(no_store=True)
 def health():
     config = current_app.app_config
     return health_check(config)
@@ -184,7 +184,7 @@ class AnnotationsObsAPI(Resource):
     def get(self, data_adaptor):
         return common_rest.annotations_obs_get(request, data_adaptor, current_app.annotations)
 
-    @cache_control(no_cache=True)
+    @cache_control(no_store=True)
     @rest_get_data_adaptor
     def put(self, data_adaptor):
         return common_rest.annotations_obs_put(request, data_adaptor, current_app.annotations)
@@ -198,14 +198,14 @@ class AnnotationsVarAPI(Resource):
 
 
 class DataVarAPI(Resource):
-    @cache_control(no_cache=True)
+    @cache_control(no_store=True)
     @rest_get_data_adaptor
     def put(self, data_adaptor):
         return common_rest.data_var_put(request, data_adaptor)
 
 
 class DiffExpObsAPI(Resource):
-    @cache_control(no_cache=True)
+    @cache_control(no_store=True)
     @rest_get_data_adaptor
     def post(self, data_adaptor):
         return common_rest.diffexp_obs_post(request, data_adaptor)
@@ -217,7 +217,7 @@ class LayoutObsAPI(Resource):
     def get(self, data_adaptor):
         return common_rest.layout_obs_get(request, data_adaptor)
 
-    @cache_control(no_cache=True)
+    @cache_control(no_store=True)
     @rest_get_data_adaptor
     def put(self, data_adaptor):
         return common_rest.layout_obs_put(request, data_adaptor)
