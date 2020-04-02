@@ -251,8 +251,7 @@ class CxgAdaptor(DataAdaptor):
             pemb = self.get_path("emb")
             embeddings = [os.path.basename(p) for (p, t) in self.lsuri(pemb) if t == "array"]
         if len(embeddings) == 0:
-            # something went wrong. perhaps the dataset was removed.  re-validate
-            self.pre_load_validation(self.data_locator)
+            raise DatasetAccessError("cxg matrix missing embeddings")
         return embeddings
 
     @staticmethod
