@@ -52,7 +52,6 @@ import anndata
 import tiledb
 import argparse
 import numpy as np
-import pandas as pd
 from os.path import splitext, basename
 import json
 
@@ -206,26 +205,6 @@ def cxg_type(array):
             return (np.unicode, {"type": "string"})
         else:
             raise TypeError(f"Annotations of type {dtype} are unsupported.")
-
-
-# def cxg_type(col):
-#     """ given a dtype, return an encoding dtype and any schema hints """
-#     dtype = col.dtype
-#     kind = dtype.kind
-#     if _can_cast_to_float32(col):
-#         return (np.float32, {})
-#     elif _can_cast_to_int32(col):
-#         return (np.int32, {})
-#     elif dtype == np.bool_ or dtype == np.bool:
-#         return (np.uint8, {type: "boolean"})
-#     elif kind == "O" and isinstance(dtype, pd.CategoricalDtype):
-#         typ, hint = cxg_type(dtype.categories)
-#         hint["categories"] = dtype.categories.tolist()
-#         return (typ, hint)
-#     elif kind == "O":
-#         return (np.unicode, {"type": "string"})
-#     else:
-#         raise TypeError(f"Annotations of type {dtype} are unsupported by cellxgene.")
 
 
 def cxg_dtype(array):
@@ -447,9 +426,8 @@ def sanitize_keys(keys):
 
     Masking out [~/.] and anything outside the ASCII range.
     """
-    # p = re.compile(r"[^a-zA-Z0-9!\-_\.\*'\(\)&$@=;:\+ ,\?]")
     p = re.compile(r"[^ -\.0-\[\]-\}]")
-    clean_keys = {k: p.sub('_', k) for k in keys}
+    clean_keys = {k: p.sub("_", k) for k in keys}
 
     used_keys = set()
     clean_unique_keys = {}
@@ -462,7 +440,7 @@ def sanitize_keys(keys):
         # else, needs deduping.
         counter = 1
         while True:
-            candidate_name = v + '-' + str(counter)
+            candidate_name = v + "-" + str(counter)
             if candidate_name not in used_keys:
                 used_keys.add(candidate_name)
                 clean_unique_keys[k] = candidate_name
