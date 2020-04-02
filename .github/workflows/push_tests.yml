@@ -28,9 +28,14 @@ jobs:
         run: |
           pip install flake8
           make lint
-      - name: Lint with eslint
+       - name: Lint all with eslint
+        if: github.ref == 'refs/heads/master'
         run: |
-          if("$GITHUB_REF" == "refs/heads/master") then make lint-client; else make lint-diff-client; fi
+           make lint-client
+      - name: Lint diff with eslint
+        if: github.ref != 'refs/heads/master'
+        run: |
+          make lint-diff-client
 
   unit-test:
     runs-on: ubuntu-latest
