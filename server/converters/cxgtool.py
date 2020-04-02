@@ -295,7 +295,6 @@ def save_dataframe(container, name, df, index_col_name, ctx):
         for k, v in df.items():
             dtype, hints = cxg_type(v)
             value[k] = v.to_numpy(dtype=dtype)
-            print(k, dtype, hints)
             if hints:
                 schema_hints.update({k: hints})
 
