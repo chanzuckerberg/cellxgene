@@ -36,6 +36,10 @@ multi_dataset:
     # is evicted from the cache first.
     max_datasets: 5
 
+    # A matrix is automatically removed from the cache after timelimit_s number of seconds.
+    # If timelimit_s is set to None, then there is no time limit.
+    timelimit_s: 30
+
 single_dataset:
   datapath: null
   obs_names: null

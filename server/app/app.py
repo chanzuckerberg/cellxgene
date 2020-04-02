@@ -239,8 +239,7 @@ def get_api_resources(bp_api):
 
 
 class Server:
-    def __init__(self, matrix_data_cache_manager, annotations, app_config):
-
+    def __init__(self, app_config):
         self.app = Flask(__name__, static_folder="../common/web/static")
         self._before_adding_routes(app_config)
         self.app.json_encoder = Float32JSONEncoder
@@ -268,9 +267,8 @@ class Server:
             resources = get_api_resources(bp_api)
             self.app.register_blueprint(resources.blueprint)
             self.app.add_url_rule("/d/<dataset>/", "dataset_index", dataset_index, methods=["GET"])
-
-        self.app.matrix_data_cache_manager = matrix_data_cache_manager
-        self.app.annotations = annotations
+        self.app.matrix_data_cache_manager = app_config.matrix_data_cache_manager
+        self.app.annotations = app_config.user_annotations
         self.app.app_config = app_config
 
     def _before_adding_routes(self, app_config):

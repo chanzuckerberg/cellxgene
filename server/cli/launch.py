@@ -11,7 +11,6 @@ from flask_cors import CORS
 
 from server.common.utils import sort_options
 from server.common.errors import DatasetAccessError, ConfigurationError
-from server.data_common.matrix_loader import MatrixDataCacheManager
 from server.common.app_config import AppConfig
 from server.common.default_config import default_config
 from server.app.app import Server
@@ -276,8 +275,8 @@ class CliLaunchServer(Server):
     the CLI runs a local web server, and needs to enable a few more features.
     """
 
-    def __init__(self, matrix_data_cache_manager, annotations, app_config):
-        super().__init__(matrix_data_cache_manager, annotations, app_config)
+    def __init__(self, app_config):
+        super().__init__(app_config)
 
     def _before_adding_routes(self, app_config):
         self.app.config["COMPRESS_MIMETYPES"] = [
@@ -388,12 +387,11 @@ def launch(
         # process the configuration
         #  any errors will be thrown as an exception.
         #  any info messages will be passed to the messagefn function.
-        matrix_data_cache_manager = MatrixDataCacheManager()
 
         def messagefn(message):
             click.echo("[cellxgene] " + message)
 
-        app_config.complete_config(matrix_data_cache_manager, messagefn)
+        app_config.complete_config(messagefn)
 
         # Use a default secret if one is not provided
         if not app_config.server__flask_secret_key:
@@ -403,10 +401,9 @@ def launch(
         raise click.ClickException(e)
 
     handle_scripts(scripts)
-    user_annotations = app_config.user_annotations
 
     # create the server
-    server = CliLaunchServer(matrix_data_cache_manager, user_annotations, app_config)
+    server = CliLaunchServer(app_config)
 
     if not app_config.server__verbose:
         log = logging.getLogger("werkzeug")
