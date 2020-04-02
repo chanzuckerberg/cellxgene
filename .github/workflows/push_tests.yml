@@ -28,7 +28,7 @@ jobs:
         run: |
           pip install flake8
           make lint
-       - name: Lint all with eslint
+      - name: Lint all with eslint
         if: github.ref == 'refs/heads/master'
         run: |
            make lint-client
