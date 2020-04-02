@@ -29,7 +29,8 @@ lint:
 
 .PHONY: lint-diff
 lint-diff:
-	$(shell git diff-index --name-only --diff-filter=d origin/master -- ../client/ | grep -E "(.*)\.(jsx|js)" | sed "s/client\///" | xargs npx eslint)
+# Get client diff against master, find all js/jsx files, remove the client prefex, run eslinst against result
+	git diff-index --name-only --diff-filter=d origin/master -- ../client/ | grep -E "(.*)\.(jsx|js)" | sed "s/client\///" | xargs -r npx eslint
 
 
 # Development convenience methods
