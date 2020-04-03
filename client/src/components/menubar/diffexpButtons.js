@@ -20,11 +20,14 @@ import CellSetButton from "./cellSetButtons";
   celllist1: state.differential?.celllist1,
   celllist2: state.differential?.celllist2,
   diffexpMayBeSlow: state.config?.parameters?.["diffexp-may-be-slow"] ?? false,
-  diffexpCellcountMax: state.config?.limits?.diffexp_cellcount_max || 0
+  diffexpCellcountMax: state.config?.limits?.diffexp_cellcount_max || 1000
 }))
 class DiffexpButtons extends React.Component {
   constructor(props) {
     super(props);
+    this.state = {
+      userDismissedPopover: false
+    }
   }
 
   computeDiffExp = () => {
@@ -50,9 +53,16 @@ class DiffexpButtons extends React.Component {
     });
   };
 
+  handlePopoverDismiss = () => {
+    this.setState({
+      userDismissedPopover: true
+    })
+  }
+
   render() {
     /* diffexp-related buttons may be disabled */
     const { differential, diffexpMayBeSlow, diffexpCellcountMax } = this.props;
+    const { userDismissedPopover } = this.state;
 
     const haveBothCellSets =
       !!differential.celllist1 && !!differential.celllist2;
@@ -64,6 +74,8 @@ class DiffexpButtons extends React.Component {
       ? " (CAUTION: large dataset - may take longer or fail)"
       : "";
     const tipMessage = `See top 10 differentially expressed genes${slowMsg}`;
+    const tipMessageWarn = `The total number of cells for differential expression computation
+                            may not exceed ${diffexpCellcountMax}. Try reselecting new cell sets.`
 
     const warnMaxSizeExceeded =
       haveEitherCellSet &&
@@ -84,17 +96,18 @@ class DiffexpButtons extends React.Component {
         />
         {!differential.diffExp ? (
           <Popover
-            isOpen={warnMaxSizeExceeded}
+            isOpen={/* warnMaxSizeExceeded && !userDismissedPopover */ false}
             position={Position.BOTTOM}
             target={
               <Tooltip
-                content={tipMessage}
+                content={warnMaxSizeExceeded ? tipMessageWarn : tipMessage}
                 position="bottom"
                 hoverOpenDelay={globals.tooltipHoverOpenDelayQuick}
+                intent={warnMaxSizeExceeded ? "danger" : "none"}
               >
                 <AnchorButton
-                  disabled={!haveBothCellSets}
-                  intent="primary"
+                  disabled={!haveBothCellSets || warnMaxSizeExceeded}
+                  intent={warnMaxSizeExceeded ? "danger" : "primary"}
                   data-testid="diffexp-button"
                   loading={differential.loading}
                   icon="left-join"
@@ -125,6 +138,14 @@ class DiffexpButtons extends React.Component {
                   onClick={this.clearDifferentialExpression}
                 >
                   Dismiss and clear cell sets
+                </Button>
+                <Button
+                  type="button"
+                  data-testid="diffexp-popover-dismiss"
+                  intent="none"
+                  onClick={this.handlePopoverDismiss}
+                >
+                  Dismiss
                 </Button>
               </div>
             }
