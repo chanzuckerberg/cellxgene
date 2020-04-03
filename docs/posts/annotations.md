@@ -36,7 +36,7 @@ Compatible annotations are tabular, with category names as column headers; `annd
 
 There are two options for updating draft annotations.
 
-### Autodetect annotations csv
+### Autodetect annotations CSV
 
 Cellxgene will automatically find and reload your draft annotations in editable mode.
 
@@ -45,9 +45,9 @@ This assumes that:
 2 - You launch cellxgene from the `annotations-directory` (i.e., the directory that contains your CSV)  
 3 - You use the same browser and have not cleared your cookies (we use a small cookie to keep track of which user created the file to avoid accidental overwrites; see FAQ)
 
-### Specify an annotations csv
+### Specify an annotations CSV
 
-**This mode is only appropriate for single-user, local cellxgene instances**
+**This mode is only appropriate for single-user, local cellxgene instances.**
 
 If you'd like to specify the complete file path for your annotations, you can do so by running:
 
