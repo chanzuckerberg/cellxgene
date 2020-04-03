@@ -16,10 +16,10 @@
 <meta property="og:url" content="http://localhost:4000/cellxgene/posts/methods.html" />
 <meta property="og:site_name" content="cellxgene" />
 <script type="application/ld+json">
-{"description":"An interactive explorer for single-cell transcriptomics data","publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"http://localhost:4000/cellxgene/cellxgene-logo.png"}},"@type":"WebPage","url":"http://localhost:4000/cellxgene/posts/methods.html","headline":"Methods","@context":"http://schema.org"}</script>
+{"description":"An interactive explorer for single-cell transcriptomics data","publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"http://localhost:4000/cellxgene/cellxgene-logo.png"}},"@type":"WebPage","headline":"Methods","url":"http://localhost:4000/cellxgene/posts/methods.html","@context":"http://schema.org"}</script>
 <!-- End Jekyll SEO tag -->
 
-    <link rel="stylesheet" href="/cellxgene/assets/css/style.css?v=d2171b9a2f9935b8b92c3103c93405d1d74ef2b3">
+    <link rel="stylesheet" href="/cellxgene/assets/css/style.css?v=7c56041b11875c1ef0250bf3b1021259d00591d3">
     <!--[if lt IE 9]>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
     <![endif]-->
@@ -85,6 +85,10 @@
         <a href="/cellxgene/posts/contact" class="btn">Contact & finding help</a><br>
         
         
+        
+        <a href="/cellxgene/posts/cellxgene_cziscience_com" class="btn">cellxgene.cziscience.com</a><br>
+        
+        
 
         <a href="https://github.com/chanzuckerberg/cellxgene" class="btn" target="_blank">Code</a>
     </p>
@@ -97,21 +101,24 @@
 
 <h3 id="expression-data">Expression data</h3>
 
-<p>Gene expression values are pulled from <code class="highlighter-rouge">anndata.X</code>. These feed into the histograms, scatterplot, colorscale, and differential expression calculations. We’re <a href="https://github.com/chanzuckerberg/cellxgene/issues/689">working on ways</a> to incorporate <code class="highlighter-rouge">anndata.raw</code> and other <code class="highlighter-rouge">anndata.layers</code>!</p>
+<p>Gene expression values are pulled from <code class="language-plaintext highlighter-rouge">anndata.X</code>. These feed into the histograms, scatterplot, colorscale, and differential expression calculations. We’re <a href="https://github.com/chanzuckerberg/cellxgene/issues/689">working on ways</a> to incorporate <code class="language-plaintext highlighter-rouge">anndata.raw</code> and other <code class="language-plaintext highlighter-rouge">anndata.layers</code>!</p>
 
 <h3 id="metadata">Metadata</h3>
 
-<p>Categorical (e.g., cluster labels) and continuous (e.g., pseudotime) metadata are pulled from <code class="highlighter-rouge">anndata.obs</code>. Any column added here will be available for visualization in cellxgene. You can also <a href="annotations">create new categorical annotations</a> within the application.</p>
+<p>Categorical (e.g., cluster labels) and continuous (e.g., pseudotime) metadata are pulled from <code class="language-plaintext highlighter-rouge">anndata.obs</code>. Any column added here will be available for visualization in cellxgene. You can also <a href="annotations">create new categorical annotations</a> within the application.</p>
 
 <h3 id="embeddings">Embeddings</h3>
 
-<p>cellxgene looks for embeddings (e.g., tSNE, UMAP, PCA, spatial coordinates) in <code class="highlighter-rouge">anndata.obsm</code>. These fields must follow the scanpy convention of starting with <code class="highlighter-rouge">X_</code>, e.g., <code class="highlighter-rouge">anndata.obsm['X_umap']</code>. If an embedding has more than two components, the first two will be used for visualization.</p>
+<p>cellxgene looks for embeddings (e.g., tSNE, UMAP, PCA, spatial coordinates) in <code class="language-plaintext highlighter-rouge">anndata.obsm</code>. These fields must follow the scanpy convention of starting with <code class="language-plaintext highlighter-rouge">X_</code>, e.g., <code class="language-plaintext highlighter-rouge">anndata.obsm['X_umap']</code>. If an embedding has more than two components, the first two will be used for visualization.</p>
 
 <h2 id="differential-expression">Differential expression</h2>
 
-<p>We’re actively working on how to improve differential expression within the app.</p>
+<p>We’re actively working on how to improve differential expression within the app.
+<strong>N.B.: the <a href="https://github.com/chanzuckerberg/cellxgene/blob/master/server/app/scanpy_engine/diffexp.py#L40">current implementation</a> assumes normally distributed values on a linear scale.</strong></p>
 
-<p>Currently, we use a <a href="https://en.wikipedia.org/wiki/Welch%27s_t-test">Welch’s <em>t</em>-test</a> implementation, including the same variance overestimation correction as used in <code class="highlighter-rouge">scanpy</code>. We sort the <code class="highlighter-rouge">tscore</code> to identify the top 15 genes, and then filter to remove any that fall below a cutoff log fold change value, which can help remove spurious test results. The default threshold is <code class="highlighter-rouge">0.01</code> and can be changed using the option <code class="highlighter-rouge">--diffexp-lfc-cutoff</code>.</p>
+<p>Currently, we use a <a href="https://en.wikipedia.org/wiki/Welch%27s_t-test">Welch’s <em>t</em>-test</a>, which assumes that the two populations are each normally distributed, but may have unequal variance. We use a two-sided t-test against the null hypothesis that the two populations have <strong>equal</strong> means. P-values are adjusted with the <a href="https://en.wikipedia.org/wiki/Bonferroni_correction">Bonferroni corrrection</a>.</p>
+
+<p>To help avoid spurious results, we use the log fold change to filter genes, retaining those where <code class="language-plaintext highlighter-rouge">|log2( mean(set1) / mean(set2) )| &gt; 0.01</code>; this threshold can be configured with the <a href="launch"><code class="language-plaintext highlighter-rouge">--diffexp-lfc-cutoff</code></a> command. We then sort genes by their associated <code class="language-plaintext highlighter-rouge">|t value|</code> and return the top 15 genes.</p>
 
       </section>
       <footer>

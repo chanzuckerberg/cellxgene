@@ -16,10 +16,10 @@
 <meta property="og:url" content="http://localhost:4000/cellxgene/posts/contribute.html" />
 <meta property="og:site_name" content="cellxgene" />
 <script type="application/ld+json">
-{"description":"An interactive explorer for single-cell transcriptomics data","publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"http://localhost:4000/cellxgene/cellxgene-logo.png"}},"@type":"WebPage","url":"http://localhost:4000/cellxgene/posts/contribute.html","headline":"Code of conduct","@context":"http://schema.org"}</script>
+{"description":"An interactive explorer for single-cell transcriptomics data","publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"http://localhost:4000/cellxgene/cellxgene-logo.png"}},"@type":"WebPage","headline":"Code of conduct","url":"http://localhost:4000/cellxgene/posts/contribute.html","@context":"http://schema.org"}</script>
 <!-- End Jekyll SEO tag -->
 
-    <link rel="stylesheet" href="/cellxgene/assets/css/style.css?v=d2171b9a2f9935b8b92c3103c93405d1d74ef2b3">
+    <link rel="stylesheet" href="/cellxgene/assets/css/style.css?v=7c56041b11875c1ef0250bf3b1021259d00591d3">
     <!--[if lt IE 9]>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
     <![endif]-->
@@ -85,6 +85,10 @@
         <a href="/cellxgene/posts/contact" class="btn">Contact & finding help</a><br>
         
         
+        
+        <a href="/cellxgene/posts/cellxgene_cziscience_com" class="btn">cellxgene.cziscience.com</a><br>
+        
+        
 
         <a href="https://github.com/chanzuckerberg/cellxgene" class="btn" target="_blank">Code</a>
     </p>
@@ -92,6 +96,7 @@
 
       <section>
       <h1 id="code-of-conduct">Code of conduct</h1>
+
 <p>We warmly welcome contributions from the community!</p>
 
 <p>To ensure a welcoming experience for our entire community, this project adheres to the Contributor Covenant
@@ -106,12 +111,21 @@ to opensource@chanzuckerberg.com.</p>
 <p>We’d love to hear from you! Please submit any bug reports and feature requests through <a href="https://github.com/chanzuckerberg/cellxgene/issues">Github issues</a>.</p>
 
 <h1 id="direct-contributions">Direct contributions</h1>
+
 <h2 id="getting-started">Getting started</h2>
 
-<p>If you are interested in working on <code class="highlighter-rouge">cellxgene</code> development, you’ll need to use git to make a copy of the <a href="https://www.youtube.com/watch?v=A-4WltCTVms&amp;list=PLe6EXFvnTV7-_41SpakZoTIYCgX4aMTdU&amp;index=2&amp;t=0s">project repository</a> and share your changes.
-If you’re new to git, we recommend <a href="https://www.gitkraken.com/">GitKraken</a> for an intuitive interface.</p>
+<p>If you are interested in working on <code class="language-plaintext highlighter-rouge">cellxgene</code> development, you’ll need to use git to make a copy of the <a href="https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/working-with-forks">project repository</a> and share your changes.</p>
 
-<p>Please submit any direct contributions by <a href="https://www.youtube.com/watch?v=Lb4yvfrX_7I&amp;list=PLe6EXFvnTV7-_41SpakZoTIYCgX4aMTdU&amp;index=3&amp;t=9s">forking the repository</a>, creating a branch, and <a href="https://www.youtube.com/watch?v=2VX1ISk9XH8&amp;list=PLe6EXFvnTV7-_41SpakZoTIYCgX4aMTdU&amp;index=9&amp;t=0s">submitting a Pull Request</a>.</p>
+<p>We have several “rules” (strong suggestions really) for contributions:</p>
+
+<ol>
+  <li>
+    <p>If your contribution is complex, adds new features, new UI design or otherwise warrants discussion, we highly recommend that you submit a github issue, and engage other contributors in a discussion about the details of your proposed PR. This will save you time in the long run, as many details and decisions can be hashed out ahead-of-time.</p>
+  </li>
+  <li>
+    <p>Please submit any direct contributions by <a href="https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/working-with-forks">forking the repository</a>, creating a feature branch, and <a href="https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request">submitting a Pull Request</a>.</p>
+  </li>
+</ol>
 
 <p>First, you’ll need the following installed on your machine</p>
 
@@ -122,31 +136,31 @@ If you’re new to git, we recommend <a href="https://www.gitkraken.com/">GitKra
 
 <p>Then clone the project</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git clone https://github.com/chanzuckerberg/cellxgene.git
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git clone https://github.com/chanzuckerberg/cellxgene.git
 </code></pre></div></div>
 
 <p>This is enough to get you started with editing documentation. If you’d like to contribute code:</p>
 
-<p>Build the client web assets by calling <code class="highlighter-rouge">make</code> from inside the <code class="highlighter-rouge">cellxgene</code> folder</p>
+<p>Build the client web assets from inside the <code class="language-plaintext highlighter-rouge">cellxgene</code> folder</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>make
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>make build-for-server-dev
 </code></pre></div></div>
 
-<p>Install all requirements (we recommend doing this inside a <a href="install">virtual environment</a>)</p>
+<p>Install all requirements (we recommend doing this inside a <a href="https://docs.python.org/3/tutorial/venv.html">virtual environment</a>)</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pip install -e .
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pip install -e .
 </code></pre></div></div>
 
-<p>You can start the app while developing either by calling <code class="highlighter-rouge">cellxgene</code> or by calling <code class="highlighter-rouge">python -m server</code>. We recommend using the <code class="highlighter-rouge">--debug</code> flag to see more output, which you can include when reporting bugs.</p>
+<p>You can start the app while developing either by calling <code class="language-plaintext highlighter-rouge">cellxgene</code> or by calling <code class="language-plaintext highlighter-rouge">python -m server</code>. We recommend using the <code class="language-plaintext highlighter-rouge">--debug</code> flag to see more output, which you can include when reporting bugs.</p>
 
-<p>If you have any questions about developing or contributing, come hang out with us by joining the <a href="https://join-cellxgene-users.herokuapp.com/">CZI Science Slack</a> and posting in the <code class="highlighter-rouge">#cellxgene-dev</code> channel.</p>
+<p>If you have any questions about developing or contributing, come hang out with us by joining the <a href="https://join-cellxgene-users.herokuapp.com/">CZI Science Slack</a> and posting in the <code class="language-plaintext highlighter-rouge">#cellxgene-dev</code> channel.</p>
 
 <h2 id="contributing-code">Contributing code</h2>
 
 <p>This project has made a few key design choices:</p>
 
 <ul>
-  <li>The front-end is built with <a href="https://github.com/regl-project/regl"><code class="highlighter-rouge">regl</code></a> (a webgl library), <a href="https://reactjs.org/"><code class="highlighter-rouge">react</code></a>, <a href="https://redux.js.org/"><code class="highlighter-rouge">redux</code></a>, <a href="https://github.com/d3/d3"><code class="highlighter-rouge">d3</code></a>, and <a href="https://blueprintjs.com/docs/#core"><code class="highlighter-rouge">blueprint</code></a> to handle rendering large numbers of cells with lots of complex interactivity</li>
+  <li>The front-end is built with <a href="https://github.com/regl-project/regl"><code class="language-plaintext highlighter-rouge">regl</code></a> (a webgl library), <a href="https://reactjs.org/"><code class="language-plaintext highlighter-rouge">react</code></a>, <a href="https://redux.js.org/"><code class="language-plaintext highlighter-rouge">redux</code></a>, <a href="https://github.com/d3/d3"><code class="language-plaintext highlighter-rouge">d3</code></a>, and <a href="https://blueprintjs.com/docs/#core"><code class="language-plaintext highlighter-rouge">blueprint</code></a> to handle rendering large numbers of cells with lots of complex interactivity</li>
   <li>The app is designed with a client-server model that can support a range of existing analysis packages for Python-based backend computational tasks (currently built for <a href="https://github.com/theislab/scanpy">scanpy</a>)</li>
   <li>The client uses fast cross-filtering to handle selections and comparisons across subsets of data</li>
 </ul>
@@ -157,11 +171,11 @@ If you’re new to git, we recommend <a href="https://www.gitkraken.com/">GitKra
 
 <h2 id="contributing-documentation">Contributing documentation</h2>
 
-<p>The documentation is written in <a href="https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet">markdown</a>, and lives in the directory <code class="highlighter-rouge">cellxgene/docs/posts</code>. You can directly edit or add to these files and submit a Pull Request as described above.</p>
+<p>The documentation is written in <a href="https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet">markdown</a>, and lives in the directory <code class="language-plaintext highlighter-rouge">cellxgene/docs/posts</code>. You can directly edit or add to these files and submit a Pull Request as described above.</p>
 
 <p>To preview your changes on your local machine, you’ll need to install Jekyll and Ruby using <a href="https://jekyllrb.com/docs/installation/">these instructions</a> (you don’t have to know how to program in Ruby, just install it).</p>
 
-<p>You can then preview your changes by running <code class="highlighter-rouge">cellxgene/docs$ bundle exec jekyll serve</code> and navigating to the url indicated in the terminal.</p>
+<p>You can then preview your changes by running <code class="language-plaintext highlighter-rouge">cellxgene/docs$ bundle exec jekyll serve</code> and navigating to the url indicated in the terminal.</p>
 
       </section>
       <footer>
