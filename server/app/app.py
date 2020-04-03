@@ -207,6 +207,12 @@ class DataVarAPI(Resource):
         return common_rest.data_var_get(request, data_adaptor)
 
 
+class ColorsAPI(Resource):
+    @rest_get_data_adaptor
+    def get(self, data_adaptor):
+        return common_rest.colors_get(data_adaptor)
+
+
 class DiffExpObsAPI(Resource):
     @cache_control(no_store=True)
     @rest_get_data_adaptor
@@ -235,6 +241,8 @@ def get_api_resources(bp_api):
     api.add_resource(AnnotationsObsAPI, "/annotations/obs")
     api.add_resource(AnnotationsVarAPI, "/annotations/var")
     api.add_resource(DataVarAPI, "/data/var")
+    # Display routes
+    api.add_resource(ColorsAPI, "/colors")
     # Computation routes
     api.add_resource(DiffExpObsAPI, "/diffexp/obs")
     api.add_resource(LayoutObsAPI, "/layout/obs")

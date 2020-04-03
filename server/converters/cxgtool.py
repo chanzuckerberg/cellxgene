@@ -6,26 +6,27 @@ The organization of the TileDB structure is:
 
     the.cxg                 TileDB Group
     |-- obs                 TileDB array containing cell (row) attributes, one attribute per
-    |                       dataframe columm, shape (n_obs,)
+    |                       dataframe column, shape (n_obs,)
     |-- var                 TileDB array containing gene (column) attributes, with one attribute per
     |                       dataframe column, shape (n_var,)
-    |-- X                   Main count matrix as a 2D TileDB array, single unnanmed numeric attribute
+    |-- X                   Main count matrix as a 2D TileDB array, single unnamed numeric attribute
     |-- emb                 TileDB group, storing optional embeddings (group may be empty)
     |   |-- <name1>         TileDB Array, single anon attribute, ND numeric array, shape (n_obs, N)
     |-- cxg_group_metadata  Empty array used only to stash metadata about the overall object.
+    |   |-- colors          CXG colors object as described in https://github.com/chanzuckerberg/cellxgene/issues/1307
     ...
 
-All arrays are defined to have a uint32 domain, zero based.  All X counds and embedding
+All arrays are defined to have a uint32 domain, zero based.  All X counts and embedding
 coordinates are coerced to float32, which is ample precision for visualization purposes.
 Dataframe (metadata) types are generally preserved, or where that is not possible,
-converted to somemthing with equal representative value in the cellxgene application
+converted to something with equal representative value in the cellxgene application
 (eg, categorical types are converted to string, bools to uint8, etc).
 
-The following objects are also decorated with auxilliary metadata using TileDB
+The following objects are also decorated with auxiliary metadata using TileDB
 array metadata:
 
 * cxg_group_metadata: minimally, will contain a 'cxg_version' field, which
-  is a semver string identifing the version number of the CXG layout.
+  is a semver string identifying the version number of the CXG layout.
   It may also contain 'cxg_parameters', a JSON-encoded parameter list
   describing CXG-wide dataset parameters.
 
@@ -54,6 +55,8 @@ import argparse
 import numpy as np
 from os.path import splitext, basename
 import json
+
+from server.common.colors import anndata_colors_to_cxg_colors
 
 
 # the CXG container version number.  Must be a semver string.
@@ -129,7 +132,7 @@ def write_cxg(adata, container, title, var_names=None, obs_names=None, about=Non
     log(1, f"\t...group created, with name {container}")
 
     # dataset metadata
-    save_metadata(container, {"title": title, "about": about})
+    save_metadata(container, {"title": title, "about": about}, adata)
     log(1, "\t...dataset metadata saved")
 
     # var/gene dataframe
@@ -392,7 +395,7 @@ def save_X(container, adata, ctx):
     tiledb.consolidate(X_name, ctx=ctx)
 
 
-def save_metadata(container, metadata):
+def save_metadata(container, metadata, adata):
     """
     Save all dataset-wide metadata.   This includes:
     * CXG version
@@ -409,6 +412,7 @@ def save_metadata(container, metadata):
     with tiledb.DenseArray(a_name, mode="w") as A:
         A.meta["cxg_version"] = CXG_VERSION
         A.meta["cxg_properties"] = json.dumps(metadata)
+        A.meta["colors"] = json.dumps(anndata_colors_to_cxg_colors(adata))
 
 
 def sanitize_keys(keys):

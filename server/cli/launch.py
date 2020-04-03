@@ -146,7 +146,7 @@ def dataset_args(func):
         "--about",
         default=DEFAULT_CONFIG.single_dataset__about,
         metavar="<URL>",
-        help="URL providing more information about the dataset " "(hint: must be a fully specified absolute URL).",
+        help="URL providing more information about the dataset (hint: must be a fully specified absolute URL).",
     )
     @functools.wraps(func)
     def wrapper(*args, **kwargs):

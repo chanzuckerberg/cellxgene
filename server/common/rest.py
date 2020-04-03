@@ -222,6 +222,10 @@ def data_var_get(request, data_adaptor):
         return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)
 
 
+def colors_get(data_adaptor):
+    return make_response(jsonify(data_adaptor.colors()), HTTPStatus.OK)
+
+
 def diffexp_obs_post(request, data_adaptor):
     if not data_adaptor.config.diffexp__enable:
         return abort(HTTPStatus.NOT_IMPLEMENTED)

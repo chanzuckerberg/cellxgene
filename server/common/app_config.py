@@ -76,7 +76,6 @@ class AppConfig(object):
             self.user_annotations__local_file_csv__file = dc["user_annotations"]["local_file_csv"]["file"]
             self.user_annotations__ontology__enable = dc["user_annotations"]["ontology"]["enable"]
             self.user_annotations__ontology__obo_location = dc["user_annotations"]["ontology"]["obo_location"]
-
             self.presentation__max_categories = dc["presentation"]["max_categories"]
 
             self.embeddings__names = dc["embeddings"]["names"]

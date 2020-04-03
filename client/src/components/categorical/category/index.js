@@ -25,6 +25,7 @@ import maybeTruncateString from "../../../util/maybeTruncateString";
     annotations: state.annotations,
     universe: state.universe,
     schema: state.world?.schema,
+    userColors: state.colors.userColors,
   };
 })
 class Category extends React.Component {
@@ -70,10 +71,11 @@ class Category extends React.Component {
   }
 
   handleColorChange = () => {
-    const { dispatch, metadataField } = this.props;
+    const { dispatch, metadataField, userColors } = this.props;
     dispatch({
       type: "color by categorical metadata",
       colorAccessor: metadataField,
+      colors: _.get(userColors, metadataField)
     });
   };
 
@@ -205,7 +207,7 @@ class Category extends React.Component {
       return (
         <div style={{ marginBottom: 10, marginTop: 4 }}>
           <span style={{ fontWeight: 700 }}>
-            {truncatedString ? truncatedString : metadataField}
+            {truncatedString || metadataField}
           </span>
           : {schema.annotations.obsByName[metadataField].categories[0]}
         </div>

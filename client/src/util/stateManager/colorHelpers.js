@@ -15,9 +15,12 @@ create new colors state object.   Paramters:
     "color by continuous metadata", "color by categorical metadata"
   -
 */
-export function createColors(world, colorMode = null, colorAccessor = null) {
+export function createColors(world, colorMode = null, colorAccessor = null, userColors = null) {
   switch (colorMode) {
     case "color by categorical metadata": {
+      if (userColors) {
+        return parseUserColors(world, colorAccessor, userColors)
+      }
       return createColorsByCategoricalMetadata(world, colorAccessor);
     }
     case "color by continuous metadata": {
@@ -36,6 +39,24 @@ export function createColors(world, colorMode = null, colorAccessor = null) {
   }
 }
 
+
+function parseUserColors(world, accessor, userColors) {
+  const { categories } = world.schema.annotations.obsByName[accessor];
+
+  /* pre-create colors - much faster than doing it for each obs */
+  const [colors, scaleMap] = categories.reduce((acc, cat, i) => {
+    const color = parseRGB(userColors[cat]);
+    acc[0][cat] = color;
+    acc[1][i] = d3.rgb(255 * color[0], 255 * color[1], 255 * color[2]);
+    return acc;
+  }, [{}, {}]);
+
+  const scale = i => scaleMap[i];
+
+  const rgb = _loadColorArray(world, colors, accessor);
+  return { rgb, scale };
+}
+
 function createColorsByCategoricalMetadata(world, accessor) {
   const { categories } = world.schema.annotations.obsByName[accessor];
 
@@ -49,6 +70,11 @@ function createColorsByCategoricalMetadata(world, accessor) {
     return acc;
   }, {});
 
+  const rgb = _loadColorArray(world, colors, accessor);
+  return { rgb, scale };
+}
+
+function _loadColorArray(world, colors, accessor) {
   const rgb = new Array(world.nObs);
   const df = world.obsAnnotations;
   const data = df.col(accessor).asArray();
@@ -56,7 +82,7 @@ function createColorsByCategoricalMetadata(world, accessor) {
     const cat = data[i];
     rgb[i] = colors[cat];
   }
-  return { rgb, scale };
+  return rgb;
 }
 
 function createColorsByContinuousMetadata(world, accessor) {

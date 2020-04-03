@@ -84,6 +84,10 @@ class DataAdaptor(metaclass=ABCMeta):
         pass
 
     @abstractmethod
+    def colors(self):
+        pass
+
+    @abstractmethod
     def get_obs_index(self):
         pass
 

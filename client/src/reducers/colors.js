@@ -27,6 +27,14 @@ const ColorsReducer = (
       };
     }
 
+    case "universe: user color load success": {
+      const { userColors } = action;
+      return {
+        ...state,
+        userColors
+      };
+    }
+
     case "reset World to eq Universe": {
       /* need to rebuild colors as world may have changed, but don't switch modes */
       const { world } = nextSharedState;
@@ -98,11 +106,13 @@ const ColorsReducer = (
         action.colorAccessor === state.colorAccessor;
       const colorMode = !resetCurrent ? action.type : null;
       const colorAccessor = !resetCurrent ? action.colorAccessor : null;
+      const { colors } = action;
 
       const { rgb, scale } = ColorHelpers.createColors(
         world,
         colorMode,
-        colorAccessor
+        colorAccessor,
+        colors
       );
       return {
         ...state,
@@ -141,7 +151,7 @@ const ColorsReducer = (
     case "annotation: delete label": {
       const { world } = nextSharedState;
       const { colorMode, colorAccessor } = state;
-      const { metadataField } = action;
+      const { metadataField, colors } = action;
       if (
         colorMode !== "color by categorical metadata" ||
         colorAccessor !== metadataField
@@ -152,7 +162,8 @@ const ColorsReducer = (
       const { rgb, scale } = ColorHelpers.createColors(
         world,
         colorMode,
-        colorAccessor
+        colorAccessor,
+        colors
       );
       return { ...state, rgb, scale };
     }

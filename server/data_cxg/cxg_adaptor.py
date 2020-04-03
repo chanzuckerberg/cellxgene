@@ -217,6 +217,10 @@ class CxgAdaptor(DataAdaptor):
         data = var.query(attrs=[term_name])[:][term_name]
         return data
 
+    def colors(self):
+        meta = self.open_array("cxg_group_metadata").meta
+        return json.loads(meta["colors"]) if "colors" in meta else dict()
+
     def query_obs_array(self, term_name):
         var = self.open_array("obs")
         try:
