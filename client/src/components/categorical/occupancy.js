@@ -101,7 +101,7 @@ class Occupancy extends React.PureComponent {
     const groupBy = world.obsAnnotations.col(metadataField);
     const occupancyMap = world.obsAnnotations
       .col(colorAccessor)
-      .histogram(groupBy);
+      .histogramCategorical(groupBy);
 
     const occupancy = occupancyMap.get(category.categoryValues[categoryIndex]);
 
@@ -117,7 +117,7 @@ class Occupancy extends React.PureComponent {
 
       let currentOffset = 0;
       const dfColumn = world.obsAnnotations.col(colorAccessor);
-      const categoryValues = dfColumn.summarize().categories;
+      const categoryValues = dfColumn.summarizeCategorical().categories;
 
       let o;
       let scaledValue;
