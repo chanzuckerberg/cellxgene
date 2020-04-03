@@ -151,7 +151,7 @@ gen-package-lock:
 # install from build directory
 .PHONY: install
 install: uninstall
-	cd $(BUILDDIR); pip install -e .
+	cd $(BUILDDIR) && pip install -e .
 
 # install from source tree for development
 .PHONY: install-dev
