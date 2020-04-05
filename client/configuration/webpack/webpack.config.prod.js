@@ -4,6 +4,7 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const SWPrecacheWebpackPlugin = require("sw-precache-webpack-plugin");
 const HtmlWebpackInlineSourcePlugin = require("html-webpack-inline-source-plugin");
+const FaviconsWebpackPlugin = require("favicons-webpack-plugin");
 
 const src = path.resolve("src");
 const fonts = path.resolve("src/fonts");
@@ -17,11 +18,9 @@ module.exports = {
   mode: "production",
   bail: true,
   cache: false,
-  devtool: "cheap-source-map",
   entry: ["./src/index.js"],
   output: {
     path: path.resolve("build"),
-    filename: "static/js/[name].[chunkhash:8].js",
     publicPath
   },
   module: {
@@ -93,7 +92,6 @@ module.exports = {
       inject: "body",
       filename: "index.html",
       template: path.resolve("index_template.html"),
-      favicon: path.resolve("favicon.png"),
       inlineSource: ".(js|css)$",
       minify: {
         removeComments: true,
@@ -108,10 +106,23 @@ module.exports = {
         minifyURLs: true
       }
     }),
-    new HtmlWebpackInlineSourcePlugin(),
-    new MiniCssExtractPlugin({
-      filename: "static/css/[name].[contenthash:8].css"
+    new FaviconsWebpackPlugin({
+      logo: "./favicon.png",
+      prefix: "static/img/",
+      favicons: {
+        icons: {
+          android: false,
+          appleIcon: false,
+          appleStartup: false,
+          coast: false,
+          firefox: false,
+          windows: false,
+          yandex: false
+        }
+      }
     }),
+    new HtmlWebpackInlineSourcePlugin(HtmlWebpackPlugin),
+    new MiniCssExtractPlugin(),
     new SWPrecacheWebpackPlugin({
       cacheId: "cellxgene",
       filename: "service-worker.js"

@@ -32,7 +32,7 @@ build-client:
 
 .PHONY: build-cli
 build-cli: build-client
-	git ls-files server/ | cpio -pdm $(BUILDDIR)
+	git ls-files server/ | grep -v 'server/test/' | cpio -pdm $(BUILDDIR)
 	cp -r client/build/  $(CLIENTBUILD)
 	$(call copy_client_assets,$(CLIENTBUILD),$(SERVERBUILD))
 	cp MANIFEST.in README.md setup.cfg setup.py $(BUILDDIR)

@@ -2,6 +2,7 @@
 const path = require("path");
 const webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const FaviconsWebpackPlugin = require("favicons-webpack-plugin");
 
 const src = path.resolve("src");
 const fonts = path.resolve("src/fonts");
@@ -82,8 +83,22 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       inject: true,
-      template: path.resolve("index.html"),
-      favicon: path.resolve("favicon.png")
+      template: path.resolve("index.html")
+    }),
+    new FaviconsWebpackPlugin({
+      logo: "./favicon.png",
+      prefix: "static/img/",
+      favicons: {
+        icons: {
+          android: false,
+          appleIcon: false,
+          appleStartup: false,
+          coast: false,
+          firefox: false,
+          windows: false,
+          yandex: false
+        }
+      }
     }),
     new webpack.NoEmitOnErrorsPlugin(),
     new webpack.DefinePlugin({
