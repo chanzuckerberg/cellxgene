@@ -39,36 +39,36 @@ class CentroidLabels extends PureComponent {
     const labelSVGS = [];
     let fontSize = "15px";
     let fontWeight = null;
-    labels.forEach((value, key) => {
+    labels.forEach((coords, label) => {
       fontSize = "15px";
       fontWeight = null;
-      if (key === dilatedValue) {
+      if (label === dilatedValue) {
         fontSize = "18px";
         fontWeight = "800";
       }
 
       // Mirror LSB middle truncation
-      let label = key;
-      if (label.length > categoryLabelDisplayStringLongLength) {
-        label = `${key.slice(
+      let displayLabel = label;
+      if (displayLabel.length > categoryLabelDisplayStringLongLength) {
+        displayLabel = `${label.slice(
           0,
           categoryLabelDisplayStringLongLength / 2
-        )}…${key.slice(-categoryLabelDisplayStringLongLength / 2)}`;
+        )}…${label.slice(-categoryLabelDisplayStringLongLength / 2)}`;
       }
 
       labelSVGS.push(
         <g
           // eslint-disable-next-line react/no-array-index-key
-          key={key}
+          key={label}
           className="centroid-label"
-          transform={`translate(${value[0]}, ${value[1]})`}
+          transform={`translate(${coords[0]}, ${coords[1]})`}
           data-testclass="centroid-label"
-          data-testid={`${key}-centroid-label`}
+          data-testid={`${label}-centroid-label`}
         >
           <text
             transform={inverseTransform}
             textAnchor="middle"
-            data-label={key}
+            data-label={label}
             style={{
               fontFamily: "Roboto Condensed",
               fontSize,
@@ -92,7 +92,7 @@ class CentroidLabels extends PureComponent {
             }
             pointerEvents="visiblePainted"
           >
-            {label}
+            {displayLabel}
           </text>
         </g>
       );
