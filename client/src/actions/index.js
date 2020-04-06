@@ -81,9 +81,11 @@ function layoutFetchAndLoad(dispatch, schema) {
 
   const plimit = new PromiseLimit(4);
   return Promise.all(
-    embNames.map(e =>
+    // embNames.map(e =>
+    [0].map(e =>
       plimit.add(() => {
-        const url = `${baseURL}?layout-name=${encodeURIComponent(e)}`;
+        // const url = `${baseURL}?layout-name=${encodeURIComponent(e)}`;
+        const url = baseURL;
         return doBinaryRequest(url).then(buffer => {
           const df = Universe.matrixFBSToDataframe(buffer);
           dispatch({
