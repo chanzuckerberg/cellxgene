@@ -61,22 +61,10 @@ module.exports = {
 
       { test: /\.json$/, include: [src, nodeModules], loader: "json-loader" },
       {
-        test: /\.(jpg|png|gif|eot|svg|ttf|woff|woff2)(\?.*)?$/,
-        include: nodeModules,
+        test: /\.(jpg|png|gif|eot|svg|ttf|woff|woff2|otf)$/i,
         loader: "file-loader",
-        query: { name: "static/media/[name].[ext]" }
-      },
-      {
-        test: /\.(woff|woff2|eot|ttf|otf)$/,
-        include: fonts,
-        loader: "file-loader",
-        query: { name: "static/fonts/[name].[ext]" }
-      },
-      {
-        test: /\.(mp4|webm)(\?.*)?$/,
-        include: [src, nodeModules],
-        loader: "url-loader",
-        query: { limit: 10000, name: "static/media/[name].[ext]" }
+        include: [nodeModules, fonts],
+        query: { name: "static/assets/[name].[ext]" }
       }
     ]
   },

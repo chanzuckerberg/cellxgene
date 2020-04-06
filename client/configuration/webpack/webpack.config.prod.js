@@ -2,9 +2,9 @@
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const SWPrecacheWebpackPlugin = require("sw-precache-webpack-plugin");
 const HtmlWebpackInlineSourcePlugin = require("html-webpack-inline-source-plugin");
 const FaviconsWebpackPlugin = require("favicons-webpack-plugin");
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 
 const src = path.resolve("src");
 const fonts = path.resolve("src/fonts");
@@ -68,22 +68,10 @@ module.exports = {
         exclude: /manifest.json$/
       },
       {
-        test: /\.(jpg|png|gif|eot|svg|ttf|woff|woff2)(\?.*)?$/,
-        include: nodeModules,
+        test: /\.(jpg|png|gif|eot|svg|ttf|woff|woff2|otf)$/i,
         loader: "file-loader",
-        query: { name: "static/media/[name].[ext]" }
-      },
-      {
-        test: /\.(woff|woff2|eot|ttf|otf)$/,
-        include: fonts,
-        loader: "file-loader",
-        query: { name: "static/fonts/[name].[ext]" }
-      },
-      {
-        test: /\.(mp4|webm)(\?.*)?$/,
-        include: [src, nodeModules],
-        loader: "url-loader",
-        query: { limit: 10000, name: "static/media/[name].[hash:8].[ext]" }
+        include: [nodeModules, fonts],
+        query: { name: "static/assets/[name]-[contenthash].[ext]" }
       }
     ]
   },
@@ -106,9 +94,14 @@ module.exports = {
         minifyURLs: true
       }
     }),
+    new CleanWebpackPlugin({
+      verbose: true,
+      protectWebpackAssets: false,
+      cleanAfterEveryBuildPatterns: ["main.js", "main.css"]
+    }),
     new FaviconsWebpackPlugin({
       logo: "./favicon.png",
-      prefix: "static/img/",
+      prefix: "static/assets/",
       favicons: {
         icons: {
           android: false,
@@ -122,11 +115,7 @@ module.exports = {
       }
     }),
     new HtmlWebpackInlineSourcePlugin(HtmlWebpackPlugin),
-    new MiniCssExtractPlugin(),
-    new SWPrecacheWebpackPlugin({
-      cacheId: "cellxgene",
-      filename: "service-worker.js"
-    })
+    new MiniCssExtractPlugin()
   ],
   performance: {
     maxEntrypointSize: 2000000,

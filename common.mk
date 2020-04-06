@@ -22,11 +22,9 @@ export JEST_ENV
 # $(1) is the source of the client assets
 # $(2) is the destination
 define copy_client_assets
-	mkdir -p $(2)/common/web/static/img
-	mkdir -p $(2)/common/web/static/js
+	mkdir -p $(2)/common/web/static/assets
 	mkdir -p $(2)/common/web/templates/
 	cp $(1)/index.html $(2)/common/web/templates/
 	cp -r $(1)/static $(2)/common/web/
-	cp $(1)/service-worker.js $(2)/common/web/static/js/
 endef
 
