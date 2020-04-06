@@ -74,23 +74,26 @@ function varAnnotationFetchAndLoad(dispatch, schema) {
 /*
 return promise fetching layout we need
 */
-function layoutFetchAndLoad(dispatch) {
+function layoutFetchAndLoad(dispatch, schema) {
+  const embeddings = schema?.schema?.layout?.obs ?? [];
+  const embNames = embeddings.map(e => e.name);
+  const baseURL = `${globals.API.prefix}${globals.API.version}layout/obs`;
+
+  const plimit = new PromiseLimit(4);
   return Promise.all(
-    ["layout/obs"]
-      .map(path => {
-        const url = `${globals.API.prefix}${globals.API.version}${path}`;
-        return doBinaryRequest(url);
-      })
-      .map(rqst => rqst.then(buffer => Universe.matrixFBSToDataframe(buffer)))
-      .map(resp =>
-        resp.then(df =>
+    embNames.map(e =>
+      plimit.add(() => {
+        const url = `${baseURL}?layout-name=${encodeURIComponent(e)}`;
+        return doBinaryRequest(url).then(buffer => {
+          const df = Universe.matrixFBSToDataframe(buffer);
           dispatch({
             type: "universe: column load success",
             dim: "obsLayout",
             dataframe: df
-          })
-        )
-      )
+          });
+        });
+      })
+    )
   );
 }
 
@@ -130,7 +133,7 @@ const doInitialDataLoad = () =>
       Step 2 - load the minimum stuff required to display.
       */
       await Promise.all([
-        layoutFetchAndLoad(dispatch),
+        layoutFetchAndLoad(dispatch, schema),
         varAnnotationFetchAndLoad(dispatch, schema)
       ]);
 

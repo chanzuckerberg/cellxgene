@@ -67,6 +67,16 @@
         "name": "umap",
         "type": "float32",
         "dims": ["umap_0", "umap_1"]
+      },
+      {
+        "name": "tsne",
+        "type": "float32",
+        "dims": ["tsne_0", "tsne_1"]
+      },
+      {
+        "name": "pca",
+        "type": "float32",
+        "dims": ["pca_0", "pca_1"]
       }
     ]
   }
