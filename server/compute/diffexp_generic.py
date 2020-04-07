@@ -2,42 +2,7 @@ import numpy as np
 from scipy import sparse, stats
 
 
-# Convenience function which handles sparse data
-def _mean_var_n(X):
-    """
-    Two-pass variance calculation.  Numerically (more) stable
-    than naive methods (and same method used by numpy.var())
-    https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Two-pass
-    """
-    # fp_err_occurred is a flag indicating that a floating point error
-    # occured somewhere in our compute.  Used to trigger non-finite
-    # number handling.
-    fp_err_occurred = False
-
-    def fp_err_set(err, flag):
-        nonlocal fp_err_occurred
-        fp_err_occurred = True
-
-    with np.errstate(divide="call", invalid="call", call=fp_err_set):
-        n = X.shape[0]
-        if sparse.issparse(X):
-            mean = X.mean(axis=0).A1
-            dfm = X - mean
-            sumsq = np.sum(np.multiply(dfm, dfm), axis=0).A1
-            v = sumsq / (n - 1)
-        else:
-            mean = X.mean(axis=0)
-            dfm = X - mean
-            sumsq = np.sum(np.multiply(dfm, dfm), axis=0)
-            v = sumsq / (n - 1)
-
-    if fp_err_occurred:
-        mean[np.isfinite(mean) == False] = 0  # noqa: E712
-        v[np.isfinite(v) == False] = 0  # noqa: E712
-    return mean, v, n
-
-
-def diffexp_ttest(data, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
+def diffexp_ttest(adaptor, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
     """
     Return differential expression statistics for top N variables.
 
@@ -55,26 +20,32 @@ def diffexp_ttest(data, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
     - p-values adjusted with Bonferroni correction.
       https://en.wikipedia.org/wiki/Bonferroni_correction
 
-    :param data: DataAdaptor instance
+    :param adaptor: DataAdaptor instance
     :param maskA: observation selection mask for set 1
     :param maskB: observation selection mask for set 2
     :param top_n: number of variables to return stats for
     :param diffexp_lfc_cutoff: minimum
     :return:  for top N genes, [ varindex, logfoldchange, pval, pval_adj ]
     """
-    shape = data.get_shape()
-    n_obs = shape[0]
-    n_var = shape[1]
-    if top_n > n_obs:
-        top_n = n_obs
+
+    dataA = adaptor.get_X_array(maskA, None)
+    dataB = adaptor.get_X_array(maskB, None)
 
     # mean, variance, N - calculate for both selections
-    meanA, vA, nA = _mean_var_n(data.get_X_array(maskA, None))
-    meanB, vB, nB = _mean_var_n(data.get_X_array(maskB, None))
+    meanA, vA, nA = _mean_var_n(dataA)
+    meanB, vB, nB = _mean_var_n(dataB)
+    res = diffexp_ttest_from_mean_var(meanA, vA, nA, meanB, vB, nB, top_n, diffexp_lfc_cutoff)
+
+    return res
+
+
+def diffexp_ttest_from_mean_var(meanA, varA, nA, meanB, varB, nB, top_n, diffexp_lfc_cutoff):
+    n_var = meanA.shape[0]
+    top_n = min(top_n, n_var)
 
     # variance / N
-    vnA = vA / min(nA, nB)  # overestimate variance, would normally be nA
-    vnB = vB / min(nA, nB)  # overestimate variance, would normally be nB
+    vnA = varA / min(nA, nB)  # overestimate variance, would normally be nA
+    vnB = varB / min(nA, nB)  # overestimate variance, would normally be nB
     sum_vn = vnA + vnB
 
     # degrees of freedom for Welch's t-test
@@ -122,3 +93,42 @@ def diffexp_ttest(data, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
     # varIndex, logfoldchange, pval, pval_adj
     result = [[sort_order[i], logfoldchanges_top_n[i], pvals_top_n[i], pvals_adj_top_n[i]] for i in range(top_n)]
     return result
+
+
+# Convenience function which handles sparse data
+def _mean_var_n(X):
+    """
+    Two-pass variance calculation.  Numerically (more) stable
+    than naive methods (and same method used by numpy.var())
+    https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Two-pass
+    """
+    # fp_err_occurred is a flag indicating that a floating point error
+    # occured somewhere in our compute.  Used to trigger non-finite
+    # number handling.
+    fp_err_occurred = False
+
+    def fp_err_set(err, flag):
+        nonlocal fp_err_occurred
+        fp_err_occurred = True
+
+    with np.errstate(divide="call", invalid="call", call=fp_err_set):
+        n = X.shape[0]
+        if sparse.issparse(X):
+            mean = X.mean(axis=0).A1
+            dfm = X - mean
+            sumsq = np.sum(np.multiply(dfm, dfm), axis=0).A1
+            v = sumsq / (n - 1)
+        else:
+            mean = X.mean(axis=0)
+            dfm = X - mean
+            sumsq = np.sum(np.multiply(dfm, dfm), axis=0)
+            v = sumsq / (n - 1)
+
+    if fp_err_occurred:
+        mean[np.isfinite(mean) == False] = 0  # noqa: E712
+        v[np.isfinite(v) == False] = 0  # noqa: E712
+    else:
+        mean[np.isnan(mean)] = 0
+        v[np.isnan(v)] = 0
+
+    return mean, v, n

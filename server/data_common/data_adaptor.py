@@ -5,9 +5,8 @@ import pandas as pd
 from os.path import basename, splitext
 
 from server.data_common.fbs.matrix import encode_matrix_fbs
-from server.common.constants import Axis, DEFAULT_TOP_N
+from server.common.constants import Axis
 from server.common.errors import FilterError, JSONEncodingValueError, ExceedsLimitError
-from server.compute.diffexp import diffexp_ttest
 from server.common.utils import jsonify_numpy
 from server.common.app_config import AppFeature, AppConfig
 
@@ -298,19 +297,23 @@ class DataAdaptor(metaclass=ABCMeta):
         except (KeyError, IndexError):
             raise FilterError("Error parsing filter")
         if top_n is None:
-            top_n = DEFAULT_TOP_N
+            top_n = self.config.diffexp__top_n
 
         if self.config.exceeds_limit(
             "diffexp_cellcount_max", np.count_nonzero(obs_mask_A) + np.count_nonzero(obs_mask_B)
         ):
             raise ExceedsLimitError("Diffexp request exceeds max cell count limit")
 
-        result = diffexp_ttest(self, obs_mask_A, obs_mask_B, top_n, self.config.diffexp__lfc_cutoff)
+        result = self.compute_diffexp_ttest(obs_mask_A, obs_mask_B, top_n, self.config.diffexp__lfc_cutoff)
 
         try:
             return jsonify_numpy(result)
         except ValueError:
             raise JSONEncodingValueError("Error encoding differential expression to JSON")
+
+    @abstractmethod
+    def compute_diffexp_ttest(self, maskA, maskB, top_n, lfc_cutoff):
+        pass
 
     @staticmethod
     def normalize_embedding(embedding):

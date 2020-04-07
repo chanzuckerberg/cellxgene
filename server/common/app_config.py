@@ -94,6 +94,7 @@ class AppConfig(object):
 
             self.diffexp__enable = dc["diffexp"]["enable"]
             self.diffexp__lfc_cutoff = dc["diffexp"]["lfc_cutoff"]
+            self.diffexp__top_n = dc["diffexp"]["top_n"]
 
             self.data_locator__s3__region_name = dc["data_locator"]["s3"]["region_name"]
 
@@ -167,12 +168,12 @@ class AppConfig(object):
         context = dict(messagefn=messagefn)
 
         self.handle_server(context)
+        self.handle_adaptor(context)
         self.handle_single_dataset(context)
         self.handle_multi_dataset(context)
         self.handle_user_annotations(context)
         self.handle_embeddings(context)
         self.handle_diffexp(context)
-        self.handle_adaptor(context)
 
         self.is_completed = True
 
@@ -381,6 +382,7 @@ class AppConfig(object):
     def handle_diffexp(self, context):
         self.__check_attr("diffexp__enable", bool)
         self.__check_attr("diffexp__lfc_cutoff", float)
+        self.__check_attr("diffexp__top_n", int)
 
         if self.single_dataset__datapath:
             with self.matrix_data_cache_manager.data_adaptor(self.single_dataset__datapath, self) as data_adaptor:
