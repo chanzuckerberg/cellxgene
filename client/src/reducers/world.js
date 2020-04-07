@@ -39,14 +39,20 @@ const WorldReducer = (
       /* incremental initial data load - always assumes world == universe */
       const { universe } = nextSharedState;
       const { dim } = action;
+
+      // we don't clip anything except for varData and obsAnnotations
+      let unclipped = state.unclipped;
+      if (dim == "varData" || dim == "obsAnnotations") {
+        unclipped = {
+          ...unclipped,
+          [dim]: universe[dim].clone()
+        };
+      }
       return {
         ...state,
         schema: universe.schema,
         [dim]: universe[dim].clone(),
-        unclipped: {
-          ...state.unclipped,
-          [dim]: universe[dim].clone()
-        }
+        unclipped
       };
     }
 
@@ -106,10 +112,15 @@ const WorldReducer = (
       const { userDefinedGenes, diffexpGenes } = prevSharedState;
       const allTheGenesWeNeed = [
         ...new Set(
-          [userDefinedGenes, diffexpGenes, Object.keys(action.expressionData)].filter(ele => ele).flat()
+          [userDefinedGenes, diffexpGenes, Object.keys(action.expressionData)]
+            .filter(ele => ele)
+            .flat()
         )
       ];
-      unclippedVarData = ControlsHelpers.pruneVarDataCache(unclippedVarData, allTheGenesWeNeed);
+      unclippedVarData = ControlsHelpers.pruneVarDataCache(
+        unclippedVarData,
+        allTheGenesWeNeed
+      );
 
       // at this point, we have the unclipped data in unclippedVarData.
       // Now create clipped.

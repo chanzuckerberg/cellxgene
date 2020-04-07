@@ -42,6 +42,10 @@ build-cli: build-client
 build-for-server-dev: clean-server build-client
 	$(call copy_client_assets,client/build,server)
 
+.PHONY: copy-client-assets
+copy-client-assets:
+	$(call copy_client_assets,client/build,server)
+
 # TESTING
 .PHONY: test
 test: unit-test smoke-test
