@@ -67,6 +67,7 @@ class AppConfig(object):
             self.server__force_https = dc["server"]["force_https"]
             self.server__flask_secret_key = dc["server"]["flask_secret_key"]
             self.server__generate_cache_control_headers = dc["server"]["generate_cache_control_headers"]
+            self.server__server_timing_headers = dc["server"]["server_timing_headers"]
 
             self.multi_dataset__dataroot = dc["multi_dataset"]["dataroot"]
             self.multi_dataset__index = dc["multi_dataset"]["index"]
