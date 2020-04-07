@@ -202,6 +202,7 @@ class AppConfig(object):
         self.__check_attr("server__force_https", bool)
         self.__check_attr("server__flask_secret_key", (type(None), str))
         self.__check_attr("server__generate_cache_control_headers", bool)
+        self.__check_attr("server__server_timing_headers", bool)
 
         if self.server__port:
             if not is_port_available(self.server__host, self.server__port):
