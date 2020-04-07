@@ -2,6 +2,7 @@
 const path = require("path");
 const webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const FaviconsWebpackPlugin = require("favicons-webpack-plugin");
 
 const src = path.resolve("src");
 const fonts = path.resolve("src/fonts");
@@ -60,30 +61,32 @@ module.exports = {
 
       { test: /\.json$/, include: [src, nodeModules], loader: "json-loader" },
       {
-        test: /\.(jpg|png|gif|eot|svg|ttf|woff|woff2)(\?.*)?$/,
-        include: nodeModules,
+        test: /\.(jpg|png|gif|eot|svg|ttf|woff|woff2|otf)$/i,
         loader: "file-loader",
-        query: { name: "static/media/[name].[ext]" }
-      },
-      {
-        test: /\.(woff|woff2|eot|ttf|otf)$/,
-        include: fonts,
-        loader: "file-loader",
-        query: { name: "static/fonts/[name].[ext]" }
-      },
-      {
-        test: /\.(mp4|webm)(\?.*)?$/,
-        include: [src, nodeModules],
-        loader: "url-loader",
-        query: { limit: 10000, name: "static/media/[name].[ext]" }
+        include: [nodeModules, fonts],
+        query: { name: "static/assets/[name].[ext]" }
       }
     ]
   },
   plugins: [
     new HtmlWebpackPlugin({
       inject: true,
-      template: path.resolve("index.html"),
-      favicon: path.resolve("favicon.png")
+      template: path.resolve("index.html")
+    }),
+    new FaviconsWebpackPlugin({
+      logo: "./favicon.png",
+      prefix: "static/img/",
+      favicons: {
+        icons: {
+          android: false,
+          appleIcon: false,
+          appleStartup: false,
+          coast: false,
+          firefox: false,
+          windows: false,
+          yandex: false
+        }
+      }
     }),
     new webpack.NoEmitOnErrorsPlugin(),
     new webpack.DefinePlugin({

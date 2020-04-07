@@ -1,9 +1,8 @@
-import os
 import datetime
 import logging
 
 from flask import Flask, redirect, current_app, make_response, render_template, abort
-from flask import Blueprint, request, send_from_directory
+from flask import Blueprint, request
 from flask_restful import Api, Resource
 
 from http import HTTPStatus
@@ -74,13 +73,6 @@ def dataset_index(dataset=None):
         return common_rest.abort_and_log(
             HTTPStatus.BAD_REQUEST, f"Invalid dataset {dataset}", loglevel=logging.INFO, include_exc_info=True
         )
-
-
-# TODO: remove the top-level /favicon route once the build problem with index.html is resolved
-@webbp.route("/favicon.png", methods=["GET"])
-@webbp.route("/static/img/favicon.png", methods=["GET"])
-def favicon():
-    return send_from_directory(os.path.join(webbp.root_path, "static/img/"), "favicon.png")
 
 
 @webbp.route("/health", methods=["GET"])

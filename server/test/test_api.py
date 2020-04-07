@@ -237,7 +237,7 @@ class EndPoints(object):
 
     def test_static(self):
         endpoint = "static"
-        file = "js/service-worker.js"
+        file = "assets/favicon.ico"
         url = f"{self.LOCAL_URL}{endpoint}/{file}"
         result = self.session.get(url)
         self.assertEqual(result.status_code, HTTPStatus.OK)
