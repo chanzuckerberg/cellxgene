@@ -1,6 +1,7 @@
 import _ from "lodash";
 import * as globals from "../globals";
 import { Universe, MatrixFBS } from "../util/stateManager";
+import * as Dataframe from "../util/dataframe";
 import {
   catchErrorsWrap,
   doJsonRequest,
@@ -80,23 +81,41 @@ function layoutFetchAndLoad(dispatch, schema) {
   const baseURL = `${globals.API.prefix}${globals.API.version}layout/obs`;
 
   const plimit = new PromiseLimit(4);
+  // return Promise.all(
+  //   embNames.map(e =>
+  //     // [0].map(e =>
+  //     plimit.add(() => {
+  //       const url = `${baseURL}?layout-name=${encodeURIComponent(e)}`;
+  //       // const url = baseURL;
+  //       return doBinaryRequest(url).then(buffer => {
+  //         const df = Universe.matrixFBSToDataframe(buffer);
+  //         dispatch({
+  //           type: "universe: column load success",
+  //           dim: "obsLayout",
+  //           dataframe: df
+  //         });
+  //       });
+  //     })
+  //   )
+  // );
+
   return Promise.all(
-    // embNames.map(e =>
-    [0].map(e =>
+    embNames.map(e =>
       plimit.add(() => {
-        // const url = `${baseURL}?layout-name=${encodeURIComponent(e)}`;
-        const url = baseURL;
-        return doBinaryRequest(url).then(buffer => {
-          const df = Universe.matrixFBSToDataframe(buffer);
-          dispatch({
-            type: "universe: column load success",
-            dim: "obsLayout",
-            dataframe: df
-          });
-        });
+        const url = `${baseURL}?layout-name=${encodeURIComponent(e)}`;
+        return doBinaryRequest(url).then(buffer =>
+          Universe.matrixFBSToDataframe(buffer)
+        );
       })
     )
-  );
+  ).then(dfs => {
+    const df = Dataframe.Dataframe.empty().withColsFromAll(dfs);
+    dispatch({
+      type: "universe: column load success",
+      dim: "obsLayout",
+      dataframe: df
+    });
+  });
 }
 
 /*
