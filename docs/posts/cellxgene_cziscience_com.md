@@ -33,5 +33,12 @@ with a link to embed on your own site, please drop us a note at <mailto:cellxgen
         <a href="https://github.com/krasnowlab/hlca">HLCA website</a>
       </td>
     </tr>
+    <tr>
+      <td><a href="https://cellxgene.cziscience.com/d/human_cell_landscape-3.cxg/" target="_blank">Human Cell Landscape</a></td>
+      <td>
+        <a href="https://person.zju.edu.cn/en/ggj">Guo Lab</a>, 
+        <a href="http://bis.zju.edu.cn/HCL/">HCL website</a>
+      </td>
+    </tr>
   </tbody>
 </table>
