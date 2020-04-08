@@ -27,11 +27,11 @@ jobs:
       - name: Lint with flake8
         run: |
           pip install flake8
-          make lint
+          make lint-server
       - name: Lint all with eslint
         if: github.ref == 'refs/heads/master'
         run: |
-           make lint-client
+          make lint-client
       - name: Lint diff with eslint
         if: github.ref != 'refs/heads/master'
         run: |

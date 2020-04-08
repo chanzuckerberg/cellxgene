@@ -74,7 +74,10 @@ fmt-py:
 	black .
 
 .PHONY: lint
-lint:
+lint: lint-server lint-client
+
+.PHONY: lint-server
+lint-server:
 	flake8 server
 
 .PHONY: lint-client
