@@ -9,10 +9,10 @@ class ImmutableKVCache(MutableMapping):
     """
 
     def __init__(self, factory):
-        self.factory = factory
-        self.lock = threading.Lock()
-        self.factory_calls = {}
-        self.cache = {}
+        self.factory = factory  # user-provided factory function
+        self.lock = threading.Lock()  # guards factory_calls
+        self.factory_calls = {}  # per-key factory condition variables
+        self.cache = {}  # result cache, indexed by key
         super().__init__()
 
     def __getitem__(self, key):
