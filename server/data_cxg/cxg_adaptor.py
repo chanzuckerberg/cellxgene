@@ -7,6 +7,7 @@ from server.common.utils import path_join
 from server.common.constants import Axis
 from server.data_common.data_adaptor import DataAdaptor
 from server.data_common.fbs.matrix import encode_matrix_fbs
+from server.common.immutable_kvcache import ImmutableKVCache
 import tiledb
 import numpy as np
 import pandas as pd
@@ -23,8 +24,9 @@ class CxgAdaptor(DataAdaptor):
 
     def __init__(self, data_locator, config=None):
         super().__init__(config)
-        self.arrays = {}
         self.lock = threading.Lock()
+        self.lsuri_result_cache = ImmutableKVCache(lambda key: self._lsuri(uri=key, tiledb_ctx=self.tiledb_ctx))
+        self.arrays = ImmutableKVCache(lambda key: self._open_array(uri=key, tiledb_ctx=self.tiledb_ctx))
 
         self.data_locator = data_locator
         self.url = data_locator.uri_or_path
@@ -83,6 +85,18 @@ class CxgAdaptor(DataAdaptor):
     def get_path(self, *urls):
         return path_join(self.url, *urls)
 
+    @staticmethod
+    def _lsuri(uri, tiledb_ctx):
+        def _cleanpath(p):
+            if p[-1] == "/":
+                return p[:-1]
+            else:
+                return p
+
+        result = []
+        tiledb.ls(uri, lambda path, type: result.append((_cleanpath(path), type)), ctx=tiledb_ctx)
+        return result
+
     def lsuri(self, uri):
         """
         given a URI, do a tiledb.ls but normalizing for all path weirdness:
@@ -92,19 +106,9 @@ class CxgAdaptor(DataAdaptor):
         returns list of (absolute paths, type) *without* trailing slash
         in the path.
         """
-
-        def _cleanpath(p):
-            if p[-1] == "/":
-                return p[:-1]
-            else:
-                return p
-
         if uri[-1] != "/":
             uri += "/"
-
-        result = []
-        tiledb.ls(uri, lambda path, type: result.append((_cleanpath(path), type)), ctx=self.tiledb_ctx)
-        return result
+        return self.lsuri_result_cache[uri]
 
     @staticmethod
     def isvalid(url):
@@ -160,19 +164,14 @@ class CxgAdaptor(DataAdaptor):
         self.about = about
         self.cxg_version = cxg_version
 
+    @staticmethod
+    def _open_array(uri, tiledb_ctx):
+        return tiledb.DenseArray(uri, mode="r", ctx=tiledb_ctx)
+
     def open_array(self, name):
         try:
-            with self.lock:
-                array = self.arrays.get(name)
-                if array:
-                    return array
-                p = self.get_path(name)
-                try:
-                    array = tiledb.DenseArray(p, mode="r", ctx=self.tiledb_ctx)
-                except tiledb.libtiledb.TileDBError:
-                    raise DatasetAccessError(name)
-                self.arrays[name] = array
-                return array
+            p = self.get_path(name)
+            return self.arrays[p]
         except tiledb.libtiledb.TileDBError:
             raise DatasetAccessError(name)
 
