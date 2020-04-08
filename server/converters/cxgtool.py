@@ -47,11 +47,11 @@ TODO/ISSUES:
 * Possible future work: accept Loom files
 
 """
+import re
 import anndata
 import tiledb
 import argparse
 import numpy as np
-import pandas as pd
 from os.path import splitext, basename
 import json
 
@@ -85,7 +85,7 @@ def main():
         metavar="<URL>",
         help="URL providing more information about the dataset (hint: must be a fully specified absolute URL).",
     )
-    parser.add_argument("--out", "-o", help="output CXG file name")
+    parser.add_argument("--out", "--output", "-o", help="output CXG file name")
     args = parser.parse_args()
 
     global log_level
@@ -109,6 +109,13 @@ def write_cxg(adata, container, title, var_names=None, obs_names=None, about=Non
         raise ValueError("Variable index is not unique - unable to convert.")
     if not adata.obs.index.is_unique:
         raise ValueError("Observation index is not unique - unable to convert.")
+
+    """
+    TileDB bug TileDB-Inc/TileDB#1575 requires that we sanitize all column names
+    prior to saving.  This can be reverted when the bug is fixed.
+    """
+    log(0, "Warning: sanitizing all dataframe column names.")
+    clean_all_column_names(adata)
 
     ctx = tiledb.Ctx(
         {
@@ -144,45 +151,64 @@ def write_cxg(adata, container, title, var_names=None, obs_names=None, about=Non
     log(1, "\t...X created")
 
 
-def _can_cast_to_float32(col):
-    if col.dtype.kind == "f":
+"""
+TODO: the code used to handle type inferencing should not be duplicated between
+this tool and the server/common/utils code. When this tool is merged into
+the cellxgene CLI, consolidate.
+"""
+
+
+def dtype_to_schema(dtype):
+    if dtype == np.float32:
+        return (np.float32, {})
+    elif dtype == np.int32:
+        return (np.int32, {})
+    elif dtype == np.bool_:
+        return (np.uint8, {type: "boolean"})
+    elif dtype == np.str:
+        return (np.unicode, {"type": "string"})
+    elif dtype == "category":
+        typ, hint = cxg_type(dtype.categories)
+        return (typ, {"type": "categorical", "categories": dtype.categories.tolist()})
+    else:
+        raise TypeError(f"Annotations of type {dtype} are unsupported.")
+
+
+def _can_cast_to_float32(array):
+    if array.dtype.kind == "f":
         # force downcast for all floats
         return True
     return False
 
 
-def _can_cast_to_int32(col):
-    if col.dtype.kind in ["i", "u"]:
-        if np.can_cast(col.dtype, np.int32):
+def _can_cast_to_int32(array):
+    if array.dtype.kind in ["i", "u"]:
+        if np.can_cast(array.dtype, np.int32):
             return True
         ii32 = np.iinfo(np.int32)
-        if col.min() >= ii32.min and col.max() <= ii32.max:
+        if array.min() >= ii32.min and array.max() <= ii32.max:
             return True
     return False
 
 
-def cxg_type(col):
-    """ given a dtype, return an encoding dtype and any schema hints """
-    dtype = col.dtype
-    kind = dtype.kind
-    if _can_cast_to_float32(col):
-        return (np.float32, {})
-    elif _can_cast_to_int32(col):
-        return (np.int32, {})
-    elif dtype == np.bool_ or dtype == np.bool:
-        return (np.uint8, {type: "boolean"})
-    elif kind == "O" and isinstance(dtype, pd.CategoricalDtype):
-        typ, hint = cxg_type(dtype.categories)
-        hint["categories"] = dtype.categories.tolist()
-        return (typ, hint)
-    elif kind == "O":
-        return (np.unicode, {"type": "string"})
-    else:
-        raise TypeError(f"Annotations of type {dtype} are unsupported by cellxgene.")
+def cxg_type(array):
+    try:
+        return dtype_to_schema(array.dtype)
+    except TypeError:
+        dtype = array.dtype
+        data_kind = dtype.kind
+        if _can_cast_to_float32(array):
+            return (np.float32, {})
+        elif _can_cast_to_int32(array):
+            return (np.int32, {})
+        elif data_kind == "O" and dtype == "object":
+            return (np.unicode, {"type": "string"})
+        else:
+            raise TypeError(f"Annotations of type {dtype} are unsupported.")
 
 
-def cxg_dtype(col):
-    return cxg_type(col)[0]
+def cxg_dtype(array):
+    return cxg_type(array)[0]
 
 
 def create_dataframe(name, df, ctx):
@@ -383,6 +409,65 @@ def save_metadata(container, metadata):
     with tiledb.DenseArray(a_name, mode="w") as A:
         A.meta["cxg_version"] = CXG_VERSION
         A.meta["cxg_properties"] = json.dumps(metadata)
+
+
+def sanitize_keys(keys):
+    """
+    We need names to be safe to use as attribute names in tiledb.  See:
+        TileDB-Inc/TileDB#1575
+        TileDB-Inc/TileDB-Py#294
+    This can be entirely removed once they add proper escaping.
+
+    Args: list of keys
+    Returns: dict of {old_key: new_key, ...}
+
+    Returned new keys will be both safe and unique.
+
+    Masking out [~/.] and anything outside the ASCII range.
+    """
+    p = re.compile(r"[^ -\.0-\[\]-\}]")
+    clean_keys = {k: p.sub("_", k) for k in keys}
+
+    used_keys = set()
+    clean_unique_keys = {}
+    for k, v in clean_keys.items():
+        if v not in used_keys:
+            used_keys.add(v)
+            clean_unique_keys[k] = v
+            continue
+
+        # else, needs deduping.
+        counter = 1
+        while True:
+            candidate_name = v + "-" + str(counter)
+            if candidate_name not in used_keys:
+                used_keys.add(candidate_name)
+                clean_unique_keys[k] = candidate_name
+                break
+            counter += 1
+
+    for k, v, in clean_unique_keys.items():
+        if k != v:
+            log(1, f"Renaming {k} to {v}")
+    return clean_unique_keys
+
+
+def sanitize_df(df):
+    df.rename(columns=sanitize_keys(df.keys().tolist()), inplace=True)
+
+
+def sanitize_mapping(mapping):
+    clean_keys = sanitize_keys([k for k in mapping.keys()])
+    for old_key, new_key in clean_keys.items():
+        if old_key != new_key:
+            mapping[new_key] = mapping[old_key]
+            del mapping[old_key]
+
+
+def clean_all_column_names(adata):
+    sanitize_df(adata.obs)
+    sanitize_df(adata.var)
+    sanitize_mapping(adata.obsm)
 
 
 if __name__ == "__main__":

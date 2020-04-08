@@ -32,7 +32,7 @@ build-client:
 
 .PHONY: build-cli
 build-cli: build-client
-	git ls-files server/ | cpio -pdm $(BUILDDIR)
+	git ls-files server/ | grep -v 'server/test/' | cpio -pdm $(BUILDDIR)
 	cp -r client/build/  $(CLIENTBUILD)
 	$(call copy_client_assets,$(CLIENTBUILD),$(SERVERBUILD))
 	cp MANIFEST.in README.md setup.cfg setup.py $(BUILDDIR)
@@ -40,6 +40,10 @@ build-cli: build-client
 # If you are actively developing in the server folder use this, dirties the source tree
 .PHONY: build-for-server-dev
 build-for-server-dev: clean-server build-client
+	$(call copy_client_assets,client/build,server)
+
+.PHONY: copy-client-assets
+copy-client-assets:
 	$(call copy_client_assets,client/build,server)
 
 # TESTING
@@ -151,7 +155,7 @@ gen-package-lock:
 # install from build directory
 .PHONY: install
 install: uninstall
-	cd $(BUILDDIR); pip install -e .
+	cd $(BUILDDIR) && pip install -e .
 
 # install from source tree for development
 .PHONY: install-dev

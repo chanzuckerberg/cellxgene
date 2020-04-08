@@ -7,9 +7,12 @@ import {
   callOnceLazy,
   memoize
 } from "./util";
-import { summarizeContinuous, summarizeCategorical } from "./summarize";
 import {
-  histogramCategorical,
+  summarizeContinuous,
+  summarizeCategorical as _summarizeCategorical
+} from "./summarize";
+import {
+  histogramCategorical as _histogramCategorical,
   hashCategorical,
   histogramContinuous,
   hashContinuous
@@ -243,8 +246,11 @@ class Dataframe {
     };
 
     /*
-    Summarize the column data. Lazy eval;
+    Summarize the column data. Lazy eval, memoized
     */
+    const summarizeCategorical = callOnceLazy(() =>
+      _summarizeCategorical(column)
+    );
     const summarize = callOnceLazy(() =>
       isTypedArray(column)
         ? summarizeContinuous(column)
@@ -254,15 +260,20 @@ class Dataframe {
     /*
     Create histogram bins for this column.  Memoized.
     */
+    const _memoHistoCat = memoize(_histogramCategorical, hashCategorical);
+    const histogramCategorical = by => _memoHistoCat(get, by);
+    let histogram = null;
     if (isTypedArray(column)) {
       const mFn = memoize(histogramContinuous, hashContinuous);
-      get.histogram = (bins, domain, by) => mFn(get, bins, domain, by);
+      histogram = (bins, domain, by) => mFn(get, bins, domain, by);
     } else {
-      const mFn = memoize(histogramCategorical, hashCategorical);
-      get.histogram = by => mFn(get, by);
+      histogram = histogramCategorical;
     }
 
     get.summarize = summarize;
+    get.summarizeCategorical = summarizeCategorical;
+    get.histogram = histogram;
+    get.histogramCategorical = histogramCategorical;
     get.asArray = asArray;
     get.has = has;
     get.ihas = ihas;

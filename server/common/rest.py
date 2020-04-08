@@ -10,6 +10,7 @@ from server.common.errors import (
     PrepareError,
     DisabledFeatureError,
     ExceedsLimitError,
+    DatasetAccessError,
 )
 
 import json
@@ -179,14 +180,21 @@ def diffexp_obs_post(request, data_adaptor):
 
 
 def layout_obs_get(request, data_adaptor):
+    fields = request.args.getlist("layout-name", None)
+    num_columns_requested = len(data_adaptor.get_embedding_names()) if len(fields) == 0 else len(fields)
+    if data_adaptor.config.exceeds_limit("column_request_max", num_columns_requested):
+        return abort(HTTPStatus.BAD_REQUEST)
+
     preferred_mimetype = request.accept_mimetypes.best_match(["application/octet-stream"])
     if preferred_mimetype != "application/octet-stream":
         return abort(HTTPStatus.NOT_ACCEPTABLE)
 
     try:
         return make_response(
-            data_adaptor.layout_to_fbs_matrix(), HTTPStatus.OK, {"Content-Type": "application/octet-stream"}
+            data_adaptor.layout_to_fbs_matrix(fields), HTTPStatus.OK, {"Content-Type": "application/octet-stream"}
         )
+    except (KeyError, DatasetAccessError) as e:
+        return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)
     except PrepareError:
         return abort_and_log(
             HTTPStatus.NOT_IMPLEMENTED,

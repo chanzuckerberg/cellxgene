@@ -16,7 +16,7 @@ cellxgene launch mydataset.h5ad --open
 
 You should see your web browser open with the following
 
-<img width="450" src="https://raw.githubusercontent.com/chanzuckerberg/cellxgene/master/docs/cellxgene-opening-screenshot.png" pad="50px">
+<img width="600" src="../images/cellxgene-opening-screenshot.png" pad="50px">
 
 **Note**: automatic opening of the browser with the `--open` flag only works on some platforms (eg, OSX). On other platforms you'll need to directly point to the provided link in your browser.
 

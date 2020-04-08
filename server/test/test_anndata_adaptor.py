@@ -34,7 +34,7 @@ Test the anndata adaptor using the pbmc3k data set.
 class AdaptorTest(unittest.TestCase):
     def setUp(self):
         args = {
-            "embeddings__names": ["umap"],
+            "embeddings__names": ["umap", "tsne", "pca"],
             "presentation__max_categories": 100,
             "single_dataset__obs_names": None,
             "single_dataset__var_names": None,
@@ -122,15 +122,29 @@ class AdaptorTest(unittest.TestCase):
         check_feature("PUT", "/annotations/obs", False)
 
     def test_layout(self):
-        fbs = self.data.layout_to_fbs_matrix()
+        fbs = self.data.layout_to_fbs_matrix(fields=None)
         layout = decode_fbs.decode_matrix_FBS(fbs)
-        self.assertEqual(layout["n_cols"], 2)
+        self.assertEqual(layout["n_cols"], 6)
         self.assertEqual(layout["n_rows"], 2638)
 
         X = layout["columns"][0]
         self.assertTrue((X >= 0).all() and (X <= 1).all())
         Y = layout["columns"][1]
         self.assertTrue((Y >= 0).all() and (Y <= 1).all())
+
+    def test_layout_fields(self):
+        """ X_pca, X_tsne, X_umap are available """
+        fbs = self.data.layout_to_fbs_matrix(["pca"])
+        layout = decode_fbs.decode_matrix_FBS(fbs)
+        self.assertEqual(layout["n_cols"], 2)
+        self.assertEqual(layout["n_rows"], 2638)
+        self.assertCountEqual(layout["col_idx"], ["pca_0", "pca_1"])
+
+        fbs = self.data.layout_to_fbs_matrix(["tsne", "pca"])
+        layout = decode_fbs.decode_matrix_FBS(fbs)
+        self.assertEqual(layout["n_cols"], 4)
+        self.assertEqual(layout["n_rows"], 2638)
+        self.assertCountEqual(layout["col_idx"], ["tsne_0", "tsne_1", "pca_0", "pca_1"])
 
     def test_annotations(self):
         fbs = self.data.annotation_to_fbs_matrix("obs")

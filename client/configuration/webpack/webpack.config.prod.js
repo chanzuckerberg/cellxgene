@@ -2,8 +2,9 @@
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const SWPrecacheWebpackPlugin = require("sw-precache-webpack-plugin");
 const HtmlWebpackInlineSourcePlugin = require("html-webpack-inline-source-plugin");
+const FaviconsWebpackPlugin = require("favicons-webpack-plugin");
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 
 const src = path.resolve("src");
 const fonts = path.resolve("src/fonts");
@@ -17,11 +18,9 @@ module.exports = {
   mode: "production",
   bail: true,
   cache: false,
-  devtool: "cheap-source-map",
   entry: ["./src/index.js"],
   output: {
     path: path.resolve("build"),
-    filename: "static/js/[name].[chunkhash:8].js",
     publicPath
   },
   module: {
@@ -69,22 +68,10 @@ module.exports = {
         exclude: /manifest.json$/
       },
       {
-        test: /\.(jpg|png|gif|eot|svg|ttf|woff|woff2)(\?.*)?$/,
-        include: nodeModules,
+        test: /\.(jpg|png|gif|eot|svg|ttf|woff|woff2|otf)$/i,
         loader: "file-loader",
-        query: { name: "static/media/[name].[ext]" }
-      },
-      {
-        test: /\.(woff|woff2|eot|ttf|otf)$/,
-        include: fonts,
-        loader: "file-loader",
-        query: { name: "static/fonts/[name].[ext]" }
-      },
-      {
-        test: /\.(mp4|webm)(\?.*)?$/,
-        include: [src, nodeModules],
-        loader: "url-loader",
-        query: { limit: 10000, name: "static/media/[name].[hash:8].[ext]" }
+        include: [nodeModules, fonts],
+        query: { name: "static/assets/[name]-[contenthash].[ext]" }
       }
     ]
   },
@@ -93,7 +80,6 @@ module.exports = {
       inject: "body",
       filename: "index.html",
       template: path.resolve("index_template.html"),
-      favicon: path.resolve("favicon.png"),
       inlineSource: ".(js|css)$",
       minify: {
         removeComments: true,
@@ -108,14 +94,28 @@ module.exports = {
         minifyURLs: true
       }
     }),
-    new HtmlWebpackInlineSourcePlugin(),
-    new MiniCssExtractPlugin({
-      filename: "static/css/[name].[contenthash:8].css"
+    new CleanWebpackPlugin({
+      verbose: true,
+      protectWebpackAssets: false,
+      cleanAfterEveryBuildPatterns: ["main.js", "main.css"]
     }),
-    new SWPrecacheWebpackPlugin({
-      cacheId: "cellxgene",
-      filename: "service-worker.js"
-    })
+    new FaviconsWebpackPlugin({
+      logo: "./favicon.png",
+      prefix: "static/assets/",
+      favicons: {
+        icons: {
+          android: false,
+          appleIcon: false,
+          appleStartup: false,
+          coast: false,
+          firefox: false,
+          windows: false,
+          yandex: false
+        }
+      }
+    }),
+    new HtmlWebpackInlineSourcePlugin(HtmlWebpackPlugin),
+    new MiniCssExtractPlugin()
   ],
   performance: {
     maxEntrypointSize: 2000000,

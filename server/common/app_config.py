@@ -54,11 +54,14 @@ class AppConfig(object):
             self.server__about_legal_privacy = dc["server"]["about_legal_privacy"]
             self.server__force_https = dc["server"]["force_https"]
             self.server__flask_secret_key = dc["server"]["flask_secret_key"]
+            self.server__generate_cache_control_headers = dc["server"]["generate_cache_control_headers"]
+            self.server__server_timing_headers = dc["server"]["server_timing_headers"]
 
             self.multi_dataset__dataroot = dc["multi_dataset"]["dataroot"]
             self.multi_dataset__index = dc["multi_dataset"]["index"]
             self.multi_dataset__allowed_matrix_types = dc["multi_dataset"]["allowed_matrix_types"]
             self.multi_dataset__matrix_cache__max_datasets = dc["multi_dataset"]["matrix_cache"]["max_datasets"]
+            self.multi_dataset__matrix_cache__timelimit_s = dc["multi_dataset"]["matrix_cache"]["timelimit_s"]
 
             self.single_dataset__datapath = dc["single_dataset"]["datapath"]
             self.single_dataset__obs_names = dc["single_dataset"]["obs_names"]
@@ -93,6 +96,9 @@ class AppConfig(object):
 
         # The annotation object is created during complete_config and stored here.
         self.user_annotations = None
+
+        # The matrix data cache manager is created during the complete_config and stored here.
+        self.matrix_data_cache_manager = None
 
         # Set to true when config_completed is called
         self.is_completed = False
@@ -137,12 +143,10 @@ class AppConfig(object):
 
         self.is_completed = False
 
-    def complete_config(self, matrix_data_cache_manager=None, messagefn=None):
+    def complete_config(self, messagefn=None):
         """The configure options are checked, and any additional setup based on the config
         parameters is done"""
 
-        if matrix_data_cache_manager is None:
-            matrix_data_cache_manager = MatrixDataCacheManager()
         if messagefn is None:
 
             def noop(message):
@@ -153,7 +157,7 @@ class AppConfig(object):
         # TODO: to give better error messages we can add a mapping between where each config
         # attribute originated (e.g. command line argument or config file), then in the error
         # messages we can give correct context for attributes with bad value.
-        context = dict(matrix_cache=matrix_data_cache_manager, messagefn=messagefn)
+        context = dict(messagefn=messagefn)
 
         self.handle_server(context)
         self.handle_single_dataset(context)
@@ -189,6 +193,8 @@ class AppConfig(object):
         self.__check_attr("server__open_browser", bool)
         self.__check_attr("server__force_https", bool)
         self.__check_attr("server__flask_secret_key", (type(None), str))
+        self.__check_attr("server__generate_cache_control_headers", bool)
+        self.__check_attr("server__server_timing_headers", bool)
 
         if self.server__port:
             if not is_port_available(self.server__host, self.server__port):
@@ -232,6 +238,10 @@ class AppConfig(object):
             if self.multi_dataset__dataroot is not None:
                 raise ConfigurationError("must supply only one of datapath or dataroot")
 
+        # create the matrix data cache manager:
+        if self.matrix_data_cache_manager is None:
+            self.matrix_data_cache_manager = MatrixDataCacheManager(max_cached=1, timelimit_s=None)
+
         # preload this data set
         matrix_data_loader = MatrixDataLoader(self.single_dataset__datapath)
         try:
@@ -268,6 +278,7 @@ class AppConfig(object):
         self.__check_attr("multi_dataset__index", (type(None), bool, str))
         self.__check_attr("multi_dataset__allowed_matrix_types", (tuple, list))
         self.__check_attr("multi_dataset__matrix_cache__max_datasets", int)
+        self.__check_attr("multi_dataset__matrix_cache__timelimit_s", (type(None), int, float))
 
         if self.multi_dataset__dataroot is None:
             return
@@ -279,8 +290,12 @@ class AppConfig(object):
             except ValueError:
                 raise ConfigurationError(f'Invalid matrix type in "allowed_matrix_types": {mtype}')
 
-        # matrix cache
-        MatrixDataCacheManager.set_max_datasets(self.multi_dataset__matrix_cache__max_datasets)
+        # create the matrix data cache manager:
+        if self.matrix_data_cache_manager is None:
+            self.matrix_data_cache_manager = MatrixDataCacheManager(
+                max_cached=self.multi_dataset__matrix_cache__max_datasets,
+                timelimit_s=self.multi_dataset__matrix_cache__timelimit_s,
+            )
 
     def handle_user_annotations(self, context):
         self.__check_attr("user_annotations__enable", bool)
@@ -318,7 +333,7 @@ class AppConfig(object):
             # if the user has specified a fixed label file, go ahead and validate it
             # so that we can remove errors early in the process.
             if self.single_dataset__datapath and self.user_annotations__local_file_csv__file:
-                with context["matrix_cache"].data_adaptor(self.single_dataset__datapath, self) as data_adaptor:
+                with self.matrix_data_cache_manager.data_adaptor(self.single_dataset__datapath, self) as data_adaptor:
                     data_adaptor.check_new_labels(self.user_annotations.read_labels(data_adaptor))
 
             if self.user_annotations__ontology__enable or self.user_annotations__ontology__obo_location:
@@ -362,7 +377,7 @@ class AppConfig(object):
         self.__check_attr("diffexp__lfc_cutoff", float)
 
         if self.single_dataset__datapath:
-            with context["matrix_cache"].data_adaptor(self.single_dataset__datapath, self) as data_adaptor:
+            with self.matrix_data_cache_manager.data_adaptor(self.single_dataset__datapath, self) as data_adaptor:
                 if self.diffexp__enable and data_adaptor.parameters.get("diffexp_may_be_slow", False):
                     context["messagefn"](
                         f"CAUTION: due to the size of your dataset, "

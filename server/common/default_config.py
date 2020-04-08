@@ -14,6 +14,8 @@ server:
   about_legal_privacy: null
   force_https: false
   flask_secret_key: null
+  generate_cache_control_headers: false
+  server_timing_headers: false
 
 presentation:
   max_categories: 1000
@@ -34,6 +36,10 @@ multi_dataset:
     # The maximum number of datasets that may be opened at one time.  The least recently used dataset
     # is evicted from the cache first.
     max_datasets: 5
+
+    # A matrix is automatically removed from the cache after timelimit_s number of seconds.
+    # If timelimit_s is set to None, then there is no time limit.
+    timelimit_s: 30
 
 single_dataset:
   datapath: null
