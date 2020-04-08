@@ -20,14 +20,14 @@ import CellSetButton from "./cellSetButtons";
   celllist1: state.differential?.celllist1,
   celllist2: state.differential?.celllist2,
   diffexpMayBeSlow: state.config?.parameters?.["diffexp-may-be-slow"] ?? false,
-  diffexpCellcountMax: state.config?.limits?.diffexp_cellcount_max || 1000
+  diffexpCellcountMax: state.config?.limits?.diffexp_cellcount_max
 }))
 class DiffexpButtons extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       userDismissedPopover: false
-    }
+    };
   }
 
   computeDiffExp = () => {
@@ -56,8 +56,8 @@ class DiffexpButtons extends React.Component {
   handlePopoverDismiss = () => {
     this.setState({
       userDismissedPopover: true
-    })
-  }
+    });
+  };
 
   render() {
     /* diffexp-related buttons may be disabled */
@@ -75,7 +75,7 @@ class DiffexpButtons extends React.Component {
       : "";
     const tipMessage = `See top 10 differentially expressed genes${slowMsg}`;
     const tipMessageWarn = `The total number of cells for differential expression computation
-                            may not exceed ${diffexpCellcountMax}. Try reselecting new cell sets.`
+                            may not exceed ${diffexpCellcountMax}. Try reselecting new cell sets.`;
 
     const warnMaxSizeExceeded =
       haveEitherCellSet &&
