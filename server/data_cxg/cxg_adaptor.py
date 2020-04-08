@@ -25,13 +25,16 @@ class CxgAdaptor(DataAdaptor):
     def __init__(self, data_locator, config=None):
         super().__init__(config)
         self.lock = threading.Lock()
-        self.lsuri_result_cache = ImmutableKVCache(lambda key: self._lsuri(uri=key, tiledb_ctx=self.tiledb_ctx))
-        self.arrays = ImmutableKVCache(lambda key: self._open_array(uri=key, tiledb_ctx=self.tiledb_ctx))
 
         self.data_locator = data_locator
         self.url = data_locator.uri_or_path
         if self.url[-1] != "/":
             self.url += "/"
+
+        # caching immutable state
+        self.lsuri_results = ImmutableKVCache(lambda key: self._lsuri(uri=key, tiledb_ctx=self.tiledb_ctx))
+        self.arrays = ImmutableKVCache(lambda key: self._open_array(uri=key, tiledb_ctx=self.tiledb_ctx))
+        self.schema = None
 
         self._validate_and_initialize()
 
@@ -108,7 +111,7 @@ class CxgAdaptor(DataAdaptor):
         """
         if uri[-1] != "/":
             uri += "/"
-        return self.lsuri_result_cache[uri]
+        return self.lsuri_results[uri]
 
     @staticmethod
     def isvalid(url):
@@ -279,7 +282,10 @@ class CxgAdaptor(DataAdaptor):
             schema["categories"] = schema_hints["categories"]
         return schema
 
-    def get_schema(self):
+    def _get_schema(self):
+        if self.schema:
+            return self.schema
+
         shape = self.get_shape()
         dtype = self.get_X_array_dtype()
 
@@ -319,20 +325,27 @@ class CxgAdaptor(DataAdaptor):
         schema = {"dataframe": dataframe, "annotations": annotations, "layout": {"obs": obs_layout}}
         return schema
 
+    def get_schema(self):
+        if self.schema is None:
+            with self.lock:
+                self.schema = self._get_schema()
+        return self.schema
+
     def annotation_to_fbs_matrix(self, axis, fields=None, labels=None):
         with ServerTiming.time(f"annotations.{axis}.query"):
-            A = self.open_array(str(axis))
-            if axis == Axis.OBS:
-                if labels is not None and not labels.empty:
-                    df = pd.DataFrame.from_dict(A[:])
-                    df = df.join(labels, self.get_obs_names())
+            with ServerTiming.time(f"annotations.{axis}.query.open_array"):
+                A = self.open_array(str(axis))
+                if axis == Axis.OBS:
+                    if labels is not None and not labels.empty:
+                        df = pd.DataFrame.from_dict(A[:])
+                        df = df.join(labels, self.get_obs_names())
+                    else:
+                        df = pd.DataFrame.from_dict(A[:])
                 else:
                     df = pd.DataFrame.from_dict(A[:])
-            else:
-                df = pd.DataFrame.from_dict(A[:])
 
-            if fields is not None and len(fields) > 0:
-                df = df[fields]
+                if fields is not None and len(fields) > 0:
+                    df = df[fields]
 
         with ServerTiming.time(f"annotations.{axis}.encode"):
             fbs = encode_matrix_fbs(df, col_idx=df.columns)
