@@ -4,6 +4,7 @@ import logging
 from flask import Flask, redirect, current_app, make_response, render_template, abort
 from flask import Blueprint, request
 from flask_restful import Api, Resource
+from server_timing import Timing as ServerTiming
 
 from http import HTTPStatus
 
@@ -123,7 +124,7 @@ def dataroot_test_index():
     data += "<body><H1>Welcome to cellxgene</H1>"
 
     config = current_app.app_config
-    locator = DataLocator(config.multi_dataset__dataroot, config=config)
+    locator = DataLocator(config.multi_dataset__dataroot, app_config=config)
     datasets = []
     for fname in locator.ls():
         location = path_join(config.multi_dataset__dataroot, fname)
@@ -235,6 +236,8 @@ class Server:
         self.app = Flask(__name__, static_folder="../common/web/static")
         self._before_adding_routes(app_config)
         self.app.json_encoder = Float32JSONEncoder
+        if app_config.server__server_timing_headers:
+            ServerTiming(self.app, force_debug=True)
 
         # enable session data
         self.app.permanent_session_lifetime = datetime.timedelta(days=50 * 365)
