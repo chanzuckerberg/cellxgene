@@ -358,7 +358,10 @@ def launch(
         if config_file:
             app_config.update_from_config_file(config_file)
 
-        app_config.update(
+        # Determine which config options were give on the command line.
+        # Those will override the ones provided in the config file (if provided).
+        cli_config = AppConfig()
+        cli_config.update(
             server__verbose=verbose,
             server__debug=debug,
             server__host=host,
@@ -383,6 +386,11 @@ def launch(
             diffexp__lfc_cutoff=diffexp_lfc_cutoff,
             adaptor__anndata_adaptor__backed=backed,
         )
+        diff = cli_config.changes_from_default()
+        changes = {}
+        for key, val, defval in diff:
+            changes[key] = val
+        app_config.update(**changes)
 
         # process the configuration
         #  any errors will be thrown as an exception.
@@ -391,11 +399,11 @@ def launch(
         def messagefn(message):
             click.echo("[cellxgene] " + message)
 
-        app_config.complete_config(messagefn)
-
         # Use a default secret if one is not provided
         if not app_config.server__flask_secret_key:
-            app_config.server__flask_secret_key = "SparkleAndShine"
+            app_config.update(server__flask_secret_key="SparkleAndShine")
+
+        app_config.complete_config(messagefn)
 
     except (ConfigurationError, DatasetAccessError) as e:
         raise click.ClickException(e)
