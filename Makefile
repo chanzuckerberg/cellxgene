@@ -22,16 +22,12 @@ clean-%:
 
 # BUILDING PACKAGE
 
-.PHONY: build
-build: clean build-cli
-	@echo "done"
-
 .PHONY: build-client
 build-client:
 	cd client && $(MAKE) ci build
 
-.PHONY: build-cli
-build-cli: build-client
+.PHONY: build
+build: clean build-client
 	git ls-files server/ | grep -v 'server/test/' | cpio -pdm $(BUILDDIR)
 	cp -r client/build/  $(CLIENTBUILD)
 	$(call copy_client_assets,$(CLIENTBUILD),$(SERVERBUILD))
