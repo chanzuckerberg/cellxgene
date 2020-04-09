@@ -24,14 +24,6 @@ build:
 
 # Development convenience methods
 
-.PHONY: server-requirements
-server-requirements:
-	virtualenv -p python3 ../venv
-	source ../venv/bin/activate && \
-		pip install -r ../server/requirements-dev.txt && \
-		yes | pip uninstall cellxgene || true && \
-		pip install -e ..
-
 .PHONY: start-frontend
 start-frontend:
 	node server/development.js
@@ -39,15 +31,6 @@ start-frontend:
 .PHONY: start-server
 start-server:
 	cellxgene launch -p $(CXG_SERVER_PORT) $(CXG_OPTIONS) $(DATASET)
-
-.PHONY: backend-dev
-backend-dev: server-requirements
-	source ../venv/bin/activate && CXG_OPTIONS='--debug' $(MAKE) start-server
-
-.PHONY: backend-dev-anno-ontology
-backend-dev-anno-ontology: server-requirements
-	CXG_OPTIONS='--experimental-annotations-ontology --debug' \
-		$(MAKE) backend-dev
 
 .PHONY: test
 test:
