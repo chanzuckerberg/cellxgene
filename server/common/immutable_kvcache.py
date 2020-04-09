@@ -21,6 +21,7 @@ class ImmutableKVCache(MutableMapping):
 
         # we need to call factory.  First grab the main lock and the per-key CV.
         factory_calls = None
+        creation_thr = False
         with self.lock:
             if key in self.cache:
                 return self.cache[key]
