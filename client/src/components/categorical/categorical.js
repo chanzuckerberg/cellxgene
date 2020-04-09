@@ -176,10 +176,18 @@ class Categories extends React.Component {
           }
         />
 
+        {/* Categories with only one field */}
+        <div style={{marginLeft: 0}}>
+          {allCategoryNames.map(catName => 
+            !schema.annotations.obsByName[catName].writable && schema.annotations.obsByName[catName].categories.length === 1 ? (
+            <div style={{marginBottom: 10}}><span style={{fontWeight: 700}}>{catName}</span>:{" "}{schema.annotations.obsByName[catName].categories[0]}</div>
+            ): null
+          )}
+        </div>
         {/* READ ONLY CATEGORICAL FIELDS */}
         {/* this is duplicative but flat, could be abstracted */}
         {allCategoryNames.map(catName =>
-          !schema.annotations.obsByName[catName].writable ? (
+          !schema.annotations.obsByName[catName].writable && schema.annotations.obsByName[catName].categories.length > 1? (
             <Category
               key={catName}
               metadataField={catName}
