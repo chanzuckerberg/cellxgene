@@ -15,6 +15,7 @@ server:
   force_https: false
   flask_secret_key: null
   generate_cache_control_headers: false
+  cache_default_ttl: 2592000
   server_timing_headers: false
 
 presentation:
