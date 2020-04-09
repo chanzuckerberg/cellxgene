@@ -18,7 +18,6 @@ from server.data_common.matrix_loader import MatrixDataLoader
 from functools import wraps
 
 webbp = Blueprint("webapp", "server.common.web", template_folder="templates")
-MAX_AGE = current_app.app_config.server__cache_default_ttl
 
 
 def _cache_control(always, **cache_kwargs):
@@ -53,7 +52,7 @@ def cache_control_always(**cache_kwargs):
 
 
 @webbp.route("/", methods=["GET"])
-@cache_control(public=True, max_age=MAX_AGE)
+@cache_control(public=True, max_age=current_app.app_config.server__cache_default_ttl)
 def dataset_index(dataset=None):
     config = current_app.app_config
     if dataset is None:
@@ -159,21 +158,21 @@ def dataroot_index():
 
 
 class SchemaAPI(Resource):
-    @cache_control(public=True, max_age=MAX_AGE)
+    @cache_control(public=True, max_age=current_app.app_config.server__cache_default_ttl)
     @rest_get_data_adaptor
     def get(self, data_adaptor):
         return common_rest.schema_get(data_adaptor, current_app.annotations)
 
 
 class ConfigAPI(Resource):
-    @cache_control(public=True, max_age=MAX_AGE)
+    @cache_control(public=True, max_age=current_app.app_config.server__cache_default_ttl)
     @rest_get_data_adaptor
     def get(self, data_adaptor):
         return common_rest.config_get(current_app.app_config, data_adaptor, current_app.annotations)
 
 
 class AnnotationsObsAPI(Resource):
-    @cache_control(public=True, max_age=MAX_AGE)
+    @cache_control(public=True, max_age=current_app.app_config.server__cache_default_ttl)
     @rest_get_data_adaptor
     def get(self, data_adaptor):
         return common_rest.annotations_obs_get(request, data_adaptor, current_app.annotations)
@@ -185,7 +184,7 @@ class AnnotationsObsAPI(Resource):
 
 
 class AnnotationsVarAPI(Resource):
-    @cache_control(public=True, max_age=MAX_AGE)
+    @cache_control(public=True, max_age=current_app.app_config.server__cache_default_ttl)
     @rest_get_data_adaptor
     def get(self, data_adaptor):
         return common_rest.annotations_var_get(request, data_adaptor, current_app.annotations)
@@ -206,7 +205,7 @@ class DiffExpObsAPI(Resource):
 
 
 class LayoutObsAPI(Resource):
-    @cache_control(public=True, max_age=MAX_AGE)
+    @cache_control(public=True, max_age=current_app.app_config.server__cache_default_ttl)
     @rest_get_data_adaptor
     def get(self, data_adaptor):
         return common_rest.layout_obs_get(request, data_adaptor)
