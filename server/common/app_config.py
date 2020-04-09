@@ -88,7 +88,8 @@ class AppConfig(object):
             self.adaptor__cxg_adaptor__tiledb_ctx = dc["adaptor"]["cxg_adaptor"]["tiledb_ctx"]
             self.adaptor__anndata_adaptor__backed = dc["adaptor"]["anndata_adaptor"]["backed"]
 
-            self.limits = dc["limits"]
+            self.limits__diffexp_cellcount_max = dc["limits"]["diffexp_cellcount_max"]
+            self.limits__column_request_max = dc["limits"]["column_request_max"]
 
         except KeyError as e:
             raise ConfigurationError(f"Unexpected config: {str(e)}")
@@ -112,7 +113,6 @@ class AppConfig(object):
 
     def __mapping(self, config):
         """Create a mapping from attribute names to (location in the config tree, value)"""
-
         dc = copy.deepcopy(config)
         mapping = {}
 
@@ -121,11 +121,6 @@ class AppConfig(object):
         if val is not None:
             mapping["adaptor__cxg_adaptor__tiledb_ctx"] = (("adaptor", "cxg_adaptor", "tiledb_ctx"), val)
             del dc["adaptor"]["cxg_adaptor"]["tiledb_ctx"]
-
-        # special case for limits, which are separately partitioned as a dict
-        if "limits" in config:
-            self.limits.update(config["limits"])
-            del config["limits"]
 
         flat_config = flatten(dc)
         for key, value in flat_config.items():
@@ -200,6 +195,7 @@ class AppConfig(object):
         self.handle_embeddings(context)
         self.handle_diffexp(context)
         self.handle_adaptor(context)
+        self.handle_limits(context)
 
         self.is_completed = True
         self.check_config()
@@ -436,6 +432,10 @@ class AppConfig(object):
         # anndata
         self.__check_attr("adaptor__anndata_adaptor__backed", bool)
 
+    def handle_limits(self, context):
+        self.__check_attr("limits__diffexp_cellcount_max", (None, int))
+        self.__check_attr("limits__column_request_max", int)
+
     def get_title(self, data_adaptor):
         return self.single_dataset__title if self.single_dataset__title else data_adaptor.get_title()
 
@@ -503,12 +503,15 @@ class AppConfig(object):
         config["library_versions"] = library_versions
         config["links"] = links
         config["parameters"] = parameters
-        config["limits"] = self.limits
+        config["limits"] = {
+            'column_request_max': self.limits__column_request_max,
+            'diffexp_cellcount_max': self.limits__diffexp_cellcount_max,
+        }
 
         return c
 
     def exceeds_limit(self, limit_name, value):
-        limit_value = self.limits.get(limit_name, None)
+        limit_value = getattr(self, "limits__" + limit_name, None)
         if limit_value is None:  # disabled
             return False
         return value > limit_value
