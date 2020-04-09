@@ -99,6 +99,6 @@ If you would like to run the client tests individually, follow the steps below i
 1. For the smoke test run `npm run smoke-test` or `make smoke-test`
 
 ### Tips
-* You can also install/launch the server side code from npm scrips (requires python3.6 with virtualenv) in `client/` directory run `npm run backend-dev`
+* You can also install/launch the server side code from npm scrips (requires python3.6 with virtualenv) with the `scripts/backend_dev` script.
 
 
