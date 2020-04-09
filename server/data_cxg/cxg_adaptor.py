@@ -397,8 +397,6 @@ class CxgAdaptor(DataAdaptor):
             if return_fields:
                 df = df[return_fields]
 
-            print(df)
-
         with ServerTiming.time(f"annotations.{axis}.encode"):
             fbs = encode_matrix_fbs(df, col_idx=df.columns)
 
