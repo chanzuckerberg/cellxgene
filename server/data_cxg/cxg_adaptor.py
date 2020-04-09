@@ -331,38 +331,73 @@ class CxgAdaptor(DataAdaptor):
                 self.schema = self._get_schema()
         return self.schema
 
+    def _annotations_field_split(self, axis, fields, A, labels):
+        """
+        fields: requested fields, may be None (all)
+        labels: writable user annotations dataframe, if any
+
+        Remove redundant fields, raise KeyError on non-existant fields,
+        and split into three lists:
+            fields_to_fetch_from_cxg
+            fields_to_fetch_from_labels
+            fields_to_return
+
+        if we have to return from labels, the fetch fields will contain the index
+        to join on, which may not be in fields_to_return
+        """
+        need_labels = axis == Axis.OBS and labels is not None and not labels.empty
+        index_key = self.get_obs_names() if need_labels else None
+
+        if not fields:
+            return (None, None, None, index_key)
+
+        cxg_keys = frozenset([a.name for a in A.schema])
+        user_anno_keys = frozenset(labels.columns.tolist()) if need_labels else frozenset()
+        return_keys = frozenset(fields)
+
+        label_join_index = (
+            frozenset([index_key]) if need_labels and (return_keys & user_anno_keys) else frozenset()
+        )
+
+        unknown_fields = return_keys - (cxg_keys | user_anno_keys)
+        if unknown_fields:
+            raise KeyError("_".join(unknown_fields))
+
+        return (
+            list((return_keys & cxg_keys) | label_join_index),
+            list(return_keys & user_anno_keys),
+            list(return_keys),
+            index_key
+        )
+
     def annotation_to_fbs_matrix(self, axis, fields=None, labels=None):
         with ServerTiming.time(f"annotations.{axis}.query"):
-            with ServerTiming.time(f"annotations.{axis}.query.open_array"):
-                A = self.open_array(str(axis))
+            A = self.open_array(str(axis))
 
-            need_to_join_labels = labels is not None and not labels.empty
+            # may raise if fields contains unknown key
+            cxg_fields, anno_fields, return_fields, index_field = self._annotations_field_split(axis, fields, A, labels)
 
-            if not fields:
-                # fetch all data
+            if cxg_fields is None:
                 data = A[:]
+            elif cxg_fields:
+                data = A.query(attrs=cxg_fields)[:]
             else:
-                # subset to only those fields stored in the CXG array
-                attr_names = np.array([a.name for a in A.schema])
-                attrs_to_fetch = attr_names[np.isin(attr_names, fields)]
-                # always request the index if we have to do a join with labels dataframe
-                if need_to_join_labels:
-                    attrs_to_fetch = np.append(attrs_to_fetch, self.get_obs_names())
-                data = A.query(attrs=attrs_to_fetch)[:]
+                data = {}
 
             df = pd.DataFrame.from_dict(data)
 
-            # add any user labels if they are requested.
-            if axis == Axis.OBS and need_to_join_labels:
-                if fields:
-                    labels_requested = labels.loc[:, np.isin(labels.columns, fields)]
-                else:
-                    labels_requested = labels
-                if not labels_requested.empty:
-                    df = df.join(labels_requested, self.get_obs_names())
+            if axis == Axis.OBS and labels is not None and not labels.empty:
+                if anno_fields is None:
+                    assert index_field
+                    df = df.join(labels, index_field)
+                elif anno_fields:
+                    assert index_field
+                    df = df.join(labels[anno_fields], index_field)
 
-            if fields is not None and len(fields) > 0:
-                df = df[fields]
+            if return_fields:
+                df = df[return_fields]
+
+            print(df)
 
         with ServerTiming.time(f"annotations.{axis}.encode"):
             fbs = encode_matrix_fbs(df, col_idx=df.columns)
