@@ -433,8 +433,8 @@ class AppConfig(object):
         self.__check_attr("adaptor__anndata_adaptor__backed", bool)
 
     def handle_limits(self, context):
-        self.__check_attr("limits__diffexp_cellcount_max", (None, int))
-        self.__check_attr("limits__column_request_max", int)
+        self.__check_attr("limits__diffexp_cellcount_max", (type(None), int))
+        self.__check_attr("limits__column_request_max", (type(None), int))
 
     def get_title(self, data_adaptor):
         return self.single_dataset__title if self.single_dataset__title else data_adaptor.get_title()

@@ -41,11 +41,11 @@ class AdaptorTest(unittest.TestCase):
             "diffexp__lfc_cutoff": 0.01,
             "adaptor__anndata_adaptor__backed": self.backed,
             "single_dataset__datapath": self.data_locator,
+            "limits__diffexp_cellcount_max": None,
+            "limits__column_request_max": None
         }
         config = AppConfig()
         config.update(**args)
-        for k in config.limits.keys():
-            config.limits[k] = None
         config.complete_config()
         self.data = AnndataAdaptor(DataLocator(self.data_locator), config)
 
