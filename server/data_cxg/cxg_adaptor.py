@@ -335,17 +335,17 @@ class CxgAdaptor(DataAdaptor):
         with ServerTiming.time(f"annotations.{axis}.query"):
             with ServerTiming.time(f"annotations.{axis}.query.open_array"):
                 A = self.open_array(str(axis))
-                if axis == Axis.OBS:
-                    if labels is not None and not labels.empty:
-                        df = pd.DataFrame.from_dict(A[:])
-                        df = df.join(labels, self.get_obs_names())
-                    else:
-                        df = pd.DataFrame.from_dict(A[:])
+            if axis == Axis.OBS:
+                if labels is not None and not labels.empty:
+                    df = pd.DataFrame.from_dict(A[:])
+                    df = df.join(labels, self.get_obs_names())
                 else:
                     df = pd.DataFrame.from_dict(A[:])
+            else:
+                df = pd.DataFrame.from_dict(A[:])
 
-                if fields is not None and len(fields) > 0:
-                    df = df[fields]
+            if fields is not None and len(fields) > 0:
+                df = df[fields]
 
         with ServerTiming.time(f"annotations.{axis}.encode"):
             fbs = encode_matrix_fbs(df, col_idx=df.columns)
