@@ -335,14 +335,31 @@ class CxgAdaptor(DataAdaptor):
         with ServerTiming.time(f"annotations.{axis}.query"):
             with ServerTiming.time(f"annotations.{axis}.query.open_array"):
                 A = self.open_array(str(axis))
-            if axis == Axis.OBS:
-                if labels is not None and not labels.empty:
-                    df = pd.DataFrame.from_dict(A[:])
-                    df = df.join(labels, self.get_obs_names())
-                else:
-                    df = pd.DataFrame.from_dict(A[:])
+
+            need_to_join_labels = labels is not None and not labels.empty
+
+            if not fields:
+                # fetch all data
+                data = A[:]
             else:
-                df = pd.DataFrame.from_dict(A[:])
+                # subset to only those fields stored in the CXG array
+                attr_names = np.array([a.name for a in A.schema])
+                attrs_to_fetch = attr_names[np.isin(attr_names, fields)]
+                # always request the index if we have to do a join with labels dataframe
+                if need_to_join_labels:
+                    attrs_to_fetch = np.append(attrs_to_fetch, self.get_obs_names())
+                data = A.query(attrs=attrs_to_fetch)[:]
+
+            df = pd.DataFrame.from_dict(data)
+
+            # add any user labels if they are requested.
+            if axis == Axis.OBS and need_to_join_labels:
+                if fields:
+                    labels_requested = labels.loc[:, np.isin(labels.columns, fields)]
+                else:
+                    labels_requested = labels
+                if not labels_requested.empty:
+                    df = df.join(labels_requested, self.get_obs_names())
 
             if fields is not None and len(fields) > 0:
                 df = df[fields]
