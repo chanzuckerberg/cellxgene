@@ -80,6 +80,10 @@ adaptor:
   anndata_adaptor:
       backed: false
 
+limits:
+  column_request_max: 32
+  diffexp_cellcount_max: null
+
 """
 
 

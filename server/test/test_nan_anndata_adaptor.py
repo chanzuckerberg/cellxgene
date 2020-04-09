@@ -19,13 +19,13 @@ class NaNTest(unittest.TestCase):
             "single_dataset__obs_names": None,
             "single_dataset__var_names": None,
             "diffexp__lfc_cutoff": 0.01,
+            "limits__diffexp_cellcount_max": None,
+            "limits__column_request_max": None,
         }
         config = AppConfig()
         config.update(**self.args)
         locator = DataLocator("test/test_datasets/nan.h5ad")
         config.update(single_dataset__datapath=locator.path)
-        for k in config.limits.keys():
-            config.limits[k] = None
         config.complete_config()
 
         with warnings.catch_warnings():

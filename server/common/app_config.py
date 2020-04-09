@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-
-
 from server import __version__ as cellxgene_version
 from flatten_dict import flatten
 from os import mkdir, environ
@@ -21,18 +18,6 @@ from server.common.utils import custom_format_warning
 DEFAULT_SERVER_PORT = int(environ.get("CXG_SERVER_PORT", "5005"))
 # anything bigger than this will generate a special message
 BIG_FILE_SIZE_THRESHOLD = 100 * 2 ** 20  # 100MB
-
-""" Default limits for requests """
-Default_Limits = {
-    # Max number of columns that may be requested for /annotations or /data routes.
-    # This is a simplistic means of preventing excess resource consumption (eg,
-    # requesting the entire X matrix in one request) or other DoS style attacks/errors.
-    # Set to None to disable check.
-    "column_request_max": 32,
-    # Max number of cells that will be accepted for differential expression.
-    # Set to None to disable the check.
-    "diffexp_cellcount_max": None,  # None is disabled
-}
 
 
 class AppFeature(object):
@@ -103,11 +88,11 @@ class AppConfig(object):
             self.adaptor__cxg_adaptor__tiledb_ctx = dc["adaptor"]["cxg_adaptor"]["tiledb_ctx"]
             self.adaptor__anndata_adaptor__backed = dc["adaptor"]["anndata_adaptor"]["backed"]
 
+            self.limits__diffexp_cellcount_max = dc["limits"]["diffexp_cellcount_max"]
+            self.limits__column_request_max = dc["limits"]["column_request_max"]
+
         except KeyError as e:
             raise ConfigurationError(f"Unexpected config: {str(e)}")
-
-        # Used for various limits, eg, size of requests.  Not currently configurable.
-        self.limits = Default_Limits
 
         # The annotation object is created during complete_config and stored here.
         self.user_annotations = None
@@ -128,7 +113,6 @@ class AppConfig(object):
 
     def __mapping(self, config):
         """Create a mapping from attribute names to (location in the config tree, value)"""
-
         dc = copy.deepcopy(config)
         mapping = {}
 
@@ -211,6 +195,7 @@ class AppConfig(object):
         self.handle_embeddings(context)
         self.handle_diffexp(context)
         self.handle_adaptor(context)
+        self.handle_limits(context)
 
         self.is_completed = True
         self.check_config()
@@ -447,6 +432,10 @@ class AppConfig(object):
         # anndata
         self.__check_attr("adaptor__anndata_adaptor__backed", bool)
 
+    def handle_limits(self, context):
+        self.__check_attr("limits__diffexp_cellcount_max", (type(None), int))
+        self.__check_attr("limits__column_request_max", (type(None), int))
+
     def get_title(self, data_adaptor):
         return self.single_dataset__title if self.single_dataset__title else data_adaptor.get_title()
 
@@ -514,12 +503,15 @@ class AppConfig(object):
         config["library_versions"] = library_versions
         config["links"] = links
         config["parameters"] = parameters
-        config["limits"] = self.limits
+        config["limits"] = {
+            'column_request_max': self.limits__column_request_max,
+            'diffexp_cellcount_max': self.limits__diffexp_cellcount_max,
+        }
 
         return c
 
     def exceeds_limit(self, limit_name, value):
-        limit_value = self.limits.get(limit_name, None)
+        limit_value = getattr(self, "limits__" + limit_name, None)
         if limit_value is None:  # disabled
             return False
         return value > limit_value
