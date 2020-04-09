@@ -146,13 +146,6 @@ gen-package-lock:
 
 # INSTALL
 
-# setup.py sucks when you have your library in a separate folder, adding these in to help setup envs
-
-# install from build directory
-.PHONY: install
-install: uninstall
-	cd $(BUILDDIR) && pip install -e .
-
 # install from source tree for development
 .PHONY: install-dev
 install-dev: uninstall
