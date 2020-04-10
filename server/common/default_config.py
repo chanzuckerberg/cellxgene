@@ -68,14 +68,20 @@ diffexp:
 
 data_locator:
   s3:
-    region_name: us-east-1
+    # s3 region name.
+    #   if true, then the s3 location is automatically determined from the datapath or dataroot.
+    #   if false/null, then do not seta.
+    #   if a string, then use that value (e.g. us-east-1).
+    region_name: true
 
 adaptor:
   cxg_adaptor:
+    # The key/values under tiledb_ctx will be used to initialize the tiledb Context.
+    # If 'vfs.s3.region' is not set, then it will automatically use the setting from
+    # data_locator / s3 / region_name.
     tiledb_ctx:
       sm.tile_cache_size:  8589934592
       sm.num_reader_threads:  32
-      vfs.s3.region: us-east-1
 
   anndata_adaptor:
       backed: false
