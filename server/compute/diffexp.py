@@ -34,6 +34,10 @@ def _mean_var_n(X):
     if fp_err_occurred:
         mean[np.isfinite(mean) == False] = 0  # noqa: E712
         v[np.isfinite(v) == False] = 0  # noqa: E712
+    else:
+        mean[np.isnan(mean)] = 0
+        v[np.isnan(v)] = 0
+
     return mean, v, n
 
 
