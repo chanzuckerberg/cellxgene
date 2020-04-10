@@ -22,16 +22,12 @@ clean-%:
 
 # BUILDING PACKAGE
 
-.PHONY: build
-build: clean build-cli
-	@echo "done"
-
 .PHONY: build-client
 build-client:
 	cd client && $(MAKE) ci build
 
-.PHONY: build-cli
-build-cli: build-client
+.PHONY: build
+build: clean build-client
 	git ls-files server/ | grep -v 'server/test/' | cpio -pdm $(BUILDDIR)
 	cp -r client/build/  $(CLIENTBUILD)
 	$(call copy_client_assets,$(CLIENTBUILD),$(SERVERBUILD))
@@ -149,13 +145,6 @@ gen-package-lock:
 
 
 # INSTALL
-
-# setup.py sucks when you have your library in a separate folder, adding these in to help setup envs
-
-# install from build directory
-.PHONY: install
-install: uninstall
-	cd $(BUILDDIR) && pip install -e .
 
 # install from source tree for development
 .PHONY: install-dev

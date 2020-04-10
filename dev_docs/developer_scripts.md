@@ -9,10 +9,9 @@ Documentation for the `Makefile` targets in the project root directory.
 builds source code
 
 ```
-build - builds whole app client and server
-build-cli - makes build dir and moves python and client files
-build-client - runs webpack build
-build-for-server-dev - builds client and copies output directly into source tree (only for server devlopment)
+build - builds the whole app (client/ source and server/ source packaged together)
+build-client - runs the client webpack build
+build-for-server-dev - builds client and copies output directly into the server source tree (only for server devlopment)
 ```
 
 ### Clean commands
@@ -50,7 +49,6 @@ dev-env - installs requirements and requirments-dev (for building code)
 Installs cellxgene from different locations
 
 ```
-install - installs from local build directory
 install-dev - installs from local source tree
 install-release-test - installs from test pypi
 install-release - installs from pypi
