@@ -62,7 +62,7 @@ Installs requirements files.
 **About** Serve the current client javascript independently from the `server` code.
 
 **Requires**
-* The server to be running. Best way to do this is with `make backend-dev`
+* The server to be running. Best way to do this is with [backend_dev](#backend_dev).
 * `make ci` to install the necessary node modules
 
 **Usage:** from the `$PROJECT_ROOT/client` directory run `make start-frontend`
@@ -83,8 +83,7 @@ environment and installs cellxgene from the current branch.
 * In parallel, you can then launch the node development server to serve the
   current state of the FE with [`start-frontend`](#start-frontend), usually in
   a different terminal tab.
-* You can also select a specific dataset using `DATASET=<dataset path> make
-  backend-dev`.
+* You can also select a specific dataset using `DATASET=<dataset path> ./scripts/backend_dev`.
 * You can also use `CXG_OPTIONS` to pass options to the `cellxgene launch`
   command, as in `CXG_OPTIONS='--disable-annotations' ./scripts/backend_dev`.
 
