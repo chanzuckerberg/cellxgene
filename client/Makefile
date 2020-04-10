@@ -32,10 +32,6 @@ start-frontend:
 start-server:
 	cellxgene launch -p $(CXG_SERVER_PORT) $(CXG_OPTIONS) $(DATASET)
 
-.PHONY: test
-test:
-	node node_modules/jest/bin/jest.js
-
 .PHONY: e2e
 e2e:
 	node node_modules/jest/bin/jest.js \
