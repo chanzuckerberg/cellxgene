@@ -20,6 +20,7 @@ class ViewDataset(TaskSet):
     """
 
     def on_start(self):
+        self.client.verify = False
         self.dataset = random.choice(DataSets)
 
         with self.client.get(f"{self.dataset}{API}/config", catch_response=True) as r:
@@ -83,6 +84,7 @@ class ViewDataset(TaskSet):
 
         def on_start(self):
             self.dataset = self.parent.dataset
+            self.client.verify = False
 
         @seq_task(1)
         def index(self):
