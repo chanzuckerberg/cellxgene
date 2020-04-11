@@ -32,8 +32,8 @@ def diffexp_ttest(adaptor, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
     dataB = adaptor.get_X_array(maskB, None)
 
     # mean, variance, N - calculate for both selections
-    meanA, vA, nA = _mean_var_n(dataA)
-    meanB, vB, nB = _mean_var_n(dataB)
+    meanA, vA, nA = mean_var_n(dataA)
+    meanB, vB, nB = mean_var_n(dataB)
     res = diffexp_ttest_from_mean_var(meanA, vA, nA, meanB, vB, nB, top_n, diffexp_lfc_cutoff)
 
     return res
@@ -96,7 +96,7 @@ def diffexp_ttest_from_mean_var(meanA, varA, nA, meanB, varB, nB, top_n, diffexp
 
 
 # Convenience function which handles sparse data
-def _mean_var_n(X):
+def mean_var_n(X):
     """
     Two-pass variance calculation.  Numerically (more) stable
     than naive methods (and same method used by numpy.var())

@@ -2,8 +2,8 @@ import os
 import concurrent.futures
 from itertools import repeat
 import numpy as np
-from server.compute.diffexp_generic import diffexp_ttest_from_mean_var
-from server.data_cxg.cxg_util import pack_selector
+from server.compute.diffexp_generic import diffexp_ttest_from_mean_var, mean_var_n
+from server.data_cxg.cxg_util import pack_selector_from_indices
 
 """
 See the comments in diffexp_generic for a description of this algorithm
@@ -78,12 +78,8 @@ class MyThreadPoolExecutor(concurrent.futures.ThreadPoolExecutor, DispatchMixins
 
 def _mean_var(matrix, row_selector, col_range):
     X = matrix.multi_index[row_selector, col_range[0] : col_range[1] - 1][""]
-    n = X.shape[0]
-    mean = np.sum(X, axis=0, dtype=np.float64) / n
-    dfm = X - mean
-    sumsq = np.sum(np.multiply(dfm, dfm, dtype=np.float64), axis=0)
-    variance = sumsq / (n - 1)
-    return (mean, variance)
+    mean, var, n = mean_var_n(X)
+    return (mean, var)
 
 
 def mean_var(matrix, row_selector):
@@ -95,7 +91,7 @@ def mean_var(matrix, row_selector):
     tile_extent = [dim.tile for dim in matrix.schema.domain]
 
     dispatch_func = _mean_var
-    row_selector = pack_selector(row_selector)
+    row_selector = pack_selector_from_indices(row_selector)
 
     # because all IO is done per-tile, and we are always dense and col-major,
     # use the tile column size as the partition.  Revisit partitioning if we

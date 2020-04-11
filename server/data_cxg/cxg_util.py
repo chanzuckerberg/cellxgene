@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def pack_selector(boolarray):
+def pack_selector_from_mask(boolarray):
     """
     pack all contiguous selectors into slices.  Remember that
     tiledb multi_index requires INCLUSIVE indices.
@@ -11,8 +11,13 @@ def pack_selector(boolarray):
         return slice(None)
 
     assert type(boolarray) == np.ndarray
+    assert boolarray.dtype == bool
 
     selector = np.nonzero(boolarray)[0]
+    return pack_selector_from_indices(selector)
+
+
+def pack_selector_from_indices(selector):
 
     if len(selector) == 0:
         return slice(None)

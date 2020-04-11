@@ -7,7 +7,7 @@ from server.common.utils import path_join
 from server.common.constants import Axis
 from server.data_common.data_adaptor import DataAdaptor
 from server.data_common.fbs.matrix import encode_matrix_fbs
-from server.data_cxg.cxg_util import pack_selector
+from server.data_cxg.cxg_util import pack_selector_from_mask
 import server.compute.diffexp_tiledb as diffexp_tiledb
 import tiledb
 import numpy as np
@@ -193,8 +193,8 @@ class CxgAdaptor(DataAdaptor):
         return diffexp_tiledb.diffexp_ttest(self, maskA, maskB, top_n, lfc_cutoff)
 
     def get_X_array(self, obs_mask=None, var_mask=None):
-        obs_items = pack_selector(obs_mask)
-        var_items = pack_selector(var_mask)
+        obs_items = pack_selector_from_mask(obs_mask)
+        var_items = pack_selector_from_mask(var_mask)
         X = self.open_array("X")
         if obs_items == slice(None) and var_items == slice(None):
             data = X[:, :]
