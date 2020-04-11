@@ -70,7 +70,7 @@ data_locator:
   s3:
     # s3 region name.
     #   if true, then the s3 location is automatically determined from the datapath or dataroot.
-    #   if false/null, then do not seta.
+    #   if false/null, then do not set.
     #   if a string, then use that value (e.g. us-east-1).
     region_name: true
 
