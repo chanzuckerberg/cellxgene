@@ -49,7 +49,7 @@ def _query_parameter_to_filter(args):
         "var": {},
     }
 
-    # args has already be url-unquoted once.  We assume double escaping
+    # args has already been url-unquoted once.  We assume double escaping
     # on name and value.
     try:
         for key, value in args.items(multi=True):
