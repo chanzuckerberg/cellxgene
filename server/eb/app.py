@@ -68,7 +68,6 @@ try:
 
     # features are unsupported in the current hosted server
     app_config.update(
-        diffexp__enable=False,
         user_annotations__enable=False,
         embeddings__enable_reembedding=False,
         multi_dataset__allowed_matrix_types=["cxg"],
