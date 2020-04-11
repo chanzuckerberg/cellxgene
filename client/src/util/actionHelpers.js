@@ -6,7 +6,7 @@ import { postNetworkErrorToast } from "../components/framework/toasters";
 dispatch an action error to the user.   Currently we use
 async toasts.
 */
-export const dispatchNetworkErrorMessageToUser = message =>
+export const dispatchNetworkErrorMessageToUser = (message) =>
   postNetworkErrorToast(message);
 
 /*
@@ -14,7 +14,7 @@ Catch unexpected errors and make sure we don't lose them!
 */
 export function catchErrorsWrap(fn, dispatchToUser = false) {
   return (dispatch, getState) => {
-    fn(dispatch, getState).catch(error => {
+    fn(dispatch, getState).catch((error) => {
       console.error(error);
       if (dispatchToUser) {
         dispatchNetworkErrorMessageToUser(error.message);
@@ -29,30 +29,33 @@ Wrapper to perform async fetch with some modest error handling
 and decoding.
 */
 const doFetch = async (url, acceptType) => {
-  const res = await fetch(url, {
-    method: "get",
-    headers: new Headers({
-      Accept: acceptType
-    }),
-    credentials: "include"
-  });
-  if (res.ok && res.headers.get("Content-Type").includes(acceptType)) {
-    return res;
+  try {
+    const res = await fetch(url, {
+      method: "get",
+      headers: new Headers({
+        Accept: acceptType,
+      }),
+      credentials: "include",
+    });
+    if (res.ok && res.headers.get("Content-Type").includes(acceptType)) {
+      return res;
+    }
+    // else an error
+    const msg = `Unexpected HTTP response ${res.status}, ${res.statusText}`;
+    dispatchNetworkErrorMessageToUser(msg);
+    throw new Error(msg);
+  } catch (e) {
+    // network error
+    const msg = "Unexpected HTTP error";
+    dispatchNetworkErrorMessageToUser(msg);
+    throw e;
   }
-  // else an error
-  let msg = `Unexpected HTTP response ${res.status}, ${res.statusText}`;
-  const body = await res.text();
-  if (body && body.length > 0) {
-    msg = `${msg} -- ${body}`;
-  }
-  dispatchNetworkErrorMessageToUser(msg);
-  throw new Error(msg);
 };
 
 /*
 Wrapper to perform an async fetch and JSON decode response.
 */
-export const doJsonRequest = async url => {
+export const doJsonRequest = async (url) => {
   const res = await doFetch(url, "application/json");
   return res.json();
 };
@@ -60,7 +63,7 @@ export const doJsonRequest = async url => {
 /*
 Wrapper to perform an async fetch for binary data.
 */
-export const doBinaryRequest = async url => {
+export const doBinaryRequest = async (url) => {
   const res = await doFetch(url, "application/octet-stream");
   return res.arrayBuffer();
 };

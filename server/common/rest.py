@@ -3,6 +3,7 @@ from http import HTTPStatus
 import copy
 import logging
 from flask import make_response, jsonify, current_app, abort
+from werkzeug.urls import url_unquote
 from server.common.constants import Axis, DiffExpMode, JSON_NaN_to_num_warning_msg
 from server.common.errors import (
     FilterError,
@@ -29,6 +30,70 @@ def abort_and_log(code, logmsg, loglevel=logging.DEBUG, include_exc_info=False):
     current_app.logger.log(loglevel, logmsg, exc_info=exc_info)
     # Do NOT send log message to HTTP response.
     return abort(code)
+
+
+def _query_parameter_to_filter(args):
+    """
+    Convert an annotation value filter, if present in the query args,
+    into the standard dict filter format used by internal code.
+
+    Query param filters look like:  <axis>:name=value, where value
+    may be one of:
+        - a range, min,max, where either may be an open range by using an asterisc, eg, 10,*
+        - a value
+    Eg,
+        ...?tissue=lung&obs:tissue=heart&obs:num_reads=1000,*
+    """
+    filters = {
+        "obs": {},
+        "var": {},
+    }
+
+    # args has already be url-unquoted once.  We assume double escaping
+    # on name and value.
+    try:
+        for key, value in args.items(multi=True):
+            axis, name = key.split(':')
+            if axis not in ("obs", "var"):
+                raise FilterError("unknown filter axis")
+            name = url_unquote(name)
+            current = filters[axis].setdefault(name, {"name": name})
+
+            val_split = value.split(',')
+            if len(val_split) == 1:
+                if 'min' in current or 'max' in current:
+                    raise FilterError("do not mix range and value filters")
+                value = url_unquote(value)
+                values = current.setdefault("values", [])
+                values.append(value)
+
+            elif len(val_split) == 2:
+                if len(current) > 1:
+                    raise FilterError("duplicate range specification")
+                min = url_unquote(val_split[0])
+                max = url_unquote(val_split[1])
+                if min != '*':
+                    current["min"] = float(min)
+                if max != "*":
+                    current["max"] = float(max)
+                if len(current) < 2:
+                    raise FilterError("must specify at least min or max in range filter")
+
+            else:
+                raise FilterError("badly formated filter value")
+
+    except ValueError as e:
+        raise FilterError(str(e))
+
+    result = {}
+    for axis in ("obs", "var"):
+        axis_filter = filters[axis]
+        if len(axis_filter) > 0:
+            result[axis] = {
+                "annotation_value": [val for val in axis_filter.values()]
+            }
+
+    return result
 
 
 def schema_get_helper(data_adaptor, annotations):
@@ -134,6 +199,22 @@ def data_var_put(request, data_adaptor):
     filter_json = request.get_json()
     filter = filter_json["filter"] if filter_json else None
     try:
+        return make_response(
+            data_adaptor.data_frame_to_fbs_matrix(filter, axis=Axis.VAR),
+            HTTPStatus.OK,
+            {"Content-Type": "application/octet-stream"},
+        )
+    except (FilterError, ValueError, ExceedsLimitError) as e:
+        return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)
+
+
+def data_var_get(request, data_adaptor):
+    preferred_mimetype = request.accept_mimetypes.best_match(["application/octet-stream"])
+    if preferred_mimetype != "application/octet-stream":
+        return abort(HTTPStatus.NOT_ACCEPTABLE)
+
+    try:
+        filter = _query_parameter_to_filter(request.args)
         return make_response(
             data_adaptor.data_frame_to_fbs_matrix(filter, axis=Axis.VAR),
             HTTPStatus.OK,
