@@ -6,6 +6,8 @@ import sys
 from urllib.parse import urlparse
 import yaml
 import copy
+import boto3
+import botocore
 
 from server.common.default_config import get_default_config
 from server.common.errors import ConfigurationError, DatasetAccessError, OntologyLoadFailure
@@ -188,13 +190,13 @@ class AppConfig(object):
 
         self.handle_server(context)
         self.handle_data_locator(context)
+        self.handle_adaptor(context)  # may depend on data_locator
         self.handle_presentation(context)
-        self.handle_single_dataset(context)
-        self.handle_multi_dataset(context)
+        self.handle_single_dataset(context)  # may depend on adaptor
+        self.handle_multi_dataset(context)  # may depend on adaptor
         self.handle_user_annotations(context)
         self.handle_embeddings(context)
         self.handle_diffexp(context)
-        self.handle_adaptor(context)
         self.handle_limits(context)
 
         self.is_completed = True
@@ -255,7 +257,22 @@ class AppConfig(object):
         self.server__flask_secret_key = environ.get("CXG_SECRET_KEY", self.server__flask_secret_key)
 
     def handle_data_locator(self, context):
-        self.__check_attr("data_locator__s3__region_name", (type(None), str))
+        self.__check_attr("data_locator__s3__region_name", (type(None), bool, str))
+        if self.data_locator__s3__region_name is True:
+            path = self.single_dataset__datapath or self.multi_dataset__dataroot
+            if path and path.startswith("s3:"):
+                bucket = urlparse(path).netloc
+                client = boto3.client("s3")
+                try:
+                    res = client.head_bucket(Bucket=bucket)
+                except botocore.exceptions.ClientError:
+                    raise ConfigurationError(f"Unable to determine region from {path}")
+
+                region = res.get("ResponseMetadata", {}).get("HTTPHeaders", {}).get("x-amz-bucket-region")
+                if region:
+                    self.data_locator__s3__region_name = region
+                else:
+                    raise ConfigurationError(f"Unable to determine region from {path}")
 
     def handle_presentation(self, context):
         self.__check_attr("presentation__max_categories", int)
@@ -281,7 +298,7 @@ class AppConfig(object):
             self.matrix_data_cache_manager = MatrixDataCacheManager(max_cached=1, timelimit_s=None)
 
         # preload this data set
-        matrix_data_loader = MatrixDataLoader(self.single_dataset__datapath)
+        matrix_data_loader = MatrixDataLoader(self.single_dataset__datapath, app_config=self)
         try:
             matrix_data_loader.pre_load_validation()
         except DatasetAccessError as e:
@@ -404,7 +421,7 @@ class AppConfig(object):
 
         if self.single_dataset__datapath:
             if self.embeddings__enable_reembedding:
-                matrix_data_loader = MatrixDataLoader(self.single_dataset__datapath)
+                matrix_data_loader = MatrixDataLoader(self.single_dataset__datapath, app_config=self)
                 if matrix_data_loader.matrix_data_type() != MatrixDataType.H5AD:
                     raise ConfigurationError("'enable-reembedding is only supported with H5AD files.")
                 if self.adaptor__anndata_adaptor__backed:
@@ -425,6 +442,11 @@ class AppConfig(object):
     def handle_adaptor(self, context):
         # cxg
         self.__check_attr("adaptor__cxg_adaptor__tiledb_ctx", dict)
+        regionkey = "vfs.s3.region"
+        if regionkey not in self.adaptor__cxg_adaptor__tiledb_ctx:
+            if type(self.data_locator__s3__region_name) == str:
+                self.adaptor__cxg_adaptor__tiledb_ctx[regionkey] = self.data_locator__s3__region_name
+
         from server.data_cxg.cxg_adaptor import CxgAdaptor
 
         CxgAdaptor.set_tiledb_context(self.adaptor__cxg_adaptor__tiledb_ctx)
