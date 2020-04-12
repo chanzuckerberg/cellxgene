@@ -65,6 +65,7 @@ embeddings:
 diffexp:
   enable: true
   lfc_cutoff: 0.01
+  top_n: 10
 
 data_locator:
   s3:
