@@ -10,15 +10,15 @@ import { unassignedCategoryLabel } from "../globals";
 */
 
 /*
-Generates a mapping of categorical values to data needed to calculate centroids
-categoricalValue -> {
+Generates a mapping of labels to data needed to calculate centroids
+label -> {
  length: int,
  holdsFinite: Boolean,
  xCoordinates: Float32Array,
  yCoordinates: Float32Array
 }
 */
-const getCoordinatesByCategoricalValues = (
+const getCoordinatesByLabel = (
   obsAnnotations,
   obsLayout,
   categoryName,
@@ -46,33 +46,33 @@ const getCoordinatesByCategoricalValues = (
 
   // Iterate over all cells
   for (let i = 0, len = categoryArray.length; i < len; i += 1) {
-    // Fetch the categorical value of the current cell
-    const categoryValue = categoryArray[i];
+    // Fetch the label of the current cell
+    const label = categoryArray[i];
 
-    // Get the index of the categoryValue within the category
-    const categoryValueIndex = categoryValueIndices.get(categoryValue);
+    // Get the index of the label within the category
+    const labelIndex = categoryValueIndices.get(label);
 
-    // If the category is truncated and this value is removed,
-    //  it will not be assigned a category value and will not be
+    // If the category's labels are truncated and this label is removed,
+    //  it will not be assigned a label and will not be
     //  labeled on the graph
     // If the user created this category,
-    //  do not create a label for the `unassigned` value
+    //  do not create a coord for the `unassigned` label
     if (
-      categoryValueIndex !== undefined &&
-      !(isUserAnno && categoryValue === unassignedCategoryLabel)
+      labelIndex !== undefined &&
+      !(isUserAnno && label === unassignedCategoryLabel)
     ) {
       // Create/fetch the scratchpad value
-      let coords = coordsByCategoryLabel.get(categoryValue);
+      let coords = coordsByCategoryLabel.get(label);
       if (coords === undefined) {
-        // Get the number of cells which are in the categorical value
-        const numInCategoricalValue = categoryValueCounts[categoryValueIndex];
+        // Get the number of cells which are in the label
+        const numInLabel = categoryValueCounts[labelIndex];
         coords = {
           hasFinite: false,
-          xCoordinates: new Float32Array(numInCategoricalValue),
-          yCoordinates: new Float32Array(numInCategoricalValue),
+          xCoordinates: new Float32Array(numInLabel),
+          yCoordinates: new Float32Array(numInLabel),
           length: 0
         };
-        coordsByCategoryLabel.set(categoryValue, coords);
+        coordsByCategoryLabel.set(label, coords);
       }
 
       coords.hasFinite =
@@ -91,9 +91,9 @@ const getCoordinatesByCategoricalValues = (
 };
 
 /* 
-  calcMedianCentroid calculates the median coordinates for categorical values in a given metadata field 
+  calcMedianCentroid calculates the median coordinates for labels in a given category
 
-  categoricalValue -> [x-Coordinate, y-Coordinate]
+  label -> [x-Coordinate, y-Coordinate]
 */
 
 const calcMedianCentroid = (
@@ -104,8 +104,8 @@ const calcMedianCentroid = (
   categoricalSelection,
   schemaObsByName
 ) => {
-  // generate a map describing the coordinates for each value within the given category
-  const dataMap = getCoordinatesByCategoricalValues(
+  // generate a map describing the coordinates for each label within the given category
+  const dataMap = getCoordinatesByLabel(
     obsAnnotations,
     obsLayout,
     categoryName,
@@ -114,25 +114,25 @@ const calcMedianCentroid = (
     schemaObsByName
   );
 
-  // categoricalValue => [medianXCoordinate, medianYCoordinate]
+  // label => [medianXCoordinate, medianYCoordinate]
   const coordinates = new Map();
 
   // Iterate over the recently created map
-  dataMap.forEach((value, key) => {
-    // If there are coordinates for this categorical value,
-    // and there is a finite coordinate for the category value
-    if (value.length > 0 && value.hasFinite) {
+  dataMap.forEach((coords, label) => {
+    // If there are coordinates for this label,
+    // and there is a finite coordinate for the label
+    if (coords.length > 0 && coords.hasFinite) {
       const calculatedCoordinates = [];
 
       // Find and store the median x and y coordinate
-      calculatedCoordinates[0] = quantile([0.5], value.xCoordinates)[0];
-      calculatedCoordinates[1] = quantile([0.5], value.yCoordinates)[0];
+      calculatedCoordinates[0] = quantile([0.5], coords.xCoordinates)[0];
+      calculatedCoordinates[1] = quantile([0.5], coords.yCoordinates)[0];
 
-      coordinates.set(key, calculatedCoordinates);
+      coordinates.set(label, calculatedCoordinates);
     }
   });
 
-  // return the map: categoricalValue -> [medianXCoordinate, medianYCoordinate]
+  // return the map: label -> [medianXCoordinate, medianYCoordinate]
   return coordinates;
 };
 

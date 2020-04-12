@@ -334,10 +334,9 @@ class DataAdaptor(metaclass=ABCMeta):
         normalized_layout = normalized_layout.astype(dtype=np.float32)
         return normalized_layout
 
-    def layout_to_fbs_matrix(self):
-        """ same as layout, except returns a flatbuffer """
+    def layout_to_fbs_matrix(self, fields):
         """
-        return all embeddings as a flatbuffer, using the cellxgene matrix fbs encoding.
+        return specified embeddings as a flatbuffer, using the cellxgene matrix fbs encoding.
 
         * returns only first two dimensions, with name {ename}_0 and {ename}_1,
           where {ename} is the embedding name.
@@ -346,8 +345,7 @@ class DataAdaptor(metaclass=ABCMeta):
         * does not support filtering
 
         """
-
-        embeddings = self.get_embedding_names()
+        embeddings = self.get_embedding_names() if fields is None or len(fields) == 0 else fields
         layout_data = []
         with ServerTiming.time(f"layout.query"):
             for ename in embeddings:

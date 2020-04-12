@@ -69,7 +69,7 @@ describe("centroid", () => {
     });
   });
 
-  test("field3 (boolean obsAnnotation", () => {
+  test("field3 (boolean obsAnnotation)", () => {
     const centroidResult = calcCentroid(
       world.obsAnnotations,
       world.obsLayout,

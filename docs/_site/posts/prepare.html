@@ -16,10 +16,10 @@
 <meta property="og:url" content="http://localhost:4000/cellxgene/posts/prepare.html" />
 <meta property="og:site_name" content="cellxgene" />
 <script type="application/ld+json">
-{"description":"Preparing your data","publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"http://localhost:4000/cellxgene/cellxgene-logo.png"}},"@type":"WebPage","url":"http://localhost:4000/cellxgene/posts/prepare.html","headline":"prepare","@context":"http://schema.org"}</script>
+{"description":"Preparing your data","publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"http://localhost:4000/cellxgene/cellxgene-logo.png"}},"@type":"WebPage","headline":"prepare","url":"http://localhost:4000/cellxgene/posts/prepare.html","@context":"http://schema.org"}</script>
 <!-- End Jekyll SEO tag -->
 
-    <link rel="stylesheet" href="/cellxgene/assets/css/style.css?v=d2171b9a2f9935b8b92c3103c93405d1d74ef2b3">
+    <link rel="stylesheet" href="/cellxgene/assets/css/style.css?v=6193ae49975e7bccac34c95b3d13d42f74d6fcee">
     <!--[if lt IE 9]>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
     <![endif]-->
@@ -85,6 +85,10 @@
         <a href="/cellxgene/posts/contact" class="btn">Contact & finding help</a><br>
         
         
+        
+        <a href="/cellxgene/posts/cellxgene_cziscience_com" class="btn">cellxgene.cziscience.com</a><br>
+        
+        
 
         <a href="https://github.com/chanzuckerberg/cellxgene" class="btn" target="_blank">Code</a>
     </p>
@@ -93,30 +97,30 @@
       <section>
       <h1 id="data-format-requirements">Data format requirements</h1>
 
-<p>If your data is in <code class="highlighter-rouge">h5ad</code> file (from the <a href="https://anndata.readthedocs.io/en/latest/index.html"><code class="highlighter-rouge">anndata</code></a> library) and meets the following requirements, you can go straight to <code class="highlighter-rouge">cellxgene launch</code>:</p>
+<p>If your data is in <code class="language-plaintext highlighter-rouge">h5ad</code> file (from the <a href="https://anndata.readthedocs.io/en/latest/index.html"><code class="language-plaintext highlighter-rouge">anndata</code></a> library) and meets the following requirements, you can go straight to <code class="language-plaintext highlighter-rouge">cellxgene launch</code>:</p>
 
 <ul>
-  <li>Expression values (raw or normalized) in <code class="highlighter-rouge">anndata.X</code></li>
-  <li>At least one embedding (e.g., tSNE, UMAP) in <code class="highlighter-rouge">anndata.obsm</code>, specified with the prefix <code class="highlighter-rouge">X_</code> (e.g., by default scanpy stores UMAP coordinates in <code class="highlighter-rouge">anndata.obsm['X_umap']</code>)</li>
-  <li>A unique identifier for every cell is available in an <code class="highlighter-rouge">anndata.obs</code> field (you can specify this with the <code class="highlighter-rouge">--obs-names</code> option)</li>
-  <li>A unique identifier for every gene is available in an <code class="highlighter-rouge">anndata.var</code> field (you can specify which field to use with the <code class="highlighter-rouge">--var-names</code> option)</li>
+  <li>Expression values (raw or normalized) in <code class="language-plaintext highlighter-rouge">anndata.X</code></li>
+  <li>At least one embedding (e.g., tSNE, UMAP) in <code class="language-plaintext highlighter-rouge">anndata.obsm</code>, specified with the prefix <code class="language-plaintext highlighter-rouge">X_</code> (e.g., by default scanpy stores UMAP coordinates in <code class="language-plaintext highlighter-rouge">anndata.obsm['X_umap']</code>)</li>
+  <li>A unique identifier for every cell is available in an <code class="language-plaintext highlighter-rouge">anndata.obs</code> field (you can specify this with the <code class="language-plaintext highlighter-rouge">--obs-names</code> option)</li>
+  <li>A unique identifier for every gene is available in an <code class="language-plaintext highlighter-rouge">anndata.var</code> field (you can specify which field to use with the <code class="language-plaintext highlighter-rouge">--var-names</code> option)</li>
 </ul>
 
 <h4 id="what-about-r-objects-from-seurat--bioconductor">What about R objects from seurat / bioconductor!?</h4>
-<p>We hear you! We’d also love to be able to ingest these files directly. This isn’t currently possible, but in the meantime, you can use one of <a href="https://satijalab.org/seurat/v3.0/conversion_vignette.html">these handy adapters</a> to convert to <code class="highlighter-rouge">h5ad</code>.</p>
+<p>We hear you! We’d also love to be able to ingest these files directly. This isn’t currently possible, but in the meantime, you can use <a href="https://bioconda.github.io/recipes/r-sceasy/README.html">sceasy</a> (<a href="https://cellgeni.readthedocs.io/en/latest/visualisations.html">docs</a>) to convert to <code class="language-plaintext highlighter-rouge">h5ad</code>. Seurat also has some <a href="https://satijalab.org/seurat/v3.0/conversion_vignette.html">handy conversion tools</a> that you can try out.</p>
 
 <h4 id="can-i-use-data-hosted-on-the-web-somewhere">Can I use data hosted on the web somewhere?</h4>
 <p>Yes! You can launch from a URL instead of a filepath. The same data format requirements apply. Please see <a href="launch">here</a> for more details.</p>
 
-<h1 id="using-cellxgene-prepare">Using <code class="highlighter-rouge">cellxgene prepare</code></h1>
+<h1 id="using-cellxgene-prepare">Using <code class="language-plaintext highlighter-rouge">cellxgene prepare</code></h1>
 
-<p>If your data is in a different format, and/or you still need to perform dimensionality reduction and/or clustering, <code class="highlighter-rouge">cellxgene</code> can do that for you with the <code class="highlighter-rouge">prepare</code> command.</p>
+<p>If your data is in a different format, and/or you still need to perform dimensionality reduction and/or clustering, <code class="language-plaintext highlighter-rouge">cellxgene</code> can do that for you with the <code class="language-plaintext highlighter-rouge">prepare</code> command.</p>
 
-<h2 id="what-is-cellxgene-prepare">What is <code class="highlighter-rouge">cellxgene prepare</code>?</h2>
+<h2 id="what-is-cellxgene-prepare">What is <code class="language-plaintext highlighter-rouge">cellxgene prepare</code>?</h2>
 
-<p><code class="highlighter-rouge">cellxgene prepare</code> offers an easy command line interface (CLI) to preliminarily wrangle your data into the required format for previewing it with cellxgene. It runs <code class="highlighter-rouge">scanpy</code> under the hood and can read in any format that is currently supported by <code class="highlighter-rouge">scanpy</code> (including mtx, loom, and more listed <a href="https://scanpy.readthedocs.io/en/latest/api/index.html#reading">in the scanpy documentation</a>).</p>
+<p><code class="language-plaintext highlighter-rouge">cellxgene prepare</code> offers an easy command line interface (CLI) to preliminarily wrangle your data into the required format for previewing it with cellxgene. It runs <code class="language-plaintext highlighter-rouge">scanpy</code> under the hood and can read in any format that is currently supported by <code class="language-plaintext highlighter-rouge">scanpy</code> (including mtx, loom, and more listed <a href="https://scanpy.readthedocs.io/en/latest/api/index.html#reading">in the scanpy documentation</a>).</p>
 
-<p><code class="highlighter-rouge">prepare</code> uses scanpy to:</p>
+<p><code class="language-plaintext highlighter-rouge">prepare</code> uses scanpy to:</p>
 
 <ul>
   <li>Handle simple data normalization (from a <a href="https://www.pydoc.io/pypi/scanpy-0.2.3/autoapi/preprocessing/recipes/index.html">recipe</a>)</li>
@@ -127,70 +131,70 @@
 
 <p>You can control which steps to run and their methods (when applicable), via the CLI. The CLI also includes options for computing QC metrics, enforcing matrix sparcity, specifying index names, and plotting output.</p>
 
-<h2 id="what-is-cellxgene-prepare-not">What is cellxgene <code class="highlighter-rouge">prepare</code> <em>not</em>?</h2>
+<h2 id="what-is-cellxgene-prepare-not">What is cellxgene <code class="language-plaintext highlighter-rouge">prepare</code> <em>not</em>?</h2>
 
-<p><code class="highlighter-rouge">cellxgene prepare</code> is not meant as a way to formally process or analyze your data. It’s simply a utility for quickly wrangling your data into cellxgene-compatible format and computing a “vanilla” embedding so you can try out <code class="highlighter-rouge">cellxgene</code> and get a general sense of a dataset.</p>
+<p><code class="language-plaintext highlighter-rouge">cellxgene prepare</code> is not meant as a way to formally process or analyze your data. It’s simply a utility for quickly wrangling your data into cellxgene-compatible format and computing a “vanilla” embedding so you can try out <code class="language-plaintext highlighter-rouge">cellxgene</code> and get a general sense of a dataset.</p>
 
-<h2 id="quickstart-for-cellxgene-prepare">Quickstart for <code class="highlighter-rouge">cellxgene prepare</code></h2>
-<p>To add <code class="highlighter-rouge">cellxgene prepare</code> to your <a href="install">cellxgene installation</a>, run<br />
-<code class="highlighter-rouge">pip install cellxgene[prepare]</code></p>
+<h2 id="quickstart-for-cellxgene-prepare">Quickstart for <code class="language-plaintext highlighter-rouge">cellxgene prepare</code></h2>
+<p>To add <code class="language-plaintext highlighter-rouge">cellxgene prepare</code> to your <a href="install">cellxgene installation</a>, run<br />
+<code class="language-plaintext highlighter-rouge">pip install cellxgene[prepare]</code></p>
 
-<p>Then run <code class="highlighter-rouge">prepare</code> on your data with:</p>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cellxgene prepare dataset.h5ad --output=dataset-processed.h5ad
+<p>Then run <code class="language-plaintext highlighter-rouge">prepare</code> on your data with:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cellxgene prepare dataset.h5ad --output=dataset-processed.h5ad
 </code></pre></div></div>
 
-<p>This will load the input data, perform PCA and nearest neighbor calculations, compute <code class="highlighter-rouge">UMAP</code> and <code class="highlighter-rouge">tSNE</code> embeddings and <code class="highlighter-rouge">louvain</code> cluster assignments, and save the results in a new file called <code class="highlighter-rouge">dataset-processed.h5ad</code> that can be loaded using <code class="highlighter-rouge">cellxgene launch</code>.</p>
+<p>This will load the input data, perform PCA and nearest neighbor calculations, compute <code class="language-plaintext highlighter-rouge">UMAP</code> and <code class="language-plaintext highlighter-rouge">tSNE</code> embeddings and <code class="language-plaintext highlighter-rouge">louvain</code> cluster assignments, and save the results in a new file called <code class="language-plaintext highlighter-rouge">dataset-processed.h5ad</code> that can be loaded using <code class="language-plaintext highlighter-rouge">cellxgene launch</code>.</p>
 
 <h2 id="example-usage">Example usage</h2>
 
-<p>As a quick example, let’s construct a command to use <code class="highlighter-rouge">prepare</code> to take a raw expression matrix and generate a processed <code class="highlighter-rouge">h5ad</code> ready to visualize with cellxgene.</p>
+<p>As a quick example, let’s construct a command to use <code class="language-plaintext highlighter-rouge">prepare</code> to take a raw expression matrix and generate a processed <code class="language-plaintext highlighter-rouge">h5ad</code> ready to visualize with cellxgene.</p>
 
-<p>We’ll start off using the raw data from the pbmc3k dataset. This dataset is described <a href="https://icb-scanpy.readthedocs-hosted.com/en/stable/api/scanpy.datasets.pbmc3k.html">here</a>, and is available as part of the scanpy package. For this example, we’ll assume this raw data is stored in a file called <code class="highlighter-rouge">pbmc3k-raw.h5ad</code>.</p>
+<p>We’ll start off using the raw data from the pbmc3k dataset. This dataset is described <a href="https://icb-scanpy.readthedocs-hosted.com/en/stable/api/scanpy.datasets.pbmc3k.html">here</a>, and is available as part of the scanpy package. For this example, we’ll assume this raw data is stored in a file called <code class="language-plaintext highlighter-rouge">pbmc3k-raw.h5ad</code>.</p>
 
-<p>Our <code class="highlighter-rouge">prepare</code> command looks like this:</p>
+<p>Our <code class="language-plaintext highlighter-rouge">prepare</code> command looks like this:</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cellxgene prepare pbmc3k-raw.h5ad \
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cellxgene prepare pbmc3k-raw.h5ad \
 	--run-qc \                                  # (A)
 	--recipe seurat \                           # (B)
 	--layout tsne --layout umap \               # (C)
 	--output pbmc3k-prepared.h5ad               # (D)
 </code></pre></div></div>
 
-<p>Let’s look at what <code class="highlighter-rouge">prepare</code> is doing to our data, and how each step relates to the command above. You can see a walkthrough of what’s going on under the hood for this example in <a href="https://github.com/chanzuckerberg/cellxgene-vignettes/blob/master/dataset-processing/pbmc3k-prepare-example.ipynb">this notebook</a>.</p>
+<p>Let’s look at what <code class="language-plaintext highlighter-rouge">prepare</code> is doing to our data, and how each step relates to the command above. You can see a walkthrough of what’s going on under the hood for this example in <a href="https://github.com/chanzuckerberg/cellxgene-vignettes/blob/master/dataset-processing/pbmc3k-prepare-example.ipynb">this notebook</a>.</p>
 
-<p><strong>(A) - Compute quality control metrics and store this in our <code class="highlighter-rouge">AnnData</code> object for later inspection</strong> <br />
+<p><strong>(A) - Compute quality control metrics and store this in our <code class="language-plaintext highlighter-rouge">AnnData</code> object for later inspection</strong> <br />
 <strong>(B) - Normalize the expression matrix using a basic preprocessing recipe</strong> <br />
 <strong>(auto) - Do some preprocessing to run PCA and compute the neighbor graph</strong><br />
 <strong>(auto) - Infer clusters with the Louvain algorithm and store these labels to visualize later</strong><br />
 <strong>(C) - Compute and store UMAP and tSNE embeddings</strong><br />
 <strong>(D) - Write results to file</strong></p>
 
-<h2 id="options-for-cellxgene-prepare">Options for cellxgene <code class="highlighter-rouge">prepare</code></h2>
+<h2 id="options-for-cellxgene-prepare">Options for cellxgene <code class="language-plaintext highlighter-rouge">prepare</code></h2>
 
-<p><strong>For the most up-to-date and comprehensive list of options, run <code class="highlighter-rouge">cellxgene prepare --help</code></strong></p>
+<p><strong>For the most up-to-date and comprehensive list of options, run <code class="language-plaintext highlighter-rouge">cellxgene prepare --help</code></strong></p>
 
-<p><code class="highlighter-rouge">--embedding</code> controls which dimensionality reduction algorithm is applies to your data.<br />
-Options are <code class="highlighter-rouge">umap</code> and/or <code class="highlighter-rouge">tsne</code>. Defaults to both.</p>
+<p><code class="language-plaintext highlighter-rouge">--embedding</code> controls which dimensionality reduction algorithm is applies to your data.<br />
+Options are <code class="language-plaintext highlighter-rouge">umap</code> and/or <code class="language-plaintext highlighter-rouge">tsne</code>. Defaults to both.</p>
 
-<p><code class="highlighter-rouge">--recipe</code> controls which normalization steps to apply to your data, based on one of the preprocessing <code class="highlighter-rouge">recipes</code> included with <code class="highlighter-rouge">scanpy</code>.
-These recipes include steps like cell filtering and gene selection; see the <code class="highlighter-rouge">scanpy</code> <a href="https://scanpy.readthedocs.io/en/latest/api/index.html#recipes">documentation</a> for more details. <br />
-Options are <code class="highlighter-rouge">none</code>, <code class="highlighter-rouge">seurat</code>, or <code class="highlighter-rouge">zheng17</code>. Defaults to <code class="highlighter-rouge">none</code>.</p>
+<p><code class="language-plaintext highlighter-rouge">--recipe</code> controls which normalization steps to apply to your data, based on one of the preprocessing <code class="language-plaintext highlighter-rouge">recipes</code> included with <code class="language-plaintext highlighter-rouge">scanpy</code>.
+These recipes include steps like cell filtering and gene selection; see the <code class="language-plaintext highlighter-rouge">scanpy</code> <a href="https://scanpy.readthedocs.io/en/latest/api/index.html#recipes">documentation</a> for more details. <br />
+Options are <code class="language-plaintext highlighter-rouge">none</code>, <code class="language-plaintext highlighter-rouge">seurat</code>, or <code class="language-plaintext highlighter-rouge">zheng17</code>. Defaults to <code class="language-plaintext highlighter-rouge">none</code>.</p>
 
-<p><code class="highlighter-rouge">--sparse</code> is a flag determines whether to enforce a sparse matrix. For large datasets, <code class="highlighter-rouge">prepare</code> can take a long time to run (a few minutes for datasets with 10-100k cells, up to an hour or more for datasets with &gt;100k cells). If you want <code class="highlighter-rouge">prepare</code> to run faster we recommend using the <code class="highlighter-rouge">sparse</code> option.<br />
-If this flag is not included, default is <code class="highlighter-rouge">False</code></p>
+<p><code class="language-plaintext highlighter-rouge">--sparse</code> is a flag determines whether to enforce a sparse matrix. For large datasets, <code class="language-plaintext highlighter-rouge">prepare</code> can take a long time to run (a few minutes for datasets with 10-100k cells, up to an hour or more for datasets with &gt;100k cells). If you want <code class="language-plaintext highlighter-rouge">prepare</code> to run faster we recommend using the <code class="language-plaintext highlighter-rouge">sparse</code> option.<br />
+If this flag is not included, default is <code class="language-plaintext highlighter-rouge">False</code></p>
 
-<p><code class="highlighter-rouge">--skip-qc</code> by default, <code class="highlighter-rouge">cellxgene prepare</code> will compute quality control metrics (saved to <code class="highlighter-rouge">anndata.obs</code> and <code class="highlighter-rouge">anndata.var</code>) as described in the <code class="highlighter-rouge">scanpy</code> <a href="https://scanpy.readthedocs.io/en/stable/api/scanpy.pp.calculate_qc_metrics.html">documentation</a>. Pass this flag if you would like to skip this step.</p>
+<p><code class="language-plaintext highlighter-rouge">--skip-qc</code> by default, <code class="language-plaintext highlighter-rouge">cellxgene prepare</code> will compute quality control metrics (saved to <code class="language-plaintext highlighter-rouge">anndata.obs</code> and <code class="language-plaintext highlighter-rouge">anndata.var</code>) as described in the <code class="language-plaintext highlighter-rouge">scanpy</code> <a href="https://scanpy.readthedocs.io/en/stable/api/scanpy.pp.calculate_qc_metrics.html">documentation</a>. Pass this flag if you would like to skip this step.</p>
 
-<p><code class="highlighter-rouge">--make-obs-names-unique</code> / <code class="highlighter-rouge">--make-var-names-unique</code> determine whether to rename <code class="highlighter-rouge">obs</code> (cell) / <code class="highlighter-rouge">var</code> (gene) names, respectively, to be unique.<br />
-Default is <code class="highlighter-rouge">True</code>.</p>
+<p><code class="language-plaintext highlighter-rouge">--make-obs-names-unique</code> / <code class="language-plaintext highlighter-rouge">--make-var-names-unique</code> determine whether to rename <code class="language-plaintext highlighter-rouge">obs</code> (cell) / <code class="language-plaintext highlighter-rouge">var</code> (gene) names, respectively, to be unique.<br />
+Default is <code class="language-plaintext highlighter-rouge">True</code>.</p>
 
-<p><code class="highlighter-rouge">--set-obs-names</code> controls which field in <code class="highlighter-rouge">anndata.obs</code> (cell metadata) is used as the <em>index</em> for cells (e.g., a cell ID column).<br />
-Default is <code class="highlighter-rouge">anndata.obs.names</code></p>
+<p><code class="language-plaintext highlighter-rouge">--set-obs-names</code> controls which field in <code class="language-plaintext highlighter-rouge">anndata.obs</code> (cell metadata) is used as the <em>index</em> for cells (e.g., a cell ID column).<br />
+Default is <code class="language-plaintext highlighter-rouge">anndata.obs.names</code></p>
 
-<p><code class="highlighter-rouge">--set-var-names</code> controls which field in <code class="highlighter-rouge">anndata.var</code> (gene metadata) is used as the <em>index</em> for genes.<br />
-Default is <code class="highlighter-rouge">anndata.var.names</code></p>
+<p><code class="language-plaintext highlighter-rouge">--set-var-names</code> controls which field in <code class="language-plaintext highlighter-rouge">anndata.var</code> (gene metadata) is used as the <em>index</em> for genes.<br />
+Default is <code class="language-plaintext highlighter-rouge">anndata.var.names</code></p>
 
-<p><code class="highlighter-rouge">--output</code> and <code class="highlighter-rouge">--overwrite</code> control where the processed data is saved.</p>
+<p><code class="language-plaintext highlighter-rouge">--output</code> and <code class="language-plaintext highlighter-rouge">--overwrite</code> control where the processed data is saved.</p>
 
       </section>
       <footer>

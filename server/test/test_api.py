@@ -84,7 +84,7 @@ class EndPoints(object):
         self.assertIsNone(df["row_idx"])
         self.assertEqual(len(df["columns"]), df["n_cols"])
         obs_index_col_name = self.schema["schema"]["annotations"]["obs"]["index"]
-        self.assertListEqual(
+        self.assertCountEqual(
             df["col_idx"],
             [obs_index_col_name, "n_genes", "percent_mito", "n_counts", "louvain"]
             + (["cluster-test"] if self.ANNOTATIONS_ENABLED else []),
@@ -104,7 +104,7 @@ class EndPoints(object):
         self.assertIsNotNone(df["columns"])
         self.assertIsNone(df["row_idx"])
         self.assertEqual(len(df["columns"]), df["n_cols"])
-        self.assertListEqual(df["col_idx"], ["n_genes", "percent_mito"])
+        self.assertCountEqual(df["col_idx"], ["n_genes", "percent_mito"])
 
     def test_get_annotations_obs_error(self):
         endpoint = "annotations/obs"
@@ -157,7 +157,7 @@ class EndPoints(object):
         self.assertIsNone(df["row_idx"])
         self.assertEqual(len(df["columns"]), df["n_cols"])
         var_index_col_name = self.schema["schema"]["annotations"]["var"]["index"]
-        self.assertListEqual(df["col_idx"], [var_index_col_name, "n_cells"])
+        self.assertCountEqual(df["col_idx"], [var_index_col_name, "n_cells"])
 
     def test_get_annotations_var_keys_fbs(self):
         endpoint = "annotations/var"
@@ -173,7 +173,7 @@ class EndPoints(object):
         self.assertIsNotNone(df["columns"])
         self.assertIsNone(df["row_idx"])
         self.assertEqual(len(df["columns"]), df["n_cols"])
-        self.assertListEqual(df["col_idx"], ["n_cells"])
+        self.assertCountEqual(df["col_idx"], ["n_cells"])
 
     def test_get_annotations_var_error(self):
         endpoint = "annotations/var"
@@ -237,7 +237,7 @@ class EndPoints(object):
 
     def test_static(self):
         endpoint = "static"
-        file = "js/service-worker.js"
+        file = "assets/favicon.ico"
         url = f"{self.LOCAL_URL}{endpoint}/{file}"
         result = self.session.get(url)
         self.assertEqual(result.status_code, HTTPStatus.OK)

@@ -1,10 +1,10 @@
-import os
 import datetime
 import logging
 
 from flask import Flask, redirect, current_app, make_response, render_template, abort
-from flask import Blueprint, request, send_from_directory
+from flask import Blueprint, request
 from flask_restful import Api, Resource
+from server_timing import Timing as ServerTiming
 
 from http import HTTPStatus
 
@@ -18,6 +18,8 @@ from server.data_common.matrix_loader import MatrixDataLoader
 from functools import wraps
 
 webbp = Blueprint("webapp", "server.common.web", template_folder="templates")
+
+ONE_WEEK = 7 * 24 * 60 * 60
 
 
 def _cache_control(always, **cache_kwargs):
@@ -52,7 +54,7 @@ def cache_control_always(**cache_kwargs):
 
 
 @webbp.route("/", methods=["GET"])
-@cache_control(public=True, max_age=3600)
+@cache_control(public=True, max_age=ONE_WEEK)
 def dataset_index(dataset=None):
     config = current_app.app_config
     if dataset is None:
@@ -74,13 +76,6 @@ def dataset_index(dataset=None):
         return common_rest.abort_and_log(
             HTTPStatus.BAD_REQUEST, f"Invalid dataset {dataset}", loglevel=logging.INFO, include_exc_info=True
         )
-
-
-# TODO: remove the top-level /favicon route once the build problem with index.html is resolved
-@webbp.route("/favicon.png", methods=["GET"])
-@webbp.route("/static/img/favicon.png", methods=["GET"])
-def favicon():
-    return send_from_directory(os.path.join(webbp.root_path, "static/img/"), "favicon.png")
 
 
 @webbp.route("/health", methods=["GET"])
@@ -131,7 +126,7 @@ def dataroot_test_index():
     data += "<body><H1>Welcome to cellxgene</H1>"
 
     config = current_app.app_config
-    locator = DataLocator(config.multi_dataset__dataroot, config=config)
+    locator = DataLocator(config.multi_dataset__dataroot, app_config=config)
     datasets = []
     for fname in locator.ls():
         location = path_join(config.multi_dataset__dataroot, fname)
@@ -165,21 +160,21 @@ def dataroot_index():
 
 
 class SchemaAPI(Resource):
-    @cache_control(public=True, max_age=3600)
+    @cache_control(public=True, max_age=ONE_WEEK)
     @rest_get_data_adaptor
     def get(self, data_adaptor):
         return common_rest.schema_get(data_adaptor, current_app.annotations)
 
 
 class ConfigAPI(Resource):
-    @cache_control(public=True, max_age=3600)
+    @cache_control(public=True, max_age=ONE_WEEK)
     @rest_get_data_adaptor
     def get(self, data_adaptor):
         return common_rest.config_get(current_app.app_config, data_adaptor, current_app.annotations)
 
 
 class AnnotationsObsAPI(Resource):
-    @cache_control(public=True, max_age=3600)
+    @cache_control(public=True, max_age=ONE_WEEK)
     @rest_get_data_adaptor
     def get(self, data_adaptor):
         return common_rest.annotations_obs_get(request, data_adaptor, current_app.annotations)
@@ -191,7 +186,7 @@ class AnnotationsObsAPI(Resource):
 
 
 class AnnotationsVarAPI(Resource):
-    @cache_control(public=True, max_age=3600)
+    @cache_control(public=True, max_age=ONE_WEEK)
     @rest_get_data_adaptor
     def get(self, data_adaptor):
         return common_rest.annotations_var_get(request, data_adaptor, current_app.annotations)
@@ -212,7 +207,7 @@ class DiffExpObsAPI(Resource):
 
 
 class LayoutObsAPI(Resource):
-    @cache_control(public=True, max_age=3600)
+    @cache_control(public=True, max_age=ONE_WEEK)
     @rest_get_data_adaptor
     def get(self, data_adaptor):
         return common_rest.layout_obs_get(request, data_adaptor)
@@ -243,6 +238,8 @@ class Server:
         self.app = Flask(__name__, static_folder="../common/web/static")
         self._before_adding_routes(app_config)
         self.app.json_encoder = Float32JSONEncoder
+        if app_config.server__server_timing_headers:
+            ServerTiming(self.app, force_debug=True)
 
         # enable session data
         self.app.permanent_session_lifetime = datetime.timedelta(days=50 * 365)

@@ -9,6 +9,7 @@ from server.data_common.data_adaptor import DataAdaptor
 from server.data_common.fbs.matrix import encode_matrix_fbs
 from server.data_cxg.cxg_util import pack_selector_from_mask
 import server.compute.diffexp_tiledb as diffexp_tiledb
+from server.common.immutable_kvcache import ImmutableKVCache
 import tiledb
 import numpy as np
 import pandas as pd
@@ -25,13 +26,17 @@ class CxgAdaptor(DataAdaptor):
 
     def __init__(self, data_locator, config=None):
         super().__init__(config)
-        self.arrays = {}
         self.lock = threading.Lock()
 
         self.data_locator = data_locator
         self.url = data_locator.uri_or_path
         if self.url[-1] != "/":
             self.url += "/"
+
+        # caching immutable state
+        self.lsuri_results = ImmutableKVCache(lambda key: self._lsuri(uri=key, tiledb_ctx=self.tiledb_ctx))
+        self.arrays = ImmutableKVCache(lambda key: self._open_array(uri=key, tiledb_ctx=self.tiledb_ctx))
+        self.schema = None
 
         self._validate_and_initialize()
 
@@ -85,6 +90,18 @@ class CxgAdaptor(DataAdaptor):
     def get_path(self, *urls):
         return path_join(self.url, *urls)
 
+    @staticmethod
+    def _lsuri(uri, tiledb_ctx):
+        def _cleanpath(p):
+            if p[-1] == "/":
+                return p[:-1]
+            else:
+                return p
+
+        result = []
+        tiledb.ls(uri, lambda path, type: result.append((_cleanpath(path), type)), ctx=tiledb_ctx)
+        return result
+
     def lsuri(self, uri):
         """
         given a URI, do a tiledb.ls but normalizing for all path weirdness:
@@ -94,19 +111,9 @@ class CxgAdaptor(DataAdaptor):
         returns list of (absolute paths, type) *without* trailing slash
         in the path.
         """
-
-        def _cleanpath(p):
-            if p[-1] == "/":
-                return p[:-1]
-            else:
-                return p
-
         if uri[-1] != "/":
             uri += "/"
-
-        result = []
-        tiledb.ls(uri, lambda path, type: result.append((_cleanpath(path), type)), ctx=self.tiledb_ctx)
-        return result
+        return self.lsuri_results[uri]
 
     @staticmethod
     def isvalid(url):
@@ -162,19 +169,14 @@ class CxgAdaptor(DataAdaptor):
         self.about = about
         self.cxg_version = cxg_version
 
+    @staticmethod
+    def _open_array(uri, tiledb_ctx):
+        return tiledb.DenseArray(uri, mode="r", ctx=tiledb_ctx)
+
     def open_array(self, name):
         try:
-            with self.lock:
-                array = self.arrays.get(name)
-                if array:
-                    return array
-                p = self.get_path(name)
-                try:
-                    array = tiledb.DenseArray(p, mode="r", ctx=self.tiledb_ctx)
-                except tiledb.libtiledb.TileDBError:
-                    raise DatasetAccessError(name)
-                self.arrays[name] = array
-                return array
+            p = self.get_path(name)
+            return self.arrays[p]
         except tiledb.libtiledb.TileDBError:
             raise DatasetAccessError(name)
 
@@ -289,7 +291,10 @@ class CxgAdaptor(DataAdaptor):
             schema["categories"] = schema_hints["categories"]
         return schema
 
-    def get_schema(self):
+    def _get_schema(self):
+        if self.schema:
+            return self.schema
+
         shape = self.get_shape()
         dtype = self.get_X_array_dtype()
 
@@ -329,20 +334,77 @@ class CxgAdaptor(DataAdaptor):
         schema = {"dataframe": dataframe, "annotations": annotations, "layout": {"obs": obs_layout}}
         return schema
 
+    def get_schema(self):
+        if self.schema is None:
+            with self.lock:
+                self.schema = self._get_schema()
+        return self.schema
+
+    def _annotations_field_split(self, axis, fields, A, labels):
+        """
+        fields: requested fields, may be None (all)
+        labels: writable user annotations dataframe, if any
+
+        Remove redundant fields, raise KeyError on non-existant fields,
+        and split into three lists:
+            fields_to_fetch_from_cxg
+            fields_to_fetch_from_labels
+            fields_to_return
+
+        if we have to return from labels, the fetch fields will contain the index
+        to join on, which may not be in fields_to_return
+        """
+        need_labels = axis == Axis.OBS and labels is not None and not labels.empty
+        index_key = self.get_obs_names() if need_labels else None
+
+        if not fields:
+            return (None, None, None, index_key)
+
+        cxg_keys = frozenset([a.name for a in A.schema])
+        user_anno_keys = frozenset(labels.columns.tolist()) if need_labels else frozenset()
+        return_keys = frozenset(fields)
+
+        label_join_index = (
+            frozenset([index_key]) if need_labels and (return_keys & user_anno_keys) else frozenset()
+        )
+
+        unknown_fields = return_keys - (cxg_keys | user_anno_keys)
+        if unknown_fields:
+            raise KeyError("_".join(unknown_fields))
+
+        return (
+            list((return_keys & cxg_keys) | label_join_index),
+            list(return_keys & user_anno_keys),
+            list(return_keys),
+            index_key
+        )
+
     def annotation_to_fbs_matrix(self, axis, fields=None, labels=None):
         with ServerTiming.time(f"annotations.{axis}.query"):
             A = self.open_array(str(axis))
-            if axis == Axis.OBS:
-                if labels is not None and not labels.empty:
-                    df = pd.DataFrame.from_dict(A[:])
-                    df = df.join(labels, self.get_obs_names())
-                else:
-                    df = pd.DataFrame.from_dict(A[:])
-            else:
-                df = pd.DataFrame.from_dict(A[:])
 
-            if fields is not None and len(fields) > 0:
-                df = df[fields]
+            # may raise if fields contains unknown key
+            cxg_fields, anno_fields, return_fields, index_field = self._annotations_field_split(axis, fields, A, labels)
+
+            if cxg_fields is None:
+                data = A[:]
+            elif cxg_fields:
+                data = A.query(attrs=cxg_fields)[:]
+            else:
+                data = {}
+
+            df = pd.DataFrame.from_dict(data)
+
+            if axis == Axis.OBS and labels is not None and not labels.empty:
+                if anno_fields is None:
+                    assert index_field
+                    df = df.join(labels, index_field)
+                elif anno_fields:
+                    assert index_field
+                    df = df.join(labels[anno_fields], index_field)
+
+            if return_fields:
+                df = df[return_fields]
 
         with ServerTiming.time(f"annotations.{axis}.encode"):
             fbs = encode_matrix_fbs(df, col_idx=df.columns)

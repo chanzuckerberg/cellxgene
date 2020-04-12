@@ -80,8 +80,8 @@ class HistogramBrush extends React.PureComponent {
   constructor(props) {
     super(props);
 
-    this.marginLeft = 3; // Space for 0 tick label on X axis
-    this.marginRight = 40; // space for Y axis & labels
+    this.marginLeft = 12; // Space for 0 tick label on X axis
+    this.marginRight = 52; // space for Y axis & labels
     this.marginBottom = 25; // space for X axis & labels
     this.marginTop = 3;
 
@@ -374,8 +374,8 @@ class HistogramBrush extends React.PureComponent {
       .call(
         d3
           .axisBottom(x)
-          .ticks(5)
-          .tickFormat(d3.format(".0s"))
+          .ticks(4)
+          .tickFormat(d3.format(x.domain().some(n => Math.abs(n) >= 10000) ? ".2e" : ","))
       );
 
     /* Y AXIS */
@@ -387,7 +387,7 @@ class HistogramBrush extends React.PureComponent {
         d3
           .axisRight(y)
           .ticks(3)
-          .tickFormat(d3.format(".0s"))
+          .tickFormat(d3.format(y.domain().some(n => Math.abs(n) >= 10000) ? ".0e" : ","))
       );
 
     /* axis style */

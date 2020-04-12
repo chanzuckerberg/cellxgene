@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-
-
 from server import __version__ as cellxgene_version
 from flatten_dict import flatten
 from os import mkdir, environ
@@ -8,6 +5,7 @@ from os.path import splitext, basename, isdir
 import sys
 from urllib.parse import urlparse
 import yaml
+import copy
 
 from server.common.default_config import get_default_config
 from server.common.errors import ConfigurationError, DatasetAccessError, OntologyLoadFailure
@@ -20,18 +18,6 @@ from server.common.utils import custom_format_warning
 DEFAULT_SERVER_PORT = int(environ.get("CXG_SERVER_PORT", "5005"))
 # anything bigger than this will generate a special message
 BIG_FILE_SIZE_THRESHOLD = 100 * 2 ** 20  # 100MB
-
-""" Default limits for requests """
-Default_Limits = {
-    # Max number of columns that may be requested for /annotations or /data routes.
-    # This is a simplistic means of preventing excess resource consumption (eg,
-    # requesting the entire X matrix in one request) or other DoS style attacks/errors.
-    # Set to None to disable check.
-    "column_request_max": 32,
-    # Max number of cells that will be accepted for differential expression.
-    # Set to None to disable the check.
-    "diffexp_cellcount_max": None,  # None is disabled
-}
 
 
 class AppFeature(object):
@@ -53,6 +39,7 @@ class AppConfig(object):
     def __init__(self):
 
         self.default_config = get_default_config()
+        self.attr_checked = {k: False for k in self.__mapping(self.default_config).keys()}
 
         dc = self.default_config
         try:
@@ -67,6 +54,7 @@ class AppConfig(object):
             self.server__force_https = dc["server"]["force_https"]
             self.server__flask_secret_key = dc["server"]["flask_secret_key"]
             self.server__generate_cache_control_headers = dc["server"]["generate_cache_control_headers"]
+            self.server__server_timing_headers = dc["server"]["server_timing_headers"]
 
             self.multi_dataset__dataroot = dc["multi_dataset"]["dataroot"]
             self.multi_dataset__index = dc["multi_dataset"]["index"]
@@ -101,11 +89,11 @@ class AppConfig(object):
             self.adaptor__cxg_adaptor__tiledb_ctx = dc["adaptor"]["cxg_adaptor"]["tiledb_ctx"]
             self.adaptor__anndata_adaptor__backed = dc["adaptor"]["anndata_adaptor"]["backed"]
 
+            self.limits__diffexp_cellcount_max = dc["limits"]["diffexp_cellcount_max"]
+            self.limits__column_request_max = dc["limits"]["column_request_max"]
+
         except KeyError as e:
             raise ConfigurationError(f"Unexpected config: {str(e)}")
-
-        # Used for various limits, eg, size of requests.  Not currently configurable.
-        self.limits = Default_Limits
 
         # The annotation object is created during complete_config and stored here.
         self.user_annotations = None
@@ -116,27 +104,47 @@ class AppConfig(object):
         # Set to true when config_completed is called
         self.is_completed = False
 
+    def check_config(self):
+        if not self.is_completed:
+            raise ConfigurationError("The configuration has not been completed")
+        mapping = self.__mapping(self.default_config)
+        for key in mapping.keys():
+            if not self.attr_checked[key]:
+                raise ConfigurationError(f"The attr '{key}' has not been checked")
+
+    def __mapping(self, config):
+        """Create a mapping from attribute names to (location in the config tree, value)"""
+        dc = copy.deepcopy(config)
+        mapping = {}
+
+        # special case for tiledb_ctx whose value is a dict.
+        val = config.get("adaptor", {}).get("cxg_adaptor", {}).get("tiledb_ctx")
+        if val is not None:
+            mapping["adaptor__cxg_adaptor__tiledb_ctx"] = (("adaptor", "cxg_adaptor", "tiledb_ctx"), val)
+            del dc["adaptor"]["cxg_adaptor"]["tiledb_ctx"]
+
+        flat_config = flatten(dc)
+        for key, value in flat_config.items():
+            # name of the attribute
+            attr = "__".join(key)
+            mapping[attr] = (key, value)
+
+        return mapping
+
     def update_from_config_file(self, config_file):
         with open(config_file) as fyaml:
             config = yaml.load(fyaml, Loader=yaml.FullLoader)
 
-        # special case for tiledb_ctx whose value is a dict, and cannot
-        # be handled by the flattening below
-        if config.get("adaptor", {}).get("cxg_adaptor", {}).get("tiledb_ctx"):
-            value = config["adaptor"]["cxg_adaptor"]["tiledb_ctx"]
-            self.adaptor__cxg_adaptor__tiledb_ctx = value
-            del config["adaptor"]["cxg_adaptor"]["tiledb_ctx"]
-
-        flat_config = flatten(config)
-        for key, value in flat_config.items():
-            # name of the attribute
-            attr = "__".join(key)
+        mapping = self.__mapping(config)
+        for attr, (key, value) in mapping.items():
             if not hasattr(self, attr):
                 raise ConfigurationError(f"Unknown key from config file: {key}")
             try:
                 setattr(self, attr, value)
             except KeyError:
                 raise ConfigurationError(f"Unable to set config attribute: {key}")
+
+            self.attr_checked[attr] = False
 
         self.is_completed = False
 
@@ -149,7 +157,19 @@ class AppConfig(object):
             except KeyError:
                 raise ConfigurationError(f"Unable to set config parameter {key}.")
 
+            self.attr_checked[key] = False
+
         self.is_completed = False
+
+    def changes_from_default(self):
+        """Return all the attribute that are different from the default"""
+        mapping = self.__mapping(self.default_config)
+        diff = []
+        for attrname, (key, defval) in mapping.items():
+            curval = getattr(self, attrname)
+            if curval != defval:
+                diff.append((attrname, curval, defval))
+        return diff
 
     def complete_config(self, messagefn=None):
         """The configure options are checked, and any additional setup based on the config
@@ -169,13 +189,17 @@ class AppConfig(object):
 
         self.handle_server(context)
         self.handle_adaptor(context)
+        self.handle_data_locator(context)
+        self.handle_presentation(context)
         self.handle_single_dataset(context)
         self.handle_multi_dataset(context)
         self.handle_user_annotations(context)
         self.handle_embeddings(context)
         self.handle_diffexp(context)
+        self.handle_limits(context)
 
         self.is_completed = True
+        self.check_config()
 
     def __check_attr(self, attrname, vtype):
         val = getattr(self, attrname)
@@ -192,6 +216,8 @@ class AppConfig(object):
                     f"expected type {vtype.__name__}, got {type(val).__name__}"
                 )
 
+        self.attr_checked[attrname] = True
+
     def handle_server(self, context):
         self.__check_attr("server__verbose", bool)
         self.__check_attr("server__debug", bool)
@@ -202,6 +228,9 @@ class AppConfig(object):
         self.__check_attr("server__force_https", bool)
         self.__check_attr("server__flask_secret_key", (type(None), str))
         self.__check_attr("server__generate_cache_control_headers", bool)
+        self.__check_attr("server__about_legal_tos", (type(None), str))
+        self.__check_attr("server__about_legal_privacy", (type(None), str))
+        self.__check_attr("server__server_timing_headers", bool)
 
         if self.server__port:
             if not is_port_available(self.server__host, self.server__port):
@@ -225,6 +254,9 @@ class AppConfig(object):
         #   first, from CXG_SECRET_KEY environment variable
         #   second, from config file
         self.server__flask_secret_key = environ.get("CXG_SECRET_KEY", self.server__flask_secret_key)
+
+    def handle_data_locator(self, context):
+        self.__check_attr("data_locator__s3__region_name", (type(None), str))
 
     def handle_presentation(self, context):
         self.__check_attr("presentation__max_categories", int)
@@ -402,6 +434,10 @@ class AppConfig(object):
         # anndata
         self.__check_attr("adaptor__anndata_adaptor__backed", bool)
 
+    def handle_limits(self, context):
+        self.__check_attr("limits__diffexp_cellcount_max", (type(None), int))
+        self.__check_attr("limits__column_request_max", (type(None), int))
+
     def get_title(self, data_adaptor):
         return self.single_dataset__title if self.single_dataset__title else data_adaptor.get_title()
 
@@ -416,8 +452,8 @@ class AppConfig(object):
         # FIXME The current set of config is not consistently presented:
         # we have camalCase, hyphen-text, and underscore_text
 
-        if not self.is_completed:
-            raise ConfigurationError("The configuration has not been completed")
+        # make sure the configuration has been checked.
+        self.check_config()
 
         # features
         features = [f.todict() for f in data_adaptor.get_features(annotation)]
@@ -469,12 +505,15 @@ class AppConfig(object):
         config["library_versions"] = library_versions
         config["links"] = links
         config["parameters"] = parameters
-        config["limits"] = self.limits
+        config["limits"] = {
+            'column_request_max': self.limits__column_request_max,
+            'diffexp_cellcount_max': self.limits__diffexp_cellcount_max,
+        }
 
         return c
 
     def exceeds_limit(self, limit_name, value):
-        limit_value = self.limits.get(limit_name, None)
+        limit_value = getattr(self, "limits__" + limit_name, None)
         if limit_value is None:  # disabled
             return False
         return value > limit_value

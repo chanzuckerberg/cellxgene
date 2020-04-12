@@ -16,10 +16,10 @@
 <meta property="og:url" content="http://localhost:4000/cellxgene/" />
 <meta property="og:site_name" content="cellxgene" />
 <script type="application/ld+json">
-{"description":"An interactive explorer for single-cell transcriptomics data","publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"http://localhost:4000/cellxgene/cellxgene-logo.png"}},"@type":"WebSite","url":"http://localhost:4000/cellxgene/","name":"cellxgene","headline":"Index","@context":"http://schema.org"}</script>
+{"description":"An interactive explorer for single-cell transcriptomics data","publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"http://localhost:4000/cellxgene/cellxgene-logo.png"}},"@type":"WebSite","headline":"Index","url":"http://localhost:4000/cellxgene/","name":"cellxgene","@context":"http://schema.org"}</script>
 <!-- End Jekyll SEO tag -->
 
-    <link rel="stylesheet" href="/cellxgene/assets/css/style.css?v=d2171b9a2f9935b8b92c3103c93405d1d74ef2b3">
+    <link rel="stylesheet" href="/cellxgene/assets/css/style.css?v=6193ae49975e7bccac34c95b3d13d42f74d6fcee">
     <!--[if lt IE 9]>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
     <![endif]-->
@@ -85,6 +85,10 @@
         <a href="/cellxgene/posts/contact" class="btn">Contact & finding help</a><br>
         
         
+        
+        <a href="/cellxgene/posts/cellxgene_cziscience_com" class="btn">cellxgene.cziscience.com</a><br>
+        
+        
 
         <a href="https://github.com/chanzuckerberg/cellxgene" class="btn" target="_blank">Code</a>
     </p>
@@ -95,20 +99,15 @@
 
 <p>Whether you need to visualize one thousand cells or one million, cellxgene helps you gain insight into your single-cell data.</p>
 
-<p>To install cellxgene you need Python 3.6+. We recommend <a href="/faq.html#how-do-i-create-a-python-environment-for-cellxgene">installing cellxgene into a conda or virtual environment.</a></p>
+<p>To install cellxgene you need Python 3.6+. We recommend <a href="install">installing cellxgene into a conda or virtual environment.</a></p>
 
 <p>Install the package.</p>
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pip install cellxgene
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pip <span class="nb">install </span>cellxgene
 </code></pre></div></div>
 
-<p>Download an example <a href="https://anndata.readthedocs.io/en/latest/">anndata</a> file</p>
+<p>Launch cellxgene with an example <a href="https://anndata.readthedocs.io/en/latest/">anndata</a> file</p>
 
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl <span class="nt">-o</span> tabula-muris.h5ad https://cellxgene-example-data.czi.technology/tabula-muris.h5ad.zip
-unzip tabula-muris.h5ad.zip
-</code></pre></div></div>
-
-<p>Launch cellxgene</p>
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cellxgene launch tabula-muris.h5ad <span class="nt">--open</span>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cellxgene launch https://cellxgene-example-data.czi.technology/pbmc3k.h5ad
 </code></pre></div></div>
 
 <p>To explore more datasets already formatted for cellxgene, check out the <a href="demo-data">Demo data</a> or
@@ -119,7 +118,7 @@ data for cellxgene.</p>
 
 <p>We’d love to hear from you!</p>
 
-<p>For questions, suggestions, or accolades, <a href="https://join-cellxgene-users.herokuapp.com/">join the <code class="highlighter-rouge">#cellxgene-users</code> channel on the CZI Science Slack</a> and say “hi!”.</p>
+<p>For questions, suggestions, or accolades, <a href="https://join-cellxgene-users.herokuapp.com/">join the <code class="language-plaintext highlighter-rouge">#cellxgene-users</code> channel on the CZI Science Slack</a> and say “hi!”.</p>
 
 <p>For any errors, <a href="https://github.com/chanzuckerberg/cellxgene/issues">report bugs on Github</a>.</p>
 
