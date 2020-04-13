@@ -27,21 +27,23 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
-      - name: Lint with flake8
+      - name: Install dependencies
         run: |
           pip install flake8
+          cd client
+          npm i "eslint" "eslint-config-airbnb" "eslint-config-prettier" "eslint-loader" "eslint-plugin-filenames" "eslint-plugin-import" "eslint-plugin-jest" "eslint-plugin-jsx-a11y" "eslint-plugin-react" "eslint-plugin-react-hooks"
+      - name: Lint with flake8
+        run: |
           make lint-server
       - name: Lint all with eslint
+        working-directory: ./client
         if: github.event_name	!= 'pull_request'
         run: |
-          cd client
-          npm i "eslint" "eslint-config-airbnb" "eslint-config-prettier" "eslint-loader" "eslint-plugin-filenames" "eslint-plugin-import" "eslint-plugin-jest" "eslint-plugin-jsx-a11y" "eslint-plugin-react" "eslint-plugin-react-hooks"
           make lint
       - name: Lint diff with eslint
+        working-directory: ./client
         if: github.event_name	== 'pull_request'
         run: |
-          cd client
-          npm i "eslint" "eslint-config-airbnb" "eslint-config-prettier" "eslint-loader" "eslint-plugin-filenames" "eslint-plugin-import" "eslint-plugin-jest" "eslint-plugin-jsx-a11y" "eslint-plugin-react" "eslint-plugin-react-hooks"
           make lint-diff
 
   unit-test:
