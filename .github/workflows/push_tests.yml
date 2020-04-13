@@ -31,11 +31,15 @@ jobs:
       - name: Lint all with eslint
         if: github.ref == 'refs/heads/master'
         run: |
-          make lint-client
+          cd client
+          npm i "eslint" "eslint-config-airbnb" "eslint-config-prettier" "eslint-loader" "eslint-plugin-filenames" "eslint-plugin-import" "eslint-plugin-jest" "eslint-plugin-jsx-a11y" "eslint-plugin-react" "eslint-plugin-react-hooks"
+          make lint
       - name: Lint diff with eslint
         if: github.ref != 'refs/heads/master'
         run: |
-          make lint-diff-client
+          cd client
+          npm i "eslint" "eslint-config-airbnb" "eslint-config-prettier" "eslint-loader" "eslint-plugin-filenames" "eslint-plugin-import" "eslint-plugin-jest" "eslint-plugin-jsx-a11y" "eslint-plugin-react" "eslint-plugin-react-hooks"
+          make lint-diff
 
   unit-test:
     runs-on: ubuntu-latest
