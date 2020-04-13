@@ -1,4 +1,3 @@
-import _ from "lodash";
 import * as globals from "../globals";
 import { Universe, MatrixFBS } from "../util/stateManager";
 import * as Dataframe from "../util/dataframe";
@@ -6,7 +5,7 @@ import {
   catchErrorsWrap,
   doJsonRequest,
   doBinaryRequest,
-  dispatchNetworkErrorMessageToUser
+  dispatchNetworkErrorMessageToUser,
 } from "../util/actionHelpers";
 import { PromiseLimit } from "../util/promiseLimit";
 import { requestReembed, reembedResetWorldToUniverse } from "./reembed";
@@ -19,23 +18,23 @@ function obsAnnotationFetchAndLoad(dispatch, schema) {
   const obsAnnotations = schema?.schema?.annotations?.obs ?? {};
   const index = obsAnnotations.index ?? false;
   const columns = (obsAnnotations.columns ?? []).filter(
-    col => col.name !== index
+    (col) => col.name !== index
   );
 
-  const plimit = new PromiseLimit(4);
+  const plimit = new PromiseLimit(5);
   return Promise.all(
-    columns.map(col =>
+    columns.map((col) =>
       plimit.add(() => {
         const path = `annotations/obs?annotation-name=${encodeURIComponent(
           col.name
         )}`;
         const url = `${globals.API.prefix}${globals.API.version}${path}`;
-        return doBinaryRequest(url).then(buffer => {
+        return doBinaryRequest(url).then((buffer) => {
           const df = Universe.matrixFBSToDataframe(buffer);
           dispatch({
             type: "universe: column load success",
             dim: "obsAnnotations",
-            dataframe: df
+            dataframe: df,
           });
         });
       })
@@ -52,20 +51,22 @@ function varAnnotationFetchAndLoad(dispatch, schema) {
   const names = index ? [index] : [];
   return Promise.all(
     names
-      .map(name => {
+      .map((name) => {
         const path = `annotations/var?annotation-name=${encodeURIComponent(
           name
         )}`;
         const url = `${globals.API.prefix}${globals.API.version}${path}`;
         return doBinaryRequest(url);
       })
-      .map(rqst => rqst.then(buffer => Universe.matrixFBSToDataframe(buffer)))
-      .map(resp =>
-        resp.then(df =>
+      .map((rqst) =>
+        rqst.then((buffer) => Universe.matrixFBSToDataframe(buffer))
+      )
+      .map((resp) =>
+        resp.then((df) =>
           dispatch({
             type: "universe: column load success",
             dim: "varAnnotations",
-            dataframe: df
+            dataframe: df,
           })
         )
       )
@@ -77,25 +78,25 @@ return promise fetching layout we need
 */
 function layoutFetchAndLoad(dispatch, schema) {
   const embeddings = schema?.schema?.layout?.obs ?? [];
-  const embNames = embeddings.map(e => e.name);
+  const embNames = embeddings.map((e) => e.name);
   const baseURL = `${globals.API.prefix}${globals.API.version}layout/obs`;
 
-  const plimit = new PromiseLimit(4);
+  const plimit = new PromiseLimit(5);
   return Promise.all(
-    embNames.map(e =>
+    embNames.map((e) =>
       plimit.add(() => {
         const url = `${baseURL}?layout-name=${encodeURIComponent(e)}`;
-        return doBinaryRequest(url).then(buffer =>
+        return doBinaryRequest(url).then((buffer) =>
           Universe.matrixFBSToDataframe(buffer)
         );
       })
     )
-  ).then(dfs => {
+  ).then((dfs) => {
     const df = Dataframe.Dataframe.empty().withColsFromAll(dfs);
     dispatch({
       type: "universe: column load success",
       dim: "obsLayout",
-      dataframe: df
+      dataframe: df,
     });
   });
 }
@@ -108,7 +109,7 @@ Bootstrap application with the initial data loading.
   * /layout - all default layout
 */
 const doInitialDataLoad = () =>
-  catchErrorsWrap(async dispatch => {
+  catchErrorsWrap(async (dispatch) => {
     dispatch({ type: "initial data load start" });
 
     try {
@@ -116,8 +117,8 @@ const doInitialDataLoad = () =>
       Step 1 - config & schema, all JSON
       */
       const requestJson = ["config", "schema"]
-        .map(r => `${globals.API.prefix}${globals.API.version}${r}`)
-        .map(url => doJsonRequest(url));
+        .map((r) => `${globals.API.prefix}${globals.API.version}${r}`)
+        .map((url) => doJsonRequest(url));
       const stepOneResults = await Promise.all(requestJson);
       /* set config defaults */
       const config = { ...globals.configDefaults, ...stepOneResults[0].config };
@@ -125,11 +126,11 @@ const doInitialDataLoad = () =>
       const universe = Universe.createUniverseFromResponse(config, schema);
       dispatch({
         type: "universe exists, but loading is still in progress",
-        universe
+        universe,
       });
       dispatch({
         type: "configuration load complete",
-        config
+        config,
       });
 
       /*
@@ -137,7 +138,7 @@ const doInitialDataLoad = () =>
       */
       await Promise.all([
         layoutFetchAndLoad(dispatch, schema),
-        varAnnotationFetchAndLoad(dispatch, schema)
+        varAnnotationFetchAndLoad(dispatch, schema),
       ]);
 
       /*
@@ -147,7 +148,7 @@ const doInitialDataLoad = () =>
 
       dispatch({
         type: "initial data load complete (universe exists)",
-        universe
+        universe,
       });
     } catch (error) {
       dispatch({ type: "initial data load error", error });
@@ -164,7 +165,7 @@ const setWorldToSelection = () => (dispatch, getState) => {
     type: "set World to current selection",
     universe,
     world,
-    crossfilter
+    crossfilter,
   });
 };
 
@@ -174,6 +175,11 @@ const dispatchExpressionErrors = (dispatch, res) => {
   dispatchNetworkErrorMessageToUser(msg);
   throw new Error(msg);
 };
+
+/* double URI encode - needed for query-param filters */
+function dubEncURIComponent(s) {
+  return encodeURIComponent(encodeURIComponent(s));
+}
 
 /*
 Fetch expression vectors for each gene in genes.  This is NOT an action
@@ -188,51 +194,31 @@ async function _doRequestExpressionData(dispatch, getState, genes) {
   const varIndexName = universe.schema.annotations.var.index;
 
   /* helper for this function only */
-  const fetchData = async geneNames => {
-    const res = await fetch(
-      `${globals.API.prefix}${globals.API.version}data/var`,
-      {
-        method: "PUT",
-        body: JSON.stringify({
-          filter: {
-            var: {
-              annotation_value: [{ name: varIndexName, values: geneNames }]
-            }
-          }
-        }),
-        headers: new Headers({
-          accept: "application/octet-stream",
-          "Content-Type": "application/json"
-        }),
-        credentials: "include"
-      }
+  const fetchData = async (geneNames) => {
+    const query = geneNames
+      .map(
+        (g) =>
+          `var:${dubEncURIComponent(varIndexName)}=${dubEncURIComponent(g)}`
+      )
+      .join("&");
+    const url = `${globals.API.prefix}${globals.API.version}data/var?${query}`;
+    return doBinaryRequest(url).then((buffer) =>
+      // TODO: why convert to an Object and not a Dataframe?
+      Universe.convertDataFBStoObject(universe, buffer)
     );
-
-    if (
-      !res.ok ||
-      res.headers.get("Content-Type") !== "application/octet-stream"
-    ) {
-      // WILL throw
-      return dispatchExpressionErrors(dispatch, res);
-    }
-
-    const data = await res.arrayBuffer();
-    return Universe.convertDataFBStoObject(universe, data);
   };
 
   /* preload data already in cache */
-  let expressionData = _.transform(
-    genes,
-    (expData, g) => {
-      const data = universe.varData.col(g);
-      if (data) {
-        expData[g] = data.asArray();
-      }
-    },
-    {}
-  ); // --> { gene: data }
+  let expressionData = genes.reduce((acc, g) => {
+    const data = universe.varData.col(g);
+    if (data) {
+      acc[g] = data.asArray();
+    }
+    return acc;
+  }, {}); // --> { gene: data }
+
   /* make a list of genes for which we do not have data */
-  const genesToFetch = _.filter(genes, g => expressionData[g] === undefined);
+  const genesToFetch = genes.filter((g) => expressionData[g] === undefined);
 
   dispatch({ type: "expression load start" });
 
@@ -242,7 +228,7 @@ async function _doRequestExpressionData(dispatch, getState, genes) {
       const newExpressionData = await fetchData(genesToFetch);
       expressionData = {
         ...expressionData,
-        ...newExpressionData
+        ...newExpressionData,
       };
     } catch (error) {
       dispatch({ type: "expression load error", error });
@@ -264,19 +250,19 @@ function requestSingleGeneExpressionCountsForColoringPOST(gene) {
         type: "color by expression",
         gene,
         data: {
-          [gene]: world.varData.col(gene).asArray()
-        }
+          [gene]: world.varData.col(gene).asArray(),
+        },
       });
     } catch (error) {
       dispatch({
         type: "get single gene expression for coloring error",
-        error
+        error,
       });
     }
   };
 }
 
-const requestUserDefinedGene = gene => async (dispatch, getState) => {
+const requestUserDefinedGene = (gene) => async (dispatch, getState) => {
   dispatch({ type: "request user defined gene started" });
   try {
     await await _doRequestExpressionData(dispatch, getState, [gene]);
@@ -287,13 +273,13 @@ const requestUserDefinedGene = gene => async (dispatch, getState) => {
       type: "request user defined gene success",
       data: {
         genes: [gene],
-        expression: world.varData.col(gene).asArray()
-      }
+        expression: world.varData.col(gene).asArray(),
+      },
     });
   } catch (error) {
     return dispatch({
       type: "request user defined gene error",
-      error
+      error,
     });
   }
 };
@@ -315,7 +301,7 @@ const dispatchDiffExpErrors = (dispatch, response) => {
       dispatchNetworkErrorMessageToUser(msg);
       dispatch({
         type: "request differential expression error",
-        error: new Error(msg)
+        error: new Error(msg),
       });
     }
   }
@@ -353,15 +339,15 @@ const requestDifferentialExpression = (set1, set2, num_genes = 10) => async (
         method: "POST",
         headers: new Headers({
           Accept: "application/json",
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         }),
         body: JSON.stringify({
           mode: "topN",
           count: num_genes,
           set1: { filter: { obs: { index: set1 } } },
-          set2: { filter: { obs: { index: set2 } } }
+          set2: { filter: { obs: { index: set2 } } },
         }),
-        credentials: "include"
+        credentials: "include",
       }
     );
 
@@ -371,7 +357,7 @@ const requestDifferentialExpression = (set1, set2, num_genes = 10) => async (
 
     const data = await res.json();
     // result is [ [varIdx, ...], ... ]
-    const topNGenes = _.map(data, r =>
+    const topNGenes = data.map((r) =>
       universe.varAnnotations.at(r[0], varIndexName)
     );
 
@@ -379,17 +365,22 @@ const requestDifferentialExpression = (set1, set2, num_genes = 10) => async (
     Kick off secondary action to fetch all of the expression data for the
     topN expressed genes.
     */
-    await _doRequestExpressionData(dispatch, getState, topNGenes);
+    const plimit = new PromiseLimit(5);
+    await Promise.all(
+      topNGenes.map((gene) =>
+        plimit.add(() => _doRequestExpressionData(dispatch, getState, [gene]))
+      )
+    );
 
     /* then send the success case action through */
     return dispatch({
       type: "request differential expression success",
-      data
+      data,
     });
   } catch (error) {
     return dispatch({
       type: "request differential expression error",
-      error
+      error,
     });
   }
 };
@@ -399,7 +390,7 @@ const resetWorldToUniverse = () => (dispatch, getState) => {
   reembedResetWorldToUniverse(dispatch, getState);
   dispatch({
     type: "reset World to eq Universe",
-    universe
+    universe,
   });
 };
 
@@ -409,12 +400,12 @@ const saveObsAnnotations = () => async (dispatch, getState) => {
   const { dataCollectionNameIsReadOnly, dataCollectionName } = annotations;
 
   dispatch({
-    type: "writable obs annotations - save started"
+    type: "writable obs annotations - save started",
   });
 
   const writableAnnotations = schema.annotations.obs.columns
-    .filter(s => s.writable)
-    .map(s => s.name);
+    .filter((s) => s.writable)
+    .map((s) => s.name);
   const df = obsAnnotations.subset(null, writableAnnotations);
   const matrix = MatrixFBS.encodeMatrixFBS(df);
   try {
@@ -430,28 +421,28 @@ const saveObsAnnotations = () => async (dispatch, getState) => {
         method: "PUT",
         body: matrix,
         headers: new Headers({
-          "Content-Type": "application/octet-stream"
+          "Content-Type": "application/octet-stream",
         }),
-        credentials: "include"
+        credentials: "include",
       }
     );
     if (res.ok) {
       dispatch({
         type: "writable obs annotations - save complete",
-        obsAnnotations
+        obsAnnotations,
       });
     } else {
       dispatch({
         type: "writable obs annotations - save error",
         message: `HTTP error ${res.status} - ${res.statusText}`,
-        res
+        res,
       });
     }
   } catch (error) {
     dispatch({
       type: "writable obs annotations - save error",
       message: error.toString(),
-      error
+      error,
     });
   }
 };
@@ -464,5 +455,5 @@ export default {
   requestReembed,
   resetWorldToUniverse,
   saveObsAnnotations,
-  setWorldToSelection
+  setWorldToSelection,
 };
