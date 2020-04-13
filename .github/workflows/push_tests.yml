@@ -1,6 +1,6 @@
 name: Push Tests
 
-on: [push]
+on: [push, pull_request]
 
 env:
   JEST_ENV: prod
