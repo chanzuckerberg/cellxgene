@@ -66,6 +66,17 @@ diffexp:
   enable: true
   lfc_cutoff: 0.01
   top_n: 10
+  alg_tiledb:
+    # The number of threads in the thread pool.
+    # This can be an integer, or a string.
+    # If it is a string, then it is evaluated as a python expression,
+    # where the variable "cpu_count" is provided.
+    # for example:  "max(64,4*cpu_count)"
+    max_workers: max(64, 4 * cpu_count)
+
+    # The target number of matrix elements that are evaluated
+    # together in one thread.
+    target_workunit: 16_000_000
 
 data_locator:
   s3:

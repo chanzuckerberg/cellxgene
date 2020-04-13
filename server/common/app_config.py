@@ -1,6 +1,6 @@
 from server import __version__ as cellxgene_version
 from flatten_dict import flatten
-from os import mkdir, environ
+import os
 from os.path import splitext, basename, isdir
 import sys
 from urllib.parse import urlparse
@@ -16,8 +16,9 @@ from server.common.utils import find_available_port, is_port_available
 import warnings
 from server.common.annotations import AnnotationsLocalFile
 from server.common.utils import custom_format_warning
+import server.compute.diffexp_tiledb as diffexp_tiledb
 
-DEFAULT_SERVER_PORT = int(environ.get("CXG_SERVER_PORT", "5005"))
+DEFAULT_SERVER_PORT = int(os.environ.get("CXG_SERVER_PORT", "5005"))
 # anything bigger than this will generate a special message
 BIG_FILE_SIZE_THRESHOLD = 100 * 2 ** 20  # 100MB
 
@@ -85,6 +86,8 @@ class AppConfig(object):
             self.diffexp__enable = dc["diffexp"]["enable"]
             self.diffexp__lfc_cutoff = dc["diffexp"]["lfc_cutoff"]
             self.diffexp__top_n = dc["diffexp"]["top_n"]
+            self.diffexp__alg_tiledb__max_workers = dc["diffexp"]["alg_tiledb"]["max_workers"]
+            self.diffexp__alg_tiledb__target_workunit = dc["diffexp"]["alg_tiledb"]["target_workunit"]
 
             self.data_locator__s3__region_name = dc["data_locator"]["s3"]["region_name"]
 
@@ -256,7 +259,7 @@ class AppConfig(object):
         # secret key:
         #   first, from CXG_SECRET_KEY environment variable
         #   second, from config file
-        self.server__flask_secret_key = environ.get("CXG_SECRET_KEY", self.server__flask_secret_key)
+        self.server__flask_secret_key = os.environ.get("CXG_SECRET_KEY", self.server__flask_secret_key)
 
     def handle_data_locator(self, context):
         self.__check_attr("data_locator__s3__region_name", (type(None), bool, str))
@@ -381,7 +384,7 @@ class AppConfig(object):
 
             if dirname is not None and not isdir(dirname):
                 try:
-                    mkdir(dirname)
+                    os.mkdir(dirname)
                 except OSError:
                     raise ConfigurationError("Unable to create directory specified by --annotations-dir")
 
@@ -433,6 +436,8 @@ class AppConfig(object):
         self.__check_attr("diffexp__enable", bool)
         self.__check_attr("diffexp__lfc_cutoff", float)
         self.__check_attr("diffexp__top_n", int)
+        self.__check_attr("diffexp__alg_tiledb__max_workers", (str, int))
+        self.__check_attr("diffexp__alg_tiledb__target_workunit", int)
 
         if self.single_dataset__datapath:
             with self.matrix_data_cache_manager.data_adaptor(self.single_dataset__datapath, self) as data_adaptor:
@@ -441,6 +446,19 @@ class AppConfig(object):
                         f"CAUTION: due to the size of your dataset, "
                         f"running differential expression may take longer or fail."
                     )
+
+        max_workers = self.diffexp__alg_tiledb__max_workers
+        if type(max_workers) == str:
+            cpu_count = os.cpu_count()
+            try:
+                max_workers = eval(max_workers, {"cpu_count": cpu_count})
+            except Exception:
+                raise ConfigurationError(f"Unable to evaluate: {max_workers}")
+
+        self.diffexp__alg_tiledb__max_workers = max_workers
+        diffexp_tiledb.set_config(
+            self.diffexp__alg_tiledb__max_workers,
+            self.diffexp__alg_tiledb__target_workunit)
 
     def handle_adaptor(self, context):
         # cxg
