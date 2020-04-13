@@ -8,32 +8,20 @@ import { Button } from "@blueprintjs/core";
 import * as globals from "../../globals";
 import HistogramBrush from "../brushableHistogram";
 
-@connect(state => ({
+@connect((state) => ({
   obsAnnotations: state.world?.obsAnnotations,
   colorAccessor: state.colors.colorAccessor,
   colorScale: state.colors.scale,
-  schema: state.world?.schema
+  schema: state.world?.schema,
 }))
 class Continuous extends React.PureComponent {
-  handleColorAction = key => {
-    return () => {
-      const { dispatch, obsAnnotations } = this.props;
-      const summary = obsAnnotations.col(key).summarize();
-      dispatch({
-        type: "color by continuous metadata",
-        colorAccessor: key,
-        rangeForColorAccessor: summary
-      });
-    };
-  };
-
   static renderIsStillLoading(zebra, key) {
     return (
       <div
         key={key}
         style={{
           padding: globals.leftSidebarSectionPadding,
-          backgroundColor: zebra % 2 === 0 ? globals.lightestGrey : "white"
+          backgroundColor: zebra % 2 === 0 ? globals.lightestGrey : "white",
         }}
       >
         <div
@@ -41,7 +29,7 @@ class Continuous extends React.PureComponent {
             display: "flex",
             justifyContent: "space-between",
             justifyItems: "center",
-            alignItems: "center"
+            alignItems: "center",
           }}
         >
           <div style={{ minWidth: 30 }} />
@@ -51,7 +39,7 @@ class Continuous extends React.PureComponent {
           <div
             style={{
               display: "flex",
-              justifyContent: "flex-end"
+              justifyContent: "flex-end",
             }}
           >
             <Button minimal loading intent="primary" />
@@ -66,16 +54,16 @@ class Continuous extends React.PureComponent {
 
     const obsIndex = schema.annotations.obs.index;
     const allContinuousNames = schema.annotations.obs.columns
-      .filter(col => col.type === "int32" || col.type === "float32")
-      .filter(col => col.name !== obsIndex)
-      .map(col => col.name);
+      .filter((col) => col.type === "int32" || col.type === "float32")
+      .filter((col) => col.name !== obsIndex)
+      .map((col) => col.name);
 
     /* initial value for iterator to simulate index, ranges is an object */
     let zebra = 0;
 
     return (
       <div>
-        {allContinuousNames.map(key => {
+        {allContinuousNames.map((key) => {
           if (!obsAnnotations.hasCol(key)) {
             // still loading!
             zebra += 1;
@@ -98,7 +86,6 @@ class Continuous extends React.PureComponent {
                 isObs
                 zebra={zebra % 2 === 0}
                 ranges={summary}
-                handleColorAction={this.handleColorAction(key)}
               />
             );
           }

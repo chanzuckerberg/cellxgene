@@ -5,7 +5,7 @@ import {
   lowerBound,
   binarySearch,
   lowerBoundIndirect,
-  upperBoundIndirect
+  upperBoundIndirect,
 } from "./sort";
 import { makeSortIndex } from "./util";
 
@@ -101,12 +101,12 @@ export default class ImmutableTypedCrossfilter {
         id,
         dim,
         name,
-        selection: dim.select({ mode: "all" })
-      }
+        selection: dim.select({ mode: "all" }),
+      },
     };
 
     return new ImmutableTypedCrossfilter(data, dimensions, {
-      bitArray
+      bitArray,
     });
   }
 
@@ -126,7 +126,7 @@ export default class ImmutableTypedCrossfilter {
     }
 
     return new ImmutableTypedCrossfilter(data, dimensions, {
-      bitArray
+      bitArray,
     });
   }
 
@@ -138,8 +138,8 @@ export default class ImmutableTypedCrossfilter {
       [newName]: {
         ...dim,
         name: newName,
-        dim: dim.dim.rename(newName)
-      }
+        dim: dim.dim.rename(newName),
+      },
     };
     return new ImmutableTypedCrossfilter(data, newDimensions, selectionCache);
   }
@@ -205,19 +205,19 @@ export default class ImmutableTypedCrossfilter {
       If sort index exists in the dimension, assume sort ordered ranges.
       */
     if (oldSeln.index) {
-      dels.forEach(interval =>
+      dels.forEach((interval) =>
         bitArray.deselectIndirectFromRange(id, oldSeln.index, interval)
       );
     } else {
-      dels.forEach(interval => bitArray.deselectFromRange(id, interval));
+      dels.forEach((interval) => bitArray.deselectFromRange(id, interval));
     }
 
     if (newSeln.index) {
-      adds.forEach(interval =>
+      adds.forEach((interval) =>
         bitArray.selectIndirectFromRange(id, newSeln.index, interval)
       );
     } else {
-      adds.forEach(interval => bitArray.selectFromRange(id, interval));
+      adds.forEach((interval) => bitArray.selectFromRange(id, interval));
     }
 
     return { bitArray };
@@ -229,12 +229,12 @@ export default class ImmutableTypedCrossfilter {
     if (!this.selectionCache.bitArray) {
       // console.log("...rebuilding crossfilter cache...");
       const bitArray = new BitArray(this.data.length);
-      Object.keys(this.dimensions).forEach(name => {
+      Object.keys(this.dimensions).forEach((name) => {
         const { selection } = this.dimensions[name];
         const id = bitArray.allocDimension();
         this.dimensions[name].id = id;
         const { ranges, index } = selection;
-        ranges.forEach(range => {
+        ranges.forEach((range) => {
           if (index) {
             bitArray.selectIndirectFromRange(id, index, range);
           } else {
@@ -395,7 +395,7 @@ class ImmutableScalarDimension extends _ImmutableBaseDimension {
       // only by enumerated dimensions
       array = this._createValueArray(
         data,
-        i => value[i],
+        (i) => value[i],
         new ValueArrayType(data.length)
       );
     } else {
@@ -448,7 +448,7 @@ class ImmutableScalarDimension extends _ImmutableBaseDimension {
     for (let v = 0, len = values.length; v < len; v += 1) {
       const r = [
         lowerBoundIndirect(value, index, values[v], 0, value.length),
-        upperBoundIndirect(value, index, values[v], 0, value.length)
+        upperBoundIndirect(value, index, values[v], 0, value.length),
       ];
       if (r[0] <= r[1]) {
         ranges.push(r);
@@ -459,12 +459,16 @@ class ImmutableScalarDimension extends _ImmutableBaseDimension {
 
   selectRange(spec) {
     const { value, index } = this;
-    /* [lo, hi) */
-    const { lo, hi } = spec;
+    /* 
+    if !inclusive: [lo, hi) else [lo, hi]
+    */
+    const { lo, hi, inclusive } = spec;
     const ranges = [];
     const r = [
       lowerBoundIndirect(value, index, lo, 0, value.length),
-      lowerBoundIndirect(value, index, hi, 0, value.length)
+      !!inclusive
+        ? upperBoundIndirect(value, index, hi, 0, value.length)
+        : lowerBoundIndirect(value, index, hi, 0, value.length),
     ];
     if (r[0] < r[1]) ranges.push(r);
     return { ranges, index };
@@ -504,7 +508,9 @@ class ImmutableEnumDimension extends ImmutableScalarDimension {
     const { values } = spec;
     return super.selectExact({
       mode: spec.mode,
-      values: values.map(v => binarySearch(enumIndex, v, 0, enumIndex.length))
+      values: values.map((v) =>
+        binarySearch(enumIndex, v, 0, enumIndex.length)
+      ),
     });
   }
 
@@ -593,13 +599,13 @@ class ImmutableSpatialDimension extends _ImmutableBaseDimension {
     if (maxY - minY > maxX - minX) {
       slice = [
         lowerBoundIndirect(X, Xindex, minX, 0, length),
-        lowerBoundIndirect(X, Xindex, maxX, 0, length)
+        lowerBoundIndirect(X, Xindex, maxX, 0, length),
       ];
       index = Xindex;
     } else {
       slice = [
         lowerBoundIndirect(Y, Yindex, minY, 0, length),
-        lowerBoundIndirect(Y, Yindex, maxY, 0, length)
+        lowerBoundIndirect(Y, Yindex, maxY, 0, length),
       ];
       index = Yindex;
     }
@@ -632,7 +638,7 @@ class ImmutableSpatialDimension extends _ImmutableBaseDimension {
 export const DimTypes = {
   scalar: ImmutableScalarDimension,
   enum: ImmutableEnumDimension,
-  spatial: ImmutableSpatialDimension
+  spatial: ImmutableSpatialDimension,
 };
 
 function isArrayOrTypedArray(x) {
@@ -682,7 +688,8 @@ function withinPolygon(polygon, x, y) {
     x1 = p[0];
     y1 = p[1];
 
-    if (((y1 > y) !== (y0 > y)) && (x < (x0 - x1) * (y - y1) / (y0 - y1) + x1)) inside = !inside;
+    if (y1 > y !== y0 > y && x < ((x0 - x1) * (y - y1)) / (y0 - y1) + x1)
+      inside = !inside;
     x0 = x1;
     y0 = y1;
   }

@@ -24,10 +24,10 @@ import { makeContinuousDimensionName } from "../../util/nameCreators";
   );
   return {
     world: state.world,
-    scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
-    scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
+    isScatterplotXXaccessor: state.controls.scatterplotXXaccessor === field,
+    isScatterplotYYaccessor: state.controls.scatterplotYYaccessor === field,
     continuousSelectionRange: state.continuousSelection[myName],
-    colorAccessor: state.colors.colorAccessor
+    isColorAccessor: state.colors.colorAccessor === field,
   };
 })
 class HistogramBrush extends React.PureComponent {
@@ -47,7 +47,7 @@ class HistogramBrush extends React.PureComponent {
     return varData.col(field);
   }
 
-  calcHistogramCache = memoize(col => {
+  calcHistogramCache = memoize((col) => {
     /*
      recalculate expensive stuff, notably bins, summaries, etc.
     */
@@ -61,13 +61,17 @@ class HistogramBrush extends React.PureComponent {
       .domain([domainMin, domainMax])
       .range([this.marginLeft, this.marginLeft + this.width]);
 
-    histogramCache.bins = histogramContinuous(col, numBins, [domainMin, domainMax]);
+    histogramCache.bins = histogramContinuous(col, numBins, [
+      domainMin,
+      domainMax,
+    ]);
     histogramCache.binWidth = (domainMax - domainMin) / numBins;
 
-    histogramCache.binStart = i => domainMin + i * histogramCache.binWidth;
-    histogramCache.binEnd = i => domainMin + (i + 1) * histogramCache.binWidth;
+    histogramCache.binStart = (i) => domainMin + i * histogramCache.binWidth;
+    histogramCache.binEnd = (i) =>
+      domainMin + (i + 1) * histogramCache.binWidth;
 
-    const yMax = histogramCache.bins.reduce((l, r) => l > r ? l : r);
+    const yMax = histogramCache.bins.reduce((l, r) => (l > r ? l : r));
 
     histogramCache.y = d3
       .scaleLinear()
@@ -90,32 +94,47 @@ class HistogramBrush extends React.PureComponent {
   }
 
   componentDidMount() {
-    const { field, colorAccessor } = this.props;
+    const { field, isColorAccessor } = this.props;
 
-    this.renderHistogram(this._histogram, field, colorAccessor);
+    this.renderHistogram(this._histogram, field, isColorAccessor);
   }
 
   componentDidUpdate(prevProps) {
-    const { field, world, continuousSelectionRange: range, colorAccessor } = this.props;
+    const {
+      field,
+      world,
+      continuousSelectionRange: range,
+      isColorAccessor,
+    } = this.props;
     const { x } = this._histogram;
     let { brushX, brushXselection } = this.state;
 
     const dfColumn = HistogramBrush.getColumn(world, field);
-    const oldDfColumn = HistogramBrush.getColumn(prevProps.world, prevProps.field);
+    const oldDfColumn = HistogramBrush.getColumn(
+      prevProps.world,
+      prevProps.field
+    );
 
     const rangeChanged = range !== prevProps.continuousSelectionRange;
     const dfChanged = dfColumn !== oldDfColumn;
-    const colorSelectionChanged = prevProps.colorAccessor !== colorAccessor;
+    const colorSelectionChanged = prevProps.isColorAccessor !== isColorAccessor;
 
     if (dfChanged || colorSelectionChanged) {
-      ({brushX, brushXselection} = this.renderHistogram(this._histogram, field, colorAccessor));
+      ({ brushX, brushXselection } = this.renderHistogram(
+        this._histogram,
+        field,
+        isColorAccessor
+      ));
     }
 
     /*
     if the selection has changed, ensure that the brush correctly reflects
     the underlying selection.
     */
-    if ((dfChanged || rangeChanged || colorSelectionChanged) && brushXselection) {
+    if (
+      (dfChanged || rangeChanged || colorSelectionChanged) &&
+      brushXselection
+    ) {
       const selection = d3.brushSelection(brushXselection.node());
       if (!range && selection) {
         /* no active selection - clear brush */
@@ -160,9 +179,9 @@ class HistogramBrush extends React.PureComponent {
           continuousNamespace: {
             isObs,
             isUserDefined,
-            isDiffExp
+            isDiffExp,
           },
-          range: [x(d3.event.selection[0]), x(d3.event.selection[1])]
+          range: [x(d3.event.selection[0]), x(d3.event.selection[1])],
         });
       } else {
         dispatch({
@@ -171,9 +190,9 @@ class HistogramBrush extends React.PureComponent {
           continuousNamespace: {
             isObs,
             isUserDefined,
-            isDiffExp
+            isDiffExp,
           },
-          range: null
+          range: null,
         });
       }
     };
@@ -216,9 +235,9 @@ class HistogramBrush extends React.PureComponent {
           continuousNamespace: {
             isObs,
             isUserDefined,
-            isDiffExp
+            isDiffExp,
           },
-          range: _range
+          range: _range,
         });
       } else {
         dispatch({
@@ -227,8 +246,8 @@ class HistogramBrush extends React.PureComponent {
           continuousNamespace: {
             isObs,
             isUserDefined,
-            isDiffExp
-          }
+            isDiffExp,
+          },
         });
       }
     };
@@ -238,7 +257,7 @@ class HistogramBrush extends React.PureComponent {
     const { dispatch, field } = this.props;
     dispatch({
       type: "set scatterplot x",
-      data: field
+      data: field,
     });
   };
 
@@ -246,7 +265,7 @@ class HistogramBrush extends React.PureComponent {
     const { dispatch, field } = this.props;
     dispatch({
       type: "set scatterplot y",
-      data: field
+      data: field,
     });
   };
 
@@ -257,7 +276,7 @@ class HistogramBrush extends React.PureComponent {
       dispatch({
         type: "color by continuous metadata",
         colorAccessor: field,
-        rangeForColorAccessor: ranges
+        rangeForColorAccessor: ranges,
       });
     } else if (world.varData.hasCol(field)) {
       dispatch(actions.requestSingleGeneExpressionCountsForColoringPOST(field));
@@ -268,29 +287,29 @@ class HistogramBrush extends React.PureComponent {
     const {
       dispatch,
       field,
-      colorAccessor,
-      scatterplotXXaccessor,
-      scatterplotYYaccessor
+      isColorAccessor,
+      isScatterplotXXaccessor,
+      isScatterplotYYaccessor,
     } = this.props;
     dispatch({
       type: "clear user defined gene",
-      data: field
+      data: field,
     });
-    if (field === colorAccessor) {
+    if (isColorAccessor) {
       dispatch({
-        type: "reset colorscale"
+        type: "reset colorscale",
       });
     }
-    if (field === scatterplotXXaccessor) {
+    if (isScatterplotXXaccessor) {
       dispatch({
         type: "set scatterplot x",
-        data: null
+        data: null,
       });
     }
-    if (field === scatterplotYYaccessor) {
+    if (isScatterplotYYaccessor) {
       dispatch({
         type: "set scatterplot y",
-        data: null
+        data: null,
       });
     }
   };
@@ -300,11 +319,11 @@ class HistogramBrush extends React.PureComponent {
     const col = HistogramBrush.getColumn(world, field);
     this._histogram = {
       ...this.calcHistogramCache(col),
-      svgRef
+      svgRef,
     };
   }
 
-  renderHistogram(histogram, field, colorAccessor) {
+  renderHistogram(histogram, field, isColorAccessor) {
     const { x, y, bins, svgRef, binStart, binEnd, binWidth } = histogram;
     const svg = d3.select(svgRef);
 
@@ -319,14 +338,16 @@ class HistogramBrush extends React.PureComponent {
       .attr("class", "histogram-container")
       .attr("transform", `translate(${this.marginLeft},${this.marginTop})`);
 
-    const colorScale = d3.scaleSequential(interpolateCool).domain([0, bins.length]);
+    const colorScale = d3
+      .scaleSequential(interpolateCool)
+      .domain([0, bins.length]);
 
     const histogramScale = d3
       .scaleLinear()
       .domain(x.domain())
       .range([
         colorScale.domain()[1],
-        colorScale.domain()[0]
+        colorScale.domain()[0],
       ]); /* we flip this to make colors dark if high in the color scale */
 
     if (binWidth > 0) {
@@ -338,10 +359,15 @@ class HistogramBrush extends React.PureComponent {
         .enter()
         .append("rect")
         .attr("x", (d, i) => x(binStart(i)) + 1)
-        .attr("y", d => y(d))
+        .attr("y", (d) => y(d))
         .attr("width", (d, i) => x(binEnd(i)) - x(binStart(i)) - 1)
-        .attr("height", d => y(0) - y(d))
-        .style("fill", colorAccessor === field ? (d, i) => colorScale(histogramScale(binStart(i))) : "#bbb");
+        .attr("height", (d) => y(0) - y(d))
+        .style(
+          "fill",
+          isColorAccessor
+            ? (d, i) => colorScale(histogramScale(binStart(i)))
+            : "#bbb"
+        );
     }
 
     // BRUSH
@@ -350,7 +376,7 @@ class HistogramBrush extends React.PureComponent {
       .brushX()
       .extent([
         [x.range()[0], y.range()[1]],
-        [x.range()[1], this.marginTop + this.height + this.marginBottom]
+        [x.range()[1], this.marginTop + this.height + this.marginBottom],
       ])
       /*
       emit start so that the Undoable history can save an undo point
@@ -375,7 +401,11 @@ class HistogramBrush extends React.PureComponent {
         d3
           .axisBottom(x)
           .ticks(4)
-          .tickFormat(d3.format(x.domain().some(n => Math.abs(n) >= 10000) ? ".2e" : ","))
+          .tickFormat(
+            d3.format(
+              x.domain().some((n) => Math.abs(n) >= 10000) ? ".2e" : ","
+            )
+          )
       );
 
     /* Y AXIS */
@@ -387,7 +417,11 @@ class HistogramBrush extends React.PureComponent {
         d3
           .axisRight(y)
           .ticks(3)
-          .tickFormat(d3.format(y.domain().some(n => Math.abs(n) >= 10000) ? ".0e" : ","))
+          .tickFormat(
+            d3.format(
+              y.domain().some((n) => Math.abs(n) >= 10000) ? ".0e" : ","
+            )
+          )
       );
 
     /* axis style */
@@ -404,19 +438,19 @@ class HistogramBrush extends React.PureComponent {
     const {
       field,
       world,
-      colorAccessor,
+      isColorAccessor,
       isUserDefined,
       isDiffExp,
       logFoldChange,
       pvalAdj,
-      scatterplotXXaccessor,
-      scatterplotYYaccessor,
-      zebra
+      isScatterplotXXaccessor,
+      isScatterplotYYaccessor,
+      zebra,
     } = this.props;
     const fieldForId = field.replace(/\s/g, "_");
     const {
       min: unclippedRangeMin,
-      max: unclippedRangeMax
+      max: unclippedRangeMax,
     } = HistogramBrush.getColumn(world, field, false).summarize();
     const unclippedRangeMinColor =
       world.clipQuantiles.min === 0 ? "#bbb" : globals.blue;
@@ -436,14 +470,14 @@ class HistogramBrush extends React.PureComponent {
         }
         style={{
           padding: globals.leftSidebarSectionPadding,
-          backgroundColor: zebra ? globals.lightestGrey : "white"
+          backgroundColor: zebra ? globals.lightestGrey : "white",
         }}
       >
         <div
           style={{
             display: "flex",
             justifyContent: "flex-end",
-            paddingBottom: "8px"
+            paddingBottom: "8px",
           }}
         >
           {isDiffExp || isUserDefined ? (
@@ -456,16 +490,16 @@ class HistogramBrush extends React.PureComponent {
                 <Button
                   data-testid={`plot-x-${field}`}
                   onClick={this.handleSetGeneAsScatterplotX}
-                  active={scatterplotXXaccessor === field}
-                  intent={scatterplotXXaccessor === field ? "primary" : "none"}
+                  active={isScatterplotXXaccessor}
+                  intent={isScatterplotXXaccessor ? "primary" : "none"}
                 >
                   plot x
                 </Button>
                 <Button
                   data-testid={`plot-y-${field}`}
                   onClick={this.handleSetGeneAsScatterplotY}
-                  active={scatterplotYYaccessor === field}
-                  intent={scatterplotYYaccessor === field ? "primary" : "none"}
+                  active={isScatterplotYYaccessor}
+                  intent={isScatterplotYYaccessor ? "primary" : "none"}
                 >
                   plot y
                 </Button>
@@ -479,7 +513,7 @@ class HistogramBrush extends React.PureComponent {
               style={{
                 color: globals.blue,
                 cursor: "pointer",
-                marginLeft: 7
+                marginLeft: 7,
               }}
             >
               remove
@@ -492,8 +526,8 @@ class HistogramBrush extends React.PureComponent {
           >
             <Button
               onClick={this.handleColorAction}
-              active={colorAccessor === field}
-              intent={colorAccessor === field ? "primary" : "none"}
+              active={isColorAccessor}
+              intent={isColorAccessor ? "primary" : "none"}
               data-testclass="colorby"
               data-testid={`colorby-${field}`}
               icon="tint"
@@ -506,12 +540,12 @@ class HistogramBrush extends React.PureComponent {
           id={`histogram_${fieldForId}_svg`}
           data-testclass="histogram-plot"
           data-testid={`histogram-${field}-plot`}
-          ref={svgRef => this.drawHistogram(svgRef)}
+          ref={(svgRef) => this.drawHistogram(svgRef)}
         />
         <div
           style={{
             display: "flex",
-            justifyContent: "space-between"
+            justifyContent: "space-between",
           }}
         >
           <span style={{ color: unclippedRangeMinColor }}>
@@ -533,7 +567,7 @@ class HistogramBrush extends React.PureComponent {
             style={{
               display: "flex",
               justifyContent: "center",
-              alignItems: "baseline"
+              alignItems: "baseline",
             }}
           >
             <span>
@@ -543,7 +577,7 @@ class HistogramBrush extends React.PureComponent {
             <span
               style={{
                 marginLeft: 7,
-                padding: 2
+                padding: 2,
               }}
             >
               <strong>p-value (adj):</strong>
