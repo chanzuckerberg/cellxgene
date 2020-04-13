@@ -1,6 +1,9 @@
 name: Push Tests
 
-on: [push, pull_request]
+on:
+  push:
+    branch: master
+  pull_request:
 
 env:
   JEST_ENV: prod
