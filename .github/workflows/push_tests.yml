@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: |
-          git fetch --depth=1 origin +refs/heads/${{github.base_ref}}:refs/remotes/origin/${{github.base_ref}}
+          git fetch --depth=1 origin +${{github.base_ref}}
       - name: Set up Python 3.7
         uses: actions/setup-python@v1
         with:
