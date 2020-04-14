@@ -16,7 +16,7 @@ from server.common.utils import find_available_port, is_port_available
 import warnings
 from server.common.annotations import AnnotationsLocalFile
 from server.common.utils import custom_format_warning
-import server.compute.diffexp_tiledb as diffexp_tiledb
+import server.compute.diffexp_cxg as diffexp_tiledb
 
 DEFAULT_SERVER_PORT = int(os.environ.get("CXG_SERVER_PORT", "5005"))
 # anything bigger than this will generate a special message
@@ -86,8 +86,9 @@ class AppConfig(object):
             self.diffexp__enable = dc["diffexp"]["enable"]
             self.diffexp__lfc_cutoff = dc["diffexp"]["lfc_cutoff"]
             self.diffexp__top_n = dc["diffexp"]["top_n"]
-            self.diffexp__alg_tiledb__max_workers = dc["diffexp"]["alg_tiledb"]["max_workers"]
-            self.diffexp__alg_tiledb__target_workunit = dc["diffexp"]["alg_tiledb"]["target_workunit"]
+            self.diffexp__alg_cxg__max_workers = dc["diffexp"]["alg_cxg"]["max_workers"]
+            self.diffexp__alg_cxg__cpu_multiplier = dc["diffexp"]["alg_cxg"]["cpu_multiplier"]
+            self.diffexp__alg_cxg__target_workunit = dc["diffexp"]["alg_cxg"]["target_workunit"]
 
             self.data_locator__s3__region_name = dc["data_locator"]["s3"]["region_name"]
 
@@ -436,8 +437,9 @@ class AppConfig(object):
         self.__check_attr("diffexp__enable", bool)
         self.__check_attr("diffexp__lfc_cutoff", float)
         self.__check_attr("diffexp__top_n", int)
-        self.__check_attr("diffexp__alg_tiledb__max_workers", (str, int))
-        self.__check_attr("diffexp__alg_tiledb__target_workunit", int)
+        self.__check_attr("diffexp__alg_cxg__max_workers", (str, int))
+        self.__check_attr("diffexp__alg_cxg__cpu_multiplier", int)
+        self.__check_attr("diffexp__alg_cxg__target_workunit", int)
 
         if self.single_dataset__datapath:
             with self.matrix_data_cache_manager.data_adaptor(self.single_dataset__datapath, self) as data_adaptor:
@@ -447,18 +449,13 @@ class AppConfig(object):
                         f"running differential expression may take longer or fail."
                     )
 
-        max_workers = self.diffexp__alg_tiledb__max_workers
-        if type(max_workers) == str:
-            cpu_count = os.cpu_count()
-            try:
-                max_workers = eval(max_workers, {"cpu_count": cpu_count})
-            except Exception:
-                raise ConfigurationError(f"Unable to evaluate: {max_workers}")
-
-        self.diffexp__alg_tiledb__max_workers = max_workers
+        max_workers = self.diffexp__alg_cxg__max_workers
+        cpu_multiplier = self.diffexp__alg_cxg__cpu_multiplier
+        cpu_count = os.cpu_count()
+        max_workers = min(max_workers, cpu_multiplier * cpu_count)
         diffexp_tiledb.set_config(
-            self.diffexp__alg_tiledb__max_workers,
-            self.diffexp__alg_tiledb__target_workunit)
+            max_workers,
+            self.diffexp__alg_cxg__target_workunit)
 
     def handle_adaptor(self, context):
         # cxg

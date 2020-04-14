@@ -39,6 +39,7 @@ def diffexp_ttest(adaptor, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
     nB = len(row_selector_B)
     matrix = adaptor.open_array("X")
 
+    dtype = matrix.dtype
     cols = matrix.shape[1]
     tile_extent = [dim.tile for dim in matrix.schema.domain]
 
@@ -91,7 +92,14 @@ def diffexp_ttest(adaptor, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
                 future.cancel()
             raise ComputeError(str(e))
 
-    r = diffexp_ttest_from_mean_var(meanA, varA, nA, meanB, varB, nB, top_n, diffexp_lfc_cutoff)
+    r = diffexp_ttest_from_mean_var(
+        meanA.astype(dtype),
+        varA.astype(dtype),
+        nA,
+        meanB.astype(dtype),
+        varB.astype(dtype),
+        nB, top_n, diffexp_lfc_cutoff)
+
     return r
 
 

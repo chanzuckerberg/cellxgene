@@ -8,7 +8,7 @@ from server.common.constants import Axis
 from server.data_common.data_adaptor import DataAdaptor
 from server.data_common.fbs.matrix import encode_matrix_fbs
 from server.data_cxg.cxg_util import pack_selector_from_mask
-import server.compute.diffexp_tiledb as diffexp_tiledb
+import server.compute.diffexp_cxg as diffexp_cxg
 from server.common.immutable_kvcache import ImmutableKVCache
 import tiledb
 import numpy as np
@@ -192,7 +192,7 @@ class CxgAdaptor(DataAdaptor):
             top_n = self.config.diffexp__top_n
         if lfc_cutoff is None:
             lfc_cutoff = self.config.diffexp__lfc_cutoff
-        return diffexp_tiledb.diffexp_ttest(self, maskA, maskB, top_n, lfc_cutoff)
+        return diffexp_cxg.diffexp_ttest(self, maskA, maskB, top_n, lfc_cutoff)
 
     def get_X_array(self, obs_mask=None, var_mask=None):
         obs_items = pack_selector_from_mask(obs_mask)
