@@ -1,11 +1,13 @@
 from server import __version__ as cellxgene_version
 from flatten_dict import flatten
-from os import mkdir, environ
+import os
 from os.path import splitext, basename, isdir
 import sys
 from urllib.parse import urlparse
 import yaml
 import copy
+import boto3
+import botocore
 
 from server.common.default_config import get_default_config
 from server.common.errors import ConfigurationError, DatasetAccessError, OntologyLoadFailure
@@ -14,8 +16,9 @@ from server.common.utils import find_available_port, is_port_available
 import warnings
 from server.common.annotations import AnnotationsLocalFile
 from server.common.utils import custom_format_warning
+import server.compute.diffexp_cxg as diffexp_tiledb
 
-DEFAULT_SERVER_PORT = int(environ.get("CXG_SERVER_PORT", "5005"))
+DEFAULT_SERVER_PORT = int(os.environ.get("CXG_SERVER_PORT", "5005"))
 # anything bigger than this will generate a special message
 BIG_FILE_SIZE_THRESHOLD = 100 * 2 ** 20  # 100MB
 
@@ -82,6 +85,10 @@ class AppConfig(object):
 
             self.diffexp__enable = dc["diffexp"]["enable"]
             self.diffexp__lfc_cutoff = dc["diffexp"]["lfc_cutoff"]
+            self.diffexp__top_n = dc["diffexp"]["top_n"]
+            self.diffexp__alg_cxg__max_workers = dc["diffexp"]["alg_cxg"]["max_workers"]
+            self.diffexp__alg_cxg__cpu_multiplier = dc["diffexp"]["alg_cxg"]["cpu_multiplier"]
+            self.diffexp__alg_cxg__target_workunit = dc["diffexp"]["alg_cxg"]["target_workunit"]
 
             self.data_locator__s3__region_name = dc["data_locator"]["s3"]["region_name"]
 
@@ -187,14 +194,15 @@ class AppConfig(object):
         context = dict(messagefn=messagefn)
 
         self.handle_server(context)
+        self.handle_adaptor(context)
         self.handle_data_locator(context)
+        self.handle_adaptor(context)  # may depend on data_locator
         self.handle_presentation(context)
-        self.handle_single_dataset(context)
-        self.handle_multi_dataset(context)
+        self.handle_single_dataset(context)  # may depend on adaptor
+        self.handle_multi_dataset(context)  # may depend on adaptor
         self.handle_user_annotations(context)
         self.handle_embeddings(context)
         self.handle_diffexp(context)
-        self.handle_adaptor(context)
         self.handle_limits(context)
 
         self.is_completed = True
@@ -252,10 +260,25 @@ class AppConfig(object):
         # secret key:
         #   first, from CXG_SECRET_KEY environment variable
         #   second, from config file
-        self.server__flask_secret_key = environ.get("CXG_SECRET_KEY", self.server__flask_secret_key)
+        self.server__flask_secret_key = os.environ.get("CXG_SECRET_KEY", self.server__flask_secret_key)
 
     def handle_data_locator(self, context):
-        self.__check_attr("data_locator__s3__region_name", (type(None), str))
+        self.__check_attr("data_locator__s3__region_name", (type(None), bool, str))
+        if self.data_locator__s3__region_name is True:
+            path = self.single_dataset__datapath or self.multi_dataset__dataroot
+            if path and path.startswith("s3:"):
+                bucket = urlparse(path).netloc
+                client = boto3.client("s3")
+                try:
+                    res = client.head_bucket(Bucket=bucket)
+                except botocore.exceptions.ClientError:
+                    raise ConfigurationError(f"Unable to determine region from {path}")
+
+                region = res.get("ResponseMetadata", {}).get("HTTPHeaders", {}).get("x-amz-bucket-region")
+                if region:
+                    self.data_locator__s3__region_name = region
+                else:
+                    raise ConfigurationError(f"Unable to determine region from {path}")
 
     def handle_presentation(self, context):
         self.__check_attr("presentation__max_categories", int)
@@ -281,7 +304,7 @@ class AppConfig(object):
             self.matrix_data_cache_manager = MatrixDataCacheManager(max_cached=1, timelimit_s=None)
 
         # preload this data set
-        matrix_data_loader = MatrixDataLoader(self.single_dataset__datapath)
+        matrix_data_loader = MatrixDataLoader(self.single_dataset__datapath, app_config=self)
         try:
             matrix_data_loader.pre_load_validation()
         except DatasetAccessError as e:
@@ -362,7 +385,7 @@ class AppConfig(object):
 
             if dirname is not None and not isdir(dirname):
                 try:
-                    mkdir(dirname)
+                    os.mkdir(dirname)
                 except OSError:
                     raise ConfigurationError("Unable to create directory specified by --annotations-dir")
 
@@ -404,7 +427,7 @@ class AppConfig(object):
 
         if self.single_dataset__datapath:
             if self.embeddings__enable_reembedding:
-                matrix_data_loader = MatrixDataLoader(self.single_dataset__datapath)
+                matrix_data_loader = MatrixDataLoader(self.single_dataset__datapath, app_config=self)
                 if matrix_data_loader.matrix_data_type() != MatrixDataType.H5AD:
                     raise ConfigurationError("'enable-reembedding is only supported with H5AD files.")
                 if self.adaptor__anndata_adaptor__backed:
@@ -413,6 +436,10 @@ class AppConfig(object):
     def handle_diffexp(self, context):
         self.__check_attr("diffexp__enable", bool)
         self.__check_attr("diffexp__lfc_cutoff", float)
+        self.__check_attr("diffexp__top_n", int)
+        self.__check_attr("diffexp__alg_cxg__max_workers", (str, int))
+        self.__check_attr("diffexp__alg_cxg__cpu_multiplier", int)
+        self.__check_attr("diffexp__alg_cxg__target_workunit", int)
 
         if self.single_dataset__datapath:
             with self.matrix_data_cache_manager.data_adaptor(self.single_dataset__datapath, self) as data_adaptor:
@@ -422,9 +449,22 @@ class AppConfig(object):
                         f"running differential expression may take longer or fail."
                     )
 
+        max_workers = self.diffexp__alg_cxg__max_workers
+        cpu_multiplier = self.diffexp__alg_cxg__cpu_multiplier
+        cpu_count = os.cpu_count()
+        max_workers = min(max_workers, cpu_multiplier * cpu_count)
+        diffexp_tiledb.set_config(
+            max_workers,
+            self.diffexp__alg_cxg__target_workunit)
+
     def handle_adaptor(self, context):
         # cxg
         self.__check_attr("adaptor__cxg_adaptor__tiledb_ctx", dict)
+        regionkey = "vfs.s3.region"
+        if regionkey not in self.adaptor__cxg_adaptor__tiledb_ctx:
+            if type(self.data_locator__s3__region_name) == str:
+                self.adaptor__cxg_adaptor__tiledb_ctx[regionkey] = self.data_locator__s3__region_name
+
         from server.data_cxg.cxg_adaptor import CxgAdaptor
 
         CxgAdaptor.set_tiledb_context(self.adaptor__cxg_adaptor__tiledb_ctx)

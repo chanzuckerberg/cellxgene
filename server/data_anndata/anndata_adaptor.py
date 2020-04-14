@@ -15,6 +15,7 @@ from server.common.utils import series_to_schema
 from server.common.constants import Axis, MAX_LAYOUTS
 from server.common.errors import PrepareError, DatasetAccessError, FilterError
 from server.compute.scanpy import scanpy_umap
+import server.compute.diffexp_generic as diffexp_generic
 
 anndata_version = version.parse(str(anndata.__version__)).release
 
@@ -324,6 +325,13 @@ class AnndataAdaptor(DataAdaptor):
         fbs = encode_matrix_fbs(df, col_idx=df.columns, row_idx=None)
         schema = {"name": name, "type": "float32", "dims": dims}
         return (schema, fbs)
+
+    def compute_diffexp_ttest(self, maskA, maskB, top_n=None, lfc_cutoff=None):
+        if top_n is None:
+            top_n = self.config.diffexp__top_n
+        if lfc_cutoff is None:
+            lfc_cutoff = self.config.diffexp__lfc_cutoff
+        return diffexp_generic.diffexp_ttest(self, maskA, maskB, top_n, lfc_cutoff)
 
     def get_X_array(self, obs_mask=None, var_mask=None):
         if obs_mask is None:

@@ -346,8 +346,8 @@ def save_embeddings(container, adata, ctx):
             create_emb(e_name, value)
             with tiledb.DenseArray(e_name, mode="w", ctx=ctx) as A:
                 A[:] = value
+            tiledb.consolidate(e_name, ctx=ctx)
             log(1, f"\t\t...{name} embedding created")
-        tiledb.consolidate(e_name, ctx=ctx)
 
 
 def create_X(X_name, shape):

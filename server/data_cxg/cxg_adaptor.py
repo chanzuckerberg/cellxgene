@@ -7,6 +7,8 @@ from server.common.utils import path_join
 from server.common.constants import Axis
 from server.data_common.data_adaptor import DataAdaptor
 from server.data_common.fbs.matrix import encode_matrix_fbs
+from server.data_cxg.cxg_util import pack_selector_from_mask
+import server.compute.diffexp_cxg as diffexp_cxg
 from server.common.immutable_kvcache import ImmutableKVCache
 import tiledb
 import numpy as np
@@ -185,9 +187,16 @@ class CxgAdaptor(DataAdaptor):
     def compute_embedding(self, method, filter):
         raise NotImplementedError("CXG does not yet support re-embedding")
 
+    def compute_diffexp_ttest(self, maskA, maskB, top_n=None, lfc_cutoff=None):
+        if top_n is None:
+            top_n = self.config.diffexp__top_n
+        if lfc_cutoff is None:
+            lfc_cutoff = self.config.diffexp__lfc_cutoff
+        return diffexp_cxg.diffexp_ttest(self, maskA, maskB, top_n, lfc_cutoff)
+
     def get_X_array(self, obs_mask=None, var_mask=None):
-        obs_items = self._convert_mask(obs_mask)
-        var_items = self._convert_mask(var_mask)
+        obs_items = pack_selector_from_mask(obs_mask)
+        var_items = pack_selector_from_mask(var_mask)
         X = self.open_array("X")
         if obs_items == slice(None) and var_items == slice(None):
             data = X[:, :]
@@ -401,30 +410,3 @@ class CxgAdaptor(DataAdaptor):
             fbs = encode_matrix_fbs(df, col_idx=df.columns)
 
         return fbs
-
-    @staticmethod
-    def _convert_mask(boolarray):
-        """Convert an index mask to a list of ranges or indices that can be used in a multi_index."""
-        if boolarray is None:
-            return slice(None)
-        assert type(boolarray) == np.ndarray
-        assert (boolarray.dtype) == bool
-
-        selector = np.nonzero(boolarray)[0]
-
-        if len(selector) == 0:
-            return slice(None)
-
-        result = []
-        current = slice(selector[0], selector[0])
-        for sel in selector[1:]:
-            if sel == current.stop + 1:
-                current = slice(current.start, sel)
-            else:
-                result.append(current if current.start != current.stop else current.start)
-                current = slice(sel, sel)
-
-        if len(result) == 0 or result[-1] != current:
-            result.append(current if current.start != current.stop else current.start)
-
-        return result

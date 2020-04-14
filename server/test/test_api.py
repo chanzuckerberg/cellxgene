@@ -206,6 +206,13 @@ class EndPoints(object):
         result = self.session.put(url, headers=header)
         self.assertEqual(result.status_code, HTTPStatus.BAD_REQUEST)
 
+    def test_data_get_fbs(self):
+        endpoint = f"data/var"
+        url = f"{self.URL_BASE}{endpoint}"
+        header = {"Accept": "application/octet-stream"}
+        result = self.session.get(url, headers=header)
+        self.assertEqual(result.status_code, HTTPStatus.BAD_REQUEST)
+
     def test_data_put_filter_fbs(self):
         endpoint = f"data/var"
         url = f"{self.URL_BASE}{endpoint}"
@@ -221,6 +228,19 @@ class EndPoints(object):
         self.assertIsNone(df["row_idx"])
         self.assertEqual(len(df["columns"]), df["n_cols"])
         self.assertListEqual(df["col_idx"].tolist(), [0, 1, 4])
+
+    def test_data_get_filter_fbs(self):
+        index_col_name = self.schema["schema"]["annotations"]["var"]["index"]
+        query = f"var:{index_col_name}=SIK1"
+        endpoint = f"data/var"
+        url = f"{self.URL_BASE}{endpoint}?{query}"
+        header = {"Accept": "application/octet-stream"}
+        result = self.session.get(url, headers=header)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
+        df = decode_fbs.decode_matrix_FBS(result.content)
+        self.assertEqual(df["n_rows"], 2638)
+        self.assertEqual(df["n_cols"], 1)
 
     def test_data_put_single_var(self):
         endpoint = f"data/var"
