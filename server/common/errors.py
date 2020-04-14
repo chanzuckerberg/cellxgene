@@ -76,3 +76,11 @@ class ExceedsLimitError(Exception):
     """
 
     pass
+
+
+class ComputeError(Exception):
+    """
+    Raised when an error occurs during a compute algorithm (such as diffexp)
+    """
+
+    pass

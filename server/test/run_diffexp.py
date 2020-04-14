@@ -4,7 +4,7 @@ import random
 import time
 import numpy as np
 
-import server.compute.diffexp_tiledb as diffexp_tiledb
+import server.compute.diffexp_cxg as diffexp_cxg
 import server.compute.diffexp_generic as diffexp_generic
 
 from server.common.app_config import AppConfig
@@ -19,7 +19,7 @@ def main():
     parser.add_argument("-nb", "--numB", type=int, required=True, help="number of rows in group B")
     parser.add_argument("-t", "--trials", default=1, type=int, help="number of trials")
     parser.add_argument(
-        "-a", "--alg", choices=("default", "generic", "tiledb"), default="default", help="algorithm to use"
+        "-a", "--alg", choices=("default", "generic", "cxg"), default="default", help="algorithm to use"
     )
     parser.add_argument("-s", "--show", default=False, action="store_true", help="show the results")
     parser.add_argument(
@@ -30,8 +30,6 @@ def main():
     args = parser.parse_args()
 
     app_config = AppConfig()
-    app_config.data_locator__s3__region_name = "us-west-2"
-    app_config.adaptor__cxg_adaptor__tiledb_ctx["vfs.s3.region"] = "us-west-2"
     app_config.single_dataset__datapath = args.dataset
     app_config.server__verbose = True
     app_config.complete_config()
@@ -70,11 +68,11 @@ def main():
             results = adaptor.compute_diffexp_ttest(maskA, maskB)
         elif args.alg == "generic":
             results = diffexp_generic.diffexp_ttest(adaptor, maskA, maskB)
-        elif args.alg == "tiledb":
+        elif args.alg == "cxg":
             if not isinstance(adaptor, CxgAdaptor):
-                print("tiledb only works with CxgAdaptor")
+                print("cxg only works with CxgAdaptor")
                 sys.exit(1)
-            results = diffexp_tiledb.diffexp_ttest(adaptor, maskA, maskB)
+            results = diffexp_cxg.diffexp_ttest(adaptor, maskA, maskB)
 
         t2 = time.time()
         print("TIME=", t2 - t1)
