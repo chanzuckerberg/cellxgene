@@ -10,11 +10,11 @@ import AnnoSelect from "./annoSelect";
 import LabelInput from "./labelInput";
 import { labelPrompt } from "./labelUtil";
 
-@connect(state => ({
+@connect((state) => ({
   writableCategoriesEnabled: state.config?.parameters?.["annotations"] ?? false,
   schema: state.world?.schema,
   config: state.config,
-  ontology: state.ontology
+  ontology: state.ontology,
 }))
 class Categories extends React.Component {
   constructor(props) {
@@ -23,22 +23,22 @@ class Categories extends React.Component {
       createAnnoModeActive: false,
       newCategoryText: "",
       categoryToDuplicate: null,
-      expandedCats: new Set()
+      expandedCats: new Set(),
     };
   }
 
-  handleCreateUserAnno = e => {
+  handleCreateUserAnno = (e) => {
     const { dispatch } = this.props;
     const { newCategoryText, categoryToDuplicate } = this.state;
     dispatch({
       type: "annotation: create category",
       data: newCategoryText,
-      categoryToDuplicate
+      categoryToDuplicate,
     });
     this.setState({
       createAnnoModeActive: false,
       categoryToDuplicate: null,
-      newCategoryText: ""
+      newCategoryText: "",
     });
     e.preventDefault();
   };
@@ -51,15 +51,15 @@ class Categories extends React.Component {
     this.setState({
       createAnnoModeActive: false,
       categoryToDuplicate: null,
-      newCategoryText: ""
+      newCategoryText: "",
     });
   };
 
-  handleModalDuplicateCategorySelection = d => {
+  handleModalDuplicateCategorySelection = (d) => {
     this.setState({ categoryToDuplicate: d });
   };
 
-  categoryNameError = name => {
+  categoryNameError = (name) => {
     /*
     return false if this is a LEGAL/acceptable category name or NULL/empty string,
     or return an error type.
@@ -73,7 +73,7 @@ class Categories extends React.Component {
     we render as categorical.
     */
     const { schema } = this.props;
-    const allCategoryNames = schema.annotations.obs.columns.map(c => c.name);
+    const allCategoryNames = schema.annotations.obs.columns.map((c) => c.name);
 
     /* check category name syntax */
     const error = AnnotationsHelpers.annotationNameIsErroneous(name);
@@ -90,15 +90,15 @@ class Categories extends React.Component {
     return false;
   };
 
-  handleChange = name => {
+  handleChange = (name) => {
     this.setState({ newCategoryText: name });
   };
 
-  handleSelect = name => {
+  handleSelect = (name) => {
     this.setState({ newCategoryText: name });
   };
 
-  instruction = name => {
+  instruction = (name) => {
     return labelPrompt(
       this.categoryNameError(name),
       "New, unique category name",
@@ -106,29 +106,39 @@ class Categories extends React.Component {
     );
   };
 
-  onExpansionChange = catName => {
-    const {expandedCats} = this.state;
+  onExpansionChange = (catName) => {
+    const { expandedCats } = this.state;
     if (expandedCats.has(catName)) {
       const _expandedCats = new Set(expandedCats);
-      _expandedCats.delete(catName)
-      this.setState({expandedCats: _expandedCats}) 
+      _expandedCats.delete(catName);
+      this.setState({ expandedCats: _expandedCats });
     } else {
       const _expandedCats = new Set(expandedCats);
-      _expandedCats.add(catName)
-      this.setState({expandedCats: _expandedCats})
+      _expandedCats.add(catName);
+      this.setState({ expandedCats: _expandedCats });
     }
-  }
+  };
 
   maybeRenderSingleLabel = (allCategoryNames, schema) => {
-    return allCategoryNames.map(catName => 
-      !schema.annotations.obsByName[catName].writable && schema.annotations.obsByName[catName].categories.length === 1 ? (
-        <div style={{marginBottom: 10}}><span style={{fontWeight: 700}}>{catName}</span>:{" "}{schema.annotations.obsByName[catName].categories[0]}</div>
-      ): null
-    )
-  }
-  maybeRenderReadOnly = (allCategoryNames, schema, expandedCats, createAnnoModeActive) => {
-    return allCategoryNames.map(catName =>
-      !schema.annotations.obsByName[catName].writable && schema.annotations.obsByName[catName].categories.length > 1? (
+    return allCategoryNames.map((catName) =>
+      !schema.annotations.obsByName[catName].writable &&
+      schema.annotations.obsByName[catName].categories.length === 1 ? (
+        <div style={{ marginBottom: 10 }}>
+          <span style={{ fontWeight: 700 }}>{catName}</span>:{" "}
+          {schema.annotations.obsByName[catName].categories[0]}
+        </div>
+      ) : null
+    );
+  };
+  maybeRenderReadOnly = (
+    allCategoryNames,
+    schema,
+    expandedCats,
+    createAnnoModeActive
+  ) => {
+    return allCategoryNames.map((catName) =>
+      !schema.annotations.obsByName[catName].writable &&
+      schema.annotations.obsByName[catName].categories.length > 1 ? (
         <Category
           key={catName}
           metadataField={catName}
@@ -138,10 +148,15 @@ class Categories extends React.Component {
           isUserAnno={false}
         />
       ) : null
-    )
-  }
-  maybeRenderAnnotations = (allCategoryNames, schema, expandedCats, createAnnoModeActive) => {
-    return allCategoryNames.map(catName =>
+    );
+  };
+  maybeRenderAnnotations = (
+    allCategoryNames,
+    schema,
+    expandedCats,
+    createAnnoModeActive
+  ) => {
+    return allCategoryNames.map((catName) =>
       schema.annotations.obsByName[catName].writable ? (
         <Category
           key={catName}
@@ -152,15 +167,15 @@ class Categories extends React.Component {
           isUserAnno
         />
       ) : null
-    )
-  }
+    );
+  };
 
   render() {
     const {
       createAnnoModeActive,
       categoryToDuplicate,
       newCategoryText,
-      expandedCats      
+      expandedCats,
     } = this.state;
     const { writableCategoriesEnabled, schema, config, ontology } = this.props;
     const ontologyEnabled = ontology?.enabled ?? false;
@@ -173,7 +188,7 @@ class Categories extends React.Component {
     return (
       <div
         style={{
-          padding: globals.leftSidebarSectionPadding
+          padding: globals.leftSidebarSectionPadding,
         }}
       >
         <AnnoDialog
@@ -196,7 +211,7 @@ class Categories extends React.Component {
                 "data-testid": "new-category-name",
                 leftIcon: "tag",
                 intent: "none",
-                autoFocus: true
+                autoFocus: true,
               }}
               newLabelMessage="New category"
             />
@@ -212,12 +227,32 @@ class Categories extends React.Component {
           }
         />
 
-
-        <div style={{marginLeft: 0}}>
-          {this.maybeRenderSingleLabel(allCategoryNames, schema, expandedCats, createAnnoModeActive)/* Categories with only one label */}
+        <div style={{ marginLeft: 0 }}>
+          {
+            this.maybeRenderSingleLabel(
+              allCategoryNames,
+              schema,
+              expandedCats,
+              createAnnoModeActive
+            ) /* Categories with only one label */
+          }
         </div>
-        {this.maybeRenderReadOnly(allCategoryNames, schema, expandedCats, createAnnoModeActive) /* Read only categorical fields, ostensibly 'normal' mode */}
-        {this.maybeRenderAnnotations(allCategoryNames, schema, expandedCats, createAnnoModeActive) /* Writable fields, ie., anno */}
+        {
+          this.maybeRenderReadOnly(
+            allCategoryNames,
+            schema,
+            expandedCats,
+            createAnnoModeActive
+          ) /* Read only categorical fields, ostensibly 'normal' mode */
+        }
+        {
+          this.maybeRenderAnnotations(
+            allCategoryNames,
+            schema,
+            expandedCats,
+            createAnnoModeActive
+          ) /* Writable fields, ie., anno */
+        }
 
         {writableCategoriesEnabled ? (
           <div>
