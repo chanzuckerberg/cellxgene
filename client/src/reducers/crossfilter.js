@@ -4,14 +4,14 @@ import Crossfilter from "../util/typedCrossfilter";
 import {
   World,
   ControlsHelpers,
-  AnnotationsHelpers
+  AnnotationsHelpers,
 } from "../util/stateManager";
 import {
   layoutDimensionName,
   obsAnnoDimensionName,
   userDefinedDimensionName,
   diffexpDimensionName,
-  makeContinuousDimensionName
+  makeContinuousDimensionName,
 } from "../util/nameCreators";
 
 const XYDimName = layoutDimensionName("XY");
@@ -124,7 +124,7 @@ const CrossfilterReducerBase = (
     case "request differential expression success": {
       const { world } = prevSharedState;
       const varIndexName = world.schema.annotations.var.index;
-      const genes = _.map(action.data, d =>
+      const genes = _.map(action.data, (d) =>
         world.varAnnotations.at(d[0], varIndexName)
       );
       const crossfilter = _.reduce(
@@ -216,7 +216,7 @@ const CrossfilterReducerBase = (
         minX,
         minY,
         maxX,
-        maxY
+        maxY,
       });
     }
 
@@ -224,7 +224,7 @@ const CrossfilterReducerBase = (
       const { polygon } = action;
       return state.select(XYDimName, {
         mode: "within-polygon",
-        polygon
+        polygon,
       });
     }
 
@@ -249,7 +249,12 @@ const CrossfilterReducerBase = (
         return state.select(name, { mode: "all" });
       }
       const [lo, hi] = action.range;
-      const newState = state.select(name, { mode: "range", lo, hi });
+      const newState = state.select(name, {
+        mode: "range",
+        lo,
+        hi,
+        inclusive: true, // [lo, hi] incluisve selection
+      });
       return newState;
     }
 
@@ -261,19 +266,19 @@ const CrossfilterReducerBase = (
       const values = categoryValues.filter((v, i) => categoryValueSelected[i]);
       return state.select(obsAnnoDimensionName(action.metadataField), {
         mode: "exact",
-        values
+        values,
       });
     }
 
     case "categorical metadata filter none of these": {
       return state.select(obsAnnoDimensionName(action.metadataField), {
-        mode: "none"
+        mode: "none",
       });
     }
 
     case "categorical metadata filter all of these": {
       return state.select(obsAnnoDimensionName(action.metadataField), {
-        mode: "all"
+        mode: "all",
       });
     }
 

@@ -15,7 +15,7 @@ const ContinuousSelection = (state = {}, action) => {
       );
       return {
         ...state,
-        [name]: action.range
+        [name]: action.range,
       };
     }
     case "continuous metadata histogram cancel": {
