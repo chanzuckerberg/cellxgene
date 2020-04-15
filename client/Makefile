@@ -1,6 +1,5 @@
 include ../common.mk
 
-DATASET := $(if $(DATASET),$(DATASET),../example-dataset/pbmc3k.h5ad)
 ANNOTATIONS := $(if $(ANNOTATIONS),$(ANNOTATIONS),../server/test/test_datasets/pbmc3k-annotations.csv)
 ANNOTATIONS_FILENAME := $(shell basename $(ANNOTATIONS))
 
@@ -23,14 +22,9 @@ build:
 
 
 # Development convenience methods
-
 .PHONY: start-frontend
 start-frontend:
 	node server/development.js
-
-.PHONY: start-server
-start-server:
-	cellxgene launch -p $(CXG_SERVER_PORT) $(CXG_OPTIONS) $(DATASET)
 
 .PHONY: e2e
 e2e:

@@ -1,15 +1,12 @@
 #!/usr/bin/env bash
+set -e
 
 PROJECT_ROOT=$(git rev-parse --show-toplevel)
 
-cd ${PROJECT_ROOT}
+${PROJECT_ROOT}/scripts/dev_setup
 
-./scripts/dev_setup
-
-source venv/bin/activate
-
-cd client
+source ${PROJECT_ROOT}/venv/bin/activate
 
 export CXG_OPTIONS=${CXG_OPTIONS:---debug}
 
-make start-server
+make --file=${PROJECT_ROOT}/common.mk start-server
