@@ -183,18 +183,6 @@ class Category extends React.Component {
       return this.renderIsStillLoading();
     }
 
-    if (
-      !schema?.annotations?.obsByName[metadataField]?.writable &&
-      schema?.annotations?.obsByName[metadataField]?.categories?.length === 1
-    ) {
-      return (
-        <div style={{ marginBottom: 10, marginTop: 4 }}>
-          <span style={{ fontWeight: 700 }}>{metadataField}</span>:{" "}
-          {schema.annotations.obsByName[metadataField].categories[0]}
-        </div>
-      );
-    }
-
     const isTruncated = _.get(
       categoricalSelection,
       [metadataField, "isTruncated"],
@@ -205,6 +193,20 @@ class Category extends React.Component {
       metadataField,
       globals.categoryDisplayStringMaxLength
     );
+
+    if (
+      !schema?.annotations?.obsByName[metadataField]?.writable &&
+      schema?.annotations?.obsByName[metadataField]?.categories?.length === 1
+    ) {
+      return (
+        <div style={{ marginBottom: 10, marginTop: 4 }}>
+          <span style={{ fontWeight: 700 }}>
+            {truncatedString ? truncatedString : metadataField}
+          </span>
+          : {schema.annotations.obsByName[metadataField].categories[0]}
+        </div>
+      );
+    }
 
     return (
       <CategoryFlipperLayout
