@@ -2,6 +2,9 @@ import os
 import tempfile
 import fsspec
 from datetime import datetime
+import boto3
+import botocore
+from urllib.parse import urlparse
 
 
 class DataLocator:
@@ -25,7 +28,7 @@ class DataLocator:
 
     """
 
-    def __init__(self, uri_or_path, app_config=None):
+    def __init__(self, uri_or_path, region_name=None):
         if isinstance(uri_or_path, DataLocator):
             locator = uri_or_path
             self.uri_or_path = locator.uri_or_path
@@ -39,9 +42,9 @@ class DataLocator:
             self.cname = self.path if self.protocol == "file" else self.uri_or_path
 
         # fsspec.filesystem will throw RuntimeError if the protocol is unsupported
-        if self.protocol == "s3" and app_config and app_config.data_locator__s3__region_name:
+        if self.protocol == "s3" and region_name:
             self.fs = fsspec.filesystem(
-                self.protocol, config_kwargs={"region_name": app_config.data_locator__s3__region_name}
+                self.protocol, config_kwargs={"region_name": region_name}
             )
         else:
             self.fs = fsspec.filesystem(self.protocol)
@@ -125,3 +128,25 @@ class LocalFilePath:
     def __exit__(self, *args):
         if self.delete:
             os.unlink(self.tmp_path)
+
+
+def discover_region_name(uri):
+    """If this is an s3 protocol, discover the region name.
+    If this is not an s3 protocol return None"""
+
+    protocol, _ = DataLocator._get_protocol_and_path(uri)
+    if protocol == "s3":
+        bucket = urlparse(uri).netloc
+        client = boto3.client("s3")
+        try:
+            res = client.head_bucket(Bucket=bucket)
+        except botocore.exceptions.ClientError:
+            raise RuntimeError(f"Unable to determine region from {uri}")
+
+        region = res.get("ResponseMetadata", {}).get("HTTPHeaders", {}).get("x-amz-bucket-region")
+        if region:
+            return region
+        else:
+            raise RuntimeError(f"Unable to determine region from {uri}")
+
+    return None
