@@ -17,13 +17,16 @@ import AnnoDialogAddLabel from "./annoDialogAddLabel";
 import * as globals from "../../../globals";
 import maybeTruncateString from "../../../util/maybeTruncateString";
 
-@connect((state) => ({
-  colorAccessor: state.colors.colorAccessor,
-  categoricalSelection: state.categoricalSelection,
-  annotations: state.annotations,
-  universe: state.universe,
-  schema: state.world?.schema,
-}))
+@connect((state, ownProps) => {
+  const { metadataField } = ownProps;
+  return {
+    isColorAccessor: state.colors.colorAccessor === metadataField,
+    categoricalSelection: state.categoricalSelection,
+    annotations: state.annotations,
+    universe: state.universe,
+    schema: state.world?.schema,
+  };
+})
 class Category extends React.Component {
   constructor(props) {
     super(props);
@@ -170,8 +173,7 @@ class Category extends React.Component {
     const {
       metadataField,
       categoricalSelection,
-      colorAccessor,
-      isUserAnno,
+      isColorAccessor,
       annotations,
       isExpanded,
       onExpansionChange,
@@ -183,6 +185,8 @@ class Category extends React.Component {
       return this.renderIsStillLoading();
     }
 
+    const isUserAnno =
+      schema?.annotations?.obsByName[metadataField]?.writable ?? false;
     const isTruncated = _.get(
       categoricalSelection,
       [metadataField, "isTruncated"],
@@ -195,7 +199,7 @@ class Category extends React.Component {
     );
 
     if (
-      !schema?.annotations?.obsByName[metadataField]?.writable &&
+      !isUserAnno &&
       schema?.annotations?.obsByName[metadataField]?.categories?.length === 1
     ) {
       return (
@@ -304,8 +308,8 @@ class Category extends React.Component {
               data-testclass="colorby"
               data-testid={`colorby-${metadataField}`}
               onClick={this.handleColorChange}
-              active={colorAccessor === metadataField}
-              intent={colorAccessor === metadataField ? "primary" : "none"}
+              active={isColorAccessor}
+              intent={isColorAccessor ? "primary" : "none"}
               disabled={isTruncated}
               icon="tint"
             />

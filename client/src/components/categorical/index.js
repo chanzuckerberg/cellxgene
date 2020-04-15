@@ -186,7 +186,6 @@ class Categories extends React.Component {
               onExpansionChange={this.onExpansionChange}
               isExpanded={expandedCats.has(catName)}
               createAnnoModeActive={createAnnoModeActive}
-              isUserAnno={false}
             />
           ) : null
         )}
@@ -199,7 +198,6 @@ class Categories extends React.Component {
               onExpansionChange={this.onExpansionChange}
               isExpanded={expandedCats.has(catName)}
               createAnnoModeActive={createAnnoModeActive}
-              isUserAnno
             />
           ) : null
         )}
