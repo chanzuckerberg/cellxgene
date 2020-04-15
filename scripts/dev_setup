@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -e
+
+PROJECT_ROOT=$(git rev-parse --show-toplevel)
+
+cd ${PROJECT_ROOT}
+
+virtualenv -p python3 venv
+
+source venv/bin/activate
+
+make uninstall dev-env-server build-for-server-dev install-dev

@@ -1,0 +1,42 @@
+#!/usr/bin/osascript
+
+set DATASET to system attribute "DATASET"
+set CXG_OPTIONS to system attribute "CXG_OPTIONS"
+
+on gotoProjectRootDir()
+  tell application "Finder"
+    set current_path to container of (path to me) as alias
+  end tell
+  tell application "Terminal"
+    do script "cd " & (POSIX path of current_path) & ".." in front window
+  end tell
+end gotoProjectRootDir
+
+on newTab()
+  tell application "System Events" to keystroke "t" using command down
+  delay 0.05
+end newTab
+
+tell application "Terminal"
+  activate
+  reopen
+
+  my newTab()
+  my gotoProjectRootDir()
+  if DATASET is not equal to "" then
+    do script "export DATASET=" & DATASET in front window
+  end if
+  if CXG_OPTIONS is not equal to "" then
+    do script "export CXG_OPTIONS=" & CXG_OPTIONS in front window
+  end if
+  do script "./scripts/backend_dev" in front window
+
+  my newTab()
+  my gotoProjectRootDir()
+  do script "sleep 1
+    # This tab is for the client hot-reloading node server. It will wait until cellxgene is built before continuing. Please hang in there while the other tab completes.
+    while [ `ps aux | grep dev_setup | grep -v grep | awk '{ print $2 }'` ]; do sleep 1; done
+    cd client/
+    make start-frontend" in window 1
+
+end tell
