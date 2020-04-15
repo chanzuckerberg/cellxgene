@@ -130,9 +130,9 @@ class LocalFilePath:
             os.unlink(self.tmp_path)
 
 
-def discover_region_name(uri):
-    """If this is an s3 protocol, discover the region name.
-    If this is not an s3 protocol return None"""
+def discover_s3_region_name(uri):
+    """If this is an s3 protocol, discover and return the (aws) region name.
+    If a return name could not be discovered, or if the uri is not an s3 protocol, return None."""
 
     protocol, _ = DataLocator._get_protocol_and_path(uri)
     if protocol == "s3":
@@ -141,12 +141,12 @@ def discover_region_name(uri):
         try:
             res = client.head_bucket(Bucket=bucket)
         except botocore.exceptions.ClientError:
-            raise RuntimeError(f"Unable to determine region from {uri}")
+            return None
 
         region = res.get("ResponseMetadata", {}).get("HTTPHeaders", {}).get("x-amz-bucket-region")
         if region:
             return region
         else:
-            raise RuntimeError(f"Unable to determine region from {uri}")
+            return None
 
     return None

@@ -15,7 +15,7 @@ import warnings
 from server.common.annotations import AnnotationsLocalFile
 from server.common.utils import custom_format_warning
 import server.compute.diffexp_cxg as diffexp_tiledb
-from server.common.data_locator import discover_region_name
+from server.common.data_locator import discover_s3_region_name
 
 DEFAULT_SERVER_PORT = int(os.environ.get("CXG_SERVER_PORT", "5005"))
 # anything bigger than this will generate a special message
@@ -265,10 +265,10 @@ class AppConfig(object):
         self.__check_attr("data_locator__s3__region_name", (type(None), bool, str))
         if self.data_locator__s3__region_name is True:
             path = self.single_dataset__datapath or self.multi_dataset__dataroot
-            try:
-                self.data_locator__s3__region_name = discover_region_name(path)
-            except Exception as e:
-                raise ConfigurationError(str(e))
+            region_name = discover_s3_region_name(path)
+            if region_name is None:
+                raise ConfigurationError(f"Unable to discover s3 region name from {path}")
+            self.data_locator__s3__region_name = region_name
 
     def handle_presentation(self, context):
         self.__check_attr("presentation__max_categories", int)
