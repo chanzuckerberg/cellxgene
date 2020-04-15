@@ -29,7 +29,7 @@ function _currentLabel(ownProps, categoricalSelection) {
 
 @connect((state, ownProps) => {
   const { pointDilation, categoricalSelection } = state;
-  const { metadataField, categoryField } = ownProps;
+  const { metadataField } = ownProps;
   const isDilated =
     pointDilation.metadataField === metadataField &&
     pointDilation.categoryField ===

@@ -136,7 +136,7 @@ class Category extends React.Component {
             }}
           >
             <label className="bp3-control bp3-checkbox">
-              <input disabled checked={true} type="checkbox" />
+              <input disabled checked type="checkbox" />
               <span className="bp3-control-indicator" />
             </label>
             <Tooltip
