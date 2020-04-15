@@ -93,8 +93,23 @@ There are many more options to these commands that may be important or necessary
    ```
    $ make build
    ```
+    
+6. Flask secret key
+
+   The application requires as secret key to be provided to flask, the web framework used by cellxgene.
+   There are three ways to provide the secret key:
    
-6. Create an environment
+   - In the configuration file:  update the server/flask_secret_key attribute.
+   - An environment variable:  CXG_SECRET_KEY
+   - Managed by the AWS Secret Manager
+   
+   If using the AWS Secret Manager, then the secret name is passed as an environment variable:  CXG_AWS_SECRET_NAME.
+   The secret must contain a key with the name "flask_secret_key".
+   Likely you have located the AWS Secret Manager in the same AWS region as the dataroot.  If that is not the case
+   then the AWS Secret Manager region name can be specified in an environment variable:  CXG_AWS_SECRET_REGION_NAME.
+   
+   
+7. Create an environment
 
     ```
     # name of the environment
@@ -106,23 +121,25 @@ There are many more options to these commands that may be important or necessary
     # One or both of the following environment variables needs to be set
     $ CXG_DATAROOT=<location to your S3 bucket>
     $ CXG_CONFIG_FILE=<location to your config file>
+  
+    # Potentially also set envvars for the sercret key.
    
     $ eb create $EB_ENV --instance-type $EB_INSTANCE \
        --envvars CXG_DATAROOT=$CXG_DATAROOT,CXG_CONFIG_FILE=$CXG_CONFIG_FILE
     ```
 
-7. Give the elastic beanstalk environment access to the S3 bucket.
+8. Give the elastic beanstalk environment access to the S3 bucket.
 
     This link may provide some useful information:
     https://aws.amazon.com/premiumsupport/knowledge-center/elastic-beanstalk-s3-bucket-instance/
     
-8. Deploy the application
+9. Deploy the application
 
     ```
     $ eb deploy $EB_ENV 
     ```
    
-9. Open the application in a browser
+10. Open the application in a browser
 
    ```
    $ eb open $EB_ENV

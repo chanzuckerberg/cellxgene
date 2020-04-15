@@ -10,7 +10,7 @@ def _is_accessible(path, config):
         return True
 
     try:
-        dl = DataLocator(path, config)
+        dl = DataLocator(path, region_name=config.data_locator__s3__region_name)
         return dl.exists()
     except RuntimeError:
         return False

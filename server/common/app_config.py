@@ -6,8 +6,6 @@ import sys
 from urllib.parse import urlparse
 import yaml
 import copy
-import boto3
-import botocore
 
 from server.common.default_config import get_default_config
 from server.common.errors import ConfigurationError, DatasetAccessError, OntologyLoadFailure
@@ -17,6 +15,7 @@ import warnings
 from server.common.annotations import AnnotationsLocalFile
 from server.common.utils import custom_format_warning
 import server.compute.diffexp_cxg as diffexp_tiledb
+from server.common.data_locator import discover_s3_region_name
 
 DEFAULT_SERVER_PORT = int(os.environ.get("CXG_SERVER_PORT", "5005"))
 # anything bigger than this will generate a special message
@@ -266,19 +265,13 @@ class AppConfig(object):
         self.__check_attr("data_locator__s3__region_name", (type(None), bool, str))
         if self.data_locator__s3__region_name is True:
             path = self.single_dataset__datapath or self.multi_dataset__dataroot
-            if path and path.startswith("s3:"):
-                bucket = urlparse(path).netloc
-                client = boto3.client("s3")
-                try:
-                    res = client.head_bucket(Bucket=bucket)
-                except botocore.exceptions.ClientError:
-                    raise ConfigurationError(f"Unable to determine region from {path}")
-
-                region = res.get("ResponseMetadata", {}).get("HTTPHeaders", {}).get("x-amz-bucket-region")
-                if region:
-                    self.data_locator__s3__region_name = region
-                else:
-                    raise ConfigurationError(f"Unable to determine region from {path}")
+            if path.startswith("s3://"):
+                region_name = discover_s3_region_name(path)
+                if region_name is None:
+                    raise ConfigurationError(f"Unable to discover s3 region name from {path}")
+            else:
+                region_name = None
+            self.data_locator__s3__region_name = region_name
 
     def handle_presentation(self, context):
         self.__check_attr("presentation__max_categories", int)

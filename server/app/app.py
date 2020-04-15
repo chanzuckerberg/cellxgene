@@ -126,7 +126,8 @@ def dataroot_test_index():
     data += "<body><H1>Welcome to cellxgene</H1>"
 
     config = current_app.app_config
-    locator = DataLocator(config.multi_dataset__dataroot, app_config=config)
+    locator = DataLocator(config.multi_dataset__dataroot,
+                          region_name=config.data_locator__s3__region_name)
     datasets = []
     for fname in locator.ls():
         location = path_join(config.multi_dataset__dataroot, fname)
