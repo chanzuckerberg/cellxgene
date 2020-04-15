@@ -17,9 +17,9 @@ export const configDefaults = {
   parameters: {
     "max-category-items": 1000,
     "disable-diffexp": false,
-    "diffexp-may-be-slow": false
+    "diffexp-may-be-slow": false,
   },
-  links: {}
+  links: {},
 };
 
 /* colors */
@@ -68,12 +68,12 @@ export const leftSidebarSectionHeading = {
   fontSize: 18,
   textTransform: "uppercase",
   fontWeight: 500,
-  letterSpacing: ".05em"
+  letterSpacing: ".05em",
 };
 export const leftSidebarSectionPadding = 10;
 export const categoryLabelDisplayStringLongLength = 27;
 export const categoryLabelDisplayStringShortLength = 11;
-export const categoryDisplayStringMaxLength = 27;
+export const categoryDisplayStringMaxLength = 41;
 
 export const maxUserDefinedGenes = 25;
 export const maxGenes = 100;
@@ -97,7 +97,7 @@ if (window.CELLXGENE && window.CELLXGENE.API) {
     // prefix: "http://tabulamuris.cxg.czi.technology/api/",
     // prefix: "http://api-staging.clustering.czi.technology/api/",
     prefix: `http://localhost:${process.env.CXG_SERVER_PORT}/api/`,
-    version: "v0.2/"
+    version: "v0.2/",
   };
 }
 
