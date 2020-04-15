@@ -214,7 +214,8 @@ class MatrixDataType(Enum):
 class MatrixDataLoader(object):
     def __init__(self, location, matrix_data_type=None, app_config=None):
         """ location can be a string or DataLocator """
-        self.location = DataLocator(location, region_name=app_config.data_locator__s3__region_name)
+        region_name = None if app_config is None else app_config.data_locator__s3__region_name
+        self.location = DataLocator(location, region_name=region_name)
         if not self.location.exists():
             raise DatasetAccessError("Dataset does not exist.")
 
