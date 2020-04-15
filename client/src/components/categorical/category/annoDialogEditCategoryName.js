@@ -1,41 +1,41 @@
 import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
-import AnnoDialog from "./annoDialog";
-import LabelInput from "./labelInput";
-import { labelPrompt } from "./labelUtil";
+import AnnoDialog from "../annoDialog";
+import LabelInput from "../labelInput";
+import { labelPrompt } from "../labelUtil";
 
-import { AnnotationsHelpers } from "../../util/stateManager";
+import { AnnotationsHelpers } from "../../../util/stateManager";
 
-@connect(state => ({
+@connect((state) => ({
   categoricalSelection: state.categoricalSelection,
   annotations: state.annotations,
   universe: state.universe,
-  ontology: state.ontology
+  ontology: state.ontology,
 }))
 class AnnoDialogEditCategoryName extends React.PureComponent {
   constructor(props) {
     super(props);
     this.state = {
-      newCategoryText: props.metadataField
+      newCategoryText: props.metadataField,
     };
   }
 
-  handleChangeOrSelect = name => {
+  handleChangeOrSelect = (name) => {
     this.setState({
-      newCategoryText: name
+      newCategoryText: name,
     });
   };
 
   disableEditCategoryMode = () => {
     const { dispatch, metadataField } = this.props;
     dispatch({
-      type: "annotation: disable category edit mode"
+      type: "annotation: disable category edit mode",
     });
     this.setState({ newCategoryText: metadataField });
   };
 
-  handleEditCategory = e => {
+  handleEditCategory = (e) => {
     const { dispatch, metadataField, categoricalSelection } = this.props;
     const { newCategoryText } = this.state;
 
@@ -54,12 +54,12 @@ class AnnoDialogEditCategoryName extends React.PureComponent {
       type: "annotation: category edited",
       metadataField,
       newCategoryText,
-      data: newCategoryText
+      data: newCategoryText,
     });
     e.preventDefault();
   };
 
-  editedCategoryNameError = name => {
+  editedCategoryNameError = (name) => {
     const { metadataField, categoricalSelection } = this.props;
 
     /* check for syntax errors in category name */
@@ -80,7 +80,7 @@ class AnnoDialogEditCategoryName extends React.PureComponent {
     return false;
   };
 
-  instruction = name => {
+  instruction = (name) => {
     return labelPrompt(
       this.editedCategoryNameError(name),
       "New, unique category name",
@@ -101,10 +101,10 @@ class AnnoDialogEditCategoryName extends React.PureComponent {
             annotations.categoryBeingEdited === metadataField
           }
           inputProps={{
-            "data-testid": `${metadataField}:edit-category-name-dialog`
+            "data-testid": `${metadataField}:edit-category-name-dialog`,
           }}
           primaryButtonProps={{
-            "data-testid": `${metadataField}:submit-category-edit`
+            "data-testid": `${metadataField}:submit-category-edit`,
           }}
           title="Edit category name"
           instruction={this.instruction(newCategoryText)}
@@ -124,7 +124,7 @@ class AnnoDialogEditCategoryName extends React.PureComponent {
                 "data-testid": `${metadataField}:edit-category-name-text`,
                 leftIcon: "tag",
                 intent: "none",
-                autoFocus: true
+                autoFocus: true,
               }}
               newLabelMessage="New category"
             />

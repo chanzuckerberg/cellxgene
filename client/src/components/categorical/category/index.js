@@ -7,27 +7,28 @@ import {
   Button,
   Tooltip,
   Icon,
-  Position
+  Position,
 } from "@blueprintjs/core";
 import CategoryFlipperLayout from "./categoryFlipperLayout";
 import AnnoMenu from "./annoMenuCategory";
 import AnnoDialogEditCategoryName from "./annoDialogEditCategoryName";
 import AnnoDialogAddLabel from "./annoDialogAddLabel";
 
-import * as globals from "../../globals";
-import maybeTruncateString from "../../util/maybeTruncateString";
+import * as globals from "../../../globals";
+import maybeTruncateString from "../../../util/maybeTruncateString";
 
-@connect(state => ({
+@connect((state) => ({
   colorAccessor: state.colors.colorAccessor,
   categoricalSelection: state.categoricalSelection,
   annotations: state.annotations,
-  universe: state.universe
+  universe: state.universe,
+  schema: state.world?.schema,
 }))
 class Category extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      isChecked: true
+      isChecked: true,
     };
   }
 
@@ -47,7 +48,7 @@ class Category extends React.Component {
           cat.categoryValueSelected,
           (res, cond) => (cond ? res + 1 : res),
           0
-        )
+        ),
       };
       if (categoryCount.selectedCatCount === categoryCount.totalCatCount) {
         /* everything is on, so not indeterminate */
@@ -69,7 +70,7 @@ class Category extends React.Component {
     const { dispatch, metadataField } = this.props;
     dispatch({
       type: "color by categorical metadata",
-      colorAccessor: metadataField
+      colorAccessor: metadataField,
     });
   };
 
@@ -77,7 +78,7 @@ class Category extends React.Component {
     const { dispatch, metadataField } = this.props;
     dispatch({
       type: "categorical metadata filter all of these",
-      metadataField
+      metadataField,
     });
     this.setState({ isChecked: true });
   }
@@ -86,7 +87,7 @@ class Category extends React.Component {
     const { dispatch, metadataField } = this.props;
     dispatch({
       type: "categorical metadata filter none of these",
-      metadataField
+      metadataField,
     });
     this.setState({ isChecked: false });
   }
@@ -114,21 +115,21 @@ class Category extends React.Component {
     return (
       <div
         style={{
-          maxWidth: globals.maxControlsWidth
+          maxWidth: globals.maxControlsWidth,
         }}
       >
         <div
           style={{
             display: "flex",
             justifyContent: "space-between",
-            alignItems: "baseline"
+            alignItems: "baseline",
           }}
         >
           <div
             style={{
               display: "flex",
               justifyContent: "flex-start",
-              alignItems: "flex-start"
+              alignItems: "flex-start",
             }}
           >
             <label className="bp3-control bp3-checkbox">
@@ -143,13 +144,13 @@ class Category extends React.Component {
               usePortal
               modifiers={{
                 preventOverflow: { enabled: false },
-                hide: { enabled: false }
+                hide: { enabled: false },
               }}
             >
               <span
                 style={{
                   cursor: "pointer",
-                  display: "inline-block"
+                  display: "inline-block",
                 }}
               >
                 {truncatedString || metadataField}
@@ -173,12 +174,25 @@ class Category extends React.Component {
       isUserAnno,
       annotations,
       isExpanded,
-      onExpansionChange
+      onExpansionChange,
+      schema,
     } = this.props;
 
     const isStillLoading = !(categoricalSelection?.[metadataField] ?? false);
     if (isStillLoading) {
       return this.renderIsStillLoading();
+    }
+
+    if (
+      !schema?.annotations?.obsByName[metadataField]?.writable &&
+      schema?.annotations?.obsByName[metadataField]?.categories?.length === 1
+    ) {
+      return (
+        <div style={{ marginBottom: 10, marginTop: 4 }}>
+          <span style={{ fontWeight: 700 }}>{metadataField}</span>:{" "}
+          {schema.annotations.obsByName[metadataField].categories[0]}
+        </div>
+      );
     }
 
     const isTruncated = _.get(
@@ -202,7 +216,7 @@ class Category extends React.Component {
           style={{
             display: "flex",
             justifyContent: "flex-start",
-            alignItems: "flex-start"
+            alignItems: "flex-start",
           }}
         >
           <label className="bp3-control bp3-checkbox">
@@ -210,7 +224,7 @@ class Category extends React.Component {
               data-testclass="category-select"
               data-testid={`${metadataField}:category-select`}
               onChange={this.handleToggleAllClick.bind(this)}
-              ref={el => {
+              ref={(el) => {
                 this.checkbox = el;
                 return el;
               }}
@@ -227,14 +241,14 @@ class Category extends React.Component {
             usePortal
             modifiers={{
               preventOverflow: { enabled: false },
-              hide: { enabled: false }
+              hide: { enabled: false },
             }}
           >
             <span
               data-testid={`${metadataField}:category-expand`}
               style={{
                 cursor: "pointer",
-                display: "inline-block"
+                display: "inline-block",
               }}
               onClick={() => {
                 const editingCategory =

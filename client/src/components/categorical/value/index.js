@@ -8,16 +8,16 @@ import {
   Popover,
   Position,
   PopoverInteractionKind,
-  Tooltip
+  Tooltip,
 } from "@blueprintjs/core";
 import Occupancy from "./occupancy";
-import * as globals from "../../globals";
-import styles from "./categorical.css";
-import AnnoDialog from "./annoDialog";
-import LabelInput from "./labelInput";
+import * as globals from "../../../globals";
+import styles from "../categorical.css";
+import AnnoDialog from "../annoDialog";
+import LabelInput from "../labelInput";
 
-import { AnnotationsHelpers } from "../../util/stateManager";
-import { labelPrompt, isLabelErroneous } from "./labelUtil";
+import { AnnotationsHelpers } from "../../../util/stateManager";
+import { labelPrompt, isLabelErroneous } from "../labelUtil";
 
 /* this is defined outside of the class so we can use it in connect() */
 function _currentLabel(ownProps, categoricalSelection) {
@@ -43,14 +43,14 @@ function _currentLabel(ownProps, categoricalSelection) {
     world: state.world,
     crossfilter: state.crossfilter,
     ontology: state.ontology,
-    isDilated
+    isDilated,
   };
 })
 class CategoryValue extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      editedLabelText: this.currentLabel()
+      editedLabelText: this.currentLabel(),
     };
   }
 
@@ -62,7 +62,7 @@ class CategoryValue extends React.Component {
       prevProps.categoryIndex !== categoryIndex
     ) {
       this.setState({
-        editedLabelText: this.currentLabel()
+        editedLabelText: this.currentLabel(),
       });
     }
   }
@@ -74,7 +74,7 @@ class CategoryValue extends React.Component {
     dispatch({
       type: "annotation: delete label",
       metadataField,
-      label
+      label,
     });
   };
 
@@ -85,11 +85,11 @@ class CategoryValue extends React.Component {
       type: "annotation: label current cell selection",
       metadataField,
       categoryIndex,
-      label
+      label,
     });
   };
 
-  handleEditValue = e => {
+  handleEditValue = (e) => {
     const { dispatch, metadataField, categoryIndex } = this.props;
     const { editedLabelText } = this.state;
     const label = this.getLabel();
@@ -99,12 +99,12 @@ class CategoryValue extends React.Component {
       editedLabel: editedLabelText,
       metadataField,
       categoryIndex,
-      label
+      label,
     });
     e.preventDefault();
   };
 
-  handleCreateArbitraryLabel = txt => {
+  handleCreateArbitraryLabel = (txt) => {
     const { dispatch, metadataField, categoryIndex } = this.props;
     const label = this.getLabel();
     this.cancelEditMode();
@@ -113,17 +113,17 @@ class CategoryValue extends React.Component {
       metadataField,
       editedLabel: txt,
       categoryIndex,
-      label
+      label,
     });
   };
 
-  labelNameError = name => {
+  labelNameError = (name) => {
     const { metadataField, ontology, schema } = this.props;
     if (name === this.currentLabel()) return false;
     return isLabelErroneous(name, metadataField, ontology, schema);
   };
 
-  instruction = label => {
+  instruction = (label) => {
     return labelPrompt(this.labelNameError(label), "New, unique label", ":");
   };
 
@@ -132,19 +132,19 @@ class CategoryValue extends React.Component {
     dispatch({
       type: "annotation: activate edit label mode",
       metadataField,
-      categoryIndex
+      categoryIndex,
     });
   };
 
   cancelEditMode = () => {
     const { dispatch, metadataField, categoryIndex } = this.props;
     this.setState({
-      editedLabelText: this.currentLabel()
+      editedLabelText: this.currentLabel(),
     });
     dispatch({
       type: "annotation: cancel edit label mode",
       metadataField,
-      categoryIndex
+      categoryIndex,
     });
   };
 
@@ -153,7 +153,7 @@ class CategoryValue extends React.Component {
     dispatch({
       type: "categorical metadata filter deselect",
       metadataField,
-      categoryIndex
+      categoryIndex,
     });
   };
 
@@ -203,7 +203,7 @@ class CategoryValue extends React.Component {
     dispatch({
       type: "categorical metadata filter select",
       metadataField,
-      categoryIndex
+      categoryIndex,
     });
   };
 
@@ -212,7 +212,7 @@ class CategoryValue extends React.Component {
     dispatch({
       type: "category value mouse hover start",
       metadataField,
-      categoryIndex
+      categoryIndex,
     });
   };
 
@@ -221,15 +221,15 @@ class CategoryValue extends React.Component {
     dispatch({
       type: "category value mouse hover end",
       metadataField,
-      categoryIndex
+      categoryIndex,
     });
   };
 
-  handleTextChange = text => {
+  handleTextChange = (text) => {
     this.setState({ editedLabelText: text });
   };
 
-  handleChoice = e => {
+  handleChoice = (e) => {
     /* Blueprint Suggest format */
     this.setState({ editedLabelText: e.target });
   };
@@ -290,7 +290,7 @@ class CategoryValue extends React.Component {
       // flippedProps is potentially brittle, their docs want {...flippedProps} on our div,
       // our lint doesn't like jsx spread, we are version pinned to prevent api change on their part
       flippedProps,
-      isDilated
+      isDilated,
     } = this.props;
     const ontologyEnabled = ontology?.enabled ?? false;
 
@@ -359,7 +359,7 @@ class CategoryValue extends React.Component {
           alignItems: "baseline",
           justifyContent: "space-between",
           marginBottom: "2px",
-          borderRadius: "2px"
+          borderRadius: "2px",
         }}
         onMouseEnter={this.handleMouseEnter}
         onMouseLeave={this.handleMouseExit}
@@ -371,7 +371,7 @@ class CategoryValue extends React.Component {
             userSelect: "none",
             width: globals.leftSidebarWidth - 145,
             display: "flex",
-            justifyContent: "space-between"
+            justifyContent: "space-between",
           }}
         >
           <div style={{ display: "flex", alignItems: "baseline" }}>
@@ -397,7 +397,7 @@ class CategoryValue extends React.Component {
               usePortal
               modifiers={{
                 preventOverflow: { enabled: false },
-                hide: { enabled: false }
+                hide: { enabled: false },
               }}
             >
               <span
@@ -417,7 +417,7 @@ class CategoryValue extends React.Component {
                   lineHeight: "1.1em",
                   height: "1.1em",
                   wordBreak: "break-all",
-                  verticalAlign: "middle"
+                  verticalAlign: "middle",
                 }}
               >
                 {truncatedString || displayString}
@@ -428,10 +428,10 @@ class CategoryValue extends React.Component {
                 <AnnoDialog
                   isActive={editModeActive}
                   inputProps={{
-                    "data-testid": `${metadataField}:edit-label-name-dialog`
+                    "data-testid": `${metadataField}:edit-label-name-dialog`,
                   }}
                   primaryButtonProps={{
-                    "data-testid": `${metadataField}:${displayString}:submit-label-edit`
+                    "data-testid": `${metadataField}:${displayString}:submit-label-edit`,
                   }}
                   title="Edit label"
                   instruction={this.instruction(editedLabelText)}
@@ -452,7 +452,7 @@ class CategoryValue extends React.Component {
                         "data-testid": `${metadataField}:${displayString}:edit-label-name`,
                         leftIcon: "tag",
                         intent: "none",
-                        autoFocus: true
+                        autoFocus: true,
                       }}
                     />
                   }
@@ -483,7 +483,7 @@ class CategoryValue extends React.Component {
                 fontStyle:
                   displayString === globals.unassignedCategoryLabel
                     ? "italic"
-                    : "auto"
+                    : "auto",
               }}
             >
               {count}
@@ -498,7 +498,7 @@ class CategoryValue extends React.Component {
                 backgroundColor:
                   isColorBy && categories
                     ? colorScale(categories.indexOf(value))
-                    : "inherit"
+                    : "inherit",
               }}
             />
             {isUserAnno ? (
@@ -526,7 +526,7 @@ class CategoryValue extends React.Component {
                                   displayString ===
                                   globals.unassignedCategoryLabel
                                     ? "italic"
-                                    : "auto"
+                                    : "auto",
                               }}
                             >
                               {` ${displayString}`}
@@ -566,7 +566,7 @@ class CategoryValue extends React.Component {
                       marginLeft: 0,
                       position: "relative",
                       top: -1,
-                      minHeight: 16
+                      minHeight: 16,
                     }}
                     data-testclass="seeActions"
                     data-testid={`${metadataField}:${displayString}:see-actions`}

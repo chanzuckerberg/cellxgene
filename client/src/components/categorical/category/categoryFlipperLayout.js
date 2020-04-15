@@ -3,11 +3,11 @@ import _ from "lodash";
 import { connect } from "react-redux";
 import { Flipper, Flipped } from "react-flip-toolkit";
 
-import * as globals from "../../globals";
-import Value from "./value";
+import * as globals from "../../../globals";
+import Value from "../value";
 
-@connect(state => ({
-  categoricalSelection: state.categoricalSelection
+@connect((state) => ({
+  categoricalSelection: state.categoricalSelection,
 }))
 class Category extends React.Component {
   constructor(props) {
@@ -21,7 +21,7 @@ class Category extends React.Component {
     return _.map(optTuples, (tuple, i) => {
       return (
         <Flipped key={tuple[1]} flipId={tuple[1]}>
-          {flippedProps => (
+          {(flippedProps) => (
             <Value
               isUserAnno={isUserAnno}
               optTuples={optTuples}
@@ -42,17 +42,17 @@ class Category extends React.Component {
       metadataField,
       categoricalSelection,
       children,
-      isExpanded
+      isExpanded,
     } = this.props;
     const { isTruncated } = categoricalSelection[metadataField];
     const cat = categoricalSelection[metadataField];
     const optTuples = [...cat.categoryValueIndices];
-    const optTuplesAsKey = _.map(optTuples, t => t[0]).join(""); // animation
+    const optTuplesAsKey = _.map(optTuples, (t) => t[0]).join(""); // animation
 
     return (
       <div
         style={{
-          maxWidth: globals.maxControlsWidth
+          maxWidth: globals.maxControlsWidth,
         }}
         data-testclass="category"
         data-testid={`category-${metadataField}`}
@@ -61,7 +61,7 @@ class Category extends React.Component {
           style={{
             display: "flex",
             justifyContent: "space-between",
-            alignItems: "baseline"
+            alignItems: "baseline",
           }}
         >
           {children}

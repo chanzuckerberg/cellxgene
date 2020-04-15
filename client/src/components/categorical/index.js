@@ -119,57 +119,6 @@ class Categories extends React.Component {
     }
   };
 
-  maybeRenderSingleLabel = (allCategoryNames, schema) => {
-    return allCategoryNames.map((catName) =>
-      !schema.annotations.obsByName[catName].writable &&
-      schema.annotations.obsByName[catName].categories.length === 1 ? (
-        <div style={{ marginBottom: 10 }}>
-          <span style={{ fontWeight: 700 }}>{catName}</span>:{" "}
-          {schema.annotations.obsByName[catName].categories[0]}
-        </div>
-      ) : null
-    );
-  };
-  maybeRenderReadOnly = (
-    allCategoryNames,
-    schema,
-    expandedCats,
-    createAnnoModeActive
-  ) => {
-    return allCategoryNames.map((catName) =>
-      !schema.annotations.obsByName[catName].writable &&
-      schema.annotations.obsByName[catName].categories.length > 1 ? (
-        <Category
-          key={catName}
-          metadataField={catName}
-          onExpansionChange={this.onExpansionChange}
-          isExpanded={expandedCats.has(catName)}
-          createAnnoModeActive={createAnnoModeActive}
-          isUserAnno={false}
-        />
-      ) : null
-    );
-  };
-  maybeRenderAnnotations = (
-    allCategoryNames,
-    schema,
-    expandedCats,
-    createAnnoModeActive
-  ) => {
-    return allCategoryNames.map((catName) =>
-      schema.annotations.obsByName[catName].writable ? (
-        <Category
-          key={catName}
-          metadataField={catName}
-          onExpansionChange={this.onExpansionChange}
-          isExpanded={expandedCats.has(catName)}
-          createAnnoModeActive={createAnnoModeActive}
-          isUserAnno
-        />
-      ) : null
-    );
-  };
-
   render() {
     const {
       createAnnoModeActive,
@@ -227,32 +176,33 @@ class Categories extends React.Component {
           }
         />
 
-        <div style={{ marginLeft: 0 }}>
-          {
-            this.maybeRenderSingleLabel(
-              allCategoryNames,
-              schema,
-              expandedCats,
-              createAnnoModeActive
-            ) /* Categories with only one label */
-          }
-        </div>
-        {
-          this.maybeRenderReadOnly(
-            allCategoryNames,
-            schema,
-            expandedCats,
-            createAnnoModeActive
-          ) /* Read only categorical fields, ostensibly 'normal' mode */
-        }
-        {
-          this.maybeRenderAnnotations(
-            allCategoryNames,
-            schema,
-            expandedCats,
-            createAnnoModeActive
-          ) /* Writable fields, ie., anno */
-        }
+        {/* READ ONLY CATEGORICAL FIELDS */}
+        {/* this is duplicative but flat, could be abstracted */}
+        {allCategoryNames.map((catName) =>
+          !schema.annotations.obsByName[catName].writable ? (
+            <Category
+              key={catName}
+              metadataField={catName}
+              onExpansionChange={this.onExpansionChange}
+              isExpanded={expandedCats.has(catName)}
+              createAnnoModeActive={createAnnoModeActive}
+              isUserAnno={false}
+            />
+          ) : null
+        )}
+        {/* WRITEABLE FIELDS */}
+        {allCategoryNames.map((catName) =>
+          schema.annotations.obsByName[catName].writable ? (
+            <Category
+              key={catName}
+              metadataField={catName}
+              onExpansionChange={this.onExpansionChange}
+              isExpanded={expandedCats.has(catName)}
+              createAnnoModeActive={createAnnoModeActive}
+              isUserAnno
+            />
+          ) : null
+        )}
 
         {writableCategoriesEnabled ? (
           <div>
