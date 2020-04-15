@@ -1,4 +1,8 @@
 include ../common.mk
+# https://stackoverflow.com/a/14777895/9587410
+ifeq ($(shell uname),Darwin)     # is Windows_NT on XP, 2000, 7, Vista, 10...
+    IS_DARWIN := "true"
+endif
 
 DATASET := $(if $(DATASET),$(DATASET),../example-dataset/pbmc3k.h5ad)
 ANNOTATIONS := $(if $(ANNOTATIONS),$(ANNOTATIONS),../server/test/test_datasets/pbmc3k-annotations.csv)
@@ -20,6 +24,17 @@ install:
 .PHONY: build
 build:
 	npm run build
+
+# Formatting code
+
+.PHONY: lint
+lint:
+	npx eslint .
+
+.PHONY: lint-diff
+lint-diff:
+# Get client diff against master, find all js/jsx files, remove the client prefex, run eslinst against result
+	git diff --name-only --diff-filter=d origin/master...HEAD -- ../client/ | grep -E "(.*)\.(jsx|js)" | sed "s/client\///" | $(if $(IS_DARWIN),xargs ./node_modules/.bin/eslint,xargs -r ./node_modules/.bin/eslint)
 
 
 # Development convenience methods

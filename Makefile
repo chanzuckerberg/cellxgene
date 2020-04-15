@@ -74,8 +74,19 @@ fmt-py:
 	black .
 
 .PHONY: lint
-lint:
+lint: lint-server lint-client
+
+.PHONY: lint-server
+lint-server:
 	flake8 server
+
+.PHONY: lint-client
+lint-client:
+	cd client && $(MAKE) lint
+
+.PHONY: lint-diff-client
+lint-diff-client:
+	cd client && $(MAKE) lint-diff
 
 
 # CREATING DISTRIBUTION RELEASE
