@@ -7,6 +7,4 @@ ${PROJECT_ROOT}/scripts/dev_setup
 
 source ${PROJECT_ROOT}/venv/bin/activate
 
-export CXG_OPTIONS=${CXG_OPTIONS:---debug}
-
 make --file=${PROJECT_ROOT}/common.mk start-server
