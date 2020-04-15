@@ -33,7 +33,10 @@ lint:
 .PHONY: lint-diff
 lint-diff:
 # Get client diff against master, find all js/jsx files, remove the client prefex, run eslinst against result
-	git diff --name-only --diff-filter=d origin/master...HEAD -- ../client/ | grep -E "(.*)\.(jsx|js)" | sed "s/client\///" | $(if $(IS_DARWIN),xargs ./node_modules/.bin/eslint,xargs -r ./node_modules/.bin/eslint)
+	git diff --name-only --diff-filter=d origin/master...HEAD -- ../client/ \
+		| grep -E "(.*)\.(jsx|js)$$" \
+		| sed "s/client\///" \
+		| $(if $(IS_DARWIN),xargs ./node_modules/.bin/eslint,xargs -r ./node_modules/.bin/eslint)
 
 
 # Development convenience methods
