@@ -265,9 +265,12 @@ class AppConfig(object):
         self.__check_attr("data_locator__s3__region_name", (type(None), bool, str))
         if self.data_locator__s3__region_name is True:
             path = self.single_dataset__datapath or self.multi_dataset__dataroot
-            region_name = discover_s3_region_name(path)
-            if region_name is None:
-                raise ConfigurationError(f"Unable to discover s3 region name from {path}")
+            if path.startswith("s3://"):
+                region_name = discover_s3_region_name(path)
+                if region_name is None:
+                    raise ConfigurationError(f"Unable to discover s3 region name from {path}")
+            else:
+                region_name = None
             self.data_locator__s3__region_name = region_name
 
     def handle_presentation(self, context):
