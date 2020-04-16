@@ -83,10 +83,10 @@ def diffexp_ttest(adaptor, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
         try:
             result = future.result()
             part_meanA, part_varA, part_meanB, part_varB, cols = result
-            meanA[cols[0]: cols[1]] += part_meanA
-            varA[cols[0]: cols[1]] += part_varA
-            meanB[cols[0]: cols[1]] += part_meanB
-            varB[cols[0]: cols[1]] += part_varB
+            meanA[cols[0] : cols[1]] += part_meanA
+            varA[cols[0] : cols[1]] += part_varA
+            meanB[cols[0] : cols[1]] += part_meanB
+            varB[cols[0] : cols[1]] += part_varB
         except Exception as e:
             for future in futures:
                 future.cancel()
@@ -98,7 +98,10 @@ def diffexp_ttest(adaptor, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
         nA,
         meanB.astype(dtype),
         varB.astype(dtype),
-        nB, top_n, diffexp_lfc_cutoff)
+        nB,
+        top_n,
+        diffexp_lfc_cutoff,
+    )
 
     return r
 

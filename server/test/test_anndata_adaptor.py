@@ -42,7 +42,7 @@ class AdaptorTest(unittest.TestCase):
             "adaptor__anndata_adaptor__backed": self.backed,
             "single_dataset__datapath": self.data_locator,
             "limits__diffexp_cellcount_max": None,
-            "limits__column_request_max": None
+            "limits__column_request_max": None,
         }
         config = AppConfig()
         config.update(**args)
