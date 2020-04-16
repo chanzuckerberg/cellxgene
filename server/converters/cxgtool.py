@@ -164,7 +164,7 @@ def dtype_to_schema(dtype):
     elif dtype == np.int32:
         return (np.int32, {})
     elif dtype == np.bool_:
-        return (np.uint8, {type: "boolean"})
+        return (np.uint8, {"type": "boolean"})
     elif dtype == np.str:
         return (np.unicode, {"type": "string"})
     elif dtype == "category":
