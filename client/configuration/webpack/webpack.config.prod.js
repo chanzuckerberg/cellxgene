@@ -5,6 +5,7 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const HtmlWebpackInlineSourcePlugin = require("html-webpack-inline-source-plugin");
 const FaviconsWebpackPlugin = require("favicons-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+const CspHashPlugin = require("./cspHashPlugin");
 
 const src = path.resolve("src");
 const fonts = path.resolve("src/fonts");
@@ -21,7 +22,7 @@ module.exports = {
   entry: ["./src/index.js"],
   output: {
     path: path.resolve("build"),
-    publicPath
+    publicPath,
   },
   module: {
     rules: [
@@ -29,7 +30,7 @@ module.exports = {
         test: /\.js$/,
         include: src,
         loader: "babel-loader",
-        options: babelOptions
+        options: babelOptions,
       },
       {
         test: /\.css$/,
@@ -41,12 +42,12 @@ module.exports = {
             loader: "css-loader",
             options: {
               modules: {
-                localIdentName: "[name]__[local]___[hash:base64:5]"
+                localIdentName: "[name]__[local]___[hash:base64:5]",
               },
-              importLoaders: 1
-            }
-          }
-        ]
+              importLoaders: 1,
+            },
+          },
+        ],
       },
       {
         test: /index\.css$/,
@@ -56,24 +57,24 @@ module.exports = {
           {
             loader: "css-loader",
             options: {
-              importLoaders: 1
-            }
-          }
-        ]
+              importLoaders: 1,
+            },
+          },
+        ],
       },
       {
         test: /\.json$/,
         include: [src, nodeModules],
         loader: "json-loader",
-        exclude: /manifest.json$/
+        exclude: /manifest.json$/,
       },
       {
         test: /\.(jpg|png|gif|eot|svg|ttf|woff|woff2|otf)$/i,
         loader: "file-loader",
         include: [nodeModules, fonts],
-        query: { name: "static/assets/[name]-[contenthash].[ext]" }
-      }
-    ]
+        query: { name: "static/assets/[name]-[contenthash].[ext]" },
+      },
+    ],
   },
   plugins: [
     new HtmlWebpackPlugin({
@@ -91,13 +92,13 @@ module.exports = {
         keepClosingSlash: true,
         minifyJS: true,
         minifyCSS: true,
-        minifyURLs: true
-      }
+        minifyURLs: true,
+      },
     }),
     new CleanWebpackPlugin({
       verbose: true,
       protectWebpackAssets: false,
-      cleanAfterEveryBuildPatterns: ["main.js", "main.css"]
+      cleanAfterEveryBuildPatterns: ["main.js", "main.css"],
     }),
     new FaviconsWebpackPlugin({
       logo: "./favicon.png",
@@ -110,15 +111,18 @@ module.exports = {
           coast: false,
           firefox: false,
           windows: false,
-          yandex: false
-        }
-      }
+          yandex: false,
+        },
+      },
     }),
     new HtmlWebpackInlineSourcePlugin(HtmlWebpackPlugin),
-    new MiniCssExtractPlugin()
+    new MiniCssExtractPlugin(),
+    new CspHashPlugin({
+      filename: "csp-hashes.json",
+    }),
   ],
   performance: {
     maxEntrypointSize: 2000000,
-    maxAssetSize: 2000000
-  }
+    maxAssetSize: 2000000,
+  },
 };

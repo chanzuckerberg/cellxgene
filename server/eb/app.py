@@ -2,6 +2,7 @@
 
 import sys
 import os
+from flask import json
 import logging
 from flask_talisman import Talisman
 
@@ -34,7 +35,26 @@ class WSGIServer(Server):
         super().__init__(app_config)
 
     def _before_adding_routes(self, app_config):
-        csp = {"default-src": "'self' 'unsafe-inline' 'unsafe-eval'", "img-src": ["'self'", "data:"]}
+        csp_hashes = None
+        try:
+            with self.app.open_resource("../common/web/csp-hashes.json") as f:
+                csp_hashes = json.load(f)
+        except FileNotFoundError:
+            pass
+        if not isinstance(csp_hashes, dict):
+            csp_hashes = {}
+        script_hashes = [f"'{hash}'" for hash in csp_hashes.get("script-hashes", [])]
+        style_hashes = [f"'{hash}'" for hash in csp_hashes.get("style-hashes", [])]
+        csp = {
+            "default-src": "'self'",
+            "script-src": ["'unsafe-eval'", "'unsafe-inline'"] + script_hashes,
+            "img-src": ["'self'", "data:"],
+            "object-src": "'none'",
+            "base-uri": "'none'",
+        }
+        if len(style_hashes) > 0:
+            csp["style-src"] = style_hashes
+
         Talisman(self.app, force_https=app_config.server__force_https, content_security_policy=csp)
 
 
