@@ -1,16 +1,14 @@
 from setuptools import setup, find_packages
 
+
+def file_lines(filepath):
+    with open(filepath) as fh:
+        lines = fh.read().splitlines()
+    return lines
+
+
 with open("README.md", "rb") as fh:
     long_description = fh.read().decode()
-
-with open("server/requirements.txt") as fh:
-    requirements = fh.read().splitlines()
-
-with open("server/requirements-prepare.txt") as fh:
-    requirements_prepare = fh.read().splitlines()
-
-with open("server/requirements-hosted.txt") as fh:
-    requirements_hosted = fh.read().splitlines()
 
 setup(
     name="cellxgene",
@@ -23,7 +21,7 @@ setup(
     description="Web application for exploration of large scale scRNA-seq datasets",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    install_requires=requirements,
+    install_requires=file_lines("server/requirements.txt"),
     include_package_data=True,
     zip_safe=False,
     classifiers=[
@@ -43,7 +41,7 @@ setup(
     ],
     entry_points={"console_scripts": ["cellxgene = server.cli.cli:cli"]},
     extras_require=dict(
-        prepare=requirements_prepare,
-        hosted=requirements_hosted
+        prepare=file_lines("server/requirements-prepare.txt"),
+        hosted=file_lines("server/requirements-hosted.txt")
     ),
 )
