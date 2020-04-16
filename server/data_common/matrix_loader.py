@@ -167,7 +167,7 @@ class MatrixDataCacheManager(object):
                 self.datasets[location] = item
 
         try:
-            assert(cache_item)
+            assert cache_item
             if delete_adaptor:
                 delete_adaptor.delete()
             if data_adaptor is None:

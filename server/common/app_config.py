@@ -446,9 +446,7 @@ class AppConfig(object):
         cpu_multiplier = self.diffexp__alg_cxg__cpu_multiplier
         cpu_count = os.cpu_count()
         max_workers = min(max_workers, cpu_multiplier * cpu_count)
-        diffexp_tiledb.set_config(
-            max_workers,
-            self.diffexp__alg_cxg__target_workunit)
+        diffexp_tiledb.set_config(max_workers, self.diffexp__alg_cxg__target_workunit)
 
     def handle_adaptor(self, context):
         # cxg
@@ -537,8 +535,8 @@ class AppConfig(object):
         config["links"] = links
         config["parameters"] = parameters
         config["limits"] = {
-            'column_request_max': self.limits__column_request_max,
-            'diffexp_cellcount_max': self.limits__diffexp_cellcount_max,
+            "column_request_max": self.limits__column_request_max,
+            "diffexp_cellcount_max": self.limits__diffexp_cellcount_max,
         }
 
         return c

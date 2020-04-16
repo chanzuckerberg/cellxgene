@@ -364,9 +364,7 @@ class CxgAdaptor(DataAdaptor):
         user_anno_keys = frozenset(labels.columns.tolist()) if need_labels else frozenset()
         return_keys = frozenset(fields)
 
-        label_join_index = (
-            frozenset([index_key]) if need_labels and (return_keys & user_anno_keys) else frozenset()
-        )
+        label_join_index = frozenset([index_key]) if need_labels and (return_keys & user_anno_keys) else frozenset()
 
         unknown_fields = return_keys - (cxg_keys | user_anno_keys)
         if unknown_fields:
@@ -376,7 +374,7 @@ class CxgAdaptor(DataAdaptor):
             list((return_keys & cxg_keys) | label_join_index),
             list(return_keys & user_anno_keys),
             list(return_keys),
-            index_key
+            index_key,
         )
 
     def annotation_to_fbs_matrix(self, axis, fields=None, labels=None):

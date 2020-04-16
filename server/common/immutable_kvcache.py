@@ -27,23 +27,23 @@ class ImmutableKVCache(MutableMapping):
                 return self.cache[key]
             if key not in self.factory_calls:
                 creation_thr = True
-                self.factory_calls[key] = {'cv': threading.Condition(), 'is_done': False, 'error': None}
+                self.factory_calls[key] = {"cv": threading.Condition(), "is_done": False, "error": None}
             factory_calls = self.factory_calls[key]
 
         # with the CV, create the value (or wait for it to be created)
-        cv = factory_calls['cv']
+        cv = factory_calls["cv"]
         with cv:
             if creation_thr:
                 try:
                     self.cache[key] = self.factory(key)
                 except Exception as e:
-                    factory_calls['error'] = e
+                    factory_calls["error"] = e
 
-                factory_calls['is_done'] = True
+                factory_calls["is_done"] = True
                 cv.notify_all()
             else:
                 """ wait for the value to be available """
-                while not factory_calls['is_done']:
+                while not factory_calls["is_done"]:
                     cv.wait()
 
         with self.lock:

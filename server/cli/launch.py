@@ -437,7 +437,7 @@ def launch(
             port=app_config.server__port,
             threaded=not app_config.server__debug,
             use_debugger=False,
-            use_reloader=False
+            use_reloader=False,
         )
     except OSError as e:
         if e.errno == errno.EADDRINUSE:

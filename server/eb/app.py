@@ -33,17 +33,12 @@ except Exception:
 
 def get_flask_secret_key(region_name, secret_name):
     session = boto3.session.Session()
-    client = session.client(
-        service_name='secretsmanager',
-        region_name=region_name
-    )
+    client = session.client(service_name="secretsmanager", region_name=region_name)
 
     try:
-        get_secret_value_response = client.get_secret_value(
-            SecretId=secret_name
-        )
-        if 'SecretString' in get_secret_value_response:
-            var = get_secret_value_response['SecretString']
+        get_secret_value_response = client.get_secret_value(SecretId=secret_name)
+        if "SecretString" in get_secret_value_response:
+            var = get_secret_value_response["SecretString"]
             secret = json.loads(var)
             return secret.get("flask_secret_key")
     except Exception:
