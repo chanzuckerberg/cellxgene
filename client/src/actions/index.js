@@ -1,4 +1,4 @@
-import * as Sentry from '@sentry/browser';
+import * as Sentry from "@sentry/browser";
 import * as globals from "../globals";
 import { Universe, MatrixFBS } from "../util/stateManager";
 import * as Dataframe from "../util/dataframe";
