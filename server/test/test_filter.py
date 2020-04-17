@@ -15,50 +15,46 @@ class FilterParseTests(unittest.TestCase):
 
     def test_queryparam_to_filter_parse(self):
         # categories
-        self.assertEqual(_query_parameter_to_filter(_qsparse("obs:foo=bar&var:baz=133&var:baz=A&obs:baz=foo")), {
-            "obs": {
-                "annotation_value": [
-                    {"name": "foo", "values": ["bar"]},
-                    {"name": "baz", "values": ["foo"]},
-                ]
+        self.assertEqual(
+            _query_parameter_to_filter(_qsparse("obs:foo=bar&var:baz=133&var:baz=A&obs:baz=foo")),
+            {
+                "obs": {"annotation_value": [{"name": "foo", "values": ["bar"]}, {"name": "baz", "values": ["foo"]}]},
+                "var": {"annotation_value": [{"name": "baz", "values": ["133", "A"]}]},
             },
-            "var": {
-                "annotation_value": [
-                    {"name": "baz", "values": ["133", "A"]}
-                ]
-            }
-        })
+        )
 
         # ranges
-        self.assertEqual(_query_parameter_to_filter(_qsparse("obs:A=1,99&obs:B=*,100&obs:C=0,*")), {
-            "obs": {
-                "annotation_value": [
-                    {"name": "A", "min": 1, "max": 99.},
-                    {"name": "B", "max": 100.},
-                    {"name": "C", "min": 0.},
-                ]
+        self.assertEqual(
+            _query_parameter_to_filter(_qsparse("obs:A=1,99&obs:B=*,100&obs:C=0,*")),
+            {
+                "obs": {
+                    "annotation_value": [
+                        {"name": "A", "min": 1, "max": 99.0},
+                        {"name": "B", "max": 100.0},
+                        {"name": "C", "min": 0.0},
+                    ]
+                },
             },
-        })
+        )
 
         # combo
-        self.assertEqual(_query_parameter_to_filter(_qsparse("var:B=YES&var:A=1,99&var:B=NO")), {
-            "var": {
-                "annotation_value": [
-                    {"name": "B", "values": ["YES", "NO"]},
-                    {"name": "A", "min": 1., "max": 99.},
-                ]
+        self.assertEqual(
+            _query_parameter_to_filter(_qsparse("var:B=YES&var:A=1,99&var:B=NO")),
+            {
+                "var": {
+                    "annotation_value": [
+                        {"name": "B", "values": ["YES", "NO"]},
+                        {"name": "A", "min": 1.0, "max": 99.0},
+                    ]
+                },
             },
-        })
+        )
 
     def test_queryparam_to_filter_escaping(self):
-        self.assertEqual(_query_parameter_to_filter(_qsparse("obs:var=%2521%252C%253AOK%253D&obs:A%2521=YO")), {
-            "obs": {
-                "annotation_value": [
-                    {"name": "var", "values": ["!,:OK="]},
-                    {"name": "A!", "values": ["YO"]},
-                ],
-            },
-        })
+        self.assertEqual(
+            _query_parameter_to_filter(_qsparse("obs:var=%2521%252C%253AOK%253D&obs:A%2521=YO")),
+            {"obs": {"annotation_value": [{"name": "var", "values": ["!,:OK="]}, {"name": "A!", "values": ["YO"]}]}},
+        )
 
     def test_queryparam_to_filter_errors(self):
 

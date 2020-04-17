@@ -28,6 +28,7 @@ def _cache_control(always, **cache_kwargs):
     See Werkzeug for attributes that can be set, eg, no_cache, private, max_age, etc.
     https://werkzeug.palletsprojects.com/en/1.0.x/datastructures/#werkzeug.datastructures.ResponseCacheControl
     """
+
     def inner_cache_control(f):
         @wraps(f)
         def wrapper(*args, **kwargs):
@@ -39,7 +40,9 @@ def _cache_control(always, **cache_kwargs):
             for k, v in cache_kwargs.items():
                 setattr(response.cache_control, k, v)
             return response
+
         return wrapper
+
     return inner_cache_control
 
 
@@ -126,7 +129,7 @@ def dataroot_test_index():
     data += "<body><H1>Welcome to cellxgene</H1>"
 
     config = current_app.app_config
-    locator = DataLocator(config.multi_dataset__dataroot, app_config=config)
+    locator = DataLocator(config.multi_dataset__dataroot, region_name=config.data_locator__s3__region_name)
     datasets = []
     for fname in locator.ls():
         location = path_join(config.multi_dataset__dataroot, fname)

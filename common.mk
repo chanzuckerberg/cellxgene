@@ -7,16 +7,18 @@ SHELL := env PATH='$(PATH)' /bin/bash
 # - If a variable is defined, return its value
 # - Else return the default value from environment.dev
 define get_or_else_dev_env_default
-$(if $($(1)),$($(1)),$(shell sed -n 's/$(1)=\(.*\)/\1/p' < $(PROJECT_ROOT)/environment.default))
+$(if $($(1)),$($(1)),$(shell VAR=$$(sed -n 's/$(1)=\(.*\)/\1/p' $(PROJECT_ROOT)/environment.default); eval "echo \"$$VAR\""))
 endef
 
 export CXG_SERVER_PORT := $(call get_or_else_dev_env_default,CXG_SERVER_PORT)
 export CXG_CLIENT_PORT := $(call get_or_else_dev_env_default,CXG_CLIENT_PORT)
 export JEST_ENV := $(call get_or_else_dev_env_default,JEST_ENV)
+export DATASET := $(call get_or_else_dev_env_default,DATASET)
+export CXG_OPTIONS := $(call get_or_else_dev_env_default,CXG_OPTIONS)
 
-export CXG_SERVER_PORT
-export CXG_CLIENT_PORT
-export JEST_ENV
+.PHONY: start-server
+start-server:
+	cellxgene launch -p $(CXG_SERVER_PORT) $(CXG_OPTIONS) $(DATASET)
 
 # copy the client assests to a location known to the server
 # $(1) is the source of the client assets

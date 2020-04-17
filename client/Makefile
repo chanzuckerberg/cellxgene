@@ -1,6 +1,9 @@
 include ../common.mk
+# https://stackoverflow.com/a/14777895/9587410
+ifeq ($(shell uname),Darwin)     # is Windows_NT on XP, 2000, 7, Vista, 10...
+    IS_DARWIN := "true"
+endif
 
-DATASET := $(if $(DATASET),$(DATASET),../example-dataset/pbmc3k.h5ad)
 ANNOTATIONS := $(if $(ANNOTATIONS),$(ANNOTATIONS),../server/test/test_datasets/pbmc3k-annotations.csv)
 ANNOTATIONS_FILENAME := $(shell basename $(ANNOTATIONS))
 
@@ -21,37 +24,25 @@ install:
 build:
 	npm run build
 
+# Formatting code
+
+.PHONY: lint
+lint:
+	npx eslint .
+
+.PHONY: lint-diff
+lint-diff:
+# Get client diff against master, find all js/jsx files, remove the client prefex, run eslinst against result
+	git diff --name-only --diff-filter=d origin/master...HEAD -- ../client/ \
+		| grep -E "(.*)\.(jsx|js)$$" \
+		| sed "s/client\///" \
+		| $(if $(IS_DARWIN),xargs ./node_modules/.bin/eslint,xargs -r ./node_modules/.bin/eslint)
+
 
 # Development convenience methods
-
-.PHONY: server-requirements
-server-requirements:
-	virtualenv -p python3 ../venv
-	source ../venv/bin/activate && \
-		pip install -r ../server/requirements-dev.txt && \
-		yes | pip uninstall cellxgene || true && \
-		pip install -e ..
-
 .PHONY: start-frontend
 start-frontend:
 	node server/development.js
-
-.PHONY: start-server
-start-server:
-	cellxgene launch -p $(CXG_SERVER_PORT) $(CXG_OPTIONS) $(DATASET)
-
-.PHONY: backend-dev
-backend-dev: server-requirements
-	source ../venv/bin/activate && CXG_OPTIONS='--debug' $(MAKE) start-server
-
-.PHONY: backend-dev-anno-ontology
-backend-dev-anno-ontology: server-requirements
-	CXG_OPTIONS='--experimental-annotations-ontology --debug' \
-		$(MAKE) backend-dev
-
-.PHONY: test
-test:
-	node node_modules/jest/bin/jest.js
 
 .PHONY: e2e
 e2e:

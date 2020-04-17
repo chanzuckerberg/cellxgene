@@ -53,15 +53,15 @@ def _query_parameter_to_filter(args):
     # on name and value.
     try:
         for key, value in args.items(multi=True):
-            axis, name = key.split(':')
+            axis, name = key.split(":")
             if axis not in ("obs", "var"):
                 raise FilterError("unknown filter axis")
             name = url_unquote(name)
             current = filters[axis].setdefault(name, {"name": name})
 
-            val_split = value.split(',')
+            val_split = value.split(",")
             if len(val_split) == 1:
-                if 'min' in current or 'max' in current:
+                if "min" in current or "max" in current:
                     raise FilterError("do not mix range and value filters")
                 value = url_unquote(value)
                 values = current.setdefault("values", [])
@@ -72,7 +72,7 @@ def _query_parameter_to_filter(args):
                     raise FilterError("duplicate range specification")
                 min = url_unquote(val_split[0])
                 max = url_unquote(val_split[1])
-                if min != '*':
+                if min != "*":
                     current["min"] = float(min)
                 if max != "*":
                     current["max"] = float(max)
@@ -89,9 +89,7 @@ def _query_parameter_to_filter(args):
     for axis in ("obs", "var"):
         axis_filter = filters[axis]
         if len(axis_filter) > 0:
-            result[axis] = {
-                "annotation_value": [val for val in axis_filter.values()]
-            }
+            result[axis] = {"annotation_value": [val for val in axis_filter.values()]}
 
     return result
 

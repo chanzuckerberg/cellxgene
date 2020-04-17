@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -e
+
+PROJECT_ROOT=$(git rev-parse --show-toplevel)
+
+${PROJECT_ROOT}/scripts/dev_setup
+
+source ${PROJECT_ROOT}/venv/bin/activate
+
+make --file=${PROJECT_ROOT}/common.mk start-server

@@ -1,22 +1,22 @@
 // jshint esversion: 6
 import React from "react";
 import { connect } from "react-redux";
-import Categorical from "../categorical/categorical";
+import Categorical from "../categorical";
 import * as globals from "../../globals";
 import DynamicScatterplot from "../scatterplot/scatterplot";
 import TopLeftLogoAndTitle from "./topLeftLogoAndTitle";
 
-@connect(state => ({
+@connect((state) => ({
   responsive: state.responsive,
   scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
-  scatterplotYYaccessor: state.controls.scatterplotYYaccessor
+  scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
 }))
 class LeftSideBar extends React.Component {
   render() {
     const {
       responsive,
       scatterplotXXaccessor,
-      scatterplotYYaccessor
+      scatterplotYYaccessor,
     } = this.props;
 
     /*
@@ -31,7 +31,7 @@ class LeftSideBar extends React.Component {
           position: "fixed",
           backgroundColor: "white",
           /* x y blur spread color */
-          borderRight: `1px solid ${globals.lightGrey}`
+          borderRight: `1px solid ${globals.lightGrey}`,
         }}
       >
         <TopLeftLogoAndTitle />
@@ -41,7 +41,7 @@ class LeftSideBar extends React.Component {
             marginTop: logoRelatedPadding,
             width: globals.leftSidebarWidth,
             overflowY: "auto",
-            overflowX: "hidden"
+            overflowX: "hidden",
           }}
         >
           <Categorical />
