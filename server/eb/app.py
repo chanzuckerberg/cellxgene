@@ -36,6 +36,21 @@ class WSGIServer(Server):
 
     @staticmethod
     def _before_adding_routes(app, app_config):
+        script_hashes, style_hashes = WSGIServer.load_csp_hashes(app)
+        csp = {
+            "default-src": "'self'",
+            "script-src": ["'unsafe-eval'", "'unsafe-inline'"] + script_hashes,
+            "img-src": ["'self'", "data:"],
+            "object-src": "'none'",
+            "base-uri": "'none'",
+        }
+        if len(style_hashes) > 0:
+            csp["style-src"] = style_hashes
+
+        Talisman(app, force_https=app_config.server__force_https, content_security_policy=csp)
+
+    @staticmethod
+    def load_csp_hashes(app):
         csp_hashes = None
         try:
             with app.open_resource("../common/web/csp-hashes.json") as f:
@@ -50,17 +65,7 @@ class WSGIServer(Server):
         if len(script_hashes) == 0 or len(style_hashes) == 0:
             logging.error("Content security policy hashes are missing, falling back to unsafe-inline policy")
 
-        csp = {
-            "default-src": "'self'",
-            "script-src": ["'unsafe-eval'", "'unsafe-inline'"] + script_hashes,
-            "img-src": ["'self'", "data:"],
-            "object-src": "'none'",
-            "base-uri": "'none'",
-        }
-        if len(style_hashes) > 0:
-            csp["style-src"] = style_hashes
-
-        Talisman(app, force_https=app_config.server__force_https, content_security_policy=csp)
+        return (script_hashes, style_hashes)
 
 
 try:
