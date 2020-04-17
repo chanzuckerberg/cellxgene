@@ -9,6 +9,7 @@ import {
   Icon,
 } from "@blueprintjs/core";
 import * as globals from "../../globals";
+import { termsOfServiceToast } from "../framework/toasters";
 
 const CookieDecision = "cxg.cookieDecision";
 
@@ -25,9 +26,7 @@ function storageGet(key, defaultValue = null) {
 function storageSet(key, value) {
   try {
     window.localStorage.setItem(key, value);
-  } catch {
-    return;
-  }
+  } catch {}
 }
 
 @connect((state) => ({

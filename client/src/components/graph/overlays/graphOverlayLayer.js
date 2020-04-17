@@ -1,12 +1,8 @@
 import React, { PureComponent, cloneElement } from "react";
-import { connect } from "react-redux";
 
 import styles from "../graph.css";
 
 export default
-@connect((state) => ({
-  responsive: state.responsive,
-}))
 class GraphOverlayLayer extends PureComponent {
   /*
     This component takes its children (assumed in the data coordinate space ([0, 1] range, origin in bottom left corner))
@@ -16,7 +12,6 @@ class GraphOverlayLayer extends PureComponent {
    */
   constructor(props) {
     super(props);
-
     this.state = {
       display: {},
     };
@@ -50,16 +45,16 @@ class GraphOverlayLayer extends PureComponent {
       cameraTF,
       modelTF,
       projectionTF,
-      responsive,
-      graphPaddingRightLeft,
-      graphPaddingTop,
       children,
       handleCanvasEvent,
+      width,
+      height,
+      style
     } = this.props;
+    const { display } = this.state;
 
     if (!cameraTF) return null;
 
-    const { display } = this.state;
     const displaying = Object.values(display).some((value) => value); // check to see if at least one overlay is currently displayed
 
     const inverseTransform = `${this.reverseMatrixScaleTransformString(
@@ -68,9 +63,7 @@ class GraphOverlayLayer extends PureComponent {
       cameraTF
     )} ${this.reverseMatrixScaleTransformString(
       projectionTF
-    )} scale(1 2) scale(1 ${
-      1 / -(responsive.height - graphPaddingTop)
-    }) scale(2 1) scale(${1 / (responsive.width - graphPaddingRightLeft)} 1)`;
+    )} scale(1 2) scale(1 ${1 / (-height)}) scale(2 1) scale(${1 / width} 1)`;
 
     // Copy the children passed with the overlay and add the inverse transform and onDisplayChange props
     const newChildren = React.Children.map(children, (child) =>
@@ -83,11 +76,11 @@ class GraphOverlayLayer extends PureComponent {
     return (
       <svg
         className={styles.graphSVG}
-        width={responsive.width - graphPaddingRightLeft}
-        height={responsive.height}
+        width={width}
+        height={height}
         pointerEvents="none"
         style={{
-          zIndex: 99,
+          ...style,
           backgroundColor: displaying ? "rgba(255, 255, 255, 0.55)" : "",
         }}
         onMouseMove={handleCanvasEvent}
@@ -95,15 +88,11 @@ class GraphOverlayLayer extends PureComponent {
       >
         <g
           id="canvas-transformation-group-x"
-          transform={`scale(${
-            responsive.width - graphPaddingRightLeft
-          } 1) scale(.5 1) translate(1 0)`}
+          transform={`scale(${width} 1) scale(.5 1) translate(1 0)`}
         >
           <g
             id="canvas-transformation-group-y"
-            transform={`scale(1 ${-(
-              responsive.height - graphPaddingTop
-            )}) translate(0 -1) scale(1 .5) translate(0 1)`}
+            transform={`scale(1 ${-height}) translate(0 -1) scale(1 .5) translate(0 1)`}
           >
             <g
               id="projection-transformation-group"

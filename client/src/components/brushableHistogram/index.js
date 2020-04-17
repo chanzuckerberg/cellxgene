@@ -88,8 +88,8 @@ class HistogramBrush extends React.PureComponent {
   constructor(props) {
     super(props);
 
-    this.marginLeft = 12; // Space for 0 tick label on X axis
-    this.marginRight = 52; // space for Y axis & labels
+    this.marginLeft = 10; // Space for 0 tick label on X axis
+    this.marginRight = 54; // space for Y axis & labels
     this.marginBottom = 25; // space for X axis & labels
     this.marginTop = 3;
 

@@ -7,41 +7,30 @@ import DynamicScatterplot from "../scatterplot/scatterplot";
 import TopLeftLogoAndTitle from "./topLeftLogoAndTitle";
 
 @connect((state) => ({
-  responsive: state.responsive,
   scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
   scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
 }))
 class LeftSideBar extends React.Component {
+
   render() {
-    const {
-      responsive,
-      scatterplotXXaccessor,
-      scatterplotYYaccessor,
-    } = this.props;
-
-    /*
-    this magic number should be made less fragile,
-    if cellxgene logo or tabs change, this must as well
-    */
-    const logoRelatedPadding = 50;
-
+    const { scatterplotXXaccessor, scatterplotYYaccessor, style } = this.props;
     return (
       <div
         style={{
-          position: "fixed",
-          backgroundColor: "white",
           /* x y blur spread color */
           borderRight: `1px solid ${globals.lightGrey}`,
+          display: "flex",
+          flexDirection: "column",
+          overflowY: "auto",
+          ...style,
         }}
       >
         <TopLeftLogoAndTitle />
         <div
           style={{
-            height: responsive.height - logoRelatedPadding,
-            marginTop: logoRelatedPadding,
+            height: "100%",
             width: globals.leftSidebarWidth,
             overflowY: "auto",
-            overflowX: "hidden",
           }}
         >
           <Categorical />

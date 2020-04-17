@@ -62,7 +62,11 @@ class Continuous extends React.PureComponent {
     let zebra = 0;
 
     return (
-      <div>
+      <div
+        style={{
+          overflowY: "auto"
+        }}
+      >
         {allContinuousNames.map((key) => {
           if (!obsAnnotations.hasCol(key)) {
             // still loading!
