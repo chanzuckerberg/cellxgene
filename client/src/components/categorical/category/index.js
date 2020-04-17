@@ -25,7 +25,6 @@ import maybeTruncateString from "../../../util/maybeTruncateString";
     annotations: state.annotations,
     universe: state.universe,
     schema: state.world?.schema,
-    userColors: state.colors.userColors,
   };
 })
 class Category extends React.Component {
@@ -71,11 +70,10 @@ class Category extends React.Component {
   }
 
   handleColorChange = () => {
-    const { dispatch, metadataField, userColors } = this.props;
+    const { dispatch, metadataField } = this.props;
     dispatch({
       type: "color by categorical metadata",
       colorAccessor: metadataField,
-      colors: _.get(userColors, metadataField)
     });
   };
 

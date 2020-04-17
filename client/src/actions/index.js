@@ -9,6 +9,7 @@ import {
 } from "../util/actionHelpers";
 import { PromiseLimit } from "../util/promiseLimit";
 import { requestReembed, reembedResetWorldToUniverse } from "./reembed";
+import { loadUserColorConfig } from "../util/stateManager/colorHelpers";
 
 /*
 return promise to fetch the OBS annotations we need to load.  Omit anything
@@ -23,22 +24,19 @@ async function obsAnnotationFetchAndLoad(dispatch, schema) {
 
   const plimit = new PromiseLimit(5);
   return Promise.all(
-    columns
-      .filter(col => col.name !== index)
-      .map(col =>
-        plimit.add(() => {
-          const path = `annotations/obs?annotation-name=${encodeURIComponent(col.name)}`;
-          return fetchBinary(path)
-            .then(buffer => Universe.matrixFBSToDataframe(buffer))
-            .then(df =>
-              dispatch({
-                type: "universe: column load success",
-                dim: "obsAnnotations",
-                dataframe: df
-              })
-            )
-        })
+    columns.map(col =>
+      plimit.add(() =>
+        fetchBinary(`annotations/obs?annotation-name=${encodeURIComponent(col.name)}`)
+          .then(buffer => Universe.matrixFBSToDataframe(buffer))
+          .then(df =>
+            dispatch({
+              type: "universe: column load success",
+              dim: "obsAnnotations",
+              dataframe: df
+            })
+          )
       )
+    )
   );
 }
 
@@ -50,20 +48,17 @@ async function varAnnotationFetchAndLoad(dispatch, schema) {
   const index = varAnnotations.index ?? false;
   const names = index ? [index] : [];
   return Promise.all(
-    names
-      .map(name => {
-          const path = `annotations/var?annotation-name=${encodeURIComponent(name)}`;
-          return fetchBinary(path)
-            .then(buffer => Universe.matrixFBSToDataframe(buffer))
-            .then(df =>
-              dispatch({
-                type: "universe: column load success",
-                dim: "varAnnotations",
-                dataframe: df
-              })
-            );
-        }
-      )
+    names.map(name =>
+      fetchBinary(`annotations/var?annotation-name=${encodeURIComponent(name)}`)
+        .then(buffer => Universe.matrixFBSToDataframe(buffer))
+        .then(df =>
+          dispatch({
+            type: "universe: column load success",
+            dim: "varAnnotations",
+            dataframe: df
+          })
+        )
+    )
   );
 }
 
@@ -76,11 +71,11 @@ function layoutFetchAndLoad(dispatch, schema) {
 
   const plimit = new PromiseLimit(5);
   return Promise.all(
-    embNames.map((e) =>
-      plimit.add(() => {
-        return fetchBinary(`layout/obs?layout-name=${encodeURIComponent(e)}`)
-          .then(buffer => Universe.matrixFBSToDataframe(buffer));
-      })
+    embNames.map(e =>
+      plimit.add(() =>
+        fetchBinary(`layout/obs?layout-name=${encodeURIComponent(e)}`)
+          .then(buffer => Universe.matrixFBSToDataframe(buffer))
+      )
     )
   ).then(dfs =>
     dispatch({
@@ -96,10 +91,10 @@ return promise fetching user-configured colors
 */
 async function userColorsFetchAndLoad(dispatch) {
   return fetchJson("colors")
-    .then(userColors =>
+    .then(response =>
       dispatch({
         type: "universe: user color load success",
-        userColors
+        userColors: loadUserColorConfig(response)
       })
     );
 }
@@ -190,16 +185,11 @@ async function _doRequestExpressionData(dispatch, getState, genes) {
   /* helper for this function only */
   const fetchData = async (geneNames) => {
     const query = geneNames
-      .map(
-        (g) =>
-          `var:${dubEncURIComponent(varIndexName)}=${dubEncURIComponent(g)}`
-      )
+      .map(g => `var:${dubEncURIComponent(varIndexName)}=${dubEncURIComponent(g)}`)
       .join("&");
-    const url = `${globals.API.prefix}${globals.API.version}data/var?${query}`;
-    return doBinaryRequest(url).then((buffer) =>
-      // TODO: why convert to an Object and not a Dataframe?
-      Universe.convertDataFBStoObject(universe, buffer)
-    );
+    // TODO: why convert to an Object and not a Dataframe?
+    return fetchBinary(`data/var?${query}`)
+      .then(buffer => Universe.convertDataFBStoObject(universe, buffer));
   };
 
   /* preload data already in cache */
@@ -361,7 +351,7 @@ const requestDifferentialExpression = (set1, set2, num_genes = 10) => async (
     */
     const plimit = new PromiseLimit(5);
     await Promise.all(
-      topNGenes.map((gene) =>
+      topNGenes.map(gene =>
         plimit.add(() => _doRequestExpressionData(dispatch, getState, [gene]))
       )
     );

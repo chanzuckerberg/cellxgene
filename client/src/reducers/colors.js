@@ -98,7 +98,7 @@ const ColorsReducer = (
 
     case "color by categorical metadata":
     case "color by continuous metadata": {
-      const { world } = prevSharedState;
+      const { world, colors } = prevSharedState;
 
       /* toggle between this mode and reset */
       const resetCurrent =
@@ -106,14 +106,8 @@ const ColorsReducer = (
         action.colorAccessor === state.colorAccessor;
       const colorMode = !resetCurrent ? action.type : null;
       const colorAccessor = !resetCurrent ? action.colorAccessor : null;
-      const { colors } = action;
 
-      const { rgb, scale } = ColorHelpers.createColors(
-        world,
-        colorMode,
-        colorAccessor,
-        colors
-      );
+      const { rgb, scale } = ColorHelpers.createColors(world, colorMode, colorAccessor, colors.userColors);
       return {
         ...state,
         colorMode,
@@ -159,12 +153,7 @@ const ColorsReducer = (
         return state;
 
       /* else, we need to rebuild colors as labels have changed! */
-      const { rgb, scale } = ColorHelpers.createColors(
-        world,
-        colorMode,
-        colorAccessor,
-        colors
-      );
+      const { rgb, scale } = ColorHelpers.createColors(world, colorMode, colorAccessor);
       return { ...state, rgb, scale };
     }
 

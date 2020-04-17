@@ -11,15 +11,15 @@ import { range } from "../range";
 /*
 create new colors state object.   Paramters:
   - world - current world object
-  - mode - color-by mode.  One of: null, "color by expression",
-    "color by continuous metadata", "color by categorical metadata"
-  -
+  - colorMode - color-by mode. One of {null, "color by expression", "color by continuous metadata",
+    "color by categorical metadata"}
+  - colorAccessor - the obs annotations used for color-by
 */
 export function createColors(world, colorMode = null, colorAccessor = null, userColors = null) {
   switch (colorMode) {
     case "color by categorical metadata": {
       if (userColors) {
-        return parseUserColors(world, colorAccessor, userColors)
+        return createUserColors(world, colorAccessor, userColors);
       }
       return createColorsByCategoricalMetadata(world, colorAccessor);
     }
@@ -39,48 +39,51 @@ export function createColors(world, colorMode = null, colorAccessor = null, user
   }
 }
 
+export function loadUserColorConfig(userColors) {
+  const convertedUserColors = {};
+  Object.keys(userColors).forEach(category => {
+    const [colors, scaleMap] = Object.keys(userColors[category]).reduce((acc, label, i) => {
+      const color = parseRGB(userColors[category][label]);
+      acc[0][label] = color;
+      acc[1][i] = d3.rgb(255 * color[0], 255 * color[1], 255 * color[2]);
+      return acc;
+    }, [{}, {}]);
+    const scale = i => scaleMap[i];
+    convertedUserColors[category] = { colors, scale };
+  });
+  return convertedUserColors;
+}
 
-function parseUserColors(world, accessor, userColors) {
-  const { categories } = world.schema.annotations.obsByName[accessor];
-
-  /* pre-create colors - much faster than doing it for each obs */
-  const [colors, scaleMap] = categories.reduce((acc, cat, i) => {
-    const color = parseRGB(userColors[cat]);
-    acc[0][cat] = color;
-    acc[1][i] = d3.rgb(255 * color[0], 255 * color[1], 255 * color[2]);
-    return acc;
-  }, [{}, {}]);
-
-  const scale = i => scaleMap[i];
-
-  const rgb = _loadColorArray(world, colors, accessor);
+function createUserColors(world, colorAccessor, userColors) {
+  const { colors, scale } = userColors[colorAccessor];
+  const rgb = createRgbArray(world, colors, colorAccessor);
   return { rgb, scale };
 }
 
-function createColorsByCategoricalMetadata(world, accessor) {
-  const { categories } = world.schema.annotations.obsByName[accessor];
+function createColorsByCategoricalMetadata(world, category) {
+  const { labels } = world.schema.annotations.obsByName[category];
 
   const scale = d3
     .scaleSequential(interpolateRainbow)
-    .domain([0, categories.length]);
+    .domain([0, labels.length]);
 
   /* pre-create colors - much faster than doing it for each obs */
-  const colors = categories.reduce((acc, cat, idx) => {
+  const colors = labels.reduce((acc, cat, idx) => {
     acc[cat] = parseRGB(scale(idx));
     return acc;
   }, {});
 
-  const rgb = _loadColorArray(world, colors, accessor);
+  const rgb = createRgbArray(world, colors, category);
   return { rgb, scale };
 }
 
-function _loadColorArray(world, colors, accessor) {
+export function createRgbArray(world, colors, category) {
   const rgb = new Array(world.nObs);
   const df = world.obsAnnotations;
-  const data = df.col(accessor).asArray();
+  const data = df.col(category).asArray();
   for (let i = 0, len = df.length; i < len; i += 1) {
-    const cat = data[i];
-    rgb[i] = colors[cat];
+    const label = data[i];
+    rgb[i] = colors[label];
   }
   return rgb;
 }
