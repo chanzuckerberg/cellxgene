@@ -34,10 +34,11 @@ class WSGIServer(Server):
     def __init__(self, app_config):
         super().__init__(app_config)
 
-    def _before_adding_routes(self, app_config):
+    @staticmethod
+    def _before_adding_routes(app, app_config):
         csp_hashes = None
         try:
-            with self.app.open_resource("../common/web/csp-hashes.json") as f:
+            with app.open_resource("../common/web/csp-hashes.json") as f:
                 csp_hashes = json.load(f)
         except FileNotFoundError:
             pass
@@ -59,7 +60,7 @@ class WSGIServer(Server):
         if len(style_hashes) > 0:
             csp["style-src"] = style_hashes
 
-        Talisman(self.app, force_https=app_config.server__force_https, content_security_policy=csp)
+        Talisman(app, force_https=app_config.server__force_https, content_security_policy=csp)
 
 
 try:
