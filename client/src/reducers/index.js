@@ -37,16 +37,16 @@ const Reducer = undoable(
     ["categoricalSelection", categoricalSelection],
     ["continuousSelection", continuousSelection],
     ["graphSelection", graphSelection],
-    ["crossfilter", crossfilter],
     ["colors", colors],
     ["controls", controls],
+    ["crossfilter", crossfilter],
     ["differential", differential],
     ["responsive", responsive],
     ["centroidLabels", centroidLabels],
     ["pointDilation", pointDialation],
     ["reembedController", reembedController],
     ["autosave", autosave],
-    ["resetCache", resetCache]
+    ["resetCache", resetCache],
   ]),
   [
     "universe",
@@ -61,7 +61,7 @@ const Reducer = undoable(
     "layoutChoice",
     "centroidLabels",
     "annotations",
-    "reembedding"
+    "reembedding",
   ],
   undoableConfig
 );

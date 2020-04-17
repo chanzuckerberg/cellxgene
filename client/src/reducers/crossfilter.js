@@ -58,7 +58,7 @@ const CrossfilterReducerBase = (
     }
 
     case "reset World to eq Universe": {
-      const { userDefinedGenes, diffexpGenes } = prevSharedState.controls;
+      const { userDefinedGenes, diffexpGenes } = nextSharedState.controls;
       const { world } = nextSharedState;
       let { crossfilter } = prevSharedState.resetCache;
       crossfilter = ControlsHelpers.createGeneDimensions(
@@ -76,7 +76,7 @@ const CrossfilterReducerBase = (
 
     case "set clip quantiles":
     case "set World to current selection": {
-      const { userDefinedGenes, diffexpGenes } = prevSharedState.controls;
+      const { userDefinedGenes, diffexpGenes } = nextSharedState.controls;
       const { world, layoutChoice } = nextSharedState;
       let crossfilter = new Crossfilter(world.obsAnnotations);
       crossfilter = World.createObsDimensions(
@@ -111,7 +111,7 @@ const CrossfilterReducerBase = (
     }
 
     case "request user defined gene success": {
-      const { world } = prevSharedState;
+      const { world } = nextSharedState;
       const gene = action.data.genes[0];
       return state.addDimension(
         userDefinedDimensionName(gene),
@@ -122,7 +122,7 @@ const CrossfilterReducerBase = (
     }
 
     case "request differential expression success": {
-      const { world } = prevSharedState;
+      const { world } = nextSharedState;
       const varIndexName = world.schema.annotations.var.index;
       const genes = _.map(action.data, (d) =>
         world.varAnnotations.at(d[0], varIndexName)
@@ -142,7 +142,7 @@ const CrossfilterReducerBase = (
     }
 
     case "clear differential expression": {
-      const { world } = prevSharedState;
+      const { world } = nextSharedState;
       const varIndexName = world.schema.annotations.var.index;
       const crossfilter = _.reduce(
         action.diffExp,
@@ -160,7 +160,7 @@ const CrossfilterReducerBase = (
     }
 
     case "clear all user defined genes": {
-      const { userDefinedGenes } = prevSharedState.controls;
+      const { userDefinedGenes } = nextSharedState.controls;
       const crossfilter = _.reduce(
         userDefinedGenes,
         (xfltr, gene) => xfltr.delDimension(userDefinedDimensionName(gene)),
