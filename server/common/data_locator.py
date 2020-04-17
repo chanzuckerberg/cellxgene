@@ -42,8 +42,12 @@ class DataLocator:
             self.cname = self.path if self.protocol == "file" else self.uri_or_path
 
         # fsspec.filesystem will throw RuntimeError if the protocol is unsupported
-        if self.protocol == "s3" and region_name:
-            self.fs = fsspec.filesystem(self.protocol, config_kwargs={"region_name": region_name})
+        if self.protocol == "s3":
+            if region_name:
+                config_kwargs = dict(region_name=region_name)
+                self.fs = fsspec.filesystem(self.protocol, listings_expiry_time=30, config_kwargs=config_kwargs)
+            else:
+                self.fs = fsspec.filesystem(self.protocol, listings_expiry_time=30)
         else:
             self.fs = fsspec.filesystem(self.protocol)
 
