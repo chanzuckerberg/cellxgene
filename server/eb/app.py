@@ -6,7 +6,6 @@ from flask import json
 import logging
 from flask_talisman import Talisman
 import boto3
-import json
 
 if os.path.isdir("/opt/python/log"):
     # This is the standard location where Amazon EC2 instances store the application logs.
