@@ -45,6 +45,10 @@ class WSGIServer(Server):
             csp_hashes = {}
         script_hashes = [f"'{hash}'" for hash in csp_hashes.get("script-hashes", [])]
         style_hashes = [f"'{hash}'" for hash in csp_hashes.get("style-hashes", [])]
+
+        if len(script_hashes) == 0 or len(style_hashes) == 0:
+            logging.error("Content security policy hashes are missing, falling back to unsafe-inline policy")
+
         csp = {
             "default-src": "'self'",
             "script-src": ["'unsafe-eval'", "'unsafe-inline'"] + script_hashes,
