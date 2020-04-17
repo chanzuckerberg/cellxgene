@@ -2,10 +2,10 @@
 
 import sys
 import os
+from flask import json
 import logging
 from flask_talisman import Talisman
 import boto3
-import json
 
 if os.path.isdir("/opt/python/log"):
     # This is the standard location where Amazon EC2 instances store the application logs.
@@ -52,9 +52,38 @@ class WSGIServer(Server):
     def __init__(self, app_config):
         super().__init__(app_config)
 
-    def _before_adding_routes(self, app_config):
-        csp = {"default-src": "'self' 'unsafe-inline' 'unsafe-eval'", "img-src": ["'self'", "data:"]}
-        Talisman(self.app, force_https=app_config.server__force_https, content_security_policy=csp)
+    @staticmethod
+    def _before_adding_routes(app, app_config):
+        script_hashes, style_hashes = WSGIServer.load_csp_hashes(app)
+        csp = {
+            "default-src": "'self'",
+            "script-src": ["'unsafe-eval'", "'unsafe-inline'"] + script_hashes,
+            "img-src": ["'self'", "data:"],
+            "object-src": "'none'",
+            "base-uri": "'none'",
+        }
+        if len(style_hashes) > 0:
+            csp["style-src"] = style_hashes
+
+        Talisman(app, force_https=app_config.server__force_https, content_security_policy=csp)
+
+    @staticmethod
+    def load_csp_hashes(app):
+        csp_hashes = None
+        try:
+            with app.open_resource("../common/web/csp-hashes.json") as f:
+                csp_hashes = json.load(f)
+        except FileNotFoundError:
+            pass
+        if not isinstance(csp_hashes, dict):
+            csp_hashes = {}
+        script_hashes = [f"'{hash}'" for hash in csp_hashes.get("script-hashes", [])]
+        style_hashes = [f"'{hash}'" for hash in csp_hashes.get("style-hashes", [])]
+
+        if len(script_hashes) == 0 or len(style_hashes) == 0:
+            logging.error("Content security policy hashes are missing, falling back to unsafe-inline policy")
+
+        return (script_hashes, style_hashes)
 
 
 try:

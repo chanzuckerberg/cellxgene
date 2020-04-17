@@ -278,8 +278,9 @@ class CliLaunchServer(Server):
     def __init__(self, app_config):
         super().__init__(app_config)
 
-    def _before_adding_routes(self, app_config):
-        self.app.config["COMPRESS_MIMETYPES"] = [
+    @staticmethod
+    def _before_adding_routes(app, app_config):
+        app.config["COMPRESS_MIMETYPES"] = [
             "text/html",
             "text/css",
             "text/xml",
@@ -287,9 +288,9 @@ class CliLaunchServer(Server):
             "application/javascript",
             "application/octet-stream",
         ]
-        Compress(self.app)
+        Compress(app)
         if app_config.server__debug:
-            CORS(self.app, supports_credentials=True)
+            CORS(app, supports_credentials=True)
 
 
 @sort_options

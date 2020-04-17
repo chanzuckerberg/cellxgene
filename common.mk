@@ -28,5 +28,6 @@ define copy_client_assets
 	mkdir -p $(2)/common/web/templates/
 	cp $(1)/index.html $(2)/common/web/templates/
 	cp -r $(1)/static $(2)/common/web/
+	cp $(1)/csp-hashes.json $(2)/common/web/
 endef
 

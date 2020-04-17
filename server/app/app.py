@@ -242,9 +242,14 @@ def get_api_resources(bp_api):
 
 
 class Server:
+    @staticmethod
+    def _before_adding_routes(app, app_config):
+        """ will be called before routes are added, during __init__.  Subclass protocol """
+        pass
+
     def __init__(self, app_config):
         self.app = Flask(__name__, static_folder="../common/web/static")
-        self._before_adding_routes(app_config)
+        self._before_adding_routes(self.app, app_config)
         self.app.json_encoder = Float32JSONEncoder
         if app_config.server__server_timing_headers:
             ServerTiming(self.app, force_debug=True)
@@ -275,7 +280,3 @@ class Server:
         self.app.matrix_data_cache_manager = app_config.matrix_data_cache_manager
         self.app.annotations = app_config.user_annotations
         self.app.app_config = app_config
-
-    def _before_adding_routes(self, app_config):
-        """ will be called before routes are added.  Subclass protocol """
-        pass

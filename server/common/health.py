@@ -30,4 +30,6 @@ def health_check(config):
     ]
     health["status"] = "pass" if all(checks) else "fail"
     code = HTTPStatus.OK if health["status"] == "pass" else HTTPStatus.BAD_REQUEST
-    return make_response(jsonify(health), code, {"Content-Type": "application/health+json"},)
+    response = make_response(jsonify(health), code)
+    response.headers["Content-Type"] = "application/health+json"
+    return response
