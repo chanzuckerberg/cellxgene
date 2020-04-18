@@ -223,7 +223,10 @@ def data_var_get(request, data_adaptor):
 
 
 def colors_get(data_adaptor):
-    return make_response(jsonify(data_adaptor.colors()), HTTPStatus.OK)
+    try:
+        return make_response(jsonify(data_adaptor.get_colors()), HTTPStatus.OK)
+    except Exception as e:
+        return abort_and_log(HTTPStatus.NOT_FOUND, str(e), include_exc_info=True)
 
 
 def diffexp_obs_post(request, data_adaptor):

@@ -4,16 +4,23 @@ into a cellxgene TileDB structure, aka a 'CXG'.
 
 The organization of the TileDB structure is:
 
-    the.cxg                 TileDB Group
-    |-- obs                 TileDB array containing cell (row) attributes, one attribute per
-    |                       dataframe column, shape (n_obs,)
-    |-- var                 TileDB array containing gene (column) attributes, with one attribute per
-    |                       dataframe column, shape (n_var,)
-    |-- X                   Main count matrix as a 2D TileDB array, single unnamed numeric attribute
-    |-- emb                 TileDB group, storing optional embeddings (group may be empty)
-    |   |-- <name1>         TileDB Array, single anon attribute, ND numeric array, shape (n_obs, N)
-    |-- cxg_group_metadata  Empty array used only to stash metadata about the overall object.
-    |   |-- colors          CXG colors object as described in https://github.com/chanzuckerberg/cellxgene/issues/1307
+    the.cxg                         TileDB Group
+    ├─ obs                          TileDB array containing cell (row) attributes, one attribute per
+    │                               dataframe column, shape (n_obs,)
+    ├─ var                          TileDB array containing gene (column) attributes, with one attribute per
+    │                               dataframe column, shape (n_obs,)
+    ├─ X                            Main count matrix as a 2D TileDB array, single unnamed numeric attribute
+    ├─ emb                          TileDB group, storing optional embeddings (group may be empty)
+    │  └─ <name1>                   TileDB Array, single anon attribute, ND numeric array, shape (n_obs, N)
+    └─ cxg_group_metadata           Empty array used only to stash metadata about the overall object.
+       └─ cxg_category_colors       CXG colors object as described below:
+                                        {
+                                             "<category_name>": {
+                                                 "<label_name>": "<color_hex_code>",
+                                                 ...
+                                             },
+                                             ...
+                                        }
     ...
 
 All arrays are defined to have a uint32 domain, zero based.  All X counts and embedding
@@ -41,6 +48,14 @@ including the global data layout, spatial tile size, and the like. The CXG is
 self-describing in these areas, and the actual values (eg, tile size) are empirically
 derived from benchmarking. They may change in the future.
 
+cxgtool.py will extract color information stored in arrays in the 'uns' anndata
+property with the key "{category_name}_colors". For this to work, the following
+command must result in a mapping from category names to matplotlib-compatible colors:
+
+```
+dict(zip(adata.obs[cat].cat.categories, adata.uns[f"{cat}_colors"]))
+```
+
 ---
 
 TODO/ISSUES:
@@ -56,7 +71,7 @@ import numpy as np
 from os.path import splitext, basename
 import json
 
-from server.common.colors import anndata_colors_to_cxg_colors
+from server.common.colors import convert_anndata_category_colors_to_cxg_category_colors, ColorFormatException
 
 
 # the CXG container version number.  Must be a semver string.
@@ -74,6 +89,9 @@ def main():
     parser.add_argument("h5ad", nargs="?", help="H5AD file name")
     parser.add_argument(
         "--backed", action="store_true", help="loaded in file backed mode. Will be slower, but use less memory."
+    )
+    parser.add_argument(
+        "--colors", action="store_true", default=False, help="Extract scanpy-compatible category colors from h5ad file."
     )
     parser.add_argument(
         "--obs-names", help="Name of annotation to use for observations. If not specified, will use the obs index."
@@ -102,12 +120,20 @@ def main():
     container = out if splitext(out)[1] == ".cxg" else out + ".cxg"
     title = args.title if args.title is not None else basefname
 
-    write_cxg(adata, container, title, var_names=args.var_names, obs_names=args.obs_names, about=args.about)
+    write_cxg(
+        adata,
+        container,
+        title,
+        var_names=args.var_names,
+        obs_names=args.obs_names,
+        about=args.about,
+        extract_colors=args.colors,
+    )
 
     log(1, "done")
 
 
-def write_cxg(adata, container, title, var_names=None, obs_names=None, about=None):
+def write_cxg(adata, container, title, var_names=None, obs_names=None, about=None, extract_colors=True):
     if not adata.var.index.is_unique:
         raise ValueError("Variable index is not unique - unable to convert.")
     if not adata.obs.index.is_unique:
@@ -132,7 +158,7 @@ def write_cxg(adata, container, title, var_names=None, obs_names=None, about=Non
     log(1, f"\t...group created, with name {container}")
 
     # dataset metadata
-    save_metadata(container, {"title": title, "about": about}, adata)
+    save_metadata(container, {"title": title, "about": about}, adata, extract_colors)
     log(1, "\t...dataset metadata saved")
 
     # var/gene dataframe
@@ -395,7 +421,7 @@ def save_X(container, adata, ctx):
     tiledb.consolidate(X_name, ctx=ctx)
 
 
-def save_metadata(container, metadata, adata):
+def save_metadata(container, metadata, adata, extract_colors):
     """
     Save all dataset-wide metadata.   This includes:
     * CXG version
@@ -412,7 +438,17 @@ def save_metadata(container, metadata, adata):
     with tiledb.DenseArray(a_name, mode="w") as A:
         A.meta["cxg_version"] = CXG_VERSION
         A.meta["cxg_properties"] = json.dumps(metadata)
-        A.meta["colors"] = json.dumps(anndata_colors_to_cxg_colors(adata))
+        if extract_colors:
+            try:
+                A.meta["cxg_category_colors"] = json.dumps(
+                    convert_anndata_category_colors_to_cxg_category_colors(adata)
+                )
+            except (KeyError, ColorFormatException):
+                log(
+                    0,
+                    "Warning: failed to extract colors from h5ad file! "
+                    "Fix the h5ad file or rerun with --ignore-colors. See help for details.",
+                )
 
 
 def sanitize_keys(keys):

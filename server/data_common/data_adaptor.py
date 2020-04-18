@@ -84,7 +84,7 @@ class DataAdaptor(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def colors(self):
+    def get_colors(self):
         pass
 
     @abstractmethod

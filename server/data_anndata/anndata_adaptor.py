@@ -12,7 +12,7 @@ from server_timing import Timing as ServerTiming
 from server.data_common.data_adaptor import DataAdaptor
 from server.data_common.fbs.matrix import encode_matrix_fbs
 from server.common.utils import series_to_schema
-from server.common.colors import anndata_colors_to_cxg_colors
+from server.common.colors import convert_anndata_category_colors_to_cxg_category_colors
 from server.common.constants import Axis, MAX_LAYOUTS
 from server.common.errors import PrepareError, DatasetAccessError, FilterError
 from server.compute.scanpy import scanpy_umap
@@ -334,6 +334,9 @@ class AnndataAdaptor(DataAdaptor):
             lfc_cutoff = self.config.diffexp__lfc_cutoff
         return diffexp_generic.diffexp_ttest(self, maskA, maskB, top_n, lfc_cutoff)
 
+    def get_colors(self):
+        return convert_anndata_category_colors_to_cxg_category_colors(self.data)
+
     def get_X_array(self, obs_mask=None, var_mask=None):
         if obs_mask is None:
             obs_mask = slice(None)
@@ -350,9 +353,6 @@ class AnndataAdaptor(DataAdaptor):
 
     def query_obs_array(self, term_name):
         return getattr(self.data.obs, term_name)
-
-    def colors(self):
-        return anndata_colors_to_cxg_colors(self.data)
 
     def get_obs_index(self):
         name = self.config.single_dataset__obs_names

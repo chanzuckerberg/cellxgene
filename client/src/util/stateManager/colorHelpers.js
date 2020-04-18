@@ -18,7 +18,7 @@ create new colors state object.   Paramters:
 export function createColors(world, colorMode = null, colorAccessor = null, userColors = null) {
   switch (colorMode) {
     case "color by categorical metadata": {
-      if (userColors) {
+      if (userColors && colorAccessor in userColors) {
         return createUserColors(world, colorAccessor, userColors);
       }
       return createColorsByCategoricalMetadata(world, colorAccessor);
@@ -60,27 +60,27 @@ function createUserColors(world, colorAccessor, userColors) {
   return { rgb, scale };
 }
 
-function createColorsByCategoricalMetadata(world, category) {
-  const { labels } = world.schema.annotations.obsByName[category];
+function createColorsByCategoricalMetadata(world, colorAccessor) {
+  const { categories } = world.schema.annotations.obsByName[colorAccessor];
 
   const scale = d3
     .scaleSequential(interpolateRainbow)
-    .domain([0, labels.length]);
+    .domain([0, categories.length]);
 
   /* pre-create colors - much faster than doing it for each obs */
-  const colors = labels.reduce((acc, cat, idx) => {
+  const colors = categories.reduce((acc, cat, idx) => {
     acc[cat] = parseRGB(scale(idx));
     return acc;
   }, {});
 
-  const rgb = createRgbArray(world, colors, category);
+  const rgb = createRgbArray(world, colors, colorAccessor);
   return { rgb, scale };
 }
 
-export function createRgbArray(world, colors, category) {
+export function createRgbArray(world, colors, colorAccessor) {
   const rgb = new Array(world.nObs);
   const df = world.obsAnnotations;
-  const data = df.col(category).asArray();
+  const data = df.col(colorAccessor).asArray();
   for (let i = 0, len = df.length; i < len; i += 1) {
     const label = data[i];
     rgb[i] = colors[label];
