@@ -77,6 +77,9 @@ from server.common.colors import convert_anndata_category_colors_to_cxg_category
 # the CXG container version number.  Must be a semver string.
 CXG_VERSION = "0.1"
 
+# log_level must have a default
+log_level = 3
+
 
 def log(level, *args):
     global log_level
@@ -133,7 +136,7 @@ def main():
     log(1, "done")
 
 
-def write_cxg(adata, container, title, var_names=None, obs_names=None, about=None, extract_colors=True):
+def write_cxg(adata, container, title, var_names=None, obs_names=None, about=None, extract_colors=False):
     if not adata.var.index.is_unique:
         raise ValueError("Variable index is not unique - unable to convert.")
     if not adata.obs.index.is_unique:

@@ -8,8 +8,10 @@ import pandas as pd
 import requests
 
 import server.test.decode_fbs as decode_fbs
-from server.test import data_with_tmp_annotations, make_fbs
 from server.data_common.matrix_loader import MatrixDataType
+from server.test import data_with_tmp_annotations, make_fbs, PROJECT_ROOT
+from server.test.test_datasets.fixtures import pbmc3k_colors
+
 
 BAD_FILTER = {"filter": {"obs": {"annotation_value": [{"name": "xyz"}]}}}
 
@@ -255,6 +257,15 @@ class EndPoints(object):
         self.assertEqual(df["n_rows"], 2638)
         self.assertEqual(df["n_cols"], 1)
 
+    def test_config(self):
+        endpoint = "colors"
+        url = f"{self.URL_BASE}{endpoint}"
+        result = self.session.get(url)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "application/json")
+        result_data = result.json()
+        self.assertEqual(result_data, pbmc3k_colors)
+
     def test_static(self):
         endpoint = "static"
         file = "assets/favicon.ico"
@@ -349,7 +360,7 @@ class EndPointsAnndata(unittest.TestCase, EndPoints):
                 "cellxgene",
                 "--no-upgrade-check",
                 "launch",
-                "../example-dataset/pbmc3k.h5ad",
+                f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad",
                 "--disable-annotations",
                 "--verbose",
                 "--port",
@@ -383,7 +394,7 @@ class EndPointsCxg(unittest.TestCase, EndPoints):
                 "cellxgene",
                 "--no-upgrade-check",
                 "launch",
-                "test/test_datasets/pbmc3k.cxg",
+                f"{PROJECT_ROOT}/server/test/test_datasets/pbmc3k.cxg",
                 "--disable-annotations",
                 "--verbose",
                 "--port",

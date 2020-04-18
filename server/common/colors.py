@@ -210,13 +210,14 @@ def convert_anndata_category_colors_to_cxg_category_colors(data):
     :return: cellxgene color data structure as described above
     """
     cxg_colors = dict()
+    color_key_suffix = "_colors"
     for uns_key in data.uns.keys():
         # find uns array that describes colors for a category
-        if not uns_key.endswith("_colors"):
+        if not uns_key.endswith(color_key_suffix):
             continue
 
         # check to see if we actually have observations for that category
-        category_name = uns_key[:-7]
+        category_name = uns_key[:-len(color_key_suffix)]
         if category_name not in data.obs.keys():
             continue
 

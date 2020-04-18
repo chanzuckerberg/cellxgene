@@ -5,6 +5,8 @@ import server.compute.diffexp_cxg as diffexp_cxg
 import server.compute.diffexp_generic as diffexp_generic
 import numpy as np
 
+from server.test import PROJECT_ROOT
+
 
 class DiffExpTest(unittest.TestCase):
     """Tests the diffexp returns the expected results for one test case, using different
@@ -50,7 +52,7 @@ class DiffExpTest(unittest.TestCase):
 
     def test_anndata_default(self):
         """Test an anndata adaptor with its default diffexp algorithm (diffexp_generic)"""
-        adaptor = self.load_dataset("../example-dataset/pbmc3k.h5ad")
+        adaptor = self.load_dataset(f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad")
         maskA = self.get_mask(adaptor, 1, 10)
         maskB = self.get_mask(adaptor, 2, 10)
         results = adaptor.compute_diffexp_ttest(maskA, maskB, 10)
@@ -58,7 +60,7 @@ class DiffExpTest(unittest.TestCase):
 
     def test_cxg_default(self):
         """Test a cxg adaptor with its default diffexp algorithm (diffexp_cxg)"""
-        adaptor = self.load_dataset("test/test_datasets/pbmc3k.cxg")
+        adaptor = self.load_dataset(f"{PROJECT_ROOT}/server/test/test_datasets/pbmc3k.cxg")
         maskA = self.get_mask(adaptor, 1, 10)
         maskB = self.get_mask(adaptor, 2, 10)
 
@@ -72,7 +74,7 @@ class DiffExpTest(unittest.TestCase):
 
     def test_cxg_generic(self):
         """Test a cxg adaptor with the generic adaptor"""
-        adaptor = self.load_dataset("test/test_datasets/pbmc3k.cxg")
+        adaptor = self.load_dataset(f"{PROJECT_ROOT}/server/test/test_datasets/pbmc3k.cxg")
         maskA = self.get_mask(adaptor, 1, 10)
         maskB = self.get_mask(adaptor, 2, 10)
         # run it directly
