@@ -13,17 +13,11 @@ from server.test.test_datasets.fixtures import pbmc3k_colors
 
 
 class TestCxgAdaptor(unittest.TestCase):
-
     def setUp(self) -> None:
-        random_string = ''.join(random.choice(string.ascii_letters) for _ in range(8))
+        random_string = "".join(random.choice(string.ascii_letters) for _ in range(8))
         self.data_locator = f"/tmp/test_{random_string}.cxg"
         self.source_h5ad = anndata.read_h5ad(f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad")
-        write_cxg(
-            adata=self.source_h5ad,
-            container=self.data_locator,
-            title="pbmc3k",
-            extract_colors=True
-        )
+        write_cxg(adata=self.source_h5ad, container=self.data_locator, title="pbmc3k", extract_colors=True)
         config = app_config(self.data_locator)
         self.data = CxgAdaptor(DataLocator(self.data_locator), config)
 

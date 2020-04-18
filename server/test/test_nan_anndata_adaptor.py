@@ -12,7 +12,6 @@ from server.test import PROJECT_ROOT, app_config
 
 
 class NaNTest(unittest.TestCase):
-
     def setUp(self):
         self.data_locator = DataLocator(f"{PROJECT_ROOT}/server/test/test_datasets/nan.h5ad")
         self.config = app_config(self.data_locator.path)

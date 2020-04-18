@@ -257,7 +257,7 @@ class EndPoints(object):
         self.assertEqual(df["n_rows"], 2638)
         self.assertEqual(df["n_cols"], 1)
 
-    def test_config(self):
+    def test_colors(self):
         endpoint = "colors"
         url = f"{self.URL_BASE}{endpoint}"
         result = self.session.get(url)

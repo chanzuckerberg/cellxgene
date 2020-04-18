@@ -7,7 +7,6 @@ from server.test.test_datasets.fixtures import pbmc3k_colors
 
 
 class TestCxgAdaptor(unittest.TestCase):
-
     def setUp(self):
         data_locator = f"{PROJECT_ROOT}/server/test/test_datasets/pbmc3k.cxg"
         config = app_config(data_locator)

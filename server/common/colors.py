@@ -217,7 +217,7 @@ def convert_anndata_category_colors_to_cxg_category_colors(data):
             continue
 
         # check to see if we actually have observations for that category
-        category_name = uns_key[:-len(color_key_suffix)]
+        category_name = uns_key[: -len(color_key_suffix)]
         if category_name not in data.obs.keys():
             continue
 
