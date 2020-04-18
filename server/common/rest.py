@@ -1,10 +1,13 @@
-import sys
-from http import HTTPStatus
 import copy
 import logging
+import sys
+from http import HTTPStatus
+
 from flask import make_response, jsonify, current_app, abort
 from werkzeug.urls import url_unquote
+
 from server.common.constants import Axis, DiffExpMode, JSON_NaN_to_num_warning_msg
+from server.common.colors import ColorFormatException
 from server.common.errors import (
     FilterError,
     JSONEncodingValueError,
@@ -225,7 +228,7 @@ def data_var_get(request, data_adaptor):
 def colors_get(data_adaptor):
     try:
         return make_response(jsonify(data_adaptor.get_colors()), HTTPStatus.OK)
-    except Exception as e:
+    except ColorFormatException as e:
         return abort_and_log(HTTPStatus.NOT_FOUND, str(e), include_exc_info=True)
 
 
