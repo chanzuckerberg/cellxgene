@@ -208,6 +208,7 @@ class DataVarAPI(Resource):
 
 
 class ColorsAPI(Resource):
+    @cache_control(public=True, max_age=ONE_WEEK)
     @rest_get_data_adaptor
     def get(self, data_adaptor):
         return common_rest.colors_get(data_adaptor)

@@ -1,5 +1,7 @@
 import re
 
+from server.common.errors import ColorFormatException
+
 HEX_COLOR_FORMAT = re.compile("^#[a-fA-F0-9]{6,6}$")
 
 # https://www.w3.org/TR/css-color-4/#named-colors
@@ -155,12 +157,6 @@ CSS4_NAMED_COLORS = dict(
 )
 
 
-class ColorFormatException(Exception):
-    """Raised when color helper functions encounter an unknown color format"""
-
-    pass
-
-
 def convert_color_to_hex_format(unknown):
     """
     Try to convert color info to a hex triplet string https://en.wikipedia.org/wiki/Web_colors#Hex_triplet.
@@ -174,7 +170,7 @@ def convert_color_to_hex_format(unknown):
     :param unknown: color info of unknown format
     :return: a hex triplet representing that color
     """
-    if type(unknown) in (list, tuple):
+    if type(unknown) in (list, tuple) and len(unknown) == 3:
         if all(0.0 <= ele <= 1.0 for ele in unknown):
             tup = tuple(int(ele * 255) for ele in unknown)
         elif all(0 <= ele <= 255 and isinstance(ele, int) for ele in unknown):
@@ -182,8 +178,8 @@ def convert_color_to_hex_format(unknown):
         else:
             raise ColorFormatException("Unknown color format!")
         return "#%02x%02x%02x" % tup
-    elif isinstance(unknown, str) and unknown in CSS4_NAMED_COLORS:
-        return CSS4_NAMED_COLORS[unknown]
+    elif isinstance(unknown, str) and unknown.lower() in CSS4_NAMED_COLORS:
+        return CSS4_NAMED_COLORS[unknown.lower()]
     elif isinstance(unknown, str) and HEX_COLOR_FORMAT.match(unknown):
         return unknown.lower()
     else:

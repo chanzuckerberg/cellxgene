@@ -71,7 +71,8 @@ import numpy as np
 from os.path import splitext, basename
 import json
 
-from server.common.colors import convert_anndata_category_colors_to_cxg_category_colors, ColorFormatException
+from server.common.colors import convert_anndata_category_colors_to_cxg_category_colors
+from server.common.errors import ColorFormatException
 
 
 # the CXG container version number.  Must be a semver string.

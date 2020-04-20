@@ -7,7 +7,6 @@ from flask import make_response, jsonify, current_app, abort
 from werkzeug.urls import url_unquote
 
 from server.common.constants import Axis, DiffExpMode, JSON_NaN_to_num_warning_msg
-from server.common.colors import ColorFormatException
 from server.common.errors import (
     FilterError,
     JSONEncodingValueError,
@@ -15,6 +14,7 @@ from server.common.errors import (
     DisabledFeatureError,
     ExceedsLimitError,
     DatasetAccessError,
+    ColorFormatException
 )
 
 import json
