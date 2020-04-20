@@ -170,20 +170,23 @@ def convert_color_to_hex_format(unknown):
     :param unknown: color info of unknown format
     :return: a hex triplet representing that color
     """
-    if type(unknown) in (list, tuple) and len(unknown) == 3:
-        if all(0.0 <= ele <= 1.0 for ele in unknown):
-            tup = tuple(int(ele * 255) for ele in unknown)
-        elif all(0 <= ele <= 255 and isinstance(ele, int) for ele in unknown):
-            tup = tuple(unknown)
+    try:
+        if type(unknown) in (list, tuple) and len(unknown) == 3:
+            if all(0.0 <= ele <= 1.0 for ele in unknown):
+                tup = tuple(int(ele * 255) for ele in unknown)
+            elif all(0 <= ele <= 255 and isinstance(ele, int) for ele in unknown):
+                tup = tuple(unknown)
+            else:
+                raise ColorFormatException("Unknown color iterable format!")
+            return "#%02x%02x%02x" % tup
+        elif isinstance(unknown, str) and unknown.lower() in CSS4_NAMED_COLORS:
+            return CSS4_NAMED_COLORS[unknown.lower()]
+        elif isinstance(unknown, str) and HEX_COLOR_FORMAT.match(unknown):
+            return unknown.lower()
         else:
-            raise ColorFormatException("Unknown color format!")
-        return "#%02x%02x%02x" % tup
-    elif isinstance(unknown, str) and unknown.lower() in CSS4_NAMED_COLORS:
-        return CSS4_NAMED_COLORS[unknown.lower()]
-    elif isinstance(unknown, str) and HEX_COLOR_FORMAT.match(unknown):
-        return unknown.lower()
-    else:
-        raise ColorFormatException("Unknown color format!")
+            raise ColorFormatException("Unknown color format type!")
+    except Exception as e:
+        raise ColorFormatException(e)
 
 
 def convert_anndata_category_colors_to_cxg_category_colors(data):
@@ -201,6 +204,12 @@ def convert_anndata_category_colors_to_cxg_category_colors(data):
 
     For more on the anndata color data structure, see
     https://github.com/chanzuckerberg/cellxgene/issues/1152#issuecomment-587276178.
+
+    Handling of malformed data:
+    - For any color info in a adata.uns[f"{category}_colors"] color array that convert_color_to_hex_format cannot convert
+      to a hex triplet string, a ColorFormatException is raised
+    - No category_name key group is returned for adata.uns[f"{category}_colors"] keys for which there is no
+      adata.obs[f"{category}"] key
 
     :param data: the anndata file
     :return: cellxgene color data structure as described above
