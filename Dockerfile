@@ -6,6 +6,7 @@ RUN apt install -y make tree git build-essential
 # RUN echo Hello World from $(hostname) > index.html
 # CMD busybox httpd -f -p ${PORT}
 
+ENV ENV=dev
 
 RUN mkdir -p /app/cellxgene
 WORKDIR /app/cellxgene
@@ -19,3 +20,5 @@ RUN tree
 RUN pip install -e .
 
 CMD python server/eb/app.py
+CMD make build-client
+CMD cd server/eb && make build
