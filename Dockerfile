@@ -13,10 +13,6 @@ WORKDIR /app/cellxgene
 
 # TODO(el): copy everything for now... figure out later
 COPY server server
-COPY server/requirements.txt server/requirements.txt
-COPY setup.py setup.py
-COPY README.md README.md
-RUN tree
 RUN pip install -e .
 
 CMD python server/eb/app.py
