@@ -20,5 +20,5 @@ RUN tree
 RUN pip install -e .
 
 CMD python server/eb/app.py
-CMD make build-client
-CMD cd server/eb && make build
+# CMD make build-client
+# CMD cd server/eb && make build
