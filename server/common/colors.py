@@ -206,8 +206,8 @@ def convert_anndata_category_colors_to_cxg_category_colors(data):
     https://github.com/chanzuckerberg/cellxgene/issues/1152#issuecomment-587276178.
 
     Handling of malformed data:
-    - For any color info in a adata.uns[f"{category}_colors"] color array that convert_color_to_hex_format cannot convert
-      to a hex triplet string, a ColorFormatException is raised
+    - For any color info in a adata.uns[f"{category}_colors"] color array that convert_color_to_hex_format cannot
+      convert to a hex triplet string, a ColorFormatException is raised
     - No category_name key group is returned for adata.uns[f"{category}_colors"] keys for which there is no
       adata.obs[f"{category}"] key
 

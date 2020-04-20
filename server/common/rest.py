@@ -14,7 +14,7 @@ from server.common.errors import (
     DisabledFeatureError,
     ExceedsLimitError,
     DatasetAccessError,
-    ColorFormatException
+    ColorFormatException,
 )
 
 import json

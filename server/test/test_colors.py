@@ -24,15 +24,17 @@ class ColorsTest(unittest.TestCase):
                 convert_color_to_hex_format(bad_input)
 
     def test_anndata_colors_to_cxg_colors(self):
-        get_h5ad = lambda: anndata.read_h5ad(f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad")
         # test standard behavior
-        adata = get_h5ad()
+        adata = self._get_h5ad()
         self.assertEqual(convert_anndata_category_colors_to_cxg_category_colors(adata), pbmc3k_colors)
         # test that invalid color formats raise an exception
-        adata.uns['louvain_colors'][0] = "#NOTCOOL"
+        adata.uns["louvain_colors"][0] = "#NOTCOOL"
         with self.assertRaises(ColorFormatException):
             convert_anndata_category_colors_to_cxg_category_colors(adata)
         # test that colors without a matching obs category are skipped
-        adata = get_h5ad()
-        del adata.obs['louvain']
+        adata = self._get_h5ad()
+        del adata.obs["louvain"]
         self.assertEqual(convert_anndata_category_colors_to_cxg_category_colors(adata), {})
+
+    def _get_h5ad(self):
+        return anndata.read_h5ad(f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad")
