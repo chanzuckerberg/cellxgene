@@ -11,8 +11,9 @@ ENV ENV=dev
 RUN mkdir -p /app/cellxgene
 WORKDIR /app/cellxgene
 
-# TODO(el): copy everything for now... figure out later
 COPY server server
+COPY setup.py README.md ./
+
 RUN pip install -e .
 
 CMD python server/eb/app.py
