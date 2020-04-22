@@ -1,0 +1,7 @@
+{
+  "name": "cellxgene",
+  "version": "0.1.0",
+  "scripts": {
+    "postinstall": "npm build --prefix client"
+  }
+}
