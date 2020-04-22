@@ -113,4 +113,4 @@ Methods used to test the client javascript code
   start the rest api separately with the pbmc3k.h5ad file. Note you can use
   the `JEST_ENV` environment variable to change how JEST runs in the browser.
   The test runs against `localhost:5005` by default. You can use the
-  `CXG_BASE_URL` env variable to test non-localhost deployments of cellxgene.
+  `CXG_URL_BASE` env variable to test non-localhost deployments of cellxgene.
