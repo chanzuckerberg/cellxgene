@@ -11,8 +11,7 @@ let browser, page, utils, cxgActions;
 const data = datasets[DATASET];
 
 beforeAll(async () => {
-  const browserViewport = { width: 1280, height: 960 };
-  [browser, page, utils, cxgActions] = await setupTestBrowser(browserViewport);
+  [browser, page, utils, cxgActions] = await setupTestBrowser();
 });
 
 beforeEach(async () => {
@@ -33,7 +32,6 @@ describe("did launch", () => {
 describe("metadata loads", () => {
   test("categories and values from dataset appear", async () => {
     for (const label in data.categorical) {
-      await utils.waitByID(`category-${label}`);
       const categoryName = await utils.getOneElementInnerText(`[data-testid="category-${label}"]`);
       expect(categoryName).toMatch(label);
       await utils.clickOn(`${label}:category-expand`);
@@ -52,6 +50,7 @@ describe("metadata loads", () => {
       await utils.waitByID(`histogram-${label}`);
     }
   });
+
 });
 
 describe("cell selection", () => {

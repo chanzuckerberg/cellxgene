@@ -3,12 +3,24 @@ import { DEBUG, DEV } from "./config";
 import { puppeteerUtils } from "./puppeteerUtils";
 import { cellxgeneActions } from "./cellxgeneActions";
 
-export async function setupTestBrowser(browserViewport) {
+export async function setupTestBrowser() {
+  const browserViewport = { width: 1280, height: 960 };
   const browserParams = DEV
-    ? { headless: false, slowMo: 5 }
+    ? {
+      headless: false,
+      slowMo: 5,
+      args: [ `--window-size=${browserViewport.width},${browserViewport.height}`]
+    }
     : DEBUG
-      ? { headless: false, slowMo: 100, devtools: true }
-      : {};
+      ? {
+        headless: false,
+        slowMo: 100,
+        devtools: true,
+        args: [ `--window-size=${browserViewport.width + 560},${browserViewport.height}`]
+      }
+      : {
+        args: [ `--window-size=${browserViewport.width},${browserViewport.height}`]
+      };
   const browser = await puppeteer.launch(browserParams);
   const page = await browser.pages().then(pages => pages[0]);
   await page.setViewport(browserViewport);
