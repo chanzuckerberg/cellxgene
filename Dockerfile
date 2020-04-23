@@ -1,21 +1,10 @@
-# FROM busybox
-FROM python:3.6
+FROM ubuntu:bionic
 
-RUN apt update -y && apt upgrade -y
-RUN apt install -y make tree git build-essential
-# RUN echo Hello World from $(hostname) > index.html
-# CMD busybox httpd -f -p ${PORT}
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
 
-ENV ENV=dev
+RUN apt-get update && \
+    apt-get install -y build-essential libxml2-dev python3-dev python3-pip zlib1g-dev python3-requests && \
+    pip3 install cellxgene
 
-RUN mkdir -p /app/cellxgene
-WORKDIR /app/cellxgene
-
-COPY server server
-COPY setup.py README.md ./
-
-RUN pip install -e .
-
-CMD python server/eb/app.py
-# CMD make build-client
-# CMD cd server/eb && make build
+ENTRYPOINT ["cellxgene"]

@@ -1,4 +1,5 @@
 bin
+client
 dist
 docs
-build
+server
