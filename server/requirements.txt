@@ -19,4 +19,4 @@ scipy>=1.3.0
 requests>=2.22.0
 tiledb>=0.5.3
 s3fs>=0.4.2
-gunicorn
+gunicorn>=20.0.4
