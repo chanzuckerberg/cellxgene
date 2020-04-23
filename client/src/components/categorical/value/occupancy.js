@@ -6,7 +6,7 @@ import {
   Popover,
   PopoverInteractionKind,
   Position,
-  Classes
+  Classes,
 } from "@blueprintjs/core";
 
 @connect()
@@ -21,13 +21,7 @@ class Occupancy extends React.PureComponent {
       createHistogram fetches the continous data in relation to the cells releveant to the catagory value.
       It then seperates that data into 50 bins for drawing the mini-histogram
     */
-    const {
-      world,
-      metadataField,
-      colorAccessor,
-      category,
-      categoryIndex
-    } = this.props;
+    const { world, metadataField, colorAccessor, categoryValue } = this.props;
 
     if (!this.canvas) return;
 
@@ -45,7 +39,7 @@ class Occupancy extends React.PureComponent {
       groupBy
     ); /* Because the signature changes we really need different names for histogram to differentiate signatures  */
 
-    const categoryValue = category.categoryValues[categoryIndex];
+    // const categoryValue = category.categoryValues[categoryIndex];
     const bins = histogramMap.has(categoryValue)
       ? histogramMap.get(categoryValue)
       : new Array(50).fill(0);
@@ -88,11 +82,10 @@ class Occupancy extends React.PureComponent {
       world,
       metadataField,
       colorAccessor,
-      category,
-      categoryIndex,
-      schema,
-      colorScale
+      categoryValue,
+      colorScale,
     } = this.props;
+    const { schema } = world;
 
     const ctx = this.canvas?.getContext("2d");
 
@@ -103,7 +96,7 @@ class Occupancy extends React.PureComponent {
       .col(colorAccessor)
       .histogramCategorical(groupBy);
 
-    const occupancy = occupancyMap.get(category.categoryValues[categoryIndex]);
+    const occupancy = occupancyMap.get(categoryValue);
 
     if (occupancy && occupancy.size > 0) {
       // not all categories have occupancy, so occupancy may be undefined.
@@ -137,18 +130,10 @@ class Occupancy extends React.PureComponent {
   };
 
   render() {
-    const {
-      colorAccessor,
-      categoricalSelection,
-      category,
-      categoryIndex
-    } = this.props;
-
+    const { colorAccessor, categoryValue, colorByIsCategorical } = this.props;
     const { canvas } = this;
     if (canvas)
       canvas.getContext("2d").clearRect(0, 0, this._WIDTH, this._HEIGHT);
-
-    const colorByIsCatagoricalData = !!categoricalSelection[colorAccessor];
 
     return (
       <Popover
@@ -158,11 +143,11 @@ class Occupancy extends React.PureComponent {
         position={Position.LEFT}
         modifiers={{
           preventOverflow: { enabled: false },
-          hide: { enabled: false }
+          hide: { enabled: false },
         }}
         lazy
         usePortal
-        disabled={colorByIsCatagoricalData}
+        disabled={colorByIsCategorical}
         popoverClassName={Classes.POPOVER_CONTENT_SIZING}
       >
         <canvas
@@ -171,15 +156,15 @@ class Occupancy extends React.PureComponent {
             marginRight: 5,
             width: this._WIDTH,
             height: this._HEIGHT,
-            borderBottom: colorByIsCatagoricalData
+            borderBottom: colorByIsCategorical
               ? ""
-              : "solid rgb(230, 230, 230) 0.25px"
+              : "solid rgb(230, 230, 230) 0.25px",
           }}
           width={this._WIDTH}
           height={this._HEIGHT}
-          ref={ref => {
+          ref={(ref) => {
             this.canvas = ref;
-            if (colorByIsCatagoricalData) this.createOccupancyStack();
+            if (colorByIsCategorical) this.createOccupancyStack();
             else this.createHistogram();
           }}
         />
@@ -187,7 +172,7 @@ class Occupancy extends React.PureComponent {
           <p style={{ margin: "0" }}>
             This histograms shows the distribution of{" "}
             <strong>{colorAccessor}</strong> within{" "}
-            <strong>{category.categoryValues[categoryIndex]}</strong>.
+            <strong>{categoryValue}</strong>.
             <br />
             <br />
             The x axis is the same for each histogram, while the y axis is

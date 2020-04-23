@@ -9,8 +9,7 @@ let browser, page, utils, actions;
 const data = datasets[DATASET];
 
 beforeAll(async () => {
-  const browserViewport = {width: 1280, height: 960};
-  [browser, page, utils, actions] = await setupTestBrowser(browserViewport);
+  [browser, page, utils, actions] = await setupTestBrowser();
 });
 
 afterAll(() => {

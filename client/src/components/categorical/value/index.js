@@ -17,6 +17,7 @@ import AnnoDialog from "../annoDialog";
 import LabelInput from "../labelInput";
 
 import { AnnotationsHelpers } from "../../../util/stateManager";
+import maybeTruncateString from "../../../util/maybeTruncateString";
 import { labelPrompt, isLabelErroneous } from "../labelUtil";
 
 /* this is defined outside of the class so we can use it in connect() */
@@ -291,6 +292,7 @@ class CategoryValue extends React.Component {
       // our lint doesn't like jsx spread, we are version pinned to prevent api change on their part
       flippedProps,
       isDilated,
+      world,
     } = this.props;
     const ontologyEnabled = ontology?.enabled ?? false;
 
@@ -312,29 +314,12 @@ class CategoryValue extends React.Component {
       categories = schema.annotations.obsByName[colorAccessor]?.categories;
     }
 
-    let truncatedString = null;
-
-    if (
-      colorAccessor &&
-      !isColorBy &&
-      displayString.length > globals.categoryLabelDisplayStringShortLength
-    ) {
-      truncatedString = `${displayString.slice(
-        0,
-        globals.categoryLabelDisplayStringShortLength / 2
-      )}…${displayString.slice(
-        -globals.categoryLabelDisplayStringShortLength / 2
-      )}`;
-    } else if (
-      displayString.length > globals.categoryLabelDisplayStringLongLength
-    ) {
-      truncatedString = `${displayString.slice(
-        0,
-        globals.categoryLabelDisplayStringLongLength / 2
-      )}…${displayString.slice(
-        -globals.categoryLabelDisplayStringLongLength / 2
-      )}`;
-    }
+    const truncatedString = maybeTruncateString(
+      displayString,
+      colorAccessor && !isColorBy
+        ? globals.categoryLabelDisplayStringShortLength
+        : globals.categoryLabelDisplayStringLongLength
+    );
 
     const editModeActive =
       isUserAnno &&
@@ -464,8 +449,12 @@ class CategoryValue extends React.Component {
           <span style={{ flexShrink: 0 }}>
             {colorAccessor && !isColorBy && !annotations.isEditingLabelName ? (
               <Occupancy
-                category={category}
-                {...this.props} // eslint-disable-line react/jsx-props-no-spreading
+                categoryValue={value}
+                colorAccessor={colorAccessor}
+                metadataField={metadataField}
+                world={world}
+                colorScale={colorScale}
+                colorByIsCategorical={!!categoricalSelection[colorAccessor]}
               />
             ) : null}
           </span>
