@@ -30,3 +30,4 @@ define copy_client_assets
 	cp -r $(1)/static $(2)/common/web/
 	cp $(1)/csp-hashes.json $(2)/common/web/
 endef
+
