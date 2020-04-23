@@ -1,9 +1,47 @@
 #!/usr/bin/env bash
 set -e
 
+print_help() {
+    echo -e "backend_dev: start up cellxgene for front-end development"
+    echo -e "params:"
+    echo -e "  -d, --dataset\t\tDataset to be used in cellxgene launch"
+    echo -e "  -l, --launch-options\tOptions to be used with cellxgene launch"
+    echo -e "  -s, --skip-install-deps\tSkip installing client/server dependencies"
+}
+
+ADDITIONAL_ARGS=()
+
+while [[ $# -gt 0 ]]
+do
+    case "$1" in
+        -d|--dataset)
+        export DATASET="$2"
+        shift 2
+        ;;
+        -l|--launch-options)
+        export CXG_OPTIONS="$2"
+        shift 2
+        ;;
+        -h|--help)
+          print_help
+          exit 0
+        ;;
+        *)
+        ADDITIONAL_ARGS+=("$1")
+        shift
+        ;;
+    esac
+done
+
+
+if [[ ! -z ${DATASET+x} && (! -f "$DATASET" && ! -d "$DATASET") ]]; then
+  echo "${DATASET} does not exist!"
+  exit 1
+fi
+
 PROJECT_ROOT=$(git rev-parse --show-toplevel)
 
-${PROJECT_ROOT}/scripts/dev_setup
+${PROJECT_ROOT}/scripts/dev_setup $ADDITIONAL_ARGS
 
 source ${PROJECT_ROOT}/venv/bin/activate
 

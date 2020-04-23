@@ -1,6 +1,32 @@
 #!/usr/bin/env bash
 set -e
 
+print_help() {
+    echo -e "dev_setup: install cellxgene from source in the repo for development"
+    echo -e "params:"
+    echo -e "  -s, --skip-install-deps\tSkip installing client/server dependencies"
+}
+
+ADDITIONAL_ARGS=()
+
+while [[ $# -gt 0 ]]
+do
+    case "$1" in
+        -s|--skip-install-deps)
+        export SKIP_INSTALL=1
+        shift
+        ;;
+        -h|--help)
+          print_help
+          exit 0
+        ;;
+        *)
+        ADDITIONAL_ARGS+=("$1")
+        shift
+        ;;
+    esac
+done
+
 PROJECT_ROOT=$(git rev-parse --show-toplevel)
 
 cd ${PROJECT_ROOT}
@@ -9,4 +35,5 @@ virtualenv -p python3 venv
 
 source venv/bin/activate
 
-make uninstall dev-env-server build-for-server-dev install-dev
+[[ "$SKIP_INSTALL" -eq "1" ]] || make install-deps
+make uninstall build-for-server-dev install-dev

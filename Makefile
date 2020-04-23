@@ -24,7 +24,7 @@ clean-%:
 
 .PHONY: build-client
 build-client:
-	cd client && $(MAKE) ci build
+	cd client && $(MAKE) build
 
 .PHONY: build
 build: clean build-client
@@ -101,12 +101,12 @@ pydist: build
 
 # create new version to commit to master
 .PHONY: release-stage-1
-release-stage-1: dev-env bump clean-lite gen-package-lock
+release-stage-1: install-deps bump clean-lite gen-package-lock
 	@echo "Version bumped part:$(PART) and client built. Ready to commit and push"
 
 # build dist and release to dev pypi
 .PHONY: release-stage-2
-release-stage-2: dev-env pydist twine
+release-stage-2: install-deps pydist twine
 	@echo "Dist built and uploaded to test.pypi.org"
 	@echo "Test the install:"
 	@echo "    make install-release-test"
@@ -120,20 +120,20 @@ release-stage-final: twine-prod
 # DANGER: releases directly to prod
 # use this if you accidently burned a test release version number,
 .PHONY: release-directly-to-prod
-release-directly-to-prod: dev-env pydist twine-prod
+release-directly-to-prod: install-deps pydist twine-prod
 	@echo "Dist built and uploaded to pypi.org"
 	@echo "Test the install:"
 	@echo "    make install-release"
 
-.PHONY: dev-env
-dev-env: dev-env-client dev-env-server
+.PHONY: install-deps
+install-deps: install-deps-client install-deps-server
 
-.PHONY: dev-env-client
-dev-env-client:
+.PHONY: install-deps-client
+install-deps-client:
 	cd client && $(MAKE) ci
 
-.PHONY: dev-env-server
-dev-env-server:
+.PHONY: install-deps-server
+install-deps-server:
 	pip install -r server/requirements-dev.txt
 
 # give PART=[major, minor, part] as param to make bump
