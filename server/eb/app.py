@@ -61,11 +61,14 @@ class WSGIServer(Server):
             "img-src": ["'self'", "data:"],
             "object-src": "'none'",
             "base-uri": "'none'",
+            "upgrade-insecure-requests": "",
+            "frame-ancestors": "'none'",
+            "require-trusted-types-for": "'script'",
         }
         if len(style_hashes) > 0:
             csp["style-src"] = style_hashes
 
-        Talisman(app, force_https=app_config.server__force_https, content_security_policy=csp)
+        Talisman(app, force_https=app_config.server__force_https, frame_options='DENY', content_security_policy=csp)
 
     @staticmethod
     def load_csp_hashes(app):
