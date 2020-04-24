@@ -1,9 +1,16 @@
 import React from "react";
 import { connect } from "react-redux";
+import {
+  Drawer,
+  Button,
+  Classes,
+  Position,
+  Colors,
+  Icon,
+} from "@blueprintjs/core";
 import * as globals from "../../globals";
-import { termsOfServiceToast } from "../framework/toasters";
 
-const TosDismissedKey = "cxg.tosDismissed";
+const CookieDecision = "cxg.cookieDecision";
 
 function storageGet(key, defaultValue = null) {
   try {
@@ -23,53 +30,106 @@ function storageSet(key, value) {
   }
 }
 
-@connect(state => ({
-  tosURL: state.config?.parameters?.about_legal_tos
+@connect((state) => ({
+  tosURL: state.config?.parameters?.about_legal_tos,
+  privacyURL: state.config?.parameters?.about_legal_privacy,
 }))
 class TermsPrompt extends React.PureComponent {
   constructor(props) {
     super(props);
+    const cookieDecision = storageGet(CookieDecision, null);
+    const hasDecided = cookieDecision !== null;
     this.state = {
-      hasDismissed: storageGet(TosDismissedKey, false)
+      hasDecided,
+      cookieDecision,
+      isOpen: !hasDecided,
     };
   }
 
   componentDidMount() {
-    const { hasDismissed } = this.state;
-    const { tosURL } = this.props;
-    if (!hasDismissed && tosURL) {
-      this.popTermsToast();
+    const { hasDecided } = this.state;
+    const { tosURL, privacyURL } = this.props;
+    if (!hasDecided && tosURL && privacyURL) {
+      this.openConsentDrawer();
     }
   }
 
-  onTermsToastDismissed = () => {
-    this.setState({ hasDismissed: "yes" });
-    storageSet(TosDismissedKey, "yes");
-  };
-
-  popTermsToast() {
-    const { tosURL } = this.props;
-    termsOfServiceToast(
-      <span>
-        By using our site, you are agreeing to our{" "}
-        <a
-          style={{
-            fontWeight: 700,
-            color: "white",
-            textDecoration: "underline"
-          }}
-          href={tosURL}
-          target="_blank"
-        >
-          Terms of Service
-        </a>
-      </span>,
-      this.onTermsToastDismissed
-    );
+  openConsentDrawer() {
+    this.setState({ isOpen: true });
   }
 
+  closeConsentDrawer() {
+    this.setState({ isOpen: false });
+  }
+
+  handleOK = () => {
+    this.setState({ isOpen: false });
+    storageSet(CookieDecision, "yes");
+  };
+
+  handleNo = () => {
+    this.setState({ isOpen: false });
+    storageSet(CookieDecision, "no");
+  };
+
   render() {
-    return null;
+    const { tosURL, privacyURL } = this.props;
+    const { isOpen } = this.state;
+    return (
+      <Drawer
+        onclose={this.drawerClose}
+        isOpen={isOpen}
+        size={"120px"}
+        position={Position.BOTTOM}
+        canOutsideClickClose={false}
+        hasBackdrop={false}
+        enforceFocus={false}
+        autoFocus={false}
+        portal={false}
+      >
+        <div
+          className={Classes.DRAWER_BODY}
+          style={{ backgroundColor: Colors.LIGHT_GRAY1 }}
+        >
+          <div className={Classes.DIALOG_BODY}>
+            <span>
+              <Icon icon="info-sign" intent="primary" /> By using this site, you
+              are agreeing to our{" "}
+              <a
+                style={{
+                  fontWeight: 700,
+                  textDecoration: "underline",
+                }}
+                href={tosURL}
+                target="_blank"
+              >
+                terms of service
+              </a>
+              . We use cookies to help us improve the site and to inform our
+              future efforts, and we also use necessary cookies to make our site
+              work. To learn more, read our{" "}
+              <a
+                style={{
+                  fontWeight: 700,
+                  textDecoration: "underline",
+                }}
+                href={privacyURL}
+                target="_blank"
+              >
+                privacy policy
+              </a>
+              .
+            </span>
+          </div>
+          <div className={Classes.DIALOG_FOOTER} style={{ textAlign: "left" }}>
+            <Button intent="primary" onClick={this.handleOK}>
+              I'm OK with cookies!
+            </Button>{" "}
+            <Button onClick={this.handleNo}>No thanks</Button>
+          </div>
+        </div>
+      </Drawer>
+    );
   }
 }
 
