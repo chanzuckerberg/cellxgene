@@ -16,6 +16,10 @@ import actions from "../../actions";
 import { histogramContinuous } from "../../util/dataframe/histogram";
 import { makeContinuousDimensionName } from "../../util/nameCreators";
 
+function clamp(val, rng) {
+  return Math.max(Math.min(val, rng[1]), rng[0]);
+}
+
 @connect((state, ownProps) => {
   const { isObs, isUserDefined, isDiffExp, field } = ownProps;
   const myName = makeContinuousDimensionName(
@@ -139,24 +143,25 @@ class HistogramBrush extends React.PureComponent {
       if (!range && selection) {
         /* no active selection - clear brush */
         brushXselection.call(brushX.move, null);
-      } else if (range && !selection) {
-        /* there is an active selection, but no brush - set the brush */
-        const x0 = x(range[0]);
-        const x1 = x(range[1]);
-        brushXselection.call(brushX.move, [x0, x1]);
-      } else if (range && selection) {
-        /* there is an active selection and a brush - make sure they match */
-        const moveDeltaThreshold = 1;
-        const x0 = x(range[0]);
-        const x1 = x(range[1]);
-        const dX0 = Math.abs(x0 - selection[0]);
-        const dX1 = Math.abs(x1 - selection[1]);
-        /*
-        only update the brush if it is grossly incorrect,
-        as defined by the moveDeltaThreshold
-        */
-        if (dX0 > moveDeltaThreshold || dX1 > moveDeltaThreshold) {
+      } else if (range) {
+        const { min, max } = dfColumn.summarize();
+        const x0 = x(clamp(range[0], [min, max]));
+        const x1 = x(clamp(range[1], [min, max]));
+        if (!selection) {
+          /* there is an active selection, but no brush - set the brush */
           brushXselection.call(brushX.move, [x0, x1]);
+        } else {
+          /* there is an active selection and a brush - make sure they match */
+          const moveDeltaThreshold = 1;
+          const dX0 = Math.abs(x0 - selection[0]);
+          const dX1 = Math.abs(x1 - selection[1]);
+          /*
+          only update the brush if it is grossly incorrect,
+          as defined by the moveDeltaThreshold
+          */
+          if (dX0 > moveDeltaThreshold || dX1 > moveDeltaThreshold) {
+            brushXselection.call(brushX.move, [x0, x1]);
+          }
         }
       }
     }
