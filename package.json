@@ -1,6 +1,5 @@
 {
   "name": "cellxgene",
-  "version": "0.1.0",
   "scripts": {
     "postinstall": "npm install --prefix client && npm run build --prefix client && make copy-client-assets"
   }
