@@ -132,7 +132,7 @@ class ContinuousLegend extends React.Component {
           display: colorAccessor ? "inherit" : "none",
           position: "absolute",
           left: 8,
-          bottom: 5,
+          top: 35,
           zIndex: 1,
         }}
       />
