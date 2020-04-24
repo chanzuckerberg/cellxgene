@@ -43,7 +43,7 @@ jobs:
         sed -i 's/-r requirements.txt//' server/requirements-dev.txt
         pip install -r server/requirements-dev.txt
         # 2. install cellxgene
-        make pydist install-dist
+        make install-deps pydist install-dist
         # 3. install anndata
         pip install anndata==${{ matrix.anndata-version }}
         # workaround for anndata 0.6.22.post1 bug
@@ -76,7 +76,7 @@ jobs:
         run: |
           cd cellxgene
           # 1. only install the dev requirements on top of what is in the cellxgene pip package
-          make dev-env-client
+          make install-deps-client
           sed -i 's/-r requirements.txt//' server/requirements-dev.txt
           pip install -r server/requirements-dev.txt
           # 2. install cellxgene
@@ -111,7 +111,7 @@ jobs:
         run: |
           cd cellxgene
           sed -i -E 's/^anndata[>=]=[0-9]+.[0-9]+.[0-9]+$/anndata/g' server/requirements.txt
-          make pydist install-dist dev-env
+          make install-deps pydist install-dist
           cd ../anndata
           pip install -e .
       - name: Tests

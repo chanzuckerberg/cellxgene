@@ -92,7 +92,7 @@ lint-diff-client:
 # CREATING DISTRIBUTION RELEASE
 
 .PHONY: pydist
-pydist: build
+pydist: install-deps-client build
 	cd $(BUILDDIR); python setup.py sdist -d ../dist
 	@echo "done"
 
