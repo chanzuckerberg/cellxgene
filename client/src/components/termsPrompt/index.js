@@ -125,7 +125,9 @@ class TermsPrompt extends React.PureComponent {
         size={"120px"}
         position={Position.BOTTOM}
         canOutsideClickClose={false}
-        hasBackdrop={false}
+        hasBackdrop={
+          true /* if the user can't use the app or click outside to dismiss, that should be visually represented with a backdrop */
+        }
         enforceFocus={false}
         autoFocus={false}
         portal={false}
