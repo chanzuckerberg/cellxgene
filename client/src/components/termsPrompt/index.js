@@ -72,6 +72,49 @@ class TermsPrompt extends React.PureComponent {
     storageSet(CookieDecision, "no");
   };
 
+  renderTos() {
+    const { tosURL } = this.props;
+    if (!tosURL) return null;
+    return (
+      <span>
+        <Icon icon="info-sign" intent="primary" /> By using this site, you are
+        agreeing to our{" "}
+        <a
+          style={{
+            fontWeight: 700,
+            textDecoration: "underline",
+          }}
+          href={tosURL}
+          target="_blank"
+        >
+          terms of service
+        </a>
+        .{" "}
+      </span>
+    );
+  }
+
+  renderPrivacy() {
+    const { privacyURL } = this.props;
+    if (!privacyURL) return null;
+    return (
+      <span>
+        To learn more, read our{" "}
+        <a
+          style={{
+            fontWeight: 700,
+            textDecoration: "underline",
+          }}
+          href={privacyURL}
+          target="_blank"
+        >
+          privacy policy
+        </a>
+        .&nbsp;
+      </span>
+    );
+  }
+
   render() {
     const { tosURL, privacyURL } = this.props;
     const { isOpen } = this.state;
@@ -92,34 +135,15 @@ class TermsPrompt extends React.PureComponent {
           style={{ backgroundColor: Colors.LIGHT_GRAY1 }}
         >
           <div className={Classes.DIALOG_BODY}>
-            <span>
-              <Icon icon="info-sign" intent="primary" /> By using this site, you
-              are agreeing to our{" "}
-              <a
-                style={{
-                  fontWeight: 700,
-                  textDecoration: "underline",
-                }}
-                href={tosURL}
-                target="_blank"
-              >
-                terms of service
-              </a>
-              . We use cookies to help us improve the site and to inform our
-              future efforts, and we also use necessary cookies to make our site
-              work. To learn more, read our{" "}
-              <a
-                style={{
-                  fontWeight: 700,
-                  textDecoration: "underline",
-                }}
-                href={privacyURL}
-                target="_blank"
-              >
-                privacy policy
-              </a>
-              .
-            </span>
+            <div>
+              {this.renderTos()}
+              <span>
+                We use cookies to help us improve the site and to inform our
+                future efforts, and we also use necessary cookies to make our
+                site work.&nbsp;
+              </span>
+              {this.renderPrivacy()}
+            </div>
           </div>
           <div className={Classes.DIALOG_FOOTER} style={{ textAlign: "left" }}>
             <Button intent="primary" onClick={this.handleOK}>
