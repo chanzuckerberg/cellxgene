@@ -49,7 +49,7 @@ class TermsPrompt extends React.PureComponent {
   componentDidMount() {
     const { hasDecided } = this.state;
     const { tosURL, privacyURL } = this.props;
-    if (!hasDecided && tosURL && privacyURL) {
+    if (!hasDecided && (tosURL || privacyURL)) {
       this.openConsentDrawer();
     }
   }
