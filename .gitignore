@@ -41,6 +41,7 @@ npm-debug.log
 __pycache__
 *.DS_Store*
 data
+config.yaml
 
 # Jekyll
 docs/_site/
