@@ -37,34 +37,31 @@ function storageSet(key, value) {
 class TermsPrompt extends React.PureComponent {
   constructor(props) {
     super(props);
+    const { tosURL, privacyURL } = this.props;
     const cookieDecision = storageGet(CookieDecision, null);
     const hasDecided = cookieDecision !== null;
     this.state = {
       hasDecided,
-      cookieDecision,
+      isEnabled: tosURL || privacyURL,
       isOpen: !hasDecided,
     };
   }
 
   componentDidMount() {
-    const { hasDecided } = this.state;
-    const { tosURL, privacyURL } = this.props;
-    if (!hasDecided && (tosURL || privacyURL)) {
-      this.openConsentDrawer();
+    const { hasDecided, isEnabled } = this.state;
+    if (isEnabled && !hasDecided) {
+      this.setState({ isOpen: true });
     }
-  }
-
-  openConsentDrawer() {
-    this.setState({ isOpen: true });
-  }
-
-  closeConsentDrawer() {
-    this.setState({ isOpen: false });
   }
 
   handleOK = () => {
     this.setState({ isOpen: false });
     storageSet(CookieDecision, "yes");
+    if (window.cookieDecisionCallback instanceof Function) {
+      try {
+        window.cookieDecisionCallback();
+      } catch (e) {}
+    }
   };
 
   handleNo = () => {
@@ -116,8 +113,8 @@ class TermsPrompt extends React.PureComponent {
   }
 
   render() {
-    const { tosURL, privacyURL } = this.props;
-    const { isOpen } = this.state;
+    const { isOpen, isEnabled } = this.state;
+    if (!isEnabled && !isOpen) return null;
     return (
       <Drawer
         onclose={this.drawerClose}

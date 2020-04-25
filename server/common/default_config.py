@@ -9,6 +9,7 @@ server:
   host: "127.0.0.1"
   port : null
   scripts : []
+  inline_scripts: []
   open_browser: false
   about_legal_tos: null
   about_legal_privacy: null

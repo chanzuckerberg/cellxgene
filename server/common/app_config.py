@@ -50,6 +50,7 @@ class AppConfig(object):
             self.server__host = dc["server"]["host"]
             self.server__port = dc["server"]["port"]
             self.server__scripts = dc["server"]["scripts"]
+            self.server__inline_scripts = dc["server"]["inline_scripts"]
             self.server__open_browser = dc["server"]["open_browser"]
             self.server__about_legal_tos = dc["server"]["about_legal_tos"]
             self.server__about_legal_privacy = dc["server"]["about_legal_privacy"]
@@ -230,6 +231,7 @@ class AppConfig(object):
         self.__check_attr("server__host", str)
         self.__check_attr("server__port", (type(None), int))
         self.__check_attr("server__scripts", (list, tuple))
+        self.__check_attr("server__inline_scripts", (list, tuple))
         self.__check_attr("server__open_browser", bool)
         self.__check_attr("server__force_https", bool)
         self.__check_attr("server__flask_secret_key", (type(None), str))
