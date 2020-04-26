@@ -15,7 +15,7 @@ with a link to embed on your own site, please drop us a note at <mailto:cellxgen
   <thead style="width: 100%">
     <tr>
       <th>cellxgene link</th>
-      <th>Source</th>
+      <th>More Information</th>
     </tr>
   </thead>
   <tbody style="width: 100%">
@@ -122,6 +122,14 @@ with a link to embed on your own site, please drop us a note at <mailto:cellxgen
       <td>
         <a href="https://www.gutcellatlas.org/">www.gutcellatlas.org</a>,
         <a href="https://www.covid19cellatlas.org/">covid19cellatlas.org</a>
+      </td>
+    </tr>
+    <tr>
+      <td><a href="https://cellxgene.cziscience.com/d/Single_cell_atlas_of_peripheral_immune_response_to_SARS_CoV_2_infection-25.cxg/" target="_blank">A single-cell atlas of the peripheral immune response to severe COVID-19
+</a></td>
+      <td>
+        <a href="https://blishlab.sites.stanford.edu/">Blish Lab</a>,
+        <a href="https://www.medrxiv.org/content/10.1101/2020.04.17.20069930v1">medRxiv preprint</a>
       </td>
     </tr>
 
