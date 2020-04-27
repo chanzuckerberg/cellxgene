@@ -68,7 +68,7 @@ class WSGIServer(Server):
         if len(style_hashes) > 0:
             csp["style-src"] = style_hashes
 
-        Talisman(app, force_https=app_config.server__force_https, frame_options='DENY', content_security_policy=csp)
+        Talisman(app, force_https=app_config.server__force_https, frame_options="DENY", content_security_policy=csp)
 
     @staticmethod
     def load_csp_hashes(app):

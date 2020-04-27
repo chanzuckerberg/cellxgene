@@ -10,10 +10,11 @@ from parameterized import parameterized_class
 import numpy as np
 import pandas as pd
 
-from server.data_anndata.anndata_adaptor import AnndataAdaptor
-from server.common.errors import FilterError
 from server.common.data_locator import DataLocator
-from server.common.app_config import AppConfig
+from server.common.errors import FilterError
+from server.data_anndata.anndata_adaptor import AnndataAdaptor
+from server.test import PROJECT_ROOT, app_config
+from server.test.test_datasets.fixtures import pbmc3k_colors
 
 """
 Test the anndata adaptor using the pbmc3k data set.
@@ -23,30 +24,17 @@ Test the anndata adaptor using the pbmc3k data set.
 @parameterized_class(
     ("data_locator", "backed"),
     [
-        ("../example-dataset/pbmc3k.h5ad", False),
-        ("test/test_datasets/pbmc3k-CSC-gz.h5ad", False),
-        ("test/test_datasets/pbmc3k-CSR-gz.h5ad", False),
-        ("../example-dataset/pbmc3k.h5ad", True),
-        ("test/test_datasets/pbmc3k-CSC-gz.h5ad", True),
-        ("test/test_datasets/pbmc3k-CSR-gz.h5ad", True),
+        (f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad", False),
+        (f"{PROJECT_ROOT}/server/test/test_datasets/pbmc3k-CSC-gz.h5ad", False),
+        (f"{PROJECT_ROOT}/server/test/test_datasets/pbmc3k-CSR-gz.h5ad", False),
+        (f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad", True),
+        (f"{PROJECT_ROOT}/server/test/test_datasets/pbmc3k-CSC-gz.h5ad", True),
+        (f"{PROJECT_ROOT}/server/test/test_datasets/pbmc3k-CSR-gz.h5ad", True),
     ],
 )
 class AdaptorTest(unittest.TestCase):
     def setUp(self):
-        args = {
-            "embeddings__names": ["umap", "tsne", "pca"],
-            "presentation__max_categories": 100,
-            "single_dataset__obs_names": None,
-            "single_dataset__var_names": None,
-            "diffexp__lfc_cutoff": 0.01,
-            "adaptor__anndata_adaptor__backed": self.backed,
-            "single_dataset__datapath": self.data_locator,
-            "limits__diffexp_cellcount_max": None,
-            "limits__column_request_max": None,
-        }
-        config = AppConfig()
-        config.update(**args)
-        config.complete_config()
+        config = app_config(self.data_locator, self.backed)
         self.data = AnndataAdaptor(DataLocator(self.data_locator), config)
 
     def test_init(self):
@@ -91,6 +79,9 @@ class AdaptorTest(unittest.TestCase):
     def test_obs_and_var_names(self):
         self.assertEqual(np.sum(self.data.data.var[self.data.get_schema()["annotations"]["var"]["index"]].isna()), 0)
         self.assertEqual(np.sum(self.data.data.obs[self.data.get_schema()["annotations"]["obs"]["index"]].isna()), 0)
+
+    def test_get_colors(self):
+        self.assertEqual(self.data.get_colors(), pbmc3k_colors)
 
     def test_get_schema(self):
         with open(path.join(path.dirname(__file__), "schema.json")) as fh:

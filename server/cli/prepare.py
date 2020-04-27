@@ -73,7 +73,8 @@ def prepare(
     (h5ad, loom, or a 10x directory), runs dimensionality reduction,
     computes nearest neighbors, computes an embedding, performs clustering,
     and saves the results. Includes additional options for naming annotations,
-    ensuring sparsity, and plotting results."""
+    ensuring sparsity, and plotting results.
+    """
 
     # collect slow imports here to make CLI startup more responsive
     click.echo("[cellxgene] Starting CLI...")

@@ -205,7 +205,7 @@ class Category extends React.Component {
       return (
         <div style={{ marginBottom: 10, marginTop: 4 }}>
           <span style={{ fontWeight: 700 }}>
-            {truncatedString ? truncatedString : metadataField}
+            {truncatedString || metadataField}
           </span>
           : {schema.annotations.obsByName[metadataField].categories[0]}
         </div>

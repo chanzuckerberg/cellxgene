@@ -9,12 +9,13 @@ import {
 } from "../util/actionHelpers";
 import { PromiseLimit } from "../util/promiseLimit";
 import { requestReembed, reembedResetWorldToUniverse } from "./reembed";
+import { loadUserColorConfig } from "../util/stateManager/colorHelpers";
 
 /*
 return promise to fetch the OBS annotations we need to load.  Omit anything
 we don't need.
 */
-function obsAnnotationFetchAndLoad(dispatch, schema) {
+async function obsAnnotationFetchAndLoad(dispatch, schema) {
   const obsAnnotations = schema?.schema?.annotations?.obs ?? {};
   const index = obsAnnotations.index ?? false;
   const columns = (obsAnnotations.columns ?? []).filter(
@@ -23,21 +24,18 @@ function obsAnnotationFetchAndLoad(dispatch, schema) {
 
   const plimit = new PromiseLimit(5);
   return Promise.all(
-    columns.map((col) =>
-      plimit.add(() => {
-        const path = `annotations/obs?annotation-name=${encodeURIComponent(
-          col.name
-        )}`;
-        const url = `${globals.API.prefix}${globals.API.version}${path}`;
-        return doBinaryRequest(url).then((buffer) => {
-          const df = Universe.matrixFBSToDataframe(buffer);
-          dispatch({
-            type: "universe: column load success",
-            dim: "obsAnnotations",
-            dataframe: df,
-          });
-        });
-      })
+    columns.map(col =>
+      plimit.add(() =>
+        fetchBinary(`annotations/obs?annotation-name=${encodeURIComponent(col.name)}`)
+          .then(buffer => Universe.matrixFBSToDataframe(buffer))
+          .then(df =>
+            dispatch({
+              type: "universe: column load success",
+              dim: "obsAnnotations",
+              dataframe: df
+            })
+          )
+      )
     )
   );
 }
@@ -45,31 +43,22 @@ function obsAnnotationFetchAndLoad(dispatch, schema) {
 /*
 return promise fetching VAR annotations we need to load.  Only index is currently used.
 */
-function varAnnotationFetchAndLoad(dispatch, schema) {
+async function varAnnotationFetchAndLoad(dispatch, schema) {
   const varAnnotations = schema?.schema?.annotations?.var ?? {};
   const index = varAnnotations.index ?? false;
   const names = index ? [index] : [];
   return Promise.all(
-    names
-      .map((name) => {
-        const path = `annotations/var?annotation-name=${encodeURIComponent(
-          name
-        )}`;
-        const url = `${globals.API.prefix}${globals.API.version}${path}`;
-        return doBinaryRequest(url);
-      })
-      .map((rqst) =>
-        rqst.then((buffer) => Universe.matrixFBSToDataframe(buffer))
-      )
-      .map((resp) =>
-        resp.then((df) =>
+    names.map(name =>
+      fetchBinary(`annotations/var?annotation-name=${encodeURIComponent(name)}`)
+        .then(buffer => Universe.matrixFBSToDataframe(buffer))
+        .then(df =>
           dispatch({
             type: "universe: column load success",
             dim: "varAnnotations",
-            dataframe: df,
+            dataframe: df
           })
         )
-      )
+    )
   );
 }
 
@@ -79,26 +68,35 @@ return promise fetching layout we need
 function layoutFetchAndLoad(dispatch, schema) {
   const embeddings = schema?.schema?.layout?.obs ?? [];
   const embNames = embeddings.map((e) => e.name);
-  const baseURL = `${globals.API.prefix}${globals.API.version}layout/obs`;
 
   const plimit = new PromiseLimit(5);
   return Promise.all(
-    embNames.map((e) =>
-      plimit.add(() => {
-        const url = `${baseURL}?layout-name=${encodeURIComponent(e)}`;
-        return doBinaryRequest(url).then((buffer) =>
-          Universe.matrixFBSToDataframe(buffer)
-        );
-      })
+    embNames.map(e =>
+      plimit.add(() =>
+        fetchBinary(`layout/obs?layout-name=${encodeURIComponent(e)}`)
+          .then(buffer => Universe.matrixFBSToDataframe(buffer))
+      )
     )
-  ).then((dfs) => {
-    const df = Dataframe.Dataframe.empty().withColsFromAll(dfs);
+  ).then(dfs =>
     dispatch({
       type: "universe: column load success",
       dim: "obsLayout",
-      dataframe: df,
-    });
-  });
+      dataframe: Dataframe.Dataframe.empty().withColsFromAll(dfs)
+    })
+  );
+}
+
+/*
+return promise fetching user-configured colors
+*/
+async function userColorsFetchAndLoad(dispatch) {
+  return fetchJson("colors")
+    .then(response =>
+      dispatch({
+        type: "universe: user color load success",
+        userColors: loadUserColorConfig(response)
+      })
+    );
 }
 
 /*
@@ -116,13 +114,10 @@ const doInitialDataLoad = () =>
       /*
       Step 1 - config & schema, all JSON
       */
-      const requestJson = ["config", "schema"]
-        .map((r) => `${globals.API.prefix}${globals.API.version}${r}`)
-        .map((url) => doJsonRequest(url));
-      const stepOneResults = await Promise.all(requestJson);
+      const requestJson = ["config", "schema"].map(fetchJson);
+      const [responseConfig, schema] = await Promise.all(requestJson);
       /* set config defaults */
-      const config = { ...globals.configDefaults, ...stepOneResults[0].config };
-      const schema = stepOneResults[1];
+      const config = { ...globals.configDefaults, ...responseConfig.config };
       const universe = Universe.createUniverseFromResponse(config, schema);
       dispatch({
         type: "universe exists, but loading is still in progress",
@@ -137,6 +132,7 @@ const doInitialDataLoad = () =>
       Step 2 - load the minimum stuff required to display.
       */
       await Promise.all([
+        userColorsFetchAndLoad(dispatch),
         layoutFetchAndLoad(dispatch, schema),
         varAnnotationFetchAndLoad(dispatch, schema),
       ]);
@@ -169,13 +165,6 @@ const setWorldToSelection = () => (dispatch, getState) => {
   });
 };
 
-// Throws
-const dispatchExpressionErrors = (dispatch, res) => {
-  const msg = `Unexpected HTTP response while fetching expression data ${res.status}, ${res.statusText}`;
-  dispatchNetworkErrorMessageToUser(msg);
-  throw new Error(msg);
-};
-
 /* double URI encode - needed for query-param filters */
 function dubEncURIComponent(s) {
   return encodeURIComponent(encodeURIComponent(s));
@@ -196,16 +185,11 @@ async function _doRequestExpressionData(dispatch, getState, genes) {
   /* helper for this function only */
   const fetchData = async (geneNames) => {
     const query = geneNames
-      .map(
-        (g) =>
-          `var:${dubEncURIComponent(varIndexName)}=${dubEncURIComponent(g)}`
-      )
+      .map(g => `var:${dubEncURIComponent(varIndexName)}=${dubEncURIComponent(g)}`)
       .join("&");
-    const url = `${globals.API.prefix}${globals.API.version}data/var?${query}`;
-    return doBinaryRequest(url).then((buffer) =>
-      // TODO: why convert to an Object and not a Dataframe?
-      Universe.convertDataFBStoObject(universe, buffer)
-    );
+    // TODO: why convert to an Object and not a Dataframe?
+    return fetchBinary(`data/var?${query}`)
+      .then(buffer => Universe.convertDataFBStoObject(universe, buffer));
   };
 
   /* preload data already in cache */
@@ -367,7 +351,7 @@ const requestDifferentialExpression = (set1, set2, num_genes = 10) => async (
     */
     const plimit = new PromiseLimit(5);
     await Promise.all(
-      topNGenes.map((gene) =>
+      topNGenes.map(gene =>
         plimit.add(() => _doRequestExpressionData(dispatch, getState, [gene]))
       )
     );
@@ -446,6 +430,14 @@ const saveObsAnnotations = () => async (dispatch, getState) => {
     });
   }
 };
+
+function fetchJson(pathAndQuery) {
+  return doJsonRequest(`${globals.API.prefix}${globals.API.version}${pathAndQuery}`);
+}
+
+function fetchBinary(pathAndQuery) {
+  return doBinaryRequest(`${globals.API.prefix}${globals.API.version}${pathAndQuery}`);
+}
 
 export default {
   doInitialDataLoad,
