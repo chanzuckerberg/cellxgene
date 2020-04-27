@@ -19,6 +19,7 @@ server:
 
 presentation:
   max_categories: 1000
+  user_colors: true
 
 multi_dataset:
   dataroot: null

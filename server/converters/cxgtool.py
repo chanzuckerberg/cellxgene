@@ -95,7 +95,10 @@ def main():
         "--backed", action="store_true", help="loaded in file backed mode. Will be slower, but use less memory."
     )
     parser.add_argument(
-        "--colors", action="store_true", default=False, help="Extract scanpy-compatible category colors from h5ad file."
+        "--disable-user-colors",
+        action="store_true",
+        default=False,
+        help="Do not extract scanpy-compatible category colors from h5ad file."
     )
     parser.add_argument(
         "--obs-names", help="Name of annotation to use for observations. If not specified, will use the obs index."
@@ -131,7 +134,7 @@ def main():
         var_names=args.var_names,
         obs_names=args.obs_names,
         about=args.about,
-        extract_colors=args.colors,
+        extract_colors=not args.disable_user_colors,
     )
 
     log(1, "done")
@@ -162,7 +165,22 @@ def write_cxg(adata, container, title, var_names=None, obs_names=None, about=Non
     log(1, f"\t...group created, with name {container}")
 
     # dataset metadata
-    save_metadata(container, {"title": title, "about": about}, adata, extract_colors)
+    metadata_dict = dict(
+        cxg_version=CXG_VERSION,
+        cxg_properties=json.dumps({"title": title, "about": about}),
+    )
+    if extract_colors:
+        try:
+            metadata_dict["cxg_category_colors"] = json.dumps(
+                convert_anndata_category_colors_to_cxg_category_colors(adata)
+            )
+        except ColorFormatException:
+            log(
+                0,
+                "Warning: failed to extract colors from h5ad file! "
+                "Fix the h5ad file or rerun with --disable-user-colors. See help for details.",
+            )
+    save_metadata(container, metadata_dict)
     log(1, "\t...dataset metadata saved")
 
     # var/gene dataframe
@@ -425,7 +443,7 @@ def save_X(container, adata, ctx):
     tiledb.consolidate(X_name, ctx=ctx)
 
 
-def save_metadata(container, metadata, adata, extract_colors):
+def save_metadata(container, metadata_dict):
     """
     Save all dataset-wide metadata.   This includes:
     * CXG version
@@ -440,20 +458,8 @@ def save_metadata(container, metadata, adata, extract_colors):
     with tiledb.from_numpy(a_name, np.zeros((1,))) as A:
         pass
     with tiledb.DenseArray(a_name, mode="w") as A:
-        A.meta["cxg_version"] = CXG_VERSION
-        A.meta["cxg_properties"] = json.dumps(metadata)
-        if extract_colors:
-            try:
-                A.meta["cxg_category_colors"] = json.dumps(
-                    convert_anndata_category_colors_to_cxg_category_colors(adata)
-                )
-            except (KeyError, ColorFormatException):
-                log(
-                    0,
-                    "Warning: failed to extract colors from h5ad file! "
-                    "Fix the h5ad file or rerun with --ignore-colors. See help for details.",
-                )
-
+        for k, v in metadata_dict.items():
+            A.meta[k] = v
 
 def sanitize_keys(keys):
     """
