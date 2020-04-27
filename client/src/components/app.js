@@ -94,7 +94,8 @@ class App extends React.Component {
             position: "relative",
             top: 0,
             left: 0,
-            minWidth: 1240,
+            minHeight: "inherit",
+            minWidth: "1240px",
           }}
         >
           <LeftSideBar
