@@ -10,7 +10,11 @@
     "transcriptomics",
     "dataviz"
   ],
-  "stack": "container",
+  "buildpacks": [
+    "heroku/nodejs",
+    "heroku/python"
+  ],
+  "stack": "heroku-18",
   "env": {
     "DATASET": {
       "description": "Link to dataset",
