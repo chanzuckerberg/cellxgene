@@ -98,7 +98,7 @@ def main():
         "--disable-user-colors",
         action="store_true",
         default=False,
-        help="Do not extract scanpy-compatible category colors from h5ad file."
+        help="Do not extract scanpy-compatible category colors from h5ad file.",
     )
     parser.add_argument(
         "--obs-names", help="Name of annotation to use for observations. If not specified, will use the obs index."
@@ -165,10 +165,7 @@ def write_cxg(adata, container, title, var_names=None, obs_names=None, about=Non
     log(1, f"\t...group created, with name {container}")
 
     # dataset metadata
-    metadata_dict = dict(
-        cxg_version=CXG_VERSION,
-        cxg_properties=json.dumps({"title": title, "about": about}),
-    )
+    metadata_dict = dict(cxg_version=CXG_VERSION, cxg_properties=json.dumps({"title": title, "about": about}))
     if extract_colors:
         try:
             metadata_dict["cxg_category_colors"] = json.dumps(
@@ -460,6 +457,7 @@ def save_metadata(container, metadata_dict):
     with tiledb.DenseArray(a_name, mode="w") as A:
         for k, v in metadata_dict.items():
             A.meta[k] = v
+
 
 def sanitize_keys(keys):
     """

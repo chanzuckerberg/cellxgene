@@ -13,7 +13,6 @@ from server.test.test_datasets.fixtures import pbmc3k_colors
 
 
 class TestCxgAdaptor(unittest.TestCase):
-
     def setUp(self) -> None:
         self.fixtures = []
 
