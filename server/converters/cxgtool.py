@@ -95,7 +95,7 @@ def main():
         "--backed", action="store_true", help="loaded in file backed mode. Will be slower, but use less memory."
     )
     parser.add_argument(
-        "--disable-user-colors",
+        "--disable-custom-colors",
         action="store_true",
         default=False,
         help="Do not extract scanpy-compatible category colors from h5ad file.",
@@ -134,7 +134,7 @@ def main():
         var_names=args.var_names,
         obs_names=args.obs_names,
         about=args.about,
-        extract_colors=not args.disable_user_colors,
+        extract_colors=not args.disable_custom_colors,
     )
 
     log(1, "done")
@@ -175,7 +175,7 @@ def write_cxg(adata, container, title, var_names=None, obs_names=None, about=Non
             log(
                 0,
                 "Warning: failed to extract colors from h5ad file! "
-                "Fix the h5ad file or rerun with --disable-user-colors. See help for details.",
+                "Fix the h5ad file or rerun with --disable-custom-colors. See help for details.",
             )
     save_metadata(container, metadata_dict)
     log(1, "\t...dataset metadata saved")

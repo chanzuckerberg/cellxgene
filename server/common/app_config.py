@@ -78,7 +78,7 @@ class AppConfig(object):
             self.user_annotations__ontology__obo_location = dc["user_annotations"]["ontology"]["obo_location"]
 
             self.presentation__max_categories = dc["presentation"]["max_categories"]
-            self.presentation__user_colors = dc["presentation"]["user_colors"]
+            self.presentation__custom_colors = dc["presentation"]["custom_colors"]
 
             self.embeddings__names = dc["embeddings"]["names"]
             self.embeddings__enable_reembedding = dc["embeddings"]["enable_reembedding"]
@@ -276,7 +276,7 @@ class AppConfig(object):
 
     def handle_presentation(self, context):
         self.__check_attr("presentation__max_categories", int)
-        self.__check_attr("presentation__user_colors", bool)
+        self.__check_attr("presentation__custom_colors", bool)
 
     def handle_single_dataset(self, context):
         self.__check_attr("single_dataset__datapath", (str, type(None)))
@@ -519,7 +519,7 @@ class AppConfig(object):
             "annotations_cell_ontology_enabled": False,
             "annotations_cell_ontology_obopath": None,
             "annotations_cell_ontology_terms": None,
-            "user_colors": self.presentation__user_colors,
+            "custom_colors": self.presentation__custom_colors,
             "diffexp-may-be-slow": False,
             "about_legal_tos": self.server__about_legal_tos,
             "about_legal_privacy": self.server__about_legal_privacy,

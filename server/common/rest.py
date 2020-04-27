@@ -226,7 +226,7 @@ def data_var_get(request, data_adaptor):
 
 
 def colors_get(data_adaptor):
-    if not data_adaptor.config.presentation__user_colors:
+    if not data_adaptor.config.presentation__custom_colors:
         return make_response(jsonify({}), HTTPStatus.OK)
     try:
         return make_response(jsonify(data_adaptor.get_colors()), HTTPStatus.OK)

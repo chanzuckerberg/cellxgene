@@ -74,7 +74,7 @@ def config_args(func):
         help="Will not display categories with more distinct values than specified.",
     )
     @click.option(
-        "--disable-user-colors",
+        "--disable-custom-colors",
         is_flag=True,
         default=False,
         show_default=False,
@@ -318,7 +318,7 @@ def launch(
     obs_names,
     var_names,
     max_category_items,
-    disable_user_colors,
+    disable_custom_colors,
     diffexp_lfc_cutoff,
     title,
     scripts,
@@ -389,7 +389,7 @@ def launch(
             user_annotations__ontology__enable=experimental_annotations_ontology,
             user_annotations__ontology__obo_location=experimental_annotations_ontology_obo,
             presentation__max_categories=max_category_items,
-            presentation__user_colors=not disable_user_colors,
+            presentation__custom_colors=not disable_custom_colors,
             embeddings__names=embedding,
             embeddings__enable_reembedding=experimental_enable_reembedding,
             diffexp__enable=not disable_diffexp,
