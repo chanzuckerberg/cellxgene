@@ -2,10 +2,13 @@
 
 import sys
 import os
+import hashlib
+import base64
 from flask import json
 import logging
 from flask_talisman import Talisman
 import boto3
+
 
 if os.path.isdir("/opt/python/log"):
     # This is the standard location where Amazon EC2 instances store the application logs.
@@ -54,24 +57,32 @@ class WSGIServer(Server):
 
     @staticmethod
     def _before_adding_routes(app, app_config):
-        script_hashes, style_hashes = WSGIServer.load_csp_hashes(app)
+        script_hashes, style_hashes = WSGIServer.get_csp_hashes(app, app_config)
         csp = {
-            "default-src": "'self'",
+            "default-src": ["'self'"],
             "script-src": ["'unsafe-eval'", "'unsafe-inline'"] + script_hashes,
             "img-src": ["'self'", "data:"],
-            "object-src": "'none'",
-            "base-uri": "'none'",
-            "upgrade-insecure-requests": "",
-            "frame-ancestors": "'none'",
-            "require-trusted-types-for": "'script'",
+            "object-src": ["'none'"],
+            "base-uri": ["'none'"],
+            "upgrade-insecure-requests": [""],
+            "frame-ancestors": ["'none'"],
+            "require-trusted-types-for": ["'script'"],
         }
         if len(style_hashes) > 0:
             csp["style-src"] = style_hashes
+        if app_config.server__inline_scripts:
+            csp["script-src"].append("'strict-dynamic'")
+
+        if app_config.server__csp_directives:
+            for k, v in app_config.server__csp_directives.items():
+                if not isinstance(v, list):
+                    v = [v]
+                csp[k] = csp.get(k, []) + v
 
         Talisman(app, force_https=app_config.server__force_https, frame_options="DENY", content_security_policy=csp)
 
     @staticmethod
-    def load_csp_hashes(app):
+    def load_static_csp_hashes(app):
         csp_hashes = None
         try:
             with app.open_resource("../common/web/csp-hashes.json") as f:
@@ -86,6 +97,26 @@ class WSGIServer(Server):
         if len(script_hashes) == 0 or len(style_hashes) == 0:
             logging.error("Content security policy hashes are missing, falling back to unsafe-inline policy")
 
+        return (script_hashes, style_hashes)
+
+    @staticmethod
+    def compute_inline_scp_hashes(app, app_config):
+        inline_scripts = app_config.server__inline_scripts
+        hashes = []
+        for script in inline_scripts:
+            with app.open_resource(f"../common/web/templates/{script}") as f:
+                content = f.read()
+                # we use jinja2 template include, which trims final newline if present.
+                if content[-1] == 0x0A:
+                    content = content[0:-1]
+                hash = base64.b64encode(hashlib.sha256(content).digest())
+                hashes.append(f"'sha256-{hash.decode('utf-8')}'")
+        return hashes
+
+    @staticmethod
+    def get_csp_hashes(app, app_config):
+        script_hashes, style_hashes = WSGIServer.load_static_csp_hashes(app)
+        script_hashes += WSGIServer.compute_inline_scp_hashes(app, app_config)
         return (script_hashes, style_hashes)
 
 
