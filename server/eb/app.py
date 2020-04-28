@@ -11,7 +11,7 @@ if os.path.isdir("/opt/python/log"):
     # This is the standard location where Amazon EC2 instances store the application logs.
     logging.basicConfig(
         filename="/opt/python/log/app.log",
-        level=logging.DEBUG,
+        level=logging.INFO,
         format="%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
     )
