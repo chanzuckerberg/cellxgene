@@ -69,7 +69,7 @@ There are many more options to these commands that may be important or necessary
    To use this feature, do the following:
 
    * In this directory, create a sub directory called "static".  
-   * Copy the files you want to server into this directory
+   * Copy the files you want to serve into this directory
    * modify your configuration file to set the location to these file:  /static/deploy/<filename>
 
    Example:  you want to include an "about_legal_tos" and "about_legal_privacy" page to cellxgene.
@@ -87,14 +87,35 @@ There are many more options to these commands that may be important or necessary
    ```
    
    The next step will place these files into the deployment.
+
+5. Add additional script files to include in HTML page
+
+Additional scripts can be added using the server/scripts or server/inline_scripts config parameters.
+To include these scripts in the deployment, use the following steps:
+
+   * In this directory, create a sub directory called "scripts".  
+   * Copy the script files into this directory
+   * modify your configuration file to set the location to these file:
+        - for server/scripts, the path is:  /templates/<filename>
+        - for server/inline_scripts, the path is: <filename>
+
+   For example, to add an inline script called "myscript.js":
    
-5. Create the artifact.zip file for the application
+   ```
+   $ mkdir scripts
+   $ cp <source_dir>/myscript.js scripts/myscript.js
+   # edit the config.yaml
+   $ grep inline_scripts config.yaml
+     inline_scripts : [ myscript.js ]
+   ```
+   
+6. Create the artifact.zip file for the application
 
    ```
    $ make build
    ```
     
-6. Flask secret key
+7. Flask secret key
 
    The application requires as secret key to be provided to flask, the web framework used by cellxgene.
    There are three ways to provide the secret key:
@@ -109,7 +130,7 @@ There are many more options to these commands that may be important or necessary
    then the AWS Secret Manager region name can be specified in an environment variable:  CXG_AWS_SECRET_REGION_NAME.
    
    
-7. Create an environment
+8. Create an environment
 
     ```
     # name of the environment
@@ -128,18 +149,18 @@ There are many more options to these commands that may be important or necessary
        --envvars CXG_DATAROOT=$CXG_DATAROOT,CXG_CONFIG_FILE=$CXG_CONFIG_FILE
     ```
 
-8. Give the elastic beanstalk environment access to the S3 bucket.
+9. Give the elastic beanstalk environment access to the S3 bucket.
 
     This link may provide some useful information:
     https://aws.amazon.com/premiumsupport/knowledge-center/elastic-beanstalk-s3-bucket-instance/
     
-9. Deploy the application
+10. Deploy the application
 
     ```
     $ eb deploy $EB_ENV 
     ```
    
-10. Open the application in a browser
+11. Open the application in a browser
 
    ```
    $ eb open $EB_ENV
