@@ -206,6 +206,14 @@ def server_args(func):
         "no additional script files will be included.",
         show_default=False,
     )
+    @click.option(
+        "--error-aggregation",
+        "-e",
+        default=DEFAULT_CONFIG.server__error_aggregation,
+        metavar="<text>",
+        help="Sentry.io DSN for enabling error aggregation.",
+        hidden=True,
+    )
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         return func(*args, **kwargs)
@@ -333,6 +341,7 @@ def launch(
     experimental_enable_reembedding,
     config_file,
     dump_default_config,
+    error_aggregation,
 ):
     """Launch the cellxgene data viewer.
     This web app lets you explore single-cell expression data.
@@ -377,6 +386,7 @@ def launch(
             server__port=port,
             server__scripts=scripts,
             server__open_browser=open_browser,
+            server__error_aggregation=error_aggregation,
             single_dataset__datapath=datapath,
             single_dataset__title=title,
             single_dataset__about=about,
