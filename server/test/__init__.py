@@ -1,6 +1,6 @@
 import shutil
 import tempfile
-from os import path
+from os import path, popen
 
 import pandas as pd
 
@@ -11,11 +11,14 @@ from server.data_common.fbs.matrix import encode_matrix_fbs
 from server.data_common.matrix_loader import MatrixDataLoader, MatrixDataType
 
 
+PROJECT_ROOT = popen("git rev-parse --show-toplevel").read().strip()
+
+
 def data_with_tmp_annotations(ext: MatrixDataType, annotations_fixture=False):
     tmp_dir = tempfile.mkdtemp()
     annotations_file = path.join(tmp_dir, "test_annotations.csv")
     if annotations_fixture:
-        shutil.copyfile(f"test/test_datasets/pbmc3k-annotations.csv", annotations_file)
+        shutil.copyfile(f"{PROJECT_ROOT}/server/test/test_datasets/pbmc3k-annotations.csv", annotations_file)
     args = {
         "embeddings__names": ["umap"],
         "presentation__max_categories": 100,
@@ -24,7 +27,7 @@ def data_with_tmp_annotations(ext: MatrixDataType, annotations_fixture=False):
         "diffexp__lfc_cutoff": 0.01,
     }
     fname = {
-        MatrixDataType.H5AD: "../example-dataset/pbmc3k.h5ad",
+        MatrixDataType.H5AD: f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad",
         MatrixDataType.CXG: "test/test_datasets/pbmc3k.cxg",
     }[ext]
     data_locator = DataLocator(fname)
@@ -53,3 +56,21 @@ def skip_if(condition, reason: str):
         return wraps
 
     return decorator
+
+
+def app_config(data_locator, backed=False):
+    args = {
+        "embeddings__names": ["umap", "tsne", "pca"],
+        "presentation__max_categories": 100,
+        "single_dataset__obs_names": None,
+        "single_dataset__var_names": None,
+        "diffexp__lfc_cutoff": 0.01,
+        "adaptor__anndata_adaptor__backed": backed,
+        "single_dataset__datapath": data_locator,
+        "limits__diffexp_cellcount_max": None,
+        "limits__column_request_max": None,
+    }
+    config = AppConfig()
+    config.update(**args)
+    config.complete_config()
+    return config

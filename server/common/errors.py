@@ -84,3 +84,9 @@ class ComputeError(Exception):
     """
 
     pass
+
+
+class ColorFormatException(Exception):
+    """Raised when color helper functions encounter an unknown color format"""
+
+    pass

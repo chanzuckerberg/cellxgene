@@ -1,9 +1,11 @@
-import sys
-from http import HTTPStatus
 import copy
 import logging
+import sys
+from http import HTTPStatus
+
 from flask import make_response, jsonify, current_app, abort
 from werkzeug.urls import url_unquote
+
 from server.common.constants import Axis, DiffExpMode, JSON_NaN_to_num_warning_msg
 from server.common.errors import (
     FilterError,
@@ -12,6 +14,7 @@ from server.common.errors import (
     DisabledFeatureError,
     ExceedsLimitError,
     DatasetAccessError,
+    ColorFormatException,
 )
 
 import json
@@ -220,6 +223,15 @@ def data_var_get(request, data_adaptor):
         )
     except (FilterError, ValueError, ExceedsLimitError) as e:
         return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)
+
+
+def colors_get(data_adaptor):
+    if not data_adaptor.config.presentation__custom_colors:
+        return make_response(jsonify({}), HTTPStatus.OK)
+    try:
+        return make_response(jsonify(data_adaptor.get_colors()), HTTPStatus.OK)
+    except ColorFormatException as e:
+        return abort_and_log(HTTPStatus.NOT_FOUND, str(e), include_exc_info=True)
 
 
 def diffexp_obs_post(request, data_adaptor):

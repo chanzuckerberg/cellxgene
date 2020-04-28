@@ -5,21 +5,21 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<!-- Begin Jekyll SEO tag v2.5.0 -->
+<!-- Begin Jekyll SEO tag v2.6.1 -->
 <title>prepare | cellxgene</title>
 <meta name="generator" content="Jekyll v3.8.5" />
 <meta property="og:title" content="prepare" />
 <meta property="og:locale" content="en_US" />
 <meta name="description" content="Preparing your data" />
 <meta property="og:description" content="Preparing your data" />
-<link rel="canonical" href="http://localhost:4000/cellxgene/posts/prepare.html" />
-<meta property="og:url" content="http://localhost:4000/cellxgene/posts/prepare.html" />
+<link rel="canonical" href="https://chanzuckerberg.github.io/cellxgene/posts/prepare.html" />
+<meta property="og:url" content="https://chanzuckerberg.github.io/cellxgene/posts/prepare.html" />
 <meta property="og:site_name" content="cellxgene" />
 <script type="application/ld+json">
-{"description":"Preparing your data","publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"http://localhost:4000/cellxgene/cellxgene-logo.png"}},"@type":"WebPage","headline":"prepare","url":"http://localhost:4000/cellxgene/posts/prepare.html","@context":"http://schema.org"}</script>
+{"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://chanzuckerberg.github.io/cellxgene/cellxgene-logo.png"}},"description":"Preparing your data","@type":"WebPage","url":"https://chanzuckerberg.github.io/cellxgene/posts/prepare.html","headline":"prepare","@context":"https://schema.org"}</script>
 <!-- End Jekyll SEO tag -->
 
-    <link rel="stylesheet" href="/cellxgene/assets/css/style.css?v=8742f9094e8035364d6f515e78c81cbc1de63669">
+    <link rel="stylesheet" href="/cellxgene/assets/css/style.css?v=b45f000ecb36779dde84b689d463d17a077275d6">
     <!--[if lt IE 9]>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
     <![endif]-->
@@ -102,8 +102,8 @@
 <ul>
   <li>Expression values (raw or normalized) in <code class="language-plaintext highlighter-rouge">anndata.X</code></li>
   <li>At least one embedding (e.g., tSNE, UMAP) in <code class="language-plaintext highlighter-rouge">anndata.obsm</code>, specified with the prefix <code class="language-plaintext highlighter-rouge">X_</code> (e.g., by default scanpy stores UMAP coordinates in <code class="language-plaintext highlighter-rouge">anndata.obsm['X_umap']</code>)</li>
-  <li>A unique identifier for every cell is available in an <code class="language-plaintext highlighter-rouge">anndata.obs</code> field (you can specify this with the <code class="language-plaintext highlighter-rouge">--obs-names</code> option)</li>
-  <li>A unique identifier for every gene is available in an <code class="language-plaintext highlighter-rouge">anndata.var</code> field (you can specify which field to use with the <code class="language-plaintext highlighter-rouge">--var-names</code> option)</li>
+  <li>A unique identifier is required for each cell, which by default will be pulled from the <code class="language-plaintext highlighter-rouge">obs</code> DataFrame index. If the index is not unique or does not contain the cell ID, an alternative column can be specified with <code class="language-plaintext highlighter-rouge">--obs-names</code></li>
+  <li>A unique identifier is required for each gene, which by default will be pulled from the <code class="language-plaintext highlighter-rouge">var</code> DataFrame index. If the index is not unique or does not contain the cell ID, an alternative column can be specified with <code class="language-plaintext highlighter-rouge">--var-names</code></li>
 </ul>
 
 <h4 id="what-about-r-objects-from-seurat--bioconductor">What about R objects from seurat / bioconductor!?</h4>
@@ -111,6 +111,32 @@
 
 <h4 id="can-i-use-data-hosted-on-the-web-somewhere">Can I use data hosted on the web somewhere?</h4>
 <p>Yes! You can launch from a URL instead of a filepath. The same data format requirements apply. Please see <a href="launch">here</a> for more details.</p>
+
+<h1 id="data-format-options">Data format options</h1>
+
+<h4 id="category-colors">Category colors</h4>
+<p><code class="language-plaintext highlighter-rouge">cellxgene</code> will display <a href="https://github.com/chanzuckerberg/cellxgene/issues/1152#issue-564361541">scanpy-style color
+information</a>
+for category-label pairs. An example of this format is shown below:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&gt;&gt;&gt; category = "louvain"
+&gt;&gt;&gt; # colors stored in adata.uns must be matplotlib-compatible color information
+&gt;&gt;&gt; adata.uns[f"{category}_colors"]
+array(['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#bcbd22'], dtype='&lt;U7')
+&gt;&gt;&gt; # there must be a matching category in adata.obs
+&gt;&gt;&gt; category in adata.obs
+True
+</code></pre></div></div>
+
+<p>To test that you’ve done this properly, check that for your given <code class="language-plaintext highlighter-rouge">category</code> the number of colors match the number of category values and that the second command below results in a mapping from categories to colors.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&gt;&gt;&gt; len(adata.obs[category].cat.categories) == len(adata.uns[f"{category}_colors"])
+True
+&gt;&gt;&gt; dict(zip(adata.obs[category].cat.categories, adata.uns[f"{category}_colors"]))
+{'CD4 T cells': '#1f77b4', 'CD14+ Monocytes': '#ff7f0e', 'B cells': '#2ca02c', 'CD8 T cells': '#d62728', 'NK cells': '#9467bd', 'FCGR3A+ Monocytes': '#8c564b', 'Dendritic cells': '#e377c2', 'Megakaryocytes': '#bcbd22'}
+</code></pre></div></div>
+
+<p>You can disable this feature using the <code class="language-plaintext highlighter-rouge">--disable-custom-colors</code> flag for <code class="language-plaintext highlighter-rouge">cellxgene launch</code>. cellxgene will then chose colors from its standard color palettes.</p>
 
 <h1 id="using-cellxgene-prepare">Using <code class="language-plaintext highlighter-rouge">cellxgene prepare</code></h1>
 
@@ -136,7 +162,7 @@
 <p><code class="language-plaintext highlighter-rouge">cellxgene prepare</code> is not meant as a way to formally process or analyze your data. It’s simply a utility for quickly wrangling your data into cellxgene-compatible format and computing a “vanilla” embedding so you can try out <code class="language-plaintext highlighter-rouge">cellxgene</code> and get a general sense of a dataset.</p>
 
 <h2 id="quickstart-for-cellxgene-prepare">Quickstart for <code class="language-plaintext highlighter-rouge">cellxgene prepare</code></h2>
-<p>To add <code class="language-plaintext highlighter-rouge">cellxgene prepare</code> to your <a href="install">cellxgene installation</a>, run<br />
+<p>To add <code class="language-plaintext highlighter-rouge">cellxgene prepare</code> to your <a href="install">cellxgene installation</a>, run
 <code class="language-plaintext highlighter-rouge">pip install cellxgene[prepare]</code></p>
 
 <p>Then run <code class="language-plaintext highlighter-rouge">prepare</code> on your data with:</p>
@@ -162,36 +188,36 @@
 
 <p>Let’s look at what <code class="language-plaintext highlighter-rouge">prepare</code> is doing to our data, and how each step relates to the command above. You can see a walkthrough of what’s going on under the hood for this example in <a href="https://github.com/chanzuckerberg/cellxgene-vignettes/blob/master/dataset-processing/pbmc3k-prepare-example.ipynb">this notebook</a>.</p>
 
-<p><strong>(A) - Compute quality control metrics and store this in our <code class="language-plaintext highlighter-rouge">AnnData</code> object for later inspection</strong> <br />
-<strong>(B) - Normalize the expression matrix using a basic preprocessing recipe</strong> <br />
-<strong>(auto) - Do some preprocessing to run PCA and compute the neighbor graph</strong><br />
-<strong>(auto) - Infer clusters with the Louvain algorithm and store these labels to visualize later</strong><br />
-<strong>(C) - Compute and store UMAP and tSNE embeddings</strong><br />
+<p><strong>(A) - Compute quality control metrics and store this in our <code class="language-plaintext highlighter-rouge">AnnData</code> object for later inspection</strong>
+<strong>(B) - Normalize the expression matrix using a basic preprocessing recipe</strong>
+<strong>(auto) - Do some preprocessing to run PCA and compute the neighbor graph</strong>
+<strong>(auto) - Infer clusters with the Louvain algorithm and store these labels to visualize later</strong>
+<strong>(C) - Compute and store UMAP and tSNE embeddings</strong>
 <strong>(D) - Write results to file</strong></p>
 
 <h2 id="options-for-cellxgene-prepare">Options for cellxgene <code class="language-plaintext highlighter-rouge">prepare</code></h2>
 
 <p><strong>For the most up-to-date and comprehensive list of options, run <code class="language-plaintext highlighter-rouge">cellxgene prepare --help</code></strong></p>
 
-<p><code class="language-plaintext highlighter-rouge">--embedding</code> controls which dimensionality reduction algorithm is applies to your data.<br />
+<p><code class="language-plaintext highlighter-rouge">--embedding</code> controls which dimensionality reduction algorithm is applies to your data.
 Options are <code class="language-plaintext highlighter-rouge">umap</code> and/or <code class="language-plaintext highlighter-rouge">tsne</code>. Defaults to both.</p>
 
 <p><code class="language-plaintext highlighter-rouge">--recipe</code> controls which normalization steps to apply to your data, based on one of the preprocessing <code class="language-plaintext highlighter-rouge">recipes</code> included with <code class="language-plaintext highlighter-rouge">scanpy</code>.
-These recipes include steps like cell filtering and gene selection; see the <code class="language-plaintext highlighter-rouge">scanpy</code> <a href="https://scanpy.readthedocs.io/en/latest/api/index.html#recipes">documentation</a> for more details. <br />
+These recipes include steps like cell filtering and gene selection; see the <code class="language-plaintext highlighter-rouge">scanpy</code> <a href="https://scanpy.readthedocs.io/en/latest/api/index.html#recipes">documentation</a> for more details.
 Options are <code class="language-plaintext highlighter-rouge">none</code>, <code class="language-plaintext highlighter-rouge">seurat</code>, or <code class="language-plaintext highlighter-rouge">zheng17</code>. Defaults to <code class="language-plaintext highlighter-rouge">none</code>.</p>
 
-<p><code class="language-plaintext highlighter-rouge">--sparse</code> is a flag determines whether to enforce a sparse matrix. For large datasets, <code class="language-plaintext highlighter-rouge">prepare</code> can take a long time to run (a few minutes for datasets with 10-100k cells, up to an hour or more for datasets with &gt;100k cells). If you want <code class="language-plaintext highlighter-rouge">prepare</code> to run faster we recommend using the <code class="language-plaintext highlighter-rouge">sparse</code> option.<br />
+<p><code class="language-plaintext highlighter-rouge">--sparse</code> is a flag determines whether to enforce a sparse matrix. For large datasets, <code class="language-plaintext highlighter-rouge">prepare</code> can take a long time to run (a few minutes for datasets with 10-100k cells, up to an hour or more for datasets with &gt;100k cells). If you want <code class="language-plaintext highlighter-rouge">prepare</code> to run faster we recommend using the <code class="language-plaintext highlighter-rouge">sparse</code> option.
 If this flag is not included, default is <code class="language-plaintext highlighter-rouge">False</code></p>
 
 <p><code class="language-plaintext highlighter-rouge">--skip-qc</code> by default, <code class="language-plaintext highlighter-rouge">cellxgene prepare</code> will compute quality control metrics (saved to <code class="language-plaintext highlighter-rouge">anndata.obs</code> and <code class="language-plaintext highlighter-rouge">anndata.var</code>) as described in the <code class="language-plaintext highlighter-rouge">scanpy</code> <a href="https://scanpy.readthedocs.io/en/stable/api/scanpy.pp.calculate_qc_metrics.html">documentation</a>. Pass this flag if you would like to skip this step.</p>
 
-<p><code class="language-plaintext highlighter-rouge">--make-obs-names-unique</code> / <code class="language-plaintext highlighter-rouge">--make-var-names-unique</code> determine whether to rename <code class="language-plaintext highlighter-rouge">obs</code> (cell) / <code class="language-plaintext highlighter-rouge">var</code> (gene) names, respectively, to be unique.<br />
+<p><code class="language-plaintext highlighter-rouge">--make-obs-names-unique</code> / <code class="language-plaintext highlighter-rouge">--make-var-names-unique</code> determine whether to rename <code class="language-plaintext highlighter-rouge">obs</code> (cell) / <code class="language-plaintext highlighter-rouge">var</code> (gene) names, respectively, to be unique.
 Default is <code class="language-plaintext highlighter-rouge">True</code>.</p>
 
-<p><code class="language-plaintext highlighter-rouge">--set-obs-names</code> controls which field in <code class="language-plaintext highlighter-rouge">anndata.obs</code> (cell metadata) is used as the <em>index</em> for cells (e.g., a cell ID column).<br />
+<p><code class="language-plaintext highlighter-rouge">--set-obs-names</code> controls which field in <code class="language-plaintext highlighter-rouge">anndata.obs</code> (cell metadata) is used as the <em>index</em> for cells (e.g., a cell ID column).
 Default is <code class="language-plaintext highlighter-rouge">anndata.obs.names</code></p>
 
-<p><code class="language-plaintext highlighter-rouge">--set-var-names</code> controls which field in <code class="language-plaintext highlighter-rouge">anndata.var</code> (gene metadata) is used as the <em>index</em> for genes.<br />
+<p><code class="language-plaintext highlighter-rouge">--set-var-names</code> controls which field in <code class="language-plaintext highlighter-rouge">anndata.var</code> (gene metadata) is used as the <em>index</em> for genes.
 Default is <code class="language-plaintext highlighter-rouge">anndata.var.names</code></p>
 
 <p><code class="language-plaintext highlighter-rouge">--output</code> and <code class="language-plaintext highlighter-rouge">--overwrite</code> control where the processed data is saved.</p>
