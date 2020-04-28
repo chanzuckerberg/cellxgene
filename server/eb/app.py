@@ -9,6 +9,7 @@ import logging
 from flask_talisman import Talisman
 import boto3
 
+
 if os.path.isdir("/opt/python/log"):
     # This is the standard location where Amazon EC2 instances store the application logs.
     logging.basicConfig(
@@ -58,19 +59,25 @@ class WSGIServer(Server):
     def _before_adding_routes(app, app_config):
         script_hashes, style_hashes = WSGIServer.get_csp_hashes(app, app_config)
         csp = {
-            "default-src": "'self'",
+            "default-src": ["'self'"],
             "script-src": ["'unsafe-eval'", "'unsafe-inline'"] + script_hashes,
             "img-src": ["'self'", "data:"],
-            "object-src": "'none'",
-            "base-uri": "'none'",
-            "upgrade-insecure-requests": "",
-            "frame-ancestors": "'none'",
-            "require-trusted-types-for": "'script'",
+            "object-src": ["'none'"],
+            "base-uri": ["'none'"],
+            "upgrade-insecure-requests": [""],
+            "frame-ancestors": ["'none'"],
+            "require-trusted-types-for": ["'script'"],
         }
         if len(style_hashes) > 0:
             csp["style-src"] = style_hashes
         if app_config.server__inline_scripts:
-            csp['script-src'].append("'strict-dynamic'")
+            csp["script-src"].append("'strict-dynamic'")
+
+        if app_config.server__csp_directives:
+            for k, v in app_config.server__csp_directives.items():
+                if not isinstance(v, list):
+                    v = [v]
+                csp[k] = csp.get(k, []) + v
 
         Talisman(app, force_https=app_config.server__force_https, frame_options="DENY", content_security_policy=csp)
 

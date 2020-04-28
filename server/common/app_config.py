@@ -58,6 +58,7 @@ class AppConfig(object):
             self.server__flask_secret_key = dc["server"]["flask_secret_key"]
             self.server__generate_cache_control_headers = dc["server"]["generate_cache_control_headers"]
             self.server__server_timing_headers = dc["server"]["server_timing_headers"]
+            self.server__csp_directives = dc["server"]["csp_directives"]
 
             self.multi_dataset__dataroot = dc["multi_dataset"]["dataroot"]
             self.multi_dataset__index = dc["multi_dataset"]["index"]
@@ -129,6 +130,12 @@ class AppConfig(object):
         if val is not None:
             mapping["adaptor__cxg_adaptor__tiledb_ctx"] = (("adaptor", "cxg_adaptor", "tiledb_ctx"), val)
             del dc["adaptor"]["cxg_adaptor"]["tiledb_ctx"]
+
+        # special case for csp_directives whose value is a dict.
+        val = config.get("server", {}).get("csp_directives", {})
+        if val is not None:
+            mapping["server__csp_directives"] = (("server", "csp_directives"), val)
+            del dc["server"]["csp_directives"]
 
         flat_config = flatten(dc)
         for key, value in flat_config.items():
@@ -240,6 +247,7 @@ class AppConfig(object):
         self.__check_attr("server__about_legal_tos", (type(None), str))
         self.__check_attr("server__about_legal_privacy", (type(None), str))
         self.__check_attr("server__server_timing_headers", bool)
+        self.__check_attr("server__csp_directives", (type(None), dict))
 
         if self.server__port:
             if not is_port_available(self.server__host, self.server__port):
@@ -263,6 +271,18 @@ class AppConfig(object):
         #   first, from CXG_SECRET_KEY environment variable
         #   second, from config file
         self.server__flask_secret_key = os.environ.get("CXG_SECRET_KEY", self.server__flask_secret_key)
+
+        # CSP Directives are a dict of string: list(string) or string: string
+        if self.server__csp_directives is not None:
+            for k, v in self.server__csp_directives.items():
+                if not isinstance(k, str):
+                    raise ConfigurationError(f"CSP directive names must be a string.")
+                if isinstance(v, list):
+                    for policy in v:
+                        if not isinstance(policy, str):
+                            raise ConfigurationError(f"CSP directive value must be a string or list of strings.")
+                elif not isinstance(v, str):
+                    raise ConfigurationError(f"CSP directive value must be a string or list of strings.")
 
     def handle_data_locator(self, context):
         self.__check_attr("data_locator__s3__region_name", (type(None), bool, str))
