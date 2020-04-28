@@ -42,7 +42,7 @@ class TermsPrompt extends React.PureComponent {
     const hasDecided = cookieDecision !== null;
     this.state = {
       hasDecided,
-      isEnabled: tosURL || privacyURL,
+      isEnabled: !!tosURL || !!privacyURL,
       isOpen: !hasDecided,
     };
   }
@@ -114,7 +114,7 @@ class TermsPrompt extends React.PureComponent {
 
   render() {
     const { isOpen, isEnabled } = this.state;
-    if (!isEnabled && !isOpen) return null;
+    if (!isEnabled || !isOpen) return null;
     return (
       <Drawer
         onclose={this.drawerClose}
