@@ -78,7 +78,14 @@ class WSGIServer(Server):
                     v = [v]
                 csp[k] = csp.get(k, []) + v
 
-        Talisman(app, force_https=app_config.server__force_https, frame_options="DENY", content_security_policy=csp)
+        Talisman(
+            app,
+            force_https=app_config.server__force_https,
+            frame_options="DENY",
+            content_security_policy=csp,
+            content_security_policy_report_only=True,
+            content_security_policy_report_uri="",
+        )
 
     @staticmethod
     def load_static_csp_hashes(app):
