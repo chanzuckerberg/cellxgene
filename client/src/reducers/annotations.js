@@ -25,22 +25,21 @@ const Annotations = (
     isEditingLabelName: false,
     categoryBeingEdited: null,
     categoryAddingNewLabel: null,
-    labelEditable: { category: null, label: null }
+    labelEditable: { category: null, label: null },
   },
   action
 ) => {
   switch (action.type) {
     case "configuration load complete": {
       const dataCollectionName =
-        action.config.parameters?.["annotations-data-collection-name"] ?? null;
+        action.config.parameters?.["annotationsDataCollectionName"] ?? null;
       const dataCollectionNameIsReadOnly =
-        action.config.parameters?.[
-          "annotations-data-collection-name-is-read-only"
-        ] ?? false;
+        action.config.parameters?.["annotationsDataCollectionNameIsReadOnly"] ??
+        false;
       return {
         ...state,
         dataCollectionNameIsReadOnly,
-        dataCollectionName
+        dataCollectionName,
       };
     }
 
@@ -50,7 +49,7 @@ const Annotations = (
       }
       return {
         ...state,
-        dataCollectionName: action.data
+        dataCollectionName: action.data,
       };
     }
 
@@ -59,7 +58,7 @@ const Annotations = (
       return {
         ...state,
         isAddingNewLabel: true,
-        categoryAddingNewLabel: action.data
+        categoryAddingNewLabel: action.data,
       };
     }
 
@@ -67,7 +66,7 @@ const Annotations = (
       return {
         ...state,
         isAddingNewLabel: false,
-        categoryAddingNewLabel: null
+        categoryAddingNewLabel: null,
       };
     }
 
@@ -75,7 +74,7 @@ const Annotations = (
       return {
         ...state,
         isEditingCategoryName: true,
-        categoryBeingEdited: action.data
+        categoryBeingEdited: action.data,
       };
     }
 
@@ -83,7 +82,7 @@ const Annotations = (
       return {
         ...state,
         isEditingCategoryName: false,
-        categoryBeingEdited: null
+        categoryBeingEdited: null,
       };
     }
 
@@ -94,8 +93,8 @@ const Annotations = (
         isEditingLabelName: true,
         labelEditable: {
           category: action.metadataField,
-          label: action.categoryIndex
-        }
+          label: action.categoryIndex,
+        },
       };
     }
 
@@ -103,7 +102,7 @@ const Annotations = (
       return {
         ...state,
         isEditingLabelName: false,
-        labelEditable: { category: null, label: null }
+        labelEditable: { category: null, label: null },
       };
     }
 
