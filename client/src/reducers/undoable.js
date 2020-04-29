@@ -80,7 +80,7 @@ const Undoable = (reducer, undoableKeys, options = {}) => {
     const past = currentState[pastKey];
     const future = currentState[futureKey];
     if (past.length === 0) return currentState;
-    const currentUndoableState = Object.entries(currentState).filter(kv =>
+    const currentUndoableState = Object.entries(currentState).filter((kv) =>
       undoableKeysSet.has(kv[0])
     );
     const newPast = [...past];
@@ -91,7 +91,7 @@ const Undoable = (reducer, undoableKeys, options = {}) => {
       ...fromEntries(newState),
       [pastKey]: newPast,
       [futureKey]: newFuture,
-      [pendingKey]: null
+      [pendingKey]: null,
     };
     return nextState;
   }
@@ -103,7 +103,7 @@ const Undoable = (reducer, undoableKeys, options = {}) => {
     const past = currentState[pastKey] || [];
     const future = currentState[futureKey] || [];
     if (future.length === 0) return currentState;
-    const currentUndoableState = Object.entries(currentState).filter(kv =>
+    const currentUndoableState = Object.entries(currentState).filter((kv) =>
       undoableKeysSet.has(kv[0])
     );
     const newFuture = [...future];
@@ -114,7 +114,7 @@ const Undoable = (reducer, undoableKeys, options = {}) => {
       ...fromEntries(newState),
       [pastKey]: newPast,
       [futureKey]: newFuture,
-      [pendingKey]: null
+      [pendingKey]: null,
     };
     return nextState;
   }
@@ -128,7 +128,7 @@ const Undoable = (reducer, undoableKeys, options = {}) => {
       [pastKey]: [],
       [futureKey]: [],
       [filterStateKey]: {},
-      [pendingKey]: null
+      [pendingKey]: null,
     };
   }
 
@@ -145,7 +145,7 @@ const Undoable = (reducer, undoableKeys, options = {}) => {
       [pastKey]: past,
       [futureKey]: future,
       [filterStateKey]: filterState,
-      [pendingKey]: pending
+      [pendingKey]: pending,
     };
   }
 
@@ -154,7 +154,7 @@ const Undoable = (reducer, undoableKeys, options = {}) => {
   */
   function save(currentState, action, filterState) {
     const past = currentState[pastKey] || [];
-    const currentUndoableState = Object.entries(currentState).filter(kv =>
+    const currentUndoableState = Object.entries(currentState).filter((kv) =>
       undoableKeysSet.has(kv[0])
     );
     const res = reducer(currentState, action);
@@ -164,7 +164,7 @@ const Undoable = (reducer, undoableKeys, options = {}) => {
       [pastKey]: newPast,
       [futureKey]: [],
       [filterStateKey]: filterState,
-      [pendingKey]: null
+      [pendingKey]: null,
     };
     return nextState;
   }
@@ -173,12 +173,12 @@ const Undoable = (reducer, undoableKeys, options = {}) => {
   Save current state as pending history change.  No other side effects.
   */
   function stashPending(currentState) {
-    const currentUndoableState = Object.entries(currentState).filter(kv =>
+    const currentUndoableState = Object.entries(currentState).filter((kv) =>
       undoableKeysSet.has(kv[0])
     );
     return {
       ...currentState,
-      [pendingKey]: currentUndoableState
+      [pendingKey]: currentUndoableState,
     };
   }
 
@@ -188,7 +188,7 @@ const Undoable = (reducer, undoableKeys, options = {}) => {
   function cancelPending(currentState) {
     return {
       ...currentState,
-      [pendingKey]: null
+      [pendingKey]: null,
     };
   }
 
@@ -203,7 +203,7 @@ const Undoable = (reducer, undoableKeys, options = {}) => {
       ...currentState,
       [pastKey]: newPast,
       [futureKey]: [],
-      [pendingKey]: null
+      [pendingKey]: null,
     };
     return nextState;
   }
@@ -213,7 +213,7 @@ const Undoable = (reducer, undoableKeys, options = {}) => {
       [pastKey]: [],
       [futureKey]: [],
       [filterStateKey]: {},
-      [pendingKey]: null
+      [pendingKey]: null,
     },
     action
   ) => {
@@ -241,7 +241,7 @@ const Undoable = (reducer, undoableKeys, options = {}) => {
         );
         const {
           [filterActionKey]: filterAction,
-          [filterStateKey]: filterStateUpdate
+          [filterStateKey]: filterStateUpdate,
         } = actionFilterResp;
         const nextFilterState = { ...currentFilterState, ...filterStateUpdate };
 

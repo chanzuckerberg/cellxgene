@@ -36,10 +36,10 @@ var formatStats = (stats, port) => {
 
   var json = stats.toJson();
   var formattedErrors = json.errors.map(
-    message => "Error in " + formatMessage(message)
+    (message) => "Error in " + formatMessage(message)
   );
   var formattedWarnings = json.warnings.map(
-    message => "Warning in " + formatMessage(message)
+    (message) => "Warning in " + formatMessage(message)
   );
 
   if (hasErrors) {
@@ -48,7 +48,7 @@ var formatStats = (stats, port) => {
     if (formattedErrors.some(isLikelyASyntaxError)) {
       formattedErrors = formattedErrors.filter(isLikelyASyntaxError);
     }
-    formattedErrors.forEach(message => {
+    formattedErrors.forEach((message) => {
       console.log(message);
       console.log();
     });
@@ -58,7 +58,7 @@ var formatStats = (stats, port) => {
   if (hasWarnings) {
     console.log(chalk.yellow("Compiled with warnings."));
     console.log();
-    formattedWarnings.forEach(message => {
+    formattedWarnings.forEach((message) => {
       console.log(message);
       console.log();
     });

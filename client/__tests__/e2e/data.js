@@ -4,7 +4,7 @@ export const datasets = {
     dataframe: {
       nObs: "2638",
       nVar: "1838",
-      type: "float32"
+      type: "float32",
     },
     categorical: {
       louvain: {
@@ -15,47 +15,47 @@ export const datasets = {
         "Dendritic cells": "37",
         "FCGR3A+ Monocytes": "150",
         Megakaryocytes: "15",
-        "NK cells": "154"
-      }
+        "NK cells": "154",
+      },
     },
     continuous: {
       n_genes: "int32",
       percent_mito: "float32",
-      n_counts: "float32"
+      n_counts: "float32",
     },
     cellsets: {
       lasso: [
         {
           "coordinates-as-percent": { x1: 0.1, y1: 0.25, x2: 0.7, y2: 0.75 },
-          count: "1181"
-        }
+          count: "1181",
+        },
       ],
       categorical: [
         {
           metadata: "louvain",
           values: ["B cells", "Megakaryocytes"],
-          count: "357"
-        }
+          count: "357",
+        },
       ],
       continuous: [
         {
           metadata: "n_genes",
           "coordinates-as-percent": { x1: 0.25, y1: 0.5, x2: 0.55, y2: 0.5 },
-          count: "1537"
-        }
-      ]
+          count: "1537",
+        },
+      ],
     },
 
     diffexp: {
       cellset1: [
-        { kind: "categorical", metadata: "louvain", values: ["B cells"] }
+        { kind: "categorical", metadata: "louvain", values: ["B cells"] },
       ],
       cellset2: [
         {
           kind: "categorical",
           metadata: "louvain",
-          values: ["CD4 T cells", "NK cells"]
-        }
+          values: ["CD4 T cells", "NK cells"],
+        },
       ],
       "gene-results": [
         "HLA-DRB1",
@@ -67,21 +67,21 @@ export const datasets = {
         "HLA-DQB1",
         "MS4A1",
         "IL32",
-        "CD37"
-      ]
+        "CD37",
+      ],
     },
 
     genes: {
       bulkadd: ["S100A8", "FCGR3A", "LGALS2", "GSTP1"],
-      search: "ACD"
+      search: "ACD",
     },
     subset: {
       cellset1: [
         {
           kind: "categorical",
           metadata: "louvain",
-          values: ["B cells", "Megakaryocytes"]
-        }
+          values: ["B cells", "Megakaryocytes"],
+        },
       ],
       count: "357",
       categorical: {
@@ -93,27 +93,27 @@ export const datasets = {
           "Dendritic cells": "0",
           "FCGR3A+ Monocytes": "0",
           Megakaryocytes: "15",
-          "NK cells": "0"
-        }
+          "NK cells": "0",
+        },
       },
       lasso: {
         "coordinates-as-percent": { x1: 0.25, y1: 0.05, x2: 0.75, y2: 0.55 },
-        count: "329"
-      }
+        count: "329",
+      },
     },
     scatter: {
-      genes: { x: "S100A8", y: "FCGR3A" }
+      genes: { x: "S100A8", y: "FCGR3A" },
     },
     pan: {
-      "coordinates-as-percent": { x1: 0.75, y1: 0.75, x2: 0.35, y2: 0.35 }
+      "coordinates-as-percent": { x1: 0.75, y1: 0.75, x2: 0.35, y2: 0.35 },
     },
     features: {
       panzoom: {
         lasso: {
           "coordinates-as-percent": { x1: 0.3, y1: 0.3, x2: 0.5, y2: 0.5 },
-          count: "24"
-        }
-      }
+          count: "24",
+        },
+      },
     },
     categoryLabel: {
       lasso: {
@@ -122,17 +122,17 @@ export const datasets = {
       newCount: {
         bySubsetConfig: {
           false: "600",
-          true: "591"
-        }
-      }
+          true: "591",
+        },
+      },
     },
     annotationsFromFile: {
       count: {
         bySubsetConfig: {
           false: "1161",
-          true: "856"
-        }
-      }
+          true: "856",
+        },
+      },
     },
     clip: {
       min: "30",
@@ -141,7 +141,7 @@ export const datasets = {
       gene: "S100A8",
       "coordinates-as-percent": { x1: 0.25, y1: 0.5, x2: 0.55, y2: 0.5 },
       count: "386",
-      "gene-cell-count": "416"
-    }
-  }
+      "gene-cell-count": "416",
+    },
+  },
 };

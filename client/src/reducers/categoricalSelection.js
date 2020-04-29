@@ -36,7 +36,7 @@ const CategoricalSelection = (
       if (names.length === 0) return state;
       return {
         ...state,
-        ...CH.createCategoricalSelection(world, names)
+        ...CH.createCategoricalSelection(world, names),
       };
     }
 
@@ -52,8 +52,8 @@ const CategoricalSelection = (
         ...state,
         [action.metadataField]: {
           ...state[action.metadataField],
-          categoryValueSelected: newCategoryValueSelected
-        }
+          categoryValueSelected: newCategoryValueSelected,
+        },
       };
       return newCategoricalSelection;
     }
@@ -70,8 +70,8 @@ const CategoricalSelection = (
         ...state,
         [action.metadataField]: {
           ...state[action.metadataField],
-          categoryValueSelected: newCategoryValueSelected
-        }
+          categoryValueSelected: newCategoryValueSelected,
+        },
       };
       return newCategoricalSelection;
     }
@@ -87,8 +87,8 @@ const CategoricalSelection = (
           categorySelected: false,
           categoryValueSelected: Array.from(
             state[action.metadataField].categoryValueSelected
-          ).fill(false)
-        }
+          ).fill(false),
+        },
       };
       return newCategoricalSelection;
     }
@@ -104,8 +104,8 @@ const CategoricalSelection = (
           categorySelected: true,
           categoryValueSelected: Array.from(
             state[action.metadataField].categoryValueSelected
-          ).fill(true)
-        }
+          ).fill(true),
+        },
       };
       return newCategoricalSelection;
     }
@@ -115,7 +115,7 @@ const CategoricalSelection = (
       const name = action.data;
       return {
         ...state,
-        ...CH.createCategoricalSelection(world, [name])
+        ...CH.createCategoricalSelection(world, [name]),
       };
     }
 
@@ -143,7 +143,7 @@ const CategoricalSelection = (
       const { [name]: _, ...partialState } = state;
       return {
         ...partialState,
-        ...CH.createCategoricalSelection(world, [name])
+        ...CH.createCategoricalSelection(world, [name]),
       };
     }
 

@@ -34,12 +34,12 @@ function createProjectionTF(viewportWidth, viewportHeight) {
   const minDim = Math.min(viewportWidth, heightMinusGutter);
   const aspectScale = [
     (fractionToUse * minDim) / viewportWidth,
-    (fractionToUse * minDim) / viewportHeight
+    (fractionToUse * minDim) / viewportHeight,
   ];
   const m = mat3.create();
   mat3.fromTranslation(m, [
     0,
-    -topGutterSizePx / viewportHeight / aspectScale[1]
+    -topGutterSizePx / viewportHeight / aspectScale[1],
   ]);
   mat3.scale(m, m, aspectScale);
   return m;
@@ -73,7 +73,7 @@ function renderThrottle(callback) {
   };
 }
 
-@connect(state => ({
+@connect((state) => ({
   universe: state.universe,
   world: state.world,
   crossfilter: state.crossfilter,
@@ -85,7 +85,7 @@ function renderThrottle(callback) {
   centroidLabels: state.centroidLabels,
   graphInteractionMode: state.controls.graphInteractionMode,
   colorAccessor: state.colors.colorAccessor,
-  pointDilation: state.pointDilation
+  pointDilation: state.pointDilation,
 }))
 class Graph extends React.Component {
   computePointPositions = memoize((X, Y, modelTF) => {
@@ -102,7 +102,7 @@ class Graph extends React.Component {
     return positions;
   });
 
-  computePointColors = memoize(rgb => {
+  computePointColors = memoize((rgb) => {
     /*
     compute webgl colors for each point
     */
@@ -186,13 +186,13 @@ class Graph extends React.Component {
       positions: null,
       colors: null,
       sizes: null,
-      flags: null
+      flags: null,
     };
     this.state = {
       toolSVG: null,
       tool: null,
       container: null,
-      cameraRender: 0
+      cameraRender: 0,
     };
   }
 
@@ -234,7 +234,7 @@ class Graph extends React.Component {
       camera,
       modelTF,
       modelInvTF: mat3.invert([], modelTF),
-      projectionTF
+      projectionTF,
     });
   }
 
@@ -250,7 +250,7 @@ class Graph extends React.Component {
       layoutChoice,
       graphInteractionMode,
       pointDilation,
-      colorAccessor
+      colorAccessor,
     } = this.props;
     const { regl, toolSVG, camera, modelTF } = this.state;
     let stateChanges = {};
@@ -274,7 +274,7 @@ class Graph extends React.Component {
         needsRepaint = true;
         stateChanges = {
           ...stateChanges,
-          projectionTF
+          projectionTF,
         };
       }
 
@@ -333,7 +333,7 @@ class Graph extends React.Component {
       // If the window size has changed we want to recreate all SVGs
       stateChanges = {
         ...stateChanges,
-        ...this.createToolSVG()
+        ...this.createToolSVG(),
       };
     } else if (
       (responsive.height && responsive.width && !toolSVG) ||
@@ -345,7 +345,7 @@ class Graph extends React.Component {
       // If lasso/zoom is switched
       stateChanges = {
         ...stateChanges,
-        ...this.createToolSVG()
+        ...this.createToolSVG(),
       };
     }
 
@@ -369,12 +369,12 @@ class Graph extends React.Component {
     }
   }
 
-  handleCanvasEvent = e => {
+  handleCanvasEvent = (e) => {
     const { camera, projectionTF } = this.state;
     if (e.type !== "wheel") e.preventDefault();
     if (camera.handleEvent(e, projectionTF)) {
       this.renderCanvas();
-      this.setState(state => {
+      this.setState((state) => {
         return { ...state, updateOverlay: !state.updateOverlay };
       });
     }
@@ -389,9 +389,7 @@ class Graph extends React.Component {
 
     /* clear out whatever was on the div, even if nothing, but usually the brushes etc */
 
-    d3.select("#lasso-layer")
-      .selectAll(".lasso-group")
-      .remove();
+    d3.select("#lasso-layer").selectAll(".lasso-group").remove();
 
     // Don't render or recreate toolSVG if currently in zoom mode
     if (graphInteractionMode !== "select") {
@@ -443,7 +441,7 @@ class Graph extends React.Component {
         */
         const screenCoords = [
           this.mapPointToScreen(currentSelection.brushCoords.northwest),
-          this.mapPointToScreen(currentSelection.brushCoords.southeast)
+          this.mapPointToScreen(currentSelection.brushCoords.southeast),
         ];
         if (!toolCurrentSelection) {
           /* tool is not selected, so just move the brush */
@@ -480,7 +478,7 @@ class Graph extends React.Component {
       /*
       if there is a current selection, make sure the lasso tool matches
       */
-      const polygon = currentSelection.polygon.map(p =>
+      const polygon = currentSelection.polygon.map((p) =>
         this.mapPointToScreen(p)
       );
       tool.move(polygon);
@@ -551,7 +549,7 @@ class Graph extends React.Component {
       ),
       Math.round(
         -((xy[1] + 1) / 2 - 1) * (responsive.height - this.graphPaddingTop)
-      )
+      ),
     ];
     return pin;
   }
@@ -571,12 +569,12 @@ class Graph extends React.Component {
     const s = d3.event.selection;
     const brushCoords = {
       northwest: this.mapScreenToPoint([s[0][0], s[0][1]]),
-      southeast: this.mapScreenToPoint([s[1][0], s[1][1]])
+      southeast: this.mapScreenToPoint([s[1][0], s[1][1]]),
     };
 
     dispatch({
       type: "graph brush change",
-      brushCoords
+      brushCoords,
     });
   }
 
@@ -601,15 +599,15 @@ class Graph extends React.Component {
     if (s) {
       const brushCoords = {
         northwest: this.mapScreenToPoint(s[0]),
-        southeast: this.mapScreenToPoint(s[1])
+        southeast: this.mapScreenToPoint(s[1]),
       };
       dispatch({
         type: "graph brush end",
-        brushCoords
+        brushCoords,
       });
     } else {
       dispatch({
-        type: "graph brush deselect"
+        type: "graph brush deselect",
       });
     }
   }
@@ -617,14 +615,14 @@ class Graph extends React.Component {
   handleBrushDeselectAction() {
     const { dispatch } = this.props;
     dispatch({
-      type: "graph brush deselect"
+      type: "graph brush deselect",
     });
   }
 
   handleLassoStart() {
     const { dispatch } = this.props;
     dispatch({
-      type: "graph lasso start"
+      type: "graph lasso start",
     });
   }
 
@@ -642,7 +640,7 @@ class Graph extends React.Component {
     } else {
       dispatch({
         type: "graph lasso end",
-        polygon: polygon.map(xy => this.mapScreenToPoint(xy)) // transform the polygon
+        polygon: polygon.map((xy) => this.mapScreenToPoint(xy)), // transform the polygon
       });
     }
   }
@@ -667,7 +665,7 @@ class Graph extends React.Component {
     const { dispatch } = this.props;
     dispatch({
       type: "change opacity deselected cells in 2d graph background",
-      data: e.target.value
+      data: e.target.value,
     });
   }
 
@@ -688,7 +686,7 @@ class Graph extends React.Component {
     regl.poll();
     regl.clear({
       depth: 1,
-      color: [1, 1, 1, 1]
+      color: [1, 1, 1, 1],
     });
     drawPoints({
       distance: camera.distance(),
@@ -698,7 +696,7 @@ class Graph extends React.Component {
       count: this.count,
       projView,
       nPoints: universe.nObs,
-      minViewportDimension: Math.min(width || 800, height || 600)
+      minViewportDimension: Math.min(width || 800, height || 600),
     });
     regl._gl.flush();
   }
@@ -711,7 +709,7 @@ class Graph extends React.Component {
       pointBuffer,
       flagBuffer,
       camera,
-      projectionTF
+      projectionTF,
     } = this.state;
     this.renderPoints(
       regl,
@@ -737,7 +735,7 @@ class Graph extends React.Component {
             zIndex: -9999,
             position: "fixed",
             top: this.graphPaddingTop,
-            right: globals.leftSidebarWidth
+            right: globals.leftSidebarWidth,
           }}
         >
           <div id="graphAttachPoint">
@@ -774,7 +772,7 @@ class Graph extends React.Component {
               width={responsive.width - this.graphPaddingRightLeft}
               height={responsive.height - this.graphPaddingTop}
               data-testid="layout-graph"
-              ref={canvas => {
+              ref={(canvas) => {
                 this.reglCanvas = canvas;
               }}
               onMouseDown={this.handleCanvasEvent}

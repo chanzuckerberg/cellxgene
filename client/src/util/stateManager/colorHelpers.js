@@ -15,7 +15,12 @@ create new colors state object.   Paramters:
     "color by categorical metadata"}
   - colorAccessor - the obs annotations used for color-by
 */
-export function createColors(world, colorMode = null, colorAccessor = null, userColors = null) {
+export function createColors(
+  world,
+  colorMode = null,
+  colorAccessor = null,
+  userColors = null
+) {
   switch (colorMode) {
     case "color by categorical metadata": {
       if (userColors && colorAccessor in userColors) {
@@ -33,7 +38,7 @@ export function createColors(world, colorMode = null, colorAccessor = null, user
       const defaultCellColor = parseRGB(globals.defaultCellColor);
       return {
         rgb: new Array(world.nObs).fill(defaultCellColor),
-        scale: undefined
+        scale: undefined,
       };
     }
   }
@@ -41,14 +46,17 @@ export function createColors(world, colorMode = null, colorAccessor = null, user
 
 export function loadUserColorConfig(userColors) {
   const convertedUserColors = {};
-  Object.keys(userColors).forEach(category => {
-    const [colors, scaleMap] = Object.keys(userColors[category]).reduce((acc, label, i) => {
-      const color = parseRGB(userColors[category][label]);
-      acc[0][label] = color;
-      acc[1][i] = d3.rgb(255 * color[0], 255 * color[1], 255 * color[2]);
-      return acc;
-    }, [{}, {}]);
-    const scale = i => scaleMap[i];
+  Object.keys(userColors).forEach((category) => {
+    const [colors, scaleMap] = Object.keys(userColors[category]).reduce(
+      (acc, label, i) => {
+        const color = parseRGB(userColors[category][label]);
+        acc[0][label] = color;
+        acc[1][i] = d3.rgb(255 * color[0], 255 * color[1], 255 * color[2]);
+        return acc;
+      },
+      [{}, {}]
+    );
+    const scale = (i) => scaleMap[i];
     convertedUserColors[category] = { colors, scale };
   });
   return convertedUserColors;
@@ -147,13 +155,13 @@ function createColorsByExpression(world, accessor) {
   return { rgb, scale };
 }
 
-export const resetColors = world => {
+export const resetColors = (world) => {
   const { rgb, scale } = createColors(world);
   return {
     colorMode: null,
     colorAccessor: null,
     rgb,
-    scale
+    scale,
   };
 };
 
@@ -165,7 +173,7 @@ export const checkIfColorByDiffexpAndResetColors = (
   if (prevControls.diffexpGenes.includes(state.colorAccessor)) {
     return {
       ...state,
-      ...resetColors(prevWorld)
+      ...resetColors(prevWorld),
     };
   }
   return null;

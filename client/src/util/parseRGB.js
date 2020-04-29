@@ -16,11 +16,11 @@ function parseColorName(c) {
   return [
     scaleRGB(parseInt(parsedHex[1], 16)),
     scaleRGB(parseInt(parsedHex[2], 16)),
-    scaleRGB(parseInt(parsedHex[3], 16))
+    scaleRGB(parseInt(parsedHex[3], 16)),
   ];
 }
 
-export default c => {
+export default (c) => {
   let cv = colorCache[c];
   if (!cv) {
     cv = parseColorName(c);

@@ -24,15 +24,17 @@ async function obsAnnotationFetchAndLoad(dispatch, schema) {
 
   const plimit = new PromiseLimit(5);
   return Promise.all(
-    columns.map(col =>
+    columns.map((col) =>
       plimit.add(() =>
-        fetchBinary(`annotations/obs?annotation-name=${encodeURIComponent(col.name)}`)
-          .then(buffer => Universe.matrixFBSToDataframe(buffer))
-          .then(df =>
+        fetchBinary(
+          `annotations/obs?annotation-name=${encodeURIComponent(col.name)}`
+        )
+          .then((buffer) => Universe.matrixFBSToDataframe(buffer))
+          .then((df) =>
             dispatch({
               type: "universe: column load success",
               dim: "obsAnnotations",
-              dataframe: df
+              dataframe: df,
             })
           )
       )
@@ -48,14 +50,14 @@ async function varAnnotationFetchAndLoad(dispatch, schema) {
   const index = varAnnotations.index ?? false;
   const names = index ? [index] : [];
   return Promise.all(
-    names.map(name =>
+    names.map((name) =>
       fetchBinary(`annotations/var?annotation-name=${encodeURIComponent(name)}`)
-        .then(buffer => Universe.matrixFBSToDataframe(buffer))
-        .then(df =>
+        .then((buffer) => Universe.matrixFBSToDataframe(buffer))
+        .then((df) =>
           dispatch({
             type: "universe: column load success",
             dim: "varAnnotations",
-            dataframe: df
+            dataframe: df,
           })
         )
     )
@@ -71,17 +73,18 @@ function layoutFetchAndLoad(dispatch, schema) {
 
   const plimit = new PromiseLimit(5);
   return Promise.all(
-    embNames.map(e =>
+    embNames.map((e) =>
       plimit.add(() =>
-        fetchBinary(`layout/obs?layout-name=${encodeURIComponent(e)}`)
-          .then(buffer => Universe.matrixFBSToDataframe(buffer))
+        fetchBinary(
+          `layout/obs?layout-name=${encodeURIComponent(e)}`
+        ).then((buffer) => Universe.matrixFBSToDataframe(buffer))
       )
     )
-  ).then(dfs =>
+  ).then((dfs) =>
     dispatch({
       type: "universe: column load success",
       dim: "obsLayout",
-      dataframe: Dataframe.Dataframe.empty().withColsFromAll(dfs)
+      dataframe: Dataframe.Dataframe.empty().withColsFromAll(dfs),
     })
   );
 }
@@ -90,13 +93,12 @@ function layoutFetchAndLoad(dispatch, schema) {
 return promise fetching user-configured colors
 */
 async function userColorsFetchAndLoad(dispatch) {
-  return fetchJson("colors")
-    .then(response =>
-      dispatch({
-        type: "universe: user color load success",
-        userColors: loadUserColorConfig(response)
-      })
-    );
+  return fetchJson("colors").then((response) =>
+    dispatch({
+      type: "universe: user color load success",
+      userColors: loadUserColorConfig(response),
+    })
+  );
 }
 
 /*
@@ -185,11 +187,15 @@ async function _doRequestExpressionData(dispatch, getState, genes) {
   /* helper for this function only */
   const fetchData = async (geneNames) => {
     const query = geneNames
-      .map(g => `var:${dubEncURIComponent(varIndexName)}=${dubEncURIComponent(g)}`)
+      .map(
+        (g) =>
+          `var:${dubEncURIComponent(varIndexName)}=${dubEncURIComponent(g)}`
+      )
       .join("&");
     // TODO: why convert to an Object and not a Dataframe?
-    return fetchBinary(`data/var?${query}`)
-      .then(buffer => Universe.convertDataFBStoObject(universe, buffer));
+    return fetchBinary(`data/var?${query}`).then((buffer) =>
+      Universe.convertDataFBStoObject(universe, buffer)
+    );
   };
 
   /* preload data already in cache */
@@ -351,7 +357,7 @@ const requestDifferentialExpression = (set1, set2, num_genes = 10) => async (
     */
     const plimit = new PromiseLimit(5);
     await Promise.all(
-      topNGenes.map(gene =>
+      topNGenes.map((gene) =>
         plimit.add(() => _doRequestExpressionData(dispatch, getState, [gene]))
       )
     );
@@ -432,11 +438,15 @@ const saveObsAnnotations = () => async (dispatch, getState) => {
 };
 
 function fetchJson(pathAndQuery) {
-  return doJsonRequest(`${globals.API.prefix}${globals.API.version}${pathAndQuery}`);
+  return doJsonRequest(
+    `${globals.API.prefix}${globals.API.version}${pathAndQuery}`
+  );
 }
 
 function fetchBinary(pathAndQuery) {
-  return doBinaryRequest(`${globals.API.prefix}${globals.API.version}${pathAndQuery}`);
+  return doBinaryRequest(
+    `${globals.API.prefix}${globals.API.version}${pathAndQuery}`
+  );
 }
 
 export default {

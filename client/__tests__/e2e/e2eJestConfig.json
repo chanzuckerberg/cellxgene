@@ -1,9 +1,5 @@
 {
   "preset": "jest-puppeteer",
-  "testMatch": [
-    "**/__tests__/**/?(*.)(spec|test).js?(x)"
-  ],
-  "setupFiles": [
-    "../setupMissingGlobals.js"
-  ]
+  "testMatch": ["**/__tests__/**/?(*.)(spec|test).js?(x)"],
+  "setupFiles": ["../setupMissingGlobals.js"]
 }

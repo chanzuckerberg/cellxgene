@@ -4,7 +4,7 @@ import {
   lowerBound,
   upperBound,
   lowerBoundIndirect,
-  upperBoundIndirect
+  upperBoundIndirect,
 } from "../../../src/util/typedCrossfilter/sort";
 
 /*
@@ -40,7 +40,7 @@ describe("sortArray", () => {
       ["a", "b", "0", "1"],
       [0, "a", true, null, undefined, 3.1415],
       fillRand(new Array(1000)),
-      ["a", NaN, null, pInf]
+      ["a", NaN, null, pInf],
     ].map((val, idx) =>
       test(`JS vals ${idx}`, () => {
         expect(sortArray(val)).toMatchObject(val.sort());
@@ -49,7 +49,7 @@ describe("sortArray", () => {
   });
 
   describe("finite numbers", () => {
-    [Array, Float32Array, Uint32Array, Int32Array, Float64Array].map(Type =>
+    [Array, Float32Array, Uint32Array, Int32Array, Float64Array].map((Type) =>
       test(Type.name, () => {
         expect(sortArray(Type.from([6, 5, 4, 3, 2, 1, 0]))).toMatchObject(
           Type.from([0, 1, 2, 3, 4, 5, 6])
@@ -131,7 +131,7 @@ describe("sortArray", () => {
 
 describe("sortIndex", () => {
   describe("finite numbers", () => {
-    [Array, Float32Array, Uint32Array, Int32Array, Float64Array].map(Type =>
+    [Array, Float32Array, Uint32Array, Int32Array, Float64Array].map((Type) =>
       test(Type.name, () => {
         const source1 = Type.from([6, 5, 4, 3, 2, 1, 0]);
         const index1 = fillRange(new Uint32Array(source1.length));

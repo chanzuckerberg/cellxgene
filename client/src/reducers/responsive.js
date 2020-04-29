@@ -2,7 +2,7 @@
 const Responsive = (
   state = {
     width: null,
-    height: null
+    height: null,
   },
   action
 ) => {
@@ -11,7 +11,7 @@ const Responsive = (
       return {
         ...state,
         width: action.data.width,
-        height: action.data.height
+        height: action.data.height,
       };
     default:
       return state;

@@ -23,7 +23,7 @@ describe("create", () => {
 describe("undo", () => {
   test("expected state modifications", () => {
     const initialState = { a: 0, b: 1000 };
-    const reducer = state => {
+    const reducer = (state) => {
       return { a: state.a + 1, b: state.b + 1 };
     };
     const undoableReducer = undoable(reducer, ["a"]);
@@ -43,7 +43,7 @@ describe("undo", () => {
 
 describe("redo", () => {
   const initialState = { a: 0, b: 1000 };
-  const reducer = state => {
+  const reducer = (state) => {
     return { a: state.a + 1, b: state.b + 1 };
   };
   let UR;
@@ -58,7 +58,7 @@ describe("redo", () => {
 
     // verify undo->redo reverts state.
     const s2 = UR(UR(s1, { type: "@@undoable/undo" }), {
-      type: "@@undoable/redo"
+      type: "@@undoable/redo",
     });
     expect(s2).toMatchObject({ a: 1, b: 1001 });
 

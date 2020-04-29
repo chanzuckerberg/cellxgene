@@ -28,7 +28,7 @@ function templateUniverse() {
     /*
     Var data columns - subset of all
     */
-    varData: Dataframe.Dataframe.empty(null, new Dataframe.KeyIndex())
+    varData: Dataframe.Dataframe.empty(null, new Dataframe.KeyIndex()),
   };
 }
 
@@ -91,22 +91,22 @@ export function matrixFBSToDataframe(arrayBuffers) {
     return Dataframe.Dataframe.empty();
   }
 
-  const fbs = arrayBuffers.map(ab => decodeMatrixFBS(ab, true)); // leave in place
+  const fbs = arrayBuffers.map((ab) => decodeMatrixFBS(ab, true)); // leave in place
   /* check that all FBS have same row dimensionality */
   const { nRows } = fbs[0];
-  fbs.forEach(b => {
+  fbs.forEach((b) => {
     if (b.nRows !== nRows)
       throw new Error("FBS with inconsistent dimensionality");
   });
   const columns = fbs
-    .map(fb =>
-      fb.columns.map(c => {
+    .map((fb) =>
+      fb.columns.map((c) => {
         if (isFpTypedArray(c) || Array.isArray(c)) return c;
         return promoteTypedArray(c);
       })
     )
     .flat();
-  const colIdx = fbs.map(b => b.colIdx).flat();
+  const colIdx = fbs.map((b) => b.colIdx).flat();
   const nCols = columns.length;
 
   const df = new Dataframe.Dataframe(
@@ -145,8 +145,8 @@ function normalizeSchemaCategory(colSchema, col = undefined) {
     let categories = [
       ...new Set([
         ...(colSchema.categories ?? []),
-        ...(col?.summarize?.().categories ?? [])
-      ])
+        ...(col?.summarize?.().categories ?? []),
+      ]),
     ];
     if (writable && categories.indexOf(unassignedCategoryLabel) === -1) {
       categories = categories.concat(unassignedCategoryLabel);
@@ -165,7 +165,7 @@ function normalizeSchemaCategory(colSchema, col = undefined) {
 
 function normalizeEntireSchema(schema) {
   // currently only needed for obsAnnotations
-  schema.annotations.obs.columns.forEach(colSchema =>
+  schema.annotations.obs.columns.forEach((colSchema) =>
     normalizeSchemaCategory(colSchema)
   );
 }
@@ -178,9 +178,9 @@ export function addObsAnnotations(universe, df) {
 
   // for all of the new data, reconcile with schema and sort categories.
   const dfs = Array.isArray(df) ? df : [df];
-  const keys = dfs.map(d => d.colIndex.keys()).flat();
+  const keys = dfs.map((d) => d.colIndex.keys()).flat();
   const { schema } = universe;
-  keys.forEach(k => {
+  keys.forEach((k) => {
     const colSchema = schema.annotations.obsByName[k];
     const col = obsAnnotations.col(k);
     normalizeSchemaCategory(colSchema, col);

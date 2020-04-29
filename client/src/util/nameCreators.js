@@ -12,11 +12,11 @@ codebase.
 
 const makeDimensionName = (namespace, key) => `${namespace}_${key}`;
 
-export const layoutDimensionName = key => makeDimensionName("layout", key);
-export const obsAnnoDimensionName = key => makeDimensionName("obsAnno", key);
-export const diffexpDimensionName = key =>
+export const layoutDimensionName = (key) => makeDimensionName("layout", key);
+export const obsAnnoDimensionName = (key) => makeDimensionName("obsAnno", key);
+export const diffexpDimensionName = (key) =>
   makeDimensionName("varData_diffexp", key);
-export const userDefinedDimensionName = key =>
+export const userDefinedDimensionName = (key) =>
   makeDimensionName("varData_userDefined", key);
 
 /*

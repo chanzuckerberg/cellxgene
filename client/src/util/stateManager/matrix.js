@@ -70,7 +70,7 @@ export function decodeMatrixFBS(arrayBuffer, inplace = false) {
     nCols,
     columns,
     colIdx,
-    rowIdx: null
+    rowIdx: null,
   };
 }
 
@@ -102,9 +102,9 @@ export function encodeMatrixFBS(df) {
   let encColumns;
 
   if (shape[0] > 0 && shape[1] > 0) {
-    const columns = df.columns().map(col => col.asArray());
+    const columns = df.columns().map((col) => col.asArray());
 
-    const cols = columns.map(carr => {
+    const cols = columns.map((carr) => {
       let uType;
       let tarr;
       if (isTypedArray(carr)) {

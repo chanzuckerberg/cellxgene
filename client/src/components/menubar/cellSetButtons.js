@@ -12,7 +12,7 @@ class CellSetButton extends React.PureComponent {
       differential,
       crossfilter,
       dispatch,
-      eitherCellSetOneOrTwo
+      eitherCellSetOneOrTwo,
     } = this.props;
 
     // Reducer and components assume that value will be null if
@@ -25,7 +25,7 @@ class CellSetButton extends React.PureComponent {
       /* diffexp needs to be cleared before we store a new set */
       dispatch({
         type: `store current cell selection as differential set ${eitherCellSetOneOrTwo}`,
-        data: set
+        data: set,
       });
     }
   }

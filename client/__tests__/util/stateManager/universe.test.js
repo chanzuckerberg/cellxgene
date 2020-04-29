@@ -43,7 +43,7 @@ describe("createUniverseFromResponse", () => {
         obsAnnotations: expect.any(Dataframe.Dataframe),
         varAnnotations: expect.any(Dataframe.Dataframe),
         obsLayout: expect.any(Dataframe.Dataframe),
-        varData: expect.any(Dataframe.Dataframe)
+        varData: expect.any(Dataframe.Dataframe),
       })
     );
 
@@ -60,7 +60,7 @@ describe("createUniverseFromResponse", () => {
       ...Universe.addObsLayout(
         universe,
         Universe.matrixFBSToDataframe(REST.layoutObs)
-      )
+      ),
     };
 
     expect(universe).toMatchObject(
@@ -71,13 +71,13 @@ describe("createUniverseFromResponse", () => {
         obsAnnotations: expect.any(Dataframe.Dataframe),
         varAnnotations: expect.any(Dataframe.Dataframe),
         obsLayout: expect.any(Dataframe.Dataframe),
-        varData: expect.any(Dataframe.Dataframe)
+        varData: expect.any(Dataframe.Dataframe),
       })
     );
 
     expect(universe.obsAnnotations.dims).toEqual([
       nObs,
-      REST.schema.schema.annotations.obs.columns.length
+      REST.schema.schema.annotations.obs.columns.length,
     ]);
     expect(universe.obsLayout.dims).toEqual([nObs, 2]);
     expect(universe.obsLayout.colIndex.keys()).toEqual(
@@ -85,7 +85,7 @@ describe("createUniverseFromResponse", () => {
     );
     expect(universe.varAnnotations.dims).toEqual([
       nVar,
-      REST.schema.schema.annotations.var.columns.length
+      REST.schema.schema.annotations.var.columns.length,
     ]);
     expect(universe.varData.isEmpty()).toBeTruthy();
   });

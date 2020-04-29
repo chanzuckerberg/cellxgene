@@ -6,11 +6,11 @@ import {
   MenuItem,
   Popover,
   Position,
-  PopoverInteractionKind
+  PopoverInteractionKind,
 } from "@blueprintjs/core";
 
-@connect(state => ({
-  annotations: state.annotations
+@connect((state) => ({
+  annotations: state.annotations,
 }))
 class AnnoMenuCategory extends React.PureComponent {
   constructor(props) {
@@ -22,7 +22,7 @@ class AnnoMenuCategory extends React.PureComponent {
     const { dispatch, metadataField } = this.props;
     dispatch({
       type: "annotation: activate add new label mode",
-      data: metadataField
+      data: metadataField,
     });
   };
 
@@ -31,7 +31,7 @@ class AnnoMenuCategory extends React.PureComponent {
 
     dispatch({
       type: "annotation: activate category edit mode",
-      data: metadataField
+      data: metadataField,
     });
   };
 
@@ -39,7 +39,7 @@ class AnnoMenuCategory extends React.PureComponent {
     const { dispatch, metadataField } = this.props;
     dispatch({
       type: "annotation: delete category",
-      metadataField
+      metadataField,
     });
   };
 
@@ -50,7 +50,7 @@ class AnnoMenuCategory extends React.PureComponent {
       isUserAnno,
       createText,
       editText,
-      deleteText
+      deleteText,
     } = this.props;
 
     return (

@@ -69,8 +69,8 @@ function templateWorld() {
     /* unclipped dataframes - subset, but not value clipped */
     unclipped: {
       obsAnnotations,
-      varData
-    }
+      varData,
+    },
   };
 }
 
@@ -134,7 +134,7 @@ export function createWorldFromEntireUniverse(universe) {
   /* save unclipped copies of potentially clipped dataframes */
   world.unclipped = {
     obsAnnotations: world.obsAnnotations.clone(),
-    varData: world.varData.clone()
+    varData: world.varData.clone(),
   };
 
   return world;
@@ -219,7 +219,7 @@ export function createWorldWithNewClip(
   newWorld.obsLayout = world.obsLayout.clone();
   newWorld.unclipped = {
     obsAnnotations: world.unclipped.obsAnnotations.clone(),
-    varData: world.unclipped.varData.clone()
+    varData: world.unclipped.varData.clone(),
   };
 
   /* and now clip */
@@ -295,7 +295,7 @@ export function createObsDimensions(crossfilter, world, XYdimNames) {
   const { schema, obsLayout } = world;
   const indexName = schema.annotations.obs.index;
   const annoList = schema.annotations.obs.columns.filter(
-    anno => anno.name !== indexName
+    (anno) => anno.name !== indexName
   );
   crossfilter = annoList.reduce((xfltr, anno) => {
     return addObsDimension(xfltr, world, anno);

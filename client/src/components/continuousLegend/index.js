@@ -38,12 +38,12 @@ const continuous = (selectorId, colorscale, colorAccessor) => {
     .range([1, legendheight - margin.top - margin.bottom])
     .domain([
       colorscale.domain()[1],
-      colorscale.domain()[0]
+      colorscale.domain()[0],
     ]); /* we flip this to make viridis colors dark if high in the color scale */
 
   // image data hackery based on http://bl.ocks.org/mbostock/048d21cf747371b11884f75ad896e5a5
   const image = ctx.createImageData(1, legendheight);
-  d3.range(legendheight).forEach(i => {
+  d3.range(legendheight).forEach((i) => {
     const c = d3.rgb(colorscale(legendscale.invert(i)));
     image.data[4 * i] = c.r;
     image.data[4 * i + 1] = c.g;
@@ -62,11 +62,7 @@ const continuous = (selectorId, colorscale, colorAccessor) => {
   });
   */
 
-  const legendaxis = d3
-    .axisRight()
-    .scale(legendscale)
-    .tickSize(6)
-    .ticks(8);
+  const legendaxis = d3.axisRight().scale(legendscale).tickSize(6).ticks(8);
 
   const svg = d3
     .select(selectorId)
@@ -98,10 +94,10 @@ const continuous = (selectorId, colorscale, colorAccessor) => {
     .text(colorAccessor);
 };
 
-@connect(state => ({
+@connect((state) => ({
   colorAccessor: state.colors.colorAccessor,
   colorScale: state.colors.scale,
-  responsive: state.responsive
+  responsive: state.responsive,
 }))
 class ContinuousLegend extends React.Component {
   constructor(props) {
@@ -118,9 +114,7 @@ class ContinuousLegend extends React.Component {
       prevProps.responsive.width !== responsive.width
     ) {
       /* always remove it, if it's not continuous we don't put it back. */
-      d3.select("#continuous_legend")
-        .selectAll("*")
-        .remove();
+      d3.select("#continuous_legend").selectAll("*").remove();
     }
 
     if (colorAccessor && colorScale && colorScale.range) {
@@ -144,7 +138,7 @@ class ContinuousLegend extends React.Component {
           position: "fixed",
           display: colorAccessor ? "inherit" : "none",
           right: globals.leftSidebarWidth,
-          top: responsive.height / 2
+          top: responsive.height / 2,
         }}
       />
     );

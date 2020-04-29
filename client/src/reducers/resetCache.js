@@ -8,7 +8,7 @@ which improves Reset UI performance.
 */
 const ResetCacheReducer = (
   state = {
-    crossfilter: null
+    crossfilter: null,
   },
   action,
   nextSharedState
@@ -18,7 +18,7 @@ const ResetCacheReducer = (
       const { crossfilter } = nextSharedState;
       return {
         ...state,
-        crossfilter
+        crossfilter,
       };
     }
     default: {
