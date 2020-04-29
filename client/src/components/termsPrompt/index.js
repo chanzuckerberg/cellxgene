@@ -19,7 +19,7 @@ function storageSet(key, value) {
   try {
     window.localStorage.setItem(key, value);
   } catch {
-    return;
+    
   }
 }
 

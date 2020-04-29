@@ -466,7 +466,7 @@ class ImmutableScalarDimension extends _ImmutableBaseDimension {
     const ranges = [];
     const r = [
       lowerBoundIndirect(value, index, lo, 0, value.length),
-      !!inclusive
+      inclusive
         ? upperBoundIndirect(value, index, hi, 0, value.length)
         : lowerBoundIndirect(value, index, hi, 0, value.length),
     ];

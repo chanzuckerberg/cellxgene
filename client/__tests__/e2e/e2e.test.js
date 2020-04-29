@@ -7,7 +7,7 @@ import { appUrlBase, DATASET } from "./config";
 import { setupTestBrowser } from "./testBrowser";
 import { datasets } from "./data";
 
-let browser, page, utils, cxgActions;
+let browser; let page; let utils; let cxgActions;
 const data = datasets[DATASET];
 
 beforeAll(async () => {
@@ -111,7 +111,7 @@ describe("gene entry", () => {
     await cxgActions.bulkAddGenes(testGenes);
     const allHistograms = await cxgActions.getAllHistograms("histogram-user-gene", testGenes);
     expect(allHistograms).toEqual(expect.arrayContaining(testGenes));
-    expect(allHistograms.length).toEqual(testGenes.length);
+    expect(allHistograms).toHaveLength(testGenes.length);
   });
 });
 
@@ -125,7 +125,7 @@ describe("differential expression", () => {
     expect(allHistograms).toEqual(
       expect.arrayContaining(data.diffexp["gene-results"])
     );
-    expect(allHistograms.length).toEqual(data.diffexp["gene-results"].length);
+    expect(allHistograms).toHaveLength(data.diffexp["gene-results"].length);
   });
 });
 

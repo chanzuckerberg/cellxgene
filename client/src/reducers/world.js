@@ -41,7 +41,7 @@ const WorldReducer = (
       const { dim } = action;
 
       // we don't clip anything except for varData and obsAnnotations
-      let unclipped = state.unclipped;
+      let {unclipped} = state;
       if (dim == "varData" || dim == "obsAnnotations") {
         unclipped = {
           ...unclipped,

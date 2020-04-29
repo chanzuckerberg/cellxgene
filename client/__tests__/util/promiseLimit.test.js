@@ -44,10 +44,10 @@ describe("PromiseLimit", () => {
 		let maxRunning = 0;
 
 		const cbfn = async i => {
-			running = running + 1;
+			running += 1;
 			maxRunning = running > maxRunning ? running : maxRunning;
 			await delay(100);
-			running = running - 1;
+			running -= 1;
 		};
 
 		const result = await Promise.all(
