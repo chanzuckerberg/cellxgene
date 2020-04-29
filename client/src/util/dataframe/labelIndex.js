@@ -23,7 +23,6 @@ function extent(tarr) {
   return [min, max];
 }
 
-/* eslint-disable class-methods-use-this */
 class IdentityInt32Index {
   /*
   identity/noop index, with small assumptions that labels are int32
@@ -41,12 +40,12 @@ class IdentityInt32Index {
     return k;
   }
 
-  getOffset(i) {
+  static getOffset(i) {
     // label to offset
     return i;
   }
 
-  getLabel(i) {
+  static getLabel(i) {
     // offset to label
     return i;
   }
