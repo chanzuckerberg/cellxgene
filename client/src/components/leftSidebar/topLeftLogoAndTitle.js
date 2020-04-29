@@ -4,12 +4,12 @@ import { connect } from "react-redux";
 import * as globals from "../../globals";
 import Logo from "../framework/logo";
 
-@connect(state => ({
+@connect((state) => ({
   responsive: state.responsive,
   datasetTitle: state.config?.displayNames?.dataset ?? "",
   aboutURL: state.config?.links?.["about-dataset"],
   scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
-  scatterplotYYaccessor: state.controls.scatterplotYYaccessor
+  scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
 }))
 class LeftSideBar extends React.Component {
   render() {
@@ -35,7 +35,7 @@ class LeftSideBar extends React.Component {
           width: globals.leftSidebarWidth - paddingToAvoidScrollBar,
           position: "absolute",
           backgroundColor: "white",
-          zIndex: 8888
+          zIndex: 8888,
           /* x y blur spread color */
           // boxShadow: "-5px -1px 4px 2px rgba(225,225,225,0.4)"
         }}
@@ -49,7 +49,7 @@ class LeftSideBar extends React.Component {
             fontWeight: "bold",
             marginLeft: 5,
             color: globals.logoColor,
-            userSelect: "none"
+            userSelect: "none",
           }}
         >
           cell
@@ -58,7 +58,7 @@ class LeftSideBar extends React.Component {
               position: "relative",
               top: 1,
               fontWeight: 300,
-              fontSize: 24
+              fontSize: 24,
             }}
           >
             ×
@@ -76,11 +76,17 @@ class LeftSideBar extends React.Component {
             marginLeft: "7px",
             height: "1.2em",
             overflow: "hidden",
-            wordBreak: "break-all"
+            wordBreak: "break-all",
           }}
           title={datasetTitle}
         >
-          {aboutURL ? <a href={aboutURL} target="_blank">{displayTitle}</a> : displayTitle}
+          {aboutURL ? (
+            <a href={aboutURL} target="_blank">
+              {displayTitle}
+            </a>
+          ) : (
+            displayTitle
+          )}
         </div>
       </div>
     );

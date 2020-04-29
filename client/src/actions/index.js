@@ -1,3 +1,5 @@
+import { toCamel } from "convert-keys";
+
 import * as globals from "../globals";
 import { Universe, MatrixFBS } from "../util/stateManager";
 import * as Dataframe from "../util/dataframe";
@@ -121,7 +123,11 @@ const doInitialDataLoad = () =>
         .map((url) => doJsonRequest(url));
       const stepOneResults = await Promise.all(requestJson);
       /* set config defaults */
-      const config = { ...globals.configDefaults, ...stepOneResults[0].config };
+      const config = toCamel({
+        ...globals.configDefaults,
+        ...stepOneResults[0].config,
+      });
+      console.log(config);
       const schema = stepOneResults[1];
       const universe = Universe.createUniverseFromResponse(config, schema);
       dispatch({

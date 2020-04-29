@@ -18,19 +18,17 @@ function storageGet(key, defaultValue = null) {
 function storageSet(key, value) {
   try {
     window.localStorage.setItem(key, value);
-  } catch {
-    
-  }
+  } catch {}
 }
 
-@connect(state => ({
-  tosURL: state.config?.parameters?.about_legal_tos
+@connect((state) => ({
+  tosURL: state.config?.parameters?.aboutLegalTos,
 }))
 class TermsPrompt extends React.PureComponent {
   constructor(props) {
     super(props);
     this.state = {
-      hasDismissed: storageGet(TosDismissedKey, false)
+      hasDismissed: storageGet(TosDismissedKey, false),
     };
   }
 
@@ -56,7 +54,7 @@ class TermsPrompt extends React.PureComponent {
           style={{
             fontWeight: 700,
             color: "white",
-            textDecoration: "underline"
+            textDecoration: "underline",
           }}
           href={tosURL}
           target="_blank"
