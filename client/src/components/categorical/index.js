@@ -11,7 +11,7 @@ import LabelInput from "./labelInput";
 import { labelPrompt } from "./labelUtil";
 
 @connect((state) => ({
-  writableCategoriesEnabled: state.config?.parameters?.["annotations"] ?? false,
+  writableCategoriesEnabled: state.config?.parameters?.annotations ?? false,
   schema: state.world?.schema,
   config: state.config,
   ontology: state.ontology,

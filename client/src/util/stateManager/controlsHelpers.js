@@ -8,13 +8,13 @@ import * as globals from "../../globals";
 import { rangeFill as fillRange } from "../range";
 import {
   userDefinedDimensionName,
-  diffexpDimensionName
+  diffexpDimensionName,
 } from "../nameCreators";
 
 export function maxCategoryItems(config) {
   return (
-    config.parameters?.["max-category-items"] ??
-    globals.configDefaults.parameters["max-category-items"]
+    config.parameters?.maxCategoryItems ??
+    globals.configDefaults.parameters.maxCategoryItems
   );
 }
 
@@ -47,7 +47,7 @@ Remember that option values can be ANY js type, except undefined/null.
 function topNCategories(colSchema, summary, N) {
   /* return top N by occurrences in the data, preserving original category order */
   const { categories } = colSchema;
-  const counts = categories.map(cat => summary.categoryCounts.get(cat) ?? 0);
+  const counts = categories.map((cat) => summary.categoryCounts.get(cat) ?? 0);
 
   if (categories.length <= N) {
     return [categories, counts];
@@ -80,14 +80,14 @@ export function selectableCategoryNames(schema, maxCatItems, names) {
   const { index, columns } = schema.annotations.obs;
 
   return columns
-    .filter(colSchema => !names || names.indexOf(colSchema.name) !== -1)
-    .filter(colSchema => {
+    .filter((colSchema) => !names || names.indexOf(colSchema.name) !== -1)
+    .filter((colSchema) => {
       const { type, name } = colSchema;
       const isSelectableType =
         type === "string" || type === "boolean" || type === "categorical";
       return isSelectableType && name !== index;
     })
-    .map(v => v.name);
+    .map((v) => v.name);
 }
 
 export function createCategoricalSelection(world, names) {
@@ -122,7 +122,7 @@ export function createCategoricalSelection(world, names) {
       isTruncated, // bool: true if list was truncated
       categoryValueCounts, // array: cardinality of each category,
       categorySelected: true, // bool - default state for entire category
-      isUserAnno // bool
+      isUserAnno, // bool
     };
     return acc;
   }, {});
