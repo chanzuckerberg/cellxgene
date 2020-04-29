@@ -1,3 +1,4 @@
+/* eslint-disable max-classes-per-file */
 /**
 Label indexing - map a label to & from an integer offset.  See Dataframe
 for how this is used.
@@ -40,12 +41,14 @@ class IdentityInt32Index {
     return k;
   }
 
-  static getOffset(i) {
+  // eslint-disable-next-line class-methods-use-this
+  getOffset(i) {
     // label to offset
     return i;
   }
 
-  static getLabel(i) {
+  // eslint-disable-next-line class-methods-use-this
+  getLabel(i) {
     // offset to label
     return i;
   }
@@ -92,9 +95,6 @@ class IdentityInt32Index {
     return this.__promote(labelArray);
   }
 }
-/* eslint-enable class-methods-use-this */
-
-/* eslint-disable class-methods-use-this */
 class DenseInt32Index {
   /*
   DenseInt32Index indexes integer labels, and uses Int32Array typed arrays
@@ -176,9 +176,7 @@ class DenseInt32Index {
     return this.__promote(labelArray);
   }
 }
-/* eslint-enable class-methods-use-this */
 
-/* eslint-disable class-methods-use-this */
 class KeyIndex {
   /*
   KeyIndex indexes arbitrary JS primitive types, and uses a Map()
@@ -222,6 +220,7 @@ class KeyIndex {
     return this.rindex.length;
   }
 
+  // eslint-disable-next-line class-methods-use-this
   subsetLabels(labelArray) {
     return new KeyIndex(labelArray);
   }

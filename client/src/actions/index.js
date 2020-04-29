@@ -127,7 +127,6 @@ const doInitialDataLoad = () =>
         ...globals.configDefaults,
         ...stepOneResults[0].config,
       });
-      console.log(config);
       const schema = stepOneResults[1];
       const universe = Universe.createUniverseFromResponse(config, schema);
       dispatch({
