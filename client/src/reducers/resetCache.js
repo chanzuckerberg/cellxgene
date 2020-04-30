@@ -14,7 +14,8 @@ const ResetCacheReducer = (
   nextSharedState
 ) => {
   switch (action.type) {
-    case "initial data load complete (universe exists)": {
+    case "initial data load complete (universe exists)":
+    case "set layout choice": {
       const { crossfilter } = nextSharedState;
       return {
         ...state,
