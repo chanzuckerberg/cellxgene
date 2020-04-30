@@ -195,6 +195,8 @@ class CxgAdaptor(DataAdaptor):
         return diffexp_cxg.diffexp_ttest(self, maskA, maskB, top_n, lfc_cutoff)
 
     def get_colors(self):
+        if self.cxg_version == "0.0":
+            return dict()
         meta = self.open_array("cxg_group_metadata").meta
         return json.loads(meta["cxg_category_colors"]) if "cxg_category_colors" in meta else dict()
 
