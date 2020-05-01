@@ -57,7 +57,6 @@ class WSGIServer(Server):
 
     @staticmethod
     def _before_adding_routes(app, app_config):
-        print("DEBUG", app.debug)
         script_hashes, style_hashes = WSGIServer.get_csp_hashes(app, app_config)
         csp = {
             "default-src": ["'self'"],
