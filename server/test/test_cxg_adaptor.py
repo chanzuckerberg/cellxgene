@@ -7,10 +7,14 @@ from server.test.test_datasets.fixtures import pbmc3k_colors
 
 
 class TestCxgAdaptor(unittest.TestCase):
-    def setUp(self):
-        data_locator = f"{PROJECT_ROOT}/server/test/test_datasets/pbmc3k.cxg"
-        config = app_config(data_locator)
-        self.data = CxgAdaptor(DataLocator(data_locator), config)
 
     def test_get_colors(self):
-        self.assertEqual(self.data.get_colors(), pbmc3k_colors)
+        data = self.get_data("pbmc3k.cxg")
+        self.assertDictEqual(data.get_colors(), pbmc3k_colors)
+        data = self.get_data("pbmc3k_v0.cxg")
+        self.assertDictEqual(data.get_colors(), dict())
+
+    def get_data(self, fixture):
+        data_locator = f"{PROJECT_ROOT}/server/test/test_datasets/{fixture}"
+        config = app_config(data_locator)
+        return CxgAdaptor(DataLocator(data_locator), config)
