@@ -9,7 +9,9 @@
     "build": "npm run clean && webpack --config configuration/webpack/webpack.config.prod.js",
     "dev": "npm run clean && webpack --config configuration/webpack/webpack.config.dev.js",
     "fmt": "eslint --fix src",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
   },
   "engineStrict": true,
   "engines": {
@@ -46,7 +48,8 @@
     "react-redux": "^7.2.0",
     "redux": "^4.0.5",
     "redux-thunk": "^2.3.0",
-    "regl": "^1.4.0"
+    "regl": "^1.4.0",
+    "snyk": "^1.316.1"
   },
   "devDependencies": {
     "@babel/core": "^7.9.0",
@@ -141,5 +144,6 @@
         ]
       }
     }
-  }
+  },
+  "snyk": true
 }
