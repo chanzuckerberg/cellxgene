@@ -40,7 +40,7 @@
             window.CELLXGENE = {};
             window.CELLXGENE.API = {
                 prefix: window.location.href + "api/",
-                version: "v0.2/"
+                version: "v0.2/",
             };
         </script>
         <noscript
@@ -50,11 +50,13 @@
         </noscript>
 
         <div id="root"></div>
+
         {% for script in SCRIPTS %}
         <script type="text/javascript" src="{{script | safe}}"></script>
         {% endfor %}
+
         {% for ils in INLINE_SCRIPTS %}
-        <script type="text/javascript">{% include ils %}</script>
+        <script type="text/javascript" no-csp-hash>{% include ils %}</script>
         {% endfor %}
     </body>
 </html>

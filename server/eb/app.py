@@ -60,8 +60,8 @@ class WSGIServer(Server):
         script_hashes, style_hashes = WSGIServer.get_csp_hashes(app, app_config)
         csp = {
             "default-src": ["'self'"],
-            "script-src": ["'unsafe-eval'", "'unsafe-inline'"] + script_hashes,
-            "style-src": ["'unsafe-inline'"] + style_hashes,
+            "script-src": ["'self'", "'unsafe-eval'", "'unsafe-inline'"] + script_hashes,
+            "style-src": ["'self'", "'unsafe-inline'"] + style_hashes,
             "img-src": ["'self'", "data:"],
             "object-src": ["'none'"],
             "base-uri": ["'none'"],
@@ -69,8 +69,6 @@ class WSGIServer(Server):
             "frame-ancestors": ["'none'"],
             "require-trusted-types-for": ["'script'"],
         }
-        if app_config.server__inline_scripts:
-            csp["script-src"].append("'strict-dynamic'")
 
         if app_config.server__csp_directives:
             for k, v in app_config.server__csp_directives.items():

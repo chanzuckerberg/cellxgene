@@ -14,13 +14,14 @@ class CspHashPlugin {
         (data, cb) => {
           const { filename } = this.opts;
 
+          const $ = cheerio.load(data.html, { decodeEntities: false });
+
           if (filename) {
-            const $ = cheerio.load(data.html, { decodeEntities: false });
             const results = {};
-            results["script-hashes"] = $("script:not([src])")
+            results["script-hashes"] = $("script:not([src]):not([no-csp-hash])")
               .map((i, elmt) => this.digest($(elmt).html()))
               .get();
-            results["style-hashes"] = $("style:not([href])")
+            results["style-hashes"] = $("style:not([href]):not([no-csp-hash])")
               .map((i, elmt) => this.digest($(elmt).html()))
               .get();
 
@@ -30,6 +31,18 @@ class CspHashPlugin {
               size: () => json.length,
             };
           }
+
+          // remove no-csp-hash attributes
+          let foundOne = false;
+          $("script[no-csp-hash]").each((i, elmt) => {
+            $(elmt).removeAttr("no-csp-hash");
+            foundOne = true;
+          });
+          $("style[no-csp-hash]").each((i, elmt) => {
+            $(elmt).removeAttr("no-csp-hash");
+            foundOne = true;
+          });
+          if (foundOne) data.html = $.html();
 
           // Tell webpack to move on
           cb(null, data);
