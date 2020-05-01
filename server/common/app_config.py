@@ -54,7 +54,6 @@ class AppConfig(object):
             self.server__open_browser = dc["server"]["open_browser"]
             self.server__about_legal_tos = dc["server"]["about_legal_tos"]
             self.server__about_legal_privacy = dc["server"]["about_legal_privacy"]
-            self.server__force_https = dc["server"]["force_https"]
             self.server__flask_secret_key = dc["server"]["flask_secret_key"]
             self.server__generate_cache_control_headers = dc["server"]["generate_cache_control_headers"]
             self.server__server_timing_headers = dc["server"]["server_timing_headers"]
@@ -241,7 +240,6 @@ class AppConfig(object):
         self.__check_attr("server__scripts", (list, tuple))
         self.__check_attr("server__inline_scripts", (list, tuple))
         self.__check_attr("server__open_browser", bool)
-        self.__check_attr("server__force_https", bool)
         self.__check_attr("server__flask_secret_key", (type(None), str))
         self.__check_attr("server__generate_cache_control_headers", bool)
         self.__check_attr("server__about_legal_tos", (type(None), str))

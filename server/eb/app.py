@@ -57,6 +57,7 @@ class WSGIServer(Server):
 
     @staticmethod
     def _before_adding_routes(app, app_config):
+        print("DEBUG", app.debug)
         script_hashes, style_hashes = WSGIServer.get_csp_hashes(app, app_config)
         csp = {
             "default-src": ["'self'"],
@@ -65,10 +66,12 @@ class WSGIServer(Server):
             "img-src": ["'self'", "data:"],
             "object-src": ["'none'"],
             "base-uri": ["'none'"],
-            "upgrade-insecure-requests": [""],
             "frame-ancestors": ["'none'"],
             "require-trusted-types-for": ["'script'"],
         }
+
+        if not app.debug:
+            csp["upgrade-insecure-requests"] = ""
 
         if app_config.server__csp_directives:
             for k, v in app_config.server__csp_directives.items():
@@ -77,7 +80,7 @@ class WSGIServer(Server):
                 csp[k] = csp.get(k, []) + v
 
         Talisman(
-            app, force_https=app_config.server__force_https, frame_options="DENY", content_security_policy=csp,
+            app, frame_options="DENY", content_security_policy=csp,
         )
 
     @staticmethod
