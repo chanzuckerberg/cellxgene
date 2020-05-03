@@ -47,8 +47,9 @@ There are many more options to these commands that may be important or necessary
    
    The config file may then be customized before the app is deployed.
    
-   If your config file is named "config.yaml" and exists in this directory, then it will be bundled with the 
-   application zip file and installed along side the app on the EB servers.
+   If your config file is named "config.yaml" and exists in `customize/config.yaml`, 
+   then it will be bundled with the application zip file and installed along 
+   side the app on the EB servers.
    
    However, a potentially more flexible approach is to place your config file in a location accessible to the EB 
    servers, such as along side the matrix files in S3.  For example:  s3://my-bucket/my-datasets/config.yaml.
@@ -58,17 +59,26 @@ There are many more options to these commands that may be important or necessary
    is the location where the matrix files are located. 
    This environment variable will override the dataroot in the config file (if specified).
    
-   - Note:  Certain features, such as diffexp and user annotations, are automatically disabled by the EB app,
+   - Note:  Certain features, such as user annotations, are automatically disabled by the EB app,
    and cannot be enabled using configuration.  They may be enabled manually by modifying app.py, however
    this is not supported or recommended at this time.
    
-4. Prepare static endpoints
+4. Customization
 
-   The cellxgene server can server additional static webpages that may be associated with the deployment.
-   These include the about_legal_tos (terms of service), and bout_legal_privacy, for example.  
-   To use this feature, do the following:
+The deployment can be customized in several ways, by adding files to a directory called
+`customize` which is placed in this directory.
+ 
+config file: 
 
-   * In this directory, create a sub directory called "static".  
+This was described in the previous section.  
+
+static files: 
+
+The cellxgene server can server additional static webpages that may be associated with the deployment.
+These include the about_legal_tos (terms of service), and about_legal_privacy, for example.  
+To use this feature, do the following:
+
+   * In this directory, create a sub directory called "customize/deploy/".  
    * Copy the files you want to serve into this directory
    * modify your configuration file to set the location to these file:  /static/deploy/<filename>
 
@@ -77,45 +87,46 @@ There are many more options to these commands that may be important or necessary
 
    ```
    $ mkdir static
-   $ cp <source_dir>/tos.html static/tos.html
-   $ cp <source_dir>/privacy.html static/privacy.html
+   $ cp <source_dir>/tos.html customize/deploy/tos.html
+   $ cp <source_dir>/privacy.html customize/deploy/privacy.html
 
    # edit config.yaml
    $ grep "/static/deploy" config.yaml
    about_legal_tos: /static/deploy/tos.html
    about_legal_privacy: /static/deploy/privacy.html
    ```
-   
-   The next step will place these files into the deployment.
 
-5. Add additional script files to include in HTML page
+Inline javascript scripts:
 
-Additional scripts can be added using the server/scripts or server/inline_scripts config parameters.
+Additional scripts can be added using the server/inline_scripts config parameters.
 To include these scripts in the deployment, use the following steps:
 
-   * In this directory, create a sub directory called "scripts".  
+   * In this directory, create a sub directory called "customize/inline_scripts".  
    * Copy the script files into this directory
-   * modify your configuration file to set the location to these file:
-        - for server/scripts, the path is:  /templates/<filename>
-        - for server/inline_scripts, the path is: <filename>
+   * modify your configuration file to set the location to these file (leaving off customize/inline_scripts)
 
    For example, to add an inline script called "myscript.js":
    
    ```
    $ mkdir scripts
-   $ cp <source_dir>/myscript.js scripts/myscript.js
+   $ cp <source_dir>/myscript.js customize/inline_scripts/myscript.js
    # edit the config.yaml
    $ grep inline_scripts config.yaml
      inline_scripts : [ myscript.js ]
    ```
-   
-6. Create the artifact.zip file for the application
+
+ebextensions:
+
+Any additional config files intended for the `.ebextensions` directory of the artifact can be added
+to the `customize/ebextensions` directory.  Any file found here will be copied over.
+
+5. Create the artifact.zip file for the application
 
    ```
    $ make build
    ```
     
-7. Flask secret key
+6. Flask secret key
 
    The application requires as secret key to be provided to flask, the web framework used by cellxgene.
    There are three ways to provide the secret key:
@@ -130,7 +141,7 @@ To include these scripts in the deployment, use the following steps:
    then the AWS Secret Manager region name can be specified in an environment variable:  CXG_AWS_SECRET_REGION_NAME.
    
    
-8. Create an environment
+7. Create an environment
 
     ```
     # name of the environment
@@ -149,18 +160,18 @@ To include these scripts in the deployment, use the following steps:
        --envvars CXG_DATAROOT=$CXG_DATAROOT,CXG_CONFIG_FILE=$CXG_CONFIG_FILE
     ```
 
-9. Give the elastic beanstalk environment access to the S3 bucket.
+8. Give the elastic beanstalk environment access to the S3 bucket.
 
     This link may provide some useful information:
     https://aws.amazon.com/premiumsupport/knowledge-center/elastic-beanstalk-s3-bucket-instance/
     
-10. Deploy the application
+9. Deploy the application
 
     ```
     $ eb deploy $EB_ENV 
     ```
    
-11. Open the application in a browser
+10. Open the application in a browser
 
    ```
    $ eb open $EB_ENV
