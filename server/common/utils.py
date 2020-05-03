@@ -1,12 +1,16 @@
 import contextlib
 import errno
-import socket
-from urllib.parse import urlsplit, urljoin
+import importlib.util
+import logging
 import os
+import pkgutil
+import socket
+import warnings
+
 from flask import json
+from urllib.parse import urlsplit, urljoin
 import numpy as np
 import pandas as pd
-import warnings
 
 
 def find_available_port(host, port=5005):
@@ -142,3 +146,24 @@ def series_to_schema(array):
         else:
             raise TypeError(f"Annotations of type {dtype} are unsupported.")
         return schema
+
+
+def import_plugins(plugin_module):
+    """
+    Load optional plugin modules from server.common.plugins
+
+    If you would like to customize cellxgene, you can add submodules to server.common.plugins before running the app.
+    This code will import each, loading the code in each. If no plugins are defined, initializing the app continues as
+    normal.
+    """
+    loaded_modules = []
+    try:
+        pkg = importlib.import_module(plugin_module)
+        for loader, name, is_pkg in pkgutil.walk_packages(pkg.__path__):
+            full_name = f"{plugin_module}.{name}"
+            module = importlib.import_module(full_name)
+            logging.info(f"Imported plugin {full_name}")
+            loaded_modules.append(module)
+    except ModuleNotFoundError:
+        logging.debug(f"No plugins found in module: {plugin_module}")
+    return loaded_modules
