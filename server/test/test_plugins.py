@@ -24,7 +24,6 @@ class TestPlugins(unittest.TestCase):
     def tearDownClass(cls) -> None:
         if os.path.isdir(cls.plugins_dir):
             shutil.rmtree(cls.plugins_dir)
-        cls.modules_executed = []
 
     def test_import_plugins(self):
         self.assertTrue(os.path.isfile(self.test_plugin_path))
