@@ -44,14 +44,14 @@ There are many more options to these commands that may be important or necessary
    Currently cellxgene supports a flat file organization.   Each matrix file is located from
    the same s3 prefix or filesystem directory.  This location is specified in the configuration as the dataroot.
    
-2. Create an elastic beanstalk application.  For example:
+1. Create an elastic beanstalk application.  For example:
 
     ```
     EB_APP=cellxgene-app
     eb init -p python-3.6 $EB_APP
     ```
 
-3. Configuring cellxgene
+1. Configuring cellxgene
 
    All the cellxgene configuration options can be set from a configuration file.
    This file can be generated like this:
@@ -170,8 +170,8 @@ incompatibilities and raise an error.
    The application requires as secret key to be provided to flask, the web framework used by cellxgene.
    There are three ways to provide the secret key:
    
-   - In the configuration file:  update the server/flask_secret_key attribute.
-   - An environment variable:  CXG_SECRET_KEY
+   - In the configuration file: update the server/flask_secret_key attribute.
+   - An environment variable: `CXG_SECRET_KEY`
    - Managed by the AWS Secret Manager
    
    If using the AWS Secret Manager, then the secret name is passed as an environment variable:  CXG_AWS_SECRET_NAME.
@@ -180,7 +180,6 @@ incompatibilities and raise an error.
    The most straightforward way is to specified it with the CXG_AWS_SECRET_REGION_NAME environment variable.
    If this environment variable is not defined, then the app attempts to determine the region from the 
    dataroot (if in s3), or the config file location (if in s3).
-   
    
 7. Create an environment
 
@@ -205,7 +204,6 @@ incompatibilities and raise an error.
 
     If using S3, this link may provide some useful information:
     https://aws.amazon.com/premiumsupport/knowledge-center/elastic-beanstalk-s3-bucket-instance/
-    
     If using Lustre, then this link may provide a place to start:
     https://aws.amazon.com/fsx/lustre/
     

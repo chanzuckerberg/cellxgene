@@ -41,6 +41,9 @@ build: clean
 	      cp -r customize/ebextensions/* artifact.dir/.ebextensions;  \
 	  fi; \
 	fi; \
+	if [ -d plugins ] ; then \
+	  cp -r plugins artifact.dir/server/;  \
+	fi; \
 	(cd artifact.dir; \
 	  cp -r server/common/web/static static; \
 	  zip -r ../artifact.zip . --exclude server/test/\* server/eb/\* ; ); \
