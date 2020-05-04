@@ -185,6 +185,8 @@ class Category extends React.Component {
       return this.renderIsStillLoading();
     }
 
+    const checkboxID = `category-select-${metadataField}`;
+
     const isUserAnno =
       schema?.annotations?.obsByName[metadataField]?.writable ?? false;
     const isTruncated = _.get(
@@ -197,6 +199,15 @@ class Category extends React.Component {
       metadataField,
       globals.categoryDisplayStringMaxLength
     );
+
+    const handleCategoryClick = () => {
+      const editingCategory =
+        annotations.isEditingCategoryName &&
+        annotations.categoryBeingEdited === metadataField;
+      if (!editingCategory) {
+        onExpansionChange(metadataField);
+      }
+    };
 
     if (
       !isUserAnno &&
@@ -225,8 +236,9 @@ class Category extends React.Component {
             alignItems: "flex-start",
           }}
         >
-          <label className="bp3-control bp3-checkbox">
+          <label className="bp3-control bp3-checkbox" htmlFor={checkboxID}>
             <input
+              id={checkboxID}
               data-testclass="category-select"
               data-testid={`${metadataField}:category-select`}
               onChange={this.handleToggleAllClick.bind(this)}
@@ -251,18 +263,22 @@ class Category extends React.Component {
             }}
           >
             <span
+              role="menuitem"
+              tabIndex="0"
               data-testid={`${metadataField}:category-expand`}
+              onKeyPress={(e) => {
+                console.log(e.key);
+
+                if (e.key === "Enter") {
+                  handleCategoryClick();
+                }
+              }}
               style={{
                 cursor: "pointer",
                 display: "inline-block",
               }}
               onClick={() => {
-                const editingCategory =
-                  annotations.isEditingCategoryName &&
-                  annotations.categoryBeingEdited === metadataField;
-                if (!editingCategory) {
-                  onExpansionChange(metadataField);
-                }
+                handleCategoryClick();
               }}
             >
               {isUserAnno ? (
