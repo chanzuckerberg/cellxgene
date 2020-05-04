@@ -7,26 +7,26 @@ import {
   Radio,
   RadioGroup,
   Tooltip,
-  Position
+  Position,
 } from "@blueprintjs/core";
 import { connect } from "react-redux";
 import * as globals from "../../globals";
 import { World } from "../../util/stateManager";
 import actions from "../../actions";
 
-@connect(state => ({
+@connect((state) => ({
   universe: state.universe,
   world: state.world,
   layoutChoice: state.layoutChoice,
   reembedController: state.reembedController,
-  enableReembedding: state.config?.parameters?.["enable-reembedding"] ?? false
+  enableReembedding: state.config?.parameters?.["enable-reembedding"] ?? false,
 }))
 class Embedding extends React.PureComponent {
-  handleLayoutChoiceChange = e => {
+  handleLayoutChoiceChange = (e) => {
     const { dispatch } = this.props;
     dispatch({
       type: "set layout choice",
-      layoutChoice: e.currentTarget.value
+      layoutChoice: e.currentTarget.value,
     });
   };
 
@@ -36,7 +36,7 @@ class Embedding extends React.PureComponent {
       world,
       universe,
       dispatch,
-      reembedController
+      reembedController,
     } = this.props;
 
     if (!enableReembedding) return null;
@@ -70,7 +70,7 @@ class Embedding extends React.PureComponent {
     return (
       <ButtonGroup
         style={{
-          marginRight: 10
+          marginRight: 10,
         }}
       >
         <Popover
@@ -85,7 +85,7 @@ class Embedding extends React.PureComponent {
                 data-testid="layout-choice"
                 icon="heatmap"
                 style={{
-                  cursor: "pointer"
+                  cursor: "pointer",
                 }}
               />
             </Tooltip>
@@ -98,7 +98,7 @@ class Embedding extends React.PureComponent {
                 justifyContent: "flex-start",
                 alignItems: "flex-start",
                 flexDirection: "column",
-                padding: 10
+                padding: 10,
               }}
             >
               <RadioGroup
@@ -106,7 +106,7 @@ class Embedding extends React.PureComponent {
                 onChange={this.handleLayoutChoiceChange}
                 selectedValue={layoutChoice.current}
               >
-                {layoutChoice.available.map(name => (
+                {layoutChoice.available.map((name) => (
                   <Radio label={name} value={name} key={name} />
                 ))}
               </RadioGroup>

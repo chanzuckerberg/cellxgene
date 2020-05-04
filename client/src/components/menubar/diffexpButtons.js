@@ -7,26 +7,26 @@ import {
   ButtonGroup,
   AnchorButton,
   Tooltip,
-  Position
+  Position,
 } from "@blueprintjs/core";
 import * as globals from "../../globals";
 import actions from "../../actions";
 import CellSetButton from "./cellSetButtons";
 
-@connect(state => ({
+@connect((state) => ({
   config: state.config,
   crossfilter: state.crossfilter,
   differential: state.differential,
   celllist1: state.differential?.celllist1,
   celllist2: state.differential?.celllist2,
   diffexpMayBeSlow: state.config?.parameters?.["diffexp-may-be-slow"] ?? false,
-  diffexpCellcountMax: state.config?.limits?.diffexp_cellcount_max
+  diffexpCellcountMax: state.config?.limits?.diffexp_cellcount_max,
 }))
 class DiffexpButtons extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      userDismissedPopover: false
+      userDismissedPopover: false,
     };
   }
 
@@ -46,16 +46,16 @@ class DiffexpButtons extends React.Component {
     const { dispatch, differential } = this.props;
     dispatch({
       type: "clear differential expression",
-      diffExp: differential.diffExp
+      diffExp: differential.diffExp,
     });
     dispatch({
-      type: "clear scatterplot"
+      type: "clear scatterplot",
     });
   };
 
   handlePopoverDismiss = () => {
     this.setState({
-      userDismissedPopover: true
+      userDismissedPopover: true,
     });
   };
 
@@ -124,7 +124,7 @@ class DiffexpButtons extends React.Component {
                   alignItems: "flex-end",
                   flexDirection: "column",
                   padding: 10,
-                  maxWidth: 310
+                  maxWidth: 310,
                 }}
               >
                 <p>

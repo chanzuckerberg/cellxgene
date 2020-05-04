@@ -13,7 +13,7 @@ describe("Dataframe column summary", () => {
         categorical: true,
         categories: [],
         categoryCounts: new Map(),
-        numCategories: 0
+        numCategories: 0,
       })
     );
   });
@@ -27,7 +27,7 @@ describe("Dataframe column summary", () => {
         [true],
         new Float32Array([39.3]),
         new Int32Array([99]),
-        [1]
+        [1],
       ],
       null,
       new Dataframe.KeyIndex([
@@ -36,7 +36,7 @@ describe("Dataframe column summary", () => {
         "nameBoolean",
         "nameFloat32",
         "nameInt32",
-        "nameCategorical"
+        "nameCategorical",
       ])
     );
 
@@ -45,7 +45,7 @@ describe("Dataframe column summary", () => {
         categorical: true,
         categories: ["n1"],
         categoryCounts: new Map([["n1", 1]]),
-        numCategories: 1
+        numCategories: 1,
       })
     );
     expect(df.icol(1).summarize()).toEqual(
@@ -53,7 +53,7 @@ describe("Dataframe column summary", () => {
         categorical: true,
         categories: ["hi"],
         categoryCounts: new Map([["hi", 1]]),
-        numCategories: 1
+        numCategories: 1,
       })
     );
     expect(df.icol(2).summarize()).toEqual(
@@ -61,7 +61,7 @@ describe("Dataframe column summary", () => {
         categorical: true,
         categories: [true],
         categoryCounts: new Map([[true, 1]]),
-        numCategories: 1
+        numCategories: 1,
       })
     );
     expect(df.icol(3).summarize()).toEqual(
@@ -71,7 +71,7 @@ describe("Dataframe column summary", () => {
         max: float32Conversion(39.3),
         nan: 0,
         ninf: 0,
-        pinf: 0
+        pinf: 0,
       })
     );
     expect(df.icol(4).summarize()).toEqual(
@@ -81,7 +81,7 @@ describe("Dataframe column summary", () => {
         max: 99,
         nan: 0,
         ninf: 0,
-        pinf: 0
+        pinf: 0,
       })
     );
     expect(df.icol(5).summarize()).toEqual(
@@ -89,7 +89,7 @@ describe("Dataframe column summary", () => {
         categorical: true,
         categories: [1],
         categoryCounts: new Map([[1, 1]]),
-        numCategories: 1
+        numCategories: 1,
       })
     );
   });
@@ -103,7 +103,7 @@ describe("Dataframe column summary", () => {
         [false, true, true],
         new Float32Array([39.3, 39.3, 0]),
         new Int32Array([99, 99, 99]),
-        [1, false, "0"]
+        [1, false, "0"],
       ],
       null,
       new Dataframe.KeyIndex([
@@ -112,7 +112,7 @@ describe("Dataframe column summary", () => {
         "nameBoolean",
         "nameFloat32",
         "nameInt32",
-        "nameCategorical"
+        "nameCategorical",
       ])
     );
 
@@ -120,24 +120,34 @@ describe("Dataframe column summary", () => {
       expect.objectContaining({
         categorical: true,
         categories: expect.arrayContaining(["n0", "n1", "n2"]),
-        categoryCounts: new Map([["n0", 1], ["n1", 1], ["n2", 1]]),
-        numCategories: 3
+        categoryCounts: new Map([
+          ["n0", 1],
+          ["n1", 1],
+          ["n2", 1],
+        ]),
+        numCategories: 3,
       })
     );
     expect(df.icol(1).summarize()).toEqual(
       expect.objectContaining({
         categorical: true,
         categories: expect.arrayContaining(["hi", "bye"]),
-        categoryCounts: new Map([["hi", 2], ["bye", 1]]),
-        numCategories: 2
+        categoryCounts: new Map([
+          ["hi", 2],
+          ["bye", 1],
+        ]),
+        numCategories: 2,
       })
     );
     expect(df.icol(2).summarize()).toEqual(
       expect.objectContaining({
         categorical: true,
         categories: expect.arrayContaining([true, false]),
-        categoryCounts: new Map([[true, 2], [false, 1]]),
-        numCategories: 2
+        categoryCounts: new Map([
+          [true, 2],
+          [false, 1],
+        ]),
+        numCategories: 2,
       })
     );
     expect(df.icol(3).summarize()).toEqual(
@@ -147,7 +157,7 @@ describe("Dataframe column summary", () => {
         max: float32Conversion(39.3),
         nan: 0,
         ninf: 0,
-        pinf: 0
+        pinf: 0,
       })
     );
     expect(df.icol(4).summarize()).toEqual(
@@ -157,15 +167,19 @@ describe("Dataframe column summary", () => {
         max: 99,
         nan: 0,
         ninf: 0,
-        pinf: 0
+        pinf: 0,
       })
     );
     expect(df.icol(5).summarize()).toEqual(
       expect.objectContaining({
         categorical: true,
         categories: expect.arrayContaining([1, false, "0"]),
-        categoryCounts: new Map([[1, 1], [false, 1], ["0", 1]]),
-        numCategories: 3
+        categoryCounts: new Map([
+          [1, 1],
+          [false, 1],
+          ["0", 1],
+        ]),
+        numCategories: 3,
       })
     );
   });
@@ -181,10 +195,10 @@ describe("Dataframe column summary", () => {
           39.3,
           Number.NEGATIVE_INFINITY,
           Number.NaN,
-          Number.POSITIVE_INFINITY
+          Number.POSITIVE_INFINITY,
         ]),
         new Int32Array([99, 99, 99, 99]),
-        [1, false, "0", "0"]
+        [1, false, "0", "0"],
       ],
       null,
       new Dataframe.KeyIndex([
@@ -193,7 +207,7 @@ describe("Dataframe column summary", () => {
         "nameBoolean",
         "nameFloat32",
         "nameInt32",
-        "nameCategorical"
+        "nameCategorical",
       ])
     );
 
@@ -201,24 +215,34 @@ describe("Dataframe column summary", () => {
       expect.objectContaining({
         categorical: true,
         categories: expect.arrayContaining(["n0", "n1", "n2"]),
-        categoryCounts: new Map([["n0", 1], ["n1", 1], ["n2", 2]]),
-        numCategories: 3
+        categoryCounts: new Map([
+          ["n0", 1],
+          ["n1", 1],
+          ["n2", 2],
+        ]),
+        numCategories: 3,
       })
     );
     expect(df.icol(1).summarize()).toEqual(
       expect.objectContaining({
         categorical: true,
         categories: expect.arrayContaining(["hi", "bye"]),
-        categoryCounts: new Map([["hi", 2], ["bye", 1]]),
-        numCategories: 2
+        categoryCounts: new Map([
+          ["hi", 2],
+          ["bye", 1],
+        ]),
+        numCategories: 2,
       })
     );
     expect(df.icol(2).summarize()).toEqual(
       expect.objectContaining({
         categorical: true,
         categories: expect.arrayContaining([true, false]),
-        categoryCounts: new Map([[true, 2], [false, 1]]),
-        numCategories: 2
+        categoryCounts: new Map([
+          [true, 2],
+          [false, 1],
+        ]),
+        numCategories: 2,
       })
     );
     expect(df.icol(3).summarize()).toEqual(
@@ -228,7 +252,7 @@ describe("Dataframe column summary", () => {
         max: float32Conversion(39.3),
         nan: 1,
         ninf: 1,
-        pinf: 1
+        pinf: 1,
       })
     );
     expect(df.icol(4).summarize()).toEqual(
@@ -238,15 +262,19 @@ describe("Dataframe column summary", () => {
         max: 99,
         nan: 0,
         ninf: 0,
-        pinf: 0
+        pinf: 0,
       })
     );
     expect(df.icol(5).summarize()).toEqual(
       expect.objectContaining({
         categorical: true,
         categories: expect.arrayContaining([1, false, "0"]),
-        categoryCounts: new Map([[1, 1], [false, 1], ["0", 1]]),
-        numCategories: 3
+        categoryCounts: new Map([
+          [1, 1],
+          [false, 1],
+          ["0", 1],
+        ]),
+        numCategories: 3,
       })
     );
   });

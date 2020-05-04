@@ -5,17 +5,17 @@ import {
   isTypedArray,
   isArrayOrTypedArray,
   callOnceLazy,
-  memoize
+  memoize,
 } from "./util";
 import {
   summarizeContinuous,
-  summarizeCategorical as _summarizeCategorical
+  summarizeCategorical as _summarizeCategorical,
 } from "./summarize";
 import {
   histogramCategorical as _histogramCategorical,
   hashCategorical,
   histogramContinuous,
-  hashContinuous
+  hashContinuous,
 } from "./histogram";
 
 /*
@@ -140,7 +140,7 @@ class Dataframe {
     if (!Array.isArray(columnarData)) {
       throw new TypeError("Dataframe constructor requires array of columns");
     }
-    if (!columnarData.every(c => isArrayOrTypedArray(c))) {
+    if (!columnarData.every((c) => isArrayOrTypedArray(c))) {
       throw new TypeError("Dataframe columns must all be Array or TypedArray");
     }
     if (!isLabelIndex(rowIndex)) {
@@ -153,7 +153,7 @@ class Dataframe {
     /* check for expected dimensionality / size */
     if (
       nCols !== columnarData.length ||
-      !columnarData.every(c => c.length === nRows)
+      !columnarData.every((c) => c.length === nRows)
     ) {
       throw new RangeError(
         "Dataframe dimension does not match provided data shape"
@@ -261,7 +261,7 @@ class Dataframe {
     Create histogram bins for this column.  Memoized.
     */
     const _memoHistoCat = memoize(_histogramCategorical, hashCategorical);
-    const histogramCategorical = by => _memoHistoCat(get, by);
+    const histogramCategorical = (by) => _memoHistoCat(get, by);
     let histogram = null;
     if (isTypedArray(column)) {
       const mFn = memoize(histogramContinuous, hashContinuous);
@@ -293,7 +293,7 @@ class Dataframe {
     */
     const {
       getOffset: getRowByOffset,
-      getLabel: getRowByLabel
+      getLabel: getRowByLabel,
     } = this.rowIndex;
     this.__columnsAccessor = this.__columns.map((column, idx) => {
       if (accessors[idx]) {
@@ -423,7 +423,7 @@ class Dataframe {
 
     // otherwise, bulid a new dataframe combining columns from both
 
-    const srcOffsets = srcLabels.map(l => dataframe.colIndex.getOffset(l));
+    const srcOffsets = srcLabels.map((l) => dataframe.colIndex.getOffset(l));
 
     // check for label collisions
     if (dstLabels.some(this.hasCol, this)) {
@@ -435,12 +435,12 @@ class Dataframe {
     const { rowIndex } = this;
     const columns = [
       ...this.__columns,
-      ...srcOffsets.map(i => dataframe.__columns[i])
+      ...srcOffsets.map((i) => dataframe.__columns[i]),
     ];
     const colIndex = this.colIndex.withLabels(dstLabels);
     const columnsAccessor = [
       ...this.__columnsAccessor,
-      ...srcOffsets.map(i => dataframe.__columnsAccessor[i])
+      ...srcOffsets.map((i) => dataframe.__columnsAccessor[i]),
     ];
 
     return new this.constructor(
@@ -604,7 +604,7 @@ class Dataframe {
 
     /* subset rows */
     if (rowOffsets) {
-      columns = columns.map(col => {
+      columns = columns.map((col) => {
         const newCol = new col.constructor(rowOffsets.length);
         for (let i = 0, l = rowOffsets.length; i < l; i += 1) {
           newCol[i] = col[rowOffsets[i]];
@@ -630,7 +630,7 @@ class Dataframe {
       if (!labels) {
         return null;
       }
-      return labels.map(label => {
+      return labels.map((label) => {
         const off = index.getOffset(label);
         if (off === undefined) {
           throw new RangeError(`unknown label: ${label}`);

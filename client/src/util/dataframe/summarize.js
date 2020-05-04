@@ -59,7 +59,7 @@ export function summarizeContinuous(col) {
     nan,
     pinf,
     ninf,
-    percentiles
+    percentiles,
   };
 }
 
@@ -77,6 +77,6 @@ export function summarizeCategorical(col) {
     categorical: true,
     categories: [...categoryCounts.keys()],
     categoryCounts,
-    numCategories: categoryCounts.size
+    numCategories: categoryCounts.size,
   };
 }

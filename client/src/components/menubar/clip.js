@@ -6,7 +6,7 @@ import {
   Popover,
   NumericInput,
   Icon,
-  Tooltip
+  Tooltip,
 } from "@blueprintjs/core";
 import { tooltipHoverOpenDelay } from "../../globals";
 
@@ -21,7 +21,7 @@ function Clip(props) {
     isClipDisabled,
     handleClipOnKeyPress,
     handleClipPercentileMaxValueChange,
-    handleClipPercentileMinValueChange
+    handleClipPercentileMinValueChange,
   } = props;
 
   const clipMin =
@@ -37,7 +37,7 @@ function Clip(props) {
     <div
       className="bp3-button-group"
       style={{
-        marginRight: 10
+        marginRight: 10,
       }}
     >
       <Popover
@@ -52,7 +52,7 @@ function Clip(props) {
               data-testid="visualization-settings"
               className={`bp3-button bp3-icon-timeline-bar-chart ${activeClipClass}`}
               style={{
-                cursor: "pointer"
+                cursor: "pointer",
               }}
             />
           </Tooltip>
@@ -67,7 +67,7 @@ function Clip(props) {
               justifyContent: "flex-start",
               alignItems: "flex-start",
               flexDirection: "column",
-              padding: 10
+              padding: 10,
             }}
           >
             <div>Clip all continuous values to percentile range</div>
@@ -77,7 +77,7 @@ function Clip(props) {
                 justifyContent: "space-between",
                 alignItems: "center",
                 paddingTop: 5,
-                paddingBottom: 5
+                paddingBottom: 5,
               }}
             >
               <NumericInput
@@ -121,7 +121,7 @@ function Clip(props) {
                 style={{
                   cursor: "pointer",
                   marginRight: 5,
-                  marginLeft: 5
+                  marginLeft: 5,
                 }}
                 onClick={handleClipCommit}
               >

@@ -19,16 +19,16 @@ System wide schema assumptions:
 export function indexEntireSchema(schema) {
   /* Index schema for ease of use */
   schema.annotations.obsByName = fromEntries(
-    schema.annotations.obs.columns.map(v => [v.name, v])
+    schema.annotations.obs.columns.map((v) => [v.name, v])
   );
   schema.annotations.varByName = fromEntries(
-    schema.annotations.var.columns.map(v => [v.name, v])
+    schema.annotations.var.columns.map((v) => [v.name, v])
   );
   schema.layout.obsByName = fromEntries(
-    schema.layout.obs.map(v => [v.name, v])
+    schema.layout.obs.map((v) => [v.name, v])
   );
   schema.layout.varByName = fromEntries(
-    schema.layout.var.map(v => [v.name, v])
+    schema.layout.var.map((v) => [v.name, v])
   );
 
   return schema;
@@ -40,8 +40,8 @@ function _copyObsAnno(schema) {
     ...schema,
     annotations: {
       ...schema.annotations,
-      obs: _.cloneDeep(schema.annotations.obs)
-    }
+      obs: _.cloneDeep(schema.annotations.obs),
+    },
   };
 }
 
@@ -50,22 +50,22 @@ function _copyObsLayout(schema) {
     ...schema,
     layout: {
       ...schema.layout,
-      obs: _.cloneDeep(schema.layout.obs)
-    }
+      obs: _.cloneDeep(schema.layout.obs),
+    },
   };
 }
 
 function _reindexObsAnno(schema) {
   /* reindex obs annotations ONLY */
   schema.annotations.obsByName = fromEntries(
-    schema.annotations.obs.columns.map(v => [v.name, v])
+    schema.annotations.obs.columns.map((v) => [v.name, v])
   );
   return schema;
 }
 
 function _reindexObsLayout(schema) {
   schema.layout.obsByName = fromEntries(
-    schema.layout.obs.map(v => [v.name, v])
+    schema.layout.obs.map((v) => [v.name, v])
   );
   return schema;
 }
@@ -73,7 +73,7 @@ function _reindexObsLayout(schema) {
 export function removeObsAnnoColumn(schema, name) {
   const newSchema = _copyObsAnno(schema);
   newSchema.annotations.obs.columns = schema.annotations.obs.columns.filter(
-    v => v.name !== name
+    (v) => v.name !== name
   );
   return _reindexObsAnno(newSchema);
 }
@@ -115,7 +115,7 @@ export function addObsAnnoCategory(schema, name, category) {
   const catAnno = newSchema.annotations.obsByName[name];
   catAnno.categories = catLabelSort(catAnno.writable, [
     ...catAnno.categories,
-    category
+    category,
   ]);
   return newSchema;
 }
@@ -130,6 +130,6 @@ export function addObsLayout(schema, layout) {
 export function removeObsLayout(schema, name) {
   /* remove a layout */
   const newSchema = _copyObsLayout(schema);
-  newSchema.layout.obs = schema.layout.obs.filter(v => v.name !== name);
+  newSchema.layout.obs = schema.layout.obs.filter((v) => v.name !== name);
   return _reindexObsLayout(newSchema);
 }

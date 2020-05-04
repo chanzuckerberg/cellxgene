@@ -29,9 +29,9 @@ beforeAll(async () => {
   page = await browser.newPage();
   await page.setViewport(browserViewport);
   if (DEV || DEBUG) {
-    page.on("console", msg => console.log(`PAGE LOG: ${msg.text()}`));
+    page.on("console", (msg) => console.log(`PAGE LOG: ${msg.text()}`));
   }
-  page.on("pageerror", err => {
+  page.on("pageerror", (err) => {
     throw new Error(`Console error: ${err}`);
   });
   utils = puppeteerUtils(page);

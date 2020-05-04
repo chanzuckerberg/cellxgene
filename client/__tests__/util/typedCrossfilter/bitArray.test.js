@@ -187,7 +187,7 @@ describe("fillBySelection", () => {
 describe("wide bitarray", () => {
   test.each([9, 30, 31, 32, 33, 54, 63, 64, 65, 127, 128, 129])(
     "more than %d dimensions",
-    ndim => {
+    (ndim) => {
       /* ensure we move across the uint boundary correctly */
 
       const ba = new BitArray(defaultTestLength);

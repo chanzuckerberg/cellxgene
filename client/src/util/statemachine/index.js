@@ -57,7 +57,7 @@ export default class StateMachine {
     );
 
     // all transition names (aka events)
-    this.events = new Set(transitions.map(tsn => tsn.event));
+    this.events = new Set(transitions.map((tsn) => tsn.event));
 
     // the transition graph.
     // graph[event][from] -> transition

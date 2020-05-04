@@ -1,7 +1,6 @@
 import { strict as assert } from "assert";
 
 export const cellxgeneActions = (page, utils) => ({
-
   async drag(testId, start, end, lasso = false) {
     const layout = await utils.waitByID(testId);
     const elBox = await layout.boxModel();
@@ -31,22 +30,29 @@ export const cellxgeneActions = (page, utils) => ({
   },
 
   async getAllHistograms(testclass, testIds) {
-    const histTestIds = testIds.map(tid => `histogram-${tid}`);
+    const histTestIds = testIds.map((tid) => `histogram-${tid}`);
     // these load asynchronously, so we need to wait for each histogram individually
     await utils.waitForAllByIds(histTestIds);
     const allHistograms = await utils.getAllByClass(testclass);
-    return allHistograms.map(hist => hist.replace(/^histogram-/, ""));
+    return allHistograms.map((hist) => hist.replace(/^histogram-/, ""));
   },
 
   async getAllCategoriesAndCounts(category) {
     await utils.waitByClass("categorical-row");
     return page.$$eval(
       `[data-testid="category-${category}"] [data-testclass='categorical-row']`,
-      rows => Object.fromEntries(rows.map(row => {
-        const cat = row.querySelector("[data-testclass='categorical-value']").innerText;
-        const count = row.querySelector("[data-testclass='categorical-value-count']").innerText;
-        return [cat, count];
-      }))
+      (rows) =>
+        Object.fromEntries(
+          rows.map((row) => {
+            const cat = row.querySelector(
+              "[data-testclass='categorical-value']"
+            ).innerText;
+            const count = row.querySelector(
+              "[data-testclass='categorical-value-count']"
+            ).innerText;
+            return [cat, count];
+          })
+        )
     );
   },
 
@@ -60,12 +66,14 @@ export const cellxgeneActions = (page, utils) => ({
     await utils.waitByID(checkboxId);
     const checkedPseudoclass = await page.$eval(
       `[data-testid='${checkboxId}']`,
-      el => el.matches(":checked")
+      (el) => el.matches(":checked")
     );
     if (!checkedPseudoclass) await utils.clickOn(checkboxId);
     try {
       const categoryRow = await utils.waitByID(`${category}:category-expand`);
-      const isExpanded = await categoryRow.$("[data-testclass='category-expand-is-expanded']");
+      const isExpanded = await categoryRow.$(
+        "[data-testclass='category-expand-is-expanded']"
+      );
       if (isExpanded) await utils.clickOn(`${category}:category-expand`);
     } catch {}
   },
@@ -75,14 +83,22 @@ export const cellxgeneActions = (page, utils) => ({
     const size = await el.boxModel();
     return {
       x: Math.floor(size.width * xAsPercent),
-      y: Math.floor(size.height * yAsPercent)
-    }
+      y: Math.floor(size.height * yAsPercent),
+    };
   },
 
   async calcDragCoordinates(testId, coordinateAsPercent) {
     return {
-      start: await this.calcCoordinate(testId, coordinateAsPercent.x1, coordinateAsPercent.y1),
-      end: await this.calcCoordinate(testId, coordinateAsPercent.x2, coordinateAsPercent.y2)
+      start: await this.calcCoordinate(
+        testId,
+        coordinateAsPercent.x1,
+        coordinateAsPercent.y1
+      ),
+      end: await this.calcCoordinate(
+        testId,
+        coordinateAsPercent.x2,
+        coordinateAsPercent.y2
+      ),
     };
   },
 
@@ -97,7 +113,9 @@ export const cellxgeneActions = (page, utils) => ({
 
   async expandCategory(category) {
     const expand = await utils.waitByID(`${category}:category-expand`);
-    const notExpanded = await expand.$("[data-testclass='category-expand-is-not-expanded']");
+    const notExpanded = await expand.$(
+      "[data-testclass='category-expand-is-not-expanded']"
+    );
     if (notExpanded) await utils.clickOn(`${category}:category-expand`);
   },
 
@@ -117,7 +135,10 @@ export const cellxgeneActions = (page, utils) => ({
   async renameCategory(oldCatgoryName, newCategoryName) {
     await utils.clickOn(`${oldCatgoryName}:see-actions`);
     await utils.clickOn(`${oldCatgoryName}:edit-category-mode`);
-    await utils.clearInputAndTypeInto(`${oldCatgoryName}:edit-category-name-text`, newCategoryName);
+    await utils.clearInputAndTypeInto(
+      `${oldCatgoryName}:edit-category-name-text`,
+      newCategoryName
+    );
     await utils.clickOn(`${oldCatgoryName}:submit-category-edit`);
   },
 
@@ -136,7 +157,7 @@ export const cellxgeneActions = (page, utils) => ({
   async deleteLabel(categoryName, labelName) {
     await this.expandCategory(categoryName);
     await utils.clickOn(`${categoryName}:${labelName}:see-actions`);
-    await utils.clickOn( `${categoryName}:${labelName}:delete-label`);
+    await utils.clickOn(`${categoryName}:${labelName}:delete-label`);
   },
 
   async renameLabel(categoryName, oldLabelName, newLabelName) {
@@ -153,17 +174,23 @@ export const cellxgeneActions = (page, utils) => ({
   async addGeneToSearch(geneName) {
     await utils.typeInto("gene-search", geneName);
     await page.keyboard.press("Enter");
-    await page.waitForSelector(
-      `[data-testid='histogram-${geneName}']`
-    );
+    await page.waitForSelector(`[data-testid='histogram-${geneName}']`);
   },
 
   async subset(coordinatesAsPercent) {
     // In order to deselect the selection after the subset, make sure we have some clear part
     // of the scatterplot we can click on
     assert(coordinatesAsPercent.x2 < 0.99 || coordinatesAsPercent.y2 < 0.99);
-    const lassoSelection = await this.calcDragCoordinates( "layout-graph", coordinatesAsPercent);
-    await this.drag("layout-graph", lassoSelection.start, lassoSelection.end, true );
+    const lassoSelection = await this.calcDragCoordinates(
+      "layout-graph",
+      coordinatesAsPercent
+    );
+    await this.drag(
+      "layout-graph",
+      lassoSelection.start,
+      lassoSelection.end,
+      true
+    );
     await utils.clickOn("subset-button");
     const clearCoordinate = await this.calcCoordinate(
       "layout-graph",
@@ -174,7 +201,9 @@ export const cellxgeneActions = (page, utils) => ({
   },
 
   async setSellSet(cellSet, cellSetNum) {
-    for (const selection of cellSet.filter(sel => sel.kind === "categorical")) {
+    for (const selection of cellSet.filter(
+      (sel) => sel.kind === "categorical"
+    )) {
       await this.selectCategory(selection.metadata, selection.values, true);
     }
     await this.cellSet(cellSetNum);
@@ -190,7 +219,5 @@ export const cellxgeneActions = (page, utils) => ({
     await utils.clickOn("section-bulk-add");
     await utils.typeInto("input-bulk-add", geneNames.join(","));
     await page.keyboard.press("Enter");
-  }
+  },
 });
-
-

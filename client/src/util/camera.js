@@ -20,7 +20,7 @@ class Camera {
     this.prevEvent = {
       clientX: 0,
       clientY: 0,
-      type: 0
+      type: 0,
     };
     this.canvas = canvas;
     this.viewMatrix = mat3.create();
@@ -43,11 +43,11 @@ class Camera {
     const m = this.viewMatrix;
     const dyRange = [
       -panBound - (m[7] + 1) / m[4],
-      panBound - (m[7] - 1) / m[4]
+      panBound - (m[7] - 1) / m[4],
     ];
     const dxRange = [
       -panBound - (m[6] + 1) / m[0],
-      panBound - (m[6] - 1) / m[0]
+      panBound - (m[6] - 1) / m[0],
     ];
 
     const dxClamped = clamp(dx, dxRange);

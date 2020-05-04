@@ -17,13 +17,13 @@ const aConfigResponse = {
       { method: "POST", path: "/cluster/", available: false },
       { method: "POST", path: "/layout/", available: false },
       { method: "POST", path: "/diffexp/", available: false },
-      { method: "POST", path: "/saveLocal/", available: false }
+      { method: "POST", path: "/saveLocal/", available: false },
     ],
     displayNames: {
       engine: "the little engine that could",
-      dataset: "all your zeros are mine"
-    }
-  }
+      dataset: "all your zeros are mine",
+    },
+  },
 };
 
 const aSchemaResponse = {
@@ -31,7 +31,7 @@ const aSchemaResponse = {
     dataframe: {
       nObs,
       nVar,
-      type: "float32"
+      type: "float32",
     },
     annotations: {
       obs: {
@@ -44,9 +44,9 @@ const aSchemaResponse = {
           {
             name: "field4",
             type: "categorical",
-            categories: field4Categories
-          }
-        ]
+            categories: field4Categories,
+          },
+        ],
       },
       var: {
         index: "name",
@@ -58,46 +58,46 @@ const aSchemaResponse = {
           {
             name: "fieldD",
             type: "categorical",
-            categories: fieldDCategories
-          }
-        ]
-      }
+            categories: fieldDCategories,
+          },
+        ],
+      },
     },
     layout: {
       obs: [{ name: "umap", type: "float32", dims: ["umap_0", "umap_1"] }],
-      var: []
-    }
-  }
+      var: [],
+    },
+  },
 };
 
 const anAnnotationsObsJSONResponse = {
   names: ["name", "field1", "field2", "field3", "field4"],
   data: _()
     .range(nObs)
-    .map(idx => [
+    .map((idx) => [
       idx,
       `obs${idx}`,
       2 * idx,
       idx + 0.0133,
       !!(idx & 1),
-      field4Categories[idx % field4Categories.length]
+      field4Categories[idx % field4Categories.length],
     ])
-    .value()
+    .value(),
 };
 
 const anAnnotationsVarJSONResponse = {
   names: ["fieldA", "fieldB", "fieldC", "fieldD", "name"],
   data: _()
     .range(nVar)
-    .map(idx => [
+    .map((idx) => [
       idx,
       10 * idx,
       idx + 2.90143,
       !!(idx & 1),
       fieldDCategories[idx % fieldDCategories.length],
-      `var${idx}`
+      `var${idx}`,
     ])
-    .value()
+    .value(),
 };
 
 function encodeTypedArray(builder, uType, uData) {
@@ -120,7 +120,7 @@ function encodeMatrix(columns, colIndex = undefined) {
   */
   const utf8Encoder = new TextEncoder("utf-8");
   const builder = new flatbuffers.Builder(1024);
-  const cols = _.map(columns, carr => {
+  const cols = _.map(columns, (carr) => {
     let uType;
     let tarr;
     if (_.every(carr, _.isNumber)) {
@@ -178,7 +178,7 @@ const anAnnotationsVarFBSResponse = (() => {
 const aLayoutFBSResponse = (() => {
   const coords = [
     new Float32Array(nObs).fill(Math.random()),
-    new Float32Array(nObs).fill(Math.random())
+    new Float32Array(nObs).fill(Math.random()),
   ];
   return encodeMatrix(coords, ["umap_0", "umap_1"]);
 })();
@@ -187,8 +187,8 @@ const aDataObsResponse = {
   var: [2, 4, 29],
   obs: _()
     .range(nObs)
-    .map(idx => [idx, Math.random(), Math.random(), Math.random()])
-    .value()
+    .map((idx) => [idx, Math.random(), Math.random(), Math.random()])
+    .value(),
 };
 
 export {
@@ -197,5 +197,5 @@ export {
   anAnnotationsVarFBSResponse as annotationsVar,
   anAnnotationsObsFBSResponse as annotationsObs,
   aSchemaResponse as schema,
-  aConfigResponse as config
+  aConfigResponse as config,
 };

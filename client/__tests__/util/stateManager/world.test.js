@@ -7,7 +7,7 @@ import { DimTypes } from "../../../src/util/typedCrossfilter/crossfilter";
 import * as REST from "./sampleResponses";
 import {
   obsAnnoDimensionName,
-  layoutDimensionName
+  layoutDimensionName,
 } from "../../../src/util/nameCreators";
 
 /*
@@ -35,7 +35,7 @@ const defaultBigBang = () => {
     ...Universe.addObsLayout(
       universe,
       Universe.matrixFBSToDataframe(REST.layoutObs)
-    )
+    ),
   };
 
   /* create world */
@@ -50,7 +50,7 @@ const defaultBigBang = () => {
   return {
     universe,
     world,
-    crossfilter
+    crossfilter,
   };
 };
 
@@ -80,8 +80,8 @@ describe("createWorldFromEntireUniverse", () => {
         clipQuantiles: { min: 0, max: 1 },
         unclipped: {
           obsAnnotations: expect.any(Dataframe.Dataframe),
-          varData: expect.any(Dataframe.Dataframe)
-        }
+          varData: expect.any(Dataframe.Dataframe),
+        },
       })
     );
   });
@@ -92,7 +92,7 @@ describe("createWorldFromCurrentSelection", () => {
     const {
       universe,
       world: originalWorld,
-      crossfilter: originalCrossfilter
+      crossfilter: originalCrossfilter,
     } = defaultBigBang();
 
     /* mock a selection */
@@ -100,7 +100,7 @@ describe("createWorldFromCurrentSelection", () => {
       .select(obsAnnoDimensionName("field1"), { mode: "range", lo: 0, hi: 5 })
       .select(obsAnnoDimensionName("field3"), {
         mode: "exact",
-        values: [false]
+        values: [false],
       });
 
     /* create the world from the selection */
@@ -124,7 +124,7 @@ describe("createWorldFromCurrentSelection", () => {
     };
     const matchingIndices = _()
       .range(universe.nObs)
-      .filter(idx => matchFilter(universe.obsAnnotations, idx))
+      .filter((idx) => matchFilter(universe.obsAnnotations, idx))
       .value();
 
     expect(world).toMatchObject(
@@ -139,8 +139,8 @@ describe("createWorldFromCurrentSelection", () => {
         varData: expect.any(Dataframe.Dataframe),
         unclipped: {
           obsAnnotations: expect.any(Dataframe.Dataframe),
-          varData: expect.any(Dataframe.Dataframe)
-        }
+          varData: expect.any(Dataframe.Dataframe),
+        },
       })
     );
 
@@ -170,7 +170,7 @@ describe("createObsDimensionMap", () => {
     const { crossfilter } = defaultBigBang();
     const annotationNames = _.map(
       REST.schema.schema.annotations.obs.columns,
-      c => c.name
+      (c) => c.name
     );
     const obsIndexColName = REST.schema.schema.annotations.obs.index;
     const schemaByObsName = _.keyBy(
@@ -178,7 +178,7 @@ describe("createObsDimensionMap", () => {
       "name"
     );
     expect(crossfilter).toBeDefined();
-    annotationNames.forEach(name => {
+    annotationNames.forEach((name) => {
       const dim = crossfilter.dimensions[obsAnnoDimensionName(name)];
       if (name === obsIndexColName) {
         expect(dim).toBeUndefined();

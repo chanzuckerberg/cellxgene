@@ -5,7 +5,7 @@ const ColorsReducer = (
     colorMode: null,
     colorAccessor: null,
     rgb: null,
-    scale: null
+    scale: null,
   },
   action,
   nextSharedState,
@@ -23,7 +23,7 @@ const ColorsReducer = (
         colorAccessor,
         colorMode,
         rgb,
-        scale
+        scale,
       };
     }
 
@@ -31,7 +31,7 @@ const ColorsReducer = (
       const { userColors } = action;
       return {
         ...state,
-        userColors
+        userColors,
       };
     }
 
@@ -47,7 +47,7 @@ const ColorsReducer = (
       return {
         ...state,
         rgb,
-        scale
+        scale,
       };
     }
 
@@ -73,7 +73,7 @@ const ColorsReducer = (
       return {
         ...state,
         rgb,
-        scale
+        scale,
       };
     }
 
@@ -85,14 +85,14 @@ const ColorsReducer = (
       /* else reset */
       return {
         ...state,
-        ...ColorHelpers.resetColors(prevSharedState.world)
+        ...ColorHelpers.resetColors(prevSharedState.world),
       };
     }
 
     case "reset colorscale": {
       return {
         ...state,
-        ...ColorHelpers.resetColors(prevSharedState.world)
+        ...ColorHelpers.resetColors(prevSharedState.world),
       };
     }
 
@@ -107,13 +107,18 @@ const ColorsReducer = (
       const colorMode = !resetCurrent ? action.type : null;
       const colorAccessor = !resetCurrent ? action.colorAccessor : null;
 
-      const { rgb, scale } = ColorHelpers.createColors(world, colorMode, colorAccessor, colors.userColors);
+      const { rgb, scale } = ColorHelpers.createColors(
+        world,
+        colorMode,
+        colorAccessor,
+        colors.userColors
+      );
       return {
         ...state,
         colorMode,
         colorAccessor,
         rgb,
-        scale
+        scale,
       };
     }
 
@@ -136,7 +141,7 @@ const ColorsReducer = (
         colorMode,
         colorAccessor,
         rgb,
-        scale
+        scale,
       };
     }
 
@@ -153,7 +158,11 @@ const ColorsReducer = (
         return state;
 
       /* else, we need to rebuild colors as labels have changed! */
-      const { rgb, scale } = ColorHelpers.createColors(world, colorMode, colorAccessor);
+      const { rgb, scale } = ColorHelpers.createColors(
+        world,
+        colorMode,
+        colorAccessor
+      );
       return { ...state, rgb, scale };
     }
 

@@ -2,11 +2,11 @@ import { unassignedCategoryLabel } from "../globals";
 import {
   World,
   ControlsHelpers,
-  AnnotationsHelpers
+  AnnotationsHelpers,
 } from "../util/stateManager";
 import {
   addObsLayout,
-  removeObsLayout
+  removeObsLayout,
 } from "../util/stateManager/schemaHelpers";
 import clip from "../util/clip";
 import quantile from "../util/quantile";
@@ -45,14 +45,14 @@ const WorldReducer = (
       if (dim == "varData" || dim == "obsAnnotations") {
         unclipped = {
           ...unclipped,
-          [dim]: universe[dim].clone()
+          [dim]: universe[dim].clone(),
         };
       }
       return {
         ...state,
         schema: universe.schema,
         [dim]: universe[dim].clone(),
-        unclipped
+        unclipped,
       };
     }
 
@@ -113,9 +113,9 @@ const WorldReducer = (
       const allTheGenesWeNeed = [
         ...new Set(
           [userDefinedGenes, diffexpGenes, Object.keys(action.expressionData)]
-            .filter(ele => ele)
+            .filter((ele) => ele)
             .flat()
-        )
+        ),
       ];
       unclippedVarData = ControlsHelpers.pruneVarDataCache(
         unclippedVarData,
@@ -130,14 +130,14 @@ const WorldReducer = (
       let clippedVarData = state.varData;
       const keysToDrop = clippedVarData.colIndex
         .keys()
-        .filter(k => !unclippedVarData.hasCol(k));
+        .filter((k) => !unclippedVarData.hasCol(k));
       const keysToAdd = unclippedVarData.colIndex
         .keys()
-        .filter(k => !clippedVarData.hasCol(k));
-      keysToDrop.forEach(k => {
+        .filter((k) => !clippedVarData.hasCol(k));
+      keysToDrop.forEach((k) => {
         clippedVarData = clippedVarData.dropCol(k);
       });
-      keysToAdd.forEach(k => {
+      keysToAdd.forEach((k) => {
         const data = unclippedVarData.col(k).asArray();
         const q = [state.clipQuantiles.min, state.clipQuantiles.max];
         const [qMinVal, qMaxVal] = quantile(q, data);
@@ -154,8 +154,8 @@ const WorldReducer = (
         varData: clippedVarData,
         unclipped: {
           ...state.unclipped,
-          varData: unclippedVarData
-        }
+          varData: unclippedVarData,
+        },
       };
     }
 
@@ -188,7 +188,7 @@ const WorldReducer = (
           name,
           newAnnotation,
           state.unclipped.obsAnnotations.rowIndex
-        )
+        ),
       };
       return { ...state, schema, obsAnnotations, unclipped };
     }
@@ -201,7 +201,7 @@ const WorldReducer = (
       const obsAnnotations = state.obsAnnotations.renameCol(name, newName);
       const unclipped = {
         ...state.unclipped,
-        obsAnnotations: state.unclipped.obsAnnotations.renameCol(name, newName)
+        obsAnnotations: state.unclipped.obsAnnotations.renameCol(name, newName),
       };
       return { ...state, schema, obsAnnotations, unclipped };
     }
@@ -213,7 +213,7 @@ const WorldReducer = (
       const obsAnnotations = state.obsAnnotations.dropCol(name);
       const unclipped = {
         ...state.unclipped,
-        obsAnnotations: state.unclipped.obsAnnotations.dropCol(name)
+        obsAnnotations: state.unclipped.obsAnnotations.dropCol(name),
       };
       return { ...state, schema, obsAnnotations, unclipped };
     }
@@ -233,7 +233,7 @@ const WorldReducer = (
             crossfilter,
             metadataField,
             newLabelText
-          )
+          ),
         };
       }
       return { ...state, schema };
@@ -253,7 +253,7 @@ const WorldReducer = (
           metadataField,
           oldLabelName,
           newLabelName
-        )
+        ),
       };
       const obsAnnotations = state.obsAnnotations.replaceColData(
         metadataField,
@@ -274,7 +274,7 @@ const WorldReducer = (
           metadataField,
           label,
           unassignedCategoryLabel
-        )
+        ),
       };
       const obsAnnotations = state.obsAnnotations.replaceColData(
         metadataField,
@@ -288,7 +288,7 @@ const WorldReducer = (
       const { crossfilter } = prevSharedState;
       return {
         ...state,
-        ...setLabelOnCurrentSelection(state, crossfilter, metadataField, label)
+        ...setLabelOnCurrentSelection(state, crossfilter, metadataField, label),
       };
     }
 
@@ -306,14 +306,14 @@ const WorldReducer = (
       const embedingLabels = embedding.colIndex.keys();
       const labels = {
         [embedingLabels[0]]: dims[0],
-        [embedingLabels[1]]: dims[1]
+        [embedingLabels[1]]: dims[1],
       };
       obsLayout = obsLayout.withColsFrom(embedding, labels);
       schema = addObsLayout(schema, embeddingSchema);
       return {
         ...state,
         obsLayout,
-        schema
+        schema,
       };
     }
 
@@ -334,7 +334,7 @@ const WorldReducer = (
       return {
         ...state,
         obsLayout,
-        schema
+        schema,
       };
     }
 
@@ -357,7 +357,7 @@ function setLabelOnCurrentSelection(world, crossfilter, metadataField, label) {
       metadataField,
       mask,
       label
-    )
+    ),
   };
   const obsAnnotations = world.obsAnnotations.replaceColData(
     metadataField,
