@@ -365,6 +365,8 @@ class Graph extends React.Component {
       );
     }
     if (Object.keys(stateChanges).length > 0) {
+      // Preventing update loop via stateChanges and diff checks
+      // eslint-disable-next-line react/no-did-update-set-state
       this.setState(stateChanges);
     }
   }
