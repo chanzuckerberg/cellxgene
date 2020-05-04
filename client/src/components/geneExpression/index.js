@@ -274,7 +274,7 @@ class GeneExpression extends React.Component {
                 onActiveItemChange={(item) =>
                   this.setState({ activeItem: item })
                 }
-                itemRenderer={renderGene.bind(this)}
+                itemRenderer={renderGene}
                 items={varIndex || ["No genes"]}
                 popoverProps={{ minimal: true }}
               />
