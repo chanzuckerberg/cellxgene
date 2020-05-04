@@ -23,6 +23,9 @@ export default class LabelInput extends React.PureComponent {
   * popoverProps -- will be passed to <Suggest>
   */
 
+  /* maxinum number of suggestions */
+  static QueryResultLimit = 100;
+
   constructor(props) {
     super(props);
 
@@ -102,9 +105,6 @@ export default class LabelInput extends React.PureComponent {
       />
     );
   };
-
-  /* maxinum number of suggestions */
-  static QueryResultLimit = 100;
 
   filterLabels(query) {
     const { labelSuggestions } = this.props;
