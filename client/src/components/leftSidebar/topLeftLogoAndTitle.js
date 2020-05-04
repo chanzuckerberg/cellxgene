@@ -81,7 +81,7 @@ class LeftSideBar extends React.Component {
           title={datasetTitle}
         >
           {aboutURL ? (
-            <a href={aboutURL} target="_blank">
+            <a href={aboutURL} target="_blank" rel="noopener noreferrer">
               {displayTitle}
             </a>
           ) : (

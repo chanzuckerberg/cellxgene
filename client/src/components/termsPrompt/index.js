@@ -81,6 +81,7 @@ class TermsPrompt extends React.PureComponent {
           }}
           href={tosURL}
           target="_blank"
+          rel="noopener noreferrer"
         >
           terms of service
         </a>
@@ -102,6 +103,7 @@ class TermsPrompt extends React.PureComponent {
           }}
           href={privacyURL}
           target="_blank"
+          rel="noopener noreferrer"
         >
           privacy policy
         </a>
