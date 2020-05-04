@@ -79,7 +79,7 @@ class WSGIServer(Server):
                 csp[k] = csp.get(k, []) + v
 
         Talisman(
-            app, frame_options="DENY", content_security_policy=csp,
+            app, force_https=app_config.server__force_https, frame_options="DENY", content_security_policy=csp,
         )
 
     @staticmethod

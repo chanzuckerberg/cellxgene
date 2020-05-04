@@ -13,6 +13,7 @@ server:
   open_browser: false
   about_legal_tos: null
   about_legal_privacy: null
+  force_https: false
   flask_secret_key: null
   generate_cache_control_headers: false
   server_timing_headers: false
