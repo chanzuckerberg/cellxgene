@@ -62,6 +62,8 @@ class CategoryValue extends React.Component {
       prevProps.metadataField !== metadataField ||
       prevProps.categoryIndex !== categoryIndex
     ) {
+      // adequately checked to prevent looping
+      // eslint-disable-next-line react/no-did-update-set-state
       this.setState({
         editedLabelText: this.currentLabel(),
       });
