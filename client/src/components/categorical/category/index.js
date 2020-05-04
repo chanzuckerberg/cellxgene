@@ -115,6 +115,8 @@ class Category extends React.Component {
       globals.categoryDisplayStringMaxLength
     );
 
+    const checkboxID = `category-select-${metadataField}`;
+
     return (
       <div
         style={{
@@ -135,8 +137,8 @@ class Category extends React.Component {
               alignItems: "flex-start",
             }}
           >
-            <label className="bp3-control bp3-checkbox">
-              <input disabled checked type="checkbox" />
+            <label htmlFor={checkboxID} className="bp3-control bp3-checkbox">
+              <input disabled id={checkboxID} checked type="checkbox" />
               <span className="bp3-control-indicator" />
             </label>
             <Tooltip
@@ -267,8 +269,6 @@ class Category extends React.Component {
               tabIndex="0"
               data-testid={`${metadataField}:category-expand`}
               onKeyPress={(e) => {
-                console.log(e.key);
-
                 if (e.key === "Enter") {
                   handleCategoryClick();
                 }
