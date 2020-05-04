@@ -64,7 +64,7 @@ class Category extends React.Component {
       } else if (categoryCount.selectedCatCount < categoryCount.totalCatCount) {
         /* to be explicit... */
         this.checkbox.indeterminate = true;
-        this.setState({ isChecked: false });
+        this.setState({ isChecked: false }); // eslint-disable-line react/no-did-update-set-state
       }
     }
   }
