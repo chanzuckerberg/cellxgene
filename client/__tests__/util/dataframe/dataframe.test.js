@@ -53,7 +53,7 @@ describe("simple data access", () => {
     [4, 2],
     [
       new Float64Array([0.0, Number.NaN, Number.POSITIVE_INFINITY, 3.14159]),
-      ["red", "blue", "green", "nan"]
+      ["red", "blue", "green", "nan"],
     ],
     new Dataframe.DenseInt32Index([3, 2, 1, 0]),
     new Dataframe.KeyIndex(["numbers", "colors"])
@@ -136,7 +136,7 @@ describe("dataframe subsetting", () => {
         new Int32Array([0, 1, 2]),
         ["A", "B", "C"],
         new Float32Array([4.4, 5.5, 6.6]),
-        ["red", "green", "blue"]
+        ["red", "green", "blue"],
       ],
       null,
       new Dataframe.KeyIndex(["int32", "string", "float32", "colors"])
@@ -258,7 +258,7 @@ describe("dataframe subsetting", () => {
         new Int32Array([0, 1, 2]),
         ["A", "B", "C"],
         new Float32Array([4.4, 5.5, 6.6]),
-        ["red", "green", "blue"]
+        ["red", "green", "blue"],
       ],
       new Dataframe.DenseInt32Index([2, 4, 6]),
       new Dataframe.KeyIndex(["int32", "string", "float32", "colors"])
@@ -283,7 +283,7 @@ describe("dataframe factories", () => {
       [
         new Array(3).fill(0),
         new Int16Array(3).fill(99),
-        new Float64Array(3).fill(1.1)
+        new Float64Array(3).fill(1.1),
       ]
     );
 
@@ -323,7 +323,7 @@ describe("dataframe factories", () => {
         [2, 2],
         [
           ["red", "blue"],
-          [true, false]
+          [true, false],
         ],
         null,
         new Dataframe.KeyIndex(["colors", "bools"])
@@ -346,7 +346,7 @@ describe("dataframe factories", () => {
         [2, 2],
         [
           ["red", "blue"],
-          [true, false]
+          [true, false],
         ],
         null,
         new Dataframe.DenseInt32Index([74, 75])
@@ -371,7 +371,7 @@ describe("dataframe factories", () => {
         [2, 2],
         [
           ["red", "blue"],
-          [true, false]
+          [true, false],
         ],
         null,
         new Dataframe.DenseInt32Index([74, 75])
@@ -396,7 +396,7 @@ describe("dataframe factories", () => {
         [2, 2],
         [
           ["red", "blue"],
-          [true, false]
+          [true, false],
         ],
         null,
         null
@@ -421,7 +421,7 @@ describe("dataframe factories", () => {
         [2, 2],
         [
           ["red", "blue"],
-          [true, false]
+          [true, false],
         ],
         null,
         null
@@ -479,7 +479,7 @@ describe("dataframe factories", () => {
         [
           ["red", "blue"],
           [true, false],
-          [1, 0]
+          [1, 0],
         ],
         null,
         new Dataframe.KeyIndex(["colors", "bools", "numbers"])
@@ -553,7 +553,7 @@ describe("dataframe factories", () => {
         [
           ["red", "blue"],
           [true, false],
-          [1, 0]
+          [1, 0],
         ],
         null,
         new Dataframe.KeyIndex(["colors", "bools", "numbers"])
@@ -595,7 +595,7 @@ describe("dataframe factories", () => {
         [
           ["red", "blue"],
           [true, false],
-          [1, 0]
+          [1, 0],
         ],
         null,
         new Dataframe.KeyIndex(["colors", "bools", "numbers"])
@@ -618,7 +618,7 @@ describe("dataframe factories", () => {
         [
           ["red", "blue"],
           [true, false],
-          [1, 0]
+          [1, 0],
         ],
         null,
         new Dataframe.KeyIndex(["colors", "bools", "numbers"])
@@ -641,7 +641,7 @@ describe("dataframe factories", () => {
         [
           ["red", "blue"],
           [true, false],
-          [1, 0]
+          [1, 0],
         ],
         null,
         null
@@ -665,7 +665,7 @@ describe("dataframe factories", () => {
         [
           ["red", "blue"],
           [true, false],
-          [1, 0]
+          [1, 0],
         ],
         null,
         null
@@ -689,7 +689,7 @@ describe("dataframe factories", () => {
         [
           ["red", "blue"],
           [true, false],
-          [1, 0]
+          [1, 0],
         ],
         null,
         new Dataframe.DenseInt32Index([102, 101, 100])
@@ -715,7 +715,7 @@ describe("dataframe factories", () => {
         [
           new Array(3).fill(0),
           new Int16Array(3).fill(99),
-          new Float64Array(3).fill(1.1)
+          new Float64Array(3).fill(1.1),
         ]
       );
       const dfB = dfA.mapColumns((col, idx) => {
@@ -760,7 +760,7 @@ describe("dataframe factories", () => {
         [2, 2],
         [
           [true, false],
-          [1, 0]
+          [1, 0],
         ],
         null,
         new Dataframe.KeyIndex(["A", "B"])
@@ -781,7 +781,7 @@ describe("dataframe col", () => {
       [2, 2],
       [
         [true, false],
-        [1, 0]
+        [1, 0],
       ],
       null,
       new Dataframe.KeyIndex(["A", "B"])

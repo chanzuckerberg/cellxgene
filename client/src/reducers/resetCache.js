@@ -8,17 +8,18 @@ which improves Reset UI performance.
 */
 const ResetCacheReducer = (
   state = {
-    crossfilter: null
+    crossfilter: null,
   },
   action,
   nextSharedState
 ) => {
   switch (action.type) {
-    case "initial data load complete (universe exists)": {
+    case "initial data load complete (universe exists)":
+    case "set layout choice": {
       const { crossfilter } = nextSharedState;
       return {
         ...state,
-        crossfilter
+        crossfilter,
       };
     }
     default: {

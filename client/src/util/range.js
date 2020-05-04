@@ -23,28 +23,28 @@ rangeFill(array, start, step) -> array
 */
 
 function _doFill(arr, start, step, count) {
-	for (let idx = 0, val = start; idx < count; idx += 1, val += step) {
-		arr[idx] = val;
-	}
-	return arr;
+  for (let idx = 0, val = start; idx < count; idx += 1, val += step) {
+    arr[idx] = val;
+  }
+  return arr;
 }
 
 export function rangeFill(arr, start = 0, step = 1) {
-	return _doFill(arr, start, step, arr.length);
+  return _doFill(arr, start, step, arr.length);
 }
 
 export function range(start, stop, step) {
-	if (start === undefined) return [];
-	if (stop === undefined) {
-		stop = start;
-		start = 0;
-	}
-	step = step || 1; // catch undefind and zero
-	const len = Math.max(Math.ceil((stop - start) / step), 0);
-	return _doFill(new Array(len), start, step, len);
+  if (start === undefined) return [];
+  if (stop === undefined) {
+    stop = start;
+    start = 0;
+  }
+  step = step || 1; // catch undefind and zero
+  const len = Math.max(Math.ceil((stop - start) / step), 0);
+  return _doFill(new Array(len), start, step, len);
 }
 
 export function linspace(start, stop, nsteps) {
-	const delta = (stop - start) / (nsteps - 1).toFixed();
-	return range(0, nsteps, 1).map(i => start + i * delta);
+  const delta = (stop - start) / (nsteps - 1).toFixed();
+  return range(0, nsteps, 1).map((i) => start + i * delta);
 }

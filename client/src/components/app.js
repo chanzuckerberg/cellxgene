@@ -14,10 +14,10 @@ import TermsOfServicePrompt from "./termsPrompt";
 
 import actions from "../actions";
 
-@connect(state => ({
+@connect((state) => ({
   loading: state.controls.loading,
   error: state.controls.error,
-  graphRenderCounter: state.controls.graphRenderCounter
+  graphRenderCounter: state.controls.graphRenderCounter,
 }))
 class App extends React.Component {
   constructor(props) {
@@ -40,16 +40,16 @@ class App extends React.Component {
         type: "window resize",
         data: {
           height: window.innerHeight,
-          width: window.innerWidth
-        }
+          width: window.innerWidth,
+        },
       });
     });
     dispatch({
       type: "window resize",
       data: {
         height: window.innerHeight,
-        width: window.innerWidth
-      }
+        width: window.innerWidth,
+      },
     });
   }
 
@@ -70,7 +70,7 @@ class App extends React.Component {
               position: "fixed",
               fontWeight: 500,
               top: window.innerHeight / 2,
-              left: window.innerWidth / 2 - 50
+              left: window.innerWidth / 2 - 50,
             }}
           >
             loading cellxgene
@@ -82,7 +82,7 @@ class App extends React.Component {
               position: "fixed",
               fontWeight: 500,
               top: window.innerHeight / 2,
-              left: window.innerWidth / 2 - 50
+              left: window.innerWidth / 2 - 50,
             }}
           >
             error loading

@@ -14,7 +14,7 @@ describe("Dataframe column histogram", () => {
       new Map([
         ["n1", new Map([["c1", 1]])],
         ["n2", new Map([["c2", 1]])],
-        ["n3", new Map([["c3", 1]])]
+        ["n3", new Map([["c3", 1]])],
       ])
     );
     // memoized?
@@ -31,7 +31,11 @@ describe("Dataframe column histogram", () => {
 
     const h1 = df.col("value").histogram(3, [0, 2], df.col("name"));
     expect(h1).toMatchObject(
-      new Map([["n1", [1, 0, 0]], ["n2", [0, 1, 0]], ["n3", [0, 0, 1]]])
+      new Map([
+        ["n1", [1, 0, 0]],
+        ["n2", [0, 1, 0]],
+        ["n3", [0, 0, 1]],
+      ])
     );
     // memoized?
     expect(df.col("value").histogram(3, [0, 2], df.col("name"))).toMatchObject(
@@ -48,7 +52,13 @@ describe("Dataframe column histogram", () => {
     );
 
     const h1 = df.col("cat").histogram();
-    expect(h1).toMatchObject(new Map([["c1", 1], ["c2", 1], ["c3", 1]]));
+    expect(h1).toMatchObject(
+      new Map([
+        ["c1", 1],
+        ["c2", 1],
+        ["c3", 1],
+      ])
+    );
     // memoized?
     expect(df.col("value").histogram(3, [0, 2])).toMatchObject(h1);
   });
@@ -87,7 +97,7 @@ describe("Dataframe column histogram", () => {
       0,
       0,
       0,
-      2
+      2,
     ]);
   });
 });

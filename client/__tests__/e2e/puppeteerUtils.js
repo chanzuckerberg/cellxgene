@@ -1,4 +1,4 @@
-export const puppeteerUtils = page => ({
+export const puppeteerUtils = (page) => ({
   async waitByID(testId, props = {}) {
     return page.waitForSelector(`[data-testid='${testId}']`, props);
   },
@@ -9,13 +9,13 @@ export const puppeteerUtils = page => ({
 
   async waitForAllByIds(testIds) {
     await Promise.all(
-      testIds.map(testId => page.waitForSelector(`[data-testid='${testId}']`))
+      testIds.map((testId) => page.waitForSelector(`[data-testid='${testId}']`))
     );
   },
 
   async getAllByClass(testClass) {
-    return page.$$eval(`[data-testclass=${testClass}]`, eles =>
-      eles.map(ele => ele.dataset.testid)
+    return page.$$eval(`[data-testclass=${testClass}]`, (eles) =>
+      eles.map((ele) => ele.dataset.testid)
     );
   },
 
@@ -52,18 +52,18 @@ export const puppeteerUtils = page => ({
 
   async getOneElementInnerHTML(selector) {
     await page.waitForSelector(selector);
-    return page.$eval(selector, el => el.innerHTML);
+    return page.$eval(selector, (el) => el.innerHTML);
   },
 
   async getOneElementInnerText(selector) {
     await page.waitForSelector(selector);
-    return page.$eval(selector, el => el.innerText);
+    return page.$eval(selector, (el) => el.innerText);
   },
 
   async getElementCoordinates(testid) {
-    return page.$eval(`[data-testid='${testid}']`, elem => {
+    return page.$eval(`[data-testid='${testid}']`, (elem) => {
       const { left, top } = elem.getBoundingClientRect();
       return [left, top];
     });
-  }
+  },
 });

@@ -14,37 +14,37 @@ return Promise.all([
 ])
 */
 export class PromiseLimit {
-	constructor(maxConcurrency) {
-		this.queue = new Set();
-		this.maxConcurrency = maxConcurrency;
-		this.pending = 0;
-	}
+  constructor(maxConcurrency) {
+    this.queue = new Set();
+    this.maxConcurrency = maxConcurrency;
+    this.pending = 0;
+  }
 
-	add(fn, ...args) {
-		// fn - must return a promise
-		// args - will be passed to fn
-		return new Promise((resolve, reject) => {
-			this.queue.add({ fn, args, resolve, reject });
-			this._resolveNext(false);
-		});
-	}
+  add(fn, ...args) {
+    // fn - must return a promise
+    // args - will be passed to fn
+    return new Promise((resolve, reject) => {
+      this.queue.add({ fn, args, resolve, reject });
+      this._resolveNext(false);
+    });
+  }
 
-	_resolveNext = (completed = true) => {
-		if (completed) this.pending -= 1;
+  _resolveNext = (completed = true) => {
+    if (completed) this.pending -= 1;
 
-		while (this.queue.size > 0 && this.pending < this.maxConcurrency) {
-			const task = this.queue.values().next().value; // order of insertion
-			this.pending += 1;
-			this.queue.delete(task);
-			const { resolve, reject, fn, args } = task;
+    while (this.queue.size > 0 && this.pending < this.maxConcurrency) {
+      const task = this.queue.values().next().value; // order of insertion
+      this.pending += 1;
+      this.queue.delete(task);
+      const { resolve, reject, fn, args } = task;
 
-			try {
-				const result = fn(...args);
-				result.then(this._resolveNext, this._resolveNext);
-				result.then(resolve, reject);
-			} catch (err) {
-				reject(err);
-			}
-		}
-	};
+      try {
+        const result = fn(...args);
+        result.then(this._resolveNext, this._resolveNext);
+        result.then(resolve, reject);
+      } catch (err) {
+        reject(err);
+      }
+    }
+  };
 }

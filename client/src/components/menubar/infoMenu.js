@@ -47,16 +47,16 @@ function InformationMenu(props) {
               }`}
             />
             <MenuItem text="MIT License" />
-            {tosURL ? <MenuItem
-              href={tosURL}
-              target="_blank"
-              text="Terms of Service"
-            /> : null }
-            {privacyURL ? <MenuItem
-              href={privacyURL}
-              target="_blank"
-              text="Privacy Policy"
-            /> : null }
+            {tosURL ? (
+              <MenuItem href={tosURL} target="_blank" text="Terms of Service" />
+            ) : null}
+            {privacyURL ? (
+              <MenuItem
+                href={privacyURL}
+                target="_blank"
+                text="Privacy Policy"
+              />
+            ) : null}
           </Menu>
         }
         position={Position.BOTTOM_RIGHT}
@@ -65,7 +65,7 @@ function InformationMenu(props) {
           type="button"
           className="bp3-button bp3-icon-info-sign"
           style={{
-            cursor: "pointer"
+            cursor: "pointer",
           }}
         />
       </Popover>

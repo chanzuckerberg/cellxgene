@@ -194,6 +194,12 @@ class CxgAdaptor(DataAdaptor):
             lfc_cutoff = self.config.diffexp__lfc_cutoff
         return diffexp_cxg.diffexp_ttest(self, maskA, maskB, top_n, lfc_cutoff)
 
+    def get_colors(self):
+        if self.cxg_version == "0.0":
+            return dict()
+        meta = self.open_array("cxg_group_metadata").meta
+        return json.loads(meta["cxg_category_colors"]) if "cxg_category_colors" in meta else dict()
+
     def get_X_array(self, obs_mask=None, var_mask=None):
         obs_items = pack_selector_from_mask(obs_mask)
         var_items = pack_selector_from_mask(var_mask)

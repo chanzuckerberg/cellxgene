@@ -4,6 +4,7 @@ import json
 from server.data_anndata.anndata_adaptor import AnndataAdaptor
 from server.common.data_locator import DataLocator
 from server.common.app_config import AppConfig
+from server.test import PROJECT_ROOT
 
 
 class DataLoadAdaptorTest(unittest.TestCase):
@@ -12,7 +13,7 @@ class DataLoadAdaptorTest(unittest.TestCase):
     """
 
     def setUp(self):
-        self.data_file = DataLocator("../example-dataset/pbmc3k.h5ad")
+        self.data_file = DataLocator(f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad")
         config = AppConfig()
         config.update(single_dataset__datapath=self.data_file.path)
         config.complete_config()

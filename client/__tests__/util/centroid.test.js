@@ -31,7 +31,7 @@ describe("centroid", () => {
       ...Universe.addObsLayout(
         universe,
         Universe.matrixFBSToDataframe(REST.layoutObs)
-      )
+      ),
     };
     world = World.createWorldFromEntireUniverse(universe);
 
@@ -61,10 +61,10 @@ describe("centroid", () => {
     // This expected result assumes that all cells belong in all categorical values inside of sample response
     const expectedResult = [
       quantile([0.5], world.obsLayout.col("umap_0").asArray())[0],
-      quantile([0.5], world.obsLayout.col("umap_1").asArray())[0]
+      quantile([0.5], world.obsLayout.col("umap_1").asArray())[0],
     ];
 
-    centroidResult.forEach(coordinate => {
+    centroidResult.forEach((coordinate) => {
       expect(coordinate).toEqual(expectedResult);
     });
   });
@@ -86,10 +86,10 @@ describe("centroid", () => {
     // This expected result assumes that all cells belong in all categorical values inside of sample response
     const expectedResult = [
       quantile([0.5], world.obsLayout.col("umap_0").asArray())[0],
-      quantile([0.5], world.obsLayout.col("umap_1").asArray())[0]
+      quantile([0.5], world.obsLayout.col("umap_1").asArray())[0],
     ];
 
-    centroidResult.forEach(coordinate => {
+    centroidResult.forEach((coordinate) => {
       expect(coordinate).toEqual(expectedResult);
     });
   });

@@ -24,7 +24,7 @@ export default (
       .brush()
       .extent([
         [0, 0],
-        [responsive.width - graphPaddingRight, responsive.height]
+        [responsive.width - graphPaddingRight, responsive.height],
       ])
       .on("start", handleStartAction)
       .on("brush", handleDragAction)

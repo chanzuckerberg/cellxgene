@@ -5,7 +5,7 @@ const ColorsReducer = (
     colorMode: null,
     colorAccessor: null,
     rgb: null,
-    scale: null
+    scale: null,
   },
   action,
   nextSharedState,
@@ -23,7 +23,15 @@ const ColorsReducer = (
         colorAccessor,
         colorMode,
         rgb,
-        scale
+        scale,
+      };
+    }
+
+    case "universe: user color load success": {
+      const { userColors } = action;
+      return {
+        ...state,
+        userColors,
       };
     }
 
@@ -39,7 +47,7 @@ const ColorsReducer = (
       return {
         ...state,
         rgb,
-        scale
+        scale,
       };
     }
 
@@ -65,7 +73,7 @@ const ColorsReducer = (
       return {
         ...state,
         rgb,
-        scale
+        scale,
       };
     }
 
@@ -77,20 +85,20 @@ const ColorsReducer = (
       /* else reset */
       return {
         ...state,
-        ...ColorHelpers.resetColors(prevSharedState.world)
+        ...ColorHelpers.resetColors(prevSharedState.world),
       };
     }
 
     case "reset colorscale": {
       return {
         ...state,
-        ...ColorHelpers.resetColors(prevSharedState.world)
+        ...ColorHelpers.resetColors(prevSharedState.world),
       };
     }
 
     case "color by categorical metadata":
     case "color by continuous metadata": {
-      const { world } = prevSharedState;
+      const { world, colors } = prevSharedState;
 
       /* toggle between this mode and reset */
       const resetCurrent =
@@ -102,14 +110,15 @@ const ColorsReducer = (
       const { rgb, scale } = ColorHelpers.createColors(
         world,
         colorMode,
-        colorAccessor
+        colorAccessor,
+        colors.userColors
       );
       return {
         ...state,
         colorMode,
         colorAccessor,
         rgb,
-        scale
+        scale,
       };
     }
 
@@ -132,7 +141,7 @@ const ColorsReducer = (
         colorMode,
         colorAccessor,
         rgb,
-        scale
+        scale,
       };
     }
 
@@ -141,7 +150,7 @@ const ColorsReducer = (
     case "annotation: delete label": {
       const { world } = nextSharedState;
       const { colorMode, colorAccessor } = state;
-      const { metadataField } = action;
+      const { metadataField, colors } = action;
       if (
         colorMode !== "color by categorical metadata" ||
         colorAccessor !== metadataField

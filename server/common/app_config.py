@@ -50,6 +50,7 @@ class AppConfig(object):
             self.server__host = dc["server"]["host"]
             self.server__port = dc["server"]["port"]
             self.server__scripts = dc["server"]["scripts"]
+            self.server__inline_scripts = dc["server"]["inline_scripts"]
             self.server__open_browser = dc["server"]["open_browser"]
             self.server__about_legal_tos = dc["server"]["about_legal_tos"]
             self.server__about_legal_privacy = dc["server"]["about_legal_privacy"]
@@ -57,6 +58,7 @@ class AppConfig(object):
             self.server__flask_secret_key = dc["server"]["flask_secret_key"]
             self.server__generate_cache_control_headers = dc["server"]["generate_cache_control_headers"]
             self.server__server_timing_headers = dc["server"]["server_timing_headers"]
+            self.server__csp_directives = dc["server"]["csp_directives"]
 
             self.multi_dataset__dataroot = dc["multi_dataset"]["dataroot"]
             self.multi_dataset__index = dc["multi_dataset"]["index"]
@@ -78,6 +80,7 @@ class AppConfig(object):
             self.user_annotations__ontology__obo_location = dc["user_annotations"]["ontology"]["obo_location"]
 
             self.presentation__max_categories = dc["presentation"]["max_categories"]
+            self.presentation__custom_colors = dc["presentation"]["custom_colors"]
 
             self.embeddings__names = dc["embeddings"]["names"]
             self.embeddings__enable_reembedding = dc["embeddings"]["enable_reembedding"]
@@ -127,6 +130,12 @@ class AppConfig(object):
         if val is not None:
             mapping["adaptor__cxg_adaptor__tiledb_ctx"] = (("adaptor", "cxg_adaptor", "tiledb_ctx"), val)
             del dc["adaptor"]["cxg_adaptor"]["tiledb_ctx"]
+
+        # special case for csp_directives whose value is a dict.
+        val = config.get("server", {}).get("csp_directives")
+        if val is not None:
+            mapping["server__csp_directives"] = (("server", "csp_directives"), val)
+            del dc["server"]["csp_directives"]
 
         flat_config = flatten(dc)
         for key, value in flat_config.items():
@@ -230,6 +239,7 @@ class AppConfig(object):
         self.__check_attr("server__host", str)
         self.__check_attr("server__port", (type(None), int))
         self.__check_attr("server__scripts", (list, tuple))
+        self.__check_attr("server__inline_scripts", (list, tuple))
         self.__check_attr("server__open_browser", bool)
         self.__check_attr("server__force_https", bool)
         self.__check_attr("server__flask_secret_key", (type(None), str))
@@ -237,6 +247,7 @@ class AppConfig(object):
         self.__check_attr("server__about_legal_tos", (type(None), str))
         self.__check_attr("server__about_legal_privacy", (type(None), str))
         self.__check_attr("server__server_timing_headers", bool)
+        self.__check_attr("server__csp_directives", (type(None), dict))
 
         if self.server__port:
             if not is_port_available(self.server__host, self.server__port):
@@ -261,6 +272,18 @@ class AppConfig(object):
         #   second, from config file
         self.server__flask_secret_key = os.environ.get("CXG_SECRET_KEY", self.server__flask_secret_key)
 
+        # CSP Directives are a dict of string: list(string) or string: string
+        if self.server__csp_directives is not None:
+            for k, v in self.server__csp_directives.items():
+                if not isinstance(k, str):
+                    raise ConfigurationError(f"CSP directive names must be a string.")
+                if isinstance(v, list):
+                    for policy in v:
+                        if not isinstance(policy, str):
+                            raise ConfigurationError(f"CSP directive value must be a string or list of strings.")
+                elif not isinstance(v, str):
+                    raise ConfigurationError(f"CSP directive value must be a string or list of strings.")
+
     def handle_data_locator(self, context):
         self.__check_attr("data_locator__s3__region_name", (type(None), bool, str))
         if self.data_locator__s3__region_name is True:
@@ -275,6 +298,7 @@ class AppConfig(object):
 
     def handle_presentation(self, context):
         self.__check_attr("presentation__max_categories", int)
+        self.__check_attr("presentation__custom_colors", bool)
 
     def handle_single_dataset(self, context):
         self.__check_attr("single_dataset__datapath", (str, type(None)))
@@ -517,6 +541,7 @@ class AppConfig(object):
             "annotations_cell_ontology_enabled": False,
             "annotations_cell_ontology_obopath": None,
             "annotations_cell_ontology_terms": None,
+            "custom_colors": self.presentation__custom_colors,
             "diffexp-may-be-slow": False,
             "about_legal_tos": self.server__about_legal_tos,
             "about_legal_privacy": self.server__about_legal_privacy,

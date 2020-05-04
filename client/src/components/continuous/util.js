@@ -13,7 +13,7 @@ export const innerHeight = height - 2;
 
 export const devicePixelRatio = window.devicePixelRatio || 1;
 
-export const createDimensions = data => {
+export const createDimensions = (data) => {
   const newArr = [];
   _.each(data, (value, key) => {
     if (value.range) {
@@ -21,12 +21,12 @@ export const createDimensions = data => {
         key /* room for confusion: lodash calls this key, it's also the name of the property parallel coords code is looking for */,
         type: {
           within: (d, extent, dim) =>
-            extent[0] <= dim.scale(d) && dim.scale(d) <= extent[1]
+            extent[0] <= dim.scale(d) && dim.scale(d) <= extent[1],
         },
         scale: d3
           .scaleSqrt()
           .range([innerHeight, 0])
-          .domain([0, value.range.max])
+          .domain([0, value.range.max]),
       });
     }
   });

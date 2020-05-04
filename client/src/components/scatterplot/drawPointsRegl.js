@@ -1,6 +1,6 @@
 import { glPointFlags, glPointSize } from "../../util/glHelpers";
 
-export default function(regl) {
+export default function (regl) {
   return regl({
     vert: `
     precision mediump float;
@@ -52,17 +52,17 @@ export default function(regl) {
     attributes: {
       position: regl.prop("position"),
       color: regl.prop("color"),
-      flag: regl.prop("flag")
+      flag: regl.prop("flag"),
     },
 
     uniforms: {
       projection: regl.prop("projection"),
       nPoints: regl.prop("nPoints"),
-      minViewportDimension: regl.prop("minViewportDimension")
+      minViewportDimension: regl.prop("minViewportDimension"),
     },
 
     count: regl.prop("count"),
 
-    primitive: "points"
+    primitive: "points",
   });
 }

@@ -1,6 +1,6 @@
 import {
   sliceByIndex,
-  makeSortIndex
+  makeSortIndex,
 } from "../../../src/util/typedCrossfilter/util";
 import { rangeFill as fillRange } from "../../../src/util/range";
 

@@ -69,12 +69,15 @@ def dataset_index(dataset=None):
         location = path_join(config.multi_dataset__dataroot, dataset)
 
     scripts = config.server__scripts
+    inline_scripts = config.server__inline_scripts
 
     try:
         cache_manager = current_app.matrix_data_cache_manager
         with cache_manager.data_adaptor(location, config) as data_adaptor:
             dataset_title = config.get_title(data_adaptor)
-            return render_template("index.html", datasetTitle=dataset_title, SCRIPTS=scripts)
+            return render_template(
+                "index.html", datasetTitle=dataset_title, SCRIPTS=scripts, INLINE_SCRIPTS=inline_scripts
+            )
     except DatasetAccessError:
         return common_rest.abort_and_log(
             HTTPStatus.BAD_REQUEST, f"Invalid dataset {dataset}", loglevel=logging.INFO, include_exc_info=True
@@ -207,6 +210,13 @@ class DataVarAPI(Resource):
         return common_rest.data_var_get(request, data_adaptor)
 
 
+class ColorsAPI(Resource):
+    @cache_control(public=True, max_age=ONE_WEEK)
+    @rest_get_data_adaptor
+    def get(self, data_adaptor):
+        return common_rest.colors_get(data_adaptor)
+
+
 class DiffExpObsAPI(Resource):
     @cache_control(no_store=True)
     @rest_get_data_adaptor
@@ -235,6 +245,8 @@ def get_api_resources(bp_api):
     api.add_resource(AnnotationsObsAPI, "/annotations/obs")
     api.add_resource(AnnotationsVarAPI, "/annotations/var")
     api.add_resource(DataVarAPI, "/data/var")
+    # Display routes
+    api.add_resource(ColorsAPI, "/colors")
     # Computation routes
     api.add_resource(DiffExpObsAPI, "/diffexp/obs")
     api.add_resource(LayoutObsAPI, "/layout/obs")

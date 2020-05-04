@@ -1,9 +1,16 @@
 import React from "react";
 import { connect } from "react-redux";
+import {
+  Drawer,
+  Button,
+  Classes,
+  Position,
+  Colors,
+  Icon,
+} from "@blueprintjs/core";
 import * as globals from "../../globals";
-import { termsOfServiceToast } from "../framework/toasters";
 
-const TosDismissedKey = "cxg.tosDismissed";
+const CookieDecision = "cxg.cookieDecision";
 
 function storageGet(key, defaultValue = null) {
   try {
@@ -23,51 +30,127 @@ function storageSet(key, value) {
 
 @connect((state) => ({
   tosURL: state.config?.parameters?.aboutLegalTos,
+  privacyURL: state.config?.parameters?.AboutLegalPrivacy,
 }))
 class TermsPrompt extends React.PureComponent {
   constructor(props) {
     super(props);
+    const { tosURL, privacyURL } = this.props;
+    const cookieDecision = storageGet(CookieDecision, null);
+    const hasDecided = cookieDecision !== null;
     this.state = {
-      hasDismissed: storageGet(TosDismissedKey, false),
+      hasDecided,
+      isEnabled: !!tosURL || !!privacyURL,
+      isOpen: !hasDecided,
     };
   }
 
   componentDidMount() {
-    const { hasDismissed } = this.state;
-    const { tosURL } = this.props;
-    if (!hasDismissed && tosURL) {
-      this.popTermsToast();
+    const { hasDecided, isEnabled } = this.state;
+    if (isEnabled && !hasDecided) {
+      this.setState({ isOpen: true });
     }
   }
 
-  onTermsToastDismissed = () => {
-    this.setState({ hasDismissed: "yes" });
-    storageSet(TosDismissedKey, "yes");
+  handleOK = () => {
+    this.setState({ isOpen: false });
+    storageSet(CookieDecision, "yes");
+    if (window.cookieDecisionCallback instanceof Function) {
+      try {
+        window.cookieDecisionCallback();
+      } catch (e) {}
+    }
   };
 
-  popTermsToast() {
+  handleNo = () => {
+    this.setState({ isOpen: false });
+    storageSet(CookieDecision, "no");
+  };
+
+  renderTos() {
     const { tosURL } = this.props;
-    termsOfServiceToast(
+    if (!tosURL) return null;
+    return (
       <span>
-        By using our site, you are agreeing to our{" "}
+        <Icon icon="info-sign" intent="primary" /> By using this site, you are
+        agreeing to our{" "}
         <a
           style={{
             fontWeight: 700,
-            color: "white",
             textDecoration: "underline",
           }}
           href={tosURL}
           target="_blank"
         >
-          Terms of Service
+          terms of service
         </a>
-      </span>,
-      this.onTermsToastDismissed
+        .{" "}
+      </span>
+    );
+  }
+
+  renderPrivacy() {
+    const { privacyURL } = this.props;
+    if (!privacyURL) return null;
+    return (
+      <span>
+        To learn more, read our{" "}
+        <a
+          style={{
+            fontWeight: 700,
+            textDecoration: "underline",
+          }}
+          href={privacyURL}
+          target="_blank"
+        >
+          privacy policy
+        </a>
+        .&nbsp;
+      </span>
     );
   }
 
   render() {
-    return null;
+    const { isOpen, isEnabled } = this.state;
+    if (!isEnabled || !isOpen) return null;
+    return (
+      <Drawer
+        onclose={this.drawerClose}
+        isOpen={isOpen}
+        size={"120px"}
+        position={Position.BOTTOM}
+        canOutsideClickClose={false}
+        hasBackdrop={
+          true /* if the user can't use the app or click outside to dismiss, that should be visually represented with a backdrop */
+        }
+        enforceFocus={false}
+        autoFocus={false}
+        portal={false}
+      >
+        <div
+          className={Classes.DRAWER_BODY}
+          style={{ backgroundColor: Colors.LIGHT_GRAY1 }}
+        >
+          <div className={Classes.DIALOG_BODY}>
+            <div>
+              {this.renderTos()}
+              <span>
+                We use cookies to help us improve the site and to inform our
+                future efforts, and we also use necessary cookies to make our
+                site work.&nbsp;
+              </span>
+              {this.renderPrivacy()}
+            </div>
+          </div>
+          <div className={Classes.DIALOG_FOOTER} style={{ textAlign: "left" }}>
+            <Button intent="primary" onClick={this.handleOK}>
+              I'm OK with cookies!
+            </Button>{" "}
+            <Button onClick={this.handleNo}>No thanks</Button>
+          </div>
+        </div>
+      </Drawer>
+    );
   }
 }
 

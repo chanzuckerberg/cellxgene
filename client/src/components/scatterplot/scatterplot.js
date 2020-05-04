@@ -22,7 +22,7 @@ function createProjectionTF(viewportWidth, viewportHeight) {
   return mat3.projection(m, viewportWidth, viewportHeight);
 }
 
-@connect(state => {
+@connect((state) => {
   const { world, crossfilter, universe } = state;
   const { scatterplotXXaccessor, scatterplotYYaccessor } = state.controls;
   const expressionX = scatterplotXXaccessor
@@ -54,7 +54,7 @@ function createProjectionTF(viewportWidth, viewportHeight) {
 
     crossfilter,
 
-    responsive: state.responsive
+    responsive: state.responsive,
   };
 })
 class Scatterplot extends React.PureComponent {
@@ -67,7 +67,7 @@ class Scatterplot extends React.PureComponent {
     return positions;
   });
 
-  computePointColors = memoize(rgb => {
+  computePointColors = memoize((rgb) => {
     /*
     compute webgl colors for each point
     */
@@ -135,11 +135,11 @@ class Scatterplot extends React.PureComponent {
       colors: null,
       flags: null,
       xScale: null,
-      yScale: null
+      yScale: null,
     };
     this.state = {
       svg: null,
-      minimized: null
+      minimized: null,
     };
   }
 
@@ -184,7 +184,7 @@ class Scatterplot extends React.PureComponent {
       colorBuffer,
       svg,
       drawPoints,
-      projectionTF
+      projectionTF,
     });
   }
 
@@ -198,7 +198,7 @@ class Scatterplot extends React.PureComponent {
       expressionY,
       colorRGB,
       colorAccessor,
-      pointDilation
+      pointDilation,
     } = this.props;
     const {
       regl,
@@ -207,7 +207,7 @@ class Scatterplot extends React.PureComponent {
       flagBuffer,
       svg,
       drawPoints,
-      projectionTF
+      projectionTF,
     } = this.state;
 
     if (
@@ -284,7 +284,7 @@ class Scatterplot extends React.PureComponent {
 
     return {
       xScale,
-      yScale
+      yScale,
     };
   }
 
@@ -294,15 +294,9 @@ class Scatterplot extends React.PureComponent {
 
     // the axes are much cleaner and easier now. No need to rotate and orient
     // the axis, just call axisBottom, axisLeft etc.
-    const xAxis = d3
-      .axisBottom()
-      .ticks(7)
-      .scale(xScale);
+    const xAxis = d3.axisBottom().ticks(7).scale(xScale);
 
-    const yAxis = d3
-      .axisLeft()
-      .ticks(7)
-      .scale(yScale);
+    const yAxis = d3.axisLeft().ticks(7).scale(yScale);
 
     // adding axes is also simpler now, just translate x-axis to (0,height)
     // and it's alread defined to be a bottom axis.
@@ -356,7 +350,7 @@ class Scatterplot extends React.PureComponent {
     regl.poll();
     regl.clear({
       depth: 1,
-      color: [1, 1, 1, 1]
+      color: [1, 1, 1, 1],
     });
     drawPoints({
       flag: flagBuffer,
@@ -368,7 +362,7 @@ class Scatterplot extends React.PureComponent {
       minViewportDimension: Math.min(
         cvWidth - globals.leftSidebarWidth || width,
         cvHeight || height
-      )
+      ),
     });
     regl._gl.flush();
   }
@@ -387,7 +381,7 @@ class Scatterplot extends React.PureComponent {
           padding: "0px 20px 20px 0px",
           backgroundColor: "white",
           /* x y blur spread color */
-          boxShadow: "0px 0px 6px 2px rgba(153,153,153,0.4)"
+          boxShadow: "0px 0px 6px 2px rgba(153,153,153,0.4)",
         }}
         id="scatterplot_wrapper"
       >
@@ -395,7 +389,7 @@ class Scatterplot extends React.PureComponent {
           style={{
             position: "absolute",
             right: 5,
-            top: 5
+            top: 5,
           }}
         >
           <Button
@@ -413,7 +407,7 @@ class Scatterplot extends React.PureComponent {
             data-testid="clear-scatterplot"
             onClick={() =>
               dispatch({
-                type: "clear scatterplot"
+                type: "clear scatterplot",
               })
             }
           >
@@ -425,7 +419,7 @@ class Scatterplot extends React.PureComponent {
           id="scatterplot"
           style={{
             width: `${width + margin.left + margin.right}px`,
-            height: `${height + margin.top + margin.bottom}px`
+            height: `${height + margin.top + margin.bottom}px`,
           }}
         >
           <canvas
@@ -434,9 +428,9 @@ class Scatterplot extends React.PureComponent {
             data-testid="scatterplot"
             style={{
               marginLeft: margin.left,
-              marginTop: margin.top
+              marginTop: margin.top,
             }}
-            ref={canvas => {
+            ref={(canvas) => {
               this.reglCanvas = canvas;
             }}
           />

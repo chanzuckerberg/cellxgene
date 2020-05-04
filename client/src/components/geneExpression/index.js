@@ -11,7 +11,7 @@ import {
   Button,
   FormGroup,
   InputGroup,
-  ControlGroup
+  ControlGroup,
 } from "@blueprintjs/core";
 import { Suggest } from "@blueprintjs/select";
 import HistogramBrush from "../brushableHistogram";
@@ -19,7 +19,7 @@ import * as globals from "../../globals";
 import actions from "../../actions";
 import {
   postUserErrorToast,
-  keepAroundErrorToast
+  keepAroundErrorToast,
 } from "../framework/toasters";
 
 import { memoize } from "../../util/dataframe/util";
@@ -40,7 +40,7 @@ const renderGene = (fuzzySortResult, { handleClick, modifiers }) => {
       // See https://github.com/chanzuckerberg/cellxgene/issues/483
       // label={gene.n_counts}
       key={geneName}
-      onClick={g =>
+      onClick={(g) =>
         /* this fires when user clicks a menu item */
         handleClick(g)
       }
@@ -53,17 +53,17 @@ const filterGenes = (query, genes) =>
   /* fires on load, once, and then for each character typed into the input */
   fuzzysort.go(query, genes, {
     limit: 5,
-    threshold: -10000 // don't return bad results
+    threshold: -10000, // don't return bad results
   });
 
-@connect(state => {
+@connect((state) => {
   return {
     obsAnnotations: state.world?.obsAnnotations,
     userDefinedGenes: state.controls.userDefinedGenes,
     userDefinedGenesLoading: state.controls.userDefinedGenesLoading,
     world: state.world,
     colorAccessor: state.colors.colorAccessor,
-    differential: state.differential
+    differential: state.differential,
   };
 })
 class GeneExpression extends React.Component {
@@ -72,11 +72,11 @@ class GeneExpression extends React.Component {
     this.state = {
       bulkAdd: "",
       tab: "autosuggest",
-      activeItem: null
+      activeItem: null,
     };
   }
 
-  _genesToUpper = listGenes => {
+  _genesToUpper = (listGenes) => {
     // Has to be a Map to preserve index
     const upperGenes = new Map();
     for (let i = 0, { length } = listGenes; i < length; i += 1) {
@@ -87,7 +87,7 @@ class GeneExpression extends React.Component {
   };
 
   // eslint-disable-next-line react/sort-comp
-  _memoGenesToUpper = memoize(this._genesToUpper, arr => arr);
+  _memoGenesToUpper = memoize(this._genesToUpper, (arr) => arr);
 
   handleBulkAddClick = () => {
     const { world, dispatch, userDefinedGenes } = this.props;
@@ -115,7 +115,7 @@ class GeneExpression extends React.Component {
       dispatch({ type: "bulk user defined gene start" });
 
       Promise.all(
-        [...upperGenes.keys()].map(upperGene => {
+        [...upperGenes.keys()].map((upperGene) => {
           if (upperUserDefinedGenes.get(upperGene) !== undefined) {
             return keepAroundErrorToast("That gene already exists");
           }
@@ -204,7 +204,7 @@ class GeneExpression extends React.Component {
       world,
       userDefinedGenes,
       userDefinedGenesLoading,
-      differential
+      differential,
     } = this.props;
     const varIndexName = world?.schema?.annotations?.var?.index;
     const varIndex = world?.varAnnotations?.col(varIndexName)?.asArray();
@@ -218,7 +218,7 @@ class GeneExpression extends React.Component {
         <div>
           <div
             style={{
-              padding: globals.leftSidebarSectionPadding
+              padding: globals.leftSidebarSectionPadding,
             }}
           >
             <Button
@@ -250,7 +250,7 @@ class GeneExpression extends React.Component {
             <ControlGroup
               style={{
                 paddingLeft: globals.leftSidebarSectionPadding,
-                paddingBottom: globals.leftSidebarSectionPadding
+                paddingBottom: globals.leftSidebarSectionPadding,
               }}
             >
               <Suggest
@@ -261,7 +261,7 @@ class GeneExpression extends React.Component {
                   userDefinedGenesLoading ? () => true : () => false
                 }
                 noResults={<MenuItem disabled text="No matching genes." />}
-                onItemSelect={g => {
+                onItemSelect={(g) => {
                   /* this happens on 'enter' */
                   this.handleClick(g);
                 }}
@@ -271,7 +271,9 @@ class GeneExpression extends React.Component {
                   return "";
                 }}
                 itemListPredicate={filterGenes}
-                onActiveItemChange={item => this.setState({ activeItem: item })}
+                onActiveItemChange={(item) =>
+                  this.setState({ activeItem: item })
+                }
                 itemRenderer={renderGene.bind(this)}
                 items={varIndex || ["No genes"]}
                 popoverProps={{ minimal: true }}
@@ -289,7 +291,7 @@ class GeneExpression extends React.Component {
           {tab === "bulkadd" ? (
             <div style={{ paddingLeft: globals.leftSidebarSectionPadding }}>
               <form
-                onSubmit={e => {
+                onSubmit={(e) => {
                   e.preventDefault();
                   this.handleBulkAddClick();
                 }}
@@ -300,7 +302,7 @@ class GeneExpression extends React.Component {
                 >
                   <ControlGroup>
                     <InputGroup
-                      onChange={e => {
+                      onChange={(e) => {
                         this.setState({ bulkAdd: e.target.value });
                       }}
                       id="text-input-bulk-add"

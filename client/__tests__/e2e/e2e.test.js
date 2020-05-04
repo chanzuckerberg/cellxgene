@@ -11,8 +11,7 @@ let browser; let page; let utils; let cxgActions;
 const data = datasets[DATASET];
 
 beforeAll(async () => {
-  const browserViewport = { width: 1280, height: 960 };
-  [browser, page, utils, cxgActions] = await setupTestBrowser(browserViewport);
+  [browser, page, utils, cxgActions] = await setupTestBrowser();
 });
 
 beforeEach(async () => {
@@ -25,7 +24,9 @@ afterAll(() => {
 
 describe("did launch", () => {
   test("page launched", async () => {
-    const element = await utils.getOneElementInnerHTML("[data-testid='header']");
+    const element = await utils.getOneElementInnerHTML(
+      "[data-testid='header']"
+    );
     expect(element).toBe(data.title);
   });
 });
@@ -33,8 +34,9 @@ describe("did launch", () => {
 describe("metadata loads", () => {
   test("categories and values from dataset appear", async () => {
     for (const label in data.categorical) {
-      await utils.waitByID(`category-${label}`);
-      const categoryName = await utils.getOneElementInnerText(`[data-testid="category-${label}"]`);
+      const categoryName = await utils.getOneElementInnerText(
+        `[data-testid="category-${label}"]`
+      );
       expect(categoryName).toMatch(label);
       await utils.clickOn(`${label}:category-expand`);
       const categories = await cxgActions.getAllCategoriesAndCounts(label);
@@ -82,7 +84,9 @@ describe("cell selection", () => {
       await utils.clickOn(`${cellset.metadata}:category-expand`);
       await utils.clickOn(`${cellset.metadata}:category-select`);
       for (const val of cellset.values) {
-        await utils.clickOn(`categorical-value-select-${cellset.metadata}-${val}`);
+        await utils.clickOn(
+          `categorical-value-select-${cellset.metadata}-${val}`
+        );
       }
       const cellCount = await cxgActions.cellSet(1);
       expect(cellCount).toBe(cellset.count);
@@ -104,12 +108,16 @@ describe("cell selection", () => {
 });
 
 describe("gene entry", () => {
-  test("search for single gene", async () => cxgActions.addGeneToSearch(data.genes.search));
+  test("search for single gene", async () =>
+    cxgActions.addGeneToSearch(data.genes.search));
 
   test("bulk add genes", async () => {
     const testGenes = data.genes.bulkadd;
     await cxgActions.bulkAddGenes(testGenes);
-    const allHistograms = await cxgActions.getAllHistograms("histogram-user-gene", testGenes);
+    const allHistograms = await cxgActions.getAllHistograms(
+      "histogram-user-gene",
+      testGenes
+    );
     expect(allHistograms).toEqual(expect.arrayContaining(testGenes));
     expect(allHistograms).toHaveLength(testGenes.length);
   });
@@ -173,11 +181,19 @@ describe("subset", () => {
     const userDefinedGenes = data.genes.bulkadd;
     const diffExpGenes = data.diffexp["gene-results"];
     await cxgActions.bulkAddGenes(userDefinedGenes);
-    const userDefinedHistograms = await cxgActions.getAllHistograms("histogram-user-gene", userDefinedGenes);
-    expect(userDefinedHistograms).toEqual(expect.arrayContaining(userDefinedGenes));
-    await cxgActions.subset({x1: 0.15, y1: 0.10, x2: 0.98, y2: 0.98});
+    const userDefinedHistograms = await cxgActions.getAllHistograms(
+      "histogram-user-gene",
+      userDefinedGenes
+    );
+    expect(userDefinedHistograms).toEqual(
+      expect.arrayContaining(userDefinedGenes)
+    );
+    await cxgActions.subset({ x1: 0.15, y1: 0.1, x2: 0.98, y2: 0.98 });
     await cxgActions.runDiffExp(data.diffexp.cellset1, data.diffexp.cellset2);
-    const diffExpHistograms = await cxgActions.getAllHistograms("histogram-diffexp", diffExpGenes);
+    const diffExpHistograms = await cxgActions.getAllHistograms(
+      "histogram-diffexp",
+      diffExpGenes
+    );
     expect(diffExpHistograms).toEqual(expect.arrayContaining(diffExpGenes));
     await utils.clickOn("reset-subset-button");
     const expected = [].concat(userDefinedGenes, diffExpGenes);
@@ -185,26 +201,38 @@ describe("subset", () => {
       "histogram-user-gene",
       expected
     );
-    expect(userDefinedHistogramsAfterSubset).toEqual(expect.arrayContaining(expected));
+    expect(userDefinedHistogramsAfterSubset).toEqual(
+      expect.arrayContaining(expected)
+    );
   });
 
   test("subset selection appends the top diff exp genes to user defined genes", async () => {
     const userDefinedGenes = data.genes.bulkadd;
     const diffExpGenes = data.diffexp["gene-results"];
     await cxgActions.bulkAddGenes(userDefinedGenes);
-    const userDefinedHistograms = await cxgActions.getAllHistograms("histogram-user-gene", userDefinedGenes);
-    expect(userDefinedHistograms).toEqual(expect.arrayContaining(userDefinedGenes));
-    await cxgActions.subset({x1: 0.15, y1: 0.10, x2: 0.98, y2: 0.98});
+    const userDefinedHistograms = await cxgActions.getAllHistograms(
+      "histogram-user-gene",
+      userDefinedGenes
+    );
+    expect(userDefinedHistograms).toEqual(
+      expect.arrayContaining(userDefinedGenes)
+    );
+    await cxgActions.subset({ x1: 0.15, y1: 0.1, x2: 0.98, y2: 0.98 });
     await cxgActions.runDiffExp(data.diffexp.cellset1, data.diffexp.cellset2);
-    const diffExpHistograms = await cxgActions.getAllHistograms("histogram-diffexp", diffExpGenes);
+    const diffExpHistograms = await cxgActions.getAllHistograms(
+      "histogram-diffexp",
+      diffExpGenes
+    );
     expect(diffExpHistograms).toEqual(expect.arrayContaining(diffExpGenes));
-    await cxgActions.subset({x1: 0.16, y1: 0.11, x2: 0.97, y2: 0.97});
+    await cxgActions.subset({ x1: 0.16, y1: 0.11, x2: 0.97, y2: 0.97 });
     const expected = [].concat(userDefinedGenes, diffExpGenes);
     const userDefinedHistogramsAfterSubset = await cxgActions.getAllHistograms(
       "histogram-user-gene",
       expected
     );
-    expect(userDefinedHistogramsAfterSubset).toEqual(expect.arrayContaining(expected));
+    expect(userDefinedHistogramsAfterSubset).toEqual(
+      expect.arrayContaining(expected)
+    );
   });
 });
 

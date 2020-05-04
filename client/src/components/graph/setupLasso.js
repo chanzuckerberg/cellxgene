@@ -5,8 +5,8 @@ import * as d3 from "d3";
 const Lasso = () => {
   const dispatch = d3.dispatch("start", "end", "cancel");
 
-  const polygonToPath = polygon =>
-    `M${polygon.map(d => d.join(",")).join("L")}`;
+  const polygonToPath = (polygon) =>
+    `M${polygon.map((d) => d.join(",")).join("L")}`;
 
   const distance = (pt1, pt2) =>
     Math.sqrt((pt2[0] - pt1[0]) ** 2 + (pt2[1] - pt1[1]) ** 2);
@@ -14,7 +14,7 @@ const Lasso = () => {
   // distance last point has to be to first point before it auto closes when mouse is released
   const closeDistance = 75;
 
-  const lasso = svg => {
+  const lasso = (svg) => {
     let lassoPolygon;
     let lassoPath;
     let closePath;
@@ -55,10 +55,7 @@ const Lasso = () => {
         distance(lassoPolygon[0], lassoPolygon[lassoPolygon.length - 1]) <
         closeDistance
       ) {
-        closePath
-          .attr("x1", point[0])
-          .attr("y1", point[1])
-          .attr("opacity", 1);
+        closePath.attr("x1", point[0]).attr("y1", point[1]).attr("opacity", 1);
       } else {
         closePath.attr("opacity", 0);
       }
@@ -116,7 +113,7 @@ const Lasso = () => {
       }
     };
 
-    lasso.move = polygon => {
+    lasso.move = (polygon) => {
       if (polygon !== lassoPolygon || polygon.length !== lassoPolygon.length) {
         lasso.reset();
 

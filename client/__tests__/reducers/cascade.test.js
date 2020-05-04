@@ -26,7 +26,7 @@ describe("cascade", () => {
           expect(nextSharedState).toStrictEqual({});
           expect(prevSharedState).toBe(topLevelState);
           return 0;
-        }
+        },
       ],
       [
         "bar",
@@ -36,8 +36,8 @@ describe("cascade", () => {
           expect(nextSharedState).toStrictEqual({ foo: 0 });
           expect(prevSharedState).toBe(topLevelState);
           return 99;
-        }
-      ]
+        },
+      ],
     ]);
 
     const nextState = reducer(topLevelState, topLevelAction);

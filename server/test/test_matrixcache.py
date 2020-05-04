@@ -7,13 +7,15 @@ import shutil
 import os
 import time
 
+from server.test import PROJECT_ROOT
+
 
 class MatrixCacheTest(unittest.TestCase):
     def setup(self):
         pass
 
     def make_temporay_datasets(self, dirname, num):
-        source = "test/test_datasets/pbmc3k.cxg"
+        source = f"{PROJECT_ROOT}/server/test/test_datasets/pbmc3k.cxg"
         for i in range(num):
             target = os.path.join(dirname, str(i) + ".cxg")
             shutil.copytree(source, target)

@@ -20,12 +20,19 @@ build: clean
 	cp app.py artifact.dir/application.py; \
 	cp ../requirements.txt artifact.dir; \
 	cp -r .ebextensions artifact.dir; \
-	if [ -f config.yaml ] ; then \
-	  cp config.yaml artifact.dir;  \
-	fi; \
-	if [ -d static ] ; then \
-	  mkdir -p artifact.dir/server/common/web/static/deploy; \
-	  cp -r static/* artifact.dir/server/common/web/static/deploy;  \
+	if [ -d customize ] ; then \
+	  if [ -f customize/config.yaml ] ; then \
+	     cp customize/config.yaml artifact.dir;  \
+	  fi ; \
+	  if [ -d customize/deploy ] ; then \
+		  cp -r customize/deploy artifact.dir/server/common/web/static;  \
+	  fi; \
+	  if [ -d customize/inline_scripts ] ; then \
+	      cp -r customize/inline_scripts/* artifact.dir/server/common/web/templates;  \
+	  fi; \
+	  if [ -d customize/ebextensions ] ; then \
+	      cp -r customize/ebextensions/* artifact.dir/.ebextensions;  \
+	  fi; \
 	fi; \
 	(cd artifact.dir; \
 	  cp -r server/common/web/static static; \

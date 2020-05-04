@@ -9,22 +9,22 @@ namespace mangling on these definitions.  See webpack config for specifics.
 @import "~@blueprintjs/select/lib/css/blueprint-select.css";
 
 @font-face {
-    font-family: 'Roboto Condensed';
-    font-style: italic;
-    src: url('./fonts/RobotoCondensed-Italic.ttf') format('truetype');
-    font-weight: 400;
+  font-family: "Roboto Condensed";
+  font-style: italic;
+  src: url("./fonts/RobotoCondensed-Italic.ttf") format("truetype");
+  font-weight: 400;
 }
 
 @font-face {
-    font-family: 'Roboto Condensed';
-    font-style: normal;
-    src: url('./fonts/RobotoCondensed-Regular.ttf') format('truetype');
-    font-weight: 400;
+  font-family: "Roboto Condensed";
+  font-style: normal;
+  src: url("./fonts/RobotoCondensed-Regular.ttf") format("truetype");
+  font-weight: 400;
 }
 
 @font-face {
-    font-family: 'Roboto Condensed';
-    font-style: normal;
-    src: url('./fonts/RobotoCondensed-Bold.ttf') format('truetype');
-    font-weight: 700;
+  font-family: "Roboto Condensed";
+  font-style: normal;
+  src: url("./fonts/RobotoCondensed-Bold.ttf") format("truetype");
+  font-weight: 700;
 }

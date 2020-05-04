@@ -3,11 +3,11 @@ import { connect } from "react-redux";
 import { Button, MenuItem } from "@blueprintjs/core";
 import { Select } from "@blueprintjs/select";
 
-@connect(state => ({
+@connect((state) => ({
   colorAccessor: state.colors.colorAccessor,
   categoricalSelection: state.categoricalSelection,
   annotations: state.annotations,
-  universe: state.universe
+  universe: state.universe,
 }))
 class DuplicateCategorySelect extends React.PureComponent {
   constructor(props) {
@@ -19,7 +19,7 @@ class DuplicateCategorySelect extends React.PureComponent {
     const {
       allCategoryNames,
       categoryToDuplicate,
-      handleModalDuplicateCategorySelection
+      handleModalDuplicateCategorySelection,
     } = this.props;
     return (
       <div>
@@ -37,7 +37,7 @@ class DuplicateCategorySelect extends React.PureComponent {
             return <MenuItem onClick={handleClick} key={d} text={d} />;
           }}
           noResults={<MenuItem disabled text="No results." />}
-          onItemSelect={d => {
+          onItemSelect={(d) => {
             handleModalDuplicateCategorySelection(d);
           }}
         >

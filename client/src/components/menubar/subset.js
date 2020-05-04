@@ -7,7 +7,7 @@ function Subset(props) {
     subsetPossible,
     subsetResetPossible,
     handleSubset,
-    handleSubsetReset
+    handleSubsetReset,
   } = props;
 
   return (

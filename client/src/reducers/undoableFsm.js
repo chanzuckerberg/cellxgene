@@ -32,13 +32,13 @@ const createFsmTransitions = (
       event: "graph brush start",
       from: "init",
       to: "graph brush in progress",
-      action: stashPending
+      action: stashPending,
     },
     {
       event: "graph brush cancel",
       from: "graph brush in progress",
       to: "done",
-      action: applyPending
+      action: applyPending,
     },
     {
       event: "graph brush deselect",
@@ -48,13 +48,13 @@ const createFsmTransitions = (
       action: (fsm, transition, data) =>
         data.state.graphSelection.selection.mode === "all"
           ? cancelPending()
-          : applyPending()
+          : applyPending(),
     },
     {
       event: "graph brush end",
       from: "graph brush in progress",
       to: "done",
-      action: applyPending
+      action: applyPending,
     },
 
     /* graph selection lasso */
@@ -62,13 +62,13 @@ const createFsmTransitions = (
       event: "graph lasso start",
       from: "init",
       to: "graph lasso in progress",
-      action: stashPending
+      action: stashPending,
     },
     {
       event: "graph lasso cancel",
       from: "graph lasso in progress",
       to: "done",
-      action: applyPending
+      action: applyPending,
     },
     {
       event: "graph lasso deselect",
@@ -78,13 +78,13 @@ const createFsmTransitions = (
       action: (fsm, transition, data) =>
         data.state.graphSelection.selection.mode === "all"
           ? cancelPending()
-          : applyPending()
+          : applyPending(),
     },
     {
       event: "graph lasso end",
       from: "graph lasso in progress",
       to: "done",
-      action: applyPending
+      action: applyPending,
     },
 
     /* Continuous metadata histogram brush selection */
@@ -92,19 +92,19 @@ const createFsmTransitions = (
       event: "continuous metadata histogram start",
       from: "init",
       to: "continuous histo select in progress",
-      action: stashPending
+      action: stashPending,
     },
     {
       event: "continuous metadata histogram cancel",
       from: "continuous histo select in progress",
       to: "done",
-      action: cancelPending
+      action: cancelPending,
     },
     {
       event: "continuous metadata histogram end",
       from: "continuous histo select in progress",
       to: "done",
-      action: applyPending
+      action: applyPending,
     },
 
     /* Single gene request by user */
@@ -112,25 +112,25 @@ const createFsmTransitions = (
       event: "single user defined gene start",
       from: "init",
       to: "single user gene request in progress",
-      action: stashPending
+      action: stashPending,
     },
     {
       event: "request user defined gene error",
       from: "single user gene request in progress",
       to: "single user gene error in progress",
-      action: skip
+      action: skip,
     },
     {
       event: "single user defined gene error",
       from: "single user gene error in progress",
       to: "done",
-      action: cancelPending
+      action: cancelPending,
     },
     {
       event: "single user defined gene complete",
       from: "single user gene request in progress",
       to: "done",
-      action: applyPending
+      action: applyPending,
     },
 
     /* Bulk gene request by user */
@@ -138,25 +138,25 @@ const createFsmTransitions = (
       event: "bulk user defined gene start",
       from: "init",
       to: "bulk user gene request in progress",
-      action: stashPending
+      action: stashPending,
     },
     {
       event: "request user defined gene error",
       from: "bulk user gene request in progress",
       to: "bulk user gene request error in progress",
-      action: skip
+      action: skip,
     },
     {
       event: "bulk user defined gene error",
       from: "bulk user gene request error in progress",
       to: "done",
-      action: cancelPending
+      action: cancelPending,
     },
     {
       event: "bulk user defined gene complete",
       from: "bulk user gene request in progress",
       to: "done",
-      action: applyPending
+      action: applyPending,
     },
 
     /* Compute Differential Expression button user action */
@@ -164,19 +164,19 @@ const createFsmTransitions = (
       event: "request differential expression started",
       from: "init",
       to: "diffexp in progress",
-      action: stashPending
+      action: stashPending,
     },
     {
       event: "request user defined gene error",
       from: "diffexp in progress",
       to: "done",
-      action: cancelPending
+      action: cancelPending,
     },
     {
       event: "request differential expression success",
       from: "diffexp in progress",
       to: "done",
-      action: applyPending
+      action: applyPending,
     },
 
     /* Clear Differential Expression button user action */
@@ -184,13 +184,13 @@ const createFsmTransitions = (
       event: "clear differential expression",
       from: "init",
       to: "CDE Button in progress",
-      action: stashPending
+      action: stashPending,
     },
     {
       event: "clear scatterplot",
       from: "CDE Button in progress",
       to: "done",
-      action: applyPending
+      action: applyPending,
     },
 
     /* clear scatter plot button (eg, on scatterplot view) */
@@ -198,8 +198,8 @@ const createFsmTransitions = (
       event: "clear scatterplot",
       from: "init",
       to: "done",
-      action: save
-    }
+      action: save,
+    },
   ];
 };
 

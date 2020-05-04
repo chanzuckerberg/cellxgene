@@ -11,7 +11,7 @@ const someData = [
     type: "tab",
     productIDs: ["001"],
     coords: [0, 0],
-    nonFinite: 0.0
+    nonFinite: 0.0,
   },
   {
     date: "2011-11-14T16:20:19Z",
@@ -21,7 +21,7 @@ const someData = [
     type: "tab",
     productIDs: ["001", "005"],
     coords: [0.4, 0.4],
-    nonFinite: Number.NaN
+    nonFinite: Number.NaN,
   },
   {
     date: "2011-11-14T16:28:54Z",
@@ -31,7 +31,7 @@ const someData = [
     type: "visa",
     productIDs: ["004", "005"],
     coords: [0.3, 0.1],
-    nonFinite: Number.POSITIVE_INFINITY
+    nonFinite: Number.POSITIVE_INFINITY,
   },
   {
     date: "2011-11-14T16:30:43Z",
@@ -41,7 +41,7 @@ const someData = [
     type: "tab",
     productIDs: ["001", "002"],
     coords: [0.392, 0.1],
-    nonFinite: Number.NEGATIVE_INFINITY
+    nonFinite: Number.NEGATIVE_INFINITY,
   },
   {
     date: "2011-11-14T16:48:46Z",
@@ -51,7 +51,7 @@ const someData = [
     type: "tab",
     productIDs: ["005"],
     coords: [0.7, 0.0482],
-    nonFinite: 1.0
+    nonFinite: 1.0,
   },
   {
     date: "2011-11-14T16:53:41Z",
@@ -61,7 +61,7 @@ const someData = [
     type: "tab",
     productIDs: ["001", "004", "005"],
     coords: [0.9999, 1.0],
-    nonFinite: Number.NaN
+    nonFinite: Number.NaN,
   },
   {
     date: "2011-11-14T16:54:06Z",
@@ -71,7 +71,7 @@ const someData = [
     type: "cash",
     productIDs: ["001", "002", "003", "004", "005"],
     coords: [0.384, 0.6938],
-    nonFinite: 99.0
+    nonFinite: 99.0,
   },
   {
     date: "2011-11-14T16:58:03Z",
@@ -81,7 +81,7 @@ const someData = [
     type: "tab",
     productIDs: ["001"],
     coords: [0.4822, 0.482],
-    nonFinite: Number.NaN
+    nonFinite: Number.NaN,
   },
   {
     date: "2011-11-14T17:07:21Z",
@@ -91,7 +91,7 @@ const someData = [
     type: "tab",
     productIDs: ["004", "005"],
     coords: [0.2234, 0],
-    nonFinite: Number.NaN
+    nonFinite: Number.NaN,
   },
   {
     date: "2011-11-14T17:22:59Z",
@@ -101,7 +101,7 @@ const someData = [
     type: "tab",
     productIDs: ["001", "002", "004", "005"],
     coords: [0.382, 0.38485],
-    nonFinite: -1
+    nonFinite: -1,
   },
   {
     date: "2011-11-14T17:25:45Z",
@@ -111,7 +111,7 @@ const someData = [
     type: "cash",
     productIDs: ["002"],
     coords: [0.998, 0.8472],
-    nonFinite: 0.0
+    nonFinite: 0.0,
   },
   {
     date: "2011-11-14T17:29:52Z",
@@ -121,8 +121,8 @@ const someData = [
     type: "visa",
     productIDs: ["004"],
     coords: [0.8273, 0.3384],
-    nonFinite: 0.0
-  }
+    nonFinite: 0.0,
+  },
 ];
 
 let payments = null;
@@ -248,16 +248,21 @@ describe("ImmutableTypedCrossfilter", () => {
     test("none", () => {
       expect(p.select("quantity", { mode: "none" }).countSelected()).toEqual(0);
     });
-    test.each([[[]], [[2]], [[2, 1]], [[9, 82]], [[0, 1]]])("exact: %p", v =>
+    test.each([[[]], [[2]], [[2, 1]], [[9, 82]], [[0, 1]]])("exact: %p", (v) =>
       expect(
         p.select("quantity", { mode: "exact", values: v }).countSelected()
-      ).toEqual(_.filter(someData, d => v.includes(d.quantity)).length)
+      ).toEqual(_.filter(someData, (d) => v.includes(d.quantity)).length)
     );
-    test.each([[0, 1], [1, 2], [0, 99], [99, 100000]])("range %p", (lo, hi) =>
+    test.each([
+      [0, 1],
+      [1, 2],
+      [0, 99],
+      [99, 100000],
+    ])("range %p", (lo, hi) =>
       expect(
         p.select("quantity", { mode: "range", lo, hi }).countSelected()
       ).toEqual(
-        _.filter(someData, d => d.quantity >= lo && d.quantity < hi).length
+        _.filter(someData, (d) => d.quantity >= lo && d.quantity < hi).length
       )
     );
     test("bad mode", () => {
@@ -284,11 +289,11 @@ describe("ImmutableTypedCrossfilter", () => {
       [["tab"]],
       [["visa"]],
       [["visa", "tab"]],
-      [["cash", "tab", "visa"]]
-    ])("exact: %p", v =>
+      [["cash", "tab", "visa"]],
+    ])("exact: %p", (v) =>
       expect(
         p.select("type", { mode: "exact", values: v }).countSelected()
-      ).toEqual(_.filter(someData, d => v.includes(d.type)).length)
+      ).toEqual(_.filter(someData, (d) => v.includes(d.type)).length)
     );
     test("range", () => {
       expect(() => p.select("type", { mode: "range", lo: 0, hi: 9 })).toThrow(
@@ -303,8 +308,8 @@ describe("ImmutableTypedCrossfilter", () => {
   describe("spatial dimension", () => {
     let p;
     beforeEach(() => {
-      const X = someData.map(r => r.coords[0]);
-      const Y = someData.map(r => r.coords[1]);
+      const X = someData.map((r) => r.coords[0]);
+      const Y = someData.map((r) => r.coords[1]);
       p = payments.addDimension("coords", "spatial", X, Y);
     });
 
@@ -316,34 +321,76 @@ describe("ImmutableTypedCrossfilter", () => {
     test("none", () => {
       expect(p.select("coords", { mode: "none" }).countSelected()).toEqual(0);
     });
-    test.each([[0, 0, 1, 1], [0, 0, 0.5, 0.5], [0.5, 0.5, 1, 1]])(
-      "within-rect %d %d %d %d",
-      (minX, minY, maxX, maxY) => {
-        expect(
-          p
-            .select("coords", { mode: "within-rect", minX, minY, maxX, maxY })
-            .allSelected()
-        ).toEqual(
-          _.filter(someData, d => {
-            const [x, y] = d.coords;
-            return minX <= x && x < maxX && minY <= y && y < maxY;
-          })
-        );
-      }
-    );
+    test.each([
+      [0, 0, 1, 1],
+      [0, 0, 0.5, 0.5],
+      [0.5, 0.5, 1, 1],
+    ])("within-rect %d %d %d %d", (minX, minY, maxX, maxY) => {
+      expect(
+        p
+          .select("coords", { mode: "within-rect", minX, minY, maxX, maxY })
+          .allSelected()
+      ).toEqual(
+        _.filter(someData, (d) => {
+          const [x, y] = d.coords;
+          return minX <= x && x < maxX && minY <= y && y < maxY;
+        })
+      );
+    });
 
     test.each([
       [
-          [[0, 0], [0, 1], [1, 1], [1, 0]],
-          [true, true, true, true, true, false, true, true, true, true, true, true]
+        [
+          [0, 0],
+          [0, 1],
+          [1, 1],
+          [1, 0],
+        ],
+        [
+          true,
+          true,
+          true,
+          true,
+          true,
+          false,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+        ],
       ],
       [
-          [[0, 0], [0, 0.5], [0.5, 0.5], [0.5, 0]],
-          [true, true, true, true, false, false, false, true, true, true, false, false]
-      ]
+        [
+          [0, 0],
+          [0, 0.5],
+          [0.5, 0.5],
+          [0.5, 0],
+        ],
+        [
+          true,
+          true,
+          true,
+          true,
+          false,
+          false,
+          false,
+          true,
+          true,
+          true,
+          false,
+          false,
+        ],
+      ],
     ])("within-polygon %p", (polygon, expected) => {
-      expect(p.select("coords", { mode: "within-polygon", polygon }).allSelected())
-          .toEqual(_.zip(someData, expected).filter(x => x[1]).map(x => x[0]));
+      expect(
+        p.select("coords", { mode: "within-polygon", polygon }).allSelected()
+      ).toEqual(
+        _.zip(someData, expected)
+          .filter((x) => x[1])
+          .map((x) => x[0])
+      );
     });
   });
 
@@ -381,7 +428,7 @@ describe("ImmutableTypedCrossfilter", () => {
         p
           .select("nonFinite", {
             mode: "exact",
-            values: [Number.POSITIVE_INFINITY]
+            values: [Number.POSITIVE_INFINITY],
           })
           .countSelected()
       ).toEqual(1);
@@ -389,7 +436,7 @@ describe("ImmutableTypedCrossfilter", () => {
         p
           .select("nonFinite", {
             mode: "exact",
-            values: [Number.NEGATIVE_INFINITY]
+            values: [Number.NEGATIVE_INFINITY],
           })
           .countSelected()
       ).toEqual(1);
@@ -402,7 +449,7 @@ describe("ImmutableTypedCrossfilter", () => {
         p
           .select("nonFinite", {
             mode: "exact",
-            values: [Number.POSITIVE_INFINITY, 0, 1, 99]
+            values: [Number.POSITIVE_INFINITY, 0, 1, 99],
           })
           .countSelected()
       ).toEqual(6);
@@ -414,7 +461,7 @@ describe("ImmutableTypedCrossfilter", () => {
           .select("nonFinite", {
             mode: "range",
             lo: 0,
-            hi: Number.POSITIVE_INFINITY
+            hi: Number.POSITIVE_INFINITY,
           })
           .countSelected()
       ).toEqual(5);
@@ -423,7 +470,7 @@ describe("ImmutableTypedCrossfilter", () => {
           .select("nonFinite", {
             mode: "range",
             lo: 0,
-            hi: Number.NaN
+            hi: Number.NaN,
           })
           .countSelected()
       ).toEqual(6);
@@ -432,7 +479,7 @@ describe("ImmutableTypedCrossfilter", () => {
           .select("nonFinite", {
             mode: "range",
             lo: Number.NEGATIVE_INFINITY,
-            hi: Number.POSITIVE_INFINITY
+            hi: Number.POSITIVE_INFINITY,
           })
           .countSelected()
       ).toEqual(7);

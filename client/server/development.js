@@ -21,7 +21,7 @@ compiler.plugin("invalid", () => {
   console.log("Compiling...");
 });
 
-compiler.plugin("done", stats => {
+compiler.plugin("done", (stats) => {
   utils.formatStats(stats, CLIENT_PORT);
 });
 
@@ -33,7 +33,7 @@ app.use(historyApiFallback({ verbose: false }));
 app.use(
   require("webpack-dev-middleware")(compiler, {
     logLevel: "warn",
-    publicPath: config.output.publicPath
+    publicPath: config.output.publicPath,
   })
 );
 
@@ -43,7 +43,7 @@ app.get("*", (req, res) => {
   res.sendFile(path.resolve("index.html"));
 });
 
-app.listen(CLIENT_PORT, err => {
+app.listen(CLIENT_PORT, (err) => {
   if (err) {
     console.log(err);
     return;

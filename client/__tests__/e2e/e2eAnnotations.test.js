@@ -9,19 +9,17 @@ let browser; let page; let utils; let actions;
 const data = datasets[DATASET];
 
 beforeAll(async () => {
-  const browserViewport = {width: 1280, height: 960};
-  [browser, page, utils, actions] = await setupTestBrowser(browserViewport);
+  [browser, page, utils, actions] = await setupTestBrowser();
 });
 
 afterAll(() => {
-  if (browser !== undefined) browser.close()
+  if (browser !== undefined) browser.close();
 });
 
 describe.each([
-  {withSubset: true, tag: "subset"},
-  {withSubset: false, tag: "whole"}
+  { withSubset: true, tag: "subset" },
+  { withSubset: false, tag: "whole" },
 ])("annotations", (config) => {
-
   const perTestCategoryName = "per-test-category";
   const perTestLabelName = "per-test-label";
 
@@ -32,7 +30,8 @@ describe.each([
     // setup the test fixtures
     await actions.createCategory(perTestCategoryName);
     await actions.createLabel(perTestCategoryName, perTestLabelName);
-    if (config.withSubset) await actions.subset({x1: 0.10, y1: 0.10, x2: 0.80, y2: 0.80});
+    if (config.withSubset)
+      await actions.subset({ x1: 0.1, y1: 0.1, x2: 0.8, y2: 0.8 });
     await utils.waitByClass("autosave-complete");
   });
 
@@ -75,7 +74,11 @@ describe.each([
   test("rename a label", async () => {
     const newLabelName = "my-cool-new-label";
     await assertLabelDoesNotExist(perTestCategoryName, newLabelName);
-    await actions.renameLabel(perTestCategoryName, perTestLabelName, newLabelName);
+    await actions.renameLabel(
+      perTestCategoryName,
+      perTestLabelName,
+      newLabelName
+    );
     await assertLabelDoesNotExist(perTestCategoryName, perTestLabelName);
     await assertLabelExists(perTestCategoryName, newLabelName);
   });
@@ -84,8 +87,10 @@ describe.each([
     const categoryName = "cluster-test";
     const labelName = "four";
     await actions.expandCategory(categoryName);
-    const result = await utils.waitByID(`categorical-value-count-${categoryName}-${labelName}`);
-    expect(await result.evaluate(node => node.innerText)).toBe(
+    const result = await utils.waitByID(
+      `categorical-value-count-${categoryName}-${labelName}`
+    );
+    expect(await result.evaluate((node) => node.innerText)).toBe(
       data.annotationsFromFile.count.bySubsetConfig[config.withSubset]
     );
   });
@@ -102,11 +107,17 @@ describe.each([
       lassoSelection.end,
       true
     );
-    await utils.waitByID("lasso-element", {visible: true});
-    await utils.clickOn(`${perTestCategoryName}:${perTestLabelName}:see-actions`);
-    await utils.clickOn(`${perTestCategoryName}:${perTestLabelName}:add-current-selection-to-this-label`);
-    const result = await utils.waitByID(`categorical-value-count-${perTestCategoryName}-${perTestLabelName}`);
-    expect(await result.evaluate(node => node.innerText)).toBe(
+    await utils.waitByID("lasso-element", { visible: true });
+    await utils.clickOn(
+      `${perTestCategoryName}:${perTestLabelName}:see-actions`
+    );
+    await utils.clickOn(
+      `${perTestCategoryName}:${perTestLabelName}:add-current-selection-to-this-label`
+    );
+    const result = await utils.waitByID(
+      `categorical-value-count-${perTestCategoryName}-${perTestLabelName}`
+    );
+    expect(await result.evaluate((node) => node.innerText)).toBe(
       data.categoryLabel.newCount.bySubsetConfig[config.withSubset]
     );
   });
@@ -171,7 +182,11 @@ describe.each([
   test("undo/redo label rename", async () => {
     const newLabelName = `label-renamed-undo-${config.tag}`;
     await assertLabelDoesNotExist(perTestCategoryName, newLabelName);
-    await actions.renameLabel(perTestCategoryName, perTestLabelName, newLabelName);
+    await actions.renameLabel(
+      perTestCategoryName,
+      perTestLabelName,
+      newLabelName
+    );
     await assertLabelExists(perTestCategoryName, newLabelName);
     await assertLabelDoesNotExist(perTestCategoryName, perTestLabelName);
     await utils.clickOn("undo");
@@ -184,14 +199,16 @@ describe.each([
 
   async function assertCategoryExists(categoryName) {
     const handle = await utils.waitByID(`${categoryName}:category-expand`);
-    const result = await handle.evaluate(node => node.innerText);
+    const result = await handle.evaluate((node) => node.innerText);
     // slice beginning and end of category name result to account for truncation of long names
     expect(result.slice(0, 10)).toBe(categoryName.slice(0, 10));
     expect(result.slice(-10)).toBe(categoryName.slice(-10));
   }
 
   async function assertCategoryDoesNotExist(categoryName) {
-    const result = await page.$(`[data-testid='${categoryName}:category-expand']`);
+    const result = await page.$(
+      `[data-testid='${categoryName}:category-expand']`
+    );
     expect(result).toBeNull();
   }
 
@@ -199,13 +216,17 @@ describe.each([
     const category = await utils.waitByID(`${categoryName}:category-expand`);
     expect(category).not.toBeNull();
     await actions.expandCategory(categoryName);
-    const previous = await utils.waitByID(`categorical-value-${categoryName}-${labelName}`);
-    expect(await previous.evaluate(node => node.innerText)).toBe(labelName);
+    const previous = await utils.waitByID(
+      `categorical-value-${categoryName}-${labelName}`
+    );
+    expect(await previous.evaluate((node) => node.innerText)).toBe(labelName);
   }
 
   async function assertLabelDoesNotExist(categoryName, labelName) {
     await actions.expandCategory(categoryName);
-    const result = await page.$(`[data-testid='categorical-value-${categoryName}-${labelName}']`);
+    const result = await page.$(
+      `[data-testid='categorical-value-${categoryName}-${labelName}']`
+    );
     expect(result).toBeNull();
   }
 
@@ -213,10 +234,10 @@ describe.each([
     try {
       const category = await page.waitForSelector(
         `[data-testid='${categoryName}:category-expand']`,
-        {timeout: 200}
+        { timeout: 200 }
       );
       if (category !== null) return await actions.deleteCategory(categoryName);
     } catch {}
-    return null
+    return null;
   }
 });
