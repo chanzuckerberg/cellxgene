@@ -4,6 +4,7 @@ include ../common.mk
 clean:
 	rm -f common/web/templates/index.html
 	rm -rf common/web/static
+	rm -f common/web/csp-hashes.json
 
 .PHONY: unit-test
 unit-test:
