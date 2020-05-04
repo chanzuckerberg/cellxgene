@@ -96,7 +96,7 @@ class DiffexpButtons extends React.Component {
         />
         {!differential.diffExp ? (
           <Popover
-            isOpen={/* warnMaxSizeExceeded && !userDismissedPopover */ false}
+            isOpen={warnMaxSizeExceeded && !userDismissedPopover}
             position={Position.BOTTOM}
             target={
               <Tooltip
