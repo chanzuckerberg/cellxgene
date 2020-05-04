@@ -1,62 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>cell&times;gene</title>
-        <style>
-            html,
-            body,
-            p,
-            h1,
-            h2,
-            h3,
-            h4,
-            h5,
-            h6,
-            span,
-            button,
-            input,
-            label,
-            text,
-            div {
-                font-family: "Roboto Condensed", "Helvetica Neue", "Helvetica",
-                    "Arial", sans-serif;
-                font-size: 14px;
-            }
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>cell&times;gene</title>
+    <style>
+      html,
+      body,
+      p,
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6,
+      span,
+      button,
+      input,
+      label,
+      text,
+      div {
+        font-family: "Roboto Condensed", "Helvetica Neue", "Helvetica", "Arial",
+          sans-serif;
+        font-size: 14px;
+      }
 
-            body {
-                margin: 0;
-                padding: 0;
-            }
+      body {
+        margin: 0;
+        padding: 0;
+      }
 
-            * {
-                box-sizing: border-box;
-            }
-        </style>
-    </head>
-    <body>
-        <script type="text/javascript">
-            window.CELLXGENE = {};
-            window.CELLXGENE.API = {
-                prefix: window.location.href + "api/",
-                version: "v0.2/",
-            };
-        </script>
-        <noscript
-            >If you're seeing this message, that means
-            <strong>JavaScript has been disabled on your browser</strong>,
-            please <strong>enable JS</strong> to make this app work.
-        </noscript>
+      * {
+        box-sizing: border-box;
+      }
+    </style>
+  </head>
+  <body>
+    <script type="text/javascript">
+      window.CELLXGENE = {};
+      window.CELLXGENE.API = {
+        prefix: window.location.href + "api/",
+        version: "v0.2/",
+      };
+    </script>
+    <noscript
+      >If you're seeing this message, that means
+      <strong>JavaScript has been disabled on your browser</strong>, please
+      <strong>enable JS</strong> to make this app work.
+    </noscript>
 
-        <div id="root"></div>
+    <div id="root"></div>
+    {% for script in SCRIPTS %}
+    <script type="text/javascript" src="{{script | safe}}"></script>
+    {% endfor %}
 
-        {% for script in SCRIPTS %}
-        <script type="text/javascript" src="{{script | safe}}"></script>
-        {% endfor %}
-
-        {% for ils in INLINE_SCRIPTS %}
-        <script type="text/javascript" no-csp-hash>{% include ils %}</script>
-        {% endfor %}
-    </body>
+    {% for ils in INLINE_SCRIPTS %}
+    <!-- caution: do not change white space in this script element -->
+    <script type="text/javascript" no-csp-hash>{% include ils %}</script>
+    {% endfor %}
+  </body>
 </html>

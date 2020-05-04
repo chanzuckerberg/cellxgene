@@ -3,7 +3,7 @@ import { Universe } from "../util/stateManager";
 import {
   postNetworkErrorToast,
   postAsyncSuccessToast,
-  postAsyncFailureToast
+  postAsyncFailureToast,
 } from "../components/framework/toasters";
 
 function abortableFetch(request, opts, timeout = 0) {
@@ -18,7 +18,7 @@ function abortableFetch(request, opts, timeout = 0) {
         setTimeout(() => controller.abort(), timeout);
       }
       return fetch(request, { ...opts, signal });
-    }
+    },
   };
 }
 
@@ -38,19 +38,19 @@ async function doReembedFetch(dispatch, getState) {
       method: "PUT",
       headers: new Headers({
         Accept: "application/octet-stream",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       }),
       body: JSON.stringify({
         method: "umap",
-        filter: { obs: { index: cells } }
+        filter: { obs: { index: cells } },
       }),
-      credentials: "include"
+      credentials: "include",
     },
     60000 // 1 minute timeout
   );
   dispatch({
     type: "reembed: request start",
-    abortableFetch: af
+    abortableFetch: af,
   });
   const res = await af.ready();
 
@@ -82,17 +82,17 @@ export function requestReembed() {
       const buffer = await res.arrayBuffer();
       const df = Universe.matrixFBSToDataframe(buffer);
       dispatch({
-        type: "reembed: request completed"
+        type: "reembed: request completed",
       });
       dispatch({
         type: "reembed: add reembedding",
         embedding: df,
-        schema
+        schema,
       });
       postAsyncSuccessToast("Re-embedding has completed.");
     } catch (error) {
       dispatch({
-        type: "reembed: request aborted"
+        type: "reembed: request aborted",
       });
       if (error.name === "AbortError") {
         postAsyncFailureToast("Re-embedding calculation was aborted.");
@@ -108,6 +108,6 @@ export function reembedResetWorldToUniverse(dispatch, getState) {
   const { reembedController } = getState();
   if (reembedController.pendingFetch) reembedController.pendingFetch.abort();
   dispatch({
-    type: "reembed: clear all reembeddings"
+    type: "reembed: clear all reembeddings",
   });
 }

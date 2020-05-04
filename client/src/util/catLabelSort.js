@@ -24,7 +24,7 @@ const catLabelSort = (isUserAnno, values) => {
   const ints = [];
   const unassignedOrNaN = [];
 
-  values.forEach(v => {
+  values.forEach((v) => {
     if (isUserAnno && v === globals.unassignedCategoryLabel) {
       unassignedOrNaN.push(v);
     } else if (String(v).toLowerCase() === "nan") {

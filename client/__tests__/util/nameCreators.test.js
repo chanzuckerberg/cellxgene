@@ -6,7 +6,7 @@ import {
   obsAnnoDimensionName,
   diffexpDimensionName,
   userDefinedDimensionName,
-  makeContinuousDimensionName
+  makeContinuousDimensionName,
 } from "../../src/util/nameCreators";
 
 describe("nameCreators", () => {
@@ -14,25 +14,25 @@ describe("nameCreators", () => {
     layoutDimensionName,
     obsAnnoDimensionName,
     diffexpDimensionName,
-    userDefinedDimensionName
+    userDefinedDimensionName,
   ];
 
   test("check for namespace isolation", () => {
     const foo = "foo";
-    nameCreators.forEach(fn => expect(fn(foo)).not.toBe(foo));
+    nameCreators.forEach((fn) => expect(fn(foo)).not.toBe(foo));
 
     const bar = "bar";
-    nameCreators.forEach(fn => expect(fn(foo)).not.toBe(fn(bar)));
+    nameCreators.forEach((fn) => expect(fn(foo)).not.toBe(fn(bar)));
 
-    nameCreators.forEach(fn => {
-      const allOtherFn = nameCreators.filter(elmnt => elmnt !== fn);
-      allOtherFn.forEach(otherFn => expect(fn(foo)).not.toBe(otherFn(foo)));
+    nameCreators.forEach((fn) => {
+      const allOtherFn = nameCreators.filter((elmnt) => elmnt !== fn);
+      allOtherFn.forEach((otherFn) => expect(fn(foo)).not.toBe(otherFn(foo)));
     });
   });
 
   test("check for legal keys", () => {
     /* need namespace creators to return strings only */
-    nameCreators.forEach(fn => expect(fn("X")).toMatch(/X/));
+    nameCreators.forEach((fn) => expect(fn("X")).toMatch(/X/));
   });
 });
 

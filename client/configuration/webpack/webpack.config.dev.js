@@ -18,7 +18,7 @@ module.exports = {
     path: path.resolve("build"),
     pathinfo: true,
     filename: "static/js/bundle.js",
-    publicPath: "/"
+    publicPath: "/",
   },
   module: {
     rules: [
@@ -26,7 +26,7 @@ module.exports = {
         test: /\.js$/,
         include: src,
         loader: "babel-loader",
-        options: babelOptions
+        options: babelOptions,
       },
       {
         test: /\.css$/,
@@ -34,29 +34,29 @@ module.exports = {
         exclude: [path.resolve(src, "index.css")],
         loader: [
           {
-            loader: "style-loader"
+            loader: "style-loader",
           },
           {
             loader: "css-loader",
             options: {
               modules: {
-                localIdentName: "[name]__[local]___[hash:base64:5]"
-              }
-            }
-          }
-        ]
+                localIdentName: "[name]__[local]___[hash:base64:5]",
+              },
+            },
+          },
+        ],
       },
       {
         test: /index\.css$/,
         include: [path.resolve(src, "index.css")],
         loader: [
           {
-            loader: "style-loader"
+            loader: "style-loader",
           },
           {
-            loader: "css-loader"
-          }
-        ]
+            loader: "css-loader",
+          },
+        ],
       },
 
       { test: /\.json$/, include: [src, nodeModules], loader: "json-loader" },
@@ -64,14 +64,14 @@ module.exports = {
         test: /\.(jpg|png|gif|eot|svg|ttf|woff|woff2|otf)$/i,
         loader: "file-loader",
         include: [nodeModules, fonts],
-        query: { name: "static/assets/[name].[ext]" }
-      }
-    ]
+        query: { name: "static/assets/[name].[ext]" },
+      },
+    ],
   },
   plugins: [
     new HtmlWebpackPlugin({
       inject: true,
-      template: path.resolve("index.html")
+      template: path.resolve("index.html"),
     }),
     new FaviconsWebpackPlugin({
       logo: "./favicon.png",
@@ -84,16 +84,18 @@ module.exports = {
           coast: false,
           firefox: false,
           windows: false,
-          yandex: false
-        }
-      }
+          yandex: false,
+        },
+      },
     }),
     new webpack.NoEmitOnErrorsPlugin(),
     new webpack.DefinePlugin({
-      __REACT_DEVTOOLS_GLOBAL_HOOK__: "({ isDisabled: true })"
+      __REACT_DEVTOOLS_GLOBAL_HOOK__: "({ isDisabled: true })",
     }),
     new webpack.DefinePlugin({
-      "process.env.CXG_SERVER_PORT": JSON.stringify(process.env.CXG_SERVER_PORT)
-    })
-  ]
+      "process.env.CXG_SERVER_PORT": JSON.stringify(
+        process.env.CXG_SERVER_PORT
+      ),
+    }),
+  ],
 };

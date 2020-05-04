@@ -2,11 +2,11 @@ import React from "react";
 import { connect } from "react-redux";
 import { Button, Tooltip, Dialog, Classes, Colors } from "@blueprintjs/core";
 
-@connect(state => ({
+@connect((state) => ({
   colorAccessor: state.colors.colorAccessor,
   categoricalSelection: state.categoricalSelection,
   annotations: state.annotations,
-  universe: state.universe
+  universe: state.universe,
 }))
 class AnnoDialog extends React.PureComponent {
   constructor(props) {
@@ -30,13 +30,13 @@ class AnnoDialog extends React.PureComponent {
       primaryButtonText,
       secondaryButtonText,
       handleSecondaryButtonSubmit,
-      primaryButtonProps
+      primaryButtonProps,
     } = this.props;
 
     return (
       <Dialog icon="tag" title={title} isOpen={isActive} onClose={handleCancel}>
         <form
-          onSubmit={e => {
+          onSubmit={(e) => {
             e.preventDefault();
           }}
         >
@@ -48,7 +48,7 @@ class AnnoDialog extends React.PureComponent {
                 style={{
                   marginTop: 7,
                   visibility: validationError ? "visible" : "hidden",
-                  color: Colors.ORANGE3
+                  color: Colors.ORANGE3,
                 }}
               >
                 {errorMessage}

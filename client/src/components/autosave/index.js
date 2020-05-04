@@ -4,7 +4,7 @@ import * as globals from "../../globals";
 import actions from "../../actions";
 import FilenameDialog from "./filenameDialog";
 
-@connect(state => ({
+@connect((state) => ({
   universe: state.universe,
   annotations: state.annotations,
   obsAnnotations: state.universe.obsAnnotations,
@@ -12,13 +12,13 @@ import FilenameDialog from "./filenameDialog";
   lastSavedObsAnnotations: state.autosave?.lastSavedObsAnnotations,
   error: state.autosave?.error,
   writableCategoriesEnabled: state.config?.parameters?.["annotations"] ?? false,
-  initialDataLoadComplete: state.autosave?.initialDataLoadComplete
+  initialDataLoadComplete: state.autosave?.initialDataLoadComplete,
 }))
 class Autosave extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      timer: null
+      timer: null,
     };
   }
 
@@ -64,22 +64,26 @@ class Autosave extends React.Component {
   }
 
   render() {
-    const { writableCategoriesEnabled, saveInProgress, initialDataLoadComplete } = this.props;
+    const {
+      writableCategoriesEnabled,
+      saveInProgress,
+      initialDataLoadComplete,
+    } = this.props;
     return writableCategoriesEnabled ? (
       <div
         id="autosave"
         data-testclass={
           !initialDataLoadComplete
             ? "autosave-init"
-            : (this.needToSave() || saveInProgress)
-              ? "autosave-incomplete"
-              : "autosave-complete"
+            : this.needToSave() || saveInProgress
+            ? "autosave-incomplete"
+            : "autosave-complete"
         }
         style={{
           position: "fixed",
           display: "inherit",
           right: globals.leftSidebarWidth + 5,
-          bottom: 5
+          bottom: 5,
         }}
       >
         {this.statusMessage()}

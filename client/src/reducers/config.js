@@ -3,7 +3,7 @@ const Config = (
   state = {
     displayNames: null,
     features: null,
-    parameters: null
+    parameters: null,
   },
   action
 ) => {
@@ -12,19 +12,19 @@ const Config = (
       return {
         ...state,
         loading: true,
-        error: null
+        error: null,
       };
     case "configuration load complete":
       return {
         ...state,
         loading: false,
         error: null,
-        ...action.config
+        ...action.config,
       };
     case "initial data load error":
       return {
         ...state,
-        error: action.error
+        error: action.error,
       };
     default:
       return state;

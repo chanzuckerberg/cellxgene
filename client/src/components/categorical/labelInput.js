@@ -31,7 +31,7 @@ export default class LabelInput extends React.PureComponent {
     const queryResults = this.filterLabels(query);
     this.state = {
       query,
-      queryResults
+      queryResults,
     };
   }
 
@@ -42,7 +42,7 @@ export default class LabelInput extends React.PureComponent {
     const queryResults = this.filterLabels(query);
     this.setState({
       query,
-      queryResults
+      queryResults,
     });
 
     const { onChange } = this.props;
@@ -57,7 +57,7 @@ export default class LabelInput extends React.PureComponent {
     if (target !== query && onSelect) onSelect(target, event);
   };
 
-  handleKeyDown = e => {
+  handleKeyDown = (e) => {
     /* 
     prevent these events from propagating to containing form/dialog
     and causing further side effects (eg, closing dialog, submitting
@@ -72,7 +72,7 @@ export default class LabelInput extends React.PureComponent {
     }
   };
 
-  handleChange = e => {
+  handleChange = (e) => {
     const { onChange } = this.props;
     if (onChange) onChange(e.target.value);
   };
@@ -112,16 +112,18 @@ export default class LabelInput extends React.PureComponent {
 
     /* empty query is wildcard */
     if (query === "") {
-      return labelSuggestions.slice(0, LabelInput.QueryResultLimit).map(l => ({
-        target: l,
-        score: -10000
-      }));
+      return labelSuggestions
+        .slice(0, LabelInput.QueryResultLimit)
+        .map((l) => ({
+          target: l,
+          score: -10000,
+        }));
     }
 
     /* else, do a fuzzy query */
     const options = {
       limit: LabelInput.QueryResultLimit,
-      threshold: -10000 // don't return bad results
+      threshold: -10000, // don't return bad results
     };
     let queryResults = fuzzysort.go(query, labelSuggestions, options);
     /* exact match will always be first in list */
@@ -149,18 +151,18 @@ export default class LabelInput extends React.PureComponent {
 
     const popoverProps = {
       minimal: true,
-      ...props.popoverProps
+      ...props.popoverProps,
     };
     const inputProps = {
       ...props.inputProps,
-      autoFocus: false
+      autoFocus: false,
     };
     const { queryResults } = this.state;
     return (
       <>
         <Suggest
           fill
-          inputValueRenderer={i => i.target}
+          inputValueRenderer={(i) => i.target}
           items={queryResults}
           itemRenderer={this.renderLabelSuggestion}
           onItemSelect={this.handleItemSelect}

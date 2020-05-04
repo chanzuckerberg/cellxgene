@@ -33,7 +33,7 @@ const setupParallelCoordinates = (width, height, margin) => {
 
   return {
     svg,
-    ctx
+    ctx,
   };
 };
 

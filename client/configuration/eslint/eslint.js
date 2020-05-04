@@ -9,8 +9,8 @@ module.exports = {
     sourceType: "module",
     ecmaFeatures: {
       jsx: true,
-      generators: true
-    }
+      generators: true,
+    },
   },
   rules: {
     "no-magic-numbers": "off",
@@ -26,7 +26,7 @@ module.exports = {
     "operator-linebreak": [
       "error",
       "after",
-      { overrides: { "?": "before", ":": "before" } }
+      { overrides: { "?": "before", ":": "before" } },
     ],
     "no-console": "off",
     "spaced-comment": ["error", "always", { exceptions: ["*"] }],
@@ -35,13 +35,13 @@ module.exports = {
     "react/prop-types": [0],
     "space-before-function-paren": "off",
     "function-paren-newline": "off",
-    "prefer-destructuring": ["error", { object: true, array: false }]
+    "prefer-destructuring": ["error", { object: true, array: false }],
   },
   overrides: [
     {
       files: ["**/*.test.js"],
       env: {
-        jest: true // now **/*.test.js files' env has both es6 *and* jest
+        jest: true, // now **/*.test.js files' env has both es6 *and* jest
       },
       // Can't extend in overrides: https://github.com/eslint/eslint/issues/8813
       // "extends": ["plugin:jest/recommended"]
@@ -51,8 +51,8 @@ module.exports = {
         "jest/no-focused-tests": "error",
         "jest/no-identical-title": "error",
         "jest/prefer-to-have-length": "warn",
-        "jest/valid-expect": "error"
-      }
-    }
-  ]
+        "jest/valid-expect": "error",
+      },
+    },
+  ],
 };

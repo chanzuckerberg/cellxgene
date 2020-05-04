@@ -158,6 +158,9 @@ try:
             secret_region_name = discover_s3_region_name(app_config.multi_dataset__dataroot)
             if not secret_region_name:
                 logging.error(f"Expected to discover the s3 region name from {app_config.multi_dataset__dataroot}")
+                secret_region_name = discover_s3_region_name(config_file)
+                if not secret_region_name:
+                    logging.error(f"Expected to discover the s3 region name from {app_config.multi_dataset__dataroot}")
         flask_secret_key = get_flask_secret_key(secret_region_name, secret_name)
         app_config.update(server__flask_secret_key=flask_secret_key)
 

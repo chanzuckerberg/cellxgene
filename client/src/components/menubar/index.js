@@ -11,7 +11,7 @@ import Subset from "./subset";
 import UndoRedoReset from "./undoRedo";
 import DiffexpButtons from "./diffexpButtons";
 
-@connect(state => ({
+@connect((state) => ({
   universe: state.universe,
   world: state.world,
   crossfilter: state.crossfilter,
@@ -34,7 +34,7 @@ import DiffexpButtons from "./diffexpButtons";
   diffexpMayBeSlow: state.config?.parameters?.["diffexp-may-be-slow"] ?? false,
   showCentroidLabels: state.centroidLabels.showLabels,
   tosURL: state.config?.parameters?.about_legal_tos,
-  privacyURL: state.config?.parameters?.about_legal_privacy
+  privacyURL: state.config?.parameters?.about_legal_privacy,
 }))
 class MenuBar extends React.Component {
   static isValidDigitKeyEvent(e) {
@@ -64,7 +64,7 @@ class MenuBar extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      pendingClipPercentiles: null
+      pendingClipPercentiles: null,
     };
   }
 
@@ -90,7 +90,7 @@ class MenuBar extends React.Component {
     return isDisabled;
   };
 
-  handleClipOnKeyPress = e => {
+  handleClipOnKeyPress = (e) => {
     /*
     allow only numbers, plus other critical keys which
     may be required to make a number
@@ -100,7 +100,7 @@ class MenuBar extends React.Component {
     }
   };
 
-  handleClipPercentileMinValueChange = v => {
+  handleClipPercentileMinValueChange = (v) => {
     /*
     Ignore anything that isn't a legit number
     */
@@ -116,11 +116,11 @@ class MenuBar extends React.Component {
     if (v > 100) v = 100;
     const clipPercentileMin = Math.round(v); // paranoia
     this.setState({
-      pendingClipPercentiles: { clipPercentileMin, clipPercentileMax }
+      pendingClipPercentiles: { clipPercentileMin, clipPercentileMax },
     });
   };
 
-  handleClipPercentileMaxValueChange = v => {
+  handleClipPercentileMaxValueChange = (v) => {
     /*
     Ignore anything that isn't a legit number
     */
@@ -137,7 +137,7 @@ class MenuBar extends React.Component {
     const clipPercentileMax = Math.round(v); // paranoia
 
     this.setState({
-      pendingClipPercentiles: { clipPercentileMin, clipPercentileMax }
+      pendingClipPercentiles: { clipPercentileMin, clipPercentileMax },
     });
   };
 
@@ -149,14 +149,14 @@ class MenuBar extends React.Component {
     const max = clipPercentileMax / 100;
     dispatch({
       type: "set clip quantiles",
-      clipQuantiles: { min, max }
+      clipQuantiles: { min, max },
     });
   };
 
   handleClipOpening = () => {
     const { clipPercentileMin, clipPercentileMax } = this.props;
     this.setState({
-      pendingClipPercentiles: { clipPercentileMin, clipPercentileMax }
+      pendingClipPercentiles: { clipPercentileMin, clipPercentileMax },
     });
   };
 
@@ -169,7 +169,7 @@ class MenuBar extends React.Component {
 
     dispatch({
       type: "show centroid labels for category",
-      showLabels: !showCentroidLabels
+      showLabels: !showCentroidLabels,
     });
   };
 
@@ -200,7 +200,7 @@ class MenuBar extends React.Component {
       aboutLink,
       showCentroidLabels,
       privacyURL,
-      tosURL
+      tosURL,
     } = this.props;
     const { pendingClipPercentiles } = this.state;
 
@@ -221,10 +221,10 @@ class MenuBar extends React.Component {
           position: "fixed",
           right: globals.leftSidebarWidth + 8,
           top: 8,
-          display: "flex"
+          display: "flex",
         }}
       >
-        {disableDiffexp ? null : <DiffexpButtons/>}
+        {disableDiffexp ? null : <DiffexpButtons />}
         <Subset
           subsetPossible={this.subsetPossible()}
           subsetResetPossible={this.subsetResetPossible()}
@@ -251,11 +251,11 @@ class MenuBar extends React.Component {
               onClick={() => {
                 dispatch({
                   type: "change graph interaction mode",
-                  data: "select"
+                  data: "select",
                 });
               }}
               style={{
-                cursor: "pointer"
+                cursor: "pointer",
               }}
             />
           </Tooltip>
@@ -272,11 +272,11 @@ class MenuBar extends React.Component {
               onClick={() => {
                 dispatch({
                   type: "change graph interaction mode",
-                  data: "zoom"
+                  data: "zoom",
                 });
               }}
               style={{
-                cursor: "pointer"
+                cursor: "pointer",
               }}
             />
           </Tooltip>
@@ -294,7 +294,7 @@ class MenuBar extends React.Component {
             active={showCentroidLabels}
             intent={showCentroidLabels ? "primary" : "none"}
             style={{
-              marginRight: 10
+              marginRight: 10,
             }}
           />
         </Tooltip>

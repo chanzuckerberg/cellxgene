@@ -19,7 +19,7 @@ const setupScatterplot = (width, height, margin) => {
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
   return {
-    svg
+    svg,
   };
 };
 

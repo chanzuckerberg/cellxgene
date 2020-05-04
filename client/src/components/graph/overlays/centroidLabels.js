@@ -6,14 +6,14 @@ import { connect } from "react-redux";
 import { categoryLabelDisplayStringLongLength } from "../../../globals";
 
 export default
-@connect(state => ({
+@connect((state) => ({
   colorAccessor: state.colors.colorAccessor,
   dilatedValue: state.pointDilation.categoryField,
-  labels: state.centroidLabels.labels
+  labels: state.centroidLabels.labels,
 }))
 class CentroidLabels extends PureComponent {
   // Check to see if centroids have either just been displayed or removed from the overlay
-  componentDidUpdate = prevProps => {
+  componentDidUpdate = (prevProps) => {
     const { labels, overlayToggled } = this.props;
     const prevSize = prevProps.labels.size;
     const { size } = labels;
@@ -33,7 +33,7 @@ class CentroidLabels extends PureComponent {
       inverseTransform,
       dilatedValue,
       dispatch,
-      colorAccessor
+      colorAccessor,
     } = this.props;
 
     const labelSVGS = [];
@@ -74,20 +74,20 @@ class CentroidLabels extends PureComponent {
               fontSize,
               fontWeight,
               fill: "black",
-              userSelect: "none"
+              userSelect: "none",
             }}
-            onMouseEnter={e =>
+            onMouseEnter={(e) =>
               dispatch({
                 type: "category value mouse hover start",
                 metadataField: colorAccessor,
-                categoryField: e.target.getAttribute("data-label")
+                categoryField: e.target.getAttribute("data-label"),
               })
             }
-            onMouseOut={e =>
+            onMouseOut={(e) =>
               dispatch({
                 type: "category value mouse hover end",
                 metadataField: colorAccessor,
-                categoryField: e.target.getAttribute("data-label")
+                categoryField: e.target.getAttribute("data-label"),
               })
             }
             pointerEvents="visiblePainted"

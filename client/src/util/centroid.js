@@ -70,7 +70,7 @@ const getCoordinatesByLabel = (
           hasFinite: false,
           xCoordinates: new Float32Array(numInLabel),
           yCoordinates: new Float32Array(numInLabel),
-          length: 0
+          length: 0,
         };
         coordsByCategoryLabel.set(label, coords);
       }

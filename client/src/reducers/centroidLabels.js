@@ -2,7 +2,7 @@ import calcCentroid from "../util/centroid";
 
 const initialState = {
   labels: [],
-  showLabels: false
+  showLabels: false,
 };
 
 const centroidLabels = (state = initialState, action, sharedNextState) => {
@@ -10,7 +10,7 @@ const centroidLabels = (state = initialState, action, sharedNextState) => {
     world,
     layoutChoice,
     categoricalSelection,
-    colors: { colorAccessor }
+    colors: { colorAccessor },
   } = sharedNextState;
 
   const showLabels = action.showLabels ?? state.showLabels;
@@ -34,7 +34,7 @@ const centroidLabels = (state = initialState, action, sharedNextState) => {
                 categoricalSelection,
                 world.schema.annotations.obsByName
               )
-            : []
+            : [],
       };
 
     case "color by categorical metadata":
@@ -45,7 +45,7 @@ const centroidLabels = (state = initialState, action, sharedNextState) => {
         return {
           ...state,
           labels: [],
-          showLabels
+          showLabels,
         };
       }
 
@@ -59,7 +59,7 @@ const centroidLabels = (state = initialState, action, sharedNextState) => {
           categoricalSelection,
           world.schema.annotations.obsByName
         ),
-        showLabels
+        showLabels,
       };
 
     case "color by continuous metadata":

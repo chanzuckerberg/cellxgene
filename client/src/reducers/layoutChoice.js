@@ -9,14 +9,14 @@ about commonly used names.  Preferentially, pick in the following order:
 */
 function bestDefaultLayout(layouts) {
   const preferredNames = ["umap", "tsne", "pca"];
-  const idx = preferredNames.findIndex(name => layouts.indexOf(name) !== -1);
+  const idx = preferredNames.findIndex((name) => layouts.indexOf(name) !== -1);
   if (idx !== -1) return preferredNames[idx];
   return layouts[0];
 }
 
 function setToDefaultLayout(world) {
   const { schema } = world;
-  const available = schema.layout.obs.map(v => v.name).sort();
+  const available = schema.layout.obs.map((v) => v.name).sort();
   const current = bestDefaultLayout(available);
   const currentDimNames = schema.layout.obsByName[current].dims;
   return { available, current, currentDimNames };
@@ -26,7 +26,7 @@ const LayoutChoice = (
   state = {
     available: [], // all available choices
     current: undefined, // name of the current layout, eg, 'umap'
-    currentDimNames: [] // dimension name
+    currentDimNames: [], // dimension name
   },
   action,
   nextSharedState
@@ -37,7 +37,7 @@ const LayoutChoice = (
       const { universe } = nextSharedState;
       return {
         ...state,
-        ...setToDefaultLayout(universe)
+        ...setToDefaultLayout(universe),
       };
     }
 
@@ -53,7 +53,7 @@ const LayoutChoice = (
       const available = Array.from(new Set(state.available).add(name));
       return {
         ...state,
-        available
+        available,
       };
     }
 
@@ -64,12 +64,12 @@ const LayoutChoice = (
       if (dflt.available.includes(current)) {
         return {
           ...state,
-          available: dflt.available
+          available: dflt.available,
         };
       }
       return {
         ...state,
-        ...dflt
+        ...dflt,
       };
     }
 

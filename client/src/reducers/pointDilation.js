@@ -1,6 +1,6 @@
 const initialState = {
   metadataField: "",
-  categoryField: ""
+  categoryField: "",
 };
 
 const pointDialation = (state = initialState, action, sharedNextState) => {
@@ -15,7 +15,7 @@ const pointDialation = (state = initialState, action, sharedNextState) => {
       return {
         ...state,
         metadataField,
-        categoryField
+        categoryField,
       };
 
     case "category value mouse hover end":

@@ -132,7 +132,7 @@ class AppConfig(object):
             del dc["adaptor"]["cxg_adaptor"]["tiledb_ctx"]
 
         # special case for csp_directives whose value is a dict.
-        val = config.get("server", {}).get("csp_directives", {})
+        val = config.get("server", {}).get("csp_directives")
         if val is not None:
             mapping["server__csp_directives"] = (("server", "csp_directives"), val)
             del dc["server"]["csp_directives"]

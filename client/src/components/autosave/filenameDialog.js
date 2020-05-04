@@ -7,10 +7,10 @@ import {
   InputGroup,
   Dialog,
   Classes,
-  Colors
+  Colors,
 } from "@blueprintjs/core";
 
-@connect(state => ({
+@connect((state) => ({
   universe: state.universe,
   idhash: state.config?.parameters?.["annotations-user-data-idhash"] ?? null,
   annotations: state.annotations,
@@ -18,13 +18,13 @@ import {
   saveInProgress: state.autosave?.saveInProgress ?? false,
   lastSavedObsAnnotations: state.autosave?.lastSavedObsAnnotations,
   error: state.autosave?.error,
-  writableCategoriesEnabled: state.config?.parameters?.["annotations"] ?? false
+  writableCategoriesEnabled: state.config?.parameters?.["annotations"] ?? false,
 }))
 class FilenameDialog extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      filenameText: ""
+      filenameText: "",
     };
   }
 
@@ -36,7 +36,7 @@ class FilenameDialog extends React.Component {
 
     dispatch({
       type: "set annotations collection name",
-      data: filenameText
+      data: filenameText,
     });
   };
 
@@ -71,7 +71,7 @@ class FilenameDialog extends React.Component {
             fontStyle: "italic",
             fontSize: 12,
             marginTop: 5,
-            color: Colors.ORANGE3
+            color: Colors.ORANGE3,
           }}
         >
           Name cannot be blank
@@ -84,7 +84,7 @@ class FilenameDialog extends React.Component {
             fontStyle: "italic",
             fontSize: 12,
             marginTop: 5,
-            color: Colors.ORANGE3
+            color: Colors.ORANGE3,
           }}
         >
           Only alphanumeric and underscore allowed
@@ -108,7 +108,7 @@ class FilenameDialog extends React.Component {
         onClose={this.dismissFilenameDialog}
       >
         <form
-          onSubmit={e => {
+          onSubmit={(e) => {
             e.preventDefault();
             this.handleCreateFilename();
           }}
@@ -120,7 +120,9 @@ class FilenameDialog extends React.Component {
                 autoFocus
                 value={filenameText}
                 intent={this.filenameError(filenameText) ? "warning" : "none"}
-                onChange={e => this.setState({ filenameText: e.target.value })}
+                onChange={(e) =>
+                  this.setState({ filenameText: e.target.value })
+                }
                 leftIcon="tag"
               />
               <p
@@ -129,7 +131,7 @@ class FilenameDialog extends React.Component {
                   visibility: this.filenameError(filenameText)
                     ? "visible"
                     : "hidden",
-                  color: Colors.ORANGE3
+                  color: Colors.ORANGE3,
                 }}
               >
                 {this.filenameErrorMessage(filenameText)}

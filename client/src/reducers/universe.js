@@ -2,12 +2,12 @@ import { unassignedCategoryLabel } from "../globals";
 import {
   addObsAnnotations,
   addVarAnnotations,
-  addObsLayout
+  addObsLayout,
 } from "../util/stateManager/universe";
 import {
   World,
   ControlsHelpers,
-  AnnotationsHelpers
+  AnnotationsHelpers,
 } from "../util/stateManager";
 
 const Universe = (state = null, action, nextSharedState, prevSharedState) => {
@@ -23,19 +23,19 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
         case "obsAnnotations": {
           return {
             ...state,
-            ...addObsAnnotations(state, dataframe)
+            ...addObsAnnotations(state, dataframe),
           };
         }
         case "varAnnotations": {
           return {
             ...state,
-            ...addVarAnnotations(state, dataframe)
+            ...addVarAnnotations(state, dataframe),
           };
         }
         case "obsLayout": {
           return {
             ...state,
-            ...addObsLayout(state, dataframe)
+            ...addObsLayout(state, dataframe),
           };
         }
         default: {
@@ -62,8 +62,10 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
       const { userDefinedGenes, diffexpGenes } = prevSharedState;
       const allTheGenesWeNeed = [
         ...new Set(
-          [userDefinedGenes, diffexpGenes, Object.keys(action.expressionData)].filter(ele => ele).flat()
-        )
+          [userDefinedGenes, diffexpGenes, Object.keys(action.expressionData)]
+            .filter((ele) => ele)
+            .flat()
+        ),
       ];
       varData = ControlsHelpers.pruneVarDataCache(varData, allTheGenesWeNeed);
       return { ...state, varData };
@@ -98,7 +100,7 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
           categoryToDuplicate,
           name,
           {
-            writable: true
+            writable: true,
           }
         );
         /* if we are duplicating a non-writable annotation, it may not have an unassigned category */
@@ -114,7 +116,7 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
           name,
           categories,
           type: "categorical",
-          writable: true
+          writable: true,
         });
         data = new Array(state.nObs).fill(unassignedCategoryLabel);
       }
@@ -134,7 +136,7 @@ const Universe = (state = null, action, nextSharedState, prevSharedState) => {
 
       const colSchema = {
         ...state.schema.annotations.obsByName[name],
-        name: newName
+        name: newName,
       };
       const schema = AnnotationsHelpers.addObsAnnoSchema(
         AnnotationsHelpers.removeObsAnnoSchema(state.schema, name),
