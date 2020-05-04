@@ -64,8 +64,8 @@ class CentroidLabels extends PureComponent {
           data-testclass="centroid-label"
           data-testid={`${label}-centroid-label`}
         >
-          { // The mouse actions for centroid labels do not have a screen reader alternative
-            // eslint-disable-next-line jsx-a11y/mouse-events-have-key-events}
+          {/* The mouse actions for centroid labels do not have a screen reader alternative */}
+          {/* eslint-disable-next-line jsx-a11y/mouse-events-have-key-events */}
           <text
             transform={inverseTransform}
             textAnchor="middle"
