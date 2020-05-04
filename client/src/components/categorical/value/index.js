@@ -329,6 +329,8 @@ class CategoryValue extends React.Component {
       annotations.isEditingLabelName &&
       annotations.labelEditable.label === categoryIndex;
 
+    const valueToggleLabel = `value-toggle-checkbox-${displayString}`;
+
     return (
       <div
         key={i}
@@ -362,8 +364,13 @@ class CategoryValue extends React.Component {
           }}
         >
           <div style={{ display: "flex", alignItems: "baseline" }}>
-            <label className="bp3-control bp3-checkbox" style={{ margin: 0 }}>
+            <label
+              htmlFor={valueToggleLabel}
+              className="bp3-control bp3-checkbox"
+              style={{ margin: 0 }}
+            >
               <input
+                id={valueToggleLabel}
                 onChange={selected ? this.toggleOff : this.toggleOn}
                 data-testclass="categorical-value-select"
                 data-testid={`categorical-value-select-${metadataField}-${displayString}`}
