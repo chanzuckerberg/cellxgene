@@ -74,7 +74,7 @@ This was described in the previous section.
 
 static files: 
 
-The cellxgene server can server additional static webpages that may be associated with the deployment.
+The cellxgene server can serve additional static webpages that may be associated with the deployment.
 These include the about_legal_tos (terms of service), and about_legal_privacy, for example.  
 To use this feature, do the following:
 
