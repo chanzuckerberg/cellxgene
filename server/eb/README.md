@@ -120,6 +120,30 @@ ebextensions:
 Any additional config files intended for the `.ebextensions` directory of the artifact can be added
 to the `customize/ebextensions` directory.  Any file found here will be copied over.
 
+requirements.txt:
+
+A custom requirements.txt can be supplied in customize/requirements.txt.   
+This file fully specify the versions of all the python modules used by there server in the deployment.
+This is useful to ensure that the dependencies do not change from one deployment to the next.
+Therefore the custom/requirements.txt must all have exact versions specified (e.g. anndata==0.7.1).
+
+This file can be generated the first time using a process like this:
+```
+   #  assume you are running in this directory
+   $  virtualenv temp
+   $  source temp/bin/activate
+   $  pip install -r ../requirements.txt 
+   $  mkdir -p customize
+   $  pip freeze > customize/requirements.txt
+   $  deactivate
+   $  rm -rf temp/
+```
+ 
+Keep the customize/requirememts.txt file, and reuse it for each deployment. 
+If a future cellxgene version updates its requirements by modifying a module version 
+or adding a new dependency, then the `make build` process will detect any 
+incompatibilities and raise an error. 
+
 5. Create the artifact.zip file for the application
 
    ```
