@@ -27,9 +27,22 @@ https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/eb-cli3-install.html
 These steps are meant to serve as an example.  
 There are many more options to these commands that may be important or necessary for your environment.
 
-1. Create an S3 bucket
+1. Make your matrix files available to the EB servers.
 
-   Upload your matrix files to this bucket
+   The following choices are known to work.
+   
+   * S3 Bucket. 
+   * POSIX filesystem (such as Lustre)
+   * Lustre filesystem backed by S3
+   
+   S3 is convenient and the relatively inexpensive option.  
+   Lustre is higher performance, but more expensive, and slightly more complex to setup and manage.
+   AWS supports a feature to back the Lustre filesystem with S3, which give an easy to manage and high
+   performance option.
+    
+   Once the storage is in place, the next step is to copy your matrix files to that location.
+   Currently cellxgene supports a flat file organization.   Each matrix file is located from
+   the same s3 prefix or filesystem directory.  This location is specified in the configuration as the dataroot.
    
 2. Create an elastic beanstalk application.  For example:
 
@@ -47,12 +60,14 @@ There are many more options to these commands that may be important or necessary
    
    The config file may then be customized before the app is deployed.
    
-   If your config file is named "config.yaml" and exists in `customize/config.yaml`, 
-   then it will be bundled with the application zip file and installed along 
-   side the app on the EB servers.
+   There are two ways to set the config file location, evaluated in this order:
    
-   However, a potentially more flexible approach is to place your config file in a location accessible to the EB 
-   servers, such as along side the matrix files in S3.  For example:  s3://my-bucket/my-datasets/config.yaml.
+   First, if your config file is named "config.yaml" and exists in `customize/config.yaml`, 
+   then it will be bundled with the application zip file and installed along 
+   side the app on the EB servers. 
+   
+   Second, a potentially more flexible approach is to place your config file in a location accessible to the EB 
+   servers, such as in S3.  For example:  s3://my-bucket/my-datasets/config.yaml.
    Set the CXG_CONFIG_FILE environment variable to specify this location.  
    
    Another option is to set the CXG_DATAROOT environment variable.  The dataroot 
@@ -137,8 +152,10 @@ to the `customize/ebextensions` directory.  Any file found here will be copied o
    
    If using the AWS Secret Manager, then the secret name is passed as an environment variable:  CXG_AWS_SECRET_NAME.
    The secret must contain a key with the name "flask_secret_key".
-   Likely you have located the AWS Secret Manager in the same AWS region as the dataroot.  If that is not the case
-   then the AWS Secret Manager region name can be specified in an environment variable:  CXG_AWS_SECRET_REGION_NAME.
+   The region name for the AWS Secret Manager must be specified (e.g. us-east-1).
+   The most straightforward way is to specified it with the CXG_AWS_SECRET_REGION_NAME environment variable.
+   If this environment variable is not defined, then the app attempts to determine the region from the 
+   dataroot (if in s3), or the config file location (if in s3).
    
    
 7. Create an environment
@@ -160,10 +177,13 @@ to the `customize/ebextensions` directory.  Any file found here will be copied o
        --envvars CXG_DATAROOT=$CXG_DATAROOT,CXG_CONFIG_FILE=$CXG_CONFIG_FILE
     ```
 
-8. Give the elastic beanstalk environment access to the S3 bucket.
+8. Give the elastic beanstalk environment access to the dataroot. 
 
-    This link may provide some useful information:
+    If using S3, this link may provide some useful information:
     https://aws.amazon.com/premiumsupport/knowledge-center/elastic-beanstalk-s3-bucket-instance/
+    
+    If using Lustre, then this link may provide a place to start:
+    https://aws.amazon.com/fsx/lustre/
     
 9. Deploy the application
 

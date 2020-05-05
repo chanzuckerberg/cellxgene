@@ -124,43 +124,55 @@ class WSGIServer(Server):
 try:
     app_config = AppConfig()
 
-    dataroot = os.getenv("CXG_DATAROOT")
-    config_file = os.getenv("CXG_CONFIG_FILE")
+    has_config = False
+    # config file: look first for "config.yaml" in the current working directory
+    config_file = "config.yaml"
+    config_location = DataLocator(config_file)
+    if config_location.exists():
+        with config_location.local_handle() as lh:
+            logging.info(f"Configuration from {config_file}")
+            app_config.update_from_config_file(lh)
+            has_config = True
 
-    secret_name = os.getenv("CXG_AWS_SECRET_NAME")
-    secret_region_name = os.getenv("CXG_AWS_SECRET_REGION_NAME")
-
-    if config_file:
-        region_name = discover_s3_region_name(config_file)
-        config_location = DataLocator(config_file, region_name)
-        if config_location.exists():
-            with config_location.local_handle() as lh:
-                logging.info(f"Configuration from {config_file}")
-                app_config.update_from_config_file(lh)
-        else:
-            logging.critical(f"Configuration file not found {config_file}")
-            sys.exit(1)
     else:
-        # no config file specified, try "config.yaml" in the current working directory
-        config_file = "config.yaml"
-        config_location = DataLocator(config_file)
-        if config_location.exists():
-            with config_location.local_handle() as lh:
-                logging.info(f"Configuration from {config_file}")
-                app_config.update_from_config_file(lh)
+        # config file: second, use the CXG_CONFIG_FILE
+        config_file = os.getenv("CXG_CONFIG_FILE")
+        if config_file:
+            region_name = discover_s3_region_name(config_file)
+            config_location = DataLocator(config_file, region_name)
+            if config_location.exists():
+                with config_location.local_handle() as lh:
+                    logging.info(f"Configuration from {config_file}")
+                    app_config.update_from_config_file(lh)
+                    has_config = True
+            else:
+                logging.critical(f"Configuration file not found {config_file}")
+                sys.exit(1)
 
+    if not has_config:
+        logging.critical("No config file found")
+        sys.exit(1)
+
+    dataroot = os.getenv("CXG_DATAROOT")
     if dataroot:
         logging.info(f"Configuration from CXG_DATAROOT")
         app_config.update(multi_dataset__dataroot=dataroot)
 
+    secret_name = os.getenv("CXG_AWS_SECRET_NAME")
     if secret_name:
+        # need to find the secret manager region.
+        #  1. from CXG_AWS_SECRET_REGION_NAME
+        #  2. discover from dataroot location (if on s3)
+        #  3. discover from config file location (if on s3)
+        secret_region_name = os.getenv("CXG_AWS_SECRET_REGION_NAME")
         if secret_region_name is None:
             secret_region_name = discover_s3_region_name(app_config.multi_dataset__dataroot)
             if not secret_region_name:
-                logging.error(f"Expected to discover the s3 region name from {app_config.multi_dataset__dataroot}")
                 secret_region_name = discover_s3_region_name(config_file)
-                if not secret_region_name:
-                    logging.error(f"Expected to discover the s3 region name from {app_config.multi_dataset__dataroot}")
+        if not secret_region_name:
+            logging.error(f"Could not determine the AWS Secret Manager region")
+            sys.exit(1)
+
         flask_secret_key = get_flask_secret_key(secret_region_name, secret_name)
         app_config.update(server__flask_secret_key=flask_secret_key)
 
