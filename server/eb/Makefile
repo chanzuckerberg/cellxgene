@@ -17,12 +17,19 @@ build: clean
 	(cd ../.. ; \
 	    git ls-files server/ | cpio -pdm server/eb/artifact.dir ; ); \
 	$(call copy_client_assets,../../client/build,artifact.dir/server) ; \
+	set -e ; \
 	cp app.py artifact.dir/application.py; \
 	cp ../requirements.txt artifact.dir; \
 	cp -r .ebextensions artifact.dir; \
 	if [ -d customize ] ; then \
 	  if [ -f customize/config.yaml ] ; then \
 	     cp customize/config.yaml artifact.dir;  \
+	  fi ; \
+	  if [ -f customize/requirements.txt ] ; then \
+	     pip install requirements-parser ; \
+	     pip install packaging ; \
+	     python check_requirements.py ../requirements.txt customize/requirements.txt; \
+	     cp customize/requirements.txt artifact.dir;  \
 	  fi ; \
 	  if [ -d customize/deploy ] ; then \
 		  cp -r customize/deploy artifact.dir/server/common/web/static;  \
