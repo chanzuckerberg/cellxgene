@@ -10,6 +10,7 @@ define get_or_else_dev_env_default
 $(if $($(1)),$($(1)),$(shell VAR=$$(sed -n 's/$(1)=\(.*\)/\1/p' $(PROJECT_ROOT)/environment.default); eval "echo \"$$VAR\""))
 endef
 
+export CELLXGENE_COMMIT := $(shell git rev-parse --short HEAD)
 export CXG_SERVER_PORT := $(call get_or_else_dev_env_default,CXG_SERVER_PORT)
 export CXG_CLIENT_PORT := $(call get_or_else_dev_env_default,CXG_CLIENT_PORT)
 export JEST_ENV := $(call get_or_else_dev_env_default,JEST_ENV)

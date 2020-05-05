@@ -21,8 +21,9 @@ install:
 	npm install
 
 .PHONY: build
+WEBPACK_CONFIG ?= configuration/webpack/webpack.config.prod.js
 build:
-	npm run build
+	npm run build -- "${WEBPACK_CONFIG}"
 
 # Formatting code
 
