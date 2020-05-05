@@ -8,8 +8,13 @@ server:
   debug: false
   host: "127.0.0.1"
   port : null
-  scripts : []
+
+  # Scripts can be a list of either file names (string) or dicts containing keys src, integrity and crossorigin.
+  # these will be injected into the index template as script tags with these attributes set.
+  scripts: []
+  # Inline scripts are a list of file names, where the contents of the file will be injected into the index.
   inline_scripts: []
+
   open_browser: false
   about_legal_tos: null
   about_legal_privacy: null

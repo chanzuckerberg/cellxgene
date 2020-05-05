@@ -287,6 +287,17 @@ class AppConfig(object):
                 elif not isinstance(v, str):
                     raise ConfigurationError(f"CSP directive value must be a string or list of strings.")
 
+        # scripts can be string (filename) or dict (attributes).   Convert string to dict.
+        scripts = []
+        for s in self.server__scripts:
+            if isinstance(s, str):
+                scripts.append({"src": s})
+            elif isinstance(s, dict) and isinstance(s["src"], str):
+                scripts.append(s)
+            else:
+                raise ConfigurationError("Scripts must be string or dict")
+        self.server__scripts = scripts
+
     def handle_data_locator(self, context):
         self.__check_attr("data_locator__s3__region_name", (type(None), bool, str))
         if self.data_locator__s3__region_name is True:
