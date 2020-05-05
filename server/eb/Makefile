@@ -27,6 +27,7 @@ build: clean
 	  fi ; \
 	  if [ -f customize/requirements.txt ] ; then \
 	     pip install requirements-parser ; \
+	     pip install packaging ; \
 	     python check_requirements.py ../requirements.txt customize/requirements.txt; \
 	     cp customize/requirements.txt artifact.dir;  \
 	  fi ; \
