@@ -118,10 +118,6 @@ class ContinuousLegend extends React.Component {
     }
   }
 
-  componentWillUnmount() {
-    window.removeEventListener("resize", this.handleResize);
-  }
-
   render() {
     const { colorAccessor } = this.props;
     return (

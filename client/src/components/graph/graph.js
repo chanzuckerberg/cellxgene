@@ -190,6 +190,7 @@ class Graph extends React.Component {
       tool: null,
       container: null,
       cameraRender: 0,
+      viewport
     };
   }
 
@@ -740,12 +741,6 @@ class Graph extends React.Component {
         <GraphOverlayLayer
           width={viewport.width}
           height={viewport.height}
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            zIndex: 1
-          }}
           cameraTF={cameraTF}
           modelTF={modelTF}
           projectionTF={projectionTF}

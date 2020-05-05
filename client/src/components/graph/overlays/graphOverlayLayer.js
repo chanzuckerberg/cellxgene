@@ -80,7 +80,10 @@ class GraphOverlayLayer extends PureComponent {
         height={height}
         pointerEvents="none"
         style={{
-          ...style,
+          position: "absolute",
+          top: 0,
+          left: 0,
+          zIndex: 1,
           backgroundColor: displaying ? "rgba(255, 255, 255, 0.55)" : "",
         }}
         onMouseMove={handleCanvasEvent}

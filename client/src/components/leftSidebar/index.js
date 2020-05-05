@@ -13,7 +13,7 @@ import TopLeftLogoAndTitle from "./topLeftLogoAndTitle";
 class LeftSideBar extends React.Component {
 
   render() {
-    const { scatterplotXXaccessor, scatterplotYYaccessor, style } = this.props;
+    const { scatterplotXXaccessor, scatterplotYYaccessor } = this.props;
     return (
       <div
         style={{
@@ -21,8 +21,7 @@ class LeftSideBar extends React.Component {
           borderRight: `1px solid ${globals.lightGrey}`,
           display: "flex",
           flexDirection: "column",
-          overflowY: "auto",
-          ...style,
+          height: "100%",
         }}
       >
         <TopLeftLogoAndTitle />

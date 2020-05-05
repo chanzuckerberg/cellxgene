@@ -12,20 +12,17 @@ import * as globals from "../../globals";
 class RightSidebar extends React.Component {
 
   render() {
-    const { style } = this.props;
     return (
       <div
-        ref={ref => { this.ref = ref; }}
         style={{
           /* x y blur spread color */
           borderLeft: `1px solid ${globals.lightGrey}`,
           display: "flex",
           flexDirection: "column",
           position: "relative",
-          right: 0,
-          top: 0,
-          overflowY: "auto",
-          ...style
+          overflowY: "inherit",
+          height: "inherit",
+          width: "inherit"
         }}
       >
         <GeneExpression />
