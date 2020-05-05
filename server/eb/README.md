@@ -32,7 +32,7 @@ There are many more options to these commands that may be important or necessary
    The following choices are known to work.
    
    * S3 Bucket. 
-   * Lustre filesystem
+   * POSIX filesystem (such as Lustre)
    * Lustre filesystem backed by S3
    
    S3 is convenient and the relatively inexpensive option.  
