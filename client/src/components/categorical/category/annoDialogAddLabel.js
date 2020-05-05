@@ -92,7 +92,7 @@ class Category extends React.PureComponent {
           instruction={this.instruction(newLabelText)}
           cancelTooltipContent="Close this dialog without adding a label."
           primaryButtonText="Add label"
-          secondaryButtonText={`Add label and assign ${crossfilter.countSelected()} currently selected cells`}
+          secondaryButtonText={`Add label, assign ${crossfilter.countSelected()} selected cells`}
           handleSecondaryButtonSubmit={this.addLabelAndAssignCells}
           text={newLabelText}
           validationError={this.labelNameError(newLabelText)}
