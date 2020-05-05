@@ -123,7 +123,7 @@ to the `customize/ebextensions` directory.  Any file found here will be copied o
 requirements.txt:
 
 A custom requirements.txt can be supplied in customize/requirements.txt.   
-This file fully specify the versions of all the python modules used by there server in the deployment.
+This file must fully specify the versions of all the python modules used by the server in the deployment.
 This is useful to ensure that the dependencies do not change from one deployment to the next.
 Therefore the custom/requirements.txt must all have exact versions specified (e.g. anndata==0.7.1).
 
