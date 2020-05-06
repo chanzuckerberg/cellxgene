@@ -147,7 +147,7 @@ class TermsPrompt extends React.PureComponent {
           </div>
           <div className={Classes.DIALOG_FOOTER} style={{ textAlign: "left" }}>
             <Button intent="primary" onClick={this.handleOK}>
-              I'm OK with cookies!
+              I&apos;m OK with cookies!
             </Button>{" "}
             <Button onClick={this.handleNo}>No thanks</Button>
           </div>
