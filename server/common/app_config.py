@@ -241,8 +241,8 @@ class AppConfig(object):
         self.__check_attr("server__debug", bool)
         self.__check_attr("server__host", str)
         self.__check_attr("server__port", (type(None), int))
-        self.__check_attr("server__scripts", (list, tuple))
-        self.__check_attr("server__inline_scripts", (list, tuple))
+        self.__check_attr("server__scripts", list)
+        self.__check_attr("server__inline_scripts", list)
         self.__check_attr("server__open_browser", bool)
         self.__check_attr("server__force_https", bool)
         self.__check_attr("server__flask_secret_key", (type(None), str))
@@ -357,7 +357,7 @@ class AppConfig(object):
     def handle_multi_dataset(self, context):
         self.__check_attr("multi_dataset__dataroot", (type(None), str))
         self.__check_attr("multi_dataset__index", (type(None), bool, str))
-        self.__check_attr("multi_dataset__allowed_matrix_types", (tuple, list))
+        self.__check_attr("multi_dataset__allowed_matrix_types", list)
         self.__check_attr("multi_dataset__matrix_cache__max_datasets", int)
         self.__check_attr("multi_dataset__matrix_cache__timelimit_s", (type(None), int, float))
 
@@ -442,7 +442,7 @@ class AppConfig(object):
                 )
 
     def handle_embeddings(self, context):
-        self.__check_attr("embeddings__names", (list, tuple))
+        self.__check_attr("embeddings__names", list)
         self.__check_attr("embeddings__enable_reembedding", bool)
 
         if self.single_dataset__datapath:
