@@ -10,6 +10,10 @@ class Layout extends React.Component {
 
     The layout is based on CSS grid: the left and right sidebars have fixed widths, the graph in the middle takes the
     remaining space.
+
+    Note, the renderGraph child is a function rather than a fully-instantiated element because the middle pane of the
+    app is dynamically-sized. It must have access to the containing viewport in order to know how large the graph
+    should be.
   */
 
   componentDidMount() {
