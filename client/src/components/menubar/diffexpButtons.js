@@ -16,13 +16,6 @@ import CellSetButton from "./cellSetButtons";
   diffexpCellcountMax: state.config?.limits?.diffexpCellcountMax,
 }))
 class DiffexpButtons extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      userDismissedPopover: false,
-    };
-  }
-
   computeDiffExp = () => {
     const { dispatch, differential } = this.props;
     if (differential.celllist1 && differential.celllist2) {
@@ -43,12 +36,6 @@ class DiffexpButtons extends React.Component {
     });
     dispatch({
       type: "clear scatterplot",
-    });
-  };
-
-  handlePopoverDismiss = () => {
-    this.setState({
-      userDismissedPopover: true,
     });
   };
 
