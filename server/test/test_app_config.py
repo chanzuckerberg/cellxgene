@@ -23,9 +23,6 @@ class AppConfigTest(unittest.TestCase):
         self.assertCountEqual(v, [])
 
         c = AppConfig()
-        c.update(server__scripts=("a","b"), server__inline_scripts=["c","d"])
+        c.update(server__scripts=("a", "b"), server__inline_scripts=["c", "d"])
         v = c.changes_from_default()
-        self.assertCountEqual(v, [("server__scripts", ["a","b"], []), ("server__inline_scripts", ["c","d"], [])])
-
-
-
+        self.assertCountEqual(v, [("server__scripts", ["a", "b"], []), ("server__inline_scripts", ["c", "d"], [])])
