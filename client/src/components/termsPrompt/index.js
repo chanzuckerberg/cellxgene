@@ -8,7 +8,6 @@ import {
   Colors,
   Icon,
 } from "@blueprintjs/core";
-import * as globals from "../../globals";
 
 const CookieDecision = "cxg.cookieDecision";
 

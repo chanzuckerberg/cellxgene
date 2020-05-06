@@ -1,14 +1,7 @@
 // jshint esversion: 6
 import React from "react";
 import { connect } from "react-redux";
-import {
-  Popover,
-  Button,
-  ButtonGroup,
-  AnchorButton,
-  Tooltip,
-  Position,
-} from "@blueprintjs/core";
+import { Button, ButtonGroup, AnchorButton, Tooltip } from "@blueprintjs/core";
 import * as globals from "../../globals";
 import actions from "../../actions";
 import CellSetButton from "./cellSetButtons";
@@ -62,7 +55,6 @@ class DiffexpButtons extends React.Component {
   render() {
     /* diffexp-related buttons may be disabled */
     const { differential, diffexpMayBeSlow, diffexpCellcountMax } = this.props;
-    const { userDismissedPopover } = this.state;
 
     const haveBothCellSets =
       !!differential.celllist1 && !!differential.celllist2;

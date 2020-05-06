@@ -41,7 +41,7 @@ const WorldReducer = (
       const { dim } = action;
 
       // we don't clip anything except for varData and obsAnnotations
-      let {unclipped} = state;
+      let { unclipped } = state;
       if (dim == "varData" || dim == "obsAnnotations") {
         unclipped = {
           ...unclipped,
@@ -298,7 +298,7 @@ const WorldReducer = (
       const { obsLayout: origObsLayout, schema: origSchema } = state;
       const { embedding, schema: embeddingSchema } = action;
 
-      const { dims, name } = embeddingSchema;
+      const { dims } = embeddingSchema;
       let obsLayout = origObsLayout;
       let schema = origSchema;
 
