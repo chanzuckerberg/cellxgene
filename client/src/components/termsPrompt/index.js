@@ -24,7 +24,9 @@ function storageGet(key, defaultValue = null) {
 function storageSet(key, value) {
   try {
     window.localStorage.setItem(key, value);
-  } catch {}
+  } catch {
+    // continue
+  }
 }
 
 @connect((state) => ({
@@ -57,7 +59,9 @@ class TermsPrompt extends React.PureComponent {
     if (window.cookieDecisionCallback instanceof Function) {
       try {
         window.cookieDecisionCallback();
-      } catch (e) {}
+      } catch (e) {
+        // continue
+      }
     }
   };
 
@@ -118,12 +122,10 @@ class TermsPrompt extends React.PureComponent {
       <Drawer
         onclose={this.drawerClose}
         isOpen={isOpen}
-        size={"120px"}
+        size="120px"
         position={Position.BOTTOM}
         canOutsideClickClose={false}
-        hasBackdrop={
-          true /* if the user can't use the app or click outside to dismiss, that should be visually represented with a backdrop */
-        }
+        hasBackdrop /* if the user can't use the app or click outside to dismiss, that should be visually represented with a backdrop */
         enforceFocus={false}
         autoFocus={false}
         portal={false}
