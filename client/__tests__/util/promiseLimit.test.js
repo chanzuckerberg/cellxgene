@@ -1,4 +1,4 @@
-import { PromiseLimit } from "../../src/util/promiseLimit";
+import PromiseLimit from "../../src/util/promiseLimit";
 import { range } from "../../src/util/range";
 
 const delay = (t) => new Promise((resolve, reject) => setTimeout(resolve, t));
