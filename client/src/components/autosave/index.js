@@ -80,10 +80,11 @@ class Autosave extends React.Component {
             : "autosave-complete"
         }
         style={{
-          position: "fixed",
+          position: "absolute",
           display: "inherit",
-          right: globals.leftSidebarWidth + 5,
-          bottom: 5,
+          right: 8,
+          bottom: 8,
+          zIndex: 1,
         }}
       >
         {this.statusMessage()}

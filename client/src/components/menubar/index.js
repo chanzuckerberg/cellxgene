@@ -2,7 +2,9 @@
 import React from "react";
 import { connect } from "react-redux";
 import { Button, ButtonGroup, AnchorButton, Tooltip } from "@blueprintjs/core";
+
 import * as globals from "../../globals";
+import styles from "./menubar.css";
 import actions from "../../actions";
 import Clip from "./clip";
 import Embedding from "./embedding";
@@ -33,8 +35,8 @@ import DiffexpButtons from "./diffexpButtons";
   disableDiffexp: state.config?.parameters?.["disable-diffexp"] ?? false,
   diffexpMayBeSlow: state.config?.parameters?.["diffexp-may-be-slow"] ?? false,
   showCentroidLabels: state.centroidLabels.showLabels,
-  tosURL: state.config?.parameters?.about_legal_tos,
-  privacyURL: state.config?.parameters?.about_legal_privacy,
+  tosURL: state.config?.parameters?.["about_legal_tos"],
+  privacyURL: state.config?.parameters?.["about_legal_privacy"],
 }))
 class MenuBar extends React.Component {
   static isValidDigitKeyEvent(e) {
@@ -205,100 +207,35 @@ class MenuBar extends React.Component {
     const { pendingClipPercentiles } = this.state;
 
     // constants used to create selection tool button
-    let selectionTooltip;
-    let selectionButtonIcon;
-    if (selectionTool === "brush") {
-      selectionTooltip = "Brush selection";
-      selectionButtonIcon = "select";
-    } else {
-      selectionTooltip = "Lasso selection";
-      selectionButtonIcon = "polygon-filter";
-    }
+    const [selectionTooltip, selectionButtonIcon] = selectionTool === "brush"
+      ? ["Brush selection", "Lasso selection"]
+      : ["select", "polygon-filter"];
 
     return (
       <div
         style={{
-          position: "fixed",
-          right: globals.leftSidebarWidth + 8,
-          top: 8,
+          position: "absolute",
+          right: 8,
+          top: 0,
           display: "flex",
+          flexDirection: "row-reverse",
+          alignItems: "flex-start",
+          flexWrap: "wrap",
+          justifyContent: "flex-start",
+          zIndex: 3,
         }}
       >
-        {disableDiffexp ? null : <DiffexpButtons />}
-        <Subset
-          subsetPossible={this.subsetPossible()}
-          subsetResetPossible={this.subsetResetPossible()}
-          handleSubset={() => {
-            dispatch(actions.setWorldToSelection());
-            dispatch({ type: "increment graph render counter" });
-          }}
-          handleSubsetReset={() => {
-            dispatch(actions.resetWorldToUniverse());
-            dispatch({ type: "increment graph render counter" });
-          }}
+        <InformationMenu
+          libraryVersions={libraryVersions}
+          aboutLink={aboutLink}
+          tosURL={tosURL}
+          privacyURL={privacyURL}
         />
-        <ButtonGroup style={{ marginRight: "10px" }}>
-          <Tooltip
-            content={selectionTooltip}
-            position="bottom"
-            hoverOpenDelay={globals.tooltipHoverOpenDelay}
-          >
-            <AnchorButton
-              type="button"
-              data-testid="mode-lasso"
-              icon={selectionButtonIcon}
-              active={graphInteractionMode === "select"}
-              onClick={() => {
-                dispatch({
-                  type: "change graph interaction mode",
-                  data: "select",
-                });
-              }}
-              style={{
-                cursor: "pointer",
-              }}
-            />
-          </Tooltip>
-          <Tooltip
-            content="Drag to pan, scroll to zoom"
-            position="bottom"
-            hoverOpenDelay={globals.tooltipHoverOpenDelay}
-          >
-            <AnchorButton
-              type="button"
-              data-testid="mode-pan-zoom"
-              icon="zoom-in"
-              active={graphInteractionMode === "zoom"}
-              onClick={() => {
-                dispatch({
-                  type: "change graph interaction mode",
-                  data: "zoom",
-                });
-              }}
-              style={{
-                cursor: "pointer",
-              }}
-            />
-          </Tooltip>
-        </ButtonGroup>
-        <Tooltip
-          content="When a category is colored by, show labels on the graph"
-          position="bottom"
-          disabled={graphInteractionMode === "zoom"}
-        >
-          <Button
-            type="button"
-            data-testid="centroid-label-toggle"
-            icon="property"
-            onClick={this.handleCentroidChange}
-            active={showCentroidLabels}
-            intent={showCentroidLabels ? "primary" : "none"}
-            style={{
-              marginRight: 10,
-            }}
-          />
-        </Tooltip>
-        <Embedding />
+        <UndoRedoReset
+          dispatch={dispatch}
+          undoDisabled={undoDisabled}
+          redoDisabled={redoDisabled}
+        />
         <Clip
           pendingClipPercentiles={pendingClipPercentiles}
           clipPercentileMin={clipPercentileMin}
@@ -308,26 +245,80 @@ class MenuBar extends React.Component {
           handleClipCommit={this.handleClipCommit}
           isClipDisabled={this.isClipDisabled}
           handleClipOnKeyPress={this.handleClipOnKeyPress}
-          handleClipPercentileMaxValueChange={
-            this.handleClipPercentileMaxValueChange
-          }
-          handleClipPercentileMinValueChange={
-            this.handleClipPercentileMinValueChange
-          }
+          handleClipPercentileMaxValueChange={this.handleClipPercentileMaxValueChange}
+          handleClipPercentileMinValueChange={this.handleClipPercentileMinValueChange}
         />
-        <UndoRedoReset
-          dispatch={dispatch}
-          undoDisabled={undoDisabled}
-          redoDisabled={redoDisabled}
+    <Embedding />
+    <Tooltip
+      content="When a category is colored by, show labels on the graph"
+      position="bottom"
+      disabled={graphInteractionMode === "zoom"}
+    >
+      <AnchorButton
+        className={styles.menubarButton}
+        type="button"
+        data-testid="centroid-label-toggle"
+        icon="property"
+        onClick={this.handleCentroidChange}
+        active={showCentroidLabels}
+        intent={showCentroidLabels ? "primary" : "none"}
+      />
+    </Tooltip>
+    <ButtonGroup
+      className={styles.menubarButton}
+    >
+      <Tooltip
+        content={selectionTooltip}
+        position="bottom"
+        hoverOpenDelay={globals.tooltipHoverOpenDelay}
+      >
+        <AnchorButton
+          type="button"
+          data-testid="mode-lasso"
+          icon={selectionButtonIcon}
+          active={graphInteractionMode === "select"}
+          onClick={() => {
+            dispatch({
+              type: "change graph interaction mode",
+              data: "select"
+            });
+          }}
         />
-        <InformationMenu
-          libraryVersions={libraryVersions}
-          aboutLink={aboutLink}
-          tosURL={tosURL}
-          privacyURL={privacyURL}
+      </Tooltip>
+      <Tooltip
+        content="Drag to pan, scroll to zoom"
+        position="bottom"
+        hoverOpenDelay={globals.tooltipHoverOpenDelay}
+      >
+        <AnchorButton
+          type="button"
+          data-testid="mode-pan-zoom"
+          icon="zoom-in"
+          active={graphInteractionMode === "zoom"}
+          onClick={() => {
+            dispatch({
+              type: "change graph interaction mode",
+              data: "zoom"
+            });
+          }}
         />
-      </div>
-    );
+      </Tooltip>
+    </ButtonGroup>
+    <Subset
+      subsetPossible={this.subsetPossible()}
+      subsetResetPossible={this.subsetResetPossible()}
+      handleSubset={() => {
+        dispatch(actions.setWorldToSelection());
+        dispatch({ type: "increment graph render counter" });
+      }}
+      handleSubsetReset={() => {
+        dispatch(actions.resetWorldToUniverse());
+        dispatch({ type: "increment graph render counter" });
+      }}
+    />
+    {disableDiffexp ? null : <DiffexpButtons/>}
+    </div>
+  );
   }
 }
 
