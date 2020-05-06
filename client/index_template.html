@@ -52,10 +52,11 @@
     <div id="root"></div>
     {% for script in SCRIPTS %}
     <script type="text/javascript" src="{{script | safe}}"></script>
-    {% endfor %} {% for ils in INLINE_SCRIPTS %}
-    <script type="text/javascript">
-      {% include ils %}
-    </script>
+    {% endfor %}
+
+    {% for ils in INLINE_SCRIPTS %}
+    <!-- caution: do not change white space in this script element -->
+    <script type="text/javascript" no-csp-hash>{% include ils %}</script>
     {% endfor %}
   </body>
 </html>

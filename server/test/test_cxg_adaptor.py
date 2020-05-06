@@ -7,7 +7,6 @@ from server.test.test_datasets.fixtures import pbmc3k_colors
 
 
 class TestCxgAdaptor(unittest.TestCase):
-
     def test_get_colors(self):
         data = self.get_data("pbmc3k.cxg")
         self.assertDictEqual(data.get_colors(), pbmc3k_colors)
