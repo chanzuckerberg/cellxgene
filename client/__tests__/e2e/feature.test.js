@@ -12,7 +12,11 @@ import { appUrlBase, DEBUG, DEV, DATASET } from "./config";
 import { puppeteerUtils, cellxgeneActions } from "./puppeteerUtils";
 import { datasets } from "./data";
 
-let browser; let page; let utils; let cxgActions; let spy;
+let browser;
+let page;
+let utils;
+let cxgActions;
+let spy;
 const browserViewport = { width: 1280, height: 960 };
 const data = datasets[DATASET].features;
 

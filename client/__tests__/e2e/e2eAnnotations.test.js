@@ -5,7 +5,10 @@ import { appUrlBase, DATASET } from "./config";
 import { setupTestBrowser } from "./testBrowser";
 import { datasets } from "./data";
 
-let browser; let page; let utils; let actions;
+let browser;
+let page;
+let utils;
+let actions;
 const data = datasets[DATASET];
 
 beforeAll(async () => {

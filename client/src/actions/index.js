@@ -121,7 +121,10 @@ const doInitialDataLoad = () =>
       const requestJson = ["config", "schema"].map(fetchJson);
       const [responseConfig, schema] = await Promise.all(requestJson);
       /* set config defaults */
-      const config = toCamel({ ...globals.configDefaults, ...responseConfig.config });
+      const config = toCamel({
+        ...globals.configDefaults,
+        ...responseConfig.config,
+      });
       const universe = Universe.createUniverseFromResponse(config, schema);
       dispatch({
         type: "universe exists, but loading is still in progress",

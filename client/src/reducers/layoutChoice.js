@@ -49,7 +49,7 @@ const LayoutChoice = (
     }
 
     case "reembed: add reembedding": {
-      const {name} = action.schema;
+      const { name } = action.schema;
       const available = Array.from(new Set(state.available).add(name));
       return {
         ...state,
