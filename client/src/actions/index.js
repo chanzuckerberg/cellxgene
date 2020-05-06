@@ -9,7 +9,7 @@ import {
   doBinaryRequest,
   dispatchNetworkErrorMessageToUser,
 } from "../util/actionHelpers";
-import { PromiseLimit } from "../util/promiseLimit";
+import PromiseLimit from "../util/promiseLimit";
 import { requestReembed, reembedResetWorldToUniverse } from "./reembed";
 import { loadUserColorConfig } from "../util/stateManager/colorHelpers";
 
