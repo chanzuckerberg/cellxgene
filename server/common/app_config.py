@@ -167,6 +167,9 @@ class AppConfig(object):
             if not hasattr(self, key):
                 raise ConfigurationError(f"unknown config parameter {key}.")
             try:
+                if type(value) == tuple:
+                    # convert tuple values to list values
+                    value = list(value)
                 setattr(self, key, value)
             except KeyError:
                 raise ConfigurationError(f"Unable to set config parameter {key}.")
