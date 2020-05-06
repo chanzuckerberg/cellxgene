@@ -1,4 +1,6 @@
+import random
 import shutil
+import string
 import tempfile
 from os import path, popen
 
@@ -74,3 +76,7 @@ def app_config(data_locator, backed=False):
     config.update(**args)
     config.complete_config()
     return config
+
+
+def random_string(n):
+    return "".join(random.choice(string.ascii_letters) for _ in range(n))
