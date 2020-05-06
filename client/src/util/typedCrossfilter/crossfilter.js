@@ -410,7 +410,8 @@ class ImmutableScalarDimension extends _ImmutableBaseDimension {
     this.index = makeSortIndex(array);
   }
 
-  static _createValueArray(data, mapf, array) {
+  // eslint-disable-next-line class-methods-use-this
+  _createValueArray(data, mapf, array) {
     // create dimension value array
     const len = data.length;
     const larray = array;
