@@ -42,7 +42,7 @@ const WorldReducer = (
 
       // we don't clip anything except for varData and obsAnnotations
       let { unclipped } = state;
-      if (dim == "varData" || dim == "obsAnnotations") {
+      if (dim === "varData" || dim === "obsAnnotations") {
         unclipped = {
           ...unclipped,
           [dim]: universe[dim].clone(),
