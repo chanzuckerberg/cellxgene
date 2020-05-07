@@ -61,7 +61,14 @@ const continuous = (selectorId, colorscale, colorAccessor) => {
   });
   */
 
-  const legendaxis = d3.axisRight().scale(legendscale).tickSize(6).ticks(8);
+  const legendaxis = d3
+    .axisRight(legendscale)
+    .ticks(6)
+    .tickFormat(
+      d3.format(
+        legendscale.domain().some((n) => Math.abs(n) >= 10000) ? ".0e" : ","
+      )
+    );
 
   const svg = d3
     .select(selectorId)
