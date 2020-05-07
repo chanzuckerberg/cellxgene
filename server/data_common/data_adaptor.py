@@ -280,7 +280,7 @@ class DataAdaptor(metaclass=ABCMeta):
         col_idx = np.nonzero([] if var_selector is None else var_selector)[0]
         return encode_matrix_fbs(X, col_idx=col_idx, row_idx=None)
 
-    def diffexp_topN(self, obsFilterA, obsFilterB, top_n=None):
+    def diffexp_topN(self, obsFilterA, obsFilterB, top_n=None, use_cache=True):
         """
         Computes the top N differentially expressed variables between two observation sets. If mode
         is "TOP_N", then stats for the top N
@@ -290,6 +290,7 @@ class DataAdaptor(metaclass=ABCMeta):
         :param obsFilterA: filter: dictionary with filter params for first set of observations
         :param obsFilterB: filter: dictionary with filter params for second set of observations
         :param top_n: Limit results to top N (Top var mode only)
+        :param use_cache: Use precomputed or cached diffexp results (if available).
         :return: top N genes and corresponding stats
         """
         if Axis.VAR in obsFilterA or Axis.VAR in obsFilterB:
@@ -308,7 +309,7 @@ class DataAdaptor(metaclass=ABCMeta):
         ):
             raise ExceedsLimitError("Diffexp request exceeds max cell count limit")
 
-        result = self.compute_diffexp_ttest(obs_mask_A, obs_mask_B, top_n, self.config.diffexp__lfc_cutoff)
+        result = self.compute_diffexp_ttest(obs_mask_A, obs_mask_B, top_n, self.config.diffexp__lfc_cutoff, use_cache)
 
         try:
             return jsonify_numpy(result)

@@ -1,6 +1,7 @@
 import concurrent.futures
 import numpy as np
 from server.compute.diffexp_generic import diffexp_ttest_from_mean_var, mean_var_n
+from server.compute.diffexp_generic import compute_indices_hash, compute_indices_hash_version
 from server.data_cxg.cxg_util import pack_selector_from_indices
 from server.common.errors import ComputeError
 
@@ -32,25 +33,76 @@ def get_thread_executor():
     return diffexp_thread_executor
 
 
-def diffexp_ttest(adaptor, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
+def diffexp_ttest(adaptor, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01,
+                  cache_hash_version=compute_indices_hash_version()):
     row_selector_A = np.where(maskA)[0]
     row_selector_B = np.where(maskB)[0]
     nA = len(row_selector_A)
     nB = len(row_selector_B)
-    matrix = adaptor.open_array("X")
 
+    mean_var_A = None
+    mean_var_B = None
+
+    matrix = adaptor.open_array("X")
     dtype = matrix.dtype
+
+    if cache_hash_version:
+        mean_var_A = query_cache(adaptor, row_selector_A, cache_hash_version)
+        mean_var_B = query_cache(adaptor, row_selector_B, cache_hash_version)
+
+    if mean_var_A and mean_var_B:
+        meanA = mean_var_A[0]
+        varA = mean_var_A[1]
+        meanB = mean_var_B[0]
+        varB = mean_var_B[1]
+    elif mean_var_A and not mean_var_B:
+        meanA = mean_var_A[0]
+        varA = mean_var_A[1]
+        meanB, varB = compute_mean_var(adaptor, row_selector_B)
+    elif not mean_var_A and mean_var_B:
+        meanB = mean_var_B[0]
+        varB = mean_var_B[1]
+        meanA, varA = compute_mean_var(adaptor, row_selector_A)
+    else:
+        meanA, varA, meanB, varB = compute_mean_var_dual(adaptor, row_selector_A, row_selector_B)
+
+    r = diffexp_ttest_from_mean_var(
+        meanA.astype(dtype),
+        varA.astype(dtype),
+        nA,
+        meanB.astype(dtype),
+        varB.astype(dtype),
+        nB,
+        top_n,
+        diffexp_lfc_cutoff,
+    )
+
+    return r
+
+
+def query_cache(adaptor, row_selector, hash_version=None):
+    if hash_version is None:
+        hash_version = compute_indices_hash_version()
+    try:
+        hashkey = compute_indices_hash(row_selector, hash_version)
+    except ComputeError:
+        return None
+
+    found = adaptor.diffexp_cache(hashkey)
+    if found is not None:
+        mean_var = adaptor.open_array("diffexp/mean_var").multi_index[0:1, found, :][""]
+        mean = mean_var[0][0][:]
+        var = mean_var[1][0][:]
+        return mean, var
+
+    return None
+
+
+def compute_mean_var(adaptor, row_selector):
+    row_selector = pack_selector_from_indices(row_selector)
+    matrix = adaptor.open_array("X")
     cols = matrix.shape[1]
     tile_extent = [dim.tile for dim in matrix.schema.domain]
-
-    # The rows from both row_selector_A and row_selector_B are gathered at the
-    # same time, then the mean and variance are computed by subsetting on that
-    # combined submatrix.  Combining the gather reduces number of requests/bandwidth
-    # to the data source.
-    row_selector_AB = np.union1d(row_selector_A, row_selector_B)
-    row_selector_A_in_AB = np.in1d(row_selector_AB, row_selector_A, assume_unique=True)
-    row_selector_B_in_AB = np.in1d(row_selector_AB, row_selector_B, assume_unique=True)
-    row_selector_AB = pack_selector_from_indices(row_selector_AB)
 
     # because all IO is done per-tile, and we are always dense and col-major,
     # use the tile column size as the unit of partition.  Possibly access
@@ -62,7 +114,53 @@ def diffexp_ttest(adaptor, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
     # the target_workunit.  A potential improvement would be to partition by both columns and rows.
     # However partitioning the rows is slightly more complex due to the arbitrary distribution
     # of row selections that are passed into this algorithm.
-    cells_per_coltile = (nA + nB) * tile_extent[1]
+    cells_per_coltile = len(row_selector) * tile_extent[1]
+    cols_per_partition = max(1, int(target_workunit / cells_per_coltile)) * tile_extent[1]
+    col_partitions = [(c, min(c + cols_per_partition, cols)) for c in range(0, cols, cols_per_partition)]
+
+    mean = np.zeros((cols,), dtype=np.float64)
+    var = np.zeros((cols,), dtype=np.float64)
+
+    executor = get_thread_executor()
+    futures = []
+    for cols in col_partitions:
+        futures.append(executor.submit(_mean_var, matrix, row_selector, cols))
+
+    for future in futures:
+        # returns tuple: (meanA, varA, meanB, varB, cols)
+        try:
+            result = future.result()
+            part_mean, part_var, cols = result
+            mean[cols[0] : cols[1]] += part_mean
+            var[cols[0] : cols[1]] += part_var
+        except Exception as e:
+            for future in futures:
+                future.cancel()
+            raise ComputeError(str(e))
+
+    return mean, var
+
+
+def compute_mean_var_dual(adaptor, row_selector_A, row_selector_B):
+    """Compute the mean/var of both row selectors at the same time.
+    Accessing the matrix once can lead to a performance improvement."""
+    matrix = adaptor.open_array("X")
+    cols = matrix.shape[1]
+    tile_extent = [dim.tile for dim in matrix.schema.domain]
+
+    # The rows from both row_selector_A and row_selector_B are gathered at the
+    # same time, then the mean and variance are computed by subsetting on that
+    # combined submatrix.  Combining the gather reduces number of requests/bandwidth
+    # to the data source.
+    row_selector_AB = np.union1d(row_selector_A, row_selector_B)
+    nR = len(row_selector_AB)
+    row_selector_A_in_AB = np.in1d(row_selector_AB, row_selector_A, assume_unique=True)
+    row_selector_B_in_AB = np.in1d(row_selector_AB, row_selector_B, assume_unique=True)
+    row_selector_AB = pack_selector_from_indices(row_selector_AB)
+
+    # see comments in compute_mean_var for a discussion of the partitioning approach
+    # used here:
+    cells_per_coltile = nR * tile_extent[1]
     cols_per_partition = max(1, int(target_workunit / cells_per_coltile)) * tile_extent[1]
     col_partitions = [(c, min(c + cols_per_partition, cols)) for c in range(0, cols, cols_per_partition)]
 
@@ -92,18 +190,7 @@ def diffexp_ttest(adaptor, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
                 future.cancel()
             raise ComputeError(str(e))
 
-    r = diffexp_ttest_from_mean_var(
-        meanA.astype(dtype),
-        varA.astype(dtype),
-        nA,
-        meanB.astype(dtype),
-        varB.astype(dtype),
-        nB,
-        top_n,
-        diffexp_lfc_cutoff,
-    )
-
-    return r
+    return meanA, varA, meanB, varB
 
 
 def _mean_var_ab(matrix, row_selector_AB, row_selector_A_in_AB, row_selector_B_in_AB, col_range):
@@ -111,3 +198,9 @@ def _mean_var_ab(matrix, row_selector_AB, row_selector_A_in_AB, row_selector_B_i
     meanA, varA, n = mean_var_n(X[row_selector_A_in_AB])
     meanB, varB, n = mean_var_n(X[row_selector_B_in_AB])
     return (meanA, varA, meanB, varB, col_range)
+
+
+def _mean_var(matrix, row_selector, col_range):
+    X = matrix.multi_index[row_selector, col_range[0] : col_range[1] - 1][""]
+    meanA, varA, n = mean_var_n(X)
+    return (meanA, varA, col_range)

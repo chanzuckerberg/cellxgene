@@ -1,8 +1,12 @@
 import unittest
+import subprocess
+import sys
+import shutil
 from server.data_common.matrix_loader import MatrixDataLoader
 from server.common.app_config import AppConfig
 import server.compute.diffexp_cxg as diffexp_cxg
 import server.compute.diffexp_generic as diffexp_generic
+from server.compute.diffexp_generic import compute_indices_hash_version, compute_indices_hash
 import numpy as np
 
 from server.test import PROJECT_ROOT
@@ -11,6 +15,14 @@ from server.test import PROJECT_ROOT
 class DiffExpTest(unittest.TestCase):
     """Tests the diffexp returns the expected results for one test case, using different
     adaptor types and different algorithms."""
+
+    def setUp(self):
+        diffexp = f"{PROJECT_ROOT}/server/test/test_datasets/pbmc3k.cxg/diffexp"
+        shutil.rmtree(diffexp, ignore_errors=True)
+
+    def tearnDown(self):
+        diffexp = f"{PROJECT_ROOT}/server/test/test_datasets/pbmc3k.cxg/diffexp"
+        shutil.rmtree(diffexp, ignore_errors=True)
 
     def load_dataset(self, path):
         app_config = AppConfig()
@@ -29,6 +41,14 @@ class DiffExpTest(unittest.TestCase):
         mask[sel] = True
         return mask
 
+    def compare_diffexp_results(self, results, expects):
+        self.assertEqual(len(results), len(expects))
+        for result, expect in zip(results, expects):
+            self.assertEqual(result[0], expect[0])
+            self.assertAlmostEqual(result[1], expect[1])
+            self.assertAlmostEqual(result[2], expect[2])
+            self.assertAlmostEqual(result[3], expect[3])
+
     def check_1_10_2_10(self, results):
         """Checks the results for a specific set of rows selections"""
         expects = [
@@ -43,12 +63,7 @@ class DiffExpTest(unittest.TestCase):
             [1575, 1.0317602, 0.007830310753043345, 1.0],
             [576, 0.97873515, 0.008272092578813124, 1.0],
         ]
-        self.assertEqual(len(results), len(expects))
-        for result, expect in zip(results, expects):
-            self.assertEqual(result[0], expect[0])
-            self.assertAlmostEqual(result[1], expect[1])
-            self.assertAlmostEqual(result[2], expect[2])
-            self.assertAlmostEqual(result[3], expect[3])
+        self.compare_diffexp_results(results, expects)
 
     def test_anndata_default(self):
         """Test an anndata adaptor with its default diffexp algorithm (diffexp_generic)"""
@@ -80,3 +95,48 @@ class DiffExpTest(unittest.TestCase):
         # run it directly
         results = diffexp_generic.diffexp_ttest(adaptor, maskA, maskB, 10)
         self.check_1_10_2_10(results)
+
+    def test_cache(self):
+
+        dataset = f"{PROJECT_ROOT}/server/test/test_datasets/pbmc3k.cxg"
+        script = f"{PROJECT_ROOT}/server/converters/diffexp_precompute.py"
+        subprocess.check_call(f"{sys.executable} {script} {dataset} --overwrite", shell=True)
+        adaptor = self.load_dataset(dataset)
+        obsvals = adaptor.query_obs_array("louvain")[:]
+        filterA = np.where(obsvals == "CD8 T cells")[0]
+        filterB = np.where(obsvals == "CD4 T cells")[0]
+        rows = adaptor.get_shape()[0]
+        maskA = np.zeros(rows, dtype=bool)
+        maskA[filterA] = True
+        maskB = np.zeros(rows, dtype=bool)
+        maskB[filterB] = True
+
+        res_generic = diffexp_generic.diffexp_ttest(adaptor, maskA, maskB, 10)
+
+        # run it directly
+        cache_hash_version = compute_indices_hash_version()
+        res_cache = diffexp_cxg.diffexp_ttest(adaptor, maskA, maskB, 10, cache_hash_version=cache_hash_version)
+        self.compare_diffexp_results(res_cache, res_generic)
+        res_no_cache = diffexp_cxg.diffexp_ttest(adaptor, maskA, maskB, 10, cache_hash_version=None)
+        self.compare_diffexp_results(res_no_cache, res_generic)
+
+        # run it through the adaptor
+        res_cache_adaptor = adaptor.compute_diffexp_ttest(maskA, maskB, 10, use_cache=True)
+        self.compare_diffexp_results(res_cache_adaptor, res_generic)
+        res_no_cache_adaptor = adaptor.compute_diffexp_ttest(maskA, maskB, 10, use_cache=False)
+        self.compare_diffexp_results(res_no_cache_adaptor, res_generic)
+
+        # check that the cache works
+        hashA = compute_indices_hash(filterA, cache_hash_version)
+        assert adaptor.diffexp_cache(hashA) == 3
+        assert diffexp_cxg.query_cache(adaptor, filterA, cache_hash_version) is not None
+        hashB = compute_indices_hash(filterB, cache_hash_version)
+        assert adaptor.diffexp_cache(hashB) == 2
+        assert diffexp_cxg.query_cache(adaptor, filterB, cache_hash_version) is not None
+        hashN = compute_indices_hash(filterA[:-1], cache_hash_version)
+        assert adaptor.diffexp_cache(hashN) is None
+        assert diffexp_cxg.query_cache(adaptor, filterA[:-1], cache_hash_version) is None
+
+        # check that a new cache hash version does not fail
+        res_cache = diffexp_cxg.diffexp_ttest(adaptor, maskA, maskB, 10, cache_hash_version=cache_hash_version + 1)
+        self.compare_diffexp_results(res_cache, res_generic)

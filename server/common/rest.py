@@ -249,6 +249,7 @@ def diffexp_obs_post(request, data_adaptor):
         set1_filter = args.get("set1", {"filter": {}})["filter"]
         set2_filter = args.get("set2", {"filter": {}})["filter"]
         count = args.get("count", None)
+        use_cache = args.get("use_cache", True)
 
         if set1_filter is None or set2_filter is None or count is None:
             return abort_and_log(HTTPStatus.BAD_REQUEST, "missing required parameter")
@@ -259,7 +260,7 @@ def diffexp_obs_post(request, data_adaptor):
         return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)
 
     try:
-        diffexp = data_adaptor.diffexp_topN(set1_filter, set2_filter, count)
+        diffexp = data_adaptor.diffexp_topN(set1_filter, set2_filter, count, use_cache)
         return make_response(diffexp, HTTPStatus.OK, {"Content-Type": "application/json"})
     except (ValueError, DisabledFeatureError, FilterError, ExceedsLimitError) as e:
         return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)

@@ -327,7 +327,7 @@ class AnndataAdaptor(DataAdaptor):
         schema = {"name": name, "type": "float32", "dims": dims}
         return (schema, fbs)
 
-    def compute_diffexp_ttest(self, maskA, maskB, top_n=None, lfc_cutoff=None):
+    def compute_diffexp_ttest(self, maskA, maskB, top_n=None, lfc_cutoff=None, use_cache=False):
         if top_n is None:
             top_n = self.config.diffexp__top_n
         if lfc_cutoff is None:

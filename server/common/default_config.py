@@ -79,6 +79,8 @@ diffexp:
     # together in one thread.
     target_workunit: 16_000_000
 
+    enable_cache: true
+
 data_locator:
   s3:
     # s3 region name.

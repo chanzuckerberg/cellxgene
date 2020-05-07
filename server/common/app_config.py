@@ -91,6 +91,7 @@ class AppConfig(object):
             self.diffexp__alg_cxg__max_workers = dc["diffexp"]["alg_cxg"]["max_workers"]
             self.diffexp__alg_cxg__cpu_multiplier = dc["diffexp"]["alg_cxg"]["cpu_multiplier"]
             self.diffexp__alg_cxg__target_workunit = dc["diffexp"]["alg_cxg"]["target_workunit"]
+            self.diffexp__alg_cxg__enable_cache = dc["diffexp"]["alg_cxg"]["enable_cache"]
 
             self.data_locator__s3__region_name = dc["data_locator"]["s3"]["region_name"]
 
@@ -460,6 +461,7 @@ class AppConfig(object):
         self.__check_attr("diffexp__alg_cxg__max_workers", (str, int))
         self.__check_attr("diffexp__alg_cxg__cpu_multiplier", int)
         self.__check_attr("diffexp__alg_cxg__target_workunit", int)
+        self.__check_attr("diffexp__alg_cxg__enable_cache", bool)
 
         if self.single_dataset__datapath:
             with self.matrix_data_cache_manager.data_adaptor(self.single_dataset__datapath, self) as data_adaptor:

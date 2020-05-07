@@ -1,5 +1,7 @@
 import numpy as np
 from scipy import sparse, stats
+from hashlib import sha256
+from server.common.errors import ComputeError
 
 
 def diffexp_ttest(adaptor, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
@@ -132,3 +134,26 @@ def mean_var_n(X):
         v[np.isnan(v)] = 0
 
     return mean, v, n
+
+
+def compute_indices_hash_version():
+    """The current version of the compute_indices_hash function"""
+    return 1
+
+
+def compute_indices_hash(indices, version=None):
+    """Compute a hash to uniquely identify a selection of indices."""
+
+    # if the hash function is changed in the future, then increment the
+    # compute_indices_hash_version number, and add the new method here.
+
+    if version == 1 or version is None:
+        sindices = np.sort(indices)
+        num = len(indices)
+        hval = sha256(sindices).hexdigest()
+        fval = "%09d" % (0 if num == 0 else sindices[0])
+        lval = "%09d" % num
+        val = f"{hval}-{fval}-{lval}"
+        return val
+    else:
+        raise ComputeError(f"Unknown indices_hash version {version}")

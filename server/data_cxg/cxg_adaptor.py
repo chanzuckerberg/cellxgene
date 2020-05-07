@@ -38,6 +38,11 @@ class CxgAdaptor(DataAdaptor):
         self.arrays = ImmutableKVCache(lambda key: self._open_array(uri=key, tiledb_ctx=self.tiledb_ctx))
         self.schema = None
 
+        # diffexp caching
+        self.diffexp_has_cache = False  # True, if the adaptor has cached results
+        self.diffexp_hashkey = None  # when set, mapping of hashes to index in the diffexp arrays
+        self.diffexp_cache_hash_version = None
+
         self._validate_and_initialize()
 
     def cleanup(self):
@@ -133,6 +138,15 @@ class CxgAdaptor(DataAdaptor):
             return False
         return True
 
+    def diffexp_cache(self, hashval):
+        """Find the hashval in the cache.  For now, the cache is only populated from the precomputed values"""
+        if not self.diffexp_has_cache:
+            return None
+        if self.diffexp_hashkey is None:
+            hashkey = self.open_array("diffexp/hashkey")
+            self.diffexp_hashkey = {h: i for i, h in enumerate(hashkey[:])}
+        return self.diffexp_hashkey.get(hashval)
+
     def _validate_and_initialize(self):
         """
         remember, preload_validation() has already been called, so
@@ -165,6 +179,14 @@ class CxgAdaptor(DataAdaptor):
         if cxg_version not in ["0.0", "0.1"]:
             raise DatasetAccessError(f"cxg matrix is not valid: {self.url}")
 
+        # diffexp cache
+        if self.config.diffexp__alg_cxg__enable_cache:
+            d_type = tiledb.object_type(path_join(self.url, "diffexp"), ctx=self.tiledb_ctx)
+            if d_type == "group":
+                self.diffexp_has_cache = True
+                hk = self.open_array("diffexp/hashkey")
+                self.diffexp_cache_hash_version = hk.meta["hash_version"]
+
         self.title = title
         self.about = about
         self.cxg_version = cxg_version
@@ -187,12 +209,15 @@ class CxgAdaptor(DataAdaptor):
     def compute_embedding(self, method, filter):
         raise NotImplementedError("CXG does not yet support re-embedding")
 
-    def compute_diffexp_ttest(self, maskA, maskB, top_n=None, lfc_cutoff=None):
+    def compute_diffexp_ttest(self, maskA, maskB, top_n=None, lfc_cutoff=None, use_cache=True):
         if top_n is None:
             top_n = self.config.diffexp__top_n
         if lfc_cutoff is None:
             lfc_cutoff = self.config.diffexp__lfc_cutoff
-        return diffexp_cxg.diffexp_ttest(self, maskA, maskB, top_n, lfc_cutoff)
+
+        use_cache = use_cache and self.config.diffexp__alg_cxg__enable_cache
+        cache_hash_version = self.diffexp_cache_hash_version if use_cache else None
+        return diffexp_cxg.diffexp_ttest(self, maskA, maskB, top_n, lfc_cutoff, cache_hash_version)
 
     def get_colors(self):
         if self.cxg_version == "0.0":
