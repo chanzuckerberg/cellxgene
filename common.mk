@@ -10,6 +10,11 @@ define get_or_else_dev_env_default
 $(if $($(1)),$($(1)),$(shell VAR=$$(sed -n 's/$(1)=\(.*\)/\1/p' $(PROJECT_ROOT)/environment.default); eval "echo \"$$VAR\""))
 endef
 
+# https://stackoverflow.com/a/14777895/9587410
+ifeq ($(shell uname),Darwin)     # is Windows_NT on XP, 2000, 7, Vista, 10...
+    IS_DARWIN := "true"
+endif
+
 export CELLXGENE_COMMIT := $(shell git rev-parse --short HEAD)
 export CXG_SERVER_PORT := $(call get_or_else_dev_env_default,CXG_SERVER_PORT)
 export CXG_CLIENT_PORT := $(call get_or_else_dev_env_default,CXG_CLIENT_PORT)

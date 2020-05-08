@@ -28,7 +28,7 @@ build: clean
 	  if [ -f customize/requirements.txt ] ; then \
 	     pip install requirements-parser ; \
 	     pip install packaging ; \
-	     python check_requirements.py ../requirements.txt customize/requirements.txt; \
+	     python3 check_requirements.py ../requirements.txt customize/requirements.txt; \
 	     cp customize/requirements.txt artifact.dir;  \
 	  fi ; \
 	  if [ -d customize/deploy ] ; then \
@@ -36,6 +36,7 @@ build: clean
 	  fi; \
 	  if [ -d customize/inline_scripts ] ; then \
 	      cp -r customize/inline_scripts/* artifact.dir/server/common/web/templates;  \
+	      find artifact.dir/server/common/web/templates/ -type f -exec sed -i$(if $(IS_DARWIN), '',) 's/__CELLXGENE_COMMIT__/$(CELLXGENE_COMMIT)/g' {} \;; \
 	  fi; \
 	  if [ -d customize/ebextensions ] ; then \
 	      cp -r customize/ebextensions/* artifact.dir/.ebextensions;  \
@@ -43,6 +44,7 @@ build: clean
 	fi; \
 	if [ -d customize/plugins ] ; then \
 	  cp -r customize/plugins artifact.dir/server/;  \
+	  find artifact.dir/server/plugins/ -type f -exec sed -i$(if $(IS_DARWIN), '',) 's/__CELLXGENE_COMMIT__/$(CELLXGENE_COMMIT)/g' {} \;; \
 	fi; \
 	(cd artifact.dir; \
 	  cp -r server/common/web/static static; \

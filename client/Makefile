@@ -1,8 +1,4 @@
 include ../common.mk
-# https://stackoverflow.com/a/14777895/9587410
-ifeq ($(shell uname),Darwin)     # is Windows_NT on XP, 2000, 7, Vista, 10...
-    IS_DARWIN := "true"
-endif
 
 ANNOTATIONS := $(if $(ANNOTATIONS),$(ANNOTATIONS),../server/test/test_datasets/pbmc3k-annotations.csv)
 ANNOTATIONS_FILENAME := $(shell basename $(ANNOTATIONS))
@@ -23,7 +19,7 @@ install:
 .PHONY: build
 WEBPACK_CONFIG ?= configuration/webpack/webpack.config.prod.js
 build:
-	npm run build -- "${WEBPACK_CONFIG}"
+	npm run build $(WEBPACK_CONFIG)
 
 # Formatting code
 
