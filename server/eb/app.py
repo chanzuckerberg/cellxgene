@@ -60,6 +60,7 @@ class WSGIServer(Server):
         script_hashes, style_hashes = WSGIServer.get_csp_hashes(app, app_config)
         csp = {
             "default-src": ["'self'"],
+            "connect-src": ["'self'"],
             "script-src": ["'self'", "'unsafe-eval'", "'unsafe-inline'"] + script_hashes,
             "style-src": ["'self'", "'unsafe-inline'"] + style_hashes,
             "img-src": ["'self'", "data:"],
