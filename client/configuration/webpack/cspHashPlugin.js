@@ -32,8 +32,8 @@ class CspHashPlugin {
             };
           }
 
-          // remove no-csp-hash attributes.  Cheerio does not parse Jinga templates
-          // correctly, so we brute force this wiht a regular expression.
+          // Remove no-csp-hash attributes. Cheerio does not parse Jinja templates
+          // correctly, so we brute force this with a regular expression.
           data.html = data.html
             .replace(/(<script .*)no-csp-hash(.*>)/, (match, p1, p2) =>
               [p1, p2].join("")
