@@ -11,6 +11,7 @@ import {
 } from "@blueprintjs/core";
 import { connect } from "react-redux";
 import * as globals from "../../globals";
+import styles from "./menubar.css";
 import { World } from "../../util/stateManager";
 import actions from "../../actions";
 
@@ -69,9 +70,7 @@ class Embedding extends React.PureComponent {
 
     return (
       <ButtonGroup
-        style={{
-          marginRight: 10,
-        }}
+        className={styles.menubarButton}
       >
         <Popover
           target={

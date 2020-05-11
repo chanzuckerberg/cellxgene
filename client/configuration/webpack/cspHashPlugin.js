@@ -14,13 +14,14 @@ class CspHashPlugin {
         (data, cb) => {
           const { filename } = this.opts;
 
+          const $ = cheerio.load(data.html, { decodeEntities: false });
+
           if (filename) {
-            const $ = cheerio.load(data.html, { decodeEntities: false });
             const results = {};
-            results["script-hashes"] = $("script:not([src])")
+            results["script-hashes"] = $("script:not([src]):not([no-csp-hash])")
               .map((i, elmt) => this.digest($(elmt).html()))
               .get();
-            results["style-hashes"] = $("style:not([href])")
+            results["style-hashes"] = $("style:not([href]):not([no-csp-hash])")
               .map((i, elmt) => this.digest($(elmt).html()))
               .get();
 
@@ -30,6 +31,16 @@ class CspHashPlugin {
               size: () => json.length,
             };
           }
+
+          // Remove no-csp-hash attributes. Cheerio does not parse Jinja templates
+          // correctly, so we brute force this with a regular expression.
+          data.html = data.html
+            .replace(/(<script .*)no-csp-hash(.*>)/, (match, p1, p2) =>
+              [p1, p2].join("")
+            )
+            .replace(/(<style .*)no-csp-hash(.*>)/, (match, p1, p2) =>
+              [p1, p2].join("")
+            );
 
           // Tell webpack to move on
           cb(null, data);

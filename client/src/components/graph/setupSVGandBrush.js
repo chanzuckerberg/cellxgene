@@ -14,17 +14,16 @@ export default (
   handleDragAction,
   handleEndAction,
   handleCancelAction,
-  responsive,
-  graphPaddingRight
+  viewport,
 ) => {
-  const svg = d3.select("#graphAttachPoint").select("#lasso-layer");
+  const svg = d3.select("#graph-wrapper").select("#lasso-layer");
 
   if (selectionToolType === "brush") {
     const brush = d3
       .brush()
       .extent([
         [0, 0],
-        [responsive.width - graphPaddingRight, responsive.height],
+        [viewport.width, viewport.height]
       ])
       .on("start", handleStartAction)
       .on("brush", handleDragAction)

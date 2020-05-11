@@ -9,6 +9,7 @@ import {
   Icon,
 } from "@blueprintjs/core";
 import * as globals from "../../globals";
+import { termsOfServiceToast } from "../framework/toasters";
 
 const CookieDecision = "cxg.cookieDecision";
 
@@ -25,9 +26,7 @@ function storageGet(key, defaultValue = null) {
 function storageSet(key, value) {
   try {
     window.localStorage.setItem(key, value);
-  } catch {
-    return;
-  }
+  } catch {}
 }
 
 @connect((state) => ({
@@ -145,10 +144,19 @@ class TermsPrompt extends React.PureComponent {
             </div>
           </div>
           <div className={Classes.DIALOG_FOOTER} style={{ textAlign: "left" }}>
-            <Button intent="primary" onClick={this.handleOK}>
+            <Button
+              intent="primary"
+              onClick={this.handleOK}
+              data-testid="tos-cookies-accept"
+            >
               I'm OK with cookies!
             </Button>{" "}
-            <Button onClick={this.handleNo}>No thanks</Button>
+            <Button
+              onClick={this.handleNo}
+              data-testid="tos-cookies-reject"
+            >
+              No thanks
+            </Button>
           </div>
         </div>
       </Drawer>

@@ -2,9 +2,12 @@
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const HtmlWebpackInlineSourcePlugin = require("html-webpack-inline-source-plugin");
 const FaviconsWebpackPlugin = require("favicons-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+const TerserJSPlugin = require("terser-webpack-plugin");
+const CleanCss = require("clean-css");
+const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
+
 const CspHashPlugin = require("./cspHashPlugin");
 
 const src = path.resolve("src");
@@ -21,9 +24,20 @@ module.exports = {
   cache: false,
   entry: ["./src/index.js"],
   output: {
+    filename: "static/[name]-[contenthash].js",
     path: path.resolve("build"),
     publicPath,
   },
+  optimization: {
+    minimize: true,
+    minimizer: [
+      new TerserJSPlugin({}),
+      new OptimizeCSSAssetsPlugin({
+        cssProcessor: CleanCss,
+      }),
+    ],
+  },
+  devtool: "source-map",
   module: {
     rules: [
       {
@@ -52,15 +66,7 @@ module.exports = {
       {
         test: /index\.css$/,
         include: [path.resolve(src, "index.css")],
-        use: [
-          MiniCssExtractPlugin.loader,
-          {
-            loader: "css-loader",
-            options: {
-              importLoaders: 1,
-            },
-          },
-        ],
+        use: [MiniCssExtractPlugin.loader, "css-loader"],
       },
       {
         test: /\.json$/,
@@ -78,22 +84,10 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      inject: "body",
       filename: "index.html",
       template: path.resolve("index_template.html"),
-      inlineSource: ".(js|css)$",
-      minify: {
-        removeComments: true,
-        collapseWhitespace: true,
-        removeRedundantAttributes: true,
-        useShortDoctype: true,
-        removeEmptyAttributes: true,
-        removeStyleLinkTypeAttributes: true,
-        keepClosingSlash: true,
-        minifyJS: true,
-        minifyCSS: true,
-        minifyURLs: true,
-      },
+      decodeEntities: false,
+      minify: false,
     }),
     new CleanWebpackPlugin({
       verbose: true,
@@ -115,8 +109,9 @@ module.exports = {
         },
       },
     }),
-    new HtmlWebpackInlineSourcePlugin(HtmlWebpackPlugin),
-    new MiniCssExtractPlugin(),
+    new MiniCssExtractPlugin({
+      filename: "static/[name]-[contenthash].css",
+    }),
     new CspHashPlugin({
       filename: "csp-hashes.json",
     }),

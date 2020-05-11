@@ -63,6 +63,7 @@ export const graphWidth = 700;
 export const graphHeight = 700;
 export const scatterplotMarginLeft = 25;
 
+export const rightSidebarWidth = 365;
 export const leftSidebarWidth = 365;
 export const leftSidebarSectionHeading = {
   fontSize: 18,
@@ -73,7 +74,7 @@ export const leftSidebarSectionHeading = {
 export const leftSidebarSectionPadding = 10;
 export const categoryLabelDisplayStringLongLength = 27;
 export const categoryLabelDisplayStringShortLength = 11;
-export const categoryDisplayStringMaxLength = 41;
+export const categoryDisplayStringMaxLength = 33;
 
 export const maxUserDefinedGenes = 25;
 export const maxGenes = 100;

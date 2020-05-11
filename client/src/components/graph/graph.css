@@ -1,21 +1,3 @@
-:local(.graphCanvas) path {
-  shape-rendering: crispEdges;
-}
-
-#graphWrapper {
-  position: relative;
-}
-
-#graphAttachPoint,
-.graphSVG,
-.graphCanvas {
-  position: absolute;
-}
-
-#graphSVG {
-  pointer-events: none;
-}
-
 :local(.axis) path,
 :local(.axis) line {
   fill: none;

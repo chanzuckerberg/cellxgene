@@ -10,6 +10,7 @@ import {
   Position,
 } from "@blueprintjs/core";
 import * as globals from "../../globals";
+import styles from "./menubar.css";
 import actions from "../../actions";
 import CellSetButton from "./cellSetButtons";
 
@@ -85,7 +86,7 @@ class DiffexpButtons extends React.Component {
         diffexpCellcountMax;
 
     return (
-      <ButtonGroup style={{ marginRight: 10 }}>
+      <ButtonGroup className={styles.menubarButton} >
         <CellSetButton
           {...this.props} // eslint-disable-line react/jsx-props-no-spreading
           eitherCellSetOneOrTwo={1}
@@ -95,61 +96,22 @@ class DiffexpButtons extends React.Component {
           eitherCellSetOneOrTwo={2}
         />
         {!differential.diffExp ? (
-          <Popover
-            isOpen={/* warnMaxSizeExceeded && !userDismissedPopover */ false}
-            position={Position.BOTTOM}
-            target={
-              <Tooltip
-                content={warnMaxSizeExceeded ? tipMessageWarn : tipMessage}
-                position="bottom"
-                hoverOpenDelay={globals.tooltipHoverOpenDelayQuick}
-                intent={warnMaxSizeExceeded ? "danger" : "none"}
-              >
-                <AnchorButton
-                  disabled={!haveBothCellSets || warnMaxSizeExceeded}
-                  intent={warnMaxSizeExceeded ? "danger" : "primary"}
-                  data-testid="diffexp-button"
-                  loading={differential.loading}
-                  icon="left-join"
-                  fill
-                  onClick={this.computeDiffExp}
-                />
-              </Tooltip>
-            }
-            content={
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "flex-start",
-                  alignItems: "flex-end",
-                  flexDirection: "column",
-                  padding: 10,
-                  maxWidth: 310,
-                }}
-              >
-                <p>
-                  {`The total number of cells for differential expression computation
-                may not exceed ${diffexpCellcountMax}`}
-                </p>
-                <Button
-                  type="button"
-                  data-testid="diffexp-maxsize-exceeded-warning-dismiss"
-                  intent="warning"
-                  onClick={this.clearDifferentialExpression}
-                >
-                  Dismiss and clear cell sets
-                </Button>
-                <Button
-                  type="button"
-                  data-testid="diffexp-popover-dismiss"
-                  intent="none"
-                  onClick={this.handlePopoverDismiss}
-                >
-                  Dismiss
-                </Button>
-              </div>
-            }
-          />
+          <Tooltip
+            content={warnMaxSizeExceeded ? tipMessageWarn : tipMessage}
+            position="bottom"
+            hoverOpenDelay={globals.tooltipHoverOpenDelayQuick}
+            intent={warnMaxSizeExceeded ? "danger" : "none"}
+          >
+            <AnchorButton
+              disabled={!haveBothCellSets || warnMaxSizeExceeded}
+              intent={warnMaxSizeExceeded ? "danger" : "primary"}
+              data-testid="diffexp-button"
+              loading={differential.loading}
+              icon="left-join"
+              fill
+              onClick={this.computeDiffExp}
+            />
+          </Tooltip>
         ) : null}
 
         {differential.diffExp ? (

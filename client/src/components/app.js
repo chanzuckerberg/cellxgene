@@ -4,6 +4,7 @@ import Helmet from "react-helmet";
 import { connect } from "react-redux";
 
 import Container from "./framework/container";
+import Layout from "./framework/layout";
 import LeftSideBar from "./leftSidebar";
 import RightSideBar from "./rightSidebar";
 import Legend from "./continuousLegend";
@@ -20,10 +21,6 @@ import actions from "../actions";
   graphRenderCounter: state.controls.graphRenderCounter,
 }))
 class App extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {};
-  }
 
   componentDidMount() {
     const { dispatch } = this.props;
@@ -33,24 +30,7 @@ class App extends React.Component {
     this._onURLChanged();
 
     dispatch(actions.doInitialDataLoad(window.location.search));
-
-    /* listen for resize events */
-    window.addEventListener("resize", () => {
-      dispatch({
-        type: "window resize",
-        data: {
-          height: window.innerHeight,
-          width: window.innerWidth,
-        },
-      });
-    });
-    dispatch({
-      type: "window resize",
-      data: {
-        height: window.innerHeight,
-        width: window.innerWidth,
-      },
-    });
+    this.forceUpdate();
   }
 
   _onURLChanged() {
@@ -88,15 +68,22 @@ class App extends React.Component {
             error loading
           </div>
         ) : null}
-        <div>
-          {loading ? null : <LeftSideBar />}
-          {loading ? null : <RightSideBar />}
-          {loading ? null : <MenuBar />}
-          {loading ? null : <Graph key={graphRenderCounter} />}
-          {loading ? null : <Autosave />}
-          {loading ? null : <TermsOfServicePrompt />}
-          <Legend />
-        </div>
+        {loading ? null : <Layout>
+          <LeftSideBar/>
+          {viewportRef =>
+            <>
+              <MenuBar/>
+              <Autosave/>
+              <TermsOfServicePrompt/>
+              <Legend viewportRef={viewportRef}/>
+              <Graph
+                key={graphRenderCounter}
+                viewportRef={viewportRef}
+              />
+            </>
+          }
+          <RightSideBar/>
+        </Layout>}
       </Container>
     );
   }

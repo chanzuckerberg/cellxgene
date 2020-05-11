@@ -3,7 +3,6 @@ import React from "react";
 import { connect } from "react-redux";
 import * as d3 from "d3";
 import { interpolateCool } from "d3-scale-chromatic";
-import * as globals from "../../globals";
 
 // create continuous color legend
 // http://bl.ocks.org/syntagmatic/e8ccca52559796be775553b467593a9f
@@ -62,7 +61,14 @@ const continuous = (selectorId, colorscale, colorAccessor) => {
   });
   */
 
-  const legendaxis = d3.axisRight().scale(legendscale).tickSize(6).ticks(8);
+  const legendaxis = d3
+    .axisRight(legendscale)
+    .ticks(6)
+    .tickFormat(
+      d3.format(
+        legendscale.domain().some((n) => Math.abs(n) >= 10000) ? ".0e" : ","
+      )
+    );
 
   const svg = d3
     .select(selectorId)
@@ -97,22 +103,12 @@ const continuous = (selectorId, colorscale, colorAccessor) => {
 @connect((state) => ({
   colorAccessor: state.colors.colorAccessor,
   colorScale: state.colors.scale,
-  responsive: state.responsive,
 }))
 class ContinuousLegend extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {};
-  }
 
   componentDidUpdate(prevProps) {
-    const { colorAccessor, responsive, colorScale } = this.props;
-    if (
-      prevProps.colorAccessor !== colorAccessor ||
-      prevProps.colorScale !== colorScale ||
-      prevProps.responsive.height !== responsive.height ||
-      prevProps.responsive.width !== responsive.width
-    ) {
+    const { colorAccessor, colorScale } = this.props;
+    if (prevProps.colorAccessor !== colorAccessor || prevProps.colorScale !== colorScale) {
       /* always remove it, if it's not continuous we don't put it back. */
       d3.select("#continuous_legend").selectAll("*").remove();
     }
@@ -130,15 +126,17 @@ class ContinuousLegend extends React.Component {
   }
 
   render() {
-    const { colorAccessor, responsive } = this.props;
+    const { colorAccessor } = this.props;
     return (
       <div
         id="continuous_legend"
+        ref={ref => {this.ref = ref}}
         style={{
-          position: "fixed",
           display: colorAccessor ? "inherit" : "none",
-          right: globals.leftSidebarWidth,
-          top: responsive.height / 2,
+          position: "absolute",
+          left: 8,
+          top: 35,
+          zIndex: 1,
         }}
       />
     );

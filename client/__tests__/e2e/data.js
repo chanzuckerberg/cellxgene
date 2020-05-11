@@ -27,7 +27,7 @@ export const datasets = {
       lasso: [
         {
           "coordinates-as-percent": { x1: 0.1, y1: 0.25, x2: 0.7, y2: 0.75 },
-          count: "1181",
+          count: "1173"
         },
       ],
       categorical: [
@@ -98,7 +98,7 @@ export const datasets = {
       },
       lasso: {
         "coordinates-as-percent": { x1: 0.25, y1: 0.05, x2: 0.75, y2: 0.55 },
-        count: "329",
+        count: "331",
       },
     },
     scatter: {
@@ -121,8 +121,8 @@ export const datasets = {
       },
       newCount: {
         bySubsetConfig: {
-          false: "600",
-          true: "591",
+          false: "599",
+          true: "594",
         },
       },
     },
@@ -130,7 +130,7 @@ export const datasets = {
       count: {
         bySubsetConfig: {
           false: "1161",
-          true: "856",
+          true: "852",
         },
       },
     },
