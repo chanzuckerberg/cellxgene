@@ -12,6 +12,9 @@
   ],
   "buildpacks": [
     {
+      "url": "https://github.com/chanzuckerberg/cellxgene-heroku-customize.git",
+    },
+    {
       "url": "heroku/nodejs"
     },
     {
