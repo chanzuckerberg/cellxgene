@@ -156,7 +156,7 @@ try:
 
     dataroot = os.getenv("CXG_DATAROOT")
     if dataroot:
-        logging.info(f"Configuration from CXG_DATAROOT")
+        logging.info("Configuration from CXG_DATAROOT")
         app_config.update(multi_dataset__dataroot=dataroot)
 
     secret_name = os.getenv("CXG_AWS_SECRET_NAME")
@@ -171,7 +171,7 @@ try:
             if not secret_region_name:
                 secret_region_name = discover_s3_region_name(config_file)
         if not secret_region_name:
-            logging.error(f"Could not determine the AWS Secret Manager region")
+            logging.error("Could not determine the AWS Secret Manager region")
             sys.exit(1)
 
         flask_secret_key = get_flask_secret_key(secret_region_name, secret_name)
@@ -188,7 +188,7 @@ try:
 
     if not app_config.server__flask_secret_key:
         logging.critical(
-            f"flask_secret_key is not provided.  Either set in config file, CXG_SECRET_KEY environment variable, "
+            "flask_secret_key is not provided.  Either set in config file, CXG_SECRET_KEY environment variable, "
             "or in AWS Secret Manager"
         )
         sys.exit(1)
