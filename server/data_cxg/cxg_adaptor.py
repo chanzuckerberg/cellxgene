@@ -264,7 +264,7 @@ class CxgAdaptor(DataAdaptor):
     # function to get the embedding
     # this function to iterate through embeddings.
     def get_embedding_names(self):
-        with ServerTiming.time(f"layout.lsuri"):
+        with ServerTiming.time("layout.lsuri"):
             pemb = self.get_path("emb")
             embeddings = [os.path.basename(p) for (p, t) in self.lsuri(pemb) if t == "array"]
         if len(embeddings) == 0:
@@ -311,7 +311,7 @@ class CxgAdaptor(DataAdaptor):
             A = self.open_array(ax)
             schema_hints = json.loads(A.meta["cxg_schema"]) if "cxg_schema" in A.meta else {}
             if type(schema_hints) is not dict:
-                raise TypeError(f"Array schema was malformed.")
+                raise TypeError("Array schema was malformed.")
 
             cols = []
             for attr in A.schema:
