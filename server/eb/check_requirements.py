@@ -29,16 +29,12 @@ def check(expected, custom):
     # cdict must only have exact requirements (==)
     for cname, cspecs in cdict.items():
         if len(cspecs) != 1 or cspecs[0][0] != "==":
-            print(
-                f"Error, spec must be an exact requirement {custom}: {cname} {str(cspecs)}"
-            )
+            print(f"Error, spec must be an exact requirement {custom}: {cname} {str(cspecs)}")
             okay = False
 
     for ename, especs in edict.items():
         if ename not in cdict:
-            print(
-                f"Error, missing requirement from {custom}: {ename} {str(especs)}"
-            )
+            print(f"Error, missing requirement from {custom}: {ename} {str(especs)}")
             okay = False
             continue
 
@@ -46,9 +42,7 @@ def check(expected, custom):
         for espec in especs:
             rokay = check_version(cver, espec[0], Version(espec[1]))
             if not rokay:
-                print(
-                    f"Error, failed requirement from {custom}: {ename} {espec}, {cver}"
-                )
+                print(f"Error, failed requirement from {custom}: {ename} {espec}, {cver}")
                 okay = False
 
     if okay:
