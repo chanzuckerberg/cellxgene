@@ -228,7 +228,7 @@ class MatrixDataLoader(object):
             self.matrix_data_type = self.__matrix_data_type()
 
         if not self.__matrix_data_type_allowed(app_config):
-            raise DatasetAccessError(f"Dataset does not have an allowed type.")
+            raise DatasetAccessError("Dataset does not have an allowed type.")
 
         if self.matrix_data_type == MatrixDataType.H5AD:
             from server.data_anndata.anndata_adaptor import AnndataAdaptor
@@ -272,7 +272,7 @@ class MatrixDataLoader(object):
 
     def pre_load_validation(self):
         if self.matrix_data_type == MatrixDataType.UNKNOWN:
-            raise DatasetAccessError(f"Dataset does not have a recognized type: .h5ad or .cxg")
+            raise DatasetAccessError("Dataset does not have a recognized type: .h5ad or .cxg")
         self.matrix_type.pre_load_validation(self.location)
 
     def file_size(self):
