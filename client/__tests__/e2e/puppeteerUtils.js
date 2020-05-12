@@ -44,8 +44,8 @@ export const puppeteerUtils = (page) => ({
   },
 
   async clickOn(testid, options = {}) {
-    await this.waitByID(testid);
-    const click = await page.click(`[data-testid='${testid}']`, options);
+    await this.waitByID(testid, options);
+    const click = await page.click(`[data-testid='${testid}']`);
     await page.waitFor(50);
     return click;
   },
