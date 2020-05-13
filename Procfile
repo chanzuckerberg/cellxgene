@@ -1,1 +1,1 @@
-web: gunicorn --chdir server/eb app:application --log-file -
+web: gunicorn --chdir server/eb/artifact.dir application:application --log-file -

@@ -16,6 +16,7 @@ dist/
 
 # Environments
 venv/
+.venv/
 cellxgene/
 
 # client build
