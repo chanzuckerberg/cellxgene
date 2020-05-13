@@ -105,7 +105,7 @@ def get_data_adaptor(dataset=None):
             raise DatasetAccessError("Invalid dataset {dataset}")
 
     if datapath is None:
-        return common_rest.abort_and_log(HTTPStatus.BAD_REQUEST, f"Invalid dataset NONE", loglevel=logging.INFO)
+        return common_rest.abort_and_log(HTTPStatus.BAD_REQUEST, "Invalid dataset NONE", loglevel=logging.INFO)
 
     cache_manager = current_app.matrix_data_cache_manager
     return cache_manager.data_adaptor(datapath, config)

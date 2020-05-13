@@ -279,13 +279,13 @@ class AppConfig(object):
         if self.server__csp_directives is not None:
             for k, v in self.server__csp_directives.items():
                 if not isinstance(k, str):
-                    raise ConfigurationError(f"CSP directive names must be a string.")
+                    raise ConfigurationError("CSP directive names must be a string.")
                 if isinstance(v, list):
                     for policy in v:
                         if not isinstance(policy, str):
-                            raise ConfigurationError(f"CSP directive value must be a string or list of strings.")
+                            raise ConfigurationError("CSP directive value must be a string or list of strings.")
                 elif not isinstance(v, str):
-                    raise ConfigurationError(f"CSP directive value must be a string or list of strings.")
+                    raise ConfigurationError("CSP directive value must be a string or list of strings.")
 
         # scripts can be string (filename) or dict (attributes).   Convert string to dict.
         scripts = []
@@ -476,8 +476,8 @@ class AppConfig(object):
             with self.matrix_data_cache_manager.data_adaptor(self.single_dataset__datapath, self) as data_adaptor:
                 if self.diffexp__enable and data_adaptor.parameters.get("diffexp_may_be_slow", False):
                     context["messagefn"](
-                        f"CAUTION: due to the size of your dataset, "
-                        f"running differential expression may take longer or fail."
+                        "CAUTION: due to the size of your dataset, "
+                        "running differential expression may take longer or fail."
                     )
 
         max_workers = self.diffexp__alg_cxg__max_workers
