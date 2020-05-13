@@ -82,13 +82,6 @@ class AnnoMenuCategory extends React.PureComponent {
               position={Position.RIGHT_TOP}
               content={
                 <Menu>
-                  {/* <MenuItem
-                    icon="tag"
-                    data-testclass="handleAddNewLabelToCategory"
-                    data-testid={`${metadataField}:add-new-label-to-category`}
-                    onClick={this.activateAddNewLabelMode}
-                    text={createText}
-                  /> */}
                   <MenuItem
                     icon="edit"
                     disabled={annotations.isEditingCategoryName}
