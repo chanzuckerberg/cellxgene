@@ -30,8 +30,8 @@ function storageSet(key, value) {
 }
 
 @connect((state) => ({
-  tosURL: state.config?.parameters?.aboutLegalTos,
-  privacyURL: state.config?.parameters?.AboutLegalPrivacy,
+  tosURL: state.config?.parameters?.["about_legal_tos"],
+  privacyURL: state.config?.parameters?.["about_legal_privacy"],
 }))
 class TermsPrompt extends React.PureComponent {
   constructor(props) {
@@ -146,16 +146,14 @@ class TermsPrompt extends React.PureComponent {
             </div>
           </div>
           <div className={Classes.DIALOG_FOOTER} style={{ textAlign: "left" }}>
-            <Button intent="primary" 
-            onClick={this.handleOK}
-            data-testid="tos-cookies-accept">
-              I&apos;m OK with cookies!
-              
-            </Button>{" "}
             <Button
-              onClick={this.handleNo}
-              data-testid="tos-cookies-reject"
+              intent="primary"
+              onClick={this.handleOK}
+              data-testid="tos-cookies-accept"
             >
+              I&apos;m OK with cookies!
+            </Button>{" "}
+            <Button onClick={this.handleNo} data-testid="tos-cookies-reject">
               No thanks
             </Button>
           </div>

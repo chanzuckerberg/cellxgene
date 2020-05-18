@@ -11,7 +11,7 @@ import FilenameDialog from "./filenameDialog";
   saveInProgress: state.autosave?.saveInProgress ?? false,
   lastSavedObsAnnotations: state.autosave?.lastSavedObsAnnotations,
   error: state.autosave?.error,
-  writableCategoriesEnabled: state.config?.parameters?.annotations ?? false,
+  writableCategoriesEnabled: state.config?.parameters?.["annotations"] ?? false,
   initialDataLoadComplete: state.autosave?.initialDataLoadComplete,
 }))
 class Autosave extends React.Component {

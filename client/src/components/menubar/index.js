@@ -28,15 +28,15 @@ import DiffexpButtons from "./diffexpButtons";
   scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
   celllist1: state.differential.celllist1,
   celllist2: state.differential.celllist2,
-  libraryVersions: state.config?.libraryVersions,
+  libraryVersions: state.config?.library_versions, // eslint-disable-line camelcase
   undoDisabled: state["@@undoable/past"].length === 0,
   redoDisabled: state["@@undoable/future"].length === 0,
   aboutLink: state.config?.links?.["about-dataset"],
   disableDiffexp: state.config?.parameters?.["disable-diffexp"] ?? false,
   diffexpMayBeSlow: state.config?.parameters?.["diffexp-may-be-slow"] ?? false,
   showCentroidLabels: state.centroidLabels.showLabels,
-  tosURL: state.config?.parameters?.aboutLegalTos,
-  privacyURL: state.config?.parameters?.aboutLegalPrivacy,
+  tosURL: state.config?.parameters?.about_legal_tos,
+  privacyURL: state.config?.parameters?.about_legal_privacy,
 }))
 class MenuBar extends React.Component {
   static isValidDigitKeyEvent(e) {
@@ -207,9 +207,10 @@ class MenuBar extends React.Component {
     const { pendingClipPercentiles } = this.state;
 
     // constants used to create selection tool button
-    const [selectionTooltip, selectionButtonIcon] = selectionTool === "brush"
-      ? ["Brush selection", "Lasso selection"]
-      : ["select", "polygon-filter"];
+    const [selectionTooltip, selectionButtonIcon] =
+      selectionTool === "brush"
+        ? ["Brush selection", "Lasso selection"]
+        : ["select", "polygon-filter"];
 
     return (
       <div
@@ -245,80 +246,82 @@ class MenuBar extends React.Component {
           handleClipCommit={this.handleClipCommit}
           isClipDisabled={this.isClipDisabled}
           handleClipOnKeyPress={this.handleClipOnKeyPress}
-          handleClipPercentileMaxValueChange={this.handleClipPercentileMaxValueChange}
-          handleClipPercentileMinValueChange={this.handleClipPercentileMinValueChange}
+          handleClipPercentileMaxValueChange={
+            this.handleClipPercentileMaxValueChange
+          }
+          handleClipPercentileMinValueChange={
+            this.handleClipPercentileMinValueChange
+          }
         />
-    <Embedding />
-    <Tooltip
-      content="When a category is colored by, show labels on the graph"
-      position="bottom"
-      disabled={graphInteractionMode === "zoom"}
-    >
-      <AnchorButton
-        className={styles.menubarButton}
-        type="button"
-        data-testid="centroid-label-toggle"
-        icon="property"
-        onClick={this.handleCentroidChange}
-        active={showCentroidLabels}
-        intent={showCentroidLabels ? "primary" : "none"}
-      />
-    </Tooltip>
-    <ButtonGroup
-      className={styles.menubarButton}
-    >
-      <Tooltip
-        content={selectionTooltip}
-        position="bottom"
-        hoverOpenDelay={globals.tooltipHoverOpenDelay}
-      >
-        <AnchorButton
-          type="button"
-          data-testid="mode-lasso"
-          icon={selectionButtonIcon}
-          active={graphInteractionMode === "select"}
-          onClick={() => {
-            dispatch({
-              type: "change graph interaction mode",
-              data: "select"
-            });
+        <Embedding />
+        <Tooltip
+          content="When a category is colored by, show labels on the graph"
+          position="bottom"
+          disabled={graphInteractionMode === "zoom"}
+        >
+          <AnchorButton
+            className={styles.menubarButton}
+            type="button"
+            data-testid="centroid-label-toggle"
+            icon="property"
+            onClick={this.handleCentroidChange}
+            active={showCentroidLabels}
+            intent={showCentroidLabels ? "primary" : "none"}
+          />
+        </Tooltip>
+        <ButtonGroup className={styles.menubarButton}>
+          <Tooltip
+            content={selectionTooltip}
+            position="bottom"
+            hoverOpenDelay={globals.tooltipHoverOpenDelay}
+          >
+            <AnchorButton
+              type="button"
+              data-testid="mode-lasso"
+              icon={selectionButtonIcon}
+              active={graphInteractionMode === "select"}
+              onClick={() => {
+                dispatch({
+                  type: "change graph interaction mode",
+                  data: "select",
+                });
+              }}
+            />
+          </Tooltip>
+          <Tooltip
+            content="Drag to pan, scroll to zoom"
+            position="bottom"
+            hoverOpenDelay={globals.tooltipHoverOpenDelay}
+          >
+            <AnchorButton
+              type="button"
+              data-testid="mode-pan-zoom"
+              icon="zoom-in"
+              active={graphInteractionMode === "zoom"}
+              onClick={() => {
+                dispatch({
+                  type: "change graph interaction mode",
+                  data: "zoom",
+                });
+              }}
+            />
+          </Tooltip>
+        </ButtonGroup>
+        <Subset
+          subsetPossible={this.subsetPossible()}
+          subsetResetPossible={this.subsetResetPossible()}
+          handleSubset={() => {
+            dispatch(actions.setWorldToSelection());
+            dispatch({ type: "increment graph render counter" });
+          }}
+          handleSubsetReset={() => {
+            dispatch(actions.resetWorldToUniverse());
+            dispatch({ type: "increment graph render counter" });
           }}
         />
-      </Tooltip>
-      <Tooltip
-        content="Drag to pan, scroll to zoom"
-        position="bottom"
-        hoverOpenDelay={globals.tooltipHoverOpenDelay}
-      >
-        <AnchorButton
-          type="button"
-          data-testid="mode-pan-zoom"
-          icon="zoom-in"
-          active={graphInteractionMode === "zoom"}
-          onClick={() => {
-            dispatch({
-              type: "change graph interaction mode",
-              data: "zoom"
-            });
-          }}
-        />
-      </Tooltip>
-    </ButtonGroup>
-    <Subset
-      subsetPossible={this.subsetPossible()}
-      subsetResetPossible={this.subsetResetPossible()}
-      handleSubset={() => {
-        dispatch(actions.setWorldToSelection());
-        dispatch({ type: "increment graph render counter" });
-      }}
-      handleSubsetReset={() => {
-        dispatch(actions.resetWorldToUniverse());
-        dispatch({ type: "increment graph render counter" });
-      }}
-    />
-    {disableDiffexp ? null : <DiffexpButtons/>}
-    </div>
-  );
+        {disableDiffexp ? null : <DiffexpButtons />}
+      </div>
+    );
   }
 }
 

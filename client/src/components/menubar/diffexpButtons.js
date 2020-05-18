@@ -14,7 +14,7 @@ import CellSetButton from "./cellSetButtons";
   celllist1: state.differential?.celllist1,
   celllist2: state.differential?.celllist2,
   diffexpMayBeSlow: state.config?.parameters?.["diffexp-may-be-slow"] ?? false,
-  diffexpCellcountMax: state.config?.limits?.diffexpCellcountMax,
+  diffexpCellcountMax: state.config?.limits?.diffexp_cellcount_max,
 }))
 class DiffexpButtons extends React.Component {
   computeDiffExp = () => {
@@ -65,7 +65,7 @@ class DiffexpButtons extends React.Component {
         diffexpCellcountMax;
 
     return (
-      <ButtonGroup className={styles.menubarButton} >
+      <ButtonGroup className={styles.menubarButton}>
         <CellSetButton
           {...this.props} // eslint-disable-line react/jsx-props-no-spreading
           eitherCellSetOneOrTwo={1}

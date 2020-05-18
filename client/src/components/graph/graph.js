@@ -190,7 +190,7 @@ class Graph extends React.Component {
       tool: null,
       container: null,
       cameraRender: 0,
-      viewport
+      viewport,
     };
   }
 
@@ -209,7 +209,10 @@ class Graph extends React.Component {
 
     // create all default rendering transformations
     const modelTF = createModelTF();
-    const projectionTF = createProjectionTF(this.reglCanvas.width, this.reglCanvas.height);
+    const projectionTF = createProjectionTF(
+      this.reglCanvas.width,
+      this.reglCanvas.height
+    );
 
     // initial draw to canvas
     this.renderPoints(
@@ -250,7 +253,8 @@ class Graph extends React.Component {
     } = this.props;
     const { regl, toolSVG, camera, modelTF, viewport } = this.state;
     let { projectionTF } = this.state;
-    const hasResized = prevState.viewport.height !== this.reglCanvas.height ||
+    const hasResized =
+      prevState.viewport.height !== this.reglCanvas.height ||
       prevState.viewport.width !== this.reglCanvas.width;
     let stateChanges = {};
     let needsRepaint = hasResized;
@@ -261,7 +265,10 @@ class Graph extends React.Component {
       const { drawPoints, pointBuffer, colorBuffer, flagBuffer } = this.state;
 
       if (hasResized) {
-        projectionTF = createProjectionTF(this.reglCanvas.width, this.reglCanvas.height);
+        projectionTF = createProjectionTF(
+          this.reglCanvas.width,
+          this.reglCanvas.height
+        );
         stateChanges = {
           ...stateChanges,
           projectionTF,
@@ -322,7 +329,10 @@ class Graph extends React.Component {
         ...stateChanges,
         ...this.createToolSVG(),
       };
-    } else if ((viewport.height && viewport.width && !toolSVG) || selectionTool !== prevProps.selectionTool ) {
+    } else if (
+      (viewport.height && viewport.width && !toolSVG) ||
+      selectionTool !== prevProps.selectionTool
+    ) {
       // first time or change of selection tool
       stateChanges = { ...stateChanges, ...this.createToolSVG() };
     } else if (prevProps.graphInteractionMode !== graphInteractionMode) {
@@ -372,12 +382,11 @@ class Graph extends React.Component {
     const { viewportRef } = this.props;
     return {
       height: viewportRef.clientHeight,
-      width: viewportRef.clientWidth
+      width: viewportRef.clientWidth,
     };
   };
 
-
-  handleCanvasEvent = e => {
+  handleCanvasEvent = (e) => {
     const { camera, projectionTF } = this.state;
     if (e.type !== "wheel") e.preventDefault();
     if (camera.handleEvent(e, projectionTF)) {
@@ -548,12 +557,8 @@ class Graph extends React.Component {
     vec2.transformMat3(xy, xy, projectionTF);
 
     return [
-      Math.round(
-        (xy[0] + 1) * viewport.width / 2
-      ),
-      Math.round(
-        -((xy[1] + 1) / 2 - 1) * viewport.height
-      )
+      Math.round(((xy[0] + 1) * viewport.width) / 2),
+      Math.round(-((xy[1] + 1) / 2 - 1) * viewport.height),
     ];
   }
 
@@ -699,7 +704,7 @@ class Graph extends React.Component {
       count: this.count,
       projView,
       nPoints: universe.nObs,
-      minViewportDimension: Math.min(width, height)
+      minViewportDimension: Math.min(width, height),
     });
     regl._gl.flush();
   }
@@ -745,9 +750,11 @@ class Graph extends React.Component {
           cameraTF={cameraTF}
           modelTF={modelTF}
           projectionTF={projectionTF}
-          handleCanvasEvent={graphInteractionMode === "zoom" ? this.handleCanvasEvent : undefined}
+          handleCanvasEvent={
+            graphInteractionMode === "zoom" ? this.handleCanvasEvent : undefined
+          }
         >
-          <CentroidLabels/>
+          <CentroidLabels />
         </GraphOverlayLayer>
         <svg
           id="lasso-layer"
@@ -757,13 +764,11 @@ class Graph extends React.Component {
             position: "absolute",
             top: 0,
             left: 0,
-            zIndex: 1
+            zIndex: 1,
           }}
           width={viewport.width}
           height={viewport.height}
-          pointerEvents={
-            graphInteractionMode === "select" ? "auto" : "none"
-          }
+          pointerEvents={graphInteractionMode === "select" ? "auto" : "none"}
         />
         <canvas
           width={viewport.width}
@@ -778,7 +783,9 @@ class Graph extends React.Component {
           }}
           className="graph-canvas"
           data-testid="layout-graph"
-          ref={canvas => { this.reglCanvas = canvas; }}
+          ref={(canvas) => {
+            this.reglCanvas = canvas;
+          }}
           onMouseDown={this.handleCanvasEvent}
           onMouseUp={this.handleCanvasEvent}
           onMouseMove={this.handleCanvasEvent}

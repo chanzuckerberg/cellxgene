@@ -37,9 +37,9 @@ describe("did launch", () => {
     try {
       await utils.clickOn("tos-cookies-accept", { timeout: 500 });
     } catch {
-      console.warn("No terms of service footer detected.")
+      console.warn("No terms of service footer detected.");
     }
-    page.waitFor(50);  // give the footer a chance to disappear
+    page.waitFor(50); // give the footer a chance to disappear
     const result = await page.$("[data-testid='tos-cookies-accept']");
     expect(result).toBeNull();
   });

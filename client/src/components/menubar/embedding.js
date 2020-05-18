@@ -20,7 +20,7 @@ import actions from "../../actions";
   world: state.world,
   layoutChoice: state.layoutChoice,
   reembedController: state.reembedController,
-  enableReembedding: state.config?.parameters?.["enable-reembedding"] ?? false
+  enableReembedding: state.config?.parameters?.["enable-reembedding"] ?? false,
 }))
 class Embedding extends React.PureComponent {
   handleLayoutChoiceChange = (e) => {
@@ -69,9 +69,7 @@ class Embedding extends React.PureComponent {
     const { layoutChoice } = this.props;
 
     return (
-      <ButtonGroup
-        className={styles.menubarButton}
-      >
+      <ButtonGroup className={styles.menubarButton}>
         <Popover
           target={
             <Tooltip

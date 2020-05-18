@@ -18,7 +18,7 @@ import {
   saveInProgress: state.autosave?.saveInProgress ?? false,
   lastSavedObsAnnotations: state.autosave?.lastSavedObsAnnotations,
   error: state.autosave?.error,
-  writableCategoriesEnabled: state.config?.parameters?.["annotations"] ?? false
+  writableCategoriesEnabled: state.config?.parameters?.["annotations"] ?? false,
 }))
 class FilenameDialog extends React.Component {
   constructor(props) {
@@ -98,7 +98,6 @@ class FilenameDialog extends React.Component {
     const { writableCategoriesEnabled, annotations, idhash } = this.props;
     const { filenameText } = this.state;
 
-
     return writableCategoriesEnabled &&
       !annotations.dataCollectionNameIsReadOnly &&
       !annotations.dataCollectionName ? (
@@ -153,9 +152,7 @@ class FilenameDialog extends React.Component {
           <div className={Classes.DIALOG_FOOTER}>
             <div className={Classes.DIALOG_FOOTER_ACTIONS}>
               <Tooltip content="Cancel naming collection">
-                <Button onClick={this.dismissFilenameDialog} type="button">
-                  Cancel
-                </Button>
+                <Button onClick={this.dismissFilenameDialog}>Cancel</Button>
               </Tooltip>
               <Button
                 disabled={!filenameText || this.filenameError(filenameText)}

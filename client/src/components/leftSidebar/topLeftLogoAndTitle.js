@@ -4,7 +4,7 @@ import { connect } from "react-redux";
 import * as globals from "../../globals";
 import Logo from "../framework/logo";
 
-@connect(state => ({
+@connect((state) => ({
   datasetTitle: state.config?.displayNames?.dataset ?? "",
   aboutURL: state.config?.links?.["about-dataset"],
   scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
