@@ -2,11 +2,14 @@
 import React from "react";
 import { AnchorButton, Tooltip } from "@blueprintjs/core";
 import { tooltipHoverOpenDelay } from "../../globals";
+import styles from "./menubar.css";
 
 function InformationMenu(props) {
   const { undoDisabled, redoDisabled, dispatch } = props;
   return (
-    <div style={{ marginRight: 10 }} className="bp3-button-group">
+    <div
+      className={`bp3-button-group ${styles.menubarButton}`}
+    >
       <Tooltip
         content="Undo"
         position="bottom"

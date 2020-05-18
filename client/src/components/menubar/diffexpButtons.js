@@ -3,6 +3,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { Button, ButtonGroup, AnchorButton, Tooltip } from "@blueprintjs/core";
 import * as globals from "../../globals";
+import styles from "./menubar.css";
 import actions from "../../actions";
 import CellSetButton from "./cellSetButtons";
 
@@ -64,7 +65,7 @@ class DiffexpButtons extends React.Component {
         diffexpCellcountMax;
 
     return (
-      <ButtonGroup style={{ marginRight: 10 }}>
+      <ButtonGroup className={styles.menubarButton} >
         <CellSetButton
           {...this.props} // eslint-disable-line react/jsx-props-no-spreading
           eitherCellSetOneOrTwo={1}

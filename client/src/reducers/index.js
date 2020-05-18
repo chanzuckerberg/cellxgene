@@ -13,7 +13,6 @@ import crossfilter from "./crossfilter";
 import colors from "./colors";
 import differential from "./differential";
 import layoutChoice from "./layoutChoice";
-import responsive from "./responsive";
 import controls from "./controls";
 import resetCache from "./resetCache";
 import annotations from "./annotations";
@@ -41,7 +40,6 @@ const Reducer = undoable(
     ["controls", controls],
     ["crossfilter", crossfilter],
     ["differential", differential],
-    ["responsive", responsive],
     ["centroidLabels", centroidLabels],
     ["pointDilation", pointDialation],
     ["reembedController", reembedController],

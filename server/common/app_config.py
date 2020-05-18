@@ -167,6 +167,9 @@ class AppConfig(object):
             if not hasattr(self, key):
                 raise ConfigurationError(f"unknown config parameter {key}.")
             try:
+                if type(value) == tuple:
+                    # convert tuple values to list values
+                    value = list(value)
                 setattr(self, key, value)
             except KeyError:
                 raise ConfigurationError(f"Unable to set config parameter {key}.")
@@ -238,8 +241,8 @@ class AppConfig(object):
         self.__check_attr("server__debug", bool)
         self.__check_attr("server__host", str)
         self.__check_attr("server__port", (type(None), int))
-        self.__check_attr("server__scripts", (list, tuple))
-        self.__check_attr("server__inline_scripts", (list, tuple))
+        self.__check_attr("server__scripts", list)
+        self.__check_attr("server__inline_scripts", list)
         self.__check_attr("server__open_browser", bool)
         self.__check_attr("server__force_https", bool)
         self.__check_attr("server__flask_secret_key", (type(None), str))
@@ -276,13 +279,24 @@ class AppConfig(object):
         if self.server__csp_directives is not None:
             for k, v in self.server__csp_directives.items():
                 if not isinstance(k, str):
-                    raise ConfigurationError(f"CSP directive names must be a string.")
+                    raise ConfigurationError("CSP directive names must be a string.")
                 if isinstance(v, list):
                     for policy in v:
                         if not isinstance(policy, str):
-                            raise ConfigurationError(f"CSP directive value must be a string or list of strings.")
+                            raise ConfigurationError("CSP directive value must be a string or list of strings.")
                 elif not isinstance(v, str):
-                    raise ConfigurationError(f"CSP directive value must be a string or list of strings.")
+                    raise ConfigurationError("CSP directive value must be a string or list of strings.")
+
+        # scripts can be string (filename) or dict (attributes).   Convert string to dict.
+        scripts = []
+        for s in self.server__scripts:
+            if isinstance(s, str):
+                scripts.append({"src": s})
+            elif isinstance(s, dict) and isinstance(s["src"], str):
+                scripts.append(s)
+            else:
+                raise ConfigurationError("Scripts must be string or dict")
+        self.server__scripts = scripts
 
     def handle_data_locator(self, context):
         self.__check_attr("data_locator__s3__region_name", (type(None), bool, str))
@@ -354,7 +368,7 @@ class AppConfig(object):
     def handle_multi_dataset(self, context):
         self.__check_attr("multi_dataset__dataroot", (type(None), str))
         self.__check_attr("multi_dataset__index", (type(None), bool, str))
-        self.__check_attr("multi_dataset__allowed_matrix_types", (tuple, list))
+        self.__check_attr("multi_dataset__allowed_matrix_types", list)
         self.__check_attr("multi_dataset__matrix_cache__max_datasets", int)
         self.__check_attr("multi_dataset__matrix_cache__timelimit_s", (type(None), int, float))
 
@@ -439,7 +453,7 @@ class AppConfig(object):
                 )
 
     def handle_embeddings(self, context):
-        self.__check_attr("embeddings__names", (list, tuple))
+        self.__check_attr("embeddings__names", list)
         self.__check_attr("embeddings__enable_reembedding", bool)
 
         if self.single_dataset__datapath:
@@ -462,8 +476,8 @@ class AppConfig(object):
             with self.matrix_data_cache_manager.data_adaptor(self.single_dataset__datapath, self) as data_adaptor:
                 if self.diffexp__enable and data_adaptor.parameters.get("diffexp_may_be_slow", False):
                     context["messagefn"](
-                        f"CAUTION: due to the size of your dataset, "
-                        f"running differential expression may take longer or fail."
+                        "CAUTION: due to the size of your dataset, "
+                        "running differential expression may take longer or fail."
                     )
 
         max_workers = self.diffexp__alg_cxg__max_workers

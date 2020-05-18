@@ -9,6 +9,7 @@ import {
   Tooltip,
 } from "@blueprintjs/core";
 import { tooltipHoverOpenDelay } from "../../globals";
+import styles from "./menubar.css";
 
 function Clip(props) {
   const {
@@ -35,10 +36,7 @@ function Clip(props) {
 
   return (
     <div
-      className="bp3-button-group"
-      style={{
-        marginRight: 10,
-      }}
+      className={`bp3-button-group ${styles.menubarButton}`}
     >
       <Popover
         target={

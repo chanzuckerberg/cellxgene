@@ -1,11 +1,14 @@
 // jshint esversion: 6
 import React from "react";
 import { Button, Popover, Menu, MenuItem, Position } from "@blueprintjs/core";
+import styles from "./menubar.css";
 
 function InformationMenu(props) {
   const { libraryVersions, aboutLink, tosURL, privacyURL } = props;
   return (
-    <div style={{}} className="bp3-button-group">
+    <div
+      className={`bp3-button-group ${styles.menubarButton}`}
+    >
       <Popover
         content={
           <Menu>

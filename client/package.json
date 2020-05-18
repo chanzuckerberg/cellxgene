@@ -6,8 +6,9 @@
   "repository": "https://github.com/chanzuckerberg/cellxgene",
   "scripts": {
     "clean": "rimraf build",
-    "build": "npm run clean && webpack --config configuration/webpack/webpack.config.prod.js",
-    "dev": "npm run clean && webpack --config configuration/webpack/webpack.config.dev.js",
+    "build": "npm run clean && webpack --config",
+    "prod": "npm run build -- configuration/webpack/webpack.config.prod.js",
+    "dev": "npm run build -- configuration/webpack/webpack.config.dev.js",
     "fmt": "eslint --fix src",
     "lint": "eslint src"
   },
@@ -63,6 +64,7 @@
     "@babel/preset-react": "^7.9.4",
     "@babel/register": "^7.9.0",
     "@babel/runtime": "^7.9.2",
+    "@sentry/webpack-plugin": "^1.11.1",
     "babel-eslint": "^10.1.0",
     "babel-jest": "^25.2.6",
     "babel-loader": "^8.1.0",

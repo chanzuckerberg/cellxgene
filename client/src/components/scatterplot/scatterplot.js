@@ -53,8 +53,6 @@ function createProjectionTF(viewportWidth, viewportHeight) {
     expressionY,
 
     crossfilter,
-
-    responsive: state.responsive,
   };
 })
 class Scatterplot extends React.PureComponent {
@@ -140,6 +138,10 @@ class Scatterplot extends React.PureComponent {
     this.state = {
       svg: null,
       minimized: null,
+      viewport: {
+        height: null,
+        width: null,
+      }
     };
   }
 
@@ -177,6 +179,9 @@ class Scatterplot extends React.PureComponent {
       projectionTF
     );
 
+    window.addEventListener("resize", this.handleResize);
+    const viewport = this.getViewportDimensions();
+
     this.setState({
       regl,
       flagBuffer,
@@ -185,6 +190,7 @@ class Scatterplot extends React.PureComponent {
       svg,
       drawPoints,
       projectionTF,
+      viewport
     });
   }
 
@@ -272,6 +278,28 @@ class Scatterplot extends React.PureComponent {
     }
   }
 
+  componentWillUnmount() {
+    window.removeEventListener("resize", this.updateViewportDimensions);
+  }
+
+  getViewportDimensions = () => {
+    return {
+      viewport: {
+        height: window.height,
+        width: window.width
+      }
+    };
+  };
+
+  handleResize = () => {
+    const { state } = this.state;
+    const viewport = this.getViewportDimensions();
+    this.setState({
+      ...state,
+      viewport,
+    });
+  };
+
   static setupScales(expressionX, expressionY) {
     const xScale = d3
       .scaleLinear()
@@ -287,6 +315,10 @@ class Scatterplot extends React.PureComponent {
       yScale,
     };
   }
+
+  updateViewportDimensions = () => {
+    this.setState(this.getViewportDimensions());
+  };
 
   drawAxesSVG(xScale, yScale, svg) {
     const { scatterplotYYaccessor, scatterplotXXaccessor } = this.props;
@@ -341,12 +373,8 @@ class Scatterplot extends React.PureComponent {
     projectionTF
   ) {
     if (!this.reglCanvas) return;
-    const { universe, responsive } = this.props;
-    // The viewport dimension is used to scale points, so we want to pass
-    // the dimension of the MAIN viewport, not the scatterplot viewport.
-    // Slightly hacky, but we want all points to scale uniformly.  Perhaps
-    // this should move to the redux state and be shared?
-    const { width: cvWidth, height: cvHeight } = responsive;
+    const { universe } = this.props;
+    const { viewport } = this.state;
     regl.poll();
     regl.clear({
       depth: 1,
@@ -360,9 +388,9 @@ class Scatterplot extends React.PureComponent {
       count: this.count,
       nPoints: universe.nObs,
       minViewportDimension: Math.min(
-        cvWidth - globals.leftSidebarWidth || width,
-        cvHeight || height
-      ),
+        viewport.width - globals.leftSidebarWidth || width,
+        viewport.height || height
+      )
     });
     regl._gl.flush();
   }
@@ -379,9 +407,10 @@ class Scatterplot extends React.PureComponent {
           borderRadius: "3px 3px 0px 0px",
           left: globals.leftSidebarWidth + globals.scatterplotMarginLeft,
           padding: "0px 20px 20px 0px",
-          backgroundColor: "white",
+          background: "white",
           /* x y blur spread color */
           boxShadow: "0px 0px 6px 2px rgba(153,153,153,0.4)",
+          zIndex: 2,
         }}
         id="scatterplot_wrapper"
       >

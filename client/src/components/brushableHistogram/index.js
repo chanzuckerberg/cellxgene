@@ -15,6 +15,7 @@ import * as globals from "../../globals";
 import actions from "../../actions";
 import { histogramContinuous } from "../../util/dataframe/histogram";
 import { makeContinuousDimensionName } from "../../util/nameCreators";
+import significantDigits from "../../util/significantDigits";
 
 function clamp(val, rng) {
   return Math.max(Math.min(val, rng[1]), rng[0]);
@@ -88,8 +89,8 @@ class HistogramBrush extends React.PureComponent {
   constructor(props) {
     super(props);
 
-    this.marginLeft = 12; // Space for 0 tick label on X axis
-    this.marginRight = 52; // space for Y axis & labels
+    this.marginLeft = 10; // Space for 0 tick label on X axis
+    this.marginRight = 54; // space for Y axis & labels
     this.marginBottom = 25; // space for X axis & labels
     this.marginTop = 3;
 
@@ -288,6 +289,23 @@ class HistogramBrush extends React.PureComponent {
     }
   };
 
+  maybeScientific = (x) => {
+    let format = ",";
+    const _ticks = x.ticks(4);
+
+    if (x.domain().some((n) => Math.abs(n) >= 10000)) {
+      /* 
+        heuristic: if the last tick d3 wants to render has one significant
+        digit ie., 2000, render 2e+3, but if it's anything else ie., 42000000 render
+        4.20e+n
+      */
+      format =
+        significantDigits(_ticks[_ticks.length - 1]) === 1 ? ".0e" : ".2e";
+    }
+
+    return format;
+  };
+
   removeHistogram = () => {
     const {
       dispatch,
@@ -406,11 +424,7 @@ class HistogramBrush extends React.PureComponent {
         d3
           .axisBottom(x)
           .ticks(4)
-          .tickFormat(
-            d3.format(
-              x.domain().some((n) => Math.abs(n) >= 10000) ? ".2e" : ","
-            )
-          )
+          .tickFormat(d3.format(this.maybeScientific(x)))
       );
 
     /* Y AXIS */

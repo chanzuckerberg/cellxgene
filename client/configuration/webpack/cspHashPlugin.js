@@ -32,17 +32,15 @@ class CspHashPlugin {
             };
           }
 
-          // remove no-csp-hash attributes
-          let foundOne = false;
-          $("script[no-csp-hash]").each((i, elmt) => {
-            $(elmt).removeAttr("no-csp-hash");
-            foundOne = true;
-          });
-          $("style[no-csp-hash]").each((i, elmt) => {
-            $(elmt).removeAttr("no-csp-hash");
-            foundOne = true;
-          });
-          if (foundOne) data.html = $.html();
+          // Remove no-csp-hash attributes. Cheerio does not parse Jinja templates
+          // correctly, so we brute force this with a regular expression.
+          data.html = data.html
+            .replace(/(<script .*)no-csp-hash(.*>)/, (match, p1, p2) =>
+              [p1, p2].join("")
+            )
+            .replace(/(<style .*)no-csp-hash(.*>)/, (match, p1, p2) =>
+              [p1, p2].join("")
+            );
 
           // Tell webpack to move on
           cb(null, data);

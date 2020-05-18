@@ -6,7 +6,6 @@ import { mat3, vec2 } from "gl-matrix";
 import _regl from "regl";
 import memoize from "memoize-one";
 
-import * as globals from "../../globals";
 import setupSVGandBrushElements from "./setupSVGandBrush";
 import _camera from "../../util/camera";
 import _drawPoints from "./drawPointsRegl";
@@ -77,7 +76,6 @@ function renderThrottle(callback) {
   universe: state.universe,
   world: state.world,
   crossfilter: state.crossfilter,
-  responsive: state.responsive,
   colorRGB: state.colors.rgb,
   selectionTool: state.graphSelection.tool,
   currentSelection: state.graphSelection.selection,
@@ -177,9 +175,8 @@ class Graph extends React.Component {
 
   constructor(props) {
     super(props);
+    const viewport = this.getViewportDimensions();
     this.count = 0;
-    this.graphPaddingTop = 0;
-    this.graphPaddingRightLeft = globals.leftSidebarWidth * 2;
     this.renderCache = {
       X: null,
       Y: null,
@@ -193,10 +190,13 @@ class Graph extends React.Component {
       tool: null,
       container: null,
       cameraRender: 0,
+      viewport
     };
   }
 
   componentDidMount() {
+    window.addEventListener("resize", this.handleResize);
+
     // setup canvas, webgl draw function and camera
     const camera = _camera(this.reglCanvas);
     const regl = _regl(this.reglCanvas);
@@ -209,10 +209,7 @@ class Graph extends React.Component {
 
     // create all default rendering transformations
     const modelTF = createModelTF();
-    const projectionTF = createProjectionTF(
-      this.reglCanvas.width,
-      this.reglCanvas.height
-    );
+    const projectionTF = createProjectionTF(this.reglCanvas.width, this.reglCanvas.height);
 
     // initial draw to canvas
     this.renderPoints(
@@ -238,13 +235,12 @@ class Graph extends React.Component {
     });
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps, prevState) {
     const { renderCache } = this;
     const {
       world,
       crossfilter,
       colorRGB,
-      responsive,
       selectionTool,
       currentSelection,
       layoutChoice,
@@ -252,26 +248,20 @@ class Graph extends React.Component {
       pointDilation,
       colorAccessor,
     } = this.props;
-    const { regl, toolSVG, camera, modelTF } = this.state;
+    const { regl, toolSVG, camera, modelTF, viewport } = this.state;
+    let { projectionTF } = this.state;
+    const hasResized = prevState.viewport.height !== this.reglCanvas.height ||
+      prevState.viewport.width !== this.reglCanvas.width;
     let stateChanges = {};
+    let needsRepaint = hasResized;
 
     if (regl && world && crossfilter) {
       /* update the regl and point rendering state */
       const { obsLayout, nObs } = world;
       const { drawPoints, pointBuffer, colorBuffer, flagBuffer } = this.state;
 
-      let { projectionTF } = this.state;
-      let needsRepaint = false;
-
-      if (
-        prevProps.responsive.height !== responsive.height ||
-        prevProps.responsive.width !== responsive.width
-      ) {
-        projectionTF = createProjectionTF(
-          this.reglCanvas.width,
-          this.reglCanvas.height
-        );
-        needsRepaint = true;
+      if (hasResized) {
+        projectionTF = createProjectionTF(this.reglCanvas.width, this.reglCanvas.height);
         stateChanges = {
           ...stateChanges,
           projectionTF,
@@ -326,19 +316,13 @@ class Graph extends React.Component {
       }
     }
 
-    if (
-      prevProps.responsive.height !== responsive.height ||
-      prevProps.responsive.width !== responsive.width
-    ) {
+    if (hasResized) {
       // If the window size has changed we want to recreate all SVGs
       stateChanges = {
         ...stateChanges,
         ...this.createToolSVG(),
       };
-    } else if (
-      (responsive.height && responsive.width && !toolSVG) ||
-      selectionTool !== prevProps.selectionTool
-    ) {
+    } else if ((viewport.height && viewport.width && !toolSVG) || selectionTool !== prevProps.selectionTool ) {
       // first time or change of selection tool
       stateChanges = { ...stateChanges, ...this.createToolSVG() };
     } else if (prevProps.graphInteractionMode !== graphInteractionMode) {
@@ -371,7 +355,29 @@ class Graph extends React.Component {
     }
   }
 
-  handleCanvasEvent = (e) => {
+  componentWillUnmount() {
+    window.removeEventListener("resize", this.handleResize);
+  }
+
+  handleResize = () => {
+    const { state } = this.state;
+    const viewport = this.getViewportDimensions();
+    this.setState({
+      ...state,
+      viewport,
+    });
+  };
+
+  getViewportDimensions = () => {
+    const { viewportRef } = this.props;
+    return {
+      height: viewportRef.clientHeight,
+      width: viewportRef.clientWidth
+    };
+  };
+
+
+  handleCanvasEvent = e => {
     const { camera, projectionTF } = this.state;
     if (e.type !== "wheel") e.preventDefault();
     if (camera.handleEvent(e, projectionTF)) {
@@ -387,7 +393,7 @@ class Graph extends React.Component {
     Called from componentDidUpdate. Create the tool SVG, and return any
     state changes that should be passed to setState().
     */
-    const { responsive, selectionTool, graphInteractionMode } = this.props;
+    const { viewport, selectionTool, graphInteractionMode } = this.props;
 
     /* clear out whatever was on the div, even if nothing, but usually the brushes etc */
 
@@ -421,8 +427,7 @@ class Graph extends React.Component {
       handleDrag,
       handleEnd,
       handleCancel,
-      responsive,
-      this.graphPaddingRightLeft
+      viewport
     );
 
     return { toolSVG: newToolSVG, tool, container };
@@ -514,14 +519,12 @@ class Graph extends React.Component {
     accounting for current pan/zoom camera.
     */
 
-    const { responsive } = this.props;
-    const { camera, projectionTF, modelInvTF } = this.state;
+    const { camera, projectionTF, modelInvTF, viewport } = this.state;
     const cameraInvTF = camera.invView();
 
     /* screen -> gl */
-    const x =
-      (2 * pin[0]) / (responsive.width - this.graphPaddingRightLeft) - 1;
-    const y = 2 * (1 - pin[1] / (responsive.height - this.graphPaddingTop)) - 1;
+    const x = (2 * pin[0]) / viewport.width - 1;
+    const y = 2 * (1 - pin[1] / viewport.height) - 1;
 
     const xy = vec2.fromValues(x, y);
     const projectionInvTF = mat3.invert(mat3.create(), projectionTF);
@@ -537,23 +540,21 @@ class Graph extends React.Component {
     of mapScreenToPoint()
     */
 
-    const { responsive } = this.props;
-    const { camera, projectionTF, modelTF } = this.state;
+    const { camera, projectionTF, modelTF, viewport } = this.state;
     const cameraTF = camera.view();
 
     const xy = vec2.transformMat3(vec2.create(), xyCell, modelTF);
     vec2.transformMat3(xy, xy, cameraTF);
     vec2.transformMat3(xy, xy, projectionTF);
 
-    const pin = [
+    return [
       Math.round(
-        ((xy[0] + 1) * (responsive.width - this.graphPaddingRightLeft)) / 2
+        (xy[0] + 1) * viewport.width / 2
       ),
       Math.round(
-        -((xy[1] + 1) / 2 - 1) * (responsive.height - this.graphPaddingTop)
-      ),
+        -((xy[1] + 1) / 2 - 1) * viewport.height
+      )
     ];
-    return pin;
   }
 
   handleBrushDragAction() {
@@ -698,7 +699,7 @@ class Graph extends React.Component {
       count: this.count,
       projView,
       nPoints: universe.nObs,
-      minViewportDimension: Math.min(width || 800, height || 600),
+      minViewportDimension: Math.min(width, height)
     });
     regl._gl.flush();
   }
@@ -725,66 +726,65 @@ class Graph extends React.Component {
   });
 
   render() {
-    const { responsive, graphInteractionMode } = this.props;
-    const { modelTF, projectionTF, camera } = this.state;
-
+    const { graphInteractionMode } = this.props;
+    const { modelTF, projectionTF, camera, viewport } = this.state;
     const cameraTF = camera?.view()?.slice();
 
     return (
-      <div id="graphWrapper">
-        <div
-          style={{
-            zIndex: -9999,
-            position: "fixed",
-            top: this.graphPaddingTop,
-            right: globals.leftSidebarWidth,
-          }}
+      <div
+        id="graph-wrapper"
+        style={{
+          position: "relative",
+          top: 0,
+          left: 0,
+        }}
+      >
+        <GraphOverlayLayer
+          width={viewport.width}
+          height={viewport.height}
+          cameraTF={cameraTF}
+          modelTF={modelTF}
+          projectionTF={projectionTF}
+          handleCanvasEvent={graphInteractionMode === "zoom" ? this.handleCanvasEvent : undefined}
         >
-          <div id="graphAttachPoint">
-            <GraphOverlayLayer
-              cameraTF={cameraTF}
-              modelTF={modelTF}
-              projectionTF={projectionTF}
-              graphPaddingRightLeft={this.graphPaddingRightLeft}
-              graphPaddingTop={this.graphPaddingTop}
-              responsive={responsive}
-              handleCanvasEvent={
-                graphInteractionMode === "zoom"
-                  ? this.handleCanvasEvent
-                  : undefined
-              }
-            >
-              <CentroidLabels />
-            </GraphOverlayLayer>
-
-            <svg
-              id="lasso-layer"
-              data-testid="layout-overlay"
-              className={styles.graphSVG}
-              width={responsive.width - this.graphPaddingRightLeft}
-              height={responsive.height}
-              pointerEvents={
-                graphInteractionMode === "select" ? "auto" : "none"
-              }
-              style={{ zIndex: 89 }}
-            />
-          </div>
-          <div style={{ padding: 0, margin: 0 }}>
-            <canvas
-              width={responsive.width - this.graphPaddingRightLeft}
-              height={responsive.height - this.graphPaddingTop}
-              data-testid="layout-graph"
-              ref={(canvas) => {
-                this.reglCanvas = canvas;
-              }}
-              onMouseDown={this.handleCanvasEvent}
-              onMouseUp={this.handleCanvasEvent}
-              onMouseMove={this.handleCanvasEvent}
-              onDoubleClick={this.handleCanvasEvent}
-              onWheel={this.handleCanvasEvent}
-            />
-          </div>
-        </div>
+          <CentroidLabels/>
+        </GraphOverlayLayer>
+        <svg
+          id="lasso-layer"
+          data-testid="layout-overlay"
+          className="graph-svg"
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            zIndex: 1
+          }}
+          width={viewport.width}
+          height={viewport.height}
+          pointerEvents={
+            graphInteractionMode === "select" ? "auto" : "none"
+          }
+        />
+        <canvas
+          width={viewport.width}
+          height={viewport.height}
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            padding: 0,
+            margin: 0,
+            shapeRendering: "crispEdges",
+          }}
+          className="graph-canvas"
+          data-testid="layout-graph"
+          ref={canvas => { this.reglCanvas = canvas; }}
+          onMouseDown={this.handleCanvasEvent}
+          onMouseUp={this.handleCanvasEvent}
+          onMouseMove={this.handleCanvasEvent}
+          onDoubleClick={this.handleCanvasEvent}
+          onWheel={this.handleCanvasEvent}
+        />
       </div>
     );
   }

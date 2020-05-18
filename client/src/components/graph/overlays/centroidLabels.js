@@ -11,7 +11,8 @@ export default
 }))
 class CentroidLabels extends PureComponent {
   // Check to see if centroids have either just been displayed or removed from the overlay
-  componentDidUpdate = (prevProps) => {
+
+  componentDidUpdate(prevProps) {
     const { labels, overlayToggled } = this.props;
     const prevSize = prevProps.labels.size;
     const { size } = labels;

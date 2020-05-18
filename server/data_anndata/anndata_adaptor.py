@@ -183,13 +183,13 @@ class AnndataAdaptor(DataAdaptor):
     def _validate_and_initialize(self):
         if anndata_version_is_pre_070() and self.config.adaptor__anndata_adaptor__backed:
             warnings.warn(
-                f"Use of --backed mode with anndata versions older than 0.7 will have serious "
+                "Use of --backed mode with anndata versions older than 0.7 will have serious "
                 "performance issues. Please update to at least anndata 0.7 or later."
             )
 
         # var and obs column names must be unique
         if not self.data.obs.columns.is_unique or not self.data.var.columns.is_unique:
-            raise KeyError(f"All annotation column names must be unique.")
+            raise KeyError("All annotation column names must be unique.")
 
         self._alias_annotation_names()
         self._validate_data_types()
@@ -222,8 +222,8 @@ class AnndataAdaptor(DataAdaptor):
         X0 = self.data.X[0, 0:1]
         if sparse.isspmatrix(X0) and not sparse.isspmatrix_csc(X0):
             warnings.warn(
-                f"Anndata data matrix is sparse, but not a CSC (columnar) matrix.  "
-                f"Performance may be improved by using CSC."
+                "Anndata data matrix is sparse, but not a CSC (columnar) matrix.  "
+                "Performance may be improved by using CSC."
             )
         if self.data.X.dtype != "float32":
             warnings.warn(
@@ -295,7 +295,7 @@ class AnndataAdaptor(DataAdaptor):
                 valid_layouts.append(layout)
 
         if len(valid_layouts) == 0:
-            raise PrepareError(f"No valid layout data.")
+            raise PrepareError("No valid layout data.")
 
         # cap layouts to MAX_LAYOUTS
         return layouts[0:MAX_LAYOUTS]

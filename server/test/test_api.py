@@ -185,14 +185,14 @@ class EndPoints(object):
         self.assertEqual(result.status_code, HTTPStatus.BAD_REQUEST)
 
     def test_data_mimetype_error(self):
-        endpoint = f"data/var"
+        endpoint = "data/var"
         header = {"Accept": "xxx"}
         url = f"{self.URL_BASE}{endpoint}"
         result = self.session.put(url, headers=header)
         self.assertEqual(result.status_code, HTTPStatus.NOT_ACCEPTABLE)
 
     def test_fbs_default(self):
-        endpoint = f"data/var"
+        endpoint = "data/var"
         url = f"{self.URL_BASE}{endpoint}"
         result = self.session.put(url)
         self.assertEqual(result.status_code, HTTPStatus.BAD_REQUEST)
@@ -202,21 +202,21 @@ class EndPoints(object):
         self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
 
     def test_data_put_fbs(self):
-        endpoint = f"data/var"
+        endpoint = "data/var"
         url = f"{self.URL_BASE}{endpoint}"
         header = {"Accept": "application/octet-stream"}
         result = self.session.put(url, headers=header)
         self.assertEqual(result.status_code, HTTPStatus.BAD_REQUEST)
 
     def test_data_get_fbs(self):
-        endpoint = f"data/var"
+        endpoint = "data/var"
         url = f"{self.URL_BASE}{endpoint}"
         header = {"Accept": "application/octet-stream"}
         result = self.session.get(url, headers=header)
         self.assertEqual(result.status_code, HTTPStatus.BAD_REQUEST)
 
     def test_data_put_filter_fbs(self):
-        endpoint = f"data/var"
+        endpoint = "data/var"
         url = f"{self.URL_BASE}{endpoint}"
         header = {"Accept": "application/octet-stream"}
         filter = {"filter": {"var": {"index": [0, 1, 4]}}}
@@ -233,8 +233,8 @@ class EndPoints(object):
 
     def test_data_get_filter_fbs(self):
         index_col_name = self.schema["schema"]["annotations"]["var"]["index"]
+        endpoint = "data/var"
         query = f"var:{index_col_name}=SIK1"
-        endpoint = f"data/var"
         url = f"{self.URL_BASE}{endpoint}?{query}"
         header = {"Accept": "application/octet-stream"}
         result = self.session.get(url, headers=header)
@@ -245,7 +245,7 @@ class EndPoints(object):
         self.assertEqual(df["n_cols"], 1)
 
     def test_data_put_single_var(self):
-        endpoint = f"data/var"
+        endpoint = "data/var"
         url = f"{self.URL_BASE}{endpoint}"
         header = {"Accept": "application/octet-stream"}
         index_col_name = self.schema["schema"]["annotations"]["var"]["index"]
@@ -306,7 +306,7 @@ class EndPointsAnnotations(EndPoints):
         query = "annotation-collection-name=test_annotations"
         url = f"{self.URL_BASE}{endpoint}?{query}"
         n_rows = self.data.get_shape()[0]
-        fbs = make_fbs({"cat_A": pd.Series(["label_A" for l in range(0, n_rows)], dtype="category")})
+        fbs = make_fbs({"cat_A": pd.Series(["label_A"] * n_rows, dtype="category")})
         result = self.session.put(url, data=fbs)
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/json")

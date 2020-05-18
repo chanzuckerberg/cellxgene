@@ -32,6 +32,17 @@ describe("did launch", () => {
     );
     expect(element).toBe(data.title);
   });
+
+  test("terms of service, if they are there", async () => {
+    try {
+      await utils.clickOn("tos-cookies-accept", { timeout: 500 });
+    } catch {
+      console.warn("No terms of service footer detected.")
+    }
+    page.waitFor(50);  // give the footer a chance to disappear
+    const result = await page.$("[data-testid='tos-cookies-accept']");
+    expect(result).toBeNull();
+  });
 });
 
 describe("metadata loads", () => {
