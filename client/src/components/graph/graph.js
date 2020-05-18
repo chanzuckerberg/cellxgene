@@ -10,7 +10,6 @@ import setupSVGandBrushElements from "./setupSVGandBrush";
 import _camera from "../../util/camera";
 import _drawPoints from "./drawPointsRegl";
 import { isTypedArray } from "../../util/typeHelpers";
-import styles from "./graph.css";
 
 import GraphOverlayLayer from "./overlays/graphOverlayLayer";
 import CentroidLabels from "./overlays/centroidLabels";
