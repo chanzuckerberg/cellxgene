@@ -6,6 +6,7 @@ import _ from "lodash";
 import { connect } from "react-redux";
 import HistogramBrush from "../brushableHistogram";
 import * as globals from "../../globals";
+import AddGenes from "./addGenes";
 
 @connect((state) => {
   return {
@@ -18,7 +19,6 @@ import * as globals from "../../globals";
   };
 })
 class GeneExpression extends React.Component {
- 
   render() {
     const { world, userDefinedGenes, differential } = this.props;
     const varIndexName = world?.schema?.annotations?.var?.index;
