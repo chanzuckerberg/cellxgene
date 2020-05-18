@@ -1,6 +1,6 @@
 {
   "name": "cellxgene",
   "scripts": {
-    "postinstall": "export SENTRY_LOG_LEVEL=debug && cp sentry.properties /tmp/sentry.properties && cat /tmp/sentry.properties && npm install --prefix client && npm run build --prefix client -- ../server/eb/customize/webpack.config.js && make copy-client-assets && rm -rf client/node_modules && make -C server/eb build && unzip -o ~/server/eb/artifact.zip -d ~/"
+    "postinstall": "export SENTRY_LOG_LEVEL=debug && cp sentry.properties /tmp/sentry.properties && cat /tmp/sentry.properties && npm install --prefix client && npm run build --prefix client -- ../server/eb/customize/webpack.config.js && make copy-client-assets && rm -rf client/node_modules && make -C server/eb build"
   }
 }
