@@ -6,7 +6,7 @@ import Logo from "../framework/logo";
 
 @connect(state => ({
   datasetTitle: state.config?.displayNames?.dataset ?? "",
-  aboutURL: state.config?.links?.aboutDataset,
+  aboutURL: state.config?.links?.["about-dataset"],
   scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
   scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
 }))

@@ -13,7 +13,7 @@ import CellSetButton from "./cellSetButtons";
   differential: state.differential,
   celllist1: state.differential?.celllist1,
   celllist2: state.differential?.celllist2,
-  diffexpMayBeSlow: state.config?.parameters?.diffexpMayBeSlow ?? false,
+  diffexpMayBeSlow: state.config?.parameters?.["diffexp-may-be-slow"] ?? false,
   diffexpCellcountMax: state.config?.limits?.diffexpCellcountMax,
 }))
 class DiffexpButtons extends React.Component {

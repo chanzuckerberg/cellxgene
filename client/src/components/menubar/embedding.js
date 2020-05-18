@@ -20,7 +20,7 @@ import actions from "../../actions";
   world: state.world,
   layoutChoice: state.layoutChoice,
   reembedController: state.reembedController,
-  enableReembedding: state.config?.parameters?.enableReembedding ?? false,
+  enableReembedding: state.config?.parameters?.["enable-reembedding"] ?? false
 }))
 class Embedding extends React.PureComponent {
   handleLayoutChoiceChange = (e) => {
