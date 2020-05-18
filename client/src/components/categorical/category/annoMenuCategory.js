@@ -67,7 +67,7 @@ class AnnoMenuCategory extends React.PureComponent {
               hoverOpenDelay={globals.tooltipHoverOpenDelay}
             >
               <Button
-                style={{ marginLeft: 0 }}
+                style={{ marginLeft: 0, marginRight: 2 }}
                 data-testclass="handleAddNewLabelToCategory"
                 data-testid={`${metadataField}:add-new-label-to-category`}
                 icon={<Icon icon="plus" iconSize={10} />}
@@ -102,7 +102,7 @@ class AnnoMenuCategory extends React.PureComponent {
               }
             >
               <Button
-                style={{ marginLeft: 0 }}
+                style={{ marginLeft: 0, marginRight: 2 }}
                 data-testclass="seeActions"
                 data-testid={`${metadataField}:see-actions`}
                 icon={<Icon icon="more" iconSize={10} />}
