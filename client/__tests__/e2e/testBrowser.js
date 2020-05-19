@@ -36,6 +36,10 @@ export async function setupTestBrowser() {
     page.on("console", async (msg) => {
       // If there is a console.error but an error is not thrown, this will ensure the test fails
       if (msg.type() === "error") {
+        // TODO: chromium does not currently support the CSP directive on the
+        // line below, so we swallow this error. Remove this when the test
+        // suite uses a browser version that supports this directive.
+        if (msg.text() === "Unrecognized Content-Security-Policy directive 'require-trusted-types-for'.\n") return;
         const errorMsgText = await Promise.all(
           // TODO can we do this without internal properties?
           msg.args().map((arg) => arg._remoteObject.description)

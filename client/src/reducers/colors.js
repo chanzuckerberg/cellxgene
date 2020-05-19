@@ -150,7 +150,7 @@ const ColorsReducer = (
     case "annotation: delete label": {
       const { world } = nextSharedState;
       const { colorMode, colorAccessor } = state;
-      const { metadataField, colors } = action;
+      const { metadataField } = action;
       if (
         colorMode !== "color by categorical metadata" ||
         colorAccessor !== metadataField

@@ -69,9 +69,7 @@ class Embedding extends React.PureComponent {
     const { layoutChoice } = this.props;
 
     return (
-      <ButtonGroup
-        className={styles.menubarButton}
-      >
+      <ButtonGroup className={styles.menubarButton}>
         <Popover
           target={
             <Tooltip

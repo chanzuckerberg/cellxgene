@@ -1,6 +1,5 @@
 import React from "react";
 import { connect } from "react-redux";
-import * as globals from "../../globals";
 import actions from "../../actions";
 import FilenameDialog from "./filenameDialog";
 
@@ -11,7 +10,7 @@ import FilenameDialog from "./filenameDialog";
   saveInProgress: state.autosave?.saveInProgress ?? false,
   lastSavedObsAnnotations: state.autosave?.lastSavedObsAnnotations,
   error: state.autosave?.error,
-  writableCategoriesEnabled: state.config?.parameters?.["annotations"] ?? false,
+  writableCategoriesEnabled: state.config?.parameters?.annotations ?? false,
   initialDataLoadComplete: state.autosave?.initialDataLoadComplete,
 }))
 class Autosave extends React.Component {

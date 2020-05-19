@@ -5,6 +5,6 @@
 export default (n) => {
   return n
     .toExponential()
-    .replace(/e[\+\-0-9]*$/, "")
+    .replace(/e[+\-0-9]*$/, "")
     .replace(/^0\.?0*|\./, "").length;
 };

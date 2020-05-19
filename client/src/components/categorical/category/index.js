@@ -64,7 +64,7 @@ class Category extends React.Component {
       } else if (categoryCount.selectedCatCount < categoryCount.totalCatCount) {
         /* to be explicit... */
         this.checkbox.indeterminate = true;
-        this.setState({ isChecked: false });
+        this.setState({ isChecked: false }); // eslint-disable-line react/no-did-update-set-state
       }
     }
   }
@@ -77,14 +77,15 @@ class Category extends React.Component {
     });
   };
 
-  toggleAll() {
-    const { dispatch, metadataField } = this.props;
-    dispatch({
-      type: "categorical metadata filter all of these",
-      metadataField,
-    });
-    this.setState({ isChecked: true });
-  }
+  handleCategoryClick = () => {
+    const { annotations, metadataField, onExpansionChange } = this.props;
+    const editingCategory =
+      annotations.isEditingCategoryName &&
+      annotations.categoryBeingEdited === metadataField;
+    if (!editingCategory) {
+      onExpansionChange(metadataField);
+    }
+  };
 
   toggleNone() {
     const { dispatch, metadataField } = this.props;
@@ -93,6 +94,15 @@ class Category extends React.Component {
       metadataField,
     });
     this.setState({ isChecked: false });
+  }
+
+  toggleAll() {
+    const { dispatch, metadataField } = this.props;
+    dispatch({
+      type: "categorical metadata filter all of these",
+      metadataField,
+    });
+    this.setState({ isChecked: true });
   }
 
   handleToggleAllClick() {
@@ -115,6 +125,8 @@ class Category extends React.Component {
       globals.categoryDisplayStringMaxLength
     );
 
+    const checkboxID = `category-select-${metadataField}`;
+
     return (
       <div
         style={{
@@ -135,8 +147,8 @@ class Category extends React.Component {
               alignItems: "flex-start",
             }}
           >
-            <label className="bp3-control bp3-checkbox">
-              <input disabled checked type="checkbox" />
+            <label htmlFor={checkboxID} className="bp3-control bp3-checkbox">
+              <input disabled id={checkboxID} checked type="checkbox" />
               <span className="bp3-control-indicator" />
             </label>
             <Tooltip
@@ -174,9 +186,7 @@ class Category extends React.Component {
       metadataField,
       categoricalSelection,
       isColorAccessor,
-      annotations,
       isExpanded,
-      onExpansionChange,
       schema,
     } = this.props;
 
@@ -184,6 +194,8 @@ class Category extends React.Component {
     if (isStillLoading) {
       return this.renderIsStillLoading();
     }
+
+    const checkboxID = `category-select-${metadataField}`;
 
     const isUserAnno =
       schema?.annotations?.obsByName[metadataField]?.writable ?? false;
@@ -225,8 +237,9 @@ class Category extends React.Component {
             alignItems: "flex-start",
           }}
         >
-          <label className="bp3-control bp3-checkbox">
+          <label className="bp3-control bp3-checkbox" htmlFor={checkboxID}>
             <input
+              id={checkboxID}
               data-testclass="category-select"
               data-testid={`${metadataField}:category-select`}
               onChange={this.handleToggleAllClick.bind(this)}
@@ -251,19 +264,19 @@ class Category extends React.Component {
             }}
           >
             <span
+              role="menuitem"
+              tabIndex="0"
               data-testid={`${metadataField}:category-expand`}
+              onKeyPress={(e) => {
+                if (e.key === "Enter") {
+                  this.handleCategoryClick();
+                }
+              }}
               style={{
                 cursor: "pointer",
                 display: "inline-block",
               }}
-              onClick={() => {
-                const editingCategory =
-                  annotations.isEditingCategoryName &&
-                  annotations.categoryBeingEdited === metadataField;
-                if (!editingCategory) {
-                  onExpansionChange(metadataField);
-                }
-              }}
+              onClick={this.handleCategoryClick}
             >
               {isUserAnno ? (
                 <Icon style={{ marginRight: 5 }} icon="tag" iconSize={16} />

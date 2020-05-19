@@ -4,7 +4,7 @@ import { connect } from "react-redux";
 import * as globals from "../../globals";
 import Logo from "../framework/logo";
 
-@connect(state => ({
+@connect((state) => ({
   datasetTitle: state.config?.displayNames?.dataset ?? "",
   aboutURL: state.config?.links?.["about-dataset"],
   scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
@@ -75,7 +75,7 @@ class LeftSideBar extends React.Component {
           title={datasetTitle}
         >
           {aboutURL ? (
-            <a href={aboutURL} target="_blank">
+            <a href={aboutURL} target="_blank" rel="noopener noreferrer">
               {displayTitle}
             </a>
           ) : (

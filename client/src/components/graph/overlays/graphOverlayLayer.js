@@ -2,8 +2,7 @@ import React, { PureComponent, cloneElement } from "react";
 
 import styles from "../graph.css";
 
-export default
-class GraphOverlayLayer extends PureComponent {
+export default class GraphOverlayLayer extends PureComponent {
   /*
     This component takes its children (assumed in the data coordinate space ([0, 1] range, origin in bottom left corner))
     and transforms itself multiple times resulting in screen space ([0, screenWidth/Height] range, origin in top left corner)
@@ -49,7 +48,6 @@ class GraphOverlayLayer extends PureComponent {
       handleCanvasEvent,
       width,
       height,
-      style
     } = this.props;
     const { display } = this.state;
 
@@ -63,7 +61,7 @@ class GraphOverlayLayer extends PureComponent {
       cameraTF
     )} ${this.reverseMatrixScaleTransformString(
       projectionTF
-    )} scale(1 2) scale(1 ${1 / (-height)}) scale(2 1) scale(${1 / width} 1)`;
+    )} scale(1 2) scale(1 ${1 / -height}) scale(2 1) scale(${1 / width} 1)`;
 
     // Copy the children passed with the overlay and add the inverse transform and onDisplayChange props
     const newChildren = React.Children.map(children, (child) =>

@@ -54,7 +54,7 @@ class CspHashPlugin {
       .createHash("sha256")
       .update(str, "utf8")
       .digest("base64");
-    return "sha256-" + hash;
+    return `sha256-${hash}`;
   }
 }
 

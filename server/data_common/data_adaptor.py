@@ -230,18 +230,19 @@ class DataAdaptor(metaclass=ABCMeta):
 
         # all labels must have a name, which must be unique and not used in obs column names
         if not labels_df.columns.is_unique:
-            raise KeyError(f"All column names specified in user annotations must be unique.")
+            raise KeyError("All column names specified in user annotations must be unique.")
 
         # the label index must be unique, and must have same values the anndata obs index
         if not labels_df.index.is_unique:
-            raise KeyError(f"All row index values specified in user annotations must be unique.")
+            raise KeyError("All row index values specified in user annotations must be unique.")
 
         obs_columns = self.get_obs_columns()
 
         duplicate_columns = list(set(labels_df.columns) & set(obs_columns))
         if len(duplicate_columns) > 0:
             raise KeyError(
-                f"Labels file may not contain column names which overlap " f"with h5ad obs columns {duplicate_columns}"
+                "Labels file may not contain column names which overlap "
+                f"with h5ad obs columns {duplicate_columns}"
             )
 
         # labels must have same count as obs annotations
@@ -351,13 +352,13 @@ class DataAdaptor(metaclass=ABCMeta):
         """
         embeddings = self.get_embedding_names() if fields is None or len(fields) == 0 else fields
         layout_data = []
-        with ServerTiming.time(f"layout.query"):
+        with ServerTiming.time("layout.query"):
             for ename in embeddings:
                 embedding = self.get_embedding_array(ename, 2)
                 normalized_layout = DataAdaptor.normalize_embedding(embedding)
                 layout_data.append(pd.DataFrame(normalized_layout, columns=[f"{ename}_0", f"{ename}_1"]))
 
-        with ServerTiming.time(f"layout.encode"):
+        with ServerTiming.time("layout.encode"):
             if layout_data:
                 df = pd.concat(layout_data, axis=1, copy=False)
             else:

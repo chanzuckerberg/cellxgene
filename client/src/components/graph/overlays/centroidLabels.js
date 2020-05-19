@@ -1,5 +1,3 @@
-/* eslint-disable max-classes-per-file */
-/* eslint-disable jsx-a11y/mouse-events-have-key-events */
 import React, { PureComponent } from "react";
 import { connect } from "react-redux";
 
@@ -26,7 +24,7 @@ class CentroidLabels extends PureComponent {
       // Notify overlay layer of display change
       overlayToggled("centroidLabels", displayChangeOn);
     }
-  };
+  }
 
   render() {
     const {
@@ -59,6 +57,7 @@ class CentroidLabels extends PureComponent {
 
       labelSVGS.push(
         <g
+          // label is unique so disabling eslint rule
           // eslint-disable-next-line react/no-array-index-key
           key={label}
           className="centroid-label"
@@ -66,6 +65,8 @@ class CentroidLabels extends PureComponent {
           data-testclass="centroid-label"
           data-testid={`${label}-centroid-label`}
         >
+          {/* The mouse actions for centroid labels do not have a screen reader alternative */}
+          {/* eslint-disable-next-line jsx-a11y/mouse-events-have-key-events */}
           <text
             transform={inverseTransform}
             textAnchor="middle"
