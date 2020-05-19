@@ -77,14 +77,15 @@ class Category extends React.Component {
     });
   };
 
-  toggleAll() {
-    const { dispatch, metadataField } = this.props;
-    dispatch({
-      type: "categorical metadata filter all of these",
-      metadataField,
-    });
-    this.setState({ isChecked: true });
-  }
+  handleCategoryClick = () => {
+    const { annotations, metadataField, onExpansionChange } = this.props;
+    const editingCategory =
+      annotations.isEditingCategoryName &&
+      annotations.categoryBeingEdited === metadataField;
+    if (!editingCategory) {
+      onExpansionChange(metadataField);
+    }
+  };
 
   toggleNone() {
     const { dispatch, metadataField } = this.props;
@@ -93,6 +94,15 @@ class Category extends React.Component {
       metadataField,
     });
     this.setState({ isChecked: false });
+  }
+
+  toggleAll() {
+    const { dispatch, metadataField } = this.props;
+    dispatch({
+      type: "categorical metadata filter all of these",
+      metadataField,
+    });
+    this.setState({ isChecked: true });
   }
 
   handleToggleAllClick() {
@@ -176,9 +186,7 @@ class Category extends React.Component {
       metadataField,
       categoricalSelection,
       isColorAccessor,
-      annotations,
       isExpanded,
-      onExpansionChange,
       schema,
     } = this.props;
 
@@ -201,15 +209,6 @@ class Category extends React.Component {
       metadataField,
       globals.categoryDisplayStringMaxLength
     );
-
-    const handleCategoryClick = () => {
-      const editingCategory =
-        annotations.isEditingCategoryName &&
-        annotations.categoryBeingEdited === metadataField;
-      if (!editingCategory) {
-        onExpansionChange(metadataField);
-      }
-    };
 
     if (
       !isUserAnno &&
@@ -270,16 +269,14 @@ class Category extends React.Component {
               data-testid={`${metadataField}:category-expand`}
               onKeyPress={(e) => {
                 if (e.key === "Enter") {
-                  handleCategoryClick();
+                  this.handleCategoryClick();
                 }
               }}
               style={{
                 cursor: "pointer",
                 display: "inline-block",
               }}
-              onClick={() => {
-                handleCategoryClick();
-              }}
+              onClick={this.handleCategoryClick}
             >
               {isUserAnno ? (
                 <Icon style={{ marginRight: 5 }} icon="tag" iconSize={16} />
