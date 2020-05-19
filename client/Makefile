@@ -25,7 +25,7 @@ build:
 
 .PHONY: lint
 lint:
-	npx eslint .
+	npx eslint ./src/
 
 .PHONY: lint-diff
 lint-diff:
