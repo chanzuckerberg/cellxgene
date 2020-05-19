@@ -171,7 +171,11 @@ class CxgAdaptor(DataAdaptor):
 
     @staticmethod
     def _open_array(uri, tiledb_ctx):
-        return tiledb.DenseArray(uri, mode="r", ctx=tiledb_ctx)
+        with tiledb.Array(uri, mode="r", ctx=tiledb_ctx) as array:
+            if array.schema.sparse:
+                return tiledb.SparseArray(uri, mode="r", ctx=tiledb_ctx)
+            else:
+                return tiledb.DenseArray(uri, mode="r", ctx=tiledb_ctx)
 
     def open_array(self, name):
         try:
@@ -200,15 +204,44 @@ class CxgAdaptor(DataAdaptor):
         meta = self.open_array("cxg_group_metadata").meta
         return json.loads(meta["cxg_category_colors"]) if "cxg_category_colors" in meta else dict()
 
+    def __remap_indices(self, coord_range, coord_mask, coord_data):
+        """coord_data is the indices for either the obs or var dimension, and will contain values
+        in the range [0,coord_range).  coord_mask is a mask passed into the get_X_array function.  Where
+        the mask is set, the corresponding index has been retrieved.  The number of selected entries
+        in coord_mask is ncoord.  The goal of this function is to map coord_data into the range [0,ncoord)."""
+        if coord_mask is None:
+            return coord_range, coord_data
+
+        indices = np.where(coord_mask)[0]
+        ncoord = indices.shape[0]
+        maprange = np.arange(ncoord)
+        mapindex = np.zeros(indices[-1] + 1, dtype=int)
+        mapindex[indices] = maprange
+        coordindices = mapindex[coord_data]
+        return ncoord, coordindices
+
     def get_X_array(self, obs_mask=None, var_mask=None):
         obs_items = pack_selector_from_mask(obs_mask)
         var_items = pack_selector_from_mask(var_mask)
         X = self.open_array("X")
-        if obs_items == slice(None) and var_items == slice(None):
-            data = X[:, :]
+
+        if X.schema.sparse:
+            if obs_items == slice(None) and var_items == slice(None):
+                data = X[:, :]
+            else:
+                data = X.multi_index[obs_items, var_items]
+            nrows, obsindices = self.__remap_indices(X.shape[0], obs_mask, data["obs"])
+            ncols, varindices = self.__remap_indices(X.shape[1], var_mask, data["var"])
+            densedata = np.zeros((nrows, ncols), dtype=self.get_X_array_dtype())
+            densedata[obsindices, varindices] = data[""]
+            return densedata
+
         else:
-            data = X.multi_index[obs_items, var_items][""]
-        return data
+            if obs_items == slice(None) and var_items == slice(None):
+                data = X[:, :]
+            else:
+                data = X.multi_index[obs_items, var_items][""]
+            return data
 
     def get_shape(self):
         X = self.open_array("X")

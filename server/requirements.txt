@@ -11,6 +11,7 @@ flask-talisman>=0.7.0
 flatbuffers>=1.10.0
 flatten-dict>=0.2.0
 fsspec>=0.4.4
+numba>=0.49.1
 numpy>=1.16.0
 packaging>=20.0
 pandas>=0.24.2
