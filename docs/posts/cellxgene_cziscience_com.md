@@ -125,13 +125,71 @@ with a link to embed on your own site, please drop us a note at <mailto:cellxgen
       </td>
     </tr>
     <tr>
-      <td><a href="https://cellxgene.cziscience.com/d/Single_cell_atlas_of_peripheral_immune_response_to_SARS_CoV_2_infection-25.cxg/" target="_blank">A single-cell atlas of the peripheral immune response to severe COVID-19
-</a></td>
+      <td><a href="https://cellxgene.cziscience.com/d/Single_cell_atlas_of_peripheral_immune_response_to_SARS_CoV_2_infection-25.cxg/" target="_blank">A single-cell atlas of the peripheral immune response to severe COVID-19</a></td>
       <td>
         <a href="https://blishlab.sites.stanford.edu/">Blish Lab</a>,
         <a href="https://www.medrxiv.org/content/10.1101/2020.04.17.20069930v1">medRxiv preprint</a>
       </td>
     </tr>
-
+    <tr>
+      <td><a href="https://cellxgene.cziscience.com/d/Atlas_of_Healthy_and_SHIV_Infected_Non_Human_Primate_Lung_and_Ileum_ACE2+_Cells_ileum-12.cxg/" target="_blank">Atlas of Healthy and SHIV-Infected Non-Human Primate Lung and Ileum ACE2+ Cells - Ileum</a></td>
+      <td>
+        <a href="https://singlecell.broadinstitute.org/single_cell/study/SCP807/atlas-of-healthy-and-shiv-infected-non-human-primate-lung-and-ileum-ace2-cells?scpbr=the-alexandria-project">Single Cell Portal</a>
+      </td>
+    </tr>
+    <tr>
+      <td><a href="https://cellxgene.cziscience.com/d/Atlas_of_Healthy_and_SHIV_Infected_Non_Human_Primate_Lung_and_Ileum_ACE2+_Cells_lung-11.cxg/" target="_blank">Atlas of Healthy and SHIV-Infected Non-Human Primate Lung and Ileum ACE2+ Cells - Lung</a></td>
+      <td>
+        <a href="https://singlecell.broadinstitute.org/single_cell/study/SCP807/atlas-of-healthy-and-shiv-infected-non-human-primate-lung-and-ileum-ace2-cells?scpbr=the-alexandria-project">Single Cell Portal</a>
+      </td>
+    </tr>
+    <tr>
+      <td><a href="https://cellxgene.cziscience.com/d/Allergic_inflammatory_memory_in_human_respiratory_epithelial_progenitor_cells_epithelial-10.cxg/" target="_blank">Allergic inflammatory memory in human respiratory epithelial progenitor cells - epithelial cells</a></td>
+      <td>
+        <a href="https://singlecell.broadinstitute.org/single_cell/study/SCP253/allergic-inflammatory-memory-in-human-respiratory-epithelial-progenitor-cells?scpbr=the-alexandria-project">Single Cell Portal</a>
+      </td>
+    </tr>
+    <tr>
+      <td><a href="https://cellxgene.cziscience.com/d/Allergic_inflammatory_memory_in_human_respiratory_epithelial_progenitor_cells_scraping-9.cxg/" target="_blank">Allergic inflammatory memory in human respiratory epithelial progenitor cells - nasal scrapings</a></td>
+      <td>
+        <a href="https://singlecell.broadinstitute.org/single_cell/study/SCP253/allergic-inflammatory-memory-in-human-respiratory-epithelial-progenitor-cells?scpbr=the-alexandria-project">Single Cell Portal</a>
+      </td>
+    </tr>
+    <tr>
+      <td><a href="https://cellxgene.cziscience.com/d/Allergic_inflammatory_memory_in_human_respiratory_epithelial_progenitor_cells_surgical-8.cxg/" target="_blank">Allergic inflammatory memory in human respiratory epithelial progenitor cells - surgical</a></td>
+      <td>
+        <a href="https://singlecell.broadinstitute.org/single_cell/study/SCP253/allergic-inflammatory-memory-in-human-respiratory-epithelial-progenitor-cells?scpbr=the-alexandria-project">Single Cell Portal</a>
+      </td>
+    </tr>
+    <tr>
+      <td><a href="https://cellxgene.cziscience.com/d/Allergic_inflammatory_memory_in_human_respiratory_epithelial_progenitor_cells_nasalsss-26.cxg/" target="_blank">Allergic inflammatory memory in human respiratory epithelial progenitor cells - nasal SSS</a></td>
+      <td>
+        <a href="https://singlecell.broadinstitute.org/single_cell/study/SCP253/allergic-inflammatory-memory-in-human-respiratory-epithelial-progenitor-cells?scpbr=the-alexandria-project">Single Cell Portal</a>
+      </td>
+    </tr>
+    <tr>
+      <td><a href="https://cellxgene.cziscience.com/d/ACE2_and_TMPRSS2_expression_in_human_non_inflamed_terminal_ileum_epithelial-7.cxg/" target="_blank">ACE2 and TMPRSS2 expression in human non-inflamed terminal ileum - epithelial cells</a></td>
+      <td>
+        <a href="https://singlecell.broadinstitute.org/single_cell/study/SCP812/ace2-and-tmprss2-expression-in-human-non-inflamed-terminal-ileum?scpbr=the-alexandria-project">Single Cell Portal</a>
+      </td>
+    </tr>
+    <tr>
+      <td><a href="https://cellxgene.cziscience.com/d/ACE2_and_TMPRSS2_expression_in_human_non_inflamed_terminal_ileum-6.cxg/" target="_blank">ACE2 and TMPRSS2 expression in human non-inflamed terminal ileum</a></td>
+      <td>
+        <a href="https://singlecell.broadinstitute.org/single_cell/study/SCP812/ace2-and-tmprss2-expression-in-human-non-inflamed-terminal-ileum?scpbr=the-alexandria-project">Single Cell Portal</a>
+      </td>
+    </tr>
+    <tr>
+      <td><a href="https://cellxgene.cziscience.com/d/Human_Lung_HIV_TB_Co_infection_ACE2+_Cells-5.cxg/" target="_blank">Human Lung HIV-TB Co-infection ACE2+ Cells</a></td>
+      <td>
+        <a href="https://singlecell.broadinstitute.org/single_cell/study/SCP814/human-lung-hiv-tb-co-infection-ace2-cells?scpbr=the-alexandria-project">Single Cell Portal</a>
+      </td>
+    </tr>
+    <tr>
+      <td><a href="https://cellxgene.cziscience.com/d/Epithelial_Cells_in_NHP_mTB_Granuloma_and_Uninvolved_Lung-4.cxg/" target="_blank">Epithelial Cells in NHP mTB Granuloma and Uninvolved Lung</a></td>
+      <td>
+        <a href="https://singlecell.broadinstitute.org/single_cell/study/SCP806/epithelial-cells-in-nhp-mtb-granuloma-and-uninvolved-lung?scpbr=the-alexandria-project">Single Cell Portal</a>
+      </td>
+    </tr>
   </tbody>
 </table>
