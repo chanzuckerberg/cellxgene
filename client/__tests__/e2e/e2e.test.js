@@ -7,7 +7,10 @@ import { appUrlBase, DATASET } from "./config";
 import { setupTestBrowser } from "./testBrowser";
 import { datasets } from "./data";
 
-let browser, page, utils, cxgActions;
+let browser;
+let page;
+let utils;
+let cxgActions;
 const data = datasets[DATASET];
 
 beforeAll(async () => {
@@ -34,9 +37,9 @@ describe("did launch", () => {
     try {
       await utils.clickOn("tos-cookies-accept", { timeout: 500 });
     } catch {
-      console.warn("No terms of service footer detected.")
+      console.warn("No terms of service footer detected.");
     }
-    page.waitFor(50);  // give the footer a chance to disappear
+    page.waitFor(50); // give the footer a chance to disappear
     const result = await page.$("[data-testid='tos-cookies-accept']");
     expect(result).toBeNull();
   });
@@ -130,7 +133,7 @@ describe("gene entry", () => {
       testGenes
     );
     expect(allHistograms).toEqual(expect.arrayContaining(testGenes));
-    expect(allHistograms.length).toEqual(testGenes.length);
+    expect(allHistograms).toHaveLength(testGenes.length);
   });
 });
 
@@ -144,7 +147,7 @@ describe("differential expression", () => {
     expect(allHistograms).toEqual(
       expect.arrayContaining(data.diffexp["gene-results"])
     );
-    expect(allHistograms.length).toEqual(data.diffexp["gene-results"].length);
+    expect(allHistograms).toHaveLength(data.diffexp["gene-results"].length);
   });
 });
 

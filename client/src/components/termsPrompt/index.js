@@ -8,8 +8,6 @@ import {
   Colors,
   Icon,
 } from "@blueprintjs/core";
-import * as globals from "../../globals";
-import { termsOfServiceToast } from "../framework/toasters";
 
 const CookieDecision = "cxg.cookieDecision";
 
@@ -26,12 +24,14 @@ function storageGet(key, defaultValue = null) {
 function storageSet(key, value) {
   try {
     window.localStorage.setItem(key, value);
-  } catch {}
+  } catch {
+    // continue
+  }
 }
 
 @connect((state) => ({
-  tosURL: state.config?.parameters?.about_legal_tos,
-  privacyURL: state.config?.parameters?.about_legal_privacy,
+  tosURL: state.config?.parameters?.["about_legal_tos"],
+  privacyURL: state.config?.parameters?.["about_legal_privacy"],
 }))
 class TermsPrompt extends React.PureComponent {
   constructor(props) {
@@ -59,7 +59,9 @@ class TermsPrompt extends React.PureComponent {
     if (window.cookieDecisionCallback instanceof Function) {
       try {
         window.cookieDecisionCallback();
-      } catch (e) {}
+      } catch (e) {
+        // continue
+      }
     }
   };
 
@@ -82,6 +84,7 @@ class TermsPrompt extends React.PureComponent {
           }}
           href={tosURL}
           target="_blank"
+          rel="noopener noreferrer"
         >
           terms of service
         </a>
@@ -103,6 +106,7 @@ class TermsPrompt extends React.PureComponent {
           }}
           href={privacyURL}
           target="_blank"
+          rel="noopener noreferrer"
         >
           privacy policy
         </a>
@@ -118,12 +122,10 @@ class TermsPrompt extends React.PureComponent {
       <Drawer
         onclose={this.drawerClose}
         isOpen={isOpen}
-        size={"120px"}
+        size="120px"
         position={Position.BOTTOM}
         canOutsideClickClose={false}
-        hasBackdrop={
-          true /* if the user can't use the app or click outside to dismiss, that should be visually represented with a backdrop */
-        }
+        hasBackdrop /* if the user can't use the app or click outside to dismiss, that should be visually represented with a backdrop */
         enforceFocus={false}
         autoFocus={false}
         portal={false}
@@ -149,12 +151,9 @@ class TermsPrompt extends React.PureComponent {
               onClick={this.handleOK}
               data-testid="tos-cookies-accept"
             >
-              I'm OK with cookies!
+              I&apos;m OK with cookies!
             </Button>{" "}
-            <Button
-              onClick={this.handleNo}
-              data-testid="tos-cookies-reject"
-            >
+            <Button onClick={this.handleNo} data-testid="tos-cookies-reject">
               No thanks
             </Button>
           </div>

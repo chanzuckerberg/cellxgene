@@ -13,7 +13,7 @@ return Promise.all([
 	plimit.add(() => fetch('/baz'))
 ])
 */
-export class PromiseLimit {
+export default class PromiseLimit {
   constructor(maxConcurrency) {
     this.queue = new Set();
     this.maxConcurrency = maxConcurrency;

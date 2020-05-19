@@ -1,14 +1,7 @@
 // jshint esversion: 6
 import React from "react";
 import { connect } from "react-redux";
-import {
-  Popover,
-  Button,
-  ButtonGroup,
-  AnchorButton,
-  Tooltip,
-  Position,
-} from "@blueprintjs/core";
+import { Button, ButtonGroup, AnchorButton, Tooltip } from "@blueprintjs/core";
 import * as globals from "../../globals";
 import styles from "./menubar.css";
 import actions from "../../actions";
@@ -21,16 +14,9 @@ import CellSetButton from "./cellSetButtons";
   celllist1: state.differential?.celllist1,
   celllist2: state.differential?.celllist2,
   diffexpMayBeSlow: state.config?.parameters?.["diffexp-may-be-slow"] ?? false,
-  diffexpCellcountMax: state.config?.limits?.diffexp_cellcount_max,
+  diffexpCellcountMax: state.config?.limits?.["diffexp_cellcount_max"],
 }))
 class DiffexpButtons extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      userDismissedPopover: false,
-    };
-  }
-
   computeDiffExp = () => {
     const { dispatch, differential } = this.props;
     if (differential.celllist1 && differential.celllist2) {
@@ -54,16 +40,9 @@ class DiffexpButtons extends React.Component {
     });
   };
 
-  handlePopoverDismiss = () => {
-    this.setState({
-      userDismissedPopover: true,
-    });
-  };
-
   render() {
     /* diffexp-related buttons may be disabled */
     const { differential, diffexpMayBeSlow, diffexpCellcountMax } = this.props;
-    const { userDismissedPopover } = this.state;
 
     const haveBothCellSets =
       !!differential.celllist1 && !!differential.celllist2;
@@ -86,7 +65,7 @@ class DiffexpButtons extends React.Component {
         diffexpCellcountMax;
 
     return (
-      <ButtonGroup className={styles.menubarButton} >
+      <ButtonGroup className={styles.menubarButton}>
         <CellSetButton
           {...this.props} // eslint-disable-line react/jsx-props-no-spreading
           eitherCellSetOneOrTwo={1}

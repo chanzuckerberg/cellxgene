@@ -7,11 +7,6 @@ const ToastTopCenter = Toaster.create({
   position: Position.TOP,
 });
 
-const ToastBottomCenter = Toaster.create({
-  className: "recipe-toaster",
-  position: Position.BOTTOM,
-});
-
 /*
 A "user" error - eg, bad input
 */

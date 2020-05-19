@@ -1,3 +1,4 @@
+// eslint-disable-next-line max-classes-per-file
 import PositiveIntervals from "./positiveIntervals";
 import BitArray from "./bitArray";
 import {
@@ -409,7 +410,7 @@ class ImmutableScalarDimension extends _ImmutableBaseDimension {
     this.index = makeSortIndex(array);
   }
 
-  /* eslint-disable class-methods-use-this */
+  // eslint-disable-next-line class-methods-use-this
   _createValueArray(data, mapf, array) {
     // create dimension value array
     const len = data.length;
@@ -419,7 +420,6 @@ class ImmutableScalarDimension extends _ImmutableBaseDimension {
     }
     return larray;
   }
-  /* eslint-enable class-methods-use-this */
 
   select(spec) {
     const { mode } = spec;
@@ -466,7 +466,7 @@ class ImmutableScalarDimension extends _ImmutableBaseDimension {
     const ranges = [];
     const r = [
       lowerBoundIndirect(value, index, lo, 0, value.length),
-      !!inclusive
+      inclusive
         ? upperBoundIndirect(value, index, hi, 0, value.length)
         : lowerBoundIndirect(value, index, hi, 0, value.length),
     ];
@@ -514,11 +514,10 @@ class ImmutableEnumDimension extends ImmutableScalarDimension {
     });
   }
 
-  /* eslint-disable class-methods-use-this */
+  // eslint-disable-next-line class-methods-use-this
   selectRange() {
     throw new Error("range selection unsupported on Enumerated dimension");
   }
-  /* eslint-enable class-methods-use-this */
 }
 
 class ImmutableSpatialDimension extends _ImmutableBaseDimension {

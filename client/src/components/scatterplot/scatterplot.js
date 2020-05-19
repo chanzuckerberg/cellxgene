@@ -141,7 +141,7 @@ class Scatterplot extends React.PureComponent {
       viewport: {
         height: null,
         width: null,
-      }
+      },
     };
   }
 
@@ -190,7 +190,7 @@ class Scatterplot extends React.PureComponent {
       svg,
       drawPoints,
       projectionTF,
-      viewport
+      viewport,
     });
   }
 
@@ -286,18 +286,9 @@ class Scatterplot extends React.PureComponent {
     return {
       viewport: {
         height: window.height,
-        width: window.width
-      }
+        width: window.width,
+      },
     };
-  };
-
-  handleResize = () => {
-    const { state } = this.state;
-    const viewport = this.getViewportDimensions();
-    this.setState({
-      ...state,
-      viewport,
-    });
   };
 
   static setupScales(expressionX, expressionY) {
@@ -315,6 +306,15 @@ class Scatterplot extends React.PureComponent {
       yScale,
     };
   }
+
+  handleResize = () => {
+    const { state } = this.state;
+    const viewport = this.getViewportDimensions();
+    this.setState({
+      ...state,
+      viewport,
+    });
+  };
 
   updateViewportDimensions = () => {
     this.setState(this.getViewportDimensions());
@@ -390,7 +390,7 @@ class Scatterplot extends React.PureComponent {
       minViewportDimension: Math.min(
         viewport.width - globals.leftSidebarWidth || width,
         viewport.height || height
-      )
+      ),
     });
     regl._gl.flush();
   }

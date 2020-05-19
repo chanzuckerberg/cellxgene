@@ -45,7 +45,9 @@ class CellSetButton extends React.PureComponent {
         <AnchorButton
           type="button"
           disabled={differential.diffExp}
-          onClick={this.set.bind(this)}
+          onClick={() => {
+            this.set();
+          }}
           data-testid={`cellset-button-${eitherCellSetOneOrTwo}`}
         >
           {eitherCellSetOneOrTwo}
