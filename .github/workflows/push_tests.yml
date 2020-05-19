@@ -35,11 +35,11 @@ jobs:
       - name: Lint with flake8
         run: |
           make lint-server
-      # - name: Lint all with eslint
-      #   working-directory: ./client
-      #   if: github.event_name	!= 'pull_request'
-      #   run: |
-      #     make lint
+      - name: Lint src with eslint
+        working-directory: ./client
+        if: github.event_name	!= 'pull_request'
+        run: |
+          make lint
       # - name: Lint diff with eslint
       #   working-directory: ./client
       #   if: github.event_name	== 'pull_request'
