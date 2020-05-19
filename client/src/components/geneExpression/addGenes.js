@@ -262,7 +262,7 @@ class AddGenes extends React.Component {
               }}
               itemListPredicate={filterGenes}
               onActiveItemChange={(item) => this.setState({ activeItem: item })}
-              itemRenderer={renderGene.bind(this)}
+              itemRenderer={renderGene}
               items={varIndex || ["No genes"]}
               popoverProps={{ minimal: true }}
             />
