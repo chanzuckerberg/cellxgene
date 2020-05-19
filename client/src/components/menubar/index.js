@@ -28,7 +28,7 @@ import DiffexpButtons from "./diffexpButtons";
   scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
   celllist1: state.differential.celllist1,
   celllist2: state.differential.celllist2,
-  libraryVersions: state.config?.library_versions, // eslint-disable-line camelcase
+  libraryVersions: state.config?.["library_versions"],
   undoDisabled: state["@@undoable/past"].length === 0,
   redoDisabled: state["@@undoable/future"].length === 0,
   aboutLink: state.config?.links?.["about-dataset"],

@@ -13,8 +13,8 @@ import {
 
 export function maxCategoryItems(config) {
   return (
-    config.parameters?.maxCategoryItems ??
-    globals.configDefaults.parameters.maxCategoryItems
+    config.parameters?.["max-category-items"] ??
+    globals.configDefaults.parameters["max-category-items"]
   );
 }
 
