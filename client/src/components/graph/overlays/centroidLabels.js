@@ -1,4 +1,4 @@
-import React, { PureComponent } from "react";
+import React, { PureComponent, Component } from "react";
 import { connect } from "react-redux";
 
 import { categoryLabelDisplayStringLongLength } from "../../../globals";
