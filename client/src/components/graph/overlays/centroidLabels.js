@@ -8,6 +8,7 @@ export default
   colorAccessor: state.colors.colorAccessor,
   dilatedValue: state.pointDilation.categoryField,
   labels: state.centroidLabels.labels,
+  categoricalSelection: state.categoricalSelection,
 }))
 class CentroidLabels extends PureComponent {
   // Check to see if centroids have either just been displayed or removed from the overlay
@@ -33,11 +34,20 @@ class CentroidLabels extends PureComponent {
       dilatedValue,
       dispatch,
       colorAccessor,
+      categoricalSelection,
     } = this.props;
+
+    if (!colorAccessor) return null;
+
+    const {
+      categoryValueIndices,
+      categoryValueSelected,
+    } = categoricalSelection?.[colorAccessor];
 
     const labelSVGS = [];
     let fontSize = "15px";
     let fontWeight = null;
+    const deselectOpacity = 0.5;
     labels.forEach((coords, label) => {
       fontSize = "15px";
       fontWeight = null;
@@ -45,6 +55,8 @@ class CentroidLabels extends PureComponent {
         fontSize = "18px";
         fontWeight = "800";
       }
+
+      const selected = categoryValueSelected[categoryValueIndices.get(label)];
 
       // Mirror LSB middle truncation
       let displayLabel = label;
@@ -77,6 +89,7 @@ class CentroidLabels extends PureComponent {
               fontWeight,
               fill: "black",
               userSelect: "none",
+              opacity: selected ? 1 : deselectOpacity,
             }}
             onMouseEnter={(e) =>
               dispatch({
