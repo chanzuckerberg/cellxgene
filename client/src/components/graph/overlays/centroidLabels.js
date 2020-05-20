@@ -37,7 +37,8 @@ class CentroidLabels extends PureComponent {
       categoricalSelection,
     } = this.props;
 
-    if (!colorAccessor) return null;
+    if (!colorAccessor || labels.size === undefined || labels.size === 0)
+      return null;
 
     const {
       categoryValueIndices,
