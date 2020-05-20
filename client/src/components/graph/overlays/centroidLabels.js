@@ -1,6 +1,5 @@
 import React, { PureComponent } from "react";
 import { connect } from "react-redux";
-// comment
 
 import { categoryLabelDisplayStringLongLength } from "../../../globals";
 
