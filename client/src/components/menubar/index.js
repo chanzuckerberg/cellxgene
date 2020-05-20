@@ -37,6 +37,7 @@ import DiffexpButtons from "./diffexpButtons";
   showCentroidLabels: state.centroidLabels.showLabels,
   tosURL: state.config?.parameters?.["about_legal_tos"],
   privacyURL: state.config?.parameters?.["about_legal_privacy"],
+  categoricalSelection: state.categoricalSelection,
 }))
 class MenuBar extends React.Component {
   static isValidDigitKeyEvent(e) {
@@ -203,8 +204,12 @@ class MenuBar extends React.Component {
       showCentroidLabels,
       privacyURL,
       tosURL,
+      categoricalSelection,
+      colorAccessor,
     } = this.props;
     const { pendingClipPercentiles } = this.state;
+
+    const isColoredByCategorical = !!categoricalSelection?.[colorAccessor];
 
     // constants used to create selection tool button
     const [selectionTooltip, selectionButtonIcon] =
@@ -267,6 +272,7 @@ class MenuBar extends React.Component {
             onClick={this.handleCentroidChange}
             active={showCentroidLabels}
             intent={showCentroidLabels ? "primary" : "none"}
+            disabled={!isColoredByCategorical}
           />
         </Tooltip>
         <ButtonGroup className={styles.menubarButton}>
