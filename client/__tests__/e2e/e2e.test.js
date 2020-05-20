@@ -27,15 +27,13 @@ afterAll(() => {
 
 describe("did launch", () => {
   test("page launched", async () => {
-    const element = await utils.getOneElementInnerHTML(
-      "[data-testid='header']"
-    );
+    const element = await utils.getOneElementInnerHTML("[data-testid='header']");
     expect(element).toBe(data.title);
   });
 
   test("terms of service, if they are there", async () => {
     try {
-      await utils.clickOn("tos-cookies-accept", { timeout: 500 });
+      await utils.clickOn("tos-cookies-accept", { timeout: 3000 });
     } catch {
       console.warn("No terms of service footer detected.");
     }
