@@ -102,7 +102,7 @@ class AnnoMenuCategory extends React.PureComponent {
               }
             >
               <Button
-                style={{ marginLeft: 0, marginRight: 2 }}
+                style={{ marginLeft: 0, marginRight: 5 }}
                 data-testclass="seeActions"
                 data-testid={`${metadataField}:see-actions`}
                 icon={<Icon icon="more" iconSize={10} />}
