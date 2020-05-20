@@ -326,8 +326,10 @@ describe("ui elements don't error", () => {
 
 describe("centroid labels", () => {
   test("labels are created", async () => {
-    await utils.clickOn("centroid-label-toggle");
     const labels = Object.keys(data.categorical);
+
+    await utils.clickOn(`colorby-${labels[0]}`);
+    await utils.clickOn("centroid-label-toggle");
     /* eslint-disable no-await-in-loop */
     // Toggle colorby for each category and check to see if labels are generated
     for (let i = 0, { length } = labels; i < length; i += 1) {
@@ -346,8 +348,8 @@ describe("centroid labels", () => {
 describe("graph overlay", () => {
   test("transform centroids correctly", async () => {
     const category = Object.keys(data.categorical)[0];
-    await utils.clickOn("centroid-label-toggle");
     await utils.clickOn(`colorby-${category}`);
+    await utils.clickOn("centroid-label-toggle");
     await utils.clickOn("mode-pan-zoom");
     const panCoords = await cxgActions.calcDragCoordinates(
       "layout-graph",
