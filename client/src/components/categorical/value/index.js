@@ -7,6 +7,7 @@ import {
   MenuItem,
   Popover,
   Position,
+  Icon,
   PopoverInteractionKind,
   Tooltip,
 } from "@blueprintjs/core";
@@ -343,7 +344,7 @@ class CategoryValue extends React.Component {
         }
         data-testclass="categorical-row"
         style={{
-          padding: "4px 7px",
+          padding: "4px 0px 4px 7px",
           display: "flex",
           alignItems: "baseline",
           justifyContent: "space-between",
@@ -561,14 +562,14 @@ class CategoryValue extends React.Component {
                 >
                   <Button
                     style={{
-                      marginLeft: 0,
+                      marginLeft: 2,
                       position: "relative",
                       top: -1,
                       minHeight: 16,
                     }}
                     data-testclass="seeActions"
                     data-testid={`${metadataField}:${displayString}:see-actions`}
-                    icon="more"
+                    icon={<Icon icon="more" iconSize={10} />}
                     small
                     minimal
                   />

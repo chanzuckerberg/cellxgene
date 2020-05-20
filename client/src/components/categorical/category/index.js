@@ -278,9 +278,6 @@ class Category extends React.Component {
               }}
               onClick={this.handleCategoryClick}
             >
-              {isUserAnno ? (
-                <Icon style={{ marginRight: 5 }} icon="tag" iconSize={16} />
-              ) : null}
               {truncatedString || metadataField}
               {isExpanded ? (
                 <FaChevronDown
