@@ -63,6 +63,7 @@ const centroidLabels = (state = initialState, action, sharedNextState) => {
       };
 
     case "color by continuous metadata":
+    case "color by expression":
       return { ...state, labels: [] };
 
     case "reset centroid labels":
