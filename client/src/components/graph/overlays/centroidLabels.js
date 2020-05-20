@@ -47,7 +47,7 @@ class CentroidLabels extends PureComponent {
     const labelSVGS = [];
     let fontSize = "15px";
     let fontWeight = null;
-    const deselectOpacity = 0.5;
+    const deselectOpacity = 0.375;
     labels.forEach((coords, label) => {
       fontSize = "15px";
       fontWeight = null;
