@@ -6,10 +6,9 @@ import _ from "lodash";
 import { connect } from "react-redux";
 import HistogramBrush from "../brushableHistogram";
 import { Button, ButtonGroup, Tooltip } from "@blueprintjs/core";
-import * as globals from "../../globals";
 import actions from "../../actions";
 
-@connect(state => {
+@connect((state) => {
   return {};
 })
 class Gene extends React.Component {
