@@ -4,7 +4,6 @@ on:
   push:
     branches: master
   pull_request:
-    branches: *
 
 env:
   JEST_ENV: prod
@@ -38,9 +37,14 @@ jobs:
           make lint-server
       - name: Lint src with eslint
         working-directory: ./client
+        if: github.event_name	!= 'pull_request'
         run: |
           make lint
-
+      # - name: Lint diff with eslint
+      #   working-directory: ./client
+      #   if: github.event_name	== 'pull_request'
+      #   run: |
+      #     make lint-diff
 
   unit-test:
     runs-on: ubuntu-latest
