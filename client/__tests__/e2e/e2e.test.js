@@ -334,7 +334,8 @@ describe("centroid labels", () => {
     // Toggle colorby for each category and check to see if labels are generated
     for (let i = 0, { length } = labels; i < length; i += 1) {
       const label = labels[i];
-      await utils.clickOn(`colorby-${label}`);
+      // first label is already enabled
+      if (i !== 0) await utils.clickOn(`colorby-${label}`);
       const generatedLabels = await utils.getAllByClass("centroid-label");
       // Number of labels generated should be equal to size of the object
       expect(generatedLabels).toHaveLength(
