@@ -14,7 +14,7 @@ export default (
   handleDragAction,
   handleEndAction,
   handleCancelAction,
-  viewport,
+  viewport
 ) => {
   const svg = d3.select("#graph-wrapper").select("#lasso-layer");
 
@@ -23,7 +23,7 @@ export default (
       .brush()
       .extent([
         [0, 0],
-        [viewport.width, viewport.height]
+        [viewport.width, viewport.height],
       ])
       .on("start", handleStartAction)
       .on("brush", handleDragAction)

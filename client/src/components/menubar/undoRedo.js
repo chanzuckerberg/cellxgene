@@ -7,9 +7,7 @@ import styles from "./menubar.css";
 function InformationMenu(props) {
   const { undoDisabled, redoDisabled, dispatch } = props;
   return (
-    <div
-      className={`bp3-button-group ${styles.menubarButton}`}
-    >
+    <div className={`bp3-button-group ${styles.menubarButton}`}>
       <Tooltip
         content="Undo"
         position="bottom"

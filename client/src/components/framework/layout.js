@@ -2,9 +2,7 @@
 import React from "react";
 import * as globals from "../../globals";
 
-
 class Layout extends React.Component {
-
   /*
     Layout - this react component contains all the layout style and logic for the application once it has loaded.
 
@@ -26,60 +24,66 @@ class Layout extends React.Component {
 
   render() {
     const { children } = this.props;
-    const [ leftSidebar, renderGraph, rightSidebar ] = children;
-    return <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: `
-          [left-sidebar-start] ${globals.leftSidebarWidth+1}px
+    const [leftSidebar, renderGraph, rightSidebar] = children;
+    return (
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: `
+          [left-sidebar-start] ${globals.leftSidebarWidth + 1}px
           [left-sidebar-end graph-start] auto
-          [graph-end right-sidebar-start] ${globals.rightSidebarWidth+1}px [right-sidebar-end]
+          [graph-end right-sidebar-start] ${
+            globals.rightSidebarWidth + 1
+          }px [right-sidebar-end]
         `,
-        gridTemplateRows: "[top] auto [bottom]",
-        gridTemplateAreas: "left-sidebar | graph | right-sidebar",
-        columnGap: "0px",
-        justifyItems: "stretch",
-        alignItems: "stretch",
-        height: "inherit",
-        width: "inherit",
-        position: "relative",
-        top: 0,
-        left: 0,
-        minWidth: "1240px",
-      }}
-    >
-      <div
-        style={{
-          gridArea: "top / left-sidebar-start / bottom / left-sidebar-end",
-          position: "relative",
+          gridTemplateRows: "[top] auto [bottom]",
+          gridTemplateAreas: "left-sidebar | graph | right-sidebar",
+          columnGap: "0px",
+          justifyItems: "stretch",
+          alignItems: "stretch",
           height: "inherit",
-          overflowY: "auto"
+          width: "inherit",
+          position: "relative",
+          top: 0,
+          left: 0,
+          minWidth: "1240px",
         }}
       >
-        {leftSidebar}
+        <div
+          style={{
+            gridArea: "top / left-sidebar-start / bottom / left-sidebar-end",
+            position: "relative",
+            height: "inherit",
+            overflowY: "auto",
+          }}
+        >
+          {leftSidebar}
+        </div>
+        <div
+          style={{
+            zIndex: 0,
+            gridArea: "top / graph-start / bottom / graph-end",
+            position: "relative",
+            height: "inherit",
+          }}
+          ref={(ref) => {
+            this.viewportRef = ref;
+          }}
+        >
+          {this.viewportRef ? renderGraph(this.viewportRef) : null}
+        </div>
+        <div
+          style={{
+            gridArea: "top / right-sidebar-start / bottom / right-sidebar-end",
+            position: "relative",
+            height: "inherit",
+            overflowY: "auto",
+          }}
+        >
+          {rightSidebar}
+        </div>
       </div>
-      <div
-        style={{
-          zIndex: 0,
-          gridArea: "top / graph-start / bottom / graph-end",
-          position: "relative",
-          height: "inherit",
-        }}
-        ref={ref => { this.viewportRef = ref; }}
-      >
-        {this.viewportRef ? renderGraph(this.viewportRef) : null}
-      </div>
-      <div
-        style={{
-          gridArea: "top / right-sidebar-start / bottom / right-sidebar-end",
-          position: "relative",
-          height: "inherit",
-          overflowY: "auto"
-        }}
-      >
-        {rightSidebar}
-      </div>
-    </div>;
+    );
   }
 }
 

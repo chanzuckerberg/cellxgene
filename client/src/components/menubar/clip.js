@@ -35,9 +35,7 @@ function Clip(props) {
       : "";
 
   return (
-    <div
-      className={`bp3-button-group ${styles.menubarButton}`}
-    >
+    <div className={`bp3-button-group ${styles.menubarButton}`}>
       <Popover
         target={
           <Tooltip
