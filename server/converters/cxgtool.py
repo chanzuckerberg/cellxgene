@@ -366,7 +366,7 @@ def create_emb(e_name, emb):
     dims = []
     for d in range(emb.ndim):
         shape = emb.shape
-        dims.append(tiledb.Dim("", domain=(0, shape[d] - 1), tile=min(shape[d], 1000), dtype=np.uint32))
+        dims.append(tiledb.Dim(domain=(0, shape[d] - 1), tile=min(shape[d], 1000), dtype=np.uint32))
     domain = tiledb.Domain(*dims)
     schema = tiledb.ArraySchema(
         domain=domain, sparse=False, attrs=attrs, capacity=1_000_000, cell_order="row-major", tile_order="row-major"
