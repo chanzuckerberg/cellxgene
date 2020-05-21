@@ -32,7 +32,7 @@ jobs:
         run: |
           pip install flake8
           cd client
-          npm i "eslint" "eslint-config-airbnb" "eslint-config-prettier" "eslint-loader" "eslint-plugin-filenames" "eslint-plugin-import" "eslint-plugin-jest" "eslint-plugin-jsx-a11y" "eslint-plugin-react" "eslint-plugin-react-hooks"
+          npm i "eslint" "eslint-config-airbnb" "eslint-config-prettier" "eslint-loader" "eslint-plugin-filenames" "eslint-plugin-import" "eslint-plugin-jest" "eslint-plugin-jsx-a11y" "eslint-plugin-react" "eslint-plugin-react-hooks" "eslint-plugin-prettier"
       - name: Lint with flake8
         run: |
           make lint-server
