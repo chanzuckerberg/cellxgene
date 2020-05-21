@@ -84,11 +84,6 @@ lint-server:
 lint-client:
 	cd client && $(MAKE) lint
 
-.PHONY: lint-diff-client
-lint-diff-client:
-	cd client && $(MAKE) lint-diff
-
-
 # CREATING DISTRIBUTION RELEASE
 
 .PHONY: pydist
