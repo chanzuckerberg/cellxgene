@@ -9,7 +9,6 @@ import {
   Position,
   Icon,
   PopoverInteractionKind,
-  Tooltip,
 } from "@blueprintjs/core";
 import Occupancy from "./occupancy";
 import * as globals from "../../../globals";
@@ -18,8 +17,8 @@ import AnnoDialog from "../annoDialog";
 import LabelInput from "../labelInput";
 
 import { AnnotationsHelpers } from "../../../util/stateManager";
-import maybeTruncateString from "../../../util/maybeTruncateString";
 import { labelPrompt, isLabelErroneous } from "../labelUtil";
+import Truncate from "../../util/truncate";
 
 /* this is defined outside of the class so we can use it in connect() */
 function _currentLabel(ownProps, categoricalSelection) {
@@ -317,13 +316,6 @@ class CategoryValue extends React.Component {
       categories = schema.annotations.obsByName[colorAccessor]?.categories;
     }
 
-    const truncatedString = maybeTruncateString(
-      displayString,
-      colorAccessor && !isColorBy
-        ? globals.categoryLabelDisplayStringShortLength
-        : globals.categoryLabelDisplayStringLongLength
-    );
-
     const editModeActive =
       isUserAnno &&
       annotations.labelEditable.category === metadataField &&
@@ -384,40 +376,34 @@ class CategoryValue extends React.Component {
                 onMouseLeave={this.handleMouseEnter}
               />
             </label>
-            <Tooltip
-              content={displayString}
-              disabled={truncatedString === null}
-              hoverOpenDelay={globals.tooltipHoverOpenDelayQuick}
-              position={Position.LEFT}
-              usePortal
-              modifiers={{
-                preventOverflow: { enabled: false },
-                hide: { enabled: false },
+            <Truncate
+              size={
+                colorAccessor && !isColorBy
+                  ? globals.leftSidebarWidth - 145 - 26 - 120
+                  : globals.leftSidebarWidth - 145 - 26
+              }
+              fontSize={12}
+              data-testid={`categorical-value-${metadataField}-${displayString}`}
+              data-testclass="categorical-value"
+              style={{
+                color:
+                  displayString === globals.unassignedCategoryLabel
+                    ? "#ababab"
+                    : "black",
+                fontStyle:
+                  displayString === globals.unassignedCategoryLabel
+                    ? "italic"
+                    : "normal",
+                display: "inline-block",
+                overflow: "hidden",
+                lineHeight: "1.1em",
+                height: "1.1em",
+                wordBreak: "break-all",
+                verticalAlign: "middle",
               }}
             >
-              <span
-                data-testid={`categorical-value-${metadataField}-${displayString}`}
-                data-testclass="categorical-value"
-                style={{
-                  color:
-                    displayString === globals.unassignedCategoryLabel
-                      ? "#ababab"
-                      : "black",
-                  fontStyle:
-                    displayString === globals.unassignedCategoryLabel
-                      ? "italic"
-                      : "normal",
-                  display: "inline-block",
-                  overflow: "hidden",
-                  lineHeight: "1.1em",
-                  height: "1.1em",
-                  wordBreak: "break-all",
-                  verticalAlign: "middle",
-                }}
-              >
-                {truncatedString || displayString}
-              </span>
-            </Tooltip>
+              {displayString}
+            </Truncate>
             {editModeActive ? (
               <div>
                 <AnnoDialog
