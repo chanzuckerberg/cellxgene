@@ -5,12 +5,11 @@ import Continuous from "../continuous/continuous";
 import GeneExpression from "../geneExpression";
 import * as globals from "../../globals";
 
-@connect(state => ({
+@connect((state) => ({
   scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
   scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
 }))
 class RightSidebar extends React.Component {
-
   render() {
     return (
       <div
@@ -22,7 +21,7 @@ class RightSidebar extends React.Component {
           position: "relative",
           overflowY: "inherit",
           height: "inherit",
-          width: "inherit"
+          width: "inherit",
         }}
       >
         <GeneExpression />

@@ -21,7 +21,6 @@ import actions from "../actions";
   graphRenderCounter: state.controls.graphRenderCounter,
 }))
 class App extends React.Component {
-
   componentDidMount() {
     const { dispatch } = this.props;
 
@@ -68,22 +67,21 @@ class App extends React.Component {
             error loading
           </div>
         ) : null}
-        {loading ? null : <Layout>
-          <LeftSideBar/>
-          {viewportRef =>
-            <>
-              <MenuBar/>
-              <Autosave/>
-              <TermsOfServicePrompt/>
-              <Legend viewportRef={viewportRef}/>
-              <Graph
-                key={graphRenderCounter}
-                viewportRef={viewportRef}
-              />
-            </>
-          }
-          <RightSideBar/>
-        </Layout>}
+        {loading ? null : (
+          <Layout>
+            <LeftSideBar />
+            {(viewportRef) => (
+              <>
+                <MenuBar />
+                <Autosave />
+                <TermsOfServicePrompt />
+                <Legend viewportRef={viewportRef} />
+                <Graph key={graphRenderCounter} viewportRef={viewportRef} />
+              </>
+            )}
+            <RightSideBar />
+          </Layout>
+        )}
       </Container>
     );
   }

@@ -12,9 +12,7 @@ function Subset(props) {
   } = props;
 
   return (
-    <ButtonGroup
-     className={styles.menubarButton}
-    >
+    <ButtonGroup className={styles.menubarButton}>
       <Tooltip
         content="Subset to currently selected cells and associated metadata"
         position="bottom"
@@ -26,7 +24,7 @@ function Subset(props) {
           disabled={!subsetPossible}
           icon="pie-chart"
           onClick={handleSubset}
-  />
+        />
       </Tooltip>
       <Tooltip
         content="Undo subset and show all cells and associated metadata"
