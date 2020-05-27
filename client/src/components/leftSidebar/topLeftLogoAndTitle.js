@@ -3,6 +3,7 @@ import React from "react";
 import { connect } from "react-redux";
 import * as globals from "../../globals";
 import Logo from "../framework/logo";
+import Truncate from "../util/truncate";
 
 @connect((state) => ({
   datasetTitle: state.config?.displayNames?.dataset ?? "",
@@ -13,16 +14,8 @@ import Logo from "../framework/logo";
 class LeftSideBar extends React.Component {
   render() {
     const { datasetTitle, aboutURL } = this.props;
-
-    const displayTitle =
-      datasetTitle.length > globals.datasetTitleMaxCharacterCount
-        ? `${datasetTitle.substring(
-            0,
-            Math.floor(globals.datasetTitleMaxCharacterCount / 2)
-          )}…${datasetTitle.slice(
-            -Math.floor(globals.datasetTitleMaxCharacterCount / 2)
-          )}`
-        : datasetTitle;
+    const width = 190;
+    const fontSize = 14;
 
     return (
       <div
@@ -62,24 +55,27 @@ class LeftSideBar extends React.Component {
         <div
           data-testid="header"
           style={{
-            fontSize: 14,
+            fontSize,
             position: "relative",
             top: -6,
             display: "inline-block",
-            width: "190px",
+            width,
             marginLeft: "7px",
             height: "1.2em",
             overflow: "hidden",
             wordBreak: "break-all",
           }}
-          title={datasetTitle}
         >
           {aboutURL ? (
-            <a href={aboutURL} target="_blank" rel="noopener noreferrer">
-              {displayTitle}
-            </a>
+            <Truncate size={width} fontSize={fontSize}>
+              <a href={aboutURL} target="_blank" rel="noopener noreferrer">
+                {datasetTitle}
+              </a>
+            </Truncate>
           ) : (
-            displayTitle
+            <Truncate size={width} fontSize={fontSize}>
+              <span>{datasetTitle}</span>
+            </Truncate>
           )}
         </div>
       </div>
