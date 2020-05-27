@@ -118,7 +118,7 @@ def main():
         "--sparse-threshold",
         "-s",
         type=float,
-        default=5.0,
+        default=0.0,  # force dense by default
         help="The X array will be sparse if the percent of non-zeros falls below this value",
     )
     args = parser.parse_args()
