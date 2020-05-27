@@ -15,10 +15,10 @@ import * as globals from "../../../globals";
 import styles from "../categorical.css";
 import AnnoDialog from "../annoDialog";
 import LabelInput from "../labelInput";
+import Truncate from "../../util/truncate";
 
 import { AnnotationsHelpers } from "../../../util/stateManager";
 import { labelPrompt, isLabelErroneous } from "../labelUtil";
-import Truncate from "../../util/truncate";
 
 /* this is defined outside of the class so we can use it in connect() */
 function _currentLabel(ownProps, categoricalSelection) {
@@ -383,26 +383,29 @@ class CategoryValue extends React.Component {
                   : globals.leftSidebarWidth - 145 - 26
               }
               fontSize={12}
-              data-testid={`categorical-value-${metadataField}-${displayString}`}
-              data-testclass="categorical-value"
-              style={{
-                color:
-                  displayString === globals.unassignedCategoryLabel
-                    ? "#ababab"
-                    : "black",
-                fontStyle:
-                  displayString === globals.unassignedCategoryLabel
-                    ? "italic"
-                    : "normal",
-                display: "inline-block",
-                overflow: "hidden",
-                lineHeight: "1.1em",
-                height: "1.1em",
-                wordBreak: "break-all",
-                verticalAlign: "middle",
-              }}
             >
-              {displayString}
+              <span
+                data-testid={`categorical-value-${metadataField}-${displayString}`}
+                data-testclass="categorical-value"
+                style={{
+                  color:
+                    displayString === globals.unassignedCategoryLabel
+                      ? "#ababab"
+                      : "black",
+                  fontStyle:
+                    displayString === globals.unassignedCategoryLabel
+                      ? "italic"
+                      : "normal",
+                  display: "inline-block",
+                  overflow: "hidden",
+                  lineHeight: "1.1em",
+                  height: "1.1em",
+                  wordBreak: "break-all",
+                  verticalAlign: "middle",
+                }}
+              >
+                {displayString}
+              </span>
             </Truncate>
             {editModeActive ? (
               <div>
