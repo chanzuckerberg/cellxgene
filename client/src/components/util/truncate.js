@@ -5,13 +5,41 @@ import pixelWidth from "string-pixel-width";
 import { widthsMap, tooltipHoverOpenDelayQuick } from "../../globals";
 
 export default class Truncate extends Component {
-  maybeTruncateString = (str, maxSize, activeFont, fontSize) => {
-    let truncatedString = null;
+  static fontIsLoaded = false;
+
+  static checkIfFontLoaded() {
+    if (document.fonts.check("1em Roboto Condensed")) {
+      return true;
+    }
+    let ret;
+    document.fonts.ready.then(() => {
+      if (!document.fonts.check("1em Roboto Condensed")) {
+        console.error("Roboto Condensed was not loaded");
+        ret = false;
+      } else {
+        ret = true;
+      }
+    });
+    return ret;
+  }
+
+  static getLoadedFont() {
+    if (!this.fontIsLoaded) {
+      this.fontIsLoaded = this.checkIfFontLoaded();
+    }
+
+    return this.fontIsLoaded ? "Roboto Condensed" : "Helvetica Neue";
+  }
+
+  maybeTruncateString = (str, maxSize, fontSize) => {
+    const activeFont = Truncate.getLoadedFont();
+
     const renderedSize = pixelWidth(str, {
       font: activeFont,
       size: fontSize,
       map: widthsMap,
     });
+    let truncatedString = null;
     if (renderedSize > maxSize) {
       const percentage = renderedSize / maxSize;
       const newLength = str.length / percentage;
@@ -32,12 +60,7 @@ export default class Truncate extends Component {
       "data-testclass": testClass,
       style,
     } = this.props;
-    const truncatedString = this.maybeTruncateString(
-      children,
-      size,
-      "Roboto Condensed",
-      fontSize
-    );
+    const truncatedString = this.maybeTruncateString(children, size, fontSize);
     return (
       <Tooltip
         content={children}
