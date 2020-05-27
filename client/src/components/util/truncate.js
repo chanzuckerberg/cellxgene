@@ -52,18 +52,17 @@ export default class Truncate extends Component {
   };
 
   render() {
-    const {
-      children,
+    const { children, size, fontSize } = this.props;
+    const originalString = children[0].text;
+    const truncatedString = this.maybeTruncateString(
+      originalString,
       size,
-      fontSize,
-      "data-testid": testID,
-      "data-testclass": testClass,
-      style,
-    } = this.props;
-    const truncatedString = this.maybeTruncateString(children, size, fontSize);
+      fontSize
+    );
+    children[0].text = truncatedString;
     return (
       <Tooltip
-        content={children}
+        content={originalString}
         disabled={truncatedString === null}
         hoverOpenDelay={tooltipHoverOpenDelayQuick}
         position={Position.LEFT}
@@ -73,9 +72,7 @@ export default class Truncate extends Component {
           hide: { enabled: false },
         }}
       >
-        <span data-testid={testID} data-testclass={testClass} style={style}>
-          {truncatedString || children}
-        </span>
+        {children}
       </Tooltip>
     );
   }
