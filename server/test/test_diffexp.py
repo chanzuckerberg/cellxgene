@@ -88,16 +88,34 @@ class DiffExpTest(unittest.TestCase):
     def test_cxg_sparse(self):
         with tempfile.TemporaryDirectory() as dirname:
             sparsename = os.path.join(dirname, "sparse.cxg")
+            sparse_col_shift_name = os.path.join(dirname, "sparse_col_shift.cxg")
             densename = os.path.join(dirname, "dense.cxg")
             source_h5ad = anndata.read_h5ad(f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad")
+
             # create a cxg sparse array
+            # TODO:  pbmc3k.h5ad is 100% non-zero.  Converting it to sparse is useful, but it would
+            # be a better test if a matrix with mostly non-zero values were tested.  The sparse_col_shift test
+            # would also be better if we started with a matrix that was mostly non-zero, but would convert to
+            # sparse using the column shift.  pbmc3k.h5ad does not fit that category, and therefore
+            # the sparse_threshold is set to 99.9% to force it into the col_shift format.  A better solution
+            # is to create a script that generates synthetic datasets with the properties need by the test.
             write_cxg(adata=source_h5ad, container=sparsename, title="pbmc3k", sparse_threshold=100)
-            write_cxg(adata=source_h5ad, container=densename, title="pbmc3k", sparse_threshold=0)
             adaptor_sparse = self.load_dataset(sparsename)
+            assert adaptor_sparse.open_array("X").schema.sparse
+            assert not adaptor_sparse.has_array("X_col_shift")
+
+            write_cxg(adata=source_h5ad, container=sparse_col_shift_name, title="pbmc3k", sparse_threshold=99.9)
+            adaptor_sparse_col_shift = self.load_dataset(sparse_col_shift_name)
+            assert adaptor_sparse_col_shift.open_array("X").schema.sparse
+            assert adaptor_sparse_col_shift.has_array("X_col_shift")
+
+            write_cxg(adata=source_h5ad, container=densename, title="pbmc3k", sparse_threshold=0)
             adaptor_dense = self.load_dataset(densename)
+            assert not adaptor_dense.open_array("X").schema.sparse
+            assert not adaptor_sparse.has_array("X_col_shift")
 
             col_results = []
-            for adaptor in (adaptor_sparse, adaptor_dense):
+            for adaptor in (adaptor_sparse, adaptor_sparse_col_shift, adaptor_dense):
                 maskA = self.get_mask(adaptor, 1, 10)
                 maskB = self.get_mask(adaptor, 2, 10)
                 diffexp_results = diffexp_cxg.diffexp_ttest(adaptor, maskA, maskB, 10)
@@ -109,10 +127,12 @@ class DiffExpTest(unittest.TestCase):
                 col_results.append(cols)
 
                 x = adaptor.get_X_array()
-                print(x)
+                assert x.shape == (adaptor.get_shape())
 
         for row in range(col_results[0].shape[0]):
             for col in range(col_results[0].shape[1]):
-                sval = col_results[0][row][col]
-                dval = col_results[1][row][col]
-                self.assertTrue(np.isclose(sval, dval, 1e-6, 1e-6))
+                for i in range(len(col_results)):
+                    for j in range(i + 1, len(col_results)):
+                        vi = col_results[i][row][col]
+                        vj = col_results[j][row][col]
+                        self.assertTrue(np.isclose(vi, vj, 1e-6, 1e-6))

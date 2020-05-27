@@ -107,6 +107,12 @@ def diffexp_ttest(adaptor, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
                 future.cancel()
             raise ComputeError(str(e))
 
+    if is_sparse:
+        if adaptor.has_array("X_col_shift"):
+            X_col_shift = adaptor.open_array("X_col_shift")[:]
+            meanA += X_col_shift
+            meanB += X_col_shift
+
     r = diffexp_ttest_from_mean_var(
         meanA.astype(dtype),
         varA.astype(dtype),
