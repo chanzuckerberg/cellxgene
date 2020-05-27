@@ -141,7 +141,7 @@ class Category extends React.Component {
               <input disabled id={checkboxID} checked type="checkbox" />
               <span className="bp3-control-indicator" />
             </label>
-            <Truncate fontSize={12} size={220}>
+            <Truncate fontSize={12} size={globals.maxControlsWidth}>
               <span
                 style={{
                   cursor: "pointer",
@@ -191,7 +191,7 @@ class Category extends React.Component {
     ) {
       return (
         <div style={{ marginBottom: 10, marginTop: 4 }}>
-          <Truncate size={150} fontSize={12}>
+          <Truncate size={150} fontSize={12} bold>
             <span style={{ fontWeight: 700 }}>{metadataField}</span>
           </Truncate>
           <Truncate size={150} fontSize={12}>

@@ -31,13 +31,15 @@ export default class Truncate extends Component {
     return this.fontIsLoaded ? "Roboto Condensed" : "Helvetica Neue";
   }
 
-  maybeTruncateString = (str, maxSize, fontSize) => {
+  maybeTruncateString = (str, maxSize, fontSize, bold, italic) => {
     const activeFont = Truncate.getLoadedFont();
 
     const renderedSize = pixelWidth(str, {
       font: activeFont,
       size: fontSize,
       map: widthsMap,
+      bold,
+      italic,
     });
     let truncatedString = null;
     if (renderedSize > maxSize) {
@@ -52,7 +54,7 @@ export default class Truncate extends Component {
   };
 
   render() {
-    const { children, size, fontSize } = this.props;
+    const { children, size, fontSize, bold, italic } = this.props;
     // Truncate only support a single child with a text child
 
     if (
@@ -63,7 +65,9 @@ export default class Truncate extends Component {
       const truncatedString = this.maybeTruncateString(
         originalString,
         size,
-        fontSize
+        fontSize,
+        bold,
+        italic
       );
       // Only make tooltip if string has to be truncated
       if (truncatedString) {
