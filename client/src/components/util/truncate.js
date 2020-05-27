@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, cloneElement } from "react";
 import { Tooltip, Position } from "@blueprintjs/core";
 import pixelWidth from "string-pixel-width";
 
@@ -53,27 +53,44 @@ export default class Truncate extends Component {
 
   render() {
     const { children, size, fontSize } = this.props;
-    const originalString = children[0].text;
-    const truncatedString = this.maybeTruncateString(
-      originalString,
-      size,
-      fontSize
-    );
-    children[0].text = truncatedString;
-    return (
-      <Tooltip
-        content={originalString}
-        disabled={truncatedString === null}
-        hoverOpenDelay={tooltipHoverOpenDelayQuick}
-        position={Position.LEFT}
-        usePortal
-        modifiers={{
-          preventOverflow: { enabled: false },
-          hide: { enabled: false },
-        }}
-      >
-        {children}
-      </Tooltip>
-    );
+    // Truncate only support a single child with a text child
+
+    if (
+      React.Children.count(children) === 1 &&
+      React.Children.count(children.props?.children) === 1
+    ) {
+      const originalString = children.props.children;
+      const truncatedString = this.maybeTruncateString(
+        originalString,
+        size,
+        fontSize
+      );
+      // Only make tooltip if string has to be truncated
+      if (truncatedString) {
+        // clone children, changing the children(text) to the truncated string
+        const newChildren = React.Children.map(children, (child) =>
+          cloneElement(child, {
+            children: truncatedString,
+            "data-truncated": true,
+          })
+        );
+        return (
+          <Tooltip
+            content={originalString}
+            hoverOpenDelay={tooltipHoverOpenDelayQuick}
+            position={Position.LEFT}
+            usePortal
+            modifiers={{
+              preventOverflow: { enabled: false },
+              hide: { enabled: false },
+            }}
+          >
+            {newChildren}
+          </Tooltip>
+        );
+      }
+      return children;
+    }
+    throw Error("Only pass a single child with inner text to Truncate");
   }
 }
