@@ -48,8 +48,8 @@ export default class Truncate extends Component {
         maxSize,
         params,
         length < lastLength
-          ? length / 2
-          : Math.floor(Math.floor((length - lastLength) / 2) + lastLength),
+          ? Math.floor(length / 2)
+          : Math.floor(Math.abs(length - lastLength) / 2) + lastLength,
         length,
         close
       );
@@ -63,7 +63,7 @@ export default class Truncate extends Component {
         str,
         maxSize,
         params,
-        Math.floor((lastLength - length) / 2) + length,
+        Math.floor(Math.abs(lastLength - length) / 2) + length,
         length,
         close
       );
