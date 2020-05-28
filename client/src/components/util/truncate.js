@@ -43,7 +43,7 @@ export default class Truncate extends Component {
     const shortenedString =
       length === str.length - 1
         ? str
-        : `${str.slice(0, length)}…${str.slice(-length / 2)}`;
+        : `${str.slice(0, length)}…${str.slice(-length)}`;
     // Measure the size of that string
     const renderedSize = pixelWidth(shortenedString, params);
 
@@ -53,13 +53,13 @@ export default class Truncate extends Component {
     }
     // Base case: If we've narrowed down to a length, return the closest string
     if (length === lastLength) {
-      return `${str.slice(0, close)}…${str.slice(-close / 2)}`;
+      return `${str.slice(0, close)}…${str.slice(-close)}`;
     }
     // If the current size is longer than max
     if (renderedSize > maxSize) {
       // If we're only one off from the closest string so far, just return the closest string
       if (length - close === 1) {
-        return `${str.slice(0, close)}…${str.slice(-close / 2)}`;
+        return `${str.slice(0, close)}…${str.slice(-close)}`;
       }
       // Otherwise recursively call with half the current length
       return this.computeLargestTruncatedString(
