@@ -53,22 +53,12 @@ export default class Truncate extends Component {
     }
     // Base case: If we've narrowed down to a length, return the closest string
     if (length === lastLength) {
-      console.log("RETURNING", { length, lastLength, renderedSize });
       return `${str.slice(0, close)}…${str.slice(-close / 2)}`;
     }
     // If the current size is longer than max
     if (renderedSize > maxSize) {
-      console.log({
-        length,
-        lastLength,
-        renderedSize,
-        close,
-        size: "big",
-      });
       // If we're only one off from the closest string so far, just return the closest string
       if (length - close === 1) {
-        console.log("RETURNING", { length, lastLength, renderedSize });
-
         return `${str.slice(0, close)}…${str.slice(-close / 2)}`;
       }
       // Otherwise recursively call with half the current length
@@ -85,13 +75,6 @@ export default class Truncate extends Component {
     }
     // If the current size is smaller than the max
     if (renderedSize < maxSize) {
-      console.log({
-        length,
-        lastLength,
-        renderedSize,
-        close,
-        size: "small",
-      });
       // Save this length as the closest so far
       close = length;
       // Recursively call with a larger string
@@ -104,14 +87,12 @@ export default class Truncate extends Component {
         close
       );
     }
-    console.log("RETURNING", { length, lastLength, renderedSize });
 
     return shortenedString;
   };
 
   maybeTruncateString = (str, maxSize, fontSize, bold, italic) => {
     const activeFont = Truncate.getLoadedFont();
-    console.log({ activeFont });
     return this.computeLargestTruncatedString(str, maxSize, {
       font: activeFont,
       size: fontSize,
@@ -137,7 +118,6 @@ export default class Truncate extends Component {
         bold,
         italic
       );
-      console.log({ truncatedString });
 
       // Only make tooltip if string has to be truncated
       if (truncatedString) {
