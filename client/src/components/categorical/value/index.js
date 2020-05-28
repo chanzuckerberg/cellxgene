@@ -396,7 +396,6 @@ class CategoryValue extends React.Component {
                       ? "italic"
                       : "normal",
                   display: "inline-block",
-                  border: "solid black 1px",
                   overflow: "hidden",
                   lineHeight: "1.1em",
                   height: "1.1em",
