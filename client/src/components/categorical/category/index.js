@@ -22,6 +22,8 @@ import * as globals from "../../../globals";
   };
 })
 class Category extends React.Component {
+  _labelWidth = globals.leftSidebarWidth - 80;
+
   constructor(props) {
     super(props);
     this.state = {
@@ -141,11 +143,12 @@ class Category extends React.Component {
               <input disabled id={checkboxID} checked type="checkbox" />
               <span className="bp3-control-indicator" />
             </label>
-            <Truncate fontSize={12} size={globals.maxControlsWidth}>
+            <Truncate fontSize={12} size={this._labelWidth}>
               <span
                 style={{
                   cursor: "pointer",
                   display: "inline-block",
+                  width: this._labelWidth,
                 }}
               >
                 {metadataField}
@@ -242,11 +245,11 @@ class Category extends React.Component {
             }}
             style={{
               cursor: "pointer",
-              display: "inline-block",
+              width: this._labelWidth,
             }}
             onClick={this.handleCategoryClick}
           >
-            <Truncate fontSize={12} size={220}>
+            <Truncate fontSize={14} size={this._labelWidth}>
               <span>{metadataField}</span>
             </Truncate>
             {isExpanded ? (
