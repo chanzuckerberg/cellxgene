@@ -10,6 +10,7 @@ export default class Truncate extends Component {
 
   // Uses binary-search-esque method to find largest fitting string given a maxSize
   // Params: font, size, bold, italic, map
+  // Memoizing requires this function to be above the memo function
   // eslint-disable-next-line react/sort-comp
   static _computeLargestTruncatedString = (
     str,
