@@ -324,6 +324,11 @@ class CategoryValue extends React.Component {
 
     const valueToggleLabel = `value-toggle-checkbox-${displayString}`;
 
+    const labelWidth =
+      colorAccessor && !isColorBy
+        ? globals.leftSidebarWidth - 145 - 15 - 100
+        : globals.leftSidebarWidth - 145 - 15;
+
     return (
       <div
         key={i}
@@ -376,18 +381,12 @@ class CategoryValue extends React.Component {
                 onMouseLeave={this.handleMouseEnter}
               />
             </label>
-            <Truncate
-              size={
-                colorAccessor && !isColorBy
-                  ? globals.leftSidebarWidth - 145 - 26 - 120
-                  : globals.leftSidebarWidth - 145 - 26
-              }
-              fontSize={12}
-            >
+            <Truncate size={labelWidth} fontSize={12}>
               <span
                 data-testid={`categorical-value-${metadataField}-${displayString}`}
                 data-testclass="categorical-value"
                 style={{
+                  width: labelWidth,
                   color:
                     displayString === globals.unassignedCategoryLabel
                       ? "#ababab"
@@ -400,7 +399,6 @@ class CategoryValue extends React.Component {
                   overflow: "hidden",
                   lineHeight: "1.1em",
                   height: "1.1em",
-                  wordBreak: "break-all",
                   verticalAlign: "middle",
                 }}
               >
