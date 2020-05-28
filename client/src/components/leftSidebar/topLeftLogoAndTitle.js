@@ -53,7 +53,6 @@ class LeftSideBar extends React.Component {
           gene
         </span>
         <div
-          data-testid="header"
           style={{
             fontSize,
             position: "relative",
@@ -68,13 +67,18 @@ class LeftSideBar extends React.Component {
         >
           {aboutURL ? (
             <Truncate size={width} fontSize={fontSize}>
-              <a href={aboutURL} target="_blank" rel="noopener noreferrer">
+              <a
+                href={aboutURL}
+                data-testid="header"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 {datasetTitle}
               </a>
             </Truncate>
           ) : (
             <Truncate size={width} fontSize={fontSize}>
-              <span>{datasetTitle}</span>
+              <span data-testid="header">{datasetTitle}</span>
             </Truncate>
           )}
         </div>
