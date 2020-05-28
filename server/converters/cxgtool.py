@@ -410,9 +410,10 @@ def save_embeddings(container, adata, ctx):
 
 def create_X(X_name, shape, is_sparse):
     """
-    The X matrix is access in both row and column oriented patterns, depending on the
+    The X matrix is accessed in both row and column oriented patterns, depending on the
     particular operation.  Because of the data type, default compression works best.
-    The tile size (50, 100) and global layout (row/col) was chosen empirically, by benchmarking
+    The tile size, (50, 100) for dense, and (512,2048) for sparse,
+    and global layout (row/col) was chosen empirically, by benchmarking
     the current cellxgene backend.
     """
     filters = tiledb.FilterList([tiledb.ZstdFilter()])
@@ -436,17 +437,22 @@ def create_X(X_name, shape, is_sparse):
         tiledb.DenseArray.create(X_name, schema)
 
 
-def count_nonzero_X(adata):
+def check_sparse_X(adata, sparse_threshold):
     shape = adata.X.shape
     stride = min(int(np.power(10, np.around(np.log10(1e9 / shape[1])))), 10_000)
     nnz = 0
+    maxnnz = int(shape[0] * shape[1] * sparse_threshold / 100)
     for row in range(0, shape[0], stride):
         lim = min(row + stride, shape[0])
         a = adata.X[row:lim, :]
         if type(a) is not np.ndarray:
             a = a.toarray()
         nnz += np.count_nonzero(a)
-    return nnz
+        if nnz > maxnnz:
+            return (nnz, lim * shape[1])
+        log(2, "\t...rows", row, "to", lim, "nnz", nnz, "nnz percent %5.2f%%" % (100 * nnz / (lim * shape[1])))
+
+    return (nnz, shape[0] * shape[1])
 
 
 def save_X(container, adata, ctx, sparse_threshold):
@@ -459,15 +465,20 @@ def save_X(container, adata, ctx, sparse_threshold):
     elif sparse_threshold == 0:
         is_sparse = False
     else:
-        nnz = count_nonzero_X(adata)
-        percent = 100.0 * nnz / (shape[0] * shape[1])
-        log(1, "shape:", str(shape), "non-zeros:", nnz, "percent: %6.2f" % percent)
+        nnz, nelem = check_sparse_X(adata, sparse_threshold)
+        percent = 100.0 * nnz / nelem
+        if nelem != shape[0] * shape[1]:
+            log(1, "\t...shape:", str(shape), "non-zeros percent (estimate): %6.2f" % percent)
+        else:
+            log(1, "\t...shape:", str(shape), "non-zeros:", nnz, "percent: %6.2f" % percent)
+
         is_sparse = percent < sparse_threshold
 
     create_X(X_name, shape, is_sparse)
 
     stride = min(int(np.power(10, np.around(np.log10(1e9 / shape[1])))), 10_000)
     if is_sparse:
+        log(1, "\t...output X as sparse matrix")
         with tiledb.SparseArray(X_name, mode="w", ctx=ctx) as X:
             for row in range(0, shape[0], stride):
                 lim = min(row + stride, shape[0])
@@ -481,6 +492,7 @@ def save_X(container, adata, ctx, sparse_threshold):
             tiledb.consolidate(X_name, ctx=ctx)
 
     else:
+        log(1, "\t...output X as dense matrix")
         with tiledb.DenseArray(X_name, mode="w", ctx=ctx) as X:
             for row in range(0, shape[0], stride):
                 lim = min(row + stride, shape[0])
