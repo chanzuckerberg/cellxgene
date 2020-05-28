@@ -3,35 +3,15 @@ import { Tooltip, Position } from "@blueprintjs/core";
 import pixelWidth from "string-pixel-width";
 
 import { widthsMap, tooltipHoverOpenDelayQuick } from "../../globals";
+import { memoize } from "../../util/dataframe/util";
 
 export default class Truncate extends Component {
   static fontIsLoaded = false;
 
-  static checkIfFontLoaded() {
-    if (document.fonts.check("1em Roboto Condensed")) {
-      return true;
-    }
-    let ret;
-    document.fonts.ready.then(() => {
-      if (!document.fonts.check("1em Roboto Condensed")) {
-        console.error("Roboto Condensed was not loaded");
-        ret = false;
-      } else {
-        ret = true;
-      }
-    });
-    return ret;
-  }
-
-  static getLoadedFont() {
-    if (!this.fontIsLoaded) {
-      this.fontIsLoaded = this.checkIfFontLoaded();
-    }
-
-    return this.fontIsLoaded ? "Roboto Condensed" : "Helvetica Neue";
-  }
-
-  computeLargestTruncatedString = (
+  // Uses binary-search-esque method to find largest fitting string given a maxSize
+  // Params: font, size, bold, italic, map
+  // eslint-disable-next-line react/sort-comp
+  static _computeLargestTruncatedString = (
     str,
     maxSize,
     params,
@@ -62,7 +42,7 @@ export default class Truncate extends Component {
         return `${str.slice(0, close)}…${str.slice(-close)}`;
       }
       // Otherwise recursively call with half the current length
-      return this.computeLargestTruncatedString(
+      return this._computeLargestTruncatedString(
         str,
         maxSize,
         params,
@@ -78,7 +58,7 @@ export default class Truncate extends Component {
       // Save this length as the closest so far
       close = length;
       // Recursively call with a larger string
-      return this.computeLargestTruncatedString(
+      return this._computeLargestTruncatedString(
         str,
         maxSize,
         params,
@@ -91,9 +71,43 @@ export default class Truncate extends Component {
     return shortenedString;
   };
 
+  static _memoComputeLargestTruncatedString = memoize(
+    this._computeLargestTruncatedString,
+    (str, maxSize, params) => {
+      return `${str} + ${maxSize} + {${params.font}, ${params.size}, ${params.bold}, ${params.italic}}`;
+    }
+  );
+
+  // Check's to see if main font (Roboto Condensed) is loaded
+  static checkIfFontLoaded() {
+    if (document.fonts.check("1em Roboto Condensed")) {
+      return true;
+    }
+    let ret;
+    document.fonts.ready.then(() => {
+      if (!document.fonts.check("1em Roboto Condensed")) {
+        console.error("Roboto Condensed was not loaded");
+        ret = false;
+      } else {
+        ret = true;
+      }
+    });
+    return ret;
+  }
+
+  // Retrieves the currently loaded font
+  static getLoadedFont() {
+    if (!this.fontIsLoaded) {
+      this.fontIsLoaded = this.checkIfFontLoaded();
+    }
+
+    return this.fontIsLoaded ? "Roboto Condensed" : "Helvetica Neue";
+  }
+
+  // Returns a truncated string if necessary, null otherwise
   maybeTruncateString = (str, maxSize, fontSize, bold, italic) => {
     const activeFont = Truncate.getLoadedFont();
-    return this.computeLargestTruncatedString(str, maxSize, {
+    return Truncate._memoComputeLargestTruncatedString(str, maxSize, {
       font: activeFont,
       size: fontSize,
       map: widthsMap,
