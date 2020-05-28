@@ -381,7 +381,7 @@ class CategoryValue extends React.Component {
                 onMouseLeave={this.handleMouseEnter}
               />
             </label>
-            <Truncate size={labelWidth} fontSize={12}>
+            <Truncate size={labelWidth} fontSize={14}>
               <span
                 data-testid={`categorical-value-${metadataField}-${displayString}`}
                 data-testclass="categorical-value"
@@ -396,6 +396,7 @@ class CategoryValue extends React.Component {
                       ? "italic"
                       : "normal",
                   display: "inline-block",
+                  border: "solid black 1px",
                   overflow: "hidden",
                   lineHeight: "1.1em",
                   height: "1.1em",
