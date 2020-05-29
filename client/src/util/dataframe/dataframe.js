@@ -1,6 +1,5 @@
 import { IdentityInt32Index, isLabelIndex } from "./labelIndex";
 // weird cross-dependency that we should clean up someday...
-import { sortArray } from "../typedCrossfilter/sort";
 import {
   isTypedArray,
   isArrayOrTypedArray,
