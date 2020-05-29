@@ -20,7 +20,7 @@ def pack_selector_from_mask(boolarray):
 def pack_selector_from_indices(selector):
 
     if len(selector) == 0:
-        return slice(None)
+        return None
 
     result = []
     current = slice(selector[0], selector[0])
