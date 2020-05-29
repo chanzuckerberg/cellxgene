@@ -1,4 +1,5 @@
 import * as Universe from "../../../src/util/stateManager/universe";
+import { matrixFBSToDataframe } from "../../../src/util/stateManager/matrix";
 import * as Dataframe from "../../../src/util/dataframe";
 import * as REST from "./sampleResponses";
 
@@ -51,16 +52,13 @@ describe("createUniverseFromResponse", () => {
       ...universe,
       ...Universe.addObsAnnotations(
         universe,
-        Universe.matrixFBSToDataframe(REST.annotationsObs)
+        matrixFBSToDataframe(REST.annotationsObs)
       ),
       ...Universe.addVarAnnotations(
         universe,
-        Universe.matrixFBSToDataframe(REST.annotationsVar)
+        matrixFBSToDataframe(REST.annotationsVar)
       ),
-      ...Universe.addObsLayout(
-        universe,
-        Universe.matrixFBSToDataframe(REST.layoutObs)
-      ),
+      ...Universe.addObsLayout(universe, matrixFBSToDataframe(REST.layoutObs)),
     };
 
     expect(universe).toMatchObject(
@@ -80,7 +78,7 @@ describe("createUniverseFromResponse", () => {
       REST.schema.schema.annotations.obs.columns.length,
     ]);
     expect(universe.obsLayout.dims).toEqual([nObs, 2]);
-    expect(universe.obsLayout.colIndex.keys()).toEqual(
+    expect(universe.obsLayout.colIndex.labels()).toEqual(
       universe.schema.layout.obs[0].dims
     );
     expect(universe.varAnnotations.dims).toEqual([

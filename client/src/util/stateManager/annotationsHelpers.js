@@ -100,7 +100,7 @@ export function setLabelByValue(df, colName, fromLabel, toLabel) {
   /* 
 	in the dataframe column `colName`, set any value of `fromLabel` to `toLabel`
 	*/
-  const keys = df.colIndex.keys();
+  const keys = df.colIndex.labels();
   const ndf = df.mapColumns((col, colIdx) => {
     if (colName !== keys[colIdx]) return col;
 
@@ -118,7 +118,7 @@ export function setLabelByMask(df, colName, mask, label) {
   /* 
 	in the dataframe column `colName`, set the masked rows to 'label'
 	*/
-  const keys = df.colIndex.keys();
+  const keys = df.colIndex.labels();
   const ndf = df.mapColumns((col, colIdx) => {
     if (colName !== keys[colIdx]) return col;
 

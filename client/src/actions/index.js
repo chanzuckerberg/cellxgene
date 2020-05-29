@@ -29,7 +29,7 @@ async function obsAnnotationFetchAndLoad(dispatch, schema) {
         fetchBinary(
           `annotations/obs?annotation-name=${encodeURIComponent(col.name)}`
         )
-          .then((buffer) => Universe.matrixFBSToDataframe(buffer))
+          .then((buffer) => MatrixFBS.matrixFBSToDataframe(buffer))
           .then((df) =>
             dispatch({
               type: "universe: column load success",
@@ -52,7 +52,7 @@ async function varAnnotationFetchAndLoad(dispatch, schema) {
   return Promise.all(
     names.map((name) =>
       fetchBinary(`annotations/var?annotation-name=${encodeURIComponent(name)}`)
-        .then((buffer) => Universe.matrixFBSToDataframe(buffer))
+        .then((buffer) => MatrixFBS.matrixFBSToDataframe(buffer))
         .then((df) =>
           dispatch({
             type: "universe: column load success",
@@ -77,7 +77,7 @@ function layoutFetchAndLoad(dispatch, schema) {
       plimit.add(() =>
         fetchBinary(
           `layout/obs?layout-name=${encodeURIComponent(e)}`
-        ).then((buffer) => Universe.matrixFBSToDataframe(buffer))
+        ).then((buffer) => MatrixFBS.matrixFBSToDataframe(buffer))
       )
     )
   ).then((dfs) =>
