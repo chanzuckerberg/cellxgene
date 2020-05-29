@@ -205,10 +205,24 @@ class CxgAdaptor(DataAdaptor):
         return json.loads(meta["cxg_category_colors"]) if "cxg_category_colors" in meta else dict()
 
     def __remap_indices(self, coord_range, coord_mask, coord_data):
-        """coord_data is the indices for either the obs or var dimension, and will contain values
-        in the range [0,coord_range).  coord_mask is a mask passed into the get_X_array function.  Where
-        the mask is set, the corresponding index has been retrieved.  The number of selected entries
-        in coord_mask is ncoord.  The goal of this function is to map coord_data into the range [0,ncoord)."""
+        """
+        This function maps the indices in coord_data, which could be in the range [0,coord_range), to
+        a range that only includes the number of indices encoded in coord_mask.
+        coord_range is the maxinum size of the range (e.g. get_shape()[0] or get_shape()[1])
+        coord_mask is a mask passed into the get_X_array, of size coord_range
+        coord_data are indices representing locations of non-zero values, in the range [0,coord_range).
+
+        For example, say
+        coord_mask = [1,0,1,0,0,1]
+        coord_data = [2,0,2,2,5]
+
+        The function computes the following:
+        indices = [0,2,5]
+        ncoord = 3
+        maprange = [0,1,2]
+        mapindex = [0,0,1,0,0,2]
+        coordindices = [1,0,1,1,2]
+        """
         if coord_mask is None:
             return coord_range, coord_data
 
