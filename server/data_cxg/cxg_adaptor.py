@@ -237,6 +237,9 @@ class CxgAdaptor(DataAdaptor):
     def get_X_array(self, obs_mask=None, var_mask=None):
         obs_items = pack_selector_from_mask(obs_mask)
         var_items = pack_selector_from_mask(var_mask)
+        if obs_items is None or var_items is None:
+            # If either zero rows or zero columns were selected, return an empty 2d array.
+            return np.ndarray((0, 0))
         X = self.open_array("X")
 
         if X.schema.sparse:
