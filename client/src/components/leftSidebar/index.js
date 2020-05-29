@@ -1,18 +1,27 @@
 // jshint esversion: 6
 import React from "react";
 import { connect } from "react-redux";
+import { useAuth0 } from "../../react-auth0-spa";
 import Categorical from "../categorical";
 import * as globals from "../../globals";
 import DynamicScatterplot from "../scatterplot/scatterplot";
 import TopLeftLogoAndTitle from "./topLeftLogoAndTitle";
+import AuthN from "./AuthN";
 
 @connect((state) => ({
   scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
   scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
 }))
+
+
 class LeftSideBar extends React.Component {
   render() {
     const { scatterplotXXaccessor, scatterplotYYaccessor } = this.props;
+    const { loading } = useAuth0();
+
+    if (loading) {
+      return <div>Loading...</div>;
+    }
     return (
       <div
         style={{
@@ -31,6 +40,7 @@ class LeftSideBar extends React.Component {
             overflowY: "auto",
           }}
         >
+          <AuthN />
           <Categorical />
         </div>
         {scatterplotXXaccessor && scatterplotYYaccessor ? (
