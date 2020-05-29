@@ -1,11 +1,13 @@
 import unittest
 from server.data_common.matrix_loader import MatrixDataLoader
-from server.common.app_config import AppConfig
+from server.test import PROJECT_ROOT, app_config
 import server.compute.diffexp_cxg as diffexp_cxg
 import server.compute.diffexp_generic as diffexp_generic
+from server.converters.cxgtool import write_cxg
 import numpy as np
-
-from server.test import PROJECT_ROOT
+import tempfile
+import anndata
+import os
 
 
 class DiffExpTest(unittest.TestCase):
@@ -13,12 +15,9 @@ class DiffExpTest(unittest.TestCase):
     adaptor types and different algorithms."""
 
     def load_dataset(self, path):
-        app_config = AppConfig()
-        app_config.single_dataset__datapath = path
-        app_config.server__verbose = True
-        app_config.complete_config()
+        config = app_config(path)
         loader = MatrixDataLoader(path)
-        adaptor = loader.open(app_config)
+        adaptor = loader.open(config)
         return adaptor
 
     def get_mask(self, adaptor, start, stride):
@@ -46,9 +45,14 @@ class DiffExpTest(unittest.TestCase):
         self.assertEqual(len(results), len(expects))
         for result, expect in zip(results, expects):
             self.assertEqual(result[0], expect[0])
-            self.assertAlmostEqual(result[1], expect[1])
-            self.assertAlmostEqual(result[2], expect[2])
-            self.assertAlmostEqual(result[3], expect[3])
+            self.assertTrue(np.isclose(result[1], expect[1], 1e-6, 1e-6))
+            self.assertTrue(np.isclose(result[2], expect[2], 1e-6, 1e-6))
+            self.assertTrue(np.isclose(result[3], expect[3], 1e-6, 1e-6))
+
+    def get_X_col(self, adaptor, cols):
+        varmask = np.zeros(adaptor.get_shape()[1], dtype=bool)
+        varmask[cols] = True
+        return adaptor.get_X_array(None, varmask)
 
     def test_anndata_default(self):
         """Test an anndata adaptor with its default diffexp algorithm (diffexp_generic)"""
@@ -80,3 +84,35 @@ class DiffExpTest(unittest.TestCase):
         # run it directly
         results = diffexp_generic.diffexp_ttest(adaptor, maskA, maskB, 10)
         self.check_1_10_2_10(results)
+
+    def test_cxg_sparse(self):
+        with tempfile.TemporaryDirectory() as dirname:
+            sparsename = os.path.join(dirname, "sparse.cxg")
+            densename = os.path.join(dirname, "dense.cxg")
+            source_h5ad = anndata.read_h5ad(f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad")
+            # create a cxg sparse array
+            write_cxg(adata=source_h5ad, container=sparsename, title="pbmc3k", sparse_threshold=100)
+            write_cxg(adata=source_h5ad, container=densename, title="pbmc3k", sparse_threshold=0)
+            adaptor_sparse = self.load_dataset(sparsename)
+            adaptor_dense = self.load_dataset(densename)
+
+            col_results = []
+            for adaptor in (adaptor_sparse, adaptor_dense):
+                maskA = self.get_mask(adaptor, 1, 10)
+                maskB = self.get_mask(adaptor, 2, 10)
+                diffexp_results = diffexp_cxg.diffexp_ttest(adaptor, maskA, maskB, 10)
+                self.check_1_10_2_10(diffexp_results)
+                topcols = [x[0] for x in diffexp_results]
+                cols = self.get_X_col(adaptor, topcols)
+                assert cols.shape[0] == adaptor.get_shape()[0]
+                assert cols.shape[1] == len(diffexp_results)
+                col_results.append(cols)
+
+                x = adaptor.get_X_array()
+                print(x)
+
+        for row in range(col_results[0].shape[0]):
+            for col in range(col_results[0].shape[1]):
+                sval = col_results[0][row][col]
+                dval = col_results[1][row][col]
+                self.assertTrue(np.isclose(sval, dval, 1e-6, 1e-6))

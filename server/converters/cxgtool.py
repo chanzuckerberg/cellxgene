@@ -114,6 +114,13 @@ def main():
         help="URL providing more information about the dataset (hint: must be a fully specified absolute URL).",
     )
     parser.add_argument("--out", "--output", "-o", help="output CXG file name")
+    parser.add_argument(
+        "--sparse-threshold",
+        "-s",
+        type=float,
+        default=0.0,  # force dense by default
+        help="The X array will be sparse if the percent of non-zeros falls below this value",
+    )
     args = parser.parse_args()
 
     global log_level
@@ -135,12 +142,15 @@ def main():
         obs_names=args.obs_names,
         about=args.about,
         extract_colors=not args.disable_custom_colors,
+        sparse_threshold=args.sparse_threshold,
     )
 
     log(1, "done")
 
 
-def write_cxg(adata, container, title, var_names=None, obs_names=None, about=None, extract_colors=False):
+def write_cxg(
+    adata, container, title, var_names=None, obs_names=None, about=None, extract_colors=False, sparse_threshold=5.0
+):
     if not adata.var.index.is_unique:
         raise ValueError("Variable index is not unique - unable to convert.")
     if not adata.obs.index.is_unique:
@@ -195,7 +205,7 @@ def write_cxg(adata, container, title, var_names=None, obs_names=None, about=Non
     log(1, "\t...embeddings created")
 
     # X matrix
-    save_X(container, adata, ctx)
+    save_X(container, adata, ctx, sparse_threshold)
     log(1, "\t...X created")
 
 
@@ -398,44 +408,99 @@ def save_embeddings(container, adata, ctx):
             log(1, f"\t\t...{name} embedding created")
 
 
-def create_X(X_name, shape):
+def create_X(X_name, shape, is_sparse):
     """
-    Dense, always.  Future task: explore if sparse encoding is worth the trouble
-    below a sparsity threshold.
-
-    The X matrix is access in both row and column oriented patterns, depending on the
+    The X matrix is accessed in both row and column oriented patterns, depending on the
     particular operation.  Because of the data type, default compression works best.
-    The tile size (50, 100) and global layout (row/col) was choosen empirically, by benchmarking
+    The tile size, (50, 100) for dense, and (512,2048) for sparse,
+    and global layout (row/col) was chosen empirically, by benchmarking
     the current cellxgene backend.
     """
     filters = tiledb.FilterList([tiledb.ZstdFilter()])
     attrs = [tiledb.Attr(dtype=np.float32, filters=filters)]
-    domain = tiledb.Domain(
-        tiledb.Dim(name="obs", domain=(0, shape[0] - 1), tile=min(shape[0], 50), dtype=np.uint32),
-        tiledb.Dim(name="var", domain=(0, shape[1] - 1), tile=min(shape[1], 100), dtype=np.uint32),
-    )
+    if is_sparse:
+        domain = tiledb.Domain(
+            tiledb.Dim(name="obs", domain=(0, shape[0] - 1), tile=min(shape[0], 512), dtype=np.uint32),
+            tiledb.Dim(name="var", domain=(0, shape[1] - 1), tile=min(shape[1], 2048), dtype=np.uint32),
+        )
+    else:
+        domain = tiledb.Domain(
+            tiledb.Dim(name="obs", domain=(0, shape[0] - 1), tile=min(shape[0], 50), dtype=np.uint32),
+            tiledb.Dim(name="var", domain=(0, shape[1] - 1), tile=min(shape[1], 100), dtype=np.uint32),
+        )
     schema = tiledb.ArraySchema(
-        domain=domain, sparse=False, attrs=attrs, cell_order="row-major", tile_order="col-major"
+        domain=domain, sparse=is_sparse, attrs=attrs, cell_order="row-major", tile_order="col-major"
     )
-    tiledb.DenseArray.create(X_name, schema)
+    if is_sparse:
+        tiledb.SparseArray.create(X_name, schema)
+    else:
+        tiledb.DenseArray.create(X_name, schema)
 
 
-def save_X(container, adata, ctx):
+def check_sparse_X(adata, sparse_threshold):
+    shape = adata.X.shape
+    stride = min(int(np.power(10, np.around(np.log10(1e9 / shape[1])))), 10_000)
+    nnz = 0
+    maxnnz = int(shape[0] * shape[1] * sparse_threshold / 100)
+    for row in range(0, shape[0], stride):
+        lim = min(row + stride, shape[0])
+        a = adata.X[row:lim, :]
+        if type(a) is not np.ndarray:
+            a = a.toarray()
+        nnz += np.count_nonzero(a)
+        if nnz > maxnnz:
+            return (nnz, lim * shape[1])
+        log(2, "\t...rows", row, "to", lim, "nnz", nnz, "nnz percent %5.2f%%" % (100 * nnz / (lim * shape[1])))
+
+    return (nnz, shape[0] * shape[1])
+
+
+def save_X(container, adata, ctx, sparse_threshold):
     # Save X count matrix
     X_name = f"{container}/X"
     shape = adata.X.shape
-    create_X(X_name, shape)
+
+    if sparse_threshold == 100:
+        is_sparse = True
+    elif sparse_threshold == 0:
+        is_sparse = False
+    else:
+        nnz, nelem = check_sparse_X(adata, sparse_threshold)
+        percent = 100.0 * nnz / nelem
+        if nelem != shape[0] * shape[1]:
+            log(1, "\t...shape:", str(shape), "non-zeros percent (estimate): %6.2f" % percent)
+        else:
+            log(1, "\t...shape:", str(shape), "non-zeros:", nnz, "percent: %6.2f" % percent)
+
+        is_sparse = percent < sparse_threshold
+
+    create_X(X_name, shape, is_sparse)
 
     stride = min(int(np.power(10, np.around(np.log10(1e9 / shape[1])))), 10_000)
-    with tiledb.DenseArray(X_name, mode="w", ctx=ctx) as X:
-        for row in range(0, shape[0], stride):
-            lim = min(row + stride, shape[0])
-            a = adata.X[row:lim, :]
-            if type(a) is not np.ndarray:
-                a = a.toarray()
-            X[row:lim, :] = a
-            log(2, "\t...rows", row, "to", lim)
-        tiledb.consolidate(X_name, ctx=ctx)
+    if is_sparse:
+        log(1, "\t...output X as sparse matrix")
+        with tiledb.SparseArray(X_name, mode="w", ctx=ctx) as X:
+            for row in range(0, shape[0], stride):
+                lim = min(row + stride, shape[0])
+                a = adata.X[row:lim, :]
+                if type(a) is not np.ndarray:
+                    a = a.toarray()
+                indices = np.nonzero(a)
+                trow = indices[0] + row
+                X[trow, indices[1]] = a[indices[0], indices[1]]
+                log(2, "\t...rows", row, "to", lim)
+            tiledb.consolidate(X_name, ctx=ctx)
+
+    else:
+        log(1, "\t...output X as dense matrix")
+        with tiledb.DenseArray(X_name, mode="w", ctx=ctx) as X:
+            for row in range(0, shape[0], stride):
+                lim = min(row + stride, shape[0])
+                a = adata.X[row:lim, :]
+                if type(a) is not np.ndarray:
+                    a = a.toarray()
+                X[row:lim, :] = a
+                log(2, "\t...rows", row, "to", lim)
 
     tiledb.consolidate(X_name, ctx=ctx)
 
