@@ -118,48 +118,82 @@ export default class Truncate extends Component {
   };
 
   render() {
-    const { children, size, fontSize, bold, italic } = this.props;
+    const { children } = this.props;
     // Truncate only support a single child with a text child
-
     if (
       React.Children.count(children) === 1 &&
       React.Children.count(children.props?.children) === 1
     ) {
-      const originalString = children.props.children;
-      const truncatedString = this.maybeTruncateString(
-        originalString,
-        size,
-        fontSize,
-        bold,
-        italic
-      );
+      const originalStr = children.props.children;
+      const firstHalf = originalStr.slice(0, originalStr.length / 2);
+      const secondHalf = originalStr.slice(originalStr.length / 2);
 
-      // Only make tooltip if string has to be truncated
-      if (truncatedString) {
-        // clone children, changing the children(text) to the truncated string
-        const newChildren = React.Children.map(children, (child) =>
-          cloneElement(child, {
-            children: truncatedString,
-            "data-truncated": true,
-          })
-        );
-        return (
-          <Tooltip
-            content={originalString}
-            hoverOpenDelay={tooltipHoverOpenDelayQuick}
-            position={Position.LEFT}
-            usePortal
-            modifiers={{
-              preventOverflow: { enabled: false },
-              hide: { enabled: false },
+      const startFixedChars = 5;
+      const endFixedChars = 5;
+      const fontFaceScaleFactor = 0.16;
+      const startWidth = `1em * ${fontFaceScaleFactor} * ${startFixedChars} * 2`;
+      const endWidth = `1em * ${fontFaceScaleFactor} * ${endFixedChars} * 2`;
+
+      const commonStyling = {
+        display: "inline-block",
+        verticalAlign: "bottom",
+        whiteSpace: "nowrap",
+        overflow: "hidden",
+      };
+
+      const truncatedChildren = (
+        <>
+          <span
+            style={{
+              ...commonStyling,
+              maxWidth: `calc(100% - calc(${endWidth}))`,
+              minWidth: `calc(${startWidth})`,
+              textOverflow: "ellipsis",
+              backgroundColor: "rgba(255, 0, 0, 0.7)",
             }}
           >
-            {newChildren}
-          </Tooltip>
-        );
-      }
-      return children;
+            {firstHalf}
+          </span>
+          <span
+            style={{
+              ...commonStyling,
+              maxWidth: `calc(100% - calc(${startWidth}))`,
+              direction: "rtl",
+              backgroundColor: "rgba(0, 0, 255, 0.7)",
+            }}
+          >
+            {secondHalf}
+          </span>
+        </>
+      );
+
+      const newChildren = React.Children.map(children, (child) =>
+        cloneElement(child, {
+          "data-truncated": true,
+          children: truncatedChildren,
+          style: {
+            ...child.props.style,
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+          },
+        })
+      );
+      return (
+        <Tooltip
+          content={originalStr}
+          hoverOpenDelay={tooltipHoverOpenDelayQuick}
+          position={Position.LEFT}
+          usePortal
+          modifiers={{
+            preventOverflow: { enabled: false },
+            hide: { enabled: false },
+          }}
+        >
+          {newChildren}
+        </Tooltip>
+      );
     }
+
     throw Error("Only pass a single child with inner text to Truncate");
   }
 }
