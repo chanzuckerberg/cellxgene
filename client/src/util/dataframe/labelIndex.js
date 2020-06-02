@@ -32,10 +32,10 @@ class IdentityInt32Index {
     this.maxOffset = maxOffset;
   }
 
-  keys() {
+  labels() {
     // memoize
     const k = fillRange(new Int32Array(this.maxOffset));
-    this.keys = function keys() {
+    this.labels = function labels() {
       return k;
     };
     return k;
@@ -48,9 +48,21 @@ class IdentityInt32Index {
   }
 
   // eslint-disable-next-line class-methods-use-this
+  getOffsets(arr) {
+    // labels to offsets
+    return arr;
+  }
+
+  // eslint-disable-next-line class-methods-use-this
   getLabel(i) {
     // offset to label
     return i;
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  getLabels(arr) {
+    // offsets to labels
+    return arr;
   }
 
   size() {
@@ -62,6 +74,9 @@ class IdentityInt32Index {
     time/space decision - based on the resulting density
     */
     const [minLabel, maxLabel] = extent(labelArray);
+    if (minLabel === 0 && maxLabel === labelArray.length - 1)
+      return new IdentityInt32Index(labelArray.length);
+
     const labelSpaceSize = maxLabel - minLabel + 1;
     const density = labelSpaceSize / this.maxOffset;
     /* 0.1 is a magic number, that needs testing to optimize */
@@ -71,30 +86,43 @@ class IdentityInt32Index {
     return new DenseInt32Index(labelArray, [minLabel, maxLabel]);
   }
 
-  subsetLabels(labelArray) {
-    return this.__promote(labelArray);
+  subset(labels) {
+    /* validate subset */
+    const { maxOffset } = this;
+    for (let i = 0, l = labels.length; i < l; i += 1) {
+      const label = labels[i];
+      if (label < 0 || label >= maxOffset)
+        throw new RangeError(`offset or label: ${label}`);
+    }
+    return this.__promote(labels);
+  }
+
+  /* identity index - labels are offsets */
+  isubset(offsets) {
+    return this.subset(offsets);
   }
 
   withLabel(label) {
     if (label === this.maxOffset) {
       return new IdentityInt32Index(label + 1);
     }
-    return this.__promote([...this.keys(), label]);
+    return this.__promote([...this.labels(), label]);
   }
 
   withLabels(labels) {
-    return this.__promote([...this.keys(), ...labels]);
+    return this.__promote([...this.labels(), ...labels]);
   }
 
   dropLabel(label) {
     if (label === this.maxOffset - 1) {
       return new IdentityInt32Index(label);
     }
-    const labelArray = [...this.keys()];
+    const labelArray = [...this.labels()];
     labelArray.splice(labelArray.indexOf(label), 1);
     return this.__promote(labelArray);
   }
 }
+
 class DenseInt32Index {
   /*
   DenseInt32Index indexes integer labels, and uses Int32Array typed arrays
@@ -129,12 +157,29 @@ class DenseInt32Index {
     this.getOffset = function getOffset(l) {
       return index[l - minLabel];
     };
+
+    this.getOffsets = function getOffsets(arr) {
+      const res = new arr.constructor(arr.length);
+      for (let i = 0, len = arr.length; i < len; i += 1) {
+        res[i] = index[arr[i] - minLabel];
+      }
+      return res;
+    };
+
     this.getLabel = function getLabel(i) {
       return rindex[i];
     };
+
+    this.getLabels = function getLabels(arr) {
+      const res = new arr.constructor(arr.length);
+      for (let i = 0, len = arr.length; i < len; i += 1) {
+        res[i] = rindex[arr[i]];
+      }
+      return res;
+    };
   }
 
-  keys() {
+  labels() {
     return this.rindex;
   }
 
@@ -158,20 +203,44 @@ class DenseInt32Index {
     return new DenseInt32Index(labelArray, [minLabel, maxLabel]);
   }
 
-  subsetLabels(labelArray) {
-    return this.__promote(labelArray);
+  subset(labels) {
+    /* validate subset */
+    for (let i = 0, l = labels.length; i < l; i += 1) {
+      const label = labels[i];
+      const offset = this.getOffset(label);
+      if (offset === undefined || offset === -1)
+        throw new RangeError(`unknown label: ${label}`);
+    }
+
+    return this.__promote(labels);
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  isubset(offsets) {
+    /* validate subset */
+    const { rindex } = this;
+    const maxOffset = rindex.length;
+    const labels = new Int32Array(offsets.length);
+    for (let i = 0, l = offsets.length; i < l; i += 1) {
+      const offset = offsets[i];
+      if (offset < 0 || offset >= maxOffset)
+        throw new RangeError(`out of bounds offset: ${offset}`);
+      labels[i] = rindex[offset];
+    }
+
+    return this.__promote(labels);
   }
 
   withLabel(label) {
-    return this.__promote([...this.keys(), label]);
+    return this.__promote([...this.labels(), label]);
   }
 
   withLabels(labels) {
-    return this.__promote([...this.keys(), ...labels]);
+    return this.__promote([...this.labels(), ...labels]);
   }
 
   dropLabel(label) {
-    const labelArray = [...this.keys()];
+    const labelArray = [...this.labels()];
     labelArray.splice(labelArray.indexOf(label), 1);
     return this.__promote(labelArray);
   }
@@ -207,12 +276,29 @@ class KeyIndex {
     this.getOffset = function getOffset(k) {
       return index.get(k);
     };
+
+    this.getOffsets = function getOffsets(arr) {
+      const res = new arr.constructor(arr.length);
+      for (let i = 0, len = arr.length; i < len; i += 1) {
+        res[i] = index.get(arr[i]);
+      }
+      return res;
+    };
+
     this.getLabel = function getLabel(i) {
       return rindex[i];
     };
+
+    this.getLabels = function getLabels(arr) {
+      const res = new arr.constructor(arr.length);
+      for (let i = 0, len = arr.length; i < len; i += 1) {
+        res[i] = rindex[arr[i]];
+      }
+      return res;
+    };
   }
 
-  keys() {
+  labels() {
     return this.rindex;
   }
 
@@ -220,9 +306,30 @@ class KeyIndex {
     return this.rindex.length;
   }
 
+  subset(labels) {
+    /* validate subset */
+    for (let i = 0, l = labels.length; i < l; i += 1) {
+      const label = labels[i];
+      const offset = this.getOffset(label);
+      if (offset === undefined) throw new RangeError(`unknown label: ${label}`);
+    }
+
+    return new KeyIndex(labels);
+  }
+
   // eslint-disable-next-line class-methods-use-this
-  subsetLabels(labelArray) {
-    return new KeyIndex(labelArray);
+  isubset(offsets) {
+    const { rindex } = this;
+    const maxOffset = rindex.length;
+    const labels = new Array(offsets.length);
+    for (let i = 0, l = offsets.length; i < l; i += 1) {
+      const offset = offsets[i];
+      if (offset < 0 || offset >= maxOffset)
+        throw new RangeError(`out of bounds offset: ${offset}`);
+      labels[i] = rindex[offset];
+    }
+
+    return new KeyIndex(labels);
   }
 
   withLabel(label) {

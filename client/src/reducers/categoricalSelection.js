@@ -31,7 +31,7 @@ const CategoricalSelection = (
       const names = CH.selectableCategoryNames(
         world.schema,
         CH.maxCategoryItems(prevSharedState.config),
-        dataframe.colIndex.keys()
+        dataframe.colIndex.labels()
       );
       if (names.length === 0) return state;
       return {

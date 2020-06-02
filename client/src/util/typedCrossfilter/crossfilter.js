@@ -60,9 +60,7 @@ export default class ImmutableTypedCrossfilter {
   }
 
   setData(data) {
-    const { selectionCache } = this;
-    this.selectionCache = {};
-    return new ImmutableTypedCrossfilter(data, this.dimensions, selectionCache);
+    return new ImmutableTypedCrossfilter(data, this.dimensions);
   }
 
   dimensionNames() {

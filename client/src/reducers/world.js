@@ -93,7 +93,7 @@ const WorldReducer = (
           let worldValSlice = val;
           if (!World.worldEqUniverse(state, universe)) {
             worldValSlice = universeVarData
-              .subset(state.obsAnnotations.rowIndex.keys(), [key], null)
+              .subset(state.obsAnnotations.rowIndex.labels(), [key], null)
               .icol(0)
               .asArray();
           }
@@ -129,10 +129,10 @@ const WorldReducer = (
       //
       let clippedVarData = state.varData;
       const keysToDrop = clippedVarData.colIndex
-        .keys()
+        .labels()
         .filter((k) => !unclippedVarData.hasCol(k));
       const keysToAdd = unclippedVarData.colIndex
-        .keys()
+        .labels()
         .filter((k) => !clippedVarData.hasCol(k));
       keysToDrop.forEach((k) => {
         clippedVarData = clippedVarData.dropCol(k);
@@ -171,7 +171,7 @@ const WorldReducer = (
       let newAnnotation = null;
       if (!World.worldEqUniverse(state, universe)) {
         newAnnotation = universe.obsAnnotations
-          .subset(state.obsAnnotations.rowIndex.keys(), [name], null)
+          .subset(state.obsAnnotations.rowIndex.labels(), [name], null)
           .icol(0)
           .asArray();
       } else {
@@ -303,7 +303,7 @@ const WorldReducer = (
       let schema = origSchema;
 
       // alias the names the server sent us, in case they were not the same as the schema
-      const embedingLabels = embedding.colIndex.keys();
+      const embedingLabels = embedding.colIndex.labels();
       const labels = {
         [embedingLabels[0]]: dims[0],
         [embedingLabels[1]]: dims[1],

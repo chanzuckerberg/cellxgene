@@ -40,84 +40,6 @@ These functions are used exclusively by the actions and reducers to
 build an internal POJO for use by the rendering components.
 */
 
-function promoteTypedArray(o) {
-  /*
-  Decide what internal data type to use for the data returned from 
-  the server.
-
-  TODO - future optimization: not all int32/uint32 data series require
-  promotion to float64.  We COULD simply look at the data to decide. 
-  */
-  if (isFpTypedArray(o) || Array.isArray(o)) return o;
-
-  let TyepdArrayCtor;
-  switch (o.constructor) {
-    case Int8Array:
-    case Uint8Array:
-    case Uint8ClampedArray:
-    case Int16Array:
-    case Uint16Array:
-      TyepdArrayCtor = Float32Array;
-      break;
-
-    case Int32Array:
-    case Uint32Array:
-      TyepdArrayCtor = Float64Array;
-      break;
-
-    default:
-      throw new Error("Unexpected data type returned from server.");
-  }
-  if (o.constructor === TyepdArrayCtor) return o;
-  return new TyepdArrayCtor(o);
-}
-
-export function matrixFBSToDataframe(arrayBuffers) {
-  /*
-  Convert array of Matrix FBS to a Dataframe.
-
-  The application has strong assumptions that all scalar data will be
-  stored as a float32 or float64 (regardless of underlying data types).
-  For example, clipping of value ranges (eg, user-selected percentiles)
-  depends on the ability to use NaN in any numeric type.
-
-  All float data from the server is left as is.  All non-float is promoted
-  to an appropriate float.
-  */
-  if (!Array.isArray(arrayBuffers)) {
-    arrayBuffers = [arrayBuffers];
-  }
-  if (arrayBuffers.length === 0) {
-    return Dataframe.Dataframe.empty();
-  }
-
-  const fbs = arrayBuffers.map((ab) => decodeMatrixFBS(ab, true)); // leave in place
-  /* check that all FBS have same row dimensionality */
-  const { nRows } = fbs[0];
-  fbs.forEach((b) => {
-    if (b.nRows !== nRows)
-      throw new Error("FBS with inconsistent dimensionality");
-  });
-  const columns = fbs
-    .map((fb) =>
-      fb.columns.map((c) => {
-        if (isFpTypedArray(c) || Array.isArray(c)) return c;
-        return promoteTypedArray(c);
-      })
-    )
-    .flat();
-  const colIdx = fbs.map((b) => b.colIdx).flat();
-  const nCols = columns.length;
-
-  const df = new Dataframe.Dataframe(
-    [nRows, nCols],
-    columns,
-    null,
-    new Dataframe.KeyIndex(colIdx)
-  );
-  return df;
-}
-
 export function createUniverseFromResponse(configResponse, schemaResponse) {
   /*
   build & return universe from a REST 0.2 /config, /schema and /annotations/obs response
@@ -178,7 +100,7 @@ export function addObsAnnotations(universe, df) {
 
   // for all of the new data, reconcile with schema and sort categories.
   const dfs = Array.isArray(df) ? df : [df];
-  const keys = dfs.map((d) => d.colIndex.keys()).flat();
+  const keys = dfs.map((d) => d.colIndex.labels()).flat();
   const { schema } = universe;
   keys.forEach((k) => {
     const colSchema = schema.annotations.obsByName[k];
