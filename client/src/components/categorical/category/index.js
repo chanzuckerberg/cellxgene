@@ -22,7 +22,7 @@ import * as globals from "../../../globals";
   };
 })
 class Category extends React.Component {
-  _labelWidth = globals.leftSidebarWidth - 80;
+  _labelWidth = globals.leftSidebarWidth - 100;
 
   constructor(props) {
     super(props);
@@ -247,12 +247,13 @@ class Category extends React.Component {
             }}
             style={{
               cursor: "pointer",
-              width: this._labelWidth,
             }}
             onClick={this.handleCategoryClick}
           >
             <Truncate>
-              <span style={{ width: this._labelWidth }}>{metadataField}</span>
+              <span style={{ maxWidth: this._labelWidth }}>
+                polygondwanaland-polygondwanaland-polygondwanaland
+              </span>
             </Truncate>
             {isExpanded ? (
               <FaChevronDown
