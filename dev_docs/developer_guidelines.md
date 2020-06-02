@@ -51,11 +51,17 @@ JEST_ENV=prod make pydist install-dist dev-env smoke-test
 
 ## Server dev
 ### Install
+
+To install from the source tree
 * Build the client and put static files in place: `make build-for-server-dev`
 * Install from local files: `make install-dev`
 
+To install from a candidate python distribution
+* Make the distribution: `make pydist`
+* Install it: `make install-dist`
+
 ### Launch
-* `cellxgene launch [options] <datafile>`
+* `cellxgene launch [options] <datafile>` or `make start-server`
 
 ### Reloading
 If you install cellxgene using `make install-dev` the server will be restarted every time you make changes on the server code. If changes affects the client, the browser must be reloaded.
@@ -78,13 +84,13 @@ If you would like to run the server tests individually, follow the steps below
 ## Client dev
 ### Install
 1. Install prereqs for client: `make dev-env`
-2. Install cellxgene server: `make install-dev` Caveat: this will not build the production client package - you must use the [server install](#install) instructions above to serve web assets.
+2. Install cellxgene server as described in the [server install](#install) instructions above.
 
 ### Launch
-To launch with hot reloading you need to launch the server and the client separately. Node's hot reloading starts the client on its own node server and auto-refreshes when changes are made.
-1. Launch server (the client relies on the REST API being available): `cellxgene launch [options] <datafile>`
-2. Launch client: in `client/` directory run `npm run start`
-3. Client will be served on localhost:3000
+To launch with hot reloading, you need to launch the server and the client separately. Node's hot reloading starts the client on its own node server and auto-refreshes when changes are made to source files.
+1. Launch server (the client relies on the REST API being available): `cellxgene launch --debug [other_options] <datafile>` or `make start-server`
+2. Launch client: in `client/` directory run `make start-frontend`
+3. Client will be served on `localhost:3000`
 
 ### Build
 To build only the client: `make build-client`
@@ -95,10 +101,13 @@ We use `eslint` to lint the code and `prettier` as our code formatter.
 ### Test
 
 If you would like to run the client tests individually, follow the steps below in the `client` directory
-1. For unit tests run `npm run unit-test` or `make unit-test`
-1. For the smoke test run `npm run smoke-test` or `make smoke-test`
+1. For unit tests run `make unit-test`
+1. For the smoke test run `make smoke-test` for the standard smoke test suite and `make smoke-test-annotations` for the annotations test suite.
+
+If you would like to run the smoke tests against a hot-reloaded version of the client:
+1. Start the hot-reloading servers as described in the [Client dev section](#client-dev). If you plan to run the standard test suite (without annotations), you'll have to start the backend server with annotations disabled (e.g. `CXG_OPTIONS='--debug --disable-annotations' make start-server`).
+1. From the project root, `cd client`
+1. Run either the standard E2E test suite with `CXG_CLIENT_PORT=3000 make e2e` or the annotations test suite with `CXG_CLIENT_PORT=3000 make e2e-annotations`
 
 ### Tips
 * You can also install/launch the server side code from npm scrips (requires python3.6 with virtualenv) with the `scripts/backend_dev` script.
-
-
