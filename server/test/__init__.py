@@ -60,7 +60,7 @@ def skip_if(condition, reason: str):
     return decorator
 
 
-def app_config(data_locator, backed=False):
+def app_config(data_locator, backed=False, extra={}):
     args = {
         "embeddings__names": ["umap", "tsne", "pca"],
         "presentation__max_categories": 100,
@@ -74,6 +74,7 @@ def app_config(data_locator, backed=False):
     }
     config = AppConfig()
     config.update(**args)
+    config.update(**extra)
     config.complete_config()
     return config
 
