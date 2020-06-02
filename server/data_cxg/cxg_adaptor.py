@@ -133,6 +133,10 @@ class CxgAdaptor(DataAdaptor):
             return False
         return True
 
+    def has_array(self, name):
+        a_type = tiledb.object_type(path_join(self.url, name), ctx=self.tiledb_ctx)
+        return a_type == "array"
+
     def _validate_and_initialize(self):
         """
         remember, preload_validation() has already been called, so
@@ -147,13 +151,7 @@ class CxgAdaptor(DataAdaptor):
         * version 0.1 -- metadata attache to cxg_group_metadata array.
           Same as 0, except it adds group metadata.
         """
-        a_type = tiledb.object_type(path_join(self.url, "cxg_group_metadata"), ctx=self.tiledb_ctx)
-        if a_type is None:
-            # version 0
-            cxg_version = "0.0"
-            title = None
-            about = None
-        elif a_type == "array":
+        if self.has_array("cxg_group_metadata"):
             # version >0
             gmd = self.open_array("cxg_group_metadata")
             cxg_version = gmd.meta["cxg_version"]
@@ -161,6 +159,11 @@ class CxgAdaptor(DataAdaptor):
                 cxg_properties = json.loads(gmd.meta["cxg_properties"])
                 title = cxg_properties.get("title", None)
                 about = cxg_properties.get("about", None)
+        else:
+            # version 0
+            cxg_version = "0.0"
+            title = None
+            about = None
 
         if cxg_version not in ["0.0", "0.1"]:
             raise DatasetAccessError(f"cxg matrix is not valid: {self.url}")
@@ -251,10 +254,18 @@ class CxgAdaptor(DataAdaptor):
                 data = X[:, :]
             else:
                 data = X.multi_index[obs_items, var_items]
-            nrows, obsindices = self.__remap_indices(X.shape[0], obs_mask, data["obs"])
-            ncols, varindices = self.__remap_indices(X.shape[1], var_mask, data["var"])
+
+            nrows, obsindices = self.__remap_indices(X.shape[0], obs_mask, data.get("coords", data)["obs"])
+            ncols, varindices = self.__remap_indices(X.shape[1], var_mask, data.get("coords", data)["var"])
             densedata = np.zeros((nrows, ncols), dtype=self.get_X_array_dtype())
             densedata[obsindices, varindices] = data[""]
+            if self.has_array("X_col_shift"):
+                X_col_shift = self.open_array("X_col_shift")
+                if var_items == slice(None):
+                    densedata += X_col_shift[:]
+                else:
+                    densedata += X_col_shift.multi_index[var_items][""]
+
             return densedata
 
         else:

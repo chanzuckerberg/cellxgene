@@ -241,8 +241,7 @@ class DataAdaptor(metaclass=ABCMeta):
         duplicate_columns = list(set(labels_df.columns) & set(obs_columns))
         if len(duplicate_columns) > 0:
             raise KeyError(
-                "Labels file may not contain column names which overlap "
-                f"with h5ad obs columns {duplicate_columns}"
+                "Labels file may not contain column names which overlap " f"with h5ad obs columns {duplicate_columns}"
             )
 
         # labels must have same count as obs annotations
