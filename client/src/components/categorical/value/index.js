@@ -381,7 +381,7 @@ class CategoryValue extends React.Component {
                 onMouseLeave={this.handleMouseEnter}
               />
             </label>
-            <Truncate size={labelWidth} fontSize={14}>
+            <Truncate>
               <span
                 data-testid={`categorical-value-${metadataField}-${displayString}`}
                 data-testclass="categorical-value"

@@ -143,7 +143,7 @@ class Category extends React.Component {
               <input disabled id={checkboxID} checked type="checkbox" />
               <span className="bp3-control-indicator" />
             </label>
-            <Truncate fontSize={14} size={this._labelWidth}>
+            <Truncate>
               <span
                 style={{
                   cursor: "pointer",
@@ -194,11 +194,13 @@ class Category extends React.Component {
     ) {
       return (
         <div style={{ marginBottom: 10, marginTop: 4 }}>
-          <Truncate size={150} fontSize={14} bold>
-            <span style={{ fontWeight: 700 }}>{metadataField}</span>
+          <Truncate>
+            <span style={{ maxWidth: 150, fontWeight: 700 }}>
+              {metadataField}
+            </span>
           </Truncate>
-          <Truncate size={150} fontSize={14}>
-            <span>
+          <Truncate>
+            <span style={{ maxWidth: 150 }}>
               {`: ${schema.annotations.obsByName[metadataField].categories[0]}`}
             </span>
           </Truncate>
@@ -249,8 +251,8 @@ class Category extends React.Component {
             }}
             onClick={this.handleCategoryClick}
           >
-            <Truncate fontSize={14} size={this._labelWidth}>
-              <span>{metadataField}</span>
+            <Truncate>
+              <span style={{ width: this._labelWidth }}>{metadataField}</span>
             </Truncate>
             {isExpanded ? (
               <FaChevronDown

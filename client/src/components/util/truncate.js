@@ -75,5 +75,5 @@ export default (props) => {
       </Tooltip>
     );
   }
-  throw Error("Only pass a single child with inner text to Truncate");
+  throw Error("Only pass a single child with text to Truncate");
 };

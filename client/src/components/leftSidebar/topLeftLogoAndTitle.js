@@ -66,8 +66,9 @@ class LeftSideBar extends React.Component {
           }}
         >
           {aboutURL ? (
-            <Truncate size={width} fontSize={fontSize}>
+            <Truncate>
               <a
+                style={{ width: 185 }}
                 href={aboutURL}
                 data-testid="header"
                 target="_blank"
@@ -77,8 +78,10 @@ class LeftSideBar extends React.Component {
               </a>
             </Truncate>
           ) : (
-            <Truncate size={width} fontSize={fontSize}>
-              <span data-testid="header">{datasetTitle}</span>
+            <Truncate>
+              <span style={{ width: 185 }} data-testid="header">
+                {datasetTitle}
+              </span>
             </Truncate>
           )}
         </div>
