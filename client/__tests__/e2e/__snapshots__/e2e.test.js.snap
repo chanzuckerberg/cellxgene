@@ -1,0 +1,5 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`did launch page launched 1`] = `"<span style=\\"width: 185px; display: flex; overflow: hidden; justify-content: flex-start;\\"><span style=\\"overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-shrink: 1; min-width: 5px;\\">pbm</span><span style=\\"color: transparent; position: relative; overflow: hidden; white-space: nowrap;\\">c3k<span style=\\"position: absolute; right: 0px; color: initial;\\">c3k</span></span></span>"`;
+
+exports[`metadata loads categories and values from dataset appear 1`] = `undefined`;

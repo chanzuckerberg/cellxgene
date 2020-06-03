@@ -57,6 +57,7 @@ export default (props) => {
     const newChildren = React.Children.map(children, (child) =>
       cloneElement(child, {
         children: truncatedJSX,
+        "aria-label": originalString,
       })
     );
     return (
