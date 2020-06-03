@@ -29,6 +29,23 @@ presentation:
   custom_colors: true
 
 multi_dataset:
+  # If dataroot is set, then cellxgene may serve multiple datasets.  This parameter is not
+  # compatable with single_dataset/datapath.
+  # dataroot may be a string, representing the path to a directory or S3 prefix.  In this
+  # case the datasets in that location are accessed from <server>/d/<datasetname>.
+  # example:
+  #     dataroot:  /path/to/datasets/
+  # or
+  #     dataroot:  s3://bucket/prefix/
+  #
+  # As an alternative, dataroot can be a dictionary, mapping url prefixes to dataroot paths.
+  # example:
+  #     dataroot:
+  #         set1 : /path/to/set1_datasets/
+  #         set2 : /path/to/set2_datasets/
+  # In this case, datasets can be accessed from <server>/set1/<datasetname> or
+  # <server>/set2/<datasetname>.
+
   dataroot: null
 
   # The index page when in multi-dataset mode:
