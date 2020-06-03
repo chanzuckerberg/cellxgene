@@ -8,47 +8,45 @@ import DynamicScatterplot from "../scatterplot/scatterplot";
 import TopLeftLogoAndTitle from "./topLeftLogoAndTitle";
 import AuthN from "./AuthN";
 
-@connect((state) => ({
-  scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
-  scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
-}))
+const LeftSideBar = (props) => {
+  const { scatterplotXXaccessor, scatterplotYYaccessor } = props;
+  const { loading } = useAuth0();
 
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
-class LeftSideBar extends React.Component {
-  render() {
-    const { scatterplotXXaccessor, scatterplotYYaccessor } = this.props;
-    const { loading } = useAuth0();
-
-    if (loading) {
-      return <div>Loading...</div>;
-    }
-    return (
+  return (
+    <div
+      style={{
+        /* x y blur spread color */
+        borderRight: `1px solid ${globals.lightGrey}`,
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+      }}
+    >
+      <TopLeftLogoAndTitle />
       <div
         style={{
-          /* x y blur spread color */
-          borderRight: `1px solid ${globals.lightGrey}`,
-          display: "flex",
-          flexDirection: "column",
           height: "100%",
+          width: globals.leftSidebarWidth,
+          overflowY: "auto",
         }}
       >
-        <TopLeftLogoAndTitle />
-        <div
-          style={{
-            height: "100%",
-            width: globals.leftSidebarWidth,
-            overflowY: "auto",
-          }}
-        >
-          <AuthN />
-          <Categorical />
-        </div>
-        {scatterplotXXaccessor && scatterplotYYaccessor ? (
-          <DynamicScatterplot />
-        ) : null}
+        <AuthN />
+        <Categorical />
       </div>
-    );
-  }
-}
+      {scatterplotXXaccessor && scatterplotYYaccessor ? (
+        <DynamicScatterplot />
+      ) : null}
+    </div>
+  );
+};
 
-export default LeftSideBar;
+const mapStateToProps = (state) => ({
+  scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
+  scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
+});
+
+export default connect(mapStateToProps)(LeftSideBar);

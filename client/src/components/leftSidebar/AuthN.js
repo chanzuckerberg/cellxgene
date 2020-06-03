@@ -9,10 +9,16 @@ const AuthN = () => {
   return (
     <div>
       {!isAuthenticated && (
-        <button onClick={() => loginWithRedirect({})}>Log in</button>
+        <button type="button" onClick={() => loginWithRedirect({})}>
+          Log in
+        </button>
       )}
 
-      {isAuthenticated && <button onClick={() => logout()}>Log out</button>}
+      {isAuthenticated && (
+        <button type="button" onClick={() => logout()}>
+          Log out
+        </button>
+      )}
     </div>
   );
 };
