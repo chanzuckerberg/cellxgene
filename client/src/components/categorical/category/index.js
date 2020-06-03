@@ -252,7 +252,7 @@ class Category extends React.Component {
           >
             <Truncate>
               <span style={{ maxWidth: this._labelWidth }}>
-                polygondwanaland-polygondwanaland-polygondwanaland
+                {metadataField}
               </span>
             </Truncate>
             {isExpanded ? (
