@@ -16,6 +16,8 @@ export default (props) => {
     const firstString = originalString.substr(0, originalString.length / 2);
     const secondString = originalString.substr(originalString.length / 2);
 
+    console.log(children.props.style.color);
+
     const splitStyle = {
       ...children.props.style,
       display: "flex",
@@ -34,7 +36,7 @@ export default (props) => {
     const secondStyleInner = {
       position: "absolute",
       right: 0,
-      color: "initial",
+      color: children.props.style.color || "initial",
     };
     const secondStyle = {
       color: "transparent",
