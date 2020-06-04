@@ -324,10 +324,25 @@ class CategoryValue extends React.Component {
 
     const valueToggleLabel = `value-toggle-checkbox-${displayString}`;
 
+    const LEFT_MARGIN = 33;
+    const CHECKBOX = 26;
+    const CELL_NUMBER = 61;
+    const ANNO_MENU = 26;
+    const LABEL_MARGIN = 24;
+
+    const otherElementsWidth =
+      LEFT_MARGIN +
+      CHECKBOX +
+      CELL_NUMBER +
+      LABEL_MARGIN +
+      (isUserAnno ? ANNO_MENU : 0);
+
+    const OCCUPANCY_WIDTH = 100;
+
     const labelWidth =
       colorAccessor && !isColorBy
-        ? globals.leftSidebarWidth - 145 - 15 - 100
-        : globals.leftSidebarWidth - 145 - 15;
+        ? globals.leftSidebarWidth - otherElementsWidth - OCCUPANCY_WIDTH
+        : globals.leftSidebarWidth - otherElementsWidth;
 
     return (
       <div
@@ -400,6 +415,7 @@ class CategoryValue extends React.Component {
                   lineHeight: "1.1em",
                   height: "1.1em",
                   verticalAlign: "middle",
+                  marginRight: LABEL_MARGIN,
                 }}
               >
                 {displayString}

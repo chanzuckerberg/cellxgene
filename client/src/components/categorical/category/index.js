@@ -11,6 +11,10 @@ import Truncate from "../../util/truncate";
 
 import * as globals from "../../../globals";
 
+const LABEL_WIDTH = globals.leftSidebarWidth - 100;
+const ANNO_BUTTON_WIDTH = 50;
+const LABEL_WIDTH_ANNO = LABEL_WIDTH - ANNO_BUTTON_WIDTH;
+
 @connect((state, ownProps) => {
   const { metadataField } = ownProps;
   return {
@@ -22,8 +26,6 @@ import * as globals from "../../../globals";
   };
 })
 class Category extends React.Component {
-  _labelWidth = globals.leftSidebarWidth - 100;
-
   constructor(props) {
     super(props);
     this.state = {
@@ -148,7 +150,7 @@ class Category extends React.Component {
                 style={{
                   cursor: "pointer",
                   display: "inline-block",
-                  width: this._labelWidth,
+                  width: LABEL_WIDTH,
                 }}
               >
                 {metadataField}
@@ -252,7 +254,9 @@ class Category extends React.Component {
           >
             <Truncate>
               <span
-                style={{ maxWidth: this._labelWidth }}
+                style={{
+                  maxWidth: isUserAnno ? LABEL_WIDTH_ANNO : LABEL_WIDTH,
+                }}
                 data-testid={`${metadataField}:category-label`}
               >
                 {metadataField}

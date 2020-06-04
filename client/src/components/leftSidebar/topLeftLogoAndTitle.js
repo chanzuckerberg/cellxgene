@@ -5,6 +5,9 @@ import * as globals from "../../globals";
 import Logo from "../framework/logo";
 import Truncate from "../util/truncate";
 
+const DATASET_TITLE_WIDTH = 190;
+const DATASET_TITLE_FONT_SIZE = 14;
+
 @connect((state) => ({
   datasetTitle: state.config?.displayNames?.dataset ?? "",
   aboutURL: state.config?.links?.["about-dataset"],
@@ -14,8 +17,6 @@ import Truncate from "../util/truncate";
 class LeftSideBar extends React.Component {
   render() {
     const { datasetTitle, aboutURL } = this.props;
-    const width = 190;
-    const fontSize = 14;
 
     return (
       <div
@@ -54,11 +55,11 @@ class LeftSideBar extends React.Component {
         </span>
         <div
           style={{
-            fontSize,
+            fontSize: DATASET_TITLE_FONT_SIZE,
             position: "relative",
             top: -6,
             display: "inline-block",
-            width,
+            width: DATASET_TITLE_WIDTH,
             marginLeft: "7px",
             height: "1.2em",
             overflow: "hidden",
