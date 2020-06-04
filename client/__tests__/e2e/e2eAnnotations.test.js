@@ -203,8 +203,8 @@ describe.each([
   async function assertCategoryExists(categoryName) {
     const handle = await utils.waitByID(`${categoryName}:category-label`);
 
-    const result = await handle.evaluate((node) => 
-      node.getAttribute("aria-label");
+    const result = await handle.evaluate((node) =>
+      node.getAttribute("aria-label")
     );
 
     expect(result).toBe(categoryName);
