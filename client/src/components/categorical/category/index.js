@@ -251,7 +251,10 @@ class Category extends React.Component {
             onClick={this.handleCategoryClick}
           >
             <Truncate>
-              <span style={{ maxWidth: this._labelWidth }}>
+              <span
+                style={{ maxWidth: this._labelWidth }}
+                data-testid={`${metadataField}:category-label`}
+              >
                 {metadataField}
               </span>
             </Truncate>
