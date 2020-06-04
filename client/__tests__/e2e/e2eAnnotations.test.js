@@ -201,16 +201,18 @@ describe.each([
   });
 
   async function assertCategoryExists(categoryName) {
-    const handle = await utils.waitByID(`${categoryName}:category-expand`);
-    const result = await handle.evaluate((node) =>
-      node.getAttribute("aria-label")
+    const handle = await utils.waitByID(`${categoryName}:category-label`);
+
+    const result = await handle.evaluate((node) => 
+      node.getAttribute("aria-label");
     );
+
     expect(result).toBe(categoryName);
   }
 
   async function assertCategoryDoesNotExist(categoryName) {
     const result = await page.$(
-      `[data-testid='${categoryName}:category-expand']`
+      `[data-testid='${categoryName}:category-label']`
     );
     expect(result).toBeNull();
   }
