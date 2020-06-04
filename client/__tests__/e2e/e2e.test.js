@@ -50,7 +50,7 @@ describe("metadata loads", () => {
     for (const label in data.categorical) {
       const elem = await utils.getOneElementInnerHTML(
         `[data-testid="category-${label}"]`
-      ).resolves;
+      );
       expect(elem).toMatchSnapshot();
       await utils.clickOn(`${label}:category-expand`);
       const categories = await cxgActions.getAllCategoriesAndCounts(label);
