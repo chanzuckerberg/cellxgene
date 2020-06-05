@@ -2,14 +2,18 @@ import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
 import { FaChevronRight, FaChevronDown } from "react-icons/fa";
-import { AnchorButton, Button, Tooltip, Position } from "@blueprintjs/core";
+import { AnchorButton, Button, Tooltip } from "@blueprintjs/core";
 import CategoryFlipperLayout from "./categoryFlipperLayout";
 import AnnoMenu from "./annoMenuCategory";
 import AnnoDialogEditCategoryName from "./annoDialogEditCategoryName";
 import AnnoDialogAddLabel from "./annoDialogAddLabel";
+import Truncate from "../../util/truncate";
 
 import * as globals from "../../../globals";
-import maybeTruncateString from "../../../util/maybeTruncateString";
+
+const LABEL_WIDTH = globals.leftSidebarWidth - 100;
+const ANNO_BUTTON_WIDTH = 50;
+const LABEL_WIDTH_ANNO = LABEL_WIDTH - ANNO_BUTTON_WIDTH;
 
 @connect((state, ownProps) => {
   const { metadataField } = ownProps;
@@ -114,10 +118,6 @@ class Category extends React.Component {
     We are still loading this category, so render a "busy" signal.
     */
     const { metadataField } = this.props;
-    const truncatedString = maybeTruncateString(
-      metadataField,
-      globals.categoryDisplayStringMaxLength
-    );
 
     const checkboxID = `category-select-${metadataField}`;
 
@@ -145,26 +145,17 @@ class Category extends React.Component {
               <input disabled id={checkboxID} checked type="checkbox" />
               <span className="bp3-control-indicator" />
             </label>
-            <Tooltip
-              content={metadataField}
-              disabled={truncatedString === null}
-              hoverOpenDelay={globals.tooltipHoverOpenDelayQuick}
-              position={Position.LEFT}
-              usePortal
-              modifiers={{
-                preventOverflow: { enabled: false },
-                hide: { enabled: false },
-              }}
-            >
+            <Truncate>
               <span
                 style={{
                   cursor: "pointer",
                   display: "inline-block",
+                  width: LABEL_WIDTH,
                 }}
               >
-                {truncatedString || metadataField}
+                {metadataField}
               </span>
-            </Tooltip>
+            </Truncate>
           </div>
           <div>
             <Button minimal loading intent="primary" />
@@ -199,21 +190,22 @@ class Category extends React.Component {
       false
     );
 
-    const truncatedString = maybeTruncateString(
-      metadataField,
-      globals.categoryDisplayStringMaxLength
-    );
-
     if (
       !isUserAnno &&
       schema?.annotations?.obsByName[metadataField]?.categories?.length === 1
     ) {
       return (
         <div style={{ marginBottom: 10, marginTop: 4 }}>
-          <span style={{ fontWeight: 700 }}>
-            {truncatedString || metadataField}
-          </span>
-          : {schema.annotations.obsByName[metadataField].categories[0]}
+          <Truncate>
+            <span style={{ maxWidth: 150, fontWeight: 700 }}>
+              {metadataField}
+            </span>
+          </Truncate>
+          <Truncate>
+            <span style={{ maxWidth: 150 }}>
+              {`: ${schema.annotations.obsByName[metadataField].categories[0]}`}
+            </span>
+          </Truncate>
         </div>
       );
     }
@@ -246,46 +238,42 @@ class Category extends React.Component {
             />
             <span className="bp3-control-indicator" />
           </label>
-          <Tooltip
-            content={metadataField}
-            disabled={truncatedString === null}
-            hoverOpenDelay={globals.tooltipHoverOpenDelayQuick}
-            position={Position.LEFT}
-            usePortal
-            modifiers={{
-              preventOverflow: { enabled: false },
-              hide: { enabled: false },
+          <span
+            role="menuitem"
+            tabIndex="0"
+            data-testid={`${metadataField}:category-expand`}
+            onKeyPress={(e) => {
+              if (e.key === "Enter") {
+                this.handleCategoryClick();
+              }
             }}
+            style={{
+              cursor: "pointer",
+            }}
+            onClick={this.handleCategoryClick}
           >
-            <span
-              role="menuitem"
-              tabIndex="0"
-              data-testid={`${metadataField}:category-expand`}
-              onKeyPress={(e) => {
-                if (e.key === "Enter") {
-                  this.handleCategoryClick();
-                }
-              }}
-              style={{
-                cursor: "pointer",
-                display: "inline-block",
-              }}
-              onClick={this.handleCategoryClick}
-            >
-              {truncatedString || metadataField}
-              {isExpanded ? (
-                <FaChevronDown
-                  data-testclass="category-expand-is-expanded"
-                  style={{ fontSize: 10, marginLeft: 5 }}
-                />
-              ) : (
-                <FaChevronRight
-                  data-testclass="category-expand-is-not-expanded"
-                  style={{ fontSize: 10, marginLeft: 5 }}
-                />
-              )}
-            </span>
-          </Tooltip>
+            <Truncate>
+              <span
+                style={{
+                  maxWidth: isUserAnno ? LABEL_WIDTH_ANNO : LABEL_WIDTH,
+                }}
+                data-testid={`${metadataField}:category-label`}
+              >
+                {metadataField}
+              </span>
+            </Truncate>
+            {isExpanded ? (
+              <FaChevronDown
+                data-testclass="category-expand-is-expanded"
+                style={{ fontSize: 10, marginLeft: 5 }}
+              />
+            ) : (
+              <FaChevronRight
+                data-testclass="category-expand-is-not-expanded"
+                style={{ fontSize: 10, marginLeft: 5 }}
+              />
+            )}
+          </span>
         </div>
         {<AnnoDialogEditCategoryName metadataField={metadataField} />}
         {<AnnoDialogAddLabel metadataField={metadataField} />}

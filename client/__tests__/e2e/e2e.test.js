@@ -27,8 +27,10 @@ afterAll(() => {
 
 describe("did launch", () => {
   test("page launched", async () => {
-    const element = await utils.getOneElementInnerHTML("[data-testid='header']");
-    expect(element).toBe(data.title);
+    const element = await utils.getOneElementInnerHTML(
+      "[data-testid='header']"
+    );
+    expect(element).toMatchSnapshot();
   });
 
   test("terms of service, if they are there", async () => {
@@ -46,10 +48,10 @@ describe("did launch", () => {
 describe("metadata loads", () => {
   test("categories and values from dataset appear", async () => {
     for (const label in data.categorical) {
-      const categoryName = await utils.getOneElementInnerText(
+      const elem = await utils.getOneElementInnerHTML(
         `[data-testid="category-${label}"]`
       );
-      expect(categoryName).toMatch(label);
+      expect(elem).toMatchSnapshot();
       await utils.clickOn(`${label}:category-expand`);
       const categories = await cxgActions.getAllCategoriesAndCounts(label);
       expect(Object.keys(categories)).toMatchObject(

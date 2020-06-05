@@ -168,7 +168,7 @@ class Occupancy extends React.PureComponent {
             else this.createHistogram();
           }}
         />
-        <div key="text" style={{ fontFamily: "Roboto", fontSize: "14px" }}>
+        <div key="text" style={{ fontSize: "14px" }}>
           <p style={{ margin: "0" }}>
             This histograms shows the distribution of{" "}
             <strong>{colorAccessor}</strong> within{" "}
