@@ -1,9 +1,9 @@
 from server import __version__ as cellxgene_version
-from flatten_dict import flatten
+from flatten_dict import flatten, unflatten
 import os
 from os.path import splitext, basename, isdir
 import sys
-from urllib.parse import urlparse
+from urllib.parse import urlparse, quote_plus
 import yaml
 import copy
 
@@ -167,6 +167,14 @@ class AppConfig(object):
             self.attr_checked[attr] = False
 
         self.is_completed = False
+
+    def write_config(self, config_file):
+        """output the config to a yaml file"""
+        mapping = self.__mapping(self.default_config)
+        for attrname in mapping.keys():
+            mapping[attrname] = getattr(self, attrname)
+        config = unflatten(mapping, splitter=lambda key: key.split("__"))
+        yaml.dump(config, open(config_file, "w"))
 
     def update(self, **kw):
         for key, value in kw.items():
@@ -395,6 +403,8 @@ class AppConfig(object):
         for key in self.multi_dataset__dataroot.keys():
             # sanity check for well formed keys
             if type(key) != str:
+                raise ConfigurationError(f"error in multi_dataset__dataroot {key}")
+            if quote_plus(key) != key:
                 raise ConfigurationError(f"error in multi_dataset__dataroot {key}")
             if os.path.split(os.path.normpath(key))[-1] != key:
                 raise ConfigurationError(f"error in multi_dataset__dataroot {key}")
