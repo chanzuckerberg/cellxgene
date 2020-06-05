@@ -1,5 +1,16 @@
 import { ControlsHelpers as CH } from "../util/stateManager";
 
+/*
+State is an object, with a key for each categorical annotation, and a
+value which is a Map of label->t/f, reflecting selection state for the label.
+
+Label state default (if missing) is up to the component, but typically true.
+
+{
+  "louvain": Map(),
+  ...
+}
+*/
 const CategoricalSelection = (
   state,
   action,
@@ -13,11 +24,7 @@ const CategoricalSelection = (
     case "set clip quantiles": {
       const { world } = nextSharedState;
       const newState = CH.createCategoricalSelection(
-        world,
-        CH.selectableCategoryNames(
-          world.schema,
-          CH.maxCategoryItems(prevSharedState.config)
-        )
+        CH.selectableCategoryNames(world.schema)
       );
       return newState;
     }
@@ -30,13 +37,12 @@ const CategoricalSelection = (
       const { world } = nextSharedState;
       const names = CH.selectableCategoryNames(
         world.schema,
-        CH.maxCategoryItems(prevSharedState.config),
         dataframe.colIndex.labels()
       );
       if (names.length === 0) return state;
       return {
         ...state,
-        ...CH.createCategoricalSelection(world, names),
+        ...CH.createCategoricalSelection(names),
       };
     }
 
@@ -44,16 +50,12 @@ const CategoricalSelection = (
       /*
       Set the specific category in this field to false
       */
-      const newCategoryValueSelected = Array.from(
-        state[action.metadataField].categoryValueSelected
-      );
-      newCategoryValueSelected[action.categoryIndex] = true;
+      const { metadataField, label } = action;
+      const newSelected = new Map(state[metadataField]);
+      newSelected.set(label, true);
       const newCategoricalSelection = {
         ...state,
-        [action.metadataField]: {
-          ...state[action.metadataField],
-          categoryValueSelected: newCategoryValueSelected,
-        },
+        [action.metadataField]: newSelected,
       };
       return newCategoricalSelection;
     }
@@ -62,16 +64,12 @@ const CategoricalSelection = (
       /*
       Set the specific category in this field to false
       */
-      const newCategoryValueSelected = Array.from(
-        state[action.metadataField].categoryValueSelected
-      );
-      newCategoryValueSelected[action.categoryIndex] = false;
+      const { metadataField, label } = action;
+      const newSelected = new Map(state[metadataField]);
+      newSelected.set(label, false);
       const newCategoricalSelection = {
         ...state,
-        [action.metadataField]: {
-          ...state[action.metadataField],
-          categoryValueSelected: newCategoryValueSelected,
-        },
+        [action.metadataField]: newSelected,
       };
       return newCategoricalSelection;
     }
@@ -80,15 +78,13 @@ const CategoricalSelection = (
       /*
       set all categories in this field to false.
       */
+      const { metadataField, labels } = action;
+      const { selected } = state[metadataField];
+      const newSelected = new Map(selected);
+      labels.forEach((label) => newSelected.set(label, false));
       const newCategoricalSelection = {
         ...state,
-        [action.metadataField]: {
-          ...state[action.metadataField],
-          categorySelected: false,
-          categoryValueSelected: Array.from(
-            state[action.metadataField].categoryValueSelected
-          ).fill(false),
-        },
+        [action.metadataField]: newSelected,
       };
       return newCategoricalSelection;
     }
@@ -97,15 +93,13 @@ const CategoricalSelection = (
       /*
       set all categories in this field to true.
       */
+      const { metadataField, labels } = action;
+      const { selected } = state[metadataField];
+      const newSelected = new Map(selected);
+      labels.forEach((label) => newSelected.set(label, true));
       const newCategoricalSelection = {
         ...state,
-        [action.metadataField]: {
-          ...state[action.metadataField],
-          categorySelected: true,
-          categoryValueSelected: Array.from(
-            state[action.metadataField].categoryValueSelected
-          ).fill(true),
-        },
+        [action.metadataField]: newSelected,
       };
       return newCategoricalSelection;
     }
@@ -115,7 +109,7 @@ const CategoricalSelection = (
       const name = action.data;
       return {
         ...state,
-        ...CH.createCategoricalSelection(world, [name]),
+        ...CH.createCategoricalSelection([name]),
       };
     }
 
@@ -143,7 +137,7 @@ const CategoricalSelection = (
       const { [name]: _, ...partialState } = state;
       return {
         ...partialState,
-        ...CH.createCategoricalSelection(world, [name]),
+        ...CH.createCategoricalSelection([name]),
       };
     }
 

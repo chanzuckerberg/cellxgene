@@ -130,8 +130,7 @@ class Categories extends React.Component {
     const ontologyEnabled = ontology?.enabled ?? false;
     /* all names, sorted in display order.  Will be rendered in this order */
     const allCategoryNames = ControlsHelpers.selectableCategoryNames(
-      schema,
-      ControlsHelpers.maxCategoryItems(config)
+      schema
     ).sort();
 
     return (

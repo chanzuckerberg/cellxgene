@@ -10,6 +10,7 @@ import AnnoDialogAddLabel from "./annoDialogAddLabel";
 
 import * as globals from "../../../globals";
 import maybeTruncateString from "../../../util/maybeTruncateString";
+import { createCategorySummary } from "../../../util/stateManager/controlsHelpers";
 
 @connect((state, ownProps) => {
   const { metadataField } = ownProps;
@@ -18,6 +19,7 @@ import maybeTruncateString from "../../../util/maybeTruncateString";
     categoricalSelection: state.categoricalSelection,
     annotations: state.annotations,
     universe: state.universe,
+    world: state.world,
     schema: state.world?.schema,
   };
 })
@@ -26,36 +28,56 @@ class Category extends React.Component {
     super(props);
     this.state = {
       isChecked: true,
+      categorySummary: this.createCategorySummary(),
     };
   }
 
+  createCategorySummary() {
+    const { world, metadataField } = this.props;
+    if (!world || !metadataField || !world.obsAnnotations.hasCol(metadataField))
+      return null;
+    return createCategorySummary(world, metadataField);
+  }
+
   componentDidUpdate(prevProps) {
-    const { categoricalSelection, metadataField } = this.props;
+    const { categoricalSelection, metadataField, world } = this.props;
+    let { categorySummary } = this.state;
+
+    if (
+      world !== prevProps.world ||
+      metadataField !== prevProps.metadataField ||
+      !categorySummary
+    ) {
+      const newCategorySummary = this.createCategorySummary();
+      if (categorySummary !== newCategorySummary) {
+        categorySummary = newCategorySummary;
+        this.setState({ categorySummary });
+      }
+    }
+
     const cat = categoricalSelection?.[metadataField];
     if (
       categoricalSelection !== prevProps.categoricalSelection &&
       !!cat &&
       !!this.checkbox
     ) {
-      const categoryCount = {
-        // total number of categories in this dimension
-        totalCatCount: cat.numCategoryValues,
-        // number of selected options in this category
-        selectedCatCount: _.reduce(
-          cat.categoryValueSelected,
-          (res, cond) => (cond ? res + 1 : res),
-          0
-        ),
-      };
-      if (categoryCount.selectedCatCount === categoryCount.totalCatCount) {
+      // total number of categories in this dimension
+      const totalCatCount = categorySummary.numCategoryValues;
+      // number of selected options in this category
+      const selectedCatCount = categorySummary.categoryValues.reduce(
+        (res, label) => (cat.get(label) ?? true ? res + 1 : res),
+        0
+      );
+
+      if (selectedCatCount === totalCatCount) {
         /* everything is on, so not indeterminate */
         this.checkbox.indeterminate = false;
         this.setState({ isChecked: true }); // eslint-disable-line react/no-did-update-set-state
-      } else if (categoryCount.selectedCatCount === 0) {
+      } else if (selectedCatCount === 0) {
         /* nothing is on, so no */
         this.checkbox.indeterminate = false;
         this.setState({ isChecked: false }); // eslint-disable-line react/no-did-update-set-state
-      } else if (categoryCount.selectedCatCount < categoryCount.totalCatCount) {
+      } else if (selectedCatCount < totalCatCount) {
         /* to be explicit... */
         this.checkbox.indeterminate = true;
         this.setState({ isChecked: false }); // eslint-disable-line react/no-did-update-set-state
@@ -83,25 +105,28 @@ class Category extends React.Component {
 
   toggleNone() {
     const { dispatch, metadataField } = this.props;
+    const { categorySummary } = this.state;
     dispatch({
       type: "categorical metadata filter none of these",
       metadataField,
+      labels: categorySummary.categoryValues,
     });
     this.setState({ isChecked: false });
   }
 
   toggleAll() {
     const { dispatch, metadataField } = this.props;
+    const { categorySummary } = this.state;
     dispatch({
       type: "categorical metadata filter all of these",
       metadataField,
+      labels: categorySummary.categoryValues,
     });
     this.setState({ isChecked: true });
   }
 
   handleToggleAllClick() {
     const { isChecked } = this.state;
-    // || this.checkbox.indeterminate === false
     if (isChecked) {
       this.toggleNone();
     } else {
@@ -175,16 +200,10 @@ class Category extends React.Component {
   }
 
   render() {
-    const { isChecked } = this.state;
-    const {
-      metadataField,
-      categoricalSelection,
-      isColorAccessor,
-      isExpanded,
-      schema,
-    } = this.props;
+    const { isChecked, categorySummary } = this.state;
+    const { metadataField, isColorAccessor, isExpanded, schema } = this.props;
 
-    const isStillLoading = !(categoricalSelection?.[metadataField] ?? false);
+    const isStillLoading = !categorySummary;
     if (isStillLoading) {
       return this.renderIsStillLoading();
     }
@@ -193,11 +212,7 @@ class Category extends React.Component {
 
     const isUserAnno =
       schema?.annotations?.obsByName[metadataField]?.writable ?? false;
-    const isTruncated = _.get(
-      categoricalSelection,
-      [metadataField, "isTruncated"],
-      false
-    );
+    const isTruncated = categorySummary?.isTruncated ?? false;
 
     const truncatedString = maybeTruncateString(
       metadataField,
@@ -223,6 +238,7 @@ class Category extends React.Component {
         metadataField={metadataField}
         isExpanded={isExpanded}
         isUserAnno={isUserAnno}
+        categorySummary={categorySummary}
       >
         <div
           style={{

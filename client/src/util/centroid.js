@@ -1,6 +1,10 @@
 import quantile from "./quantile";
 import { memoize } from "./dataframe/util";
 import { unassignedCategoryLabel } from "../globals";
+import {
+  createCategorySummary,
+  isSelectableCategoryName,
+} from "./stateManager/controlsHelpers";
 
 /*
   Centroid coordinate calculation
@@ -18,31 +22,24 @@ label -> {
  yCoordinates: Float32Array
 }
 */
-const getCoordinatesByLabel = (
-  obsAnnotations,
-  obsLayout,
-  categoryName,
-  layoutDimNames,
-  categoricalSelection,
-  schemaObsByName
-) => {
+const getCoordinatesByLabel = (world, categoryName, layoutDimNames) => {
   const coordsByCategoryLabel = new Map();
-
-  const categoryArray = obsAnnotations.col(categoryName).asArray();
-
-  const layoutXArray = obsLayout.col(layoutDimNames[0]).asArray();
-  const layoutYArray = obsLayout.col(layoutDimNames[1]).asArray();
-
-  const { categoryValueIndices, categoryValueCounts } =
-    categoricalSelection?.[categoryName] || {};
-
   // If the coloredBy is not a categorical col
-  if (categoryValueIndices === undefined) {
+  if (!isSelectableCategoryName(world.schema, categoryName)) {
     return coordsByCategoryLabel;
   }
 
-  // Check to see if the current category is a user created annotation
-  const isUserAnno = schemaObsByName[categoryName].writable;
+  const { obsAnnotations, obsLayout } = world;
+  const categoryArray = obsAnnotations.col(categoryName).asArray();
+  const layoutXArray = obsLayout.col(layoutDimNames[0]).asArray();
+  const layoutYArray = obsLayout.col(layoutDimNames[1]).asArray();
+
+  const categorySummary = createCategorySummary(world, categoryName);
+  const {
+    isUserAnno,
+    categoryValueIndices,
+    categoryValueCounts,
+  } = categorySummary;
 
   // Iterate over all cells
   for (let i = 0, len = categoryArray.length; i < len; i += 1) {
@@ -96,23 +93,9 @@ const getCoordinatesByLabel = (
   label -> [x-Coordinate, y-Coordinate]
 */
 
-const calcMedianCentroid = (
-  obsAnnotations,
-  obsLayout,
-  categoryName,
-  layoutDimNames,
-  categoricalSelection,
-  schemaObsByName
-) => {
+const calcMedianCentroid = (world, categoryName, layoutDimNames) => {
   // generate a map describing the coordinates for each label within the given category
-  const dataMap = getCoordinatesByLabel(
-    obsAnnotations,
-    obsLayout,
-    categoryName,
-    layoutDimNames,
-    categoricalSelection,
-    schemaObsByName
-  );
+  const dataMap = getCoordinatesByLabel(world, categoryName, layoutDimNames);
 
   // label => [medianXCoordinate, medianYCoordinate]
   const coordinates = new Map();
@@ -137,19 +120,9 @@ const calcMedianCentroid = (
 };
 
 // A simple function to hash the parameters
-const hashMedianCentroid = (
-  obsAnnotations,
-  obsLayout,
-  categoryName,
-  layoutDimNames,
-  categorySelection,
-  schemaObsByName
-) => {
-  return `${obsAnnotations.__id}+${
-    obsLayout.__id
-  }:${categoryName}:${layoutDimNames}:${Object.keys(
-    categorySelection
-  )}:${Object.keys(schemaObsByName)}`;
+const hashMedianCentroid = (world, categoryName, layoutDimNames) => {
+  const { obsAnnotations, obsLayout } = world;
+  return `${obsAnnotations.__id}+${obsLayout.__id}:${categoryName}:${layoutDimNames}`;
 };
 // export the memoized calculation function
 export default memoize(calcMedianCentroid, hashMedianCentroid);

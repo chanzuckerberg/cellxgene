@@ -22,11 +22,9 @@ import maybeTruncateString from "../../../util/maybeTruncateString";
 import { labelPrompt, isLabelErroneous } from "../labelUtil";
 
 /* this is defined outside of the class so we can use it in connect() */
-function _currentLabel(ownProps, categoricalSelection) {
-  const { metadataField, categoryIndex } = ownProps;
-  return String(
-    categoricalSelection[metadataField].categoryValues[categoryIndex]
-  ).valueOf();
+function _currentLabelAsString(ownProps) {
+  const { metadataField, categorySummary, categoryIndex } = ownProps;
+  return String(categorySummary.categoryValues[categoryIndex]).valueOf();
 }
 
 @connect((state, ownProps) => {
@@ -34,8 +32,7 @@ function _currentLabel(ownProps, categoricalSelection) {
   const { metadataField } = ownProps;
   const isDilated =
     pointDilation.metadataField === metadataField &&
-    pointDilation.categoryField ===
-      _currentLabel(ownProps, categoricalSelection);
+    pointDilation.categoryField === _currentLabelAsString(ownProps);
   return {
     categoricalSelection,
     annotations: state.annotations,
@@ -52,21 +49,27 @@ class CategoryValue extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      editedLabelText: this.currentLabel(),
+      editedLabelText: this.currentLabelAsString(),
     };
   }
 
   componentDidUpdate(prevProps) {
-    const { categoricalSelection, metadataField, categoryIndex } = this.props;
+    const {
+      categoricalSelection,
+      metadataField,
+      categoryIndex,
+      categorySummary,
+    } = this.props;
     if (
       prevProps.categoricalSelection !== categoricalSelection ||
       prevProps.metadataField !== metadataField ||
-      prevProps.categoryIndex !== categoryIndex
+      prevProps.categoryIndex !== categoryIndex ||
+      prevProps.categorySummary !== categorySummary
     ) {
       // adequately checked to prevent looping
       // eslint-disable-next-line react/no-did-update-set-state
       this.setState({
-        editedLabelText: this.currentLabel(),
+        editedLabelText: this.currentLabelAsString(),
       });
     }
   }
@@ -74,7 +77,6 @@ class CategoryValue extends React.Component {
   handleDeleteValue = () => {
     const { dispatch, metadataField } = this.props;
     const label = this.getLabel();
-
     dispatch({
       type: "annotation: delete label",
       metadataField,
@@ -123,7 +125,7 @@ class CategoryValue extends React.Component {
 
   labelNameError = (name) => {
     const { metadataField, ontology, schema } = this.props;
-    if (name === this.currentLabel()) return false;
+    if (name === this.currentLabelAsString()) return false;
     return isLabelErroneous(name, metadataField, ontology, schema);
   };
 
@@ -133,31 +135,44 @@ class CategoryValue extends React.Component {
 
   activateEditLabelMode = () => {
     const { dispatch, metadataField, categoryIndex } = this.props;
+    const label = this.getLabel();
     dispatch({
       type: "annotation: activate edit label mode",
       metadataField,
       categoryIndex,
+      label,
     });
   };
 
   cancelEditMode = () => {
     const { dispatch, metadataField, categoryIndex } = this.props;
+    const label = this.getLabel();
     this.setState({
-      editedLabelText: this.currentLabel(),
+      editedLabelText: this.currentLabelAsString(),
     });
     dispatch({
       type: "annotation: cancel edit label mode",
       metadataField,
       categoryIndex,
+      label,
     });
   };
 
   toggleOff = () => {
-    const { dispatch, metadataField, categoryIndex } = this.props;
+    const {
+      dispatch,
+      metadataField,
+      categoryIndex,
+      categorySummary,
+    } = this.props;
+    const labels = categorySummary.categoryValues;
+    const label = labels[categoryIndex];
     dispatch({
       type: "categorical metadata filter deselect",
       metadataField,
       categoryIndex,
+      label,
+      labels,
     });
   };
 
@@ -172,16 +187,23 @@ class CategoryValue extends React.Component {
     If and only if true, update the component
     */
     const { props, state } = this;
-    const { metadataField, categoryIndex, categoricalSelection } = props;
-    const { categoricalSelection: newCategoricalSelection } = nextProps;
+    const {
+      metadataField,
+      categoryIndex,
+      categoricalSelection,
+      categorySummary,
+    } = props;
+    const {
+      categoryIndex: newCategoryIndex,
+      categoricalSelection: newCategoricalSelection,
+      categorySummary: newCategorySummary,
+    } = nextProps;
 
+    const label = categorySummary.categoryValues[categoryIndex];
+    const newLabel = newCategorySummary.categoryValues[newCategoryIndex];
     const valueSelectionChange =
-      categoricalSelection[metadataField].categoryValueSelected[
-        categoryIndex
-      ] !==
-      newCategoricalSelection[metadataField].categoryValueSelected[
-        categoryIndex
-      ];
+      (categoricalSelection[metadataField].get(label) ?? true) !==
+      (newCategoricalSelection[metadataField].get(newLabel) ?? true);
 
     const worldChange = props.world !== nextProps.world;
     const colorAccessorChange = props.colorAccessor !== nextProps.colorAccessor;
@@ -203,29 +225,42 @@ class CategoryValue extends React.Component {
   };
 
   toggleOn = () => {
-    const { dispatch, metadataField, categoryIndex } = this.props;
+    const {
+      dispatch,
+      metadataField,
+      categoryIndex,
+      categorySummary,
+    } = this.props;
+    const labels = categorySummary.categoryValues;
+    const label = labels[categoryIndex];
     dispatch({
       type: "categorical metadata filter select",
       metadataField,
       categoryIndex,
+      label,
+      labels,
     });
   };
 
   handleMouseEnter = () => {
     const { dispatch, metadataField, categoryIndex } = this.props;
+    const label = this.getLabel();
     dispatch({
       type: "category value mouse hover start",
       metadataField,
       categoryIndex,
+      label,
     });
   };
 
   handleMouseExit = () => {
     const { dispatch, metadataField, categoryIndex } = this.props;
+    const label = this.getLabel();
     dispatch({
       type: "category value mouse hover end",
       metadataField,
       categoryIndex,
+      label,
     });
   };
 
@@ -239,16 +274,13 @@ class CategoryValue extends React.Component {
   };
 
   getLabel = () => {
-    const { metadataField, categoryIndex, categoricalSelection } = this.props;
-    const category = categoricalSelection[metadataField];
-    const label = category.categoryValues[categoryIndex];
-
+    const { metadataField, categoryIndex, categorySummary } = this.props;
+    const label = categorySummary.categoryValues[categoryIndex];
     return label;
   };
 
-  currentLabel() {
-    const { categoricalSelection } = this.props;
-    return _currentLabel(this.props, categoricalSelection);
+  currentLabelAsString() {
+    return _currentLabelAsString(this.props);
   }
 
   isAddCurrentSelectionDisabled(category, value) {
@@ -296,6 +328,7 @@ class CategoryValue extends React.Component {
       flippedProps,
       isDilated,
       world,
+      categorySummary,
     } = this.props;
     const ontologyEnabled = ontology?.enabled ?? false;
 
@@ -304,10 +337,11 @@ class CategoryValue extends React.Component {
     if (!categoricalSelection) return null;
 
     const category = categoricalSelection[metadataField];
-    const selected = category.categoryValueSelected[categoryIndex];
-    const count = category.categoryValueCounts[categoryIndex];
-    const value = category.categoryValues[categoryIndex];
-    const displayString = this.currentLabel();
+    // const selected = category.categoryValueSelected[categoryIndex];
+    const selected = category.get(this.getLabel()) ?? true;
+    const count = categorySummary.categoryValueCounts[categoryIndex];
+    const value = categorySummary.categoryValues[categoryIndex];
+    const displayString = this.currentLabelAsString();
 
     /* this is the color scale, so add swatches below */
     const isColorBy = metadataField === colorAccessor;
