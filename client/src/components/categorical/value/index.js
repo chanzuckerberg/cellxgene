@@ -218,6 +218,10 @@ class CategoryValue extends React.Component {
     const editingLabel = state.editedLabelText !== nextState.editedLabelText;
     const dilationChange = props.isDilated !== nextProps.isDilated;
 
+    const count = categorySummary.categoryValueCounts[categoryIndex];
+    const newCount = newCategorySummary.categoryValueCounts[newCategoryIndex];
+    const countChanged = count !== newCount;
+
     return (
       valueSelectionChange ||
       worldChange ||
@@ -225,7 +229,8 @@ class CategoryValue extends React.Component {
       annotationsChange ||
       crossfilterChange ||
       editingLabel ||
-      dilationChange
+      dilationChange ||
+      countChanged
     );
   };
 

@@ -38,6 +38,7 @@ export const cellxgeneActions = (page, utils) => ({
   },
 
   async getAllCategoriesAndCounts(category) {
+    // these load asynchronously, so we have to wait for the specific category.
     await utils.waitByID(`category-${category}`)
     return page.$$eval(
       `[data-testid="category-${category}"] [data-testclass='categorical-row']`,
