@@ -1,6 +1,4 @@
 import React from "react";
-import _ from "lodash";
-import { connect } from "react-redux";
 import { Flipper, Flipped } from "react-flip-toolkit";
 
 import * as globals from "../../../globals";
@@ -15,7 +13,7 @@ class Category extends React.Component {
   renderCategoryItems(optTuples) {
     const { metadataField, isUserAnno, categorySummary } = this.props;
 
-    return _.map(optTuples, (tuple, i) => {
+    return optTuples.map((tuple, i) => {
       return (
         <Flipped key={tuple[1]} flipId={tuple[1]}>
           {(flippedProps) => (
@@ -39,7 +37,7 @@ class Category extends React.Component {
     const { metadataField, categorySummary, children, isExpanded } = this.props;
     const { isTruncated } = categorySummary;
     const optTuples = [...categorySummary.categoryValueIndices];
-    const optTuplesAsKey = _.map(optTuples, (t) => t[0]).join(""); // animation
+    const optTuplesAsKey = optTuples.map((t) => t[0]).join(""); // animation
 
     return (
       <div

@@ -11,12 +11,7 @@ Label state default (if missing) is up to the component, but typically true.
   ...
 }
 */
-const CategoricalSelection = (
-  state,
-  action,
-  nextSharedState,
-  prevSharedState
-) => {
+const CategoricalSelection = (state, action, nextSharedState) => {
   switch (action.type) {
     case "initial data load complete (universe exists)":
     case "set World to current selection":
@@ -105,7 +100,6 @@ const CategoricalSelection = (
     }
 
     case "annotation: create category": {
-      const { world } = nextSharedState;
       const name = action.data;
       return {
         ...state,
@@ -132,7 +126,6 @@ const CategoricalSelection = (
     case "annotation: label edited":
     case "annotation: delete label": {
       /* need to rebuild the state for this annotation */
-      const { world } = nextSharedState;
       const name = action.metadataField;
       const { [name]: _, ...partialState } = state;
       return {

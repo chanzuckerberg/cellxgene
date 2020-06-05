@@ -1,5 +1,4 @@
 import React from "react";
-import { connect } from "react-redux";
 import { Button, Tooltip, Dialog, Classes, Colors } from "@blueprintjs/core";
 
 class AnnoDialog extends React.PureComponent {

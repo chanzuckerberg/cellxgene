@@ -1,5 +1,4 @@
 import React from "react";
-import { connect } from "react-redux";
 import { Button, MenuItem } from "@blueprintjs/core";
 import { Select } from "@blueprintjs/select";
 

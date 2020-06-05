@@ -1,5 +1,4 @@
 import React from "react";
-import _ from "lodash";
 import { connect } from "react-redux";
 import { FaChevronRight, FaChevronDown } from "react-icons/fa";
 import { AnchorButton, Button, Tooltip } from "@blueprintjs/core";
@@ -10,7 +9,7 @@ import AnnoDialogAddLabel from "./annoDialogAddLabel";
 import Truncate from "../../util/truncate";
 
 import * as globals from "../../../globals";
-import { createCategorySummary } from "../../../util/stateManager/controlsHelpers";
+import { createCategorySummary as _createCategorySummary } from "../../../util/stateManager/controlsHelpers";
 
 const LABEL_WIDTH = globals.leftSidebarWidth - 100;
 const ANNO_BUTTON_WIDTH = 50;
@@ -36,13 +35,6 @@ class Category extends React.Component {
     };
   }
 
-  createCategorySummary() {
-    const { world, metadataField } = this.props;
-    if (!world || !metadataField || !world.obsAnnotations.hasCol(metadataField))
-      return null;
-    return createCategorySummary(world, metadataField);
-  }
-
   componentDidUpdate(prevProps) {
     const { categoricalSelection, metadataField, world } = this.props;
     let { categorySummary } = this.state;
@@ -55,7 +47,7 @@ class Category extends React.Component {
       const newCategorySummary = this.createCategorySummary();
       if (categorySummary !== newCategorySummary) {
         categorySummary = newCategorySummary;
-        this.setState({ categorySummary });
+        this.setState({ categorySummary }); // eslint-disable-line react/no-did-update-set-state
       }
     }
 
@@ -106,6 +98,13 @@ class Category extends React.Component {
       onExpansionChange(metadataField);
     }
   };
+
+  createCategorySummary() {
+    const { world, metadataField } = this.props;
+    if (!world || !metadataField || !world.obsAnnotations.hasCol(metadataField))
+      return null;
+    return _createCategorySummary(world, metadataField);
+  }
 
   toggleNone() {
     const { dispatch, metadataField } = this.props;

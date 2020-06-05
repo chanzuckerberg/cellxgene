@@ -22,7 +22,7 @@ import { labelPrompt, isLabelErroneous } from "../labelUtil";
 
 /* this is defined outside of the class so we can use it in connect() */
 function _currentLabelAsString(ownProps) {
-  const { metadataField, categorySummary, categoryIndex } = ownProps;
+  const { categorySummary, categoryIndex } = ownProps;
   return String(categorySummary.categoryValues[categoryIndex]).valueOf();
 }
 
@@ -71,6 +71,12 @@ class CategoryValue extends React.Component {
         editedLabelText: this.currentLabelAsString(),
       });
     }
+  }
+
+  getLabel() {
+    const { categoryIndex, categorySummary } = this.props;
+    const label = categorySummary.categoryValues[categoryIndex];
+    return label;
   }
 
   handleDeleteValue = () => {
@@ -270,12 +276,6 @@ class CategoryValue extends React.Component {
   handleChoice = (e) => {
     /* Blueprint Suggest format */
     this.setState({ editedLabelText: e.target });
-  };
-
-  getLabel = () => {
-    const { metadataField, categoryIndex, categorySummary } = this.props;
-    const label = categorySummary.categoryValues[categoryIndex];
-    return label;
   };
 
   currentLabelAsString() {
