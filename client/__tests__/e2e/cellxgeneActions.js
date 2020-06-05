@@ -44,9 +44,10 @@ export const cellxgeneActions = (page, utils) => ({
       (rows) =>
         Object.fromEntries(
           rows.map((row) => {
-            const cat = row.querySelector(
-              "[data-testclass='categorical-value']"
-            ).innerText;
+            const cat = row
+              .querySelector("[data-testclass='categorical-value']")
+              .getAttribute("aria-label");
+
             const count = row.querySelector(
               "[data-testclass='categorical-value-count']"
             ).innerText;

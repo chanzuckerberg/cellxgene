@@ -82,7 +82,6 @@ class CentroidLabels extends PureComponent {
             textAnchor="middle"
             data-label={label}
             style={{
-              fontFamily: "Roboto Condensed",
               fontSize,
               fontWeight,
               fill: "black",

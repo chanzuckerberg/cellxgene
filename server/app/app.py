@@ -58,7 +58,7 @@ def cache_control_always(**cache_kwargs):
 
 @webbp.route("/", methods=["GET"])
 @cache_control(public=True, max_age=ONE_WEEK)
-def dataset_index(dataset=None):
+def dataset_index(url_dataroot=None, dataset=None):
     config = current_app.app_config
     if dataset is None:
         if config.single_dataset__datapath:
@@ -66,7 +66,10 @@ def dataset_index(dataset=None):
         else:
             return dataroot_index()
     else:
-        location = path_join(config.multi_dataset__dataroot, dataset)
+        dataroot = config.multi_dataset__dataroot.get(url_dataroot)
+        if dataroot is None:
+            abort(HTTPStatus.NOT_FOUND)
+        location = path_join(dataroot, dataset)
 
     scripts = config.server__scripts
     inline_scripts = config.server__inline_scripts
@@ -91,18 +94,21 @@ def health():
     return health_check(config)
 
 
-def get_data_adaptor(dataset=None):
+def get_data_adaptor(url_dataroot=None, dataset=None):
     config = current_app.app_config
 
     if dataset is None:
         datapath = config.single_dataset__datapath
     else:
-        datapath = path_join(config.multi_dataset__dataroot, dataset)
+        dataroot = config.multi_dataset__dataroot.get(url_dataroot)
+        if dataroot is None:
+            raise DatasetAccessError(f"Invalid dataset {url_dataroot}/{dataset}")
+        datapath = path_join(dataroot, dataset)
         # path_join returns a normalized path.  Therefore it is
         # sufficient to check that the datapath starts with the
         # dataroot to determine that the datapath is under the dataroot.
-        if not datapath.startswith(config.multi_dataset__dataroot):
-            raise DatasetAccessError("Invalid dataset {dataset}")
+        if not datapath.startswith(dataroot):
+            raise DatasetAccessError("Invalid dataset {url_dataroot}/{dataset}")
 
     if datapath is None:
         return common_rest.abort_and_log(HTTPStatus.BAD_REQUEST, "Invalid dataset NONE", loglevel=logging.INFO)
@@ -115,7 +121,7 @@ def rest_get_data_adaptor(func):
     @wraps(func)
     def wrapped_function(self, dataset=None):
         try:
-            with get_data_adaptor(dataset) as data_adaptor:
+            with get_data_adaptor(self.url_dataroot, dataset) as data_adaptor:
                 return func(self, data_adaptor)
         except DatasetAccessError:
             return common_rest.abort_and_log(
@@ -132,22 +138,23 @@ def dataroot_test_index():
     data += "<body><H1>Welcome to cellxgene</H1>"
 
     config = current_app.app_config
-    locator = DataLocator(config.multi_dataset__dataroot, region_name=config.data_locator__s3__region_name)
     datasets = []
-    for fname in locator.ls():
-        location = path_join(config.multi_dataset__dataroot, fname)
-        try:
-            MatrixDataLoader(location, app_config=config)
-            datasets.append(fname)
-        except DatasetAccessError:
-            # skip over invalid datasets
-            pass
+    for url_dataroot, dataroot in config.multi_dataset__dataroot.items():
+        locator = DataLocator(dataroot, region_name=config.data_locator__s3__region_name)
+        for fname in locator.ls():
+            location = path_join(dataroot, fname)
+            try:
+                MatrixDataLoader(location, app_config=config)
+                datasets.append((url_dataroot, fname))
+            except DatasetAccessError:
+                # skip over invalid datasets
+                pass
 
     data += "<br/>Select one of these datasets...<br/>"
     data += "<ul>"
     datasets.sort()
-    for dataset in datasets:
-        data += f"<li><a href=d/{dataset}>{dataset}</a></li>"
+    for url_dataroot, dataset in datasets:
+        data += f"<li><a href={url_dataroot}/{dataset}>{dataset}</a></li>"
     data += "</ul>"
     data += "</body></html>"
 
@@ -165,21 +172,29 @@ def dataroot_index():
         return redirect(config.multi_dataset__index)
 
 
-class SchemaAPI(Resource):
+class DatasetResource(Resource):
+    """Base class for all Resources that act on datasets."""
+
+    def __init__(self, url_dataroot):
+        super().__init__()
+        self.url_dataroot = url_dataroot
+
+
+class SchemaAPI(DatasetResource):
     @cache_control(public=True, max_age=ONE_WEEK)
     @rest_get_data_adaptor
     def get(self, data_adaptor):
         return common_rest.schema_get(data_adaptor, current_app.annotations)
 
 
-class ConfigAPI(Resource):
+class ConfigAPI(DatasetResource):
     @cache_control(public=True, max_age=ONE_WEEK)
     @rest_get_data_adaptor
     def get(self, data_adaptor):
         return common_rest.config_get(current_app.app_config, data_adaptor, current_app.annotations)
 
 
-class AnnotationsObsAPI(Resource):
+class AnnotationsObsAPI(DatasetResource):
     @cache_control(public=True, max_age=ONE_WEEK)
     @rest_get_data_adaptor
     def get(self, data_adaptor):
@@ -191,14 +206,14 @@ class AnnotationsObsAPI(Resource):
         return common_rest.annotations_obs_put(request, data_adaptor, current_app.annotations)
 
 
-class AnnotationsVarAPI(Resource):
+class AnnotationsVarAPI(DatasetResource):
     @cache_control(public=True, max_age=ONE_WEEK)
     @rest_get_data_adaptor
     def get(self, data_adaptor):
         return common_rest.annotations_var_get(request, data_adaptor, current_app.annotations)
 
 
-class DataVarAPI(Resource):
+class DataVarAPI(DatasetResource):
     @cache_control(no_store=True)
     @rest_get_data_adaptor
     def put(self, data_adaptor):
@@ -210,21 +225,21 @@ class DataVarAPI(Resource):
         return common_rest.data_var_get(request, data_adaptor)
 
 
-class ColorsAPI(Resource):
+class ColorsAPI(DatasetResource):
     @cache_control(public=True, max_age=ONE_WEEK)
     @rest_get_data_adaptor
     def get(self, data_adaptor):
         return common_rest.colors_get(data_adaptor)
 
 
-class DiffExpObsAPI(Resource):
+class DiffExpObsAPI(DatasetResource):
     @cache_control(no_store=True)
     @rest_get_data_adaptor
     def post(self, data_adaptor):
         return common_rest.diffexp_obs_post(request, data_adaptor)
 
 
-class LayoutObsAPI(Resource):
+class LayoutObsAPI(DatasetResource):
     @cache_control(public=True, max_age=ONE_WEEK)
     @rest_get_data_adaptor
     def get(self, data_adaptor):
@@ -236,20 +251,25 @@ class LayoutObsAPI(Resource):
         return common_rest.layout_obs_put(request, data_adaptor)
 
 
-def get_api_resources(bp_api):
+def get_api_resources(bp_api, url_dataroot=None):
     api = Api(bp_api)
+
+    def add_resource(resource, url):
+        """convenience function to make the outer function less verbose"""
+        api.add_resource(resource, url, resource_class_args=(url_dataroot,))
+
     # Initialization routes
-    api.add_resource(SchemaAPI, "/schema")
-    api.add_resource(ConfigAPI, "/config")
+    add_resource(SchemaAPI, "/schema")
+    add_resource(ConfigAPI, "/config")
     # Data routes
-    api.add_resource(AnnotationsObsAPI, "/annotations/obs")
-    api.add_resource(AnnotationsVarAPI, "/annotations/var")
-    api.add_resource(DataVarAPI, "/data/var")
+    add_resource(AnnotationsObsAPI, "/annotations/obs")
+    add_resource(AnnotationsVarAPI, "/annotations/var")
+    add_resource(DataVarAPI, "/data/var")
     # Display routes
-    api.add_resource(ColorsAPI, "/colors")
+    add_resource(ColorsAPI, "/colors")
     # Computation routes
-    api.add_resource(DiffExpObsAPI, "/diffexp/obs")
-    api.add_resource(LayoutObsAPI, "/layout/obs")
+    add_resource(DiffExpObsAPI, "/diffexp/obs")
+    add_resource(LayoutObsAPI, "/layout/obs")
     return api
 
 
@@ -285,10 +305,18 @@ class Server:
             # NOTE:  These routes only allow the dataset to be in the directory
             # of the dataroot, and not a subdirectory.  We may want to change
             # the route format at some point
-            bp_api = Blueprint("api_dataset", __name__, url_prefix="/d/<dataset>" + api_version)
-            resources = get_api_resources(bp_api)
-            self.app.register_blueprint(resources.blueprint)
-            self.app.add_url_rule("/d/<dataset>/", "dataset_index", dataset_index, methods=["GET"])
+            for url_dataroot in app_config.multi_dataset__dataroot.keys():
+                bp_api = Blueprint(
+                    f"api_dataset_{url_dataroot}", __name__, url_prefix=f"/{url_dataroot}/<dataset>" + api_version
+                )
+                resources = get_api_resources(bp_api, url_dataroot)
+                self.app.register_blueprint(resources.blueprint)
+                self.app.add_url_rule(
+                    f"/{url_dataroot}/<dataset>/",
+                    f"dataset_index_{url_dataroot}",
+                    lambda dataset: dataset_index(url_dataroot, dataset),
+                    methods=["GET"],
+                )
         self.app.matrix_data_cache_manager = app_config.matrix_data_cache_manager
         self.app.annotations = app_config.user_annotations
         self.app.app_config = app_config

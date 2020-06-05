@@ -1,9 +1,9 @@
 from server import __version__ as cellxgene_version
-from flatten_dict import flatten
+from flatten_dict import flatten, unflatten
 import os
 from os.path import splitext, basename, isdir
 import sys
-from urllib.parse import urlparse
+from urllib.parse import urlparse, quote_plus
 import yaml
 import copy
 
@@ -125,17 +125,23 @@ class AppConfig(object):
         dc = copy.deepcopy(config)
         mapping = {}
 
-        # special case for tiledb_ctx whose value is a dict.
-        val = config.get("adaptor", {}).get("cxg_adaptor", {}).get("tiledb_ctx")
-        if val is not None:
-            mapping["adaptor__cxg_adaptor__tiledb_ctx"] = (("adaptor", "cxg_adaptor", "tiledb_ctx"), val)
-            del dc["adaptor"]["cxg_adaptor"]["tiledb_ctx"]
-
-        # special case for csp_directives whose value is a dict.
-        val = config.get("server", {}).get("csp_directives")
-        if val is not None:
-            mapping["server__csp_directives"] = (("server", "csp_directives"), val)
-            del dc["server"]["csp_directives"]
+        # special cases where the value could be a dict.
+        # If its value is not None, the entry is added to the mapping, and not included
+        # in the flattening below.
+        dictval_cases = [
+            ("adaptor", "cxg_adaptor", "tiledb_ctx"),
+            ("server", "csp_directives"),
+            ("multi_dataset", "dataroot"),
+        ]
+        for dictval_case in dictval_cases:
+            cur = dc
+            for part in dictval_case[:-1]:
+                cur = cur.get(part, {})
+            val = cur.get(dictval_case[-1])
+            if val is not None:
+                key = "__".join(dictval_case)
+                mapping[key] = (dictval_case, val)
+                del cur[dictval_case[-1]]
 
         flat_config = flatten(dc)
         for key, value in flat_config.items():
@@ -161,6 +167,14 @@ class AppConfig(object):
             self.attr_checked[attr] = False
 
         self.is_completed = False
+
+    def write_config(self, config_file):
+        """output the config to a yaml file"""
+        mapping = self.__mapping(self.default_config)
+        for attrname in mapping.keys():
+            mapping[attrname] = getattr(self, attrname)
+        config = unflatten(mapping, splitter=lambda key: key.split("__"))
+        yaml.dump(config, open(config_file, "w"))
 
     def update(self, **kw):
         for key, value in kw.items():
@@ -302,6 +316,14 @@ class AppConfig(object):
         self.__check_attr("data_locator__s3__region_name", (type(None), bool, str))
         if self.data_locator__s3__region_name is True:
             path = self.single_dataset__datapath or self.multi_dataset__dataroot
+            if type(path) == dict:
+                # if multi_dataset__dataroot is a dict, then use the first key
+                # that is in s3.   NOTE:  it is not supported to have dataroots
+                # in different regions.
+                paths = path.values()
+                for path in paths:
+                    if path.startswith("s3://"):
+                        break
             if path.startswith("s3://"):
                 region_name = discover_s3_region_name(path)
                 if region_name is None:
@@ -366,7 +388,7 @@ class AppConfig(object):
                 )
 
     def handle_multi_dataset(self, context):
-        self.__check_attr("multi_dataset__dataroot", (type(None), str))
+        self.__check_attr("multi_dataset__dataroot", (type(None), dict, str))
         self.__check_attr("multi_dataset__index", (type(None), bool, str))
         self.__check_attr("multi_dataset__allowed_matrix_types", list)
         self.__check_attr("multi_dataset__matrix_cache__max_datasets", int)
@@ -374,6 +396,18 @@ class AppConfig(object):
 
         if self.multi_dataset__dataroot is None:
             return
+
+        if type(self.multi_dataset__dataroot) == str:
+            self.multi_dataset__dataroot = dict(d=self.multi_dataset__dataroot)
+
+        for key in self.multi_dataset__dataroot.keys():
+            # sanity check for well formed keys
+            if type(key) != str:
+                raise ConfigurationError(f"error in multi_dataset__dataroot {key}")
+            if quote_plus(key) != key:
+                raise ConfigurationError(f"error in multi_dataset__dataroot {key}")
+            if os.path.split(os.path.normpath(key))[-1] != key:
+                raise ConfigurationError(f"error in multi_dataset__dataroot {key}")
 
         # error checking
         for mtype in self.multi_dataset__allowed_matrix_types:
