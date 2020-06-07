@@ -1,15 +1,17 @@
-export const puppeteerUtils = (page) => ({
-  async waitByID(testId, props = {}) {
+const puppeteerUtils = (page) => ({
+  waitByID(testId, props = {}) {
     return page.waitForSelector(`[data-testid='${testId}']`, props);
   },
 
-  async waitByClass(testClass, props = {}) {
+  waitByClass(testClass, props = {}) {
     return page.waitForSelector(`[data-testclass='${testClass}']`, props);
   },
 
-  async waitForAllByIds(testIds) {
-    await Promise.all(
-      testIds.map((testId) => page.waitForSelector(`[data-testid='${testId}']`))
+  async waitForAllByIds(testIds, props = {}) {
+    return Promise.all(
+      testIds.map((testId) =>
+        page.waitForSelector(`[data-testid='${testId}']`, props)
+      )
     );
   },
 
@@ -67,3 +69,5 @@ export const puppeteerUtils = (page) => ({
     });
   },
 });
+
+export default puppeteerUtils;

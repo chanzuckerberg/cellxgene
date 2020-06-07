@@ -3,8 +3,8 @@ Smoke test suite that will be run in Travis CI
 
 Tests included in this file are expected to be relatively stable and test core features
  */
-import { appUrlBase, DATASET } from "./config";
-import { setupTestBrowser } from "./testBrowser";
+import { appUrlBase, DATASET, DEBUG } from "./config";
+import setupTestBrowser from "./testBrowser";
 import { datasets } from "./data";
 
 let browser;
@@ -22,7 +22,7 @@ beforeEach(async () => {
 });
 
 afterAll(() => {
-  if (browser !== undefined) browser.close();
+  if (!DEBUG && browser !== undefined) browser.close();
 });
 
 describe("did launch", () => {

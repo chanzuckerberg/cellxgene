@@ -1,6 +1,6 @@
 import { strict as assert } from "assert";
 
-export const cellxgeneActions = (page, utils) => ({
+const cellxgeneActions = (page, utils) => ({
   async drag(testId, start, end, lasso = false) {
     const layout = await utils.waitByID(testId);
     const elBox = await layout.boxModel();
@@ -31,15 +31,16 @@ export const cellxgeneActions = (page, utils) => ({
 
   async getAllHistograms(testclass, testIds) {
     const histTestIds = testIds.map((tid) => `histogram-${tid}`);
-    // these load asynchronously, so we need to wait for each histogram individually
-    await utils.waitForAllByIds(histTestIds);
+    // these load asynchronously, so we need to wait for each histogram individually,
+    // and they may be quite slow in some cases.
+    await utils.waitForAllByIds(histTestIds, { timeout: 240000 });
     const allHistograms = await utils.getAllByClass(testclass);
     return allHistograms.map((hist) => hist.replace(/^histogram-/, ""));
   },
 
   async getAllCategoriesAndCounts(category) {
     // these load asynchronously, so we have to wait for the specific category.
-    await utils.waitByID(`category-${category}`)
+    await utils.waitByID(`category-${category}`);
     return page.$$eval(
       `[data-testid="category-${category}"] [data-testclass='categorical-row']`,
       (rows) =>
@@ -223,3 +224,5 @@ export const cellxgeneActions = (page, utils) => ({
     await page.keyboard.press("Enter");
   },
 });
+
+export default cellxgeneActions;
