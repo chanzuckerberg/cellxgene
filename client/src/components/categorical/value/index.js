@@ -206,6 +206,7 @@ class CategoryValue extends React.Component {
 
     const label = categorySummary.categoryValues[categoryIndex];
     const newLabel = newCategorySummary.categoryValues[newCategoryIndex];
+    const labelChanged = label !== newLabel;
     const valueSelectionChange =
       (categoricalSelection[metadataField].get(label) ?? true) !==
       (newCategoricalSelection[metadataField].get(newLabel) ?? true);
@@ -223,6 +224,7 @@ class CategoryValue extends React.Component {
     const countChanged = count !== newCount;
 
     return (
+      labelChanged ||
       valueSelectionChange ||
       worldChange ||
       colorAccessorChange ||
