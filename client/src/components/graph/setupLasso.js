@@ -9,10 +9,10 @@ const Lasso = () => {
     let lassoPolygon;
     let lassoPath;
     let closePath;
-    
+
     const polygonToPath = (polygon) =>
       `M${polygon.map((d) => d.join(",")).join("L")}`;
-  
+
     const distance = (pt1, pt2) =>
       Math.sqrt((pt2[0] - pt1[0]) ** 2 + (pt2[1] - pt1[1]) ** 2);
 
@@ -37,7 +37,7 @@ const Lasso = () => {
         .append("line")
         .attr("x2", lassoPolygon[0][0])
         .attr("y2", lassoPolygon[0][1])
-        .attr("stroke-dasharray", "3, 3")
+        .attr("stroke-dasharray", "3, 3");
 
       dispatch.call("start", lasso, lassoPolygon);
     };
@@ -53,12 +53,15 @@ const Lasso = () => {
         closeDistance
       ) {
         const closePathColor = "#bb2f00";
-        closePath.attr("x1", point[0]).attr("y1", point[1]).attr("opacity", 1).attr("stroke", closePathColor).attr("fill", closePathColor);
+        closePath.attr("x1", point[0])
+        .attr("y1", point[1])
+        .attr("opacity", 1)
+        .attr("stroke", closePathColor)
+        .attr("fill", closePathColor);
         lassoPath.attr("stroke", closePathColor).attr("fill", closePathColor);
       } else {
         closePath.attr("opacity", 0);
         lassoPath.attr("stroke", lassoPathColor).attr("fill", lassoPathColor);
-
       }
     };
 
