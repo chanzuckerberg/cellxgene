@@ -20,11 +20,6 @@ class AnnoDialogEditCategoryName extends React.PureComponent {
     };
   }
 
-  allCategoryNames() {
-    const { schema } = this.props;
-    return schema.annotations.obs.columns.map((c) => c.name);
-  }
-
   handleChangeOrSelect = (name) => {
     this.setState({
       newCategoryText: name,
@@ -99,6 +94,11 @@ class AnnoDialogEditCategoryName extends React.PureComponent {
       ":"
     );
   };
+
+  allCategoryNames() {
+    const { schema } = this.props;
+    return schema.annotations.obs.columns.map((c) => c.name);
+  }
 
   render() {
     const { newCategoryText } = this.state;
