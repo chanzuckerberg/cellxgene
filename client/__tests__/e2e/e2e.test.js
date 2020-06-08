@@ -30,12 +30,12 @@ describe("did launch", () => {
     const element = await utils.getOneElementInnerHTML(
       "[data-testid='header']"
     );
-    expect(element).toBe(data.title);
+    expect(element).toMatchSnapshot();
   });
 
   test("terms of service, if they are there", async () => {
     try {
-      await utils.clickOn("tos-cookies-accept", { timeout: 500 });
+      await utils.clickOn("tos-cookies-accept", { timeout: 3000 });
     } catch {
       console.warn("No terms of service footer detected.");
     }
@@ -48,10 +48,10 @@ describe("did launch", () => {
 describe("metadata loads", () => {
   test("categories and values from dataset appear", async () => {
     for (const label in data.categorical) {
-      const categoryName = await utils.getOneElementInnerText(
+      const elem = await utils.getOneElementInnerHTML(
         `[data-testid="category-${label}"]`
       );
-      expect(categoryName).toMatch(label);
+      expect(elem).toMatchSnapshot();
       await utils.clickOn(`${label}:category-expand`);
       const categories = await cxgActions.getAllCategoriesAndCounts(label);
       expect(Object.keys(categories)).toMatchObject(
@@ -326,13 +326,16 @@ describe("ui elements don't error", () => {
 
 describe("centroid labels", () => {
   test("labels are created", async () => {
-    await utils.clickOn("centroid-label-toggle");
     const labels = Object.keys(data.categorical);
+
+    await utils.clickOn(`colorby-${labels[0]}`);
+    await utils.clickOn("centroid-label-toggle");
     /* eslint-disable no-await-in-loop */
     // Toggle colorby for each category and check to see if labels are generated
     for (let i = 0, { length } = labels; i < length; i += 1) {
       const label = labels[i];
-      await utils.clickOn(`colorby-${label}`);
+      // first label is already enabled
+      if (i !== 0) await utils.clickOn(`colorby-${label}`);
       const generatedLabels = await utils.getAllByClass("centroid-label");
       // Number of labels generated should be equal to size of the object
       expect(generatedLabels).toHaveLength(
@@ -346,8 +349,8 @@ describe("centroid labels", () => {
 describe("graph overlay", () => {
   test("transform centroids correctly", async () => {
     const category = Object.keys(data.categorical)[0];
-    await utils.clickOn("centroid-label-toggle");
     await utils.clickOn(`colorby-${category}`);
+    await utils.clickOn("centroid-label-toggle");
     await utils.clickOn("mode-pan-zoom");
     const panCoords = await cxgActions.calcDragCoordinates(
       "layout-graph",

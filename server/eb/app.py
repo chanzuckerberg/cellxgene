@@ -67,7 +67,6 @@ class WSGIServer(Server):
             "object-src": ["'none'"],
             "base-uri": ["'none'"],
             "frame-ancestors": ["'none'"],
-            "require-trusted-types-for": ["'script'"],
         }
 
         if not app.debug:

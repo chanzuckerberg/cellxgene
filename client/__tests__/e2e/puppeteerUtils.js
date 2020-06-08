@@ -50,8 +50,8 @@ export const puppeteerUtils = (page) => ({
     return click;
   },
 
-  async getOneElementInnerHTML(selector) {
-    await page.waitForSelector(selector);
+  async getOneElementInnerHTML(selector, options = {}) {
+    await page.waitForSelector(selector, options);
     return page.$eval(selector, (el) => el.innerHTML);
   },
 

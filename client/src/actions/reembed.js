@@ -1,5 +1,5 @@
 import { API } from "../globals";
-import { Universe } from "../util/stateManager";
+import { MatrixFBS } from "../util/stateManager";
 import {
   postNetworkErrorToast,
   postAsyncSuccessToast,
@@ -24,7 +24,7 @@ function abortableFetch(request, opts, timeout = 0) {
 
 async function doReembedFetch(dispatch, getState) {
   const state = getState();
-  let cells = state.world.obsAnnotations.rowIndex.keys();
+  let cells = state.world.obsAnnotations.rowIndex.labels();
 
   // These lines ensure that we convert any TypedArray to an Array.
   // This is necessary because JSON.stringify() does some very strange
@@ -80,7 +80,7 @@ export function requestReembed() {
       const res = await doReembedFetch(dispatch, getState);
       const schema = JSON.parse(res.headers.get("CxG-Schema"));
       const buffer = await res.arrayBuffer();
-      const df = Universe.matrixFBSToDataframe(buffer);
+      const df = MatrixFBS.matrixFBSToDataframe(buffer);
       dispatch({
         type: "reembed: request completed",
       });

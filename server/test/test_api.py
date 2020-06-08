@@ -244,6 +244,19 @@ class EndPoints(object):
         self.assertEqual(df["n_rows"], 2638)
         self.assertEqual(df["n_cols"], 1)
 
+    def test_data_get_unknown_filter_fbs(self):
+        index_col_name = self.schema["schema"]["annotations"]["var"]["index"]
+        endpoint = "data/var"
+        query = f"var:{index_col_name}=UNKNOWN"
+        url = f"{self.URL_BASE}{endpoint}?{query}"
+        header = {"Accept": "application/octet-stream"}
+        result = self.session.get(url, headers=header)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
+        df = decode_fbs.decode_matrix_FBS(result.content)
+        self.assertEqual(df["n_rows"], 2638)
+        self.assertEqual(df["n_cols"], 0)
+
     def test_data_put_single_var(self):
         endpoint = "data/var"
         url = f"{self.URL_BASE}{endpoint}"

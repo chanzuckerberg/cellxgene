@@ -201,16 +201,18 @@ describe.each([
   });
 
   async function assertCategoryExists(categoryName) {
-    const handle = await utils.waitByID(`${categoryName}:category-expand`);
-    const result = await handle.evaluate((node) => node.innerText);
-    // slice beginning and end of category name result to account for truncation of long names
-    expect(result.slice(0, 10)).toBe(categoryName.slice(0, 10));
-    expect(result.slice(-10)).toBe(categoryName.slice(-10));
+    const handle = await utils.waitByID(`${categoryName}:category-label`);
+
+    const result = await handle.evaluate((node) =>
+      node.getAttribute("aria-label")
+    );
+
+    expect(result).toBe(categoryName);
   }
 
   async function assertCategoryDoesNotExist(categoryName) {
     const result = await page.$(
-      `[data-testid='${categoryName}:category-expand']`
+      `[data-testid='${categoryName}:category-label']`
     );
     expect(result).toBeNull();
   }
@@ -222,7 +224,9 @@ describe.each([
     const previous = await utils.waitByID(
       `categorical-value-${categoryName}-${labelName}`
     );
-    expect(await previous.evaluate((node) => node.innerText)).toBe(labelName);
+    expect(
+      await previous.evaluate((node) => node.getAttribute("aria-label"))
+    ).toBe(labelName);
   }
 
   async function assertLabelDoesNotExist(categoryName, labelName) {

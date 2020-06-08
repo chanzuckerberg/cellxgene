@@ -105,10 +105,12 @@ const continuous = (selectorId, colorscale, colorAccessor) => {
   colorScale: state.colors.scale,
 }))
 class ContinuousLegend extends React.Component {
-
   componentDidUpdate(prevProps) {
     const { colorAccessor, colorScale } = this.props;
-    if (prevProps.colorAccessor !== colorAccessor || prevProps.colorScale !== colorScale) {
+    if (
+      prevProps.colorAccessor !== colorAccessor ||
+      prevProps.colorScale !== colorScale
+    ) {
       /* always remove it, if it's not continuous we don't put it back. */
       d3.select("#continuous_legend").selectAll("*").remove();
     }
@@ -130,7 +132,9 @@ class ContinuousLegend extends React.Component {
     return (
       <div
         id="continuous_legend"
-        ref={ref => {this.ref = ref}}
+        ref={(ref) => {
+          this.ref = ref;
+        }}
         style={{
           display: colorAccessor ? "inherit" : "none",
           position: "absolute",

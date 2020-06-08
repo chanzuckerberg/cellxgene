@@ -1,5 +1,6 @@
 import _ from "lodash";
 import * as Universe from "../../../src/util/stateManager/universe";
+import { matrixFBSToDataframe } from "../../../src/util/stateManager/matrix";
 import * as World from "../../../src/util/stateManager/world";
 import * as Dataframe from "../../../src/util/dataframe";
 import Crossfilter from "../../../src/util/typedCrossfilter";
@@ -26,16 +27,13 @@ const defaultBigBang = () => {
     ...universe,
     ...Universe.addObsAnnotations(
       universe,
-      Universe.matrixFBSToDataframe(REST.annotationsObs)
+      matrixFBSToDataframe(REST.annotationsObs)
     ),
     ...Universe.addVarAnnotations(
       universe,
-      Universe.matrixFBSToDataframe(REST.annotationsVar)
+      matrixFBSToDataframe(REST.annotationsVar)
     ),
-    ...Universe.addObsLayout(
-      universe,
-      Universe.matrixFBSToDataframe(REST.layoutObs)
-    ),
+    ...Universe.addObsLayout(universe, matrixFBSToDataframe(REST.layoutObs)),
   };
 
   /* create world */
@@ -59,9 +57,9 @@ describe("createWorldFromEntireUniverse", () => {
     const universe = Universe.createUniverseFromResponse(
       _.cloneDeep(REST.config),
       _.cloneDeep(REST.schema),
-      Universe.matrixFBSToDataframe(_.cloneDeep(REST.annotationsObs)),
-      Universe.matrixFBSToDataframe(_.cloneDeep(REST.annotationsVar)),
-      Universe.matrixFBSToDataframe(_.cloneDeep(REST.layoutObs))
+      matrixFBSToDataframe(_.cloneDeep(REST.annotationsObs)),
+      matrixFBSToDataframe(_.cloneDeep(REST.annotationsVar)),
+      matrixFBSToDataframe(_.cloneDeep(REST.layoutObs))
     );
     expect(universe).toBeDefined();
 
@@ -144,16 +142,16 @@ describe("createWorldFromCurrentSelection", () => {
       })
     );
 
-    expect(world.obsAnnotations.rowIndex.keys()).toEqual(
+    expect(world.obsAnnotations.rowIndex.labels()).toEqual(
       new Int32Array(matchingIndices)
     );
-    expect(world.obsAnnotations.colIndex.keys()).toEqual(
-      universe.obsAnnotations.colIndex.keys()
+    expect(world.obsAnnotations.colIndex.labels()).toEqual(
+      universe.obsAnnotations.colIndex.labels()
     );
-    expect(world.obsLayout.rowIndex.keys()).toEqual(
+    expect(world.obsLayout.rowIndex.labels()).toEqual(
       new Int32Array(matchingIndices)
     );
-    expect(world.obsLayout.colIndex.keys()).toEqual(
+    expect(world.obsLayout.colIndex.labels()).toEqual(
       world.schema.layout.obs[0].dims
     );
   });

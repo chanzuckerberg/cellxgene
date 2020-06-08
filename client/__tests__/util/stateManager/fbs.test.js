@@ -27,7 +27,7 @@ describe("encode/decode", () => {
     const dfWithColIdx = new Dataframe([3, 4], columns, null, colIndex);
     const dfB = decodeMatrixFBS(encodeMatrixFBS(dfWithColIdx));
     expect([dfB.nRows, dfB.nCols]).toEqual(dfWithColIdx.dims);
-    expect(dfB.colIdx).toEqual(colIndex.keys());
+    expect(dfB.colIdx).toEqual(colIndex.labels());
     expect(dfB.rowIdx).toBeNull();
     expect(dfB.columns).toEqual(columns);
   });

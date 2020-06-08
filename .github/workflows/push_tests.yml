@@ -4,6 +4,7 @@ on:
   push:
     branches: master
   pull_request:
+    branches: '*'
 
 env:
   JEST_ENV: prod
@@ -31,20 +32,15 @@ jobs:
         run: |
           pip install flake8
           cd client
-          npm i "eslint" "eslint-config-airbnb" "eslint-config-prettier" "eslint-loader" "eslint-plugin-filenames" "eslint-plugin-import" "eslint-plugin-jest" "eslint-plugin-jsx-a11y" "eslint-plugin-react" "eslint-plugin-react-hooks"
+          npm i "eslint" "eslint-config-airbnb" "eslint-config-prettier" "eslint-loader" "eslint-plugin-filenames" "eslint-plugin-import" "eslint-plugin-jest" "eslint-plugin-jsx-a11y" "eslint-plugin-react" "eslint-plugin-react-hooks" "eslint-plugin-prettier"
       - name: Lint with flake8
         run: |
           make lint-server
-      # - name: Lint all with eslint
-      #   working-directory: ./client
-      #   if: github.event_name	!= 'pull_request'
-      #   run: |
-      #     make lint
-      # - name: Lint diff with eslint
-      #   working-directory: ./client
-      #   if: github.event_name	== 'pull_request'
-      #   run: |
-      #     make lint-diff
+      - name: Lint src with eslint
+        working-directory: ./client
+        run: |
+          make lint
+
 
   unit-test:
     runs-on: ubuntu-latest

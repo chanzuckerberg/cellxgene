@@ -1,7 +1,12 @@
 import { flatbuffers } from "flatbuffers";
 import { NetEncoding } from "./matrix_generated";
-import { isTypedArray } from "../typeHelpers";
-import { IdentityInt32Index, DenseInt32Index, KeyIndex } from "../dataframe";
+import { isTypedArray, isFpTypedArray } from "../typeHelpers";
+import {
+  Dataframe,
+  IdentityInt32Index,
+  DenseInt32Index,
+  KeyIndex,
+} from "../dataframe";
 
 const utf8Decoder = new TextDecoder("utf-8");
 
@@ -133,14 +138,14 @@ export function encodeMatrixFBS(df) {
         encColIndex = encodeTypedArray(
           builder,
           encColIndexUType,
-          df.colIndex.keys()
+          df.colIndex.labels()
         );
       } else if (colIndexType === KeyIndex) {
         encColIndexUType = NetEncoding.TypedArray.JSONEncodedArray;
         encColIndex = encodeTypedArray(
           builder,
           encColIndexUType,
-          utf8Encoder.encode(JSON.stringify(df.colIndex.keys()))
+          utf8Encoder.encode(JSON.stringify(df.colIndex.labels()))
         );
       } else {
         throw new Error("Index type FBS encoding unsupported");
@@ -161,4 +166,80 @@ export function encodeMatrixFBS(df) {
   const root = NetEncoding.Matrix.endMatrix(builder);
   builder.finish(root);
   return builder.asUint8Array();
+}
+
+function promoteTypedArray(o) {
+  /*
+  Decide what internal data type to use for the data returned from 
+  the server.
+
+  TODO - future optimization: not all int32/uint32 data series require
+  promotion to float64.  We COULD simply look at the data to decide. 
+  */
+  if (isFpTypedArray(o) || Array.isArray(o)) return o;
+
+  let TyepdArrayCtor;
+  switch (o.constructor) {
+    case Int8Array:
+    case Uint8Array:
+    case Uint8ClampedArray:
+    case Int16Array:
+    case Uint16Array:
+      TyepdArrayCtor = Float32Array;
+      break;
+
+    case Int32Array:
+    case Uint32Array:
+      TyepdArrayCtor = Float64Array;
+      break;
+
+    default:
+      throw new Error("Unexpected data type returned from server.");
+  }
+  if (o.constructor === TyepdArrayCtor) return o;
+  return new TyepdArrayCtor(o);
+}
+
+export function matrixFBSToDataframe(arrayBuffers) {
+  /*
+  Convert array of Matrix FBS to a Dataframe.
+
+  The application has strong assumptions that all scalar data will be
+  stored as a float32 or float64 (regardless of underlying data types).
+  For example, clipping of value ranges (eg, user-selected percentiles)
+  depends on the ability to use NaN in any numeric type.
+
+  All float data from the server is left as is.  All non-float is promoted
+  to an appropriate float.
+  */
+  if (!Array.isArray(arrayBuffers)) {
+    arrayBuffers = [arrayBuffers];
+  }
+  if (arrayBuffers.length === 0) {
+    return Dataframe.Dataframe.empty();
+  }
+
+  const fbs = arrayBuffers.map((ab) => decodeMatrixFBS(ab, true)); // leave in place
+  /* check that all FBS have same row dimensionality */
+  const { nRows } = fbs[0];
+  fbs.forEach((b) => {
+    if (b.nRows !== nRows)
+      throw new Error("FBS with inconsistent dimensionality");
+  });
+  const columns = fbs
+    .map((fb) =>
+      fb.columns.map((c) => {
+        if (isFpTypedArray(c) || Array.isArray(c)) return c;
+        return promoteTypedArray(c);
+      })
+    )
+    .flat();
+  // colIdx may be TypedArray or Array
+  const colIdx = fbs
+    .map((b) => (Array.isArray(b.colIdx) ? b.colIdx : Array.from(b.colIdx)))
+    .flat();
+  const nCols = columns.length;
+
+  const df = new Dataframe([nRows, nCols], columns, null, new KeyIndex(colIdx));
+  return df;
 }

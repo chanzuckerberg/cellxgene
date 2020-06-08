@@ -81,7 +81,7 @@ export default class GraphOverlayLayer extends PureComponent {
           position: "absolute",
           top: 0,
           left: 0,
-          zIndex: 1,
+          zIndex: 2,
           backgroundColor: displaying ? "rgba(255, 255, 255, 0.55)" : "",
         }}
         onMouseMove={handleCanvasEvent}

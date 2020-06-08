@@ -1,7 +1,7 @@
 module.exports = {
   root: true,
   parser: "babel-eslint",
-  extends: ["airbnb", "prettier", "prettier/react"],
+  extends: ["airbnb", "plugin:prettier/recommended", "prettier/react"],
   env: { browser: true, commonjs: true, es6: true },
   globals: { expect: true },
   parserOptions: {
@@ -21,13 +21,7 @@ module.exports = {
     "react/jsx-filename-extension": "off",
     "comma-dangle": "off",
     "no-underscore-dangle": "off",
-    quotes: ["error", "double"],
     "implicit-arrow-linebreak": "off",
-    "operator-linebreak": [
-      "error",
-      "after",
-      { overrides: { "?": "before", ":": "before" } },
-    ],
     "no-console": "off",
     "spaced-comment": ["error", "always", { exceptions: ["*"] }],
     "no-param-reassign": "off",

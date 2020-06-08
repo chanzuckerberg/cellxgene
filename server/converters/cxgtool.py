@@ -8,8 +8,11 @@ The organization of the TileDB structure is:
     ├─ obs                          TileDB array containing cell (row) attributes, one attribute per
     │                               dataframe column, shape (n_obs,)
     ├─ var                          TileDB array containing gene (column) attributes, with one attribute per
-    │                               dataframe column, shape (n_obs,)
+    │                               dataframe column, shape (n_var,)
     ├─ X                            Main count matrix as a 2D TileDB array, single unnamed numeric attribute
+    ├─ X_col_shift                  TilebDB Array used in column shift encoding, shape (n_var,), dtype = X.dtype.
+    │                               Single unnamed numeric attribute.  If this array is sparse, and X_col_shift exists,
+    │                               then all values in the i'th column were subtracted by X_col_shift[i].
     ├─ emb                          TileDB group, storing optional embeddings (group may be empty)
     │  └─ <name1>                   TileDB Array, single anon attribute, ND numeric array, shape (n_obs, N)
     └─ cxg_group_metadata           Empty array used only to stash metadata about the overall object.
@@ -70,6 +73,7 @@ import argparse
 import numpy as np
 from os.path import splitext, basename
 import json
+from scipy.stats import mode
 
 from server.common.colors import convert_anndata_category_colors_to_cxg_category_colors
 from server.common.errors import ColorFormatException
@@ -114,6 +118,13 @@ def main():
         help="URL providing more information about the dataset (hint: must be a fully specified absolute URL).",
     )
     parser.add_argument("--out", "--output", "-o", help="output CXG file name")
+    parser.add_argument(
+        "--sparse-threshold",
+        "-s",
+        type=float,
+        default=0.0,  # force dense by default
+        help="The X array will be sparse if the percent of non-zeros falls below this value",
+    )
     args = parser.parse_args()
 
     global log_level
@@ -135,12 +146,15 @@ def main():
         obs_names=args.obs_names,
         about=args.about,
         extract_colors=not args.disable_custom_colors,
+        sparse_threshold=args.sparse_threshold,
     )
 
     log(1, "done")
 
 
-def write_cxg(adata, container, title, var_names=None, obs_names=None, about=None, extract_colors=False):
+def write_cxg(
+    adata, container, title, var_names=None, obs_names=None, about=None, extract_colors=False, sparse_threshold=5.0
+):
     if not adata.var.index.is_unique:
         raise ValueError("Variable index is not unique - unable to convert.")
     if not adata.obs.index.is_unique:
@@ -195,7 +209,7 @@ def write_cxg(adata, container, title, var_names=None, obs_names=None, about=Non
     log(1, "\t...embeddings created")
 
     # X matrix
-    save_X(container, adata, ctx)
+    save_X(container, adata.X, ctx, sparse_threshold)
     log(1, "\t...X created")
 
 
@@ -366,7 +380,7 @@ def create_emb(e_name, emb):
     dims = []
     for d in range(emb.ndim):
         shape = emb.shape
-        dims.append(tiledb.Dim("", domain=(0, shape[d] - 1), tile=min(shape[d], 1000), dtype=np.uint32))
+        dims.append(tiledb.Dim(domain=(0, shape[d] - 1), tile=min(shape[d], 1000), dtype=np.uint32))
     domain = tiledb.Domain(*dims)
     schema = tiledb.ArraySchema(
         domain=domain, sparse=False, attrs=attrs, capacity=1_000_000, cell_order="row-major", tile_order="row-major"
@@ -398,46 +412,175 @@ def save_embeddings(container, adata, ctx):
             log(1, f"\t\t...{name} embedding created")
 
 
-def create_X(X_name, shape):
+def create_X(X_name, shape, is_sparse):
     """
-    Dense, always.  Future task: explore if sparse encoding is worth the trouble
-    below a sparsity threshold.
-
-    The X matrix is access in both row and column oriented patterns, depending on the
+    The X matrix is accessed in both row and column oriented patterns, depending on the
     particular operation.  Because of the data type, default compression works best.
-    The tile size (50, 100) and global layout (row/col) was choosen empirically, by benchmarking
+    The tile size, (50, 100) for dense, and (512,2048) for sparse,
+    and global layout (row/col) was chosen empirically, by benchmarking
     the current cellxgene backend.
     """
     filters = tiledb.FilterList([tiledb.ZstdFilter()])
     attrs = [tiledb.Attr(dtype=np.float32, filters=filters)]
-    domain = tiledb.Domain(
-        tiledb.Dim(name="obs", domain=(0, shape[0] - 1), tile=min(shape[0], 50), dtype=np.uint32),
-        tiledb.Dim(name="var", domain=(0, shape[1] - 1), tile=min(shape[1], 100), dtype=np.uint32),
-    )
+    if is_sparse:
+        domain = tiledb.Domain(
+            tiledb.Dim(name="obs", domain=(0, shape[0] - 1), tile=min(shape[0], 512), dtype=np.uint32),
+            tiledb.Dim(name="var", domain=(0, shape[1] - 1), tile=min(shape[1], 2048), dtype=np.uint32),
+        )
+    else:
+        domain = tiledb.Domain(
+            tiledb.Dim(name="obs", domain=(0, shape[0] - 1), tile=min(shape[0], 50), dtype=np.uint32),
+            tiledb.Dim(name="var", domain=(0, shape[1] - 1), tile=min(shape[1], 100), dtype=np.uint32),
+        )
     schema = tiledb.ArraySchema(
-        domain=domain, sparse=False, attrs=attrs, cell_order="row-major", tile_order="col-major"
+        domain=domain, sparse=is_sparse, attrs=attrs, cell_order="row-major", tile_order="col-major"
     )
-    tiledb.DenseArray.create(X_name, schema)
+    if is_sparse:
+        tiledb.SparseArray.create(X_name, schema)
+    else:
+        tiledb.DenseArray.create(X_name, schema)
 
 
-def save_X(container, adata, ctx):
+def evaluate_for_sparse_encoding(xdata, sparse_threshold):
+    """
+    This function determines if the X matrix has a sparsity below the sparse_threshold.
+    This function also returns the number of non-zeros encountered and number
+    of elements evaluated.  This function may return before evaluating the whole X matrix
+    if it can be determined that X is not sparse enough.
+    """
+    shape = xdata.shape
+    stride = min(int(np.power(10, np.around(np.log10(1e9 / shape[1])))), 10_000)
+    nnz = 0
+    maxnnz = int(shape[0] * shape[1] * sparse_threshold / 100)
+    for row in range(0, shape[0], stride):
+        lim = min(row + stride, shape[0])
+        a = xdata[row:lim, :]
+        if type(a) is not np.ndarray:
+            a = a.toarray()
+        nnz += np.count_nonzero(a)
+        if nnz > maxnnz:
+            return (False, nnz, lim * shape[1])
+        log(2, "\t...rows", lim, "of", shape[0], "nnz", nnz, "nnz percent %5.2f%%" % (100 * nnz / (lim * shape[1])))
+
+    is_sparse = (100.0 * nnz / (shape[0] * shape[1])) < sparse_threshold
+    return (is_sparse, nnz, shape[0] * shape[1])
+
+
+def evaluate_for_sparse_column_shift_encoding(xdata, sparse_threshold):
+    """Column shift encoding works by taking the most common value in each column, then
+    subtracting that value from each element of the column.  If each column mostly contains
+    its most common value, then the resulting matrix can be very sparse.
+
+    This function determines if column shift encoding can be used to transform
+    the X matrix into a sparse matrix with a sparsity below the sparse_threshold.
+    If so, return the col_shift array that stores this encoding.
+    This function also returns the number of non-zeros encountered and number
+    of elements evaluated.  This function may return before evaluating the whole X matrix
+    if it can be determined that X cannot benefit from column shift encoding.
+    """
+    shape = xdata.shape
+    stride = max(1, 128_000_000 // shape[0])
+    col_shift = np.zeros(shape[1])
+    nnz = 0
+    maxnnz = int(shape[0] * shape[1] * sparse_threshold / 100)
+    for col in range(0, shape[1], stride):
+        lim = min(col + stride, shape[1])
+        a = xdata[:, col:lim]
+        if type(a) is not np.ndarray:
+            a = a.toarray()
+        m = mode(a)
+        col_shift[col:lim] = m.mode
+        nnz += shape[0] * (lim - col) - np.sum(m.count)
+        if nnz > maxnnz:
+            return (None, nnz, shape[0] * lim)
+        log(2, "\t...cols", lim, "of", shape[1], "nnz",
+            nnz, "nnz percent %5.2f%%" % (100 * nnz / (lim * shape[0])))
+
+    is_sparse = (100.0 * nnz / (shape[0] * shape[1])) < sparse_threshold
+    return (col_shift if is_sparse else None, nnz, shape[0] * shape[1])
+
+
+def save_X(container, xdata, ctx, sparse_threshold, expect_sparse=False):
     # Save X count matrix
     X_name = f"{container}/X"
-    shape = adata.X.shape
-    create_X(X_name, shape)
 
+    shape = xdata.shape
+    log(1, "\t...shape:", str(shape))
+
+    col_shift = None
+    if sparse_threshold == 100:
+        is_sparse = True
+    elif sparse_threshold == 0:
+        is_sparse = False
+    else:
+        is_sparse, nnz, nelem = evaluate_for_sparse_encoding(xdata, sparse_threshold)
+        percent = 100.0 * nnz / nelem
+        if nelem != shape[0] * shape[1]:
+            log(1, "\t...sparse=", is_sparse, "non-zeros percent (estimate): %6.2f" % percent)
+        else:
+            log(1, "\t...sparse=", is_sparse, "non-zeros:", nnz, "percent: %6.2f" % percent)
+
+        is_sparse = percent < sparse_threshold
+        if not is_sparse:
+            col_shift, nnz, nelem = evaluate_for_sparse_column_shift_encoding(xdata, sparse_threshold)
+            is_sparse = col_shift is not None
+            percent = 100.0 * nnz / nelem
+            if nelem != shape[0] * shape[1]:
+                log(1, "\t...sparse=", is_sparse, "col shift non-zeros percent (estimate): %6.2f" % percent)
+            else:
+                log(1, "\t...sparse=", is_sparse, "col shift non-zeros:", nnz, "percent: %6.2f" % percent)
+
+    if expect_sparse is True and is_sparse is False:
+        return False
+
+    create_X(X_name, shape, is_sparse)
     stride = min(int(np.power(10, np.around(np.log10(1e9 / shape[1])))), 10_000)
-    with tiledb.DenseArray(X_name, mode="w", ctx=ctx) as X:
-        for row in range(0, shape[0], stride):
-            lim = min(row + stride, shape[0])
-            a = adata.X[row:lim, :]
-            if type(a) is not np.ndarray:
-                a = a.toarray()
-            X[row:lim, :] = a
-            log(2, "\t...rows", row, "to", lim)
-        tiledb.consolidate(X_name, ctx=ctx)
+    if is_sparse:
+        if col_shift is not None:
+            log(1, "\t...output X as sparse matrix with column shift encoding")
+            X_col_shift_name = f"{container}/X_col_shift"
+            filters = tiledb.FilterList([tiledb.ZstdFilter()])
+            attrs = [tiledb.Attr(dtype=np.float32, filters=filters)]
+            domain = tiledb.Domain(tiledb.Dim(domain=(0, shape[1] - 1), tile=min(shape[1], 5000), dtype=np.uint32))
+            schema = tiledb.ArraySchema(domain=domain, attrs=attrs)
+            tiledb.DenseArray.create(X_col_shift_name, schema)
+            with tiledb.DenseArray(X_col_shift_name, mode="w", ctx=ctx) as X_col_shift:
+                X_col_shift[:] = col_shift
+            tiledb.consolidate(X_col_shift_name, ctx=ctx)
+        else:
+            log(1, "\t...output X as sparse matrix")
+
+        with tiledb.SparseArray(X_name, mode="w", ctx=ctx) as X:
+            nnz = 0
+            for row in range(0, shape[0], stride):
+                lim = min(row + stride, shape[0])
+                a = xdata[row:lim, :]
+                if type(a) is not np.ndarray:
+                    a = a.toarray()
+                if col_shift is not None:
+                    a = a - col_shift
+                indices = np.nonzero(a)
+                trow = indices[0] + row
+                nnz += indices[0].shape[0]
+                X[trow, indices[1]] = a[indices[0], indices[1]]
+                log(2, "\t...rows", lim, "of", shape[0], "nnz", nnz, "sparse", nnz / (lim * shape[1]))
+
+    else:
+        log(1, "\t...output X as dense matrix")
+        with tiledb.DenseArray(X_name, mode="w", ctx=ctx) as X:
+            for row in range(0, shape[0], stride):
+                lim = min(row + stride, shape[0])
+                a = xdata[row:lim, :]
+                if type(a) is not np.ndarray:
+                    a = a.toarray()
+                X[row:lim, :] = a
+                log(2, "\t...rows", row, "to", lim)
 
     tiledb.consolidate(X_name, ctx=ctx)
+    if hasattr(tiledb, "vacuum"):
+        tiledb.vacuum(X_name)
+
+    return is_sparse
 
 
 def save_metadata(container, metadata_dict):

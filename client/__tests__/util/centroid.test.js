@@ -4,6 +4,7 @@ import calcCentroid from "../../src/util/centroid";
 
 import quantile from "../../src/util/quantile";
 import * as Universe from "../../src/util/stateManager/universe";
+import { matrixFBSToDataframe } from "../../src/util/stateManager/matrix";
 import * as World from "../../src/util/stateManager/world";
 import * as REST from "./stateManager/sampleResponses";
 import { ControlsHelpers as CH } from "../../src/util/stateManager";
@@ -22,16 +23,13 @@ describe("centroid", () => {
       ...universe,
       ...Universe.addObsAnnotations(
         universe,
-        Universe.matrixFBSToDataframe(REST.annotationsObs)
+        matrixFBSToDataframe(REST.annotationsObs)
       ),
       ...Universe.addVarAnnotations(
         universe,
-        Universe.matrixFBSToDataframe(REST.annotationsVar)
+        matrixFBSToDataframe(REST.annotationsVar)
       ),
-      ...Universe.addObsLayout(
-        universe,
-        Universe.matrixFBSToDataframe(REST.layoutObs)
-      ),
+      ...Universe.addObsLayout(universe, matrixFBSToDataframe(REST.layoutObs)),
     };
     world = World.createWorldFromEntireUniverse(universe);
 

@@ -2,13 +2,19 @@ import random
 import shutil
 import string
 import tempfile
+import requests
+import time
+import os
+from subprocess import Popen
 from os import path, popen
+from contextlib import contextmanager
 
 import pandas as pd
 
 from server.common.annotations import AnnotationsLocalFile
 from server.common.data_locator import DataLocator
-from server.common.app_config import AppConfig
+from server.common.app_config import AppConfig, DEFAULT_SERVER_PORT
+from server.common.utils import find_available_port
 from server.data_common.fbs.matrix import encode_matrix_fbs
 from server.data_common.matrix_loader import MatrixDataLoader, MatrixDataType
 
@@ -60,7 +66,7 @@ def skip_if(condition, reason: str):
     return decorator
 
 
-def app_config(data_locator, backed=False):
+def app_config(data_locator, backed=False, extra={}):
     args = {
         "embeddings__names": ["umap", "tsne", "pca"],
         "presentation__max_categories": 100,
@@ -74,9 +80,61 @@ def app_config(data_locator, backed=False):
     }
     config = AppConfig()
     config.update(**args)
+    config.update(**extra)
     config.complete_config()
     return config
 
 
 def random_string(n):
     return "".join(random.choice(string.ascii_letters) for _ in range(n))
+
+
+@contextmanager
+def test_server(command_line_args=[], app_config=None):
+    """A context to run the cellxgene server.
+    Command line arguments can be passed in, as well as an app_config.
+    This function is meant to be used like this, for example:
+
+    with test_server(...) as server:
+       r = requests.get(f"{server}/...")
+       // check r
+
+    where the server can be accessed within the context, and is terminated when
+    the context is exited.
+    The port is automatically set using find_available_port.
+    The verbose flag is automatically set to True.
+    If an app_config is provided, then this function writes a temporary
+    yaml config file, which this server will read and parse.
+    """
+
+    port = DEFAULT_SERVER_PORT
+    port = find_available_port("localhost", port)
+    command = ["cellxgene", "--no-upgrade-check", "launch", "--verbose", "--port=%d" % port] + command_line_args
+
+    tempdir = None
+    if app_config:
+        tempdir = tempfile.TemporaryDirectory()
+        config_file = os.path.join(tempdir.name, "config.yaml")
+        app_config.write_config(config_file)
+        command.extend(["-c", config_file])
+
+    server = f"http://localhost:{port}"
+    ps = Popen(command)
+
+    for _ in range(10):
+        try:
+            requests.get(f"{server}/health")
+            break
+        except requests.exceptions.ConnectionError:
+            time.sleep(1)
+
+    if tempdir:
+        tempdir.cleanup()
+
+    try:
+        yield server
+    finally:
+        try:
+            ps.terminate()
+        except ProcessLookupError:
+            pass

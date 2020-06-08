@@ -11,7 +11,6 @@ import TopLeftLogoAndTitle from "./topLeftLogoAndTitle";
   scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
 }))
 class LeftSideBar extends React.Component {
-
   render() {
     const { scatterplotXXaccessor, scatterplotYYaccessor } = this.props;
     return (

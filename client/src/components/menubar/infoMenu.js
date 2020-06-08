@@ -6,9 +6,7 @@ import styles from "./menubar.css";
 function InformationMenu(props) {
   const { libraryVersions, aboutLink, tosURL, privacyURL } = props;
   return (
-    <div
-      className={`bp3-button-group ${styles.menubarButton}`}
-    >
+    <div className={`bp3-button-group ${styles.menubarButton}`}>
       <Popover
         content={
           <Menu>

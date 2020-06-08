@@ -99,7 +99,7 @@ function clipDataframe(
   if (upperQuantile > 1) upperQuantile = 1;
   if (lowerQuantile === 0 && upperQuantile === 1) return df;
 
-  const keys = df.colIndex.keys();
+  const keys = df.colIndex.labels();
   return df.mapColumns((col, colIdx) => {
     const colLabel = keys[colIdx];
     if (!clipPredicate(df, colIdx, colLabel)) return col;
@@ -277,7 +277,7 @@ export function addObsDimensions(crossfilter, world) {
   but not yet in the crossfilter
   */
   const schema = world.schema.annotations.obsByName;
-  const dimsWeNeed = world.obsAnnotations.colIndex.keys();
+  const dimsWeNeed = world.obsAnnotations.colIndex.labels();
   crossfilter = dimsWeNeed.reduce((xfltr, name) => {
     const dimName = obsAnnoDimensionName(name);
     if (xfltr.hasDimension(dimName)) return xfltr;
@@ -321,7 +321,7 @@ export function getSelectedByIndex(crossfilter) {
   return array of obsIndex, containing all selected obs/cells.
   */
   const selected = crossfilter.allSelectedMask(); // array of bool-ish
-  const keys = crossfilter.data.rowIndex.keys(); // row keys, aka universe rowIndex
+  const keys = crossfilter.data.rowIndex.labels(); // row keys, aka universe rowIndex
 
   const set = new Int32Array(selected.length);
   let numElems = 0;

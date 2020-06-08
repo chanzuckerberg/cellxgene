@@ -187,7 +187,7 @@ export function pruneVarDataCache(varData, needed) {
   if (numOverWatermark <= 0) return varData;
 
   const { colIndex } = varData;
-  const all = colIndex.keys();
+  const all = colIndex.labels();
   const unused = _.difference(all, needed);
   if (unused.length > 0) {
     // sort by offset in the dataframe - ie, psuedo-LRU
@@ -203,9 +203,9 @@ export function pruneVarDataCache(varData, needed) {
 
 export function subsetAndResetGeneLists(state) {
   const { userDefinedGenes, diffexpGenes } = state;
-  const newUserDefinedGenes = []
-    .concat(userDefinedGenes, diffexpGenes)
-    .slice(0, globals.maxGenes);
+  const newUserDefinedGenes = _.uniq(
+    [].concat(userDefinedGenes, diffexpGenes)
+  ).slice(0, globals.maxGenes);
   const newDiffExpGenes = [];
   return [newUserDefinedGenes, newDiffExpGenes];
 }

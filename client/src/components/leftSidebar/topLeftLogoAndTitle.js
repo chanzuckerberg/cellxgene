@@ -3,6 +3,10 @@ import React from "react";
 import { connect } from "react-redux";
 import * as globals from "../../globals";
 import Logo from "../framework/logo";
+import Truncate from "../util/truncate";
+
+const DATASET_TITLE_WIDTH = 190;
+const DATASET_TITLE_FONT_SIZE = 14;
 
 @connect((state) => ({
   datasetTitle: state.config?.displayNames?.dataset ?? "",
@@ -13,16 +17,6 @@ import Logo from "../framework/logo";
 class LeftSideBar extends React.Component {
   render() {
     const { datasetTitle, aboutURL } = this.props;
-
-    const displayTitle =
-      datasetTitle.length > globals.datasetTitleMaxCharacterCount
-        ? `${datasetTitle.substring(
-            0,
-            Math.floor(globals.datasetTitleMaxCharacterCount / 2)
-          )}…${datasetTitle.slice(
-            -Math.floor(globals.datasetTitleMaxCharacterCount / 2)
-          )}`
-        : datasetTitle;
 
     return (
       <div
@@ -60,26 +54,36 @@ class LeftSideBar extends React.Component {
           gene
         </span>
         <div
-          data-testid="header"
           style={{
-            fontSize: 14,
+            fontSize: DATASET_TITLE_FONT_SIZE,
             position: "relative",
             top: -6,
             display: "inline-block",
-            width: "190px",
+            width: DATASET_TITLE_WIDTH,
             marginLeft: "7px",
             height: "1.2em",
             overflow: "hidden",
             wordBreak: "break-all",
           }}
-          title={datasetTitle}
         >
           {aboutURL ? (
-            <a href={aboutURL} target="_blank" rel="noopener noreferrer">
-              {displayTitle}
-            </a>
+            <Truncate>
+              <a
+                style={{ width: 185 }}
+                href={aboutURL}
+                data-testid="header"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {datasetTitle}
+              </a>
+            </Truncate>
           ) : (
-            displayTitle
+            <Truncate>
+              <span style={{ width: 185 }} data-testid="header">
+                {datasetTitle}
+              </span>
+            </Truncate>
           )}
         </div>
       </div>

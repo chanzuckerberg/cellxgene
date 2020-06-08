@@ -7,17 +7,17 @@ import {
   MenuItem,
   Popover,
   Position,
+  Icon,
   PopoverInteractionKind,
-  Tooltip,
 } from "@blueprintjs/core";
 import Occupancy from "./occupancy";
 import * as globals from "../../../globals";
 import styles from "../categorical.css";
 import AnnoDialog from "../annoDialog";
 import LabelInput from "../labelInput";
+import Truncate from "../../util/truncate";
 
 import { AnnotationsHelpers } from "../../../util/stateManager";
-import maybeTruncateString from "../../../util/maybeTruncateString";
 import { labelPrompt, isLabelErroneous } from "../labelUtil";
 
 /* this is defined outside of the class so we can use it in connect() */
@@ -316,13 +316,6 @@ class CategoryValue extends React.Component {
       categories = schema.annotations.obsByName[colorAccessor]?.categories;
     }
 
-    const truncatedString = maybeTruncateString(
-      displayString,
-      colorAccessor && !isColorBy
-        ? globals.categoryLabelDisplayStringShortLength
-        : globals.categoryLabelDisplayStringLongLength
-    );
-
     const editModeActive =
       isUserAnno &&
       annotations.labelEditable.category === metadataField &&
@@ -330,6 +323,26 @@ class CategoryValue extends React.Component {
       annotations.labelEditable.label === categoryIndex;
 
     const valueToggleLabel = `value-toggle-checkbox-${displayString}`;
+
+    const LEFT_MARGIN = 33;
+    const CHECKBOX = 26;
+    const CELL_NUMBER = 61;
+    const ANNO_MENU = 26;
+    const LABEL_MARGIN = 24;
+
+    const otherElementsWidth =
+      LEFT_MARGIN +
+      CHECKBOX +
+      CELL_NUMBER +
+      LABEL_MARGIN +
+      (isUserAnno ? ANNO_MENU : 0);
+
+    const OCCUPANCY_WIDTH = 100;
+
+    const labelWidth =
+      colorAccessor && !isColorBy
+        ? globals.leftSidebarWidth - otherElementsWidth - OCCUPANCY_WIDTH
+        : globals.leftSidebarWidth - otherElementsWidth;
 
     return (
       <div
@@ -343,7 +356,7 @@ class CategoryValue extends React.Component {
         }
         data-testclass="categorical-row"
         style={{
-          padding: "4px 7px",
+          padding: "4px 0px 4px 7px",
           display: "flex",
           alignItems: "baseline",
           justifyContent: "space-between",
@@ -383,21 +396,12 @@ class CategoryValue extends React.Component {
                 onMouseLeave={this.handleMouseEnter}
               />
             </label>
-            <Tooltip
-              content={displayString}
-              disabled={truncatedString === null}
-              hoverOpenDelay={globals.tooltipHoverOpenDelayQuick}
-              position={Position.LEFT}
-              usePortal
-              modifiers={{
-                preventOverflow: { enabled: false },
-                hide: { enabled: false },
-              }}
-            >
+            <Truncate>
               <span
                 data-testid={`categorical-value-${metadataField}-${displayString}`}
                 data-testclass="categorical-value"
                 style={{
+                  width: labelWidth,
                   color:
                     displayString === globals.unassignedCategoryLabel
                       ? "#ababab"
@@ -410,13 +414,13 @@ class CategoryValue extends React.Component {
                   overflow: "hidden",
                   lineHeight: "1.1em",
                   height: "1.1em",
-                  wordBreak: "break-all",
                   verticalAlign: "middle",
+                  marginRight: LABEL_MARGIN,
                 }}
               >
-                {truncatedString || displayString}
+                {displayString}
               </span>
-            </Tooltip>
+            </Truncate>
             {editModeActive ? (
               <div>
                 <AnnoDialog
@@ -561,14 +565,14 @@ class CategoryValue extends React.Component {
                 >
                   <Button
                     style={{
-                      marginLeft: 0,
+                      marginLeft: 2,
                       position: "relative",
                       top: -1,
                       minHeight: 16,
                     }}
                     data-testclass="seeActions"
                     data-testid={`${metadataField}:${displayString}:see-actions`}
-                    icon="more"
+                    icon={<Icon icon="more" iconSize={10} />}
                     small
                     minimal
                   />

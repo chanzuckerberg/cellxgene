@@ -6,8 +6,12 @@ import {
   MenuItem,
   Popover,
   Position,
+  Tooltip,
+  Icon,
   PopoverInteractionKind,
 } from "@blueprintjs/core";
+
+import * as globals from "../../../globals";
 
 @connect((state) => ({
   annotations: state.annotations,
@@ -56,46 +60,57 @@ class AnnoMenuCategory extends React.PureComponent {
     return (
       <>
         {isUserAnno ? (
-          <Popover
-            interactionKind={PopoverInteractionKind.HOVER}
-            boundary="window"
-            position={Position.RIGHT_TOP}
-            content={
-              <Menu>
-                <MenuItem
-                  icon="tag"
-                  data-testclass="handleAddNewLabelToCategory"
-                  data-testid={`${metadataField}:add-new-label-to-category`}
-                  onClick={this.activateAddNewLabelMode}
-                  text={createText}
-                />
-                <MenuItem
-                  icon="edit"
-                  disabled={annotations.isEditingCategoryName}
-                  data-testclass="activateEditCategoryMode"
-                  data-testid={`${metadataField}:edit-category-mode`}
-                  onClick={this.activateEditCategoryMode}
-                  text={editText}
-                />
-                <MenuItem
-                  icon="delete"
-                  intent="danger"
-                  data-testclass="handleDeleteCategory"
-                  data-testid={`${metadataField}:delete-category`}
-                  onClick={this.handleDeleteCategory}
-                  text={deleteText}
-                />
-              </Menu>
-            }
-          >
-            <Button
-              style={{ marginLeft: 0 }}
-              data-testclass="seeActions"
-              data-testid={`${metadataField}:see-actions`}
-              icon="more"
-              minimal
-            />
-          </Popover>
+          <>
+            <Tooltip
+              content={createText}
+              position="bottom"
+              hoverOpenDelay={globals.tooltipHoverOpenDelay}
+            >
+              <Button
+                style={{ marginLeft: 0, marginRight: 2 }}
+                data-testclass="handleAddNewLabelToCategory"
+                data-testid={`${metadataField}:add-new-label-to-category`}
+                icon={<Icon icon="plus" iconSize={10} />}
+                onClick={this.activateAddNewLabelMode}
+                small
+                minimal
+              />
+            </Tooltip>
+            <Popover
+              interactionKind={PopoverInteractionKind.HOVER}
+              boundary="window"
+              position={Position.RIGHT_TOP}
+              content={
+                <Menu>
+                  <MenuItem
+                    icon="edit"
+                    disabled={annotations.isEditingCategoryName}
+                    data-testclass="activateEditCategoryMode"
+                    data-testid={`${metadataField}:edit-category-mode`}
+                    onClick={this.activateEditCategoryMode}
+                    text={editText}
+                  />
+                  <MenuItem
+                    icon="delete"
+                    intent="danger"
+                    data-testclass="handleDeleteCategory"
+                    data-testid={`${metadataField}:delete-category`}
+                    onClick={this.handleDeleteCategory}
+                    text={deleteText}
+                  />
+                </Menu>
+              }
+            >
+              <Button
+                style={{ marginLeft: 0, marginRight: 5 }}
+                data-testclass="seeActions"
+                data-testid={`${metadataField}:see-actions`}
+                icon={<Icon icon="more" iconSize={10} />}
+                small
+                minimal
+              />
+            </Popover>
+          </>
         ) : null}
       </>
     );
