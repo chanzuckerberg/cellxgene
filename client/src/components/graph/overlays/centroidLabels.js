@@ -70,16 +70,14 @@ class CentroidLabels extends PureComponent {
 
       labelSVGS.push(
         <g
-          // label is unique so disabling eslint rule
-          // eslint-disable-next-line react/no-array-index-key
+          // eslint-disable-next-line react/no-array-index-key --- label is unique and consistent
           key={label}
           className="centroid-label"
           transform={`translate(${coords[0]}, ${coords[1]})`}
           data-testclass="centroid-label"
           data-testid={`${label}-centroid-label`}
         >
-          {/* The mouse actions for centroid labels do not have a screen reader alternative */}
-          {/* eslint-disable-next-line jsx-a11y/mouse-events-have-key-events */}
+          {/* eslint-disable-next-line jsx-a11y/mouse-events-have-key-events --- the mouse actions for centroid labels do not have a screen reader alternative*/}
           <text
             transform={inverseTransform}
             textAnchor="middle"

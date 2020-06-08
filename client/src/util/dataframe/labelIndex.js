@@ -1,4 +1,4 @@
-/* eslint-disable max-classes-per-file */
+/* eslint-disable max-classes-per-file -- Classes are interrelated*/
 /**
 Label indexing - map a label to & from an integer offset.  See Dataframe
 for how this is used.
@@ -11,7 +11,7 @@ Private utility functions
 */
 function extent(tarr) {
   let min = 0x7fffffff;
-  let max = ~min; // eslint-disable-line no-bitwise
+  let max = ~min; // eslint-disable-line no-bitwise -- Establishes 0 of same size
   for (let i = 0, l = tarr.length; i < l; i += 1) {
     const v = tarr[i];
     if (v < min) {
@@ -41,25 +41,22 @@ class IdentityInt32Index {
     return k;
   }
 
-  // eslint-disable-next-line class-methods-use-this
+  /* eslint-disable class-methods-use-this -- having these accessors as class methods allows for polymorphism */
   getOffset(i) {
     // label to offset
     return i;
   }
 
-  // eslint-disable-next-line class-methods-use-this
   getOffsets(arr) {
     // labels to offsets
     return arr;
   }
 
-  // eslint-disable-next-line class-methods-use-this
   getLabel(i) {
     // offset to label
     return i;
   }
 
-  // eslint-disable-next-line class-methods-use-this
   getLabels(arr) {
     // offsets to labels
     return arr;
@@ -68,6 +65,7 @@ class IdentityInt32Index {
   size() {
     return this.maxOffset;
   }
+  /* eslint-enable class-methods-use-this -- enable */
 
   __promote(labelArray) {
     /*
@@ -215,7 +213,6 @@ class DenseInt32Index {
     return this.__promote(labels);
   }
 
-  // eslint-disable-next-line class-methods-use-this
   isubset(offsets) {
     /* validate subset */
     const { rindex } = this;
@@ -317,7 +314,6 @@ class KeyIndex {
     return new KeyIndex(labels);
   }
 
-  // eslint-disable-next-line class-methods-use-this
   isubset(offsets) {
     const { rindex } = this;
     const maxOffset = rindex.length;
@@ -347,7 +343,6 @@ class KeyIndex {
     return new KeyIndex(labelArray);
   }
 }
-/* eslint-enable class-methods-use-this */
 
 function isLabelIndex(i) {
   return (
@@ -358,3 +353,4 @@ function isLabelIndex(i) {
 }
 
 export { DenseInt32Index, IdentityInt32Index, KeyIndex, isLabelIndex };
+/* eslint-enable max-classes-per-file -- enable*/
