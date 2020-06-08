@@ -6,6 +6,6 @@ export const DEV = jestEnv === "dev";
 export const DEBUG = jestEnv === "debug";
 export const DATASET = "pbmc3k";
 
-if (DEBUG) jest.setTimeout(240000);
-if (DEV) jest.setTimeout(30000);
-if (!DEBUG && !DEV) jest.setTimeout(10000);
+if (DEBUG) jest.setTimeout(2 * 60 * 1000);
+if (DEV) jest.setTimeout(30 * 1000);
+if (!DEBUG && !DEV) jest.setTimeout(10 * 1000);

@@ -20,6 +20,11 @@ class AnnoDialogEditCategoryName extends React.PureComponent {
     };
   }
 
+  allCategoryNames() {
+    const { schema } = this.props;
+    return schema.annotations.obs.columns.map((c) => c.name);
+  }
+
   handleChangeOrSelect = (name) => {
     this.setState({
       newCategoryText: name,
@@ -42,9 +47,7 @@ class AnnoDialogEditCategoryName extends React.PureComponent {
     test for uniqueness against *all* annotation names, not just the subset
     we render as categorical.
     */
-    const { schema } = this.props;
-    const allCategoryNames = schema.annotations.obs.columns.map((c) => c.name);
-
+    const allCategoryNames = this.allCategoryNames();
     if (
       (allCategoryNames.indexOf(newCategoryText) > -1 &&
         newCategoryText !== metadataField) ||
@@ -78,9 +81,7 @@ class AnnoDialogEditCategoryName extends React.PureComponent {
     test for uniqueness against *all* annotation names, not just the subset
     we render as categorical.
     */
-    const { schema } = this.props;
-    const allCategoryNames = schema.annotations.obs.columns.map((c) => c.name);
-
+    const allCategoryNames = this.allCategoryNames();
     const categoryNameAlreadyExists = allCategoryNames.indexOf(name) > -1;
     const sameName = name === metadataField;
     if (categoryNameAlreadyExists && !sameName) {
