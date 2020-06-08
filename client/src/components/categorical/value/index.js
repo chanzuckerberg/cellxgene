@@ -23,7 +23,9 @@ import { labelPrompt, isLabelErroneous } from "../labelUtil";
 /* this is defined outside of the class so we can use it in connect() */
 function _currentLabelAsString(ownProps) {
   const { categorySummary, categoryIndex } = ownProps;
-  return String(categorySummary.categoryValues[categoryIndex]).valueOf();
+  // when called as a function, the String() constructor performs type conversion,
+  // and returns a primtive string.
+  return String(categorySummary.categoryValues[categoryIndex]);
 }
 
 @connect((state, ownProps) => {
