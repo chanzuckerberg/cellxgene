@@ -10,7 +10,6 @@ import {
   Icon,
   PopoverInteractionKind,
 } from "@blueprintjs/core";
-import Occupancy from "./occupancy";
 import * as globals from "../../../globals";
 import styles from "../categorical.css";
 import AnnoDialog from "../annoDialog";
@@ -19,6 +18,7 @@ import Truncate from "../../util/truncate";
 
 import { AnnotationsHelpers } from "../../../util/stateManager";
 import { labelPrompt, isLabelErroneous } from "../labelUtil";
+import MiniHistogram from "../../expressionGraphs/miniHistogram";
 
 /* this is defined outside of the class so we can use it in connect() */
 function _currentLabel(ownProps, categoricalSelection) {
@@ -460,14 +460,21 @@ class CategoryValue extends React.Component {
           </div>
           <span style={{ flexShrink: 0 }}>
             {colorAccessor && !isColorBy && !annotations.isEditingLabelName ? (
-              <Occupancy
-                categoryValue={value}
-                colorAccessor={colorAccessor}
-                metadataField={metadataField}
-                world={world}
-                colorScale={colorScale}
-                colorByIsCategorical={!!categoricalSelection[colorAccessor]}
-              />
+              categoricalSelection[colorAccessor] ? null : (
+                <MiniHistogram
+                  /* eslint-disable react/jsx-props-no-spreading -- Disable unneeded on next release of eslint-config-airbnb */
+                  {...{
+                    colorAccessor,
+                    metadataField,
+                    world,
+                    colorScale,
+                  }}
+                  /* eslint-enable react/jsx-props-no-spreading -- enable */
+                  categoryValue={value}
+                  height={11}
+                  width={100}
+                />
+              )
             ) : null}
           </span>
         </div>
