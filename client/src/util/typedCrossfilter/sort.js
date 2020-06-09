@@ -1,6 +1,6 @@
 import { isTypedArray, isFpTypedArray } from "../typeHelpers";
 
-/* eslint no-bitwise: "off" */
+/* eslint-disable no-bitwise -- code relies on bitwise ops */
 
 /*
  ** fast sort and search, with separate code paths for floats (NaN ordering),
@@ -426,3 +426,4 @@ export function binarySearch(valueArray, value, first, last) {
   if (index !== last && value === valueArray[index]) return index;
   return last;
 }
+/* eslint-enable no-bitwise -- enable */

@@ -1,5 +1,4 @@
-// jshint esversion: 6
-/* eslint no-bitwise: "off" */
+/* eslint-disable no-bitwise -- crossfilter relies on bitwise ops */
 
 // BitArray is a 2D bitarray with size [length, nBitWidth].
 // Each bit is referred to as a `dimension`.  Dimensions may be
@@ -291,3 +290,4 @@ class BitArray {
 }
 
 export default BitArray;
+/* eslint-enable no-bitwise -- enable */

@@ -51,19 +51,21 @@ class Category extends React.Component {
           0
         ),
       };
+      /* eslint-disable react/no-did-update-set-state -- Contained in if statement to prevent infinite looping */
       if (categoryCount.selectedCatCount === categoryCount.totalCatCount) {
         /* everything is on, so not indeterminate */
         this.checkbox.indeterminate = false;
-        this.setState({ isChecked: true }); // eslint-disable-line react/no-did-update-set-state
+        this.setState({ isChecked: true });
       } else if (categoryCount.selectedCatCount === 0) {
         /* nothing is on, so no */
         this.checkbox.indeterminate = false;
-        this.setState({ isChecked: false }); // eslint-disable-line react/no-did-update-set-state
+        this.setState({ isChecked: false });
       } else if (categoryCount.selectedCatCount < categoryCount.totalCatCount) {
         /* to be explicit... */
         this.checkbox.indeterminate = true;
-        this.setState({ isChecked: false }); // eslint-disable-line react/no-did-update-set-state
+        this.setState({ isChecked: false });
       }
+      /* eslint-enable react/no-did-update-set-state -- re-enabling*/
     }
   }
 
