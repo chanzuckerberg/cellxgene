@@ -8,7 +8,7 @@ export default class MiniStackedBar extends React.PureComponent {
     this.canvasRef = React.createRef();
   }
 
-  componentDidMount = () => {
+  drawStacks = () => {
     /* 
       Knowing that the color scale is based off of catagorical data, 
       createOccupancyStack obtains a map showing the number if cells per colored value
@@ -27,7 +27,7 @@ export default class MiniStackedBar extends React.PureComponent {
 
     const ctx = this.canvasRef?.current.getContext("2d");
 
-    if (!ctx) return;
+    ctx.clearRect(0, 0, width, height);
 
     const groupBy = world.obsAnnotations.col(metadataField);
     const occupancyMap = world.obsAnnotations
@@ -65,6 +65,15 @@ export default class MiniStackedBar extends React.PureComponent {
         currentOffset += o ? scaledValue : 0;
       }
     }
+  };
+
+  componentDidUpdate = (prevProps) => {
+    const { colorAccessor } = this.props;
+    if (colorAccessor !== prevProps.colorAccessor) this.drawStacks();
+  };
+
+  componentDidMount = () => {
+    this.drawStacks();
   };
 
   render() {

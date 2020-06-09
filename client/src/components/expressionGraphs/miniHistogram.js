@@ -14,7 +14,7 @@ export default class MiniHistogram extends React.PureComponent {
     this.state = {};
   }
 
-  componentDidMount = () => {
+  drawHistogram = () => {
     /* 
       Knowing that colorScale is based off continuous data, 
       createHistogram fetches the continuous data in relation to the cells relevant to the category value.
@@ -28,9 +28,9 @@ export default class MiniHistogram extends React.PureComponent {
       width,
       height,
     } = this.props;
+    const ctx = this.canvasRef.current.getContext("2d");
 
-    if (!this.canvasRef) return;
-
+    ctx.clearRect(0, 0, width, height);
     const groupBy = world.obsAnnotations.col(metadataField);
 
     const col =
@@ -55,8 +55,6 @@ export default class MiniHistogram extends React.PureComponent {
 
     const yScale = d3.scaleLinear().domain([0, largestBin]).range([0, height]);
 
-    const ctx = this.canvasRef.current.getContext("2d");
-
     ctx.fillStyle = "#000";
 
     let x;
@@ -69,6 +67,15 @@ export default class MiniHistogram extends React.PureComponent {
       y = yScale(bins[i]);
       ctx.fillRect(x, height - y, rectWidth, y);
     }
+  };
+
+  componentDidMount = () => {
+    this.drawHistogram();
+  };
+
+  componentDidUpdate = (prevProps) => {
+    const { colorAccessor } = this.props;
+    if (prevProps.colorAccessor !== colorAccessor) this.drawHistogram();
   };
 
   render() {
