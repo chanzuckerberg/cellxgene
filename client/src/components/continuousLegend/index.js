@@ -137,7 +137,11 @@ class ContinuousLegend extends React.Component {
   render() {
     const { colorAccessor, colorScale } = this.props;
 
-    if (colorScale && colorScale.domain()[1] === colorScale.domain()[0]) {
+    if (
+      colorScale &&
+      colorScale.domain &&
+      colorScale.domain()[1] === colorScale.domain()[0]
+    ) {
       /* it's a single value, not a distribution, min max are the same */
       return null;
     }
