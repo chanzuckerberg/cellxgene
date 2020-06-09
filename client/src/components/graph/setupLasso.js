@@ -54,11 +54,11 @@ const Lasso = () => {
       ) {
         const closePathColor = "#bb2f00";
         closePath
-        .attr("x1", point[0])
-        .attr("y1", point[1])
-        .attr("opacity", 1)
-        .attr("stroke", closePathColor)
-        .attr("fill", closePathColor);
+          .attr("x1", point[0])
+          .attr("y1", point[1])
+          .attr("opacity", 1)
+          .attr("stroke", closePathColor)
+          .attr("fill", closePathColor);
         lassoPath.attr("stroke", closePathColor).attr("fill", closePathColor);
       } else {
         closePath.attr("opacity", 0);
