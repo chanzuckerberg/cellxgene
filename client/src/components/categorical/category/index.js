@@ -200,9 +200,9 @@ class Category extends React.Component {
 
     const checkboxID = `category-select-${metadataField}`;
 
-    const isUserAnno =
-      schema?.annotations?.obsByName[metadataField]?.writable ?? false;
-    const isTruncated = categorySummary?.isTruncated ?? false;
+    const isUserAnno = !!schema?.annotations?.obsByName[metadataField]
+      ?.writable;
+    const isTruncated = !!categorySummary?.isTruncated;
 
     if (
       !isUserAnno &&
