@@ -556,7 +556,7 @@ class HistogramBrush extends React.PureComponent {
           </Tooltip>
         </div>
         <svg
-          style={{ display: isSingleValue ? "none" : "auto" }}
+          style={{ display: isSingleValue ? "none" : "block" }}
           width={this.width}
           height={this.height}
           id={`histogram_${fieldForId}_svg`}
@@ -573,7 +573,7 @@ class HistogramBrush extends React.PureComponent {
           <span
             style={{
               color: unclippedRangeMinColor,
-              display: isSingleValue ? "none" : "auto",
+              display: isSingleValue ? "none" : "block",
             }}
           >
             min {unclippedRangeMin.toPrecision(4)}
@@ -590,7 +590,7 @@ class HistogramBrush extends React.PureComponent {
           <span
             style={{
               color: unclippedRangeMaxColor,
-              display: isSingleValue ? "none" : "auto",
+              display: isSingleValue ? "none" : "block",
             }}
           >
             max {unclippedRangeMax.toPrecision(4)}
