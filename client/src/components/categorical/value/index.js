@@ -19,6 +19,7 @@ import Truncate from "../../util/truncate";
 import { AnnotationsHelpers } from "../../../util/stateManager";
 import { labelPrompt, isLabelErroneous } from "../labelUtil";
 import MiniHistogram from "../../expressionGraphs/miniHistogram";
+import MiniStackedBar from "../../expressionGraphs/miniStackedBar";
 
 /* this is defined outside of the class so we can use it in connect() */
 function _currentLabel(ownProps, categoricalSelection) {
@@ -460,7 +461,21 @@ class CategoryValue extends React.Component {
           </div>
           <span style={{ flexShrink: 0 }}>
             {colorAccessor && !isColorBy && !annotations.isEditingLabelName ? (
-              categoricalSelection[colorAccessor] ? null : (
+              categoricalSelection[colorAccessor] ? (
+                <MiniStackedBar
+                  /* eslint-disable react/jsx-props-no-spreading -- Disable unneeded on next release of eslint-config-airbnb */
+                  {...{
+                    colorAccessor,
+                    metadataField,
+                    world,
+                    colorScale,
+                  }}
+                  /* eslint-enable react/jsx-props-no-spreading -- enable */
+                  categoryValue={value}
+                  height={11}
+                  width={100}
+                />
+              ) : (
                 <MiniHistogram
                   /* eslint-disable react/jsx-props-no-spreading -- Disable unneeded on next release of eslint-config-airbnb */
                   {...{
