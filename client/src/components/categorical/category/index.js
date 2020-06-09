@@ -47,7 +47,8 @@ class Category extends React.Component {
       const newCategorySummary = this.createCategorySummary();
       if (categorySummary !== newCategorySummary) {
         categorySummary = newCategorySummary;
-        this.setState({ categorySummary }); // eslint-disable-line react/no-did-update-set-state
+        /* eslint-disable-next-line react/no-did-update-set-state -- Contained in if statement to prevent infinite looping */
+        this.setState({ categorySummary });
       }
     }
 
