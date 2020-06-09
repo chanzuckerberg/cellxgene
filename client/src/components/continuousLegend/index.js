@@ -107,6 +107,7 @@ const continuous = (selectorId, colorscale, colorAccessor) => {
 class ContinuousLegend extends React.Component {
   componentDidUpdate(prevProps) {
     const { colorAccessor, colorScale } = this.props;
+
     if (
       prevProps.colorAccessor !== colorAccessor ||
       prevProps.colorScale !== colorScale
@@ -115,7 +116,13 @@ class ContinuousLegend extends React.Component {
       d3.select("#continuous_legend").selectAll("*").remove();
     }
 
-    if (colorAccessor && colorScale && colorScale.range) {
+    if (
+      colorAccessor &&
+      colorScale &&
+      colorScale.range &&
+      colorScale.domain()[1] !==
+        colorScale.domain()[0] /* it's a single value, not a distribution, min max are the same */
+    ) {
       /* fragile! continuous range is 0 to 1, not [#fa4b2c, ...], make this a flag? */
       if (colorScale.range()[0][0] !== "#") {
         continuous(
@@ -128,7 +135,12 @@ class ContinuousLegend extends React.Component {
   }
 
   render() {
-    const { colorAccessor } = this.props;
+    const { colorAccessor, colorScale } = this.props;
+
+    if (colorScale && colorScale.domain()[1] === colorScale.domain()[0]) {
+      /* it's a single value, not a distribution, min max are the same */
+      return null;
+    }
     return (
       <div
         id="continuous_legend"

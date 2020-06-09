@@ -476,6 +476,8 @@ class HistogramBrush extends React.PureComponent {
     const unclippedRangeMaxColor =
       world.clipQuantiles.max === 1 ? "#bbb" : globals.blue;
 
+    const isSingleValue = unclippedRangeMin === unclippedRangeMax;
+
     return (
       <div
         id={`histogram_${fieldForId}`}
@@ -554,6 +556,7 @@ class HistogramBrush extends React.PureComponent {
           </Tooltip>
         </div>
         <svg
+          style={{ display: isSingleValue ? "none" : "auto" }}
           width={this.width}
           height={this.height}
           id={`histogram_${fieldForId}_svg`}
@@ -564,10 +567,15 @@ class HistogramBrush extends React.PureComponent {
         <div
           style={{
             display: "flex",
-            justifyContent: "space-between",
+            justifyContent: isSingleValue ? "center" : "space-between",
           }}
         >
-          <span style={{ color: unclippedRangeMinColor }}>
+          <span
+            style={{
+              color: unclippedRangeMinColor,
+              display: isSingleValue ? "none" : "auto",
+            }}
+          >
             min {unclippedRangeMin.toPrecision(4)}
           </span>
           <span
@@ -576,7 +584,15 @@ class HistogramBrush extends React.PureComponent {
           >
             {field}
           </span>
-          <span style={{ color: unclippedRangeMaxColor }}>
+          <div style={{ display: isSingleValue ? "block" : "none" }}>
+            : {unclippedRangeMin}
+          </div>
+          <span
+            style={{
+              color: unclippedRangeMaxColor,
+              display: isSingleValue ? "none" : "auto",
+            }}
+          >
             max {unclippedRangeMax.toPrecision(4)}
           </span>
         </div>
