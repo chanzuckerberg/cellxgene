@@ -67,8 +67,7 @@ class CategoryValue extends React.Component {
       prevProps.categoryIndex !== categoryIndex ||
       prevProps.categorySummary !== categorySummary
     ) {
-      // adequately checked to prevent looping
-      // eslint-disable-next-line react/no-did-update-set-state
+      // eslint-disable-next-line react/no-did-update-set-state --- adequately checked to prevent looping
       this.setState({
         editedLabelText: this.currentLabelAsString(),
       });

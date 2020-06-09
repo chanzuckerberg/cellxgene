@@ -1,4 +1,4 @@
-// eslint-disable-next-line max-classes-per-file
+// eslint-disable-next-line max-classes-per-file -- classes are interrelated
 import PositiveIntervals from "./positiveIntervals";
 import BitArray from "./bitArray";
 import {
@@ -408,7 +408,7 @@ class ImmutableScalarDimension extends _ImmutableBaseDimension {
     this.index = makeSortIndex(array);
   }
 
-  // eslint-disable-next-line class-methods-use-this
+  // eslint-disable-next-line class-methods-use-this -- needed for polymorphism
   _createValueArray(data, mapf, array) {
     // create dimension value array
     const len = data.length;
@@ -512,7 +512,7 @@ class ImmutableEnumDimension extends ImmutableScalarDimension {
     });
   }
 
-  // eslint-disable-next-line class-methods-use-this
+  // eslint-disable-next-line class-methods-use-this -- enables polymorphism
   selectRange() {
     throw new Error("range selection unsupported on Enumerated dimension");
   }

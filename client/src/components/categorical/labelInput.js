@@ -142,7 +142,7 @@ export default class LabelInput extends React.PureComponent {
       return (
         <InputGroup
           autoFocus={autoFocus}
-          {...props.inputProps} // eslint-disable-line react/jsx-props-no-spreading
+          {...props.inputProps} // eslint-disable-line react/jsx-props-no-spreading --- Allows for modularity
           value={label}
           onChange={this.handleChange}
         />
