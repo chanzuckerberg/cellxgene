@@ -10,7 +10,7 @@ If your data is in `h5ad` file (from the [`anndata`](https://anndata.readthedocs
 - Expression values (raw or normalized) in `anndata.X`
 - At least one embedding (e.g., tSNE, UMAP) in `anndata.obsm`, specified with the prefix `X_` (e.g., by default scanpy stores UMAP coordinates in `anndata.obsm['X_umap']`)
 - A unique identifier is required for each cell, which by default will be pulled from the `obs` DataFrame index. If the index is not unique or does not contain the cell ID, an alternative column can be specified with `--obs-names`
-- A unique identifier is required for each gene, which by default will be pulled from the `var` DataFrame index. If the index is not unique or does not contain the cell ID, an alternative column can be specified with `--var-names`
+- A unique identifier is required for each gene, which by default will be pulled from the `var` DataFrame index. If the index is not unique or does not contain the gene ID, an alternative column can be specified with `--var-names`
 
 #### What about R objects from seurat / bioconductor!?
 We hear you! We'd also love to be able to ingest these files directly. This isn't currently possible, but in the meantime, you can use [sceasy](https://bioconda.github.io/recipes/r-sceasy/README.html) ([docs](https://cellgeni.readthedocs.io/en/latest/visualisations.html)) to convert to `h5ad`. Seurat also has some [handy conversion tools](https://satijalab.org/seurat/v3.0/conversion_vignette.html) that you can try out.
