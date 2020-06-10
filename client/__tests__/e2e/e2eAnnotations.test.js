@@ -1,8 +1,8 @@
 /*
 Tests included in this file are specific to annotation features
 */
-import { appUrlBase, DATASET } from "./config";
-import { setupTestBrowser } from "./testBrowser";
+import { appUrlBase, DATASET, DEBUG } from "./config";
+import setupTestBrowser from "./testBrowser";
 import { datasets } from "./data";
 
 let browser;
@@ -15,8 +15,8 @@ beforeAll(async () => {
   [browser, page, utils, actions] = await setupTestBrowser();
 });
 
-afterAll(() => {
-  if (browser !== undefined) browser.close();
+afterAll(async () => {
+  if (!DEBUG && browser !== undefined) await browser.close();
 });
 
 describe.each([
@@ -28,6 +28,7 @@ describe.each([
 
   beforeEach(async () => {
     await page.goto(appUrlBase);
+
     // wait for the page to load
     await utils.waitByClass("autosave-complete");
     // setup the test fixtures
@@ -238,13 +239,9 @@ describe.each([
   }
 
   async function deleteCategoryIfExists(categoryName) {
-    try {
-      const category = await page.waitForSelector(
-        `[data-testid='${categoryName}:category-expand']`,
-        { timeout: 200 }
-      );
-      if (category !== null) return await actions.deleteCategory(categoryName);
-    } catch {}
-    return null;
+    const handle = await page.$(
+      `[data-testid='${categoryName}:category-expand']`
+    );
+    if (handle) await actions.deleteCategory(categoryName);
   }
 });

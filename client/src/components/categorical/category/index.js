@@ -1,5 +1,4 @@
 import React from "react";
-import _ from "lodash";
 import { connect } from "react-redux";
 import { FaChevronRight, FaChevronDown } from "react-icons/fa";
 import { AnchorButton, Button, Tooltip } from "@blueprintjs/core";
@@ -10,6 +9,7 @@ import AnnoDialogAddLabel from "./annoDialogAddLabel";
 import Truncate from "../../util/truncate";
 
 import * as globals from "../../../globals";
+import { createCategorySummary as _createCategorySummary } from "../../../util/stateManager/controlsHelpers";
 
 const LABEL_WIDTH = globals.leftSidebarWidth - 100;
 const ANNO_BUTTON_WIDTH = 50;
@@ -22,6 +22,7 @@ const LABEL_WIDTH_ANNO = LABEL_WIDTH - ANNO_BUTTON_WIDTH;
     categoricalSelection: state.categoricalSelection,
     annotations: state.annotations,
     universe: state.universe,
+    world: state.world,
     schema: state.world?.schema,
   };
 })
@@ -30,37 +31,50 @@ class Category extends React.Component {
     super(props);
     this.state = {
       isChecked: true,
+      categorySummary: this.createCategorySummary(),
     };
   }
 
   componentDidUpdate(prevProps) {
-    const { categoricalSelection, metadataField } = this.props;
+    const { categoricalSelection, metadataField, world } = this.props;
+    let { categorySummary } = this.state;
+
+    if (
+      world !== prevProps.world ||
+      metadataField !== prevProps.metadataField ||
+      !categorySummary
+    ) {
+      const newCategorySummary = this.createCategorySummary();
+      if (categorySummary !== newCategorySummary) {
+        categorySummary = newCategorySummary;
+        /* eslint-disable-next-line react/no-did-update-set-state -- Contained in if statement to prevent infinite looping */
+        this.setState({ categorySummary });
+      }
+    }
+
     const cat = categoricalSelection?.[metadataField];
     if (
       categoricalSelection !== prevProps.categoricalSelection &&
       !!cat &&
       !!this.checkbox
     ) {
-      const categoryCount = {
-        // total number of categories in this dimension
-        totalCatCount: cat.numCategoryValues,
-        // number of selected options in this category
-        selectedCatCount: _.reduce(
-          cat.categoryValueSelected,
-          (res, cond) => (cond ? res + 1 : res),
-          0
-        ),
-      };
+      // total number of categories in this dimension
+      const totalCatCount = categorySummary.numCategoryValues;
+      // number of selected options in this category
+      const selectedCatCount = categorySummary.categoryValues.reduce(
+        (res, label) => (cat.get(label) ?? true ? res + 1 : res),
+        0
+      );
       /* eslint-disable react/no-did-update-set-state -- Contained in if statement to prevent infinite looping */
-      if (categoryCount.selectedCatCount === categoryCount.totalCatCount) {
+      if (selectedCatCount === totalCatCount) {
         /* everything is on, so not indeterminate */
         this.checkbox.indeterminate = false;
         this.setState({ isChecked: true });
-      } else if (categoryCount.selectedCatCount === 0) {
+      } else if (selectedCatCount === 0) {
         /* nothing is on, so no */
         this.checkbox.indeterminate = false;
         this.setState({ isChecked: false });
-      } else if (categoryCount.selectedCatCount < categoryCount.totalCatCount) {
+      } else if (selectedCatCount < totalCatCount) {
         /* to be explicit... */
         this.checkbox.indeterminate = true;
         this.setState({ isChecked: false });
@@ -87,27 +101,37 @@ class Category extends React.Component {
     }
   };
 
+  createCategorySummary() {
+    const { world, metadataField } = this.props;
+    if (!world || !metadataField || !world.obsAnnotations.hasCol(metadataField))
+      return null;
+    return _createCategorySummary(world, metadataField);
+  }
+
   toggleNone() {
     const { dispatch, metadataField } = this.props;
+    const { categorySummary } = this.state;
     dispatch({
       type: "categorical metadata filter none of these",
       metadataField,
+      labels: categorySummary.categoryValues,
     });
     this.setState({ isChecked: false });
   }
 
   toggleAll() {
     const { dispatch, metadataField } = this.props;
+    const { categorySummary } = this.state;
     dispatch({
       type: "categorical metadata filter all of these",
       metadataField,
+      labels: categorySummary.categoryValues,
     });
     this.setState({ isChecked: true });
   }
 
   handleToggleAllClick() {
     const { isChecked } = this.state;
-    // || this.checkbox.indeterminate === false
     if (isChecked) {
       this.toggleNone();
     } else {
@@ -168,29 +192,19 @@ class Category extends React.Component {
   }
 
   render() {
-    const { isChecked } = this.state;
-    const {
-      metadataField,
-      categoricalSelection,
-      isColorAccessor,
-      isExpanded,
-      schema,
-    } = this.props;
+    const { isChecked, categorySummary } = this.state;
+    const { metadataField, isColorAccessor, isExpanded, schema } = this.props;
 
-    const isStillLoading = !(categoricalSelection?.[metadataField] ?? false);
+    const isStillLoading = !categorySummary;
     if (isStillLoading) {
       return this.renderIsStillLoading();
     }
 
     const checkboxID = `category-select-${metadataField}`;
 
-    const isUserAnno =
-      schema?.annotations?.obsByName[metadataField]?.writable ?? false;
-    const isTruncated = _.get(
-      categoricalSelection,
-      [metadataField, "isTruncated"],
-      false
-    );
+    const isUserAnno = !!schema?.annotations?.obsByName[metadataField]
+      ?.writable;
+    const isTruncated = !!categorySummary?.isTruncated;
 
     if (
       !isUserAnno &&
@@ -217,6 +231,7 @@ class Category extends React.Component {
         metadataField={metadataField}
         isExpanded={isExpanded}
         isUserAnno={isUserAnno}
+        categorySummary={categorySummary}
       >
         <div
           style={{

@@ -26,14 +26,7 @@ const centroidLabels = (state = initialState, action, sharedNextState) => {
         ...state,
         labels:
           !!colorAccessor && showLabels && !!categoricalSelection[colorAccessor]
-            ? calcCentroid(
-                world.obsAnnotations,
-                world.obsLayout,
-                colorAccessor,
-                layoutChoice.currentDimNames,
-                categoricalSelection,
-                world.schema.annotations.obsByName
-              )
+            ? calcCentroid(world, colorAccessor, layoutChoice.currentDimNames)
             : [],
       };
 
@@ -52,12 +45,9 @@ const centroidLabels = (state = initialState, action, sharedNextState) => {
       return {
         ...state,
         labels: calcCentroid(
-          world.obsAnnotations,
-          world.obsLayout,
+          world,
           colorAccessor,
-          layoutChoice.currentDimNames,
-          categoricalSelection,
-          world.schema.annotations.obsByName
+          layoutChoice.currentDimNames
         ),
         showLabels,
       };

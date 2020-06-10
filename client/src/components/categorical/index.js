@@ -13,7 +13,6 @@ import { labelPrompt } from "./labelUtil";
 @connect((state) => ({
   writableCategoriesEnabled: state.config?.parameters?.annotations ?? false,
   schema: state.world?.schema,
-  config: state.config,
   ontology: state.ontology,
 }))
 class Categories extends React.Component {
@@ -126,12 +125,11 @@ class Categories extends React.Component {
       newCategoryText,
       expandedCats,
     } = this.state;
-    const { writableCategoriesEnabled, schema, config, ontology } = this.props;
+    const { writableCategoriesEnabled, schema, ontology } = this.props;
     const ontologyEnabled = ontology?.enabled ?? false;
     /* all names, sorted in display order.  Will be rendered in this order */
     const allCategoryNames = ControlsHelpers.selectableCategoryNames(
-      schema,
-      ControlsHelpers.maxCategoryItems(config)
+      schema
     ).sort();
 
     return (

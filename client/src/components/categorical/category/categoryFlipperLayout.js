@@ -1,14 +1,9 @@
 import React from "react";
-import _ from "lodash";
-import { connect } from "react-redux";
 import { Flipper, Flipped } from "react-flip-toolkit";
 
 import * as globals from "../../../globals";
 import Value from "../value";
 
-@connect((state) => ({
-  categoricalSelection: state.categoricalSelection,
-}))
 class Category extends React.Component {
   constructor(props) {
     super(props);
@@ -16,9 +11,9 @@ class Category extends React.Component {
   }
 
   renderCategoryItems(optTuples) {
-    const { metadataField, isUserAnno } = this.props;
+    const { metadataField, isUserAnno, categorySummary } = this.props;
 
-    return _.map(optTuples, (tuple, i) => {
+    return optTuples.map((tuple, i) => {
       return (
         <Flipped key={tuple[1]} flipId={tuple[1]}>
           {(flippedProps) => (
@@ -30,6 +25,7 @@ class Category extends React.Component {
               categoryIndex={tuple[1]}
               i={i}
               flippedProps={flippedProps}
+              categorySummary={categorySummary}
             />
           )}
         </Flipped>
@@ -38,16 +34,10 @@ class Category extends React.Component {
   }
 
   render() {
-    const {
-      metadataField,
-      categoricalSelection,
-      children,
-      isExpanded,
-    } = this.props;
-    const { isTruncated } = categoricalSelection[metadataField];
-    const cat = categoricalSelection[metadataField];
-    const optTuples = [...cat.categoryValueIndices];
-    const optTuplesAsKey = _.map(optTuples, (t) => t[0]).join(""); // animation
+    const { metadataField, categorySummary, children, isExpanded } = this.props;
+    const { isTruncated } = categorySummary;
+    const optTuples = [...categorySummary.categoryValueIndices];
+    const optTuplesAsKey = optTuples.map((t) => t[0]).join(""); // animation
 
     return (
       <div

@@ -6,17 +6,12 @@ import _ from "lodash";
 
 import * as globals from "../../globals";
 import { rangeFill as fillRange } from "../range";
+import fromEntries from "../fromEntries";
 import {
   userDefinedDimensionName,
   diffexpDimensionName,
 } from "../nameCreators";
-
-export function maxCategoryItems(config) {
-  return (
-    config.parameters?.["max-category-items"] ??
-    globals.configDefaults.parameters["max-category-items"]
-  );
-}
+import { isCategoricalAnnotation } from "./annotationsHelpers";
 
 /*
 Selection state for categoricals are tracked in an Object that
@@ -69,7 +64,12 @@ function topNCategories(colSchema, summary, N) {
   return [_topNCategories, topNCounts];
 }
 
-export function selectableCategoryNames(schema, maxCatItems, names) {
+export function isSelectableCategoryName(schema, name) {
+  const { index } = schema.annotations.obs;
+  return name && name !== index && isCategoricalAnnotation(schema, name);
+}
+
+export function selectableCategoryNames(schema, names) {
   /*
   return all obs annotation names that are categorical AND have a
   "reasonably" small number of categories AND are not the index column.
@@ -77,56 +77,44 @@ export function selectableCategoryNames(schema, maxCatItems, names) {
   If the initial name list not provided, use everything in the schema.
   */
   if (!schema) return [];
-  const { index, columns } = schema.annotations.obs;
-
-  return columns
-    .filter((colSchema) => !names || names.indexOf(colSchema.name) !== -1)
-    .filter((colSchema) => {
-      const { type, name } = colSchema;
-      const isSelectableType =
-        type === "string" || type === "boolean" || type === "categorical";
-      return isSelectableType && name !== index;
-    })
-    .map((v) => v.name);
+  if (!names) names = schema.annotations.obs.columns.map((c) => c.name);
+  return names.filter((name) => isSelectableCategoryName(schema, name));
 }
 
-export function createCategoricalSelection(world, names) {
+export function createCategorySummary(world, name) {
   const N = globals.maxCategoricalOptionsToDisplay;
   const { obsAnnotations, schema } = world;
 
-  const res = names.reduce((acc, name) => {
-    const colSchema = schema.annotations.obsByName[name];
-    const { writable: isUserAnno } = colSchema;
+  const colSchema = schema.annotations.obsByName[name];
+  const { writable: isUserAnno } = colSchema;
 
-    /*
-    Summarize the annotation data currently in world.  Must return categoryValues
-    in sorted order, and must include all category values even if they are not
-    actively used in the current world.
-    */
-    const summary = obsAnnotations.col(name).summarizeCategorical();
-    const [categoryValues, categoryValueCounts] = topNCategories(
-      colSchema,
-      summary,
-      N
-    );
-    const categoryValueIndices = new Map(categoryValues.map((v, i) => [v, i]));
-    const numCategoryValues = categoryValueIndices.size;
-    const categoryValueSelected = new Array(numCategoryValues).fill(true);
-    const isTruncated = categoryValues.length < summary.numCategories;
+  /*
+  Summarize the annotation data currently in world.  Must return categoryValues
+  in sorted order, and must include all category values even if they are not
+  actively used in the current world.
+  */
+  const summary = obsAnnotations.col(name).summarizeCategorical();
+  const [categoryValues, categoryValueCounts] = topNCategories(
+    colSchema,
+    summary,
+    N
+  );
+  const categoryValueIndices = new Map(categoryValues.map((v, i) => [v, i]));
+  const numCategoryValues = categoryValueIndices.size;
+  const isTruncated = categoryValues.length < summary.numCategories;
 
-    acc[name] = {
-      categoryValues, // array: of natively typed category values
-      categoryValueIndices, // map: category value (native type) -> category index
-      categoryValueSelected, // array: t/f selection state
-      numCategoryValues, // number: of values in the category
-      isTruncated, // bool: true if list was truncated
-      categoryValueCounts, // array: cardinality of each category,
-      categorySelected: true, // bool - default state for entire category
-      isUserAnno, // bool
-    };
-    return acc;
-  }, {});
-  return res;
+  return {
+    categoryValues, // array: of natively typed category values
+    categoryValueIndices, // map: category value (native type) -> category index
+    numCategoryValues, // number: of values in the category
+    isTruncated, // bool: true if list was truncated
+    categoryValueCounts, // array: cardinality of each category,
+    isUserAnno, // bool
+  };
+}
+
+export function createCategoricalSelection(names) {
+  return fromEntries(names.map((name) => [name, new Map()]));
 }
 
 /*
