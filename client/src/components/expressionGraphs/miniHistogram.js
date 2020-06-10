@@ -1,5 +1,4 @@
 import React from "react";
-import * as d3 from "d3";
 import {
   Popover,
   PopoverInteractionKind,
@@ -11,49 +10,13 @@ export default class MiniHistogram extends React.PureComponent {
   constructor(props) {
     super(props);
     this.canvasRef = React.createRef();
-    this.state = {};
   }
 
   drawHistogram = () => {
-    /* 
-      Knowing that colorScale is based off continuous data, 
-      createHistogram fetches the continuous data in relation to the cells relevant to the category value.
-      It then separates that data into 50 bins for drawing the mini-histogram
-    */
-    const {
-      world,
-      metadataField,
-      colorAccessor,
-      categoryValue,
-      width,
-      height,
-    } = this.props;
+    const { xScale, yScale, bins, width, height } = this.props;
     const ctx = this.canvasRef.current.getContext("2d");
 
     ctx.clearRect(0, 0, width, height);
-    const groupBy = world.obsAnnotations.col(metadataField);
-
-    const col =
-      world.obsAnnotations.col(colorAccessor) ||
-      world.varData.col(colorAccessor);
-
-    const range = col.summarize();
-
-    const histogramMap = col.histogram(
-      50,
-      [range.min, range.max],
-      groupBy
-    ); /* Because the signature changes we really need different names for histogram to differentiate signatures  */
-
-    const bins = histogramMap.has(categoryValue)
-      ? histogramMap.get(categoryValue)
-      : new Array(50).fill(0);
-
-    const xScale = d3.scaleLinear().domain([0, bins.length]).range([0, width]);
-
-    const largestBin = Math.max(...bins);
-
-    const yScale = d3.scaleLinear().domain([0, largestBin]).range([0, height]);
 
     ctx.fillStyle = "#000";
 
@@ -74,12 +37,12 @@ export default class MiniHistogram extends React.PureComponent {
   };
 
   componentDidUpdate = (prevProps) => {
-    const { colorAccessor } = this.props;
-    if (prevProps.colorAccessor !== colorAccessor) this.drawHistogram();
+    const { expressionLabel } = this.props;
+    if (prevProps.expressionLabel !== expressionLabel) this.drawHistogram();
   };
 
   render() {
-    const { colorAccessor, categoryValue, width, height } = this.props;
+    const { domainLabel, expressionLabel, width, height } = this.props;
 
     return (
       <Popover
@@ -110,8 +73,8 @@ export default class MiniHistogram extends React.PureComponent {
         <div key="text" style={{ fontSize: "14px" }}>
           <p style={{ margin: "0" }}>
             This histograms shows the distribution of{" "}
-            <strong>{colorAccessor}</strong> within{" "}
-            <strong>{categoryValue}</strong>.
+            <strong>{expressionLabel}</strong> within{" "}
+            <strong>{domainLabel}</strong>.
             <br />
             <br />
             The x axis is the same for each histogram, while the y axis is

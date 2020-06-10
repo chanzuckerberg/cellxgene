@@ -1,5 +1,6 @@
 import { connect } from "react-redux";
 import React from "react";
+import * as d3 from "d3";
 
 import {
   Button,
@@ -245,6 +246,50 @@ class CategoryValue extends React.Component {
     return label;
   };
 
+  createHistogramBins = (
+    world,
+    metadataField,
+    colorAccessor,
+    value,
+    width,
+    height
+  ) => {
+    /*
+      Knowing that colorScale is based off continuous data, 
+      createHistogramBins fetches the continuous data in relation to the cells relevant to the category value.
+      It then separates that data into 50 bins for drawing the mini-histogram
+    */
+    const groupBy = world.obsAnnotations.col(metadataField);
+
+    const col =
+      world.obsAnnotations.col(colorAccessor) ||
+      world.varData.col(colorAccessor);
+
+    const range = col.summarize();
+
+    const histogramMap = col.histogram(
+      50,
+      [range.min, range.max],
+      groupBy
+    ); /* Because the signature changes we really need different names for histogram to differentiate signatures  */
+
+    const bins = histogramMap.has(value)
+      ? histogramMap.get(value)
+      : new Array(50).fill(0);
+
+    const xScale = d3.scaleLinear().domain([0, bins.length]).range([0, width]);
+
+    const largestBin = Math.max(...bins);
+
+    const yScale = d3.scaleLinear().domain([0, largestBin]).range([0, height]);
+
+    return {
+      xScale,
+      yScale,
+      bins,
+    };
+  };
+
   currentLabel() {
     const { categoricalSelection } = this.props;
     return _currentLabel(this.props, categoricalSelection);
@@ -324,6 +369,7 @@ class CategoryValue extends React.Component {
 
     const valueToggleLabel = `value-toggle-checkbox-${displayString}`;
 
+    const VALUE_HEIGHT = 11;
     const LEFT_MARGIN = 33;
     const CHECKBOX = 26;
     const CELL_NUMBER = 61;
@@ -337,11 +383,11 @@ class CategoryValue extends React.Component {
       LABEL_MARGIN +
       (isUserAnno ? ANNO_MENU : 0);
 
-    const OCCUPANCY_WIDTH = 100;
+    const GRAPH_WIDTH = 100;
 
     const labelWidth =
       colorAccessor && !isColorBy
-        ? globals.leftSidebarWidth - otherElementsWidth - OCCUPANCY_WIDTH
+        ? globals.leftSidebarWidth - otherElementsWidth - GRAPH_WIDTH
         : globals.leftSidebarWidth - otherElementsWidth;
 
     return (
@@ -472,22 +518,28 @@ class CategoryValue extends React.Component {
                   }}
                   /* eslint-enable react/jsx-props-no-spreading -- enable */
                   categoryValue={value}
-                  height={11}
-                  width={100}
+                  height={VALUE_HEIGHT}
+                  width={GRAPH_WIDTH}
                 />
               ) : (
                 <MiniHistogram
                   /* eslint-disable react/jsx-props-no-spreading -- Disable unneeded on next release of eslint-config-airbnb */
                   {...{
-                    colorAccessor,
-                    metadataField,
-                    world,
                     colorScale,
+                    ...this.createHistogramBins(
+                      world,
+                      metadataField,
+                      colorAccessor,
+                      value,
+                      GRAPH_WIDTH,
+                      VALUE_HEIGHT
+                    ),
                   }}
                   /* eslint-enable react/jsx-props-no-spreading -- enable */
-                  categoryValue={value}
-                  height={11}
-                  width={100}
+                  expressionLabel={colorAccessor}
+                  domainLabel={value}
+                  height={VALUE_HEIGHT}
+                  width={GRAPH_WIDTH}
                 />
               )
             ) : null}
@@ -516,8 +568,8 @@ class CategoryValue extends React.Component {
               display={isColorBy && categories ? "auto" : "none"}
               style={{
                 marginLeft: 5,
-                width: 11,
-                height: 11,
+                width: VALUE_HEIGHT,
+                height: VALUE_HEIGHT,
                 backgroundColor:
                   isColorBy && categories
                     ? colorScale(categories.indexOf(value))
