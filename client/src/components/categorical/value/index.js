@@ -290,6 +290,50 @@ class CategoryValue extends React.Component {
     };
   };
 
+  createStackedGraphBins = (
+    world,
+    metadataField,
+    colorAccessor,
+    categoryValue,
+    width
+  ) => {
+    /* 
+      Knowing that the color scale is based off of categorical data, 
+      createOccupancyStack obtains a map showing the number if cells per colored value
+      Using the colorScale a stack of colored bars is drawn representing the map
+     */
+    const { schema } = world;
+
+    const groupBy = world.obsAnnotations.col(metadataField);
+    const occupancyMap = world.obsAnnotations
+      .col(colorAccessor)
+      .histogramCategorical(groupBy);
+
+    const occupancy = occupancyMap.get(categoryValue);
+
+    if (occupancy && occupancy.size > 0) {
+      // not all categories have occupancy, so occupancy may be undefined.
+      const scale = d3
+        .scaleLinear()
+        /* get all the keys d[1] as an array, then find the sum */
+        .domain([0, d3.sum(Array.from(occupancy.values()))])
+        .range([0, width]);
+      const categories =
+        schema.annotations.obsByName[colorAccessor]?.categories;
+
+      const dfColumn = world.obsAnnotations.col(colorAccessor);
+      const categoryValues = dfColumn.summarizeCategorical().categories;
+
+      return {
+        domainValues: categoryValues,
+        scale,
+        domain: categories,
+        occupancy,
+      };
+    }
+    return null;
+  };
+
   currentLabel() {
     const { categoricalSelection } = this.props;
     return _currentLabel(this.props, categoricalSelection);
@@ -511,13 +555,16 @@ class CategoryValue extends React.Component {
                 <MiniStackedBar
                   /* eslint-disable react/jsx-props-no-spreading -- Disable unneeded on next release of eslint-config-airbnb */
                   {...{
-                    colorAccessor,
-                    metadataField,
-                    world,
                     colorScale,
+                    ...this.createStackedGraphBins(
+                      world,
+                      metadataField,
+                      colorAccessor,
+                      value,
+                      GRAPH_WIDTH
+                    ),
                   }}
                   /* eslint-enable react/jsx-props-no-spreading -- enable */
-                  categoryValue={value}
                   height={VALUE_HEIGHT}
                   width={GRAPH_WIDTH}
                 />
