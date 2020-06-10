@@ -37,12 +37,21 @@ export default class MiniHistogram extends React.PureComponent {
   };
 
   componentDidUpdate = (prevProps) => {
-    const { expressionLabel } = this.props;
-    if (prevProps.expressionLabel !== expressionLabel) this.drawHistogram();
+    const { obsOrVarContinuousFieldDisplayName } = this.props;
+    if (
+      prevProps.obsOrVarContinuousFieldDisplayName !==
+      obsOrVarContinuousFieldDisplayName
+    )
+      this.drawHistogram();
   };
 
   render() {
-    const { domainLabel, expressionLabel, width, height } = this.props;
+    const {
+      domainLabel,
+      obsOrVarContinuousFieldDisplayName,
+      width,
+      height,
+    } = this.props;
 
     return (
       <Popover
@@ -73,7 +82,7 @@ export default class MiniHistogram extends React.PureComponent {
         <div key="text" style={{ fontSize: "14px" }}>
           <p style={{ margin: "0" }}>
             This histograms shows the distribution of{" "}
-            <strong>{expressionLabel}</strong> within{" "}
+            <strong>{obsOrVarContinuousFieldDisplayName}</strong> within{" "}
             <strong>{domainLabel}</strong>.
             <br />
             <br />

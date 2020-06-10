@@ -536,7 +536,7 @@ class CategoryValue extends React.Component {
                     ),
                   }}
                   /* eslint-enable react/jsx-props-no-spreading -- enable */
-                  expressionLabel={colorAccessor}
+                  obsOrVarContinuousFieldDisplayName={colorAccessor}
                   domainLabel={value}
                   height={VALUE_HEIGHT}
                   width={GRAPH_WIDTH}
