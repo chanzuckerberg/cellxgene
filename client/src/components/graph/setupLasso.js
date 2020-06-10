@@ -1,6 +1,7 @@
 // https://bl.ocks.org/pbeshai/8008075f9ce771ee8be39e8c38907570
 
 import * as d3 from "d3";
+import { Colors } from "@blueprintjs/core";
 
 const Lasso = () => {
   const dispatch = d3.dispatch("start", "end", "cancel");
@@ -18,7 +19,7 @@ const Lasso = () => {
 
     // distance last point has to be to first point before it auto closes when mouse is released
     const closeDistance = 75;
-    const lassoPathColor = "#00bbbb";
+    const lassoPathColor = Colors.BLUE5;
 
     const handleDragStart = () => {
       lassoPolygon = [d3.mouse(svg.node())]; // current x y of mouse within element
@@ -52,7 +53,7 @@ const Lasso = () => {
         distance(lassoPolygon[0], lassoPolygon[lassoPolygon.length - 1]) <
         closeDistance
       ) {
-        const closePathColor = "#bb2f00";
+        const closePathColor = Colors.GREEN5;
         closePath
           .attr("x1", point[0])
           .attr("y1", point[1])
