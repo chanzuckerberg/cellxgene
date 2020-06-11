@@ -1,14 +1,7 @@
 import React from "react";
-import { connect } from "react-redux";
 import { Button, MenuItem } from "@blueprintjs/core";
 import { Select } from "@blueprintjs/select";
 
-@connect((state) => ({
-  colorAccessor: state.colors.colorAccessor,
-  categoricalSelection: state.categoricalSelection,
-  annotations: state.annotations,
-  universe: state.universe,
-}))
 class DuplicateCategorySelect extends React.PureComponent {
   constructor(props) {
     super(props);

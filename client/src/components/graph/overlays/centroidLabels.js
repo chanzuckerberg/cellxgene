@@ -40,10 +40,7 @@ class CentroidLabels extends PureComponent {
     if (!colorAccessor || labels.size === undefined || labels.size === 0)
       return null;
 
-    const {
-      categoryValueIndices,
-      categoryValueSelected,
-    } = categoricalSelection?.[colorAccessor];
+    const category = categoricalSelection[colorAccessor];
 
     const labelSVGS = [];
     let fontSize = "15px";
@@ -57,7 +54,7 @@ class CentroidLabels extends PureComponent {
         fontWeight = "800";
       }
 
-      const selected = categoryValueSelected[categoryValueIndices.get(label)];
+      const selected = category.get(label) ?? true;
 
       // Mirror LSB middle truncation
       let displayLabel = label;

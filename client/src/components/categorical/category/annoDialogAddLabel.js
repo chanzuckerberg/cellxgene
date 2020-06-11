@@ -5,8 +5,6 @@ import LabelInput from "../labelInput";
 import { labelPrompt, isLabelErroneous } from "../labelUtil";
 
 @connect((state) => ({
-  colorAccessor: state.colors.colorAccessor,
-  categoricalSelection: state.categoricalSelection,
   annotations: state.annotations,
   universe: state.universe,
   ontology: state.ontology,

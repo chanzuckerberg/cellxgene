@@ -1,5 +1,4 @@
 import React from "react";
-import _ from "lodash";
 import { connect } from "react-redux";
 import AnnoDialog from "../annoDialog";
 import LabelInput from "../labelInput";
@@ -8,9 +7,9 @@ import { labelPrompt } from "../labelUtil";
 import { AnnotationsHelpers } from "../../../util/stateManager";
 
 @connect((state) => ({
-  categoricalSelection: state.categoricalSelection,
   annotations: state.annotations,
   universe: state.universe,
+  schema: state.world?.schema,
   ontology: state.ontology,
 }))
 class AnnoDialogEditCategoryName extends React.PureComponent {
@@ -36,11 +35,14 @@ class AnnoDialogEditCategoryName extends React.PureComponent {
   };
 
   handleEditCategory = (e) => {
-    const { dispatch, metadataField, categoricalSelection } = this.props;
+    const { dispatch, metadataField } = this.props;
     const { newCategoryText } = this.state;
 
-    const allCategoryNames = _.keys(categoricalSelection);
-
+    /*
+    test for uniqueness against *all* annotation names, not just the subset
+    we render as categorical.
+    */
+    const allCategoryNames = this.allCategoryNames();
     if (
       (allCategoryNames.indexOf(newCategoryText) > -1 &&
         newCategoryText !== metadataField) ||
@@ -60,7 +62,7 @@ class AnnoDialogEditCategoryName extends React.PureComponent {
   };
 
   editedCategoryNameError = (name) => {
-    const { metadataField, categoricalSelection } = this.props;
+    const { metadataField } = this.props;
 
     /* check for syntax errors in category name */
     const error = AnnotationsHelpers.annotationNameIsErroneous(name);
@@ -69,7 +71,12 @@ class AnnoDialogEditCategoryName extends React.PureComponent {
     }
 
     /* check for duplicative categories */
-    const allCategoryNames = _.keys(categoricalSelection);
+
+    /*
+    test for uniqueness against *all* annotation names, not just the subset
+    we render as categorical.
+    */
+    const allCategoryNames = this.allCategoryNames();
     const categoryNameAlreadyExists = allCategoryNames.indexOf(name) > -1;
     const sameName = name === metadataField;
     if (categoryNameAlreadyExists && !sameName) {
@@ -87,6 +94,11 @@ class AnnoDialogEditCategoryName extends React.PureComponent {
       ":"
     );
   };
+
+  allCategoryNames() {
+    const { schema } = this.props;
+    return schema.annotations.obs.columns.map((c) => c.name);
+  }
 
   render() {
     const { newCategoryText } = this.state;

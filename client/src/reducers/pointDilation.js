@@ -3,12 +3,8 @@ const initialState = {
   categoryField: "",
 };
 
-const pointDialation = (state = initialState, action, sharedNextState) => {
-  const { categoricalSelection } = sharedNextState;
-  const { metadataField, categoryIndex } = action;
-  const categoryField =
-    action.categoryField ||
-    categoricalSelection?.[metadataField]?.categoryValues[categoryIndex];
+const pointDialation = (state = initialState, action) => {
+  const { metadataField, label: categoryField } = action;
 
   switch (action.type) {
     case "category value mouse hover start":

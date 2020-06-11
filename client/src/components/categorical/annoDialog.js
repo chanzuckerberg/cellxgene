@@ -1,13 +1,6 @@
 import React from "react";
-import { connect } from "react-redux";
 import { Button, Tooltip, Dialog, Classes, Colors } from "@blueprintjs/core";
 
-@connect((state) => ({
-  colorAccessor: state.colors.colorAccessor,
-  categoricalSelection: state.categoricalSelection,
-  annotations: state.annotations,
-  universe: state.universe,
-}))
 class AnnoDialog extends React.PureComponent {
   constructor(props) {
     super(props);

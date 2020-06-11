@@ -35,19 +35,15 @@ describe("centroid", () => {
 
     // Create categorical selection from world
     categoricalSelection = CH.createCategoricalSelection(
-      world,
-      CH.selectableCategoryNames(world.schema, CH.maxCategoryItems(REST.config))
+      CH.selectableCategoryNames(world.schema)
     );
   });
 
   test("field4 (categorical obsAnnotation)", () => {
     const centroidResult = calcCentroid(
-      world.obsAnnotations,
-      world.obsLayout,
+      world,
       "field4",
-      ["umap_0", "umap_1"],
-      categoricalSelection,
-      world.schema.annotations.obsByName
+      ["umap_0", "umap_1"]
     );
 
     // Check to see that a centroid has been calculated for every categorical value
@@ -69,12 +65,9 @@ describe("centroid", () => {
 
   test("field3 (boolean obsAnnotation)", () => {
     const centroidResult = calcCentroid(
-      world.obsAnnotations,
-      world.obsLayout,
+      world,
       "field3",
-      ["umap_0", "umap_1"],
-      categoricalSelection,
-      world.schema.annotations.obsByName
+      ["umap_0", "umap_1"]
     );
 
     // Check to see that a centroid has been calculated for every categorical value
