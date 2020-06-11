@@ -465,6 +465,7 @@ class HistogramBrush extends React.PureComponent {
       isScatterplotXXaccessor,
       isScatterplotYYaccessor,
       zebra,
+      ranges,
     } = this.props;
     const fieldForId = field.replace(/\s/g, "_");
     const {
@@ -476,7 +477,7 @@ class HistogramBrush extends React.PureComponent {
     const unclippedRangeMaxColor =
       world.clipQuantiles.max === 1 ? "#bbb" : globals.blue;
 
-    const isSingleValue = unclippedRangeMin === unclippedRangeMax;
+    const isSingleValue = ranges?.min === ranges?.max;
 
     return (
       <div
