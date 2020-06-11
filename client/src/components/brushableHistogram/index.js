@@ -465,6 +465,7 @@ class HistogramBrush extends React.PureComponent {
       isScatterplotXXaccessor,
       isScatterplotYYaccessor,
       zebra,
+      ranges,
     } = this.props;
     const fieldForId = field.replace(/\s/g, "_");
     const {
@@ -475,6 +476,8 @@ class HistogramBrush extends React.PureComponent {
       world.clipQuantiles.min === 0 ? "#bbb" : globals.blue;
     const unclippedRangeMaxColor =
       world.clipQuantiles.max === 1 ? "#bbb" : globals.blue;
+
+    const isSingleValue = ranges?.min === ranges?.max;
 
     return (
       <div
@@ -554,6 +557,7 @@ class HistogramBrush extends React.PureComponent {
           </Tooltip>
         </div>
         <svg
+          style={{ display: isSingleValue ? "none" : "block" }}
           width={this.width}
           height={this.height}
           id={`histogram_${fieldForId}_svg`}
@@ -564,10 +568,15 @@ class HistogramBrush extends React.PureComponent {
         <div
           style={{
             display: "flex",
-            justifyContent: "space-between",
+            justifyContent: isSingleValue ? "center" : "space-between",
           }}
         >
-          <span style={{ color: unclippedRangeMinColor }}>
+          <span
+            style={{
+              color: unclippedRangeMinColor,
+              display: isSingleValue ? "none" : "block",
+            }}
+          >
             min {unclippedRangeMin.toPrecision(4)}
           </span>
           <span
@@ -576,7 +585,15 @@ class HistogramBrush extends React.PureComponent {
           >
             {field}
           </span>
-          <span style={{ color: unclippedRangeMaxColor }}>
+          <div style={{ display: isSingleValue ? "block" : "none" }}>
+            : {unclippedRangeMin}
+          </div>
+          <span
+            style={{
+              color: unclippedRangeMaxColor,
+              display: isSingleValue ? "none" : "block",
+            }}
+          >
             max {unclippedRangeMax.toPrecision(4)}
           </span>
         </div>
