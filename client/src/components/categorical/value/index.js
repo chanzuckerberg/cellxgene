@@ -469,11 +469,11 @@ class CategoryValue extends React.Component {
       LABEL_MARGIN +
       (isUserAnno ? ANNO_MENU : 0);
 
-    const GRAPH_WIDTH = 100;
+    const CHART_WIDTH = 100;
 
     const labelWidth =
       colorAccessor && !isColorBy
-        ? globals.leftSidebarWidth - otherElementsWidth - GRAPH_WIDTH
+        ? globals.leftSidebarWidth - otherElementsWidth - CHART_WIDTH
         : globals.leftSidebarWidth - otherElementsWidth;
 
     return (
@@ -603,12 +603,12 @@ class CategoryValue extends React.Component {
                       metadataField,
                       colorAccessor,
                       value,
-                      GRAPH_WIDTH
+                      CHART_WIDTH
                     ),
                   }}
                   /* eslint-enable react/jsx-props-no-spreading -- enable */
                   height={VALUE_HEIGHT}
-                  width={GRAPH_WIDTH}
+                  width={CHART_WIDTH}
                 />
               ) : (
                 <MiniHistogram
@@ -620,7 +620,7 @@ class CategoryValue extends React.Component {
                       metadataField,
                       colorAccessor,
                       value,
-                      GRAPH_WIDTH,
+                      CHART_WIDTH,
                       VALUE_HEIGHT
                     ),
                   }}
@@ -628,7 +628,7 @@ class CategoryValue extends React.Component {
                   obsOrVarContinuousFieldDisplayName={colorAccessor}
                   domainLabel={value}
                   height={VALUE_HEIGHT}
-                  width={GRAPH_WIDTH}
+                  width={CHART_WIDTH}
                 />
               )
             ) : null}
