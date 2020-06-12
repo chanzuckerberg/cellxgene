@@ -19,8 +19,8 @@ import Truncate from "../../util/truncate";
 
 import { AnnotationsHelpers } from "../../../util/stateManager";
 import { labelPrompt, isLabelErroneous } from "../labelUtil";
-import MiniHistogram from "../../expressionGraphs/miniHistogram";
-import MiniStackedBar from "../../expressionGraphs/miniStackedBar";
+import MiniHistogram from "../../miniHistogram";
+import MiniStackedBar from "../../miniStackedBar";
 
 /* this is defined outside of the class so we can use it in connect() */
 function _currentLabelAsString(ownProps) {
