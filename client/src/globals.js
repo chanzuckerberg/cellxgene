@@ -1,5 +1,8 @@
 import { Colors } from "@blueprintjs/core";
 import { dispatchNetworkErrorMessageToUser } from "./util/actionHelpers";
+import { CXG_SERVER_PORT as DEFAULT_CXG_SERVER_PORT } from "../__tests__/e2e/config";
+
+const CXG_SERVER_PORT = process.env.CXG_SERVER_PORT || DEFAULT_CXG_SERVER_PORT;
 
 /* if a categorical metadata field has more options than this, truncate */
 export const maxCategoricalOptionsToDisplay = 200;
@@ -87,7 +90,7 @@ let _API;
 if (window.CELLXGENE && window.CELLXGENE.API) {
   _API = window.CELLXGENE.API;
 } else {
-  if (process.env.CXG_SERVER_PORT === undefined) {
+  if (CXG_SERVER_PORT === undefined) {
     const errorMessage = "Please set the CXG_SERVER_PORT environment variable.";
     dispatchNetworkErrorMessageToUser(errorMessage);
     throw new Error(errorMessage);
@@ -96,7 +99,7 @@ if (window.CELLXGENE && window.CELLXGENE.API) {
     // prefix: "http://api.clustering.czi.technology/api/",
     // prefix: "http://tabulamuris.cxg.czi.technology/api/",
     // prefix: "http://api-staging.clustering.czi.technology/api/",
-    prefix: `http://localhost:${process.env.CXG_SERVER_PORT}/api/`,
+    prefix: `http://localhost:${CXG_SERVER_PORT}/api/`,
     version: "v0.2/",
   };
 }

@@ -918,43 +918,59 @@ describe("dataframe col", () => {
 });
 
 describe("label indexing", () => {
-
   test("IdentityInt32Index", () => {
     const idx = new Dataframe.IdentityInt32Index(12); // [0, 12)
 
     expect(Dataframe.isLabelIndex(idx)).toBeTruthy();
 
-    expect(idx.labels()).toEqual(new Int32Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]));
+    expect(idx.labels()).toEqual(
+      new Int32Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
+    );
     expect(idx.getLabel(1)).toEqual(1);
     expect(idx.getOffset(1)).toEqual(1);
-    expect(idx.getOffsets([1,3])).toEqual([1,3])
-    expect(idx.getLabels([1, 3])).toEqual([1,3])
+    expect(idx.getOffsets([1, 3])).toEqual([1, 3]);
+    expect(idx.getLabels([1, 3])).toEqual([1, 3]);
     expect(idx.size()).toEqual(12);
 
     expect(idx.subset([2]).labels()).toEqual([2]);
     expect(idx.subset([2, 3, 4]).labels()).toEqual(new Int32Array([2, 3, 4]));
-    expect(idx.subset([0, 1, 2, 3]).labels()).toEqual(new Int32Array([0, 1, 2, 3]));
+    expect(idx.subset([0, 1, 2, 3]).labels()).toEqual(
+      new Int32Array([0, 1, 2, 3])
+    );
 
     expect(idx.isubset([2]).labels()).toEqual([2]);
     expect(idx.isubset([2, 3, 4]).labels()).toEqual(new Int32Array([2, 3, 4]));
-    expect(idx.isubset([0, 1, 2, 3]).labels()).toEqual(new Int32Array([0, 1, 2, 3]));
+    expect(idx.isubset([0, 1, 2, 3]).labels()).toEqual(
+      new Int32Array([0, 1, 2, 3])
+    );
 
-    expect(idx.subset([0, 1, 2, 3, 4])).toBeInstanceOf(Dataframe.IdentityInt32Index);
+    expect(idx.subset([0, 1, 2, 3, 4])).toBeInstanceOf(
+      Dataframe.IdentityInt32Index
+    );
     expect(idx.subset([2, 1, 0])).toBeInstanceOf(Dataframe.IdentityInt32Index);
     expect(idx.subset([1, 2, 3, 4])).toBeInstanceOf(Dataframe.DenseInt32Index);
     expect(idx.subset([0, 1, 3, 4])).toBeInstanceOf(Dataframe.DenseInt32Index);
-    expect(idx.subset([0, 1, 2, 3, 10])).toBeInstanceOf(Dataframe.DenseInt32Index);
+    expect(idx.subset([0, 1, 2, 3, 10])).toBeInstanceOf(
+      Dataframe.DenseInt32Index
+    );
     expect(idx.subset([4, 3, 2, 1])).toBeInstanceOf(Dataframe.DenseInt32Index);
     expect(idx.subset([4])).toBeInstanceOf(Dataframe.KeyIndex);
 
-    expect(idx.withLabel(99).labels()).toEqual(new Int32Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 99]));
-    expect(idx.dropLabel(0).labels()).toEqual(new Int32Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]));
-    expect(idx.dropLabel(11).labels()).toEqual(new Int32Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]));
-    expect(idx.dropLabel(5).labels()).toEqual(new Int32Array([0, 1, 2, 3, 4, 6, 7, 8, 9, 10, 11]));
+    expect(idx.withLabel(99).labels()).toEqual(
+      new Int32Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 99])
+    );
+    expect(idx.dropLabel(0).labels()).toEqual(
+      new Int32Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
+    );
+    expect(idx.dropLabel(11).labels()).toEqual(
+      new Int32Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    );
+    expect(idx.dropLabel(5).labels()).toEqual(
+      new Int32Array([0, 1, 2, 3, 4, 6, 7, 8, 9, 10, 11])
+    );
   });
 
   test("DenseInt32Index", () => {
-
     const idx = new Dataframe.DenseInt32Index([99, 1002, 48, 0, 22]);
 
     expect(Dataframe.isLabelIndex(idx)).toBeTruthy();
@@ -964,17 +980,29 @@ describe("label indexing", () => {
     expect(idx.getOffset(1002)).toEqual(1);
     expect(idx.getOffset(0)).toEqual(3);
     expect(idx.getLabel(0)).toEqual(99);
-    expect(idx.getLabels(new Int32Array([2, 4]))).toEqual(new Int32Array([48, 22]));
+    expect(idx.getLabels(new Int32Array([2, 4]))).toEqual(
+      new Int32Array([48, 22])
+    );
     expect(idx.getLabels([2, 4])).toEqual([48, 22]);
     expect(idx.getOffsets([0, 48])).toEqual([3, 2]);
 
-    expect(idx.subset([1002, 0, 99]).labels()).toEqual(new Int32Array([1002, 0, 99]))
-    expect(idx.getOffsets(idx.subset([1002, 0, 99]).labels())).toEqual(new Int32Array([1, 3, 0]));
-    expect(idx.isubset([4, 1, 2]).labels()).toEqual(new Int32Array([22, 1002, 48]));
+    expect(idx.subset([1002, 0, 99]).labels()).toEqual(
+      new Int32Array([1002, 0, 99])
+    );
+    expect(idx.getOffsets(idx.subset([1002, 0, 99]).labels())).toEqual(
+      new Int32Array([1, 3, 0])
+    );
+    expect(idx.isubset([4, 1, 2]).labels()).toEqual(
+      new Int32Array([22, 1002, 48])
+    );
 
-    expect(idx.withLabel(88).labels()).toEqual(new Int32Array([99, 1002, 48, 0, 22, 88]));
+    expect(idx.withLabel(88).labels()).toEqual(
+      new Int32Array([99, 1002, 48, 0, 22, 88])
+    );
     expect(idx.withLabel(88).getOffset(88)).toEqual(5);
-    expect(idx.dropLabel(48).labels()).toEqual(new Int32Array([99, 1002, 0, 22]));
+    expect(idx.dropLabel(48).labels()).toEqual(
+      new Int32Array([99, 1002, 0, 22])
+    );
   });
 
   test("KeyIndex", () => {
@@ -991,9 +1019,13 @@ describe("label indexing", () => {
     expect(idx.subset(["green", "red"]).labels()).toEqual(["green", "red"]);
     expect(idx.isubset([2, 1, 0]).labels()).toEqual(["blue", "green", "red"]);
 
-    expect(idx.withLabel("yo").labels()).toEqual(["red", "green", "blue", "yo"]);
+    expect(idx.withLabel("yo").labels()).toEqual([
+      "red",
+      "green",
+      "blue",
+      "yo",
+    ]);
     expect(idx.withLabel("yo").getOffset("yo")).toEqual(3);
     expect(idx.dropLabel("blue").labels()).toEqual(["red", "green"]);
+  });
 });
-
-})

@@ -7,12 +7,10 @@ import { datasets } from "./data";
 import {
   clickOn,
   goToPage,
-  typeInto,
   waitByClass,
   waitByID,
   getTestId,
   getTestClass,
-  isElementPresent,
 } from "./puppeteerUtils";
 
 import {
@@ -37,14 +35,6 @@ const perTestLabelName = "TEST-LABEL";
 
 async function setup(config) {
   await goToPage(appUrlBase);
-
-  if (await isElementPresent(getTestId("annotation-dialog"))) {
-    await typeInto("new-annotation-name", "e2e");
-    await clickOn("submit-annotation");
-
-    // wait for the page to load
-    await waitByClass("autosave-complete");
-  }
 
   // setup the test fixtures
   await createCategory(perTestCategoryName);

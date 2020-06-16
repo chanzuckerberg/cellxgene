@@ -453,4 +453,62 @@ describe("graph overlay", () => {
     );
   });
 });
+
+test("pan zoom mode resets lasso selection", async () => {
+  await goToPage(appUrlBase);
+
+  const panzoomLasso = data.features.panzoom.lasso;
+
+  const lassoSelection = await calcDragCoordinates(
+    "layout-graph",
+    panzoomLasso["coordinates-as-percent"]
+  );
+
+  await drag("layout-graph", lassoSelection.start, lassoSelection.end, true);
+  await waitByID("lasso-element", { visible: true });
+
+  const initialCount = await getCellSetCount(1);
+
+  expect(initialCount).toBe(panzoomLasso.count);
+
+  await clickOn("mode-pan-zoom");
+  await clickOn("mode-lasso");
+
+  const modeSwitchCount = await getCellSetCount(1);
+
+  expect(modeSwitchCount).toBe(initialCount);
+});
+
+test("lasso moves after pan", async () => {
+  await goToPage(appUrlBase);
+
+  const panzoomLasso = data.features.panzoom.lasso;
+  const coordinatesAsPercent = panzoomLasso["coordinates-as-percent"];
+
+  const lassoSelection = await calcDragCoordinates(
+    "layout-graph",
+    coordinatesAsPercent
+  );
+
+  await drag("layout-graph", lassoSelection.start, lassoSelection.end, true);
+  await waitByID("lasso-element", { visible: true });
+
+  const initialCount = await getCellSetCount(1);
+
+  expect(initialCount).toBe(panzoomLasso.count);
+
+  await clickOn("mode-pan-zoom");
+
+  const panCoords = await calcDragCoordinates(
+    "layout-graph",
+    coordinatesAsPercent
+  );
+
+  await drag("layout-graph", panCoords.start, panCoords.end, false);
+  await clickOn("mode-lasso");
+
+  const panCount = await getCellSetCount(2);
+
+  expect(panCount).toBe(initialCount);
+});
 /* eslint-enable no-await-in-loop -- await in loop is needed to emulate sequential user actions */

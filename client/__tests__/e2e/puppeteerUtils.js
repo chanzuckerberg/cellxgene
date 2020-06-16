@@ -104,11 +104,22 @@ async function clickTermsOfService() {
   await clickOn("tos-cookies-accept");
 }
 
+async function nameNewAnnotation() {
+  if (await isElementPresent(getTestId("annotation-dialog"))) {
+    await typeInto("new-annotation-name", "ignoreE2E");
+    await clickOn("submit-annotation");
+
+    // wait for the page to load
+    await waitByClass("autosave-complete");
+  }
+}
+
 export async function goToPage(url) {
   await page.goto(url, {
     waitUntil: "networkidle0",
   });
 
+  await nameNewAnnotation();
   await clickTermsOfService();
 }
 

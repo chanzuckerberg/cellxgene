@@ -2,8 +2,10 @@ const DEBUG = "debug";
 const DEV = "dev";
 const PROD = "prod";
 const jestEnv = process.env.JEST_ENV || PROD;
+const isHeadful = process.env.HEADFUL === "true";
 
 const DEFAULT_LAUNCH_CONFIG = {
+  headless: !isHeadful,
   args: ["--ignore-certificate-errors", "--ignore-ssl-errors"],
   dumpio: true,
   ignoreHTTPSErrors: true,

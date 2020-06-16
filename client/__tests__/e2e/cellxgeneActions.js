@@ -72,9 +72,11 @@ export async function getAllCategoriesAndCounts(category) {
           const cat = row
             .querySelector("[data-testclass='categorical-value']")
             .getAttribute("aria-label");
+
           const count = row.querySelector(
             "[data-testclass='categorical-value-count']"
           ).innerText;
+
           return [cat, count];
         })
       )

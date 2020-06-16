@@ -56,3 +56,4 @@ client/.eslintcache
 
 # Puppeteer screenshots
 screenshot-*
+ignoreE2E*
