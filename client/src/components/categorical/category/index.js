@@ -9,7 +9,12 @@ import AnnoDialogAddLabel from "./annoDialogAddLabel";
 import Truncate from "../../util/truncate";
 
 import * as globals from "../../../globals";
-import { createCategorySummary as _createCategorySummary } from "../../../util/stateManager/controlsHelpers";
+import { createCategorySummaryFromDfCol } from "../../../util/stateManager/controlsHelpers";
+import {
+  createColorTable,
+  createColorQuery,
+} from "../../../util/stateManager/colorHelpers";
+import actions from "../../../actions";
 
 const LABEL_WIDTH = globals.leftSidebarWidth - 100;
 const ANNO_BUTTON_WIDTH = 50;
@@ -18,67 +23,157 @@ const LABEL_WIDTH_ANNO = LABEL_WIDTH - ANNO_BUTTON_WIDTH;
 @connect((state, ownProps) => {
   const { metadataField } = ownProps;
   return {
-    isColorAccessor: state.colors.colorAccessor === metadataField,
+    colors: state.colors,
     categoricalSelection: state.categoricalSelection,
     annotations: state.annotations,
-    universe: state.universe,
-    world: state.world,
-    schema: state.world?.schema,
+    annoMatrix: state.annoMatrix,
+    schema: state.annoMatrix?.schema,
+    crossfilter: state.obsCrossfilter,
   };
 })
-class Category extends React.Component {
+class Category extends React.PureComponent {
   constructor(props) {
     super(props);
     this.state = {
       isChecked: true,
-      categorySummary: this.createCategorySummary(),
+      status: "pending",
+      categoryData: null, // dataframe containing the category
+      categorySummary: null, // summary of category by label
+      isColorAccessor: false,
+      colorAccessor: null,
+      colorData: null, // dataframe containing color-by category
+      colorTable: null, // the current color-by per cell
+      crossfilter: null, // the current crossfilter
     };
   }
 
-  componentDidUpdate(prevProps) {
-    const { categoricalSelection, metadataField, world } = this.props;
-    let { categorySummary } = this.state;
-
-    if (
-      world !== prevProps.world ||
-      metadataField !== prevProps.metadataField ||
-      !categorySummary
-    ) {
-      const newCategorySummary = this.createCategorySummary();
-      if (categorySummary !== newCategorySummary) {
-        categorySummary = newCategorySummary;
-        this.setState({ categorySummary }); // eslint-disable-line react/no-did-update-set-state
-      }
-    }
-
+  updateSelectionState(categorySummary) {
+    const { categoricalSelection, metadataField } = this.props;
     const cat = categoricalSelection?.[metadataField];
-    if (
-      categoricalSelection !== prevProps.categoricalSelection &&
-      !!cat &&
-      !!this.checkbox
-    ) {
-      // total number of categories in this dimension
-      const totalCatCount = categorySummary.numCategoryValues;
-      // number of selected options in this category
-      const selectedCatCount = categorySummary.categoryValues.reduce(
-        (res, label) => (cat.get(label) ?? true ? res + 1 : res),
-        0
-      );
 
-      if (selectedCatCount === totalCatCount) {
-        /* everything is on, so not indeterminate */
-        this.checkbox.indeterminate = false;
-        this.setState({ isChecked: true }); // eslint-disable-line react/no-did-update-set-state
-      } else if (selectedCatCount === 0) {
-        /* nothing is on, so no */
-        this.checkbox.indeterminate = false;
-        this.setState({ isChecked: false }); // eslint-disable-line react/no-did-update-set-state
-      } else if (selectedCatCount < totalCatCount) {
-        /* to be explicit... */
-        this.checkbox.indeterminate = true;
-        this.setState({ isChecked: false }); // eslint-disable-line react/no-did-update-set-state
-      }
+    if (!categorySummary || !cat || !this.checkbox) return;
+
+    // total number of categories in this dimension
+    const totalCatCount = categorySummary.numCategoryValues;
+    // number of selected options in this category
+    const selectedCatCount = categorySummary.categoryValues.reduce(
+      (res, label) => (cat.get(label) ?? true ? res + 1 : res),
+      0
+    );
+
+    if (selectedCatCount === totalCatCount) {
+      /* everything is on, so not indeterminate */
+      this.checkbox.indeterminate = false;
+      this.setState({ isChecked: true }); // eslint-disable-line react/no-did-update-set-state
+    } else if (selectedCatCount === 0) {
+      /* nothing is on, so no */
+      this.checkbox.indeterminate = false;
+      this.setState({ isChecked: false }); // eslint-disable-line react/no-did-update-set-state
+    } else if (selectedCatCount < totalCatCount) {
+      /* to be explicit... */
+      this.checkbox.indeterminate = true;
+      this.setState({ isChecked: false }); // eslint-disable-line react/no-did-update-set-state
     }
+  }
+
+  updateColorTable(colorData) {
+    // color table, which may be null
+    const { schema, colors, metadataField } = this.props;
+    const { colorAccessor, userColors, colorMode } = colors;
+    return {
+      isColorAccessor: colorAccessor === metadataField,
+      colorAccessor,
+      colorMode,
+      colorTable: createColorTable(
+        colorMode,
+        colorAccessor,
+        colorData,
+        schema,
+        userColors
+      ),
+    };
+  }
+
+  colorByQuery() {
+    const { colors, schema } = this.props;
+    const { colorMode, colorAccessor } = colors;
+    return createColorQuery(colorMode, colorAccessor, schema);
+  }
+
+  async fetchData() {
+    /*
+    fetch our data and the color-by data if appropriate, and then build a summary
+    of our category and a color table for the color-by annotation.
+    */
+    const {
+      annoMatrix,
+      crossfilter,
+      metadataField,
+      schema,
+      colors,
+    } = this.props;
+    const { colorAccessor, userColors, colorMode } = colors;
+    let colorDataPromise = Promise.resolve(null);
+    if (colorAccessor) {
+      const query = this.colorByQuery();
+      if (query) colorDataPromise = annoMatrix.fetch(...query);
+    }
+    const [categoryData, colorData] = await Promise.all([
+      annoMatrix.fetch("obs", metadataField),
+      colorDataPromise,
+    ]);
+
+    // our data
+    const column = categoryData.icol(0);
+    const colSchema = schema.annotations.obsByName[metadataField];
+    const categorySummary = createCategorySummaryFromDfCol(column, colSchema);
+    return [categoryData, categorySummary, colorData, crossfilter];
+  }
+
+  updateState(prevProps) {
+    const {
+      annoMatrix,
+      metadataField,
+      categoricalSelection,
+      colors,
+    } = this.props;
+    if (!annoMatrix) return;
+
+    if (annoMatrix != prevProps?.annoMatrix || colors !== prevProps?.colors) {
+      this.setState({ status: "pending" });
+      this.fetchData().then(
+        ([categoryData, categorySummary, colorData, crossfilter]) => {
+          this.updateSelectionState(categorySummary);
+          this.setState({
+            status: "success",
+            categoryData,
+            categorySummary,
+            colorData,
+            crossfilter,
+            ...this.updateColorTable(colorData),
+          });
+        },
+        (error) => {
+          console.log(error);
+          this.setState({ status: "error", error });
+        }
+      );
+      return;
+    }
+
+    const prevCategoricalSelection = prevProps?.categoricalSelection;
+    if (categoricalSelection !== prevCategoricalSelection) {
+      const { categorySummary } = this.state;
+      this.updateSelectionState(categorySummary);
+    }
+  }
+
+  componentDidMount() {
+    this.updateState(null);
+  }
+
+  componentDidUpdate(prevProps) {
+    this.updateState(prevProps);
   }
 
   handleColorChange = () => {
@@ -99,32 +194,31 @@ class Category extends React.Component {
     }
   };
 
-  createCategorySummary() {
-    const { world, metadataField } = this.props;
-    if (!world || !metadataField || !world.obsAnnotations.hasCol(metadataField))
-      return null;
-    return _createCategorySummary(world, metadataField);
-  }
-
   toggleNone() {
     const { dispatch, metadataField } = this.props;
     const { categorySummary } = this.state;
-    dispatch({
-      type: "categorical metadata filter none of these",
-      metadataField,
-      labels: categorySummary.categoryValues,
-    });
+    dispatch(
+      actions.selectCategoricalAllMetadataAction(
+        "categorical metadata filter none of these",
+        metadataField,
+        categorySummary.categoryValues,
+        false
+      )
+    );
     this.setState({ isChecked: false });
   }
 
   toggleAll() {
     const { dispatch, metadataField } = this.props;
     const { categorySummary } = this.state;
-    dispatch({
-      type: "categorical metadata filter all of these",
-      metadataField,
-      labels: categorySummary.categoryValues,
-    });
+    dispatch(
+      actions.selectCategoricalAllMetadataAction(
+        "categorical metadata filter all of these",
+        metadataField,
+        categorySummary.categoryValues,
+        true
+      )
+    );
     this.setState({ isChecked: true });
   }
 
@@ -190,11 +284,21 @@ class Category extends React.Component {
   }
 
   render() {
-    const { isChecked, categorySummary } = this.state;
-    const { metadataField, isColorAccessor, isExpanded, schema } = this.props;
+    const {
+      isChecked,
+      categoryData,
+      categorySummary,
+      colorData,
+      crossfilter,
+      colorTable,
+      colorAccessor,
+      isColorAccessor,
+      status,
+    } = this.state;
+    const { metadataField, isExpanded, schema } = this.props;
 
-    const isStillLoading = !categorySummary;
-    if (isStillLoading) {
+    if (status === "error") return;
+    if (status === "pending") {
       return this.renderIsStillLoading();
     }
 
@@ -229,7 +333,12 @@ class Category extends React.Component {
         metadataField={metadataField}
         isExpanded={isExpanded}
         isUserAnno={isUserAnno}
+        categoryData={categoryData}
         categorySummary={categorySummary}
+        colorAccessor={colorAccessor}
+        colorData={colorData}
+        colorTable={colorTable}
+        crossfilter={crossfilter}
       >
         <div
           style={{

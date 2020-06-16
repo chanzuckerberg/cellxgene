@@ -63,7 +63,7 @@ history will be cleared when these actions occur
 */
 const clearOnActions = new Set([
   "initial data load complete (universe exists)",
-  "reset World to eq Universe",
+  "reset subset",
   "initial data load error",
 ]);
 
@@ -88,7 +88,7 @@ const saveOnActions = new Set([
   "store current cell selection as differential set 1",
   "store current cell selection as differential set 2",
 
-  "set World to current selection",
+  "subset to selection",
   "set clip quantiles",
 
   "set layout choice",

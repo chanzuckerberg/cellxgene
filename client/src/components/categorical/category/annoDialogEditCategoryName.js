@@ -8,8 +8,7 @@ import { AnnotationsHelpers } from "../../../util/stateManager";
 
 @connect((state) => ({
   annotations: state.annotations,
-  universe: state.universe,
-  schema: state.world?.schema,
+  schema: state.annoMatrix?.schema,
   ontology: state.ontology,
 }))
 class AnnoDialogEditCategoryName extends React.PureComponent {

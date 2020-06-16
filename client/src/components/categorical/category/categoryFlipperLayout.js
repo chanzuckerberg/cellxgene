@@ -4,14 +4,23 @@ import { Flipper, Flipped } from "react-flip-toolkit";
 import * as globals from "../../../globals";
 import Value from "../value";
 
-class Category extends React.Component {
+class Category extends React.PureComponent {
   constructor(props) {
     super(props);
     this.state = {};
   }
 
   renderCategoryItems(optTuples) {
-    const { metadataField, isUserAnno, categorySummary } = this.props;
+    const {
+      metadataField,
+      isUserAnno,
+      categoryData,
+      categorySummary,
+      colorAccessor,
+      colorData,
+      colorTable,
+      crossfilter,
+    } = this.props;
 
     return optTuples.map((tuple, i) => {
       return (
@@ -25,7 +34,12 @@ class Category extends React.Component {
               categoryIndex={tuple[1]}
               i={i}
               flippedProps={flippedProps}
+              categoryData={categoryData}
               categorySummary={categorySummary}
+              colorAccessor={colorAccessor}
+              colorData={colorData}
+              colorTable={colorTable}
+              crossfilter={crossfilter}
             />
           )}
         </Flipped>

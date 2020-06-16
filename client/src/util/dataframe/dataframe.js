@@ -785,7 +785,9 @@ class Dataframe {
 
     callback MUST not modify the column, but instead return a mutated copy.
     */
-    const columns = this.__columns.map(callback);
+    const columns = this.__columns.map((colData, colIdx) =>
+      callback(colData, colIdx, this)
+    );
     const columnsAccessor = columns.map((c, idx) =>
       this.__columns[idx] === c ? this.__columnsAccessor[idx] : undefined
     );

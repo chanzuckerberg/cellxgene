@@ -3,46 +3,89 @@ Helper functions for the embedded graph colors
 */
 import * as d3 from "d3";
 import { interpolateRainbow, interpolateCool } from "d3-scale-chromatic";
+import memoize from "memoize-one";
 import * as globals from "../../globals";
 import parseRGB from "../parseRGB";
 import finiteExtent from "../finiteExtent";
 import { range } from "../range";
 
 /*
-create new colors state object.   Paramters:
-  - world - current world object
-  - colorMode - color-by mode. One of {null, "color by expression", "color by continuous metadata",
-    "color by categorical metadata"}
-  - colorAccessor - the obs annotations used for color-by
+given a color mode & accessor, generate an annoMatrix query that will
+fulfill it
 */
-export function createColors(
-  world,
-  colorMode = null,
-  colorAccessor = null,
+export function createColorQuery(colorMode, colorByAccessor, schema) {
+  if (!colorMode || !colorByAccessor || !schema) return null;
+  switch (colorMode) {
+    case "color by categorical metadata":
+    case "color by continuous metadata": {
+      return ["obs", colorByAccessor];
+    }
+    case "color by expression": {
+      const varIndex = schema?.annotations?.var?.index;
+      if (!varIndex) return null;
+      return [
+        "X",
+        {
+          field: "var",
+          column: varIndex,
+          value: colorByAccessor,
+        },
+      ];
+    }
+    default: {
+      return null;
+    }
+  }
+}
+
+/*
+create colors scale and RGB array and return as object. Parameters:
+  * colorMode - categorical, etc.
+  * colorByAccessor - the annotation label name
+  * colorByDataframe - the actual color-by data
+  * schema - the entire schema
+  * userColors - optional user color table
+Returns:
+  {
+    scale: color scale
+    rgb: cell to color mapping
+  }
+*/
+function _createColorTable(
+  colorMode,
+  colorByAccessor,
+  colorByData,
+  schema,
   userColors = null
 ) {
   switch (colorMode) {
     case "color by categorical metadata": {
-      if (userColors && colorAccessor in userColors) {
-        return createUserColors(world, colorAccessor, userColors);
+      if (userColors && colorByAccessor in userColors) {
+        return createUserColors(colorByData, colorByAccessor, userColors);
       }
-      return createColorsByCategoricalMetadata(world, colorAccessor);
+      return createColorsByCategoricalMetadata(
+        colorByData,
+        colorByAccessor,
+        schema
+      );
     }
     case "color by continuous metadata": {
-      return createColorsByContinuousMetadata(world, colorAccessor);
+      return createColorsByContinuousMetadata(colorByData, colorByAccessor);
     }
     case "color by expression": {
-      return createColorsByExpression(world, colorAccessor);
+      return createColorsByExpression(colorByData);
     }
     default: {
       const defaultCellColor = parseRGB(globals.defaultCellColor);
       return {
-        rgb: new Array(world.nObs).fill(defaultCellColor),
+        rgb: new Array(schema.dataframe.nObs).fill(defaultCellColor),
         scale: undefined,
       };
     }
   }
 }
+
+export const createColorTable = memoize(_createColorTable);
 
 export function loadUserColorConfig(userColors) {
   const convertedUserColors = {};
@@ -62,14 +105,14 @@ export function loadUserColorConfig(userColors) {
   return convertedUserColors;
 }
 
-function createUserColors(world, colorAccessor, userColors) {
+function createUserColors(dataframe, colorAccessor, userColors) {
   const { colors, scale } = userColors[colorAccessor];
-  const rgb = createRgbArray(world, colors, colorAccessor);
+  const rgb = createRgbArray(dataframe, colors, colorAccessor);
   return { rgb, scale };
 }
 
-function createColorsByCategoricalMetadata(world, colorAccessor) {
-  const { categories } = world.schema.annotations.obsByName[colorAccessor];
+function createColorsByCategoricalMetadata(dataframe, colorAccessor, schema) {
+  const { categories } = schema.annotations.obsByName[colorAccessor];
 
   const scale = d3
     .scaleSequential(interpolateRainbow)
@@ -81,24 +124,23 @@ function createColorsByCategoricalMetadata(world, colorAccessor) {
     return acc;
   }, {});
 
-  const rgb = createRgbArray(world, colors, colorAccessor);
+  const rgb = createRgbArray(dataframe, colors, colorAccessor);
   return { rgb, scale };
 }
 
-export function createRgbArray(world, colors, colorAccessor) {
-  const rgb = new Array(world.nObs);
-  const df = world.obsAnnotations;
-  const data = df.col(colorAccessor).asArray();
-  for (let i = 0, len = df.length; i < len; i += 1) {
+export function createRgbArray(dataframe, colors, colorAccessor) {
+  const data = dataframe.col(colorAccessor).asArray();
+  const rgb = new Array(data.length);
+  for (let i = 0, len = data.length; i < len; i += 1) {
     const label = data[i];
     rgb[i] = colors[label];
   }
   return rgb;
 }
 
-function createColorsByContinuousMetadata(world, accessor) {
+function createColorsByContinuousMetadata(dataframe, accessor) {
   const colorBins = 100;
-  const col = world.obsAnnotations.col(accessor);
+  const col = dataframe.col(accessor);
   const { min, max } = col.summarize();
   const scale = d3
     .scaleQuantile()
@@ -112,9 +154,9 @@ function createColorsByContinuousMetadata(world, accessor) {
   }
 
   const nonFiniteColor = parseRGB(globals.nonFiniteCellColor);
-  const rgb = new Array(world.nObs);
   const data = col.asArray();
-  for (let i = 0, len = world.obsAnnotations.length; i < len; i += 1) {
+  const rgb = new Array(data.length);
+  for (let i = 0, len = data.length; i < len; i += 1) {
     const val = data[i];
     if (Number.isFinite(val)) {
       const c = scale(val);
@@ -126,8 +168,8 @@ function createColorsByContinuousMetadata(world, accessor) {
   return { rgb, scale };
 }
 
-function createColorsByExpression(world, accessor) {
-  const expression = world.varData.col(accessor).asArray();
+function createColorsByExpression(dataframe) {
+  const expression = dataframe.icol(0).asArray();
   const colorBins = 100;
   const [min, max] = finiteExtent(expression);
   const scale = d3
@@ -142,7 +184,7 @@ function createColorsByExpression(world, accessor) {
   }
   const nonFiniteColor = parseRGB(globals.nonFiniteCellColor);
 
-  const rgb = new Array(world.nObs);
+  const rgb = new Array(expression.length);
   for (let i = 0, len = expression.length; i < len; i += 1) {
     const e = expression[i];
     if (Number.isFinite(e)) {
@@ -154,27 +196,3 @@ function createColorsByExpression(world, accessor) {
   }
   return { rgb, scale };
 }
-
-export const resetColors = (world) => {
-  const { rgb, scale } = createColors(world);
-  return {
-    colorMode: null,
-    colorAccessor: null,
-    rgb,
-    scale,
-  };
-};
-
-export const checkIfColorByDiffexpAndResetColors = (
-  prevControls,
-  state,
-  prevWorld
-) => {
-  if (prevControls.diffexpGenes.includes(state.colorAccessor)) {
-    return {
-      ...state,
-      ...resetColors(prevWorld),
-    };
-  }
-  return null;
-};

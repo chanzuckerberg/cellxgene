@@ -72,8 +72,8 @@ class App extends React.Component {
             <LeftSideBar />
             {(viewportRef) => (
               <>
-                <MenuBar />
-                <Autosave />
+                {<MenuBar />}
+                {/*<Autosave />*/}
                 <TermsOfServicePrompt />
                 <Legend viewportRef={viewportRef} />
                 <Graph key={graphRenderCounter} viewportRef={viewportRef} />

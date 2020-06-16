@@ -4,17 +4,15 @@ import thunk from "redux-thunk";
 import cascadeReducers from "./cascade";
 import undoable from "./undoable";
 import config from "./config";
-import universe from "./universe";
-import world from "./world";
+import annoMatrix from "./annoMatrix";
+import obsCrossfilter from "./obsCrossfilter";
 import categoricalSelection from "./categoricalSelection";
 import continuousSelection from "./continuousSelection";
 import graphSelection from "./graphSelection";
-import crossfilter from "./crossfilter";
 import colors from "./colors";
 import differential from "./differential";
 import layoutChoice from "./layoutChoice";
 import controls from "./controls";
-import resetCache from "./resetCache";
 import annotations from "./annotations";
 import autosave from "./autosave";
 import ontology from "./ontology";
@@ -27,8 +25,8 @@ import undoableConfig from "./undoableConfig";
 const Reducer = undoable(
   cascadeReducers([
     ["config", config],
-    ["universe", universe],
-    ["world", world],
+    ["annoMatrix", annoMatrix],
+    ["obsCrossfilter", obsCrossfilter],
     ["ontology", ontology],
     ["annotations", annotations],
     ["reembedding", reembedding],
@@ -38,21 +36,18 @@ const Reducer = undoable(
     ["graphSelection", graphSelection],
     ["colors", colors],
     ["controls", controls],
-    ["crossfilter", crossfilter],
     ["differential", differential],
     ["centroidLabels", centroidLabels],
     ["pointDilation", pointDialation],
     ["reembedController", reembedController],
     ["autosave", autosave],
-    ["resetCache", resetCache],
   ]),
   [
-    "universe",
-    "world",
+    "annoMatrix",
+    "obsCrossfilter",
     "categoricalSelection",
     "continuousSelection",
     "graphSelection",
-    "crossfilter",
     "colors",
     "controls",
     "differential",

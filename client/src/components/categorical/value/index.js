@@ -19,6 +19,7 @@ import Truncate from "../../util/truncate";
 
 import { AnnotationsHelpers } from "../../../util/stateManager";
 import { labelPrompt, isLabelErroneous } from "../labelUtil";
+import actions from "../../../actions";
 
 /* this is defined outside of the class so we can use it in connect() */
 function _currentLabelAsString(ownProps) {
@@ -35,11 +36,7 @@ function _currentLabelAsString(ownProps) {
   return {
     categoricalSelection,
     annotations: state.annotations,
-    colorScale: state.colors.scale,
-    colorAccessor: state.colors.colorAccessor,
-    schema: state.world?.schema,
-    world: state.world,
-    crossfilter: state.crossfilter,
+    schema: state.annoMatrix?.schema,
     ontology: state.ontology,
     isDilated,
   };
@@ -172,13 +169,16 @@ class CategoryValue extends React.Component {
     } = this.props;
     const labels = categorySummary.categoryValues;
     const label = labels[categoryIndex];
-    dispatch({
-      type: "categorical metadata filter deselect",
-      metadataField,
-      categoryIndex,
-      label,
-      labels,
-    });
+
+    dispatch(
+      actions.selectCategoricalMetadataAction(
+        "categorical metadata filter deselect",
+        metadataField,
+        labels,
+        label,
+        false
+      )
+    );
   };
 
   shouldComponentUpdate = (nextProps, nextState) => {
@@ -211,7 +211,6 @@ class CategoryValue extends React.Component {
       (categoricalSelection[metadataField].get(label) ?? true) !==
       (newCategoricalSelection[metadataField].get(newLabel) ?? true);
 
-    const worldChange = props.world !== nextProps.world;
     const colorAccessorChange = props.colorAccessor !== nextProps.colorAccessor;
     const annotationsChange = props.annotations !== nextProps.annotations;
     const crossfilterChange =
@@ -226,7 +225,6 @@ class CategoryValue extends React.Component {
     return (
       labelChanged ||
       valueSelectionChange ||
-      worldChange ||
       colorAccessorChange ||
       annotationsChange ||
       crossfilterChange ||
@@ -245,13 +243,16 @@ class CategoryValue extends React.Component {
     } = this.props;
     const labels = categorySummary.categoryValues;
     const label = labels[categoryIndex];
-    dispatch({
-      type: "categorical metadata filter select",
-      metadataField,
-      categoryIndex,
-      label,
-      labels,
-    });
+
+    dispatch(
+      actions.selectCategoricalMetadataAction(
+        "categorical metadata filter select",
+        metadataField,
+        labels,
+        label,
+        true
+      )
+    );
   };
 
   handleMouseEnter = () => {
@@ -295,7 +296,7 @@ class CategoryValue extends React.Component {
     1. no cells are selected
     2. all currently selected cells already have this label, on this category
     */
-    const { crossfilter, world } = this.props;
+    const { crossfilter, categoryData } = this.props;
 
     // 1. no cells selected?
     if (crossfilter.countSelected() === 0) {
@@ -304,12 +305,7 @@ class CategoryValue extends React.Component {
     // 2. all selected cells already have the label
     const mask = crossfilter.allSelectedMask();
     if (
-      AnnotationsHelpers.allHaveLabelByMask(
-        world.obsAnnotations,
-        category,
-        value,
-        mask
-      )
+      AnnotationsHelpers.allHaveLabelByMask(categoryData, category, value, mask)
     ) {
       return true;
     }
@@ -323,7 +319,7 @@ class CategoryValue extends React.Component {
       metadataField,
       categoryIndex,
       colorAccessor,
-      colorScale,
+      colorTable,
       i,
       schema,
       isUserAnno,
@@ -333,9 +329,11 @@ class CategoryValue extends React.Component {
       // our lint doesn't like jsx spread, we are version pinned to prevent api change on their part
       flippedProps,
       isDilated,
-      world,
       categorySummary,
+      categoryData,
+      colorData,
     } = this.props;
+    const colorScale = colorTable?.scale;
     const ontologyEnabled = ontology?.enabled ?? false;
 
     const { editedLabelText } = this.state;
@@ -505,8 +503,11 @@ class CategoryValue extends React.Component {
                 categoryValue={value}
                 colorAccessor={colorAccessor}
                 metadataField={metadataField}
-                world={world}
-                colorScale={colorScale}
+                categoryData={categoryData}
+                // world={world}
+                // colorScale={colorScale}
+                colorData={colorData}
+                colorTable={colorTable}
                 colorByIsCategorical={!!categoricalSelection[colorAccessor]}
               />
             ) : null}

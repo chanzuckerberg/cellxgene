@@ -2,42 +2,115 @@ import React, { PureComponent } from "react";
 import { connect } from "react-redux";
 
 import { categoryLabelDisplayStringLongLength } from "../../../globals";
+import calcCentroid from "../../../util/centroid";
+import { createColorQuery } from "../../../util/stateManager/colorHelpers";
 
 export default
 @connect((state) => ({
-  colorAccessor: state.colors.colorAccessor,
+  annoMatrix: state.annoMatrix,
+  colors: state.colors,
+  layoutChoice: state.layoutChoice,
   dilatedValue: state.pointDilation.categoryField,
-  labels: state.centroidLabels.labels,
   categoricalSelection: state.categoricalSelection,
+  showLabels: state.centroidLabels?.showLabels,
 }))
 class CentroidLabels extends PureComponent {
-  // Check to see if centroids have either just been displayed or removed from the overlay
+  constructor(props) {
+    super(props);
+    this.state = {
+      status: "pending",
+      labels: new Map(),
+      colorAccessor: null,
+    };
+  }
 
-  componentDidUpdate(prevProps) {
-    const { labels, overlayToggled } = this.props;
-    const prevSize = prevProps.labels.size;
-    const { size } = labels;
+  colorByQuery() {
+    const { annoMatrix, colors } = this.props;
+    const { schema } = annoMatrix;
+    const { colorMode, colorAccessor } = colors;
+    return createColorQuery(colorMode, colorAccessor, schema);
+  }
 
-    const displayChangeOff = prevSize > 0 && size === undefined;
-    const displayChangeOn = prevSize === undefined && size > 0;
-
-    if (displayChangeOn || displayChangeOff) {
-      // Notify overlay layer of display change
-      overlayToggled("centroidLabels", displayChangeOn);
+  async fetchData() {
+    const { annoMatrix, layoutChoice } = this.props;
+    // fetch all data we need: layout, category
+    const promises = [];
+    // layout
+    promises.push(annoMatrix.fetch("emb", layoutChoice.current));
+    // category
+    const query = this.colorByQuery();
+    if (query) {
+      promises.push(annoMatrix.fetch(...query));
+    } else {
+      promises.push(Promise.resolve(null));
     }
+
+    return Promise.all(promises);
+  }
+
+  // Check to see if centroids have either just been displayed or removed from the overlay
+  updateState(prevProps) {
+    const { annoMatrix, colors, layoutChoice } = this.props;
+    if (!annoMatrix || !layoutChoice || !colors) return;
+
+    if (
+      annoMatrix !== prevProps?.annoMatrix ||
+      colors !== prevProps?.colors ||
+      layoutChoice !== prevProps?.layoutChoice
+    ) {
+      const { schema } = annoMatrix;
+      const { colorAccessor } = colors;
+      this.setState({ status: "pending" });
+      this.fetchData().then(
+        ([layoutDf, colorDf]) => {
+          let labels = [];
+          if (colorDf) {
+            labels = calcCentroid(
+              schema,
+              colorAccessor,
+              colorDf,
+              layoutChoice,
+              layoutDf
+            );
+          }
+          this.setState({ status: "success", labels, colorAccessor });
+        },
+        (error) => this.setState({ status: "error", error })
+      );
+    }
+    return;
+  }
+
+  componentDidMount() {
+    this.updateState(null);
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    this.updateState(prevProps);
+
+    const { showLabels, overlaySetShowing } = this.props;
+    const { labels } = this.state;
+    overlaySetShowing("centroidLabels", showLabels && labels.size > 0);
   }
 
   render() {
     const {
-      labels,
       inverseTransform,
       dilatedValue,
       dispatch,
-      colorAccessor,
+      colors,
       categoricalSelection,
+      showLabels,
     } = this.props;
 
-    if (!colorAccessor || labels.size === undefined || labels.size === 0)
+    const { status, labels, colorAccessor } = this.state;
+
+    if (
+      status !== "success" ||
+      !showLabels ||
+      !colorAccessor ||
+      labels.size === 0
+    )
       return null;
 
     const category = categoricalSelection[colorAccessor];

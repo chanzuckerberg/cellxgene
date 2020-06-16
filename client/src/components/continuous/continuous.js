@@ -9,12 +9,76 @@ import * as globals from "../../globals";
 import HistogramBrush from "../brushableHistogram";
 
 @connect((state) => ({
-  obsAnnotations: state.world?.obsAnnotations,
-  colorAccessor: state.colors.colorAccessor,
-  colorScale: state.colors.scale,
-  schema: state.world?.schema,
+  schema: state.annoMatrix?.schema,
+  annoMatrix: state.annoMatrix,
 }))
 class Continuous extends React.PureComponent {
+  constructor(props) {
+    super(props);
+
+    /*
+    allContinuous: map of category name to object.  Object contains:
+      * status: loading status for the category
+      * summary: result of Dataframe.summary()
+    */
+    this.state = {
+      allContinuous: new Map(),
+    };
+  }
+
+  setAllContinuous(colName, status) {
+    this.setState({
+      allContinuous: new Map(this.state.allContinuous).set(colName, status),
+    });
+  }
+
+  fetchState(prevProps) {
+    const { schema, annoMatrix } = this.props;
+    let allContinuousNames;
+
+    if (!schema) return;
+    if (schema !== prevProps?.schema) {
+      const obsIndex = schema.annotations.obs.index;
+      allContinuousNames = schema.annotations.obs.columns
+        .filter((col) => col.type === "int32" || col.type === "float32")
+        .filter((col) => col.name !== obsIndex)
+        .map((col) => col.name);
+
+      // Map preserves order of insertion, allowing ordering of component render.
+      this.setState({
+        allContinuous: new Map(
+          allContinuousNames.map((name) => [name, { status: "pending" }])
+        ),
+      });
+    }
+
+    if (!annoMatrix) return;
+    if (annoMatrix !== prevProps?.annoMatrix) {
+      allContinuousNames.forEach((colName) =>
+        annoMatrix.fetch("obs", colName).then(
+          (df) =>
+            this.setAllContinuous(colName, {
+              status: "success",
+              summary: df.col(colName).summarize(),
+            }),
+          (error) => this.setAllContinuous(colName, { status: "error" })
+        )
+      );
+    }
+  }
+
+  componentDidMount() {
+    const { annoMatrix } = this.props;
+    if (annoMatrix) this.fetchState();
+  }
+
+  componentDidUpdate(prevProps) {
+    const { annoMatrix } = this.props;
+    if (annoMatrix !== prevProps.annoMatrix) {
+      this.fetchState();
+    }
+  }
+
   static renderIsStillLoading(zebra, key) {
     return (
       <div
@@ -50,34 +114,33 @@ class Continuous extends React.PureComponent {
   }
 
   render() {
-    const { obsAnnotations, schema } = this.props;
-
-    const obsIndex = schema.annotations.obs.index;
-    const allContinuousNames = schema.annotations.obs.columns
-      .filter((col) => col.type === "int32" || col.type === "float32")
-      .filter((col) => col.name !== obsIndex)
-      .map((col) => col.name);
+    const { schema, annoMatrix } = this.props;
 
     /* initial value for iterator to simulate index, ranges is an object */
     let zebra = 0;
 
+    const { allContinuous } = this.state;
     return (
       <div>
-        {allContinuousNames.map((key) => {
-          if (!obsAnnotations.hasCol(key)) {
-            // still loading!
+        {Array.from(allContinuous, ([key, val]) => {
+          const { status, summary } = val;
+          if (status === "error") return null; // skip
+          if (status === "pending") {
+            // sitll loading!
             zebra += 1;
             return Continuous.renderIsStillLoading(zebra, key);
           }
 
-          // data loaded and available
-          const summary = obsAnnotations.col(key).summarize();
           const nonFiniteExtent =
             summary.min === undefined ||
             summary.max === undefined ||
             Number.isNaN(summary.min) ||
             Number.isNaN(summary.max);
-          if (!summary.categorical && !nonFiniteExtent) {
+          if (
+            status === "success" &&
+            !summary.categorical &&
+            !nonFiniteExtent
+          ) {
             zebra += 1;
             return (
               <HistogramBrush
@@ -85,11 +148,10 @@ class Continuous extends React.PureComponent {
                 field={key}
                 isObs
                 zebra={zebra % 2 === 0}
-                ranges={summary}
+                // ranges={summary}
               />
             );
           }
-
           return null;
         })}
       </div>

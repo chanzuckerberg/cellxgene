@@ -40,10 +40,18 @@ describe("centroid", () => {
   });
 
   test("field4 (categorical obsAnnotation)", () => {
+    // const centroidResult = calcCentroid(
+    //   world,
+    //   "field4",
+    //   ["umap_0", "umap_1"]
+    // );
+    // XXX: this will change once we remove world
     const centroidResult = calcCentroid(
-      world,
+      world.schema,
       "field4",
-      ["umap_0", "umap_1"]
+      world.obsAnnotations,
+      { current: "umap", currentDimNames: ["umap_0", "umap_1"] },
+      world.obsLayout
     );
 
     // Check to see that a centroid has been calculated for every categorical value
@@ -64,10 +72,18 @@ describe("centroid", () => {
   });
 
   test("field3 (boolean obsAnnotation)", () => {
+    // const centroidResult = calcCentroid(
+    //   world,
+    //   "field3",
+    //   ["umap_0", "umap_1"]
+    // );
+    // XXX: this will change once we remove world
     const centroidResult = calcCentroid(
-      world,
+      world.schema,
       "field3",
-      ["umap_0", "umap_1"]
+      world.obsAnnotations,
+      { current: "umap", currentDimNames: ["umap_0", "umap_1"] },
+      world.obsLayout
     );
 
     // Check to see that a centroid has been calculated for every categorical value

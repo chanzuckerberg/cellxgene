@@ -9,7 +9,7 @@ import CellSetButton from "./cellSetButtons";
 
 @connect((state) => ({
   config: state.config,
-  crossfilter: state.crossfilter,
+  crossfilter: state.obsCrossfilter,
   differential: state.differential,
   celllist1: state.differential?.celllist1,
   celllist2: state.differential?.celllist2,

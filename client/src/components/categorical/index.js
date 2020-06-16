@@ -12,7 +12,7 @@ import { labelPrompt } from "./labelUtil";
 
 @connect((state) => ({
   writableCategoriesEnabled: state.config?.parameters?.annotations ?? false,
-  schema: state.world?.schema,
+  schema: state.annoMatrix?.schema,
   ontology: state.ontology,
 }))
 class Categories extends React.Component {

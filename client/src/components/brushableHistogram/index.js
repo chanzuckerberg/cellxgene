@@ -9,7 +9,6 @@ import React from "react";
 import { Button, ButtonGroup, Tooltip } from "@blueprintjs/core";
 import { connect } from "react-redux";
 import * as d3 from "d3";
-import memoize from "memoize-one";
 import { interpolateCool } from "d3-scale-chromatic";
 import * as globals from "../../globals";
 import actions from "../../actions";
@@ -28,7 +27,7 @@ function clamp(val, rng) {
     field
   );
   return {
-    world: state.world,
+    annoMatrix: state.annoMatrix,
     isScatterplotXXaccessor: state.controls.scatterplotXXaccessor === field,
     isScatterplotYYaccessor: state.controls.scatterplotYYaccessor === field,
     continuousSelectionRange: state.continuousSelection[myName],
@@ -36,23 +35,7 @@ function clamp(val, rng) {
   };
 })
 class HistogramBrush extends React.PureComponent {
-  static getColumn(world, field, clipped = true) {
-    /*
-    Return the underlying Dataframe column for our field.   By default,
-    returns the clipped column.   If clipped===false, will return the
-    unclipped column.
-    */
-    const obsAnnotations = clipped
-      ? world.obsAnnotations
-      : world.unclipped.obsAnnotations;
-    const varData = clipped ? world.varData : world.unclipped.varData;
-    if (obsAnnotations.hasCol(field)) {
-      return obsAnnotations.col(field);
-    }
-    return varData.col(field);
-  }
-
-  calcHistogramCache = memoize((col) => {
+  calcHistogramCache(col) {
     /*
      recalculate expensive stuff, notably bins, summaries, etc.
     */
@@ -84,10 +67,12 @@ class HistogramBrush extends React.PureComponent {
       .range([this.marginTop + this.height, this.marginTop]);
 
     return histogramCache;
-  });
+  }
 
   constructor(props) {
     super(props);
+
+    this.svgRef = undefined;
 
     this.marginLeft = 10; // Space for 0 tick label on X axis
     this.marginRight = 54; // space for Y axis & labels
@@ -96,37 +81,61 @@ class HistogramBrush extends React.PureComponent {
 
     this.width = 340 - this.marginLeft - this.marginRight;
     this.height = 135 - this.marginTop - this.marginBottom;
+
+    this.state = {
+      status: "pending",
+      _histogram: null,
+      unclippedRangeMin: undefined,
+      unclippedRangeMax: undefined,
+      brushX: undefined,
+      brushXselection: undefined,
+    };
   }
 
-  componentDidMount() {
-    const { field, isColorAccessor } = this.props;
-
-    this.renderHistogram(this._histogram, field, isColorAccessor);
+  createQuery() {
+    const { isObs, field, annoMatrix } = this.props;
+    const { schema } = annoMatrix;
+    if (isObs) {
+      return ["obs", field];
+    } else {
+      const varIndex = annoMatrix?.schema?.annotations?.var?.index;
+      if (!varIndex) return null;
+      return [
+        "X",
+        {
+          field: "var",
+          column: varIndex,
+          value: field,
+        },
+      ];
+    }
   }
 
-  componentDidUpdate(prevProps) {
+  updateHistogram(prevProps, column) {
+    const { column: oldColumn } = this.state;
     const {
       field,
-      world,
-      continuousSelectionRange: range,
       isColorAccessor,
+      continuousSelectionRange: range,
     } = this.props;
-    const { x } = this._histogram;
+    const dfChanged = column !== oldColumn;
+    const colorSelectionChanged =
+      !prevProps || prevProps.isColorAccessor !== isColorAccessor;
+    const rangeChanged =
+      range !== !prevProps || prevProps.continuousSelectionRange;
+
+    let { _histogram } = this.state;
+    if (dfChanged) {
+      _histogram = this.calcHistogramCache(column);
+      this.setState({ _histogram, column });
+    }
+
+    if (!this.svgRef) return;
+
     let { brushX, brushXselection } = this.state;
-
-    const dfColumn = HistogramBrush.getColumn(world, field);
-    const oldDfColumn = HistogramBrush.getColumn(
-      prevProps.world,
-      prevProps.field
-    );
-
-    const rangeChanged = range !== prevProps.continuousSelectionRange;
-    const dfChanged = dfColumn !== oldDfColumn;
-    const colorSelectionChanged = prevProps.isColorAccessor !== isColorAccessor;
-
     if (dfChanged || colorSelectionChanged) {
       ({ brushX, brushXselection } = this.renderHistogram(
-        this._histogram,
+        _histogram,
         field,
         isColorAccessor
       ));
@@ -145,7 +154,8 @@ class HistogramBrush extends React.PureComponent {
         /* no active selection - clear brush */
         brushXselection.call(brushX.move, null);
       } else if (range) {
-        const { min, max } = dfColumn.summarize();
+        const { x } = _histogram;
+        const { min, max } = column.summarize();
         const x0 = x(clamp(range[0], [min, max]));
         const x1 = x(clamp(range[1], [min, max]));
         if (!selection) {
@@ -168,6 +178,63 @@ class HistogramBrush extends React.PureComponent {
     }
   }
 
+  async fetchData(prevProps) {
+    const { annoMatrix } = this.props;
+    const isClipped = annoMatrix.isClipped;
+    const query = this.createQuery();
+
+    const df = await annoMatrix.fetch(...query);
+    const column = df.icol(0);
+
+    // if we are clipped, fetch both our value and our unclipped value,
+    // as we need the absolute min/max range, not just the clipped min/max.
+    const ranges = column.summarize();
+    let unclippedRangeMin;
+    let unclippedRangeMax;
+    if (isClipped) {
+      const parent = await annoMatrix.viewOf.fetch(...query);
+      ({ min: unclippedRangeMin, max: unclippedRangeMax } = parent
+        .icol(0)
+        .summarize());
+    } else {
+      ({ min: unclippedRangeMin, max: unclippedRangeMax } = ranges);
+    }
+
+    this.setState({
+      ranges,
+      unclippedRangeMin,
+      unclippedRangeMax,
+    });
+    return column;
+  }
+
+  fetchState(prevProps) {
+    const { annoMatrix, isObs, field, isColorAccessor } = this.props;
+    if (!annoMatrix) return;
+    if (annoMatrix !== prevProps?.annoMatrix) {
+      this.setState({ status: "pending" });
+      this.fetchData(prevProps).then(
+        (column) => {
+          this.updateHistogram(prevProps, column);
+          this.setState({ status: "success" });
+        },
+        (error) => this.setState({ status: "error", error })
+      );
+      return;
+    }
+
+    const { column } = this.state;
+    this.updateHistogram(prevProps, column);
+  }
+
+  componentDidMount() {
+    this.fetchState(null);
+  }
+
+  componentDidUpdate(prevProps) {
+    this.fetchState(prevProps);
+  }
+
   onBrush(selection, x, eventType) {
     const type = `continuous metadata histogram ${eventType}`;
     return () => {
@@ -178,29 +245,21 @@ class HistogramBrush extends React.PureComponent {
       // ignore cascading events, which are programmatically generated
       if (d3.event.sourceEvent.sourceEvent) return;
 
-      if (d3.event.selection) {
-        dispatch({
-          type,
-          selection: field,
-          continuousNamespace: {
-            isObs,
-            isUserDefined,
-            isDiffExp,
-          },
-          range: [x(d3.event.selection[0]), x(d3.event.selection[1])],
-        });
-      } else {
-        dispatch({
-          type,
-          selection: field,
-          continuousNamespace: {
-            isObs,
-            isUserDefined,
-            isDiffExp,
-          },
-          range: null,
-        });
-      }
+      const query = this.createQuery();
+      const range = d3.event.selection
+        ? [x(d3.event.selection[0]), x(d3.event.selection[1])]
+        : null;
+      const otherProps = {
+        selection: field,
+        continuousNamespace: {
+          isObs,
+          isUserDefined,
+          isDiffExp,
+        },
+      };
+      dispatch(
+        actions.selectContinuousMetadataAction(type, query, range, otherProps)
+      );
     };
   }
 
@@ -215,14 +274,15 @@ class HistogramBrush extends React.PureComponent {
       // ignore cascading events, which are programmatically generated
       if (d3.event.sourceEvent.sourceEvent) return;
 
+      let type;
+      let range = null;
       if (d3.event.selection) {
-        let _range;
-
+        type = "continuous metadata histogram end";
         if (
           d3.event.selection[1] - d3.event.selection[0] >
           minAllowedBrushSize
         ) {
-          _range = [x(d3.event.selection[0]), x(d3.event.selection[1])];
+          range = [x(d3.event.selection[0]), x(d3.event.selection[1])];
         } else {
           /* the user selected range is too small and will be hidden #587, so take control of it procedurally */
           /* https://stackoverflow.com/questions/12354729/d3-js-limit-size-of-brush */
@@ -232,30 +292,24 @@ class HistogramBrush extends React.PureComponent {
             minAllowedBrushSize +
             smallAmountToAvoidInfiniteLoop; //
 
-          _range = [x(d3.event.selection[0]), x(procedurallyResizedBrushWidth)];
+          range = [x(d3.event.selection[0]), x(procedurallyResizedBrushWidth)];
         }
-
-        dispatch({
-          type: "continuous metadata histogram end",
-          selection: field,
-          continuousNamespace: {
-            isObs,
-            isUserDefined,
-            isDiffExp,
-          },
-          range: _range,
-        });
       } else {
-        dispatch({
-          type: "continuous metadata histogram cancel",
-          selection: field,
-          continuousNamespace: {
-            isObs,
-            isUserDefined,
-            isDiffExp,
-          },
-        });
+        type = "continuous metadata histogram cancel";
       }
+
+      const query = this.createQuery();
+      const otherProps = {
+        selection: field,
+        continuousNamespace: {
+          isObs,
+          isUserDefined,
+          isDiffExp,
+        },
+      };
+      dispatch(
+        actions.selectContinuousMetadataAction(type, query, range, otherProps)
+      );
     };
   }
 
@@ -276,15 +330,16 @@ class HistogramBrush extends React.PureComponent {
   };
 
   handleColorAction = () => {
-    const { dispatch, field, world, ranges } = this.props;
+    const { dispatch, field, isObs } = this.props;
+    const { ranges } = this.state;
 
-    if (world.obsAnnotations.hasCol(field)) {
+    if (isObs) {
       dispatch({
         type: "color by continuous metadata",
         colorAccessor: field,
         rangeForColorAccessor: ranges,
       });
-    } else if (world.varData.hasCol(field)) {
+    } else {
       dispatch(actions.requestSingleGeneExpressionCountsForColoringPOST(field));
     }
   };
@@ -337,17 +392,13 @@ class HistogramBrush extends React.PureComponent {
     }
   };
 
-  drawHistogram(svgRef) {
-    const { field, world } = this.props;
-    const col = HistogramBrush.getColumn(world, field);
-    this._histogram = {
-      ...this.calcHistogramCache(col),
-      svgRef,
-    };
+  saveSvgRef(svgRef) {
+    this.svgRef = svgRef;
   }
 
   renderHistogram(histogram, field, isColorAccessor) {
-    const { x, y, bins, svgRef, binStart, binEnd, binWidth } = histogram;
+    const { svgRef } = this;
+    const { x, y, bins, binStart, binEnd, binWidth } = histogram;
     const svg = d3.select(svgRef);
 
     /* Remove everything */
@@ -454,9 +505,12 @@ class HistogramBrush extends React.PureComponent {
   }
 
   render() {
+    const { status, column } = this.state;
+    if (status === "error") return null;
+
     const {
+      annoMatrix,
       field,
-      world,
       isColorAccessor,
       isUserDefined,
       isDiffExp,
@@ -467,14 +521,16 @@ class HistogramBrush extends React.PureComponent {
       zebra,
     } = this.props;
     const fieldForId = field.replace(/\s/g, "_");
-    const {
-      min: unclippedRangeMin,
-      max: unclippedRangeMax,
-    } = HistogramBrush.getColumn(world, field, false).summarize();
+    const unclippedRangeMin = this.state.unclippedRangeMin ?? 0;
+    const unclippedRangeMax = this.state.unclippedRangeMax ?? 1;
     const unclippedRangeMinColor =
-      world.clipQuantiles.min === 0 ? "#bbb" : globals.blue;
+      !annoMatrix.isClipped || annoMatrix.clipRange[0] === 0
+        ? "#bbb"
+        : globals.blue;
     const unclippedRangeMaxColor =
-      world.clipQuantiles.max === 1 ? "#bbb" : globals.blue;
+      !annoMatrix.isClipped || annoMatrix.clipRange[1] === 1
+        ? "#bbb"
+        : globals.blue;
 
     return (
       <div
@@ -559,7 +615,7 @@ class HistogramBrush extends React.PureComponent {
           id={`histogram_${fieldForId}_svg`}
           data-testclass="histogram-plot"
           data-testid={`histogram-${field}-plot`}
-          ref={(svgRef) => this.drawHistogram(svgRef)}
+          ref={(svgRef) => this.saveSvgRef(svgRef)}
         />
         <div
           style={{
