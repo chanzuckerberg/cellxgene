@@ -4,7 +4,7 @@ on:
   push:
     branches: master
   pull_request:
-    branches: '*'
+    branches: "*"
 
 env:
   JEST_ENV: prod
@@ -40,7 +40,6 @@ jobs:
         working-directory: ./client
         run: |
           make lint
-
 
   unit-test:
     runs-on: ubuntu-latest

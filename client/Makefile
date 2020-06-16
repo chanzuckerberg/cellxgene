@@ -34,10 +34,7 @@ start-frontend:
 
 .PHONY: e2e
 e2e:
-	node node_modules/jest/bin/jest.js \
-		--verbose false \
-		--config __tests__/e2e/e2eJestConfig.json \
-		e2e/e2e.test.js
+	npm run e2e-prod
 
 .PHONY: e2e-annotations
 e2e-annotations:

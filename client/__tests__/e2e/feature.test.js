@@ -8,7 +8,7 @@ Then run jest --verbose false --config __tests__/e2e/e2eJestConfig.json feature.
  */
 
 import puppeteer from "puppeteer";
-import { appUrlBase, DEBUG, DEV, DATASET } from "./config";
+import { appUrlBase, isDebug, isDev, DATASET } from "./config";
 import { puppeteerUtils, cellxgeneActions } from "./puppeteerUtils";
 import { datasets } from "./data";
 
@@ -20,19 +20,19 @@ let spy;
 const browserViewport = { width: 1280, height: 960 };
 const data = datasets[DATASET].features;
 
-if (DEBUG) jest.setTimeout(100000);
-if (DEV) jest.setTimeout(10000);
+if (isDebug) jest.setTimeout(100000);
+if (isDev) jest.setTimeout(10000);
 
 beforeAll(async () => {
-  const browserParams = DEV
+  const browserParams = isDev
     ? { headless: false, slowMo: 5 }
-    : DEBUG
+    : isDebug
     ? { headless: false, slowMo: 100, devtools: true }
     : {};
   browser = await puppeteer.launch(browserParams);
   page = await browser.newPage();
   await page.setViewport(browserViewport);
-  if (DEV || DEBUG) {
+  if (isDev || isDebug) {
     page.on("console", (msg) => console.log(`PAGE LOG: ${msg.text()}`));
   }
   page.on("pageerror", (err) => {
@@ -47,7 +47,7 @@ beforeEach(async () => {
 });
 
 afterAll(() => {
-  if (!DEBUG) {
+  if (!isDebug) {
     browser.close();
   }
 });
