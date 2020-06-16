@@ -1,9 +1,9 @@
 const DEBUG = "debug";
 const DEV = "dev";
-const jestEnv = process.env.JEST_ENV;
+const PROD = "prod";
+const jestEnv = process.env.JEST_ENV || PROD;
 
 const DEFAULT_LAUNCH_CONFIG = {
-  headless: false,
   args: ["--ignore-certificate-errors", "--ignore-ssl-errors"],
   dumpio: true,
   ignoreHTTPSErrors: true,

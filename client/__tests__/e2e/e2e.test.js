@@ -1,8 +1,9 @@
-/*
-Smoke test suite that will be run in Travis CI
-
-Tests included in this file are expected to be relatively stable and test core features
+/**
+ * Smoke test suite that will be run in Travis CI
+ * Tests included in this file are expected to be relatively stable and test core features
  */
+
+/* eslint-disable no-await-in-loop -- await in loop is needed to emulate sequential user actions  */
 import { appUrlBase, DATASET } from "./config";
 
 import { datasets } from "./data";
@@ -49,17 +50,14 @@ describe("metadata loads", () => {
     await goToPage(appUrlBase);
 
     for (const label of Object.keys(data.categorical)) {
-      // eslint-disable-next-line no-await-in-loop
       const element = await getOneElementInnerHTML(
         getTestId(`category-${label}`)
       );
 
       expect(element).toMatchSnapshot();
 
-      // eslint-disable-next-line no-await-in-loop
       await clickOn(`${label}:category-expand`);
 
-      // eslint-disable-next-line no-await-in-loop
       const categories = await getAllCategoriesAndCounts(label);
 
       expect(Object.keys(categories)).toMatchObject(
@@ -408,7 +406,6 @@ describe("centroid labels", () => {
     await clickOn(`colorby-${labels[0]}`);
     await clickOn("centroid-label-toggle");
 
-    /* eslint-disable no-await-in-loop */
     // Toggle colorby for each category and check to see if labels are generated
     for (let i = 0, { length } = labels; i < length; i += 1) {
       const label = labels[i];
@@ -420,7 +417,6 @@ describe("centroid labels", () => {
         Object.keys(data.categorical[label]).length
       );
     }
-    /* eslint-enable no-await-in-loop */
   });
 });
 
@@ -457,3 +453,4 @@ describe("graph overlay", () => {
     );
   });
 });
+/* eslint-enable no-await-in-loop -- await in loop is needed to emulate sequential user actions */
