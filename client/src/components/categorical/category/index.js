@@ -130,7 +130,7 @@ class Category extends React.PureComponent {
     return [categoryData, categorySummary, colorData, crossfilter];
   }
 
-  updateState(prevProps) {
+  async updateState(prevProps) {
     const {
       annoMatrix,
       metadataField,
@@ -141,23 +141,26 @@ class Category extends React.PureComponent {
 
     if (annoMatrix != prevProps?.annoMatrix || colors !== prevProps?.colors) {
       this.setState({ status: "pending" });
-      this.fetchData().then(
-        ([categoryData, categorySummary, colorData, crossfilter]) => {
-          this.updateSelectionState(categorySummary);
-          this.setState({
-            status: "success",
-            categoryData,
-            categorySummary,
-            colorData,
-            crossfilter,
-            ...this.updateColorTable(colorData),
-          });
-        },
-        (error) => {
-          console.log(error);
-          this.setState({ status: "error", error });
-        }
-      );
+      try {
+        const [
+          categoryData,
+          categorySummary,
+          colorData,
+          crossfilter,
+        ] = await this.fetchData();
+        this.updateSelectionState(categorySummary);
+        this.setState({
+          status: "success",
+          categoryData,
+          categorySummary,
+          colorData,
+          crossfilter,
+          ...this.updateColorTable(colorData),
+        });
+      } catch (error) {
+        this.setState({ status: "error", error });
+        throw error;
+      }
       return;
     }
 

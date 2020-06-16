@@ -331,7 +331,7 @@ class Graph extends React.Component {
     return Promise.all(promises);
   }
 
-  updateState(prevProps) {
+  async updateState(prevProps) {
     const {
       annoMatrix,
       colors,
@@ -348,25 +348,26 @@ class Graph extends React.Component {
       pointDilation !== prevProps?.pointDilation
     ) {
       this.setState({ status: "pending" });
-      this.fetchData().then(
-        ([layoutDf, colorDf, pointDilationDf]) => {
-          const colorTable = this.updateColorTable(colorDf);
-          this.setState({
-            status: "success",
+      try {
+        const [layoutDf, colorDf, pointDilationDf] = await this.fetchData();
+        const colorTable = this.updateColorTable(colorDf);
+        this.setState({
+          status: "success",
+          layoutDf,
+          colorDf,
+          colorTable,
+          pointDilationDf,
+          ...this.updateReglState(
             layoutDf,
             colorDf,
             colorTable,
-            pointDilationDf,
-            ...this.updateReglState(
-              layoutDf,
-              colorDf,
-              colorTable,
-              pointDilationDf
-            ),
-          });
-        },
-        (error) => this.setState({ status: "error", error })
-      );
+            pointDilationDf
+          ),
+        });
+      } catch (error) {
+        this.setState({ status: "error", error });
+        throw error;
+      }
       return;
     }
 

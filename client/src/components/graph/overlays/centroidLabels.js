@@ -37,9 +37,9 @@ class CentroidLabels extends PureComponent {
     const promises = [];
     // layout
     promises.push(annoMatrix.fetch("emb", layoutChoice.current));
-    // category
+    // category to label - we ONLY label on obs, never on X, etc.
     const query = this.colorByQuery();
-    if (query) {
+    if (query && query[0] === "obs") {
       promises.push(annoMatrix.fetch(...query));
     } else {
       promises.push(Promise.resolve(null));
@@ -49,7 +49,7 @@ class CentroidLabels extends PureComponent {
   }
 
   // Check to see if centroids have either just been displayed or removed from the overlay
-  updateState(prevProps) {
+  async updateState(prevProps) {
     const { annoMatrix, colors, layoutChoice } = this.props;
     if (!annoMatrix || !layoutChoice || !colors) return;
 
@@ -61,22 +61,23 @@ class CentroidLabels extends PureComponent {
       const { schema } = annoMatrix;
       const { colorAccessor } = colors;
       this.setState({ status: "pending" });
-      this.fetchData().then(
-        ([layoutDf, colorDf]) => {
-          let labels = [];
-          if (colorDf) {
-            labels = calcCentroid(
-              schema,
-              colorAccessor,
-              colorDf,
-              layoutChoice,
-              layoutDf
-            );
-          }
-          this.setState({ status: "success", labels, colorAccessor });
-        },
-        (error) => this.setState({ status: "error", error })
-      );
+      try {
+        const [layoutDf, colorDf] = await this.fetchData();
+        let labels = [];
+        if (colorDf) {
+          labels = calcCentroid(
+            schema,
+            colorAccessor,
+            colorDf,
+            layoutChoice,
+            layoutDf
+          );
+        }
+        this.setState({ status: "success", labels, colorAccessor });
+      } catch (error) {
+        this.setState({ status: "error", error });
+        throw error;
+      }
     }
     return;
   }

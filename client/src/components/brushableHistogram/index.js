@@ -208,18 +208,19 @@ class HistogramBrush extends React.PureComponent {
     return column;
   }
 
-  fetchState(prevProps) {
+  async updateState(prevProps) {
     const { annoMatrix, isObs, field, isColorAccessor } = this.props;
     if (!annoMatrix) return;
     if (annoMatrix !== prevProps?.annoMatrix) {
       this.setState({ status: "pending" });
-      this.fetchData(prevProps).then(
-        (column) => {
-          this.updateHistogram(prevProps, column);
-          this.setState({ status: "success" });
-        },
-        (error) => this.setState({ status: "error", error })
-      );
+      try {
+        const column = await this.fetchData(prevProps);
+        this.updateHistogram(prevProps, column);
+        this.setState({ status: "success" });
+      } catch (error) {
+        this.setState({ status: "error", error });
+        throw error;
+      }
       return;
     }
 
@@ -228,11 +229,11 @@ class HistogramBrush extends React.PureComponent {
   }
 
   componentDidMount() {
-    this.fetchState(null);
+    this.updateState(null);
   }
 
   componentDidUpdate(prevProps) {
-    this.fetchState(prevProps);
+    this.updateState(prevProps);
   }
 
   onBrush(selection, x, eventType) {
