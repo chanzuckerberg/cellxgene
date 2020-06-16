@@ -1,4 +1,3 @@
-// jshint esversion: 6
 /* rc slider https://www.npmjs.com/package/rc-slider */
 
 import React from "react";
@@ -71,6 +70,14 @@ class AddGenes extends React.Component {
     };
   }
 
+  componentDidMount() {
+    this.updateState();
+  }
+
+  componentDidUpdate(prevProps) {
+    this.updateState(prevProps);
+  }
+
   _genesToUpper = (listGenes) => {
     // Has to be a Map to preserve index
     const upperGenes = new Map();
@@ -83,33 +90,6 @@ class AddGenes extends React.Component {
 
   // eslint-disable-next-line react/sort-comp -- memo requires a defined _genesToUpper
   _memoGenesToUpper = memoize(this._genesToUpper, (arr) => arr);
-
-  fetchState(prevProps) {
-    const { annoMatrix } = this.props;
-    if (!annoMatrix) return;
-    if (annoMatrix !== prevProps?.annoMatrix) {
-      const { schema } = annoMatrix;
-      const varIndex = schema.annotations.var.index;
-
-      this.setState({ status: "pending" });
-      annoMatrix.fetch("var", varIndex).then(
-        (df) =>
-          this.setState({
-            status: "success",
-            geneNames: df.col(varIndex).asArray(),
-          }),
-        (error) => this.setState({ status: "error", error })
-      );
-    }
-  }
-
-  componentDidMount() {
-    this.fetchState();
-  }
-
-  componentDidUpdate(prevProps) {
-    this.fetchState(prevProps);
-  }
 
   handleBulkAddClick = () => {
     const { dispatch, userDefinedGenes } = this.props;
@@ -160,6 +140,27 @@ class AddGenes extends React.Component {
     this.setState({ bulkAdd: "" });
     return undefined;
   };
+
+  async updateState(prevProps) {
+    const { annoMatrix } = this.props;
+    if (!annoMatrix) return;
+    if (annoMatrix !== prevProps?.annoMatrix) {
+      const { schema } = annoMatrix;
+      const varIndex = schema.annotations.var.index;
+
+      this.setState({ status: "pending" });
+      try {
+        const df = await annoMatrix.fetch("var", varIndex);
+        this.setState({
+          status: "success",
+          geneNames: df.col(varIndex).asArray(),
+        });
+      } catch (error) {
+        this.setState({ status: "error" });
+        throw error;
+      }
+    }
+  }
 
   placeholderGeneNames() {
     /*

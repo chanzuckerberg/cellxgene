@@ -1,11 +1,6 @@
 /*
 Action creators for selection 
 */
-import {
-  AnnoMatrixLoader,
-  AnnoMatrixObsCrossfilter,
-} from "../util/annoMatrix/";
-
 export const selectContinuousMetadataAction = (
   type,
   query,
@@ -48,8 +43,7 @@ export const selectCategoricalMetadataAction = (
 
   const labelSelectionState = new Map(categoricalSelection[metadataField]);
   labels.forEach(
-    (label) =>
-      labelSelectionState.has(label) || labelSelectionState.set(label, true)
+    (l) => labelSelectionState.has(l) || labelSelectionState.set(l, true)
   );
   labelSelectionState.set(label, isSelected);
 
@@ -118,10 +112,7 @@ const _graphBrushWithinRectAction = (type, embName, brushCoords) => async (
   dispatch,
   getState
 ) => {
-  const {
-    obsCrossfilter: prevObsCrossfilter,
-    categoricalSelection,
-  } = getState();
+  const { obsCrossfilter: prevObsCrossfilter } = getState();
 
   const selection = { mode: "within-rect", ...brushCoords };
   const obsCrossfilter = await prevObsCrossfilter.select(
@@ -138,10 +129,7 @@ const _graphBrushWithinRectAction = (type, embName, brushCoords) => async (
 };
 
 const _graphAllAction = (type, embName) => async (dispatch, getState) => {
-  const {
-    obsCrossfilter: prevObsCrossfilter,
-    categoricalSelection,
-  } = getState();
+  const { obsCrossfilter: prevObsCrossfilter } = getState();
 
   const obsCrossfilter = await prevObsCrossfilter.select("emb", embName, {
     mode: "all",
@@ -178,10 +166,7 @@ export const graphLassoEndAction = (embName, polygon) => async (
   dispatch,
   getState
 ) => {
-  const {
-    obsCrossfilter: prevObsCrossfilter,
-    categoricalSelection,
-  } = getState();
+  const { obsCrossfilter: prevObsCrossfilter } = getState();
 
   const selection = {
     mode: "within-polygon",

@@ -1,3 +1,5 @@
+/* eslint-disable max-classes-per-file -- Classes are interrelated*/
+
 import { doBinaryRequest, fetchResult, dubEncURIComp } from "./fetchHelpers";
 import { matrixFBSToDataframe } from "../stateManager/matrix";
 import {
@@ -60,7 +62,7 @@ class AnnoMatrix {
     return schemaColumns(this.schema, field);
   }
 
-  getMatrixFields() {
+  static getMatrixFields() {
     return AnnoMatrix.fields();
   }
 
@@ -182,10 +184,10 @@ class AnnoMatrix {
     if (uncachedQueries.length > 0) {
       await Promise.all(
         uncachedQueries.map((query) =>
-          this._getPendingLoad(field, query, async (field, query) => {
+          this._getPendingLoad(field, query, async (_field, _query) => {
             /* fetch, then index */
-            const [whereCacheUpdate, df] = await this._doLoad(field, query);
-            this[field] = this[field].withColsFrom(df);
+            const [whereCacheUpdate, df] = await this._doLoad(_field, _query);
+            this[_field] = this[_field].withColsFrom(df);
             this._whereCache = whereCacheMerge(
               this._whereCache,
               whereCacheUpdate
@@ -296,7 +298,7 @@ export class AnnoMatrixLoader extends AnnoMatrix {
     return o;
   }
 
-  addObsColumn(colSchema, ctor, value) {
+  addObsColumn(colSchema, Ctor, value) {
     /*
 		add a column to field, initializing with value
 		*/
@@ -307,7 +309,7 @@ export class AnnoMatrixLoader extends AnnoMatrix {
     }
 
     const o = clone(this);
-    const data = new ctor(this.nObs).fill(value);
+    const data = new Ctor(this.nObs).fill(value);
     o.obs = this.obs.withCol(col, data);
     o.schema = addObsAnnoColumn(this.schema, col, {
       ...colSchema,
@@ -517,9 +519,8 @@ function queryCacheKey(field, query) {
   if (typeof query === "object") {
     const { field: queryField, column: queryColumn, value: queryValue } = query;
     return `${field}/${queryField}/${queryColumn}/${queryValue}`;
-  } else {
-    return `${field}/${query}`;
   }
+  return `${field}/${query}`;
 }
 
 function encodeQuery(colKey, q) {
@@ -528,8 +529,8 @@ function encodeQuery(colKey, q) {
     return `${dubEncURIComp(queryField)}:${dubEncURIComp(
       queryColumn
     )}=${dubEncURIComp(queryValue)}`;
-  } else {
-    if (!colKey) throw new Error("Unsupported query by name");
-    return `${colKey}=${encodeURIComponent(q)}`;
   }
+  if (!colKey) throw new Error("Unsupported query by name");
+  return `${colKey}=${encodeURIComponent(q)}`;
 }
+/* eslint-enable max-classes-per-file -- enable*/

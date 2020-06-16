@@ -1,18 +1,12 @@
 import * as globals from "../globals";
-import {
-  AnnoMatrixLoader,
-  AnnoMatrixObsCrossfilter,
-} from "../util/annoMatrix/";
-import { Universe, MatrixFBS } from "../util/stateManager";
-import * as Dataframe from "../util/dataframe";
+import { AnnoMatrixLoader, AnnoMatrixObsCrossfilter } from "../util/annoMatrix";
+import { MatrixFBS } from "../util/stateManager";
 import {
   catchErrorsWrap,
   doJsonRequest,
-  doBinaryRequest,
   dispatchNetworkErrorMessageToUser,
 } from "../util/actionHelpers";
-import PromiseLimit from "../util/promiseLimit";
-import { requestReembed, reembedResetWorldToUniverse } from "./reembed";
+import { requestReembed /*, reembedResetWorldToUniverse*/ } from "./reembed";
 import { loadUserColorConfig } from "../util/stateManager/colorHelpers";
 import {
   selectContinuousMetadataAction,
@@ -41,7 +35,7 @@ async function userColorsFetchAndLoad(dispatch) {
   );
 }
 
-async function schemaFetch(dispatch) {
+async function schemaFetch() {
   return fetchJson("schema");
 }
 
@@ -63,7 +57,7 @@ const doInitialDataLoad = () =>
   catchErrorsWrap(async (dispatch) => {
     dispatch({ type: "initial data load start" });
 
-    const [config, schema, colors] = await Promise.all([
+    const [, schema] = await Promise.all([
       configFetch(dispatch),
       schemaFetch(dispatch),
       userColorsFetchAndLoad(dispatch),
@@ -283,12 +277,9 @@ const resetSubsetAction = () => (dispatch, getState) => {
   be the top of the stack, and must be preserved.
   */
 
-  const {
-    annoMatrix: prevAnnoMatrix,
-    obsCrossfilter: prevObsCrossfilter,
-  } = getState();
+  const { annoMatrix: prevAnnoMatrix } = getState();
 
-  let clipRange = prevAnnoMatrix.isClipped ? prevAnnoMatrix.clipRange : null;
+  const clipRange = prevAnnoMatrix.isClipped ? prevAnnoMatrix.clipRange : null;
 
   /* pop all views */
   let annoMatrix = prevAnnoMatrix;
@@ -311,12 +302,6 @@ const resetSubsetAction = () => (dispatch, getState) => {
 
 function fetchJson(pathAndQuery) {
   return doJsonRequest(
-    `${globals.API.prefix}${globals.API.version}${pathAndQuery}`
-  );
-}
-
-function fetchBinary(pathAndQuery) {
-  return doBinaryRequest(
     `${globals.API.prefix}${globals.API.version}${pathAndQuery}`
   );
 }

@@ -2,7 +2,6 @@
 import React from "react";
 import { AnchorButton, Tooltip } from "@blueprintjs/core";
 import { connect } from "react-redux";
-import { World } from "../../util/stateManager";
 import { tooltipHoverOpenDelay } from "../../globals";
 
 @connect()

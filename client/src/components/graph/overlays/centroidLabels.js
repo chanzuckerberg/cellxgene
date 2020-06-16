@@ -24,6 +24,18 @@ class CentroidLabels extends PureComponent {
     };
   }
 
+  componentDidMount() {
+    this.updateState(null);
+  }
+
+  componentDidUpdate(prevProps) {
+    this.updateState(prevProps);
+
+    const { showLabels, overlaySetShowing } = this.props;
+    const { labels } = this.state;
+    overlaySetShowing("centroidLabels", showLabels && labels.size > 0);
+  }
+
   colorByQuery() {
     const { annoMatrix, colors } = this.props;
     const { schema } = annoMatrix;
@@ -75,23 +87,10 @@ class CentroidLabels extends PureComponent {
         }
         this.setState({ status: "success", labels, colorAccessor });
       } catch (error) {
-        this.setState({ status: "error", error });
+        this.setState({ status: "error" });
         throw error;
       }
     }
-    return;
-  }
-
-  componentDidMount() {
-    this.updateState(null);
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    this.updateState(prevProps);
-
-    const { showLabels, overlaySetShowing } = this.props;
-    const { labels } = this.state;
-    overlaySetShowing("centroidLabels", showLabels && labels.size > 0);
   }
 
   render() {
@@ -99,7 +98,6 @@ class CentroidLabels extends PureComponent {
       inverseTransform,
       dilatedValue,
       dispatch,
-      colors,
       categoricalSelection,
       showLabels,
     } = this.props;

@@ -1,5 +1,3 @@
-import { ColorHelpers } from "../util/stateManager";
-
 /*
 Color By UI state
 */

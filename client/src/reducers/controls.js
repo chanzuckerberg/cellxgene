@@ -21,9 +21,7 @@ const Controls = (
     scatterplotYYaccessor: null,
     graphRenderCounter: 0 /* integer as <Component key={graphRenderCounter} - a change in key forces a remount */,
   },
-  action,
-  nextSharedState,
-  prevSharedState
+  action
 ) => {
   /*
   For now, log anything looking like an error to the console.

@@ -2,7 +2,6 @@ export { doBinaryRequest } from "../actionHelpers";
 
 export function fetchResult(promise) {
   let _status = "pending";
-  let _result = undefined;
   const res = promise.then(
     (r) => {
       _status = "success";

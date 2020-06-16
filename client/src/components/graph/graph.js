@@ -9,7 +9,6 @@ import memoize from "memoize-one";
 import setupSVGandBrushElements from "./setupSVGandBrush";
 import _camera from "../../util/camera";
 import _drawPoints from "./drawPointsRegl";
-import { isTypedArray } from "../../util/typeHelpers";
 import {
   createColorTable,
   createColorQuery,
@@ -215,173 +214,6 @@ class Graph extends React.Component {
     };
   }
 
-  updateColorTable(colorDf) {
-    /* update color table state */
-    const { annoMatrix, colors } = this.props;
-    const { schema } = annoMatrix;
-    const { colorAccessor, userColors, colorMode } = colors;
-    return createColorTable(
-      colorMode,
-      colorAccessor,
-      colorDf,
-      schema,
-      userColors
-    );
-  }
-
-  updateReglState(layoutDf, colorDf, colorTable, pointDilationDf) {
-    /* update all regl-related state */
-    const newState = {};
-    let needsRepaint = false;
-    const { layoutChoice } = this.props;
-    const { colorAccessor } = this.props.colors;
-    const { state } = this;
-    const { regl, pointBuffer, colorBuffer, flagBuffer, modelTF } = state;
-
-    // still initializing?
-    if (!regl) return newState;
-
-    /* point coordinates */
-    const X = layoutDf.col(layoutChoice.currentDimNames[0]).asArray();
-    const Y = layoutDf.col(layoutChoice.currentDimNames[1]).asArray();
-    const positions = this.computePointPositions(X, Y, modelTF);
-    if (positions !== state.positions) {
-      newState.positions = positions;
-      pointBuffer({ data: positions, dimension: 2 });
-      needsRepaint = true;
-    }
-
-    /* point colors */
-    const colors = this.computePointColors(colorTable.rgb);
-    if (colors !== state.colors) {
-      /* update our cache & GL if the buffer changes */
-      newState.colors = colors;
-      colorBuffer({ data: colors, dimension: 3 });
-      needsRepaint = true;
-    }
-
-    /* flags */
-    const { crossfilter, pointDilation } = this.props;
-    const flags = this.computePointFlags(
-      crossfilter,
-      colorDf,
-      colorAccessor,
-      pointDilationDf,
-      pointDilation
-    );
-    if (flags !== state.flags) {
-      newState.flags = flags;
-      flagBuffer({ data: flags, dimension: 1 });
-      needsRepaint = true;
-    }
-
-    if (needsRepaint) {
-      const { drawPoints, camera, projectionTF } = state;
-      this.renderPoints(
-        regl,
-        drawPoints,
-        colorBuffer,
-        pointBuffer,
-        flagBuffer,
-        camera,
-        projectionTF
-      );
-    }
-
-    return newState;
-  }
-
-  colorByQuery() {
-    const { annoMatrix, colors } = this.props;
-    const { schema } = annoMatrix;
-    const { colorMode, colorAccessor } = colors;
-    return createColorQuery(colorMode, colorAccessor, schema);
-  }
-
-  async fetchData() {
-    /*
-    fetch all data needed.  Includes:
-      - the color by dataframe
-      - the layout dataframe
-      - the point dilation dataframe
-    */
-    const { annoMatrix, layoutChoice, colors, pointDilation } = this.props;
-    const { colorAccessor } = colors;
-    const { metadataField: pointDilationAccessor } = pointDilation;
-
-    const promises = [];
-    // layout
-    promises.push(annoMatrix.fetch("emb", layoutChoice.current));
-
-    // color
-    const query = this.colorByQuery();
-    if (query) {
-      promises.push(annoMatrix.fetch(...query));
-    } else {
-      promises.push(Promise.resolve(null));
-    }
-
-    // point highlighting
-    if (pointDilationAccessor) {
-      promises.push(annoMatrix.fetch("obs", pointDilationAccessor));
-    } else {
-      promises.push(Promise.resolve(null));
-    }
-
-    return Promise.all(promises);
-  }
-
-  async updateState(prevProps) {
-    const {
-      annoMatrix,
-      colors,
-      layoutChoice,
-      crossfilter,
-      pointDilation,
-    } = this.props;
-    if (!annoMatrix) return;
-
-    if (
-      annoMatrix !== prevProps?.annoMatrix ||
-      layoutChoice !== prevProps?.layoutChoice ||
-      colors !== prevProps?.colors ||
-      pointDilation !== prevProps?.pointDilation
-    ) {
-      this.setState({ status: "pending" });
-      try {
-        const [layoutDf, colorDf, pointDilationDf] = await this.fetchData();
-        const colorTable = this.updateColorTable(colorDf);
-        this.setState({
-          status: "success",
-          layoutDf,
-          colorDf,
-          colorTable,
-          pointDilationDf,
-          ...this.updateReglState(
-            layoutDf,
-            colorDf,
-            colorTable,
-            pointDilationDf
-          ),
-        });
-      } catch (error) {
-        this.setState({ status: "error", error });
-        throw error;
-      }
-      return;
-    }
-
-    if (
-      crossfilter !== prevProps?.crossfilter ||
-      pointDilation !== prevProps?.pointDilation
-    ) {
-      const { layoutDf, colorDf, colorTable, pointDilationDf } = this.state;
-      this.setState(
-        this.updateReglState(layoutDf, colorDf, colorTable, pointDilationDf)
-      );
-    }
-  }
-
   componentDidMount() {
     window.addEventListener("resize", this.handleResize);
 
@@ -416,14 +248,11 @@ class Graph extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     const {
-      crossfilter,
       selectionTool,
       currentSelection,
-      layoutChoice,
       graphInteractionMode,
-      pointDilation,
     } = this.props;
-    const { regl, toolSVG, camera, modelTF, viewport } = this.state;
+    const { toolSVG, viewport } = this.state;
     let { projectionTF } = this.state;
     const { reglCanvas } = this;
     const hasResized =
@@ -431,7 +260,6 @@ class Graph extends React.Component {
       (prevState.viewport.height !== reglCanvas.height ||
         prevState.viewport.width !== reglCanvas.width);
     let stateChanges = {};
-    let needsRepaint = hasResized;
 
     if (hasResized) {
       projectionTF = createProjectionTF(reglCanvas.width, reglCanvas.height);
@@ -561,6 +389,172 @@ class Graph extends React.Component {
 
     return { toolSVG: newToolSVG, tool, container };
   };
+
+  updateColorTable(colorDf) {
+    /* update color table state */
+    const { annoMatrix, colors } = this.props;
+    const { schema } = annoMatrix;
+    const { colorAccessor, userColors, colorMode } = colors;
+    return createColorTable(
+      colorMode,
+      colorAccessor,
+      colorDf,
+      schema,
+      userColors
+    );
+  }
+
+  updateReglState(layoutDf, colorDf, colorTable, pointDilationDf) {
+    /* update all regl-related state */
+    const newState = {};
+    let needsRepaint = false;
+    const { layoutChoice, colors } = this.props;
+    const { colorAccessor } = colors;
+    const { state } = this;
+    const { regl, pointBuffer, colorBuffer, flagBuffer, modelTF } = state;
+
+    // still initializing?
+    if (!regl) return newState;
+
+    /* point coordinates */
+    const X = layoutDf.col(layoutChoice.currentDimNames[0]).asArray();
+    const Y = layoutDf.col(layoutChoice.currentDimNames[1]).asArray();
+    const positions = this.computePointPositions(X, Y, modelTF);
+    if (positions !== state.positions) {
+      newState.positions = positions;
+      pointBuffer({ data: positions, dimension: 2 });
+      needsRepaint = true;
+    }
+
+    /* point colors */
+    const _colors = this.computePointColors(colorTable.rgb);
+    if (_colors !== state.colors) {
+      /* update our cache & GL if the buffer changes */
+      newState.colors = _colors;
+      colorBuffer({ data: _colors, dimension: 3 });
+      needsRepaint = true;
+    }
+
+    /* flags */
+    const { crossfilter, pointDilation } = this.props;
+    const flags = this.computePointFlags(
+      crossfilter,
+      colorDf,
+      colorAccessor,
+      pointDilationDf,
+      pointDilation
+    );
+    if (flags !== state.flags) {
+      newState.flags = flags;
+      flagBuffer({ data: flags, dimension: 1 });
+      needsRepaint = true;
+    }
+
+    if (needsRepaint) {
+      const { drawPoints, camera, projectionTF } = state;
+      this.renderPoints(
+        regl,
+        drawPoints,
+        colorBuffer,
+        pointBuffer,
+        flagBuffer,
+        camera,
+        projectionTF
+      );
+    }
+
+    return newState;
+  }
+
+  colorByQuery() {
+    const { annoMatrix, colors } = this.props;
+    const { schema } = annoMatrix;
+    const { colorMode, colorAccessor } = colors;
+    return createColorQuery(colorMode, colorAccessor, schema);
+  }
+
+  async fetchData() {
+    /*
+    fetch all data needed.  Includes:
+      - the color by dataframe
+      - the layout dataframe
+      - the point dilation dataframe
+    */
+    const { annoMatrix, layoutChoice, pointDilation } = this.props;
+    const { metadataField: pointDilationAccessor } = pointDilation;
+
+    const promises = [];
+    // layout
+    promises.push(annoMatrix.fetch("emb", layoutChoice.current));
+
+    // color
+    const query = this.colorByQuery();
+    if (query) {
+      promises.push(annoMatrix.fetch(...query));
+    } else {
+      promises.push(Promise.resolve(null));
+    }
+
+    // point highlighting
+    if (pointDilationAccessor) {
+      promises.push(annoMatrix.fetch("obs", pointDilationAccessor));
+    } else {
+      promises.push(Promise.resolve(null));
+    }
+
+    return Promise.all(promises);
+  }
+
+  async updateState(prevProps) {
+    const {
+      annoMatrix,
+      colors,
+      layoutChoice,
+      crossfilter,
+      pointDilation,
+    } = this.props;
+    if (!annoMatrix) return;
+
+    if (
+      annoMatrix !== prevProps?.annoMatrix ||
+      layoutChoice !== prevProps?.layoutChoice ||
+      colors !== prevProps?.colors ||
+      pointDilation !== prevProps?.pointDilation
+    ) {
+      this.setState({ status: "pending" });
+      try {
+        const [layoutDf, colorDf, pointDilationDf] = await this.fetchData();
+        const colorTable = this.updateColorTable(colorDf);
+        this.setState({
+          status: "success",
+          layoutDf,
+          colorDf,
+          colorTable,
+          pointDilationDf,
+          ...this.updateReglState(
+            layoutDf,
+            colorDf,
+            colorTable,
+            pointDilationDf
+          ),
+        });
+      } catch (error) {
+        this.setState({ status: "error", error });
+        throw error;
+      }
+      return;
+    }
+
+    if (
+      crossfilter !== prevProps?.crossfilter ||
+      pointDilation !== prevProps?.pointDilation
+    ) {
+      const { layoutDf, colorDf, colorTable, pointDilationDf } = this.state;
+      this.setState(
+        this.updateReglState(layoutDf, colorDf, colorTable, pointDilationDf)
+      );
+    }
+  }
 
   brushToolUpdate(tool, container) {
     /*

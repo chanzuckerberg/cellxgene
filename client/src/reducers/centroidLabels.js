@@ -4,9 +4,6 @@ const initialState = {
 
 const centroidLabels = (state = initialState, action, sharedNextState) => {
   const {
-    world,
-    layoutChoice,
-    categoricalSelection,
     colors: { colorAccessor },
   } = sharedNextState;
 

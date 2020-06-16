@@ -1,4 +1,3 @@
-// jshint esversion: 6
 /* rc slider https://www.npmjs.com/package/rc-slider */
 
 import React from "react";
@@ -26,13 +25,22 @@ class Continuous extends React.PureComponent {
     };
   }
 
+  componentDidMount() {
+    this.updateState();
+  }
+
+  componentDidUpdate(prevProps) {
+    this.updateState(prevProps);
+  }
+
   setAllContinuous(colName, status) {
+    const { allContinuous } = this.state;
     this.setState({
-      allContinuous: new Map(this.state.allContinuous).set(colName, status),
+      allContinuous: new Map(allContinuous).set(colName, status),
     });
   }
 
-  fetchState(prevProps) {
+  async updateState(prevProps) {
     const { schema, annoMatrix } = this.props;
     let allContinuousNames;
 
@@ -54,28 +62,22 @@ class Continuous extends React.PureComponent {
 
     if (!annoMatrix) return;
     if (annoMatrix !== prevProps?.annoMatrix) {
+      let df;
+      try {
+        df = await annoMatrix.fetch("obs", allContinuousNames);
+      } catch (error) {
+        allContinuousNames.forEach((colName) =>
+          this.setAllContinuous(colName, { status: "error" })
+        );
+        throw error;
+      }
+
       allContinuousNames.forEach((colName) =>
-        annoMatrix.fetch("obs", colName).then(
-          (df) =>
-            this.setAllContinuous(colName, {
-              status: "success",
-              summary: df.col(colName).summarize(),
-            }),
-          (error) => this.setAllContinuous(colName, { status: "error" })
-        )
+        this.setAllContinuous(colName, {
+          status: "success",
+          summary: df.col(colName).summarize(),
+        })
       );
-    }
-  }
-
-  componentDidMount() {
-    const { annoMatrix } = this.props;
-    if (annoMatrix) this.fetchState();
-  }
-
-  componentDidUpdate(prevProps) {
-    const { annoMatrix } = this.props;
-    if (annoMatrix !== prevProps.annoMatrix) {
-      this.fetchState();
     }
   }
 
@@ -114,8 +116,6 @@ class Continuous extends React.PureComponent {
   }
 
   render() {
-    const { schema, annoMatrix } = this.props;
-
     /* initial value for iterator to simulate index, ranges is an object */
     let zebra = 0;
 

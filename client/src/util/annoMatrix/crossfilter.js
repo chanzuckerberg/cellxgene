@@ -7,7 +7,7 @@ providing a number of services:
 import Crossfilter from "../typedCrossfilter";
 import { getColumnSchema } from "./schema";
 
-export class AnnoMatrixObsCrossfilter {
+export default class AnnoMatrixObsCrossfilter {
   constructor(annoMatrix, obsCrossfilter = null) {
     this.annoMatrix = annoMatrix;
     this.obsCrossfilter = obsCrossfilter || new Crossfilter(annoMatrix.obs);
@@ -65,7 +65,7 @@ export class AnnoMatrixObsCrossfilter {
   countSelected() {
     /* if no data yet indexed in the crossfilter, just say everything is selected */
     if (this.obsCrossfilter.size() === 0) return this.annoMatrix.nObs;
-    else return this.obsCrossfilter.countSelected();
+    return this.obsCrossfilter.countSelected();
   }
 
   allSelectedMask() {
@@ -101,13 +101,12 @@ export class AnnoMatrixObsCrossfilter {
       this.obsCrossfilter.dimensionNames().length === 0
     ) {
       return new Uint8Array(this.annoMatrix.nObs).fill(selectedValue);
-    } else {
-      return this.obsCrossfilter.fillByIsSelected(
-        array,
-        selectedValue,
-        deselectedValue
-      );
     }
+    return this.obsCrossfilter.fillByIsSelected(
+      array,
+      selectedValue,
+      deselectedValue
+    );
   }
 
   /**
@@ -144,17 +143,19 @@ export class AnnoMatrixObsCrossfilter {
     const type = this._getColumnBaseType(field, colName);
     if (type === "string" || type === "categorical" || type === "boolean") {
       return ["enum", col.asArray()];
-    } else if (type === "int32") {
-      return ["scalar", col.asArray(), Int32Array];
-    } else if (type === "float32") {
-      return ["scalar", col.asArray(), Float32Array];
-    } else {
-      // Currently not supporting boolean and categorical types.
-      console.error(
-        `Warning - unknown metadata schema (${type}) for field ${field} ${colName}.`
-      );
-      // skip it - we don't know what to do with this type
     }
+    if (type === "int32") {
+      return ["scalar", col.asArray(), Int32Array];
+    }
+    if (type === "float32") {
+      return ["scalar", col.asArray(), Float32Array];
+    }
+    // Currently not supporting boolean and categorical types.
+    console.error(
+      `Warning - unknown metadata schema (${type}) for field ${field} ${colName}.`
+    );
+    // skip it - we don't know what to do with this type
+
     return undefined;
   }
 }

@@ -343,8 +343,6 @@ class CategoryValue extends React.Component {
       createOccupancyStack obtains a map showing the number if cells per colored value
       Using the colorScale a stack of colored bars is drawn representing the map
      */
-    const { scale: colorScale } = colorTable;
-
     const groupBy = categoryData.col(metadataField);
     const occupancyMap = colorData
       .col(colorAccessor)

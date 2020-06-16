@@ -9,7 +9,6 @@ import {
   createColorQuery,
 } from "../../util/stateManager/colorHelpers";
 
-
 // create continuous color legend
 // http://bl.ocks.org/syntagmatic/e8ccca52559796be775553b467593a9f
 const continuous = (selectorId, colorscale, colorAccessor) => {
@@ -116,11 +115,17 @@ class ContinuousLegend extends React.Component {
     this.ref = null;
     this.state = {
       colorAccessor: null,
-      colorTable: null,
       colorScale: null,
-    }
+    };
   }
 
+  componentDidMount() {
+    this.updateState(null);
+  }
+
+  componentDidUpdate(prevProps) {
+    this.updateState(prevProps);
+  }
 
   async updateState(prevProps) {
     const { annoMatrix, colors } = this.props;
@@ -159,18 +164,9 @@ class ContinuousLegend extends React.Component {
 
       this.setState({
         colorAccessor,
-        colorTable,
         colorScale: colorTable.scale,
       });
     }
-  }
-
-  componentDidMount() {
-    this.updateState(null);
-  }
-
-  componentDidUpdate(prevProps) {
-    this.updateState(prevProps);
   }
 
   render() {

@@ -31,7 +31,7 @@ const CategoricalSelection = (state, action, nextSharedState) => {
       const { metadataField, labelSelectionState } = action;
       return {
         ...state,
-        [action.metadataField]: labelSelectionState,
+        [metadataField]: labelSelectionState,
       };
     }
 

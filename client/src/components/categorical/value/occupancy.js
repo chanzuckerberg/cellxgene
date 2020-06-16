@@ -26,7 +26,6 @@ class Occupancy extends React.PureComponent {
     const {
       metadataField,
       categoryData,
-      colorAccessor,
       colorData,
       categoryValue,
     } = this.props;

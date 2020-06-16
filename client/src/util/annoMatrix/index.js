@@ -7,4 +7,4 @@ export {
   AnnoMatrixClipView,
   AnnoMatrixRowSubsetView,
 } from "./annoMatrix";
-export { AnnoMatrixObsCrossfilter } from "./crossfilter";
+export { default as AnnoMatrixObsCrossfilter } from "./crossfilter";

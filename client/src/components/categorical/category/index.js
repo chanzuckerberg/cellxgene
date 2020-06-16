@@ -20,17 +20,14 @@ const LABEL_WIDTH = globals.leftSidebarWidth - 100;
 const ANNO_BUTTON_WIDTH = 50;
 const LABEL_WIDTH_ANNO = LABEL_WIDTH - ANNO_BUTTON_WIDTH;
 
-@connect((state, ownProps) => {
-  const { metadataField } = ownProps;
-  return {
-    colors: state.colors,
-    categoricalSelection: state.categoricalSelection,
-    annotations: state.annotations,
-    annoMatrix: state.annoMatrix,
-    schema: state.annoMatrix?.schema,
-    crossfilter: state.obsCrossfilter,
-  };
-})
+@connect((state) => ({
+  colors: state.colors,
+  categoricalSelection: state.categoricalSelection,
+  annotations: state.annotations,
+  annoMatrix: state.annoMatrix,
+  schema: state.annoMatrix?.schema,
+  crossfilter: state.obsCrossfilter,
+}))
 class Category extends React.PureComponent {
   constructor(props) {
     super(props);
@@ -47,6 +44,32 @@ class Category extends React.PureComponent {
     };
   }
 
+  componentDidMount() {
+    this.updateState(null);
+  }
+
+  componentDidUpdate(prevProps) {
+    this.updateState(prevProps);
+  }
+
+  handleColorChange = () => {
+    const { dispatch, metadataField } = this.props;
+    dispatch({
+      type: "color by categorical metadata",
+      colorAccessor: metadataField,
+    });
+  };
+
+  handleCategoryClick = () => {
+    const { annotations, metadataField, onExpansionChange } = this.props;
+    const editingCategory =
+      annotations.isEditingCategoryName &&
+      annotations.categoryBeingEdited === metadataField;
+    if (!editingCategory) {
+      onExpansionChange(metadataField);
+    }
+  };
+
   updateSelectionState(categorySummary) {
     const { categoricalSelection, metadataField } = this.props;
     const cat = categoricalSelection?.[metadataField];
@@ -61,19 +84,21 @@ class Category extends React.PureComponent {
       0
     );
 
+    /* eslint-disable react/no-did-update-set-state -- Contained in if statement to prevent infinite looping */
     if (selectedCatCount === totalCatCount) {
       /* everything is on, so not indeterminate */
       this.checkbox.indeterminate = false;
-      this.setState({ isChecked: true }); // eslint-disable-line react/no-did-update-set-state
+      this.setState({ isChecked: true });
     } else if (selectedCatCount === 0) {
       /* nothing is on, so no */
       this.checkbox.indeterminate = false;
-      this.setState({ isChecked: false }); // eslint-disable-line react/no-did-update-set-state
+      this.setState({ isChecked: false });
     } else if (selectedCatCount < totalCatCount) {
       /* to be explicit... */
       this.checkbox.indeterminate = true;
-      this.setState({ isChecked: false }); // eslint-disable-line react/no-did-update-set-state
+      this.setState({ isChecked: false });
     }
+    /* eslint-enable react/no-did-update-set-state -- re-enabling*/
   }
 
   updateColorTable(colorData) {
@@ -112,7 +137,7 @@ class Category extends React.PureComponent {
       schema,
       colors,
     } = this.props;
-    const { colorAccessor, userColors, colorMode } = colors;
+    const { colorAccessor } = colors;
     let colorDataPromise = Promise.resolve(null);
     if (colorAccessor) {
       const query = this.colorByQuery();
@@ -131,15 +156,10 @@ class Category extends React.PureComponent {
   }
 
   async updateState(prevProps) {
-    const {
-      annoMatrix,
-      metadataField,
-      categoricalSelection,
-      colors,
-    } = this.props;
+    const { annoMatrix, categoricalSelection, colors } = this.props;
     if (!annoMatrix) return;
 
-    if (annoMatrix != prevProps?.annoMatrix || colors !== prevProps?.colors) {
+    if (annoMatrix !== prevProps?.annoMatrix || colors !== prevProps?.colors) {
       this.setState({ status: "pending" });
       try {
         const [
@@ -158,7 +178,7 @@ class Category extends React.PureComponent {
           ...this.updateColorTable(colorData),
         });
       } catch (error) {
-        this.setState({ status: "error", error });
+        this.setState({ status: "error" });
         throw error;
       }
       return;
@@ -169,39 +189,6 @@ class Category extends React.PureComponent {
       const { categorySummary } = this.state;
       this.updateSelectionState(categorySummary);
     }
-  }
-
-  componentDidMount() {
-    this.updateState(null);
-  }
-
-  componentDidUpdate(prevProps) {
-    this.updateState(prevProps);
-  }
-
-  handleColorChange = () => {
-    const { dispatch, metadataField } = this.props;
-    dispatch({
-      type: "color by categorical metadata",
-      colorAccessor: metadataField,
-    });
-  };
-
-  handleCategoryClick = () => {
-    const { annotations, metadataField, onExpansionChange } = this.props;
-    const editingCategory =
-      annotations.isEditingCategoryName &&
-      annotations.categoryBeingEdited === metadataField;
-    if (!editingCategory) {
-      onExpansionChange(metadataField);
-    }
-  };
-
-  createCategorySummary() {
-    const { world, metadataField } = this.props;
-    if (!world || !metadataField || !world.obsAnnotations.hasCol(metadataField))
-      return null;
-    return _createCategorySummary(world, metadataField);
   }
 
   toggleNone() {
@@ -307,7 +294,7 @@ class Category extends React.PureComponent {
     } = this.state;
     const { metadataField, isExpanded, schema } = this.props;
 
-    if (status === "error") return;
+    if (status === "error") return null;
     if (status === "pending") {
       return this.renderIsStillLoading();
     }

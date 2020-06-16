@@ -68,9 +68,9 @@ function _whereCacheMerge(dst, src) {
   if (!dst) dst = {};
   if (!src || typeof src !== "object") return dst;
   Object.entries(src).forEach(([field, query]) => {
-    if (!dst.hasOwnProperty(field)) dst[field] = {};
+    if (!Object.prototype.hasOwnProperty.call(dst, field)) dst[field] = {};
     Object.entries(query).forEach(([queryField, columnMap]) => {
-      if (!dst[field].hasOwnProperty(queryField))
+      if (!Object.prototype.hasOwnProperty.call(dst[field], queryField))
         dst[field][queryField] = new Map();
       columnMap.forEach((valueMap, queryColumn) => {
         if (!dst[field][queryField].has(queryColumn))

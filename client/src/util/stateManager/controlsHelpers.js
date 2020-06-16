@@ -7,10 +7,6 @@ import _ from "lodash";
 import * as globals from "../../globals";
 import { rangeFill as fillRange } from "../range";
 import fromEntries from "../fromEntries";
-import {
-  userDefinedDimensionName,
-  diffexpDimensionName,
-} from "../nameCreators";
 import { isCategoricalAnnotation } from "./annotationsHelpers";
 
 /*

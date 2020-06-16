@@ -35,40 +35,6 @@ function clamp(val, rng) {
   };
 })
 class HistogramBrush extends React.PureComponent {
-  calcHistogramCache(col) {
-    /*
-     recalculate expensive stuff, notably bins, summaries, etc.
-    */
-    const histogramCache = {};
-    const summary = col.summarize();
-    const { min: domainMin, max: domainMax } = summary;
-    const numBins = 40;
-
-    histogramCache.x = d3
-      .scaleLinear()
-      .domain([domainMin, domainMax])
-      .range([this.marginLeft, this.marginLeft + this.width]);
-
-    histogramCache.bins = histogramContinuous(col, numBins, [
-      domainMin,
-      domainMax,
-    ]);
-    histogramCache.binWidth = (domainMax - domainMin) / numBins;
-
-    histogramCache.binStart = (i) => domainMin + i * histogramCache.binWidth;
-    histogramCache.binEnd = (i) =>
-      domainMin + (i + 1) * histogramCache.binWidth;
-
-    const yMax = histogramCache.bins.reduce((l, r) => (l > r ? l : r));
-
-    histogramCache.y = d3
-      .scaleLinear()
-      .domain([0, yMax])
-      .range([this.marginTop + this.height, this.marginTop]);
-
-    return histogramCache;
-  }
-
   constructor(props) {
     super(props);
 
@@ -90,142 +56,6 @@ class HistogramBrush extends React.PureComponent {
       brushX: undefined,
       brushXselection: undefined,
     };
-  }
-
-  createQuery() {
-    const { isObs, field, annoMatrix } = this.props;
-    const { schema } = annoMatrix;
-    if (isObs) {
-      return ["obs", field];
-    } else {
-      const varIndex = annoMatrix?.schema?.annotations?.var?.index;
-      if (!varIndex) return null;
-      return [
-        "X",
-        {
-          field: "var",
-          column: varIndex,
-          value: field,
-        },
-      ];
-    }
-  }
-
-  updateHistogram(prevProps, column) {
-    const { column: oldColumn } = this.state;
-    const {
-      field,
-      isColorAccessor,
-      continuousSelectionRange: range,
-    } = this.props;
-    const dfChanged = column !== oldColumn;
-    const colorSelectionChanged =
-      !prevProps || prevProps.isColorAccessor !== isColorAccessor;
-    const rangeChanged =
-      range !== !prevProps || prevProps.continuousSelectionRange;
-
-    let { _histogram } = this.state;
-    if (dfChanged) {
-      _histogram = this.calcHistogramCache(column);
-      this.setState({ _histogram, column });
-    }
-
-    if (!this.svgRef) return;
-
-    let { brushX, brushXselection } = this.state;
-    if (dfChanged || colorSelectionChanged) {
-      ({ brushX, brushXselection } = this.renderHistogram(
-        _histogram,
-        field,
-        isColorAccessor
-      ));
-    }
-
-    /*
-    if the selection has changed, ensure that the brush correctly reflects
-    the underlying selection.
-    */
-    if (
-      (dfChanged || rangeChanged || colorSelectionChanged) &&
-      brushXselection
-    ) {
-      const selection = d3.brushSelection(brushXselection.node());
-      if (!range && selection) {
-        /* no active selection - clear brush */
-        brushXselection.call(brushX.move, null);
-      } else if (range) {
-        const { x } = _histogram;
-        const { min, max } = column.summarize();
-        const x0 = x(clamp(range[0], [min, max]));
-        const x1 = x(clamp(range[1], [min, max]));
-        if (!selection) {
-          /* there is an active selection, but no brush - set the brush */
-          brushXselection.call(brushX.move, [x0, x1]);
-        } else {
-          /* there is an active selection and a brush - make sure they match */
-          const moveDeltaThreshold = 1;
-          const dX0 = Math.abs(x0 - selection[0]);
-          const dX1 = Math.abs(x1 - selection[1]);
-          /*
-          only update the brush if it is grossly incorrect,
-          as defined by the moveDeltaThreshold
-          */
-          if (dX0 > moveDeltaThreshold || dX1 > moveDeltaThreshold) {
-            brushXselection.call(brushX.move, [x0, x1]);
-          }
-        }
-      }
-    }
-  }
-
-  async fetchData(prevProps) {
-    const { annoMatrix } = this.props;
-    const isClipped = annoMatrix.isClipped;
-    const query = this.createQuery();
-
-    const df = await annoMatrix.fetch(...query);
-    const column = df.icol(0);
-
-    // if we are clipped, fetch both our value and our unclipped value,
-    // as we need the absolute min/max range, not just the clipped min/max.
-    const ranges = column.summarize();
-    let unclippedRangeMin;
-    let unclippedRangeMax;
-    if (isClipped) {
-      const parent = await annoMatrix.viewOf.fetch(...query);
-      ({ min: unclippedRangeMin, max: unclippedRangeMax } = parent
-        .icol(0)
-        .summarize());
-    } else {
-      ({ min: unclippedRangeMin, max: unclippedRangeMax } = ranges);
-    }
-
-    this.setState({
-      ranges,
-      unclippedRangeMin,
-      unclippedRangeMax,
-    });
-    return column;
-  }
-
-  async updateState(prevProps) {
-    const { annoMatrix, isObs, field, isColorAccessor } = this.props;
-    if (!annoMatrix) return;
-    if (annoMatrix !== prevProps?.annoMatrix) {
-      this.setState({ status: "pending" });
-      try {
-        const column = await this.fetchData(prevProps);
-        this.updateHistogram(prevProps, column);
-        this.setState({ status: "success" });
-      } catch (error) {
-        this.setState({ status: "error", error });
-        throw error;
-      }
-      return;
-    }
-
-    const { column } = this.state;
-    this.updateHistogram(prevProps, column);
   }
 
   componentDidMount() {
@@ -393,6 +223,175 @@ class HistogramBrush extends React.PureComponent {
     }
   };
 
+  calcHistogramCache(col) {
+    /*
+     recalculate expensive stuff, notably bins, summaries, etc.
+    */
+    const histogramCache = {};
+    const summary = col.summarize();
+    const { min: domainMin, max: domainMax } = summary;
+    const numBins = 40;
+
+    histogramCache.x = d3
+      .scaleLinear()
+      .domain([domainMin, domainMax])
+      .range([this.marginLeft, this.marginLeft + this.width]);
+
+    histogramCache.bins = histogramContinuous(col, numBins, [
+      domainMin,
+      domainMax,
+    ]);
+    histogramCache.binWidth = (domainMax - domainMin) / numBins;
+
+    histogramCache.binStart = (i) => domainMin + i * histogramCache.binWidth;
+    histogramCache.binEnd = (i) =>
+      domainMin + (i + 1) * histogramCache.binWidth;
+
+    const yMax = histogramCache.bins.reduce((l, r) => (l > r ? l : r));
+
+    histogramCache.y = d3
+      .scaleLinear()
+      .domain([0, yMax])
+      .range([this.marginTop + this.height, this.marginTop]);
+
+    return histogramCache;
+  }
+
+  createQuery() {
+    const { isObs, field, annoMatrix } = this.props;
+    const { schema } = annoMatrix;
+    if (isObs) {
+      return ["obs", field];
+    }
+    const varIndex = schema?.annotations?.var?.index;
+    if (!varIndex) return null;
+    return [
+      "X",
+      {
+        field: "var",
+        column: varIndex,
+        value: field,
+      },
+    ];
+  }
+
+  updateHistogram(prevProps, column) {
+    const { column: oldColumn } = this.state;
+    const {
+      field,
+      isColorAccessor,
+      continuousSelectionRange: range,
+    } = this.props;
+    const dfChanged = column !== oldColumn;
+    const colorSelectionChanged =
+      !prevProps || prevProps.isColorAccessor !== isColorAccessor;
+    const rangeChanged =
+      range !== !prevProps || prevProps.continuousSelectionRange;
+
+    let { _histogram } = this.state;
+    if (dfChanged) {
+      _histogram = this.calcHistogramCache(column);
+      this.setState({ _histogram, column });
+    }
+
+    if (!this.svgRef) return;
+
+    let { brushX, brushXselection } = this.state;
+    if (dfChanged || colorSelectionChanged) {
+      ({ brushX, brushXselection } = this.renderHistogram(
+        _histogram,
+        field,
+        isColorAccessor
+      ));
+    }
+
+    /*
+    if the selection has changed, ensure that the brush correctly reflects
+    the underlying selection.
+    */
+    if (
+      (dfChanged || rangeChanged || colorSelectionChanged) &&
+      brushXselection
+    ) {
+      const selection = d3.brushSelection(brushXselection.node());
+      if (!range && selection) {
+        /* no active selection - clear brush */
+        brushXselection.call(brushX.move, null);
+      } else if (range) {
+        const { x } = _histogram;
+        const { min, max } = column.summarize();
+        const x0 = x(clamp(range[0], [min, max]));
+        const x1 = x(clamp(range[1], [min, max]));
+        if (!selection) {
+          /* there is an active selection, but no brush - set the brush */
+          brushXselection.call(brushX.move, [x0, x1]);
+        } else {
+          /* there is an active selection and a brush - make sure they match */
+          const moveDeltaThreshold = 1;
+          const dX0 = Math.abs(x0 - selection[0]);
+          const dX1 = Math.abs(x1 - selection[1]);
+          /*
+          only update the brush if it is grossly incorrect,
+          as defined by the moveDeltaThreshold
+          */
+          if (dX0 > moveDeltaThreshold || dX1 > moveDeltaThreshold) {
+            brushXselection.call(brushX.move, [x0, x1]);
+          }
+        }
+      }
+    }
+  }
+
+  async fetchData() {
+    const { annoMatrix } = this.props;
+    const { isClipped } = annoMatrix;
+    const query = this.createQuery();
+
+    const df = await annoMatrix.fetch(...query);
+    const column = df.icol(0);
+
+    // if we are clipped, fetch both our value and our unclipped value,
+    // as we need the absolute min/max range, not just the clipped min/max.
+    const ranges = column.summarize();
+    let unclippedRangeMin;
+    let unclippedRangeMax;
+    if (isClipped) {
+      const parent = await annoMatrix.viewOf.fetch(...query);
+      ({ min: unclippedRangeMin, max: unclippedRangeMax } = parent
+        .icol(0)
+        .summarize());
+    } else {
+      ({ min: unclippedRangeMin, max: unclippedRangeMax } = ranges);
+    }
+
+    this.setState({
+      ranges,
+      unclippedRangeMin,
+      unclippedRangeMax,
+    });
+    return column;
+  }
+
+  async updateState(prevProps) {
+    const { annoMatrix } = this.props;
+    if (!annoMatrix) return;
+    if (annoMatrix !== prevProps?.annoMatrix) {
+      this.setState({ status: "pending" });
+      try {
+        const column = await this.fetchData();
+        this.updateHistogram(prevProps, column);
+        this.setState({ status: "success" });
+      } catch (error) {
+        this.setState({ status: "error" });
+        throw error;
+      }
+      return;
+    }
+
+    const { column } = this.state;
+    this.updateHistogram(prevProps, column);
+  }
+
   saveSvgRef(svgRef) {
     this.svgRef = svgRef;
   }
@@ -506,7 +505,8 @@ class HistogramBrush extends React.PureComponent {
   }
 
   render() {
-    const { status, column, ranges } = this.state;
+    const { state } = this;
+    const { status, ranges } = state;
     if (status === "error") return null;
 
     const {
@@ -522,8 +522,8 @@ class HistogramBrush extends React.PureComponent {
       zebra,
     } = this.props;
     const fieldForId = field.replace(/\s/g, "_");
-    const unclippedRangeMin = this.state.unclippedRangeMin ?? 0;
-    const unclippedRangeMax = this.state.unclippedRangeMax ?? 1;
+    const unclippedRangeMin = state.unclippedRangeMin ?? 0;
+    const unclippedRangeMax = state.unclippedRangeMax ?? 1;
     const unclippedRangeMinColor =
       !annoMatrix.isClipped || annoMatrix.clipRange[0] === 0
         ? "#bbb"
