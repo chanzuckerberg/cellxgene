@@ -1,23 +1,25 @@
 // https://bl.ocks.org/pbeshai/8008075f9ce771ee8be39e8c38907570
 
 import * as d3 from "d3";
+import { Colors } from "@blueprintjs/core";
 
 const Lasso = () => {
   const dispatch = d3.dispatch("start", "end", "cancel");
-
-  const polygonToPath = (polygon) =>
-    `M${polygon.map((d) => d.join(",")).join("L")}`;
-
-  const distance = (pt1, pt2) =>
-    Math.sqrt((pt2[0] - pt1[0]) ** 2 + (pt2[1] - pt1[1]) ** 2);
-
-  // distance last point has to be to first point before it auto closes when mouse is released
-  const closeDistance = 75;
 
   const lasso = (svg) => {
     let lassoPolygon;
     let lassoPath;
     let closePath;
+
+    const polygonToPath = (polygon) =>
+      `M${polygon.map((d) => d.join(",")).join("L")}`;
+
+    const distance = (pt1, pt2) =>
+      Math.sqrt((pt2[0] - pt1[0]) ** 2 + (pt2[1] - pt1[1]) ** 2);
+
+    // distance last point has to be to first point before it auto closes when mouse is released
+    const closeDistance = 75;
+    const lassoPathColor = Colors.BLUE5;
 
     const handleDragStart = () => {
       lassoPolygon = [d3.mouse(svg.node())]; // current x y of mouse within element
@@ -29,18 +31,14 @@ const Lasso = () => {
       lassoPath = g
         .append("path")
         .attr("data-testid", "lasso-element")
-        .attr("fill", "#0bb")
         .attr("fill-opacity", 0.1)
-        .attr("stroke", "#0bb")
         .attr("stroke-dasharray", "3, 3");
 
       closePath = g
         .append("line")
         .attr("x2", lassoPolygon[0][0])
         .attr("y2", lassoPolygon[0][1])
-        .attr("stroke", "#0bb")
-        .attr("stroke-dasharray", "3, 3")
-        .attr("opacity", 0);
+        .attr("stroke-dasharray", "3, 3");
 
       dispatch.call("start", lasso, lassoPolygon);
     };
@@ -55,9 +53,17 @@ const Lasso = () => {
         distance(lassoPolygon[0], lassoPolygon[lassoPolygon.length - 1]) <
         closeDistance
       ) {
-        closePath.attr("x1", point[0]).attr("y1", point[1]).attr("opacity", 1);
+        const closePathColor = Colors.GREEN5;
+        closePath
+          .attr("x1", point[0])
+          .attr("y1", point[1])
+          .attr("opacity", 1)
+          .attr("stroke", closePathColor)
+          .attr("fill", closePathColor);
+        lassoPath.attr("stroke", closePathColor).attr("fill", closePathColor);
       } else {
         closePath.attr("opacity", 0);
+        lassoPath.attr("stroke", lassoPathColor).attr("fill", lassoPathColor);
       }
     };
 
@@ -121,9 +127,9 @@ const Lasso = () => {
         lassoPath = g
           .append("path")
           .attr("data-testid", "lasso-element")
-          .attr("fill", "#0bb")
+          .attr("fill", lassoPathColor)
           .attr("fill-opacity", 0.1)
-          .attr("stroke", "#0bb")
+          .attr("stroke", lassoPathColor)
           .attr("stroke-dasharray", "3, 3");
 
         lassoPath.attr("d", `${polygonToPath(lassoPolygon)}Z`);
