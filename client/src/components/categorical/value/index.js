@@ -452,11 +452,11 @@ class CategoryValue extends React.Component {
     const valueToggleLabel = `value-toggle-checkbox-${displayString}`;
 
     const VALUE_HEIGHT = 11;
-    const LEFT_MARGIN = 33;
+    const LEFT_MARGIN = 60;
     const CHECKBOX = 26;
-    const CELL_NUMBER = 61;
+    const CELL_NUMBER = 50;
     const ANNO_MENU = 26;
-    const LABEL_MARGIN = 24;
+    const LABEL_MARGIN = 16;
 
     const otherElementsWidth =
       LEFT_MARGIN +
@@ -466,10 +466,14 @@ class CategoryValue extends React.Component {
       (isUserAnno ? ANNO_MENU : 0);
 
     const CHART_WIDTH = 100;
+    const CHART_MARGIN = 24;
 
     const labelWidth =
       colorAccessor && !isColorBy
-        ? globals.leftSidebarWidth - otherElementsWidth - CHART_WIDTH
+        ? globals.leftSidebarWidth -
+          otherElementsWidth -
+          CHART_WIDTH -
+          CHART_MARGIN
         : globals.leftSidebarWidth - otherElementsWidth;
 
     return (

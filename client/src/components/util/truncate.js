@@ -16,16 +16,18 @@ const FIRST_HALF_STYLE = {
   flexShrink: 1,
   minWidth: "5px",
 };
+const SECOND_HALF_STYLE = {
+  position: "relative",
+  overflow: "hidden",
+  whiteSpace: "nowrap",
+};
+const SECOND_HALF_SPACING_STYLE = {
+  color: "transparent",
+};
 
 const SECOND_HALF_INNER_STYLE = {
   position: "absolute",
   right: 0,
-};
-const SECOND_HALF_STYLE = {
-  color: "transparent",
-  position: "relative",
-  overflow: "hidden",
-  whiteSpace: "nowrap",
 };
 
 export default (props) => {
@@ -46,17 +48,17 @@ export default (props) => {
   const inheritedColor = children.props.style.color;
 
   const splitStyle = { ...children.props.style, ...SPLIT_STYLE };
-  const secondHalfInnerStyle = {
+  const secondHalfContentStyle = {
     ...SECOND_HALF_INNER_STYLE,
-    color: inheritedColor || "initial",
+    color: inheritedColor || "inherit",
   };
 
   const truncatedJSX = (
     <span style={splitStyle}>
       <span style={FIRST_HALF_STYLE}>{firstString}</span>
       <span style={SECOND_HALF_STYLE}>
-        {secondString}
-        <span style={secondHalfInnerStyle}>{secondString}</span>
+        <span style={SECOND_HALF_SPACING_STYLE}>{secondString}</span>
+        <span style={secondHalfContentStyle}>{secondString}</span>
       </span>
     </span>
   );
