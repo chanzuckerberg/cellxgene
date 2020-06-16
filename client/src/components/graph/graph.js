@@ -404,7 +404,11 @@ class Graph extends React.Component {
 
     /* clear out whatever was on the div, even if nothing, but usually the brushes etc */
 
-    d3.select("#lasso-layer").selectAll(".lasso-group").remove();
+    const lassoGroupElem = d3.select("#lasso-layer").selectAll(".lasso-group");
+
+    if (lassoGroupElem) {
+      lassoGroupElem.remove();
+    }
 
     // Don't render or recreate toolSVG if currently in zoom mode
     if (graphInteractionMode !== "select") {

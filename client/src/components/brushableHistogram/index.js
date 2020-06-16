@@ -351,7 +351,11 @@ class HistogramBrush extends React.PureComponent {
     const svg = d3.select(svgRef);
 
     /* Remove everything */
-    svg.selectAll("*").remove();
+    const all = svg.selectAll("*");
+
+    if (all) {
+      all.remove();
+    }
 
     /* Set margins within the SVG */
     const container = svg

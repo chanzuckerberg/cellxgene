@@ -69,7 +69,10 @@ const Lasso = () => {
 
     const handleDragEnd = () => {
       // remove the close path
-      closePath.remove();
+      if (closePath) {
+        closePath.remove();
+      }
+
       closePath = null;
 
       // succesfully closed
@@ -82,7 +85,9 @@ const Lasso = () => {
 
         // otherwise cancel
       } else {
-        lassoPath.remove();
+        if (lassoPath) {
+          lassoPath.remove();
+        }
         lassoPath = null;
         lassoPolygon = null;
         dispatch.call("cancel");

@@ -115,7 +115,10 @@ class ContinuousLegend extends React.Component {
       prevProps.colorScale !== colorScale
     ) {
       /* always remove it, if it's not continuous we don't put it back. */
-      d3.select("#continuous_legend").selectAll("*").remove();
+      const allLegend = d3.select("#continuous_legend").selectAll("*");
+      if (allLegend) {
+        allLegend.remove();
+      }
     }
 
     if (colorAccessor && colorScale && range && domainMin < domainMax) {

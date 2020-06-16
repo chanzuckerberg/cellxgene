@@ -322,7 +322,10 @@ class Scatterplot extends React.PureComponent {
 
   drawAxesSVG(xScale, yScale, svg) {
     const { scatterplotYYaccessor, scatterplotXXaccessor } = this.props;
-    svg.selectAll("*").remove();
+    const all = svg.selectAll("*");
+    if (all) {
+      all.remove();
+    }
 
     // the axes are much cleaner and easier now. No need to rotate and orient
     // the axis, just call axisBottom, axisLeft etc.
