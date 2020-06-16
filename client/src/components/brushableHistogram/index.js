@@ -506,7 +506,7 @@ class HistogramBrush extends React.PureComponent {
   }
 
   render() {
-    const { status, column } = this.state;
+    const { status, column, ranges } = this.state;
     if (status === "error") return null;
 
     const {
@@ -520,7 +520,6 @@ class HistogramBrush extends React.PureComponent {
       isScatterplotXXaccessor,
       isScatterplotYYaccessor,
       zebra,
-      ranges,
     } = this.props;
     const fieldForId = field.replace(/\s/g, "_");
     const unclippedRangeMin = this.state.unclippedRangeMin ?? 0;
