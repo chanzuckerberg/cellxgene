@@ -1,7 +1,12 @@
 module.exports = {
   root: true,
   parser: "babel-eslint",
-  extends: ["airbnb", "plugin:prettier/recommended", "prettier/react"],
+  extends: [
+    "airbnb",
+    "plugin:eslint-comments/recommended",
+    "plugin:prettier/recommended",
+    "prettier/react",
+  ],
   env: { browser: true, commonjs: true, es6: true },
   globals: { expect: true },
   parserOptions: {
@@ -13,6 +18,7 @@ module.exports = {
     },
   },
   rules: {
+    "eslint-comments/require-description": ["error"],
     "no-magic-numbers": "off",
     "no-nested-ternary": "off",
     "func-style": "off",

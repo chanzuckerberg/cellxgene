@@ -98,6 +98,11 @@ class AnnoDialogEditCategoryName extends React.PureComponent {
     );
   };
 
+  allCategoryNames() {
+    const { schema } = this.props;
+    return schema.annotations.obs.columns.map((c) => c.name);
+  }
+
   render() {
     const { newCategoryText } = this.state;
     const { metadataField, annotations, ontology } = this.props;

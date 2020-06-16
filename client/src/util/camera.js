@@ -151,11 +151,10 @@ class Camera {
     let viewChanged = false;
     switch (e.type) {
       case "mousemove": {
-        /* eslint-disable no-bitwise */
+        /* eslint-disable-next-line no-bitwise --- MouseEvent.buttons exposes a bitmask, best acted on with bitops */
         if (e.buttons & 0x1) {
           viewChanged = this.mousePan(e, projectionTF);
         }
-        /* eslint-enable no-bitwise */
         this.flush(e);
         break;
       }

@@ -197,6 +197,13 @@ class Category extends React.PureComponent {
     }
   };
 
+  createCategorySummary() {
+    const { world, metadataField } = this.props;
+    if (!world || !metadataField || !world.obsAnnotations.hasCol(metadataField))
+      return null;
+    return _createCategorySummary(world, metadataField);
+  }
+
   toggleNone() {
     const { dispatch, metadataField } = this.props;
     const { categorySummary } = this.state;
@@ -307,9 +314,9 @@ class Category extends React.PureComponent {
 
     const checkboxID = `category-select-${metadataField}`;
 
-    const isUserAnno =
-      schema?.annotations?.obsByName[metadataField]?.writable ?? false;
-    const isTruncated = categorySummary?.isTruncated ?? false;
+    const isUserAnno = !!schema?.annotations?.obsByName[metadataField]
+      ?.writable;
+    const isTruncated = !!categorySummary?.isTruncated;
 
     if (
       !isUserAnno &&

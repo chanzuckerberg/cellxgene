@@ -81,7 +81,7 @@ class AddGenes extends React.Component {
     return upperGenes;
   };
 
-  // eslint-disable-next-line react/sort-comp
+  // eslint-disable-next-line react/sort-comp -- memo requires a defined _genesToUpper
   _memoGenesToUpper = memoize(this._genesToUpper, (arr) => arr);
 
   fetchState(prevProps) {

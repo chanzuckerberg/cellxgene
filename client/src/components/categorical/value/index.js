@@ -1,5 +1,6 @@
 import { connect } from "react-redux";
 import React from "react";
+import * as d3 from "d3";
 
 import {
   Button,
@@ -10,7 +11,6 @@ import {
   Icon,
   PopoverInteractionKind,
 } from "@blueprintjs/core";
-import Occupancy from "./occupancy";
 import * as globals from "../../../globals";
 import styles from "../categorical.css";
 import AnnoDialog from "../annoDialog";
@@ -20,11 +20,15 @@ import Truncate from "../../util/truncate";
 import { AnnotationsHelpers } from "../../../util/stateManager";
 import { labelPrompt, isLabelErroneous } from "../labelUtil";
 import actions from "../../../actions";
+import MiniHistogram from "../../miniHistogram";
+import MiniStackedBar from "../../miniStackedBar";
 
 /* this is defined outside of the class so we can use it in connect() */
 function _currentLabelAsString(ownProps) {
   const { categorySummary, categoryIndex } = ownProps;
-  return String(categorySummary.categoryValues[categoryIndex]).valueOf();
+  // when called as a function, the String() constructor performs type conversion,
+  // and returns a primtive string.
+  return String(categorySummary.categoryValues[categoryIndex]);
 }
 
 @connect((state, ownProps) => {
@@ -62,8 +66,7 @@ class CategoryValue extends React.Component {
       prevProps.categoryIndex !== categoryIndex ||
       prevProps.categorySummary !== categorySummary
     ) {
-      // adequately checked to prevent looping
-      // eslint-disable-next-line react/no-did-update-set-state
+      // eslint-disable-next-line react/no-did-update-set-state --- adequately checked to prevent looping
       this.setState({
         editedLabelText: this.currentLabelAsString(),
       });
@@ -169,7 +172,6 @@ class CategoryValue extends React.Component {
     } = this.props;
     const labels = categorySummary.categoryValues;
     const label = labels[categoryIndex];
-
     dispatch(
       actions.selectCategoricalMetadataAction(
         "categorical metadata filter deselect",
@@ -208,8 +210,8 @@ class CategoryValue extends React.Component {
     const newLabel = newCategorySummary.categoryValues[newCategoryIndex];
     const labelChanged = label !== newLabel;
     const valueSelectionChange =
-      (categoricalSelection[metadataField].get(label) ?? true) !==
-      (newCategoricalSelection[metadataField].get(newLabel) ?? true);
+      categoricalSelection[metadataField].get(label) !==
+      newCategoricalSelection[metadataField].get(newLabel);
 
     const colorAccessorChange = props.colorAccessor !== nextProps.colorAccessor;
     const annotationsChange = props.annotations !== nextProps.annotations;
@@ -243,7 +245,6 @@ class CategoryValue extends React.Component {
     } = this.props;
     const labels = categorySummary.categoryValues;
     const label = labels[categoryIndex];
-
     dispatch(
       actions.selectCategoricalMetadataAction(
         "categorical metadata filter select",
@@ -284,6 +285,93 @@ class CategoryValue extends React.Component {
   handleChoice = (e) => {
     /* Blueprint Suggest format */
     this.setState({ editedLabelText: e.target });
+  };
+
+  createHistogramBins = (
+    metadataField,
+    categoryData,
+    colorAccessor,
+    colorData,
+    categoryValue,
+    width,
+    height
+  ) => {
+    /*
+      Knowing that colorScale is based off continuous data, 
+      createHistogramBins fetches the continuous data in relation to the cells relevant to the category value.
+      It then separates that data into 50 bins for drawing the mini-histogram
+    */
+    const groupBy = categoryData.col(metadataField);
+    const col = colorData.icol(0);
+    const range = col.summarize();
+
+    const histogramMap = col.histogram(
+      50,
+      [range.min, range.max],
+      groupBy
+    ); /* Because the signature changes we really need different names for histogram to differentiate signatures  */
+
+    const bins = histogramMap.has(categoryValue)
+      ? histogramMap.get(categoryValue)
+      : new Array(50).fill(0);
+
+    const xScale = d3.scaleLinear().domain([0, bins.length]).range([0, width]);
+
+    const largestBin = Math.max(...bins);
+
+    const yScale = d3.scaleLinear().domain([0, largestBin]).range([0, height]);
+
+    return {
+      xScale,
+      yScale,
+      bins,
+    };
+  };
+
+  createStackedGraphBins = (
+    metadataField,
+    categoryData,
+    colorAccessor,
+    categoryValue,
+    colorTable,
+    schema,
+    width
+  ) => {
+    /* 
+      Knowing that the color scale is based off of categorical data, 
+      createOccupancyStack obtains a map showing the number if cells per colored value
+      Using the colorScale a stack of colored bars is drawn representing the map
+     */
+    const { scale: colorScale } = colorTable;
+
+    const groupBy = categoryData.col(metadataField);
+    const occupancyMap = colorData
+      .col(colorAccessor)
+      .histogramCategorical(groupBy);
+
+    const occupancy = occupancyMap.get(categoryValue);
+
+    if (occupancy && occupancy.size > 0) {
+      // not all categories have occupancy, so occupancy may be undefined.
+      const scale = d3
+        .scaleLinear()
+        /* get all the keys d[1] as an array, then find the sum */
+        .domain([0, d3.sum(Array.from(occupancy.values()))])
+        .range([0, width]);
+      const categories =
+        schema.annotations.obsByName[colorAccessor]?.categories;
+
+      const dfColumn = colorData.col(colorAccessor);
+      const categoryValues = dfColumn.summarizeCategorical().categories;
+
+      return {
+        domainValues: categoryValues,
+        scale,
+        domain: categories,
+        occupancy,
+      };
+    }
+    return null;
   };
 
   currentLabelAsString() {
@@ -362,6 +450,7 @@ class CategoryValue extends React.Component {
 
     const valueToggleLabel = `value-toggle-checkbox-${displayString}`;
 
+    const VALUE_HEIGHT = 11;
     const LEFT_MARGIN = 33;
     const CHECKBOX = 26;
     const CELL_NUMBER = 61;
@@ -375,11 +464,11 @@ class CategoryValue extends React.Component {
       LABEL_MARGIN +
       (isUserAnno ? ANNO_MENU : 0);
 
-    const OCCUPANCY_WIDTH = 100;
+    const CHART_WIDTH = 100;
 
     const labelWidth =
       colorAccessor && !isColorBy
-        ? globals.leftSidebarWidth - otherElementsWidth - OCCUPANCY_WIDTH
+        ? globals.leftSidebarWidth - otherElementsWidth - CHART_WIDTH
         : globals.leftSidebarWidth - otherElementsWidth;
 
     return (
@@ -499,17 +588,47 @@ class CategoryValue extends React.Component {
           </div>
           <span style={{ flexShrink: 0 }}>
             {colorAccessor && !isColorBy && !annotations.isEditingLabelName ? (
-              <Occupancy
-                categoryValue={value}
-                colorAccessor={colorAccessor}
-                metadataField={metadataField}
-                categoryData={categoryData}
-                // world={world}
-                // colorScale={colorScale}
-                colorData={colorData}
-                colorTable={colorTable}
-                colorByIsCategorical={!!categoricalSelection[colorAccessor]}
-              />
+              categoricalSelection[colorAccessor] ? (
+                <MiniStackedBar
+                  /* eslint-disable react/jsx-props-no-spreading -- Disable unneeded on next release of eslint-config-airbnb */
+                  {...{
+                    colorTable,
+                    ...this.createStackedGraphBins(
+                      metadataField,
+                      categoryData,
+                      colorAccessor,
+                      value,
+                      colorTable,
+                      schema,
+                      CHART_WIDTH
+                    ),
+                  }}
+                  /* eslint-enable react/jsx-props-no-spreading -- enable */
+                  height={VALUE_HEIGHT}
+                  width={CHART_WIDTH}
+                />
+              ) : (
+                <MiniHistogram
+                  /* eslint-disable react/jsx-props-no-spreading -- Disable unneeded on next release of eslint-config-airbnb */
+                  {...{
+                    colorTable,
+                    ...this.createHistogramBins(
+                      metadataField,
+                      categoryData,
+                      colorAccessor,
+                      colorData,
+                      value,
+                      CHART_WIDTH,
+                      VALUE_HEIGHT
+                    ),
+                  }}
+                  /* eslint-enable react/jsx-props-no-spreading -- enable */
+                  obsOrVarContinuousFieldDisplayName={colorAccessor}
+                  domainLabel={value}
+                  height={VALUE_HEIGHT}
+                  width={CHART_WIDTH}
+                />
+              )
             ) : null}
           </span>
         </div>
@@ -536,8 +655,8 @@ class CategoryValue extends React.Component {
               display={isColorBy && categories ? "auto" : "none"}
               style={{
                 marginLeft: 5,
-                width: 11,
-                height: 11,
+                width: VALUE_HEIGHT,
+                height: VALUE_HEIGHT,
                 backgroundColor:
                   isColorBy && categories
                     ? colorScale(categories.indexOf(value))

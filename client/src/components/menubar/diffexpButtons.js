@@ -42,7 +42,13 @@ class DiffexpButtons extends React.Component {
 
   render() {
     /* diffexp-related buttons may be disabled */
-    const { differential, diffexpMayBeSlow, diffexpCellcountMax } = this.props;
+    const {
+      differential,
+      diffexpMayBeSlow,
+      diffexpCellcountMax,
+      crossfilter,
+      dispatch,
+    } = this.props;
 
     const haveBothCellSets =
       !!differential.celllist1 && !!differential.celllist2;
@@ -66,14 +72,17 @@ class DiffexpButtons extends React.Component {
 
     return (
       <ButtonGroup className={styles.menubarButton}>
+        {/* eslint-disable react/jsx-props-no-spreading --- disable until eslint-config-airbnb v18.1.1*/}
         <CellSetButton
-          {...this.props} // eslint-disable-line react/jsx-props-no-spreading
+          {...{ differential, crossfilter, dispatch }}
           eitherCellSetOneOrTwo={1}
         />
         <CellSetButton
-          {...this.props} // eslint-disable-line react/jsx-props-no-spreading
+          {...{ differential, crossfilter, dispatch }}
           eitherCellSetOneOrTwo={2}
         />
+        {/* eslint-enable react/jsx-props-no-spreading --- end disable*/}
+
         {!differential.diffExp ? (
           <Tooltip
             content={warnMaxSizeExceeded ? tipMessageWarn : tipMessage}
