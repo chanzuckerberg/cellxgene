@@ -427,9 +427,12 @@ class CategoryValue extends React.Component {
       world,
     } = this.props;
 
+    const isColorBy = metadataField === colorAccessor;
+
     if (
       !this.shouldRenderStackedBarOrHistogram ||
-      !categoricalSelection[colorAccessor]
+      !categoricalSelection[colorAccessor] ||
+      isColorBy
     ) {
       return null;
     }
@@ -692,7 +695,7 @@ class CategoryValue extends React.Component {
           </div>
           <span style={{ flexShrink: 0 }}>
             {this.renderMiniStackedBar(value)}
-            {this.renderMiniMiniHistogram(value)}
+            {this.renderMiniHistogram(value)}
           </span>
         </div>
         <div>
