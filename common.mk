@@ -21,6 +21,7 @@ export CXG_CLIENT_PORT := $(call get_or_else_dev_env_default,CXG_CLIENT_PORT)
 export JEST_ENV := $(call get_or_else_dev_env_default,JEST_ENV)
 export DATASET := $(call get_or_else_dev_env_default,DATASET)
 export CXG_OPTIONS := $(call get_or_else_dev_env_default,CXG_OPTIONS)
+export PROD := $(call get_or_else_dev_env_default,PROD)
 
 .PHONY: start-server
 start-server:

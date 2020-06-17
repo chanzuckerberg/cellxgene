@@ -16,6 +16,7 @@ module.exports = {
     page: true,
     browser: true,
     context: true,
+    beforeEach: true,
   },
   parserOptions: {
     ecmaVersion: 2017,

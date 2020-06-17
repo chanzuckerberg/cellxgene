@@ -10,7 +10,7 @@ async function takeScreenshot(currentTestName, page) {
   const screenshotName = `${date}-${testName}.png`;
 
   await page.screenshot({
-    path: `./screenshot-${screenshotName}`,
+    path: `./ignoreE2E-screenshot-${screenshotName}`,
   });
 }
 

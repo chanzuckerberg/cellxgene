@@ -20,18 +20,18 @@ beforeEach(async () => {
 
   await page._client.send("Animation.setPlaybackRate", { playbackRate: 12 });
 
-  page.on("pageerror", (err) => {
-    console.log(`PAGE LOG: ${msg.text()}`);
-    throw new Error(`Console error: ${err}`);
-  });
+  page.on("console", async (msg) => {
+    page.on("pageerror", (err) => {
+      console.log(`PAGE LOG: ${msg.text()}`);
+      throw new Error(`Console error: ${err}`);
+    });
 
-  page.on("error", (err) => {
-    console.log(`PAGE LOG: ${msg.text()}`);
-    throw new Error(`Console error: ${err}`);
-  });
+    page.on("error", (err) => {
+      console.log(`PAGE LOG: ${msg.text()}`);
+      throw new Error(`Console error: ${err}`);
+    });
 
-  if (isDev || isDebug) {
-    page.on("console", async (msg) => {
+    if (isDev || isDebug) {
       // If there is a console.error but an error is not thrown, this will ensure the test fails
       console.log(`PAGE LOG: ${msg.text()}`);
       if (msg.type() === "error") {
@@ -50,6 +50,6 @@ beforeEach(async () => {
         );
         throw new Error(`Console error: ${errorMsgText}`);
       }
-    });
-  }
+    }
+  });
 });
