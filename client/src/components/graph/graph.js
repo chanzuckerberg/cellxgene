@@ -483,6 +483,7 @@ class Graph extends React.Component {
   }
 
   lassoToolUpdate(tool) {
+    if (!tool) return;
     /*
     this is called from componentDidUpdate(), so be very careful using
     anything from this.state, which may be updated asynchronously.
