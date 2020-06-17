@@ -45,7 +45,10 @@ const Lasso = () => {
 
     const handleDrag = () => {
       const point = d3.mouse(svg.node());
-      lassoPolygon.push(point);
+      if (lassoPolygon) {
+        lassoPolygon.push(point);
+      }
+
       lassoPath.attr("d", polygonToPath(lassoPolygon));
 
       // indicate if we are within closing distance
