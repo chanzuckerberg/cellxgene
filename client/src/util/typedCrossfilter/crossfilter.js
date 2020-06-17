@@ -226,7 +226,7 @@ export default class ImmutableTypedCrossfilter {
     if (!this.selectionCache) this.selectionCache = {};
 
     if (!this.selectionCache.bitArray) {
-      // console.log("...rebuilding crossfilter cache...");
+      console.log("...rebuilding crossfilter cache...");
       const bitArray = new BitArray(this.data.length);
       Object.keys(this.dimensions).forEach((name) => {
         const { selection } = this.dimensions[name];

@@ -17,9 +17,78 @@ export default class AnnoMatrixObsCrossfilter {
     return this.obsCrossfilter.size();
   }
 
-  annoMatrix() {
-    return this.annoMatrix();
+  /**
+  Managing the associated annoMatrix.  These wrappers are necessary to 
+  make coordinated changes to BOTH the crossfilter and annoMatrix, and
+  ensure that all state stays synchronized.
+  **/
+  addObsColumn(colSchema, Ctor, value) {
+    const annoMatrix = this.annoMatrix.addObsColumn(colSchema, Ctor, value);
+    const obsCrossfilter = this.obsCrossfilter.setData(annoMatrix.obs);
+    return new AnnoMatrixObsCrossfilter(annoMatrix, obsCrossfilter);
   }
+
+  dropObsColumn(col) {
+    const annoMatrix = this.annoMatrix.dropObsColumn(col);
+    let { obsCrossfilter } = this;
+    const dimName = dimensionName("obs", col);
+    if (obsCrossfilter.hasDimension(dimName)) {
+      obsCrossfilter = obsCrossfilter.delDimension(dimName);
+    } else {
+      obsCrossfilter = obsCrossfilter.setData(annoMatrix.obs);
+    }
+    return new AnnoMatrixObsCrossfilter(annoMatrix, obsCrossfilter);
+  }
+
+  renameObsColumn(oldCol, newCol) {
+    const annoMatrix = this.annoMatrix.renameObsColumn(oldCol, newCol);
+    const oldDimName = dimensionName("obs", oldCol);
+    const newDimName = dimensionName("obs", newCol);
+    let { obsCrossfilter } = this;
+    if (obsCrossfilter.hasDimension(oldDimName)) {
+      obsCrossfilter = obsCrossfilter.renameDimension(oldDimName, newDimName);
+    } else {
+      obsCrossfilter = obsCrossfilter.setData(annoMatrix.obs);
+    }
+    return new AnnoMatrixObsCrossfilter(annoMatrix, obsCrossfilter);
+  }
+
+  addObsAnnoCategory(col, category) {
+    const annoMatrix = this.annoMatrix.addObsAnnoCategory(col, category);
+    const dimName = dimensionName("obs", col);
+    let { obsCrossfilter } = this;
+    if (obsCrossfilter.hasDimension(dimName)) {
+      obsCrossfilter = obsCrossfilter.delDimension(dimName);
+    }
+    return new AnnoMatrixObsCrossfilter(annoMatrix, obsCrossfilter);
+  }
+
+  removeObsAnnoCategory(col, category) {
+    const annoMatrix = this.annoMatrix.removeObsAnnoCategory(col, category);
+    const dimName = dimensionName("obs", col);
+    let { obsCrossfilter } = this;
+    if (obsCrossfilter.hasDimension(dimName)) {
+      obsCrossfilter = obsCrossfilter.delDimension(dimName);
+    }
+    return new AnnoMatrixObsCrossfilter(annoMatrix, obsCrossfilter);
+  }
+
+  setObsColumnValues(col, rowLabels, value) {
+    const annoMatrix = this.annoMatrix.setObsColumnValues(
+      col,
+      rowLabels,
+      value
+    );
+    const dimName = dimensionName("obs", col);
+    let { obsCrossfilter } = this;
+    if (obsCrossfilter.hasDimension(dimName)) {
+      obsCrossfilter = obsCrossfilter.delDimension(dimName);
+    }
+    return new AnnoMatrixObsCrossfilter(annoMatrix, obsCrossfilter);
+  }
+  /**
+  Selection state 
+  **/
 
   async select(field, query, spec) {
     const { annoMatrix } = this;
@@ -35,7 +104,7 @@ export default class AnnoMatrixObsCrossfilter {
     // grab the data, so we can grab the index.
     const df = await annoMatrix.fetch(field, query);
 
-    const dimName = dimensionName(field, df);
+    const dimName = dimensionNameFromDf(field, df);
     if (!obsCrossfilter.hasDimension(dimName)) {
       // lazy index generation - add dimension when first used
       obsCrossfilter = this._addObsCrossfilterDimension(
@@ -115,7 +184,7 @@ export default class AnnoMatrixObsCrossfilter {
 
   _addObsCrossfilterDimension(obsCrossfilter, field, df) {
     if (field === "var") return obsCrossfilter;
-    const dimName = dimensionName(field, df);
+    const dimName = dimensionNameFromDf(field, df);
     const dimParams = this._getObsDimensionParams(field, df);
     if (obsCrossfilter.size() === 0)
       obsCrossfilter = obsCrossfilter.setData(df);
@@ -160,7 +229,12 @@ export default class AnnoMatrixObsCrossfilter {
   }
 }
 
-function dimensionName(field, df) {
-  const colNames = df.colIndex.labels().join(":");
-  return `${field}/${colNames}`;
+function dimensionNameFromDf(field, df) {
+  const colNames = df.colIndex.labels();
+  return dimensionName(field, colNames);
+}
+
+function dimensionName(field, colNames) {
+  if (!Array.isArray(colNames)) return `${field}/${colNames}`;
+  return `${field}/${colNames.join(":")}`;
 }

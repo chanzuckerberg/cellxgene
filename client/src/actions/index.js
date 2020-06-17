@@ -325,4 +325,12 @@ export default {
     annotationActions.annotationRenameCategoryAction,
   annotationDeleteCategoryAction:
     annotationActions.annotationDeleteCategoryAction,
+  annotationCreateLabelInCategory:
+    annotationActions.annotationCreateLabelInCategory,
+  annotationDeleteLabelFromCategory:
+    annotationActions.annotationDeleteLabelFromCategory,
+  annotationRenameLabelInCategory:
+    annotationActions.annotationRenameLabelInCategory,
+  annotationLabelCurrentSelection:
+    annotationActions.annotationLabelCurrentSelection,
 };

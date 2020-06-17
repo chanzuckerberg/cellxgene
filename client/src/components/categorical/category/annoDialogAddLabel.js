@@ -3,6 +3,7 @@ import { connect } from "react-redux";
 import AnnoDialog from "../annoDialog";
 import LabelInput from "../labelInput";
 import { labelPrompt, isLabelErroneous } from "../labelUtil";
+import actions from "../../../actions";
 
 @connect((state) => ({
   annotations: state.annotations,
@@ -34,12 +35,13 @@ class Category extends React.PureComponent {
     const { newLabelText } = this.state;
 
     this.disableAddNewLabelMode();
-    dispatch({
-      type: "annotation: add new label to category",
-      metadataField,
-      newLabelText,
-      assignSelectedCells: false,
-    });
+    dispatch(
+      actions.annotationCreateLabelInCategory(
+        metadataField,
+        newLabelText,
+        false
+      )
+    );
     e.preventDefault();
   };
 
@@ -48,12 +50,9 @@ class Category extends React.PureComponent {
     const { newLabelText } = this.state;
 
     this.disableAddNewLabelMode();
-    dispatch({
-      type: "annotation: add new label to category",
-      metadataField,
-      newLabelText,
-      assignSelectedCells: true,
-    });
+    dispatch(
+      actions.annotationCreateLabelInCategory(metadataField, newLabelText, true)
+    );
     e.preventDefault();
   };
 

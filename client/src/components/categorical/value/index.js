@@ -82,50 +82,37 @@ class CategoryValue extends React.Component {
   handleDeleteValue = () => {
     const { dispatch, metadataField } = this.props;
     const label = this.getLabel();
-    dispatch({
-      type: "annotation: delete label",
-      metadataField,
-      label,
-    });
+    dispatch(actions.annotationDeleteLabelFromCategory(metadataField, label));
   };
 
   handleAddCurrentSelectionToThisLabel = () => {
-    const { dispatch, metadataField, categoryIndex } = this.props;
+    const { dispatch, metadataField } = this.props;
     const label = this.getLabel();
-    dispatch({
-      type: "annotation: label current cell selection",
-      metadataField,
-      categoryIndex,
-      label,
-    });
+    dispatch(actions.annotationLabelCurrentSelection(metadataField, label));
   };
 
   handleEditValue = (e) => {
-    const { dispatch, metadataField, categoryIndex } = this.props;
+    const { dispatch, metadataField } = this.props;
     const { editedLabelText } = this.state;
     const label = this.getLabel();
     this.cancelEditMode();
-    dispatch({
-      type: "annotation: label edited",
-      editedLabel: editedLabelText,
-      metadataField,
-      categoryIndex,
-      label,
-    });
+    dispatch(
+      actions.annotationRenameLabelInCategory(
+        metadataField,
+        label,
+        editedLabelText
+      )
+    );
     e.preventDefault();
   };
 
   handleCreateArbitraryLabel = (txt) => {
-    const { dispatch, metadataField, categoryIndex } = this.props;
+    const { dispatch, metadataField } = this.props;
     const label = this.getLabel();
     this.cancelEditMode();
-    dispatch({
-      type: "annotation: label edited",
-      metadataField,
-      editedLabel: txt,
-      categoryIndex,
-      label,
-    });
+    dispatch(
+      actions.annotationRenameLabelInCategory(metadataField, label, txt)
+    );
   };
 
   labelNameError = (name) => {
@@ -447,7 +434,7 @@ class CategoryValue extends React.Component {
       annotations.isEditingLabelName &&
       annotations.labelEditable.label === categoryIndex;
 
-    const valueToggleLabel = `value-toggle-checkbox-${displayString}`;
+    const valueToggleLabel = `value-toggle-checkbox-${metadataField}-${displayString}`;
 
     const VALUE_HEIGHT = 11;
     const LEFT_MARGIN = 60;

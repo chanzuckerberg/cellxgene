@@ -42,16 +42,14 @@ class Continuous extends React.PureComponent {
 
   async updateState(prevProps) {
     const { schema, annoMatrix } = this.props;
-    let allContinuousNames;
-
     if (!schema) return;
-    if (schema !== prevProps?.schema) {
-      const obsIndex = schema.annotations.obs.index;
-      allContinuousNames = schema.annotations.obs.columns
-        .filter((col) => col.type === "int32" || col.type === "float32")
-        .filter((col) => col.name !== obsIndex)
-        .map((col) => col.name);
+    const obsIndex = schema.annotations.obs.index;
+    const allContinuousNames = schema.annotations.obs.columns
+      .filter((col) => col.type === "int32" || col.type === "float32")
+      .filter((col) => col.name !== obsIndex)
+      .map((col) => col.name);
 
+    if (schema !== prevProps?.schema) {
       // Map preserves order of insertion, allowing ordering of component render.
       this.setState({
         allContinuous: new Map(

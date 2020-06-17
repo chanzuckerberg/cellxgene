@@ -7,13 +7,13 @@ import {
   removeObsAnnoColumn,
   addObsAnnoCategory,
   removeObsAnnoCategory,
+  indexEntireSchema,
 } from "../stateManager/schemaHelpers";
 import { Dataframe, IdentityInt32Index } from "../dataframe";
 import {
   getColumnDimensionNames,
   getColumnSchema,
   schemaColumns,
-  indexEntireSchema,
   isContinuousType,
 } from "./schema";
 import { whereCacheCreate, whereCacheGet, whereCacheMerge } from "./whereCache";
@@ -272,13 +272,23 @@ export class AnnoMatrixLoader extends AnnoMatrix {
   }
 
   addObsAnnoCategory(col, category) {
+    const colSchema = getColumnSchema(this.schema, "obs", col);
+    if (!colSchema.writable) {
+      throw new Error("Not a writable obs column");
+    }
+
     const o = clone(this);
     o.schema = addObsAnnoCategory(this.schema, col, category);
     return o;
   }
 
-  removeObsAnnoCategory(col, category) {
-    const o = clone(this);
+  removeObsAnnoCategory(col, category, unassignedCategory) {
+    const colSchema = getColumnSchema(this.schema, "obs", col);
+    if (!colSchema.writable) {
+      throw new Error("Not a writable obs column");
+    }
+
+    const o = this.resetObsColumnValues(col, category, unassignedCategory);
     o.schema = removeObsAnnoCategory(this.schema, col, category);
     return o;
   }
@@ -287,8 +297,7 @@ export class AnnoMatrixLoader extends AnnoMatrix {
     /*
 		drop column from field
 		*/
-    const field = "obs";
-    const colSchema = getColumnSchema(this.schema, field, col);
+    const colSchema = getColumnSchema(this.schema, "obs", col);
     if (!colSchema.writable) {
       throw new Error("Not a writable obs column");
     }
@@ -307,9 +316,8 @@ export class AnnoMatrixLoader extends AnnoMatrix {
       * a primitive type, including null or undefined.
     If an array, it must be of same size as nObs and same type as Ctor
 		*/
-    const field = "obs";
     const col = colSchema.name;
-    if (getColumnSchema(this.schema, field, col) || this[field].hasCol(col)) {
+    if (getColumnSchema(this.schema, "obs", col) || this.obs.hasCol(col)) {
       throw new Error("column already exists");
     }
 
@@ -336,14 +344,13 @@ export class AnnoMatrixLoader extends AnnoMatrix {
     /*
     Rename the obs oldColName to newColName.  oldCol must be writable.
     */
-    const field = "obs";
-    const oldColSchema = getColumnSchema(this.schema, field, oldCol);
+    const oldColSchema = getColumnSchema(this.schema, "obs", oldCol);
     if (!oldColSchema.writable) {
       throw new Error("Not a writable obs column");
     }
 
-    const value = this[field].hasCol(oldCol)
-      ? this[field].col(oldCol).asArray()
+    const value = this.obs.hasCol(oldCol)
+      ? this.obs.col(oldCol).asArray()
       : undefined;
     return this.dropObsColumn(oldCol).addObsColumn(
       {
@@ -357,13 +364,14 @@ export class AnnoMatrixLoader extends AnnoMatrix {
 
   setObsColumnValues(col, rowLabels, value) {
     /*
-		Set all rows in rowLabels to value.
+		Set all rows identified by rowLabels to value.
 		*/
-    const field = "obs";
-    const colSchema = getColumnSchema(this.schema, field, col);
+    const colSchema = getColumnSchema(this.schema, "obs", col);
     if (!colSchema.writable) {
       throw new Error("Not a writable obs column");
     }
+    if (!this.obs.hasCol(col))
+      throw new Error("Internal error - user annotation data missing");
 
     const rowIndices = this.rowIndex.getOffsets(rowLabels);
     const data = this.obs.col(col).asArray().slice();
@@ -373,8 +381,34 @@ export class AnnoMatrixLoader extends AnnoMatrix {
 
     const o = clone(this);
     o.obs = this.obs.replaceColData(col, data);
-    if (colSchema.type === "categorical") {
+    const { categories } = colSchema;
+    if (categories && categories.indexOf(value) === -1) {
       o.schema = addObsAnnoCategory(this.schema, col, value);
+    }
+    return o;
+  }
+
+  resetObsColumnValues(col, oldValue, newValue) {
+    /*
+    Set all rows with value 'oldValue' to 'newValue'
+    */
+    const colSchema = getColumnSchema(this.schema, "obs", col);
+    if (!colSchema.writable) {
+      throw new Error("Not a writable obs column");
+    }
+    if (!this.obs.hasCol(col))
+      throw new Error("Internal error - user annotation data missing");
+
+    const data = this.obs.col(col).asArray().slice();
+    for (let i = 0, l = data.length; i < l; i += 1) {
+      if (data[i] === oldValue) data[i] = newValue;
+    }
+
+    const o = clone(this);
+    o.obs = this.obs.replaceColData(col, data);
+    const { categories } = colSchema;
+    if (categories && categories.indexOf(newValue) !== -1) {
+      o.schema = addObsAnnoCategory(this.schema, col, newValue);
     }
     return o;
   }
@@ -403,15 +437,6 @@ class AnnoMatrixView extends AnnoMatrix {
   }
 
   dropObsColumn(col) {
-    /*
-		drop column from field
-		*/
-    // const field = "obs";
-    // const colSchema = getColumnSchema(this.schema, field, col);
-    // if (!colSchema.writable) {
-    //   throw new Error("Not a writable obs column");
-    // }
-
     const o = clone(this);
     o.viewOf = this.viewOf.dropObsColumn(col);
     o.obs = this.obs.dropCol(col);
@@ -420,33 +445,30 @@ class AnnoMatrixView extends AnnoMatrix {
   }
 
   addObsColumn(colSchema, ctor, value) {
-    /*
-		add a column to field, initializing with value
-		*/
-    // const field = "obs";
-    // const col = colSchema.name;
-    // if (getColumnSchema(this.schema, field, col) || this[field].hasCol(col)) {
-    //   throw new Error("column already exists");
-    // }
-
     const o = clone(this);
     o.viewOf = this.viewOf.addObsColumn(colSchema, ctor, value);
     o.schema = o.viewOf.schema;
     return o;
   }
 
-  setObsColumnValues(col, rowLabels, value) {
-    /*
-		set values
-		*/
-    // const field = "obs";
-    // const colSchema = getColumnSchema(this.schema, field, col);
-    // if (!colSchema.writable) {
-    //   throw new Error("Not a writable obs column");
-    // }
+  renameObsColumn(oldCol, newCol) {
+    const o = clone(this);
+    o.viewOf = this.viewOf.renameObsColumn(oldCol, newCol);
+    o.schema = o.viewOf.schema;
+    return o;
+  }
 
+  setObsColumnValues(col, rowLabels, value) {
     const o = clone(this);
     o.viewOf = this.viewOf.setObsColumnValues(col, rowLabels, value);
+    o.obs = this.obs.dropCol(col);
+    o.schema = o.viewOf.schema;
+    return o;
+  }
+
+  resetObsColumnValues(col, oldValue, newValue) {
+    const o = clone(this);
+    o.viewOf = this.viewOf.resetObsColumnValues(col, oldValue, newValue);
     o.obs = this.obs.dropCol(col);
     o.schema = o.viewOf.schema;
     return o;
