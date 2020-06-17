@@ -6,22 +6,10 @@ import {
   doJsonRequest,
   dispatchNetworkErrorMessageToUser,
 } from "../util/actionHelpers";
-import { requestReembed /*, reembedResetWorldToUniverse*/ } from "./reembed";
+import { requestReembed /* , reembedResetWorldToUniverse */ } from "./reembed";
 import { loadUserColorConfig } from "../util/stateManager/colorHelpers";
-import {
-  selectContinuousMetadataAction,
-  selectCategoricalMetadataAction,
-  selectCategoricalAllMetadataAction,
-  graphBrushStartAction,
-  graphBrushChangeAction,
-  graphBrushDeselectAction,
-  graphBrushCancelAction,
-  graphBrushEndAction,
-  graphLassoStartAction,
-  graphLassoEndAction,
-  graphLassoCancelAction,
-  graphLassoDeselectAction,
-} from "./selection";
+import * as selectionActions from "./selection";
+import * as annotationActions from "./annotation";
 
 /*
 return promise fetching user-configured colors
@@ -313,19 +301,28 @@ export default {
   requestUserDefinedGene,
   requestReembed,
   saveObsAnnotations,
-  selectContinuousMetadataAction,
-  selectCategoricalMetadataAction,
-  selectCategoricalAllMetadataAction,
-  graphBrushStartAction,
-  graphBrushChangeAction,
-  graphBrushDeselectAction,
-  graphBrushCancelAction,
-  graphBrushEndAction,
-  graphLassoStartAction,
-  graphLassoEndAction,
-  graphLassoCancelAction,
-  graphLassoDeselectAction,
+  selectContinuousMetadataAction:
+    selectionActions.selectContinuousMetadataAction,
+  selectCategoricalMetadataAction:
+    selectionActions.selectCategoricalMetadataAction,
+  selectCategoricalAllMetadataAction:
+    selectionActions.selectCategoricalAllMetadataAction,
+  graphBrushStartAction: selectionActions.graphBrushStartAction,
+  graphBrushChangeAction: selectionActions.graphBrushChangeAction,
+  graphBrushDeselectAction: selectionActions.graphBrushDeselectAction,
+  graphBrushCancelAction: selectionActions.graphBrushCancelAction,
+  graphBrushEndAction: selectionActions.graphBrushEndAction,
+  graphLassoStartAction: selectionActions.graphLassoStartAction,
+  graphLassoEndAction: selectionActions.graphLassoEndAction,
+  graphLassoCancelAction: selectionActions.graphLassoCancelAction,
+  graphLassoDeselectAction: selectionActions.graphLassoDeselectAction,
   clipAction,
   subsetAction,
   resetSubsetAction,
+  annotationCreateCategoryAction:
+    annotationActions.annotationCreateCategoryAction,
+  annotationRenameCategoryAction:
+    annotationActions.annotationRenameCategoryAction,
+  annotationDeleteCategoryAction:
+    annotationActions.annotationDeleteCategoryAction,
 };

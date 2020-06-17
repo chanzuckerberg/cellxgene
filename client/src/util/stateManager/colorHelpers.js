@@ -6,7 +6,6 @@ import { interpolateRainbow, interpolateCool } from "d3-scale-chromatic";
 import memoize from "memoize-one";
 import * as globals from "../../globals";
 import parseRGB from "../parseRGB";
-import finiteExtent from "../finiteExtent";
 import { range } from "../range";
 
 /*
@@ -64,11 +63,7 @@ function _createColorTable(
       if (userColors && colorByAccessor in userColors) {
         return createUserColors(data, colorByAccessor, userColors);
       }
-      return createColorsByCategoricalMetadata(
-        data,
-        colorByAccessor,
-        schema
-      );
+      return createColorsByCategoricalMetadata(data, colorByAccessor, schema);
     }
     case "color by continuous metadata": {
       const col = colorByData.col(colorByAccessor);
@@ -111,7 +106,7 @@ export function loadUserColorConfig(userColors) {
 
 function _createUserColors(data, colorAccessor, userColors) {
   const { colors, scale } = userColors[colorAccessor];
-  const rgb = createRgbArray(data, colors, colorAccessor);
+  const rgb = createRgbArray(data, colors);
   return { rgb, scale };
 }
 const createUserColors = memoize(_createUserColors);
@@ -129,12 +124,14 @@ function _createColorsByCategoricalMetadata(data, colorAccessor, schema) {
     return acc;
   }, {});
 
-  const rgb = createRgbArray(data, colors, colorAccessor);
+  const rgb = createRgbArray(data, colors);
   return { rgb, scale };
 }
-const createColorsByCategoricalMetadata = memoize(_createColorsByCategoricalMetadata);
+const createColorsByCategoricalMetadata = memoize(
+  _createColorsByCategoricalMetadata
+);
 
-function createRgbArray(data, colors, colorAccessor) {
+function createRgbArray(data, colors) {
   const rgb = new Array(data.length);
   for (let i = 0, len = data.length; i < len; i += 1) {
     const label = data[i];
@@ -169,4 +166,6 @@ function _createColorsByContinuousMetadata(data, min, max) {
   }
   return { rgb, scale };
 }
-export const createColorsByContinuousMetadata = memoize(_createColorsByContinuousMetadata);
+export const createColorsByContinuousMetadata = memoize(
+  _createColorsByContinuousMetadata
+);

@@ -27,13 +27,21 @@ const ObsCrossfilter = (state = null, action) => {
     case "graph lasso deselect":
     case "set clip quantiles":
     case "subset to selection":
-    case "reset subset": {
+    case "reset subset":
+    case "annotation: create category":
+    case "annotation: category edited":
+    case "annotation: delete category": {
       const { obsCrossfilter } = action;
       if (!obsCrossfilter) return state;
       return obsCrossfilter;
     }
 
     default: {
+      // XXX debugging code
+      if (action.obsCrossfilter)
+        console.error(
+          "**** action with field obsCrossfilter ignored - likely bug ****"
+        );
       return state;
     }
   }

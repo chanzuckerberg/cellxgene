@@ -9,6 +9,7 @@ import AnnoDialog from "./annoDialog";
 import AnnoSelect from "./annoSelect";
 import LabelInput from "./labelInput";
 import { labelPrompt } from "./labelUtil";
+import actions from "../../actions";
 
 @connect((state) => ({
   writableCategoriesEnabled: state.config?.parameters?.annotations ?? false,
@@ -29,11 +30,12 @@ class Categories extends React.Component {
   handleCreateUserAnno = (e) => {
     const { dispatch } = this.props;
     const { newCategoryText, categoryToDuplicate } = this.state;
-    dispatch({
-      type: "annotation: create category",
-      data: newCategoryText,
-      categoryToDuplicate,
-    });
+    dispatch(
+      actions.annotationCreateCategoryAction(
+        newCategoryText,
+        categoryToDuplicate
+      )
+    );
     this.setState({
       createAnnoModeActive: false,
       categoryToDuplicate: null,

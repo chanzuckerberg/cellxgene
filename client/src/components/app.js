@@ -73,7 +73,7 @@ class App extends React.Component {
             {(viewportRef) => (
               <>
                 {<MenuBar />}
-                {/*<Autosave />*/}
+                {/* <Autosave /> */}
                 <TermsOfServicePrompt />
                 <Legend viewportRef={viewportRef} />
                 <Graph key={graphRenderCounter} viewportRef={viewportRef} />
