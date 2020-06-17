@@ -23,13 +23,7 @@ import MiniHistogram from "../../miniHistogram";
 import MiniStackedBar from "../../miniStackedBar";
 
 const VALUE_HEIGHT = 11;
-const LEFT_MARGIN = 60;
-const CHECKBOX = 26;
-const CELL_NUMBER = 50;
-const ANNO_MENU = 26;
-const LABEL_MARGIN = 16;
 const CHART_WIDTH = 100;
-const CHART_MARGIN = 24;
 
 /* this is defined outside of the class so we can use it in connect() */
 function _currentLabelAsString(ownProps) {
@@ -558,6 +552,13 @@ class CategoryValue extends React.Component {
       annotations.labelEditable.label === categoryIndex;
 
     const valueToggleLabel = `value-toggle-checkbox-${displayString}`;
+
+    const LEFT_MARGIN = 60;
+    const CHECKBOX = 26;
+    const CELL_NUMBER = 50;
+    const ANNO_MENU = 26;
+    const LABEL_MARGIN = 16;
+    const CHART_MARGIN = 24;
 
     const otherElementsWidth =
       LEFT_MARGIN +
