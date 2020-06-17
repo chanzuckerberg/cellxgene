@@ -480,6 +480,37 @@ class CategoryValue extends React.Component {
           CHART_MARGIN
         : globals.leftSidebarWidth - otherElementsWidth;
 
+    let stackedBins;
+    let histogramBins;
+
+    // If coloring by and this isn't the colorAccessor and it isn't being edited
+    if (colorAccessor && !isColorBy && !annotations.isEditingLabelName) {
+      // If it is a categorical color by make stacked graph bins
+      if (categoricalSelection[colorAccessor]) {
+        stackedBins = this.createStackedGraphBins(
+          world,
+          metadataField,
+          colorAccessor,
+          value,
+          CHART_WIDTH
+        );
+      }
+      // Otherwise make a histogram
+      else {
+        histogramBins = this.createHistogramBins(
+          world,
+          metadataField,
+          colorAccessor,
+          value,
+          CHART_WIDTH,
+          VALUE_HEIGHT
+        );
+      }
+    }
+
+    const { domainValues, scale, domain, occupancy } = stackedBins || {};
+    const { xScale, yScale, bins } = histogramBins || {};
+
     return (
       <div
         key={i}
@@ -596,45 +627,35 @@ class CategoryValue extends React.Component {
             ) : null}
           </div>
           <span style={{ flexShrink: 0 }}>
-            {colorAccessor && !isColorBy && !annotations.isEditingLabelName ? (
-              categoricalSelection[colorAccessor] ? (
-                <MiniStackedBar
-                  /* eslint-disable react/jsx-props-no-spreading -- Disable unneeded on next release of eslint-config-airbnb */
-                  {...{
-                    colorScale,
-                    ...this.createStackedGraphBins(
-                      world,
-                      metadataField,
-                      colorAccessor,
-                      value,
-                      CHART_WIDTH
-                    ),
-                  }}
-                  /* eslint-enable react/jsx-props-no-spreading -- enable */
-                  height={VALUE_HEIGHT}
-                  width={CHART_WIDTH}
-                />
-              ) : (
-                <MiniHistogram
-                  /* eslint-disable react/jsx-props-no-spreading -- Disable unneeded on next release of eslint-config-airbnb */
-                  {...{
-                    colorScale,
-                    ...this.createHistogramBins(
-                      world,
-                      metadataField,
-                      colorAccessor,
-                      value,
-                      CHART_WIDTH,
-                      VALUE_HEIGHT
-                    ),
-                  }}
-                  /* eslint-enable react/jsx-props-no-spreading -- enable */
-                  obsOrVarContinuousFieldDisplayName={colorAccessor}
-                  domainLabel={value}
-                  height={VALUE_HEIGHT}
-                  width={CHART_WIDTH}
-                />
-              )
+            {stackedBins ? (
+              <MiniStackedBar
+                /* eslint-disable react/jsx-props-no-spreading -- Disable unneeded on next release of eslint-config-airbnb */
+                {...{
+                  colorScale,
+                  domainValues,
+                  scale,
+                  domain,
+                  occupancy,
+                }}
+                /* eslint-enable react/jsx-props-no-spreading -- enable */
+                height={VALUE_HEIGHT}
+                width={CHART_WIDTH}
+              />
+            ) : histogramBins ? (
+              <MiniHistogram
+                /* eslint-disable react/jsx-props-no-spreading -- Disable unneeded on next release of eslint-config-airbnb */
+                {...{
+                  colorScale,
+                  xScale,
+                  yScale,
+                  bins,
+                }}
+                /* eslint-enable react/jsx-props-no-spreading -- enable */
+                obsOrVarContinuousFieldDisplayName={colorAccessor}
+                domainLabel={value}
+                height={VALUE_HEIGHT}
+                width={CHART_WIDTH}
+              />
             ) : null}
           </span>
         </div>
