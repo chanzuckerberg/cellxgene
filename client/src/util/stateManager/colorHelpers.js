@@ -60,20 +60,25 @@ function _createColorTable(
 ) {
   switch (colorMode) {
     case "color by categorical metadata": {
+      const data = colorByData.col(colorByAccessor).asArray();
       if (userColors && colorByAccessor in userColors) {
-        return createUserColors(colorByData, colorByAccessor, userColors);
+        return createUserColors(data, colorByAccessor, userColors);
       }
       return createColorsByCategoricalMetadata(
-        colorByData,
+        data,
         colorByAccessor,
         schema
       );
     }
     case "color by continuous metadata": {
-      return createColorsByContinuousMetadata(colorByData, colorByAccessor);
+      const col = colorByData.col(colorByAccessor);
+      const { min, max } = col.summarize();
+      return createColorsByContinuousMetadata(col.asArray(), min, max);
     }
     case "color by expression": {
-      return createColorsByExpression(colorByData);
+      const col = colorByData.icol(0);
+      const { min, max } = col.summarize();
+      return createColorsByContinuousMetadata(col.asArray(), min, max);
     }
     default: {
       const defaultCellColor = parseRGB(globals.defaultCellColor);
@@ -84,7 +89,6 @@ function _createColorTable(
     }
   }
 }
-
 export const createColorTable = memoize(_createColorTable);
 
 export function loadUserColorConfig(userColors) {
@@ -105,13 +109,14 @@ export function loadUserColorConfig(userColors) {
   return convertedUserColors;
 }
 
-function createUserColors(dataframe, colorAccessor, userColors) {
+function _createUserColors(data, colorAccessor, userColors) {
   const { colors, scale } = userColors[colorAccessor];
-  const rgb = createRgbArray(dataframe, colors, colorAccessor);
+  const rgb = createRgbArray(data, colors, colorAccessor);
   return { rgb, scale };
 }
+const createUserColors = memoize(_createUserColors);
 
-function createColorsByCategoricalMetadata(dataframe, colorAccessor, schema) {
+function _createColorsByCategoricalMetadata(data, colorAccessor, schema) {
   const { categories } = schema.annotations.obsByName[colorAccessor];
 
   const scale = d3
@@ -124,12 +129,12 @@ function createColorsByCategoricalMetadata(dataframe, colorAccessor, schema) {
     return acc;
   }, {});
 
-  const rgb = createRgbArray(dataframe, colors, colorAccessor);
+  const rgb = createRgbArray(data, colors, colorAccessor);
   return { rgb, scale };
 }
+const createColorsByCategoricalMetadata = memoize(_createColorsByCategoricalMetadata);
 
-export function createRgbArray(dataframe, colors, colorAccessor) {
-  const data = dataframe.col(colorAccessor).asArray();
+function createRgbArray(data, colors, colorAccessor) {
   const rgb = new Array(data.length);
   for (let i = 0, len = data.length; i < len; i += 1) {
     const label = data[i];
@@ -138,10 +143,8 @@ export function createRgbArray(dataframe, colors, colorAccessor) {
   return rgb;
 }
 
-function createColorsByContinuousMetadata(dataframe, accessor) {
+function _createColorsByContinuousMetadata(data, min, max) {
   const colorBins = 100;
-  const col = dataframe.col(accessor);
-  const { min, max } = col.summarize();
   const scale = d3
     .scaleQuantile()
     .domain([min, max])
@@ -154,7 +157,6 @@ function createColorsByContinuousMetadata(dataframe, accessor) {
   }
 
   const nonFiniteColor = parseRGB(globals.nonFiniteCellColor);
-  const data = col.asArray();
   const rgb = new Array(data.length);
   for (let i = 0, len = data.length; i < len; i += 1) {
     const val = data[i];
@@ -167,32 +169,4 @@ function createColorsByContinuousMetadata(dataframe, accessor) {
   }
   return { rgb, scale };
 }
-
-function createColorsByExpression(dataframe) {
-  const expression = dataframe.icol(0).asArray();
-  const colorBins = 100;
-  const [min, max] = finiteExtent(expression);
-  const scale = d3
-    .scaleQuantile()
-    .domain([min, max])
-    .range(range(colorBins - 1, -1, -1));
-
-  /* pre-create colors - much faster than doing it for each obs */
-  const colors = new Array(colorBins);
-  for (let i = 0; i < colorBins; i += 1) {
-    colors[i] = parseRGB(interpolateCool(i / colorBins));
-  }
-  const nonFiniteColor = parseRGB(globals.nonFiniteCellColor);
-
-  const rgb = new Array(expression.length);
-  for (let i = 0, len = expression.length; i < len; i += 1) {
-    const e = expression[i];
-    if (Number.isFinite(e)) {
-      const c = scale(e);
-      rgb[i] = colors[c];
-    } else {
-      rgb[i] = nonFiniteColor;
-    }
-  }
-  return { rgb, scale };
-}
+export const createColorsByContinuousMetadata = memoize(_createColorsByContinuousMetadata);
