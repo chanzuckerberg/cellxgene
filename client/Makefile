@@ -25,7 +25,7 @@ build:
 
 .PHONY: lint
 lint:
-	npx eslint
+	npm run lint
 
 # Development convenience methods
 .PHONY: start-frontend
