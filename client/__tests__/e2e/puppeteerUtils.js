@@ -16,7 +16,7 @@ const puppeteerUtils = (page) => ({
   },
 
   async getAllByClass(testClass) {
-    return page.$$eval(`[data-testclass=${testClass}]`, (eles) => eles.slice());
+    return page.$$(`[data-testclass=${testClass}]`);
   },
 
   async typeInto(testId, text) {
