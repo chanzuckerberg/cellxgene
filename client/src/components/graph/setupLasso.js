@@ -7,9 +7,15 @@ const Lasso = () => {
   const dispatch = d3.dispatch("start", "end", "cancel");
 
   const lasso = (svg) => {
-    let lassoPolygon;
-    let lassoPath;
-    let closePath;
+    let lassoPolygon = null;
+    let lassoPath = null;
+    let closePath = null;
+
+    const resetState = () => {
+      lassoPolygon = null;
+      lassoPath = null;
+      closePath = null;
+    };
 
     const polygonToPath = (polygon) =>
       `M${polygon.map((d) => d.join(",")).join("L")}`;
@@ -24,9 +30,12 @@ const Lasso = () => {
     const handleDragStart = () => {
       lassoPolygon = [d3.mouse(svg.node())]; // current x y of mouse within element
 
-      if (lassoPath) {
-        lassoPath.remove();
+      if (!lassoPolygon) {
+        resetState();
+        return;
       }
+
+      lassoPath.remove();
 
       lassoPath = g
         .append("path")
@@ -44,10 +53,13 @@ const Lasso = () => {
     };
 
     const handleDrag = () => {
-      const point = d3.mouse(svg.node());
-      if (lassoPolygon) {
-        lassoPolygon.push(point);
+      if (!lassoPolygon || !lassoPath || !closePath) {
+        resetState();
+        return;
       }
+
+      const point = d3.mouse(svg.node());
+      lassoPolygon.push(point);
 
       lassoPath.attr("d", polygonToPath(lassoPolygon));
 
@@ -71,6 +83,11 @@ const Lasso = () => {
     };
 
     const handleDragEnd = () => {
+      if (!lassoPolygon || !lassoPath || !closePath) {
+        resetState();
+        return;
+      }
+
       // remove the close path
       closePath.remove();
       closePath = null;

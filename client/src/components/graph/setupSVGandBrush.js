@@ -18,6 +18,12 @@ export default (
 ) => {
   const svg = d3.select("#graph-wrapper").select("#lasso-layer");
 
+  if (!svg) {
+    throw new Error(
+      `No svg initialized while attempting to setup ${selectionToolType}`
+    );
+  }
+
   if (selectionToolType === "brush") {
     const brush = d3
       .brush()
