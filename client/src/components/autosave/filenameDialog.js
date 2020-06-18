@@ -11,13 +11,8 @@ import {
 } from "@blueprintjs/core";
 
 @connect((state) => ({
-  universe: state.universe,
   idhash: state.config?.parameters?.["annotations-user-data-idhash"] ?? null,
   annotations: state.annotations,
-  obsAnnotations: state.universe.obsAnnotations,
-  saveInProgress: state.autosave?.saveInProgress ?? false,
-  lastSavedObsAnnotations: state.autosave?.lastSavedObsAnnotations,
-  error: state.autosave?.error,
   writableCategoriesEnabled: state.config?.parameters?.annotations ?? false,
 }))
 class FilenameDialog extends React.Component {

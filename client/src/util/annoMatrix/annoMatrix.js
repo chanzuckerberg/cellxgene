@@ -272,6 +272,9 @@ export class AnnoMatrixLoader extends AnnoMatrix {
   }
 
   addObsAnnoCategory(col, category) {
+    /*
+    Add a new category (aka label) to the schema for an obs column.
+    */
     const colSchema = getColumnSchema(this.schema, "obs", col);
     if (!colSchema.writable) {
       throw new Error("Not a writable obs column");
@@ -282,13 +285,20 @@ export class AnnoMatrixLoader extends AnnoMatrix {
     return o;
   }
 
-  removeObsAnnoCategory(col, category, unassignedCategory) {
+  async removeObsAnnoCategory(col, category, unassignedCategory) {
+    /*
+    Remove a single "category" (aka "label") from the data & schema of an obs column.
+    */
     const colSchema = getColumnSchema(this.schema, "obs", col);
     if (!colSchema.writable) {
       throw new Error("Not a writable obs column");
     }
 
-    const o = this.resetObsColumnValues(col, category, unassignedCategory);
+    const o = await this.resetObsColumnValues(
+      col,
+      category,
+      unassignedCategory
+    );
     o.schema = removeObsAnnoCategory(this.schema, col, category);
     return o;
   }
@@ -362,7 +372,7 @@ export class AnnoMatrixLoader extends AnnoMatrix {
     );
   }
 
-  setObsColumnValues(col, rowLabels, value) {
+  async setObsColumnValues(col, rowLabels, value) {
     /*
 		Set all rows identified by rowLabels to value.
 		*/
@@ -370,6 +380,9 @@ export class AnnoMatrixLoader extends AnnoMatrix {
     if (!colSchema.writable) {
       throw new Error("Not a writable obs column");
     }
+
+    // ensure that we have the data in cache before we manipulate it
+    await this.fetch("obs", col);
     if (!this.obs.hasCol(col))
       throw new Error("Internal error - user annotation data missing");
 
@@ -388,7 +401,7 @@ export class AnnoMatrixLoader extends AnnoMatrix {
     return o;
   }
 
-  resetObsColumnValues(col, oldValue, newValue) {
+  async resetObsColumnValues(col, oldValue, newValue) {
     /*
     Set all rows with value 'oldValue' to 'newValue'
     */
@@ -396,6 +409,9 @@ export class AnnoMatrixLoader extends AnnoMatrix {
     if (!colSchema.writable) {
       throw new Error("Not a writable obs column");
     }
+
+    // ensure that we have the data in cache before we manipulate it
+    await this.fetch("obs", col);
     if (!this.obs.hasCol(col))
       throw new Error("Internal error - user annotation data missing");
 
@@ -429,9 +445,9 @@ class AnnoMatrixView extends AnnoMatrix {
     return o;
   }
 
-  removeObsAnnoCategory(col, category, unassignedCategory) {
+  async removeObsAnnoCategory(col, category, unassignedCategory) {
     const o = clone(this);
-    o.viewOf = this.viewOf.removeObsAnnoCategory(
+    o.viewOf = await this.viewOf.removeObsAnnoCategory(
       col,
       category,
       unassignedCategory
@@ -462,17 +478,17 @@ class AnnoMatrixView extends AnnoMatrix {
     return o;
   }
 
-  setObsColumnValues(col, rowLabels, value) {
+  async setObsColumnValues(col, rowLabels, value) {
     const o = clone(this);
-    o.viewOf = this.viewOf.setObsColumnValues(col, rowLabels, value);
+    o.viewOf = await this.viewOf.setObsColumnValues(col, rowLabels, value);
     o.obs = this.obs.dropCol(col);
     o.schema = o.viewOf.schema;
     return o;
   }
 
-  resetObsColumnValues(col, oldValue, newValue) {
+  async resetObsColumnValues(col, oldValue, newValue) {
     const o = clone(this);
-    o.viewOf = this.viewOf.resetObsColumnValues(col, oldValue, newValue);
+    o.viewOf = await this.viewOf.resetObsColumnValues(col, oldValue, newValue);
     o.obs = this.obs.dropCol(col);
     o.schema = o.viewOf.schema;
     return o;

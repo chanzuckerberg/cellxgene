@@ -1,6 +1,5 @@
 import * as globals from "../globals";
 import { AnnoMatrixLoader, AnnoMatrixObsCrossfilter } from "../util/annoMatrix";
-import { MatrixFBS } from "../util/stateManager";
 import {
   catchErrorsWrap,
   doJsonRequest,
@@ -8,8 +7,8 @@ import {
 } from "../util/actionHelpers";
 import { requestReembed /* , reembedResetWorldToUniverse */ } from "./reembed";
 import { loadUserColorConfig } from "../util/stateManager/colorHelpers";
-import * as selectionActions from "./selection";
-import * as annotationActions from "./annotation";
+import * as selnActions from "./selection";
+import * as annoActions from "./annotation";
 
 /*
 return promise fetching user-configured colors
@@ -167,59 +166,6 @@ const requestDifferentialExpression = (set1, set2, num_genes = 10) => async (
   }
 };
 
-const saveObsAnnotations = () => async (dispatch, getState) => {
-  const { universe, annotations } = getState();
-  const { obsAnnotations, schema } = universe;
-  const { dataCollectionNameIsReadOnly, dataCollectionName } = annotations;
-
-  dispatch({
-    type: "writable obs annotations - save started",
-  });
-
-  const writableAnnotations = schema.annotations.obs.columns
-    .filter((s) => s.writable)
-    .map((s) => s.name);
-  const df = obsAnnotations.subset(null, writableAnnotations);
-  const matrix = MatrixFBS.encodeMatrixFBS(df);
-  try {
-    const queryString =
-      !dataCollectionNameIsReadOnly && !!dataCollectionName
-        ? `?annotation-collection-name=${encodeURIComponent(
-            dataCollectionName
-          )}`
-        : "";
-    const res = await fetch(
-      `${globals.API.prefix}${globals.API.version}annotations/obs${queryString}`,
-      {
-        method: "PUT",
-        body: matrix,
-        headers: new Headers({
-          "Content-Type": "application/octet-stream",
-        }),
-        credentials: "include",
-      }
-    );
-    if (res.ok) {
-      dispatch({
-        type: "writable obs annotations - save complete",
-        obsAnnotations,
-      });
-    } else {
-      dispatch({
-        type: "writable obs annotations - save error",
-        message: `HTTP error ${res.status} - ${res.statusText}`,
-        res,
-      });
-    }
-  } catch (error) {
-    dispatch({
-      type: "writable obs annotations - save error",
-      message: error.toString(),
-      error,
-    });
-  }
-};
-
 const clipAction = (min, max) => (dispatch, getState) => {
   /*
   apply a clip to the current annoMatrix.  By convention, the clip
@@ -300,37 +246,30 @@ export default {
   requestSingleGeneExpressionCountsForColoringPOST,
   requestUserDefinedGene,
   requestReembed,
-  saveObsAnnotations,
-  selectContinuousMetadataAction:
-    selectionActions.selectContinuousMetadataAction,
-  selectCategoricalMetadataAction:
-    selectionActions.selectCategoricalMetadataAction,
+  selectContinuousMetadataAction: selnActions.selectContinuousMetadataAction,
+  selectCategoricalMetadataAction: selnActions.selectCategoricalMetadataAction,
   selectCategoricalAllMetadataAction:
-    selectionActions.selectCategoricalAllMetadataAction,
-  graphBrushStartAction: selectionActions.graphBrushStartAction,
-  graphBrushChangeAction: selectionActions.graphBrushChangeAction,
-  graphBrushDeselectAction: selectionActions.graphBrushDeselectAction,
-  graphBrushCancelAction: selectionActions.graphBrushCancelAction,
-  graphBrushEndAction: selectionActions.graphBrushEndAction,
-  graphLassoStartAction: selectionActions.graphLassoStartAction,
-  graphLassoEndAction: selectionActions.graphLassoEndAction,
-  graphLassoCancelAction: selectionActions.graphLassoCancelAction,
-  graphLassoDeselectAction: selectionActions.graphLassoDeselectAction,
+    selnActions.selectCategoricalAllMetadataAction,
+  graphBrushStartAction: selnActions.graphBrushStartAction,
+  graphBrushChangeAction: selnActions.graphBrushChangeAction,
+  graphBrushDeselectAction: selnActions.graphBrushDeselectAction,
+  graphBrushCancelAction: selnActions.graphBrushCancelAction,
+  graphBrushEndAction: selnActions.graphBrushEndAction,
+  graphLassoStartAction: selnActions.graphLassoStartAction,
+  graphLassoEndAction: selnActions.graphLassoEndAction,
+  graphLassoCancelAction: selnActions.graphLassoCancelAction,
+  graphLassoDeselectAction: selnActions.graphLassoDeselectAction,
   clipAction,
   subsetAction,
   resetSubsetAction,
-  annotationCreateCategoryAction:
-    annotationActions.annotationCreateCategoryAction,
-  annotationRenameCategoryAction:
-    annotationActions.annotationRenameCategoryAction,
-  annotationDeleteCategoryAction:
-    annotationActions.annotationDeleteCategoryAction,
-  annotationCreateLabelInCategory:
-    annotationActions.annotationCreateLabelInCategory,
+  annotationCreateCategoryAction: annoActions.annotationCreateCategoryAction,
+  annotationRenameCategoryAction: annoActions.annotationRenameCategoryAction,
+  annotationDeleteCategoryAction: annoActions.annotationDeleteCategoryAction,
+  annotationCreateLabelInCategory: annoActions.annotationCreateLabelInCategory,
   annotationDeleteLabelFromCategory:
-    annotationActions.annotationDeleteLabelFromCategory,
-  annotationRenameLabelInCategory:
-    annotationActions.annotationRenameLabelInCategory,
-  annotationLabelCurrentSelection:
-    annotationActions.annotationLabelCurrentSelection,
+    annoActions.annotationDeleteLabelFromCategory,
+  annotationRenameLabelInCategory: annoActions.annotationRenameLabelInCategory,
+  annotationLabelCurrentSelection: annoActions.annotationLabelCurrentSelection,
+  saveObsAnnotationsAction: annoActions.saveObsAnnotationsAction,
+  needToSaveObsAnnotations: annoActions.needToSaveObsAnnotations,
 };

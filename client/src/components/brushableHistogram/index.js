@@ -380,7 +380,7 @@ class HistogramBrush extends React.PureComponent {
       try {
         const column = await this.fetchData();
         this.updateHistogram(prevProps, column);
-        this.setState({ status: "success" });
+        this.setState({ status: "success", column });
       } catch (error) {
         this.setState({ status: "error" });
         throw error;

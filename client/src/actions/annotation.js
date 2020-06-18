@@ -1,7 +1,9 @@
 /*
 Action creators for user annotation
 */
-import { unassignedCategoryLabel } from "../globals";
+import _ from "lodash";
+import * as globals from "../globals";
+import { MatrixFBS } from "../util/stateManager";
 
 function isUserAnnotation(annoMatrix, obsCatName) {
   // true if writable annotation; false if not or doesn't exist.
@@ -14,6 +16,7 @@ export const annotationCreateCategoryAction = (
 ) => async (dispatch, getState) => {
   /*
   Add a new user-created category to the obs annotations.
+
   Arguments:
     newCategoryName - string name for the category.
     categoryToDuplicate - obs category to use for initial values, or null.
@@ -48,8 +51,8 @@ export const annotationCreateCategoryAction = (
     ({ categories } = col.summarize());
   } else {
     /* else assign to the standard default value */
-    initialValue = unassignedCategoryLabel;
-    categories = [unassignedCategoryLabel];
+    initialValue = globals.unassignedCategoryLabel;
+    categories = [globals.unassignedCategoryLabel];
   }
 
   const obsCrossfilter = prevObsCrossfilter.addObsColumn(
@@ -136,7 +139,7 @@ export const annotationCreateLabelInCategory = (
   categoryName,
   labelName,
   assignSelected
-) => (dispatch, getState) => {
+) => async (dispatch, getState) => {
   /*
   Add a new label to a user-defined category.  If assignSelected is true, assign 
   the label to all currently selected cells.
@@ -154,7 +157,7 @@ export const annotationCreateLabelInCategory = (
     labelName
   );
   if (assignSelected) {
-    obsCrossfilter = obsCrossfilter.setObsColumnValues(
+    obsCrossfilter = await obsCrossfilter.setObsColumnValues(
       categoryName,
       prevObsCrossfilter.allSelectedLabels(),
       labelName
@@ -171,10 +174,10 @@ export const annotationCreateLabelInCategory = (
   });
 };
 
-export const annotationDeleteLabelFromCategory = (categoryName, labelName) => (
-  dispatch,
-  getState
-) => {
+export const annotationDeleteLabelFromCategory = (
+  categoryName,
+  labelName
+) => async (dispatch, getState) => {
   /*
   delete a label from a user-defined category
   */
@@ -186,10 +189,10 @@ export const annotationDeleteLabelFromCategory = (categoryName, labelName) => (
   if (!isUserAnnotation(prevAnnoMatrix, categoryName))
     throw new Error("not a user annotation");
 
-  const obsCrossfilter = prevObsCrossfilter.removeObsAnnoCategory(
+  const obsCrossfilter = await prevObsCrossfilter.removeObsAnnoCategory(
     categoryName,
     labelName,
-    unassignedCategoryLabel
+    globals.unassignedCategoryLabel
   );
 
   dispatch({
@@ -205,7 +208,7 @@ export const annotationRenameLabelInCategory = (
   categoryName,
   oldLabelName,
   newLabelName
-) => (dispatch, getState) => {
+) => async (dispatch, getState) => {
   /*
   label name change
   */
@@ -217,9 +220,16 @@ export const annotationRenameLabelInCategory = (
   if (!isUserAnnotation(prevAnnoMatrix, categoryName))
     throw new Error("not a user annotation");
 
-  const obsCrossfilter = prevObsCrossfilter
-    .resetObsColumnValues(categoryName, oldLabelName, newLabelName)
-    .removeObsAnnoCategory(categoryName, oldLabelName, unassignedCategoryLabel);
+  let obsCrossfilter = await prevObsCrossfilter.resetObsColumnValues(
+    categoryName,
+    oldLabelName,
+    newLabelName
+  );
+  obsCrossfilter = await obsCrossfilter.removeObsAnnoCategory(
+    categoryName,
+    oldLabelName,
+    globals.unassignedCategoryLabel
+  );
 
   dispatch({
     type: "annotation: label edited",
@@ -231,10 +241,10 @@ export const annotationRenameLabelInCategory = (
   });
 };
 
-export const annotationLabelCurrentSelection = (categoryName, labelName) => (
-  dispatch,
-  getState
-) => {
+export const annotationLabelCurrentSelection = (
+  categoryName,
+  labelName
+) => async (dispatch, getState) => {
   /*
   set the label on all currently selected
   */
@@ -246,7 +256,7 @@ export const annotationLabelCurrentSelection = (categoryName, labelName) => (
   if (!isUserAnnotation(prevAnnoMatrix, categoryName))
     throw new Error("not a user annotation");
 
-  const obsCrossfilter = prevObsCrossfilter.setObsColumnValues(
+  const obsCrossfilter = await prevObsCrossfilter.setObsColumnValues(
     categoryName,
     prevObsCrossfilter.allSelectedLabels(),
     labelName
@@ -259,4 +269,102 @@ export const annotationLabelCurrentSelection = (categoryName, labelName) => (
     obsCrossfilter,
     annoMatrix: obsCrossfilter.annoMatrix,
   });
+};
+
+function writableAnnotations(annoMatrix) {
+  return annoMatrix.schema.annotations.obs.columns
+    .filter((s) => s.writable)
+    .map((s) => s.name);
+}
+
+export const needToSaveObsAnnotations = (annoMatrix, lastSavedAnnoMatrix) => {
+  /*
+  Return true if there are LIKELY user-defined annotation modifications between the two
+  annoMatrices.  Technically not an action creator, but intimately intertwined
+  with the save process.
+
+  Two conditions will trigger a need to save:
+    * the collection of user-defined columns have changed
+    * the contents of the user-defined columns have change
+  */
+
+  // if the annoMatrix hasn't changed, we are guaranteed no changes to the matrix schema or contents.
+  if (annoMatrix === lastSavedAnnoMatrix) return false;
+
+  // if the schema has changed, we need to save
+  const currentWritable = writableAnnotations(annoMatrix);
+  if (_.difference(currentWritable, writableAnnotations(lastSavedAnnoMatrix))) {
+    return true;
+  }
+
+  // no schema changes; check for change in contents
+  return currentWritable.some(
+    (col) => annoMatrix.col(col) !== lastSavedAnnoMatrix.col(col)
+  );
+};
+
+export const saveObsAnnotationsAction = () => async (dispatch, getState) => {
+  /*
+  Save the user-created obs annotations IF any have changed.
+  */
+  const { annoMatrix, annotations, autosave } = getState();
+  const { dataCollectionNameIsReadOnly, dataCollectionName } = annotations;
+  const { lastSavedAnnoMatrix, saveInProgress } = autosave;
+
+  if (saveInProgress || annoMatrix === lastSavedAnnoMatrix) return;
+  if (!needToSaveObsAnnotations(annoMatrix, lastSavedAnnoMatrix)) {
+    dispatch({
+      type: "writable obs annotations - save complete",
+      lastSavedAnnoMatrix: annoMatrix,
+    });
+    return;
+  }
+
+  /*
+  Else, we really do need to save
+  */
+
+  dispatch({
+    type: "writable obs annotations - save started",
+  });
+
+  const df = await annoMatrix.fetch("obs", writableAnnotations(annoMatrix));
+  const matrix = MatrixFBS.encodeMatrixFBS(df);
+  try {
+    const queryString =
+      !dataCollectionNameIsReadOnly && !!dataCollectionName
+        ? `?annotation-collection-name=${encodeURIComponent(
+            dataCollectionName
+          )}`
+        : "";
+    const res = await fetch(
+      `${globals.API.prefix}${globals.API.version}annotations/obs${queryString}`,
+      {
+        method: "PUT",
+        body: matrix,
+        headers: new Headers({
+          "Content-Type": "application/octet-stream",
+        }),
+        credentials: "include",
+      }
+    );
+    if (res.ok) {
+      dispatch({
+        type: "writable obs annotations - save complete",
+        lastSavedAnnoMatrix: annoMatrix,
+      });
+    } else {
+      dispatch({
+        type: "writable obs annotations - save error",
+        message: `HTTP error ${res.status} - ${res.statusText}`,
+        res,
+      });
+    }
+  } catch (error) {
+    dispatch({
+      type: "writable obs annotations - save error",
+      message: error.toString(),
+      error,
+    });
+  }
 };

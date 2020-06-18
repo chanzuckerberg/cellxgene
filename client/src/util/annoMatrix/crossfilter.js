@@ -59,8 +59,8 @@ export default class AnnoMatrixObsCrossfilter {
     return new AnnoMatrixObsCrossfilter(annoMatrix, obsCrossfilter);
   }
 
-  removeObsAnnoCategory(col, category, unassignedCategory) {
-    const annoMatrix = this.annoMatrix.removeObsAnnoCategory(
+  async removeObsAnnoCategory(col, category, unassignedCategory) {
+    const annoMatrix = await this.annoMatrix.removeObsAnnoCategory(
       col,
       category,
       unassignedCategory
@@ -73,8 +73,8 @@ export default class AnnoMatrixObsCrossfilter {
     return new AnnoMatrixObsCrossfilter(annoMatrix, obsCrossfilter);
   }
 
-  setObsColumnValues(col, rowLabels, value) {
-    const annoMatrix = this.annoMatrix.setObsColumnValues(
+  async setObsColumnValues(col, rowLabels, value) {
+    const annoMatrix = await this.annoMatrix.setObsColumnValues(
       col,
       rowLabels,
       value
@@ -87,8 +87,8 @@ export default class AnnoMatrixObsCrossfilter {
     return new AnnoMatrixObsCrossfilter(annoMatrix, obsCrossfilter);
   }
 
-  resetObsColumnValues(col, oldValue, newValue) {
-    const annoMatrix = this.annoMatrix.resetObsColumnValues(
+  async resetObsColumnValues(col, oldValue, newValue) {
+    const annoMatrix = await this.annoMatrix.resetObsColumnValues(
       col,
       oldValue,
       newValue
