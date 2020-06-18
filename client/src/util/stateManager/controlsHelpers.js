@@ -37,7 +37,7 @@ Remember that option values can be ANY js type, except undefined/null.
 */
 function topNCategories(colSchema, summary, N) {
   /* return top N by occurrences in the data, preserving original category order */
-  let categories = [
+  const categories = [
     ...new Set([
       ...(colSchema.categories ?? []),
       ...(summary.categories ?? []),
