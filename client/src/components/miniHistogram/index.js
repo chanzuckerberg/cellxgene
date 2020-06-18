@@ -14,6 +14,9 @@ export default class MiniHistogram extends React.PureComponent {
 
   drawHistogram = () => {
     const { xScale, yScale, bins, width, height } = this.props;
+
+    if (!bins) return;
+
     const ctx = this.canvasRef.current.getContext("2d");
 
     ctx.clearRect(0, 0, width, height);

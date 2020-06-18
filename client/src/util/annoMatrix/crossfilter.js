@@ -34,8 +34,6 @@ export default class AnnoMatrixObsCrossfilter {
     const dimName = dimensionName("obs", col);
     if (obsCrossfilter.hasDimension(dimName)) {
       obsCrossfilter = obsCrossfilter.delDimension(dimName);
-    } else {
-      obsCrossfilter = obsCrossfilter.setData(annoMatrix.obs);
     }
     return new AnnoMatrixObsCrossfilter(annoMatrix, obsCrossfilter);
   }
@@ -47,8 +45,6 @@ export default class AnnoMatrixObsCrossfilter {
     let { obsCrossfilter } = this;
     if (obsCrossfilter.hasDimension(oldDimName)) {
       obsCrossfilter = obsCrossfilter.renameDimension(oldDimName, newDimName);
-    } else {
-      obsCrossfilter = obsCrossfilter.setData(annoMatrix.obs);
     }
     return new AnnoMatrixObsCrossfilter(annoMatrix, obsCrossfilter);
   }
@@ -63,8 +59,12 @@ export default class AnnoMatrixObsCrossfilter {
     return new AnnoMatrixObsCrossfilter(annoMatrix, obsCrossfilter);
   }
 
-  removeObsAnnoCategory(col, category) {
-    const annoMatrix = this.annoMatrix.removeObsAnnoCategory(col, category);
+  removeObsAnnoCategory(col, category, unassignedCategory) {
+    const annoMatrix = this.annoMatrix.removeObsAnnoCategory(
+      col,
+      category,
+      unassignedCategory
+    );
     const dimName = dimensionName("obs", col);
     let { obsCrossfilter } = this;
     if (obsCrossfilter.hasDimension(dimName)) {
@@ -86,6 +86,21 @@ export default class AnnoMatrixObsCrossfilter {
     }
     return new AnnoMatrixObsCrossfilter(annoMatrix, obsCrossfilter);
   }
+
+  resetObsColumnValues(col, oldValue, newValue) {
+    const annoMatrix = this.annoMatrix.resetObsColumnValues(
+      col,
+      oldValue,
+      newValue
+    );
+    const dimName = dimensionName("obs", col);
+    let { obsCrossfilter } = this;
+    if (obsCrossfilter.hasDimension(dimName)) {
+      obsCrossfilter = obsCrossfilter.delDimension(dimName);
+    }
+    return new AnnoMatrixObsCrossfilter(annoMatrix, obsCrossfilter);
+  }
+
   /**
   Selection state 
   **/

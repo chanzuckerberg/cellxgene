@@ -407,7 +407,7 @@ export class AnnoMatrixLoader extends AnnoMatrix {
     const o = clone(this);
     o.obs = this.obs.replaceColData(col, data);
     const { categories } = colSchema;
-    if (categories && categories.indexOf(newValue) !== -1) {
+    if (categories && categories.indexOf(newValue) === -1) {
       o.schema = addObsAnnoCategory(this.schema, col, newValue);
     }
     return o;
@@ -429,9 +429,13 @@ class AnnoMatrixView extends AnnoMatrix {
     return o;
   }
 
-  removeObsAnnoCategory(col, category) {
+  removeObsAnnoCategory(col, category, unassignedCategory) {
     const o = clone(this);
-    o.viewOf = this.viewOf.removeObsAnnoCategory(col, category);
+    o.viewOf = this.viewOf.removeObsAnnoCategory(
+      col,
+      category,
+      unassignedCategory
+    );
     o.schema = o.viewOf.schema;
     return o;
   }
