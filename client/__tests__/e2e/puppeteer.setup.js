@@ -1,3 +1,9 @@
+/**
+ * `client/jest-puppeteer.config.js` is for configuring Puppeteer's launch config options
+ * `client/__tests__/e2e/puppeteer.setup.js` is for configuring `jest`, `browser`,
+ * and `page` objects
+ */
+
 import { setDefaultOptions } from "expect-puppeteer";
 import { isDebug, isDev } from "./config";
 

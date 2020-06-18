@@ -55,6 +55,10 @@ export async function clickOn(testId, options = {}) {
   await expect(page).toClick(getTestId(testId), options);
 }
 
+/**
+ * (thuang): There are times when Puppeteer clicks on a button and the page doesn't respond.
+ * So I added clickOnUntil() to retry clicking until a given condition is met.
+ */
 export async function clickOnUntil(testId, assert) {
   const MAX_RETRY = 10;
   const WAIT_FOR_MS = 200;

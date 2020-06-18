@@ -38,7 +38,6 @@ async function setup(config) {
 
   // setup the test fixtures
   await createCategory(perTestCategoryName);
-
   await createLabel(perTestCategoryName, perTestLabelName);
 
   if (config.withSubset) {
