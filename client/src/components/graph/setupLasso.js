@@ -35,7 +35,9 @@ const Lasso = () => {
         return;
       }
 
-      lassoPath.remove();
+      if (lassoPath) {
+        lassoPath.remove();
+      }
 
       lassoPath = g
         .append("path")
