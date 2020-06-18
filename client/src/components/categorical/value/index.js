@@ -437,18 +437,18 @@ class CategoryValue extends React.Component {
       return null;
     }
 
-    const {
-      domainValues,
-      scale,
-      domain,
-      occupancy,
-    } = this.createStackedGraphBins(
-      world,
-      metadataField,
-      colorAccessor,
-      categoryValue,
-      CHART_WIDTH
-    );
+    const { domainValues, scale, domain, occupancy } =
+      this.createStackedGraphBins(
+        world,
+        metadataField,
+        colorAccessor,
+        categoryValue,
+        CHART_WIDTH
+      ) ?? {};
+
+    if (!domainValues || !scale || !domain || !occupancy) {
+      return null;
+    }
 
     return (
       <MiniStackedBar
@@ -483,14 +483,15 @@ class CategoryValue extends React.Component {
       return null;
     }
 
-    const { xScale, yScale, bins } = this.createHistogramBins(
-      world,
-      metadataField,
-      colorAccessor,
-      categoryValue,
-      CHART_WIDTH,
-      VALUE_HEIGHT
-    );
+    const { xScale, yScale, bins } =
+      this.createHistogramBins(
+        world,
+        metadataField,
+        colorAccessor,
+        categoryValue,
+        CHART_WIDTH,
+        VALUE_HEIGHT
+      ) ?? {};
 
     return (
       <MiniHistogram
