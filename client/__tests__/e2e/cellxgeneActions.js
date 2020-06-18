@@ -35,7 +35,9 @@ const cellxgeneActions = (page, utils) => ({
     // and they may be quite slow in some cases.
     await utils.waitForAllByIds(histTestIds, { timeout: 240000 });
     const allHistograms = await utils.getAllByClass(testclass);
-    return allHistograms.map((hist) => hist.replace(/^histogram-/, ""));
+    return allHistograms.map((hist) =>
+      hist.dataset.testid.replace(/^histogram-/, "")
+    );
   },
 
   async getAllCategoriesAndCounts(category) {
