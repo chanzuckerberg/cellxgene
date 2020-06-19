@@ -1,26 +1,14 @@
-/* eslint-disable max-classes-per-file -- Classes are interrelated*/
-
-import { doBinaryRequest, fetchResult, dubEncURIComp } from "./fetchHelpers";
-import { matrixFBSToDataframe } from "../stateManager/matrix";
-import {
-  addObsAnnoColumn,
-  removeObsAnnoColumn,
-  addObsAnnoCategory,
-  removeObsAnnoCategory,
-  indexEntireSchema,
-} from "../stateManager/schemaHelpers";
 import { Dataframe, IdentityInt32Index } from "../dataframe";
 import {
   getColumnDimensionNames,
   getColumnSchema,
   schemaColumns,
-  isContinuousType,
 } from "./schema";
-import { whereCacheCreate, whereCacheGet, whereCacheMerge } from "./whereCache";
-import clip from "../clip";
-import { isArrayOrTypedArray } from "../typeHelpers";
+import { fetchResult } from "./fetchHelpers";
+import { indexEntireSchema } from "../stateManager/schemaHelpers";
+import { whereCacheGet, whereCacheMerge } from "./whereCache";
 
-class AnnoMatrix {
+export default class AnnoMatrix {
   static fields() {
     return ["obs", "var", "emb", "X"];
   }
@@ -132,40 +120,40 @@ class AnnoMatrix {
     return undefined;
   }
 
-  /**
-   ** View creation interfaces:
-   **/
-  isubsetMask(rowMask) {
-    /*
-		Subset on row based upon mask
-		*/
-    return this.isubset(maskToList(rowMask));
-  }
+  // /**
+  //  ** View creation interfaces:
+  //  **/
+  // isubsetMask(rowMask) {
+  //   /*
+  // Subset on row based upon mask
+  // */
+  //   return this.isubset(maskToList(rowMask));
+  // }
 
-  isubset(rowOffsets) {
-    /*
-		subset based on offset
-		*/
-    const rowIndex = this.rowIndex.isubset(rowOffsets);
-    return new AnnoMatrixRowSubsetView(this, rowIndex);
-  }
+  // isubset(rowOffsets) {
+  //   /*
+  // subset based on offset
+  // */
+  //   const rowIndex = this.rowIndex.isubset(rowOffsets);
+  //   return new AnnoMatrixRowSubsetView(this, rowIndex);
+  // }
 
-  subset(rowLabels) {
-    /*
-		subset based on labels
-		*/
-    const rowIndex = this.rowIndex.subset(rowLabels);
-    return new AnnoMatrixRowSubsetView(this, rowIndex);
-  }
+  // subset(rowLabels) {
 
-  clip(qmin, qmax) {
-    /*
-		Create a view that clips all continuous data to the [min, max] range.
-		The matrix shape does not change, but the continuous values outside the
-		specified range will become a NaN.
-		*/
-    return new AnnoMatrixClipView(this, qmin, qmax);
-  }
+  // subset based on labels
+
+  //   const rowIndex = this.rowIndex.subset(rowLabels);
+  //   return new AnnoMatrixRowSubsetView(this, rowIndex);
+  // }
+
+  // clip(qmin, qmax) {
+  //   /*
+  // Create a view that clips all continuous data to the [min, max] range.
+  // The matrix shape does not change, but the continuous values outside the
+  // specified range will become a NaN.
+  // */
+  //   return new AnnoMatrixClipView(this, qmin, qmax);
+  // }
 
   /**
    ** private below
@@ -219,380 +207,8 @@ class AnnoMatrix {
 }
 
 /*
-Base matrix, which proxies for server.
-*/
-export class AnnoMatrixLoader extends AnnoMatrix {
-  constructor(baseURL, schema) {
-    const { nObs, nVar } = schema.dataframe;
-    super(schema, nObs, nVar);
-    this.baseURL = baseURL;
-  }
-
-  async _doLoad(field, query) {
-    /*
-		_doLoad - evaluates the query against the field. Returns:
-			* whereCache update: column query map mapping the query to the column labels
-			* Dataframe contianing the new colums (one per dimension)
-		*/
-    let urlQuery;
-    let urlBase;
-
-    switch (field) {
-      case "obs":
-      case "var": {
-        urlBase = `${this.baseURL}/annotations/${field}`;
-        urlQuery = encodeQuery("annotation-name", query);
-        break;
-      }
-      case "X": {
-        urlBase = `${this.baseURL}/data/var`;
-        urlQuery = encodeQuery(undefined, query);
-        break;
-      }
-      case "emb": {
-        urlBase = `${this.baseURL}/layout/obs`;
-        urlQuery = encodeQuery("layout-name", query);
-        break;
-      }
-      default:
-        throw new Error("Unknown field name");
-    }
-
-    const url = `${urlBase}?${urlQuery}`;
-    const buffer = await doBinaryRequest(url);
-    const result = matrixFBSToDataframe(buffer);
-    if (!result || result.isEmpty()) throw Error("Unknown field/col");
-
-    const whereCacheUpdate = whereCacheCreate(
-      field,
-      query,
-      result.colIndex.labels()
-    );
-    return [whereCacheUpdate, result];
-  }
-
-  addObsAnnoCategory(col, category) {
-    /*
-    Add a new category (aka label) to the schema for an obs column.
-    */
-    const colSchema = getColumnSchema(this.schema, "obs", col);
-    if (!colSchema.writable) {
-      throw new Error("Not a writable obs column");
-    }
-
-    const o = clone(this);
-    o.schema = addObsAnnoCategory(this.schema, col, category);
-    return o;
-  }
-
-  async removeObsAnnoCategory(col, category, unassignedCategory) {
-    /*
-    Remove a single "category" (aka "label") from the data & schema of an obs column.
-    */
-    const colSchema = getColumnSchema(this.schema, "obs", col);
-    if (!colSchema.writable) {
-      throw new Error("Not a writable obs column");
-    }
-
-    const o = await this.resetObsColumnValues(
-      col,
-      category,
-      unassignedCategory
-    );
-    o.schema = removeObsAnnoCategory(this.schema, col, category);
-    return o;
-  }
-
-  dropObsColumn(col) {
-    /*
-		drop column from field
-		*/
-    const colSchema = getColumnSchema(this.schema, "obs", col);
-    if (!colSchema.writable) {
-      throw new Error("Not a writable obs column");
-    }
-
-    const o = clone(this);
-    o.obs = this.obs.dropCol(col);
-    o.schema = removeObsAnnoColumn(this.schema, col);
-    return o;
-  }
-
-  addObsColumn(colSchema, Ctor, value) {
-    /*
-		add a column to field, initializing with value.  Value may 
-    be one of:
-      * an array of values
-      * a primitive type, including null or undefined.
-    If an array, it must be of same size as nObs and same type as Ctor
-		*/
-    const col = colSchema.name;
-    if (getColumnSchema(this.schema, "obs", col) || this.obs.hasCol(col)) {
-      throw new Error("column already exists");
-    }
-
-    const o = clone(this);
-    let data;
-    if (isArrayOrTypedArray(value)) {
-      if (value.constructor !== Ctor)
-        throw new Error("Mismatched value array type");
-      if (value.length !== this.nObs)
-        throw new Error("Value array has incorrect length");
-      data = value.slice();
-    } else {
-      data = new Ctor(this.nObs).fill(value);
-    }
-    o.obs = this.obs.withCol(col, data);
-    o.schema = addObsAnnoColumn(this.schema, col, {
-      ...colSchema,
-      writable: true,
-    });
-    return o;
-  }
-
-  renameObsColumn(oldCol, newCol) {
-    /*
-    Rename the obs oldColName to newColName.  oldCol must be writable.
-    */
-    const oldColSchema = getColumnSchema(this.schema, "obs", oldCol);
-    if (!oldColSchema.writable) {
-      throw new Error("Not a writable obs column");
-    }
-
-    const value = this.obs.hasCol(oldCol)
-      ? this.obs.col(oldCol).asArray()
-      : undefined;
-    return this.dropObsColumn(oldCol).addObsColumn(
-      {
-        ...oldColSchema,
-        name: newCol,
-      },
-      value.constructor,
-      value
-    );
-  }
-
-  async setObsColumnValues(col, rowLabels, value) {
-    /*
-		Set all rows identified by rowLabels to value.
-		*/
-    const colSchema = getColumnSchema(this.schema, "obs", col);
-    if (!colSchema.writable) {
-      throw new Error("Not a writable obs column");
-    }
-
-    // ensure that we have the data in cache before we manipulate it
-    await this.fetch("obs", col);
-    if (!this.obs.hasCol(col))
-      throw new Error("Internal error - user annotation data missing");
-
-    const rowIndices = this.rowIndex.getOffsets(rowLabels);
-    const data = this.obs.col(col).asArray().slice();
-    for (let i = 0, len = rowIndices.length; i < len; i += 1) {
-      data[rowIndices[i]] = value;
-    }
-
-    const o = clone(this);
-    o.obs = this.obs.replaceColData(col, data);
-    const { categories } = colSchema;
-    if (categories && categories.indexOf(value) === -1) {
-      o.schema = addObsAnnoCategory(this.schema, col, value);
-    }
-    return o;
-  }
-
-  async resetObsColumnValues(col, oldValue, newValue) {
-    /*
-    Set all rows with value 'oldValue' to 'newValue'
-    */
-    const colSchema = getColumnSchema(this.schema, "obs", col);
-    if (!colSchema.writable) {
-      throw new Error("Not a writable obs column");
-    }
-
-    // ensure that we have the data in cache before we manipulate it
-    await this.fetch("obs", col);
-    if (!this.obs.hasCol(col))
-      throw new Error("Internal error - user annotation data missing");
-
-    const data = this.obs.col(col).asArray().slice();
-    for (let i = 0, l = data.length; i < l; i += 1) {
-      if (data[i] === oldValue) data[i] = newValue;
-    }
-
-    const o = clone(this);
-    o.obs = this.obs.replaceColData(col, data);
-    const { categories } = colSchema;
-    if (categories && categories.indexOf(newValue) === -1) {
-      o.schema = addObsAnnoCategory(this.schema, col, newValue);
-    }
-    return o;
-  }
-}
-
-class AnnoMatrixView extends AnnoMatrix {
-  constructor(viewOf, rowIndex = null) {
-    const nObs = rowIndex ? rowIndex.size() : viewOf.nObs;
-    super(viewOf.schema, nObs, viewOf.nVar, rowIndex || viewOf.rowIndex);
-    this.viewOf = viewOf;
-    this.isView = true;
-  }
-
-  addObsAnnoCategory(col, category) {
-    const o = clone(this);
-    o.viewOf = this.viewOf.addObsAnnoCategory(col, category);
-    o.schema = o.viewOf.schema;
-    return o;
-  }
-
-  async removeObsAnnoCategory(col, category, unassignedCategory) {
-    const o = clone(this);
-    o.viewOf = await this.viewOf.removeObsAnnoCategory(
-      col,
-      category,
-      unassignedCategory
-    );
-    o.schema = o.viewOf.schema;
-    return o;
-  }
-
-  dropObsColumn(col) {
-    const o = clone(this);
-    o.viewOf = this.viewOf.dropObsColumn(col);
-    o.obs = this.obs.dropCol(col);
-    o.schema = o.viewOf.schema;
-    return o;
-  }
-
-  addObsColumn(colSchema, ctor, value) {
-    const o = clone(this);
-    o.viewOf = this.viewOf.addObsColumn(colSchema, ctor, value);
-    o.schema = o.viewOf.schema;
-    return o;
-  }
-
-  renameObsColumn(oldCol, newCol) {
-    const o = clone(this);
-    o.viewOf = this.viewOf.renameObsColumn(oldCol, newCol);
-    o.schema = o.viewOf.schema;
-    return o;
-  }
-
-  async setObsColumnValues(col, rowLabels, value) {
-    const o = clone(this);
-    o.viewOf = await this.viewOf.setObsColumnValues(col, rowLabels, value);
-    o.obs = this.obs.dropCol(col);
-    o.schema = o.viewOf.schema;
-    return o;
-  }
-
-  async resetObsColumnValues(col, oldValue, newValue) {
-    const o = clone(this);
-    o.viewOf = await this.viewOf.resetObsColumnValues(col, oldValue, newValue);
-    o.obs = this.obs.dropCol(col);
-    o.schema = o.viewOf.schema;
-    return o;
-  }
-}
-
-class AnnoMatrixMapView extends AnnoMatrixView {
-  /*
-	A view which knows how to transform its data.
-	*/
-  constructor(viewOf, mapFn) {
-    super(viewOf);
-    this.mapFn = mapFn;
-  }
-
-  async _doLoad(field, query) {
-    const df = await this.viewOf._fetch(field, query);
-    const dfMapped = df.mapColumns((colData, colIdx) => {
-      const colLabel = df.colIndex.getLabel(colIdx);
-      const colSchema = getColumnSchema(this.schema, field, colLabel);
-      return this.mapFn(field, colLabel, colSchema, colData, df);
-    });
-    const whereCacheUpdate = whereCacheCreate(
-      field,
-      query,
-      dfMapped.colIndex.labels()
-    );
-    return [whereCacheUpdate, dfMapped];
-  }
-}
-
-export class AnnoMatrixClipView extends AnnoMatrixMapView {
-  /*
-	A view which is a clipped transformation of its parent
-	*/
-  constructor(viewOf, qmin, qmax) {
-    super(viewOf, (field, colLabel, colSchema, colData, df) =>
-      clipAnnoMatrix(field, colLabel, colSchema, colData, df, qmin, qmax)
-    );
-    this.isClipped = true;
-    this.clipRange = [qmin, qmax];
-  }
-}
-
-export class AnnoMatrixRowSubsetView extends AnnoMatrixView {
-  /*
-	A view which is a subset of total rows.
-	*/
-  async _doLoad(field, query) {
-    const df = await this.viewOf._fetch(field, query);
-
-    // don't try to row-subset the var dimension.
-    if (field === "var") {
-      return [null, df];
-    }
-
-    const dfSubset = df.subset(null, null, this.rowIndex);
-    const whereCacheUpdate = whereCacheCreate(
-      field,
-      query,
-      dfSubset.colIndex.labels()
-    );
-    return [whereCacheUpdate, dfSubset];
-  }
-}
-
-/*
 Utility functions below
 */
-
-function clipAnnoMatrix(field, colLabel, colSchema, colData, df, qmin, qmax) {
-  /* only clip obs and var scalar columns */
-  if (field !== "obs" && field !== "X") return colData;
-  if (!isContinuousType(colSchema)) return colData;
-  if (qmin < 0) qmin = 0;
-  if (qmax > 1) qmax = 1;
-  if (qmin === 0 && qmax === 1) return colData;
-
-  const quantiles = df.col(colLabel).summarize().percentiles;
-  const lower = quantiles[100 * qmin];
-  const upper = quantiles[100 * qmax];
-  const clippedData = clip(colData.slice(), lower, upper, Number.NaN);
-  return clippedData;
-}
-
-/* convert masks to lists - method wastes space, but is fast */
-function maskToList(mask) {
-  if (!mask) {
-    return null;
-  }
-  const list = new Int32Array(mask.length);
-  let elems = 0;
-  for (let i = 0, l = mask.length; i < l; i += 1) {
-    if (mask[i]) {
-      list[elems] = i;
-      elems += 1;
-    }
-  }
-  return new Int32Array(list.buffer, 0, elems);
-}
-
-function clone(orig) {
-  return Object.assign(Object.create(Object.getPrototypeOf(orig)), orig);
-}
 
 function queryCacheKey(field, query) {
   if (typeof query === "object") {
@@ -601,15 +217,3 @@ function queryCacheKey(field, query) {
   }
   return `${field}/${query}`;
 }
-
-function encodeQuery(colKey, q) {
-  if (typeof q === "object") {
-    const { field: queryField, column: queryColumn, value: queryValue } = q;
-    return `${dubEncURIComp(queryField)}:${dubEncURIComp(
-      queryColumn
-    )}=${dubEncURIComp(queryValue)}`;
-  }
-  if (!colKey) throw new Error("Unsupported query by name");
-  return `${colKey}=${encodeURIComponent(q)}`;
-}
-/* eslint-enable max-classes-per-file -- enable*/

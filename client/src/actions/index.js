@@ -1,5 +1,10 @@
 import * as globals from "../globals";
-import { AnnoMatrixLoader, AnnoMatrixObsCrossfilter } from "../util/annoMatrix";
+import {
+  AnnoMatrixLoader,
+  AnnoMatrixObsCrossfilter,
+  clip,
+  isubsetMask,
+} from "../util/annoMatrix";
 import {
   catchErrorsWrap,
   doJsonRequest,
@@ -173,8 +178,8 @@ const clipAction = (min, max) => (dispatch, getState) => {
   */
   const { annoMatrix: prevAnnoMatrix } = getState();
   const annoMatrix = prevAnnoMatrix.isClipped
-    ? prevAnnoMatrix.viewOf.clip(min, max)
-    : prevAnnoMatrix.clip(min, max);
+    ? clip(prevAnnoMatrix.viewOf, min, max)
+    : clip(prevAnnoMatrix, min, max);
   const obsCrossfilter = new AnnoMatrixObsCrossfilter(annoMatrix);
   dispatch({
     type: "set clip quantiles",
@@ -193,7 +198,8 @@ const subsetAction = () => (dispatch, getState) => {
     obsCrossfilter: prevObsCrossfilter,
   } = getState();
 
-  const annoMatrix = prevAnnoMatrix.isubsetMask(
+  const annoMatrix = isubsetMask(
+    prevAnnoMatrix,
     prevObsCrossfilter.allSelectedMask()
   );
   const obsCrossfilter = new AnnoMatrixObsCrossfilter(annoMatrix);
@@ -223,7 +229,7 @@ const resetSubsetAction = () => (dispatch, getState) => {
 
   /* re-apply the clip, if any */
   if (clipRange !== null) {
-    annoMatrix = annoMatrix.clip(...clipRange);
+    annoMatrix = clip(annoMatrix, ...clipRange);
   }
 
   const obsCrossfilter = new AnnoMatrixObsCrossfilter(annoMatrix);
