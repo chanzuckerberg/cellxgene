@@ -120,41 +120,6 @@ export default class AnnoMatrix {
     return undefined;
   }
 
-  // /**
-  //  ** View creation interfaces:
-  //  **/
-  // isubsetMask(rowMask) {
-  //   /*
-  // Subset on row based upon mask
-  // */
-  //   return this.isubset(maskToList(rowMask));
-  // }
-
-  // isubset(rowOffsets) {
-  //   /*
-  // subset based on offset
-  // */
-  //   const rowIndex = this.rowIndex.isubset(rowOffsets);
-  //   return new AnnoMatrixRowSubsetView(this, rowIndex);
-  // }
-
-  // subset(rowLabels) {
-
-  // subset based on labels
-
-  //   const rowIndex = this.rowIndex.subset(rowLabels);
-  //   return new AnnoMatrixRowSubsetView(this, rowIndex);
-  // }
-
-  // clip(qmin, qmax) {
-  //   /*
-  // Create a view that clips all continuous data to the [min, max] range.
-  // The matrix shape does not change, but the continuous values outside the
-  // specified range will become a NaN.
-  // */
-  //   return new AnnoMatrixClipView(this, qmin, qmax);
-  // }
-
   /**
    ** private below
    **/
