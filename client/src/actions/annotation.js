@@ -288,6 +288,8 @@ export const needToSaveObsAnnotations = (annoMatrix, lastSavedAnnoMatrix) => {
     * the contents of the user-defined columns have change
   */
 
+  annoMatrix = annoMatrix.base();
+
   // if the annoMatrix hasn't changed, we are guaranteed no changes to the matrix schema or contents.
   if (annoMatrix === lastSavedAnnoMatrix) return false;
 
@@ -307,9 +309,12 @@ export const saveObsAnnotationsAction = () => async (dispatch, getState) => {
   /*
   Save the user-created obs annotations IF any have changed.
   */
-  const { annoMatrix, annotations, autosave } = getState();
+  const state = getState();
+  const { annotations, autosave } = state;
   const { dataCollectionNameIsReadOnly, dataCollectionName } = annotations;
   const { lastSavedAnnoMatrix, saveInProgress } = autosave;
+
+  const annoMatrix = state.annoMatrix.base();
 
   if (saveInProgress || annoMatrix === lastSavedAnnoMatrix) return;
   if (!needToSaveObsAnnotations(annoMatrix, lastSavedAnnoMatrix)) {

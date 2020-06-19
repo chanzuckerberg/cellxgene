@@ -72,6 +72,18 @@ export default class AnnoMatrix {
   }
 
   /**
+   ** General utility methods
+   **/
+  base() {
+    /*
+    return the base of view
+    */
+    let annoMatrix = this;
+    while (annoMatrix.isView) annoMatrix = annoMatrix.viewOf;
+    return annoMatrix;
+  }
+
+  /**
    ** Load / read interfaces
    **/
   fetch(field, q) {

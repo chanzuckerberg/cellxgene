@@ -170,7 +170,7 @@ export default class AnnoMatrixObsCrossfilter {
       this.obsCrossfilter.size() === 0 ||
       this.obsCrossfilter.dimensionNames().length === 0
     ) {
-      return this.annoMatrix.rowIndex;
+      return this.annoMatrix.rowIndex.labels();
     }
 
     const mask = this.obsCrossfilter.allSelectedMask();
