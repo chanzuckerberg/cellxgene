@@ -8,6 +8,8 @@ import { fetchResult } from "./fetchHelpers";
 import { indexEntireSchema } from "../stateManager/schemaHelpers";
 import { whereCacheGet, whereCacheMerge } from "./whereCache";
 
+const MAX_CACHED_COLUMNS = 32;
+
 export default class AnnoMatrix {
   static fields() {
     return ["obs", "var", "emb", "X"];
@@ -42,6 +44,12 @@ export default class AnnoMatrix {
       X: {},
     };
     this._whereCache = {};
+    this._gcInfo = {
+      obs: new Map(),
+      var: new Map(),
+      emb: new Map(),
+      X: new Map(),
+    };
   }
 
   /**
@@ -127,6 +135,16 @@ export default class AnnoMatrix {
     if (!AnnoMatrix.fields().includes(field)) return undefined;
     const queries = Array.isArray(q) ? q : [q];
 
+    /* find cached columns we need, and GC the rest */
+    const cachedColumns = queries
+      .map((query) =>
+        whereCacheGet(this._whereCache, this.schema, field, query).filter(
+          (cacheKey) => cacheKey !== undefined && this[field].hasCol(cacheKey)
+        )
+      )
+      .flat();
+    this._gcCleanup(field, cachedColumns);
+
     /* find any query not already cached */
     const uncachedQueries = queries.filter((query) =>
       whereCacheGet(this._whereCache, this.schema, field, query).some(
@@ -139,7 +157,7 @@ export default class AnnoMatrix {
       await Promise.all(
         uncachedQueries.map((query) =>
           this._getPendingLoad(field, query, async (_field, _query) => {
-            /* fetch, then index */
+            /* fetch, then index.  _doLoad is subclass interface */
             const [whereCacheUpdate, df] = await this._doLoad(_field, _query);
             this[_field] = this[_field].withColsFrom(df);
             this._whereCache = whereCacheMerge(
@@ -157,17 +175,73 @@ export default class AnnoMatrix {
         whereCacheGet(this._whereCache, this.schema, field, query)
       )
       .flat();
-    return this[field].subset(null, requestedCacheKeys);
+    const response = this[field].subset(null, requestedCacheKeys);
+    this._gcUpdate(field, response);
+    return response;
   }
 
   async _getPendingLoad(field, query, fetchFn) {
+    /*
+    Given a query on a field, ensure that we only have a single outstanding
+    fetch at any given time.  If multiple requests occur while a fetch is
+    outstanding, just wait for the original.
+
+    This is implemented by returning a promise that will await the singular
+    fetch promise.
+    */
     const key = queryCacheKey(field, query);
     if (!this._pendingLoad[field][key]) {
       this._pendingLoad[field][key] = fetchFn(field, query);
-      await this._pendingLoad[field][key];
-      delete this._pendingLoad[field][key];
+      try {
+        await this._pendingLoad[field][key];
+      } finally {
+        delete this._pendingLoad[field][key];
+      }
     }
     return this._pendingLoad[field][key];
+  }
+
+  // eslint-disable-next-line class-methods-use-this -- make sure subclass implements
+  async _doLoad() {
+    /* protect against bugs in subclass */
+    throw new Error("subclass failed to implement _doLoad");
+  }
+
+  _gcCleanup(field, pinnedColumns) {
+    /*
+    called periodically to prune memory use by deleting less used data from the cache.
+
+    do not delete anything in pinnedColumns, as those are being requested
+    */
+    if (field !== "X") return;
+    if (this[field].length < MAX_CACHED_COLUMNS) return;
+    const gcInfo = this._gcInfo[field];
+    const candidates = Array.from(gcInfo.keys()).filter(
+      (col) => pinnedColumns.indexOf(col) === -1
+    );
+    const excessCount =
+      candidates.length + pinnedColumns.length - MAX_CACHED_COLUMNS;
+    if (excessCount > 0) {
+      const toDrop = candidates.slice(0, excessCount);
+      this[field] = toDrop.reduce((df, col) => df.dropCol(col), this[field]);
+      toDrop.forEach((col) => gcInfo.delete(col));
+    }
+  }
+
+  _gcUpdate(field, dataframe) {
+    /*
+    called each time a query is performed, allowing the gc to update any bookkeeping.
+
+    Map objects preserve order of insertion. This is leveraged as a cheap way to
+    do LRU, by removing and re-inserting keys.
+    */
+    const cols = dataframe.colIndex.labels();
+    const gcInfo = this._gcInfo[field];
+    const now = Date.now();
+    cols.forEach((c) => {
+      gcInfo.delete(c);
+      gcInfo.set(c, now);
+    });
   }
 }
 
