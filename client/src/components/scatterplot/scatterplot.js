@@ -23,18 +23,18 @@ function createProjectionTF(viewportWidth, viewportHeight) {
 }
 
 @connect((state) => {
-  const { world, crossfilter, universe } = state;
+  const { obsCrossfilter: crossfilter } = state;
   const { scatterplotXXaccessor, scatterplotYYaccessor } = state.controls;
-  const expressionX = scatterplotXXaccessor
-    ? world.varData.col(scatterplotXXaccessor)?.asArray()
-    : null;
-  const expressionY = scatterplotYYaccessor
-    ? world.varData.col(scatterplotYYaccessor)?.asArray()
-    : null;
+  // const expressionX = scatterplotXXaccessor
+  //   ? world.varData.col(scatterplotXXaccessor)?.asArray()
+  //   : null;
+  // const expressionY = scatterplotYYaccessor
+  //   ? world.varData.col(scatterplotYYaccessor)?.asArray()
+  //   : null;
 
   return {
-    world,
-    universe,
+    // world,
+    // universe,
 
     colorRGB: state.colors.rgb,
     colorScale: state.colors.scale,
@@ -49,8 +49,8 @@ function createProjectionTF(viewportWidth, viewportHeight) {
 
     differential: state.differential,
 
-    expressionX,
-    expressionY,
+    // expressionX,
+    // expressionY,
 
     crossfilter,
   };
