@@ -8,12 +8,10 @@ const stateKey = "@@undoable/filterState";
 these actions will not affect history
 */
 const skipOnActions = new Set([
+  "annoMatrix: init complete",
   "url changed",
-  "interface reset started",
   "initial data load start",
-  "universe: column load success",
   "universe: user color load success",
-  "universe exists, but loading is still in progress",
   "configuration load complete",
   "increment graph render counter",
   "window resize",
@@ -23,16 +21,7 @@ const skipOnActions = new Set([
   "graph brush change",
   "continuous metadata histogram brush",
 
-  "expression load start",
-  "expression load success",
-  "expression load error",
-
-  "request user defined gene started",
   "request user defined gene success",
-  "clear all user defined genes",
-
-  "get single gene expression for coloring started",
-  "get single gene expression for coloring error",
 
   "category value mouse hover start",
   "category value mouse hover end",
@@ -62,7 +51,7 @@ const debounceOnActions = new Set([]);
 history will be cleared when these actions occur
 */
 const clearOnActions = new Set([
-  "initial data load complete (universe exists)",
+  "initial data load complete",
   "reset subset",
   "initial data load error",
 ]);
@@ -242,7 +231,7 @@ debug: set to any falsish value to disable logging of helpful debugging informat
 Set to true or 1 for base logging, high number for more verbosity (currently only 1/true
 or 2).
 */
-const debug = false;
+const debug = true;
 const undoableConfig = {
   debug,
   historyLimit: 50, // maximum history size

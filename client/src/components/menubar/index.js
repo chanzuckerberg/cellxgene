@@ -14,8 +14,6 @@ import UndoRedoReset from "./undoRedo";
 import DiffexpButtons from "./diffexpButtons";
 
 @connect((state) => ({
-  // universe: state.universe,
-  // world: state.world,
   annoMatrix: state.annoMatrix,
   crossfilter: state.obsCrossfilter,
   differential: state.differential,

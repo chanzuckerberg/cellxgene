@@ -113,12 +113,6 @@ const Controls = (
         userDefinedGenes: newUserDefinedGenes,
       };
     }
-    case "clear all user defined genes": {
-      return {
-        ...state,
-        userDefinedGenes: [],
-      };
-    }
     case "initial data load error": {
       return {
         ...state,
@@ -145,12 +139,6 @@ const Controls = (
       return {
         ...state,
         graphRenderCounter: c,
-      };
-    }
-    case "interface reset started": {
-      return {
-        ...state,
-        resettingInterface: true,
       };
     }
 

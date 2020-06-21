@@ -49,22 +49,27 @@ const doInitialDataLoad = () =>
   catchErrorsWrap(async (dispatch) => {
     dispatch({ type: "initial data load start" });
 
-    const [, schema] = await Promise.all([
-      configFetch(dispatch),
-      schemaFetch(dispatch),
-      userColorsFetchAndLoad(dispatch),
-    ]);
+    try {
+      const [, schema] = await Promise.all([
+        configFetch(dispatch),
+        schemaFetch(dispatch),
+        userColorsFetchAndLoad(dispatch),
+      ]);
 
-    const baseDataUrl = `${globals.API.prefix}${globals.API.version}`;
-    const annoMatrix = new AnnoMatrixLoader(baseDataUrl, schema.schema);
-    const obsCrossfilter = new AnnoMatrixObsCrossfilter(annoMatrix);
-    dispatch({
-      type: "annoMatrix: init complete",
-      annoMatrix,
-      obsCrossfilter,
-    });
+      const baseDataUrl = `${globals.API.prefix}${globals.API.version}`;
+      const annoMatrix = new AnnoMatrixLoader(baseDataUrl, schema.schema);
+      const obsCrossfilter = new AnnoMatrixObsCrossfilter(annoMatrix);
+      dispatch({
+        type: "annoMatrix: init complete",
+        annoMatrix,
+        obsCrossfilter,
+      });
 
-    dispatch({ type: "initial data load complete" });
+      dispatch({ type: "initial data load complete" });
+    } catch (error) {
+      dispatch({ type: "initial data load error", error });
+      throw error;
+    }
   }, true);
 
 function requestSingleGeneExpressionCountsForColoringPOST(gene) {
