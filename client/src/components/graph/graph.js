@@ -75,6 +75,10 @@ function renderThrottle(callback) {
   };
 }
 
+const flagSelected = 1;
+const flagNaN = 2;
+const flagHighlight = 4;
+
 @connect((state) => ({
   annoMatrix: state.annoMatrix,
   crossfilter: state.obsCrossfilter,
@@ -112,18 +116,18 @@ class Graph extends React.Component {
   });
 
   computeSelectedFlags = memoize(
-    (crossfilter, flagSelected, flagUnselected) => {
+    (crossfilter, _flagSelected, _flagUnselected) => {
       const x = crossfilter.fillByIsSelected(
         new Float32Array(crossfilter.size()),
-        flagSelected,
-        flagUnselected
+        _flagSelected,
+        _flagUnselected
       );
       return x;
     }
   );
 
   computePointFlags = memoize(
-    (crossfilter, colorDf, colorAccessor, pointDilationDf, pointDilation) => {
+    (crossfilter, colorByData, pointDilationData, pointDilationLabel) => {
       /*
       We communicate with the shader using three flags:
       - isNaN -- the value is a NaN. Only makes sense when we have a colorAccessor
@@ -138,31 +142,17 @@ class Graph extends React.Component {
       (eg, isNaN) are meaningless in the face of categorical metadata.
       */
 
-      const flagSelected = 1;
-      const flagNaN = 2;
-      const flagHighlight = 4;
-
       const flags = this.computeSelectedFlags(
         crossfilter,
         flagSelected,
         0
       ).slice();
 
-      const colorByData = colorDf?.col(colorAccessor)?.asArray();
-
-      const {
-        metadataField: pointDilationCategory,
-        categoryField: pointDilationLabel,
-      } = pointDilation;
-      const highlightData = pointDilationDf
-        ?.col(pointDilationCategory)
-        ?.asArray();
-
-      if (colorByData || highlightData) {
+      if (colorByData || pointDilationData) {
         for (let i = 0, len = flags.length; i < len; i += 1) {
-          if (highlightData) {
+          if (pointDilationData) {
             flags[i] +=
-              highlightData[i] === pointDilationLabel ? flagHighlight : 0;
+              pointDilationData[i] === pointDilationLabel ? flagHighlight : 0;
           }
           if (colorByData) {
             flags[i] += Number.isFinite(colorByData[i]) ? 0 : flagNaN;
@@ -178,6 +168,13 @@ class Graph extends React.Component {
     const viewport = this.getViewportDimensions();
     this.reglCanvas = null;
     const modelTF = createModelTF();
+    this.renderCache = {
+      // cached state that doesn't trigger an update
+      // regl buffer data
+      positions: null,
+      colors: null,
+      flags: null,
+    };
     this.state = {
       toolSVG: null,
       tool: null,
@@ -205,11 +202,6 @@ class Graph extends React.Component {
 
       // color lookup table
       colorTable: null,
-
-      // regl buffer data
-      positions: null,
-      colors: null,
-      flags: null,
     };
   }
 
@@ -405,46 +397,52 @@ class Graph extends React.Component {
 
   updateReglState(layoutDf, colorDf, colorTable, pointDilationDf) {
     /* update all regl-related state */
-    const newState = {};
+    const { renderCache, state } = this;
     let needsRepaint = false;
     const { layoutChoice, colors } = this.props;
     const { colorAccessor } = colors;
-    const { state } = this;
     const { regl, pointBuffer, colorBuffer, flagBuffer, modelTF } = state;
 
     // still initializing?
-    if (!regl) return newState;
+    if (!regl) return;
 
     /* point coordinates */
     const X = layoutDf.col(layoutChoice.currentDimNames[0]).asArray();
     const Y = layoutDf.col(layoutChoice.currentDimNames[1]).asArray();
     const positions = this.computePointPositions(X, Y, modelTF);
-    if (positions !== state.positions) {
-      newState.positions = positions;
+    if (positions !== renderCache.positions) {
+      renderCache.positions = positions;
       pointBuffer({ data: positions, dimension: 2 });
       needsRepaint = true;
     }
 
     /* point colors */
     const _colors = this.computePointColors(colorTable.rgb);
-    if (_colors !== state.colors) {
+    if (_colors !== renderCache.colors) {
       /* update our cache & GL if the buffer changes */
-      newState.colors = _colors;
+      renderCache.colors = _colors;
       colorBuffer({ data: _colors, dimension: 3 });
       needsRepaint = true;
     }
 
     /* flags */
     const { crossfilter, pointDilation } = this.props;
+    const colorByData = colorDf?.col(colorAccessor)?.asArray();
+    const {
+      metadataField: pointDilationCategory,
+      categoryField: pointDilationLabel,
+    } = pointDilation;
+    const pointDilationData = pointDilationDf
+      ?.col(pointDilationCategory)
+      ?.asArray();
     const flags = this.computePointFlags(
       crossfilter,
-      colorDf,
-      colorAccessor,
-      pointDilationDf,
-      pointDilation
+      colorByData,
+      pointDilationData,
+      pointDilationLabel
     );
-    if (flags !== state.flags) {
-      newState.flags = flags;
+    if (flags !== renderCache.flags) {
+      renderCache.flags = flags;
       flagBuffer({ data: flags, dimension: 1 });
       needsRepaint = true;
     }
@@ -461,8 +459,6 @@ class Graph extends React.Component {
         projectionTF
       );
     }
-
-    return newState;
   }
 
   createColorByQuery() {
@@ -524,18 +520,13 @@ class Graph extends React.Component {
       try {
         const [layoutDf, colorDf, pointDilationDf] = await this.fetchData();
         const colorTable = this.updateColorTable(colorDf);
+        this.updateReglState(layoutDf, colorDf, colorTable, pointDilationDf);
         this.setState({
           status: "success",
           layoutDf,
           colorDf,
           colorTable,
           pointDilationDf,
-          ...this.updateReglState(
-            layoutDf,
-            colorDf,
-            colorTable,
-            pointDilationDf
-          ),
         });
       } catch (error) {
         this.setState({ status: "error" });
@@ -549,9 +540,7 @@ class Graph extends React.Component {
       pointDilation !== prevProps?.pointDilation
     ) {
       const { layoutDf, colorDf, colorTable, pointDilationDf } = this.state;
-      this.setState(
-        this.updateReglState(layoutDf, colorDf, colorTable, pointDilationDf)
-      );
+      this.updateReglState(layoutDf, colorDf, colorTable, pointDilationDf);
     }
   }
 

@@ -16,6 +16,10 @@ import {
   createColorQuery,
 } from "../../util/stateManager/colorHelpers";
 
+const flagSelected = 1;
+const flagNaN = 2;
+const flagHighlight = 4;
+
 function createProjectionTF(viewportWidth, viewportHeight) {
   /*
   the projection transform accounts for the screen size & other layout
@@ -63,18 +67,18 @@ class Scatterplot extends React.PureComponent {
   });
 
   computeSelectedFlags = memoize(
-    (crossfilter, flagSelected, flagUnselected) => {
+    (crossfilter, _flagSelected, _flagUnselected) => {
       const x = crossfilter.fillByIsSelected(
         new Float32Array(crossfilter.size()),
-        flagSelected,
-        flagUnselected
+        _flagSelected,
+        _flagUnselected
       );
       return x;
     }
   );
 
   computePointFlags = memoize(
-    (crossfilter, colorDf, colorAccessor, pointDilationDf, pointDilation) => {
+    (crossfilter, colorByData, pointDilationData, pointDilationLabel) => {
       /*
       We communicate with the shader using three flags:
       - isNaN -- the value is a NaN. Only makes sense when we have a colorAccessor
@@ -89,31 +93,27 @@ class Scatterplot extends React.PureComponent {
       (eg, isNaN) are meaningless in the face of categorical metadata.
       */
 
-      const flagSelected = 1;
-      const flagNaN = 2;
-      const flagHighlight = 4;
-
       const flags = this.computeSelectedFlags(
         crossfilter,
         flagSelected,
         0
       ).slice();
 
-      const colorByData = colorDf?.col(colorAccessor)?.asArray();
+      // const colorByData = colorDf?.col(colorAccessor)?.asArray();
 
-      const {
-        metadataField: pointDilationCategory,
-        categoryField: pointDilationLabel,
-      } = pointDilation;
-      const highlightData = pointDilationDf
-        ?.col(pointDilationCategory)
-        ?.asArray();
+      // const {
+      //   metadataField: pointDilationCategory,
+      //   categoryField: pointDilationLabel,
+      // } = pointDilation;
+      // const highlightData = pointDilationDf
+      //   ?.col(pointDilationCategory)
+      //   ?.asArray();
 
-      if (colorByData || highlightData) {
+      if (colorByData || pointDilationData) {
         for (let i = 0, len = flags.length; i < len; i += 1) {
-          if (highlightData) {
+          if (pointDilationData) {
             flags[i] +=
-              highlightData[i] === pointDilationLabel ? flagHighlight : 0;
+              pointDilationData[i] === pointDilationLabel ? flagHighlight : 0;
           }
           if (colorByData) {
             flags[i] += Number.isFinite(colorByData[i]) ? 0 : flagNaN;
@@ -127,6 +127,14 @@ class Scatterplot extends React.PureComponent {
   constructor(props) {
     super(props);
     this.axes = false;
+    this.renderCache = {
+      // cached state that doesn't trigger an update
+      positions: null,
+      colors: null,
+      flags: null,
+      xScale: null,
+      yScale: null,
+    };
     this.state = {
       regl: null,
       svg: null,
@@ -137,11 +145,6 @@ class Scatterplot extends React.PureComponent {
         width: null,
       },
       projectionTF: null,
-      positions: null,
-      colors: null,
-      flags: null,
-      xScale: null,
-      yScale: null,
       expressionXDf: null,
       expressionYDf: null,
       colorDf: null,
@@ -254,11 +257,10 @@ class Scatterplot extends React.PureComponent {
     colorTable,
     pointDilationDf
   ) {
-    const newState = {};
+    const { renderCache, state } = this;
     let needsRepaint = false;
     const { colors } = this.props;
     const { colorAccessor } = colors;
-    const { state } = this;
     const {
       svg,
       regl,
@@ -267,9 +269,9 @@ class Scatterplot extends React.PureComponent {
       flagBuffer,
       projectionTF,
     } = state;
-    let { xScale, yScale } = state;
+    let { xScale, yScale } = renderCache;
 
-    if (!regl || !svg) return newState;
+    if (!regl || !svg) return;
 
     if (
       expressionXDf !== state.expressionXDf ||
@@ -282,8 +284,8 @@ class Scatterplot extends React.PureComponent {
         expressionYDf
       ));
       this.drawAxesSVG(xScale, yScale, svg);
-      newState.xScale = xScale;
-      newState.yScale = yScale;
+      renderCache.xScale = xScale;
+      renderCache.yScale = yScale;
       needsRepaint = true;
     }
 
@@ -293,30 +295,45 @@ class Scatterplot extends React.PureComponent {
       xScale,
       yScale
     );
-    if (positions !== state.positions) {
-      newState.positions = positions;
+    if (positions !== renderCache.positions) {
+      renderCache.positions = positions;
       pointBuffer({ data: positions, dimension: 2 });
       needsRepaint = true;
     }
 
     /* colors for each point */
     const _colors = this.computePointColors(colorTable.rgb);
-    if (_colors !== state.colors) {
-      newState.colors = _colors;
+    if (_colors !== renderCache.colors) {
+      renderCache.colors = _colors;
       colorBuffer({ data: _colors, dimension: 3 });
       needsRepaint = true;
     }
 
+    /* falgs */
     const { crossfilter, pointDilation } = this.props;
+    const colorByData = colorDf?.col(colorAccessor)?.asArray();
+    const {
+      metadataField: pointDilationCategory,
+      categoryField: pointDilationLabel,
+    } = pointDilation;
+    const pointDilationData = pointDilationDf
+      ?.col(pointDilationCategory)
+      ?.asArray();
     const flags = this.computePointFlags(
       crossfilter,
-      colorDf,
-      colorAccessor,
-      pointDilationDf,
-      pointDilation
+      colorByData,
+      pointDilationData,
+      pointDilationLabel
     );
-    if (flags !== state.flags) {
-      newState.flags = flags;
+    // const flags = this.computePointFlags(
+    //   crossfilter,
+    //   colorDf,
+    //   colorAccessor,
+    //   pointDilationDf,
+    //   pointDilation
+    // );
+    if (flags !== renderCache.flags) {
+      renderCache.flags = flags;
       flagBuffer({ data: flags, dimension: 1 });
       needsRepaint = true;
     }
@@ -332,8 +349,6 @@ class Scatterplot extends React.PureComponent {
         projectionTF
       );
     }
-
-    return newState;
   }
 
   updateColorTable(colorDf) {
@@ -413,6 +428,13 @@ class Scatterplot extends React.PureComponent {
           pointDilationDf,
         ] = await this.fetchData();
         const colorTable = this.updateColorTable(colorDf);
+        this.updateReglState(
+          expressionXDf,
+          expressionYDf,
+          colorDf,
+          colorTable,
+          pointDilationDf
+        );
         this.setState({
           status: "success",
           expressionXDf,
@@ -420,13 +442,6 @@ class Scatterplot extends React.PureComponent {
           colorDf,
           colorTable,
           pointDilationDf,
-          ...this.updateReglState(
-            expressionXDf,
-            expressionYDf,
-            colorDf,
-            colorTable,
-            pointDilationDf
-          ),
         });
       } catch (error) {
         this.setState({ status: "error" });
@@ -446,14 +461,12 @@ class Scatterplot extends React.PureComponent {
         colorTable,
         pointDilationDf,
       } = this.state;
-      this.setState(
-        this.updateReglState(
-          expressionXDf,
-          expressionYDf,
-          colorDf,
-          colorTable,
-          pointDilationDf
-        )
+      this.updateReglState(
+        expressionXDf,
+        expressionYDf,
+        colorDf,
+        colorTable,
+        pointDilationDf
       );
     }
   }

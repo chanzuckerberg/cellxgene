@@ -559,12 +559,14 @@ class Dataframe {
     const dims = [...this.dims];
 
     /* subset columns */
-    let { __columns, colIndex } = this;
+    let { __columns, colIndex, __columnsAccessor } = this;
     if (newColIndex) {
       const colOffsets = this.colIndex.getOffsets(newColIndex.labels());
       __columns = new Array(colOffsets.length);
+      __columnsAccessor = new Array(colOffsets.length);
       for (let i = 0, l = colOffsets.length; i < l; i += 1) {
         __columns[i] = this.__columns[colOffsets[i]];
+        __columnsAccessor[i] = this.__columnsAccessor[colOffsets[i]];
       }
       colIndex = newColIndex;
       dims[1] = colOffsets.length;
@@ -582,10 +584,17 @@ class Dataframe {
       });
       rowIndex = newRowIndex;
       dims[0] = rowOffsets.length;
+      __columnsAccessor = []; // force a recompile
     }
 
     if (dims[0] === 0 || dims[1] === 0) return Dataframe.empty();
-    return new Dataframe(dims, __columns, rowIndex, colIndex);
+    return new Dataframe(
+      dims,
+      __columns,
+      rowIndex,
+      colIndex,
+      __columnsAccessor
+    );
   }
 
   subset(rowLabels, colLabels = null, withRowIndex = null) {

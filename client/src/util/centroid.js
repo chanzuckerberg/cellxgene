@@ -149,7 +149,11 @@ const hashMedianCentroid = (
   layoutChoice,
   layoutDf
 ) => {
-  return `${categoryDf.__id}+${layoutDf.__id}:${categoryName}:${layoutChoice.currentDimNames}`;
+  const category = categoryDf.col(categoryName);
+  const layoutDimNames = layoutChoice.currentDimNames;
+  const layoutX = layoutDf.col(layoutDimNames[0]);
+  const layoutY = layoutDf.col(layoutDimNames[1]);
+  return `${category.__id}+${layoutX.__id}:${layoutY.__id}`;
 };
 // export the memoized calculation function
 export default memoize(calcMedianCentroid, hashMedianCentroid);
