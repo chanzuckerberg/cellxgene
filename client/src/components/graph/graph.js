@@ -123,7 +123,6 @@ class Graph extends React.Component {
   );
 
   computePointFlags = memoize(
-    // (world, crossfilter, colorAccessor, pointDilation) => {
     (crossfilter, colorDf, colorAccessor, pointDilationDf, pointDilation) => {
       /*
       We communicate with the shader using three flags:
@@ -466,7 +465,7 @@ class Graph extends React.Component {
     return newState;
   }
 
-  colorByQuery() {
+  createColorByQuery() {
     const { annoMatrix, colors } = this.props;
     const { schema } = annoMatrix;
     const { colorMode, colorAccessor } = colors;
@@ -488,7 +487,7 @@ class Graph extends React.Component {
     promises.push(annoMatrix.fetch("emb", layoutChoice.current));
 
     // color
-    const query = this.colorByQuery();
+    const query = this.createColorByQuery();
     if (query) {
       promises.push(annoMatrix.fetch(...query));
     } else {
@@ -539,7 +538,7 @@ class Graph extends React.Component {
           ),
         });
       } catch (error) {
-        this.setState({ status: "error", error });
+        this.setState({ status: "error" });
         throw error;
       }
       return;
