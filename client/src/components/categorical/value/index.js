@@ -422,11 +422,7 @@ class CategoryValue extends React.Component {
 
     /* this is the color scale, so add swatches below */
     const isColorBy = metadataField === colorAccessor;
-    let categories = null;
-
-    if (isColorBy && schema) {
-      categories = schema.annotations.obsByName[colorAccessor]?.categories;
-    }
+    const { categoryValueIndices } = categorySummary;
 
     const editModeActive =
       isUserAnno &&
@@ -643,14 +639,14 @@ class CategoryValue extends React.Component {
             </span>
 
             <svg
-              display={isColorBy && categories ? "auto" : "none"}
+              display={isColorBy && categoryValueIndices ? "auto" : "none"}
               style={{
                 marginLeft: 5,
                 width: VALUE_HEIGHT,
                 height: VALUE_HEIGHT,
                 backgroundColor:
-                  isColorBy && categories
-                    ? colorScale(categories.indexOf(value))
+                  isColorBy && categoryValueIndices
+                    ? colorScale(categoryValueIndices.get(value))
                     : "inherit",
               }}
             />
