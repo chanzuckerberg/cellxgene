@@ -202,16 +202,27 @@ describe.each([
   });
 
   test.only("stacked bar graph renders", async () => {
-    if (config.withSubset)
+    if (config.withSubset) {
       await actions.subset({ x1: 0.1, y1: 0.1, x2: 0.8, y2: 0.8 });
+    }
 
     await actions.expandCategory(`louvain`);
 
-    await utils.clickOn(`colorby-${perTestCategoryName}`);
-    const labels = await utils.getAllByClass("categorical-row");
-    console.log({ labels });
+    await utils.clickOn(`colorby-louvain`);
 
-    labels.forEach((label) => expect(label.outerHTML).toMatchSnapshot());
+    const labels = await utils.getAllByClass("categorical-row");
+
+    const result = await Promise.all(
+      labels.map(async (label) => {
+        return page.evaluate((element) => {
+          return element.outerHTML;
+        }, label);
+      })
+    );
+
+    expect(result).toMatchSnapshot();
+
+    console.log(">>>>>>>>>>>>>>>>>>>> result", result);
   });
 
   async function assertCategoryExists(categoryName) {
