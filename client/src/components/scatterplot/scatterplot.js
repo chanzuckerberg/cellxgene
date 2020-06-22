@@ -46,6 +46,55 @@ function createProjectionTF(viewportWidth, viewportHeight) {
   };
 })
 class Scatterplot extends React.PureComponent {
+  static drawAxesSVG(
+    xScale,
+    yScale,
+    svg,
+    scatterplotYYaccessor,
+    scatterplotXXaccessor
+  ) {
+    svg.selectAll("*").remove();
+
+    // the axes are much cleaner and easier now. No need to rotate and orient
+    // the axis, just call axisBottom, axisLeft etc.
+    const xAxis = d3.axisBottom().ticks(7).scale(xScale);
+
+    const yAxis = d3.axisLeft().ticks(7).scale(yScale);
+
+    // adding axes is also simpler now, just translate x-axis to (0,height)
+    // and it's alread defined to be a bottom axis.
+    svg
+      .append("g")
+      .attr("transform", `translate(0,${height})`)
+      .attr("class", "x axis")
+      .call(xAxis);
+
+    // y-axis is translated to (0,0)
+    svg
+      .append("g")
+      .attr("transform", "translate(0,0)")
+      .attr("class", "y axis")
+      .call(yAxis);
+
+    // adding label. For x-axis, it's at (10, 10), and for y-axis at (width, height-10).
+    svg
+      .append("text")
+      .attr("x", 10)
+      .attr("y", 10)
+      .attr("class", "label")
+      .style("font-style", "italic")
+      .text(scatterplotYYaccessor);
+
+    svg
+      .append("text")
+      .attr("x", width)
+      .attr("y", height - 10)
+      .attr("text-anchor", "end")
+      .attr("class", "label")
+      .style("font-style", "italic")
+      .text(scatterplotXXaccessor);
+  }
+
   computePointPositions = memoize((X, Y, xScale, yScale) => {
     const positions = new Float32Array(2 * X.length);
     for (let i = 0, len = X.length; i < len; i += 1) {
@@ -117,7 +166,8 @@ class Scatterplot extends React.PureComponent {
   constructor(props) {
     super(props);
     this.axes = false;
-    this.renderCache = { // cached state that doesn't trigger an update
+    this.renderCache = {
+      // cached state that doesn't trigger an update
       positions: null,
       colors: null,
       flags: null,
@@ -134,11 +184,24 @@ class Scatterplot extends React.PureComponent {
         width: null,
       },
       projectionTF: null,
-      expressionXDf: null,
-      expressionYDf: null,
-      colorDf: null,
-      colorTable: null,
-      pointDilationDf: null,
+
+      // component rendering derived state - these must stay synchronized
+      // with the reducer state they were generated from.
+      scatterplotState: {
+        scatterplotXXaccessor: null,
+        scatterplotYYaccessor: null,
+        expressionXDf: null,
+        expressionYDf: null,
+      },
+      colorState: {
+        colors: null,
+        colorDf: null,
+        colorTable: null,
+      },
+      pointDilationState: {
+        pointDilation: null,
+        pointDilationDf: null,
+      },
     };
   }
 
@@ -232,24 +295,16 @@ class Scatterplot extends React.PureComponent {
     ];
   }
 
-  createColorByQuery() {
-    const { annoMatrix, colors } = this.props;
+  createColorByQuery(colors) {
+    const { annoMatrix } = this.props;
     const { schema } = annoMatrix;
     const { colorMode, colorAccessor } = colors;
     return createColorQuery(colorMode, colorAccessor, schema);
   }
 
-  updateReglState(
-    expressionXDf,
-    expressionYDf,
-    colorDf,
-    colorTable,
-    pointDilationDf
-  ) {
+  updateReglState(scatterplotState, colorState, pointDilationState) {
     const { renderCache, state } = this;
     let needsRepaint = false;
-    const { colors } = this.props;
-    const { colorAccessor } = colors;
     const {
       svg,
       regl,
@@ -258,13 +313,21 @@ class Scatterplot extends React.PureComponent {
       flagBuffer,
       projectionTF,
     } = state;
-    let { xScale, yScale } = renderCache;
 
     if (!regl || !svg) return;
 
+    const {
+      scatterplotYYaccessor,
+      scatterplotXXaccessor,
+      expressionXDf,
+      expressionYDf,
+    } = scatterplotState;
+    const xCol = expressionXDf.icol(0);
+    const yCol = expressionYDf.icol(0);
+    let { xScale, yScale } = renderCache;
     if (
-      expressionXDf !== state.expressionXDf ||
-      expressionYDf !== state.expressionYDf ||
+      xCol !== state.scatterplotState.expressionXDf?.icol(0) ||
+      yCol !== state.scatterplotState.expressionYDf?.icol(0) ||
       !xScale ||
       !yScale
     ) {
@@ -272,15 +335,21 @@ class Scatterplot extends React.PureComponent {
         expressionXDf,
         expressionYDf
       ));
-      this.drawAxesSVG(xScale, yScale, svg);
+      Scatterplot.drawAxesSVG(
+        xScale,
+        yScale,
+        svg,
+        scatterplotYYaccessor,
+        scatterplotXXaccessor
+      );
       renderCache.xScale = xScale;
       renderCache.yScale = yScale;
       needsRepaint = true;
     }
 
     const positions = this.computePointPositions(
-      expressionXDf.icol(0).asArray(),
-      expressionYDf.icol(0).asArray(),
+      xCol.asArray(),
+      yCol.asArray(),
       xScale,
       yScale
     );
@@ -291,6 +360,8 @@ class Scatterplot extends React.PureComponent {
     }
 
     /* colors for each point */
+    const { colors, colorTable, colorDf } = colorState;
+    const { colorAccessor } = colors;
     const _colors = this.computePointColors(colorTable.rgb);
     if (_colors !== renderCache.colors) {
       renderCache.colors = _colors;
@@ -298,8 +369,9 @@ class Scatterplot extends React.PureComponent {
       needsRepaint = true;
     }
 
-    /* falgs */
-    const { crossfilter, pointDilation } = this.props;
+    /* flags */
+    const { pointDilation, pointDilationDf } = pointDilationState;
+    const { crossfilter } = this.props;
     const colorByData = colorDf?.col(colorAccessor)?.asArray();
     const {
       metadataField: pointDilationCategory,
@@ -333,9 +405,9 @@ class Scatterplot extends React.PureComponent {
     }
   }
 
-  updateColorTable(colorDf) {
+  updateColorTable(colors, colorDf) {
     /* update color table state */
-    const { annoMatrix, colors } = this.props;
+    const { annoMatrix } = this.props;
     const { schema } = annoMatrix;
     const { colorAccessor, userColors, colorMode } = colors;
     return createColorTable(
@@ -347,13 +419,13 @@ class Scatterplot extends React.PureComponent {
     );
   }
 
-  async fetchData() {
-    const {
-      annoMatrix,
-      scatterplotXXaccessor,
-      scatterplotYYaccessor,
-      pointDilation,
-    } = this.props;
+  async fetchData(
+    scatterplotXXaccessor,
+    scatterplotYYaccessor,
+    colors,
+    pointDilation
+  ) {
+    const { annoMatrix } = this.props;
     const { metadataField: pointDilationAccessor } = pointDilation;
 
     const promises = [];
@@ -366,7 +438,7 @@ class Scatterplot extends React.PureComponent {
     );
 
     // color
-    const query = this.createColorByQuery();
+    const query = this.createColorByQuery(colors);
     if (query) {
       promises.push(annoMatrix.fetch(...query));
     } else {
@@ -408,22 +480,27 @@ class Scatterplot extends React.PureComponent {
           expressionYDf,
           colorDf,
           pointDilationDf,
-        ] = await this.fetchData();
-        const colorTable = this.updateColorTable(colorDf);
-        this.updateReglState(
+        ] = await this.fetchData(
+          scatterplotXXaccessor,
+          scatterplotYYaccessor,
+          colors,
+          pointDilation
+        );
+        const colorTable = this.updateColorTable(colors, colorDf);
+        const scatterplotState = {
+          scatterplotXXaccessor,
+          scatterplotYYaccessor,
           expressionXDf,
           expressionYDf,
-          colorDf,
-          colorTable,
-          pointDilationDf
-        );
+        };
+        const colorState = { colors, colorDf, colorTable };
+        const pointDilationState = { pointDilation, pointDilationDf };
+        this.updateReglState(scatterplotState, colorState, pointDilationState);
         this.setState({
           status: "success",
-          expressionXDf,
-          expressionYDf,
-          colorDf,
-          colorTable,
-          pointDilationDf,
+          scatterplotState,
+          colorState,
+          pointDilationState,
         });
       } catch (error) {
         this.setState({ status: "error" });
@@ -432,69 +509,10 @@ class Scatterplot extends React.PureComponent {
       return;
     }
 
-    if (
-      crossfilter !== prevProps?.crossfilter ||
-      pointDilation !== prevProps?.pointDilation
-    ) {
-      const {
-        expressionXDf,
-        expressionYDf,
-        colorDf,
-        colorTable,
-        pointDilationDf,
-      } = this.state;
-      this.updateReglState(
-        expressionXDf,
-        expressionYDf,
-        colorDf,
-        colorTable,
-        pointDilationDf
-      );
+    if (crossfilter !== prevProps?.crossfilter) {
+      const { scatterplotState, colorState, pointDilationState } = this.state;
+      this.updateReglState(scatterplotState, colorState, pointDilationState);
     }
-  }
-
-  drawAxesSVG(xScale, yScale, svg) {
-    const { scatterplotYYaccessor, scatterplotXXaccessor } = this.props;
-    svg.selectAll("*").remove();
-
-    // the axes are much cleaner and easier now. No need to rotate and orient
-    // the axis, just call axisBottom, axisLeft etc.
-    const xAxis = d3.axisBottom().ticks(7).scale(xScale);
-
-    const yAxis = d3.axisLeft().ticks(7).scale(yScale);
-
-    // adding axes is also simpler now, just translate x-axis to (0,height)
-    // and it's alread defined to be a bottom axis.
-    svg
-      .append("g")
-      .attr("transform", `translate(0,${height})`)
-      .attr("class", "x axis")
-      .call(xAxis);
-
-    // y-axis is translated to (0,0)
-    svg
-      .append("g")
-      .attr("transform", "translate(0,0)")
-      .attr("class", "y axis")
-      .call(yAxis);
-
-    // adding label. For x-axis, it's at (10, 10), and for y-axis at (width, height-10).
-    svg
-      .append("text")
-      .attr("x", 10)
-      .attr("y", 10)
-      .attr("class", "label")
-      .style("font-style", "italic")
-      .text(scatterplotYYaccessor);
-
-    svg
-      .append("text")
-      .attr("x", width)
-      .attr("y", height - 10)
-      .attr("text-anchor", "end")
-      .attr("class", "label")
-      .style("font-style", "italic")
-      .text(scatterplotXXaccessor);
   }
 
   renderPoints(
