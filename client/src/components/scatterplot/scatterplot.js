@@ -99,16 +99,6 @@ class Scatterplot extends React.PureComponent {
         0
       ).slice();
 
-      // const colorByData = colorDf?.col(colorAccessor)?.asArray();
-
-      // const {
-      //   metadataField: pointDilationCategory,
-      //   categoryField: pointDilationLabel,
-      // } = pointDilation;
-      // const highlightData = pointDilationDf
-      //   ?.col(pointDilationCategory)
-      //   ?.asArray();
-
       if (colorByData || pointDilationData) {
         for (let i = 0, len = flags.length; i < len; i += 1) {
           if (pointDilationData) {
@@ -127,8 +117,7 @@ class Scatterplot extends React.PureComponent {
   constructor(props) {
     super(props);
     this.axes = false;
-    this.renderCache = {
-      // cached state that doesn't trigger an update
+    this.renderCache = { // cached state that doesn't trigger an update
       positions: null,
       colors: null,
       flags: null,
@@ -325,13 +314,6 @@ class Scatterplot extends React.PureComponent {
       pointDilationData,
       pointDilationLabel
     );
-    // const flags = this.computePointFlags(
-    //   crossfilter,
-    //   colorDf,
-    //   colorAccessor,
-    //   pointDilationDf,
-    //   pointDilation
-    // );
     if (flags !== renderCache.flags) {
       renderCache.flags = flags;
       flagBuffer({ data: flags, dimension: 1 });
