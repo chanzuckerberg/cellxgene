@@ -40,6 +40,21 @@ class Continuous extends React.PureComponent {
     });
   }
 
+  async fetchDataForOne(colName) {
+    const { annoMatrix } = this.props;
+    this.setAllContinuous(colName, { status: "pending" });
+    try {
+      const df = await annoMatrix.fetch("obs", colName);
+      this.setAllContinuous(colName, {
+        status: "success",
+        summary: df.col(colName).summarize(),
+      });
+    } catch (error) {
+      this.setAllContinuous(colName, { status: "error" });
+      throw error;
+    }
+  }
+
   async updateState(prevProps) {
     const { schema, annoMatrix } = this.props;
     if (!schema) return;
@@ -60,22 +75,8 @@ class Continuous extends React.PureComponent {
 
     if (!annoMatrix) return;
     if (annoMatrix !== prevProps?.annoMatrix) {
-      let df;
-      try {
-        df = await annoMatrix.fetch("obs", allContinuousNames);
-      } catch (error) {
-        allContinuousNames.forEach((colName) =>
-          this.setAllContinuous(colName, { status: "error" })
-        );
-        throw error;
-      }
-
-      allContinuousNames.forEach((colName) =>
-        this.setAllContinuous(colName, {
-          status: "success",
-          summary: df.col(colName).summarize(),
-        })
-      );
+      /* request once at a time, so we load in parallel */
+      allContinuousNames.forEach((colName) => this.fetchDataForOne(colName));
     }
   }
 
