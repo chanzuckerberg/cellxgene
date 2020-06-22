@@ -6,6 +6,7 @@
 
 import { setDefaultOptions } from "expect-puppeteer";
 import { isDebug, isDev } from "./config";
+import * as ENV_DEFAULT from "../../../environment.default.json";
 
 // (thuang): This is the max time a test can take to run.
 // Since when debugging, we run slowMo and !headless, this means
@@ -14,9 +15,7 @@ import { isDebug, isDev } from "./config";
 jest.setTimeout(2 * 60 * 1000);
 setDefaultOptions({ timeout: 20 * 1000 });
 
-// (thuang): Please make sure this number matches
-// `RETRY_ATTEMPTS` in `screenshot_env.js`
-jest.retryTimes(2);
+jest.retryTimes(ENV_DEFAULT.RETRY_ATTEMPTS);
 
 beforeEach(async () => {
   await jestPuppeteer.resetBrowser();

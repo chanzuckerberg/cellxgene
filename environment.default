@@ -1,9 +1,0 @@
-# Default environment variables for cellxgene development
-# Similar constants are defined in file: `client/__tests__/e2e/config.js`
-# When new values are added, make sure to export in file: `common.mk`
-CXG_SERVER_PORT=5005
-CXG_CLIENT_PORT=3000
-JEST_ENV=dev
-DATASET="$(git rev-parse --show-toplevel)/example-dataset/pbmc3k.h5ad"
-CXG_OPTIONS=--debug
-PROD=prod

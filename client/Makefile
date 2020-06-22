@@ -34,15 +34,13 @@ start-frontend:
 
 .PHONY: e2e
 e2e:
-	JEST_ENV=${PROD} \
-	CXG_CLIENT_PORT=${CXG_SERVER_PORT} \
+	APP_PORT=${CXG_SERVER_PORT} \
 		npm run e2e -- \
 		--verbose false \
 
 .PHONY: e2e-annotations
 e2e-annotations:
-	JEST_ENV=${PROD} \
-	CXG_CLIENT_PORT=${CXG_SERVER_PORT} \
+	APP_PORT=${CXG_SERVER_PORT} \
 	npm run e2e-annotations -- \
 		--verbose false \
 

@@ -4,10 +4,9 @@
  * and `page` objects
  */
 
-const DEBUG = "debug";
-const DEV = "dev";
-const PROD = "prod";
-const jestEnv = process.env.JEST_ENV || PROD;
+const ENV_DEFAULT = require("../environment.default.json");
+
+const jestEnv = process.env.JEST_ENV || ENV_DEFAULT.JEST_ENV;
 const isHeadful = process.env.HEADFUL === "true";
 
 const DEFAULT_LAUNCH_CONFIG = {
@@ -22,7 +21,7 @@ const DEFAULT_LAUNCH_CONFIG = {
 };
 
 const LAUNCH_CONFIG_BY_ENV = {
-  [DEBUG]: {
+  [ENV_DEFAULT.DEBUG]: {
     ...DEFAULT_LAUNCH_CONFIG,
     headless: false,
     slowMo: 100,
@@ -32,7 +31,7 @@ const LAUNCH_CONFIG_BY_ENV = {
       height: DEFAULT_LAUNCH_CONFIG.defaultViewport.height + 560,
     },
   },
-  [DEV]: {
+  [ENV_DEFAULT.DEV]: {
     ...DEFAULT_LAUNCH_CONFIG,
     headless: false,
     slowMo: 5,

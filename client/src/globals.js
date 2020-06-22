@@ -1,8 +1,6 @@
 import { Colors } from "@blueprintjs/core";
 import { dispatchNetworkErrorMessageToUser } from "./util/actionHelpers";
-import { CXG_SERVER_PORT as DEFAULT_CXG_SERVER_PORT } from "../__tests__/e2e/config";
-
-const CXG_SERVER_PORT = process.env.CXG_SERVER_PORT || DEFAULT_CXG_SERVER_PORT;
+import * as ENV_DEFAULT from "../../environment.default.json";
 
 /* if a categorical metadata field has more options than this, truncate */
 export const maxCategoricalOptionsToDisplay = 200;
@@ -85,6 +83,9 @@ export const maxGenes = 100;
 export const tooltipHoverOpenDelay = 1000; /* ms delay before a tooltip displays */
 export const tooltipHoverOpenDelayQuick = 500;
 
+const CXG_SERVER_PORT =
+  process.env.CXG_SERVER_PORT || ENV_DEFAULT.CXG_SERVER_PORT;
+
 let _API;
 
 if (window.CELLXGENE && window.CELLXGENE.API) {
@@ -95,6 +96,7 @@ if (window.CELLXGENE && window.CELLXGENE.API) {
     dispatchNetworkErrorMessageToUser(errorMessage);
     throw new Error(errorMessage);
   }
+
   _API = {
     // prefix: "http://api.clustering.czi.technology/api/",
     // prefix: "http://tabulamuris.cxg.czi.technology/api/",
