@@ -36,19 +36,15 @@ start-frontend:
 e2e:
 	JEST_ENV=${PROD} \
 	CXG_CLIENT_PORT=${CXG_SERVER_PORT} \
-		node node_modules/jest/bin/jest.js \
+		npm run e2e -- \
 		--verbose false \
-		--config __tests__/e2e/e2eJestConfig.json \
-		e2e/e2e.test.js
 
 .PHONY: e2e-annotations
 e2e-annotations:
 	JEST_ENV=${PROD} \
 	CXG_CLIENT_PORT=${CXG_SERVER_PORT} \
-	node node_modules/jest/bin/jest.js \
+	npm run e2e-annotations -- \
 		--verbose false \
-		--config __tests__/e2e/e2eJestConfig.json \
-		e2e/e2eAnnotations.test.js
 
 .PHONY: smoke-test
 smoke-test:

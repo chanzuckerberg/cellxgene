@@ -343,15 +343,22 @@ describe("clipping", () => {
 
     await typeInto("gene-search", data.clip.gene);
     await page.keyboard.press("Enter");
+
     await page.waitForSelector(`[data-testid='histogram-${data.clip.gene}']`);
+
     await clip(data.clip.min, data.clip.max);
+
     const histBrushableAreaId = `histogram-${data.clip.gene}-plot-brushable-area`;
+
     const coords = await calcDragCoordinates(
       histBrushableAreaId,
       data.clip["coordinates-as-percent"]
     );
+
     await drag(histBrushableAreaId, coords.start, coords.end);
+
     const cellCount = await getCellSetCount(1);
+
     expect(cellCount).toBe(data.clip["gene-cell-count"]);
   });
 });
