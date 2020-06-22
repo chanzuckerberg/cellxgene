@@ -21,7 +21,7 @@ afterAll(async () => {
 
 describe.each([
   { withSubset: true, tag: "subset" },
-  // { withSubset: false, tag: "whole" },
+  { withSubset: false, tag: "whole" },
 ])("annotations", (config) => {
   const perTestCategoryName = "per-test-category";
   const perTestLabelName = "per-test-label";
