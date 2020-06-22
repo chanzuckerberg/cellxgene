@@ -201,30 +201,6 @@ describe.each([
     await assertLabelDoesNotExist(perTestCategoryName, perTestLabelName);
   });
 
-  test.only("stacked bar graph renders", async () => {
-    if (config.withSubset) {
-      await actions.subset({ x1: 0.1, y1: 0.1, x2: 0.8, y2: 0.8 });
-    }
-
-    await actions.expandCategory(`louvain`);
-
-    await utils.clickOn(`colorby-louvain`);
-
-    const labels = await utils.getAllByClass("categorical-row");
-
-    const result = await Promise.all(
-      labels.map(async (label) => {
-        return page.evaluate((element) => {
-          return element.outerHTML;
-        }, label);
-      })
-    );
-
-    expect(result).toMatchSnapshot();
-
-    console.log(">>>>>>>>>>>>>>>>>>>> result", result);
-  });
-
   async function assertCategoryExists(categoryName) {
     const handle = await utils.waitByID(`${categoryName}:category-label`);
 
