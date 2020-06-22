@@ -17,6 +17,7 @@ import {
 import GraphOverlayLayer from "./overlays/graphOverlayLayer";
 import CentroidLabels from "./overlays/centroidLabels";
 import actions from "../../actions";
+import renderThrottle from "../../util/renderThrottle";
 
 /*
 Simple 2D transforms control all point painting.  There are three:
@@ -55,24 +56,6 @@ function createModelTF() {
   const m = mat3.fromScaling(mat3.create(), [2, 2]);
   mat3.translate(m, m, [-0.5, -0.5]);
   return m;
-}
-
-function renderThrottle(callback) {
-  /*
-  This wraps a call to requestAnimationFrame(), enforcing a single
-  render callback at any given time (ie, you can call this any number
-  of times, and it will coallesce multiple inter-frame calls into a
-  single render).
-  */
-  let rafCurrentlyInProgress = null;
-  return function f() {
-    if (rafCurrentlyInProgress) return;
-    const context = this;
-    rafCurrentlyInProgress = window.requestAnimationFrame(() => {
-      callback.apply(context);
-      rafCurrentlyInProgress = null;
-    });
-  };
 }
 
 const flagSelected = 1;
@@ -416,7 +399,6 @@ class Graph extends React.Component {
   updateReglState(layoutState, colorState, pointDilationState) {
     /* update all regl-related state */
     const { renderCache, state } = this;
-    let needsRepaint = false;
     const { regl, pointBuffer, colorBuffer, flagBuffer, modelTF } = state;
 
     // still initializing?
@@ -431,7 +413,6 @@ class Graph extends React.Component {
     if (positions !== renderCache.positions) {
       renderCache.positions = positions;
       pointBuffer({ data: positions, dimension: 2 });
-      needsRepaint = true;
     }
 
     /* point colors */
@@ -442,7 +423,6 @@ class Graph extends React.Component {
       /* update our cache & GL if the buffer changes */
       renderCache.colors = _colors;
       colorBuffer({ data: _colors, dimension: 3 });
-      needsRepaint = true;
     }
 
     /* flags */
@@ -465,20 +445,6 @@ class Graph extends React.Component {
     if (flags !== renderCache.flags) {
       renderCache.flags = flags;
       flagBuffer({ data: flags, dimension: 1 });
-      needsRepaint = true;
-    }
-
-    if (needsRepaint) {
-      const { drawPoints, camera, projectionTF } = state;
-      this.renderPoints(
-        regl,
-        drawPoints,
-        colorBuffer,
-        pointBuffer,
-        flagBuffer,
-        camera,
-        projectionTF
-      );
     }
   }
 
@@ -867,11 +833,15 @@ class Graph extends React.Component {
 
   render() {
     const { graphInteractionMode } = this.props;
-    const { modelTF, projectionTF, camera, viewport } = this.state;
+    const { modelTF, projectionTF, camera, viewport, regl } = this.state;
     const cameraTF = camera?.view()?.slice();
 
     const { status } = this.state;
     if (status === "error") return null;
+
+    if (regl) {
+      this.renderCanvas();
+    }
 
     return (
       <div

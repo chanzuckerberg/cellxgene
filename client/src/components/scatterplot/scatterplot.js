@@ -15,6 +15,7 @@ import {
   createColorTable,
   createColorQuery,
 } from "../../util/stateManager/colorHelpers";
+import renderThrottle from "../../util/renderThrottle";
 
 const flagSelected = 1;
 const flagNaN = 2;
@@ -304,15 +305,7 @@ class Scatterplot extends React.PureComponent {
 
   updateReglState(scatterplotState, colorState, pointDilationState) {
     const { renderCache, state } = this;
-    let needsRepaint = false;
-    const {
-      svg,
-      regl,
-      pointBuffer,
-      colorBuffer,
-      flagBuffer,
-      projectionTF,
-    } = state;
+    const { svg, regl, pointBuffer, colorBuffer, flagBuffer } = state;
 
     if (!regl || !svg) return;
 
@@ -344,7 +337,6 @@ class Scatterplot extends React.PureComponent {
       );
       renderCache.xScale = xScale;
       renderCache.yScale = yScale;
-      needsRepaint = true;
     }
 
     const positions = this.computePointPositions(
@@ -356,7 +348,6 @@ class Scatterplot extends React.PureComponent {
     if (positions !== renderCache.positions) {
       renderCache.positions = positions;
       pointBuffer({ data: positions, dimension: 2 });
-      needsRepaint = true;
     }
 
     /* colors for each point */
@@ -366,7 +357,6 @@ class Scatterplot extends React.PureComponent {
     if (_colors !== renderCache.colors) {
       renderCache.colors = _colors;
       colorBuffer({ data: _colors, dimension: 3 });
-      needsRepaint = true;
     }
 
     /* flags */
@@ -389,19 +379,6 @@ class Scatterplot extends React.PureComponent {
     if (flags !== renderCache.flags) {
       renderCache.flags = flags;
       flagBuffer({ data: flags, dimension: 1 });
-      needsRepaint = true;
-    }
-
-    if (needsRepaint) {
-      const { drawPoints } = state;
-      this.renderPoints(
-        regl,
-        drawPoints,
-        flagBuffer,
-        colorBuffer,
-        pointBuffer,
-        projectionTF
-      );
     }
   }
 
@@ -548,11 +525,33 @@ class Scatterplot extends React.PureComponent {
     regl._gl.flush();
   }
 
+  renderCanvas = renderThrottle(() => {
+    const {
+      regl,
+      drawPoints,
+      colorBuffer,
+      pointBuffer,
+      flagBuffer,
+      projectionTF,
+    } = this.state;
+    this.renderPoints(
+      regl,
+      drawPoints,
+      flagBuffer,
+      colorBuffer,
+      pointBuffer,
+      projectionTF
+    );
+  });
+
   render() {
     const { dispatch } = this.props;
-    const { minimized, status } = this.state;
+    const { minimized, status, regl } = this.state;
 
     if (status === "error") return null;
+    if (regl) {
+      this.renderCanvas();
+    }
 
     return (
       <div
