@@ -7,6 +7,7 @@ ANNOTATIONS_FILENAME := $(shell basename $(ANNOTATIONS))
 .PHONY: clean
 clean:
 	rm -rf node_modules
+	rm -f __tests__/screenshots/*.png
 
 .PHONY: ci
 ci:
