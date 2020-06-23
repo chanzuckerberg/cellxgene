@@ -11,6 +11,7 @@ import {
   waitByID,
   getTestId,
   getTestClass,
+  getAllByClass,
 } from "./puppeteerUtils";
 
 import {
@@ -274,6 +275,28 @@ describe.each([
     await clickOn("redo");
     await assertLabelExists(perTestCategoryName, newLabelName);
     await assertLabelDoesNotExist(perTestCategoryName, perTestLabelName);
+  });
+
+  test("stacked bar graph renders", async () => {
+    await setup(config);
+
+    await expandCategory(`louvain`);
+
+    await clickOn(`colorby-louvain`);
+
+    const labels = await getAllByClass("categorical-row");
+
+    const result = await Promise.all(
+      labels.map(async (label) => {
+        return page.evaluate((element) => {
+          return element.outerHTML;
+        }, label);
+      })
+    );
+
+    expect(result).toMatchSnapshot();
+
+    console.log(">>>>>>>>>>>>>>>>>>>> result", result);
   });
 
   async function assertCategoryExists(categoryName) {

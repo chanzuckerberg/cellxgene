@@ -22,9 +22,7 @@ export async function waitForAllByIds(testIds) {
 }
 
 export async function getAllByClass(testClass) {
-  return page.$$eval(`[data-testclass=${testClass}]`, (elements) =>
-    elements.map((ele) => ele.dataset.testid)
-  );
+  return page.$$(`[data-testclass=${testClass}]`);
 }
 
 export async function typeInto(testId, text) {
