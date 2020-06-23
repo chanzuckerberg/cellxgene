@@ -7,7 +7,8 @@
 const ENV_DEFAULT = require("../environment.default.json");
 
 const jestEnv = process.env.JEST_ENV || ENV_DEFAULT.JEST_ENV;
-const isHeadful = process.env.HEADFUL === "true";
+const isHeadful =
+  process.env.HEADFUL === "true" || process.env.HEADLESS === "false";
 
 const DEFAULT_LAUNCH_CONFIG = {
   headless: !isHeadful,

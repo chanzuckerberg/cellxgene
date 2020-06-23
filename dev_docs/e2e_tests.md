@@ -30,7 +30,7 @@ For actions that don't meet these guidelines, you can create a test in feature.t
 
 Where: client/\_\_tests\_\_/e2e/e2e.test.js
 
-How: `npm run e2e`
+How: `npm run e2e` or `make e2e`
 
 Tests are written using the Jest testing framework. Browser automation is handled by Puppeteer. Puppeteer provides an API to control Chrome over the DevTools Protocol. This allows us to write code that mimics user actions and check page state.
 
@@ -61,10 +61,28 @@ See [developer guidelines](developer_guidelines.md)
 
 - Mystery bugs are often caused by a missing `async` or `await`. Double check every function and every line (twice!).
 
-- Switch from to debug mode by running `export JEST_ENV='debug'` on the CLI before running the tests
+- Use `ndb` for debugging: Put a javascript breakpoint in by adding this line `debugger` to the test at the point which you want to pause execution. And then run `ndb npm run e2e` or `ndb make e2e`.
 
-- Put a javascript breakpoint in by adding this line `debugger` to the test at the point which you want to pause execution. And then run `ndb npm run e2e`. NOTE: You will need to global install [`ndb`](https://github.com/GoogleChromeLabs/ndb), which provides an improved debugging experience for Node.js, enabled by Chrome DevTools
+  NOTE: You will need to global install [`ndb`](https://github.com/GoogleChromeLabs/ndb) via `npm install -g ndb`, which provides an improved debugging experience for Node.js, enabled by Chrome DevTools
 
 - Limit the tests that are run by adding `.only` after `describe` or `test` to limit execution to just that block of tests. (Remember to take the `.only` out before you commit!)
 
 - Avoid using `beforeEach() => {}` to set up test environment for each test, since Jest/Jasmine doesn't fail a test when a set up step fails, and we will end up getting obscure errors and don't know why a test fails. Another reason is for readability as explained [here](https://kentcdodds.com/blog/avoid-nesting-when-youre-testing/)
+
+- Use [`takeScreenshot()`](../client/__tests__/e2e/takeScreenshot.js) to timestamp and store screenshots in the already git ignored folder `client/__tests__/screenshots/`, so you don't accidentally check in your screenshot in your commit
+
+## Config Files
+
+1. [jest-puppeteer.config.js](../client/jest-puppeteer.config.js) is for configuring Puppeteer's launch options as specified [here](https://github.com/puppeteer/puppeteer/blob/v3.1.0/docs/api.md#puppeteerlaunchoptions). Note: The link is to the doc for **v3.1.0**
+
+1. [e2eJestConfig.json](../client/__tests__/e2e/e2eJestConfig.json) is for configuring `jest` when running e2e tests. For example, in `package.json` we have:
+
+   ```ts
+   {
+     "e2e": "jest --config __tests__/e2e/e2eJestConfig.json e2e/e2e.test.js",
+   }
+   ```
+
+   which tells `jest` to use `e2eJestConfig.json` as the config file to run e2e test file `e2e.test.js`
+
+1. [puppeteer.setup.js](../client/__tests__/e2e/puppeteer.setup.js) is for configuring `jest`, `browser`, and `page` objects at runtime
