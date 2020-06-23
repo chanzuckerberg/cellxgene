@@ -25,7 +25,7 @@ export function whereCacheGet(whereCache, schema, field, query) {
   /* 
 	query will either be an where query (object) or a column name (string).
 
-	Return array of column labels or unknown.
+	Return array of column labels or undefined.
 	*/
 
   if (typeof query === "object") {
@@ -41,7 +41,8 @@ export function whereCacheGet(whereCache, schema, field, query) {
     return columnLabels === undefined ? [undefined] : columnLabels;
   }
 
-  return getColumnDimensionNames(schema, field, query);
+  const colDims = getColumnDimensionNames(schema, field, query);
+  return colDims === undefined ? [undefined] : colDims;
 }
 
 export function whereCacheCreate(field, query, columnLabels) {

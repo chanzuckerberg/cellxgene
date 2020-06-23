@@ -8,7 +8,7 @@ import { fetchResult } from "./fetchHelpers";
 import { indexEntireSchema } from "../stateManager/schemaHelpers";
 import { whereCacheGet, whereCacheMerge } from "./whereCache";
 
-const MAX_CACHED_COLUMNS = 32;
+const MAX_CACHED_COLUMNS = 48;
 
 export default class AnnoMatrix {
   static fields() {
@@ -143,18 +143,22 @@ export default class AnnoMatrix {
   /**
    ** private below
    **/
-  async _fetch(field, q) {
-    if (!AnnoMatrix.fields().includes(field)) return undefined;
-    const queries = Array.isArray(q) ? q : [q];
-
-    /* find cached columns we need, and GC the rest */
-    const cachedColumns = queries
+  _resolveCachedQueries(field, queries) {
+    return queries
       .map((query) =>
         whereCacheGet(this._whereCache, this.schema, field, query).filter(
           (cacheKey) => cacheKey !== undefined && this[field].hasCol(cacheKey)
         )
       )
       .flat();
+  }
+
+  async _fetch(field, q) {
+    if (!AnnoMatrix.fields().includes(field)) return undefined;
+    const queries = Array.isArray(q) ? q : [q];
+
+    /* find cached columns we need, and GC the rest */
+    const cachedColumns = this._resolveCachedQueries(field, queries);
     this._gcCleanup(field, cachedColumns);
 
     /* find any query not already cached */
@@ -182,11 +186,7 @@ export default class AnnoMatrix {
     }
 
     /* everything we need is in the cache, so just cherry-pick requested columns */
-    const requestedCacheKeys = queries
-      .map((query) =>
-        whereCacheGet(this._whereCache, this.schema, field, query)
-      )
-      .flat();
+    const requestedCacheKeys = this._resolveCachedQueries(field, queries);
     const response = this[field].subset(null, requestedCacheKeys);
     this._gcUpdate(field, response);
     return response;
@@ -225,7 +225,6 @@ export default class AnnoMatrix {
 
     do not delete anything in pinnedColumns, as those are being requested
     */
-    if (field !== "X") return;
     if (this[field].length < MAX_CACHED_COLUMNS) return;
     const gcInfo = this._gcInfo[field];
     const candidates = Array.from(gcInfo.keys()).filter(

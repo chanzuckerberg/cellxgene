@@ -20,7 +20,7 @@ export function getColumnSchema(schema, field, col) {
     case "X":
       return schema.dataframe;
     default:
-      throw new Error("unknown field name");
+      throw new Error(`unknown field name: ${field}`);
   }
 }
 
@@ -32,7 +32,7 @@ export function getColumnDimensionNames(schema, field, col) {
 		*/
   const colSchema = getColumnSchema(schema, field, col);
   if (!colSchema) {
-    throw new Error("unknown column name");
+    return undefined;
   }
   return colSchema.dims || [col];
 }
@@ -46,7 +46,7 @@ export function schemaColumns(schema, field) {
     case "emb":
       return Object.keys(schema.layout.obsByName);
     default:
-      throw new Error("unknown field name");
+      throw new Error(`unknown field name: ${field}`);
   }
 }
 
