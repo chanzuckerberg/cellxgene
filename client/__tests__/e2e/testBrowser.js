@@ -54,11 +54,11 @@ export default async function setupTestBrowser() {
     });
   }
   page.on("pageerror", (err) => {
-    console.log(`PAGE LOG: ${err.text()}`);
+    console.log(`PAGE LOG: ${err}`);
     throw new Error(`Console error: ${err}`);
   });
   page.on("error", (err) => {
-    console.log(`PAGE LOG: ${err.text()}`);
+    console.log(`PAGE LOG: ${err}`);
     throw new Error(`Console error: ${err}`);
   });
   const utils = puppeteerUtils(page);
