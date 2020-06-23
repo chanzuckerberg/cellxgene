@@ -41,7 +41,7 @@ The `JEST_ENV` environment variable enables the following E2E test options:
 Run end to end tests interactively during development
 1. cellxgene should be installed as [specified in client dev](#install-1)
 1. Follow [launch](#launch-1) instructions for client dev with dataset `example-dataset/pbmc3k`
-1. Run `npm run e2e` or `make e2e` from the `client` directory
+1. Run `npm run e2e` from the `client` directory
 1. To debug a failing test `export JEST_ENV='debug'` and re-run.
 
 To run end to end tests _exactly_ as they will be run on CI use the following command:
@@ -107,7 +107,7 @@ If you would like to run the client tests individually, follow the steps below i
 If you would like to run the smoke tests against a hot-reloaded version of the client:
 1. Start the hot-reloading servers as described in the [Client dev section](#client-dev). If you plan to run the standard test suite (without annotations), you'll have to start the backend server with annotations disabled (e.g. `CXG_OPTIONS='--debug --disable-annotations' make start-server`).
 1. From the project root, `cd client`
-1. Run either the standard E2E test suite with `CXG_CLIENT_PORT=3000 make e2e` or the annotations test suite with `CXG_CLIENT_PORT=3000 make e2e-annotations`
+1. Run either the standard E2E test suite with `npm run e2e` or the annotations test suite with `npm run e2e-annotations`
 
 ### Tips
 * You can also install/launch the server side code from npm scrips (requires python3.6 with virtualenv) with the `scripts/backend_dev` script.
