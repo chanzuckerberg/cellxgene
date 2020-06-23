@@ -6,7 +6,7 @@ End to end (e2e) tests, when done correctly, can surface errors and regressions 
 
 The major problem most developers have with e2e tests are that the tests can be flaky and thus not trusted. Failing tests wind up being disabled instead of fixed. To guard against that we need to establish principals about what features to test and have guidelines for writing tests to ensure that they are as robust as possible. By ensuring each test has a high value and is unlikely to fail when it shouldn't it increases the motivation to fix the test as opposed to deleting it.
 
-Additionally, we try to combat flaky tests by re-running failed tests two more times before declaring a test is truly failing. Even though this mediation doesn't solve the root cause of the flakiness, it does help decrease the false positive cases caused flakiness.
+Additionally, we try to combat flaky tests by re-running failed tests two more times before declaring a test is truly failing. Even though this mediation doesn't solve the root cause of the flakiness, it does help decrease the false positive cases caused by the flakiness.
 
 ### Choosing what to test
 
