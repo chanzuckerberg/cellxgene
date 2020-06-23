@@ -280,7 +280,7 @@ describe.each([
   test("stacked bar graph renders", async () => {
     await setup(config);
 
-    await expandCategory(`louvain`);
+    await expandCategory(perTestCategoryName);
 
     await clickOn(`colorby-louvain`);
 
@@ -295,8 +295,6 @@ describe.each([
     );
 
     expect(result).toMatchSnapshot();
-
-    console.log(">>>>>>>>>>>>>>>>>>>> result", result);
   });
 
   async function assertCategoryExists(categoryName) {
