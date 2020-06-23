@@ -57,7 +57,9 @@ export async function getAllHistograms(testclass, testIds) {
 
   const allHistograms = await getAllByClass(testclass);
 
-  return allHistograms.map((hist) => hist.replace(/^histogram-/, ""));
+  return allHistograms.map((hist) =>
+    hist.dataset.testid.replace(/^histogram-/, "")
+  );
 }
 
 export async function getAllCategoriesAndCounts(category) {
