@@ -1,92 +1,85 @@
-class FilterError(Exception):
-    """
-    Raised when filter is malformed
-    """
+from http import HTTPStatus
+
+
+class RequestException(Exception):
+    """Baseclass for exceptions that can be raised from a request."""
+
+    # The default status code is 400 (Bad Request)
+    default_status_code = HTTPStatus.BAD_REQUEST
+
+    def __init__(self, message, status_code=None):
+        Exception.__init__(self)
+        self.message = message
+        self.status_code = status_code or self.default_status_code
+
+
+class FilterError(RequestException):
+    """Raised when filter is malformed"""
 
     pass
 
 
-class JSONEncodingValueError(Exception):
-    """
-    Raised when data cannot be encoded into json
-    """
+class JSONEncodingValueError(RequestException):
+    """Raised when data cannot be encoded into json"""
 
     pass
 
 
-class MimeTypeError(Exception):
-    """
-    Raised when incompatible MIME type selected
-    """
+class MimeTypeError(RequestException):
+    """Raised when incompatible MIME type selected"""
 
     pass
 
 
-class PrepareError(Exception):
-    """
-    Raised when data is misprepared
-    """
+class DatasetAccessError(RequestException):
+    """Raised when file loaded into a DataAdaptor is misformatted"""
 
     pass
 
 
-class DatasetAccessError(Exception):
-    """
-    Raised when file loaded into a DataAdaptor is misformatted
-    """
+class DisabledFeatureError(RequestException):
+    """Raised when an attempt to use a disabled feature occurs"""
 
     pass
 
 
-class DisabledFeatureError(Exception):
-    """
-    Raised when an attempt to use a disabled feature occurs
-    """
+class AnnotationsError(RequestException):
+    """Raised when an attempt to use the annotations feature fails"""
 
     pass
 
 
-class AnnotationsError(Exception):
-    """
-    Raised when an attempt to use the annotations feature fails
-    """
+class ComputeError(RequestException):
+    """Raised when an error occurs during a compute algorithm (such as diffexp)"""
+
+    default_status_code = HTTPStatus.INTERNAL_SERVER_ERROR
+
+
+class ExceedsLimitError(RequestException):
+    """Raised when an HTTP request exceeds a limit/quota"""
+
+    pass
+
+
+class ColorFormatException(RequestException):
+    """Raised when color helper functions encounter an unknown color format"""
 
     pass
 
 
 class OntologyLoadFailure(Exception):
-    """
-    Raised when reading the ontology file fails
-    """
+    """Raised when reading the ontology file fails"""
 
     pass
 
 
 class ConfigurationError(Exception):
-    """
-    Raised when checking configuration errors
-    """
+    """Raised when checking configuration errors"""
 
     pass
 
 
-class ExceedsLimitError(Exception):
-    """
-    Raised when an HTTP request exceeds a limit/quota
-    """
-
-    pass
-
-
-class ComputeError(Exception):
-    """
-    Raised when an error occurs during a compute algorithm (such as diffexp)
-    """
-
-    pass
-
-
-class ColorFormatException(Exception):
-    """Raised when color helper functions encounter an unknown color format"""
+class PrepareError(Exception):
+    """Raised when data is misprepared"""
 
     pass
