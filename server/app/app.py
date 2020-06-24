@@ -9,7 +9,7 @@ from server_timing import Timing as ServerTiming
 from http import HTTPStatus
 
 import server.common.rest as common_rest
-from server.common.errors import DatasetAccessError
+from server.common.errors import DatasetAccessError, RequestException
 from server.common.utils import path_join, Float32JSONEncoder
 from server.common.data_locator import DataLocator
 from server.common.health import health_check
@@ -81,9 +81,9 @@ def dataset_index(url_dataroot=None, dataset=None):
             return render_template(
                 "index.html", datasetTitle=dataset_title, SCRIPTS=scripts, INLINE_SCRIPTS=inline_scripts
             )
-    except DatasetAccessError:
+    except DatasetAccessError as e:
         return common_rest.abort_and_log(
-            HTTPStatus.BAD_REQUEST, f"Invalid dataset {dataset}", loglevel=logging.INFO, include_exc_info=True
+            e.status_code, f"Invalid dataset {dataset}: {e.message}", loglevel=logging.INFO, include_exc_info=True
         )
 
 
@@ -92,6 +92,11 @@ def dataset_index(url_dataroot=None, dataset=None):
 def health():
     config = current_app.app_config
     return health_check(config)
+
+
+@webbp.errorhandler(RequestException)
+def handle_request_exception(error):
+    return common_rest.abort_and_log(error.status_code, error.message, loglevel=logging.INFO, include_exc_info=True)
 
 
 def get_data_adaptor(url_dataroot=None, dataset=None):
@@ -123,9 +128,9 @@ def rest_get_data_adaptor(func):
         try:
             with get_data_adaptor(self.url_dataroot, dataset) as data_adaptor:
                 return func(self, data_adaptor)
-        except DatasetAccessError:
+        except DatasetAccessError as e:
             return common_rest.abort_and_log(
-                HTTPStatus.BAD_REQUEST, f"Invalid dataset {dataset}", loglevel=logging.INFO, include_exc_info=True
+                e.status_code, f"Invalid dataset {dataset}: {e.message}", loglevel=logging.INFO, include_exc_info=True
             )
 
     return wrapped_function

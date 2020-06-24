@@ -5,6 +5,7 @@ from server.data_common.rwlock import RWLock
 from server.common.errors import DatasetAccessError
 from server.common.data_locator import DataLocator
 from contextlib import contextmanager
+from http import HTTPStatus
 
 
 class MatrixDataCacheItem(object):
@@ -217,7 +218,7 @@ class MatrixDataLoader(object):
         region_name = None if app_config is None else app_config.data_locator__s3__region_name
         self.location = DataLocator(location, region_name=region_name)
         if not self.location.exists():
-            raise DatasetAccessError("Dataset does not exist.")
+            raise DatasetAccessError("Dataset does not exist.", HTTPStatus.NOT_FOUND)
 
         # matrix_data_type is an enum value of type MatrixDataType
         self.matrix_data_type = matrix_data_type
