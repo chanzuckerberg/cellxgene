@@ -95,6 +95,7 @@
     "html-webpack-plugin": "^4.3.0",
     "husky": "^4.2.5",
     "jest": "^26.0.1",
+    "jest-fetch-mock": "^3.0.3",
     "jest-puppeteer": "^4.4.0",
     "json-loader": "^0.5.7",
     "lint-staged": "^10.2.9",

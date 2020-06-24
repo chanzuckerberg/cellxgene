@@ -1,136 +1,191 @@
+// these FOUR statements MUST be first in the file, before any other imports
+import { enableFetchMocks } from "jest-fetch-mock";
+enableFetchMocks();
+import * as serverMocks from "./serverMocks";
+// OK, continue on!
+
+import obs_louvain from "./louvain.json";
+import obs_n_genes from "./n_genes.json";
+
 import {
   AnnoMatrixLoader,
   AnnoMatrixObsCrossfilter,
+  clip,
+  isubset,
+  isubsetMask,
 } from "../../../src/util/annoMatrix/";
-import { doJsonRequest } from "../../../src/util/actionHelpers";
 import { Dataframe } from "../../../src/util/dataframe";
+import { rangeFill } from "../../../src/util/range";
 
-const baseDataUrl = "http://localhost:5005/api/v0.2";
-
-const fetchJson = (path) => doJsonRequest(`${baseDataUrl}${path}`);
-// const fetchBinary = (path) => doBinaryRequest(`${baseDataUrl}${path}`);
-
-describe.skip("AnnoMatrix", () => {
+describe("AnnoMatrix", () => {
   let annoMatrix;
 
   beforeEach(async () => {
-    const schema = await fetchJson("/schema");
-    annoMatrix = new AnnoMatrixLoader(baseDataUrl, schema.schema);
-  });
-
-  test("simple fetch", async () => {
-    await expect(annoMatrix.fetch("obs", "name_0")).resolves.toBeInstanceOf(
-      Dataframe
+    fetch.resetMocks(); // reset all fetch mocking state
+    annoMatrix = new AnnoMatrixLoader(
+      serverMocks.baseDataURL,
+      serverMocks.schema.schema
     );
-    await expect(
-      annoMatrix.fetch("obs", ["name_0", "n_genes"])
-    ).resolves.toBeInstanceOf(Dataframe);
   });
 
-  test("fetch all fields", async () => {
-    ["emb", "var", "obs"].forEach(async (field) => {
-      const columnNames = annoMatrix.getMatrixColumns(field);
+  describe("basics", () => {
+    test("annomatrix static checks", () => {
+      expect(annoMatrix).toBeDefined();
+      expect(annoMatrix.schema).toMatchObject(serverMocks.schema.schema);
+      expect(annoMatrix.nObs).toEqual(serverMocks.schema.schema.dataframe.nObs);
+      expect(annoMatrix.nVar).toEqual(serverMocks.schema.schema.dataframe.nVar);
+      expect(annoMatrix.isView).toBeFalsy();
+      expect(annoMatrix.viewOf).toBeUndefined();
+      expect(annoMatrix.rowIndex).toBeDefined();
+    });
+
+    test("simple single column fetch", async () => {
+      fetch.once(serverMocks.annotationsObs(["name_0"]));
+
+      const df = await annoMatrix.fetch("obs", "name_0");
+      expect(df).toBeInstanceOf(Dataframe);
+      expect(df.colIndex.labels()).toEqual(["name_0"]);
+      expect(df.dims).toEqual([annoMatrix.nObs, 1]);
+    });
+
+    test("simple multi column fetch", async () => {
+      fetch
+        .once(serverMocks.annotationsObs(["name_0"]))
+        .once(serverMocks.annotationsObs(["n_genes"]));
+
       await expect(
-        annoMatrix.fetch(field, columnNames.slice(2))
+        annoMatrix.fetch("obs", ["name_0", "n_genes"])
       ).resolves.toBeInstanceOf(Dataframe);
     });
-  });
 
-  test("fetch - test all query forms", async () => {
-    // single string is a column name
-    await expect(annoMatrix.fetch("obs", "n_genes")).resolves.toBeInstanceOf(
-      Dataframe
-    );
+    describe("fetch from field", () => {
+      const getLastTwo = async (field) => {
+        const columnNames = annoMatrix.getMatrixColumns(field).slice(-2);
+        fetch.mockResponses(...columnNames.map(() => serverMocks.responder));
+        await expect(
+          annoMatrix.fetch(field, columnNames)
+        ).resolves.toBeInstanceOf(Dataframe);
+      };
 
-    // array of column names
-    await expect(
-      annoMatrix.fetch("obs", ["n_genes", "percent_mito"])
-    ).resolves.toBeInstanceOf(Dataframe);
+      test("obs", async () => await getLastTwo("obs"));
+      test("var", async () => await getLastTwo("var"));
+      test("emb", async () => await getLastTwo("emb"));
+    });
 
-    // more complex value filter query, enumerated
-    await expect(
-      annoMatrix.fetch("X", {
-        field: "var",
-        column: annoMatrix.schema.annotations.var.index,
-        value: "TYMP",
-      })
-    ).resolves.toBeInstanceOf(Dataframe);
+    test("fetch - test all query forms", async () => {
+      // single string is a column name
+      fetch.once(serverMocks.annotationsObs(["n_genes"]));
+      await expect(annoMatrix.fetch("obs", "n_genes")).resolves.toBeInstanceOf(
+        Dataframe
+      );
 
-    // more complex value filter query, range
-    await expect(
-      annoMatrix.fetch("X", [
-        {
-          field: "var",
-          column: annoMatrix.schema.annotations.var.index,
-          value: "SUMO3",
-        },
-        {
+      // array of column names, expecting n_genes to be cached.
+      fetch.once(serverMocks.annotationsObs(["percent_mito"]));
+      await expect(
+        annoMatrix.fetch("obs", ["n_genes", "percent_mito"])
+      ).resolves.toBeInstanceOf(Dataframe);
+
+      // more complex value filter query, enumerated
+      fetch.once(serverMocks.responder);
+      await expect(
+        annoMatrix.fetch("X", {
           field: "var",
           column: annoMatrix.schema.annotations.var.index,
           value: "TYMP",
-        },
-      ])
-    ).resolves.toBeInstanceOf(Dataframe);
-  });
+        })
+      ).resolves.toBeInstanceOf(Dataframe);
 
-  test("push and pop views", async () => {
-    const am1 = annoMatrix.clip(0.1, 0.9);
-    expect(am1.viewOf).toBe(annoMatrix);
-    expect(am1.nObs).toEqual(annoMatrix.nObs);
-    expect(am1.nVar).toEqual(annoMatrix.nVar);
-    expect(am1.rowIndex).toBe(annoMatrix.rowIndex);
-
-    const am2 = annoMatrix.clip(0.1, 0.9);
-    expect(am2.viewOf).toBe(annoMatrix);
-    expect(am2).not.toBe(am1);
-    expect(am2.rowIndex).toBe(annoMatrix.rowIndex);
-  });
-
-  test("schema accessors", () => {
-    expect(annoMatrix.getMatrixFields()).toEqual(
-      expect.arrayContaining(["X", "obs", "emb", "var"])
-    );
-    expect(annoMatrix.getMatrixColumns("obs")).toEqual(
-      expect.arrayContaining(["name_0", "n_genes", "louvain"])
-    );
-    expect(annoMatrix.getColumnSchema("emb", "umap")).toEqual({
-      name: "umap",
-      dims: ["umap_0", "umap_1"],
-      type: "float32",
+      // more complex value filter query, range
+      const varIndex = annoMatrix.schema.annotations.var.index;
+      fetch
+        .once(
+          serverMocks.withExpected("/data/var", [[`var:${varIndex}`, "SUMO3"]])
+        )
+        .once(
+          serverMocks.withExpected("/data/var", [[`var:${varIndex}`, "TYMP"]])
+        );
+      await expect(
+        annoMatrix.fetch("X", [
+          {
+            field: "var",
+            column: varIndex,
+            value: "SUMO3",
+          },
+          {
+            field: "var",
+            column: varIndex,
+            value: "TYMP",
+          },
+        ])
+      ).resolves.toBeInstanceOf(Dataframe);
+      // XXX inspect the wherecache?
     });
-    expect(annoMatrix.getColumnDimensions("emb", "umap")).toEqual([
-      "umap_0",
-      "umap_1",
-    ]);
-  });
 
-  /*
-	test the mask & label access to subset via isubset and isubsetMask
-	*/
-  test("isubset", async () => {
-    const rowList = [0, 10];
-    const rowMask = new Uint8Array(annoMatrix.nObs);
-    for (let i = 0; i < rowList.length; i += 1) {
-      rowMask[rowList[i]] = 1;
-    }
+    test("push and pop views", async () => {
+      const am1 = clip(annoMatrix, 0.1, 0.9);
+      expect(am1.viewOf).toBe(annoMatrix);
+      expect(am1.nObs).toEqual(annoMatrix.nObs);
+      expect(am1.nVar).toEqual(annoMatrix.nVar);
+      expect(am1.rowIndex).toBe(annoMatrix.rowIndex);
 
-    const am1 = annoMatrix.isubset(rowList);
-    const am2 = annoMatrix.isubsetMask(rowMask);
-    expect(am1).not.toBe(am2);
-    expect(am1.nObs).toEqual(2);
-    expect(am1.nObs).toEqual(am2.nObs);
-    expect(am1.nVar).toEqual(am2.nVar);
+      const am2 = clip(annoMatrix, 0.1, 0.9);
+      expect(am2.viewOf).toBe(annoMatrix);
+      expect(am2).not.toBe(am1);
+      expect(am2.rowIndex).toBe(annoMatrix.rowIndex);
+    });
 
-    const ng1 = await am1.fetch("obs", "n_genes");
-    const ng2 = await am2.fetch("obs", "n_genes");
-    expect(ng1.length).toEqual(ng2.length);
-    expect(ng1.colIndex.labels()).toEqual(ng2.colIndex.labels());
-    expect(ng1.col("n_genes").asArray()).toEqual(ng2.col("n_genes").asArray());
+    test("schema accessors", () => {
+      expect(annoMatrix.getMatrixFields()).toEqual(
+        expect.arrayContaining(["X", "obs", "emb", "var"])
+      );
+      expect(annoMatrix.getMatrixColumns("obs")).toEqual(
+        expect.arrayContaining(["name_0", "n_genes", "louvain"])
+      );
+      expect(annoMatrix.getColumnSchema("emb", "umap")).toEqual({
+        name: "umap",
+        dims: ["umap_0", "umap_1"],
+        type: "float32",
+      });
+      expect(annoMatrix.getColumnDimensions("emb", "umap")).toEqual([
+        "umap_0",
+        "umap_1",
+      ]);
+    });
+
+    /*
+  	test the mask & label access to subset via isubset and isubsetMask
+  	*/
+    test("isubset", async () => {
+      const rowList = [0, 10];
+      const rowMask = new Uint8Array(annoMatrix.nObs);
+      for (let i = 0; i < rowList.length; i += 1) {
+        rowMask[rowList[i]] = 1;
+      }
+
+      const am1 = isubset(annoMatrix, rowList);
+      const am2 = isubsetMask(annoMatrix, rowMask);
+      expect(am1).not.toBe(am2);
+      expect(am1.nObs).toEqual(2);
+      expect(am1.nObs).toEqual(am2.nObs);
+      expect(am1.nVar).toEqual(am2.nVar);
+
+      fetch
+        .once(serverMocks.annotationsObs(["n_genes"]))
+        .once(serverMocks.annotationsObs(["n_genes"]));
+      const ng1 = await am1.fetch("obs", "n_genes");
+      const ng2 = await am2.fetch("obs", "n_genes");
+      expect(ng1.length).toEqual(ng2.length);
+      expect(ng1.colIndex.labels()).toEqual(ng2.colIndex.labels());
+      expect(ng1.col("n_genes").asArray()).toEqual(
+        ng2.col("n_genes").asArray()
+      );
+    });
   });
 
   describe("add/drop column", () => {
     async function addDrop(base) {
       expect(base.getMatrixColumns("obs")).not.toContain("foo");
+      fetch.mockRejectOnce(new Error("unknown column name"));
       await expect(base.fetch("obs", "foo")).rejects.toThrow(
         "unknown column name"
       );
@@ -155,6 +210,7 @@ describe.skip("AnnoMatrix", () => {
       const am2 = am1.dropObsColumn("foo");
       expect(base.getMatrixColumns("obs")).not.toContain("foo");
       expect(am2.getMatrixColumns("obs")).not.toContain("foo");
+      fetch.mockRejectOnce(new Error("unknown column name"));
       await expect(am2.fetch("obs", "foo")).rejects.toThrow(
         "unknown column name"
       );
@@ -165,22 +221,27 @@ describe.skip("AnnoMatrix", () => {
     });
 
     test("add/drop column, with view", async () => {
-      const am1 = annoMatrix.clip(0.1, 0.9);
+      const am1 = clip(annoMatrix, 0.1, 0.9);
       await addDrop(am1);
 
-      const am2 = am1.isubset([0, 1, 2, 20, 30, 400]);
+      const am2 = isubset(am1, [0, 1, 2, 20, 30, 400]);
       await addDrop(am2);
 
-      const am3 = annoMatrix.isubset([10, 0, 7, 3]);
+      const am3 = isubset(annoMatrix, [10, 0, 7, 3]);
       await addDrop(am3);
 
-      const am4 = am3.clip(0, 1);
+      const am4 = clip(am3, 0, 1);
       await addDrop(am4);
+
+      const columnNames = annoMatrix.getMatrixColumns("obs");
+      fetch.mockResponse(serverMocks.responder);
 
       await am1.fetch("obs", am1.getMatrixColumns("obs"));
       await am2.fetch("obs", am2.getMatrixColumns("obs"));
       await am3.fetch("obs", am3.getMatrixColumns("obs"));
       await am4.fetch("obs", am4.getMatrixColumns("obs"));
+
+      fetch.resetMocks();
 
       await addDrop(am1);
       await addDrop(am2);
@@ -210,7 +271,7 @@ describe.skip("AnnoMatrix", () => {
 
       /* set values in column */
       const whichRows = [1, 2, 10];
-      const am1 = am.setObsColumnValues("test", whichRows, "yo");
+      const am1 = await am.setObsColumnValues("test", whichRows, "yo");
       const testVal1 = await am1.fetch("obs", "test");
       const expt = new Array(am1.nObs).fill("unassigned");
       for (let i = 0; i < whichRows.length; i += 1) {
@@ -225,6 +286,7 @@ describe.skip("AnnoMatrix", () => {
       );
 
       /* drop column */
+      fetch.mockRejectOnce(new Error("unknown column name"));
       am = am1.dropObsColumn("test");
       await expect(am.fetch("obs", "test")).rejects.toThrow(
         "unknown column name"
@@ -236,14 +298,17 @@ describe.skip("AnnoMatrix", () => {
     });
 
     test("set, with a view", async () => {
-      const am1 = annoMatrix.clip(0.1, 0.9);
+      const am1 = clip(annoMatrix, 0.1, 0.9);
       await addSetDrop(am1);
 
-      const am2 = am1.isubset([0, 1, 2, 10, 20, 30, 400]);
+      const am2 = isubset(am1, [0, 1, 2, 10, 20, 30, 400]);
       await addSetDrop(am2);
 
-      const am3 = annoMatrix.isubset([10, 1, 0, 30, 2]);
+      const am3 = isubset(annoMatrix, [10, 1, 0, 30, 2]);
       await addSetDrop(am3);
+
+      const columnNames = annoMatrix.getMatrixColumns("obs");
+      fetch.mockResponse(serverMocks.responder);
 
       await am1.fetch("obs", am1.getMatrixColumns("obs"));
       await am2.fetch("obs", am2.getMatrixColumns("obs"));
@@ -256,19 +321,22 @@ describe.skip("AnnoMatrix", () => {
   });
 });
 
-describe.skip("AnnoMatrixCrossfilter", () => {
+describe("AnnoMatrixCrossfilter", () => {
   let annoMatrix;
   let crossfilter;
 
   beforeEach(async () => {
-    const schema = await fetchJson("/schema");
-    annoMatrix = new AnnoMatrixLoader(baseDataUrl, schema.schema);
+    fetch.resetMocks(); // reset all fetch mocking state
+    annoMatrix = new AnnoMatrixLoader(
+      serverMocks.baseDataURL,
+      serverMocks.schema.schema
+    );
     crossfilter = new AnnoMatrixObsCrossfilter(annoMatrix);
   });
 
   test("initial state of crossfilter", () => {
     expect(crossfilter).toBeDefined();
-    expect(crossfilter.countSelectedObs()).toEqual(annoMatrix.nObs);
+    expect(crossfilter.countSelected()).toEqual(annoMatrix.nObs);
     expect(crossfilter.allSelectedMask()).toHaveLength(annoMatrix.nObs);
     expect(crossfilter.allSelectedMask()).toEqual(
       new Uint8Array(annoMatrix.nObs).fill(1)
@@ -277,13 +345,14 @@ describe.skip("AnnoMatrixCrossfilter", () => {
 
   test("simple column select", async () => {
     let xfltr;
-    xfltr = await crossfilter.selectObs("obs", "louvain", {
+    fetch.once(serverMocks.dataframeResponse(["louvain"], [obs_louvain]));
+    xfltr = await crossfilter.select("obs", "louvain", {
       mode: "exact",
       values: ["NK cells", "B cells"],
     });
 
     expect(xfltr).toBeDefined();
-    expect(xfltr.countSelectedObs()).toEqual(496);
+    expect(xfltr.countSelected()).toEqual(496);
 
     const df = await annoMatrix.fetch("obs", "louvain");
     const values = df.col("louvain").asArray();
@@ -292,22 +361,35 @@ describe.skip("AnnoMatrixCrossfilter", () => {
       (val, idx) => !["NK cells", "B cells"].includes(val) !== !selected[idx]
     );
 
-    xfltr = await xfltr.selectObs("obs", "n_genes", {
+    fetch.once(
+      serverMocks.dataframeResponse(["n_genes"], [new Int32Array(obs_n_genes)])
+    );
+    xfltr = await xfltr.select("obs", "n_genes", {
       mode: "range",
       lo: 0,
       hi: 500,
       inclusive: false,
     });
-    expect(xfltr.countSelectedObs()).toEqual(33);
+    expect(xfltr.countSelected()).toEqual(33);
   });
 
   test("complex column select", async () => {
     let xfltr;
-    xfltr = await crossfilter.selectObs(
+    const varIndex = annoMatrix.schema.annotations.var.index;
+
+    const nObs = annoMatrix.schema.dataframe.nObs;
+    fetch.once(
+      serverMocks.dataframeResponse(
+        ["TEST"],
+        [rangeFill(new Float32Array(nObs), 0, 0.1)]
+      )
+    );
+
+    xfltr = await crossfilter.select(
       "X",
       {
         field: "var",
-        column: annoMatrix.schema.annotations.var.index,
+        column: varIndex,
         value: "TYMP",
       },
       {
@@ -319,18 +401,18 @@ describe.skip("AnnoMatrixCrossfilter", () => {
     );
 
     expect(xfltr).toBeDefined();
-    expect(xfltr.countSelectedObs()).toEqual(887);
+    expect(xfltr.countSelected()).toEqual(501);
 
     const df = await annoMatrix.fetch("X", {
       field: "var",
-      column: annoMatrix.schema.annotations.var.index,
+      column: varIndex,
       value: "TYMP",
     });
     const values = df.icol(0).asArray();
     const selected = xfltr.allSelectedMask();
     values.every((val, idx) => !(val >= 0 && val <= 50) !== !selected[idx]);
     expect(selected.reduce((acc, val) => (val ? acc + 1 : acc), 0)).toEqual(
-      xfltr.countSelectedObs()
+      xfltr.countSelected()
     );
   });
 
@@ -339,18 +421,20 @@ describe.skip("AnnoMatrixCrossfilter", () => {
     for (let i = 0; i < mask.length; i += 2) {
       mask[i] = true;
     }
-    const annoMatrixSubset = annoMatrix.isubsetMask(mask);
+    const annoMatrixSubset = isubsetMask(annoMatrix, mask);
     expect(annoMatrixSubset.nObs).toEqual(Math.floor(annoMatrix.nObs / 2));
 
     let xfltr = new AnnoMatrixObsCrossfilter(annoMatrixSubset);
-    expect(xfltr.countSelectedObs()).toEqual(annoMatrixSubset.nObs);
-    xfltr = await xfltr.selectObs("obs", "louvain", {
+    expect(xfltr.countSelected()).toEqual(annoMatrixSubset.nObs);
+
+    fetch.once(serverMocks.dataframeResponse(["louvain"], [obs_louvain]));
+    xfltr = await xfltr.select("obs", "louvain", {
       mode: "exact",
       values: ["NK cells", "B cells"],
     });
 
     expect(xfltr).toBeDefined();
-    expect(xfltr.countSelectedObs()).toEqual(240);
+    expect(xfltr.countSelected()).toEqual(240);
 
     const df = await annoMatrixSubset.fetch("obs", "louvain");
     const values = df.col("louvain").asArray();

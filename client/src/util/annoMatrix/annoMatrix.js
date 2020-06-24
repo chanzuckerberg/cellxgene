@@ -59,7 +59,8 @@ export default class AnnoMatrix {
     return schemaColumns(this.schema, field);
   }
 
-  static getMatrixFields() {
+  // eslint-disable-next-line class-methods-use-this -- need to be able to call this on instances
+  getMatrixFields() {
     return AnnoMatrix.fields();
   }
 
