@@ -1,3 +1,4 @@
+/* eslint-disable no-undef -- not yet ported */
 import React from "react";
 import {
   AnchorButton,
@@ -12,7 +13,7 @@ import {
 import { connect } from "react-redux";
 import * as globals from "../../globals";
 import styles from "./menubar.css";
-import { World } from "../../util/stateManager";
+// import { World } from "../../util/stateManager";
 import actions from "../../actions";
 
 @connect((state) => ({
@@ -117,3 +118,4 @@ class Embedding extends React.PureComponent {
 }
 
 export default Embedding;
+/* eslint-enable no-undef -- not yet ported */
