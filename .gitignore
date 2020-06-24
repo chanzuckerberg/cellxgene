@@ -19,11 +19,7 @@ venv/
 cellxgene/
 
 # client build
-server/common/web/static/css/
-server/common/web/static/img/
-server/common/web/static/media/
-server/common/web/static/fonts/
-server/common/web/static/js/
+server/common/web/static/*
 server/common/web/templates/
 server/common/web/csp-hashes.json
 
@@ -53,3 +49,6 @@ docs/_site/
 docs/Gemfile.lock
 
 client/.eslintcache
+
+# E2E Testing
+ignoreE2E*

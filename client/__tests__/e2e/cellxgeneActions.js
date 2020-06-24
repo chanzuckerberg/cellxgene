@@ -1,228 +1,315 @@
+/* eslint-disable no-await-in-loop -- await in loop is needed to emulate sequential user actions  */
 import { strict as assert } from "assert";
+import {
+  clearInputAndTypeInto,
+  clickOn,
+  getAllByClass,
+  getOneElementInnerText,
+  typeInto,
+  waitByID,
+  waitByClass,
+  waitForAllByIds,
+  clickOnUntil,
+  getTestClass,
+  getTestId,
+  isElementPresent,
+} from "./puppeteerUtils";
 
-const cellxgeneActions = (page, utils) => ({
-  async drag(testId, start, end, lasso = false) {
-    const layout = await utils.waitByID(testId);
-    const elBox = await layout.boxModel();
-    const x1 = elBox.content[0].x + start.x;
-    const x2 = elBox.content[0].x + end.x;
-    const y1 = elBox.content[0].y + start.y;
-    const y2 = elBox.content[0].y + end.y;
+export async function drag(testId, start, end, lasso = false) {
+  const layout = await waitByID(testId);
+  const elBox = await layout.boxModel();
+  const x1 = elBox.content[0].x + start.x;
+  const x2 = elBox.content[0].x + end.x;
+  const y1 = elBox.content[0].y + start.y;
+  const y2 = elBox.content[0].y + end.y;
+  await page.mouse.move(x1, y1);
+  await page.mouse.down();
+  if (lasso) {
+    await page.mouse.move(x2, y1);
+    await page.mouse.move(x2, y2);
+    await page.mouse.move(x1, y2);
     await page.mouse.move(x1, y1);
-    await page.mouse.down();
-    if (lasso) {
-      await page.mouse.move(x2, y1);
-      await page.mouse.move(x2, y2);
-      await page.mouse.move(x1, y2);
-      await page.mouse.move(x1, y1);
-    } else {
-      await page.mouse.move(x2, y2);
-    }
-    await page.mouse.up();
-  },
+  } else {
+    await page.mouse.move(x2, y2);
+  }
+  await page.mouse.up();
+}
 
-  async clickOnCoordinate(testId, coord) {
-    const layout = await utils.waitByID(testId);
-    const elBox = await layout.boxModel();
-    const x = elBox.content[0].x + coord.x;
-    const y = elBox.content[0].y + coord.y;
-    await page.mouse.click(x, y);
-  },
+export async function clickOnCoordinate(testId, coord) {
+  const layout = await expect(page).toMatchElement(getTestId(testId));
+  const elBox = await layout.boxModel();
 
-  async getAllHistograms(testclass, testIds) {
-    const histTestIds = testIds.map((tid) => `histogram-${tid}`);
-    // these load asynchronously, so we need to wait for each histogram individually,
-    // and they may be quite slow in some cases.
-    await utils.waitForAllByIds(histTestIds, { timeout: 240000 });
-    const allHistograms = await utils.getAllByClass(testclass);
-    return allHistograms.map((hist) => hist.replace(/^histogram-/, ""));
-  },
+  if (!elBox) {
+    throw Error("Layout's boxModel is not available!");
+  }
 
-  async getAllCategoriesAndCounts(category) {
-    // these load asynchronously, so we have to wait for the specific category.
-    await utils.waitByID(`category-${category}`);
-    return page.$$eval(
-      `[data-testid="category-${category}"] [data-testclass='categorical-row']`,
-      (rows) =>
-        Object.fromEntries(
-          rows.map((row) => {
-            const cat = row
-              .querySelector("[data-testclass='categorical-value']")
-              .getAttribute("aria-label");
+  const x = elBox.content[0].x + coord.x;
+  const y = elBox.content[0].y + coord.y;
+  await page.mouse.click(x, y);
+}
 
-            const count = row.querySelector(
-              "[data-testclass='categorical-value-count']"
-            ).innerText;
-            return [cat, count];
-          })
-        )
+export async function getAllHistograms(testclass, testIds) {
+  const histTestIds = testIds.map((tid) => `histogram-${tid}`);
+
+  // these load asynchronously, so we need to wait for each histogram individually,
+  // and they may be quite slow in some cases.
+  await waitForAllByIds(histTestIds, { timeout: 4 * 60 * 1000 });
+
+  const allHistograms = await getAllByClass(testclass);
+
+  const testIDs = await Promise.all(
+    allHistograms.map((hist) => {
+      return page.evaluate((elem) => {
+        return elem.dataset.testid;
+      }, hist);
+    })
+  );
+
+  return testIDs.map((id) => id.replace(/^histogram-/, ""));
+}
+
+export async function getAllCategoriesAndCounts(category) {
+  // these load asynchronously, so we have to wait for the specific category.
+  await waitByID(`category-${category}`);
+
+  return page.$$eval(
+    `[data-testid="category-${category}"] [data-testclass='categorical-row']`,
+    (rows) =>
+      Object.fromEntries(
+        rows.map((row) => {
+          const cat = row
+            .querySelector("[data-testclass='categorical-value']")
+            .getAttribute("aria-label");
+
+          const count = row.querySelector(
+            "[data-testclass='categorical-value-count']"
+          ).innerText;
+
+          return [cat, count];
+        })
+      )
+  );
+}
+
+export async function getCellSetCount(num) {
+  await clickOn(`cellset-button-${num}`);
+  return getOneElementInnerText(`[data-testid='cellset-count-${num}']`);
+}
+
+export async function resetCategory(category) {
+  const checkboxId = `${category}:category-select`;
+  await waitByID(checkboxId);
+  const checkedPseudoclass = await page.$eval(
+    `[data-testid='${checkboxId}']`,
+    (el) => el.matches(":checked")
+  );
+  if (!checkedPseudoclass) await clickOn(checkboxId);
+
+  const categoryRow = await waitByID(`${category}:category-expand`);
+
+  const isExpanded = await categoryRow.$(
+    "[data-testclass='category-expand-is-expanded']"
+  );
+
+  if (isExpanded) await clickOn(`${category}:category-expand`);
+}
+
+export async function calcCoordinate(testId, xAsPercent, yAsPercent) {
+  const el = await waitByID(testId);
+  const size = await el.boxModel();
+  return {
+    x: Math.floor(size.width * xAsPercent),
+    y: Math.floor(size.height * yAsPercent),
+  };
+}
+
+export async function calcDragCoordinates(testId, coordinateAsPercent) {
+  return {
+    start: await calcCoordinate(
+      testId,
+      coordinateAsPercent.x1,
+      coordinateAsPercent.y1
+    ),
+    end: await calcCoordinate(
+      testId,
+      coordinateAsPercent.x2,
+      coordinateAsPercent.y2
+    ),
+  };
+}
+
+export async function selectCategory(category, values, reset = true) {
+  if (reset) await resetCategory(category);
+
+  await clickOn(`${category}:category-expand`);
+  await clickOn(`${category}:category-select`);
+
+  for (const value of values) {
+    await clickOn(`categorical-value-select-${category}-${value}`);
+  }
+}
+
+export async function expandCategory(category) {
+  const expand = await waitByID(`${category}:category-expand`);
+  const notExpanded = await expand.$(
+    "[data-testclass='category-expand-is-not-expanded']"
+  );
+  if (notExpanded) await clickOn(`${category}:category-expand`);
+}
+
+export async function clip(min = 0, max = 100) {
+  await clickOn("visualization-settings");
+  await clearInputAndTypeInto("clip-min-input", min);
+  await clearInputAndTypeInto("clip-max-input", max);
+  await clickOn("clip-commit");
+}
+
+export async function createCategory(categoryName) {
+  await clickOnUntil("open-annotation-dialog", async () => {
+    await expect(page).toMatchElement(getTestId("new-category-name"));
+  });
+
+  await typeInto("new-category-name", categoryName);
+  await clickOn("submit-category");
+}
+
+export async function duplicateCategory(categoryName) {
+  await clickOn("open-annotation-dialog");
+
+  await typeInto("new-category-name", categoryName);
+
+  const dropdownOptionClass = "duplicate-category-dropdown-option";
+
+  await clickOnUntil("duplicate-category-dropdown", async () => {
+    await expect(page).toMatchElement(getTestClass(dropdownOptionClass));
+  });
+
+  const option = await expect(page).toMatchElement(
+    getTestClass(dropdownOptionClass)
+  );
+
+  await option.click();
+
+  await clickOnUntil("submit-category", async () => {
+    await expect(page).toMatchElement(
+      getTestId(`${categoryName}:category-expand`)
     );
-  },
+  });
 
-  async cellSet(num) {
-    await utils.clickOn(`cellset-button-${num}`);
-    return utils.getOneElementInnerText(`[data-testid='cellset-count-${num}']`);
-  },
+  await waitByClass("autosave-complete");
+}
 
-  async resetCategory(category) {
-    const checkboxId = `${category}:category-select`;
-    await utils.waitByID(checkboxId);
-    const checkedPseudoclass = await page.$eval(
-      `[data-testid='${checkboxId}']`,
-      (el) => el.matches(":checked")
-    );
-    if (!checkedPseudoclass) await utils.clickOn(checkboxId);
-    try {
-      const categoryRow = await utils.waitByID(`${category}:category-expand`);
-      const isExpanded = await categoryRow.$(
-        "[data-testclass='category-expand-is-expanded']"
-      );
-      if (isExpanded) await utils.clickOn(`${category}:category-expand`);
-    } catch {}
-  },
+export async function renameCategory(oldCategoryName, newCategoryName) {
+  await clickOn(`${oldCategoryName}:see-actions`);
+  await clickOn(`${oldCategoryName}:edit-category-mode`);
+  await clearInputAndTypeInto(
+    `${oldCategoryName}:edit-category-name-text`,
+    newCategoryName
+  );
+  await clickOn(`${oldCategoryName}:submit-category-edit`);
+}
 
-  async calcCoordinate(testId, xAsPercent, yAsPercent) {
-    const el = await utils.waitByID(testId);
-    const size = await el.boxModel();
-    return {
-      x: Math.floor(size.width * xAsPercent),
-      y: Math.floor(size.height * yAsPercent),
-    };
-  },
+export async function deleteCategory(categoryName) {
+  const targetId = `${categoryName}:delete-category`;
 
-  async calcDragCoordinates(testId, coordinateAsPercent) {
-    return {
-      start: await this.calcCoordinate(
-        testId,
-        coordinateAsPercent.x1,
-        coordinateAsPercent.y1
-      ),
-      end: await this.calcCoordinate(
-        testId,
-        coordinateAsPercent.x2,
-        coordinateAsPercent.y2
-      ),
-    };
-  },
+  await clickOnUntil(`${categoryName}:see-actions`, async () => {
+    await expect(page).toMatchElement(getTestId(targetId));
+  });
 
-  async selectCategory(category, values, reset = true) {
-    if (reset) await this.resetCategory(category);
-    await utils.clickOn(`${category}:category-expand`);
-    await utils.clickOn(`${category}:category-select`);
-    for (const val of values) {
-      await utils.clickOn(`categorical-value-select-${category}-${val}`);
-    }
-  },
+  await clickOn(targetId);
 
-  async expandCategory(category) {
-    const expand = await utils.waitByID(`${category}:category-expand`);
-    const notExpanded = await expand.$(
-      "[data-testclass='category-expand-is-not-expanded']"
-    );
-    if (notExpanded) await utils.clickOn(`${category}:category-expand`);
-  },
+  await assertCategoryDoesNotExist();
+}
 
-  async clip(min = 0, max = 100) {
-    await utils.clickOn("visualization-settings");
-    await utils.clearInputAndTypeInto("clip-min-input", min);
-    await utils.clearInputAndTypeInto("clip-max-input", max);
-    await utils.clickOn("clip-commit");
-  },
+export async function createLabel(categoryName, labelName) {
+  /**
+   * (thuang): This explicit wait is needed, since currently showing
+   * the modal again quickly after the previous action dismissing the
+   * modal will persist the input value from the previous action.
+   *
+   * To reproduce:
+   * 1. Click on the plus sign to show the modal to add a new label to the category
+   * 2. Type `123` in the input box
+   * 3. Hover over your mouse over the plus sign and double click to quickly dismiss and
+   * invoke the modal again
+   * 4. You will see `123` is persisted in the input box
+   * 5. Expected behavior is to get an empty input box
+   */
+  await page.waitFor(500);
 
-  async createCategory(categoryName) {
-    await utils.clickOn("open-annotation-dialog");
-    await utils.typeInto("new-category-name", categoryName);
-    await utils.clickOn("submit-category");
-  },
+  await clickOn(`${categoryName}:see-actions`);
 
-  async renameCategory(oldCatgoryName, newCategoryName) {
-    await utils.clickOn(`${oldCatgoryName}:see-actions`);
-    await utils.clickOn(`${oldCatgoryName}:edit-category-mode`);
-    await utils.clearInputAndTypeInto(
-      `${oldCatgoryName}:edit-category-name-text`,
-      newCategoryName
-    );
-    await utils.clickOn(`${oldCatgoryName}:submit-category-edit`);
-  },
+  await clickOn(`${categoryName}:add-new-label-to-category`);
 
-  async deleteCategory(categoryName) {
-    await utils.clickOn(`${categoryName}:see-actions`);
-    await utils.clickOn(`${categoryName}:delete-category`);
-  },
+  await typeInto(`${categoryName}:new-label-name`, labelName);
 
-  async createLabel(categoryName, labelName) {
-    await utils.clickOn(`${categoryName}:see-actions`);
-    await utils.clickOn(`${categoryName}:add-new-label-to-category`);
-    await utils.typeInto(`${categoryName}:new-label-name`, labelName);
-    await utils.clickOn(`${categoryName}:submit-label`);
-  },
+  await clickOn(`${categoryName}:submit-label`);
+}
 
-  async deleteLabel(categoryName, labelName) {
-    await this.expandCategory(categoryName);
-    await utils.clickOn(`${categoryName}:${labelName}:see-actions`);
-    await utils.clickOn(`${categoryName}:${labelName}:delete-label`);
-  },
+export async function deleteLabel(categoryName, labelName) {
+  await expandCategory(categoryName);
+  await clickOn(`${categoryName}:${labelName}:see-actions`);
+  await clickOn(`${categoryName}:${labelName}:delete-label`);
+}
 
-  async renameLabel(categoryName, oldLabelName, newLabelName) {
-    await this.expandCategory(categoryName);
-    await utils.clickOn(`${categoryName}:${oldLabelName}:see-actions`);
-    await utils.clickOn(`${categoryName}:${oldLabelName}:edit-label`);
-    await utils.clearInputAndTypeInto(
-      `${categoryName}:${oldLabelName}:edit-label-name`,
-      newLabelName
-    );
-    await utils.clickOn(`${categoryName}:${oldLabelName}:submit-label-edit`);
-  },
+export async function renameLabel(categoryName, oldLabelName, newLabelName) {
+  await expandCategory(categoryName);
+  await clickOn(`${categoryName}:${oldLabelName}:see-actions`);
+  await clickOn(`${categoryName}:${oldLabelName}:edit-label`);
+  await clearInputAndTypeInto(
+    `${categoryName}:${oldLabelName}:edit-label-name`,
+    newLabelName
+  );
+  await clickOn(`${categoryName}:${oldLabelName}:submit-label-edit`);
+}
 
-  async addGeneToSearch(geneName) {
-    await utils.typeInto("gene-search", geneName);
-    await page.keyboard.press("Enter");
-    await page.waitForSelector(`[data-testid='histogram-${geneName}']`);
-  },
+export async function addGeneToSearch(geneName) {
+  await typeInto("gene-search", geneName);
+  await page.keyboard.press("Enter");
+  await page.waitForSelector(`[data-testid='histogram-${geneName}']`);
+}
 
-  async subset(coordinatesAsPercent) {
-    // In order to deselect the selection after the subset, make sure we have some clear part
-    // of the scatterplot we can click on
-    assert(coordinatesAsPercent.x2 < 0.99 || coordinatesAsPercent.y2 < 0.99);
-    const lassoSelection = await this.calcDragCoordinates(
-      "layout-graph",
-      coordinatesAsPercent
-    );
-    await this.drag(
-      "layout-graph",
-      lassoSelection.start,
-      lassoSelection.end,
-      true
-    );
-    await utils.clickOn("subset-button");
-    const clearCoordinate = await this.calcCoordinate(
-      "layout-graph",
-      0.5,
-      0.99
-    );
-    await this.clickOnCoordinate("layout-graph", clearCoordinate);
-  },
+export async function subset(coordinatesAsPercent) {
+  // In order to deselect the selection after the subset, make sure we have some clear part
+  // of the scatterplot we can click on
+  assert(coordinatesAsPercent.x2 < 0.99 || coordinatesAsPercent.y2 < 0.99);
+  const lassoSelection = await calcDragCoordinates(
+    "layout-graph",
+    coordinatesAsPercent
+  );
+  await drag("layout-graph", lassoSelection.start, lassoSelection.end, true);
+  await clickOn("subset-button");
+  const clearCoordinate = await calcCoordinate("layout-graph", 0.5, 0.99);
+  await clickOnCoordinate("layout-graph", clearCoordinate);
+}
 
-  async setSellSet(cellSet, cellSetNum) {
-    for (const selection of cellSet.filter(
-      (sel) => sel.kind === "categorical"
-    )) {
-      await this.selectCategory(selection.metadata, selection.values, true);
-    }
-    await this.cellSet(cellSetNum);
-  },
+export async function setSellSet(cellSet, cellSetNum) {
+  const selections = cellSet.filter((sel) => sel.kind === "categorical");
 
-  async runDiffExp(cellSet1, cellSet2) {
-    await this.setSellSet(cellSet1, 1);
-    await this.setSellSet(cellSet2, 2);
-    await utils.clickOn("diffexp-button");
-  },
+  for (const selection of selections) {
+    await selectCategory(selection.metadata, selection.values, true);
+  }
 
-  async bulkAddGenes(geneNames) {
-    await utils.clickOn("section-bulk-add");
-    await utils.typeInto("input-bulk-add", geneNames.join(","));
-    await page.keyboard.press("Enter");
-  },
-});
+  await getCellSetCount(cellSetNum);
+}
 
-export default cellxgeneActions;
+export async function runDiffExp(cellSet1, cellSet2) {
+  await setSellSet(cellSet1, 1);
+  await setSellSet(cellSet2, 2);
+  await clickOn("diffexp-button");
+}
+
+export async function bulkAddGenes(geneNames) {
+  await clickOn("section-bulk-add");
+  await typeInto("input-bulk-add", geneNames.join(","));
+  await page.keyboard.press("Enter");
+}
+
+export async function assertCategoryDoesNotExist(categoryName) {
+  const result = await isElementPresent(
+    getTestId(`${categoryName}:category-label`)
+  );
+
+  await expect(result).toBe(false);
+}
+/* eslint-enable no-await-in-loop -- await in loop is needed to emulate sequential user actions */

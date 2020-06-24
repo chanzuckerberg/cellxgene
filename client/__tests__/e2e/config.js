@@ -1,11 +1,8 @@
-export const jestEnv = process.env.JEST_ENV;
-export const appPort = process.env.CXG_SERVER_PORT;
-export const appUrlBase =
-	process.env.CXG_URL_BASE || `http://localhost:${appPort}`;
-export const DEV = jestEnv === "dev";
-export const DEBUG = jestEnv === "debug";
-export const DATASET = "pbmc3k";
+import * as ENV_DEFAULT from "../../../environment.default.json";
 
-if (DEBUG) jest.setTimeout(2 * 60 * 1000);
-if (DEV) jest.setTimeout(30 * 1000);
-if (!DEBUG && !DEV) jest.setTimeout(10 * 1000);
+export const jestEnv = process.env.JEST_ENV || ENV_DEFAULT.JEST_ENV;
+export const appUrlBase =
+  process.env.CXG_URL_BASE || `http://localhost:${ENV_DEFAULT.CXG_CLIENT_PORT}`;
+export const DATASET = "pbmc3k";
+export const isDev = jestEnv === ENV_DEFAULT.DEV;
+export const isDebug = jestEnv === ENV_DEFAULT.DEBUG;

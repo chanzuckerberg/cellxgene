@@ -7,11 +7,10 @@ import * as Universe from "../../src/util/stateManager/universe";
 import { matrixFBSToDataframe } from "../../src/util/stateManager/matrix";
 import * as World from "../../src/util/stateManager/world";
 import * as REST from "./stateManager/sampleResponses";
-import { ControlsHelpers as CH } from "../../src/util/stateManager";
 
 describe("centroid", () => {
   let world;
-  let categoricalSelection;
+
   beforeAll(() => {
     // Create world + universe
     let universe = Universe.createUniverseFromResponse(
@@ -32,19 +31,10 @@ describe("centroid", () => {
       ...Universe.addObsLayout(universe, matrixFBSToDataframe(REST.layoutObs)),
     };
     world = World.createWorldFromEntireUniverse(universe);
-
-    // Create categorical selection from world
-    categoricalSelection = CH.createCategoricalSelection(
-      CH.selectableCategoryNames(world.schema)
-    );
   });
 
   test("field4 (categorical obsAnnotation)", () => {
-    const centroidResult = calcCentroid(
-      world,
-      "field4",
-      ["umap_0", "umap_1"]
-    );
+    const centroidResult = calcCentroid(world, "field4", ["umap_0", "umap_1"]);
 
     // Check to see that a centroid has been calculated for every categorical value
     const keysAsArray = Array.from(centroidResult.keys());
@@ -64,11 +54,7 @@ describe("centroid", () => {
   });
 
   test("field3 (boolean obsAnnotation)", () => {
-    const centroidResult = calcCentroid(
-      world,
-      "field3",
-      ["umap_0", "umap_1"]
-    );
+    const centroidResult = calcCentroid(world, "field3", ["umap_0", "umap_1"]);
 
     // Check to see that a centroid has been calculated for every categorical value
     const keysAsArray = Array.from(centroidResult.keys());

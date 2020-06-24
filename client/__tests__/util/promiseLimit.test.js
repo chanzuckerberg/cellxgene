@@ -1,7 +1,7 @@
 import PromiseLimit from "../../src/util/promiseLimit";
 import { range } from "../../src/util/range";
 
-const delay = (t) => new Promise((resolve, reject) => setTimeout(resolve, t));
+const delay = (t) => new Promise((resolve) => setTimeout(resolve, t));
 
 describe("PromiseLimit", () => {
   test("simple evaluation, concurrency 1", async () => {
@@ -28,13 +28,14 @@ describe("PromiseLimit", () => {
 
   test("eval in order of insertion", async () => {
     const plimit = new PromiseLimit(100);
-    let counter = 0;
+
     const result = await Promise.all([
-      plimit.add(() => Promise.resolve((counter += 1))),
-      plimit.add(() => Promise.resolve((counter += 1))),
-      plimit.add(() => Promise.resolve((counter += 1))),
-      plimit.add(() => Promise.resolve((counter += 1))),
+      plimit.add(() => Promise.resolve(1)),
+      plimit.add(() => Promise.resolve(2)),
+      plimit.add(() => Promise.resolve(3)),
+      plimit.add(() => Promise.resolve(4)),
     ]);
+
     expect(result).toEqual([1, 2, 3, 4]);
   });
 
@@ -43,16 +44,15 @@ describe("PromiseLimit", () => {
     let running = 0;
     let maxRunning = 0;
 
-    const cbfn = async (i) => {
-      running = running + 1;
+    const callback = async () => {
+      running += 1;
       maxRunning = running > maxRunning ? running : maxRunning;
       await delay(100);
-      running = running - 1;
+      running -= 1;
     };
 
-    const result = await Promise.all(
-      range(10).map((i) => plimit.add(() => cbfn(i)))
-    );
+    await Promise.all(range(10).map((i) => plimit.add(() => callback(i))));
+
     expect(maxRunning).toEqual(2);
   });
 
@@ -60,6 +60,7 @@ describe("PromiseLimit", () => {
     const plimit = new PromiseLimit(2);
     const result = await Promise.all([
       plimit.add(() => Promise.resolve("OK")),
+      // eslint-disable-next-line prefer-promise-reject-errors -- unit test
       plimit.add(() => Promise.reject("not OK")).catch((e) => e),
       plimit.add(() => Promise.resolve("OK")),
       plimit
