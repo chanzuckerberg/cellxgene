@@ -4,12 +4,12 @@ https://bl.ocks.org/mbostock/34f08d5e11952a80609169b7917d4172
 https://bl.ocks.org/SpaceActuary/2f004899ea1b2bd78d6f1dbb2febf771
 https://bl.ocks.org/mbostock/3019563
 */
-// jshint esversion: 6
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Button, ButtonGroup, Tooltip } from "@blueprintjs/core";
 import { connect } from "react-redux";
 import * as d3 from "d3";
 import { interpolateCool } from "d3-scale-chromatic";
+import Async from "react-async";
 import * as globals from "../../globals";
 import actions from "../../actions";
 import { histogramContinuous } from "../../util/dataframe/histogram";
@@ -19,6 +19,403 @@ import significantDigits from "../../util/significantDigits";
 function clamp(val, rng) {
   return Math.max(Math.min(val, rng[1]), rng[0]);
 }
+
+function maybeScientific(x) {
+  let format = ",";
+  const _ticks = x.ticks(4);
+
+  if (x.domain().some((n) => Math.abs(n) >= 10000)) {
+    /* 
+      heuristic: if the last tick d3 wants to render has one significant
+      digit ie., 2000, render 2e+3, but if it's anything else ie., 42000000 render
+      4.20e+n
+    */
+    format = significantDigits(_ticks[_ticks.length - 1]) === 1 ? ".0e" : ".2e";
+  }
+
+  return format;
+}
+
+const StillLoading = ({ zebra, field }) => {
+  /*
+  Render a loading indicator for the field.
+  */
+  return (
+    <div
+      style={{
+        padding: globals.leftSidebarSectionPadding,
+        backgroundColor: zebra % 2 === 0 ? globals.lightestGrey : "white",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          justifyItems: "center",
+          alignItems: "center",
+        }}
+      >
+        <div style={{ minWidth: 30 }} />
+        <div style={{ display: "flex", alignSelf: "center" }}>
+          <span style={{ fontStyle: "italic" }}>{field}</span>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+          }}
+        >
+          <Button minimal loading intent="primary" />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const HistogramFooter = ({
+  field,
+  hideRanges,
+  range,
+  rangeColor,
+  logFoldChange,
+  pvalAdj,
+}) => {
+  /*
+  Footer of each histogram.  Will render range, title, and optionally 
+  differential expression info.
+
+  Required props:
+    * field - the field name to display
+    * range - length two array, [min, max], containing the range values to display
+    * hideRanges - true/false, enables/disable rendering of ranges
+    * logFoldChange - lfc to display, optional.
+    * pValue - pValue to display, optional.
+  */
+  const [rangeMin, rangeMax] = range;
+  const [rangeColorMin, rangeColorMax] = rangeColor || ["#bbb", "#bbb"];
+
+  return (
+    <div>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: hideRanges ? "center" : "space-between",
+        }}
+      >
+        <span
+          style={{
+            color: rangeColorMin,
+            display: hideRanges ? "none" : "block",
+          }}
+        >
+          min {rangeMin.toPrecision(4)}
+        </span>
+        <span
+          data-testclass="brushable-histogram-field-name"
+          style={{ fontStyle: "italic" }}
+        >
+          {field}
+        </span>
+        <div style={{ display: hideRanges ? "block" : "none" }}>
+          : {rangeMin}
+        </div>
+        <span
+          style={{
+            color: rangeColorMax,
+            display: hideRanges ? "none" : "block",
+          }}
+        >
+          max {rangeMax.toPrecision(4)}
+        </span>
+      </div>
+
+      {logFoldChange && pvalAdj ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "baseline",
+          }}
+        >
+          <span>
+            <strong>log fold change:</strong>
+            {` ${logFoldChange.toPrecision(4)}`}
+          </span>
+          <span
+            style={{
+              marginLeft: 7,
+              padding: 2,
+            }}
+          >
+            <strong>p-value (adj):</strong>
+            {pvalAdj < 0.0001 ? " < 0.0001" : ` ${pvalAdj.toFixed(4)}`}
+          </span>
+        </div>
+      ) : null}
+    </div>
+  );
+};
+
+const HistogramToolbar = ({
+  field,
+  isColorBy,
+  onColorByClick,
+  onRemoveClick,
+  isScatterPlotX,
+  isScatterPlotY,
+  onScatterPlotXClick,
+  onScatterPlotYClick,
+}) => {
+  /*
+  Render the toolbar for the histogram.  Props:
+    * field - field name
+    * isColorBy - true/false, is this the current color-by
+    * onColorByClick - color-by click handler
+    * onRemoveClick - optional handler for remove.  Button will not render if not defined.
+    * isScatterPlotX - optional, true/false if currently the X scatterplot field
+    * isScatterPlotY - optional, true/false if currently the Y scatterplot field
+    * onScatterPlotXClick - optional, handler for scatterPlot X button.
+    * onScatterPlotYClick - optional, handler for scatterPlot X button.
+
+  Scatterplot controls will not render if either handler unspecified.
+  */
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "flex-end",
+        paddingBottom: "8px",
+      }}
+    >
+      {onScatterPlotXClick && onScatterPlotYClick ? (
+        <span>
+          <span
+            style={{ marginRight: 7 }}
+            className="bp3-icon-standard bp3-icon-scatter-plot"
+          />
+          <ButtonGroup style={{ marginRight: 7 }}>
+            <Button
+              data-testid={`plot-x-${field}`}
+              onClick={onScatterPlotXClick}
+              active={isScatterPlotX}
+              intent={isScatterPlotX ? "primary" : "none"}
+            >
+              plot x
+            </Button>
+            <Button
+              data-testid={`plot-y-${field}`}
+              onClick={onScatterPlotYClick}
+              active={isScatterPlotY}
+              intent={isScatterPlotY ? "primary" : "none"}
+            >
+              plot y
+            </Button>
+          </ButtonGroup>
+        </span>
+      ) : null}
+      {onRemoveClick ? (
+        <Button
+          minimal
+          onClick={onRemoveClick}
+          style={{
+            color: globals.blue,
+            cursor: "pointer",
+            marginLeft: 7,
+          }}
+        >
+          remove
+        </Button>
+      ) : null}
+      <Tooltip
+        content="Use as color scale"
+        position="bottom"
+        hoverOpenDelay={globals.tooltipHoverOpenDelay}
+      >
+        <Button
+          onClick={onColorByClick}
+          active={isColorBy}
+          intent={isColorBy ? "primary" : "none"}
+          data-testclass="colorby"
+          data-testid={`colorby-${field}`}
+          icon="tint"
+        />
+      </Tooltip>
+    </div>
+  );
+};
+
+const Histogram = ({
+  field,
+  fieldForId,
+  display,
+  histogram,
+  width,
+  height,
+  onBrush,
+  onBrushEnd,
+  marginLeft,
+  marginRight,
+  marginBottom,
+  marginTop,
+  isColorBy,
+  selectionRange,
+}) => {
+  const svgRef = useRef(null);
+  const [brush, setBrush] = useState(null);
+
+  useEffect(() => {
+    /*
+    Create the d3 histogram
+    */
+    const { x, y, bins, binStart, binEnd, binWidth } = histogram;
+    const svg = d3.select(svgRef.current);
+
+    /* Remove everything */
+    svg.selectAll("*").remove();
+
+    /* Set margins within the SVG */
+    const container = svg
+      .attr("width", width + marginLeft + marginRight)
+      .attr("height", height + marginTop + marginBottom)
+      .append("g")
+      .attr("class", "histogram-container")
+      .attr("transform", `translate(${marginLeft},${marginTop})`);
+
+    const colorScale = d3
+      .scaleSequential(interpolateCool)
+      .domain([0, bins.length]);
+
+    const histogramScale = d3
+      .scaleLinear()
+      .domain(x.domain())
+      .range([
+        colorScale.domain()[1],
+        colorScale.domain()[0],
+      ]); /* we flip this to make colors dark if high in the color scale */
+
+    if (binWidth > 0) {
+      /* BINS */
+      container
+        .insert("g", "*")
+        .selectAll("rect")
+        .data(bins)
+        .enter()
+        .append("rect")
+        .attr("x", (d, i) => x(binStart(i)) + 1)
+        .attr("y", (d) => y(d))
+        .attr("width", (d, i) => x(binEnd(i)) - x(binStart(i)) - 1)
+        .attr("height", (d) => y(0) - y(d))
+        .style(
+          "fill",
+          isColorBy ? (d, i) => colorScale(histogramScale(binStart(i))) : "#bbb"
+        );
+    }
+
+    // BRUSH
+    // Note the brushable area is bounded by the data on three sides, but goes down to cover the x-axis
+    const brushX = d3
+      .brushX()
+      .extent([
+        [x.range()[0], y.range()[1]],
+        [x.range()[1], marginTop + height + marginBottom],
+      ])
+      /*
+      emit start so that the Undoable history can save an undo point
+      upon drag start, and ignore the subsequent intermediate drag events.
+      */
+      .on("start", onBrush(field, x.invert, "start"))
+      .on("brush", onBrush(field, x.invert, "brush"))
+      .on("end", onBrushEnd(field, x.invert));
+
+    const brushXselection = container
+      .insert("g")
+      .attr("class", "brush")
+      .attr("data-testid", `${svgRef.current.dataset.testid}-brushable-area`)
+      .call(brushX);
+
+    /* X AXIS */
+    container
+      .insert("g")
+      .attr("class", "axis axis--x")
+      .attr("transform", `translate(0,${marginTop + height})`)
+      .call(
+        d3
+          .axisBottom(x)
+          .ticks(4)
+          .tickFormat(d3.format(maybeScientific(x)))
+      );
+
+    /* Y AXIS */
+    container
+      .insert("g")
+      .attr("class", "axis axis--y")
+      .attr("transform", `translate(${marginLeft + width},0)`)
+      .call(
+        d3
+          .axisRight(y)
+          .ticks(3)
+          .tickFormat(
+            d3.format(
+              y.domain().some((n) => Math.abs(n) >= 10000) ? ".0e" : ","
+            )
+          )
+      );
+
+    /* axis style */
+    svg.selectAll(".axis text").style("fill", "rgb(80,80,80)");
+    svg.selectAll(".axis path").style("stroke", "rgb(230,230,230)");
+    svg.selectAll(".axis line").style("stroke", "rgb(230,230,230)");
+
+    setBrush({ brushX, brushXselection });
+  }, [histogram, svgRef.current, isColorBy]);
+
+  useEffect(() => {
+    /*
+    paint/update selection brush
+    */
+    if (!brush) return;
+    const { brushX, brushXselection } = brush;
+    const selection = d3.brushSelection(brushXselection.node());
+    if (!selectionRange && selection) {
+      /* no active selection - clear brush */
+      brushXselection.call(brushX.move, null);
+    } else if (selectionRange) {
+      const { x, domain } = histogram;
+      const [min, max] = domain;
+      const x0 = x(clamp(selectionRange[0], [min, max]));
+      const x1 = x(clamp(selectionRange[1], [min, max]));
+      if (!selection) {
+        /* there is an active selection, but no brush - set the brush */
+        brushXselection.call(brushX.move, [x0, x1]);
+      } else {
+        /* there is an active selection and a brush - make sure they match */
+        const moveDeltaThreshold = 1;
+        const dX0 = Math.abs(x0 - selection[0]);
+        const dX1 = Math.abs(x1 - selection[1]);
+        /*
+        only update the brush if it is grossly incorrect,
+        as defined by the moveDeltaThreshold
+        */
+        if (dX0 > moveDeltaThreshold || dX1 > moveDeltaThreshold) {
+          brushXselection.call(brushX.move, [x0, x1]);
+        }
+      }
+    }
+  }, [brush, selectionRange]);
+
+  return (
+    <svg
+      style={{ display }}
+      width={width}
+      height={height}
+      id={`histogram_${fieldForId}_svg`}
+      data-testclass="histogram-plot"
+      data-testid={`histogram-${field}-plot`}
+      ref={svgRef}
+    />
+  );
+};
 
 @connect((state, ownProps) => {
   const { isObs, isUserDefined, isDiffExp, field } = ownProps;
@@ -38,8 +435,6 @@ class HistogramBrush extends React.PureComponent {
   constructor(props) {
     super(props);
 
-    this.svgRef = undefined;
-
     this.marginLeft = 10; // Space for 0 tick label on X axis
     this.marginRight = 54; // space for Y axis & labels
     this.marginBottom = 25; // space for X axis & labels
@@ -47,26 +442,9 @@ class HistogramBrush extends React.PureComponent {
 
     this.width = 340 - this.marginLeft - this.marginRight;
     this.height = 135 - this.marginTop - this.marginBottom;
-
-    this.state = {
-      status: "pending",
-      _histogram: null,
-      unclippedRangeMin: undefined,
-      unclippedRangeMax: undefined,
-      brushX: undefined,
-      brushXselection: undefined,
-    };
   }
 
-  componentDidMount() {
-    this.updateState(null);
-  }
-
-  componentDidUpdate(prevProps) {
-    this.updateState(prevProps);
-  }
-
-  onBrush(selection, x, eventType) {
+  onBrush = (selection, x, eventType) => {
     const type = `continuous metadata histogram ${eventType}`;
     return () => {
       const { dispatch, field, isObs, isUserDefined, isDiffExp } = this.props;
@@ -92,9 +470,9 @@ class HistogramBrush extends React.PureComponent {
         actions.selectContinuousMetadataAction(type, query, range, otherProps)
       );
     };
-  }
+  };
 
-  onBrushEnd(selection, x) {
+  onBrushEnd = (selection, x) => {
     return () => {
       const { dispatch, field, isObs, isUserDefined, isDiffExp } = this.props;
       const minAllowedBrushSize = 10;
@@ -142,7 +520,7 @@ class HistogramBrush extends React.PureComponent {
         actions.selectContinuousMetadataAction(type, query, range, otherProps)
       );
     };
-  }
+  };
 
   handleSetGeneAsScatterplotX = () => {
     const { dispatch, field } = this.props;
@@ -173,23 +551,6 @@ class HistogramBrush extends React.PureComponent {
     } else {
       dispatch(actions.requestSingleGeneExpressionCountsForColoringPOST(field));
     }
-  };
-
-  maybeScientific = (x) => {
-    let format = ",";
-    const _ticks = x.ticks(4);
-
-    if (x.domain().some((n) => Math.abs(n) >= 10000)) {
-      /* 
-        heuristic: if the last tick d3 wants to render has one significant
-        digit ie., 2000, render 2e+3, but if it's anything else ie., 42000000 render
-        4.20e+n
-      */
-      format =
-        significantDigits(_ticks[_ticks.length - 1]) === 1 ? ".0e" : ".2e";
-    }
-
-    return format;
   };
 
   removeHistogram = () => {
@@ -223,6 +584,57 @@ class HistogramBrush extends React.PureComponent {
     }
   };
 
+  fetchAsyncProps = async () => {
+    const { annoMatrix } = this.props;
+
+    const { isClipped } = annoMatrix;
+    const query = this.createQuery();
+
+    const df = await annoMatrix.fetch(...query);
+    const column = df.icol(0);
+
+    // if we are clipped, fetch both our value and our unclipped value,
+    // as we need the absolute min/max range, not just the clipped min/max.
+    const summary = column.summarize();
+    const range = [summary.min, summary.max];
+
+    let unclippedRange = [...range];
+    if (isClipped) {
+      const parent = await annoMatrix.viewOf.fetch(...query);
+      const { min, max } = parent.icol(0).summarize();
+      unclippedRange = [min, max];
+    }
+
+    const unclippedRangeColor = [
+      !annoMatrix.isClipped || annoMatrix.clipRange[0] === 0
+        ? "#bbb"
+        : globals.blue,
+      !annoMatrix.isClipped || annoMatrix.clipRange[1] === 1
+        ? "#bbb"
+        : globals.blue,
+    ];
+
+    const histogram = this.calcHistogramCache(column);
+
+    const isSingleValue = summary.min === summary.max;
+    const nonFiniteExtent =
+      summary.min === undefined ||
+      summary.max === undefined ||
+      Number.isNaN(summary.min) ||
+      Number.isNaN(summary.max);
+
+    const OK2Render = !summary.categorical && !nonFiniteExtent;
+
+    return {
+      histogram,
+      range,
+      unclippedRange,
+      unclippedRangeColor,
+      isSingleValue,
+      OK2Render,
+    };
+  };
+
   calcHistogramCache(col) {
     /*
      recalculate expensive stuff, notably bins, summaries, etc.
@@ -231,6 +643,8 @@ class HistogramBrush extends React.PureComponent {
     const summary = col.summarize();
     const { min: domainMin, max: domainMax } = summary;
     const numBins = 40;
+
+    histogramCache.domain = [domainMin, domainMax];
 
     histogramCache.x = d3
       .scaleLinear()
@@ -275,242 +689,8 @@ class HistogramBrush extends React.PureComponent {
     ];
   }
 
-  updateHistogram(prevProps, column) {
-    const { column: oldColumn } = this.state;
-    const {
-      field,
-      isColorAccessor,
-      continuousSelectionRange: range,
-    } = this.props;
-    const dfChanged = column !== oldColumn;
-    const colorSelectionChanged =
-      !prevProps || prevProps.isColorAccessor !== isColorAccessor;
-    const rangeChanged =
-      range !== !prevProps || prevProps.continuousSelectionRange;
-
-    let { _histogram } = this.state;
-    if (dfChanged) {
-      _histogram = this.calcHistogramCache(column);
-      this.setState({ _histogram, column });
-    }
-
-    if (!this.svgRef) return;
-
-    let { brushX, brushXselection } = this.state;
-    if (dfChanged || colorSelectionChanged) {
-      ({ brushX, brushXselection } = this.renderHistogram(
-        _histogram,
-        field,
-        isColorAccessor
-      ));
-    }
-
-    /*
-    if the selection has changed, ensure that the brush correctly reflects
-    the underlying selection.
-    */
-    if (
-      (dfChanged || rangeChanged || colorSelectionChanged) &&
-      brushXselection
-    ) {
-      const selection = d3.brushSelection(brushXselection.node());
-      if (!range && selection) {
-        /* no active selection - clear brush */
-        brushXselection.call(brushX.move, null);
-      } else if (range) {
-        const { x } = _histogram;
-        const { min, max } = column.summarize();
-        const x0 = x(clamp(range[0], [min, max]));
-        const x1 = x(clamp(range[1], [min, max]));
-        if (!selection) {
-          /* there is an active selection, but no brush - set the brush */
-          brushXselection.call(brushX.move, [x0, x1]);
-        } else {
-          /* there is an active selection and a brush - make sure they match */
-          const moveDeltaThreshold = 1;
-          const dX0 = Math.abs(x0 - selection[0]);
-          const dX1 = Math.abs(x1 - selection[1]);
-          /*
-          only update the brush if it is grossly incorrect,
-          as defined by the moveDeltaThreshold
-          */
-          if (dX0 > moveDeltaThreshold || dX1 > moveDeltaThreshold) {
-            brushXselection.call(brushX.move, [x0, x1]);
-          }
-        }
-      }
-    }
-  }
-
-  async fetchData() {
-    const { annoMatrix } = this.props;
-    const { isClipped } = annoMatrix;
-    const query = this.createQuery();
-
-    const df = await annoMatrix.fetch(...query);
-    const column = df.icol(0);
-
-    // if we are clipped, fetch both our value and our unclipped value,
-    // as we need the absolute min/max range, not just the clipped min/max.
-    const ranges = column.summarize();
-    let unclippedRangeMin;
-    let unclippedRangeMax;
-    if (isClipped) {
-      const parent = await annoMatrix.viewOf.fetch(...query);
-      ({ min: unclippedRangeMin, max: unclippedRangeMax } = parent
-        .icol(0)
-        .summarize());
-    } else {
-      ({ min: unclippedRangeMin, max: unclippedRangeMax } = ranges);
-    }
-
-    this.setState({
-      ranges,
-      unclippedRangeMin,
-      unclippedRangeMax,
-    });
-    return column;
-  }
-
-  async updateState(prevProps) {
-    const { annoMatrix } = this.props;
-    if (!annoMatrix) return;
-    if (annoMatrix !== prevProps?.annoMatrix) {
-      this.setState({ status: "pending" });
-      try {
-        const column = await this.fetchData();
-        this.updateHistogram(prevProps, column);
-        this.setState({ status: "success", column });
-      } catch (error) {
-        this.setState({ status: "error" });
-        throw error;
-      }
-      return;
-    }
-
-    const { column } = this.state;
-    this.updateHistogram(prevProps, column);
-  }
-
-  saveSvgRef(svgRef) {
-    this.svgRef = svgRef;
-  }
-
-  renderHistogram(histogram, field, isColorAccessor) {
-    const { svgRef } = this;
-    const { x, y, bins, binStart, binEnd, binWidth } = histogram;
-    const svg = d3.select(svgRef);
-
-    /* Remove everything */
-    svg.selectAll("*").remove();
-
-    /* Set margins within the SVG */
-    const container = svg
-      .attr("width", this.width + this.marginLeft + this.marginRight)
-      .attr("height", this.height + this.marginTop + this.marginBottom)
-      .append("g")
-      .attr("class", "histogram-container")
-      .attr("transform", `translate(${this.marginLeft},${this.marginTop})`);
-
-    const colorScale = d3
-      .scaleSequential(interpolateCool)
-      .domain([0, bins.length]);
-
-    const histogramScale = d3
-      .scaleLinear()
-      .domain(x.domain())
-      .range([
-        colorScale.domain()[1],
-        colorScale.domain()[0],
-      ]); /* we flip this to make colors dark if high in the color scale */
-
-    if (binWidth > 0) {
-      /* BINS */
-      container
-        .insert("g", "*")
-        .selectAll("rect")
-        .data(bins)
-        .enter()
-        .append("rect")
-        .attr("x", (d, i) => x(binStart(i)) + 1)
-        .attr("y", (d) => y(d))
-        .attr("width", (d, i) => x(binEnd(i)) - x(binStart(i)) - 1)
-        .attr("height", (d) => y(0) - y(d))
-        .style(
-          "fill",
-          isColorAccessor
-            ? (d, i) => colorScale(histogramScale(binStart(i)))
-            : "#bbb"
-        );
-    }
-
-    // BRUSH
-    // Note the brushable area is bounded by the data on three sides, but goes down to cover the x-axis
-    const brushX = d3
-      .brushX()
-      .extent([
-        [x.range()[0], y.range()[1]],
-        [x.range()[1], this.marginTop + this.height + this.marginBottom],
-      ])
-      /*
-      emit start so that the Undoable history can save an undo point
-      upon drag start, and ignore the subsequent intermediate drag events.
-      */
-      .on("start", this.onBrush(field, x.invert, "start").bind(this))
-      .on("brush", this.onBrush(field, x.invert, "brush").bind(this))
-      .on("end", this.onBrushEnd(field, x.invert).bind(this));
-
-    const brushXselection = container
-      .insert("g")
-      .attr("class", "brush")
-      .attr("data-testid", `${svgRef.dataset.testid}-brushable-area`)
-      .call(brushX);
-
-    /* X AXIS */
-    container
-      .insert("g")
-      .attr("class", "axis axis--x")
-      .attr("transform", `translate(0,${this.marginTop + this.height})`)
-      .call(
-        d3
-          .axisBottom(x)
-          .ticks(4)
-          .tickFormat(d3.format(this.maybeScientific(x)))
-      );
-
-    /* Y AXIS */
-    container
-      .insert("g")
-      .attr("class", "axis axis--y")
-      .attr("transform", `translate(${this.marginLeft + this.width},0)`)
-      .call(
-        d3
-          .axisRight(y)
-          .ticks(3)
-          .tickFormat(
-            d3.format(
-              y.domain().some((n) => Math.abs(n) >= 10000) ? ".0e" : ","
-            )
-          )
-      );
-
-    /* axis style */
-    svg.selectAll(".axis text").style("fill", "rgb(80,80,80)");
-    svg.selectAll(".axis path").style("stroke", "rgb(230,230,230)");
-    svg.selectAll(".axis line").style("stroke", "rgb(230,230,230)");
-
-    const newState = { brushX, brushXselection };
-    this.setState(newState);
-    return newState;
-  }
-
   render() {
-    const { state } = this;
-    const { status, ranges } = state;
-    if (status === "error") return null;
-
     const {
-      annoMatrix,
       field,
       isColorAccessor,
       isUserDefined,
@@ -520,164 +700,78 @@ class HistogramBrush extends React.PureComponent {
       isScatterplotXXaccessor,
       isScatterplotYYaccessor,
       zebra,
+      continuousSelectionRange,
     } = this.props;
     const fieldForId = field.replace(/\s/g, "_");
-    const unclippedRangeMin = state.unclippedRangeMin ?? 0;
-    const unclippedRangeMax = state.unclippedRangeMax ?? 1;
-    const unclippedRangeMinColor =
-      !annoMatrix.isClipped || annoMatrix.clipRange[0] === 0
-        ? "#bbb"
-        : globals.blue;
-    const unclippedRangeMaxColor =
-      !annoMatrix.isClipped || annoMatrix.clipRange[1] === 1
-        ? "#bbb"
-        : globals.blue;
-
-    const isSingleValue = ranges?.min === ranges?.max;
+    const showScatterPlot = isDiffExp || isUserDefined;
 
     return (
-      <div
-        id={`histogram_${fieldForId}`}
-        data-testid={`histogram-${field}`}
-        data-testclass={
-          isDiffExp
-            ? "histogram-diffexp"
-            : isUserDefined
-            ? "histogram-user-gene"
-            : "histogram-continuous-metadata"
-        }
-        style={{
-          padding: globals.leftSidebarSectionPadding,
-          backgroundColor: zebra ? globals.lightestGrey : "white",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "flex-end",
-            paddingBottom: "8px",
-          }}
-        >
-          {isDiffExp || isUserDefined ? (
-            <span>
-              <span
-                style={{ marginRight: 7 }}
-                className="bp3-icon-standard bp3-icon-scatter-plot"
-              />
-              <ButtonGroup style={{ marginRight: 7 }}>
-                <Button
-                  data-testid={`plot-x-${field}`}
-                  onClick={this.handleSetGeneAsScatterplotX}
-                  active={isScatterplotXXaccessor}
-                  intent={isScatterplotXXaccessor ? "primary" : "none"}
-                >
-                  plot x
-                </Button>
-                <Button
-                  data-testid={`plot-y-${field}`}
-                  onClick={this.handleSetGeneAsScatterplotY}
-                  active={isScatterplotYYaccessor}
-                  intent={isScatterplotYYaccessor ? "primary" : "none"}
-                >
-                  plot y
-                </Button>
-              </ButtonGroup>
-            </span>
-          ) : null}
-          {isUserDefined ? (
-            <Button
-              minimal
-              onClick={this.removeHistogram}
-              style={{
-                color: globals.blue,
-                cursor: "pointer",
-                marginLeft: 7,
-              }}
-            >
-              remove
-            </Button>
-          ) : null}
-          <Tooltip
-            content="Use as color scale"
-            position="bottom"
-            hoverOpenDelay={globals.tooltipHoverOpenDelay}
-          >
-            <Button
-              onClick={this.handleColorAction}
-              active={isColorAccessor}
-              intent={isColorAccessor ? "primary" : "none"}
-              data-testclass="colorby"
-              data-testid={`colorby-${field}`}
-              icon="tint"
-            />
-          </Tooltip>
-        </div>
-        <svg
-          style={{ display: isSingleValue ? "none" : "block" }}
-          width={this.width}
-          height={this.height}
-          id={`histogram_${fieldForId}_svg`}
-          data-testclass="histogram-plot"
-          data-testid={`histogram-${field}-plot`}
-          ref={(svgRef) => this.saveSvgRef(svgRef)}
-        />
-        <div
-          style={{
-            display: "flex",
-            justifyContent: isSingleValue ? "center" : "space-between",
-          }}
-        >
-          <span
-            style={{
-              color: unclippedRangeMinColor,
-              display: isSingleValue ? "none" : "block",
-            }}
-          >
-            min {unclippedRangeMin.toPrecision(4)}
-          </span>
-          <span
-            data-testclass="brushable-histogram-field-name"
-            style={{ fontStyle: "italic" }}
-          >
-            {field}
-          </span>
-          <div style={{ display: isSingleValue ? "block" : "none" }}>
-            : {unclippedRangeMin}
-          </div>
-          <span
-            style={{
-              color: unclippedRangeMaxColor,
-              display: isSingleValue ? "none" : "block",
-            }}
-          >
-            max {unclippedRangeMax.toPrecision(4)}
-          </span>
-        </div>
-
-        {isDiffExp ? (
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "baseline",
-            }}
-          >
-            <span>
-              <strong>log fold change:</strong>
-              {` ${logFoldChange.toPrecision(4)}`}
-            </span>
-            <span
-              style={{
-                marginLeft: 7,
-                padding: 2,
-              }}
-            >
-              <strong>p-value (adj):</strong>
-              {pvalAdj < 0.0001 ? " < 0.0001" : ` ${pvalAdj.toFixed(4)}`}
-            </span>
-          </div>
-        ) : null}
-      </div>
+      <Async promiseFn={this.fetchAsyncProps}>
+        <Async.Pending>
+          <StillLoading field={field} zebra={zebra} />
+        </Async.Pending>
+        <Async.Rejected>{(error) => error.message}</Async.Rejected>
+        <Async.Fulfilled>
+          {(asyncProps) =>
+            asyncProps.OK2Render ? (
+              <div
+                id={`histogram_${fieldForId}`}
+                data-testid={`histogram-${field}`}
+                data-testclass={
+                  isDiffExp
+                    ? "histogram-diffexp"
+                    : isUserDefined
+                    ? "histogram-user-gene"
+                    : "histogram-continuous-metadata"
+                }
+                style={{
+                  padding: globals.leftSidebarSectionPadding,
+                  backgroundColor: zebra ? globals.lightestGrey : "white",
+                }}
+              >
+                <HistogramToolbar
+                  field={field}
+                  isColorBy={isColorAccessor}
+                  onColorByClick={this.handleColorAction}
+                  onRemoveClick={isUserDefined ? this.removeHistogram : null}
+                  isScatterPlotX={isScatterplotXXaccessor}
+                  isScatterPlotY={isScatterplotYYaccessor}
+                  onScatterPlotXClick={
+                    showScatterPlot ? this.handleSetGeneAsScatterplotX : null
+                  }
+                  onScatterPlotYClick={
+                    showScatterPlot ? this.handleSetGeneAsScatterplotY : null
+                  }
+                />
+                <Histogram
+                  field={field}
+                  fieldForId={fieldForId}
+                  display={asyncProps.isSingleValue ? "none" : "block"}
+                  histogram={asyncProps.histogram}
+                  width={this.width}
+                  height={this.height}
+                  onBrush={this.onBrush}
+                  onBrushEnd={this.onBrushEnd}
+                  marginLeft={this.marginLeft}
+                  marginRight={this.marginRight}
+                  marginBottom={this.marginBottom}
+                  marginTop={this.marginTop}
+                  isColorBy={isColorAccessor}
+                  selectionRange={continuousSelectionRange}
+                />
+                <HistogramFooter
+                  field={field}
+                  hideRanges={asyncProps.isSingleValue}
+                  range={asyncProps.unclippedRange}
+                  rangeColor={asyncProps.unclippedRangeColor}
+                  logFoldChange={logFoldChange}
+                  pvalAdj={pvalAdj}
+                />
+              </div>
+            ) : null
+          }
+        </Async.Fulfilled>
+      </Async>
     );
   }
 }
