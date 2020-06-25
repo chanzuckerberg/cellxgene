@@ -2,7 +2,7 @@ import {
   whereCacheGet,
   whereCacheCreate,
   whereCacheMerge,
-} from "../../../src/util/annoMatrix/whereCache";
+} from "../../../src/annoMatrix/whereCache";
 
 const schema = {};
 

@@ -13,7 +13,7 @@ import {
   clip,
   isubset,
   isubsetMask,
-} from "../../../src/util/annoMatrix";
+} from "../../../src/annoMatrix";
 import { Dataframe } from "../../../src/util/dataframe";
 import { rangeFill } from "../../../src/util/range";
 

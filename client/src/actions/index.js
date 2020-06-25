@@ -4,7 +4,7 @@ import {
   AnnoMatrixObsCrossfilter,
   clip,
   isubsetMask,
-} from "../util/annoMatrix";
+} from "../annoMatrix";
 import {
   catchErrorsWrap,
   doJsonRequest,

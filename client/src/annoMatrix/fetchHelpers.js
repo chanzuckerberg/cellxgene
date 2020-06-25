@@ -1,4 +1,4 @@
-export { doBinaryRequest } from "../actionHelpers";
+export { doBinaryRequest } from "../util/actionHelpers";
 
 export function fetchResult(promise) {
   let _status = "pending";

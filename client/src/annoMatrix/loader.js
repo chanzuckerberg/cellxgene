@@ -3,15 +3,15 @@ Base matrix, which proxies for server.
 */
 import clone from "./clone";
 import { doBinaryRequest, dubEncURIComp } from "./fetchHelpers";
-import { matrixFBSToDataframe } from "../stateManager/matrix";
+import { matrixFBSToDataframe } from "../util/stateManager/matrix";
 import { getColumnSchema } from "./schema";
 import {
   addObsAnnoColumn,
   removeObsAnnoColumn,
   addObsAnnoCategory,
   removeObsAnnoCategory,
-} from "../stateManager/schemaHelpers";
-import { isArrayOrTypedArray } from "../typeHelpers";
+} from "../util/stateManager/schemaHelpers";
+import { isArrayOrTypedArray } from "../util/typeHelpers";
 import { whereCacheCreate } from "./whereCache";
 import AnnoMatrix from "./annoMatrix";
 

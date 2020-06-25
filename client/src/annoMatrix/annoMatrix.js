@@ -1,11 +1,11 @@
-import { Dataframe, IdentityInt32Index } from "../dataframe";
+import { Dataframe, IdentityInt32Index } from "../util/dataframe";
 import {
   getColumnDimensionNames,
   getColumnSchema,
   schemaColumns,
 } from "./schema";
 import { fetchResult } from "./fetchHelpers";
-import { indexEntireSchema } from "../stateManager/schemaHelpers";
+import { indexEntireSchema } from "../util/stateManager/schemaHelpers";
 import { whereCacheGet, whereCacheMerge } from "./whereCache";
 
 const MAX_CACHED_COLUMNS = 48;

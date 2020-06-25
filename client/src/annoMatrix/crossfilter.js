@@ -4,7 +4,7 @@ providing a number of services:
 	- on-demand index creation as data is loaded
 	- transparently mapping between queries and crossfilter index names
 */
-import Crossfilter from "../typedCrossfilter";
+import Crossfilter from "../util/typedCrossfilter";
 import { getColumnSchema } from "./schema";
 
 export default class AnnoMatrixObsCrossfilter {

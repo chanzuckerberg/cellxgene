@@ -4,7 +4,7 @@
 Views on the annomatrix
 */
 import clone from "./clone";
-import clip from "../clip";
+import clip from "../util/clip";
 import AnnoMatrix from "./annoMatrix";
 import { whereCacheCreate } from "./whereCache";
 import { isContinuousType, getColumnSchema } from "./schema";
