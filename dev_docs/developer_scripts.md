@@ -109,8 +109,8 @@ Methods used to test the client javascript code
   `backend-dev` targets. One starts the server, the other runs the tests. If
   developing a front-end feature and just checking if tests pass, this is
   probabaly the one you want to run.
-* `make e2e` Runs backend tests without starting the server. You will need to
+* `npm run e2e` Runs backend tests without starting the server. You will need to
   start the rest api separately with the pbmc3k.h5ad file. Note you can use
   the `JEST_ENV` environment variable to change how JEST runs in the browser.
-  The test runs against `localhost:5005` by default. You can use the
+  The test runs against `localhost:3000` by default. You can use the
   `CXG_URL_BASE` env variable to test non-localhost deployments of cellxgene.

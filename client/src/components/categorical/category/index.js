@@ -362,6 +362,7 @@ class Category extends React.PureComponent {
           <span
             role="menuitem"
             tabIndex="0"
+            data-testclass="category-expand"
             data-testid={`${metadataField}:category-expand`}
             onKeyPress={(e) => {
               if (e.key === "Enter") {

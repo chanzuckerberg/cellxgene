@@ -1,4 +1,3 @@
-/* eslint no-bitwise: "off" */
 import _ from "lodash";
 import { flatbuffers } from "flatbuffers";
 import { NetEncoding } from "../../../src/util/stateManager/matrix_generated";
@@ -79,6 +78,7 @@ const anAnnotationsObsJSONResponse = {
       `obs${idx}`,
       2 * idx,
       idx + 0.0133,
+      // eslint-disable-next-line no-bitwise -- idx & 1 to check for odd numbers
       !!(idx & 1),
       field4Categories[idx % field4Categories.length],
     ])
@@ -93,6 +93,7 @@ const anAnnotationsVarJSONResponse = {
       idx,
       10 * idx,
       idx + 2.90143,
+      // eslint-disable-next-line no-bitwise -- idx & 1 to check for odd numbers
       !!(idx & 1),
       fieldDCategories[idx % fieldDCategories.length],
       `var${idx}`,
@@ -112,7 +113,7 @@ function encodeTypedArray(builder, uType, uData) {
 function encodeMatrix(columns, colIndex = undefined) {
   /*
   IMPORTANT: this is not a general purpose encoder.  in particular,
-  it doesn't correctly handle all column index types, nor does it 
+  it doesn't correctly handle all column index types, nor does it
   handle all column typedarray types.
 
   encodeMatrixFBS in matrix.py is more general.  This is used only

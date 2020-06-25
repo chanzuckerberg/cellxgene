@@ -3,11 +3,12 @@ PATH := $(PATH):$(PROJECT_ROOT)/scripts
 
 SHELL := env PATH='$(PATH)' /bin/bash
 
-# get_or_else_dev_env_default
-# - If a variable is defined, return its value
-# - Else return the default value from environment.dev
-define get_or_else_dev_env_default
-$(if $($(1)),$($(1)),$(shell VAR=$$(sed -n 's/$(1)=\(.*\)/\1/p' $(PROJECT_ROOT)/environment.default); eval "echo \"$$VAR\""))
+ifeq ($(shell which jq),)
+$(error Please install jq using "apt-get install jq" or "brew install jq")
+endif
+
+define GetValueFromJson
+$(shell jq -r '.$(1)' "$(PROJECT_ROOT)/environment.default.json")
 endef
 
 # https://stackoverflow.com/a/14777895/9587410
@@ -16,11 +17,11 @@ ifeq ($(shell uname),Darwin)     # is Windows_NT on XP, 2000, 7, Vista, 10...
 endif
 
 export CELLXGENE_COMMIT := $(shell git rev-parse --short HEAD)
-export CXG_SERVER_PORT := $(call get_or_else_dev_env_default,CXG_SERVER_PORT)
-export CXG_CLIENT_PORT := $(call get_or_else_dev_env_default,CXG_CLIENT_PORT)
-export JEST_ENV := $(call get_or_else_dev_env_default,JEST_ENV)
-export DATASET := $(call get_or_else_dev_env_default,DATASET)
-export CXG_OPTIONS := $(call get_or_else_dev_env_default,CXG_OPTIONS)
+export CXG_SERVER_PORT := $(call GetValueFromJson,CXG_SERVER_PORT)
+export CXG_CLIENT_PORT := $(call GetValueFromJson,CXG_CLIENT_PORT)
+export JEST_ENV := $(call GetValueFromJson,JEST_ENV)
+export DATASET := $(call GetValueFromJson,DATASET)
+export CXG_OPTIONS := $(call GetValueFromJson,CXG_OPTIONS)
 
 .PHONY: start-server
 start-server:

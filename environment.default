@@ -1,6 +1,0 @@
-# Default environment variables for cellxgene development
-CXG_SERVER_PORT=5005
-CXG_CLIENT_PORT=3000
-JEST_ENV=dev
-DATASET="$(git rev-parse --show-toplevel)/example-dataset/pbmc3k.h5ad"
-CXG_OPTIONS=--debug

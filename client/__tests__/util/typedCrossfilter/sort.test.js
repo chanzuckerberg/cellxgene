@@ -2,9 +2,6 @@ import {
   sortArray,
   sortIndex,
   lowerBound,
-  upperBound,
-  lowerBoundIndirect,
-  upperBoundIndirect,
 } from "../../../src/util/typedCrossfilter/sort";
 
 /*
@@ -68,7 +65,7 @@ describe("sortArray", () => {
   });
 
   describe("non-finite numbers", () => {
-    test("inifinity", () => {
+    test("infinity", () => {
       expect(sortArray(new Float32Array([pInf, nInf, 0, 1, 2]))).toMatchObject(
         new Float32Array([nInf, 0, 1, 2, pInf])
       );
