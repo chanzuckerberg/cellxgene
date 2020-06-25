@@ -1,4 +1,4 @@
-/* eslint-disable no-undef -- not yet ported */
+/* eslint-disable no-undef -- not yet ported, disabled until reimplementation occurs */
 import React from "react";
 import {
   AnchorButton,
@@ -118,4 +118,4 @@ class Embedding extends React.PureComponent {
 }
 
 export default Embedding;
-/* eslint-enable no-undef -- not yet ported */
+/* eslint-enable no-undef -- not yet ported, disabled until reimplementation occurs */

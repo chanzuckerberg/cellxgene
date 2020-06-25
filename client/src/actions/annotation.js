@@ -4,11 +4,9 @@ Action creators for user annotation
 import _ from "lodash";
 import * as globals from "../globals";
 import { MatrixFBS } from "../util/stateManager";
+import { AnnotationsHelpers } from "../util/stateManager";
 
-function isUserAnnotation(annoMatrix, obsCatName) {
-  // true if writable annotation; false if not or doesn't exist.
-  return annoMatrix.schema.annotations.obsByName[obsCatName]?.writable ?? false;
-}
+const isUserAnnotation = AnnotationsHelpers.isUserAnnotation;
 
 export const annotationCreateCategoryAction = (
   newCategoryName,

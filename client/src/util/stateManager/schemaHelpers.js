@@ -13,7 +13,6 @@ import catLabelSort from "../catLabelSort";
 System wide schema assumptions:
   - schema and data wil be consistent (eg, for user-created annotations)
   - schema will be internally self-consistent (eg, index matches columns)
-  - world & universe schema are same - only data is subset
 */
 
 export function indexEntireSchema(schema) {

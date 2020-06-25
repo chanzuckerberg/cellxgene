@@ -88,9 +88,9 @@ export function createCategorySummaryFromDfCol(dfCol, colSchema) {
   const { writable: isUserAnno } = colSchema;
 
   /*
-  Summarize the annotation data currently in world.  Must return categoryValues
-  in sorted order, and must include all category values even if they are not
-  actively used in the current world.
+  Summarize the annotation data currently in dataframe column.  Must return
+  categoryValues in sorted order, and must include all category values even
+  if they are not actively used in the current annoMatrix view.
   */
   const summary = dfCol.summarizeCategorical();
   const [categoryValues, categoryValueCounts] = topNCategories(
