@@ -123,7 +123,7 @@ def config_get(app_config, data_adaptor, annotations):
 def annotations_obs_get(request, data_adaptor, annotations):
     fields = request.args.getlist("annotation-name", None)
     num_columns_requested = len(data_adaptor.get_obs_keys()) if len(fields) == 0 else len(fields)
-    if data_adaptor.config.exceeds_limit("column_request_max", num_columns_requested):
+    if data_adaptor.server_config.exceeds_limit("column_request_max", num_columns_requested):
         return abort(HTTPStatus.BAD_REQUEST)
     preferred_mimetype = request.accept_mimetypes.best_match(["application/octet-stream"])
     if preferred_mimetype != "application/octet-stream":
@@ -173,7 +173,7 @@ def annotations_obs_put(request, data_adaptor, annotations):
 def annotations_var_get(request, data_adaptor, annotations):
     fields = request.args.getlist("annotation-name", None)
     num_columns_requested = len(data_adaptor.get_var_keys()) if len(fields) == 0 else len(fields)
-    if data_adaptor.config.exceeds_limit("column_request_max", num_columns_requested):
+    if data_adaptor.server_config.exceeds_limit("column_request_max", num_columns_requested):
         return abort(HTTPStatus.BAD_REQUEST)
     preferred_mimetype = request.accept_mimetypes.best_match(["application/octet-stream"])
     if preferred_mimetype != "application/octet-stream":
@@ -226,7 +226,7 @@ def data_var_get(request, data_adaptor):
 
 
 def colors_get(data_adaptor):
-    if not data_adaptor.config.presentation__custom_colors:
+    if not data_adaptor.dataset_config.presentation__custom_colors:
         return make_response(jsonify({}), HTTPStatus.OK)
     try:
         return make_response(jsonify(data_adaptor.get_colors()), HTTPStatus.OK)
@@ -235,7 +235,7 @@ def colors_get(data_adaptor):
 
 
 def diffexp_obs_post(request, data_adaptor):
-    if not data_adaptor.config.diffexp__enable:
+    if not data_adaptor.dataset_config.diffexp__enable:
         return abort(HTTPStatus.NOT_IMPLEMENTED)
 
     args = request.get_json()
@@ -273,7 +273,7 @@ def diffexp_obs_post(request, data_adaptor):
 def layout_obs_get(request, data_adaptor):
     fields = request.args.getlist("layout-name", None)
     num_columns_requested = len(data_adaptor.get_embedding_names()) if len(fields) == 0 else len(fields)
-    if data_adaptor.config.exceeds_limit("column_request_max", num_columns_requested):
+    if data_adaptor.server_config.exceeds_limit("column_request_max", num_columns_requested):
         return abort(HTTPStatus.BAD_REQUEST)
 
     preferred_mimetype = request.accept_mimetypes.best_match(["application/octet-stream"])
@@ -296,7 +296,7 @@ def layout_obs_get(request, data_adaptor):
 
 
 def layout_obs_put(request, data_adaptor):
-    if not data_adaptor.config.embedding__enable_reembedding:
+    if not data_adaptor.dataset_config.embedding__enable_reembedding:
         return abort(HTTPStatus.NOT_IMPLEMENTED)
 
     preferred_mimetype = request.accept_mimetypes.best_match(["application/octet-stream"])

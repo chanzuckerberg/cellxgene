@@ -37,90 +37,14 @@ class AppFeature(object):
         return d
 
 
-class AppConfig(object):
-    def __init__(self):
+class BaseConfig(object):
+    def __init__(self, app_config, default_config):
+        self.app_config = app_config
+        self.default_config = default_config
+        self.attr_checked = {k: False for k in self.create_mapping(default_config).keys()}
+        self.dictval_cases = []
 
-        self.default_config = get_default_config()
-        self.attr_checked = {k: False for k in self.__mapping(self.default_config).keys()}
-
-        dc = self.default_config
-        try:
-            self.server__verbose = dc["server"]["verbose"]
-            self.server__debug = dc["server"]["debug"]
-            self.server__host = dc["server"]["host"]
-            self.server__port = dc["server"]["port"]
-            self.server__scripts = dc["server"]["scripts"]
-            self.server__inline_scripts = dc["server"]["inline_scripts"]
-            self.server__open_browser = dc["server"]["open_browser"]
-            self.server__about_legal_tos = dc["server"]["about_legal_tos"]
-            self.server__about_legal_privacy = dc["server"]["about_legal_privacy"]
-            self.server__force_https = dc["server"]["force_https"]
-            self.server__flask_secret_key = dc["server"]["flask_secret_key"]
-            self.server__generate_cache_control_headers = dc["server"]["generate_cache_control_headers"]
-            self.server__server_timing_headers = dc["server"]["server_timing_headers"]
-            self.server__csp_directives = dc["server"]["csp_directives"]
-
-            self.multi_dataset__dataroot = dc["multi_dataset"]["dataroot"]
-            self.multi_dataset__index = dc["multi_dataset"]["index"]
-            self.multi_dataset__allowed_matrix_types = dc["multi_dataset"]["allowed_matrix_types"]
-            self.multi_dataset__matrix_cache__max_datasets = dc["multi_dataset"]["matrix_cache"]["max_datasets"]
-            self.multi_dataset__matrix_cache__timelimit_s = dc["multi_dataset"]["matrix_cache"]["timelimit_s"]
-
-            self.single_dataset__datapath = dc["single_dataset"]["datapath"]
-            self.single_dataset__obs_names = dc["single_dataset"]["obs_names"]
-            self.single_dataset__var_names = dc["single_dataset"]["var_names"]
-            self.single_dataset__about = dc["single_dataset"]["about"]
-            self.single_dataset__title = dc["single_dataset"]["title"]
-
-            self.user_annotations__enable = dc["user_annotations"]["enable"]
-            self.user_annotations__type = dc["user_annotations"]["type"]
-            self.user_annotations__local_file_csv__directory = dc["user_annotations"]["local_file_csv"]["directory"]
-            self.user_annotations__local_file_csv__file = dc["user_annotations"]["local_file_csv"]["file"]
-            self.user_annotations__ontology__enable = dc["user_annotations"]["ontology"]["enable"]
-            self.user_annotations__ontology__obo_location = dc["user_annotations"]["ontology"]["obo_location"]
-
-            self.presentation__max_categories = dc["presentation"]["max_categories"]
-            self.presentation__custom_colors = dc["presentation"]["custom_colors"]
-
-            self.embeddings__names = dc["embeddings"]["names"]
-            self.embeddings__enable_reembedding = dc["embeddings"]["enable_reembedding"]
-
-            self.diffexp__enable = dc["diffexp"]["enable"]
-            self.diffexp__lfc_cutoff = dc["diffexp"]["lfc_cutoff"]
-            self.diffexp__top_n = dc["diffexp"]["top_n"]
-            self.diffexp__alg_cxg__max_workers = dc["diffexp"]["alg_cxg"]["max_workers"]
-            self.diffexp__alg_cxg__cpu_multiplier = dc["diffexp"]["alg_cxg"]["cpu_multiplier"]
-            self.diffexp__alg_cxg__target_workunit = dc["diffexp"]["alg_cxg"]["target_workunit"]
-
-            self.data_locator__s3__region_name = dc["data_locator"]["s3"]["region_name"]
-
-            self.adaptor__cxg_adaptor__tiledb_ctx = dc["adaptor"]["cxg_adaptor"]["tiledb_ctx"]
-            self.adaptor__anndata_adaptor__backed = dc["adaptor"]["anndata_adaptor"]["backed"]
-
-            self.limits__diffexp_cellcount_max = dc["limits"]["diffexp_cellcount_max"]
-            self.limits__column_request_max = dc["limits"]["column_request_max"]
-
-        except KeyError as e:
-            raise ConfigurationError(f"Unexpected config: {str(e)}")
-
-        # The annotation object is created during complete_config and stored here.
-        self.user_annotations = None
-
-        # The matrix data cache manager is created during the complete_config and stored here.
-        self.matrix_data_cache_manager = None
-
-        # Set to true when config_completed is called
-        self.is_completed = False
-
-    def check_config(self):
-        if not self.is_completed:
-            raise ConfigurationError("The configuration has not been completed")
-        mapping = self.__mapping(self.default_config)
-        for key in mapping.keys():
-            if not self.attr_checked[key]:
-                raise ConfigurationError(f"The attr '{key}' has not been checked")
-
-    def __mapping(self, config):
+    def create_mapping(self, config):
         """Create a mapping from attribute names to (location in the config tree, value)"""
         dc = copy.deepcopy(config)
         mapping = {}
@@ -130,7 +54,7 @@ class AppConfig(object):
         # in the flattening below.
         dictval_cases = [
             ("adaptor", "cxg_adaptor", "tiledb_ctx"),
-            ("server", "csp_directives"),
+            ("app", "csp_directives"),
             ("multi_dataset", "dataroot"),
         ]
         for dictval_case in dictval_cases:
@@ -151,30 +75,28 @@ class AppConfig(object):
 
         return mapping
 
-    def update_from_config_file(self, config_file):
-        with open(config_file) as fyaml:
-            config = yaml.load(fyaml, Loader=yaml.FullLoader)
+    def check_attr(self, attrname, vtype):
+        val = getattr(self, attrname)
+        if type(vtype) in (list, tuple):
+            if type(val) not in vtype:
+                tnames = ",".join([x.__name__ for x in vtype])
+                raise ConfigurationError(
+                    f"Invalid type for attribute: {attrname}, expected types ({tnames}), got {type(val).__name__}"
+                )
+        else:
+            if type(val) != vtype:
+                raise ConfigurationError(
+                    f"Invalid type for attribute: {attrname}, "
+                    f"expected type {vtype.__name__}, got {type(val).__name__}"
+                )
 
-        mapping = self.__mapping(config)
-        for attr, (key, value) in mapping.items():
-            if not hasattr(self, attr):
-                raise ConfigurationError(f"Unknown key from config file: {key}")
-            try:
-                setattr(self, attr, value)
-            except KeyError:
-                raise ConfigurationError(f"Unable to set config attribute: {key}")
+        self.attr_checked[attrname] = True
 
-            self.attr_checked[attr] = False
-
-        self.is_completed = False
-
-    def write_config(self, config_file):
-        """output the config to a yaml file"""
-        mapping = self.__mapping(self.default_config)
-        for attrname in mapping.keys():
-            mapping[attrname] = getattr(self, attrname)
-        config = unflatten(mapping, splitter=lambda key: key.split("__"))
-        yaml.dump(config, open(config_file, "w"))
+    def check_config(self):
+        mapping = self.create_mapping(self.default_config)
+        for key in mapping.keys():
+            if not self.attr_checked[key]:
+                raise ConfigurationError(f"The attr '{key}' has not been checked")
 
     def update(self, **kw):
         for key, value in kw.items():
@@ -192,9 +114,21 @@ class AppConfig(object):
 
         self.is_completed = False
 
+    def update_from_config(self, config, prefix):
+        mapping = self.create_mapping(config)
+        for attr, (key, value) in mapping.items():
+            if not hasattr(self, attr):
+                raise ConfigurationError(f"Unknown key from config file: {prefix}__{attr}")
+            try:
+                setattr(self, attr, value)
+            except KeyError:
+                raise ConfigurationError(f"Unable to set config attribute: {prefix}__{attr}")
+
+            self.attr_checked[attr] = False
+
     def changes_from_default(self):
         """Return all the attribute that are different from the default"""
-        mapping = self.__mapping(self.default_config)
+        mapping = self.create_mapping(self.default_config)
         diff = []
         for attrname, (key, defval) in mapping.items():
             curval = getattr(self, attrname)
@@ -202,96 +136,109 @@ class AppConfig(object):
                 diff.append((attrname, curval, defval))
         return diff
 
-    def complete_config(self, messagefn=None):
-        """The configure options are checked, and any additional setup based on the config
-        parameters is done"""
 
-        if messagefn is None:
+class ServerConfig(BaseConfig):
+    def __init__(self, app_config, default_config):
+        super().__init__(app_config, default_config)
 
-            def noop(message):
-                pass
+        self.dictval_cases = [
+            ("app", "csp_directives"),
+            ("adaptor", "cxg_adaptor", "tiledb_ctx"),
+            ("multi_dataset", "dataroot"),
+        ]
 
-            messagefn = noop
+        dc = default_config
+        try:
+            self.app__verbose = dc["app"]["verbose"]
+            self.app__debug = dc["app"]["debug"]
+            self.app__host = dc["app"]["host"]
+            self.app__port = dc["app"]["port"]
+            self.app__open_browser = dc["app"]["open_browser"]
+            self.app__force_https = dc["app"]["force_https"]
+            self.app__flask_secret_key = dc["app"]["flask_secret_key"]
+            self.app__generate_cache_control_headers = dc["app"]["generate_cache_control_headers"]
+            self.app__server_timing_headers = dc["app"]["server_timing_headers"]
+            self.app__csp_directives = dc["app"]["csp_directives"]
 
-        # TODO: to give better error messages we can add a mapping between where each config
-        # attribute originated (e.g. command line argument or config file), then in the error
-        # messages we can give correct context for attributes with bad value.
-        context = dict(messagefn=messagefn)
+            self.multi_dataset__dataroot = dc["multi_dataset"]["dataroot"]
+            self.multi_dataset__index = dc["multi_dataset"]["index"]
+            self.multi_dataset__allowed_matrix_types = dc["multi_dataset"]["allowed_matrix_types"]
+            self.multi_dataset__matrix_cache__max_datasets = dc["multi_dataset"]["matrix_cache"]["max_datasets"]
+            self.multi_dataset__matrix_cache__timelimit_s = dc["multi_dataset"]["matrix_cache"]["timelimit_s"]
 
-        self.handle_server(context)
-        self.handle_adaptor(context)
+            self.single_dataset__datapath = dc["single_dataset"]["datapath"]
+            self.single_dataset__obs_names = dc["single_dataset"]["obs_names"]
+            self.single_dataset__var_names = dc["single_dataset"]["var_names"]
+            self.single_dataset__about = dc["single_dataset"]["about"]
+            self.single_dataset__title = dc["single_dataset"]["title"]
+
+            self.diffexp__alg_cxg__max_workers = dc["diffexp"]["alg_cxg"]["max_workers"]
+            self.diffexp__alg_cxg__cpu_multiplier = dc["diffexp"]["alg_cxg"]["cpu_multiplier"]
+            self.diffexp__alg_cxg__target_workunit = dc["diffexp"]["alg_cxg"]["target_workunit"]
+
+            self.data_locator__s3__region_name = dc["data_locator"]["s3"]["region_name"]
+
+            self.adaptor__cxg_adaptor__tiledb_ctx = dc["adaptor"]["cxg_adaptor"]["tiledb_ctx"]
+            self.adaptor__anndata_adaptor__backed = dc["adaptor"]["anndata_adaptor"]["backed"]
+
+            self.limits__diffexp_cellcount_max = dc["limits"]["diffexp_cellcount_max"]
+            self.limits__column_request_max = dc["limits"]["column_request_max"]
+
+        except KeyError as e:
+            raise ConfigurationError(f"Unexpected config: {str(e)}")
+
+        # The matrix data cache manager is created during the complete_config and stored here.
+        self.matrix_data_cache_manager = None
+
+    def complete_config(self, context):
+        self.handle_app(context)
         self.handle_data_locator(context)
         self.handle_adaptor(context)  # may depend on data_locator
-        self.handle_presentation(context)
         self.handle_single_dataset(context)  # may depend on adaptor
         self.handle_multi_dataset(context)  # may depend on adaptor
-        self.handle_user_annotations(context)
-        self.handle_embeddings(context)
         self.handle_diffexp(context)
         self.handle_limits(context)
 
-        self.is_completed = True
         self.check_config()
 
-    def __check_attr(self, attrname, vtype):
-        val = getattr(self, attrname)
-        if type(vtype) in (list, tuple):
-            if type(val) not in vtype:
-                tnames = ",".join([x.__name__ for x in vtype])
+    def handle_app(self, context):
+        self.check_attr("app__verbose", bool)
+        self.check_attr("app__debug", bool)
+        self.check_attr("app__host", str)
+        self.check_attr("app__port", (type(None), int))
+        self.check_attr("app__open_browser", bool)
+        self.check_attr("app__force_https", bool)
+        self.check_attr("app__flask_secret_key", (type(None), str))
+        self.check_attr("app__generate_cache_control_headers", bool)
+        self.check_attr("app__server_timing_headers", bool)
+        self.check_attr("app__csp_directives", (type(None), dict))
+
+        if self.app__port:
+            if not is_port_available(self.app__host, self.app__port):
                 raise ConfigurationError(
-                    f"Invalid type for attribute: {attrname}, expected types ({tnames}), got {type(val).__name__}"
+                    f"The port selected {self.app__port} is in use, please configure an open port."
                 )
         else:
-            if type(val) != vtype:
-                raise ConfigurationError(
-                    f"Invalid type for attribute: {attrname}, "
-                    f"expected type {vtype.__name__}, got {type(val).__name__}"
-                )
+            self.app__port = find_available_port(self.app__host, DEFAULT_SERVER_PORT)
 
-        self.attr_checked[attrname] = True
-
-    def handle_server(self, context):
-        self.__check_attr("server__verbose", bool)
-        self.__check_attr("server__debug", bool)
-        self.__check_attr("server__host", str)
-        self.__check_attr("server__port", (type(None), int))
-        self.__check_attr("server__scripts", list)
-        self.__check_attr("server__inline_scripts", list)
-        self.__check_attr("server__open_browser", bool)
-        self.__check_attr("server__force_https", bool)
-        self.__check_attr("server__flask_secret_key", (type(None), str))
-        self.__check_attr("server__generate_cache_control_headers", bool)
-        self.__check_attr("server__about_legal_tos", (type(None), str))
-        self.__check_attr("server__about_legal_privacy", (type(None), str))
-        self.__check_attr("server__server_timing_headers", bool)
-        self.__check_attr("server__csp_directives", (type(None), dict))
-
-        if self.server__port:
-            if not is_port_available(self.server__host, self.server__port):
-                raise ConfigurationError(
-                    f"The port selected {self.server__port} is in use, please configure an open port."
-                )
-        else:
-            self.server__port = find_available_port(self.server__host, DEFAULT_SERVER_PORT)
-
-        if self.server__debug:
+        if self.app__debug:
             context["messagefn"]("in debug mode, setting verbose=True and open_browser=False")
-            self.server__verbose = True
-            self.server__open_browser = False
+            self.app__verbose = True
+            self.app__open_browser = False
         else:
             warnings.formatwarning = custom_format_warning
 
-        if not self.server__verbose:
+        if not self.app__verbose:
             sys.tracebacklimit = 0
 
         # secret key:
         #   first, from CXG_SECRET_KEY environment variable
         #   second, from config file
-        self.server__flask_secret_key = os.environ.get("CXG_SECRET_KEY", self.server__flask_secret_key)
+        self.app__flask_secret_key = os.environ.get("CXG_SECRET_KEY", self.app__flask_secret_key)
 
         # CSP Directives are a dict of string: list(string) or string: string
-        if self.server__csp_directives is not None:
-            for k, v in self.server__csp_directives.items():
+        if self.app__csp_directives is not None:
+            for k, v in self.app__csp_directives.items():
                 if not isinstance(k, str):
                     raise ConfigurationError("CSP directive names must be a string.")
                 if isinstance(v, list):
@@ -301,19 +248,8 @@ class AppConfig(object):
                 elif not isinstance(v, str):
                     raise ConfigurationError("CSP directive value must be a string or list of strings.")
 
-        # scripts can be string (filename) or dict (attributes).   Convert string to dict.
-        scripts = []
-        for s in self.server__scripts:
-            if isinstance(s, str):
-                scripts.append({"src": s})
-            elif isinstance(s, dict) and isinstance(s["src"], str):
-                scripts.append(s)
-            else:
-                raise ConfigurationError("Scripts must be string or dict")
-        self.server__scripts = scripts
-
     def handle_data_locator(self, context):
-        self.__check_attr("data_locator__s3__region_name", (type(None), bool, str))
+        self.check_attr("data_locator__s3__region_name", (type(None), bool, str))
         if self.data_locator__s3__region_name is True:
             path = self.single_dataset__datapath or self.multi_dataset__dataroot
             if type(path) == dict:
@@ -332,16 +268,12 @@ class AppConfig(object):
                 region_name = None
             self.data_locator__s3__region_name = region_name
 
-    def handle_presentation(self, context):
-        self.__check_attr("presentation__max_categories", int)
-        self.__check_attr("presentation__custom_colors", bool)
-
     def handle_single_dataset(self, context):
-        self.__check_attr("single_dataset__datapath", (str, type(None)))
-        self.__check_attr("single_dataset__title", (str, type(None)))
-        self.__check_attr("single_dataset__about", (str, type(None)))
-        self.__check_attr("single_dataset__obs_names", (str, type(None)))
-        self.__check_attr("single_dataset__var_names", (str, type(None)))
+        self.check_attr("single_dataset__datapath", (str, type(None)))
+        self.check_attr("single_dataset__title", (str, type(None)))
+        self.check_attr("single_dataset__about", (str, type(None)))
+        self.check_attr("single_dataset__obs_names", (str, type(None)))
+        self.check_attr("single_dataset__var_names", (str, type(None)))
 
         if self.single_dataset__datapath is None:
             if self.multi_dataset__dataroot is None:
@@ -357,7 +289,7 @@ class AppConfig(object):
             self.matrix_data_cache_manager = MatrixDataCacheManager(max_cached=1, timelimit_s=None)
 
         # preload this data set
-        matrix_data_loader = MatrixDataLoader(self.single_dataset__datapath, app_config=self)
+        matrix_data_loader = MatrixDataLoader(self.single_dataset__datapath, app_config=self.app_config)
         try:
             matrix_data_loader.pre_load_validation()
         except DatasetAccessError as e:
@@ -388,11 +320,11 @@ class AppConfig(object):
                 )
 
     def handle_multi_dataset(self, context):
-        self.__check_attr("multi_dataset__dataroot", (type(None), dict, str))
-        self.__check_attr("multi_dataset__index", (type(None), bool, str))
-        self.__check_attr("multi_dataset__allowed_matrix_types", list)
-        self.__check_attr("multi_dataset__matrix_cache__max_datasets", int)
-        self.__check_attr("multi_dataset__matrix_cache__timelimit_s", (type(None), int, float))
+        self.check_attr("multi_dataset__dataroot", (type(None), dict, str))
+        self.check_attr("multi_dataset__index", (type(None), bool, str))
+        self.check_attr("multi_dataset__allowed_matrix_types", list)
+        self.check_attr("multi_dataset__matrix_cache__max_datasets", int)
+        self.check_attr("multi_dataset__matrix_cache__timelimit_s", (type(None), int, float))
 
         if self.multi_dataset__dataroot is None:
             return
@@ -423,13 +355,112 @@ class AppConfig(object):
                 timelimit_s=self.multi_dataset__matrix_cache__timelimit_s,
             )
 
+    def handle_diffexp(self, context):
+        self.check_attr("diffexp__alg_cxg__max_workers", (str, int))
+        self.check_attr("diffexp__alg_cxg__cpu_multiplier", int)
+        self.check_attr("diffexp__alg_cxg__target_workunit", int)
+
+        max_workers = self.diffexp__alg_cxg__max_workers
+        cpu_multiplier = self.diffexp__alg_cxg__cpu_multiplier
+        cpu_count = os.cpu_count()
+        max_workers = min(max_workers, cpu_multiplier * cpu_count)
+        diffexp_tiledb.set_config(max_workers, self.diffexp__alg_cxg__target_workunit)
+
+    def handle_adaptor(self, context):
+        # cxg
+        self.check_attr("adaptor__cxg_adaptor__tiledb_ctx", dict)
+        regionkey = "vfs.s3.region"
+        if regionkey not in self.adaptor__cxg_adaptor__tiledb_ctx:
+            if type(self.data_locator__s3__region_name) == str:
+                self.adaptor__cxg_adaptor__tiledb_ctx[regionkey] = self.data_locator__s3__region_name
+
+        from server.data_cxg.cxg_adaptor import CxgAdaptor
+
+        CxgAdaptor.set_tiledb_context(self.adaptor__cxg_adaptor__tiledb_ctx)
+
+        # anndata
+        self.check_attr("adaptor__anndata_adaptor__backed", bool)
+
+    def handle_limits(self, context):
+        self.check_attr("limits__diffexp_cellcount_max", (type(None), int))
+        self.check_attr("limits__column_request_max", (type(None), int))
+
+    def exceeds_limit(self, limit_name, value):
+        limit_value = getattr(self, "limits__" + limit_name, None)
+        if limit_value is None:  # disabled
+            return False
+        return value > limit_value
+
+
+class DatasetConfig(BaseConfig):
+    def __init__(self, tag, app_config, default_config):
+        super().__init__(app_config, default_config)
+        self.tag = tag
+        dc = default_config
+        try:
+            self.app__scripts = dc["app"]["scripts"]
+            self.app__inline_scripts = dc["app"]["inline_scripts"]
+            self.app__about_legal_tos = dc["app"]["about_legal_tos"]
+            self.app__about_legal_privacy = dc["app"]["about_legal_privacy"]
+
+            self.presentation__max_categories = dc["presentation"]["max_categories"]
+            self.presentation__custom_colors = dc["presentation"]["custom_colors"]
+
+            self.user_annotations__enable = dc["user_annotations"]["enable"]
+            self.user_annotations__type = dc["user_annotations"]["type"]
+            self.user_annotations__local_file_csv__directory = dc["user_annotations"]["local_file_csv"]["directory"]
+            self.user_annotations__local_file_csv__file = dc["user_annotations"]["local_file_csv"]["file"]
+            self.user_annotations__ontology__enable = dc["user_annotations"]["ontology"]["enable"]
+            self.user_annotations__ontology__obo_location = dc["user_annotations"]["ontology"]["obo_location"]
+
+            self.embeddings__names = dc["embeddings"]["names"]
+            self.embeddings__enable_reembedding = dc["embeddings"]["enable_reembedding"]
+
+            self.diffexp__enable = dc["diffexp"]["enable"]
+            self.diffexp__lfc_cutoff = dc["diffexp"]["lfc_cutoff"]
+            self.diffexp__top_n = dc["diffexp"]["top_n"]
+
+        except KeyError as e:
+            raise ConfigurationError(f"Unexpected config: {str(e)}")
+
+        # The annotation object is created during complete_config and stored here.
+        self.user_annotations = None
+
+    def complete_config(self, context):
+        self.handle_app(context)
+        self.handle_presentation(context)
+        self.handle_user_annotations(context)
+        self.handle_embeddings(context)
+        self.handle_diffexp(context)
+
+    def handle_app(self, context):
+        self.check_attr("app__scripts", list)
+        self.check_attr("app__inline_scripts", list)
+        self.check_attr("app__about_legal_tos", (type(None), str))
+        self.check_attr("app__about_legal_privacy", (type(None), str))
+
+        # scripts can be string (filename) or dict (attributes).   Convert string to dict.
+        scripts = []
+        for s in self.app__scripts:
+            if isinstance(s, str):
+                scripts.append({"src": s})
+            elif isinstance(s, dict) and isinstance(s["src"], str):
+                scripts.append(s)
+            else:
+                raise ConfigurationError("Scripts must be string or dict")
+        self.app__scripts = scripts
+
+    def handle_presentation(self, context):
+        self.check_attr("presentation__max_categories", int)
+        self.check_attr("presentation__custom_colors", bool)
+
     def handle_user_annotations(self, context):
-        self.__check_attr("user_annotations__enable", bool)
-        self.__check_attr("user_annotations__type", str)
-        self.__check_attr("user_annotations__local_file_csv__directory", (type(None), str))
-        self.__check_attr("user_annotations__local_file_csv__file", (type(None), str))
-        self.__check_attr("user_annotations__ontology__enable", bool)
-        self.__check_attr("user_annotations__ontology__obo_location", (type(None), str))
+        self.check_attr("user_annotations__enable", bool)
+        self.check_attr("user_annotations__type", str)
+        self.check_attr("user_annotations__local_file_csv__directory", (type(None), str))
+        self.check_attr("user_annotations__local_file_csv__file", (type(None), str))
+        self.check_attr("user_annotations__ontology__enable", bool)
+        self.check_attr("user_annotations__ontology__obo_location", (type(None), str))
 
         if self.user_annotations__enable:
             # TODO, replace this with a factory pattern once we have more than one way
@@ -458,8 +489,11 @@ class AppConfig(object):
 
             # if the user has specified a fixed label file, go ahead and validate it
             # so that we can remove errors early in the process.
-            if self.single_dataset__datapath and self.user_annotations__local_file_csv__file:
-                with self.matrix_data_cache_manager.data_adaptor(self.single_dataset__datapath, self) as data_adaptor:
+            server_config = self.app_config.server_config
+            if server_config.single_dataset__datapath and self.user_annotations__local_file_csv__file:
+                with server_config.matrix_data_cache_manager.data_adaptor(
+                    self.tag, server_config.single_dataset__datapath, self.app_config
+                ) as data_adaptor:
                     data_adaptor.check_new_labels(self.user_annotations.read_labels(data_adaptor))
 
             if self.user_annotations__ontology__enable or self.user_annotations__ontology__obo_location:
@@ -487,68 +521,150 @@ class AppConfig(object):
                 )
 
     def handle_embeddings(self, context):
-        self.__check_attr("embeddings__names", list)
-        self.__check_attr("embeddings__enable_reembedding", bool)
+        self.check_attr("embeddings__names", list)
+        self.check_attr("embeddings__enable_reembedding", bool)
 
-        if self.single_dataset__datapath:
+        if self.app_config.server_config.single_dataset__datapath:
             if self.embeddings__enable_reembedding:
-                matrix_data_loader = MatrixDataLoader(self.single_dataset__datapath, app_config=self)
+                matrix_data_loader = MatrixDataLoader(self.single_dataset__datapath, app_config=self.app_config)
                 if matrix_data_loader.matrix_data_type() != MatrixDataType.H5AD:
                     raise ConfigurationError("'enable-reembedding is only supported with H5AD files.")
                 if self.adaptor__anndata_adaptor__backed:
                     raise ConfigurationError("enable-reembedding is not supported when run in --backed mode.")
 
     def handle_diffexp(self, context):
-        self.__check_attr("diffexp__enable", bool)
-        self.__check_attr("diffexp__lfc_cutoff", float)
-        self.__check_attr("diffexp__top_n", int)
-        self.__check_attr("diffexp__alg_cxg__max_workers", (str, int))
-        self.__check_attr("diffexp__alg_cxg__cpu_multiplier", int)
-        self.__check_attr("diffexp__alg_cxg__target_workunit", int)
+        self.check_attr("diffexp__enable", bool)
+        self.check_attr("diffexp__lfc_cutoff", float)
+        self.check_attr("diffexp__top_n", int)
 
-        if self.single_dataset__datapath:
-            with self.matrix_data_cache_manager.data_adaptor(self.single_dataset__datapath, self) as data_adaptor:
+        server_config = self.app_config.server_config
+        if server_config.single_dataset__datapath:
+            with server_config.matrix_data_cache_manager.data_adaptor(
+                self.tag, server_config.single_dataset__datapath, self.app_config
+            ) as data_adaptor:
                 if self.diffexp__enable and data_adaptor.parameters.get("diffexp_may_be_slow", False):
                     context["messagefn"](
                         "CAUTION: due to the size of your dataset, "
                         "running differential expression may take longer or fail."
                     )
 
-        max_workers = self.diffexp__alg_cxg__max_workers
-        cpu_multiplier = self.diffexp__alg_cxg__cpu_multiplier
-        cpu_count = os.cpu_count()
-        max_workers = min(max_workers, cpu_multiplier * cpu_count)
-        diffexp_tiledb.set_config(max_workers, self.diffexp__alg_cxg__target_workunit)
 
-    def handle_adaptor(self, context):
-        # cxg
-        self.__check_attr("adaptor__cxg_adaptor__tiledb_ctx", dict)
-        regionkey = "vfs.s3.region"
-        if regionkey not in self.adaptor__cxg_adaptor__tiledb_ctx:
-            if type(self.data_locator__s3__region_name) == str:
-                self.adaptor__cxg_adaptor__tiledb_ctx[regionkey] = self.data_locator__s3__region_name
+class AppConfig(object):
+    def __init__(self):
 
-        from server.data_cxg.cxg_adaptor import CxgAdaptor
+        self.default_config = get_default_config()
+        self.server_config = ServerConfig(self, self.default_config["server"])
+        self.dataset_config = {}
+        self.dataset_config["default"] = DatasetConfig(None, self, self.default_config["dataset"])
+        self.default_dataset_config = self.dataset_config["default"]
 
-        CxgAdaptor.set_tiledb_context(self.adaptor__cxg_adaptor__tiledb_ctx)
+        # Set to true when config_completed is called
+        self.is_completed = False
 
-        # anndata
-        self.__check_attr("adaptor__anndata_adaptor__backed", bool)
+    def get_dataset_config(self, dataroot_key):
+        if self.server_config.single_dataset__datapath:
+            return self.default_dataset_config
+        else:
+            return self.dataset_config.get(dataroot_key, self.default_dataset_config)
 
-    def handle_limits(self, context):
-        self.__check_attr("limits__diffexp_cellcount_max", (type(None), int))
-        self.__check_attr("limits__column_request_max", (type(None), int))
+    def check_config(self):
+        if not self.is_completed:
+            raise ConfigurationError("The configuration has not been completed")
+        self.server_config.check_config()
+        for dataset_config in self.dataset_config.values():
+            dataset_config.check_config()
+
+    def update_server_config(self, **kw):
+        self.server_config.update(**kw)
+        self.is_complete = False
+
+    def update_default_dataset_config(self, **kw):
+        self.default_dataset_config.update(**kw)
+        # BCM - update all the other dataset configs too
+        self.is_complete = False
+
+    def update_from_config_file(self, config_file):
+        with open(config_file) as fyaml:
+            config = yaml.load(fyaml, Loader=yaml.FullLoader)
+
+        self.server_config.update_from_config(config["server"], "server")
+        self.default_dataset_config.update_from_config(config["dataset"], "dataset")
+
+        for key, dataset_config in config.items():
+            # BCM - verify this dataroot is know in server__multi_dataset__dataroot
+            if key.startswith("dataset_"):
+                urlroot = key[len("dataset_"):]
+                self.dataset_config[urlroot] = DatasetConfig(urlroot, self, self.default_config["dataset"])
+                self.dataset_config[urlroot].update_from_config(config["dataset"], "dataset")
+                self.dataset_config[urlroot].update_from_config(dataset_config, key)
+
+    def write_config(self, config_file):
+        """output the config to a yaml file"""
+        server = self.server_config.create_mapping(self.server_config.default_config)
+        dataset = self.default_dataset_config.create_mapping(self.default_dataset_config.default_config)
+        config = dict(server={}, dataset={})
+        for attrname in server.keys():
+            config["server__" + attrname] = getattr(self.server_config, attrname)
+        for attrname in dataset.keys():
+            config["dataset__" + attrname] = getattr(self.default_dataset_config, attrname)
+        config = unflatten(config, splitter=lambda key: key.split("__"))
+        yaml.dump(config, open(config_file, "w"))
+        # BCM - write out dataroots
+
+    def changes_from_default(self):
+        """Return all the attribute that are different from the default"""
+        diff_server = self.server_config.changes_from_default()
+        diff_dataset = self.default_dataset_config.changes_from_default()
+        diff = dict(server=diff_server, dataset=diff_dataset)
+        return diff
+
+    def complete_config(self, messagefn=None):
+        """The configure options are checked, and any additional setup based on the config
+        parameters is done"""
+
+        if messagefn is None:
+
+            def noop(message):
+                pass
+
+            messagefn = noop
+
+        # TODO: to give better error messages we can add a mapping between where each config
+        # attribute originated (e.g. command line argument or config file), then in the error
+        # messages we can give correct context for attributes with bad value.
+        context = dict(messagefn=messagefn)
+
+        self.server_config.complete_config(context)
+        for dataset_config in self.dataset_config.values():
+            dataset_config.complete_config(context)
+
+        self.is_completed = True
+        self.check_config()
+
+    def get_matrix_data_cache_manager(self):
+        return self.server_config.matrix_data_cache_manager
 
     def get_title(self, data_adaptor):
-        return self.single_dataset__title if self.single_dataset__title else data_adaptor.get_title()
+        return (
+            self.server_config.single_dataset__title
+            if self.server_config.single_dataset__title
+            else data_adaptor.get_title()
+        )
 
     def get_about(self, data_adaptor):
-        return self.single_dataset__about if self.single_dataset__about else data_adaptor.get_about()
+        return (
+            self.server_config.single_dataset__about
+            if self.server_config.single_dataset__about
+            else data_adaptor.get_about()
+        )
 
     def get_client_config(self, data_adaptor, annotation=None):
         """
         Return the configuration as required by the /config REST route
         """
+
+        server_config = self.server_config
+        dataset_config = data_adaptor.dataset_config
 
         # FIXME The current set of config is not consistently presented:
         # we have camalCase, hyphen-text, and underscore_text
@@ -575,24 +691,24 @@ class AppConfig(object):
 
         # parameters
         parameters = {
-            "layout": self.embeddings__names,
-            "max-category-items": self.presentation__max_categories,
-            "obs_names": self.single_dataset__obs_names,
-            "var_names": self.single_dataset__var_names,
-            "diffexp_lfc_cutoff": self.diffexp__lfc_cutoff,
-            "backed": self.adaptor__anndata_adaptor__backed,
-            "disable-diffexp": not self.diffexp__enable,
-            "enable-reembedding": self.embeddings__enable_reembedding,
+            "layout": dataset_config.embeddings__names,
+            "max-category-items": dataset_config.presentation__max_categories,
+            "obs_names": server_config.single_dataset__obs_names,
+            "var_names": server_config.single_dataset__var_names,
+            "diffexp_lfc_cutoff": dataset_config.diffexp__lfc_cutoff,
+            "backed": server_config.adaptor__anndata_adaptor__backed,
+            "disable-diffexp": not dataset_config.diffexp__enable,
+            "enable-reembedding": dataset_config.embeddings__enable_reembedding,
             "annotations": False,
             "annotations_file": None,
             "annotations_dir": None,
             "annotations_cell_ontology_enabled": False,
             "annotations_cell_ontology_obopath": None,
             "annotations_cell_ontology_terms": None,
-            "custom_colors": self.presentation__custom_colors,
+            "custom_colors": dataset_config.presentation__custom_colors,
             "diffexp-may-be-slow": False,
-            "about_legal_tos": self.server__about_legal_tos,
-            "about_legal_privacy": self.server__about_legal_privacy,
+            "about_legal_tos": dataset_config.app__about_legal_tos,
+            "about_legal_privacy": dataset_config.app__about_legal_privacy,
         }
 
         data_adaptor.update_parameters(parameters)
@@ -608,14 +724,8 @@ class AppConfig(object):
         config["links"] = links
         config["parameters"] = parameters
         config["limits"] = {
-            "column_request_max": self.limits__column_request_max,
-            "diffexp_cellcount_max": self.limits__diffexp_cellcount_max,
+            "column_request_max": server_config.limits__column_request_max,
+            "diffexp_cellcount_max": server_config.limits__diffexp_cellcount_max,
         }
 
         return c
-
-    def exceeds_limit(self, limit_name, value):
-        limit_value = getattr(self, "limits__" + limit_name, None)
-        if limit_value is None:  # disabled
-            return False
-        return value > limit_value

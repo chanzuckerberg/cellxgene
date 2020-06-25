@@ -32,8 +32,8 @@ def main():
     args = parser.parse_args()
 
     app_config = AppConfig()
-    app_config.single_dataset__datapath = args.dataset
-    app_config.server__verbose = True
+    app_config.update_server_config(single_dataset__datapath=args.dataset)
+    app_config.update_server_config(app__verbose=True)
     app_config.complete_config()
 
     loader = MatrixDataLoader(args.dataset)
