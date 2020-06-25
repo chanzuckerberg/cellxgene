@@ -156,7 +156,7 @@ const HistogramFooter = ({
   );
 };
 
-const HistogramToolbar = ({
+const HistogramHeader = ({
   field,
   isColorBy,
   onColorByClick,
@@ -729,7 +729,7 @@ class HistogramBrush extends React.PureComponent {
                   backgroundColor: zebra ? globals.lightestGrey : "white",
                 }}
               >
-                <HistogramToolbar
+                <HistogramHeader
                   field={field}
                   isColorBy={isColorAccessor}
                   onColorByClick={this.handleColorAction}
