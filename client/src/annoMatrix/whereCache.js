@@ -19,9 +19,9 @@ the index.
 	}
 }
 */
-import { getColumnDimensionNames } from "./schema";
+import { _getColumnDimensionNames } from "./schema";
 
-export function whereCacheGet(whereCache, schema, field, query) {
+export function _whereCacheGet(whereCache, schema, field, query) {
   /* 
 	query will either be an where query (object) or a column name (string).
 
@@ -41,11 +41,11 @@ export function whereCacheGet(whereCache, schema, field, query) {
     return columnLabels === undefined ? [undefined] : columnLabels;
   }
 
-  const colDims = getColumnDimensionNames(schema, field, query);
+  const colDims = _getColumnDimensionNames(schema, field, query);
   return colDims === undefined ? [undefined] : colDims;
 }
 
-export function whereCacheCreate(field, query, columnLabels) {
+export function _whereCacheCreate(field, query, columnLabels) {
   /*
 	Create a new whereCache
 	*/
@@ -62,7 +62,7 @@ export function whereCacheCreate(field, query, columnLabels) {
   return whereCache;
 }
 
-function _whereCacheMerge(dst, src) {
+function __whereCacheMerge(dst, src) {
   /*
 	merge src into dst (modifies dst)
 	*/
@@ -85,6 +85,6 @@ function _whereCacheMerge(dst, src) {
   return dst;
 }
 
-export function whereCacheMerge(...caches) {
-  return caches.reduce((dst, src) => _whereCacheMerge(dst, src), {});
+export function _whereCacheMerge(...caches) {
+  return caches.reduce((dst, src) => __whereCacheMerge(dst, src), {});
 }

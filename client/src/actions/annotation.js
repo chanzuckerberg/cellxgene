@@ -3,10 +3,9 @@ Action creators for user annotation
 */
 import _ from "lodash";
 import * as globals from "../globals";
-import { MatrixFBS } from "../util/stateManager";
-import { AnnotationsHelpers } from "../util/stateManager";
+import { MatrixFBS, AnnotationsHelpers } from "../util/stateManager";
 
-const isUserAnnotation = AnnotationsHelpers.isUserAnnotation;
+const { isUserAnnotation } = AnnotationsHelpers;
 
 export const annotationCreateCategoryAction = (
   newCategoryName,

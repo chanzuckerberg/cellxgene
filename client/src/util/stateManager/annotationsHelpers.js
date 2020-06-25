@@ -2,9 +2,6 @@
 Helper functions for user-editable annotations state management.
 See also reducers/annotations.js
 */
-import { unassignedCategoryLabel } from "../../globals";
-import * as SchemaHelpers from "./schemaHelpers";
-import { obsAnnoDimensionName } from "../nameCreators";
 
 /*
 There are a number of state constraints assumed throughout the

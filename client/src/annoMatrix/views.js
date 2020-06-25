@@ -6,8 +6,8 @@ Views on the annomatrix
 import clone from "./clone";
 import clip from "../util/clip";
 import AnnoMatrix from "./annoMatrix";
-import { whereCacheCreate } from "./whereCache";
-import { isContinuousType, getColumnSchema } from "./schema";
+import { _whereCacheCreate } from "./whereCache";
+import { _isContinuousType, _getColumnSchema } from "./schema";
 
 class AnnoMatrixView extends AnnoMatrix {
   constructor(viewOf, rowIndex = null) {
@@ -87,10 +87,10 @@ class AnnoMatrixMapView extends AnnoMatrixView {
     const df = await this.viewOf._fetch(field, query);
     const dfMapped = df.mapColumns((colData, colIdx) => {
       const colLabel = df.colIndex.getLabel(colIdx);
-      const colSchema = getColumnSchema(this.schema, field, colLabel);
+      const colSchema = _getColumnSchema(this.schema, field, colLabel);
       return this.mapFn(field, colLabel, colSchema, colData, df);
     });
-    const whereCacheUpdate = whereCacheCreate(
+    const whereCacheUpdate = _whereCacheCreate(
       field,
       query,
       dfMapped.colIndex.labels()
@@ -125,7 +125,7 @@ export class AnnoMatrixRowSubsetView extends AnnoMatrixView {
     }
 
     const dfSubset = df.subset(null, null, this.rowIndex);
-    const whereCacheUpdate = whereCacheCreate(
+    const whereCacheUpdate = _whereCacheCreate(
       field,
       query,
       dfSubset.colIndex.labels()
@@ -141,7 +141,7 @@ Utility functions below
 function clipAnnoMatrix(field, colLabel, colSchema, colData, df, qmin, qmax) {
   /* only clip obs and var scalar columns */
   if (field !== "obs" && field !== "X") return colData;
-  if (!isContinuousType(colSchema)) return colData;
+  if (!_isContinuousType(colSchema)) return colData;
   if (qmin < 0) qmin = 0;
   if (qmax > 1) qmax = 1;
   if (qmin === 0 && qmax === 1) return colData;

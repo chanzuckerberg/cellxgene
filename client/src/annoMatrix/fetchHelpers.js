@@ -1,6 +1,6 @@
 export { doBinaryRequest } from "../util/actionHelpers";
 
-export function fetchResult(promise) {
+export function _fetchResult(promise) {
   let _status = "pending";
   const res = promise.then(
     (r) => {
@@ -21,6 +21,6 @@ export function fetchResult(promise) {
 }
 
 /* double URI encode - needed for query-param filters */
-export function dubEncURIComp(s) {
+export function _dubEncURIComp(s) {
   return encodeURIComponent(encodeURIComponent(s));
 }

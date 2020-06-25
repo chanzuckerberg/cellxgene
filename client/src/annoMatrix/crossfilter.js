@@ -5,7 +5,7 @@ providing a number of services:
 	- transparently mapping between queries and crossfilter index names
 */
 import Crossfilter from "../util/typedCrossfilter";
-import { getColumnSchema } from "./schema";
+import { _getColumnSchema } from "./schema";
 
 export default class AnnoMatrixObsCrossfilter {
   constructor(annoMatrix, obsCrossfilter = null) {
@@ -31,7 +31,7 @@ export default class AnnoMatrixObsCrossfilter {
   dropObsColumn(col) {
     const annoMatrix = this.annoMatrix.dropObsColumn(col);
     let { obsCrossfilter } = this;
-    const dimName = dimensionName("obs", col);
+    const dimName = _dimensionName("obs", col);
     if (obsCrossfilter.hasDimension(dimName)) {
       obsCrossfilter = obsCrossfilter.delDimension(dimName);
     }
@@ -40,8 +40,8 @@ export default class AnnoMatrixObsCrossfilter {
 
   renameObsColumn(oldCol, newCol) {
     const annoMatrix = this.annoMatrix.renameObsColumn(oldCol, newCol);
-    const oldDimName = dimensionName("obs", oldCol);
-    const newDimName = dimensionName("obs", newCol);
+    const oldDimName = _dimensionName("obs", oldCol);
+    const newDimName = _dimensionName("obs", newCol);
     let { obsCrossfilter } = this;
     if (obsCrossfilter.hasDimension(oldDimName)) {
       obsCrossfilter = obsCrossfilter.renameDimension(oldDimName, newDimName);
@@ -51,7 +51,7 @@ export default class AnnoMatrixObsCrossfilter {
 
   addObsAnnoCategory(col, category) {
     const annoMatrix = this.annoMatrix.addObsAnnoCategory(col, category);
-    const dimName = dimensionName("obs", col);
+    const dimName = _dimensionName("obs", col);
     let { obsCrossfilter } = this;
     if (obsCrossfilter.hasDimension(dimName)) {
       obsCrossfilter = obsCrossfilter.delDimension(dimName);
@@ -65,7 +65,7 @@ export default class AnnoMatrixObsCrossfilter {
       category,
       unassignedCategory
     );
-    const dimName = dimensionName("obs", col);
+    const dimName = _dimensionName("obs", col);
     let { obsCrossfilter } = this;
     if (obsCrossfilter.hasDimension(dimName)) {
       obsCrossfilter = obsCrossfilter.delDimension(dimName);
@@ -79,7 +79,7 @@ export default class AnnoMatrixObsCrossfilter {
       rowLabels,
       value
     );
-    const dimName = dimensionName("obs", col);
+    const dimName = _dimensionName("obs", col);
     let { obsCrossfilter } = this;
     if (obsCrossfilter.hasDimension(dimName)) {
       obsCrossfilter = obsCrossfilter.delDimension(dimName);
@@ -93,7 +93,7 @@ export default class AnnoMatrixObsCrossfilter {
       oldValue,
       newValue
     );
-    const dimName = dimensionName("obs", col);
+    const dimName = _dimensionName("obs", col);
     let { obsCrossfilter } = this;
     if (obsCrossfilter.hasDimension(dimName)) {
       obsCrossfilter = obsCrossfilter.delDimension(dimName);
@@ -119,7 +119,7 @@ export default class AnnoMatrixObsCrossfilter {
     // grab the data, so we can grab the index.
     const df = await annoMatrix.fetch(field, query);
 
-    const dimName = dimensionNameFromDf(field, df);
+    const dimName = _dimensionNameFromDf(field, df);
     if (!obsCrossfilter.hasDimension(dimName)) {
       // lazy index generation - add dimension when first used
       obsCrossfilter = this._addObsCrossfilterDimension(
@@ -194,12 +194,12 @@ export default class AnnoMatrixObsCrossfilter {
   }
 
   /**
-   ** Private
+   ** Private below
    **/
 
   _addObsCrossfilterDimension(obsCrossfilter, field, df) {
     if (field === "var") return obsCrossfilter;
-    const dimName = dimensionNameFromDf(field, df);
+    const dimName = _dimensionNameFromDf(field, df);
     const dimParams = this._getObsDimensionParams(field, df);
     if (obsCrossfilter.size() === 0)
       obsCrossfilter = obsCrossfilter.setData(df);
@@ -209,7 +209,7 @@ export default class AnnoMatrixObsCrossfilter {
 
   _getColumnBaseType(field, col) {
     /* Look up the primitive type for this field/col */
-    const colSchema = getColumnSchema(this.annoMatrix.schema, field, col);
+    const colSchema = _getColumnSchema(this.annoMatrix.schema, field, col);
     return colSchema.type;
   }
 
@@ -244,12 +244,12 @@ export default class AnnoMatrixObsCrossfilter {
   }
 }
 
-function dimensionNameFromDf(field, df) {
+function _dimensionNameFromDf(field, df) {
   const colNames = df.colIndex.labels();
-  return dimensionName(field, colNames);
+  return _dimensionName(field, colNames);
 }
 
-function dimensionName(field, colNames) {
+function _dimensionName(field, colNames) {
   if (!Array.isArray(colNames)) return `${field}/${colNames}`;
   return `${field}/${colNames.join(":")}`;
 }

@@ -1,12 +1,12 @@
 import { Dataframe, IdentityInt32Index } from "../util/dataframe";
 import {
-  getColumnDimensionNames,
-  getColumnSchema,
-  schemaColumns,
+  _getColumnDimensionNames,
+  _getColumnSchema,
+  _schemaColumns,
 } from "./schema";
-import { fetchResult } from "./fetchHelpers";
+import { _fetchResult } from "./fetchHelpers";
 import { indexEntireSchema } from "../util/stateManager/schemaHelpers";
-import { whereCacheGet, whereCacheMerge } from "./whereCache";
+import { _whereCacheGet, _whereCacheMerge } from "./whereCache";
 
 const MAX_CACHED_COLUMNS = 48;
 
@@ -56,7 +56,7 @@ export default class AnnoMatrix {
    ** Schema helper/accessors
    **/
   getMatrixColumns(field) {
-    return schemaColumns(this.schema, field);
+    return _schemaColumns(this.schema, field);
   }
 
   // eslint-disable-next-line class-methods-use-this -- need to be able to call this on instances
@@ -65,11 +65,11 @@ export default class AnnoMatrix {
   }
 
   getColumnSchema(field, col) {
-    return getColumnSchema(this.schema, field, col);
+    return _getColumnSchema(this.schema, field, col);
   }
 
   getColumnDimensions(field, col) {
-    return getColumnDimensionNames(this.schema, field, col);
+    return _getColumnDimensionNames(this.schema, field, col);
   }
 
   /**
@@ -129,7 +129,7 @@ export default class AnnoMatrix {
 
 		Returns a Promise for a dataframe containing the requested columns.
 		*/
-    return fetchResult(this._fetch(field, q));
+    return _fetchResult(this._fetch(field, q));
   }
 
   prefetch(field, q) {
@@ -147,7 +147,7 @@ export default class AnnoMatrix {
   _resolveCachedQueries(field, queries) {
     return queries
       .map((query) =>
-        whereCacheGet(this._whereCache, this.schema, field, query).filter(
+        _whereCacheGet(this._whereCache, this.schema, field, query).filter(
           (cacheKey) => cacheKey !== undefined && this[field].hasCol(cacheKey)
         )
       )
@@ -164,7 +164,7 @@ export default class AnnoMatrix {
 
     /* find any query not already cached */
     const uncachedQueries = queries.filter((query) =>
-      whereCacheGet(this._whereCache, this.schema, field, query).some(
+      _whereCacheGet(this._whereCache, this.schema, field, query).some(
         (cacheKey) => cacheKey === undefined || !this[field].hasCol(cacheKey)
       )
     );
@@ -177,7 +177,7 @@ export default class AnnoMatrix {
             /* fetch, then index.  _doLoad is subclass interface */
             const [whereCacheUpdate, df] = await this._doLoad(_field, _query);
             this[_field] = this[_field].withColsFrom(df);
-            this._whereCache = whereCacheMerge(
+            this._whereCache = _whereCacheMerge(
               this._whereCache,
               whereCacheUpdate
             );
@@ -202,7 +202,7 @@ export default class AnnoMatrix {
     This is implemented by returning a promise that will await the singular
     fetch promise.
     */
-    const key = queryCacheKey(field, query);
+    const key = _queryCacheKey(field, query);
     if (!this._pendingLoad[field][key]) {
       this._pendingLoad[field][key] = fetchFn(field, query);
       try {
@@ -261,7 +261,7 @@ export default class AnnoMatrix {
 Utility functions below
 */
 
-function queryCacheKey(field, query) {
+function _queryCacheKey(field, query) {
   if (typeof query === "object") {
     const { field: queryField, column: queryColumn, value: queryValue } = query;
     return `${field}/${queryField}/${queryColumn}/${queryValue}`;

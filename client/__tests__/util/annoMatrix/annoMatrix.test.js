@@ -1,6 +1,5 @@
 // these THREE statements MUST be first in the file, before any other imports
 import { enableFetchMocks } from "jest-fetch-mock";
-enableFetchMocks();
 import * as serverMocks from "./serverMocks";
 // OK, continue on!
 
@@ -16,6 +15,8 @@ import {
 } from "../../../src/annoMatrix";
 import { Dataframe } from "../../../src/util/dataframe";
 import { rangeFill } from "../../../src/util/range";
+
+enableFetchMocks();
 
 describe("AnnoMatrix", () => {
   let annoMatrix;

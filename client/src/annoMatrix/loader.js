@@ -2,9 +2,9 @@
 Base matrix, which proxies for server.
 */
 import clone from "./clone";
-import { doBinaryRequest, dubEncURIComp } from "./fetchHelpers";
+import { doBinaryRequest, _dubEncURIComp } from "./fetchHelpers";
 import { matrixFBSToDataframe } from "../util/stateManager/matrix";
-import { getColumnSchema } from "./schema";
+import { _getColumnSchema } from "./schema";
 import {
   addObsAnnoColumn,
   removeObsAnnoColumn,
@@ -12,7 +12,7 @@ import {
   removeObsAnnoCategory,
 } from "../util/stateManager/schemaHelpers";
 import { isArrayOrTypedArray } from "../util/typeHelpers";
-import { whereCacheCreate } from "./whereCache";
+import { _whereCacheCreate } from "./whereCache";
 import AnnoMatrix from "./annoMatrix";
 
 export default class AnnoMatrixLoader extends AnnoMatrix {
@@ -22,54 +22,14 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     this.baseURL = baseURL;
   }
 
-  async _doLoad(field, query) {
-    /*
-		_doLoad - evaluates the query against the field. Returns:
-			* whereCache update: column query map mapping the query to the column labels
-			* Dataframe contianing the new colums (one per dimension)
-		*/
-    let urlQuery;
-    let urlBase;
-
-    switch (field) {
-      case "obs":
-      case "var": {
-        urlBase = `${this.baseURL}/annotations/${field}`;
-        urlQuery = encodeQuery("annotation-name", query);
-        break;
-      }
-      case "X": {
-        urlBase = `${this.baseURL}/data/var`;
-        urlQuery = encodeQuery(undefined, query);
-        break;
-      }
-      case "emb": {
-        urlBase = `${this.baseURL}/layout/obs`;
-        urlQuery = encodeQuery("layout-name", query);
-        break;
-      }
-      default:
-        throw new Error("Unknown field name");
-    }
-
-    const url = `${urlBase}?${urlQuery}`;
-    const buffer = await doBinaryRequest(url);
-    const result = matrixFBSToDataframe(buffer);
-    if (!result || result.isEmpty()) throw Error("Unknown field/col");
-
-    const whereCacheUpdate = whereCacheCreate(
-      field,
-      query,
-      result.colIndex.labels()
-    );
-    return [whereCacheUpdate, result];
-  }
-
+  /**
+   ** Public
+   **/
   addObsAnnoCategory(col, category) {
     /*
     Add a new category (aka label) to the schema for an obs column.
     */
-    const colSchema = getColumnSchema(this.schema, "obs", col);
+    const colSchema = _getColumnSchema(this.schema, "obs", col);
     if (!colSchema.writable) {
       throw new Error("Not a writable obs column");
     }
@@ -83,7 +43,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     /*
     Remove a single "category" (aka "label") from the data & schema of an obs column.
     */
-    const colSchema = getColumnSchema(this.schema, "obs", col);
+    const colSchema = _getColumnSchema(this.schema, "obs", col);
     if (!colSchema.writable) {
       throw new Error("Not a writable obs column");
     }
@@ -101,7 +61,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     /*
 		drop column from field
 		*/
-    const colSchema = getColumnSchema(this.schema, "obs", col);
+    const colSchema = _getColumnSchema(this.schema, "obs", col);
     if (!colSchema.writable) {
       throw new Error("Not a writable obs column");
     }
@@ -121,7 +81,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     If an array, it must be of same size as nObs and same type as Ctor
 		*/
     const col = colSchema.name;
-    if (getColumnSchema(this.schema, "obs", col) || this.obs.hasCol(col)) {
+    if (_getColumnSchema(this.schema, "obs", col) || this.obs.hasCol(col)) {
       throw new Error("column already exists");
     }
 
@@ -148,7 +108,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     /*
     Rename the obs oldColName to newColName.  oldCol must be writable.
     */
-    const oldColSchema = getColumnSchema(this.schema, "obs", oldCol);
+    const oldColSchema = _getColumnSchema(this.schema, "obs", oldCol);
     if (!oldColSchema.writable) {
       throw new Error("Not a writable obs column");
     }
@@ -170,7 +130,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     /*
 		Set all rows identified by rowLabels to value.
 		*/
-    const colSchema = getColumnSchema(this.schema, "obs", col);
+    const colSchema = _getColumnSchema(this.schema, "obs", col);
     if (!colSchema.writable) {
       throw new Error("Not a writable obs column");
     }
@@ -199,7 +159,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     /*
     Set all rows with value 'oldValue' to 'newValue'
     */
-    const colSchema = getColumnSchema(this.schema, "obs", col);
+    const colSchema = _getColumnSchema(this.schema, "obs", col);
     if (!colSchema.writable) {
       throw new Error("Not a writable obs column");
     }
@@ -222,18 +182,64 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     }
     return o;
   }
+
+  /**
+   ** Private below
+   **/
+  async _doLoad(field, query) {
+    /*
+    _doLoad - evaluates the query against the field. Returns:
+      * whereCache update: column query map mapping the query to the column labels
+      * Dataframe contianing the new colums (one per dimension)
+    */
+    let urlQuery;
+    let urlBase;
+
+    switch (field) {
+      case "obs":
+      case "var": {
+        urlBase = `${this.baseURL}/annotations/${field}`;
+        urlQuery = _encodeQuery("annotation-name", query);
+        break;
+      }
+      case "X": {
+        urlBase = `${this.baseURL}/data/var`;
+        urlQuery = _encodeQuery(undefined, query);
+        break;
+      }
+      case "emb": {
+        urlBase = `${this.baseURL}/layout/obs`;
+        urlQuery = _encodeQuery("layout-name", query);
+        break;
+      }
+      default:
+        throw new Error("Unknown field name");
+    }
+
+    const url = `${urlBase}?${urlQuery}`;
+    const buffer = await doBinaryRequest(url);
+    const result = matrixFBSToDataframe(buffer);
+    if (!result || result.isEmpty()) throw Error("Unknown field/col");
+
+    const whereCacheUpdate = _whereCacheCreate(
+      field,
+      query,
+      result.colIndex.labels()
+    );
+    return [whereCacheUpdate, result];
+  }
 }
 
 /*
 Utility functions below
 */
 
-function encodeQuery(colKey, q) {
+function _encodeQuery(colKey, q) {
   if (typeof q === "object") {
     const { field: queryField, column: queryColumn, value: queryValue } = q;
-    return `${dubEncURIComp(queryField)}:${dubEncURIComp(
+    return `${_dubEncURIComp(queryField)}:${_dubEncURIComp(
       queryColumn
-    )}=${dubEncURIComp(queryValue)}`;
+    )}=${_dubEncURIComp(queryValue)}`;
   }
   if (!colKey) throw new Error("Unsupported query by name");
   return `${colKey}=${encodeURIComponent(q)}`;

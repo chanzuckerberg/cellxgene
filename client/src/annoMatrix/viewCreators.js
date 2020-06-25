@@ -8,7 +8,7 @@ export function isubsetMask(annoMatrix, rowMask) {
   /*
 		Subset on row based upon mask
 		*/
-  return isubset(annoMatrix, maskToList(rowMask));
+  return isubset(annoMatrix, _maskToList(rowMask));
 }
 
 export function isubset(annoMatrix, rowOffsets) {
@@ -40,7 +40,7 @@ export function clip(annoMatrix, qmin, qmax) {
 Utility functions below
 */
 
-function maskToList(mask) {
+function _maskToList(mask) {
   /* convert masks to lists - method wastes space, but is fast */
   if (!mask) {
     return null;
