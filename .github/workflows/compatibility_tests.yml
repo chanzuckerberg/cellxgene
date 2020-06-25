@@ -5,7 +5,7 @@ on:
     - cron: '0 8 7 * 2'
   push:
     branches:
-      - master
+      - main
 
 env:
   JEST_ENV: prod
@@ -22,7 +22,7 @@ jobs:
       - name: Build docker image
         run: docker build .
 
-  cellxgene-master-with-python-and-anndata-versions:
+  cellxgene-main-with-python-and-anndata-versions:
     name: python versions x anndata versions
     runs-on: ubuntu-latest
     strategy:
@@ -86,8 +86,8 @@ jobs:
       - name: Tests
         run: cd cellxgene && make unit-test ${{ matrix.test-suite }}
 
-  cellxgene-master-with-anndata-master:
-    name: cellxgene master with anndata master
+  cellxgene-main-with-anndata-master:
+    name: cellxgene main with anndata master
     runs-on: ubuntu-latest
     strategy:
       matrix:

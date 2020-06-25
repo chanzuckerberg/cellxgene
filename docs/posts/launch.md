@@ -25,7 +25,7 @@ You should see your web browser open with the following
 You can also launch from a URL directly like this:
 
 ```
-cellxgene launch https://github.com/chanzuckerberg/cellxgene/blob/master/example-dataset/pbmc3k.h5ad
+cellxgene launch https://github.com/chanzuckerberg/cellxgene/blob/main/example-dataset/pbmc3k.h5ad
 ```
 
 Support for S3 and GCS is not enabled by default. If you wish to directly access S3 or GFS, install one or both of the following packages:
