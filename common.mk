@@ -7,8 +7,13 @@ ifeq ($(shell which jq),)
 $(error Please install jq using "apt-get install jq" or "brew install jq")
 endif
 
-define GetValueFromJson
-$(shell jq -r '.$(1)' "$(PROJECT_ROOT)/environment.default.json")
+define env_or_else_default
+$(if $($(1)),$($(1)),$(shell jq -r '.$(1)' "$(PROJECT_ROOT)/environment.default.json"))
+endef
+
+# if not a full path, create a full path relative to the project root
+define full_path
+$(shell [[ $(1) = /* ]] && echo $(1) || echo $(PROJECT_ROOT)/$(1))
 endef
 
 # https://stackoverflow.com/a/14777895/9587410
@@ -17,11 +22,11 @@ ifeq ($(shell uname),Darwin)     # is Windows_NT on XP, 2000, 7, Vista, 10...
 endif
 
 export CELLXGENE_COMMIT := $(shell git rev-parse --short HEAD)
-export CXG_SERVER_PORT := $(call GetValueFromJson,CXG_SERVER_PORT)
-export CXG_CLIENT_PORT := $(call GetValueFromJson,CXG_CLIENT_PORT)
-export JEST_ENV := $(call GetValueFromJson,JEST_ENV)
-export DATASET := $(call GetValueFromJson,DATASET)
-export CXG_OPTIONS := $(call GetValueFromJson,CXG_OPTIONS)
+export CXG_SERVER_PORT := $(call env_or_else_default,CXG_SERVER_PORT)
+export CXG_CLIENT_PORT := $(call env_or_else_default,CXG_CLIENT_PORT)
+export CXG_OPTIONS := $(call env_or_else_default,CXG_OPTIONS)
+export DATASET := $(call full_path,$(call env_or_else_default,DATASET))
+export JEST_ENV := $(call env_or_else_default,JEST_ENV)
 
 .PHONY: start-server
 start-server:
