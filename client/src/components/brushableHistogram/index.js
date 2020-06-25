@@ -254,10 +254,7 @@ const Histogram = ({
   height,
   onBrush,
   onBrushEnd,
-  marginLeft,
-  marginRight,
-  marginBottom,
-  marginTop,
+  margin,
   isColorBy,
   selectionRange,
 }) => {
@@ -268,6 +265,7 @@ const Histogram = ({
     /*
     Create the d3 histogram
     */
+    const { marginLeft, marginRight, marginBottom, marginTop } = margin;
     const { x, y, bins, binStart, binEnd, binWidth } = histogram;
     const svg = d3.select(svgRef.current);
 
@@ -368,7 +366,7 @@ const Histogram = ({
     svg.selectAll(".axis line").style("stroke", "rgb(230,230,230)");
 
     setBrush({ brushX, brushXselection });
-  }, [histogram, svgRef.current, isColorBy]);
+  }, [histogram, isColorBy]);
 
   useEffect(() => {
     /*
@@ -435,13 +433,18 @@ class HistogramBrush extends React.PureComponent {
   constructor(props) {
     super(props);
 
-    this.marginLeft = 10; // Space for 0 tick label on X axis
-    this.marginRight = 54; // space for Y axis & labels
-    this.marginBottom = 25; // space for X axis & labels
-    this.marginTop = 3;
-
-    this.width = 340 - this.marginLeft - this.marginRight;
-    this.height = 135 - this.marginTop - this.marginBottom;
+    const marginLeft = 10; // Space for 0 tick label on X axis
+    const marginRight = 54; // space for Y axis & labels
+    const marginBottom = 25; // space for X axis & labels
+    const marginTop = 3;
+    this.margin = {
+      marginLeft,
+      marginRight,
+      marginBottom,
+      marginTop,
+    };
+    this.width = 340 - marginLeft - marginRight;
+    this.height = 135 - marginTop - marginBottom;
   }
 
   onBrush = (selection, x, eventType) => {
@@ -540,13 +543,11 @@ class HistogramBrush extends React.PureComponent {
 
   handleColorAction = () => {
     const { dispatch, field, isObs } = this.props;
-    const { ranges } = this.state;
 
     if (isObs) {
       dispatch({
         type: "color by continuous metadata",
         colorAccessor: field,
-        rangeForColorAccessor: ranges,
       });
     } else {
       dispatch(actions.requestSingleGeneExpressionCountsForColoringPOST(field));
@@ -586,10 +587,9 @@ class HistogramBrush extends React.PureComponent {
 
   fetchAsyncProps = async () => {
     const { annoMatrix } = this.props;
-
     const { isClipped } = annoMatrix;
-    const query = this.createQuery();
 
+    const query = this.createQuery();
     const df = await annoMatrix.fetch(...query);
     const column = df.icol(0);
 
@@ -614,7 +614,12 @@ class HistogramBrush extends React.PureComponent {
         : globals.blue,
     ];
 
-    const histogram = this.calcHistogramCache(column);
+    const histogram = this.calcHistogramCache(
+      column,
+      this.margin,
+      this.width,
+      this.height
+    );
 
     const isSingleValue = summary.min === summary.max;
     const nonFiniteExtent =
@@ -635,7 +640,8 @@ class HistogramBrush extends React.PureComponent {
     };
   };
 
-  calcHistogramCache(col) {
+  // eslint-disable-next-line class-methods-use-this -- ready for memoization
+  calcHistogramCache(col, margin, width, height) {
     /*
      recalculate expensive stuff, notably bins, summaries, etc.
     */
@@ -643,13 +649,14 @@ class HistogramBrush extends React.PureComponent {
     const summary = col.summarize();
     const { min: domainMin, max: domainMax } = summary;
     const numBins = 40;
+    const { marginTop, marginLeft } = margin;
 
     histogramCache.domain = [domainMin, domainMax];
 
     histogramCache.x = d3
       .scaleLinear()
       .domain([domainMin, domainMax])
-      .range([this.marginLeft, this.marginLeft + this.width]);
+      .range([marginLeft, marginLeft + width]);
 
     histogramCache.bins = histogramContinuous(col, numBins, [
       domainMin,
@@ -666,7 +673,7 @@ class HistogramBrush extends React.PureComponent {
     histogramCache.y = d3
       .scaleLinear()
       .domain([0, yMax])
-      .range([this.marginTop + this.height, this.marginTop]);
+      .range([marginTop + height, marginTop]);
 
     return histogramCache;
   }
@@ -691,6 +698,7 @@ class HistogramBrush extends React.PureComponent {
 
   render() {
     const {
+      annoMatrix,
       field,
       isColorAccessor,
       isUserDefined,
@@ -706,7 +714,7 @@ class HistogramBrush extends React.PureComponent {
     const showScatterPlot = isDiffExp || isUserDefined;
 
     return (
-      <Async promiseFn={this.fetchAsyncProps}>
+      <Async watch={annoMatrix} promiseFn={this.fetchAsyncProps}>
         <Async.Pending>
           <StillLoading field={field} zebra={zebra} />
         </Async.Pending>
@@ -752,10 +760,7 @@ class HistogramBrush extends React.PureComponent {
                   height={this.height}
                   onBrush={this.onBrush}
                   onBrushEnd={this.onBrushEnd}
-                  marginLeft={this.marginLeft}
-                  marginRight={this.marginRight}
-                  marginBottom={this.marginBottom}
-                  marginTop={this.marginTop}
+                  margin={this.margin}
                   isColorBy={isColorAccessor}
                   selectionRange={continuousSelectionRange}
                 />
