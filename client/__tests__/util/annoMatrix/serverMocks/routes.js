@@ -15,7 +15,7 @@ const indexedSchema = {
 };
 
 function makeMockColumn(s, length) {
-  const { type, name } = s;
+  const { type } = s;
   switch (type) {
     case "int32":
       return new Int32Array(length).fill(Math.floor(99 * Math.random()));
@@ -64,8 +64,8 @@ function annotationObsResponse(request) {
   const url = new URL(request.url);
   const params = Array.from(url.searchParams.entries());
   const names = params
-    .filter(([k, v]) => k === "annotation-name")
-    .map(([k, v]) => v);
+    .filter(([k]) => k === "annotation-name")
+    .map(([, v]) => v);
   if (!names.every((n) => indexedSchema.obsByName[n])) {
     return Promise.reject(new Error("bad obs annotation name in URL"));
   }
@@ -89,8 +89,8 @@ function annotationVarResponse(request) {
   const url = new URL(request.url);
   const params = Array.from(url.searchParams.entries());
   const names = params
-    .filter(([k, v]) => k === "annotation-name")
-    .map(([k, v]) => v);
+    .filter(([k]) => k === "annotation-name")
+    .map(([, v]) => v);
   if (!names.every((n) => indexedSchema.varByName[n])) {
     return Promise.reject(new Error("bad var annotation name in URL"));
   }
@@ -113,9 +113,7 @@ function annotationVarResponse(request) {
 function layoutObsResponse(request) {
   const url = new URL(request.url);
   const params = Array.from(url.searchParams.entries());
-  const names = params
-    .filter(([k, v]) => k === "layout-name")
-    .map(([k, v]) => v);
+  const names = params.filter(([k]) => k === "layout-name").map(([, v]) => v);
   if (!names.every((n) => indexedSchema.embByName[n])) {
     return Promise.reject(new Error("bad layout name in URL"));
   }
@@ -161,14 +159,17 @@ function dataVarResponse(request) {
 
 export function responder(request) {
   const url = new URL(request.url);
-  const pathname = url.pathname;
+  const { pathname } = url;
   if (pathname.endsWith("/annotations/obs")) {
     return annotationObsResponse(request);
-  } else if (pathname.endsWith("/annotations/var")) {
+  }
+  if (pathname.endsWith("/annotations/var")) {
     return annotationVarResponse(request);
-  } else if (pathname.endsWith("/layout/obs")) {
+  }
+  if (pathname.endsWith("/layout/obs")) {
     return layoutObsResponse(request);
-  } else if (pathname.endsWith("/data/var")) {
+  }
+  if (pathname.endsWith("/data/var")) {
     return dataVarResponse(request);
   }
   return Promise.reject(new Error("bad URL"));
@@ -182,7 +183,7 @@ export function withExpected(expectedURL, expectedParams) {
     // if URL is bogus, reject the promise
     const url = new URL(request.url);
     if (!url.pathname.endsWith(expectedURL)) {
-      return Promise.reject("Unexpected URL!");
+      return Promise.reject(new Error("Unexpected URL!"));
     }
     const params = Array.from(url.searchParams.entries()).sort(
       (a, b) => a[0] < b[0]
@@ -190,7 +191,7 @@ export function withExpected(expectedURL, expectedParams) {
     expectedParams = expectedParams.slice().sort((a, b) => a[0] < b[0]);
 
     if (
-      params.length != expectedParams.length ||
+      params.length !== expectedParams.length ||
       !params.every(
         (p, i) => p[0] === expectedParams[i][0] && p[1] === expectedParams[i][1]
       )

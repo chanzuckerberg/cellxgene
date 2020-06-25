@@ -427,8 +427,8 @@ describe("centroid labels", () => {
   });
 });
 
-describe("graph overlay", () => {
-  test("transform centroids correctly", async () => {
+describe.only("graph overlay", () => {
+  test.only("transform centroids correctly", async () => {
     await goToPage(appUrlBase);
 
     const category = Object.keys(data.categorical)[0];

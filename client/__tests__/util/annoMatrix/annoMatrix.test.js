@@ -1,11 +1,11 @@
-// these FOUR statements MUST be first in the file, before any other imports
+// these THREE statements MUST be first in the file, before any other imports
 import { enableFetchMocks } from "jest-fetch-mock";
 enableFetchMocks();
 import * as serverMocks from "./serverMocks";
 // OK, continue on!
 
-import obs_louvain from "./louvain.json";
-import obs_n_genes from "./n_genes.json";
+import obsLouvain from "./louvain.json";
+import obsNGenes from "./n_genes.json";
 
 import {
   AnnoMatrixLoader,
@@ -13,7 +13,7 @@ import {
   clip,
   isubset,
   isubsetMask,
-} from "../../../src/util/annoMatrix/";
+} from "../../../src/util/annoMatrix";
 import { Dataframe } from "../../../src/util/dataframe";
 import { rangeFill } from "../../../src/util/range";
 
@@ -67,9 +67,9 @@ describe("AnnoMatrix", () => {
         ).resolves.toBeInstanceOf(Dataframe);
       };
 
-      test("obs", async () => await getLastTwo("obs"));
-      test("var", async () => await getLastTwo("var"));
-      test("emb", async () => await getLastTwo("emb"));
+      test("obs", async () => getLastTwo("obs"));
+      test("var", async () => getLastTwo("var"));
+      test("emb", async () => getLastTwo("emb"));
     });
 
     test("fetch - test all query forms", async () => {
@@ -174,7 +174,7 @@ describe("AnnoMatrix", () => {
         .once(serverMocks.annotationsObs(["n_genes"]));
       const ng1 = await am1.fetch("obs", "n_genes");
       const ng2 = await am2.fetch("obs", "n_genes");
-      expect(ng1.length).toEqual(ng2.length);
+      expect(ng1).toHaveLength(ng2.length);
       expect(ng1.colIndex.labels()).toEqual(ng2.colIndex.labels());
       expect(ng1.col("n_genes").asArray()).toEqual(
         ng2.col("n_genes").asArray()
@@ -201,7 +201,7 @@ describe("AnnoMatrix", () => {
       const foo = await am1.fetch("obs", "foo");
       expect(foo).toBeDefined();
       expect(foo).toBeInstanceOf(Dataframe);
-      expect(foo.length).toEqual(am1.nObs);
+      expect(foo).toHaveLength(am1.nObs);
       expect(foo.col("foo").asArray()).toEqual(
         new Float32Array(am1.nObs).fill(0)
       );
@@ -233,7 +233,6 @@ describe("AnnoMatrix", () => {
       const am4 = clip(am3, 0, 1);
       await addDrop(am4);
 
-      const columnNames = annoMatrix.getMatrixColumns("obs");
       fetch.mockResponse(serverMocks.responder);
 
       await am1.fetch("obs", am1.getMatrixColumns("obs"));
@@ -307,7 +306,6 @@ describe("AnnoMatrix", () => {
       const am3 = isubset(annoMatrix, [10, 1, 0, 30, 2]);
       await addSetDrop(am3);
 
-      const columnNames = annoMatrix.getMatrixColumns("obs");
       fetch.mockResponse(serverMocks.responder);
 
       await am1.fetch("obs", am1.getMatrixColumns("obs"));
@@ -345,7 +343,7 @@ describe("AnnoMatrixCrossfilter", () => {
 
   test("simple column select", async () => {
     let xfltr;
-    fetch.once(serverMocks.dataframeResponse(["louvain"], [obs_louvain]));
+    fetch.once(serverMocks.dataframeResponse(["louvain"], [obsLouvain]));
     xfltr = await crossfilter.select("obs", "louvain", {
       mode: "exact",
       values: ["NK cells", "B cells"],
@@ -362,7 +360,7 @@ describe("AnnoMatrixCrossfilter", () => {
     );
 
     fetch.once(
-      serverMocks.dataframeResponse(["n_genes"], [new Int32Array(obs_n_genes)])
+      serverMocks.dataframeResponse(["n_genes"], [new Int32Array(obsNGenes)])
     );
     xfltr = await xfltr.select("obs", "n_genes", {
       mode: "range",
@@ -374,10 +372,9 @@ describe("AnnoMatrixCrossfilter", () => {
   });
 
   test("complex column select", async () => {
-    let xfltr;
     const varIndex = annoMatrix.schema.annotations.var.index;
 
-    const nObs = annoMatrix.schema.dataframe.nObs;
+    const { nObs } = annoMatrix.schema.dataframe;
     fetch.once(
       serverMocks.dataframeResponse(
         ["TEST"],
@@ -385,7 +382,7 @@ describe("AnnoMatrixCrossfilter", () => {
       )
     );
 
-    xfltr = await crossfilter.select(
+    const xfltr = await crossfilter.select(
       "X",
       {
         field: "var",
@@ -427,7 +424,7 @@ describe("AnnoMatrixCrossfilter", () => {
     let xfltr = new AnnoMatrixObsCrossfilter(annoMatrixSubset);
     expect(xfltr.countSelected()).toEqual(annoMatrixSubset.nObs);
 
-    fetch.once(serverMocks.dataframeResponse(["louvain"], [obs_louvain]));
+    fetch.once(serverMocks.dataframeResponse(["louvain"], [obsLouvain]));
     xfltr = await xfltr.select("obs", "louvain", {
       mode: "exact",
       values: ["NK cells", "B cells"],

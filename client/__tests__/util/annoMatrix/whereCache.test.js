@@ -97,11 +97,12 @@ describe("whereCache", () => {
   });
 
   test("whereCacheCreate", () => {
-    let wc;
-    let query;
-
-    query = { field: "queryField", column: "queryColumn", value: "queryValue" };
-    wc = whereCacheCreate(
+    const query = {
+      field: "queryField",
+      column: "queryColumn",
+      value: "queryValue",
+    };
+    const wc = whereCacheCreate(
       "field",
       { field: "queryField", column: "queryColumn", value: "queryValue" },
       [0, 1, 2]
