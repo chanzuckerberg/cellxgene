@@ -17,6 +17,7 @@ export default (
   viewport
 ) => {
   const svg = d3.select("#graph-wrapper").select("#lasso-layer");
+  if (svg.empty()) return {};
 
   if (selectionToolType === "brush") {
     const brush = d3
