@@ -36,7 +36,7 @@ function maybeScientific(x) {
   return format;
 }
 
-const StillLoading = ({ zebra, field }) => {
+const StillLoading = ({ zebra, displayName }) => {
   /*
   Render a loading indicator for the field.
   */
@@ -57,7 +57,7 @@ const StillLoading = ({ zebra, field }) => {
       >
         <div style={{ minWidth: 30 }} />
         <div style={{ display: "flex", alignSelf: "center" }}>
-          <span style={{ fontStyle: "italic" }}>{field}</span>
+          <span style={{ fontStyle: "italic" }}>{displayName}</span>
         </div>
         <div
           style={{
@@ -73,7 +73,7 @@ const StillLoading = ({ zebra, field }) => {
 };
 
 const HistogramFooter = ({
-  field,
+  displayName,
   hideRanges,
   range,
   rangeColor,
@@ -85,9 +85,10 @@ const HistogramFooter = ({
   differential expression info.
 
   Required props:
-    * field - the field name to display
-    * range - length two array, [min, max], containing the range values to display
+    * displayName - the displayName, aka "n_genes", "FOXP2", etc.
     * hideRanges - true/false, enables/disable rendering of ranges
+    * range - length two array, [min, max], containing the range values to display
+    * rangeColor - length two array, [mincolor, maxcolor], each a CSS color
     * logFoldChange - lfc to display, optional.
     * pValue - pValue to display, optional.
   */
@@ -114,7 +115,7 @@ const HistogramFooter = ({
           data-testclass="brushable-histogram-field-name"
           style={{ fontStyle: "italic" }}
         >
-          {field}
+          {displayName}
         </span>
         <div style={{ display: hideRanges ? "block" : "none" }}>
           : {rangeMin}
@@ -157,7 +158,7 @@ const HistogramFooter = ({
 };
 
 const HistogramHeader = ({
-  field,
+  fieldId,
   isColorBy,
   onColorByClick,
   onRemoveClick,
@@ -168,7 +169,7 @@ const HistogramHeader = ({
 }) => {
   /*
   Render the toolbar for the histogram.  Props:
-    * field - field name
+    * fieldId - field identifier, used for various IDs
     * isColorBy - true/false, is this the current color-by
     * onColorByClick - color-by click handler
     * onRemoveClick - optional handler for remove.  Button will not render if not defined.
@@ -196,7 +197,7 @@ const HistogramHeader = ({
           />
           <ButtonGroup style={{ marginRight: 7 }}>
             <Button
-              data-testid={`plot-x-${field}`}
+              data-testid={`plot-x-${fieldId}`}
               onClick={onScatterPlotXClick}
               active={isScatterPlotX}
               intent={isScatterPlotX ? "primary" : "none"}
@@ -204,7 +205,7 @@ const HistogramHeader = ({
               plot x
             </Button>
             <Button
-              data-testid={`plot-y-${field}`}
+              data-testid={`plot-y-${fieldId}`}
               onClick={onScatterPlotYClick}
               active={isScatterPlotY}
               intent={isScatterPlotY ? "primary" : "none"}
@@ -237,7 +238,7 @@ const HistogramHeader = ({
           active={isColorBy}
           intent={isColorBy ? "primary" : "none"}
           data-testclass="colorby"
-          data-testid={`colorby-${field}`}
+          data-testid={`colorby-${fieldId}`}
           icon="tint"
         />
       </Tooltip>
@@ -716,7 +717,7 @@ class HistogramBrush extends React.PureComponent {
     return (
       <Async watch={annoMatrix} promiseFn={this.fetchAsyncProps}>
         <Async.Pending>
-          <StillLoading field={field} zebra={zebra} />
+          <StillLoading displayName={field} zebra={zebra} />
         </Async.Pending>
         <Async.Rejected>{(error) => error.message}</Async.Rejected>
         <Async.Fulfilled>
@@ -738,7 +739,7 @@ class HistogramBrush extends React.PureComponent {
                 }}
               >
                 <HistogramHeader
-                  field={field}
+                  fieldId={field}
                   isColorBy={isColorAccessor}
                   onColorByClick={this.handleColorAction}
                   onRemoveClick={isUserDefined ? this.removeHistogram : null}
@@ -765,7 +766,7 @@ class HistogramBrush extends React.PureComponent {
                   selectionRange={continuousSelectionRange}
                 />
                 <HistogramFooter
-                  field={field}
+                  displayName={field}
                   hideRanges={asyncProps.isSingleValue}
                   range={asyncProps.unclippedRange}
                   rangeColor={asyncProps.unclippedRangeColor}
