@@ -1,4 +1,3 @@
-// jshint esversion: 6
 import React from "react";
 import { connect } from "react-redux";
 import { ButtonGroup, AnchorButton, Tooltip } from "@blueprintjs/core";
@@ -7,7 +6,7 @@ import * as globals from "../../globals";
 import styles from "./menubar.css";
 import actions from "../../actions";
 import Clip from "./clip";
-// import Embedding from "./embedding";
+import Embedding from "./embedding";
 import InformationMenu from "./infoMenu";
 import Subset from "./subset";
 import UndoRedoReset from "./undoRedo";
@@ -254,7 +253,7 @@ class MenuBar extends React.Component {
             this.handleClipPercentileMinValueChange
           }
         />
-        {/* <Embedding /> */ null}
+        <Embedding />
         <Tooltip
           content="When a category is colored by, show labels on the graph"
           position="bottom"

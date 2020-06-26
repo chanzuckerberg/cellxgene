@@ -1,4 +1,3 @@
-/* eslint-disable no-undef -- not yet ported, disabled until reimplementation occurs */
 import React from "react";
 import {
   AnchorButton,
@@ -13,15 +12,13 @@ import {
 import { connect } from "react-redux";
 import * as globals from "../../globals";
 import styles from "./menubar.css";
-// import { World } from "../../util/stateManager";
 import actions from "../../actions";
 
 @connect((state) => ({
-  universe: state.universe,
-  world: state.world,
   layoutChoice: state.layoutChoice,
-  reembedController: state.reembedController,
-  enableReembedding: state.config?.parameters?.["enable-reembedding"] ?? false,
+  // reembedController: state.reembedController,
+  // enableReembedding: state.config?.parameters?.["enable-reembedding"] ?? false,
+  enableReembedding: false,
 }))
 class Embedding extends React.PureComponent {
   handleLayoutChoiceChange = (e) => {
@@ -33,6 +30,8 @@ class Embedding extends React.PureComponent {
   };
 
   renderReembedding() {
+    return null;
+    /* disabled pending rewrite
     const {
       enableReembedding,
       world,
@@ -64,6 +63,7 @@ class Embedding extends React.PureComponent {
         />
       </Tooltip>
     );
+*/
   }
 
   render() {
@@ -118,4 +118,3 @@ class Embedding extends React.PureComponent {
 }
 
 export default Embedding;
-/* eslint-enable no-undef -- not yet ported, disabled until reimplementation occurs */
