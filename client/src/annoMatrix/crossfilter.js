@@ -184,7 +184,7 @@ export default class AnnoMatrixObsCrossfilter {
       this.obsCrossfilter.size() === 0 ||
       this.obsCrossfilter.dimensionNames().length === 0
     ) {
-      return new Uint8Array(this.annoMatrix.nObs).fill(selectedValue);
+      return array.fill(selectedValue);
     }
     return this.obsCrossfilter.fillByIsSelected(
       array,
