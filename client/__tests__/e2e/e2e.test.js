@@ -149,7 +149,7 @@ describe("cell selection", () => {
 describe("gene entry", () => {
   test("search for single gene", async () => {
     await goToPage(appUrlBase);
-    addGeneToSearch(data.genes.search);
+    await addGeneToSearch(data.genes.search);
   });
 
   test("bulk add genes", async () => {
