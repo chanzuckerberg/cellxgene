@@ -721,7 +721,6 @@ class Dataframe {
     */
     const coff = this.colIndex.getOffset(c);
     const roff = this.rowIndex.getOffset(r);
-    if (coff === undefined || roff === undefined) return undefined;
     return this.__columns[coff][roff];
   }
 

@@ -1130,7 +1130,6 @@ describe("corner cases", () => {
     expect(df.ihas(true, true)).toBeFalsy();
     expect(df.ihas([], [])).toBeFalsy();
     expect(df.ihas({}, {})).toBeFalsy();
-
   });
 
   test("Dataframe rejects bogus labels", () => {
@@ -1212,6 +1211,5 @@ describe("corner cases", () => {
     expect(df.has(0, undefined)).toBeFalsy();
     expect(df.has(0, [])).toBeFalsy();
     expect(df.has(0, {})).toBeFalsy();
-
   });
 });
