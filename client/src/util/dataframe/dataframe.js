@@ -290,10 +290,8 @@ class Dataframe {
 
     Use an existing accessor if provided, else compile a new one.
     */
-    const {
-      getOffset: getRowByOffset,
-      getLabel: getRowByLabel,
-    } = this.rowIndex;
+    const getRowByOffset = this.rowIndex.getOffset.bind(this.rowIndex);
+    const getRowByLabel = this.rowIndex.getLabel.bind(this.rowIndex);
     this.__columnsAccessor = this.__columns.map((column, idx) => {
       if (accessors[idx]) {
         return accessors[idx];
@@ -704,7 +702,9 @@ class Dataframe {
     /*
     Return column accessor by offset.
     */
-    return this.__columnsAccessor[columnOffset];
+    return Number.isInteger(columnOffset)
+      ? this.__columnsAccessor[columnOffset]
+      : undefined;
   }
 
   at(r, c) {
@@ -721,6 +721,7 @@ class Dataframe {
     */
     const coff = this.colIndex.getOffset(c);
     const roff = this.rowIndex.getOffset(r);
+    if (coff === undefined || roff === undefined) return undefined;
     return this.__columns[coff][roff];
   }
 
@@ -753,7 +754,14 @@ class Dataframe {
     dataframe - returns true/false
     */
     const [nRows, nCols] = this.dims;
-    return c >= 0 && c < nCols && r >= 0 && r < nRows;
+    return (
+      Number.isInteger(r) &&
+      Number.isInteger(c) &&
+      c >= 0 &&
+      c < nCols &&
+      r >= 0 &&
+      r < nRows
+    );
   }
 
   hasCol(c) {
