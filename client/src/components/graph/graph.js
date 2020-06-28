@@ -5,6 +5,7 @@ import { connect } from "react-redux";
 import { mat3, vec2 } from "gl-matrix";
 import _regl from "regl";
 import memoize from "memoize-one";
+import Async from "react-async";
 
 import setupSVGandBrushElements from "./setupSVGandBrush";
 import _camera from "../../util/camera";
@@ -18,6 +19,7 @@ import GraphOverlayLayer from "./overlays/graphOverlayLayer";
 import CentroidLabels from "./overlays/centroidLabels";
 import actions from "../../actions";
 import renderThrottle from "../../util/renderThrottle";
+import shallowEqual from "../../util/shallowEqual";
 
 /*
 Simple 2D transforms control all point painting.  There are three:
@@ -73,6 +75,34 @@ const flagHighlight = 4;
   pointDilation: state.pointDilation,
 }))
 class Graph extends React.Component {
+  static createReglState(canvas) {
+    /*
+    Must be created for each canvas
+    */
+    // setup canvas, webgl draw function and camera
+    const camera = _camera(canvas);
+    const regl = _regl(canvas);
+    const drawPoints = _drawPoints(regl);
+
+    // preallocate webgl buffers
+    const pointBuffer = regl.buffer();
+    const colorBuffer = regl.buffer();
+    const flagBuffer = regl.buffer();
+
+    return {
+      camera,
+      regl,
+      drawPoints,
+      pointBuffer,
+      colorBuffer,
+      flagBuffer,
+    };
+  }
+
+  static watchAsync(props, prevProps) {
+    return !shallowEqual(props.watchProps, prevProps.watchProps);
+  }
+
   computePointPositions = memoize((X, Y, modelTF) => {
     /*
     compute the model coordinate for each point
@@ -150,14 +180,8 @@ class Graph extends React.Component {
     super(props);
     const viewport = this.getViewportDimensions();
     this.reglCanvas = null;
+    this.renderCache = null;
     const modelTF = createModelTF();
-    this.renderCache = {
-      // cached state that doesn't trigger an update
-      // regl buffer data
-      positions: null,
-      colors: null,
-      flags: null,
-    };
     this.state = {
       toolSVG: null,
       tool: null,
@@ -198,33 +222,13 @@ class Graph extends React.Component {
   componentDidMount() {
     window.addEventListener("resize", this.handleResize);
 
-    // setup canvas, webgl draw function and camera
-    const camera = _camera(this.reglCanvas);
-    const regl = _regl(this.reglCanvas);
-    const drawPoints = _drawPoints(regl);
-
-    // preallocate webgl buffers
-    const pointBuffer = regl.buffer();
-    const colorBuffer = regl.buffer();
-    const flagBuffer = regl.buffer();
-
     // create all default rendering transformations
-    const projectionTF = createProjectionTF(
-      this.reglCanvas.width,
-      this.reglCanvas.height
-    );
+    const { viewport } = this.state;
+    const projectionTF = createProjectionTF(viewport.width, viewport.height);
 
     this.setState({
-      regl,
-      drawPoints,
-      pointBuffer,
-      colorBuffer,
-      flagBuffer,
-      camera,
       projectionTF,
     });
-
-    this.updateState(null);
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -235,23 +239,34 @@ class Graph extends React.Component {
     } = this.props;
     const { toolSVG, viewport } = this.state;
     let { projectionTF } = this.state;
-    const { reglCanvas } = this;
+    // const { reglCanvas } = this;
     const hasResized =
-      reglCanvas &&
-      (prevState.viewport.height !== reglCanvas.height ||
-        prevState.viewport.width !== reglCanvas.width);
+      // reglCanvas &&
+      prevState.viewport.height !== viewport.height ||
+      prevState.viewport.width !== viewport.width;
     let stateChanges = {};
 
     if (hasResized) {
-      projectionTF = createProjectionTF(reglCanvas.width, reglCanvas.height);
+      projectionTF = createProjectionTF(viewport.width, viewport.height);
       stateChanges = {
         ...stateChanges,
         projectionTF,
       };
     }
 
-    this.updateState(prevProps);
+    if (
+      (viewport.height && viewport.width && !toolSVG) || // first time init
+      hasResized || //  window size has changed we want to recreate all SVGs
+      selectionTool !== prevProps.selectionTool || // change of selection tool
+      prevProps.graphInteractionMode !== graphInteractionMode // lasso/zoom mode is switched
+    ) {
+      stateChanges = {
+        ...stateChanges,
+        ...this.createToolSVG(),
+      };
+    }
 
+    /*
     if (hasResized) {
       // If the window size has changed we want to recreate all SVGs
       stateChanges = {
@@ -271,6 +286,7 @@ class Graph extends React.Component {
         ...this.createToolSVG(),
       };
     }
+*/
 
     /*
     if the selection tool or state has changed, ensure that the selection
@@ -296,6 +312,13 @@ class Graph extends React.Component {
   componentWillUnmount() {
     window.removeEventListener("resize", this.handleResize);
   }
+
+  setReglCanvas = (canvas) => {
+    this.reglCanvas = canvas;
+    this.setState({
+      ...Graph.createReglState(canvas),
+    });
+  };
 
   handleResize = () => {
     const { state } = this.state;
@@ -334,8 +357,9 @@ class Graph extends React.Component {
     const { viewport } = this.state;
 
     /* clear out whatever was on the div, even if nothing, but usually the brushes etc */
-
-    d3.select("#lasso-layer").selectAll(".lasso-group").remove();
+    const lasso = d3.select("#lasso-layer");
+    if (lasso.empty()) return {}; // still initializing
+    lasso.selectAll(".lasso-group").remove();
 
     // Don't render or recreate toolSVG if currently in zoom mode
     if (graphInteractionMode !== "select") {
@@ -371,63 +395,32 @@ class Graph extends React.Component {
     return { toolSVG: newToolSVG, tool, container };
   };
 
-  updateColorTable(colors, colorDf) {
-    const { annoMatrix } = this.props;
-    const { schema } = annoMatrix;
+  fetchAsyncProps = async (props) => {
+    const {
+      annoMatrix,
+      colors: colorsProp,
+      layoutChoice,
+      crossfilter,
+      pointDilation,
+      viewport,
+    } = props.watchProps;
+    const { modelTF } = this.state;
 
-    /* update color table state */
-    if (!colors || !colorDf) {
-      return createColorTable(
-        null, // default mode
-        null,
-        null,
-        schema,
-        null
-      );
-    }
-
-    const { colorAccessor, userColors, colorMode } = colors;
-    return createColorTable(
-      colorMode,
-      colorAccessor,
-      colorDf,
-      schema,
-      userColors
+    const [layoutDf, colorDf, pointDilationDf] = await this.fetchData(
+      annoMatrix,
+      layoutChoice,
+      colorsProp,
+      pointDilation
     );
-  }
-
-  updateReglState(layoutState, colorState, pointDilationState) {
-    /* update all regl-related state */
-    const { renderCache, state } = this;
-    const { regl, pointBuffer, colorBuffer, flagBuffer, modelTF } = state;
-
-    // still initializing?
-    if (!regl) return;
-
-    /* point coordinates */
-    const { layoutDf, layoutChoice } = layoutState;
     const { currentDimNames } = layoutChoice;
     const X = layoutDf.col(currentDimNames[0]).asArray();
     const Y = layoutDf.col(currentDimNames[1]).asArray();
     const positions = this.computePointPositions(X, Y, modelTF);
-    if (positions !== renderCache.positions) {
-      renderCache.positions = positions;
-      pointBuffer({ data: positions, dimension: 2 });
-    }
 
-    /* point colors */
-    const { colors, colorTable, colorDf } = colorState;
-    const { colorAccessor } = colors;
-    const _colors = this.computePointColors(colorTable.rgb);
-    if (_colors !== renderCache.colors) {
-      /* update our cache & GL if the buffer changes */
-      renderCache.colors = _colors;
-      colorBuffer({ data: _colors, dimension: 3 });
-    }
+    const colorTable = this.updateColorTable(colorsProp, colorDf);
+    const colors = this.computePointColors(colorTable.rgb);
 
-    /* flags */
-    const { crossfilter } = this.props;
-    const { pointDilation, pointDilationDf } = pointDilationState;
+    const { colorAccessor } = colorsProp;
     const colorByData = colorDf?.col(colorAccessor)?.asArray();
     const {
       metadataField: pointDilationCategory,
@@ -442,18 +435,16 @@ class Graph extends React.Component {
       pointDilationData,
       pointDilationLabel
     );
-    if (flags !== renderCache.flags) {
-      renderCache.flags = flags;
-      flagBuffer({ data: flags, dimension: 1 });
-    }
-  }
 
-  createColorByQuery(colors) {
-    const { annoMatrix } = this.props;
-    const { schema } = annoMatrix;
-    const { colorMode, colorAccessor } = colors;
-    return createColorQuery(colorMode, colorAccessor, schema);
-  }
+    const { width, height } = viewport;
+    return {
+      positions,
+      colors,
+      flags,
+      width,
+      height,
+    };
+  };
 
   async fetchData(annoMatrix, layoutChoice, colors, pointDilation) {
     /*
@@ -484,54 +475,6 @@ class Graph extends React.Component {
     }
 
     return Promise.all(promises);
-  }
-
-  async updateState(prevProps) {
-    const {
-      annoMatrix,
-      colors,
-      layoutChoice,
-      crossfilter,
-      pointDilation,
-    } = this.props;
-    if (!annoMatrix) return;
-
-    if (
-      annoMatrix !== prevProps?.annoMatrix ||
-      layoutChoice !== prevProps?.layoutChoice ||
-      colors !== prevProps?.colors ||
-      pointDilation !== prevProps?.pointDilation
-    ) {
-      this.setState({ status: "pending" });
-      try {
-        const [layoutDf, colorDf, pointDilationDf] = await this.fetchData(
-          annoMatrix,
-          layoutChoice,
-          colors,
-          pointDilation
-        );
-        const layoutState = { layoutDf, layoutChoice };
-        const colorTable = this.updateColorTable(colors, colorDf);
-        const colorState = { colors, colorDf, colorTable };
-        const pointDilationState = { pointDilation, pointDilationDf };
-        this.updateReglState(layoutState, colorState, pointDilationState);
-        this.setState({
-          status: "success",
-          layoutState,
-          colorState,
-          pointDilationState,
-        });
-      } catch (error) {
-        this.setState({ status: "error" });
-        throw error;
-      }
-      return;
-    }
-
-    if (crossfilter !== prevProps?.crossfilter) {
-      const { layoutState, colorState, pointDilationState } = this.state;
-      this.updateReglState(layoutState, colorState, pointDilationState);
-    }
   }
 
   brushToolUpdate(tool, container) {
@@ -776,6 +719,69 @@ class Graph extends React.Component {
     });
   }
 
+  renderCanvas = renderThrottle(() => {
+    const {
+      regl,
+      drawPoints,
+      colorBuffer,
+      pointBuffer,
+      flagBuffer,
+      camera,
+      projectionTF,
+    } = this.state;
+    this.renderPoints(
+      regl,
+      drawPoints,
+      colorBuffer,
+      pointBuffer,
+      flagBuffer,
+      camera,
+      projectionTF
+    );
+  });
+
+  updateReglAndRender(newRenderCache) {
+    const { positions, colors, flags } = newRenderCache;
+    this.renderCache = newRenderCache;
+    const { pointBuffer, colorBuffer, flagBuffer } = this.state;
+    pointBuffer({ data: positions, dimension: 2 });
+    colorBuffer({ data: colors, dimension: 3 });
+    flagBuffer({ data: flags, dimension: 1 });
+    this.renderCanvas();
+  }
+
+  updateColorTable(colors, colorDf) {
+    const { annoMatrix } = this.props;
+    const { schema } = annoMatrix;
+
+    /* update color table state */
+    if (!colors || !colorDf) {
+      return createColorTable(
+        null, // default mode
+        null,
+        null,
+        schema,
+        null
+      );
+    }
+
+    const { colorAccessor, userColors, colorMode } = colors;
+    return createColorTable(
+      colorMode,
+      colorAccessor,
+      colorDf,
+      schema,
+      userColors
+    );
+  }
+
+  createColorByQuery(colors) {
+    const { annoMatrix } = this.props;
+    const { schema } = annoMatrix;
+    const { colorMode, colorAccessor } = colors;
+    return createColorQuery(colorMode, colorAccessor, schema);
+  }
+
   renderPoints(
     regl,
     drawPoints,
@@ -810,38 +816,17 @@ class Graph extends React.Component {
     regl._gl.flush();
   }
 
-  renderCanvas = renderThrottle(() => {
-    const {
-      regl,
-      drawPoints,
-      colorBuffer,
-      pointBuffer,
-      flagBuffer,
-      camera,
-      projectionTF,
-    } = this.state;
-    this.renderPoints(
-      regl,
-      drawPoints,
-      colorBuffer,
-      pointBuffer,
-      flagBuffer,
-      camera,
-      projectionTF
-    );
-  });
-
   render() {
-    const { graphInteractionMode } = this.props;
+    const {
+      graphInteractionMode,
+      annoMatrix,
+      colors,
+      layoutChoice,
+      pointDilation,
+      crossfilter,
+    } = this.props;
     const { modelTF, projectionTF, camera, viewport, regl } = this.state;
     const cameraTF = camera?.view()?.slice();
-
-    const { status } = this.state;
-    if (status === "error") return null;
-
-    if (regl) {
-      this.renderCanvas();
-    }
 
     return (
       <div
@@ -891,15 +876,37 @@ class Graph extends React.Component {
           }}
           className="graph-canvas"
           data-testid="layout-graph"
-          ref={(canvas) => {
-            this.reglCanvas = canvas;
-          }}
+          ref={this.setReglCanvas}
           onMouseDown={this.handleCanvasEvent}
           onMouseUp={this.handleCanvasEvent}
           onMouseMove={this.handleCanvasEvent}
           onDoubleClick={this.handleCanvasEvent}
           onWheel={this.handleCanvasEvent}
         />
+
+        <Async
+          watchFn={Graph.watchAsync}
+          promiseFn={this.fetchAsyncProps}
+          watchProps={{
+            annoMatrix,
+            colors,
+            layoutChoice,
+            pointDilation,
+            crossfilter,
+            viewport,
+          }}
+        >
+          <Async.Pending>Loading...</Async.Pending>
+          <Async.Rejected>{(error) => error.message}</Async.Rejected>
+          <Async.Fulfilled>
+            {(asyncProps) => {
+              if (regl && !shallowEqual(asyncProps, this.renderCache)) {
+                this.updateReglAndRender(asyncProps);
+              }
+              return null;
+            }}
+          </Async.Fulfilled>
+        </Async>
       </div>
     );
   }
