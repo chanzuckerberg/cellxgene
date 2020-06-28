@@ -103,6 +103,9 @@ class IdentityInt32Index {
   /* identity index - labels are offsets */
   isubsetMask(mask) {
     let count = 0;
+    if (mask.length !== this.maxOffset) {
+      throw new RangeError("mask has invalid length for index");
+    }
     let labels = new Int32Array(mask.length);
     for (let i = 0, l = mask.length; i < l; i += 1) {
       if (mask[i]) {
@@ -360,13 +363,15 @@ class KeyIndex {
     const { rindex } = this;
     if (mask.length !== rindex.length)
       throw new RangeError("mask has invalid length for index");
-    const labels = new Int32Array(mask.length);
-    for (let i = 0, v = 0, l = mask.length; i < l; i += 1) {
+    let labels = new Array(mask.length);
+    let count = 0;
+    for (let i = 0, l = mask.length; i < l; i += 1) {
       if (mask[i]) {
-        labels[v] = rindex[i];
-        v += 1;
+        labels[count] = rindex[i];
+        count += 1;
       }
     }
+    labels = labels.slice(0, count);
     return new KeyIndex(labels);
   }
 
