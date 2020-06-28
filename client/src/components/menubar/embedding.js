@@ -1,6 +1,5 @@
 import React from "react";
 import {
-  AnchorButton,
   ButtonGroup,
   Popover,
   Button,
@@ -12,7 +11,6 @@ import {
 import { connect } from "react-redux";
 import * as globals from "../../globals";
 import styles from "./menubar.css";
-import actions from "../../actions";
 
 @connect((state) => ({
   layoutChoice: state.layoutChoice,
@@ -29,6 +27,7 @@ class Embedding extends React.PureComponent {
     });
   };
 
+  // eslint-disable-next-line class-methods-use-this -- temporary disable
   renderReembedding() {
     return null;
     /* disabled pending rewrite
