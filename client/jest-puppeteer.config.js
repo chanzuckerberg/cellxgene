@@ -13,7 +13,6 @@ const isHeadful =
 const DEFAULT_LAUNCH_CONFIG = {
   headless: !isHeadful,
   args: ["--ignore-certificate-errors", "--ignore-ssl-errors"],
-  dumpio: true,
   ignoreHTTPSErrors: true,
   defaultViewport: {
     width: 1280,
