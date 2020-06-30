@@ -3,18 +3,13 @@ import { enableFetchMocks } from "jest-fetch-mock";
 import * as serverMocks from "./serverMocks";
 // OK, continue on!
 
-import obsLouvain from "./louvain.json";
-import obsNGenes from "./n_genes.json";
-
 import {
   AnnoMatrixLoader,
-  AnnoMatrixObsCrossfilter,
   clip,
   isubset,
   isubsetMask,
 } from "../../../src/annoMatrix";
 import { Dataframe } from "../../../src/util/dataframe";
-import { rangeFill } from "../../../src/util/range";
 
 enableFetchMocks();
 

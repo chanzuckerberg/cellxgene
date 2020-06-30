@@ -10,11 +10,8 @@ import embUmap from "./umap.json";
 import {
   AnnoMatrixLoader,
   AnnoMatrixObsCrossfilter,
-  clip,
-  isubset,
   isubsetMask,
 } from "../../../src/annoMatrix";
-import { Dataframe } from "../../../src/util/dataframe";
 import { rangeFill } from "../../../src/util/range";
 
 enableFetchMocks();
@@ -33,7 +30,7 @@ describe("AnnoMatrixCrossfilter", () => {
   });
 
   test("initial state of crossfilter", () => {
-    const nObs = annoMatrix.nObs;
+    const { nObs } = annoMatrix;
 
     expect(crossfilter).toBeDefined();
     expect(crossfilter.size()).toEqual(nObs);
@@ -79,7 +76,7 @@ describe("AnnoMatrixCrossfilter", () => {
       expect(
         newCrossfilter.obsCrossfilter.hasDimension("obs/louvain")
       ).toBeTruthy();
-      expect(fetch.mock.calls.length).toEqual(1);
+      expect(fetch.mock.calls).toHaveLength(1);
 
       newCrossfilter = await crossfilter.select("obs", "louvain", {
         mode: "all",
@@ -89,7 +86,6 @@ describe("AnnoMatrixCrossfilter", () => {
 
     test("simple column select", async () => {
       let xfltr;
-      const rowIndex = rangeFill(new Int32Array(annoMatrix.nObs));
 
       fetch.once(serverMocks.dataframeResponse(["louvain"], [obsLouvain]));
       xfltr = await crossfilter.select("obs", "louvain", {
@@ -203,7 +199,6 @@ describe("AnnoMatrixCrossfilter", () => {
     });
 
     test("spatial column select", async () => {
-      const { nObs } = annoMatrix.schema.dataframe;
       fetch.once(
         serverMocks.dataframeResponse(
           ["umap_0", "umap_1"],
