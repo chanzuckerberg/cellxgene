@@ -20,9 +20,9 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     const { nObs, nVar } = schema.dataframe;
     super(schema, nObs, nVar);
 
-    if (baseURL[baseURL.length - 1] !== '/') {
+    if (baseURL[baseURL.length - 1] !== "/") {
       // must have trailing slash
-      baseURL += '/';
+      baseURL += "/";
     }
     this.baseURL = baseURL;
   }
