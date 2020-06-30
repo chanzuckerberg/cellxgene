@@ -44,7 +44,7 @@ const StillLoading = ({ zebra, displayName }) => {
     <div
       style={{
         padding: globals.leftSidebarSectionPadding,
-        backgroundColor: zebra % 2 === 0 ? globals.lightestGrey : "white",
+        backgroundColor: zebra ? globals.lightestGrey : "white",
       }}
     >
       <div
@@ -68,6 +68,20 @@ const StillLoading = ({ zebra, displayName }) => {
           <Button minimal loading intent="primary" />
         </div>
       </div>
+    </div>
+  );
+};
+
+const ErrorLoading = ({ displayName, error, zebra }) => {
+  console.log(error); // log to console as this is unexpected
+  return (
+    <div
+      style={{
+        padding: globals.leftSidebarSectionPadding,
+        backgroundColor: zebra ? globals.lightestGrey : "white",
+      }}
+    >
+      <span>{`Failure loading ${displayName}`}</span>
     </div>
   );
 };
@@ -719,7 +733,11 @@ class HistogramBrush extends React.PureComponent {
         <Async.Pending>
           <StillLoading displayName={field} zebra={zebra} />
         </Async.Pending>
-        <Async.Rejected>{(error) => error.message}</Async.Rejected>
+        <Async.Rejected>
+          {(error) => (
+            <ErrorLoading zebra={zebra} error={error} displayName={field} />
+          )}
+        </Async.Rejected>
         <Async.Fulfilled>
           {(asyncProps) =>
             asyncProps.OK2Render ? (

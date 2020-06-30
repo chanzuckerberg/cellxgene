@@ -64,11 +64,9 @@ const doInitialDataLoad = () =>
         annoMatrix,
         obsCrossfilter,
       });
-
       dispatch({ type: "initial data load complete" });
     } catch (error) {
       dispatch({ type: "initial data load error", error });
-      throw error;
     }
   }, true);
 

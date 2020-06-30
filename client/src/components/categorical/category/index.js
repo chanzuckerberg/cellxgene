@@ -228,7 +228,11 @@ class Category extends React.PureComponent {
         <Async.Pending>
           <StillLoading metadataField={metadataField} checkboxID={checkboxID} />
         </Async.Pending>
-        <Async.Rejected>{(error) => error.message}</Async.Rejected>
+        <Async.Rejected>
+          {(error) => (
+            <ErrorLoading metadataField={metadataField} error={error} />
+          )}
+        </Async.Rejected>
         <Async.Fulfilled>
           {(asyncProps) => {
             const {
@@ -325,6 +329,24 @@ const StillLoading = ({ metadataField, checkboxID }) => {
           <Button minimal loading intent="primary" />
         </div>
       </div>
+    </div>
+  );
+};
+
+const ErrorLoading = ({ metadataField, error }) => {
+  console.error(error); // log error to console as it is unexpected.
+  return (
+    <div style={{ marginBottom: 10, marginTop: 4 }}>
+      <span
+        style={{
+          cursor: "pointer",
+          display: "inline-block",
+          width: LABEL_WIDTH,
+          fontStyle: "italic",
+        }}
+      >
+        {`Failure loading ${metadataField}`}
+      </span>
     </div>
   );
 };

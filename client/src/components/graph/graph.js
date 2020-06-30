@@ -14,6 +14,7 @@ import {
   createColorTable,
   createColorQuery,
 } from "../../util/stateManager/colorHelpers";
+import * as globals from "../../globals";
 
 import GraphOverlayLayer from "./overlays/graphOverlayLayer";
 import CentroidLabels from "./overlays/centroidLabels";
@@ -896,8 +897,17 @@ class Graph extends React.Component {
             viewport,
           }}
         >
-          <Async.Pending>Loading...</Async.Pending>
-          <Async.Rejected>{(error) => error.message}</Async.Rejected>
+          <Async.Pending>Embedding loading...</Async.Pending>
+          <Async.Rejected>
+            {(error) => (
+              <ErrorLoading
+                displayName={layoutChoice.current}
+                error={error}
+                width={viewport.width}
+                height={viewport.height}
+              />
+            )}
+          </Async.Rejected>
           <Async.Fulfilled>
             {(asyncProps) => {
               if (regl && !shallowEqual(asyncProps, this.renderCache)) {
@@ -913,3 +923,19 @@ class Graph extends React.Component {
 }
 
 export default Graph;
+
+const ErrorLoading = ({ displayName, error, width, height }) => {
+  console.log(error); // log to console as this is an unepected error
+  return (
+    <div
+      style={{
+        position: "fixed",
+        fontWeight: 500,
+        top: height / 2,
+        left: globals.leftSidebarWidth + width / 2 - 50,
+      }}
+    >
+      <span>{`Failure loading ${displayName}`}</span>
+    </div>
+  );
+};
