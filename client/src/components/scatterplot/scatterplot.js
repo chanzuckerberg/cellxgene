@@ -31,6 +31,15 @@ function createProjectionTF(viewportWidth, viewportHeight) {
   return mat3.projection(m, viewportWidth, viewportHeight);
 }
 
+function getScale(col, rangeMin, rangeMax) {
+    if (!col) return null;
+    const { min, max } = col.summarize();
+    return d3.scaleLinear().domain([min, max]).range([rangeMin, rangeMax]);
+  }
+const getXScale = memoize(getScale);
+const getYScale = memoize(getScale);
+
+
 @connect((state) => {
   const { obsCrossfilter: crossfilter } = state;
   const { scatterplotXXaccessor, scatterplotYYaccessor } = state.controls;
@@ -73,12 +82,6 @@ class Scatterplot extends React.PureComponent {
 
   static watchAsync(props, prevProps) {
     return !shallowEqual(props.watchProps, prevProps.watchProps);
-  }
-
-  static getScale(col, rangeMin, rangeMax) {
-    if (!col) return null;
-    const { min, max } = col.summarize();
-    return d3.scaleLinear().domain([min, max]).range([rangeMin, rangeMax]);
   }
 
   computePointPositions = memoize((X, Y, xScale, yScale) => {
@@ -240,8 +243,8 @@ class Scatterplot extends React.PureComponent {
 
     const xCol = expressionXDf.icol(0);
     const yCol = expressionYDf.icol(0);
-    const xScale = Scatterplot.getScale(xCol, 0, width);
-    const yScale = Scatterplot.getScale(yCol, height, 0);
+    const xScale = getXScale(xCol, 0, width);
+    const yScale = getYScale(yCol, height, 0);
     const positions = this.computePointPositions(
       xCol.asArray(),
       yCol.asArray(),
