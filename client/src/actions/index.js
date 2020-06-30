@@ -283,4 +283,5 @@ export default {
   annotationLabelCurrentSelection: annoActions.annotationLabelCurrentSelection,
   saveObsAnnotationsAction: annoActions.saveObsAnnotationsAction,
   needToSaveObsAnnotations: annoActions.needToSaveObsAnnotations,
+  layoutChoiceAction: selnActions.layoutChoiceAction,
 };

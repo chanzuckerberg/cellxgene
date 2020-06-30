@@ -11,9 +11,11 @@ import {
 import { connect } from "react-redux";
 import * as globals from "../../globals";
 import styles from "./menubar.css";
+import actions from "../../actions";
 
 @connect((state) => ({
   layoutChoice: state.layoutChoice,
+  // disabled temporarily
   // reembedController: state.reembedController,
   // enableReembedding: state.config?.parameters?.["enable-reembedding"] ?? false,
   enableReembedding: false,
@@ -21,10 +23,7 @@ import styles from "./menubar.css";
 class Embedding extends React.PureComponent {
   handleLayoutChoiceChange = (e) => {
     const { dispatch } = this.props;
-    dispatch({
-      type: "set layout choice",
-      layoutChoice: e.currentTarget.value,
-    });
+    dispatch(actions.layoutChoiceAction(e.currentTarget.value));
   };
 
   // eslint-disable-next-line class-methods-use-this -- temporary disable
