@@ -19,6 +19,11 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
   constructor(baseURL, schema) {
     const { nObs, nVar } = schema.dataframe;
     super(schema, nObs, nVar);
+
+    if (baseURL[baseURL.length - 1] !== '/') {
+      // must have trailing slash
+      baseURL += '/';
+    }
     this.baseURL = baseURL;
   }
 
@@ -198,17 +203,17 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     switch (field) {
       case "obs":
       case "var": {
-        urlBase = `${this.baseURL}/annotations/${field}`;
+        urlBase = `${this.baseURL}annotations/${field}`;
         urlQuery = _encodeQuery("annotation-name", query);
         break;
       }
       case "X": {
-        urlBase = `${this.baseURL}/data/var`;
+        urlBase = `${this.baseURL}data/var`;
         urlQuery = _encodeQuery(undefined, query);
         break;
       }
       case "emb": {
-        urlBase = `${this.baseURL}/layout/obs`;
+        urlBase = `${this.baseURL}layout/obs`;
         urlQuery = _encodeQuery("layout-name", query);
         break;
       }
