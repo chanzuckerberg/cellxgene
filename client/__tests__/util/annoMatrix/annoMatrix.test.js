@@ -1,4 +1,4 @@
-// these THREE statements MUST be first in the file, before any other imports
+// these TWO statements MUST be first in the file, before any other imports
 import { enableFetchMocks } from "jest-fetch-mock";
 import * as serverMocks from "./serverMocks";
 // OK, continue on!
