@@ -110,8 +110,7 @@ class Category extends React.PureComponent {
   };
 
   fetchAsyncProps = async (props) => {
-    const { crossfilter, watchProps } = props;
-    const { annoMatrix, metadataField, colors } = watchProps;
+    const { annoMatrix, crossfilter, metadataField, colors } = props.watchProps;
 
     const [categoryData, categorySummary, colorData] = await Category.fetchData(
       annoMatrix,
@@ -223,8 +222,8 @@ class Category extends React.PureComponent {
           annoMatrix,
           categoricalSelection,
           colors,
+          crossfilter,
         }}
-        crossfilter={crossfilter}
       >
         <Async.Pending>
           <StillLoading metadataField={metadataField} checkboxID={checkboxID} />
