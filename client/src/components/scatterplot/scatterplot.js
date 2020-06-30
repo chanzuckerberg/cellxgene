@@ -240,8 +240,8 @@ class Scatterplot extends React.PureComponent {
 
     const xCol = expressionXDf.icol(0);
     const yCol = expressionYDf.icol(0);
-    const xScale = this.getScale(xCol, 0, width);
-    const yScale = this.getScale(yCol, height, 0);
+    const xScale = Scatterplot.getScale(xCol, 0, width);
+    const yScale = Scatterplot.getScale(yCol, height, 0);
     const positions = this.computePointPositions(
       xCol.asArray(),
       yCol.asArray(),
