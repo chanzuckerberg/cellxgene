@@ -185,19 +185,27 @@ export const graphLassoEndAction = (embName, polygon) => async (
   });
 };
 
-export const layoutChoiceAction = (newLayoutChoice) => async (dispatch, getState) => {
+export const layoutChoiceAction = (newLayoutChoice) => async (
+  dispatch,
+  getState
+) => {
   /*
   On layout choice, make sure we have selected all on the previous layout, AND the new
   layout.
   */
   const { obsCrossfilter: prevObsCrossfilter, layoutChoice } = getState();
 
-  let obsCrossfilter = await prevObsCrossfilter.select("emb", layoutChoice.current, { mode: "all" });
-  obsCrossfilter = await obsCrossfilter.select("emb", newLayoutChoice, { mode: "all" });
+  let obsCrossfilter = await prevObsCrossfilter.select(
+    "emb",
+    layoutChoice.current,
+    { mode: "all" }
+  );
+  obsCrossfilter = await obsCrossfilter.select("emb", newLayoutChoice, {
+    mode: "all",
+  });
   dispatch({
     type: "set layout choice",
     layoutChoice: newLayoutChoice,
     obsCrossfilter,
   });
-
 };

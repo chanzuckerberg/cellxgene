@@ -42,7 +42,9 @@ export const annotationCreateCategoryAction = (
     if (catDupType !== "string" && catDupType !== "categorical")
       throw new Error("categoryToDuplicate does not exist or has invalid type");
 
-    const catToDupDf = await prevAnnoMatrix.base().fetch("obs", categoryToDuplicate);
+    const catToDupDf = await prevAnnoMatrix
+      .base()
+      .fetch("obs", categoryToDuplicate);
     const col = catToDupDf.col(categoryToDuplicate);
     initialValue = col.asArray();
     ({ categories } = col.summarize());
