@@ -50,9 +50,26 @@ class AppConfigTest(unittest.TestCase):
         # test that multi dataroots work end to end
         c.update_server_config(
             multi_dataset__dataroot=dict(
-                set1=f"{PROJECT_ROOT}/example-dataset", set2=f"{PROJECT_ROOT}/server/test/test_datasets"
+                set1=f"{PROJECT_ROOT}/example-dataset",
+                set2=f"{PROJECT_ROOT}/server/test/test_datasets",
+                set3=f"{PROJECT_ROOT}/server/test/test_datasets",
             )
         )
+
+        # Change this default to test if the dataroot overrides below work.
+        c.update_default_dataset_config(app__about_legal_tos="tos_default.html")
+
+        # specialize the configs for set1
+        c.add_dataroot_config(
+            "set1", user_annotations__enable=False, diffexp__enable=True, app__about_legal_tos="tos_set1.html"
+        )
+
+        # specialize the configs for set2
+        c.add_dataroot_config(
+            "set2", user_annotations__enable=True, diffexp__enable=False, app__about_legal_tos="tos_set2.html"
+        )
+
+        # no specializations for set3 (they get the default dataset config)
         c.complete_config()
 
         with test_server(app_config=c) as server:
@@ -61,10 +78,22 @@ class AppConfigTest(unittest.TestCase):
             r = session.get(f"{server}/set1/pbmc3k.h5ad/api/v0.2/config")
             data_config = r.json()
             assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k"
+            assert data_config["config"]["parameters"]["annotations"] is False
+            assert data_config["config"]["parameters"]["disable-diffexp"] is False
+            assert data_config["config"]["parameters"]["about_legal_tos"] == "tos_set1.html"
 
             r = session.get(f"{server}/set2/pbmc3k.cxg/api/v0.2/config")
             data_config = r.json()
             assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k"
+            assert data_config["config"]["parameters"]["annotations"] is True
+            assert data_config["config"]["parameters"]["about_legal_tos"] == "tos_set2.html"
+
+            r = session.get(f"{server}/set3/pbmc3k.cxg/api/v0.2/config")
+            data_config = r.json()
+            assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k"
+            assert data_config["config"]["parameters"]["annotations"] is True
+            assert data_config["config"]["parameters"]["disable-diffexp"] is False
+            assert data_config["config"]["parameters"]["about_legal_tos"] == "tos_default.html"
 
             r = session.get(f"{server}/health")
             assert r.json()["status"] == "pass"

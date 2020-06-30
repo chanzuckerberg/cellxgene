@@ -125,8 +125,8 @@ def test_server(command_line_args=[], app_config=None):
         except requests.exceptions.ConnectionError:
             time.sleep(1)
 
-    # if tempdir:
-    #    tempdir.cleanup()
+    if tempdir:
+        tempdir.cleanup()
 
     try:
         yield server

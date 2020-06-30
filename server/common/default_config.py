@@ -16,7 +16,7 @@ server:
 
   multi_dataset:
     # If dataroot is set, then cellxgene may serve multiple datasets.  This parameter is not
-    # compatable with single_dataset/datapath.
+    # compatible with single_dataset/datapath.
     # dataroot may be a string, representing the path to a directory or S3 prefix.  In this
     # case the datasets in that location are accessed from <server>/d/<datasetname>.
     # example:
@@ -30,7 +30,22 @@ server:
     #         set1 : /path/to/set1_datasets/
     #         set2 : /path/to/set2_datasets/
     # In this case, datasets can be accessed from <server>/set1/<datasetname> or
-    # <server>/set2/<datasetname>.
+    # <server>/set2/<datasetname>.  It is possible to have different dataset configurations
+    # for datasets accessed through different dataroots.  For example, in one dataroot, the
+    # user annotations could be enabled, and in another dataroot they could be disabled.
+    # To specify dataroot configurations, add a new top level dictionary to the config named
+    # dataroot_<key>.  This dictionary has the exact same form as the "dataset" dictionary (see below).
+    # When this approach is used, the values for each configuration option are checked in
+    # this order: dataroot_<key>, dataset, then the default values.
+    #
+    # example:
+    #
+    # dataroot_set1:
+    #   user_annotations:
+    #      enable:  false
+    # dataroot_set2:
+    #   user_annotations:
+    #      enable:  true
 
     dataroot: null
 
