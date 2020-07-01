@@ -37,6 +37,15 @@ export function createColorQuery(colorMode, colorByAccessor, schema) {
   }
 }
 
+function _defaultColors(nObs) {
+  const defaultCellColor = parseRGB(globals.defaultCellColor);
+  return {
+    rgb: new Array(nObs).fill(defaultCellColor),
+    scale: undefined,
+  };
+}
+const defaultColors = memoize(_defaultColors);
+
 /*
 create colors scale and RGB array and return as object. Parameters:
   * colorMode - categorical, etc.
@@ -76,11 +85,7 @@ function _createColorTable(
       return createColorsByContinuousMetadata(col.asArray(), min, max);
     }
     default: {
-      const defaultCellColor = parseRGB(globals.defaultCellColor);
-      return {
-        rgb: new Array(schema.dataframe.nObs).fill(defaultCellColor),
-        scale: undefined,
-      };
+      return defaultColors(schema.dataframe.nObs);
     }
   }
 }
