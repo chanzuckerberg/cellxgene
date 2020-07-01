@@ -53,4 +53,6 @@ jest.retryTimes(ENV_DEFAULT.RETRY_ATTEMPTS);
       }
     }
   });
-})();
+})().catch((error) => {
+  console.error("puppeteer.setup.js error", error);
+});
