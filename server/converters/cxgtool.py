@@ -493,8 +493,7 @@ def evaluate_for_sparse_column_shift_encoding(xdata, sparse_threshold):
         nnz += shape[0] * (lim - col) - np.sum(m.count)
         if nnz > maxnnz:
             return (None, nnz, shape[0] * lim)
-        log(2, "\t...cols", lim, "of", shape[1], "nnz",
-            nnz, "nnz percent %5.2f%%" % (100 * nnz / (lim * shape[0])))
+        log(2, "\t...cols", lim, "of", shape[1], "nnz", nnz, "nnz percent %5.2f%%" % (100 * nnz / (lim * shape[0])))
 
     is_sparse = (100.0 * nnz / (shape[0] * shape[1])) < sparse_threshold
     return (col_shift if is_sparse else None, nnz, shape[0] * shape[1])

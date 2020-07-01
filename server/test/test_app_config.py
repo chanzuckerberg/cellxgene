@@ -50,8 +50,7 @@ class AppConfigTest(unittest.TestCase):
         # test that multi dataroots work end to end
         c.update(
             multi_dataset__dataroot=dict(
-                set1=f"{PROJECT_ROOT}/example-dataset",
-                set2=f"{PROJECT_ROOT}/server/test/test_datasets"
+                set1=f"{PROJECT_ROOT}/example-dataset", set2=f"{PROJECT_ROOT}/server/test/test_datasets"
             )
         )
         c.complete_config()
