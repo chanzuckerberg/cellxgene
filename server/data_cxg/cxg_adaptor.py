@@ -400,7 +400,7 @@ class CxgAdaptor(DataAdaptor):
         embeddings = self.get_embedding_names()
         for ename in embeddings:
             A = self.open_array(f"emb/{ename}")
-            obs_layout.append({"name": ename, "type": A.dtype.name, "dims": [f"{ename}_{d}" for d in range(0, A.ndim)]})
+            obs_layout.append({"name": ename, "type": "float32", "dims": [f"{ename}_{d}" for d in range(0, A.ndim)]})
 
         schema = {"dataframe": dataframe, "annotations": annotations, "layout": {"obs": obs_layout}}
         return schema
