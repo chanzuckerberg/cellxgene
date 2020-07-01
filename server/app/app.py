@@ -47,7 +47,7 @@ def _cache_control(always, **cache_kwargs):
 
 
 def cache_control(**cache_kwargs):
-    """ configu driven """
+    """ config driven """
     return _cache_control(False, **cache_kwargs)
 
 
@@ -56,8 +56,10 @@ def cache_control_always(**cache_kwargs):
     return _cache_control(True, **cache_kwargs)
 
 
+# tell the client not to cache the index.html page so that changes to the app work on redeployment
+# note that the bulk of the data needed by the client (datasets) will still be cached
 @webbp.route("/", methods=["GET"])
-@cache_control(public=True, max_age=ONE_WEEK)
+@cache_control_always(public=True, max_age=0, no_store=True, no_cache=True, must_revalidate=True)
 def dataset_index(url_dataroot=None, dataset=None):
     config = current_app.app_config
     if dataset is None:

@@ -38,8 +38,7 @@ def main():
         print("input is not a directory", args.input)
         sys.exit(1)
 
-    shutil.copytree(args.input, args.output,
-                    ignore=shutil.ignore_patterns("X", "X_col_shift"))
+    shutil.copytree(args.input, args.output, ignore=shutil.ignore_patterns("X", "X_col_shift"))
 
     ctx = tiledb.Ctx(
         {
