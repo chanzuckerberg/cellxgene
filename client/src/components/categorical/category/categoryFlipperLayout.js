@@ -5,11 +5,6 @@ import * as globals from "../../../globals";
 import Value from "../value";
 
 class Category extends React.PureComponent {
-  constructor(props) {
-    super(props);
-    this.state = {};
-  }
-
   renderCategoryItems(optTuples) {
     const {
       metadataField,
@@ -19,7 +14,6 @@ class Category extends React.PureComponent {
       colorAccessor,
       colorData,
       colorTable,
-      crossfilter,
     } = this.props;
 
     return optTuples.map((tuple, i) => {
@@ -39,7 +33,6 @@ class Category extends React.PureComponent {
               colorAccessor={colorAccessor}
               colorData={colorData}
               colorTable={colorTable}
-              crossfilter={crossfilter}
             />
           )}
         </Flipped>

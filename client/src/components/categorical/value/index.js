@@ -22,6 +22,7 @@ import { labelPrompt, isLabelErroneous } from "../labelUtil";
 import actions from "../../../actions";
 import MiniHistogram from "../../miniHistogram";
 import MiniStackedBar from "../../miniStackedBar";
+import { CategoryCrossfilterContext } from "../categoryContext";
 
 const VALUE_HEIGHT = 11;
 const CHART_WIDTH = 100;
@@ -212,8 +213,6 @@ class CategoryValue extends React.Component {
 
     const colorAccessorChange = props.colorAccessor !== nextProps.colorAccessor;
     const annotationsChange = props.annotations !== nextProps.annotations;
-    const crossfilterChange =
-      props.isUserAnno && props.crossfilter !== nextProps.crossfilter;
     const editingLabel = state.editedLabelText !== nextState.editedLabelText;
     const dilationChange = props.isDilated !== nextProps.isDilated;
 
@@ -226,7 +225,6 @@ class CategoryValue extends React.Component {
       valueSelectionChange ||
       colorAccessorChange ||
       annotationsChange ||
-      crossfilterChange ||
       editingLabel ||
       dilationChange ||
       countChanged
@@ -374,13 +372,13 @@ class CategoryValue extends React.Component {
     return _currentLabelAsString(this.props);
   }
 
-  isAddCurrentSelectionDisabled(category, value) {
+  isAddCurrentSelectionDisabled(crossfilter, category, value) {
     /*
     disable "add current selection to label", if one of the following is true:
     1. no cells are selected
     2. all currently selected cells already have this label, on this category
     */
-    const { crossfilter, categoryData } = this.props;
+    const { categoryData } = this.props;
 
     // 1. no cells selected?
     if (crossfilter.countSelected() === 0) {
@@ -723,32 +721,37 @@ class CategoryValue extends React.Component {
                   position={Position.RIGHT_TOP}
                   content={
                     <Menu>
-                      <MenuItem
-                        icon="plus"
-                        data-testclass="handleAddCurrentSelectionToThisLabel"
-                        data-testid={`${metadataField}:${displayString}:add-current-selection-to-this-label`}
-                        onClick={this.handleAddCurrentSelectionToThisLabel}
-                        text={
-                          <span>
-                            Re-label currently selected cells as
-                            <span
-                              style={{
-                                fontStyle:
-                                  displayString ===
-                                  globals.unassignedCategoryLabel
-                                    ? "italic"
-                                    : "auto",
-                              }}
-                            >
-                              {` ${displayString}`}
-                            </span>
-                          </span>
-                        }
-                        disabled={this.isAddCurrentSelectionDisabled(
-                          metadataField,
-                          value
+                      <CategoryCrossfilterContext.Consumer>
+                        {(crossfilter) => (
+                          <MenuItem
+                            icon="plus"
+                            data-testclass="handleAddCurrentSelectionToThisLabel"
+                            data-testid={`${metadataField}:${displayString}:add-current-selection-to-this-label`}
+                            onClick={this.handleAddCurrentSelectionToThisLabel}
+                            text={
+                              <span>
+                                Re-label currently selected cells as
+                                <span
+                                  style={{
+                                    fontStyle:
+                                      displayString ===
+                                      globals.unassignedCategoryLabel
+                                        ? "italic"
+                                        : "auto",
+                                  }}
+                                >
+                                  {` ${displayString}`}
+                                </span>
+                              </span>
+                            }
+                            disabled={this.isAddCurrentSelectionDisabled(
+                              crossfilter,
+                              metadataField,
+                              value
+                            )}
+                          />
                         )}
-                      />
+                      </CategoryCrossfilterContext.Consumer>
                       {displayString !== globals.unassignedCategoryLabel ? (
                         <MenuItem
                           icon="edit"

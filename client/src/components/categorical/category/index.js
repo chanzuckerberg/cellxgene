@@ -10,6 +10,7 @@ import AnnoMenu from "./annoMenuCategory";
 import AnnoDialogEditCategoryName from "./annoDialogEditCategoryName";
 import AnnoDialogAddLabel from "./annoDialogAddLabel";
 import Truncate from "../../util/truncate";
+import { CategoryCrossfilterContext } from "../categoryContext";
 
 import * as globals from "../../../globals";
 import { createCategorySummaryFromDfCol } from "../../../util/stateManager/controlsHelpers";
@@ -109,8 +110,24 @@ class Category extends React.PureComponent {
     }
   };
 
+  handleCategoryKeyPress = (e) => {
+    if (e.key === "Enter") {
+      this.handleCategoryClick();
+    }
+  };
+
+  handleToggleAllClick = (categorySummary) => {
+    const isChecked = this.getSelectionState(categorySummary);
+    if (isChecked === "all") {
+      this.toggleNone(categorySummary);
+    } else {
+      this.toggleAll(categorySummary);
+    }
+  };
+
   fetchAsyncProps = async (props) => {
-    const { annoMatrix, crossfilter, metadataField, colors } = props.watchProps;
+    const { annoMatrix, metadataField, colors } = props.watchProps;
+    const { crossfilter } = this.props;
 
     const [categoryData, categorySummary, colorData] = await Category.fetchData(
       annoMatrix,
@@ -124,6 +141,8 @@ class Category extends React.PureComponent {
       colorData,
       crossfilter,
       ...this.updateColorTable(colorData),
+      handleCategoryToggleAllClick: () =>
+        this.handleToggleAllClick(categorySummary),
     };
   };
 
@@ -169,15 +188,6 @@ class Category extends React.PureComponent {
     );
   }
 
-  handleToggleAllClick(categorySummary) {
-    const isChecked = this.getSelectionState(categorySummary);
-    if (isChecked === "all") {
-      this.toggleNone(categorySummary);
-    } else {
-      this.toggleAll(categorySummary);
-    }
-  }
-
   render() {
     const {
       metadataField,
@@ -197,6 +207,9 @@ class Category extends React.PureComponent {
       !isUserAnno &&
       schema?.annotations?.obsByName[metadataField]?.categories?.length === 1
     ) {
+      /*
+      Entire category has a single value, special case.
+      */
       return (
         <div style={{ marginBottom: 10, marginTop: 4 }}>
           <Truncate>
@@ -222,7 +235,6 @@ class Category extends React.PureComponent {
           annoMatrix,
           categoricalSelection,
           colors,
-          crossfilter,
         }}
       >
         <Async.Pending>
@@ -242,20 +254,11 @@ class Category extends React.PureComponent {
               categoryData,
               categorySummary,
               isColorAccessor,
+              handleCategoryToggleAllClick,
             } = asyncProps;
             return (
-              <CategoryFlipperLayout
-                metadataField={metadataField}
-                isExpanded={isExpanded}
-                isUserAnno={isUserAnno}
-                categoryData={categoryData}
-                categorySummary={categorySummary}
-                colorAccessor={colorAccessor}
-                colorData={colorData}
-                colorTable={colorTable}
-                crossfilter={asyncProps.crossfilter}
-              >
-                <CategoryHeader
+              <CategoryCrossfilterContext.Provider value={crossfilter}>
+                <CategoryRender
                   metadataField={metadataField}
                   checkboxID={checkboxID}
                   isUserAnno={isUserAnno}
@@ -263,18 +266,17 @@ class Category extends React.PureComponent {
                   isExpanded={isExpanded}
                   isColorAccessor={isColorAccessor}
                   selectionState={this.getSelectionState(categorySummary)}
+                  categoryData={categoryData}
+                  categorySummary={categorySummary}
+                  colorAccessor={colorAccessor}
+                  colorData={colorData}
+                  colorTable={colorTable}
                   onColorChangeClick={this.handleColorChange}
-                  onCategoryToggleAllClick={() =>
-                    this.handleToggleAllClick(categorySummary)
-                  }
+                  onCategoryToggleAllClick={handleCategoryToggleAllClick}
                   onCategoryMenuClick={this.handleCategoryClick}
-                  onCategoryMenuKeyPress={(e) => {
-                    if (e.key === "Enter") {
-                      this.handleCategoryClick();
-                    }
-                  }}
+                  onCategoryMenuKeyPress={this.handleCategoryKeyPress}
                 />
-              </CategoryFlipperLayout>
+              </CategoryCrossfilterContext.Provider>
             );
           }}
         </Async.Fulfilled>
@@ -351,115 +353,169 @@ const ErrorLoading = ({ metadataField, error }) => {
   );
 };
 
-const CategoryHeader = ({
-  metadataField,
-  checkboxID,
-  isUserAnno,
-  isTruncated,
-  isColorAccessor,
-  isExpanded,
-  selectionState,
-  onColorChangeClick,
-  onCategoryMenuClick,
-  onCategoryMenuKeyPress,
-  onCategoryToggleAllClick,
-}) => {
-  /*
-  Render category name and controls (eg, color-by button).
-  */
-  const checkboxRef = useRef(null);
+const CategoryHeader = React.memo(
+  ({
+    metadataField,
+    checkboxID,
+    isUserAnno,
+    isTruncated,
+    isColorAccessor,
+    isExpanded,
+    selectionState,
+    onColorChangeClick,
+    onCategoryMenuClick,
+    onCategoryMenuKeyPress,
+    onCategoryToggleAllClick,
+  }) => {
+    /*
+    Render category name and controls (eg, color-by button).
+    */
+    const checkboxRef = useRef(null);
 
-  useEffect(() => {
-    checkboxRef.current.indeterminate = selectionState === "some";
-  }, [checkboxRef.current, selectionState]);
+    useEffect(() => {
+      checkboxRef.current.indeterminate = selectionState === "some";
+    }, [checkboxRef.current, selectionState]);
 
-  return (
-    <>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "flex-start",
-          alignItems: "flex-start",
-        }}
-      >
-        <label className="bp3-control bp3-checkbox" htmlFor={checkboxID}>
-          <input
-            id={checkboxID}
-            data-testclass="category-select"
-            data-testid={`${metadataField}:category-select`}
-            onChange={onCategoryToggleAllClick}
-            ref={checkboxRef}
-            checked={selectionState === "all"}
-            type="checkbox"
-          />
-          <span className="bp3-control-indicator" />
-        </label>
-        <span
-          role="menuitem"
-          tabIndex="0"
-          data-testclass="category-expand"
-          data-testid={`${metadataField}:category-expand`}
-          onKeyPress={onCategoryMenuKeyPress}
+    return (
+      <>
+        <div
           style={{
-            cursor: "pointer",
+            display: "flex",
+            justifyContent: "flex-start",
+            alignItems: "flex-start",
           }}
-          onClick={onCategoryMenuClick}
         >
-          <Truncate>
-            <span
-              style={{
-                maxWidth: isUserAnno ? LABEL_WIDTH_ANNO : LABEL_WIDTH,
-              }}
-              data-testid={`${metadataField}:category-label`}
-            >
-              {metadataField}
-            </span>
-          </Truncate>
-          {isExpanded ? (
-            <FaChevronDown
-              data-testclass="category-expand-is-expanded"
-              style={{ fontSize: 10, marginLeft: 5 }}
+          <label className="bp3-control bp3-checkbox" htmlFor={checkboxID}>
+            <input
+              id={checkboxID}
+              data-testclass="category-select"
+              data-testid={`${metadataField}:category-select`}
+              onChange={onCategoryToggleAllClick}
+              ref={checkboxRef}
+              checked={selectionState === "all"}
+              type="checkbox"
             />
-          ) : (
-            <FaChevronRight
-              data-testclass="category-expand-is-not-expanded"
-              style={{ fontSize: 10, marginLeft: 5 }}
-            />
-          )}
-        </span>
-      </div>
-      {<AnnoDialogEditCategoryName metadataField={metadataField} />}
-      {<AnnoDialogAddLabel metadataField={metadataField} />}
-      <div>
-        <AnnoMenu
-          metadataField={metadataField}
-          isUserAnno={isUserAnno}
-          createText="Add a new label to this category"
-          editText="Edit this category's name"
-          deleteText="Delete this category, all associated labels, and remove all cell assignments"
-        />
-
-        <Tooltip
-          content={
-            isTruncated
-              ? `Coloring by ${metadataField} is disabled, as it exceeds the limit of ${globals.maxCategoricalOptionsToDisplay} labels`
-              : "Use as color scale"
-          }
-          position="bottom"
-          usePortal={false}
-          hoverOpenDelay={globals.tooltipHoverOpenDelay}
-        >
-          <AnchorButton
-            data-testclass="colorby"
-            data-testid={`colorby-${metadataField}`}
-            onClick={onColorChangeClick}
-            active={isColorAccessor}
-            intent={isColorAccessor ? "primary" : "none"}
-            disabled={isTruncated}
-            icon="tint"
+            <span className="bp3-control-indicator" />
+          </label>
+          <span
+            role="menuitem"
+            tabIndex="0"
+            data-testclass="category-expand"
+            data-testid={`${metadataField}:category-expand`}
+            onKeyPress={onCategoryMenuKeyPress}
+            style={{
+              cursor: "pointer",
+            }}
+            onClick={onCategoryMenuClick}
+          >
+            <Truncate>
+              <span
+                style={{
+                  maxWidth: isUserAnno ? LABEL_WIDTH_ANNO : LABEL_WIDTH,
+                }}
+                data-testid={`${metadataField}:category-label`}
+              >
+                {metadataField}
+              </span>
+            </Truncate>
+            {isExpanded ? (
+              <FaChevronDown
+                data-testclass="category-expand-is-expanded"
+                style={{ fontSize: 10, marginLeft: 5 }}
+              />
+            ) : (
+              <FaChevronRight
+                data-testclass="category-expand-is-not-expanded"
+                style={{ fontSize: 10, marginLeft: 5 }}
+              />
+            )}
+          </span>
+        </div>
+        {<AnnoDialogEditCategoryName metadataField={metadataField} />}
+        {<AnnoDialogAddLabel metadataField={metadataField} />}
+        <div>
+          <AnnoMenu
+            metadataField={metadataField}
+            isUserAnno={isUserAnno}
+            createText="Add a new label to this category"
+            editText="Edit this category's name"
+            deleteText="Delete this category, all associated labels, and remove all cell assignments"
           />
-        </Tooltip>
-      </div>
-    </>
-  );
-};
+
+          <Tooltip
+            content={
+              isTruncated
+                ? `Coloring by ${metadataField} is disabled, as it exceeds the limit of ${globals.maxCategoricalOptionsToDisplay} labels`
+                : "Use as color scale"
+            }
+            position="bottom"
+            usePortal={false}
+            hoverOpenDelay={globals.tooltipHoverOpenDelay}
+          >
+            <AnchorButton
+              data-testclass="colorby"
+              data-testid={`colorby-${metadataField}`}
+              onClick={onColorChangeClick}
+              active={isColorAccessor}
+              intent={isColorAccessor ? "primary" : "none"}
+              disabled={isTruncated}
+              icon="tint"
+            />
+          </Tooltip>
+        </div>
+      </>
+    );
+  }
+);
+
+const CategoryRender = React.memo(
+  ({
+    metadataField,
+    checkboxID,
+    isUserAnno,
+    isTruncated,
+    isColorAccessor,
+    isExpanded,
+    selectionState,
+    categoryData,
+    categorySummary,
+    colorAccessor,
+    colorData,
+    colorTable,
+    onColorChangeClick,
+    onCategoryMenuClick,
+    onCategoryMenuKeyPress,
+    onCategoryToggleAllClick,
+  }) => {
+    /*
+    Render the core of the category, including checkboxes, controls, etc.
+    */
+
+    return (
+      <CategoryFlipperLayout
+        metadataField={metadataField}
+        isExpanded={isExpanded}
+        isUserAnno={isUserAnno}
+        categoryData={categoryData}
+        categorySummary={categorySummary}
+        colorAccessor={colorAccessor}
+        colorData={colorData}
+        colorTable={colorTable}
+      >
+        <CategoryHeader
+          metadataField={metadataField}
+          checkboxID={checkboxID}
+          isUserAnno={isUserAnno}
+          isTruncated={isTruncated}
+          isExpanded={isExpanded}
+          isColorAccessor={isColorAccessor}
+          selectionState={selectionState}
+          onColorChangeClick={onColorChangeClick}
+          onCategoryToggleAllClick={onCategoryToggleAllClick}
+          onCategoryMenuClick={onCategoryMenuClick}
+          onCategoryMenuKeyPress={onCategoryMenuKeyPress}
+        />
+      </CategoryFlipperLayout>
+    );
+  }
+);

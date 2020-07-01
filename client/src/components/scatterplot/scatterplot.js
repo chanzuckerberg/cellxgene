@@ -32,13 +32,12 @@ function createProjectionTF(viewportWidth, viewportHeight) {
 }
 
 function getScale(col, rangeMin, rangeMax) {
-    if (!col) return null;
-    const { min, max } = col.summarize();
-    return d3.scaleLinear().domain([min, max]).range([rangeMin, rangeMax]);
-  }
+  if (!col) return null;
+  const { min, max } = col.summarize();
+  return d3.scaleLinear().domain([min, max]).range([rangeMin, rangeMax]);
+}
 const getXScale = memoize(getScale);
 const getYScale = memoize(getScale);
-
 
 @connect((state) => {
   const { obsCrossfilter: crossfilter } = state;
