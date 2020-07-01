@@ -47,7 +47,7 @@ def _cache_control(always, **cache_kwargs):
 
 
 def cache_control(**cache_kwargs):
-    """ configu driven """
+    """ config driven """
     return _cache_control(False, **cache_kwargs)
 
 
