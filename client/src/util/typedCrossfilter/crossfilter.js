@@ -503,7 +503,10 @@ class ImmutableEnumDimension extends ImmutableScalarDimension {
 
   selectExact(spec) {
     const { enumIndex } = this;
-    const { values } = spec;
+    let { values } = spec;
+    if (!Array.isArray(values)) {
+      values = [values];
+    }
     return super.selectExact({
       mode: spec.mode,
       values: values.map((v) =>
