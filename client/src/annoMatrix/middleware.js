@@ -34,9 +34,11 @@ function _doGC(store) {
   // they have overly intimiate knowledge of our reducers.
   const undoablePast = state["@@undoable/past"];
   const undoableFuture = state["@@undoable/future"];
-  const undoableStack = undoablePast.concat(undoableFuture).flatMap((snapshot) =>
-    snapshot.filter((v) => v[0] === "annoMatrix").map((v) => v[1])
-  );
+  const undoableStack = undoablePast
+    .concat(undoableFuture)
+    .flatMap((snapshot) =>
+      snapshot.filter((v) => v[0] === "annoMatrix").map((v) => v[1])
+    );
   const currentAnnoMatrix = state.annoMatrix;
 
   /*

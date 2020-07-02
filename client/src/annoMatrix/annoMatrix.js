@@ -261,7 +261,9 @@ export default class AnnoMatrix {
     const excessCount = candidates.length + pinnedColumns.length - maxColumns;
     if (excessCount > 0) {
       const toDrop = candidates.slice(0, excessCount);
-      console.log(`dropping from ${field} hot:${isHot}, columns [${toDrop.join(', ')}]`);
+      console.log(
+        `dropping from ${field} hot:${isHot}, columns [${toDrop.join(", ")}]`
+      );
       this[field] = toDrop.reduce((df, col) => df.dropCol(col), this[field]);
       toDrop.forEach((col) => gcInfo.delete(col));
     }

@@ -54,7 +54,9 @@ export function _schemaColumns(schema, field) {
 
 export function _getWritableColumns(schema, field) {
   if (field !== "obs") return [];
-  return schema.annotations.obs.columns.filter((v) => v.writable).map((v) => v.name);
+  return schema.annotations.obs.columns
+    .filter((v) => v.writable)
+    .map((v) => v.name);
 }
 
 export function _isContinuousType(schema) {
