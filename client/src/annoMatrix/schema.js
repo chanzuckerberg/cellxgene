@@ -2,6 +2,7 @@
 Helper functions related to schema
 */
 import catLabelSort from "../util/catLabelSort";
+import { unassignedCategoryLabel } from "../globals";
 
 export function _getColumnSchema(schema, field, col) {
   /* look up the column definition */

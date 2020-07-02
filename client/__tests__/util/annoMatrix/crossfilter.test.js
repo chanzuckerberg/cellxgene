@@ -263,9 +263,9 @@ describe("AnnoMatrixCrossfilter", () => {
     /*
     test the matrix mutators via crossfilter proxy
     */
-    async function helperAddTestCol(crossfilter, colName, colSchema = null) {
+    async function helperAddTestCol(cf, colName, colSchema = null) {
       expect(
-        crossfilter.annoMatrix.getMatrixColumns("obs").includes(colName)
+        cf.annoMatrix.getMatrixColumns("obs").includes(colName)
       ).toBeFalsy();
 
       if (colSchema === null) {
@@ -277,14 +277,14 @@ describe("AnnoMatrixCrossfilter", () => {
       }
       colSchema.name = colName;
       const initValue = colSchema.categories[0];
-      let xfltr = crossfilter.addObsColumn(colSchema, Array, initValue);
+      const xfltr = cf.addObsColumn(colSchema, Array, initValue);
       expect(
         xfltr.annoMatrix.schema.annotations.obs.columns.filter(
           (v) => v.name === colName
         )
       ).toHaveLength(1);
       const df = await xfltr.annoMatrix.fetch("obs", colName);
-      expect(df.hasCol(colName));
+      expect(df.hasCol(colName)).toBeTruthy();
       return xfltr;
     }
 
@@ -304,9 +304,10 @@ describe("AnnoMatrixCrossfilter", () => {
       expect(
         xfltr.annoMatrix.getMatrixColumns("obs").includes("foo")
       ).toBeTruthy();
-      expect(
-        xfltr.annoMatrix.schema.annotations.obsByName["foo"]
-      ).toMatchObject({ name: "foo", type: "categorical" });
+      expect(xfltr.annoMatrix.schema.annotations.obsByName.foo).toMatchObject({
+        name: "foo",
+        type: "categorical",
+      });
       expect(
         xfltr.annoMatrix.schema.annotations.obs.columns.filter(
           (v) => v.name === "foo"
@@ -340,7 +341,6 @@ describe("AnnoMatrixCrossfilter", () => {
     });
 
     test("dropObsColumn", async () => {
-      let df;
       let xfltr;
 
       /* check that we catch attempt to drop readonly dimension */
@@ -360,9 +360,7 @@ describe("AnnoMatrixCrossfilter", () => {
           (v) => v.name === "foo"
         )
       ).toHaveLength(0);
-      expect(
-        xfltr.annoMatrix.schema.annotations.obsByName["foo"]
-      ).toBeUndefined();
+      expect(xfltr.annoMatrix.schema.annotations.obsByName.foo).toBeUndefined();
       fetch.mockRejectOnce(new Error("unknown column name"));
       await expect(xfltr.annoMatrix.fetch("obs", "foo")).rejects.toThrow(
         "unknown column name"
@@ -383,7 +381,6 @@ describe("AnnoMatrixCrossfilter", () => {
     });
 
     test("renameObsColumn", async () => {
-      let df;
       let xfltr;
 
       /* catch attempts to rename non-existent or readonly columns */
@@ -407,8 +404,8 @@ describe("AnnoMatrixCrossfilter", () => {
       await expect(xfltr.annoMatrix.fetch("obs", "foo")).rejects.toThrow(
         "unknown column name"
       );
-      df = await xfltr.annoMatrix.fetch("obs", "bar");
-      expect(df.hasCol("bar"));
+      const df = await xfltr.annoMatrix.fetch("obs", "bar");
+      expect(df.hasCol("bar")).toBeTruthy();
 
       // now same, but ensure we have built an index before doing the rename
       xfltr = await helperAddTestCol(crossfilter, "bar");
@@ -478,10 +475,10 @@ describe("AnnoMatrixCrossfilter", () => {
       let xfltr;
 
       // catch unknown or readonly categories
-      expect(() =>
+      await expect(() =>
         crossfilter.removeObsAnnoCategory("louvain", "mumble", "unassigned")
       ).rejects.toThrow("Unknown or readonly obs column");
-      expect(() =>
+      await expect(() =>
         crossfilter.removeObsAnnoCategory("undefined-name", "mumble")
       ).rejects.toThrow("Unknown or readonly obs column");
 
@@ -548,10 +545,10 @@ describe("AnnoMatrixCrossfilter", () => {
 
     test("setObsColumnValues", async () => {
       // catch unknown or readonly categories
-      expect(() =>
+      await expect(() =>
         crossfilter.setObsColumnValues("louvain", [0, 1], "unassigned")
       ).rejects.toThrow("Unknown or readonly obs column");
-      expect(() =>
+      await expect(() =>
         crossfilter.setObsColumnValues("undefined-name", [0], "mumble")
       ).rejects.toThrow("Unknown or readonly obs column");
 
@@ -563,7 +560,7 @@ describe("AnnoMatrixCrossfilter", () => {
       xfltr = await xfltr.select("obs", "foo", { mode: "all" });
 
       // catch unknown row label
-      expect(() =>
+      await expect(() =>
         xfltr.setObsColumnValues("foo", [-1], "red")
       ).rejects.toThrow("Unknown row label");
 
@@ -575,7 +572,6 @@ describe("AnnoMatrixCrossfilter", () => {
           .every((v) => v === "unassigned")
       ).toBeTruthy();
       const xfltr1 = await xfltr.setObsColumnValues("foo", [0, 10], "purple");
-      let df = await xfltr1.annoMatrix.fetch("obs", "foo");
       expect(
         (await xfltr1.annoMatrix.fetch("obs", "foo"))
           .col("foo")
@@ -608,10 +604,10 @@ describe("AnnoMatrixCrossfilter", () => {
 
     test("resetObsColumnValues", async () => {
       // catch unknown or readonly categories
-      expect(() =>
+      await expect(() =>
         crossfilter.resetObsColumnValues("louvain", "red", "blue")
       ).rejects.toThrow("Unknown or readonly obs column");
-      expect(() =>
+      await expect(() =>
         crossfilter.resetObsColumnValues("undefined-name", "red", "blue")
       ).rejects.toThrow("Unknown or readonly obs column");
 
@@ -626,7 +622,7 @@ describe("AnnoMatrixCrossfilter", () => {
       });
 
       // catch unknown category name label
-      expect(() =>
+      await expect(() =>
         xfltr.resetObsColumnValues("foo", "unknown-label", "red")
       ).rejects.toThrow("unknown category");
 
@@ -674,12 +670,12 @@ describe("AnnoMatrixCrossfilter", () => {
     test("transition from empty annoMatrix", async () => {
       // select before fetch needs to work
       fetch.once(serverMocks.dataframeResponse(["louvain"], [obsLouvain]));
-      let xfltr = await crossfilter.select("obs", "louvain", {
+      const xfltr = await crossfilter.select("obs", "louvain", {
         mode: "exact",
         values: "B cells",
       });
       expect(fetch.mock.calls).toHaveLength(1);
-      expect(xfltr.obsCrossfilter.hasDimension("obs/louvain"));
+      expect(xfltr.obsCrossfilter.hasDimension("obs/louvain")).toBeTruthy();
       expect(xfltr.obsCrossfilter.all()).toBe(xfltr.annoMatrix.obs);
       expect(xfltr.countSelected()).toEqual(
         obsLouvain.reduce(

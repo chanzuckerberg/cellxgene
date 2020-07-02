@@ -8,7 +8,6 @@ import * as globals from "../../globals";
 import { rangeFill as fillRange } from "../range";
 import fromEntries from "../fromEntries";
 import { isCategoricalAnnotation } from "./annotationsHelpers";
-import catLabelSort from "../catLabelSort";
 
 /*
 Selection state for categoricals are tracked in an Object that
