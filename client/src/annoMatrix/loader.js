@@ -35,9 +35,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     Add a new category (aka label) to the schema for an obs column.
     */
     const colSchema = _getColumnSchema(this.schema, "obs", col);
-    if (!colSchema.writable) {
-      throw new Error("Not a writable obs column");
-    }
+    _writableCategoryTypeCheck(colSchema); // throws on error
 
     const o = clone(this);
     o.schema = addObsAnnoCategory(this.schema, col, category);
@@ -49,16 +47,14 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     Remove a single "category" (aka "label") from the data & schema of an obs column.
     */
     const colSchema = _getColumnSchema(this.schema, "obs", col);
-    if (!colSchema.writable) {
-      throw new Error("Not a writable obs column");
-    }
+    _writableCategoryTypeCheck(colSchema); // throws on error
 
     const o = await this.resetObsColumnValues(
       col,
       category,
       unassignedCategory
     );
-    o.schema = removeObsAnnoCategory(this.schema, col, category);
+    o.schema = removeObsAnnoCategory(o.schema, col, category);
     return o;
   }
 
@@ -67,9 +63,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
 		drop column from field
 		*/
     const colSchema = _getColumnSchema(this.schema, "obs", col);
-    if (!colSchema.writable) {
-      throw new Error("Not a writable obs column");
-    }
+    _writableCheck(colSchema); // throws on error
 
     const o = clone(this);
     o.obs = this.obs.dropCol(col);
@@ -85,6 +79,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
       * a primitive type, including null or undefined.
     If an array, it must be of same size as nObs and same type as Ctor
 		*/
+    colSchema.writable = true;
     const col = colSchema.name;
     if (_getColumnSchema(this.schema, "obs", col) || this.obs.hasCol(col)) {
       throw new Error("column already exists");
@@ -114,9 +109,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     Rename the obs oldColName to newColName.  oldCol must be writable.
     */
     const oldColSchema = _getColumnSchema(this.schema, "obs", oldCol);
-    if (!oldColSchema.writable) {
-      throw new Error("Not a writable obs column");
-    }
+    _writableCheck(oldColSchema); // throws on error
 
     const value = this.obs.hasCol(oldCol)
       ? this.obs.col(oldCol).asArray()
@@ -136,9 +129,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
 		Set all rows identified by rowLabels to value.
 		*/
     const colSchema = _getColumnSchema(this.schema, "obs", col);
-    if (!colSchema.writable) {
-      throw new Error("Not a writable obs column");
-    }
+    _writableCategoryTypeCheck(colSchema); // throws on error
 
     // ensure that we have the data in cache before we manipulate it
     await this.fetch("obs", col);
@@ -148,13 +139,15 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     const rowIndices = this.rowIndex.getOffsets(rowLabels);
     const data = this.obs.col(col).asArray().slice();
     for (let i = 0, len = rowIndices.length; i < len; i += 1) {
-      data[rowIndices[i]] = value;
+      const idx = rowIndices[i];
+      if (idx === undefined) throw new Error("Unknown row label");
+      data[idx] = value;
     }
 
     const o = clone(this);
     o.obs = this.obs.replaceColData(col, data);
     const { categories } = colSchema;
-    if (categories && categories.indexOf(value) === -1) {
+    if (!categories?.includes(value)) {
       o.schema = addObsAnnoCategory(this.schema, col, value);
     }
     return o;
@@ -162,11 +155,13 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
 
   async resetObsColumnValues(col, oldValue, newValue) {
     /*
-    Set all rows with value 'oldValue' to 'newValue'
+    Set all rows with value 'oldValue' to 'newValue'.
     */
     const colSchema = _getColumnSchema(this.schema, "obs", col);
-    if (!colSchema.writable) {
-      throw new Error("Not a writable obs column");
+    _writableCategoryTypeCheck(colSchema); // throws on error
+
+    if (!colSchema.categories.includes(oldValue)) {
+      throw new Error("unknown category");
     }
 
     // ensure that we have the data in cache before we manipulate it
@@ -182,7 +177,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     const o = clone(this);
     o.obs = this.obs.replaceColData(col, data);
     const { categories } = colSchema;
-    if (categories && categories.indexOf(newValue) === -1) {
+    if (!categories?.includes(newValue)) {
       o.schema = addObsAnnoCategory(this.schema, col, newValue);
     }
     return o;
@@ -248,4 +243,17 @@ function _encodeQuery(colKey, q) {
   }
   if (!colKey) throw new Error("Unsupported query by name");
   return `${colKey}=${encodeURIComponent(q)}`;
+}
+
+function _writableCheck(colSchema) {
+  if (!colSchema?.writable) {
+    throw new Error("Unknown or readonly obs column");
+  }
+}
+
+function _writableCategoryTypeCheck(colSchema) {
+  _writableCheck(colSchema);
+  if (colSchema.type !== "categorical") {
+    throw new Error("column must be categorical");
+  }
 }

@@ -229,7 +229,7 @@ export default class AnnoMatrix {
     if (this[field].length < MAX_CACHED_COLUMNS) return;
     const gcInfo = this._gcInfo[field];
     const candidates = Array.from(gcInfo.keys()).filter(
-      (col) => pinnedColumns.indexOf(col) === -1
+      (col) => !pinnedColumns.includes(col)
     );
     const excessCount =
       candidates.length + pinnedColumns.length - MAX_CACHED_COLUMNS;
