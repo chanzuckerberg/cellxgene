@@ -256,7 +256,7 @@ describe("ImmutableTypedCrossfilter", () => {
     test("single value exact", () => {
       expect(
         p.select("quantity", { mode: "exact", values: 2 }).countSelected()
-      ).toEqual(_.filter(someData, (d) => d.quantity === 2).length)
+      ).toEqual(_.filter(someData, (d) => d.quantity === 2).length);
     });
     test.each([
       [0, 1],
@@ -303,7 +303,7 @@ describe("ImmutableTypedCrossfilter", () => {
     test("single value exact", () => {
       expect(
         p.select("type", { mode: "exact", values: "tab" }).countSelected()
-      ).toEqual(_.filter(someData, (d) => d.type === "tab").length)
+      ).toEqual(_.filter(someData, (d) => d.type === "tab").length);
     });
     test("range", () => {
       expect(() => p.select("type", { mode: "range", lo: 0, hi: 9 })).toThrow(
