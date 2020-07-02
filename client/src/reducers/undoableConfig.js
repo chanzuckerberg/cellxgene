@@ -52,7 +52,6 @@ history will be cleared when these actions occur
 */
 const clearOnActions = new Set([
   "initial data load complete",
-  "reset subset",
   "initial data load error",
 ]);
 
