@@ -10,7 +10,6 @@ describe("centroid", () => {
   let schema;
   let obsAnnotations;
   let obsLayout;
-  // let categoricalSelection;
 
   beforeAll(() => {
     schema = indexEntireSchema(_.cloneDeep(REST.schema.schema));
