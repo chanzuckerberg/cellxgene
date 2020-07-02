@@ -8,7 +8,7 @@ import { _fetchResult } from "./fetchHelpers";
 import { indexEntireSchema } from "../util/stateManager/schemaHelpers";
 import { _whereCacheGet, _whereCacheMerge } from "./whereCache";
 
-const MAX_CACHED_COLUMNS = 48;
+const MAX_CACHED_COLUMNS = 256;
 
 export default class AnnoMatrix {
   static fields() {

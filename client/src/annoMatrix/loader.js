@@ -4,7 +4,7 @@ Base matrix, which proxies for server.
 import clone from "./clone";
 import { doBinaryRequest, _dubEncURIComp } from "./fetchHelpers";
 import { matrixFBSToDataframe } from "../util/stateManager/matrix";
-import { _getColumnSchema } from "./schema";
+import { _getColumnSchema, _normalizeCategoricalSchema } from "./schema";
 import {
   addObsAnnoColumn,
   removeObsAnnoColumn,
@@ -190,7 +190,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     /*
     _doLoad - evaluates the query against the field. Returns:
       * whereCache update: column query map mapping the query to the column labels
-      * Dataframe contianing the new colums (one per dimension)
+      * Dataframe containing the new colums (one per dimension)
     */
     let urlQuery;
     let urlBase;
@@ -226,6 +226,15 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
       query,
       result.colIndex.labels()
     );
+
+    if (field === "obs") {
+      /* cough, cough - see comment on method */
+      _normalizeCategoricalSchema(
+        this.schema.annotations.obsByName[query],
+        result.col(query)
+      );
+    }
+
     return [whereCacheUpdate, result];
   }
 }

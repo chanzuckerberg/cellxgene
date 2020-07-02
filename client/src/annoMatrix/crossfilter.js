@@ -11,6 +11,7 @@ export default class AnnoMatrixObsCrossfilter {
   constructor(annoMatrix, obsCrossfilter = null) {
     this.annoMatrix = annoMatrix;
     this.obsCrossfilter = obsCrossfilter || new Crossfilter(annoMatrix.obs);
+    this.obsCrossfilter.setData(annoMatrix.obs);
   }
 
   size() {
@@ -123,6 +124,7 @@ export default class AnnoMatrixObsCrossfilter {
     if (!obsCrossfilter.hasDimension(dimName)) {
       // lazy index generation - add dimension when first used
       obsCrossfilter = this._addObsCrossfilterDimension(
+        annoMatrix,
         obsCrossfilter,
         field,
         df
@@ -197,12 +199,12 @@ export default class AnnoMatrixObsCrossfilter {
    ** Private below
    **/
 
-  _addObsCrossfilterDimension(obsCrossfilter, field, df) {
+  _addObsCrossfilterDimension(annoMatrix, obsCrossfilter, field, df) {
     if (field === "var") return obsCrossfilter;
     const dimName = _dimensionNameFromDf(field, df);
     const dimParams = this._getObsDimensionParams(field, df);
-    if (obsCrossfilter.size() === 0)
-      obsCrossfilter = obsCrossfilter.setData(df);
+    if (obsCrossfilter.all() !== annoMatrix.obs)
+      obsCrossfilter = obsCrossfilter.setData(annoMatrix.obs);
     obsCrossfilter = obsCrossfilter.addDimension(dimName, ...dimParams);
     return obsCrossfilter;
   }

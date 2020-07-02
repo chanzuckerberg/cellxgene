@@ -1,6 +1,7 @@
 /*
 Helper functions related to schema
 */
+import catLabelSort from "../util/catLabelSort";
 
 export function _getColumnSchema(schema, field, col) {
   /* look up the column definition */
@@ -53,4 +54,21 @@ export function _schemaColumns(schema, field) {
 export function _isContinuousType(schema) {
   const { type } = schema;
   return !(type === "string" || type === "boolean" || type === "categorical");
+}
+
+export function _normalizeCategoricalSchema(colSchema, col) {
+  const { type, writable } = colSchema;
+  if (type === "string" || type === "boolean" || type === "categorical") {
+    const categorySet = new Set(
+      col.summarize().categories.concat(colSchema.categories ?? [])
+    );
+    if (writable && !categorySet.has(unassignedCategoryLabel)) {
+      categorySet.add(unassignedCategoryLabel);
+    }
+    colSchema.categories = Array.from(categorySet);
+  }
+
+  if (colSchema.categories) {
+    colSchema.categories = catLabelSort(writable, colSchema.categories);
+  }
 }
