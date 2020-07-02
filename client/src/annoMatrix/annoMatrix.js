@@ -3,12 +3,11 @@ import {
   _getColumnDimensionNames,
   _getColumnSchema,
   _schemaColumns,
+  _getWritableColumns,
 } from "./schema";
 import { _fetchResult } from "./fetchHelpers";
 import { indexEntireSchema } from "../util/stateManager/schemaHelpers";
 import { _whereCacheGet, _whereCacheMerge } from "./whereCache";
-
-const MAX_CACHED_COLUMNS = 256;
 
 export default class AnnoMatrix {
   static fields() {
@@ -160,7 +159,7 @@ export default class AnnoMatrix {
 
     /* find cached columns we need, and GC the rest */
     const cachedColumns = this._resolveCachedQueries(field, queries);
-    this._gcCleanup(field, cachedColumns);
+    this._gcFetchCleanup(field, cachedColumns);
 
     /* find any query not already cached */
     const uncachedQueries = queries.filter((query) =>
@@ -189,7 +188,7 @@ export default class AnnoMatrix {
     /* everything we need is in the cache, so just cherry-pick requested columns */
     const requestedCacheKeys = this._resolveCachedQueries(field, queries);
     const response = this[field].subset(null, requestedCacheKeys);
-    this._gcUpdate(field, response);
+    this._gcUpdateStats(field, response);
     return response;
   }
 
@@ -220,32 +219,89 @@ export default class AnnoMatrix {
     throw new Error("subclass failed to implement _doLoad");
   }
 
-  _gcCleanup(field, pinnedColumns) {
-    /*
-    called periodically to prune memory use by deleting less used data from the cache.
+  /**
+   ** Garbage collection of annomatrix cache to manage memory use.
+   **/
 
-    do not delete anything in pinnedColumns, as those are being requested
-    */
-    if (this[field].length < MAX_CACHED_COLUMNS) return;
+  /*
+  These callbacks implement a GC policy for the cache.  Background:
+
+    * For the Loader (base) annomatrix, re-filling the cache is expensive as
+      it requires an HTTP fetch.
+    * user-defined / writable columns must not be GC'ed as they may be
+      still pending a save/commit.
+    * For views, cost is less and (roughly) proportional with nObs
+    * obs, var and emb do not grow without bounds, and are needed constantly 
+      for rendering.  
+      a) There is no upside to GC'ing these in the base (loader)
+      b) The undo/redo cache can hold a large number in views, which is worht GC'ing
+    * X is often much larger than memory, and the UI allows add/del from
+      this.  Most of the GC potential is here in both the base and views.
+
+  Current policy:
+    * if in active use ("hot") do not GC obs, var or emb.
+    * never, ever GC writable obs columns
+    * For base/loader set a numeric limit on maximum X column count
+    * For views, apply a fixed limit to the number of columns cached in any field.
+      Limit will be lower if not hot.
+
+  To be effective, the GC callback needs to be invoked from the undo/redo code,
+  as much of the cache is pinned by that data structure.
+  */
+  _gcField(field, isHot, pinnedColumns) {
+    const maxColumns = isHot ? 256 : 10; // maybe to aggessive?
+
+    if (this[field].length < maxColumns) return;
+
     const gcInfo = this._gcInfo[field];
     const candidates = Array.from(gcInfo.keys()).filter(
       (col) => !pinnedColumns.includes(col)
     );
-    const excessCount =
-      candidates.length + pinnedColumns.length - MAX_CACHED_COLUMNS;
+
+    const excessCount = candidates.length + pinnedColumns.length - maxColumns;
     if (excessCount > 0) {
       const toDrop = candidates.slice(0, excessCount);
+      console.log(`dropping from ${field} hot:${isHot}, columns [${toDrop.join(', ')}]`);
       this[field] = toDrop.reduce((df, col) => df.dropCol(col), this[field]);
       toDrop.forEach((col) => gcInfo.delete(col));
     }
   }
 
-  _gcUpdate(field, dataframe) {
+  _gcFetchCleanup(field, pinnedColumns) {
     /*
-    called each time a query is performed, allowing the gc to update any bookkeeping.
+    Called during data load/fetch.  By definition, this is 'hot', so we
+    only want to gc X.
+    */
+    if (field === "X") {
+      this._gcField(
+        field,
+        true,
+        pinnedColumns.concat(_getWritableColumns(this.schema, field))
+      );
+    }
+  }
+
+  _gc(hints) {
+    /*
+    Called from middleware, or elsewhere.  isHot is true if we are in the active store, 
+    or false if we are in some other context (eg, history state).
+    */
+    const { isHot } = hints;
+    const candidateFields = isHot ? ["X"] : ["X", "emb", "var", "obs"];
+    candidateFields.forEach((field) =>
+      this._gcField(field, isHot, _getWritableColumns(this.schema, field))
+    );
+  }
+
+  _gcUpdateStats(field, dataframe) {
+    /*
+    called each time a query is performed, allowing the gc to update any bookkeeping
+    information.  Currently, this is just a simple last-fetched timestamp, stored
+    in a Map.
 
     Map objects preserve order of insertion. This is leveraged as a cheap way to
-    do LRU, by removing and re-inserting keys.
+    do LRU, by removing and re-inserting keys.  IMPORTANT: the cleanup code assumes
+    the map insertion order is least-recently-used first.
     */
     const cols = dataframe.colIndex.labels();
     const gcInfo = this._gcInfo[field];
@@ -258,7 +314,7 @@ export default class AnnoMatrix {
 }
 
 /*
-Utility functions below
+private utility functions below
 */
 
 function _queryCacheKey(field, query) {

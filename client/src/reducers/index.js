@@ -19,6 +19,7 @@ import ontology from "./ontology";
 import centroidLabels from "./centroidLabels";
 import pointDialation from "./pointDilation";
 import { reembedController, reembedding } from "./reembed";
+import { gcMiddleware as annoMatrixGC } from "../annoMatrix";
 
 import undoableConfig from "./undoableConfig";
 
@@ -59,6 +60,6 @@ const Reducer = undoable(
   undoableConfig
 );
 
-const store = createStore(Reducer, applyMiddleware(thunk));
+const store = createStore(Reducer, applyMiddleware(thunk, annoMatrixGC));
 
 export default store;
