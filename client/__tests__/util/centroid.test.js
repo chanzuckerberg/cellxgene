@@ -17,7 +17,10 @@ describe("centroid", () => {
     obsAnnotations = matrixFBSToDataframe(REST.annotationsObs);
     obsLayout = matrixFBSToDataframe(REST.layoutObs);
 
-    _normalizeCategoricalSchema(schema.annotations.obsByName["field3"], obsAnnotations.col("field3"));
+    _normalizeCategoricalSchema(
+      schema.annotations.obsByName["field3"],
+      obsAnnotations.col("field3")
+    );
   });
 
   test("field4 (categorical obsAnnotation)", () => {
