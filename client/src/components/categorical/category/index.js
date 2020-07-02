@@ -203,29 +203,6 @@ class Category extends React.PureComponent {
     const isUserAnno = !!schema?.annotations?.obsByName[metadataField]
       ?.writable;
 
-    if (
-      !isUserAnno &&
-      schema?.annotations?.obsByName[metadataField]?.categories?.length === 1
-    ) {
-      /*
-      Entire category has a single value, special case.
-      */
-      return (
-        <div style={{ marginBottom: 10, marginTop: 4 }}>
-          <Truncate>
-            <span style={{ maxWidth: 150, fontWeight: 700 }}>
-              {metadataField}
-            </span>
-          </Truncate>
-          <Truncate>
-            <span style={{ maxWidth: 150 }}>
-              {`: ${schema.annotations.obsByName[metadataField].categories[0]}`}
-            </span>
-          </Truncate>
-        </div>
-      );
-    }
-
     return (
       <Async
         watchFn={Category.watchAsync}
@@ -491,6 +468,31 @@ const CategoryRender = React.memo(
     Render the core of the category, including checkboxes, controls, etc.
     */
 
+    const { numCategoryValues } = categorySummary;
+    const isSingularValue = !isUserAnno && numCategoryValues === 1;
+
+    if (isSingularValue) {
+      /*
+      Entire category has a single value, special case.
+      */
+      const theOneValue = categorySummary.categoryValues[0];
+      return (
+        <div style={{ marginBottom: 10, marginTop: 4 }}>
+          <Truncate>
+            <span style={{ maxWidth: 150, fontWeight: 700 }}>
+              {metadataField}
+            </span>
+          </Truncate>
+          <Truncate>
+            <span style={{ maxWidth: 150 }}>{`: ${theOneValue}`}</span>
+          </Truncate>
+        </div>
+      );
+    }
+
+    /*
+    Otherwise, our normal multi-layout layout
+    */
     return (
       <CategoryFlipperLayout
         metadataField={metadataField}
