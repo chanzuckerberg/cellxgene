@@ -74,12 +74,6 @@ export default class AnnoMatrix {
       X: {},
     };
     this._whereCache = {};
-    // this._gcInfo = {
-    //   obs: new Map(),
-    //   var: new Map(),
-    //   emb: new Map(),
-    //   X: new Map(),
-    // };
     this._gcInfo = new Map();
   }
 
