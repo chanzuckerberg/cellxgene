@@ -506,7 +506,7 @@ class Scatterplot extends React.PureComponent {
               viewport,
             }}
           >
-            <Async.Pending>Loading...</Async.Pending>
+            <Async.Pending initial>Loading...</Async.Pending>
             <Async.Rejected>{(error) => error.message}</Async.Rejected>
             <Async.Fulfilled>
               {(asyncProps) => {

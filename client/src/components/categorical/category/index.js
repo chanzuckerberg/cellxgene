@@ -25,27 +25,32 @@ const LABEL_WIDTH = globals.leftSidebarWidth - 100;
 const ANNO_BUTTON_WIDTH = 50;
 const LABEL_WIDTH_ANNO = LABEL_WIDTH - ANNO_BUTTON_WIDTH;
 
-@connect((state) => ({
-  colors: state.colors,
-  categoricalSelection: state.categoricalSelection,
-  annotations: state.annotations,
-  annoMatrix: state.annoMatrix,
-  schema: state.annoMatrix?.schema,
-  crossfilter: state.obsCrossfilter,
-}))
+@connect((state, ownProps) => {
+  const schema = state.annoMatrix?.schema;
+  const { metadataField } = ownProps;
+  const isUserAnno = schema?.annotations?.obsByName[metadataField]?.writable;
+  const categoricalSelection = state.categoricalSelection?.[metadataField];
+  return {
+    colors: state.colors,
+    categoricalSelection,
+    annotations: state.annotations,
+    annoMatrix: state.annoMatrix,
+    schema,
+    crossfilter: state.obsCrossfilter,
+    isUserAnno,
+  };
+})
 class Category extends React.PureComponent {
   static getSelectionState(
     categoricalSelection,
     metadataField,
     categorySummary
   ) {
-    const cat = categoricalSelection?.[metadataField];
-
     // total number of categories in this dimension
     const totalCatCount = categorySummary.numCategoryValues;
     // number of selected options in this category
     const selectedCatCount = categorySummary.categoryValues.reduce(
-      (res, label) => (cat.get(label) ?? true ? res + 1 : res),
+      (res, label) => (categoricalSelection.get(label) ?? true ? res + 1 : res),
       0
     );
     return selectedCatCount === totalCatCount
@@ -192,49 +197,50 @@ class Category extends React.PureComponent {
     const {
       metadataField,
       isExpanded,
-      schema,
       categoricalSelection,
       crossfilter,
       colors,
       annoMatrix,
+      isUserAnno,
     } = this.props;
 
     const checkboxID = `category-select-${metadataField}`;
-    const isUserAnno = !!schema?.annotations?.obsByName[metadataField]
-      ?.writable;
 
     return (
-      <Async
-        watchFn={Category.watchAsync}
-        promiseFn={this.fetchAsyncProps}
-        watchProps={{
-          metadataField,
-          annoMatrix,
-          categoricalSelection,
-          colors,
-        }}
-      >
-        <Async.Pending>
-          <StillLoading metadataField={metadataField} checkboxID={checkboxID} />
-        </Async.Pending>
-        <Async.Rejected>
-          {(error) => (
-            <ErrorLoading metadataField={metadataField} error={error} />
-          )}
-        </Async.Rejected>
-        <Async.Fulfilled>
-          {(asyncProps) => {
-            const {
-              colorAccessor,
-              colorTable,
-              colorData,
-              categoryData,
-              categorySummary,
-              isColorAccessor,
-              handleCategoryToggleAllClick,
-            } = asyncProps;
-            return (
-              <CategoryCrossfilterContext.Provider value={crossfilter}>
+      <CategoryCrossfilterContext.Provider value={crossfilter}>
+        <Async
+          watchFn={Category.watchAsync}
+          promiseFn={this.fetchAsyncProps}
+          watchProps={{
+            metadataField,
+            annoMatrix,
+            categoricalSelection,
+            colors,
+          }}
+        >
+          <Async.Pending initial>
+            <StillLoading
+              metadataField={metadataField}
+              checkboxID={checkboxID}
+            />
+          </Async.Pending>
+          <Async.Rejected>
+            {(error) => (
+              <ErrorLoading metadataField={metadataField} error={error} />
+            )}
+          </Async.Rejected>
+          <Async.Fulfilled>
+            {(asyncProps) => {
+              const {
+                colorAccessor,
+                colorTable,
+                colorData,
+                categoryData,
+                categorySummary,
+                isColorAccessor,
+                handleCategoryToggleAllClick,
+              } = asyncProps;
+              return (
                 <CategoryRender
                   metadataField={metadataField}
                   checkboxID={checkboxID}
@@ -253,11 +259,11 @@ class Category extends React.PureComponent {
                   onCategoryMenuClick={this.handleCategoryClick}
                   onCategoryMenuKeyPress={this.handleCategoryKeyPress}
                 />
-              </CategoryCrossfilterContext.Provider>
-            );
-          }}
-        </Async.Fulfilled>
-      </Async>
+              );
+            }}
+          </Async.Fulfilled>
+        </Async>
+      </CategoryCrossfilterContext.Provider>
     );
   }
 }
@@ -467,7 +473,6 @@ const CategoryRender = React.memo(
     /*
     Render the core of the category, including checkboxes, controls, etc.
     */
-
     const { numCategoryValues } = categorySummary;
     const isSingularValue = !isUserAnno && numCategoryValues === 1;
 

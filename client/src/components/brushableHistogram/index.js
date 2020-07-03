@@ -4,12 +4,13 @@ https://bl.ocks.org/mbostock/34f08d5e11952a80609169b7917d4172
 https://bl.ocks.org/SpaceActuary/2f004899ea1b2bd78d6f1dbb2febf771
 https://bl.ocks.org/mbostock/3019563
 */
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { Button, ButtonGroup, Tooltip } from "@blueprintjs/core";
 import { connect } from "react-redux";
 import * as d3 from "d3";
 import { interpolateCool } from "d3-scale-chromatic";
 import Async from "react-async";
+import memoize from "memoize-one";
 import * as globals from "../../globals";
 import actions from "../../actions";
 import { histogramContinuous } from "../../util/dataframe/histogram";
@@ -86,15 +87,18 @@ const ErrorLoading = ({ displayName, error, zebra }) => {
   );
 };
 
-const HistogramFooter = ({
-  displayName,
-  hideRanges,
-  range,
-  rangeColor,
-  logFoldChange,
-  pvalAdj,
-}) => {
-  /*
+const HistogramFooter = React.memo(
+  ({
+    displayName,
+    hideRanges,
+    rangeMin,
+    rangeMax,
+    rangeColorMin,
+    rangeColorMax,
+    logFoldChange,
+    pvalAdj,
+  }) => {
+    /*
   Footer of each histogram.  Will render range, title, and optionally 
   differential expression info.
 
@@ -106,159 +110,165 @@ const HistogramFooter = ({
     * logFoldChange - lfc to display, optional.
     * pValue - pValue to display, optional.
   */
-  const [rangeMin, rangeMax] = range;
-  const [rangeColorMin, rangeColorMax] = rangeColor || ["#bbb", "#bbb"];
-
-  return (
-    <div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: hideRanges ? "center" : "space-between",
-        }}
-      >
-        <span
-          style={{
-            color: rangeColorMin,
-            display: hideRanges ? "none" : "block",
-          }}
-        >
-          min {rangeMin.toPrecision(4)}
-        </span>
-        <span
-          data-testclass="brushable-histogram-field-name"
-          style={{ fontStyle: "italic" }}
-        >
-          {displayName}
-        </span>
-        <div style={{ display: hideRanges ? "block" : "none" }}>
-          : {rangeMin}
-        </div>
-        <span
-          style={{
-            color: rangeColorMax,
-            display: hideRanges ? "none" : "block",
-          }}
-        >
-          max {rangeMax.toPrecision(4)}
-        </span>
-      </div>
-
-      {logFoldChange && pvalAdj ? (
+    return (
+      <div>
         <div
           style={{
             display: "flex",
-            justifyContent: "center",
-            alignItems: "baseline",
+            justifyContent: hideRanges ? "center" : "space-between",
           }}
         >
-          <span>
-            <strong>log fold change:</strong>
-            {` ${logFoldChange.toPrecision(4)}`}
-          </span>
           <span
             style={{
-              marginLeft: 7,
-              padding: 2,
+              color: rangeColorMin,
+              display: hideRanges ? "none" : "block",
             }}
           >
-            <strong>p-value (adj):</strong>
-            {pvalAdj < 0.0001 ? " < 0.0001" : ` ${pvalAdj.toFixed(4)}`}
+            min {rangeMin.toPrecision(4)}
+          </span>
+          <span
+            data-testclass="brushable-histogram-field-name"
+            style={{ fontStyle: "italic" }}
+          >
+            {displayName}
+          </span>
+          <div style={{ display: hideRanges ? "block" : "none" }}>
+            : {rangeMin}
+          </div>
+          <span
+            style={{
+              color: rangeColorMax,
+              display: hideRanges ? "none" : "block",
+            }}
+          >
+            max {rangeMax.toPrecision(4)}
           </span>
         </div>
-      ) : null}
-    </div>
-  );
-};
 
-const HistogramHeader = ({
-  fieldId,
-  isColorBy,
-  onColorByClick,
-  onRemoveClick,
-  isScatterPlotX,
-  isScatterPlotY,
-  onScatterPlotXClick,
-  onScatterPlotYClick,
-}) => {
-  /*
-  Render the toolbar for the histogram.  Props:
-    * fieldId - field identifier, used for various IDs
-    * isColorBy - true/false, is this the current color-by
-    * onColorByClick - color-by click handler
-    * onRemoveClick - optional handler for remove.  Button will not render if not defined.
-    * isScatterPlotX - optional, true/false if currently the X scatterplot field
-    * isScatterPlotY - optional, true/false if currently the Y scatterplot field
-    * onScatterPlotXClick - optional, handler for scatterPlot X button.
-    * onScatterPlotYClick - optional, handler for scatterPlot X button.
-
-  Scatterplot controls will not render if either handler unspecified.
-  */
-
-  return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "flex-end",
-        paddingBottom: "8px",
-      }}
-    >
-      {onScatterPlotXClick && onScatterPlotYClick ? (
-        <span>
-          <span
-            style={{ marginRight: 7 }}
-            className="bp3-icon-standard bp3-icon-scatter-plot"
-          />
-          <ButtonGroup style={{ marginRight: 7 }}>
-            <Button
-              data-testid={`plot-x-${fieldId}`}
-              onClick={onScatterPlotXClick}
-              active={isScatterPlotX}
-              intent={isScatterPlotX ? "primary" : "none"}
+        {logFoldChange && pvalAdj ? (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "baseline",
+            }}
+          >
+            <span>
+              <strong>log fold change:</strong>
+              {` ${logFoldChange.toPrecision(4)}`}
+            </span>
+            <span
+              style={{
+                marginLeft: 7,
+                padding: 2,
+              }}
             >
-              plot x
-            </Button>
-            <Button
-              data-testid={`plot-y-${fieldId}`}
-              onClick={onScatterPlotYClick}
-              active={isScatterPlotY}
-              intent={isScatterPlotY ? "primary" : "none"}
-            >
-              plot y
-            </Button>
-          </ButtonGroup>
-        </span>
-      ) : null}
-      {onRemoveClick ? (
-        <Button
-          minimal
-          onClick={onRemoveClick}
-          style={{
-            color: globals.blue,
-            cursor: "pointer",
-            marginLeft: 7,
-          }}
-        >
-          remove
-        </Button>
-      ) : null}
-      <Tooltip
-        content="Use as color scale"
-        position="bottom"
-        hoverOpenDelay={globals.tooltipHoverOpenDelay}
+              <strong>p-value (adj):</strong>
+              {pvalAdj < 0.0001 ? " < 0.0001" : ` ${pvalAdj.toFixed(4)}`}
+            </span>
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+);
+
+const HistogramHeader = React.memo(
+  ({
+    fieldId,
+    isColorBy,
+    onColorByClick,
+    onRemoveClick,
+    isScatterPlotX,
+    isScatterPlotY,
+    onScatterPlotXClick,
+    onScatterPlotYClick,
+    isObs,
+  }) => {
+    /*
+      Render the toolbar for the histogram.  Props:
+        * fieldId - field identifier, used for various IDs
+        * isColorBy - true/false, is this the current color-by
+        * onColorByClick - color-by click handler
+        * onRemoveClick - optional handler for remove.  Button will not render if not defined.
+        * isScatterPlotX - optional, true/false if currently the X scatterplot field
+        * isScatterPlotY - optional, true/false if currently the Y scatterplot field
+        * onScatterPlotXClick - optional, handler for scatterPlot X button.
+        * onScatterPlotYClick - optional, handler for scatterPlot X button.
+
+      Scatterplot controls will not render if either handler unspecified.
+    */
+
+    const memoizedColorByCallback = useCallback(
+      () => onColorByClick(fieldId, isObs),
+      [fieldId, isObs]
+    );
+
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          paddingBottom: "8px",
+        }}
       >
-        <Button
-          onClick={onColorByClick}
-          active={isColorBy}
-          intent={isColorBy ? "primary" : "none"}
-          data-testclass="colorby"
-          data-testid={`colorby-${fieldId}`}
-          icon="tint"
-        />
-      </Tooltip>
-    </div>
-  );
-};
+        {onScatterPlotXClick && onScatterPlotYClick ? (
+          <span>
+            <span
+              style={{ marginRight: 7 }}
+              className="bp3-icon-standard bp3-icon-scatter-plot"
+            />
+            <ButtonGroup style={{ marginRight: 7 }}>
+              <Button
+                data-testid={`plot-x-${fieldId}`}
+                onClick={onScatterPlotXClick}
+                active={isScatterPlotX}
+                intent={isScatterPlotX ? "primary" : "none"}
+              >
+                plot x
+              </Button>
+              <Button
+                data-testid={`plot-y-${fieldId}`}
+                onClick={onScatterPlotYClick}
+                active={isScatterPlotY}
+                intent={isScatterPlotY ? "primary" : "none"}
+              >
+                plot y
+              </Button>
+            </ButtonGroup>
+          </span>
+        ) : null}
+        {onRemoveClick ? (
+          <Button
+            minimal
+            onClick={onRemoveClick}
+            style={{
+              color: globals.blue,
+              cursor: "pointer",
+              marginLeft: 7,
+            }}
+          >
+            remove
+          </Button>
+        ) : null}
+        <Tooltip
+          content="Use as color scale"
+          position="bottom"
+          hoverOpenDelay={globals.tooltipHoverOpenDelay}
+        >
+          <Button
+            onClick={memoizedColorByCallback}
+            active={isColorBy}
+            intent={isColorBy ? "primary" : "none"}
+            data-testclass="colorby"
+            data-testid={`colorby-${fieldId}`}
+            icon="tint"
+          />
+        </Tooltip>
+      </div>
+    );
+  }
+);
 
 const Histogram = ({
   field,
@@ -445,6 +455,18 @@ const Histogram = ({
   };
 })
 class HistogramBrush extends React.PureComponent {
+  /* memoized closure to prevent HistogramHeader unecessary repaint */
+  handleColorAction = memoize((dispatch) => (field, isObs) => {
+    if (isObs) {
+      dispatch({
+        type: "color by continuous metadata",
+        colorAccessor: field,
+      });
+    } else {
+      dispatch(actions.requestSingleGeneExpressionCountsForColoringPOST(field));
+    }
+  });
+
   constructor(props) {
     super(props);
 
@@ -554,19 +576,6 @@ class HistogramBrush extends React.PureComponent {
       type: "set scatterplot y",
       data: field,
     });
-  };
-
-  handleColorAction = () => {
-    const { dispatch, field, isObs } = this.props;
-
-    if (isObs) {
-      dispatch({
-        type: "color by continuous metadata",
-        colorAccessor: field,
-      });
-    } else {
-      dispatch(actions.requestSingleGeneExpressionCountsForColoringPOST(field));
-    }
   };
 
   removeHistogram = () => {
@@ -713,6 +722,7 @@ class HistogramBrush extends React.PureComponent {
 
   render() {
     const {
+      dispatch,
       annoMatrix,
       field,
       isColorAccessor,
@@ -724,13 +734,14 @@ class HistogramBrush extends React.PureComponent {
       isScatterplotYYaccessor,
       zebra,
       continuousSelectionRange,
+      isObs,
     } = this.props;
     const fieldForId = field.replace(/\s/g, "_");
     const showScatterPlot = isDiffExp || isUserDefined;
 
     return (
       <Async watch={annoMatrix} promiseFn={this.fetchAsyncProps}>
-        <Async.Pending>
+        <Async.Pending initial>
           <StillLoading displayName={field} zebra={zebra} />
         </Async.Pending>
         <Async.Rejected>
@@ -759,7 +770,8 @@ class HistogramBrush extends React.PureComponent {
                 <HistogramHeader
                   fieldId={field}
                   isColorBy={isColorAccessor}
-                  onColorByClick={this.handleColorAction}
+                  isObs={isObs}
+                  onColorByClick={this.handleColorAction(dispatch)}
                   onRemoveClick={isUserDefined ? this.removeHistogram : null}
                   isScatterPlotX={isScatterplotXXaccessor}
                   isScatterPlotY={isScatterplotYYaccessor}
@@ -786,8 +798,10 @@ class HistogramBrush extends React.PureComponent {
                 <HistogramFooter
                   displayName={field}
                   hideRanges={asyncProps.isSingleValue}
-                  range={asyncProps.unclippedRange}
-                  rangeColor={asyncProps.unclippedRangeColor}
+                  rangeMin={asyncProps.unclippedRange[0]}
+                  rangeMax={asyncProps.unclippedRange[1]}
+                  rangeColorMin={asyncProps.unclippedRangeColor[0]}
+                  rangeColorMax={asyncProps.unclippedRangeColor[1]}
                   logFoldChange={logFoldChange}
                   pvalAdj={pvalAdj}
                 />
