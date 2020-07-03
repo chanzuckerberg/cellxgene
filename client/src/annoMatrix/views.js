@@ -3,7 +3,6 @@
 /*
 Views on the annomatrix
 */
-import clone from "./clone";
 import clip from "../util/clip";
 import AnnoMatrix from "./annoMatrix";
 import { _whereCacheCreate } from "./whereCache";
@@ -18,14 +17,14 @@ class AnnoMatrixView extends AnnoMatrix {
   }
 
   addObsAnnoCategory(col, category) {
-    const o = clone(this);
+    const o = this._clone();
     o.viewOf = this.viewOf.addObsAnnoCategory(col, category);
     o.schema = o.viewOf.schema;
     return o;
   }
 
   async removeObsAnnoCategory(col, category, unassignedCategory) {
-    const o = clone(this);
+    const o = this._clone();
     o.viewOf = await this.viewOf.removeObsAnnoCategory(
       col,
       category,
@@ -36,39 +35,39 @@ class AnnoMatrixView extends AnnoMatrix {
   }
 
   dropObsColumn(col) {
-    const o = clone(this);
+    const o = this._clone();
     o.viewOf = this.viewOf.dropObsColumn(col);
-    o.obs = this.obs.dropCol(col);
+    o._cache.obs = this._cache.obs.dropCol(col);
     o.schema = o.viewOf.schema;
     return o;
   }
 
   addObsColumn(colSchema, ctor, value) {
-    const o = clone(this);
+    const o = this._clone();
     o.viewOf = this.viewOf.addObsColumn(colSchema, ctor, value);
     o.schema = o.viewOf.schema;
     return o;
   }
 
   renameObsColumn(oldCol, newCol) {
-    const o = clone(this);
+    const o = this._clone();
     o.viewOf = this.viewOf.renameObsColumn(oldCol, newCol);
     o.schema = o.viewOf.schema;
     return o;
   }
 
   async setObsColumnValues(col, rowLabels, value) {
-    const o = clone(this);
+    const o = this._clone();
     o.viewOf = await this.viewOf.setObsColumnValues(col, rowLabels, value);
-    o.obs = this.obs.dropCol(col);
+    o._cache.obs = this._cache.obs.dropCol(col);
     o.schema = o.viewOf.schema;
     return o;
   }
 
   async resetObsColumnValues(col, oldValue, newValue) {
-    const o = clone(this);
+    const o = this._clone();
     o.viewOf = await this.viewOf.resetObsColumnValues(col, oldValue, newValue);
-    o.obs = this.obs.dropCol(col);
+    o._cache.obs = this._cache.obs.dropCol(col);
     o.schema = o.viewOf.schema;
     return o;
   }
@@ -109,6 +108,7 @@ export class AnnoMatrixClipView extends AnnoMatrixMapView {
     );
     this.isClipped = true;
     this.clipRange = [qmin, qmax];
+    Object.seal(this);
   }
 }
 
@@ -116,6 +116,11 @@ export class AnnoMatrixRowSubsetView extends AnnoMatrixView {
   /*
 	A view which is a subset of total rows.
 	*/
+  constructor(viewOf, rowIndex) {
+    super(viewOf, rowIndex);
+    Object.seal(this);
+  }
+
   async _doLoad(field, query) {
     const df = await this.viewOf._fetch(field, query);
 

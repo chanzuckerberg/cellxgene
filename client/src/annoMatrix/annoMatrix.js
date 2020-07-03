@@ -8,13 +8,44 @@ import {
 import { _fetchResult } from "./fetchHelpers";
 import { indexEntireSchema } from "../util/stateManager/schemaHelpers";
 import { _whereCacheGet, _whereCacheMerge } from "./whereCache";
+import _shallowClone from "./clone";
 
 export default class AnnoMatrix {
+  /*
+  Abstract base class for all AnnoMatrix objects.  This class provides a proxy
+  to the annotated matrix data authoritatively served by the server/back-end.
+
+  AnnoMatrix instances are immutable, meaning that their schema and dimensionality
+  will not change, and simple object equality can be used to detect structural
+  changes. The actual data is cached, and not guaranteed to be present -- any
+  request to access data must be resolved by a fetch() call, which is async, and
+  may involve a server round-trip.
+
+  AnnoMatrixes also "stack" like filters, allowing for the construction of
+  views which transform the data in some manner.
+
+  The bootstrap class is AnnoMatrixLoader, which is the caching server proxy, and
+  is bootstrapped with a API URL:
+    new AnnoMatirx(url, schema) -> annoMatrix
+
+  There are various "views", such as AnnoMatrixRowSubsetView, which provide
+  the same interface but with a transformed view of the server data.  Utilities in
+  viewCreators.js can be used to create these views:
+      clip(annoMatrix, min, max) -> annoMatrix
+      subset(annoMatrix, rowLabels) -> annoMatrix
+  etc.
+  */
   static fields() {
+    /*
+    return the fields present in the AnnoMatrix instance.
+    */
     return ["obs", "var", "emb", "X"];
   }
 
   constructor(schema, nObs, nVar, rowIndex = null) {
+    /*
+    Private constructor - this is an abstract base class.
+    */
     this.schema = indexEntireSchema(schema);
     this.nObs = nObs;
     this.nVar = nVar;
@@ -30,12 +61,12 @@ export default class AnnoMatrix {
 
 		Do NOT use directly - instead, use the fetch() and preload() API.
 		*/
-    this.X = Dataframe.empty(this.rowIndex);
-    this.obs = Dataframe.empty(this.rowIndex);
-    this.var = Dataframe.empty(this.rowIndex);
-    this.emb = Dataframe.empty(this.rowIndex);
-
-    /* private */
+    this._cache = {
+      obs: Dataframe.empty(this.rowIndex),
+      var: Dataframe.empty(this.rowIndex),
+      emb: Dataframe.empty(this.rowIndex),
+      X: Dataframe.empty(this.rowIndex),
+    };
     this._pendingLoad = {
       obs: {},
       var: {},
@@ -43,12 +74,13 @@ export default class AnnoMatrix {
       X: {},
     };
     this._whereCache = {};
-    this._gcInfo = {
-      obs: new Map(),
-      var: new Map(),
-      emb: new Map(),
-      X: new Map(),
-    };
+    // this._gcInfo = {
+    //   obs: new Map(),
+    //   var: new Map(),
+    //   emb: new Map(),
+    //   X: new Map(),
+    // };
+    this._gcInfo = new Map();
   }
 
   /**
@@ -147,7 +179,8 @@ export default class AnnoMatrix {
     return queries
       .map((query) =>
         _whereCacheGet(this._whereCache, this.schema, field, query).filter(
-          (cacheKey) => cacheKey !== undefined && this[field].hasCol(cacheKey)
+          (cacheKey) =>
+            cacheKey !== undefined && this._cache[field].hasCol(cacheKey)
         )
       )
       .flat();
@@ -164,7 +197,8 @@ export default class AnnoMatrix {
     /* find any query not already cached */
     const uncachedQueries = queries.filter((query) =>
       _whereCacheGet(this._whereCache, this.schema, field, query).some(
-        (cacheKey) => cacheKey === undefined || !this[field].hasCol(cacheKey)
+        (cacheKey) =>
+          cacheKey === undefined || !this._cache[field].hasCol(cacheKey)
       )
     );
 
@@ -175,7 +209,7 @@ export default class AnnoMatrix {
           this._getPendingLoad(field, query, async (_field, _query) => {
             /* fetch, then index.  _doLoad is subclass interface */
             const [whereCacheUpdate, df] = await this._doLoad(_field, _query);
-            this[_field] = this[_field].withColsFrom(df);
+            this._cache[_field] = this._cache[_field].withColsFrom(df);
             this._whereCache = _whereCacheMerge(
               this._whereCache,
               whereCacheUpdate
@@ -187,7 +221,7 @@ export default class AnnoMatrix {
 
     /* everything we need is in the cache, so just cherry-pick requested columns */
     const requestedCacheKeys = this._resolveCachedQueries(field, queries);
-    const response = this[field].subset(null, requestedCacheKeys);
+    const response = this._cache[field].subset(null, requestedCacheKeys);
     this._gcUpdateStats(field, response);
     return response;
   }
@@ -251,21 +285,37 @@ export default class AnnoMatrix {
   _gcField(field, isHot, pinnedColumns) {
     const maxColumns = isHot ? 256 : 10; // maybe to aggessive?
 
-    if (this[field].length < maxColumns) return;
+    const cache = this._cache[field];
+    if (cache.colIndex.size() < maxColumns) return; // trivial rejection
 
-    const gcInfo = this._gcInfo[field];
-    const candidates = Array.from(gcInfo.keys()).filter(
-      (col) => !pinnedColumns.includes(col)
-    );
+    const candidates = cache.colIndex
+      .labels()
+      .filter((col) => !pinnedColumns.includes(col));
 
     const excessCount = candidates.length + pinnedColumns.length - maxColumns;
     if (excessCount > 0) {
+      const { _gcInfo } = this;
+      candidates.sort((a, b) => {
+        let atime = _gcInfo.get(_columnCacheKey(field, a));
+        if (atime === undefined) atime = 0;
+
+        let btime = _gcInfo.get(_columnCacheKey(field, b));
+        if (btime === undefined) btime = 0;
+
+        return atime - btime;
+      });
+
       const toDrop = candidates.slice(0, excessCount);
       console.log(
-        `dropping from ${field} hot:${isHot}, columns [${toDrop.join(", ")}]`
+        `GC: dropping from ${field} hot:${isHot}, columns [${toDrop.join(
+          ", "
+        )}]`
       );
-      this[field] = toDrop.reduce((df, col) => df.dropCol(col), this[field]);
-      toDrop.forEach((col) => gcInfo.delete(col));
+      this._cache[field] = toDrop.reduce(
+        (df, col) => df.dropCol(col),
+        this._cache[field]
+      );
+      toDrop.forEach((col) => _gcInfo.delete(_columnCacheKey(field, col)));
     }
   }
 
@@ -306,12 +356,43 @@ export default class AnnoMatrix {
     the map insertion order is least-recently-used first.
     */
     const cols = dataframe.colIndex.labels();
-    const gcInfo = this._gcInfo[field];
+    const { _gcInfo } = this;
     const now = Date.now();
     cols.forEach((c) => {
-      gcInfo.delete(c);
-      gcInfo.set(c, now);
+      // gcInfo.delete(c);
+      _gcInfo.set(_columnCacheKey(field, c), now);
     });
+  }
+
+  /**
+  Cloning sublcass protocol - we rely in cloning to preserve immutable
+  symantics while not causing races or other side effects in internal
+  cache management.
+
+  Subclasses must override _cloneDeeper() if they have state which requires 
+  something other than a shallow copy.  Overrides MUST call super()._cloneDeepr(), 
+  and return its result (after any required modification).  _cloneDeeper()
+  will be called on the OLD object, with the NEW object as an argument.
+
+  Do not override _clone();
+  **/
+  _cloneDeeper(clone) {
+    clone._cache = _shallowClone(this._cache);
+    clone._gcInfo = new Map();
+    clone._pendingLoad = {
+      obs: {},
+      var: {},
+      emb: {},
+      X: {},
+    };
+    return clone;
+  }
+
+  _clone() {
+    const clone = _shallowClone(this);
+    this._cloneDeeper(clone);
+    Object.seal(clone);
+    return clone;
   }
 }
 
@@ -325,4 +406,8 @@ function _queryCacheKey(field, query) {
     return `${field}/${queryField}/${queryColumn}/${queryValue}`;
   }
   return `${field}/${query}`;
+}
+
+function _columnCacheKey(field, column) {
+  return `${field}/${column}`;
 }

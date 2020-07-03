@@ -1,7 +1,6 @@
 /*
 Base matrix, which proxies for server.
 */
-import clone from "./clone";
 import { doBinaryRequest, _dubEncURIComp } from "./fetchHelpers";
 import { matrixFBSToDataframe } from "../util/stateManager/matrix";
 import { _getColumnSchema, _normalizeCategoricalSchema } from "./schema";
@@ -25,6 +24,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
       baseURL += "/";
     }
     this.baseURL = baseURL;
+    Object.seal(this);
   }
 
   /**
@@ -37,7 +37,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     const colSchema = _getColumnSchema(this.schema, "obs", col);
     _writableCategoryTypeCheck(colSchema); // throws on error
 
-    const o = clone(this);
+    const o = this._clone();
     o.schema = addObsAnnoCategory(this.schema, col, category);
     return o;
   }
@@ -65,8 +65,8 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     const colSchema = _getColumnSchema(this.schema, "obs", col);
     _writableCheck(colSchema); // throws on error
 
-    const o = clone(this);
-    o.obs = this.obs.dropCol(col);
+    const o = this._clone();
+    o._cache.obs = this._cache.obs.dropCol(col);
     o.schema = removeObsAnnoColumn(this.schema, col);
     return o;
   }
@@ -81,11 +81,14 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
 		*/
     colSchema.writable = true;
     const col = colSchema.name;
-    if (_getColumnSchema(this.schema, "obs", col) || this.obs.hasCol(col)) {
+    if (
+      _getColumnSchema(this.schema, "obs", col) ||
+      this._cache.obs.hasCol(col)
+    ) {
       throw new Error("column already exists");
     }
 
-    const o = clone(this);
+    const o = this._clone();
     let data;
     if (isArrayOrTypedArray(value)) {
       if (value.constructor !== Ctor)
@@ -96,7 +99,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     } else {
       data = new Ctor(this.nObs).fill(value);
     }
-    o.obs = this.obs.withCol(col, data);
+    o._cache.obs = this._cache.obs.withCol(col, data);
     o.schema = addObsAnnoColumn(this.schema, col, {
       ...colSchema,
       writable: true,
@@ -111,8 +114,8 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     const oldColSchema = _getColumnSchema(this.schema, "obs", oldCol);
     _writableCheck(oldColSchema); // throws on error
 
-    const value = this.obs.hasCol(oldCol)
-      ? this.obs.col(oldCol).asArray()
+    const value = this._cache.obs.hasCol(oldCol)
+      ? this._cache.obs.col(oldCol).asArray()
       : undefined;
     return this.dropObsColumn(oldCol).addObsColumn(
       {
@@ -133,19 +136,19 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
 
     // ensure that we have the data in cache before we manipulate it
     await this.fetch("obs", col);
-    if (!this.obs.hasCol(col))
+    if (!this._cache.obs.hasCol(col))
       throw new Error("Internal error - user annotation data missing");
 
     const rowIndices = this.rowIndex.getOffsets(rowLabels);
-    const data = this.obs.col(col).asArray().slice();
+    const data = this._cache.obs.col(col).asArray().slice();
     for (let i = 0, len = rowIndices.length; i < len; i += 1) {
       const idx = rowIndices[i];
       if (idx === undefined) throw new Error("Unknown row label");
       data[idx] = value;
     }
 
-    const o = clone(this);
-    o.obs = this.obs.replaceColData(col, data);
+    const o = this._clone();
+    o._cache.obs = this._cache.obs.replaceColData(col, data);
     const { categories } = colSchema;
     if (!categories?.includes(value)) {
       o.schema = addObsAnnoCategory(this.schema, col, value);
@@ -166,16 +169,16 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
 
     // ensure that we have the data in cache before we manipulate it
     await this.fetch("obs", col);
-    if (!this.obs.hasCol(col))
+    if (!this._cache.obs.hasCol(col))
       throw new Error("Internal error - user annotation data missing");
 
-    const data = this.obs.col(col).asArray().slice();
+    const data = this._cache.obs.col(col).asArray().slice();
     for (let i = 0, l = data.length; i < l; i += 1) {
       if (data[i] === oldValue) data[i] = newValue;
     }
 
-    const o = clone(this);
-    o.obs = this.obs.replaceColData(col, data);
+    const o = this._clone();
+    o._cache.obs = this._cache.obs.replaceColData(col, data);
     const { categories } = colSchema;
     if (!categories?.includes(newValue)) {
       o.schema = addObsAnnoCategory(this.schema, col, newValue);

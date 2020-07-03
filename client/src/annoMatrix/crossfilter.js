@@ -10,8 +10,9 @@ import { _getColumnSchema } from "./schema";
 export default class AnnoMatrixObsCrossfilter {
   constructor(annoMatrix, obsCrossfilter = null) {
     this.annoMatrix = annoMatrix;
-    this.obsCrossfilter = obsCrossfilter || new Crossfilter(annoMatrix.obs);
-    this.obsCrossfilter.setData(annoMatrix.obs);
+    this.obsCrossfilter =
+      obsCrossfilter || new Crossfilter(annoMatrix._cache.obs);
+    this.obsCrossfilter.setData(annoMatrix._cache.obs);
   }
 
   size() {
@@ -25,7 +26,7 @@ export default class AnnoMatrixObsCrossfilter {
   **/
   addObsColumn(colSchema, Ctor, value) {
     const annoMatrix = this.annoMatrix.addObsColumn(colSchema, Ctor, value);
-    const obsCrossfilter = this.obsCrossfilter.setData(annoMatrix.obs);
+    const obsCrossfilter = this.obsCrossfilter.setData(annoMatrix._cache.obs);
     return new AnnoMatrixObsCrossfilter(annoMatrix, obsCrossfilter);
   }
 
@@ -110,7 +111,7 @@ export default class AnnoMatrixObsCrossfilter {
     const { annoMatrix } = this;
     let { obsCrossfilter } = this;
 
-    if (!annoMatrix?.[field]) {
+    if (!annoMatrix?._cache?.[field]) {
       throw new Error("Unknown field name");
     }
     if (field === "var") {
@@ -203,8 +204,8 @@ export default class AnnoMatrixObsCrossfilter {
     if (field === "var") return obsCrossfilter;
     const dimName = _dimensionNameFromDf(field, df);
     const dimParams = this._getObsDimensionParams(field, df);
-    if (obsCrossfilter.all() !== annoMatrix.obs)
-      obsCrossfilter = obsCrossfilter.setData(annoMatrix.obs);
+    if (obsCrossfilter.all() !== annoMatrix._cache.obs)
+      obsCrossfilter = obsCrossfilter.setData(annoMatrix._cache.obs);
     obsCrossfilter = obsCrossfilter.addDimension(dimName, ...dimParams);
     return obsCrossfilter;
   }

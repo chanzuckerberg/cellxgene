@@ -26,8 +26,6 @@ function _itIsTimeForGC() {
 }
 
 function _doGC(store) {
-  console.log("...running GC middleware");
-
   const state = store.getState();
 
   // these should probably be a function imported from undoable.js, etc, as

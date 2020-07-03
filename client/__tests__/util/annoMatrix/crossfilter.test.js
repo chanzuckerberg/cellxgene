@@ -676,7 +676,7 @@ describe("AnnoMatrixCrossfilter", () => {
       });
       expect(fetch.mock.calls).toHaveLength(1);
       expect(xfltr.obsCrossfilter.hasDimension("obs/louvain")).toBeTruthy();
-      expect(xfltr.obsCrossfilter.all()).toBe(xfltr.annoMatrix.obs);
+      expect(xfltr.obsCrossfilter.all()).toBe(xfltr.annoMatrix._cache.obs);
       expect(xfltr.countSelected()).toEqual(
         obsLouvain.reduce(
           (count, v) => (v === "B cells" ? count + 1 : count),
