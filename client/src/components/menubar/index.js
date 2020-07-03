@@ -173,9 +173,9 @@ class MenuBar extends React.Component {
 
   subsetPossible = () => {
     const { crossfilter } = this.props;
+    const count = crossfilter.countSelected();
     return (
-      crossfilter.countSelected() !== 0 &&
-      crossfilter.countSelected() !== crossfilter.size()
+      count !== 0 && count !== crossfilter.size() // ie, not all are selected
     );
   };
 

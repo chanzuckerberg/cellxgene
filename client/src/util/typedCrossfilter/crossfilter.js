@@ -60,7 +60,8 @@ export default class ImmutableTypedCrossfilter {
   }
 
   setData(data) {
-    console.log("crossfilter set data, may drop cache");
+    if (this.data === data) return this;
+    console.log("...crossfilter set data, will drop cache");
     return new ImmutableTypedCrossfilter(data, this.dimensions);
   }
 

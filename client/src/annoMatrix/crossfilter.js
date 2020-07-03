@@ -12,7 +12,7 @@ export default class AnnoMatrixObsCrossfilter {
     this.annoMatrix = annoMatrix;
     this.obsCrossfilter =
       obsCrossfilter || new Crossfilter(annoMatrix._cache.obs);
-    this.obsCrossfilter.setData(annoMatrix._cache.obs);
+    this.obsCrossfilter = this.obsCrossfilter.setData(annoMatrix._cache.obs);
   }
 
   size() {
@@ -204,8 +204,7 @@ export default class AnnoMatrixObsCrossfilter {
     if (field === "var") return obsCrossfilter;
     const dimName = _dimensionNameFromDf(field, df);
     const dimParams = this._getObsDimensionParams(field, df);
-    if (obsCrossfilter.all() !== annoMatrix._cache.obs)
-      obsCrossfilter = obsCrossfilter.setData(annoMatrix._cache.obs);
+    obsCrossfilter = obsCrossfilter.setData(annoMatrix._cache.obs);
     obsCrossfilter = obsCrossfilter.addDimension(dimName, ...dimParams);
     return obsCrossfilter;
   }
