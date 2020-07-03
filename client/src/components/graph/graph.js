@@ -131,13 +131,11 @@ class Graph extends React.Component {
 
   computeSelectedFlags = memoize(
     (crossfilter, _flagSelected, _flagUnselected) => {
-      console.time("computeSelectedFlags");
       const x = crossfilter.fillByIsSelected(
         new Float32Array(crossfilter.size()),
         _flagSelected,
         _flagUnselected
       );
-      console.timeEnd("computeSelectedFlags");
       return x;
     }
   );
@@ -157,7 +155,6 @@ class Graph extends React.Component {
       continuous metadata, as they rely on different tests, and some of the flags
       (eg, isNaN) are meaningless in the face of categorical metadata.
       */
-      console.time("computePointFlags");
       const flags = this.computeSelectedFlags(
         crossfilter,
         flagSelected,
@@ -175,7 +172,6 @@ class Graph extends React.Component {
           }
         }
       }
-      console.timeEnd("computePointFlags");
       return flags;
     }
   );
