@@ -13,6 +13,9 @@ import {
 import { isArrayOrTypedArray } from "../util/typeHelpers";
 import { _whereCacheCreate } from "./whereCache";
 import AnnoMatrix from "./annoMatrix";
+import PromiseLimit from "../util/promiseLimit";
+
+const promiseThrottle = new PromiseLimit(5);
 
 export default class AnnoMatrixLoader extends AnnoMatrix {
   constructor(baseURL, schema) {
@@ -197,6 +200,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     */
     let urlQuery;
     let urlBase;
+    let priority = 10; // default fetch priority
 
     switch (field) {
       case "obs":
@@ -213,6 +217,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
       case "emb": {
         urlBase = `${this.baseURL}layout/obs`;
         urlQuery = _encodeQuery("layout-name", query);
+        priority = 0; // high prio load for embeddings
         break;
       }
       default:
@@ -220,7 +225,11 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     }
 
     const url = `${urlBase}?${urlQuery}`;
-    const buffer = await doBinaryRequest(url);
+    const buffer = await promiseThrottle.priorityAdd(
+      priority,
+      doBinaryRequest,
+      url
+    );
     const result = matrixFBSToDataframe(buffer);
     if (!result || result.isEmpty()) throw Error("Unknown field/col");
 
