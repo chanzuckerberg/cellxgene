@@ -1,7 +1,7 @@
 /* eslint-disable max-classes-per-file -- Classes are interrelated*/
 
 /*
-Views on the annomatrix
+Views on the annomatrix.  all API here is defined in viewCreators.js and annoMatrix.js.
 */
 import clip from "../util/clip";
 import AnnoMatrix from "./annoMatrix";
@@ -104,7 +104,7 @@ export class AnnoMatrixClipView extends AnnoMatrixMapView {
 	*/
   constructor(viewOf, qmin, qmax) {
     super(viewOf, (field, colLabel, colSchema, colData, df) =>
-      clipAnnoMatrix(field, colLabel, colSchema, colData, df, qmin, qmax)
+      _clipAnnoMatrix(field, colLabel, colSchema, colData, df, qmin, qmax)
     );
     this.isClipped = true;
     this.clipRange = [qmin, qmax];
@@ -143,7 +143,7 @@ export class AnnoMatrixRowSubsetView extends AnnoMatrixView {
 Utility functions below
 */
 
-function clipAnnoMatrix(field, colLabel, colSchema, colData, df, qmin, qmax) {
+function _clipAnnoMatrix(field, colLabel, colSchema, colData, df, qmin, qmax) {
   /* only clip obs and var scalar columns */
   if (field !== "obs" && field !== "X") return colData;
   if (!_isContinuousType(colSchema)) return colData;

@@ -1,5 +1,12 @@
 /*
-AnnoMatrix -- Annotated Matrix
+AnnoMatrix -- Annotated Matrix exported interface
+
+Public API is defined in:
+
+	annoMatrix.js
+	viewCreators.js
+	crossfilter.js
+
 */
 
 export { default as AnnoMatrixLoader } from "./loader";

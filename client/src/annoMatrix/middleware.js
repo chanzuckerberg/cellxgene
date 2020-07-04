@@ -1,7 +1,14 @@
 /*
 Garbage collection / cache management support
 
-Middleware that knows how to garbage collect undo state.
+Middleware that knows how to pull annoMatrix from the undoable state,
+and pass it along to the AnnoMatrix class for possible cache GC.
+
+Private interface.
+
+Future work item: this middleware knows internal details of both the
+Undoable metareducer and the AnnoMatrix private API.  It would be helpful
+to make the Undoable interface better factored.
 */
 
 const annoMatrixGC = (store) => (next) => (action) => {
@@ -12,13 +19,15 @@ const annoMatrixGC = (store) => (next) => (action) => {
 };
 
 let lastGCTime = 0;
-const ThirtySeconds = 30 * 1000;
+const InterGCDelayMS = 30 * 1000; // 30 seconds
 function _itIsTimeForGC() {
   /*
   we don't want to run GC on every dispatch, so throttle it a bit.
+
+  Runs every InterGCDelay period
   */
   const now = Date.now();
-  if (now - lastGCTime > ThirtySeconds) {
+  if (now - lastGCTime > InterGCDelayMS) {
     lastGCTime = now;
     return true;
   }

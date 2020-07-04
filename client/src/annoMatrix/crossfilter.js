@@ -1,17 +1,20 @@
 /*
 Row crossfilter proxy for an AnnoMatrix.  This wraps Crossfilter,
-providing a number of services:
+providing a number of services, and ensuring that the crossfilter and
+AnnoMatrix stay in sync:
 	- on-demand index creation as data is loaded
-	- transparently mapping between queries and crossfilter index names
+	- transparently mapping between queries and crossfilter index names.
+  - for mutation of the matrix by user annotations, maintain synchronization
+    between Crossfilter and AnnoMatrix.
 */
 import Crossfilter from "../util/typedCrossfilter";
 import { _getColumnSchema } from "./schema";
 
 export default class AnnoMatrixObsCrossfilter {
-  constructor(annoMatrix, obsCrossfilter = null) {
+  constructor(annoMatrix, _obsCrossfilter = null) {
     this.annoMatrix = annoMatrix;
     this.obsCrossfilter =
-      obsCrossfilter || new Crossfilter(annoMatrix._cache.obs);
+      _obsCrossfilter || new Crossfilter(annoMatrix._cache.obs);
     this.obsCrossfilter = this.obsCrossfilter.setData(annoMatrix._cache.obs);
   }
 
@@ -23,6 +26,8 @@ export default class AnnoMatrixObsCrossfilter {
   Managing the associated annoMatrix.  These wrappers are necessary to 
   make coordinated changes to BOTH the crossfilter and annoMatrix, and
   ensure that all state stays synchronized.
+
+  See API documentation in annoMatrix.js.
   **/
   addObsColumn(colSchema, Ctor, value) {
     const annoMatrix = this.annoMatrix.addObsColumn(colSchema, Ctor, value);
@@ -104,7 +109,8 @@ export default class AnnoMatrixObsCrossfilter {
   }
 
   /**
-  Selection state 
+  Selection state - API is identical to ImmutableTypedCrossfilter, as these
+  are just wrappers to lazy create indices.
   **/
 
   async select(field, query, spec) {

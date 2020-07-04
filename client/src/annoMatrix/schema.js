@@ -1,5 +1,5 @@
 /*
-Helper functions related to schema
+Private helper functions related to schema
 */
 import catLabelSort from "../util/catLabelSort";
 import { unassignedCategoryLabel } from "../globals";

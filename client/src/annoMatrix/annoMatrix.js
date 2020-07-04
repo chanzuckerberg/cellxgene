@@ -5,7 +5,6 @@ import {
   _schemaColumns,
   _getWritableColumns,
 } from "./schema";
-import { _fetchResult } from "./fetchHelpers";
 import { indexEntireSchema } from "../util/stateManager/schemaHelpers";
 import { _whereCacheGet, _whereCacheMerge } from "./whereCache";
 import _shallowClone from "./clone";
@@ -20,6 +19,12 @@ export default class AnnoMatrix {
   changes. The actual data is cached, and not guaranteed to be present -- any
   request to access data must be resolved by a fetch() call, which is async, and
   may involve a server round-trip.
+
+  Guarantees made by the immutabilty, ie, any of these can be detected by
+  simple annoMatrix compare:
+    * schema is the same, including all fields and columns
+    * dimensionality is the same (nObs, nVar)
+    * data mapping/transformation, such as clipping, are the same
 
   AnnoMatrixes also "stack" like filters, allowing for the construction of
   views which transform the data in some manner.
@@ -44,7 +49,21 @@ export default class AnnoMatrix {
 
   constructor(schema, nObs, nVar, rowIndex = null) {
     /*
-    Private constructor - this is an abstract base class.
+    Private constructor - this is an abstract base class.  Do not use.
+    */
+
+    /*
+    Public instance fields:
+      * schema - the matrix schema.  IMPORTANT: always the entire schema, for the
+        base (unfiltered, unclipped, unsubset) annotated matrix, as the server
+        presents it.
+      * nObs, nVar - size of each dimension.  These will accurately reflect the
+        size of the current annoMatrix view.  For example, if you subset the view,
+        the nObs will be smaller.
+      * rowIndex - a rowIndex shared by all data on this view (ie, the list of cells).
+        The row index labels are as defined by the base dataset from the server.
+      * isView - true if this is a view, false if not.
+      * viewOf - pointer to parent annomatrix if a view, undefined/null if not a view.
     */
     this.schema = indexEntireSchema(schema);
     this.nObs = nObs;
@@ -54,7 +73,7 @@ export default class AnnoMatrix {
     this.viewOf = undefined;
 
     /*
-		Private:
+		Private instance variables.
 
 		These are caches - lazily loaded. The only guarantee is that if they
 		are loaded, they will conform to the schema & dimensionality constraints.
@@ -81,19 +100,52 @@ export default class AnnoMatrix {
    ** Schema helper/accessors
    **/
   getMatrixColumns(field) {
+    /*
+    Return array of column names in the field.  ONLY supported on the
+    obs, var and emb fields.  X currently unimplemented and will throw.
+
+    For exmaple:
+
+      annoMatrix.getMatrixColumns("obs") -> ["louvain", "n_genes"]
+    */
     return _schemaColumns(this.schema, field);
   }
 
   // eslint-disable-next-line class-methods-use-this -- need to be able to call this on instances
   getMatrixFields() {
+    /*
+    Return array of fields in this annoMatrix.  Currently hard-wired to
+    return:  ["X", "obs", "var", "emb"].
+
+    These are the fields from data may be requested.
+    */
     return AnnoMatrix.fields();
   }
 
   getColumnSchema(field, col) {
+    /*
+    Return the schema for the field & column ,eg,
+
+      anonMatrix.getColumnSchema("obs", "n_genes") -> { type: "int32", name: "n_genes" }
+
+    This is identical to the information in the annoMatrix.schema
+    instance variable.
+    */
     return _getColumnSchema(this.schema, field, col);
   }
 
   getColumnDimensions(field, col) {
+    /*
+    Return the dimensions on this field / column.  For most fields, which are 1D,
+    this just return the column name.  Multi-dimensional columns, such as embeddings,
+    will return >1 name.
+
+    Examples:
+
+      getColumnDimensions("obs", "louvain") -> ["louvain"]
+      getColumnDimensions("emb", "umap") -> ["umap_0", "umap_1"]
+
+    */
     return _getColumnDimensionNames(this.schema, field, col);
   }
 
@@ -102,7 +154,7 @@ export default class AnnoMatrix {
    **/
   base() {
     /*
-    return the base of view
+    return the base of view, or `this` if not a view.
     */
     let annoMatrix = this;
     while (annoMatrix.isView) annoMatrix = annoMatrix.viewOf;
@@ -117,7 +169,7 @@ export default class AnnoMatrix {
 		Return the given query on a single matrix field as a single dataframe.
 		Currently supports ONLY full column query.
 
-		Returns a Promise for the dataframe.
+		Returns a Promise for the query result, which will resolve to a dataframe.
 
 		Field must be one of the matrix fields: 'obs', 'var', 'X', 'emb'.  Value
 		represents the underlying object upon which the query is occuring.
@@ -125,49 +177,219 @@ export default class AnnoMatrix {
 		Query is one of:
 			* a string, representing a single column name from the field, eg,
 				"n_genes"
-			* an object, containing an advanced query
+			* an object, containing an "value" query (see below).
 			* an array, containing one or more of the above.
 
 		Columns may have more than one dimension, and all will be fetched
-		and returned together.  This is most common in an embedding.
+		and returned together.  This is most commonly seen in an embedding,
+    which usually has two dimensions.
 
 		A value query allows for fetching based upon the value in another 
-		field/column, _on the same dimension_ (currently only on the var 
-		dimension, as only full column fetches are supported). The query
-		is a single value filter:
+		field/column, similar to a join.  Currently only supported on the var
+		dimension, allowing query of X columns by var value (eg, gene name)
+
+    The query filter	is a single value filter:
 			{ "field name": [
 				{name: "column name", values: [ list of values ]}
 			]}
-		One and only one value filter is allowed.
+		One and only one value filter is allowed in a value query.
 
 		Examples:
-			fetch("obs", "n_genes") // get the n_genes column
-			fetch("var", this.schema.annotations.var.index)	// get the var index
-			fetch("obs", ["n_genes", "louvain"]) // multiple columns
+
+    1. Fetch the "n_genes" column the "obs":
+
+			const df = await fetch("obs", "n_genes")
+      console.log("Largest number of genes is: ", df.summarize().max);
+
+    2. Fetch two separate columns from obs.  Returns a single dataframe containing
+       the columns:
+
+			const df = await fetch("obs", ["n_genes", "louvain"])
+      console.log("Cell 0 has category: ", df.at(0, "louvain"));
+
+    3. Fetch an entire X (expression counts) column that has a var annotation
+       value "TYMP" in the var index.
+
 			fetch("X", { 
 				where: {field: "var", column: this.schema.annotations.var.index, value: "TYMP"}
 			})
+
+      In AnnData & Pandas DataFrame API, this is equivalent to:
+        adata.X[:, adata.var.index.get_loc("SUMO3")]
 
 		The value query is a recodification and subset of the server REST API 
 		value filter JSON.  Range queries and multiple filters are not currently
 		supported.
 
-		Returns a Promise for a dataframe containing the requested columns.
 		*/
-    return _fetchResult(this._fetch(field, q));
+    return this._fetch(field, q);
   }
 
   prefetch(field, q) {
     /*
 		Start a data fetch & cache fill.  Identical to fetch() except it does
 		not return a value.
+
+    Primary use is to being a cache load as early as is possible, reducing
+    overall component rendering latency.
 		*/
     this._fetch(field, q);
     return undefined;
   }
 
   /**
-   ** private below
+   ** Save / mutate interfaces - manipulation of "writable" OBS annotations.
+   **
+   ** These are all present to support client-side creation of OBS annotations, aka
+   ** "user annotations".
+   **
+   ** They implement common manipulations to the AnnoMatrix, maintaining the
+   ** norma guarantees around correctness of public API, eg,
+   **   - schema will be correct, including the "writable" attribute
+   **   - fetch() will return the latest data, even from views
+   **   - immutability guranteeds
+   **
+   ** As most of these interfaces mutate the annoMatrix, they return a new
+   ** annoMatrix
+   **
+   ** The actual implementation is in the sub-classes, which MUST override these.
+   **/
+
+  // eslint-disable-next-line class-methods-use-this, no-unused-vars -- make sure subclass implements
+  addObsAnnoCategory(col, category) {
+    /*
+    Add a new category value (aka "label") to a writable obs column, and return the new AnnoMatrix.
+    Typical use is to add a new user-created label to a user-created obs categorical
+    annotation.
+
+    Will throw column does not exist or is not writable.
+
+    Example:
+
+      addObsAnnoCategory("my cell type", "left toenail") -> AnnoMatrix
+
+    */
+    _subclassResponsibility();
+  }
+
+  // eslint-disable-next-line class-methods-use-this, no-unused-vars -- make sure subclass implements
+  async removeObsAnnoCategory(col, category, unassignedCategory) {
+    /*
+    Remove a category value from an obs column, reassign any obs having that value
+    to the 'unassignedCategory' value, and return a promise for a new AnnoMatrix.
+    Typical use is to remove a user-created label from a user-created obs categorical
+    annotation.
+
+    Will throw column does not exist or is not writable.
+
+    An `unassignedCategory` value must be provided, for assignment to any obs/cells
+    that had the now-delete category label as their value.
+
+    Example:
+      await removeObsAnnoCategory("my-tissue-type", "right earlobe", "unassigned") -> AnnoMatrix
+
+    NOTE: method is async as it may need to fetch data to provide the reassignment.
+    */
+    _subclassResponsibility();
+  }
+
+  // eslint-disable-next-line class-methods-use-this, no-unused-vars -- make sure subclass implements
+  dropObsColumn(col) {
+    /*
+    Drop an entire writable column, eg a user-created obs annotation.  Typical use
+    is to provide the "Delete Category" implementation.  Returns the new AnnoMatrix.
+    Will throw if not a writable annotation.
+
+    Will throw column does not exist or is not writable.
+
+    Example:
+
+      dropObsColumn("old annotations") ->  AnnoMatrix
+    */
+    _subclassResponsibility();
+  }
+
+  // eslint-disable-next-line class-methods-use-this, no-unused-vars -- make sure subclass implements
+  addObsColumn(colSchema, Ctor, value) {
+    /*
+    Add a new writable OBS annotation column, with the caller-specified schema, initial value
+    type and value.
+
+    Value may be any one of:
+      * an array of values
+      * a primitive type, including null or undefined.
+    If an array, length must be the same as 'this.nObs', and constructor must equal 'Ctor'.
+    If a primitive, 'Ctor' will be used to create the initial value, which will be filled
+    with 'value'.
+
+    Throws if the name specified in 'colSchema' duplicates an existing obs column.
+
+    Returns a new AnnoMatrix.
+
+    Examples:
+
+      addObsColumn(
+        { name: "foo", type: "categorical", categories: "unassigned" },
+        Array,
+        "unassigned"
+      ) -> AnnoMatrix
+
+    */
+    _subclassResponsibility();
+  }
+
+  // eslint-disable-next-line class-methods-use-this, no-unused-vars -- make sure subclass implements
+  renameObsColumn(oldCol, newCol) {
+    /*
+    Rename the obs column 'oldCol' to have name 'newCol' and returns new AnnoMatrix.
+
+    Will throw column does not exist or is not writable, or if 'newCol' is not unique.
+
+    Example:
+
+      renameObsColumn('cell type', 'old cell type') -> AnnoMatrix.
+
+    */
+    _subclassResponsibility();
+  }
+
+  // eslint-disable-next-line class-methods-use-this, no-unused-vars -- make sure subclass implements
+  async setObsColumnValues(col, obsLabels, value) {
+    /*
+    Set all obs with label in array 'obsLabels' to have 'value'.  Typical use would be
+    to set a group of cells to have a label on a user-created categorical anntoation
+    (eg set all selected cells to have a label).
+
+    NOTE: async method, as it may need to fetch.
+
+    Will throw column does not exist or is not writable.
+
+    Example:
+      await setObsColmnValues("flavor", [383, 400], "tasty") -> AnnoMtarix
+
+    */
+    _subclassResponsibility();
+  }
+
+  // eslint-disable-next-line class-methods-use-this, no-unused-vars -- make sure subclass implements
+  async resetObsColumnValues(col, oldValue, newValue) {
+    /*
+    Set by value - all elements in the column with value 'oldValue' are set to 'newValue'.
+    Async method - returns a promise for a new AnnoMatrix.
+
+    Typical use would be to set all labels of one value to another.
+
+    Will throw column does not exist or is not writable.
+
+    Example:
+      await resetObsColumnValues("my notes", "good", "not-good") -> AnnoMatrix
+
+    */
+    _subclassResponsibility();
+  }
+
+  /**
+   ** Private interfaces below.
    **/
   _resolveCachedQueries(field, queries) {
     return queries
@@ -243,8 +465,7 @@ export default class AnnoMatrix {
 
   // eslint-disable-next-line class-methods-use-this -- make sure subclass implements
   async _doLoad() {
-    /* protect against bugs in subclass */
-    throw new Error("subclass failed to implement _doLoad");
+    _subclassResponsibility();
   }
 
   /**
@@ -404,4 +625,9 @@ function _queryCacheKey(field, query) {
 
 function _columnCacheKey(field, column) {
   return `${field}/${column}`;
+}
+
+function _subclassResponsibility() {
+  /* protect against bugs in subclass */
+  throw new Error("subclass failed to implement required method");
 }

@@ -1,4 +1,6 @@
 /*
+Private support functions.
+
 Support for a "where" query, eg,
 
 	{ where: { field: "var", column: "gene", value: "FOXP2" }}

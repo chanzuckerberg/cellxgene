@@ -1,6 +1,3 @@
-/*
-Base matrix, which proxies for server.
-*/
 import { doBinaryRequest, _dubEncURIComp } from "./fetchHelpers";
 import { matrixFBSToDataframe } from "../util/stateManager/matrix";
 import { _getColumnSchema, _normalizeCategoricalSchema } from "./schema";
@@ -18,6 +15,16 @@ import PromiseLimit from "../util/promiseLimit";
 const promiseThrottle = new PromiseLimit(5);
 
 export default class AnnoMatrixLoader extends AnnoMatrix {
+  /*
+  AnnoMatrix implementation which proxies to HTTP server using the CXG REST API.
+  Used as the base (non-view) instance.
+
+  Public API is same as AnnoMatrix class (refer there for API description),
+  with the addition of the constructor which bootstraps:
+
+    new AnnoMatrixLoader(serverBaseURL, schema) -> instance
+
+  */
   constructor(baseURL, schema) {
     const { nObs, nVar } = schema.dataframe;
     super(schema, nObs, nVar);
@@ -31,7 +38,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
   }
 
   /**
-   ** Public
+   ** Public.  API described in base class.
    **/
   addObsAnnoCategory(col, category) {
     /*

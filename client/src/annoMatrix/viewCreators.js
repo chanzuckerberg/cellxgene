@@ -1,30 +1,36 @@
 /*
-View creators
+View creators.  These are helper functions which create new views from existing
+instances of AnnoMatrix, implementing common UI functions.
 */
 
 import { AnnoMatrixRowSubsetView, AnnoMatrixClipView } from "./views";
 
-export function isubsetMask(annoMatrix, rowMask) {
+export function isubsetMask(annoMatrix, obsMask) {
   /*
-		Subset on row based upon mask
-		*/
-  return isubset(annoMatrix, _maskToList(rowMask));
+		Subset annomatrix to contain the rows which have truish value in the mask.
+    Maks length must equal annoMatrix.nObs (row count).
+	*/
+  return isubset(annoMatrix, _maskToList(obsMask));
 }
 
-export function isubset(annoMatrix, rowOffsets) {
+export function isubset(annoMatrix, obsOffsets) {
   /*
-		subset based on offset
-		*/
-  const rowIndex = annoMatrix.rowIndex.isubset(rowOffsets);
-  return new AnnoMatrixRowSubsetView(annoMatrix, rowIndex);
+		Subset annomatrix to contain the positions contained in the obsOffsets array
+
+    Example:
+
+      isubset(annoMatrix, [0, 1]) -> annoMatrix with only the first two rows
+	*/
+  const obsIndex = annoMatrix.rowIndex.isubset(obsOffsets);
+  return new AnnoMatrixRowSubsetView(annoMatrix, obsIndex);
 }
 
-export function subset(annoMatrix, rowLabels) {
+export function subset(annoMatrix, obsLabels) {
   /*
 		subset based on labels
-		*/
-  const rowIndex = annoMatrix.rowIndex.subset(rowLabels);
-  return new AnnoMatrixRowSubsetView(annoMatrix, rowIndex);
+  */
+  const obsIndex = annoMatrix.rowIndex.subset(obsLabels);
+  return new AnnoMatrixRowSubsetView(annoMatrix, obsIndex);
 }
 
 export function clip(annoMatrix, qmin, qmax) {
@@ -37,7 +43,7 @@ export function clip(annoMatrix, qmin, qmax) {
 }
 
 /*
-Utility functions below
+Private utility functions below
 */
 
 function _maskToList(mask) {
