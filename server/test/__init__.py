@@ -27,21 +27,18 @@ def data_with_tmp_annotations(ext: MatrixDataType, annotations_fixture=False):
     annotations_file = path.join(tmp_dir, "test_annotations.csv")
     if annotations_fixture:
         shutil.copyfile(f"{PROJECT_ROOT}/server/test/test_datasets/pbmc3k-annotations.csv", annotations_file)
-    args = {
-        "embeddings__names": ["umap"],
-        "presentation__max_categories": 100,
-        "single_dataset__obs_names": None,
-        "single_dataset__var_names": None,
-        "diffexp__lfc_cutoff": 0.01,
-    }
     fname = {
         MatrixDataType.H5AD: f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad",
         MatrixDataType.CXG: "test/test_datasets/pbmc3k.cxg",
     }[ext]
     data_locator = DataLocator(fname)
     config = AppConfig()
-    config.update(**args)
-    config.update(single_dataset__datapath=data_locator.path)
+    config.update_server_config(
+        single_dataset__obs_names=None, single_dataset__var_names=None, single_dataset__datapath=data_locator.path
+    )
+    config.update_default_dataset_config(
+        embeddings__names=["umap"], presentation__max_categories=100, diffexp__lfc_cutoff=0.01,
+    )
     config.complete_config()
     data = MatrixDataLoader(data_locator.abspath()).open(config)
     annotations = AnnotationsLocalFile(None, annotations_file)
@@ -66,21 +63,21 @@ def skip_if(condition, reason: str):
     return decorator
 
 
-def app_config(data_locator, backed=False, extra={}):
-    args = {
-        "embeddings__names": ["umap", "tsne", "pca"],
-        "presentation__max_categories": 100,
-        "single_dataset__obs_names": None,
-        "single_dataset__var_names": None,
-        "diffexp__lfc_cutoff": 0.01,
-        "adaptor__anndata_adaptor__backed": backed,
-        "single_dataset__datapath": data_locator,
-        "limits__diffexp_cellcount_max": None,
-        "limits__column_request_max": None,
-    }
+def app_config(data_locator, backed=False, extra_server_config={}, extra_dataset_config={}):
     config = AppConfig()
-    config.update(**args)
-    config.update(**extra)
+    config.update_server_config(
+        single_dataset__obs_names=None,
+        single_dataset__var_names=None,
+        adaptor__anndata_adaptor__backed=backed,
+        single_dataset__datapath=data_locator,
+        limits__diffexp_cellcount_max=None,
+        limits__column_request_max=None,
+    )
+    config.update_default_dataset_config(
+        embeddings__names=["umap", "tsne", "pca"], presentation__max_categories=100, diffexp__lfc_cutoff=0.01
+    )
+    config.update_server_config(**extra_server_config)
+    config.update_default_dataset_config(**extra_dataset_config)
     config.complete_config()
     return config
 

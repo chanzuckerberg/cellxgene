@@ -11,11 +11,13 @@ clean:
 # Presumes that a top-level `make build-client` has been done to 
 # create the client static assets.
 
+cwd := $(shell pwd)
+
 .PHONY: build
 build: clean
 	mkdir artifact.dir; \
 	(cd ../.. ; \
-	    git ls-files server/ | cpio -pdm server/eb/artifact.dir ; ); \
+	  git ls-files server/ | cpio -pdm $(cwd)/artifact.dir ; ); \
 	$(call copy_client_assets,../../client/build,artifact.dir/server) ; \
 	set -e ; \
 	cp app.py artifact.dir/application.py; \

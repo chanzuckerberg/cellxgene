@@ -24,10 +24,12 @@ def health_check(config):
     health = {"status": None, "version": "1", "releaseID": cellxgene_version}
 
     checks = False
-    if config.single_dataset__datapath is not None:
-        checks = _is_accessible(config.single_dataset__datapath, config)
-    elif config.multi_dataset__dataroot is not None:
-        checks = all([_is_accessible(datapath, config) for datapath in config.multi_dataset__dataroot.values()])
+    server_config = config.server_config
+    if config.is_multi_dataset():
+        dataroots = [datapath_dict["dataroot"] for datapath_dict in server_config.multi_dataset__dataroot.values()]
+        checks = all([_is_accessible(dataroot, server_config) for dataroot in dataroots])
+    else:
+        checks = _is_accessible(server_config.single_dataset__datapath, server_config)
 
     health["status"] = "pass" if checks else "fail"
     code = HTTPStatus.OK if health["status"] == "pass" else HTTPStatus.BAD_REQUEST
