@@ -1,25 +1,15 @@
-import enum
-import os
-import sys
-
 from server.db.db_config import CellxGeneDbConfig
 from sqlalchemy import (
-    Boolean,
     Column,
     create_engine,
     DateTime,
-    Enum,
     ForeignKey,
-    ForeignKeyConstraint,
-    Integer,
     String,
     text,
 )
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 
-pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa
-sys.path.insert(0, pkg_root)  # noqa
 
 Base = declarative_base()
 # deployment_stage = os.environ["DEPLOYMENT_STAGE"]
@@ -29,7 +19,7 @@ DEFAULT_DATETIME = text("now()")
 
 class DBSessionMaker:
     def __init__(self):
-        self.engine = create_engine(CellxGeneDbConfig().database_uri, connect_args={"connect_timeout": 5})
+        self.engine = create_engine(CellxGeneDbConfig().database_uri(), connect_args={"connect_timeout": 5})
         self.session_maker = sessionmaker(bind=self.engine)
 
     def session(self, **kwargs):
@@ -38,8 +28,8 @@ class DBSessionMaker:
 
 class CellxgGeneUser(Base):
     """
-    A registered Corpora user.
-    Maintains user details such as contact information and access control settings.
+    A registered CellxGene user.
+    Links a user to their annotations
     """
 
     __tablename__ = "user"
@@ -49,21 +39,21 @@ class CellxgGeneUser(Base):
     updated_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
 
     # Relationships
-    annotations = relationship("annotation", back_populates="user")
+    annotations = relationship("Annotation", back_populates="user")
 
 
 class Annotation(Base):
     """
-    A Corpora project represents an in progress or live submission of a lab experiment.
-    DbProjects are associated with one or more single-cell datasets and links to external repositories.
+    An annotation is a link between a user, a dataset and tiledb dataframe. A user can have multiple annotations for a
+    dataset, the most recent annotation (based on created_at) will be the default returned when queried
     """
 
     __tablename__ = "annotation"
 
     id = Column(String, primary_key=True)
     tiledb_uri = Column(String)
-    user = Column(ForeignKey("user.id"), nullable=False)
-    dataset = Column(ForeignKey("dataset.id"), nullable=False)
+    user_id = Column(String, ForeignKey("user.id"), nullable=False)
+    dataset_id = Column(String, ForeignKey("dataset.id"), nullable=False)
     created_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
 
     # Relationships
@@ -73,9 +63,7 @@ class Annotation(Base):
 
 class Dataset(Base):
     """
-    Models a single experiment uploaded and processed by Corpora.
-    Describes experiment metadata such as specimen and assay data.
-    Related data files are represented by DbDataArtifacts.
+    Datasets refer to cellxgene datasets stored in tiledb
     """
 
     __tablename__ = "dataset"
@@ -83,4 +71,4 @@ class Dataset(Base):
     id = Column(String, primary_key=True)
     name = Column(String)
     created_at = Column(DateTime, nullable=False, server_default=DEFAULT_DATETIME)
-    annotations = relationship("annotation", back_populates="user")
+    annotations = relationship("Annotation", back_populates="dataset")
