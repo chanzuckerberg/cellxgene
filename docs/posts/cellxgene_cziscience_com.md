@@ -272,36 +272,42 @@ with a link to embed on your own site, please drop us a note at <mailto:cellxgen
     <tr>
       <td><a href="https://cellxgene.cziscience.com/d/Single_cell_gene_expression_profiling_of_SARS_CoV_2_infected_human_cell_lines_H1299-27.cxg/" target="_blank">Single-cell gene expression profiling of SARS-CoV-2 infected human cell lines - H1299</a></td>
       <td>
+        <a href="https://www.mdc-berlin.de/landthaler#t-single-cellsars-cov-2">Landthaler Lab</a>,
         <a href="https://www.biorxiv.org/content/10.1101/2020.05.05.079194v1">BioRxiv preprint</a>
       </td>
     </tr>
     <tr>
       <td><a href="https://cellxgene.cziscience.com/d/Single_cell_gene_expression_profiling_of_SARS_CoV_2_infected_human_cell_lines_Calu_3-28.cxg/" target="_blank">Single-cell gene expression profiling of SARS-CoV-2 infected human cell lines - Calu-3</a></td>
       <td>
+        <a href="https://www.mdc-berlin.de/landthaler#t-single-cellsars-cov-2">Landthaler Lab</a>,
         <a href="https://www.biorxiv.org/content/10.1101/2020.05.05.079194v1">BioRxiv preprint</a>
       </td>
     </tr>
     <tr>
       <td><a href="https://cellxgene.cziscience.com/d/Single_cell_drug_screening_a549-42.cxg/" target="_blank">Single-cell drug screening - A549</a></td>
       <td>
+        <a href="https://github.com/cole-trapnell-lab/sci-plex">Trapnell Lab Github</a>,
         <a href="https://science.sciencemag.org/content/367/6473/45">Science</a>
       </td>
     </tr>
     <tr>
       <td><a href="https://cellxgene.cziscience.com/d/Single_cell_drug_screening_k562-43.cxg/" target="_blank">Single-cell drug screening - K562</a></td>
       <td>
+        <a href="https://github.com/cole-trapnell-lab/sci-plex">Trapnell Lab Github</a>,
         <a href="https://science.sciencemag.org/content/367/6473/45">Science</a>
       </td>
     </tr>
     <tr>
       <td><a href="https://cellxgene.cziscience.com/d/Single_cell_drug_screening_mcf7-44.cxg/" target="_blank">Single-cell drug screening - MCF7</a></td>
       <td>
+        <a href="https://github.com/cole-trapnell-lab/sci-plex">Trapnell Lab Github</a>,
         <a href="https://science.sciencemag.org/content/367/6473/45">Science</a>
       </td>
     </tr>
     <tr>
       <td><a href="https://cellxgene.prod.single-cell.czi.technology/d/Molecular_atlas_of_cell_types_and_zonation_in_the_brain_vasculature-48.cxg/" target="_blank">A molecular atlas of cell types and zonation in the brain vasculature</a></td>
       <td>
+        <a href="http://betsholtzlab.org/VascularSingleCells/database.html">Betsholtz Lab</a>,
         <a href="https://www.nature.com/articles/nature25739">Nature</a>
       </td>
     </tr>
