@@ -10,6 +10,16 @@ AnnoMatrix stay in sync:
 import Crossfilter from "../util/typedCrossfilter";
 import { _getColumnSchema } from "./schema";
 
+function _dimensionNameFromDf(field, df) {
+  const colNames = df.colIndex.labels();
+  return _dimensionName(field, colNames);
+}
+
+function _dimensionName(field, colNames) {
+  if (!Array.isArray(colNames)) return `${field}/${colNames}`;
+  return `${field}/${colNames.join(":")}`;
+}
+
 export default class AnnoMatrixObsCrossfilter {
   constructor(annoMatrix, _obsCrossfilter = null) {
     this.annoMatrix = annoMatrix;
@@ -250,14 +260,4 @@ export default class AnnoMatrixObsCrossfilter {
 
     return undefined;
   }
-}
-
-function _dimensionNameFromDf(field, df) {
-  const colNames = df.colIndex.labels();
-  return _dimensionName(field, colNames);
-}
-
-function _dimensionName(field, colNames) {
-  if (!Array.isArray(colNames)) return `${field}/${colNames}`;
-  return `${field}/${colNames.join(":")}`;
 }

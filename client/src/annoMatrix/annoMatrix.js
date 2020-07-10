@@ -521,11 +521,12 @@ export default class AnnoMatrix {
       });
 
       const toDrop = candidates.slice(0, excessCount);
-      console.log(
-        `GC: dropping from ${field} hot:${isHot}, columns [${toDrop.join(
-          ", "
-        )}]`
-      );
+      // helpful debugging - please leave in place.
+      // console.log(
+      //   `GC: dropping from ${field} hot:${isHot}, columns [${toDrop.join(
+      //     ", "
+      //   )}]`
+      // );
       this._cache[field] = toDrop.reduce(
         (df, col) => df.dropCol(col),
         this._cache[field]

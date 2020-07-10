@@ -42,9 +42,9 @@ class AnnoMatrixView extends AnnoMatrix {
     return o;
   }
 
-  addObsColumn(colSchema, ctor, value) {
+  addObsColumn(colSchema, Ctor, value) {
     const o = this._clone();
-    o.viewOf = this.viewOf.addObsColumn(colSchema, ctor, value);
+    o.viewOf = this.viewOf.addObsColumn(colSchema, Ctor, value);
     o.schema = o.viewOf.schema;
     return o;
   }

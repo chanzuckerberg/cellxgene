@@ -180,7 +180,7 @@ class Graph extends React.Component {
     super(props);
     const viewport = this.getViewportDimensions();
     this.reglCanvas = null;
-    this.renderCache = null;
+    this.cachedAsyncProps = null;
     const modelTF = createModelTF();
     this.state = {
       toolSVG: null,
@@ -740,9 +740,9 @@ class Graph extends React.Component {
     );
   });
 
-  updateReglAndRender(newRenderCache) {
-    const { positions, colors, flags } = newRenderCache;
-    this.renderCache = newRenderCache;
+  updateReglAndRender(asyncProps) {
+    const { positions, colors, flags } = asyncProps;
+    this.cachedAsyncProps = asyncProps;
     const { pointBuffer, colorBuffer, flagBuffer } = this.state;
     pointBuffer({ data: positions, dimension: 2 });
     colorBuffer({ data: colors, dimension: 3 });
@@ -909,7 +909,7 @@ class Graph extends React.Component {
           </Async.Rejected>
           <Async.Fulfilled>
             {(asyncProps) => {
-              if (regl && !shallowEqual(asyncProps, this.renderCache)) {
+              if (regl && !shallowEqual(asyncProps, this.cachedAsyncProps)) {
                 this.updateReglAndRender(asyncProps);
               }
               return null;
@@ -920,8 +920,6 @@ class Graph extends React.Component {
     );
   }
 }
-
-export default Graph;
 
 const ErrorLoading = ({ displayName, error, width, height }) => {
   console.log(error); // log to console as this is an unepected error
@@ -938,3 +936,5 @@ const ErrorLoading = ({ displayName, error, width, height }) => {
     </div>
   );
 };
+
+export default Graph;
