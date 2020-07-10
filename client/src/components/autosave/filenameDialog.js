@@ -113,7 +113,7 @@ class FilenameDialog extends React.Component {
             this.handleCreateFilename();
           }}
         >
-          <div className={Classes.DIALOG_BODY}>
+          <div className={Classes.DIALOG_BODY} data-testid="annotation-dialog">
             <div style={{ marginBottom: 20 }}>
               <p>Name your annotations collection:</p>
               <InputGroup
@@ -124,6 +124,7 @@ class FilenameDialog extends React.Component {
                   this.setState({ filenameText: e.target.value })
                 }
                 leftIcon="tag"
+                data-testid="new-annotation-name"
               />
               <p
                 style={{
@@ -159,6 +160,7 @@ class FilenameDialog extends React.Component {
                 onClick={this.handleCreateFilename}
                 intent="primary"
                 type="submit"
+                data-testid="submit-annotation"
               >
                 Create annotations collection
               </Button>

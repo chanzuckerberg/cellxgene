@@ -11,8 +11,12 @@
     "dataviz"
   ],
   "buildpacks": [
-    "heroku/nodejs",
-    "heroku/python"
+    {
+      "url": "heroku/nodejs"
+    },
+    {
+      "url": "heroku/python"
+    }
   ],
   "stack": "heroku-18",
   "env": {

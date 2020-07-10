@@ -918,43 +918,59 @@ describe("dataframe col", () => {
 });
 
 describe("label indexing", () => {
-
   test("IdentityInt32Index", () => {
     const idx = new Dataframe.IdentityInt32Index(12); // [0, 12)
 
     expect(Dataframe.isLabelIndex(idx)).toBeTruthy();
 
-    expect(idx.labels()).toEqual(new Int32Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]));
+    expect(idx.labels()).toEqual(
+      new Int32Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
+    );
     expect(idx.getLabel(1)).toEqual(1);
     expect(idx.getOffset(1)).toEqual(1);
-    expect(idx.getOffsets([1,3])).toEqual([1,3])
-    expect(idx.getLabels([1, 3])).toEqual([1,3])
+    expect(idx.getOffsets([1, 3])).toEqual([1, 3]);
+    expect(idx.getLabels([1, 3])).toEqual([1, 3]);
     expect(idx.size()).toEqual(12);
 
     expect(idx.subset([2]).labels()).toEqual([2]);
     expect(idx.subset([2, 3, 4]).labels()).toEqual(new Int32Array([2, 3, 4]));
-    expect(idx.subset([0, 1, 2, 3]).labels()).toEqual(new Int32Array([0, 1, 2, 3]));
+    expect(idx.subset([0, 1, 2, 3]).labels()).toEqual(
+      new Int32Array([0, 1, 2, 3])
+    );
 
     expect(idx.isubset([2]).labels()).toEqual([2]);
     expect(idx.isubset([2, 3, 4]).labels()).toEqual(new Int32Array([2, 3, 4]));
-    expect(idx.isubset([0, 1, 2, 3]).labels()).toEqual(new Int32Array([0, 1, 2, 3]));
+    expect(idx.isubset([0, 1, 2, 3]).labels()).toEqual(
+      new Int32Array([0, 1, 2, 3])
+    );
 
-    expect(idx.subset([0, 1, 2, 3, 4])).toBeInstanceOf(Dataframe.IdentityInt32Index);
+    expect(idx.subset([0, 1, 2, 3, 4])).toBeInstanceOf(
+      Dataframe.IdentityInt32Index
+    );
     expect(idx.subset([2, 1, 0])).toBeInstanceOf(Dataframe.IdentityInt32Index);
     expect(idx.subset([1, 2, 3, 4])).toBeInstanceOf(Dataframe.DenseInt32Index);
     expect(idx.subset([0, 1, 3, 4])).toBeInstanceOf(Dataframe.DenseInt32Index);
-    expect(idx.subset([0, 1, 2, 3, 10])).toBeInstanceOf(Dataframe.DenseInt32Index);
+    expect(idx.subset([0, 1, 2, 3, 10])).toBeInstanceOf(
+      Dataframe.DenseInt32Index
+    );
     expect(idx.subset([4, 3, 2, 1])).toBeInstanceOf(Dataframe.DenseInt32Index);
     expect(idx.subset([4])).toBeInstanceOf(Dataframe.KeyIndex);
 
-    expect(idx.withLabel(99).labels()).toEqual(new Int32Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 99]));
-    expect(idx.dropLabel(0).labels()).toEqual(new Int32Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]));
-    expect(idx.dropLabel(11).labels()).toEqual(new Int32Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]));
-    expect(idx.dropLabel(5).labels()).toEqual(new Int32Array([0, 1, 2, 3, 4, 6, 7, 8, 9, 10, 11]));
+    expect(idx.withLabel(99).labels()).toEqual(
+      new Int32Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 99])
+    );
+    expect(idx.dropLabel(0).labels()).toEqual(
+      new Int32Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
+    );
+    expect(idx.dropLabel(11).labels()).toEqual(
+      new Int32Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    );
+    expect(idx.dropLabel(5).labels()).toEqual(
+      new Int32Array([0, 1, 2, 3, 4, 6, 7, 8, 9, 10, 11])
+    );
   });
 
   test("DenseInt32Index", () => {
-
     const idx = new Dataframe.DenseInt32Index([99, 1002, 48, 0, 22]);
 
     expect(Dataframe.isLabelIndex(idx)).toBeTruthy();
@@ -964,17 +980,29 @@ describe("label indexing", () => {
     expect(idx.getOffset(1002)).toEqual(1);
     expect(idx.getOffset(0)).toEqual(3);
     expect(idx.getLabel(0)).toEqual(99);
-    expect(idx.getLabels(new Int32Array([2, 4]))).toEqual(new Int32Array([48, 22]));
+    expect(idx.getLabels(new Int32Array([2, 4]))).toEqual(
+      new Int32Array([48, 22])
+    );
     expect(idx.getLabels([2, 4])).toEqual([48, 22]);
     expect(idx.getOffsets([0, 48])).toEqual([3, 2]);
 
-    expect(idx.subset([1002, 0, 99]).labels()).toEqual(new Int32Array([1002, 0, 99]))
-    expect(idx.getOffsets(idx.subset([1002, 0, 99]).labels())).toEqual(new Int32Array([1, 3, 0]));
-    expect(idx.isubset([4, 1, 2]).labels()).toEqual(new Int32Array([22, 1002, 48]));
+    expect(idx.subset([1002, 0, 99]).labels()).toEqual(
+      new Int32Array([1002, 0, 99])
+    );
+    expect(idx.getOffsets(idx.subset([1002, 0, 99]).labels())).toEqual(
+      new Int32Array([1, 3, 0])
+    );
+    expect(idx.isubset([4, 1, 2]).labels()).toEqual(
+      new Int32Array([22, 1002, 48])
+    );
 
-    expect(idx.withLabel(88).labels()).toEqual(new Int32Array([99, 1002, 48, 0, 22, 88]));
+    expect(idx.withLabel(88).labels()).toEqual(
+      new Int32Array([99, 1002, 48, 0, 22, 88])
+    );
     expect(idx.withLabel(88).getOffset(88)).toEqual(5);
-    expect(idx.dropLabel(48).labels()).toEqual(new Int32Array([99, 1002, 0, 22]));
+    expect(idx.dropLabel(48).labels()).toEqual(
+      new Int32Array([99, 1002, 0, 22])
+    );
   });
 
   test("KeyIndex", () => {
@@ -991,9 +1019,197 @@ describe("label indexing", () => {
     expect(idx.subset(["green", "red"]).labels()).toEqual(["green", "red"]);
     expect(idx.isubset([2, 1, 0]).labels()).toEqual(["blue", "green", "red"]);
 
-    expect(idx.withLabel("yo").labels()).toEqual(["red", "green", "blue", "yo"]);
+    expect(idx.withLabel("yo").labels()).toEqual([
+      "red",
+      "green",
+      "blue",
+      "yo",
+    ]);
     expect(idx.withLabel("yo").getOffset("yo")).toEqual(3);
     expect(idx.dropLabel("blue").labels()).toEqual(["red", "green"]);
+  });
 });
 
-})
+describe("corner cases", () => {
+  /* error/corner cases */
+
+  test("identity integer index rejects non-integer labels", () => {
+    const idx = new Dataframe.IdentityInt32Index(10);
+    expect(idx.getOffset(0)).toBe(0);
+    expect(idx.getOffset(9)).toBe(9);
+    expect(idx.getOffset(10)).toBeUndefined();
+    expect(idx.getOffset(-1)).toBeUndefined();
+    expect(idx.getOffset("sort")).toBeUndefined();
+    expect(idx.getOffset("length")).toBeUndefined();
+    expect(idx.getOffset(true)).toBeUndefined();
+    expect(idx.getOffset(0.001)).toBeUndefined();
+    expect(idx.getOffset({})).toBeUndefined();
+    expect(idx.getOffset([])).toBeUndefined();
+    expect(idx.getOffset(new Float32Array())).toBeUndefined();
+    expect(idx.getOffset("__proto__")).toBeUndefined();
+
+    expect(idx.getLabel(0)).toBe(0);
+    expect(idx.getLabel(9)).toBe(9);
+    expect(idx.getLabel(10)).toBeUndefined();
+    expect(idx.getLabel(-1)).toBeUndefined();
+    expect(idx.getLabel("sort")).toBeUndefined();
+    expect(idx.getLabel("length")).toBeUndefined();
+    expect(idx.getLabel(true)).toBeUndefined();
+    expect(idx.getLabel(0.001)).toBeUndefined();
+    expect(idx.getLabel({})).toBeUndefined();
+    expect(idx.getLabel([])).toBeUndefined();
+    expect(idx.getLabel(new Float32Array())).toBeUndefined();
+    expect(idx.getLabel("__proto__")).toBeUndefined();
+  });
+
+  test("dense integer index rejects non-integer labels", () => {
+    const idx = new Dataframe.DenseInt32Index([-10, 0, 3, 9, 10]);
+    expect(idx.getOffset(0)).toBe(1);
+    expect(idx.getOffset(9)).toBe(3);
+    expect(idx.getOffset(1)).toBeUndefined();
+    expect(idx.getOffset(11)).toBeUndefined();
+    expect(idx.getOffset(-1)).toBeUndefined();
+    expect(idx.getOffset("sort")).toBeUndefined();
+    expect(idx.getOffset("length")).toBeUndefined();
+    expect(idx.getOffset(true)).toBeUndefined();
+    expect(idx.getOffset(0.001)).toBeUndefined();
+    expect(idx.getOffset({})).toBeUndefined();
+    expect(idx.getOffset([])).toBeUndefined();
+    expect(idx.getOffset(new Float32Array())).toBeUndefined();
+    expect(idx.getOffset("__proto__")).toBeUndefined();
+
+    expect(idx.getLabel(0)).toBe(-10);
+    expect(idx.getLabel(4)).toBe(10);
+    expect(idx.getLabel(10)).toBeUndefined();
+    expect(idx.getLabel(-1)).toBeUndefined();
+    expect(idx.getLabel("sort")).toBeUndefined();
+    expect(idx.getLabel("length")).toBeUndefined();
+    expect(idx.getLabel(true)).toBeUndefined();
+    expect(idx.getLabel(0.001)).toBeUndefined();
+    expect(idx.getLabel({})).toBeUndefined();
+    expect(idx.getLabel([])).toBeUndefined();
+    expect(idx.getLabel(new Float32Array())).toBeUndefined();
+    expect(idx.getLabel("__proto__")).toBeUndefined();
+  });
+
+  test("Empty dataframe rejects bogus labels", () => {
+    const df = Dataframe.Dataframe.empty();
+
+    expect(df.hasCol("sort")).toBeFalsy();
+    expect(df.hasCol(0)).toBeFalsy();
+    expect(df.hasCol(true)).toBeFalsy();
+    expect(df.hasCol(false)).toBeFalsy();
+    expect(df.hasCol([])).toBeFalsy();
+    expect(df.hasCol({})).toBeFalsy();
+    expect(df.hasCol(null)).toBeFalsy();
+    expect(df.hasCol(undefined)).toBeFalsy();
+
+    expect(df.col("sort")).toBeUndefined();
+    expect(df.col(0)).toBeUndefined();
+    expect(df.col(true)).toBeUndefined();
+    expect(df.col(false)).toBeUndefined();
+    expect(df.col([])).toBeUndefined();
+    expect(df.col({})).toBeUndefined();
+    expect(df.col(null)).toBeUndefined();
+    expect(df.col(undefined)).toBeUndefined();
+
+    expect(df.icol("sort")).toBeUndefined();
+    expect(df.icol(0)).toBeUndefined();
+    expect(df.icol(true)).toBeUndefined();
+    expect(df.icol(false)).toBeUndefined();
+    expect(df.icol([])).toBeUndefined();
+    expect(df.icol({})).toBeUndefined();
+    expect(df.icol(null)).toBeUndefined();
+    expect(df.icol(undefined)).toBeUndefined();
+
+    expect(df.ihas("sort", "length")).toBeFalsy();
+    expect(df.ihas("0", "0")).toBeFalsy();
+    expect(df.ihas("", "")).toBeFalsy();
+    expect(df.ihas(null, null)).toBeFalsy();
+    expect(df.ihas(undefined, undefined)).toBeFalsy();
+    expect(df.ihas(true, true)).toBeFalsy();
+    expect(df.ihas([], [])).toBeFalsy();
+    expect(df.ihas({}, {})).toBeFalsy();
+  });
+
+  test("Dataframe rejects bogus labels", () => {
+    const df = new Dataframe.Dataframe(
+      [2, 2],
+      [
+        [true, false],
+        [1, 0],
+      ],
+      null,
+      new Dataframe.KeyIndex(["A", "B"])
+    );
+
+    expect(df.hasCol("sort")).toBeFalsy();
+    expect(df.hasCol("__proto__")).toBeFalsy();
+    expect(df.hasCol(0)).toBeFalsy();
+    expect(df.hasCol(true)).toBeFalsy();
+    expect(df.hasCol(false)).toBeFalsy();
+    expect(df.hasCol([])).toBeFalsy();
+    expect(df.hasCol({})).toBeFalsy();
+    expect(df.hasCol(null)).toBeFalsy();
+    expect(df.hasCol(undefined)).toBeFalsy();
+
+    expect(df.col("sort")).toBeUndefined();
+    expect(df.col("__proto__")).toBeUndefined();
+    expect(df.col(0)).toBeUndefined();
+    expect(df.col(true)).toBeUndefined();
+    expect(df.col(false)).toBeUndefined();
+    expect(df.col([])).toBeUndefined();
+    expect(df.col({})).toBeUndefined();
+    expect(df.col(null)).toBeUndefined();
+    expect(df.col(undefined)).toBeUndefined();
+
+    expect(df.icol("sort")).toBeUndefined();
+    expect(df.icol("__proto__")).toBeUndefined();
+    expect(df.icol(-1)).toBeUndefined();
+    expect(df.icol(true)).toBeUndefined();
+    expect(df.icol(false)).toBeUndefined();
+    expect(df.icol([])).toBeUndefined();
+    expect(df.icol({})).toBeUndefined();
+    expect(df.icol(null)).toBeUndefined();
+    expect(df.icol(undefined)).toBeUndefined();
+
+    expect(df.ihas("sort", "length")).toBeFalsy();
+    expect(df.ihas("__proto__", "__proto__")).toBeFalsy();
+
+    expect(df.ihas(-1, 0)).toBeFalsy();
+    expect(df.ihas("0", 0)).toBeFalsy();
+    expect(df.ihas("", 0)).toBeFalsy();
+    expect(df.ihas(null, 0)).toBeFalsy();
+    expect(df.ihas(undefined, 0)).toBeFalsy();
+    expect(df.ihas([], 0)).toBeFalsy();
+    expect(df.ihas({}, 0)).toBeFalsy();
+
+    expect(df.ihas(0, -1)).toBeFalsy();
+    expect(df.ihas(0, "0")).toBeFalsy();
+    expect(df.ihas(0, "")).toBeFalsy();
+    expect(df.ihas(0, null)).toBeFalsy();
+    expect(df.ihas(0, undefined)).toBeFalsy();
+    expect(df.ihas(0, [])).toBeFalsy();
+    expect(df.ihas(0, {})).toBeFalsy();
+
+    expect(df.has("sort", "length")).toBeFalsy();
+    expect(df.has("length", "sort")).toBeFalsy();
+    expect(df.has("__proto__", "__proto__")).toBeFalsy();
+
+    expect(df.has(-1, "A")).toBeFalsy();
+    expect(df.has("0", "A")).toBeFalsy();
+    expect(df.has("", "A")).toBeFalsy();
+    expect(df.has(null, "A")).toBeFalsy();
+    expect(df.has(undefined, "A")).toBeFalsy();
+    expect(df.has([], "A")).toBeFalsy();
+    expect(df.has({}, "A")).toBeFalsy();
+
+    expect(df.has(0, -1)).toBeFalsy();
+    expect(df.has(0, "0")).toBeFalsy();
+    expect(df.has(0, "")).toBeFalsy();
+    expect(df.has(0, null)).toBeFalsy();
+    expect(df.has(0, undefined)).toBeFalsy();
+    expect(df.has(0, [])).toBeFalsy();
+    expect(df.has(0, {})).toBeFalsy();
+  });
+});

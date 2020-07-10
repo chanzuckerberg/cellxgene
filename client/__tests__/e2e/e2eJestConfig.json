@@ -1,5 +1,10 @@
 {
+  "testRunner": "jest-circus/runner",
   "preset": "jest-puppeteer",
   "testMatch": ["**/__tests__/**/?(*.)(spec|test).js?(x)"],
-  "setupFiles": ["../setupMissingGlobals.js"]
+  "setupFiles": ["../setupMissingGlobals.js"],
+  "setupFilesAfterEnv": ["expect-puppeteer", "./puppeteer.setup.js"],
+  "globalSetup": "jest-environment-puppeteer/setup",
+  "globalTeardown": "jest-environment-puppeteer/teardown",
+  "testEnvironment": "./screenshot_env.js"
 }

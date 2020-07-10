@@ -5,13 +5,13 @@ _an interactive explorer for single-cell transcriptomics data_
 [![DOI](https://zenodo.org/badge/105615409.svg)](https://zenodo.org/badge/latestdoi/105615409) [![PyPI](https://img.shields.io/pypi/v/cellxgene)](https://pypi.org/project/cellxgene/) [![PyPI - Downloads](https://img.shields.io/pypi/dm/cellxgene)](https://pypistats.org/packages/cellxgene) [![GitHub last commit](https://img.shields.io/github/last-commit/chanzuckerberg/cellxgene)](https://github.com/chanzuckerberg/cellxgene/pulse)
 [![Push Tests](https://github.com/chanzuckerberg/cellxgene/workflows/Push%20Tests/badge.svg)](https://github.com/chanzuckerberg/cellxgene/actions?query=workflow%3A%22Push+Tests%22)
 [![Compatibility Tests](https://github.com/chanzuckerberg/cellxgene/workflows/Compatibility%20Tests/badge.svg)](https://github.com/chanzuckerberg/cellxgene/actions?query=workflow%3A%22Compatibility+Tests%22)
-![Code Coverage](https://codecov.io/gh/chanzuckerberg/cellxgene/branch/master/graph/badge.svg)
+![Code Coverage](https://codecov.io/gh/chanzuckerberg/cellxgene/branch/main/graph/badge.svg)
 
 cellxgene (pronounced "cell-by-gene") is an interactive data explorer for single-cell transcriptomics datasets, such as those coming from the [Human Cell Atlas](https://humancellatlas.org). Leveraging modern web development techniques to enable fast visualizations of at least 1 million cells, we hope to enable biologists and computational researchers to explore their data.
 
 Whether you need to visualize one thousand cells or one million, cellxgene helps you gain insight into your single-cell data.
 
-<img src="https://github.com/chanzuckerberg/cellxgene/raw/master/docs/images/crossfilter.gif" width="350" height="200" hspace="30"><img src="https://github.com/chanzuckerberg/cellxgene/raw/master/docs/images/category-breakdown.gif" width="350" height="200" hspace="30">
+<img src="https://github.com/chanzuckerberg/cellxgene/raw/main/docs/images/crossfilter.gif" width="350" height="200" hspace="30"><img src="https://github.com/chanzuckerberg/cellxgene/raw/main/docs/images/category-breakdown.gif" width="350" height="200" hspace="30">
 
 # Getting started
 ### The comprehensive guide to cellxgene

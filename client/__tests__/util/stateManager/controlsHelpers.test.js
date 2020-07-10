@@ -4,7 +4,6 @@ test controls helpers
 import { subsetAndResetGeneLists } from "../../../src/util/stateManager/controlsHelpers";
 import * as globals from "../../../src/globals";
 
-
 describe("controls helpers", () => {
   test("subsetAndResetGeneLists", () => {
     const geneList = [];
@@ -28,7 +27,7 @@ describe("controls helpers", () => {
     );
     const expectedNewUserDefinedGenes = [
       ...geneList.slice(0, 20),
-      ...geneList.slice(21)
+      ...geneList.slice(21),
     ].slice(0, globals.maxGenes);
     expect(globals.maxUserDefinedGenes).toBeLessThan(globals.maxGenes);
     expect(geneList.length).toBeGreaterThan(globals.maxGenes);

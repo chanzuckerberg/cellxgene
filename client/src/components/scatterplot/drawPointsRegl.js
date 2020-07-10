@@ -1,6 +1,6 @@
 import { glPointFlags, glPointSize } from "../../util/glHelpers";
 
-export default function (regl) {
+export default function drawPointsRegl(regl) {
   return regl({
     vert: `
     precision mediump float;
