@@ -34,25 +34,26 @@ class AppConfigTest(unittest.TestCase):
 
         c = AppConfig()
         # test for illegal url_dataroots
-        for illegal in ("a/b", "../b", "!$*", "\\n", "", "(bad)"):
-            c.update_server_config(multi_dataset__dataroot={illegal: f"{PROJECT_ROOT}/example-dataset"})
+        for illegal in ("../b", "!$*", "\\n", "", "(bad)"):
+            c.update_server_config(
+                multi_dataset__dataroot={"tag": {"base_url": illegal, "dataroot": "{PROJECT_ROOT}/example-dataset"}}
+            )
             with self.assertRaises(ConfigurationError):
                 c.complete_config()
 
         # test for legal url_dataroots
-        for legal in (
-            "d",
-            "this.is-okay_",
-        ):
-            c.update_server_config(multi_dataset__dataroot={legal: f"{PROJECT_ROOT}/example-dataset"})
+        for legal in ("d", "this.is-okay_", "a/b"):
+            c.update_server_config(
+                multi_dataset__dataroot={"tag": {"base_url": legal, "dataroot": "{PROJECT_ROOT}/example-dataset"}}
+            )
             c.complete_config()
 
         # test that multi dataroots work end to end
         c.update_server_config(
             multi_dataset__dataroot=dict(
-                set1=f"{PROJECT_ROOT}/example-dataset",
-                set2=f"{PROJECT_ROOT}/server/test/test_datasets",
-                set3=f"{PROJECT_ROOT}/server/test/test_datasets",
+                s1=dict(dataroot=f"{PROJECT_ROOT}/example-dataset", base_url="set1/1/2"),
+                s2=dict(dataroot=f"{PROJECT_ROOT}/server/test/test_datasets", base_url="set2"),
+                s3=dict(dataroot=f"{PROJECT_ROOT}/server/test/test_datasets", base_url="set3"),
             )
         )
 
@@ -61,12 +62,12 @@ class AppConfigTest(unittest.TestCase):
 
         # specialize the configs for set1
         c.add_dataroot_config(
-            "set1", user_annotations__enable=False, diffexp__enable=True, app__about_legal_tos="tos_set1.html"
+            "s1", user_annotations__enable=False, diffexp__enable=True, app__about_legal_tos="tos_set1.html"
         )
 
         # specialize the configs for set2
         c.add_dataroot_config(
-            "set2", user_annotations__enable=True, diffexp__enable=False, app__about_legal_tos="tos_set2.html"
+            "s2", user_annotations__enable=True, diffexp__enable=False, app__about_legal_tos="tos_set2.html"
         )
 
         # no specializations for set3 (they get the default dataset config)
@@ -75,7 +76,7 @@ class AppConfigTest(unittest.TestCase):
         with test_server(app_config=c) as server:
             session = requests.Session()
 
-            r = session.get(f"{server}/set1/pbmc3k.h5ad/api/v0.2/config")
+            r = session.get(f"{server}/set1/1/2/pbmc3k.h5ad/api/v0.2/config")
             data_config = r.json()
             assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k"
             assert data_config["config"]["parameters"]["annotations"] is False

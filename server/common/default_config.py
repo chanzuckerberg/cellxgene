@@ -24,28 +24,37 @@ server:
     # or
     #     dataroot:  s3://bucket/prefix/
     #
-    # As an alternative, dataroot can be a dictionary, mapping url prefixes to dataroot paths.
+    # As an alternative, dataroot can be a dictionary, where a dataset key is associated with a base_url
+    # and a dataroot.
     # example:
     #     dataroot:
-    #         set1 : /path/to/set1_datasets/
-    #         set2 : /path/to/set2_datasets/
+    #         d1:
+    #            base_url: set1
+    #            dataroot: /path/to/set1_datasets/
+    #         d2:
+    #            base_url: set2/subdir
+    #            dataroot: /path/to/set2_datasets/
+    #
     # In this case, datasets can be accessed from <server>/set1/<datasetname> or
-    # <server>/set2/<datasetname>.  It is possible to have different dataset configurations
+    # <server>/set2/subdir/<datasetname>.  It is possible to have different dataset configurations
     # for datasets accessed through different dataroots.  For example, in one dataroot, the
     # user annotations could be enabled, and in another dataroot they could be disabled.
     # To specify dataroot configurations, add a new top level dictionary to the config named
-    # dataroot_<key>.  This dictionary has the exact same form as the "dataset" dictionary (see below).
+    # per_dataset_config. Within per_dataset_config create a dictionary for each dataroot to specialize
+    # ("d1" or "d2" from the example).  Each of these dictionaries has the exact same form as the "dataset"
+    # dictionary (see below).
     # When this approach is used, the values for each configuration option are checked in
-    # this order: dataroot_<key>, dataset, then the default values.
+    # this order: per_dataset_config/<key>, dataset, then the default values.
     #
     # example:
     #
-    # dataroot_set1:
-    #   user_annotations:
-    #      enable:  false
-    # dataroot_set2:
-    #   user_annotations:
-    #      enable:  true
+    # per_dataset_config:
+    #    d1:
+    #       user_annotations:
+    #           enable:  false
+    #    d2:
+    #       user_annotations:
+    #           enable:  true
 
     dataroot: null
 
@@ -68,6 +77,8 @@ server:
       timelimit_s: 30
 
   single_dataset:
+    # If datapath is set, then cellxgene with serve a single dataset located at datapath.  This parameter is not
+    # compatible with multi_dataset/dataroot.
     datapath: null
     obs_names: null
     var_names: null

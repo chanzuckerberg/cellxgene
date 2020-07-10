@@ -97,12 +97,13 @@ def _query_parameter_to_filter(args):
     return result
 
 
-def schema_get_helper(data_adaptor, annotations):
+def schema_get_helper(data_adaptor):
     """helper function to gather the schema from the data source and annotations"""
     schema = data_adaptor.get_schema()
     schema = copy.deepcopy(schema)
 
     # add label obs annotations as needed
+    annotations = data_adaptor.dataset_config.user_annotations
     if annotations is not None:
         label_schema = annotations.get_schema(data_adaptor)
         schema["annotations"]["obs"]["columns"].extend(label_schema)
@@ -110,17 +111,17 @@ def schema_get_helper(data_adaptor, annotations):
     return schema
 
 
-def schema_get(data_adaptor, annotations):
-    schema = schema_get_helper(data_adaptor, annotations)
+def schema_get(data_adaptor):
+    schema = schema_get_helper(data_adaptor)
     return make_response(jsonify({"schema": schema}), HTTPStatus.OK)
 
 
-def config_get(app_config, data_adaptor, annotations):
-    config = app_config.get_client_config(data_adaptor, annotations)
+def config_get(app_config, data_adaptor):
+    config = app_config.get_client_config(data_adaptor)
     return make_response(jsonify(config), HTTPStatus.OK)
 
 
-def annotations_obs_get(request, data_adaptor, annotations):
+def annotations_obs_get(request, data_adaptor):
     fields = request.args.getlist("annotation-name", None)
     num_columns_requested = len(data_adaptor.get_obs_keys()) if len(fields) == 0 else len(fields)
     if data_adaptor.server_config.exceeds_limit("column_request_max", num_columns_requested):
@@ -131,6 +132,7 @@ def annotations_obs_get(request, data_adaptor, annotations):
 
     try:
         labels = None
+        annotations = data_adaptor.dataset_config.user_annotations
         if annotations:
             labels = annotations.read_labels(data_adaptor)
         fbs = data_adaptor.annotation_to_fbs_matrix(Axis.OBS, fields, labels)
@@ -139,8 +141,9 @@ def annotations_obs_get(request, data_adaptor, annotations):
         return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)
 
 
-def annotations_put_fbs_helper(data_adaptor, annotations, fbs):
+def annotations_put_fbs_helper(data_adaptor, fbs):
     """helper function to write annotations from fbs"""
+    annotations = data_adaptor.dataset_config.user_annotations
     if annotations is None:
         raise DisabledFeatureError("Writable annotations are not enabled")
 
@@ -150,7 +153,8 @@ def annotations_put_fbs_helper(data_adaptor, annotations, fbs):
     annotations.write_labels(new_label_df, data_adaptor)
 
 
-def annotations_obs_put(request, data_adaptor, annotations):
+def annotations_obs_put(request, data_adaptor):
+    annotations = data_adaptor.dataset_config.user_annotations
     if annotations is None:
         return abort(HTTPStatus.NOT_IMPLEMENTED)
 
@@ -163,14 +167,14 @@ def annotations_obs_put(request, data_adaptor, annotations):
         annotations.set_collection(anno_collection)
 
     try:
-        annotations_put_fbs_helper(data_adaptor, annotations, fbs)
+        annotations_put_fbs_helper(data_adaptor, fbs)
         res = json.dumps({"status": "OK"})
         return make_response(res, HTTPStatus.OK, {"Content-Type": "application/json"})
     except (ValueError, DisabledFeatureError, KeyError) as e:
         return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)
 
 
-def annotations_var_get(request, data_adaptor, annotations):
+def annotations_var_get(request, data_adaptor):
     fields = request.args.getlist("annotation-name", None)
     num_columns_requested = len(data_adaptor.get_var_keys()) if len(fields) == 0 else len(fields)
     if data_adaptor.server_config.exceeds_limit("column_request_max", num_columns_requested):
@@ -181,6 +185,7 @@ def annotations_var_get(request, data_adaptor, annotations):
 
     try:
         labels = None
+        annotations = data_adaptor.dataset_config.user_annotations
         if annotations is not None:
             labels = annotations.read_labels(data_adaptor)
         return make_response(

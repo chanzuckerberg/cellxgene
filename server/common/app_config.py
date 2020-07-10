@@ -94,10 +94,9 @@ class AppConfig(object):
         self.server_config.update_from_config(config["server"], "server")
         self.default_dataset_config.update_from_config(config["dataset"], "dataset")
 
-        for key, dataroot_config in config.items():
-            if key.startswith("dataset_"):
-                dataroot_tag = key[len("dataset_") :]
-                self.add_dataroot_config(dataroot_tag, **dataroot_config)
+        per_dataset_config = config.get("per_dataset_config", {})
+        for key, dataroot_config in per_dataset_config.items():
+            self.add_dataroot_config(key, **dataroot_config)
 
         self.is_complete = False
 
@@ -110,10 +109,12 @@ class AppConfig(object):
             config["server__" + attrname] = getattr(self.server_config, attrname)
         for attrname in dataset.keys():
             config["dataset__" + attrname] = getattr(self.default_dataset_config, attrname)
+        if self.dataroot_config:
+            config["per_dataset_config"] = {}
         for dataroot_tag, dataroot_config in self.dataroot_config.items():
             dataset = dataroot_config.create_mapping(dataroot_config.default_config)
             for attrname in dataset.keys():
-                config[f"dataset_{dataroot_tag}__" + attrname] = getattr(dataroot_config, attrname)
+                config[f"per_dataset_config__{dataroot_tag}__" + attrname] = getattr(dataroot_config, attrname)
 
         config = unflatten(config, splitter=lambda key: key.split("__"))
         yaml.dump(config, open(config_file, "w"))
@@ -130,9 +131,9 @@ class AppConfig(object):
         if dataroot_tag in self.dataroot_config:
             raise ConfigurationError(f"dataroot config already exists: {dataroot_tag}")
         if type(self.server_config.multi_dataset__dataroot) != dict:
-            raise ConfigurationError("The server__mutli_dataset__dataroot must be a dictionary")
+            raise ConfigurationError("The server__multi_dataset__dataroot must be a dictionary")
         if dataroot_tag not in self.server_config.multi_dataset__dataroot:
-            raise ConfigurationError(f"The dataroot_tag ({dataroot_tag}) not found in server__mutli_dataset__dataroot")
+            raise ConfigurationError(f"The dataroot_tag ({dataroot_tag}) not found in server__multi_dataset__dataroot")
 
         self.is_completed = False
         self.dataroot_config[dataroot_tag] = DatasetConfig(dataroot_tag, self, self.default_config["dataset"])
@@ -168,6 +169,9 @@ class AppConfig(object):
     def get_matrix_data_cache_manager(self):
         return self.server_config.matrix_data_cache_manager
 
+    def is_multi_dataset(self):
+        return self.server_config.multi_dataset__dataroot is not None
+
     def get_title(self, data_adaptor):
         return (
             self.server_config.single_dataset__title
@@ -182,13 +186,14 @@ class AppConfig(object):
             else data_adaptor.get_about()
         )
 
-    def get_client_config(self, data_adaptor, annotation=None):
+    def get_client_config(self, data_adaptor):
         """
         Return the configuration as required by the /config REST route
         """
 
         server_config = self.server_config
         dataset_config = data_adaptor.dataset_config
+        annotation = dataset_config.user_annotations
 
         # FIXME The current set of config is not consistently presented:
         # we have camalCase, hyphen-text, and underscore_text
@@ -475,7 +480,7 @@ class ServerConfig(BaseConfig):
                 # if multi_dataset__dataroot is a dict, then use the first key
                 # that is in s3.   NOTE:  it is not supported to have dataroots
                 # in different regions.
-                paths = path.values()
+                paths = [val.get("dataroot") for val in path.values()]
                 for path in paths:
                     if path.startswith("s3://"):
                         break
@@ -549,16 +554,36 @@ class ServerConfig(BaseConfig):
             return
 
         if type(self.multi_dataset__dataroot) == str:
-            self.multi_dataset__dataroot = dict(d=self.multi_dataset__dataroot)
+            default_dict = dict(base_url="d", dataroot=self.multi_dataset__dataroot)
+            self.multi_dataset__dataroot = dict(d=default_dict)
 
-        for key in self.multi_dataset__dataroot.keys():
-            # sanity check for well formed keys
-            if type(key) != str:
-                raise ConfigurationError(f"error in multi_dataset__dataroot {key}")
-            if quote_plus(key) != key:
-                raise ConfigurationError(f"error in multi_dataset__dataroot {key}")
-            if os.path.split(os.path.normpath(key))[-1] != key:
-                raise ConfigurationError(f"error in multi_dataset__dataroot {key}")
+        for tag, dataroot_dict in self.multi_dataset__dataroot.items():
+            if "base_url" not in dataroot_dict:
+                raise ConfigurationError(f"error in multi_dataset__dataroot: missing base_url for tag {tag}")
+            if "dataroot" not in dataroot_dict:
+                raise ConfigurationError(f"error in multi_dataset__dataroot: missing dataroot, for tag {tag}")
+
+            base_url = dataroot_dict["base_url"]
+
+            # sanity check for well formed base urls
+            bad = False
+            if type(base_url) != str:
+                bad = True
+            elif os.path.normpath(base_url) != base_url:
+                bad = True
+            else:
+                base_url_parts = base_url.split("/")
+                if [quote_plus(part) for part in base_url_parts] != base_url_parts:
+                    bad = True
+                if ".." in base_url_parts:
+                    bad = True
+            if bad:
+                raise ConfigurationError(f"error in multi_dataset__dataroot base_url {base_url} for tag {tag}")
+
+        # verify all the base_urls are unique
+        base_urls = [d["base_url"] for d in self.multi_dataset__dataroot.values()]
+        if len(base_urls) > len(set(base_urls)):
+            raise ConfigurationError("error in multi_dataset__dataroot:  base_urls must be unique")
 
         # error checking
         for mtype in self.multi_dataset__allowed_matrix_types:
