@@ -1,9 +1,10 @@
 import string
 import random
 
+
 from sqlalchemy import func
 
-from server.db.cellxgene_orm import CellxgGeneUser, Dataset, Annotation, Base
+from server.db.cellxgene_orm import CellxGeneUser, CellxGeneDataset, Annotation, Base
 from server.db.create_db import create_db
 from server.db.db_utils import DbUtils
 
@@ -27,12 +28,12 @@ class TestDatabase:
         self._create_test_annotations()
 
     def _create_test_user(self):
-        user = CellxgGeneUser(id="test_user_id")
+        user = CellxGeneUser(id="test_user_id")
         self.db.session.add(user)
         self.db.session.commit()
 
     def _create_test_dataset(self):
-        dataset = Dataset(
+        dataset = CellxGeneDataset(
             id="test_dataset_id",
             name="test_dataset",
         )
@@ -57,14 +58,14 @@ class TestDatabase:
     def _create_test_users(self, user_count: int = 10):
         users = []
         for i in range(user_count):
-            users.append(CellxgGeneUser(id=self.get_random_string()))
+            users.append(CellxGeneUser(id=self.get_random_string()))
         self.db.session.add_all(users)
         self.db.session.commit()
 
     def _create_test_datasets(self, dataset_count: int = 10):
         datasets = []
         for i in range(dataset_count):
-            datasets.append(Dataset(id=self.get_random_string(), name=self.get_random_string()))
+            datasets.append(CellxGeneDataset(id=self.get_random_string(), name=self.get_random_string()))
         self.db.session.add_all(datasets)
         self.db.session.commit()
 
@@ -74,8 +75,8 @@ class TestDatabase:
     def _create_test_annotations(self, annotation_count: int = 10):
         annotations = []
         for i in range(annotation_count):
-            dataset = self.order_by_random(Dataset)
-            user = self.order_by_random(CellxgGeneUser)
+            dataset = self.order_by_random(CellxGeneDataset)
+            user = self.order_by_random(CellxGeneUser)
             annotations.append(Annotation(
                 id=self.get_random_string(),
                 tiledb_uri=self.get_random_string(),

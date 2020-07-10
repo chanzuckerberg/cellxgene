@@ -178,8 +178,6 @@ dataset:
     lfc_cutoff: 0.01
     top_n: 10
 
-relational_db:
-  database_uri: "postgresql://postgres:test_pw@localhost:5432"
 """
 
 

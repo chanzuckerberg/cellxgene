@@ -1,15 +1,12 @@
 """
-Drops and recreates all tables according to cellxgene_orm.py
+Drops and recreates all tables for local testing according to cellxgene_orm.py
 """
-
-from flask import current_app
 from sqlalchemy import create_engine
 
 from server.db.cellxgene_orm import Base
-config = current_app.app_config
 
 
-def create_db(database_uri):
+def create_db(database_uri: str = "postgresql://postgres:test_pw@localhost:5432"):
     engine = create_engine(database_uri)
     print("Dropping tables")
     Base.metadata.drop_all(engine)

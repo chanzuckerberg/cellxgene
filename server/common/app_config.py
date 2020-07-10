@@ -442,7 +442,6 @@ class ServerConfig(BaseConfig):
             self.limits__diffexp_cellcount_max = dc["limits"]["diffexp_cellcount_max"]
             self.limits__column_request_max = dc["limits"]["column_request_max"]
 
-            self.relational_db__database_uri = dc["relational_db"]["database_uri"]
         except KeyError as e:
             raise ConfigurationError(f"Unexpected config: {str(e)}")
 
@@ -461,7 +460,6 @@ class ServerConfig(BaseConfig):
         self.handle_multi_dataset(context)  # may depend on adaptor
         self.handle_diffexp(context)
         self.handle_limits(context)
-        self.handle_relational_db(context)
 
         self.check_config()
 
@@ -699,9 +697,6 @@ class ServerConfig(BaseConfig):
         self.check_attr("limits__diffexp_cellcount_max", (type(None), int))
         self.check_attr("limits__column_request_max", (type(None), int))
 
-    def handle_relational_db(self, context):
-        self.__check_attr("relational_db__database_uri", str)
-
     def exceeds_limit(self, limit_name, value):
         limit_value = getattr(self, "limits__" + limit_name, None)
         if limit_value is None:  # disabled
@@ -847,10 +842,6 @@ class DatasetConfig(BaseConfig):
                 context["messagefn"](
                     "Warning: --experimental-annotations-ontology-obo" " ignored as annotations are disabled."
                 )
-
-    def handle_relational_db(self, context):
-        self.__check_attr("relational_db__database_uri", str)
-
 
     def handle_embeddings(self, context):
         self.check_attr("embeddings__names", list)

@@ -1,10 +1,13 @@
 import typing
 
-from server.db.cellxgene_orm import DBSessionMaker, Base
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+from server.db.cellxgene_orm import Base
 
 
 class DbUtils:
-    def __init__(self, database_uri):
+    def __init__(self, database_uri: str = "postgresql://postgres:test_pw@localhost:5432"):
         self.session = DBSessionMaker(database_uri).session()
         self.engine = self.session.get_bind()
 
@@ -29,3 +32,12 @@ class DbUtils:
             if filter_args
             else self.session.query(*table_args).all()
         )
+
+
+class DBSessionMaker:
+    def __init__(self, database_uri):
+        self.engine = create_engine(database_uri, connect_args={"connect_timeout": 5})
+        self.session_maker = sessionmaker(bind=self.engine)
+
+    def session(self, **kwargs):
+        return self.session_maker(**kwargs)
