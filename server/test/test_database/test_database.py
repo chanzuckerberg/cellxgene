@@ -1,13 +1,12 @@
 import unittest
 
 from server.db.cellxgene_orm import CellxgGeneUser, Dataset, Annotation
-from server.db.create_db import create_db
 from server.db.db_utils import DbUtils
 from server.test.fixtures.database import TestDatabase
 
 
 class AppConfigTest(unittest.TestCase):
-    db = DbUtils()
+    db = DbUtils("postgresql://postgres:test_pw@localhost:5432")
 
     @classmethod
     def setUpClass(cls) -> None:

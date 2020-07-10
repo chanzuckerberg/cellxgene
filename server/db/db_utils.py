@@ -4,8 +4,8 @@ from server.db.cellxgene_orm import DBSessionMaker, Base
 
 
 class DbUtils:
-    def __init__(self):
-        self.session = DBSessionMaker().session()
+    def __init__(self, database_uri):
+        self.session = DBSessionMaker(database_uri).session()
         self.engine = self.session.get_bind()
 
     def get(self, table: Base, entity_id: typing.Union[str, typing.Tuple[str]]) -> typing.Union[Base, None]:

@@ -10,8 +10,9 @@ from server.db.db_utils import DbUtils
 
 class TestDatabase:
     def __init__(self):
-        create_db()
-        self.db = DbUtils()
+        local_db_uri = "postgresql://postgres:test_pw@localhost:5432"
+        create_db(local_db_uri)
+        self.db = DbUtils(local_db_uri)
         self._populate_test_data()
         self._populate_test_data_many()
 

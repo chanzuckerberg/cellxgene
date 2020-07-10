@@ -2,14 +2,15 @@
 Drops and recreates all tables according to cellxgene_orm.py
 """
 
+from flask import current_app
 from sqlalchemy import create_engine
 
 from server.db.cellxgene_orm import Base
-from server.db.db_config import CellxGeneDbConfig
+config = current_app.app_config
 
 
-def create_db():
-    engine = create_engine(CellxGeneDbConfig().database_uri())
+def create_db(database_uri):
+    engine = create_engine(database_uri)
     print("Dropping tables")
     Base.metadata.drop_all(engine)
     print("Recreating tables")

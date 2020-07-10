@@ -460,6 +460,7 @@ class ServerConfig(BaseConfig):
         self.handle_multi_dataset(context)  # may depend on adaptor
         self.handle_diffexp(context)
         self.handle_limits(context)
+        self.handle_relational_db(context)
 
         self.check_config()
 
@@ -842,6 +843,10 @@ class DatasetConfig(BaseConfig):
                 context["messagefn"](
                     "Warning: --experimental-annotations-ontology-obo" " ignored as annotations are disabled."
                 )
+
+    def handle_relational_db(self, context):
+        self.__check_attr("relational_db__database_uri", str)
+
 
     def handle_embeddings(self, context):
         self.check_attr("embeddings__names", list)

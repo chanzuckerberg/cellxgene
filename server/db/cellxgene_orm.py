@@ -1,4 +1,3 @@
-from server.db.db_config import CellxGeneDbConfig
 from sqlalchemy import (
     Column,
     create_engine,
@@ -12,14 +11,13 @@ from sqlalchemy.orm import relationship, sessionmaker
 
 
 Base = declarative_base()
-# deployment_stage = os.environ["DEPLOYMENT_STAGE"]
 
 DEFAULT_DATETIME = text("now()")
 
 
 class DBSessionMaker:
-    def __init__(self):
-        self.engine = create_engine(CellxGeneDbConfig().database_uri(), connect_args={"connect_timeout": 5})
+    def __init__(self, database_uri):
+        self.engine = create_engine(database_uri, connect_args={"connect_timeout": 5})
         self.session_maker = sessionmaker(bind=self.engine)
 
     def session(self, **kwargs):
