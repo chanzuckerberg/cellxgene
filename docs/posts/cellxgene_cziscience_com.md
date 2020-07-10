@@ -191,5 +191,84 @@ with a link to embed on your own site, please drop us a note at <mailto:cellxgen
         <a href="https://singlecell.broadinstitute.org/single_cell/study/SCP806/epithelial-cells-in-nhp-mtb-granuloma-and-uninvolved-lung?scpbr=the-alexandria-project">Single Cell Portal</a>
       </td>
     </tr>
+    <tr>
+      <td><a href="https://cellxgene.cziscience.com/d/kampmann_lab_human_AD_snRNAseq_EC-49.cxg/
+" target="_blank">Selective Neuronal Vulnerability in Alzheimer's Disease</a></td>
+      <td>
+        <a href="https://kampmannlab.ucsf.edu/">Kampmann Lab</a>, 
+        <a href="https://www.biorxiv.org/content/10.1101/2020.04.04.025825v2">BioRxiv preprint</a>
+      </td>
+    </tr>
+    <tr>
+      <td><a href="https://cellxgene.cziscience.com/d/kampmann_lab_human_AD_snRNAseq_SFG-50.cxg/
+" target="_blank">Selective Neuronal Vulnerability in Alzheimer's Disease: Superior Frontal Gyrus</a></td>
+      <td>
+        <a href="https://kampmannlab.ucsf.edu/">Kampmann Lab</a>, 
+        <a href="https://www.biorxiv.org/content/10.1101/2020.04.04.025825v2">BioRxiv preprint</a>
+      </td>
+    </tr>
+    <tr>
+      <td><a href="https://cellxgene.cziscience.com/d/kampmann_lab_human_AD_snRNAseq_EC_astrocytes-51.cxg/
+" target="_blank">Selective Neuronal Vulnerability in Alzheimer's Disease: Astrocytes in EC</a></td>
+      <td>
+        <a href="https://kampmannlab.ucsf.edu/">Kampmann Lab</a>, 
+        <a href="https://www.biorxiv.org/content/10.1101/2020.04.04.025825v2">BioRxiv preprint</a>
+      </td>
+    </tr>
+    <tr>
+      <td><a href="https://cellxgene.cziscience.com/d/kampmann_lab_human_AD_snRNAseq_EC_excitatoryNeurons-52.cxg/
+" target="_blank">Selective Neuronal Vulnerability in Alzheimer's Disease: Excitatory Neurons in EC</a></td>
+      <td>
+        <a href="https://kampmannlab.ucsf.edu/">Kampmann Lab</a>, 
+        <a href="https://www.biorxiv.org/content/10.1101/2020.04.04.025825v2">BioRxiv preprint</a>
+      </td>
+    </tr>
+    <tr>
+      <td><a href="https://cellxgene.cziscience.com/d/kampmann_lab_human_AD_snRNAseq_EC_inhibitoryNeurons-53.cxg/
+" target="_blank">Selective Neuronal Vulnerability in Alzheimer's Disease: Inhibitory Neurons in EC</a></td>
+      <td>
+        <a href="https://kampmannlab.ucsf.edu/">Kampmann Lab</a>, 
+        <a href="https://www.biorxiv.org/content/10.1101/2020.04.04.025825v2">BioRxiv preprint</a>
+      </td>
+    </tr>
+    <tr>
+      <td><a href="https://cellxgene.cziscience.com/d/kampmann_lab_human_AD_snRNAseq_EC_microglia-54.cxg/
+" target="_blank">Selective Neuronal Vulnerability in Alzheimer's Disease: Microglia in EC</a></td>
+      <td>
+        <a href="https://kampmannlab.ucsf.edu/">Kampmann Lab</a>, 
+        <a href="https://www.biorxiv.org/content/10.1101/2020.04.04.025825v2">BioRxiv preprint</a>
+      </td>
+    </tr>
+    <tr>
+      <td><a href="https://cellxgene.cziscience.com/d/kampmann_lab_human_AD_snRNAseq_SFG_astrocytes-55.cxg/
+" target="_blank">Selective Neuronal Vulnerability in Alzheimer's Disease: Astrocytes in SFG</a></td>
+      <td>
+        <a href="https://kampmannlab.ucsf.edu/">Kampmann Lab</a>, 
+        <a href="https://www.biorxiv.org/content/10.1101/2020.04.04.025825v2">BioRxiv preprint</a>
+      </td>
+    </tr>
+    <tr>
+      <td><a href="https://cellxgene.cziscience.com/d/kampmann_lab_human_AD_snRNAseq_SFG_excitatoryNeurons-56.cxg/
+" target="_blank">Selective Neuronal Vulnerability in Alzheimer's Disease: Excitatory Neurons in SFG</a></td>
+      <td>
+        <a href="https://kampmannlab.ucsf.edu/">Kampmann Lab</a>, 
+        <a href="https://www.biorxiv.org/content/10.1101/2020.04.04.025825v2">BioRxiv preprint</a>
+      </td>
+    </tr>
+    <tr>
+      <td><a href="https://cellxgene.cziscience.com/d/kampmann_lab_human_AD_snRNAseq_SFG_inhibitoryNeurons-57.cxg/
+" target="_blank">Selective Neuronal Vulnerability in Alzheimer's Disease: Inhibitory Neurons in SFG</a></td>
+      <td>
+        <a href="https://kampmannlab.ucsf.edu/">Kampmann Lab</a>, 
+        <a href="https://www.biorxiv.org/content/10.1101/2020.04.04.025825v2">BioRxiv preprint</a>
+      </td>
+    </tr>
+    <tr>
+      <td><a href="https://cellxgene.cziscience.com/d/kampmann_lab_human_AD_snRNAseq_SFG_microglia-58.cxg/" target="_blank">Selective Neuronal Vulnerability in Alzheimer's Disease: Microglia in SFG</a></td>
+      <td>
+        <a href="https://kampmannlab.ucsf.edu/">Kampmann Lab</a>, 
+        <a href="https://www.biorxiv.org/content/10.1101/2020.04.04.025825v2">BioRxiv preprint</a>
+      </td>
+    </tr>
   </tbody>
 </table>
