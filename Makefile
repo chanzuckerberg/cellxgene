@@ -60,6 +60,11 @@ smoke-test:
 smoke-test-annotations:
 	cd client && $(MAKE) smoke-test-annotations
 
+.PHONY: test-db
+test-db:
+	cd server && $(MAKE) test-db
+
+
 # FORMATTING CODE
 
 .PHOHY: fmt
