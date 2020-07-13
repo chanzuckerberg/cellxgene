@@ -41,11 +41,11 @@ function InformationMenu(props) {
             />
             <MenuItem
               target="_blank"
-              text={`cellxgene v${
+              text={
                 libraryVersions && libraryVersions.cellxgene
                   ? libraryVersions.cellxgene
                   : null
-              }`}
+              }
             />
             <MenuItem text="MIT License" />
             {tosURL ? (

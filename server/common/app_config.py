@@ -1,4 +1,4 @@
-from server import __version__ as cellxgene_version
+from server import display_version as cellxgene_display_version
 from flatten_dict import flatten, unflatten
 import os
 from os.path import splitext, basename, isdir
@@ -213,7 +213,7 @@ class AppConfig(object):
         # library_versions
         library_versions = {}
         library_versions.update(data_adaptor.get_library_versions())
-        library_versions["cellxgene"] = cellxgene_version
+        library_versions["cellxgene"] = cellxgene_display_version
 
         # links
         links = {"about-dataset": about}

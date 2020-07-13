@@ -164,6 +164,7 @@ def import_plugins(plugin_module):
             module = importlib.import_module(full_name)
             logging.info(f"Imported plugin {full_name}")
             loaded_modules.append(module)
-    except ModuleNotFoundError:
-        logging.debug(f"No plugins found in module: {plugin_module}")
+    except ModuleNotFoundError as e:
+        logging.error(f"No plugins found in module: {plugin_module}: {str(e)}")
+
     return loaded_modules
