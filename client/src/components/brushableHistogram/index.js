@@ -664,7 +664,7 @@ class HistogramBrush extends React.PureComponent {
     };
   };
 
-  // eslint-disable-next-line class-methods-use-this -- ready for memoization
+  // eslint-disable-next-line class-methods-use-this -- instance method allows for memoization per annotation
   calcHistogramCache(col, margin, width, height) {
     /*
      recalculate expensive stuff, notably bins, summaries, etc.
