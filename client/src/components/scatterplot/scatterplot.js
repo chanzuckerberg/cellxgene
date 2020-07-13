@@ -8,7 +8,6 @@ import memoize from "memoize-one";
 import Async from "react-async";
 
 import * as globals from "../../globals";
-// import setupScatterplot from "./setupScatterplot";
 import styles from "./scatterplot.css";
 import _drawPoints from "./drawPointsRegl";
 import { margin, width, height } from "./util";
