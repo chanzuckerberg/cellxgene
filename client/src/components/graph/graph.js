@@ -1,7 +1,7 @@
 // jshint esversion: 6
 import React from "react";
 import * as d3 from "d3";
-import { connect } from "react-redux";
+import { connect, shallowEqual } from "react-redux";
 import { mat3, vec2 } from "gl-matrix";
 import _regl from "regl";
 import memoize from "memoize-one";
@@ -20,7 +20,6 @@ import GraphOverlayLayer from "./overlays/graphOverlayLayer";
 import CentroidLabels from "./overlays/centroidLabels";
 import actions from "../../actions";
 import renderThrottle from "../../util/renderThrottle";
-import shallowEqual from "../../util/shallowEqual";
 
 /*
 Simple 2D transforms control all point painting.  There are three:
@@ -239,9 +238,7 @@ class Graph extends React.Component {
     } = this.props;
     const { toolSVG, viewport } = this.state;
     let { projectionTF } = this.state;
-    // const { reglCanvas } = this;
     const hasResized =
-      // reglCanvas &&
       prevState.viewport.height !== viewport.height ||
       prevState.viewport.width !== viewport.width;
     let stateChanges = {};
@@ -265,28 +262,6 @@ class Graph extends React.Component {
         ...this.createToolSVG(),
       };
     }
-
-    /*
-    if (hasResized) {
-      // If the window size has changed we want to recreate all SVGs
-      stateChanges = {
-        ...stateChanges,
-        ...this.createToolSVG(),
-      };
-    } else if (
-      (viewport.height && viewport.width && !toolSVG) ||
-      selectionTool !== prevProps.selectionTool
-    ) {
-      // first time or change of selection tool
-      stateChanges = { ...stateChanges, ...this.createToolSVG() };
-    } else if (prevProps.graphInteractionMode !== graphInteractionMode) {
-      // If lasso/zoom is switched
-      stateChanges = {
-        ...stateChanges,
-        ...this.createToolSVG(),
-      };
-    }
-*/
 
     /*
     if the selection tool or state has changed, ensure that the selection

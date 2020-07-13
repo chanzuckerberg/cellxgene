@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { connect } from "react-redux";
+import { connect, shallowEqual } from "react-redux";
 import { Button, ButtonGroup } from "@blueprintjs/core";
 import _regl from "regl";
 import * as d3 from "d3";
@@ -17,7 +17,6 @@ import {
   createColorQuery,
 } from "../../util/stateManager/colorHelpers";
 import renderThrottle from "../../util/renderThrottle";
-import shallowEqual from "../../util/shallowEqual";
 
 const flagSelected = 1;
 const flagNaN = 2;
@@ -158,7 +157,6 @@ class Scatterplot extends React.PureComponent {
     this.renderCache = null;
     this.state = {
       regl: null,
-      // svg: null,
       drawPoints: null,
       minimized: null,
       viewport: {

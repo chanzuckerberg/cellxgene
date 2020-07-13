@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from "react";
-import { connect } from "react-redux";
+import { connect, shallowEqual } from "react-redux";
 import { FaChevronRight, FaChevronDown } from "react-icons/fa";
 import { AnchorButton, Button, Tooltip } from "@blueprintjs/core";
 import Async from "react-async";
@@ -19,7 +19,6 @@ import {
   createColorQuery,
 } from "../../../util/stateManager/colorHelpers";
 import actions from "../../../actions";
-import shallowEqual from "../../../util/shallowEqual";
 
 const LABEL_WIDTH = globals.leftSidebarWidth - 100;
 const ANNO_BUTTON_WIDTH = 50;

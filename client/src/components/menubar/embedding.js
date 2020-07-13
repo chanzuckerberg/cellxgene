@@ -15,7 +15,7 @@ import actions from "../../actions";
 
 @connect((state) => ({
   layoutChoice: state.layoutChoice,
-  // disabled temporarily
+  // disabled temporarily. TODO - issue #1606
   // reembedController: state.reembedController,
   // enableReembedding: state.config?.parameters?.["enable-reembedding"] ?? false,
   enableReembedding: false,
@@ -29,7 +29,7 @@ class Embedding extends React.PureComponent {
   // eslint-disable-next-line class-methods-use-this -- temporary disable
   renderReembedding() {
     return null;
-    /* disabled pending rewrite
+    /* disabled pending rewrite. TODO - issue #1606
     const {
       enableReembedding,
       world,
