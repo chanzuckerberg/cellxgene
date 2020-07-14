@@ -28,8 +28,6 @@ class CentroidLabels extends PureComponent {
   }
 
   componentDidUpdate() {
-    // this.updateState(prevProps);
-
     const { showLabels, overlaySetShowing } = this.props;
     const { labelSize } = this.state;
     overlaySetShowing("centroidLabels", showLabels && labelSize > 0);
