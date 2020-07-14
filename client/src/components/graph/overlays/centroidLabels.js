@@ -1,5 +1,6 @@
 import React, { PureComponent } from "react";
-import { connect } from "react-redux";
+import { connect, shallowEqual } from "react-redux";
+import Async from "react-async";
 
 import { categoryLabelDisplayStringLongLength } from "../../../globals";
 import calcCentroid from "../../../util/centroid";
@@ -15,26 +16,73 @@ export default
   showLabels: state.centroidLabels?.showLabels,
 }))
 class CentroidLabels extends PureComponent {
+  static watchAsync(props, prevProps) {
+    return !shallowEqual(props.watchProps, prevProps.watchProps);
+  }
+
   constructor(props) {
     super(props);
     this.state = {
-      status: "pending",
-      labels: new Map(),
-      colorAccessor: null,
+      labelSize: 0,
     };
   }
 
-  componentDidMount() {
-    this.updateState(null);
-  }
-
-  componentDidUpdate(prevProps) {
-    this.updateState(prevProps);
+  componentDidUpdate() {
+    // this.updateState(prevProps);
 
     const { showLabels, overlaySetShowing } = this.props;
-    const { labels } = this.state;
-    overlaySetShowing("centroidLabels", showLabels && labels.size > 0);
+    const { labelSize } = this.state;
+    overlaySetShowing("centroidLabels", showLabels && labelSize > 0);
   }
+
+  fetchAsyncProps = async (props) => {
+    const {
+      annoMatrix,
+      colors,
+      layoutChoice,
+      categoricalSelection,
+    } = props.watchProps;
+    const { schema } = annoMatrix;
+    const { colorAccessor } = colors;
+
+    const [layoutDf, colorDf] = await this.fetchData();
+    let labels = [];
+    if (colorDf) {
+      labels = calcCentroid(
+        schema,
+        colorAccessor,
+        colorDf,
+        layoutChoice,
+        layoutDf
+      );
+    }
+
+    this.setState({ labelSize: labels.size });
+
+    return {
+      labels,
+      colorAccessor,
+      category: categoricalSelection[colorAccessor],
+    };
+  };
+
+  handleMouseEnter = (e, colorAccessor, label) => {
+    const { dispatch } = this.props;
+    dispatch({
+      type: "category value mouse hover start",
+      metadataField: colorAccessor,
+      categoryField: label,
+    });
+  };
+
+  handleMouseOut = (e, colorAccessor, label) => {
+    const { dispatch } = this.props;
+    dispatch({
+      type: "category value mouse hover end",
+      metadataField: colorAccessor,
+      categoryField: label,
+    });
+  };
 
   colorByQuery() {
     const { annoMatrix, colors } = this.props;
@@ -60,126 +108,122 @@ class CentroidLabels extends PureComponent {
     return Promise.all(promises);
   }
 
-  // Check to see if centroids have either just been displayed or removed from the overlay
-  async updateState(prevProps) {
-    const { annoMatrix, colors, layoutChoice } = this.props;
-    if (!annoMatrix || !layoutChoice || !colors) return;
-
-    if (
-      annoMatrix !== prevProps?.annoMatrix ||
-      colors !== prevProps?.colors ||
-      layoutChoice !== prevProps?.layoutChoice
-    ) {
-      const { schema } = annoMatrix;
-      const { colorAccessor } = colors;
-      this.setState({ status: "pending" });
-      try {
-        const [layoutDf, colorDf] = await this.fetchData();
-        let labels = [];
-        if (colorDf) {
-          labels = calcCentroid(
-            schema,
-            colorAccessor,
-            colorDf,
-            layoutChoice,
-            layoutDf
-          );
-        }
-        this.setState({ status: "success", labels, colorAccessor });
-      } catch (error) {
-        this.setState({ status: "error" });
-        throw error;
-      }
-    }
-  }
-
   render() {
     const {
       inverseTransform,
       dilatedValue,
-      dispatch,
       categoricalSelection,
       showLabels,
+      colors,
+      annoMatrix,
+      layoutChoice,
     } = this.props;
 
-    const { status, labels, colorAccessor } = this.state;
-
-    if (
-      status !== "success" ||
-      !showLabels ||
-      !colorAccessor ||
-      labels.size === 0
-    )
+    if (!showLabels) {
       return null;
+    }
 
-    const category = categoricalSelection[colorAccessor];
+    return (
+      <Async
+        watchFn={CentroidLabels.watchAsync}
+        promiseFn={this.fetchAsyncProps}
+        watchProps={{
+          annoMatrix,
+          colors,
+          layoutChoice,
+          categoricalSelection,
+          dilatedValue,
+        }}
+      >
+        <Async.Fulfilled>
+          {(asyncProps) => {
+            const labelSVGS = [];
+            const deselectOpacity = 0.375;
+            const { category, colorAccessor, labels } = asyncProps;
 
-    const labelSVGS = [];
-    let fontSize = "15px";
-    let fontWeight = null;
-    const deselectOpacity = 0.375;
-    labels.forEach((coords, label) => {
-      fontSize = "15px";
-      fontWeight = null;
-      if (label === dilatedValue) {
-        fontSize = "18px";
-        fontWeight = "800";
-      }
+            labels.forEach((coords, label) => {
+              const selected = category.get(label) ?? true;
 
-      const selected = category.get(label) ?? true;
+              // Mirror LSB middle truncation
+              let displayLabel = label;
+              if (displayLabel.length > categoryLabelDisplayStringLongLength) {
+                displayLabel = `${label.slice(
+                  0,
+                  categoryLabelDisplayStringLongLength / 2
+                )}…${label.slice(-categoryLabelDisplayStringLongLength / 2)}`;
+              }
 
-      // Mirror LSB middle truncation
-      let displayLabel = label;
-      if (displayLabel.length > categoryLabelDisplayStringLongLength) {
-        displayLabel = `${label.slice(
-          0,
-          categoryLabelDisplayStringLongLength / 2
-        )}…${label.slice(-categoryLabelDisplayStringLongLength / 2)}`;
-      }
+              labelSVGS.push(
+                // eslint-disable-next-line jsx-a11y/mouse-events-have-key-events -- the mouse actions for centroid labels do not have a screen reader alternative
+                <Label
+                  key={label} // eslint-disable-line react/no-array-index-key --- label is not an index, eslint is confused
+                  label={label}
+                  dilatedValue={dilatedValue}
+                  coords={coords}
+                  inverseTransform={inverseTransform}
+                  opactity={selected ? 1 : deselectOpacity}
+                  colorAccessor={colorAccessor}
+                  displayLabel={displayLabel}
+                  onMouseEnter={this.handleMouseEnter}
+                  onMouseOut={this.handleMouseOut}
+                />
+              );
+            });
 
-      labelSVGS.push(
-        <g
-          // eslint-disable-next-line react/no-array-index-key --- label is unique and consistent
-          key={label}
-          className="centroid-label"
-          transform={`translate(${coords[0]}, ${coords[1]})`}
-          data-testclass="centroid-label"
-          data-testid={`${label}-centroid-label`}
-        >
-          {/* eslint-disable-next-line jsx-a11y/mouse-events-have-key-events --- the mouse actions for centroid labels do not have a screen reader alternative*/}
-          <text
-            transform={inverseTransform}
-            textAnchor="middle"
-            data-label={label}
-            style={{
-              fontSize,
-              fontWeight,
-              fill: "black",
-              userSelect: "none",
-              opacity: selected ? 1 : deselectOpacity,
-            }}
-            onMouseEnter={(e) =>
-              dispatch({
-                type: "category value mouse hover start",
-                metadataField: colorAccessor,
-                categoryField: e.target.getAttribute("data-label"),
-              })
-            }
-            onMouseOut={(e) =>
-              dispatch({
-                type: "category value mouse hover end",
-                metadataField: colorAccessor,
-                categoryField: e.target.getAttribute("data-label"),
-              })
-            }
-            pointerEvents="visiblePainted"
-          >
-            {displayLabel}
-          </text>
-        </g>
-      );
-    });
-
-    return <>{labelSVGS}</>;
+            return <>{labelSVGS}</>;
+          }}
+        </Async.Fulfilled>
+      </Async>
+    );
   }
 }
+
+const Label = ({
+  label,
+  dilatedValue,
+  coords,
+  inverseTransform,
+  opacity,
+  colorAccessor,
+  displayLabel,
+  onMouseEnter,
+  onMouseOut,
+}) => {
+  /*
+  Render a label at a given coordinate.
+  */
+  let fontSize = "15px";
+  let fontWeight = null;
+  if (label === dilatedValue) {
+    fontSize = "18px";
+    fontWeight = "800";
+  }
+
+  return (
+    <g
+      key={label}
+      className="centroid-label"
+      transform={`translate(${coords[0]}, ${coords[1]})`}
+      data-testclass="centroid-label"
+      data-testid={`${label}-centroid-label`}
+    >
+      {/* eslint-disable-next-line jsx-a11y/mouse-events-have-key-events --- the mouse actions for centroid labels do not have a screen reader alternative*/}
+      <text
+        transform={inverseTransform}
+        textAnchor="middle"
+        style={{
+          fontSize,
+          fontWeight,
+          fill: "black",
+          userSelect: "none",
+          opacity: { opacity },
+        }}
+        onMouseEnter={(e) => onMouseEnter(e, colorAccessor, label)}
+        onMouseOut={(e) => onMouseOut(e, colorAccessor, label)}
+        pointerEvents="visiblePainted"
+      >
+        {displayLabel}
+      </text>
+    </g>
+  );
+};
