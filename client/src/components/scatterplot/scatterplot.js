@@ -182,8 +182,8 @@ class Scatterplot extends React.PureComponent {
 
   getViewportDimensions = () => {
     return {
-        height: window.innerHeight,
-        width: window.innerWidth,
+      height: window.innerHeight,
+      width: window.innerWidth,
     };
   };
 
@@ -402,7 +402,7 @@ class Scatterplot extends React.PureComponent {
       crossfilter,
       pointDilation,
     } = this.props;
-    const { minimized, status, regl, viewport } = this.state;
+    const { minimized, regl, viewport } = this.state;
 
     return (
       <div
