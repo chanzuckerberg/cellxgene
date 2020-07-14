@@ -20,31 +20,19 @@ class CentroidLabels extends PureComponent {
     return !shallowEqual(props.watchProps, prevProps.watchProps);
   }
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      labelSize: 0,
-    };
-  }
-
-  componentDidUpdate() {
-    const { showLabels, overlaySetShowing } = this.props;
-    const { labelSize } = this.state;
-    overlaySetShowing("centroidLabels", showLabels && labelSize > 0);
-  }
-
   fetchAsyncProps = async (props) => {
     const {
       annoMatrix,
       colors,
       layoutChoice,
       categoricalSelection,
+      showLabels,
     } = props.watchProps;
     const { schema } = annoMatrix;
     const { colorAccessor } = colors;
 
     const [layoutDf, colorDf] = await this.fetchData();
-    let labels = [];
+    let labels;
     if (colorDf) {
       labels = calcCentroid(
         schema,
@@ -53,9 +41,12 @@ class CentroidLabels extends PureComponent {
         layoutChoice,
         layoutDf
       );
+    } else {
+      labels = new Map();
     }
 
-    this.setState({ labelSize: labels.size });
+    const { overlaySetShowing } = this.props;
+    overlaySetShowing("centroidLabels", showLabels && labels.size > 0);
 
     return {
       labels,
@@ -107,6 +98,7 @@ class CentroidLabels extends PureComponent {
   }
 
   render() {
+    console.log('render');
     const {
       inverseTransform,
       dilatedValue,
@@ -116,10 +108,6 @@ class CentroidLabels extends PureComponent {
       annoMatrix,
       layoutChoice,
     } = this.props;
-
-    if (!showLabels) {
-      return null;
-    }
 
     return (
       <Async
@@ -131,10 +119,13 @@ class CentroidLabels extends PureComponent {
           layoutChoice,
           categoricalSelection,
           dilatedValue,
+          showLabels,
         }}
       >
         <Async.Fulfilled>
           {(asyncProps) => {
+            if (!showLabels) return null;
+
             const labelSVGS = [];
             const deselectOpacity = 0.375;
             const { category, colorAccessor, labels } = asyncProps;
