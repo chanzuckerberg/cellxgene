@@ -98,7 +98,6 @@ class CentroidLabels extends PureComponent {
   }
 
   render() {
-    console.log('render');
     const {
       inverseTransform,
       dilatedValue,
