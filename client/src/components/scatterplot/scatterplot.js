@@ -151,6 +151,7 @@ class Scatterplot extends React.PureComponent {
 
   constructor(props) {
     super(props);
+    const viewport = this.getViewportDimensions();
     this.axes = false;
     this.reglCanvas = null;
     this.renderCache = null;
@@ -158,32 +159,18 @@ class Scatterplot extends React.PureComponent {
       regl: null,
       drawPoints: null,
       minimized: null,
-      viewport: {
-        height: null,
-        width: null,
-      },
-      projectionTF: null,
+      viewport,
+      projectionTF: createProjectionTF(width, height),
     };
   }
 
   componentDidMount() {
-    // Create render transform
-    const projectionTF = createProjectionTF(
-      this.reglCanvas.width,
-      this.reglCanvas.height
-    );
-
+    // this affect point render size for the scatterplot
     window.addEventListener("resize", this.handleResize);
-    const viewport = this.getViewportDimensions();
-
-    this.setState({
-      projectionTF,
-      viewport,
-    });
   }
 
   componentWillUnmount() {
-    window.removeEventListener("resize", this.updateViewportDimensions);
+    window.removeEventListener("resize", this.handleResize);
   }
 
   setReglCanvas = (canvas) => {
@@ -195,10 +182,8 @@ class Scatterplot extends React.PureComponent {
 
   getViewportDimensions = () => {
     return {
-      viewport: {
-        height: window.height,
-        width: window.width,
-      },
+        height: window.innerHeight,
+        width: window.innerWidth,
     };
   };
 
@@ -209,10 +194,6 @@ class Scatterplot extends React.PureComponent {
       ...state,
       viewport,
     });
-  };
-
-  updateViewportDimensions = () => {
-    this.setState(this.getViewportDimensions());
   };
 
   fetchAsyncProps = async (props) => {
@@ -422,11 +403,6 @@ class Scatterplot extends React.PureComponent {
       pointDilation,
     } = this.props;
     const { minimized, status, regl, viewport } = this.state;
-
-    if (status === "error") return null;
-    if (regl) {
-      this.renderCanvas();
-    }
 
     return (
       <div
