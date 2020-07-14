@@ -2,7 +2,6 @@
 import React from "react";
 import { AnchorButton, Tooltip } from "@blueprintjs/core";
 import { connect } from "react-redux";
-import { World } from "../../util/stateManager";
 import { tooltipHoverOpenDelay } from "../../globals";
 
 @connect()
@@ -15,12 +14,8 @@ class CellSetButton extends React.PureComponent {
       eitherCellSetOneOrTwo,
     } = this.props;
 
-    // Reducer and components assume that value will be null if
-    // no selection made.  World..getSelectedByIndex() returns a
-    // zero length TypedArray when nothing is selected.
-    let set = World.getSelectedByIndex(crossfilter);
+    let set = crossfilter.allSelectedLabels();
     if (set.length === 0) set = null;
-
     if (!differential.diffExp) {
       /* diffexp needs to be cleared before we store a new set */
       dispatch({

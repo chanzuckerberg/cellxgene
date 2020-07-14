@@ -5,11 +5,11 @@ import LabelInput from "../labelInput";
 import { labelPrompt } from "../labelUtil";
 
 import { AnnotationsHelpers } from "../../../util/stateManager";
+import actions from "../../../actions";
 
 @connect((state) => ({
   annotations: state.annotations,
-  universe: state.universe,
-  schema: state.world?.schema,
+  schema: state.annoMatrix?.schema,
   ontology: state.ontology,
 }))
 class AnnoDialogEditCategoryName extends React.PureComponent {
@@ -42,7 +42,9 @@ class AnnoDialogEditCategoryName extends React.PureComponent {
     test for uniqueness against *all* annotation names, not just the subset
     we render as categorical.
     */
-    const allCategoryNames = this.allCategoryNames();
+    const { schema } = this.props;
+    const allCategoryNames = schema.annotations.obs.columns.map((c) => c.name);
+
     if (
       (allCategoryNames.indexOf(newCategoryText) > -1 &&
         newCategoryText !== metadataField) ||
@@ -52,12 +54,11 @@ class AnnoDialogEditCategoryName extends React.PureComponent {
     }
 
     this.disableEditCategoryMode();
-    dispatch({
-      type: "annotation: category edited",
-      metadataField,
-      newCategoryText,
-      data: newCategoryText,
-    });
+
+    if (metadataField !== newCategoryText)
+      dispatch(
+        actions.annotationRenameCategoryAction(metadataField, newCategoryText)
+      );
     e.preventDefault();
   };
 
@@ -76,7 +77,9 @@ class AnnoDialogEditCategoryName extends React.PureComponent {
     test for uniqueness against *all* annotation names, not just the subset
     we render as categorical.
     */
-    const allCategoryNames = this.allCategoryNames();
+    const { schema } = this.props;
+    const allCategoryNames = schema.annotations.obs.columns.map((c) => c.name);
+
     const categoryNameAlreadyExists = allCategoryNames.indexOf(name) > -1;
     const sameName = name === metadataField;
     if (categoryNameAlreadyExists && !sameName) {

@@ -44,6 +44,7 @@
     "lodash": "^4.17.15",
     "memoize-one": "^5.1.1",
     "react": "^16.13.1",
+    "react-async": "^10.0.1",
     "react-dom": "^16.13.1",
     "react-flip-toolkit": "7.0.6",
     "react-helmet": "^5.2.1",
@@ -51,7 +52,8 @@
     "react-redux": "^7.2.0",
     "redux": "^4.0.5",
     "redux-thunk": "^2.3.0",
-    "regl": "^1.6.1"
+    "regl": "^1.6.1",
+    "tinyqueue": "^2.0.3"
   },
   "devDependencies": {
     "@babel/core": "^7.10.2",
@@ -102,6 +104,7 @@
     "jest": "^26.0.1",
     "jest-circus": "^26.0.1",
     "jest-environment-puppeteer": "^4.4.0",
+    "jest-fetch-mock": "^3.0.3",
     "jest-puppeteer": "^4.4.0",
     "json-loader": "^0.5.7",
     "lint-staged": "^10.2.9",

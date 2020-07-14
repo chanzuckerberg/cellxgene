@@ -1,4 +1,3 @@
-// jshint esversion: 6
 /* rc slider https://www.npmjs.com/package/rc-slider */
 
 import React from "react";
@@ -34,9 +33,6 @@ const renderGene = (fuzzySortResult, { handleClick, modifiers }) => {
       active={modifiers.active}
       disabled={modifiers.disabled}
       data-testid={`suggest-menu-item-${geneName}`}
-      // Use of annotations in this way is incorrect and dataset specific.
-      // See https://github.com/chanzuckerberg/cellxgene/issues/483
-      // label={gene.n_counts}
       key={geneName}
       onClick={(g) =>
         /* this fires when user clicks a menu item */
@@ -56,11 +52,9 @@ const filterGenes = (query, genes) =>
 
 @connect((state) => {
   return {
-    obsAnnotations: state.world?.obsAnnotations,
+    annoMatrix: state.annoMatrix,
     userDefinedGenes: state.controls.userDefinedGenes,
     userDefinedGenesLoading: state.controls.userDefinedGenesLoading,
-    world: state.world,
-    colorAccessor: state.colors.colorAccessor,
     differential: state.differential,
   };
 })
@@ -71,7 +65,17 @@ class AddGenes extends React.Component {
       bulkAdd: "",
       tab: "autosuggest",
       activeItem: null,
+      geneNames: [],
+      status: "pending",
     };
+  }
+
+  componentDidMount() {
+    this.updateState();
+  }
+
+  componentDidUpdate(prevProps) {
+    this.updateState(prevProps);
   }
 
   _genesToUpper = (listGenes) => {
@@ -88,9 +92,8 @@ class AddGenes extends React.Component {
   _memoGenesToUpper = memoize(this._genesToUpper, (arr) => arr);
 
   handleBulkAddClick = () => {
-    const { world, dispatch, userDefinedGenes } = this.props;
-    const varIndexName = world.schema.annotations.var.index;
-    const { bulkAdd } = this.state;
+    const { dispatch, userDefinedGenes } = this.props;
+    const { bulkAdd, geneNames } = this.state;
 
     /*
       test:
@@ -98,18 +101,14 @@ class AddGenes extends React.Component {
     */
     if (bulkAdd !== "") {
       const genes = _.pull(_.uniq(bulkAdd.split(/[ ,]+/)), "");
-      console.log("geneExpression genes", genes);
       if (genes.length === 0) {
         return keepAroundErrorToast("Must enter a gene name.");
       }
-      const worldGenes =
-        world.varAnnotations?.col(varIndexName)?.asArray() || [];
-
       // These gene lists are unique enough where memoization is useless
       const upperGenes = this._genesToUpper(genes);
       const upperUserDefinedGenes = this._genesToUpper(userDefinedGenes);
 
-      const upperWorldGenes = this._memoGenesToUpper(worldGenes);
+      const upperGeneNames = this._memoGenesToUpper(geneNames);
 
       dispatch({ type: "bulk user defined gene start" });
 
@@ -119,7 +118,7 @@ class AddGenes extends React.Component {
             return keepAroundErrorToast("That gene already exists");
           }
 
-          const indexOfGene = upperWorldGenes.get(upperGene);
+          const indexOfGene = upperGeneNames.get(upperGene);
 
           if (indexOfGene === undefined) {
             return keepAroundErrorToast(
@@ -129,7 +128,7 @@ class AddGenes extends React.Component {
             );
           }
           return dispatch(
-            actions.requestUserDefinedGene(worldGenes[indexOfGene])
+            actions.requestUserDefinedGene(geneNames[indexOfGene])
           );
         })
       ).then(
@@ -142,6 +141,27 @@ class AddGenes extends React.Component {
     return undefined;
   };
 
+  async updateState(prevProps) {
+    const { annoMatrix } = this.props;
+    if (!annoMatrix) return;
+    if (annoMatrix !== prevProps?.annoMatrix) {
+      const { schema } = annoMatrix;
+      const varIndex = schema.annotations.var.index;
+
+      this.setState({ status: "pending" });
+      try {
+        const df = await annoMatrix.fetch("var", varIndex);
+        this.setState({
+          status: "success",
+          geneNames: df.col(varIndex).asArray(),
+        });
+      } catch (error) {
+        this.setState({ status: "error" });
+        throw error;
+      }
+    }
+  }
+
   placeholderGeneNames() {
     /*
     return a string containing gene name suggestions for use as a user hint.
@@ -151,10 +171,7 @@ class AddGenes extends React.Component {
 
     NOTE: the random selection means it will re-render constantly.
     */
-    const { world } = this.props;
-    const { varAnnotations } = world;
-    const varIndexName = world.schema.annotations.var.index;
-    const geneNames = varAnnotations.col(varIndexName).asArray();
+    const { geneNames } = this.state;
     if (geneNames.length > 0) {
       const placeholder = [];
       let len = geneNames.length;
@@ -175,8 +192,8 @@ class AddGenes extends React.Component {
   }
 
   handleClick(g) {
-    const { world, dispatch, userDefinedGenes } = this.props;
-    const varIndexName = world.schema.annotations.var.index;
+    const { dispatch, userDefinedGenes } = this.props;
+    const { geneNames } = this.state;
     if (!g) return;
     const gene = g.target;
     if (userDefinedGenes.indexOf(gene) !== -1) {
@@ -185,27 +202,21 @@ class AddGenes extends React.Component {
       postUserErrorToast(
         `That's too many genes, you can have at most ${globals.maxUserDefinedGenes} user defined genes`
       );
-    } else if (
-      world.varAnnotations.col(varIndexName).indexOf(gene) === undefined
-    ) {
+    } else if (geneNames.indexOf(gene) === undefined) {
       postUserErrorToast("That doesn't appear to be a valid gene name.");
     } else {
       dispatch({ type: "single user defined gene start" });
-      dispatch(actions.requestUserDefinedGene(gene)).then(
-        () => dispatch({ type: "single user defined gene complete" }),
-        () => dispatch({ type: "single user defined gene error" })
-      );
+      dispatch(actions.requestUserDefinedGene(gene));
+      dispatch({ type: "single user defined gene complete" });
     }
   }
 
   render() {
-    const { world, userDefinedGenesLoading } = this.props;
-    const varIndexName = world?.schema?.annotations?.var?.index;
-    const varIndex = world?.varAnnotations?.col(varIndexName)?.asArray();
-    const { tab, bulkAdd, activeItem } = this.state;
+    const { userDefinedGenesLoading } = this.props;
+    const { tab, bulkAdd, activeItem, status, geneNames } = this.state;
 
     // may still be loading!
-    if (!varIndex) return null;
+    if (status !== "success") return null;
 
     return (
       <div>
@@ -263,7 +274,7 @@ class AddGenes extends React.Component {
               itemListPredicate={filterGenes}
               onActiveItemChange={(item) => this.setState({ activeItem: item })}
               itemRenderer={renderGene}
-              items={varIndex || ["No genes"]}
+              items={geneNames || ["No genes"]}
               popoverProps={{ minimal: true }}
             />
             <Button

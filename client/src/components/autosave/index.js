@@ -4,14 +4,12 @@ import actions from "../../actions";
 import FilenameDialog from "./filenameDialog";
 
 @connect((state) => ({
-  universe: state.universe,
   annotations: state.annotations,
-  obsAnnotations: state.universe.obsAnnotations,
   saveInProgress: state.autosave?.saveInProgress ?? false,
-  lastSavedObsAnnotations: state.autosave?.lastSavedObsAnnotations,
   error: state.autosave?.error,
   writableCategoriesEnabled: state.config?.parameters?.annotations ?? false,
-  initialDataLoadComplete: state.autosave?.initialDataLoadComplete,
+  annoMatrix: state.annoMatrix,
+  lastSavedAnnoMatrix: state.autosave?.lastSavedAnnoMatrix,
 }))
 class Autosave extends React.Component {
   constructor(props) {
@@ -42,16 +40,14 @@ class Autosave extends React.Component {
   tick = () => {
     const { dispatch, saveInProgress } = this.props;
     if (this.needToSave() && !saveInProgress) {
-      dispatch(actions.saveObsAnnotations());
+      dispatch(actions.saveObsAnnotationsAction());
     }
   };
 
   needToSave = () => {
     /* return true if we need to save, false if we don't */
-    const { obsAnnotations, lastSavedObsAnnotations } = this.props;
-    return (
-      lastSavedObsAnnotations && obsAnnotations !== lastSavedObsAnnotations
-    );
+    const { annoMatrix, lastSavedAnnoMatrix } = this.props;
+    return actions.needToSaveObsAnnotations(annoMatrix, lastSavedAnnoMatrix);
   };
 
   statusMessage() {
@@ -66,9 +62,13 @@ class Autosave extends React.Component {
     const {
       writableCategoriesEnabled,
       saveInProgress,
-      initialDataLoadComplete,
+      lastSavedAnnoMatrix,
     } = this.props;
-    return writableCategoriesEnabled ? (
+    const initialDataLoadComplete = lastSavedAnnoMatrix;
+
+    if (!writableCategoriesEnabled) return null;
+
+    return (
       <div
         id="autosave"
         data-testclass={
@@ -89,7 +89,7 @@ class Autosave extends React.Component {
         {this.statusMessage()}
         <FilenameDialog />
       </div>
-    ) : null;
+    );
   }
 }
 

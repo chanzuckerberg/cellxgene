@@ -98,6 +98,23 @@ class IdentityInt32Index {
     return this.subset(offsets);
   }
 
+  /* identity index - labels are offsets */
+  isubsetMask(mask) {
+    let count = 0;
+    if (mask.length !== this.maxOffset) {
+      throw new RangeError("mask has invalid length for index");
+    }
+    let labels = new Int32Array(mask.length);
+    for (let i = 0, l = mask.length; i < l; i += 1) {
+      if (mask[i]) {
+        labels[count] = i;
+        count += 1;
+      }
+    }
+    labels = labels.slice(0, count);
+    return this.subset(labels);
+  }
+
   withLabel(label) {
     if (label === this.maxOffset) {
       return new IdentityInt32Index(label + 1);
@@ -201,7 +218,6 @@ class DenseInt32Index {
       if (offset === undefined || offset === -1)
         throw new RangeError(`unknown label: ${label}`);
     }
-
     return this.__promote(labels);
   }
 
@@ -216,7 +232,22 @@ class DenseInt32Index {
         throw new RangeError(`out of bounds offset: ${offset}`);
       labels[i] = rindex[offset];
     }
+    return this.__promote(labels);
+  }
 
+  isubsetMask(mask) {
+    const { rindex } = this;
+    if (mask.length !== rindex.length)
+      throw new RangeError("mask has invalid length for index");
+    let count = 0;
+    let labels = new Int32Array(mask.length);
+    for (let i = 0, l = mask.length; i < l; i += 1) {
+      if (mask[i]) {
+        labels[count] = rindex[i];
+        count += 1;
+      }
+    }
+    labels = labels.slice(0, count);
     return this.__promote(labels);
   }
 
@@ -311,6 +342,22 @@ class KeyIndex {
       labels[i] = rindex[offset];
     }
 
+    return new KeyIndex(labels);
+  }
+
+  isubsetMask(mask) {
+    const { rindex } = this;
+    if (mask.length !== rindex.length)
+      throw new RangeError("mask has invalid length for index");
+    let labels = new Array(mask.length);
+    let count = 0;
+    for (let i = 0, l = mask.length; i < l; i += 1) {
+      if (mask[i]) {
+        labels[count] = rindex[i];
+        count += 1;
+      }
+    }
+    labels = labels.slice(0, count);
     return new KeyIndex(labels);
   }
 

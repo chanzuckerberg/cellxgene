@@ -7,10 +7,6 @@ import _ from "lodash";
 import * as globals from "../../globals";
 import { rangeFill as fillRange } from "../range";
 import fromEntries from "../fromEntries";
-import {
-  userDefinedDimensionName,
-  diffexpDimensionName,
-} from "../nameCreators";
 import { isCategoricalAnnotation } from "./annotationsHelpers";
 
 /*
@@ -40,7 +36,7 @@ Remember that option values can be ANY js type, except undefined/null.
   }
 */
 function topNCategories(colSchema, summary, N) {
-  /* return top N by occurrences in the data, preserving original category order */
+  /* return top N by occurrences in the data */
   const { categories } = colSchema;
   const counts = categories.map((cat) => summary.categoryCounts.get(cat) ?? 0);
 
@@ -81,19 +77,16 @@ export function selectableCategoryNames(schema, names) {
   return names.filter((name) => isSelectableCategoryName(schema, name));
 }
 
-export function createCategorySummary(world, name) {
+export function createCategorySummaryFromDfCol(dfCol, colSchema) {
   const N = globals.maxCategoricalOptionsToDisplay;
-  const { obsAnnotations, schema } = world;
-
-  const colSchema = schema.annotations.obsByName[name];
   const { writable: isUserAnno } = colSchema;
 
   /*
-  Summarize the annotation data currently in world.  Must return categoryValues
-  in sorted order, and must include all category values even if they are not
-  actively used in the current world.
+  Summarize the annotation data currently in dataframe column.  Must return
+  categoryValues in sorted order, and must include all category values even
+  if they are not actively used in the current annoMatrix view.
   */
-  const summary = obsAnnotations.col(name).summarizeCategorical();
+  const summary = dfCol.summarizeCategorical();
   const [categoryValues, categoryValueCounts] = topNCategories(
     colSchema,
     summary,
@@ -115,38 +108,6 @@ export function createCategorySummary(world, name) {
 
 export function createCategoricalSelection(names) {
   return fromEntries(names.map((name) => [name, new Map()]));
-}
-
-/*
-build a crossfilter dimensions for all gene expression related dimensions.
-*/
-export function createGeneDimensions(
-  userDefinedGenes,
-  diffexpGenes,
-  world,
-  crossfilter
-) {
-  crossfilter = userDefinedGenes.reduce(
-    (xflt, gene) =>
-      xflt.addDimension(
-        userDefinedDimensionName(gene),
-        "scalar",
-        world.varData.col(gene).asArray(),
-        Float32Array
-      ),
-    crossfilter
-  );
-  crossfilter = diffexpGenes.reduce(
-    (xflt, gene) =>
-      xflt.addDimension(
-        diffexpDimensionName(gene),
-        "scalar",
-        world.varData.col(gene).asArray(),
-        Float32Array
-      ),
-    crossfilter
-  );
-  return crossfilter;
 }
 
 export function pruneVarDataCache(varData, needed) {

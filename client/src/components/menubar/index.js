@@ -1,4 +1,3 @@
-// jshint esversion: 6
 import React from "react";
 import { connect } from "react-redux";
 import { ButtonGroup, AnchorButton, Tooltip } from "@blueprintjs/core";
@@ -14,13 +13,12 @@ import UndoRedoReset from "./undoRedo";
 import DiffexpButtons from "./diffexpButtons";
 
 @connect((state) => ({
-  universe: state.universe,
-  world: state.world,
-  crossfilter: state.crossfilter,
+  annoMatrix: state.annoMatrix,
+  crossfilter: state.obsCrossfilter,
   differential: state.differential,
   graphInteractionMode: state.controls.graphInteractionMode,
-  clipPercentileMin: Math.round(100 * (state.world?.clipQuantiles?.min ?? 0)),
-  clipPercentileMax: Math.round(100 * (state.world?.clipQuantiles?.max ?? 1)),
+  clipPercentileMin: Math.round(100 * (state.annoMatrix?.clipRange?.[0] ?? 0)),
+  clipPercentileMax: Math.round(100 * (state.annoMatrix?.clipRange?.[1] ?? 1)),
   userDefinedGenes: state.controls.userDefinedGenes,
   diffexpGenes: state.controls.diffexpGenes,
   colorAccessor: state.colors.colorAccessor,
@@ -78,10 +76,10 @@ class MenuBar extends React.Component {
     const { pendingClipPercentiles } = this.state;
     const clipPercentileMin = pendingClipPercentiles?.clipPercentileMin;
     const clipPercentileMax = pendingClipPercentiles?.clipPercentileMax;
-
-    const { world } = this.props;
-    const currentClipMin = 100 * world?.clipQuantiles?.min;
-    const currentClipMax = 100 * world?.clipQuantiles?.max;
+    const {
+      clipPercentileMin: currentClipMin,
+      clipPercentileMax: currentClipMax,
+    } = this.props;
 
     // if you change this test, be careful with logic around
     // comparisons between undefined / NaN handling.
@@ -150,10 +148,7 @@ class MenuBar extends React.Component {
     const { clipPercentileMin, clipPercentileMax } = pendingClipPercentiles;
     const min = clipPercentileMin / 100;
     const max = clipPercentileMax / 100;
-    dispatch({
-      type: "set clip quantiles",
-      clipQuantiles: { min, max },
-    });
+    dispatch(actions.clipAction(min, max));
   };
 
   handleClipOpening = () => {
@@ -178,15 +173,15 @@ class MenuBar extends React.Component {
 
   subsetPossible = () => {
     const { crossfilter } = this.props;
+    const count = crossfilter.countSelected();
     return (
-      crossfilter.countSelected() !== 0 &&
-      crossfilter.countSelected() !== crossfilter.size()
+      count !== 0 && count !== crossfilter.size() // ie, not all are selected
     );
   };
 
   subsetResetPossible = () => {
-    const { world, universe } = this.props;
-    return world.nObs !== universe.nObs;
+    const { annoMatrix } = this.props;
+    return annoMatrix.nObs !== annoMatrix.schema.dataframe.nObs;
   };
 
   render() {
@@ -317,12 +312,10 @@ class MenuBar extends React.Component {
           subsetPossible={this.subsetPossible()}
           subsetResetPossible={this.subsetResetPossible()}
           handleSubset={() => {
-            dispatch(actions.setWorldToSelection());
-            dispatch({ type: "increment graph render counter" });
+            dispatch(actions.subsetAction());
           }}
           handleSubsetReset={() => {
-            dispatch(actions.resetWorldToUniverse());
-            dispatch({ type: "increment graph render counter" });
+            dispatch(actions.resetSubsetAction());
           }}
         />
         {disableDiffexp ? null : <DiffexpButtons />}

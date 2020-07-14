@@ -8,12 +8,10 @@ const stateKey = "@@undoable/filterState";
 these actions will not affect history
 */
 const skipOnActions = new Set([
+  "annoMatrix: init complete",
   "url changed",
-  "interface reset started",
   "initial data load start",
-  "universe: column load success",
   "universe: user color load success",
-  "universe exists, but loading is still in progress",
   "configuration load complete",
   "increment graph render counter",
   "window resize",
@@ -23,16 +21,7 @@ const skipOnActions = new Set([
   "graph brush change",
   "continuous metadata histogram brush",
 
-  "expression load start",
-  "expression load success",
-  "expression load error",
-
-  "request user defined gene started",
   "request user defined gene success",
-  "clear all user defined genes",
-
-  "get single gene expression for coloring started",
-  "get single gene expression for coloring error",
 
   "category value mouse hover start",
   "category value mouse hover end",
@@ -62,8 +51,7 @@ const debounceOnActions = new Set([]);
 history will be cleared when these actions occur
 */
 const clearOnActions = new Set([
-  "initial data load complete (universe exists)",
-  "reset World to eq Universe",
+  "initial data load complete",
   "initial data load error",
 ]);
 
@@ -88,7 +76,7 @@ const saveOnActions = new Set([
   "store current cell selection as differential set 1",
   "store current cell selection as differential set 2",
 
-  "set World to current selection",
+  "subset to selection",
   "set clip quantiles",
 
   "set layout choice",

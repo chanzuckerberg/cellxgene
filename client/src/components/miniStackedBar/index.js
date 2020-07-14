@@ -12,11 +12,15 @@ export default class MiniStackedBar extends React.PureComponent {
       domainValues,
       scale,
       domain,
-      colorScale,
+      colorTable,
       occupancy,
       width,
       height,
     } = this.props;
+
+    if (!colorTable || !domainValues) return;
+
+    const { scale: colorScale } = colorTable;
 
     const ctx = this.canvasRef?.current.getContext("2d");
 

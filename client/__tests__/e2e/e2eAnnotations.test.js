@@ -304,7 +304,7 @@ describe.each([
       node.getAttribute("aria-label")
     );
 
-    expect(result).toBe(categoryName);
+    return expect(result).toBe(categoryName);
   }
 
   async function assertLabelExists(categoryName, labelName) {

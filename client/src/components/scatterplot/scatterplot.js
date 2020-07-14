@@ -1,18 +1,25 @@
-import React from "react";
-import { connect } from "react-redux";
+import React, { useEffect, useRef } from "react";
+import { connect, shallowEqual } from "react-redux";
 import { Button, ButtonGroup } from "@blueprintjs/core";
 import _regl from "regl";
 import * as d3 from "d3";
 import { mat3 } from "gl-matrix";
 import memoize from "memoize-one";
-import { isTypedArray } from "../../util/typeHelpers";
+import Async from "react-async";
 
 import * as globals from "../../globals";
-import setupScatterplot from "./setupScatterplot";
 import styles from "./scatterplot.css";
 import _drawPoints from "./drawPointsRegl";
 import { margin, width, height } from "./util";
-import finiteExtent from "../../util/finiteExtent";
+import {
+  createColorTable,
+  createColorQuery,
+} from "../../util/stateManager/colorHelpers";
+import renderThrottle from "../../util/renderThrottle";
+
+const flagSelected = 1;
+const flagNaN = 2;
+const flagHighlight = 4;
 
 function createProjectionTF(viewportWidth, viewportHeight) {
   /*
@@ -22,40 +29,58 @@ function createProjectionTF(viewportWidth, viewportHeight) {
   return mat3.projection(m, viewportWidth, viewportHeight);
 }
 
+function getScale(col, rangeMin, rangeMax) {
+  if (!col) return null;
+  const { min, max } = col.summarize();
+  return d3.scaleLinear().domain([min, max]).range([rangeMin, rangeMax]);
+}
+const getXScale = memoize(getScale);
+const getYScale = memoize(getScale);
+
 @connect((state) => {
-  const { world, crossfilter, universe } = state;
+  const { obsCrossfilter: crossfilter } = state;
   const { scatterplotXXaccessor, scatterplotYYaccessor } = state.controls;
-  const expressionX = scatterplotXXaccessor
-    ? world.varData.col(scatterplotXXaccessor)?.asArray()
-    : null;
-  const expressionY = scatterplotYYaccessor
-    ? world.varData.col(scatterplotYYaccessor)?.asArray()
-    : null;
 
   return {
-    world,
-    universe,
-
-    colorRGB: state.colors.rgb,
-    colorScale: state.colors.scale,
-    colorAccessor: state.colors.colorAccessor,
-
+    annoMatrix: state.annoMatrix,
+    colors: state.colors,
     pointDilation: state.pointDilation,
 
     // Accessors are var/gene names (strings)
     scatterplotXXaccessor,
     scatterplotYYaccessor,
-    opacityForDeselectedCells: state.controls.opacityForDeselectedCells,
 
     differential: state.differential,
-
-    expressionX,
-    expressionY,
-
     crossfilter,
   };
 })
 class Scatterplot extends React.PureComponent {
+  static createReglState(canvas) {
+    /*
+    Must be created for each canvas
+    */
+    // setup canvas, webgl draw function and camera
+    const regl = _regl(canvas);
+    const drawPoints = _drawPoints(regl);
+
+    // preallocate webgl buffers
+    const pointBuffer = regl.buffer();
+    const colorBuffer = regl.buffer();
+    const flagBuffer = regl.buffer();
+
+    return {
+      regl,
+      drawPoints,
+      pointBuffer,
+      colorBuffer,
+      flagBuffer,
+    };
+  }
+
+  static watchAsync(props, prevProps) {
+    return !shallowEqual(props.watchProps, prevProps.watchProps);
+  }
+
   computePointPositions = memoize((X, Y, xScale, yScale) => {
     const positions = new Float32Array(2 * X.length);
     for (let i = 0, len = X.length; i < len; i += 1) {
@@ -77,21 +102,31 @@ class Scatterplot extends React.PureComponent {
   });
 
   computeSelectedFlags = memoize(
-    (crossfilter, flagSelected, flagUnselected) => {
+    (crossfilter, _flagSelected, _flagUnselected) => {
       const x = crossfilter.fillByIsSelected(
         new Float32Array(crossfilter.size()),
-        flagSelected,
-        flagUnselected
+        _flagSelected,
+        _flagUnselected
       );
       return x;
     }
   );
 
   computePointFlags = memoize(
-    (world, crossfilter, colorAccessor, pointDilation) => {
-      const flagSelected = 1;
-      const flagNaN = 2;
-      const flagHighlight = 4;
+    (crossfilter, colorByData, pointDilationData, pointDilationLabel) => {
+      /*
+      We communicate with the shader using three flags:
+      - isNaN -- the value is a NaN. Only makes sense when we have a colorAccessor
+      - isSelected -- the value is selected
+      - isHightlighted -- the value is highlighted in the UI (orthogonal from selection highlighting)
+
+      Due to constraints in webgl vertex shader attributes, these are encoded in a float, "kinda"
+      like bitmasks.
+
+      We also have separate code paths for generating flags for categorical and
+      continuous metadata, as they rely on different tests, and some of the flags
+      (eg, isNaN) are meaningless in the face of categorical metadata.
+      */
 
       const flags = this.computeSelectedFlags(
         crossfilter,
@@ -99,21 +134,11 @@ class Scatterplot extends React.PureComponent {
         0
       ).slice();
 
-      const { metadataField, categoryField } = pointDilation;
-      const highlightData = metadataField
-        ? world.obsAnnotations.col(metadataField)?.asArray()
-        : null;
-      const colorByColumn = colorAccessor
-        ? world.obsAnnotations.col(colorAccessor)?.asArray() ||
-          world.varData.col(colorAccessor)?.asArray()
-        : null;
-      const colorByData =
-        colorByColumn && isTypedArray(colorByColumn) ? colorByColumn : null;
-
-      if (colorByData || highlightData) {
+      if (colorByData || pointDilationData) {
         for (let i = 0, len = flags.length; i < len; i += 1) {
-          if (highlightData) {
-            flags[i] += highlightData[i] === categoryField ? flagHighlight : 0;
+          if (pointDilationData) {
+            flags[i] +=
+              pointDilationData[i] === pointDilationLabel ? flagHighlight : 0;
           }
           if (colorByData) {
             flags[i] += Number.isFinite(colorByData[i]) ? 0 : flagNaN;
@@ -126,161 +151,47 @@ class Scatterplot extends React.PureComponent {
 
   constructor(props) {
     super(props);
-    this.count = 0;
     this.axes = false;
-    this.renderCache = {
-      positions: null,
-      colors: null,
-      flags: null,
-      xScale: null,
-      yScale: null,
-    };
+    this.reglCanvas = null;
+    this.renderCache = null;
     this.state = {
-      svg: null,
+      regl: null,
+      drawPoints: null,
       minimized: null,
       viewport: {
         height: null,
         width: null,
       },
+      projectionTF: null,
     };
   }
 
   componentDidMount() {
-    const { svg } = setupScatterplot(width, height, margin);
-    let scales;
-    const { expressionX, expressionY } = this.props;
-
-    if (svg && expressionX && expressionY) {
-      scales = Scatterplot.setupScales(expressionX, expressionY);
-      this.drawAxesSVG(scales.xScale, scales.yScale, svg);
-      this.renderCache = { ...this.renderCache, ...scales };
-    }
-
-    const regl = _regl(this.reglCanvas);
-    const drawPoints = _drawPoints(regl);
-
     // Create render transform
     const projectionTF = createProjectionTF(
       this.reglCanvas.width,
       this.reglCanvas.height
     );
 
-    // preallocate buffers
-    const pointBuffer = regl.buffer();
-    const colorBuffer = regl.buffer();
-    const flagBuffer = regl.buffer();
-
-    this.renderPoints(
-      regl,
-      drawPoints,
-      flagBuffer,
-      colorBuffer,
-      pointBuffer,
-      projectionTF
-    );
-
     window.addEventListener("resize", this.handleResize);
     const viewport = this.getViewportDimensions();
 
     this.setState({
-      regl,
-      flagBuffer,
-      pointBuffer,
-      colorBuffer,
-      svg,
-      drawPoints,
       projectionTF,
       viewport,
     });
   }
 
-  componentDidUpdate(prevProps) {
-    const {
-      world,
-      crossfilter,
-      scatterplotXXaccessor,
-      scatterplotYYaccessor,
-      expressionX,
-      expressionY,
-      colorRGB,
-      colorAccessor,
-      pointDilation,
-    } = this.props;
-    const {
-      regl,
-      pointBuffer,
-      colorBuffer,
-      flagBuffer,
-      svg,
-      drawPoints,
-      projectionTF,
-    } = this.state;
-
-    if (
-      scatterplotXXaccessor !== prevProps.scatterplotXXaccessor ||
-      scatterplotYYaccessor !== prevProps.scatterplotYYaccessor ||
-      world !== prevProps.world // shape or clip of world changed
-    ) {
-      const scales = Scatterplot.setupScales(expressionX, expressionY);
-      this.drawAxesSVG(scales.xScale, scales.yScale, svg);
-      this.renderCache = { ...this.renderCache, ...scales };
-    }
-
-    if (world && regl) {
-      const { renderCache } = this;
-      const { xScale, yScale } = this.renderCache;
-      let needsRepaint = false;
-
-      const newPositions = this.computePointPositions(
-        expressionX,
-        expressionY,
-        xScale,
-        yScale
-      );
-      if (renderCache.positions !== newPositions) {
-        renderCache.positions = newPositions;
-        pointBuffer({ data: renderCache.positions, dimension: 2 });
-        needsRepaint = true;
-      }
-
-      /* colors for each point */
-      const newColors = this.computePointColors(colorRGB);
-      if (renderCache.colors !== newColors) {
-        renderCache.colors = newColors;
-        colorBuffer({ data: renderCache.colors, dimension: 3 });
-        needsRepaint = true;
-      }
-
-      const newFlags = this.computePointFlags(
-        world,
-        crossfilter,
-        colorAccessor,
-        pointDilation
-      );
-      if (renderCache.flags !== newFlags) {
-        renderCache.flags = newFlags;
-        flagBuffer({ data: renderCache.flags, dimension: 1 });
-        needsRepaint = true;
-      }
-
-      this.count = expressionX.length;
-
-      if (needsRepaint) {
-        this.renderPoints(
-          regl,
-          drawPoints,
-          flagBuffer,
-          colorBuffer,
-          pointBuffer,
-          projectionTF
-        );
-      }
-    }
-  }
-
   componentWillUnmount() {
     window.removeEventListener("resize", this.updateViewportDimensions);
   }
+
+  setReglCanvas = (canvas) => {
+    this.reglCanvas = canvas;
+    this.setState({
+      ...Scatterplot.createReglState(canvas),
+    });
+  };
 
   getViewportDimensions = () => {
     return {
@@ -290,22 +201,6 @@ class Scatterplot extends React.PureComponent {
       },
     };
   };
-
-  static setupScales(expressionX, expressionY) {
-    const xScale = d3
-      .scaleLinear()
-      .domain(finiteExtent(expressionX))
-      .range([0, width]);
-    const yScale = d3
-      .scaleLinear()
-      .domain(finiteExtent(expressionY))
-      .range([height, 0]);
-
-    return {
-      xScale,
-      yScale,
-    };
-  }
 
   handleResize = () => {
     const { state } = this.state;
@@ -320,48 +215,167 @@ class Scatterplot extends React.PureComponent {
     this.setState(this.getViewportDimensions());
   };
 
-  drawAxesSVG(xScale, yScale, svg) {
-    const { scatterplotYYaccessor, scatterplotXXaccessor } = this.props;
-    svg.selectAll("*").remove();
+  fetchAsyncProps = async (props) => {
+    const {
+      scatterplotXXaccessor,
+      scatterplotYYaccessor,
+      colors: colorsProp,
+      crossfilter,
+      pointDilation,
+    } = props.watchProps;
 
-    // the axes are much cleaner and easier now. No need to rotate and orient
-    // the axis, just call axisBottom, axisLeft etc.
-    const xAxis = d3.axisBottom().ticks(7).scale(xScale);
+    const [
+      expressionXDf,
+      expressionYDf,
+      colorDf,
+      pointDilationDf,
+    ] = await this.fetchData(
+      scatterplotXXaccessor,
+      scatterplotYYaccessor,
+      colorsProp,
+      pointDilation
+    );
+    const colorTable = this.updateColorTable(colorsProp, colorDf);
 
-    const yAxis = d3.axisLeft().ticks(7).scale(yScale);
+    const xCol = expressionXDf.icol(0);
+    const yCol = expressionYDf.icol(0);
+    const xScale = getXScale(xCol, 0, width);
+    const yScale = getYScale(yCol, height, 0);
+    const positions = this.computePointPositions(
+      xCol.asArray(),
+      yCol.asArray(),
+      xScale,
+      yScale
+    );
 
-    // adding axes is also simpler now, just translate x-axis to (0,height)
-    // and it's alread defined to be a bottom axis.
-    svg
-      .append("g")
-      .attr("transform", `translate(0,${height})`)
-      .attr("class", "x axis")
-      .call(xAxis);
+    const colors = this.computePointColors(colorTable.rgb);
 
-    // y-axis is translated to (0,0)
-    svg
-      .append("g")
-      .attr("transform", "translate(0,0)")
-      .attr("class", "y axis")
-      .call(yAxis);
+    const { colorAccessor } = colorsProp;
+    const colorByData = colorDf?.col(colorAccessor)?.asArray();
+    const {
+      metadataField: pointDilationCategory,
+      categoryField: pointDilationLabel,
+    } = pointDilation;
+    const pointDilationData = pointDilationDf
+      ?.col(pointDilationCategory)
+      ?.asArray();
+    const flags = this.computePointFlags(
+      crossfilter,
+      colorByData,
+      pointDilationData,
+      pointDilationLabel
+    );
 
-    // adding label. For x-axis, it's at (10, 10), and for y-axis at (width, height-10).
-    svg
-      .append("text")
-      .attr("x", 10)
-      .attr("y", 10)
-      .attr("class", "label")
-      .style("font-style", "italic")
-      .text(scatterplotYYaccessor);
+    return {
+      positions,
+      colors,
+      flags,
+      width,
+      height,
+      xScale,
+      yScale,
+    };
+  };
 
-    svg
-      .append("text")
-      .attr("x", width)
-      .attr("y", height - 10)
-      .attr("text-anchor", "end")
-      .attr("class", "label")
-      .style("font-style", "italic")
-      .text(scatterplotXXaccessor);
+  createXQuery(geneName) {
+    const { annoMatrix } = this.props;
+    const { schema } = annoMatrix;
+    const varIndex = schema?.annotations?.var?.index;
+    if (!varIndex) return null;
+    return [
+      "X",
+      {
+        field: "var",
+        column: varIndex,
+        value: geneName,
+      },
+    ];
+  }
+
+  createColorByQuery(colors) {
+    const { annoMatrix } = this.props;
+    const { schema } = annoMatrix;
+    const { colorMode, colorAccessor } = colors;
+    return createColorQuery(colorMode, colorAccessor, schema);
+  }
+
+  updateColorTable(colors, colorDf) {
+    /* update color table state */
+    const { annoMatrix } = this.props;
+    const { schema } = annoMatrix;
+    const { colorAccessor, userColors, colorMode } = colors;
+    return createColorTable(
+      colorMode,
+      colorAccessor,
+      colorDf,
+      schema,
+      userColors
+    );
+  }
+
+  async fetchData(
+    scatterplotXXaccessor,
+    scatterplotYYaccessor,
+    colors,
+    pointDilation
+  ) {
+    const { annoMatrix } = this.props;
+    const { metadataField: pointDilationAccessor } = pointDilation;
+
+    const promises = [];
+    // X and Y dimensions
+    promises.push(
+      annoMatrix.fetch(...this.createXQuery(scatterplotXXaccessor))
+    );
+    promises.push(
+      annoMatrix.fetch(...this.createXQuery(scatterplotYYaccessor))
+    );
+
+    // color
+    const query = this.createColorByQuery(colors);
+    if (query) {
+      promises.push(annoMatrix.fetch(...query));
+    } else {
+      promises.push(Promise.resolve(null));
+    }
+
+    // point highlighting
+    if (pointDilationAccessor) {
+      promises.push(annoMatrix.fetch("obs", pointDilationAccessor));
+    } else {
+      promises.push(Promise.resolve(null));
+    }
+
+    return Promise.all(promises);
+  }
+
+  renderCanvas = renderThrottle(() => {
+    const {
+      regl,
+      drawPoints,
+      colorBuffer,
+      pointBuffer,
+      flagBuffer,
+      projectionTF,
+    } = this.state;
+    this.renderPoints(
+      regl,
+      drawPoints,
+      flagBuffer,
+      colorBuffer,
+      pointBuffer,
+      projectionTF
+    );
+  });
+
+  updateReglAndRender(newRenderCache) {
+    const { positions, colors, flags } = newRenderCache;
+    this.renderCache = newRenderCache;
+    const { pointBuffer, colorBuffer, flagBuffer } = this.state;
+    pointBuffer({ data: positions, dimension: 2 });
+    colorBuffer({ data: colors, dimension: 3 });
+    flagBuffer({ data: flags, dimension: 1 });
+    this.renderCanvas();
   }
 
   renderPoints(
@@ -372,8 +386,10 @@ class Scatterplot extends React.PureComponent {
     pointBuffer,
     projectionTF
   ) {
-    if (!this.reglCanvas) return;
-    const { universe } = this.props;
+    const { annoMatrix } = this.props;
+    if (!this.reglCanvas || !annoMatrix) return;
+
+    const { schema } = annoMatrix;
     const { viewport } = this.state;
     regl.poll();
     regl.clear({
@@ -385,8 +401,8 @@ class Scatterplot extends React.PureComponent {
       color: colorBuffer,
       position: pointBuffer,
       projection: projectionTF,
-      count: this.count,
-      nPoints: universe.nObs,
+      count: annoMatrix.nObs,
+      nPoints: schema.dataframe.nObs,
       minViewportDimension: Math.min(
         viewport.width - globals.leftSidebarWidth || width,
         viewport.height || height
@@ -396,8 +412,21 @@ class Scatterplot extends React.PureComponent {
   }
 
   render() {
-    const { dispatch } = this.props;
-    const { minimized } = this.state;
+    const {
+      dispatch,
+      annoMatrix,
+      scatterplotXXaccessor,
+      scatterplotYYaccessor,
+      colors,
+      crossfilter,
+      pointDilation,
+    } = this.props;
+    const { minimized, status, regl, viewport } = this.state;
+
+    if (status === "error") return null;
+    if (regl) {
+      this.renderCanvas();
+    }
 
     return (
       <div
@@ -459,10 +488,42 @@ class Scatterplot extends React.PureComponent {
               marginLeft: margin.left,
               marginTop: margin.top,
             }}
-            ref={(canvas) => {
-              this.reglCanvas = canvas;
-            }}
+            ref={this.setReglCanvas}
           />
+          <Async
+            watchFn={Scatterplot.watchAsync}
+            promiseFn={this.fetchAsyncProps}
+            watchProps={{
+              annoMatrix,
+              scatterplotXXaccessor,
+              scatterplotYYaccessor,
+              colors,
+              crossfilter,
+              pointDilation,
+              viewport,
+            }}
+          >
+            <Async.Pending initial>Loading...</Async.Pending>
+            <Async.Rejected>{(error) => error.message}</Async.Rejected>
+            <Async.Fulfilled>
+              {(asyncProps) => {
+                if (regl && !shallowEqual(asyncProps, this.renderCache)) {
+                  this.updateReglAndRender(asyncProps);
+                }
+                return (
+                  <ScatterplotAxis
+                    width={width}
+                    height={height}
+                    margin={margin}
+                    scatterplotYYaccessor={scatterplotXXaccessor}
+                    scatterplotXXaccessor={scatterplotYYaccessor}
+                    xScale={asyncProps.xScale}
+                    yScale={asyncProps.yScale}
+                  />
+                );
+              }}
+            </Async.Fulfilled>
+          </Async>
         </div>
       </div>
     );
@@ -470,3 +531,75 @@ class Scatterplot extends React.PureComponent {
 }
 
 export default Scatterplot;
+
+const ScatterplotAxis = React.memo(
+  ({ scatterplotYYaccessor, scatterplotXXaccessor, xScale, yScale }) => {
+    /*
+    Axis for the scatterplot, rendered with SVG/D3.  Props:
+      * scatterplotXXaccessor - name of X axis
+      * scatterplotXXaccessor - name of Y axis
+      * xScale - D3 scale for X axis (domain to range)
+      * yScale - D3 scale for Y axis (domain to range)
+
+    This also relies on the GLOBAL width/height/margin constants.  If those become
+    become variables, may need to add the params.
+    */
+
+    const svgRef = useRef(null);
+
+    useEffect(() => {
+      if (!svgRef.current) return;
+      const svg = d3.select(svgRef.current);
+
+      svg.selectAll("*").remove();
+
+      // the axes are much cleaner and easier now. No need to rotate and orient
+      // the axis, just call axisBottom, axisLeft etc.
+      const xAxis = d3.axisBottom().ticks(7).scale(xScale);
+      const yAxis = d3.axisLeft().ticks(7).scale(yScale);
+
+      // adding axes is also simpler now, just translate x-axis to (0,height)
+      // and it's alread defined to be a bottom axis.
+      svg
+        .append("g")
+        .attr("transform", `translate(0,${height})`)
+        .attr("class", "x axis")
+        .call(xAxis);
+
+      // y-axis is translated to (0,0)
+      svg
+        .append("g")
+        .attr("transform", "translate(0,0)")
+        .attr("class", "y axis")
+        .call(yAxis);
+
+      // adding label. For x-axis, it's at (10, 10), and for y-axis at (width, height-10).
+      svg
+        .append("text")
+        .attr("x", 10)
+        .attr("y", 10)
+        .attr("class", "label")
+        .style("font-style", "italic")
+        .text(scatterplotYYaccessor);
+
+      svg
+        .append("text")
+        .attr("x", width)
+        .attr("y", height - 10)
+        .attr("text-anchor", "end")
+        .attr("class", "label")
+        .style("font-style", "italic")
+        .text(scatterplotXXaccessor);
+    }, [scatterplotXXaccessor, scatterplotYYaccessor, xScale, yScale]);
+
+    return (
+      <svg
+        width={width + margin.left + margin.right}
+        height={height + margin.top + margin.bottom}
+        data-testid="scatterplot-svg"
+      >
+        <g ref={svgRef} transform={`translate(${margin.left},${margin.top})`} />
+      </svg>
+    );
+  }
+);

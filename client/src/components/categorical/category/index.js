@@ -1,87 +1,100 @@
-import React from "react";
-import { connect } from "react-redux";
+import React, { useRef, useEffect } from "react";
+import { connect, shallowEqual } from "react-redux";
 import { FaChevronRight, FaChevronDown } from "react-icons/fa";
 import { AnchorButton, Button, Tooltip } from "@blueprintjs/core";
+import Async from "react-async";
+import memoize from "memoize-one";
+
 import CategoryFlipperLayout from "./categoryFlipperLayout";
 import AnnoMenu from "./annoMenuCategory";
 import AnnoDialogEditCategoryName from "./annoDialogEditCategoryName";
 import AnnoDialogAddLabel from "./annoDialogAddLabel";
 import Truncate from "../../util/truncate";
+import { CategoryCrossfilterContext } from "../categoryContext";
 
 import * as globals from "../../../globals";
-import { createCategorySummary as _createCategorySummary } from "../../../util/stateManager/controlsHelpers";
+import { createCategorySummaryFromDfCol } from "../../../util/stateManager/controlsHelpers";
+import {
+  createColorTable,
+  createColorQuery,
+} from "../../../util/stateManager/colorHelpers";
+import actions from "../../../actions";
 
 const LABEL_WIDTH = globals.leftSidebarWidth - 100;
 const ANNO_BUTTON_WIDTH = 50;
 const LABEL_WIDTH_ANNO = LABEL_WIDTH - ANNO_BUTTON_WIDTH;
 
 @connect((state, ownProps) => {
+  const schema = state.annoMatrix?.schema;
   const { metadataField } = ownProps;
+  const isUserAnno = schema?.annotations?.obsByName[metadataField]?.writable;
+  const categoricalSelection = state.categoricalSelection?.[metadataField];
   return {
-    isColorAccessor: state.colors.colorAccessor === metadataField,
-    categoricalSelection: state.categoricalSelection,
+    colors: state.colors,
+    categoricalSelection,
     annotations: state.annotations,
-    universe: state.universe,
-    world: state.world,
-    schema: state.world?.schema,
+    annoMatrix: state.annoMatrix,
+    schema,
+    crossfilter: state.obsCrossfilter,
+    isUserAnno,
   };
 })
-class Category extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      isChecked: true,
-      categorySummary: this.createCategorySummary(),
-    };
+class Category extends React.PureComponent {
+  static getSelectionState(
+    categoricalSelection,
+    metadataField,
+    categorySummary
+  ) {
+    // total number of categories in this dimension
+    const totalCatCount = categorySummary.numCategoryValues;
+    // number of selected options in this category
+    const selectedCatCount = categorySummary.categoryValues.reduce(
+      (res, label) => (categoricalSelection.get(label) ?? true ? res + 1 : res),
+      0
+    );
+    return selectedCatCount === totalCatCount
+      ? "all"
+      : selectedCatCount === 0
+      ? "none"
+      : "some";
   }
 
-  componentDidUpdate(prevProps) {
-    const { categoricalSelection, metadataField, world } = this.props;
-    let { categorySummary } = this.state;
-
-    if (
-      world !== prevProps.world ||
-      metadataField !== prevProps.metadataField ||
-      !categorySummary
-    ) {
-      const newCategorySummary = this.createCategorySummary();
-      if (categorySummary !== newCategorySummary) {
-        categorySummary = newCategorySummary;
-        /* eslint-disable-next-line react/no-did-update-set-state -- Contained in if statement to prevent infinite looping */
-        this.setState({ categorySummary });
-      }
-    }
-
-    const cat = categoricalSelection?.[metadataField];
-    if (
-      categoricalSelection !== prevProps.categoricalSelection &&
-      !!cat &&
-      !!this.checkbox
-    ) {
-      // total number of categories in this dimension
-      const totalCatCount = categorySummary.numCategoryValues;
-      // number of selected options in this category
-      const selectedCatCount = categorySummary.categoryValues.reduce(
-        (res, label) => (cat.get(label) ?? true ? res + 1 : res),
-        0
-      );
-      /* eslint-disable react/no-did-update-set-state -- Contained in if statement to prevent infinite looping */
-      if (selectedCatCount === totalCatCount) {
-        /* everything is on, so not indeterminate */
-        this.checkbox.indeterminate = false;
-        this.setState({ isChecked: true });
-      } else if (selectedCatCount === 0) {
-        /* nothing is on, so no */
-        this.checkbox.indeterminate = false;
-        this.setState({ isChecked: false });
-      } else if (selectedCatCount < totalCatCount) {
-        /* to be explicit... */
-        this.checkbox.indeterminate = true;
-        this.setState({ isChecked: false });
-      }
-      /* eslint-enable react/no-did-update-set-state -- re-enabling*/
-    }
+  static watchAsync(props, prevProps) {
+    return !shallowEqual(props.watchProps, prevProps.watchProps);
   }
+
+  static async fetchData(annoMatrix, metadataField, colors) {
+    /*
+    fetch our data and the color-by data if appropriate, and then build a summary
+    of our category and a color table for the color-by annotation.
+    */
+    const { schema } = annoMatrix;
+    const { colorAccessor, colorMode } = colors;
+    let colorDataPromise = Promise.resolve(null);
+    if (colorAccessor) {
+      const query = createColorQuery(colorMode, colorAccessor, schema);
+      if (query) colorDataPromise = annoMatrix.fetch(...query);
+    }
+    const [categoryData, colorData] = await Promise.all([
+      annoMatrix.fetch("obs", metadataField),
+      colorDataPromise,
+    ]);
+
+    // our data
+    const column = categoryData.icol(0);
+    const colSchema = schema.annotations.obsByName[metadataField];
+    const categorySummary = createCategorySummaryFromDfCol(column, colSchema);
+    return [categoryData, categorySummary, colorData];
+  }
+
+  getSelectionState = memoize((categorySummary) => {
+    const { categoricalSelection, metadataField } = this.props;
+    return Category.getSelectionState(
+      categoricalSelection,
+      metadataField,
+      categorySummary
+    );
+  });
 
   handleColorChange = () => {
     const { dispatch, metadataField } = this.props;
@@ -101,138 +114,252 @@ class Category extends React.Component {
     }
   };
 
-  createCategorySummary() {
-    const { world, metadataField } = this.props;
-    if (!world || !metadataField || !world.obsAnnotations.hasCol(metadataField))
-      return null;
-    return _createCategorySummary(world, metadataField);
-  }
-
-  toggleNone() {
-    const { dispatch, metadataField } = this.props;
-    const { categorySummary } = this.state;
-    dispatch({
-      type: "categorical metadata filter none of these",
-      metadataField,
-      labels: categorySummary.categoryValues,
-    });
-    this.setState({ isChecked: false });
-  }
-
-  toggleAll() {
-    const { dispatch, metadataField } = this.props;
-    const { categorySummary } = this.state;
-    dispatch({
-      type: "categorical metadata filter all of these",
-      metadataField,
-      labels: categorySummary.categoryValues,
-    });
-    this.setState({ isChecked: true });
-  }
-
-  handleToggleAllClick() {
-    const { isChecked } = this.state;
-    if (isChecked) {
-      this.toggleNone();
-    } else {
-      this.toggleAll();
+  handleCategoryKeyPress = (e) => {
+    if (e.key === "Enter") {
+      this.handleCategoryClick();
     }
+  };
+
+  handleToggleAllClick = (categorySummary) => {
+    const isChecked = this.getSelectionState(categorySummary);
+    if (isChecked === "all") {
+      this.toggleNone(categorySummary);
+    } else {
+      this.toggleAll(categorySummary);
+    }
+  };
+
+  fetchAsyncProps = async (props) => {
+    const { annoMatrix, metadataField, colors } = props.watchProps;
+    const { crossfilter } = this.props;
+
+    const [categoryData, categorySummary, colorData] = await Category.fetchData(
+      annoMatrix,
+      metadataField,
+      colors
+    );
+
+    return {
+      categoryData,
+      categorySummary,
+      colorData,
+      crossfilter,
+      ...this.updateColorTable(colorData),
+      handleCategoryToggleAllClick: () =>
+        this.handleToggleAllClick(categorySummary),
+    };
+  };
+
+  updateColorTable(colorData) {
+    // color table, which may be null
+    const { schema, colors, metadataField } = this.props;
+    const { colorAccessor, userColors, colorMode } = colors;
+    return {
+      isColorAccessor: colorAccessor === metadataField,
+      colorAccessor,
+      colorMode,
+      colorTable: createColorTable(
+        colorMode,
+        colorAccessor,
+        colorData,
+        schema,
+        userColors
+      ),
+    };
   }
 
-  renderIsStillLoading() {
-    /*
-    We are still loading this category, so render a "busy" signal.
-    */
-    const { metadataField } = this.props;
+  toggleNone(categorySummary) {
+    const { dispatch, metadataField } = this.props;
+    dispatch(
+      actions.selectCategoricalAllMetadataAction(
+        "categorical metadata filter none of these",
+        metadataField,
+        categorySummary.categoryValues,
+        false
+      )
+    );
+  }
+
+  toggleAll(categorySummary) {
+    const { dispatch, metadataField } = this.props;
+    dispatch(
+      actions.selectCategoricalAllMetadataAction(
+        "categorical metadata filter all of these",
+        metadataField,
+        categorySummary.categoryValues,
+        true
+      )
+    );
+  }
+
+  render() {
+    const {
+      metadataField,
+      isExpanded,
+      categoricalSelection,
+      crossfilter,
+      colors,
+      annoMatrix,
+      isUserAnno,
+    } = this.props;
 
     const checkboxID = `category-select-${metadataField}`;
 
     return (
+      <CategoryCrossfilterContext.Provider value={crossfilter}>
+        <Async
+          watchFn={Category.watchAsync}
+          promiseFn={this.fetchAsyncProps}
+          watchProps={{
+            metadataField,
+            annoMatrix,
+            categoricalSelection,
+            colors,
+          }}
+        >
+          <Async.Pending initial>
+            <StillLoading
+              metadataField={metadataField}
+              checkboxID={checkboxID}
+            />
+          </Async.Pending>
+          <Async.Rejected>
+            {(error) => (
+              <ErrorLoading metadataField={metadataField} error={error} />
+            )}
+          </Async.Rejected>
+          <Async.Fulfilled>
+            {(asyncProps) => {
+              const {
+                colorAccessor,
+                colorTable,
+                colorData,
+                categoryData,
+                categorySummary,
+                isColorAccessor,
+                handleCategoryToggleAllClick,
+              } = asyncProps;
+              return (
+                <CategoryRender
+                  metadataField={metadataField}
+                  checkboxID={checkboxID}
+                  isUserAnno={isUserAnno}
+                  isTruncated={!!categorySummary?.isTruncated}
+                  isExpanded={isExpanded}
+                  isColorAccessor={isColorAccessor}
+                  selectionState={this.getSelectionState(categorySummary)}
+                  categoryData={categoryData}
+                  categorySummary={categorySummary}
+                  colorAccessor={colorAccessor}
+                  colorData={colorData}
+                  colorTable={colorTable}
+                  onColorChangeClick={this.handleColorChange}
+                  onCategoryToggleAllClick={handleCategoryToggleAllClick}
+                  onCategoryMenuClick={this.handleCategoryClick}
+                  onCategoryMenuKeyPress={this.handleCategoryKeyPress}
+                />
+              );
+            }}
+          </Async.Fulfilled>
+        </Async>
+      </CategoryCrossfilterContext.Provider>
+    );
+  }
+}
+
+export default Category;
+
+const StillLoading = ({ metadataField, checkboxID }) => {
+  /*
+  We are still loading this category, so render a "busy" signal.
+  */
+  return (
+    <div
+      style={{
+        maxWidth: globals.maxControlsWidth,
+      }}
+    >
       <div
         style={{
-          maxWidth: globals.maxControlsWidth,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "baseline",
         }}
       >
         <div
           style={{
             display: "flex",
-            justifyContent: "space-between",
-            alignItems: "baseline",
+            justifyContent: "flex-start",
+            alignItems: "flex-start",
           }}
         >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "flex-start",
-              alignItems: "flex-start",
-            }}
-          >
-            <label htmlFor={checkboxID} className="bp3-control bp3-checkbox">
-              <input disabled id={checkboxID} checked type="checkbox" />
-              <span className="bp3-control-indicator" />
-            </label>
-            <Truncate>
-              <span
-                style={{
-                  cursor: "pointer",
-                  display: "inline-block",
-                  width: LABEL_WIDTH,
-                }}
-              >
-                {metadataField}
-              </span>
-            </Truncate>
-          </div>
-          <div>
-            <Button minimal loading intent="primary" />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  render() {
-    const { isChecked, categorySummary } = this.state;
-    const { metadataField, isColorAccessor, isExpanded, schema } = this.props;
-
-    const isStillLoading = !categorySummary;
-    if (isStillLoading) {
-      return this.renderIsStillLoading();
-    }
-
-    const checkboxID = `category-select-${metadataField}`;
-
-    const isUserAnno = !!schema?.annotations?.obsByName[metadataField]
-      ?.writable;
-    const isTruncated = !!categorySummary?.isTruncated;
-
-    if (
-      !isUserAnno &&
-      schema?.annotations?.obsByName[metadataField]?.categories?.length === 1
-    ) {
-      return (
-        <div style={{ marginBottom: 10, marginTop: 4 }}>
+          <label htmlFor={checkboxID} className="bp3-control bp3-checkbox">
+            <input disabled id={checkboxID} checked type="checkbox" />
+            <span className="bp3-control-indicator" />
+          </label>
           <Truncate>
-            <span style={{ maxWidth: 150, fontWeight: 700 }}>
+            <span
+              style={{
+                cursor: "pointer",
+                display: "inline-block",
+                width: LABEL_WIDTH,
+              }}
+            >
               {metadataField}
             </span>
           </Truncate>
-          <Truncate>
-            <span style={{ maxWidth: 150 }}>
-              {`: ${schema.annotations.obsByName[metadataField].categories[0]}`}
-            </span>
-          </Truncate>
         </div>
-      );
-    }
+        <div>
+          <Button minimal loading intent="primary" />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ErrorLoading = ({ metadataField, error }) => {
+  console.error(error); // log error to console as it is unexpected.
+  return (
+    <div style={{ marginBottom: 10, marginTop: 4 }}>
+      <span
+        style={{
+          cursor: "pointer",
+          display: "inline-block",
+          width: LABEL_WIDTH,
+          fontStyle: "italic",
+        }}
+      >
+        {`Failure loading ${metadataField}`}
+      </span>
+    </div>
+  );
+};
+
+const CategoryHeader = React.memo(
+  ({
+    metadataField,
+    checkboxID,
+    isUserAnno,
+    isTruncated,
+    isColorAccessor,
+    isExpanded,
+    selectionState,
+    onColorChangeClick,
+    onCategoryMenuClick,
+    onCategoryMenuKeyPress,
+    onCategoryToggleAllClick,
+  }) => {
+    /*
+    Render category name and controls (eg, color-by button).
+    */
+    const checkboxRef = useRef(null);
+
+    useEffect(() => {
+      checkboxRef.current.indeterminate = selectionState === "some";
+    }, [checkboxRef.current, selectionState]);
 
     return (
-      <CategoryFlipperLayout
-        metadataField={metadataField}
-        isExpanded={isExpanded}
-        isUserAnno={isUserAnno}
-        categorySummary={categorySummary}
-      >
+      <>
         <div
           style={{
             display: "flex",
@@ -245,12 +372,9 @@ class Category extends React.Component {
               id={checkboxID}
               data-testclass="category-select"
               data-testid={`${metadataField}:category-select`}
-              onChange={this.handleToggleAllClick.bind(this)}
-              ref={(el) => {
-                this.checkbox = el;
-                return el;
-              }}
-              checked={isChecked}
+              onChange={onCategoryToggleAllClick}
+              ref={checkboxRef}
+              checked={selectionState === "all"}
               type="checkbox"
             />
             <span className="bp3-control-indicator" />
@@ -260,15 +384,11 @@ class Category extends React.Component {
             tabIndex="0"
             data-testclass="category-expand"
             data-testid={`${metadataField}:category-expand`}
-            onKeyPress={(e) => {
-              if (e.key === "Enter") {
-                this.handleCategoryClick();
-              }
-            }}
+            onKeyPress={onCategoryMenuKeyPress}
             style={{
               cursor: "pointer",
             }}
-            onClick={this.handleCategoryClick}
+            onClick={onCategoryMenuClick}
           >
             <Truncate>
               <span
@@ -317,7 +437,7 @@ class Category extends React.Component {
             <AnchorButton
               data-testclass="colorby"
               data-testid={`colorby-${metadataField}`}
-              onClick={this.handleColorChange}
+              onClick={onColorChangeClick}
               active={isColorAccessor}
               intent={isColorAccessor ? "primary" : "none"}
               disabled={isTruncated}
@@ -325,9 +445,83 @@ class Category extends React.Component {
             />
           </Tooltip>
         </div>
+      </>
+    );
+  }
+);
+
+const CategoryRender = React.memo(
+  ({
+    metadataField,
+    checkboxID,
+    isUserAnno,
+    isTruncated,
+    isColorAccessor,
+    isExpanded,
+    selectionState,
+    categoryData,
+    categorySummary,
+    colorAccessor,
+    colorData,
+    colorTable,
+    onColorChangeClick,
+    onCategoryMenuClick,
+    onCategoryMenuKeyPress,
+    onCategoryToggleAllClick,
+  }) => {
+    /*
+    Render the core of the category, including checkboxes, controls, etc.
+    */
+    const { numCategoryValues } = categorySummary;
+    const isSingularValue = !isUserAnno && numCategoryValues === 1;
+
+    if (isSingularValue) {
+      /*
+      Entire category has a single value, special case.
+      */
+      const theOneValue = categorySummary.categoryValues[0];
+      return (
+        <div style={{ marginBottom: 10, marginTop: 4 }}>
+          <Truncate>
+            <span style={{ maxWidth: 150, fontWeight: 700 }}>
+              {metadataField}
+            </span>
+          </Truncate>
+          <Truncate>
+            <span style={{ maxWidth: 150 }}>{`: ${theOneValue}`}</span>
+          </Truncate>
+        </div>
+      );
+    }
+
+    /*
+    Otherwise, our normal multi-layout layout
+    */
+    return (
+      <CategoryFlipperLayout
+        metadataField={metadataField}
+        isExpanded={isExpanded}
+        isUserAnno={isUserAnno}
+        categoryData={categoryData}
+        categorySummary={categorySummary}
+        colorAccessor={colorAccessor}
+        colorData={colorData}
+        colorTable={colorTable}
+      >
+        <CategoryHeader
+          metadataField={metadataField}
+          checkboxID={checkboxID}
+          isUserAnno={isUserAnno}
+          isTruncated={isTruncated}
+          isExpanded={isExpanded}
+          isColorAccessor={isColorAccessor}
+          selectionState={selectionState}
+          onColorChangeClick={onColorChangeClick}
+          onCategoryToggleAllClick={onCategoryToggleAllClick}
+          onCategoryMenuClick={onCategoryMenuClick}
+          onCategoryMenuKeyPress={onCategoryMenuKeyPress}
+        />
       </CategoryFlipperLayout>
     );
   }
-}
-
-export default Category;
+);

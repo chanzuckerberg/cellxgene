@@ -1,32 +1,17 @@
-import { ColorHelpers } from "../util/stateManager";
+/*
+Color By UI state
+*/
 
 const ColorsReducer = (
   state = {
     colorMode: null,
     colorAccessor: null,
-    rgb: null,
-    scale: null,
   },
   action,
   nextSharedState,
   prevSharedState
 ) => {
   switch (action.type) {
-    case "universe exists, but loading is still in progress": {
-      /* initialize everything with default colors, no mode, no color-by accessor */
-      const { world } = nextSharedState;
-      const colorMode = null;
-      const colorAccessor = null;
-      const { rgb, scale } = ColorHelpers.createColors(world);
-      return {
-        ...state,
-        colorAccessor,
-        colorMode,
-        rgb,
-        scale,
-      };
-    }
-
     case "universe: user color load success": {
       const { userColors } = action;
       return {
@@ -35,46 +20,17 @@ const ColorsReducer = (
       };
     }
 
-    case "reset World to eq Universe": {
-      /* need to rebuild colors as world may have changed, but don't switch modes */
-      const { world } = nextSharedState;
-      const { colorMode, colorAccessor } = state;
-      const { rgb, scale } = ColorHelpers.createColors(
-        world,
-        colorMode,
-        colorAccessor
-      );
-      return {
-        ...state,
-        rgb,
-        scale,
-      };
-    }
-
+    case "clear differential expression":
     case "set clip quantiles":
-    case "set World to current selection": {
-      const { world: prevWorld, controls: prevControls } = prevSharedState;
-      const resetColorState = ColorHelpers.checkIfColorByDiffexpAndResetColors(
-        prevControls,
-        state,
-        prevWorld
-      );
-      if (resetColorState) {
-        return resetColorState;
+    case "subset to selection": {
+      const { controls: prevControls } = prevSharedState;
+      if (prevControls.diffexpGenes.includes(state.colorAccessor)) {
+        return {
+          colorMode: null,
+          colorAccessor: null,
+        };
       }
-
-      const { colorMode, colorAccessor } = state;
-      const { world } = nextSharedState;
-      const { rgb, scale } = ColorHelpers.createColors(
-        world,
-        colorMode,
-        colorAccessor
-      );
-      return {
-        ...state,
-        rgb,
-        scale,
-      };
+      return state;
     }
 
     case "annotation: delete category": {
@@ -85,21 +41,21 @@ const ColorsReducer = (
       /* else reset */
       return {
         ...state,
-        ...ColorHelpers.resetColors(prevSharedState.world),
+        colorMode: null,
+        colorAccessor: null,
       };
     }
 
     case "reset colorscale": {
       return {
         ...state,
-        ...ColorHelpers.resetColors(prevSharedState.world),
+        colorMode: null,
+        colorAccessor: null,
       };
     }
 
     case "color by categorical metadata":
     case "color by continuous metadata": {
-      const { world, colors } = prevSharedState;
-
       /* toggle between this mode and reset */
       const resetCurrent =
         action.type === state.colorMode &&
@@ -107,76 +63,25 @@ const ColorsReducer = (
       const colorMode = !resetCurrent ? action.type : null;
       const colorAccessor = !resetCurrent ? action.colorAccessor : null;
 
-      const { rgb, scale } = ColorHelpers.createColors(
-        world,
-        colorMode,
-        colorAccessor,
-        colors.userColors
-      );
       return {
         ...state,
         colorMode,
         colorAccessor,
-        rgb,
-        scale,
       };
     }
 
     case "color by expression": {
-      const { world } = prevSharedState;
-
       /* toggle between this mode and reset */
       const resetCurrent =
         action.type === state.colorMode && action.gene === state.colorAccessor;
       const colorMode = !resetCurrent ? action.type : null;
       const colorAccessor = !resetCurrent ? action.gene : null;
 
-      const { rgb, scale } = ColorHelpers.createColors(
-        world,
-        colorMode,
-        colorAccessor
-      );
       return {
         ...state,
         colorMode,
         colorAccessor,
-        rgb,
-        scale,
       };
-    }
-
-    case "annotation: add new label to category":
-    case "annotation: label current cell selection":
-    case "annotation: delete label": {
-      const { world } = nextSharedState;
-      const { colorMode, colorAccessor } = state;
-      const { metadataField } = action;
-      if (
-        colorMode !== "color by categorical metadata" ||
-        colorAccessor !== metadataField
-      )
-        return state;
-
-      /* else, we need to rebuild colors as labels have changed! */
-      const { rgb, scale } = ColorHelpers.createColors(
-        world,
-        colorMode,
-        colorAccessor
-      );
-      return { ...state, rgb, scale };
-    }
-
-    case "clear differential expression": {
-      const { world: prevWorld, controls: prevControls } = prevSharedState;
-      const resetColorState = ColorHelpers.checkIfColorByDiffexpAndResetColors(
-        prevControls,
-        state,
-        prevWorld
-      );
-      if (resetColorState) {
-        return resetColorState;
-      }
-      return state;
     }
 
     default: {

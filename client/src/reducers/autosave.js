@@ -2,22 +2,17 @@ const Autosave = (
   state = {
     saveInProgress: false,
     error: false,
-    lastSavedObsAnnotations: null,
-    initialDataLoadComplete: false,
+    lastSavedAnnoMatrix: null,
   },
-  action,
-  nextSharedState
+  action
 ) => {
   switch (action.type) {
-    case "initial data load complete (universe exists)": {
-      /* don't save on init */
-      const { universe } = nextSharedState;
+    case "annoMatrix: init complete": {
       return {
         ...state,
         error: false,
         saveInProgress: false,
-        lastSavedObsAnnotations: universe.obsAnnotations,
-        initialDataLoadComplete: true,
+        lastSavedAnnoMatrix: action.annoMatrix,
       };
     }
 
@@ -29,21 +24,20 @@ const Autosave = (
     }
 
     case "writable obs annotations - save error": {
-      const { message } = action;
       return {
         ...state,
-        error: message,
+        error: action.message,
         saveInProgress: false,
       };
     }
 
     case "writable obs annotations - save complete": {
-      const lastSavedObsAnnotations = action.obsAnnotations;
+      const { lastSavedAnnoMatrix } = action;
       return {
         ...state,
         saveInProgress: false,
         error: false,
-        lastSavedObsAnnotations,
+        lastSavedAnnoMatrix,
       };
     }
 
