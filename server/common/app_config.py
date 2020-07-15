@@ -450,7 +450,7 @@ class ServerConfig(BaseConfig):
                 default_server_port = int(os.environ.get("CXG_SERVER_PORT", DEFAULT_SERVER_PORT))
             except ValueError:
                 raise ConfigurationError(
-                    "Invalid port from envvar CXG_SERVER_PORT: " + os.environ.get("CXG_SERVER_PORT")
+                    "Invalid port from environment variable CXG_SERVER_PORT: " + os.environ.get("CXG_SERVER_PORT")
                 )
             try:
                 self.app__port = find_available_port(self.app__host, default_server_port)
