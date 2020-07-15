@@ -194,7 +194,6 @@ class MenuBar extends React.PureComponent {
   };
 
   render() {
-    console.log("menubar::render()");
     const {
       dispatch,
       libraryVersions,

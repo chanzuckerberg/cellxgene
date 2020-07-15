@@ -5,7 +5,6 @@ import styles from "./menubar.css";
 
 const InformationMenu = React.memo((props) => {
   const { libraryVersions, aboutLink, tosURL, privacyURL } = props;
-  console.log("render InformationMenu");
   return (
     <div className={`bp3-button-group ${styles.menubarButton}`}>
       <Popover
