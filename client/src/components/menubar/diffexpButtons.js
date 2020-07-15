@@ -16,7 +16,7 @@ import CellSetButton from "./cellSetButtons";
   diffexpMayBeSlow: state.config?.parameters?.["diffexp-may-be-slow"] ?? false,
   diffexpCellcountMax: state.config?.limits?.["diffexp_cellcount_max"],
 }))
-class DiffexpButtons extends React.Component {
+class DiffexpButtons extends React.PureComponent {
   computeDiffExp = () => {
     const { dispatch, differential } = this.props;
     if (differential.celllist1 && differential.celllist2) {

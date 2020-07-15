@@ -184,6 +184,16 @@ class MenuBar extends React.Component {
     return annoMatrix.nObs !== annoMatrix.schema.dataframe.nObs;
   };
 
+  handleSubset = () => {
+    const { dispatch } = this.props;
+    dispatch(actions.subsetAction());
+  }
+
+  handleSubsetReset = () => {
+    const { dispatch } = this.props;
+    dispatch(actions.resetSubsetAction());
+  }
+
   render() {
     const {
       dispatch,
@@ -311,12 +321,8 @@ class MenuBar extends React.Component {
         <Subset
           subsetPossible={this.subsetPossible()}
           subsetResetPossible={this.subsetResetPossible()}
-          handleSubset={() => {
-            dispatch(actions.subsetAction());
-          }}
-          handleSubsetReset={() => {
-            dispatch(actions.resetSubsetAction());
-          }}
+          handleSubset={this.handleSubset}
+          handleSubsetReset={this.handleSubsetReset}
         />
         {disableDiffexp ? null : <DiffexpButtons />}
       </div>

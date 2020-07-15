@@ -3,8 +3,9 @@ import React from "react";
 import { Button, Popover, Menu, MenuItem, Position } from "@blueprintjs/core";
 import styles from "./menubar.css";
 
-function InformationMenu(props) {
+const InformationMenu = React.memo((props) => {
   const { libraryVersions, aboutLink, tosURL, privacyURL } = props;
+  console.log("render InformationMenu");
   return (
     <div className={`bp3-button-group ${styles.menubarButton}`}>
       <Popover
@@ -72,6 +73,6 @@ function InformationMenu(props) {
       </Popover>
     </div>
   );
-}
+});
 
 export default InformationMenu;

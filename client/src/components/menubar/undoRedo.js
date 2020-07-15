@@ -1,10 +1,9 @@
-// jshint esversion: 6
 import React from "react";
 import { AnchorButton, Tooltip } from "@blueprintjs/core";
 import { tooltipHoverOpenDelay } from "../../globals";
 import styles from "./menubar.css";
 
-function InformationMenu(props) {
+const UndoRedo = React.memo((props) => {
   const { undoDisabled, redoDisabled, dispatch } = props;
   return (
     <div className={`bp3-button-group ${styles.menubarButton}`}>
@@ -46,6 +45,6 @@ function InformationMenu(props) {
       </Tooltip>
     </div>
   );
-}
+});
 
-export default InformationMenu;
+export default UndoRedo;

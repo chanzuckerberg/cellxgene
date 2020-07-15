@@ -139,38 +139,54 @@ class Graph extends React.Component {
     }
   );
 
-  computePointFlags = memoize(
-    (crossfilter, colorByData, pointDilationData, pointDilationLabel) => {
-      /*
-      We communicate with the shader using three flags:
-      - isNaN -- the value is a NaN. Only makes sense when we have a colorAccessor
-      - isSelected -- the value is selected
-      - isHightlighted -- the value is highlighted in the UI (orthogonal from selection highlighting)
-
-      Due to constraints in webgl vertex shader attributes, these are encoded in a float, "kinda"
-      like bitmasks.
-
-      We also have separate code paths for generating flags for categorical and
-      continuous metadata, as they rely on different tests, and some of the flags
-      (eg, isNaN) are meaningless in the face of categorical metadata.
-      */
-      const flags = this.computeSelectedFlags(
-        crossfilter,
-        flagSelected,
-        0
-      ).slice();
-
-      if (colorByData || pointDilationData) {
+  computeHighlightFlags = memoize(
+    (nObs, pointDilationData, pointDilationLabel) => {
+      const flags = new Float32Array(nObs);
+      if (pointDilationData) {
         for (let i = 0, len = flags.length; i < len; i += 1) {
-          if (pointDilationData) {
-            flags[i] +=
-              pointDilationData[i] === pointDilationLabel ? flagHighlight : 0;
-          }
-          if (colorByData) {
-            flags[i] += Number.isFinite(colorByData[i]) ? 0 : flagNaN;
+          if (pointDilationData[i] === pointDilationLabel) {
+            flags[i] = flagHighlight;
           }
         }
       }
+      return flags;
+    }
+  );
+
+  computeColorByFlags = memoize((nObs, colorByData) => {
+    const flags = new Float32Array(nObs);
+    if (colorByData) {
+      for (let i = 0, len = flags.length; i < len; i += 1) {
+        if (!Number.isFinite(colorByData[i])) {
+          flags[i] = flagNaN;
+        }
+      }
+    }
+    return flags;
+  });
+
+  computePointFlags = memoize(
+    (crossfilter, colorByData, pointDilationData, pointDilationLabel) => {
+
+      const nObs = crossfilter.size();
+      const flags = new Float32Array(nObs);
+
+      const selectedFlags = this.computeSelectedFlags(
+        crossfilter,
+        flagSelected,
+        0
+      );
+      const highlightFlags = this.computeHighlightFlags(
+        nObs,
+        pointDilationData,
+        pointDilationLabel
+      );
+      const colorByFlags = this.computeColorByFlags(nObs, colorByData);
+
+      for (let i = 0; i < nObs; i += 1) {
+        flags[i] = selectedFlags[i] + highlightFlags[i] + colorByFlags[i];
+      }
+
       return flags;
     }
   );
