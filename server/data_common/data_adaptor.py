@@ -331,7 +331,7 @@ class DataAdaptor(metaclass=ABCMeta):
         try:
             min = np.nanmin(embedding, axis=0)
             max = np.nanmax(embedding, axis=0)
-        except RuntimeError: 
+        except RuntimeError:
             # indicates entire array was NaN, which should propagate
             min = np.NaN
             max = np.NaN
