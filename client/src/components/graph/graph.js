@@ -219,7 +219,7 @@ class Graph extends React.Component {
       camera: null,
       modelTF,
       modelInvTF: mat3.invert([], modelTF),
-      projectionTF: null,
+      projectionTF: createProjectionTF(viewport.width, viewport.height),
 
       // regl state
       regl: null,
@@ -248,14 +248,6 @@ class Graph extends React.Component {
 
   componentDidMount() {
     window.addEventListener("resize", this.handleResize);
-
-    // create all default rendering transformations
-    const { viewport } = this.state;
-    const projectionTF = createProjectionTF(viewport.width, viewport.height);
-
-    this.setState({
-      projectionTF,
-    });
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -265,19 +257,10 @@ class Graph extends React.Component {
       graphInteractionMode,
     } = this.props;
     const { toolSVG, viewport } = this.state;
-    let { projectionTF } = this.state;
     const hasResized =
       prevState.viewport.height !== viewport.height ||
       prevState.viewport.width !== viewport.width;
     let stateChanges = {};
-
-    if (hasResized) {
-      projectionTF = createProjectionTF(viewport.width, viewport.height);
-      stateChanges = {
-        ...stateChanges,
-        projectionTF,
-      };
-    }
 
     if (
       (viewport.height && viewport.width && !toolSVG) || // first time init
@@ -326,9 +309,11 @@ class Graph extends React.Component {
   handleResize = () => {
     const { state } = this.state;
     const viewport = this.getViewportDimensions();
+    const projectionTF = createProjectionTF(viewport.width, viewport.height);
     this.setState({
       ...state,
       viewport,
+      projectionTF,
     });
   };
 
