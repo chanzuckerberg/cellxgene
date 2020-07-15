@@ -167,7 +167,6 @@ class Graph extends React.Component {
 
   computePointFlags = memoize(
     (crossfilter, colorByData, pointDilationData, pointDilationLabel) => {
-
       const nObs = crossfilter.size();
       const flags = new Float32Array(nObs);
 

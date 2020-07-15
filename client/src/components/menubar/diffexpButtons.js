@@ -8,8 +8,6 @@ import actions from "../../actions";
 import CellSetButton from "./cellSetButtons";
 
 @connect((state) => ({
-  config: state.config,
-  crossfilter: state.obsCrossfilter,
   differential: state.differential,
   celllist1: state.differential?.celllist1,
   celllist2: state.differential?.celllist2,
@@ -42,13 +40,7 @@ class DiffexpButtons extends React.PureComponent {
 
   render() {
     /* diffexp-related buttons may be disabled */
-    const {
-      differential,
-      diffexpMayBeSlow,
-      diffexpCellcountMax,
-      crossfilter,
-      dispatch,
-    } = this.props;
+    const { differential, diffexpMayBeSlow, diffexpCellcountMax } = this.props;
 
     const haveBothCellSets =
       !!differential.celllist1 && !!differential.celllist2;
@@ -72,17 +64,8 @@ class DiffexpButtons extends React.PureComponent {
 
     return (
       <ButtonGroup className={styles.menubarButton}>
-        {/* eslint-disable react/jsx-props-no-spreading --- disable until eslint-config-airbnb v18.1.1*/}
-        <CellSetButton
-          {...{ differential, crossfilter, dispatch }}
-          eitherCellSetOneOrTwo={1}
-        />
-        <CellSetButton
-          {...{ differential, crossfilter, dispatch }}
-          eitherCellSetOneOrTwo={2}
-        />
-        {/* eslint-enable react/jsx-props-no-spreading --- end disable*/}
-
+        <CellSetButton eitherCellSetOneOrTwo={1} />
+        <CellSetButton eitherCellSetOneOrTwo={2} />
         {!differential.diffExp ? (
           <Tooltip
             content={warnMaxSizeExceeded ? tipMessageWarn : tipMessage}

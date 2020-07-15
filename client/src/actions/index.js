@@ -284,4 +284,5 @@ export default {
   saveObsAnnotationsAction: annoActions.saveObsAnnotationsAction,
   needToSaveObsAnnotations: annoActions.needToSaveObsAnnotations,
   layoutChoiceAction: selnActions.layoutChoiceAction,
+  setCellSetFromSelection: selnActions.setCellSetFromSelection,
 };
