@@ -1,10 +1,5 @@
 import * as globals from "../globals";
-import {
-  AnnoMatrixLoader,
-  AnnoMatrixObsCrossfilter,
-  clip,
-  isubsetMask,
-} from "../annoMatrix";
+import { AnnoMatrixLoader, AnnoMatrixObsCrossfilter } from "../annoMatrix";
 import {
   catchErrorsWrap,
   doJsonRequest,
@@ -16,6 +11,7 @@ import {
 import { loadUserColorConfig } from "../util/stateManager/colorHelpers";
 import * as selnActions from "./selection";
 import * as annoActions from "./annotation";
+import * as viewActions from "./viewStack";
 
 /*
 return promise fetching user-configured colors
@@ -176,75 +172,6 @@ const requestDifferentialExpression = (set1, set2, num_genes = 10) => async (
   }
 };
 
-const clipAction = (min, max) => (dispatch, getState) => {
-  /*
-  apply a clip to the current annoMatrix.  By convention, the clip
-  view is ALWAYS the top view.
-  */
-  const { annoMatrix: prevAnnoMatrix } = getState();
-  const annoMatrix = prevAnnoMatrix.isClipped
-    ? clip(prevAnnoMatrix.viewOf, min, max)
-    : clip(prevAnnoMatrix, min, max);
-  const obsCrossfilter = new AnnoMatrixObsCrossfilter(annoMatrix);
-  dispatch({
-    type: "set clip quantiles",
-    clipQuantiles: { min, max },
-    annoMatrix,
-    obsCrossfilter,
-  });
-};
-
-const subsetAction = () => (dispatch, getState) => {
-  /*
-  Subset the annoMatrix to the current crossfilter selection
-  */
-  const {
-    annoMatrix: prevAnnoMatrix,
-    obsCrossfilter: prevObsCrossfilter,
-  } = getState();
-
-  const annoMatrix = isubsetMask(
-    prevAnnoMatrix,
-    prevObsCrossfilter.allSelectedMask()
-  );
-  const obsCrossfilter = new AnnoMatrixObsCrossfilter(annoMatrix);
-  dispatch({
-    type: "subset to selection",
-    annoMatrix,
-    obsCrossfilter,
-  });
-};
-
-const resetSubsetAction = () => (dispatch, getState) => {
-  /*
-  Reset the annoMatrix to all data.  Because we may have multiple views
-  stacked, we pop them all.  By convention, any clip transformation will
-  be the top of the stack, and must be preserved.
-  */
-
-  const { annoMatrix: prevAnnoMatrix } = getState();
-
-  const clipRange = prevAnnoMatrix.isClipped ? prevAnnoMatrix.clipRange : null;
-
-  /* pop all views */
-  let annoMatrix = prevAnnoMatrix;
-  while (annoMatrix.isView) {
-    annoMatrix = annoMatrix.viewOf;
-  }
-
-  /* re-apply the clip, if any */
-  if (clipRange !== null) {
-    annoMatrix = clip(annoMatrix, ...clipRange);
-  }
-
-  const obsCrossfilter = new AnnoMatrixObsCrossfilter(annoMatrix);
-  dispatch({
-    type: "reset subset",
-    annoMatrix,
-    obsCrossfilter,
-  });
-};
-
 function fetchJson(pathAndQuery) {
   return doJsonRequest(
     `${globals.API.prefix}${globals.API.version}${pathAndQuery}`
@@ -270,9 +197,9 @@ export default {
   graphLassoEndAction: selnActions.graphLassoEndAction,
   graphLassoCancelAction: selnActions.graphLassoCancelAction,
   graphLassoDeselectAction: selnActions.graphLassoDeselectAction,
-  clipAction,
-  subsetAction,
-  resetSubsetAction,
+  clipAction: viewActions.clipAction,
+  subsetAction: viewActions.subsetAction,
+  resetSubsetAction: viewActions.resetSubsetAction,
   annotationCreateCategoryAction: annoActions.annotationCreateCategoryAction,
   annotationRenameCategoryAction: annoActions.annotationRenameCategoryAction,
   annotationDeleteCategoryAction: annoActions.annotationDeleteCategoryAction,
