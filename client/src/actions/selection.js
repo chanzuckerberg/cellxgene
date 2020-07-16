@@ -209,3 +209,16 @@ export const layoutChoiceAction = (newLayoutChoice) => async (
     obsCrossfilter,
   });
 };
+
+/*
+Differential expression set selection
+*/
+export const setCellSetFromSelection = (cellSetId) => (dispatch, getState) => {
+  const { obsCrossfilter } = getState();
+  const selected = obsCrossfilter.allSelectedLabels();
+
+  dispatch({
+    type: `store current cell selection as differential set ${cellSetId}`,
+    data: selected.length > 0 ? selected : null,
+  });
+};

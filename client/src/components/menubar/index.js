@@ -12,32 +12,44 @@ import Subset from "./subset";
 import UndoRedoReset from "./undoRedo";
 import DiffexpButtons from "./diffexpButtons";
 
-@connect((state) => ({
-  annoMatrix: state.annoMatrix,
-  crossfilter: state.obsCrossfilter,
-  differential: state.differential,
-  graphInteractionMode: state.controls.graphInteractionMode,
-  clipPercentileMin: Math.round(100 * (state.annoMatrix?.clipRange?.[0] ?? 0)),
-  clipPercentileMax: Math.round(100 * (state.annoMatrix?.clipRange?.[1] ?? 1)),
-  userDefinedGenes: state.controls.userDefinedGenes,
-  diffexpGenes: state.controls.diffexpGenes,
-  colorAccessor: state.colors.colorAccessor,
-  scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
-  scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
-  celllist1: state.differential.celllist1,
-  celllist2: state.differential.celllist2,
-  libraryVersions: state.config?.["library_versions"],
-  undoDisabled: state["@@undoable/past"].length === 0,
-  redoDisabled: state["@@undoable/future"].length === 0,
-  aboutLink: state.config?.links?.["about-dataset"],
-  disableDiffexp: state.config?.parameters?.["disable-diffexp"] ?? false,
-  diffexpMayBeSlow: state.config?.parameters?.["diffexp-may-be-slow"] ?? false,
-  showCentroidLabels: state.centroidLabels.showLabels,
-  tosURL: state.config?.parameters?.["about_legal_tos"],
-  privacyURL: state.config?.parameters?.["about_legal_privacy"],
-  categoricalSelection: state.categoricalSelection,
-}))
-class MenuBar extends React.Component {
+@connect((state) => {
+  const { annoMatrix } = state;
+  const crossfilter = state.obsCrossfilter;
+  const selectedCount = crossfilter.countSelected();
+
+  const subsetPossible =
+    selectedCount !== 0 && selectedCount !== crossfilter.size(); // ie, not all are selected
+  const subsetResetPossible =
+    annoMatrix.nObs !== annoMatrix.schema.dataframe.nObs;
+
+  return {
+    subsetPossible,
+    subsetResetPossible,
+    differential: state.differential,
+    graphInteractionMode: state.controls.graphInteractionMode,
+    clipPercentileMin: Math.round(100 * (annoMatrix?.clipRange?.[0] ?? 0)),
+    clipPercentileMax: Math.round(100 * (annoMatrix?.clipRange?.[1] ?? 1)),
+    userDefinedGenes: state.controls.userDefinedGenes,
+    diffexpGenes: state.controls.diffexpGenes,
+    colorAccessor: state.colors.colorAccessor,
+    scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
+    scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
+    celllist1: state.differential.celllist1,
+    celllist2: state.differential.celllist2,
+    libraryVersions: state.config?.["library_versions"],
+    undoDisabled: state["@@undoable/past"].length === 0,
+    redoDisabled: state["@@undoable/future"].length === 0,
+    aboutLink: state.config?.links?.["about-dataset"],
+    disableDiffexp: state.config?.parameters?.["disable-diffexp"] ?? false,
+    diffexpMayBeSlow:
+      state.config?.parameters?.["diffexp-may-be-slow"] ?? false,
+    showCentroidLabels: state.centroidLabels.showLabels,
+    tosURL: state.config?.parameters?.["about_legal_tos"],
+    privacyURL: state.config?.parameters?.["about_legal_privacy"],
+    categoricalSelection: state.categoricalSelection,
+  };
+})
+class MenuBar extends React.PureComponent {
   static isValidDigitKeyEvent(e) {
     /*
     Return true if this event is necessary to enter a percent number input.
@@ -171,17 +183,14 @@ class MenuBar extends React.Component {
     });
   };
 
-  subsetPossible = () => {
-    const { crossfilter } = this.props;
-    const count = crossfilter.countSelected();
-    return (
-      count !== 0 && count !== crossfilter.size() // ie, not all are selected
-    );
+  handleSubset = () => {
+    const { dispatch } = this.props;
+    dispatch(actions.subsetAction());
   };
 
-  subsetResetPossible = () => {
-    const { annoMatrix } = this.props;
-    return annoMatrix.nObs !== annoMatrix.schema.dataframe.nObs;
+  handleSubsetReset = () => {
+    const { dispatch } = this.props;
+    dispatch(actions.resetSubsetAction());
   };
 
   render() {
@@ -201,6 +210,8 @@ class MenuBar extends React.Component {
       tosURL,
       categoricalSelection,
       colorAccessor,
+      subsetPossible,
+      subsetResetPossible,
     } = this.props;
     const { pendingClipPercentiles } = this.state;
 
@@ -309,14 +320,10 @@ class MenuBar extends React.Component {
           </Tooltip>
         </ButtonGroup>
         <Subset
-          subsetPossible={this.subsetPossible()}
-          subsetResetPossible={this.subsetResetPossible()}
-          handleSubset={() => {
-            dispatch(actions.subsetAction());
-          }}
-          handleSubsetReset={() => {
-            dispatch(actions.resetSubsetAction());
-          }}
+          subsetPossible={subsetPossible}
+          subsetResetPossible={subsetResetPossible}
+          handleSubset={this.handleSubset}
+          handleSubsetReset={this.handleSubsetReset}
         />
         {disableDiffexp ? null : <DiffexpButtons />}
       </div>

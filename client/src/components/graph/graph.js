@@ -139,6 +139,32 @@ class Graph extends React.Component {
     }
   );
 
+  computeHighlightFlags = memoize(
+    (nObs, pointDilationData, pointDilationLabel) => {
+      const flags = new Float32Array(nObs);
+      if (pointDilationData) {
+        for (let i = 0, len = flags.length; i < len; i += 1) {
+          if (pointDilationData[i] === pointDilationLabel) {
+            flags[i] = flagHighlight;
+          }
+        }
+      }
+      return flags;
+    }
+  );
+
+  computeColorByFlags = memoize((nObs, colorByData) => {
+    const flags = new Float32Array(nObs);
+    if (colorByData) {
+      for (let i = 0, len = flags.length; i < len; i += 1) {
+        if (!Number.isFinite(colorByData[i])) {
+          flags[i] = flagNaN;
+        }
+      }
+    }
+    return flags;
+  });
+
   computePointFlags = memoize(
     (crossfilter, colorByData, pointDilationData, pointDilationLabel) => {
       /*
@@ -154,23 +180,25 @@ class Graph extends React.Component {
       continuous metadata, as they rely on different tests, and some of the flags
       (eg, isNaN) are meaningless in the face of categorical metadata.
       */
-      const flags = this.computeSelectedFlags(
+      const nObs = crossfilter.size();
+      const flags = new Float32Array(nObs);
+
+      const selectedFlags = this.computeSelectedFlags(
         crossfilter,
         flagSelected,
         0
-      ).slice();
+      );
+      const highlightFlags = this.computeHighlightFlags(
+        nObs,
+        pointDilationData,
+        pointDilationLabel
+      );
+      const colorByFlags = this.computeColorByFlags(nObs, colorByData);
 
-      if (colorByData || pointDilationData) {
-        for (let i = 0, len = flags.length; i < len; i += 1) {
-          if (pointDilationData) {
-            flags[i] +=
-              pointDilationData[i] === pointDilationLabel ? flagHighlight : 0;
-          }
-          if (colorByData) {
-            flags[i] += Number.isFinite(colorByData[i]) ? 0 : flagNaN;
-          }
-        }
+      for (let i = 0; i < nObs; i += 1) {
+        flags[i] = selectedFlags[i] + highlightFlags[i] + colorByFlags[i];
       }
+
       return flags;
     }
   );
