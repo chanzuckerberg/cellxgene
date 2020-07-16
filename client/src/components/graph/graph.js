@@ -6,6 +6,7 @@ import { mat3, vec2 } from "gl-matrix";
 import _regl from "regl";
 import memoize from "memoize-one";
 import Async from "react-async";
+import { Button } from "@blueprintjs/core";
 
 import setupSVGandBrushElements from "./setupSVGandBrush";
 import _camera from "../../util/camera";
@@ -28,7 +29,6 @@ Simple 2D transforms control all point painting.  There are three:
   * camera - apply a 2D camera transformation (pan, zoom)
   * projection - apply any transformation required for screen size and layout
 */
-
 function createProjectionTF(viewportWidth, viewportHeight) {
   /*
   the projection transform accounts for the screen size & other layout
@@ -884,7 +884,13 @@ class Graph extends React.Component {
             viewport,
           }}
         >
-          <Async.Pending initial>Embedding loading...</Async.Pending>
+          <Async.Pending initial>
+            <StillLoading
+              displayName={layoutChoice.current}
+              width={viewport.width}
+              height={viewport.height}
+            />
+          </Async.Pending>
           <Async.Rejected>
             {(error) => (
               <ErrorLoading
@@ -921,6 +927,34 @@ const ErrorLoading = ({ displayName, error, width, height }) => {
       }}
     >
       <span>{`Failure loading ${displayName}`}</span>
+    </div>
+  );
+};
+
+const StillLoading = ({ displayName, width, height }) => {
+  /*
+  Render a busy/loading indicator
+  */
+  return (
+    <div
+      style={{
+        position: "fixed",
+        fontWeight: 500,
+        top: height / 2,
+        width,
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          justifyItems: "center",
+          alignItems: "center",
+        }}
+      >
+        <Button minimal loading intent="primary" />
+        <span style={{ fontStyle: "italic" }}>Loading {displayName}</span>
+      </div>
     </div>
   );
 };
