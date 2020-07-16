@@ -42,8 +42,21 @@ export default (props) => {
   }
   const originalString = children.props.children;
 
-  const firstString = originalString.substr(0, originalString.length / 2);
-  const secondString = originalString.substr(originalString.length / 2);
+  let firstString;
+  let secondString;
+
+  if (originalString.length === 1) {
+    firstString = originalString;
+  } else {
+    firstString = originalString.substr(0, originalString.length / 2);
+    secondString = originalString.substr(originalString.length / 2);
+    if (firstString.charAt(firstString.length - 1) === " ") {
+      firstString = `${firstString.substr(0, firstString.length - 1)}\u00a0`;
+    }
+    if (secondString.charAt(0) === " ") {
+      secondString = `\u00a0${secondString.substr(1)}`;
+    }
+  }
 
   const inheritedColor = children.props.style.color;
 
