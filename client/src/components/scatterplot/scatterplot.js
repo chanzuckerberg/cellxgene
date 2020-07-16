@@ -59,6 +59,11 @@ class Scatterplot extends React.PureComponent {
     /*
     Must be created for each canvas
     */
+
+    // regl will create a top-level, full-screen canvas if we pass it a null.
+    // canvas should never be null, so protect against that.
+    if (!canvas) return {};
+
     // setup canvas, webgl draw function and camera
     const regl = _regl(canvas);
     const drawPoints = _drawPoints(regl);
@@ -175,9 +180,12 @@ class Scatterplot extends React.PureComponent {
 
   setReglCanvas = (canvas) => {
     this.reglCanvas = canvas;
-    this.setState({
-      ...Scatterplot.createReglState(canvas),
-    });
+    if (canvas) {
+      // no need to update this state if we are detaching.
+      this.setState({
+        ...Scatterplot.createReglState(canvas),
+      });
+    }
   };
 
   getViewportDimensions = () => {
