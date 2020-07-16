@@ -104,7 +104,7 @@ def test_server(command_line_args=[], app_config=None):
     yaml config file, which this server will read and parse.
     """
 
-    port = DEFAULT_SERVER_PORT
+    port = int(os.environ.get("CXG_SERVER_PORT", DEFAULT_SERVER_PORT))
     port = find_available_port("localhost", port)
     command = ["cellxgene", "--no-upgrade-check", "launch", "--verbose", "--port=%d" % port] + command_line_args
 

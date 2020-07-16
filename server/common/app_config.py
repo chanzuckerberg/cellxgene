@@ -17,7 +17,7 @@ from server.common.utils import custom_format_warning
 import server.compute.diffexp_cxg as diffexp_tiledb
 from server.common.data_locator import discover_s3_region_name
 
-DEFAULT_SERVER_PORT = int(os.environ.get("CXG_SERVER_PORT", "5005"))
+DEFAULT_SERVER_PORT = 5005
 # anything bigger than this will generate a special message
 BIG_FILE_SIZE_THRESHOLD = 100 * 2 ** 20  # 100MB
 
@@ -438,12 +438,24 @@ class ServerConfig(BaseConfig):
         self.check_attr("app__csp_directives", (type(None), dict))
 
         if self.app__port:
-            if not is_port_available(self.app__host, self.app__port):
-                raise ConfigurationError(
-                    f"The port selected {self.app__port} is in use, please configure an open port."
-                )
+            try:
+                if not is_port_available(self.app__host, self.app__port):
+                    raise ConfigurationError(
+                        f"The port selected {self.app__port} is in use, please configure an open port."
+                    )
+            except OverflowError:
+                raise ConfigurationError(f"Invalid port: {self.app__port}")
         else:
-            self.app__port = find_available_port(self.app__host, DEFAULT_SERVER_PORT)
+            try:
+                default_server_port = int(os.environ.get("CXG_SERVER_PORT", DEFAULT_SERVER_PORT))
+            except ValueError:
+                raise ConfigurationError(
+                    "Invalid port from environment variable CXG_SERVER_PORT: " + os.environ.get("CXG_SERVER_PORT")
+                )
+            try:
+                self.app__port = find_available_port(self.app__host, default_server_port)
+            except OverflowError:
+                raise ConfigurationError(f"Invalid port: {default_server_port}")
 
         if self.app__debug:
             context["messagefn"]("in debug mode, setting verbose=True and open_browser=False")
