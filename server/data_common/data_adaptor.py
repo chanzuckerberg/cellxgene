@@ -328,8 +328,14 @@ class DataAdaptor(metaclass=ABCMeta):
         """
 
         # scale isotropically
-        min = embedding.min(axis=0)
-        max = embedding.max(axis=0)
+        try:
+            min = np.nanmin(embedding, axis=0)
+            max = np.nanmax(embedding, axis=0)
+        except RuntimeError:
+            # indicates entire array was NaN, which should propagate
+            min = np.NaN
+            max = np.NaN
+
         scale = np.amax(max - min)
         normalized_layout = (embedding - min) / scale
 

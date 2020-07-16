@@ -391,13 +391,13 @@ def create_emb(e_name, emb):
 def is_valid_embedding(adata, name, arr):
     """ return True if this layout data is a valid array for front-end presentation:
         * ndarray, with shape (n_obs, >= 2), dtype float/int/uint
-        * contains only finite values
         * follows ScanPy embedding naming conventions
+        * with all values finite or NaN (no +Inf or -Inf)
     """
     is_valid = type(name) == str and name.startswith("X_") and len(name) > 2
     is_valid = is_valid and type(arr) == np.ndarray and arr.dtype.kind in "fiu"
     is_valid = is_valid and arr.shape[0] == adata.n_obs and arr.shape[1] >= 2
-    is_valid = is_valid and np.all(np.isfinite(arr))
+    is_valid = is_valid and not np.any(np.isinf(arr)) and not np.all(np.isnan(arr))
     return is_valid
 
 

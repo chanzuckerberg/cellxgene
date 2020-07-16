@@ -197,12 +197,13 @@ class AnndataAdaptor(DataAdaptor):
 
     def _is_valid_layout(self, arr):
         """ return True if this layout data is a valid array for front-end presentation:
-            * ndarray, with shape (n_obs, >= 2), dtype float/int/uint
-            * contains only finite values
+            * ndarray, dtype float/int/uint
+            * with shape (n_obs, >= 2)
+            * with all values finite or NaN (no +Inf or -Inf)
         """
         is_valid = type(arr) == np.ndarray and arr.dtype.kind in "fiu"
         is_valid = is_valid and arr.shape[0] == self.data.n_obs and arr.shape[1] >= 2
-        is_valid = is_valid and np.all(np.isfinite(arr))
+        is_valid = is_valid and not np.any(np.isinf(arr)) and not np.all(np.isnan(arr))
         return is_valid
 
     def _validate_data_types(self):
@@ -291,7 +292,7 @@ class AnndataAdaptor(DataAdaptor):
             raise PrepareError("No valid layout data.")
 
         # cap layouts to MAX_LAYOUTS
-        return layouts[0:MAX_LAYOUTS]
+        return valid_layouts[0:MAX_LAYOUTS]
 
     def get_embedding_array(self, ename, dims=2):
         full_embedding = self.data.obsm[f"X_{ename}"]
