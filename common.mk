@@ -16,12 +16,6 @@ define full_path
 $(shell [[ $(1) = /* ]] && echo $(1) || echo $(PROJECT_ROOT)/$(1))
 endef
 
-# https://stackoverflow.com/a/14777895/9587410
-ifeq ($(shell uname),Darwin)     # is Windows_NT on XP, 2000, 7, Vista, 10...
-    IS_DARWIN := "true"
-endif
-
-export CELLXGENE_COMMIT := $(shell git rev-parse --short HEAD)
 export CXG_SERVER_PORT := $(call env_or_else_default,CXG_SERVER_PORT)
 export CXG_CLIENT_PORT := $(call env_or_else_default,CXG_CLIENT_PORT)
 export CXG_OPTIONS := $(call env_or_else_default,CXG_OPTIONS)
