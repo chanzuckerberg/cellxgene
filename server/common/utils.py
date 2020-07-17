@@ -11,6 +11,7 @@ from flask import json
 from urllib.parse import urlsplit, urljoin
 import numpy as np
 import pandas as pd
+from server.common.errors import ConfigurationError
 
 
 def find_available_port(host, port=5005):
@@ -161,10 +162,13 @@ def import_plugins(plugin_module):
         pkg = importlib.import_module(plugin_module)
         for loader, name, is_pkg in pkgutil.walk_packages(pkg.__path__):
             full_name = f"{plugin_module}.{name}"
-            module = importlib.import_module(full_name)
-            logging.info(f"Imported plugin {full_name}")
+            try:
+                module = importlib.import_module(full_name)
+            except Exception as e:
+                raise ConfigurationError(f"Unexpected error while importing plugin: {plugin_module}.{name}: {str(e)}")
             loaded_modules.append(module)
     except ModuleNotFoundError as e:
-        logging.error(f"No plugins found in module: {plugin_module}: {str(e)}")
+        #  This exception occurs when the plugin_module does not exist (not an error).
+        logging.debug(f"No plugins found in module: {plugin_module}: {str(e)}")
 
     return loaded_modules
