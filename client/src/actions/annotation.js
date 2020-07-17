@@ -48,6 +48,10 @@ export const annotationCreateCategoryAction = (
     const col = catToDupDf.col(categoryToDuplicate);
     initialValue = col.asArray();
     ({ categories } = col.summarize());
+    // all user-created annotations must have the unassigned category
+    if (!categories.includes(globals.unassignedCategoryLabel)) {
+      categories.push(globals.unassignedCategoryLabel);
+    }
   } else {
     /* else assign to the standard default value */
     initialValue = globals.unassignedCategoryLabel;
