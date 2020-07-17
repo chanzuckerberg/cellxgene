@@ -174,7 +174,7 @@ class Category extends React.PureComponent {
       actions.selectCategoricalAllMetadataAction(
         "categorical metadata filter none of these",
         metadataField,
-        categorySummary.categoryValues,
+        categorySummary.allCategoryValues,
         false
       )
     );
@@ -186,7 +186,7 @@ class Category extends React.PureComponent {
       actions.selectCategoricalAllMetadataAction(
         "categorical metadata filter all of these",
         metadataField,
-        categorySummary.categoryValues,
+        categorySummary.allCategoryValues,
         true
       )
     );

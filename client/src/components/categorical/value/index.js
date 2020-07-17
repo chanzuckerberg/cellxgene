@@ -168,13 +168,12 @@ class CategoryValue extends React.Component {
       categoryIndex,
       categorySummary,
     } = this.props;
-    const labels = categorySummary.categoryValues;
-    const label = labels[categoryIndex];
+    const label = categorySummary.categoryValues[categoryIndex];
     dispatch(
       actions.selectCategoricalMetadataAction(
         "categorical metadata filter deselect",
         metadataField,
-        labels,
+        categorySummary.allCategoryValues,
         label,
         false
       )
@@ -238,13 +237,12 @@ class CategoryValue extends React.Component {
       categoryIndex,
       categorySummary,
     } = this.props;
-    const labels = categorySummary.categoryValues;
-    const label = labels[categoryIndex];
+    const label = categorySummary.categoryValues[categoryIndex];
     dispatch(
       actions.selectCategoricalMetadataAction(
         "categorical metadata filter select",
         metadataField,
-        labels,
+        categorySummary.allCategoryValues,
         label,
         true
       )
