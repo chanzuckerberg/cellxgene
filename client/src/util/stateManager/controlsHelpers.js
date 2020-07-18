@@ -36,28 +36,30 @@ Remember that option values can be ANY js type, except undefined/null.
   }
 */
 function topNCategories(colSchema, summary, N) {
-  /* return top N by occurrences in the data */
-  const { categories } = colSchema;
-  const counts = categories.map((cat) => summary.categoryCounts.get(cat) ?? 0);
+  /* return top N categories by occurrences in the data */
+  const { categories: allCategories } = colSchema;
+  const counts = allCategories.map(
+    (cat) => summary.categoryCounts.get(cat) ?? 0
+  );
 
-  if (categories.length <= N) {
-    return [categories, counts];
+  if (allCategories.length <= N) {
+    return [allCategories, allCategories, counts];
   }
 
-  const sortIndex = fillRange(new Array(categories.length)).sort(
+  const sortIndex = fillRange(new Array(allCategories.length)).sort(
     (a, b) => counts[b] - counts[a]
   );
   const topNindices = new Set(sortIndex.slice(0, N));
 
   const _topNCategories = [];
   const topNCounts = [];
-  for (let i = 0; i < categories.length; i += 1) {
+  for (let i = 0; i < allCategories.length; i += 1) {
     if (topNindices.has(i)) {
-      _topNCategories.push(categories[i]);
+      _topNCategories.push(allCategories[i]);
       topNCounts.push(counts[i]);
     }
   }
-  return [_topNCategories, topNCounts];
+  return [allCategories, _topNCategories, topNCounts];
 }
 
 export function isSelectableCategoryName(schema, name) {
@@ -87,21 +89,22 @@ export function createCategorySummaryFromDfCol(dfCol, colSchema) {
   if they are not actively used in the current annoMatrix view.
   */
   const summary = dfCol.summarizeCategorical();
-  const [categoryValues, categoryValueCounts] = topNCategories(
-    colSchema,
-    summary,
-    N
-  );
+  const [
+    allCategoryValues,
+    categoryValues,
+    categoryValueCounts,
+  ] = topNCategories(colSchema, summary, N);
   const categoryValueIndices = new Map(categoryValues.map((v, i) => [v, i]));
   const numCategoryValues = categoryValueIndices.size;
   const isTruncated = categoryValues.length < summary.numCategories;
 
   return {
-    categoryValues, // array: of natively typed category values
-    categoryValueIndices, // map: category value (native type) -> category index
-    numCategoryValues, // number: of values in the category
-    isTruncated, // bool: true if list was truncated
-    categoryValueCounts, // array: cardinality of each category,
+    allCategoryValues, // array: of natively typed category values (all of them)
+    categoryValues, // array: of natively typed category values (top N only)
+    categoryValueIndices, // map: category value (native type) -> category index (top N only)
+    numCategoryValues, // number: of values in the category (top N)
+    isTruncated, // bool: true if list was truncated (ie, if topN != all)
+    categoryValueCounts, // array: cardinality of each category, (top N)
     isUserAnno, // bool
   };
 }
