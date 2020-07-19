@@ -1,4 +1,8 @@
-import { Dataframe, IdentityInt32Index } from "../util/dataframe";
+import {
+  Dataframe,
+  IdentityInt32Index,
+  dataframeMemo,
+} from "../util/dataframe";
 import {
   _getColumnDimensionNames,
   _getColumnSchema,
@@ -8,6 +12,8 @@ import {
 import { indexEntireSchema } from "../util/stateManager/schemaHelpers";
 import { _whereCacheGet, _whereCacheMerge } from "./whereCache";
 import _shallowClone from "./clone";
+
+const _dataframeCache = dataframeMemo(128);
 
 export default class AnnoMatrix {
   /*
@@ -437,7 +443,9 @@ export default class AnnoMatrix {
 
     /* everything we need is in the cache, so just cherry-pick requested columns */
     const requestedCacheKeys = this._resolveCachedQueries(field, queries);
-    const response = this._cache[field].subset(null, requestedCacheKeys);
+    const response = _dataframeCache(
+      this._cache[field].subset(null, requestedCacheKeys)
+    );
     this._gcUpdateStats(field, response);
     return response;
   }

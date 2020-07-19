@@ -5,6 +5,7 @@ import {
   isArrayOrTypedArray,
   callOnceLazy,
   memoize,
+  __getMemoId,
 } from "./util";
 import {
   summarizeContinuous,
@@ -73,17 +74,6 @@ Dataframe
 
 class Dataframe {
   /**
-  memoization helpers.
-  **/
-  static __DataframeId__ = 0;
-
-  static __getId() {
-    const id = Dataframe.__DataframeId__;
-    Dataframe.__DataframeId__ += 1;
-    return id;
-  }
-
-  /**
   Constructors & factories
   **/
 
@@ -126,7 +116,7 @@ class Dataframe {
     this.length = nRows; // convenience accessor for row dimension
     this.rowIndex = rowIndex;
     this.colIndex = colIndex;
-    this.__id = Dataframe.__getId();
+    this.__id = __getMemoId();
 
     this.__compile(__columnsAccessor);
     Object.freeze(this);
@@ -202,7 +192,7 @@ class Dataframe {
 
     */
     const { length } = column;
-    const __id = Dataframe.__getId();
+    const __id = __getMemoId();
 
     /* get value by row label */
     const get = function get(rlabel) {

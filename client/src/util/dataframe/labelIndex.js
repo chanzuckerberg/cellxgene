@@ -5,6 +5,7 @@ for how this is used.
 **/
 
 import { rangeFill as fillRange } from "../range";
+import { __getMemoId } from "./util";
 
 /*
 Private utility functions
@@ -30,6 +31,10 @@ class IdentityInt32Index {
   */
   constructor(maxOffset) {
     this.maxOffset = maxOffset;
+  }
+
+  get __id() {
+    return `IdentityInt32Index_${this.maxOffset}`;
   }
 
   labels() {
@@ -162,6 +167,7 @@ class DenseInt32Index {
     this.minLabel = minLabel;
     this.rindex = labels;
     this.index = index;
+    this.__id = __getMemoId();
     this.__compile();
   }
 
@@ -288,6 +294,7 @@ class KeyIndex {
 
     this.index = index;
     this.rindex = rindex;
+    this.__id = __getMemoId();
     this.__compile();
   }
 
