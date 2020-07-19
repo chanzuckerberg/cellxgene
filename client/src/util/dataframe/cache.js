@@ -5,10 +5,8 @@ Dataframe object returned when the contents of the dataframe are identical.
 The core dataframe class does not support this, but it does attempt to maintain
 strict eq and immutability of columns indices.
 
-This is a class that will maintain an LRU cache of Dataframe objects.
-
-The only public method, get(), will return a dataframe with strict eq on 
-colummns, indices and dimensions.
+This is a function that will maintain a least-recently created cache of Dataframe 
+objects.
 */
 
 import { memoize } from "./util";
