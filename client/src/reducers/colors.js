@@ -33,6 +33,18 @@ const ColorsReducer = (
       return state;
     }
 
+    case "annotation: category edited": {
+      const { colorAccessor } = state;
+      if (action.metadataField !== colorAccessor) {
+        return state;
+      }
+      /* else update colorAccessor */
+      return {
+        ...state,
+        colorAccessor: action.newCategoryText,
+      };
+    }
+
     case "annotation: delete category": {
       const { colorAccessor } = state;
       if (action.metadataField !== colorAccessor) {

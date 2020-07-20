@@ -52,3 +52,13 @@ export function memoize(fn, hashFn, maxResultsCached = -1) {
 
   return wrap;
 }
+
+/**
+memoization helpers - just a global counter.
+**/
+let __DataframeMemoId__ = 0;
+export function __getMemoId() {
+  const id = __DataframeMemoId__;
+  __DataframeMemoId__ += 1;
+  return id;
+}

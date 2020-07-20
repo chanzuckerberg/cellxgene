@@ -2,10 +2,11 @@ import React, { useRef, useEffect } from "react";
 import { connect, shallowEqual } from "react-redux";
 import { FaChevronRight, FaChevronDown } from "react-icons/fa";
 import { AnchorButton, Button, Tooltip } from "@blueprintjs/core";
+import { Flipper, Flipped } from "react-flip-toolkit";
 import Async from "react-async";
 import memoize from "memoize-one";
 
-import CategoryFlipperLayout from "./categoryFlipperLayout";
+import Value from "../value";
 import AnnoMenu from "./annoMenuCategory";
 import AnnoDialogEditCategoryName from "./annoDialogEditCategoryName";
 import AnnoDialogAddLabel from "./annoDialogAddLabel";
@@ -63,38 +64,16 @@ class Category extends React.PureComponent {
     return !shallowEqual(props.watchProps, prevProps.watchProps);
   }
 
-  static async fetchData(annoMatrix, metadataField, colors) {
-    /*
-    fetch our data and the color-by data if appropriate, and then build a summary
-    of our category and a color table for the color-by annotation.
-    */
-    const { schema } = annoMatrix;
-    const { colorAccessor, colorMode } = colors;
-    let colorDataPromise = Promise.resolve(null);
-    if (colorAccessor) {
-      const query = createColorQuery(colorMode, colorAccessor, schema);
-      if (query) colorDataPromise = annoMatrix.fetch(...query);
-    }
-    const [categoryData, colorData] = await Promise.all([
-      annoMatrix.fetch("obs", metadataField),
-      colorDataPromise,
-    ]);
+  createCategorySummaryFromDfCol = memoize(createCategorySummaryFromDfCol);
 
-    // our data
-    const column = categoryData.icol(0);
-    const colSchema = schema.annotations.obsByName[metadataField];
-    const categorySummary = createCategorySummaryFromDfCol(column, colSchema);
-    return [categoryData, categorySummary, colorData];
-  }
-
-  getSelectionState = memoize((categorySummary) => {
+  getSelectionState(categorySummary) {
     const { categoricalSelection, metadataField } = this.props;
     return Category.getSelectionState(
       categoricalSelection,
       metadataField,
       categorySummary
     );
-  });
+  }
 
   handleColorChange = () => {
     const { dispatch, metadataField } = this.props;
@@ -133,7 +112,7 @@ class Category extends React.PureComponent {
     const { annoMatrix, metadataField, colors } = props.watchProps;
     const { crossfilter } = this.props;
 
-    const [categoryData, categorySummary, colorData] = await Category.fetchData(
+    const [categoryData, categorySummary, colorData] = await this.fetchData(
       annoMatrix,
       metadataField,
       colors
@@ -149,6 +128,33 @@ class Category extends React.PureComponent {
         this.handleToggleAllClick(categorySummary),
     };
   };
+
+  async fetchData(annoMatrix, metadataField, colors) {
+    /*
+    fetch our data and the color-by data if appropriate, and then build a summary
+    of our category and a color table for the color-by annotation.
+    */
+    const { schema } = annoMatrix;
+    const { colorAccessor, colorMode } = colors;
+    let colorDataPromise = Promise.resolve(null);
+    if (colorAccessor) {
+      const query = createColorQuery(colorMode, colorAccessor, schema);
+      if (query) colorDataPromise = annoMatrix.fetch(...query);
+    }
+    const [categoryData, colorData] = await Promise.all([
+      annoMatrix.fetch("obs", metadataField),
+      colorDataPromise,
+    ]);
+
+    // our data
+    const column = categoryData.icol(0);
+    const colSchema = schema.annotations.obsByName[metadataField];
+    const categorySummary = this.createCategorySummaryFromDfCol(
+      column,
+      colSchema
+    );
+    return [categoryData, categorySummary, colorData];
+  }
 
   updateColorTable(colorData) {
     // color table, which may be null
@@ -228,7 +234,7 @@ class Category extends React.PureComponent {
               <ErrorLoading metadataField={metadataField} error={error} />
             )}
           </Async.Rejected>
-          <Async.Fulfilled>
+          <Async.Fulfilled persist>
             {(asyncProps) => {
               const {
                 colorAccessor,
@@ -239,15 +245,17 @@ class Category extends React.PureComponent {
                 isColorAccessor,
                 handleCategoryToggleAllClick,
               } = asyncProps;
+              const isTruncated = !!categorySummary?.isTruncated;
+              const selectionState = this.getSelectionState(categorySummary);
               return (
                 <CategoryRender
                   metadataField={metadataField}
                   checkboxID={checkboxID}
                   isUserAnno={isUserAnno}
-                  isTruncated={!!categorySummary?.isTruncated}
+                  isTruncated={isTruncated}
                   isExpanded={isExpanded}
                   isColorAccessor={isColorAccessor}
-                  selectionState={this.getSelectionState(categorySummary)}
+                  selectionState={selectionState}
                   categoryData={categoryData}
                   categorySummary={categorySummary}
                   colorAccessor={colorAccessor}
@@ -498,30 +506,115 @@ const CategoryRender = React.memo(
     Otherwise, our normal multi-layout layout
     */
     return (
-      <CategoryFlipperLayout
-        metadataField={metadataField}
-        isExpanded={isExpanded}
-        isUserAnno={isUserAnno}
-        categoryData={categoryData}
-        categorySummary={categorySummary}
-        colorAccessor={colorAccessor}
-        colorData={colorData}
-        colorTable={colorTable}
+      <div
+        style={{
+          maxWidth: globals.maxControlsWidth,
+        }}
+        data-testclass="category"
+        data-testid={`category-${metadataField}`}
       >
-        <CategoryHeader
-          metadataField={metadataField}
-          checkboxID={checkboxID}
-          isUserAnno={isUserAnno}
-          isTruncated={isTruncated}
-          isExpanded={isExpanded}
-          isColorAccessor={isColorAccessor}
-          selectionState={selectionState}
-          onColorChangeClick={onColorChangeClick}
-          onCategoryToggleAllClick={onCategoryToggleAllClick}
-          onCategoryMenuClick={onCategoryMenuClick}
-          onCategoryMenuKeyPress={onCategoryMenuKeyPress}
-        />
-      </CategoryFlipperLayout>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "baseline",
+          }}
+        >
+          <CategoryHeader
+            metadataField={metadataField}
+            checkboxID={checkboxID}
+            isUserAnno={isUserAnno}
+            isTruncated={isTruncated}
+            isExpanded={isExpanded}
+            isColorAccessor={isColorAccessor}
+            selectionState={selectionState}
+            onColorChangeClick={onColorChangeClick}
+            onCategoryToggleAllClick={onCategoryToggleAllClick}
+            onCategoryMenuClick={onCategoryMenuClick}
+            onCategoryMenuKeyPress={onCategoryMenuKeyPress}
+          />
+        </div>
+        <div style={{ marginLeft: 26 }}>
+          {
+            /* values*/
+            isExpanded ? (
+              <CategoryValueList
+                isUserAnno={isUserAnno}
+                metadataField={metadataField}
+                categoryData={categoryData}
+                categorySummary={categorySummary}
+                colorAccessor={colorAccessor}
+                colorData={colorData}
+                colorTable={colorTable}
+              />
+            ) : null
+          }
+        </div>
+        <div>
+          {isExpanded && isTruncated ? (
+            <p style={{ paddingLeft: 15 }}>... truncated list ...</p>
+          ) : null}
+        </div>
+      </div>
+    );
+  }
+);
+
+const CategoryValueList = React.memo(
+  ({
+    isUserAnno,
+    metadataField,
+    categoryData,
+    categorySummary,
+    colorAccessor,
+    colorData,
+    colorTable,
+  }) => {
+    const tuples = [...categorySummary.categoryValueIndices];
+
+    /*
+    Render the value list.  If this is a user annotation, we use a flipper
+    animation, if read-only, we don't bother and save a few bits of perf.
+    */
+    if (!isUserAnno) {
+      return (
+        <>
+          {tuples.map(([value, index]) => (
+            <Value
+              key={value}
+              isUserAnno={isUserAnno}
+              metadataField={metadataField}
+              categoryIndex={index}
+              categoryData={categoryData}
+              categorySummary={categorySummary}
+              colorAccessor={colorAccessor}
+              colorData={colorData}
+              colorTable={colorTable}
+            />
+          ))}
+        </>
+      );
+    }
+
+    /* User annotation */
+    const flipKey = tuples.map((t) => t[0]).join("");
+    return (
+      <Flipper flipKey={flipKey}>
+        {tuples.map(([value, index]) => (
+          <Flipped key={value} flipId={value}>
+            <Value
+              isUserAnno={isUserAnno}
+              metadataField={metadataField}
+              categoryIndex={index}
+              categoryData={categoryData}
+              categorySummary={categorySummary}
+              colorAccessor={colorAccessor}
+              colorData={colorData}
+              colorTable={colorTable}
+            />
+          </Flipped>
+        ))}
+      </Flipper>
     );
   }
 );

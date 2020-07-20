@@ -18,13 +18,24 @@ categorical annotations to be writable.
 */
 
 export function isCategoricalAnnotation(schema, name) {
-  /* we treat any string, categorical or boolean as a categorical */
-  const { type } = schema.annotations.obsByName[name];
+  /* 
+  we treat any string, categorical or boolean as a categorical.
+  Return true/false/undefined (for unkonwn fields)
+  */
+  const colSchema = schema.annotations.obsByName[name];
+  if (colSchema === undefined) return undefined;
+  const { type } = colSchema;
   return type === "string" || type === "boolean" || type === "categorical";
 }
 
 export function isContinuousAnnotation(schema, name) {
-  return !isCategoricalAnnotation(schema, name);
+  /*
+  Return true/false/undefined
+  */
+  const colSchema = schema.annotations.obsByName[name];
+  if (colSchema === undefined) return undefined;
+  const { type } = colSchema;
+  return !(type === "string" || type === "boolean" || type === "categorical");
 }
 
 function _isUserAnnotation(schema, name) {

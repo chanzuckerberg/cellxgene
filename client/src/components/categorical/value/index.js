@@ -29,24 +29,30 @@ const CHART_WIDTH = 100;
 
 /* this is defined outside of the class so we can use it in connect() */
 function _currentLabelAsString(ownProps) {
-  const { categorySummary, categoryIndex } = ownProps;
+  const { label } = ownProps;
   // when called as a function, the String() constructor performs type conversion,
   // and returns a primitive string.
-  return String(categorySummary.categoryValues[categoryIndex]);
+  return String(label);
 }
 
 @connect((state, ownProps) => {
   const { pointDilation, categoricalSelection } = state;
-  const { metadataField } = ownProps;
+  const { metadataField, categorySummary, categoryIndex } = ownProps;
   const isDilated =
     pointDilation.metadataField === metadataField &&
     pointDilation.categoryField === _currentLabelAsString(ownProps);
+
+  const category = categoricalSelection[metadataField];
+  const label = categorySummary.categoryValues[categoryIndex];
+  const isSelected = category.get(label) ?? true;
+
   return {
-    categoricalSelection,
     annotations: state.annotations,
     schema: state.annoMatrix?.schema,
     ontology: state.ontology,
     isDilated,
+    isSelected,
+    label,
   };
 })
 class CategoryValue extends React.Component {
@@ -58,14 +64,8 @@ class CategoryValue extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
-    const {
-      categoricalSelection,
-      metadataField,
-      categoryIndex,
-      categorySummary,
-    } = this.props;
+    const { metadataField, categoryIndex, categorySummary } = this.props;
     if (
-      prevProps.categoricalSelection !== categoricalSelection ||
       prevProps.metadataField !== metadataField ||
       prevProps.categoryIndex !== categoryIndex ||
       prevProps.categorySummary !== categorySummary
@@ -84,28 +84,19 @@ class CategoryValue extends React.Component {
     return colorAccessor && !isColorBy && !annotations.isEditingLabelName;
   }
 
-  getLabel() {
-    const { categoryIndex, categorySummary } = this.props;
-    const label = categorySummary.categoryValues[categoryIndex];
-    return label;
-  }
-
   handleDeleteValue = () => {
-    const { dispatch, metadataField } = this.props;
-    const label = this.getLabel();
+    const { dispatch, metadataField, label } = this.props;
     dispatch(actions.annotationDeleteLabelFromCategory(metadataField, label));
   };
 
   handleAddCurrentSelectionToThisLabel = () => {
-    const { dispatch, metadataField } = this.props;
-    const label = this.getLabel();
+    const { dispatch, metadataField, label } = this.props;
     dispatch(actions.annotationLabelCurrentSelection(metadataField, label));
   };
 
   handleEditValue = (e) => {
-    const { dispatch, metadataField } = this.props;
+    const { dispatch, metadataField, label } = this.props;
     const { editedLabelText } = this.state;
-    const label = this.getLabel();
     this.cancelEditMode();
     dispatch(
       actions.annotationRenameLabelInCategory(
@@ -118,8 +109,7 @@ class CategoryValue extends React.Component {
   };
 
   handleCreateArbitraryLabel = (txt) => {
-    const { dispatch, metadataField } = this.props;
-    const label = this.getLabel();
+    const { dispatch, metadataField, label } = this.props;
     this.cancelEditMode();
     dispatch(
       actions.annotationRenameLabelInCategory(metadataField, label, txt)
@@ -137,8 +127,7 @@ class CategoryValue extends React.Component {
   };
 
   activateEditLabelMode = () => {
-    const { dispatch, metadataField, categoryIndex } = this.props;
-    const label = this.getLabel();
+    const { dispatch, metadataField, categoryIndex, label } = this.props;
     dispatch({
       type: "annotation: activate edit label mode",
       metadataField,
@@ -148,8 +137,7 @@ class CategoryValue extends React.Component {
   };
 
   cancelEditMode = () => {
-    const { dispatch, metadataField, categoryIndex } = this.props;
-    const label = this.getLabel();
+    const { dispatch, metadataField, categoryIndex, label } = this.props;
     this.setState({
       editedLabelText: this.currentLabelAsString(),
     });
@@ -191,24 +179,17 @@ class CategoryValue extends React.Component {
     If and only if true, update the component
     */
     const { props, state } = this;
-    const {
-      metadataField,
-      categoryIndex,
-      categoricalSelection,
-      categorySummary,
-    } = props;
+    const { categoryIndex, categorySummary, isSelected } = props;
     const {
       categoryIndex: newCategoryIndex,
-      categoricalSelection: newCategoricalSelection,
       categorySummary: newCategorySummary,
+      isSelected: newIsSelected,
     } = nextProps;
 
     const label = categorySummary.categoryValues[categoryIndex];
     const newLabel = newCategorySummary.categoryValues[newCategoryIndex];
     const labelChanged = label !== newLabel;
-    const valueSelectionChange =
-      categoricalSelection[metadataField].get(label) !==
-      newCategoricalSelection[metadataField].get(newLabel);
+    const valueSelectionChange = isSelected !== newIsSelected;
 
     const colorAccessorChange = props.colorAccessor !== nextProps.colorAccessor;
     const annotationsChange = props.annotations !== nextProps.annotations;
@@ -250,8 +231,7 @@ class CategoryValue extends React.Component {
   };
 
   handleMouseEnter = () => {
-    const { dispatch, metadataField, categoryIndex } = this.props;
-    const label = this.getLabel();
+    const { dispatch, metadataField, categoryIndex, label } = this.props;
     dispatch({
       type: "category value mouse hover start",
       metadataField,
@@ -261,8 +241,7 @@ class CategoryValue extends React.Component {
   };
 
   handleMouseExit = () => {
-    const { dispatch, metadataField, categoryIndex } = this.props;
-    const label = this.getLabel();
+    const { dispatch, metadataField, categoryIndex, label } = this.props;
     dispatch({
       type: "category value mouse hover end",
       metadataField,
@@ -393,21 +372,21 @@ class CategoryValue extends React.Component {
     return false;
   }
 
-  renderMiniStackedBar = (categoryValue) => {
+  renderMiniStackedBar = () => {
     const {
-      categoricalSelection,
       colorAccessor,
       metadataField,
       categoryData,
       colorData,
       colorTable,
       schema,
+      label,
     } = this.props;
     const isColorBy = metadataField === colorAccessor;
 
     if (
       !this.shouldRenderStackedBarOrHistogram ||
-      !categoricalSelection[colorAccessor] ||
+      !AnnotationsHelpers.isCategoricalAnnotation(schema, colorAccessor) ||
       isColorBy
     ) {
       return null;
@@ -419,7 +398,7 @@ class CategoryValue extends React.Component {
         categoryData,
         colorAccessor,
         colorData,
-        categoryValue,
+        label,
         colorTable,
         schema,
         CHART_WIDTH
@@ -446,20 +425,21 @@ class CategoryValue extends React.Component {
     );
   };
 
-  renderMiniHistogram = (categoryValue) => {
+  renderMiniHistogram = () => {
     const {
-      categoricalSelection,
       colorAccessor,
       metadataField,
       colorData,
       categoryData,
       colorTable,
+      schema,
+      label,
     } = this.props;
     const colorScale = colorTable?.scale;
 
     if (
       !this.shouldRenderStackedBarOrHistogram ||
-      categoricalSelection[colorAccessor]
+      !AnnotationsHelpers.isContinuousAnnotation(schema, colorAccessor)
     ) {
       return null;
     }
@@ -470,7 +450,7 @@ class CategoryValue extends React.Component {
         categoryData,
         colorAccessor,
         colorData,
-        categoryValue,
+        label,
         CHART_WIDTH,
         VALUE_HEIGHT
       ) ?? {};
@@ -486,7 +466,7 @@ class CategoryValue extends React.Component {
         }}
         /* eslint-enable react/jsx-props-no-spreading -- enable */
         obsOrVarContinuousFieldDisplayName={colorAccessor}
-        domainLabel={categoryValue}
+        domainLabel={label}
         height={VALUE_HEIGHT}
         width={CHART_WIDTH}
       />
@@ -495,32 +475,24 @@ class CategoryValue extends React.Component {
 
   render() {
     const {
-      categoricalSelection,
       metadataField,
       categoryIndex,
       colorAccessor,
       colorTable,
-      i,
       isUserAnno,
       annotations,
       ontology,
-      // flippedProps is potentially brittle, their docs want {...flippedProps} on our div,
-      // our lint doesn't like jsx spread, we are version pinned to prevent api change on their part
-      flippedProps,
       isDilated,
+      isSelected,
       categorySummary,
+      label,
     } = this.props;
     const colorScale = colorTable?.scale;
     const ontologyEnabled = ontology?.enabled ?? false;
 
     const { editedLabelText } = this.state;
 
-    if (!categoricalSelection) return null;
-
-    const category = categoricalSelection[metadataField];
-    const selected = category.get(this.getLabel()) ?? true;
     const count = categorySummary.categoryValueCounts[categoryIndex];
-    const value = categorySummary.categoryValues[categoryIndex];
     const displayString = this.currentLabelAsString();
 
     /* this is the color scale, so add swatches below */
@@ -559,10 +531,6 @@ class CategoryValue extends React.Component {
 
     return (
       <div
-        key={i}
-        data-flip-config={flippedProps["data-flip-config"]}
-        data-flip-id={flippedProps["data-flip-id"]}
-        data-portal-key={flippedProps["data-portal-key"]}
         className={
           /* This code is to change the styles on centroid label hover is causing over-rendering */
           `${styles.value}${isDilated ? ` ${styles.hover}` : ""}`
@@ -597,10 +565,10 @@ class CategoryValue extends React.Component {
             >
               <input
                 id={valueToggleLabel}
-                onChange={selected ? this.toggleOff : this.toggleOn}
+                onChange={isSelected ? this.toggleOff : this.toggleOn}
                 data-testclass="categorical-value-select"
                 data-testid={`categorical-value-select-${metadataField}-${displayString}`}
-                checked={selected}
+                checked={isSelected}
                 type="checkbox"
               />
               <span
@@ -673,8 +641,8 @@ class CategoryValue extends React.Component {
             ) : null}
           </div>
           <span style={{ flexShrink: 0 }}>
-            {this.renderMiniStackedBar(value)}
-            {this.renderMiniHistogram(value)}
+            {this.renderMiniStackedBar()}
+            {this.renderMiniHistogram()}
           </span>
         </div>
         <div>
@@ -704,7 +672,7 @@ class CategoryValue extends React.Component {
                 height: VALUE_HEIGHT,
                 backgroundColor:
                   isColorBy && categoryValueIndices
-                    ? colorScale(categoryValueIndices.get(value))
+                    ? colorScale(categoryValueIndices.get(label))
                     : "inherit",
               }}
             />
@@ -745,7 +713,7 @@ class CategoryValue extends React.Component {
                             disabled={this.isAddCurrentSelectionDisabled(
                               crossfilter,
                               metadataField,
-                              value
+                              label
                             )}
                           />
                         )}
