@@ -42,7 +42,7 @@ const ColorsReducer = (
       return {
         ...state,
         colorAccessor: action.newCategoryText,
-      }
+      };
     }
 
     case "annotation: delete category": {

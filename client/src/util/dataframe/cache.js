@@ -24,4 +24,3 @@ const dataframeMemo = (capacity = 100) =>
   memoize(noop, hashDataframe, capacity);
 
 export default dataframeMemo;
-
