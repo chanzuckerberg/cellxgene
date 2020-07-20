@@ -17,7 +17,7 @@ cellxgene looks for embeddings (e.g., tSNE, UMAP, PCA, spatial coordinates) in `
 ## Differential expression
 
 We're actively working on how to improve differential expression within the app.
-**N.B.: the [current implementation](https://github.com/chanzuckerberg/cellxgene/blob/master/server/app/scanpy_engine/diffexp.py#L40) assumes normally distributed values on a linear scale.**
+**N.B.: the [current implementation](https://github.com/chanzuckerberg/cellxgene/blob/main/server/app/scanpy_engine/diffexp.py#L40) assumes normally distributed values on a linear scale.**
 
 Currently, we use a [Welch's _t_-test](https://en.wikipedia.org/wiki/Welch%27s_t-test), which assumes that the two populations are each normally distributed, but may have unequal variance. We use a two-sided t-test against the null hypothesis that the two populations have **equal** means. P-values are adjusted with the [Bonferroni corrrection](https://en.wikipedia.org/wiki/Bonferroni_correction).
 

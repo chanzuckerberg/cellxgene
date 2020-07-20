@@ -4,7 +4,7 @@
 
 Clicking on the following button will forward you to Heroku to begin the deployment process:
 
-<a href="https://heroku.com/deploy?template=https://github.com/chanzuckerberg/cellxgene">
+<a href="https://heroku.com/deploy?template=https://github.com/chanzuckerberg/cellxgene/tree/main">
  <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy">
 </a>
 

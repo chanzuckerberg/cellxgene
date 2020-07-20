@@ -9,7 +9,9 @@ import {
   Classes,
 } from "@blueprintjs/core";
 
-@connect()
+@connect((state) => ({
+  schema: state.annoMatrix?.schema,
+}))
 class Occupancy extends React.PureComponent {
   _WIDTH = 100;
 
@@ -21,16 +23,17 @@ class Occupancy extends React.PureComponent {
       createHistogram fetches the continous data in relation to the cells releveant to the catagory value.
       It then seperates that data into 50 bins for drawing the mini-histogram
     */
-    const { world, metadataField, colorAccessor, categoryValue } = this.props;
+    const {
+      metadataField,
+      categoryData,
+      colorData,
+      categoryValue,
+    } = this.props;
 
     if (!this.canvas) return;
 
-    const groupBy = world.obsAnnotations.col(metadataField);
-
-    const col =
-      world.obsAnnotations.col(colorAccessor) ||
-      world.varData.col(colorAccessor);
-
+    const groupBy = categoryData.col(metadataField);
+    const col = colorData.icol(0);
     const range = col.summarize();
 
     const histogramMap = col.histogram(
@@ -39,7 +42,6 @@ class Occupancy extends React.PureComponent {
       groupBy
     ); /* Because the signature changes we really need different names for histogram to differentiate signatures  */
 
-    // const categoryValue = category.categoryValues[categoryIndex];
     const bins = histogramMap.has(categoryValue)
       ? histogramMap.get(categoryValue)
       : new Array(50).fill(0);
@@ -79,20 +81,22 @@ class Occupancy extends React.PureComponent {
       Using the colorScale a stack of colored bars is drawn representing the map
      */
     const {
-      world,
       metadataField,
+      categoryData,
       colorAccessor,
       categoryValue,
-      colorScale,
+      colorTable,
+      schema,
+      colorData,
     } = this.props;
-    const { schema } = world;
+    const { scale: colorScale } = colorTable;
 
     const ctx = this.canvas?.getContext("2d");
 
     if (!ctx) return;
 
-    const groupBy = world.obsAnnotations.col(metadataField);
-    const occupancyMap = world.obsAnnotations
+    const groupBy = categoryData.col(metadataField);
+    const occupancyMap = colorData
       .col(colorAccessor)
       .histogramCategorical(groupBy);
 
@@ -109,7 +113,7 @@ class Occupancy extends React.PureComponent {
         schema.annotations.obsByName[colorAccessor]?.categories;
 
       let currentOffset = 0;
-      const dfColumn = world.obsAnnotations.col(colorAccessor);
+      const dfColumn = colorData.col(colorAccessor);
       const categoryValues = dfColumn.summarizeCategorical().categories;
 
       let o;

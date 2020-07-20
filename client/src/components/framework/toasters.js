@@ -5,6 +5,7 @@ import { Position, Toaster, Intent } from "@blueprintjs/core";
 const ToastTopCenter = Toaster.create({
   className: "recipe-toaster",
   position: Position.TOP,
+  maxToasts: 4,
 });
 
 /*
@@ -23,12 +24,15 @@ export const keepAroundErrorToast = (message) =>
 /*
 a hard network error
 */
-export const postNetworkErrorToast = (message) =>
-  ToastTopCenter.show({
-    message,
-    timeout: 30000,
-    intent: Intent.DANGER,
-  });
+export const postNetworkErrorToast = (message, key = undefined) =>
+  ToastTopCenter.show(
+    {
+      message,
+      timeout: 30000,
+      intent: Intent.DANGER,
+    },
+    key
+  );
 
 /*
 Async message to user

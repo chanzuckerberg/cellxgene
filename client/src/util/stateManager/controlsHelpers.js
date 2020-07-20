@@ -6,17 +6,8 @@ import _ from "lodash";
 
 import * as globals from "../../globals";
 import { rangeFill as fillRange } from "../range";
-import {
-  userDefinedDimensionName,
-  diffexpDimensionName,
-} from "../nameCreators";
-
-export function maxCategoryItems(config) {
-  return (
-    config.parameters?.["max-category-items"] ??
-    globals.configDefaults.parameters["max-category-items"]
-  );
-}
+import fromEntries from "../fromEntries";
+import { isCategoricalAnnotation } from "./annotationsHelpers";
 
 /*
 Selection state for categoricals are tracked in an Object that
@@ -45,31 +36,38 @@ Remember that option values can be ANY js type, except undefined/null.
   }
 */
 function topNCategories(colSchema, summary, N) {
-  /* return top N by occurrences in the data, preserving original category order */
-  const { categories } = colSchema;
-  const counts = categories.map((cat) => summary.categoryCounts.get(cat) ?? 0);
+  /* return top N categories by occurrences in the data */
+  const { categories: allCategories } = colSchema;
+  const counts = allCategories.map(
+    (cat) => summary.categoryCounts.get(cat) ?? 0
+  );
 
-  if (categories.length <= N) {
-    return [categories, counts];
+  if (allCategories.length <= N) {
+    return [allCategories, allCategories, counts];
   }
 
-  const sortIndex = fillRange(new Array(categories.length)).sort(
+  const sortIndex = fillRange(new Array(allCategories.length)).sort(
     (a, b) => counts[b] - counts[a]
   );
   const topNindices = new Set(sortIndex.slice(0, N));
 
   const _topNCategories = [];
   const topNCounts = [];
-  for (let i = 0; i < categories.length; i += 1) {
+  for (let i = 0; i < allCategories.length; i += 1) {
     if (topNindices.has(i)) {
-      _topNCategories.push(categories[i]);
+      _topNCategories.push(allCategories[i]);
       topNCounts.push(counts[i]);
     }
   }
-  return [_topNCategories, topNCounts];
+  return [allCategories, _topNCategories, topNCounts];
 }
 
-export function selectableCategoryNames(schema, maxCatItems, names) {
+export function isSelectableCategoryName(schema, name) {
+  const { index } = schema.annotations.obs;
+  return name && name !== index && isCategoricalAnnotation(schema, name);
+}
+
+export function selectableCategoryNames(schema, names) {
   /*
   return all obs annotation names that are categorical AND have a
   "reasonably" small number of categories AND are not the index column.
@@ -77,88 +75,42 @@ export function selectableCategoryNames(schema, maxCatItems, names) {
   If the initial name list not provided, use everything in the schema.
   */
   if (!schema) return [];
-  const { index, columns } = schema.annotations.obs;
-
-  return columns
-    .filter((colSchema) => !names || names.indexOf(colSchema.name) !== -1)
-    .filter((colSchema) => {
-      const { type, name } = colSchema;
-      const isSelectableType =
-        type === "string" || type === "boolean" || type === "categorical";
-      return isSelectableType && name !== index;
-    })
-    .map((v) => v.name);
+  if (!names) names = schema.annotations.obs.columns.map((c) => c.name);
+  return names.filter((name) => isSelectableCategoryName(schema, name));
 }
 
-export function createCategoricalSelection(world, names) {
+export function createCategorySummaryFromDfCol(dfCol, colSchema) {
   const N = globals.maxCategoricalOptionsToDisplay;
-  const { obsAnnotations, schema } = world;
+  const { writable: isUserAnno } = colSchema;
 
-  const res = names.reduce((acc, name) => {
-    const colSchema = schema.annotations.obsByName[name];
-    const { writable: isUserAnno } = colSchema;
+  /*
+  Summarize the annotation data currently in dataframe column.  Must return
+  categoryValues in sorted order, and must include all category values even
+  if they are not actively used in the current annoMatrix view.
+  */
+  const summary = dfCol.summarizeCategorical();
+  const [
+    allCategoryValues,
+    categoryValues,
+    categoryValueCounts,
+  ] = topNCategories(colSchema, summary, N);
+  const categoryValueIndices = new Map(categoryValues.map((v, i) => [v, i]));
+  const numCategoryValues = categoryValueIndices.size;
+  const isTruncated = categoryValues.length < summary.numCategories;
 
-    /*
-    Summarize the annotation data currently in world.  Must return categoryValues
-    in sorted order, and must include all category values even if they are not
-    actively used in the current world.
-    */
-    const summary = obsAnnotations.col(name).summarizeCategorical();
-    const [categoryValues, categoryValueCounts] = topNCategories(
-      colSchema,
-      summary,
-      N
-    );
-    const categoryValueIndices = new Map(categoryValues.map((v, i) => [v, i]));
-    const numCategoryValues = categoryValueIndices.size;
-    const categoryValueSelected = new Array(numCategoryValues).fill(true);
-    const isTruncated = categoryValues.length < summary.numCategories;
-
-    acc[name] = {
-      categoryValues, // array: of natively typed category values
-      categoryValueIndices, // map: category value (native type) -> category index
-      categoryValueSelected, // array: t/f selection state
-      numCategoryValues, // number: of values in the category
-      isTruncated, // bool: true if list was truncated
-      categoryValueCounts, // array: cardinality of each category,
-      categorySelected: true, // bool - default state for entire category
-      isUserAnno, // bool
-    };
-    return acc;
-  }, {});
-  return res;
+  return {
+    allCategoryValues, // array: of natively typed category values (all of them)
+    categoryValues, // array: of natively typed category values (top N only)
+    categoryValueIndices, // map: category value (native type) -> category index (top N only)
+    numCategoryValues, // number: of values in the category (top N)
+    isTruncated, // bool: true if list was truncated (ie, if topN != all)
+    categoryValueCounts, // array: cardinality of each category, (top N)
+    isUserAnno, // bool
+  };
 }
 
-/*
-build a crossfilter dimensions for all gene expression related dimensions.
-*/
-export function createGeneDimensions(
-  userDefinedGenes,
-  diffexpGenes,
-  world,
-  crossfilter
-) {
-  crossfilter = userDefinedGenes.reduce(
-    (xflt, gene) =>
-      xflt.addDimension(
-        userDefinedDimensionName(gene),
-        "scalar",
-        world.varData.col(gene).asArray(),
-        Float32Array
-      ),
-    crossfilter
-  );
-  crossfilter = diffexpGenes.reduce(
-    (xflt, gene) =>
-      xflt.addDimension(
-        diffexpDimensionName(gene),
-        "scalar",
-        world.varData.col(gene).asArray(),
-        Float32Array
-      ),
-    crossfilter
-  );
-  return crossfilter;
+export function createCategoricalSelection(names) {
+  return fromEntries(names.map((name) => [name, new Map()]));
 }
 
 export function pruneVarDataCache(varData, needed) {

@@ -33,7 +33,7 @@ export default class GraphOverlayLayer extends PureComponent {
   };
 
   // This is passed to all children, should be called when an overlay's display state is toggled along with the overlay name and its new display state in boolean form
-  overlayToggled = (overlay, displaying) => {
+  overlaySetShowing = (overlay, displaying) => {
     this.setState((state) => {
       return { ...state, display: { ...state.display, [overlay]: displaying } };
     });
@@ -67,7 +67,7 @@ export default class GraphOverlayLayer extends PureComponent {
     const newChildren = React.Children.map(children, (child) =>
       cloneElement(child, {
         inverseTransform,
-        overlayToggled: this.overlayToggled,
+        overlaySetShowing: this.overlaySetShowing,
       })
     );
 

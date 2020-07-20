@@ -94,7 +94,7 @@ pydist: build
 
 # RELEASE HELPERS
 
-# create new version to commit to master
+# create new version to commit to main
 .PHONY: release-stage-1
 release-stage-1: dev-env bump clean-lite gen-package-lock
 	@echo "Version bumped part:$(PART) and client built. Ready to commit and push"

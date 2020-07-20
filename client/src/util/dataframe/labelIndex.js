@@ -1,17 +1,18 @@
-/* eslint-disable max-classes-per-file */
+/* eslint-disable max-classes-per-file -- Classes are interrelated*/
 /**
 Label indexing - map a label to & from an integer offset.  See Dataframe
 for how this is used.
 **/
 
 import { rangeFill as fillRange } from "../range";
+import { __getMemoId } from "./util";
 
 /*
 Private utility functions
 */
 function extent(tarr) {
   let min = 0x7fffffff;
-  let max = ~min; // eslint-disable-line no-bitwise
+  let max = ~min; // eslint-disable-line no-bitwise -- Establishes 0 of same size
   for (let i = 0, l = tarr.length; i < l; i += 1) {
     const v = tarr[i];
     if (v < min) {
@@ -32,6 +33,10 @@ class IdentityInt32Index {
     this.maxOffset = maxOffset;
   }
 
+  get __id() {
+    return `IdentityInt32Index_${this.maxOffset}`;
+  }
+
   labels() {
     // memoize
     const k = fillRange(new Int32Array(this.maxOffset));
@@ -41,28 +46,24 @@ class IdentityInt32Index {
     return k;
   }
 
-  // eslint-disable-next-line class-methods-use-this
   getOffset(i) {
     // label to offset
-    return i;
+    return Number.isInteger(i) && i >= 0 && i < this.maxOffset ? i : undefined;
   }
 
-  // eslint-disable-next-line class-methods-use-this
   getOffsets(arr) {
     // labels to offsets
-    return arr;
+    return arr.map((i) => this.getOffset(i));
   }
 
-  // eslint-disable-next-line class-methods-use-this
   getLabel(i) {
     // offset to label
-    return i;
+    return Number.isInteger(i) && i >= 0 && i < this.maxOffset ? i : undefined;
   }
 
-  // eslint-disable-next-line class-methods-use-this
   getLabels(arr) {
     // offsets to labels
-    return arr;
+    return arr.map((i) => this.getLabel(i));
   }
 
   size() {
@@ -91,7 +92,7 @@ class IdentityInt32Index {
     const { maxOffset } = this;
     for (let i = 0, l = labels.length; i < l; i += 1) {
       const label = labels[i];
-      if (label < 0 || label >= maxOffset)
+      if (!Number.isInteger(label) || label < 0 || label >= maxOffset)
         throw new RangeError(`offset or label: ${label}`);
     }
     return this.__promote(labels);
@@ -100,6 +101,23 @@ class IdentityInt32Index {
   /* identity index - labels are offsets */
   isubset(offsets) {
     return this.subset(offsets);
+  }
+
+  /* identity index - labels are offsets */
+  isubsetMask(mask) {
+    let count = 0;
+    if (mask.length !== this.maxOffset) {
+      throw new RangeError("mask has invalid length for index");
+    }
+    let labels = new Int32Array(mask.length);
+    for (let i = 0, l = mask.length; i < l; i += 1) {
+      if (mask[i]) {
+        labels[count] = i;
+        count += 1;
+      }
+    }
+    labels = labels.slice(0, count);
+    return this.subset(labels);
   }
 
   withLabel(label) {
@@ -149,33 +167,28 @@ class DenseInt32Index {
     this.minLabel = minLabel;
     this.rindex = labels;
     this.index = index;
+    this.__id = __getMemoId();
     this.__compile();
   }
 
   __compile() {
     const { minLabel, index, rindex } = this;
     this.getOffset = function getOffset(l) {
-      return index[l - minLabel];
+      if (!Number.isInteger(l)) return undefined;
+      const offset = index[l - minLabel];
+      return offset === -1 ? undefined : offset;
     };
 
     this.getOffsets = function getOffsets(arr) {
-      const res = new arr.constructor(arr.length);
-      for (let i = 0, len = arr.length; i < len; i += 1) {
-        res[i] = index[arr[i] - minLabel];
-      }
-      return res;
+      return arr.map((i) => this.getOffset(i));
     };
 
     this.getLabel = function getLabel(i) {
-      return rindex[i];
+      return Number.isInteger(i) ? rindex[i] : undefined;
     };
 
     this.getLabels = function getLabels(arr) {
-      const res = new arr.constructor(arr.length);
-      for (let i = 0, len = arr.length; i < len; i += 1) {
-        res[i] = rindex[arr[i]];
-      }
-      return res;
+      return arr.map((i) => this.getLabel(i));
     };
   }
 
@@ -211,11 +224,9 @@ class DenseInt32Index {
       if (offset === undefined || offset === -1)
         throw new RangeError(`unknown label: ${label}`);
     }
-
     return this.__promote(labels);
   }
 
-  // eslint-disable-next-line class-methods-use-this
   isubset(offsets) {
     /* validate subset */
     const { rindex } = this;
@@ -227,7 +238,22 @@ class DenseInt32Index {
         throw new RangeError(`out of bounds offset: ${offset}`);
       labels[i] = rindex[offset];
     }
+    return this.__promote(labels);
+  }
 
+  isubsetMask(mask) {
+    const { rindex } = this;
+    if (mask.length !== rindex.length)
+      throw new RangeError("mask has invalid length for index");
+    let count = 0;
+    let labels = new Int32Array(mask.length);
+    for (let i = 0, l = mask.length; i < l; i += 1) {
+      if (mask[i]) {
+        labels[count] = rindex[i];
+        count += 1;
+      }
+    }
+    labels = labels.slice(0, count);
     return this.__promote(labels);
   }
 
@@ -268,6 +294,7 @@ class KeyIndex {
 
     this.index = index;
     this.rindex = rindex;
+    this.__id = __getMemoId();
     this.__compile();
   }
 
@@ -278,23 +305,15 @@ class KeyIndex {
     };
 
     this.getOffsets = function getOffsets(arr) {
-      const res = new arr.constructor(arr.length);
-      for (let i = 0, len = arr.length; i < len; i += 1) {
-        res[i] = index.get(arr[i]);
-      }
-      return res;
+      return arr.map((l) => this.getOffset(l));
     };
 
     this.getLabel = function getLabel(i) {
-      return rindex[i];
+      return Number.isInteger(i) ? rindex[i] : undefined;
     };
 
     this.getLabels = function getLabels(arr) {
-      const res = new arr.constructor(arr.length);
-      for (let i = 0, len = arr.length; i < len; i += 1) {
-        res[i] = rindex[arr[i]];
-      }
-      return res;
+      return arr.map((i) => this.getLabel(i));
     };
   }
 
@@ -311,13 +330,14 @@ class KeyIndex {
     for (let i = 0, l = labels.length; i < l; i += 1) {
       const label = labels[i];
       const offset = this.getOffset(label);
-      if (offset === undefined) throw new RangeError(`unknown label: ${label}`);
+      if (offset === undefined || offset === -1) {
+        throw new RangeError(`unknown label: ${label}`);
+      }
     }
 
     return new KeyIndex(labels);
   }
 
-  // eslint-disable-next-line class-methods-use-this
   isubset(offsets) {
     const { rindex } = this;
     const maxOffset = rindex.length;
@@ -329,6 +349,22 @@ class KeyIndex {
       labels[i] = rindex[offset];
     }
 
+    return new KeyIndex(labels);
+  }
+
+  isubsetMask(mask) {
+    const { rindex } = this;
+    if (mask.length !== rindex.length)
+      throw new RangeError("mask has invalid length for index");
+    let labels = new Array(mask.length);
+    let count = 0;
+    for (let i = 0, l = mask.length; i < l; i += 1) {
+      if (mask[i]) {
+        labels[count] = rindex[i];
+        count += 1;
+      }
+    }
+    labels = labels.slice(0, count);
     return new KeyIndex(labels);
   }
 
@@ -347,7 +383,6 @@ class KeyIndex {
     return new KeyIndex(labelArray);
   }
 }
-/* eslint-enable class-methods-use-this */
 
 function isLabelIndex(i) {
   return (
@@ -358,3 +393,4 @@ function isLabelIndex(i) {
 }
 
 export { DenseInt32Index, IdentityInt32Index, KeyIndex, isLabelIndex };
+/* eslint-enable max-classes-per-file -- enable*/

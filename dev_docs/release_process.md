@@ -33,7 +33,7 @@ Follow these steps to create a release.
 4.  Commit and push the new branch
 5.  Create a PR for the release.
     -   [optional] As needed, conduct PR review.
-6.  Merge to master
+6.  Merge to the `main` branch
 7.  Publish to pypi by performing the following steps (assumes you that you have registered for pypi,
     and that you have write access to the cellxgene pypi package):
     -   Build the distribution and upload to test pypi `make release-stage-2`
@@ -44,7 +44,7 @@ Follow these steps to create a release.
     ([instructions](https://help.github.com/articles/creating-releases/)).
     -   Draft new release
     -   Type version name matching release version number from (1)
-    -   Select `master` as release branch (ensure you merged the release PR)
+    -   Select `main` as release branch (ensure you merged the release PR)
     -   Type title `Release {version num}`
     -   [optional] Check pre-release if this release is not ready for production
     -   Publish Release
@@ -55,7 +55,7 @@ change the packaging (e.g. new bundled files, new dependencies, etc.)
 
 ### Point release (special case)
 
-To make a bugfix release (a point release) when there are already other changes in master we need to do a modified version of our release process. The difference is that instead of using master we are going make our release branch off of the tag for the release we want to patch. We cherrypick the commits that we want to include in the patch. Then instead of merging to master, we create the release directly off of the branch.
+To make a bugfix release (a point release) when there are already other changes in `main` we need to do a modified version of our release process. The difference is that instead of using `main` we are going make our release branch off of the tag for the release we want to patch. We cherrypick the commits that we want to include in the patch. Then instead of merging to `main`, we create the release directly off of the branch.
 
 1.  (same as above) Preparation:
     -   python3.6 environment, and a cellxgene clone
@@ -68,10 +68,10 @@ To make a bugfix release (a point release) when there are already other changes 
     -   Create a branch from that tag. `git branch release-0.9.1`
 3.  Cherrypick the commits that you want included in this patch.
     -   Test that the cherrypicked commits landed and fixed the issue
-    -   We WILL NOT merge this branch back into master, these commits should already exist in master.
+    -   We WILL NOT merge this branch back into `main`, these commits should already exist in `main`.
 4.  In the release branch:
     -   Run `make release-stage-1 PART=patch`.
-5.  Commit and push the new branch. DO NOT MAKE A PR OR MERGE TO MASTER.
+5.  Commit and push the new branch. DO NOT MAKE A PR OR MERGE TO `main`.
     -   wait for release to pass the tests
 6.  Publish to pypi by performing the following steps (assumes you that you have registered for pypi,
     and that you have write access to the cellxgene pypi package): - Build the distribution and upload to test pypi `make release-stage-2` - Test the test installation in a fresh virtual environment using `make install-release-test` - Upload the package to real pypi using `make release-stage-final` - Test the installation in a fresh virtual environment using

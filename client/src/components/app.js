@@ -64,10 +64,10 @@ class App extends React.Component {
               left: window.innerWidth / 2 - 50,
             }}
           >
-            error loading
+            error loading cellxgene
           </div>
         ) : null}
-        {loading ? null : (
+        {loading || error ? null : (
           <Layout>
             <LeftSideBar />
             {(viewportRef) => (

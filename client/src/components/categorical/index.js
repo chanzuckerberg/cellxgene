@@ -9,11 +9,11 @@ import AnnoDialog from "./annoDialog";
 import AnnoSelect from "./annoSelect";
 import LabelInput from "./labelInput";
 import { labelPrompt } from "./labelUtil";
+import actions from "../../actions";
 
 @connect((state) => ({
   writableCategoriesEnabled: state.config?.parameters?.annotations ?? false,
-  schema: state.world?.schema,
-  config: state.config,
+  schema: state.annoMatrix?.schema,
   ontology: state.ontology,
 }))
 class Categories extends React.Component {
@@ -30,11 +30,12 @@ class Categories extends React.Component {
   handleCreateUserAnno = (e) => {
     const { dispatch } = this.props;
     const { newCategoryText, categoryToDuplicate } = this.state;
-    dispatch({
-      type: "annotation: create category",
-      data: newCategoryText,
-      categoryToDuplicate,
-    });
+    dispatch(
+      actions.annotationCreateCategoryAction(
+        newCategoryText,
+        categoryToDuplicate
+      )
+    );
     this.setState({
       createAnnoModeActive: false,
       categoryToDuplicate: null,
@@ -126,12 +127,11 @@ class Categories extends React.Component {
       newCategoryText,
       expandedCats,
     } = this.state;
-    const { writableCategoriesEnabled, schema, config, ontology } = this.props;
+    const { writableCategoriesEnabled, schema, ontology } = this.props;
     const ontologyEnabled = ontology?.enabled ?? false;
     /* all names, sorted in display order.  Will be rendered in this order */
     const allCategoryNames = ControlsHelpers.selectableCategoryNames(
-      schema,
-      ControlsHelpers.maxCategoryItems(config)
+      schema
     ).sort();
 
     return (

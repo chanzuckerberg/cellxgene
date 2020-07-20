@@ -1,4 +1,3 @@
-// jshint esversion: 6
 import React from "react";
 import { connect } from "react-redux";
 import { ButtonGroup, AnchorButton, Tooltip } from "@blueprintjs/core";
@@ -13,33 +12,44 @@ import Subset from "./subset";
 import UndoRedoReset from "./undoRedo";
 import DiffexpButtons from "./diffexpButtons";
 
-@connect((state) => ({
-  universe: state.universe,
-  world: state.world,
-  crossfilter: state.crossfilter,
-  differential: state.differential,
-  graphInteractionMode: state.controls.graphInteractionMode,
-  clipPercentileMin: Math.round(100 * (state.world?.clipQuantiles?.min ?? 0)),
-  clipPercentileMax: Math.round(100 * (state.world?.clipQuantiles?.max ?? 1)),
-  userDefinedGenes: state.controls.userDefinedGenes,
-  diffexpGenes: state.controls.diffexpGenes,
-  colorAccessor: state.colors.colorAccessor,
-  scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
-  scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
-  celllist1: state.differential.celllist1,
-  celllist2: state.differential.celllist2,
-  libraryVersions: state.config?.["library_versions"],
-  undoDisabled: state["@@undoable/past"].length === 0,
-  redoDisabled: state["@@undoable/future"].length === 0,
-  aboutLink: state.config?.links?.["about-dataset"],
-  disableDiffexp: state.config?.parameters?.["disable-diffexp"] ?? false,
-  diffexpMayBeSlow: state.config?.parameters?.["diffexp-may-be-slow"] ?? false,
-  showCentroidLabels: state.centroidLabels.showLabels,
-  tosURL: state.config?.parameters?.["about_legal_tos"],
-  privacyURL: state.config?.parameters?.["about_legal_privacy"],
-  categoricalSelection: state.categoricalSelection,
-}))
-class MenuBar extends React.Component {
+@connect((state) => {
+  const { annoMatrix } = state;
+  const crossfilter = state.obsCrossfilter;
+  const selectedCount = crossfilter.countSelected();
+
+  const subsetPossible =
+    selectedCount !== 0 && selectedCount !== crossfilter.size(); // ie, not all are selected
+  const subsetResetPossible =
+    annoMatrix.nObs !== annoMatrix.schema.dataframe.nObs;
+
+  return {
+    subsetPossible,
+    subsetResetPossible,
+    differential: state.differential,
+    graphInteractionMode: state.controls.graphInteractionMode,
+    clipPercentileMin: Math.round(100 * (annoMatrix?.clipRange?.[0] ?? 0)),
+    clipPercentileMax: Math.round(100 * (annoMatrix?.clipRange?.[1] ?? 1)),
+    userDefinedGenes: state.controls.userDefinedGenes,
+    diffexpGenes: state.controls.diffexpGenes,
+    colorAccessor: state.colors.colorAccessor,
+    scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
+    scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
+    celllist1: state.differential.celllist1,
+    celllist2: state.differential.celllist2,
+    libraryVersions: state.config?.["library_versions"],
+    undoDisabled: state["@@undoable/past"].length === 0,
+    redoDisabled: state["@@undoable/future"].length === 0,
+    aboutLink: state.config?.links?.["about-dataset"],
+    disableDiffexp: state.config?.parameters?.["disable-diffexp"] ?? false,
+    diffexpMayBeSlow:
+      state.config?.parameters?.["diffexp-may-be-slow"] ?? false,
+    showCentroidLabels: state.centroidLabels.showLabels,
+    tosURL: state.config?.parameters?.["about_legal_tos"],
+    privacyURL: state.config?.parameters?.["about_legal_privacy"],
+    categoricalSelection: state.categoricalSelection,
+  };
+})
+class MenuBar extends React.PureComponent {
   static isValidDigitKeyEvent(e) {
     /*
     Return true if this event is necessary to enter a percent number input.
@@ -78,10 +88,10 @@ class MenuBar extends React.Component {
     const { pendingClipPercentiles } = this.state;
     const clipPercentileMin = pendingClipPercentiles?.clipPercentileMin;
     const clipPercentileMax = pendingClipPercentiles?.clipPercentileMax;
-
-    const { world } = this.props;
-    const currentClipMin = 100 * world?.clipQuantiles?.min;
-    const currentClipMax = 100 * world?.clipQuantiles?.max;
+    const {
+      clipPercentileMin: currentClipMin,
+      clipPercentileMax: currentClipMax,
+    } = this.props;
 
     // if you change this test, be careful with logic around
     // comparisons between undefined / NaN handling.
@@ -150,10 +160,7 @@ class MenuBar extends React.Component {
     const { clipPercentileMin, clipPercentileMax } = pendingClipPercentiles;
     const min = clipPercentileMin / 100;
     const max = clipPercentileMax / 100;
-    dispatch({
-      type: "set clip quantiles",
-      clipQuantiles: { min, max },
-    });
+    dispatch(actions.clipAction(min, max));
   };
 
   handleClipOpening = () => {
@@ -176,17 +183,14 @@ class MenuBar extends React.Component {
     });
   };
 
-  subsetPossible = () => {
-    const { crossfilter } = this.props;
-    return (
-      crossfilter.countSelected() !== 0 &&
-      crossfilter.countSelected() !== crossfilter.size()
-    );
+  handleSubset = () => {
+    const { dispatch } = this.props;
+    dispatch(actions.subsetAction());
   };
 
-  subsetResetPossible = () => {
-    const { world, universe } = this.props;
-    return world.nObs !== universe.nObs;
+  handleSubsetReset = () => {
+    const { dispatch } = this.props;
+    dispatch(actions.resetSubsetAction());
   };
 
   render() {
@@ -206,6 +210,8 @@ class MenuBar extends React.Component {
       tosURL,
       categoricalSelection,
       colorAccessor,
+      subsetPossible,
+      subsetResetPossible,
     } = this.props;
     const { pendingClipPercentiles } = this.state;
 
@@ -314,16 +320,10 @@ class MenuBar extends React.Component {
           </Tooltip>
         </ButtonGroup>
         <Subset
-          subsetPossible={this.subsetPossible()}
-          subsetResetPossible={this.subsetResetPossible()}
-          handleSubset={() => {
-            dispatch(actions.setWorldToSelection());
-            dispatch({ type: "increment graph render counter" });
-          }}
-          handleSubsetReset={() => {
-            dispatch(actions.resetWorldToUniverse());
-            dispatch({ type: "increment graph render counter" });
-          }}
+          subsetPossible={subsetPossible}
+          subsetResetPossible={subsetResetPossible}
+          handleSubset={this.handleSubset}
+          handleSubsetReset={this.handleSubsetReset}
         />
         {disableDiffexp ? null : <DiffexpButtons />}
       </div>

@@ -1,6 +1,5 @@
 import React from "react";
 import {
-  AnchorButton,
   ButtonGroup,
   Popover,
   Button,
@@ -12,26 +11,25 @@ import {
 import { connect } from "react-redux";
 import * as globals from "../../globals";
 import styles from "./menubar.css";
-import { World } from "../../util/stateManager";
 import actions from "../../actions";
 
 @connect((state) => ({
-  universe: state.universe,
-  world: state.world,
   layoutChoice: state.layoutChoice,
-  reembedController: state.reembedController,
-  enableReembedding: state.config?.parameters?.["enable-reembedding"] ?? false,
+  // disabled temporarily. TODO - issue #1606
+  // reembedController: state.reembedController,
+  // enableReembedding: state.config?.parameters?.["enable-reembedding"] ?? false,
+  enableReembedding: false,
 }))
 class Embedding extends React.PureComponent {
   handleLayoutChoiceChange = (e) => {
     const { dispatch } = this.props;
-    dispatch({
-      type: "set layout choice",
-      layoutChoice: e.currentTarget.value,
-    });
+    dispatch(actions.layoutChoiceAction(e.currentTarget.value));
   };
 
+  // eslint-disable-next-line class-methods-use-this -- temporary disable
   renderReembedding() {
+    return null;
+    /* disabled pending rewrite. TODO - issue #1606
     const {
       enableReembedding,
       world,
@@ -63,6 +61,7 @@ class Embedding extends React.PureComponent {
         />
       </Tooltip>
     );
+*/
   }
 
   render() {

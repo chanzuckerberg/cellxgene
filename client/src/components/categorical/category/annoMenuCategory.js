@@ -12,6 +12,7 @@ import {
 } from "@blueprintjs/core";
 
 import * as globals from "../../../globals";
+import actions from "../../../actions";
 
 @connect((state) => ({
   annotations: state.annotations,
@@ -41,10 +42,7 @@ class AnnoMenuCategory extends React.PureComponent {
 
   handleDeleteCategory = () => {
     const { dispatch, metadataField } = this.props;
-    dispatch({
-      type: "annotation: delete category",
-      metadataField,
-    });
+    dispatch(actions.annotationDeleteCategoryAction(metadataField));
   };
 
   render() {

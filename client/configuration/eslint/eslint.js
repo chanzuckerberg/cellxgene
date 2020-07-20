@@ -1,9 +1,23 @@
 module.exports = {
   root: true,
   parser: "babel-eslint",
-  extends: ["airbnb", "plugin:prettier/recommended", "prettier/react"],
+  extends: [
+    "airbnb",
+    "plugin:eslint-comments/recommended",
+    "plugin:prettier/recommended",
+    "prettier/react",
+  ],
   env: { browser: true, commonjs: true, es6: true },
-  globals: { expect: true },
+  globals: {
+    expect: true,
+    jest: true,
+    jestPuppeteer: true,
+    it: true,
+    page: true,
+    browser: true,
+    context: true,
+    beforeEach: true,
+  },
   parserOptions: {
     ecmaVersion: 2017,
     sourceType: "module",
@@ -13,6 +27,7 @@ module.exports = {
     },
   },
   rules: {
+    "eslint-comments/require-description": ["error"],
     "no-magic-numbers": "off",
     "no-nested-ternary": "off",
     "func-style": "off",
@@ -30,6 +45,13 @@ module.exports = {
     "space-before-function-paren": "off",
     "function-paren-newline": "off",
     "prefer-destructuring": ["error", { object: true, array: false }],
+    "import/prefer-default-export": "off",
+    "no-restricted-syntax": [
+      "error",
+      "ForInStatement",
+      "LabeledStatement",
+      "WithStatement",
+    ],
   },
   overrides: [
     {

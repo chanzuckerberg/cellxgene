@@ -1,4 +1,3 @@
-// jshint esversion: 6
 import React from "react";
 import { connect } from "react-redux";
 import { Button, ButtonGroup, AnchorButton, Tooltip } from "@blueprintjs/core";
@@ -8,15 +7,13 @@ import actions from "../../actions";
 import CellSetButton from "./cellSetButtons";
 
 @connect((state) => ({
-  config: state.config,
-  crossfilter: state.crossfilter,
   differential: state.differential,
   celllist1: state.differential?.celllist1,
   celllist2: state.differential?.celllist2,
   diffexpMayBeSlow: state.config?.parameters?.["diffexp-may-be-slow"] ?? false,
   diffexpCellcountMax: state.config?.limits?.["diffexp_cellcount_max"],
 }))
-class DiffexpButtons extends React.Component {
+class DiffexpButtons extends React.PureComponent {
   computeDiffExp = () => {
     const { dispatch, differential } = this.props;
     if (differential.celllist1 && differential.celllist2) {
@@ -66,14 +63,8 @@ class DiffexpButtons extends React.Component {
 
     return (
       <ButtonGroup className={styles.menubarButton}>
-        <CellSetButton
-          {...this.props} // eslint-disable-line react/jsx-props-no-spreading
-          eitherCellSetOneOrTwo={1}
-        />
-        <CellSetButton
-          {...this.props} // eslint-disable-line react/jsx-props-no-spreading
-          eitherCellSetOneOrTwo={2}
-        />
+        <CellSetButton eitherCellSetOneOrTwo={1} />
+        <CellSetButton eitherCellSetOneOrTwo={2} />
         {!differential.diffExp ? (
           <Tooltip
             content={warnMaxSizeExceeded ? tipMessageWarn : tipMessage}

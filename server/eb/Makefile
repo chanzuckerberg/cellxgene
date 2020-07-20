@@ -11,11 +11,13 @@ clean:
 # Presumes that a top-level `make build-client` has been done to 
 # create the client static assets.
 
+cwd := $(shell pwd)
+
 .PHONY: build
 build: clean
 	mkdir artifact.dir; \
 	(cd ../.. ; \
-	    git ls-files server/ | cpio -pdm server/eb/artifact.dir ; ); \
+	  git ls-files server/ | cpio -pdm $(cwd)/artifact.dir ; ); \
 	$(call copy_client_assets,../../client/build,artifact.dir/server) ; \
 	set -e ; \
 	cp app.py artifact.dir/application.py; \
@@ -36,7 +38,6 @@ build: clean
 	  fi; \
 	  if [ -d customize/inline_scripts ] ; then \
 	      cp -r customize/inline_scripts/* artifact.dir/server/common/web/templates;  \
-	      find artifact.dir/server/common/web/templates/ -type f -exec sed -i$(if $(IS_DARWIN), '',) 's/__CELLXGENE_COMMIT__/$(CELLXGENE_COMMIT)/g' {} \;; \
 	  fi; \
 	  if [ -d customize/ebextensions ] ; then \
 	      cp -r customize/ebextensions/* artifact.dir/.ebextensions;  \
@@ -44,7 +45,6 @@ build: clean
 	fi; \
 	if [ -d customize/plugins ] ; then \
 	  cp -r customize/plugins artifact.dir/server/;  \
-	  find artifact.dir/server/plugins/ -type f -exec sed -i$(if $(IS_DARWIN), '',) 's/__CELLXGENE_COMMIT__/$(CELLXGENE_COMMIT)/g' {} \;; \
 	fi; \
 	(cd artifact.dir; \
 	  cp -r server/common/web/static static; \

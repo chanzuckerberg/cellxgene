@@ -1,4 +1,4 @@
-// eslint-disable-next-line max-classes-per-file
+// eslint-disable-next-line max-classes-per-file -- classes are interrelated
 import PositiveIntervals from "./positiveIntervals";
 import BitArray from "./bitArray";
 import {
@@ -60,6 +60,9 @@ export default class ImmutableTypedCrossfilter {
   }
 
   setData(data) {
+    if (this.data === data) return this;
+    // please leave, WIP
+    // console.log("...crossfilter set data, will drop cache");
     return new ImmutableTypedCrossfilter(data, this.dimensions);
   }
 
@@ -192,6 +195,7 @@ export default class ImmutableTypedCrossfilter {
       adds = PositiveIntervals.difference(newSeln.ranges, oldSeln.ranges);
       dels = PositiveIntervals.difference(oldSeln.ranges, newSeln.ranges);
     } else {
+      // please leave, WIP
       // console.log("suboptimal selection update - index changed");
       adds = newSeln.ranges;
       dels = oldSeln.ranges;
@@ -408,7 +412,7 @@ class ImmutableScalarDimension extends _ImmutableBaseDimension {
     this.index = makeSortIndex(array);
   }
 
-  // eslint-disable-next-line class-methods-use-this
+  // eslint-disable-next-line class-methods-use-this -- needed for polymorphism
   _createValueArray(data, mapf, array) {
     // create dimension value array
     const len = data.length;
@@ -503,7 +507,10 @@ class ImmutableEnumDimension extends ImmutableScalarDimension {
 
   selectExact(spec) {
     const { enumIndex } = this;
-    const { values } = spec;
+    let { values } = spec;
+    if (!Array.isArray(values)) {
+      values = [values];
+    }
     return super.selectExact({
       mode: spec.mode,
       values: values.map((v) =>
@@ -512,7 +519,7 @@ class ImmutableEnumDimension extends ImmutableScalarDimension {
     });
   }
 
-  // eslint-disable-next-line class-methods-use-this
+  // eslint-disable-next-line class-methods-use-this -- enables polymorphism
   selectRange() {
     throw new Error("range selection unsupported on Enumerated dimension");
   }

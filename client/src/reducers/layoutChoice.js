@@ -14,8 +14,7 @@ function bestDefaultLayout(layouts) {
   return layouts[0];
 }
 
-function setToDefaultLayout(world) {
-  const { schema } = world;
+function setToDefaultLayout(schema) {
   const available = schema.layout.obs.map((v) => v.name).sort();
   const current = bestDefaultLayout(available);
   const currentDimNames = schema.layout.obsByName[current].dims;
@@ -32,17 +31,17 @@ const LayoutChoice = (
   nextSharedState
 ) => {
   switch (action.type) {
-    case "universe exists, but loading is still in progress": {
+    case "initial data load complete": {
       // set default to default
-      const { universe } = nextSharedState;
+      const { annoMatrix } = nextSharedState;
       return {
         ...state,
-        ...setToDefaultLayout(universe),
+        ...setToDefaultLayout(annoMatrix.schema),
       };
     }
 
     case "set layout choice": {
-      const { schema } = nextSharedState.world;
+      const { schema } = nextSharedState.annoMatrix;
       const current = action.layoutChoice;
       const currentDimNames = schema.layout.obsByName[current].dims;
       return { ...state, current, currentDimNames };
@@ -58,9 +57,9 @@ const LayoutChoice = (
     }
 
     case "reembed: clear all reembeddings": {
-      const { universe } = nextSharedState;
+      const { annoMatrix } = nextSharedState;
       const { current } = state;
-      const dflt = setToDefaultLayout(universe);
+      const dflt = setToDefaultLayout(annoMatrix.schema);
       if (dflt.available.includes(current)) {
         return {
           ...state,

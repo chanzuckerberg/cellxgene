@@ -24,11 +24,10 @@ class CxgAdaptor(DataAdaptor):
         {"sm.tile_cache_size": 8 * 1024 * 1024 * 1024, "sm.num_reader_threads": 32, "vfs.s3.region": "us-east-1"}
     )
 
-    def __init__(self, data_locator, config=None):
-        super().__init__(config)
+    def __init__(self, data_locator, app_config=None, dataset_config=None):
+        super().__init__(data_locator, app_config, dataset_config)
         self.lock = threading.Lock()
 
-        self.data_locator = data_locator
         self.url = data_locator.uri_or_path
         if self.url[-1] != "/":
             self.url += "/"
@@ -66,20 +65,14 @@ class CxgAdaptor(DataAdaptor):
         return 0
 
     @staticmethod
-    def open(data_locator, args):
-        return CxgAdaptor(data_locator, args)
+    def open(data_locator, app_config, dataset_config=None):
+        return CxgAdaptor(data_locator, app_config, dataset_config)
 
     def get_about(self):
         return self.about if self.about else super().get_about()
 
     def get_title(self):
         return self.title if self.title else super().get_title()
-
-    def get_location(self):
-        return self.url
-
-    def get_data_locator(self):
-        return self.data_locator
 
     def get_name(self):
         return "cellxgene cxg adaptor version"
@@ -196,9 +189,9 @@ class CxgAdaptor(DataAdaptor):
 
     def compute_diffexp_ttest(self, maskA, maskB, top_n=None, lfc_cutoff=None):
         if top_n is None:
-            top_n = self.config.diffexp__top_n
+            top_n = self.dataset_config.diffexp__top_n
         if lfc_cutoff is None:
-            lfc_cutoff = self.config.diffexp__lfc_cutoff
+            lfc_cutoff = self.dataset_config.diffexp__lfc_cutoff
         return diffexp_cxg.diffexp_ttest(self, maskA, maskB, top_n, lfc_cutoff)
 
     def get_colors(self):
@@ -400,7 +393,7 @@ class CxgAdaptor(DataAdaptor):
         embeddings = self.get_embedding_names()
         for ename in embeddings:
             A = self.open_array(f"emb/{ename}")
-            obs_layout.append({"name": ename, "type": A.dtype.name, "dims": [f"{ename}_{d}" for d in range(0, A.ndim)]})
+            obs_layout.append({"name": ename, "type": "float32", "dims": [f"{ename}_{d}" for d in range(0, A.ndim)]})
 
         schema = {"dataframe": dataframe, "annotations": annotations, "layout": {"obs": obs_layout}}
         return schema

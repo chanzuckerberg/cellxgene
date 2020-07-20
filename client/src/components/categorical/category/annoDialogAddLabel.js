@@ -3,14 +3,13 @@ import { connect } from "react-redux";
 import AnnoDialog from "../annoDialog";
 import LabelInput from "../labelInput";
 import { labelPrompt, isLabelErroneous } from "../labelUtil";
+import actions from "../../../actions";
 
 @connect((state) => ({
-  colorAccessor: state.colors.colorAccessor,
-  categoricalSelection: state.categoricalSelection,
   annotations: state.annotations,
-  universe: state.universe,
+  schema: state.annoMatrix?.schema,
   ontology: state.ontology,
-  crossfilter: state.crossfilter,
+  obsCrossfilter: state.obsCrossfilter,
 }))
 class Category extends React.PureComponent {
   constructor(props) {
@@ -36,12 +35,13 @@ class Category extends React.PureComponent {
     const { newLabelText } = this.state;
 
     this.disableAddNewLabelMode();
-    dispatch({
-      type: "annotation: add new label to category",
-      metadataField,
-      newLabelText,
-      assignSelectedCells: false,
-    });
+    dispatch(
+      actions.annotationCreateLabelInCategory(
+        metadataField,
+        newLabelText,
+        false
+      )
+    );
     e.preventDefault();
   };
 
@@ -50,18 +50,15 @@ class Category extends React.PureComponent {
     const { newLabelText } = this.state;
 
     this.disableAddNewLabelMode();
-    dispatch({
-      type: "annotation: add new label to category",
-      metadataField,
-      newLabelText,
-      assignSelectedCells: true,
-    });
+    dispatch(
+      actions.annotationCreateLabelInCategory(metadataField, newLabelText, true)
+    );
     e.preventDefault();
   };
 
   labelNameError = (name) => {
-    const { metadataField, ontology, universe } = this.props;
-    return isLabelErroneous(name, metadataField, ontology, universe.schema);
+    const { metadataField, ontology, schema } = this.props;
+    return isLabelErroneous(name, metadataField, ontology, schema);
   };
 
   instruction = (label) => {
@@ -74,7 +71,7 @@ class Category extends React.PureComponent {
 
   render() {
     const { newLabelText } = this.state;
-    const { metadataField, annotations, ontology, crossfilter } = this.props;
+    const { metadataField, annotations, ontology, obsCrossfilter } = this.props;
     const ontologyEnabled = ontology?.enabled ?? false;
 
     return (
@@ -92,7 +89,7 @@ class Category extends React.PureComponent {
           instruction={this.instruction(newLabelText)}
           cancelTooltipContent="Close this dialog without adding a label."
           primaryButtonText="Add label"
-          secondaryButtonText={`Add label & assign ${crossfilter.countSelected()} selected cells`}
+          secondaryButtonText={`Add label & assign ${obsCrossfilter.countSelected()} selected cells`}
           handleSecondaryButtonSubmit={this.addLabelAndAssignCells}
           text={newLabelText}
           validationError={this.labelNameError(newLabelText)}

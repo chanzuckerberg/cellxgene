@@ -3,7 +3,7 @@ import React from "react";
 import { Button, Popover, Menu, MenuItem, Position } from "@blueprintjs/core";
 import styles from "./menubar.css";
 
-function InformationMenu(props) {
+const InformationMenu = React.memo((props) => {
   const { libraryVersions, aboutLink, tosURL, privacyURL } = props;
   return (
     <div className={`bp3-button-group ${styles.menubarButton}`}>
@@ -41,11 +41,11 @@ function InformationMenu(props) {
             />
             <MenuItem
               target="_blank"
-              text={`cellxgene v${
+              text={
                 libraryVersions && libraryVersions.cellxgene
                   ? libraryVersions.cellxgene
                   : null
-              }`}
+              }
             />
             <MenuItem text="MIT License" />
             {tosURL ? (
@@ -72,6 +72,6 @@ function InformationMenu(props) {
       </Popover>
     </div>
   );
-}
+});
 
 export default InformationMenu;

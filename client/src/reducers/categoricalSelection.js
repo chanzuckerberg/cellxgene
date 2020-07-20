@@ -1,121 +1,45 @@
 import { ControlsHelpers as CH } from "../util/stateManager";
 
-const CategoricalSelection = (
-  state,
-  action,
-  nextSharedState,
-  prevSharedState
-) => {
+/*
+State is an object, with a key for each categorical annotation, and a
+value which is a Map of label->t/f, reflecting selection state for the label.
+
+Label state default (if missing) is up to the component, but typically true.
+
+{
+  "louvain": Map(),
+  ...
+}
+*/
+const CategoricalSelection = (state, action, nextSharedState) => {
   switch (action.type) {
-    case "initial data load complete (universe exists)":
-    case "set World to current selection":
-    case "reset World to eq Universe":
+    case "initial data load complete":
+    case "subset to selection":
+    case "reset subset":
     case "set clip quantiles": {
-      const { world } = nextSharedState;
+      const { annoMatrix } = nextSharedState;
       const newState = CH.createCategoricalSelection(
-        world,
-        CH.selectableCategoryNames(
-          world.schema,
-          CH.maxCategoryItems(prevSharedState.config)
-        )
+        CH.selectableCategoryNames(annoMatrix.schema)
       );
       return newState;
     }
 
-    case "universe: column load success": {
-      const { dim } = action;
-      if (dim !== "obsAnnotations") return state;
-
-      const { dataframe } = action;
-      const { world } = nextSharedState;
-      const names = CH.selectableCategoryNames(
-        world.schema,
-        CH.maxCategoryItems(prevSharedState.config),
-        dataframe.colIndex.labels()
-      );
-      if (names.length === 0) return state;
+    case "categorical metadata filter select":
+    case "categorical metadata filter deselect":
+    case "categorical metadata filter none of these":
+    case "categorical metadata filter all of these": {
+      const { metadataField, labelSelectionState } = action;
       return {
         ...state,
-        ...CH.createCategoricalSelection(world, names),
+        [metadataField]: labelSelectionState,
       };
-    }
-
-    case "categorical metadata filter select": {
-      /*
-      Set the specific category in this field to false
-      */
-      const newCategoryValueSelected = Array.from(
-        state[action.metadataField].categoryValueSelected
-      );
-      newCategoryValueSelected[action.categoryIndex] = true;
-      const newCategoricalSelection = {
-        ...state,
-        [action.metadataField]: {
-          ...state[action.metadataField],
-          categoryValueSelected: newCategoryValueSelected,
-        },
-      };
-      return newCategoricalSelection;
-    }
-
-    case "categorical metadata filter deselect": {
-      /*
-      Set the specific category in this field to false
-      */
-      const newCategoryValueSelected = Array.from(
-        state[action.metadataField].categoryValueSelected
-      );
-      newCategoryValueSelected[action.categoryIndex] = false;
-      const newCategoricalSelection = {
-        ...state,
-        [action.metadataField]: {
-          ...state[action.metadataField],
-          categoryValueSelected: newCategoryValueSelected,
-        },
-      };
-      return newCategoricalSelection;
-    }
-
-    case "categorical metadata filter none of these": {
-      /*
-      set all categories in this field to false.
-      */
-      const newCategoricalSelection = {
-        ...state,
-        [action.metadataField]: {
-          ...state[action.metadataField],
-          categorySelected: false,
-          categoryValueSelected: Array.from(
-            state[action.metadataField].categoryValueSelected
-          ).fill(false),
-        },
-      };
-      return newCategoricalSelection;
-    }
-
-    case "categorical metadata filter all of these": {
-      /*
-      set all categories in this field to true.
-      */
-      const newCategoricalSelection = {
-        ...state,
-        [action.metadataField]: {
-          ...state[action.metadataField],
-          categorySelected: true,
-          categoryValueSelected: Array.from(
-            state[action.metadataField].categoryValueSelected
-          ).fill(true),
-        },
-      };
-      return newCategoricalSelection;
     }
 
     case "annotation: create category": {
-      const { world } = nextSharedState;
       const name = action.data;
       return {
         ...state,
-        ...CH.createCategoricalSelection(world, [name]),
+        ...CH.createCategoricalSelection([name]),
       };
     }
 
@@ -138,12 +62,11 @@ const CategoricalSelection = (
     case "annotation: label edited":
     case "annotation: delete label": {
       /* need to rebuild the state for this annotation */
-      const { world } = nextSharedState;
       const name = action.metadataField;
       const { [name]: _, ...partialState } = state;
       return {
         ...partialState,
-        ...CH.createCategoricalSelection(world, [name]),
+        ...CH.createCategoricalSelection([name]),
       };
     }
 

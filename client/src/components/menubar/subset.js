@@ -3,7 +3,7 @@ import { AnchorButton, ButtonGroup, Tooltip } from "@blueprintjs/core";
 import styles from "./menubar.css";
 import * as globals from "../../globals";
 
-function Subset(props) {
+const Subset = React.memo((props) => {
   const {
     subsetPossible,
     subsetResetPossible,
@@ -41,6 +41,6 @@ function Subset(props) {
       </Tooltip>
     </ButtonGroup>
   );
-}
+});
 
 export default Subset;

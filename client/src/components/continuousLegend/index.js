@@ -4,6 +4,11 @@ import { connect } from "react-redux";
 import * as d3 from "d3";
 import { interpolateCool } from "d3-scale-chromatic";
 
+import {
+  createColorTable,
+  createColorQuery,
+} from "../../util/stateManager/colorHelpers";
+
 // create continuous color legend
 // http://bl.ocks.org/syntagmatic/e8ccca52559796be775553b467593a9f
 const continuous = (selectorId, colorscale, colorAccessor) => {
@@ -101,34 +106,78 @@ const continuous = (selectorId, colorscale, colorAccessor) => {
 };
 
 @connect((state) => ({
-  colorAccessor: state.colors.colorAccessor,
-  colorScale: state.colors.scale,
+  annoMatrix: state.annoMatrix,
+  colors: state.colors,
 }))
 class ContinuousLegend extends React.Component {
+  constructor(props) {
+    super(props);
+    this.ref = null;
+    this.state = {
+      colorAccessor: null,
+      colorScale: null,
+    };
+  }
+
+  componentDidMount() {
+    this.updateState(null);
+  }
+
   componentDidUpdate(prevProps) {
-    const { colorAccessor, colorScale } = this.props;
-    if (
-      prevProps.colorAccessor !== colorAccessor ||
-      prevProps.colorScale !== colorScale
-    ) {
+    this.updateState(prevProps);
+  }
+
+  async updateState(prevProps) {
+    const { annoMatrix, colors } = this.props;
+    if (!colors || !annoMatrix) return;
+
+    if (colors !== prevProps?.colors || annoMatrix !== prevProps?.annoMatrix) {
+      const { schema } = annoMatrix;
+      const { colorMode, colorAccessor, userColors } = colors;
+      const colorQuery = createColorQuery(colorMode, colorAccessor, schema);
+      const colorDf = colorQuery ? await annoMatrix.fetch(...colorQuery) : null;
+      const colorTable = createColorTable(
+        colorMode,
+        colorAccessor,
+        colorDf,
+        schema,
+        userColors
+      );
+
+      const colorScale = colorTable.scale;
+      const range = colorScale?.range;
+      const [domainMin, domainMax] = colorScale?.domain?.() ?? [0, 0];
+
       /* always remove it, if it's not continuous we don't put it back. */
       d3.select("#continuous_legend").selectAll("*").remove();
-    }
 
-    if (colorAccessor && colorScale && colorScale.range) {
-      /* fragile! continuous range is 0 to 1, not [#fa4b2c, ...], make this a flag? */
-      if (colorScale.range()[0][0] !== "#") {
-        continuous(
-          "#continuous_legend",
-          d3.scaleSequential(interpolateCool).domain(colorScale.domain()),
-          colorAccessor
-        );
+      if (colorAccessor && colorScale && range && domainMin < domainMax) {
+        /* fragile! continuous range is 0 to 1, not [#fa4b2c, ...], make this a flag? */
+        if (range()[0][0] !== "#") {
+          continuous(
+            "#continuous_legend",
+            d3.scaleSequential(interpolateCool).domain(colorScale.domain()),
+            colorAccessor
+          );
+        }
       }
+
+      this.setState({
+        colorAccessor,
+        colorScale: colorTable.scale,
+      });
     }
   }
 
   render() {
-    const { colorAccessor } = this.props;
+    const { colorAccessor, colorScale } = this.state;
+    if (
+      colorScale?.domain &&
+      colorScale.domain()[1] === colorScale.domain()[0]
+    ) {
+      /* it's a single value, not a distribution, min max are the same */
+      return null;
+    }
     return (
       <div
         id="continuous_legend"

@@ -104,6 +104,7 @@ export function requestReembed() {
   };
 }
 
+/* disabled until reimplementation occurs
 export function reembedResetWorldToUniverse(dispatch, getState) {
   const { reembedController } = getState();
   if (reembedController.pendingFetch) reembedController.pendingFetch.abort();
@@ -111,3 +112,4 @@ export function reembedResetWorldToUniverse(dispatch, getState) {
     type: "reembed: clear all reembeddings",
   });
 }
+*/
