@@ -6,7 +6,6 @@ import * as globals from "../../globals";
 import styles from "./menubar.css";
 import actions from "../../actions";
 import Clip from "./clip";
-import Embedding from "./embedding";
 import InformationMenu from "./infoMenu";
 import Subset from "./subset";
 import UndoRedoReset from "./undoRedo";
@@ -264,7 +263,6 @@ class MenuBar extends React.PureComponent {
             this.handleClipPercentileMinValueChange
           }
         />
-        <Embedding />
         <Tooltip
           content="When a category is colored by, show labels on the graph"
           position="bottom"
