@@ -51,18 +51,19 @@ class Embedding extends React.PureComponent {
                 type="button"
                 data-testid="layout-choice"
                 icon="heatmap"
-                minimal
+                // minimal
                 id="embedding"
                 style={{
                   cursor: "pointer",
                 }}
               >
                 {layoutChoice?.current}: {crossfilter.countSelected()} out of{" "}
-                {schema?.dataframe?.nObs} total cells
+                {schema?.dataframe?.nObs} total cells{" "}
+                {/* BRUCE to extend 1559 */}
               </Button>
             </Tooltip>
           }
-          minimal /* removes arrow */
+          // minimal /* removes arrow */
           position={Position.TOP_LEFT}
           content={
             <div
