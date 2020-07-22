@@ -782,12 +782,14 @@ class DatasetConfig(BaseConfig):
         self.check_attr("embeddings__names", list)
         self.check_attr("embeddings__enable_reembedding", bool)
 
-        if self.app_config.server_config.single_dataset__datapath:
+        server_config = self.app_config.server_config
+        if server_config.single_dataset__datapath:
             if self.embeddings__enable_reembedding:
-                matrix_data_loader = MatrixDataLoader(self.single_dataset__datapath, app_config=self.app_config)
-                if matrix_data_loader.matrix_data_type() != MatrixDataType.H5AD:
+                matrix_data_loader = MatrixDataLoader(
+                    server_config.single_dataset__datapath, app_config=self.app_config)
+                if matrix_data_loader.matrix_data_type != MatrixDataType.H5AD:
                     raise ConfigurationError("'enable-reembedding is only supported with H5AD files.")
-                if self.adaptor__anndata_adaptor__backed:
+                if server_config.adaptor__anndata_adaptor__backed:
                     raise ConfigurationError("enable-reembedding is not supported when run in --backed mode.")
 
     def handle_diffexp(self, context):

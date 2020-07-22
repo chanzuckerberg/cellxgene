@@ -66,6 +66,32 @@ class EndPoints(object):
         self.assertIsNone(df["row_idx"])
         self.assertEqual(len(df["columns"]), df["n_cols"])
 
+    def test_put_layout_fbs(self):
+        # first check that re-embedding is turned on
+        result = self.session.get(f"{self.URL_BASE}config")
+        config_data = result.json()
+        re_embed = config_data["config"]["parameters"]["enable-reembedding"]
+        if not re_embed:
+            return
+        # attempt to reembed with umap over 100 cells.
+        endpoint = "layout/obs"
+        url = f"{self.URL_BASE}{endpoint}"
+        header = {"Accept": "application/octet-stream"}
+        data = {}
+        data["filter"] = {}
+        data["filter"]["obs"] = {}
+        data["filter"]["obs"]["index"] = list(range(100))
+        data["method"] = "umap"
+        result = self.session.put(url, headers=header, json=data)
+
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        df = decode_fbs.decode_matrix_FBS(result.content)
+        self.assertEqual(df["n_rows"], 100)
+        self.assertEqual(df["n_cols"], 2)
+        cols = list(df["col_idx"])
+        self.assertTrue(cols[0].startswith("reembed:umap_") and cols[0].endswith("_0"))
+        self.assertTrue(cols[1].startswith("reembed:umap_") and cols[1].endswith("_1"))
+
     def test_bad_filter(self):
         endpoint = "data/var"
         url = f"{self.URL_BASE}{endpoint}"
@@ -376,6 +402,7 @@ class EndPointsAnndata(unittest.TestCase, EndPoints):
                 f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad",
                 "--disable-annotations",
                 "--verbose",
+                "--experimental-enable-reembedding",
                 "--port",
                 str(cls.PORT),
             ],
