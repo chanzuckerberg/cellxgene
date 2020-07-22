@@ -7,6 +7,7 @@ const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const TerserJSPlugin = require("terser-webpack-plugin");
 const CleanCss = require("clean-css");
 const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
+const ObsoleteWebpackPlugin = require("obsolete-webpack-plugin");
 
 const CspHashPlugin = require("./cspHashPlugin");
 
@@ -88,6 +89,24 @@ module.exports = {
       template: path.resolve("index_template.html"),
       decodeEntities: false,
       minify: false,
+    }),
+    new ObsoleteWebpackPlugin({
+      template:
+        '<div class="outerContainer">' +
+        '<h1 class="purple"> Meta </h1>' +
+        '<div class="innerContainer">' +
+        '<div class="header"> Unsupported Browser </div>' +
+        '<div class="content"> Meta is currently supported on the following browsers' +
+        '<div class="supported-browsers purple">' +
+        '<div class="browser-type"> <img src="https://assets.beta.meta.org/images/browsers/chrome.png"/>' +
+        '<div class="version">Chrome > 60</div> </div>' +
+        '<div class="browser-type"> <img src="https://assets.beta.meta.org/images/browsers/safari.png"/>' +
+        '<div class="version">Safari >= 10.1</div> </div>' +
+        '<div class="browser-type"> <img src="https://assets.beta.meta.org/images/browsers/firefox.png"/>' +
+        '<div class="version">Firefox >= 60</div> </div>' +
+        '<div class="browser-type"><img src="https://assets.beta.meta.org/images/browsers/edge.png"/>' +
+        '<div class="version">Edge >= 15</div> </div>' +
+        "</div>",
     }),
     new CleanWebpackPlugin({
       verbose: true,
