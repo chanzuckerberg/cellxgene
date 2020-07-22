@@ -70,6 +70,8 @@ export default class AnnoMatrix {
         The row index labels are as defined by the base dataset from the server.
       * isView - true if this is a view, false if not.
       * viewOf - pointer to parent annomatrix if a view, undefined/null if not a view.
+      * userFlags - container for any additional state a user of this API wants to hang
+        off of an annoMatrix, and have propagated by the (shallow) cloning protocol.
     */
     this.schema = indexEntireSchema(schema);
     this.nObs = nObs;
@@ -77,6 +79,7 @@ export default class AnnoMatrix {
     this.rowIndex = rowIndex || new IdentityInt32Index(nObs);
     this.isView = false;
     this.viewOf = undefined;
+    this.userFlags = {};
 
     /*
 		Private instance variables.
