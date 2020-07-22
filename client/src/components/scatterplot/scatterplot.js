@@ -438,12 +438,13 @@ class Scatterplot extends React.PureComponent {
       pointDilation,
     } = this.props;
     const { minimized, regl, viewport } = this.state;
+    const bottomToolbarGutter = 48; // gutter for bottom tool bar
 
     return (
       <div
         style={{
           position: "fixed",
-          bottom: minimized ? -height + -margin.top - 2 : 0,
+          bottom: bottomToolbarGutter,
           borderRadius: "3px 3px 0px 0px",
           left: globals.leftSidebarWidth + globals.scatterplotMarginLeft,
           padding: "0px 20px 20px 0px",
@@ -488,7 +489,7 @@ class Scatterplot extends React.PureComponent {
           id="scatterplot"
           style={{
             width: `${width + margin.left + margin.right}px`,
-            height: `${height + margin.top + margin.bottom}px`,
+            height: `${(minimized ? 0 : height + margin.top) + margin.bottom}px`,
           }}
         >
           <canvas
@@ -498,6 +499,7 @@ class Scatterplot extends React.PureComponent {
             style={{
               marginLeft: margin.left,
               marginTop: margin.top,
+              display: minimized ? "none" : null,
             }}
             ref={this.setReglCanvas}
           />
@@ -523,9 +525,7 @@ class Scatterplot extends React.PureComponent {
                 }
                 return (
                   <ScatterplotAxis
-                    width={width}
-                    height={height}
-                    margin={margin}
+                    minimized={minimized}
                     scatterplotYYaccessor={scatterplotXXaccessor}
                     scatterplotXXaccessor={scatterplotYYaccessor}
                     xScale={asyncProps.xScale}
@@ -544,7 +544,7 @@ class Scatterplot extends React.PureComponent {
 export default Scatterplot;
 
 const ScatterplotAxis = React.memo(
-  ({ scatterplotYYaccessor, scatterplotXXaccessor, xScale, yScale }) => {
+  ({ minimized, scatterplotYYaccessor, scatterplotXXaccessor, xScale, yScale }) => {
     /*
     Axis for the scatterplot, rendered with SVG/D3.  Props:
       * scatterplotXXaccessor - name of X axis
@@ -559,7 +559,7 @@ const ScatterplotAxis = React.memo(
     const svgRef = useRef(null);
 
     useEffect(() => {
-      if (!svgRef.current) return;
+      if (!svgRef.current || minimized) return;
       const svg = d3.select(svgRef.current);
 
       svg.selectAll("*").remove();
@@ -608,6 +608,9 @@ const ScatterplotAxis = React.memo(
         width={width + margin.left + margin.right}
         height={height + margin.top + margin.bottom}
         data-testid="scatterplot-svg"
+        style={{
+          "display": minimized ? "none" : null
+        }}
       >
         <g ref={svgRef} transform={`translate(${margin.left},${margin.top})`} />
       </svg>
