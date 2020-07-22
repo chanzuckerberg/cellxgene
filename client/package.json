@@ -29,6 +29,13 @@
   "resolutions": {
     "eslint-scope": "3.7.1"
   },
+  "browserslist": [
+    "Chrome > 60",
+    "Safari >= 10.1",
+    "iOS >= 10.3",
+    "Firefox >= 60",
+    "Edge >= 15"
+  ],
   "dependencies": {
     "@blueprintjs/core": "^3.30.0",
     "@blueprintjs/icons": "^3.19.0",
@@ -107,6 +114,7 @@
     "json-loader": "^0.5.7",
     "lint-staged": "^10.2.11",
     "mini-css-extract-plugin": "^0.9.0",
+    "obsolete-webpack-plugin": "^0.5.6",
     "optimize-css-assets-webpack-plugin": "^5.0.3",
     "prettier": "^2.0.5",
     "puppeteer": "^3.3.0",
