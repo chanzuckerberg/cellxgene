@@ -489,7 +489,9 @@ class Scatterplot extends React.PureComponent {
           id="scatterplot"
           style={{
             width: `${width + margin.left + margin.right}px`,
-            height: `${(minimized ? 0 : height + margin.top) + margin.bottom}px`,
+            height: `${
+              (minimized ? 0 : height + margin.top) + margin.bottom
+            }px`,
           }}
         >
           <canvas
@@ -544,7 +546,13 @@ class Scatterplot extends React.PureComponent {
 export default Scatterplot;
 
 const ScatterplotAxis = React.memo(
-  ({ minimized, scatterplotYYaccessor, scatterplotXXaccessor, xScale, yScale }) => {
+  ({
+    minimized,
+    scatterplotYYaccessor,
+    scatterplotXXaccessor,
+    xScale,
+    yScale,
+  }) => {
     /*
     Axis for the scatterplot, rendered with SVG/D3.  Props:
       * scatterplotXXaccessor - name of X axis
@@ -609,7 +617,7 @@ const ScatterplotAxis = React.memo(
         height={height + margin.top + margin.bottom}
         data-testid="scatterplot-svg"
         style={{
-          "display": minimized ? "none" : null
+          display: minimized ? "none" : null,
         }}
       >
         <g ref={svgRef} transform={`translate(${margin.left},${margin.top})`} />
