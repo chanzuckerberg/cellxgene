@@ -450,7 +450,7 @@ class Scatterplot extends React.PureComponent {
           padding: "0px 20px 20px 0px",
           background: "white",
           /* x y blur spread color */
-          boxShadow: "0px 0px 6px 2px rgba(153,153,153,0.4)",
+          boxShadow: "0px 0px 3px 2px rgba(153,153,153,0.2)",
           zIndex: 2,
         }}
         id="scatterplot_wrapper"
