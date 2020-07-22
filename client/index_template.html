@@ -34,7 +34,8 @@
         box-sizing: border-box;
       }
     </style>
-    <script src="https://dl.dropboxusercontent.com/s/r55397ld512etib/EncoderDecoderTogether.min.js?dl=0" nomodule="" type="text/javascript"></script>
+    <!-- We know some versions of edge will bypass nomodule but still don't have TextEncoder, not ideal since this means ALL browser will have to load the script -->
+    <script src="https://dl.dropboxusercontent.com/s/r55397ld512etib/EncoderDecoderTogether.min.js?dl=0" type="text/javascript"></script>
 
   </head>
   <body>
