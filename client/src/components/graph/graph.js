@@ -34,8 +34,10 @@ function createProjectionTF(viewportWidth, viewportHeight) {
   the projection transform accounts for the screen size & other layout
   */
   const fractionToUse = 0.95; // fraction of min dimension to use
-  const topGutterSizePx = 32; // toolbar box height
-  const heightMinusGutter = viewportHeight - topGutterSizePx;
+  const topGutterSizePx = 32; // top gutter for tools
+  const bottomGutterSizePx = 32; // bottom gutter for tools
+  const heightMinusGutter =
+    viewportHeight - topGutterSizePx - bottomGutterSizePx;
   const minDim = Math.min(viewportWidth, heightMinusGutter);
   const aspectScale = [
     (fractionToUse * minDim) / viewportWidth,
@@ -44,7 +46,7 @@ function createProjectionTF(viewportWidth, viewportHeight) {
   const m = mat3.create();
   mat3.fromTranslation(m, [
     0,
-    -topGutterSizePx / viewportHeight / aspectScale[1],
+    (bottomGutterSizePx - topGutterSizePx) / viewportHeight / aspectScale[1],
   ]);
   mat3.scale(m, m, aspectScale);
   return m;
