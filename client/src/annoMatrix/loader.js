@@ -90,10 +90,10 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     If an array, it must be of same size as nObs and same type as Ctor
 		*/
     colSchema.writable = true;
-    const col = colSchema.name;
+    const colName = colSchema.name;
     if (
-      _getColumnSchema(this.schema, "obs", col) ||
-      this._cache.obs.hasCol(col)
+      _getColumnSchema(this.schema, "obs", colName) ||
+      this._cache.obs.hasCol(colName)
     ) {
       throw new Error("column already exists");
     }
@@ -109,11 +109,9 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     } else {
       data = new Ctor(this.nObs).fill(value);
     }
-    o._cache.obs = this._cache.obs.withCol(col, data);
-    o.schema = addObsAnnoColumn(this.schema, col, {
-      ...colSchema,
-      writable: true,
-    });
+    o._cache.obs = this._cache.obs.withCol(colName, data);
+    _normalizeCategoricalSchema(colSchema, o._cache.obs.col(colName));
+    o.schema = addObsAnnoColumn(this.schema, colName, colSchema);
     return o;
   }
 

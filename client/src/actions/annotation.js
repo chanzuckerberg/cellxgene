@@ -34,7 +34,8 @@ export const annotationCreateCategoryAction = (
     throw new Error("name collision on annotation category create");
 
   let initialValue;
-  let categories;
+  let newSchema;
+  let ctor;
   if (categoryToDuplicate) {
     /* if we are duplicating a category, retrieve it */
     const catDupSchema = schema.annotations.obsByName[categoryToDuplicate];
@@ -47,25 +48,33 @@ export const annotationCreateCategoryAction = (
       .fetch("obs", categoryToDuplicate);
     const col = catToDupDf.col(categoryToDuplicate);
     initialValue = col.asArray();
-    ({ categories } = col.summarize());
+    const { categories } = col.summarizeCategorical();
     // all user-created annotations must have the unassigned category
     if (!categories.includes(globals.unassignedCategoryLabel)) {
       categories.push(globals.unassignedCategoryLabel);
     }
+    ctor = initialValue.constructor;
+    newSchema = {
+      ...catDupSchema,
+      name: newCategoryName,
+      categories,
+      writable: true,
+    };
   } else {
     /* else assign to the standard default value */
     initialValue = globals.unassignedCategoryLabel;
-    categories = [globals.unassignedCategoryLabel];
+    ctor = Array;
+    newSchema = {
+      name: newCategoryName,
+      type: "categorical",
+      categories: [globals.unassignedCategoryLabel],
+      writable: true,
+    };
   }
 
   const obsCrossfilter = prevObsCrossfilter.addObsColumn(
-    {
-      name: newCategoryName,
-      type: "categorical",
-      categories,
-      writable: true,
-    },
-    Array,
+    newSchema,
+    ctor,
     initialValue
   );
 

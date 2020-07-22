@@ -16,6 +16,7 @@ class Continuous extends React.PureComponent {
     const allContinuousNames = schema.annotations.obs.columns
       .filter((col) => col.type === "int32" || col.type === "float32")
       .filter((col) => col.name !== obsIndex)
+      .filter((col) => !col.writable) // skip user annotations - they will be treated as categorical
       .map((col) => col.name);
 
     return (
