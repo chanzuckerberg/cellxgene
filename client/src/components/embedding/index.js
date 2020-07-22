@@ -12,11 +12,13 @@ import {
 import * as globals from "../../globals";
 import actions from "../../actions";
 
-@connect((state) => ({
-  layoutChoice: state.layoutChoice,
-  schema: state.annoMatrix?.schema,
-  crossfilter: state.obsCrossfilter,
-}))
+@connect((state) => {
+  return {
+    layoutChoice: state.layoutChoice,
+    schema: state.annoMatrix?.schema,
+    crossfilter: state.obsCrossfilter,
+  };
+})
 class Embedding extends React.PureComponent {
   constructor(props) {
     super(props);
@@ -58,7 +60,7 @@ class Embedding extends React.PureComponent {
                 }}
               >
                 {layoutChoice?.current}: {crossfilter.countSelected()} out of{" "}
-                {schema?.dataframe?.nObs} total cells{" "}
+                {crossfilter.size()} cells
                 {/* BRUCE to extend 1559 */}
               </Button>
             </Tooltip>
@@ -76,13 +78,20 @@ class Embedding extends React.PureComponent {
                 width: 400,
               }}
             >
+              <h1>Embedding Choice</h1>
+              <p style={{ fontStyle: "italic" }}>
+                There are {schema?.dataframe?.nObs} cells in the entire dataset.
+              </p>
               <RadioGroup
-                label="Embedding Choice"
                 onChange={this.handleLayoutChoiceChange}
                 selectedValue={layoutChoice.current}
               >
                 {layoutChoice.available.map((name) => (
-                  <Radio label={name} value={name} key={name} />
+                  <Radio
+                    label={`${name} ${schema?.dataframe?.nObs} cells`}
+                    value={name}
+                    key={name}
+                  />
                 ))}
               </RadioGroup>
             </div>
