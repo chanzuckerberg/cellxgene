@@ -86,11 +86,7 @@ class Embedding extends React.PureComponent {
                 selectedValue={layoutChoice.current}
               >
                 {layoutChoice.available.map((name) => (
-                  <Radio
-                    label={`${name}`}
-                    value={name}
-                    key={name}
-                  />
+                  <Radio label={`${name}`} value={name} key={name} />
                 ))}
               </RadioGroup>
             </div>

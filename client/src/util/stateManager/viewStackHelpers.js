@@ -35,7 +35,7 @@ Views can be interogated for their type with the following:
 
 */
 
-import { subsetByIndex, clip, isubsetMask, isubset } from "../../annoMatrix";
+import { clip, isubsetMask, isubset } from "../../annoMatrix";
 
 export function _clipAnnoMatrix(annoMatrix, min, max) {
   /*

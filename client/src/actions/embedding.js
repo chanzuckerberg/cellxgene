@@ -13,11 +13,7 @@ export const layoutChoiceAction = (newLayoutChoice) => async (
   On layout choice, make sure we have selected all on the previous layout, AND the new
   layout.
   */
-  const {
-    annoMatrix: prevAnnoMatrix,
-    obsCrossfilter: prevObsCrossfilter,
-    layoutChoice,
-  } = getState();
+  const { annoMatrix: prevAnnoMatrix } = getState();
 
   const embeddingDf = await prevAnnoMatrix.base().fetch("emb", newLayoutChoice);
   const annoMatrix = _setEmbeddingSubset(prevAnnoMatrix, embeddingDf);
