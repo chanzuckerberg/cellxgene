@@ -301,7 +301,7 @@ def layout_obs_get(request, data_adaptor):
 
 
 def layout_obs_put(request, data_adaptor):
-    if not data_adaptor.dataset_config.embedding__enable_reembedding:
+    if not data_adaptor.dataset_config.embeddings__enable_reembedding:
         return abort(HTTPStatus.NOT_IMPLEMENTED)
 
     preferred_mimetype = request.accept_mimetypes.best_match(["application/octet-stream"])
