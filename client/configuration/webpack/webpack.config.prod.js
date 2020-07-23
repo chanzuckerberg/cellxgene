@@ -107,6 +107,7 @@ module.exports = {
         '<div class="browser-type"><img src="https://assets.beta.meta.org/images/browsers/edge.png"/>' +
         '<div class="version">Edge >= 15</div> </div>' +
         "</div>",
+      promptOnNonTargetBrowser: true,
     }),
     new CleanWebpackPlugin({
       verbose: true,
