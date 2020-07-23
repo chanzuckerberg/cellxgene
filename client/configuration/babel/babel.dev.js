@@ -1,10 +1,7 @@
 module.exports = {
   babelrc: false,
   cacheDirectory: true,
-  presets: [
-    ["modern-browsers", { loose: true, modules: false }],
-    "@babel/preset-react",
-  ],
+  presets: ["@babel/preset-env", "@babel/preset-react"],
   plugins: [
     "@babel/plugin-proposal-function-bind",
     ["@babel/plugin-proposal-decorators", { legacy: true }],

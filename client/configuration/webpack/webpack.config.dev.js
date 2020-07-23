@@ -3,6 +3,7 @@ const path = require("path");
 const webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const FaviconsWebpackPlugin = require("favicons-webpack-plugin");
+const ObsoleteWebpackPlugin = require("obsolete-webpack-plugin");
 
 const src = path.resolve("src");
 const fonts = path.resolve("src/fonts");
@@ -72,6 +73,25 @@ module.exports = {
     new HtmlWebpackPlugin({
       inject: true,
       template: path.resolve("index.html"),
+    }),
+    new ObsoleteWebpackPlugin({
+      template:
+        '<div class="outerContainer">' +
+        '<h1 class="purple"> Meta </h1>' +
+        '<div class="innerContainer">' +
+        '<div class="header"> Unsupported Browser </div>' +
+        '<div class="content"> Meta is currently supported on the following browsers' +
+        '<div class="supported-browsers purple">' +
+        '<div class="browser-type"> <img src="https://assets.beta.meta.org/images/browsers/chrome.png"/>' +
+        '<div class="version">Chrome > 60</div> </div>' +
+        '<div class="browser-type"> <img src="https://assets.beta.meta.org/images/browsers/safari.png"/>' +
+        '<div class="version">Safari >= 10.1</div> </div>' +
+        '<div class="browser-type"> <img src="https://assets.beta.meta.org/images/browsers/firefox.png"/>' +
+        '<div class="version">Firefox >= 60</div> </div>' +
+        '<div class="browser-type"><img src="https://assets.beta.meta.org/images/browsers/edge.png"/>' +
+        '<div class="version">Edge >= 15</div> </div>' +
+        "</div>",
+      promptOnNonTargetBrowser: true,
     }),
     new FaviconsWebpackPlugin({
       logo: "./favicon.png",
