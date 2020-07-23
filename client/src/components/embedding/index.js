@@ -61,7 +61,6 @@ class Embedding extends React.PureComponent {
               >
                 {layoutChoice?.current}: {crossfilter.countSelected()} out of{" "}
                 {crossfilter.size()} cells
-                {/* BRUCE to extend 1559 */}
               </Button>
             </Tooltip>
           }
@@ -88,7 +87,7 @@ class Embedding extends React.PureComponent {
               >
                 {layoutChoice.available.map((name) => (
                   <Radio
-                    label={`${name} ${schema?.dataframe?.nObs} cells`}
+                    label={`${name}`}
                     value={name}
                     key={name}
                   />

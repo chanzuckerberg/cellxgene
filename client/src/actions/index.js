@@ -12,6 +12,7 @@ import { loadUserColorConfig } from "../util/stateManager/colorHelpers";
 import * as selnActions from "./selection";
 import * as annoActions from "./annotation";
 import * as viewActions from "./viewStack";
+import * as embActions from "./embedding";
 
 /*
 return promise fetching user-configured colors
@@ -210,6 +211,6 @@ export default {
   annotationLabelCurrentSelection: annoActions.annotationLabelCurrentSelection,
   saveObsAnnotationsAction: annoActions.saveObsAnnotationsAction,
   needToSaveObsAnnotations: annoActions.needToSaveObsAnnotations,
-  layoutChoiceAction: selnActions.layoutChoiceAction,
+  layoutChoiceAction: embActions.layoutChoiceAction,
   setCellSetFromSelection: selnActions.setCellSetFromSelection,
 };
