@@ -64,7 +64,12 @@ function topNCategories(colSchema, summary, N) {
 
 export function isSelectableCategoryName(schema, name) {
   const { index } = schema.annotations.obs;
-  return name && name !== index && isCategoricalAnnotation(schema, name);
+  const colSchema = schema.annotations.obsByName[name];
+  return (
+    name &&
+    name !== index &&
+    (isCategoricalAnnotation(schema, name) || colSchema.writable)
+  );
 }
 
 export function selectableCategoryNames(schema, names) {
