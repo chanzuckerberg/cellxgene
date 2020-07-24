@@ -2,7 +2,6 @@ import shutil
 import time
 import unittest
 from http import HTTPStatus
-from subprocess import Popen
 
 import pandas as pd
 import requests
@@ -11,6 +10,7 @@ import server.test.decode_fbs as decode_fbs
 from server.data_common.matrix_loader import MatrixDataType
 from server.test import data_with_tmp_annotations, make_fbs, PROJECT_ROOT
 from server.test.test_datasets.fixtures import pbmc3k_colors
+from server.test import start_test_server, stop_test_server
 
 
 BAD_FILTER = {"filter": {"obs": {"annotation_value": [{"name": "xyz"}]}}}
@@ -20,9 +20,6 @@ BAD_FILTER = {"filter": {"obs": {"annotation_value": [{"name": "xyz"}]}}}
 
 class EndPoints(object):
     ANNOTATIONS_ENABLED = True
-
-    def setUp(self):
-        self.session = requests.Session()
 
     def test_initialize(self):
         endpoint = "schema"
@@ -308,13 +305,13 @@ class EndPoints(object):
     def test_static(self):
         endpoint = "static"
         file = "assets/favicon.ico"
-        url = f"{self.LOCAL_URL}{endpoint}/{file}"
+        url = f"{self.server}/{endpoint}/{file}"
         result = self.session.get(url)
         self.assertEqual(result.status_code, HTTPStatus.OK)
 
-    @staticmethod
-    def _setUpClass(child_class, start_command):
-        child_class.ps = Popen(start_command)
+    def _setupClass(child_class, command_line):
+        child_class.ps, child_class.server = start_test_server(command_line)
+        child_class.URL_BASE = f"{child_class.server}/api/v0.2/"
         child_class.session = requests.Session()
         for i in range(90):
             try:
@@ -322,13 +319,6 @@ class EndPoints(object):
                 child_class.schema = result.json()
             except requests.exceptions.ConnectionError:
                 time.sleep(1)
-
-    @staticmethod
-    def _tearDownClass(child_class):
-        try:
-            child_class.ps.terminate()
-        except ProcessLookupError:
-            pass
 
 
 class EndPointsAnnotations(EndPoints):
@@ -385,32 +375,19 @@ class EndPointsAnnotations(EndPoints):
 class EndPointsAnndata(unittest.TestCase, EndPoints):
     """Test Case for endpoints"""
 
-    PORT = 5010
-    LOCAL_URL = f"http://127.0.0.1:{PORT}/"
-    VERSION = "v0.2"
-    URL_BASE = f"{LOCAL_URL}api/{VERSION}/"
     ANNOTATIONS_ENABLED = False
 
     @classmethod
     def setUpClass(cls):
-        cls._setUpClass(
-            cls,
-            [
-                "cellxgene",
-                "--no-upgrade-check",
-                "launch",
-                f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad",
-                "--disable-annotations",
-                "--verbose",
-                "--experimental-enable-reembedding",
-                "--port",
-                str(cls.PORT),
-            ],
-        )
+        cls._setupClass(cls, [
+            f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad",
+            "--disable-annotations",
+            "--experimental-enable-reembedding",
+        ])
 
     @classmethod
     def tearDownClass(cls):
-        cls._tearDownClass(cls)
+        stop_test_server(cls.ps)
 
     @property
     def annotations_enabled(self):
@@ -420,98 +397,57 @@ class EndPointsAnndata(unittest.TestCase, EndPoints):
 class EndPointsCxg(unittest.TestCase, EndPoints):
     """Test Case for endpoints"""
 
-    PORT = 5011
-    LOCAL_URL = f"http://127.0.0.1:{PORT}/"
-    VERSION = "v0.2"
-    URL_BASE = f"{LOCAL_URL}api/{VERSION}/"
     ANNOTATIONS_ENABLED = False
 
     @classmethod
     def setUpClass(cls):
-        cls._setUpClass(
-            cls,
-            [
-                "cellxgene",
-                "--no-upgrade-check",
-                "launch",
-                f"{PROJECT_ROOT}/server/test/test_datasets/pbmc3k.cxg",
-                "--disable-annotations",
-                "--verbose",
-                "--port",
-                str(cls.PORT),
-            ],
-        )
+        cls._setupClass(cls, [
+            f"{PROJECT_ROOT}/server/test/test_datasets/pbmc3k.cxg",
+            "--disable-annotations",
+        ])
 
     @classmethod
     def tearDownClass(cls):
-        cls._tearDownClass(cls)
+        stop_test_server(cls.ps)
 
 
 class EndPointsAnndataAnnotations(unittest.TestCase, EndPointsAnnotations):
     """Test Case for endpoints"""
 
-    PORT = 5012
-    LOCAL_URL = f"http://127.0.0.1:{PORT}/"
-    VERSION = "v0.2"
-    URL_BASE = f"{LOCAL_URL}api/{VERSION}/"
     ANNOTATIONS_ENABLED = True
-    MATRIX_DATA_TYPE = MatrixDataType.H5AD
 
     @classmethod
     def setUpClass(cls):
         cls.data, cls.tmp_dir, cls.annotations = data_with_tmp_annotations(
             MatrixDataType.H5AD, annotations_fixture=True
         )
-        cls._setUpClass(
-            cls,
-            [
-                "cellxgene",
-                "--no-upgrade-check",
-                "launch",
-                "--annotations-file",
-                cls.annotations.output_file,
-                "--verbose",
-                "--port",
-                str(cls.PORT),
-                cls.data.get_location(),
-            ],
-        )
+        cls._setupClass(cls, [
+            "--annotations-file",
+            cls.annotations.output_file,
+            cls.data.get_location(),
+        ])
 
     @classmethod
     def tearDownClass(cls):
         shutil.rmtree(cls.tmp_dir)
-        cls._tearDownClass(cls)
+        stop_test_server(cls.ps)
 
 
 class EndPointsCxgAnnotations(unittest.TestCase, EndPointsAnnotations):
     """Test Case for endpoints"""
 
-    PORT = 5013
-    LOCAL_URL = f"http://127.0.0.1:{PORT}/"
-    VERSION = "v0.2"
-    URL_BASE = f"{LOCAL_URL}api/{VERSION}/"
     ANNOTATIONS_ENABLED = True
-    MATRIX_DATA_TYPE = MatrixDataType.CXG
 
     @classmethod
     def setUpClass(cls):
         cls.data, cls.tmp_dir, cls.annotations = data_with_tmp_annotations(MatrixDataType.CXG, annotations_fixture=True)
-        cls._setUpClass(
-            cls,
-            [
-                "cellxgene",
-                "--no-upgrade-check",
-                "launch",
-                "--annotations-file",
-                cls.annotations.output_file,
-                "--verbose",
-                "--port",
-                str(cls.PORT),
-                cls.data.get_location(),
-            ],
-        )
+        cls._setupClass(cls, [
+            "--annotations-file",
+            cls.annotations.output_file,
+            cls.data.get_location(),
+        ])
 
     @classmethod
     def tearDownClass(cls):
         shutil.rmtree(cls.tmp_dir)
-        cls._tearDownClass(cls)
+        stop_test_server(cls.ps)

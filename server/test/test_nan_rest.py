@@ -1,17 +1,13 @@
 from http import HTTPStatus
-from subprocess import Popen
 import unittest
-import time
 import math
+from server.test import start_test_server, stop_test_server
 
 import server.test.decode_fbs as decode_fbs
 
 import requests
 
-LOCAL_URL = "http://127.0.0.1:5006/"
 VERSION = "v0.2"
-URL_BASE = f"{LOCAL_URL}api/{VERSION}/"
-
 BAD_FILTER = {"filter": {"obs": {"annotation_value": [{"name": "xyz"}]}}}
 
 
@@ -20,33 +16,25 @@ class WithNaNs(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.ps = Popen(["cellxgene", "launch", "test/test_datasets/nan.h5ad", "--verbose", "--port", "5006"])
-        session = requests.Session()
-        for i in range(90):
-            try:
-                session.get(f"{URL_BASE}schema")
-            except requests.exceptions.ConnectionError:
-                time.sleep(1)
+        cls.ps, cls.server = start_test_server(["test/test_datasets/nan.h5ad"])
 
     @classmethod
     def tearDownClass(cls):
-        try:
-            cls.ps.terminate()
-        except ProcessLookupError:
-            pass
+        stop_test_server(cls.ps)
 
     def setUp(self):
         self.session = requests.Session()
+        self.url_base = f"{self.server}/api/{VERSION}/"
 
     def test_initialize(self):
         endpoint = "schema"
-        url = f"{URL_BASE}{endpoint}"
+        url = f"{self.url_base}{endpoint}"
         result = self.session.get(url)
         self.assertEqual(result.status_code, HTTPStatus.OK)
 
     def test_data(self):
         endpoint = "data/var"
-        url = f"{URL_BASE}{endpoint}"
+        url = f"{self.url_base}{endpoint}"
         filter = {"filter": {"var": {"index": [[0, 20]]}}}
         result = self.session.put(url, json=filter)
         self.assertEqual(result.status_code, HTTPStatus.OK)
@@ -56,7 +44,7 @@ class WithNaNs(unittest.TestCase):
 
     def test_annotation_obs(self):
         endpoint = "annotations/obs"
-        url = f"{URL_BASE}{endpoint}"
+        url = f"{self.url_base}{endpoint}"
         result = self.session.get(url)
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
@@ -65,7 +53,7 @@ class WithNaNs(unittest.TestCase):
 
     def test_annotation_var(self):
         endpoint = "annotations/var"
-        url = f"{URL_BASE}{endpoint}"
+        url = f"{self.url_base}{endpoint}"
         result = self.session.get(url)
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/octet-stream")

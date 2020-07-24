@@ -86,15 +86,14 @@ def random_string(n):
     return "".join(random.choice(string.ascii_letters) for _ in range(n))
 
 
-@contextmanager
-def test_server(command_line_args=[], app_config=None):
-    """A context to run the cellxgene server.
+def start_test_server(command_line_args=[], app_config=None):
+    """
     Command line arguments can be passed in, as well as an app_config.
     This function is meant to be used like this, for example:
 
     with test_server(...) as server:
-       r = requests.get(f"{server}/...")
-       // check r
+        r = requests.get(f"{server}/...")
+        // check r
 
     where the server can be accessed within the context, and is terminated when
     the context is exited.
@@ -129,10 +128,25 @@ def test_server(command_line_args=[], app_config=None):
     if tempdir:
         tempdir.cleanup()
 
+    return ps, server
+
+
+def stop_test_server(ps):
+    try:
+        ps.terminate()
+    except ProcessLookupError:
+        pass
+
+
+@contextmanager
+def test_server(command_line_args=[], app_config=None):
+    """A context to run the cellxgene server."""
+
+    ps, server = start_test_server(command_line_args, app_config)
     try:
         yield server
     finally:
         try:
-            ps.terminate()
+            stop_test_server(ps)
         except ProcessLookupError:
             pass
