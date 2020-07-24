@@ -40,8 +40,10 @@
     "@blueprintjs/core": "^3.30.0",
     "@blueprintjs/icons": "^3.19.0",
     "@blueprintjs/select": "^3.13.5",
+    "core-js": "^3.6.5",
     "d3": "^4.10.0",
     "d3-scale-chromatic": "^1.5.0",
+    "fastestsmallesttextencoderdecoder": "^1.0.22",
     "flatbuffers": "^1.11.0",
     "fuzzysort": "^1.1.4",
     "gl-mat4": "^1.2.0",
@@ -59,6 +61,7 @@
     "react-redux": "^7.2.0",
     "redux": "^4.0.5",
     "redux-thunk": "^2.3.0",
+    "regenerator-runtime": "^0.13.7",
     "regl": "^1.6.1",
     "tinyqueue": "^2.0.3"
   },
