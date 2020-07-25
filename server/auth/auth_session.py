@@ -10,14 +10,14 @@ class AuthTypeSession(AuthTypeBase):
     # key in the session token for userid
     CXGUID = "cxguid"
 
-    def __init__(self):
+    def __init__(self, app_config):
         super().__init__()
 
     def is_valid(self):
         return True
 
-    def set_params(self, params):
-        return
+    def complete_setup(self, app):
+        pass
 
     def is_authenticated(self):
         # always authenticated

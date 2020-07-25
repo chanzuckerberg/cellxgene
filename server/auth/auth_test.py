@@ -10,7 +10,7 @@ class AuthTypeTest(AuthTypeClientBase):
     CXGUID = "cxguid_test"
     CXGUNAME = "cxguname_test"
 
-    def __init__(self):
+    def __init__(self, app_config):
         super().__init__()
         self.username = "test_account"
         self.userid = "id0001"
@@ -25,10 +25,8 @@ class AuthTypeTest(AuthTypeClientBase):
         app.add_url_rule("/login", "login", self.login, methods=["GET"])
         app.add_url_rule("/logout", "logout", self.logout, methods=["GET"])
 
-    def set_params(self, params):
-        if params:
-            self.username = params.get("username", self.username)
-            self.userid = params.get("userid", self.userid)
+    def complete_setup(self, app):
+        pass
 
     def is_authenticated(self):
         return self.CXGUID in session

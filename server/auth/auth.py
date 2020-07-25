@@ -8,11 +8,6 @@ class AuthTypeBase(ABC):
         super().__init__()
 
     @abstractmethod
-    def set_params(self, params):
-        """Set the parameters from app config.  raise ConfigurationError if any params are invalid"""
-        pass
-
-    @abstractmethod
     def is_valid(self):
         """Return True if the auth type can return user info (AuthTypeNone is the only one that cannot)"""
         pass
@@ -20,6 +15,11 @@ class AuthTypeBase(ABC):
     def requires_client_login(self):
         """Return True if the user needs to login from the client (e.g. Login button is shown)"""
         return False
+
+    @abstractmethod
+    def complete_setup(self, app):
+        """complete any setup that may be needed, the Flask app is passed in"""
+        pass
 
     @abstractmethod
     def is_authenticated(self):
@@ -73,8 +73,8 @@ class AuthTypeFactory:
         AuthTypeFactory.auth_types[name] = auth_type
 
     @staticmethod
-    def create(name):
+    def create(name, app_config):
         auth_type = AuthTypeFactory.auth_types.get(name)
         if auth_type is None:
             return None
-        return auth_type()
+        return auth_type(app_config)

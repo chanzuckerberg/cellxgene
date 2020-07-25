@@ -139,6 +139,18 @@ def get_data_adaptor(url_dataroot=None, dataset=None):
     return cache_manager.data_adaptor(dataset_key, datapath, config)
 
 
+def requires_authentication(func):
+    @wraps(func)
+    def wrapped_function(self, *args, **kwargs):
+        auth = current_app.auth
+        if auth.is_authenticated():
+            return func(self, *args, **kwargs)
+        else:
+            return make_response("not authenticated", HTTPStatus.UNAUTHORIZED)
+
+    return wrapped_function
+
+
 def rest_get_data_adaptor(func):
     @wraps(func)
     def wrapped_function(self, dataset=None):
@@ -237,6 +249,7 @@ class AnnotationsObsAPI(DatasetResource):
     def get(self, data_adaptor):
         return common_rest.annotations_obs_get(request, data_adaptor)
 
+    @requires_authentication
     @cache_control(no_store=True)
     @rest_get_data_adaptor
     def put(self, data_adaptor):
@@ -357,9 +370,11 @@ class Server:
             resources = get_api_resources(bp_api)
             self.app.register_blueprint(resources.blueprint)
 
-        self.app.auth = server_config.auth
-        if self.app.auth.requires_client_login():
-            self.app.auth.add_url_rules(self.app)
-
         self.app.matrix_data_cache_manager = server_config.matrix_data_cache_manager
         self.app.app_config = app_config
+
+        auth = server_config.auth
+        self.app.auth = auth
+        if auth.requires_client_login():
+            auth.add_url_rules(self.app)
+        auth.complete_setup(self.app)

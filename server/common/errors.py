@@ -83,3 +83,9 @@ class PrepareError(Exception):
     """Raised when data is misprepared"""
 
     pass
+
+
+class AuthenticationError(Exception):
+    """Raised when there is an authentication error"""
+
+    default_status_code = HTTPStatus.UNAUTHORIZED
