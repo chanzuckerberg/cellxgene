@@ -3,7 +3,7 @@ from server.data_common.matrix_loader import MatrixDataLoader
 from server.test import PROJECT_ROOT, app_config
 import server.compute.diffexp_cxg as diffexp_cxg
 import server.compute.diffexp_generic as diffexp_generic
-from server.converters.cxgtool import write_cxg
+from server.converters.cxgtool import write_cxg, create_cxg_group_metadata
 from server.test.create_test_matrix import create_test_h5ad
 from server.data_common.fbs.matrix import encode_matrix_fbs, decode_matrix_fbs
 import numpy as np
@@ -105,13 +105,23 @@ class DiffExpTest(unittest.TestCase):
             adata = adaptor_anndata.data
 
             sparsename = os.path.join(dirname, "sparse.cxg")
-            write_cxg(adata=adata, container=sparsename, title="sparse", sparse_threshold=11)
+            cxg_group_metadata = create_cxg_group_metadata(
+                adata=adata,
+                basefname="sparse.h5ad",
+                title="sparse",
+            )
+            write_cxg(adata=adata, container=sparsename, cxg_group_metadata=cxg_group_metadata, sparse_threshold=11)
             adaptor_sparse = self.load_dataset(sparsename)
             assert adaptor_sparse.open_array("X").schema.sparse
             assert adaptor_sparse.has_array("X_col_shift") == apply_col_shift
 
             densename = os.path.join(dirname, "dense.cxg")
-            write_cxg(adata=adata, container=densename, title="dense", sparse_threshold=0)
+            cxg_group_metadata = create_cxg_group_metadata(
+                adata=adata,
+                basefname="dense.h5ad",
+                title="dense",
+            )
+            write_cxg(adata=adata, container=densename, cxg_group_metadata=cxg_group_metadata, sparse_threshold=0)
             adaptor_dense = self.load_dataset(densename)
             assert not adaptor_dense.open_array("X").schema.sparse
             assert not adaptor_dense.has_array("X_col_shift")

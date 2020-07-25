@@ -160,7 +160,7 @@ class CxgAdaptor(DataAdaptor):
                 title = cxg_properties.get("title", None)
                 about = cxg_properties.get("about", None)
             if cxg_version == "0.2.0":
-                corpora_props = json.loads(gmd.meta["corpora"])
+                corpora_props = json.loads(gmd.meta["corpora"]) if "corpora" in gmd.meta else None
         else:
             # version 0
             cxg_version = "0.0"

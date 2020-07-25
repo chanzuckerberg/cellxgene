@@ -85,7 +85,14 @@ def main():
     container = out if splitext(out)[1] == ".cxg" else out + ".cxg"
 
     corpora_props = load_corpora_props(args, adata) if not args.disable_corpora else None
-    cxg_group_metadata = create_cxg_group_metadata(args, adata, corpora_props, basefname)
+    cxg_group_metadata = create_cxg_group_metadata(
+        adata,
+        basefname,
+        title=args.title,
+        about=args.about,
+        corpora_props=corpora_props,
+        extract_colors=not args.disable_custom_colors
+    )
 
     write_cxg(
         adata,
@@ -559,7 +566,7 @@ def load_corpora_props(args, adata):
     return corpora_props
 
 
-def create_cxg_group_metadata(args, adata, corpora_props, basefname):
+def create_cxg_group_metadata(adata, basefname, title=None, about=None, corpora_props=None, extract_colors=True):
 
     if corpora_props is not None:
         # clobber encoding version to be OUR version, not the source H5AD encoding
@@ -571,14 +578,14 @@ def create_cxg_group_metadata(args, adata, corpora_props, basefname):
     else:
         corpora_about_link = {}
 
-    title = args.title if args.title is not None else corpora_about_link.get("link_name", basefname)
-    about = args.about if args.about is not None else corpora_about_link.get("link_url", None)
+    title = title if title is not None else corpora_about_link.get("link_name", basefname)
+    about = about if about is not None else corpora_about_link.get("link_url", None)
 
     cxg_group_metadata = {"cxg_version": CXG_VERSION, "cxg_properties": json.dumps({"title": title, "about": about})}
     if corpora_props is not None:
         cxg_group_metadata.update({"corpora": json.dumps(corpora_props)})
 
-    if not args.disable_custom_colors:
+    if extract_colors:
         try:
             cxg_group_metadata["cxg_category_colors"] = json.dumps(
                 convert_anndata_category_colors_to_cxg_category_colors(adata)
