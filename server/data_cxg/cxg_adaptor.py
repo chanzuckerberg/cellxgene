@@ -165,7 +165,6 @@ class CxgAdaptor(DataAdaptor):
             # version 0
             cxg_version = "0.0"
 
-        print(cxg_version)
         if cxg_version not in ["0.0", "0.1", "0.2.0"]:
             raise DatasetAccessError(f"cxg matrix is not valid: {self.url}")
 
