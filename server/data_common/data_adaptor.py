@@ -130,6 +130,9 @@ class DataAdaptor(metaclass=ABCMeta):
             location = location[:-1]
         return splitext(basename(location))[0]
 
+    def get_corpora_props(self):
+        return None
+
     @abstractmethod
     def get_schema(self):
         """
