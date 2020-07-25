@@ -1,6 +1,5 @@
 import shutil
 import unittest
-import json
 
 import anndata
 
