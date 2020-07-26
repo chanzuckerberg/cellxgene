@@ -36,6 +36,7 @@ Views can be interogated for their type with the following:
 */
 
 import { clip, isubsetMask, isubset } from "../../annoMatrix";
+import { memoize } from "../dataframe/util"
 
 export function _clipAnnoMatrix(annoMatrix, min, max) {
   /*
@@ -153,6 +154,17 @@ function _getEmbeddingRowOffsets(baseRowIndex, embeddingDf) {
   if (numOffsets === X.length) return null;
   return offsets.subarray(0, numOffsets);
 }
+
+export function _getDiscreteCellEmbeddingRowIndex(embeddingDf) {
+  const idx = _getEmbeddingRowOffsets(embeddingDf.rowIndex, embeddingDf);
+  if (idx === null)
+    return embeddingDf.rowIndex;
+  return embeddingDf.rowIndex.isubset(idx);
+}
+export const getDiscreteCellEmbeddingRowIndex = memoize(
+  _getDiscreteCellEmbeddingRowIndex,
+  (df) => (df.__id)
+);
 
 export function getEmbSubsetView(annoMatrix) {
   /* if there is an embedding subset in the view stack, return it.  Falsish if not. */

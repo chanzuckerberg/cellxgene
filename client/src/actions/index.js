@@ -41,6 +41,15 @@ async function configFetch(dispatch) {
   });
 }
 
+function prefetchEmbeddings(annoMatrix) {
+  /*
+  prefetch requests for all embeddings
+  */
+  const {schema} = annoMatrix;
+  const available = schema.layout.obs.map((v) => v.name);
+  available.forEach(embName => annoMatrix.prefetch("emb", embName));
+}
+
 /*
 Application bootstrap
 */
@@ -58,6 +67,8 @@ const doInitialDataLoad = () =>
       const baseDataUrl = `${globals.API.prefix}${globals.API.version}`;
       const annoMatrix = new AnnoMatrixLoader(baseDataUrl, schema.schema);
       const obsCrossfilter = new AnnoMatrixObsCrossfilter(annoMatrix);
+      prefetchEmbeddings(annoMatrix);
+
       dispatch({
         type: "annoMatrix: init complete",
         annoMatrix,
