@@ -89,7 +89,11 @@ class Embedding extends React.PureComponent {
                 selectedValue={layoutChoice.current}
               >
                 {layoutChoice.available.map((name) => (
-                  <LayoutChoice annoMatrix={annoMatrix} layoutName={name} key={name} />
+                  <LayoutChoice
+                    annoMatrix={annoMatrix}
+                    layoutName={name}
+                    key={name}
+                  />
                 ))}
               </RadioGroup>
             </div>
@@ -102,15 +106,19 @@ class Embedding extends React.PureComponent {
 
 export default Embedding;
 
-const loadEmbeddingCounts = async ({annoMatrix, layoutName}) => {
+const loadEmbeddingCounts = async ({ annoMatrix, layoutName }) => {
   const embedding = await annoMatrix.fetch("emb", layoutName);
   const discreteCellIndex = getDiscreteCellEmbeddingRowIndex(embedding);
   return { embedding, discreteCellIndex };
-}
+};
 
 const LayoutChoice = ({ annoMatrix, layoutName }) => {
   return (
-    <Async promiseFn={loadEmbeddingCounts} annoMatrix={annoMatrix} layoutName={layoutName}>
+    <Async
+      promiseFn={loadEmbeddingCounts}
+      annoMatrix={annoMatrix}
+      layoutName={layoutName}
+    >
       {({ data, error, isPending }) => {
         if (error) {
           /* log, as this is unexpected */
@@ -118,13 +126,17 @@ const LayoutChoice = ({ annoMatrix, layoutName }) => {
         }
         if (error || isPending) {
           /* still loading, or errored out - just omit counts (TODO: spinner?) */
-          return (<Radio label={`${layoutName}`} value={layoutName} />);
+          return <Radio label={`${layoutName}`} value={layoutName} />;
         }
         if (data) {
           const { embedding, discreteCellIndex } = data;
           const isAllCells = discreteCellIndex.size() === embedding.length;
-          const sizeHint = `${discreteCellIndex.size()} ${isAllCells ? '(all) ' : ''}cells`;
-          return (<Radio label={`${layoutName}: ${sizeHint}`} value={layoutName} />);
+          const sizeHint = `${discreteCellIndex.size()} ${
+            isAllCells ? "(all) " : ""
+          }cells`;
+          return (
+            <Radio label={`${layoutName}: ${sizeHint}`} value={layoutName} />
+          );
         }
         return null;
       }}
