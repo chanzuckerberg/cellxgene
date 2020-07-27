@@ -1,6 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
-import Async from "react-async";
+import { useAsync } from "react-async";
 import {
   ButtonGroup,
   Popover,
@@ -84,18 +84,11 @@ class Embedding extends React.PureComponent {
               <p style={{ fontStyle: "italic" }}>
                 There are {schema?.dataframe?.nObs} cells in the entire dataset.
               </p>
-              <RadioGroup
+              <EmbeddingChoices
                 onChange={this.handleLayoutChoiceChange}
-                selectedValue={layoutChoice.current}
-              >
-                {layoutChoice.available.map((name) => (
-                  <LayoutChoice
-                    annoMatrix={annoMatrix}
-                    layoutName={name}
-                    key={name}
-                  />
-                ))}
-              </RadioGroup>
+                annoMatrix={annoMatrix}
+                layoutChoice={layoutChoice}
+              />
             </div>
           }
         />
@@ -106,40 +99,58 @@ class Embedding extends React.PureComponent {
 
 export default Embedding;
 
-const loadEmbeddingCounts = async ({ annoMatrix, layoutName }) => {
-  const embedding = await annoMatrix.fetch("emb", layoutName);
-  const discreteCellIndex = getDiscreteCellEmbeddingRowIndex(embedding);
-  return { embedding, discreteCellIndex };
+const loadAllEmbeddingCounts = async ({ annoMatrix, available }) => {
+  const embeddings = await Promise.all(
+    available.map((name) => annoMatrix.fetch("emb", name))
+  );
+  return available.map((name, idx) => ({
+    embeddingName: name,
+    embedding: embeddings[idx],
+    discreteCellIndex: getDiscreteCellEmbeddingRowIndex(embeddings[idx]),
+  }));
 };
 
-const LayoutChoice = ({ annoMatrix, layoutName }) => {
-  return (
-    <Async
-      promiseFn={loadEmbeddingCounts}
-      annoMatrix={annoMatrix}
-      layoutName={layoutName}
-    >
-      {({ data, error, isPending }) => {
-        if (error) {
-          /* log, as this is unexpected */
-          console.error(error);
-        }
-        if (error || isPending) {
-          /* still loading, or errored out - just omit counts (TODO: spinner?) */
-          return <Radio label={`${layoutName}`} value={layoutName} />;
-        }
-        if (data) {
-          const { embedding, discreteCellIndex } = data;
+const EmbeddingChoices = ({ onChange, annoMatrix, layoutChoice }) => {
+  const { available } = layoutChoice;
+  const { data, error, isPending } = useAsync({
+    promiseFn: loadAllEmbeddingCounts,
+    annoMatrix,
+    available,
+  });
+
+  if (error) {
+    /* log, as this is unexpected */
+    console.error(error);
+  }
+  if (error || isPending) {
+    /* still loading, or errored out - just omit counts (TODO: spinner?) */
+    return (
+      <RadioGroup onChange={onChange} selectedValue={layoutChoice.current}>
+        {layoutChoice.available.map((name) => (
+          <Radio label={`${name}`} value={name} key={name} />
+        ))}
+      </RadioGroup>
+    );
+  }
+  if (data) {
+    return (
+      <RadioGroup onChange={onChange} selectedValue={layoutChoice.current}>
+        {data.map((summary) => {
+          const { discreteCellIndex, embedding, embeddingName } = summary;
           const isAllCells = discreteCellIndex.size() === embedding.length;
           const sizeHint = `${discreteCellIndex.size()} ${
             isAllCells ? "(all) " : ""
           }cells`;
           return (
-            <Radio label={`${layoutName}: ${sizeHint}`} value={layoutName} />
+            <Radio
+              label={`${embeddingName}: ${sizeHint}`}
+              value={embeddingName}
+              key={embeddingName}
+            />
           );
-        }
-        return null;
-      }}
-    </Async>
-  );
+        })}
+      </RadioGroup>
+    );
+  }
+  return null;
 };
