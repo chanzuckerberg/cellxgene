@@ -136,11 +136,8 @@ const EmbeddingChoices = ({ onChange, annoMatrix, layoutChoice }) => {
     return (
       <RadioGroup onChange={onChange} selectedValue={layoutChoice.current}>
         {data.map((summary) => {
-          const { discreteCellIndex, embedding, embeddingName } = summary;
-          const isAllCells = discreteCellIndex.size() === embedding.length;
-          const sizeHint = `${discreteCellIndex.size()} ${
-            isAllCells ? "(all) " : ""
-          }cells`;
+          const { discreteCellIndex, embeddingName } = summary;
+          const sizeHint = `${discreteCellIndex.size()} cells`;
           return (
             <Radio
               label={`${embeddingName}: ${sizeHint}`}
