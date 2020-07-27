@@ -10,6 +10,7 @@ import InformationMenu from "./infoMenu";
 import Subset from "./subset";
 import UndoRedoReset from "./undoRedo";
 import DiffexpButtons from "./diffexpButtons";
+import { getEmbSubsetView } from "../../util/stateManager/viewStackHelpers";
 
 @connect((state) => {
   const { annoMatrix } = state;
@@ -17,9 +18,11 @@ import DiffexpButtons from "./diffexpButtons";
   const selectedCount = crossfilter.countSelected();
 
   const subsetPossible =
-    selectedCount !== 0 && selectedCount !== crossfilter.size(); // ie, not all are selected
-  const subsetResetPossible =
-    annoMatrix.nObs !== annoMatrix.schema.dataframe.nObs;
+    selectedCount !== 0 && selectedCount !== crossfilter.size(); // ie, not all and not none are selected
+  const embSubsetView = getEmbSubsetView(annoMatrix);
+  const subsetResetPossible = !embSubsetView
+    ? annoMatrix.nObs !== annoMatrix.schema.dataframe.nObs
+    : annoMatrix.nObs !== embSubsetView.nObs;
 
   return {
     subsetPossible,

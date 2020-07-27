@@ -1,5 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
+import { useAsync } from "react-async";
 import {
   ButtonGroup,
   Popover,
@@ -11,10 +12,11 @@ import {
 } from "@blueprintjs/core";
 import * as globals from "../../globals";
 import actions from "../../actions";
+import { getDiscreteCellEmbeddingRowIndex } from "../../util/stateManager/viewStackHelpers";
 
 @connect((state) => {
   return {
-    layoutChoice: state.layoutChoice,
+    layoutChoice: state.layoutChoice, // TODO: really should clean up naming, s/layout/embedding/g
     schema: state.annoMatrix?.schema,
     crossfilter: state.obsCrossfilter,
   };
@@ -32,6 +34,7 @@ class Embedding extends React.PureComponent {
 
   render() {
     const { layoutChoice, schema, crossfilter } = this.props;
+    const { annoMatrix } = crossfilter;
     return (
       <ButtonGroup
         style={{
@@ -61,7 +64,6 @@ class Embedding extends React.PureComponent {
               >
                 {layoutChoice?.current}: {crossfilter.countSelected()} out of{" "}
                 {crossfilter.size()} cells
-                {/* BRUCE to extend 1559 */}
               </Button>
             </Tooltip>
           }
@@ -82,18 +84,11 @@ class Embedding extends React.PureComponent {
               <p style={{ fontStyle: "italic" }}>
                 There are {schema?.dataframe?.nObs} cells in the entire dataset.
               </p>
-              <RadioGroup
+              <EmbeddingChoices
                 onChange={this.handleLayoutChoiceChange}
-                selectedValue={layoutChoice.current}
-              >
-                {layoutChoice.available.map((name) => (
-                  <Radio
-                    label={`${name} ${schema?.dataframe?.nObs} cells`}
-                    value={name}
-                    key={name}
-                  />
-                ))}
-              </RadioGroup>
+                annoMatrix={annoMatrix}
+                layoutChoice={layoutChoice}
+              />
             </div>
           }
         />
@@ -103,3 +98,59 @@ class Embedding extends React.PureComponent {
 }
 
 export default Embedding;
+
+const loadAllEmbeddingCounts = async ({ annoMatrix, available }) => {
+  const embeddings = await Promise.all(
+    available.map((name) => annoMatrix.fetch("emb", name))
+  );
+  return available.map((name, idx) => ({
+    embeddingName: name,
+    embedding: embeddings[idx],
+    discreteCellIndex: getDiscreteCellEmbeddingRowIndex(embeddings[idx]),
+  }));
+};
+
+const EmbeddingChoices = ({ onChange, annoMatrix, layoutChoice }) => {
+  const { available } = layoutChoice;
+  const { data, error, isPending } = useAsync({
+    promiseFn: loadAllEmbeddingCounts,
+    annoMatrix,
+    available,
+  });
+
+  if (error) {
+    /* log, as this is unexpected */
+    console.error(error);
+  }
+  if (error || isPending) {
+    /* still loading, or errored out - just omit counts (TODO: spinner?) */
+    return (
+      <RadioGroup onChange={onChange} selectedValue={layoutChoice.current}>
+        {layoutChoice.available.map((name) => (
+          <Radio label={`${name}`} value={name} key={name} />
+        ))}
+      </RadioGroup>
+    );
+  }
+  if (data) {
+    return (
+      <RadioGroup onChange={onChange} selectedValue={layoutChoice.current}>
+        {data.map((summary) => {
+          const { discreteCellIndex, embedding, embeddingName } = summary;
+          const isAllCells = discreteCellIndex.size() === embedding.length;
+          const sizeHint = `${discreteCellIndex.size()} ${
+            isAllCells ? "(all) " : ""
+          }cells`;
+          return (
+            <Radio
+              label={`${embeddingName}: ${sizeHint}`}
+              value={embeddingName}
+              key={embeddingName}
+            />
+          );
+        })}
+      </RadioGroup>
+    );
+  }
+  return null;
+};
