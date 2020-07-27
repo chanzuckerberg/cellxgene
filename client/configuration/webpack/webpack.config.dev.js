@@ -4,6 +4,7 @@ const webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const FaviconsWebpackPlugin = require("favicons-webpack-plugin");
 const ObsoleteWebpackPlugin = require("obsolete-webpack-plugin");
+const ScriptExtHtmlWebpackPlugin = require("script-ext-html-webpack-plugin");
 
 const src = path.resolve("src");
 const fonts = path.resolve("src/fonts");
@@ -74,6 +75,7 @@ module.exports = {
       template: path.resolve("index.html"),
     }),
     new ObsoleteWebpackPlugin({
+      name: "obsolete",
       template:
         "<script>" +
         'var root = document.getElementById("root");' +
@@ -119,6 +121,9 @@ module.exports = {
       "process.env.CXG_SERVER_PORT": JSON.stringify(
         process.env.CXG_SERVER_PORT
       ),
+    }),
+    new ScriptExtHtmlWebpackPlugin({
+      async: "obsolete",
     }),
   ],
 };

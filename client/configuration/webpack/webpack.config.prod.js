@@ -8,6 +8,7 @@ const TerserJSPlugin = require("terser-webpack-plugin");
 const CleanCss = require("clean-css");
 const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
 const ObsoleteWebpackPlugin = require("obsolete-webpack-plugin");
+const ScriptExtHtmlWebpackPlugin = require("script-ext-html-webpack-plugin");
 
 const CspHashPlugin = require("./cspHashPlugin");
 
@@ -90,6 +91,7 @@ module.exports = {
       minify: false,
     }),
     new ObsoleteWebpackPlugin({
+      name: "obsolete",
       template:
         "<script>" +
         'var root = document.getElementById("root");' +
@@ -137,6 +139,9 @@ module.exports = {
     }),
     new CspHashPlugin({
       filename: "csp-hashes.json",
+    }),
+    new ScriptExtHtmlWebpackPlugin({
+      async: "obsolete",
     }),
   ],
   performance: {
