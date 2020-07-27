@@ -96,7 +96,7 @@ Required, but empty TileDB array, used to store CXG-wide metadata.  The followin
 
 #### cxg_properties
 
-The properties metadata dictionary contains dataset-wide properties, encoded as a JSON dictionary. Curently, the following fields are defined:
+The properties metadata dictionary contains dataset-wide properties, encoded as a JSON dictionary. Currently, the following fields are defined:
 * title: string, dataset human name (eg, "Lung Tissue")
 * about: string, fully-qualified http/https URL, linking to more inforation on the dataset.
 
@@ -149,7 +149,7 @@ For backwards compatibility and continuity with CXG version 0.1.0, the following
 
 #### Presentation Hints
 * The [Corpora `title`](https://github.com/chanzuckerberg/corpora-data-portal/blob/main/backend/schema/corpora_schema.md#presentation-metadata) value MUST be saved in the `cxg_properties.title` field.
-* The [Corpora `color_map`](https://github.com/chanzuckerberg/corpora-data-portal/blob/main/backend/schema/corpora_schema.md#presentation-hints) MUST be saved in the `cxg_category_colors` field.
+* The [Corpora `color_map`](https://github.com/chanzuckerberg/corpora-data-portal/blob/main/backend/schema/corpora_schema.md#presentation-hints), when present in the dataset, MUST be saved in the `cxg_category_colors` field and NOT in the `corpora` field.
 * The [Corpora SUMMARY `project_link`](https://github.com/chanzuckerberg/corpora-data-portal/blob/main/backend/schema/corpora_schema.md#presentation-hints), if present, MUST be saved in the `cxg_properties.about` field.
 
 Where these values differ in the final CXG, the `cxg_properties` values WILL take precedence.

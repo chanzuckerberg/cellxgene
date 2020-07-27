@@ -16,7 +16,7 @@ def corpora_get_versions_from_anndata(adata):
         * None - if not a Corpora object
         * [ corpora_schema_version, corpora_encoding_version ] - if a Corpora object
 
-    Implements the identification protocol defined in the spect.
+    Implements the identification protocol defined in the specification.
     """
 
     # per Corpora AnnData spec, this is a corpora file if the following is true
