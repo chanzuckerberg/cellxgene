@@ -52,7 +52,7 @@ def corpora_get_props_from_anndata(adata):
     if not version_is_supported:
         raise ValueError("Unsupported Corpora schema version")
 
-    Required_Simple_Fields = [
+    required_simple_fields = [
         "version",
         "title",
         "layer_descriptions",
@@ -62,19 +62,19 @@ def corpora_get_props_from_anndata(adata):
         "project_description",
     ]
     # Spec says some values encoded as JSON due to the inability of AnnData to store complex types.
-    Required_Json_Fields = ["contributors", "project_links"]
-    Optional_Simple_Fields = ["preprint_doi", "publication_doi", "default_embedding", "default_field", "tags"]
+    required_json_fields = ["contributors", "project_links"]
+    optional_simple_fields = ["preprint_doi", "publication_doi", "default_embedding", "default_field", "tags"]
 
     corpora_props = {}
-    for key in Required_Simple_Fields:
+    for key in required_simple_fields:
         if key not in adata.uns:
             raise KeyError(f"missing Corpora schema field {key}")
         corpora_props.update({key: adata.uns[key]})
-    for key in Required_Json_Fields:
+    for key in required_json_fields:
         if key not in adata.uns:
             raise KeyError(f"missing Corpora schema field {key}")
         corpora_props.update({key: json.loads(adata.uns[key])})
-    for key in Optional_Simple_Fields:
+    for key in optional_simple_fields:
         if key in adata.uns:
             corpora_props.update({key: adata.uns[key]})
 
