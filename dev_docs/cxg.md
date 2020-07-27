@@ -12,7 +12,7 @@ CXG is a cellxgene-private data format, used for at-rest storage of annotated ma
 
 CXG is built upon the [TileDB](https://tiledb.com/) embedded database. Each CXG is a TileDB [group](https://docs.tiledb.com/main/api-usage/object-management), which in turn includes one or more TileDB multi-dimensional arrays.
 
-This document presumes familiarty with [TileDB terminology and concepts](https://docs.tiledb.com/main/), the [Corpora schema](https://github.com/chanzuckerberg/corpora-data-portal/blob/main/backend/schema/corpora_schema.md) and its [H5AD encoding](https://github.com/chanzuckerberg/corpora-data-portal/blob/main/backend/schema/corpora_schema_h5ad_implementation.md), and the AnnData/H5AD data model.
+This document presumes familiarity with [TileDB terminology and concepts](https://docs.tiledb.com/main/), the [Corpora schema](https://github.com/chanzuckerberg/corpora-data-portal/blob/main/backend/schema/corpora_schema.md) and its [H5AD encoding](https://github.com/chanzuckerberg/corpora-data-portal/blob/main/backend/schema/corpora_schema_h5ad_implementation.md), and the AnnData/H5AD data model.
 
 This document also leverages the current cellxgene schema, which is documented in the [REST API spec](./REST_API.md).
 
@@ -40,7 +40,7 @@ CXG consumers (readers) MUST be prepared to handle any legal TileDB compression,
 
 ### CXG
 
-The CXG is a TileDB group containing all data and metadata for a single annotated matrix.  The following objects must be present in a CXG:
+The CXG is a TileDB group containing all data and metadata for a single annotated matrix.  The following objects MUST be present in a CXG, except where noted as optional:
 * __obs__: a TileDB array, of shape (n_obs,), containing obs annotations, each annotation stored in a separate TileDB array attribute.
 * __var__: a TileDB array, of shape (n_var,), containing var annotations, each annotation stored in a separate TileDB array attribute.
 * __X__: a TileDB array, of shape (n_obs, n_var), with a single TileDB attribute of numeric type.
