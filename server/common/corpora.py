@@ -34,6 +34,15 @@ def corpora_get_versions_from_anndata(adata):
     return None
 
 
+def corpora_is_version_supported(corpora_schema_version, corpora_encoding_version):
+    return (
+        corpora_schema_version is not None
+        and corpora_encoding_version is not None
+        and corpora_schema_version.startswith("1.")
+        and corpora_encoding_version.startswith("0.1.")
+    )
+
+
 def corpora_get_props_from_anndata(adata):
     """
     Get Corpora dataset properties from an AnnData
@@ -42,13 +51,7 @@ def corpora_get_props_from_anndata(adata):
     if versions is None:
         return None
     [corpora_schema_version, corpora_encoding_version] = versions
-    version_is_supported = (
-        corpora_schema_version is not None
-        and corpora_encoding_version is not None
-        and corpora_schema_version.startswith("1.")
-        and corpora_encoding_version.startswith("0.1.")
-    )
-
+    version_is_supported = corpora_is_version_supported(corpora_schema_version, corpora_encoding_version)
     if not version_is_supported:
         raise ValueError("Unsupported Corpora schema version")
 

@@ -16,7 +16,11 @@ from scipy.stats import mode
 
 from server.common.colors import convert_anndata_category_colors_to_cxg_category_colors
 from server.common.errors import ColorFormatException
-from server.common.corpora import corpora_get_props_from_anndata, corpora_get_versions_from_anndata
+from server.common.corpora import (
+    corpora_get_props_from_anndata,
+    corpora_get_versions_from_anndata,
+    corpora_is_version_supported,
+)
 
 
 # the CXG container version number.  Must be a semver string (major.minor.patch)
@@ -91,7 +95,7 @@ def main():
         title=args.title,
         about=args.about,
         corpora_props=corpora_props,
-        extract_colors=not args.disable_custom_colors
+        extract_colors=not args.disable_custom_colors,
     )
 
     write_cxg(
@@ -548,13 +552,7 @@ def load_corpora_props(args, adata):
 
     [corpora_schema_version, corpora_encoding_version] = versions
     corpora_props = corpora_get_props_from_anndata(adata)
-    version_is_supported = (
-        corpora_schema_version is not None
-        and corpora_encoding_version is not None
-        and corpora_schema_version.startswith("1.")
-        and corpora_encoding_version.startswith("0.1.")
-    )
-
+    version_is_supported = corpora_is_version_supported(corpora_schema_version, corpora_encoding_version)
     if not version_is_supported or not corpora_props:
         log(0, "ERROR: Unknown source file schema version is unsupported")
         raise ValueError("Unsupported Corpora schema version")
