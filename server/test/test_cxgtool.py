@@ -34,15 +34,8 @@ class TestCxgAdaptor(unittest.TestCase):
         self.fixtures.append(data_locator)
         source_h5ad = anndata.read_h5ad(f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad")
         cxg_group_metadata = create_cxg_group_metadata(
-            adata=source_h5ad,
-            basefname="pbmc3k.h5ad",
-            title="pbmc3k",
-            **kwargs
+            adata=source_h5ad, basefname="pbmc3k.h5ad", title="pbmc3k", **kwargs
         )
-        write_cxg(
-            adata=source_h5ad,
-            container=data_locator,
-            cxg_group_metadata=cxg_group_metadata
-        )
+        write_cxg(adata=source_h5ad, container=data_locator, cxg_group_metadata=cxg_group_metadata)
         config = app_config(data_locator)
         return CxgAdaptor(DataLocator(data_locator), config)

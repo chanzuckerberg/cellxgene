@@ -16,8 +16,7 @@ class DiffExpTest(unittest.TestCase):
     adaptor types and different algorithms."""
 
     def load_dataset(self, path, extra_server_config={}, extra_dataset_config={}):
-        config = app_config(path, extra_server_config=extra_server_config,
-                            extra_dataset_config=extra_dataset_config)
+        config = app_config(path, extra_server_config=extra_server_config, extra_dataset_config=extra_dataset_config)
         loader = MatrixDataLoader(path)
         adaptor = loader.open(config)
         return adaptor
@@ -105,22 +104,14 @@ class DiffExpTest(unittest.TestCase):
             adata = adaptor_anndata.data
 
             sparsename = os.path.join(dirname, "sparse.cxg")
-            cxg_group_metadata = create_cxg_group_metadata(
-                adata=adata,
-                basefname="sparse.h5ad",
-                title="sparse",
-            )
+            cxg_group_metadata = create_cxg_group_metadata(adata=adata, basefname="sparse.h5ad", title="sparse",)
             write_cxg(adata=adata, container=sparsename, cxg_group_metadata=cxg_group_metadata, sparse_threshold=11)
             adaptor_sparse = self.load_dataset(sparsename)
             assert adaptor_sparse.open_array("X").schema.sparse
             assert adaptor_sparse.has_array("X_col_shift") == apply_col_shift
 
             densename = os.path.join(dirname, "dense.cxg")
-            cxg_group_metadata = create_cxg_group_metadata(
-                adata=adata,
-                basefname="dense.h5ad",
-                title="dense",
-            )
+            cxg_group_metadata = create_cxg_group_metadata(adata=adata, basefname="dense.h5ad", title="dense",)
             write_cxg(adata=adata, container=densename, cxg_group_metadata=cxg_group_metadata, sparse_threshold=0)
             adaptor_dense = self.load_dataset(densename)
             assert not adaptor_dense.open_array("X").schema.sparse
