@@ -5,6 +5,7 @@ https://github.com/chanzuckerberg/corpora-data-portal/blob/main/backend/schema/c
 
 https://github.com/chanzuckerberg/corpora-data-portal/blob/main/backend/schema/corpora_schema_h5ad_implementation.md
 """
+import collections
 import json
 
 from server.cli.upgrade import validate_version_str
@@ -20,12 +21,14 @@ def corpora_get_versions_from_anndata(adata):
     """
 
     # per Corpora AnnData spec, this is a corpora file if the following is true
-    if "version" not in adata.uns or "corpora_schema_version" not in adata.uns["version"]:
-        # oops, not corpora
+    if adata.uns is None or "version" not in adata.uns:
+        return None
+    version = adata.uns["version"]
+    if not isinstance(version, collections.abc.Mapping) or "corpora_schema_version" not in version:
         return None
 
-    corpora_schema_version = adata.uns["version"].get("corpora_schema_version", None)
-    corpora_encoding_version = adata.uns["version"].get("corpora_encoding_version", None)
+    corpora_schema_version = version.get("corpora_schema_version", None)
+    corpora_encoding_version = version.get("corpora_encoding_version", None)
 
     # TODO: spec says these must be SEMVER values, so check.
     if validate_version_str(corpora_schema_version) and validate_version_str(corpora_encoding_version):
