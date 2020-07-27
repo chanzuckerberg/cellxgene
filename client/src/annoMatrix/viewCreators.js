@@ -33,6 +33,13 @@ export function subset(annoMatrix, obsLabels) {
   return new AnnoMatrixRowSubsetView(annoMatrix, obsIndex);
 }
 
+export function subsetByIndex(annoMatrix, obsIndex) {
+  /*
+  subset based upon the new obs index.
+  */
+  return new AnnoMatrixRowSubsetView(annoMatrix, obsIndex);
+}
+
 export function clip(annoMatrix, qmin, qmax) {
   /*
 		Create a view that clips all continuous data to the [min, max] range.
@@ -59,5 +66,5 @@ function _maskToList(mask) {
       elems += 1;
     }
   }
-  return new Int32Array(list.buffer, 0, elems);
+  return list.subarray(0, elems);
 }

@@ -11,7 +11,12 @@ stack multiple subsets.
 If these conventions change, code elsewhere (eg. menubar/clip.js) will need to
 change as well.
 */
-import { AnnoMatrixObsCrossfilter, clip, isubsetMask } from "../annoMatrix";
+import { AnnoMatrixObsCrossfilter } from "../annoMatrix";
+import {
+  _clipAnnoMatrix,
+  _userSubsetAnnoMatrix,
+  _userResetSubsetAnnoMatrix,
+} from "../util/stateManager/viewStackHelpers";
 
 export const clipAction = (min, max) => (dispatch, getState) => {
   /*
@@ -19,9 +24,7 @@ export const clipAction = (min, max) => (dispatch, getState) => {
   view is ALWAYS the top view.
   */
   const { annoMatrix: prevAnnoMatrix } = getState();
-  const annoMatrix = prevAnnoMatrix.isClipped
-    ? clip(prevAnnoMatrix.viewOf, min, max)
-    : clip(prevAnnoMatrix, min, max);
+  const annoMatrix = _clipAnnoMatrix(prevAnnoMatrix, min, max);
   const obsCrossfilter = new AnnoMatrixObsCrossfilter(annoMatrix);
   dispatch({
     type: "set clip quantiles",
@@ -43,24 +46,10 @@ export const subsetAction = () => (dispatch, getState) => {
     annoMatrix: prevAnnoMatrix,
     obsCrossfilter: prevObsCrossfilter,
   } = getState();
-
-  let annoMatrix;
-  if (prevAnnoMatrix.isClipped) {
-    // if there is a clip view, pop it and reapply after we subset
-    const { clipRange } = prevAnnoMatrix;
-    annoMatrix = isubsetMask(
-      prevAnnoMatrix.viewOf,
-      prevObsCrossfilter.allSelectedMask()
-    );
-    annoMatrix = clip(annoMatrix, ...clipRange);
-  } else {
-    // else just push a subset view.
-    annoMatrix = isubsetMask(
-      prevAnnoMatrix,
-      prevObsCrossfilter.allSelectedMask()
-    );
-  }
-
+  const annoMatrix = _userSubsetAnnoMatrix(
+    prevAnnoMatrix,
+    prevObsCrossfilter.allSelectedMask()
+  );
   const obsCrossfilter = new AnnoMatrixObsCrossfilter(annoMatrix);
   dispatch({
     type: "subset to selection",
@@ -77,20 +66,7 @@ export const resetSubsetAction = () => (dispatch, getState) => {
   */
 
   const { annoMatrix: prevAnnoMatrix } = getState();
-
-  const clipRange = prevAnnoMatrix.isClipped ? prevAnnoMatrix.clipRange : null;
-
-  /* pop all views */
-  let annoMatrix = prevAnnoMatrix;
-  while (annoMatrix.isView) {
-    annoMatrix = annoMatrix.viewOf;
-  }
-
-  /* re-apply the clip, if any */
-  if (clipRange !== null) {
-    annoMatrix = clip(annoMatrix, ...clipRange);
-  }
-
+  const annoMatrix = _userResetSubsetAnnoMatrix(prevAnnoMatrix);
   const obsCrossfilter = new AnnoMatrixObsCrossfilter(annoMatrix);
   dispatch({
     type: "reset subset",
