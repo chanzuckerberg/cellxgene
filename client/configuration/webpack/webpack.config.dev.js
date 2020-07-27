@@ -85,17 +85,31 @@ module.exports = {
         "portals[i].remove();" +
         "}" +
         "</script>" +
+        '<div style="display: flex;flex-direction: column;width: 100vw;height: 100vh;text-align: center;justify-content: center;align-items: center;background: #8080801a;font-family: &quot;Roboto Condensed, sans serif&quot;;">' +
+        '<img src="https://raw.githubusercontent.com/chanzuckerberg/cellxgene/main/docs/cellxgene-logo.png" style="width: 320px;"/>' +
+        '<div style="margin-top: 16px;background: white;width: 40vw;border-radius: 4px;padding: 24px 64px;-webkit-box-shadow: 0px 0px 3px 2px rgba(0,0,0,0.38);-moz-box-shadow: 0px 0px 3px 2px rgba(0,0,0,0.38);box-shadow: 0px 0px 3px 2px rgba(0,0,0,0.38);max-width: 550px;">' +
+        '<div style="margin-bottom: 0;font-weight: bolder;font-size: 1.2em;"> Unsupported Browser </div>' +
+        '<div style="margin-top: 0;">cellxgene is currently supported on the following browsers</div>' +
+        '<div style="display: flex;justify-content: space-around;margin-top: 16px">' +
         "<div>" +
-        '<div style="display: flex;flex-direction: column;width: 100vw;height: 100vh;text-align: center;justify-content: center;">' +
-        "<h1> cellxgene </h1>" +
-        "<div> Unsupported Browser </div>" +
-        '<div style="margin-top: 16px;"> cellxgene is currently supported on the following browsers' +
-        '<div style="display: flex;justify-content: space-around;margin: auto 40vw;margin-top: 16px">' +
-        '<div> <img src="https://assets.beta.meta.org/images/browsers/chrome.png" style="width: 80px;height: 80px;"><div>Chrome &gt; 60</div></div>' +
-        '<div> <img src="https://assets.beta.meta.org/images/browsers/safari.png" style="width: 80px;height: 80px;"><div>Safari &gt;= 10.1</div> </div>' +
-        '<div> <img src="https://assets.beta.meta.org/images/browsers/firefox.png" style="width: 80px;height: 80px;"><div>Firefox &gt;= 60</div> </div>' +
-        '<div><img src="https://assets.beta.meta.org/images/browsers/edge.png" style="width: 80px;height: 80px;"><div>Edge &gt;= 15</div> </div>' +
-        "</div></div><div></div></div>",
+        '<img src="https://assets.beta.meta.org/images/browsers/chrome.png" style="width: 80px;height: 80px;"/>' +
+        "<div>Chrome &gt; 60</div>" +
+        "</div>" +
+        "<div>" +
+        '<img src="https://assets.beta.meta.org/images/browsers/safari.png" style="width: 80px;height: 80px;"/>' +
+        "<div>Safari ≥ 10.1</div>" +
+        "</div>" +
+        "<div>" +
+        '<img src="https://assets.beta.meta.org/images/browsers/firefox.png" style="width: 80px;height: 80px;"/>' +
+        "<div>Firefox ≥ 60</div>" +
+        "</div>" +
+        "<div>" +
+        '<img src="https://assets.beta.meta.org/images/browsers/edge.png" style="width: 80px;height: 80px;"/>' +
+        "<div>Edge ≥ 15</div>" +
+        "</div>" +
+        "</div>" +
+        "</div>" +
+        "</div>",
       promptOnNonTargetBrowser: true,
     }),
     new FaviconsWebpackPlugin({
