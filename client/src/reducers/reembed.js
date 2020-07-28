@@ -27,38 +27,3 @@ export const reembedController = (
     }
   }
 };
-
-/*
-actual reembedding data is part of the undo/redo history
-*/
-export const reembedding = (
-  state = {
-    reembeddings: new Map(),
-  },
-  action
-) => {
-  switch (action.type) {
-    case "reembed: add reembedding": {
-      const { schema, embedding } = action;
-      const { name } = schema.name;
-      const { reembeddings } = state;
-      return {
-        ...state,
-        reembeddings: new Map(reembeddings).set(name, {
-          name,
-          schema,
-          embedding,
-        }),
-      };
-    }
-    case "reembed: clear all reembeddings": {
-      return {
-        ...state,
-        reembeddings: new Map(),
-      };
-    }
-    default: {
-      return state;
-    }
-  }
-};

@@ -30,7 +30,6 @@ const Reducer = undoable(
     ["obsCrossfilter", obsCrossfilter],
     ["ontology", ontology],
     ["annotations", annotations],
-    ["reembedding", reembedding],
     ["layoutChoice", layoutChoice],
     ["categoricalSelection", categoricalSelection],
     ["continuousSelection", continuousSelection],
@@ -55,7 +54,6 @@ const Reducer = undoable(
     "layoutChoice",
     "centroidLabels",
     "annotations",
-    "reembedding",
   ],
   undoableConfig
 );

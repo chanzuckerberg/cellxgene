@@ -71,6 +71,13 @@ class AnnoMatrixView extends AnnoMatrix {
     o.schema = o.viewOf.schema;
     return o;
   }
+
+  addEmbedding(colSchema) {
+    const o = this._clone();
+    o.viewOf = this.viewOf.addEmbedding(colSchema);
+    o.schema = o.viewOf.schema;
+    return o;
+  }
 }
 
 class AnnoMatrixMapView extends AnnoMatrixView {

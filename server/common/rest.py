@@ -315,16 +315,8 @@ def layout_obs_put(request, data_adaptor):
     method = args["method"] if args else "umap"
 
     try:
-        schema, fbs = data_adaptor.compute_embedding(method, filter)
-        return make_response(
-            fbs,
-            HTTPStatus.OK,
-            {
-                "Content-Type": "application/octet-stream",
-                "CxG-Schema": json.dumps(schema),
-                "Access-Control-Expose-Headers": "CxG-Schema",
-            },
-        )
+        schema = data_adaptor.compute_embedding(method, filter)
+        return make_response(schema, HTTPStatus.OK, {"Content-Type": "application/json"})
     except NotImplementedError as e:
         return abort_and_log(HTTPStatus.NOT_IMPLEMENTED, str(e), include_exc_info=True)
     except (ValueError, DisabledFeatureError, FilterError) as e:

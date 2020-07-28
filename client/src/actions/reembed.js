@@ -1,5 +1,4 @@
 import { API } from "../globals";
-import { MatrixFBS } from "../util/stateManager";
 import {
   postNetworkErrorToast,
   postAsyncSuccessToast,
@@ -24,7 +23,7 @@ function abortableFetch(request, opts, timeout = 0) {
 
 async function doReembedFetch(dispatch, getState) {
   const state = getState();
-  let cells = state.world.obsAnnotations.rowIndex.labels();
+  let cells = state.annoMatrix.rowIndex.labels();
 
   // These lines ensure that we convert any TypedArray to an Array.
   // This is necessary because JSON.stringify() does some very strange
@@ -54,10 +53,7 @@ async function doReembedFetch(dispatch, getState) {
   });
   const res = await af.ready();
 
-  if (
-    res.ok &&
-    res.headers.get("Content-Type").includes("application/octet-stream")
-  ) {
+  if (res.ok && res.headers.get("Content-Type").includes("application/json")) {
     return res;
   }
 
@@ -78,17 +74,20 @@ export function requestReembed() {
   return async (dispatch, getState) => {
     try {
       const res = await doReembedFetch(dispatch, getState);
-      const schema = JSON.parse(res.headers.get("CxG-Schema"));
-      const buffer = await res.arrayBuffer();
-      const df = MatrixFBS.matrixFBSToDataframe(buffer);
+      const schema = await res.json();
       dispatch({
         type: "reembed: request completed",
       });
+
+      const { obsCrossfilter: prevObsCrossfilter } = getState();
+      const obsCrossfilter = prevObsCrossfilter.addEmbedding(schema);
       dispatch({
         type: "reembed: add reembedding",
-        embedding: df,
         schema,
+        annoMatrix: obsCrossfilter.annoMatrix,
+        obsCrossfilter,
       });
+
       postAsyncSuccessToast("Re-embedding has completed.");
     } catch (error) {
       dispatch({
@@ -103,13 +102,3 @@ export function requestReembed() {
     }
   };
 }
-
-/* disabled until reimplementation occurs
-export function reembedResetWorldToUniverse(dispatch, getState) {
-  const { reembedController } = getState();
-  if (reembedController.pendingFetch) reembedController.pendingFetch.abort();
-  dispatch({
-    type: "reembed: clear all reembeddings",
-  });
-}
-*/

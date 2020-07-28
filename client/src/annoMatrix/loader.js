@@ -6,6 +6,7 @@ import {
   removeObsAnnoColumn,
   addObsAnnoCategory,
   removeObsAnnoCategory,
+  addObsLayout,
 } from "../util/stateManager/schemaHelpers";
 import { isArrayOrTypedArray } from "../util/typeHelpers";
 import { _whereCacheCreate } from "./whereCache";
@@ -191,6 +192,20 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     if (!categories?.includes(newValue)) {
       o.schema = addObsAnnoCategory(this.schema, col, newValue);
     }
+    return o;
+  }
+
+  addEmbedding(colSchema) {
+    /*
+    add new layout to the obs embeddings
+    */
+    const { name: colName } = colSchema;
+    if (_getColumnSchema(this.schema, "emb", colName)) {
+      throw new Error("column already exists");
+    }
+
+    const o = this._clone();
+    o.schema = addObsLayout(this.schema, colSchema);
     return o;
   }
 

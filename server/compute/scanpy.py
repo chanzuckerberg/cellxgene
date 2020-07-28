@@ -1,4 +1,5 @@
 import importlib
+import numpy as np
 
 """
 Wrapper for various scanpy modules.  Will raise NotImplementedError if the scanpy
@@ -46,4 +47,7 @@ def scanpy_umap(adata, obs_mask=None, pca_options={}, neighbors_options={}, umap
     sc.pp.neighbors(adata, **neighbors_options)
     sc.tl.umap(adata, **umap_options)
 
-    return adata.obsm["X_umap"]
+    umap = adata.obsm["X_umap"]
+    result = np.full((obs_mask.shape[0], umap.shape[1]), np.NaN)
+    result[obs_mask] = umap
+    return result
