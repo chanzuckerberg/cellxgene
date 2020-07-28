@@ -15,7 +15,7 @@ const babelOptions = require("../babel/babel.dev");
 module.exports = {
   mode: "development",
   devtool: "eval",
-  entry: ["./src/index"],
+  entry: ["whatwg-fetch", "./src/index"],
   output: {
     path: path.resolve("build"),
     pathinfo: true,

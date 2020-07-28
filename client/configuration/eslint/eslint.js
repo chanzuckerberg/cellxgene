@@ -9,7 +9,14 @@ module.exports = {
     "prettier/react",
   ],
   settings: {
-    polyfills: ["TextDecoder", "TextEncoder"],
+    polyfills: [
+      "TextDecoder",
+      "TextEncoder",
+      "fetch",
+      "Request",
+      "Response",
+      "Headers",
+    ],
   },
   env: { browser: true, commonjs: true, es6: true },
   globals: {
