@@ -8,6 +8,9 @@ module.exports = {
     "plugin:prettier/recommended",
     "prettier/react",
   ],
+  settings: {
+    polyfills: ["TextDecoder", "TextEncoder"],
+  },
   env: { browser: true, commonjs: true, es6: true },
   globals: {
     expect: true,
