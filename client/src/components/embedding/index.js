@@ -101,7 +101,7 @@ export default Embedding;
 
 const loadAllEmbeddingCounts = async ({ annoMatrix, available }) => {
   const embeddings = await Promise.all(
-    available.map((name) => annoMatrix.fetch("emb", name))
+    available.map((name) => annoMatrix.base().fetch("emb", name))
   );
   return available.map((name, idx) => ({
     embeddingName: name,
@@ -136,11 +136,8 @@ const EmbeddingChoices = ({ onChange, annoMatrix, layoutChoice }) => {
     return (
       <RadioGroup onChange={onChange} selectedValue={layoutChoice.current}>
         {data.map((summary) => {
-          const { discreteCellIndex, embedding, embeddingName } = summary;
-          const isAllCells = discreteCellIndex.size() === embedding.length;
-          const sizeHint = `${discreteCellIndex.size()} ${
-            isAllCells ? "(all) " : ""
-          }cells`;
+          const { discreteCellIndex, embeddingName } = summary;
+          const sizeHint = `${discreteCellIndex.size()} cells`;
           return (
             <Radio
               label={`${embeddingName}: ${sizeHint}`}
