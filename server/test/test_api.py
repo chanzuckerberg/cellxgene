@@ -76,21 +76,23 @@ class EndPoints(object):
         # attempt to reembed with umap over 100 cells.
         endpoint = "layout/obs"
         url = f"{self.URL_BASE}{endpoint}"
-        header = {"Accept": "application/octet-stream"}
         data = {}
         data["filter"] = {}
         data["filter"]["obs"] = {}
         data["filter"]["obs"]["index"] = list(range(100))
         data["method"] = "umap"
-        result = self.session.put(url, headers=header, json=data)
+        result = self.session.put(url, json=data)
 
         self.assertEqual(result.status_code, HTTPStatus.OK)
-        df = decode_fbs.decode_matrix_FBS(result.content)
-        self.assertEqual(df["n_rows"], 100)
-        self.assertEqual(df["n_cols"], 2)
-        cols = list(df["col_idx"])
-        self.assertTrue(cols[0].startswith("reembed:umap_") and cols[0].endswith("_0"))
-        self.assertTrue(cols[1].startswith("reembed:umap_") and cols[1].endswith("_1"))
+        result_data = result.json()
+        self.assertIsInstance(result_data, dict)
+        self.assertEqual(result_data.get("type", None), "float32")
+        self.assertTrue(result_data.get("name", "").startswith("reembed:umap_"))
+        self.assertIsInstance(result_data.get("dims", None), list)
+        self.assertEqual(len(result_data["dims"]), 2)
+        dims = result_data["dims"]
+        self.assertTrue(dims[0].startswith("reembed:umap_") and dims[0].endswith("_0"))
+        self.assertTrue(dims[1].startswith("reembed:umap_") and dims[1].endswith("_1"))
 
     def test_bad_filter(self):
         endpoint = "data/var"

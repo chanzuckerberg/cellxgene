@@ -304,10 +304,6 @@ def layout_obs_put(request, data_adaptor):
     if not data_adaptor.dataset_config.embeddings__enable_reembedding:
         return abort(HTTPStatus.NOT_IMPLEMENTED)
 
-    preferred_mimetype = request.accept_mimetypes.best_match(["application/octet-stream"])
-    if preferred_mimetype != "application/octet-stream":
-        return abort(HTTPStatus.NOT_ACCEPTABLE)
-
     args = request.get_json()
     filter = args["filter"] if args else None
     if not filter:
