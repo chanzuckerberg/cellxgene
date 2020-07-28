@@ -5,9 +5,18 @@ from urllib.parse import urlencode
 from urllib.request import urlopen
 import json
 
-# TODO, make these modules optional.  If not installed, then AuthTypeOAuth is not available
-from authlib.integrations.flask_client import OAuth
-from jose import jwt
+# It is not required to have authlib or jose.
+# However, it is a configuration error to use this auth type if they are not installed.
+missingimport = []
+try:
+    from authlib.integrations.flask_client import OAuth
+except ModuleNotFoundError:
+    missingimport.append("authlib")
+
+try:
+    from jose import jwt
+except ModuleNotFoundError:
+    missingimport.append("jose")
 
 
 class AuthTypeOAuth(AuthTypeClientBase):
@@ -17,6 +26,8 @@ class AuthTypeOAuth(AuthTypeClientBase):
 
     def __init__(self, app_config):
         super().__init__()
+        if missingimport:
+            raise ConfigurationError(f"oauth requires these modules: {', '.join(missingimport)}")
         self.algorithms = ["RS256"]
         self.api_base_url = app_config.authentication__params_oauth__api_base_url
         self.client_id = app_config.authentication__params_oauth__client_id
