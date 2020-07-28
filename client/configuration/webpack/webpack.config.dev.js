@@ -15,7 +15,7 @@ module.exports = {
   mode: "development",
   devtool: "eval",
   entry: [
-    "core-js-stable",
+    "core-js",
     "regenerator-runtime/runtime",
     "fastestsmallesttextencoderdecoder",
     "whatwg-fetch",
