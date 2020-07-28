@@ -26,6 +26,7 @@ def abort_and_log(code, logmsg, loglevel=logging.DEBUG, include_exc_info=False):
     Log the message, then abort with HTTP code. If include_exc_info is true,
     also include current exception via sys.exc_info().
     """
+    print(">>>>>>>>>>> abort_and_log", code, logmsg, loglevel)
     if include_exc_info:
         exc_info = sys.exc_info()
     else:
@@ -301,6 +302,8 @@ def layout_obs_get(request, data_adaptor):
 
 
 def layout_obs_put(request, data_adaptor):
+    import sys
+    print(">>>>>>>>> layout_obs_put", file=sys.stderr)
     if not data_adaptor.dataset_config.embeddings__enable_reembedding:
         return abort(HTTPStatus.NOT_IMPLEMENTED)
 
@@ -312,6 +315,7 @@ def layout_obs_put(request, data_adaptor):
 
     try:
         schema = data_adaptor.compute_embedding(method, filter)
+        print(">>>>>>>>>>> layout_obs_put B", schema, file=sys.stderr)
         return make_response(schema, HTTPStatus.OK, {"Content-Type": "application/json"})
     except NotImplementedError as e:
         return abort_and_log(HTTPStatus.NOT_IMPLEMENTED, str(e), include_exc_info=True)
