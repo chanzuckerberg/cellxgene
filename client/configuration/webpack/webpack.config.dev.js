@@ -110,7 +110,7 @@ module.exports = {
         "</div>" +
         "</div>" +
         "</div>",
-      promptOnNonTargetBrowser: true,
+      promptOnNonTargetBrowser: false,
     }),
     new FaviconsWebpackPlugin({
       logo: "./favicon.png",
