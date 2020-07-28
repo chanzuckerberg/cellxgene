@@ -34,8 +34,6 @@ def corpora_get_versions_from_anndata(adata):
     if validate_version_str(corpora_schema_version) and validate_version_str(corpora_encoding_version):
         return [corpora_schema_version, corpora_encoding_version]
 
-    return None
-
 
 def corpora_is_version_supported(corpora_schema_version, corpora_encoding_version):
     return (
