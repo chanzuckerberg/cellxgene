@@ -90,22 +90,22 @@ module.exports = {
         '<div style="margin-bottom: 0;font-weight: bolder;font-size: 1.2em;"> Unsupported Browser </div>' +
         '<div style="margin-top: 0;">cellxgene is currently supported on the following browsers</div>' +
         '<div style="display: flex;justify-content: space-around;margin-top: 16px">' +
-        "<div>" +
+        '<a href="https://www.google.com/chrome/?hl=en%22" aria-label="Download Google Chrome">' +
         '<img src="https://assets.beta.meta.org/images/browsers/chrome.png" style="width: 80px;height: 80px;"/>' +
         "<div>Chrome &gt; 60</div>" +
-        "</div>" +
-        "<div>" +
+        "</a>" +
+        '<a href="https://www.apple.com/safari/" aria-label="Download Safari">' +
         '<img src="https://assets.beta.meta.org/images/browsers/safari.png" style="width: 80px;height: 80px;"/>' +
         "<div>Safari ≥ 10.1</div>" +
-        "</div>" +
-        "<div>" +
+        "</a>" +
+        '<a href="https://www.mozilla.com/firefox/" aria-label="Download Firefox">' +
         '<img src="https://assets.beta.meta.org/images/browsers/firefox.png" style="width: 80px;height: 80px;"/>' +
         "<div>Firefox ≥ 60</div>" +
-        "</div>" +
-        "<div>" +
+        "</a>" +
+        '<a href="//www.microsoft.com/edge" aria-label="Download Edge">' +
         '<img src="https://assets.beta.meta.org/images/browsers/edge.png" style="width: 80px;height: 80px;"/>' +
         "<div>Edge ≥ 15</div>" +
-        "</div>" +
+        "</a>" +
         "</div>" +
         "</div>" +
         "</div>",
