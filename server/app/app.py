@@ -272,6 +272,7 @@ class LayoutObsAPI(DatasetResource):
     @cache_control(no_store=True)
     @rest_get_data_adaptor
     def put(self, data_adaptor):
+        print("FFFFFF")
         return common_rest.layout_obs_put(request, data_adaptor)
 
 
