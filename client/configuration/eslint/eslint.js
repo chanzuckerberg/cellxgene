@@ -4,6 +4,7 @@ module.exports = {
   extends: [
     "airbnb",
     "plugin:eslint-comments/recommended",
+    "plugin:compat/recommended",
     "plugin:prettier/recommended",
     "prettier/react",
   ],
