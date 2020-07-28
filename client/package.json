@@ -34,7 +34,8 @@
     "Safari >= 10.1",
     "iOS >= 10.3",
     "Firefox >= 60",
-    "Edge >= 15"
+    "Edge >= 15",
+    "not Explorer > 0"
   ],
   "dependencies": {
     "@blueprintjs/core": "^3.30.0",
