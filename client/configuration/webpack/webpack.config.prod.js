@@ -24,7 +24,7 @@ module.exports = {
   bail: true,
   cache: false,
   entry: [
-    "core-js-stable",
+    "core-js",
     "regenerator-runtime/runtime",
     "fastestsmallesttextencoderdecoder",
     "whatwg-fetch",
