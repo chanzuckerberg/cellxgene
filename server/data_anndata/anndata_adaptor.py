@@ -298,17 +298,20 @@ class AnndataAdaptor(DataAdaptor):
         return full_embedding[:, 0:dims]
 
     def compute_embedding(self, method, obsFilter):
-        print("DDDDD", "compute_embedding")
+        print("DDDDD", "compute_embedding  1")
         if Axis.VAR in obsFilter:
             raise FilterError("Observation filters may not contain variable conditions")
         if method != "umap":
             raise NotImplementedError(f"re-embedding method {method} is not available.")
         try:
+            print("DDDDD", "compute_embedding  2")
             shape = self.get_shape()
             obs_mask = self._axis_filter_to_mask(Axis.OBS, obsFilter["obs"], shape[0])
+            print("DDDDD", "compute_embedding  3")
         except (KeyError, IndexError):
             raise FilterError("Error parsing filter")
         with ServerTiming.time("layout.compute"):
+            print("DDDDD", "compute_embedding  4")
             X_umap = scanpy_umap(self.data, obs_mask)
 
         # Server picks reemedding name, which must not collide with any other
