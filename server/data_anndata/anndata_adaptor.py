@@ -298,11 +298,13 @@ class AnndataAdaptor(DataAdaptor):
         return full_embedding[:, 0:dims]
 
     def compute_embedding(self, method, obsFilter):
-        print("DDDDD", "compute_embedding  1")
+        print("DDDDD", "compute_embedding  1", method, obsFilter)
         if Axis.VAR in obsFilter:
             raise FilterError("Observation filters may not contain variable conditions")
+        print("DDDDD", "compute_embedding  1.1")
         if method != "umap":
             raise NotImplementedError(f"re-embedding method {method} is not available.")
+        print("DDDDD", "compute_embedding  1.2")
         try:
             print("DDDDD", "compute_embedding  2")
             shape = self.get_shape()
