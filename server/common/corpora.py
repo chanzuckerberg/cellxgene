@@ -27,8 +27,8 @@ def corpora_get_versions_from_anndata(adata):
     if not isinstance(version, collections.abc.Mapping) or "corpora_schema_version" not in version:
         return None
 
-    corpora_schema_version = version.get("corpora_schema_version", None)
-    corpora_encoding_version = version.get("corpora_encoding_version", None)
+    corpora_schema_version = version.get("corpora_schema_version")
+    corpora_encoding_version = version.get("corpora_encoding_version")
 
     # TODO: spec says these must be SEMVER values, so check.
     if validate_version_str(corpora_schema_version) and validate_version_str(corpora_encoding_version):
@@ -39,8 +39,8 @@ def corpora_get_versions_from_anndata(adata):
 
 def corpora_is_version_supported(corpora_schema_version, corpora_encoding_version):
     return (
-        corpora_schema_version is not None
-        and corpora_encoding_version is not None
+        corpora_schema_version
+        and corpora_encoding_version
         and corpora_schema_version.startswith("1.")
         and corpora_encoding_version.startswith("0.1.")
     )
@@ -75,13 +75,18 @@ def corpora_get_props_from_anndata(adata):
     for key in required_simple_fields:
         if key not in adata.uns:
             raise KeyError(f"missing Corpora schema field {key}")
-        corpora_props.update({key: adata.uns[key]})
+        corpora_props[key] = adata.uns[key]
+
     for key in required_json_fields:
         if key not in adata.uns:
             raise KeyError(f"missing Corpora schema field {key}")
-        corpora_props.update({key: json.loads(adata.uns[key])})
+        try:
+            corpora_props[key] = json.loads(adata.uns[key])
+        except json.JSONDecodeError:
+            raise json.JSONDecodeError(f"Corpora schema field {key} is expected to be a valid JSON string")
+
     for key in optional_simple_fields:
         if key in adata.uns:
-            corpora_props.update({key: adata.uns[key]})
+            corpora_props[key] = adata.uns[key]
 
     return corpora_props

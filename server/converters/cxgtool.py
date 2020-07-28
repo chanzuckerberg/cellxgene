@@ -576,8 +576,8 @@ def create_cxg_group_metadata(adata, basefname, title=None, about=None, corpora_
     else:
         corpora_about_link = {}
 
-    title = title if title is not None else corpora_about_link.get("link_name", basefname)
-    about = about if about is not None else corpora_about_link.get("link_url", None)
+    title = title or corpora_about_link.get("link_name", basefname)
+    about = about or corpora_about_link.get("link_url")
 
     cxg_group_metadata = {"cxg_version": CXG_VERSION, "cxg_properties": json.dumps({"title": title, "about": about})}
     if corpora_props is not None:

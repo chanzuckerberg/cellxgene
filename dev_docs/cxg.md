@@ -98,7 +98,7 @@ Required, but empty TileDB array, used to store CXG-wide metadata.  The followin
 
 The properties metadata dictionary contains dataset-wide properties, encoded as a JSON dictionary. Currently, the following fields are defined:
 * title: string, dataset human name (eg, "Lung Tissue")
-* about: string, fully-qualified http/https URL, linking to more inforation on the dataset.
+* about: string, fully-qualified http/https URL, linking to more information on the dataset.
 
 All implementions MUST ignore unrecognized fields. 
 
