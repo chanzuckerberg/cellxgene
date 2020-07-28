@@ -16,6 +16,7 @@ module.exports = {
       "Request",
       "Response",
       "Headers",
+      "AbortController",
     ],
   },
   env: { browser: true, commonjs: true, es6: true },

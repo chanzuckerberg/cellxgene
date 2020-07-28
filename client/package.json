@@ -40,6 +40,7 @@
     "@blueprintjs/core": "^3.30.0",
     "@blueprintjs/icons": "^3.19.0",
     "@blueprintjs/select": "^3.13.5",
+    "abort-controller": "^3.0.0",
     "core-js": "^3.6.5",
     "d3": "^4.10.0",
     "d3-scale-chromatic": "^1.5.0",
