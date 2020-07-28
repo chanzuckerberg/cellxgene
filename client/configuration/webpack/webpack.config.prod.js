@@ -23,7 +23,14 @@ module.exports = {
   mode: "production",
   bail: true,
   cache: false,
-  entry: ["whatwg-fetch", "abort-controller/polyfill", "./src/index"],
+  entry: [
+    "core-js-stable",
+    "regenerator-runtime/runtime",
+    "fastestsmallesttextencoderdecoder",
+    "whatwg-fetch",
+    "abort-controller/polyfill",
+    "./src/index",
+  ],
   output: {
     filename: "static/[name]-[contenthash].js",
     path: path.resolve("build"),

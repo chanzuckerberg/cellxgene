@@ -14,7 +14,14 @@ const babelOptions = require("../babel/babel.dev");
 module.exports = {
   mode: "development",
   devtool: "eval",
-  entry: ["whatwg-fetch", "abort-controller/polyfill", "./src/index"],
+  entry: [
+    "core-js-stable",
+    "regenerator-runtime/runtime",
+    "fastestsmallesttextencoderdecoder",
+    "whatwg-fetch",
+    "abort-controller/polyfill",
+    "./src/index",
+  ],
   output: {
     path: path.resolve("build"),
     pathinfo: true,
