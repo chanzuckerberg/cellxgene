@@ -312,6 +312,7 @@ def layout_obs_put(request, data_adaptor):
 
     try:
         schema = data_adaptor.compute_embedding(method, filter)
+        print("AAAAA", schema)
         return make_response(schema, HTTPStatus.OK, {"Content-Type": "application/json"})
     except NotImplementedError as e:
         return abort_and_log(HTTPStatus.NOT_IMPLEMENTED, str(e), include_exc_info=True)

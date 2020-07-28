@@ -315,8 +315,10 @@ class AnndataAdaptor(DataAdaptor):
         name = f"reembed:{method}_{datetime.now().isoformat(timespec='milliseconds')}"
         dims = [f"{name}_0", f"{name}_1"]
         layout_schema = {"name": name, "type": "float32", "dims": dims}
+        print("BBBBB", layout_schema)
         self.schema["layout"]["obs"].append(layout_schema)
         self.data.obsm[f"X_{name}"] = X_umap
+        print("CCCCC", X_umap.shape)
         return layout_schema
 
     def compute_diffexp_ttest(self, maskA, maskB, top_n=None, lfc_cutoff=None):
