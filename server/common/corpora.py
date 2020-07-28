@@ -21,7 +21,7 @@ def corpora_get_versions_from_anndata(adata):
     """
 
     # per Corpora AnnData spec, this is a corpora file if the following is true
-    if adata.uns is None or "version" not in adata.uns:
+    if "version" not in adata.uns_keys():
         return None
     version = adata.uns["version"]
     if not isinstance(version, collections.abc.Mapping) or "corpora_schema_version" not in version:
