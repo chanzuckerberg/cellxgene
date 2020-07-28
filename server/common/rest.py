@@ -301,7 +301,6 @@ def layout_obs_get(request, data_adaptor):
 
 
 def layout_obs_put(request, data_adaptor):
-    print("AAAAA", "init")
     if not data_adaptor.dataset_config.embeddings__enable_reembedding:
         return abort(HTTPStatus.NOT_IMPLEMENTED)
 
@@ -312,9 +311,7 @@ def layout_obs_put(request, data_adaptor):
     method = args["method"] if args else "umap"
 
     try:
-        print("AAAAA", "first")
         schema = data_adaptor.compute_embedding(method, filter)
-        print("AAAAA", "second", schema)
         return make_response(schema, HTTPStatus.OK, {"Content-Type": "application/json"})
     except NotImplementedError as e:
         return abort_and_log(HTTPStatus.NOT_IMPLEMENTED, str(e), include_exc_info=True)
