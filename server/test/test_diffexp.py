@@ -16,8 +16,7 @@ class DiffExpTest(unittest.TestCase):
     adaptor types and different algorithms."""
 
     def load_dataset(self, path, extra_server_config={}, extra_dataset_config={}):
-        config = app_config(path, extra_server_config=extra_server_config,
-                            extra_dataset_config=extra_dataset_config)
+        config = app_config(path, extra_server_config=extra_server_config, extra_dataset_config=extra_dataset_config)
         loader = MatrixDataLoader(path)
         adaptor = loader.open(config)
         return adaptor

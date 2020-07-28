@@ -786,7 +786,8 @@ class DatasetConfig(BaseConfig):
         if server_config.single_dataset__datapath:
             if self.embeddings__enable_reembedding:
                 matrix_data_loader = MatrixDataLoader(
-                    server_config.single_dataset__datapath, app_config=self.app_config)
+                    server_config.single_dataset__datapath, app_config=self.app_config
+                )
                 if matrix_data_loader.matrix_data_type != MatrixDataType.H5AD:
                     raise ConfigurationError("'enable-reembedding is only supported with H5AD files.")
                 if server_config.adaptor__anndata_adaptor__backed:
