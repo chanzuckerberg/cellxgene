@@ -16,6 +16,7 @@ from server.common.annotations import AnnotationsLocalFile
 from server.common.utils import custom_format_warning
 import server.compute.diffexp_cxg as diffexp_tiledb
 from server.common.data_locator import discover_s3_region_name
+from server.auth.auth import AuthTypeFactory
 
 DEFAULT_SERVER_PORT = 5005
 # anything bigger than this will generate a special message
@@ -194,6 +195,7 @@ class AppConfig(object):
         server_config = self.server_config
         dataset_config = data_adaptor.dataset_config
         annotation = dataset_config.user_annotations
+        auth = server_config.auth
 
         # FIXME The current set of config is not consistently presented:
         # we have camalCase, hyphen-text, and underscore_text
@@ -256,6 +258,18 @@ class AppConfig(object):
             "column_request_max": server_config.limits__column_request_max,
             "diffexp_cellcount_max": server_config.limits__diffexp_cellcount_max,
         }
+
+        if dataset_config.app__authentication_enable and auth.is_valid():
+            config["authentication"] = {
+                "is_authenticated": auth.is_authenticated(),
+                "requires_client_login": auth.requires_client_login(),
+                "username": auth.get_username(),
+            }
+            if auth.requires_client_login():
+                config["authentication"].update({
+                    "login": auth.get_login_url(data_adaptor),
+                    "logout" : auth.get_logout_url(data_adaptor),
+                })
 
         return c
 
@@ -366,6 +380,7 @@ class ServerConfig(BaseConfig):
     def __init__(self, app_config, default_config):
         dictval_cases = [
             ("app", "csp_directives"),
+            ("authentication", "params"),
             ("adaptor", "cxg_adaptor", "tiledb_ctx"),
             ("multi_dataset", "dataroot"),
         ]
@@ -383,6 +398,9 @@ class ServerConfig(BaseConfig):
             self.app__generate_cache_control_headers = dc["app"]["generate_cache_control_headers"]
             self.app__server_timing_headers = dc["app"]["server_timing_headers"]
             self.app__csp_directives = dc["app"]["csp_directives"]
+
+            self.authentication__type = dc["authentication"]["type"]
+            self.authentication__params = dc["authentication"]["params"]
 
             self.multi_dataset__dataroot = dc["multi_dataset"]["dataroot"]
             self.multi_dataset__index = dc["multi_dataset"]["index"]
@@ -414,8 +432,12 @@ class ServerConfig(BaseConfig):
         # The matrix data cache manager is created during the complete_config and stored here.
         self.matrix_data_cache_manager = None
 
+        # The authentication object (BCM -- better name)
+        self.auth = None
+
     def complete_config(self, context):
         self.handle_app(context)
+        self.handle_authentication(context)
         self.handle_data_locator(context)
         self.handle_adaptor(context)  # may depend on data_locator
         self.handle_single_dataset(context)  # may depend on adaptor
@@ -483,6 +505,14 @@ class ServerConfig(BaseConfig):
                             raise ConfigurationError("CSP directive value must be a string or list of strings.")
                 elif not isinstance(v, str):
                     raise ConfigurationError("CSP directive value must be a string or list of strings.")
+
+    def handle_authentication(self, context):
+        self.check_attr("authentication__type", (type(None), str))
+        self.check_attr("authentication__params", (type(None), dict))
+        self.auth = AuthTypeFactory.create(self.authentication__type)
+        if self.auth is None:
+            raise ConfigurationError(f"Unknown authentication type: {self.authentication__type}")
+        self.auth.set_params(self.authentication__params)
 
     def handle_data_locator(self, context):
         self.check_attr("data_locator__s3__region_name", (type(None), bool, str))
@@ -660,6 +690,7 @@ class DatasetConfig(BaseConfig):
             self.app__inline_scripts = dc["app"]["inline_scripts"]
             self.app__about_legal_tos = dc["app"]["about_legal_tos"]
             self.app__about_legal_privacy = dc["app"]["about_legal_privacy"]
+            self.app__authentication_enable = dc["app"]["authentication_enable"]
 
             self.presentation__max_categories = dc["presentation"]["max_categories"]
             self.presentation__custom_colors = dc["presentation"]["custom_colors"]
@@ -696,6 +727,7 @@ class DatasetConfig(BaseConfig):
         self.check_attr("app__inline_scripts", list)
         self.check_attr("app__about_legal_tos", (type(None), str))
         self.check_attr("app__about_legal_privacy", (type(None), str))
+        self.check_attr("app__authentication_enable", bool)
 
         # scripts can be string (filename) or dict (attributes).   Convert string to dict.
         scripts = []
@@ -721,6 +753,13 @@ class DatasetConfig(BaseConfig):
         self.check_attr("user_annotations__ontology__obo_location", (type(None), str))
 
         if self.user_annotations__enable:
+            server_config = self.app_config.server_config
+            if not self.app__authentication_enable:
+                raise ConfigurationError("user annotations requires authentication to be enabled")
+            if not server_config.auth.is_valid():
+                auth_type = server_config.authentication__type
+                raise ConfigurationError(f"authentication method {auth_type} is not compatible with user annotations")
+
             # TODO, replace this with a factory pattern once we have more than one way
             # to do annotations.  currently only local_file_csv
             if self.user_annotations__type != "local_file_csv":

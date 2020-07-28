@@ -28,6 +28,11 @@ class DataAdaptor(metaclass=ABCMeta):
 
         # parameters set by this data adaptor based on the data.
         self.parameters = {}
+        self.uri_path = None
+
+    def set_uri_path(self, path):
+        # uri path to the dataset, e.g. /d/<datasetname>
+        self.uri_path = path
 
     @staticmethod
     @abstractmethod

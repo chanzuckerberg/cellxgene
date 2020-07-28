@@ -14,6 +14,15 @@ server:
     server_timing_headers: false
     csp_directives: null
 
+  authentication:
+    # The authentication types may be "none" or "session"
+    # none:  No authentication support, features like user_annotations must not be enabled.
+    # session:  A session based userid is automatically generated.
+    type: session
+
+    # a dictionary of parameters that may be required for an authentication type
+    params: null
+
   multi_dataset:
     # If dataroot is set, then cellxgene may serve multiple datasets.  This parameter is not
     # compatible with single_dataset/datapath.
@@ -131,6 +140,9 @@ dataset:
 
     about_legal_tos: null
     about_legal_privacy: null
+
+    # allow authentication support
+    authentication_enable: true
 
   presentation:
     max_categories: 1000
