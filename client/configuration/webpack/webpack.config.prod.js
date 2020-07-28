@@ -1,4 +1,3 @@
-// jshint esversion: 6
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
@@ -24,7 +23,7 @@ module.exports = {
   mode: "production",
   bail: true,
   cache: false,
-  entry: ["./src/index.js"],
+  entry: ["whatwg-fetch", "abort-controller/polyfill", "./src/index"],
   output: {
     filename: "static/[name]-[contenthash].js",
     path: path.resolve("build"),
