@@ -237,14 +237,12 @@ class AdaptorTest(unittest.TestCase):
                 self.data.compute_embedding("umap", filter)
             return
 
-        (schema, fbs) = self.data.compute_embedding("umap", filter)
+        schema = self.data.compute_embedding("umap", filter)
 
         self.assertIsInstance(schema["name"], str)
         name = schema["name"]
         self.assertEqual(schema["type"], "float32")
         self.assertEqual(schema["dims"], [f"{name}_0", f"{name}_1"])
 
-        emb = decode_fbs.decode_matrix_FBS(fbs)
-        self.assertEqual(emb["n_rows"], 100)
-        self.assertEqual(emb["n_cols"], 2)
-        self.assertEqual(emb["col_idx"], [f"{name}_0", f"{name}_1"])
+        emb = self.data.data.obsm[f"X_{name}"]
+        self.assertEqual(emb.shape, (2638, 2))
