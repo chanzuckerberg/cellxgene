@@ -1,7 +1,6 @@
 import warnings
 
 import numpy as np
-import pandas as pd
 from pandas.core.dtypes.dtypes import CategoricalDtype
 import anndata
 from scipy import sparse
