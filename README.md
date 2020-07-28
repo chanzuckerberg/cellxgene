@@ -45,6 +45,17 @@ To explore more datasets already formatted for cellxgene, check out the [Demo da
 see [Preparing your data](https://chanzuckerberg.github.io/cellxgene/posts/prepare) to learn more about formatting your own
 data for cellxgene.
 
+### Supported browsers
+
+cellxgene currently supports the following browsers:
+
+- Google Chrome 61+
+- Edge 15+
+- Firefox 60+
+- Safari 10.1+
+
+Please [file an issue](https://github.com/chanzuckerberg/cellxgene/issues/new/choose) if you find that your browser is not supported or if would like us to expand our support to other browsers.
+
 ### Finding help
 
 We'd love to hear from you!
