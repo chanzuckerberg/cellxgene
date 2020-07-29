@@ -1,6 +1,5 @@
 from datetime import datetime
 import re
-from uuid import uuid4
 import os
 import pandas as pd
 from hashlib import blake2b
@@ -11,7 +10,7 @@ from server.common.errors import AnnotationsError, OntologyLoadFailure
 from server.common.utils import series_to_schema
 import fsspec
 import fastobo
-from flask import session
+from flask import session, current_app
 from abc import ABCMeta, abstractmethod
 
 
@@ -80,7 +79,6 @@ class Annotations(metaclass=ABCMeta):
 
 class AnnotationsLocalFile(Annotations):
 
-    CXGUID = "cxguid"
     CXG_ANNO_COLLECTION = "cxg_anno_collection"
 
     def __init__(self, output_dir, output_file):
@@ -159,18 +157,12 @@ class AnnotationsLocalFile(Annotations):
             self.last_fname = fname
             self.last_labels = df
 
-    def _get_userid(self):
-        if self.CXGUID not in session:
-            session[self.CXGUID] = uuid4().hex
-            session.permanent = True
-        return session[self.CXGUID]
-
     def _get_userdata_idhash(self, data_adaptor):
         """
         Return a short hash that weakly identifies the user and dataset.
         Used to create safe annotations output file names.
         """
-        uid = self._get_userid()
+        uid = current_app.auth.get_userid()
         id = (uid + data_adaptor.get_location()).encode()
         idhash = base64.b32encode(blake2b(id, digest_size=5).digest()).decode("utf-8")
         return idhash
@@ -257,8 +249,9 @@ class AnnotationsLocalFile(Annotations):
 
         elif session is not None:
             collection = self.get_collection()
-            params["annotations-user-data-idhash"] = self._get_userdata_idhash(data_adaptor)
-            params["annotations-data-collection-is-read-only"] = False
-            params["annotations-data-collection-name"] = collection
+            if current_app.auth.is_authenticated():
+                params["annotations-user-data-idhash"] = self._get_userdata_idhash(data_adaptor)
+                params["annotations-data-collection-is-read-only"] = False
+                params["annotations-data-collection-name"] = collection
 
         parameters.update(params)

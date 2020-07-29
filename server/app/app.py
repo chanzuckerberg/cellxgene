@@ -85,6 +85,7 @@ def dataset_index(url_dataroot=None, dataset=None):
     try:
         cache_manager = current_app.matrix_data_cache_manager
         with cache_manager.data_adaptor(url_dataroot, location, app_config) as data_adaptor:
+            data_adaptor.set_uri_path(f"{url_dataroot}/{dataset}")
             dataset_title = app_config.get_title(data_adaptor)
             return render_template(
                 "index.html", datasetTitle=dataset_title, SCRIPTS=scripts, INLINE_SCRIPTS=inline_scripts
@@ -129,7 +130,7 @@ def get_data_adaptor(url_dataroot=None, dataset=None):
         # sufficient to check that the datapath starts with the
         # dataroot to determine that the datapath is under the dataroot.
         if not datapath.startswith(dataroot):
-            raise DatasetAccessError("Invalid dataset {url_dataroot}/{dataset}")
+            raise DatasetAccessError(f"Invalid dataset {url_dataroot}/{dataset}")
 
     if datapath is None:
         return common_rest.abort_and_log(HTTPStatus.BAD_REQUEST, "Invalid dataset NONE", loglevel=logging.INFO)
@@ -143,6 +144,7 @@ def rest_get_data_adaptor(func):
     def wrapped_function(self, dataset=None):
         try:
             with get_data_adaptor(self.url_dataroot, dataset) as data_adaptor:
+                data_adaptor.set_uri_path(f"{self.url_dataroot}/{dataset}")
                 return func(self, data_adaptor)
         except DatasetAccessError as e:
             return common_rest.abort_and_log(
@@ -160,6 +162,17 @@ def dataroot_test_index():
 
     config = current_app.app_config
     server_config = config.server_config
+
+    auth = server_config.auth
+    if auth.is_valid():
+        if server_config.auth.is_authenticated():
+            data += f"<p>Logged in as {auth.get_userid()} / {auth.get_username()}</p>"
+        if auth.requires_client_login():
+            if server_config.auth.is_authenticated():
+                data += "<p><a href='/logout'>Logout</a></p>"
+            else:
+                data += "<p><a href='/login'>Login</a></p>"
+
     datasets = []
     for dataroot_dict in server_config.multi_dataset__dataroot.values():
         dataroot = dataroot_dict["dataroot"]
@@ -338,10 +351,15 @@ class Server:
                     lambda dataset, url_dataroot=url_dataroot: dataset_index(url_dataroot, dataset),
                     methods=["GET"],
                 )
+
         else:
             bp_api = Blueprint("api", __name__, url_prefix=api_version)
             resources = get_api_resources(bp_api)
             self.app.register_blueprint(resources.blueprint)
+
+        self.app.auth = server_config.auth
+        if self.app.auth.requires_client_login():
+            self.app.auth.add_url_rules(self.app)
 
         self.app.matrix_data_cache_manager = server_config.matrix_data_cache_manager
         self.app.app_config = app_config

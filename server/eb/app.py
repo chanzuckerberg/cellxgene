@@ -19,9 +19,6 @@ if os.path.isdir("/opt/python/log"):
         datefmt="%Y-%m-%d %H:%M:%S",
     )
 
-# echo the logs to stdout.  Useful for local testing
-logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
-
 SERVERDIR = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(SERVERDIR)
 
