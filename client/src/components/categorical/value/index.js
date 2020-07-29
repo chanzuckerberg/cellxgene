@@ -455,6 +455,9 @@ class CategoryValue extends React.Component {
         VALUE_HEIGHT
       ) ?? {};
 
+    if (xScale === undefined || yScale === undefined || bins === undefined)
+      return null;
+
     return (
       <MiniHistogram
         /* eslint-disable react/jsx-props-no-spreading -- Disable unneeded on next release of eslint-config-airbnb */
