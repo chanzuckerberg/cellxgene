@@ -130,7 +130,7 @@ def get_data_adaptor(url_dataroot=None, dataset=None):
         # sufficient to check that the datapath starts with the
         # dataroot to determine that the datapath is under the dataroot.
         if not datapath.startswith(dataroot):
-            raise DatasetAccessError("Invalid dataset {url_dataroot}/{dataset}")
+            raise DatasetAccessError(f"Invalid dataset {url_dataroot}/{dataset}")
 
     if datapath is None:
         return common_rest.abort_and_log(HTTPStatus.BAD_REQUEST, "Invalid dataset NONE", loglevel=logging.INFO)

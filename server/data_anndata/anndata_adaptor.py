@@ -17,6 +17,7 @@ from server.common.constants import Axis, MAX_LAYOUTS
 from server.common.errors import PrepareError, DatasetAccessError, FilterError
 from server.compute.scanpy import scanpy_umap
 import server.compute.diffexp_generic as diffexp_generic
+from server.common.corpora import corpora_get_props_from_anndata
 
 anndata_version = version.parse(str(anndata.__version__)).release
 
@@ -56,6 +57,9 @@ class AnndataAdaptor(DataAdaptor):
     @staticmethod
     def open(data_locator, app_config, dataset_config=None):
         return AnndataAdaptor(data_locator, app_config, dataset_config)
+
+    def get_corpora_props(self):
+        return corpora_get_props_from_anndata(self.data)
 
     def get_name(self):
         return "cellxgene anndata adaptor version"
