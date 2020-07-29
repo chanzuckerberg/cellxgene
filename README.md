@@ -54,7 +54,7 @@ cellxgene currently supports the following browsers:
 - Firefox 60+
 - Safari 10.1+
 
-Please [file an issue](https://github.com/chanzuckerberg/cellxgene/issues/new/choose) if you find that your browser is not supported or if would like us to expand our support to other browsers.
+Please [file an issue](https://github.com/chanzuckerberg/cellxgene/issues/new/choose) if you would like us to add support for an unsupported browser.
 
 ### Finding help
 
