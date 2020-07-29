@@ -1,4 +1,4 @@
-from flask import session, request, redirect, current_app, has_request_context
+from flask import session, request, redirect, current_app, after_this_request, has_request_context, g
 from server.auth.auth import AuthTypeClientBase, AuthTypeFactory
 from server.common.errors import AuthenticationError, ConfigurationError
 from urllib.parse import urlencode
@@ -24,15 +24,29 @@ class AuthTypeOAuth(AuthTypeClientBase):
 
     CXG_ID_TOKEN = "id_token"
 
-    def __init__(self, app_config):
+    def __init__(self, server_config):
         super().__init__()
         if missingimport:
             raise ConfigurationError(f"oauth requires these modules: {', '.join(missingimport)}")
         self.algorithms = ["RS256"]
-        self.api_base_url = app_config.authentication__params_oauth__api_base_url
-        self.client_id = app_config.authentication__params_oauth__client_id
-        self.client_secret = app_config.authentication__params_oauth__client_secret
-        self.callback_base_url = app_config.authentication__params_oauth__callback_base_url
+        self.api_base_url = server_config.authentication__params_oauth__api_base_url
+        self.client_id = server_config.authentication__params_oauth__client_id
+        self.client_secret = server_config.authentication__params_oauth__client_secret
+        self.callback_base_url = server_config.authentication__params_oauth__callback_base_url
+        self.session_cookie = server_config.authentication__params_oauth__session_cookie
+        if not self.session_cookie:
+            self.cookie_params = server_config.authentication__params_oauth__cookie
+            if type(self.cookie_params) != dict:
+                raise ConfigurationError("either session_cookie or cookie must be set")
+            valid_keys = set(("key", "max_age", "expires", "path", "domain", "secure", "httponly", "samesite"))
+            keys = set(self.cookie_params.keys())
+            unknown = keys - valid_keys
+            if unknown:
+                raise ConfigurationError(f"unexpected key in cookie params: {', '.join(unknown)}")
+            if "key" not in keys:
+                raise ConfigurationError("must have a key (name) in the cookie params")
+
+        # set the audience
         self.audience = self.client_id
 
         # load the jwks (JSON Web Key Set).
@@ -111,8 +125,15 @@ class AuthTypeOAuth(AuthTypeClientBase):
         return self.client.authorize_redirect(redirect_uri=callbackurl)
 
     def logout(self):
-        if self.CXG_ID_TOKEN in session:
-            del session[self.CXG_ID_TOKEN]
+        if self.session_cookie:
+            if self.CXG_ID_TOKEN in session:
+                del session[self.CXG_ID_TOKEN]
+        else:
+            @after_this_request
+            def remove_cookie(response):
+                response.set_cookie(self.cookie_params["key"], "", expires=0)
+                return response
+
         return_path = request.args.get("dataset", "")
         return_to = f"{self.callback_base_url}/{return_path}"
         params = {'returnTo' : return_to, 'client_id' : self.client_id}
@@ -121,10 +142,24 @@ class AuthTypeOAuth(AuthTypeClientBase):
     def callback(self):
         token = self.client.authorize_access_token()
         id_token = token.get("id_token")
-        session[self.CXG_ID_TOKEN] = id_token
-        del session["oauth_callback_redirect"]
         oauth_callback_redirect = session.get("oauth_callback_redirect", "/")
+        del session["oauth_callback_redirect"]
         resp = redirect(oauth_callback_redirect)
+
+        if self.session_cookie:
+            session[self.CXG_ID_TOKEN] = id_token
+        else:
+            args = self.cookie_params.copy()
+            del args["key"]
+            try:
+                resp.set_cookie(
+                    self.cookie_params["key"],
+                    id_token,
+                    **args)
+                g.token = id_token
+            except Exception as e:
+                raise AuthenticationError(f"unable to set_cookie {self.cookie_params}") from e
+
         return resp
 
     def get_login_url(self, data_adaptor):
@@ -143,7 +178,14 @@ class AuthTypeOAuth(AuthTypeClientBase):
 
     def get_token(self):
         """Function to return the token"""
-        return session.get(self.CXG_ID_TOKEN)
+        if "token" in g:
+            return g.token
+        if self.session_cookie:
+            g.token = session.get(self.CXG_ID_TOKEN)
+        else:
+            g.token = request.cookies.get(self.cookie_params["key"])
+
+        return g.token
 
     def get_jwt_payload(self):
         if not has_request_context():
