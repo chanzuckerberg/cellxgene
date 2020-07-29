@@ -301,7 +301,6 @@ def layout_obs_get(request, data_adaptor):
 
 
 def layout_obs_put(request, data_adaptor):
-    import sys
     if not data_adaptor.dataset_config.embeddings__enable_reembedding:
         return abort(HTTPStatus.NOT_IMPLEMENTED)
 
