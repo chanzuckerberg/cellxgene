@@ -63,7 +63,6 @@ async function doReembedFetch(dispatch, getState) {
   if (body && body.length > 0) {
     msg = `${msg} -- ${body}`;
   }
-  postNetworkErrorToast(msg);
   throw new Error(msg);
 }
 
