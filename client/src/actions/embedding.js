@@ -5,6 +5,23 @@ action creators related to embeddings choice
 import { AnnoMatrixObsCrossfilter } from "../annoMatrix";
 import { _setEmbeddingSubset } from "../util/stateManager/viewStackHelpers";
 
+export async function _switchEmbedding(prevAnnoMatrix, newEmbeddingName) {
+  /*
+  DRY helper used by this and reembedding action creators
+  */
+  const base = prevAnnoMatrix.base();
+  const embeddingDf = await base.fetch("emb", newEmbeddingName);
+  const annoMatrix = _setEmbeddingSubset(prevAnnoMatrix, embeddingDf);
+  const obsCrossfilter = await new AnnoMatrixObsCrossfilter(annoMatrix).select(
+    "emb",
+    newEmbeddingName,
+    {
+      mode: "all",
+    }
+  );
+  return [annoMatrix, obsCrossfilter];
+}
+
 export const layoutChoiceAction = (newLayoutChoice) => async (
   dispatch,
   getState
@@ -14,15 +31,9 @@ export const layoutChoiceAction = (newLayoutChoice) => async (
   layout.
   */
   const { annoMatrix: prevAnnoMatrix } = getState();
-
-  const embeddingDf = await prevAnnoMatrix.base().fetch("emb", newLayoutChoice);
-  const annoMatrix = _setEmbeddingSubset(prevAnnoMatrix, embeddingDf);
-  const obsCrossfilter = await new AnnoMatrixObsCrossfilter(annoMatrix).select(
-    "emb",
-    newLayoutChoice,
-    {
-      mode: "all",
-    }
+  const [annoMatrix, obsCrossfilter] = await _switchEmbedding(
+    prevAnnoMatrix,
+    newLayoutChoice
   );
   dispatch({
     type: "set layout choice",

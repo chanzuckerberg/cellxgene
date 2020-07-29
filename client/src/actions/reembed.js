@@ -4,6 +4,7 @@ import {
   postAsyncSuccessToast,
   postAsyncFailureToast,
 } from "../components/framework/toasters";
+import { _switchEmbedding } from "./embedding";
 
 function abortableFetch(request, opts, timeout = 0) {
   const controller = new AbortController();
@@ -78,12 +79,16 @@ export function requestReembed() {
         type: "reembed: request completed",
       });
 
-      const { obsCrossfilter: prevObsCrossfilter } = getState();
-      const obsCrossfilter = prevObsCrossfilter.addEmbedding(schema);
+      const { annoMatrix: prevAnnoMatrix } = getState();
+      const base = prevAnnoMatrix.base().addEmbedding(schema);
+      const [annoMatrix, obsCrossfilter] = await _switchEmbedding(
+        base,
+        schema.name
+      );
       dispatch({
         type: "reembed: add reembedding",
         schema,
-        annoMatrix: obsCrossfilter.annoMatrix,
+        annoMatrix,
         obsCrossfilter,
       });
 
