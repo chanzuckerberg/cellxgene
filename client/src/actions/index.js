@@ -58,7 +58,7 @@ const doInitialDataLoad = () =>
     dispatch({ type: "initial data load start" });
 
     try {
-      const [, schema] = await Promise.all([
+      const [config, schema] = await Promise.all([
         configFetch(dispatch),
         schemaFetch(dispatch),
         userColorsFetchAndLoad(dispatch),
@@ -75,6 +75,15 @@ const doInitialDataLoad = () =>
         obsCrossfilter,
       });
       dispatch({ type: "initial data load complete" });
+
+      const defaultEmbedding = config?.parameters?.["default_embedding"];
+      const layoutSchema = schema?.schema?.layout?.obs ?? [];
+      if (
+        defaultEmbedding &&
+        layoutSchema.some((s) => s.name === defaultEmbedding)
+      ) {
+        dispatch(embActions.layoutChoiceAction(defaultEmbedding));
+      }
     } catch (error) {
       dispatch({ type: "initial data load error", error });
     }
