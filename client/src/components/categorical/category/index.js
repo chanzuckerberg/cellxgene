@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from "react";
 import { connect, shallowEqual } from "react-redux";
 import { FaChevronRight, FaChevronDown } from "react-icons/fa";
-import { AnchorButton, Button, Tooltip } from "@blueprintjs/core";
+import { AnchorButton, Button, Tooltip, Position } from "@blueprintjs/core";
 import { Flipper, Flipped } from "react-flip-toolkit";
 import Async from "react-async";
 import memoize from "memoize-one";
@@ -438,9 +438,13 @@ const CategoryHeader = React.memo(
                 ? `Coloring by ${metadataField} is disabled, as it exceeds the limit of ${globals.maxCategoricalOptionsToDisplay} labels`
                 : "Use as color scale"
             }
-            position="bottom"
-            usePortal={false}
+            position={Position.LEFT}
+            usePortal
             hoverOpenDelay={globals.tooltipHoverOpenDelay}
+            modifiers={{
+              preventOverflow: { enabled: false },
+              hide: { enabled: false },
+            }}
           >
             <AnchorButton
               data-testclass="colorby"
