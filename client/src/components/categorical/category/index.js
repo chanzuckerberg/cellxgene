@@ -438,8 +438,14 @@ const CategoryHeader = React.memo(
                 ? `Coloring by ${metadataField} is disabled, as it exceeds the limit of ${globals.maxCategoricalOptionsToDisplay} labels`
                 : "Use as color scale"
             }
-            position="bottom"
-            usePortal={false}
+            position="right"
+            modifiers={{
+              arrow: { enabled: true },
+              flip: { enabled: false },
+              keepTogether: { enabled: true },
+              preventOverflow: { enabled: false },
+            }}
+            usePortal
             hoverOpenDelay={globals.tooltipHoverOpenDelay}
           >
             <AnchorButton
