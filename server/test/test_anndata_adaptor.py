@@ -246,3 +246,5 @@ class AdaptorTest(unittest.TestCase):
 
         emb = self.data.data.obsm[f"X_{name}"]
         self.assertEqual(emb.shape, (2638, 2))
+        self.assertTrue(np.isfinite(emb[0:100]).all())
+        self.assertTrue(np.isnan(emb[100:]).all())

@@ -86,9 +86,9 @@ class EndPoints(object):
         self.assertEqual(result.status_code, HTTPStatus.OK)
         result_data = result.json()
         self.assertIsInstance(result_data, dict)
-        self.assertEqual(result_data.get("type", None), "float32")
-        self.assertTrue(result_data.get("name", "").startswith("reembed:umap_"))
-        self.assertIsInstance(result_data.get("dims", None), list)
+        self.assertEqual(result_data["type"], "float32")
+        self.assertTrue(result_data["name"].startswith("reembed:umap_"))
+        self.assertIsInstance(result_data["dims"], list)
         self.assertEqual(len(result_data["dims"]), 2)
         dims = result_data["dims"]
         self.assertTrue(dims[0].startswith("reembed:umap_") and dims[0].endswith("_0"))
