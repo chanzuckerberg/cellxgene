@@ -6,6 +6,7 @@ import {
   removeObsAnnoColumn,
   addObsAnnoCategory,
   removeObsAnnoCategory,
+  addObsLayout,
 } from "../util/stateManager/schemaHelpers";
 import { isArrayOrTypedArray } from "../util/typeHelpers";
 import { _whereCacheCreate } from "./whereCache";
@@ -47,9 +48,9 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     const colSchema = _getColumnSchema(this.schema, "obs", col);
     _writableCategoryTypeCheck(colSchema); // throws on error
 
-    const o = this._clone();
-    o.schema = addObsAnnoCategory(this.schema, col, category);
-    return o;
+    const newAnnoMatrix = this._clone();
+    newAnnoMatrix.schema = addObsAnnoCategory(this.schema, col, category);
+    return newAnnoMatrix;
   }
 
   async removeObsAnnoCategory(col, category, unassignedCategory) {
@@ -59,13 +60,17 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     const colSchema = _getColumnSchema(this.schema, "obs", col);
     _writableCategoryTypeCheck(colSchema); // throws on error
 
-    const o = await this.resetObsColumnValues(
+    const newAnnoMatrix = await this.resetObsColumnValues(
       col,
       category,
       unassignedCategory
     );
-    o.schema = removeObsAnnoCategory(o.schema, col, category);
-    return o;
+    newAnnoMatrix.schema = removeObsAnnoCategory(
+      newAnnoMatrix.schema,
+      col,
+      category
+    );
+    return newAnnoMatrix;
   }
 
   dropObsColumn(col) {
@@ -75,10 +80,10 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     const colSchema = _getColumnSchema(this.schema, "obs", col);
     _writableCheck(colSchema); // throws on error
 
-    const o = this._clone();
-    o._cache.obs = this._cache.obs.dropCol(col);
-    o.schema = removeObsAnnoColumn(this.schema, col);
-    return o;
+    const newAnnoMatrix = this._clone();
+    newAnnoMatrix._cache.obs = this._cache.obs.dropCol(col);
+    newAnnoMatrix.schema = removeObsAnnoColumn(this.schema, col);
+    return newAnnoMatrix;
   }
 
   addObsColumn(colSchema, Ctor, value) {
@@ -98,7 +103,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
       throw new Error("column already exists");
     }
 
-    const o = this._clone();
+    const newAnnoMatrix = this._clone();
     let data;
     if (isArrayOrTypedArray(value)) {
       if (value.constructor !== Ctor)
@@ -109,10 +114,13 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     } else {
       data = new Ctor(this.nObs).fill(value);
     }
-    o._cache.obs = this._cache.obs.withCol(colName, data);
-    _normalizeCategoricalSchema(colSchema, o._cache.obs.col(colName));
-    o.schema = addObsAnnoColumn(this.schema, colName, colSchema);
-    return o;
+    newAnnoMatrix._cache.obs = this._cache.obs.withCol(colName, data);
+    _normalizeCategoricalSchema(
+      colSchema,
+      newAnnoMatrix._cache.obs.col(colName)
+    );
+    newAnnoMatrix.schema = addObsAnnoColumn(this.schema, colName, colSchema);
+    return newAnnoMatrix;
   }
 
   renameObsColumn(oldCol, newCol) {
@@ -155,13 +163,13 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
       data[idx] = value;
     }
 
-    const o = this._clone();
-    o._cache.obs = this._cache.obs.replaceColData(col, data);
+    const newAnnoMatrix = this._clone();
+    newAnnoMatrix._cache.obs = this._cache.obs.replaceColData(col, data);
     const { categories } = colSchema;
     if (!categories?.includes(value)) {
-      o.schema = addObsAnnoCategory(this.schema, col, value);
+      newAnnoMatrix.schema = addObsAnnoCategory(this.schema, col, value);
     }
-    return o;
+    return newAnnoMatrix;
   }
 
   async resetObsColumnValues(col, oldValue, newValue) {
@@ -185,13 +193,27 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
       if (data[i] === oldValue) data[i] = newValue;
     }
 
-    const o = this._clone();
-    o._cache.obs = this._cache.obs.replaceColData(col, data);
+    const newAnnoMatrix = this._clone();
+    newAnnoMatrix._cache.obs = this._cache.obs.replaceColData(col, data);
     const { categories } = colSchema;
     if (!categories?.includes(newValue)) {
-      o.schema = addObsAnnoCategory(this.schema, col, newValue);
+      newAnnoMatrix.schema = addObsAnnoCategory(this.schema, col, newValue);
     }
-    return o;
+    return newAnnoMatrix;
+  }
+
+  addEmbedding(colSchema) {
+    /*
+    add new layout to the obs embeddings
+    */
+    const { name: colName } = colSchema;
+    if (_getColumnSchema(this.schema, "emb", colName)) {
+      throw new Error("column already exists");
+    }
+
+    const newAnnoMatrix = this._clone();
+    newAnnoMatrix.schema = addObsLayout(this.schema, colSchema);
+    return newAnnoMatrix;
   }
 
   /**

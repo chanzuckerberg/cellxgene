@@ -101,7 +101,7 @@ export default Embedding;
 
 const loadAllEmbeddingCounts = async ({ annoMatrix, available }) => {
   const embeddings = await Promise.all(
-    available.map((name) => annoMatrix.fetch("emb", name))
+    available.map((name) => annoMatrix.base().fetch("emb", name))
   );
   return available.map((name, idx) => ({
     embeddingName: name,
