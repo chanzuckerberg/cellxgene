@@ -3,6 +3,9 @@ show_downloads: false
 url: "https://chanzuckerberg.github.io"
 baseurl: "/cellxgene"
 
+plugins:
+  - jekyll-relative-links
+
 logo: cellxgene-logo.png
 
 nav:

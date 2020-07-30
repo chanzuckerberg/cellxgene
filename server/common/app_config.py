@@ -242,6 +242,12 @@ class AppConfig(object):
             "about_legal_privacy": dataset_config.app__about_legal_privacy,
         }
 
+        # dataset_props
+        # TODO/Note: putting info from the dataset into the /config is not ideal.
+        # However, it is definitely not part of /schema, and we do not have a top-level
+        # route for data properties.  Consider creating one at some point.
+        corpora_props = data_adaptor.get_corpora_props()
+
         data_adaptor.update_parameters(parameters)
         if annotation:
             annotation.update_parameters(parameters, data_adaptor)
@@ -254,6 +260,7 @@ class AppConfig(object):
         config["library_versions"] = library_versions
         config["links"] = links
         config["parameters"] = parameters
+        config["corpora_props"] = corpora_props
         config["limits"] = {
             "column_request_max": server_config.limits__column_request_max,
             "diffexp_cellcount_max": server_config.limits__diffexp_cellcount_max,
@@ -825,7 +832,8 @@ class DatasetConfig(BaseConfig):
         if server_config.single_dataset__datapath:
             if self.embeddings__enable_reembedding:
                 matrix_data_loader = MatrixDataLoader(
-                    server_config.single_dataset__datapath, app_config=self.app_config)
+                    server_config.single_dataset__datapath, app_config=self.app_config
+                )
                 if matrix_data_loader.matrix_data_type != MatrixDataType.H5AD:
                     raise ConfigurationError("'enable-reembedding is only supported with H5AD files.")
                 if server_config.adaptor__anndata_adaptor__backed:

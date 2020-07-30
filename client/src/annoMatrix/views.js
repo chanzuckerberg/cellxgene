@@ -17,59 +17,74 @@ class AnnoMatrixView extends AnnoMatrix {
   }
 
   addObsAnnoCategory(col, category) {
-    const o = this._clone();
-    o.viewOf = this.viewOf.addObsAnnoCategory(col, category);
-    o.schema = o.viewOf.schema;
-    return o;
+    const newAnnoMatrix = this._clone();
+    newAnnoMatrix.viewOf = this.viewOf.addObsAnnoCategory(col, category);
+    newAnnoMatrix.schema = newAnnoMatrix.viewOf.schema;
+    return newAnnoMatrix;
   }
 
   async removeObsAnnoCategory(col, category, unassignedCategory) {
-    const o = this._clone();
-    o.viewOf = await this.viewOf.removeObsAnnoCategory(
+    const newAnnoMatrix = this._clone();
+    newAnnoMatrix.viewOf = await this.viewOf.removeObsAnnoCategory(
       col,
       category,
       unassignedCategory
     );
-    o.schema = o.viewOf.schema;
-    return o;
+    newAnnoMatrix.schema = newAnnoMatrix.viewOf.schema;
+    return newAnnoMatrix;
   }
 
   dropObsColumn(col) {
-    const o = this._clone();
-    o.viewOf = this.viewOf.dropObsColumn(col);
-    o._cache.obs = this._cache.obs.dropCol(col);
-    o.schema = o.viewOf.schema;
-    return o;
+    const newAnnoMatrix = this._clone();
+    newAnnoMatrix.viewOf = this.viewOf.dropObsColumn(col);
+    newAnnoMatrix._cache.obs = this._cache.obs.dropCol(col);
+    newAnnoMatrix.schema = newAnnoMatrix.viewOf.schema;
+    return newAnnoMatrix;
   }
 
   addObsColumn(colSchema, Ctor, value) {
-    const o = this._clone();
-    o.viewOf = this.viewOf.addObsColumn(colSchema, Ctor, value);
-    o.schema = o.viewOf.schema;
-    return o;
+    const newAnnoMatrix = this._clone();
+    newAnnoMatrix.viewOf = this.viewOf.addObsColumn(colSchema, Ctor, value);
+    newAnnoMatrix.schema = newAnnoMatrix.viewOf.schema;
+    return newAnnoMatrix;
   }
 
   renameObsColumn(oldCol, newCol) {
-    const o = this._clone();
-    o.viewOf = this.viewOf.renameObsColumn(oldCol, newCol);
-    o.schema = o.viewOf.schema;
-    return o;
+    const newAnnoMatrix = this._clone();
+    newAnnoMatrix.viewOf = this.viewOf.renameObsColumn(oldCol, newCol);
+    newAnnoMatrix.schema = newAnnoMatrix.viewOf.schema;
+    return newAnnoMatrix;
   }
 
   async setObsColumnValues(col, rowLabels, value) {
-    const o = this._clone();
-    o.viewOf = await this.viewOf.setObsColumnValues(col, rowLabels, value);
-    o._cache.obs = this._cache.obs.dropCol(col);
-    o.schema = o.viewOf.schema;
-    return o;
+    const newAnnoMatrix = this._clone();
+    newAnnoMatrix.viewOf = await this.viewOf.setObsColumnValues(
+      col,
+      rowLabels,
+      value
+    );
+    newAnnoMatrix._cache.obs = this._cache.obs.dropCol(col);
+    newAnnoMatrix.schema = newAnnoMatrix.viewOf.schema;
+    return newAnnoMatrix;
   }
 
   async resetObsColumnValues(col, oldValue, newValue) {
-    const o = this._clone();
-    o.viewOf = await this.viewOf.resetObsColumnValues(col, oldValue, newValue);
-    o._cache.obs = this._cache.obs.dropCol(col);
-    o.schema = o.viewOf.schema;
-    return o;
+    const newAnnoMatrix = this._clone();
+    newAnnoMatrix.viewOf = await this.viewOf.resetObsColumnValues(
+      col,
+      oldValue,
+      newValue
+    );
+    newAnnoMatrix._cache.obs = this._cache.obs.dropCol(col);
+    newAnnoMatrix.schema = newAnnoMatrix.viewOf.schema;
+    return newAnnoMatrix;
+  }
+
+  addEmbedding(colSchema) {
+    const newAnnoMatrix = this._clone();
+    newAnnoMatrix.viewOf = this.viewOf.addEmbedding(colSchema);
+    newAnnoMatrix.schema = newAnnoMatrix.viewOf.schema;
+    return newAnnoMatrix;
   }
 }
 

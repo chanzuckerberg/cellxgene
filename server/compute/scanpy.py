@@ -1,4 +1,5 @@
 import importlib
+import numpy as np
 
 """
 Wrapper for various scanpy modules.  Will raise NotImplementedError if the scanpy
@@ -11,8 +12,8 @@ def get_scanpy_module():
         sc = importlib.import_module("scanpy")
         # Future: we could enforce versions here, eg, lookat sc.__version__
         return sc
-    except ModuleNotFoundError:
-        raise NotImplementedError("Please install scanpy to enable UMAP re-embedding")
+    except ModuleNotFoundError as e:
+        raise NotImplementedError("Please install scanpy to enable UMAP re-embedding") from e
     except Exception as e:
         # will capture other ImportError corner cases
         raise NotImplementedError() from e
@@ -46,4 +47,7 @@ def scanpy_umap(adata, obs_mask=None, pca_options={}, neighbors_options={}, umap
     sc.pp.neighbors(adata, **neighbors_options)
     sc.tl.umap(adata, **umap_options)
 
-    return adata.obsm["X_umap"]
+    umap = adata.obsm["X_umap"]
+    result = np.full((obs_mask.shape[0], umap.shape[1]), np.NaN)
+    result[obs_mask] = umap
+    return result
