@@ -216,20 +216,6 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     return newAnnoMatrix;
   }
 
-  addEmbedding(colSchema) {
-    /*
-    add new layout to the obs embeddings
-    */
-    const { name: colName } = colSchema;
-    if (_getColumnSchema(this.schema, "emb", colName)) {
-      throw new Error("column already exists");
-    }
-
-    const o = this._clone();
-    o.schema = addObsLayout(this.schema, colSchema);
-    return o;
-  }
-
   /**
    ** Private below
    **/
