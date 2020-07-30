@@ -397,6 +397,19 @@ export default class AnnoMatrix {
     _subclassResponsibility();
   }
 
+  // eslint-disable-next-line class-methods-use-this, no-unused-vars -- make sure subclass implements
+  addEmbedding(colSchema) {
+    /*
+    Add a new obs embedding to the AnnoMatrix, with provided schema.
+    Returns a new annomatrix.
+
+    Typical use will be to add a re-embedding that the server has calculated.
+
+    Will throw if the column schema is invalid (eg, duplicate name).
+    */
+    _subclassResponsibility();
+  }
+
   /**
    ** Private interfaces below.
    **/

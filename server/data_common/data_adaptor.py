@@ -71,8 +71,7 @@ class DataAdaptor(metaclass=ABCMeta):
 
     @abstractmethod
     def compute_embedding(self, method, filter):
-        """compute a new embedding on the specified obs subset, and return a
-           tuple of (schema, fbs)."""
+        """compute a new embedding on the specified obs subset, and return the embedding schema. """
         pass
 
     @abstractmethod
@@ -134,6 +133,9 @@ class DataAdaptor(metaclass=ABCMeta):
         if location.endswith("/"):
             location = location[:-1]
         return splitext(basename(location))[0]
+
+    def get_corpora_props(self):
+        return None
 
     @abstractmethod
     def get_schema(self):

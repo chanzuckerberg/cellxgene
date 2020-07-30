@@ -118,6 +118,11 @@ export default class AnnoMatrixObsCrossfilter {
     return new AnnoMatrixObsCrossfilter(annoMatrix, obsCrossfilter);
   }
 
+  addEmbedding(colSchema) {
+    const annoMatrix = this.annoMatrix.addEmbedding(colSchema);
+    return new AnnoMatrixObsCrossfilter(annoMatrix, this.obsCrossfilter);
+  }
+
   /**
   Selection state - API is identical to ImmutableTypedCrossfilter, as these
   are just wrappers to lazy create indices.
