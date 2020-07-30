@@ -57,7 +57,7 @@ class AnndataAdaptor(DataAdaptor):
     def open(data_locator, app_config, dataset_config=None):
         return AnndataAdaptor(data_locator, app_config, dataset_config)
 
-    def get_name(self):
+    def get_name(self):g
         return "cellxgene anndata adaptor version"
 
     def get_library_versions(self):

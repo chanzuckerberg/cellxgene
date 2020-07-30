@@ -329,6 +329,7 @@ class Graph extends React.Component {
 
   handleCanvasEvent = (e) => {
     const { camera, projectionTF } = this.state;
+    console.log("hi", projectionTF)
     if (e.type !== "wheel") e.preventDefault();
     if (camera.handleEvent(e, projectionTF)) {
       this.renderCanvas();
