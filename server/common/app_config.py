@@ -242,11 +242,17 @@ class AppConfig(object):
             "about_legal_privacy": dataset_config.app__about_legal_privacy,
         }
 
-        # dataset_props
+        # corpora dataset_props
         # TODO/Note: putting info from the dataset into the /config is not ideal.
         # However, it is definitely not part of /schema, and we do not have a top-level
         # route for data properties.  Consider creating one at some point.
         corpora_props = data_adaptor.get_corpora_props()
+        if corpora_props and "default_embedding" in corpora_props:
+            default_embedding = corpora_props["default_embedding"]
+            if isinstance(default_embedding, str) and default_embedding.startswith("X_"):
+                default_embedding = default_embedding[2:]  # drop X_ prefix
+            if default_embedding in data_adaptor.get_embedding_names():
+                parameters["default_embedding"] = default_embedding
 
         data_adaptor.update_parameters(parameters)
         if annotation:
