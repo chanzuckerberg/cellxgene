@@ -144,7 +144,3 @@ class CorporaRESTAPITest(unittest.TestCase):
         self.assertEqual(corpora_props["version"]["corpora_schema_version"], "1.0.0")
         self.assertEqual(corpora_props["organism"], "human")
         self.assertEqual(parameters["default_embedding"], "tsne")
-
-        import sys
-        print(corpora_props, file=sys.stderr)
-        print(parameters, file=sys.stderr)
