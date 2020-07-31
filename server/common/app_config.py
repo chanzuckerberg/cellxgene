@@ -12,7 +12,7 @@ from server.common.errors import ConfigurationError, DatasetAccessError, Ontolog
 from server.data_common.matrix_loader import MatrixDataLoader, MatrixDataCacheManager, MatrixDataType
 from server.common.utils import find_available_port, is_port_available
 import warnings
-from server.common.annotations import AnnotationsLocalFile
+from server.common.annotations import AnnotationsLocalFile, AnnotationsTileDBHosted
 from server.common.utils import custom_format_warning
 import server.compute.diffexp_cxg as diffexp_tiledb
 from server.common.data_locator import discover_s3_region_name
@@ -797,43 +797,45 @@ class DatasetConfig(BaseConfig):
 
             # TODO, replace this with a factory pattern once we have more than one way
             # to do annotations.  currently only local_file_csv
-            if self.user_annotations__type != "local_file_csv":
-                raise ConfigurationError('The only annotation type support is "local_file_csv"')
+            if self.user_annotations__type == "local_file_csv":
 
-            dirname = self.user_annotations__local_file_csv__directory
-            filename = self.user_annotations__local_file_csv__file
+                dirname = self.user_annotations__local_file_csv__directory
+                filename = self.user_annotations__local_file_csv__file
 
-            if filename is not None and dirname is not None:
-                raise ConfigurationError("'annotations-file' and 'annotations-dir' may not be used together.")
+                if filename is not None and dirname is not None:
+                    raise ConfigurationError("'annotations-file' and 'annotations-dir' may not be used together.")
 
-            if filename is not None:
-                lf_name, lf_ext = splitext(filename)
-                if lf_ext and lf_ext != ".csv":
-                    raise ConfigurationError(f"annotation file type must be .csv: {filename}")
+                if filename is not None:
+                    lf_name, lf_ext = splitext(filename)
+                    if lf_ext and lf_ext != ".csv":
+                        raise ConfigurationError(f"annotation file type must be .csv: {filename}")
 
-            if dirname is not None and not isdir(dirname):
-                try:
-                    os.mkdir(dirname)
-                except OSError:
-                    raise ConfigurationError("Unable to create directory specified by --annotations-dir")
+                if dirname is not None and not isdir(dirname):
+                    try:
+                        os.mkdir(dirname)
+                    except OSError:
+                        raise ConfigurationError("Unable to create directory specified by --annotations-dir")
 
-            self.user_annotations = AnnotationsLocalFile(dirname, filename)
+                self.user_annotations = AnnotationsLocalFile(dirname, filename)
 
-            # if the user has specified a fixed label file, go ahead and validate it
-            # so that we can remove errors early in the process.
-            server_config = self.app_config.server_config
-            if server_config.single_dataset__datapath and self.user_annotations__local_file_csv__file:
-                with server_config.matrix_data_cache_manager.data_adaptor(
-                    self.tag, server_config.single_dataset__datapath, self.app_config
-                ) as data_adaptor:
-                    data_adaptor.check_new_labels(self.user_annotations.read_labels(data_adaptor))
+                # if the user has specified a fixed label file, go ahead and validate it
+                # so that we can remove errors early in the process.
+                server_config = self.app_config.server_config
+                if server_config.single_dataset__datapath and self.user_annotations__local_file_csv__file:
+                    with server_config.matrix_data_cache_manager.data_adaptor(
+                        self.tag, server_config.single_dataset__datapath, self.app_config
+                    ) as data_adaptor:
+                        data_adaptor.check_new_labels(self.user_annotations.read_labels(data_adaptor))
 
-            if self.user_annotations__ontology__enable or self.user_annotations__ontology__obo_location:
-                try:
-                    self.user_annotations.load_ontology(self.user_annotations__ontology__obo_location)
-                except OntologyLoadFailure as e:
-                    raise ConfigurationError("Unable to load ontology terms\n" + str(e))
-
+                if self.user_annotations__ontology__enable or self.user_annotations__ontology__obo_location:
+                    try:
+                        self.user_annotations.load_ontology(self.user_annotations__ontology__obo_location)
+                    except OntologyLoadFailure as e:
+                        raise ConfigurationError("Unable to load ontology terms\n" + str(e))
+            elif self.user_annotations__type == "hosted_tiledb_array":
+                self.user_annotations = AnnotationsTileDBHosted()
+            else:
+                raise ConfigurationError('The only annotation type support is "local_file_csv" or "hosted_tiledb_array')
         else:
             if self.user_annotations__type == "local_file_csv":
                 dirname = self.user_annotations__local_file_csv__directory

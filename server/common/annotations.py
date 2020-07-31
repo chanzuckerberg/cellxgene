@@ -259,3 +259,20 @@ class AnnotationsLocalFile(Annotations):
                 params["annotations-data-collection-name"] = collection
 
         parameters.update(params)
+
+
+class AnnotationsTileDBHosted(Annotations):
+    def __init__(self):
+        pass
+
+    def set_collection(self, name):
+        pass
+
+    def read_labels(self, data_adaptor):
+        pass
+
+    def write_labels(self, df, data_adaptor):
+        pass
+
+    def update_parameters(self, parameters, data_adaptor):
+        pass
