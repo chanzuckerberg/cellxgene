@@ -8,8 +8,9 @@ class AuthTypeBase(ABC):
         super().__init__()
 
     @abstractmethod
-    def is_valid(self):
-        """Return True if the auth type can return user info (AuthTypeNone is the only one that cannot)"""
+    def is_valid_authentication_type(self):
+        """Return True if the auth type is valid, e.g. it can return userinfo and username.
+          (AuthTypeNone is the only one type that returns False)"""
         pass
 
     def requires_client_login(self):
@@ -18,21 +19,27 @@ class AuthTypeBase(ABC):
 
     @abstractmethod
     def complete_setup(self, app):
-        """complete any setup that may be needed, the Flask app is passed in"""
+        """complete any setup that may be needed by this auth type.  The Flask app is passed in.
+        This is the last auth function called before the server starts to run."""
         pass
 
     @abstractmethod
-    def is_authenticated(self):
+    def is_user_authenticated(self):
         """Return True if the user is authenticated"""
         pass
 
     @abstractmethod
-    def get_userid(self):
+    def get_user_id(self):
         """Return the id for this user (string)"""
         pass
 
     @abstractmethod
-    def get_username(self):
+    def get_user_name(self):
+        """Return the name of the user (string)"""
+        pass
+
+    @abstractmethod
+    def get_user_email(self):
         """Return the name of the user (string)"""
         pass
 

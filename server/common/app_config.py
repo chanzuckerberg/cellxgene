@@ -266,11 +266,11 @@ class AppConfig(object):
             "diffexp_cellcount_max": server_config.limits__diffexp_cellcount_max,
         }
 
-        if dataset_config.app__authentication_enable and auth.is_valid():
+        if dataset_config.app__authentication_enable and auth.is_valid_authentication_type():
             config["authentication"] = {
-                "is_authenticated": auth.is_authenticated(),
+                "is_authenticated": auth.is_user_authenticated(),
                 "requires_client_login": auth.requires_client_login(),
-                "username": auth.get_username(),
+                "username": auth.get_user_name(),
             }
             if auth.requires_client_login():
                 config["authentication"].update({
@@ -776,7 +776,7 @@ class DatasetConfig(BaseConfig):
             server_config = self.app_config.server_config
             if not self.app__authentication_enable:
                 raise ConfigurationError("user annotations requires authentication to be enabled")
-            if not server_config.auth.is_valid():
+            if not server_config.auth.is_valid_authentication_type():
                 auth_type = server_config.authentication__type
                 raise ConfigurationError(f"authentication method {auth_type} is not compatible with user annotations")
 

@@ -143,7 +143,7 @@ def requires_authentication(func):
     @wraps(func)
     def wrapped_function(self, *args, **kwargs):
         auth = current_app.auth
-        if auth.is_authenticated():
+        if auth.is_user_authenticated():
             return func(self, *args, **kwargs)
         else:
             return make_response("not authenticated", HTTPStatus.UNAUTHORIZED)
@@ -176,11 +176,11 @@ def dataroot_test_index():
     server_config = config.server_config
 
     auth = server_config.auth
-    if auth.is_valid():
-        if server_config.auth.is_authenticated():
-            data += f"<p>Logged in as {auth.get_userid()} / {auth.get_username()}</p>"
+    if auth.is_valid_authentication_type():
+        if server_config.auth.is_user_authenticated():
+            data += f"<p>Logged in as {auth.get_user_id()} / {auth.get_user_name()} / {auth.get_user_email()}</p>"
         if auth.requires_client_login():
-            if server_config.auth.is_authenticated():
+            if server_config.auth.is_user_authenticated():
                 data += "<p><a href='/logout'>Logout</a></p>"
             else:
                 data += "<p><a href='/login'>Login</a></p>"

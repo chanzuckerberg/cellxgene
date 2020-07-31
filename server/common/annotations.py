@@ -10,7 +10,7 @@ from server.common.errors import AnnotationsError, OntologyLoadFailure
 from server.common.utils import series_to_schema
 import fsspec
 import fastobo
-from flask import session, current_app
+from flask import session, current_app, has_request_context
 from abc import ABCMeta, abstractmethod
 
 
@@ -46,8 +46,8 @@ class Annotations(metaclass=ABCMeta):
             raise OntologyLoadFailure("Error loading OBO file") from e
 
     def get_schema(self, data_adaptor):
-        labels = self.read_labels(data_adaptor)
         schema = []
+        labels = self.read_labels(data_adaptor)
         if labels is not None and not labels.empty:
             for col in labels.columns:
                 col_schema = dict(name=col, writable=True)
@@ -113,6 +113,10 @@ class AnnotationsLocalFile(Annotations):
         return session.get(self.CXG_ANNO_COLLECTION)
 
     def read_labels(self, data_adaptor):
+        if has_request_context():
+            if not current_app.auth.is_user_authenticated():
+                return pd.DataFrame()
+
         fname = self._get_filename(data_adaptor)
         with self.label_lock:
             if fname is not None and os.path.exists(fname) and os.path.getsize(fname) > 0:
@@ -162,7 +166,7 @@ class AnnotationsLocalFile(Annotations):
         Return a short hash that weakly identifies the user and dataset.
         Used to create safe annotations output file names.
         """
-        uid = current_app.auth.get_userid()
+        uid = current_app.auth.get_user_id()
         id = (uid + data_adaptor.get_location()).encode()
         idhash = base64.b32encode(blake2b(id, digest_size=5).digest()).decode("utf-8")
         return idhash
@@ -249,7 +253,7 @@ class AnnotationsLocalFile(Annotations):
 
         elif session is not None:
             collection = self.get_collection()
-            if current_app.auth.is_authenticated():
+            if current_app.auth.is_user_authenticated():
                 params["annotations-user-data-idhash"] = self._get_userdata_idhash(data_adaptor)
                 params["annotations-data-collection-is-read-only"] = False
                 params["annotations-data-collection-name"] = collection

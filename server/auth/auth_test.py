@@ -9,13 +9,15 @@ class AuthTypeTest(AuthTypeClientBase):
     # key in session token with userid and username
     CXGUID = "cxguid_test"
     CXGUNAME = "cxguname_test"
+    CXGUEMAIL = "cxguemail_test"
 
     def __init__(self, app_config):
         super().__init__()
-        self.username = "test_account"
-        self.userid = "id0001"
+        self.user_name = "test_account"
+        self.user_id = "id0001"
+        self.user_email = "test_account@test.com"
 
-    def is_valid(self):
+    def is_valid_authentication_type(self):
         return True
 
     def requires_client_login(self):
@@ -28,20 +30,23 @@ class AuthTypeTest(AuthTypeClientBase):
     def complete_setup(self, app):
         pass
 
-    def is_authenticated(self):
+    def is_user_authenticated(self):
         return self.CXGUID in session
 
-    def get_userid(self):
+    def get_user_id(self):
         return session.get(self.CXGUID)
 
-    def get_username(self):
+    def get_user_name(self):
         return session.get(self.CXGUNAME)
+
+    def get_user_email(self):
+        return session.get(self.CXGUEMAIL)
 
     def login(self):
         args = request.args
         return_to = args.get("dataset", "/")
-        session[self.CXGUID] = args.get("userid", self.userid)
-        session[self.CXGUNAME] = args.get("username", self.username)
+        session[self.CXGUID] = args.get("userid", self.user_id)
+        session[self.CXGUNAME] = args.get("username", self.user_name)
         return redirect(return_to)
 
     def logout(self):

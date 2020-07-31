@@ -1,4 +1,4 @@
-from flask import session, request, redirect, current_app
+from flask import session, request, redirect, current_app, has_request_context
 from server.auth.auth import AuthTypeClientBase, AuthTypeFactory
 from server.common.errors import AuthenticationError, ConfigurationError
 from urllib.parse import urlencode
@@ -35,7 +35,9 @@ class AuthTypeOAuth(AuthTypeClientBase):
         self.callback_base_url = app_config.authentication__params_oauth__callback_base_url
         self.audience = self.client_id
 
-        # load the jwks
+        # load the jwks (JSON Web Key Set).
+        # The JSON Web Key Set (JWKS) is a set of keys which contains the public keys used to verify
+        # any JSON Web Token (JWT) issued by the authorization server and signed using the RS256
         try:
             jwksloc = f"{self.api_base_url}/.well-known/jwks.json"
             jwksurl = urlopen(jwksloc)
@@ -43,7 +45,7 @@ class AuthTypeOAuth(AuthTypeClientBase):
         except Exception:
             raise ConfigurationError(f"error in oauth, api_url_base: {self.api_base_url}, cannot access {jwksloc}")
 
-    def is_valid(self):
+    def is_valid_authentication_type(self):
         return True
 
     def requires_client_login(self):
@@ -57,7 +59,8 @@ class AuthTypeOAuth(AuthTypeClientBase):
     def complete_setup(self, flask_app):
         self.oauth = OAuth(flask_app)
         if self.callback_base_url is None:
-            # assume this is for a local test, and the oauth provider has been configured
+            # In this case, assume the server is running on the same host as the client,
+            # and the oauth provider has been configured
             # with a callback that understands a localhost callback (e.g. A http://localhost:5005).
             server_config = flask_app.app_config.server_config
             self.callback_base_url = f"http://{server_config.app__host}:{server_config.app__port}"
@@ -74,23 +77,29 @@ class AuthTypeOAuth(AuthTypeClientBase):
             }
         )
 
-    def is_authenticated(self):
+    def is_user_authenticated(self):
         try:
             payload = self.get_jwt_payload()
             return payload is not None
         except AuthenticationError:
             return False
 
-    def get_userid(self):
+    def get_user_id(self):
         payload = self.get_jwt_payload()
         if payload and payload.get("sub"):
             return payload.get("sub")
         return None
 
-    def get_username(self):
+    def get_user_name(self):
         payload = self.get_jwt_payload()
         if payload and payload.get("name"):
             return payload.get("name")
+        return None
+
+    def get_user_email(self):
+        payload = self.get_jwt_payload()
+        if payload and payload.get("email"):
+            return payload.get("email")
         return None
 
     def login(self):
@@ -113,9 +122,9 @@ class AuthTypeOAuth(AuthTypeClientBase):
         token = self.client.authorize_access_token()
         id_token = token.get("id_token")
         session[self.CXG_ID_TOKEN] = id_token
-        r = session.get("oauth_callback_redirect", "/")
         del session["oauth_callback_redirect"]
-        resp = redirect(r)
+        oauth_callback_redirect = session.get("oauth_callback_redirect", "/")
+        resp = redirect(oauth_callback_redirect)
         return resp
 
     def get_login_url(self, data_adaptor):
@@ -137,6 +146,9 @@ class AuthTypeOAuth(AuthTypeClientBase):
         return session.get(self.CXG_ID_TOKEN)
 
     def get_jwt_payload(self):
+        if not has_request_context():
+            return None
+
         token = self.get_token()
         if token is None:
             return None

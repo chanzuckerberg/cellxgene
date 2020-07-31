@@ -6,19 +6,22 @@ class AuthTypeNone(AuthTypeBase):
     def __init__(self, app_config):
         super().__init__()
 
-    def is_valid(self):
+    def is_valid_authentication_type(self):
         return False
 
     def complete_setup(self, app):
         pass
 
-    def is_authenticated(self):
+    def is_user_authenticated(self):
         return True
 
-    def get_userid(self):
+    def get_user_id(self):
         return None
 
-    def get_username(self):
+    def get_user_name(self):
+        return None
+
+    def get_user_email(self):
         return None
 
 
