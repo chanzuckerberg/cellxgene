@@ -272,11 +272,11 @@ class AppConfig(object):
             "diffexp_cellcount_max": server_config.limits__diffexp_cellcount_max,
         }
 
-        if dataset_config.app__authentication_enable and auth.is_valid():
+        if dataset_config.app__authentication_enable and auth.is_valid_authentication_type():
             config["authentication"] = {
-                "is_authenticated": auth.is_authenticated(),
+                "is_authenticated": auth.is_user_authenticated(),
                 "requires_client_login": auth.requires_client_login(),
-                "username": auth.get_username(),
+                "username": auth.get_user_name(),
             }
             if auth.requires_client_login():
                 config["authentication"].update({
@@ -393,7 +393,6 @@ class ServerConfig(BaseConfig):
     def __init__(self, app_config, default_config):
         dictval_cases = [
             ("app", "csp_directives"),
-            ("authentication", "params"),
             ("adaptor", "cxg_adaptor", "tiledb_ctx"),
             ("multi_dataset", "dataroot"),
         ]
@@ -413,7 +412,11 @@ class ServerConfig(BaseConfig):
             self.app__csp_directives = dc["app"]["csp_directives"]
 
             self.authentication__type = dc["authentication"]["type"]
-            self.authentication__params = dc["authentication"]["params"]
+            self.authentication__params_oauth__api_base_url = dc["authentication"]["params_oauth"]["api_base_url"]
+            self.authentication__params_oauth__client_id = dc["authentication"]["params_oauth"]["client_id"]
+            self.authentication__params_oauth__client_secret = dc["authentication"]["params_oauth"]["client_secret"]
+            self.authentication__params_oauth__callback_base_url = \
+                dc["authentication"]["params_oauth"]["callback_base_url"]
 
             self.multi_dataset__dataroot = dc["multi_dataset"]["dataroot"]
             self.multi_dataset__index = dc["multi_dataset"]["index"]
@@ -445,7 +448,7 @@ class ServerConfig(BaseConfig):
         # The matrix data cache manager is created during the complete_config and stored here.
         self.matrix_data_cache_manager = None
 
-        # The authentication object (BCM -- better name)
+        # The authentication object
         self.auth = None
 
     def complete_config(self, context):
@@ -521,11 +524,21 @@ class ServerConfig(BaseConfig):
 
     def handle_authentication(self, context):
         self.check_attr("authentication__type", (type(None), str))
-        self.check_attr("authentication__params", (type(None), dict))
-        self.auth = AuthTypeFactory.create(self.authentication__type)
+
+        # oauth
+        ptypes = str if self.authentication__type == "oauth" else (type(None), str)
+        self.check_attr("authentication__params_oauth__api_base_url", ptypes)
+        self.check_attr("authentication__params_oauth__client_id", ptypes)
+        self.check_attr("authentication__params_oauth__client_secret", ptypes)
+        self.check_attr("authentication__params_oauth__callback_base_url", (type(None), str))
+        #   secret key: first, from CXG_OAUTH_CLIENT_SECRET environment variable
+        #   second, from config file
+        self.authentication__params__oauth__client_secret = os.environ.get(
+            "CXG_OAUTH_CLIENT_SECRET", self.authentication__params_oauth__client_secret)
+
+        self.auth = AuthTypeFactory.create(self.authentication__type, self)
         if self.auth is None:
             raise ConfigurationError(f"Unknown authentication type: {self.authentication__type}")
-        self.auth.set_params(self.authentication__params)
 
     def handle_data_locator(self, context):
         self.check_attr("data_locator__s3__region_name", (type(None), bool, str))
@@ -769,7 +782,7 @@ class DatasetConfig(BaseConfig):
             server_config = self.app_config.server_config
             if not self.app__authentication_enable:
                 raise ConfigurationError("user annotations requires authentication to be enabled")
-            if not server_config.auth.is_valid():
+            if not server_config.auth.is_valid_authentication_type():
                 auth_type = server_config.authentication__type
                 raise ConfigurationError(f"authentication method {auth_type} is not compatible with user annotations")
 

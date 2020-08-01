@@ -5,7 +5,7 @@ server:
   app:
     verbose: false
     debug: false
-    host: "127.0.0.1"
+    host: localhost
     port : null
     open_browser: false
     force_https: false
@@ -15,13 +15,24 @@ server:
     csp_directives: null
 
   authentication:
-    # The authentication types may be "none" or "session"
+    # The authentication types may be "none", "session", "oauth"
     # none:  No authentication support, features like user_annotations must not be enabled.
-    # session:  A session based userid is automatically generated.
+    # session:  A session based userid is automatically generated. (no params needed)
+    # oauth: oauth2 is used for authentication;  parameters are defined in params_oauth.
     type: session
 
-    # a dictionary of parameters that may be required for an authentication type
-    params: null
+    params_oauth:
+       # url to the auth server
+       api_base_url: null
+       # client_id of this app
+       client_id: null
+       # the client_secret known to the auth server and this app
+       client_secret: null
+       # cellxgene server location;
+       # the browser will be redirected to locations relative to this location during login and logout.
+       # A value of None, indicates the client and server are on the localhost.  http://localhost:<port> will be used.
+       callback_base_url: null
+
 
   multi_dataset:
     # If dataroot is set, then cellxgene may serve multiple datasets.  This parameter is not
