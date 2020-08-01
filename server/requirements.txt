@@ -21,3 +21,4 @@ requests>=2.22.0
 tiledb>=0.5.9,>=0.6.2
 s3fs>=0.4.2
 gunicorn>=20.0.4
+aiohttp>=3.6.2
