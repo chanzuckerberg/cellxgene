@@ -22,9 +22,9 @@ CXG_VERSION = "0.2.0"
     name="convert",
     short_help="Converts an H5AD dataset to the CXG format.",
     help="Converts an H5AD dataset to the CXG format. The CXG format is a cellxgene-private data format "
-         "that has performance and access characteristics amenable to a multi-dataset, multi-user serving "
-         "environment. You will be able to launch the cellxgene using the `cellxgene launch` command as "
-         "usually with the generated CXG file.",
+    "that has performance and access characteristics amenable to a multi-dataset, multi-user serving "
+    "environment. You will be able to launch the cellxgene using the `cellxgene launch` command as "
+    "usually with the generated CXG file.",
 )
 @click.argument(
     "input-file",
@@ -36,13 +36,13 @@ CXG_VERSION = "0.2.0"
     "-o",
     "--output-dir",
     help="Name of the output CXG directory. If not provided, will default to be the input filename with a "
-         "CXG extension.",
+    "CXG extension.",
 )
 @click.option(
     "-b",
     "--backed",
     help="When true, loads the H5AD in file backed mode. This will cause the conversion to be slower, "
-         "but will use less memory.",
+    "but will use less memory.",
     default=False,
     show_default=True,
     is_flag=True,
@@ -51,20 +51,20 @@ CXG_VERSION = "0.2.0"
     "-t",
     "--title",
     help="Human readable dataset title that will be included as metadata about the CXG file. If omitted, "
-         "the dataset title will be the filename.",
+    "the dataset title will be the filename.",
 )
 @click.option(
     "-a",
     "--about",
     help="A fully qualified URL that provides more information about the dataset and will be included as "
-         "metadata about the CXG file.",
+    "metadata about the CXG file.",
 )
 @click.option(
     "-s",
     "--sparse-threshold",
     help="If the dataset's percent of non-zero values falls belows the specified threshold, then the X "
-         "array of the dataset will be sparse. Since the default value is 0.0, the default will be to "
-         "convert to dense array.",
+    "array of the dataset will be sparse. Since the default value is 0.0, the default will be to "
+    "convert to dense array.",
     default=0.0,
     show_default=True,
 )
@@ -96,17 +96,17 @@ CXG_VERSION = "0.2.0"
 @click.option("-v", "--verbose", count=True)
 @click.help_option("--help", "-h", help="Show this message and exit.")
 def convert_to_cxg(
-        input_file,
-        output_directory,
-        backed,
-        title,
-        about,
-        sparse_threshold,
-        obs_names,
-        var_names,
-        disable_custom_colors,
-        disable_corpora_schema,
-        should_overwrite,
+    input_file,
+    output_directory,
+    backed,
+    title,
+    about,
+    sparse_threshold,
+    obs_names,
+    var_names,
+    disable_custom_colors,
+    disable_corpora_schema,
+    should_overwrite,
 ):
     """
     Convert a dataset file into CXG.
@@ -118,31 +118,33 @@ def convert_to_cxg(
     # Read in dataset
     logging.info(f"Reading in AnnData dataset: {path.basename(input_file)}")
     dataset = anndata.read_h5ad(input_file, backed="r" if backed else None)
-    logging.log(logging.INFO, "Completed reading in AnnData dataset!")
+    logging.info("Completed reading in AnnData dataset!")
 
     # Get the directory that will hold all the CXG files
     cxg_output_container = get_output_directory(input_file, output_directory, should_overwrite)
 
     # Get Corpora schema properties from the anndata object
-    logging.log(logging.INFO, "Extracting metadata about the dataset")
+    logging.info("Extracting metadata about the dataset")
     corpora_properties = extract_corpora_properties(dataset, title, about) if not disable_corpora_schema else None
 
     # Get the title and about properties of the dataset
     title, about = extract_title_and_about_dataset(title, about, corpora_properties, input_file)
 
-    logging.log(logging.INFO, "Creating CXG metadata information")
+    logging.info("Creating CXG metadata information")
     cxg_group_metadata = create_cxg_group_metadata(dataset, title, about, corpora_properties, not disable_custom_colors)
 
+    logging.info("Beginning CXG dataset generation")
     generate_cxg_dataset(dataset, cxg_output_container, cxg_group_metadata, obs_names, var_names, sparse_threshold)
+    logging.info("Completed CXG dataset generation!")
 
 
 def generate_cxg_dataset(anndata_dataset, cxg_container, cxg_group_metadata, obs_names, var_names, sparse_threshold):
     # Clean and validate the AnnData dataset
-    logging.log(logging.INFO, "Cleaning and validating AnnData object.")
+    logging.info("Cleaning and validating AnnData object.")
     validate_anndata_object(anndata_dataset)
     clean_anndata_object(anndata_dataset)
 
-    logging.log(logging.INFO, "Beginning writing to CXG.")
+    logging.info("Beginning writing to CXG.")
     ctx = tiledb.Ctx(
         {
             "sm.num_reader_threads": 32,
@@ -152,31 +154,31 @@ def generate_cxg_dataset(anndata_dataset, cxg_container, cxg_group_metadata, obs
     )
 
     tiledb.group_create(cxg_container, ctx=ctx)
-    logging.log(logging.INFO, f"\t...group created, with name {cxg_container}")
+    logging.info(f"\t...group created, with name {cxg_container}")
 
     # Save the dataset metadata
     save_metadata(cxg_container, cxg_group_metadata)
-    logging.log(logging.INFO, "\t...dataset metadata saved")
+    logging.info("\t...dataset metadata saved")
 
     # Save the obs/cell dataframe
     save_dataframe(cxg_container, "obs", anndata_dataset.obs, obs_names, ctx=ctx)
-    logging.log(logging.INFO, "\t...obs dataframe created")
+    logging.info("\t...obs dataframe created")
 
     # Save the var/gene dataframe
     save_dataframe(cxg_container, "var", anndata_dataset.var, var_names, ctx=ctx)
-    logging.log(logging.INFO, "\t...var dataframe created")
+    logging.info("\t...var dataframe created")
 
     # Save the dataset embeddings
     embedding_container = f"{cxg_container}/emb"
     tiledb.group_create(embedding_container, ctx=ctx)
     save_embeddings(embedding_container, anndata_dataset, ctx)
-    logging.log(logging.INFO, "\t...embeddings created")
+    logging.info("\t...embeddings created")
 
     # Save the main X matrix of the dataset
     save_x_matrix(cxg_container, anndata_dataset.X, ctx, sparse_threshold)
-    logging.log(logging.INFO, "\t...X created")
+    logging.info("\t...X created")
 
-    logging.log(logging.INFO, f"\t...group created, with name {cxg_container}")
+    logging.info(f"\t...completed creating CXG container with name {cxg_container}")
 
 
 def save_metadata(cxg_container, metadata_dict):
@@ -240,7 +242,7 @@ def save_embeddings(container, anndata_dataset, ctx):
             with tiledb.DenseArray(embedding_name, mode="w", ctx=ctx) as array:
                 array[:] = value
             tiledb.consolidate(embedding_name, ctx=ctx)
-            logging.log(logging.INFO, f"\t\t...{name} embedding created")
+            logging.info(f"\t\t...{name} embedding created")
 
 
 def save_x_matrix(container, x_matrix_data, ctx, sparse_threshold):
@@ -269,7 +271,7 @@ def save_x_matrix(container, x_matrix_data, ctx, sparse_threshold):
     stride = min(int(np.power(10, np.around(np.log10(1e9 / shape[1])))), 10_000)
     if is_sparse:
         if col_shift is not None:
-            logging.log(logging.INFO, "\t\t...output X as sparse matrix with column shift encoding")
+            logging.info("\t\t...output X as sparse matrix with column shift encoding")
             x_col_shift_name = f"{container}/X_col_shift"
             filters = tiledb.FilterList([tiledb.ZstdFilter()])
             attrs = [tiledb.Attr(dtype=np.float32, filters=filters)]
@@ -280,7 +282,7 @@ def save_x_matrix(container, x_matrix_data, ctx, sparse_threshold):
                 x_col_shift[:] = col_shift
             tiledb.consolidate(x_col_shift_name, ctx=ctx)
         else:
-            logging.log(logging.INFO, "\t\t...output X as sparse matrix")
+            logging.info("\t\t...output X as sparse matrix")
 
         with tiledb.SparseArray(x_matrix_name, mode="w", ctx=ctx) as x_array:
             for start_row_index in range(0, shape[0], stride):
@@ -295,7 +297,7 @@ def save_x_matrix(container, x_matrix_data, ctx, sparse_threshold):
                 x_array[trow, indices[1]] = x_matrix_subset[indices[0], indices[1]]
 
     else:
-        logging.log(logging.INFO, "\t\t...output X as dense matrix")
+        logging.info("\t\t...output X as dense matrix")
         with tiledb.DenseArray(x_matrix_name, mode="w", ctx=ctx) as x_array:
             for start_row_index in range(0, shape[0], stride):
                 end_row_index = min(start_row_index + stride, shape[0])
@@ -369,18 +371,16 @@ def is_matrix_sparse(x_matrix_data, sparse_threshold):
         number_of_non_zero_elements += np.count_nonzero(matrix_subset)
         if number_of_non_zero_elements > maximum_number_of_non_zero_elements_in_matrix:
             if end_row_index != total_number_of_rows:
-                logging.log(
-                    logging.INFO,
+                logging.info(
                     "\t\t\t... X matrix is not sparse. Percentage of non-zero elements (estimate): %6.2f"
                     % (100 * number_of_non_zero_elements)
-                    / (end_row_index * total_number_of_columns),
+                    / (end_row_index * total_number_of_columns)
                 )
             else:
-                logging.log(
-                    logging.INFO,
+                logging.info(
                     "\t\t\t... X matrix is not sparse. Percentage of non-zero elements (exact): %6.2f"
                     % (100 * number_of_non_zero_elements)
-                    / total_number_of_matrix_elements,
+                    / total_number_of_matrix_elements
                 )
             return False, number_of_non_zero_elements, end_row_index * total_number_of_columns
 
@@ -428,18 +428,16 @@ def is_matrix_sparse_with_column_shift_encoding(x_matrix_data, sparse_threshold)
 
         if number_of_non_zero_elements > maximum_number_of_non_zero_elements_in_matrix:
             if end_column_index != total_number_of_columns:
-                logging.log(
-                    logging.INFO,
-                    "\t\t\t... X matrix is not sparse even with column shift. Percentage of non-zero elements "
-                    "(estimate): %6.2f"
+                logging.info(
+                    "\t\t\t... X matrix is not sparse even with column shift. Percentage of non-zero elements (estimate): %6.2f"
                     % (100 * number_of_non_zero_elements)
-                    / (end_column_index * total_number_of_rows),
+                    / (end_column_index * total_number_of_rows)
                 )
             else:
-                logging.log(
-                    logging.INFO,
-                    "\t\t\t... X matrix is not sparse even with column shift. Percentage of non-zero elements "
-                    "(exact): %6.2f" % (100 * number_of_non_zero_elements) / total_number_of_matrix_elements,
+                logging.info(
+                    "\t\t\t... X matrix is not sparse even with column shift. Percentage of non-zero elements (exact): %6.2f"
+                    % (100 * number_of_non_zero_elements)
+                    / total_number_of_matrix_elements
                 )
             return None
 
@@ -461,8 +459,9 @@ def create_dataframe(array_name, dataframe):
             tiledb.ZstdFilter(level=22),
         ]
     )
-    attrs = [tiledb.Attr(name=column, dtype=cxg_type(dataframe[column])[0], filters=tiledb_filter) for column in
-             dataframe]
+    attrs = [
+        tiledb.Attr(name=column, dtype=cxg_type(dataframe[column])[0], filters=tiledb_filter) for column in dataframe
+    ]
     domain = tiledb.Domain(
         tiledb.Dim(domain=(0, dataframe.shape[0] - 1), tile=min(dataframe.shape[0], 1000), dtype=np.uint32)
     )
@@ -548,10 +547,8 @@ def create_cxg_group_metadata(anndata_dataset, title, about, corpora_properties,
                 convert_anndata_category_colors_to_cxg_category_colors(anndata_dataset)
             )
         except ColorFormatException:
-            logging.log(
-                logging.WARNING,
-                "Failed to extract colors from H5AD file! Fix the H5AD file or rerun with "
-                "--disable-custom-colors. See help for more details.",
+            logging.warning(
+                "Failed to extract colors from H5AD file! Fix the H5AD file or rerun with --disable-custom-colors. See help for more details."
             )
 
     return cxg_group_metadata
@@ -627,11 +624,9 @@ def extract_corpora_properties(anndata_dataset, title, about):
         # schema the object is using and therefore cannot extract any properties.
         raise ValueError("Unknown source file schema version is unsupported.")
 
-    logging.log(logging.INFO, "Input file appears to be encoded using Corpora schema standards.")
+    logging.info("Input file appears to be encoded using Corpora schema standards.")
     if title is not None or about is not None:
-        logging.log(
-            logging.WARNING, "Explicit specification of --title or --about will override Corpora schema fields."
-        )
+        logging.warning("Explicit specification of --title or --about will override Corpora schema fields.")
 
     return corpora_properties
 
@@ -715,7 +710,7 @@ def clean_anndata_object(anndata_dataset):
     Sanitize and dedupe the keys in the obs, var, and obsm attributes of the given AnnData object.
     """
 
-    logging.log(logging.INFO, "Sanitizing and deduping AnnData object keys.")
+    logging.info("Sanitizing and deduping AnnData object keys.")
     anndata_dataset.obs.rename(columns=sanitize_keys(anndata_dataset.obs.keys().tolist()), inplace=True)
     anndata_dataset.var.rename(columns=sanitize_keys(anndata_dataset.var.keys().tolist()), inplace=True)
     sanitize_mapping(anndata_dataset.obsm)
