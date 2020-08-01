@@ -3,7 +3,6 @@ from server.common.errors import ConfigurationError
 
 
 class AuthTypeNone(AuthTypeBase):
-
     def __init__(self):
         super().__init__()
 

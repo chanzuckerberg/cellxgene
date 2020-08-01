@@ -99,8 +99,8 @@ class AuthTest(unittest.TestCase):
     def test_auth_test_single(self):
         c = AppConfig()
         c.update_server_config(
-            authentication__type="test",
-            single_dataset__datapath=f"{PROJECT_ROOT}/server/test/test_datasets/pbmc3k.cxg")
+            authentication__type="test", single_dataset__datapath=f"{PROJECT_ROOT}/server/test/test_datasets/pbmc3k.cxg"
+        )
 
         c.complete_config()
 

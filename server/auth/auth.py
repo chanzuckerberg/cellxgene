@@ -69,7 +69,7 @@ class AuthTypeFactory:
 
     @staticmethod
     def register(name, auth_type):
-        assert(issubclass(auth_type, AuthTypeBase))
+        assert issubclass(auth_type, AuthTypeBase)
         AuthTypeFactory.auth_types[name] = auth_type
 
     @staticmethod
