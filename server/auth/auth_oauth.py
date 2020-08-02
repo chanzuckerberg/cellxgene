@@ -34,17 +34,8 @@ class AuthTypeOAuth(AuthTypeClientBase):
         self.client_secret = server_config.authentication__params_oauth__client_secret
         self.callback_base_url = server_config.authentication__params_oauth__callback_base_url
         self.session_cookie = server_config.authentication__params_oauth__session_cookie
-        if not self.session_cookie:
-            self.cookie_params = server_config.authentication__params_oauth__cookie
-            if type(self.cookie_params) != dict:
-                raise ConfigurationError("either session_cookie or cookie must be set")
-            valid_keys = set(("key", "max_age", "expires", "path", "domain", "secure", "httponly", "samesite"))
-            keys = set(self.cookie_params.keys())
-            unknown = keys - valid_keys
-            if unknown:
-                raise ConfigurationError(f"unexpected key in cookie params: {', '.join(unknown)}")
-            if "key" not in keys:
-                raise ConfigurationError("must have a key (name) in the cookie params")
+        self.cookie_params = server_config.authentication__params_oauth__cookie
+        self._validate_cookie_params()
 
         # set the audience
         self.audience = self.client_id
@@ -58,6 +49,21 @@ class AuthTypeOAuth(AuthTypeClientBase):
             self.jwks = json.loads(jwksurl.read())
         except Exception:
             raise ConfigurationError(f"error in oauth, api_url_base: {self.api_base_url}, cannot access {jwksloc}")
+
+    def _validate_cookie_params(self):
+        """check the cookie_params, and raise a ConfigurationError if there is something wrong"""
+        if self.session_cookie:
+            return
+
+        if not isinstance(self.cookie_params, dict):
+            raise ConfigurationError("either session_cookie or cookie must be set")
+        valid_keys = {"key", "max_age", "expires", "path", "domain", "secure", "httponly", "samesite"}
+        keys = set(self.cookie_params.keys())
+        unknown = keys - valid_keys
+        if unknown:
+            raise ConfigurationError(f"unexpected key in cookie params: {', '.join(unknown)}")
+        if "key" not in keys:
+            raise ConfigurationError("must have a key (name) in the cookie params")
 
     def is_valid_authentication_type(self):
         return True
@@ -142,8 +148,7 @@ class AuthTypeOAuth(AuthTypeClientBase):
     def callback(self):
         token = self.client.authorize_access_token()
         id_token = token.get("id_token")
-        oauth_callback_redirect = session.get("oauth_callback_redirect", "/")
-        del session["oauth_callback_redirect"]
+        oauth_callback_redirect = session.pop("oauth_callback_redirect", "/")
         resp = redirect(oauth_callback_redirect)
 
         if self.session_cookie:
