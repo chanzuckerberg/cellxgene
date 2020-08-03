@@ -1,9 +1,13 @@
+import time
 from datetime import datetime
 import re
 import os
 import pandas as pd
 from hashlib import blake2b
 import base64
+
+import tiledb
+
 from server import __version__ as cellxgene_version
 import threading
 from server.common.errors import AnnotationsError, OntologyLoadFailure
@@ -12,6 +16,8 @@ import fsspec
 import fastobo
 from flask import session, current_app, has_request_context
 from abc import ABCMeta, abstractmethod
+
+from server.db.db_utils import DbUtils
 
 
 class Annotations(metaclass=ABCMeta):
@@ -262,8 +268,11 @@ class AnnotationsLocalFile(Annotations):
 
 
 class AnnotationsTileDBHosted(Annotations):
-    def __init__(self):
-        pass
+    def __init__(self, db_uri):
+        super().__init__()
+        self.db = DbUtils(database_uri=db_uri)
+        # lock used to protect label file write ops
+        self.label_lock = threading.RLock()
 
     def set_collection(self, name):
         pass
@@ -272,7 +281,13 @@ class AnnotationsTileDBHosted(Annotations):
         pass
 
     def write_labels(self, df, data_adaptor):
-        pass
+        uid = current_app.auth.get_user_id()
+        timestamp = time.time()
+        uri = f"s3:///user_annotations/{data_adaptor.get_title()}/{uid}/{timestamp}"
+
+        with self.label_lock:
+            if not df.empty:
+                tiledb.from_pandas(uri, df)
 
     def update_parameters(self, parameters, data_adaptor):
         pass

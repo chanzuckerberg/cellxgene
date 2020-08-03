@@ -169,10 +169,11 @@ try:
             secret_region_name = discover_s3_region_name(app_config.multi_dataset__dataroot)
             if not secret_region_name:
                 secret_region_name = discover_s3_region_name(config_file)
-        if not secret_region_name:
-            logging.error("Could not determine the AWS Secret Manager region")
-            sys.exit(1)
-
+            try:
+                os.environ["CXG_AWS_SECRET_REGION_NAME"] = secret_region_name
+            except:
+                logging.error("Could not determine the AWS Secret Manager region")
+                sys.exit(1)
         flask_secret_key = get_secret_key(secret_region_name, secret_name, 'flask_secret_key')
         app_config.update_server_config(app__flask_secret_key=flask_secret_key)
 

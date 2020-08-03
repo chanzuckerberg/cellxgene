@@ -171,6 +171,7 @@ dataset:
   user_annotations:
     enable: true
     type: local_file_csv
+    db_uri: null
     local_file_csv:
       directory: null
       file: null

@@ -1,3 +1,5 @@
+import logging
+
 from server import display_version as cellxgene_display_version
 from flatten_dict import flatten, unflatten
 import os
@@ -17,6 +19,7 @@ from server.common.utils import custom_format_warning
 import server.compute.diffexp_cxg as diffexp_tiledb
 from server.common.data_locator import discover_s3_region_name
 from server.auth.auth import AuthTypeFactory
+from server.eb.app import app_config, config_file, get_secret_key
 
 DEFAULT_SERVER_PORT = 5005
 # anything bigger than this will generate a special message
@@ -732,6 +735,7 @@ class DatasetConfig(BaseConfig):
 
             self.user_annotations__enable = dc["user_annotations"]["enable"]
             self.user_annotations__type = dc["user_annotations"]["type"]
+            self.user_annotations__db_uri = dc["user_annotations"]["db_uri"]
             self.user_annotations__local_file_csv__directory = dc["user_annotations"]["local_file_csv"]["directory"]
             self.user_annotations__local_file_csv__file = dc["user_annotations"]["local_file_csv"]["file"]
             self.user_annotations__ontology__enable = dc["user_annotations"]["ontology"]["enable"]
@@ -833,6 +837,11 @@ class DatasetConfig(BaseConfig):
                     except OntologyLoadFailure as e:
                         raise ConfigurationError("Unable to load ontology terms\n" + str(e))
             elif self.user_annotations__type == "hosted_tiledb_array":
+                secret_name = os.getenv("CXG_AWS_SECRET_NAME")
+                secret_region_name = os.getenv("CXG_AWS_SECRET_REGION_NAME")
+                db_uri = get_secret_key(secret_region_name, secret_name, 'DB_URI')
+                app_config.update_server_config(user_annotations__db_uri=db_uri)
+                self.check_attr("user_annotations__db_uri", str)
                 self.user_annotations = AnnotationsTileDBHosted()
             else:
                 raise ConfigurationError('The only annotation type support is "local_file_csv" or "hosted_tiledb_array')
