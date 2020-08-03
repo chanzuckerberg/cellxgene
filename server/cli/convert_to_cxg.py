@@ -200,7 +200,7 @@ def save_metadata(cxg_container, metadata_dict):
 def save_dataframe(container, dataframe_name, dataframe, index_column_name, ctx):
     array_name = f"{container}/{dataframe_name}"
 
-    dataframe, index_column_name = transform_dataframe_index_into_column(dataframe, dataframe_name, index_column_name)
+    index_column_name = transform_dataframe_index_into_column(dataframe, dataframe_name, index_column_name)
     create_dataframe(array_name, dataframe)
 
     with tiledb.DenseArray(array_name, mode="w", ctx=ctx) as array:
@@ -220,29 +220,29 @@ def save_dataframe(container, dataframe_name, dataframe, index_column_name, ctx)
 
 
 def save_embeddings(container, anndata_dataset, ctx):
-    def is_valid_embedding(adata, name, arr):
+    def is_valid_embedding(adata, embedding_name, embedding_array):
         """
-        Returns true if this layout data is a valid array for front-end presentation:
+        Returns true if this layout data is a valid array for front-end presentation with the following criteria:
             * ndarray, with shape (n_obs, >= 2), dtype float/int/uint
             * follows ScanPy embedding naming conventions
             * with all values finite or NaN (no +Inf or -Inf)
         """
 
-        is_valid = isinstance(name, str) and name.startswith("X_") and len(name) > 2
-        is_valid = is_valid and isinstance(arr, np.ndarray) and arr.dtype.kind in "fiu"
-        is_valid = is_valid and arr.shape[0] == adata.n_obs and arr.shape[1] >= 2
-        is_valid = is_valid and not np.any(np.isinf(arr)) and not np.all(np.isnan(arr))
+        is_valid = isinstance(embedding_name, str) and embedding_name.startswith("X_") and len(embedding_name) > 2
+        is_valid = is_valid and isinstance(embedding_array, np.ndarray) and embedding_array.dtype.kind in "fiu"
+        is_valid = is_valid and embedding_array.shape[0] == adata.n_obs and embedding_array.shape[1] >= 2
+        is_valid = is_valid and not np.any(np.isinf(embedding_array)) and not np.all(np.isnan(embedding_array))
         return is_valid
 
-    for name, value in anndata_dataset.obsm.items():
-        if is_valid_embedding(anndata_dataset, name, value):
-            embedding_name = f"{container}/{name[2:]}"
-            create_embedding(embedding_name, value)
+    for embedding_name, embedding_values in anndata_dataset.obsm.items():
+        if is_valid_embedding(anndata_dataset, embedding_name, embedding_values):
+            embedding_name = f"{container}/{embedding_name[2:]}"
+            create_embedding(embedding_name, embedding_values)
 
             with tiledb.DenseArray(embedding_name, mode="w", ctx=ctx) as array:
-                array[:] = value
+                array[:] = embedding_values
             tiledb.consolidate(embedding_name, ctx=ctx)
-            logging.info(f"\t\t...{name} embedding created")
+            logging.info(f"\t\t...{embedding_name} embedding created")
 
 
 def save_x_matrix(container, x_matrix_data, ctx, sparse_threshold):
@@ -585,7 +585,7 @@ def transform_dataframe_index_into_column(dataframe, dataframe_name, index_colum
     else:
         raise KeyError(f"Annotation {index_column_name}, specified in --{dataframe_name}-name, does not exist.")
 
-    return dataframe, index_column_name
+    return index_column_name
 
 
 def extract_title_and_about_dataset(title, about, corpora_properties, input_filename):
