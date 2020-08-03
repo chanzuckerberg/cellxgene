@@ -393,6 +393,7 @@ class ServerConfig(BaseConfig):
     def __init__(self, app_config, default_config):
         dictval_cases = [
             ("app", "csp_directives"),
+            ("authentication", "params_oauth", "cookie"),
             ("adaptor", "cxg_adaptor", "tiledb_ctx"),
             ("multi_dataset", "dataroot"),
         ]
@@ -417,6 +418,8 @@ class ServerConfig(BaseConfig):
             self.authentication__params_oauth__client_secret = dc["authentication"]["params_oauth"]["client_secret"]
             self.authentication__params_oauth__callback_base_url = \
                 dc["authentication"]["params_oauth"]["callback_base_url"]
+            self.authentication__params_oauth__session_cookie = dc["authentication"]["params_oauth"]["session_cookie"]
+            self.authentication__params_oauth__cookie = dc["authentication"]["params_oauth"]["cookie"]
 
             self.multi_dataset__dataroot = dc["multi_dataset"]["dataroot"]
             self.multi_dataset__index = dc["multi_dataset"]["index"]
@@ -531,6 +534,12 @@ class ServerConfig(BaseConfig):
         self.check_attr("authentication__params_oauth__client_id", ptypes)
         self.check_attr("authentication__params_oauth__client_secret", ptypes)
         self.check_attr("authentication__params_oauth__callback_base_url", (type(None), str))
+        self.check_attr("authentication__params_oauth__session_cookie", bool)
+
+        if self.authentication__params_oauth__session_cookie:
+            self.check_attr("authentication__params_oauth__cookie", (type(None), dict))
+        else:
+            self.check_attr("authentication__params_oauth__cookie", dict)
         #   secret key: first, from CXG_OAUTH_CLIENT_SECRET environment variable
         #   second, from config file
         self.authentication__params__oauth__client_secret = os.environ.get(
