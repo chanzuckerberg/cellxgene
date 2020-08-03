@@ -9,10 +9,12 @@ const nodeModules = path.resolve("node_modules");
 
 const publicPath = "/";
 
-const obsoleteHTMLTemplate = fs.readFileSync(
+const rawObsoleteHTMLTemplate = fs.readFileSync(
   `${__dirname}/obsoleteHTMLTemplate.html`,
   "utf8"
 );
+
+const obsoleteHTMLTemplate = rawObsoleteHTMLTemplate.replace(/'/g, '"');
 
 module.exports = {
   entry: [
