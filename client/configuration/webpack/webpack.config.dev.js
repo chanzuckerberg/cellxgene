@@ -1,65 +1,32 @@
-// jshint esversion: 6
 const path = require("path");
 const webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const FaviconsWebpackPlugin = require("favicons-webpack-plugin");
+const ScriptExtHtmlWebpackPlugin = require("script-ext-html-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
-const src = path.resolve("src");
+const { merge } = require("webpack-merge");
+
+const sharedConfig = require("./webpack.config.shared");
+const babelOptions = require("../babel/babel.dev");
+
 const fonts = path.resolve("src/fonts");
 const nodeModules = path.resolve("node_modules");
 
-const babelOptions = require("../babel/babel.dev");
-
-module.exports = {
+const devConfig = {
   mode: "development",
   devtool: "eval",
-  entry: ["./src/index"],
   output: {
-    path: path.resolve("build"),
     pathinfo: true,
     filename: "static/js/bundle.js",
-    publicPath: "/",
   },
   module: {
     rules: [
       {
-        test: /\.js$/,
-        include: src,
+        test: /\.jsx?$/,
         loader: "babel-loader",
         options: babelOptions,
       },
-      {
-        test: /\.css$/,
-        include: src,
-        exclude: [path.resolve(src, "index.css")],
-        loader: [
-          {
-            loader: "style-loader",
-          },
-          {
-            loader: "css-loader",
-            options: {
-              modules: {
-                localIdentName: "[name]__[local]___[hash:base64:5]",
-              },
-            },
-          },
-        ],
-      },
-      {
-        test: /index\.css$/,
-        include: [path.resolve(src, "index.css")],
-        loader: [
-          {
-            loader: "style-loader",
-          },
-          {
-            loader: "css-loader",
-          },
-        ],
-      },
-
-      { test: /\.json$/, include: [src, nodeModules], loader: "json-loader" },
       {
         test: /\.(jpg|png|gif|eot|svg|ttf|woff|woff2|otf)$/i,
         loader: "file-loader",
@@ -88,6 +55,9 @@ module.exports = {
         },
       },
     }),
+    new MiniCssExtractPlugin({
+      filename: "static/[name].css",
+    }),
     new webpack.NoEmitOnErrorsPlugin(),
     new webpack.DefinePlugin({
       __REACT_DEVTOOLS_GLOBAL_HOOK__: "({ isDisabled: true })",
@@ -97,5 +67,10 @@ module.exports = {
         process.env.CXG_SERVER_PORT
       ),
     }),
+    new ScriptExtHtmlWebpackPlugin({
+      async: "obsolete",
+    }),
   ],
 };
+
+module.exports = merge(sharedConfig, devConfig);
