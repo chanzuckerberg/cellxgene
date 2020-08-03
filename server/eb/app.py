@@ -31,7 +31,7 @@ except Exception:
     sys.exit(1)
 
 
-def get_flask_secret_key(region_name, secret_name):
+def get_secret_key(region_name, secret_name, secret_key):
     session = boto3.session.Session()
     client = session.client(service_name="secretsmanager", region_name=region_name)
 
@@ -40,7 +40,7 @@ def get_flask_secret_key(region_name, secret_name):
         if "SecretString" in get_secret_value_response:
             var = get_secret_value_response["SecretString"]
             secret = json.loads(var)
-            return secret.get("flask_secret_key")
+            return secret.get(secret_key)
     except Exception:
         logging.critical("Caught exception during get_secret_key", exc_info=True)
         sys.exit(1)
@@ -173,7 +173,7 @@ try:
             logging.error("Could not determine the AWS Secret Manager region")
             sys.exit(1)
 
-        flask_secret_key = get_flask_secret_key(secret_region_name, secret_name)
+        flask_secret_key = get_secret_key(secret_region_name, secret_name, 'flask_secret_key')
         app_config.update_server_config(app__flask_secret_key=flask_secret_key)
 
     # features are unsupported in the current hosted server
