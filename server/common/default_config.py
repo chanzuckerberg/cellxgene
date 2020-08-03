@@ -33,6 +33,15 @@ server:
        # A value of None, indicates the client and server are on the localhost.  http://localhost:<port> will be used.
        callback_base_url: null
 
+       # if true, the jwt containing the id_token is stored in a session cookie
+       session_cookie:  true
+
+       # if session_cookie is false, then a regular cookie will be used.  In that case
+       # the cookie will be defined by a dictionary of parameters.
+       # The keys of the dictionary match the parameters of the flask set_cookie api
+       # (https://flask.palletsprojects.com/en/1.1.x/api/), and with the same meaning.
+       # legal keys:  key, max_age, expires, path, domain, secure, httponly, and samesite.
+       cookie:  null
 
   multi_dataset:
     # If dataroot is set, then cellxgene may serve multiple datasets.  This parameter is not
