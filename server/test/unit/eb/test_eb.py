@@ -2,7 +2,7 @@ import unittest
 import tempfile
 import requests
 import subprocess
-from server.test import PROJECT_ROOT
+from server.test import PROJECT_ROOT, FIXTURES_ROOT
 from server.common.app_config import AppConfig
 from contextlib import contextmanager
 import time
@@ -37,7 +37,7 @@ class Elastic_Beanstalk_Test(unittest.TestCase):
         c = AppConfig()
         # test that eb works
         c.update_server_config(
-            multi_dataset__dataroot=f"{PROJECT_ROOT}/server/test/test_datasets", app__flask_secret_key="open sesame"
+            multi_dataset__dataroot=f"{FIXTURES_ROOT}/test_datasets", app__flask_secret_key="open sesame"
         )
 
         c.complete_config()
