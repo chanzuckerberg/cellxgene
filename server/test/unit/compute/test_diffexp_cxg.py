@@ -4,7 +4,7 @@ from server.test import PROJECT_ROOT, app_config, FIXTURES_ROOT
 import server.compute.diffexp_cxg as diffexp_cxg
 import server.compute.diffexp_generic as diffexp_generic
 from server.converters.cxgtool import write_cxg, create_cxg_group_metadata
-from server.test.functional.create_test_matrix import create_test_h5ad
+from server.test.performance.create_test_matrix import create_test_h5ad
 from server.data_common.fbs.matrix import encode_matrix_fbs, decode_matrix_fbs
 import numpy as np
 import tempfile

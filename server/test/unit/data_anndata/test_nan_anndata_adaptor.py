@@ -4,7 +4,7 @@ import warnings
 
 import pytest
 
-import server.test.functional.decode_fbs as decode_fbs
+import server.test.unit.decode_fbs as decode_fbs
 from server.common.data_locator import DataLocator
 from server.common.errors import FilterError
 from server.data_anndata.anndata_adaptor import AnndataAdaptor
