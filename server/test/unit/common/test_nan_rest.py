@@ -3,7 +3,7 @@ import unittest
 import math
 from server.test import start_test_server, stop_test_server
 
-import server.test.decode_fbs as decode_fbs
+import server.test.functional.decode_fbs as decode_fbs
 
 import requests
 

@@ -6,7 +6,7 @@ from http import HTTPStatus
 import pandas as pd
 import requests
 
-import server.test.decode_fbs as decode_fbs
+import server.test.functional.decode_fbs as decode_fbs
 from server.data_common.matrix_loader import MatrixDataType
 from server.test import data_with_tmp_annotations, make_fbs, PROJECT_ROOT
 from server.test.fixtures.fixtures import pbmc3k_colors

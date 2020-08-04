@@ -1,7 +1,7 @@
 import json
 from os import path, listdir
 import unittest
-import server.test.decode_fbs as decode_fbs
+import server.test.functional.decode_fbs as decode_fbs
 import shutil
 
 import numpy as np

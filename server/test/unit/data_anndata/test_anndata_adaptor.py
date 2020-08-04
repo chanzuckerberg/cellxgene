@@ -4,7 +4,7 @@ import pytest
 import time
 import unittest
 import sys
-import server.test.decode_fbs as decode_fbs
+import server.test.functional.decode_fbs as decode_fbs
 from parameterized import parameterized_class
 
 import numpy as np

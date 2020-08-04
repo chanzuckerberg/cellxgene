@@ -3,7 +3,7 @@ import unittest
 import warnings
 import math
 
-import server.test.decode_fbs as decode_fbs
+import server.test.functional.decode_fbs as decode_fbs
 
 from server.data_anndata.anndata_adaptor import AnndataAdaptor
 from server.common.errors import FilterError
