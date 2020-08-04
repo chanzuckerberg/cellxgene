@@ -3,7 +3,7 @@ import unittest
 from server.common.data_locator import DataLocator
 from server.data_cxg.cxg_adaptor import CxgAdaptor
 from server.test import PROJECT_ROOT, app_config
-from server.test.test_datasets.fixtures import pbmc3k_colors
+from server.test.fixtures.fixtures import pbmc3k_colors
 
 
 class TestCxgAdaptor(unittest.TestCase):

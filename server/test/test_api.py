@@ -9,7 +9,7 @@ import requests
 import server.test.decode_fbs as decode_fbs
 from server.data_common.matrix_loader import MatrixDataType
 from server.test import data_with_tmp_annotations, make_fbs, PROJECT_ROOT
-from server.test.test_datasets.fixtures import pbmc3k_colors
+from server.test.fixtures.fixtures import pbmc3k_colors
 from server.test import start_test_server, stop_test_server
 
 

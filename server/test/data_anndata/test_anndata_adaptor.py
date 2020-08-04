@@ -14,7 +14,7 @@ from server.common.data_locator import DataLocator
 from server.common.errors import FilterError
 from server.data_anndata.anndata_adaptor import AnndataAdaptor
 from server.test import PROJECT_ROOT, app_config
-from server.test.test_datasets.fixtures import pbmc3k_colors
+from server.test.fixtures.fixtures import pbmc3k_colors
 
 """
 Test the anndata adaptor using the pbmc3k data set.

@@ -26,10 +26,10 @@ def data_with_tmp_annotations(ext: MatrixDataType, annotations_fixture=False):
     tmp_dir = tempfile.mkdtemp()
     annotations_file = path.join(tmp_dir, "test_annotations.csv")
     if annotations_fixture:
-        shutil.copyfile(f"{PROJECT_ROOT}/server/test/test_datasets/pbmc3k-annotations.csv", annotations_file)
+        shutil.copyfile(f"{PROJECT_ROOT}/server/test/fixtures/pbmc3k-annotations.csv", annotations_file)
     fname = {
         MatrixDataType.H5AD: f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad",
-        MatrixDataType.CXG: "test/test_datasets/pbmc3k.cxg",
+        MatrixDataType.CXG: "test/fixtures/pbmc3k.cxg",
     }[ext]
     data_locator = DataLocator(fname)
     config = AppConfig()
