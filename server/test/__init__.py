@@ -20,6 +20,7 @@ from server.data_common.matrix_loader import MatrixDataLoader, MatrixDataType
 
 
 PROJECT_ROOT = popen("git rev-parse --show-toplevel").read().strip()
+FIXTURES_ROOT = PROJECT_ROOT + "/server/test/fixtures"
 
 
 def data_with_tmp_annotations(ext: MatrixDataType, annotations_fixture=False):

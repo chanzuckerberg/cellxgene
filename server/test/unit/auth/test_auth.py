@@ -1,12 +1,14 @@
 import unittest
-from server.common.app_config import AppConfig
-from server.test import PROJECT_ROOT, test_server
+
 import requests
+
+from server.common.app_config import AppConfig
+from server.test import FIXTURES_ROOT, test_server
 
 
 class AuthTest(unittest.TestCase):
     def setUp(self):
-        self.dataset_dataroot = f"{PROJECT_ROOT}/server/test/fixtures"
+        self.dataset_dataroot = FIXTURES_ROOT
 
     def test_auth_none(self):
         c = AppConfig()

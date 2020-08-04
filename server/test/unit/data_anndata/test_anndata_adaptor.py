@@ -1,19 +1,19 @@
 import json
-from os import path
-import pytest
+import sys
 import time
 import unittest
-import sys
-import server.test.functional.decode_fbs as decode_fbs
-from parameterized import parameterized_class
+from os import path
 
 import numpy as np
 import pandas as pd
+import pytest
+from parameterized import parameterized_class
 
+import server.test.functional.decode_fbs as decode_fbs
 from server.common.data_locator import DataLocator
 from server.common.errors import FilterError
 from server.data_anndata.anndata_adaptor import AnndataAdaptor
-from server.test import PROJECT_ROOT, app_config
+from server.test import PROJECT_ROOT, app_config, FIXTURES_ROOT
 from server.test.fixtures.fixtures import pbmc3k_colors
 
 """
@@ -25,11 +25,11 @@ Test the anndata adaptor using the pbmc3k data set.
     ("data_locator", "backed"),
     [
         (f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad", False),
-        (f"{PROJECT_ROOT}/server/test/test_datasets/pbmc3k-CSC-gz.h5ad", False),
-        (f"{PROJECT_ROOT}/server/test/test_datasets/pbmc3k-CSR-gz.h5ad", False),
+        (f"{FIXTURES_ROOT}/pbmc3k-CSC-gz.h5ad", False),
+        (f"{FIXTURES_ROOT}/pbmc3k-CSR-gz.h5ad", False),
         (f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad", True),
-        (f"{PROJECT_ROOT}/server/test/test_datasets/pbmc3k-CSC-gz.h5ad", True),
-        (f"{PROJECT_ROOT}/server/test/test_datasets/pbmc3k-CSR-gz.h5ad", True),
+        (f"{FIXTURES_ROOT}/pbmc3k-CSC-gz.h5ad", True),
+        (f"{FIXTURES_ROOT}/pbmc3k-CSR-gz.h5ad", True),
     ],
 )
 class AdaptorTest(unittest.TestCase):
@@ -84,7 +84,7 @@ class AdaptorTest(unittest.TestCase):
         self.assertEqual(self.data.get_colors(), pbmc3k_colors)
 
     def test_get_schema(self):
-        with open(path.join(path.dirname(__file__), "schema.json")) as fh:
+        with open(f"{FIXTURES_ROOT}/schema.json") as fh:
             schema = json.load(fh)
             self.assertDictEqual(self.data.get_schema(), schema)
 
