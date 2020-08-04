@@ -1,6 +1,6 @@
 import unittest
 from server.data_common.matrix_loader import MatrixDataLoader
-from server.test import PROJECT_ROOT, app_config
+from server.test import PROJECT_ROOT, app_config, FIXTURES_ROOT
 import server.compute.diffexp_cxg as diffexp_cxg
 import server.compute.diffexp_generic as diffexp_generic
 from server.converters.cxgtool import write_cxg, create_cxg_group_metadata
@@ -68,7 +68,7 @@ class DiffExpTest(unittest.TestCase):
 
     def test_cxg_default(self):
         """Test a cxg adaptor with its default diffexp algorithm (diffexp_cxg)"""
-        adaptor = self.load_dataset(f"{PROJECT_ROOT}/server/test/test_datasets/pbmc3k.cxg")
+        adaptor = self.load_dataset(f"{FIXTURES_ROOT}/pbmc3k.cxg")
         maskA = self.get_mask(adaptor, 1, 10)
         maskB = self.get_mask(adaptor, 2, 10)
 
@@ -82,7 +82,7 @@ class DiffExpTest(unittest.TestCase):
 
     def test_cxg_generic(self):
         """Test a cxg adaptor with the generic adaptor"""
-        adaptor = self.load_dataset(f"{PROJECT_ROOT}/server/test/test_datasets/pbmc3k.cxg")
+        adaptor = self.load_dataset(f"{FIXTURES_ROOT}/pbmc3k.cxg")
         maskA = self.get_mask(adaptor, 1, 10)
         maskB = self.get_mask(adaptor, 2, 10)
         # run it directly

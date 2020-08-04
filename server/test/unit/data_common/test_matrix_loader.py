@@ -1,13 +1,13 @@
+import os
+import shutil
+import tempfile
+import time
 import unittest
-from server.data_common.matrix_loader import MatrixDataCacheManager
+
 from server.common.app_config import AppConfig
 from server.common.errors import DatasetAccessError
-import tempfile
-import shutil
-import os
-import time
-
-from server.test import PROJECT_ROOT
+from server.data_common.matrix_loader import MatrixDataCacheManager
+from server.test import FIXTURES_ROOT
 
 
 class MatrixCacheTest(unittest.TestCase):
@@ -15,7 +15,7 @@ class MatrixCacheTest(unittest.TestCase):
         pass
 
     def make_temporay_datasets(self, dirname, num):
-        source = f"{PROJECT_ROOT}/server/test/test_datasets/pbmc3k.cxg"
+        source = f"{FIXTURES_ROOT}/pbmc3k.cxg"
         for i in range(num):
             target = os.path.join(dirname, str(i) + ".cxg")
             shutil.copytree(source, target)
@@ -38,7 +38,7 @@ class MatrixCacheTest(unittest.TestCase):
         result = {}
         for k, v in datasets.items():
             # filter out the dirname and the .cxg from the name
-            newk = int(k[1][len(dirname) + 1 : -4])
+            newk = int(k[1][len(dirname) + 1: -4])
             result[newk] = v
 
         return result

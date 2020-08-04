@@ -8,12 +8,12 @@ import requests
 
 import server.test.functional.decode_fbs as decode_fbs
 from server.data_common.matrix_loader import MatrixDataType
-from server.test import data_with_tmp_annotations, make_fbs, PROJECT_ROOT
+from server.test import data_with_tmp_annotations, make_fbs, PROJECT_ROOT, FIXTURES_ROOT, start_test_server, \
+    stop_test_server
 from server.test.fixtures.fixtures import pbmc3k_colors
-from server.test import start_test_server, stop_test_server
-
 
 BAD_FILTER = {"filter": {"obs": {"annotation_value": [{"name": "xyz"}]}}}
+
 
 # TODO (mweiden): remove ANNOTATIONS_ENABLED and Annotation subclasses when annotations are no longer experimental
 
@@ -404,7 +404,7 @@ class EndPointsCxg(unittest.TestCase, EndPoints):
     @classmethod
     def setUpClass(cls):
         cls._setupClass(cls, [
-            f"{PROJECT_ROOT}/server/test/test_datasets/pbmc3k.cxg",
+            f"{FIXTURES_ROOT}/pbmc3k.cxg",
             "--disable-annotations",
         ])
 

@@ -2,7 +2,7 @@ import unittest
 
 from server.common.data_locator import DataLocator
 from server.data_cxg.cxg_adaptor import CxgAdaptor
-from server.test import PROJECT_ROOT, app_config
+from server.test import FIXTURES_ROOT, app_config
 from server.test.fixtures.fixtures import pbmc3k_colors
 
 
@@ -14,6 +14,6 @@ class TestCxgAdaptor(unittest.TestCase):
         self.assertDictEqual(data.get_colors(), dict())
 
     def get_data(self, fixture):
-        data_locator = f"{PROJECT_ROOT}/server/test/test_datasets/{fixture}"
+        data_locator = f"{FIXTURES_ROOT}/{fixture}"
         config = app_config(data_locator)
         return CxgAdaptor(DataLocator(data_locator), config)

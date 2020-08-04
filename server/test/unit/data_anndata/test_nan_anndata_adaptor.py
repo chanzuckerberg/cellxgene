@@ -8,12 +8,12 @@ import server.test.functional.decode_fbs as decode_fbs
 from server.data_anndata.anndata_adaptor import AnndataAdaptor
 from server.common.errors import FilterError
 from server.common.data_locator import DataLocator
-from server.test import PROJECT_ROOT, app_config
+from server.test import PROJECT_ROOT, app_config, FIXTURES_ROOT
 
 
 class NaNTest(unittest.TestCase):
     def setUp(self):
-        self.data_locator = DataLocator(f"{PROJECT_ROOT}/server/test/test_datasets/nan.h5ad")
+        self.data_locator = DataLocator(f"{FIXTURES_ROOT}/nan.h5ad")
         self.config = app_config(self.data_locator.path)
 
         with warnings.catch_warnings():
