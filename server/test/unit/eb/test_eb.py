@@ -37,7 +37,7 @@ class Elastic_Beanstalk_Test(unittest.TestCase):
         c = AppConfig()
         # test that eb works
         c.update_server_config(
-            multi_dataset__dataroot=f"{FIXTURES_ROOT}/test_datasets", app__flask_secret_key="open sesame"
+            multi_dataset__dataroot=f"{FIXTURES_ROOT}", app__flask_secret_key="open sesame"
         )
 
         c.complete_config()
