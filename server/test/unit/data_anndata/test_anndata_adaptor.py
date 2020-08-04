@@ -2,7 +2,6 @@ import json
 import sys
 import time
 import unittest
-from os import path
 
 import numpy as np
 import pandas as pd
