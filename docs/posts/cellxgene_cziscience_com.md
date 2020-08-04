@@ -329,5 +329,11 @@ with a link to embed on your own site, please drop us a note at <mailto:cellxgen
         <a href="https://www.biorxiv.org/content/10.1101/2020.05.11.088591v1">bioRxiv preprint</a>
       </td>
     </tr>
+    <tr>
+      <td><a href="https://cellxgene.cziscience.com/d/Single_cell_longitudinal_analysis_of_SARS_CoV_2_infection_in_human_bronchial_epithelial_cells-29.cxg/" target="_blank">Single-cell longitudinal analysis of SARS-CoV-2 infection in human bronchial epithelial cells</a></td>
+      <td>
+        <a href="https://www.biorxiv.org/content/10.1101/2020.05.06.081695v2">bioRxiv preprint</a>
+      </td>
+    </tr>
   </tbody>
 </table>
