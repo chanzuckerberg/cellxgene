@@ -311,5 +311,23 @@ with a link to embed on your own site, please drop us a note at <mailto:cellxgen
         <a href="https://www.nature.com/articles/nature25739">Nature</a>
       </td>
     </tr>
+    <tr>
+      <td><a href="https://cellxgene.cziscience.com/d/Single_soma_transcriptomics_AT8-45.cxg/" target="_blank">Single Soma Transcriptomics - AT8</a></td>
+      <td>
+        <a href="https://www.biorxiv.org/content/10.1101/2020.05.11.088591v1">bioRxiv preprint</a>
+      </td>
+    </tr>
+    <tr>
+      <td><a href="https://cellxgene.cziscience.com/d/Single_soma_transcriptomics_MAP2-46.cxg/" target="_blank">Single Soma Transcriptomics - MAP2</a></td>
+      <td>
+        <a href="https://www.biorxiv.org/content/10.1101/2020.05.11.088591v1">bioRxiv preprint</a>
+      </td>
+    </tr>
+    <tr>
+      <td><a href="https://cellxgene.cziscience.com/d/Single_soma_transcriptomics_MAP2AT8-47.cxg/" target="_blank">Single Soma Transcriptomics - MAP2AT8</a></td>
+      <td>
+        <a href="https://www.biorxiv.org/content/10.1101/2020.05.11.088591v1">bioRxiv preprint</a>
+      </td>
+    </tr>
   </tbody>
 </table>
