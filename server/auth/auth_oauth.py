@@ -122,13 +122,19 @@ class AuthTypeOAuth(AuthTypeClientBase):
             return payload.get("email")
         return None
 
+    def update_response(self, response):
+        response.cache_control.update(
+            dict(public=True, max_age=0, no_store=True, no_cache=True, must_revalidate=True))
+
     def login(self):
         callbackurl = f'{self.callback_base_url}/oauth2/callback'
         return_path = request.args.get("dataset", "")
         return_to = f"{self.callback_base_url}/{return_path}"
         # save the return path in the session cookie, accessed in the callback function
         session["oauth_callback_redirect"] = return_to
-        return self.client.authorize_redirect(redirect_uri=callbackurl)
+        response = self.client.authorize_redirect(redirect_uri=callbackurl)
+        self.update_response(response)
+        return response
 
     def logout(self):
         if self.session_cookie:
@@ -138,12 +144,15 @@ class AuthTypeOAuth(AuthTypeClientBase):
             @after_this_request
             def remove_cookie(response):
                 response.set_cookie(self.cookie_params["key"], "", expires=0)
+                self.update_response()
                 return response
 
         return_path = request.args.get("dataset", "")
         return_to = f"{self.callback_base_url}/{return_path}"
         params = {'returnTo' : return_to, 'client_id' : self.client_id}
-        return redirect(self.client.api_base_url + '/v2/logout?' + urlencode(params))
+        response = redirect(self.client.api_base_url + '/v2/logout?' + urlencode(params))
+        self.update_response()
+        return response
 
     def callback(self):
         token = self.client.authorize_access_token()
@@ -165,6 +174,7 @@ class AuthTypeOAuth(AuthTypeClientBase):
             except Exception as e:
                 raise AuthenticationError(f"unable to set_cookie {self.cookie_params}") from e
 
+        self.update_response(resp)
         return resp
 
     def get_login_url(self, data_adaptor):
