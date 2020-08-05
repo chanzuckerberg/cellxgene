@@ -94,13 +94,13 @@ class WSGIServer(Server):
 
     @staticmethod
     def _before_adding_routes(app, app_config):
-        script_hashes, style_hashes = WSGIServer.get_csp_hashes(app, app_config)
+        script_hashes = WSGIServer.get_csp_hashes(app, app_config)
         server_config = app_config.server_config
         csp = {
             "default-src": ["'self'"],
             "connect-src": ["'self'"],
             "script-src": ["'self'", "'unsafe-eval'", "'unsafe-inline'"] + script_hashes,
-            "style-src": ["'self'", "'unsafe-inline'"] + style_hashes,
+            "style-src": ["'self'", "'unsafe-inline'"],
             "img-src": ["'self'", "data:"],
             "object-src": ["'none'"],
             "base-uri": ["'none'"],
@@ -131,15 +131,13 @@ class WSGIServer(Server):
         if not isinstance(csp_hashes, dict):
             csp_hashes = {}
         script_hashes = [f"'{hash}'" for hash in csp_hashes.get("script-hashes", [])]
-        style_hashes = [f"'{hash}'" for hash in csp_hashes.get("style-hashes", [])]
-
-        if len(script_hashes) == 0 or len(style_hashes) == 0:
+        if len(script_hashes) == 0:
             logging.error("Content security policy hashes are missing, falling back to unsafe-inline policy")
 
-        return (script_hashes, style_hashes)
+        return (script_hashes)
 
     @staticmethod
-    def compute_inline_scp_hashes(app, app_config):
+    def compute_inline_csp_hashes(app, app_config):
         dataset_configs = [app_config.default_dataset_config] + list(app_config.dataroot_config.values())
         hashes = []
         for dataset_config in dataset_configs:
@@ -156,9 +154,9 @@ class WSGIServer(Server):
 
     @staticmethod
     def get_csp_hashes(app, app_config):
-        script_hashes, style_hashes = WSGIServer.load_static_csp_hashes(app)
-        script_hashes += WSGIServer.compute_inline_scp_hashes(app, app_config)
-        return (script_hashes, style_hashes)
+        script_hashes = WSGIServer.load_static_csp_hashes(app)
+        script_hashes += WSGIServer.compute_inline_csp_hashes(app, app_config)
+        return script_hashes
 
 
 try:
