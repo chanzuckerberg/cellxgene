@@ -1,18 +1,17 @@
 """
 Code to decode, for testing purposes, the flatbuffer encoded blobs.
 This code will need to be updated if fbs/matrix.fbs changes.
-
 For more information, see fbs/matrix.fbs and server/data_common/fbs/
 """
 import json
 
-import server.data_common.fbs.NetEncoding.TypedArray as TypedArray
-import server.data_common.fbs.NetEncoding.Matrix as Matrix
-import server.data_common.fbs.NetEncoding.Int32Array as Int32Array
-import server.data_common.fbs.NetEncoding.Uint32Array as Uint32Array
 import server.data_common.fbs.NetEncoding.Float32Array as Float32Array
 import server.data_common.fbs.NetEncoding.Float64Array as Float64Array
+import server.data_common.fbs.NetEncoding.Int32Array as Int32Array
 import server.data_common.fbs.NetEncoding.JSONEncodedArray as JSONEncodedArray
+import server.data_common.fbs.NetEncoding.Matrix as Matrix
+import server.data_common.fbs.NetEncoding.TypedArray as TypedArray
+import server.data_common.fbs.NetEncoding.Uint32Array as Uint32Array
 
 
 def decode_typed_array(tarr):
@@ -42,7 +41,6 @@ def decode_matrix_FBS(buf):
     """
     Given a FBS Matrix, return an decoded Python dict containing
     same info in native format.
-
     NOTE / TODO: row_idx not currently implemented
     """
     df = Matrix.Matrix.GetRootAsMatrix(buf, 0)

@@ -1,7 +1,7 @@
 import unittest
 from server.common.app_config import AppConfig
 from server.common.errors import ConfigurationError
-from server.test import PROJECT_ROOT, test_server
+from server.test import PROJECT_ROOT, test_server, FIXTURES_ROOT
 import requests
 
 # NOTE, there are more tests that should be written for AppConfig.
@@ -52,8 +52,8 @@ class AppConfigTest(unittest.TestCase):
         c.update_server_config(
             multi_dataset__dataroot=dict(
                 s1=dict(dataroot=f"{PROJECT_ROOT}/example-dataset", base_url="set1/1/2"),
-                s2=dict(dataroot=f"{PROJECT_ROOT}/server/test/test_datasets", base_url="set2"),
-                s3=dict(dataroot=f"{PROJECT_ROOT}/server/test/test_datasets", base_url="set3"),
+                s2=dict(dataroot=f"{FIXTURES_ROOT}", base_url="set2"),
+                s3=dict(dataroot=f"{FIXTURES_ROOT}", base_url="set3"),
             )
         )
 

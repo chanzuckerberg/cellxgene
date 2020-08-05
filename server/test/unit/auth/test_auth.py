@@ -1,14 +1,19 @@
 import unittest
-from server.common.app_config import AppConfig
-from server.test import PROJECT_ROOT, test_server
+
 import requests
+
+from server.common.app_config import AppConfig
+from server.test import FIXTURES_ROOT, test_server
 
 
 class AuthTest(unittest.TestCase):
+    def setUp(self):
+        self.dataset_dataroot = FIXTURES_ROOT
+
     def test_auth_none(self):
         c = AppConfig()
         c.update_server_config(
-            authentication__type=None, multi_dataset__dataroot=f"{PROJECT_ROOT}/server/test/test_datasets"
+            authentication__type=None, multi_dataset__dataroot=self.dataset_dataroot
         )
         c.update_default_dataset_config(user_annotations__enable=False)
 
@@ -23,7 +28,7 @@ class AuthTest(unittest.TestCase):
     def test_auth_session(self):
         c = AppConfig()
         c.update_server_config(
-            authentication__type="session", multi_dataset__dataroot=f"{PROJECT_ROOT}/server/test/test_datasets"
+            authentication__type="session", multi_dataset__dataroot=self.dataset_dataroot
         )
         c.update_default_dataset_config(user_annotations__enable=True)
         c.complete_config()
@@ -41,8 +46,8 @@ class AuthTest(unittest.TestCase):
         c.update_server_config(authentication__type="test")
         c.update_server_config(
             multi_dataset__dataroot=dict(
-                a1=dict(dataroot=f"{PROJECT_ROOT}/server/test/test_datasets", base_url="auth"),
-                a2=dict(dataroot=f"{PROJECT_ROOT}/server/test/test_datasets", base_url="no-auth"),
+                a1=dict(dataroot=self.dataset_dataroot, base_url="auth"),
+                a2=dict(dataroot=self.dataset_dataroot, base_url="no-auth"),
             )
         )
 
@@ -100,7 +105,7 @@ class AuthTest(unittest.TestCase):
         c = AppConfig()
         c.update_server_config(
             authentication__type="test",
-            single_dataset__datapath=f"{PROJECT_ROOT}/server/test/test_datasets/pbmc3k.cxg")
+            single_dataset__datapath=f"{self.dataset_dataroot}/pbmc3k.cxg")
 
         c.complete_config()
 
