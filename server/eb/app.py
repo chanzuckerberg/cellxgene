@@ -73,11 +73,11 @@ def handle_config_from_secret(app_config):
 
     keyattrs = (
         ("flask_secret_key", "app__flask_secret_key"),
-        ("oauth_client_secret", "app__authentication__params_oauth__client_secret")
+        ("oauth_client_secret", "authentication__params_oauth__client_secret")
     )
 
     for key, attr in keyattrs:
-        curval = getattr(app_config, attr)
+        curval = getattr(app_config.server_config, attr)
         if curval:
             continue
 
@@ -85,7 +85,7 @@ def handle_config_from_secret(app_config):
         val = secrets.get(key)
         if val:
             logging.error(f"set {attr} from secret")
-            app_config.update_server_config({attr : val})
+            app_config.update_server_config(**{attr : val})
 
 
 class WSGIServer(Server):
