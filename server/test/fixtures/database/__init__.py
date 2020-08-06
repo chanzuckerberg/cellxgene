@@ -34,18 +34,20 @@ class TestDatabase:
 
     def _create_test_dataset(self):
         dataset = CellxGeneDataset(
-            id="test_dataset_id",
             name="test_dataset",
         )
         self.db.session.add(dataset)
         self.db.session.commit()
 
     def _create_test_annotation(self):
+        dataset = self.db.query([CellxGeneDataset],
+                                [CellxGeneDataset.name == "test_dataset"],
+                                )[0]
         annotation = Annotation(
             id="test_annotation_id",
             tiledb_uri="tiledb_uri",
             user_id="test_user_id",
-            dataset_id="test_dataset_id"
+            dataset_id=str(dataset.id)
         )
         self.db.session.add(annotation)
         self.db.session.commit()
@@ -65,7 +67,7 @@ class TestDatabase:
     def _create_test_datasets(self, dataset_count: int = 10):
         datasets = []
         for i in range(dataset_count):
-            datasets.append(CellxGeneDataset(id=self.get_random_string(), name=self.get_random_string()))
+            datasets.append(CellxGeneDataset(name=self.get_random_string()))
         self.db.session.add_all(datasets)
         self.db.session.commit()
 
@@ -81,7 +83,7 @@ class TestDatabase:
                 id=self.get_random_string(),
                 tiledb_uri=self.get_random_string(),
                 user_id=user.id,
-                dataset_id=dataset.id
+                dataset_id=str(dataset.id)
             ))
         self.db.session.add_all(annotations)
         self.db.session.commit()

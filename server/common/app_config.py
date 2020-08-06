@@ -840,10 +840,9 @@ class DatasetConfig(BaseConfig):
                     except OntologyLoadFailure as e:
                         raise ConfigurationError("Unable to load ontology terms\n" + str(e))
             elif self.user_annotations__type == "hosted_tiledb_array":
-                print("heyyyyyy girl")
-                secret_name = os.getenv("CXG_AWS_SECRET_NAME")
-                secret_region_name = os.getenv("CXG_AWS_SECRET_REGION_NAME")
-                from server.eb.app import get_secret_key
+                # secret_name = os.getenv("CXG_AWS_SECRET_NAME")
+                # secret_region_name = os.getenv("CXG_AWS_SECRET_REGION_NAME")
+                # from server.eb.app import get_secret_key
                 # db_uri = get_secret_key(secret_region_name, secret_name, 'DB_URI')
                 # from server.eb.app import app_config
                 # app_config.update_server_config(user_annotations__db_uri=db_uri)

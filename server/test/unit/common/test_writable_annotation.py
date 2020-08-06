@@ -8,13 +8,36 @@ import numpy as np
 import pandas as pd
 
 from server.common.rest import schema_get_helper, annotations_put_fbs_helper
-from server.test import data_with_tmp_annotations, make_fbs
+from server.test import data_with_tmp_local_csv_annotations, make_fbs, data_with_tmp_tiledb_annotations
 from server.data_common.matrix_loader import MatrixDataType
 
 
-class WritableAnnotationTest(unittest.TestCase):
+class WritableTileDBStoredAnnotationTest(unittest.TestCase):
     def setUp(self):
-        self.data, self.tmp_dir, self.annotations = data_with_tmp_annotations(MatrixDataType.H5AD)
+        self.data, self.tmp_dir, self.annotations = data_with_tmp_tiledb_annotations(MatrixDataType.H5AD)
+        self.data.dataset_config.user_annotations = self.annotations
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp_dir)
+
+    def annotation_put_fbs(self, fbs):
+        annotations_put_fbs_helper(self.data, fbs)
+        res = json.dumps({"status": "OK"})
+        return res
+
+    def test_error_checks(self):
+        # verify that the expected errors are generated
+        n_rows = self.data.get_shape()[0]
+        fbs_bad = make_fbs({"louvain": pd.Series(["undefined"] * n_rows, dtype="category")})
+
+        # ensure we catch attempt to overwrite non-writable data
+        with self.assertRaises(KeyError):
+            self.annotation_put_fbs(fbs_bad)
+
+
+class WritableUserAnnotationTest(unittest.TestCase):
+    def setUp(self):
+        self.data, self.tmp_dir, self.annotations = data_with_tmp_local_csv_annotations(MatrixDataType.H5AD)
         self.data.dataset_config.user_annotations = self.annotations
 
     def tearDown(self):

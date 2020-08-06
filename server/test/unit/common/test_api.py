@@ -8,7 +8,7 @@ import requests
 
 import server.test.unit.decode_fbs as decode_fbs
 from server.data_common.matrix_loader import MatrixDataType
-from server.test import (data_with_tmp_annotations, make_fbs, PROJECT_ROOT, FIXTURES_ROOT, start_test_server,
+from server.test import (data_with_tmp_local_csv_annotations, make_fbs, PROJECT_ROOT, FIXTURES_ROOT, start_test_server,
                          stop_test_server)
 from server.test.fixtures.fixtures import pbmc3k_colors
 
@@ -420,7 +420,7 @@ class EndPointsAnndataAnnotations(unittest.TestCase, EndPointsAnnotations):
 
     @classmethod
     def setUpClass(cls):
-        cls.data, cls.tmp_dir, cls.annotations = data_with_tmp_annotations(
+        cls.data, cls.tmp_dir, cls.annotations = data_with_tmp_local_csv_annotations(
             MatrixDataType.H5AD, annotations_fixture=True
         )
         cls._setupClass(cls, [
@@ -442,7 +442,7 @@ class EndPointsCxgAnnotations(unittest.TestCase, EndPointsAnnotations):
 
     @classmethod
     def setUpClass(cls):
-        cls.data, cls.tmp_dir, cls.annotations = data_with_tmp_annotations(MatrixDataType.CXG, annotations_fixture=True)
+        cls.data, cls.tmp_dir, cls.annotations = data_with_tmp_local_csv_annotations(MatrixDataType.CXG, annotations_fixture=True)
         cls._setupClass(cls, [
             "--annotations-file",
             cls.annotations.output_file,

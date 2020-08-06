@@ -18,7 +18,7 @@ from flask import session, current_app, has_request_context
 from abc import ABCMeta, abstractmethod
 
 from server.converters.cxgtool import check_keys
-from server.db.cellxgene_orm import Annotation
+from server.db.cellxgene_orm import Annotation, CellxGeneDataset
 from server.db.db_utils import DbUtils
 
 
@@ -291,12 +291,12 @@ class AnnotationsTileDBHosted(Annotations):
     def write_labels(self, df, data_adaptor):
         uid = current_app.auth.get_user_id()
         timestamp = time.time()
-        dataset = data_adaptor.get_title()
-        uri = f"{self.directory_path}/{dataset}/{uid}/{timestamp}"
+        dataset_name = data_adaptor.get_path() + data_adaptor.get_title()
+        uri = f"{self.directory_path}/{dataset_name}/{uid}/{timestamp}"
         annotation = Annotation(
             tiledb_uri=uri,
             user_id=uid,
-            dataset_id=dataset
+            dataset=CellxGeneDataset(name=dataset_name)
         )
         with self.label_lock:
             if not df.empty:

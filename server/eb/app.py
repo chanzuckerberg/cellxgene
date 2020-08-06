@@ -188,8 +188,6 @@ try:
                 sys.exit(1)
 
     if not has_config:
-        import pdb
-        pdb.set_trace()
         logging.critical("No config file found")
         sys.exit(1)
 

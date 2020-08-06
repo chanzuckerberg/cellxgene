@@ -170,7 +170,7 @@ dataset:
 
   user_annotations:
     enable: true
-    type: hosted_tiledb_array
+    type: local_file_csv
     db_uri: postgresql://postgres:test_pw@localhost:5432
     hosted_file_directory: null
     local_file_csv:

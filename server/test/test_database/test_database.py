@@ -4,7 +4,7 @@ from server.db.db_utils import DbUtils
 from server.test.fixtures.database import TestDatabase
 
 
-class AppConfigTest(unittest.TestCase):
+class DatabaseTest(unittest.TestCase):
     db = DbUtils("postgresql://postgres:test_pw@localhost:5432")
 
     @classmethod
@@ -22,8 +22,8 @@ class AppConfigTest(unittest.TestCase):
         self.assertGreater(user_count, 10)
 
     def test_dataset_creation(self):
-        one_dataset = self.db.get(table=CellxGeneDataset, entity_id='test_dataset_id')
-        self.assertEqual(one_dataset.id, 'test_dataset_id')
+        one_dataset = self.db.query(table_args=[CellxGeneDataset], filter_args=[CellxGeneDataset.name == 'test_dataset'])
+        self.assertEqual(one_dataset[0].name, 'test_dataset')
         dataset_count = self.db.session.query(CellxGeneDataset).count()
         self.assertGreater(dataset_count, 10)
 

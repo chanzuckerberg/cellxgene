@@ -1,7 +1,4 @@
-<<<<<<< HEAD
 import uuid
-=======
->>>>>>> 8d96477fae90ad798ff651cc3cf16e123c80b935
 from datetime import datetime
 
 from sqlalchemy import (
@@ -10,10 +7,7 @@ from sqlalchemy import (
     ForeignKey,
     String,
 )
-<<<<<<< HEAD
 from sqlalchemy.dialects.postgresql import UUID
-=======
->>>>>>> 8d96477fae90ad798ff651cc3cf16e123c80b935
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
