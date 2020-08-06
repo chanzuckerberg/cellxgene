@@ -6,6 +6,7 @@ import * as globals from "../../globals";
 import styles from "./menubar.css";
 import actions from "../../actions";
 import Clip from "./clip";
+import AuthButtons from "./authButtons";
 import InformationMenu from "./infoMenu";
 import Subset from "./subset";
 import UndoRedoReset from "./undoRedo";
@@ -40,6 +41,7 @@ import { getEmbSubsetView } from "../../util/stateManager/viewStackHelpers";
     celllist1: state.differential.celllist1,
     celllist2: state.differential.celllist2,
     libraryVersions: state.config?.["library_versions"],
+    auth: state.config?.authentication,
     undoDisabled: state["@@undoable/past"].length === 0,
     redoDisabled: state["@@undoable/future"].length === 0,
     aboutLink: state.config?.links?.["about-dataset"],
@@ -218,6 +220,7 @@ class MenuBar extends React.PureComponent {
       subsetPossible,
       subsetResetPossible,
       enableReembedding,
+      auth,
     } = this.props;
     const { pendingClipPercentiles } = this.state;
 
@@ -243,6 +246,7 @@ class MenuBar extends React.PureComponent {
           zIndex: 3,
         }}
       >
+        <AuthButtons auth={auth} />
         <InformationMenu
           libraryVersions={libraryVersions}
           aboutLink={aboutLink}
