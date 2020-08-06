@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime
 
 from sqlalchemy import (
@@ -6,6 +7,7 @@ from sqlalchemy import (
     ForeignKey,
     String,
 )
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
@@ -39,7 +41,7 @@ class Annotation(Base):
     id = Column(String, primary_key=True)
     tiledb_uri = Column(String)
     user_id = Column(String, ForeignKey("cxguser.id"), nullable=False)
-    dataset_id = Column(String, ForeignKey("cxgdataset.id"), nullable=False)
+    dataset_id = Column(UUID, ForeignKey("cxgdataset.id"), nullable=False)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 
     # Relationships
@@ -49,12 +51,12 @@ class Annotation(Base):
 
 class CellxGeneDataset(Base):
     """
-    Datasets refer to cellxgene datasets stored in tiledb
+    Datasets refer to cellxgene datasets stored by cellxgene
     """
 
     __tablename__ = "cxgdataset"
 
-    id = Column(String, primary_key=True)
-    name = Column(String)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+    name = Column(String, unique=True, index=True)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
     annotations = relationship("Annotation", back_populates="dataset")

@@ -1,6 +1,4 @@
-import yaml
 
-default_config = """
 server:
   app:
     verbose: false
@@ -85,7 +83,7 @@ server:
     #       user_annotations:
     #           enable:  true
 
-    dataroot: null
+    dataroot: https://hosted-cellxgene-dev.s3-us-west-2.amazonaws.com/
 
     # The index page when in multi-dataset mode:
     #   false or null:  this returns a 404 code
@@ -172,7 +170,7 @@ dataset:
     enable: true
     type: hosted_tiledb_array
     db_uri: postgresql://postgres:test_pw@localhost:5432
-    hosted_file_directory: null
+    hosted_file_directory: ~/Desktop/annotations
     local_file_csv:
       directory: null
       file: null
@@ -189,8 +187,4 @@ dataset:
     lfc_cutoff: 0.01
     top_n: 10
 
-"""
 
-
-def get_default_config():
-    return yaml.load(default_config, Loader=yaml.Loader)

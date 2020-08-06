@@ -166,6 +166,17 @@ def rest_get_data_adaptor(func):
     return wrapped_function
 
 
+def list_all_datasets(server_config):
+    datasets = []
+    for dataroot_dict in server_config.multi_dataset__dataroot.values():
+        dataroot = dataroot_dict["dataroot"]
+        locator = DataLocator(dataroot, region_name=server_config.data_locator__s3__region_name)
+        for fname in locator.ls():
+            datasets.append(path_join(dataroot, fname))
+
+    return datasets
+
+
 def dataroot_test_index():
     # the following index page is meant for testing/debugging purposes
     data = '<!doctype html><html lang="en">'

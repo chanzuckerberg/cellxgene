@@ -17,6 +17,8 @@ import fastobo
 from flask import session, current_app, has_request_context
 from abc import ABCMeta, abstractmethod
 
+from server.converters.cxgtool import check_keys
+from server.db.cellxgene_orm import Annotation
 from server.db.db_utils import DbUtils
 
 
@@ -268,26 +270,47 @@ class AnnotationsLocalFile(Annotations):
 
 
 class AnnotationsTileDBHosted(Annotations):
-    def __init__(self, db_uri):
+    def __init__(self, directory_path, db_uri):
         super().__init__()
         self.db = DbUtils(database_uri=db_uri)
+        self.directory_path = directory_path
         # lock used to protect label file write ops
         self.label_lock = threading.RLock()
+
+    def check_category_names(self, df):
+        check_keys(df.keys().to_list())
 
     def set_collection(self, name):
         pass
 
     def read_labels(self, data_adaptor):
-        pass
+        uid = current_app.auth.get_user_id()
+        dataset = data_adaptor.get_title()
+        self.db.query(Annotation, user_id=uid, )
 
     def write_labels(self, df, data_adaptor):
         uid = current_app.auth.get_user_id()
         timestamp = time.time()
-        uri = f"s3:///user_annotations/{data_adaptor.get_title()}/{uid}/{timestamp}"
-
+        dataset = data_adaptor.get_title()
+        uri = f"{self.directory_path}/{dataset}/{uid}/{timestamp}"
+        annotation = Annotation(
+            tiledb_uri=uri,
+            user_id=uid,
+            dataset_id=dataset
+        )
         with self.label_lock:
             if not df.empty:
-                tiledb.from_pandas(uri, df)
+                self.check_category_names(df)
+                filter = tiledb.FilterList(
+                    [
+                        # attempt aggressive compression as many of these dataframes are very repetitive
+                        # strings, bools and other non-float data.
+                        tiledb.ZstdFilter(),
+                    ]
+                )
+                tiledb.from_pandas(uri, df, attrs_filters=filter)
+        self.db.session.add(annotation)
+        self.db.session.commit()
 
     def update_parameters(self, parameters, data_adaptor):
         pass

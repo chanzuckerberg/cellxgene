@@ -126,7 +126,7 @@ try:
 
     has_config = False
     # config file: look first for "config.yaml" in the current working directory
-    config_file = "config.yaml"
+    config_file = "myconfig.yaml"
     config_location = DataLocator(config_file)
     if config_location.exists():
         with config_location.local_handle() as lh:
@@ -150,6 +150,8 @@ try:
                 sys.exit(1)
 
     if not has_config:
+        import pdb
+        pdb.set_trace()
         logging.critical("No config file found")
         sys.exit(1)
 
