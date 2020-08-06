@@ -40,10 +40,11 @@ export default class MiniHistogram extends React.PureComponent {
   };
 
   componentDidUpdate = (prevProps) => {
-    const { obsOrVarContinuousFieldDisplayName } = this.props;
+    const { obsOrVarContinuousFieldDisplayName, bins } = this.props;
     if (
       prevProps.obsOrVarContinuousFieldDisplayName !==
-      obsOrVarContinuousFieldDisplayName
+        obsOrVarContinuousFieldDisplayName ||
+      prevProps.bins !== bins
     )
       this.drawHistogram();
   };

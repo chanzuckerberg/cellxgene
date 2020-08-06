@@ -4,7 +4,7 @@ import random
 import json
 from gevent.pool import Group
 
-import server.test.decode_fbs as decode_fbs
+import server.test.unit.decode_fbs as decode_fbs
 from config import DataSets
 
 

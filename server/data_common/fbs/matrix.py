@@ -1,58 +1,24 @@
-import flatbuffers
-import numpy as np
-from scipy import sparse
-import pandas as pd
 import json
 
+import numpy as np
+import pandas as pd
+from flatbuffers import Builder
+from scipy import sparse
+
 import server.data_common.fbs.NetEncoding.Column as Column
-import server.data_common.fbs.NetEncoding.TypedArray as TypedArray
-import server.data_common.fbs.NetEncoding.Matrix as Matrix
-import server.data_common.fbs.NetEncoding.Int32Array as Int32Array
-import server.data_common.fbs.NetEncoding.Uint32Array as Uint32Array
 import server.data_common.fbs.NetEncoding.Float32Array as Float32Array
 import server.data_common.fbs.NetEncoding.Float64Array as Float64Array
+import server.data_common.fbs.NetEncoding.Int32Array as Int32Array
 import server.data_common.fbs.NetEncoding.JSONEncodedArray as JSONEncodedArray
-
-
-# Placeholder until recent enhancements to flatbuffers Python
-# runtime are released, at which point we can use the default
-# version.  This code is a port of the head.  See:
-#
-#       https://github.com/google/flatbuffers/pull/4829
-#
-def CreateNumpyVector(builder, x):
-    """CreateNumpyVector writes a numpy array into the buffer."""
-
-    if not isinstance(x, np.ndarray):
-        raise TypeError(f"non-numpy-ndarray passed to CreateNumpyVector ({type(x)}")
-
-    if x.dtype.kind not in ["b", "i", "u", "f"]:
-        raise TypeError("numpy-ndarray holds elements of unsupported datatype")
-
-    if x.ndim > 1:
-        raise TypeError("multidimensional-ndarray passed to CreateNumpyVector")
-
-    builder.StartVector(x.itemsize, x.size, x.dtype.alignment)
-
-    # Ensure little endian byte ordering
-    if x.dtype.str[0] == "<":
-        x_little_endian = x
-    else:
-        x_little_endian = x.byteswap(inplace=False)
-
-    # Calculate total length
-    length = int(x_little_endian.itemsize * x_little_endian.size)
-    builder.head = int(builder.Head() - length)
-
-    # tobytes ensures c_contiguous ordering
-    builder.Bytes[builder.Head() : builder.Head() + length] = x_little_endian.tobytes(order="C")
-
-    return builder.EndVector(x.size)
+import server.data_common.fbs.NetEncoding.Matrix as Matrix
+import server.data_common.fbs.NetEncoding.TypedArray as TypedArray
+import server.data_common.fbs.NetEncoding.Uint32Array as Uint32Array
 
 
 # Serialization helper
 def serialize_column(builder, typed_arr):
     """ Serialize NetEncoding.Column """
+
     (u_type, u_value) = typed_arr
     Column.ColumnStart(builder)
     Column.ColumnAddUType(builder, u_type)
@@ -63,6 +29,7 @@ def serialize_column(builder, typed_arr):
 # Serialization helper
 def serialize_matrix(builder, n_rows, n_cols, columns, col_idx):
     """ Serialize NetEncoding.Matrix """
+
     Matrix.MatrixStart(builder)
     Matrix.MatrixAddNRows(builder, n_rows)
     Matrix.MatrixAddNCols(builder, n_cols)
@@ -77,9 +44,10 @@ def serialize_matrix(builder, n_rows, n_cols, columns, col_idx):
 # Serialization helper
 def serialize_typed_array(builder, source_array, encoding_info):
     """
-    Serialize any of the various typed arrays, eg, Float32Array.   Specific
-    means of serialization and type conversion are provided by type_info.
+    Serialize any of the various typed arrays, eg, Float32Array. Specific means of serialization and type conversion
+    are provided by type_info.
     """
+
     arr = source_array
     (array_type, as_type) = encoding_info(source_array)
 
@@ -104,7 +72,8 @@ def serialize_typed_array(builder, source_array, encoding_info):
             arr = arr[0]
         elif arr.shape[1] == 1:
             arr = arr.T[0]
-    vec = CreateNumpyVector(builder, arr)
+
+    vec = builder.CreateNumpyVector(arr)
 
     # serialize the typed array table
     builder.StartObject(1)
@@ -113,38 +82,36 @@ def serialize_typed_array(builder, source_array, encoding_info):
     return (array_type, array_value)
 
 
-column_encoding_type_map = {
-    # array protocol string:  ( array_type, as_type )
-    np.dtype(np.float64).str: (TypedArray.TypedArray.Float32Array, np.float32),
-    np.dtype(np.float32).str: (TypedArray.TypedArray.Float32Array, np.float32),
-    np.dtype(np.float16).str: (TypedArray.TypedArray.Float32Array, np.float32),
-    np.dtype(np.int8).str: (TypedArray.TypedArray.Int32Array, np.int32),
-    np.dtype(np.int16).str: (TypedArray.TypedArray.Int32Array, np.int32),
-    np.dtype(np.int32).str: (TypedArray.TypedArray.Int32Array, np.int32),
-    np.dtype(np.int64).str: (TypedArray.TypedArray.Int32Array, np.int32),
-    np.dtype(np.uint8).str: (TypedArray.TypedArray.Uint32Array, np.uint32),
-    np.dtype(np.uint16).str: (TypedArray.TypedArray.Uint32Array, np.uint32),
-    np.dtype(np.uint32).str: (TypedArray.TypedArray.Uint32Array, np.uint32),
-    np.dtype(np.uint64).str: (TypedArray.TypedArray.Uint32Array, np.uint32),
-}
-column_encoding_default = (TypedArray.TypedArray.JSONEncodedArray, "json")
-
-
 def column_encoding(arr):
+    column_encoding_type_map = {
+        # array protocol string:  ( array_type, as_type )
+        np.dtype(np.float64).str: (TypedArray.TypedArray.Float32Array, np.float32),
+        np.dtype(np.float32).str: (TypedArray.TypedArray.Float32Array, np.float32),
+        np.dtype(np.float16).str: (TypedArray.TypedArray.Float32Array, np.float32),
+        np.dtype(np.int8).str: (TypedArray.TypedArray.Int32Array, np.int32),
+        np.dtype(np.int16).str: (TypedArray.TypedArray.Int32Array, np.int32),
+        np.dtype(np.int32).str: (TypedArray.TypedArray.Int32Array, np.int32),
+        np.dtype(np.int64).str: (TypedArray.TypedArray.Int32Array, np.int32),
+        np.dtype(np.uint8).str: (TypedArray.TypedArray.Uint32Array, np.uint32),
+        np.dtype(np.uint16).str: (TypedArray.TypedArray.Uint32Array, np.uint32),
+        np.dtype(np.uint32).str: (TypedArray.TypedArray.Uint32Array, np.uint32),
+        np.dtype(np.uint64).str: (TypedArray.TypedArray.Uint32Array, np.uint32),
+    }
+    column_encoding_default = (TypedArray.TypedArray.JSONEncodedArray, "json")
+
     return column_encoding_type_map.get(arr.dtype.str, column_encoding_default)
 
 
-index_encoding_type_map = {
-    # array protocol string:  ( array_type, as_type )
-    np.dtype(np.int32).str: (TypedArray.TypedArray.Int32Array, np.int32),
-    np.dtype(np.int64).str: (TypedArray.TypedArray.Int32Array, np.int32),
-    np.dtype(np.uint32).str: (TypedArray.TypedArray.Uint32Array, np.uint32),
-    np.dtype(np.uint64).str: (TypedArray.TypedArray.Uint32Array, np.uint32),
-}
-index_encoding_default = (TypedArray.TypedArray.JSONEncodedArray, "json")
-
-
 def index_encoding(arr):
+    index_encoding_type_map = {
+        # array protocol string:  ( array_type, as_type )
+        np.dtype(np.int32).str: (TypedArray.TypedArray.Int32Array, np.int32),
+        np.dtype(np.int64).str: (TypedArray.TypedArray.Int32Array, np.int32),
+        np.dtype(np.uint32).str: (TypedArray.TypedArray.Uint32Array, np.uint32),
+        np.dtype(np.uint64).str: (TypedArray.TypedArray.Uint32Array, np.uint32),
+    }
+    index_encoding_default = (TypedArray.TypedArray.JSONEncodedArray, "json")
+
     return index_encoding_type_map.get(arr.dtype.str, index_encoding_default)
 
 
@@ -165,8 +132,7 @@ def guess_at_mem_needed(matrix):
 
 def encode_matrix_fbs(matrix, row_idx=None, col_idx=None):
     """
-    Given a 2D DataFrame, ndarray or sparse equivalent, create and return a
-    Matrix flatbuffer.
+    Given a 2D DataFrame, ndarray or sparse equivalent, create and return a Matrix flatbuffer.
 
     :param matrix: 2D DataFrame, ndarray or sparse equivalent
     :param row_idx: index for row dimension, Index or ndarray
@@ -183,7 +149,7 @@ def encode_matrix_fbs(matrix, row_idx=None, col_idx=None):
     (n_rows, n_cols) = matrix.shape
 
     # estimate size needed, so we don't unnecessarily realloc.
-    builder = flatbuffers.Builder(guess_at_mem_needed(matrix))
+    builder = Builder(guess_at_mem_needed(matrix))
 
     columns = []
     for cidx in range(n_cols - 1, -1, -1):
@@ -239,9 +205,9 @@ def deserialize_typed_array(tarr):
 
 def decode_matrix_fbs(fbs):
     """
-    Given an FBS-encoded Matrix, return a Pandas DataFrame the contains the data
-    and indices.
+    Given an FBS-encoded Matrix, return a Pandas DataFrame the contains the data and indices.
     """
+
     matrix = Matrix.Matrix.GetRootAsMatrix(fbs, 0)
     n_rows = matrix.NRows()
     n_cols = matrix.NCols()

@@ -4,9 +4,21 @@ module.exports = {
   extends: [
     "airbnb",
     "plugin:eslint-comments/recommended",
+    "plugin:compat/recommended",
     "plugin:prettier/recommended",
     "prettier/react",
   ],
+  settings: {
+    polyfills: [
+      "TextDecoder",
+      "TextEncoder",
+      "fetch",
+      "Request",
+      "Response",
+      "Headers",
+      "AbortController",
+    ],
+  },
   env: { browser: true, commonjs: true, es6: true },
   globals: {
     expect: true,

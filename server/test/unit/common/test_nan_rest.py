@@ -3,7 +3,7 @@ import unittest
 import math
 from server.test import start_test_server, stop_test_server
 
-import server.test.decode_fbs as decode_fbs
+import server.test.unit.decode_fbs as decode_fbs
 
 import requests
 
@@ -16,7 +16,7 @@ class WithNaNs(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.ps, cls.server = start_test_server(["test/test_datasets/nan.h5ad"])
+        cls.ps, cls.server = start_test_server(["test/fixtures/nan.h5ad"])
 
     @classmethod
     def tearDownClass(cls):

@@ -9,6 +9,7 @@ from server.db.cellxgene_orm import Base, CellxGeneDataset
 from server.db.db_utils import DbUtils
 
 
+
 def create_db(database_uri: str = "postgresql://postgres:test_pw@localhost:5432"):
     engine = create_engine(database_uri)
     print("Dropping tables")

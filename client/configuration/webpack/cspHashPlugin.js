@@ -1,7 +1,12 @@
+/* eslint-disable import/no-extraneous-dependencies -- this file is a devDependency*/
 const cheerio = require("cheerio");
 const crypto = require("crypto");
-HtmlWebpackPlugin = require("html-webpack-plugin");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
 
+const digest = (str) => {
+  const hash = crypto.createHash("sha256").update(str, "utf8").digest("base64");
+  return `sha256-${hash}`;
+};
 class CspHashPlugin {
   constructor(opts) {
     this.opts = { ...opts };
@@ -19,10 +24,7 @@ class CspHashPlugin {
           if (filename) {
             const results = {};
             results["script-hashes"] = $("script:not([src]):not([no-csp-hash])")
-              .map((i, elmt) => this.digest($(elmt).html()))
-              .get();
-            results["style-hashes"] = $("style:not([href]):not([no-csp-hash])")
-              .map((i, elmt) => this.digest($(elmt).html()))
+              .map((i, elmt) => digest($(elmt).html()))
               .get();
 
             const json = JSON.stringify(results);
@@ -34,13 +36,10 @@ class CspHashPlugin {
 
           // Remove no-csp-hash attributes. Cheerio does not parse Jinja templates
           // correctly, so we brute force this with a regular expression.
-          data.html = data.html
-            .replace(/(<script .*)no-csp-hash(.*>)/, (match, p1, p2) =>
-              [p1, p2].join("")
-            )
-            .replace(/(<style .*)no-csp-hash(.*>)/, (match, p1, p2) =>
-              [p1, p2].join("")
-            );
+          data.html = data.html.replace(
+            /(<script .*)no-csp-hash(.*>)/,
+            (match, p1, p2) => [p1, p2].join("")
+          );
 
           // Tell webpack to move on
           cb(null, data);
@@ -48,14 +47,7 @@ class CspHashPlugin {
       );
     });
   }
-
-  digest(str) {
-    const hash = crypto
-      .createHash("sha256")
-      .update(str, "utf8")
-      .digest("base64");
-    return `sha256-${hash}`;
-  }
 }
 
 module.exports = CspHashPlugin;
+/* eslint-enable import/no-extraneous-dependencies -- enable*/

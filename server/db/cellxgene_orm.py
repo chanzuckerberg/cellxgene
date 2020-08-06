@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 import uuid
+=======
+>>>>>>> 8d96477fae90ad798ff651cc3cf16e123c80b935
 from datetime import datetime
 
 from sqlalchemy import (
@@ -7,7 +10,10 @@ from sqlalchemy import (
     ForeignKey,
     String,
 )
+<<<<<<< HEAD
 from sqlalchemy.dialects.postgresql import UUID
+=======
+>>>>>>> 8d96477fae90ad798ff651cc3cf16e123c80b935
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
@@ -42,6 +48,7 @@ class Annotation(Base):
     tiledb_uri = Column(String)
     user_id = Column(String, ForeignKey("cxguser.id"), nullable=False)
     dataset_id = Column(UUID, ForeignKey("cxgdataset.id"), nullable=False)
+
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 
     # Relationships
@@ -58,5 +65,6 @@ class CellxGeneDataset(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
     name = Column(String, unique=True, index=True)
+
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
     annotations = relationship("Annotation", back_populates="dataset")
