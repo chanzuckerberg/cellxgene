@@ -184,10 +184,7 @@ class AuthTypeOAuth(AuthTypeClientBase):
 
     def get_logout_url(self, data_adaptor):
         """Return the url for the logout route"""
-        if current_app.app_config.is_multi_dataset():
-            return f"/logout?dataset={data_adaptor.uri_path}"
-        else:
-            return "/logout"
+        return "/logout"
 
     def get_token(self):
         """Function to return the token"""
