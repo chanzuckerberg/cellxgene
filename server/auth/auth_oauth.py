@@ -144,14 +144,12 @@ class AuthTypeOAuth(AuthTypeClientBase):
             @after_this_request
             def remove_cookie(response):
                 response.set_cookie(self.cookie_params["key"], "", expires=0)
-                self.update_response()
+                self.update_response(response)
                 return response
 
-        return_path = request.args.get("dataset", "")
-        return_to = f"{self.callback_base_url}/{return_path}"
-        params = {'returnTo' : return_to, 'client_id' : self.client_id}
+        params = {'returnTo' : self.callback_base_url, 'client_id' : self.client_id}
         response = redirect(self.client.api_base_url + '/v2/logout?' + urlencode(params))
-        self.update_response()
+        self.update_response(response)
         return response
 
     def callback(self):
@@ -186,10 +184,7 @@ class AuthTypeOAuth(AuthTypeClientBase):
 
     def get_logout_url(self, data_adaptor):
         """Return the url for the logout route"""
-        if current_app.app_config.is_multi_dataset():
-            return f"/logout?dataset={data_adaptor.uri_path}"
-        else:
-            return "/logout"
+        return "/logout"
 
     def get_token(self):
         """Function to return the token"""
