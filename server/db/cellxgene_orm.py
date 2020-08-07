@@ -1,5 +1,4 @@
 import uuid
-from datetime import datetime
 
 from sqlalchemy import (
     Column,
@@ -63,6 +62,3 @@ class CellxGeneDataset(Base):
 
     created_at = Column(DateTime, nullable=False, server_default=func.now())
     annotations = relationship("Annotation", back_populates="dataset")
-
-    def get_or_create(self, name):
-        pass

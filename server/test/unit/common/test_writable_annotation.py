@@ -60,12 +60,14 @@ class WritableTileDBStoredAnnotationTest(unittest.TestCase):
         annotation = self.db.query([Annotation],
                                    [Annotation.user_id == '1234', Annotation.dataset_id == str(dataset_id)])
 
-        df = tiledb.open_dataframe(annotation[0].tiledb_uri)
-        self.assertEqual(df.shape, (n_rows, 2))
-        self.assertEqual(set(df.columns), {"cat_A", "cat_B"})
-        self.assertTrue(self.data.original_obs_index.equals(df.index))
-        self.assertTrue(np.all(df["cat_A"] == ["label_A"] * n_rows))
-        self.assertTrue(np.all(df["cat_B"] == ["label_B"] * n_rows))
+        df2 = tiledb.open(annotation[0].tiledb_uri)
+        pandas_df = self.annotations.convert_to_pandas_df(df2)
+
+        self.assertEqual(pandas_df.shape, (n_rows, 2))
+        self.assertEqual(set(pandas_df.columns), {"cat_A", "cat_B"})
+        self.assertTrue(self.data.original_obs_index.equals(pandas_df.index))
+        self.assertTrue(np.all(pandas_df["cat_A"] == ["label_A"] * n_rows))
+        self.assertTrue(np.all(pandas_df["cat_B"] == ["label_B"] * n_rows))
 
 
     def xtest_put_get_roundtrip(self):

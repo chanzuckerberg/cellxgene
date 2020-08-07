@@ -290,11 +290,38 @@ class AnnotationsTileDBHosted(Annotations):
         uid = '1234'
         dataset_name = data_adaptor.get_location()
         dataset = self.db.query(table_args=[CellxGeneDataset], filter_args=[CellxGeneDataset.name == dataset_name])
+        # Todo @madison retrieve latest based on timestamp
         annotation_object = self.db.query([Annotation], [Annotation.user_id == uid, Annotation.dataset == dataset])
+        df = tiledb.open(annotation_object[0].tiledb_uri)
+        pandas_df = self.convert_to_pandas_df(df)
+        return pandas_df
 
-        import pdb
-        pdb.set_trace()
-        print(annotation_object)
+    def convert_to_pandas_df(self, tileDBArray):
+        repr_meta = None
+        index_dims = None
+        if '__pandas_attribute_repr' in tileDBArray.meta:
+            # backwards compatibility... unsure if necessary at this point
+            repr_meta = json.loads(tileDBArray.meta['__pandas_attribute_repr'])
+        if '__pandas_index_dims' in tileDBArray.meta:
+            index_dims = json.loads(tileDBArray.meta['__pandas_index_dims'])
+
+        data = tileDBArray[:]
+        indexes = list()
+
+        for col_name, col_val in data.items():
+            if repr_meta and col_name in repr_meta:
+                new_col = pd.Series(col_val, dtype=repr_meta[col_name])
+                data[col_name] = new_col
+            elif index_dims and col_name in index_dims:
+                new_col = pd.Series(col_val, dtype=index_dims[col_name])
+                data[col_name] = new_col
+                indexes.append(col_name)
+
+        new_df = pd.DataFrame.from_dict(data)
+        if len(indexes) > 0:
+            new_df.set_index(indexes, inplace=True)
+
+        return new_df
 
     def write_labels(self, df, data_adaptor):
         # uid = current_app.auth.get_user_id()
