@@ -1,32 +1,28 @@
-// jshint esversion: 6
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const FaviconsWebpackPlugin = require("favicons-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const TerserJSPlugin = require("terser-webpack-plugin");
 const CleanCss = require("clean-css");
 const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
+const FaviconsWebpackPlugin = require("favicons-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
-const CspHashPlugin = require("./cspHashPlugin");
-
-const src = path.resolve("src");
-const fonts = path.resolve("src/fonts");
-const nodeModules = path.resolve("node_modules");
+const { merge } = require("webpack-merge");
 
 const babelOptions = require("../babel/babel.prod");
 
-const publicPath = "/";
+const CspHashPlugin = require("./cspHashPlugin");
+const sharedConfig = require("./webpack.config.shared");
 
-module.exports = {
+const fonts = path.resolve("src/fonts");
+const nodeModules = path.resolve("node_modules");
+
+const prodConfig = {
   mode: "production",
   bail: true,
   cache: false,
-  entry: ["./src/index.js"],
   output: {
     filename: "static/[name]-[contenthash].js",
-    path: path.resolve("build"),
-    publicPath,
   },
   optimization: {
     minimize: true,
@@ -41,38 +37,9 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.js$/,
-        include: src,
+        test: /\.jsx?$/,
         loader: "babel-loader",
         options: babelOptions,
-      },
-      {
-        test: /\.css$/,
-        include: src,
-        exclude: [path.resolve(src, "index.css")],
-        use: [
-          MiniCssExtractPlugin.loader,
-          {
-            loader: "css-loader",
-            options: {
-              modules: {
-                localIdentName: "[name]__[local]___[hash:base64:5]",
-              },
-              importLoaders: 1,
-            },
-          },
-        ],
-      },
-      {
-        test: /index\.css$/,
-        include: [path.resolve(src, "index.css")],
-        use: [MiniCssExtractPlugin.loader, "css-loader"],
-      },
-      {
-        test: /\.json$/,
-        include: [src, nodeModules],
-        loader: "json-loader",
-        exclude: /manifest.json$/,
       },
       {
         test: /\.(jpg|png|gif|eot|svg|ttf|woff|woff2|otf)$/i,
@@ -121,3 +88,5 @@ module.exports = {
     maxAssetSize: 2000000,
   },
 };
+
+module.exports = merge(sharedConfig, prodConfig);

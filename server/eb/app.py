@@ -31,7 +31,7 @@ except Exception:
     sys.exit(1)
 
 
-def get_flask_secret_key(region_name, secret_name):
+def get_secret_key(region_name, secret_name):
     session = boto3.session.Session()
     client = session.client(service_name="secretsmanager", region_name=region_name)
 
@@ -40,12 +40,52 @@ def get_flask_secret_key(region_name, secret_name):
         if "SecretString" in get_secret_value_response:
             var = get_secret_value_response["SecretString"]
             secret = json.loads(var)
-            return secret.get("flask_secret_key")
+            return secret
     except Exception:
         logging.critical("Caught exception during get_secret_key", exc_info=True)
         sys.exit(1)
 
     return None
+
+
+def handle_config_from_secret(app_config):
+    """Update configuration from the secret manager"""
+    secret_name = os.getenv("CXG_AWS_SECRET_NAME")
+    if not secret_name:
+        return
+
+    # need to find the secret manager region.
+    #  1. from CXG_AWS_SECRET_REGION_NAME
+    #  2. discover from dataroot location (if on s3)
+    #  3. discover from config file location (if on s3)
+    secret_region_name = os.getenv("CXG_AWS_SECRET_REGION_NAME")
+    if secret_region_name is None:
+        secret_region_name = discover_s3_region_name(app_config.multi_dataset__dataroot)
+        if not secret_region_name:
+            secret_region_name = discover_s3_region_name(config_file)
+    if not secret_region_name:
+        logging.error("Could not determine the AWS Secret Manager region")
+        sys.exit(1)
+
+    secrets = get_secret_key(secret_region_name, secret_name)
+    if not secrets:
+        return
+
+    keyattrs = (
+        ("flask_secret_key", "app__flask_secret_key"),
+        ("oauth_client_secret", "authentication__params_oauth__client_secret")
+    )
+
+    for key, attr in keyattrs:
+        curval = getattr(app_config.server_config, attr)
+        if curval:
+            continue
+
+        # replace the attr with the secret if it is not set
+        val = secrets.get(key)
+        if val:
+            logging.error(f"set {attr} from secret")
+            app_config.update_server_config(**{attr : val})
 
 
 class WSGIServer(Server):
@@ -54,13 +94,13 @@ class WSGIServer(Server):
 
     @staticmethod
     def _before_adding_routes(app, app_config):
-        script_hashes, style_hashes = WSGIServer.get_csp_hashes(app, app_config)
+        script_hashes = WSGIServer.get_csp_hashes(app, app_config)
         server_config = app_config.server_config
         csp = {
             "default-src": ["'self'"],
             "connect-src": ["'self'"],
             "script-src": ["'self'", "'unsafe-eval'", "'unsafe-inline'"] + script_hashes,
-            "style-src": ["'self'", "'unsafe-inline'"] + style_hashes,
+            "style-src": ["'self'", "'unsafe-inline'"],
             "img-src": ["'self'", "data:"],
             "object-src": ["'none'"],
             "base-uri": ["'none'"],
@@ -91,15 +131,13 @@ class WSGIServer(Server):
         if not isinstance(csp_hashes, dict):
             csp_hashes = {}
         script_hashes = [f"'{hash}'" for hash in csp_hashes.get("script-hashes", [])]
-        style_hashes = [f"'{hash}'" for hash in csp_hashes.get("style-hashes", [])]
-
-        if len(script_hashes) == 0 or len(style_hashes) == 0:
+        if len(script_hashes) == 0:
             logging.error("Content security policy hashes are missing, falling back to unsafe-inline policy")
 
-        return (script_hashes, style_hashes)
+        return (script_hashes)
 
     @staticmethod
-    def compute_inline_scp_hashes(app, app_config):
+    def compute_inline_csp_hashes(app, app_config):
         dataset_configs = [app_config.default_dataset_config] + list(app_config.dataroot_config.values())
         hashes = []
         for dataset_config in dataset_configs:
@@ -116,9 +154,9 @@ class WSGIServer(Server):
 
     @staticmethod
     def get_csp_hashes(app, app_config):
-        script_hashes, style_hashes = WSGIServer.load_static_csp_hashes(app)
-        script_hashes += WSGIServer.compute_inline_scp_hashes(app, app_config)
-        return (script_hashes, style_hashes)
+        script_hashes = WSGIServer.load_static_csp_hashes(app)
+        script_hashes += WSGIServer.compute_inline_csp_hashes(app, app_config)
+        return script_hashes
 
 
 try:
@@ -158,30 +196,14 @@ try:
         logging.info("Configuration from CXG_DATAROOT")
         app_config.update_server_config(multi_dataset__dataroot=dataroot)
 
-    secret_name = os.getenv("CXG_AWS_SECRET_NAME")
-    if secret_name:
-        # need to find the secret manager region.
-        #  1. from CXG_AWS_SECRET_REGION_NAME
-        #  2. discover from dataroot location (if on s3)
-        #  3. discover from config file location (if on s3)
-        secret_region_name = os.getenv("CXG_AWS_SECRET_REGION_NAME")
-        if secret_region_name is None:
-            secret_region_name = discover_s3_region_name(app_config.multi_dataset__dataroot)
-            if not secret_region_name:
-                secret_region_name = discover_s3_region_name(config_file)
-        if not secret_region_name:
-            logging.error("Could not determine the AWS Secret Manager region")
-            sys.exit(1)
-
-        flask_secret_key = get_flask_secret_key(secret_region_name, secret_name)
-        app_config.update_server_config(app__flask_secret_key=flask_secret_key)
+    # update from secret manager
+    handle_config_from_secret(app_config)
 
     # features are unsupported in the current hosted server
     app_config.update_default_dataset_config(
         user_annotations__enable=False, embeddings__enable_reembedding=False,
     )
     app_config.update_server_config(multi_dataset__allowed_matrix_types=["cxg"],)
-
     app_config.complete_config(logging.info)
 
     if not app_config.server_config.app__flask_secret_key:

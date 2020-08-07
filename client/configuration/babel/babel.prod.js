@@ -1,7 +1,14 @@
 module.exports = {
   babelrc: false,
   presets: [
-    ["modern-browsers", { loose: true, modules: false }],
+    [
+      "@babel/preset-env",
+      {
+        useBuiltIns: "entry",
+        corejs: 3,
+        modules: false,
+      },
+    ],
     "@babel/preset-react",
   ],
   plugins: [

@@ -453,7 +453,9 @@ class CategoryValue extends React.Component {
         label,
         CHART_WIDTH,
         VALUE_HEIGHT
-      ) ?? {};
+      ) ?? {}; // if createHistogramBins returns empty object assign null to deconstructed
+
+    if (!xScale || !yScale || !bins) return null;
 
     return (
       <MiniHistogram

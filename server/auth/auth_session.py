@@ -10,27 +10,30 @@ class AuthTypeSession(AuthTypeBase):
     # key in the session token for userid
     CXGUID = "cxguid"
 
-    def __init__(self):
+    def __init__(self, app_config):
         super().__init__()
 
-    def is_valid(self):
+    def is_valid_authentication_type(self):
         return True
 
-    def set_params(self, params):
-        return
+    def complete_setup(self, app):
+        pass
 
-    def is_authenticated(self):
+    def is_user_authenticated(self):
         # always authenticated
         return True
 
-    def get_userid(self):
+    def get_user_id(self):
         if self.CXGUID not in session:
             session[self.CXGUID] = uuid4().hex
             session.permanent = True
         return session[self.CXGUID]
 
-    def get_username(self):
+    def get_user_name(self):
         return "anonymous"
+
+    def get_user_email(self):
+        return None
 
 
 AuthTypeFactory.register("session", AuthTypeSession)
