@@ -286,6 +286,7 @@ class AnnotationsHostedTileDB(Annotations):
         )
         # Todo in future pr, retrieve dataframe from tiledb uri
 
+
     def write_labels(self, df, data_adaptor):
         uid = current_app.auth.get_user_id()
         timestamp = time.time()

@@ -38,7 +38,6 @@ class DatabaseTest(unittest.TestCase):
         dataset_id = str(self.db.query(table_args=[CellxGeneDataset],
                                        filter_args=[CellxGeneDataset.name == 'test_dataset'])[0].id)
 
-        # have to commit separately because created_at time written on the db server
         self.db.session.add(Annotation(dataset_id=dataset_id, user_id='test_user_id', tiledb_uri='tiledb_uri_0'))
         self.db.session.commit()
 
