@@ -284,7 +284,8 @@ class AnnotationsHostedTileDB(Annotations):
         annotation_object = self.db.query_for_most_recent(
             Annotation, [Annotation.user_id == uid, Annotation.dataset == dataset]
         )
-        ## Todo in future pr, retrieve dataframe from tiledb uri
+        print(annotation_object)
+        # Todo in future pr, retrieve dataframe from tiledb uri
 
     def write_labels(self, df, data_adaptor):
         uid = current_app.auth.get_user_id()
@@ -301,7 +302,7 @@ class AnnotationsHostedTileDB(Annotations):
 
         uri = f"{self.directory_path}/{dataset_name}/{uid}/{timestamp}"
         os.makedirs(uri, exist_ok=True)
-        schema_hints ={}
+        schema_hints = {}
         annotation = Annotation(
             tiledb_uri=uri,
             user_id=uid,
