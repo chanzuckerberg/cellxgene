@@ -66,47 +66,7 @@ class WritableTileDBStoredAnnotationTest(unittest.TestCase):
         self.assertTrue(self.data.original_obs_index.equals(df.index))
         self.assertTrue(np.all(df["cat_A"] == ["label_A"] * n_rows))
         self.assertTrue(np.all(df["cat_B"] == ["label_B"] * n_rows))
-        #
-        # # verify complete overwrite on second attempt, AND rotation occurs
-        # fbs = make_fbs(
-        #     {
-        #         "cat_A": pd.Series(["label_A1"] * n_rows, dtype="category"),
-        #         "cat_C": pd.Series(["label_C"] * n_rows, dtype="category"),
-        #     }
-        # )
-        # res = self.annotation_put_fbs(fbs)
-        # self.assertEqual(res, json.dumps({"status": "OK"}))
-        # self.assertTrue(path.exists(self.annotations.output_file))
-        # df = pd.read_csv(self.annotations.output_file, index_col=0, header=0, comment="#")
-        # self.assertEqual(set(df.columns), {"cat_A", "cat_C"})
-        # self.assertTrue(np.all(df["cat_A"] == ["label_A1"] * n_rows))
-        # self.assertTrue(np.all(df["cat_C"] == ["label_C"] * n_rows))
-        #
-        # # rotation
-        # name, ext = path.splitext(self.annotations.output_file)
-        # backup_dir = f"{name}-backups"
-        # self.assertTrue(path.isdir(backup_dir))
-        # found_files = listdir(backup_dir)
-        # self.assertEqual(len(found_files), 1)
 
-    def xtest_file_rotation_to_max_9(self):
-        # verify we stop rotation at 9
-        n_rows = self.data.get_shape()[0]
-        fbs = make_fbs(
-            {
-                "cat_A": pd.Series(["label_A"] * n_rows, dtype="category"),
-                "cat_B": pd.Series(["label_B"] * n_rows, dtype="category"),
-            }
-        )
-        for i in range(0, 11):
-            res = self.annotation_put_fbs(fbs)
-            self.assertEqual(res, json.dumps({"status": "OK"}))
-
-        name, ext = path.splitext(self.annotations.output_file)
-        backup_dir = f"{name}-backups"
-        self.assertTrue(path.isdir(backup_dir))
-        found_files = listdir(backup_dir)
-        self.assertTrue(len(found_files) <= 9)
 
     def xtest_put_get_roundtrip(self):
         # verify that OBS PUTs (annotation_put_fbs) are accessible via
