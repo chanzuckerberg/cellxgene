@@ -171,6 +171,8 @@ dataset:
   user_annotations:
     enable: true
     type: local_file_csv
+    db_uri: postgresql://postgres:test_pw@localhost:5432
+    hosted_file_directory: s3://hosted-cellxgene-dev/user_annotations/
     local_file_csv:
       directory: null
       file: null

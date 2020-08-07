@@ -1,12 +1,15 @@
 import json
-import uuid
 import time
+import uuid
 from datetime import datetime
 import re
 import os
 import pandas as pd
 from hashlib import blake2b
 import base64
+
+import tiledb
+
 from server import __version__ as cellxgene_version
 import threading
 from server.common.errors import AnnotationsError, OntologyLoadFailure
@@ -16,8 +19,8 @@ import fastobo
 from flask import session, current_app, has_request_context
 from abc import ABCMeta, abstractmethod
 
-from server.db.cellxgene_orm import CellxGeneDataset, Annotation
-from server.db.db_utils import DbUtils
+from server.converters.cxgtool import check_keys, cxg_dtype, generate_schema_hints_and_convert_value_types
+from server.db.cellxgene_orm import Annotation, CellxGeneDataset
 
 
 class Annotations(metaclass=ABCMeta):
@@ -101,7 +104,6 @@ class AnnotationsLocalFile(Annotations):
     def is_safe_collection_name(self, name):
         """
         return true if this is a safe collection name
-
         this is ultra conservative. If we want to allow full legal file name syntax,
         we could look at modules like `pathvalidate`
         """
@@ -268,27 +270,59 @@ class AnnotationsLocalFile(Annotations):
 
 
 class AnnotationsHostedTileDB(Annotations):
-    def __init__(self, directory_path: str, db: DbUtils):
+    def __init__(self, directory_path, db, user_id):
         super().__init__()
         self.db = db
         self.directory_path = directory_path
+        # lock used to protect label file write ops
+        self.label_lock = threading.RLock()
+        self.user_id = user_id
+
+    def check_category_names(self, df):
+        check_keys(df.keys().to_list())
 
     def set_collection(self, name):
         pass
 
     def read_labels(self, data_adaptor):
-        uid = current_app.auth.get_user_id()
         dataset_name = data_adaptor.get_location()
         dataset = self.db.query(table_args=[CellxGeneDataset], filter_args=[CellxGeneDataset.name == dataset_name])
-        # Todo @madison retrieve latest based on timestamp
-        annotation_object = self.db.query_for_most_recent(  # noqa F841
-            Annotation, [Annotation.user_id == uid, Annotation.dataset == dataset]
-        )
-        # Todo in future pr, retrieve dataframe from tiledb uri
 
+        annotation_object = self.db.query_for_most_recent(
+            Annotation, [Annotation.user_id == self.user_id, Annotation.dataset == dataset]
+        )
+        df = tiledb.open(annotation_object[0].tiledb_uri)
+        pandas_df = self.convert_to_pandas_df(df)
+        return pandas_df
+
+    def convert_to_pandas_df(self, tileDBArray):
+        repr_meta = None
+        index_dims = None
+        if '__pandas_attribute_repr' in tileDBArray.meta:
+            # backwards compatibility... unsure if necessary at this point
+            repr_meta = json.loads(tileDBArray.meta['__pandas_attribute_repr'])
+        if '__pandas_index_dims' in tileDBArray.meta:
+            index_dims = json.loads(tileDBArray.meta['__pandas_index_dims'])
+
+        data = tileDBArray[:]
+        indexes = list()
+
+        for col_name, col_val in data.items():
+            if repr_meta and col_name in repr_meta:
+                new_col = pd.Series(col_val, dtype=repr_meta[col_name])
+                data[col_name] = new_col
+            elif index_dims and col_name in index_dims:
+                new_col = pd.Series(col_val, dtype=index_dims[col_name])
+                data[col_name] = new_col
+                indexes.append(col_name)
+
+        new_df = pd.DataFrame.from_dict(data)
+        if len(indexes) > 0:
+            new_df.set_index(indexes, inplace=True)
+
+        return new_df
 
     def write_labels(self, df, data_adaptor):
-        uid = current_app.auth.get_user_id()
         timestamp = time.time()
         dataset_name = data_adaptor.get_location()
         try:
@@ -299,20 +333,31 @@ class AnnotationsHostedTileDB(Annotations):
             dataset_id = uuid.uuid4()
             dataset = CellxGeneDataset(id=dataset_id, name=dataset_name)
             self.db.session.add(dataset)
+            self.db.session.commit()
 
-        uri = f"{self.directory_path}/{dataset_name}/{uid}/{timestamp}"
+        uri = f"{self.directory_path}/{dataset_name}/{self.user_id}/{timestamp}"
         if "s3" in uri:
             pass
         else:
             os.makedirs(uri, exist_ok=True)
-        schema_hints = {}
+        schema_hints, values = generate_schema_hints_and_convert_value_types(df)
+
         annotation = Annotation(
             tiledb_uri=uri,
-            user_id=uid,
+            user_id=self.user_id,
             dataset_id=str(dataset_id),
             schema_hints=json.dumps(schema_hints)
         )
-        # todo in future pr -- write df to tiledb, store at uri
+        with self.label_lock:
+            if not df.empty:
+                # self.check_category_names(df)
+                # convert to tiledb datatypes
+                for col in df:
+                    df[col] = df[col].astype(cxg_dtype(df[col]))
+                try:
+                    tiledb.from_pandas(uri, df)
+                except Exception as e:
+                    print(e)
         self.db.session.add(annotation)
         self.db.session.commit()
 
