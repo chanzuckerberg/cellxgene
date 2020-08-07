@@ -28,7 +28,7 @@ class DatabaseTest(unittest.TestCase):
         self.assertGreater(dataset_count, 10)
 
     def test_annotation_creation(self):
-        one_annotation = self.db.get(table=Annotation, entity_id='test_annotation_id')
-        self.assertEqual(one_annotation.id, 'test_annotation_id')
+        one_annotation = self.db.query(table_args=[Annotation], filter_args=[Annotation.tiledb_uri == 'tiledb_uri'])[0]
+        self.assertEqual(one_annotation.tiledb_uri, 'tiledb_uri')
         annotation_count = self.db.session.query(Annotation).count()
         self.assertGreater(annotation_count, 10)

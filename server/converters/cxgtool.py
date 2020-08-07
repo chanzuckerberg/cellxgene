@@ -308,25 +308,32 @@ def alias_index_col(df, df_name, index_col_name):
 #
 #     tiledb.consolidate(A_name, ctx=ctx)
 
+def generate_schema_hints_and_convert_value_types(df):
+    value = {}
+    schema_hints = {}
+    for k, v in df.items():
+        dtype, hints = cxg_type(v)
+        value[k] = v.to_numpy(dtype=dtype)
+        if hints:
+            schema_hints.update({k: hints})
+    return schema_hints, value
+
 
 def save_dataframe(container, name, df, index_col_name, ctx):
     A_name = f"{container}/{name}"
     (df, index_col_name) = alias_index_col(df, name, index_col_name)
     create_dataframe(A_name, df, ctx=ctx)
     with tiledb.DenseArray(A_name, mode="w", ctx=ctx) as A:
-        value = {}
-        schema_hints = {}
-        for k, v in df.items():
-            dtype, hints = cxg_type(v)
-            value[k] = v.to_numpy(dtype=dtype)
-            if hints:
-                schema_hints.update({k: hints})
+        schema_hints, value = generate_schema_hints_and_convert_value_types(df)
 
         schema_hints.update({"index": index_col_name})
+        # convert all values in all cols to a numpy version of cxg datatypes,
+        # then store the contents in the tiledb array A
         A[:] = value
         A.meta["cxg_schema"] = json.dumps(schema_hints)
 
     tiledb.consolidate(A_name, ctx=ctx)
+
 
 def create_emb(e_name, emb):
     """

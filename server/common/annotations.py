@@ -1,4 +1,6 @@
+import json
 import time
+import uuid
 from datetime import datetime
 import re
 import os
@@ -17,7 +19,7 @@ import fastobo
 from flask import session, current_app, has_request_context
 from abc import ABCMeta, abstractmethod
 
-from server.converters.cxgtool import check_keys
+from server.converters.cxgtool import check_keys, cxg_dtype, generate_schema_hints_and_convert_value_types
 from server.db.cellxgene_orm import Annotation, CellxGeneDataset
 from server.db.db_utils import DbUtils
 
@@ -284,33 +286,50 @@ class AnnotationsTileDBHosted(Annotations):
         pass
 
     def read_labels(self, data_adaptor):
-        uid = current_app.auth.get_user_id()
-        dataset = data_adaptor.get_title()
-        self.db.query(Annotation, user_id=uid, )
+        # uid = current_app.auth.get_user_id()
+        uid = '1234'
+        dataset_name = data_adaptor.get_location()
+        dataset = self.db.query(table_args=[CellxGeneDataset], filter_args=[CellxGeneDataset.name == dataset_name])
+        annotation_object = self.db.query([Annotation], [Annotation.user_id == uid, Annotation.dataset == dataset])
+
+        import pdb
+        pdb.set_trace()
+        print(annotation_object)
 
     def write_labels(self, df, data_adaptor):
-        uid = current_app.auth.get_user_id()
+        # uid = current_app.auth.get_user_id()
+        uid = '1234'
         timestamp = time.time()
-        dataset_name = data_adaptor.get_path() + data_adaptor.get_title()
+        dataset_name = data_adaptor.get_location()
+        try:
+            dataset_id = self.db.query(table_args=[CellxGeneDataset], filter_args=[CellxGeneDataset.name == dataset_name])[0].id
+        except IndexError:
+            dataset_id = uuid.uuid4()
+            dataset = CellxGeneDataset(id=dataset_id, name=dataset_name)
+            self.db.session.add(dataset)
+
         uri = f"{self.directory_path}/{dataset_name}/{uid}/{timestamp}"
+        os.makedirs(uri, exist_ok=True)
+        schema_hints, values = generate_schema_hints_and_convert_value_types(df)
         annotation = Annotation(
             tiledb_uri=uri,
             user_id=uid,
-            dataset=CellxGeneDataset(name=dataset_name)
+            dataset_id=str(dataset_id),
+            schema_hints=json.dumps(schema_hints)
         )
         with self.label_lock:
             if not df.empty:
-                self.check_category_names(df)
-                filter = tiledb.FilterList(
-                    [
-                        # attempt aggressive compression as many of these dataframes are very repetitive
-                        # strings, bools and other non-float data.
-                        tiledb.ZstdFilter(),
-                    ]
-                )
-                tiledb.from_pandas(uri, df, attrs_filters=filter)
+                # self.check_category_names(df)
+                # convert to tiledb datatypes
+                for col in df:
+                    df[col] = df[col].astype(cxg_dtype(df[col]))
+                try:
+                    tiledb.from_pandas(uri, df)
+                except Exception as e:
+                    print(e)
         self.db.session.add(annotation)
         self.db.session.commit()
+
 
     def update_parameters(self, parameters, data_adaptor):
         pass

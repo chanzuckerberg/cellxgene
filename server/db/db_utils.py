@@ -3,7 +3,7 @@ import typing
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from server.db.cellxgene_orm import Base
+from server.db.cellxgene_orm import Base, CellxGeneDataset
 
 
 class DbUtils:
@@ -32,6 +32,22 @@ class DbUtils:
             if filter_args
             else self.session.query(*table_args).all()
         )
+
+    # def get_or_create_dataset(self, dataset_name: str ) -> CellxGeneDataset:
+    #     """
+    #     Query the database using the current DB session
+    #     :param dataset_name: Name of dataset to retrieve
+    #     :param filter_args: List of SQLAlchemy filter conditions
+    #     :return: List of SQLAlchemy query response objects
+    #     """
+    #     try:
+    #         dataset = self.session.query(CellxGeneDataset).filter(CellxGeneDataset.name==dataset_name).all()
+    #     except
+    #
+    #     return (
+    #         if filter_args
+    #         else self.session.query(*table_args).all()
+    #     )
 
 
 class DBSessionMaker:

@@ -6,7 +6,7 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     String,
-)
+    func, JSON)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
@@ -23,8 +23,8 @@ class CellxGeneUser(Base):
     __tablename__ = "cxguser"
 
     id = Column(String, primary_key=True)
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
-    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, nullable=False, server_default=func.now())
+    updated_at = Column(DateTime, nullable=False, server_default=func.now(), onupdate=func.now())
 
     # Relationships
     annotations = relationship("Annotation", back_populates="cxguser")
@@ -38,21 +38,22 @@ class Annotation(Base):
 
     __tablename__ = "annotation"
 
-    id = Column(String, primary_key=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
     tiledb_uri = Column(String)
     user_id = Column(String, ForeignKey("cxguser.id"), nullable=False)
     dataset_id = Column(UUID, ForeignKey("cxgdataset.id"), nullable=False)
 
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
-
+    created_at = Column(DateTime, nullable=False, server_default=func.now())
+    schema_hints = Column(JSON)
     # Relationships
     cxguser = relationship("CellxGeneUser", back_populates="annotations")
     dataset = relationship("CellxGeneDataset", back_populates="annotations")
 
 
+
 class CellxGeneDataset(Base):
     """
-    Datasets refer to cellxgene datasets stored by cellxgene
+    Datasets refer to datasets stored by cellxgene
     """
 
     __tablename__ = "cxgdataset"
@@ -60,5 +61,8 @@ class CellxGeneDataset(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
     name = Column(String, unique=True, index=True)
 
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    created_at = Column(DateTime, nullable=False, server_default=func.now())
     annotations = relationship("Annotation", back_populates="dataset")
+
+    def get_or_create(self, name):
+        pass

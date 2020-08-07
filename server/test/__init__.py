@@ -58,7 +58,7 @@ def data_with_tmp_tiledb_annotations(ext: MatrixDataType):
         single_dataset__obs_names=None, single_dataset__var_names=None, single_dataset__datapath=data_locator.path
     )
     config.update_default_dataset_config(
-        embeddings__names=["umap"], presentation__max_categories=100, diffexp__lfc_cutoff=0.01,
+        embeddings__names=["umap"], presentation__max_categories=100, diffexp__lfc_cutoff=0.01, user_annotations__type="hosted_tiledb_array"
     )
     config.complete_config()
     data = MatrixDataLoader(data_locator.abspath()).open(config)
