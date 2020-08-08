@@ -21,9 +21,10 @@ class AuthTest(unittest.TestCase):
 
         with test_server(app_config=c) as server:
             session = requests.Session()
-            r = session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/config")
-            data_config = r.json()
-            assert "authentication" not in data_config["config"]
+            config = session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/config").json()
+            userinfo = session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/userinfo").json()
+            assert "authentication" not in config["config"]
+            assert userinfo is None
 
     def test_auth_session(self):
         c = AppConfig()
@@ -35,11 +36,12 @@ class AuthTest(unittest.TestCase):
 
         with test_server(app_config=c) as server:
             session = requests.Session()
-            r = session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/config")
-            data_config = r.json()
-            assert data_config["config"]["authentication"]["is_authenticated"]
-            assert not data_config["config"]["authentication"]["requires_client_login"]
-            assert data_config["config"]["authentication"]["username"] == "anonymous"
+            config = session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/config").json()
+            userinfo = session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/userinfo").json()
+
+            assert not config["config"]["authentication"]["requires_client_login"]
+            assert userinfo["userinfo"]["is_authenticated"]
+            assert userinfo["userinfo"]["username"] == "anonymous"
 
     def test_auth_test(self):
         c = AppConfig()
@@ -61,15 +63,16 @@ class AuthTest(unittest.TestCase):
             session = requests.Session()
 
             # auth datasets
-            r = session.get(f"{server}/auth/pbmc3k.cxg/api/v0.2/config")
-            data_config = r.json()
-            assert not data_config["config"]["authentication"]["is_authenticated"]
-            assert data_config["config"]["authentication"]["requires_client_login"]
-            assert data_config["config"]["authentication"]["username"] is None
-            assert data_config["config"]["parameters"]["annotations"]
+            config = session.get(f"{server}/auth/pbmc3k.cxg/api/v0.2/config").json()
+            userinfo = session.get(f"{server}/auth/pbmc3k.cxg/api/v0.2/userinfo").json()
 
-            login_uri = data_config["config"]["authentication"]["login"]
-            logout_uri = data_config["config"]["authentication"]["logout"]
+            assert not userinfo["userinfo"]["is_authenticated"]
+            assert userinfo["userinfo"]["username"] is None
+            assert config["config"]["authentication"]["requires_client_login"]
+            assert config["config"]["parameters"]["annotations"]
+
+            login_uri = config["config"]["authentication"]["login"]
+            logout_uri = config["config"]["authentication"]["logout"]
 
             assert login_uri == "/login?dataset=auth/pbmc3k.cxg"
             assert logout_uri == "/logout?dataset=auth/pbmc3k.cxg"
@@ -79,27 +82,27 @@ class AuthTest(unittest.TestCase):
             assert r.history[0].status_code == 302
             assert r.url == f"{server}/auth/pbmc3k.cxg/"
 
-            r = session.get(f"{server}/auth/pbmc3k.cxg/api/v0.2/config")
-            data_config = r.json()
-            assert data_config["config"]["authentication"]["is_authenticated"]
-            assert data_config["config"]["authentication"]["username"] == "test_account"
-            assert data_config["config"]["parameters"]["annotations"]
+            config = session.get(f"{server}/auth/pbmc3k.cxg/api/v0.2/config").json()
+            userinfo = session.get(f"{server}/auth/pbmc3k.cxg/api/v0.2/userinfo").json()
+            assert userinfo["userinfo"]["is_authenticated"]
+            assert userinfo["userinfo"]["username"] == "test_account"
+            assert config["config"]["parameters"]["annotations"]
 
             r = session.get(f"{server}/{logout_uri}")
             # check that the logout redirect worked
             assert r.history[0].status_code == 302
             assert r.url == f"{server}/auth/pbmc3k.cxg/"
-            r = session.get(f"{server}/auth/pbmc3k.cxg/api/v0.2/config")
-            data_config = r.json()
-            assert not data_config["config"]["authentication"]["is_authenticated"]
-            assert data_config["config"]["authentication"]["username"] is None
-            assert data_config["config"]["parameters"]["annotations"]
+            config = session.get(f"{server}/auth/pbmc3k.cxg/api/v0.2/config").json()
+            userinfo = session.get(f"{server}/auth/pbmc3k.cxg/api/v0.2/userinfo").json()
+            assert not userinfo["userinfo"]["is_authenticated"]
+            assert userinfo["userinfo"]["username"] is None
+            assert config["config"]["parameters"]["annotations"]
 
             # no-auth datasets
-            r = session.get(f"{server}/no-auth/pbmc3k.cxg/api/v0.2/config")
-            data_config = r.json()
-            assert "authentication" not in data_config["config"]
-            assert not data_config["config"]["parameters"]["annotations"]
+            config = session.get(f"{server}/no-auth/pbmc3k.cxg/api/v0.2/config").json()
+            userinfo = session.get(f"{server}/no-auth/pbmc3k.cxg/api/v0.2/userinfo").json()
+            assert userinfo is None
+            assert not config["config"]["parameters"]["annotations"]
 
     def test_auth_test_single(self):
         c = AppConfig()
@@ -111,16 +114,15 @@ class AuthTest(unittest.TestCase):
 
         with test_server(app_config=c) as server:
             session = requests.Session()
+            config = session.get(f"{server}/api/v0.2/config").json()
+            userinfo = session.get(f"{server}/api/v0.2/userinfo").json()
+            assert not userinfo["userinfo"]["is_authenticated"]
+            assert userinfo["userinfo"]["username"] is None
+            assert config["config"]["authentication"]["requires_client_login"]
+            assert config["config"]["parameters"]["annotations"]
 
-            r = session.get(f"{server}/api/v0.2/config")
-            data_config = r.json()
-            assert not data_config["config"]["authentication"]["is_authenticated"]
-            assert data_config["config"]["authentication"]["requires_client_login"]
-            assert data_config["config"]["authentication"]["username"] is None
-            assert data_config["config"]["parameters"]["annotations"]
-
-            login_uri = data_config["config"]["authentication"]["login"]
-            logout_uri = data_config["config"]["authentication"]["logout"]
+            login_uri = config["config"]["authentication"]["login"]
+            logout_uri = config["config"]["authentication"]["logout"]
 
             assert login_uri == "/login"
             assert logout_uri == "/logout"
@@ -130,18 +132,18 @@ class AuthTest(unittest.TestCase):
             assert r.history[0].status_code == 302
             assert r.url == f"{server}/"
 
-            r = session.get(f"{server}/api/v0.2/config")
-            data_config = r.json()
-            assert data_config["config"]["authentication"]["is_authenticated"]
-            assert data_config["config"]["authentication"]["username"] == "test_account"
-            assert data_config["config"]["parameters"]["annotations"]
+            config = session.get(f"{server}/api/v0.2/config").json()
+            userinfo = session.get(f"{server}/api/v0.2/userinfo").json()
+            assert userinfo["userinfo"]["is_authenticated"]
+            assert userinfo["userinfo"]["username"] == "test_account"
+            assert config["config"]["parameters"]["annotations"]
 
             r = session.get(f"{server}/{logout_uri}")
             # check that the logout redirect worked
             assert r.history[0].status_code == 302
             assert r.url == f"{server}/"
-            r = session.get(f"{server}/api/v0.2/config")
-            data_config = r.json()
-            assert not data_config["config"]["authentication"]["is_authenticated"]
-            assert data_config["config"]["authentication"]["username"] is None
-            assert data_config["config"]["parameters"]["annotations"]
+            config = session.get(f"{server}/api/v0.2/config").json()
+            userinfo = session.get(f"{server}/api/v0.2/userinfo").json()
+            assert not userinfo["userinfo"]["is_authenticated"]
+            assert userinfo["userinfo"]["username"] is None
+            assert config["config"]["parameters"]["annotations"]

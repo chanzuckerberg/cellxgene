@@ -243,6 +243,13 @@ class ConfigAPI(DatasetResource):
         return common_rest.config_get(current_app.app_config, data_adaptor)
 
 
+class UserInfoAPI(DatasetResource):
+    @cache_control_always(no_store=True)
+    @rest_get_data_adaptor
+    def get(self, data_adaptor):
+        return common_rest.userinfo_get(current_app.app_config, data_adaptor)
+
+
 class AnnotationsObsAPI(DatasetResource):
     @cache_control(public=True, max_age=ONE_WEEK)
     @rest_get_data_adaptor
@@ -311,6 +318,7 @@ def get_api_resources(bp_api, url_dataroot=None):
     # Initialization routes
     add_resource(SchemaAPI, "/schema")
     add_resource(ConfigAPI, "/config")
+    add_resource(UserInfoAPI, "/userinfo")
     # Data routes
     add_resource(AnnotationsObsAPI, "/annotations/obs")
     add_resource(AnnotationsVarAPI, "/annotations/var")

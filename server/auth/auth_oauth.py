@@ -1,4 +1,4 @@
-from flask import session, request, redirect, current_app, after_this_request, has_request_context, g
+from flask import session, request, redirect, current_app, has_request_context, g
 from server.auth.auth import AuthTypeClientBase, AuthTypeFactory
 from server.common.errors import AuthenticationError, ConfigurationError
 from urllib.parse import urlencode
@@ -15,6 +15,7 @@ except ModuleNotFoundError:
 
 try:
     from jose import jwt
+    from jose.exceptions import ExpiredSignatureError, JWTError, JWTClaimsError
 except ModuleNotFoundError:
     missingimport.append("jose")
 
@@ -137,18 +138,15 @@ class AuthTypeOAuth(AuthTypeClientBase):
         return response
 
     def logout(self):
+        params = {'returnTo' : self.callback_base_url, 'client_id' : self.client_id}
+        response = redirect(self.client.api_base_url + '/v2/logout?' + urlencode(params))
+
         if self.session_cookie:
             if self.CXG_ID_TOKEN in session:
                 del session[self.CXG_ID_TOKEN]
         else:
-            @after_this_request
-            def remove_cookie(response):
-                response.set_cookie(self.cookie_params["key"], "", expires=0)
-                self.update_response(response)
-                return response
+            response.set_cookie(self.cookie_params["key"], "", expires=0)
 
-        params = {'returnTo' : self.callback_base_url, 'client_id' : self.client_id}
-        response = redirect(self.client.api_base_url + '/v2/logout?' + urlencode(params))
         self.update_response(response)
         return response
 
@@ -178,7 +176,7 @@ class AuthTypeOAuth(AuthTypeClientBase):
     def get_login_url(self, data_adaptor):
         """Return the url for the login route"""
         if current_app.app_config.is_multi_dataset():
-            return f"/login?dataset={data_adaptor.uri_path}"
+            return f"/login?dataset={data_adaptor.uri_path}/"
         else:
             return "/login"
 
@@ -227,11 +225,12 @@ class AuthTypeOAuth(AuthTypeClientBase):
                 )
                 return payload
 
-            except jwt.JWTError as e:
+            except JWTError as e:
                 raise AuthenticationError(f"invalid signature: {str(e)}")
-            except jwt.ExpiredSignatureError as e:
-                raise AuthenticationError(f"token expired: {str(e)}")
-            except jwt.JWTClaimsError as e:
+            except ExpiredSignatureError:
+                # TODO, handle expired sessions by refreshing the token
+                return None
+            except JWTClaimsError as e:
                 raise AuthenticationError(f"invalid claims {str(e)}")
 
         raise AuthenticationError("Unable to find the appropriate key")
