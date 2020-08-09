@@ -381,14 +381,11 @@ class EndPointsAnndata(unittest.TestCase, EndPoints):
 
     @classmethod
     def setUpClass(cls):
-        cls._setupClass(
-            cls,
-            [
-                f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad",
-                "--disable-annotations",
-                "--experimental-enable-reembedding",
-            ],
-        )
+        cls._setupClass(cls, [
+            f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad",
+            "--disable-annotations",
+            "--experimental-enable-reembedding",
+        ])
 
     @classmethod
     def tearDownClass(cls):
@@ -442,7 +439,11 @@ class EndPointsCxgAnnotations(unittest.TestCase, EndPointsAnnotations):
     @classmethod
     def setUpClass(cls):
         cls.data, cls.tmp_dir, cls.annotations = data_with_tmp_annotations(MatrixDataType.CXG, annotations_fixture=True)
-        cls._setupClass(cls, ["--annotations-file", cls.annotations.output_file, cls.data.get_location(), ])
+        cls._setupClass(cls, [
+            "--annotations-file",
+            cls.annotations.output_file,
+            cls.data.get_location(),
+        ])
 
     @classmethod
     def tearDownClass(cls):

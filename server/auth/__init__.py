@@ -1,3 +1,4 @@
+
 # import the built in auth types so they can be registered
 
 import server.auth.auth_none  # noqa: F401

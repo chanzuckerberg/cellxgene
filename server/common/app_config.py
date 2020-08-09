@@ -279,9 +279,10 @@ class AppConfig(object):
                 "username": auth.get_user_name(),
             }
             if auth.requires_client_login():
-                config["authentication"].update(
-                    {"login": auth.get_login_url(data_adaptor), "logout": auth.get_logout_url(data_adaptor),}
-                )
+                config["authentication"].update({
+                    "login": auth.get_login_url(data_adaptor),
+                    "logout": auth.get_logout_url(data_adaptor),
+                })
 
         return c
 
