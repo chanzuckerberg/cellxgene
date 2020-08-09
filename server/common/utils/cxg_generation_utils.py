@@ -3,6 +3,8 @@ import json
 import numpy as np
 import tiledb
 
+from server.common.utils.type_conversion_utils import cxg_type
+
 
 def convert_dictionary_to_cxg_group(cxg_container, metadata_dict):
     """
@@ -33,9 +35,8 @@ def convert_dataframe_to_cxg_array(cxg_container, dataframe_name, dataframe, ind
     def create_dataframe_array(array_name, dataframe):
         tiledb_filter = tiledb.FilterList(
             [
-                # Attempt aggressive compression as many of these dataframes are very repetitive strings,
-                # bools and other
-                # non-float data.
+                # Attempt aggressive compression as many of these dataframes are very repetitive strings, bools and
+                # other non-float data.
                 tiledb.ZstdFilter(level=22),
             ]
         )
@@ -75,10 +76,9 @@ def convert_ndarray_to_cxg_dense_array(ndarray_name, ndarray, ctx):
     """
     Saves contents of ndarray to the CXG output directory specified.
 
-    Generally this function is used to convert
-    dataset embeddings. Because embeddings are typically accessed with very large slices (or all of the embedding),
-    they do not benefit from overly aggressive compression due to their format.  Given this, we use a large tile size
-    (1000) but only default compression level.
+    Generally this function is used to convert dataset embeddings. Because embeddings are typically accessed with
+    very large slices (or all of the embedding), they do not benefit from overly aggressive compression due to their
+    format.  Given this, we use a large tile size (1000) but only default compression level.
     """
 
     def create_ndarray_array(ndarray_name, ndarray):
@@ -104,7 +104,7 @@ def convert_ndarray_to_cxg_dense_array(ndarray_name, ndarray, ctx):
 
 
 def convert_matrix_to_cxg_array(
-    matrix_name, matrix, encode_as_sparse_array, ctx, column_shift_for_sparse_encoding=None
+        matrix_name, matrix, encode_as_sparse_array, ctx, column_shift_for_sparse_encoding=None
 ):
     def create_matrix_array(matrix_name, number_of_rows, number_of_columns, encode_as_sparse_array):
         filters = tiledb.FilterList([tiledb.ZstdFilter()])

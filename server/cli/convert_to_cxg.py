@@ -108,42 +108,6 @@ def convert_to_cxg(
     h5ad_data_file.to_cxg(cxg_output_container, not disable_custom_colors, sparse_threshold)
 
 
-def dtype_to_schema(dtype):
-    if dtype == np.float32:
-        return (np.float32, {})
-    if dtype == np.int32:
-        return (np.int32, {})
-    if dtype == np.bool_:
-        return (np.uint8, {"type": "boolean"})
-    if dtype == np.str:
-        return (np.unicode, {"type": "string"})
-    if dtype == "category":
-        type = cxg_type(dtype.categories)
-        return (type, {"type": "categorical", "categories": dtype.categories.tolist()})
-
-    raise TypeError(f"Annotations of type {dtype} are unsupported.")
-
-
-def cxg_type(array):
-    try:
-        return dtype_to_schema(array.dtype)
-    except TypeError:
-        dtype = array.dtype
-        data_kind = dtype.kind
-        if array.dtype.kind == "f":
-            # Castable to float32
-            return np.float32
-        if array.dtype.kind in ["i", "u"]:
-            # Castable to int32
-            if np.can_cast(array.dtype, np.int32):
-                return np.int32
-            ii32 = np.iinfo(np.int32)
-            if array.min() >= ii32.min and array.max() <= ii32.max:
-                return np.int32
-        if data_kind == "O" and dtype == "object":
-            return np.unicode
-
-        raise TypeError(f"Annotations of type {dtype} are unsupported.")
 
 
 def get_output_directory(input_filename, output_directory, should_overwrite):
