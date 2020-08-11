@@ -27,8 +27,7 @@ import undoableConfig from "./undoableConfig";
 const Reducer = undoable(
   cascadeReducers([
     ["config", config],
-    ["userinfo", userinfo],
-    [("annoMatrix", annoMatrix)],
+    ["annoMatrix", annoMatrix],
     ["obsCrossfilter", obsCrossfilter],
     ["ontology", ontology],
     ["annotations", annotations],
@@ -43,6 +42,7 @@ const Reducer = undoable(
     ["pointDilation", pointDialation],
     ["reembedController", reembedController],
     ["autosave", autosave],
+    ["userinfo", userinfo],
   ]),
   [
     "annoMatrix",

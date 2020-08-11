@@ -43,8 +43,7 @@ async function configFetch(dispatch) {
 
 async function userInfoFetch(dispatch) {
   return fetchJson("userinfo").then((response) => {
-    console.log("userInfoFetch sees", response);
-    const userInfo = { ...response.userInfo };
+    const userInfo = response.userinfo;
     dispatch({
       type: "userinfo load complete",
       userInfo,
@@ -72,9 +71,9 @@ const doInitialDataLoad = () =>
     try {
       const [config, schema] = await Promise.all([
         configFetch(dispatch),
-        userInfoFetch(dispatch),
         schemaFetch(dispatch),
         userColorsFetchAndLoad(dispatch),
+        userInfoFetch(dispatch),
       ]);
 
       const baseDataUrl = `${globals.API.prefix}${globals.API.version}`;
