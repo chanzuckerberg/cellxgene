@@ -41,6 +41,18 @@ async function configFetch(dispatch) {
   });
 }
 
+async function userInfoFetch(dispatch) {
+  return fetchJson("userinfo").then((response) => {
+    console.log("userInfoFetch sees", response);
+    const userInfo = { ...response.userInfo };
+    dispatch({
+      type: "userinfo load complete",
+      userInfo,
+    });
+    return userInfo;
+  });
+}
+
 function prefetchEmbeddings(annoMatrix) {
   /*
   prefetch requests for all embeddings
@@ -60,6 +72,7 @@ const doInitialDataLoad = () =>
     try {
       const [config, schema] = await Promise.all([
         configFetch(dispatch),
+        userInfoFetch(dispatch),
         schemaFetch(dispatch),
         userColorsFetchAndLoad(dispatch),
       ]);

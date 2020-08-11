@@ -4,6 +4,7 @@ import thunk from "redux-thunk";
 import cascadeReducers from "./cascade";
 import undoable from "./undoable";
 import config from "./config";
+import userinfo from "./userinfo";
 import annoMatrix from "./annoMatrix";
 import obsCrossfilter from "./obsCrossfilter";
 import categoricalSelection from "./categoricalSelection";
@@ -26,7 +27,8 @@ import undoableConfig from "./undoableConfig";
 const Reducer = undoable(
   cascadeReducers([
     ["config", config],
-    ["annoMatrix", annoMatrix],
+    ["userinfo", userinfo],
+    [("annoMatrix", annoMatrix)],
     ["obsCrossfilter", obsCrossfilter],
     ["ontology", ontology],
     ["annotations", annotations],
