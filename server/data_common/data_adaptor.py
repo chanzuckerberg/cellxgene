@@ -7,7 +7,7 @@ from os.path import basename, splitext
 from server.data_common.fbs.matrix import encode_matrix_fbs
 from server.common.constants import Axis
 from server.common.errors import FilterError, JSONEncodingValueError, ExceedsLimitError
-from server.common.utils import jsonify_numpy
+from server.common.utils.utils import jsonify_numpy
 from server.common.app_config import AppFeature, AppConfig
 
 

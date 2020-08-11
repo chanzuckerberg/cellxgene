@@ -18,6 +18,8 @@ def convert_dictionary_to_cxg_group(cxg_container, metadata_dict):
     """
 
     array_name = f"{cxg_container}/cxg_group_metadata"
+    with tiledb.from_numpy(array_name, np.zeros((1,))):
+        pass
     with tiledb.DenseArray(array_name, mode="w") as metadata_array:
         for key, value in metadata_dict.items():
             metadata_array.meta[key] = value
@@ -59,11 +61,12 @@ def convert_dataframe_to_cxg_array(cxg_container, dataframe_name, dataframe, ind
     with tiledb.DenseArray(array_name, mode="w", ctx=ctx) as array:
         value = {}
         schema_hints = {}
-        for key, value in dataframe.items():
-            dtype, hints = cxg_type(value)
-            value[key] = value.to_numpy(dtype=dtype)
+        for column_name, column_values in dataframe.items():
+            dtype, hints = cxg_type(column_values)
+
+            value[column_name] = column_values.to_numpy(dtype=dtype)
             if hints:
-                schema_hints.update({key: hints})
+                schema_hints.update({column_name: hints})
 
         schema_hints.update({"index": index_column_name})
         array[:] = value
@@ -100,7 +103,8 @@ def convert_ndarray_to_cxg_dense_array(ndarray_name, ndarray, ctx):
 
     with tiledb.DenseArray(ndarray_name, mode="w", ctx=ctx) as array:
         array[:] = ndarray
-    tiledb.consolidate(ndarray, ctx=ctx)
+
+    tiledb.consolidate(ndarray_name, ctx=ctx)
 
 
 def convert_matrix_to_cxg_array(

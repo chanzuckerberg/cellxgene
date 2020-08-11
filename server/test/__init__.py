@@ -14,7 +14,7 @@ import pandas as pd
 from server.common.annotations import AnnotationsLocalFile
 from server.common.data_locator import DataLocator
 from server.common.app_config import AppConfig, DEFAULT_SERVER_PORT
-from server.common.utils import find_available_port
+from server.common.utils.utils import find_available_port
 from server.data_common.fbs.matrix import encode_matrix_fbs
 from server.data_common.matrix_loader import MatrixDataLoader, MatrixDataType
 

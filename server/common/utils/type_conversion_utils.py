@@ -64,16 +64,16 @@ def cxg_type(array):
         data_kind = dtype.kind
         if array.dtype.kind == "f":
             # Castable to float32
-            return np.float32
+            return (np.float32, {})
         if array.dtype.kind in ["i", "u"]:
             # Castable to int32
             if np.can_cast(array.dtype, np.int32):
-                return np.int32
+                return (np.int32, {})
             ii32 = np.iinfo(np.int32)
             if array.min() >= ii32.min and array.max() <= ii32.max:
-                return np.int32
+                return (np.int32, {})
         if data_kind == "O" and dtype == "object":
-            return np.unicode
+            return (np.unicode, {"type": "string"})
 
         raise TypeError(f"Annotations of type {dtype} are unsupported.")
 

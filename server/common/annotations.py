@@ -7,7 +7,7 @@ import base64
 from server import __version__ as cellxgene_version
 import threading
 from server.common.errors import AnnotationsError, OntologyLoadFailure
-from server.common.utils import series_to_schema
+from server.common.utils.type_conversion_utils import series_to_schema
 import fsspec
 import fastobo
 from flask import session, current_app, has_request_context

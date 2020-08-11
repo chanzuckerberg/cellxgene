@@ -10,7 +10,7 @@ from server_timing import Timing as ServerTiming
 
 from server.data_common.data_adaptor import DataAdaptor
 from server.data_common.fbs.matrix import encode_matrix_fbs
-from server.common.utils import series_to_schema
+from server.common.utils.type_conversion_utils import series_to_schema
 from server.common.colors import convert_anndata_category_colors_to_cxg_category_colors
 from server.common.constants import Axis, MAX_LAYOUTS
 from server.common.errors import PrepareError, DatasetAccessError, FilterError

@@ -10,7 +10,7 @@ from http import HTTPStatus
 
 import server.common.rest as common_rest
 from server.common.errors import DatasetAccessError, RequestException
-from server.common.utils import path_join, Float32JSONEncoder
+from server.common.utils.utils import path_join, Float32JSONEncoder
 from server.common.data_locator import DataLocator
 from server.common.health import health_check
 from server.data_common.matrix_loader import MatrixDataLoader

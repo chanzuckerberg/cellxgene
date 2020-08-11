@@ -1,9 +1,9 @@
 import os
 import json
 import logging
-from server.common.utils import dtype_to_schema
+from server.common.utils.type_conversion_utils import dtype_to_schema
 from server.common.errors import DatasetAccessError, ConfigurationError
-from server.common.utils import path_join
+from server.common.utils.utils import path_join
 from server.common.constants import Axis
 from server.data_common.data_adaptor import DataAdaptor
 from server.data_common.fbs.matrix import encode_matrix_fbs

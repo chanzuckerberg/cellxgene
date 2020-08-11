@@ -1,22 +1,22 @@
-from server import display_version as cellxgene_display_version
-from flatten_dict import flatten, unflatten
-import os
-from os.path import splitext, basename, isdir
-import sys
-from urllib.parse import urlparse, quote_plus
-import yaml
 import copy
+import os
+import sys
+import warnings
+from os.path import splitext, basename, isdir
+from urllib.parse import urlparse, quote_plus
 
+import yaml
+from flatten_dict import flatten, unflatten
+
+import server.compute.diffexp_cxg as diffexp_tiledb
+from server import display_version as cellxgene_display_version
+from server.auth.auth import AuthTypeFactory
+from server.common.annotations import AnnotationsLocalFile
+from server.common.data_locator import discover_s3_region_name
 from server.common.default_config import get_default_config
 from server.common.errors import ConfigurationError, DatasetAccessError, OntologyLoadFailure
+from server.common.utils.utils import find_available_port, is_port_available, custom_format_warning
 from server.data_common.matrix_loader import MatrixDataLoader, MatrixDataCacheManager, MatrixDataType
-from server.common.utils import find_available_port, is_port_available
-import warnings
-from server.common.annotations import AnnotationsLocalFile
-from server.common.utils import custom_format_warning
-import server.compute.diffexp_cxg as diffexp_tiledb
-from server.common.data_locator import discover_s3_region_name
-from server.auth.auth import AuthTypeFactory
 
 DEFAULT_SERVER_PORT = 5005
 # anything bigger than this will generate a special message
@@ -148,7 +148,6 @@ class AppConfig(object):
         parameters is done"""
 
         if messagefn is None:
-
             def noop(message):
                 pass
 
@@ -824,7 +823,7 @@ class DatasetConfig(BaseConfig):
             server_config = self.app_config.server_config
             if server_config.single_dataset__datapath and self.user_annotations__local_file_csv__file:
                 with server_config.matrix_data_cache_manager.data_adaptor(
-                    self.tag, server_config.single_dataset__datapath, self.app_config
+                        self.tag, server_config.single_dataset__datapath, self.app_config
                 ) as data_adaptor:
                     data_adaptor.check_new_labels(self.user_annotations.read_labels(data_adaptor))
 
@@ -875,7 +874,7 @@ class DatasetConfig(BaseConfig):
         server_config = self.app_config.server_config
         if server_config.single_dataset__datapath:
             with server_config.matrix_data_cache_manager.data_adaptor(
-                self.tag, server_config.single_dataset__datapath, self.app_config
+                    self.tag, server_config.single_dataset__datapath, self.app_config
             ) as data_adaptor:
                 if self.diffexp__enable and data_adaptor.parameters.get("diffexp_may_be_slow", False):
                     context["messagefn"](

@@ -104,7 +104,7 @@ class CorporaRESTAPITest(unittest.TestCase):
             "project_description": "test description",
             "project_links": json.dumps([
                 {"link_name": "test link", "link_type": "SUMMARY", "link_url": "https://a.u.r.l/"}
-            ]g),
+            ]),
             "default_embedding": "X_tsne",
         }
         adata.uns.update(corpora_props)

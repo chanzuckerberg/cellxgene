@@ -24,14 +24,14 @@ class H5ADDataFile:
     another format (currently just CXG is supported). """
 
     def __init__(
-        self,
-        input_filename,
-        backed=False,
-        dataset_title=None,
-        dataset_about=None,
-        obs_index_column_name=None,
-        vars_index_column_name=None,
-        use_corpora_schema=True,
+            self,
+            input_filename,
+            backed=False,
+            dataset_title=None,
+            dataset_about=None,
+            obs_index_column_name=None,
+            vars_index_column_name=None,
+            use_corpora_schema=True,
     ):
         self.input_filename = input_filename
         self.backed = backed
@@ -44,10 +44,11 @@ class H5ADDataFile:
 
         self.validate_input_file_type()
 
-        self.extract_metadata_about_dataset()
         self.extract_anndata_elements_from_file()
+        self.extract_metadata_about_dataset()
 
         self.validate_anndata()
+
 
     def to_cxg(self, output_cxg_directory, convert_anndata_colors_to_cxg_colors, sparse_threshold):
         logging.info("Beginning writing to CXG.")
@@ -89,6 +90,8 @@ class H5ADDataFile:
         if not is_sparse:
             col_shift = is_matrix_sparse_with_column_shift_encoding(x_matrix_data, sparse_threshold)
             is_sparse = col_shift is not None
+        else:
+            col_shift = None
 
         if is_sparse:
             if col_shift is not None:
@@ -134,7 +137,7 @@ class H5ADDataFile:
         for embedding_name, embedding_values in self.anndata.obsm.items():
             if is_valid_embedding(self.anndata, embedding_name, embedding_values):
                 embedding_name = f"{embedding_container}/{embedding_name[2:]}"
-                convert_ndarray_to_cxg_dense_array(embedding_name, embedding_values)
+                convert_ndarray_to_cxg_dense_array(embedding_name, embedding_values, ctx)
                 logging.info(f"\t\t...{embedding_name} embedding created")
 
     def generate_cxg_metadata(self, convert_anndata_colors_to_cxg_colors):
@@ -146,7 +149,7 @@ class H5ADDataFile:
 
         cxg_group_metadata = {
             "cxg_version": CxgConstants.CXG_VERSION,
-            "cxg_properties": json.dumps({"title": self.title, "about": self.about}),
+            "cxg_properties": json.dumps({"title": self.dataset_title, "about": self.dataset_about}),
         }
         if self.corpora_properties is not None:
             cxg_group_metadata["corpora"] = json.dumps(self.corpora_properties)
@@ -200,8 +203,8 @@ class H5ADDataFile:
         a link that details more information about the dataset.
         """
 
-        self.corpora_properties = corpora_get_props_from_anndata(self.anndata)
-        if self.corpora_properties is None:
+        self.corpora_properties = corpora_get_props_from_anndata(self.anndata) if self.use_corpora_schema else None
+        if self.corpora_properties is None and self.use_corpora_schema:
             # If the return value is None, this means that we were not able to figure out what version of the Corpora
             # schema the object is using and therefore cannot extract any properties.
             raise ValueError("Unknown source file schema version is unsupported.")
@@ -219,8 +222,8 @@ class H5ADDataFile:
 
         filename = path.splitext(path.basename(self.input_filename))[0]
 
-        self.title = self.title if self.title else corpora_about_link.get("link_name", filename)
-        self.about = self.about if self.about else corpora_about_link.get("link_url")
+        self.dataset_title = self.dataset_title if self.dataset_title else corpora_about_link.get("link_name", filename)
+        self.dataset_about = self.dataset_about if self.dataset_about else corpora_about_link.get("link_url")
 
     def transform_dataframe_index_into_column(self, dataframe, dataframe_name, index_column_name):
         """

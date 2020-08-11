@@ -1,4 +1,4 @@
-from server.common.utils import import_plugins
+from server.common.utils.utils import import_plugins
 import logging
 import sys
 
