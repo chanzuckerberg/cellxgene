@@ -96,12 +96,16 @@ class WSGIServer(Server):
     def _before_adding_routes(app, app_config):
         script_hashes = WSGIServer.get_csp_hashes(app, app_config)
         server_config = app_config.server_config
+        # This hash should be in sync with the script within
+        # `client/configuration/webpack/obsoleteHTMLTemplate.html`
+        obsolete_browser_script_hash = ['SHA25-0028D52E332C015C3ED9929926F4000BB4020B8CB85C1F5769D6AA3BA711F58E']
         csp = {
             "default-src": ["'self'"],
             "connect-src": ["'self'"],
-            "script-src": ["'self'", "'unsafe-eval'", "'unsafe-inline'"] + script_hashes,
+            "script-src": ["'self'", "'unsafe-eval'", "'unsafe-inline'"]
+            + obsolete_browser_script_hash + script_hashes,
             "style-src": ["'self'", "'unsafe-inline'"],
-            "img-src": ["'self'", "data:"],
+            "img-src": ["'self'", "'https://cellxgene.cziscience.com'", "data:"],
             "object-src": ["'none'"],
             "base-uri": ["'none'"],
             "frame-ancestors": ["'none'"],
