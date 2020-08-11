@@ -283,8 +283,7 @@ class AnnotationsHostedTileDB(Annotations):
         # Todo @madison retrieve latest based on timestamp
         annotation_object = self.db.query_for_most_recent(
             Annotation, [Annotation.user_id == uid, Annotation.dataset == dataset]
-        )
-        print(annotation_object)
+        )  # noqa
         # Todo in future pr, retrieve dataframe from tiledb uri
 
     def write_labels(self, df, data_adaptor):
@@ -301,7 +300,10 @@ class AnnotationsHostedTileDB(Annotations):
             self.db.session.add(dataset)
 
         uri = f"{self.directory_path}/{dataset_name}/{uid}/{timestamp}"
-        os.makedirs(uri, exist_ok=True)
+        if "s3" in uri:
+            pass
+        else:
+            os.makedirs(uri, exist_ok=True)
         schema_hints = {}
         annotation = Annotation(
             tiledb_uri=uri,
