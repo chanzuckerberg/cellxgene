@@ -281,9 +281,9 @@ class AnnotationsHostedTileDB(Annotations):
         dataset_name = data_adaptor.get_location()
         dataset = self.db.query(table_args=[CellxGeneDataset], filter_args=[CellxGeneDataset.name == dataset_name])
         # Todo @madison retrieve latest based on timestamp
-        annotation_object = self.db.query_for_most_recent(
+        annotation_object = self.db.query_for_most_recent(  # noqa F841
             Annotation, [Annotation.user_id == uid, Annotation.dataset == dataset]
-        )  # noqa
+        )
         # Todo in future pr, retrieve dataframe from tiledb uri
 
     def write_labels(self, df, data_adaptor):
