@@ -33,6 +33,9 @@ class DbUtils:
             else self.session.query(*table_args).all()
         )
 
+    def query_for_most_recent(self, table: Base, filter_args: typing.List[bool] = None) -> Base:
+        return self.session.query(table).filter(*filter_args).order_by(table.created_at.desc()).limit(1).all()[0]
+
 
 class DBSessionMaker:
     def __init__(self, database_uri):

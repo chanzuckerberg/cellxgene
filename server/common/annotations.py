@@ -1,3 +1,6 @@
+import json
+import uuid
+import time
 from datetime import datetime
 import re
 import os
@@ -12,6 +15,9 @@ import fsspec
 import fastobo
 from flask import session, current_app, has_request_context
 from abc import ABCMeta, abstractmethod
+
+from server.db.cellxgene_orm import CellxGeneDataset, Annotation
+from server.db.db_utils import DbUtils
 
 
 class Annotations(metaclass=ABCMeta):
@@ -259,3 +265,55 @@ class AnnotationsLocalFile(Annotations):
                 params["annotations-data-collection-name"] = collection
 
         parameters.update(params)
+
+
+class AnnotationsHostedTileDB(Annotations):
+    def __init__(self, directory_path: str, db: DbUtils):
+        super().__init__()
+        self.db = db
+        self.directory_path = directory_path
+
+    def set_collection(self, name):
+        pass
+
+    def read_labels(self, data_adaptor):
+        uid = current_app.auth.get_user_id()
+        dataset_name = data_adaptor.get_location()
+        dataset = self.db.query(table_args=[CellxGeneDataset], filter_args=[CellxGeneDataset.name == dataset_name])
+        # Todo @madison retrieve latest based on timestamp
+        annotation_object = self.db.query_for_most_recent(  # noqa F841
+            Annotation, [Annotation.user_id == uid, Annotation.dataset == dataset]
+        )
+        # Todo in future pr, retrieve dataframe from tiledb uri
+
+    def write_labels(self, df, data_adaptor):
+        uid = current_app.auth.get_user_id()
+        timestamp = time.time()
+        dataset_name = data_adaptor.get_location()
+        try:
+            dataset_id = self.db.query(
+                table_args=[CellxGeneDataset], filter_args=[CellxGeneDataset.name == dataset_name]
+            )[0].id
+        except IndexError:
+            dataset_id = uuid.uuid4()
+            dataset = CellxGeneDataset(id=dataset_id, name=dataset_name)
+            self.db.session.add(dataset)
+
+        uri = f"{self.directory_path}/{dataset_name}/{uid}/{timestamp}"
+        if "s3" in uri:
+            pass
+        else:
+            os.makedirs(uri, exist_ok=True)
+        schema_hints = {}
+        annotation = Annotation(
+            tiledb_uri=uri,
+            user_id=uid,
+            dataset_id=str(dataset_id),
+            schema_hints=json.dumps(schema_hints)
+        )
+        # todo in future pr -- write df to tiledb, store at uri
+        self.db.session.add(annotation)
+        self.db.session.commit()
+
+    def update_parameters(self, parameters, data_adaptor):
+        pass
