@@ -49,7 +49,6 @@ class H5ADDataFile:
 
         self.validate_anndata()
 
-
     def to_cxg(self, output_cxg_directory, convert_anndata_colors_to_cxg_colors, sparse_threshold):
         logging.info("Beginning writing to CXG.")
         ctx = tiledb.Ctx(
