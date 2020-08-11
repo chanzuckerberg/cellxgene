@@ -105,7 +105,7 @@ class WSGIServer(Server):
             "script-src": ["'self'", "'unsafe-eval'", "'unsafe-inline'"]
             + obsolete_browser_script_hash + script_hashes,
             "style-src": ["'self'", "'unsafe-inline'"],
-            "img-src": ["'self'", "data:", "'https:///cellxgene.cziscience.com'"],
+            "img-src": ["'self'", "'data:'", "'https:///cellxgene.cziscience.com'"],
             "object-src": ["'none'"],
             "base-uri": ["'none'"],
             "frame-ancestors": ["'none'"],
