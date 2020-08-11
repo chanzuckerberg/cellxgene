@@ -4,7 +4,7 @@ import * as globals from "../../globals";
 import styles from "./menubar.css";
 
 const Auth = React.memo((props) => {
-  const { auth } = props;
+  const { auth, userinfo } = props;
 
   if (!auth || (auth && !auth.requires_client_login)) return null;
 
@@ -19,10 +19,10 @@ const Auth = React.memo((props) => {
           type="button"
           data-testid="auth-button"
           disabled={false}
-          icon={!auth.is_authenticated ? "log-in" : "log-out"}
-          href={!auth.is_authenticated ? auth.login : auth.logout}
+          icon={!userinfo.is_authenticated ? "log-in" : "log-out"}
+          href={!userinfo.is_authenticated ? auth.login : auth.logout}
         >
-          {!auth.is_authenticated ? "Log In" : "Log Out"}
+          {!userinfo.is_authenticated ? "Log In" : "Log Out"}
         </AnchorButton>
       </Tooltip>
     </div>
