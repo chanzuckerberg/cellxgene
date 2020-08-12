@@ -203,7 +203,11 @@ class AuthTypeOAuth(AuthTypeClientBase):
         if token is None:
             return None
 
-        unverified_header = jwt.get_unverified_header(token)
+        try:
+            unverified_header = jwt.get_unverified_header(token)
+        except JWTError:
+            return None
+
         rsa_key = {}
         for key in self.jwks['keys']:
             if key['kid'] == unverified_header['kid']:
