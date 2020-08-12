@@ -11,7 +11,7 @@ def sanitize_values_in_list(list_of_keys: list):
         raise Exception("List of keys to sanitize must contain all strings.")
 
     # Mask out [~/.] and anything outside the ASCII range.
-    mask = re.compile(r"[^ -\.0-\[\]-\}]")
+    mask = re.compile(r"[^ -\-0-\[\]-\}]")
     clean_keys_list = [mask.sub("_", key) for key in list_of_keys]
 
     # Dedupe the clean keys list
