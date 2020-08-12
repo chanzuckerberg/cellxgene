@@ -603,26 +603,8 @@ def create_cxg_group_metadata(adata, basefname, title=None, about=None, corpora_
 
     return cxg_group_metadata
 
-# TODO @madison DRY up and combine with sanitize keys
-def check_keys(keys):
-    """
-    We need names to be safe to use as attribute names in tiledb.  See:
-        TileDB-Inc/TileDB#1575
-        TileDB-Inc/TileDB-Py#294
-    Raise an exception if they arent clean
-    Args: list of keys
-    Returns: Nothing
-    """
-    p = re.compile(r"[^ -\.0-\[\]-\}]")
-    clean_keys = {k: p.sub("_", k) for k in keys}
 
-    used_keys = set()
-    for k, v in clean_keys.items():
-        if v not in used_keys:
-            raise AnnotationCategoryNameError(f"{k} not a valid category name, please resubmit")
-    return
-
-def sanitize_keys(keys):
+def sanitize_keys(keys, update_keys=True):
     """
     We need names to be safe to use as attribute names in tiledb.  See:
         TileDB-Inc/TileDB#1575
@@ -659,6 +641,8 @@ def sanitize_keys(keys):
 
     for k, v, in clean_unique_keys.items():
         if k != v:
+            if update_keys is False:
+                raise AnnotationCategoryNameError(f"{k} not a valid category name, please resubmit")
             log(1, f"Renaming {k} to {v}")
     return clean_unique_keys
 

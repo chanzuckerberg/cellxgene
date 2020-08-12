@@ -27,7 +27,7 @@ FIXTURES_ROOT = PROJECT_ROOT + "/server/test/fixtures"
 def data_with_tmp_tiledb_annotations(ext: MatrixDataType):
     app = Flask('fake_app')
 
-    with app.test_request_context(environ_base={}):
+    with app.test_request_context():
         tmp_dir = tempfile.mkdtemp()
         fname = {
             MatrixDataType.H5AD: f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad",

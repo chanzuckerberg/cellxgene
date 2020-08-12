@@ -1,6 +1,7 @@
 import json
 from os import path, listdir
 import unittest
+from unittest.mock import patch, MagicMock
 
 import tiledb
 
@@ -14,6 +15,7 @@ from server.common.rest import schema_get_helper, annotations_put_fbs_helper
 from server.db.cellxgene_orm import CellxGeneDataset, Annotation
 from server.test import data_with_tmp_annotations, make_fbs, data_with_tmp_tiledb_annotations
 from server.data_common.matrix_loader import MatrixDataType
+from server.common.errors import AnnotationCategoryNameError
 
 
 class WritableTileDBStoredAnnotationTest(unittest.TestCase):
@@ -21,6 +23,13 @@ class WritableTileDBStoredAnnotationTest(unittest.TestCase):
         self.data, self.tmp_dir, self.annotations = data_with_tmp_tiledb_annotations(MatrixDataType.H5AD)
         self.data.dataset_config.user_annotations = self.annotations
         self.db = self.annotations.db
+        self.n_rows = self.data.get_shape()[0]
+        self.test_dict = {
+                "cat_A": pd.Series(["label_A"] * self.n_rows, dtype="category"),
+                "cat_B": pd.Series(["label_B"] * self.n_rows, dtype="category"),
+            }
+        self.fbs = make_fbs(self.test_dict)
+        self.df = pd.DataFrame(self.test_dict)
 
     def tearDown(self):
         shutil.rmtree(self.tmp_dir)
@@ -29,6 +38,73 @@ class WritableTileDBStoredAnnotationTest(unittest.TestCase):
         annotations_put_fbs_helper(self.data, fbs)
         res = json.dumps({"status": "OK"})
         return res
+
+    def test_category_name_throws_errors_for_categories_that_cant_be_converted_to_filenames(self):
+        bad_category_names = make_fbs(
+            {
+                "cat_A": pd.Series(["label_A"] * self.n_rows, dtype="category"),
+                "cat/B": pd.Series(["label_B"] * self.n_rows, dtype="category"),
+            }
+        )
+        with self.assertRaises(AnnotationCategoryNameError):
+            self.annotation_put_fbs(bad_category_names)
+
+    def test_convert_to_pandas__converts_tiledb_to_pandas_df(self):
+        self.annotations.write_labels(self.df, self.data)
+        dataset_id = self.db.query([CellxGeneDataset], [CellxGeneDataset.name == self.data.get_location()])[0].id
+        annotation = self.db.query_for_most_recent(
+            Annotation,
+            [Annotation.user_id == '1234', Annotation.dataset_id == str(dataset_id)]
+        )
+        # retrieve tiledb array
+        df = tiledb.open(annotation.tiledb_uri)
+        self.assertEqual(type(df), tiledb.array.SparseArray)
+
+        # oonvert to pandas df
+        pandas_df = self.annotations.convert_to_pandas_df(df)
+        self.assertEqual(type(pandas_df), pd.DataFrame)
+
+    def test_write_labels_creates_a_dataset_if_it_doesnt_exist(self):
+        new_name = 'new_dataset/location'
+        self.data.get_location = MagicMock(return_value=new_name)
+        num_datasets = len(self.db.query([CellxGeneDataset]))
+        self.annotation_put_fbs(self.fbs)
+        more_datasets = len(self.db.query([CellxGeneDataset]))
+        self.assertGreater(more_datasets, num_datasets)
+
+        self.assertGreater(len(self.db.query([CellxGeneDataset], [CellxGeneDataset.name == new_name])), 0)
+
+
+    def test_write_labels_links_to_existing_dataset(self):
+        ## add dataset to to db
+        self.annotation_put_fbs(self.fbs)
+
+        num_datasets = len(self.db.query([CellxGeneDataset]))
+
+        # create another annotation with the same dataset
+        self.annotation_put_fbs(self.fbs)
+
+        same_num_datasets = len(self.db.query([CellxGeneDataset]))
+
+        self.assertEqual(num_datasets, same_num_datasets)
+
+    def test_read_labels_returns_pandas_df(self):
+        self.annotation_put_fbs(self.fbs)
+
+        pandas_df = self.annotations.read_labels(self.data)
+
+        self.assertEqual(type(pandas_df), pd.DataFrame)
+
+    def test_read_labels_returns_df_matching_original(self):
+        self.annotation_put_fbs(self.fbs)
+
+        pandas_df = self.annotations.read_labels(self.data)
+
+        self.assertEqual(pandas_df.shape, (self.n_rows, 2))
+        self.assertEqual(set(pandas_df.columns), {"cat_A", "cat_B"})
+        self.assertTrue(self.data.original_obs_index.equals(pandas_df.index))
+        self.assertTrue(np.all(pandas_df["cat_A"] == ["label_A"] * self.n_rows))
+        self.assertTrue(np.all(pandas_df["cat_B"] == ["label_B"] * self.n_rows))
 
     def test_error_checks(self):
         # verify that the expected errors are generated
@@ -40,18 +116,8 @@ class WritableTileDBStoredAnnotationTest(unittest.TestCase):
         with self.assertRaises(KeyError):
             self.annotation_put_fbs(fbs_bad)
 
-    def test_write_to_file(self):
-        # verify the file is written as expected
-        n_rows = self.data.get_shape()[0]
-
-        fbs = make_fbs(
-            {
-                "cat_A": pd.Series(["label_A"] * n_rows, dtype="category"),
-                "cat_B": pd.Series(["label_B"] * n_rows, dtype="category"),
-            }
-        )
-        res = self.annotation_put_fbs(fbs)
-        self.assertEqual(res, json.dumps({"status": "OK"}))
+    def test_write_labels_stores_df_as_tiledb_array(self):
+        self.annotations.write_labels(self.df, self.data)
 
         ## get uri
         dataset_id = self.db.query([CellxGeneDataset], [CellxGeneDataset.name == self.data.get_location()])[0].id
@@ -61,13 +127,7 @@ class WritableTileDBStoredAnnotationTest(unittest.TestCase):
         )
 
         df = tiledb.open(annotation.tiledb_uri)
-        pandas_df = self.annotations.convert_to_pandas_df(df)
-
-        self.assertEqual(pandas_df.shape, (n_rows, 2))
-        self.assertEqual(set(pandas_df.columns), {"cat_A", "cat_B"})
-        self.assertTrue(self.data.original_obs_index.equals(pandas_df.index))
-        self.assertTrue(np.all(pandas_df["cat_A"] == ["label_A"] * n_rows))
-        self.assertTrue(np.all(pandas_df["cat_B"] == ["label_B"] * n_rows))
+        self.assertEqual(type(df), tiledb.array.SparseArray)
 
 
 class WritableAnnotationTest(unittest.TestCase):
@@ -170,8 +230,6 @@ class WritableAnnotationTest(unittest.TestCase):
 
         # get
         labels = self.annotations.read_labels(None)
-        import pdb
-        pdb.set_trace()
         fbsAll = self.data.annotation_to_fbs_matrix("obs", None, labels)
         schema = schema_get_helper(self.data)
         annotations = decode_fbs.decode_matrix_FBS(fbsAll)

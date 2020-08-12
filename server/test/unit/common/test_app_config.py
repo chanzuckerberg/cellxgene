@@ -98,3 +98,4 @@ class AppConfigTest(unittest.TestCase):
 
             r = session.get(f"{server}/health")
             assert r.json()["status"] == "pass"
+

@@ -19,7 +19,8 @@ import fastobo
 from flask import session, current_app, has_request_context
 from abc import ABCMeta, abstractmethod
 
-from server.converters.cxgtool import check_keys, cxg_dtype, generate_schema_hints_and_convert_value_types
+from server.converters.cxgtool import cxg_dtype, generate_schema_hints_and_convert_value_types, \
+    sanitize_keys
 from server.db.cellxgene_orm import Annotation, CellxGeneDataset
 
 
@@ -279,19 +280,23 @@ class AnnotationsHostedTileDB(Annotations):
         self.user_id = user_id
 
     def check_category_names(self, df):
-        check_keys(df.keys().to_list())
+        ## TODO @madison check that this matches front end check
+        sanitize_keys(df.keys().to_list(), False)
 
     def set_collection(self, name):
         pass
 
     def read_labels(self, data_adaptor):
         dataset_name = data_adaptor.get_location()
-        dataset = self.db.query(table_args=[CellxGeneDataset], filter_args=[CellxGeneDataset.name == dataset_name])
+        dataset_id = str(self.db.query(
+            table_args=[CellxGeneDataset],
+            filter_args=[CellxGeneDataset.name == dataset_name]
+        )[0].id)
 
         annotation_object = self.db.query_for_most_recent(
-            Annotation, [Annotation.user_id == self.user_id, Annotation.dataset == dataset]
+            Annotation, [Annotation.user_id == self.user_id, Annotation.dataset_id == dataset_id]
         )
-        df = tiledb.open(annotation_object[0].tiledb_uri)
+        df = tiledb.open(annotation_object.tiledb_uri)
         pandas_df = self.convert_to_pandas_df(df)
         return pandas_df
 
@@ -350,7 +355,7 @@ class AnnotationsHostedTileDB(Annotations):
         )
         with self.label_lock:
             if not df.empty:
-                # self.check_category_names(df)
+                self.check_category_names(df)
                 # convert to tiledb datatypes
                 for col in df:
                     df[col] = df[col].astype(cxg_dtype(df[col]))
