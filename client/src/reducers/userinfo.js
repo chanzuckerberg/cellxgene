@@ -8,8 +8,6 @@ const UserInfo = (state = {}, action) => {
         error: null,
       };
     case "userinfo load complete":
-      console.log("userinfo reducer", action);
-
       return {
         ...state,
         loading: false,

@@ -6,8 +6,6 @@ import styles from "./menubar.css";
 const Auth = React.memo((props) => {
   const { auth, userinfo } = props;
 
-  console.log("userinfo in auth buttons", userinfo);
-
   if (!auth || (auth && !auth.requires_client_login)) return null;
 
   return (
