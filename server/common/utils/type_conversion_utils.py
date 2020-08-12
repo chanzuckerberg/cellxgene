@@ -4,56 +4,41 @@ import numpy as np
 import pandas as pd
 
 
-def series_to_schema(array: pd.Series):
-    try:
-        return dtype_to_schema(array.dtype)
-    except TypeError:
-        dtype = array.dtype
-        data_kind = dtype.kind
-        schema = {}
-        if can_cast_to_float32(array):
-            schema["type"] = "float32"
-        elif can_cast_to_int32(array):
-            schema["type"] = "int32"
-        elif data_kind == "O" and dtype == "object":
-            schema["type"] = "string"
-        else:
-            raise TypeError(f"Annotations of type {dtype} are unsupported.")
-        return schema
+def get_dtype_of_array(array: pd.Series):
+    return get_dtype_and_schema_of_array(array)[0]
 
 
-def dtype_to_schema(dtype):
-    return dtype_to_dtype_and_schema(dtype)[1]
+def get_schema_type_hint_of_array(array: pd.Series):
+    return get_dtype_and_schema_of_array(array)[1]
 
 
-def dtype_to_dtype_and_schema(dtype):
-    if dtype == np.float32 or dtype == np.int32:
+def get_dtype_and_schema_of_array(array: pd.Series):
+    dtype = array.dtype
+    data_kind = dtype.kind
+
+    if dtype == np.float32:
         return (dtype, {"type": "float32"})
+    if dtype == np.int32:
+        return (dtype, {"type": "int32"})
     if dtype == np.bool_:
-        return (np.uint8, {"type": "int32"})
+        return (np.uint8, {"type": "boolean"})
     if dtype == np.str:
-        return (np.unicode, {"type": "boolean"})
+        return (np.unicode, {"type": "string"})
     if dtype == "category":
-        type = cxg_type(dtype.categories)
+        type, _ = get_dtype_and_schema_of_array(dtype.categories)
         return (type, {"type": "categorical", "categories": dtype.categories.tolist()})
 
+    # Check whether the data type can be cast to either float32 or int32
+    if can_cast_to_float32(array):
+        return (np.float32, {"type": "float32"})
+    if can_cast_to_int32(array):
+        return (np.int32, {"type": "int32"})
+
+    # Check whether the data is an object
+    if data_kind == "O" and dtype == "object":
+        return (np.unicode, {"type": "string"})
+
     raise TypeError(f"Annotations of type {dtype} are unsupported.")
-
-
-def cxg_type(array):
-    try:
-        return dtype_to_dtype_and_schema(array.dtype)
-    except TypeError:
-        dtype = array.dtype
-        data_kind = dtype.kind
-        if can_cast_to_float32(array):
-            return (np.float32, {})
-        if can_cast_to_int32(array):
-            return (np.int32, {})
-        if data_kind == "O" and dtype == "object":
-            return (np.unicode, {"type": "string"})
-
-        raise TypeError(f"Array of type {dtype} are unsupported.")
 
 
 def can_cast_to_float32(array: pd.Series):
