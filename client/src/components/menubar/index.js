@@ -224,6 +224,7 @@ class MenuBar extends React.PureComponent {
       auth,
       userinfo,
     } = this.props;
+    console.log("in parent menubar", this.props);
     const { pendingClipPercentiles } = this.state;
 
     const isColoredByCategorical = !!categoricalSelection?.[colorAccessor];
