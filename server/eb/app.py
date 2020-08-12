@@ -98,7 +98,7 @@ class WSGIServer(Server):
         server_config = app_config.server_config
         # This hash should be in sync with the script within
         # `client/configuration/webpack/obsoleteHTMLTemplate.html`
-        obsolete_browser_script_hash = ['SHA25-0028D52E332C015C3ED9929926F4000BB4020B8CB85C1F5769D6AA3BA711F58E']
+        obsolete_browser_script_hash = ["'SHA25-0028D52E332C015C3ED9929926F4000BB4020B8CB85C1F5769D6AA3BA711F58E'"]
         csp = {
             "default-src": ["'self'"],
             "connect-src": ["'self'"],
