@@ -101,7 +101,7 @@ class WSGIServer(Server):
 
         # It is _very_ difficult to generate the correct hash manually,
         # consider forcing CSP to fail on the local server by intercepting the response via Requestly
-        # this should print the failing script's hash to console
+        # this should print the failing script's hash to console. See more here: https://github.com/chanzuckerberg/cellxgene/pull/1745
         obsolete_browser_script_hash = ["'sha256-/rmgOi/skq9MpiZxPv6lPb1PNSN+Uf4NaUHO/IjyfwM='"]
         csp = {
             "default-src": ["'self'"],
