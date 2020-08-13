@@ -43,7 +43,7 @@ def is_matrix_sparse(matrix, sparse_threshold):
             if end_row_index != total_number_of_rows:
                 logging.info(
                     "Matrix is not sparse. Percentage of non-zero elements (estimate): %6.2f"
-                    % (100 * number_of_non_zero_elements / end_row_index * total_number_of_columns)
+                    % (100 * number_of_non_zero_elements / (end_row_index * total_number_of_columns))
                 )
             else:
                 logging.info(
@@ -57,10 +57,10 @@ def is_matrix_sparse(matrix, sparse_threshold):
 
 
 def is_matrix_sparse_with_column_shift_encoding(matrix, sparse_threshold):
-    """Returns a column shift if there is a column shift that allows the given matrix to be considered as sparse.
-    Column shift encoding works by taking the most common value in each column, then subtracting that value from
-    each element of the column.  If each column mostly contains its most common value, then the resulting matrix can
-    be very sparse.
+    """
+    Returns a column shift if there is a column shift that allows the given matrix to be considered as sparse. Column
+    shift encoding works by taking the most common value in each column, then subtracting that value from each  element
+    of the column.  If each column mostly contains its most common value, then the resulting matrix can be very sparse.
 
     This function determines if column shift encoding can be used to transform the matrix into a sparse matrix with a
     sparsity below the sparse_threshold. If so, returns the array that stores this encoding. This function also returns

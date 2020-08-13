@@ -4,7 +4,8 @@ from unittest.mock import patch
 import numpy as np
 from pandas import Series
 
-from server.common.utils.type_conversion_utils import can_cast_to_float32, can_cast_to_int32, get_dtype_of_array
+from server.common.utils.type_conversion_utils import can_cast_to_float32, can_cast_to_int32, get_dtype_of_array, \
+    get_schema_type_hint_of_array
 
 
 class TestTypeConversionUtils(unittest.TestCase):
@@ -63,11 +64,57 @@ class TestTypeConversionUtils(unittest.TestCase):
         self.assertFalse(can_cast)
 
     def test__get_dtype_of_array__supported_dtypes_return_as_expected(self):
-        types = [np.float32, np.int32, np.bool_, np.str]
+        types = [np.float32, np.int32, np.bool_, str]
         expected_dtypes = [np.float32, np.int32, np.uint8, np.unicode]
 
         for test_type_index in range(len(types)):
             with self.subTest(f"Testing get_dtype_of_array with type {types[test_type_index].__name__}",
                               i=test_type_index):
-                array = Series(data=[], dtype=np.dtype(types[test_type_index]))
+                array = Series(data=[], dtype=types[test_type_index])
                 self.assertEqual(get_dtype_of_array(array), expected_dtypes[test_type_index])
+
+    def test__get_schema_type_hint_of_array__supported_dtypes_return_as_expected(self):
+        types = [np.float32, np.int32, np.bool_, str]
+        expected_schema_hints = [{"type": "float32"}, {"type": "int32"}, {"type": "boolean"}, {"type": "string"}]
+
+        for test_type_index in range(len(types)):
+            with self.subTest(f"Testing get_schema_type_hint_of_array with type {types[test_type_index].__name__}",
+                              i=test_type_index):
+                array = Series(data=[], dtype=types[test_type_index])
+                self.assertEqual(get_schema_type_hint_of_array(array), expected_schema_hints[test_type_index])
+
+    def test__get_dtype_of_array__categories_return_as_expected(self):
+        array = Series(data=["a", "b", "c"], dtype="category")
+        expected_dtype = np.unicode
+
+        actual_dtype = get_dtype_of_array(array)
+
+        self.assertEqual(expected_dtype, actual_dtype)
+
+    def test__get_schema_type_hint_of_array__categories_return_as_expected(self):
+        array = Series(data=["a", "b", "b"], dtype="category")
+        expected_schema_hint = {"type": "categorical", "categories": ["a", "b"]}
+
+        actual_schema_hint = get_schema_type_hint_of_array(array)
+
+        self.assertEqual(expected_schema_hint, actual_schema_hint)
+
+    def test__get_dtype_of_array__castable_dtypes_return_as_expected(self):
+        types = [np.float64, np.int64]
+        expected_dtypes = [np.float32, np.int32]
+
+        for test_type_index in range(len(types)):
+            with self.subTest(f"Testing get_dtype_of_array with castable type {types[test_type_index].__name__}",
+                              i=test_type_index):
+                array = Series(data=[], dtype=types[test_type_index])
+                self.assertEqual(get_dtype_of_array(array), expected_dtypes[test_type_index])
+
+    def test__get_schema_type_hint_of_array__castable_dtypes_return_as_expected(self):
+        types = [np.float64, np.int64]
+        expected_schema_hints = [{"type": "float32"}, {"type": "int32"}]
+
+        for test_type_index in range(len(types)):
+            with self.subTest(f"Testing get_schema_type_hint_of_array with castable type {types[test_type_index].__name__}",
+                              i=test_type_index):
+                array = Series(data=[], dtype=types[test_type_index])
+                self.assertEqual(get_schema_type_hint_of_array(array), expected_schema_hints[test_type_index])
