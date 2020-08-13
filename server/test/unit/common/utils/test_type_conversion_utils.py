@@ -13,7 +13,7 @@ class TestTypeConversionUtils(unittest.TestCase):
     def test__can_cast_to_float32__string_is_false(self):
         array_to_convert = Series(data=["1", "2", "3"], dtype=str)
 
-        can_cast = can_cast_to_float32(array_to_convert)
+        can_cast = can_cast_to_float32(array_to_convert.dtype)
 
         self.assertFalse(can_cast)
 
@@ -21,7 +21,7 @@ class TestTypeConversionUtils(unittest.TestCase):
         array_to_convert = Series(data=[1, 2, 3], dtype=np.dtype(np.float64))
 
         with self.assertLogs(level="WARN") as logger:
-            can_cast = can_cast_to_float32(array_to_convert)
+            can_cast = can_cast_to_float32(array_to_convert.dtype)
             self.assertIn("may lose precision", logger.output[0])
 
         self.assertTrue(can_cast)
@@ -30,7 +30,7 @@ class TestTypeConversionUtils(unittest.TestCase):
     def test__can_cast_to_float64__int_is_false(self, mock_log_warning):
         array_to_convert = Series(data=[1, 2, 3], dtype=np.dtype(np.float32))
 
-        can_cast = can_cast_to_float32(array_to_convert)
+        can_cast = can_cast_to_float32(array_to_convert.dtype)
 
         self.assertTrue(can_cast)
         assert not mock_log_warning.called
@@ -38,28 +38,28 @@ class TestTypeConversionUtils(unittest.TestCase):
     def test__can_cast_to_int32__string_is_false(self):
         array_to_convert = Series(data=["1", "2", "3"], dtype=str)
 
-        can_cast = can_cast_to_int32(array_to_convert)
+        can_cast = can_cast_to_int32(array_to_convert.dtype, array_to_convert)
 
         self.assertFalse(can_cast)
 
     def test__can_cast_to_int32__int64_is_true(self):
         array_to_convert = Series(data=["1", "2", "3"], dtype=np.dtype(np.int64))
 
-        can_cast = can_cast_to_int32(array_to_convert)
+        can_cast = can_cast_to_int32(array_to_convert.dtype, array_to_convert)
 
         self.assertTrue(can_cast)
 
     def test__can_cast_to_int32__int16_is_true(self):
         array_to_convert = Series(data=["1", "2", "3"], dtype=np.dtype(np.int16))
 
-        can_cast = can_cast_to_int32(array_to_convert)
+        can_cast = can_cast_to_int32(array_to_convert.dtype, array_to_convert)
 
         self.assertTrue(can_cast)
 
     def test__can_cast_to_int32__int64_with_large_value_is_false(self):
         array_to_convert = Series(data=["3000000000", "2", "3"], dtype=np.dtype(np.int64))
 
-        can_cast = can_cast_to_int32(array_to_convert)
+        can_cast = can_cast_to_int32(array_to_convert.dtype, array_to_convert)
 
         self.assertFalse(can_cast)
 
