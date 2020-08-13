@@ -89,7 +89,7 @@ class AnnotationsHostedTileDB(Annotations):
         dataset_id = self.db.get_or_create_dataset(dataset_name)
         user_id = self.db.get_or_create_user(user_id)
 
-        uri = f"{self.directory_path}-ppp-{user_id}-{timestamp}"
+        uri = f"{self.directory_path}-{dataset_name}-{user_id}-{timestamp}"
         if uri.startswith("s3://"):
             pass
         else:
