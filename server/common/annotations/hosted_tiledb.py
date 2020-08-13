@@ -1,9 +1,7 @@
 import json
 import os
 import re
-import threading
 import time
-import uuid
 
 import pandas as pd
 import tiledb
@@ -21,8 +19,6 @@ class AnnotationsHostedTileDB(Annotations):
         super().__init__()
         self.db = db
         self.directory_path = directory_path
-        # lock used to protect label file write ops
-        self.label_lock = threading.RLock()
 
     def check_category_names(self, df):
         sanitize_keys(df.keys().to_list(), False)
@@ -106,13 +102,12 @@ class AnnotationsHostedTileDB(Annotations):
             dataset_id=str(dataset_id),
             schema_hints=json.dumps(schema_hints)
         )
-        with self.label_lock:
-            if not df.empty:
-                self.check_category_names(df)
-                # convert to tiledb datatypes
-                for col in df:
-                    df[col] = df[col].astype(cxg_dtype(df[col]))
-                tiledb.from_pandas(uri, df)
+        if not df.empty:
+            self.check_category_names(df)
+            # convert to tiledb datatypes
+            for col in df:
+                df[col] = df[col].astype(cxg_dtype(df[col]))
+            tiledb.from_pandas(uri, df)
 
         self.db.session.add(annotation)
         self.db.session.commit()

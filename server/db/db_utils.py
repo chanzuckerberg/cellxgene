@@ -63,6 +63,7 @@ class DbUtils:
             self.session.commit()
         return str(user_id)
 
+
 class DBSessionMaker:
     def __init__(self, database_uri):
         self.engine = create_engine(database_uri, connect_args={"connect_timeout": 5})
