@@ -17,25 +17,21 @@ setDefaultOptions({ timeout: 20 * 1000 });
 
 jest.retryTimes(ENV_DEFAULT.RETRY_ATTEMPTS);
 
-beforeEach(async () => {
-  await jestPuppeteer.resetBrowser();
-
+(async () => {
   const userAgent = await browser.userAgent();
   await page.setUserAgent(`${userAgent}bot`);
 
   await page._client.send("Animation.setPlaybackRate", { playbackRate: 12 });
 
+  page.on("pageerror", (err) => {
+    throw new Error(`Console error: ${err}`);
+  });
+
+  page.on("error", (err) => {
+    throw new Error(`Console error: ${err}`);
+  });
+
   page.on("console", async (msg) => {
-    page.on("pageerror", (err) => {
-      console.log(`PAGE LOG: ${msg.text()}`);
-      throw new Error(`Console error: ${err}`);
-    });
-
-    page.on("error", (err) => {
-      console.log(`PAGE LOG: ${msg.text()}`);
-      throw new Error(`Console error: ${err}`);
-    });
-
     if (isDev || isDebug) {
       // If there is a console.error but an error is not thrown, this will ensure the test fails
       console.log(`PAGE LOG: ${msg.text()}`);
@@ -57,4 +53,6 @@ beforeEach(async () => {
       }
     }
   });
+})().catch((error) => {
+  console.error("puppeteer.setup.js error", error);
 });

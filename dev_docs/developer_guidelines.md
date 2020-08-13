@@ -18,7 +18,7 @@ You can set these environment variables manually with the `export` shell command
 
 ## Running test suite
 
-Client and server tests run on Travis CI for every push, PR, and commit to master on github. End to end tests run nightly on master only.
+Client and server tests run on Travis CI for every push, PR, and commit to `main` on github. End to end tests run nightly on `main` only.
 
 ### Unit tests
 

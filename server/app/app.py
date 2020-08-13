@@ -33,7 +33,7 @@ def _cache_control(always, **cache_kwargs):
         @wraps(f)
         def wrapper(*args, **kwargs):
             response = make_response(f(*args, **kwargs))
-            if not always and not current_app.app_config.server__generate_cache_control_headers:
+            if not always and not current_app.app_config.server_config.app__generate_cache_control_headers:
                 return response
             if response.status_code >= 400:
                 return response
@@ -47,7 +47,7 @@ def _cache_control(always, **cache_kwargs):
 
 
 def cache_control(**cache_kwargs):
-    """ configu driven """
+    """ config driven """
     return _cache_control(False, **cache_kwargs)
 
 
@@ -56,28 +56,36 @@ def cache_control_always(**cache_kwargs):
     return _cache_control(True, **cache_kwargs)
 
 
+# tell the client not to cache the index.html page so that changes to the app work on redeployment
+# note that the bulk of the data needed by the client (datasets) will still be cached
 @webbp.route("/", methods=["GET"])
-@cache_control(public=True, max_age=ONE_WEEK)
+@cache_control_always(public=True, max_age=0, no_store=True, no_cache=True, must_revalidate=True)
 def dataset_index(url_dataroot=None, dataset=None):
-    config = current_app.app_config
+    app_config = current_app.app_config
+    server_config = app_config.server_config
     if dataset is None:
-        if config.single_dataset__datapath:
-            location = config.single_dataset__datapath
-        else:
+        if app_config.is_multi_dataset():
             return dataroot_index()
+        else:
+            location = server_config.single_dataset__datapath
     else:
-        dataroot = config.multi_dataset__dataroot.get(url_dataroot)
+        dataroot = None
+        for key, dataroot_dict in server_config.multi_dataset__dataroot.items():
+            if dataroot_dict["base_url"] == url_dataroot:
+                dataroot = dataroot_dict["dataroot"]
+                break
         if dataroot is None:
             abort(HTTPStatus.NOT_FOUND)
         location = path_join(dataroot, dataset)
 
-    scripts = config.server__scripts
-    inline_scripts = config.server__inline_scripts
+    dataset_config = app_config.get_dataset_config(url_dataroot)
+    scripts = dataset_config.app__scripts
+    inline_scripts = dataset_config.app__inline_scripts
 
     try:
         cache_manager = current_app.matrix_data_cache_manager
-        with cache_manager.data_adaptor(location, config) as data_adaptor:
-            dataset_title = config.get_title(data_adaptor)
+        with cache_manager.data_adaptor(url_dataroot, location, app_config) as data_adaptor:
+            dataset_title = app_config.get_title(data_adaptor)
             return render_template(
                 "index.html", datasetTitle=dataset_title, SCRIPTS=scripts, INLINE_SCRIPTS=inline_scripts
             )
@@ -101,11 +109,19 @@ def handle_request_exception(error):
 
 def get_data_adaptor(url_dataroot=None, dataset=None):
     config = current_app.app_config
+    server_config = config.server_config
+    dataset_key = None
 
     if dataset is None:
-        datapath = config.single_dataset__datapath
+        datapath = server_config.single_dataset__datapath
     else:
-        dataroot = config.multi_dataset__dataroot.get(url_dataroot)
+        dataroot = None
+        for key, dataroot_dict in server_config.multi_dataset__dataroot.items():
+            if dataroot_dict["base_url"] == url_dataroot:
+                dataroot = dataroot_dict["dataroot"]
+                dataset_key = key
+                break
+
         if dataroot is None:
             raise DatasetAccessError(f"Invalid dataset {url_dataroot}/{dataset}")
         datapath = path_join(dataroot, dataset)
@@ -119,7 +135,7 @@ def get_data_adaptor(url_dataroot=None, dataset=None):
         return common_rest.abort_and_log(HTTPStatus.BAD_REQUEST, "Invalid dataset NONE", loglevel=logging.INFO)
 
     cache_manager = current_app.matrix_data_cache_manager
-    return cache_manager.data_adaptor(datapath, config)
+    return cache_manager.data_adaptor(dataset_key, datapath, config)
 
 
 def rest_get_data_adaptor(func):
@@ -143,9 +159,12 @@ def dataroot_test_index():
     data += "<body><H1>Welcome to cellxgene</H1>"
 
     config = current_app.app_config
+    server_config = config.server_config
     datasets = []
-    for url_dataroot, dataroot in config.multi_dataset__dataroot.items():
-        locator = DataLocator(dataroot, region_name=config.data_locator__s3__region_name)
+    for dataroot_dict in server_config.multi_dataset__dataroot.values():
+        dataroot = dataroot_dict["dataroot"]
+        url_dataroot = dataroot_dict["base_url"]
+        locator = DataLocator(dataroot, region_name=server_config.data_locator__s3__region_name)
         for fname in locator.ls():
             location = path_join(dataroot, fname)
             try:
@@ -169,12 +188,12 @@ def dataroot_test_index():
 def dataroot_index():
     # Handle the base url for the cellxgene server when running in multi dataset mode
     config = current_app.app_config
-    if not config.multi_dataset__index:
+    if not config.server_config.multi_dataset__index:
         abort(HTTPStatus.NOT_FOUND)
-    elif config.multi_dataset__index is True:
+    elif config.server_config.multi_dataset__index is True:
         return dataroot_test_index()
     else:
-        return redirect(config.multi_dataset__index)
+        return redirect(config.server_config.multi_dataset__index)
 
 
 class DatasetResource(Resource):
@@ -189,33 +208,33 @@ class SchemaAPI(DatasetResource):
     @cache_control(public=True, max_age=ONE_WEEK)
     @rest_get_data_adaptor
     def get(self, data_adaptor):
-        return common_rest.schema_get(data_adaptor, current_app.annotations)
+        return common_rest.schema_get(data_adaptor)
 
 
 class ConfigAPI(DatasetResource):
     @cache_control(public=True, max_age=ONE_WEEK)
     @rest_get_data_adaptor
     def get(self, data_adaptor):
-        return common_rest.config_get(current_app.app_config, data_adaptor, current_app.annotations)
+        return common_rest.config_get(current_app.app_config, data_adaptor)
 
 
 class AnnotationsObsAPI(DatasetResource):
     @cache_control(public=True, max_age=ONE_WEEK)
     @rest_get_data_adaptor
     def get(self, data_adaptor):
-        return common_rest.annotations_obs_get(request, data_adaptor, current_app.annotations)
+        return common_rest.annotations_obs_get(request, data_adaptor)
 
     @cache_control(no_store=True)
     @rest_get_data_adaptor
     def put(self, data_adaptor):
-        return common_rest.annotations_obs_put(request, data_adaptor, current_app.annotations)
+        return common_rest.annotations_obs_put(request, data_adaptor)
 
 
 class AnnotationsVarAPI(DatasetResource):
     @cache_control(public=True, max_age=ONE_WEEK)
     @rest_get_data_adaptor
     def get(self, data_adaptor):
-        return common_rest.annotations_var_get(request, data_adaptor, current_app.annotations)
+        return common_rest.annotations_var_get(request, data_adaptor)
 
 
 class DataVarAPI(DatasetResource):
@@ -288,29 +307,26 @@ class Server:
         self.app = Flask(__name__, static_folder="../common/web/static")
         self._before_adding_routes(self.app, app_config)
         self.app.json_encoder = Float32JSONEncoder
-        if app_config.server__server_timing_headers:
+        server_config = app_config.server_config
+        if server_config.app__server_timing_headers:
             ServerTiming(self.app, force_debug=True)
 
         # enable session data
         self.app.permanent_session_lifetime = datetime.timedelta(days=50 * 365)
 
         # Config
-        secret_key = app_config.server__flask_secret_key
+        secret_key = server_config.app__flask_secret_key
         self.app.config.update(SECRET_KEY=secret_key)
 
         self.app.register_blueprint(webbp)
 
         api_version = "/api/v0.2"
-        if app_config.single_dataset__datapath:
-            bp_api = Blueprint("api", __name__, url_prefix=api_version)
-            resources = get_api_resources(bp_api)
-            self.app.register_blueprint(resources.blueprint)
-
-        else:
+        if app_config.is_multi_dataset():
             # NOTE:  These routes only allow the dataset to be in the directory
             # of the dataroot, and not a subdirectory.  We may want to change
             # the route format at some point
-            for url_dataroot in app_config.multi_dataset__dataroot.keys():
+            for dataroot_dict in server_config.multi_dataset__dataroot.values():
+                url_dataroot = dataroot_dict["base_url"]
                 bp_api = Blueprint(
                     f"api_dataset_{url_dataroot}", __name__, url_prefix=f"/{url_dataroot}/<dataset>" + api_version
                 )
@@ -319,9 +335,13 @@ class Server:
                 self.app.add_url_rule(
                     f"/{url_dataroot}/<dataset>/",
                     f"dataset_index_{url_dataroot}",
-                    lambda dataset: dataset_index(url_dataroot, dataset),
+                    lambda dataset, url_dataroot=url_dataroot: dataset_index(url_dataroot, dataset),
                     methods=["GET"],
                 )
-        self.app.matrix_data_cache_manager = app_config.matrix_data_cache_manager
-        self.app.annotations = app_config.user_annotations
+        else:
+            bp_api = Blueprint("api", __name__, url_prefix=api_version)
+            resources = get_api_resources(bp_api)
+            self.app.register_blueprint(resources.blueprint)
+
+        self.app.matrix_data_cache_manager = server_config.matrix_data_cache_manager
         self.app.app_config = app_config

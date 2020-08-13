@@ -29,7 +29,7 @@ class MatrixDataCacheItem(object):
         self.data_lock.r_release()
         return None
 
-    def acquire_and_open(self, app_config):
+    def acquire_and_open(self, app_config, dataset_config=None):
         """returns the data_adaptor if cached.  opens the data_adaptor if not.
         In either case, the a reader lock is taken.  Must call release when
         the data_adaptor is no longer needed"""
@@ -43,7 +43,7 @@ class MatrixDataCacheItem(object):
         if not self.data_adaptor:
             try:
                 self.loader.pre_load_validation()
-                self.data_adaptor = self.loader.open(app_config)
+                self.data_adaptor = self.loader.open(app_config, dataset_config)
             except Exception as e:
                 # necessary to hold the reader lock after an exception, since
                 # the release will occur when the context exits.
@@ -115,7 +115,7 @@ class MatrixDataCacheManager(object):
     # will automatically be refreshed.
 
     def __init__(self, max_cached, timelimit_s=None):
-        # key is location, value is a MatrixDataCacheInfo
+        # key is tuple(url_dataroot, location), value is a MatrixDataCacheInfo
         self.datasets = {}
 
         # lock to protect the datasets
@@ -131,20 +131,21 @@ class MatrixDataCacheManager(object):
         self.timelimit_s = timelimit_s
 
     @contextmanager
-    def data_adaptor(self, location, app_config):
+    def data_adaptor(self, url_dataroot, location, app_config):
         # create a loader for to this location if it does not already exist
 
         delete_adaptor = None
         data_adaptor = None
         cache_item = None
 
+        key = (url_dataroot, location)
         with self.lock:
             self.evict_old_datasets()
-            info = self.datasets.get(location)
+            info = self.datasets.get(key)
             if info is not None:
                 info.last_access = time.time()
                 info.num_access += 1
-                self.datasets[location] = info
+                self.datasets[key] = info
                 data_adaptor = info.cache_item.acquire_existing()
                 cache_item = info.cache_item
 
@@ -165,19 +166,20 @@ class MatrixDataCacheManager(object):
                 loader = MatrixDataLoader(location, app_config=app_config)
                 cache_item = MatrixDataCacheItem(loader)
                 item = MatrixDataCacheInfo(cache_item, time.time())
-                self.datasets[location] = item
+                self.datasets[key] = item
 
         try:
             assert cache_item
             if delete_adaptor:
                 delete_adaptor.delete()
             if data_adaptor is None:
-                data_adaptor = cache_item.acquire_and_open(app_config)
+                dataset_config = app_config.get_dataset_config(url_dataroot)
+                data_adaptor = cache_item.acquire_and_open(app_config, dataset_config)
             yield data_adaptor
         except DatasetAccessError:
             cache_item.release()
             with self.lock:
-                del self.datasets[location]
+                del self.datasets[key]
                 cache_item.delete()
             cache_item = None
             raise
@@ -215,7 +217,7 @@ class MatrixDataType(Enum):
 class MatrixDataLoader(object):
     def __init__(self, location, matrix_data_type=None, app_config=None):
         """ location can be a string or DataLocator """
-        region_name = None if app_config is None else app_config.data_locator__s3__region_name
+        region_name = None if app_config is None else app_config.server_config.data_locator__s3__region_name
         self.location = DataLocator(location, region_name=region_name)
         if not self.location.exists():
             raise DatasetAccessError("Dataset does not exist.", HTTPStatus.NOT_FOUND)
@@ -254,12 +256,12 @@ class MatrixDataLoader(object):
 
         if not app_config:
             return True
-        if not app_config.multi_dataset__dataroot:
+        if not app_config.is_multi_dataset():
             return True
-        if len(app_config.multi_dataset__allowed_matrix_types) == 0:
+        if len(app_config.server_config.multi_dataset__allowed_matrix_types) == 0:
             return True
 
-        for val in app_config.multi_dataset__allowed_matrix_types:
+        for val in app_config.server_config.multi_dataset__allowed_matrix_types:
             try:
                 if self.matrix_data_type == MatrixDataType(val):
                     return True
@@ -279,6 +281,6 @@ class MatrixDataLoader(object):
     def file_size(self):
         return self.matrix_type.file_size(self.location)
 
-    def open(self, app_config):
+    def open(self, app_config, dataset_config=None):
         # create and return a DataAdaptor object
-        return self.matrix_type.open(self.location, app_config)
+        return self.matrix_type.open(self.location, app_config, dataset_config)

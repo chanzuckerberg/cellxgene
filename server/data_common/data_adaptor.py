@@ -14,12 +14,17 @@ from server.common.app_config import AppFeature, AppConfig
 class DataAdaptor(metaclass=ABCMeta):
     """Base class for loading and accessing matrix data"""
 
-    def __init__(self, config):
-        if type(config) != AppConfig:
+    def __init__(self, data_locator, app_config, dataset_config=None):
+        if type(app_config) != AppConfig:
             raise TypeError("config expected to be of type AppConfig")
 
+        # location to the dataset
+        self.data_locator = data_locator
+
         # config is the application configuration
-        self.config = config
+        self.app_config = app_config
+        self.server_config = self.app_config.server_config
+        self.dataset_config = dataset_config or app_config.default_dataset_config
 
         # parameters set by this data adaptor based on the data.
         self.parameters = {}
@@ -31,7 +36,7 @@ class DataAdaptor(metaclass=ABCMeta):
 
     @staticmethod
     @abstractmethod
-    def open(data_locator, config):
+    def open(data_locator, app_config, dataset_config):
         pass
 
     @staticmethod
@@ -109,13 +114,11 @@ class DataAdaptor(metaclass=ABCMeta):
     def cleanup(self):
         pass
 
-    @abstractmethod
-    def get_location(self):
-        pass
-
-    @abstractmethod
     def get_data_locator(self):
-        pass
+        return self.data_locator
+
+    def get_location(self):
+        return self.data_locator.uri_or_path
 
     def get_about(self):
         return None
@@ -149,8 +152,8 @@ class DataAdaptor(metaclass=ABCMeta):
         features = [
             AppFeature("/cluster/", method="POST", available=False),
             AppFeature("/layout/obs", method="GET", available=self.get_embedding_names() is not None),
-            AppFeature("/layout/obs", method="PUT", available=self.config.embeddings__enable_reembedding),
-            AppFeature("/diffexp/", method="POST", available=self.config.diffexp__enable),
+            AppFeature("/layout/obs", method="PUT", available=self.dataset_config.embeddings__enable_reembedding),
+            AppFeature("/diffexp/", method="POST", available=self.dataset_config.diffexp__enable),
             AppFeature("/annotations/obs", method="PUT", available=annotations is not None),
         ]
         return features
@@ -260,7 +263,6 @@ class DataAdaptor(metaclass=ABCMeta):
         * currently only supports access on VAR axis
         * currently only supports filtering on VAR axis
         """
-
         if axis != Axis.VAR:
             raise ValueError("Only VAR dimension access is supported")
 
@@ -273,7 +275,7 @@ class DataAdaptor(metaclass=ABCMeta):
             raise FilterError("filtering on obs unsupported")
 
         num_columns = self.get_shape()[1] if var_selector is None else np.count_nonzero(var_selector)
-        if self.config.exceeds_limit("column_request_max", num_columns):
+        if self.server_config.exceeds_limit("column_request_max", num_columns):
             raise ExceedsLimitError("Requested dataframe columns exceed column request limit")
 
         X = self.get_X_array(obs_selector, var_selector)
@@ -301,14 +303,14 @@ class DataAdaptor(metaclass=ABCMeta):
         except (KeyError, IndexError):
             raise FilterError("Error parsing filter")
         if top_n is None:
-            top_n = self.config.diffexp__top_n
+            top_n = self.dataset_config.diffexp__top_n
 
-        if self.config.exceeds_limit(
+        if self.server_config.exceeds_limit(
             "diffexp_cellcount_max", np.count_nonzero(obs_mask_A) + np.count_nonzero(obs_mask_B)
         ):
             raise ExceedsLimitError("Diffexp request exceeds max cell count limit")
 
-        result = self.compute_diffexp_ttest(obs_mask_A, obs_mask_B, top_n, self.config.diffexp__lfc_cutoff)
+        result = self.compute_diffexp_ttest(obs_mask_A, obs_mask_B, top_n, self.dataset_config.diffexp__lfc_cutoff)
 
         try:
             return jsonify_numpy(result)

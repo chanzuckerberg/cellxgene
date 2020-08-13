@@ -28,10 +28,9 @@ def anndata_version_is_pre_070():
 
 
 class AnndataAdaptor(DataAdaptor):
-    def __init__(self, data_locator, config=None):
-        super().__init__(config)
+    def __init__(self, data_locator, app_config=None, dataset_config=None):
+        super().__init__(data_locator, app_config, dataset_config)
         self.data = None
-        self.data_locator = data_locator
         self._load_data(data_locator)
         self._validate_and_initialize()
 
@@ -55,14 +54,8 @@ class AnndataAdaptor(DataAdaptor):
         return data_locator.size() if data_locator.islocal() else 0
 
     @staticmethod
-    def open(data_locator, config):
-        return AnndataAdaptor(data_locator, config)
-
-    def get_location(self):
-        return self.data_locator.uri_or_path
-
-    def get_data_locator(self):
-        return self.data_locator
+    def open(data_locator, app_config, dataset_config=None):
+        return AnndataAdaptor(data_locator, app_config, dataset_config)
 
     def get_name(self):
         return "cellxgene anndata adaptor version"
@@ -100,7 +93,7 @@ class AnndataAdaptor(DataAdaptor):
         for (ax_name, var_name) in ((Axis.OBS, "obs"), (Axis.VAR, "var")):
             config_name = f"single_dataset__{var_name}_names"
             parameter_name = f"{var_name}_names"
-            name = getattr(self.config, config_name)
+            name = getattr(self.server_config, config_name)
             df_axis = getattr(self.data, str(ax_name))
             if name is None:
                 # Default: create unique names from index
@@ -161,7 +154,7 @@ class AnndataAdaptor(DataAdaptor):
             with data_locator.local_handle() as lh:
                 # as of AnnData 0.6.19, backed mode performs initial load fast, but at the
                 # cost of significantly slower access to X data.
-                backed = "r" if self.config.adaptor__anndata_adaptor__backed else None
+                backed = "r" if self.server_config.adaptor__anndata_adaptor__backed else None
                 self.data = anndata.read_h5ad(lh, backed=backed)
 
         except ValueError:
@@ -181,7 +174,7 @@ class AnndataAdaptor(DataAdaptor):
             )
 
     def _validate_and_initialize(self):
-        if anndata_version_is_pre_070() and self.config.adaptor__anndata_adaptor__backed:
+        if anndata_version_is_pre_070() and self.server_config.adaptor__anndata_adaptor__backed:
             warnings.warn(
                 "Use of --backed mode with anndata versions older than 0.7 will have serious "
                 "performance issues. Please update to at least anndata 0.7 or later."
@@ -199,7 +192,7 @@ class AnndataAdaptor(DataAdaptor):
 
         # heuristic
         n_values = self.data.shape[0] * self.data.shape[1]
-        if (n_values > 1e8 and self.config.adaptor__anndata_adaptor__backed is True) or (n_values > 5e8):
+        if (n_values > 1e8 and self.server_config.adaptor__anndata_adaptor__backed is True) or (n_values > 5e8):
             self.parameters.update({"diffexp_may_be_slow": True})
 
     def _is_valid_layout(self, arr):
@@ -246,7 +239,7 @@ class AnndataAdaptor(DataAdaptor):
                     )
                 if isinstance(datatype, CategoricalDtype):
                     category_num = len(curr_axis[ann].dtype.categories)
-                    if category_num > 500 and category_num > self.config.presentation__max_categories:
+                    if category_num > 500 and category_num > self.dataset_config.presentation__max_categories:
                         warnings.warn(
                             f"{str(ax).title()} annotation '{ann}' has {category_num} categories, this may be "
                             f"cumbersome or slow to display. We recommend setting the "
@@ -277,7 +270,7 @@ class AnndataAdaptor(DataAdaptor):
             c) cap total list of layouts at global const MAX_LAYOUTS
         """
         # load default layouts from the data.
-        layouts = self.config.embeddings__names
+        layouts = self.dataset_config.embeddings__names
 
         if layouts is None or len(layouts) == 0:
             layouts = [key[2:] for key in self.data.obsm_keys() if type(key) == str and key.startswith("X_")]
@@ -329,9 +322,9 @@ class AnndataAdaptor(DataAdaptor):
 
     def compute_diffexp_ttest(self, maskA, maskB, top_n=None, lfc_cutoff=None):
         if top_n is None:
-            top_n = self.config.diffexp__top_n
+            top_n = self.dataset_config.diffexp__top_n
         if lfc_cutoff is None:
-            lfc_cutoff = self.config.diffexp__lfc_cutoff
+            lfc_cutoff = self.dataset_config.diffexp__lfc_cutoff
         return diffexp_generic.diffexp_ttest(self, maskA, maskB, top_n, lfc_cutoff)
 
     def get_colors(self):
@@ -355,7 +348,7 @@ class AnndataAdaptor(DataAdaptor):
         return getattr(self.data.obs, term_name)
 
     def get_obs_index(self):
-        name = self.config.single_dataset__obs_names
+        name = self.server_config.single_dataset__obs_names
         if name is None:
             return self.original_obs_index
         else:

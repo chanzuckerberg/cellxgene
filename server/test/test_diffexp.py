@@ -15,8 +15,9 @@ class DiffExpTest(unittest.TestCase):
     """Tests the diffexp returns the expected results for one test case, using different
     adaptor types and different algorithms."""
 
-    def load_dataset(self, path, extra={}):
-        config = app_config(path, extra=extra)
+    def load_dataset(self, path, extra_server_config={}, extra_dataset_config={}):
+        config = app_config(path, extra_server_config=extra_server_config,
+                            extra_dataset_config=extra_dataset_config)
         loader = MatrixDataLoader(path)
         adaptor = loader.open(config)
         return adaptor
@@ -100,7 +101,7 @@ class DiffExpTest(unittest.TestCase):
             # create a sparse matrix
             h5adfile = os.path.join(dirname, "sparse.h5ad")
             create_test_h5ad(h5adfile, 2000, 2000, 10, apply_col_shift)
-            adaptor_anndata = self.load_dataset(h5adfile, extra=dict(embeddings__names=[]))
+            adaptor_anndata = self.load_dataset(h5adfile, extra_dataset_config=dict(embeddings__names=[]))
             adata = adaptor_anndata.data
 
             sparsename = os.path.join(dirname, "sparse.cxg")

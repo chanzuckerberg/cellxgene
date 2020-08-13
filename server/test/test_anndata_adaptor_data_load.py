@@ -15,7 +15,7 @@ class DataLoadAdaptorTest(unittest.TestCase):
     def setUp(self):
         self.data_file = DataLocator(f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad")
         config = AppConfig()
-        config.update(single_dataset__datapath=self.data_file.path)
+        config.update_server_config(single_dataset__datapath=self.data_file.path)
         config.complete_config()
         self.data = AnndataAdaptor(self.data_file, config)
 
@@ -40,14 +40,18 @@ class DataLocatorAdaptorTest(unittest.TestCase):
     Test various types of data locators we expect to consume
     """
 
-    def setUp(self):
-        self.args = {
-            "embeddings__names": ["umap"],
-            "presentation__max_categories": 100,
-            "single_dataset__obs_names": None,
-            "single_dataset__var_names": None,
-            "diffexp__lfc_cutoff": 0.01,
-        }
+    def get_basic_config(self):
+        config = AppConfig()
+        config.update_server_config(
+            single_dataset__obs_names=None,
+            single_dataset__var_names=None,
+        )
+        config.update_default_dataset_config(
+            embeddings__names=["umap"],
+            presentation__max_categories=100,
+            diffexp__lfc_cutoff=0.01,
+        )
+        return config
 
     def stdAsserts(self, data):
         """ run these each time we load the data """
@@ -57,25 +61,22 @@ class DataLocatorAdaptorTest(unittest.TestCase):
 
     def test_posix_file(self):
         locator = DataLocator("../example-dataset/pbmc3k.h5ad")
-        config = AppConfig()
-        config.update(**self.args)
-        config.update(single_dataset__datapath=locator.path)
+        config = self.get_basic_config()
+        config.update_server_config(single_dataset__datapath=locator.path)
         config.complete_config()
         data = AnndataAdaptor(locator, config)
         self.stdAsserts(data)
 
     def test_url_https(self):
-        url = "https://raw.githubusercontent.com/chanzuckerberg/cellxgene/master/example-dataset/pbmc3k.h5ad"
+        url = "https://raw.githubusercontent.com/chanzuckerberg/cellxgene/main/example-dataset/pbmc3k.h5ad"
         locator = DataLocator(url)
-        config = AppConfig()
-        config.update(**self.args)
+        config = self.get_basic_config()
         data = AnndataAdaptor(locator, config)
         self.stdAsserts(data)
 
     def test_url_http(self):
-        url = "http://raw.githubusercontent.com/chanzuckerberg/cellxgene/master/example-dataset/pbmc3k.h5ad"
+        url = "http://raw.githubusercontent.com/chanzuckerberg/cellxgene/main/example-dataset/pbmc3k.h5ad"
         locator = DataLocator(url)
-        config = AppConfig()
-        config.update(**self.args)
+        config = self.get_basic_config()
         data = AnndataAdaptor(locator, config)
         self.stdAsserts(data)

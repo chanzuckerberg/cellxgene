@@ -41,31 +41,29 @@ class IdentityInt32Index {
     return k;
   }
 
-  /* eslint-disable class-methods-use-this -- having these accessors as class methods allows for polymorphism */
   getOffset(i) {
     // label to offset
-    return i;
+    return Number.isInteger(i) && i >= 0 && i < this.maxOffset ? i : undefined;
   }
 
   getOffsets(arr) {
     // labels to offsets
-    return arr;
+    return arr.map((i) => this.getOffset(i));
   }
 
   getLabel(i) {
     // offset to label
-    return i;
+    return Number.isInteger(i) && i >= 0 && i < this.maxOffset ? i : undefined;
   }
 
   getLabels(arr) {
     // offsets to labels
-    return arr;
+    return arr.map((i) => this.getLabel(i));
   }
 
   size() {
     return this.maxOffset;
   }
-  /* eslint-enable class-methods-use-this -- enable */
 
   __promote(labelArray) {
     /*
@@ -89,7 +87,7 @@ class IdentityInt32Index {
     const { maxOffset } = this;
     for (let i = 0, l = labels.length; i < l; i += 1) {
       const label = labels[i];
-      if (label < 0 || label >= maxOffset)
+      if (!Number.isInteger(label) || label < 0 || label >= maxOffset)
         throw new RangeError(`offset or label: ${label}`);
     }
     return this.__promote(labels);
@@ -153,27 +151,21 @@ class DenseInt32Index {
   __compile() {
     const { minLabel, index, rindex } = this;
     this.getOffset = function getOffset(l) {
-      return index[l - minLabel];
+      if (!Number.isInteger(l)) return undefined;
+      const offset = index[l - minLabel];
+      return offset === -1 ? undefined : offset;
     };
 
     this.getOffsets = function getOffsets(arr) {
-      const res = new arr.constructor(arr.length);
-      for (let i = 0, len = arr.length; i < len; i += 1) {
-        res[i] = index[arr[i] - minLabel];
-      }
-      return res;
+      return arr.map((i) => this.getOffset(i));
     };
 
     this.getLabel = function getLabel(i) {
-      return rindex[i];
+      return Number.isInteger(i) ? rindex[i] : undefined;
     };
 
     this.getLabels = function getLabels(arr) {
-      const res = new arr.constructor(arr.length);
-      for (let i = 0, len = arr.length; i < len; i += 1) {
-        res[i] = rindex[arr[i]];
-      }
-      return res;
+      return arr.map((i) => this.getLabel(i));
     };
   }
 
@@ -275,23 +267,15 @@ class KeyIndex {
     };
 
     this.getOffsets = function getOffsets(arr) {
-      const res = new arr.constructor(arr.length);
-      for (let i = 0, len = arr.length; i < len; i += 1) {
-        res[i] = index.get(arr[i]);
-      }
-      return res;
+      return arr.map((l) => this.getOffset(l));
     };
 
     this.getLabel = function getLabel(i) {
-      return rindex[i];
+      return Number.isInteger(i) ? rindex[i] : undefined;
     };
 
     this.getLabels = function getLabels(arr) {
-      const res = new arr.constructor(arr.length);
-      for (let i = 0, len = arr.length; i < len; i += 1) {
-        res[i] = rindex[arr[i]];
-      }
-      return res;
+      return arr.map((i) => this.getLabel(i));
     };
   }
 
@@ -308,7 +292,9 @@ class KeyIndex {
     for (let i = 0, l = labels.length; i < l; i += 1) {
       const label = labels[i];
       const offset = this.getOffset(label);
-      if (offset === undefined) throw new RangeError(`unknown label: ${label}`);
+      if (offset === undefined || offset === -1) {
+        throw new RangeError(`unknown label: ${label}`);
+      }
     }
 
     return new KeyIndex(labels);

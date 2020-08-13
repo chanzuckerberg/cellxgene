@@ -2,7 +2,7 @@ name: Push Tests
 
 on:
   push:
-    branches: master
+    branches: main
   pull_request:
     branches: "*"
 
@@ -72,7 +72,7 @@ jobs:
           cd client && ./node_modules/codecov/bin/codecov --yml=../.codecov.yml --root=../ --gcov-root=../ -C -F frontend,javascript,unitTest
 
   smoke-tests:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.7

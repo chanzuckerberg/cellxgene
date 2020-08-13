@@ -21,13 +21,13 @@ class MatrixCacheTest(unittest.TestCase):
             shutil.copytree(source, target)
 
     def use_dataset(self, matrix_cache, dirname, app_config, dataset_index):
-        with matrix_cache.data_adaptor(os.path.join(dirname, str(dataset_index) + ".cxg"), app_config) as adaptor:
+        with matrix_cache.data_adaptor(None, os.path.join(dirname, str(dataset_index) + ".cxg"), app_config) as adaptor:
             pass
         return adaptor
 
     def use_dataset_with_error(self, matrix_cache, dirname, app_config, dataset_index):
         try:
-            with matrix_cache.data_adaptor(os.path.join(dirname, str(dataset_index) + ".cxg"), app_config):
+            with matrix_cache.data_adaptor(None, os.path.join(dirname, str(dataset_index) + ".cxg"), app_config):
                 raise DatasetAccessError("something bad happened")
         except DatasetAccessError:
             # the MatrixDataCacheManager rethrows the exception, so catch and ignore
@@ -38,7 +38,7 @@ class MatrixCacheTest(unittest.TestCase):
         result = {}
         for k, v in datasets.items():
             # filter out the dirname and the .cxg from the name
-            newk = int(k[len(dirname) + 1 : -4])
+            newk = int(k[1][len(dirname) + 1 : -4])
             result[newk] = v
 
         return result

@@ -58,6 +58,7 @@ class WSGIServer(Server):
     @staticmethod
     def _before_adding_routes(app, app_config):
         script_hashes, style_hashes = WSGIServer.get_csp_hashes(app, app_config)
+        server_config = app_config.server_config
         csp = {
             "default-src": ["'self'"],
             "connect-src": ["'self'"],
@@ -72,14 +73,14 @@ class WSGIServer(Server):
         if not app.debug:
             csp["upgrade-insecure-requests"] = ""
 
-        if app_config.server__csp_directives:
-            for k, v in app_config.server__csp_directives.items():
+        if server_config.app__csp_directives:
+            for k, v in server_config.app__csp_directives.items():
                 if not isinstance(v, list):
                     v = [v]
                 csp[k] = csp.get(k, []) + v
 
         Talisman(
-            app, force_https=app_config.server__force_https, frame_options="DENY", content_security_policy=csp,
+            app, force_https=server_config.app__force_https, frame_options="DENY", content_security_policy=csp,
         )
 
     @staticmethod
@@ -102,16 +103,18 @@ class WSGIServer(Server):
 
     @staticmethod
     def compute_inline_scp_hashes(app, app_config):
-        inline_scripts = app_config.server__inline_scripts
+        dataset_configs = [app_config.default_dataset_config] + list(app_config.dataroot_config.values())
         hashes = []
-        for script in inline_scripts:
-            with app.open_resource(f"../common/web/templates/{script}") as f:
-                content = f.read()
-                # we use jinja2 template include, which trims final newline if present.
-                if content[-1] == 0x0A:
-                    content = content[0:-1]
-                hash = base64.b64encode(hashlib.sha256(content).digest())
-                hashes.append(f"'sha256-{hash.decode('utf-8')}'")
+        for dataset_config in dataset_configs:
+            inline_scripts = dataset_config.app__inline_scripts
+            for script in inline_scripts:
+                with app.open_resource(f"../common/web/templates/{script}") as f:
+                    content = f.read()
+                    # we use jinja2 template include, which trims final newline if present.
+                    if content[-1] == 0x0A:
+                        content = content[0:-1]
+                    hash = base64.b64encode(hashlib.sha256(content).digest())
+                    hashes.append(f"'sha256-{hash.decode('utf-8')}'")
         return hashes
 
     @staticmethod
@@ -156,7 +159,7 @@ try:
     dataroot = os.getenv("CXG_DATAROOT")
     if dataroot:
         logging.info("Configuration from CXG_DATAROOT")
-        app_config.update(multi_dataset__dataroot=dataroot)
+        app_config.update_server_config(multi_dataset__dataroot=dataroot)
 
     secret_name = os.getenv("CXG_AWS_SECRET_NAME")
     if secret_name:
@@ -174,25 +177,22 @@ try:
             sys.exit(1)
 
         flask_secret_key = get_flask_secret_key(secret_region_name, secret_name)
-        app_config.update(server__flask_secret_key=flask_secret_key)
+        app_config.update_server_config(app__flask_secret_key=flask_secret_key)
 
     # features are unsupported in the current hosted server
-    app_config.update(
-        user_annotations__enable=False,
-        embeddings__enable_reembedding=False,
-        multi_dataset__allowed_matrix_types=["cxg"],
+    app_config.update_default_dataset_config(
+        user_annotations__enable=False, embeddings__enable_reembedding=False,
     )
+    app_config.update_server_config(multi_dataset__allowed_matrix_types=["cxg"],)
 
     app_config.complete_config(logging.info)
 
-    if not app_config.server__flask_secret_key:
+    if not app_config.server_config.app__flask_secret_key:
         logging.critical(
             "flask_secret_key is not provided.  Either set in config file, CXG_SECRET_KEY environment variable, "
             "or in AWS Secret Manager"
         )
         sys.exit(1)
-
-    user_annotations = app_config.user_annotations
 
     server = WSGIServer(app_config)
 
@@ -203,10 +203,10 @@ except Exception:
     logging.critical("Caught exception during initialization", exc_info=True)
     sys.exit(1)
 
-if app_config.multi_dataset__dataroot:
-    logging.info(f"starting server with multi_dataset__dataroot={app_config.multi_dataset__dataroot}")
-elif app_config.single_dataset__datapath:
-    logging.info(f"starting server with single_dataset__datapath={app_config.single_dataset__datapath}")
+if app_config.is_multi_dataset():
+    logging.info(f"starting server with multi_dataset__dataroot={app_config.server_config.multi_dataset__dataroot}")
+else:
+    logging.info(f"starting server with single_dataset__datapath={app_config.server_config.single_dataset__datapath}")
 
 if __name__ == "__main__":
     try:
