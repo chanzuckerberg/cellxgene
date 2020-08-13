@@ -5,11 +5,11 @@ import pandas as pd
 
 
 def get_dtype_of_array(array: pd.Series):
-    return get_dtype_and_schema_of_array(array)[0]
+    return get_dtype_and_schema_of_array(array.dtype, array)[0]
 
 
 def get_schema_type_hint_of_array(array: pd.Series):
-    return get_dtype_and_schema_of_array(array)[1]
+    return get_dtype_and_schema_of_array(array.dtype, array)[1]
 
 
 def get_dtype_and_schema_of_array(array: pd.Series):
