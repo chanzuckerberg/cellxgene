@@ -280,7 +280,6 @@ class AnnotationsHostedTileDB(Annotations):
         self.user_id = user_id
 
     def check_category_names(self, df):
-        ## TODO @madison check that this matches front end check
         sanitize_keys(df.keys().to_list(), False)
 
     def set_collection(self, name):

@@ -50,7 +50,10 @@ def data_with_tmp_tiledb_annotations(ext: MatrixDataType):
         config.complete_config()
 
         data = MatrixDataLoader(data_locator.abspath()).open(config)
-        annotations = AnnotationsHostedTileDB(tmp_dir, DbUtils("postgresql://postgres:test_pw@localhost:5432"), user_id='1234')
+        annotations = AnnotationsHostedTileDB(
+            tmp_dir,
+            DbUtils("postgresql://postgres:test_pw@localhost:5432"), user_id="1234"
+        )
         return data, tmp_dir, annotations
 
 

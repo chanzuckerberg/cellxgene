@@ -1,7 +1,7 @@
 import json
 from os import path, listdir
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock
 
 import tiledb
 
@@ -25,9 +25,9 @@ class WritableTileDBStoredAnnotationTest(unittest.TestCase):
         self.db = self.annotations.db
         self.n_rows = self.data.get_shape()[0]
         self.test_dict = {
-                "cat_A": pd.Series(["label_A"] * self.n_rows, dtype="category"),
-                "cat_B": pd.Series(["label_B"] * self.n_rows, dtype="category"),
-            }
+            "cat_A": pd.Series(["label_A"] * self.n_rows, dtype="category"),
+            "cat_B": pd.Series(["label_B"] * self.n_rows, dtype="category"),
+        }
         self.fbs = make_fbs(self.test_dict)
         self.df = pd.DataFrame(self.test_dict)
 
@@ -60,7 +60,7 @@ class WritableTileDBStoredAnnotationTest(unittest.TestCase):
         df = tiledb.open(annotation.tiledb_uri)
         self.assertEqual(type(df), tiledb.array.SparseArray)
 
-        # oonvert to pandas df
+        # ocnvert to pandas df
         pandas_df = self.annotations.convert_to_pandas_df(df)
         self.assertEqual(type(pandas_df), pd.DataFrame)
 
@@ -74,9 +74,8 @@ class WritableTileDBStoredAnnotationTest(unittest.TestCase):
 
         self.assertGreater(len(self.db.query([CellxGeneDataset], [CellxGeneDataset.name == new_name])), 0)
 
-
     def test_write_labels_links_to_existing_dataset(self):
-        ## add dataset to to db
+        # add dataset to to db
         self.annotation_put_fbs(self.fbs)
 
         num_datasets = len(self.db.query([CellxGeneDataset]))
@@ -118,8 +117,7 @@ class WritableTileDBStoredAnnotationTest(unittest.TestCase):
 
     def test_write_labels_stores_df_as_tiledb_array(self):
         self.annotations.write_labels(self.df, self.data)
-
-        ## get uri
+        # get uri
         dataset_id = self.db.query([CellxGeneDataset], [CellxGeneDataset.name == self.data.get_location()])[0].id
         annotation = self.db.query_for_most_recent(
             Annotation,
