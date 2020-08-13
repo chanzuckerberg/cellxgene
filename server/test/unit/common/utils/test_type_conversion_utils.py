@@ -22,7 +22,7 @@ class TestTypeConversionUtils(unittest.TestCase):
 
         with self.assertLogs(level="WARN") as logger:
             can_cast = can_cast_to_float32(array_to_convert)
-            self.assertIn(f"may lose precision", logger.output[0])
+            self.assertIn("may lose precision", logger.output[0])
 
         self.assertTrue(can_cast)
 
@@ -114,7 +114,8 @@ class TestTypeConversionUtils(unittest.TestCase):
         expected_schema_hints = [{"type": "float32"}, {"type": "int32"}]
 
         for test_type_index in range(len(types)):
-            with self.subTest(f"Testing get_schema_type_hint_of_array with castable type {types[test_type_index].__name__}",
-                              i=test_type_index):
+            with self.subTest(
+                    f"Testing get_schema_type_hint_of_array with castable type {types[test_type_index].__name__}",
+                    i=test_type_index):
                 array = Series(data=[], dtype=types[test_type_index])
                 self.assertEqual(get_schema_type_hint_of_array(array), expected_schema_hints[test_type_index])
