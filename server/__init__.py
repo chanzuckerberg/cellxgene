@@ -2,7 +2,7 @@ from server.common.utils import import_plugins
 import logging
 import sys
 
-__version__ = "0.16.0"
+__version__ = "0.16.1"
 display_version = "cellxgene v" + __version__
 
 try:
