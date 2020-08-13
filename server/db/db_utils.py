@@ -1,9 +1,10 @@
 import typing
+import uuid
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from server.db.cellxgene_orm import Base
+from server.db.cellxgene_orm import Base, CellxGeneDataset, CellxGeneUser
 
 
 class DbUtils:
@@ -34,8 +35,33 @@ class DbUtils:
         )
 
     def query_for_most_recent(self, table: Base, filter_args: typing.List[bool] = None) -> Base:
-        return self.session.query(table).filter(*filter_args).order_by(table.created_at.desc()).limit(1).all()[0]
+        try:
+            return self.session.query(table).filter(*filter_args).order_by(table.created_at.desc()).limit(1).all()[0]
+        except IndexError:
+            return None
 
+    def get_or_create_dataset(self, dataset_name):
+        try:
+            dataset_id = self.query(
+                table_args=[CellxGeneDataset], filter_args=[CellxGeneDataset.name == dataset_name]
+            )[0].id
+        except IndexError:
+            dataset_id = uuid.uuid4()
+            dataset = CellxGeneDataset(id=dataset_id, name=dataset_name)
+            self.session.add(dataset)
+            self.session.commit()
+        return str(dataset_id)
+
+    def get_or_create_user(self, user_id):
+        try:
+            user_id = self.query(
+                table_args=[CellxGeneUser], filter_args=[CellxGeneUser.id == user_id]
+            )[0].id
+        except IndexError:
+            user = CellxGeneUser(id=user_id)
+            self.session.add(user)
+            self.session.commit()
+        return str(user_id)
 
 class DBSessionMaker:
     def __init__(self, database_uri):

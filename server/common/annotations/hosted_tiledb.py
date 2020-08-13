@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import threading
 import time
 import uuid
@@ -14,6 +15,8 @@ from server.db.cellxgene_orm import CellxGeneDataset, Annotation
 
 
 class AnnotationsHostedTileDB(Annotations):
+    CXG_ANNO_COLLECTION = "cxg_anno_collection"
+
     def __init__(self, directory_path, db):
         super().__init__()
         self.db = db
@@ -24,8 +27,18 @@ class AnnotationsHostedTileDB(Annotations):
     def check_category_names(self, df):
         sanitize_keys(df.keys().to_list(), False)
 
+    def is_safe_collection_name(self, name):
+        """
+        return true if this is a safe collection name
+        this is ultra conservative. If we want to allow full legal file name syntax,
+        we could look at modules like `pathvalidate`
+        """
+        if name is None:
+            return False
+        return re.match(r"^[\w\-]+$", name) is not None
+
     def set_collection(self, name):
-        pass
+        self.CXG_ANNO_COLLECTION = name
 
     def read_labels(self, data_adaptor):
         user_id = current_app.auth.get_user_id()
@@ -38,9 +51,12 @@ class AnnotationsHostedTileDB(Annotations):
         annotation_object = self.db.query_for_most_recent(
             Annotation, [Annotation.user_id == user_id, Annotation.dataset_id == dataset_id]
         )
-        df = tiledb.open(annotation_object.tiledb_uri)
-        pandas_df = self.convert_to_pandas_df(df)
-        return pandas_df
+        if annotation_object:
+            df = tiledb.open(annotation_object.tiledb_uri)
+            pandas_df = self.convert_to_pandas_df(df)
+            return pandas_df
+        else:
+            return None
 
     def convert_to_pandas_df(self, tileDBArray):
         repr_meta = None
@@ -74,17 +90,10 @@ class AnnotationsHostedTileDB(Annotations):
         user_id = current_app.auth.get_user_id()
         timestamp = time.time()
         dataset_name = data_adaptor.get_location()
-        try:
-            dataset_id = self.db.query(
-                table_args=[CellxGeneDataset], filter_args=[CellxGeneDataset.name == dataset_name]
-            )[0].id
-        except IndexError:
-            dataset_id = uuid.uuid4()
-            dataset = CellxGeneDataset(id=dataset_id, name=dataset_name)
-            self.db.session.add(dataset)
-            self.db.session.commit()
+        dataset_id = self.db.get_or_create_dataset(dataset_name)
+        user_id = self.db.get_or_create_user(user_id)
 
-        uri = f"{self.directory_path}/{dataset_name}/{user_id}/{timestamp}"
+        uri = f"{self.directory_path}-ppp-{user_id}-{timestamp}"
         if uri.startswith("s3://"):
             pass
         else:
@@ -107,6 +116,3 @@ class AnnotationsHostedTileDB(Annotations):
 
         self.db.session.add(annotation)
         self.db.session.commit()
-
-    def update_parameters(self, parameters, data_adaptor):
-        pass
