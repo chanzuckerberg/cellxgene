@@ -106,7 +106,7 @@ class WSGIServer(Server):
         csp = {
             "default-src": ["'self'"],
             "connect-src": ["'self'"],
-            "script-src": ["'self'", "'unsafe-eval'", "'unsafe-inline'"]
+            "script-src": ["'self'", "'unsafe-eval'"]
             + obsolete_browser_script_hash + script_hashes,
             "style-src": ["'self'", "'unsafe-inline'"],
             "img-src": ["'self'", "https://cellxgene.cziscience.com", "data:"],
