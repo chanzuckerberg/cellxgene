@@ -98,7 +98,11 @@ class WSGIServer(Server):
         server_config = app_config.server_config
         # This hash should be in sync with the script within
         # `client/configuration/webpack/obsoleteHTMLTemplate.html`
-        obsolete_browser_script_hash = ["'sha256-wl4OlniJEAFM1/VNFG/LBDQyPRkO7P/5kfQWf3+fPWE='"]
+
+        # It is _very_ difficult to generate the correct hash manually,
+        # consider forcing CSP to fail on the local server by intercepting the response via Requestly
+        # this should print the failing script's hash to console
+        obsolete_browser_script_hash = ["'sha256-/rmgOi/skq9MpiZxPv6lPb1PNSN+Uf4NaUHO/IjyfwM='"]
         csp = {
             "default-src": ["'self'"],
             "connect-src": ["'self'"],
