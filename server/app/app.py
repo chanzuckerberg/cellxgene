@@ -1,21 +1,18 @@
 import datetime
 import logging
+from functools import wraps
+from http import HTTPStatus
 
-from flask import Flask, redirect, current_app, make_response, render_template, abort
-from flask import Blueprint, request
+from flask import Flask, redirect, current_app, make_response, render_template, abort, Blueprint, request
 from flask_restful import Api, Resource
 from server_timing import Timing as ServerTiming
 
-from http import HTTPStatus
-
 import server.common.rest as common_rest
-from server.common.errors import DatasetAccessError, RequestException
-from server.common.utils import path_join, Float32JSONEncoder
 from server.common.data_locator import DataLocator
+from server.common.errors import DatasetAccessError, RequestException
 from server.common.health import health_check
+from server.common.utils.utils import path_join, Float32JSONEncoder
 from server.data_common.matrix_loader import MatrixDataLoader
-
-from functools import wraps
 
 webbp = Blueprint("webapp", "server.common.web", template_folder="templates")
 

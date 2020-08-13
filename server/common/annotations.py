@@ -1,21 +1,22 @@
-import json
-import uuid
-import time
-from datetime import datetime
-import re
-import os
-import pandas as pd
-from hashlib import blake2b
 import base64
-from server import __version__ as cellxgene_version
+import json
+import os
+import re
 import threading
-from server.common.errors import AnnotationsError, OntologyLoadFailure
-from server.common.utils import series_to_schema
-import fsspec
-import fastobo
-from flask import session, current_app, has_request_context
+import time
+import uuid
 from abc import ABCMeta, abstractmethod
+from datetime import datetime
+from hashlib import blake2b
 
+import fastobo
+import fsspec
+import pandas as pd
+from flask import session, current_app, has_request_context
+
+from server import __version__ as cellxgene_version
+from server.common.errors import AnnotationsError, OntologyLoadFailure
+from server.common.utils.type_conversion_utils import get_schema_type_hint_of_array
 from server.db.cellxgene_orm import CellxGeneDataset, Annotation
 from server.db.db_utils import DbUtils
 
@@ -57,7 +58,7 @@ class Annotations(metaclass=ABCMeta):
         if labels is not None and not labels.empty:
             for col in labels.columns:
                 col_schema = dict(name=col, writable=True)
-                col_schema.update(series_to_schema(labels[col]))
+                col_schema.update(get_schema_type_hint_of_array(labels[col]))
                 schema.append(col_schema)
 
         return schema
@@ -84,7 +85,6 @@ class Annotations(metaclass=ABCMeta):
 
 
 class AnnotationsLocalFile(Annotations):
-
     CXG_ANNO_COLLECTION = "cxg_anno_collection"
 
     def __init__(self, output_dir, output_file):

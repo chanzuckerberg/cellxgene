@@ -1,23 +1,22 @@
+import os
 import random
 import shutil
 import string
 import tempfile
-import requests
 import time
-import os
-from subprocess import Popen
-from os import path, popen
 from contextlib import contextmanager
+from os import path, popen
+from subprocess import Popen
 
 import pandas as pd
+import requests
 
 from server.common.annotations import AnnotationsLocalFile
-from server.common.data_locator import DataLocator
 from server.common.app_config import AppConfig, DEFAULT_SERVER_PORT
-from server.common.utils import find_available_port
+from server.common.data_locator import DataLocator
+from server.common.utils.utils import find_available_port
 from server.data_common.fbs.matrix import encode_matrix_fbs
 from server.data_common.matrix_loader import MatrixDataLoader, MatrixDataType
-
 
 PROJECT_ROOT = popen("git rev-parse --show-toplevel").read().strip()
 FIXTURES_ROOT = PROJECT_ROOT + "/server/test/fixtures"
@@ -104,7 +103,7 @@ def start_test_server(command_line_args=[], app_config=None):
     yaml config file, which this server will read and parse.
     """
 
-    start = random.randint(DEFAULT_SERVER_PORT, 2**16 - 1)
+    start = random.randint(DEFAULT_SERVER_PORT, 2 ** 16 - 1)
     port = int(os.environ.get("CXG_SERVER_PORT", start))
     port = find_available_port("localhost", port)
     command = ["cellxgene", "--no-upgrade-check", "launch", "--verbose", "--port=%d" % port] + command_line_args
